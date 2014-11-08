@@ -27,6 +27,7 @@ import libxml2.SAX2;
 import libxml2.tree;
 import libxml2.valid;
 import libxml2.xmlIO;
+import libxml2.xmlmemory;
 import libxslt.transform;
 import libxslt.xslt;
 import libxslt.xsltInternals;
@@ -38,10 +39,20 @@ import std.stdio;
 import std.string;
 import std.utf;
 
-/***********************
- * I) General Utilites *
- ***********************/
+/************************
+ * I) General Utilities *
+ ************************/
 
+version(Windows) {
+	xmlFreeFunc xmlFree;
+	xmlMallocFunc xmlMalloc;
+	xmlStrdupFunc xmlMemStrdup;
+	xmlReallocFunc xmlRealloc;
+
+    static this() {
+        xmlMemGet(&xmlFree,&xmlMalloc,&xmlRealloc,null);
+    }
+}
 
 /**
  * Converts a null or null-terminated string to a D string or character array.
@@ -177,7 +188,7 @@ export xmlDocPtr toTimewise(xmlDocPtr musicxmlDoc) {
     return newDoc;
 } unittest {
     // Test conversion from partwise to timewise.
-    string simplePartwise = import("tests/helloWorldPartwise.xml");
+    string simplePartwise = import("helloWorldPartwise.xml");
     auto timewise = simplePartwise.toDocument("simplePartwise.xml").toTimewise();
         scope(exit) { timewise.xmlFreeDoc(); }
 
@@ -185,7 +196,7 @@ export xmlDocPtr toTimewise(xmlDocPtr musicxmlDoc) {
     assert(timewiseStr.indexOf("<measure") < timewiseStr.indexOf("<part "));
 } unittest {
     // Test conversion from timewise to timewise.
-    string simplePartwise = import("tests/helloWorldPartwise.xml");
+    string simplePartwise = import("helloWorldPartwise.xml");
     auto timewise = simplePartwise.toDocument("simplePartwise.xml").toTimewise();
         scope(exit) { timewise.xmlFreeDoc(); }
 
@@ -214,7 +225,7 @@ export xmlDocPtr toPartwise(xmlDocPtr musicxmlDoc) {
     return newDoc;
 } unittest {
     // Test conversion from timewise to partwise.
-    string simplePartwise = import("tests/helloWorldTimewise.xml");
+    string simplePartwise = import("helloWorldTimewise.xml");
     auto timewise = simplePartwise.toDocument("simpleTimewise.xml").toPartwise();
         scope(exit) { timewise.xmlFreeDoc(); }
 
@@ -251,28 +262,28 @@ static ~this() {
 
 
 
-private enum parttime_xsl = import("dtd/parttime.xsl");
-private enum timepart_xsl = import("dtd/timepart.xsl");
+private enum parttime_xsl = import("parttime.xsl");
+private enum timepart_xsl = import("timepart.xsl");
 
-private enum midievents_dtd = import("dtd/MidiEvents10.dtd" );
-private enum midixml_dtd = import("dtd/midixml.dtd" );
-private enum opus_dtd = import("dtd/opus.dtd" );
-private enum partwise_dtd = import("dtd/partwise.dtd" );
-private enum sounds_dtd = import("dtd/sounds.dtd" );
-private enum timewise_dtd = import("dtd/timewise.dtd" );
+private enum midievents_dtd = import("MidiEvents10.dtd" );
+private enum midixml_dtd = import("midixml.dtd" );
+private enum opus_dtd = import("opus.dtd" );
+private enum partwise_dtd = import("partwise.dtd" );
+private enum sounds_dtd = import("sounds.dtd" );
+private enum timewise_dtd = import("timewise.dtd" );
 
-private enum attributes_mod = import("dtd/attributes.mod");
-private enum barline_mod = import("dtd/barline.mod");
-private enum common_mod = import("dtd/common.mod");
-private enum direction_mod = import("dtd/direction.mod");
-private enum identity_mod = import("dtd/identity.mod");
-private enum layout_mod = import("dtd/layout.mod");
-private enum link_mod = import("dtd/link.mod");
-private enum note_mod = import("dtd/note.mod");
-private enum score_mod = import("dtd/score.mod");
+private enum attributes_mod = import("attributes.mod");
+private enum barline_mod = import("barline.mod");
+private enum common_mod = import("common.mod");
+private enum direction_mod = import("direction.mod");
+private enum identity_mod = import("identity.mod");
+private enum layout_mod = import("layout.mod");
+private enum link_mod = import("link.mod");
+private enum note_mod = import("note.mod");
+private enum score_mod = import("score.mod");
 
-private enum isolat1_ent = import("dtd/isolat1.ent");
-private enum isolat2_ent = import("dtd/isolat2.ent");
+private enum isolat1_ent = import("isolat1.ent");
+private enum isolat2_ent = import("isolat2.ent");
 
 private extern(C) xmlParserInputPtr xmlNewStringInputStream (xmlParserCtxtPtr, const(char)*); // parserInternals.h
 

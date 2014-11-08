@@ -538,6 +538,6 @@ export struct Score {
 }
 
 unittest {
-    string simplePartwise = import("tests/helloWorldPartwise.xml");
+    string simplePartwise = import("helloWorldPartwise.xml");
     Score score = simplePartwise;
 }
