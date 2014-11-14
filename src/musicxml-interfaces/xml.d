@@ -282,9 +282,6 @@ private enum link_mod = import("link.mod");
 private enum note_mod = import("note.mod");
 private enum score_mod = import("score.mod");
 
-private enum isolat1_ent = import("isolat1.ent");
-private enum isolat2_ent = import("isolat2.ent");
-
 private extern(C) xmlParserInputPtr xmlNewStringInputStream (xmlParserCtxtPtr, const(char)*); // parserInternals.h
 
 /**
@@ -360,12 +357,6 @@ private extern(C) xmlParserInputPtr musicDtdExternalEntityLoader(
     }
     if (id == "-//Recordare//ELEMENTS MusicXML 3.0 Score//EN" ) {
         return xmlNewStringInputStream(ctxt, score_mod); 
-    }
-    if (url == "isolat1.ent") {
-        return xmlNewStringInputStream(ctxt, isolat2_ent); 
-    }
-    if (url == "isolat2.ent") {
-        return xmlNewStringInputStream(ctxt, isolat1_ent); 
     }
 
     writeln("Unknown in-memory reference: ", url, " (which is ", id, " )");

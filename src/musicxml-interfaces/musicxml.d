@@ -33,6 +33,9 @@ export string getString(T)(T p) {
 export float getNumber(T)(T p) {
     return getString(p).to!float;
 }
+import vibejson.json;
+import core.internal.hash;
+
 export class CalendarDate {
     mixin ICalendarDate;
     this(xmlNodePtr node) {
@@ -82,6 +85,936 @@ export class PartAbbreviationDisplay {
     }
 }
 
+export class Measure {
+    mixin IMeasure;
+    this(xmlNodePtr node) {
+        for (auto ch = node.children.firstElement; ch; ch = ch.nextElement) {
+             if (ch.name.toString == "part") {
+                 partArr ~= Part(ch) ;
+             }
+
+        }
+        for (auto ch = node.properties; ch; ch = ch.next) {
+             if (ch.name.toString == "number") {
+                 number_ = getString(ch);
+             }
+             if (ch.name.toString == "implicit") {
+                 implicit = getYesNo(ch);
+             }
+             if (ch.name.toString == "width") {
+                 width = getNumber(ch);
+             }
+             if (ch.name.toString == "non-controlling") {
+                 nonControlling = getYesNo(ch);
+             }
+
+        }
+    }
+    Json toJson() {
+        auto ret = Json.emptyObject;
+        ret["number"] = number_;
+        ret["implicit"] = implicit;
+        ret["width"] = width;
+        ret["nonControlling"] = nonControlling;
+        Json jParts = Json.emptyArray;
+        foreach (part; this.partArr) {
+            Json jPart = Json.emptyArray;
+            foreach(el; part) {
+                auto type = el.type;
+                if (type == typeid(Note)) {
+                    jPart ~= el.get!Note.serializeToJson;
+                    jPart[$-1]["type"] = "Note";
+                }
+                if (type == typeid(Backup)) {
+                    jPart ~= el.get!Backup.serializeToJson;
+                    jPart[$-1]["type"] = "Backup";
+                }
+                if (type == typeid(Forward)) {
+                    jPart ~= el.get!Forward.serializeToJson;
+                    jPart[$-1]["type"] = "Forward";
+                }
+                if (type == typeid(Direction)) {
+                    jPart ~= el.get!Direction.serializeToJson;
+                    jPart[$-1]["type"] = "Direction";
+                }
+                if (type == typeid(Attributes)) {
+                    jPart ~= el.get!Attributes.serializeToJson;
+                    jPart[$-1]["type"] = "Attributes";
+                }
+                if (type == typeid(Harmony)) {
+                    jPart ~= el.get!Harmony.serializeToJson;
+                    jPart[$-1]["type"] = "Harmony";
+                }
+                if (type == typeid(FiguredBass)) {
+                    jPart ~= el.get!FiguredBass.serializeToJson;
+                    jPart[$-1]["type"] = "FiguredBass";
+                }
+                if (type == typeid(Print)) {
+                    jPart ~= el.get!Print.serializeToJson;
+                    jPart[$-1]["type"] = "Print";
+                }
+                if (type == typeid(Sound)) {
+                    jPart ~= el.get!Sound.serializeToJson;
+                    jPart[$-1]["type"] = "Sound";
+                }
+                if (type == typeid(Barline)) {
+                    jPart ~= el.get!Barline.serializeToJson;
+                    jPart[$-1]["type"] = "Barline";
+                }
+                if (type == typeid(Grouping)) {
+                    jPart ~= el.get!Grouping.serializeToJson;
+                    jPart[$-1]["type"] = "Grouping";
+                }
+                if (type == typeid(string)) {
+                    jPart ~= Json.emptyObject;
+                    jPart[$-1]["id"] = el.get!string.serializeToJson;
+                    jPart[$-1]["type"] = "id";
+                }
+            }
+            jParts ~= jPart;
+        }
+        ret["partArr"] = jParts;
+        return ret;
+    }
+    static Measure fromJson(Json t) {
+        assert(false, "Not implemented");
+    }
+}
+
+
+/**
+ * Traditional key signatures are represented by the number
+ * of flats and sharps, plus an optional mode for major/
+ * minor/mode distinctions. Negative numbers are used for
+ * flats and positive numbers for sharps, reflecting the
+ * key's placement within the circle of fifths (hence the
+ * element name). A cancel element indicates that the old
+ * key signature should be cancelled before the new one
+ * appears. This will always happen when changing to C major
+ * or A minor and need not be specified then. The cancel
+ * value matches the fifths value of the cancelled key
+ * signature (e.g., a cancel of -2 will provide an explicit
+ * cancellation for changing from B flat major to F major).
+ * The optional location attribute indicates where a key
+ * signature cancellation appears relative to a new key
+ * signature: to the left, to the right, or before the barline
+ * and to the left. It is left by default. For mid-measure key
+ * elements, a cancel location of before-barline should be
+ * treated like a cancel location of left.
+ * 
+ * Non-traditional key signatures can be represented using
+ * the Humdrum/Scot concept of a list of altered tones.
+ * The key-step and key-alter elements are represented the
+ * same way as the step and alter elements are in the pitch
+ * element in the note.mod file. The optional key-accidental
+ * element is represented the same way as the accidental
+ * element in the note.mod file. It is used for disambiguating
+ * microtonal accidentals. The different element names
+ * indicate the different meaning of altering notes in a scale
+ * versus altering a sounding pitch.
+ * 
+ * Valid mode values include major, minor, dorian, phrygian,
+ * lydian, mixolydian, aeolian, ionian, locrian, and none.
+ * 
+ * The optional number attribute refers to staff numbers,
+ * from top to bottom on the system. If absent, the key
+ * signature applies to all staves in the part.
+ * The optional list of key-octave elements is used to specify
+ * in which octave each element of the key signature appears.
+ * The content specifies the octave value using the same
+ * values as the display-octave element. The number attribute
+ * is a positive integer that refers to the key signature
+ * element in left-to-right order. If the cancel attribute is
+ * set to yes, then this number refers to an element specified
+ * by the cancel element. It is no by default.
+ * 
+ * Key signatures appear at the start of each system unless
+ * the print-object attribute has been set to "no".
+ */
+/**
+ * The appearance element controls general graphical
+ *     settings for the music's final form appearance on a
+ * printed page of display. This includes support
+ * for line widths, definitions for note sizes, and standard
+ * distances between notation elements, plus an extension
+ * element for other aspects of appearance.
+ * 
+ * The line-width element indicates the width of a line type
+ * in tenths. The type attribute defines what type of line is
+ * being defined. Values include beam, bracket, dashes,
+ * enclosure, ending, extend, heavy barline, leger,
+ * light barline, octave shift, pedal, slur middle, slur tip,
+ * staff, stem, tie middle, tie tip, tuplet bracket, and
+ * wedge. The text content is expressed in tenths.
+ * 
+ * The note-size element indicates the percentage of the
+ * regular note size to use for notes with a cue and large
+ * size as defined in the type element. The grace type is
+ * used for notes of cue size that that include a grace
+ * element. The cue type is used for all other notes with
+ * cue size, whether defined explicitly or implicitly via a
+ * cue element. The large type is used for notes of large
+ * size. The text content represent the numeric percentage.
+ * A value of 100 would be identical to the size of a regular
+ * note as defined by the music font.
+ * 
+ * The distance element represents standard distances between
+ * notation elements in tenths. The type attribute defines what
+ * type of distance is being defined. Values include hyphen
+ * (for hyphens in lyrics) and beam.
+ * 
+ * The other-appearance element is used to define any
+ * graphical settings not yet in the current version of the
+ * MusicXML format. This allows extended representation,
+ * though without application interoperability.
+ */
+/**
+ * The tuning-step, tuning-alter, and tuning-octave elements
+ * are represented like the step, alter, and octave elements,
+ * with different names to reflect their different function.
+ * They are used in the staff-tuning and accord elements.
+ */
+/**
+ * These elements are used both in the time-modification and
+ * metronome-tuplet elements. The actual-notes element
+ * describes how many notes are played in the time usually
+ * occupied by the number of normal-notes. If the normal-notes
+ * type is different than the current note type (e.g., a
+ * quarter note within an eighth note triplet), then the
+ * normal-notes type (e.g. eighth) is specified in the
+ * normal-type and normal-dot elements. The content of the
+ * actual-notes and normal-notes elements ia a non-negative
+ * integer.
+ */
+/**
+ * 
+ * Encoding contains information about who did the digital
+ *     encoding, when, with what software, and in what aspects.
+ * Standard type values for the encoder element are music,
+ * words, and arrangement, but other types may be used. The
+ * type attribute is only needed when there are multiple
+ * encoder elements.
+ * 
+ * The supports element indicates if the encoding supports
+ * a particular MusicXML element. This is recommended for
+ * elements like beam, stem, and accidental, where the
+ * absence of an element is ambiguous if you do not know
+ * if the encoding supports that element. For Version 2.0,
+ * the supports element is expanded to allow programs to
+ * indicate support for particular attributes or particular
+ * values. This lets applications communicate, for example,
+ * that all system and/or page breaks are contained in the
+ * MusicXML file.
+ */
+/**
+ * 
+ * Encoding contains information about who did the digital
+ *     encoding, when, with what software, and in what aspects.
+ * Standard type values for the encoder element are music,
+ * words, and arrangement, but other types may be used. The
+ * type attribute is only needed when there are multiple
+ * encoder elements.
+ * 
+ * The supports element indicates if the encoding supports
+ * a particular MusicXML element. This is recommended for
+ * elements like beam, stem, and accidental, where the
+ * absence of an element is ambiguous if you do not know
+ * if the encoding supports that element. For Version 2.0,
+ * the supports element is expanded to allow programs to
+ * indicate support for particular attributes or particular
+ * values. This lets applications communicate, for example,
+ * that all system and/or page breaks are contained in the
+ * MusicXML file.
+ */
+/**
+ * Traditional key signatures are represented by the number
+ * of flats and sharps, plus an optional mode for major/
+ * minor/mode distinctions. Negative numbers are used for
+ * flats and positive numbers for sharps, reflecting the
+ * key's placement within the circle of fifths (hence the
+ * element name). A cancel element indicates that the old
+ * key signature should be cancelled before the new one
+ * appears. This will always happen when changing to C major
+ * or A minor and need not be specified then. The cancel
+ * value matches the fifths value of the cancelled key
+ * signature (e.g., a cancel of -2 will provide an explicit
+ * cancellation for changing from B flat major to F major).
+ * The optional location attribute indicates where a key
+ * signature cancellation appears relative to a new key
+ * signature: to the left, to the right, or before the barline
+ * and to the left. It is left by default. For mid-measure key
+ * elements, a cancel location of before-barline should be
+ * treated like a cancel location of left.
+ * 
+ * Non-traditional key signatures can be represented using
+ * the Humdrum/Scot concept of a list of altered tones.
+ * The key-step and key-alter elements are represented the
+ * same way as the step and alter elements are in the pitch
+ * element in the note.mod file. The optional key-accidental
+ * element is represented the same way as the accidental
+ * element in the note.mod file. It is used for disambiguating
+ * microtonal accidentals. The different element names
+ * indicate the different meaning of altering notes in a scale
+ * versus altering a sounding pitch.
+ * 
+ * Valid mode values include major, minor, dorian, phrygian,
+ * lydian, mixolydian, aeolian, ionian, locrian, and none.
+ * 
+ * The optional number attribute refers to staff numbers,
+ * from top to bottom on the system. If absent, the key
+ * signature applies to all staves in the part.
+ * The optional list of key-octave elements is used to specify
+ * in which octave each element of the key signature appears.
+ * The content specifies the octave value using the same
+ * values as the display-octave element. The number attribute
+ * is a positive integer that refers to the key signature
+ * element in left-to-right order. If the cancel attribute is
+ * set to yes, then this number refers to an element specified
+ * by the cancel element. It is no by default.
+ * 
+ * Key signatures appear at the start of each system unless
+ * the print-object attribute has been set to "no".
+ */
+/**
+ * Traditional key signatures are represented by the number
+ * of flats and sharps, plus an optional mode for major/
+ * minor/mode distinctions. Negative numbers are used for
+ * flats and positive numbers for sharps, reflecting the
+ * key's placement within the circle of fifths (hence the
+ * element name). A cancel element indicates that the old
+ * key signature should be cancelled before the new one
+ * appears. This will always happen when changing to C major
+ * or A minor and need not be specified then. The cancel
+ * value matches the fifths value of the cancelled key
+ * signature (e.g., a cancel of -2 will provide an explicit
+ * cancellation for changing from B flat major to F major).
+ * The optional location attribute indicates where a key
+ * signature cancellation appears relative to a new key
+ * signature: to the left, to the right, or before the barline
+ * and to the left. It is left by default. For mid-measure key
+ * elements, a cancel location of before-barline should be
+ * treated like a cancel location of left.
+ * 
+ * Non-traditional key signatures can be represented using
+ * the Humdrum/Scot concept of a list of altered tones.
+ * The key-step and key-alter elements are represented the
+ * same way as the step and alter elements are in the pitch
+ * element in the note.mod file. The optional key-accidental
+ * element is represented the same way as the accidental
+ * element in the note.mod file. It is used for disambiguating
+ * microtonal accidentals. The different element names
+ * indicate the different meaning of altering notes in a scale
+ * versus altering a sounding pitch.
+ * 
+ * Valid mode values include major, minor, dorian, phrygian,
+ * lydian, mixolydian, aeolian, ionian, locrian, and none.
+ * 
+ * The optional number attribute refers to staff numbers,
+ * from top to bottom on the system. If absent, the key
+ * signature applies to all staves in the part.
+ * The optional list of key-octave elements is used to specify
+ * in which octave each element of the key signature appears.
+ * The content specifies the octave value using the same
+ * values as the display-octave element. The number attribute
+ * is a positive integer that refers to the key signature
+ * element in left-to-right order. If the cancel attribute is
+ * set to yes, then this number refers to an element specified
+ * by the cancel element. It is no by default.
+ * 
+ * Key signatures appear at the start of each system unless
+ * the print-object attribute has been set to "no".
+ */
+/**
+ * Traditional key signatures are represented by the number
+ * of flats and sharps, plus an optional mode for major/
+ * minor/mode distinctions. Negative numbers are used for
+ * flats and positive numbers for sharps, reflecting the
+ * key's placement within the circle of fifths (hence the
+ * element name). A cancel element indicates that the old
+ * key signature should be cancelled before the new one
+ * appears. This will always happen when changing to C major
+ * or A minor and need not be specified then. The cancel
+ * value matches the fifths value of the cancelled key
+ * signature (e.g., a cancel of -2 will provide an explicit
+ * cancellation for changing from B flat major to F major).
+ * The optional location attribute indicates where a key
+ * signature cancellation appears relative to a new key
+ * signature: to the left, to the right, or before the barline
+ * and to the left. It is left by default. For mid-measure key
+ * elements, a cancel location of before-barline should be
+ * treated like a cancel location of left.
+ * 
+ * Non-traditional key signatures can be represented using
+ * the Humdrum/Scot concept of a list of altered tones.
+ * The key-step and key-alter elements are represented the
+ * same way as the step and alter elements are in the pitch
+ * element in the note.mod file. The optional key-accidental
+ * element is represented the same way as the accidental
+ * element in the note.mod file. It is used for disambiguating
+ * microtonal accidentals. The different element names
+ * indicate the different meaning of altering notes in a scale
+ * versus altering a sounding pitch.
+ * 
+ * Valid mode values include major, minor, dorian, phrygian,
+ * lydian, mixolydian, aeolian, ionian, locrian, and none.
+ * 
+ * The optional number attribute refers to staff numbers,
+ * from top to bottom on the system. If absent, the key
+ * signature applies to all staves in the part.
+ * The optional list of key-octave elements is used to specify
+ * in which octave each element of the key signature appears.
+ * The content specifies the octave value using the same
+ * values as the display-octave element. The number attribute
+ * is a positive integer that refers to the key signature
+ * element in left-to-right order. If the cancel attribute is
+ * set to yes, then this number refers to an element specified
+ * by the cancel element. It is no by default.
+ * 
+ * Key signatures appear at the start of each system unless
+ * the print-object attribute has been set to "no".
+ */
+/**
+ * Time signatures are represented by two elements. The
+ *     beats element indicates the number of beats, as found in
+ * the numerator of a time signature. The beat-type element
+ * indicates the beat unit, as found in the denominator of
+ * a time signature.
+ * 
+ * Multiple pairs of beats and beat-type elements are used for
+ * composite time signatures with multiple denominators, such
+ * as 2/4 + 3/8. A composite such as 3+2/8 requires only one
+ * beats/beat-type pair.
+ * 
+ * The interchangeable element is used to represent the second
+ * in a pair of interchangeable dual time signatures, such as
+ * the 6/8 in 3/4 (6/8). A separate symbol attribute value is
+ * available compared to the time element's symbol attribute,
+ * which applies to the first of the dual time signatures.
+ * The time-relation element indicates the symbol used to
+ * represent the interchangeable aspect of the time signature.
+ * Valid values are parentheses, bracket, equals, slash, space,
+ * and hyphen.
+ * 
+ * A senza-misura element explicitly indicates that no time
+ * signature is present. The optional element content
+ * indicates the symbol to be used, if any, such as an X.
+ * The time element's symbol attribute is not used when a
+ * senza-misura element is present.
+ * 
+ * The print-object attribute allows a time signature to be
+ * specified but not printed, as is the case for excerpts
+ * from the middle of a score. The value is "yes" if
+ * not present. The optional number attribute refers to staff
+ * numbers within the part, from top to bottom on the system.
+ * If absent, the time signature applies to all staves in the
+ * part.
+ */
+/**
+ * Time signatures are represented by two elements. The
+ *     beats element indicates the number of beats, as found in
+ * the numerator of a time signature. The beat-type element
+ * indicates the beat unit, as found in the denominator of
+ * a time signature.
+ * 
+ * Multiple pairs of beats and beat-type elements are used for
+ * composite time signatures with multiple denominators, such
+ * as 2/4 + 3/8. A composite such as 3+2/8 requires only one
+ * beats/beat-type pair.
+ * 
+ * The interchangeable element is used to represent the second
+ * in a pair of interchangeable dual time signatures, such as
+ * the 6/8 in 3/4 (6/8). A separate symbol attribute value is
+ * available compared to the time element's symbol attribute,
+ * which applies to the first of the dual time signatures.
+ * The time-relation element indicates the symbol used to
+ * represent the interchangeable aspect of the time signature.
+ * Valid values are parentheses, bracket, equals, slash, space,
+ * and hyphen.
+ * 
+ * A senza-misura element explicitly indicates that no time
+ * signature is present. The optional element content
+ * indicates the symbol to be used, if any, such as an X.
+ * The time element's symbol attribute is not used when a
+ * senza-misura element is present.
+ * 
+ * The print-object attribute allows a time signature to be
+ * specified but not printed, as is the case for excerpts
+ * from the middle of a score. The value is "yes" if
+ * not present. The optional number attribute refers to staff
+ * numbers within the part, from top to bottom on the system.
+ * If absent, the time signature applies to all staves in the
+ * part.
+ */
+/**
+ * Time signatures are represented by two elements. The
+ *     beats element indicates the number of beats, as found in
+ * the numerator of a time signature. The beat-type element
+ * indicates the beat unit, as found in the denominator of
+ * a time signature.
+ * 
+ * Multiple pairs of beats and beat-type elements are used for
+ * composite time signatures with multiple denominators, such
+ * as 2/4 + 3/8. A composite such as 3+2/8 requires only one
+ * beats/beat-type pair.
+ * 
+ * The interchangeable element is used to represent the second
+ * in a pair of interchangeable dual time signatures, such as
+ * the 6/8 in 3/4 (6/8). A separate symbol attribute value is
+ * available compared to the time element's symbol attribute,
+ * which applies to the first of the dual time signatures.
+ * The time-relation element indicates the symbol used to
+ * represent the interchangeable aspect of the time signature.
+ * Valid values are parentheses, bracket, equals, slash, space,
+ * and hyphen.
+ * 
+ * A senza-misura element explicitly indicates that no time
+ * signature is present. The optional element content
+ * indicates the symbol to be used, if any, such as an X.
+ * The time element's symbol attribute is not used when a
+ * senza-misura element is present.
+ * 
+ * The print-object attribute allows a time signature to be
+ * specified but not printed, as is the case for excerpts
+ * from the middle of a score. The value is "yes" if
+ * not present. The optional number attribute refers to staff
+ * numbers within the part, from top to bottom on the system.
+ * If absent, the time signature applies to all staves in the
+ * part.
+ */
+/**
+ * Time signatures are represented by two elements. The
+ *     beats element indicates the number of beats, as found in
+ * the numerator of a time signature. The beat-type element
+ * indicates the beat unit, as found in the denominator of
+ * a time signature.
+ * 
+ * Multiple pairs of beats and beat-type elements are used for
+ * composite time signatures with multiple denominators, such
+ * as 2/4 + 3/8. A composite such as 3+2/8 requires only one
+ * beats/beat-type pair.
+ * 
+ * The interchangeable element is used to represent the second
+ * in a pair of interchangeable dual time signatures, such as
+ * the 6/8 in 3/4 (6/8). A separate symbol attribute value is
+ * available compared to the time element's symbol attribute,
+ * which applies to the first of the dual time signatures.
+ * The time-relation element indicates the symbol used to
+ * represent the interchangeable aspect of the time signature.
+ * Valid values are parentheses, bracket, equals, slash, space,
+ * and hyphen.
+ * 
+ * A senza-misura element explicitly indicates that no time
+ * signature is present. The optional element content
+ * indicates the symbol to be used, if any, such as an X.
+ * The time element's symbol attribute is not used when a
+ * senza-misura element is present.
+ * 
+ * The print-object attribute allows a time signature to be
+ * specified but not printed, as is the case for excerpts
+ * from the middle of a score. The value is "yes" if
+ * not present. The optional number attribute refers to staff
+ * numbers within the part, from top to bottom on the system.
+ * If absent, the time signature applies to all staves in the
+ * part.
+ */
+/**
+ * Instruments are only used if more than one instrument is
+ *     represented in the part (e.g., oboe I and II where they
+ * play together most of the time). If absent, a value of 1
+ * is assumed.
+ */
+/**
+ * Clefs are represented by the sign, line, and
+ *     clef-octave-change elements. Sign values include G, F, C,
+ * percussion, TAB, jianpu, and none. Line numbers are
+ * counted from the bottom of the staff. Standard values are
+ * 2 for the G sign (treble clef), 4 for the F sign (bass clef),
+ * 3 for the C sign (alto clef) and 5 for TAB (on a 6-line
+ * staff). The clef-octave-change element is used for
+ * transposing clefs (e.g., a treble clef for tenors would
+ * have a clef-octave-change value of -1). The optional
+ * number attribute refers to staff numbers within the part,
+ * from top to bottom on the system. A value of 1 is
+ * assumed if not present.
+ * 
+ * The jianpu sign indicates that the music that follows
+ * should be in jianpu numbered notation, just as the TAB
+ * sign indicates that the music that follows should be in
+ * tablature notation. Unlike TAB, a jianpu sign does not
+ * correspond to a visual clef notation.
+ * 
+ * Sometimes clefs are added to the staff in non-standard
+ * line positions, either to indicate cue passages, or when
+ * there are multiple clefs present simultaneously on one
+ * staff. In this situation, the additional attribute is set to
+ * "yes" and the line value is ignored. The size attribute
+ * is used for clefs where the additional attribute is "yes".
+ * It is typically used to indicate cue clefs.
+ * 
+ * Sometimes clefs at the start of a measure need to appear
+ * after the barline rather than before, as for cues or for
+ * use after a repeated section. The after-barline attribute
+ * is set to "yes" in this situation. The attribute is ignored
+ * for mid-measure clefs.
+ * 
+ * Clefs appear at the start of each system unless the
+ * print-object attribute has been set to "no" or the
+ * additional attribute has been set to "yes".
+ */
+/**
+ * Clefs are represented by the sign, line, and
+ *     clef-octave-change elements. Sign values include G, F, C,
+ * percussion, TAB, jianpu, and none. Line numbers are
+ * counted from the bottom of the staff. Standard values are
+ * 2 for the G sign (treble clef), 4 for the F sign (bass clef),
+ * 3 for the C sign (alto clef) and 5 for TAB (on a 6-line
+ * staff). The clef-octave-change element is used for
+ * transposing clefs (e.g., a treble clef for tenors would
+ * have a clef-octave-change value of -1). The optional
+ * number attribute refers to staff numbers within the part,
+ * from top to bottom on the system. A value of 1 is
+ * assumed if not present.
+ * 
+ * The jianpu sign indicates that the music that follows
+ * should be in jianpu numbered notation, just as the TAB
+ * sign indicates that the music that follows should be in
+ * tablature notation. Unlike TAB, a jianpu sign does not
+ * correspond to a visual clef notation.
+ * 
+ * Sometimes clefs are added to the staff in non-standard
+ * line positions, either to indicate cue passages, or when
+ * there are multiple clefs present simultaneously on one
+ * staff. In this situation, the additional attribute is set to
+ * "yes" and the line value is ignored. The size attribute
+ * is used for clefs where the additional attribute is "yes".
+ * It is typically used to indicate cue clefs.
+ * 
+ * Sometimes clefs at the start of a measure need to appear
+ * after the barline rather than before, as for cues or for
+ * use after a repeated section. The after-barline attribute
+ * is set to "yes" in this situation. The attribute is ignored
+ * for mid-measure clefs.
+ * 
+ * Clefs appear at the start of each system unless the
+ * print-object attribute has been set to "no" or the
+ * additional attribute has been set to "yes".
+ */
+/**
+ * The staff-details element is used to indicate different
+ *     types of staves. The staff-type element can be ossia,
+ * cue, editorial, regular, or alternate. An alternate staff
+ * indicates one that shares the same musical data as the
+ * prior staff, but displayed differently (e.g., treble and
+ * bass clef, standard notation and tab). The staff-lines
+ * element specifies the number of lines for a non 5-line
+ * staff. The staff-tuning and capo elements are used to
+ * specify tuning when using tablature notation. The optional
+ * number attribute specifies the staff number from top to
+ * bottom on the system, as with clef. The optional show-frets
+ * attribute indicates whether to show tablature frets as
+ * numbers (0, 1, 2) or letters (a, b, c). The default choice
+ * is numbers. The print-object attribute is used to indicate
+ * when a staff is not printed in a part, usually in large
+ * scores where empty parts are omitted. It is yes by default.
+ * If print-spacing is yes while print-object is no, the score
+ * is printed in cutaway format where vertical space is left
+ * for the empty part.
+ */
+/**
+ * The capo element indicates at which fret a capo should
+ *     be placed on a fretted instrument. This changes the
+ * open tuning of the strings specified by staff-tuning
+ * by the specified number of half-steps.
+ */
+/**
+ * If the part is being encoded for a transposing instrument
+ *     in written vs. concert pitch, the transposition must be
+ * encoded in the transpose element. The transpose element
+ * represents what must be added to the written pitch to get
+ * the correct sounding pitch.
+ * 
+ * The transposition is represented by chromatic steps
+ * (required) and three optional elements: diatonic pitch
+ * steps, octave changes, and doubling an octave down. The
+ * chromatic and octave-change elements are numeric values
+ * added to the encoded pitch data to create the sounding
+ * pitch. The diatonic element is also numeric and allows
+ * for correct spelling of enharmonic transpositions.
+ * 
+ * The optional number attribute refers to staff numbers,
+ * from top to bottom on the system. If absent, the
+ * transposition applies to all staves in the part. Per-staff
+ * transposition is most often used in parts that represent
+ * multiple instruments.
+ */
+/**
+ * If the part is being encoded for a transposing instrument
+ *     in written vs. concert pitch, the transposition must be
+ * encoded in the transpose element. The transpose element
+ * represents what must be added to the written pitch to get
+ * the correct sounding pitch.
+ * 
+ * The transposition is represented by chromatic steps
+ * (required) and three optional elements: diatonic pitch
+ * steps, octave changes, and doubling an octave down. The
+ * chromatic and octave-change elements are numeric values
+ * added to the encoded pitch data to create the sounding
+ * pitch. The diatonic element is also numeric and allows
+ * for correct spelling of enharmonic transpositions.
+ * 
+ * The optional number attribute refers to staff numbers,
+ * from top to bottom on the system. If absent, the
+ * transposition applies to all staves in the part. Per-staff
+ * transposition is most often used in parts that represent
+ * multiple instruments.
+ */
+/**
+ * If the part is being encoded for a transposing instrument
+ *     in written vs. concert pitch, the transposition must be
+ * encoded in the transpose element. The transpose element
+ * represents what must be added to the written pitch to get
+ * the correct sounding pitch.
+ * 
+ * The transposition is represented by chromatic steps
+ * (required) and three optional elements: diatonic pitch
+ * steps, octave changes, and doubling an octave down. The
+ * chromatic and octave-change elements are numeric values
+ * added to the encoded pitch data to create the sounding
+ * pitch. The diatonic element is also numeric and allows
+ * for correct spelling of enharmonic transpositions.
+ * 
+ * The optional number attribute refers to staff numbers,
+ * from top to bottom on the system. If absent, the
+ * transposition applies to all staves in the part. Per-staff
+ * transposition is most often used in parts that represent
+ * multiple instruments.
+ */
+/**
+ * The slash-type and slash-dot elements are optional children
+ *     of the beat-repeat and slash elements. They have the same
+ * values as the type and dot elements, and define what the
+ * beat is for the display of repetition marks. If not present,
+ * the beat is based on the current time signature.
+ */
+/**
+ * The unpitched element indicates musical elements that are
+ *     notated on the staff but lack definite pitch, such as
+ * unpitched percussion and speaking voice. Like notes, it
+ * uses step and octave elements to indicate placement on the
+ * staff, following the current clef. If percussion clef is
+ * used, the display-step and display-octave elements are
+ * interpreted as if in treble clef, with a G in octave 4 on
+ * line 2. If not present, the note is placed on the middle
+ * line of the staff, generally used for a one-line staff.
+ */
+/**
+ * The unpitched element indicates musical elements that are
+ *     notated on the staff but lack definite pitch, such as
+ * unpitched percussion and speaking voice. Like notes, it
+ * uses step and octave elements to indicate placement on the
+ * staff, following the current clef. If percussion clef is
+ * used, the display-step and display-octave elements are
+ * interpreted as if in treble clef, with a G in octave 4 on
+ * line 2. If not present, the note is placed on the middle
+ * line of the staff, generally used for a one-line staff.
+ */
+/**
+ * The bend element is used in guitar and tablature. The
+ *     bend-alter element indicates the number of steps in the
+ * bend, similar to the alter element. As with the alter
+ * element, numbers like 0.5 can be used to indicate
+ * microtones. Negative numbers indicate pre-bends or
+ * releases; the pre-bend and release elements are used
+ * to distinguish what is intended. A with-bar element
+ * indicates that the bend is to be done at the bridge
+ * with a whammy or vibrato bar. The content of the
+ * element indicates how this should be notated.
+ */
+/**
+ * The hole element represents the symbols used for woodwind
+ *     and brass fingerings as well as other notations. The content
+ * of the optional hole-type element indicates what the hole
+ * symbol represents in terms of instrument fingering or other
+ * techniques. The hole-closed element represents whether the
+ * hole is closed, open, or half-open. Valid element values are
+ * yes, no, and half. The optional location attribute indicates
+ * which portion of the hole is filled in when the element value
+ * is half. The optional hole-shape element indicates the shape
+ * of the hole symbol; the default is a circle.
+ */
+/**
+ * The hole element represents the symbols used for woodwind
+ *     and brass fingerings as well as other notations. The content
+ * of the optional hole-type element indicates what the hole
+ * symbol represents in terms of instrument fingering or other
+ * techniques. The hole-closed element represents whether the
+ * hole is closed, open, or half-open. Valid element values are
+ * yes, no, and half. The optional location attribute indicates
+ * which portion of the hole is filled in when the element value
+ * is half. The optional hole-shape element indicates the shape
+ * of the hole symbol; the default is a circle.
+ */
+/**
+ * The arrow element represents an arrow used for a musical
+ *     technical indication. Straight arrows are represented with
+ * an arrow-direction element and an optional arrow-style
+ * element. Circular arrows are represented with a
+ * circular-arrow element. Descriptive values use Unicode
+ * arrow terminology.
+ * 
+ * Values for the arrow-direction element are left, up, right,
+ * down, northwest, northeast, southeast, southwest, left right,
+ * up down, northwest southeast, northeast southwest, and other.
+ * 
+ * Values for the arrow-style element are single, double,
+ * filled, hollow, paired, combined, and other. Filled and
+ * hollow arrows indicate polygonal single arrows. Paired
+ * arrows are duplicate single arrows in the same direction.
+ * Combined arrows apply to double direction arrows like
+ * left right, indicating that an arrow in one direction
+ * should be combined with an arrow in the other direction.
+ * 
+ * Values for the circular-arrow element are clockwise and
+ * anticlockwise.
+ */
+/**
+ * The arrow element represents an arrow used for a musical
+ *     technical indication. Straight arrows are represented with
+ * an arrow-direction element and an optional arrow-style
+ * element. Circular arrows are represented with a
+ * circular-arrow element. Descriptive values use Unicode
+ * arrow terminology.
+ * 
+ * Values for the arrow-direction element are left, up, right,
+ * down, northwest, northeast, southeast, southwest, left right,
+ * up down, northwest southeast, northeast southwest, and other.
+ * 
+ * Values for the arrow-style element are single, double,
+ * filled, hollow, paired, combined, and other. Filled and
+ * hollow arrows indicate polygonal single arrows. Paired
+ * arrows are duplicate single arrows in the same direction.
+ * Combined arrows apply to double direction arrows like
+ * left right, indicating that an arrow in one direction
+ * should be combined with an arrow in the other direction.
+ * 
+ * Values for the circular-arrow element are clockwise and
+ * anticlockwise.
+ */
+/**
+ * The arrow element represents an arrow used for a musical
+ *     technical indication. Straight arrows are represented with
+ * an arrow-direction element and an optional arrow-style
+ * element. Circular arrows are represented with a
+ * circular-arrow element. Descriptive values use Unicode
+ * arrow terminology.
+ * 
+ * Values for the arrow-direction element are left, up, right,
+ * down, northwest, northeast, southeast, southwest, left right,
+ * up down, northwest southeast, northeast southwest, and other.
+ * 
+ * Values for the arrow-style element are single, double,
+ * filled, hollow, paired, combined, and other. Filled and
+ * hollow arrows indicate polygonal single arrows. Paired
+ * arrows are duplicate single arrows in the same direction.
+ * Combined arrows apply to double direction arrows like
+ * left right, indicating that an arrow in one direction
+ * should be combined with an arrow in the other direction.
+ * 
+ * Values for the circular-arrow element are clockwise and
+ * anticlockwise.
+ */
+/**
+ * The glass element represents pictograms for glass
+ *     percussion instruments. The one valid value is
+ * wind chimes.
+ */
+/**
+ * The metal element represents pictograms for metal
+ *     percussion instruments. Valid values are almglocken, bell,
+ * bell plate, brake drum, Chinese cymbal, cowbell,
+ * crash cymbals, crotale, cymbal tongs, domed gong,
+ * finger cymbals, flexatone, gong, hi-hat, high-hat cymbals,
+ * handbell, sistrum, sizzle cymbal, sleigh bells,
+ * suspended cymbal, tam tam, triangle, and Vietnamese hat.
+ * The hi-hat value refers to a pictogram like Stone's
+ * high-hat cymbals, but without the long vertical line
+ * at the bottom.
+ */
+/**
+ * The wood element represents pictograms for wood
+ *     percussion instruments. Valid values are board clapper,
+ * cabasa, castanets, claves, guiro, log drum, maraca,
+ * maracas, ratchet, sandpaper blocks, slit drum,
+ * temple block, vibraslap, and wood block. The maraca
+ * and maracas values distinguish the one- and two-maraca
+ * versions of the pictogram. The castanets and vibraslap
+ * values are in addition to Stone's list.
+ */
+/**
+ * The pitched element represents pictograms for pitched
+ *     percussion instruments. Valid values are chimes,
+ * glockenspiel, mallet, marimba, tubular chimes, vibraphone,
+ * and xylophone. The chimes and tubular chimes values
+ * distinguish the single-line and double-line versions of the
+ * pictogram. The mallet value is in addition to Stone's list.
+ */
+/**
+ * The membrane element represents pictograms for membrane
+ *     percussion instruments. Valid values are bass drum,
+ * bass drum on side, bongos, conga drum, goblet drum,
+ * military drum, snare drum, snare drum snares off,
+ * tambourine, tenor drum, timbales, and tomtom. The
+ * goblet drum value is in addition to Stone's list.
+ */
+/**
+ * The effect element represents pictograms for sound effect
+ *     percussion instruments. Valid values are anvil, auto horn,
+ * bird whistle, cannon, duck call, gun shot, klaxon horn,
+ * lions roar, police whistle, siren, slide whistle,
+ * thunder sheet, wind machine, and wind whistle. The cannon
+ * value is in addition to Stone's list.
+ */
+/**
+ * The stick-location element represents pictograms for the
+ *     location of sticks, beaters, or mallets on cymbals, gongs,
+ * drums, and other instruments. Valid values are center,
+ * rim, cymbal bell, and cymbal edge.
+ */
+/**
+ * The other-percussion element represents percussion
+ *     pictograms not defined elsewhere.
+ */
+/**
+ *     Works and movements are optionally identified by number
+ * and title. The work element also may indicate a link
+ * to the opus document that composes multiple movements
+ * into a collection.
+ */
+/**
+ *     Works and movements are optionally identified by number
+ * and title. The work element also may indicate a link
+ * to the opus document that composes multiple movements
+ * into a collection.
+ */
+/**
+ *     Works and movements are optionally identified by number
+ * and title. The work element also may indicate a link
+ * to the opus document that composes multiple movements
+ * into a collection.
+ */
+/**
+ *     Works and movements are optionally identified by number
+ * and title. The work element also may indicate a link
+ * to the opus document that composes multiple movements
+ * into a collection.
+ */
+/**
+ *     The group element allows the use of different versions of
+ * the part for different purposes. Typical values include
+ * score, parts, sound, and data. Ordering information that is
+ * directly encoded in MuseData can be derived from the
+ * ordering within a MusicXML score or opus.
+ */
 /**
  * Calendar dates are represented yyyy-mm-dd format, following
  * ISO 8601.
@@ -2230,6 +3163,9 @@ export class DocumentAttributes {
 
         }
         for (auto ch = node.properties; ch; ch = ch.next) {
+             if (ch.name.toString == "version") {
+                 version_ = getString(ch);
+             }
 
         }
     }
@@ -2251,7 +3187,7 @@ export class DocumentAttributes {
  * MusicXML 1.1 or 2.0 files should set this attribute.
  */
 mixin template IDocumentAttributes() {
-
+    string version_;
 }
 /**
  * Two entities for editorial information in notes. These
@@ -2297,7 +3233,7 @@ export class EditorialVoice {
     this(xmlNodePtr node) {
         for (auto ch = node.children.firstElement; ch; ch = ch.nextElement) {
              if (ch.name.toString == "voice") {
-                 voice = new Voice(ch) ;
+                 voice = getString(ch);
              }
              if (ch.name.toString == "footnote") {
                  footnote = new Footnote(ch) ;
@@ -2321,7 +3257,7 @@ export class EditorialVoice {
  * across all the different component DTD modules.
  */
 mixin template IEditorialVoice() {
-    Voice voice;
+    string voice;
     Footnote footnote;
     Level level;
 }
@@ -2485,28 +3421,6 @@ mixin template ILevel() {
     mixin ILevelDisplay;
     string text;
     YesNo reference;
-}
-export class Voice {
-    mixin IVoice;
-    this(xmlNodePtr node) {
-        for (auto ch = node.children.firstElement; ch; ch = ch.nextElement) {
-
-        }
-        for (auto ch = node.properties; ch; ch = ch.next) {
-
-        }
-            auto ch = node;
-                 text = getString(ch);
-    }
-
-}
-
-
-/**
- * 
- */
-mixin template IVoice() {
-    string text;
 }
 /**
  * Fermata and wavy-line elements can be applied both to
@@ -2925,49 +3839,6 @@ mixin template INormalNotes() {
  * actual-notes and normal-notes elements ia a non-negative
  * integer.
  */
-export class NormalType {
-    mixin INormalType;
-    this(xmlNodePtr node) {
-        for (auto ch = node.children.firstElement; ch; ch = ch.nextElement) {
-
-        }
-        for (auto ch = node.properties; ch; ch = ch.next) {
-
-        }
-            auto ch = node;
-                 count = getString(ch);
-    }
-
-}
-
-
-/**
- * These elements are used both in the time-modification and
- * metronome-tuplet elements. The actual-notes element
- * describes how many notes are played in the time usually
- * occupied by the number of normal-notes. If the normal-notes
- * type is different than the current note type (e.g., a
- * quarter note within an eighth note triplet), then the
- * normal-notes type (e.g. eighth) is specified in the
- * normal-type and normal-dot elements. The content of the
- * actual-notes and normal-notes elements ia a non-negative
- * integer.
- */
-mixin template INormalType() {
-    string count;
-}
-/**
- * These elements are used both in the time-modification and
- * metronome-tuplet elements. The actual-notes element
- * describes how many notes are played in the time usually
- * occupied by the number of normal-notes. If the normal-notes
- * type is different than the current note type (e.g., a
- * quarter note within an eighth note triplet), then the
- * normal-notes type (e.g. eighth) is specified in the
- * normal-type and normal-dot elements. The content of the
- * actual-notes and normal-notes elements ia a non-negative
- * integer.
- */
 export class NormalDot {
     mixin INormalDot;
     this(xmlNodePtr node) {
@@ -3066,7 +3937,7 @@ export class Dynamics {
                  rfz = true;
              }
              if (ch.name.toString == "other-dynamics") {
-                 otherDynamics = new OtherDynamics(ch) ;
+                 otherDynamics = getString(ch);
              }
              if (ch.name.toString == "fz") {
                  fz = true;
@@ -3194,7 +4065,7 @@ mixin template IDynamics() {
     bool ff;
     bool pppppp;
     bool rfz;
-    OtherDynamics otherDynamics;
+    string otherDynamics;
     bool fz;
     bool ppppp;
     bool mf;
@@ -3204,28 +4075,6 @@ mixin template IDynamics() {
     bool sfp;
     bool p;
     bool ffff;
-}
-export class OtherDynamics {
-    mixin IOtherDynamics;
-    this(xmlNodePtr node) {
-        for (auto ch = node.children.firstElement; ch; ch = ch.nextElement) {
-
-        }
-        for (auto ch = node.properties; ch; ch = ch.next) {
-
-        }
-            auto ch = node;
-                 text = getString(ch);
-    }
-
-}
-
-
-/**
- * 
- */
-mixin template IOtherDynamics() {
-    string text;
 }
 /**
  * Fingering is typically indicated 1,2,3,4,5. Multiple
@@ -3418,37 +4267,6 @@ mixin template IString() {
     mixin IPrintStyle;
     mixin IPlacement;
     float stringNum;
-}
-/**
- * The tuning-step, tuning-alter, and tuning-octave elements
- * are represented like the step, alter, and octave elements,
- * with different names to reflect their different function.
- * They are used in the staff-tuning and accord elements.
- */
-export class TuningStep {
-    mixin ITuningStep;
-    this(xmlNodePtr node) {
-        for (auto ch = node.children.firstElement; ch; ch = ch.nextElement) {
-
-        }
-        for (auto ch = node.properties; ch; ch = ch.next) {
-
-        }
-            auto ch = node;
-                 step = getString(ch);
-    }
-
-}
-
-
-/**
- * The tuning-step, tuning-alter, and tuning-octave elements
- * are represented like the step, alter, and octave elements,
- * with different names to reflect their different function.
- * They are used in the staff-tuning and accord elements.
- */
-mixin template ITuningStep() {
-    string step;
 }
 /**
  * The tuning-step, tuning-alter, and tuning-octave elements
@@ -4169,7 +4987,7 @@ export class PageLayout {
                  pageWidth = getNumber(ch);
              }
              if (ch.name.toString == "page-margins") {
-                 pageMargins ~= new PageMargins(ch) ;
+                 pageMarginsArr ~= new PageMargins(ch) ;
              }
 
         }
@@ -4192,7 +5010,7 @@ export class PageLayout {
 mixin template IPageLayout() {
     float pageHeight;
     float pageWidth;
-    PageMargins[] pageMargins;
+    PageMargins[] pageMarginsArr;
 }
 /**
  * A system is a group of staves that are read and played
@@ -4961,114 +5779,21 @@ alias Distance = float;
  * MusicXML format. This allows extended representation,
  * though without application interoperability.
  */
-export class OtherAppearance {
-    mixin IOtherAppearance;
-    this(xmlNodePtr node) {
-        for (auto ch = node.children.firstElement; ch; ch = ch.nextElement) {
-
-        }
-        for (auto ch = node.properties; ch; ch = ch.next) {
-
-        }
-            auto ch = node;
-                 type = getString(ch);
-    }
-
-}
-
-
-/**
- * The appearance element controls general graphical
- *     settings for the music's final form appearance on a
- * printed page of display. This includes support
- * for line widths, definitions for note sizes, and standard
- * distances between notation elements, plus an extension
- * element for other aspects of appearance.
- * 
- * The line-width element indicates the width of a line type
- * in tenths. The type attribute defines what type of line is
- * being defined. Values include beam, bracket, dashes,
- * enclosure, ending, extend, heavy barline, leger,
- * light barline, octave shift, pedal, slur middle, slur tip,
- * staff, stem, tie middle, tie tip, tuplet bracket, and
- * wedge. The text content is expressed in tenths.
- * 
- * The note-size element indicates the percentage of the
- * regular note size to use for notes with a cue and large
- * size as defined in the type element. The grace type is
- * used for notes of cue size that that include a grace
- * element. The cue type is used for all other notes with
- * cue size, whether defined explicitly or implicitly via a
- * cue element. The large type is used for notes of large
- * size. The text content represent the numeric percentage.
- * A value of 100 would be identical to the size of a regular
- * note as defined by the music font.
- * 
- * The distance element represents standard distances between
- * notation elements in tenths. The type attribute defines what
- * type of distance is being defined. Values include hyphen
- * (for hyphens in lyrics) and beam.
- * 
- * The other-appearance element is used to define any
- * graphical settings not yet in the current version of the
- * MusicXML format. This allows extended representation,
- * though without application interoperability.
- */
-mixin template IOtherAppearance() {
-    string type;
-}
-/**
- * The appearance element controls general graphical
- *     settings for the music's final form appearance on a
- * printed page of display. This includes support
- * for line widths, definitions for note sizes, and standard
- * distances between notation elements, plus an extension
- * element for other aspects of appearance.
- * 
- * The line-width element indicates the width of a line type
- * in tenths. The type attribute defines what type of line is
- * being defined. Values include beam, bracket, dashes,
- * enclosure, ending, extend, heavy barline, leger,
- * light barline, octave shift, pedal, slur middle, slur tip,
- * staff, stem, tie middle, tie tip, tuplet bracket, and
- * wedge. The text content is expressed in tenths.
- * 
- * The note-size element indicates the percentage of the
- * regular note size to use for notes with a cue and large
- * size as defined in the type element. The grace type is
- * used for notes of cue size that that include a grace
- * element. The cue type is used for all other notes with
- * cue size, whether defined explicitly or implicitly via a
- * cue element. The large type is used for notes of large
- * size. The text content represent the numeric percentage.
- * A value of 100 would be identical to the size of a regular
- * note as defined by the music font.
- * 
- * The distance element represents standard distances between
- * notation elements in tenths. The type attribute defines what
- * type of distance is being defined. Values include hyphen
- * (for hyphens in lyrics) and beam.
- * 
- * The other-appearance element is used to define any
- * graphical settings not yet in the current version of the
- * MusicXML format. This allows extended representation,
- * though without application interoperability.
- */
 export class Appearance {
     mixin IAppearance;
     this(xmlNodePtr node) {
         for (auto ch = node.children.firstElement; ch; ch = ch.nextElement) {
              if (ch.name.toString == "line-width") {
-                 lineWidth ~= getNumber(ch);
+                 lineWidthArr ~= getNumber(ch);
              }
              if (ch.name.toString == "distance") {
-                 distance ~= getNumber(ch);
+                 distanceArr ~= getNumber(ch);
              }
              if (ch.name.toString == "other-appearance") {
-                 otherAppearance ~= new OtherAppearance(ch) ;
+                 otherAppearanceArr ~= getString(ch);
              }
              if (ch.name.toString == "note-size") {
-                 noteSize ~= new NoteSize(ch) ;
+                 noteSizeArr ~= new NoteSize(ch) ;
              }
 
         }
@@ -5118,10 +5843,10 @@ export class Appearance {
  * though without application interoperability.
  */
 mixin template IAppearance() {
-    float[] lineWidth;
-    float[] distance;
-    OtherAppearance[] otherAppearance;
-    NoteSize[] noteSize;
+    float[] lineWidthArr;
+    float[] distanceArr;
+    string[] otherAppearanceArr;
+    NoteSize[] noteSizeArr;
 }
 /**
  * 
@@ -5282,192 +6007,6 @@ mixin template IEncoder() {
 }
 /**
  * 
- * Encoding contains information about who did the digital
- *     encoding, when, with what software, and in what aspects.
- * Standard type values for the encoder element are music,
- * words, and arrangement, but other types may be used. The
- * type attribute is only needed when there are multiple
- * encoder elements.
- * 
- * The supports element indicates if the encoding supports
- * a particular MusicXML element. This is recommended for
- * elements like beam, stem, and accidental, where the
- * absence of an element is ambiguous if you do not know
- * if the encoding supports that element. For Version 2.0,
- * the supports element is expanded to allow programs to
- * indicate support for particular attributes or particular
- * values. This lets applications communicate, for example,
- * that all system and/or page breaks are contained in the
- * MusicXML file.
- */
-export class Software {
-    mixin ISoftware;
-    this(xmlNodePtr node) {
-        for (auto ch = node.children.firstElement; ch; ch = ch.nextElement) {
-
-        }
-        for (auto ch = node.properties; ch; ch = ch.next) {
-
-        }
-            auto ch = node;
-                 name = getString(ch);
-    }
-
-}
-
-
-/**
- * 
- * Encoding contains information about who did the digital
- *     encoding, when, with what software, and in what aspects.
- * Standard type values for the encoder element are music,
- * words, and arrangement, but other types may be used. The
- * type attribute is only needed when there are multiple
- * encoder elements.
- * 
- * The supports element indicates if the encoding supports
- * a particular MusicXML element. This is recommended for
- * elements like beam, stem, and accidental, where the
- * absence of an element is ambiguous if you do not know
- * if the encoding supports that element. For Version 2.0,
- * the supports element is expanded to allow programs to
- * indicate support for particular attributes or particular
- * values. This lets applications communicate, for example,
- * that all system and/or page breaks are contained in the
- * MusicXML file.
- */
-mixin template ISoftware() {
-    string name;
-}
-/**
- * 
- * Encoding contains information about who did the digital
- *     encoding, when, with what software, and in what aspects.
- * Standard type values for the encoder element are music,
- * words, and arrangement, but other types may be used. The
- * type attribute is only needed when there are multiple
- * encoder elements.
- * 
- * The supports element indicates if the encoding supports
- * a particular MusicXML element. This is recommended for
- * elements like beam, stem, and accidental, where the
- * absence of an element is ambiguous if you do not know
- * if the encoding supports that element. For Version 2.0,
- * the supports element is expanded to allow programs to
- * indicate support for particular attributes or particular
- * values. This lets applications communicate, for example,
- * that all system and/or page breaks are contained in the
- * MusicXML file.
- */
-export class EncodingDescription {
-    mixin IEncodingDescription;
-    this(xmlNodePtr node) {
-        for (auto ch = node.children.firstElement; ch; ch = ch.nextElement) {
-
-        }
-        for (auto ch = node.properties; ch; ch = ch.next) {
-
-        }
-            auto ch = node;
-                 name = getString(ch);
-    }
-
-}
-
-
-/**
- * 
- * Encoding contains information about who did the digital
- *     encoding, when, with what software, and in what aspects.
- * Standard type values for the encoder element are music,
- * words, and arrangement, but other types may be used. The
- * type attribute is only needed when there are multiple
- * encoder elements.
- * 
- * The supports element indicates if the encoding supports
- * a particular MusicXML element. This is recommended for
- * elements like beam, stem, and accidental, where the
- * absence of an element is ambiguous if you do not know
- * if the encoding supports that element. For Version 2.0,
- * the supports element is expanded to allow programs to
- * indicate support for particular attributes or particular
- * values. This lets applications communicate, for example,
- * that all system and/or page breaks are contained in the
- * MusicXML file.
- */
-mixin template IEncodingDescription() {
-    string name;
-}
-/**
- * 
- * Encoding contains information about who did the digital
- *     encoding, when, with what software, and in what aspects.
- * Standard type values for the encoder element are music,
- * words, and arrangement, but other types may be used. The
- * type attribute is only needed when there are multiple
- * encoder elements.
- * 
- * The supports element indicates if the encoding supports
- * a particular MusicXML element. This is recommended for
- * elements like beam, stem, and accidental, where the
- * absence of an element is ambiguous if you do not know
- * if the encoding supports that element. For Version 2.0,
- * the supports element is expanded to allow programs to
- * indicate support for particular attributes or particular
- * values. This lets applications communicate, for example,
- * that all system and/or page breaks are contained in the
- * MusicXML file.
- */
-export class Supports {
-    mixin ISupports;
-    this(xmlNodePtr node) {
-        for (auto ch = node.children.firstElement; ch; ch = ch.nextElement) {
-
-        }
-        for (auto ch = node.properties; ch; ch = ch.next) {
-             if (ch.name.toString == "element") {
-                 element = getString(ch);
-             }
-             if (ch.name.toString == "value") {
-                 value = getString(ch);
-             }
-             if (ch.name.toString == "type") {
-                 type = getString(ch);
-             }
-
-        }
-    }
-
-}
-
-
-/**
- * 
- * Encoding contains information about who did the digital
- *     encoding, when, with what software, and in what aspects.
- * Standard type values for the encoder element are music,
- * words, and arrangement, but other types may be used. The
- * type attribute is only needed when there are multiple
- * encoder elements.
- * 
- * The supports element indicates if the encoding supports
- * a particular MusicXML element. This is recommended for
- * elements like beam, stem, and accidental, where the
- * absence of an element is ambiguous if you do not know
- * if the encoding supports that element. For Version 2.0,
- * the supports element is expanded to allow programs to
- * indicate support for particular attributes or particular
- * values. This lets applications communicate, for example,
- * that all system and/or page breaks are contained in the
- * MusicXML file.
- */
-mixin template ISupports() {
-    string element;
-    string value;
-    string type;
-}
-/**
- * 
  * The source for the music that is encoded. This is similar
  *     to the Dublin Core source element.
  */
@@ -5579,7 +6118,7 @@ export class Miscellaneous {
     this(xmlNodePtr node) {
         for (auto ch = node.children.firstElement; ch; ch = ch.nextElement) {
              if (ch.name.toString == "miscellaneous-field") {
-                 miscellaneousField ~= new MiscellaneousField(ch) ;
+                 miscellaneousFieldArr ~= new MiscellaneousField(ch) ;
              }
 
         }
@@ -5597,7 +6136,7 @@ export class Miscellaneous {
  *     MusicXML format, it can go in the miscellaneous area.
  */
 mixin template IMiscellaneous() {
-    MiscellaneousField[] miscellaneousField;
+    MiscellaneousField[] miscellaneousFieldArr;
 }
 /**
  * 
@@ -5612,22 +6151,22 @@ export class Identification {
     this(xmlNodePtr node) {
         for (auto ch = node.children.firstElement; ch; ch = ch.nextElement) {
              if (ch.name.toString == "miscellaneous") {
-                 miscellaneous ~= new Miscellaneous(ch) ;
+                 miscellaneousArr ~= new Miscellaneous(ch) ;
              }
              if (ch.name.toString == "creator") {
-                 creator ~= new Creator(ch) ;
+                 creatorArr ~= new Creator(ch) ;
              }
              if (ch.name.toString == "relation") {
-                 relation ~= new Relation(ch) ;
+                 relationArr ~= new Relation(ch) ;
              }
              if (ch.name.toString == "rights") {
-                 rights ~= new Rights(ch) ;
+                 rightsArr ~= new Rights(ch) ;
              }
              if (ch.name.toString == "encoding") {
-                 encoding ~= new Encoding(ch) ;
+                 encodingArr ~= new Encoding(ch) ;
              }
              if (ch.name.toString == "source") {
-                 source ~= new Source(ch) ;
+                 sourceArr ~= new Source(ch) ;
              }
 
         }
@@ -5648,12 +6187,12 @@ export class Identification {
  * are based on Dublin Core.
  */
 mixin template IIdentification() {
-    Miscellaneous[] miscellaneous;
-    Creator[] creator;
-    Relation[] relation;
-    Rights[] rights;
-    Encoding[] encoding;
-    Source[] source;
+    Miscellaneous[] miscellaneousArr;
+    Creator[] creatorArr;
+    Relation[] relationArr;
+    Rights[] rightsArr;
+    Encoding[] encodingArr;
+    Source[] sourceArr;
 }
 /**
  * 
@@ -5680,7 +6219,7 @@ export class Encoding {
     this(xmlNodePtr node) {
         for (auto ch = node.children.firstElement; ch; ch = ch.nextElement) {
              if (ch.name.toString == "encoding-description") {
-                 encodingDescription = new EncodingDescription(ch) ;
+                 encodingDescription = getString(ch);
              }
              if (ch.name.toString == "encoding-date") {
                  encodingDate = new EncodingDate(ch) ;
@@ -5692,7 +6231,7 @@ export class Encoding {
                  supports = new Supports(ch) ;
              }
              if (ch.name.toString == "software") {
-                 software = new Software(ch) ;
+                 software = getString(ch);
              }
 
         }
@@ -5725,11 +6264,11 @@ export class Encoding {
  * MusicXML file.
  */
 mixin template IEncoding() {
-    EncodingDescription encodingDescription;
+    string encodingDescription;
     EncodingDate encodingDate;
     Encoder encoder;
     Supports supports;
-    Software software;
+    string software;
 }
 export enum SeparatorType {
     None = 0,
@@ -6070,472 +6609,72 @@ mixin template ICancel() {
  */
 alias Fifths = float;
 /**
- * Traditional key signatures are represented by the number
- * of flats and sharps, plus an optional mode for major/
- * minor/mode distinctions. Negative numbers are used for
- * flats and positive numbers for sharps, reflecting the
- * key's placement within the circle of fifths (hence the
- * element name). A cancel element indicates that the old
- * key signature should be cancelled before the new one
- * appears. This will always happen when changing to C major
- * or A minor and need not be specified then. The cancel
- * value matches the fifths value of the cancelled key
- * signature (e.g., a cancel of -2 will provide an explicit
- * cancellation for changing from B flat major to F major).
- * The optional location attribute indicates where a key
- * signature cancellation appears relative to a new key
- * signature: to the left, to the right, or before the barline
- * and to the left. It is left by default. For mid-measure key
- * elements, a cancel location of before-barline should be
- * treated like a cancel location of left.
  * 
- * Non-traditional key signatures can be represented using
- * the Humdrum/Scot concept of a list of altered tones.
- * The key-step and key-alter elements are represented the
- * same way as the step and alter elements are in the pitch
- * element in the note.mod file. The optional key-accidental
- * element is represented the same way as the accidental
- * element in the note.mod file. It is used for disambiguating
- * microtonal accidentals. The different element names
- * indicate the different meaning of altering notes in a scale
- * versus altering a sounding pitch.
+ * Encoding contains information about who did the digital
+ *     encoding, when, with what software, and in what aspects.
+ * Standard type values for the encoder element are music,
+ * words, and arrangement, but other types may be used. The
+ * type attribute is only needed when there are multiple
+ * encoder elements.
  * 
- * Valid mode values include major, minor, dorian, phrygian,
- * lydian, mixolydian, aeolian, ionian, locrian, and none.
- * 
- * The optional number attribute refers to staff numbers,
- * from top to bottom on the system. If absent, the key
- * signature applies to all staves in the part.
- * The optional list of key-octave elements is used to specify
- * in which octave each element of the key signature appears.
- * The content specifies the octave value using the same
- * values as the display-octave element. The number attribute
- * is a positive integer that refers to the key signature
- * element in left-to-right order. If the cancel attribute is
- * set to yes, then this number refers to an element specified
- * by the cancel element. It is no by default.
- * 
- * Key signatures appear at the start of each system unless
- * the print-object attribute has been set to "no".
+ * The supports element indicates if the encoding supports
+ * a particular MusicXML element. This is recommended for
+ * elements like beam, stem, and accidental, where the
+ * absence of an element is ambiguous if you do not know
+ * if the encoding supports that element. For Version 2.0,
+ * the supports element is expanded to allow programs to
+ * indicate support for particular attributes or particular
+ * values. This lets applications communicate, for example,
+ * that all system and/or page breaks are contained in the
+ * MusicXML file.
  */
-export class Mode {
-    mixin IMode;
+export class Supports {
+    mixin ISupports;
     this(xmlNodePtr node) {
         for (auto ch = node.children.firstElement; ch; ch = ch.nextElement) {
 
         }
         for (auto ch = node.properties; ch; ch = ch.next) {
+             if (ch.name.toString == "element") {
+                 element = getString(ch);
+             }
+             if (ch.name.toString == "value") {
+                 value = getString(ch);
+             }
+             if (ch.name.toString == "type") {
+                 type = getString(ch);
+             }
 
         }
-            auto ch = node;
-                 data = getString(ch);
     }
 
 }
 
 
 /**
- * Traditional key signatures are represented by the number
- * of flats and sharps, plus an optional mode for major/
- * minor/mode distinctions. Negative numbers are used for
- * flats and positive numbers for sharps, reflecting the
- * key's placement within the circle of fifths (hence the
- * element name). A cancel element indicates that the old
- * key signature should be cancelled before the new one
- * appears. This will always happen when changing to C major
- * or A minor and need not be specified then. The cancel
- * value matches the fifths value of the cancelled key
- * signature (e.g., a cancel of -2 will provide an explicit
- * cancellation for changing from B flat major to F major).
- * The optional location attribute indicates where a key
- * signature cancellation appears relative to a new key
- * signature: to the left, to the right, or before the barline
- * and to the left. It is left by default. For mid-measure key
- * elements, a cancel location of before-barline should be
- * treated like a cancel location of left.
  * 
- * Non-traditional key signatures can be represented using
- * the Humdrum/Scot concept of a list of altered tones.
- * The key-step and key-alter elements are represented the
- * same way as the step and alter elements are in the pitch
- * element in the note.mod file. The optional key-accidental
- * element is represented the same way as the accidental
- * element in the note.mod file. It is used for disambiguating
- * microtonal accidentals. The different element names
- * indicate the different meaning of altering notes in a scale
- * versus altering a sounding pitch.
+ * Encoding contains information about who did the digital
+ *     encoding, when, with what software, and in what aspects.
+ * Standard type values for the encoder element are music,
+ * words, and arrangement, but other types may be used. The
+ * type attribute is only needed when there are multiple
+ * encoder elements.
  * 
- * Valid mode values include major, minor, dorian, phrygian,
- * lydian, mixolydian, aeolian, ionian, locrian, and none.
- * 
- * The optional number attribute refers to staff numbers,
- * from top to bottom on the system. If absent, the key
- * signature applies to all staves in the part.
- * The optional list of key-octave elements is used to specify
- * in which octave each element of the key signature appears.
- * The content specifies the octave value using the same
- * values as the display-octave element. The number attribute
- * is a positive integer that refers to the key signature
- * element in left-to-right order. If the cancel attribute is
- * set to yes, then this number refers to an element specified
- * by the cancel element. It is no by default.
- * 
- * Key signatures appear at the start of each system unless
- * the print-object attribute has been set to "no".
+ * The supports element indicates if the encoding supports
+ * a particular MusicXML element. This is recommended for
+ * elements like beam, stem, and accidental, where the
+ * absence of an element is ambiguous if you do not know
+ * if the encoding supports that element. For Version 2.0,
+ * the supports element is expanded to allow programs to
+ * indicate support for particular attributes or particular
+ * values. This lets applications communicate, for example,
+ * that all system and/or page breaks are contained in the
+ * MusicXML file.
  */
-mixin template IMode() {
-    string data;
-}
-/**
- * Traditional key signatures are represented by the number
- * of flats and sharps, plus an optional mode for major/
- * minor/mode distinctions. Negative numbers are used for
- * flats and positive numbers for sharps, reflecting the
- * key's placement within the circle of fifths (hence the
- * element name). A cancel element indicates that the old
- * key signature should be cancelled before the new one
- * appears. This will always happen when changing to C major
- * or A minor and need not be specified then. The cancel
- * value matches the fifths value of the cancelled key
- * signature (e.g., a cancel of -2 will provide an explicit
- * cancellation for changing from B flat major to F major).
- * The optional location attribute indicates where a key
- * signature cancellation appears relative to a new key
- * signature: to the left, to the right, or before the barline
- * and to the left. It is left by default. For mid-measure key
- * elements, a cancel location of before-barline should be
- * treated like a cancel location of left.
- * 
- * Non-traditional key signatures can be represented using
- * the Humdrum/Scot concept of a list of altered tones.
- * The key-step and key-alter elements are represented the
- * same way as the step and alter elements are in the pitch
- * element in the note.mod file. The optional key-accidental
- * element is represented the same way as the accidental
- * element in the note.mod file. It is used for disambiguating
- * microtonal accidentals. The different element names
- * indicate the different meaning of altering notes in a scale
- * versus altering a sounding pitch.
- * 
- * Valid mode values include major, minor, dorian, phrygian,
- * lydian, mixolydian, aeolian, ionian, locrian, and none.
- * 
- * The optional number attribute refers to staff numbers,
- * from top to bottom on the system. If absent, the key
- * signature applies to all staves in the part.
- * The optional list of key-octave elements is used to specify
- * in which octave each element of the key signature appears.
- * The content specifies the octave value using the same
- * values as the display-octave element. The number attribute
- * is a positive integer that refers to the key signature
- * element in left-to-right order. If the cancel attribute is
- * set to yes, then this number refers to an element specified
- * by the cancel element. It is no by default.
- * 
- * Key signatures appear at the start of each system unless
- * the print-object attribute has been set to "no".
- */
-export class KeyStep {
-    mixin IKeyStep;
-    this(xmlNodePtr node) {
-        for (auto ch = node.children.firstElement; ch; ch = ch.nextElement) {
-
-        }
-        for (auto ch = node.properties; ch; ch = ch.next) {
-
-        }
-            auto ch = node;
-                 data = getString(ch);
-    }
-
-}
-
-
-/**
- * Traditional key signatures are represented by the number
- * of flats and sharps, plus an optional mode for major/
- * minor/mode distinctions. Negative numbers are used for
- * flats and positive numbers for sharps, reflecting the
- * key's placement within the circle of fifths (hence the
- * element name). A cancel element indicates that the old
- * key signature should be cancelled before the new one
- * appears. This will always happen when changing to C major
- * or A minor and need not be specified then. The cancel
- * value matches the fifths value of the cancelled key
- * signature (e.g., a cancel of -2 will provide an explicit
- * cancellation for changing from B flat major to F major).
- * The optional location attribute indicates where a key
- * signature cancellation appears relative to a new key
- * signature: to the left, to the right, or before the barline
- * and to the left. It is left by default. For mid-measure key
- * elements, a cancel location of before-barline should be
- * treated like a cancel location of left.
- * 
- * Non-traditional key signatures can be represented using
- * the Humdrum/Scot concept of a list of altered tones.
- * The key-step and key-alter elements are represented the
- * same way as the step and alter elements are in the pitch
- * element in the note.mod file. The optional key-accidental
- * element is represented the same way as the accidental
- * element in the note.mod file. It is used for disambiguating
- * microtonal accidentals. The different element names
- * indicate the different meaning of altering notes in a scale
- * versus altering a sounding pitch.
- * 
- * Valid mode values include major, minor, dorian, phrygian,
- * lydian, mixolydian, aeolian, ionian, locrian, and none.
- * 
- * The optional number attribute refers to staff numbers,
- * from top to bottom on the system. If absent, the key
- * signature applies to all staves in the part.
- * The optional list of key-octave elements is used to specify
- * in which octave each element of the key signature appears.
- * The content specifies the octave value using the same
- * values as the display-octave element. The number attribute
- * is a positive integer that refers to the key signature
- * element in left-to-right order. If the cancel attribute is
- * set to yes, then this number refers to an element specified
- * by the cancel element. It is no by default.
- * 
- * Key signatures appear at the start of each system unless
- * the print-object attribute has been set to "no".
- */
-mixin template IKeyStep() {
-    string data;
-}
-/**
- * Traditional key signatures are represented by the number
- * of flats and sharps, plus an optional mode for major/
- * minor/mode distinctions. Negative numbers are used for
- * flats and positive numbers for sharps, reflecting the
- * key's placement within the circle of fifths (hence the
- * element name). A cancel element indicates that the old
- * key signature should be cancelled before the new one
- * appears. This will always happen when changing to C major
- * or A minor and need not be specified then. The cancel
- * value matches the fifths value of the cancelled key
- * signature (e.g., a cancel of -2 will provide an explicit
- * cancellation for changing from B flat major to F major).
- * The optional location attribute indicates where a key
- * signature cancellation appears relative to a new key
- * signature: to the left, to the right, or before the barline
- * and to the left. It is left by default. For mid-measure key
- * elements, a cancel location of before-barline should be
- * treated like a cancel location of left.
- * 
- * Non-traditional key signatures can be represented using
- * the Humdrum/Scot concept of a list of altered tones.
- * The key-step and key-alter elements are represented the
- * same way as the step and alter elements are in the pitch
- * element in the note.mod file. The optional key-accidental
- * element is represented the same way as the accidental
- * element in the note.mod file. It is used for disambiguating
- * microtonal accidentals. The different element names
- * indicate the different meaning of altering notes in a scale
- * versus altering a sounding pitch.
- * 
- * Valid mode values include major, minor, dorian, phrygian,
- * lydian, mixolydian, aeolian, ionian, locrian, and none.
- * 
- * The optional number attribute refers to staff numbers,
- * from top to bottom on the system. If absent, the key
- * signature applies to all staves in the part.
- * The optional list of key-octave elements is used to specify
- * in which octave each element of the key signature appears.
- * The content specifies the octave value using the same
- * values as the display-octave element. The number attribute
- * is a positive integer that refers to the key signature
- * element in left-to-right order. If the cancel attribute is
- * set to yes, then this number refers to an element specified
- * by the cancel element. It is no by default.
- * 
- * Key signatures appear at the start of each system unless
- * the print-object attribute has been set to "no".
- */
-export class KeyAlter {
-    mixin IKeyAlter;
-    this(xmlNodePtr node) {
-        for (auto ch = node.children.firstElement; ch; ch = ch.nextElement) {
-
-        }
-        for (auto ch = node.properties; ch; ch = ch.next) {
-
-        }
-            auto ch = node;
-                 data = getString(ch);
-    }
-
-}
-
-
-/**
- * Traditional key signatures are represented by the number
- * of flats and sharps, plus an optional mode for major/
- * minor/mode distinctions. Negative numbers are used for
- * flats and positive numbers for sharps, reflecting the
- * key's placement within the circle of fifths (hence the
- * element name). A cancel element indicates that the old
- * key signature should be cancelled before the new one
- * appears. This will always happen when changing to C major
- * or A minor and need not be specified then. The cancel
- * value matches the fifths value of the cancelled key
- * signature (e.g., a cancel of -2 will provide an explicit
- * cancellation for changing from B flat major to F major).
- * The optional location attribute indicates where a key
- * signature cancellation appears relative to a new key
- * signature: to the left, to the right, or before the barline
- * and to the left. It is left by default. For mid-measure key
- * elements, a cancel location of before-barline should be
- * treated like a cancel location of left.
- * 
- * Non-traditional key signatures can be represented using
- * the Humdrum/Scot concept of a list of altered tones.
- * The key-step and key-alter elements are represented the
- * same way as the step and alter elements are in the pitch
- * element in the note.mod file. The optional key-accidental
- * element is represented the same way as the accidental
- * element in the note.mod file. It is used for disambiguating
- * microtonal accidentals. The different element names
- * indicate the different meaning of altering notes in a scale
- * versus altering a sounding pitch.
- * 
- * Valid mode values include major, minor, dorian, phrygian,
- * lydian, mixolydian, aeolian, ionian, locrian, and none.
- * 
- * The optional number attribute refers to staff numbers,
- * from top to bottom on the system. If absent, the key
- * signature applies to all staves in the part.
- * The optional list of key-octave elements is used to specify
- * in which octave each element of the key signature appears.
- * The content specifies the octave value using the same
- * values as the display-octave element. The number attribute
- * is a positive integer that refers to the key signature
- * element in left-to-right order. If the cancel attribute is
- * set to yes, then this number refers to an element specified
- * by the cancel element. It is no by default.
- * 
- * Key signatures appear at the start of each system unless
- * the print-object attribute has been set to "no".
- */
-mixin template IKeyAlter() {
-    string data;
-}
-/**
- * Traditional key signatures are represented by the number
- * of flats and sharps, plus an optional mode for major/
- * minor/mode distinctions. Negative numbers are used for
- * flats and positive numbers for sharps, reflecting the
- * key's placement within the circle of fifths (hence the
- * element name). A cancel element indicates that the old
- * key signature should be cancelled before the new one
- * appears. This will always happen when changing to C major
- * or A minor and need not be specified then. The cancel
- * value matches the fifths value of the cancelled key
- * signature (e.g., a cancel of -2 will provide an explicit
- * cancellation for changing from B flat major to F major).
- * The optional location attribute indicates where a key
- * signature cancellation appears relative to a new key
- * signature: to the left, to the right, or before the barline
- * and to the left. It is left by default. For mid-measure key
- * elements, a cancel location of before-barline should be
- * treated like a cancel location of left.
- * 
- * Non-traditional key signatures can be represented using
- * the Humdrum/Scot concept of a list of altered tones.
- * The key-step and key-alter elements are represented the
- * same way as the step and alter elements are in the pitch
- * element in the note.mod file. The optional key-accidental
- * element is represented the same way as the accidental
- * element in the note.mod file. It is used for disambiguating
- * microtonal accidentals. The different element names
- * indicate the different meaning of altering notes in a scale
- * versus altering a sounding pitch.
- * 
- * Valid mode values include major, minor, dorian, phrygian,
- * lydian, mixolydian, aeolian, ionian, locrian, and none.
- * 
- * The optional number attribute refers to staff numbers,
- * from top to bottom on the system. If absent, the key
- * signature applies to all staves in the part.
- * The optional list of key-octave elements is used to specify
- * in which octave each element of the key signature appears.
- * The content specifies the octave value using the same
- * values as the display-octave element. The number attribute
- * is a positive integer that refers to the key signature
- * element in left-to-right order. If the cancel attribute is
- * set to yes, then this number refers to an element specified
- * by the cancel element. It is no by default.
- * 
- * Key signatures appear at the start of each system unless
- * the print-object attribute has been set to "no".
- */
-export class KeyAccidental {
-    mixin IKeyAccidental;
-    this(xmlNodePtr node) {
-        for (auto ch = node.children.firstElement; ch; ch = ch.nextElement) {
-
-        }
-        for (auto ch = node.properties; ch; ch = ch.next) {
-
-        }
-            auto ch = node;
-                 data = getString(ch);
-    }
-
-}
-
-
-/**
- * Traditional key signatures are represented by the number
- * of flats and sharps, plus an optional mode for major/
- * minor/mode distinctions. Negative numbers are used for
- * flats and positive numbers for sharps, reflecting the
- * key's placement within the circle of fifths (hence the
- * element name). A cancel element indicates that the old
- * key signature should be cancelled before the new one
- * appears. This will always happen when changing to C major
- * or A minor and need not be specified then. The cancel
- * value matches the fifths value of the cancelled key
- * signature (e.g., a cancel of -2 will provide an explicit
- * cancellation for changing from B flat major to F major).
- * The optional location attribute indicates where a key
- * signature cancellation appears relative to a new key
- * signature: to the left, to the right, or before the barline
- * and to the left. It is left by default. For mid-measure key
- * elements, a cancel location of before-barline should be
- * treated like a cancel location of left.
- * 
- * Non-traditional key signatures can be represented using
- * the Humdrum/Scot concept of a list of altered tones.
- * The key-step and key-alter elements are represented the
- * same way as the step and alter elements are in the pitch
- * element in the note.mod file. The optional key-accidental
- * element is represented the same way as the accidental
- * element in the note.mod file. It is used for disambiguating
- * microtonal accidentals. The different element names
- * indicate the different meaning of altering notes in a scale
- * versus altering a sounding pitch.
- * 
- * Valid mode values include major, minor, dorian, phrygian,
- * lydian, mixolydian, aeolian, ionian, locrian, and none.
- * 
- * The optional number attribute refers to staff numbers,
- * from top to bottom on the system. If absent, the key
- * signature applies to all staves in the part.
- * The optional list of key-octave elements is used to specify
- * in which octave each element of the key signature appears.
- * The content specifies the octave value using the same
- * values as the display-octave element. The number attribute
- * is a positive integer that refers to the key signature
- * element in left-to-right order. If the cancel attribute is
- * set to yes, then this number refers to an element specified
- * by the cancel element. It is no by default.
- * 
- * Key signatures appear at the start of each system unless
- * the print-object attribute has been set to "no".
- */
-mixin template IKeyAccidental() {
-    string data;
+mixin template ISupports() {
+    string element;
+    string value;
+    string type;
 }
 /**
  * Traditional key signatures are represented by the number
@@ -6734,22 +6873,22 @@ export class Key {
                  cancel = new Cancel(ch) ;
              }
              if (ch.name.toString == "key-step") {
-                 keyStep ~= new KeyStep(ch) ;
+                 keyStepArr ~= getString(ch);
              }
              if (ch.name.toString == "key-octave") {
-                 keyOctave ~= new KeyOctave(ch) ;
+                 keyOctaveArr ~= new KeyOctave(ch) ;
              }
              if (ch.name.toString == "fifths") {
                  fifths = getNumber(ch);
              }
              if (ch.name.toString == "key-alter") {
-                 keyAlter ~= new KeyAlter(ch) ;
+                 keyAlterArr ~= getString(ch);
              }
              if (ch.name.toString == "key-accidental") {
-                 keyAccidental ~= new KeyAccidental(ch) ;
+                 keyAccidentalArr ~= getString(ch);
              }
              if (ch.name.toString == "mode") {
-                 mode = new Mode(ch) ;
+                 mode = getString(ch);
              }
 
         }
@@ -6847,485 +6986,13 @@ mixin template IKey() {
     mixin IPrintStyle;
     mixin IPrintObject;
     Cancel cancel;
-    KeyStep[] keyStep;
-    KeyOctave[] keyOctave;
+    string[] keyStepArr;
+    KeyOctave[] keyOctaveArr;
     float number_;
     float fifths;
-    KeyAlter[] keyAlter;
-    KeyAccidental[] keyAccidental;
-    Mode mode;
-}
-/**
- * Time signatures are represented by two elements. The
- *     beats element indicates the number of beats, as found in
- * the numerator of a time signature. The beat-type element
- * indicates the beat unit, as found in the denominator of
- * a time signature.
- * 
- * Multiple pairs of beats and beat-type elements are used for
- * composite time signatures with multiple denominators, such
- * as 2/4 + 3/8. A composite such as 3+2/8 requires only one
- * beats/beat-type pair.
- * 
- * The interchangeable element is used to represent the second
- * in a pair of interchangeable dual time signatures, such as
- * the 6/8 in 3/4 (6/8). A separate symbol attribute value is
- * available compared to the time element's symbol attribute,
- * which applies to the first of the dual time signatures.
- * The time-relation element indicates the symbol used to
- * represent the interchangeable aspect of the time signature.
- * Valid values are parentheses, bracket, equals, slash, space,
- * and hyphen.
- * 
- * A senza-misura element explicitly indicates that no time
- * signature is present. The optional element content
- * indicates the symbol to be used, if any, such as an X.
- * The time element's symbol attribute is not used when a
- * senza-misura element is present.
- * 
- * The print-object attribute allows a time signature to be
- * specified but not printed, as is the case for excerpts
- * from the middle of a score. The value is "yes" if
- * not present. The optional number attribute refers to staff
- * numbers within the part, from top to bottom on the system.
- * If absent, the time signature applies to all staves in the
- * part.
- */
-export class Beats {
-    mixin IBeats;
-    this(xmlNodePtr node) {
-        for (auto ch = node.children.firstElement; ch; ch = ch.nextElement) {
-
-        }
-        for (auto ch = node.properties; ch; ch = ch.next) {
-
-        }
-            auto ch = node;
-                 data = getString(ch);
-    }
-
-}
-
-
-/**
- * Time signatures are represented by two elements. The
- *     beats element indicates the number of beats, as found in
- * the numerator of a time signature. The beat-type element
- * indicates the beat unit, as found in the denominator of
- * a time signature.
- * 
- * Multiple pairs of beats and beat-type elements are used for
- * composite time signatures with multiple denominators, such
- * as 2/4 + 3/8. A composite such as 3+2/8 requires only one
- * beats/beat-type pair.
- * 
- * The interchangeable element is used to represent the second
- * in a pair of interchangeable dual time signatures, such as
- * the 6/8 in 3/4 (6/8). A separate symbol attribute value is
- * available compared to the time element's symbol attribute,
- * which applies to the first of the dual time signatures.
- * The time-relation element indicates the symbol used to
- * represent the interchangeable aspect of the time signature.
- * Valid values are parentheses, bracket, equals, slash, space,
- * and hyphen.
- * 
- * A senza-misura element explicitly indicates that no time
- * signature is present. The optional element content
- * indicates the symbol to be used, if any, such as an X.
- * The time element's symbol attribute is not used when a
- * senza-misura element is present.
- * 
- * The print-object attribute allows a time signature to be
- * specified but not printed, as is the case for excerpts
- * from the middle of a score. The value is "yes" if
- * not present. The optional number attribute refers to staff
- * numbers within the part, from top to bottom on the system.
- * If absent, the time signature applies to all staves in the
- * part.
- */
-mixin template IBeats() {
-    string data;
-}
-/**
- * Time signatures are represented by two elements. The
- *     beats element indicates the number of beats, as found in
- * the numerator of a time signature. The beat-type element
- * indicates the beat unit, as found in the denominator of
- * a time signature.
- * 
- * Multiple pairs of beats and beat-type elements are used for
- * composite time signatures with multiple denominators, such
- * as 2/4 + 3/8. A composite such as 3+2/8 requires only one
- * beats/beat-type pair.
- * 
- * The interchangeable element is used to represent the second
- * in a pair of interchangeable dual time signatures, such as
- * the 6/8 in 3/4 (6/8). A separate symbol attribute value is
- * available compared to the time element's symbol attribute,
- * which applies to the first of the dual time signatures.
- * The time-relation element indicates the symbol used to
- * represent the interchangeable aspect of the time signature.
- * Valid values are parentheses, bracket, equals, slash, space,
- * and hyphen.
- * 
- * A senza-misura element explicitly indicates that no time
- * signature is present. The optional element content
- * indicates the symbol to be used, if any, such as an X.
- * The time element's symbol attribute is not used when a
- * senza-misura element is present.
- * 
- * The print-object attribute allows a time signature to be
- * specified but not printed, as is the case for excerpts
- * from the middle of a score. The value is "yes" if
- * not present. The optional number attribute refers to staff
- * numbers within the part, from top to bottom on the system.
- * If absent, the time signature applies to all staves in the
- * part.
- */
-export class BeatType {
-    mixin IBeatType;
-    this(xmlNodePtr node) {
-        for (auto ch = node.children.firstElement; ch; ch = ch.nextElement) {
-
-        }
-        for (auto ch = node.properties; ch; ch = ch.next) {
-
-        }
-            auto ch = node;
-                 data = getString(ch);
-    }
-
-}
-
-
-/**
- * Time signatures are represented by two elements. The
- *     beats element indicates the number of beats, as found in
- * the numerator of a time signature. The beat-type element
- * indicates the beat unit, as found in the denominator of
- * a time signature.
- * 
- * Multiple pairs of beats and beat-type elements are used for
- * composite time signatures with multiple denominators, such
- * as 2/4 + 3/8. A composite such as 3+2/8 requires only one
- * beats/beat-type pair.
- * 
- * The interchangeable element is used to represent the second
- * in a pair of interchangeable dual time signatures, such as
- * the 6/8 in 3/4 (6/8). A separate symbol attribute value is
- * available compared to the time element's symbol attribute,
- * which applies to the first of the dual time signatures.
- * The time-relation element indicates the symbol used to
- * represent the interchangeable aspect of the time signature.
- * Valid values are parentheses, bracket, equals, slash, space,
- * and hyphen.
- * 
- * A senza-misura element explicitly indicates that no time
- * signature is present. The optional element content
- * indicates the symbol to be used, if any, such as an X.
- * The time element's symbol attribute is not used when a
- * senza-misura element is present.
- * 
- * The print-object attribute allows a time signature to be
- * specified but not printed, as is the case for excerpts
- * from the middle of a score. The value is "yes" if
- * not present. The optional number attribute refers to staff
- * numbers within the part, from top to bottom on the system.
- * If absent, the time signature applies to all staves in the
- * part.
- */
-mixin template IBeatType() {
-    string data;
-}
-/**
- * Time signatures are represented by two elements. The
- *     beats element indicates the number of beats, as found in
- * the numerator of a time signature. The beat-type element
- * indicates the beat unit, as found in the denominator of
- * a time signature.
- * 
- * Multiple pairs of beats and beat-type elements are used for
- * composite time signatures with multiple denominators, such
- * as 2/4 + 3/8. A composite such as 3+2/8 requires only one
- * beats/beat-type pair.
- * 
- * The interchangeable element is used to represent the second
- * in a pair of interchangeable dual time signatures, such as
- * the 6/8 in 3/4 (6/8). A separate symbol attribute value is
- * available compared to the time element's symbol attribute,
- * which applies to the first of the dual time signatures.
- * The time-relation element indicates the symbol used to
- * represent the interchangeable aspect of the time signature.
- * Valid values are parentheses, bracket, equals, slash, space,
- * and hyphen.
- * 
- * A senza-misura element explicitly indicates that no time
- * signature is present. The optional element content
- * indicates the symbol to be used, if any, such as an X.
- * The time element's symbol attribute is not used when a
- * senza-misura element is present.
- * 
- * The print-object attribute allows a time signature to be
- * specified but not printed, as is the case for excerpts
- * from the middle of a score. The value is "yes" if
- * not present. The optional number attribute refers to staff
- * numbers within the part, from top to bottom on the system.
- * If absent, the time signature applies to all staves in the
- * part.
- */
-export class TimeRelation {
-    mixin ITimeRelation;
-    this(xmlNodePtr node) {
-        for (auto ch = node.children.firstElement; ch; ch = ch.nextElement) {
-
-        }
-        for (auto ch = node.properties; ch; ch = ch.next) {
-
-        }
-            auto ch = node;
-                 data = getString(ch);
-    }
-
-}
-
-
-/**
- * Time signatures are represented by two elements. The
- *     beats element indicates the number of beats, as found in
- * the numerator of a time signature. The beat-type element
- * indicates the beat unit, as found in the denominator of
- * a time signature.
- * 
- * Multiple pairs of beats and beat-type elements are used for
- * composite time signatures with multiple denominators, such
- * as 2/4 + 3/8. A composite such as 3+2/8 requires only one
- * beats/beat-type pair.
- * 
- * The interchangeable element is used to represent the second
- * in a pair of interchangeable dual time signatures, such as
- * the 6/8 in 3/4 (6/8). A separate symbol attribute value is
- * available compared to the time element's symbol attribute,
- * which applies to the first of the dual time signatures.
- * The time-relation element indicates the symbol used to
- * represent the interchangeable aspect of the time signature.
- * Valid values are parentheses, bracket, equals, slash, space,
- * and hyphen.
- * 
- * A senza-misura element explicitly indicates that no time
- * signature is present. The optional element content
- * indicates the symbol to be used, if any, such as an X.
- * The time element's symbol attribute is not used when a
- * senza-misura element is present.
- * 
- * The print-object attribute allows a time signature to be
- * specified but not printed, as is the case for excerpts
- * from the middle of a score. The value is "yes" if
- * not present. The optional number attribute refers to staff
- * numbers within the part, from top to bottom on the system.
- * If absent, the time signature applies to all staves in the
- * part.
- */
-mixin template ITimeRelation() {
-    string data;
-}
-/**
- * Time signatures are represented by two elements. The
- *     beats element indicates the number of beats, as found in
- * the numerator of a time signature. The beat-type element
- * indicates the beat unit, as found in the denominator of
- * a time signature.
- * 
- * Multiple pairs of beats and beat-type elements are used for
- * composite time signatures with multiple denominators, such
- * as 2/4 + 3/8. A composite such as 3+2/8 requires only one
- * beats/beat-type pair.
- * 
- * The interchangeable element is used to represent the second
- * in a pair of interchangeable dual time signatures, such as
- * the 6/8 in 3/4 (6/8). A separate symbol attribute value is
- * available compared to the time element's symbol attribute,
- * which applies to the first of the dual time signatures.
- * The time-relation element indicates the symbol used to
- * represent the interchangeable aspect of the time signature.
- * Valid values are parentheses, bracket, equals, slash, space,
- * and hyphen.
- * 
- * A senza-misura element explicitly indicates that no time
- * signature is present. The optional element content
- * indicates the symbol to be used, if any, such as an X.
- * The time element's symbol attribute is not used when a
- * senza-misura element is present.
- * 
- * The print-object attribute allows a time signature to be
- * specified but not printed, as is the case for excerpts
- * from the middle of a score. The value is "yes" if
- * not present. The optional number attribute refers to staff
- * numbers within the part, from top to bottom on the system.
- * If absent, the time signature applies to all staves in the
- * part.
- */
-export class Interchangeable {
-    mixin IInterchangeable;
-    this(xmlNodePtr node) {
-        for (auto ch = node.children.firstElement; ch; ch = ch.nextElement) {
-             if (ch.name.toString == "beats") {
-                 beats ~= new Beats(ch) ;
-             }
-             if (ch.name.toString == "beat-type") {
-                 beatType ~= new BeatType(ch) ;
-             }
-             if (ch.name.toString == "time-relation") {
-                 timeRelation = new TimeRelation(ch) ;
-             }
-
-        }
-        for (auto ch = node.properties; ch; ch = ch.next) {
-             if (ch.name.toString == "symbol") {
-                 symbol = getTimeSymbolType(ch);
-             }
-             if (ch.name.toString == "separator") {
-                 separator = getSeparatorType(ch);
-             }
-
-        }
-    }
-
-}
-
-
-/**
- * Time signatures are represented by two elements. The
- *     beats element indicates the number of beats, as found in
- * the numerator of a time signature. The beat-type element
- * indicates the beat unit, as found in the denominator of
- * a time signature.
- * 
- * Multiple pairs of beats and beat-type elements are used for
- * composite time signatures with multiple denominators, such
- * as 2/4 + 3/8. A composite such as 3+2/8 requires only one
- * beats/beat-type pair.
- * 
- * The interchangeable element is used to represent the second
- * in a pair of interchangeable dual time signatures, such as
- * the 6/8 in 3/4 (6/8). A separate symbol attribute value is
- * available compared to the time element's symbol attribute,
- * which applies to the first of the dual time signatures.
- * The time-relation element indicates the symbol used to
- * represent the interchangeable aspect of the time signature.
- * Valid values are parentheses, bracket, equals, slash, space,
- * and hyphen.
- * 
- * A senza-misura element explicitly indicates that no time
- * signature is present. The optional element content
- * indicates the symbol to be used, if any, such as an X.
- * The time element's symbol attribute is not used when a
- * senza-misura element is present.
- * 
- * The print-object attribute allows a time signature to be
- * specified but not printed, as is the case for excerpts
- * from the middle of a score. The value is "yes" if
- * not present. The optional number attribute refers to staff
- * numbers within the part, from top to bottom on the system.
- * If absent, the time signature applies to all staves in the
- * part.
- */
-mixin template IInterchangeable() {
-    mixin ITimeSymbol;
-    mixin ITimeSeparator;
-    Beats[] beats;
-    BeatType[] beatType;
-    TimeRelation timeRelation;
-}
-/**
- * Time signatures are represented by two elements. The
- *     beats element indicates the number of beats, as found in
- * the numerator of a time signature. The beat-type element
- * indicates the beat unit, as found in the denominator of
- * a time signature.
- * 
- * Multiple pairs of beats and beat-type elements are used for
- * composite time signatures with multiple denominators, such
- * as 2/4 + 3/8. A composite such as 3+2/8 requires only one
- * beats/beat-type pair.
- * 
- * The interchangeable element is used to represent the second
- * in a pair of interchangeable dual time signatures, such as
- * the 6/8 in 3/4 (6/8). A separate symbol attribute value is
- * available compared to the time element's symbol attribute,
- * which applies to the first of the dual time signatures.
- * The time-relation element indicates the symbol used to
- * represent the interchangeable aspect of the time signature.
- * Valid values are parentheses, bracket, equals, slash, space,
- * and hyphen.
- * 
- * A senza-misura element explicitly indicates that no time
- * signature is present. The optional element content
- * indicates the symbol to be used, if any, such as an X.
- * The time element's symbol attribute is not used when a
- * senza-misura element is present.
- * 
- * The print-object attribute allows a time signature to be
- * specified but not printed, as is the case for excerpts
- * from the middle of a score. The value is "yes" if
- * not present. The optional number attribute refers to staff
- * numbers within the part, from top to bottom on the system.
- * If absent, the time signature applies to all staves in the
- * part.
- */
-export class SenzaMisura {
-    mixin ISenzaMisura;
-    this(xmlNodePtr node) {
-        for (auto ch = node.children.firstElement; ch; ch = ch.nextElement) {
-
-        }
-        for (auto ch = node.properties; ch; ch = ch.next) {
-
-        }
-            auto ch = node;
-                 data = getString(ch);
-    }
-
-}
-
-
-/**
- * Time signatures are represented by two elements. The
- *     beats element indicates the number of beats, as found in
- * the numerator of a time signature. The beat-type element
- * indicates the beat unit, as found in the denominator of
- * a time signature.
- * 
- * Multiple pairs of beats and beat-type elements are used for
- * composite time signatures with multiple denominators, such
- * as 2/4 + 3/8. A composite such as 3+2/8 requires only one
- * beats/beat-type pair.
- * 
- * The interchangeable element is used to represent the second
- * in a pair of interchangeable dual time signatures, such as
- * the 6/8 in 3/4 (6/8). A separate symbol attribute value is
- * available compared to the time element's symbol attribute,
- * which applies to the first of the dual time signatures.
- * The time-relation element indicates the symbol used to
- * represent the interchangeable aspect of the time signature.
- * Valid values are parentheses, bracket, equals, slash, space,
- * and hyphen.
- * 
- * A senza-misura element explicitly indicates that no time
- * signature is present. The optional element content
- * indicates the symbol to be used, if any, such as an X.
- * The time element's symbol attribute is not used when a
- * senza-misura element is present.
- * 
- * The print-object attribute allows a time signature to be
- * specified but not printed, as is the case for excerpts
- * from the middle of a score. The value is "yes" if
- * not present. The optional number attribute refers to staff
- * numbers within the part, from top to bottom on the system.
- * If absent, the time signature applies to all staves in the
- * part.
- */
-mixin template ISenzaMisura() {
-    string data;
+    string[] keyAlterArr;
+    string[] keyAccidentalArr;
+    string mode;
 }
 /**
  * Time signatures are represented by two elements. The
@@ -7368,13 +7035,13 @@ export class Time {
     this(xmlNodePtr node) {
         for (auto ch = node.children.firstElement; ch; ch = ch.nextElement) {
              if (ch.name.toString == "interchangeable") {
-                 interchangeable ~= new Interchangeable(ch) ;
+                 interchangeableArr ~= new Interchangeable(ch) ;
              }
              if (ch.name.toString == "beats") {
-                 beats ~= new Beats(ch) ;
+                 beatsArr ~= getString(ch);
              }
              if (ch.name.toString == "beat-type") {
-                 beatType ~= new BeatType(ch) ;
+                 beatTypeArr ~= getString(ch);
              }
              if (ch.name.toString == "senza-misura") {
                  senzaMisura = true;
@@ -7472,41 +7139,118 @@ mixin template ITime() {
     mixin ITimeSeparator;
     mixin IPrintStyleAlign;
     mixin IPrintObject;
-    Interchangeable[] interchangeable;
-    Beats[] beats;
-    BeatType[] beatType;
+    Interchangeable[] interchangeableArr;
+    string[] beatsArr;
+    string[] beatTypeArr;
     bool senzaMisura;
 }
 /**
- * Instruments are only used if more than one instrument is
- *     represented in the part (e.g., oboe I and II where they
- * play together most of the time). If absent, a value of 1
- * is assumed.
+ * Time signatures are represented by two elements. The
+ *     beats element indicates the number of beats, as found in
+ * the numerator of a time signature. The beat-type element
+ * indicates the beat unit, as found in the denominator of
+ * a time signature.
+ * 
+ * Multiple pairs of beats and beat-type elements are used for
+ * composite time signatures with multiple denominators, such
+ * as 2/4 + 3/8. A composite such as 3+2/8 requires only one
+ * beats/beat-type pair.
+ * 
+ * The interchangeable element is used to represent the second
+ * in a pair of interchangeable dual time signatures, such as
+ * the 6/8 in 3/4 (6/8). A separate symbol attribute value is
+ * available compared to the time element's symbol attribute,
+ * which applies to the first of the dual time signatures.
+ * The time-relation element indicates the symbol used to
+ * represent the interchangeable aspect of the time signature.
+ * Valid values are parentheses, bracket, equals, slash, space,
+ * and hyphen.
+ * 
+ * A senza-misura element explicitly indicates that no time
+ * signature is present. The optional element content
+ * indicates the symbol to be used, if any, such as an X.
+ * The time element's symbol attribute is not used when a
+ * senza-misura element is present.
+ * 
+ * The print-object attribute allows a time signature to be
+ * specified but not printed, as is the case for excerpts
+ * from the middle of a score. The value is "yes" if
+ * not present. The optional number attribute refers to staff
+ * numbers within the part, from top to bottom on the system.
+ * If absent, the time signature applies to all staves in the
+ * part.
  */
-export class Instruments {
-    mixin IInstruments;
+export class Interchangeable {
+    mixin IInterchangeable;
     this(xmlNodePtr node) {
         for (auto ch = node.children.firstElement; ch; ch = ch.nextElement) {
+             if (ch.name.toString == "beats") {
+                 beatsArr ~= getString(ch);
+             }
+             if (ch.name.toString == "beat-type") {
+                 beatTypeArr ~= getString(ch);
+             }
+             if (ch.name.toString == "time-relation") {
+                 timeRelation = getString(ch);
+             }
 
         }
         for (auto ch = node.properties; ch; ch = ch.next) {
+             if (ch.name.toString == "symbol") {
+                 symbol = getTimeSymbolType(ch);
+             }
+             if (ch.name.toString == "separator") {
+                 separator = getSeparatorType(ch);
+             }
 
         }
-            auto ch = node;
-                 list = getString(ch);
     }
 
 }
 
 
 /**
- * Instruments are only used if more than one instrument is
- *     represented in the part (e.g., oboe I and II where they
- * play together most of the time). If absent, a value of 1
- * is assumed.
+ * Time signatures are represented by two elements. The
+ *     beats element indicates the number of beats, as found in
+ * the numerator of a time signature. The beat-type element
+ * indicates the beat unit, as found in the denominator of
+ * a time signature.
+ * 
+ * Multiple pairs of beats and beat-type elements are used for
+ * composite time signatures with multiple denominators, such
+ * as 2/4 + 3/8. A composite such as 3+2/8 requires only one
+ * beats/beat-type pair.
+ * 
+ * The interchangeable element is used to represent the second
+ * in a pair of interchangeable dual time signatures, such as
+ * the 6/8 in 3/4 (6/8). A separate symbol attribute value is
+ * available compared to the time element's symbol attribute,
+ * which applies to the first of the dual time signatures.
+ * The time-relation element indicates the symbol used to
+ * represent the interchangeable aspect of the time signature.
+ * Valid values are parentheses, bracket, equals, slash, space,
+ * and hyphen.
+ * 
+ * A senza-misura element explicitly indicates that no time
+ * signature is present. The optional element content
+ * indicates the symbol to be used, if any, such as an X.
+ * The time element's symbol attribute is not used when a
+ * senza-misura element is present.
+ * 
+ * The print-object attribute allows a time signature to be
+ * specified but not printed, as is the case for excerpts
+ * from the middle of a score. The value is "yes" if
+ * not present. The optional number attribute refers to staff
+ * numbers within the part, from top to bottom on the system.
+ * If absent, the time signature applies to all staves in the
+ * part.
  */
-mixin template IInstruments() {
-    string list;
+mixin template IInterchangeable() {
+    mixin ITimeSymbol;
+    mixin ITimeSeparator;
+    string[] beatsArr;
+    string[] beatTypeArr;
+    string timeRelation;
 }
 /**
  * Staves are used if there is more than one staff
@@ -7651,197 +7395,7 @@ mixin template IPartSymbol() {
  * print-object attribute has been set to "no" or the
  * additional attribute has been set to "yes".
  */
-export class Sign {
-    mixin ISign;
-    this(xmlNodePtr node) {
-        for (auto ch = node.children.firstElement; ch; ch = ch.nextElement) {
-
-        }
-        for (auto ch = node.properties; ch; ch = ch.next) {
-
-        }
-            auto ch = node;
-                 data = getString(ch);
-    }
-
-}
-
-
-/**
- * Clefs are represented by the sign, line, and
- *     clef-octave-change elements. Sign values include G, F, C,
- * percussion, TAB, jianpu, and none. Line numbers are
- * counted from the bottom of the staff. Standard values are
- * 2 for the G sign (treble clef), 4 for the F sign (bass clef),
- * 3 for the C sign (alto clef) and 5 for TAB (on a 6-line
- * staff). The clef-octave-change element is used for
- * transposing clefs (e.g., a treble clef for tenors would
- * have a clef-octave-change value of -1). The optional
- * number attribute refers to staff numbers within the part,
- * from top to bottom on the system. A value of 1 is
- * assumed if not present.
- * 
- * The jianpu sign indicates that the music that follows
- * should be in jianpu numbered notation, just as the TAB
- * sign indicates that the music that follows should be in
- * tablature notation. Unlike TAB, a jianpu sign does not
- * correspond to a visual clef notation.
- * 
- * Sometimes clefs are added to the staff in non-standard
- * line positions, either to indicate cue passages, or when
- * there are multiple clefs present simultaneously on one
- * staff. In this situation, the additional attribute is set to
- * "yes" and the line value is ignored. The size attribute
- * is used for clefs where the additional attribute is "yes".
- * It is typically used to indicate cue clefs.
- * 
- * Sometimes clefs at the start of a measure need to appear
- * after the barline rather than before, as for cues or for
- * use after a repeated section. The after-barline attribute
- * is set to "yes" in this situation. The attribute is ignored
- * for mid-measure clefs.
- * 
- * Clefs appear at the start of each system unless the
- * print-object attribute has been set to "no" or the
- * additional attribute has been set to "yes".
- */
-mixin template ISign() {
-    string data;
-}
-/**
- * Clefs are represented by the sign, line, and
- *     clef-octave-change elements. Sign values include G, F, C,
- * percussion, TAB, jianpu, and none. Line numbers are
- * counted from the bottom of the staff. Standard values are
- * 2 for the G sign (treble clef), 4 for the F sign (bass clef),
- * 3 for the C sign (alto clef) and 5 for TAB (on a 6-line
- * staff). The clef-octave-change element is used for
- * transposing clefs (e.g., a treble clef for tenors would
- * have a clef-octave-change value of -1). The optional
- * number attribute refers to staff numbers within the part,
- * from top to bottom on the system. A value of 1 is
- * assumed if not present.
- * 
- * The jianpu sign indicates that the music that follows
- * should be in jianpu numbered notation, just as the TAB
- * sign indicates that the music that follows should be in
- * tablature notation. Unlike TAB, a jianpu sign does not
- * correspond to a visual clef notation.
- * 
- * Sometimes clefs are added to the staff in non-standard
- * line positions, either to indicate cue passages, or when
- * there are multiple clefs present simultaneously on one
- * staff. In this situation, the additional attribute is set to
- * "yes" and the line value is ignored. The size attribute
- * is used for clefs where the additional attribute is "yes".
- * It is typically used to indicate cue clefs.
- * 
- * Sometimes clefs at the start of a measure need to appear
- * after the barline rather than before, as for cues or for
- * use after a repeated section. The after-barline attribute
- * is set to "yes" in this situation. The attribute is ignored
- * for mid-measure clefs.
- * 
- * Clefs appear at the start of each system unless the
- * print-object attribute has been set to "no" or the
- * additional attribute has been set to "yes".
- */
 alias Line = float;
-/**
- * Clefs are represented by the sign, line, and
- *     clef-octave-change elements. Sign values include G, F, C,
- * percussion, TAB, jianpu, and none. Line numbers are
- * counted from the bottom of the staff. Standard values are
- * 2 for the G sign (treble clef), 4 for the F sign (bass clef),
- * 3 for the C sign (alto clef) and 5 for TAB (on a 6-line
- * staff). The clef-octave-change element is used for
- * transposing clefs (e.g., a treble clef for tenors would
- * have a clef-octave-change value of -1). The optional
- * number attribute refers to staff numbers within the part,
- * from top to bottom on the system. A value of 1 is
- * assumed if not present.
- * 
- * The jianpu sign indicates that the music that follows
- * should be in jianpu numbered notation, just as the TAB
- * sign indicates that the music that follows should be in
- * tablature notation. Unlike TAB, a jianpu sign does not
- * correspond to a visual clef notation.
- * 
- * Sometimes clefs are added to the staff in non-standard
- * line positions, either to indicate cue passages, or when
- * there are multiple clefs present simultaneously on one
- * staff. In this situation, the additional attribute is set to
- * "yes" and the line value is ignored. The size attribute
- * is used for clefs where the additional attribute is "yes".
- * It is typically used to indicate cue clefs.
- * 
- * Sometimes clefs at the start of a measure need to appear
- * after the barline rather than before, as for cues or for
- * use after a repeated section. The after-barline attribute
- * is set to "yes" in this situation. The attribute is ignored
- * for mid-measure clefs.
- * 
- * Clefs appear at the start of each system unless the
- * print-object attribute has been set to "no" or the
- * additional attribute has been set to "yes".
- */
-export class ClefOctaveChange {
-    mixin IClefOctaveChange;
-    this(xmlNodePtr node) {
-        for (auto ch = node.children.firstElement; ch; ch = ch.nextElement) {
-
-        }
-        for (auto ch = node.properties; ch; ch = ch.next) {
-
-        }
-            auto ch = node;
-                 data = getString(ch);
-    }
-
-}
-
-
-/**
- * Clefs are represented by the sign, line, and
- *     clef-octave-change elements. Sign values include G, F, C,
- * percussion, TAB, jianpu, and none. Line numbers are
- * counted from the bottom of the staff. Standard values are
- * 2 for the G sign (treble clef), 4 for the F sign (bass clef),
- * 3 for the C sign (alto clef) and 5 for TAB (on a 6-line
- * staff). The clef-octave-change element is used for
- * transposing clefs (e.g., a treble clef for tenors would
- * have a clef-octave-change value of -1). The optional
- * number attribute refers to staff numbers within the part,
- * from top to bottom on the system. A value of 1 is
- * assumed if not present.
- * 
- * The jianpu sign indicates that the music that follows
- * should be in jianpu numbered notation, just as the TAB
- * sign indicates that the music that follows should be in
- * tablature notation. Unlike TAB, a jianpu sign does not
- * correspond to a visual clef notation.
- * 
- * Sometimes clefs are added to the staff in non-standard
- * line positions, either to indicate cue passages, or when
- * there are multiple clefs present simultaneously on one
- * staff. In this situation, the additional attribute is set to
- * "yes" and the line value is ignored. The size attribute
- * is used for clefs where the additional attribute is "yes".
- * It is typically used to indicate cue clefs.
- * 
- * Sometimes clefs at the start of a measure need to appear
- * after the barline rather than before, as for cues or for
- * use after a repeated section. The after-barline attribute
- * is set to "yes" in this situation. The attribute is ignored
- * for mid-measure clefs.
- * 
- * Clefs appear at the start of each system unless the
- * print-object attribute has been set to "no" or the
- * additional attribute has been set to "yes".
- */
-mixin template IClefOctaveChange() {
-    string data;
-}
 /**
  * Clefs are represented by the sign, line, and
  *     clef-octave-change elements. Sign values include G, F, C,
@@ -7885,10 +7439,10 @@ export class Clef {
     this(xmlNodePtr node) {
         for (auto ch = node.children.firstElement; ch; ch = ch.nextElement) {
              if (ch.name.toString == "clef-octave-change") {
-                 clefOctaveChange = new ClefOctaveChange(ch) ;
+                 clefOctaveChange = getString(ch);
              }
              if (ch.name.toString == "sign") {
-                 sign = new Sign(ch) ;
+                 sign = getString(ch);
              }
              if (ch.name.toString == "line") {
                  line = getNumber(ch);
@@ -7986,74 +7540,13 @@ export class Clef {
 mixin template IClef() {
     mixin IPrintStyle;
     mixin IPrintObject;
-    ClefOctaveChange clefOctaveChange;
-    Sign sign;
+    string clefOctaveChange;
+    string sign;
     float number_;
     SymbolSize size;
     float line;
     YesNo afterBarline;
     YesNo additional;
-}
-/**
- * The staff-details element is used to indicate different
- *     types of staves. The staff-type element can be ossia,
- * cue, editorial, regular, or alternate. An alternate staff
- * indicates one that shares the same musical data as the
- * prior staff, but displayed differently (e.g., treble and
- * bass clef, standard notation and tab). The staff-lines
- * element specifies the number of lines for a non 5-line
- * staff. The staff-tuning and capo elements are used to
- * specify tuning when using tablature notation. The optional
- * number attribute specifies the staff number from top to
- * bottom on the system, as with clef. The optional show-frets
- * attribute indicates whether to show tablature frets as
- * numbers (0, 1, 2) or letters (a, b, c). The default choice
- * is numbers. The print-object attribute is used to indicate
- * when a staff is not printed in a part, usually in large
- * scores where empty parts are omitted. It is yes by default.
- * If print-spacing is yes while print-object is no, the score
- * is printed in cutaway format where vertical space is left
- * for the empty part.
- */
-export class StaffType {
-    mixin IStaffType;
-    this(xmlNodePtr node) {
-        for (auto ch = node.children.firstElement; ch; ch = ch.nextElement) {
-
-        }
-        for (auto ch = node.properties; ch; ch = ch.next) {
-
-        }
-            auto ch = node;
-                 data = getString(ch);
-    }
-
-}
-
-
-/**
- * The staff-details element is used to indicate different
- *     types of staves. The staff-type element can be ossia,
- * cue, editorial, regular, or alternate. An alternate staff
- * indicates one that shares the same musical data as the
- * prior staff, but displayed differently (e.g., treble and
- * bass clef, standard notation and tab). The staff-lines
- * element specifies the number of lines for a non 5-line
- * staff. The staff-tuning and capo elements are used to
- * specify tuning when using tablature notation. The optional
- * number attribute specifies the staff number from top to
- * bottom on the system, as with clef. The optional show-frets
- * attribute indicates whether to show tablature frets as
- * numbers (0, 1, 2) or letters (a, b, c). The default choice
- * is numbers. The print-object attribute is used to indicate
- * when a staff is not printed in a part, usually in large
- * scores where empty parts are omitted. It is yes by default.
- * If print-spacing is yes while print-object is no, the score
- * is printed in cutaway format where vertical space is left
- * for the empty part.
- */
-mixin template IStaffType() {
-    string data;
 }
 /**
  * The staff-details element is used to indicate different
@@ -8090,7 +7583,7 @@ export class StaffTuning {
                  tuningAlter = new TuningAlter(ch) ;
              }
              if (ch.name.toString == "tuning-step") {
-                 tuningStep = new TuningStep(ch) ;
+                 tuningStep = getString(ch);
              }
              if (ch.name.toString == "tuning-octave") {
                  tuningOctave = new TuningOctave(ch) ;
@@ -8116,39 +7609,8 @@ export class StaffTuning {
 mixin template IStaffTuning() {
     TuningAlter tuningAlter;
     string line;
-    TuningStep tuningStep;
+    string tuningStep;
     TuningOctave tuningOctave;
-}
-/**
- * The capo element indicates at which fret a capo should
- *     be placed on a fretted instrument. This changes the
- * open tuning of the strings specified by staff-tuning
- * by the specified number of half-steps.
- */
-export class Capo {
-    mixin ICapo;
-    this(xmlNodePtr node) {
-        for (auto ch = node.children.firstElement; ch; ch = ch.nextElement) {
-
-        }
-        for (auto ch = node.properties; ch; ch = ch.next) {
-
-        }
-            auto ch = node;
-                 data = getString(ch);
-    }
-
-}
-
-
-/**
- * The capo element indicates at which fret a capo should
- *     be placed on a fretted instrument. This changes the
- * open tuning of the strings specified by staff-tuning
- * by the specified number of half-steps.
- */
-mixin template ICapo() {
-    string data;
 }
 /**
  * The staff-size element indicates how large a staff
@@ -8207,16 +7669,16 @@ export class StaffDetails {
                  staffLines = getNumber(ch);
              }
              if (ch.name.toString == "staff-tuning") {
-                 staffTuning ~= new StaffTuning(ch) ;
+                 staffTuningArr ~= new StaffTuning(ch) ;
              }
              if (ch.name.toString == "staff-size") {
                  staffSize = getNumber(ch);
              }
              if (ch.name.toString == "capo") {
-                 capo = new Capo(ch) ;
+                 capo = getString(ch);
              }
              if (ch.name.toString == "staff-type") {
-                 staffType = new StaffType(ch) ;
+                 staffType = getString(ch);
              }
 
         }
@@ -8265,195 +7727,12 @@ mixin template IStaffDetails() {
     mixin IPrintObject;
     mixin IPrintSpacing;
     float staffLines;
-    StaffTuning[] staffTuning;
+    StaffTuning[] staffTuningArr;
     float staffSize;
-    Capo capo;
+    string capo;
     float number_;
     ShowFretsType showFets;
-    StaffType staffType;
-}
-/**
- * If the part is being encoded for a transposing instrument
- *     in written vs. concert pitch, the transposition must be
- * encoded in the transpose element. The transpose element
- * represents what must be added to the written pitch to get
- * the correct sounding pitch.
- * 
- * The transposition is represented by chromatic steps
- * (required) and three optional elements: diatonic pitch
- * steps, octave changes, and doubling an octave down. The
- * chromatic and octave-change elements are numeric values
- * added to the encoded pitch data to create the sounding
- * pitch. The diatonic element is also numeric and allows
- * for correct spelling of enharmonic transpositions.
- * 
- * The optional number attribute refers to staff numbers,
- * from top to bottom on the system. If absent, the
- * transposition applies to all staves in the part. Per-staff
- * transposition is most often used in parts that represent
- * multiple instruments.
- */
-export class Diatonic {
-    mixin IDiatonic;
-    this(xmlNodePtr node) {
-        for (auto ch = node.children.firstElement; ch; ch = ch.nextElement) {
-
-        }
-        for (auto ch = node.properties; ch; ch = ch.next) {
-
-        }
-            auto ch = node;
-                 data = getString(ch);
-    }
-
-}
-
-
-/**
- * If the part is being encoded for a transposing instrument
- *     in written vs. concert pitch, the transposition must be
- * encoded in the transpose element. The transpose element
- * represents what must be added to the written pitch to get
- * the correct sounding pitch.
- * 
- * The transposition is represented by chromatic steps
- * (required) and three optional elements: diatonic pitch
- * steps, octave changes, and doubling an octave down. The
- * chromatic and octave-change elements are numeric values
- * added to the encoded pitch data to create the sounding
- * pitch. The diatonic element is also numeric and allows
- * for correct spelling of enharmonic transpositions.
- * 
- * The optional number attribute refers to staff numbers,
- * from top to bottom on the system. If absent, the
- * transposition applies to all staves in the part. Per-staff
- * transposition is most often used in parts that represent
- * multiple instruments.
- */
-mixin template IDiatonic() {
-    string data;
-}
-/**
- * If the part is being encoded for a transposing instrument
- *     in written vs. concert pitch, the transposition must be
- * encoded in the transpose element. The transpose element
- * represents what must be added to the written pitch to get
- * the correct sounding pitch.
- * 
- * The transposition is represented by chromatic steps
- * (required) and three optional elements: diatonic pitch
- * steps, octave changes, and doubling an octave down. The
- * chromatic and octave-change elements are numeric values
- * added to the encoded pitch data to create the sounding
- * pitch. The diatonic element is also numeric and allows
- * for correct spelling of enharmonic transpositions.
- * 
- * The optional number attribute refers to staff numbers,
- * from top to bottom on the system. If absent, the
- * transposition applies to all staves in the part. Per-staff
- * transposition is most often used in parts that represent
- * multiple instruments.
- */
-export class Chromatic {
-    mixin IChromatic;
-    this(xmlNodePtr node) {
-        for (auto ch = node.children.firstElement; ch; ch = ch.nextElement) {
-
-        }
-        for (auto ch = node.properties; ch; ch = ch.next) {
-
-        }
-            auto ch = node;
-                 data = getString(ch);
-    }
-
-}
-
-
-/**
- * If the part is being encoded for a transposing instrument
- *     in written vs. concert pitch, the transposition must be
- * encoded in the transpose element. The transpose element
- * represents what must be added to the written pitch to get
- * the correct sounding pitch.
- * 
- * The transposition is represented by chromatic steps
- * (required) and three optional elements: diatonic pitch
- * steps, octave changes, and doubling an octave down. The
- * chromatic and octave-change elements are numeric values
- * added to the encoded pitch data to create the sounding
- * pitch. The diatonic element is also numeric and allows
- * for correct spelling of enharmonic transpositions.
- * 
- * The optional number attribute refers to staff numbers,
- * from top to bottom on the system. If absent, the
- * transposition applies to all staves in the part. Per-staff
- * transposition is most often used in parts that represent
- * multiple instruments.
- */
-mixin template IChromatic() {
-    string data;
-}
-/**
- * If the part is being encoded for a transposing instrument
- *     in written vs. concert pitch, the transposition must be
- * encoded in the transpose element. The transpose element
- * represents what must be added to the written pitch to get
- * the correct sounding pitch.
- * 
- * The transposition is represented by chromatic steps
- * (required) and three optional elements: diatonic pitch
- * steps, octave changes, and doubling an octave down. The
- * chromatic and octave-change elements are numeric values
- * added to the encoded pitch data to create the sounding
- * pitch. The diatonic element is also numeric and allows
- * for correct spelling of enharmonic transpositions.
- * 
- * The optional number attribute refers to staff numbers,
- * from top to bottom on the system. If absent, the
- * transposition applies to all staves in the part. Per-staff
- * transposition is most often used in parts that represent
- * multiple instruments.
- */
-export class OctaveChange {
-    mixin IOctaveChange;
-    this(xmlNodePtr node) {
-        for (auto ch = node.children.firstElement; ch; ch = ch.nextElement) {
-
-        }
-        for (auto ch = node.properties; ch; ch = ch.next) {
-
-        }
-            auto ch = node;
-                 data = getString(ch);
-    }
-
-}
-
-
-/**
- * If the part is being encoded for a transposing instrument
- *     in written vs. concert pitch, the transposition must be
- * encoded in the transpose element. The transpose element
- * represents what must be added to the written pitch to get
- * the correct sounding pitch.
- * 
- * The transposition is represented by chromatic steps
- * (required) and three optional elements: diatonic pitch
- * steps, octave changes, and doubling an octave down. The
- * chromatic and octave-change elements are numeric values
- * added to the encoded pitch data to create the sounding
- * pitch. The diatonic element is also numeric and allows
- * for correct spelling of enharmonic transpositions.
- * 
- * The optional number attribute refers to staff numbers,
- * from top to bottom on the system. If absent, the
- * transposition applies to all staves in the part. Per-staff
- * transposition is most often used in parts that represent
- * multiple instruments.
- */
-mixin template IOctaveChange() {
-    string data;
+    string staffType;
 }
 /**
  * If the part is being encoded for a transposing instrument
@@ -8540,16 +7819,16 @@ export class Transpose {
     this(xmlNodePtr node) {
         for (auto ch = node.children.firstElement; ch; ch = ch.nextElement) {
              if (ch.name.toString == "diatonic") {
-                 diatonic = new Diatonic(ch) ;
+                 diatonic = getString(ch);
              }
              if (ch.name.toString == "octave-change") {
-                 octaveChange = new OctaveChange(ch) ;
+                 octaveChange = getString(ch);
              }
              if (ch.name.toString == "double") {
                  double_ = new Double(ch) ;
              }
              if (ch.name.toString == "chromatic") {
-                 chromatic = new Chromatic(ch) ;
+                 chromatic = getString(ch);
              }
 
         }
@@ -8587,10 +7866,10 @@ export class Transpose {
  */
 mixin template ITranspose() {
     float number_;
-    Diatonic diatonic;
-    OctaveChange octaveChange;
+    string diatonic;
+    string octaveChange;
     Double double_;
-    Chromatic chromatic;
+    string chromatic;
 }
 /**
  * Directives are like directions, but can be grouped together
@@ -8655,39 +7934,6 @@ export class Directive {
  */
 mixin template IDirective() {
     mixin IPrintStyle;
-    string data;
-}
-/**
- * The slash-type and slash-dot elements are optional children
- *     of the beat-repeat and slash elements. They have the same
- * values as the type and dot elements, and define what the
- * beat is for the display of repetition marks. If not present,
- * the beat is based on the current time signature.
- */
-export class SlashType {
-    mixin ISlashType;
-    this(xmlNodePtr node) {
-        for (auto ch = node.children.firstElement; ch; ch = ch.nextElement) {
-
-        }
-        for (auto ch = node.properties; ch; ch = ch.next) {
-
-        }
-            auto ch = node;
-                 data = getString(ch);
-    }
-
-}
-
-
-/**
- * The slash-type and slash-dot elements are optional children
- *     of the beat-repeat and slash elements. They have the same
- * values as the type and dot elements, and define what the
- * beat is for the display of repetition marks. If not present,
- * the beat is based on the current time signature.
- */
-mixin template ISlashType() {
     string data;
 }
 /**
@@ -8834,10 +8080,10 @@ export class BeatRepeat {
     this(xmlNodePtr node) {
         for (auto ch = node.children.firstElement; ch; ch = ch.nextElement) {
              if (ch.name.toString == "slash-type") {
-                 slashType = new SlashType(ch) ;
+                 slashType = getString(ch);
              }
              if (ch.name.toString == "slash-dot") {
-                 slashDot ~= new SlashDot(ch) ;
+                 slashDotArr ~= new SlashDot(ch) ;
              }
 
         }
@@ -8875,9 +8121,9 @@ export class BeatRepeat {
  * value for use-dots is no.
  */
 mixin template IBeatRepeat() {
-    SlashType slashType;
+    string slashType;
     YesNo useDots;
-    SlashDot[] slashDot;
+    SlashDot[] slashDotArr;
     float slases;
     StartStop type;
 }
@@ -8895,10 +8141,10 @@ export class Slash {
     this(xmlNodePtr node) {
         for (auto ch = node.children.firstElement; ch; ch = ch.nextElement) {
              if (ch.name.toString == "slash-type") {
-                 slashType = new SlashType(ch) ;
+                 slashType = getString(ch);
              }
              if (ch.name.toString == "slash-dot") {
-                 slashDot ~= new SlashDot(ch) ;
+                 slashDotArr ~= new SlashDot(ch) ;
              }
 
         }
@@ -8929,10 +8175,10 @@ export class Slash {
  * element, and only has effect if use-stems is no.
  */
 mixin template ISlash() {
-    SlashType slashType;
+    string slashType;
     YesNo useDots;
     YesNo useStems;
-    SlashDot[] slashDot;
+    SlashDot[] slashDotArr;
     StartStop type;
 }
 /**
@@ -9034,19 +8280,19 @@ export class Attributes {
                  partSymbol = new PartSymbol(ch) ;
              }
              if (ch.name.toString == "clef") {
-                 clef ~= new Clef(ch) ;
+                 clefArr ~= new Clef(ch) ;
              }
              if (ch.name.toString == "measure-style") {
-                 measureStyle ~= new MeasureStyle(ch) ;
+                 measureStyleArr ~= new MeasureStyle(ch) ;
              }
              if (ch.name.toString == "time") {
-                 time ~= new Time(ch) ;
+                 timeArr ~= new Time(ch) ;
              }
              if (ch.name.toString == "staff-details") {
-                 staffDetails ~= new StaffDetails(ch) ;
+                 staffDetailsArr ~= new StaffDetails(ch) ;
              }
              if (ch.name.toString == "transpose") {
-                 transpose ~= new Transpose(ch) ;
+                 transposeArr ~= new Transpose(ch) ;
              }
              if (ch.name.toString == "footnote") {
                  footnote = new Footnote(ch) ;
@@ -9058,13 +8304,13 @@ export class Attributes {
                  staves = getNumber(ch);
              }
              if (ch.name.toString == "instruments") {
-                 instruments = new Instruments(ch) ;
+                 instruments = getString(ch);
              }
              if (ch.name.toString == "key") {
-                 key ~= new Key(ch) ;
+                 keyArr ~= new Key(ch) ;
              }
              if (ch.name.toString == "directive") {
-                 directive ~= new Directive(ch) ;
+                 directiveArr ~= new Directive(ch) ;
              }
 
         }
@@ -9087,15 +8333,15 @@ mixin template IAttributes() {
     mixin IEditorial;
     float divisions;
     PartSymbol partSymbol;
-    Clef[] clef;
-    MeasureStyle[] measureStyle;
-    Time[] time;
-    StaffDetails[] staffDetails;
-    Transpose[] transpose;
+    Clef[] clefArr;
+    MeasureStyle[] measureStyleArr;
+    Time[] timeArr;
+    StaffDetails[] staffDetailsArr;
+    Transpose[] transposeArr;
     float staves;
-    Instruments instruments;
-    Key[] key;
-    Directive[] directive;
+    string instruments;
+    Key[] keyArr;
+    Directive[] directiveArr;
 }
 /**
  * The cue and grace elements indicate the presence of cue and
@@ -9238,97 +8484,15 @@ mixin template IChord() {
  * line 2. If not present, the note is placed on the middle
  * line of the staff, generally used for a one-line staff.
  */
-export class DisplayStep {
-    mixin IDisplayStep;
-    this(xmlNodePtr node) {
-        for (auto ch = node.children.firstElement; ch; ch = ch.nextElement) {
-
-        }
-        for (auto ch = node.properties; ch; ch = ch.next) {
-
-        }
-            auto ch = node;
-                 data = getString(ch);
-    }
-
-}
-
-
-/**
- * The unpitched element indicates musical elements that are
- *     notated on the staff but lack definite pitch, such as
- * unpitched percussion and speaking voice. Like notes, it
- * uses step and octave elements to indicate placement on the
- * staff, following the current clef. If percussion clef is
- * used, the display-step and display-octave elements are
- * interpreted as if in treble clef, with a G in octave 4 on
- * line 2. If not present, the note is placed on the middle
- * line of the staff, generally used for a one-line staff.
- */
-mixin template IDisplayStep() {
-    string data;
-}
-/**
- * The unpitched element indicates musical elements that are
- *     notated on the staff but lack definite pitch, such as
- * unpitched percussion and speaking voice. Like notes, it
- * uses step and octave elements to indicate placement on the
- * staff, following the current clef. If percussion clef is
- * used, the display-step and display-octave elements are
- * interpreted as if in treble clef, with a G in octave 4 on
- * line 2. If not present, the note is placed on the middle
- * line of the staff, generally used for a one-line staff.
- */
-export class DisplayOctave {
-    mixin IDisplayOctave;
-    this(xmlNodePtr node) {
-        for (auto ch = node.children.firstElement; ch; ch = ch.nextElement) {
-
-        }
-        for (auto ch = node.properties; ch; ch = ch.next) {
-
-        }
-            auto ch = node;
-                 data = getString(ch);
-    }
-
-}
-
-
-/**
- * The unpitched element indicates musical elements that are
- *     notated on the staff but lack definite pitch, such as
- * unpitched percussion and speaking voice. Like notes, it
- * uses step and octave elements to indicate placement on the
- * staff, following the current clef. If percussion clef is
- * used, the display-step and display-octave elements are
- * interpreted as if in treble clef, with a G in octave 4 on
- * line 2. If not present, the note is placed on the middle
- * line of the staff, generally used for a one-line staff.
- */
-mixin template IDisplayOctave() {
-    string data;
-}
-/**
- * The unpitched element indicates musical elements that are
- *     notated on the staff but lack definite pitch, such as
- * unpitched percussion and speaking voice. Like notes, it
- * uses step and octave elements to indicate placement on the
- * staff, following the current clef. If percussion clef is
- * used, the display-step and display-octave elements are
- * interpreted as if in treble clef, with a G in octave 4 on
- * line 2. If not present, the note is placed on the middle
- * line of the staff, generally used for a one-line staff.
- */
 export class Unpitched {
     mixin IUnpitched;
     this(xmlNodePtr node) {
         for (auto ch = node.children.firstElement; ch; ch = ch.nextElement) {
              if (ch.name.toString == "display-step") {
-                 displayStep = new DisplayStep(ch) ;
+                 displayStep = getString(ch);
              }
              if (ch.name.toString == "display-octave") {
-                 displayOctave = new DisplayOctave(ch) ;
+                 displayOctave = getString(ch);
              }
 
         }
@@ -9352,8 +8516,8 @@ export class Unpitched {
  * line of the staff, generally used for a one-line staff.
  */
 mixin template IUnpitched() {
-    DisplayStep displayStep;
-    DisplayOctave displayOctave;
+    string displayStep;
+    string displayOctave;
 }
 alias Step = float;
 alias Alter = float;
@@ -9468,10 +8632,10 @@ export class Rest {
     this(xmlNodePtr node) {
         for (auto ch = node.children.firstElement; ch; ch = ch.nextElement) {
              if (ch.name.toString == "display-step") {
-                 displayStep = new DisplayStep(ch) ;
+                 displayStep = getString(ch);
              }
              if (ch.name.toString == "display-octave") {
-                 displayOctave = new DisplayOctave(ch) ;
+                 displayOctave = getString(ch);
              }
 
         }
@@ -9495,8 +8659,8 @@ export class Rest {
  */
 mixin template IRest() {
     YesNo measure;
-    DisplayStep displayStep;
-    DisplayOctave displayOctave;
+    string displayStep;
+    string displayOctave;
 }
 /**
  * Duration is a positive number specified in division units.
@@ -9653,19 +8817,19 @@ export class Note {
                  fullNote = new FullNote(ch) ;
              }
              if (ch.name.toString == "dot") {
-                 dot ~= new Dot(ch) ;
+                 dotArr ~= new Dot(ch) ;
              }
              if (ch.name.toString == "lyric") {
-                 lyric ~= new Lyric(ch) ;
+                 lyricArr ~= new Lyric(ch) ;
              }
              if (ch.name.toString == "notations") {
-                 notations ~= new Notations(ch) ;
+                 notationsArr ~= new Notations(ch) ;
              }
              if (ch.name.toString == "stem") {
                  stem = new Stem(ch) ;
              }
              if (ch.name.toString == "type") {
-                 type = new Type(ch) ;
+                 noteType = new Type(ch) ;
              }
              if (ch.name.toString == "cue") {
                  cue = new Cue(ch) ;
@@ -9674,7 +8838,7 @@ export class Note {
                  duration = getNumber(ch);
              }
              if (ch.name.toString == "tie") {
-                 tie ~= new Tie(ch) ;
+                 tieArr ~= new Tie(ch) ;
              }
              if (ch.name.toString == "play") {
                  play = new Play(ch) ;
@@ -9689,7 +8853,7 @@ export class Note {
                  notehead = new Notehead(ch) ;
              }
              if (ch.name.toString == "voice") {
-                 voice = new Voice(ch) ;
+                 voice = getString(ch);
              }
              if (ch.name.toString == "footnote") {
                  footnote = new Footnote(ch) ;
@@ -9698,7 +8862,7 @@ export class Note {
                  level = new Level(ch) ;
              }
              if (ch.name.toString == "beam") {
-                 beam ~= new Beam(ch) ;
+                 beamArr ~= new Beam(ch) ;
              }
 
         }
@@ -9809,21 +8973,21 @@ mixin template INote() {
     float attack;
     float endDynamics;
     FullNote fullNote;
-    Dot[] dot;
-    Lyric[] lyric;
-    Notations[] notations;
+    Dot[] dotArr;
+    Lyric[] lyricArr;
+    Notations[] notationsArr;
     Stem stem;
-    Type type;
+    Type noteType;
     Cue cue;
     float duration;
-    Tie[] tie;
+    Tie[] tieArr;
     float dynamics;
     Play play;
     Staff staff;
     Grace grace;
     Notehead notehead;
     float release;
-    Beam[] beam;
+    Beam[] beamArr;
 }
 /**
  * Type indicates the graphic note type, Valid values (from
@@ -10214,13 +9378,13 @@ export class TimeModification {
                  actualNotes = new ActualNotes(ch) ;
              }
              if (ch.name.toString == "normal-type") {
-                 normalType = new NormalType(ch) ;
+                 normalType = getString(ch);
              }
              if (ch.name.toString == "normal-notes") {
                  normalNotes = new NormalNotes(ch) ;
              }
              if (ch.name.toString == "normal-dot") {
-                 normalDot ~= new NormalDot(ch) ;
+                 normalDotArr ~= new NormalDot(ch) ;
              }
 
         }
@@ -10245,9 +9409,9 @@ export class TimeModification {
  */
 mixin template ITimeModification() {
     ActualNotes actualNotes;
-    NormalType normalType;
+    string normalType;
     NormalNotes normalNotes;
-    NormalDot[] normalDot;
+    NormalDot[] normalDotArr;
 }
 export enum StemType {
     None = 2,
@@ -10762,16 +9926,16 @@ export class Notations {
     this(xmlNodePtr node) {
         for (auto ch = node.children.firstElement; ch; ch = ch.nextElement) {
              if (ch.name.toString == "slur") {
-                 slur ~= new Slur(ch) ;
+                 slurArr ~= new Slur(ch) ;
              }
              if (ch.name.toString == "articulations") {
-                 articulations ~= new Articulations(ch) ;
+                 articulationsArr ~= new Articulations(ch) ;
              }
              if (ch.name.toString == "slide") {
-                 slide ~= new Slide(ch) ;
+                 slideArr ~= new Slide(ch) ;
              }
              if (ch.name.toString == "technical") {
-                 technical ~= new Technical(ch) ;
+                 technicalArr ~= new Technical(ch) ;
              }
              if (ch.name.toString == "footnote") {
                  footnote = new Footnote(ch) ;
@@ -10780,34 +9944,34 @@ export class Notations {
                  level = new Level(ch) ;
              }
              if (ch.name.toString == "tied") {
-                 tied ~= new Tied(ch) ;
+                 tiedArr ~= new Tied(ch) ;
              }
              if (ch.name.toString == "tuplet") {
-                 tuplet ~= new Tuplet(ch) ;
+                 tupletArr ~= new Tuplet(ch) ;
              }
              if (ch.name.toString == "glissando") {
-                 glissando ~= new Glissando(ch) ;
+                 glissandoArr ~= new Glissando(ch) ;
              }
              if (ch.name.toString == "dynamics") {
-                 dynamics ~= new Dynamics(ch) ;
+                 dynamicsArr ~= new Dynamics(ch) ;
              }
              if (ch.name.toString == "fermata") {
-                 fermata ~= new Fermata(ch) ;
+                 fermataArr ~= new Fermata(ch) ;
              }
              if (ch.name.toString == "accidental-mark") {
-                 accidentalMark ~= new AccidentalMark(ch) ;
+                 accidentalMarkArr ~= new AccidentalMark(ch) ;
              }
              if (ch.name.toString == "ornaments") {
-                 ornaments ~= new Ornaments(ch) ;
+                 ornamentsArr ~= new Ornaments(ch) ;
              }
              if (ch.name.toString == "arpeggiate") {
-                 arpeggiate ~= new Arpeggiate(ch) ;
+                 arpeggiateArr ~= new Arpeggiate(ch) ;
              }
              if (ch.name.toString == "non-arpeggiate") {
-                 nonArpeggiate ~= new NonArpeggiate(ch) ;
+                 nonArpeggiateArr ~= new NonArpeggiate(ch) ;
              }
              if (ch.name.toString == "other-notation") {
-                 otherNotation ~= new OtherNotation(ch) ;
+                 otherNotationArr ~= new OtherNotation(ch) ;
              }
 
         }
@@ -10832,20 +9996,20 @@ export class Notations {
 mixin template INotations() {
     mixin IEditorial;
     mixin IPrintObject;
-    Slur[] slur;
-    Articulations[] articulations;
-    Slide[] slide;
-    Technical[] technical;
-    Tied[] tied;
-    Tuplet[] tuplet;
-    Glissando[] glissando;
-    Dynamics[] dynamics;
-    Fermata[] fermata;
-    AccidentalMark[] accidentalMark;
-    Ornaments[] ornaments;
-    Arpeggiate[] arpeggiate;
-    NonArpeggiate[] nonArpeggiate;
-    OtherNotation[] otherNotation;
+    Slur[] slurArr;
+    Articulations[] articulationsArr;
+    Slide[] slideArr;
+    Technical[] technicalArr;
+    Tied[] tiedArr;
+    Tuplet[] tupletArr;
+    Glissando[] glissandoArr;
+    Dynamics[] dynamicsArr;
+    Fermata[] fermataArr;
+    AccidentalMark[] accidentalMarkArr;
+    Ornaments[] ornamentsArr;
+    Arpeggiate[] arpeggiateArr;
+    NonArpeggiate[] nonArpeggiateArr;
+    OtherNotation[] otherNotationArr;
 }
 /**
  * The tied element represents the notated tie. The tie element
@@ -11224,7 +10388,7 @@ export class TupletActual {
                  tupletNumber = new TupletNumber(ch) ;
              }
              if (ch.name.toString == "tuplet-dot") {
-                 tupletDot ~= new TupletDot(ch) ;
+                 tupletDotArr ~= new TupletDot(ch) ;
              }
              if (ch.name.toString == "tuplet-type") {
                  tupletType = new TupletType(ch) ;
@@ -11272,7 +10436,7 @@ export class TupletActual {
  */
 mixin template ITupletActual() {
     TupletNumber tupletNumber;
-    TupletDot[] tupletDot;
+    TupletDot[] tupletDotArr;
     TupletType tupletType;
 }
 /**
@@ -11314,7 +10478,7 @@ export class TupletNormal {
                  tupletNumber = new TupletNumber(ch) ;
              }
              if (ch.name.toString == "tuplet-dot") {
-                 tupletDot ~= new TupletDot(ch) ;
+                 tupletDotArr ~= new TupletDot(ch) ;
              }
              if (ch.name.toString == "tuplet-type") {
                  tupletType = new TupletType(ch) ;
@@ -11362,7 +10526,7 @@ export class TupletNormal {
  */
 mixin template ITupletNormal() {
     TupletNumber tupletNumber;
-    TupletDot[] tupletDot;
+    TupletDot[] tupletDotArr;
     TupletType tupletType;
 }
 /**
@@ -11918,6 +11082,75 @@ mixin template IOtherNotation() {
     string data;
 }
 /**
+ * The other-direction element is used to define any direction
+ *     symbols not yet in the current version of the MusicXML
+ * format. This allows extended representation, though without
+ * application interoperability.
+ */
+export class OtherDirection {
+    mixin IOtherDirection;
+    this(xmlNodePtr node) {
+        for (auto ch = node.children.firstElement; ch; ch = ch.nextElement) {
+
+        }
+        for (auto ch = node.properties; ch; ch = ch.next) {
+             if (ch.name.toString == "print-object") {
+                 printObject = getYesNo(ch);
+             }
+             if (ch.name.toString == "default-x") {
+                 defaultX = getNumber(ch);
+             }
+             if (ch.name.toString == "relative-y") {
+                 relativeY = getNumber(ch);
+             }
+             if (ch.name.toString == "default-y") {
+                 defaultY = getNumber(ch);
+             }
+             if (ch.name.toString == "relative-x") {
+                 relativeX = getNumber(ch);
+             }
+             if (ch.name.toString == "font-family") {
+                 fontFamily = getString(ch);
+             }
+             if (ch.name.toString == "font-weight") {
+                 fontWeight = getNormalBold(ch);
+             }
+             if (ch.name.toString == "font-style") {
+                 fontStyle = getNormalItalic(ch);
+             }
+             if (ch.name.toString == "font-size") {
+                 fontSize = getNumber(ch);
+             }
+             if (ch.name.toString == "color") {
+                 color = getString(ch);
+             }
+             if (ch.name.toString == "halign") {
+                 halign = getLeftCenterRight(ch);
+             }
+             if (ch.name.toString == "valign") {
+                 valign = getTopMiddleBottomBaseline(ch);
+             }
+
+        }
+            auto ch = node;
+                 data = getString(ch);
+    }
+
+}
+
+
+/**
+ * The other-direction element is used to define any direction
+ *     symbols not yet in the current version of the MusicXML
+ * format. This allows extended representation, though without
+ * application interoperability.
+ */
+mixin template IOtherDirection() {
+    mixin IPrintObject;
+    mixin IPrintStyleAlign;
+    string data;
+}
+/**
  * Ornaments can be any of several types, followed optionally
  *     by accidentals. The accidental-mark element's content is
  * represented the same as an accidental element, but with a
@@ -11955,7 +11188,7 @@ export class Ornaments {
                  tremolo = new Tremolo(ch) ;
              }
              if (ch.name.toString == "accidental-mark") {
-                 accidentalMark ~= new AccidentalMark(ch) ;
+                 accidentalMarkArr ~= new AccidentalMark(ch) ;
              }
              if (ch.name.toString == "trill-mark") {
                  trillMark = new TrillMark(ch) ;
@@ -12049,7 +11282,7 @@ mixin template IOrnaments() {
     VerticalTurn verticalTurn;
     WavyLine wavyLine;
     Tremolo tremolo;
-    AccidentalMark[] accidentalMark;
+    AccidentalMark[] accidentalMarkArr;
     TrillMark trillMark;
     Mordent mordent;
     InvertedMordent invertedMordent;
@@ -14107,7 +13340,7 @@ export class Bend {
     this(xmlNodePtr node) {
         for (auto ch = node.children.firstElement; ch; ch = ch.nextElement) {
              if (ch.name.toString == "bend-alter") {
-                 bendAlter = new BendAlter(ch) ;
+                 bendAlter = getString(ch);
              }
              if (ch.name.toString == "with-bar") {
                  withBar = new WithBar(ch) ;
@@ -14182,53 +13415,10 @@ export class Bend {
 mixin template IBend() {
     mixin IPrintStyle;
     mixin IBendSound;
-    BendAlter bendAlter;
+    string bendAlter;
     WithBar withBar;
     bool preBend;
     bool release;
-}
-/**
- * The bend element is used in guitar and tablature. The
- *     bend-alter element indicates the number of steps in the
- * bend, similar to the alter element. As with the alter
- * element, numbers like 0.5 can be used to indicate
- * microtones. Negative numbers indicate pre-bends or
- * releases; the pre-bend and release elements are used
- * to distinguish what is intended. A with-bar element
- * indicates that the bend is to be done at the bridge
- * with a whammy or vibrato bar. The content of the
- * element indicates how this should be notated.
- */
-export class BendAlter {
-    mixin IBendAlter;
-    this(xmlNodePtr node) {
-        for (auto ch = node.children.firstElement; ch; ch = ch.nextElement) {
-
-        }
-        for (auto ch = node.properties; ch; ch = ch.next) {
-
-        }
-            auto ch = node;
-                 data = getString(ch);
-    }
-
-}
-
-
-/**
- * The bend element is used in guitar and tablature. The
- *     bend-alter element indicates the number of steps in the
- * bend, similar to the alter element. As with the alter
- * element, numbers like 0.5 can be used to indicate
- * microtones. Negative numbers indicate pre-bends or
- * releases; the pre-bend and release elements are used
- * to distinguish what is intended. A with-bar element
- * indicates that the bend is to be done at the bridge
- * with a whammy or vibrato bar. The content of the
- * element indicates how this should be notated.
- */
-mixin template IBendAlter() {
-    string data;
 }
 /**
  * The bend element is used in guitar and tablature. The
@@ -14565,10 +13755,10 @@ export class Hole {
                  holeClosed = new HoleClosed(ch) ;
              }
              if (ch.name.toString == "hole-shape") {
-                 holeShape = new HoleShape(ch) ;
+                 holeShape = getString(ch);
              }
              if (ch.name.toString == "hole-type") {
-                 holeType = new HoleType(ch) ;
+                 holeType = getString(ch);
              }
 
         }
@@ -14626,51 +13816,8 @@ mixin template IHole() {
     mixin IPrintStyle;
     mixin IPlacement;
     HoleClosed holeClosed;
-    HoleShape holeShape;
-    HoleType holeType;
-}
-/**
- * The hole element represents the symbols used for woodwind
- *     and brass fingerings as well as other notations. The content
- * of the optional hole-type element indicates what the hole
- * symbol represents in terms of instrument fingering or other
- * techniques. The hole-closed element represents whether the
- * hole is closed, open, or half-open. Valid element values are
- * yes, no, and half. The optional location attribute indicates
- * which portion of the hole is filled in when the element value
- * is half. The optional hole-shape element indicates the shape
- * of the hole symbol; the default is a circle.
- */
-export class HoleType {
-    mixin IHoleType;
-    this(xmlNodePtr node) {
-        for (auto ch = node.children.firstElement; ch; ch = ch.nextElement) {
-
-        }
-        for (auto ch = node.properties; ch; ch = ch.next) {
-
-        }
-            auto ch = node;
-                 data = getString(ch);
-    }
-
-}
-
-
-/**
- * The hole element represents the symbols used for woodwind
- *     and brass fingerings as well as other notations. The content
- * of the optional hole-type element indicates what the hole
- * symbol represents in terms of instrument fingering or other
- * techniques. The hole-closed element represents whether the
- * hole is closed, open, or half-open. Valid element values are
- * yes, no, and half. The optional location attribute indicates
- * which portion of the hole is filled in when the element value
- * is half. The optional hole-shape element indicates the shape
- * of the hole symbol; the default is a circle.
- */
-mixin template IHoleType() {
-    string data;
+    string holeShape;
+    string holeType;
 }
 export enum HoleLocation {
     Right = 0,
@@ -14762,49 +13909,6 @@ mixin template IHoleClosed() {
     HoleClosedType data;
 }
 /**
- * The hole element represents the symbols used for woodwind
- *     and brass fingerings as well as other notations. The content
- * of the optional hole-type element indicates what the hole
- * symbol represents in terms of instrument fingering or other
- * techniques. The hole-closed element represents whether the
- * hole is closed, open, or half-open. Valid element values are
- * yes, no, and half. The optional location attribute indicates
- * which portion of the hole is filled in when the element value
- * is half. The optional hole-shape element indicates the shape
- * of the hole symbol; the default is a circle.
- */
-export class HoleShape {
-    mixin IHoleShape;
-    this(xmlNodePtr node) {
-        for (auto ch = node.children.firstElement; ch; ch = ch.nextElement) {
-
-        }
-        for (auto ch = node.properties; ch; ch = ch.next) {
-
-        }
-            auto ch = node;
-                 data = getString(ch);
-    }
-
-}
-
-
-/**
- * The hole element represents the symbols used for woodwind
- *     and brass fingerings as well as other notations. The content
- * of the optional hole-type element indicates what the hole
- * symbol represents in terms of instrument fingering or other
- * techniques. The hole-closed element represents whether the
- * hole is closed, open, or half-open. Valid element values are
- * yes, no, and half. The optional location attribute indicates
- * which portion of the hole is filled in when the element value
- * is half. The optional hole-shape element indicates the shape
- * of the hole symbol; the default is a circle.
- */
-mixin template IHoleShape() {
-    string data;
-}
-/**
  * The arrow element represents an arrow used for a musical
  *     technical indication. Straight arrows are represented with
  * an arrow-direction element and an optional arrow-style
@@ -14832,13 +13936,13 @@ export class Arrow {
     this(xmlNodePtr node) {
         for (auto ch = node.children.firstElement; ch; ch = ch.nextElement) {
              if (ch.name.toString == "arrow-style") {
-                 arrowStyle = new ArrowStyle(ch) ;
+                 arrowStyle = getString(ch);
              }
              if (ch.name.toString == "arrow-direction") {
-                 arrowDirection = new ArrowDirection(ch) ;
+                 arrowDirection = getString(ch);
              }
              if (ch.name.toString == "circular-arrow") {
-                 circularArrow = new CircularArrow(ch) ;
+                 circularArrow = getString(ch);
              }
 
         }
@@ -14906,204 +14010,9 @@ export class Arrow {
 mixin template IArrow() {
     mixin IPrintStyle;
     mixin IPlacement;
-    ArrowStyle arrowStyle;
-    ArrowDirection arrowDirection;
-    CircularArrow circularArrow;
-}
-/**
- * The arrow element represents an arrow used for a musical
- *     technical indication. Straight arrows are represented with
- * an arrow-direction element and an optional arrow-style
- * element. Circular arrows are represented with a
- * circular-arrow element. Descriptive values use Unicode
- * arrow terminology.
- * 
- * Values for the arrow-direction element are left, up, right,
- * down, northwest, northeast, southeast, southwest, left right,
- * up down, northwest southeast, northeast southwest, and other.
- * 
- * Values for the arrow-style element are single, double,
- * filled, hollow, paired, combined, and other. Filled and
- * hollow arrows indicate polygonal single arrows. Paired
- * arrows are duplicate single arrows in the same direction.
- * Combined arrows apply to double direction arrows like
- * left right, indicating that an arrow in one direction
- * should be combined with an arrow in the other direction.
- * 
- * Values for the circular-arrow element are clockwise and
- * anticlockwise.
- */
-export class ArrowDirection {
-    mixin IArrowDirection;
-    this(xmlNodePtr node) {
-        for (auto ch = node.children.firstElement; ch; ch = ch.nextElement) {
-
-        }
-        for (auto ch = node.properties; ch; ch = ch.next) {
-
-        }
-            auto ch = node;
-                 data = getString(ch);
-    }
-
-}
-
-
-/**
- * The arrow element represents an arrow used for a musical
- *     technical indication. Straight arrows are represented with
- * an arrow-direction element and an optional arrow-style
- * element. Circular arrows are represented with a
- * circular-arrow element. Descriptive values use Unicode
- * arrow terminology.
- * 
- * Values for the arrow-direction element are left, up, right,
- * down, northwest, northeast, southeast, southwest, left right,
- * up down, northwest southeast, northeast southwest, and other.
- * 
- * Values for the arrow-style element are single, double,
- * filled, hollow, paired, combined, and other. Filled and
- * hollow arrows indicate polygonal single arrows. Paired
- * arrows are duplicate single arrows in the same direction.
- * Combined arrows apply to double direction arrows like
- * left right, indicating that an arrow in one direction
- * should be combined with an arrow in the other direction.
- * 
- * Values for the circular-arrow element are clockwise and
- * anticlockwise.
- */
-mixin template IArrowDirection() {
-    string data;
-}
-/**
- * The arrow element represents an arrow used for a musical
- *     technical indication. Straight arrows are represented with
- * an arrow-direction element and an optional arrow-style
- * element. Circular arrows are represented with a
- * circular-arrow element. Descriptive values use Unicode
- * arrow terminology.
- * 
- * Values for the arrow-direction element are left, up, right,
- * down, northwest, northeast, southeast, southwest, left right,
- * up down, northwest southeast, northeast southwest, and other.
- * 
- * Values for the arrow-style element are single, double,
- * filled, hollow, paired, combined, and other. Filled and
- * hollow arrows indicate polygonal single arrows. Paired
- * arrows are duplicate single arrows in the same direction.
- * Combined arrows apply to double direction arrows like
- * left right, indicating that an arrow in one direction
- * should be combined with an arrow in the other direction.
- * 
- * Values for the circular-arrow element are clockwise and
- * anticlockwise.
- */
-export class ArrowStyle {
-    mixin IArrowStyle;
-    this(xmlNodePtr node) {
-        for (auto ch = node.children.firstElement; ch; ch = ch.nextElement) {
-
-        }
-        for (auto ch = node.properties; ch; ch = ch.next) {
-
-        }
-            auto ch = node;
-                 data = getString(ch);
-    }
-
-}
-
-
-/**
- * The arrow element represents an arrow used for a musical
- *     technical indication. Straight arrows are represented with
- * an arrow-direction element and an optional arrow-style
- * element. Circular arrows are represented with a
- * circular-arrow element. Descriptive values use Unicode
- * arrow terminology.
- * 
- * Values for the arrow-direction element are left, up, right,
- * down, northwest, northeast, southeast, southwest, left right,
- * up down, northwest southeast, northeast southwest, and other.
- * 
- * Values for the arrow-style element are single, double,
- * filled, hollow, paired, combined, and other. Filled and
- * hollow arrows indicate polygonal single arrows. Paired
- * arrows are duplicate single arrows in the same direction.
- * Combined arrows apply to double direction arrows like
- * left right, indicating that an arrow in one direction
- * should be combined with an arrow in the other direction.
- * 
- * Values for the circular-arrow element are clockwise and
- * anticlockwise.
- */
-mixin template IArrowStyle() {
-    string data;
-}
-/**
- * The arrow element represents an arrow used for a musical
- *     technical indication. Straight arrows are represented with
- * an arrow-direction element and an optional arrow-style
- * element. Circular arrows are represented with a
- * circular-arrow element. Descriptive values use Unicode
- * arrow terminology.
- * 
- * Values for the arrow-direction element are left, up, right,
- * down, northwest, northeast, southeast, southwest, left right,
- * up down, northwest southeast, northeast southwest, and other.
- * 
- * Values for the arrow-style element are single, double,
- * filled, hollow, paired, combined, and other. Filled and
- * hollow arrows indicate polygonal single arrows. Paired
- * arrows are duplicate single arrows in the same direction.
- * Combined arrows apply to double direction arrows like
- * left right, indicating that an arrow in one direction
- * should be combined with an arrow in the other direction.
- * 
- * Values for the circular-arrow element are clockwise and
- * anticlockwise.
- */
-export class CircularArrow {
-    mixin ICircularArrow;
-    this(xmlNodePtr node) {
-        for (auto ch = node.children.firstElement; ch; ch = ch.nextElement) {
-
-        }
-        for (auto ch = node.properties; ch; ch = ch.next) {
-
-        }
-            auto ch = node;
-                 data = getString(ch);
-    }
-
-}
-
-
-/**
- * The arrow element represents an arrow used for a musical
- *     technical indication. Straight arrows are represented with
- * an arrow-direction element and an optional arrow-style
- * element. Circular arrows are represented with a
- * circular-arrow element. Descriptive values use Unicode
- * arrow terminology.
- * 
- * Values for the arrow-direction element are left, up, right,
- * down, northwest, northeast, southeast, southwest, left right,
- * up down, northwest southeast, northeast southwest, and other.
- * 
- * Values for the arrow-style element are single, double,
- * filled, hollow, paired, combined, and other. Filled and
- * hollow arrows indicate polygonal single arrows. Paired
- * arrows are duplicate single arrows in the same direction.
- * Combined arrows apply to double direction arrows like
- * left right, indicating that an arrow in one direction
- * should be combined with an arrow in the other direction.
- * 
- * Values for the circular-arrow element are clockwise and
- * anticlockwise.
- */
-mixin template ICircularArrow() {
-    string data;
+    string arrowStyle;
+    string arrowDirection;
+    string circularArrow;
 }
 /**
  * The handbell element represents notation for various
@@ -15250,7 +14159,7 @@ export class Articulations {
                  breathMark = new BreathMark(ch) ;
              }
              if (ch.name.toString == "other-articulation") {
-                 otherArticulation ~= new OtherArticulation(ch) ;
+                 otherArticulationArr ~= new OtherArticulation(ch) ;
              }
              if (ch.name.toString == "detached-legato") {
                  detachedLegato = new DetachedLegato(ch) ;
@@ -15305,7 +14214,7 @@ mixin template IArticulations() {
     Accent accent;
     Doit doit;
     BreathMark breathMark;
-    OtherArticulation[] otherArticulation;
+    OtherArticulation[] otherArticulationArr;
     DetachedLegato detachedLegato;
     Staccatissimo staccatissimo;
     Plop plop;
@@ -16496,10 +15405,10 @@ export class Lyric {
                  endLine = true;
              }
              if (ch.name.toString == "syllabic") {
-                 syllabic ~= new Syllabic(ch) ;
+                 syllabicArr ~= new Syllabic(ch) ;
              }
              if (ch.name.toString == "text") {
-                 text ~= new Text(ch) ;
+                 textArr ~= new Text(ch) ;
              }
              if (ch.name.toString == "laughing") {
                  laughing = true;
@@ -16517,7 +15426,7 @@ export class Lyric {
                  endParagraph = true;
              }
              if (ch.name.toString == "elision") {
-                 elision ~= new Elision(ch) ;
+                 elisionArr ~= new Elision(ch) ;
              }
 
         }
@@ -16596,13 +15505,13 @@ mixin template ILyric() {
     mixin IEditorial;
     Extend extend;
     bool endLine;
-    Syllabic[] syllabic;
-    Text[] text;
+    Syllabic[] syllabicArr;
+    Text[] textArr;
     bool laughing;
     bool humming;
     float number_;
     bool endParagraph;
-    Elision[] elision;
+    Elision[] elisionArr;
     string name;
 }
 export class Text {
@@ -16842,7 +15751,7 @@ export class FiguredBass {
                  level = new Level(ch) ;
              }
              if (ch.name.toString == "figure") {
-                 figure ~= new Figure(ch) ;
+                 figureArr ~= new Figure(ch) ;
              }
              if (ch.name.toString == "duration") {
                  duration = getNumber(ch);
@@ -16921,7 +15830,7 @@ mixin template IFiguredBass() {
     mixin IEditorial;
     mixin IPrintStyle;
     mixin IPrintout;
-    Figure[] figure;
+    Figure[] figureArr;
     float duration;
     YesNo parentheses;
 }
@@ -17200,7 +16109,7 @@ export class Forward {
     this(xmlNodePtr node) {
         for (auto ch = node.children.firstElement; ch; ch = ch.nextElement) {
              if (ch.name.toString == "voice") {
-                 voice = new Voice(ch) ;
+                 voice = getString(ch);
              }
              if (ch.name.toString == "footnote") {
                  footnote = new Footnote(ch) ;
@@ -17306,7 +16215,7 @@ export class Barline {
                  wavyLine = new WavyLine(ch) ;
              }
              if (ch.name.toString == "fermata") {
-                 fermata ~= new Fermata(ch) ;
+                 fermataArr ~= new Fermata(ch) ;
              }
              if (ch.name.toString == "bar-style") {
                  barStyle = new BarStyle(ch) ;
@@ -17374,7 +16283,7 @@ mixin template IBarline() {
     BarlineLocation location;
     string codaAttrib;
     WavyLine wavyLine;
-    Fermata[] fermata;
+    Fermata[] fermataArr;
     string segnoAttrib;
     string divisions;
     BarStyle barStyle;
@@ -17767,7 +16676,7 @@ export class Direction {
     this(xmlNodePtr node) {
         for (auto ch = node.children.firstElement; ch; ch = ch.nextElement) {
              if (ch.name.toString == "voice") {
-                 voice = new Voice(ch) ;
+                 voice = getString(ch);
              }
              if (ch.name.toString == "footnote") {
                  footnote = new Footnote(ch) ;
@@ -17776,7 +16685,7 @@ export class Direction {
                  level = new Level(ch) ;
              }
              if (ch.name.toString == "direction-type") {
-                 directionType ~= new DirectionType(ch) ;
+                 directionTypeArr ~= new DirectionType(ch) ;
              }
              if (ch.name.toString == "staff") {
                  staff = new Staff(ch) ;
@@ -17845,7 +16754,7 @@ mixin template IDirection() {
     mixin IEditorialVoice;
     mixin IPlacement;
     mixin IDirective;
-    DirectionType[] directionType;
+    DirectionType[] directionTypeArr;
     Staff staff;
     Offset offset;
     Sound sound;
@@ -17861,10 +16770,10 @@ export class DirectionType {
     this(xmlNodePtr node) {
         for (auto ch = node.children.firstElement; ch; ch = ch.nextElement) {
              if (ch.name.toString == "percussion") {
-                 percussion ~= new Percussion(ch) ;
+                 percussionArr ~= new Percussion(ch) ;
              }
              if (ch.name.toString == "rehearsal") {
-                 rehearsal ~= new Rehearsal(ch) ;
+                 rehearsalArr ~= new Rehearsal(ch) ;
              }
              if (ch.name.toString == "pedal") {
                  pedal = new Pedal(ch) ;
@@ -17891,7 +16800,7 @@ export class DirectionType {
                  otherDirection = new OtherDirection(ch) ;
              }
              if (ch.name.toString == "segno") {
-                 segno ~= new Segno(ch) ;
+                 segnoArr ~= new Segno(ch) ;
              }
              if (ch.name.toString == "scordatura") {
                  scordatura = new Scordatura(ch) ;
@@ -17918,13 +16827,13 @@ export class DirectionType {
                  octaveShift = new OctaveShift(ch) ;
              }
              if (ch.name.toString == "words") {
-                 words ~= new Words(ch) ;
+                 wordsArr ~= new Words(ch) ;
              }
              if (ch.name.toString == "damp-all") {
                  dampAll = new DampAll(ch) ;
              }
              if (ch.name.toString == "coda") {
-                 coda ~= new Coda(ch) ;
+                 codaArr ~= new Coda(ch) ;
              }
 
         }
@@ -17943,8 +16852,8 @@ export class DirectionType {
  * common.mod file.
  */
 mixin template IDirectionType() {
-    Percussion[] percussion;
-    Rehearsal[] rehearsal;
+    Percussion[] percussionArr;
+    Rehearsal[] rehearsalArr;
     Pedal pedal;
     PrincipalVoice principalVoice;
     AccordionRegistration accordionRegistration;
@@ -17953,7 +16862,7 @@ mixin template IDirectionType() {
     HarpPedals harpPedals;
     Metronome metronome;
     OtherDirection otherDirection;
-    Segno[] segno;
+    Segno[] segnoArr;
     Scordatura scordatura;
     StringMute stringMute;
     Wedge wedge;
@@ -17962,9 +16871,9 @@ mixin template IDirectionType() {
     Bracket bracket;
     Dynamics dynamics;
     OctaveShift octaveShift;
-    Words[] words;
+    Words[] wordsArr;
     DampAll dampAll;
-    Coda[] coda;
+    Coda[] codaArr;
 }
 /**
  * Language is Italian ("it") by default. Enclosure is
@@ -18570,19 +17479,19 @@ export class Metronome {
     this(xmlNodePtr node) {
         for (auto ch = node.children.firstElement; ch; ch = ch.nextElement) {
              if (ch.name.toString == "metronome-note") {
-                 metronomeNote ~= new MetronomeNote(ch) ;
+                 metronomeNoteArr ~= new MetronomeNote(ch) ;
              }
              if (ch.name.toString == "per-minute") {
                  perMinute = new PerMinute(ch) ;
              }
              if (ch.name.toString == "beat-unit") {
-                 beatUnit = new BeatUnit(ch) ;
+                 beatUnit = getString(ch);
              }
              if (ch.name.toString == "beat-unit-dot") {
-                 beatUnitDot ~= new BeatUnitDot(ch) ;
+                 beatUnitDotArr ~= new BeatUnitDot(ch) ;
              }
              if (ch.name.toString == "metronome-relation") {
-                 metronomeRelation = new MetronomeRelation(ch) ;
+                 metronomeRelation = getString(ch);
              }
 
         }
@@ -18668,34 +17577,12 @@ export class Metronome {
 mixin template IMetronome() {
     mixin IPrintStyleAlign;
     mixin IJustify;
-    MetronomeNote[] metronomeNote;
+    MetronomeNote[] metronomeNoteArr;
     PerMinute perMinute;
     YesNo parentheses;
-    BeatUnit beatUnit;
-    BeatUnitDot[] beatUnitDot;
-    MetronomeRelation metronomeRelation;
-}
-export class BeatUnit {
-    mixin IBeatUnit;
-    this(xmlNodePtr node) {
-        for (auto ch = node.children.firstElement; ch; ch = ch.nextElement) {
-
-        }
-        for (auto ch = node.properties; ch; ch = ch.next) {
-
-        }
-            auto ch = node;
-                 data = getString(ch);
-    }
-
-}
-
-
-/**
- * 
- */
-mixin template IBeatUnit() {
-    string data;
+    string beatUnit;
+    BeatUnitDot[] beatUnitDotArr;
+    string metronomeRelation;
 }
 export class BeatUnitDot {
     mixin IBeatUnitDot;
@@ -18757,13 +17644,13 @@ export class MetronomeNote {
     this(xmlNodePtr node) {
         for (auto ch = node.children.firstElement; ch; ch = ch.nextElement) {
              if (ch.name.toString == "metronome-dot") {
-                 metronomeDot ~= new MetronomeDot(ch) ;
+                 metronomeDotArr ~= new MetronomeDot(ch) ;
              }
              if (ch.name.toString == "metronome-beam") {
-                 metronomeBeam ~= new MetronomeBeam(ch) ;
+                 metronomeBeamArr ~= new MetronomeBeam(ch) ;
              }
              if (ch.name.toString == "metronome-type") {
-                 metronomeType = new MetronomeType(ch) ;
+                 metronomeType = getString(ch);
              }
              if (ch.name.toString == "metronome-tuplet") {
                  metronomeTuplet = new MetronomeTuplet(ch) ;
@@ -18782,54 +17669,10 @@ export class MetronomeNote {
  * 
  */
 mixin template IMetronomeNote() {
-    MetronomeDot[] metronomeDot;
-    MetronomeBeam[] metronomeBeam;
-    MetronomeType metronomeType;
+    MetronomeDot[] metronomeDotArr;
+    MetronomeBeam[] metronomeBeamArr;
+    string metronomeType;
     MetronomeTuplet metronomeTuplet;
-}
-export class MetronomeRelation {
-    mixin IMetronomeRelation;
-    this(xmlNodePtr node) {
-        for (auto ch = node.children.firstElement; ch; ch = ch.nextElement) {
-
-        }
-        for (auto ch = node.properties; ch; ch = ch.next) {
-
-        }
-            auto ch = node;
-                 data = getString(ch);
-    }
-
-}
-
-
-/**
- * 
- */
-mixin template IMetronomeRelation() {
-    string data;
-}
-export class MetronomeType {
-    mixin IMetronomeType;
-    this(xmlNodePtr node) {
-        for (auto ch = node.children.firstElement; ch; ch = ch.nextElement) {
-
-        }
-        for (auto ch = node.properties; ch; ch = ch.next) {
-
-        }
-            auto ch = node;
-                 data = getString(ch);
-    }
-
-}
-
-
-/**
- * 
- */
-mixin template IMetronomeType() {
-    string data;
 }
 export class MetronomeDot {
     mixin IMetronomeDot;
@@ -18885,13 +17728,13 @@ export class MetronomeTuplet {
                  actualNotes = new ActualNotes(ch) ;
              }
              if (ch.name.toString == "normal-type") {
-                 normalType = new NormalType(ch) ;
+                 normalType = getString(ch);
              }
              if (ch.name.toString == "normal-notes") {
                  normalNotes = new NormalNotes(ch) ;
              }
              if (ch.name.toString == "normal-dot") {
-                 normalDot ~= new NormalDot(ch) ;
+                 normalDotArr ~= new NormalDot(ch) ;
              }
 
         }
@@ -18919,10 +17762,10 @@ mixin template IMetronomeTuplet() {
     ActualNotes actualNotes;
     YesNo bracket;
     ActualBothNone showNumber;
-    NormalType normalType;
+    string normalType;
     StartStop type;
     NormalNotes normalNotes;
-    NormalDot[] normalDot;
+    NormalDot[] normalDotArr;
 }
 export enum OctaveShiftType {
     Down = 2,
@@ -19039,7 +17882,7 @@ export class HarpPedals {
     this(xmlNodePtr node) {
         for (auto ch = node.children.firstElement; ch; ch = ch.nextElement) {
              if (ch.name.toString == "pedal-tuning") {
-                 pedalTuning ~= new PedalTuning(ch) ;
+                 pedalTuningArr ~= new PedalTuning(ch) ;
              }
 
         }
@@ -19094,17 +17937,17 @@ export class HarpPedals {
  */
 mixin template IHarpPedals() {
     mixin IPrintStyleAlign;
-    PedalTuning[] pedalTuning;
+    PedalTuning[] pedalTuningArr;
 }
 export class PedalTuning {
     mixin IPedalTuning;
     this(xmlNodePtr node) {
         for (auto ch = node.children.firstElement; ch; ch = ch.nextElement) {
              if (ch.name.toString == "pedal-step") {
-                 pedalStep = new PedalStep(ch) ;
+                 pedalStep = getString(ch);
              }
              if (ch.name.toString == "pedal-alter") {
-                 pedalAlter = new PedalAlter(ch) ;
+                 pedalAlter = getString(ch);
              }
 
         }
@@ -19120,52 +17963,8 @@ export class PedalTuning {
  * 
  */
 mixin template IPedalTuning() {
-    PedalStep pedalStep;
-    PedalAlter pedalAlter;
-}
-export class PedalStep {
-    mixin IPedalStep;
-    this(xmlNodePtr node) {
-        for (auto ch = node.children.firstElement; ch; ch = ch.nextElement) {
-
-        }
-        for (auto ch = node.properties; ch; ch = ch.next) {
-
-        }
-            auto ch = node;
-                 data = getString(ch);
-    }
-
-}
-
-
-/**
- * 
- */
-mixin template IPedalStep() {
-    string data;
-}
-export class PedalAlter {
-    mixin IPedalAlter;
-    this(xmlNodePtr node) {
-        for (auto ch = node.children.firstElement; ch; ch = ch.nextElement) {
-
-        }
-        for (auto ch = node.properties; ch; ch = ch.next) {
-
-        }
-            auto ch = node;
-                 data = getString(ch);
-    }
-
-}
-
-
-/**
- * 
- */
-mixin template IPedalAlter() {
-    string data;
+    string pedalStep;
+    string pedalAlter;
 }
 /**
  * Harp damping marks
@@ -19401,7 +18200,7 @@ export class Scordatura {
     this(xmlNodePtr node) {
         for (auto ch = node.children.firstElement; ch; ch = ch.nextElement) {
              if (ch.name.toString == "accord") {
-                 accord ~= new Accord(ch) ;
+                 accordArr ~= new Accord(ch) ;
              }
 
         }
@@ -19421,7 +18220,7 @@ export class Scordatura {
  * file. Strings are numbered from high to low.
  */
 mixin template IScordatura() {
-    Accord[] accord;
+    Accord[] accordArr;
 }
 /**
  * Scordatura string tunings are represented by a series
@@ -19438,7 +18237,7 @@ export class Accord {
                  tuningAlter = new TuningAlter(ch) ;
              }
              if (ch.name.toString == "tuning-step") {
-                 tuningStep = new TuningStep(ch) ;
+                 tuningStep = getString(ch);
              }
              if (ch.name.toString == "tuning-octave") {
                  tuningOctave = new TuningOctave(ch) ;
@@ -19466,7 +18265,7 @@ export class Accord {
 mixin template IAccord() {
     TuningAlter tuningAlter;
     string string_;
-    TuningStep tuningStep;
+    string tuningStep;
     TuningOctave tuningOctave;
 }
 /**
@@ -19655,7 +18454,7 @@ export class AccordionRegistration {
     this(xmlNodePtr node) {
         for (auto ch = node.children.firstElement; ch; ch = ch.nextElement) {
              if (ch.name.toString == "accordion-middle") {
-                 accordionMiddle = new AccordionMiddle(ch) ;
+                 accordionMiddle = getString(ch);
              }
              if (ch.name.toString == "accordion-high") {
                  accordionHigh = true;
@@ -19720,32 +18519,9 @@ export class AccordionRegistration {
  */
 mixin template IAccordionRegistration() {
     mixin IPrintStyleAlign;
-    AccordionMiddle accordionMiddle;
+    string accordionMiddle;
     bool accordionHigh;
     bool accordionLow;
-}
-export class AccordionMiddle {
-    mixin IAccordionMiddle;
-    this(xmlNodePtr node) {
-        for (auto ch = node.children.firstElement; ch; ch = ch.nextElement) {
-
-        }
-        for (auto ch = node.properties; ch; ch = ch.next) {
-             if (ch.name.toString == "data") {
-                 data = getString(ch);
-             }
-
-        }
-    }
-
-}
-
-
-/**
- * 
- */
-mixin template IAccordionMiddle() {
-    string data;
 }
 /**
  * The percussion element is used to define percussion
@@ -19760,19 +18536,19 @@ export class Percussion {
     this(xmlNodePtr node) {
         for (auto ch = node.children.firstElement; ch; ch = ch.nextElement) {
              if (ch.name.toString == "stick-location") {
-                 stickLocation = new StickLocation(ch) ;
+                 stickLocation = getString(ch);
              }
              if (ch.name.toString == "other-percussion") {
-                 otherPercussion = new OtherPercussion(ch) ;
+                 otherPercussion = getString(ch);
              }
              if (ch.name.toString == "wood") {
-                 wood = new Wood(ch) ;
+                 wood = getString(ch);
              }
              if (ch.name.toString == "effect") {
-                 effect = new Effect(ch) ;
+                 effect = getString(ch);
              }
              if (ch.name.toString == "glass") {
-                 glass = new Glass(ch) ;
+                 glass = getString(ch);
              }
              if (ch.name.toString == "timpani") {
                  timpani = new Timpani(ch) ;
@@ -19781,13 +18557,13 @@ export class Percussion {
                  stick = new Stick(ch) ;
              }
              if (ch.name.toString == "metal") {
-                 metal = new Metal(ch) ;
+                 metal = getString(ch);
              }
              if (ch.name.toString == "pitched") {
-                 pitched = new Pitched(ch) ;
+                 pitched = getString(ch);
              }
              if (ch.name.toString == "membrane") {
-                 membrane = new Membrane(ch) ;
+                 membrane = getString(ch);
              }
              if (ch.name.toString == "beater") {
                  beater = new Beater(ch) ;
@@ -19849,233 +18625,17 @@ export class Percussion {
 mixin template IPercussion() {
     mixin IPrintStyleAlign;
     mixin IEnclosure;
-    StickLocation stickLocation;
-    OtherPercussion otherPercussion;
-    Wood wood;
-    Effect effect;
-    Glass glass;
+    string stickLocation;
+    string otherPercussion;
+    string wood;
+    string effect;
+    string glass;
     Timpani timpani;
     Stick stick;
-    Metal metal;
-    Pitched pitched;
-    Membrane membrane;
+    string metal;
+    string pitched;
+    string membrane;
     Beater beater;
-}
-/**
- * The glass element represents pictograms for glass
- *     percussion instruments. The one valid value is
- * wind chimes.
- */
-export class Glass {
-    mixin IGlass;
-    this(xmlNodePtr node) {
-        for (auto ch = node.children.firstElement; ch; ch = ch.nextElement) {
-
-        }
-        for (auto ch = node.properties; ch; ch = ch.next) {
-
-        }
-            auto ch = node;
-                 data = getString(ch);
-    }
-
-}
-
-
-/**
- * The glass element represents pictograms for glass
- *     percussion instruments. The one valid value is
- * wind chimes.
- */
-mixin template IGlass() {
-    string data;
-}
-/**
- * The metal element represents pictograms for metal
- *     percussion instruments. Valid values are almglocken, bell,
- * bell plate, brake drum, Chinese cymbal, cowbell,
- * crash cymbals, crotale, cymbal tongs, domed gong,
- * finger cymbals, flexatone, gong, hi-hat, high-hat cymbals,
- * handbell, sistrum, sizzle cymbal, sleigh bells,
- * suspended cymbal, tam tam, triangle, and Vietnamese hat.
- * The hi-hat value refers to a pictogram like Stone's
- * high-hat cymbals, but without the long vertical line
- * at the bottom.
- */
-export class Metal {
-    mixin IMetal;
-    this(xmlNodePtr node) {
-        for (auto ch = node.children.firstElement; ch; ch = ch.nextElement) {
-
-        }
-        for (auto ch = node.properties; ch; ch = ch.next) {
-
-        }
-            auto ch = node;
-                 data = getString(ch);
-    }
-
-}
-
-
-/**
- * The metal element represents pictograms for metal
- *     percussion instruments. Valid values are almglocken, bell,
- * bell plate, brake drum, Chinese cymbal, cowbell,
- * crash cymbals, crotale, cymbal tongs, domed gong,
- * finger cymbals, flexatone, gong, hi-hat, high-hat cymbals,
- * handbell, sistrum, sizzle cymbal, sleigh bells,
- * suspended cymbal, tam tam, triangle, and Vietnamese hat.
- * The hi-hat value refers to a pictogram like Stone's
- * high-hat cymbals, but without the long vertical line
- * at the bottom.
- */
-mixin template IMetal() {
-    string data;
-}
-/**
- * The wood element represents pictograms for wood
- *     percussion instruments. Valid values are board clapper,
- * cabasa, castanets, claves, guiro, log drum, maraca,
- * maracas, ratchet, sandpaper blocks, slit drum,
- * temple block, vibraslap, and wood block. The maraca
- * and maracas values distinguish the one- and two-maraca
- * versions of the pictogram. The castanets and vibraslap
- * values are in addition to Stone's list.
- */
-export class Wood {
-    mixin IWood;
-    this(xmlNodePtr node) {
-        for (auto ch = node.children.firstElement; ch; ch = ch.nextElement) {
-
-        }
-        for (auto ch = node.properties; ch; ch = ch.next) {
-
-        }
-            auto ch = node;
-                 data = getString(ch);
-    }
-
-}
-
-
-/**
- * The wood element represents pictograms for wood
- *     percussion instruments. Valid values are board clapper,
- * cabasa, castanets, claves, guiro, log drum, maraca,
- * maracas, ratchet, sandpaper blocks, slit drum,
- * temple block, vibraslap, and wood block. The maraca
- * and maracas values distinguish the one- and two-maraca
- * versions of the pictogram. The castanets and vibraslap
- * values are in addition to Stone's list.
- */
-mixin template IWood() {
-    string data;
-}
-/**
- * The pitched element represents pictograms for pitched
- *     percussion instruments. Valid values are chimes,
- * glockenspiel, mallet, marimba, tubular chimes, vibraphone,
- * and xylophone. The chimes and tubular chimes values
- * distinguish the single-line and double-line versions of the
- * pictogram. The mallet value is in addition to Stone's list.
- */
-export class Pitched {
-    mixin IPitched;
-    this(xmlNodePtr node) {
-        for (auto ch = node.children.firstElement; ch; ch = ch.nextElement) {
-
-        }
-        for (auto ch = node.properties; ch; ch = ch.next) {
-
-        }
-            auto ch = node;
-                 data = getString(ch);
-    }
-
-}
-
-
-/**
- * The pitched element represents pictograms for pitched
- *     percussion instruments. Valid values are chimes,
- * glockenspiel, mallet, marimba, tubular chimes, vibraphone,
- * and xylophone. The chimes and tubular chimes values
- * distinguish the single-line and double-line versions of the
- * pictogram. The mallet value is in addition to Stone's list.
- */
-mixin template IPitched() {
-    string data;
-}
-/**
- * The membrane element represents pictograms for membrane
- *     percussion instruments. Valid values are bass drum,
- * bass drum on side, bongos, conga drum, goblet drum,
- * military drum, snare drum, snare drum snares off,
- * tambourine, tenor drum, timbales, and tomtom. The
- * goblet drum value is in addition to Stone's list.
- */
-export class Membrane {
-    mixin IMembrane;
-    this(xmlNodePtr node) {
-        for (auto ch = node.children.firstElement; ch; ch = ch.nextElement) {
-
-        }
-        for (auto ch = node.properties; ch; ch = ch.next) {
-
-        }
-            auto ch = node;
-                 data = getString(ch);
-    }
-
-}
-
-
-/**
- * The membrane element represents pictograms for membrane
- *     percussion instruments. Valid values are bass drum,
- * bass drum on side, bongos, conga drum, goblet drum,
- * military drum, snare drum, snare drum snares off,
- * tambourine, tenor drum, timbales, and tomtom. The
- * goblet drum value is in addition to Stone's list.
- */
-mixin template IMembrane() {
-    string data;
-}
-/**
- * The effect element represents pictograms for sound effect
- *     percussion instruments. Valid values are anvil, auto horn,
- * bird whistle, cannon, duck call, gun shot, klaxon horn,
- * lions roar, police whistle, siren, slide whistle,
- * thunder sheet, wind machine, and wind whistle. The cannon
- * value is in addition to Stone's list.
- */
-export class Effect {
-    mixin IEffect;
-    this(xmlNodePtr node) {
-        for (auto ch = node.children.firstElement; ch; ch = ch.nextElement) {
-
-        }
-        for (auto ch = node.properties; ch; ch = ch.next) {
-
-        }
-            auto ch = node;
-                 data = getString(ch);
-    }
-
-}
-
-
-/**
- * The effect element represents pictograms for sound effect
- *     percussion instruments. Valid values are anvil, auto horn,
- * bird whistle, cannon, duck call, gun shot, klaxon horn,
- * lions roar, police whistle, siren, slide whistle,
- * thunder sheet, wind machine, and wind whistle. The cannon
- * value is in addition to Stone's list.
- */
-mixin template IEffect() {
-    string data;
 }
 /**
  * The timpani element represents the timpani pictogram.
@@ -20168,10 +18728,10 @@ export class Stick {
     this(xmlNodePtr node) {
         for (auto ch = node.children.firstElement; ch; ch = ch.nextElement) {
              if (ch.name.toString == "stick-material") {
-                 stickMaterial = new StickMaterial(ch) ;
+                 stickMaterial = getString(ch);
              }
              if (ch.name.toString == "stick-type") {
-                 stickType = new StickType(ch) ;
+                 stickType = getString(ch);
              }
 
         }
@@ -20197,180 +18757,9 @@ export class Stick {
  * the direction in which the tip of a stick points.
  */
 mixin template IStick() {
-    StickMaterial stickMaterial;
-    StickType stickType;
+    string stickMaterial;
+    string stickType;
     TipDirection tip;
-}
-export class StickType {
-    mixin IStickType;
-    this(xmlNodePtr node) {
-        for (auto ch = node.children.firstElement; ch; ch = ch.nextElement) {
-
-        }
-        for (auto ch = node.properties; ch; ch = ch.next) {
-
-        }
-            auto ch = node;
-                 data = getString(ch);
-    }
-
-}
-
-
-/**
- * 
- */
-mixin template IStickType() {
-    string data;
-}
-export class StickMaterial {
-    mixin IStickMaterial;
-    this(xmlNodePtr node) {
-        for (auto ch = node.children.firstElement; ch; ch = ch.nextElement) {
-
-        }
-        for (auto ch = node.properties; ch; ch = ch.next) {
-
-        }
-            auto ch = node;
-                 data = getString(ch);
-    }
-
-}
-
-
-/**
- * 
- */
-mixin template IStickMaterial() {
-    string data;
-}
-/**
- * The stick-location element represents pictograms for the
- *     location of sticks, beaters, or mallets on cymbals, gongs,
- * drums, and other instruments. Valid values are center,
- * rim, cymbal bell, and cymbal edge.
- */
-export class StickLocation {
-    mixin IStickLocation;
-    this(xmlNodePtr node) {
-        for (auto ch = node.children.firstElement; ch; ch = ch.nextElement) {
-
-        }
-        for (auto ch = node.properties; ch; ch = ch.next) {
-
-        }
-            auto ch = node;
-                 data = getString(ch);
-    }
-
-}
-
-
-/**
- * The stick-location element represents pictograms for the
- *     location of sticks, beaters, or mallets on cymbals, gongs,
- * drums, and other instruments. Valid values are center,
- * rim, cymbal bell, and cymbal edge.
- */
-mixin template IStickLocation() {
-    string data;
-}
-/**
- * The other-percussion element represents percussion
- *     pictograms not defined elsewhere.
- */
-export class OtherPercussion {
-    mixin IOtherPercussion;
-    this(xmlNodePtr node) {
-        for (auto ch = node.children.firstElement; ch; ch = ch.nextElement) {
-
-        }
-        for (auto ch = node.properties; ch; ch = ch.next) {
-
-        }
-            auto ch = node;
-                 data = getString(ch);
-    }
-
-}
-
-
-/**
- * The other-percussion element represents percussion
- *     pictograms not defined elsewhere.
- */
-mixin template IOtherPercussion() {
-    string data;
-}
-/**
- * The other-direction element is used to define any direction
- *     symbols not yet in the current version of the MusicXML
- * format. This allows extended representation, though without
- * application interoperability.
- */
-export class OtherDirection {
-    mixin IOtherDirection;
-    this(xmlNodePtr node) {
-        for (auto ch = node.children.firstElement; ch; ch = ch.nextElement) {
-
-        }
-        for (auto ch = node.properties; ch; ch = ch.next) {
-             if (ch.name.toString == "print-object") {
-                 printObject = getYesNo(ch);
-             }
-             if (ch.name.toString == "default-x") {
-                 defaultX = getNumber(ch);
-             }
-             if (ch.name.toString == "relative-y") {
-                 relativeY = getNumber(ch);
-             }
-             if (ch.name.toString == "default-y") {
-                 defaultY = getNumber(ch);
-             }
-             if (ch.name.toString == "relative-x") {
-                 relativeX = getNumber(ch);
-             }
-             if (ch.name.toString == "font-family") {
-                 fontFamily = getString(ch);
-             }
-             if (ch.name.toString == "font-weight") {
-                 fontWeight = getNormalBold(ch);
-             }
-             if (ch.name.toString == "font-style") {
-                 fontStyle = getNormalItalic(ch);
-             }
-             if (ch.name.toString == "font-size") {
-                 fontSize = getNumber(ch);
-             }
-             if (ch.name.toString == "color") {
-                 color = getString(ch);
-             }
-             if (ch.name.toString == "halign") {
-                 halign = getLeftCenterRight(ch);
-             }
-             if (ch.name.toString == "valign") {
-                 valign = getTopMiddleBottomBaseline(ch);
-             }
-
-        }
-            auto ch = node;
-                 data = getString(ch);
-    }
-
-}
-
-
-/**
- * The other-direction element is used to define any direction
- *     symbols not yet in the current version of the MusicXML
- * format. This allows extended representation, though without
- * application interoperability.
- */
-mixin template IOtherDirection() {
-    mixin IPrintObject;
-    mixin IPrintStyleAlign;
-    string data;
 }
 /**
  * An offset is represented in terms of divisions, and
@@ -20611,7 +19000,7 @@ export class Harmony {
                  placement = getAboveBelow(ch);
              }
              if (ch.name.toString == "type") {
-                 type = getExplicitImpliedAlternate(ch);
+                 harmonyType = getExplicitImpliedAlternate(ch);
              }
 
         }
@@ -20632,7 +19021,7 @@ mixin template IHarmony() {
     Frame frame;
     YesNo printFrame;
     Staff staff;
-    ExplicitImpliedAlternate type;
+    ExplicitImpliedAlternate harmonyType;
     Offset offset;
 }
 /**
@@ -21636,13 +20025,13 @@ export class Frame {
     this(xmlNodePtr node) {
         for (auto ch = node.children.firstElement; ch; ch = ch.nextElement) {
              if (ch.name.toString == "frame-strings") {
-                 frameStrings = new FrameStrings(ch) ;
+                 frameStrings = getString(ch);
              }
              if (ch.name.toString == "frame-note") {
-                 frameNote ~= new FrameNote(ch) ;
+                 frameNoteArr ~= new FrameNote(ch) ;
              }
              if (ch.name.toString == "frame-frets") {
-                 frameFrets = new FrameFrets(ch) ;
+                 frameFrets = getString(ch);
              }
              if (ch.name.toString == "first-fret") {
                  firstFret = new FirstFret(ch) ;
@@ -21706,57 +20095,13 @@ mixin template IFrame() {
     mixin IColor;
     mixin IHalign;
     mixin IValignImage;
-    FrameStrings frameStrings;
-    FrameNote[] frameNote;
+    string frameStrings;
+    FrameNote[] frameNoteArr;
     string unplayed;
-    FrameFrets frameFrets;
+    string frameFrets;
     FirstFret firstFret;
     float width;
     float height;
-}
-export class FrameStrings {
-    mixin IFrameStrings;
-    this(xmlNodePtr node) {
-        for (auto ch = node.children.firstElement; ch; ch = ch.nextElement) {
-
-        }
-        for (auto ch = node.properties; ch; ch = ch.next) {
-
-        }
-            auto ch = node;
-                 data = getString(ch);
-    }
-
-}
-
-
-/**
- * 
- */
-mixin template IFrameStrings() {
-    string data;
-}
-export class FrameFrets {
-    mixin IFrameFrets;
-    this(xmlNodePtr node) {
-        for (auto ch = node.children.firstElement; ch; ch = ch.nextElement) {
-
-        }
-        for (auto ch = node.properties; ch; ch = ch.next) {
-
-        }
-            auto ch = node;
-                 data = getString(ch);
-    }
-
-}
-
-
-/**
- * 
- */
-mixin template IFrameFrets() {
-    string data;
 }
 /**
  * The first-fret indicates which fret is shown in the top
@@ -21904,7 +20249,7 @@ export class Grouping {
     this(xmlNodePtr node) {
         for (auto ch = node.children.firstElement; ch; ch = ch.nextElement) {
              if (ch.name.toString == "feature") {
-                 feature ~= new Feature(ch) ;
+                 featureArr ~= new Feature(ch) ;
              }
 
         }
@@ -21913,7 +20258,7 @@ export class Grouping {
                  number_ = getNumber(ch);
              }
              if (ch.name.toString == "type") {
-                 type = getStartStopSingle(ch);
+                 groupingType = getStartStopSingle(ch);
              }
              if (ch.name.toString == "member-of") {
                  memberOf = getString(ch);
@@ -21940,9 +20285,9 @@ export class Grouping {
  * data, allowing for easier data sharing.
  */
 mixin template IGrouping() {
-    Feature[] feature;
+    Feature[] featureArr;
     float number_;
-    StartStopSingle type;
+    StartStopSingle groupingType;
     string memberOf;
 }
 export class Feature {
@@ -22030,7 +20375,7 @@ export class Print {
                  systemLayout = new SystemLayout(ch) ;
              }
              if (ch.name.toString == "staff-layout") {
-                 staffLayout ~= getNumber(ch);
+                 staffLayoutArr ~= getNumber(ch);
              }
 
         }
@@ -22104,7 +20449,7 @@ mixin template IPrint() {
     PageLayout pageLayout;
     SystemLayout systemLayout;
     float staffSpacing;
-    float[] staffLayout;
+    float[] staffLayoutArr;
     string pageNumber;
 }
 /**
@@ -22267,7 +20612,7 @@ export class Sound {
                  midiInstrument = new MidiInstrument(ch) ;
              }
              if (ch.name.toString == "play") {
-                 play ~= new Play(ch) ;
+                 playArr ~= new Play(ch) ;
              }
              if (ch.name.toString == "offset") {
                  offset = new Offset(ch) ;
@@ -22434,7 +20779,7 @@ mixin template ISound() {
     string fine;
     YesNo damperPedal;
     string dynamics;
-    Play[] play;
+    Play[] playArr;
     Offset offset;
     YesNo sostenutoPedal;
     string dalsegno;
@@ -22453,10 +20798,10 @@ export class Work {
     this(xmlNodePtr node) {
         for (auto ch = node.children.firstElement; ch; ch = ch.nextElement) {
              if (ch.name.toString == "work-number") {
-                 workNumber = new WorkNumber(ch) ;
+                 workNumber = getString(ch);
              }
              if (ch.name.toString == "work-title") {
-                 workTitle = new WorkTitle(ch) ;
+                 workTitle = getString(ch);
              }
              if (ch.name.toString == "opus") {
                  opus = new Opus(ch) ;
@@ -22478,71 +20823,9 @@ export class Work {
  * into a collection.
  */
 mixin template IWork() {
-    WorkNumber workNumber;
-    WorkTitle workTitle;
+    string workNumber;
+    string workTitle;
     Opus opus;
-}
-/**
- *     Works and movements are optionally identified by number
- * and title. The work element also may indicate a link
- * to the opus document that composes multiple movements
- * into a collection.
- */
-export class WorkNumber {
-    mixin IWorkNumber;
-    this(xmlNodePtr node) {
-        for (auto ch = node.children.firstElement; ch; ch = ch.nextElement) {
-
-        }
-        for (auto ch = node.properties; ch; ch = ch.next) {
-
-        }
-            auto ch = node;
-                 number_ = getString(ch);
-    }
-
-}
-
-
-/**
- *     Works and movements are optionally identified by number
- * and title. The work element also may indicate a link
- * to the opus document that composes multiple movements
- * into a collection.
- */
-mixin template IWorkNumber() {
-    string number_;
-}
-/**
- *     Works and movements are optionally identified by number
- * and title. The work element also may indicate a link
- * to the opus document that composes multiple movements
- * into a collection.
- */
-export class WorkTitle {
-    mixin IWorkTitle;
-    this(xmlNodePtr node) {
-        for (auto ch = node.children.firstElement; ch; ch = ch.nextElement) {
-
-        }
-        for (auto ch = node.properties; ch; ch = ch.next) {
-
-        }
-            auto ch = node;
-                 title = getString(ch);
-    }
-
-}
-
-
-/**
- *     Works and movements are optionally identified by number
- * and title. The work element also may indicate a link
- * to the opus document that composes multiple movements
- * into a collection.
- */
-mixin template IWorkTitle() {
-    string title;
 }
 export class Opus {
     mixin IOpus;
@@ -22565,68 +20848,6 @@ mixin template IOpus() {
 
 }
 /**
- *     Works and movements are optionally identified by number
- * and title. The work element also may indicate a link
- * to the opus document that composes multiple movements
- * into a collection.
- */
-export class MovementNumber {
-    mixin IMovementNumber;
-    this(xmlNodePtr node) {
-        for (auto ch = node.children.firstElement; ch; ch = ch.nextElement) {
-
-        }
-        for (auto ch = node.properties; ch; ch = ch.next) {
-
-        }
-            auto ch = node;
-                 number_ = getString(ch);
-    }
-
-}
-
-
-/**
- *     Works and movements are optionally identified by number
- * and title. The work element also may indicate a link
- * to the opus document that composes multiple movements
- * into a collection.
- */
-mixin template IMovementNumber() {
-    string number_;
-}
-/**
- *     Works and movements are optionally identified by number
- * and title. The work element also may indicate a link
- * to the opus document that composes multiple movements
- * into a collection.
- */
-export class MovementTitle {
-    mixin IMovementTitle;
-    this(xmlNodePtr node) {
-        for (auto ch = node.children.firstElement; ch; ch = ch.nextElement) {
-
-        }
-        for (auto ch = node.properties; ch; ch = ch.next) {
-
-        }
-            auto ch = node;
-                 title = getString(ch);
-    }
-
-}
-
-
-/**
- *     Works and movements are optionally identified by number
- * and title. The work element also may indicate a link
- * to the opus document that composes multiple movements
- * into a collection.
- */
-mixin template IMovementTitle() {
-    string title;
-}
-/**
  *     Collect score-wide defaults. This includes scaling
  * and layout, defined in layout.mod, and default values
  * for the music font, word font, lyric font, and
@@ -22645,10 +20866,10 @@ export class Defaults {
                  wordFont = new WordFont(ch) ;
              }
              if (ch.name.toString == "lyric-language") {
-                 lyricLanguage ~= new LyricLanguage(ch) ;
+                 lyricLanguageArr ~= new LyricLanguage(ch) ;
              }
              if (ch.name.toString == "lyric-font") {
-                 lyricFont ~= new LyricFont(ch) ;
+                 lyricFontArr ~= new LyricFont(ch) ;
              }
              if (ch.name.toString == "page-layout") {
                  pageLayout = new PageLayout(ch) ;
@@ -22663,7 +20884,7 @@ export class Defaults {
                  scaling = new Scaling(ch) ;
              }
              if (ch.name.toString == "staff-layout") {
-                 staffLayout ~= getNumber(ch);
+                 staffLayoutArr ~= getNumber(ch);
              }
              if (ch.name.toString == "music-font") {
                  musicFont = new MusicFont(ch) ;
@@ -22691,13 +20912,13 @@ export class Defaults {
  */
 mixin template IDefaults() {
     WordFont wordFont;
-    LyricLanguage[] lyricLanguage;
-    LyricFont[] lyricFont;
+    LyricLanguage[] lyricLanguageArr;
+    LyricFont[] lyricFontArr;
     PageLayout pageLayout;
     SystemLayout systemLayout;
     Appearance appearance;
     Scaling scaling;
-    float[] staffLayout;
+    float[] staffLayoutArr;
     MusicFont musicFont;
 }
 export class MusicFont {
@@ -22868,10 +21089,10 @@ export class Credit {
     this(xmlNodePtr node) {
         for (auto ch = node.children.firstElement; ch; ch = ch.nextElement) {
              if (ch.name.toString == "credit-type") {
-                 creditType ~= new CreditType(ch) ;
+                 creditTypeArr ~= getString(ch);
              }
              if (ch.name.toString == "credit-words") {
-                 creditWords ~= new CreditWords(ch) ;
+                 creditWordsArr ~= new CreditWords(ch) ;
              }
              if (ch.name.toString == "credit-image") {
                  creditImage = new CreditImage(ch) ;
@@ -22920,32 +21141,10 @@ export class Credit {
  * composer, arranger, lyricist, and rights.
  */
 mixin template ICredit() {
-    CreditType[] creditType;
-    CreditWords[] creditWords;
+    string[] creditTypeArr;
+    CreditWords[] creditWordsArr;
     CreditImage creditImage;
     float page;
-}
-export class CreditType {
-    mixin ICreditType;
-    this(xmlNodePtr node) {
-        for (auto ch = node.children.firstElement; ch; ch = ch.nextElement) {
-
-        }
-        for (auto ch = node.properties; ch; ch = ch.next) {
-
-        }
-            auto ch = node;
-                 type = getString(ch);
-    }
-
-}
-
-
-/**
- * 
- */
-mixin template ICreditType() {
-    string type;
 }
 export class CreditWords {
     mixin ICreditWords;
@@ -23107,10 +21306,10 @@ export class PartList {
     this(xmlNodePtr node) {
         for (auto ch = node.children.firstElement; ch; ch = ch.nextElement) {
              if (ch.name.toString == "score-part") {
-                 scorePart ~= new ScorePart(ch) ;
+                 scorePartArr ~= new ScorePart(ch) ;
              }
              if (ch.name.toString == "part-group") {
-                 partGroup ~= new PartGroup(ch) ;
+                 partGroupArr ~= new PartGroup(ch) ;
              }
 
         }
@@ -23147,8 +21346,8 @@ export class PartList {
  * be used within both the score-part and print elements.
  */
 mixin template IPartList() {
-    ScorePart[] scorePart;
-    PartGroup[] partGroup;
+    ScorePart[] scorePartArr;
+    PartGroup[] partGroupArr;
 }
 export class ScorePart {
     mixin IScorePart;
@@ -23161,10 +21360,10 @@ export class ScorePart {
                  partNameDisplay = new PartNameDisplay(ch) ;
              }
              if (ch.name.toString == "score-instrument") {
-                 scoreInstrument ~= new ScoreInstrument(ch) ;
+                 scoreInstrumentArr ~= new ScoreInstrument(ch) ;
              }
              if (ch.name.toString == "midi-device") {
-                 midiDevice ~= new MidiDevice(ch) ;
+                 midiDeviceArr ~= new MidiDevice(ch) ;
              }
              if (ch.name.toString == "part-name") {
                  partName = new PartName(ch) ;
@@ -23176,10 +21375,10 @@ export class ScorePart {
                  partAbbreviation = new PartAbbreviation(ch) ;
              }
              if (ch.name.toString == "group") {
-                 group ~= new Group(ch) ;
+                 groupArr ~= getString(ch);
              }
              if (ch.name.toString == "midi-instrument") {
-                 midiInstrument ~= new MidiInstrument(ch) ;
+                 midiInstrumentArr ~= new MidiInstrument(ch) ;
              }
 
         }
@@ -23200,13 +21399,13 @@ export class ScorePart {
 mixin template IScorePart() {
     Identification identification;
     PartNameDisplay partNameDisplay;
-    ScoreInstrument[] scoreInstrument;
-    MidiDevice[] midiDevice;
+    ScoreInstrument[] scoreInstrumentArr;
+    MidiDevice[] midiDeviceArr;
     PartName partName;
     PartAbbreviationDisplay partAbbreviationDisplay;
     PartAbbreviation partAbbreviation;
-    Group[] group;
-    MidiInstrument[] midiInstrument;
+    string[] groupArr;
+    MidiInstrument[] midiInstrumentArr;
     string id;
 }
 /**
@@ -23563,10 +21762,10 @@ export class GroupNameDisplay {
     this(xmlNodePtr node) {
         for (auto ch = node.children.firstElement; ch; ch = ch.nextElement) {
              if (ch.name.toString == "display-text") {
-                 displayText ~= new DisplayText(ch) ;
+                 displayTextArr ~= new DisplayText(ch) ;
              }
              if (ch.name.toString == "accidental-text") {
-                 accidentalText ~= new AccidentalText(ch) ;
+                 accidentalTextArr ~= new AccidentalText(ch) ;
              }
 
         }
@@ -23586,8 +21785,8 @@ export class GroupNameDisplay {
  */
 mixin template IGroupNameDisplay() {
     mixin IPrintObject;
-    DisplayText[] displayText;
-    AccidentalText[] accidentalText;
+    DisplayText[] displayTextArr;
+    AccidentalText[] accidentalTextArr;
 }
 export class GroupAbbreviation {
     mixin IGroupAbbreviation;
@@ -23648,10 +21847,10 @@ export class GroupAbbreviationDisplay {
     this(xmlNodePtr node) {
         for (auto ch = node.children.firstElement; ch; ch = ch.nextElement) {
              if (ch.name.toString == "display-text") {
-                 displayText ~= new DisplayText(ch) ;
+                 displayTextArr ~= new DisplayText(ch) ;
              }
              if (ch.name.toString == "accidental-text") {
-                 accidentalText ~= new AccidentalText(ch) ;
+                 accidentalTextArr ~= new AccidentalText(ch) ;
              }
 
         }
@@ -23671,8 +21870,8 @@ export class GroupAbbreviationDisplay {
  */
 mixin template IGroupAbbreviationDisplay() {
     mixin IPrintObject;
-    DisplayText[] displayText;
-    AccidentalText[] accidentalText;
+    DisplayText[] displayTextArr;
+    AccidentalText[] accidentalTextArr;
 }
 export class GroupSymbol {
     mixin IGroupSymbol;
@@ -23802,19 +22001,19 @@ export class ScoreInstrument {
     this(xmlNodePtr node) {
         for (auto ch = node.children.firstElement; ch; ch = ch.nextElement) {
              if (ch.name.toString == "instrument-name") {
-                 instrumentName = new InstrumentName(ch) ;
+                 instrumentName = getString(ch);
              }
              if (ch.name.toString == "instrument-sound") {
-                 instrumentSound = new InstrumentSound(ch) ;
+                 instrumentSound = getString(ch);
              }
              if (ch.name.toString == "ensemble") {
-                 ensemble = new Ensemble(ch) ;
+                 ensemble = getString(ch);
              }
              if (ch.name.toString == "virtual-instrument") {
                  virtualInstrument = new VirtualInstrument(ch) ;
              }
              if (ch.name.toString == "instrument-abbreviation") {
-                 instrumentAbbreviation = new InstrumentAbbreviation(ch) ;
+                 instrumentAbbreviation = getString(ch);
              }
              if (ch.name.toString == "solo") {
                  solo = new Solo(ch) ;
@@ -23871,79 +22070,13 @@ export class ScoreInstrument {
  * sound elements.
  */
 mixin template IScoreInstrument() {
-    InstrumentName instrumentName;
-    InstrumentSound instrumentSound;
-    Ensemble ensemble;
+    string instrumentName;
+    string instrumentSound;
+    string ensemble;
     VirtualInstrument virtualInstrument;
-    InstrumentAbbreviation instrumentAbbreviation;
+    string instrumentAbbreviation;
     Solo solo;
     string id;
-}
-export class InstrumentName {
-    mixin IInstrumentName;
-    this(xmlNodePtr node) {
-        for (auto ch = node.children.firstElement; ch; ch = ch.nextElement) {
-
-        }
-        for (auto ch = node.properties; ch; ch = ch.next) {
-
-        }
-            auto ch = node;
-                 data = getString(ch);
-    }
-
-}
-
-
-/**
- * 
- */
-mixin template IInstrumentName() {
-    string data;
-}
-export class InstrumentAbbreviation {
-    mixin IInstrumentAbbreviation;
-    this(xmlNodePtr node) {
-        for (auto ch = node.children.firstElement; ch; ch = ch.nextElement) {
-
-        }
-        for (auto ch = node.properties; ch; ch = ch.next) {
-
-        }
-            auto ch = node;
-                 data = getString(ch);
-    }
-
-}
-
-
-/**
- * 
- */
-mixin template IInstrumentAbbreviation() {
-    string data;
-}
-export class InstrumentSound {
-    mixin IInstrumentSound;
-    this(xmlNodePtr node) {
-        for (auto ch = node.children.firstElement; ch; ch = ch.nextElement) {
-
-        }
-        for (auto ch = node.properties; ch; ch = ch.next) {
-
-        }
-            auto ch = node;
-                 data = getString(ch);
-    }
-
-}
-
-
-/**
- * 
- */
-mixin template IInstrumentSound() {
-    string data;
 }
 export class Solo {
     mixin ISolo;
@@ -23965,37 +22098,15 @@ export class Solo {
 mixin template ISolo() {
 
 }
-export class Ensemble {
-    mixin IEnsemble;
-    this(xmlNodePtr node) {
-        for (auto ch = node.children.firstElement; ch; ch = ch.nextElement) {
-
-        }
-        for (auto ch = node.properties; ch; ch = ch.next) {
-
-        }
-            auto ch = node;
-                 data = getString(ch);
-    }
-
-}
-
-
-/**
- * 
- */
-mixin template IEnsemble() {
-    string data;
-}
 export class VirtualInstrument {
     mixin IVirtualInstrument;
     this(xmlNodePtr node) {
         for (auto ch = node.children.firstElement; ch; ch = ch.nextElement) {
              if (ch.name.toString == "virtual-library") {
-                 virtualLibrary = new VirtualLibrary(ch) ;
+                 virtualLibrary = getString(ch);
              }
              if (ch.name.toString == "virtual-name") {
-                 virtualName = new VirtualName(ch) ;
+                 virtualName = getString(ch);
              }
 
         }
@@ -24011,85 +22122,8 @@ export class VirtualInstrument {
  * 
  */
 mixin template IVirtualInstrument() {
-    VirtualLibrary virtualLibrary;
-    VirtualName virtualName;
-}
-export class VirtualLibrary {
-    mixin IVirtualLibrary;
-    this(xmlNodePtr node) {
-        for (auto ch = node.children.firstElement; ch; ch = ch.nextElement) {
-
-        }
-        for (auto ch = node.properties; ch; ch = ch.next) {
-
-        }
-            auto ch = node;
-                 data = getString(ch);
-    }
-
-}
-
-
-/**
- * 
- */
-mixin template IVirtualLibrary() {
-    string data;
-}
-export class VirtualName {
-    mixin IVirtualName;
-    this(xmlNodePtr node) {
-        for (auto ch = node.children.firstElement; ch; ch = ch.nextElement) {
-
-        }
-        for (auto ch = node.properties; ch; ch = ch.next) {
-
-        }
-            auto ch = node;
-                 data = getString(ch);
-    }
-
-}
-
-
-/**
- * 
- */
-mixin template IVirtualName() {
-    string data;
-}
-/**
- *     The group element allows the use of different versions of
- * the part for different purposes. Typical values include
- * score, parts, sound, and data. Ordering information that is
- * directly encoded in MuseData can be derived from the
- * ordering within a MusicXML score or opus.
- */
-export class Group {
-    mixin IGroup;
-    this(xmlNodePtr node) {
-        for (auto ch = node.children.firstElement; ch; ch = ch.nextElement) {
-
-        }
-        for (auto ch = node.properties; ch; ch = ch.next) {
-
-        }
-            auto ch = node;
-                 type = getString(ch);
-    }
-
-}
-
-
-/**
- *     The group element allows the use of different versions of
- * the part for different purposes. Typical values include
- * score, parts, sound, and data. Ordering information that is
- * directly encoded in MuseData can be derived from the
- * ordering within a MusicXML score or opus.
- */
-mixin template IGroup() {
-    string type;
+    string virtualLibrary;
+    string virtualName;
 }
 /**
  *     The score-header entity contains basic score metadata
@@ -24102,7 +22136,7 @@ export class ScoreHeader {
     this(xmlNodePtr node) {
         for (auto ch = node.children.firstElement; ch; ch = ch.nextElement) {
              if (ch.name.toString == "movement-title") {
-                 movementTitle = new MovementTitle(ch) ;
+                 movementTitle = getString(ch);
              }
              if (ch.name.toString == "identification") {
                  identification = new Identification(ch) ;
@@ -24114,13 +22148,13 @@ export class ScoreHeader {
                  work = new Work(ch) ;
              }
              if (ch.name.toString == "credit") {
-                 credit ~= new Credit(ch) ;
+                 creditArr ~= new Credit(ch) ;
              }
              if (ch.name.toString == "part-list") {
                  partList = new PartList(ch) ;
              }
              if (ch.name.toString == "movement-number") {
-                 movementNumber = new MovementNumber(ch) ;
+                 movementNumber = getString(ch);
              }
 
         }
@@ -24139,13 +22173,13 @@ export class ScoreHeader {
  * and the part list.
  */
 mixin template IScoreHeader() {
-    MovementTitle movementTitle;
+    string movementTitle;
     Identification identification;
     Defaults defaults;
     Work work;
-    Credit[] credit;
+    Credit[] creditArr;
     PartList partList;
-    MovementNumber movementNumber;
+    string movementNumber;
 }
 /**
  *     The score is the root element for the DTD. It includes
@@ -24163,14 +22197,35 @@ export class ScoreTimewise {
     this(xmlNodePtr node) {
         for (auto ch = node.children.firstElement; ch; ch = ch.nextElement) {
              if (ch.name.toString == "measure") {
-                 measure ~= new Measure(ch) ;
+                 measureArr ~= new Measure(ch) ;
              }
-             if (ch.name.toString == "score-header") {
-                 scoreHeader = new ScoreHeader(ch) ;
+             if (ch.name.toString == "movement-title") {
+                 movementTitle = getString(ch);
+             }
+             if (ch.name.toString == "identification") {
+                 identification = new Identification(ch) ;
+             }
+             if (ch.name.toString == "defaults") {
+                 defaults = new Defaults(ch) ;
+             }
+             if (ch.name.toString == "work") {
+                 work = new Work(ch) ;
+             }
+             if (ch.name.toString == "credit") {
+                 creditArr ~= new Credit(ch) ;
+             }
+             if (ch.name.toString == "part-list") {
+                 partList = new PartList(ch) ;
+             }
+             if (ch.name.toString == "movement-number") {
+                 movementNumber = getString(ch);
              }
 
         }
         for (auto ch = node.properties; ch; ch = ch.next) {
+             if (ch.name.toString == "version") {
+                 version_ = getString(ch);
+             }
 
         }
     }
@@ -24191,8 +22246,8 @@ export class ScoreTimewise {
  */
 mixin template IScoreTimewise() {
     mixin IDocumentAttributes;
-    Measure[] measure;
-    ScoreHeader scoreHeader;
+    mixin IScoreHeader;
+    Measure[] measureArr;
 }
 /**
  *     Here is the basic musical data that is either associated
@@ -24282,34 +22337,6 @@ Variant[] Part(xmlNodePtr node) {
  * The width covers the entire measure from barline
  * or system start to barline or system end.
  */
-export class Measure {
-    mixin IMeasure;
-    this(xmlNodePtr node) {
-        for (auto ch = node.children.firstElement; ch; ch = ch.nextElement) {
-             if (ch.name.toString == "part") {
-                 part ~= Part(ch) ;
-             }
-
-        }
-        for (auto ch = node.properties; ch; ch = ch.next) {
-             if (ch.name.toString == "number") {
-                 number_ = getString(ch);
-             }
-             if (ch.name.toString == "implicit") {
-                 implicit = getYesNo(ch);
-             }
-             if (ch.name.toString == "width") {
-                 width = getNumber(ch);
-             }
-             if (ch.name.toString == "non-controlling") {
-                 nonControlling = getYesNo(ch);
-             }
-
-        }
-    }
-
-}
-
 
 /**
  *     The implicit attribute is set to "yes" for measures where
@@ -24344,6 +22371,6 @@ mixin template IMeasure() {
     string number_;
     YesNo implicit;
     float width;
-    Variant[][] part;
+    Variant[][] partArr;
     YesNo nonControlling;
 }
