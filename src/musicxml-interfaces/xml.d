@@ -128,6 +128,10 @@ export bool validatesUnderDTD(xmlDocPtr doc, xmlDtdPtr dtd) {
     return true;
 }
 
+export class NoElementFound : Throwable {
+    this() { super("Expected an element."); }
+}
+
 template first(xmlElementType type) {
     export xmlNodePtr first(xmlNodePtr node) {
         while(node && node.type != type) {

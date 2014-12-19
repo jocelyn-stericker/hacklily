@@ -18,9 +18,10 @@
  * DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
+module musicxml.score;
 
 import xml;
-import musicxml;
+import types;
 
 import libxml2.tree;
 import std.conv;
@@ -30,7 +31,7 @@ import vibejson.json;
 
 export struct Score {
     @disable this();
-    private musicxml.ScoreTimewise _score;
+    private types.ScoreTimewise _score;
 
     this(string musicXml, string filename = "import.xml") {
         auto doc = musicXml.toDocument(filename).toTimewise();
@@ -39,11 +40,12 @@ export struct Score {
         // Now that we've passed DTD validation, we should no longer throw exceptions.
         // Any errors we make now are our own.
 
-        _score = new musicxml.ScoreTimewise(doc.xmlDocGetRootElement);
+        _score = new types.ScoreTimewise(doc.xmlDocGetRootElement);
     }
     ScoreTimewise representation() {
         return _score;
     }
+    // There's no toJson method because this isn't compatibile with external Json libraries. 
     string toJsonString() {
         return _score.serializeToJson.toPrettyString;
     }
@@ -51,6 +53,12 @@ export struct Score {
 
 unittest {
     string simplePartwise = import("helloWorldPartwise.xml");
+    Score score = simplePartwise;
+    score.toJsonString.writeln;
+}
+
+unittest {
+    string simplePartwise = import("generic1.xml");
     Score score = simplePartwise;
     score.toJsonString.writeln;
 }
