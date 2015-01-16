@@ -1,0 +1,52 @@
+{
+    "name": "satie",
+    "description": "A sheet music renderer for the web",
+    "homepage": "http://ripieno.github.io/satie",
+    "version": "0.0.3-alpha.1",
+    "author": "Josh Netterfield",
+    "license": "AGPLv3",
+    "files": [
+        "dist/",
+        "COPYING.txt"
+    ],
+    "main": "./dist/index.js",
+    "keywords": [
+        "classical",
+        "composing",
+        "composition",
+        "music",
+        "musicxml",
+        "react",
+        "sheet music",
+        "xml"
+    ],
+    "dependencies": {
+        "fast-json-patch": "^0.5.1",
+        "lodash": "3.4.0",
+        "musicxml-interfaces": "git://github.com/ripieno/musicxml-interfaces",
+        "react": "0.13.1",
+        "yargs": "^3.5.4"
+    },
+    "devDependencies": {
+        "chai": "2.1.1",
+        "dts-bundle": "0.2.0",
+        "istanbul": "^0.3.8",
+        "mocha": "^2.2.0",
+        "source-map-support": "^0.2.9",
+        "svg2png": "1.1.0",
+        "tsd": "^0.6.0-beta.5",
+        "tslint": "^2.1.1",
+        "typescript": "git://github.com/Microsoft/TypeScript.git"
+    },
+    "typescript": {
+        "definition": "dist/satie.d.ts"
+    },
+    "scripts": {
+        "build": "NODE_ENV=production make",
+        "build_dev": "make",
+        "watch": "make watch",
+        "start": "make watch",
+        "test": "make unittest",
+        "lint": "make lint"
+    }
+}
