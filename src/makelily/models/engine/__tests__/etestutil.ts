@@ -40,118 +40,112 @@ export var fakeAttributeChordFactory: Engine.IModel.IFactory = {
     }
 };
 
-export function createFakeStaffSegment(divisions1: number, divisions2: number): Engine.Measure.ISegmentRef {
-    return {
-        owner: 1,
-        staffSegment: {
-            attributes: {
-                divisions: divisions1 + divisions2
+export function createFakeStaffSegment(divisions1: number, divisions2: number, idx: number): Engine.Measure.ISegment {
+    let a: Engine.Measure.ISegment = <any> <Engine.IModel[]> [
+        {
+            divCount: divisions1,
+            staffIdx: 1,
+            frozenness: Engine.IModel.FrozenLevel.Warm,
+            modelDidLoad$: (segment$: Engine.Measure.ISegment) => { /* pass */ },
+            validate$: function(cursor$: Engine.ICursor) {
+                // pass
             },
-            models: [
-                {
-                    divCount: divisions1,
-                    staffIdx: 1,
-                    frozenness: Engine.IModel.FrozenLevel.Warm,
-                    modelDidLoad$: (segment$: Engine.Measure.ISegmentRef) => { /* pass */ },
-                    validate$: function(cursor$: Engine.ICursor) {
-                        // pass
-                    },
-                    fields: [],
-                    layout: function(cursor$: Engine.ICursor): Engine.IModel.ILayout {
-                        var width = cursor$.detached ? 0 : 10;
-                        cursor$.x$ += width;
-                        return {
-                            boundingBoxes$: [],
-                            division: cursor$.division$,
-                            mergePolicy: Engine.IModel.HMergePolicy.Min,
-                            x$: cursor$.x$ - width,
-                            model: this,
-                            priority: Engine.IModel.Type.Attributes
-                        };
-                    }
-                },
-                {
-                    divCount: divisions2,
-                    staffIdx: 1,
-                    frozenness: Engine.IModel.FrozenLevel.Warm,
-                    modelDidLoad$: (segment$: Engine.Measure.ISegmentRef) => { /* pass */ },
-                    validate$: function(cursor$: Engine.ICursor) {
-                        // pass
-                    },
-                    fields: [],
-                    layout: function(cursor$: Engine.ICursor): Engine.IModel.ILayout {
-                        var width = 10;
-                        cursor$.x$ += width;
-                        return {
-                            boundingBoxes$: [],
-                            division: cursor$.division$,
-                            mergePolicy: Engine.IModel.HMergePolicy.Max,
-                            x$: cursor$.x$ - width,
-                            model: this,
-                            priority: Engine.IModel.Type.Attributes
-                        };
-                    }
-                }
-            ]
+            fields: [],
+            layout: function(cursor$: Engine.ICursor): Engine.IModel.ILayout {
+                var width = cursor$.detached ? 0 : 10;
+                cursor$.x$ += width;
+                return {
+                    boundingBoxes$: [],
+                    division: cursor$.division$,
+                    mergePolicy: Engine.IModel.HMergePolicy.Min,
+                    x$: cursor$.x$ - width,
+                    model: this,
+                    priority: Engine.IModel.Type.Attributes
+                };
+            }
+        },
+        {
+            divCount: divisions2,
+            staffIdx: 1,
+            frozenness: Engine.IModel.FrozenLevel.Warm,
+            modelDidLoad$: (segment$: Engine.Measure.ISegment) => { /* pass */ },
+            validate$: function(cursor$: Engine.ICursor) {
+                // pass
+            },
+            fields: [],
+            layout: function(cursor$: Engine.ICursor): Engine.IModel.ILayout {
+                var width = 10;
+                cursor$.x$ += width;
+                return {
+                    boundingBoxes$: [],
+                    division: cursor$.division$,
+                    mergePolicy: Engine.IModel.HMergePolicy.Max,
+                    x$: cursor$.x$ - width,
+                    model: this,
+                    priority: Engine.IModel.Type.Attributes
+                };
+            }
         }
-    };
+    ];
+    a.owner = idx;
+    a.divisions = divisions1 + divisions2;
+    a.ownerType = Engine.Measure.OwnerType.Staff;
+    return a;
 }
 
-export function createFakeVoiceSegment(divisions1: number, divisions2: number): Engine.Measure.ISegmentRef {
-    return {
-        owner: 1,
-        voiceSegment: {
-            divisions: divisions1 + divisions2,
-            models: [
-                {
-                    divCount: divisions1,
-                    staffIdx: 1,
-                    frozenness: Engine.IModel.FrozenLevel.Warm,
-                    modelDidLoad$: (segment$: Engine.Measure.ISegmentRef) => { /* pass */ },
-                    validate$: function(cursor$: Engine.ICursor) {
-                        // pass
-                    },
-                    fields: [],
-                    layout: function(cursor$: Engine.ICursor): Engine.IModel.ILayout {
-                        var width = divisions1 * 10;
-                        cursor$.x$ += width;
-                        return {
-                            boundingBoxes$: [],
-                            division: cursor$.division$,
-                            mergePolicy: Engine.IModel.HMergePolicy.Min,
-                            x$: cursor$.x$ - width,
-                            expandable: true,
-                            model: this,
-                            priority: Engine.IModel.Type.Chord
-                        };
-                    }
-                },
-                {
-                    divCount: divisions2,
-                    staffIdx: 1,
-                    frozenness: Engine.IModel.FrozenLevel.Warm,
-                    modelDidLoad$: (segment$: Engine.Measure.ISegmentRef) => { /* pass */ },
-                    validate$: function(cursor$: Engine.ICursor) {
-                        // pass
-                    },
-                    fields: [],
-                    layout: function(cursor$: Engine.ICursor): Engine.IModel.ILayout {
-                        var width = divisions2*10;
-                        cursor$.x$ += width;
-                        return {
-                            boundingBoxes$: [],
-                            division: cursor$.division$,
-                            mergePolicy: Engine.IModel.HMergePolicy.Max,
-                            x$: cursor$.x$ - width,
-                            expandable: true,
-                            model: this,
-                            priority: Engine.IModel.Type.Chord
-                        };
-                    }
-                }
-            ]
+export function createFakeVoiceSegment(divisions1: number, divisions2: number, idx: number): Engine.Measure.ISegment {
+    let a: Engine.Measure.ISegment = <any> <Engine.IModel[]> [
+        {
+            divCount: divisions1,
+            staffIdx: 1,
+            frozenness: Engine.IModel.FrozenLevel.Warm,
+            modelDidLoad$: (segment$: Engine.Measure.ISegment) => { /* pass */ },
+            validate$: function(cursor$: Engine.ICursor) {
+                // pass
+            },
+            fields: [],
+            layout: function(cursor$: Engine.ICursor): Engine.IModel.ILayout {
+                var width = divisions1 * 10;
+                cursor$.x$ += width;
+                return {
+                    boundingBoxes$: [],
+                    division: cursor$.division$,
+                    mergePolicy: Engine.IModel.HMergePolicy.Min,
+                    x$: cursor$.x$ - width,
+                    expandable: true,
+                    model: this,
+                    priority: Engine.IModel.Type.Chord
+                };
+            }
+        },
+        {
+            divCount: divisions2,
+            staffIdx: 1,
+            frozenness: Engine.IModel.FrozenLevel.Warm,
+            modelDidLoad$: (segment$: Engine.Measure.ISegment) => { /* pass */ },
+            validate$: function(cursor$: Engine.ICursor) {
+                // pass
+            },
+            fields: [],
+            layout: function(cursor$: Engine.ICursor): Engine.IModel.ILayout {
+                var width = divisions2*10;
+                cursor$.x$ += width;
+                return {
+                    boundingBoxes$: [],
+                    division: cursor$.division$,
+                    mergePolicy: Engine.IModel.HMergePolicy.Max,
+                    x$: cursor$.x$ - width,
+                    expandable: true,
+                    model: this,
+                    priority: Engine.IModel.Type.Chord
+                };
+            }
         }
-    };
+    ];
+    a.owner = idx;
+    a.ownerType = Engine.Measure.OwnerType.Voice;
+    a.divisions = divisions1 + divisions2;
+    return a;
 }
 
 export function createFakeLayout(idx: number, offset: number, max: boolean): Engine.IModel.ILayout {

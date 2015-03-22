@@ -32,9 +32,7 @@ var expect          = chai.expect;
 
 function makeCursor(model: Engine.IModel, factory: Factory): Engine.ICursor {
     return {
-        segment: {
-            models: [model]
-        },
+        segment: <any> [model],
         idx$: 0,
 
         voice: {},

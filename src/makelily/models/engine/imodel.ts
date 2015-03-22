@@ -45,7 +45,7 @@ interface IModel {
      * Life-cycle method. Called when the model is created from MusicXML.
      * Prototype chains should be added to unfrozen properties.
      */
-    modelDidLoad$(segment$: Measure.ISegmentRef): void;
+    modelDidLoad$(segment$: Measure.ISegment): void;
 
     /** 
      * Life-cycle method. Called before an attempt is made to layout the models.
@@ -96,7 +96,7 @@ module IModel {
         Print                       = 10,           // Implements MusicXML.Print
         Barline                     = 20,           // Implements MusicXML.Barline
         Grouping                    = 30,           // Implements MusicXML.Grouping
-        FiguredBass                 = 40,
+        FiguredBass                 = 40,           // Implements MusicXML.FiguredBass
         END_OF_LAYOUT_ELEMENTS      = 99,
 
         START_OF_STAFF_ELEMENTS     = 100,
@@ -105,6 +105,7 @@ module IModel {
         Direction                   = 130,          // Implements MusicXML.Direction
         Harmony                     = 140,          // Implements MusicXML.Harmony
         Proxy                       = 150,          // Does not implement a MusicXML API
+        Spacer                      = 160,          // Does not implement a MusicXML API
         END_OF_STAFF_ELEMENTS       = 199,
 
         START_OF_VOICE_ELEMENTS     = 200,

@@ -58,7 +58,7 @@ class AttributesModel implements Export.IAttributesModel {
             ], isChangedHere);
     }
 
-    modelDidLoad$(segment$: Engine.Measure.ISegmentRef): void {
+    modelDidLoad$(segment$: Engine.Measure.ISegment): void {
         // todo
     }
 
@@ -74,7 +74,7 @@ class AttributesModel implements Export.IAttributesModel {
 
         // Defaults
 
-        this._validateClef$();
+        this._validateClef$(cursor$);
         this._validateTime$();
         this._validateKey$();
 
@@ -159,43 +159,47 @@ class AttributesModel implements Export.IAttributesModel {
         return this.toXML();
     }
 
-    private _validateClef$() {
-        if (!this.clefs || !this.clefs.length) {
-            // A clef is mandatory.
+    private _validateClef$(cursor$: Engine.ICursor) {
+        const staffIdx = cursor$.staff.idx;
 
-            this.clefs = [{
+        // clefs must be an array
+        if (!this.clefs) {
+            this.clefs = [];
+        }
+
+        // A clef is mandatory so far
+        if (!this.clefs[staffIdx]) {
+            this.clefs[staffIdx] = {
                 sign: "G",
                 line: 2,
                 clefOctaveChange: null
-            }];
-        } else if (!!this._clefs) {
-            // Spec difference between MusicXML and staff-context models: there should only be one clef.
-            invariant(this._clefs.length === 1, "Internal error: There must be exactly 1 clef " +
-                "defined in a staff context.\n" +
-                "Instead of 0 use 'null'. Instead of 2+, split into staves.\n" +
-                "Check the MusicXML staff splitting code.");
+            };
+        }
 
-            // Clef signs are normalized to be uppercase.
-            this.clefs[0].sign = this.clefs[0].sign.toUpperCase();
+        let clef = this.clefs[staffIdx];
 
-            // Clef lines can be inferred if needed.
-            if (isNaN(this.clefs[0].line)) {
-                this.clefs[0].line = (
-                        _.find(Export.Clef.standardClefs,
-                            clef => clef.sign === this.clefs[0].sign) ||
-                        { line: 2 } // fallback on treble clef
-                    ).line;
-            }
+        // Clef signs are normalized to be uppercase.
+        if (clef) {
+            clef.sign = clef.sign.toUpperCase();
+        }
 
-            var parentClef = this._parent && this._parent.clefs && this._parent.clefs.length ?
-                this._parent.clefs[0] : null;
+        // Clef lines can be inferred if needed.
+        if (isNaN(clef.line)) {
+            clef.line = (
+                    _.find(Export.Clef.standardClefs,
+                        clef => clef.sign === clef.sign) ||
+                    { line: 2 } // fallback on treble clef
+                ).line;
+        }
 
-            var thisClef = this.clefs[0];
-            if (parentClef && parentClef.sign === thisClef.sign && parentClef.line === thisClef.line &&
-                    parentClef.clefOctaveChange === thisClef.clefOctaveChange) {
-                // Clef is redundant
-                delete this._clefs;
-            }
+        var parentClef = this._parent && this._parent.clefs && this._parent.clefs.length ?
+            this._parent.clefs[staffIdx] : null;
+
+        var thisClef = clef;
+        if (parentClef && parentClef.sign === thisClef.sign && parentClef.line === thisClef.line &&
+                parentClef.clefOctaveChange === thisClef.clefOctaveChange) {
+            // Clef is redundant
+            delete this._clefs;
         }
     }
 

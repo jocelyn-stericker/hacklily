@@ -34,15 +34,18 @@ describe("[engine/_processMeasure.ts]", function() {
     describe("_processMeasure", function() {
         it("can lay out multiple voices", function() {
             var segments = [
-                null,
-                ETestUtil.createFakeStaffSegment(4, 4), // 00001111
-                ETestUtil.createFakeVoiceSegment(2, 6), // 00111111
-                ETestUtil.createFakeVoiceSegment(1, 7)  // 01111111
+                ETestUtil.createFakeStaffSegment(4, 4, 1), // 00001111
+                ETestUtil.createFakeVoiceSegment(2, 6, 1), // 00111111
+                ETestUtil.createFakeVoiceSegment(1, 7, 2)  // 01111111
             ];
+            segments[0].owner = 1;
+            segments[1].owner = 1;
+            segments[2].owner = 2;
             Engine.Measure.normalizeDivisons$(segments);
 
             // test without alignment
             var opts: _processMeasure.ILayoutOpts = {
+                attributes: null,
                 line: Engine.Ctx.ILine.create(segments),
                 measure: {
                     attributes$: null,
@@ -90,7 +93,7 @@ describe("[engine/_processMeasure.ts]", function() {
                         expandable: true,
                         mergePolicy: Engine.IModel.HMergePolicy.Min,
                         x$: 110,
-                        model: segments[2].voiceSegment.models[0],
+                        model: segments[1][0],  // from first voice.
                         priority: Engine.IModel.Type.Chord
                     },
                     {
@@ -107,7 +110,7 @@ describe("[engine/_processMeasure.ts]", function() {
                         division: 2,
                         mergePolicy: Engine.IModel.HMergePolicy.Max, // 1st is min, 2nd one is max
                         x$: 130,
-                        model: segments[2].voiceSegment.models[1],
+                        model: segments[1][1],
                         priority: Engine.IModel.Type.Chord
                     },
                     {

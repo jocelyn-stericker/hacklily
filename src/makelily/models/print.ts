@@ -51,7 +51,7 @@ class PrintModel implements Export.IPrintModel {
         ];
     }
 
-    modelDidLoad$(segment$: Engine.Measure.ISegmentRef): void {
+    modelDidLoad$(segment$: Engine.Measure.ISegment): void {
         // todo
     }
 

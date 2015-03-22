@@ -57,7 +57,7 @@ class BarlineModel implements Export.IBarlineModel {
             ], isChangedHere);
     }
 
-    modelDidLoad$(segment$: Engine.Measure.ISegmentRef): void {
+    modelDidLoad$(segment$: Engine.Measure.ISegment): void {
         // todo
     }
 

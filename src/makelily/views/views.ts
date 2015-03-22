@@ -34,10 +34,10 @@ export function render(doc: Engine.IDocument, startMeasure: number): string {
         throw new Error("No such measure " + startMeasure);
     }
     let partWithPrint = _.find(firstMeasure.parts, part =>
-            factory.modelHasType(part.staves[1].staffSegment.models[0], Engine.IModel.Type.Print));
+            factory.modelHasType(part.staves[1][0], Engine.IModel.Type.Print));
     let print: MusicXML.Print;
     if (partWithPrint) {
-        print = <any> partWithPrint.staves[1].staffSegment.models[0];
+        print = <any> partWithPrint.staves[1][0];
     } else {
         throw new Error("Part does not start with a Print element");
     }

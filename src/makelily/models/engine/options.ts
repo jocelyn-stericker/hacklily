@@ -23,11 +23,12 @@ import IModel               = require("./imodel");
 import Measure              = require("./measure");
 
 export interface ILayoutOptions {
-    measures: Measure.IMutableMeasure[];
-    pageLayout: MusicXML.PageLayout;
-    page$: number;
-    finalLine?: boolean;
-    modelFactory: IModel.IFactory;
+    attributes:     MusicXML.Attributes;
+    measures:       Measure.IMutableMeasure[];
+    pageLayout:     MusicXML.PageLayout;
+    page$:          number;
+    finalLine?:     boolean;
+    modelFactory:   IModel.IFactory;
 }
 
 export interface ILinesLayoutState {

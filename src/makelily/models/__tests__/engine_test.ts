@@ -37,16 +37,17 @@ describe("[engine.ts]", function() {
         it("lays out a case with multiple voices", function() {
             var staffSegments = [
                 null,
-                ETestUtil.createFakeStaffSegment(4, 4)
+                ETestUtil.createFakeStaffSegment(4, 4, 1)
             ];
 
             var voiceSegments = [
                 null,
-                ETestUtil.createFakeVoiceSegment(2, 6),
-                ETestUtil.createFakeVoiceSegment(1, 7)
+                ETestUtil.createFakeVoiceSegment(2, 6, 1),
+                ETestUtil.createFakeVoiceSegment(1, 7, 2)
             ];
 
             var layout = Engine.layoutMeasure({
+                attributes: null,
                 maxX: 1000,
                 minX: 100,
                 measure: {
@@ -80,16 +81,17 @@ describe("[engine.ts]", function() {
         it("approximates mid-line width", function() {
             var staffSegments = [
                 null,
-                ETestUtil.createFakeStaffSegment(4, 4)
+                ETestUtil.createFakeStaffSegment(4, 4, 1)
             ];
 
             var voiceSegments = [
                 null,
-                ETestUtil.createFakeVoiceSegment(2, 6),
-                ETestUtil.createFakeVoiceSegment(1, 7)
+                ETestUtil.createFakeVoiceSegment(2, 6, 1),
+                ETestUtil.createFakeVoiceSegment(1, 7, 2)
             ];
 
             var width = Engine.approximateWidth({
+                attributes: null,
                 maxX: 1000,
                 minX: 100,
                 measure: {
@@ -146,24 +148,25 @@ describe("[engine.ts]", function() {
         it("partially justifies multiple voices and measures on the final line", function() {
             var segments = [
                 {
-                    staves: [null, ETestUtil.createFakeStaffSegment(4, 4)],
+                    staves: [null, ETestUtil.createFakeStaffSegment(4, 4, 1)],
                     voices: [
                         null,
-                        ETestUtil.createFakeVoiceSegment(2, 6),
-                        ETestUtil.createFakeVoiceSegment(1, 7)
+                        ETestUtil.createFakeVoiceSegment(2, 6, 1),
+                        ETestUtil.createFakeVoiceSegment(1, 7, 2)
                     ]
                 },
                 {
-                    staves: [null, ETestUtil.createFakeStaffSegment(4, 4)],
+                    staves: [null, ETestUtil.createFakeStaffSegment(4, 4, 1)],
                     voices: [
                         null,
-                        ETestUtil.createFakeVoiceSegment(1, 7),
-                        ETestUtil.createFakeVoiceSegment(2, 6)
+                        ETestUtil.createFakeVoiceSegment(1, 7, 1),
+                        ETestUtil.createFakeVoiceSegment(2, 6, 2)
                     ]
                 }
             ];
 
             var layouts = _.map(segments, (seg, idx) => Engine.layoutMeasure({
+                attributes: null,
                 maxX: 1000,
                 minX: 0,
                 measure: {
@@ -188,6 +191,7 @@ describe("[engine.ts]", function() {
 
             var justified = Engine.justify(
                 {
+                    attributes: null,
                     finalLine: true,
                     measures: new Array(2), // TODO: if justify uses measures, this will have to be given a proper value.
                     page$: 0,
@@ -210,7 +214,7 @@ describe("[engine.ts]", function() {
                 },
                 layouts);
 
-            expect(justified[0].elements[0][0].x$).to.equal(layouts[0].elements[0][0].x$ + padding);
+            expect(justified[0].elements[0][0].x$).to.be.closeTo(layouts[0].elements[0][0].x$ + padding, 0.05);
             expect(justified[0].elements[0][2].x$).to.be.closeTo(75.2, 0.1);
             expect(justified[0].width).to.be.closeTo(justified[0].elements[0][4].x$ - justified[0].elements[0][0].x$ + 10, 0.01);
             _.forEach(justified, function(just, idx) {
@@ -230,16 +234,17 @@ describe("[engine.ts]", function() {
 
             var segments = _.times(10, function() {
                 return {
-                    staves: [null, ETestUtil.createFakeStaffSegment(4, 4)],
+                    staves: [null, ETestUtil.createFakeStaffSegment(4, 4, 1)],
                     voices: [
                         null,
-                        ETestUtil.createFakeVoiceSegment(2, 6),
-                        ETestUtil.createFakeVoiceSegment(1, 7)
+                        ETestUtil.createFakeVoiceSegment(2, 6, 1),
+                        ETestUtil.createFakeVoiceSegment(1, 7, 2)
                     ]
                 };
             });
 
             var contextOptions: Engine.Options.ILayoutOptions = {
+                attributes: null,
                 measures: _.map(segments, function(segment, idx) {
                     return {
                         idx:             idx,
@@ -273,7 +278,7 @@ describe("[engine.ts]", function() {
             var l1bars = result[0].measureLayouts;
             var l1EndEls = l1bars[l1bars.length - 1].elements[0];
 
-            expect(result[0].measureLayouts[0].elements[0][0].x$).to.equal(result[1].measureLayouts[0].elements[0][0].x$);
+            expect(result[0].measureLayouts[0].elements[0][0].x$).to.be.closeTo(result[1].measureLayouts[0].elements[0][0].x$, 0.05);
             expect(l1EndEls[l1EndEls.length - 1].x$).to.equal(1000 - 20 - 10);
         });
     });
@@ -288,7 +293,7 @@ describe("[engine.ts]", function() {
                         divCount: 0,
                         staffIdx: 1,
                         frozenness: Engine.IModel.FrozenLevel.Warm,
-                        modelDidLoad$: (segment$: Engine.Measure.ISegmentRef) => { /* pass */ },
+                        modelDidLoad$: (segment$: Engine.Measure.ISegment) => { /* pass */ },
                         validate$: (cursor$: Engine.ICursor) => { /* pass */ },
                         fields: [],
                         layout: function(cursor$: Engine.ICursor): Engine.IModel.ILayout {
@@ -311,15 +316,16 @@ describe("[engine.ts]", function() {
             var padding = 20;
 
             var segments = [{
-                staves: [null, ETestUtil.createFakeStaffSegment(4, 4)],
+                staves: [null, ETestUtil.createFakeStaffSegment(4, 4, 1)],
                 voices: [
                     null,
-                    ETestUtil.createFakeVoiceSegment(2, 6),
-                    ETestUtil.createFakeVoiceSegment(1, 7)
+                    ETestUtil.createFakeVoiceSegment(2, 6, 1),
+                    ETestUtil.createFakeVoiceSegment(1, 7, 2)
                 ]
             }];
 
             var contextOptions: Engine.Options.ILayoutOptions = {
+                attributes: null,
                 measures: _.map(segments, function(segment, idx) {
                     return {
                         idx:             idx,

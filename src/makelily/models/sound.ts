@@ -57,7 +57,7 @@ class SoundModel implements Export.ISoundModel {
             ], isChangedHere);
     }
 
-    modelDidLoad$(segment$: Engine.Measure.ISegmentRef): void {
+    modelDidLoad$(segment$: Engine.Measure.ISegment): void {
         // todo
     }
 

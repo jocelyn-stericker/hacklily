@@ -63,7 +63,7 @@ class HarmonyModel implements Export.IHarmonyModel {
         ];
     }
 
-    modelDidLoad$(segment$: Engine.Measure.ISegmentRef): void {
+    modelDidLoad$(segment$: Engine.Measure.ISegment): void {
         // todo
     }
 

@@ -50,7 +50,6 @@ var ICursor             = Engine.ICursor;
  */
 export function rhythmicSpellcheck$(cursor$: Engine.ICursor): boolean {
     var curr = ICursor.curr(cursor$);
-    var body = cursor$.segment.models;
 
     // Only durations can be spell-checked.
     if (!cursor$.factory.modelHasType(curr, ModelType.Chord)) {
@@ -72,12 +71,12 @@ export function rhythmicSpellcheck$(cursor$: Engine.ICursor): boolean {
     var currNoteStartDivision = cursor$.division$;
     var currNoteEndDivision = cursor$.division$ + curr.divCount;
 
-    var nextIdx = Util.findIndex(body,
+    var nextIdx = Util.findIndex(cursor$.segment,
         (c: Engine.IModel) =>
             cursor$.factory.modelHasType(c, ModelType.Chord, ModelType.Barline),
         cursor$.idx$ + 1);
 
-    var nextObj = body[nextIdx];
+    var nextObj = cursor$.segment[nextIdx];
 
     var nextNote = cursor$.factory.modelHasType(nextObj, ModelType.Chord) ?
             IChord.fromModel(nextObj) : null;
@@ -85,7 +84,7 @@ export function rhythmicSpellcheck$(cursor$: Engine.ICursor): boolean {
     // See if this note can be merged. Rests and tied notes can be merged.
     // Frozen models cannot be merged.
     // TODO: Tuplets cannot be merged currently. They should be able to be merged if compatible.
-    var nextEquivNote = nextIdx < body.length &&
+    var nextEquivNote = nextIdx < cursor$.segment.length &&
         !!nextNote &&
         nextObj.frozenness < Engine.IModel.FrozenLevel.Frozen &&
         !IChord.timeModification(currNote) && !IChord.timeModification(nextNote) &&
@@ -103,7 +102,7 @@ export function rhythmicSpellcheck$(cursor$: Engine.ICursor): boolean {
         var base = 1;
         var partial = 0;
         for (var i = cursor$.idx$; i >= 0; --i) {
-            var chordi = cursor$.factory.modelHasType(body[i], ModelType.Chord) ? IChord.fromModel(body[i]) : null;
+            var chordi = cursor$.factory.modelHasType(cursor$.segment[i], ModelType.Chord) ? IChord.fromModel(cursor$.segment[i]) : null;
             if (chordi && !IChord.timeModification(chordi)) {
                 break;
             }
@@ -260,8 +259,7 @@ function clearExcessBeats(currNote: Engine.IChord, excessBeats: number, cursor$:
     var after = cursor$.idx$ + replaceWith.length;
     if (!IChord.rest(currNote)) {
         for (var i = cursor$.idx$; i < after - 1; ++i) {
-            var body = cursor$.segment.models;
-            var note = IChord.fromModel(body[i]);
+            var note = IChord.fromModel(cursor$.segment[i]);
             IChord.setTies$(note, _.times(note.length, () => {
                 return {
                     type: MusicXML.StartStop.Start
@@ -416,7 +414,7 @@ class InvalidDurationError {
 export function rebeamable(idx: number, cursor: Engine.ICursor, alt?: string): Array<Engine.IModel> {
     var countOffset = 0;
     for (var i = cursor.idx$; i < idx; ++i) {
-        countOffset += cursor.segment.models[i].divCount;
+        countOffset += cursor.segment[i].divCount;
     }
     var attributes = cursor.staff.attributes;
     var divisions = attributes.divisions;
@@ -424,7 +422,6 @@ export function rebeamable(idx: number, cursor: Engine.ICursor, alt?: string): A
     var tsName = getTSString(attributes.times) + (alt ? "_" + alt : "");
     var replaceWith: Engine.IModel[] = [];
     var bp = getBeamingPattern(attributes.times, alt);
-    var body = cursor.segment.models;
     var currDivision = cursor.division$ + countOffset;
 
     var bpIdx = 0;
@@ -448,13 +445,13 @@ export function rebeamable(idx: number, cursor: Engine.ICursor, alt?: string): A
     var foundNote = false;
     var timeModification: MusicXML.TimeModification;
 
-    for (var i = idx; !!body[i]; ++i) {
-        if (cursor.factory.modelHasType(body[i], ModelType.BeamGroup)) {
+    for (var i = idx; !!cursor.segment[i]; ++i) {
+        if (cursor.factory.modelHasType(cursor.segment[i], ModelType.BeamGroup)) {
             if (idx !== i) {
                 needsReplacement = true;
             }
-        } else if (cursor.factory.modelHasType(body[i], ModelType.Chord)) {
-            var prevNote = IChord.fromModel(body[i]);
+        } else if (cursor.factory.modelHasType(cursor.segment[i], ModelType.Chord)) {
+            var prevNote = IChord.fromModel(cursor.segment[i]);
             if (!!timeModification !== !!IChord.timeModification(prevNote) && foundNote) {
                 break;
             }
@@ -495,7 +492,7 @@ export function rebeamable(idx: number, cursor: Engine.ICursor, alt?: string): A
                 prevInBeam = false;
             }
 
-            replaceWith.push(body[i]);
+            replaceWith.push(cursor.segment[i]);
 
             if (currDivision === bpCount + bpBeats) {
                 break;

@@ -61,6 +61,10 @@ class Factory implements Engine.IModel.IFactory {
         return this.create(sclass, spec);
     }
 
+    inspect(): string {
+        return "[Factory]";
+    }
+
     private _constructors: { [key: number]: any; [key: string]: Engine.IModel.Type;} = {};
 }
 

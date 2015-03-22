@@ -36,9 +36,7 @@ var expect              = chai.expect;
 
 function genCursor(factory: Factory, models: Engine.IModel[]): Engine.ICursor {
     return {
-        segment: {
-            models: models
-        },
+        segment: <any> models,
         print$: null,
         header: null,
         idx$: 0,
@@ -119,8 +117,8 @@ describe("[metre.ts]", function() {
             var retcode = Metre.rhythmicSpellcheck$(cursor$);
             expect(retcode).to.eq(true, "A change should have occured.");
 
-            expect(cursor$.segment.models.length).to.equal(1);
-            var chord = Engine.IChord.fromModel(cursor$.segment.models[0]);
+            expect(cursor$.segment.length).to.equal(1);
+            var chord = Engine.IChord.fromModel(cursor$.segment[0]);
             expect(Metre.calcDivisions(chord, cursor$)).to.equal(60);
             expect(chord.length).to.equal(1);
             expect(chord[0].noteType.duration).to.equal(MusicXML.Count.Quarter);
@@ -146,8 +144,8 @@ describe("[metre.ts]", function() {
             var retcode = Metre.rhythmicSpellcheck$(cursor$);
             expect(retcode).to.eq(true, "A change should have occured.");
 
-            expect(cursor$.segment.models.length).to.equal(1);
-            var chord = Engine.IChord.fromModel(cursor$.segment.models[0]);
+            expect(cursor$.segment.length).to.equal(1);
+            var chord = Engine.IChord.fromModel(cursor$.segment[0]);
             expect(Metre.calcDivisions(chord, cursor$)).to.equal(60);
             expect(chord.length).to.equal(1);
             expect(chord[0].noteType.duration).to.equal(MusicXML.Count.Quarter);
@@ -179,8 +177,8 @@ describe("[metre.ts]", function() {
             var retcode = Metre.rhythmicSpellcheck$(cursor$);
             expect(retcode).to.eq(false, "A change should not have occured.");
 
-            expect(cursor$.segment.models.length).to.equal(2);
-            var chord = Engine.IChord.fromModel(cursor$.segment.models[0]);
+            expect(cursor$.segment.length).to.equal(2);
+            var chord = Engine.IChord.fromModel(cursor$.segment[0]);
             expect(Metre.calcDivisions(chord, cursor$)).to.equal(30);
             expect(chord.length).to.equal(1);
             expect(chord[0].noteType.duration).to.equal(MusicXML.Count.Eighth);
@@ -223,7 +221,7 @@ describe("[metre.ts]", function() {
             var retcode = Metre.rhythmicSpellcheck$(cursor$);
             expect(retcode).to.eq(false, "A change should not have occured.");
 
-            expect(cursor$.segment.models.length).to.equal(3);
+            expect(cursor$.segment.length).to.equal(3);
         });
     });
 });

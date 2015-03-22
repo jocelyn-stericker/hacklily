@@ -46,9 +46,7 @@ function getAttributes(): MusicXML.Attributes {
 function getCursor(factory: Engine.IModel.IFactory, model: Engine.IModel): Engine.ICursor {
     var attributes = getAttributes();
     return {
-        segment: {
-            models: [model]
-        },
+        segment: <any> [model],
         idx$: 0,
         print$: null,
         header: null,

@@ -95,6 +95,7 @@ export function _extractMXMLPartsAndMeasures(input: MusicXML.ScoreTimewise,
             staves:                     []
         };
     });
+    let createModel     = factory.create.bind(factory);
 
     // TODO/STOPSHIP - sync division count in each measure
     var divisions = 1; // lilypond-regression 41g.xml does not specify divisions
@@ -173,26 +174,18 @@ export function _extractMXMLPartsAndMeasures(input: MusicXML.ScoreTimewise,
                         let staff = note.staff || 1;
                         prevStaff = staff;
                         if (!(voice in target.output.voices)) {
-                            target.output.voices[voice] = {
-                                owner:              voice,
-                                voiceSegment: {
-                                    models:         [],
-                                    divisions:      divisions
-                                }
-                            };
+                            target.output.voices[voice] = <any> [];
+                            target.output.voices[voice].owner = voice;
+                            target.output.voices[voice].ownerType = Engine.Measure.OwnerType.Voice;
                         }
                         // Make sure there is a staff segment reserved for the given staff
                         if (!(staff in target.output.staves)) {
-                            target.output.staves[staff] = {
-                                owner:                  staff,
-                                staffSegment: {
-                                    models:             [],
-                                    attributes:         null
-                                }
-                            };
+                            target.output.voices[staff] = <any> [];
+                            target.output.voices[staff].owner = staff;
+                            target.output.voices[staff].ownerType = Engine.Measure.OwnerType.Staff;
                         }
                         let newNote = factory.fromSpec(input);
-                        target.output.voices[voice].voiceSegment.models.push(newNote);
+                        target.output.voices[voice].push(newNote);
                         note = Engine.IChord.fromModel(newNote);
 
                         // Update target division
@@ -214,13 +207,9 @@ export function _extractMXMLPartsAndMeasures(input: MusicXML.ScoreTimewise,
                         input.staff || 1; // Explodes to all staves at a later point.
                     prevStaff = staff;
                     if (!(staff in target.output.staves)) {
-                        target.output.staves[staff] = {
-                            owner:                  staff,
-                            staffSegment: {
-                                models:             [],
-                                attributes:         null
-                            }
-                        };
+                        target.output.staves[staff] = <any> [];
+                        target.output.staves[staff].owner = staff;
+                        target.output.staves[staff].ownerType = Engine.Measure.OwnerType.Staff;
                     }
                     let newModel = factory.fromSpec(input);
                     syncAppendStaff(staff, newModel);
@@ -234,6 +223,9 @@ export function _extractMXMLPartsAndMeasures(input: MusicXML.ScoreTimewise,
                     break;
                 case "Backup":
                     let backup = <MusicXML.Backup> input;
+                    _.forEach(target.output.staves, (staff, staffIdx) => {
+                        syncAppendStaff(staffIdx, null);
+                    });
                     target.division -= backup.duration;
                     break;
                 default:
@@ -252,24 +244,39 @@ export function _extractMXMLPartsAndMeasures(input: MusicXML.ScoreTimewise,
             // let rootStaff = target.output.staves[1];
             // TODO: not implemented
 
-            // Set divCounts of final elements
+            // Set divCounts of final elements in staff segments and divisions of all segments
             _.forEach(target.output.staves, (staff, staffIdx) => {
                 syncAppendStaff(staffIdx, null);
+
+                let segment = target.output.staves[staffIdx];
+                if (segment) {
+                    segment.divisions = divisions;
+                }
+            });
+            _.forEach(target.output.voices, (voice, voiceIdx) => {
+                let segment = target.output.voices[voiceIdx];
+                if (segment) {
+                    segment.divisions = divisions;
+                }
             });
         });
 
         function syncAppendStaff(staff: number, model: Engine.IModel) {
             const divCount = target.division - (target.divisionPerStaff[staff] || 0);
-            let staffSegment = target.output.staves[staff];
-            let models = staffSegment ? staffSegment.staffSegment.models : null;
-            invariant(!!model && !!models || !model, "Unknown staff %s");
+            let segment = target.output.staves[staff];
+            invariant(!!model && !!segment || !model, "Unknown staff %s");
 
             if (divCount > 0) {
-                if (staffSegment && divCount) {
-                    if (models && models.length) {
-                        let model = models[models.length - 1];
+                if (segment) {
+                    if (segment.length) {
+                        let model = segment[segment.length - 1];
                         model.divCount = model.divCount || 0;
                         model.divCount += divCount;
+                    } else {
+                        let model = createModel(Engine.IModel.Type.Spacer);
+                        model.divCount = divCount;
+                        model.staff = staff;
+                        segment.push(model);
                     }
                 }
                 target.divisionPerStaff[staff] = target.division;
@@ -277,16 +284,16 @@ export function _extractMXMLPartsAndMeasures(input: MusicXML.ScoreTimewise,
 
             if (model) {
                 if (divCount >= 0 || !divCount) {
-                    models.push(model);
+                    segment.push(model);
                 } else {
                     let offset = divCount;
                     let spliced = false;
-                    for (let i = models.length - 1; i >= 0; --i) {
-                        offset += models[i].divCount;
+                    for (let i = segment.length - 1; i >= 0; --i) {
+                        offset += segment[i].divCount;
                         if (offset >= 0) {
-                            model.divCount = models[i].divCount - offset;
-                            models[i].divCount = offset;
-                            models.splice(i + 1, 0, model);
+                            model.divCount = segment[i].divCount - offset;
+                            segment[i].divCount = offset;
+                            segment.splice(i + 1, 0, model);
                             spliced = true;
                             break;
                         }

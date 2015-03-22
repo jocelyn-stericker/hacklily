@@ -22,6 +22,7 @@
 
 "use strict";
 
+import MusicXML         = require("musicxml-interfaces");
 import _                = require("lodash");
 import invariant        = require("react/lib/invariant");
 
@@ -80,43 +81,35 @@ function createCursor(
  * Complexity: O(staff-voice pairs)
  */
 function _processMeasure(spec: _processMeasure.ILayoutOpts): Measure.IMeasureLayout {
-    var segments        = spec.segments;
-    var line            = spec.line;
-    var measure         = spec.measure;
-    var prevByStaff     = spec.prevByStaff;
-    var validateOnly    = spec._validateOnly;
+    let segments                    = spec.segments;
+    let line                        = spec.line;
+    let measure                     = spec.measure;
+    let prevByStaff                 = spec.prevByStaff;
+    let validateOnly                = spec._validateOnly;
+    let lastAttribs                 = spec.attributes;
 
-    invariant(segments.length > 1, "_processMeasure expects at least one segment.");
+    invariant(segments.length >= 1, "_processMeasure expects at least one segment.");
 
-    var divisions       = segments[1].staffSegment ?
-                            segments[1].staffSegment.attributes.divisions :
-                            segments[1].voiceSegment.divisions;
+    let staffMeasure                = _.indexBy(_.filter(segments,
+            seg => seg.ownerType === Measure.OwnerType.Staff), "owner");
+    let voiceMeasure                = _.indexBy(_.filter(segments,
+            seg => seg.ownerType === Measure.OwnerType.Voice), "owner");
 
-    invariant(_.all(segments,
-        seg => !seg || divisions === (seg.staffSegment ?
-            seg.staffSegment.attributes.divisions :
-            seg.voiceSegment.divisions)),
-        "_processMeasure(...) expects all segments to have the same 'divisions' variable. \n" +
-        "Use Measure.normalizeDivisions$(segments) to accomplish this.");
+    let staffLayouts$: { [key: number]: IModel.ILayout[][] } = {};
 
-    var staffMeasure               = _.indexBy(_.filter(segments, (seg: Measure.ISegmentRef) => seg && seg.staffSegment), "owner");
-    var voiceMeasure               = _.filter(segments, (seg) => seg && seg.voiceSegment);
+    let maxXInMeasure               = 0;
+    let maxPaddingTopInMeasure$     = 0;
+    let maxPaddingBottomInMeasure$  = 0;
 
-    var staffLayouts$: { [key: number]: IModel.ILayout[][] } = {};
+    let voiceLayouts$   = _.map(voiceMeasure, segment => {
+        let voice                                                   = <Ctx.IVoice> {};
 
-    var maxXInMeasure               = 0;
-    var maxPaddingTopInMeasure$     = 0;
-    var maxPaddingBottomInMeasure$  = 0;
+        let voiceStaves$:        {[key: number]: IModel.ILayout[]}  = {};
+        let staffContexts$:      {[key: number]: Ctx.IStaff}        = {};
+        let divisionPerStaff$:   {[key: string]: number}            = {};
 
-    var voiceLayouts$   = _.map(voiceMeasure, segmentRef => {
-        var voice                                                   = <Ctx.IVoice> {};
-
-        var voiceStaves$:        {[key: number]: IModel.ILayout[]}  = {};
-        var staffContexts$:      {[key: number]: Ctx.IStaff}        = {};
-        var divisionPerStaff$:   {[key: string]: number}            = {};
-
-        var cursor$ = createCursor({
-            segment:        segmentRef.voiceSegment,
+        let cursor$ = createCursor({
+            segment:        segment,
             idx$:           0,
 
             voice:          voice,
@@ -133,27 +126,42 @@ function _processMeasure(spec: _processMeasure.ILayoutOpts): Measure.IMeasureLay
             factory:        spec.factory
         });
 
+        /**
+         * Processes a staff model within this voice's context.
+         */
         function pushStaffSegment(staffIdx: number, model: IModel) {
-            var oldDivision                 = cursor$.division$;
+            if (!model) {
+                console.log("No model at", staffIdx);
+                console.log(staffMeasure);
+                console.log("VS:", voiceStaves$)
+                console.log(divisionPerStaff$[staffIdx], cursor$.division$);
+            }
+            let oldDivision                 = cursor$.division$;
+            let oldSegment                  = cursor$.segment;
             cursor$.division$               = divisionPerStaff$[staffIdx];
-            var layout: IModel.ILayout;
+            cursor$.segment                 = staffMeasure[staffIdx];
+            let layout: IModel.ILayout;
             if (validateOnly) {
                 model.staffIdx = cursor$.staff.idx;
                 model.validate$(cursor$);
             } else {
                 layout                      = model.layout(cursor$);
             }
-            cursor$.division$ += model.divCount;
+            cursor$.division$               += model.divCount;
             divisionPerStaff$[staffIdx]     = cursor$.division$;
             cursor$.division$               = oldDivision;
             cursor$.prev$                   = model;
+            cursor$.segment                 = oldSegment;
 
+            if (!validateOnly) {
+                invariant(!!layout, "%s must be a valid layout", layout);
+            }
             voiceStaves$[staffIdx].push(layout);
         }
 
-        return _.map(segmentRef.voiceSegment.models, (model, idx, list) => {
-            var atEnd = idx + 1 === list.length;
-            var staffIdx: number = model.staffIdx;
+        return _.map(segment, (model, idx, list) => {
+            let atEnd = idx + 1 === list.length;
+            let staffIdx: number = model.staffIdx;
             invariant(isFinite(model.staffIdx), "%s is not finite", model.staffIdx);
 
             // Create a voice-staff pair if needed. We'll later merge all the
@@ -161,11 +169,11 @@ function _processMeasure(spec: _processMeasure.ILayoutOpts): Measure.IMeasureLay
             if (!voiceStaves$[staffIdx]) {
                 voiceStaves$[staffIdx] = [];
                 staffContexts$[staffIdx] = {
-                    accidentals$: {},
-                    attributes: null,
-                    totalDivisions: NaN,
-                    previous: null,
-                    idx: staffIdx
+                    accidentals$:       {},
+                    attributes:         spec.attributes,
+                    totalDivisions:     NaN,
+                    previous:           null,
+                    idx:                staffIdx
                 };
 
                 staffLayouts$[staffIdx] = staffLayouts$[staffIdx] || [];
@@ -177,7 +185,8 @@ function _processMeasure(spec: _processMeasure.ILayoutOpts): Measure.IMeasureLay
 
             do {
                 if (divisionPerStaff$[staffIdx] <= cursor$.division$) {
-                    var nextStaffEl = staffMeasure[staffIdx].staffSegment.models[voiceStaves$[staffIdx].length];
+                    // Process a staff model within a voice context.
+                    let nextStaffEl = staffMeasure[staffIdx][voiceStaves$[staffIdx].length];
                     pushStaffSegment(staffIdx, nextStaffEl);
                 } else {
                     break;
@@ -185,7 +194,7 @@ function _processMeasure(spec: _processMeasure.ILayoutOpts): Measure.IMeasureLay
             } while (true);
 
             // All layout that can be controlled by the model is done here.
-            var layout: IModel.ILayout;
+            let layout: IModel.ILayout;
             if (validateOnly) {
                 model.staffIdx = cursor$.staff.idx;
                 model.validate$(cursor$);
@@ -197,36 +206,40 @@ function _processMeasure(spec: _processMeasure.ILayoutOpts): Measure.IMeasureLay
 
             if (atEnd) {
                 _.forEach(staffMeasure,(staff, idx) => {
-                    var voiceStaff = voiceStaves$[<any>idx];
-                    while (!!staff && !!voiceStaff && voiceStaves$[<any>idx].length < staff.staffSegment.models.length) {
-                        pushStaffSegment(parseInt(idx, 10), staff.staffSegment.models[voiceStaves$[<any> idx].length]);
+                    let voiceStaff = voiceStaves$[<any>idx];
+                    while (!!staff && !!voiceStaff && voiceStaves$[<any>idx].length < staff.length) {
+                        pushStaffSegment(parseInt(idx, 10), staff[voiceStaves$[<any> idx].length]);
                     }
                 });
             }
+            lastAttribs = cursor$.staff.attributes;
             maxXInMeasure = Math.max(cursor$.x$, maxXInMeasure);
             maxPaddingTopInMeasure$ = Math.max(cursor$.maxPaddingTop$, maxPaddingTopInMeasure$);
-            maxPaddingBottomInMeasure$ = Math.max(cursor$.maxPaddingBottom$, maxPaddingBottomInMeasure$);
+            maxPaddingBottomInMeasure$ = Math.max(
+                cursor$.maxPaddingBottom$,
+                maxPaddingBottomInMeasure$);
             return layout;
         });
     });
 
     // Get an ideal voice layout for each voice-staff combination
-    var staffLayoutsUnkeyed$: IModel.ILayout[][][] = _.values(staffLayouts$);
-    var staffLayoutsCombined: IModel.ILayout[][] = <any> _.flatten(staffLayoutsUnkeyed$);
+    let staffLayoutsUnkeyed$: IModel.ILayout[][][] = _.values(staffLayouts$);
+    let staffLayoutsCombined: IModel.ILayout[][] = <any> _.flatten(staffLayoutsUnkeyed$);
 
     // Create a layout that satisfies the constraints in every single voice.
     // IModel.merge$ requires two passes to fully merge the layouts. We do the second pass
     // once we filter unneeded staff segments.
-    var allLayouts$ = voiceLayouts$.concat(staffLayoutsCombined);
+    let allLayouts$ = voiceLayouts$.concat(staffLayoutsCombined);
 
     // We have a staff layout for every single voice-staff combination.
     // They will be merged, so it doesn't matter which one we pick.
     // Pick the first.
-    var staffLayoutsUnique$ = _.map(staffLayoutsUnkeyed$, layouts => layouts[0]);
+    let staffLayoutsUnique$ = _.map(staffLayoutsUnkeyed$, layouts => layouts[0]);
 
     if (!spec._noAlign) {
-        // Calculate and finish applying the master layout
-        var masterLayout = _.reduce(allLayouts$, IModel.merge$, []);
+        // Calculate and finish applying the master layout.
+        // Two passes is always sufficient.
+        let masterLayout = _.reduce(allLayouts$, IModel.merge$, []);
         _.reduce(voiceLayouts$, IModel.merge$, masterLayout);
 
         // Merge in the staves
@@ -234,6 +247,7 @@ function _processMeasure(spec: _processMeasure.ILayoutOpts): Measure.IMeasureLay
     }
 
     return {
+        attributes: lastAttribs,
         elements: voiceLayouts$.concat(staffLayoutsUnique$),
         width: maxXInMeasure - measure.x,
         paddingTop: maxPaddingTopInMeasure$,
@@ -243,11 +257,12 @@ function _processMeasure(spec: _processMeasure.ILayoutOpts): Measure.IMeasureLay
 
 module _processMeasure {
     export interface ILayoutOpts {
-        segments: Measure.ISegmentRef[];
+        segments: Measure.ISegment[];
         measure: Ctx.IMeasure;
         line: Ctx.ILine;
         prevByStaff: IModel[];
         factory: IModel.IFactory;
+        attributes: MusicXML.Attributes;
 
         _noAlign?: boolean;
         _approximate?: boolean;

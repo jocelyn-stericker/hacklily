@@ -35,7 +35,7 @@ class ProxyModel implements Export.IProxyModel {
         return [];
     }
 
-    modelDidLoad$(segment$: Engine.Measure.ISegmentRef): void {
+    modelDidLoad$(segment$: Engine.Measure.ISegment): void {
         // todo
     }
 
