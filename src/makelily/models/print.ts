@@ -58,17 +58,26 @@ class PrintModel implements Export.IPrintModel {
 
     validate$(cursor$: Engine.ICursor): void {
         invariant(!!cursor$.header, "Cursor must have a valid header");
-        var defaultPrint                = getPrint(cursor$.header);
+        var defaultPrint                = extractDefaultPrintFromHeader(cursor$.header);
         var spec                        = deepAssign<MusicXML.Print>(this, defaultPrint);
-        cursor$.print$                  = new DefaultPrint(spec);
+        this.sync(spec);
+        cursor$.print$                  = this; // FIXME: inheritance for multiple papers
     }
 
     layout(cursor$: Engine.ICursor): Export.ILayout {
-        var defaultPrint                = getPrint(cursor$.header);
-        var spec                        = deepAssign<MusicXML.Print>(this, defaultPrint);
-        cursor$.print$                  = new DefaultPrint(spec);
+        cursor$.print$                  = this; // FIXME: inheritance for multiple papers
 
         return new PrintModel.Layout(this, cursor$);
+    }
+
+    sync(print: MusicXML.Print) {
+        var keys = Object.keys(Object(print));
+
+        for (var i = 0; i < keys.length; ++i) {
+            if (!(<any>this)[keys[i]]) {
+                (<any>this)[keys[i]] = (<any>print)[keys[i]];
+            }
+        }
     }
 
     /*---- I.2 MusicXML.Print -------------------------------------------------------------------*/
@@ -82,6 +91,9 @@ class PrintModel implements Export.IPrintModel {
     partAbbreviationDisplay:    MusicXML.PartAbbreviationDisplay;
     pageLayout:                 MusicXML.PageLayout;
     systemLayout:               MusicXML.SystemLayout;
+    /**
+     * DEPRECATED. Use staffLayouts
+     */
     staffSpacing:               number;
     staffLayouts:               MusicXML.StaffLayout[];
     pageNumber:                 string;
@@ -100,6 +112,19 @@ class PrintModel implements Export.IPrintModel {
 
     inspect() {
         return this.toXML();
+    }
+
+    /*---- III. Extensions ----------------------------------------------------------------------*/
+    pageMarginsFor(page: number): MusicXML.PageMargins {
+        for (var i = 0; i < this.pageLayout.pageMargins.length; ++i) {
+            var margins = this.pageLayout.pageMargins[i];
+            if (margins.type === MusicXML.OddEvenBoth.Both ||
+                    (margins.type === MusicXML.OddEvenBoth.Odd) === !!(page % 2)) {
+                return margins;
+            }
+        }
+        console.warn("No valid page margins for current page...");
+        return null;
     }
 }
 
@@ -159,47 +184,8 @@ function deepAssign<T>(a: T, b: T):T {
     }
 }
 
-class DefaultPrint implements MusicXML.Print {
-    /* MusicXML.Print */
-    measureNumbering:           MusicXML.MeasureNumbering;
-    partNameDisplay:            MusicXML.PartNameDisplay;
-    newSystem:                  boolean;
-    newPage:                    boolean;
-    blankPage:                  string;
-    measureLayout:              MusicXML.MeasureLayout;
-    partAbbreviationDisplay:    MusicXML.PartAbbreviationDisplay;
-    pageLayout:                 MusicXML.PageLayout;
-    systemLayout:               MusicXML.SystemLayout;
-    /**
-     * DEPRECATED. Use staffLayouts
-     */
-    staffSpacing:               number;
-    staffLayouts:               MusicXML.StaffLayout[];
-    pageNumber:                 string;
-
-    /* Convenience */
-    constructor(print: MusicXML.Print) {
-        var keys = Object.keys(Object(print));
-
-        for (var i = 0; i < keys.length; ++i) {
-            (<any>this)[keys[i]] = (<any>print)[keys[i]];
-        }
-    }
-    pageMarginsFor(page: number): MusicXML.PageMargins {
-        for (var i = 0; i < this.pageLayout.pageMargins.length; ++i) {
-            var margins = this.pageLayout.pageMargins[i];
-            if (margins.type === MusicXML.OddEvenBoth.Both ||
-                    (margins.type === MusicXML.OddEvenBoth.Odd) === !!(page % 2)) {
-                return margins;
-            }
-        }
-        console.warn("No valid page margins for current page...");
-        return null;
-    }
-}
-
-function getPrint(header: MusicXML.ScoreHeader): DefaultPrint {
-    return new DefaultPrint({
+function extractDefaultPrintFromHeader(header: MusicXML.ScoreHeader): MusicXML.Print {
+    return {
         blankPage:                  "",
         measureLayout:              null,
         measureNumbering: {
@@ -223,7 +209,7 @@ function getPrint(header: MusicXML.ScoreHeader): DefaultPrint {
         staffLayouts:               header.defaults.staffLayouts,
         staffSpacing:               null, // DEPRECATED
         systemLayout:               header.defaults.systemLayout
-    });
+    };
 }
 
 /**

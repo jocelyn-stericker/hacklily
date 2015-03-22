@@ -162,12 +162,18 @@ export function layoutMeasure(opts: IMeasureLayoutOptions): Measure.IMeasureLayo
  * @returns an approximate width for a measure that is not the first on a line.
  */
 export function approximateWidth(opts: IMeasureLayoutOptions): number {
-    invariant(isNaN(opts.measure.width), "Engine.approximateWidth(...) must be passed a measure without an exact width.\n" +
-        "Instead, it was passed a measure with opts.measure.width === " + opts.measure.width + ".\n" +
-        "This most likely means a measure was modified in a way that requires an updated layout, but its\n" +
-        "\"FrozenEngraved\" status was not cleared.");
+    invariant(isNaN(opts.measure.width) || opts.measure.width === null,
+        "Engine.approximateWidth(...) must be passed a measure without an exact width.\n" +
+        "Instead, it was passed a measure with opts.measure.width === %s.\n" +
+        "This most likely means a measure was modified in a way that requires an updated " +
+        "layout, but its \"FrozenEngraved\" status was not cleared.", opts.measure.width);
 
-    opts = <IMeasureLayoutOptions> _.extend({ _approximate: true, _detached: true }, opts);
+    invariant(!!opts.line, "An approximate line needs to be given to approximateWidth");
+
+    opts = <IMeasureLayoutOptions> _.extend({
+            _approximate: true,
+            _detached: true
+        }, opts);
     let layout = layoutMeasure(opts);
     return layout.width;
 }
@@ -211,7 +217,10 @@ export function justify(options: Options.ILayoutOptions, bounds: Options.ILineBo
 
     let expansionRemaining: number;
     let avgExpansion: number;
-    if (partial) {
+    if (!expandableCount) {
+        avgExpansion = 0;
+        expansionRemaining = 0;
+    } else if (partial) {
         let expansionRemainingGuess = bounds.right - 3 - x;
         let avgExpansionGuess = expansionRemainingGuess / expandableCount;
         let weight = Util.logistic((avgExpansionGuess - bounds.right / 80) / 20) * 2 / 3;
@@ -280,14 +289,12 @@ export function layoutLine$(options: Options.ILayoutOptions, bounds: Options.ILi
         return clean$[measure.uuid];
     });
 
-    return {
-        measureLayouts: justify(options, bounds, layouts)
-    };
+    return justify(options, bounds, layouts);
 }
 
 export function validate$(options$: Options.ILayoutOptions, memo$: Options.ILinesLayoutState): void {
     let factory         = options$.modelFactory;
-    let timestepHasType = factory.timestepHasType.bind(factory);
+    let searchHere      = factory.searchHere.bind(factory);
     let createModel     = factory.create.bind(factory);
 
     let lastAttribs: MusicXML.Attributes = null;
@@ -306,7 +313,10 @@ export function validate$(options$: Options.ILayoutOptions, memo$: Options.ILine
                 if (!segment) {
                     return;
                 }
-                if (!timestepHasType(segment, 0, IModel.Type.Attributes)) {
+                if (!searchHere(segment, 0, IModel.Type.Print).length) {
+                    segment.splice(0, 0, createModel(IModel.Type.Print));
+                }
+                if (!searchHere(segment, 0, IModel.Type.Attributes).length) {
                     segment.splice(0, 0, createModel(IModel.Type.Attributes));
                 }
             });
@@ -341,13 +351,29 @@ export function layout$(options: Options.ILayoutOptions,
 
     let bounds = Options.ILineBounds.calculate(options.pageLayout$, options.page$);
 
-    let widths = _.map(measures, measure => {
+    let widths = _.map(measures, (measure, idx) => {
+        // Create an array of the IMeasureParts of the previous, current, and next measures
+        let neighbourMeasures: Measure.IMeasurePart[] = <any> _.flatten([
+            !!measures[idx - 1] ? _.values(measures[idx - 1].parts) : <Measure.IMeasurePart> {
+                voices: [],
+                staves: []
+            },
+            _.values(measure.parts),
+            !!measures[idx + 1] ? _.values(measures[idx + 1].parts) : <Measure.IMeasurePart> {
+                voices: [],
+                staves: []
+            }
+        ]);
+        // Join all of the above models
+        let neighbourModels = <Measure.ISegment[]> _.flatten(
+            _.map(neighbourMeasures, m => m.voices.concat(m.staves))
+        );
         if (!(measure.uuid in width$)) {
             width$[measure.uuid] = approximateWidth({
                 attributes:     options.attributes,
                 factory:        options.modelFactory,
                 header:         options.header,
-                line:           null,
+                line:           Ctx.ILine.create(neighbourModels),
                 measure:        measure,
                 prevByStaff:    [], // FIXME:
                 staves:         _.map(_.values(measure.parts), p => p.staves),

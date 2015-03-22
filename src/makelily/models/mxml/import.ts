@@ -174,9 +174,9 @@ export function _extractMXMLPartsAndMeasures(input: MusicXML.ScoreTimewise,
                         }
                         // Make sure there is a staff segment reserved for the given staff
                         if (!(staff in target.output.staves)) {
-                            target.output.voices[staff] = <any> [];
-                            target.output.voices[staff].owner = staff;
-                            target.output.voices[staff].ownerType = Engine.Measure.OwnerType.Staff;
+                            target.output.staves[staff] = <any> [];
+                            target.output.staves[staff].owner = staff;
+                            target.output.staves[staff].ownerType = Engine.Measure.OwnerType.Staff;
                         }
                         let newNote = factory.fromSpec(input);
                         target.output.voices[voice].push(newNote);

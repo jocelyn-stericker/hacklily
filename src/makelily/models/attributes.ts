@@ -67,9 +67,6 @@ class AttributesModel implements Export.IAttributesModel {
 
         invariant(this._parent !== this, "Internal error. " +
             "AttributesModel.validate$() must not be called in a context with itself as a parent!");
-        if (!this.divisions) {
-            console.log(cursor$);
-        }
         invariant(!!this.divisions, "Internal error. " +
             "AttributesModel.validate$() requires divisions to be set already.");
 
@@ -281,7 +278,7 @@ module AttributesModel {
             var nextIsNote = cursor$.factory.modelHasType(next, Engine.IModel.Type.Chord);
 
             this.ksVisible = !!model._keySignatures && !!model._keySignatures.length || isFirstInLine;
-            this.tsVisible = !!model._times && !!model._times.length || isFirstInLine;
+            this.tsVisible = !!model._times && !!model._times.length; // TODO: || isFirstInPage;
             this.clefVisible = !!model._clefs && !!model._clefs.length || isFirstInLine;
 
             /*---- Clef layout ------------------------------------*/

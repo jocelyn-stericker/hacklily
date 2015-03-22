@@ -46,8 +46,7 @@ export module ILinesLayoutMemo {
     }
 }
 
-export interface ILineLayoutResult {
-    measureLayouts: Measure.IMeasureLayout[];
+export interface ILineLayoutResult extends Array<Measure.IMeasureLayout> {
 }
 
 export interface ILineBounds {

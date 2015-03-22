@@ -20,6 +20,7 @@
 
 import MusicXML             = require("musicxml-interfaces");
 import React                = require("react");
+import _                    = require("lodash");
 
 import Engine               = require("../models/engine");
 
@@ -28,18 +29,24 @@ class Page extends React.Component<Page.IProps, Page.IState> {
         const print         = this.props.print;
         const defaults      = this.props.scoreHeader.defaults;
         const scale40       = defaults.scaling.millimeters / defaults.scaling.tenths * 40;
-        const widthMM       = this.props.renderTarget === Page.RenderTarget.SvgWeb ?
+        const widthMM       = this.props.renderTarget === Page.RenderTarget.SvgExport ?
                                 Engine.RenderUtil.tenthsToMM(
                                     scale40, print.pageLayout.pageWidth) + "mm" :
                                 "100%";
-        const heightMM      = this.props.renderTarget === Page.RenderTarget.SvgWeb ?
+        const heightMM      = this.props.renderTarget === Page.RenderTarget.SvgExport ?
                                 Engine.RenderUtil.tenthsToMM(
                                     scale40, print.pageLayout.pageHeight) + "mm" :
                                 "100%";
 
+        const lineLayouts   = this.props.lineLayouts;
+        _.forEach(lineLayouts, (measureLayouts, idx) => {
+            console.log(`Line ${idx} has ${measureLayouts.length} measures`);
+            console.log(_.map(measureLayouts, measure => measure.width));
+        });
+
         return React.DOM.svg(
             {
-                "data-page":    print.pageNumber,
+                "data-page":    this.props.renderTarget === Page.RenderTarget.SvgExport ? undefined : print.pageNumber,
                 ref:            "svg" + print.pageNumber,
 
                 height:         heightMM,
@@ -66,6 +73,7 @@ module Page {
     export interface IProps {
         scoreHeader:    MusicXML.ScoreHeader;
         print:          MusicXML.Print;
+        lineLayouts:    Engine.Options.ILineLayoutResult[];
         renderTarget:   RenderTarget;
 
         onClick?:       (evt: React.MouseEvent) => void;

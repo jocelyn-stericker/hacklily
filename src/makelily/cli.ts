@@ -131,7 +131,7 @@ function cannotRead(err: any) {
             if (verbose) {
                 console.warn("Reading from %s", argv.xml[0]);
             }
-            const render = _.partialRight(Views.render, 1);
+            const render = _.partialRight(Views.render, 0);
             if (argv.xml[0] === "<stdin>") {
                 readStdin((<any>_).flow(Models.importXML, render, log));
             } else {
