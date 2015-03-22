@@ -80,7 +80,7 @@ class ChordModelImpl implements ChordModel.IChordModel {
 
         // TODO: overfill
         // TODO: rhythmic spelling
-        // TODO: the doumcnet must end with a marker
+        // TODO: the document must end with a marker
     }
 
     layout(cursor$: Engine.ICursor): ChordModel.IChordLayout {
@@ -220,16 +220,38 @@ module ChordModelImpl {
             this.x$ = cursor$.x$;
             this.division = cursor$.division$;
 
+            /*---- Move cursor in time ------------------*/
+
             if (model.divCount === -1) {
                 cursor$.division$ += cursor$.staff.totalDivisions;
             } else {
                 cursor$.division$ += model.divCount;
             }
 
+            /*---- Move cursor by width -----------------*/
+
             // TODO: Each note's width has a linear component proportional to log of its duration
             // with respect to the shortest length
+            const divisions = cursor$.staff.attributes.divisions;
+            let extraWidth = (Math.log(model.divCount) - Math.log(cursor$.line.shortestCount *
+                    divisions)) / Math.log(2) / 3 * 40;
+            const grace = model[0].grace; // TODO: What if only some notes are grace?
+            if (grace) {
+                extraWidth /= 10; // TODO: Put grace notes in own segment
+            }
+            const baseWidth = grace ? 11.4 : 22.8;
 
-            // TODO: set data for view
+            const accidentalWidth = 0; // TODO: displayedAccidentals ? 9.6*(grace ? 0.6 : 1.0) : 0;
+            const totalWidth = baseWidth + extraWidth + accidentalWidth;
+
+            // TODO
+            // const lyricWidth = this.getLyricWidth();
+            // totalWidth = Math.max(lyricWidth/2, totalWidth);
+            invariant(isFinite(totalWidth), "Invalid width %s", totalWidth);
+
+            cursor$.x$ += totalWidth;
+
+            /*---- Misc ---------------------------------*/
 
             // TODO: set min/max padding
             // TODO: set invisible counter
@@ -258,8 +280,6 @@ module ChordModelImpl {
     Layout.prototype.expandable = true;
     Layout.prototype.priority = Engine.IModel.Type.Chord;
     Layout.prototype.boundingBoxes$ = [];
-    Object.freeze(Layout.prototype.boundingBoxes$);
-
 }
 
 export = ChordModelImpl;

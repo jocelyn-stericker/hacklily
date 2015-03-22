@@ -19,11 +19,20 @@
 import MusicXML         = require("musicxml-interfaces");
 import React            = require("react");
 import _                = require("lodash");
+import invariant        = require("react/lib/invariant");
 
 import Engine           = require("./models/engine");
 import Page             = require("./views/page");
 var $                   = React.createFactory;
 
+/**
+ * Renders a single page starting at `startMeasure`.
+ * 
+ * @param doc Validated document
+ * 
+ * @param startMeasure the index from 0 (not to be confused with the
+ *        measure number string) of the first measure.
+ */
 export function render(doc: Engine.IDocument, startMeasure: number): string {
     let factory = doc.factory;
     if (!factory) {
@@ -33,19 +42,41 @@ export function render(doc: Engine.IDocument, startMeasure: number): string {
     if (!firstMeasure) {
         throw new Error("No such measure " + startMeasure);
     }
-    let partWithPrint = _.find(firstMeasure.parts, part =>
-            factory.modelHasType(part.staves[1][0], Engine.IModel.Type.Print));
+    let partWithPrint = _.find(firstMeasure.parts, part => !!part.staves[1] &&
+            factory.searchHere(part.staves[1], 0, Engine.IModel.Type.Print).length);
     let print: MusicXML.Print;
+
     if (partWithPrint) {
-        print = <any> partWithPrint.staves[1][0];
+        print = <any> factory.searchHere(partWithPrint.staves[1], 0, Engine.IModel.Type.Print)[0];
+        invariant(!!print, "Wait what?");
     } else {
         throw new Error("Part does not start with a Print element");
     }
 
-    return React.renderToString($(Page)({
+    let memo$ = Engine.Options.ILinesLayoutMemo.create();
+    const lineLayouts = Engine.layout$({
+        attributes:     null,
+        measures:       doc.measures,
+        header:         doc.header,
+        pageLayout$:    _.clone(doc.header.defaults.pageLayout),
+        page$:          0,
+        modelFactory:   doc.factory
+    }, memo$);
+
+    const core = React.renderToStaticMarkup($(Page)({
         scoreHeader:    doc.header,
-        print:          print,
+        lineLayouts:    lineLayouts,
+        "print":        print,
         renderTarget:   Page.RenderTarget.SvgExport
     }));
+
+    return `<?xml version="1.0" encoding="UTF-8" standalone="no"?>${
+        core.replace("<svg", "<svg xmlns=\"http://www.w3.org/2000/svg\"")
+            .replace(/class="mn_"/g, "font-family='bravura'")
+            .replace(/class="tn_"/g, "font-family='Alegreya'")
+            .replace(/class="mmn_"/g, "font-family='Alegreya' " +
+                        "font-style='italic' stroke='#7a7a7a'")
+            .replace(/class="bn_"/g, "font-family='Alegreya' " +
+                    "font-style='italic' text-anchor='end' stroke='#7a7a7a'")}`;
 }
 

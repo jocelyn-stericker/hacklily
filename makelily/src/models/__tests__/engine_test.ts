@@ -65,7 +65,10 @@ describe("[engine.ts]", function() {
                 },
                 prevByStaff:    [],
                 x:              100,
-                line:           null,
+                line:           {
+                    barOnLine:      0,
+                    shortestCount:  42
+                },
                 factory:        ETestUtil.fakeAttributeChordFactory
             });
             // We've tested this exact case in ISegment.layout$, so we can be
@@ -110,7 +113,10 @@ describe("[engine.ts]", function() {
                 },
                 prevByStaff:    [],
                 x:              100,
-                line:           null,
+                line:           {
+                    barOnLine:      0,
+                    shortestCount:  42
+                },
                 factory:        ETestUtil.fakeAttributeChordFactory
             });
             expect(width).to.equal(90); // 100 - 10 for attribute 1. See ETestUtil.createFakeStaffSegment
@@ -280,10 +286,10 @@ describe("[engine.ts]", function() {
 
             var result = Engine.layout$(contextOptions, memo$);
             expect(result.length).to.equal(2);
-            var l1bars = result[0].measureLayouts;
+            var l1bars = result[0];
             var l1EndEls = l1bars[l1bars.length - 1].elements[0];
 
-            expect(result[0].measureLayouts[0].elements[0][0].x$).to.be.closeTo(result[1].measureLayouts[0].elements[0][0].x$, 0.05);
+            expect(result[0][0].elements[0][0].x$).to.be.closeTo(result[1][0].elements[0][0].x$, 0.05);
             expect(l1EndEls[l1EndEls.length - 1].x$).to.equal(1000 - 20 - 10);
         });
     });
@@ -312,13 +318,21 @@ describe("[engine.ts]", function() {
                     }
                     return modelType === Engine.IModel.Type.Chord;
                 },
-                timestepHasType: (models: Engine.IModel[], idx: number,
-                        modelType: Engine.IModel.Type): boolean => {
+                searchHere: (models: Engine.IModel[], idx: number, modelType: Engine.IModel.Type):
+                        Engine.IModel[] => {
                     let model = models[idx];
                     if (model.divCount === 0) {
-                        return modelType === Engine.IModel.Type.Attributes;
+                        if (modelType === Engine.IModel.Type.Attributes) {
+                            return [model];
+                        } else {
+                            return [];
+                        }
                     }
-                    return modelType === Engine.IModel.Type.Chord;
+                    if (modelType === Engine.IModel.Type.Chord) {
+                        return [model];
+                    } else {
+                        return [];
+                    }
                 },
                 fromSpec: (model: any): Engine.IModel => {
                     throw "Not implemented";

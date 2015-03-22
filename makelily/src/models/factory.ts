@@ -46,21 +46,22 @@ class Factory implements Engine.IModel.IFactory {
     }
 
     /**
-     * Returns 'true' if the a model that occurs at the current time has one of the types
-     * specified, and 'false' otherwise.
+     * Returns all models in models with types `types` at the timestep of the model at models[idx],
+     * or an empty array if none exist.
      */
-    timestepHasType(models: Engine.IModel[], idx: number, ...types: Engine.IModel.Type[]): boolean {
+    searchHere(models: Engine.IModel[], idx: number, ...types: Engine.IModel.Type[]): Engine.IModel[] {
+        let filtered: Engine.IModel[] = [];
         while (idx > 0 && !models[idx - 1].divCount) {
             --idx;
         }
         for (let i = idx; i < models.length; ++i) {
             if (this.modelHasType(models[i], ...types)) {
-                return true;
+                filtered.push(models[i]);
             } else if (models[i].divCount) {
-                return false;
+                break;
             }
         }
-        return false;
+        return filtered;
     }
 
     fromSpec(spec: any): Engine.IModel {

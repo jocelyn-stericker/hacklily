@@ -27,6 +27,7 @@ import child_process    = require("child_process");
 import fs               = require("fs");
 
 import Models           = require("../models");
+import Views            = require("../views");
 
 function readFile(file: string, onEnd: (s: string) => void) {
     fs.readFile(file, "utf8", function (err, data) {
@@ -41,17 +42,19 @@ describe("import/export dtd validation", function() {
     const root = "vendor/lilypond-regression";
     const files = fs.readdirSync(root); // needs to be setup before leaving 'describe'
     _.forEach(files, file => {
-        if (file.match(/\.xml$/)) {
+        if (file.match(/01a\.xml$/)) {
             describe(file, function() {
-                it("can be imported, exported, and validated", function(done) {
+                it("can be imported, exported, validated, and rendered", function(done) {
                     readFile(root + "/" + file, function(str) {
                         try {
-                            let out = (<any>_).flow(Models.importXML, Models.exportXML)(str);
+                            let score = Models.importXML(str);
+                            let mxmlOut = Models.exportXML(score);
+
                             let env = Object.create(process.env);
                             env.XML_CATALOG_FILES = "./vendor/musicxml-dtd/catalog.xml";
                             let proc = (<any>child_process).spawnSync("xmllint",
                                     ["--valid", "--noout", "--nonet", "-"], {
-                                input: out,
+                                input: mxmlOut,
                                 env: env
                             });
                             const stdout = proc.stdout + "";
@@ -59,6 +62,8 @@ describe("import/export dtd validation", function() {
                             if (stdout || stderr) {
                                 done(new Error(stderr || stdout || proc.error));
                             } else {
+                                let render = Views.render(score, 0);
+                                console.log(render);
                                 done();
                             }
                         } catch(err) {

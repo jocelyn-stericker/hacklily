@@ -66,7 +66,7 @@ module IModel {
         create: (modelType: IModel.Type, options?: any) => IModel;
         fromSpec: (spec: any) => IModel;
         modelHasType: (model: IModel, ...modelTypes: IModel.Type[]) => boolean;
-        timestepHasType: (models: IModel[], idx: number, ...types: IModel.Type[]) => boolean;
+        searchHere: (models: IModel[], idx: number, ...types: IModel.Type[]) => IModel[];
     }
 
     export enum FrozenLevel {
@@ -137,13 +137,8 @@ module IModel {
         expandable?: boolean;
     }
     export module ILayout {
-        function replacer(key: string, value: any) {
-            return key === "model" ? undefined : value;
-        }
         export function detach(layout: ILayout) {
-            var clone: ILayout = JSON.parse(JSON.stringify(layout, replacer));
-            clone.model = layout.model;
-            return clone;
+            return Object.create(layout); // This is a bit sketchy, since if the original changes, so will the new
         }
     }
 
