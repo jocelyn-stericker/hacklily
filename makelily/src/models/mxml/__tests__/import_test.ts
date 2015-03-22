@@ -35,6 +35,7 @@ import Chord        = require("../../chord");
 import Direction    = require("../../direction");
 import Print        = require("../../print");
 import Sound        = require("../../sound");
+import Spacer       = require("../../spacer");
 
 var expect          = chai.expect;
 
@@ -183,19 +184,20 @@ describe("[mxml/import.ts]", function() {
     describe("_extractMXMLPartsAndMeasures", function() {
         it("parses a basic single-part song", function() {
             var factory = new Factory([Attributes, Chord, Print, Sound, Barline]);
+                // does not need spacer
 
             var mxmljson = MusicXML.parse(helloWorldXML);
             var partsAndMeasures = MXMLImport._extractMXMLPartsAndMeasures(mxmljson, factory);
             expect(partsAndMeasures.measures.length).to.eq(1);
-            expect(partsAndMeasures.measures[0].parts["P1"].staves[1].staffSegment.models.length).to.eq(4);
-            expect(partsAndMeasures.measures[0].parts["P1"].staves[1].staffSegment.models[0].divCount).to.eq(0);
-            expect(partsAndMeasures.measures[0].parts["P1"].staves[1].staffSegment.models[1].divCount).to.eq(0);
-            expect(partsAndMeasures.measures[0].parts["P1"].staves[1].staffSegment.models[2].divCount).to.eq(8);
-            expect(partsAndMeasures.measures[0].parts["P1"].staves[1].staffSegment.models[3].divCount).to.eq(0);
-            expect(partsAndMeasures.measures[0].parts["P1"].voices[1].voiceSegment.models.length).to.eq(1);
+            expect(partsAndMeasures.measures[0].parts["P1"].staves[1].length).to.eq(4);
+            expect(partsAndMeasures.measures[0].parts["P1"].staves[1][0].divCount).to.eq(0);
+            expect(partsAndMeasures.measures[0].parts["P1"].staves[1][1].divCount).to.eq(0);
+            expect(partsAndMeasures.measures[0].parts["P1"].staves[1][2].divCount).to.eq(8);
+            expect(partsAndMeasures.measures[0].parts["P1"].staves[1][3].divCount).to.eq(0);
+            expect(partsAndMeasures.measures[0].parts["P1"].voices[1].length).to.eq(1);
         });
         it("parses multi-voice, multi-staff songs with backup", function() {
-            var factory = new Factory([Attributes, Direction, Chord, Print, Sound, Barline]);
+            var factory = new Factory([Attributes, Direction, Chord, Print, Sound, Barline, Spacer]);
 
             var mxmljson = MusicXML.parse(lily43eXML);
             var partsAndMeasures = MXMLImport._extractMXMLPartsAndMeasures(mxmljson, factory);

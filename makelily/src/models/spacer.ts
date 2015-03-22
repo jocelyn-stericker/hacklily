@@ -18,7 +18,7 @@
 
 import Engine           = require("./engine");
 
-class BeamGroupModel implements Export.IBeamGroupModel {
+class SpacerModel implements Export.ISpacerModel {
 
     /*---- I.1 IModel ---------------------------------------------------------------------------*/
 
@@ -36,55 +36,47 @@ class BeamGroupModel implements Export.IBeamGroupModel {
     }
 
     modelDidLoad$(segment$: Engine.Measure.ISegment): void {
-        // todo
+        // Nothing to do
     }
 
     validate$(cursor$: Engine.ICursor): void {
-        // todo
+        // Nothing to do
     }
 
     layout(cursor$: Engine.ICursor): Export.ILayout {
-        // mutates cursor$ as required.
-        return new BeamGroup.Layout(this, cursor$);
+        return new SpacerModel.Layout(this, cursor$);
     }
-
-    /*---- I.2 C.MusicXML.BeamGroup -------------------------------------------------------------*/
 
     /*---- Validation Implementations -----------------------------------------------------------*/
 
-    constructor() {
-        // TODO
+    constructor(target: Engine.IModel) {
+        this._target = target;
     }
 
     toXML(): string {
-        return "<!-- BeamGroup -->\n";
+        return `<!-- spacer: ${this.divCount} divs -->\n`;
     }
 
     inspect() {
         return this.toXML();
     }
+
+    _target: Engine.IModel;
 }
 
-BeamGroupModel.prototype.divCount = 0;
-BeamGroupModel.prototype.frozenness = Engine.IModel.FrozenLevel.Warm;
-
-module BeamGroup {
+module SpacerModel {
     export class Layout implements Export.ILayout {
-        constructor(model: BeamGroupModel, cursor$: Engine.ICursor) {
+        constructor(model: SpacerModel, cursor$: Engine.ICursor) {
             this.model = model;
             this.x$ = cursor$.x$;
             this.division = cursor$.division$;
-
-            /*---- Geometry ---------------------------------------*/
-
-            // cursor$.x$ += 0;
         }
 
         /*---- ILayout ------------------------------------------------------*/
 
         // Constructed:
 
-        model: BeamGroupModel;
+        model: SpacerModel;
         x$: number;
         division: number;
 
@@ -98,24 +90,27 @@ module BeamGroup {
 
     Layout.prototype.mergePolicy = Engine.IModel.HMergePolicy.Min;
     Layout.prototype.expandable = false;
-    Layout.prototype.priority = Engine.IModel.Type.BeamGroup;
+    Layout.prototype.priority = Engine.IModel.Type.Spacer;
     Layout.prototype.boundingBoxes$ = [];
     Object.freeze(Layout.prototype.boundingBoxes$);
-};
+}
+
+SpacerModel.prototype.divCount = 0;
+SpacerModel.prototype.frozenness = Engine.IModel.FrozenLevel.Warm;
 
 /**
- * Registers BeamGroup in the factory structure passed in.
+ * Registers Spacer in the factory structure passed in.
  */
 function Export(constructors: { [key: number]: any }) {
-    constructors[Engine.IModel.Type.BeamGroup] = BeamGroup;
+    constructors[Engine.IModel.Type.Spacer] = SpacerModel;
 }
 
 module Export {
-    export interface IBeamGroupModel extends Engine.IModel {
+    export interface ISpacerModel extends Engine.IModel {
     }
 
     export interface ILayout extends Engine.IModel.ILayout {
-        model: IBeamGroupModel;
+        model: ISpacerModel;
     }
 }
 

@@ -164,8 +164,8 @@ export interface IMutableMeasure /* matches everything in MusicXML.Measure excep
     nonControlling?: boolean;
     parts: {
         [x: string]: {
-            voices:  Measure.ISegmentRef[];
-            staves:  Measure.ISegmentRef[];
+            voices:  Measure.ISegment[];
+            staves:  Measure.ISegment[];
         }
     };
 }
@@ -186,11 +186,11 @@ export interface ILine {
 }
 
 export module ILine {
-    export function create(segments: Measure.ISegmentRef[]): ILine {
+    export function create(segments: Measure.ISegment[]): ILine {
         return {
             barOnLine: 0,
             shortestCount: _.reduce(segments, (shortest, segment) =>
-                segment ? _.reduce((segment.voiceSegment || segment.staffSegment).models, (shortest, model) =>
+                segment ? _.reduce(segment, (shortest, model) =>
                     Math.min(shortest, model && model.divCount ? model.divCount : Number.MAX_VALUE),
                 shortest) : shortest,
             Number.MAX_VALUE)

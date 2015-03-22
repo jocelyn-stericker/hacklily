@@ -130,21 +130,22 @@ export interface IPart {
 };
 
 export interface IMeasureLayoutOptions {
-    measure: Measure.IMutableMeasure;
-    prevByStaff: IModel[];
+    attributes:     MusicXML.Attributes;
+    measure:        Measure.IMutableMeasure;
+    prevByStaff:    IModel[];
 
     /** Starts at 0. */
-    x: number;
+    x:              number;
 
-    line: Ctx.ILine;
+    line:           Ctx.ILine;
 
     /** @private approximate minimum width is being calculated */
-    _approximate?: boolean;
+    _approximate?:  boolean;
 
     /** @private does not have own attributes (true if approximate or grace notes) */
-    _detached?: boolean;
+    _detached?:     boolean;
 
-    factory: IModel.IFactory;
+    factory:        IModel.IFactory;
 }
 
 /** 
@@ -156,23 +157,22 @@ export interface IMeasureLayoutOptions {
 export function layoutMeasure(opts: IMeasureLayoutOptions): Measure.IMeasureLayout {
     let measureCtx = Ctx.IMeasure.detach(opts.measure, opts.x);
 
-    let voiceRefs = <Measure.ISegmentRef[]> _.flatten(_.map(<{ voices: Measure.ISegmentRef[] }[]> _.values(opts.measure.parts),
-                    part => part.voices), true);
-    let staffRefs = <Measure.ISegmentRef[]> _.flatten(_.map(<{ staves: Measure.ISegmentRef[] }[]> _.values(opts.measure.parts),
-                    part => part.staves), true);
+    let voices = <Measure.ISegment[]> _.flatten(_.map(_.values(opts.measure.parts), part => part.voices));
+    let staves = <Measure.ISegment[]> _.flatten(_.map(_.values(opts.measure.parts), part => part.staves));
 
-    let refs = voiceRefs.concat(staffRefs);
+    let segments = _.filter(voices.concat(staves), s => !!s);
 
     let line = opts.line;
 
     return _processMeasure({
-        line: line,
-        measure: measureCtx,
-        prevByStaff: opts.prevByStaff,
-        segments: refs,
-        _approximate: opts._approximate,
-        _detached: opts._detached,
-        factory: opts.factory
+        attributes:     opts.attributes,
+        line:           line,
+        measure:        measureCtx,
+        prevByStaff:    opts.prevByStaff,
+        segments:       segments,
+        _approximate:   opts._approximate,
+        _detached:      opts._detached,
+        factory:        opts.factory
     });
 }
 
@@ -271,16 +271,15 @@ export function justify(options: Options.ILayoutOptions, bounds: Options.ILineBo
 export function layoutLine$(options: Options.ILayoutOptions, bounds: Options.ILineBounds,
         memo$: Options.ILinesLayoutState): Options.ILineLayoutResult {
     let measures = options.measures;
+    let attributes = options.attributes;
     let clean$ = memo$.clean$;
 
     let allModels = _.reduce(measures, function(memo, measure) {
-        let voiceRefs$ = <Measure.ISegmentRef[]> _.flatten(_.map(<{ voices: Measure.ISegmentRef[] }[]> _.values(measure.parts),
-                        part => part.voices), true);
-        let staffRefs$ = <Measure.ISegmentRef[]> _.flatten(_.map(<{ staves: Measure.ISegmentRef[] }[]> _.values(measure.parts),
-                        part => part.staves), true);
+        let voiceSegments$ = <Measure.ISegment[]> _.flatten(_.map(_.values(measure.parts), part => part.voices));
+        let staffSegments$ = <Measure.ISegment[]> _.flatten(_.map(_.values(measure.parts), part => part.staves));
 
-        let refs = voiceRefs$.concat(staffRefs$);
-        return memo.concat(refs);
+        let segments = _.filter(voiceSegments$.concat(staffSegments$), s => !!s);
+        return memo.concat(segments);
     }, []);
     let line = Ctx.ILine.create(allModels);
 
@@ -288,6 +287,7 @@ export function layoutLine$(options: Options.ILayoutOptions, bounds: Options.ILi
         line.barOnLine = measureIdx;
         if (!(measure.uuid in clean$)) {
             clean$[measure.uuid] = layoutMeasure({
+                attributes: attributes,
                 measure: measure,
                 prevByStaff: [],    // FIXME: include this.
                 x: 0,               // Final offset set recorded in justify(...).
@@ -295,6 +295,8 @@ export function layoutLine$(options: Options.ILayoutOptions, bounds: Options.ILi
                 factory: options.modelFactory
             });
         }
+        // Update attributes for next measure
+        attributes = clean$[measure.uuid].attributes;
         return clean$[measure.uuid];
     });
 
@@ -310,46 +312,40 @@ export function validate$(options$: Options.ILayoutOptions, memo$: Options.ILine
 
     let lastAttribs: MusicXML.Attributes = null;
 
-    _.forEach(options$.measures, function(measure) {
+    _.forEach(options$.measures, function validateMeasure(measure) {
         if (!(measure.uuid in memo$.clean$)) {
-            let voiceRefs$ = <Measure.ISegmentRef[]>
-                    _.flatten(_.map(<{ voices: Measure.ISegmentRef[] }[]> _.values(measure.parts),
-                            part => part.voices), true);
-
-            let staffRefs$ = <Measure.ISegmentRef[]>
-                    _.flatten(_.map(<{ staves: Measure.ISegmentRef[] }[]> _.values(measure.parts),
-                            part => part.staves), true);
+            let voiceSegments$ = <Measure.ISegment[]> _.flatten(_.map(_.values(measure.parts), part => part.voices));
+            let staffSegments$ = <Measure.ISegment[]> _.flatten(_.map(_.values(measure.parts), part => part.staves));
 
             let measureCtx = Ctx.IMeasure.detach(measure, 0);
-            let refs = voiceRefs$.concat(staffRefs$);
+            let segments = _.filter(voiceSegments$.concat(staffSegments$), s => !!s);
 
-            _.forEach(refs, ref => Measure.resetSegment$(ref, null, factory));
-            Measure.normalizeDivisons$(refs, 0);
-
-            _.forEach(staffRefs$, function(ref) {
-                if (!ref) {
+            _.forEach(staffSegments$, function(segment) {
+                if (!segment) {
                     return;
                 }
-                let models = ref.staffSegment.models;
-                if (!modelHasType(models[0], IModel.Type.Attributes)) {
-                    models.splice(0, 0, createModel(IModel.Type.Attributes));
+                if (!modelHasType(segment[0], IModel.Type.Attributes)) {
+                    segment.splice(0, 0, createModel(IModel.Type.Attributes));
                 }
             });
 
-            // The layout function is overloaded to provide validation.
-            _processMeasure({
-                line: null,
-                measure: measureCtx,
-                prevByStaff: null,
-                segments: refs,
-                _approximate: true,
-                _detached: true,
-                _noAlign: true,
-                _validateOnly: true, // <-- Just validate.
-                factory: factory
-            });
+            let divisions = Measure.normalizeDivisons$(segments, 0);
+            // todo: validate divisions
 
-            console.log(measureCtx);
+            // The layout function is overloaded to provide validation.
+            let outcome = _processMeasure({
+                attributes:     lastAttribs,
+                line:           null,
+                measure:        measureCtx,
+                prevByStaff:    null,
+                segments:       segments,
+                _approximate:   true,
+                _detached:      true,
+                _noAlign:       true,
+                _validateOnly:  true, // Just validate, don't make a layout
+                factory:        factory
+            });
+            lastAttribs = outcome.attributes;
         }
     });
 }
@@ -366,6 +362,7 @@ export function layout$(options: Options.ILayoutOptions,
     let widths = _.map(measures, measure => {
         if (!(measure.uuid in width$)) {
             width$[measure.uuid] = approximateWidth({
+                attributes: options.attributes,
                 measure: measure,
                 prevByStaff: [], // FIXME:
                 staves: _.map(_.values(measure.parts), p => p.staves),
@@ -380,6 +377,7 @@ export function layout$(options: Options.ILayoutOptions,
 
     function newLayoutWithoutMeasures(): Options.ILayoutOptions {
         return {
+            attributes: null,
             measures: [],
             pageLayout: options.pageLayout,
             finalLine: false,

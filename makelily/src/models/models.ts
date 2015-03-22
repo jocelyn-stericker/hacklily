@@ -33,6 +33,7 @@ import MXMLImport       = require("./mxml/import");
 import Print            = require("./print");
 import Proxy            = require("./proxy");
 import Sound            = require("./sound");
+import Spacer           = require("./spacer");
 
 export function makeFactory() {
     return new Factory([
@@ -46,7 +47,8 @@ export function makeFactory() {
             Harmony,
             Print,
             Proxy,
-            Sound
+            Sound,
+            Spacer
     ]);
 }
 
@@ -63,10 +65,11 @@ export function importXML(src: string): Engine.IDocument {
 
     let memo$ = Engine.Options.ILinesLayoutMemo.create();
     let contextOptions: Engine.Options.ILayoutOptions = {
-        measures: score.measures,
-        pageLayout: score.header.defaults.pageLayout,
-        page$: 0,
-        modelFactory: factory
+        attributes:     null,
+        measures:       score.measures,
+        pageLayout:     score.header.defaults.pageLayout,
+        page$:          0,
+        modelFactory:   factory
     }
     Engine.validate$(contextOptions, memo$);
     
@@ -83,8 +86,8 @@ export function exportXML(score: Engine.IDocument): string {
             out += `  <part id="${id}">\n`;
             // TODO: merge
             _.forEach(part.voices, voice => {
-                if (voice && voice.voiceSegment) {
-                    out += (_.map(voice.voiceSegment.models, model =>
+                if (voice) {
+                    out += (_.map(voice, model =>
                             (<any>model).toXML())
                                 .join("\n")
                                 .split("\n")
@@ -93,8 +96,8 @@ export function exportXML(score: Engine.IDocument): string {
                 }
             });
             _.forEach(part.staves, staff => {
-                if (staff && staff.staffSegment) {
-                    out += (_.map(staff.staffSegment.models, model =>
+                if (staff) {
+                    out += (_.map(staff, model =>
                                 (<any>model).toXML())
                                     .join("\n")
                                     .split("\n")

@@ -34,118 +34,66 @@ import Util             = require("./util");
  * monotonic parts element.
  */
 export interface IMutableMeasure {
-    idx:             number; // 0-indexed, can change
-    uuid:            number;
-    number:          string; // 1-indexed
-    implicit?:       boolean;
-    width?:          number;
-    nonControlling?: boolean;
+    idx:                number; // 0-indexed, can change
+    uuid:               number;
+    number:             string; // 1-indexed
+    implicit?:          boolean;
+    width?:             number;
+    nonControlling?:    boolean;
     parts: {
-        [x: string]: IMeasurePart;
+        [x: string]:    IMeasurePart;
     };
 }
 
 export interface IMeasurePart {
-    voices:          ISegmentRef[];
-    staves:          ISegmentRef[];
+    voices:             ISegment[];
+    staves:             ISegment[];
 }
 
-export interface ISegment {
-    models:          IModel[];
+export interface ISegment extends Array<IModel> {
+    owner:              number;
+    ownerType:          OwnerType;
+    divisions:          number;
 }
 
-export interface IStaffSegment extends ISegment {
-    attributes:      MusicXML.Attributes;
-    models:          IModel[];
-}
-
-export interface IVoiceSegment extends ISegment {
-    divisions:       number;
-    models:          IModel[];
-}
-
-export interface ISegmentRef {
-    staffSegment?:   IStaffSegment;
-    voiceSegment?:   IVoiceSegment;
-
-    /** 
-     * The index of the owner staff or voice.
-     */
-    owner:           number;
-}
-
-/**
- * Resets the attributes of a segment to what it should be at the start of a segment.
- */
-export function resetSegment$(segment$: ISegmentRef, defaultAttributes: MusicXML.Attributes,
-        factory: IModel.IFactory) {
-    if (!segment$) {
-        return;
-    }
-
-    if (segment$.staffSegment) {
-        let updatedAttributes = false;
-        if (defaultAttributes) {
-            segment$.staffSegment.attributes = defaultAttributes;
-            updatedAttributes = true;
-        } else {
-            for (let i = 0; i < segment$.staffSegment.models.length; ++i) {
-                if (factory.modelHasType(segment$.staffSegment.models[i], IModel.Type.Attributes)) {
-                    segment$.staffSegment.attributes = <any> segment$.staffSegment.models[i];
-                    updatedAttributes = true;
-                    break;
-                }
-            }
-        }
-        invariant(updatedAttributes, "Could not find valid attributes.");
-    }
+export enum OwnerType {
+    Voice               = 0,
+    Staff               = 1
 }
 
 /** 
  * Given a set of segments, scales divisions so that they are compatible.
+ * 
+ * Returns the division count.
  */
-export function normalizeDivisons$(segments$: ISegmentRef[], factor: number = 0) {
-    var divisions = _.reduce(segments$, (divisions, segment) => {
-            return Util.lcm(
-                divisions,
-                segment ?
-                    (segment.staffSegment ?
-                        segment.staffSegment.attributes.divisions :
-                        segment.voiceSegment.divisions) :
-                    1
-            );
-        },
-        factor);
+export function normalizeDivisons$(segments$: ISegment[], factor: number = 0): number {
+    var divisions = _.reduce(segments$, (div1, seg) =>
+        div1 ? Util.lcm(div1, seg.divisions) : 1, factor);
 
     _.forEach(segments$, segment => {
         if (!segment) {
             return;
         }
 
-        var ratio = 1;
-        if (segment.staffSegment) {
-            ratio = divisions / segment.staffSegment.attributes.divisions;
-        } else {
-            ratio = divisions / segment.voiceSegment.divisions;
-        }
+        var ratio = divisions / segment.divisions;
+        segment.divisions = divisions;
 
         if (ratio !== 1) {
-            if (segment.staffSegment) {
-                segment.staffSegment.attributes.divisions *= ratio;
-            } else {
-                segment.voiceSegment.divisions *= ratio;
-            }
-            _.forEach((<any> segment.staffSegment || segment.voiceSegment).models,
-                    (model: IModel) => {
+            _.forEach(segment, (model: IModel) => {
                 if (model.divCount) {
                     model.divCount *= ratio;
+                } else if ((<any>model).divisions) {
+                    (<any>model).divisions *= ratio;
                 }
             });
         }
     });
+
+    return divisions;
 };
 
 export interface IMeasureLayout {
+    attributes:      MusicXML.Attributes,
     elements:        IModel.ILayout[][];
     width:           number;
     paddingTop:      number;

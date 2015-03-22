@@ -57,7 +57,7 @@ class FiguredBassModel implements Export.IFiguredBassModel {
         ]
     }
 
-    modelDidLoad$(segment$: Engine.Measure.ISegmentRef): void {
+    modelDidLoad$(segment$: Engine.Measure.ISegment): void {
         // todo
     }
 

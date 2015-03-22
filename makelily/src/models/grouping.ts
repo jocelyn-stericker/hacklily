@@ -43,7 +43,7 @@ class GroupingModel implements Export.IGroupingModel {
         ];
     }
 
-    modelDidLoad$(segment$: Engine.Measure.ISegmentRef): void {
+    modelDidLoad$(segment$: Engine.Measure.ISegment): void {
         // todo
     }
 
