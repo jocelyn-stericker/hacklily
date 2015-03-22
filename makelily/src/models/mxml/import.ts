@@ -86,15 +86,9 @@ export function _extractMXMLHeader(m: MusicXML.ScoreTimewise): Engine.ScoreHeade
 
 export function _extractMXMLPartsAndMeasures(input: MusicXML.ScoreTimewise,
             factory: Engine.IModel.IFactory):
-        {measures?: Engine.Measure.IMutableMeasure[]; parts?: Engine.IPart[]; error?: string} {
+        {measures?: Engine.Measure.IMutableMeasure[]; parts?: string[]; error?: string} {
 
-    let parts: Engine.IPart[] = _.map(input.partList.scoreParts, inPart => {
-        return {
-            id:                         inPart.id,
-            voices:                     [],
-            staves:                     []
-        };
-    });
+    let parts: string[] = _.map(input.partList.scoreParts, inPart => inPart.id);
     let createModel     = factory.create.bind(factory);
 
     // TODO/STOPSHIP - sync division count in each measure
@@ -115,11 +109,11 @@ export function _extractMXMLPartsAndMeasures(input: MusicXML.ScoreTimewise,
 
         if (Object.keys(inMeasure.parts).length === 1 && "" in inMeasure.parts) {
             // See lilypond-regression >> 41g.
-            inMeasure.parts[parts[0].id] = inMeasure.parts[""];
+            inMeasure.parts[parts[0]] = inMeasure.parts[""];
             delete inMeasure.parts[""];
         }
         let linkedParts = _.map(inMeasure.parts, (val, key) => {
-            if (!_.any(parts, part => part.id === key)) {
+            if (!_.any(parts, part => part === key)) {
                 // See lilypond-regression >> 41h.
                 return null;
             }

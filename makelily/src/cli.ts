@@ -20,8 +20,8 @@ import _                = require("lodash");
 import fs               = require("fs");
 import yargs            = require("yargs");
 
-import Models           = require("./models/models");
-import Views            = require("./views/views");
+import Models           = require("./models");
+import Views            = require("./views");
 
 function readStdin(onEnd: (s: string) => void) {
     var content = "";

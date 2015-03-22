@@ -23,6 +23,7 @@
 "use strict";
 
 import MusicXML     = require("musicxml-interfaces");
+import _            = require("lodash");
 import chai         = require("chai");
 
 import Engine       = require("../../engine");
@@ -201,7 +202,28 @@ describe("[mxml/import.ts]", function() {
 
             var mxmljson = MusicXML.parse(lily43eXML);
             var partsAndMeasures = MXMLImport._extractMXMLPartsAndMeasures(mxmljson, factory);
-            // TODO -- test
+            expect(partsAndMeasures.measures.length).to.eq(4);
+            expect(partsAndMeasures.parts).to.eql(["P1"]);
+
+            let voices = partsAndMeasures.measures[0].parts["P1"].voices;
+            let staves = partsAndMeasures.measures[0].parts["P1"].staves;
+            expect(!voices[0]).to.eq(true, "voices are 1-indexed");
+            expect(!staves[0]).to.eq(true, "staves are 1-indexed");
+            expect(voices.length).to.eq(3);
+            expect(staves.length).to.eq(3);
+            expect(voices[2].owner).to.eq(2);
+            expect(voices[2].divisions).to.eq(8);
+            expect(voices[1].divisions).to.eq(8);
+            expect(staves[2].divisions).to.eq(8);
+            expect(staves[1].divisions).to.eq(8);
+            expect(staves[1].length).to.eq(3);
+            expect(staves[2].length).to.eq(2); // Will be 3 once proxy is up and running
+            _.forEach(staves[1], model => {
+                expect(!_.any(staves[2], m2 => model === m2));
+            });
+            _.forEach(voices[1], model => {
+                expect(!_.any(voices[2], m2 => model === m2));
+            });
         });
     });
     describe("toScore", function() {

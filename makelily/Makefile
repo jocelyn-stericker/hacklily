@@ -16,7 +16,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ##
 
-.PHONY: build lint unittest tsd _gentestsuite _tsc _stageOnly _unittestOnly _lintOnly test_all dtd_regression
+.PHONY: build lint unittest tsd _gentestsuite _tsc _stageOnly _unittestOnly _lintOnly test_all 
 
 all: build unittest
 
@@ -163,10 +163,7 @@ _unittestOnly:
 	@echo "$(TEST_STRING)"
 	@find ./dist -type f | grep "__tests__.*js\$$" | xargs ./node_modules/mocha/bin/mocha -R progress
 
-dtd_regression:
-	find ./vendor/lilypond-regression/ -type f -name '*.xml' | xargs -I _FILE_ sh -c "./satie init -v -f _FILE_ | env XML_CATALOG_FILES="./vendor/musicxml-dtd/catalog.xml" xmllint --valid --noout --nonet - || exit 255"
-
-test_all: unittest lint dtd_regression
+test_all: unittest lint
 
 coverage: build
 	@echo "$(COVERAGE_STRING)"

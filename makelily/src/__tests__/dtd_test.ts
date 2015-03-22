@@ -25,8 +25,6 @@
 import _                = require("lodash");
 import child_process    = require("child_process");
 import fs               = require("fs");
-import invariant        = require("react/lib/invariant");
-import yargs            = require("yargs");
 
 import Models           = require("../models");
 
@@ -45,13 +43,11 @@ describe("import/export dtd validation", function() {
     _.forEach(files, file => {
         if (file.match(/\.xml$/)) {
             describe(file, function() {
-                let input: string;
                 it("can be imported, exported, and validated", function(done) {
                     readFile(root + "/" + file, function(str) {
                         try {
                             let out = (<any>_).flow(Models.importXML, Models.exportXML)(str);
                             let env = Object.create(process.env);
-                            let err = "";
                             env.XML_CATALOG_FILES = "./vendor/musicxml-dtd/catalog.xml";
                             let proc = (<any>child_process).spawnSync("xmllint",
                                     ["--valid", "--noout", "--nonet", "-"], {

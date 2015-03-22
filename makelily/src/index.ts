@@ -21,12 +21,11 @@
 /// <reference path="../vendor/typings/tsd.d.ts" />
 
 import MusicXML         = require("musicxml-interfaces");
-import React            = require("react");
 import _                = require("lodash");
 import invariant        = require("react/lib/invariant");
 
 import MXMLImport       = require("./models/mxml/import");
-import Models           = require("./models/models");
+import Models           = require("./models");
 import validateURL      = require("./util/validateURL");
 
 /*---- Public Interface -------------------------------------------------------------------------*/

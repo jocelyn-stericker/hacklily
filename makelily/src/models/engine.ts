@@ -97,7 +97,7 @@ export import RenderUtil        = require("./engine/renderUtil");
 export import ScoreHeader       = require("./engine/scoreHeader");
 export import Util              = require("./engine/util");
 
-import _processMeasure          = require("./engine/_processMeasure");
+import MeasureProcessor         = require("./engine/measureProcessor");
 
 if (process.env.NODE_ENV !== "production") {
     /* tslint:disable */
@@ -106,28 +106,6 @@ if (process.env.NODE_ENV !== "production") {
 }
 
 /*---- Engine -----------------------------------------------------------------------------------*/
-
-/**
- * Staves, voices, and voices are all distinct concepts. A part is usually one instrument.
- * There is a one-to-many relation between parts and voices, as well as between parts and
- * staves. Staves of a single part are grouped together.
- */
-export interface IPart {
-    /**
-     * Id of corresponding part in header. This contains information about how the part is rendered.
-     */
-    id:                         string;
-
-    /**
-     * The voices this part owns.
-     */
-    voices:                     number[];
-
-    /**
-     * The staves this part owns.
-     */
-    staves:                     number[];
-};
 
 export interface IMeasureLayoutOptions {
     attributes:     MusicXML.Attributes;
@@ -163,7 +141,7 @@ export function layoutMeasure(opts: IMeasureLayoutOptions): Measure.IMeasureLayo
 
     let line = opts.line;
 
-    return _processMeasure({
+    return MeasureProcessor.reduce({
         attributes:     opts.attributes,
         factory:        opts.factory,
         header:         opts.header,
@@ -333,11 +311,10 @@ export function validate$(options$: Options.ILayoutOptions, memo$: Options.ILine
                 }
             });
 
-            let divisions = Measure.normalizeDivisons$(segments, 0);
-            // todo: validate divisions
+            Measure.normalizeDivisons$(segments, 0);
 
             // The layout function is overloaded to provide validation.
-            let outcome = _processMeasure({
+            let outcome = MeasureProcessor.reduce({
                 attributes:     lastAttribs,
                 header:         options$.header,
                 line:           null,
@@ -434,7 +411,7 @@ export interface IDocument {
     factory?:   IModel.IFactory;
     header?:    ScoreHeader;
     measures?:  Measure.IMutableMeasure[];
-    parts?:     IPart[];
+    parts?:     string[];
 }
 
 export let MAX_SAFE_INTEGER = 9007199254740991;

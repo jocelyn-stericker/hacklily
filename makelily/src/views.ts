@@ -20,8 +20,8 @@ import MusicXML         = require("musicxml-interfaces");
 import React            = require("react");
 import _                = require("lodash");
 
-import Engine           = require("../models/engine");
-import Page             = require("./page");
+import Engine           = require("./models/engine");
+import Page             = require("./views/page");
 var $                   = React.createFactory;
 
 export function render(doc: Engine.IDocument, startMeasure: number): string {
