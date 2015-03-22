@@ -54,7 +54,7 @@ class FiguredBassModel implements Export.IFiguredBassModel {
             "fontStyle",
             "fontSize",
             "color"
-        ]
+        ];
     }
 
     modelDidLoad$(segment$: Engine.Measure.ISegment): void {

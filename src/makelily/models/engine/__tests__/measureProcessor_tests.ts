@@ -22,7 +22,7 @@
 
 "use strict";
 
-import _processMeasure  = require("../_processMeasure");
+import MeasureProcessor  = require("../measureProcessor");
 
 import chai             = require("chai");
 var expect              = chai.expect;
@@ -30,8 +30,8 @@ var expect              = chai.expect;
 import Engine           = require("../../engine");
 import ETestUtil        = require("./etestutil");
 
-describe("[engine/_processMeasure.ts]", function() {
-    describe("_processMeasure", function() {
+describe("[engine/measureProcessor.ts]", function() {
+    describe("reduce", function() {
         it("can lay out multiple voices", function() {
             var segments = [
                 ETestUtil.createFakeStaffSegment(4, 4, 1), // 00001111
@@ -44,7 +44,7 @@ describe("[engine/_processMeasure.ts]", function() {
             Engine.Measure.normalizeDivisons$(segments);
 
             // test without alignment
-            var opts: _processMeasure.ILayoutOpts = {
+            var opts: MeasureProcessor.ILayoutOpts = {
                 attributes:         null,
                 line:               Engine.Ctx.ILine.create(segments),
                 header:             null,
@@ -62,7 +62,7 @@ describe("[engine/_processMeasure.ts]", function() {
                 _noAlign:           true,
                 factory:            ETestUtil.fakeAttributeChordFactory
             };
-            var layout = _processMeasure(opts).elements;
+            var layout = MeasureProcessor.reduce(opts).elements;
             expect(layout[0].length).to.equal(2);
             expect(layout[0][0].x$).to.equal(110, "without merging"); // + 10 for staff
             expect(layout[0][1].x$).to.equal(130, "without merging"); // ...
@@ -78,7 +78,7 @@ describe("[engine/_processMeasure.ts]", function() {
 
             // Now test 
             opts._noAlign = false;
-            layout = _processMeasure(opts).elements;
+            layout = MeasureProcessor.reduce(opts).elements;
             expect(layout[0]).to.deep.equal(
                 [
                     {

@@ -44,7 +44,7 @@ class Factory implements Engine.IModel.IFactory {
             return model instanceof this._constructors[modelType];
         });
     }
-    
+
     /**
      * Returns 'true' if the a model that occurs at the current time has one of the types
      * specified, and 'false' otherwise.

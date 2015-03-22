@@ -19,21 +19,21 @@
 import MusicXML         = require("musicxml-interfaces");
 import _                = require("lodash");
 
-import Attributes       = require("./attributes");
-import Barline          = require("./barline");
-import BeamGroup        = require("./beamGroup");
-import Chord            = require("./chord");
-import Direction        = require("./direction");
-import Engine           = require("./engine");
-import Factory          = require("./factory");
-import FiguredBass      = require("./figuredBass");
-import Grouping         = require("./grouping");
-import Harmony          = require("./harmony");
-import MXMLImport       = require("./mxml/import");
-import Print            = require("./print");
-import Proxy            = require("./proxy");
-import Sound            = require("./sound");
-import Spacer           = require("./spacer");
+import Attributes       = require("./models/attributes");
+import Barline          = require("./models/barline");
+import BeamGroup        = require("./models/beamGroup");
+import Chord            = require("./models/chord");
+import Direction        = require("./models/direction");
+import Engine           = require("./models/engine");
+import Factory          = require("./models/factory");
+import FiguredBass      = require("./models/figuredBass");
+import Grouping         = require("./models/grouping");
+import Harmony          = require("./models/harmony");
+import MXMLImport       = require("./models/mxml/import");
+import Print            = require("./models/print");
+import Proxy            = require("./models/proxy");
+import Sound            = require("./models/sound");
+import Spacer           = require("./models/spacer");
 
 export function makeFactory() {
     return new Factory([
@@ -71,9 +71,9 @@ export function importXML(src: string): Engine.IDocument {
         pageLayout$:    score.header.defaults.pageLayout,
         page$:          0,
         modelFactory:   factory
-    }
+    };
     Engine.validate$(contextOptions, memo$);
-    
+
     return score;
 }
 

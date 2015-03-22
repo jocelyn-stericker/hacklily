@@ -31,11 +31,11 @@ class Page extends React.Component<Page.IProps, Page.IState> {
         const widthMM       = this.props.renderTarget === Page.RenderTarget.SvgWeb ?
                                 Engine.RenderUtil.tenthsToMM(
                                     scale40, print.pageLayout.pageWidth) + "mm" :
-                                "100%"
+                                "100%";
         const heightMM      = this.props.renderTarget === Page.RenderTarget.SvgWeb ?
                                 Engine.RenderUtil.tenthsToMM(
                                     scale40, print.pageLayout.pageHeight) + "mm" :
-                                "100%"
+                                "100%";
 
         return React.DOM.svg(
             {

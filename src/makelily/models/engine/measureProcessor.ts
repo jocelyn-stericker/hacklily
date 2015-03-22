@@ -17,7 +17,7 @@
  */
 
 /**
- * @file engine/_processMeasure.ts provides function for validating or laying out a measure
+ * @file engine/measureProcessor.ts provides function for validating or laying out a measure
  */
 
 "use strict";
@@ -34,7 +34,7 @@ import Ctx              = require("./ctx");
 /**
  * Given a cursor skeleton, creates a detached mutable cursor.
  * 
- * For use by _processMeasure.
+ * For use by MeasureProcessor.
  */
 function createCursor(
         spec: {
@@ -75,13 +75,13 @@ function createCursor(
  * models out. Note that the order of the output is arbitrary and may not correspond to the order
  * of the input segments.
  * 
- * @segments Models to lay out.
+ * @segments Models to lay out or validate.
  * @measure Model to which the model belongs to.
  * @line Line context
  * 
  * Complexity: O(staff-voice pairs)
  */
-function _processMeasure(spec: _processMeasure.ILayoutOpts): Measure.IMeasureLayout {
+export function reduce(spec: ILayoutOpts): Measure.IMeasureLayout {
     let segments                    = spec.segments;
     let line                        = spec.line;
     let measure                     = spec.measure;
@@ -255,21 +255,17 @@ function _processMeasure(spec: _processMeasure.ILayoutOpts): Measure.IMeasureLay
     };
 }
 
-module _processMeasure {
-    export interface ILayoutOpts {
-        attributes:     MusicXML.Attributes;
-        factory:        IModel.IFactory;
-        header:         MusicXML.ScoreHeader;
-        line:           Ctx.ILine;
-        measure:        Ctx.IMeasure;
-        prevByStaff:    IModel[];
-        segments:       Measure.ISegment[];
+export interface ILayoutOpts {
+    attributes:     MusicXML.Attributes;
+    factory:        IModel.IFactory;
+    header:         MusicXML.ScoreHeader;
+    line:           Ctx.ILine;
+    measure:        Ctx.IMeasure;
+    prevByStaff:    IModel[];
+    segments:       Measure.ISegment[];
 
-        _noAlign?:      boolean;
-        _approximate?:  boolean;
-        _detached?:     boolean;
-        _validateOnly?: boolean;
-    }
+    _noAlign?:      boolean;
+    _approximate?:  boolean;
+    _detached?:     boolean;
+    _validateOnly?: boolean;
 }
-
-export = _processMeasure;
