@@ -49,4 +49,5 @@ To build, lint, and run unit tests:
 | Build and unit test whenever a file changes         | `make watch`    |
 | Lint                                                | `make lint`     |
 | Run all tests, even slow ones                       | `make test_all` |
+| Run coverage testing                                | `make coverage` |
 | Update TypeScript external definitions              | `make tsd`      |

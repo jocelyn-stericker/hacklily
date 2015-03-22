@@ -85,6 +85,8 @@ TSC_STRING=$(INFO_COLOR)» Building from tsconfig.json...$(NO_COLOR)
 WATCH_STRING=$(INFO_COLOR)» Watching from tsconfig.json...$(NO_COLOR)
 STAGE_STRING=$(INFO_COLOR)» Staging *.d.ts, *,js, *.js.map...$(NO_COLOR)
 TEST_STRING=$(INFO_COLOR)» Testing __test__*.js ...$(NO_COLOR)
+CLEAN_STRING=$(INFO_COLOR)» Deleting generated code ...$(NO_COLOR)
+COVERAGE_STRING=$(INFO_COLOR)» Writing coverage info for __test__*.js to ./coverage ...$(NO_COLOR)
 WARN_STRING=$(WARN_COLOR)[WARNINGS]$(NO_COLOR)
 
 _tsc: _gentestsuite
@@ -166,9 +168,14 @@ dtd_regression:
 
 test_all: unittest lint dtd_regression
 
+coverage: build
+	@echo "$(COVERAGE_STRING)"
+	@find ./dist -type f | grep "__tests__.*js\$$" | xargs istanbul cover node_modules/mocha/bin/_mocha -- -R progress
+
 clean:
-	rm -rf ./.partialBuild
-	rm -rf ./dist
-	cd src; find . -name "*.d.ts" -print0 | xargs -0 -I _FILE_ rm _FILE_
-	cd src; find . -name "*.js" -print0 | xargs -0 -I _FILE_ rm _FILE_
-	cd src; find . -name "*.js.map" -print0 | xargs -0 -I _FILE_ rm _FILE_
+	@echo "$(CLEAN_STRING)"
+	@rm -rf ./.partialBuild
+	@rm -rf ./dist
+	@cd src; find . -name "*.d.ts" -print0 | xargs -0 -I _FILE_ rm _FILE_
+	@cd src; find . -name "*.js" -print0 | xargs -0 -I _FILE_ rm _FILE_
+	@cd src; find . -name "*.js.map" -print0 | xargs -0 -I _FILE_ rm _FILE_
