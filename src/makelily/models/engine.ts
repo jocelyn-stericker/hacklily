@@ -131,13 +131,12 @@ export interface IPart {
 
 export interface IMeasureLayoutOptions {
     attributes:     MusicXML.Attributes;
+    header:         MusicXML.ScoreHeader;
+    line:           Ctx.ILine;
     measure:        Measure.IMutableMeasure;
     prevByStaff:    IModel[];
-
     /** Starts at 0. */
     x:              number;
-
-    line:           Ctx.ILine;
 
     /** @private approximate minimum width is being calculated */
     _approximate?:  boolean;
@@ -166,13 +165,15 @@ export function layoutMeasure(opts: IMeasureLayoutOptions): Measure.IMeasureLayo
 
     return _processMeasure({
         attributes:     opts.attributes,
+        factory:        opts.factory,
+        header:         opts.header,
         line:           line,
         measure:        measureCtx,
         prevByStaff:    opts.prevByStaff,
         segments:       segments,
+
         _approximate:   opts._approximate,
-        _detached:      opts._detached,
-        factory:        opts.factory
+        _detached:      opts._detached
     });
 }
 
@@ -287,12 +288,13 @@ export function layoutLine$(options: Options.ILayoutOptions, bounds: Options.ILi
         line.barOnLine = measureIdx;
         if (!(measure.uuid in clean$)) {
             clean$[measure.uuid] = layoutMeasure({
-                attributes: attributes,
-                measure: measure,
-                prevByStaff: [],    // FIXME: include this.
-                x: 0,               // Final offset set recorded in justify(...).
-                line: line,
-                factory: options.modelFactory
+                attributes:     attributes,
+                factory:        options.modelFactory,
+                header:         options.header,
+                line:           line,
+                measure:        measure,
+                prevByStaff:    [],    // FIXME: include this.
+                x:              0      // Final offset set recorded in justify(...).
             });
         }
         // Update attributes for next measure
@@ -307,15 +309,17 @@ export function layoutLine$(options: Options.ILayoutOptions, bounds: Options.ILi
 
 export function validate$(options$: Options.ILayoutOptions, memo$: Options.ILinesLayoutState): void {
     let factory         = options$.modelFactory;
-    let modelHasType    = factory.modelHasType.bind(factory);
+    let timestepHasType = factory.timestepHasType.bind(factory);
     let createModel     = factory.create.bind(factory);
 
     let lastAttribs: MusicXML.Attributes = null;
 
     _.forEach(options$.measures, function validateMeasure(measure) {
         if (!(measure.uuid in memo$.clean$)) {
-            let voiceSegments$ = <Measure.ISegment[]> _.flatten(_.map(_.values(measure.parts), part => part.voices));
-            let staffSegments$ = <Measure.ISegment[]> _.flatten(_.map(_.values(measure.parts), part => part.staves));
+            let voiceSegments$ = <Measure.ISegment[]>
+                _.flatten(_.map(_.values(measure.parts), part => part.voices));
+            let staffSegments$ = <Measure.ISegment[]>
+                _.flatten(_.map(_.values(measure.parts), part => part.staves));
 
             let measureCtx = Ctx.IMeasure.detach(measure, 0);
             let segments = _.filter(voiceSegments$.concat(staffSegments$), s => !!s);
@@ -324,7 +328,7 @@ export function validate$(options$: Options.ILayoutOptions, memo$: Options.ILine
                 if (!segment) {
                     return;
                 }
-                if (!modelHasType(segment[0], IModel.Type.Attributes)) {
+                if (!timestepHasType(segment, 0, IModel.Type.Attributes)) {
                     segment.splice(0, 0, createModel(IModel.Type.Attributes));
                 }
             });
@@ -335,6 +339,7 @@ export function validate$(options$: Options.ILayoutOptions, memo$: Options.ILine
             // The layout function is overloaded to provide validation.
             let outcome = _processMeasure({
                 attributes:     lastAttribs,
+                header:         options$.header,
                 line:           null,
                 measure:        measureCtx,
                 prevByStaff:    null,
@@ -357,19 +362,20 @@ export function layout$(options: Options.ILayoutOptions,
     let measures = options.measures;
     let width$ = memo$.width$;
 
-    let bounds = Options.ILineBounds.calculate(options.pageLayout, options.page$);
+    let bounds = Options.ILineBounds.calculate(options.pageLayout$, options.page$);
 
     let widths = _.map(measures, measure => {
         if (!(measure.uuid in width$)) {
             width$[measure.uuid] = approximateWidth({
-                attributes: options.attributes,
-                measure: measure,
-                prevByStaff: [], // FIXME:
-                staves: _.map(_.values(measure.parts), p => p.staves),
-                voices: _.map(_.values(measure.parts), p => p.voices),
-                x: 0,
-                line: null,
-                factory: options.modelFactory
+                attributes:     options.attributes,
+                factory:        options.modelFactory,
+                header:         options.header,
+                line:           null,
+                measure:        measure,
+                prevByStaff:    [], // FIXME:
+                staves:         _.map(_.values(measure.parts), p => p.staves),
+                voices:         _.map(_.values(measure.parts), p => p.voices),
+                x:              0
             });
         }
         return width$[measure.uuid];
@@ -377,12 +383,13 @@ export function layout$(options: Options.ILayoutOptions,
 
     function newLayoutWithoutMeasures(): Options.ILayoutOptions {
         return {
-            attributes: null,
-            measures: [],
-            pageLayout: options.pageLayout,
-            finalLine: false,
-            page$: options.page$,
-            modelFactory: options.modelFactory
+            attributes:     null,
+            measures:       [],
+            header:         options.header,
+            pageLayout$:    options.pageLayout$,
+            finalLine:      false,
+            page$:          options.page$,
+            modelFactory:   options.modelFactory
         };
     }
 

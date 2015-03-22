@@ -45,21 +45,22 @@ describe("[engine/_processMeasure.ts]", function() {
 
             // test without alignment
             var opts: _processMeasure.ILayoutOpts = {
-                attributes: null,
-                line: Engine.Ctx.ILine.create(segments),
+                attributes:         null,
+                line:               Engine.Ctx.ILine.create(segments),
+                header:             null,
                 measure: {
-                    attributes$: null,
-                    idx: 0,
-                    implicit: false,
+                    attributes$:    null,
+                    idx:            0,
+                    implicit:       false,
                     nonControlling: false,
-                    number: "1",
-                    uuid: 777,
-                    x: 100
+                    number:         "1",
+                    uuid:           777,
+                    x:              100
                 },
-                prevByStaff: [],
-                segments: segments,
-                _noAlign: true,
-                factory: ETestUtil.fakeAttributeChordFactory
+                prevByStaff:        [],
+                segments:           segments,
+                _noAlign:           true,
+                factory:            ETestUtil.fakeAttributeChordFactory
             };
             var layout = _processMeasure(opts).elements;
             expect(layout[0].length).to.equal(2);
