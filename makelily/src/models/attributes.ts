@@ -67,6 +67,9 @@ class AttributesModel implements Export.IAttributesModel {
 
         invariant(this._parent !== this, "Internal error. " +
             "AttributesModel.validate$() must not be called in a context with itself as a parent!");
+        if (!this.divisions) {
+            console.log(cursor$);
+        }
         invariant(!!this.divisions, "Internal error. " +
             "AttributesModel.validate$() requires divisions to be set already.");
 

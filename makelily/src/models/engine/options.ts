@@ -25,7 +25,8 @@ import Measure              = require("./measure");
 export interface ILayoutOptions {
     attributes:     MusicXML.Attributes;
     measures:       Measure.IMutableMeasure[];
-    pageLayout:     MusicXML.PageLayout;
+    header:         MusicXML.ScoreHeader;
+    pageLayout$:    MusicXML.PageLayout;
     page$:          number;
     finalLine?:     boolean;
     modelFactory:   IModel.IFactory;

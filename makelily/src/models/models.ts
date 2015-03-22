@@ -67,7 +67,8 @@ export function importXML(src: string): Engine.IDocument {
     let contextOptions: Engine.Options.ILayoutOptions = {
         attributes:     null,
         measures:       score.measures,
-        pageLayout:     score.header.defaults.pageLayout,
+        header:         score.header,
+        pageLayout$:    score.header.defaults.pageLayout,
         page$:          0,
         modelFactory:   factory
     }

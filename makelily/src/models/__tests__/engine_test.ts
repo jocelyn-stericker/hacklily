@@ -47,25 +47,26 @@ describe("[engine.ts]", function() {
             ];
 
             var layout = Engine.layoutMeasure({
-                attributes: null,
-                maxX: 1000,
-                minX: 100,
+                header:         null,
+                attributes:     null,
+                maxX:           1000,
+                minX:           100,
                 measure: {
-                    idx: 0,
-                    number: "1",
+                    idx:        0,
+                    number:     "1",
                     parts: {
                         "P1": {
-                            voices: voiceSegments,
-                            staves: staffSegments
+                            voices:     voiceSegments,
+                            staves:     staffSegments
                         }
                     },
-                    uuid: 1248,
-                    width: NaN
+                    uuid:       248,
+                    width:      NaN
                 },
-                prevByStaff: [],
-                x: 100,
-                line: null,
-                factory: ETestUtil.fakeAttributeChordFactory
+                prevByStaff:    [],
+                x:              100,
+                line:           null,
+                factory:        ETestUtil.fakeAttributeChordFactory
             });
             // We've tested this exact case in ISegment.layout$, so we can be
             // a bit soft here.
@@ -91,25 +92,26 @@ describe("[engine.ts]", function() {
             ];
 
             var width = Engine.approximateWidth({
-                attributes: null,
-                maxX: 1000,
-                minX: 100,
+                attributes:     null,
+                maxX:           1000,
+                minX:           100,
+                header:         null,
                 measure: {
-                    idx: 0,
-                    number: "1",
+                    idx:        0,
+                    number:     "1",
                     parts: {
                         "P1": {
                             voices: voiceSegments,
                             staves: staffSegments
                         }
                     },
-                    uuid: 1248,
-                    width: NaN
+                    uuid:       1248,
+                    width:      NaN
                 },
-                prevByStaff: [],
-                x: 100,
-                line: null,
-                factory: ETestUtil.fakeAttributeChordFactory
+                prevByStaff:    [],
+                x:              100,
+                line:           null,
+                factory:        ETestUtil.fakeAttributeChordFactory
             });
             expect(width).to.equal(90); // 100 - 10 for attribute 1. See ETestUtil.createFakeStaffSegment
         });
@@ -166,25 +168,26 @@ describe("[engine.ts]", function() {
             ];
 
             var layouts = _.map(segments, (seg, idx) => Engine.layoutMeasure({
-                attributes: null,
-                maxX: 1000,
-                minX: 0,
+                attributes:     null,
+                maxX:           1000,
+                minX:           0,
                 measure: {
-                    idx: idx,
-                    number: (idx + 1) + "",
+                    idx:        idx,
+                    number:     (idx + 1) + "",
                     parts: {
                         "P1": {
                             voices: seg.voices,
                             staves: seg.staves
                         }
                     },
-                    uuid: 1248 + idx,
-                    width: NaN
+                    uuid:       1248 + idx,
+                    width:      NaN
                 },
-                prevByStaff: [],
-                x: 0,
-                line: null,
-                factory: ETestUtil.fakeAttributeChordFactory
+                header:         null,
+                prevByStaff:    [],
+                x:              0,
+                line:           null,
+                factory:        ETestUtil.fakeAttributeChordFactory
             }));
 
             var padding = 12;
@@ -194,8 +197,9 @@ describe("[engine.ts]", function() {
                     attributes: null,
                     finalLine: true,
                     measures: new Array(2), // TODO: if justify uses measures, this will have to be given a proper value.
+                    header: null,
                     page$: 0,
-                    pageLayout: {
+                    pageLayout$: {
                         pageHeight: 1000,
                         pageWidth: 1000,
                         pageMargins: [{
@@ -258,7 +262,8 @@ describe("[engine.ts]", function() {
                         }
                     };
                 }),
-                pageLayout: {
+                header: null,
+                pageLayout$: {
                     pageHeight: 1000,
                     pageWidth: 1000,
                     pageMargins: [{
@@ -307,6 +312,14 @@ describe("[engine.ts]", function() {
                     }
                     return modelType === Engine.IModel.Type.Chord;
                 },
+                timestepHasType: (models: Engine.IModel[], idx: number,
+                        modelType: Engine.IModel.Type): boolean => {
+                    let model = models[idx];
+                    if (model.divCount === 0) {
+                        return modelType === Engine.IModel.Type.Attributes;
+                    }
+                    return modelType === Engine.IModel.Type.Chord;
+                },
                 fromSpec: (model: any): Engine.IModel => {
                     throw "Not implemented";
                 }
@@ -339,7 +352,8 @@ describe("[engine.ts]", function() {
                         }
                     };
                 }),
-                pageLayout: {
+                header: null,
+                pageLayout$: {
                     pageHeight: 1000,
                     pageWidth: 1000,
                     pageMargins: [{

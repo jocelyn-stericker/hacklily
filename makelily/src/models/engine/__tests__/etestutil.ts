@@ -35,6 +35,10 @@ export var fakeAttributeChordFactory: Engine.IModel.IFactory = {
         }
         return modelType === Engine.IModel.Type.Chord;
     },
+    timestepHasType: (models: Engine.IModel[], idx: number,
+            modelType: Engine.IModel.Type): boolean => {
+        return this.modelHasType(models[idx], modelType);
+    },
     fromSpec: (spec: any): Engine.IModel => {
         throw "Not implemented";
     }

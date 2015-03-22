@@ -38,34 +38,35 @@ import Ctx              = require("./ctx");
  */
 function createCursor(
         spec: {
-            segment: Measure.ISegment;
-            voice: Ctx.IVoice;
-            staff: Ctx.IStaff;
-            measure: Ctx.IMeasure;
-            line: Ctx.ILine;
-            prev: IModel;
-            x: number;
-            _approximate: boolean;
-            _detached: boolean;
-            factory: IModel.IFactory;
+            _approximate:   boolean;
+            _detached:      boolean;
+            factory:        IModel.IFactory;
+            header:         MusicXML.ScoreHeader,
+            line:           Ctx.ILine;
+            measure:        Ctx.IMeasure;
+            prev:           IModel;
+            segment:        Measure.ISegment;
+            staff:          Ctx.IStaff;
+            voice:          Ctx.IVoice;
+            x:              number;
         }): ICursor {
     return {
-        segment: spec.segment,
-        idx$: 0,
-        line: spec.line,
-        print$: null,
-        header: null,
-        measure: spec.measure,
-        staff: Ctx.IStaff.detach(spec.staff),
-        voice: spec.voice,
-        prev$: spec.prev,
-        division$: 0,
-        x$: spec.x,
-        maxPaddingBottom$: 0,
-        maxPaddingTop$: 0,
-        approximate: spec._approximate,
-        detached: spec._detached,
-        factory: spec.factory
+        approximate:        spec._approximate,
+        detached:           spec._detached,
+        division$:          0,
+        factory:            spec.factory,
+        header:             spec.header,
+        idx$:               0,
+        line:               spec.line,
+        maxPaddingBottom$:  0,
+        maxPaddingTop$:     0,
+        measure:            spec.measure,
+        prev$:              spec.prev,
+        print$:             null,
+        segment:            spec.segment,
+        staff:              Ctx.IStaff.detach(spec.staff),
+        voice:              spec.voice,
+        x$:                 spec.x
     };
 }
 
@@ -116,6 +117,7 @@ function _processMeasure(spec: _processMeasure.ILayoutOpts): Measure.IMeasureLay
             staff:          null,
             measure:        measure,
             line:           line,
+            header:         spec.header,
 
             prev:           prevByStaff ? prevByStaff[0] : null, // FIXME!
             division$:      0,
@@ -131,10 +133,8 @@ function _processMeasure(spec: _processMeasure.ILayoutOpts): Measure.IMeasureLay
          */
         function pushStaffSegment(staffIdx: number, model: IModel) {
             if (!model) {
-                console.log("No model at", staffIdx);
-                console.log(staffMeasure);
-                console.log("VS:", voiceStaves$)
-                console.log(divisionPerStaff$[staffIdx], cursor$.division$);
+                divisionPerStaff$[staffIdx] = cursor$.division$ + 1;
+                return;
             }
             let oldDivision                 = cursor$.division$;
             let oldSegment                  = cursor$.segment;
@@ -257,16 +257,17 @@ function _processMeasure(spec: _processMeasure.ILayoutOpts): Measure.IMeasureLay
 
 module _processMeasure {
     export interface ILayoutOpts {
-        segments: Measure.ISegment[];
-        measure: Ctx.IMeasure;
-        line: Ctx.ILine;
-        prevByStaff: IModel[];
-        factory: IModel.IFactory;
-        attributes: MusicXML.Attributes;
+        attributes:     MusicXML.Attributes;
+        factory:        IModel.IFactory;
+        header:         MusicXML.ScoreHeader;
+        line:           Ctx.ILine;
+        measure:        Ctx.IMeasure;
+        prevByStaff:    IModel[];
+        segments:       Measure.ISegment[];
 
-        _noAlign?: boolean;
-        _approximate?: boolean;
-        _detached?: boolean;
+        _noAlign?:      boolean;
+        _approximate?:  boolean;
+        _detached?:     boolean;
         _validateOnly?: boolean;
     }
 }

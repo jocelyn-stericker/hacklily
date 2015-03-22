@@ -66,6 +66,7 @@ module IModel {
         create: (modelType: IModel.Type, options?: any) => IModel;
         fromSpec: (spec: any) => IModel;
         modelHasType: (model: IModel, ...modelTypes: IModel.Type[]) => boolean;
+        timestepHasType: (models: IModel[], idx: number, ...types: IModel.Type[]) => boolean;
     }
 
     export enum FrozenLevel {

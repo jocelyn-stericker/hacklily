@@ -18,6 +18,7 @@
 
 import MusicXML         = require("musicxml-interfaces");
 import _                = require("lodash");
+import invariant        = require("react/lib/invariant");
 
 import Engine           = require("./engine");
 
@@ -56,6 +57,7 @@ class PrintModel implements Export.IPrintModel {
     }
 
     validate$(cursor$: Engine.ICursor): void {
+        invariant(!!cursor$.header, "Cursor must have a valid header");
         var defaultPrint                = getPrint(cursor$.header);
         var spec                        = deepAssign<MusicXML.Print>(this, defaultPrint);
         cursor$.print$                  = new DefaultPrint(spec);
