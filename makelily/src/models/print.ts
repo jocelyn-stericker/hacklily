@@ -62,6 +62,7 @@ class PrintModel implements Export.IPrintModel {
         var spec                        = deepAssign<MusicXML.Print>(this, defaultPrint);
         this.sync(spec);
         cursor$.print$                  = this; // FIXME: inheritance for multiple papers
+        this.pageNumber                 = "1";  // TODO: implement
     }
 
     layout(cursor$: Engine.ICursor): Export.ILayout {

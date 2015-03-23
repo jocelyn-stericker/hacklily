@@ -217,7 +217,7 @@ class ScoreHeader implements MusicXML.ScoreHeader {
 
     set composer(composer: string) {
         this._setIdentification("composer", composer);
-        this._setCredits("composer", composer, MusicXML.LeftCenterRight.Right, "12px");
+        this._setCredits("composer", composer, MusicXML.LeftCenterRight.Right, "12px", 20);
     }
 
     get arranger() {
@@ -226,7 +226,7 @@ class ScoreHeader implements MusicXML.ScoreHeader {
 
     set arranger(arranger: string) {
         this._setIdentification("arranger", arranger);
-        this._setCredits("arranger", arranger, MusicXML.LeftCenterRight.Right, "12px");
+        this._setCredits("arranger", arranger, MusicXML.LeftCenterRight.Right, "12px", 35);
     }
 
     get lyricist() {
@@ -235,7 +235,7 @@ class ScoreHeader implements MusicXML.ScoreHeader {
 
     set lyricist(lyricist: string) {
         this._setIdentification("lyricist", lyricist);
-        this._setCredits("lyricist", lyricist, MusicXML.LeftCenterRight.Right, "12px");
+        this._setCredits("lyricist", lyricist, MusicXML.LeftCenterRight.Right, "12px", 50);
     }
 
     private _getIdentificationOrCredit(type: string) {
@@ -281,7 +281,7 @@ class ScoreHeader implements MusicXML.ScoreHeader {
     }
 
     private _setCredits(type: string, val: string,
-            justification: MusicXML.LeftCenterRight, fontSize: string) {
+            justification: MusicXML.LeftCenterRight, fontSize: string, top: number) {
         const mm = this.defaults.scaling.millimeters;
         const pageLayout = this.defaults.pageLayout;
 
@@ -302,7 +302,7 @@ class ScoreHeader implements MusicXML.ScoreHeader {
             // TODO: Throughout this file, use own instead of default values
             switch (justification) {
                 case MusicXML.LeftCenterRight.Center:
-                    defaultX = (margins.leftMargin + margins.rightMargin +
+                    defaultX = (margins.leftMargin - margins.rightMargin +
                             pageLayout.pageWidth)/2;
                     break;
                 case MusicXML.LeftCenterRight.Right:
@@ -324,7 +324,7 @@ class ScoreHeader implements MusicXML.ScoreHeader {
                     words: val,
                     defaultX: defaultX,
                     justify: justification,
-                    defaultY: renderUtil.mmToTenths(mm, 2),
+                    defaultY: renderUtil.mmToTenths(mm, pageLayout.pageHeight - top),
                     fontSize: fontSize
                 },
                 page: 1
@@ -339,7 +339,7 @@ class ScoreHeader implements MusicXML.ScoreHeader {
         // Set meta-data
         this.movementTitle = title;
 
-        this._setCredits("title", title, MusicXML.LeftCenterRight.Center, "18px");
+        this._setCredits("title", title, MusicXML.LeftCenterRight.Center, "18px", 10);
     }
 }
 
