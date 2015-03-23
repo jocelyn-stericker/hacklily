@@ -440,4 +440,13 @@ export interface IDocument {
     parts?:     string[];
 }
 
+/**
+ * Assigns a random key to an object, usually for React.
+ */
+export function key$(t$: any) {
+    if (!t$.key) {
+        t$.key = Math.floor(Math.random() * MAX_SAFE_INTEGER);
+    }
+}
+
 export let MAX_SAFE_INTEGER = 9007199254740991;

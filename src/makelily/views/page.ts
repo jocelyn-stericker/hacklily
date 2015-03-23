@@ -16,18 +16,23 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-"use strict";
-
 import MusicXML             = require("musicxml-interfaces");
 import React                = require("react");
 import _                    = require("lodash");
+import invariant            = require("react/lib/invariant");
 
+import Credit               = require("./credit");
 import Engine               = require("../models/engine");
+var $                       = React.createFactory;
 
 class Page extends React.Component<Page.IProps, Page.IState> {
     render() {
         const print         = this.props.print;
+        const page          = print.pageNumber;
+        invariant(!!page, "Page isn't valid!");
         const defaults      = this.props.scoreHeader.defaults;
+        const credits       = _.filter(this.props.scoreHeader.credits, cr =>
+                                (cr.page === parseInt(page, 10)));
         const scale40       = defaults.scaling.millimeters / defaults.scaling.tenths * 40;
         const widthMM       = this.props.renderTarget === Page.RenderTarget.SvgExport ?
                                 Engine.RenderUtil.tenthsToMM(
@@ -44,6 +49,9 @@ class Page extends React.Component<Page.IProps, Page.IState> {
             console.log(_.map(measureLayouts, measure => measure.width));
         });
 
+        // Make sure our credits are keyed.
+        _.forEach(credits, credit => Engine.key$(credit));
+
         return React.DOM.svg(
             {
                 "data-page":    this.props.renderTarget === Page.RenderTarget.SvgExport ? undefined : print.pageNumber,
@@ -58,8 +66,8 @@ class Page extends React.Component<Page.IProps, Page.IState> {
                 onMouseLeave:   this.props.onMouseLeave,
                 onMouseMove:    this.props.onMouseMove,
                 onMouseUp:      this.props.onMouseUp
-            }
-            /* TODO: credits */
+            },
+            _.map(credits, (credit, idx) => $(Credit)(credit))
             /* TODO: staves */
             /* TODO: models */
             /* TODO: lyric boxes */
@@ -67,9 +75,24 @@ class Page extends React.Component<Page.IProps, Page.IState> {
             /* TODO: slurs and ties */
         );
     }
+
+    getChildContext() {
+        const defaults      = this.props.scoreHeader.defaults;
+        const print         = this.props.print;
+        const scale40       = defaults.scaling.millimeters / defaults.scaling.tenths * 40;
+        return {
+            scale40:        scale40,
+            pageHeight:     Engine.RenderUtil.mmToTenths(scale40, print.pageLayout.pageHeight)
+        };
+    }
 }
 
 module Page {
+    export var childContextTypes = <any> {
+        scale40:            React.PropTypes.number.isRequired,
+        pageHeight:         React.PropTypes.number.isRequired
+    };
+
     export interface IProps {
         scoreHeader:    MusicXML.ScoreHeader;
         print:          MusicXML.Print;

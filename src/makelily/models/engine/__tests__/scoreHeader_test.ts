@@ -72,8 +72,8 @@ describe("[engine/scoreHeader.ts]", function() {
                 creditWords: {
                     words: "Orig Title",
 
-                    defaultX: 788.4800000000001,
-                    defaultY: 12.8, // ??
+                    defaultX: 690.8800000000001,
+                    defaultY: 11380.223999999998,
                     fontSize: "18px",
                     justify: MusicXML.LeftCenterRight.Center
                 },
@@ -86,7 +86,7 @@ describe("[engine/scoreHeader.ts]", function() {
                     words: "Orig Composer",
 
                     defaultX: 1284.1600000000003,
-                    defaultY: 12.8, // ??
+                    defaultY: 11316.224,
                     fontSize: "12px",
                     justify: MusicXML.LeftCenterRight.Right
                 },
@@ -99,7 +99,7 @@ describe("[engine/scoreHeader.ts]", function() {
                     words: "Orig Arranger",
 
                     defaultX: 1284.1600000000003,
-                    defaultY: 12.8, // ??
+                    defaultY: 11220.223999999998,
                     fontSize: "12px",
                     justify: MusicXML.LeftCenterRight.Right
                 },
@@ -112,7 +112,7 @@ describe("[engine/scoreHeader.ts]", function() {
                     words: "Orig Lyricist",
 
                     defaultX: 1284.1600000000003,
-                    defaultY: 12.8, // ??
+                    defaultY: 11124.223999999998,
                     fontSize: "12px",
                     justify: MusicXML.LeftCenterRight.Right
                 },
