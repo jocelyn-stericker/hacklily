@@ -39,40 +39,52 @@ function readFile(file: string, onEnd: (s: string) => void) {
 }
 
 describe("import/export dtd validation", function() {
-    const root = "vendor/lilypond-regression";
-    const files = fs.readdirSync(root); // needs to be setup before leaving 'describe'
-    _.forEach(files, file => {
+    const lilyRoot = "vendor/lilypond-regression";
+    const lilyFiles = fs.readdirSync(lilyRoot); // needs to be setup before leaving 'describe'
+    _.forEach(lilyFiles, file => {
         if (file.match(/01a\.xml$/)) {
-            describe(file, function() {
-                it("can be imported, exported, validated, and rendered", function(done) {
-                    readFile(root + "/" + file, function(str) {
-                        try {
-                            let score = Models.importXML(str);
-                            let mxmlOut = Models.exportXML(score);
-
-                            let env = Object.create(process.env);
-                            env.XML_CATALOG_FILES = "./vendor/musicxml-dtd/catalog.xml";
-                            let proc = (<any>child_process).spawnSync("xmllint",
-                                    ["--valid", "--noout", "--nonet", "-"], {
-                                input: mxmlOut,
-                                env: env
-                            });
-                            const stdout = proc.stdout + "";
-                            const stderr = proc.stderr + "";
-                            if (stdout || stderr) {
-                                done(new Error(stderr || stdout || proc.error));
-                            } else {
-                                let render = Views.render(score, 0);
-                                console.log(render);
-                                done();
-                            }
-                        } catch(err) {
-                            done(err);
-                            return;
-                        }
-                    });
-                });
-            });
+            testFile(lilyRoot, file);
         }
     });
+
+    const satieRoot = "vendor/satie-regression";
+    const satieFiles = fs.readdirSync(satieRoot); // needs to be setup before leaving 'describe'
+    _.forEach(satieFiles, file => {
+        if (file.match(/\.xml$/)) {
+            testFile(satieRoot, file);
+        }
+    });
+
+    function testFile(root: string, file: string) {
+        describe(file, function() {
+            it("can be imported, exported, validated, and rendered", function(done) {
+                readFile(root + "/" + file, function(str) {
+                    try {
+                        let score = Models.importXML(str);
+                        let mxmlOut = Models.exportXML(score);
+
+                        let env = Object.create(process.env);
+                        env.XML_CATALOG_FILES = "./vendor/musicxml-dtd/catalog.xml";
+                        let proc = (<any>child_process).spawnSync("xmllint",
+                                ["--valid", "--noout", "--nonet", "-"], {
+                            input: mxmlOut,
+                            env: env
+                        });
+                        const stdout = proc.stdout + "";
+                        const stderr = proc.stderr + "";
+                        if (stdout || stderr) {
+                            done(new Error(stderr || stdout || proc.error));
+                        } else {
+                            let render = Views.render(score, 0);
+                            console.log(render);
+                            done();
+                        }
+                    } catch(err) {
+                        done(err);
+                        return;
+                    }
+                });
+            });
+        });
+    }
 });
