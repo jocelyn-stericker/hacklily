@@ -44,7 +44,7 @@ describe("[engine/scoreHeader.ts]", function() {
         expect(scoreHeader.identification.creators[0].creator).to.eq("New Composer");
         expect(scoreHeader.identification.creators[1].creator).to.not.eq("New Composer");
         expect(scoreHeader.identification.creators[2].creator).to.not.eq("New Composer");
-        expect(scoreHeader.credits[1].creditWords.words).to.eq("New Composer");
+        expect(scoreHeader.credits[1].creditWords[0].words).to.eq("New Composer");
 
         // Changing the title should change credit words and movementTitle
         scoreHeader.title = "New Title";
@@ -52,7 +52,7 @@ describe("[engine/scoreHeader.ts]", function() {
         expect(scoreHeader.identification.creators.length).eq(3);
         expect(scoreHeader.title).to.eq("New Title"); // Since get is not directly tied to set
         expect(scoreHeader.movementTitle).to.eq("New Title");
-        expect(scoreHeader.credits[0].creditWords.words).to.eq("New Title");
+        expect(scoreHeader.credits[0].creditWords[0].words).to.eq("New Title");
     });
     it("can correctly add metadata", function() {
         var mxmljson = MusicXML.parse(minimalTest);
@@ -69,53 +69,53 @@ describe("[engine/scoreHeader.ts]", function() {
             {
                 creditImage: null,
                 creditTypes: ["title"],
-                creditWords: {
+                creditWords: [{
                     words: "Orig Title",
 
                     defaultX: 690.8800000000001,
                     defaultY: 11380.223999999998,
                     fontSize: "18px",
                     justify: MusicXML.LeftCenterRight.Center
-                },
+                }],
                 page: 1
             },
             {
                 creditImage: null,
                 creditTypes: ["composer"],
-                creditWords: {
+                creditWords: [{
                     words: "Orig Composer",
 
                     defaultX: 1284.1600000000003,
                     defaultY: 11316.224,
                     fontSize: "12px",
                     justify: MusicXML.LeftCenterRight.Right
-                },
+                }],
                 page: 1
             },
             {
                 creditImage: null,
                 creditTypes: ["arranger"],
-                creditWords: {
+                creditWords: [{
                     words: "Orig Arranger",
 
                     defaultX: 1284.1600000000003,
                     defaultY: 11220.223999999998,
                     fontSize: "12px",
                     justify: MusicXML.LeftCenterRight.Right
-                },
+                }],
                 page: 1
             },
             {
                 creditImage: null,
                 creditTypes: ["lyricist"],
-                creditWords: {
+                creditWords: [{
                     words: "Orig Lyricist",
 
                     defaultX: 1284.1600000000003,
                     defaultY: 11124.223999999998,
                     fontSize: "12px",
                     justify: MusicXML.LeftCenterRight.Right
-                },
+                }],
                 page: 1
             }
         ]);

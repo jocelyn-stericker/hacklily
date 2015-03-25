@@ -251,7 +251,8 @@ class ScoreHeader implements MusicXML.ScoreHeader {
         }
 
         return this.credits.filter(c => !!~c.creditTypes.indexOf(type))
-            .map(m => m.creditWords.words)
+            .map(m => m.creditWords)
+            .map(w => w.map(w => w.words).join(", "))
             .join(", ");
     }
 
@@ -286,14 +287,19 @@ class ScoreHeader implements MusicXML.ScoreHeader {
         const pageLayout = this.defaults.pageLayout;
 
         this.credits = this.credits || [];
-        _.forEach(this.credits, c => {
+        _.forEach(this.credits, (c, idx) => {
             if (!c.creditWords) {
                 return false;
             }
             // Replace a credit...
             let isComposer = !!~c.creditTypes.indexOf(type);
             if (isComposer) {
-                c.creditWords.words = val;
+                if (!c.creditWords.length) {
+                    delete this.credits[idx];
+                } else {
+                    c.creditWords.length = 1;
+                    c.creditWords[0].words = val;
+                }
             }
         });
         if (!_.any(this.credits, c => !!c.creditWords && !!~c.creditTypes.indexOf(type))) {
@@ -320,13 +326,13 @@ class ScoreHeader implements MusicXML.ScoreHeader {
                 // ... or add a credit
                 creditImage: null,
                 creditTypes: [type],
-                creditWords: {
+                creditWords: [{
                     words: val,
                     defaultX: defaultX,
                     justify: justification,
                     defaultY: renderUtil.mmToTenths(mm, pageLayout.pageHeight - top),
                     fontSize: fontSize
-                },
+                }],
                 page: 1
             });
         }
