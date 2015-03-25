@@ -22,25 +22,12 @@ import _                = require("lodash");
 import invariant        = require("react/lib/invariant");
 
 import Engine           = require("../models/engine");
-
-var DOMProperty         = require("react/lib/DOMProperty");
+/* tslint:disable */
+import custAttribs      = require("./svgext_injection");
+/* tslint:enable */
 
 const DEF_SPACING       = 4;
-
-let custAttributes = {
-    "text-decoration": true,
-    "letter-spacing": true,
-    "font-style": true,
-    "font-weight": true,
-    "color": true,
-    "direction": true
-};
-
-DOMProperty.injection.injectDOMPropertyConfig({
-    isCustomAttribute: function (attributeName: string) {
-        return attributeName in custAttributes;
-    }
-});
+const V_SPACING         = 4;
 
 /**                                     IMPL        TEST
  * --- words -------------------------------------------
@@ -85,27 +72,26 @@ class Credit extends React.Component<MusicXML.Credit, void> {
                 x: initX,
                 y: initY
             },
-            _.map(words, (words, idx) => React.DOM.tspan({
-                key: idx,
-                dx: (words.defaultX || words.relativeX) ?
-                    (words.defaultX + (words.relativeX || 0)) - initX :
-                    DEF_SPACING,
-                dy: (words.defaultY || words.relativeY) ?
-                    (this.context.pageHeight - (words.defaultY + (words.relativeY || 0))) - initY :
-                    0,
-                fontFamily: words.fontFamily || "Alegreya",
-                fontSize: Engine.RenderUtil.cssSizeToTenths(this.context.scale40, words.fontSize),
-                "font-weight": words.fontWeight === MusicXML.NormalBold.Bold ? "bold" : "normal",
-                "font-style": words.fontStyle === MusicXML.NormalItalic.Italic ? "italic" : "normal",
-                color: words.color || "black",
-                textAnchor: this.getTextAnchor(words),
-                "text-decoration": this.getTextDecoration(words),
-                transform: this.getTransform(words),
-                "letter-spacing": words.letterSpacing && words.letterSpacing !== "normal" ?
-                    ("" + Engine.RenderUtil.cssSizeToTenths(this.context.scale40,
-                            words.letterSpacing)) : "normal",
-                direction: this.getDirection(words)
-            }, words.words))
+            _.map(words, (words, idx) =>
+                _.map(words.words.split("\n"), (line, lineNum) => React.DOM.tspan({
+                    key: idx + "l" + lineNum,
+                    "alignment-baseline": "hanging",
+                    x: this.getX(lineNum),
+                    dx: this.getDX(words, initX, lineNum),
+                    dy: this.getDY(words, initY, lineNum),
+                    fontFamily: words.fontFamily || "Alegreya",
+                    fontSize: Engine.RenderUtil.cssSizeToTenths(this.context.scale40, words.fontSize),
+                    "font-weight": words.fontWeight === MusicXML.NormalBold.Bold ? "bold" : "normal",
+                    "font-style": words.fontStyle === MusicXML.NormalItalic.Italic ? "italic" : "normal",
+                    color: words.color || "black",
+                    textAnchor: this.getTextAnchor(words),
+                    "text-decoration": this.getTextDecoration(words),
+                    transform: this.getTransform(words),
+                    "letter-spacing": words.letterSpacing && words.letterSpacing !== "normal" ?
+                        ("" + Engine.RenderUtil.cssSizeToTenths(this.context.scale40,
+                                words.letterSpacing)) : "normal",
+                    direction: this.getDirection(words)
+                }, line)))
         /* React.DOM.text */);
     }
     getTextAnchor(words: MusicXML.CreditWords) {
@@ -151,6 +137,30 @@ class Credit extends React.Component<MusicXML.Credit, void> {
             default:
                 return "inherit";
         }
+    }
+    getX(lineNum: number) {
+        if (lineNum > 0) {
+            return 10;
+        }
+    }
+    getDX(words: MusicXML.CreditWords, initX: number, lineNum: number) {
+        if (lineNum > 0) {
+            return undefined;
+        }
+        if (words.defaultY || words.relativeY) {
+            return (words.defaultX + (words.relativeX || 0)) - initX;
+        }
+        return DEF_SPACING;
+    }
+    getDY(words: MusicXML.CreditWords, initY: number, lineNum: number) {
+        if (lineNum > 0) {
+            return V_SPACING +
+                Engine.RenderUtil.cssSizeToTenths(this.context.scale40, words.fontSize);
+        }
+        if (words.defaultY || words.relativeY) {
+            return this.context.pageHeight - (words.defaultY + (words.relativeY || 0)) - initY;
+        }
+        return 0;
     }
 }
 
