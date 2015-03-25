@@ -51,7 +51,7 @@ describe("[mxml/import.ts]", function() {
             expect(header.credits.length).to.eq(5);
             expect(header.credits[4].page).to.eq(2);
             expect(header.credits[0].creditTypes).to.deep.equal(["title"]);
-            expect(header.credits[1].creditWords).to.deep.equal({
+            expect(header.credits[1].creditWords).to.deep.equal([{
                 // Specified
                 words: "Song Composer",
 
@@ -77,9 +77,9 @@ describe("[mxml/import.ts]", function() {
                 relativeY: null,
                 rotation: 0,
                 underline: 0
-            });
+            }]);
             // Check that halign still follows justify
-            expect(header.credits[0].creditWords.halign).to.eq(MusicXML.LeftCenterRight.Center);
+            expect(header.credits[0].creditWords[0].halign).to.eq(MusicXML.LeftCenterRight.Center);
 
             expect(header.identification.creators.length).to.eq(3);
             expect(header.identification.creators[0].type).to.eq("composer");

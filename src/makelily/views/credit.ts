@@ -18,12 +18,14 @@
 
 import MusicXML         = require("musicxml-interfaces");
 import React            = require("react");
+import _                = require("lodash");
 import invariant        = require("react/lib/invariant");
 
 import Engine           = require("../models/engine");
 
 var DOMProperty         = require("react/lib/DOMProperty");
 
+const DEF_SPACING       = 4;
 
 let custAttributes = {
     "text-decoration": true,
@@ -72,27 +74,41 @@ class Credit extends React.Component<MusicXML.Credit, void> {
         const words = this.props.creditWords;
         invariant(!image, "Not implemented"); // There is either words or image, but not both
         invariant(!!words, "Unknown component type");
-        console.log("PH", this.context.pageHeight, words.defaultY, words.relativeY);
+
+        if (!!words && !words.length) {
+            return React.DOM.g({});
+        }
+        const initX = (words[0].defaultX + (words[0].relativeX || 0));
+        const initY = (this.context.pageHeight - (words[0].defaultY + (words[0].relativeY || 0)));
 
         return React.DOM.text({
-            x: (words.defaultX + (words.relativeX || 0)),
-            y: (this.context.pageHeight - (words.defaultY + (words.relativeY || 0))),
-            fontFamily: words.fontFamily || "Alegreya",
-            fontSize: Engine.RenderUtil.cssSizeToTenths(this.context.scale40, words.fontSize),
-            "font-weight": words.fontWeight === MusicXML.NormalBold.Bold ? "bold" : "normal",
-            "font-style": words.fontStyle === MusicXML.NormalItalic.Italic ? "italic" : "normal",
-            color: words.color || "black",
-            textAnchor: this.getTextAnchor(),
-            "text-decoration": this.getTextDecoration(),
-            transform: this.getTransform(),
-            "letter-spacing": words.letterSpacing && words.letterSpacing !== "normal" ?
-                ("" + Engine.RenderUtil.cssSizeToTenths(this.context.scale40,
-                        words.letterSpacing)) : "normal",
-            direction: this.getDirection()
-        }, words.words);
+                x: initX,
+                y: initY
+            },
+            _.map(words, (words, idx) => React.DOM.tspan({
+                key: idx,
+                dx: (words.defaultX || words.relativeX) ?
+                    (words.defaultX + (words.relativeX || 0)) - initX :
+                    DEF_SPACING,
+                dy: (words.defaultY || words.relativeY) ?
+                    (this.context.pageHeight - (words.defaultY + (words.relativeY || 0))) - initY :
+                    0,
+                fontFamily: words.fontFamily || "Alegreya",
+                fontSize: Engine.RenderUtil.cssSizeToTenths(this.context.scale40, words.fontSize),
+                "font-weight": words.fontWeight === MusicXML.NormalBold.Bold ? "bold" : "normal",
+                "font-style": words.fontStyle === MusicXML.NormalItalic.Italic ? "italic" : "normal",
+                color: words.color || "black",
+                textAnchor: this.getTextAnchor(words),
+                "text-decoration": this.getTextDecoration(words),
+                transform: this.getTransform(words),
+                "letter-spacing": words.letterSpacing && words.letterSpacing !== "normal" ?
+                    ("" + Engine.RenderUtil.cssSizeToTenths(this.context.scale40,
+                            words.letterSpacing)) : "normal",
+                direction: this.getDirection(words)
+            }, words.words))
+        /* React.DOM.text */);
     }
-    getTextAnchor() {
-        const words = this.props.creditWords;
+    getTextAnchor(words: MusicXML.CreditWords) {
         switch(words.halign || words.justify) {
             case MusicXML.LeftCenterRight.Right:
                 return "end";
@@ -104,8 +120,7 @@ class Credit extends React.Component<MusicXML.Credit, void> {
                 return "inherit";
         }
     }
-    getTextDecoration() {
-        const words = this.props.creditWords;
+    getTextDecoration(words: MusicXML.CreditWords) {
         if (words.underline) {
             return "underline";
         }
@@ -117,15 +132,13 @@ class Credit extends React.Component<MusicXML.Credit, void> {
         }
         return "none";
     }
-    getTransform() {
-        const words = this.props.creditWords;
+    getTransform(words: MusicXML.CreditWords) {
         if (words.rotation) {
             return `rotate(${words.rotation})`;
         }
         return undefined;
     }
-    getDirection() {
-        const words = this.props.creditWords;
+    getDirection(words: MusicXML.CreditWords) {
         switch(words.dir) {
             case MusicXML.DirectionMode.Lro:    // TODO: bidi
             case MusicXML.DirectionMode.Ltr:
