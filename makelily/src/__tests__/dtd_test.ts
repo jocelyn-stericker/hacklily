@@ -37,6 +37,15 @@ function readFile(file: string, onEnd: (s: string) => void) {
         onEnd(data);
     });
 }
+function mkdirp(path: string) {
+    try {
+        fs.mkdirSync(path);
+    } catch(e) {
+        if (e.code !== "EEXIST") {
+            throw e;
+        }
+    }
+}
 
 describe("import/export dtd validation", function() {
     const lilyRoot = "vendor/lilypond-regression";
@@ -55,8 +64,12 @@ describe("import/export dtd validation", function() {
         }
     });
 
+    mkdirp("rendertest");
+    mkdirp("rendertest/out");
+
     function testFile(root: string, file: string) {
         describe(file, function() {
+            const outname = `${root.replace("/", "_").replace("-", "_")}_${file.replace("-", "_")}`;
             it("can be imported, exported, validated, and rendered", function(done) {
                 readFile(root + "/" + file, function(str) {
                     try {
@@ -75,8 +88,8 @@ describe("import/export dtd validation", function() {
                         if (stdout || stderr) {
                             done(new Error(stderr || stdout || proc.error));
                         } else {
-                            let render = Views.render(score, 0);
-                            console.log(render);
+                            let page1Svg = Views.render(score, 0);
+                            fs.writeFile("rendertest/out/" + outname, page1Svg);
                             done();
                         }
                     } catch(err) {

@@ -82,7 +82,7 @@ class Page extends React.Component<Page.IProps, Page.IState> {
         const scale40       = defaults.scaling.millimeters / defaults.scaling.tenths * 40;
         return {
             scale40:        scale40,
-            pageHeight:     Engine.RenderUtil.mmToTenths(scale40, print.pageLayout.pageHeight)
+            pageHeight:     print.pageLayout.pageHeight
         };
     }
 }

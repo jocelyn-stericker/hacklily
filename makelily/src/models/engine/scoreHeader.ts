@@ -330,7 +330,7 @@ class ScoreHeader implements MusicXML.ScoreHeader {
                     words: val,
                     defaultX: defaultX,
                     justify: justification,
-                    defaultY: renderUtil.mmToTenths(mm, pageLayout.pageHeight - top),
+                    defaultY: pageLayout.pageHeight - renderUtil.mmToTenths(mm, top),
                     fontSize: fontSize
                 }],
                 page: 1

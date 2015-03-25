@@ -4,6 +4,7 @@ npm-debug.log
 *.swp
 dist/
 coverage
+rendertest/out
 
 // temporary
 vendor/TypeScript
