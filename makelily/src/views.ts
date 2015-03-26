@@ -16,15 +16,15 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import MusicXML         = require("musicxml-interfaces");
-import React            = require("react");
-import _                = require("lodash");
-import invariant        = require("react/lib/invariant");
-var $                   = React.createFactory;
+import MusicXML             = require("musicxml-interfaces");
+import React                = require("react");
+import _                    = require("lodash");
+import invariant            = require("react/lib/invariant");
+var $                       = React.createFactory;
 
-import Engine           = require("./models/engine");
-import Page             = require("./views/page");
-import SvgExt           = require("./views/svgext_injection");
+import Engine               = require("./models/engine");
+import Page                 = require("./views/page");
+import SvgExt               = require("./views/svgext_injection");
 
 SvgExt.inject();
 
@@ -36,7 +36,7 @@ SvgExt.inject();
  * @param startMeasure the index from 0 (not to be confused with the
  *        measure number string) of the first measure.
  */
-export function render(doc: Engine.IDocument, startMeasure: number): string {
+export function renderDocument(doc: Engine.IDocument, startMeasure: number): string {
     let factory = doc.factory;
     if (!factory) {
         throw new Error("Document has no factory");
@@ -61,7 +61,7 @@ export function render(doc: Engine.IDocument, startMeasure: number): string {
         attributes:     null,
         measures:       doc.measures,
         header:         doc.header,
-        pageLayout$:    _.clone(doc.header.defaults.pageLayout),
+        print$:         print,
         page$:          0,
         modelFactory:   doc.factory
     }, memo$);

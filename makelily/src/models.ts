@@ -68,7 +68,7 @@ export function importXML(src: string): Engine.IDocument {
         attributes:     null,
         measures:       score.measures,
         header:         score.header,
-        pageLayout$:    score.header.defaults.pageLayout,
+        print$:         null,
         page$:          0,
         modelFactory:   factory
     };

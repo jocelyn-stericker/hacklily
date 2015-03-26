@@ -86,7 +86,7 @@ describe("[engine/measureProcessor.ts]", function() {
                         mergePolicy: Engine.IModel.HMergePolicy.Min,
                         x$: 100,
                         model: null,
-                        priority: Engine.IModel.Type.Attributes
+                        renderClass: Engine.IModel.Type.Attributes
                     },
                     {
                         boundingBoxes$: [],
@@ -95,7 +95,7 @@ describe("[engine/measureProcessor.ts]", function() {
                         mergePolicy: Engine.IModel.HMergePolicy.Min,
                         x$: 110,
                         model: segments[1][0],  // from first voice.
-                        priority: Engine.IModel.Type.Chord
+                        renderClass: Engine.IModel.Type.Chord
                     },
                     {
                         division: 1,
@@ -103,7 +103,7 @@ describe("[engine/measureProcessor.ts]", function() {
                         mergePolicy: Engine.IModel.HMergePolicy.Max, // 1st is min, 2nd one is max
                         x$: 120,
                         model: null,
-                        priority: Engine.IModel.Type.Chord
+                        renderClass: Engine.IModel.Type.Chord
                     },
                     {
                         boundingBoxes$: [],
@@ -112,14 +112,14 @@ describe("[engine/measureProcessor.ts]", function() {
                         mergePolicy: Engine.IModel.HMergePolicy.Max, // 1st is min, 2nd one is max
                         x$: 130,
                         model: segments[1][1],
-                        priority: Engine.IModel.Type.Chord
+                        renderClass: Engine.IModel.Type.Chord
                     },
                     {
                         division: 4,
                         mergePolicy: Engine.IModel.HMergePolicy.Max,
                         x$: 190,
                         model: null,
-                        priority: Engine.IModel.Type.Attributes
+                        renderClass: Engine.IModel.Type.Attributes
                     },
                 ]
             );

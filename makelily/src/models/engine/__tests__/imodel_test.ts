@@ -42,55 +42,55 @@ describe("[engine/imodel.ts]", function() {
 
             expect(combinedLayout).to.deep.equal([
                 {
-                    priority: IModel.Type.Attributes,
+                    renderClass: IModel.Type.Attributes,
                     mergePolicy: IModel.HMergePolicy.Max,
                     x: 0,
                     division: 0
                 },
                 {
-                    priority: IModel.Type.Attributes,
+                    renderClass: IModel.Type.Attributes,
                     mergePolicy: IModel.HMergePolicy.Max,
                     x: 100,
                     division: 4
                 },
                 {
-                    priority: IModel.Type.Attributes,
+                    renderClass: IModel.Type.Attributes,
                     mergePolicy: IModel.HMergePolicy.Max,
                     x: 100 + 10 * Math.log(3) / Math.log(2),
                     division: 6
                 },
                 {
-                    priority: IModel.Type.Attributes,
+                    renderClass: IModel.Type.Attributes,
                     mergePolicy: IModel.HMergePolicy.Max,
                     x: 200,
                     division: 8
                 },
                 {
-                    priority: IModel.Type.Attributes,
+                    renderClass: IModel.Type.Attributes,
                     mergePolicy: IModel.HMergePolicy.Max,
                     x: 200 + 10 * Math.log(3) / Math.log(2),
                     division: 10
                 },
                 {
-                    priority: IModel.Type.Attributes,
+                    renderClass: IModel.Type.Attributes,
                     mergePolicy: IModel.HMergePolicy.Max,
                     x: 300,
                     division: 12
                 },
                 {
-                    priority: IModel.Type.Attributes,
+                    renderClass: IModel.Type.Attributes,
                     mergePolicy: IModel.HMergePolicy.Max,
                     x: 300 + 10 * Math.log(3) / Math.log(2),
                     division: 14
                 },
                 {
-                    priority: IModel.Type.Attributes,
+                    renderClass: IModel.Type.Attributes,
                     mergePolicy: IModel.HMergePolicy.Max,
                     x: 400,
                     division: 16
                 },
                 {
-                    priority: IModel.Type.Attributes,
+                    renderClass: IModel.Type.Attributes,
                     mergePolicy: IModel.HMergePolicy.Max,
                     x: 400 + 10 * Math.log(3) / Math.log(2),
                     division: 18
@@ -102,7 +102,7 @@ describe("[engine/imodel.ts]", function() {
                {
                     boundingBoxes$: [],
                     division: 0,
-                    priority: IModel.Type.Attributes,
+                    renderClass: IModel.Type.Attributes,
                     mergePolicy: IModel.HMergePolicy.Max,
                     model: {},
                     x$: 0
@@ -110,14 +110,14 @@ describe("[engine/imodel.ts]", function() {
                {
                     boundingBoxes$: [],
                     division: 4,
-                    priority: IModel.Type.Attributes,
+                    renderClass: IModel.Type.Attributes,
                     mergePolicy: IModel.HMergePolicy.Max,
                     model: {},
                     x$: 100
                },
                {
                     division: 6,
-                    priority: IModel.Type.Attributes,
+                    renderClass: IModel.Type.Attributes,
                     mergePolicy: IModel.HMergePolicy.Max,
                     model: null,
                     x$: 100 + 10 * Math.log(3) / Math.log(2)

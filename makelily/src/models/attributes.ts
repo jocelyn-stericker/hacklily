@@ -272,6 +272,7 @@ module AttributesModel {
             this.model = model;
             this.x$ = cursor$.x$;
             this.division = cursor$.division$;
+            this.staffIdx = cursor$.staff.idx;
 
             var isFirstInLine = cursor$.line && cursor$.line.barOnLine === 0;
             var next = Engine.ICursor.next(cursor$);
@@ -367,12 +368,13 @@ module AttributesModel {
         model: AttributesModel;
         x$: number;
         division: number;
+        staffIdx: number;
 
         // Prototype:
 
         mergePolicy: Engine.IModel.HMergePolicy;
         boundingBoxes$: Engine.IModel.IBoundingRect[];
-        priority: Engine.IModel.Type;
+        renderClass: Engine.IModel.Type;
         expandable: boolean;
 
         /*---- AttributesModel ----------------------------------------------*/
@@ -390,7 +392,7 @@ module AttributesModel {
 
     Layout.prototype.mergePolicy = Engine.IModel.HMergePolicy.Min;
     Layout.prototype.expandable = false;
-    Layout.prototype.priority = Engine.IModel.Type.Attributes;
+    Layout.prototype.renderClass = Engine.IModel.Type.Attributes;
     Layout.prototype.boundingBoxes$ = [];
     Object.freeze(Layout.prototype.boundingBoxes$);
 };
@@ -418,6 +420,8 @@ module Export {
 
         ksVisible: boolean;
         ksSpacing: number;
+
+        staffIdx: number;
     }
 
     export module Clef {
