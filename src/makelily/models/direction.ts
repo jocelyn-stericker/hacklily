@@ -163,13 +163,13 @@ module DirectionModel {
 
         mergePolicy: Engine.IModel.HMergePolicy;
         boundingBoxes$: Engine.IModel.IBoundingRect[];
-        priority: Engine.IModel.Type;
+        renderClass: Engine.IModel.Type;
         expandable: boolean;
     }
 
     Layout.prototype.mergePolicy = Engine.IModel.HMergePolicy.Min;
     Layout.prototype.expandable = false;
-    Layout.prototype.priority = Engine.IModel.Type.Direction;
+    Layout.prototype.renderClass = Engine.IModel.Type.Direction;
     Layout.prototype.boundingBoxes$ = [];
     Object.freeze(Layout.prototype.boundingBoxes$);
 };

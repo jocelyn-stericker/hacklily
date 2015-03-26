@@ -25,6 +25,7 @@ var $                       = React.createFactory;
 import Credit               = require("./credit");
 import Engine               = require("../models/engine");
 import StaveLines           = require("./staveLines");
+import ModelView            = require("./modelView");
 
 class Page extends React.Component<Page.IProps, Page.IState> {
     render() {
@@ -53,6 +54,8 @@ class Page extends React.Component<Page.IProps, Page.IState> {
         _.forEach(lineLayouts, (measureLayouts, idx) => {
             console.log(`Line ${idx} has ${measureLayouts.length} measures`);
             console.log(_.map(measureLayouts, measure => measure.width));
+            console.log(_.map(measureLayouts, measure => measure.elements[0]));
+            console.log(_.map(measureLayouts, measure => (<any>measure.elements[1][0].model)._class));
             console.log(measureLayouts);
         });
         const pageMarginsAll    = print.pageLayout.pageMargins;
@@ -77,12 +80,13 @@ class Page extends React.Component<Page.IProps, Page.IState> {
 
         /*--- Staves ----------------------------------------------*/
 
+        // TODO: Move to Engine & IModel, generalize
         let staveLefts          = _.map(lineLayouts, () => {
-            return systemMargins.leftMargin + pageMargins.leftMargin;    // FIXME
+            return systemMargins.leftMargin + pageMargins.leftMargin;
         });
 
         let staveRights         = _.map(lineLayouts, () => {
-            return systemMargins.rightMargin + pageMargins.rightMargin;  // FIXME
+            return systemMargins.rightMargin + pageMargins.rightMargin;
         });
 
         let staveLineProps      = _.map(_.zip(staveTops, staveLefts, staveRights), (d, i) => {
@@ -100,6 +104,23 @@ class Page extends React.Component<Page.IProps, Page.IState> {
 
         // Make sure our credits are keyed.
         _.forEach(credits, credit => Engine.key$(credit));
+
+        /*--- Models ----------------------------------------------*/
+
+        let layouts = <Engine.IModel.ILayout[]>
+            _.flatten(_.map(lineLayouts, (measureLayouts, lineIdx) => 
+                _.flatten(_.flatten(
+                    _.map(measureLayouts, measure =>
+                        _.map(_.flatten(measure.elements), (layout: Engine.IModel.ILayout) => {
+                            Engine.key$(layout);
+                            layout.y$ = staveLineProps[lineIdx].y; // TODO Move to Engine.
+                            return layout;
+                        })
+                    )
+                ))
+            ));
+
+        layouts = layouts.filter(l => !!l.model);   // Remove helpers.
 
         /*--- Render ----------------------------------------------*/
 
@@ -119,8 +140,8 @@ class Page extends React.Component<Page.IProps, Page.IState> {
                 onMouseUp:      this.props.onMouseUp
             },
             _.map(credits, (credit, idx) => $(Credit)(credit)),
-            _.map(staveLineProps, staveLineProps => $(StaveLines)(staveLineProps))
-            /* TODO: models */
+            _.map(staveLineProps, staveLineProps => $(StaveLines)(staveLineProps)),
+            _.map(layouts, layout => $(ModelView)({layout: layout, key: (<any>layout).key}))
             /* TODO: lyric boxes */
             /* TODO: free boxes */
             /* TODO: slurs and ties */

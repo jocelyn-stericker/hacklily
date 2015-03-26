@@ -37,7 +37,7 @@ export var fakeAttributeChordFactory: Engine.IModel.IFactory = {
     },
     searchHere: (models: Engine.IModel[], idx: number,
             modelType: Engine.IModel.Type): Engine.IModel[] => {
-        return this.modelHasType(models[idx], modelType) ? [models[idx]] : [];
+        return fakeAttributeChordFactory.modelHasType(models[idx], modelType) ? [models[idx]] : [];
     },
     fromSpec: (spec: any): Engine.IModel => {
         throw "Not implemented";
@@ -64,7 +64,7 @@ export function createFakeStaffSegment(divisions1: number, divisions2: number, i
                     mergePolicy: Engine.IModel.HMergePolicy.Min,
                     x$: cursor$.x$ - width,
                     model: this,
-                    priority: Engine.IModel.Type.Attributes
+                    renderClass: Engine.IModel.Type.Attributes
                 };
             }
         },
@@ -86,7 +86,7 @@ export function createFakeStaffSegment(divisions1: number, divisions2: number, i
                     mergePolicy: Engine.IModel.HMergePolicy.Max,
                     x$: cursor$.x$ - width,
                     model: this,
-                    priority: Engine.IModel.Type.Attributes
+                    renderClass: Engine.IModel.Type.Attributes
                 };
             }
         }
@@ -118,7 +118,7 @@ export function createFakeVoiceSegment(divisions1: number, divisions2: number, i
                     x$: cursor$.x$ - width,
                     expandable: true,
                     model: this,
-                    priority: Engine.IModel.Type.Chord
+                    renderClass: Engine.IModel.Type.Chord
                 };
             }
         },
@@ -141,7 +141,7 @@ export function createFakeVoiceSegment(divisions1: number, divisions2: number, i
                     x$: cursor$.x$ - width,
                     expandable: true,
                     model: this,
-                    priority: Engine.IModel.Type.Chord
+                    renderClass: Engine.IModel.Type.Chord
                 };
             }
         }
@@ -159,6 +159,6 @@ export function createFakeLayout(idx: number, offset: number, max: boolean): Eng
         division: idx*4 + offset,
         mergePolicy: max ? Engine.IModel.HMergePolicy.Max : Engine.IModel.HMergePolicy.Min,
         boundingBoxes$: [],
-        priority: Engine.IModel.Type.Attributes
+        renderClass: Engine.IModel.Type.Attributes
     };
 }

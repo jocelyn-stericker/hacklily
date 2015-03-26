@@ -350,7 +350,8 @@ export function layout$(options: Options.ILayoutOptions,
     let measures = options.measures;
     let width$ = memo$.width$;
 
-    let bounds = Options.ILineBounds.calculate(options.pageLayout$, options.page$);
+    invariant(!!options.print$, "Print not defined");
+    let boundsGuess = Options.ILineBounds.calculate(options.print$, options.page$);
 
     let widths = _.map(measures, (measure, idx) => {
         // Create an array of the IMeasureParts of the previous, current, and next measures
@@ -385,12 +386,22 @@ export function layout$(options: Options.ILayoutOptions,
         return width$[measure.uuid];
     });
 
+    let thisPrint: MusicXML.Print = null;
+    function updatePrint(measure: Measure.IMutableMeasure) {
+        let partWithPrint = _.find(measure.parts, part => !!part.staves[1] &&
+                options.modelFactory.searchHere(part.staves[1], 0, IModel.Type.Print).length);
+        if (partWithPrint) {
+            let print = <any> options.modelFactory.searchHere(partWithPrint.staves[1], 0,
+                    IModel.Type.Print)[0];
+            thisPrint = print;
+        }
+    }
     function newLayoutWithoutMeasures(): Options.ILayoutOptions {
         return {
             attributes:     null,
             measures:       [],
             header:         options.header,
-            pageLayout$:    options.pageLayout$,
+            print$:         thisPrint,
             finalLine:      false,
             page$:          options.page$,
             modelFactory:   options.modelFactory
@@ -398,8 +409,12 @@ export function layout$(options: Options.ILayoutOptions,
     }
 
     // Super-naive for now...
-    let startingWidth = bounds.right - bounds.left - 150; // FIXME: replace 150 w/ proper __ESTIMATE__ space for start of line/staff
+    let startingWidth = boundsGuess.right - boundsGuess.left - 150;
+        // FIXME: replace 150 w/ proper __ESTIMATE__ space for start of line/staff
     let lineOpts$ = _.reduce(widths, function(memo, width, idx) {
+        updatePrint(measures[idx]);
+        memo.opts[memo.opts.length - 1].print$ = thisPrint;
+        invariant(!!thisPrint, "No print found");
         if (memo.remainingWidth > width) {
             memo.remainingWidth -= width;
         } else {
@@ -416,7 +431,8 @@ export function layout$(options: Options.ILayoutOptions,
     lineOpts$[lineOpts$.length - 1].finalLine = true;
 
     return _.map(lineOpts$, function(lineOpt$) {
-        return layoutLine$(lineOpt$, bounds, memo$);
+        return layoutLine$(lineOpt$, Options.ILineBounds.calculate(lineOpt$.print$,
+                options.page$), memo$);
     });
 }
 

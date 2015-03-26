@@ -20,13 +20,14 @@ import MusicXML             = require("musicxml-interfaces");
 import _                    = require("lodash");
 
 import IModel               = require("./imodel");
+import IPrint               = require("./iprint");
 import Measure              = require("./measure");
 
 export interface ILayoutOptions {
     attributes:     MusicXML.Attributes;
     measures:       Measure.IMutableMeasure[];
     header:         MusicXML.ScoreHeader;
-    pageLayout$:    MusicXML.PageLayout;
+    print$:         MusicXML.Print;
     page$:          number;
     finalLine?:     boolean;
     modelFactory:   IModel.IFactory;
@@ -55,21 +56,13 @@ export interface ILineBounds {
 }
 
 export module ILineBounds {
-    export function calculate(pageLayout: MusicXML.PageLayout, page: number): ILineBounds {
-        var startX = 0;
-        var endX = pageLayout.pageWidth;
-
-        _.any(pageLayout.pageMargins, function(pageMargin) {
-            if (pageMargin.type === null || pageMargin.type === undefined ||
-                    pageMargin.type === MusicXML.OddEvenBoth.Both ||
-                    (pageMargin.type === MusicXML.OddEvenBoth.Even) && !(page % 2) ||
-                    (pageMargin.type === MusicXML.OddEvenBoth.Odd) && !!(page % 2)) {
-                startX += pageMargin.leftMargin;
-                endX -= pageMargin.rightMargin;
-                return true;
-            }
-            return false;
-        });
+    export function calculate(print: MusicXML.Print, page: number): ILineBounds {
+        let pageLayout          = print.pageLayout;
+        let pageMargins         = IPrint.getPageMargins(pageLayout.pageMargins, page);
+        let systemMargins       = print.systemLayout.systemMargins;
+        let startX              = systemMargins.leftMargin + pageMargins.leftMargin;
+        let endX                = systemMargins.rightMargin + pageLayout.pageWidth -
+                                    pageMargins.rightMargin;
 
         return {
             left: startX,

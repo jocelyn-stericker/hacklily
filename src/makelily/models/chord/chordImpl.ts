@@ -269,7 +269,7 @@ module ChordModelImpl {
 
         mergePolicy: Engine.IModel.HMergePolicy;
         boundingBoxes$: Engine.IModel.IBoundingRect[];
-        priority: Engine.IModel.Type;
+        renderClass: Engine.IModel.Type;
         expandable: boolean;
 
         /*---- ChordModel ---------------------------------------------------*/
@@ -278,7 +278,7 @@ module ChordModelImpl {
 
     Layout.prototype.mergePolicy = Engine.IModel.HMergePolicy.Min;
     Layout.prototype.expandable = true;
-    Layout.prototype.priority = Engine.IModel.Type.Chord;
+    Layout.prototype.renderClass = Engine.IModel.Type.Chord;
     Layout.prototype.boundingBoxes$ = [];
 }
 

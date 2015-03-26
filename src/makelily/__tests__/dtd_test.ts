@@ -88,7 +88,7 @@ describe("import/export dtd validation", function() {
                         if (stdout || stderr) {
                             done(new Error(stderr || stdout || proc.error));
                         } else {
-                            let page1Svg = Views.render(score, 0);
+                            let page1Svg = Views.renderDocument(score, 0);
                             fs.writeFile("rendertest/out/" + outname, page1Svg);
                             done();
                         }

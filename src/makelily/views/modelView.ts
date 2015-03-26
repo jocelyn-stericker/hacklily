@@ -1,4 +1,4 @@
-/**
+/** 
  * (C) Josh Netterfield <joshua@nettek.ca> 2015.
  * Part of the Satie music engraver <https://github.com/ripieno/satie>.
  * 
@@ -16,21 +16,24 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-"use strict";
-
-import MusicXML         = require("musicxml-interfaces");
+import React            = require("react");
+import _                = require("lodash");
 import invariant        = require("react/lib/invariant");
+var $                   = React.createFactory;
 
-export function getPageMargins(pageMargins: MusicXML.PageMargins[], page: number):
-    MusicXML.PageMargins {
-    for (let i = 0; i < pageMargins.length; ++i) {
-        if (pageMargins[i].type === MusicXML.OddEvenBoth.Both ||
-                pageMargins[i].type === MusicXML.OddEvenBoth.Even && (page % 2 === 0) ||
-                pageMargins[i].type === MusicXML.OddEvenBoth.Odd && (page % 2 === 1)) {
-            return pageMargins[i];
+import Attributes       = require("./attributes");
+import Engine           = require("../models/engine");
+
+class ModelView extends React.Component<{layout: Engine.IModel.ILayout}, void> {
+    render(): any {
+        let layout = <any> this.props.layout;
+        switch(layout.renderClass) {
+        case Engine.IModel.Type.Attributes:
+            return $(Attributes)({layout: layout});
+        default:
+            return null;
         }
     }
-    invariant(false, "Invalid page margins");
-    return null;
 }
 
+export = ModelView;
