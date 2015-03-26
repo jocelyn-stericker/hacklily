@@ -27,6 +27,7 @@ import MusicXML         = require("musicxml-interfaces");
 import _                = require("lodash");
 import invariant        = require("react/lib/invariant");
 
+import IPrint           = require("./iprint");
 import renderUtil       = require("./renderUtil");
 import smufl            = require("../smufl");
 
@@ -198,19 +199,6 @@ class ScoreHeader implements MusicXML.ScoreHeader {
         return this.toXML();
     }
 
-    getPageMargins(page: number) {
-        let pageMargins = this.defaults.pageLayout.pageMargins;
-        for (let i = 0; i < pageMargins.length; ++i) {
-            if (pageMargins[i].type === MusicXML.OddEvenBoth.Both ||
-                    pageMargins[i].type === MusicXML.OddEvenBoth.Even && (page % 2 === 0) ||
-                    pageMargins[i].type === MusicXML.OddEvenBoth.Odd && (page % 2 === 1)) {
-                return pageMargins[i];
-            }
-        }
-        invariant(false, "Invalid page margins");
-        return null;
-    }
-
     get composer() {
         return this._getIdentificationOrCredit("composer");
     }
@@ -304,7 +292,7 @@ class ScoreHeader implements MusicXML.ScoreHeader {
         });
         if (!_.any(this.credits, c => !!c.creditWords && !!~c.creditTypes.indexOf(type))) {
             let defaultX = NaN;
-            let margins = this.getPageMargins(1);
+            let margins = IPrint.getPageMargins(this.defaults.pageLayout.pageMargins, 1);
             // TODO: Throughout this file, use own instead of default values
             switch (justification) {
                 case MusicXML.LeftCenterRight.Center:

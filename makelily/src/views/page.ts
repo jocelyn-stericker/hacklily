@@ -20,15 +20,20 @@ import MusicXML             = require("musicxml-interfaces");
 import React                = require("react");
 import _                    = require("lodash");
 import invariant            = require("react/lib/invariant");
+var $                       = React.createFactory;
 
 import Credit               = require("./credit");
 import Engine               = require("../models/engine");
-var $                       = React.createFactory;
+import StaveLines           = require("./staveLines");
 
 class Page extends React.Component<Page.IProps, Page.IState> {
     render() {
+
+        /*--- General ---------------------------------------------*/
+
         const print         = this.props.print;
         const page          = print.pageNumber;
+        const pageNum       = parseInt(page, 10);
         invariant(!!page, "Page isn't valid!");
         const defaults      = this.props.scoreHeader.defaults;
         const credits       = _.filter(this.props.scoreHeader.credits, cr =>
@@ -44,13 +49,59 @@ class Page extends React.Component<Page.IProps, Page.IState> {
                                 "100%";
 
         const lineLayouts   = this.props.lineLayouts;
+
         _.forEach(lineLayouts, (measureLayouts, idx) => {
             console.log(`Line ${idx} has ${measureLayouts.length} measures`);
             console.log(_.map(measureLayouts, measure => measure.width));
+            console.log(measureLayouts);
         });
+        const pageMarginsAll    = print.pageLayout.pageMargins;
+        const pageMargins       = Engine.IPrint.getPageMargins(pageMarginsAll, pageNum);
+        let systemMargins       = print.systemLayout.systemMargins;
+
+        const xMin              = print.systemLayout.systemMargins.leftMargin;
+        const xMax              = print.pageLayout.pageWidth - print.systemLayout.systemMargins
+                                    .rightMargin;
+
+        let y                   = print.pageLayout.pageHeight - (
+                                    print.systemLayout.topSystemDistance +
+                                    pageMargins.topMargin);
+        let nextPaddingBottom   = 0;
+        let staveTops           = _.map(lineLayouts, (measureLayouts, idx) => {
+            let paddingTop      = _.max(measureLayouts, mre => mre.paddingTop).paddingTop;
+            y                   = y + nextPaddingBottom + paddingTop;
+            let top             = y;
+            nextPaddingBottom   = _.max(measureLayouts, mre => mre.paddingBottom).paddingBottom;
+            return top;
+        });
+
+        /*--- Staves ----------------------------------------------*/
+
+        let staveLefts          = _.map(lineLayouts, () => {
+            return systemMargins.leftMargin + pageMargins.leftMargin;    // FIXME
+        });
+
+        let staveRights         = _.map(lineLayouts, () => {
+            return systemMargins.rightMargin + pageMargins.rightMargin;  // FIXME
+        });
+
+        let staveLineProps      = _.map(_.zip(staveTops, staveLefts, staveRights), (d, i) => {
+            return {
+                key:    "stave_" + i,
+
+                lines:  5,
+                width:  print.pageLayout.pageWidth - d[2 /* right */] - d[1 /* left */],
+                x:      d[1 /* left */],
+                y:      d[0 /* top */]
+            };
+        });
+
+        /*--- Credits ---------------------------------------------*/
 
         // Make sure our credits are keyed.
         _.forEach(credits, credit => Engine.key$(credit));
+
+        /*--- Render ----------------------------------------------*/
 
         return React.DOM.svg(
             {
@@ -67,8 +118,8 @@ class Page extends React.Component<Page.IProps, Page.IState> {
                 onMouseMove:    this.props.onMouseMove,
                 onMouseUp:      this.props.onMouseUp
             },
-            _.map(credits, (credit, idx) => $(Credit)(credit))
-            /* TODO: staves */
+            _.map(credits, (credit, idx) => $(Credit)(credit)),
+            _.map(staveLineProps, staveLineProps => $(StaveLines)(staveLineProps))
             /* TODO: models */
             /* TODO: lyric boxes */
             /* TODO: free boxes */

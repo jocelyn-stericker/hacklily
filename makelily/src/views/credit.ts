@@ -22,9 +22,6 @@ import _                = require("lodash");
 import invariant        = require("react/lib/invariant");
 
 import Engine           = require("../models/engine");
-/* tslint:disable */
-import custAttribs      = require("./svgext_injection");
-/* tslint:enable */
 
 const DEF_SPACING       = 4;
 const V_SPACING         = 4;

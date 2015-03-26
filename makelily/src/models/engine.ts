@@ -91,6 +91,7 @@ export import Ctx               = require("./engine/ctx");
 export import IChord            = require("./engine/ichord");
 export import ICursor           = require("./engine/icursor");
 export import IModel            = require("./engine/imodel");
+export import IPrint            = require("./engine/iprint");
 export import Measure           = require("./engine/measure");
 export import Options           = require("./engine/options");
 export import RenderUtil        = require("./engine/renderUtil");
