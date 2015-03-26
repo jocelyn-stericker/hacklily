@@ -16,24 +16,20 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/* tslint:disable */
-var DOMProperty         = require("react/lib/DOMProperty");
-/* tslint:enable */
+"use strict";
 
-export function inject() {
-    let custAttributes = {
-        "alignment-baseline": true,
-        "text-decoration": true,
-        "letter-spacing": true,
-        "font-style": true,
-        "font-weight": true,
-        "color": true,
-        "direction": true
-    };
+import MusicXML         = require("musicxml-interfaces");
+import invariant        = require("react/lib/invariant");
 
-    DOMProperty.injection.injectDOMPropertyConfig({
-        isCustomAttribute: function (attributeName: string) {
-            return attributeName in custAttributes;
+export function getPageMargins(pageMargins: MusicXML.PageMargins[], page: number) {
+    for (let i = 0; i < pageMargins.length; ++i) {
+        if (pageMargins[i].type === MusicXML.OddEvenBoth.Both ||
+                pageMargins[i].type === MusicXML.OddEvenBoth.Even && (page % 2 === 0) ||
+                pageMargins[i].type === MusicXML.OddEvenBoth.Odd && (page % 2 === 1)) {
+            return pageMargins[i];
         }
-    });
+    }
+    invariant(false, "Invalid page margins");
+    return null;
 }
+

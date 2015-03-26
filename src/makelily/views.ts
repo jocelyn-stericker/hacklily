@@ -20,10 +20,13 @@ import MusicXML         = require("musicxml-interfaces");
 import React            = require("react");
 import _                = require("lodash");
 import invariant        = require("react/lib/invariant");
+var $                   = React.createFactory;
 
 import Engine           = require("./models/engine");
 import Page             = require("./views/page");
-var $                   = React.createFactory;
+import SvgExt           = require("./views/svgext_injection");
+
+SvgExt.inject();
 
 /**
  * Renders a single page starting at `startMeasure`.
