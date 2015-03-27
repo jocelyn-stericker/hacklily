@@ -141,7 +141,7 @@ describe("[engine.ts]", function() {
                     systemMargins: {
                         leftMargin: 0,
                         rightMargin: 0
-                    },
+                    }
                 },
                 pageLayout: {
                     pageHeight: 1000,

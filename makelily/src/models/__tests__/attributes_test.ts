@@ -101,7 +101,6 @@ describe("[attributes.ts]", function() {
         it("lays out properly when at start of song", function() {
             var cursor$ = makeCursor(attributes, factory);
             var layout = <Attributes.ILayout> attributes.layout(cursor$);
-            expect(layout.clefScale).to.equal(1.0);
             expect(layout.ksVisible).to.be.true;
             expect(layout.tsVisible).to.be.true;
             expect(layout.clefVisible).to.be.true;

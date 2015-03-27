@@ -18,34 +18,56 @@
 
 "use strict";
 
+import MusicXML             = require("musicxml-interfaces");
 import React                = require("react");
-import TypedReact           = require("typed-react");
+var $                       = React.createFactory;
 
-import ClefModel            = require("../stores/clef");
-import _Glyph               = require("./_glyph");
-import PureModelViewMixin   = require("./pureModelViewMixin");
-
-var    Glyph                = React.createFactory(_Glyph.Component);
+import Glyph                = require("./primitives/glyph");
 
 /**
  * Responsible for the rendering of a clef.
  */
-class Clef extends TypedReact.Component<Clef.IProps, {}> {
+class Clef extends React.Component<{spec: MusicXML.Clef}, void> {
     render(): any {
-        var spec = this.props.spec;
-        var x = spec.x - (spec.isChange ? 0.2 : 0);
-        var clef = Glyph({
-            x:          x,
-            y:          spec.y - (this.line() - 3)*10,
-            opacity:    this.props.opacity,
+        const spec          = this.props.spec;
+
+        if (spec.printObject !== undefined && !spec.printObject) {
+            return null;
+        }
+
+        /*
+            extends PrintStyle
+                Position
+                    defaultX?: number;
+                    relativeY?: number;
+                    defaultY?: number;
+                    relativeX?: number;
+                    Font (ignored)
+                Color
+                    color?: string;
+            extends PrintObject
+                printObject
+
+            clefOctaveChange: string;
+            sign: string;
+            number?: number;
+            size?: SymbolSize;
+            line: number;
+            afterBarline?: boolean;
+            additional?: boolean;
+        */
+        return $(Glyph)({
+            x:          spec.defaultX + (spec.relativeX || 0),
+            y:          this.context.pageHeight - (
+                            spec.defaultY + (spec.relativeY || 0) + (this.line() - 3)*10),
             fill:       spec.color,
             glyphName:  this.sign()
         });
-        return clef;
     }
 
     sign() {
-        var clef = this.props.spec.displayedClef.sign.toLowerCase();
+        const clef = this.props.spec.sign.toLowerCase();
+
         if (clef === "percussion") {
             return "unpitchedPercussionClef1";
         } else if (clef === "tab") {
@@ -53,24 +75,20 @@ class Clef extends TypedReact.Component<Clef.IProps, {}> {
         } else if (clef === "none") {
             return "staffPosRaise1";
         } else {
-            // XXX: Just render at 2/3 pt
-            return clef + "Clef" + (this.props.spec.isChange ? "Change" : "");
+            return clef + "Clef" + (this.props.spec.size === MusicXML.SymbolSize.Cue ?
+                "Change" : "");
         }
     }
 
     line(): number {
-        return this.props.spec.displayedClef.line;
+        return this.props.spec.line;
     }
 };
 
 module Clef {
-    export var Component = TypedReact.createClass(Clef, <any> [PureModelViewMixin]);
-
-    export interface IProps {
-        key: number;
-        spec: ClefModel;
-        opacity?: number;
-    }
+    export var contextTypes = <any> {
+        pageHeight:         React.PropTypes.number.isRequired
+    };
 }
 
 export = Clef;

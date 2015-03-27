@@ -25,7 +25,6 @@
 
 import MusicXML         = require("musicxml-interfaces");
 import _                = require("lodash");
-import invariant        = require("react/lib/invariant");
 
 import IPrint           = require("./iprint");
 import renderUtil       = require("./renderUtil");

@@ -17,19 +17,58 @@
  */
 
 import React            = require("react");
-import _                = require("lodash");
-import invariant        = require("react/lib/invariant");
 var $                   = React.createFactory;
 
 import Attributes       = require("../models/attributes");
-import Engine           = require("../models/engine");
+import Clef             = require("./clef");
+import KeySignature     = require("./keySignature");
+import TimeSignature    = require("./timeSignature");
 
 class AttributesView extends React.Component<{layout: Attributes.ILayout}, void> {
     render(): any {
         let layout = this.props.layout;
-        let model = layout.model;
-        console.log(layout.staffIdx, layout.clefVisible, layout.tsVisible, layout.ksVisible);
-        return null;
+        let children: any[] = [];
+        let dx$ = 0;
+        if (layout.clefVisible) {
+            let clef = Object.create(layout.model.clefs[layout.staffIdx]);
+            clef.defaultX = layout.x$;
+            clef.relativeX = 0;
+            clef.defaultY = layout.y$;
+            clef.relativeY = 0;
+            children.push($(Clef)({
+                spec: clef,
+                key: "clef"
+            }));
+
+            dx$ += layout.clefSpacing;
+        }
+        if (layout.ksVisible) {
+            let ks = Object.create(layout.model.keySignatures[0]);
+            ks.defaultX = layout.x$ + dx$;
+            ks.relativeX = 0;
+            ks.defaultY = layout.y$;
+            ks.relativeY = 0;
+            children.push($(KeySignature)({
+                spec: ks,
+                clef: layout.model.clefs[layout.staffIdx],
+                key: "ks"
+            }));
+
+            dx$ += layout.ksSpacing;
+        }
+        if (layout.tsVisible) {
+            let ts = Object.create(layout.model.times[0]);
+            ts.defaultX = layout.x$ + dx$;
+            ts.relativeX = 0;
+            ts.defaultY = layout.y$;
+            ts.relativeY = 0;
+            children.push($(TimeSignature)({
+                spec: ts,
+                key: "ts"
+            }));
+        }
+        console.log(layout.x$, layout.y$, layout.staffIdx, layout.clefVisible, layout.tsVisible, layout.ksVisible);
+        return React.DOM.g(null, children);
     }
 }
 

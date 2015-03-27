@@ -51,20 +51,9 @@ class Page extends React.Component<Page.IProps, Page.IState> {
 
         const lineLayouts   = this.props.lineLayouts;
 
-        _.forEach(lineLayouts, (measureLayouts, idx) => {
-            console.log(`Line ${idx} has ${measureLayouts.length} measures`);
-            console.log(_.map(measureLayouts, measure => measure.width));
-            console.log(_.map(measureLayouts, measure => measure.elements[0]));
-            console.log(_.map(measureLayouts, measure => (<any>measure.elements[1][0].model)._class));
-            console.log(measureLayouts);
-        });
         const pageMarginsAll    = print.pageLayout.pageMargins;
         const pageMargins       = Engine.IPrint.getPageMargins(pageMarginsAll, pageNum);
         let systemMargins       = print.systemLayout.systemMargins;
-
-        const xMin              = print.systemLayout.systemMargins.leftMargin;
-        const xMax              = print.pageLayout.pageWidth - print.systemLayout.systemMargins
-                                    .rightMargin;
 
         let y                   = print.pageLayout.pageHeight - (
                                     print.systemLayout.topSystemDistance +
@@ -108,7 +97,7 @@ class Page extends React.Component<Page.IProps, Page.IState> {
         /*--- Models ----------------------------------------------*/
 
         let layouts = <Engine.IModel.ILayout[]>
-            _.flatten(_.map(lineLayouts, (measureLayouts, lineIdx) => 
+            _.flatten(_.map(lineLayouts, (measureLayouts, lineIdx) =>
                 _.flatten(_.flatten(
                     _.map(measureLayouts, measure =>
                         _.map(_.flatten(measure.elements), (layout: Engine.IModel.ILayout) => {
