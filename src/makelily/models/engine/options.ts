@@ -17,7 +17,6 @@
  */
 
 import MusicXML             = require("musicxml-interfaces");
-import _                    = require("lodash");
 
 import IModel               = require("./imodel");
 import IPrint               = require("./iprint");

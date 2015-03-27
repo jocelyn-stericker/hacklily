@@ -18,40 +18,36 @@
 
 "use strict";
 
+import MusicXML             = require("musicxml-interfaces");
 import React                = require("react");
-import TypedReact           = require("typed-react");
 import _                    = require("lodash");
-import PureRenderMixin      = require("react/lib/ReactComponentWithPureRenderMixin");
+var $                       = React.createFactory;
 
-import _Glyph               = require("./_glyph");
-import PureModelViewMixin   = require("./pureModelViewMixin");
-import TimeSignatureModel   = require("../stores/timeSignature");
-
-var    Glyph                = React.createFactory(_Glyph.Component);
+import Glyph                = require("./primitives/glyph");
 
 /**
  * Renders a simple, compound, or common time signature.
  */
-class TimeSignature extends TypedReact.Component<TimeSignature.IProps, {}> {
+class TimeSignature extends React.Component<{spec: MusicXML.Time}, void> {
     render(): any {
-        var spec = this.props.spec;
-        var ts = spec.displayTimeSignature;
+        const spec = this.props.spec;
+        let ts = this._displayTimeSignature();
 
         if (ts.commonRepresentation) {
             var beats = ts.beats;
             var beatType = ts.beatType;
 
             if (beats === 4 && beatType === 4) {
-                return Glyph({
-                    x: spec.x,
-                    y: spec.y,
+                return $(Glyph)({
+                    x: spec.defaultX + (spec.relativeX || 0),
+                    y: this.context.pageHeight - (spec.defaultY + (spec.relativeY || 0)),
                     fill: spec.color,
                     glyphName: "timeSigCommon"
                 });
             } else if (beats === 2 && beatType === 2) {
-                return Glyph({
-                    x: spec.x,
-                    y: spec.y,
+                return $(Glyph)({
+                    x: spec.defaultX + (spec.relativeX || 0),
+                    y: this.context.pageHeight - (spec.defaultY + (spec.relativeY || 0)),
                     fill: spec.color,
                     glyphName: "timeSigCutCommon"
                 });
@@ -59,18 +55,20 @@ class TimeSignature extends TypedReact.Component<TimeSignature.IProps, {}> {
             // Cannot be represented in common representation. Pass through.
         }
         return React.DOM.g(null,
-            React.createElement(TimeSignatureNumber.Component, {
+            $(TimeSignatureNumber)({
                     key: "-5",
                     stroke: spec.color,
-                    x: spec.x + this.numOffset(),
-                    y: spec.y - 10},
+                    x: spec.defaultX + (spec.relativeX || 0) + this.numOffset(),
+                    y: this.context.pageHeight - (spec.defaultY + (spec.relativeY || 0) - 10)
+                },
                 ts.beats
             ),
-            React.createElement(TimeSignatureNumber.Component, {
+            $(TimeSignatureNumber)({
                     key: "-6",
                     stroke: spec.color,
-                    x: spec.x + this.denOffset(),
-                    y: spec.y + 10},
+                    x: spec.defaultX + (spec.relativeX || 0) + this.denOffset(),
+                    y: this.context.pageHeight - (spec.defaultY + (spec.relativeY || 0) + 10)
+                },
                 ts.beatType
             )
         /* React.DOM.g */);
@@ -78,7 +76,7 @@ class TimeSignature extends TypedReact.Component<TimeSignature.IProps, {}> {
 
     numOffset() {
         // XXX: crazy hack. fix.
-        var ts = this.props.spec.displayTimeSignature;
+        var ts = this._displayTimeSignature();
         if (ts.beats < 10 && ts.beatType >= 10) {
             return 5;
         }
@@ -86,28 +84,43 @@ class TimeSignature extends TypedReact.Component<TimeSignature.IProps, {}> {
     }
     denOffset() {
         // crazy hack. fix.
-        var ts = this.props.spec.displayTimeSignature;
+        var ts = this._displayTimeSignature();
         if (ts.beatType < 10 && ts.beats >= 10) {
             return 5;
         }
         return 0;
     }
+
+    _displayTimeSignature() {
+        const spec = this.props.spec;
+        return {
+            beats:      parseInt(spec.beats[0], 10),
+            beatType:   spec.beatTypes[0],
+            commonRepresentation: spec.symbol === MusicXML.TimeSymbolType.Common ||
+                spec.symbol === MusicXML.TimeSymbolType.Cut
+        };
+    }
 };
 
 module TimeSignature {
-    export var Component = TypedReact.createClass(TimeSignature, <any> [PureModelViewMixin]);
-
-    export interface IProps {
-        key: number;
-        spec: TimeSignatureModel;
-    }
+    export var contextTypes = <any> {
+        pageHeight:         React.PropTypes.number.isRequired
+    };
 }
 
 /* private */
-class TimeSignatureNumber extends TypedReact.Component<TimeSignatureNumber.IProps, {}> {
+interface ITSNumProps {
+    x:          number;
+    y:          number;
+    stroke:     string;
+    children?:  string;
+};
+
+/* private */
+class TimeSignatureNumber extends React.Component<ITSNumProps, void> {
     render() {
         return React.DOM.g(null,
-            _.map((this.props.children + "").split(""), (c, i) => Glyph({
+            _.map((this.props.children + "").split(""), (c, i) => $(Glyph)({
                 key: "ts-" + i,
                 x: this.props.x + i*12,
                 y: this.props.y,
@@ -115,18 +128,6 @@ class TimeSignatureNumber extends TypedReact.Component<TimeSignatureNumber.IProp
                 glyphName: "timeSig" + c
             /* Glyph */}))
         /* React.DOM.g */);
-    }
-}
-
-/* private */
-module TimeSignatureNumber {
-    export var Component = TypedReact.createClass(TimeSignatureNumber, <any> [PureRenderMixin]);
-    export interface IProps {
-        key: string;
-        x: number;
-        y: number;
-        stroke: string;
-        children?: any;
     }
 }
 

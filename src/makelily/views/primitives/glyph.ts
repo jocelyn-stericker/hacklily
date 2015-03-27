@@ -19,23 +19,21 @@
 "use strict";
 
 import React            = require("react");
-import TypedReact       = require("typed-react");
-import PureRenderMixin  = require("react/lib/ReactComponentWithPureRenderMixin");
+import invariant        = require("react/lib/invariant");
 
-import assert           = require("assert");
-import C                = require("../stores/contracts");
+import SMuFL            = require("../../models/smufl");
 
 /**
  * Most musical elements are rendered as glyphs. Exceptions include
  * slurs, ties, dots in dotted notes, ledger lines, and stave lines.
  */
-class Glyph extends TypedReact.Component<Glyph.IProps, {}> {
+class Glyph extends React.Component<Glyph.IProps, void> {
     render() {
         var px = this.props.x;
         var py = this.props.y;
 
         if (this.props.glyphName.substr(0, 2) === "fa") {
-            assert(this.props.code);
+            invariant(!!this.props.code, "Undefined glyph.");
             return React.DOM.text({
                 x: px,
                 y: py,
@@ -47,7 +45,7 @@ class Glyph extends TypedReact.Component<Glyph.IProps, {}> {
                 className: "fa"
             }, this.props.code);
         } else {
-            assert(!this.props.code);
+            invariant(!this.props.code, "Glyph should be falsy if not displaying an FA glpyh.");
         }
 
         var text: React.ReactElement<any> = React.DOM.text({
@@ -59,7 +57,7 @@ class Glyph extends TypedReact.Component<Glyph.IProps, {}> {
                 transform: this.props.transform,
                 fontSize: 40*(this.props.scale||1),
                 className: "mn_"},
-            C.SMuFL.getGlyphCode(this.props.glyphName)
+            SMuFL.getGlyphCode(this.props.glyphName)
         );
 
         if (!this.props["selection-info"] || global.isChoreServer) {
@@ -90,8 +88,6 @@ class Glyph extends TypedReact.Component<Glyph.IProps, {}> {
 }
 
 module Glyph {
-    export var Component = TypedReact.createClass(Glyph, <any> [PureRenderMixin]);
-
     export interface IProps {
         fill: string;
         glyphName: string;

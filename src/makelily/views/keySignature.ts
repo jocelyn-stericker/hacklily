@@ -18,57 +18,69 @@
 
 "use strict";
 
+import MusicXML             = require("musicxml-interfaces");
 import React                = require("react");
-import TypedReact           = require("typed-react");
 import _                    = require("lodash");
+var $                       = React.createFactory;
 
-import _Accidental          = require("./_accidental");
-import C                    = require("../stores/contracts");
-import PureModelViewMixin   = require("./pureModelViewMixin");
-import KeySignatureModel    = require("../stores/keySignature");
-
-var    Accidental           = React.createFactory(_Accidental.Component);
+import Accidental           = require("./accidental");
 
 /**
  * Renders a key signature. Not responsible for calculating the width.
  */
-class KeySignature extends TypedReact.Component<KeySignature.IProps, {}> {
+class KeySignature extends React.Component<{spec: MusicXML.Key; clef: MusicXML.Clef}, void> {
     render() {
-        var spec = this.props.spec;
         return React.DOM.g(null,
-            _.map(this.getAccidentals(), (a, idx) => Accidental({
-                key: idx /* for React */,
-                x: spec.x + idx*10,
-                y: spec.y,
-                line: a.line,
-                stroke: spec.color,
-                opacity: this.props.opacity,
-                accidental: a.accidental
-            /* Accidental */}))
+            _.map(this.getAccidentals(), accidental => $(Accidental)({spec: accidental}))
         /* React.DOM.g */);
     }
 
     /**
      * Returns an array representing the position and glyphName of each accidental.
      */
-    getAccidentals(): {accidental: string; line: number}[] {
+    getAccidentals(): MusicXML.Accidental[] {
         var spec = this.props.spec;
         var idxes = _.times(Math.min(7, Math.abs(spec.fifths)), i => (i + Math.max(0, Math.abs(spec.fifths) - 7))%7);
+
         if (spec.fifths >= 0) {
-            return _.map(idxes, i => Object({
-                line: sharps[standardClef(spec.clef)][i],
-                accidental: (7 + i < spec.fifths) ? "accidentalDoubleSharp" : "accidentalSharp"
-            }));
+            return _.map(idxes, i => makeAccidental(i, true));
         } else if (spec.fifths < 0) {
-            return _.map(idxes, i => Object({
-                line: flats[standardClef(spec.clef)][i],
-                accidental: (7 + i < -spec.fifths) ? "accidentalDoubleFlat": "accidentalFlat"
-            }));
+            return _.map(idxes, i => makeAccidental(i, false));
+        }
+
+        function makeAccidental(i: number, sharp: boolean): MusicXML.Accidental {
+            let accidental: MusicXML.MxmlAccidental;
+            switch(true) {
+                case (sharp && 7 + i < spec.fifths):
+                    accidental = MusicXML.MxmlAccidental.DoubleSharp;
+                    break;
+                case (sharp && 7 + i >= spec.fifths):
+                    accidental = MusicXML.MxmlAccidental.Sharp;
+                    break;
+                case (!sharp && (7 + i < -spec.fifths)):
+                    accidental = MusicXML.MxmlAccidental.DoubleFlat;
+                    break;
+                case (!sharp && (7 + i >= -spec.fifths)):
+                    accidental = MusicXML.MxmlAccidental.Flat;
+                    break;
+            }
+
+            let line = (sharp ? sharps : flats)[standardClef(this.props.clef)][i];
+
+            return {
+                key:        i,
+                accidental: accidental,
+                color:      spec.color,
+                defaultX:   spec.defaultX + i*10,
+                relativeX:  spec.relativeX,
+                defaultY:   spec.defaultY,
+                relativeY:  spec.relativeY + line*10
+            };
         }
     }
 };
 
-function standardClef(clef: C.MusicXML.Clef) {
+function standardClef(clef: MusicXML.Clef) {
     switch (true) {
         case (clef.sign === "G"):
             return "treble";
@@ -102,13 +114,9 @@ var flats: { [key: string]: Array<number> } = {
 };
 
 module KeySignature {
-    export var Component = TypedReact.createClass(KeySignature, <any> [PureModelViewMixin]);
-
-    export interface IProps {
-        key: number;
-        spec: KeySignatureModel;
-        opacity?: number;
-    }
+    export var contextTypes = <any> {
+        pageHeight:         React.PropTypes.number.isRequired
+    };
 }
 
 export = KeySignature;

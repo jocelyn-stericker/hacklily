@@ -17,8 +17,6 @@
  */
 
 import React            = require("react");
-import _                = require("lodash");
-import invariant        = require("react/lib/invariant");
 var $                   = React.createFactory;
 
 import Attributes       = require("./attributes");

@@ -284,10 +284,10 @@ module AttributesModel {
 
             /*---- Clef layout ------------------------------------*/
 
-            this.clefScale = isFirstInLine ? 1.0 : 0.7;
-
             if (this.clefVisible) {
                 var contextualSpacing = 0;
+                model._clefs[this.staffIdx].size = isFirstInLine ? MusicXML.SymbolSize.Full : MusicXML.SymbolSize.Cue;
+
                 if (nextIsNote && !this.ksVisible && !this.tsVisible) {
                     var chord = Engine.IChord.fromModel(next);
                     if (Engine.IChord.hasAccidental(chord, cursor$)) {
@@ -381,7 +381,6 @@ module AttributesModel {
 
         clefVisible: boolean;
         clefSpacing: number;
-        clefScale: number;
 
         tsVisible: boolean;
         tsSpacing: number;
@@ -413,7 +412,6 @@ module Export {
 
         clefVisible: boolean;
         clefSpacing: number;
-        clefScale: number;
 
         tsVisible: boolean;
         tsSpacing: number;
@@ -443,7 +441,7 @@ module Export {
                 number:             1,
                 printObject:        true,
                 relativeX:          0,
-                relativeY:             0,
+                relativeY:          0,
                 size:               1
             }, {
                 // bass
