@@ -22,6 +22,8 @@
  * number of these notes may be rests.
  */
 
+import MusicXML         = require("musicxml-interfaces");
+
 import Engine           = require("./engine");
 import ChordModelImpl   = require("./chord/chordImpl"); // @cyclic
 
@@ -38,6 +40,9 @@ module ChordModel {
     }
 
     export interface IChordLayout extends Engine.IModel.ILayout {
+        model: IChordModel;
+        clef: MusicXML.Clef;
+        multipleRest: MusicXML.MultipleRest;
     }
 }
 

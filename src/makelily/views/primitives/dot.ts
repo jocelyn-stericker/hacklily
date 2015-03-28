@@ -19,56 +19,31 @@
 "use strict";
 
 import React            = require("react");
-import TypedReact       = require("typed-react");
-import PureRenderMixin  = require("react/lib/ReactComponentWithPureRenderMixin");
 
 /**
  * Responsible for the rendering of a dot as part of a dotted note.
  * This is not used to render staccatos.
  */
-class Dot extends TypedReact.Component<Dot.IProps, {}> {
+class Dot extends React.Component<Dot.IProps, void> {
     render() {
         // See rationale for hidden rect in _glyph.jsx
         return React.DOM.g(null,
             React.DOM.circle({
-                "data-selection-info": "dotted",
-                cx: <any> (this.cx()),
-                cy: <any> (this.cy()),
-                fill: this.props.stroke,
-                r: <any>(this.props.radius)}),
-        global.isChoreServer ? null : React.DOM.rect({
-                "data-selection-info": "dotted",
-                width: 3,
-                height: 3,
-                x: <any> (this.cx() - 4),
-                y: <any> (this.cy() - 4),
-                fill: "transparent",
-                className: "mn_handle"})
-        );
-    }
-
-    cyOffset() {
-        return ((this.props.line * 2) % 2) ? 0 : 5;
-    }
-
-    cx() {
-        return this.props.x + 6*(this.props.idx);
-    }
-    cy() {
-        return this.props.y - (this.props.line - 3)*10 - this.cyOffset();
+                cx: this.props.x,
+                cy: this.props.y,
+                fill: this.props.fill,
+                r: <any>(this.props.radius)}
+            /*React.DOM.circle*/)
+        /*React.DOM.g*/);
     }
 }
 
 module Dot {
-    export var Component = TypedReact.createClass(Dot, <any> [PureRenderMixin]);
-
     export interface IProps {
         x: number;
         y: number;
         radius: number;
-        line: number;
-        idx: number;
-        stroke: string;
+        fill: string;
     }
 }
 

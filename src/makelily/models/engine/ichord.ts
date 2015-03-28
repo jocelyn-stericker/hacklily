@@ -199,40 +199,6 @@ module IChord {
         1024: true
     };
 
-    export var countToNotehead: { [key: number]: string } = {
-        9992: "noteheadDoubleWhole",
-        9991: "noteheadDoubleWhole",
-        9990: "noteheadDoubleWhole",
-        1: "noteheadWhole",
-        2: "noteheadHalf",
-        4: "noteheadBlack",
-        8: "noteheadBlack",
-        16: "noteheadBlack",
-        32: "noteheadBlack",
-        64: "noteheadBlack",
-        128: "noteheadBlack",
-        256: "noteheadBlack",
-        512: "noteheadBlack",
-        1024: "noteheadBlack"
-    };
-
-    export var countToRest: { [key: number]: string } = {
-        9992: "restLonga",
-        9991: "restLonga",
-        9990: "restDoubleWhole",
-        1: "restWhole",
-        2: "restHalf",
-        4: "restQuarter",
-        8: "rest8th",
-        16: "rest16th",
-        32: "rest32nd",
-        64: "rest64th",
-        128: "rest128th",
-        256: "rest256th",
-        512: "rest512th",
-        1024: "rest1024th"
-    };
-
     export var getAverageLine = (chord: IChord, cursor$: ICursor) => {
         return _.reduce(lines(chord, cursor$),
             (memo, line) => memo + line/lines.length, 0);
