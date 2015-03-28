@@ -53,18 +53,12 @@ class ChordModelImpl implements ChordModel.IChordModel {
     }
 
     validate$(cursor$: Engine.ICursor): void {
-        // Get the measureStyle owned by the most recent attribute...
-        var measureStyle: MusicXML.MeasureStyle = cursor$.staff.attributes.measureStyle;
-        // ... and use it to sync multi rest attributes.
-        if (measureStyle && measureStyle.multipleRest && measureStyle.multipleRest.count > 1 &&
-                !cursor$.hiddenCounter$) {
-            this.multiRest$ = measureStyle.multipleRest.count;
-        } else {
-            delete this.multiRest$;
-        }
-
         this.divCount = Metre.calcDivisions(this, cursor$);
         invariant(isFinite(this.divCount), "Unknown beat count");
+
+        if (!isFinite(this._count)) {
+            this._implyCountFromPerformanceData(cursor$);
+        }
 
         _.forEach(this, note => {
             if (!note.duration && !note.grace) {
@@ -74,13 +68,11 @@ class ChordModelImpl implements ChordModel.IChordModel {
         });
 
         this.wholebar$ = this.divCount === cursor$.staff.totalDivisions || this.divCount === -1;
-
-        invariant(this.multiRest$ && this.wholebar$ || !this.multiRest$,
-            "multiRest should imply wholebar$");
-
         // TODO: overfill
         // TODO: rhythmic spelling
         // TODO: the document must end with a marker
+
+        invariant(isFinite(this._count) && this._count !== null, "%s is not a valid count", this._count);
     }
 
     layout(cursor$: Engine.ICursor): ChordModel.IChordLayout {
@@ -92,7 +84,6 @@ class ChordModelImpl implements ChordModel.IChordModel {
 
     [key: number]: NoteImpl;
     length: number              = 0;
-    multiRest$: number;
     wholebar$: boolean;
 
     /*---- II. Life-cycle -----------------------------------------------------------------------*/
@@ -206,6 +197,59 @@ class ChordModelImpl implements ChordModel.IChordModel {
 
         return this.length;
     }
+
+    private _implyCountFromPerformanceData(cursor$: Engine.ICursor) {
+        const {times, divisions} = cursor$.staff.attributes;
+        const tsComplex = times[0];
+        const ts = {
+            beats: _.reduce(tsComplex.beats, (sum, beat) => sum + parseInt(beat, 10), 0),
+            beatType: tsComplex.beatTypes[0], // FIXME
+        };
+
+        var factor = ts.beatType/4;
+        var beats = factor * (this[0].duration / divisions);
+        this._count = 4 / (this[0].duration / divisions);
+
+        // Try dots
+        var dotFactor = 1;
+        var dots = 0;
+        while (!isPO2(1/(beats/dotFactor/4)) && dots < 5) { // /8?
+            ++dots;
+            dotFactor += Math.pow(1/2, dots);
+        }
+        if (dots === 5) {
+            dots = 0;
+        } else if (dots !== 0) {
+            this._count = (1/(beats/dotFactor/4/factor));
+            this.dots = dots;
+        }
+
+        // Try tuplets
+        // TODO
+
+        // Try ties
+        if (!isPO2(this.count)) {
+            // Whole bar rests can still exist even when there's no single NOTE duration
+            // that spans a bar.
+            if (beats === ts.beats && !!this[0].rest) {
+                this._count = -1;
+            } else {
+                var nextPO2 = Math.pow(2, Math.ceil(Math.log(this.count)/Math.log(2)));
+                this._count = nextPO2;
+                // TODO: Add 1+ tie.
+            }
+        }
+
+        // TODO: Find the best match for performance data
+
+        function isPO2(n: number) {
+            if (Math.abs(Math.round(n) - n) > 0.00001) {
+                return false;
+            }
+            n = Math.round(n);
+            return !!n && !(n & (n - 1));
+        }
+    }
 }
 
 ChordModelImpl.prototype.frozenness = Engine.IModel.FrozenLevel.Warm;
@@ -255,6 +299,15 @@ module ChordModelImpl {
 
             // TODO: set min/max padding
             // TODO: set invisible counter
+
+            if (cursor$.staff.attributes.clefs) {
+                this.clef = cursor$.staff.attributes.clefs[cursor$.staff.idx];
+            } else {
+                this.clef = null;
+            }
+
+            let measureStyle: MusicXML.MeasureStyle = cursor$.staff.attributes.measureStyle;
+            this.multipleRest = measureStyle ? measureStyle.multipleRest : null;
         }
 
         /*---- IChordLayout ------------------------------------------------------*/
@@ -274,6 +327,8 @@ module ChordModelImpl {
 
         /*---- ChordModel ---------------------------------------------------*/
 
+        clef: MusicXML.Clef;
+        multipleRest: MusicXML.MultipleRest;
     }
 
     Layout.prototype.mergePolicy = Engine.IModel.HMergePolicy.Min;

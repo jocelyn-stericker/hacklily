@@ -26,7 +26,7 @@ import ChordModelImpl   = require("./chordImpl"); // @cyclic
  * 
  * Gotchas:
  *  - You need to set a a noteType, not a noteType.duration. Setting noteType.duration
- *    has no affect.
+ *    has no effect.
  */
 class NoteImpl implements MusicXML.Note {
     _parent: ChordModelImpl;

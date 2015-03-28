@@ -67,7 +67,6 @@ class AttributesView extends React.Component<{layout: Attributes.ILayout}, void>
                 key: "ts"
             }));
         }
-        console.log(layout.x$, layout.y$, layout.staffIdx, layout.clefVisible, layout.tsVisible, layout.ksVisible);
         return React.DOM.g(null, children);
     }
 }

@@ -21,17 +21,35 @@
 import MusicXML             = require("musicxml-interfaces");
 import React                = require("react");
 import _                    = require("lodash");
-var $                       = React.createFactory;
+let $                       = React.createFactory;
 
 import Accidental           = require("./accidental");
 
+// TODO: this almost looks like logic -- move.
+const sharps: { [key: string]: Array<number> } = {
+    // "FCGDAEB"
+    treble: [5, 3.5, 5.5, 4, 2.5, 4.5, 3],
+    bass: [4, 2.5, 4.5, 3, 1.5, 3.5, 2],
+    alto: [4.5, 3, 5, 3.5, 2, 4, 2.5],
+    tenor: [2, 4, 2.5, 4.5, 3, 5, 3.5]
+};
+
+const flats: { [key: string]: Array<number> } = {
+    // "BEADGCF"
+    treble: [3, 4.5, 2.5, 4, 2, 3.5, 1.5],
+    bass: [2, 3.5, 1.5, 3, 1, 2.5, 0.5],
+    alto: [2.5, 4, 2, 3.5, 1.5, 3, 1],
+    tenor: [3.5, 5, 3, 4.5, 2.5, 4, 2]
+};
+
+
 /**
- * Renders a key signature. Not responsible for calculating the width.
+ * Renders a key signature.
  */
 class KeySignature extends React.Component<{spec: MusicXML.Key; clef: MusicXML.Clef}, void> {
     render() {
         return React.DOM.g(null,
-            _.map(this.getAccidentals(), accidental => $(Accidental)({spec: accidental}))
+            _.map(this.getAccidentals(), (accidental, idx) => $(Accidental)({spec: accidental, key: idx}))
         /* React.DOM.g */);
     }
 
@@ -39,14 +57,10 @@ class KeySignature extends React.Component<{spec: MusicXML.Key; clef: MusicXML.C
      * Returns an array representing the position and glyphName of each accidental.
      */
     getAccidentals(): MusicXML.Accidental[] {
-        var spec = this.props.spec;
-        var idxes = _.times(Math.min(7, Math.abs(spec.fifths)), i => (i + Math.max(0, Math.abs(spec.fifths) - 7))%7);
+        const {spec, clef} = this.props;
+        const idxes = _.times(Math.min(7, Math.abs(spec.fifths)), i => (i + Math.max(0, Math.abs(spec.fifths) - 7))%7);
 
-        if (spec.fifths >= 0) {
-            return _.map(idxes, i => makeAccidental(i, true));
-        } else if (spec.fifths < 0) {
-            return _.map(idxes, i => makeAccidental(i, false));
-        }
+        return _.map(idxes, i => makeAccidental(i, spec.fifths >= 0));
 
         function makeAccidental(i: number, sharp: boolean): MusicXML.Accidental {
             let accidental: MusicXML.MxmlAccidental;
@@ -65,16 +79,15 @@ class KeySignature extends React.Component<{spec: MusicXML.Key; clef: MusicXML.C
                     break;
             }
 
-            let line = (sharp ? sharps : flats)[standardClef(this.props.clef)][i];
+            let line = (sharp ? sharps : flats)[standardClef(clef)][i];
 
             return {
-                key:        i,
                 accidental: accidental,
                 color:      spec.color,
                 defaultX:   spec.defaultX + i*10,
                 relativeX:  spec.relativeX,
                 defaultY:   spec.defaultY,
-                relativeY:  spec.relativeY + line*10
+                relativeY:  spec.relativeY + (line - 3)*10
             };
         }
     }
@@ -96,25 +109,8 @@ function standardClef(clef: MusicXML.Clef) {
     }
 };
 
-// TODO: this almost looks like logic -- move to keySignature.ts
-var sharps: { [key: string]: Array<number> } = {
-    // "FCGDAEB"
-    treble: [5, 3.5, 5.5, 4, 2.5, 4.5, 3],
-    bass: [4, 2.5, 4.5, 3, 1.5, 3.5, 2],
-    alto: [4.5, 3, 5, 3.5, 2, 4, 2.5],
-    tenor: [2, 4, 2.5, 4.5, 3, 5, 3.5]
-};
-
-var flats: { [key: string]: Array<number> } = {
-    // "BEADGCF"
-    treble: [3, 4.5, 2.5, 4, 2, 3.5, 1.5],
-    bass: [2, 3.5, 1.5, 3, 1, 2.5, 0.5],
-    alto: [2.5, 4, 2, 3.5, 1.5, 3, 1],
-    tenor: [3.5, 5, 3, 4.5, 2.5, 4, 2]
-};
-
 module KeySignature {
-    export var contextTypes = <any> {
+    export const contextTypes = <any> {
         pageHeight:         React.PropTypes.number.isRequired
     };
 }

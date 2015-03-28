@@ -22,6 +22,8 @@ import invariant        = require("react/lib/invariant");
 
 import Engine           = require("./engine");
 
+const CLEF_INDENTATION = 7; // Gould(6): "A clef is indented into the stave by one stave-space or a little less"
+
 class AttributesModel implements Export.IAttributesModel {
 
     /*---- I.1 IModel ---------------------------------------------------------------------------*/
@@ -36,7 +38,7 @@ class AttributesModel implements Export.IAttributesModel {
     frozenness:      Engine.IModel.FrozenLevel;
 
     get fields(): string[] {
-        var isChangedHere = (prop: string) => {
+        let isChangedHere = (prop: string) => {
             return ("_" + prop) in this;
         };
 
@@ -192,10 +194,10 @@ class AttributesModel implements Export.IAttributesModel {
                 ).line;
         }
 
-        var parentClef = this._parent && this._parent.clefs && this._parent.clefs.length ?
+        const parentClef = this._parent && this._parent.clefs && this._parent.clefs.length ?
             this._parent.clefs[staffIdx] : null;
 
-        var thisClef = clef;
+        const thisClef = clef;
         if (parentClef && parentClef.sign === thisClef.sign && parentClef.line === thisClef.line &&
                 parentClef.clefOctaveChange === thisClef.clefOctaveChange) {
             // Clef is redundant
@@ -213,7 +215,7 @@ class AttributesModel implements Export.IAttributesModel {
                 senzaMisura: null
             }];
         } else if (!!this._times && this._times.length) {
-            var parentTime = this._parent ? this._parent.times[0] : null;
+            const parentTime = this._parent ? this._parent.times[0] : null;
             _.forEach(this.times[0].beats, function(beat) {
                 invariant(typeof beat === "string", "Attributes validation error: beats must " +
                     "be strings, but %s is not a string", beat);
@@ -239,7 +241,7 @@ class AttributesModel implements Export.IAttributesModel {
                 keyAlters: null
             }];
         } else if (!!this._keySignatures && this._keySignatures.length) {
-            var parentKS = this._parent ? this._parent.keySignatures[0] : null;
+            const parentKS = this._parent ? this._parent.keySignatures[0] : null;
             if (parentKS && this.keySignatures[0].fifths === parentKS.fifths &&
                     this.keySignatures[0].keySteps === parentKS.keySteps &&
                     this.keySignatures[0].keyAccidentals === parentKS.keyAccidentals &&
@@ -254,9 +256,9 @@ class AttributesModel implements Export.IAttributesModel {
     _setTotalDivisions(cursor$: Engine.ICursor): void {
         invariant(!!this.divisions, "Expected divisions to be set before calculating bar divisions.");
 
-        var time = this.times[0];
+        const time = this.times[0];
 
-        var totalBeats = _.reduce(time.beats, (memo, time) => memo +
+        const totalBeats = _.reduce(time.beats, (memo, time) => memo +
             _.reduce(time.split("+"), (memo, time) => memo + parseInt(time, 10), 0), 0);
 
         cursor$.staff.totalDivisions = totalBeats * this.divisions || NaN;
@@ -274,9 +276,9 @@ module AttributesModel {
             this.division = cursor$.division$;
             this.staffIdx = cursor$.staff.idx;
 
-            var isFirstInLine = cursor$.line && cursor$.line.barOnLine === 0;
-            var next = Engine.ICursor.next(cursor$);
-            var nextIsNote = cursor$.factory.modelHasType(next, Engine.IModel.Type.Chord);
+            const isFirstInLine = cursor$.line && cursor$.line.barOnLine === 0;
+            const next = Engine.ICursor.next(cursor$);
+            const nextIsNote = cursor$.factory.modelHasType(next, Engine.IModel.Type.Chord);
 
             this.ksVisible = !!model._keySignatures && !!model._keySignatures.length || isFirstInLine;
             this.tsVisible = !!model._times && !!model._times.length; // TODO: || isFirstInPage;
@@ -284,26 +286,30 @@ module AttributesModel {
 
             /*---- Clef layout ------------------------------------*/
 
+            const chord = nextIsNote ? Engine.IChord.fromModel(next) : null;
+
             if (this.clefVisible) {
-                var contextualSpacing = 0;
+                this.x$ += CLEF_INDENTATION;
+                cursor$.x$ = this.x$;
+
+                let contextualSpacing$ = 0;
                 model._clefs[this.staffIdx].size = isFirstInLine ? MusicXML.SymbolSize.Full : MusicXML.SymbolSize.Cue;
 
                 if (nextIsNote && !this.ksVisible && !this.tsVisible) {
-                    var chord = Engine.IChord.fromModel(next);
                     if (Engine.IChord.hasAccidental(chord, cursor$)) {
                         // TODO: what if there are more than 1 accidental?
-                        contextualSpacing = 15;
+                        contextualSpacing$ = 15;
                     } else {
-                        contextualSpacing = 25;
+                        contextualSpacing$ = 25;
                     }
                 } else {
-                    contextualSpacing = 12.5;
+                    contextualSpacing$ = 12.5;
                 }
 
                 if (!isFirstInLine) {
-                    this.clefSpacing = 4.2 + contextualSpacing;
+                    this.clefSpacing = 4.2 + contextualSpacing$;
                 } else {
-                    this.clefSpacing = 24 + contextualSpacing;
+                    this.clefSpacing = 24 + contextualSpacing$;
                 }
             } else {
                 this.clefSpacing = 0;
@@ -312,25 +318,25 @@ module AttributesModel {
             /*---- KS layout --------------------------------------*/
 
             if (this.ksVisible) {
-                var contextualSpacing = 0;
+                let contextualSpacing$ = 0;
                 if (nextIsNote && !this.tsVisible) {
                     if (Engine.IChord.hasAccidental(chord, cursor$)) {
                         // TODO: what if there are more than 1 accidental?
-                        contextualSpacing = 25;
+                        contextualSpacing$ = 25;
                     } else {
-                        contextualSpacing = 15;
+                        contextualSpacing$ = 15;
                     }
                 } else {
-                    contextualSpacing = 10;
+                    contextualSpacing$ = 10;
                 }
 
-                var keySignature = model.keySignatures[0];
+                const keySignature = model.keySignatures[0];
 
-                var fifths: number = Math.min(7, Math.abs(keySignature.fifths));
+                const fifths: number = Math.min(7, Math.abs(keySignature.fifths));
                 if (fifths) {
-                    this.ksSpacing = contextualSpacing + 10.4 * fifths;
+                    this.ksSpacing = contextualSpacing$ + 10.4 * fifths;
                 } else {
-                    this.ksSpacing = contextualSpacing - 5;
+                    this.ksSpacing = contextualSpacing$ - 5;
                 }
             } else {
                 this.ksSpacing = 0;
@@ -339,19 +345,19 @@ module AttributesModel {
             /*---- TS layout --------------------------------------*/
 
             if (this.tsVisible) {
-                var contextualSpacing = 0;
+                let contextualSpacing$ = 0;
                 if (nextIsNote) {
                     if (Engine.IChord.hasAccidental(chord, cursor$)) {
                         // TODO: what if there are more than 1 accidental?
-                        contextualSpacing = 25;
+                        contextualSpacing$ = 25;
                     } else {
-                        contextualSpacing = 15;
+                        contextualSpacing$ = 15;
                     }
                 } else {
-                    contextualSpacing = 12.5;
+                    contextualSpacing$ = 12.5;
                 }
 
-                this.tsSpacing = 28 + contextualSpacing;
+                this.tsSpacing = 28 + contextualSpacing$;
             } else {
                 this.tsSpacing = 0;
             }
@@ -423,7 +429,7 @@ module Export {
     }
 
     export module Clef {
-        export var standardClefs: MusicXML.Clef[] = [
+        export const standardClefs: MusicXML.Clef[] = [
             {
                 // Treble
                 line:               2,
