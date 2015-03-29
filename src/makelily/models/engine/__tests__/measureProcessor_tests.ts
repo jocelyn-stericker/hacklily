@@ -79,6 +79,7 @@ describe("[engine/measureProcessor.ts]", function() {
             // Now test 
             opts._noAlign = false;
             layout = MeasureProcessor.reduce(opts).elements;
+            layout[0].map(l => delete (<any>l).key);
             expect(layout[0]).to.deep.equal(
                 [
                     {

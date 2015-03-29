@@ -30,7 +30,7 @@ import SMuFL                = require("../models/smufl");
  */
 class StaveLines extends React.Component<StaveLines.IProps, {}> {
     render() {
-        let top = this.context.pageHeight - this.props.y;
+        let top = this.context.originY - this.props.y;
         return React.DOM.g(null,
             _.times(this.props.lines, i => $(Line)({
                 key:            "staff-" + i,
@@ -48,7 +48,7 @@ class StaveLines extends React.Component<StaveLines.IProps, {}> {
 module StaveLines {
     export var contextTypes = <any> {
         scale40:            React.PropTypes.number.isRequired,
-        pageHeight:         React.PropTypes.number.isRequired
+        originY:            React.PropTypes.number.isRequired
     };
     export interface IProps {
         lines:              number;

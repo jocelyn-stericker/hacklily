@@ -63,7 +63,7 @@ class Credit extends React.Component<MusicXML.Credit, void> {
             return React.DOM.g({});
         }
         const initX = (words[0].defaultX + (words[0].relativeX || 0));
-        const initY = (this.context.pageHeight - (words[0].defaultY + (words[0].relativeY || 0)));
+        const initY = (this.context.originY - (words[0].defaultY + (words[0].relativeY || 0)));
 
         return React.DOM.text({
                 x: initX,
@@ -155,7 +155,7 @@ class Credit extends React.Component<MusicXML.Credit, void> {
                 Engine.RenderUtil.cssSizeToTenths(this.context.scale40, words.fontSize);
         }
         if (words.defaultY || words.relativeY) {
-            return this.context.pageHeight - (words.defaultY + (words.relativeY || 0)) - initY;
+            return this.context.originY - (words.defaultY + (words.relativeY || 0)) - initY;
         }
         return 0;
     }
@@ -164,7 +164,7 @@ class Credit extends React.Component<MusicXML.Credit, void> {
 module Credit {
     export var contextTypes = <any> {
         scale40:            React.PropTypes.number.isRequired,
-        pageHeight:         React.PropTypes.number.isRequired
+        originY:            React.PropTypes.number.isRequired
     };
 }
 

@@ -122,9 +122,14 @@ module IModel {
         renderClass:        Type;
 
         x$:                 number;
-        y$?:                number;
         division:           number;
         mergePolicy:        HMergePolicy;
+
+        /**
+         * The final, justified position of the model within a bar.
+         * Set by the renderer.
+         */
+        barX?:              number;
 
         /** 
          * References to bounding rectangles for annotations such as dots, words,
@@ -139,7 +144,17 @@ module IModel {
     }
     export module ILayout {
         export function detach(layout: ILayout) {
-            return Object.create(layout); // This is a bit sketchy, since if the original changes, so will the new
+            layout.barX = NaN;
+            return Object.create(layout, {
+                x$: {
+                    get: function() {
+                        return layout.barX || layout.x$;
+                    },
+                    set: function(x: number) {
+                        layout.barX = x;
+                    }
+                }
+            });
         }
     }
 

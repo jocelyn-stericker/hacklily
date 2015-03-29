@@ -35,11 +35,13 @@ export interface ILayoutOptions {
 export interface ILinesLayoutState {
     width$: { [key: string]: number };
     clean$: { [key: string]: Measure.IMeasureLayout };
+    y$: number;
 }
 
 export module ILinesLayoutMemo {
-    export function create(): ILinesLayoutState {
+    export function create(top: number): ILinesLayoutState {
         return {
+            y$:     top,
             width$: {},
             clean$: {}
         };

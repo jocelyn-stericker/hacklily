@@ -159,7 +159,7 @@ class UnbeamedTuplet extends React.Component<{spec: MusicXML.Tuplet}, void> {
 
 module UnbeamedTuplet {
     export var contextTypes = <any> {
-        pageHeight:         React.PropTypes.number.isRequired
+        originY:         React.PropTypes.number.isRequired
     };
 }
 

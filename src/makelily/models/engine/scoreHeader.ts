@@ -30,6 +30,17 @@ import IPrint           = require("./iprint");
 import renderUtil       = require("./renderUtil");
 import smufl            = require("../smufl");
 
+let defaultsDeep = _.partialRight(_.merge, function recursiveDefaults(/* ... */): any {
+    // Ensure dates and arrays are not recursively merged
+    if (_.isArray(arguments[0]) || _.isArray(arguments[1])) {
+        return (arguments[0] || []).concat(arguments[1] || []);
+    } else if (_.isDate(arguments[0])) {
+        return arguments[0];
+    }
+    return _.merge(arguments[0], arguments[1], recursiveDefaults);
+});
+
+
 /** 
  * A header is a child of parts, and includes the title and other basic
  * information.
@@ -43,7 +54,7 @@ class ScoreHeader implements MusicXML.ScoreHeader {
     identification:     MusicXML.Identification = {
         creators:                                   [],
         encoding:                                   null,
-        miscellaneous:                              [],
+        miscellaneous:                              null,
         relations:                                  [],
         rights:                                     [],
         source:                                     null
@@ -74,7 +85,7 @@ class ScoreHeader implements MusicXML.ScoreHeader {
                     "tenths":                       10 * smufl.bravura.engravingDefaults.repeatEndingLineThickness,
                     "type":                         "ending"
                 },
-                heavyBarline: {
+                "heavy barline": {
                     "tenths":                       10 * smufl.bravura.engravingDefaults.thickBarlineThickness,
                     "type":                         "heavy barline"
                 },
@@ -86,7 +97,7 @@ class ScoreHeader implements MusicXML.ScoreHeader {
                     "tenths":                       10 * smufl.bravura.engravingDefaults.stemThickness,
                     "type":                         "stem"
                 },
-                tupletBracket: {
+                "tuplet bracket": {
                     "tenths":                       10 * smufl.bravura.engravingDefaults.tupletBracketThickness,
                     "type":                         "tuplet bracket"
                 },
@@ -94,7 +105,7 @@ class ScoreHeader implements MusicXML.ScoreHeader {
                     "tenths":                       10 * smufl.bravura.engravingDefaults.beamThickness,
                     "type":                         "beam"
                 },
-                lightBarline: {
+                "light barline": {
                     "tenths":                       10 * smufl.bravura.engravingDefaults.thinBarlineThickness,
                     "type":                         "light barline"
                 },
@@ -181,6 +192,9 @@ class ScoreHeader implements MusicXML.ScoreHeader {
     /*---- Extensions ---------------------------------------------------------------------------*/
 
     constructor(spec: MusicXML.ScoreHeader) {
+        if (spec) {
+            defaultsDeep(spec, this);
+        }
         for(let key in spec) {
             if (spec.hasOwnProperty(key) && typeof key === "string" && !!(<any>spec)[key]) {
                 (<any>this)[key] = (<any>spec)[key];

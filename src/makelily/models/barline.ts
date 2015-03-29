@@ -16,10 +16,12 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import MusicXML         = require("musicxml-interfaces");
-import _                = require("lodash");
+import MusicXML             = require("musicxml-interfaces");
+import _                    = require("lodash");
+import invariant            = require("react/lib/invariant");
 
-import Engine           = require("./engine");
+import Engine               = require("./engine");
+import SMuFL                = require("../models/smufl");
 
 class BarlineModel implements Export.IBarlineModel {
 
@@ -62,6 +64,9 @@ class BarlineModel implements Export.IBarlineModel {
     }
 
     validate$(cursor$: Engine.ICursor): void {
+        if (!isFinite(this.barStyle.data) || this.barStyle.data === null) {
+            this.barStyle.data = MusicXML.BarStyleType.Regular;
+        }
         // todo
     }
 
@@ -86,8 +91,13 @@ class BarlineModel implements Export.IBarlineModel {
 
     /*---- I.3 C.MusicXML.Editorial -------------------------------------------------------------*/
 
-    footnote:           MusicXML.Footnote;
-    level:              MusicXML.Level;
+    footnote:       MusicXML.Footnote;
+    level:          MusicXML.Level;
+
+    /*---- II. BarlineModel (extension) ---------------------------------------------------------*/
+
+    defaultX:       number;
+    defaultY:       number;
 
     /*---- Validation Implementations -----------------------------------------------------------*/
 
@@ -112,29 +122,67 @@ BarlineModel.prototype.frozenness = Engine.IModel.FrozenLevel.Warm;
 module BarlineModel {
     export class Layout implements Export.ILayout {
         constructor(model: BarlineModel, cursor$: Engine.ICursor) {
-            this.model = model;
+            this.model = Object.create(model, {
+                defaultX: {
+                    get: () => this.barX
+                }
+            });
+            this.model.defaultY = 0;
             this.x$ = cursor$.x$;
             this.division = cursor$.division$;
 
+            this.yOffset = 0;   // TODO
+            this.height = 20;   // TODO
+
             /*---- Geometry ---------------------------------------*/
 
-            // cursor$.x$ += 0;
+            const lineWidths = cursor$.header.defaults.appearance.lineWidths;
+
+            const barlineSep = SMuFL.bravura.engravingDefaults.barlineSeparation;
+            switch(model.barStyle.data) {
+                case MusicXML.BarStyleType.LightHeavy:
+                    this.lineStarts = [0, lineWidths["light barline"].tenths + barlineSep*10];
+                    this.lineWidths = [lineWidths["light barline"].tenths,
+                        lineWidths["heavy barline"].tenths];
+                    cursor$.x$ += lineWidths["light barline"].tenths + barlineSep*10 +
+                        lineWidths["heavy barline"].tenths;
+                    break;
+                case MusicXML.BarStyleType.Regular:
+                    this.lineStarts = [0];
+                    this.lineWidths = [lineWidths["light barline"].tenths*10];
+                    cursor$.x$ += lineWidths["light barline"].tenths*10;
+                    break;
+                default:
+                    invariant(false, "Not implemented");
+            }
         }
 
         /*---- ILayout ------------------------------------------------------*/
 
         // Constructed:
 
-        model: BarlineModel;
-        x$: number;
-        division: number;
+        model:          BarlineModel;
+        x$:             number;
+        division:       number;
+        height:         number;
+        yOffset:        number;
+
+        /**
+         * Set by layout engine.
+         */
+        barX:           number;
 
         // Prototype:
 
-        mergePolicy: Engine.IModel.HMergePolicy;
+        mergePolicy:    Engine.IModel.HMergePolicy;
         boundingBoxes$: Engine.IModel.IBoundingRect[];
-        renderClass: Engine.IModel.Type;
-        expandable: boolean;
+        renderClass:    Engine.IModel.Type;
+        expandable:     boolean;
+
+        /*---- Extensions ---------------------------------------------------*/
+
+        lineStarts:      number[];
+        lineWidths:      number[];
     }
 
     Layout.prototype.mergePolicy = Engine.IModel.HMergePolicy.Min;
@@ -153,10 +201,17 @@ function Export(constructors: { [key: number]: any }) {
 
 module Export {
     export interface IBarlineModel extends Engine.IModel, MusicXML.Barline {
+        defaultX:   number;
+        defaultY:   number;
     }
 
     export interface ILayout extends Engine.IModel.ILayout {
-        model: IBarlineModel;
+        model:      IBarlineModel;
+        height:     number;
+        yOffset:    number;
+
+        lineStarts:      number[];
+        lineWidths:      number[];
     }
 }
 

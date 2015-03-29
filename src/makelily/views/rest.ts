@@ -49,32 +49,18 @@ let countToRest: { [key: number]: string } = {
 /**
  * Renders a rest.
  */
-class Rest extends React.Component<{clef: MusicXML.Clef,
+class Rest extends React.Component<{
         spec: MusicXML.Note, multipleRest?: MusicXML.MultipleRest}, void> {
     render() {
         const spec = this.props.spec;
         const rest = spec.rest;
-        const clef = this.props.clef;
         invariant(!!spec.rest, "Attempting to render a non-rest with Rest");
         const notehead = countToRest[spec.noteType.duration];
 
-        let line: number;
-        if (spec.rest.displayStep) {
-            line =
-                Engine.IChord.getClefOffset(clef) +
-                ((parseInt(rest.displayOctave, 10) || 0) - 3) * 3.5 +
-                Engine.IChord.pitchOffsets[rest.displayStep];
-        } else if (spec.noteType.duration === MusicXML.Count.Whole) {
-            line = 4;
-        } else {
-            line = 3;
-        }
-
         const bbox = SMuFL.bboxes[notehead];
-        console.log("..!..", notehead, spec.noteType);
         const width = (bbox[0] - bbox[2])*10;
-        const x = spec.defaultX + (spec.relativeX || 0);
-        const y = this.context.pageHeight - (spec.defaultY + (spec.relativeY || 0));
+        const x = this.context.originX + spec.defaultX + (spec.relativeX || 0);
+        const y = this.context.originY - (spec.defaultY + (spec.relativeY || 0));
         const dotOffset = SMuFL.bboxes[notehead][0]*10 + 6;
 
         return React.DOM.g(null,
@@ -90,8 +76,7 @@ class Rest extends React.Component<{clef: MusicXML.Clef,
                     y: y - 30,
                     fontSize: 48,
                     className: "mmn_",
-                    textAnchor: "middle",
-                    line: line},
+                    textAnchor: "middle"},
                 this.props.multipleRest.count   // TODO: useSymbols
             /* React.DOM.text */),
         spec.dots ? _.map(spec.dots, (dot, idx) => $(Dot)({
@@ -99,7 +84,8 @@ class Rest extends React.Component<{clef: MusicXML.Clef,
                 radius: 2.4,
                 fill: dot.color,
                 x: x + dotOffset + 6*idx,
-                y: y + (line - 3)*10 + (((line * 2) % 2) ? 0 : 5)
+                y: y - (dot.defaultY + (dot.relativeY || 0))
+                // y: y + (line - 3)*10 + (((line * 2) % 2) ? 0 : 5)
             }/* Dot */)): null
         /* React.DOM.g */);
     }
@@ -107,7 +93,8 @@ class Rest extends React.Component<{clef: MusicXML.Clef,
 
 module Rest {
     export var contextTypes = <any> {
-        pageHeight:         React.PropTypes.number.isRequired
+        originX:            React.PropTypes.number.isRequired,
+        originY:            React.PropTypes.number.isRequired
     };
 }
 

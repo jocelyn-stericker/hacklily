@@ -248,22 +248,17 @@ describe("[engine.ts]", function() {
                 },
                 layouts);
 
-            expect(justified[0].elements[0][0].x$).to.be.closeTo(layouts[0].elements[0][0].x$ + padding, 0.05);
-            expect(justified[0].elements[0][2].x$).to.be.closeTo(75.2, 0.1);
+            expect(justified[0].elements[0][0].x$).to.be.closeTo(layouts[0].elements[0][0].x$, 0.05);
+            expect(justified[0].elements[0][2].x$).to.be.closeTo(63.2, 0.1);
             expect(justified[0].width).to.be.closeTo(justified[0].elements[0][4].x$ - justified[0].elements[0][0].x$ + 10, 0.01);
             _.forEach(justified, function(just, idx) {
                 expect(just.width).to.not.equal(layouts[idx].width);
-                _.forEach(just.elements, function(elArr, jdx) {
-                    _.forEach(elArr, function(el, kdx) {
-                        expect(el.x$).to.not.equal(layouts[idx].elements[jdx][kdx].x$);
-                    });
-                });
             });
         });
     });
     describe("layout$", function() {
         it.skip("can lay out two lines", function() {
-            var memo$ = Engine.Options.ILinesLayoutMemo.create();
+            var memo$ = Engine.Options.ILinesLayoutMemo.create(NaN);
             var padding = 20;
 
             var segments = _.times(10, function() {
@@ -365,7 +360,7 @@ describe("[engine.ts]", function() {
                 }
             };
 
-            var memo$ = Engine.Options.ILinesLayoutMemo.create();
+            var memo$ = Engine.Options.ILinesLayoutMemo.create(NaN);
             var padding = 20;
 
             var segments = [{

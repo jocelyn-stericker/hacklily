@@ -86,8 +86,8 @@ class KeySignature extends React.Component<{spec: MusicXML.Key; clef: MusicXML.C
                 color:      spec.color,
                 defaultX:   spec.defaultX + i*10,
                 relativeX:  spec.relativeX,
-                defaultY:   spec.defaultY,
-                relativeY:  spec.relativeY + (line - 3)*10
+                defaultY:   spec.defaultY + (line - 3)*10,
+                relativeY:  (spec.relativeY || 0)
             };
         }
     }
@@ -108,11 +108,5 @@ function standardClef(clef: MusicXML.Clef) {
             return "treble";
     }
 };
-
-module KeySignature {
-    export const contextTypes = <any> {
-        pageHeight:         React.PropTypes.number.isRequired
-    };
-}
 
 export = KeySignature;

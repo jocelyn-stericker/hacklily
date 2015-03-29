@@ -39,15 +39,15 @@ class TimeSignature extends React.Component<{spec: MusicXML.Time}, void> {
 
             if (beats === 4 && beatType === 4) {
                 return $(Glyph)({
-                    x: spec.defaultX + (spec.relativeX || 0),
+                    x: this.context.originX + spec.defaultX + (spec.relativeX || 0),
                     y: this.context.pageHeight - (spec.defaultY + (spec.relativeY || 0)),
                     fill: spec.color,
                     glyphName: "timeSigCommon"
                 });
             } else if (beats === 2 && beatType === 2) {
                 return $(Glyph)({
-                    x: spec.defaultX + (spec.relativeX || 0),
-                    y: this.context.pageHeight - (spec.defaultY + (spec.relativeY || 0)),
+                    x: this.context.originX + spec.defaultX + (spec.relativeX || 0),
+                    y: this.context.originY - (spec.defaultY + (spec.relativeY || 0)),
                     fill: spec.color,
                     glyphName: "timeSigCutCommon"
                 });
@@ -58,16 +58,18 @@ class TimeSignature extends React.Component<{spec: MusicXML.Time}, void> {
             $(TimeSignatureNumber)({
                     key: "-5",
                     stroke: spec.color,
-                    x: spec.defaultX + (spec.relativeX || 0) + this.numOffset(),
-                    y: this.context.pageHeight - (spec.defaultY + (spec.relativeY || 0) - 10)
+                    x: this.context.originX + spec.defaultX + (spec.relativeX || 0) +
+                        this.numOffset(),
+                    y: this.context.originY - (spec.defaultY + (spec.relativeY || 0) - 10)
                 },
                 ts.beats
             ),
             $(TimeSignatureNumber)({
                     key: "-6",
                     stroke: spec.color,
-                    x: spec.defaultX + (spec.relativeX || 0) + this.denOffset(),
-                    y: this.context.pageHeight - (spec.defaultY + (spec.relativeY || 0) + 10)
+                    x: this.context.originX + spec.defaultX + (spec.relativeX || 0) +
+                        this.denOffset(),
+                    y: this.context.originY - (spec.defaultY + (spec.relativeY || 0) + 10)
                 },
                 ts.beatType
             )
@@ -104,7 +106,8 @@ class TimeSignature extends React.Component<{spec: MusicXML.Time}, void> {
 
 module TimeSignature {
     export var contextTypes = <any> {
-        pageHeight:         React.PropTypes.number.isRequired
+        originX:         React.PropTypes.number.isRequired,
+        originY:         React.PropTypes.number.isRequired
     };
 }
 

@@ -24,8 +24,8 @@ var $                       = React.createFactory;
 
 import Credit               = require("./credit");
 import Engine               = require("../models/engine");
+import MeasureView          = require("./measureView");
 import StaveLines           = require("./staveLines");
-import ModelView            = require("./modelView");
 
 class Page extends React.Component<Page.IProps, Page.IState> {
     render() {
@@ -49,7 +49,9 @@ class Page extends React.Component<Page.IProps, Page.IState> {
                                     scale40, print.pageLayout.pageHeight) + "mm" :
                                 "100%";
 
-        const lineLayouts   = this.props.lineLayouts;
+        /*--- Staves ----------------------------------------------*/
+
+        const lineLayouts       = this.props.lineLayouts;
 
         const pageMarginsAll    = print.pageLayout.pageMargins;
         const pageMargins       = Engine.IPrint.getPageMargins(pageMarginsAll, pageNum);
@@ -67,15 +69,14 @@ class Page extends React.Component<Page.IProps, Page.IState> {
             return top;
         });
 
-        /*--- Staves ----------------------------------------------*/
-
         // TODO: Move to Engine & IModel, generalize
         let staveLefts          = _.map(lineLayouts, () => {
             return systemMargins.leftMargin + pageMargins.leftMargin;
         });
 
-        let staveRights         = _.map(lineLayouts, () => {
-            return systemMargins.rightMargin + pageMargins.rightMargin;
+        let staveRights         = _.map(lineLayouts, layout => {
+            return systemMargins.leftMargin + pageMargins.leftMargin +
+                _.reduce(layout, (width, measure) => width + measure.width, 0);
         });
 
         let staveLineProps      = _.map(_.zip(staveTops, staveLefts, staveRights), (d, i) => {
@@ -83,7 +84,7 @@ class Page extends React.Component<Page.IProps, Page.IState> {
                 key:    "stave_" + i,
 
                 lines:  5,
-                width:  print.pageLayout.pageWidth - d[2 /* right */] - d[1 /* left */],
+                width:  d[2 /* right */] - d[1 /* left */],
                 x:      d[1 /* left */],
                 y:      d[0 /* top */]
             };
@@ -100,16 +101,14 @@ class Page extends React.Component<Page.IProps, Page.IState> {
             _.flatten(_.map(lineLayouts, (measureLayouts, lineIdx) =>
                 _.flatten(_.flatten(
                     _.map(measureLayouts, measure =>
+                        // ...  
                         _.map(_.flatten(measure.elements), (layout: Engine.IModel.ILayout) => {
-                            Engine.key$(layout);
-                            layout.y$ = staveLineProps[lineIdx].y; // TODO Move to Engine.
+                            //layout.y$ = staveLineProps[lineIdx].y; // TODO Move to Engine.
                             return layout;
                         })
                     )
                 ))
             ));
-
-        layouts = layouts.filter(l => !!l.model);   // Remove helpers.
 
         /*--- Render ----------------------------------------------*/
 
@@ -130,10 +129,14 @@ class Page extends React.Component<Page.IProps, Page.IState> {
             },
             _.map(credits, (credit, idx) => $(Credit)(credit)),
             _.map(staveLineProps, staveLineProps => $(StaveLines)(staveLineProps)),
-            _.map(layouts, layout => $(ModelView)({layout: layout, key: (<any>layout).key}))
-            /* TODO: lyric boxes */
-            /* TODO: free boxes */
-            /* TODO: slurs and ties */
+            _.map(lineLayouts, lineLayout =>
+                _.map(lineLayout, measureLayout =>
+                    $(MeasureView)({
+                        layout:     measureLayout,
+                        key:        (<any>measureLayout).key
+                    })
+                )
+            )
         );
     }
 
@@ -143,7 +146,7 @@ class Page extends React.Component<Page.IProps, Page.IState> {
         const scale40       = defaults.scaling.millimeters / defaults.scaling.tenths * 40;
         return {
             scale40:        scale40,
-            pageHeight:     print.pageLayout.pageHeight
+            originY:        print.pageLayout.pageHeight
         };
     }
 }
@@ -151,7 +154,7 @@ class Page extends React.Component<Page.IProps, Page.IState> {
 module Page {
     export var childContextTypes = <any> {
         scale40:            React.PropTypes.number.isRequired,
-        pageHeight:         React.PropTypes.number.isRequired
+        originY:            React.PropTypes.number.isRequired
     };
 
     export interface IProps {

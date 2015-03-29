@@ -64,7 +64,7 @@ class Note extends React.Component<{clef: MusicXML.Clef, spec: MusicXML.Note, of
             NoteHead({
                 key: "_0",
                 x: spec.defaultX + (spec.relativeX || 0) + (offsetX || 0),
-                y: context.pageHeight - (spec.defaultY + (spec.relativeY || 0)),
+                y: context.originY - (spec.defaultY + (spec.relativeY || 0)),
                 line: line,
                 stroke: this.props.strokes[idx],
                 grace: this.props.grace[idx],
@@ -206,7 +206,7 @@ class Note extends React.Component<{clef: MusicXML.Clef, spec: MusicXML.Note, of
 
 module Note {
     export var contextTypes = <any> {
-        pageHeight:         React.PropTypes.number.isRequired
+        originY:         React.PropTypes.number.isRequired
     };
 }
 

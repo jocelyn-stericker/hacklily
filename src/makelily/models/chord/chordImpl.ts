@@ -260,7 +260,42 @@ ChordModelImpl.prototype._isRest = false;
 module ChordModelImpl {
     export class Layout implements ChordModel.IChordLayout {
         constructor(model: ChordModelImpl, cursor$: Engine.ICursor) {
-            this.model = model;
+            this.model = <any> _.map(model, note => Object.create(note, {
+                /* Here, we're extending each note to have the correct default position.
+                 * To do so, we use prototypical inheritance. See Object.create. */
+
+                defaultX: {
+                    get: () => {
+                        return note.defaultX || this.x$;
+                    }
+                },
+                defaultY: {
+                    get: () => {
+                        if (note.defaultY) {
+                            return note.defaultY;
+                        }
+                        let line: number;
+                        let clef = cursor$.staff.attributes.clefs[cursor$.staff.idx];
+
+                        if (note.rest) {
+                            if (note.rest.displayStep) {
+                                line =
+                                    Engine.IChord.getClefOffset(clef) +
+                                    ((parseInt(note.rest.displayOctave, 10) || 0) - 3) * 3.5 +
+                                    Engine.IChord.pitchOffsets[note.rest.displayStep];
+                            } else if (note.noteType.duration === MusicXML.Count.Whole) {
+                                line = 4;
+                            } else {
+                                line = 3;
+                            }
+                            return (line - 3)*10;
+                        }
+
+                        invariant(false, "Not implemented.");
+                        return NaN;
+                    }
+                }
+            }));
             this.x$ = cursor$.x$;
             this.division = cursor$.division$;
 
