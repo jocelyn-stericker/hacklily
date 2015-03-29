@@ -70,6 +70,8 @@ function makeCursor(model: IModel): ICursor {
         maxPaddingTop$: 0,
         maxPaddingBottom$: 0,
 
+        page$: 1,
+
         approximate: false,
         detached: true,
         factory: null

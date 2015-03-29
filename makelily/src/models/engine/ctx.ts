@@ -30,7 +30,7 @@ import Util         = require("./util");
 
 export interface IMeasure {
     /** 
-     * The index of a given bar, starting from 1. This may not be the same as number.
+     * The index of a given bar, starting from 0. This may not be the same as number.
      */
     idx: number;
 

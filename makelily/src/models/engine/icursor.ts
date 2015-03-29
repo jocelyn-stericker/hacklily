@@ -52,6 +52,11 @@ interface ICursor {
     maxPaddingTop$: number;
     maxPaddingBottom$: number;
 
+    /**
+     * Only available in second layout$
+     */
+    page$: number;
+
     approximate: boolean;
     detached: boolean;
     factory: IModel.IFactory;

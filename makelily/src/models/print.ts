@@ -21,6 +21,7 @@ import _                = require("lodash");
 import invariant        = require("react/lib/invariant");
 
 import Engine           = require("./engine");
+import defaultsDeep     = require("../util/defaultsDeep");
 
 class PrintModel implements Export.IPrintModel {
 
@@ -59,10 +60,10 @@ class PrintModel implements Export.IPrintModel {
     validate$(cursor$: Engine.ICursor): void {
         invariant(!!cursor$.header, "Cursor must have a valid header");
         var defaultPrint                = extractDefaultPrintFromHeader(cursor$.header);
-        var spec                        = deepAssign<MusicXML.Print>(this, defaultPrint);
+        var spec                        = defaultsDeep(this, defaultPrint);
         this.sync(spec);
         cursor$.print$                  = this; // FIXME: inheritance for multiple papers
-        this.pageNumber                 = "1";  // TODO: implement
+        this.pageNumber                 = null;
     }
 
     layout(cursor$: Engine.ICursor): Export.ILayout {
@@ -116,6 +117,7 @@ class PrintModel implements Export.IPrintModel {
     }
 
     /*---- III. Extensions ----------------------------------------------------------------------*/
+
     pageMarginsFor(page: number): MusicXML.PageMargins {
         for (var i = 0; i < this.pageLayout.pageMargins.length; ++i) {
             var margins = this.pageLayout.pageMargins[i];
@@ -134,10 +136,25 @@ PrintModel.prototype.frozenness = Engine.IModel.FrozenLevel.Warm;
 
 module PrintModel {
     export class Layout implements Export.ILayout {
-        constructor(model: PrintModel, cursor$: Engine.ICursor) {
+        constructor(origModel: PrintModel, cursor$: Engine.ICursor) {
+            let model = Object.create(origModel);
             this.model = model;
+            model.pageNumber = "" + cursor$.page$;
             this.x$ = cursor$.x$;
             this.division = cursor$.division$;
+
+            if (model.pageNumber === "1" && cursor$.measure.idx === 0) {
+                model.systemLayout = {
+                    systemMargins: {
+                        leftMargin: 70,
+                        rightMargin: 0
+                    }
+                };
+                // Doesn't work because the layout model isn't read.
+            }
+
+            // FIXME/STOPSHIP: get the layout version of print in view.ts
+            origModel.pageNumber = model.pageNumber;
         }
 
         /*---- ILayout ------------------------------------------------------*/
@@ -162,28 +179,6 @@ module PrintModel {
     Layout.prototype.boundingBoxes$ = [];
     Object.freeze(Layout.prototype.boundingBoxes$);
 };
-
-function deepAssign<T>(a: T, b: T):T {
-    if (a instanceof Array || b instanceof Array) {
-        var retArr: any[] = [];
-        var aArr:   any[] = (<any>a);
-        var bArr:   any[] = (<any>b);
-        for (var i = 0; i < Math.max(a ? aArr.length : 0, b ? bArr.length : 0); ++i) {
-            retArr.push(deepAssign(a ? aArr[i] : null, b ? bArr[i] : null));
-        }
-        return (<any>retArr);
-    } else if (a instanceof Object || b instanceof Object) {
-        var ret: T = a ? Engine.Util.cloneObject(a) : (<T>{});
-        for (var key in b) {
-            if (b.hasOwnProperty(key)) {
-                (<any>ret)[key] = deepAssign((<any>ret)[key], (<any>b)[key]);
-            }
-        }
-        return ret;
-    } else {
-        return (a === undefined) ? b : a;
-    }
-}
 
 function extractDefaultPrintFromHeader(header: MusicXML.ScoreHeader): MusicXML.Print {
     return {

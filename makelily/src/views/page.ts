@@ -35,7 +35,7 @@ class Page extends React.Component<Page.IProps, Page.IState> {
         const print         = this.props.print;
         const page          = print.pageNumber;
         const pageNum       = parseInt(page, 10);
-        invariant(!!page, "Page isn't valid!");
+        invariant(!!page, "Page %s isn't a valid page number.", pageNum);
         const defaults      = this.props.scoreHeader.defaults;
         const credits       = _.filter(this.props.scoreHeader.credits, cr =>
                                 (cr.page === parseInt(page, 10)));
@@ -57,17 +57,7 @@ class Page extends React.Component<Page.IProps, Page.IState> {
         const pageMargins       = Engine.IPrint.getPageMargins(pageMarginsAll, pageNum);
         let systemMargins       = print.systemLayout.systemMargins;
 
-        let y                   = print.pageLayout.pageHeight - (
-                                    print.systemLayout.topSystemDistance +
-                                    pageMargins.topMargin);
-        let nextPaddingBottom   = 0;
-        let staveTops           = _.map(lineLayouts, (measureLayouts, idx) => {
-            let paddingTop      = _.max(measureLayouts, mre => mre.paddingTop).paddingTop;
-            y                   = y + nextPaddingBottom + paddingTop;
-            let top             = y;
-            nextPaddingBottom   = _.max(measureLayouts, mre => mre.paddingBottom).paddingBottom;
-            return top;
-        });
+        let staveTops           = _.map(lineLayouts, measureLayouts => measureLayouts[0].originY);
 
         // TODO: Move to Engine & IModel, generalize
         let staveLefts          = _.map(lineLayouts, () => {

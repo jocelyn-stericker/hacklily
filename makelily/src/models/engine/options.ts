@@ -52,8 +52,9 @@ export interface ILineLayoutResult extends Array<Measure.IMeasureLayout> {
 }
 
 export interface ILineBounds {
-    left: number;
-    right: number;
+    left:           number;
+    right:          number;
+    systemLayout:   MusicXML.SystemLayout
 }
 
 export module ILineBounds {
@@ -66,8 +67,9 @@ export module ILineBounds {
                                     pageMargins.rightMargin;
 
         return {
-            left: startX,
-            right: endX
+            left:           startX,
+            right:          endX,
+            systemLayout:   print.systemLayout
         };
     }
 }

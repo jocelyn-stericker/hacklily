@@ -81,6 +81,7 @@ function genCursor(factory: Factory, models: Engine.IModel[]): Engine.ICursor {
         },
         prev: null,
         x: 0,
+        page$: NaN,
         approximate: true,
         detached: true,
         factory: factory
