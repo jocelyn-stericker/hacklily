@@ -166,11 +166,23 @@ describe("[engine.ts]", function() {
             };
             expect(Engine.Options.ILineBounds.calculate(spec1, 1)).to.deep.equal({
                 left: 11,
-                right: 1000 - 12
+                right: 1000 - 12,
+                systemLayout: {
+                    systemMargins: {
+                        leftMargin: 0,
+                        rightMargin: 0
+                    }
+                }
             });
             expect(Engine.Options.ILineBounds.calculate(spec1, 2)).to.deep.equal({
                 left: 21,
-                right: 1000 - 22
+                right: 1000 - 22,
+                systemLayout: {
+                    systemMargins: {
+                        leftMargin: 0,
+                        rightMargin: 0
+                    }
+                }
             });
         });
     });
@@ -244,7 +256,8 @@ describe("[engine.ts]", function() {
                 },
                 {
                     left: 12,
-                    right: 1000 - 12
+                    right: 1000 - 12,
+                    systemLayout: null
                 },
                 layouts);
 

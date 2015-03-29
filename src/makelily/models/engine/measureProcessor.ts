@@ -61,6 +61,7 @@ function createCursor(
             staff:          Ctx.IStaff;
             voice:          Ctx.IVoice;
             x:              number;
+            page:           number;
         }): ICursor {
     return {
         approximate:        spec._approximate,
@@ -78,7 +79,8 @@ function createCursor(
         segment:            spec.segment,
         staff:              Ctx.IStaff.detach(spec.staff),
         voice:              spec.voice,
-        x$:                 spec.x
+        x$:                 spec.x,
+        page$:              spec.page
     };
 }
 
@@ -134,6 +136,8 @@ export function reduce(spec: ILayoutOpts): Measure.IMeasureLayout {
             prev:           prevByStaff ? prevByStaff[0] : null, // FIXME!
             division$:      0,
             x:              measure.x,
+
+            page:           spec._approximate ? NaN : 1,
 
             _approximate:   spec._approximate,
             _detached:      spec._detached,

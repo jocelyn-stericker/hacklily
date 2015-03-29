@@ -270,8 +270,9 @@ AttributesModel.prototype.frozenness = Engine.IModel.FrozenLevel.Warm;
 
 module AttributesModel {
     export class Layout implements Export.ILayout {
-        constructor(model: AttributesModel, cursor$: Engine.ICursor) {
-            this.model = Object.create(model);
+        constructor(origModel: AttributesModel, cursor$: Engine.ICursor) {
+            let model = Object.create(origModel);
+            this.model = model;
             this.x$ = cursor$.x$;
             this.division = cursor$.division$;
             this.staffIdx = cursor$.staff.idx;

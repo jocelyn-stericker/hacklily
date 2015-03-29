@@ -66,6 +66,8 @@ function makeCursor(model: Engine.IModel, factory: Factory): Engine.ICursor {
         maxPaddingTop$: 0,
         maxPaddingBottom$: 0,
 
+        page$: NaN,
+
         approximate: false,
         detached: true,
         factory: factory
