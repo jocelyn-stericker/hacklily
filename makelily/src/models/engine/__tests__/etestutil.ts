@@ -54,7 +54,6 @@ export function createFakeStaffSegment(divisions1: number, divisions2: number, i
             validate$: function(cursor$: Engine.ICursor) {
                 // pass
             },
-            fields: [],
             layout: function(cursor$: Engine.ICursor): Engine.IModel.ILayout {
                 var width = cursor$.detached ? 0 : 10;
                 cursor$.x$ += width;
@@ -76,7 +75,6 @@ export function createFakeStaffSegment(divisions1: number, divisions2: number, i
             validate$: function(cursor$: Engine.ICursor) {
                 // pass
             },
-            fields: [],
             layout: function(cursor$: Engine.ICursor): Engine.IModel.ILayout {
                 var width = 10;
                 cursor$.x$ += width;
@@ -107,7 +105,6 @@ export function createFakeVoiceSegment(divisions1: number, divisions2: number, i
             validate$: function(cursor$: Engine.ICursor) {
                 // pass
             },
-            fields: [],
             layout: function(cursor$: Engine.ICursor): Engine.IModel.ILayout {
                 var width = divisions1 * 10;
                 cursor$.x$ += width;
@@ -130,7 +127,6 @@ export function createFakeVoiceSegment(divisions1: number, divisions2: number, i
             validate$: function(cursor$: Engine.ICursor) {
                 // pass
             },
-            fields: [],
             layout: function(cursor$: Engine.ICursor): Engine.IModel.ILayout {
                 var width = divisions2*10;
                 cursor$.x$ += width;

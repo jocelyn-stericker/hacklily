@@ -31,10 +31,6 @@ class BeamGroupModel implements Export.IBeamGroupModel {
     /** @prototype */
     frozenness:      Engine.IModel.FrozenLevel;
 
-    get fields(): string[] {
-        return [];
-    }
-
     modelDidLoad$(segment$: Engine.Measure.ISegment): void {
         // todo
     }

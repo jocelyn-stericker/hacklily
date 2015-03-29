@@ -34,35 +34,6 @@ class HarmonyModel implements Export.IHarmonyModel {
     /** @prototype */
     frozenness:      Engine.IModel.FrozenLevel;
 
-    get fields() {
-        return [
-            "frame",
-            "printFrame",
-            "staff",
-            "type",
-            "offset",
-            "root",
-            "function",
-            "kind",
-            "degrees",
-            "inversion",
-            "bass",
-            "footnote",
-            "level",
-            "printObject",
-            "defaultX",
-            "relativeY",
-            "defaultY",
-            "relativeX",
-            "fontFamily",
-            "fontWeight",
-            "fontStyle",
-            "fontSize",
-            "color",
-            "placement"
-        ];
-    }
-
     modelDidLoad$(segment$: Engine.Measure.ISegment): void {
         // todo
     }

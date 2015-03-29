@@ -87,18 +87,11 @@ describe("[attributes.ts]", function() {
         it("can be created", function() {
             attributes = factory.create(Engine.IModel.Type.Attributes);
             expect(!!attributes).to.be.true;
-        });
-        it("sets fields in validate", function() {
-            expect(attributes.fields).to.deep.equal([], "By default it has no fields");
-
-            // Divisions is set by annotator
+            // Divisions is usually set by Engine
             (<any>attributes).divisions = 100;
-            expect(attributes.fields).to.deep.equal(["divisions"], "Now it has divisions");
 
             var cursor$ = makeCursor(attributes, factory);
             attributes.validate$(cursor$);
-            expect(attributes.fields).to.deep.equal(["divisions", "clefs", "times", "keySignatures"],
-                "Auto properties should be set");
         });
         it("lays out properly when at start of song", function() {
             var cursor$ = makeCursor(attributes, factory);

@@ -37,29 +37,6 @@ class AttributesModel implements Export.IAttributesModel {
     /** @prototype */
     frozenness:      Engine.IModel.FrozenLevel;
 
-    get fields(): string[] {
-        let isChangedHere = (prop: string) => {
-            return ("_" + prop) in this;
-        };
-
-        return _.filter(
-            [
-                "divisions",
-                "partSymbol",
-                "measureStyle",
-                "staffDetails",
-                "transposes",
-                "staves",
-                "instruments",
-                "directives",
-                "clefs",
-                "times",
-                "keySignatures",
-                "footnote",
-                "level"
-            ], isChangedHere);
-    }
-
     modelDidLoad$(segment$: Engine.Measure.ISegment): void {
         // todo
     }

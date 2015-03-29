@@ -43,11 +43,6 @@ class ChordModelImpl implements ChordModel.IChordModel {
     frozenness:      Engine.IModel.FrozenLevel;
 
     /** @prototype only */
-    get fields(): string[]{
-        return _.times(this.length, idx => "" + idx)
-            .concat("length", "dots");
-    }
-
     modelDidLoad$(segment$: Engine.Measure.ISegment): void {
         // pass
     }
