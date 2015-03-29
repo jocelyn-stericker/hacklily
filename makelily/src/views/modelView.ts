@@ -20,6 +20,7 @@ import React            = require("react");
 var $                   = React.createFactory;
 
 import Attributes       = require("./attributes");
+import Barline          = require("./barline");
 import Chord            = require("./chord");
 import Engine           = require("../models/engine");
 
@@ -29,6 +30,8 @@ class ModelView extends React.Component<{layout: Engine.IModel.ILayout}, void> {
         switch(layout.renderClass) {
         case Engine.IModel.Type.Attributes:
             return $(Attributes)({layout: layout});
+        case Engine.IModel.Type.Barline:
+            return $(Barline)({layout: layout});
         case Engine.IModel.Type.Chord:
             return $(Chord)({layout: layout});
         default:

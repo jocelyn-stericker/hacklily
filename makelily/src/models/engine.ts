@@ -19,8 +19,8 @@
 /** 
  * @file Tools for creating, validating, and laying out models.
  * 
- * Render Flow
- * ===========
+ * 1. Render Flow
+ * ==============
  * 
  * De-serialization (JSON -> "UNVALIDATED")
  * ----------------------------------------
@@ -34,25 +34,59 @@
  *   3. Dependencies are created & errors fixed                 (IModel.validate$)
  *   4. Layout is guessed within a bar, voice, and staff           (IModel.layout)
  * 
- *          Models should pretend there is only one voice and one
- *          staff. The engine handles merging voices and staffs,
- *          as well as complex notation involving one voice across
- *          multiple staves.
+ *      Models can pretend there is only one voice and one
+ *      staff. The engine itself handles merging voices and staffs,
+ *      as well as complex notation involving one voice across
+ *      multiple staves.
  * 
- *          Layouts for VALIDATED and RENDERED models are memoized,
- *          so that neither validate$ layout need to be called on
- *          Models when a change happens that does not affect it.
+ *      Layouts for VALIDATED and RENDERED models are memoized,
+ *      so that neither validate$ layout need to be called on
+ *      Models when a change happens that does not affect it.
  * 
  * Lay-out ("VALIDATED" -> "RENDERED")
  * -----------------------------------
  *   5. Context gets assigned a page and line based on guess      (Engine.layout$)
  *   6. Actual layout created                                      (IModel.layout)
- *   7. Layout is justified
- *   8. Elements outside of staff are positioned
+ *   7. Layout is justified or semi-justified, and assigned a
+ *      vertical position
+ *   8. Elements outside of staff (lyrics, notations, ...) are
+ *      positioned
  * 
- * 
- * Editing Flow
+ * 2. Box Model
  * ============
+ * 
+ * Satie's layout model is based on MusicXML's default and relative positioning.
+ * See MusicXML.Position. Contrary to SVG where the origin is the top left corner,
+ * the origin in MusicXML and Satie is the bottom left corner.
+ * 
+ * The position of an object, in SVG coordinates scaled to equal tenths, is calculated as:
+ *  x = context.originX + layout.model.defaultX + model.relativeX
+ *  y = context.originY - layout.model.defaultY - model.defaultY
+ * 
+ * relativeX and relativeY
+ * -----------------------
+ * Manual or special-case changes to the default position calculated in validate$ or fit$.
+ * 
+ * defaultX and defaultY
+ * ---------------------
+ * These values are generally calculated in the layout layer of the engraving process, but
+ * can be set manually. Layouts extend the model they hold via prototypical inheritance
+ * to set defaultX and defaultY if it was not already set in the manual.
+ * 
+ * originX and originY
+ * -------------------
+ * Different objects have different positions in MusicXML. For example, credits are relative
+ * to (0, height), so originX = 0 and originY = height. Notes are relative to the top (!!) left
+ * of a measure. See MusicXML documentation for each component. originX and originY are set
+ * by React context.
+ * 
+ * React provides three ways of storing information. State is useful for storing data used by
+ * the same component that sets it. Props is useful for passing date from one component
+ * to its direct children. Context is like props, but can be passed to non-direct children. It
+ * is currently undocumented. See MeasureView and Attributes for an example of context is used.
+ * 
+ * 3. Editing Flow
+ * ===============
  * 
  * Editing ("RENDERED" -> "UNVALIDATED")
  * -------------------------------------
@@ -186,22 +220,10 @@ export function approximateWidth(opts: IMeasureLayoutOptions): number {
  */
 export function justify(options: Options.ILayoutOptions, bounds: Options.ILineBounds,
         measures: Measure.IMeasureLayout[]): Measure.IMeasureLayout[] {
-    let x = bounds.left;
 
     let measures$ = _.map(measures, Measure.IMeasureLayout.detach);
 
-    /*---- 1. explode horizontally. ----*/
-
-    _.forEach(measures$, function(measure$) {
-        _.forEach(measure$.elements, function(elementArr$) {
-            _.forEach(elementArr$, function(element$) {
-                element$.x$ += x;
-            });
-        });
-        x += measure$.width;
-    });
-
-    /*---- 2. justify ----*/
+    const x = bounds.left + _.reduce(measures$, (sum, measure) => sum + measure.width, 0);
 
     // x > enX is possible if a single bar's minimum size exceeds maxX, or if our
     // guess for a measure width was too liberal. In either case, we're shortening
@@ -288,6 +310,15 @@ export function layoutLine$(options: Options.ILayoutOptions, bounds: Options.ILi
         // Update attributes for next measure
         attributes = clean$[measure.uuid].attributes;
         return clean$[measure.uuid];
+    });
+
+    let paddingTop          = _.max(layouts, mre => mre.paddingTop).paddingTop;
+    let top                 = memo$.y$ + paddingTop;
+    let nextPaddingBottom   = _.max(layouts, mre => mre.paddingBottom).paddingBottom;
+    memo$.y$                = top + nextPaddingBottom;
+    _.forEach(layouts, layout => {
+        layout.originY = top;
+        layout.originX += bounds.left;
     });
 
     return justify(options, bounds, layouts);
@@ -457,13 +488,5 @@ export interface IDocument {
     parts?:     string[];
 }
 
-/**
- * Assigns a random key to an object, usually for React.
- */
-export function key$(t$: any) {
-    if (!t$.key) {
-        t$.key = Math.floor(Math.random() * MAX_SAFE_INTEGER);
-    }
-}
-
-export let MAX_SAFE_INTEGER = 9007199254740991;
+export const key$ = MeasureProcessor.key$;
+export const MAX_SAFE_INTEGER = MeasureProcessor.MAX_SAFE_INTEGER;

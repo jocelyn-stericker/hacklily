@@ -38,6 +38,7 @@ SvgExt.inject();
  */
 export function renderDocument(doc: Engine.IDocument, startMeasure: number): string {
     let factory = doc.factory;
+    const pageNum = 1; // FIXME
     if (!factory) {
         throw new Error("Document has no factory");
     }
@@ -53,16 +54,22 @@ export function renderDocument(doc: Engine.IDocument, startMeasure: number): str
         print = <any> factory.searchHere(partWithPrint.staves[1], 0, Engine.IModel.Type.Print)[0];
         invariant(!!print, "Wait what?");
     } else {
-        throw new Error("Part does not start with a Print element");
+        throw new Error("Part does not contain a Print element at division 0. Is it validated?");
     }
 
-    let memo$ = Engine.Options.ILinesLayoutMemo.create();
+    const pageMarginsAll    = print.pageLayout.pageMargins;
+    const pageMargins       = Engine.IPrint.getPageMargins(pageMarginsAll, pageNum);
+    const top               = print.pageLayout.pageHeight -
+                                (print.systemLayout.topSystemDistance +
+                                 pageMargins.topMargin);
+
+    let memo$ = Engine.Options.ILinesLayoutMemo.create(top);
     const lineLayouts = Engine.layout$({
         attributes:     null,
         measures:       doc.measures,
         header:         doc.header,
         print$:         print,
-        page$:          0,
+        page$:          pageNum,
         modelFactory:   doc.factory
     }, memo$);
 

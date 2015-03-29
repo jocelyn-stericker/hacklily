@@ -120,6 +120,13 @@ class ChordView extends React.Component<{layout: Chord.IChordLayout}, void> {
         //     return note;
         // }
     }
+
+    getChildContext() {
+        return {
+            originX:        this.context.originX + this.props.layout.x$,
+            originY:        this.context.originY
+        };
+    }
 }
 
 /*
@@ -182,6 +189,17 @@ class ChordView extends React.Component<{layout: Chord.IChordLayout}, void> {
         invariant(ret.length !== 0, "Invalid ledger line");
         return ret;
     }
-            */
+*/
+
+module ChordView {
+    export var contextTypes = <any> {
+        originX:            React.PropTypes.number.isRequired,
+        originY:            React.PropTypes.number.isRequired
+    };
+    export var childContextTypes = <any> {
+        originX:            React.PropTypes.number.isRequired,
+        originY:            React.PropTypes.number.isRequired
+    };
+}
 
 export = ChordView;

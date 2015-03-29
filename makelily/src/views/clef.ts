@@ -57,8 +57,8 @@ class Clef extends React.Component<{spec: MusicXML.Clef}, void> {
             additional?: boolean;
         */
         return $(Glyph)({
-            x:          spec.defaultX + (spec.relativeX || 0),
-            y:          this.context.pageHeight - (
+            x:          this.context.originX + spec.defaultX + (spec.relativeX || 0),
+            y:          this.context.originY - (
                             spec.defaultY + (spec.relativeY || 0) + (this.line() - 3)*10),
             fill:       spec.color,
             glyphName:  this.sign()
@@ -87,7 +87,8 @@ class Clef extends React.Component<{spec: MusicXML.Clef}, void> {
 
 module Clef {
     export var contextTypes = <any> {
-        pageHeight:         React.PropTypes.number.isRequired
+        originX:         React.PropTypes.number.isRequired,
+        originY:         React.PropTypes.number.isRequired
     };
 }
 

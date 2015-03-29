@@ -31,6 +31,18 @@ import ICursor          = require("./icursor");
 import IModel           = require("./imodel");
 import Ctx              = require("./ctx");
 
+export let MAX_SAFE_INTEGER = 9007199254740991;
+
+/**
+ * Assigns a random key to an object, usually for React.
+ */
+export function key$(t$: any) {
+    if (!t$.key) {
+        t$.key = Math.floor(Math.random() * MAX_SAFE_INTEGER);
+    }
+}
+
+
 /**
  * Given a cursor skeleton, creates a detached mutable cursor.
  * 
@@ -141,11 +153,13 @@ export function reduce(spec: ILayoutOpts): Measure.IMeasureLayout {
             cursor$.division$               = divisionPerStaff$[staffIdx];
             cursor$.segment                 = staffMeasure[staffIdx];
             let layout: IModel.ILayout;
+            key$(model);
             if (validateOnly) {
                 model.staffIdx = cursor$.staff.idx;
                 model.validate$(cursor$);
             } else {
                 layout                      = model.layout(cursor$);
+                (<any>layout).key           = (<any>model).key;
             }
             cursor$.division$               += model.divCount;
             divisionPerStaff$[staffIdx]     = cursor$.division$;
@@ -195,11 +209,13 @@ export function reduce(spec: ILayoutOpts): Measure.IMeasureLayout {
 
             // All layout that can be controlled by the model is done here.
             let layout: IModel.ILayout;
+            key$(model);
             if (validateOnly) {
-                model.staffIdx = cursor$.staff.idx;
+                model.staffIdx              = cursor$.staff.idx;
                 model.validate$(cursor$);
             } else {
-                layout = model.layout(cursor$);
+                layout                      = model.layout(cursor$);
+                (<any>layout).key           = (<any>model).key;
             }
             cursor$.division$ += model.divCount;
             cursor$.prev$ = model;
@@ -248,8 +264,10 @@ export function reduce(spec: ILayoutOpts): Measure.IMeasureLayout {
 
     return {
         attributes: lastAttribs,
-        elements: voiceLayouts$.concat(staffLayoutsUnique$),
+        elements: voiceLayouts$.concat(staffLayoutsUnique$), // TODO: can we filter spacers here?
         width: maxXInMeasure - measure.x,
+        originX: measure.x,
+        originY: NaN,
         paddingTop: maxPaddingTopInMeasure$,
         paddingBottom: maxPaddingBottomInMeasure$
     };

@@ -63,7 +63,7 @@ export function importXML(src: string): Engine.IDocument {
         throw score.error;
     }
 
-    let memo$ = Engine.Options.ILinesLayoutMemo.create();
+    let memo$ = Engine.Options.ILinesLayoutMemo.create(NaN);
     let contextOptions: Engine.Options.ILayoutOptions = {
         attributes:     null,
         measures:       score.measures,

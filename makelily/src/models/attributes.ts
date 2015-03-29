@@ -271,7 +271,7 @@ AttributesModel.prototype.frozenness = Engine.IModel.FrozenLevel.Warm;
 module AttributesModel {
     export class Layout implements Export.ILayout {
         constructor(model: AttributesModel, cursor$: Engine.ICursor) {
-            this.model = model;
+            this.model = Object.create(model);
             this.x$ = cursor$.x$;
             this.division = cursor$.division$;
             this.staffIdx = cursor$.staff.idx;
@@ -293,7 +293,17 @@ module AttributesModel {
                 cursor$.x$ = this.x$;
 
                 let contextualSpacing$ = 0;
-                model._clefs[this.staffIdx].size = isFirstInLine ? MusicXML.SymbolSize.Full : MusicXML.SymbolSize.Cue;
+                model._clefs = Object.create(model.clefs);
+                model._clefs[this.staffIdx] = Object.create(model.clefs[this.staffIdx], {
+                    "defaultX": {
+                        get: () => {
+                            return this.barX;
+                        }
+                    }
+                });
+                model._clefs[this.staffIdx].defaultY = model._clefs[this.staffIdx].defaultY || 0;
+                model._clefs[this.staffIdx].size =
+                    isFirstInLine ? MusicXML.SymbolSize.Full : MusicXML.SymbolSize.Cue;
 
                 if (nextIsNote && !this.ksVisible && !this.tsVisible) {
                     if (Engine.IChord.hasAccidental(chord, cursor$)) {
@@ -319,6 +329,15 @@ module AttributesModel {
 
             if (this.ksVisible) {
                 let contextualSpacing$ = 0;
+                model._keySignatures = Object.create(model.keySignatures);
+                model._keySignatures[0] = Object.create(model.keySignatures[0], {
+                    defaultX: {
+                        get: () => {
+                            return this.barX + this.clefSpacing;
+                        }
+                    }
+                });
+                model._keySignatures[0].defaultY = 0;
                 if (nextIsNote && !this.tsVisible) {
                     if (Engine.IChord.hasAccidental(chord, cursor$)) {
                         // TODO: what if there are more than 1 accidental?
@@ -346,6 +365,15 @@ module AttributesModel {
 
             if (this.tsVisible) {
                 let contextualSpacing$ = 0;
+                model._times = Object.create(model.times);
+                model._times[0] = Object.create(model.times[0], {
+                    defaultX: {
+                        get: () => {
+                            return this.barX + this.clefSpacing + this.ksSpacing;
+                        }
+                    }
+                });
+                model._times[0].defaultY = 0;
                 if (nextIsNote) {
                     if (Engine.IChord.hasAccidental(chord, cursor$)) {
                         // TODO: what if there are more than 1 accidental?
@@ -375,6 +403,11 @@ module AttributesModel {
         x$: number;
         division: number;
         staffIdx: number;
+
+        /**
+         * Set by layout engine.
+         */
+        barX: number;
 
         // Prototype:
 

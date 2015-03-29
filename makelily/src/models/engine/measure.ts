@@ -40,7 +40,7 @@ export interface IMutableMeasure {
     width?:             number;
     nonControlling?:    boolean;
     parts: {
-        [x: string]:    IMeasurePart;
+        [id: string]:   IMeasurePart;
     };
 }
 
@@ -92,11 +92,13 @@ export function normalizeDivisons$(segments$: ISegment[], factor: number = 0): n
 };
 
 export interface IMeasureLayout {
-    attributes:      MusicXML.Attributes,
-    elements:        IModel.ILayout[][];
-    width:           number;
-    paddingTop:      number;
-    paddingBottom:   number;
+    attributes:         MusicXML.Attributes,
+    elements:           IModel.ILayout[][];
+    width:              number;
+    originX:            number;
+    originY:            number;
+    paddingTop:         number;
+    paddingBottom:      number;
 }
 
 export module IMeasureLayout {

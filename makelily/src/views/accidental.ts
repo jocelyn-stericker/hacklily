@@ -29,9 +29,10 @@ class Accidental extends React.Component<{spec: MusicXML.Accidental}, void> {
     render(): any {
         let spec = this.props.spec;
         const glyphName = this.glyphName();
+        const {originX, originY} = this.context;
         var accidental = $(Glyph)({
-            x: spec.defaultX + (spec.relativeX || 0),
-            y: this.context.pageHeight - (spec.defaultY + (spec.relativeY || 0)),
+            x: originX + spec.defaultX + (spec.relativeX || 0),
+            y: originY - (spec.defaultY + (spec.relativeY || 0)),
             fill: spec.color,
             glyphName: glyphName
         });
@@ -40,14 +41,14 @@ class Accidental extends React.Component<{spec: MusicXML.Accidental}, void> {
             var width = SMuFL.bboxes[glyphName][0]*10;
             return React.DOM.g(null,
                 $(Glyph)({
-                        x: spec.defaultX + (spec.relativeX || 0) - 7,
-                        y: this.context.pageHeight - (spec.defaultY + (spec.relativeY || 0)),
+                        x: originX + spec.defaultX + (spec.relativeX || 0) - 7,
+                        y: originY - (spec.defaultY + (spec.relativeY || 0)),
                         glyphName: "accidentalParensLeft",
                         fill: "#000000"}),
                 accidental,
                 $(Glyph)({
-                        x: spec.defaultX + (spec.relativeX || 0) + width,
-                        y: this.context.pageHeight - (spec.defaultY + (spec.relativeY || 0)),
+                        x: originX + spec.defaultX + (spec.relativeX || 0) + width,
+                        y: originY - (spec.defaultY + (spec.relativeY || 0)),
                         glyphName: "accidentalParensRight",
                         fill: "#000000" })
             /* React.DOM.g */);
@@ -137,7 +138,8 @@ class Accidental extends React.Component<{spec: MusicXML.Accidental}, void> {
 
 module Accidental {
     export var contextTypes = <any> {
-        pageHeight:         React.PropTypes.number.isRequired
+        originX:         React.PropTypes.number.isRequired,
+        originY:         React.PropTypes.number.isRequired
     };
 }
 
