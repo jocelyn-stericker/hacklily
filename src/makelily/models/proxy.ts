@@ -31,10 +31,6 @@ class ProxyModel implements Export.IProxyModel {
     /** @prototype */
     frozenness:      Engine.IModel.FrozenLevel;
 
-    get fields(): string[] {
-        return [];
-    }
-
     modelDidLoad$(segment$: Engine.Measure.ISegment): void {
         // todo
     }

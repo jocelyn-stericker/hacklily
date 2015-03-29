@@ -36,29 +36,6 @@ class BarlineModel implements Export.IBarlineModel {
     /** @prototype */
     frozenness:      Engine.IModel.FrozenLevel;
 
-    get fields(): string[] {
-        var isChangedHere = (prop: string) => {
-            return ("_" + prop) in this;
-        };
-
-        return _.filter(
-            [
-                "segno",
-                "coda",
-                "location",
-                "codaAttrib",
-                "wavyLine",
-                "fermatas",
-                "segnoAttrib",
-                "divisions",
-                "barStyle",
-                "ending",
-                "repeat",
-                "footnote",
-                "level"
-            ], isChangedHere);
-    }
-
     modelDidLoad$(segment$: Engine.Measure.ISegment): void {
         // todo
     }

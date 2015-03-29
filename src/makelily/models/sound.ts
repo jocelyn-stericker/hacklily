@@ -34,29 +34,6 @@ class SoundModel implements Export.ISoundModel {
     /** @prototype */
     frozenness:      Engine.IModel.FrozenLevel;
 
-    get fields(): string[] {
-        var isChangedHere = (prop: string) => {
-            return ("_" + prop) in this;
-        };
-
-        return _.filter(
-            [
-                "divisions",
-                "partSymbol",
-                "measureStyle",
-                "staffDetails",
-                "transpose",
-                "staves",
-                "instruments",
-                "directive",
-                "clefs",
-                "time",
-                "keySignature",
-                "footnote",
-                "level"
-            ], isChangedHere);
-    }
-
     modelDidLoad$(segment$: Engine.Measure.ISegment): void {
         // todo
     }

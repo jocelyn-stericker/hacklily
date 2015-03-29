@@ -36,23 +36,6 @@ class PrintModel implements Export.IPrintModel {
     /** @prototype */
     frozenness:      Engine.IModel.FrozenLevel;
 
-    get fields() {
-        return [
-            "measureNumbering",
-            "partNameDisplay",
-            "newSystem",
-            "newPage",
-            "blankPage",
-            "measureLayout",
-            "partAbbreviationDisplay",
-            "pageLayout",
-            "systemLayout",
-            "staffSpacing",
-            "staffLayouts",
-            "pageNumber"
-        ];
-    }
-
     modelDidLoad$(segment$: Engine.Measure.ISegment): void {
         // todo
     }

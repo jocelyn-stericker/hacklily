@@ -37,11 +37,6 @@ interface IModel {
     frozenness:      IModel.FrozenLevel;
 
     /** 
-     * Fields to serialize and de-serialize.
-     */
-    fields:          string[];
-
-    /** 
      * Life-cycle method. Called when the model is created from MusicXML.
      * Prototype chains should be added to unfrozen properties.
      */

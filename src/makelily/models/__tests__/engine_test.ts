@@ -340,7 +340,6 @@ describe("[engine.ts]", function() {
                         frozenness: Engine.IModel.FrozenLevel.Warm,
                         modelDidLoad$: (segment$: Engine.Measure.ISegment) => { /* pass */ },
                         validate$: (cursor$: Engine.ICursor) => { /* pass */ },
-                        fields: [],
                         layout: function(cursor$: Engine.ICursor): Engine.IModel.ILayout {
                             throw "not reached";
                         }

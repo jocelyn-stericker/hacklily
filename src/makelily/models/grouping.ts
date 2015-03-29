@@ -34,15 +34,6 @@ class GroupingModel implements Export.IGroupingModel {
     /** @prototype */
     frozenness:      Engine.IModel.FrozenLevel;
 
-    get fields() {
-        return [
-            "features",
-            "number",
-            "type",
-            "memberOf"
-        ];
-    }
-
     modelDidLoad$(segment$: Engine.Measure.ISegment): void {
         // todo
     }

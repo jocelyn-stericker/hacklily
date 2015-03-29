@@ -34,29 +34,6 @@ class FiguredBassModel implements Export.IFiguredBassModel {
     /** @prototype */
     frozenness:      Engine.IModel.FrozenLevel;
 
-    get fields() {
-        return [
-            "figures",
-            "duration",
-            "parentheses",
-            "footnote",
-            "level",
-            "printDot",
-            "printLyric",
-            "printObject",
-            "printSpacing",
-            "defaultX",
-            "relativeY",
-            "defaultY",
-            "relativeX",
-            "fontFamily",
-            "fontWeight",
-            "fontStyle",
-            "fontSize",
-            "color"
-        ];
-    }
-
     modelDidLoad$(segment$: Engine.Measure.ISegment): void {
         // todo
     }
