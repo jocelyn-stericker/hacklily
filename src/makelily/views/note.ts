@@ -25,20 +25,16 @@ import invariant            = require("react/lib/invariant");
 let $                       = React.createFactory;
 
 import Dot                  = require("./primitives/dot");
-import Engine               = require("../models/engine");
 import Notehead             = require("./notehead");
 
-class Note extends React.Component<{clef: MusicXML.Clef, spec: MusicXML.Note, offsetX: number,
-        onLedger: boolean}, void> {
+class Note extends React.Component<{clef: MusicXML.Clef, spec: MusicXML.Note, offsetX: number, onLedger: boolean}, void> {
     render() {
-        const {spec, clef, offsetX} = this.props;
+        const spec = this.props.spec;
         const pitch = spec.pitch;
-        const stem = spec.stem;
-        const direction = stem.type === MusicXML.StemType.Up ? 1 : -1; // TODO: two other options
+        // const stem = spec.stem;
+        // const direction = stem.type === MusicXML.StemType.Up ? 1 : -1; // TODO: two other options
 
         invariant(!!pitch, "Not implemented");
-
-        var i: number;
 
         return React.DOM.g(null,
             $(Notehead)({
@@ -241,6 +237,5 @@ module Note {
         return ret;
     }
 */
-
 
 export = Note;

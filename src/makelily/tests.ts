@@ -14,6 +14,7 @@ import ctx_test = require("./models/engine/__tests__/ctx_test");
 import etestutil = require("./models/engine/__tests__/etestutil");
 import ichord_test = require("./models/engine/__tests__/ichord_test");
 import imodel_test = require("./models/engine/__tests__/imodel_test");
+import lineProcessor = require("./models/engine/__tests__/lineProcessor");
 import measure_test = require("./models/engine/__tests__/measure_test");
 import measureProcessor_tests = require("./models/engine/__tests__/measureProcessor_tests");
 import scoreHeader_test = require("./models/engine/__tests__/scoreHeader_test");

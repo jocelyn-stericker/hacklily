@@ -18,17 +18,13 @@
 
 "use strict";
 
-import MusicXML             = require("musicxml-interfaces");
 import React                = require("react");
 import _                    = require("lodash");
-import invariant            = require("react/lib/invariant");
 let $                       = React.createFactory;
 
-import { IChord }           from "../models/engine";
 import Chord                = require("../models/chord");
 import Note                 = require("./note");
 import Rest                 = require("./rest");
-import SMuFL                = require("../models/smufl");
 
 /**
  * Renders notes and their notations.
@@ -38,39 +34,39 @@ class ChordView extends React.Component<{layout: Chord.IChordLayout}, void> {
         let layout = this.props.layout;
         let spec = layout.model;
 
-        var lyKey = 0;
-        var lyrics = _.chain(<MusicXML.Note[]><any>spec)
-                        .map(n => n.lyrics)
-                        .filter(l => !!l)
-                        .flatten(true)
-                        .filter((l: MusicXML.Lyric) => !!l)
-                        .map((l: MusicXML.Lyric) => {
-                            var text: any[] = [];
-                            var currSyllabic = MusicXML.SyllabicType.Single;
-                            for (var i = 0; i < l.lyricParts.length; ++i) {
-                                switch(l.lyricParts[i]._class) {
-                                    case "Syllabic":
-                                        var syllabic = <MusicXML.Syllabic> l.lyricParts[i];
-                                        currSyllabic = syllabic.data;
-                                        break;
-                                    case "Text":
-                                        var textPt = <MusicXML.Text> l.lyricParts[i];
-                                        var width = SMuFL.bboxes["noteheadBlack"][0]*10;
-                                        text.push(React.DOM.text({
-                                                textAnchor: "middle",
-                                                fontSize: textPt.fontSize || "22",
-                                                key: ++lyKey,
-                                                // x: width/2 + (spec.x),
-                                                // y: 60      + (spec.y)
-                                            }, textPt.data));
-                                }
-                            };
-                            return text;
-                        })
-                        .flatten()
-                        .value();
+        // let lyKey = 0;
+        // let lyrics = _.chain(<MusicXML.Note[]><any>spec)
+        //                 .map(n => n.lyrics)
+        //                 .filter(l => !!l)
+        //                 .flatten(true)
+        //                 .filter((l: MusicXML.Lyric) => !!l)
+        //                 .map((l: MusicXML.Lyric) => {
+        //                     var text: any[] = [];
+        //                     var currSyllabic = MusicXML.SyllabicType.Single;
+        //                     for (var i = 0; i < l.lyricParts.length; ++i) {
+        //                         switch(l.lyricParts[i]._class) {
+        //                             case "Syllabic":
+        //                                 var syllabic = <MusicXML.Syllabic> l.lyricParts[i];
+        //                                 currSyllabic = syllabic.data;
+        //                                 break;
+        //                             case "Text":
+        //                                 var textPt = <MusicXML.Text> l.lyricParts[i];
+        //                                 var width = SMuFL.bboxes["noteheadBlack"][0]*10;
+        //                                 text.push(React.DOM.text({
+        //                                         textAnchor: "middle",
+        //                                         fontSize: textPt.fontSize || "22",
+        //                                         key: ++lyKey
+        //                                         // x: width/2 + (spec.x),
+        //                                         // y: 60      + (spec.y)
+        //                                     }, textPt.data));
+        //                         }
+        //                     };
+        //                     return text;
+        //                 })
+        //                 .flatten()
+        //                 .value();
 
-        var dotOffset = SMuFL.bboxes["noteheadBlack"][0]*10 + 6; // TODO: Correct notehead
+        // var dotOffset = SMuFL.bboxes["noteheadBlack"][0]*10 + 6; // TODO: Correct notehead
 
         if (!!spec[0].rest) {
             return $(Rest)({
@@ -90,8 +86,6 @@ class ChordView extends React.Component<{layout: Chord.IChordLayout}, void> {
                 onLedger: false
             }))
         );
-
-        throw new Error("not implemented");
     }
 
     getChildContext() {

@@ -41,12 +41,10 @@ let countToNotehead: { [key: number]: string } = {
     [MusicXML.Count._1024th]:   "noteheadBlack"
 };
 
-
 /**
  * Renders a notehead.
  */
-class Notehead extends React.Component<{spec: MusicXML.Notehead | MusicXML.Position,
-        duration: MusicXML.Count}, void> {
+class Notehead extends React.Component<{spec: MusicXML.Notehead | MusicXML.Position, duration: MusicXML.Count}, void> {
     render() {
         let spec = this.props.spec;
         let pos = <MusicXML.Position> spec;

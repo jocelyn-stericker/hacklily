@@ -27,8 +27,8 @@ import _                = require("lodash");
 import invariant        = require("react/lib/invariant");
 
 import Engine           = require("../engine");
+import Util             = require("../engine/util");
 
-var Util                = Engine.Util;
 var ModelType           = Engine.IModel.Type;
 var IChord              = Engine.IChord;
 var ICursor             = Engine.ICursor;

@@ -27,7 +27,7 @@ import Ctx              = require("../ctx");
 import chai             = require("chai");
 var expect              = chai.expect;
 
-import Engine           = require("../../engine");
+import Util             = require("../util");
 
 describe("[engine/ctx.ts]", function() {
     describe("Ctx.IStaff.detach", function() {
@@ -41,8 +41,8 @@ describe("[engine/ctx.ts]", function() {
                 division: 10,
                 idx: 0
             };
-            var orig2 = Engine.Util.cloneObject(orig);
-            var copy = Engine.Ctx.IStaff.detach(orig);
+            var orig2 = Util.cloneObject(orig);
+            var copy = Ctx.IStaff.detach(orig);
             orig2.totalDivisions = NaN; // HACK: cloneObject makes NaN -> null
 
             copy.previous = orig;

@@ -156,28 +156,6 @@ module FiguredBassModel {
     Object.freeze(Layout.prototype.boundingBoxes$);
 };
 
-function deepAssign<T>(a: T, b: T):T {
-    if (a instanceof Array || b instanceof Array) {
-        var retArr: any[] = [];
-        var aArr:   any[] = (<any>a);
-        var bArr:   any[] = (<any>b);
-        for (var i = 0; i < Math.max(a ? aArr.length : 0, b ? bArr.length : 0); ++i) {
-            retArr.push(deepAssign(a ? aArr[i] : null, b ? bArr[i] : null));
-        }
-        return (<any>retArr);
-    } else if (a instanceof Object || b instanceof Object) {
-        var ret: T = a ? Engine.Util.cloneObject(a) : (<T>{});
-        for (var key in b) {
-            if (b.hasOwnProperty(key)) {
-                (<any>ret)[key] = deepAssign((<any>ret)[key], (<any>b)[key]);
-            }
-        }
-        return ret;
-    } else {
-        return (a === undefined) ? b : a;
-    }
-}
-
 /**
  * Registers FiguredBass in the factory structure passed in.
  */

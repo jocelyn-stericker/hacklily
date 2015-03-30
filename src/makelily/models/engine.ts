@@ -121,7 +121,6 @@ import MusicXML                 = require("musicxml-interfaces");
 import _                        = require("lodash");
 import invariant                = require("react/lib/invariant");
 
-export import Ctx               = require("./engine/ctx");
 export import IChord            = require("./engine/ichord");
 export import ICursor           = require("./engine/icursor");
 export import IModel            = require("./engine/imodel");
@@ -130,8 +129,9 @@ export import Measure           = require("./engine/measure");
 export import Options           = require("./engine/options");
 export import RenderUtil        = require("./engine/renderUtil");
 export import ScoreHeader       = require("./engine/scoreHeader");
-export import Util              = require("./engine/util");
 
+import Ctx                      = require("./engine/ctx");
+import LineProcessor            = require("./engine/lineProcessor");
 import MeasureProcessor         = require("./engine/measureProcessor");
 
 if (process.env.NODE_ENV !== "production") {
@@ -141,194 +141,6 @@ if (process.env.NODE_ENV !== "production") {
 }
 
 /*---- Engine -----------------------------------------------------------------------------------*/
-
-export interface IMeasureLayoutOptions {
-    attributes:     MusicXML.Attributes;
-    header:         MusicXML.ScoreHeader;
-    line:           Ctx.ILine;
-    measure:        Measure.IMutableMeasure;
-    prevByStaff:    IModel[];
-    /** Starts at 0. */
-    x:              number;
-
-    /** @private approximate minimum width is being calculated */
-    _approximate?:  boolean;
-
-    /** @private does not have own attributes (true if approximate or grace notes) */
-    _detached?:     boolean;
-
-    factory:        IModel.IFactory;
-}
-
-/** 
- * Given the context and constraints given, creates a possible layout for items within a measure.
- * 
- * @param opts structure with __normalized__ voices and staves
- * @returns an array of staff and voice layouts with an undefined order
- */
-export function layoutMeasure(opts: IMeasureLayoutOptions): Measure.IMeasureLayout {
-    let measureCtx = Ctx.IMeasure.detach(opts.measure, opts.x);
-
-    let voices = <Measure.ISegment[]> _.flatten(_.map(_.values(opts.measure.parts), part => part.voices));
-    let staves = <Measure.ISegment[]> _.flatten(_.map(_.values(opts.measure.parts), part => part.staves));
-
-    let segments = _.filter(voices.concat(staves), s => !!s);
-
-    let line = opts.line;
-
-    return MeasureProcessor.reduce({
-        attributes:     opts.attributes,
-        factory:        opts.factory,
-        header:         opts.header,
-        line:           line,
-        measure:        measureCtx,
-        prevByStaff:    opts.prevByStaff,
-        segments:       segments,
-
-        _approximate:   opts._approximate,
-        _detached:      opts._detached
-    });
-}
-
-/** 
- * Given the context and constraints given, estimates a width. These widths do not
- * 
- * @param opts structure with __normalized__ voices and staves
- * @returns an approximate width for a measure that is not the first on a line.
- */
-export function approximateWidth(opts: IMeasureLayoutOptions): number {
-    invariant(isNaN(opts.measure.width) || opts.measure.width === null,
-        "Engine.approximateWidth(...) must be passed a measure without an exact width.\n" +
-        "Instead, it was passed a measure with opts.measure.width === %s.\n" +
-        "This most likely means a measure was modified in a way that requires an updated " +
-        "layout, but its \"FrozenEngraved\" status was not cleared.", opts.measure.width);
-
-    invariant(!!opts.line, "An approximate line needs to be given to approximateWidth");
-
-    opts = <IMeasureLayoutOptions> _.extend({
-            _approximate: true,
-            _detached: true
-        }, opts);
-    let layout = layoutMeasure(opts);
-    return layout.width;
-}
-
-/** 
- * Lays out measures within a bar & justifies.
- * 
- * @returns new end of line
- */
-export function justify(options: Options.ILayoutOptions, bounds: Options.ILineBounds,
-        measures: Measure.IMeasureLayout[]): Measure.IMeasureLayout[] {
-
-    let measures$ = _.map(measures, Measure.IMeasureLayout.detach);
-
-    const x = bounds.left + _.reduce(measures$, (sum, measure) => sum + measure.width, 0);
-
-    // x > enX is possible if a single bar's minimum size exceeds maxX, or if our
-    // guess for a measure width was too liberal. In either case, we're shortening
-    // the measure width here, and our partial algorithm doesn't work with negative
-    // padding.
-    let partial = x < bounds.right && options.finalLine;
-
-    let expandableCount = _.reduce(measures$, function(memo, measure$) {
-        // Precondition: all layouts at a given index have the same "expandable" value.
-        return _.reduce(measure$.elements[0], function(memo, element$) {
-            return memo + (element$.expandable ? 1 : 0);
-        }, memo);
-    }, 0);
-
-    let avgExpansion: number;
-    if (!expandableCount) { // case 1: nothing to expand
-        avgExpansion = 0;
-    } else if (partial) { // case 2: expanding, but not full width
-        let expansionRemainingGuess = bounds.right - 3 - x;
-        let avgExpansionGuess = expansionRemainingGuess / expandableCount;
-        let weight = Util.logistic((avgExpansionGuess - bounds.right / 80) / 20) * 2 / 3;
-        avgExpansion = (1 - weight)*avgExpansionGuess;
-    } else { // case 3: expanding or contracting to full width
-        let exp = bounds.right - x;
-        avgExpansion = exp/expandableCount;
-    }
-
-    let anyExpandable = false;
-    let totalExpCount = 0;
-    let lineExpansion = 0;
-    _.forEach(measures$, function(measure) {
-        let elementArr = measure.elements[0];
-        let measureExpansion = 0;
-        _.forEach(elementArr, function(element, j) {
-            for (let i = 0; i < measure.elements.length; ++i) {
-                if (measure.elements[i][j].expandable) {
-                    anyExpandable = true;
-                    measureExpansion += avgExpansion;
-                    ++totalExpCount;
-                    break;
-                }
-            }
-            for (let i = 0; i < measure.elements.length; ++i) {
-                measure.elements[i][j].x$ += measureExpansion;
-            }
-        });
-
-        measure.width += measureExpansion;
-        measure.originX += lineExpansion;
-        lineExpansion += measureExpansion;
-    });
-
-    invariant(totalExpCount === expandableCount, "Expected %s expandable items, got %s",
-        expandableCount, totalExpCount);
-    // TODO: center whole bar rests
-
-    return measures$;
-}
-
-export function layoutLine$(options: Options.ILayoutOptions, bounds: Options.ILineBounds,
-        memo$: Options.ILinesLayoutState): Options.ILineLayoutResult {
-    let measures = options.measures;
-    let attributes = options.attributes;
-    let clean$ = memo$.clean$;
-
-    let allModels = _.reduce(measures, function(memo, measure) {
-        let voiceSegments$ = <Measure.ISegment[]> _.flatten(_.map(_.values(measure.parts), part => part.voices));
-        let staffSegments$ = <Measure.ISegment[]> _.flatten(_.map(_.values(measure.parts), part => part.staves));
-
-        let segments = _.filter(voiceSegments$.concat(staffSegments$), s => !!s);
-        return memo.concat(segments);
-    }, []);
-    let line = Ctx.ILine.create(allModels);
-
-    let layouts = _.map(measures, (measure, measureIdx) => {
-        line.barOnLine = measureIdx;
-        if (!(measure.uuid in clean$)) {
-            clean$[measure.uuid] = layoutMeasure({
-                attributes:     attributes,
-                factory:        options.modelFactory,
-                header:         options.header,
-                line:           line,
-                measure:        measure,
-                prevByStaff:    [],    // FIXME: include this.
-                x:              0      // Final offset set recorded in justify(...).
-            });
-        }
-        // Update attributes for next measure
-        attributes = clean$[measure.uuid].attributes;
-        return clean$[measure.uuid];
-    });
-
-    let paddingTop          = _.max(layouts, mre => mre.paddingTop).paddingTop;
-    let top                 = memo$.y$ - paddingTop;
-    let nextPaddingBottom   = _.max(layouts, mre => mre.paddingBottom).paddingBottom;
-    memo$.y$                = top - nextPaddingBottom - bounds.systemLayout.systemDistance;
-    let left                = bounds.left;
-    _.forEach(layouts, layout => {
-        layout.originY      = top;
-        layout.originX      = left;
-        left                = left + layout.width;
-    });
-
-    return justify(options, bounds, layouts);
-}
 
 export function validate$(options$: Options.ILayoutOptions, memo$: Options.ILinesLayoutState): void {
     let factory         = options$.modelFactory;
@@ -358,7 +170,7 @@ export function validate$(options$: Options.ILayoutOptions, memo$: Options.ILine
                     segment.splice(0, 0, createModel(IModel.Type.Attributes));
                 }
                 if (!searchHere(segment, segment.length - 1, IModel.Type.Barline).length) {
-                    const divs = segment.divisions*800 - 
+                    const divs = segment.divisions*800 -
                         _.reduce(segment, (divs, model) => divs + model.divCount, 0);
                     if (divs !== 0) {
                         const spacer = createModel(IModel.Type.Spacer);
@@ -418,7 +230,7 @@ export function layout$(options: Options.ILayoutOptions,
             _.map(neighbourMeasures, m => m.voices.concat(m.staves))
         );
         if (!(measure.uuid in width$)) {
-            width$[measure.uuid] = approximateWidth({
+            width$[measure.uuid] = MeasureProcessor.approximateWidth({
                 attributes:     options.attributes,
                 factory:        options.modelFactory,
                 header:         options.header,
@@ -478,7 +290,7 @@ export function layout$(options: Options.ILayoutOptions,
     lineOpts$[lineOpts$.length - 1].finalLine = true;
 
     return _.map(lineOpts$, function(lineOpt$) {
-        return layoutLine$(lineOpt$, Options.ILineBounds.calculate(lineOpt$.print$,
+        return LineProcessor.layoutLine$(lineOpt$, Options.ILineBounds.calculate(lineOpt$.print$,
                 options.page$), memo$);
     });
 }

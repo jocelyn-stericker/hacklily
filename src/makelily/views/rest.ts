@@ -25,7 +25,6 @@ import invariant            = require("react/lib/invariant");
 let $                       = React.createFactory;
 
 import Dot                  = require("./primitives/dot");
-import Engine               = require("../models/engine");
 import Glyph                = require("./primitives/glyph");
 import SMuFL                = require("../models/smufl");
 
@@ -49,16 +48,13 @@ let countToRest: { [key: number]: string } = {
 /**
  * Renders a rest.
  */
-class Rest extends React.Component<{
-        spec: MusicXML.Note, multipleRest?: MusicXML.MultipleRest}, void> {
+class Rest extends React.Component<{spec: MusicXML.Note, multipleRest?: MusicXML.MultipleRest}, void> {
     render() {
         const spec = this.props.spec;
         const rest = spec.rest;
         invariant(!!spec.rest, "Attempting to render a non-rest with Rest");
         const notehead = countToRest[spec.noteType.duration];
 
-        const bbox = SMuFL.bboxes[notehead];
-        const width = (bbox[0] - bbox[2])*10;
         const x = this.context.originX + spec.defaultX + (spec.relativeX || 0);
         const y = this.context.originY - (spec.defaultY + (spec.relativeY || 0));
         const dotOffset = SMuFL.bboxes[notehead][0]*10 + 6;

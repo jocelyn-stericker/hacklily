@@ -29,7 +29,8 @@ class Accidental extends React.Component<{spec: MusicXML.Accidental}, void> {
     render(): any {
         let spec = this.props.spec;
         const glyphName = this.glyphName();
-        const {originX, originY} = this.context;
+        const originX = this.context.originX;
+        const originY = this.context.originY;
         var accidental = $(Glyph)({
             x: originX + spec.defaultX + (spec.relativeX || 0),
             y: originY - (spec.defaultY + (spec.relativeY || 0)),
