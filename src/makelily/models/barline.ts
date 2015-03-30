@@ -41,10 +41,17 @@ class BarlineModel implements Export.IBarlineModel {
     }
 
     validate$(cursor$: Engine.ICursor): void {
+        if (!this.barStyle) {
+            this.barStyle = {
+                data: NaN
+            };
+        }
         if (!isFinite(this.barStyle.data) || this.barStyle.data === null) {
             this.barStyle.data = MusicXML.BarStyleType.Regular;
         }
-        // todo
+        if (!this.barStyle.color) {
+            this.barStyle.color = "black";
+        }
     }
 
     layout(cursor$: Engine.ICursor): Export.ILayout {
@@ -98,8 +105,8 @@ BarlineModel.prototype.frozenness = Engine.IModel.FrozenLevel.Warm;
 
 module BarlineModel {
     export class Layout implements Export.ILayout {
-        constructor(model: BarlineModel, cursor$: Engine.ICursor) {
-            this.model = Object.create(model, {
+        constructor(origModel: BarlineModel, cursor$: Engine.ICursor) {
+            this.model = Object.create(origModel, {
                 defaultX: {
                     get: () => this.barX
                 }
@@ -116,7 +123,7 @@ module BarlineModel {
             const lineWidths = cursor$.header.defaults.appearance.lineWidths;
 
             const barlineSep = SMuFL.bravura.engravingDefaults.barlineSeparation;
-            switch(model.barStyle.data) {
+            switch(this.model.barStyle.data) {
                 case MusicXML.BarStyleType.LightHeavy:
                     this.lineStarts = [0, lineWidths["light barline"].tenths + barlineSep*10];
                     this.lineWidths = [lineWidths["light barline"].tenths,
@@ -126,8 +133,8 @@ module BarlineModel {
                     break;
                 case MusicXML.BarStyleType.Regular:
                     this.lineStarts = [0];
-                    this.lineWidths = [lineWidths["light barline"].tenths*10];
-                    cursor$.x$ += lineWidths["light barline"].tenths*10;
+                    this.lineWidths = [lineWidths["light barline"].tenths];
+                    cursor$.x$ += lineWidths["light barline"].tenths;
                     break;
                 default:
                     invariant(false, "Not implemented");

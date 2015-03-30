@@ -238,43 +238,47 @@ export function justify(options: Options.ILayoutOptions, bounds: Options.ILineBo
         }, memo);
     }, 0);
 
-    let expansionRemaining: number;
     let avgExpansion: number;
-    if (!expandableCount) {
+    if (!expandableCount) { // case 1: nothing to expand
         avgExpansion = 0;
-        expansionRemaining = 0;
-    } else if (partial) {
+    } else if (partial) { // case 2: expanding, but not full width
         let expansionRemainingGuess = bounds.right - 3 - x;
         let avgExpansionGuess = expansionRemainingGuess / expandableCount;
         let weight = Util.logistic((avgExpansionGuess - bounds.right / 80) / 20) * 2 / 3;
         avgExpansion = (1 - weight)*avgExpansionGuess;
-        expansionRemaining = avgExpansion * expandableCount;
-    } else {
-        expansionRemaining = bounds.right - x;
-        avgExpansion = expansionRemaining/expandableCount;
+    } else { // case 3: expanding or contracting to full width
+        let exp = bounds.right - x;
+        avgExpansion = exp/expandableCount;
     }
 
     let anyExpandable = false;
-    _.forEachRight(measures$, function(measure) {
-        let expansionRemainingHold = expansionRemaining;
-
-        _.forEachRight(measure.elements, function(elementArr) {
-            expansionRemaining = expansionRemainingHold;
-            _.forEachRight(elementArr, function(element) {
-                if (element.expandable) {
+    let totalExpCount = 0;
+    let lineExpansion = 0;
+    _.forEach(measures$, function(measure) {
+        let elementArr = measure.elements[0];
+        let measureExpansion = 0;
+        _.forEach(elementArr, function(element, j) {
+            for (let i = 0; i < measure.elements.length; ++i) {
+                if (measure.elements[i][j].expandable) {
                     anyExpandable = true;
-                    expansionRemaining -= avgExpansion;
+                    measureExpansion += avgExpansion;
+                    ++totalExpCount;
+                    break;
                 }
-                element.x$ += expansionRemaining;
-            });
+            }
+            for (let i = 0; i < measure.elements.length; ++i) {
+                measure.elements[i][j].x$ += measureExpansion;
+            }
         });
 
-        measure.width += (expansionRemainingHold - expansionRemaining);
+        measure.width += measureExpansion;
+        measure.originX += lineExpansion;
+        lineExpansion += measureExpansion;
     });
 
+    invariant(totalExpCount === expandableCount, "Expected %s expandable items, got %s",
+        expandableCount, totalExpCount);
     // TODO: center whole bar rests
-
-    invariant(!anyExpandable || Math.abs(expansionRemaining) < 0.001, "expansionRemaining was not calculated correctly.");
 
     return measures$;
 }
@@ -316,9 +320,11 @@ export function layoutLine$(options: Options.ILayoutOptions, bounds: Options.ILi
     let top                 = memo$.y$ + paddingTop;
     let nextPaddingBottom   = _.max(layouts, mre => mre.paddingBottom).paddingBottom;
     memo$.y$                = top - nextPaddingBottom - bounds.systemLayout.systemDistance;
+    let left                = bounds.left;
     _.forEach(layouts, layout => {
-        layout.originY = top;
-        layout.originX += bounds.left;
+        layout.originY      = top;
+        layout.originX      = left;
+        left                = left + layout.width;
     });
 
     return justify(options, bounds, layouts);
@@ -350,6 +356,16 @@ export function validate$(options$: Options.ILayoutOptions, memo$: Options.ILine
                 }
                 if (!searchHere(segment, 0, IModel.Type.Attributes).length) {
                     segment.splice(0, 0, createModel(IModel.Type.Attributes));
+                }
+                if (!searchHere(segment, segment.length - 1, IModel.Type.Barline).length) {
+                    const divs = segment.divisions*800 - 
+                        _.reduce(segment, (divs, model) => divs + model.divCount, 0);
+                    if (divs !== 0) {
+                        const spacer = createModel(IModel.Type.Spacer);
+                        spacer.divCount = divs;
+                        segment.splice(segment.length, 0, spacer);
+                    }
+                    segment.splice(segment.length, 0, createModel(IModel.Type.Barline));
                 }
             });
 

@@ -64,17 +64,16 @@ class Page extends React.Component<Page.IProps, Page.IState> {
             return systemMargins.leftMargin + pageMargins.leftMargin;
         });
 
-        let staveRights         = _.map(lineLayouts, layout => {
-            return systemMargins.leftMargin + pageMargins.leftMargin +
-                _.reduce(layout, (width, measure) => width + measure.width, 0);
-        });
+        let staveWidths         = _.map(lineLayouts, layout =>
+            _.reduce(layout, (width, measure) => width + measure.width, 0)
+        );
 
-        let staveLineProps      = _.map(_.zip(staveTops, staveLefts, staveRights), (d, i) => {
+        let staveLineProps      = _.map(_.zip(staveTops, staveLefts, staveWidths), (d, i) => {
             return {
                 key:    "stave_" + i,
 
                 lines:  5,
-                width:  d[2 /* right */] - d[1 /* left */],
+                width:  d[2 /* width */],
                 x:      d[1 /* left */],
                 y:      d[0 /* top */]
             };
@@ -84,21 +83,6 @@ class Page extends React.Component<Page.IProps, Page.IState> {
 
         // Make sure our credits are keyed.
         _.forEach(credits, credit => Engine.key$(credit));
-
-        /*--- Models ----------------------------------------------*/
-
-        let layouts = <Engine.IModel.ILayout[]>
-            _.flatten(_.map(lineLayouts, (measureLayouts, lineIdx) =>
-                _.flatten(_.flatten(
-                    _.map(measureLayouts, measure =>
-                        // ...  
-                        _.map(_.flatten(measure.elements), (layout: Engine.IModel.ILayout) => {
-                            //layout.y$ = staveLineProps[lineIdx].y; // TODO Move to Engine.
-                            return layout;
-                        })
-                    )
-                ))
-            ));
 
         /*--- Render ----------------------------------------------*/
 
