@@ -26,6 +26,7 @@ let $                       = React.createFactory;
 
 import { IChord }           from "../models/engine";
 import Chord                = require("../models/chord");
+import Note                 = require("./note");
 import Rest                 = require("./rest");
 import SMuFL                = require("../models/smufl");
 
@@ -79,46 +80,18 @@ class ChordView extends React.Component<{layout: Chord.IChordLayout}, void> {
             });
         }
 
-        return null;
-        // var note = Note({
-        //             accidentals: spec._displayedAccidentals,
-        //             accStrokes: spec.accStrokes,
-        //             direction: this.props.direction || spec.direction,
-        //             dotOffset: dotOffset,
-        //             dotted: spec.displayDots,
-        //             flag: spec.flag,
-        //             hasStem: spec.hasStem,
-        //             isNote: true,
-        //             onLedger: spec.onLedger,
-        //             lowestLine: spec.lowestLine,
-        //             grace: _.map(spec._notes, n => n.grace),
-        //             highestLine: spec.highestLine,
-        //             startingLine: spec.startingLine,
-        //             key: spec.key,
-        //             lyrics: lyrics,
-        //             lines: spec.lines,
-        //             notehead: spec.noteheadGlyph,
-        //             secondaryStroke: spec.color,
-        //             stemHeight: this.props.spec.stemHeight || this.props.stemHeight,
-        //             strokes: spec.strokes,
-        //             tieTo: spec.tieTo && spec.tieTo.x,
-        //             x: spec.x,
-        //             y: spec.y},
-        //         notations
-        //     /* Note */);
+        return React.DOM.g(null,
+            _.map(spec, (spec, idx) => $(Note)({
+                key: "n_" + idx,
 
-        // if (zeroOffsetMode) {
-        //     return React.DOM.g({
-        //                 key: <any> spec.key /* numeric keys are okay */,
-        //                 x: spec.x /* for beam */,
-        //                 y: spec.y /* for beam */,
-        //                 transform: "translate(" + spec.x + "," + spec.y + ")"
-        //             },
-        //         note
-        //     /* React.DOM.g */);
-        // } else {
-        //     return note;
-        // }
+                clef: layout.clef,
+                spec: spec,
+                offsetX: 0,
+                onLedger: false
+            }))
+        );
+
+        throw new Error("not implemented");
     }
 
     getChildContext() {
@@ -128,68 +101,6 @@ class ChordView extends React.Component<{layout: Chord.IChordLayout}, void> {
         };
     }
 }
-
-/*
-            this.props.hasStem && NoteStem({
-                x: this.props.x,
-                y: this.props.y,
-                key: "_2",
-                direction: direction,
-                line: this.props.startingLine,
-                stroke: this.props.secondaryStroke,
-                height: this.props.stemHeight,
-                grace: this.props.grace[0],
-                notehead: this.props.notehead
-            }),
-            this.props.flag && Flag({
-                key: "_3",
-                x: this.props.x,
-                y: this.props.y,
-                line: this.props.startingLine,
-                stroke: this.props.secondaryStroke,
-                stemHeight: this.props.stemHeight,
-                stemWidth: 1.4,
-                flag: this.props.flag,
-                notehead: this.props.notehead,
-                grace: this.props.grace[0],
-                direction: direction
-            }),
-            this.tie(),
-            this.props.lyrics
-
-    ledgerLines(): any {
-        if (!this.props.onLedger) {
-            return false;
-        }
-        var ret: Array<React.ReactElement<any>> = [];
-        var lowest = this.props.lowestLine;
-        var highest = this.props.highestLine;
-        if (lowest < 0.5) {
-            ret = ret.concat(_.times(Math.floor(1 - lowest), idx =>
-                LedgerLine({
-                    key: idx + "low",
-                    line: -idx,
-                    notehead: this.props.notehead,
-                    x: this.props.x,
-                    y: this.props.y
-                })
-            ));
-        }
-        if (highest > 5.5) {
-            ret = ret.concat(_.times(Math.floor(highest - 5), idx =>
-                LedgerLine({
-                    key: idx + "high",
-                    line: 6 + idx,
-                    notehead: this.props.notehead,
-                    x: this.props.x,
-                    y: this.props.y
-                })
-            ));
-        }
-        invariant(ret.length !== 0, "Invalid ledger line");
-        return ret;
-    }
-*/
 
 module ChordView {
     export var contextTypes = <any> {
