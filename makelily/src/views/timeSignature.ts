@@ -40,7 +40,7 @@ class TimeSignature extends React.Component<{spec: MusicXML.Time}, void> {
             if (beats === 4 && beatType === 4) {
                 return $(Glyph)({
                     x: this.context.originX + spec.defaultX + (spec.relativeX || 0),
-                    y: this.context.pageHeight - (spec.defaultY + (spec.relativeY || 0)),
+                    y: this.context.originY - (spec.defaultY + (spec.relativeY || 0)),
                     fill: spec.color,
                     glyphName: "timeSigCommon"
                 });

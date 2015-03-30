@@ -90,7 +90,6 @@ module IModel {
     export enum Type {
         START_OF_LAYOUT_ELEMENTS    = 0,
         Print                       = 10,           // Implements MusicXML.Print
-        Barline                     = 20,           // Implements MusicXML.Barline
         Grouping                    = 30,           // Implements MusicXML.Grouping
         FiguredBass                 = 40,           // Implements MusicXML.FiguredBass
         END_OF_LAYOUT_ELEMENTS      = 99,
@@ -108,6 +107,8 @@ module IModel {
         BeamGroup                   = 210,          // Does not implement a MusicXML API
         Chord                       = 220,          // Like MusicXML.Note[]
         END_OF_VOICE_ELEMENTS       = 299,
+
+        Barline                     = 399,          // Implements MusicXML.Barline
 
         Unknown                     = 1000
     };
@@ -233,6 +234,8 @@ module IModel {
                     div2, pri2);
                 invariant(!!item2, "div1 must be defined and have a valid division (is %s) & renderClass (is %s)",
                     div1, pri1);
+                invariant(pri1 === pri2, "invalid priority");
+                invariant(div1 === div2, "invalid division");
                 switch(segment2$[s2_idx].mergePolicy) {
                     case HMergePolicy.Max:
                         x = Math.max(item1.x, item2.x$);

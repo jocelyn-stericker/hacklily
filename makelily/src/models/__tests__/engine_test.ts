@@ -262,7 +262,7 @@ describe("[engine.ts]", function() {
                 layouts);
 
             expect(justified[0].elements[0][0].x$).to.be.closeTo(layouts[0].elements[0][0].x$, 0.05);
-            expect(justified[0].elements[0][2].x$).to.be.closeTo(63.2, 0.1);
+            expect(justified[0].elements[0][2].x$).to.be.closeTo(106.40, 0.1);
             expect(justified[0].width).to.be.closeTo(justified[0].elements[0][4].x$ - justified[0].elements[0][0].x$ + 10, 0.01);
             _.forEach(justified, function(just, idx) {
                 expect(just.width).to.not.equal(layouts[idx].width);
@@ -328,7 +328,7 @@ describe("[engine.ts]", function() {
         });
     });
     describe("validate$", function() {
-        it("creates attributes if missing", function() {
+        it("creates attributes and barline if missing", function() {
             var calledCount = 0;
 
             var createAttributesChordFactory: Engine.IModel.IFactory = {
@@ -419,7 +419,7 @@ describe("[engine.ts]", function() {
 
             Engine.validate$(contextOptions, memo$);
 
-            expect(calledCount).to.equal(1);
+            expect(calledCount).to.equal(3);
         });
     });
 });

@@ -203,8 +203,16 @@ export function reduce(spec: ILayoutOpts): Measure.IMeasureLayout {
 
             do {
                 if (divisionPerStaff$[staffIdx] <= cursor$.division$) {
-                    // Process a staff model within a voice context.
                     let nextStaffEl = staffMeasure[staffIdx][voiceStaves$[staffIdx].length];
+
+                    // We can mostly ignore priorities here, since except for one exception,
+                    // staff segments are more important than voice segments. The one exception
+                    // is barlines:
+                    if (spec.factory.modelHasType(nextStaffEl, IModel.Type.Barline) && divisionPerStaff$[staffIdx] === cursor$.division$) {
+                        break;
+                    }
+
+                    // Process a staff model within a voice context.
                     pushStaffSegment(staffIdx, nextStaffEl);
                 } else {
                     break;

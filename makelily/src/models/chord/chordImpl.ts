@@ -286,7 +286,7 @@ module ChordModelImpl {
                             return (line - 3)*10;
                         }
 
-                        invariant(false, "Not implemented.");
+                        // invariant(false, "Not implemented.");
                         return NaN;
                     }
                 }
