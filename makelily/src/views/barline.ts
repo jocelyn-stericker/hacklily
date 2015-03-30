@@ -18,14 +18,12 @@
 
 "use strict";
 
-import MusicXML             = require("musicxml-interfaces");
 import React                = require("react");
 import _                    = require("lodash");
 var $                       = React.createFactory;
 
 import Barline              = require("../models/barline");
 import Line                 = require("./primitives/line");
-import SMuFL                = require("../models/smufl");
 
 /**
  * Renders a full-stave-height barline at (x,y).
@@ -33,11 +31,11 @@ import SMuFL                = require("../models/smufl");
  */
 class BarlineView extends React.Component<{layout: Barline.ILayout}, {}> {
     render(): any {
-        const {originX, originY} = this.context;
+        const originX = this.context.originX;
+        const originY = this.context.originY;
 
         const layout = this.props.layout;
         const model = layout.model;
-        const defaults = SMuFL.bravura.engravingDefaults;
 
         const x = originX + model.defaultX;
         const y = originY - model.defaultY;

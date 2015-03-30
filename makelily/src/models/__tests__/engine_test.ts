@@ -22,106 +22,17 @@
 
 "use strict";
 
-import Engine           = require("../engine");
+import Engine                   = require("../engine");
 
-import MusicXML         = require("musicxml-interfaces");
-import _                = require("lodash");
-import chai             = require("chai");
+import MusicXML                 = require("musicxml-interfaces");
+import _                        = require("lodash");
+import chai                     = require("chai");
 
-var expect              = chai.expect;
+var expect                      = chai.expect;
 
-import ETestUtil        = require("../engine/__tests__/etestutil");
+import ETestUtil                = require("../engine/__tests__/etestutil");
 
 describe("[engine.ts]", function() {
-    describe("layoutMeasure", function() {
-        it("lays out a case with multiple voices", function() {
-            var staffSegments = [
-                null,
-                ETestUtil.createFakeStaffSegment(4, 4, 1)
-            ];
-
-            var voiceSegments = [
-                null,
-                ETestUtil.createFakeVoiceSegment(2, 6, 1),
-                ETestUtil.createFakeVoiceSegment(1, 7, 2)
-            ];
-
-            var layout = Engine.layoutMeasure({
-                header:         null,
-                attributes:     null,
-                maxX:           1000,
-                minX:           100,
-                measure: {
-                    idx:        0,
-                    number:     "1",
-                    parts: {
-                        "P1": {
-                            voices:     voiceSegments,
-                            staves:     staffSegments
-                        }
-                    },
-                    uuid:       248,
-                    width:      NaN
-                },
-                prevByStaff:    [],
-                x:              100,
-                line:           {
-                    barOnLine:      0,
-                    shortestCount:  42
-                },
-                factory:        ETestUtil.fakeAttributeChordFactory
-            });
-            // We've tested this exact case in ISegment.layout$, so we can be
-            // a bit soft here.
-            expect(layout.paddingBottom).to.equal(0);
-            expect(layout.paddingTop).to.equal(0);
-            expect(layout.elements[0].length).to.equal(5);
-            expect(layout.elements[0][4].x$).to.equal(190);
-            expect(layout.elements[0][0].x$).to.equal(100);
-            expect(layout.width).to.equal(100);
-        });
-    });
-    describe("approximateWidth", function() {
-        it("approximates mid-line width", function() {
-            var staffSegments = [
-                null,
-                ETestUtil.createFakeStaffSegment(4, 4, 1)
-            ];
-
-            var voiceSegments = [
-                null,
-                ETestUtil.createFakeVoiceSegment(2, 6, 1),
-                ETestUtil.createFakeVoiceSegment(1, 7, 2)
-            ];
-
-            var width = Engine.approximateWidth({
-                attributes:     null,
-                maxX:           1000,
-                minX:           100,
-                header:         null,
-                measure: {
-                    idx:        0,
-                    number:     "1",
-                    parts: {
-                        "P1": {
-                            voices: voiceSegments,
-                            staves: staffSegments
-                        }
-                    },
-                    uuid:       1248,
-                    width:      NaN
-                },
-                prevByStaff:    [],
-                x:              100,
-                line:           {
-                    barOnLine:      0,
-                    shortestCount:  42
-                },
-                factory:        ETestUtil.fakeAttributeChordFactory
-            });
-            expect(width).to.equal(90); // 100 - 10 for attribute 1. See ETestUtil.createFakeStaffSegment
-        });
-    });
     describe("Options.ILineBounds.calculate", function() {
         it("works", function() {
             var spec1: MusicXML.Print = {
@@ -183,89 +94,6 @@ describe("[engine.ts]", function() {
                         rightMargin: 0
                     }
                 }
-            });
-        });
-    });
-    describe("justify", function() {
-        it("partially justifies multiple voices and measures on the final line", function() {
-            var segments = [
-                {
-                    staves: [null, ETestUtil.createFakeStaffSegment(4, 4, 1)],
-                    voices: [
-                        null,
-                        ETestUtil.createFakeVoiceSegment(2, 6, 1),
-                        ETestUtil.createFakeVoiceSegment(1, 7, 2)
-                    ]
-                },
-                {
-                    staves: [null, ETestUtil.createFakeStaffSegment(4, 4, 1)],
-                    voices: [
-                        null,
-                        ETestUtil.createFakeVoiceSegment(1, 7, 1),
-                        ETestUtil.createFakeVoiceSegment(2, 6, 2)
-                    ]
-                }
-            ];
-
-            var layouts = _.map(segments, (seg, idx) => Engine.layoutMeasure({
-                attributes:     null,
-                maxX:           1000,
-                minX:           0,
-                measure: {
-                    idx:        idx,
-                    number:     (idx + 1) + "",
-                    parts: {
-                        "P1": {
-                            voices: seg.voices,
-                            staves: seg.staves
-                        }
-                    },
-                    uuid:       1248 + idx,
-                    width:      NaN
-                },
-                header:         null,
-                prevByStaff:    [],
-                x:              0,
-                line:           null,
-                factory:        ETestUtil.fakeAttributeChordFactory
-            }));
-
-            var padding = 12;
-
-            var justified = Engine.justify(
-                {
-                    attributes: null,
-                    finalLine: true,
-                    measures: new Array(2), // TODO: if justify uses measures, this will have to be given a proper value.
-                    header: null,
-                    page$: 0,
-                    print$: <any> {
-                        pageLayout: {
-                            pageHeight: 1000,
-                            pageWidth: 1000,
-                            pageMargins: [{
-                                leftMargin: padding,
-                                rightMargin: padding,
-                                bottomMargin: padding,
-                                topMargin: padding,
-                                type: MusicXML.OddEvenBoth.Both
-                            }]
-                        }
-                    },
-                    modelFactory: ETestUtil.fakeAttributeChordFactory
-                },
-                {
-                    left: 12,
-                    right: 1000 - 12,
-                    systemLayout: null
-                },
-                layouts);
-
-            expect(justified[0].elements[0][0].x$).to.be.closeTo(layouts[0].elements[0][0].x$, 0.05);
-            expect(justified[0].elements[0][2].x$).to.be.closeTo(106.40, 0.1);
-            expect(justified[0].width).to.be.closeTo(justified[0].elements[0][4].x$ - justified[0].elements[0][0].x$ + 10, 0.01);
-            _.forEach(justified, function(just, idx) {
-                expect(just.width).to.not.equal(layouts[idx].width);
             });
         });
     });

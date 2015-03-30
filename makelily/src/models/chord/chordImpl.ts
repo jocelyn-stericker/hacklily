@@ -196,11 +196,12 @@ class ChordModelImpl implements ChordModel.IChordModel {
     }
 
     private _implyCountFromPerformanceData(cursor$: Engine.ICursor) {
-        const {times, divisions} = cursor$.staff.attributes;
+        const times = cursor$.staff.attributes.times;
+        const divisions = cursor$.staff.attributes.divisions;
         const tsComplex = times[0];
         const ts = {
             beats: _.reduce(tsComplex.beats, (sum, beat) => sum + parseInt(beat, 10), 0),
-            beatType: tsComplex.beatTypes[0], // FIXME
+            beatType: tsComplex.beatTypes[0] // FIXME
         };
 
         var factor = ts.beatType/4;

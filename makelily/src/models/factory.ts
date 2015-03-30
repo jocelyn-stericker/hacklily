@@ -20,6 +20,7 @@ import invariant    = require("react/lib/invariant");
 import _            = require("lodash");
 
 import Engine       = require("./engine");
+import Util         = require("./engine/util");
 
 class Factory implements Engine.IModel.IFactory {
     constructor(models: Array<(constructors: {
@@ -66,7 +67,7 @@ class Factory implements Engine.IModel.IFactory {
 
     fromSpec(spec: any): Engine.IModel {
         if (spec instanceof Object) {
-            spec = Engine.Util.cloneObject(spec);
+            spec = Util.cloneObject(spec);
         } else if (typeof spec === "string" || spec instanceof String) {
             spec = JSON.parse(<string> spec);
         }

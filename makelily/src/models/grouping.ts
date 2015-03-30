@@ -20,6 +20,7 @@ import MusicXML         = require("musicxml-interfaces");
 import _                = require("lodash");
 
 import Engine           = require("./engine");
+import Util             = require("./engine/util");
 
 class GroupingModel implements Export.IGroupingModel {
 
@@ -116,7 +117,7 @@ function deepAssign<T>(a: T, b: T):T {
         }
         return (<any>retArr);
     } else if (a instanceof Object || b instanceof Object) {
-        var ret: T = a ? Engine.Util.cloneObject(a) : (<T>{});
+        var ret: T = a ? Util.cloneObject(a) : (<T>{});
         for (var key in b) {
             if (b.hasOwnProperty(key)) {
                 (<any>ret)[key] = deepAssign((<any>ret)[key], (<any>b)[key]);

@@ -42,7 +42,6 @@ const flats: { [key: string]: Array<number> } = {
     tenor: [3.5, 5, 3, 4.5, 2.5, 4, 2]
 };
 
-
 /**
  * Renders a key signature.
  */
@@ -57,7 +56,8 @@ class KeySignature extends React.Component<{spec: MusicXML.Key; clef: MusicXML.C
      * Returns an array representing the position and glyphName of each accidental.
      */
     getAccidentals(): MusicXML.Accidental[] {
-        const {spec, clef} = this.props;
+        const spec = this.props.spec;
+        const clef = this.props.clef;
         const idxes = _.times(Math.min(7, Math.abs(spec.fifths)), i => (i + Math.max(0, Math.abs(spec.fifths) - 7))%7);
 
         return _.map(idxes, i => makeAccidental(i, spec.fifths >= 0));

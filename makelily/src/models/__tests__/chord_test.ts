@@ -39,6 +39,11 @@ function getAttributes(): MusicXML.Attributes {
             beats: ["4"],
             beatTypes: [4],
             senzaMisura: null
+        }],
+        clefs: [{
+            clefOctaveChange: null,
+            sign: "G",
+            line: 2
         }]
     };
 }

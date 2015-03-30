@@ -42,6 +42,23 @@ export function key$(t$: any) {
     }
 }
 
+export interface IMeasureLayoutOptions {
+    attributes:     MusicXML.Attributes;
+    header:         MusicXML.ScoreHeader;
+    line:           Ctx.ILine;
+    measure:        Measure.IMutableMeasure;
+    prevByStaff:    IModel[];
+    /** Starts at 0. */
+    x:              number;
+
+    /** @private approximate minimum width is being calculated */
+    _approximate?:  boolean;
+
+    /** @private does not have own attributes (true if approximate or grace notes) */
+    _detached?:     boolean;
+
+    factory:        IModel.IFactory;
+}
 
 /**
  * Given a cursor skeleton, creates a detached mutable cursor.
@@ -298,4 +315,57 @@ export interface ILayoutOpts {
     _approximate?:  boolean;
     _detached?:     boolean;
     _validateOnly?: boolean;
+}
+
+/** 
+ * Given the context and constraints given, creates a possible layout for items within a measure.
+ * 
+ * @param opts structure with __normalized__ voices and staves
+ * @returns an array of staff and voice layouts with an undefined order
+ */
+export function layoutMeasure(opts: IMeasureLayoutOptions): Measure.IMeasureLayout {
+    let measureCtx = Ctx.IMeasure.detach(opts.measure, opts.x);
+
+    let voices = <Measure.ISegment[]> _.flatten(_.map(_.values(opts.measure.parts), part => part.voices));
+    let staves = <Measure.ISegment[]> _.flatten(_.map(_.values(opts.measure.parts), part => part.staves));
+
+    let segments = _.filter(voices.concat(staves), s => !!s);
+
+    let line = opts.line;
+
+    return reduce({
+        attributes:     opts.attributes,
+        factory:        opts.factory,
+        header:         opts.header,
+        line:           line,
+        measure:        measureCtx,
+        prevByStaff:    opts.prevByStaff,
+        segments:       segments,
+
+        _approximate:   opts._approximate,
+        _detached:      opts._detached
+    });
+}
+
+/** 
+ * Given the context and constraints given, estimates a width. These widths do not
+ * 
+ * @param opts structure with __normalized__ voices and staves
+ * @returns an approximate width for a measure that is not the first on a line.
+ */
+export function approximateWidth(opts: IMeasureLayoutOptions): number {
+    invariant(isNaN(opts.measure.width) || opts.measure.width === null,
+        "Engine.approximateWidth(...) must be passed a measure without an exact width.\n" +
+        "Instead, it was passed a measure with opts.measure.width === %s.\n" +
+        "This most likely means a measure was modified in a way that requires an updated " +
+        "layout, but its \"FrozenEngraved\" status was not cleared.", opts.measure.width);
+
+    invariant(!!opts.line, "An approximate line needs to be given to approximateWidth");
+
+    opts = <IMeasureLayoutOptions> _.extend({
+            _approximate: true,
+            _detached: true
+        }, opts);
+    let layout = layoutMeasure(opts);
+    return layout.width;
 }
