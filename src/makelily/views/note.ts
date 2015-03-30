@@ -24,75 +24,42 @@ import _                    = require("lodash");
 import invariant            = require("react/lib/invariant");
 let $                       = React.createFactory;
 
+import Dot                  = require("./primitives/dot");
 import Engine               = require("../models/engine");
-import NoteHead             = require("./noteHead");
+import Notehead             = require("./notehead");
 
-let countToNotehead: { [key: number]: string } = {
-    [MusicXML.Count.Maxima]:    "noteheadDoubleWhole",
-    [MusicXML.Count.Long]:      "noteheadDoubleWhole",
-    [MusicXML.Count.Breve]:     "noteheadDoubleWhole",
-    [MusicXML.Count.Whole]:     "noteheadWhole",
-    [MusicXML.Count.Half]:      "noteheadHalf",
-    [MusicXML.Count.Quarter]:   "noteheadBlack",
-    [MusicXML.Count.Eighth]:    "noteheadBlack",
-    [MusicXML.Count._16th]:     "noteheadBlack",
-    [MusicXML.Count._32nd]:     "noteheadBlack",
-    [MusicXML.Count._64th]:     "noteheadBlack",
-    [MusicXML.Count._128th]:    "noteheadBlack",
-    [MusicXML.Count._256th]:    "noteheadBlack",
-    [MusicXML.Count._512th]:    "noteheadBlack",
-    [MusicXML.Count._1024th]:   "noteheadBlack"
-};
-
-class Note extends React.Component<{clef: MusicXML.Clef, spec: MusicXML.Note, offsetX: number}, void> {
+class Note extends React.Component<{clef: MusicXML.Clef, spec: MusicXML.Note, offsetX: number,
+        onLedger: boolean}, void> {
     render() {
         const {spec, clef, offsetX} = this.props;
         const pitch = spec.pitch;
         const stem = spec.stem;
         const direction = stem.type === MusicXML.StemType.Up ? 1 : -1; // TODO: two other options
-        const notehead = countToNotehead[spec.noteType.duration];
 
         invariant(!!pitch, "Not implemented");
 
-        const line =
-                Engine.IChord.getClefOffset(clef) +
-                ((pitch.octave || 0) - 3) * 3.5 +
-                Engine.IChord.pitchOffsets[pitch.step];
         var i: number;
 
         return React.DOM.g(null,
-            NoteHead({
+            $(Notehead)({
                 key: "_0",
-                x: spec.defaultX + (spec.relativeX || 0) + (offsetX || 0),
-                y: context.originY - (spec.defaultY + (spec.relativeY || 0)),
-                line: line,
-                stroke: this.props.strokes[idx],
-                grace: this.props.grace[idx],
-                notehead: this.props.notehead
+                spec: {
+                    defaultX: 0,
+                    defaultY: spec.defaultY,
+                    color: spec.color,
+                    type: MusicXML.NoteheadType.Normal // FIXME
+                },
+                duration: spec.noteType.duration
             }),
-            this.props.dotted ? _.times(this.props.dotted, idx => Dot({
-                idx: idx,
+            spec.dots ? _.map(spec.dots, (dot, idx) => $(Dot)({
                 key: "_1_" + idx,
-                stroke: this.props.strokes[0],
+                fill: dot.color,
                 radius: 2.4,
-                x: this.props.x + this.props.dotOffset,
-                y: this.props.y,
-                line: line
+                x: 0, // TODO
+                y: 0 // TODO
             })) : null,
             this.accidental()
         /* React.DOM.g */);
-    }
-
-    getDefaultProps(): Note.IProps {
-        return <Note.IProps> {
-            x: 0,
-            y: 0,
-            lines: 3,
-            dotted: null,
-            hasStem: true,
-            accidentals: null,
-            strokes: ["black"]
-        };
     }
 
     accidentalSpacing() {
@@ -103,104 +70,107 @@ class Note extends React.Component<{clef: MusicXML.Clef, spec: MusicXML.Note, of
         }
     }
     accidental(): any {
-        if (this.props.accidentals === null) {
+        let spec = this.props.spec;
+        if (!spec.accidental) {
             return false;
         }
 
-        var accidentals = this.props.accidentals;
-        accidentals = accidentals.length ? accidentals : [accidentals];
+        return null;
+        // var accidentals = this.props.accidentals;
+        // accidentals = accidentals.length ? accidentals : [accidentals];
 
-        var l = this.props.lines;
-        var glyphOffset = 0;
+        // var l = this.props.lines;
+        // var glyphOffset = 0;
 
-        return _.map(accidentals, (acc: any, idx: number) => {
-            var paren = false;
-            if (typeof acc === "string") {
-                paren = !!~acc.indexOf("p");
-                acc = acc.replace("p", "")*1;
-            }
-            if (!isNaN(<any>acc)) {
-                var glyphName: string;
-                switch(acc) {
-                    // Standard
-                    case 2:
-                        glyphName = "accidentalDoubleSharp";
-                        glyphOffset += 14;
-                        break;
-                    case 1:
-                        glyphName = "accidentalSharp";
-                        break;
-                    case 0:
-                        glyphName = "accidentalNatural";
-                        break;
-                    case -1:
-                        glyphName = "accidentalFlat";
-                        break;
-                    case -2:
-                        glyphName = "accidentalDoubleFlat";
-                        glyphOffset += 18;
-                        break;
+        // return _.map(accidentals, (acc: any, idx: number) => {
+        //     var paren = false;
+        //     if (typeof acc === "string") {
+        //         paren = !!~acc.indexOf("p");
+        //         acc = acc.replace("p", "")*1;
+        //     }
+        //     if (!isNaN(<any>acc)) {
+        //         var glyphName: string;
+        //         switch(acc) {
+        //             // Standard
+        //             case 2:
+        //                 glyphName = "accidentalDoubleSharp";
+        //                 glyphOffset += 14;
+        //                 break;
+        //             case 1:
+        //                 glyphName = "accidentalSharp";
+        //                 break;
+        //             case 0:
+        //                 glyphName = "accidentalNatural";
+        //                 break;
+        //             case -1:
+        //                 glyphName = "accidentalFlat";
+        //                 break;
+        //             case -2:
+        //                 glyphName = "accidentalDoubleFlat";
+        //                 glyphOffset += 18;
+        //                 break;
 
-                    // Stein-Zimmermann
-                    case -0.5:
-                        glyphName = "accidentalQuarterToneFlatStein";
-                        break;
-                    case -1.5:
-                        glyphName = "accidentalNarrowReversedFlatAndFlat";
-                        glyphOffset += 18;
-                        break;
-                    case 0.5:
-                        glyphName = "accidentalQuarterToneSharpStein";
-                        break;
-                    case 1.5:
-                        glyphName = "accidentalThreeQuarterTonesSharpStein";
-                        glyphOffset += 18;
-                        break;
+        //             // Stein-Zimmermann
+        //             case -0.5:
+        //                 glyphName = "accidentalQuarterToneFlatStein";
+        //                 break;
+        //             case -1.5:
+        //                 glyphName = "accidentalNarrowReversedFlatAndFlat";
+        //                 glyphOffset += 18;
+        //                 break;
+        //             case 0.5:
+        //                 glyphName = "accidentalQuarterToneSharpStein";
+        //                 break;
+        //             case 1.5:
+        //                 glyphName = "accidentalThreeQuarterTonesSharpStein";
+        //                 glyphOffset += 18;
+        //                 break;
 
-                    default:
-                        invariant(false, "Invalid accidental");
-                }
-                if (paren) {
-                    if (glyphOffset >= 18) {
-                        glyphOffset += 5;
-                    } else {
-                        glyphOffset = 18;
-                    }
-                }
-                return Accidental({
-                    x: this.props.x - (glyphOffset || this.accidentalSpacing())*(this.props.grace[idx] ? 0.6 : 1.0),
-                    y: this.props.y,
-                    grace: this.props.grace[idx],
-                    stroke: this.props.accStrokes[idx],
-                    line: l[idx],
-                    key: "acc_" + idx,
-                    idx: idx,
-                    paren: paren,
-                    accidental: glyphName
-                });
-            } else {
-                return null;
-            }
-        });
+        //             default:
+        //                 invariant(false, "Invalid accidental");
+        //         }
+        //         if (paren) {
+        //             if (glyphOffset >= 18) {
+        //                 glyphOffset += 5;
+        //             } else {
+        //                 glyphOffset = 18;
+        //             }
+        //         }
+        //         return Accidental({
+        //             x: this.props.x - (glyphOffset || this.accidentalSpacing())*(this.props.grace[idx] ? 0.6 : 1.0),
+        //             y: this.props.y,
+        //             grace: this.props.grace[idx],
+        //             stroke: this.props.accStrokes[idx],
+        //             line: l[idx],
+        //             key: "acc_" + idx,
+        //             idx: idx,
+        //             paren: paren,
+        //             accidental: glyphName
+        //         });
+        //     } else {
+        //         return null;
+        //     }
+        // });
     }
     tie(): any {
-        var Slur: typeof SlurType = require("./slur"); // Recursive.
-        if (!this.props.tieTo) {
-            return null;
-        }
+        return null;
+        // var Slur: typeof SlurType = require("./slur"); // Recursive.
+        // if (!this.props.tieTo) {
+        //     return null;
+        // }
 
-        var fullWidth = this.props.tieTo - this.props.x;
-        return React.createElement(Slur, {
-            key: 0,
-            spec: <SlurModel>{
-                direction: -this.props.direction,
-                x: this.props.x + fullWidth/8 + 6,
-                y: this.props.y,
-                lines1: [this.props.startingLine],
-                lines2: [this.props.startingLine],
-                slurW: fullWidth*0.75
-            }
-        });
+        // var fullWidth = this.props.tieTo - this.props.x;
+        // return React.createElement(Slur, {
+        //     key: 0,
+        //     spec: <SlurModel>{
+        //         direction: -this.props.direction,
+        //         x: this.props.x + fullWidth/8 + 6,
+        //         y: this.props.y,
+        //         lines1: [this.props.startingLine],
+        //         lines2: [this.props.startingLine],
+        //         slurW: fullWidth*0.75
+        //     }
+        // });
     }
 };
 
@@ -209,5 +179,68 @@ module Note {
         originY:         React.PropTypes.number.isRequired
     };
 }
+
+/*
+            this.props.hasStem && NoteStem({
+                x: this.props.x,
+                y: this.props.y,
+                key: "_2",
+                direction: direction,
+                line: this.props.startingLine,
+                stroke: this.props.secondaryStroke,
+                height: this.props.stemHeight,
+                grace: this.props.grace[0],
+                notehead: this.props.notehead
+            }),
+            this.props.flag && Flag({
+                key: "_3",
+                x: this.props.x,
+                y: this.props.y,
+                line: this.props.startingLine,
+                stroke: this.props.secondaryStroke,
+                stemHeight: this.props.stemHeight,
+                stemWidth: 1.4,
+                flag: this.props.flag,
+                notehead: this.props.notehead,
+                grace: this.props.grace[0],
+                direction: direction
+            }),
+            this.tie(),
+            this.props.lyrics
+
+    ledgerLines(): any {
+        if (!this.props.onLedger) {
+            return false;
+        }
+        var ret: Array<React.ReactElement<any>> = [];
+        var lowest = this.props.lowestLine;
+        var highest = this.props.highestLine;
+        if (lowest < 0.5) {
+            ret = ret.concat(_.times(Math.floor(1 - lowest), idx =>
+                LedgerLine({
+                    key: idx + "low",
+                    line: -idx,
+                    notehead: this.props.notehead,
+                    x: this.props.x,
+                    y: this.props.y
+                })
+            ));
+        }
+        if (highest > 5.5) {
+            ret = ret.concat(_.times(Math.floor(highest - 5), idx =>
+                LedgerLine({
+                    key: idx + "high",
+                    line: 6 + idx,
+                    notehead: this.props.notehead,
+                    x: this.props.x,
+                    y: this.props.y
+                })
+            ));
+        }
+        invariant(ret.length !== 0, "Invalid ledger line");
+        return ret;
+    }
+*/
+
 
 export = Note;

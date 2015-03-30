@@ -317,7 +317,7 @@ export function layoutLine$(options: Options.ILayoutOptions, bounds: Options.ILi
     });
 
     let paddingTop          = _.max(layouts, mre => mre.paddingTop).paddingTop;
-    let top                 = memo$.y$ + paddingTop;
+    let top                 = memo$.y$ - paddingTop;
     let nextPaddingBottom   = _.max(layouts, mre => mre.paddingBottom).paddingBottom;
     memo$.y$                = top - nextPaddingBottom - bounds.systemLayout.systemDistance;
     let left                = bounds.left;

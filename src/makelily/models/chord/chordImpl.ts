@@ -176,6 +176,8 @@ class ChordModelImpl implements ChordModel.IChordModel {
         });
     }
 
+    stem: MusicXML.Stem;
+
     private _count: MusicXML.Count;
     private _timeModification: MusicXML.TimeModification;
 
@@ -269,28 +271,23 @@ module ChordModelImpl {
                         if (note.defaultY) {
                             return note.defaultY;
                         }
-                        let line: number;
-                        let clef = cursor$.staff.attributes.clefs[cursor$.staff.idx];
-
-                        if (note.rest) {
-                            if (note.rest.displayStep) {
-                                line =
-                                    Engine.IChord.getClefOffset(clef) +
-                                    ((parseInt(note.rest.displayOctave, 10) || 0) - 3) * 3.5 +
-                                    Engine.IChord.pitchOffsets[note.rest.displayStep];
-                            } else if (note.noteType.duration === MusicXML.Count.Whole) {
-                                line = 4;
-                            } else {
-                                line = 3;
-                            }
-                            return (line - 3)*10;
-                        }
-
-                        // invariant(false, "Not implemented.");
-                        return NaN;
+                        const clef = cursor$.staff.attributes.clefs[cursor$.staff.idx];
+                        return (note.lineForClef(clef) - 3)*10;
+                    }
+                },
+                stem: {
+                    get: () => {
+                        // TODO: guess direction
+                        return model.stem || {
+                            type: MusicXML.StemType.Up // TODO
+                        };
                     }
                 }
             }));
+            _.forEach(this.model, note => {
+                cursor$.maxPaddingTop$ = Math.max(cursor$.maxPaddingTop$, note.defaultY - 10);
+                cursor$.maxPaddingBottom$ = Math.max(cursor$.maxPaddingBottom$, note.defaultY - 30);
+            });
             this.x$ = cursor$.x$;
             this.division = cursor$.division$;
 
