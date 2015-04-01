@@ -37,6 +37,11 @@ import ChordModelImpl   = require("./chord/chordImpl"); // @cyclic
 
 module ChordModel {
     export interface IChordModel extends Engine.IModel, Engine.IChord {
+        satieStem: {
+            direction:  number;
+            stemHeight: number;
+            stemStart:  number;
+        };
     }
 
     export interface IChordLayout extends Engine.IModel.ILayout {

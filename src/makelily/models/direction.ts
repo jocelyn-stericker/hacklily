@@ -115,7 +115,7 @@ class DirectionModel implements Export.IDirectionModel {
     }
 
     toXML(): string {
-        return MusicXML.directionToXML(this);
+        return MusicXML.serialize.direction(this);
     }
 
     inspect() {

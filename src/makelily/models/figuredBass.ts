@@ -114,7 +114,7 @@ class FiguredBassModel implements Export.IFiguredBassModel {
     }
 
     toXML(): string {
-        return MusicXML.figuredBassToXML(this);
+        return MusicXML.serialize.figuredBass(this);
     }
 
     inspect() {

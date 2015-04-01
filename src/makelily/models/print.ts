@@ -92,7 +92,7 @@ class PrintModel implements Export.IPrintModel {
     }
 
     toXML(): string {
-        return MusicXML.printToXML(this);
+        return MusicXML.serialize.print(this);
     }
 
     inspect() {

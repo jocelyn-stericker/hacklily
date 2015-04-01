@@ -20,7 +20,6 @@ import MusicXML         = require("musicxml-interfaces");
 import _                = require("lodash");
 
 import ChordModelImpl   = require("./chordImpl"); // @cyclic
-import Engine           = require("../engine");
 
 /**
  * Represents a note in a ChordImpl.
@@ -113,7 +112,7 @@ class NoteImpl implements MusicXML.Note {
     }
 
     toXML() {
-        return MusicXML.noteToXML(this);
+        return MusicXML.serialize.note(this);
     }
 
     inspect() {
@@ -292,28 +291,6 @@ class NoteImpl implements MusicXML.Note {
     timeOnly:           string;
 
     /*---- Util -----------------------------------------------------------------------------*/
-
-    lineForClef(clef: MusicXML.Clef) {
-        const pitch = this.pitch;
-
-        if (this.rest) {
-            let line: number;
-            if (this.rest.displayStep) {
-                line =
-                    Engine.IChord.getClefOffset(clef) +
-                    ((parseInt(this.rest.displayOctave, 10) || 0) - 3) * 3.5 +
-                    Engine.IChord.pitchOffsets[this.rest.displayStep];
-            } else if (this.noteType.duration === MusicXML.Count.Whole) {
-                line = 4;
-            } else {
-                line = 3;
-            }
-            return line;
-        }
-
-        return Engine.IChord.getClefOffset(clef) +
-            ((pitch.octave || 0) - 3) * 3.5 + Engine.IChord.pitchOffsets[pitch.step];
-    }
 
     ensureNotationsWrittable() {
         this.notations = this.notations || [{}];
