@@ -67,6 +67,8 @@ class ChordModelImpl implements ChordModel.IChordModel {
             stemStart:  Engine.IChord.startingLine(this, direction, clef)
         };
 
+        this.satieLedger = Engine.IChord.ledgerLines(this, clef);
+
         _.forEach(this, note => {
             if (!note.duration && !note.grace) {
                 note.duration = this.divCount;
@@ -308,6 +310,11 @@ class ChordModelImpl implements ChordModel.IChordModel {
         stemHeight: number;
         stemStart:  number;
     };
+
+    /**
+     * Line numbers that need ledgers
+     */
+    satieLedger: number[];
 }
 
 ChordModelImpl.prototype.frozenness = Engine.IModel.FrozenLevel.Warm;
@@ -346,6 +353,7 @@ module ChordModelImpl {
                 }
             }));
             this.model.satieStem = model.satieStem;
+            this.model.satieLedger = model.satieLedger;
             _.forEach(this.model, note => {
                 cursor$.maxPaddingTop$ = Math.max(cursor$.maxPaddingTop$, note.defaultY - 10);
                 cursor$.maxPaddingBottom$ = Math.max(cursor$.maxPaddingBottom$, note.defaultY - 30);

@@ -112,6 +112,33 @@ describe("[engine/ichord.ts]", function() {
         <type>quarter</type>
     </note>`);
 
+    const noteG = MusicXML.parse.note(`<note>
+        <pitch>
+            <step>G</step>
+            <octave>5</octave>
+        </pitch>
+        <duration>1</duration>
+        <type>quarter</type>
+    </note>`);
+
+    const noteA = MusicXML.parse.note(`<note>
+        <pitch>
+            <step>A</step>
+            <octave>5</octave>
+        </pitch>
+        <duration>1</duration>
+        <type>quarter</type>
+    </note>`);
+
+    const noteCHigher = MusicXML.parse.note(`<note>
+        <pitch>
+            <step>C</step>
+            <octave>6</octave>
+        </pitch>
+        <duration>1</duration>
+        <type>quarter</type>
+    </note>`);
+
     const noteR = MusicXML.parse.note(`<note>
         <rest />
         <type>half</type>
@@ -246,25 +273,9 @@ describe("[engine/ichord.ts]", function() {
             expect(IChord.onLedger(noteD, treble)).to.be.false;
         });
         it("determines high G to not have a ledger", function() {
-            const noteG = MusicXML.parse.note(`<note>
-                <pitch>
-                    <step>G</step>
-                    <octave>5</octave>
-                </pitch>
-                <duration>1</duration>
-                <type>quarter</type>
-            </note>`);
             expect(IChord.onLedger(noteG, treble)).to.be.false;
         });
         it("determines high A to have a ledger", function() {
-            const noteA = MusicXML.parse.note(`<note>
-                <pitch>
-                    <step>A</step>
-                    <octave>5</octave>
-                </pitch>
-                <duration>1</duration>
-                <type>quarter</type>
-            </note>`);
             expect(IChord.onLedger(noteA, treble)).to.be.true;
         });
         it("determintes rests to not have ledgers", function() {
@@ -277,6 +288,20 @@ describe("[engine/ichord.ts]", function() {
                 <type>half</type>
             </note>`);
             expect(IChord.onLedger(noteROdd, treble)).to.be.false;
+        });
+    });
+    describe("ledgerLines", function() {
+        it("throws if clef is missing", function() {
+            expect(() => IChord.ledgerLines([noteC], null)).to.throw();
+        });
+        it("calculates valid answers for single notes", function() {
+            expect(IChord.ledgerLines([noteC], treble)).to.deep.equal([0]);
+            expect(IChord.ledgerLines([noteD], treble)).to.deep.equal([]);
+            expect(IChord.ledgerLines([noteG], treble)).to.deep.equal([]);
+            expect(IChord.ledgerLines([noteA], treble)).to.deep.equal([6]);
+        });
+        it("does not double count", function() {
+            expect(IChord.ledgerLines([noteA, noteCHigher], treble)).to.deep.equal([6, 7]);
         });
     });
 });
