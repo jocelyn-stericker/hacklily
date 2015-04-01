@@ -131,7 +131,7 @@ class AttributesModel implements Export.IAttributesModel {
     }
 
     toXML(): string {
-        return MusicXML.attributesToXML(this);
+        return MusicXML.serialize.attributes(this);
     }
 
     inspect() {

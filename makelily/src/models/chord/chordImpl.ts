@@ -25,6 +25,9 @@ import NoteImpl         = require("./noteImpl"); // @cyclic
 import ChordModel       = require("../chord");
 import Metre            = require("./metre");
 
+const IDEAL_STEM_HEIGHT: number    = 35;
+const MIN_STEM_HEIGHT: number      = 25;
+
 /**
  * A model that represents 1 or more notes in the same voice, starting on the same beat, and each
  * with the same duration. Any number of these notes may be rests.
@@ -54,6 +57,15 @@ class ChordModelImpl implements ChordModel.IChordModel {
         if (!isFinite(this._count)) {
             this._implyCountFromPerformanceData(cursor$);
         }
+
+        const direction = this._pickDirection(cursor$);
+        const clef = cursor$.staff.attributes.clefs[cursor$.staff.idx];
+
+        this.satieStem = {
+            direction:  direction,
+            stemHeight: this._getStemHeight(direction, clef),
+            stemStart:  Engine.IChord.startingLine(this, direction, clef)
+        };
 
         _.forEach(this, note => {
             if (!note.duration && !note.grace) {
@@ -98,7 +110,11 @@ class ChordModelImpl implements ChordModel.IChordModel {
     }
 
     toXML(): string {
-        return MusicXML.chordToXML(this);
+        let xml = "";
+        for (let i = 0; i < this.length; ++i) {
+            xml += MusicXML.serialize.note(this[i]) + "\n";
+        }
+        return xml;
     }
 
     inspect() {
@@ -248,6 +264,50 @@ class ChordModelImpl implements ChordModel.IChordModel {
             return !!n && !(n & (n - 1));
         }
     }
+
+    private _getStemHeight(direction: number, clef: MusicXML.Clef): number {
+        var heightFromOtherNotes = (Engine.IChord.highestLine(this, clef) -
+            Engine.IChord.lowestLine(this, clef)) * 10;
+        var idealStemHeight = IDEAL_STEM_HEIGHT + heightFromOtherNotes;
+        var minStemHeight = MIN_STEM_HEIGHT + heightFromOtherNotes;
+
+        var start = Engine.IChord.heightDeterminingLine(this, direction, clef)*10;
+        var idealExtreme = start + direction*idealStemHeight;
+
+        var result: number;
+        if (idealExtreme >= 65) {
+            result = Math.max(minStemHeight, idealStemHeight - (idealExtreme - 65));
+        } else if (idealExtreme <= -15) {
+            result = Math.max(minStemHeight, idealStemHeight - (-15 - idealExtreme));
+        } else {
+            result = 35;
+        }
+
+        // All stems should in the main voice should touch the center line.
+        if (start > 30 && direction === -1 && start - result > 30) {
+            result = start - 30;
+        } else if (start < 30 && direction === 1 && start + result < 30) {
+            result = 30 - start;
+        }
+
+        // Grace note stems are short (though still proportionally pretty tall)
+        if (this[0].grace) {
+            result *= 0.75;
+        }
+
+        return result;
+    }
+
+    private _pickDirection(cursor$: Engine.ICursor) {
+        // TODO: stub
+        return 1;
+    }
+
+    satieStem: {
+        direction:  number;
+        stemHeight: number;
+        stemStart:  number;
+    };
 }
 
 ChordModelImpl.prototype.frozenness = Engine.IModel.FrozenLevel.Warm;
@@ -273,7 +333,7 @@ module ChordModelImpl {
                             return note.defaultY;
                         }
                         const clef = cursor$.staff.attributes.clefs[cursor$.staff.idx];
-                        return (note.lineForClef(clef) - 3)*10;
+                        return (Engine.IChord.lineForClef(note, clef) - 3)*10;
                     }
                 },
                 stem: {
@@ -285,6 +345,7 @@ module ChordModelImpl {
                     }
                 }
             }));
+            this.model.satieStem = model.satieStem;
             _.forEach(this.model, note => {
                 cursor$.maxPaddingTop$ = Math.max(cursor$.maxPaddingTop$, note.defaultY - 10);
                 cursor$.maxPaddingBottom$ = Math.max(cursor$.maxPaddingBottom$, note.defaultY - 30);

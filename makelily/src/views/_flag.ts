@@ -29,6 +29,17 @@ import getFontOffset        = require("./_getFontOffset");
 
 var    Glyph                = React.createFactory(_Glyph.Component);
 
+export var countToFlag: { [key: string]: string } = {
+    8: "flag8th",
+    16: "flag16th",
+    32: "flag32nd",
+    64: "flag64th",
+    128: "flag128th",
+    256: "flag256th",
+    512: "flag512th",
+    1024: "flag1024th"
+};
+
 /**
  * Responsible for rendering the "flag" on un-beamed notes shorter than quarter notes.
  */

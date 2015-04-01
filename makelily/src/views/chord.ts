@@ -24,7 +24,9 @@ let $                       = React.createFactory;
 
 import Chord                = require("../models/chord");
 import Note                 = require("./note");
+import Notehead             = require("./notehead");
 import Rest                 = require("./rest");
+import Stem                 = require("./stem");
 
 /**
  * Renders notes and their notations.
@@ -78,13 +80,24 @@ class ChordView extends React.Component<{layout: Chord.IChordLayout}, void> {
 
         return React.DOM.g(null,
             _.map(spec, (spec, idx) => $(Note)({
-                key: "n_" + idx,
+                key: "n" + idx,
 
                 clef: layout.clef,
                 spec: spec,
                 offsetX: 0,
                 onLedger: false
-            }))
+            })),
+            $(Stem)({
+                key: "s",
+                bestHeight: spec.satieStem.stemHeight,
+                spec: {
+                    color: spec[0].stem.color || "#000000",
+                    defaultX: 0,
+                    defaultY: (spec.satieStem.stemStart - 3)*10,
+                    type: spec[0].stem.type
+                },
+                notehead: Notehead.countToNotehead[spec[0].noteType.duration] // FIXME
+            })
         );
     }
 

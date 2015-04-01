@@ -65,7 +65,7 @@ class GroupingModel implements Export.IGroupingModel {
     }
 
     toXML(): string {
-        return MusicXML.groupingToXML(this);
+        return MusicXML.serialize.grouping(this);
     }
 
     inspect() {

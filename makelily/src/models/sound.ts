@@ -83,7 +83,7 @@ class SoundModel implements Export.ISoundModel {
     }
 
     toXML(): string {
-        return MusicXML.soundToXML(this);
+        return MusicXML.serialize.sound(this);
     }
 
     inspect() {

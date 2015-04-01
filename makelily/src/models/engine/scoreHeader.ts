@@ -194,7 +194,7 @@ class ScoreHeader implements MusicXML.ScoreHeader {
 
     toXML(): string {
         return "<!-- begin score-header -->\n" +
-            MusicXML.scoreHeaderToXML(this).join("\n") + "\n" +
+            MusicXML.serialize.scoreHeader(this) + "\n" +
             "<!-- end score-header -->\n";
     }
 

@@ -92,7 +92,7 @@ class BarlineModel implements Export.IBarlineModel {
     }
 
     toXML(): string {
-        return MusicXML.barlineToXML(this);
+        return MusicXML.serialize.barline(this);
     }
 
     inspect() {

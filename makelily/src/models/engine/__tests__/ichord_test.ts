@@ -88,4 +88,195 @@ describe("[engine/ichord.ts]", function() {
             expect(IChord.hasAccidental(notes, cursor)).to.eq(false);
         });
     });
+
+    const treble = MusicXML.parse.clef(`<clef>
+        <sign>G</sign>
+        <line>2</line>
+    </clef>`);
+
+    const noteC = MusicXML.parse.note(`<note>
+        <pitch>
+            <step>C</step>
+            <octave>4</octave>
+        </pitch>
+        <duration>1</duration>
+        <type>quarter</type>
+    </note>`);
+
+    const noteD = MusicXML.parse.note(`<note>
+        <pitch>
+            <step>D</step>
+            <octave>4</octave>
+        </pitch>
+        <duration>1</duration>
+        <type>quarter</type>
+    </note>`);
+
+    const noteR = MusicXML.parse.note(`<note>
+        <rest />
+        <type>half</type>
+    </note>`);
+
+    describe("lineForClef", function() {
+        it("handles a null note", function() {
+            expect(IChord.lineForClef(null, treble)).to.equal(3);
+        });
+        it("throws on a null clef", function() {
+            expect(() => IChord.lineForClef(noteC, null)).to.throw();
+            expect(() => IChord.lineForClef(null, null)).to.throw();
+        });
+        it("calculates middle C", function() {
+
+            let bass = MusicXML.parse.clef(`<clef>
+                <sign>F</sign>
+                <line>4</line>
+            </clef>`);
+
+            expect(IChord.lineForClef(noteC, treble)).to.equal(0);
+            expect(IChord.lineForClef(noteC, bass)).to.equal(6);
+        });
+        it("calculates whole rest", function() {
+            let note = MusicXML.parse.note(`<note>
+                <rest />
+                <type>whole</type>
+            </note>`);
+
+            let clef2 = MusicXML.parse.clef(`<clef>
+                <sign>C</sign>
+                <line>2</line>
+            </clef>`);
+
+            expect(IChord.lineForClef(note, treble)).to.equal(4);
+            expect(IChord.lineForClef(note, clef2)).to.equal(4);
+        });
+        it("calculates half rest", function() {
+            let clef = MusicXML.parse.clef(`<clef>
+                <sign>G</sign>
+                <line>2</line>
+            </clef>`);
+
+            expect(IChord.lineForClef(noteR, clef)).to.equal(3);
+        });
+    });
+    describe("linesForClef", function() {
+        it("doesn't choke on empty chord", function() {
+            expect(IChord.linesForClef([], treble)).to.deep.equal([]);
+        });
+        it ("throws on null clef", function() {
+            let note1 = MusicXML.parse.note(`<note>
+                <rest />
+                <type>half</type>
+            </note>`);
+            expect(() => IChord.linesForClef([], null)).to.throw();
+            expect(() => IChord.linesForClef([note1], null)).to.throw();
+        });
+        it("seems to work", function() {
+            let note1 = MusicXML.parse.note(`<note>
+                <rest />
+                <type>half</type>
+            </note>`);
+
+            expect(IChord.linesForClef([note1, noteC], treble)).to.deep.equal([3, 0]);
+        });
+    });
+    describe("heightDeterminingLine", function() {
+        it("calculates single line", function() {
+            let note1 = MusicXML.parse.note(`<note>
+                <rest />
+                <type>half</type>
+            </note>`);
+            expect(IChord.heightDeterminingLine([note1], 1, treble)).to.deep.equal(3);
+            expect(IChord.heightDeterminingLine([note1], -1, treble)).to.deep.equal(3);
+        });
+        it("calculates inner line", function() {
+            let note2 = MusicXML.parse.note(`<note>
+                <pitch>
+                    <step>C</step>
+                    <octave>5</octave>
+                </pitch>
+                <duration>1</duration>
+                <type>quarter</type>
+            </note>`);
+
+            expect(IChord.heightDeterminingLine([noteC, note2], 1 /* Up */, treble)).to.equal(3.5);
+            expect(IChord.heightDeterminingLine([note2, noteC], 1 /* Up */, treble)).to.equal(3.5);
+
+            expect(IChord.heightDeterminingLine([noteC, note2], -1 /* Down */, treble)).to.equal(0);
+            expect(IChord.heightDeterminingLine([note2, noteC], -1 /* Down */, treble)).to.equal(0);
+        });
+        it("throws on invalid direction", function() {
+            expect(() => IChord.heightDeterminingLine([noteC], <any> "1", treble)).to.throw();
+            expect(() => IChord.heightDeterminingLine([noteC], NaN, treble)).to.throw();
+            expect(() => IChord.heightDeterminingLine([noteC], 0.5, treble)).to.throw();
+            expect(() => IChord.heightDeterminingLine([noteC], 0, treble)).to.throw();
+        });
+    });
+    describe("startingLine", function() {
+        it("calculates outer line for 3 notes", function() {
+            let note2 = MusicXML.parse.note(`<note>
+                <pitch>
+                    <step>C</step>
+                    <octave>5</octave>
+                </pitch>
+                <duration>1</duration>
+                <type>quarter</type>
+            </note>`);
+
+            let note3 = MusicXML.parse.note(`<note>
+                <pitch>
+                    <step>G</step>
+                    <octave>4</octave>
+                </pitch>
+                <duration>1</duration>
+                <type>quarter</type>
+            </note>`);
+
+            expect(IChord.startingLine([noteC, note2, note3], -1 /* Down */, treble)).to.equal(3.5);
+            expect(IChord.startingLine([note2, noteC, note3], -1 /* Down */, treble)).to.equal(3.5);
+
+            expect(IChord.startingLine([noteC, note3, note2], 1 /* Up */, treble)).to.equal(0);
+            expect(IChord.startingLine([noteC, note3, note2], 1 /* Up */, treble)).to.equal(0);
+        });
+    });
+    describe("onLedger", function() {
+        it("determines middle C to have a ledger", function() {
+            expect(IChord.onLedger(noteC, treble)).to.be.true;
+        });
+        it("determines middle D to not have a ledger", function() {
+            expect(IChord.onLedger(noteD, treble)).to.be.false;
+        });
+        it("determines high G to not have a ledger", function() {
+            const noteG = MusicXML.parse.note(`<note>
+                <pitch>
+                    <step>G</step>
+                    <octave>5</octave>
+                </pitch>
+                <duration>1</duration>
+                <type>quarter</type>
+            </note>`);
+            expect(IChord.onLedger(noteG, treble)).to.be.false;
+        });
+        it("determines high A to have a ledger", function() {
+            const noteA = MusicXML.parse.note(`<note>
+                <pitch>
+                    <step>A</step>
+                    <octave>5</octave>
+                </pitch>
+                <duration>1</duration>
+                <type>quarter</type>
+            </note>`);
+            expect(IChord.onLedger(noteA, treble)).to.be.true;
+        });
+        it("determintes rests to not have ledgers", function() {
+            expect(IChord.onLedger(noteR, treble)).to.be.false;
+            const noteROdd = MusicXML.parse.note(`<note>
+                <rest>
+                    <display-step>A</display-step>
+                    <display-octave>5</display-octave>
+                </rest>
+                <type>half</type>
+            </note>`);
+            expect(IChord.onLedger(noteROdd, treble)).to.be.false;
+        });
+    });
 });

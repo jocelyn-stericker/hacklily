@@ -38,7 +38,7 @@ class Note extends React.Component<{clef: MusicXML.Clef, spec: MusicXML.Note, of
 
         return React.DOM.g(null,
             $(Notehead)({
-                key: "_0",
+                key: "h",
                 spec: {
                     defaultX: 0,
                     defaultY: spec.defaultY,
@@ -177,17 +177,6 @@ module Note {
 }
 
 /*
-            this.props.hasStem && NoteStem({
-                x: this.props.x,
-                y: this.props.y,
-                key: "_2",
-                direction: direction,
-                line: this.props.startingLine,
-                stroke: this.props.secondaryStroke,
-                height: this.props.stemHeight,
-                grace: this.props.grace[0],
-                notehead: this.props.notehead
-            }),
             this.props.flag && Flag({
                 key: "_3",
                 x: this.props.x,

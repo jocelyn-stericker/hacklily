@@ -111,21 +111,98 @@ module IChord {
         return _.any(chord, note => note.noteType.duration <= MusicXML.Count.Eighth);
     }
 
-    export function lines(chord: IChord, cursor: ICursor): Array<number> {
-        return _.map(chord, note => {
-            if (!!note.rest) {
-                if (chord.length && note.rest.displayStep) {
-                    return getClefOffset(cursor.staff.attributes.clefs[0]) +
-                            ((parseInt(note.rest.displayOctave, 10) || 0) - 3) * 3.5 +
-                        pitchOffsets[note.rest.displayStep];
-                } else if (note.noteType.duration === MusicXML.Count.Whole) {
-                    return 4;
-                } else {
-                    return 3;
-                }
-            }
-        });
+    /**
+     * Returns the mean of all the lines, in SMuFL coordinates, where
+     * 3 is the middle line. (SMuFL coordinates are 10x MusicXML coordinates)
+     */
+    export function averageLine(chord: IChord, clef: MusicXML.Clef): number {
+        return _.reduce(linesForClef(chord, clef), (memo: number, line: number) =>
+            memo + line, 0) / chord.length;
+    }
+    /**
+     * Returns the minimum of all the lines, in SMuFL coordinates, where
+     * 3 is the middle line. (SMuFL coordinates are 10x MusicXML coordinates)
+     */
+    export function lowestLine(chord: IChord, clef: MusicXML.Clef) {
+        return _.reduce(linesForClef(chord, clef), (memo: number, line: number) =>
+            Math.min(memo, line), 10000);
+    }
+    /**
+     * Returns the highest of all the lines, in SMuFL coordinates, where
+     * 3 is the middle line. (SMuFL coordinates are 10x MusicXML coordinates)
+     */
+    export function highestLine(chord: IChord, clef: MusicXML.Clef) {
+        return _.reduce(linesForClef(chord, clef), (memo: number, line: number) =>
+            Math.max(memo, line), -10000);
+    }
+    /**
+     * Returns the position where the line starts. For single notes, this is where
+     * the notehead appears. For chords, this is where the furthest notehead appears.
+     */
+    export function startingLine(chord: IChord, direction: number, clef: MusicXML.Clef) {
+        if (direction !== -1 && direction !== 1) {
+            throw new Error("Direction was not a number");
+        }
+        return direction === 1 ? lowestLine(chord, clef) : highestLine(chord, clef);
+    }
+    /**
+     * The line of the notehead closest to the dangling end of the stem. For single notes,
+     * startingLine and heightDeterminingLine are equal.
+     * 
+     * Note: The minimum size of a stem is determinted by this value.
+     */
+    export function heightDeterminingLine(chord: IChord, direction: number, clef: MusicXML.Clef) {
+        if (direction !== -1 && direction !== 1) {
+            throw new Error("Direction was not a number");
+        }
+        return direction === 1 ? highestLine(chord, clef) : lowestLine(chord, clef);
+    }
+
+    export function linesForClef(chord: IChord, clef: MusicXML.Clef): Array<number> {
+        if (!clef) {
+            throw "Exepected a valid clef";
+        }
+        return _.map(chord, (note: MusicXML.Note) => lineForClef(note, clef));
     };
+
+    export function lineForClef(note: MusicXML.Note, clef: MusicXML.Clef): number {
+        if (!clef) {
+            throw new Error("Exepected a valid clef");
+        }
+        if (!note) {
+            return 3;
+        } else if (!!note.rest) {
+            if (note.rest.displayStep) {
+                return getClefOffset(clef) +
+                        ((parseInt(note.rest.displayOctave, 10) || 0) - 3) * 3.5 +
+                    pitchOffsets[note.rest.displayStep];
+            } else if (note.noteType.duration === MusicXML.Count.Whole) {
+                return 4;
+            } else {
+                return 3;
+            }
+        } else if (!!note.unpitched) {
+            throw new Error("Not implemnted");
+        } else if (!!note.pitch) {
+            return IChord.getClefOffset(clef) +
+                ((note.pitch.octave || 0) - 3) * 3.5 +
+                    IChord.pitchOffsets[note.pitch.step];
+        } else {
+            throw new Error("Invalid note");
+        }
+    }
+
+    /**
+     * Returns true if a ledger line is needed, and false otherwise.
+     * Will be changed once staves with > 5 lines are available.
+     */
+    export function onLedger(note: MusicXML.Note, clef: MusicXML.Clef) {
+        if (!note || note.rest || note.unpitched) {
+            return false;
+        }
+        const line = IChord.lineForClef(note, clef);
+        return line < 0.5 || line > 5.5;
+    }
 
     export function rest(chord: IChord): MusicXML.Rest {
         return !chord.length || chord[0].rest;
@@ -161,17 +238,6 @@ module IChord {
         c: 0, d: 2, e: 4, f: 5, g: 7, a: 9, b: 11
     }; // c:12
 
-    export var countToFlag: { [key: string]: string } = {
-        8: "flag8th",
-        16: "flag16th",
-        32: "flag32nd",
-        64: "flag64th",
-        128: "flag128th",
-        256: "flag256th",
-        512: "flag512th",
-        1024: "flag1024th"
-    };
-
     export var countToHasStem: { [key: string]: boolean } = {
         0.25: true,
         0.5: false,
@@ -197,11 +263,6 @@ module IChord {
         256: true,
         512: true,
         1024: true
-    };
-
-    export var getAverageLine = (chord: IChord, cursor$: ICursor) => {
-        return _.reduce(lines(chord, cursor$),
-            (memo, line) => memo + line/lines.length, 0);
     };
 
     export var offsetToPitch: { [key: string]: string } = {

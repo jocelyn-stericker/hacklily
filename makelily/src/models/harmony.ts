@@ -126,7 +126,7 @@ class HarmonyModel implements Export.IHarmonyModel {
     }
 
     toXML(): string {
-        return MusicXML.harmonyToXML(this);
+        return MusicXML.serialize.harmony(this);
     }
 
     inspect() {
