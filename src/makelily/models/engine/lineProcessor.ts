@@ -71,15 +71,15 @@ export function justify(options: Options.ILayoutOptions, bounds: Options.ILineBo
         let measureExpansion = 0;
         _.forEach(elementArr, function(element, j) {
             for (let i = 0; i < measure.elements.length; ++i) {
+                measure.elements[i][j].x$ += measureExpansion;
+            }
+            for (let i = 0; i < measure.elements.length; ++i) {
                 if (measure.elements[i][j].expandable) {
                     anyExpandable = true;
                     measureExpansion += avgExpansion;
                     ++totalExpCount;
                     break;
                 }
-            }
-            for (let i = 0; i < measure.elements.length; ++i) {
-                measure.elements[i][j].x$ += measureExpansion;
             }
         });
 
@@ -119,6 +119,7 @@ export function layoutLine$(options: Options.ILayoutOptions, bounds: Options.ILi
                 header:         options.header,
                 line:           line,
                 measure:        measure,
+                padEnd:         measureIdx !== measures.length - 1,
                 prevByStaff:    [],    // FIXME: include this.
                 x:              0      // Final offset set recorded in justify(...).
             });
