@@ -192,39 +192,6 @@ module Note {
             }),
             this.tie(),
             this.props.lyrics
-
-    ledgerLines(): any {
-        if (!this.props.onLedger) {
-            return false;
-        }
-        var ret: Array<React.ReactElement<any>> = [];
-        var lowest = this.props.lowestLine;
-        var highest = this.props.highestLine;
-        if (lowest < 0.5) {
-            ret = ret.concat(_.times(Math.floor(1 - lowest), idx =>
-                LedgerLine({
-                    key: idx + "low",
-                    line: -idx,
-                    notehead: this.props.notehead,
-                    x: this.props.x,
-                    y: this.props.y
-                })
-            ));
-        }
-        if (highest > 5.5) {
-            ret = ret.concat(_.times(Math.floor(highest - 5), idx =>
-                LedgerLine({
-                    key: idx + "high",
-                    line: 6 + idx,
-                    notehead: this.props.notehead,
-                    x: this.props.x,
-                    y: this.props.y
-                })
-            ));
-        }
-        invariant(ret.length !== 0, "Invalid ledger line");
-        return ret;
-    }
 */
 
 export = Note;

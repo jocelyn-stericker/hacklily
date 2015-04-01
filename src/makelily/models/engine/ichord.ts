@@ -204,6 +204,19 @@ module IChord {
         return line < 0.5 || line > 5.5;
     }
 
+    export function ledgerLines(chord: IChord, clef: MusicXML.Clef) {
+        let low = lowestLine(chord, clef);
+        let high = highestLine(chord, clef);
+        let lines: number[] = [];
+        for (let i = 6; i <= high; ++i) {
+            lines.push(i);
+        }
+        for (let i = 0; i >= low; --i) {
+            lines.push(i);
+        }
+        return lines;
+    }
+
     export function rest(chord: IChord): MusicXML.Rest {
         return !chord.length || chord[0].rest;
     }

@@ -23,6 +23,7 @@ import _                    = require("lodash");
 let $                       = React.createFactory;
 
 import Chord                = require("../models/chord");
+import LedgerLine           = require("./ledgerLine");
 import Note                 = require("./note");
 import Notehead             = require("./notehead");
 import Rest                 = require("./rest");
@@ -78,6 +79,10 @@ class ChordView extends React.Component<{layout: Chord.IChordLayout}, void> {
             });
         }
 
+        // TODO: Generalize this
+        let approxNotehead = Notehead.countToNotehead[
+            spec[0].noteType.duration];
+
         return React.DOM.g(null,
             _.map(spec, (spec, idx) => $(Note)({
                 key: "n" + idx,
@@ -96,8 +101,17 @@ class ChordView extends React.Component<{layout: Chord.IChordLayout}, void> {
                     defaultY: (spec.satieStem.stemStart - 3)*10,
                     type: spec[0].stem.type
                 },
-                notehead: Notehead.countToNotehead[spec[0].noteType.duration] // FIXME
-            })
+                notehead: approxNotehead
+            }),
+            _.map(spec.satieLedger, lineNumber => $(LedgerLine)({
+                key: "l" + lineNumber,
+                spec: {
+                    defaultX: 0,
+                    defaultY: (lineNumber - 3)*10,
+                    color: "#000000"
+                },
+                notehead: approxNotehead
+            }))
         );
     }
 

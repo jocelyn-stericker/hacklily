@@ -42,6 +42,7 @@ module ChordModel {
             stemHeight: number;
             stemStart:  number;
         };
+        satieLedger: number[];
     }
 
     export interface IChordLayout extends Engine.IModel.ILayout {
