@@ -73,6 +73,58 @@ export function renderDocument(doc: Engine.IDocument, startMeasure: number): str
         modelFactory:   doc.factory
     }, memo$);
 
+    if (lineLayouts[3]) {
+        console.log("---------------");
+        _.forEach(lineLayouts[3][2].elements, el => {
+            let l = "";
+            _.forEach(el, el => {
+                if (!el.model) {
+                    l += "_";
+                } else switch (el.renderClass) {
+                    case Engine.IModel.Type.Print:
+                        l += "P";
+                        break;
+                    case Engine.IModel.Type.Grouping:
+                        l += "G";
+                        break;
+                    case Engine.IModel.Type.FiguredBass:
+                        l += "F";
+                        break;
+                    case Engine.IModel.Type.Attributes:
+                        l += "A";
+                        break;
+                    case Engine.IModel.Type.Sound:
+                        l += "S";
+                        break;
+                    case Engine.IModel.Type.Direction:
+                        l += "D";
+                        break;
+                    case Engine.IModel.Type.Harmony:
+                        l += "H";
+                        break;
+                    case Engine.IModel.Type.Proxy:
+                        l += "x";
+                        break;
+                    case Engine.IModel.Type.Spacer:
+                        l += ">";
+                        break;
+                    case Engine.IModel.Type.BeamGroup:
+                        l += "B";
+                        break;
+                    case Engine.IModel.Type.Chord:
+                        l += "N";
+                        break;
+                    case Engine.IModel.Type.Barline:
+                        l += "|";
+                        break;
+                }
+                l += "(" + padNum(el.x$, 5, " ") + ") ";
+            });
+            console.log(l);
+        });
+        console.log("---------------");
+    }
+
     const core = React.renderToStaticMarkup($(Page)({
         scoreHeader:    doc.header,
         lineLayouts:    lineLayouts,
@@ -88,5 +140,12 @@ export function renderDocument(doc: Engine.IDocument, startMeasure: number): str
                         "font-style='italic' stroke='#7a7a7a'")
             .replace(/class="bn_"/g, "font-family='Alegreya' " +
                     "font-style='italic' text-anchor='end' stroke='#7a7a7a'")}`;
+}
+
+function padNum(n: number, p: number, c: string) {
+    n = Math.round(n);
+    var pad_char = typeof c !== "undefined" ? c : "0";
+    var pad = new Array(1 + p).join(pad_char);
+    return (pad + n).slice(-pad.length);
 }
 

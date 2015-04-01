@@ -190,6 +190,7 @@ export function validate$(options$: Options.ILayoutOptions, memo$: Options.ILine
                 line:           null,
                 measure:        measureCtx,
                 prevByStaff:    null,
+                padEnd:         false,
                 segments:       segments,
                 _approximate:   true,
                 _detached:      true,

@@ -57,6 +57,8 @@ export interface IMeasureLayoutOptions {
     /** @private does not have own attributes (true if approximate or grace notes) */
     _detached?:     boolean;
 
+    padEnd?:        boolean;
+
     factory:        IModel.IFactory;
 }
 
@@ -291,10 +293,12 @@ export function reduce(spec: ILayoutOpts): Measure.IMeasureLayout {
         _.reduce(staffLayoutsUnique$, IModel.merge$, masterLayout);
     }
 
+    let padding = spec.padEnd ? 15 : 0;
+
     return {
         attributes: lastAttribs,
         elements: voiceLayouts$.concat(staffLayoutsUnique$), // TODO: can we filter spacers here?
-        width: maxXInMeasure - measure.x,
+        width: maxXInMeasure + padding - measure.x,
         originX: measure.x,
         originY: NaN,
         paddingTop: maxPaddingTopInMeasure$,
@@ -315,6 +319,7 @@ export interface ILayoutOpts {
     _approximate?:  boolean;
     _detached?:     boolean;
     _validateOnly?: boolean;
+    padEnd:         boolean;
 }
 
 /** 
@@ -341,6 +346,7 @@ export function layoutMeasure(opts: IMeasureLayoutOptions): Measure.IMeasureLayo
         measure:        measureCtx,
         prevByStaff:    opts.prevByStaff,
         segments:       segments,
+        padEnd:         opts.padEnd,
 
         _approximate:   opts._approximate,
         _detached:      opts._detached

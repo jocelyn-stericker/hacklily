@@ -109,7 +109,7 @@ describe("[lineProcessor.ts]", function() {
                 layouts);
 
             expect(justified[0].elements[0][0].x$).to.be.closeTo(layouts[0].elements[0][0].x$, 0.05);
-            expect(justified[0].elements[0][2].x$).to.be.closeTo(106.40, 0.1);
+            expect(justified[0].elements[0][2].x$).to.be.closeTo(63.2, 0.1);
             expect(justified[0].width).to.be.closeTo(justified[0].elements[0][4].x$ - justified[0].elements[0][0].x$ + 10, 0.01);
             _.forEach(justified, function(just, idx) {
                 expect(just.width).to.not.equal(layouts[idx].width);

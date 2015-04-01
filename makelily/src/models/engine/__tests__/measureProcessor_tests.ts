@@ -49,6 +49,7 @@ describe("[engine/measureProcessor.ts]", function() {
                 attributes:         null,
                 line:               Ctx.ILine.create(segments),
                 header:             null,
+                padEnd:             false,
                 measure: {
                     attributes$:    null,
                     idx:            0,
