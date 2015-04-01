@@ -67,6 +67,8 @@ class ChordModelImpl implements ChordModel.IChordModel {
             stemStart:  Engine.IChord.startingLine(this, direction, clef)
         };
 
+        this.satieDirection = direction === 1 ? MusicXML.StemType.Up : MusicXML.StemType.Down;
+
         this.satieLedger = Engine.IChord.ledgerLines(this, clef);
 
         _.forEach(this, note => {
@@ -301,8 +303,16 @@ class ChordModelImpl implements ChordModel.IChordModel {
     }
 
     private _pickDirection(cursor$: Engine.ICursor) {
-        // TODO: stub
-        return 1;
+        const clef = cursor$.staff.attributes.clefs[cursor$.staff.idx];
+        let avgLine = Engine.IChord.averageLine(this, clef);
+        if (avgLine > 3) {
+            return -1;
+        } else if (avgLine < 3) {
+            return 1;
+        } else {
+            // TODO: stub
+            return 1;
+        }
     }
 
     satieStem: {
@@ -310,6 +320,8 @@ class ChordModelImpl implements ChordModel.IChordModel {
         stemHeight: number;
         stemStart:  number;
     };
+
+    satieDirection: MusicXML.StemType;
 
     /**
      * Line numbers that need ledgers
@@ -345,9 +357,8 @@ module ChordModelImpl {
                 },
                 stem: {
                     get: () => {
-                        // TODO: guess direction
                         return model.stem || {
-                            type: MusicXML.StemType.Up // TODO
+                            type: model.satieDirection
                         };
                     }
                 }
