@@ -283,7 +283,7 @@ export function getTSString(times: MusicXML.Time[]) {
     }, "");
 }
 
-function getBeamingPattern(times: MusicXML.Time[], alt?: string) {
+export function getBeamingPattern(times: MusicXML.Time[], alt?: string) {
     var time = times[0];
     var pattern: Engine.IChord[] = beamingPatterns[getTSString(times) + (alt ? "_" + alt : "")];
     var factors: {[key: number]: number[]} = {

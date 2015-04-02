@@ -303,6 +303,8 @@ class ChordModelImpl implements ChordModel.IChordModel {
     }
 
     private _pickDirection(cursor$: Engine.ICursor) {
+        // TODO: Chords should override this
+
         const clef = cursor$.staff.attributes.clefs[cursor$.staff.idx];
         let avgLine = Engine.IChord.averageLine(this, clef);
         if (avgLine > 3) {
@@ -310,8 +312,71 @@ class ChordModelImpl implements ChordModel.IChordModel {
         } else if (avgLine < 3) {
             return 1;
         } else {
-            // TODO: stub
-            return 1;
+            // There's no "right answer" here. We'll follow what "Behind Bars" recommends.
+            // TODO: Consider notes outside current bar
+            // TODO: Consider notes outside current stave
+            // TODO: Handle clef changes correctly
+
+            let nIdx = NaN; // index of current note in 'notes'
+            let nLength = 0; // temporary variable eventually indicating length of 'notes'
+            let notes = <ChordModelImpl[]> <any> _.filter(cursor$.segment, (el, idx) => {
+                if (idx === cursor$.idx$) {
+                    nIdx = nLength;
+                }
+                let ret = cursor$.factory.modelHasType(el, Engine.IModel.Type.Chord);
+                if (ret) {
+                    ++nLength;
+                }
+                return nLength;
+            });
+            invariant(notes.length === nLength, "Invalid filtration");
+
+            // 1. Continue the stem direction of surrounding stems that are in one
+            //    direction only
+            let linePrev = nIdx > 0 ? Engine.IChord.averageLine(notes[nIdx - 1], clef) : 3;
+            if (linePrev === 3 && nIdx > 0) {
+                // Note, the solution obtained may not be ideal, because we greedily resolve ties in a forward
+                // direction.
+                linePrev = notes[nIdx - 1].satieDirection === 1 ? 2.99 : 3.01;
+            }
+            const lineNext = nIdx + 1 < notes.length ? Engine.IChord.averageLine(notes[nIdx + 1], clef) : 3;
+            if (linePrev > 3 && lineNext > 3) {
+                return -1;
+            }
+            if (linePrev < 3 && lineNext < 3) {
+                return 1;
+            }
+
+            // 2. When the stem direction varies within a bar, maintain the stem direction
+            //    of the notes that are part of the same beat or half-bar.
+            //    (Note: we use the more general beaming pattern instead of half-bar to
+            //     decide boundries)
+            const beamingPattern = Metre.getBeamingPattern(cursor$.staff.attributes.times);
+            const bpDivisions = _.map(beamingPattern, seg => Metre.calcDivisions(seg, cursor$));
+            const currDivision = cursor$.division$;
+            let prevDivisionStart = 0;
+            let i = 0;
+            for (; i < bpDivisions.length; ++i) {
+                if (prevDivisionStart + bpDivisions[i] >= currDivision) {
+                    break;
+                }
+                prevDivisionStart += bpDivisions[i];
+            }
+            let nextDivisionStart = prevDivisionStart + bpDivisions[i] || NaN;
+            let considerPrev = (prevDivisionStart < currDivision) ? notes[nIdx - 1] : null;
+            let considerNext = (nextDivisionStart > currDivision + this.divCount) ? notes[nIdx + 1] : null;
+            if (considerPrev && !considerNext && linePrev !== 3) {
+                return linePrev > 3 ? -1 : 1;
+            } else if (considerNext && !considerPrev && lineNext !== 3) {
+                return lineNext > 3 ? -1 : 1;
+            }
+
+            // 2b. Check beat when considerPrev && considerNext
+            // TODO: Implement me
+
+            // 3. When there is no clear-cut case for either direction, the convention
+            //    is to use down-stem
+            return -1;
         }
     }
 
