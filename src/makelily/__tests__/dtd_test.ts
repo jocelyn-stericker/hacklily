@@ -72,7 +72,6 @@ describe("import/export dtd validation", function() {
             const outname = `${root.replace("/", "_").replace("-", "_")}_${file.replace("-", "_")}`;
             it("can be imported, exported, validated, and rendered", function(done) {
                 readFile(root + "/" + file, function(str) {
-                    console.log("==== %s ====", file);
                     try {
                         let score = Models.importXML(str);
                         let mxmlOut = Models.exportXML(score);
