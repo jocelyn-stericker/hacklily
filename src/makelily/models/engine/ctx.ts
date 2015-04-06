@@ -32,17 +32,17 @@ export interface IMeasure {
     /** 
      * The index of a given bar, starting from 0. This may not be the same as number.
      */
-    idx: number;
+    idx:                number;
 
     /** 
      * The string that is displayed at the start of the measure in some cases.
      */
-    number: string;
+    number:             string;
 
     /** 
      * If true, the measure number should never be rendered.
      */
-    implicit: boolean;
+    implicit:           boolean;
 
     /** 
      * If true, this measure does not start at beat 0 of other parts.
@@ -50,36 +50,40 @@ export interface IMeasure {
      * Satie does not support this attribute yet. It is here so we don't lose information when
      * we load and save from MusicXML.
      */
-    nonControlling: boolean;
+    nonControlling:     boolean;
 
     /** 
      * Starting position.
      */
-    x: number;
+    x:                  number;
 
     /** 
      * Attributes from previous measure.
      */
-    attributes$: MusicXML.Attributes;
+    attributes$:        MusicXML.Attributes;
 
     /** 
      * A string uniquely identifying this bar, for collaboration
      * among other things.
      */
-    uuid: number;
+    uuid:               number;
+
+    parent:             IMutableMeasure;
 }
 
 export module IMeasure {
     export function detach(measure: IMutableMeasure, x: number): IMeasure {
         return {
-            idx: measure.idx,
-            uuid: measure.uuid,
+            idx:                measure.idx,
+            uuid:               measure.uuid,
 
-            implicit: measure.implicit,
-            attributes$: null,
-            nonControlling: measure.nonControlling,
-            number: measure.number,
-            x: x
+            implicit:           measure.implicit,
+            attributes$:        null,
+            nonControlling:     measure.nonControlling,
+            number:             measure.number,
+            x:                  x,
+
+            parent:             measure
         };
     }
 }
@@ -93,14 +97,14 @@ export interface IAccidentals {
  * given measure at given division.
  */
 export interface IStaff {
-    previous: IStaff;
+    previous:       IStaff;
 
-    attributes: MusicXML.Attributes;
+    attributes:     MusicXML.Attributes;
     totalDivisions: number;
 
-    accidentals$: IAccidentals;
+    accidentals$:   IAccidentals;
 
-    idx: number;
+    idx:            number;
 }
 
 export module IStaff {

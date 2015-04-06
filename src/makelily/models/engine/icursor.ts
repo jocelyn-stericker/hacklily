@@ -29,13 +29,13 @@ import IModel           = require("./imodel");  // @circular
 import Measure          = require("./measure"); // @circular
 
 interface ICursor {
-    segment: Measure.ISegment;
-    idx$: number;
+    segment:            Measure.ISegment;
+    idx$:               number;
 
-    voice: Ctx.IVoice;
-    staff: Ctx.IStaff;
-    measure: Ctx.IMeasure;
-    line: Ctx.ILine;
+    voice:              Ctx.IVoice;
+    staff:              Ctx.IStaff;
+    measure:            Ctx.IMeasure;
+    line:               Ctx.ILine;
 
     /** 
      * Model that appears directly before this model. This could be:
@@ -43,25 +43,25 @@ interface ICursor {
      *  - the previous model in the current staff
      *  - a BarlineModel, BeginModel, or EndModel
      */
-    prev$: IModel;
-    division$: number;
-    x$: number;
-    print$: MusicXML.Print;
-    header: MusicXML.ScoreHeader;
-    minXBySmallest$?: {[key: number]: number};
-    maxPaddingTop$: number;
-    maxPaddingBottom$: number;
+    prev$:              IModel;
+    division$:          number;
+    x$:                 number;
+    print$:             MusicXML.Print;
+    header:             MusicXML.ScoreHeader;
+    minXBySmallest$?:   {[key: number]: number};
+    maxPaddingTop$:     number;
+    maxPaddingBottom$:  number;
 
     /**
      * Only available in second layout$
      */
-    page$: number;
+    page$:              number;
 
-    approximate: boolean;
-    detached: boolean;
-    factory: IModel.IFactory;
+    approximate:        boolean;
+    detached:           boolean;
+    factory:            IModel.IFactory;
 
-    hiddenCounter$?: number;
+    hiddenCounter$?:    number;
 }
 
 module ICursor {

@@ -68,12 +68,24 @@ class ChordView extends React.Component<{layout: Chord.IChordLayout}, void> {
         //                 })
         //                 .flatten()
         //                 .value();
+        // this.props.flag && Flag({
+        //     key: "_3",
+        //     x: this.props.x,
+        //     y: this.props.y,
+        //     line: this.props.startingLine,
+        //     stroke: this.props.secondaryStroke,
+        //     stemHeight: this.props.stemHeight,
+        //     stemWidth: 1.4,
+        //     flag: this.props.flag,
+        //     notehead: this.props.notehead,
+        //     grace: this.props.grace[0],
+        //     direction: direction
+        // }),
 
         // var dotOffset = SMuFL.bboxes["noteheadBlack"][0]*10 + 6; // TODO: Correct notehead
 
         if (!!spec[0].rest) {
             return $(Rest)({
-                clef: layout.clef,
                 multipleRest: layout.multipleRest,
                 spec: spec[0]
             });
@@ -86,11 +98,7 @@ class ChordView extends React.Component<{layout: Chord.IChordLayout}, void> {
         return React.DOM.g(null,
             _.map(spec, (spec, idx) => $(Note)({
                 key: "n" + idx,
-
-                clef: layout.clef,
-                spec: spec,
-                offsetX: 0,
-                onLedger: false
+                spec: spec
             })),
             $(Stem)({
                 key: "s",

@@ -298,6 +298,8 @@ module IChord {
         B: 3
     };
 
+    export var InvalidAccidental = -999;
+
 }
 
 export = IChord;

@@ -47,7 +47,6 @@ module ChordModel {
 
     export interface IChordLayout extends Engine.IModel.ILayout {
         model: IChordModel;
-        clef: MusicXML.Clef;
         multipleRest: MusicXML.MultipleRest;
     }
 }

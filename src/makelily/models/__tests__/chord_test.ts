@@ -30,7 +30,7 @@ import Chord        = require("../chord");
 import Engine       = require("../engine");
 import Factory      = require("../factory");
 
-var expect          = chai.expect;
+let expect          = chai.expect;
 
 function getAttributes(): MusicXML.Attributes {
     return {
@@ -49,54 +49,55 @@ function getAttributes(): MusicXML.Attributes {
 }
 
 function getCursor(factory: Engine.IModel.IFactory, model: Engine.IModel): Engine.ICursor {
-    var attributes = getAttributes();
+    let attributes = getAttributes();
     return {
-        segment: <any> [model],
-        idx$: 0,
-        print$: null,
-        header: null,
+        segment:            <any> [model],
+        idx$:               0,
+        print$:             null,
+        header:             null,
 
-        voice: {},
+        voice:              {},
         staff: {
-            previous: null,
-            attributes: attributes,
+            previous:       null,
+            attributes:     attributes,
             totalDivisions: 12,
-            accidentals$: {},
-            idx: 0
+            accidentals$:   {},
+            idx:            0
         },
         measure: {
-            idx: 0,
-            number: "1",
-            implicit: false,
+            idx:            0,
+            number:         "1",
+            implicit:       false,
             nonControlling: false,
-            x: 100,
-            attributes$: attributes,
-            uuid: 1
+            x:              100,
+            attributes$:    attributes,
+            uuid:           1,
+            parent:         null
         },
         line: {
-            shortestCount: 3,
-            barOnLine: 0
+            shortestCount:  3,
+            barOnLine:      0
         },
 
-        prev$: null,
-        division$: 0,
-        x$: 100,
-        minXBySmallest$: {},
-        maxPaddingTop$: 0,
-        maxPaddingBottom$: 0,
+        prev$:              null,
+        division$:          0,
+        x$:                 100,
+        minXBySmallest$:    {},
+        maxPaddingTop$:     0,
+        maxPaddingBottom$:  0,
 
-        page$: NaN,
+        page$:              NaN,
 
-        approximate: true,
-        detached: false,
-        factory: factory
+        approximate:        true,
+        detached:           false,
+        factory:            factory
     };
 }
 
 describe("[chord.ts]", function() {
     describe("ChordModel", function() {
-        var factory = new Factory([Attributes, Chord]);
-        var chord: Engine.IModel;
+        let factory = new Factory([Attributes, Chord]);
+        let chord: Engine.IModel;
         it("can be created from scratch", function() {
             chord = factory.create(Engine.IModel.Type.Chord);
             expect(!!chord).to.be.true;
@@ -119,14 +120,14 @@ describe("[chord.ts]", function() {
                     alter: 1
                 }
             });
-            var cursor$ = getCursor(factory, chord);
+            let cursor$ = getCursor(factory, chord);
             chord.validate$(cursor$);
 
             cursor$ = getCursor(factory, chord);
             expect(cursor$.division$).to.eq(0);
             chord.layout(cursor$);
             expect(cursor$.division$).to.eq(2);
-            var xml = (<any>chord).inspect();
+            let xml = (<any>chord).inspect();
             expect(xml).to.contain("<step>C</step>");
             expect(xml).to.contain("<alter>1</alter>");
             expect(xml).to.contain("<octave>4</octave>");
@@ -163,7 +164,7 @@ describe("[chord.ts]", function() {
                     octave: 4
                 }
             });
-            var cursor$ = getCursor(factory, chord);
+            let cursor$ = getCursor(factory, chord);
             chord.validate$(cursor$);
             cursor$ = getCursor(factory, chord);
             expect(cursor$.division$).to.eq(0);

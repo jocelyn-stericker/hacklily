@@ -76,6 +76,18 @@ class ChordModelImpl implements ChordModel.IChordModel {
                 note.duration = this.divCount;
             }
             note.validate$();
+            note.updateAccidental$(cursor$);
+            if (note.pitch) {
+                // Update the accidental status.
+                const pitch = note.pitch
+                if (pitch.alter === 0) {
+                    cursor$.staff.accidentals$[pitch.step] = undefined;
+                }
+                cursor$.staff.accidentals$[pitch.step + pitch.octave] = pitch.alter;
+                if ((cursor$.staff.accidentals$[pitch.step]) !== pitch.alter) {
+                    cursor$.staff.accidentals$[pitch.step] = Engine.IChord.InvalidAccidental;
+                }
+            }
         });
 
         this.wholebar$ = this.divCount === cursor$.staff.totalDivisions || this.divCount === -1;
@@ -434,7 +446,15 @@ module ChordModelImpl {
                 cursor$.maxPaddingTop$ = Math.max(cursor$.maxPaddingTop$, note.defaultY - 10);
                 cursor$.maxPaddingBottom$ = Math.max(cursor$.maxPaddingBottom$, note.defaultY - 30);
             });
-            this.x$ = cursor$.x$;
+
+            // We allow accidentals to be squished, and only require 1/3 of the accidental's displayed
+            // width as padding.
+            let accidentalWidth = _.reduce(this.model, (maxWidth, note) => {
+                return Math.max(maxWidth, note.accidental ? -note.accidental.defaultX : 0)
+            }, 0)*1/3;
+
+            this.x$ = cursor$.x$ + accidentalWidth;
+
             this.division = cursor$.division$;
 
             /*---- Move cursor in time ------------------*/
@@ -458,7 +478,6 @@ module ChordModelImpl {
             }
             const baseWidth = grace ? 11.4 : 22.8;
 
-            const accidentalWidth = 0; // TODO: displayedAccidentals ? 9.6*(grace ? 0.6 : 1.0) : 0;
             const totalWidth = baseWidth + extraWidth + accidentalWidth;
 
             // TODO
@@ -472,12 +491,6 @@ module ChordModelImpl {
 
             // TODO: set min/max padding
             // TODO: set invisible counter
-
-            if (cursor$.staff.attributes.clefs) {
-                this.clef = cursor$.staff.attributes.clefs[cursor$.staff.idx];
-            } else {
-                this.clef = null;
-            }
 
             let measureStyle: MusicXML.MeasureStyle = cursor$.staff.attributes.measureStyle;
             this.multipleRest = measureStyle ? measureStyle.multipleRest : null;
@@ -500,7 +513,6 @@ module ChordModelImpl {
 
         /*---- ChordModel ---------------------------------------------------*/
 
-        clef: MusicXML.Clef;
         multipleRest: MusicXML.MultipleRest;
     }
 

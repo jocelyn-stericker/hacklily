@@ -69,7 +69,8 @@ describe("import/export dtd validation", function() {
 
     function testFile(root: string, file: string) {
         describe(file, function() {
-            const outname = `${root.replace("/", "_").replace("-", "_")}_${file.replace("-", "_")}`;
+            const outname = `${root.replace("/", "_").replace("-", "_")}_${file.replace("-", "_")}`
+                .replace(".xml", ".svg");
             it("can be imported, exported, validated, and rendered", function(done) {
                 readFile(root + "/" + file, function(str) {
                     try {

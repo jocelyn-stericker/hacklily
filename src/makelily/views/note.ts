@@ -24,10 +24,11 @@ import _                    = require("lodash");
 import invariant            = require("react/lib/invariant");
 let $                       = React.createFactory;
 
+import Accidental           = require("./accidental");
 import Dot                  = require("./primitives/dot");
 import Notehead             = require("./notehead");
 
-class Note extends React.Component<{clef: MusicXML.Clef, spec: MusicXML.Note, offsetX: number, onLedger: boolean}, void> {
+class Note extends React.Component<{spec: MusicXML.Note}, void> {
     render() {
         const spec = this.props.spec;
         const pitch = spec.pitch;
@@ -41,7 +42,7 @@ class Note extends React.Component<{clef: MusicXML.Clef, spec: MusicXML.Note, of
                 key: "h",
                 spec: {
                     defaultX: 0,
-                    defaultY: spec.defaultY,
+                    defaultY: 0,
                     color: spec.color,
                     type: MusicXML.NoteheadType.Normal // FIXME
                 },
@@ -54,99 +55,11 @@ class Note extends React.Component<{clef: MusicXML.Clef, spec: MusicXML.Note, of
                 x: 0, // TODO
                 y: 0 // TODO
             })) : null,
-            this.accidental()
+            this.props.spec.accidental ? $(Accidental)({
+                key: "a",
+                spec: this.props.spec.accidental
+            }) : null
         /* React.DOM.g */);
-    }
-
-    accidentalSpacing() {
-        if (this.props.onLedger) {
-            return 14.4;
-        } else {
-            return 12;
-        }
-    }
-    accidental(): any {
-        let spec = this.props.spec;
-        if (!spec.accidental) {
-            return false;
-        }
-
-        return null;
-        // var accidentals = this.props.accidentals;
-        // accidentals = accidentals.length ? accidentals : [accidentals];
-
-        // var l = this.props.lines;
-        // var glyphOffset = 0;
-
-        // return _.map(accidentals, (acc: any, idx: number) => {
-        //     var paren = false;
-        //     if (typeof acc === "string") {
-        //         paren = !!~acc.indexOf("p");
-        //         acc = acc.replace("p", "")*1;
-        //     }
-        //     if (!isNaN(<any>acc)) {
-        //         var glyphName: string;
-        //         switch(acc) {
-        //             // Standard
-        //             case 2:
-        //                 glyphName = "accidentalDoubleSharp";
-        //                 glyphOffset += 14;
-        //                 break;
-        //             case 1:
-        //                 glyphName = "accidentalSharp";
-        //                 break;
-        //             case 0:
-        //                 glyphName = "accidentalNatural";
-        //                 break;
-        //             case -1:
-        //                 glyphName = "accidentalFlat";
-        //                 break;
-        //             case -2:
-        //                 glyphName = "accidentalDoubleFlat";
-        //                 glyphOffset += 18;
-        //                 break;
-
-        //             // Stein-Zimmermann
-        //             case -0.5:
-        //                 glyphName = "accidentalQuarterToneFlatStein";
-        //                 break;
-        //             case -1.5:
-        //                 glyphName = "accidentalNarrowReversedFlatAndFlat";
-        //                 glyphOffset += 18;
-        //                 break;
-        //             case 0.5:
-        //                 glyphName = "accidentalQuarterToneSharpStein";
-        //                 break;
-        //             case 1.5:
-        //                 glyphName = "accidentalThreeQuarterTonesSharpStein";
-        //                 glyphOffset += 18;
-        //                 break;
-
-        //             default:
-        //                 invariant(false, "Invalid accidental");
-        //         }
-        //         if (paren) {
-        //             if (glyphOffset >= 18) {
-        //                 glyphOffset += 5;
-        //             } else {
-        //                 glyphOffset = 18;
-        //             }
-        //         }
-        //         return Accidental({
-        //             x: this.props.x - (glyphOffset || this.accidentalSpacing())*(this.props.grace[idx] ? 0.6 : 1.0),
-        //             y: this.props.y,
-        //             grace: this.props.grace[idx],
-        //             stroke: this.props.accStrokes[idx],
-        //             line: l[idx],
-        //             key: "acc_" + idx,
-        //             idx: idx,
-        //             paren: paren,
-        //             accidental: glyphName
-        //         });
-        //     } else {
-        //         return null;
-        //     }
-        // });
     }
     tie(): any {
         return null;
@@ -168,30 +81,21 @@ class Note extends React.Component<{clef: MusicXML.Clef, spec: MusicXML.Note, of
         //     }
         // });
     }
+
+    getChildContext() {
+        return {
+            originY:        this.context.originY - this.props.spec.defaultY
+        };
+    }
 };
 
 module Note {
+    export var childContextTypes = <any> {
+        originY:            React.PropTypes.number.isRequired
+    };
     export var contextTypes = <any> {
         originY:         React.PropTypes.number.isRequired
     };
 }
-
-/*
-            this.props.flag && Flag({
-                key: "_3",
-                x: this.props.x,
-                y: this.props.y,
-                line: this.props.startingLine,
-                stroke: this.props.secondaryStroke,
-                stemHeight: this.props.stemHeight,
-                stemWidth: 1.4,
-                flag: this.props.flag,
-                notehead: this.props.notehead,
-                grace: this.props.grace[0],
-                direction: direction
-            }),
-            this.tie(),
-            this.props.lyrics
-*/
 
 export = Note;

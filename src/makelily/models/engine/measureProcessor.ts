@@ -296,13 +296,13 @@ export function reduce(spec: ILayoutOpts): Measure.IMeasureLayout {
     let padding = spec.padEnd ? 15 : 0;
 
     return {
-        attributes: lastAttribs,
-        elements: voiceLayouts$.concat(staffLayoutsUnique$), // TODO: can we filter spacers here?
-        width: maxXInMeasure + padding - measure.x,
-        originX: measure.x,
-        originY: NaN,
-        paddingTop: maxPaddingTopInMeasure$,
-        paddingBottom: maxPaddingBottomInMeasure$
+        attributes:     lastAttribs,
+        elements:       voiceLayouts$.concat(staffLayoutsUnique$),
+        width:          maxXInMeasure + padding - measure.x,
+        originX:        measure.x,
+        originY:        NaN,
+        paddingTop:     maxPaddingTopInMeasure$,
+        paddingBottom:  maxPaddingBottomInMeasure$
     };
 }
 

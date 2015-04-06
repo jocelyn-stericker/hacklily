@@ -57,7 +57,8 @@ describe("[engine/measureProcessor.ts]", function() {
                     nonControlling: false,
                     number:         "1",
                     uuid:           777,
-                    x:              100
+                    x:              100,
+                    parent:         null
                 },
                 prevByStaff:        [],
                 segments:           segments,
