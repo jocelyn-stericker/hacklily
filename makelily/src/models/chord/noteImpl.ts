@@ -18,8 +18,10 @@
 
 import MusicXML         = require("musicxml-interfaces");
 import _                = require("lodash");
+import invariant        = require("react/lib/invariant");
 
 import ChordModelImpl   = require("./chordImpl"); // @cyclic
+import Engine           = require("../engine");
 
 /**
  * Represents a note in a ChordImpl.
@@ -34,7 +36,7 @@ class NoteImpl implements MusicXML.Note {
 
     constructor(parent: ChordModelImpl, idx: number, note: MusicXML.Note,
             updateParent: boolean = true) {
-        var self : {[key:string]: any} = <any> this;
+        let self : {[key:string]: any} = <any> this;
 
         /* Link to parent */
         this._parent                    = parent;
@@ -50,7 +52,7 @@ class NoteImpl implements MusicXML.Note {
             if (note.rest) {
                 this.rest               = note.rest; // Assigns parent
             }
-            var count                   = note.noteType ? note.noteType.duration : parent.count;
+            let count                   = note.noteType ? note.noteType.duration : parent.count;
             if (count) {
                 parent.count            = count;
             }
@@ -59,7 +61,7 @@ class NoteImpl implements MusicXML.Note {
         }
 
         /* Properties owned by NoteImpl */
-        var properties                  = [
+        let properties                  = [
             "pitch", "unpitched", "noteheadText", "accidental", "instrument",
             "attack", "endDynamics", "lyrics", "notations", "stem", "cue", "ties", "dynamics", "duration",
             "play", "staff", "grace", "notehead", "release", "pizzicato", "beams", "voice", "footnote", "level",
@@ -80,7 +82,7 @@ class NoteImpl implements MusicXML.Note {
     /*---- NoteImpl -------------------------------------------------------------------------*/
 
     toJSON(): {} {
-        var clone: {[key: string]: any} = {};
+        let clone: {[key: string]: any} = {};
 
         /* Properties owned by parent */
         if (this.pitch) {
@@ -103,7 +105,7 @@ class NoteImpl implements MusicXML.Note {
         }
 
         /* Properties owned by MNote */
-        for (var key in this) {
+        for (let key in this) {
             if (this.hasOwnProperty(key) && key[0] !== "_" && !!(<any>this)[key]) {
                 clone[key] = (<any>this)[key];
             }
@@ -253,7 +255,7 @@ class NoteImpl implements MusicXML.Note {
     /*---- MusicXML.PrintStyle >> Color -----------------------------------------------------*/
 
     get color(): string {
-        var hex = this._color.toString(16);
+        let hex = this._color.toString(16);
         return "#" + "000000".substr(0, 6 - hex.length) + hex;
     }
     set color(a: string) {
@@ -348,8 +350,8 @@ class NoteImpl implements MusicXML.Note {
      */
     flattenNotations() {
         if (this.notations) {
-            var notations = this.notations;
-            var notation: MusicXML.Notations = {
+            let notations = this.notations;
+            let notation: MusicXML.Notations = {
                 articulations:          combineArticulations                ("articulations"),
                 accidentalMarks:        combine<MusicXML.AccidentalMark>    ("accidentalMarks"),
                 arpeggiates:            combine<MusicXML.Arpeggiate>        ("arpeggiates"),
@@ -372,18 +374,18 @@ class NoteImpl implements MusicXML.Note {
         }
 
         function combine<T>(key: string): T[] {
-            return _.reduce(notations, (memo: any, n:any) =>
+            return _.reduce(this.notations, (memo: any, n:any) =>
                 n[key] ? (memo||<T[]>[]).concat(n[key]) : memo, null);
         }
 
         function combineArticulations(key: string): MusicXML.Articulations[] {
-            var array = combine<MusicXML.Articulations>(key);
+            let array = combine<MusicXML.Articulations>(key);
             if (!array) {
                 return null;
             }
-            var articulations: MusicXML.Articulations = <any> {};
-            for (var i = 0; i < array.length; ++i) {
-                for (var akey in array[i]) {
+            let articulations: MusicXML.Articulations = <any> {};
+            for (let i = 0; i < array.length; ++i) {
+                for (let akey in array[i]) {
                     if (array[i].hasOwnProperty(akey)) {
                         (<any>articulations)[akey] = (<any>array[i])[akey];
                     }
@@ -393,9 +395,105 @@ class NoteImpl implements MusicXML.Note {
         }
 
         function last<T>(key: string): T {
-            return _.reduce(notations, (memo: any, n:any) =>
+            return _.reduce(this.notations, (memo: any, n:any) =>
                 n[key] ? n[key] : memo, []);
         }
+    }
+
+    updateAccidental$(cursor: Engine.ICursor) {
+        function or3(first: number, second: number, third?: number) {
+            let a = first === null || first === undefined || first !== first ? second : first;
+            return a === null || a === undefined || a !== a ? third : a || null;
+        };
+
+        let pitch = this.pitch;
+        if (!pitch) {
+            return;
+        }
+        let actual = pitch.alter || 0;
+        let accidentals = cursor.staff.accidentals$;
+        invariant(!!accidentals, "Accidentals must already have been setup. Is there an Attributes element?");
+
+        let generalTarget = accidentals[pitch.step] || null; // TODO: this is no longer sufficient due to `onion`.
+        let target = accidentals[pitch.step + pitch.octave] || generalTarget;
+
+        if (!target && generalTarget !== Engine.IChord.InvalidAccidental) {
+            target = generalTarget;
+        }
+
+        let acc = this.accidental;
+
+        let paren = acc && (acc.editorial || acc.parentheses || acc.bracket);
+
+        // If the encoding software tells us what kind of accidental we have, we trust it. Otherwise...
+        // TODO: Check cursor.header.identification.encoding.supports to see if we can actually trust it.
+        // TODO: Re-enable this logic.
+        if (!acc && actual === target) {
+            // We don't need to show an accidental if all of these conditions are met:
+
+            // 1. The note has the same accidental on other octave (if the note is on other octaves)
+            let noConflicts = target === generalTarget || generalTarget === Engine.IChord.InvalidAccidental;
+
+            // 2. The note has the same accidental on all other voice (in the same bar, in the past)
+            // console.log(cursor.measure.parent);
+            // for (let j = 0; j < ctx.accidentalsByStaff.length && noConflicts; ++j) {
+            //     if (ctx.accidentalsByStaff[j] && target !== or3(ctx.accidentalsByStaff[j][pitch.step + pitch.octave],
+            //             ctx.accidentalsByStaff[j][pitch.step], target)) {
+            //         noConflicts = false;
+            //     }
+            // }
+
+            // // 3. The note has the same accidental on other voices with the same note (right now!)
+            // let concurrentNotes = ctx.findVertical(c => c.isNote);
+            // for (let j = 0; j < concurrentNotes.length && noConflicts; ++j) {
+            //     let otherChord = concurrentNotes[j].note.chord;
+            //     noConflicts = noConflicts && !_hasConflict(otherChord, pitch.step, target);
+            // }
+
+            // // 4. There isn't ambiguity because or a barline and this is the first beat.
+            // if (ctx.division === 0) {
+            //     let prevBarOrNote = ctx.prev(c => c.isNote && !c.isRest || c.type === Engine.IModel.Type.Barline);
+            //     if (prevBarOrNote && prevBarOrNote.type === C.Type.Barline) {
+            //         let prevNote = ctx.prev(
+            //             c => c.isNote && _.any(c.note.chord, c => c.step === pitch.step) ||
+            //             c.type === C.Type.Barline, 2);
+            //         if (prevNote && prevNote.type !== C.Type.Barline) {
+            //             noConflicts = noConflicts && !_hasConflict(prevNote.note.chord, pitch.step, target);
+            //         }
+            //     }
+            // }
+
+            // if (noConflicts) {
+            //     result[i] = NaN; // no accidental
+            //     continue;
+            // } else {
+            //     paren = true;
+            // }
+        }
+
+        // assert(actual !== Engine.IChord.InvalidAccidental, "Accidental is invalid");
+        // actual is the result
+        // paren is if there is a ( ).
+
+        if (acc) {
+            if (Engine.IChord.onLedger(this, cursor.staff.attributes.clefs[cursor.staff.idx])) {
+                acc.defaultX = -12.8;
+            } else {
+                acc.defaultX = -12;
+            }
+            acc.defaultY = 0;
+
+            if (acc.editorial && !acc.parentheses) {
+                // We don't allow an accidental to be editorial but not have parentheses.
+                acc.parentheses = true;
+            }
+
+            if (acc.parentheses) {
+                acc.defaultX -= 6.25;
+            }
+        }
+
+        this.accidental = acc;
     }
 }
 

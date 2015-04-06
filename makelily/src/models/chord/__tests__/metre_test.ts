@@ -31,68 +31,16 @@ import Engine           = require("../../engine");
 import Factory          = require("../../factory");
 import Metre            = require("../metre");
 
+import AttributesTst    = require("../../__tests__/attributes_test");
+
 var ModelType           = Engine.IModel.Type;
 var expect              = chai.expect;
-
-function genCursor(factory: Factory, models: Engine.IModel[]): Engine.ICursor {
-    return {
-        segment: <any> models,
-        print$: null,
-        header: null,
-        idx$: 0,
-        prev$: null,
-        division$: 0,
-        x$: 0,
-        maxPaddingTop$: 0,
-        maxPaddingBottom$: 0,
-        voice: {
-        },
-        staff: {
-            previous: null,
-            attributes: {
-                divisions: 60,
-                clefs: [{
-                    sign: "G",
-                    clefOctaveChange: "0",
-                    line: 2
-                }],
-                times: [{
-                    beats: ["4"],
-                    beatTypes: [4],
-                    senzaMisura: null
-                }]
-            },
-            totalDivisions: 240,
-            accidentals$: {},
-            idx: 0
-        },
-        measure: {
-            idx: 1,
-            number: "1",
-            implicit: false,
-            nonControlling: false,
-            x: 0,
-            attributes$: [],
-            uuid: -1
-        },
-        line: {
-            shortestCount: Number.MAX_VALUE,
-            barOnLine: 1
-        },
-        prev: null,
-        x: 0,
-        page$: NaN,
-        approximate: true,
-        detached: true,
-        factory: factory
-    };
-}
 
 describe("[metre.ts]", function() {
     describe("rhythmicSpellcheck$", function() {
         it("merges two tied eighth notes", function() {
             var factory = new Factory([Attributes, Chord]);
-            var cursor$ = genCursor(factory, [
+            var cursor$ = AttributesTst.makeCursor(factory, [
                 factory.create(ModelType.Chord, <Engine.IChord> [{
                     pitch: {
                         step: "E",
@@ -126,7 +74,7 @@ describe("[metre.ts]", function() {
         });
         it("merges two eighth rests", function() {
             var factory = new Factory([Attributes, Chord]);
-            var cursor$ = genCursor(factory, [
+            var cursor$ = AttributesTst.makeCursor(factory, [
                 factory.create(ModelType.Chord, <Engine.IChord> [{
                     rest: {},
                     noteType: {
@@ -153,7 +101,7 @@ describe("[metre.ts]", function() {
         });
         it("does not merge two eighth notes that are not tied", function() {
             var factory = new Factory([Attributes, Chord]);
-            var cursor$ = genCursor(factory, [
+            var cursor$ = AttributesTst.makeCursor(factory, [
                 factory.create(ModelType.Chord, <Engine.IChord> [{
                     pitch: {
                         step: "E",
@@ -186,7 +134,7 @@ describe("[metre.ts]", function() {
         });
         it("does not merge accross boundries", function() {
             var factory = new Factory([Attributes, Chord]);
-            var cursor$ = genCursor(factory, [
+            var cursor$ = AttributesTst.makeCursor(factory, [
                 factory.create(ModelType.Chord, <Engine.IChord> [{
                     pitch: {
                         step: "E",

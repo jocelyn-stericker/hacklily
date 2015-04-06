@@ -28,49 +28,62 @@ import Attributes   = require("../attributes");
 import Engine       = require("../engine");
 import Factory      = require("../factory");
 
-var expect          = chai.expect;
+let expect          = chai.expect;
 
-function makeCursor(model: Engine.IModel, factory: Factory): Engine.ICursor {
+export function makeCursor(factory: Factory, models: Engine.IModel[]): Engine.ICursor {
     return {
-        segment: <any> [model],
-        idx$: 0,
+        segment:            <any> models,
+        idx$:               0,
 
-        voice: {},
+        voice:              {},
         staff: {
-            previous: null,
-            attributes: {},
-            totalDivisions: NaN,
-            accidentals$: {},
-            idx: 0
+            previous:       null,
+            attributes: {
+                divisions: 60,
+                clefs: [{
+                    sign: "G",
+                    clefOctaveChange: "0",
+                    line: 2
+                }],
+                times: [{
+                    beats: ["4"],
+                    beatTypes: [4],
+                    senzaMisura: null
+                }]
+            },
+            totalDivisions: 240,
+            accidentals$:   {},
+            idx:            0
         },
         measure: {
-            idx: 0,
-            number: "1",
-            implicit: false,
+            idx:            0,
+            number:         "1",
+            implicit:       false,
             nonControlling: false,
-            x: 100,
-            attributes$: null,
-            uuid: 100
+            x:              100,
+            attributes$:    null,
+            uuid:           100,
+            parent:         null
         },
         line: {
-            shortestCount: 0,
-            barOnLine: 0
+            shortestCount:  Number.MAX_VALUE,
+            barOnLine:      0
         },
-        print$: null,
-        header: null,
+        print$:             null,
+        header:             null,
 
-        prev$: null,
-        division$: 0,
-        x$: 100,
-        minXBySmallest$: {},
-        maxPaddingTop$: 0,
-        maxPaddingBottom$: 0,
+        prev$:              null,
+        division$:          0,
+        x$:                 100,
+        minXBySmallest$:    {},
+        maxPaddingTop$:     0,
+        maxPaddingBottom$:  0,
 
-        page$: NaN,
+        page$:              NaN,
 
-        approximate: false,
-        detached: true,
-        factory: factory
+        approximate:        false,
+        detached:           true,
+        factory:            factory
     };
 }
 
@@ -82,20 +95,22 @@ function FakeChord(constructors: { [key: number]: any }) {
 
 describe("[attributes.ts]", function() {
     describe("AttributesModel", function() {
-        var factory = new Factory([Attributes, FakeChord]);
-        var attributes: Engine.IModel;
+        let factory = new Factory([Attributes, FakeChord]);
+        let attributes: Engine.IModel;
         it("can be created", function() {
             attributes = factory.create(Engine.IModel.Type.Attributes);
             expect(!!attributes).to.be.true;
             // Divisions is usually set by Engine
             (<any>attributes).divisions = 100;
 
-            var cursor$ = makeCursor(attributes, factory);
+            let cursor$ = makeCursor(factory, [attributes]);
+            cursor$.staff.attributes = {};
             attributes.validate$(cursor$);
         });
         it("lays out properly when at start of song", function() {
-            var cursor$ = makeCursor(attributes, factory);
-            var layout = <Attributes.ILayout> attributes.layout(cursor$);
+            let cursor$ = makeCursor(factory, [attributes]);
+            cursor$.staff.attributes = {};
+            let layout = <Attributes.ILayout> attributes.layout(cursor$);
             expect(layout.ksVisible).to.be.true;
             expect(layout.tsVisible).to.be.true;
             expect(layout.clefVisible).to.be.true;

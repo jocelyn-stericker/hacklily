@@ -31,52 +31,7 @@ import MusicXML         = require("musicxml-interfaces");
 import chai             = require("chai");
 var expect              = chai.expect;
 
-function makeCursor(model: IModel): ICursor {
-    return {
-        segment: (() => {
-            let a = <any> [model];
-            return a;
-        })(),
-        idx$: 0,
-
-        voice: {},
-        staff: {
-            previous: null,
-            attributes: {},
-            totalDivisions: NaN,
-            accidentals$: {},
-            idx: 0
-        },
-        measure: {
-            idx: 0,
-            number: "1",
-            implicit: false,
-            nonControlling: false,
-            x: 100,
-            attributes$: null,
-            uuid: 100
-        },
-        line: {
-            shortestCount: 0,
-            barOnLine: 0
-        },
-        print$: null,
-        header: null,
-
-        prev$: null,
-        division$: 0,
-        x$: 100,
-        minXBySmallest$: {},
-        maxPaddingTop$: 0,
-        maxPaddingBottom$: 0,
-
-        page$: 1,
-
-        approximate: false,
-        detached: true,
-        factory: null
-    };
-}
+import AttributesTst    = require("../../__tests__/attributes_test");
 
 describe("[engine/ichord.ts]", function() {
     describe("hasAccidental", function() {
@@ -84,7 +39,7 @@ describe("[engine/ichord.ts]", function() {
             var notes: MusicXML.Note[] = [{
                 rest: {}
             }];
-            var cursor = makeCursor(<any> notes);
+            var cursor = AttributesTst.makeCursor(null, <any> [notes]);
             expect(IChord.hasAccidental(notes, cursor)).to.eq(false);
         });
     });
