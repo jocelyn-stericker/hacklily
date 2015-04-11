@@ -22,6 +22,7 @@ import invariant        = require("react/lib/invariant");
 
 import ChordModelImpl   = require("./chordImpl"); // @cyclic
 import Engine           = require("../engine");
+import SMuFL            = require("../smufl");
 
 /**
  * Represents a note in a ChordImpl.
@@ -431,20 +432,32 @@ class NoteImpl implements MusicXML.Note {
                 case 2:
                     accType = MusicXML.MxmlAccidental.DoubleSharp;
                     break;
+                case 1.5:
+                    accType = MusicXML.MxmlAccidental.ThreeQuartersSharp;
+                    break;
                 case 1:
                     accType = MusicXML.MxmlAccidental.Sharp;
+                    break;
+                case 0.5:
+                    accType = MusicXML.MxmlAccidental.QuarterSharp;
                     break;
                 case 0:
                     accType = MusicXML.MxmlAccidental.Natural;
                     break;
+                case -0.5:
+                    accType = MusicXML.MxmlAccidental.QuarterFlat;
+                    break;
                 case -1:
                     accType = MusicXML.MxmlAccidental.Flat;
+                    break;
+                case -1.5:
+                    accType = MusicXML.MxmlAccidental.ThreeQuartersFlat
                     break;
                 case -2:
                     accType = MusicXML.MxmlAccidental.DoubleFlat;
                     break;
                 default:
-                    invariant(false, "Not implemented: unknown accidental for offset %s", target);
+                    invariant(false, "Not implemented: unknown accidental for offset %s", actual);
             }
 
             acc = {
@@ -503,11 +516,18 @@ class NoteImpl implements MusicXML.Note {
         // paren is if there is a ( ).
 
         if (acc) {
+            let glyphName = Engine.IChord.accidentalGlyphs[acc.accidental];
+            invariant(glyphName in SMuFL.bboxes, "Expected a known glyph, got %s", glyphName);
+            let width = SMuFL.bboxes[glyphName][0]*10;
+
             if (Engine.IChord.onLedger(this, cursor.staff.attributes.clefs[cursor.staff.idx])) {
-                acc.defaultX = -12.8;
+                acc.defaultX = -2.84;
             } else {
-                acc.defaultX = -12;
+                acc.defaultX = -2.04;
             }
+
+            acc.defaultX -= width;
+
             acc.defaultY = 0;
 
             if (acc.editorial && !acc.parentheses) {
