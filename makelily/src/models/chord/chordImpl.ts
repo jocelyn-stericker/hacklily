@@ -111,6 +111,10 @@ class ChordModelImpl implements ChordModel.IChordModel {
 
     /*---- II. Life-cycle -----------------------------------------------------------------------*/
 
+    /**
+     * We accept either a Note from musicxml-interfaces, or an IChord, which 
+     * is an array-like element of Notes. In either case, we create a deep copy.
+     */
     constructor(spec?: Engine.IChord | MusicXML.Note | {_class: string}) {
         if (!!spec) {
             if ((<{_class: string}>spec)._class === "Note") {
@@ -456,14 +460,6 @@ module ChordModelImpl {
             this.x$ = cursor$.x$ + accidentalWidth;
 
             this.division = cursor$.division$;
-
-            /*---- Move cursor in time ------------------*/
-
-            if (model.divCount === -1) {
-                cursor$.division$ += cursor$.staff.totalDivisions;
-            } else {
-                cursor$.division$ += model.divCount;
-            }
 
             /*---- Move cursor by width -----------------*/
 

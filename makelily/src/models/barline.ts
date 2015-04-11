@@ -46,9 +46,6 @@ class BarlineModel implements Export.IBarlineModel {
                 data: NaN
             };
         }
-        if (!isFinite(this.barStyle.data) || this.barStyle.data === null) {
-            this.barStyle.data = MusicXML.BarStyleType.Regular;
-        }
         if (!this.barStyle.color) {
             this.barStyle.color = "black";
         }
@@ -111,6 +108,19 @@ module BarlineModel {
                     get: () => this.barX
                 }
             });
+            this.model.barStyle = Object.create(this.model.barStyle) || {};
+            if (!isFinite(this.model.barStyle.data) || this.model.barStyle.data === null) {
+                let lastBarlineInSegment = !_.any(cursor$.segment.slice(cursor$.idx$ + 1),
+                        model => cursor$.factory.modelHasType(model, Engine.IModel.Type.Barline));
+
+                if(cursor$.line.barOnLine$ + 1 === cursor$.line.barsOnLine &&
+                        cursor$.line.line + 1 === cursor$.line.lines &&
+                        lastBarlineInSegment) {
+                    this.model.barStyle.data = MusicXML.BarStyleType.LightHeavy;
+                } else {
+                    this.model.barStyle.data = MusicXML.BarStyleType.Regular;
+                }
+            }
             this.model.defaultY = 0;
             this.x$ = cursor$.x$;
             this.division = cursor$.division$;

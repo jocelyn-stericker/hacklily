@@ -47,7 +47,7 @@ describe("[engine/measureProcessor.ts]", function() {
             // test without alignment
             var opts: MeasureProcessor.ILayoutOpts = {
                 attributes:         null,
-                line:               Ctx.ILine.create(segments),
+                line:               Ctx.ILine.create(segments, 1, 0, 1),
                 header:             null,
                 padEnd:             false,
                 measure: {
@@ -162,8 +162,11 @@ describe("[engine/measureProcessor.ts]", function() {
                 prevByStaff:    [],
                 x:              100,
                 line:           {
-                    barOnLine:      0,
-                    shortestCount:  42
+                    barOnLine$:     0,
+                    barsOnLine:     0,
+                    shortestCount:  42,
+                    line:           0,
+                    lines:          1
                 },
                 factory:        ETestUtil.fakeAttributeChordFactory
             });
@@ -210,8 +213,11 @@ describe("[engine/measureProcessor.ts]", function() {
                 prevByStaff:    [],
                 x:              100,
                 line:           {
-                    barOnLine:      0,
-                    shortestCount:  42
+                    barOnLine$:     0,
+                    barsOnLine:     0,
+                    shortestCount:  42,
+                    line:           0,
+                    lines:          1
                 },
                 factory:        ETestUtil.fakeAttributeChordFactory
             });

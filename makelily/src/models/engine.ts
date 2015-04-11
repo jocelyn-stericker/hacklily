@@ -143,18 +143,44 @@ if (process.env.NODE_ENV !== "production") {
 /*---- Engine -----------------------------------------------------------------------------------*/
 
 export function validate$(options$: Options.ILayoutOptions, memo$: Options.ILinesLayoutState): void {
+    let shouldTryAgain: boolean;
+    do {
+        shouldTryAgain = false;
+        try {
+            tryValidate$(options$, memo$);
+        } catch(err) {
+            if (err instanceof MeasureProcessor.DivisionOverflowException) {
+                (<MeasureProcessor.DivisionOverflowException>err).resolve$(options$.measures);
+                shouldTryAgain = true;
+            } else {
+                throw err;
+            }
+        }
+    } while(shouldTryAgain);
+}
+
+export function tryValidate$(options$: Options.ILayoutOptions, memo$: Options.ILinesLayoutState): void {
     let factory         = options$.modelFactory;
     let searchHere      = factory.searchHere.bind(factory);
     let createModel     = factory.create.bind(factory);
 
     let lastAttribs: MusicXML.Attributes = null;
 
+    function withPart(segments: Measure.ISegment[], partID: string): Measure.ISegment[] {
+        _.forEach(segments, segment => {
+            if (segment) {
+                segment.part = partID;
+            }
+        });
+        return segments;
+    }
+
     _.forEach(options$.measures, function validateMeasure(measure) {
         if (!(measure.uuid in memo$.clean$)) {
             let voiceSegments$ = <Measure.ISegment[]>
-                _.flatten(_.map(_.values(measure.parts), part => part.voices));
+                _.flatten(_.map(_.pairs(measure.parts), partx => withPart(partx[1].voices, partx[0])));
             let staffSegments$ = <Measure.ISegment[]>
-                _.flatten(_.map(_.values(measure.parts), part => part.staves));
+                _.flatten(_.map(_.pairs(measure.parts), partx => withPart(partx[1].staves, partx[0])));
 
             let measureCtx = Ctx.IMeasure.detach(measure, 0);
             let segments = _.filter(voiceSegments$.concat(staffSegments$), s => !!s);
@@ -170,6 +196,8 @@ export function validate$(options$: Options.ILayoutOptions, memo$: Options.ILine
                     segment.splice(0, 0, createModel(IModel.Type.Attributes));
                 }
                 if (!searchHere(segment, segment.length - 1, IModel.Type.Barline).length) {
+                    // The goal here is to make sure this ends up at the end.
+                    // It's not elegant, but hey.
                     const divs = segment.divisions*800 -
                         _.reduce(segment, (divs, model) => divs + model.divCount, 0);
                     if (divs !== 0) {
@@ -205,7 +233,10 @@ export function validate$(options$: Options.ILayoutOptions, memo$: Options.ILine
 
 export function layout$(options: Options.ILayoutOptions,
         memo$: Options.ILinesLayoutState): Options.ILineLayoutResult[] {
-    // TODO: multiple pages.
+
+    // We lay out measures in two passes.
+    // First, we calculate the approximate width of measures and assign them to lines.
+    // Then, we lay them out properly with a valid line context.
 
     let measures = options.measures;
     let width$ = memo$.width$;
@@ -213,7 +244,7 @@ export function layout$(options: Options.ILayoutOptions,
     invariant(!!options.print$, "Print not defined");
     let boundsGuess = Options.ILineBounds.calculate(options.print$, options.page$);
 
-    let widths = _.map(measures, (measure, idx) => {
+    let widths = _.map(measures, function layoutMeasure(measure, idx) {
         // Create an array of the IMeasureParts of the previous, current, and next measures
         let neighbourMeasures: Measure.IMeasurePart[] = <any> _.flatten([
             !!measures[idx - 1] ? _.values(measures[idx - 1].parts) : <Measure.IMeasurePart> {
@@ -235,7 +266,7 @@ export function layout$(options: Options.ILayoutOptions,
                 attributes:     options.attributes,
                 factory:        options.modelFactory,
                 header:         options.header,
-                line:           Ctx.ILine.create(neighbourModels),
+                line:           Ctx.ILine.create(neighbourModels, measures.length, 0, 1),
                 measure:        measure,
                 prevByStaff:    [], // FIXME:
                 staves:         _.map(_.values(measure.parts), p => p.staves),
@@ -268,7 +299,9 @@ export function layout$(options: Options.ILayoutOptions,
         };
     }
 
-    // Super-naive for now...
+    // Here we assign the lines.
+    // It's currently very naive, and could use some work.
+
     let startingWidth = boundsGuess.right - boundsGuess.left - 150;
         // FIXME: replace 150 w/ proper __ESTIMATE__ space for start of line/staff
     let lineOpts$ = _.reduce(widths, function(memo, width, idx) {
@@ -282,15 +315,17 @@ export function layout$(options: Options.ILayoutOptions,
             memo.remainingWidth = startingWidth;
         }
         memo.opts[memo.opts.length - 1].measures.push(measures[idx]);
+        memo.opts[memo.opts.length - 1].line = memo.opts.length - 1;
         return memo;
     }, {
         opts: <Options.ILayoutOptions[]>[newLayoutWithoutMeasures()],
         remainingWidth: startingWidth
     }).opts;
 
-    lineOpts$[lineOpts$.length - 1].finalLine = true;
 
+    // layoutLine$ handles the second pass.
     return _.map(lineOpts$, function(lineOpt$) {
+        lineOpt$.lines = lineOpts$.length;
         return LineProcessor.layoutLine$(lineOpt$, Options.ILineBounds.calculate(lineOpt$.print$,
                 options.page$), memo$);
     });

@@ -60,7 +60,7 @@ class TimeSignature extends React.Component<{spec: MusicXML.Time}, void> {
                     stroke: spec.color,
                     x: this.context.originX + spec.defaultX + (spec.relativeX || 0) +
                         this.numOffset(),
-                    y: this.context.originY - (spec.defaultY + (spec.relativeY || 0) - 10)
+                    y: this.context.originY - (spec.defaultY + (spec.relativeY || 0) + 10)
                 },
                 ts.beats
             ),
@@ -69,7 +69,7 @@ class TimeSignature extends React.Component<{spec: MusicXML.Time}, void> {
                     stroke: spec.color,
                     x: this.context.originX + spec.defaultX + (spec.relativeX || 0) +
                         this.denOffset(),
-                    y: this.context.originY - (spec.defaultY + (spec.relativeY || 0) + 10)
+                    y: this.context.originY - (spec.defaultY + (spec.relativeY || 0) - 10)
                 },
                 ts.beatType
             )

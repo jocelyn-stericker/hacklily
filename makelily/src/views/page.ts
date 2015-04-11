@@ -57,7 +57,10 @@ class Page extends React.Component<Page.IProps, Page.IState> {
         const pageMargins       = Engine.IPrint.getPageMargins(pageMarginsAll, pageNum);
         let systemMargins       = print.systemLayout.systemMargins;
 
-        let staveTops           = _.map(lineLayouts, measureLayouts => measureLayouts[0].originY);
+        if (!lineLayouts[0][0]) {
+            console.log("--", lineLayouts);
+        }
+        let staveTops           = _.map(lineLayouts, measureLayouts => measureLayouts[0] ? measureLayouts[0].originY : 0);
 
         // TODO: Move to Engine & IModel, generalize
         let staveLefts          = _.map(lineLayouts, () => {

@@ -41,7 +41,7 @@ export function justify(options: Options.ILayoutOptions, bounds: Options.ILineBo
     // guess for a measure width was too liberal. In either case, we're shortening
     // the measure width here, and our partial algorithm doesn't work with negative
     // padding.
-    let partial = x < bounds.right && options.finalLine;
+    let partial = x < bounds.right && options.line + 1 === options.lines;
 
     let expandableCount = _.reduce(measures$, function(memo, measure$) {
         // Precondition: all layouts at a given index have the same "expandable" value.
@@ -108,10 +108,10 @@ export function layoutLine$(options: Options.ILayoutOptions, bounds: Options.ILi
         let segments = _.filter(voiceSegments$.concat(staffSegments$), s => !!s);
         return memo.concat(segments);
     }, []);
-    let line = Ctx.ILine.create(allModels);
+    let line = Ctx.ILine.create(allModels, measures.length, options.line, options.lines);
 
     let layouts = _.map(measures, (measure, measureIdx) => {
-        line.barOnLine = measureIdx;
+        line.barOnLine$ = measureIdx;
         if (!(measure.uuid in clean$)) {
             clean$[measure.uuid] = MeasureProcessor.layoutMeasure({
                 attributes:     attributes,

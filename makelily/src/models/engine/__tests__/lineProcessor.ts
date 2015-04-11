@@ -82,7 +82,8 @@ describe("[lineProcessor.ts]", function() {
             var justified = LineProcessor.justify(
                 {
                     attributes: null,
-                    finalLine: true,
+                    line: 0,
+                    lines: 1,
                     measures: new Array(2), // TODO: if justify uses measures, this will have to be given a proper value.
                     header: null,
                     page$: 0,

@@ -76,7 +76,10 @@ function getCursor(factory: Engine.IModel.IFactory, model: Engine.IModel): Engin
         },
         line: {
             shortestCount:  3,
-            barOnLine:      0
+            barOnLine$:     0,
+            barsOnLine:     1,
+            line:           0,
+            lines:          1
         },
 
         prev$:              null,
@@ -126,7 +129,7 @@ describe("[chord.ts]", function() {
             cursor$ = getCursor(factory, chord);
             expect(cursor$.division$).to.eq(0);
             chord.layout(cursor$);
-            expect(cursor$.division$).to.eq(2);
+            expect(cursor$.division$).to.eq(0, "layout must not affect cursor division");
             let xml = (<any>chord).inspect();
             expect(xml).to.contain("<step>C</step>");
             expect(xml).to.contain("<alter>1</alter>");
@@ -167,9 +170,7 @@ describe("[chord.ts]", function() {
             let cursor$ = getCursor(factory, chord);
             chord.validate$(cursor$);
             cursor$ = getCursor(factory, chord);
-            expect(cursor$.division$).to.eq(0);
             chord.layout(cursor$);
-            expect(cursor$.division$).to.eq(2);
             expect(Engine.IChord.fromModel(chord)[0].duration).to.eq(2, "Duration wasn't specified so should be set here.");
         });
     });

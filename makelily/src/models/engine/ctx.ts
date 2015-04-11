@@ -183,16 +183,47 @@ export interface ILine {
      * 
      * This is given in terms of beats, __not__ divisions because divisions.
      * As such, this value should be used only for geometry, not where accuracy is important.
+     *
+     * This is an estimate during validate passes and the first layout pass.
      */
     shortestCount: number;
 
-    barOnLine: number;
+    /**
+     * The bar currently being processed.
+     *
+     * Zero-indexed. Only valid in the final layout pass.
+     */
+    barOnLine$: number;
+    
+    /**
+     * The number of bars on the current line.
+     *
+     * Only valid in the final layout pass.
+     */
+    barsOnLine: number;
+
+    /**
+     * The line number. Note that this is not per-page, it's for the entire song.
+     *
+     * Zero-indexed. Only valid in the final layout pass.
+     */
+    line: number;
+
+    /**
+     * The total number of lines. Note that this is not per-page, it's for the entire song.
+     *
+     * Only valid in the final layout pass.
+     */
+    lines: number;
 }
 
 export module ILine {
-    export function create(segments: Measure.ISegment[]): ILine {
+    export function create(segments: Measure.ISegment[], bars: number, line: number, lines: number): ILine {
         return {
-            barOnLine: 0,
+            barOnLine$: 0,
+            barsOnLine: bars,
+            line: line,
+            lines: lines,
             shortestCount: _.reduce(segments, (shortest, segment) =>
                 segment ? _.reduce(segment, (shortest, model) =>
                     Math.min(shortest, model && model.divCount ? model.divCount : Number.MAX_VALUE),
