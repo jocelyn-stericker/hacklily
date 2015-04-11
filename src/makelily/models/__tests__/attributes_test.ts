@@ -67,7 +67,10 @@ export function makeCursor(factory: Factory, models: Engine.IModel[]): Engine.IC
         },
         line: {
             shortestCount:  Number.MAX_VALUE,
-            barOnLine:      0
+            barOnLine$:     0,
+            barsOnLine:     1,
+            line:           0,
+            lines:          1
         },
         print$:             null,
         header:             null,

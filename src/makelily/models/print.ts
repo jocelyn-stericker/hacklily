@@ -40,13 +40,22 @@ class PrintModel implements Export.IPrintModel {
         // todo
     }
 
+    once: boolean;
     validate$(cursor$: Engine.ICursor): void {
         invariant(!!cursor$.header, "Cursor must have a valid header");
-        var defaultPrint                = extractDefaultPrintFromHeader(cursor$.header);
-        var spec                        = defaultsDeep(this, defaultPrint);
+        var spec: MusicXML.Print;
+        if (!this.once) {
+            // FIXME: should always sync
+            var defaultPrint            = extractDefaultPrintFromHeader(cursor$.header);
+            spec                        = defaultsDeep(this, defaultPrint);
+        } else {
+            spec                        = this;
+        }
         this.sync(spec);
         cursor$.print$                  = this; // FIXME: inheritance for multiple papers
         this.pageNumber                 = null;
+
+        this.once = true;
     }
 
     layout(cursor$: Engine.ICursor): Export.ILayout {

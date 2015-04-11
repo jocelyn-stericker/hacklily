@@ -53,6 +53,7 @@ export interface ISegment extends Array<IModel> {
     owner:              number;
     ownerType:          OwnerType;
     divisions:          number;
+    part?:              string;
 }
 
 export enum OwnerType {

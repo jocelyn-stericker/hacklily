@@ -135,6 +135,8 @@ export function reduce(spec: ILayoutOpts): Measure.IMeasureLayout {
     let maxPaddingTopInMeasure$     = 0;
     let maxPaddingBottomInMeasure$  = 0;
 
+    let divOverflow: DivisionOverflowException = null;
+
     let voiceLayouts$   = _.map(voiceMeasure, segment => {
         let voice                                                   = <Ctx.IVoice> {};
 
@@ -173,8 +175,10 @@ export function reduce(spec: ILayoutOpts): Measure.IMeasureLayout {
             }
             let oldDivision                 = cursor$.division$;
             let oldSegment                  = cursor$.segment;
+            let oldIdx                      = cursor$.idx$;
             cursor$.division$               = divisionPerStaff$[staffIdx];
             cursor$.segment                 = staffMeasure[staffIdx];
+            cursor$.idx$                    = voiceStaves$[staffIdx].length;
             let layout: IModel.ILayout;
             key$(model);
             if (validateOnly) {
@@ -185,10 +189,51 @@ export function reduce(spec: ILayoutOpts): Measure.IMeasureLayout {
                 (<any>layout).key           = (<any>model).key;
             }
             cursor$.division$               += model.divCount;
+
+            if (cursor$.division$ > cursor$.staff.totalDivisions && !!divOverflow) {
+                // Note: unfortunate copy-pasta.
+                if (!divOverflow) {
+                    divOverflow = new DivisionOverflowException(cursor$.staff.totalDivisions, spec.measure.parent);
+                }
+
+                invariant(cursor$.staff.totalDivisions === divOverflow.maxDiv,
+                        "Divisions are not consistent. Found %s but expected %s",
+                        cursor$.staff.totalDivisions, divOverflow.maxDiv);
+
+                if (!divOverflow.newParts[segment.part]) {
+                    divOverflow.newParts[segment.part] = {
+                        voices: [],
+                        staves: []
+                    };
+                }
+                let newStaves = divOverflow.newParts[segment.part].staves;
+                let oldStaves = divOverflow.oldParts[segment.part].staves;
+                if (!newStaves[staffIdx]) {
+                    let nv = newStaves[staffIdx] = <any> [];
+                    let ov = oldStaves[staffIdx] = <any> cursor$.segment.slice(0, voiceStaves$[staffIdx].length + 1);
+
+                    ov.owner     = nv.owner     = staffIdx;
+                    ov.ownerType = nv.ownerType = Measure.OwnerType.Staff;
+                    ov.divisions = nv.divisions = cursor$.segment.divisions;
+                    ov.part      = nv.part      = cursor$.segment.part;
+                    invariant(ov[ov.length - 1] === model, "tx");
+                } else {
+                    let divOffset = cursor$.division$ - cursor$.staff.totalDivisions - _.reduce(newStaves[staffIdx],
+                            (sum, model) => sum + model.divCount, 0);
+                    if (divOffset > 0) {
+                        let spacer = spec.factory.create(IModel.Type.Spacer);
+                        spacer.divCount = divOffset
+                        newStaves[staffIdx].push(spacer);
+                    }
+                    newStaves[staffIdx].push(model);
+                }
+            }
+
             divisionPerStaff$[staffIdx]     = cursor$.division$;
             cursor$.division$               = oldDivision;
             cursor$.prev$                   = model;
             cursor$.segment                 = oldSegment;
+            cursor$.idx$                    = oldIdx;
 
             if (!validateOnly) {
                 invariant(!!layout, "%s must be a valid layout", layout);
@@ -218,6 +263,7 @@ export function reduce(spec: ILayoutOpts): Measure.IMeasureLayout {
                 divisionPerStaff$[staffIdx] = 0;
             }
 
+            cursor$.idx$ = idx;
             cursor$.staff = staffContexts$[staffIdx];
 
             do {
@@ -249,6 +295,40 @@ export function reduce(spec: ILayoutOpts): Measure.IMeasureLayout {
                 (<any>layout).key           = (<any>model).key;
             }
             cursor$.division$ += model.divCount;
+
+            if (cursor$.division$ > cursor$.staff.totalDivisions) {
+                // Note: unfortunate copy-pasta.
+                if (!divOverflow) {
+                    divOverflow = new DivisionOverflowException(cursor$.staff.totalDivisions, spec.measure.parent);
+                }
+
+                invariant(cursor$.staff.totalDivisions === divOverflow.maxDiv,
+                        "Divisions are not consistent. Found %s but expected %s",
+                        cursor$.staff.totalDivisions, divOverflow.maxDiv);
+                invariant(!!segment.part, "Part must be defined -- is this spec from Engine.validate$?");
+
+                if (!divOverflow.newParts[segment.part]) {
+                    divOverflow.newParts[segment.part] = {
+                        voices: [],
+                        staves: []
+                    };
+                }
+                let newVoices = divOverflow.newParts[segment.part].voices;
+                let oldVoices = divOverflow.oldParts[segment.part].voices;
+
+                if (!newVoices[segment.owner]) {
+                    let nv = newVoices[segment.owner] = <any> [];
+                    let ov = oldVoices[segment.owner] = <any> segment.slice(0, cursor$.idx$);
+
+                    ov.owner     = nv.owner     = cursor$.segment.owner;
+                    ov.ownerType = nv.ownerType = Measure.OwnerType.Voice;
+                    ov.divisions = nv.divisions = cursor$.segment.divisions;
+                    ov.part      = nv.part      = cursor$.segment.part;
+                }
+
+                newVoices[segment.owner].push(model);
+            }
+
             cursor$.prev$ = model;
 
             if (atEnd) {
@@ -268,6 +348,10 @@ export function reduce(spec: ILayoutOpts): Measure.IMeasureLayout {
             return layout;
         });
     });
+
+    if (divOverflow) {
+        throw divOverflow;
+    }
 
     // Get an ideal voice layout for each voice-staff combination
     let staffLayoutsUnkeyed$: IModel.ILayout[][][] = _.values(staffLayouts$);
@@ -374,4 +458,64 @@ export function approximateWidth(opts: IMeasureLayoutOptions): number {
         }, opts);
     let layout = layoutMeasure(opts);
     return layout.width;
+}
+
+export declare class Error {
+    constructor();
+    message: string;
+    stack: any;
+}
+
+export class DivisionOverflowException extends Error {
+    constructor(maxDiv: number, measure: Measure.IMutableMeasure) {
+        super();
+        this.measureIdx     = measure.idx;
+        this.message        = `DivisionOverflowException: max division should be ${maxDiv} in measure ${this.measureIdx}`;
+        this.stack          = (new Error).stack;
+        this.maxDiv         = maxDiv;
+        this.oldParts       = measure.parts;
+    }
+
+    resolve$(measures$: Measure.IMutableMeasure[]) {
+        let oldMeasure$ = measures$[this.measureIdx];
+
+        _.forEach(this.oldParts, (part, partID) => {
+            _.forEach(part.staves, (staff, staffIdx) => {
+                if (!staff) {
+                    this.newParts[partID].staves[staffIdx] =
+                        this.newParts[partID].staves[staffIdx] || null;
+                } else {
+                    this.newParts[partID].staves[staffIdx] =
+                        this.newParts[partID].staves[staffIdx] || <any>[];
+                    let nv = this.newParts[partID].staves[staffIdx];
+                    nv.divisions = staff.divisions;
+                    nv.part = staff.part;
+                    nv.owner = staff.owner;
+                    nv.ownerType = staff.ownerType;
+                }
+            });
+        });
+        let newMeasure = {
+            idx:                this.measureIdx + 1,
+            uuid:               Math.floor(Math.random() * MAX_SAFE_INTEGER),
+            number:             "" + (parseInt(oldMeasure$.number, 10) + 1),
+            implicit:           false,
+            width:              NaN,
+            nonControlling:     false,
+            parts:              this.newParts
+        };
+
+        oldMeasure$.parts = this.oldParts;
+        measures$.splice(this.measureIdx + 1, 0, newMeasure);
+    }
+
+    maxDiv:             number;
+    oldParts: {
+        [id: string]:   Measure.IMeasurePart;
+    };
+    newParts: {
+        [id: string]:   Measure.IMeasurePart;
+    } = {};
+
+    measureIdx:         number;
 }

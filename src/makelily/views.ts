@@ -70,7 +70,8 @@ export function renderDocument(doc: Engine.IDocument, startMeasure: number): str
         header:         doc.header,
         print$:         print,
         page$:          pageNum,
-        modelFactory:   doc.factory
+        modelFactory:   doc.factory,
+        debug:          true
     }, memo$);
 
     const core = React.renderToStaticMarkup($(Page)({

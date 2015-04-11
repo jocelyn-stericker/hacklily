@@ -28,8 +28,10 @@ export interface ILayoutOptions {
     header:         MusicXML.ScoreHeader;
     print$:         MusicXML.Print;
     page$:          number;
-    finalLine?:     boolean;
+    line?:          number;
+    lines?:         number;
     modelFactory:   IModel.IFactory;
+    debug?:         boolean;
 }
 
 export interface ILinesLayoutState {
