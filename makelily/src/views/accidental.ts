@@ -20,15 +20,19 @@
 
 import MusicXML         = require("musicxml-interfaces");
 import React            = require("react");
+import invariant        = require("react/lib/invariant");
 var $                   = React.createFactory;
 
 import Glyph            = require("./primitives/glyph");
+import IChord           = require("../models/engine/ichord");
 import SMuFL            = require("../models/smufl");
 
 class Accidental extends React.Component<{spec: MusicXML.Accidental}, void> {
     render(): any {
         let spec = this.props.spec;
-        const glyphName = this.glyphName();
+        const glyphName = IChord.accidentalGlyphs[this.props.spec.accidental];
+        invariant(glyphName in SMuFL.bboxes, "Expected a glyph, got %s", glyphName);
+
         const originX = this.context.originX;
         const originY = this.context.originY;
         var accidental = $(Glyph)({
@@ -55,84 +59,6 @@ class Accidental extends React.Component<{spec: MusicXML.Accidental}, void> {
             /* React.DOM.g */);
         } else {
             return accidental;
-        }
-    }
-    glyphName() {
-        switch (this.props.spec.accidental) {
-            case MusicXML.MxmlAccidental.NaturalFlat:
-                return "accidentalSharp";
-            case MusicXML.MxmlAccidental.SharpUp:
-                return "accidentalSharp";
-            case MusicXML.MxmlAccidental.ThreeQuartersFlat:
-                return "accidentalSharp";
-            case MusicXML.MxmlAccidental.ThreeQuartersSharp:
-                return "accidentalSharp";
-            case MusicXML.MxmlAccidental.QuarterFlat:
-                return "accidentalSharp";
-            case MusicXML.MxmlAccidental.Flat:
-                return "accidentalFlat";
-            case MusicXML.MxmlAccidental.TripleSharp:
-                return "accidentalSharp";
-            case MusicXML.MxmlAccidental.Flat1:
-                return "accidentalSharp";
-            case MusicXML.MxmlAccidental.Flat2:
-                return "accidentalSharp";
-            case MusicXML.MxmlAccidental.Flat3:
-                return "accidentalSharp";
-            case MusicXML.MxmlAccidental.Flat4:
-                return "accidentalSharp";
-            case MusicXML.MxmlAccidental.TripleFlat:
-                return "accidentalSharp";
-            case MusicXML.MxmlAccidental.Flat5:
-                return "accidentalSharp";
-            case MusicXML.MxmlAccidental.Sharp:
-                return "accidentalSharp";
-            case MusicXML.MxmlAccidental.QuarterSharp:
-                return "accidentalSharp";
-            case MusicXML.MxmlAccidental.SlashFlat:
-                return "accidentalSharp";
-            case MusicXML.MxmlAccidental.FlatDown:
-                return "accidentalSharp";
-            case MusicXML.MxmlAccidental.NaturalDown:
-                return "accidentalSharp";
-            case MusicXML.MxmlAccidental.SlashQuarterSharp:
-                return "accidentalSharp";
-            case MusicXML.MxmlAccidental.SharpSharp:
-                return "accidentalSharp";
-            case MusicXML.MxmlAccidental.Sharp1:
-                return "accidentalSharp";
-            case MusicXML.MxmlAccidental.FlatUp:
-                return "accidentalSharp";
-            case MusicXML.MxmlAccidental.Sharp2:
-                return "accidentalSharp";
-            case MusicXML.MxmlAccidental.Sharp3:
-                return "accidentalSharp";
-            case MusicXML.MxmlAccidental.DoubleSharp:
-                return "accidentalDoubleSharp";
-            case MusicXML.MxmlAccidental.Sharp4:
-                return "accidentalSharp";
-            case MusicXML.MxmlAccidental.Sharp5:
-                return "accidentalSharp";
-            case MusicXML.MxmlAccidental.Sori:
-                return "accidentalSharp";
-            case MusicXML.MxmlAccidental.DoubleSlashFlat:
-                return "accidentalSharp";
-            case MusicXML.MxmlAccidental.SharpDown:
-                return "accidentalSharp";
-            case MusicXML.MxmlAccidental.Koron:
-                return "accidentalSharp";
-            case MusicXML.MxmlAccidental.NaturalUp:
-                return "accidentalSharp";
-            case MusicXML.MxmlAccidental.SlashSharp:
-                return "accidentalSharp";
-            case MusicXML.MxmlAccidental.NaturalSharp:
-                return "accidentalSharp";
-            case MusicXML.MxmlAccidental.FlatFlat:
-                return "accidentalSharp";
-            case MusicXML.MxmlAccidental.Natural:
-                return "accidentalNatural";
-            case MusicXML.MxmlAccidental.DoubleFlat:
-                return "accidentalDoubleFlat";
         }
     }
 }

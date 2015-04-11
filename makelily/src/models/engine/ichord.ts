@@ -298,6 +298,46 @@ module IChord {
         B: 3
     };
 
+    export var accidentalGlyphs: { [key: number]: string } = {
+        [MusicXML.MxmlAccidental.NaturalFlat]: "accidentalNaturalSharp",
+        [MusicXML.MxmlAccidental.SharpUp]: "accidentalThreeQuarterTonesSharpArrowUp",
+        [MusicXML.MxmlAccidental.ThreeQuartersFlat]: "accidentalThreeQuarterTonesFlatZimmermann",
+        [MusicXML.MxmlAccidental.ThreeQuartersSharp]: "accidentalThreeQuarterTonesSharpStein",
+        [MusicXML.MxmlAccidental.QuarterFlat]: "accidentalQuarterToneFlatStein",
+        [MusicXML.MxmlAccidental.Flat]: "accidentalFlat",
+        [MusicXML.MxmlAccidental.TripleSharp]: "accidentalTripleSharp",
+        [MusicXML.MxmlAccidental.Flat1]: null,
+        [MusicXML.MxmlAccidental.Flat2]: null,
+        [MusicXML.MxmlAccidental.Flat3]: null,
+        [MusicXML.MxmlAccidental.Flat4]: null,
+        [MusicXML.MxmlAccidental.Flat5]: null,
+        [MusicXML.MxmlAccidental.Sharp1]: null,
+        [MusicXML.MxmlAccidental.Sharp2]: null,
+        [MusicXML.MxmlAccidental.Sharp3]: null,
+        [MusicXML.MxmlAccidental.Sharp4]: null,
+        [MusicXML.MxmlAccidental.Sharp5]: null,
+        [MusicXML.MxmlAccidental.SlashQuarterSharp]: null,
+        [MusicXML.MxmlAccidental.DoubleSlashFlat]: null,
+        [MusicXML.MxmlAccidental.TripleFlat]: "accidentalTripleFlat",
+        [MusicXML.MxmlAccidental.Sharp]: "accidentalSharp",
+        [MusicXML.MxmlAccidental.QuarterSharp]: "accidentalQuarterToneSharpStein",
+        [MusicXML.MxmlAccidental.SlashFlat]: "accidentalTavenerFlat",
+        [MusicXML.MxmlAccidental.FlatDown]: "accidentalFlatJohnstonDown",
+        [MusicXML.MxmlAccidental.NaturalDown]: "accidentalQuarterToneFlatNaturalArrowDown",
+        [MusicXML.MxmlAccidental.SharpSharp]: "accidentalSharpSharp",
+        [MusicXML.MxmlAccidental.FlatUp]: "accidentalFlatJohnstonUp",
+        [MusicXML.MxmlAccidental.DoubleSharp]: "accidentalDoubleSharp",
+        [MusicXML.MxmlAccidental.Sori]: "accidentalSori",
+        [MusicXML.MxmlAccidental.SharpDown]: "accidentalQuarterToneSharpArrowDown",
+        [MusicXML.MxmlAccidental.Koron]: "accidentalKoron",
+        [MusicXML.MxmlAccidental.NaturalUp]: "accidentalQuarterToneSharpNaturalArrowUp",
+        [MusicXML.MxmlAccidental.SlashSharp]: "accidentalTavenerSharp",
+        [MusicXML.MxmlAccidental.NaturalSharp]: "accidentalNaturalSharp",
+        [MusicXML.MxmlAccidental.FlatFlat]: "accidentalDoubleFlat",
+        [MusicXML.MxmlAccidental.Natural]: "accidentalNatural",
+        [MusicXML.MxmlAccidental.DoubleFlat]: "accidentalDoubleFlat"
+    }
+
     export var InvalidAccidental = -999;
 
 }
