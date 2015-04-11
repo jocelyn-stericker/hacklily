@@ -43,7 +43,13 @@ class ScoreHeader implements MusicXML.ScoreHeader {
 
     identification:     MusicXML.Identification = {
         creators:                                   [],
-        encoding:                                   null,
+        encoding: {
+            encodingDescriptions: [],
+            encodingDate: null,
+            supports: {},
+            encoders: [],
+            softwares: [],
+        },
         miscellaneous:                              null,
         relations:                                  [],
         rights:                                     [],
@@ -270,6 +276,33 @@ class ScoreHeader implements MusicXML.ScoreHeader {
                 type: type
             });
         }
+    }
+
+    overwriteEncoding() {
+        let date = new Date;
+
+        this.identification = this.identification || (new ScoreHeader(null)).identification;
+        this.identification.encoding = {
+            encodingDescriptions: [],
+            encodingDate: {
+                month: date.getMonth() + 1,
+                day: date.getDay(),
+                year: date.getFullYear()
+            },
+            supports: {
+                "satie-ext": {
+                    element: "satie-ext",
+                    value: null,
+                    type: "yes",
+                    attribute: null
+                }
+            },
+            encoders: [],
+            softwares: [
+                "Satie Layout Engine <https://ripieno.github.io/satie> by Josh Netterfield <joshua@nettek.ca>",
+                "MusicXML Interfaces <https://ripieno.github.io/musicxml-interfaces>"
+            ]
+        };
     }
 
     private _setCredits(type: string, val: string,

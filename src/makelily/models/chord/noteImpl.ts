@@ -425,6 +425,33 @@ class NoteImpl implements MusicXML.Note {
 
         let paren = acc && (acc.editorial || acc.parentheses || acc.bracket);
 
+        if (!acc && (actual||0) !== (target||0)) {
+            let accType: MusicXML.MxmlAccidental = null;
+            switch (actual) {
+                case 2:
+                    accType = MusicXML.MxmlAccidental.DoubleSharp;
+                    break;
+                case 1:
+                    accType = MusicXML.MxmlAccidental.Sharp;
+                    break;
+                case 0:
+                    accType = MusicXML.MxmlAccidental.Natural;
+                    break;
+                case -1:
+                    accType = MusicXML.MxmlAccidental.Flat;
+                    break;
+                case -2:
+                    accType = MusicXML.MxmlAccidental.DoubleFlat;
+                    break;
+                default:
+                    invariant(false, "Not implemented: unknown accidental for offset %s", target);
+            }
+
+            acc = {
+                accidental: accType
+            }
+        }
+
         // If the encoding software tells us what kind of accidental we have, we trust it. Otherwise...
         // TODO: Check cursor.header.identification.encoding.supports to see if we can actually trust it.
         // TODO: Re-enable this logic.
@@ -435,7 +462,7 @@ class NoteImpl implements MusicXML.Note {
             let noConflicts = target === generalTarget || generalTarget === Engine.IChord.InvalidAccidental;
 
             // 2. The note has the same accidental on all other voice (in the same bar, in the past)
-            // console.log(cursor.measure.parent);
+            console.log(cursor.measure.parent);
             // for (let j = 0; j < ctx.accidentalsByStaff.length && noConflicts; ++j) {
             //     if (ctx.accidentalsByStaff[j] && target !== or3(ctx.accidentalsByStaff[j][pitch.step + pitch.octave],
             //             ctx.accidentalsByStaff[j][pitch.step], target)) {
