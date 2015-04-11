@@ -18,6 +18,7 @@
 
 "use strict";
 
+import MusicXML             = require("musicxml-interfaces");
 import React                = require("react");
 import _                    = require("lodash");
 let $                       = React.createFactory;
@@ -28,6 +29,7 @@ import Note                 = require("./note");
 import Notehead             = require("./notehead");
 import Rest                 = require("./rest");
 import Stem                 = require("./stem");
+import SMuFL                = require("../models/smufl");
 
 /**
  * Renders notes and their notations.
@@ -37,52 +39,42 @@ class ChordView extends React.Component<{layout: Chord.IChordLayout}, void> {
         let layout = this.props.layout;
         let spec = layout.model;
 
-        // let lyKey = 0;
-        // let lyrics = _.chain(<MusicXML.Note[]><any>spec)
-        //                 .map(n => n.lyrics)
-        //                 .filter(l => !!l)
-        //                 .flatten(true)
-        //                 .filter((l: MusicXML.Lyric) => !!l)
-        //                 .map((l: MusicXML.Lyric) => {
-        //                     var text: any[] = [];
-        //                     var currSyllabic = MusicXML.SyllabicType.Single;
-        //                     for (var i = 0; i < l.lyricParts.length; ++i) {
-        //                         switch(l.lyricParts[i]._class) {
-        //                             case "Syllabic":
-        //                                 var syllabic = <MusicXML.Syllabic> l.lyricParts[i];
-        //                                 currSyllabic = syllabic.data;
-        //                                 break;
-        //                             case "Text":
-        //                                 var textPt = <MusicXML.Text> l.lyricParts[i];
-        //                                 var width = SMuFL.bboxes["noteheadBlack"][0]*10;
-        //                                 text.push(React.DOM.text({
-        //                                         textAnchor: "middle",
-        //                                         fontSize: textPt.fontSize || "22",
-        //                                         key: ++lyKey
-        //                                         // x: width/2 + (spec.x),
-        //                                         // y: 60      + (spec.y)
-        //                                     }, textPt.data));
-        //                         }
-        //                     };
-        //                     return text;
-        //                 })
-        //                 .flatten()
-        //                 .value();
-        // this.props.flag && Flag({
-        //     key: "_3",
-        //     x: this.props.x,
-        //     y: this.props.y,
-        //     line: this.props.startingLine,
-        //     stroke: this.props.secondaryStroke,
-        //     stemHeight: this.props.stemHeight,
-        //     stemWidth: 1.4,
-        //     flag: this.props.flag,
-        //     notehead: this.props.notehead,
-        //     grace: this.props.grace[0],
-        //     direction: direction
-        // }),
+        // TODO: Generalize this
+        let approxNotehead = Notehead.countToNotehead[
+            spec[0].noteType.duration];
 
-        // var dotOffset = SMuFL.bboxes["noteheadBlack"][0]*10 + 6; // TODO: Correct notehead
+        let lyKey = 0;
+        let lyrics = _.chain(<MusicXML.Note[]><any>spec)
+                        .map(n => n.lyrics)
+                        .filter(l => !!l)
+                        .flatten(true)
+                        .filter((l: MusicXML.Lyric) => !!l)
+                        .map((l: MusicXML.Lyric) => {
+                            var text: any[] = [];
+                            var currSyllabic = MusicXML.SyllabicType.Single;
+                            for (var i = 0; i < l.lyricParts.length; ++i) {
+                                switch(l.lyricParts[i]._class) {
+                                    case "Syllabic":
+                                        var syllabic = <MusicXML.Syllabic> l.lyricParts[i];
+                                        currSyllabic = syllabic.data;
+                                        break;
+                                    case "Text":
+                                        var textPt = <MusicXML.Text> l.lyricParts[i];
+                                        var width = SMuFL.bboxes[approxNotehead][0]*10;
+                                        text.push(React.DOM.text({
+                                                textAnchor: "middle",
+                                                fontSize: textPt.fontSize || "22",
+                                                key: ++lyKey,
+                                                x: this.context.originX + this.props.layout.x$ + width/2,
+                                                y: this.context.originY + 60
+                                            }, textPt.data));
+                                }
+                            };
+                            return text;
+                        })
+                        .flatten()
+                        .value();
+
 
         if (!!spec[0].rest) {
             return $(Rest)({
@@ -91,16 +83,12 @@ class ChordView extends React.Component<{layout: Chord.IChordLayout}, void> {
             });
         }
 
-        // TODO: Generalize this
-        let approxNotehead = Notehead.countToNotehead[
-            spec[0].noteType.duration];
-
         return React.DOM.g(null,
             _.map(spec, (spec, idx) => $(Note)({
                 key: "n" + idx,
                 spec: spec
             })),
-            $(Stem)({
+            spec.satieStem && $(Stem)({
                 key: "s",
                 bestHeight: spec.satieStem.stemHeight,
                 spec: {
@@ -119,7 +107,8 @@ class ChordView extends React.Component<{layout: Chord.IChordLayout}, void> {
                     color: "#000000"
                 },
                 notehead: approxNotehead
-            }))
+            })),
+            lyrics
         );
     }
 

@@ -32,8 +32,6 @@ class Note extends React.Component<{spec: MusicXML.Note}, void> {
     render() {
         const spec = this.props.spec;
         const pitch = spec.pitch;
-        // const stem = spec.stem;
-        // const direction = stem.type === MusicXML.StemType.Up ? 1 : -1; // TODO: two other options
 
         invariant(!!pitch, "Not implemented");
 
@@ -60,26 +58,6 @@ class Note extends React.Component<{spec: MusicXML.Note}, void> {
                 spec: this.props.spec.accidental
             }) : null
         /* React.DOM.g */);
-    }
-    tie(): any {
-        return null;
-        // var Slur: typeof SlurType = require("./slur"); // Recursive.
-        // if (!this.props.tieTo) {
-        //     return null;
-        // }
-
-        // var fullWidth = this.props.tieTo - this.props.x;
-        // return React.createElement(Slur, {
-        //     key: 0,
-        //     spec: <SlurModel>{
-        //         direction: -this.props.direction,
-        //         x: this.props.x + fullWidth/8 + 6,
-        //         y: this.props.y,
-        //         lines1: [this.props.startingLine],
-        //         lines2: [this.props.startingLine],
-        //         slurW: fullWidth*0.75
-        //     }
-        // });
     }
 
     getChildContext() {

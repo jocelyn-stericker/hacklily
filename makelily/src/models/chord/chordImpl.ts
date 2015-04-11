@@ -61,13 +61,18 @@ class ChordModelImpl implements ChordModel.IChordModel {
         const direction = this._pickDirection(cursor$);
         const clef = cursor$.staff.attributes.clefs[cursor$.staff.idx];
 
-        this.satieStem = {
-            direction:  direction,
-            stemHeight: this._getStemHeight(direction, clef),
-            stemStart:  Engine.IChord.startingLine(this, direction, clef)
-        };
+        if (Engine.IChord.countToHasStem[this.count]) {
+            this.satieStem = {
+                direction:  direction,
+                stemHeight: this._getStemHeight(direction, clef),
+                stemStart:  Engine.IChord.startingLine(this, direction, clef)
+            };
 
-        this.satieDirection = direction === 1 ? MusicXML.StemType.Up : MusicXML.StemType.Down;
+            this.satieDirection = direction === 1 ? MusicXML.StemType.Up : MusicXML.StemType.Down;
+        } else {
+            this.satieStem = null;
+            this.satieDirection = NaN;
+        }
 
         this.satieLedger = Engine.IChord.ledgerLines(this, clef);
 
