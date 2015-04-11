@@ -73,6 +73,7 @@ export function importXML(src: string): Engine.IDocument {
         modelFactory:   factory
     };
     Engine.validate$(contextOptions, memo$);
+    score.header.overwriteEncoding();
 
     return score;
 }
