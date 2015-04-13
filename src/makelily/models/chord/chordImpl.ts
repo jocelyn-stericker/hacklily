@@ -84,7 +84,7 @@ class ChordModelImpl implements ChordModel.IChordModel {
             note.updateAccidental$(cursor$);
             if (note.pitch) {
                 // Update the accidental status.
-                const pitch = note.pitch
+                const pitch = note.pitch;
                 if (pitch.alter === 0) {
                     cursor$.staff.accidentals$[pitch.step] = undefined;
                 }
@@ -101,11 +101,21 @@ class ChordModelImpl implements ChordModel.IChordModel {
         // TODO: the document must end with a marker
 
         invariant(isFinite(this._count) && this._count !== null, "%s is not a valid count", this._count);
+
+        this._checkMulitpleRest(cursor$);
     }
 
     layout(cursor$: Engine.ICursor): ChordModel.IChordLayout {
-        // mutates cursor$ as required.
+        this._checkMulitpleRest(cursor$);
         return new ChordModelImpl.Layout(this, cursor$);
+    }
+
+    private _checkMulitpleRest(cursor$: Engine.ICursor) {
+        let measureStyle: MusicXML.MeasureStyle = cursor$.staff.attributes.measureStyle;
+        if (measureStyle) {
+            this.satieMultipleRest = measureStyle.multipleRest;
+            cursor$.staff.multiRestRem = measureStyle.multipleRest.count;
+        }
     }
 
     /*---- I.2 IChord ---------------------------------------------------------------------------*/
@@ -413,6 +423,8 @@ class ChordModelImpl implements ChordModel.IChordModel {
      * Line numbers that need ledgers
      */
     satieLedger: number[];
+
+    satieMultipleRest: MusicXML.MultipleRest;
 }
 
 ChordModelImpl.prototype.frozenness = Engine.IModel.FrozenLevel.Warm;
@@ -423,13 +435,20 @@ ChordModelImpl.prototype._isRest = false;
 module ChordModelImpl {
     export class Layout implements ChordModel.IChordLayout {
         constructor(model: ChordModelImpl, cursor$: Engine.ICursor) {
+            this.division = cursor$.division$;
+
+            if (cursor$.staff.multiRestRem > 0 && !model.satieMultipleRest) {
+                // This is not displayed because it is part of a multirest.
+                return;
+            }
+
             this.model = <any> _.map(model, note => Object.create(note, {
                 /* Here, we're extending each note to have the correct default position.
                  * To do so, we use prototypical inheritance. See Object.create. */
 
                 defaultX: {
                     get: () => {
-                        return note.defaultX || this.x$;
+                        return note.defaultX || (<any>this).barX || this.x$;
                     }
                 },
                 defaultY: {
@@ -451,6 +470,7 @@ module ChordModelImpl {
             }));
             this.model.satieStem = model.satieStem;
             this.model.satieLedger = model.satieLedger;
+            this.model.satieMultipleRest = model.satieMultipleRest;
             _.forEach(this.model, note => {
                 cursor$.maxPaddingTop$ = Math.max(cursor$.maxPaddingTop$, note.defaultY - 10);
                 cursor$.maxPaddingBottom$ = Math.max(cursor$.maxPaddingBottom$, note.defaultY - 30);
@@ -459,25 +479,23 @@ module ChordModelImpl {
             // We allow accidentals to be squished, and only require 1/3 of the accidental's displayed
             // width as padding.
             let accidentalWidth = _.reduce(this.model, (maxWidth, note) => {
-                return Math.max(maxWidth, note.accidental ? -note.accidental.defaultX : 0)
+                return Math.max(maxWidth, note.accidental ? -note.accidental.defaultX : 0);
             }, 0)*1/3;
 
             this.x$ = cursor$.x$ + accidentalWidth;
-
-            this.division = cursor$.division$;
 
             /*---- Move cursor by width -----------------*/
 
             // TODO: Each note's width has a linear component proportional to log of its duration
             // with respect to the shortest length
-            const divisions = cursor$.staff.attributes.divisions;
-            let extraWidth = (Math.log(model.divCount) - Math.log(cursor$.line.shortestCount *
-                    divisions)) / Math.log(2) / 3 * 40;
+            let extraWidth = (Math.log(model.divCount) - Math.log(cursor$.line.shortestCount)) / Math.log(2) / 3 * 10;
             const grace = model[0].grace; // TODO: What if only some notes are grace?
             if (grace) {
                 extraWidth /= 10; // TODO: Put grace notes in own segment
             }
             const baseWidth = grace ? 11.4 : 22.8;
+            invariant(extraWidth >= 0, "Invalid extraWidth %s. shortest is %s, got %s", extraWidth,
+                    cursor$.line.shortestCount, model.divCount);
 
             const totalWidth = baseWidth + extraWidth + accidentalWidth;
 
@@ -491,10 +509,6 @@ module ChordModelImpl {
             /*---- Misc ---------------------------------*/
 
             // TODO: set min/max padding
-            // TODO: set invisible counter
-
-            let measureStyle: MusicXML.MeasureStyle = cursor$.staff.attributes.measureStyle;
-            this.multipleRest = measureStyle ? measureStyle.multipleRest : null;
         }
 
         /*---- IChordLayout ------------------------------------------------------*/
@@ -511,10 +525,6 @@ module ChordModelImpl {
         boundingBoxes$: Engine.IModel.IBoundingRect[];
         renderClass: Engine.IModel.Type;
         expandable: boolean;
-
-        /*---- ChordModel ---------------------------------------------------*/
-
-        multipleRest: MusicXML.MultipleRest;
     }
 
     Layout.prototype.mergePolicy = Engine.IModel.HMergePolicy.Min;

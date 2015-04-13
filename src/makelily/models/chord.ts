@@ -43,11 +43,11 @@ module ChordModel {
             stemStart:  number;
         };
         satieLedger: number[];
+        satieMultipleRest: MusicXML.MultipleRest;
     }
 
     export interface IChordLayout extends Engine.IModel.ILayout {
         model: IChordModel;
-        multipleRest: MusicXML.MultipleRest;
     }
 }
 

@@ -75,10 +75,9 @@ class ChordView extends React.Component<{layout: Chord.IChordLayout}, void> {
                         .flatten()
                         .value();
 
-
         if (!!spec[0].rest) {
             return $(Rest)({
-                multipleRest: layout.multipleRest,
+                multipleRest: layout.model.satieMultipleRest,
                 spec: spec[0]
             });
         }
@@ -114,7 +113,7 @@ class ChordView extends React.Component<{layout: Chord.IChordLayout}, void> {
 
     getChildContext() {
         return {
-            originX:        this.context.originX + this.props.layout.x$,
+            originX:        this.context.originX,
             originY:        this.context.originY
         };
     }

@@ -101,6 +101,7 @@ export interface IStaff {
 
     attributes:     MusicXML.Attributes;
     totalDivisions: number;
+    multiRestRem?:  number;
 
     accidentals$:   IAccidentals;
 
@@ -194,7 +195,7 @@ export interface ILine {
      * Zero-indexed. Only valid in the final layout pass.
      */
     barOnLine$: number;
-    
+
     /**
      * The number of bars on the current line.
      *

@@ -103,6 +103,11 @@ BarlineModel.prototype.frozenness = Engine.IModel.FrozenLevel.Warm;
 module BarlineModel {
     export class Layout implements Export.ILayout {
         constructor(origModel: BarlineModel, cursor$: Engine.ICursor) {
+            if (cursor$.staff.multiRestRem > 1) {
+                this.division = cursor$.division$;
+                return;
+            }
+
             this.model = Object.create(origModel, {
                 defaultX: {
                     get: () => this.barX

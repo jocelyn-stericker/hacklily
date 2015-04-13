@@ -336,7 +336,7 @@ module IChord {
         [MusicXML.MxmlAccidental.FlatFlat]: "accidentalDoubleFlat",
         [MusicXML.MxmlAccidental.Natural]: "accidentalNatural",
         [MusicXML.MxmlAccidental.DoubleFlat]: "accidentalDoubleFlat"
-    }
+    };
 
     export var InvalidAccidental = -999;
 

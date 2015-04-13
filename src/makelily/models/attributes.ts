@@ -42,7 +42,8 @@ class AttributesModel implements Export.IAttributesModel {
     }
 
     validate$(cursor$: Engine.ICursor): void {
-        this._parent            = cursor$.staff.attributes;
+        this._measure           = cursor$.measure.idx;
+        this._parent            = <any> cursor$.staff.attributes;
 
         invariant(this._parent !== this, "Internal error. " +
             "AttributesModel.validate$() must not be called in a context with itself as a parent!");
@@ -58,12 +59,14 @@ class AttributesModel implements Export.IAttributesModel {
         this._validateKey$();
 
         this._setTotalDivisions(cursor$);
+        this._updateMultiRest(cursor$);
     }
 
     layout(cursor$: Engine.ICursor): Export.ILayout {
         cursor$.staff.attributes = this;
 
         this._setTotalDivisions(cursor$);
+        this._updateMultiRest(cursor$);
 
         // mutates cursor$ as required.
         return new AttributesModel.Layout(this, cursor$);
@@ -71,7 +74,7 @@ class AttributesModel implements Export.IAttributesModel {
 
     /*---- I.2 C.MusicXML.Attributes ------------------------------------------------------------*/
 
-    _parent:            MusicXML.Attributes;
+    _parent:            AttributesModel;
 
     _divisions:         number;
     get divisions()     { return this._divisions === undefined && this._parent ? this._parent.divisions : this._divisions; }
@@ -121,6 +124,14 @@ class AttributesModel implements Export.IAttributesModel {
 
     footnote:           MusicXML.Footnote;
     level:              MusicXML.Level;
+
+    /*---- I.4 Satie Ext ------------------------------------------------------------------------*/
+
+    _measure:           number;
+    get oMeasureStyle(): MusicXML.MeasureStyle
+                        { return this._measureStyle === undefined && this._parent ? this._parent.oMeasureStyle : this._measureStyle; }
+    get mMeasureStyle(): number
+                        { return this._measureStyle === undefined && this._parent ? this._parent.mMeasureStyle : this._measure; }
 
     /*---- Validation Implementations -----------------------------------------------------------*/
 
@@ -239,6 +250,14 @@ class AttributesModel implements Export.IAttributesModel {
             _.reduce(time.split("+"), (memo, time) => memo + parseInt(time, 10), 0), 0);
 
         cursor$.staff.totalDivisions = totalBeats * this.divisions || NaN;
+    }
+
+    private _updateMultiRest(cursor$: Engine.ICursor): void {
+        if (!this._measureStyle && this.oMeasureStyle &&
+                this.oMeasureStyle.multipleRest &&
+                this.oMeasureStyle.multipleRest.count > this._measure - this.mMeasureStyle) {
+            cursor$.staff.multiRestRem = this.oMeasureStyle.multipleRest.count - (this._measure - this.mMeasureStyle);
+        }
     }
 }
 
