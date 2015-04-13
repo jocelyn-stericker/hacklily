@@ -92,7 +92,7 @@ class ChordView extends React.Component<{layout: Chord.IChordLayout}, void> {
                 bestHeight: spec.satieStem.stemHeight,
                 spec: {
                     color: spec[0].stem.color || "#000000",
-                    defaultX: 0,
+                    defaultX: spec[0].defaultX,
                     defaultY: (spec.satieStem.stemStart - 3)*10,
                     type: spec[0].stem.type
                 },
@@ -101,7 +101,7 @@ class ChordView extends React.Component<{layout: Chord.IChordLayout}, void> {
             _.map(spec.satieLedger, lineNumber => $(LedgerLine)({
                 key: "l" + lineNumber,
                 spec: {
-                    defaultX: 0,
+                    defaultX: spec[0].defaultX,
                     defaultY: (lineNumber - 3)*10,
                     color: "#000000"
                 },
