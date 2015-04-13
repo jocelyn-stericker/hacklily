@@ -159,7 +159,7 @@ export function validate$(options$: Options.ILayoutOptions, memo$: Options.ILine
     } while(shouldTryAgain);
 }
 
-export function tryValidate$(options$: Options.ILayoutOptions, memo$: Options.ILinesLayoutState): void {
+function tryValidate$(options$: Options.ILayoutOptions, memo$: Options.ILinesLayoutState): void {
     let factory         = options$.modelFactory;
     let searchHere      = factory.searchHere.bind(factory);
     let createModel     = factory.create.bind(factory);
@@ -185,16 +185,33 @@ export function tryValidate$(options$: Options.ILayoutOptions, memo$: Options.IL
             let measureCtx = Ctx.IMeasure.detach(measure, 0);
             let segments = _.filter(voiceSegments$.concat(staffSegments$), s => !!s);
 
-            _.forEach(staffSegments$, function(segment) {
+            _.forEach(staffSegments$, function(segment, idx) {
                 if (!segment) {
                     return;
                 }
-                if (!searchHere(segment, 0, IModel.Type.Print).length) {
-                    segment.splice(0, 0, createModel(IModel.Type.Print));
+                function ensureHeader(type: IModel.Type) {
+                    if (!searchHere(segment, 0, type).length) {
+                        if (idx === 1) {
+                            segment.splice(0, 0, createModel(type));
+                        } else {
+                            let proxy = createModel(IModel.Type.Proxy);
+                            let target = searchHere(staffSegments$[1], 0, type)[0];
+                            (<any>proxy).target = target;
+                            (<any>proxy).staffIdx = idx;
+                            let tidx = -1;
+                            for (var i = 0; i < staffSegments$[1].length; ++i) {
+                                if (staffSegments$[1][i] === target) {
+                                    tidx = i;
+                                    break;
+                                }
+                            }
+                            invariant(tidx !== -1, "Could not find required model.");
+                            segment.splice(tidx, 0, proxy);
+                        }
+                    }
                 }
-                if (!searchHere(segment, 0, IModel.Type.Attributes).length) {
-                    segment.splice(0, 0, createModel(IModel.Type.Attributes));
-                }
+                ensureHeader(IModel.Type.Print);
+                ensureHeader(IModel.Type.Attributes);
                 if (!searchHere(segment, segment.length - 1, IModel.Type.Barline).length) {
                     // The goal here is to make sure this ends up at the end.
                     // It's not elegant, but hey.

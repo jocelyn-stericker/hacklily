@@ -157,12 +157,22 @@ class AttributesModel implements Export.IAttributesModel {
             this.clefs = [];
         }
 
-        // A clef is mandatory so far
+        // Fix the clef sorting
+        let sClefs = this.clefs;
+        this.clefs = [];
+        _.forEach(sClefs, (clef, idx) => {
+            if (clef) {
+                this.clefs[clef.number || idx + 1] = clef;
+            }
+        });
+
+        // A clef is mandatory (we haven't implemented clef-less staves yet)
         if (!this.clefs[staffIdx]) {
             this.clefs[staffIdx] = {
                 sign: "G",
                 line: 2,
-                clefOctaveChange: null
+                clefOctaveChange: null,
+                number: staffIdx
             };
         }
 

@@ -188,6 +188,8 @@ export function reduce(spec: ILayoutOpts): Measure.IMeasureLayout {
                 layout                      = model.layout(cursor$);
                 (<any>layout).key           = (<any>model).key;
             }
+            invariant(isFinite(model.divCount), "%s should be a constant division count",
+                    model.divCount);
             cursor$.division$               += model.divCount;
 
             if (cursor$.division$ > cursor$.staff.totalDivisions && !!divOverflow) {
@@ -266,23 +268,21 @@ export function reduce(spec: ILayoutOpts): Measure.IMeasureLayout {
             cursor$.idx$ = idx;
             cursor$.staff = staffContexts$[staffIdx];
 
-            do {
-                if (divisionPerStaff$[staffIdx] <= cursor$.division$) {
-                    let nextStaffEl = staffMeasure[staffIdx][voiceStaves$[staffIdx].length];
+            while (divisionPerStaff$[staffIdx] <= cursor$.division$) {
+                let nextStaffEl = staffMeasure[staffIdx][voiceStaves$[staffIdx].length];
 
-                    // We can mostly ignore priorities here, since except for one exception,
-                    // staff segments are more important than voice segments. The one exception
-                    // is barlines:
-                    if (spec.factory.modelHasType(nextStaffEl, IModel.Type.Barline) && divisionPerStaff$[staffIdx] === cursor$.division$) {
-                        break;
-                    }
-
-                    // Process a staff model within a voice context.
-                    pushStaffSegment(staffIdx, nextStaffEl);
-                } else {
+                // We can mostly ignore priorities here, since except for one exception,
+                // staff segments are more important than voice segments. The one exception
+                // is barlines:
+                if (spec.factory.modelHasType(nextStaffEl, IModel.Type.Barline) && divisionPerStaff$[staffIdx] === cursor$.division$) {
                     break;
                 }
-            } while (true);
+
+                // Process a staff model within a voice context.
+                pushStaffSegment(staffIdx, nextStaffEl);
+                invariant(isFinite(divisionPerStaff$[staffIdx]), "divisionPerStaff$ is supposed " +
+                    "to be a number, got %s", divisionPerStaff$[staffIdx]);
+            }
 
             // All layout that can be controlled by the model is done here.
             let layout: IModel.ILayout;

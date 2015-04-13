@@ -17,16 +17,33 @@
  */
 
 import Engine           = require("./engine");
+import invariant                = require("react/lib/invariant");
 
 class ProxyModel implements Export.IProxyModel {
 
     /*---- I.1 IModel ---------------------------------------------------------------------------*/
 
-    /** @prototype only */
-    divCount:        number;
+    get divCount() {
+        return this._omTarget.divCount;
+    }
 
-    /** defined externally */
-    staffIdx:        number;
+    set divCount(divCount: number) {
+        this._omTarget.divCount = divCount;
+    }
+
+    get staffIdx() {
+        return this._omTarget.staffIdx;
+    }
+
+    set staffIdx(staffIdx: number) {
+        this._omTarget.staffIdx = staffIdx;
+    }
+
+    set target(target: Engine.IModel) {
+        this._target = target;
+        this._omTarget = Object.create(this._target);
+        this._omTarget.staffIdx = undefined;
+    }
 
     /** @prototype */
     frozenness:      Engine.IModel.FrozenLevel;
@@ -36,11 +53,12 @@ class ProxyModel implements Export.IProxyModel {
     }
 
     validate$(cursor$: Engine.ICursor): void {
-        this._target.validate$(cursor$);
+        invariant(!!this._target, "A proxy must have a target.");
+        this._omTarget.validate$(cursor$);
     }
 
     layout(cursor$: Engine.ICursor): Export.ILayout {
-        return this._target.layout(cursor$);
+        return this._omTarget.layout(cursor$);
     }
 
     /*---- Validation Implementations -----------------------------------------------------------*/
@@ -50,7 +68,7 @@ class ProxyModel implements Export.IProxyModel {
     }
 
     toXML(): string {
-        return "<!-- proxy -->\n";
+        return `<!-- proxy for ${(<any>this._target).toXML().replace(/--/g, "\\-\\-")} -->\n`;
     }
 
     inspect() {
@@ -58,9 +76,9 @@ class ProxyModel implements Export.IProxyModel {
     }
 
     _target: Engine.IModel;
+    _omTarget: Engine.IModel;
 }
 
-ProxyModel.prototype.divCount = 0;
 ProxyModel.prototype.frozenness = Engine.IModel.FrozenLevel.Warm;
 
 /**

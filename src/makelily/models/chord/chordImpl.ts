@@ -39,8 +39,15 @@ class ChordModelImpl implements ChordModel.IChordModel {
     /** set in validate$ */
     divCount:        number;
 
-    /** defined externally */
-    staffIdx:        number;
+    get staffIdx():  number {
+        return this[0].staff;
+    }
+
+    set staffIdx(n: number) {
+        if (n !== this[0].staff) {
+            invariant(false, "cannot call set staffIdx on chord model");
+        }
+    }
 
     /** @prototype */
     frozenness:      Engine.IModel.FrozenLevel;
@@ -429,7 +436,6 @@ class ChordModelImpl implements ChordModel.IChordModel {
 
 ChordModelImpl.prototype.frozenness = Engine.IModel.FrozenLevel.Warm;
 ChordModelImpl.prototype.dots = 0;
-ChordModelImpl.prototype.staffIdx = 1;
 ChordModelImpl.prototype._isRest = false;
 
 module ChordModelImpl {
