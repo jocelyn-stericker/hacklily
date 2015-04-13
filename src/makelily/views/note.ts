@@ -62,6 +62,7 @@ class Note extends React.Component<{spec: MusicXML.Note}, void> {
 
     getChildContext() {
         return {
+            originX:        this.context.originX + this.props.spec.defaultX,
             originY:        this.context.originY - this.props.spec.defaultY
         };
     }
@@ -69,9 +70,11 @@ class Note extends React.Component<{spec: MusicXML.Note}, void> {
 
 module Note {
     export var childContextTypes = <any> {
+        originX:            React.PropTypes.number.isRequired,
         originY:            React.PropTypes.number.isRequired
     };
     export var contextTypes = <any> {
+        originX:         React.PropTypes.number.isRequired,
         originY:         React.PropTypes.number.isRequired
     };
 }
