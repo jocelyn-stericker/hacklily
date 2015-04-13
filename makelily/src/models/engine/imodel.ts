@@ -22,6 +22,7 @@
 
 "use strict";
 
+import _                = require("lodash");
 import invariant        = require("react/lib/invariant");
 
 import ICursor          = require("./icursor"); // @circular
@@ -234,7 +235,7 @@ module IModel {
                     div2, pri2);
                 invariant(!!item2, "div1 must be defined and have a valid division (is %s) & renderClass (is %s)",
                     div1, pri1);
-                invariant(pri1 === pri2, "invalid priority");
+                invariant(pri1 === pri2, "invalid priority: %s must equal %s", pri1, pri2);
                 invariant(div1 === div2, "invalid division");
                 switch(segment2$[s2_idx].mergePolicy) {
                     case HMergePolicy.Max:

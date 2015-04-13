@@ -73,6 +73,10 @@ class NoteImpl implements MusicXML.Note {
 
         this.flattenNotations();
 
+        if (!this.staff) {
+            this.staff = 1;
+        }
+
         function setIfDefined(property: string) {
             if (note.hasOwnProperty(property) && (<any>note)[property] !== null) {
                 self[property]          = <any> (<any>note)[property];
