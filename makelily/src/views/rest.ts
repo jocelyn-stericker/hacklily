@@ -72,6 +72,7 @@ class Rest extends React.Component<{spec: MusicXML.Note, multipleRest?: MusicXML
                     y: y - 30,
                     fontSize: 48,
                     className: "mmn_",
+                    "font-weight": "bold",
                     textAnchor: "middle"},
                 this.props.multipleRest.count   // TODO: useSymbols
             /* React.DOM.text */),

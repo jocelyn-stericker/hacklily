@@ -48,7 +48,7 @@ class ScoreHeader implements MusicXML.ScoreHeader {
             encodingDate: null,
             supports: {},
             encoders: [],
-            softwares: [],
+            softwares: []
         },
         miscellaneous:                              null,
         relations:                                  [],

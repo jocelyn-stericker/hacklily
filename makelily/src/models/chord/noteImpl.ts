@@ -351,7 +351,6 @@ class NoteImpl implements MusicXML.Note {
      */
     flattenNotations() {
         if (this.notations) {
-            let notations = this.notations;
             let notation: MusicXML.Notations = {
                 articulations:          combineArticulations                ("articulations"),
                 accidentalMarks:        combine<MusicXML.AccidentalMark>    ("accidentalMarks"),
@@ -402,11 +401,6 @@ class NoteImpl implements MusicXML.Note {
     }
 
     updateAccidental$(cursor: Engine.ICursor) {
-        function or3(first: number, second: number, third?: number) {
-            let a = first === null || first === undefined || first !== first ? second : first;
-            return a === null || a === undefined || a !== a ? third : a || null;
-        };
-
         let pitch = this.pitch;
         if (!pitch) {
             return;
@@ -423,8 +417,6 @@ class NoteImpl implements MusicXML.Note {
         }
 
         let acc = this.accidental;
-
-        let paren = acc && (acc.editorial || acc.parentheses || acc.bracket);
 
         if (!acc && (actual||0) !== (target||0)) {
             let accType: MusicXML.MxmlAccidental = null;
@@ -451,7 +443,7 @@ class NoteImpl implements MusicXML.Note {
                     accType = MusicXML.MxmlAccidental.Flat;
                     break;
                 case -1.5:
-                    accType = MusicXML.MxmlAccidental.ThreeQuartersFlat
+                    accType = MusicXML.MxmlAccidental.ThreeQuartersFlat;
                     break;
                 case -2:
                     accType = MusicXML.MxmlAccidental.DoubleFlat;
@@ -462,7 +454,7 @@ class NoteImpl implements MusicXML.Note {
 
             acc = {
                 accidental: accType
-            }
+            };
         }
 
         // If the encoding software tells us what kind of accidental we have, we trust it. Otherwise...
@@ -472,10 +464,9 @@ class NoteImpl implements MusicXML.Note {
             // We don't need to show an accidental if all of these conditions are met:
 
             // 1. The note has the same accidental on other octave (if the note is on other octaves)
-            let noConflicts = target === generalTarget || generalTarget === Engine.IChord.InvalidAccidental;
+            // let noConflicts = target === generalTarget || generalTarget === Engine.IChord.InvalidAccidental;
 
             // 2. The note has the same accidental on all other voice (in the same bar, in the past)
-            console.log(cursor.measure.parent);
             // for (let j = 0; j < ctx.accidentalsByStaff.length && noConflicts; ++j) {
             //     if (ctx.accidentalsByStaff[j] && target !== or3(ctx.accidentalsByStaff[j][pitch.step + pitch.octave],
             //             ctx.accidentalsByStaff[j][pitch.step], target)) {
@@ -530,7 +521,7 @@ class NoteImpl implements MusicXML.Note {
 
             acc.defaultY = 0;
 
-            if (acc.editorial && !acc.parentheses) {
+            if (acc.editorial && !acc.parentheses || acc.bracket) {
                 // We don't allow an accidental to be editorial but not have parentheses.
                 acc.parentheses = true;
             }

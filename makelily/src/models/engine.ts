@@ -322,7 +322,6 @@ export function layout$(options: Options.ILayoutOptions,
         remainingWidth: startingWidth
     }).opts;
 
-
     // layoutLine$ handles the second pass.
     return _.map(lineOpts$, function(lineOpt$) {
         lineOpt$.lines = lineOpts$.length;

@@ -24,9 +24,6 @@
 
 import IChord           = require("../ichord");
 
-import ICursor          = require("../icursor");
-import IModel           = require("../imodel");
-
 import MusicXML         = require("musicxml-interfaces");
 import chai             = require("chai");
 var expect              = chai.expect;

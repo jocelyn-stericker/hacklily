@@ -75,7 +75,7 @@ function getCursor(factory: Engine.IModel.IFactory, model: Engine.IModel): Engin
             parent:         null
         },
         line: {
-            shortestCount:  3,
+            shortestCount:  1,
             barOnLine$:     0,
             barsOnLine:     1,
             line:           0,

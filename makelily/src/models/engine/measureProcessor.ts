@@ -222,7 +222,7 @@ export function reduce(spec: ILayoutOpts): Measure.IMeasureLayout {
                             (sum, model) => sum + model.divCount, 0);
                     if (divOffset > 0) {
                         let spacer = spec.factory.create(IModel.Type.Spacer);
-                        spacer.divCount = divOffset
+                        spacer.divCount = divOffset;
                         newStaves[staffIdx].push(spacer);
                     }
                     newStaves[staffIdx].push(model);
