@@ -166,7 +166,9 @@ class NoteImpl implements MusicXML.Note {
     _restDisplayOctave: string;
 
     get dots(): MusicXML.Dot[] {
+        let offset = this.defaultY % 10 === 0 ? 5 : 0;
         return _.times(this._parent.dots, () => <MusicXML.Dot> {
+            defaultY: offset
             // TODO: save/restore dot formatting
             // TODO: display dot formatting
         });
