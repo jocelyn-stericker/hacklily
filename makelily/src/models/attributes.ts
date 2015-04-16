@@ -283,7 +283,7 @@ module AttributesModel {
             this.division = cursor$.division$;
             this.staffIdx = cursor$.staff.idx;
 
-            const isFirstInLine = cursor$.line && cursor$.line.barOnLine$ === 0;
+            const isFirstInLine = cursor$.line && cursor$.line.barOnLine$ === 0 && !this.division;
             const next = Engine.ICursor.next(cursor$);
             const nextIsNote = cursor$.factory.modelHasType(next, Engine.IModel.Type.Chord);
 
