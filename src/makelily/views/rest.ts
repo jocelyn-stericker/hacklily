@@ -33,6 +33,7 @@ let countToRest: { [key: number]: string } = {
     [MusicXML.Count.Long]:      "restLonga",
     [MusicXML.Count.Breve]:     "restDoubleWhole",
     [MusicXML.Count.Whole]:     "restWhole",
+    [-1]:                       "restWhole",
     [MusicXML.Count.Half]:      "restHalf",
     [MusicXML.Count.Quarter]:   "restQuarter",
     [MusicXML.Count.Eighth]:    "rest8th",
