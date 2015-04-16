@@ -131,6 +131,7 @@ export function _extractMXMLPartsAndMeasures(input: MusicXML.ScoreTimewise,
                 idx:                0,
                 division:           0,
                 divisionPerStaff:   <number[]>[],
+                divisionPerVoice:   <number[]>[],
                 times:              <MusicXML.Time[]> [{
                     beats:              ["4"],
                     beatTypes:          [4]
@@ -178,12 +179,33 @@ export function _extractMXMLPartsAndMeasures(input: MusicXML.ScoreTimewise,
                             target.output.staves[staff].owner = staff;
                             target.output.staves[staff].ownerType = Engine.Measure.OwnerType.Staff;
                         }
+
+                        // Check target voice division and add spacing if needed
+                        target.divisionPerVoice[voice] = target.divisionPerVoice[voice] || 0;
+                        invariant(target.division >= target.divisionPerVoice[voice], "Ambiguous voice timing: all voices must be monotonic.");
+                        if (target.divisionPerVoice[voice] < target.division) {
+                            // Add rest
+                            let spec = MusicXML.parse.note(`
+                                <note>
+                                    <rest />
+                                    <duration>${target.division - target.divisionPerVoice[voice]}</duration>
+                                </note>`);
+                            (<any>spec)._class = "Note"; // TODO: add to parse.note
+                            let spacerModel = factory.fromSpec(spec);
+                            let spacerRest = Engine.IChord.fromModel(spacerModel);
+                            spacerRest[0].duration = target.division - target.divisionPerVoice[voice];
+                            target.output.voices[voice].push(spacerModel);
+                            target.divisionPerVoice[voice] = target.division;
+                        }
+
+                        // Add the note to the voice segment and register it as the last inserted note
                         let newNote = factory.fromSpec(input);
                         target.output.voices[voice].push(newNote);
                         note = Engine.IChord.fromModel(newNote);
-
+                        
                         // Update target division
                         let divs = Metre.calcDivisionsNoCtx([input], target.times, divisions);
+                        target.divisionPerVoice[voice] += divs;
                         target.division += divs;
                     }
 

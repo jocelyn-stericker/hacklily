@@ -184,7 +184,7 @@ module BarlineModel {
         lineWidths:      number[];
     }
 
-    Layout.prototype.mergePolicy = Engine.IModel.HMergePolicy.Min;
+    Layout.prototype.mergePolicy = Engine.IModel.HMergePolicy.Max;
     Layout.prototype.expandable = false;
     Layout.prototype.renderClass = Engine.IModel.Type.Barline;
     Layout.prototype.boundingBoxes$ = [];
