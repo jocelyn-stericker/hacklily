@@ -34,7 +34,6 @@ const getAnchor = _.memoize((notehead: string) => (<any>bravura.glyphsWithAnchor
  */
 export function getFontOffset(notehead: string, direction: number) {
     "use strict";
-    notehead            = notehead;
     var anchors 	= getAnchor(notehead);
 
     switch (true) {

@@ -24,12 +24,15 @@ import _                    = require("lodash");
 let $                       = React.createFactory;
 
 import Chord                = require("../models/chord");
+import Flag                 = require("./flag");
 import LedgerLine           = require("./ledgerLine");
 import Note                 = require("./note");
 import Notehead             = require("./notehead");
 import Rest                 = require("./rest");
 import Stem                 = require("./stem");
 import SMuFL                = require("../models/smufl");
+
+const stemThickness: number = SMuFL.bravura.engravingDefaults.stemThickness*10;
 
 /**
  * Renders notes and their notations.
@@ -96,6 +99,7 @@ class ChordView extends React.Component<{layout: Chord.IChordLayout}, void> {
                     defaultY: (spec.satieStem.stemStart - 3)*10,
                     type: spec[0].stem.type
                 },
+                width: stemThickness,
                 notehead: approxNotehead
             }),
             _.map(spec.satieLedger, lineNumber => $(LedgerLine)({
@@ -107,6 +111,20 @@ class ChordView extends React.Component<{layout: Chord.IChordLayout}, void> {
                 },
                 notehead: approxNotehead
             })),
+            spec.satieFlag && $(Flag)({
+                key: "f",
+                spec: {
+                    defaultX: spec[0].defaultX,
+                    defaultY: (spec.satieStem.stemStart - 3)*10 +
+                        spec.satieStem.stemHeight*spec.satieStem.direction,
+                    color: spec[0].stem.color || "$000000",
+                    flag: spec.satieFlag,
+                    direction: spec.satieStem.direction
+                },
+                stemWidth: stemThickness,
+                stemHeight: spec.satieStem.stemHeight,
+                notehead: approxNotehead
+            }),
             lyrics
         );
     }

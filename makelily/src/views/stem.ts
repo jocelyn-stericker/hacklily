@@ -26,12 +26,10 @@ let $                   = React.createFactory;
 import Line             = require("./primitives/line");
 import SMuFL            = require("../models/smufl");
 
-const stemThickness: number = SMuFL.bravura.engravingDefaults.stemThickness*10;
-
 /**
  * Renders a stem based on a height decided in Note.
  */
-class Stem extends React.Component<{spec: MusicXML.Stem, notehead: string, bestHeight: number}, void> {
+class Stem extends React.Component<{spec: MusicXML.Stem, notehead: string, bestHeight: number, width: number}, void> {
     render() {
         const notehead = this.props.notehead;
         const spec = this.props.spec;
@@ -39,7 +37,7 @@ class Stem extends React.Component<{spec: MusicXML.Stem, notehead: string, bestH
             return null;
         }
         const direction = spec.type === MusicXML.StemType.Up ? 1 : -1; // TODO: StemType.Double
-        const lineXOffset = direction * - stemThickness/2;
+        const lineXOffset = direction * - this.props.width/2;
         const offset = SMuFL.getFontOffset(notehead, direction);
         const x = this.context.originX + spec.defaultX +
             (spec.relativeX || (offset[0]*10 + lineXOffset));
@@ -54,7 +52,7 @@ class Stem extends React.Component<{spec: MusicXML.Stem, notehead: string, bestH
                 offset[1]*10 - this.props.bestHeight*direction,
             stroke: spec.color,
             fill: spec.color,
-            strokeWidth: stemThickness
+            strokeWidth: this.props.width
         });
     }
 }
