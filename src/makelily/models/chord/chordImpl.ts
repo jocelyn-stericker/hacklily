@@ -110,6 +110,12 @@ class ChordModelImpl implements ChordModel.IChordModel {
         invariant(isFinite(this._count) && this._count !== null, "%s is not a valid count", this._count);
 
         this._checkMulitpleRest(cursor$);
+
+        if (!this.inBeam$ && Engine.IChord.countToIsBeamable[this._count]) {
+            this.satieFlag = Engine.IChord.countToFlag[this._count];
+        } else {
+            this.satieFlag = null;
+        }
     }
 
     layout(cursor$: Engine.ICursor): ChordModel.IChordLayout {
@@ -424,6 +430,8 @@ class ChordModelImpl implements ChordModel.IChordModel {
         stemStart:  number;
     };
 
+    satieFlag: string;
+
     satieDirection: MusicXML.StemType;
 
     /**
@@ -477,6 +485,8 @@ module ChordModelImpl {
             this.model.satieStem = model.satieStem;
             this.model.satieLedger = model.satieLedger;
             this.model.satieMultipleRest = model.satieMultipleRest;
+            this.model.satieFlag = model.satieFlag;
+
             _.forEach(this.model, note => {
                 cursor$.maxPaddingTop$ = Math.max(cursor$.maxPaddingTop$, note.defaultY - 10);
                 cursor$.maxPaddingBottom$ = Math.max(cursor$.maxPaddingBottom$, note.defaultY - 30);

@@ -42,6 +42,7 @@ module ChordModel {
             stemHeight: number;
             stemStart:  number;
         };
+        satieFlag: string;
         satieLedger: number[];
         satieMultipleRest: MusicXML.MultipleRest;
     }
