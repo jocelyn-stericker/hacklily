@@ -256,8 +256,11 @@ class AttributesModel implements Export.IAttributesModel {
 
         const time = this.times[0];
 
-        const totalBeats = _.reduce(time.beats, (memo, time) => memo +
-            _.reduce(time.split("+"), (memo, time) => memo + parseInt(time, 10), 0), 0);
+        const firstType = time.beatTypes[0];
+
+        const totalBeats = _.reduce(time.beats, (memo, timeStr, idx) => memo +
+            _.reduce(timeStr.split("+"), (memo, timeStr) => memo +
+                parseInt(timeStr, 10)*firstType/time.beatTypes[idx], 0), 0);
 
         cursor$.staff.totalDivisions = totalBeats * this.divisions || NaN;
     }
