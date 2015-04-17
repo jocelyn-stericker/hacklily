@@ -27,11 +27,15 @@ let $                       = React.createFactory;
 import Accidental           = require("./accidental");
 import Dot                  = require("./primitives/dot");
 import Notehead             = require("./notehead");
+import SMuFL                = require("../models/smufl");
 
 class Note extends React.Component<{spec: MusicXML.Note}, void> {
     render() {
         const spec = this.props.spec;
         const pitch = spec.pitch;
+
+        let approxNotehead = Notehead.countToNotehead[spec.noteType.duration];
+        var width = SMuFL.bboxes[approxNotehead][0]*10;
 
         invariant(!!pitch, "Not implemented");
 
@@ -50,8 +54,8 @@ class Note extends React.Component<{spec: MusicXML.Note}, void> {
                 key: "_1_" + idx,
                 fill: dot.color,
                 radius: 2.4,
-                x: 0, // TODO
-                y: - (dot.defaultY + (dot.relativeY || 0))
+                x: this.context.originX + this.props.spec.defaultX + width + 6 + 6*idx,
+                y: this.context.originY - (dot.defaultY + (dot.relativeY || 0))
             })) : null,
             this.props.spec.accidental ? $(Accidental)({
                 key: "a",
