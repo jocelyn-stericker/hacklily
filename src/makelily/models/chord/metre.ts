@@ -291,6 +291,9 @@ export function getBeamingPattern(times: MusicXML.Time[], alt?: string) {
         8: [12,8,4,3,2,1],
         16: [4,3,2,1]
     };
+    if (time.senzaMisura != null) {
+        return [];
+    }
     if (!pattern) {
         // TODO: Partial & Mixed
         pattern = [];
