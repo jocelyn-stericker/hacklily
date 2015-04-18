@@ -31,6 +31,9 @@ import Glyph                = require("./primitives/glyph");
 class TimeSignature extends React.Component<{spec: MusicXML.Time}, void> {
     render(): any {
         const spec = this.props.spec;
+        if (spec.senzaMisura != null) {
+            return null;
+        }
         let ts = this._displayTimeSignature();
 
         if (ts.commonRepresentation) {

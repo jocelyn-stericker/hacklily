@@ -256,6 +256,11 @@ class AttributesModel implements Export.IAttributesModel {
 
         const time = this.times[0];
 
+        if (time.senzaMisura != null) {
+            cursor$.staff.totalDivisions = 1000000 * this.divisions;
+            return;
+        }
+
         const firstType = time.beatTypes[0];
 
         const totalBeats = _.reduce(time.beats, (memo, timeStr, idx) => memo +
