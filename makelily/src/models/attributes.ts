@@ -312,7 +312,11 @@ module AttributesModel {
                 model._clefs[this.staffIdx] = Object.create(model.clefs[this.staffIdx], {
                     "defaultX": {
                         get: () => {
-                            return this.barX;
+                            if (isFirstInLine) {
+                                return this.barX;
+                            } else {
+                                return this.barX - 10.5;
+                            }
                         }
                     }
                 });

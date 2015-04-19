@@ -65,6 +65,15 @@
     </measure>
     <!--=======================================================-->
     <measure number="3">
+      <note>
+        <pitch>
+          <step>C</step>
+          <octave>4</octave>
+        </pitch>
+        <duration>2</duration>
+        <voice>1</voice>
+        <type>half</type>
+      </note>
       <attributes>
         <clef>
           <sign>C</sign>
@@ -76,9 +85,9 @@
           <step>C</step>
           <octave>4</octave>
         </pitch>
-        <duration>4</duration>
+        <duration>2</duration>
         <voice>1</voice>
-        <type>whole</type>
+        <type>half</type>
       </note>
     </measure>
     <!--=======================================================-->

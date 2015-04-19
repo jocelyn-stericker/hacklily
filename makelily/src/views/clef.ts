@@ -35,27 +35,6 @@ class Clef extends React.Component<{spec: MusicXML.Clef}, void> {
             return null;
         }
 
-        /*
-            extends PrintStyle
-                Position
-                    defaultX?: number;
-                    relativeY?: number;
-                    defaultY?: number;
-                    relativeX?: number;
-                    Font (ignored)
-                Color
-                    color?: string;
-            extends PrintObject
-                printObject
-
-            clefOctaveChange: string;
-            sign: string;
-            number?: number;
-            size?: SymbolSize;
-            line: number;
-            afterBarline?: boolean;
-            additional?: boolean;
-        */
         return $(Glyph)({
             x:          this.context.originX + spec.defaultX + (spec.relativeX || 0),
             y:          this.context.originY - (
