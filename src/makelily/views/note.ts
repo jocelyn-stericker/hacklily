@@ -55,7 +55,8 @@ class Note extends React.Component<{spec: MusicXML.Note}, void> {
                 fill: dot.color,
                 radius: 2.4,
                 x: this.context.originX + this.props.spec.defaultX + width + 6 + 6*idx,
-                y: this.context.originY - (dot.defaultY + (dot.relativeY || 0))
+                y: this.context.originY - this.props.spec.defaultY -
+                    (dot.defaultY + (dot.relativeY || 0))
             })) : null,
             this.props.spec.accidental ? $(Accidental)({
                 key: "a",

@@ -162,7 +162,6 @@ export function validate$(options$: Options.ILayoutOptions, memo$: Options.ILine
 function tryValidate$(options$: Options.ILayoutOptions, memo$: Options.ILinesLayoutState): void {
     let factory         = options$.modelFactory;
     let searchHere      = factory.searchHere.bind(factory);
-    let createModel     = factory.create.bind(factory);
 
     let lastAttribs: MusicXML.Attributes = null;
 
@@ -178,9 +177,12 @@ function tryValidate$(options$: Options.ILayoutOptions, memo$: Options.ILinesLay
     _.forEach(options$.measures, function validateMeasure(measure) {
         if (!(measure.uuid in memo$.clean$)) {
             let voiceSegments$ = <Measure.ISegment[]>
-                _.flatten(_.map(_.pairs(measure.parts), partx => withPart(partx[1].voices, partx[0])));
+                _.flatten(_.map(_.pairs(measure.parts),
+                            partx => withPart(partx[1].voices, partx[0])));
+
             let staffSegments$ = <Measure.ISegment[]>
-                _.flatten(_.map(_.pairs(measure.parts), partx => withPart(partx[1].staves, partx[0])));
+                _.flatten(_.map(_.pairs(measure.parts),
+                            partx => withPart(partx[1].staves, partx[0])));
 
             let measureCtx = Ctx.IMeasure.detach(measure, 0);
             let segments = _.filter(voiceSegments$.concat(staffSegments$), s => !!s);
@@ -192,9 +194,9 @@ function tryValidate$(options$: Options.ILayoutOptions, memo$: Options.ILinesLay
                 function ensureHeader(type: IModel.Type) {
                     if (!searchHere(segment, 0, type).length) {
                         if (idx === 1) {
-                            segment.splice(0, 0, createModel(type));
+                            segment.splice(0, 0, factory.create(type));
                         } else {
-                            let proxy = createModel(IModel.Type.Proxy);
+                            let proxy = factory.create(IModel.Type.Proxy);
                             let target = searchHere(staffSegments$[1], 0, type)[0];
                             (<any>proxy).target = target;
                             (<any>proxy).staffIdx = idx;
@@ -218,11 +220,11 @@ function tryValidate$(options$: Options.ILayoutOptions, memo$: Options.ILinesLay
                     const divs = segment.divisions*800 -
                         _.reduce(segment, (divs, model) => divs + model.divCount, 0);
                     if (divs !== 0) {
-                        const spacer = createModel(IModel.Type.Spacer);
+                        const spacer = factory.create(IModel.Type.Spacer);
                         spacer.divCount = divs;
                         segment.splice(segment.length, 0, spacer);
                     }
-                    segment.splice(segment.length, 0, createModel(IModel.Type.Barline));
+                    segment.splice(segment.length, 0, factory.create(IModel.Type.Barline));
                 }
             });
 

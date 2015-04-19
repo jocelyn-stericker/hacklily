@@ -88,7 +88,8 @@ class Page extends React.Component<Page.IProps, Page.IState> {
 
         return React.DOM.svg(
             {
-                "data-page":    this.props.renderTarget === Page.RenderTarget.SvgExport ? undefined : print.pageNumber,
+                "data-page":    this.props.renderTarget === Page.RenderTarget.SvgExport ?
+                                    undefined : print.pageNumber,
                 ref:            "svg" + print.pageNumber,
 
                 height:         heightMM,

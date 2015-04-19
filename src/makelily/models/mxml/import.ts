@@ -32,7 +32,8 @@ import Metre            = require("../chord/metre");
 /*---- Exports ----------------------------------------------------------------------------------*/
 
 /**
- * Converts a timewise MXMLJSON score to a Satie score.
+ * Converts a timewise MXMLJSON score to an uninitialized Satie score.
+ * See also Models.importXML.
  * 
  * @param score produced by github.com/ripieno/musicxml-interfaces
  * @returns A structure that can be consumed by a score. If an error occurred
@@ -182,7 +183,8 @@ export function _extractMXMLPartsAndMeasures(input: MusicXML.ScoreTimewise,
 
                         // Check target voice division and add spacing if needed
                         target.divisionPerVoice[voice] = target.divisionPerVoice[voice] || 0;
-                        invariant(target.division >= target.divisionPerVoice[voice], "Ambiguous voice timing: all voices must be monotonic.");
+                        invariant(target.division >= target.divisionPerVoice[voice],
+                                "Ambiguous voice timing: all voices must be monotonic.");
                         if (target.divisionPerVoice[voice] < target.division) {
                             // Add rest
                             let spec = MusicXML.parse.note(`

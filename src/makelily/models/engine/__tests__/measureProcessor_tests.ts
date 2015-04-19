@@ -40,8 +40,11 @@ describe("[engine/measureProcessor.ts]", function() {
                 ETestUtil.createFakeVoiceSegment(1, 7, 2)  // 01111111
             ];
             segments[0].owner = 1;
+            segments[0].part = "P1";
             segments[1].owner = 1;
+            segments[1].part = "P1";
             segments[2].owner = 2;
+            segments[2].part = "P1";
             Engine.Measure.normalizeDivisons$(segments);
 
             // test without alignment
