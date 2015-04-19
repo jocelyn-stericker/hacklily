@@ -22,7 +22,6 @@
 
 "use strict";
 
-import _                = require("lodash");
 import invariant        = require("react/lib/invariant");
 
 import ICursor          = require("./icursor"); // @circular

@@ -90,6 +90,7 @@ export function createFakeStaffSegment(divisions1: number, divisions2: number, i
         }
     ];
     a.owner = idx;
+    a.part = "P1";
     a.divisions = divisions1 + divisions2;
     a.ownerType = Engine.Measure.OwnerType.Staff;
     return a;
@@ -143,6 +144,7 @@ export function createFakeVoiceSegment(divisions1: number, divisions2: number, i
         }
     ];
     a.owner = idx;
+    a.part = "P1";
     a.ownerType = Engine.Measure.OwnerType.Voice;
     a.divisions = divisions1 + divisions2;
     return a;

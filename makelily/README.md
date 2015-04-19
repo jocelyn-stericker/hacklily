@@ -24,7 +24,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 Satie is not ready for usage. Watch this space.
 
 ## Contributing
-This project is not currently accepting pull requests. You can submit issues, however all current work will be on getting Lilypond's unoffical test suite fully supported.
+This project is not currently accepting pull requests. You can submit issues,
+however all current work will be on getting Lilypond's unoffical test suite fully supported.
 
 ### Development Setup
 To get started, you'll need [node 0.12](https://nodejs.org) and one of the following:
@@ -43,11 +44,12 @@ cd satie
 ### Building
 To build, lint, and run unit tests:
 
-| Task                                                | Command         |
-|-----------------------------------------------------|-----------------|
-| Build and run unit tests                            | `make`          |
-| Build and unit test whenever a file changes         | `make watch`    |
-| Lint                                                | `make lint`     |
-| Run all tests, even slow ones                       | `make test_all` |
-| Run coverage testing                                | `make coverage` |
-| Update TypeScript external definitions              | `make tsd`      |
+| Task                                                | Command               |
+|-----------------------------------------------------|-----------------------|
+| Build and run unit tests                            | `make`                |
+| Build and unit test whenever a file changes         | `make watch`          |
+| Build and run tests matching 14a on file change     | `make watch TEST=14a` |
+| Lint                                                | `make lint`           |
+| Run all tests, even slow ones                       | `make test_all`       |
+| Run coverage testing                                | `make coverage`       |
+| Update TypeScript external definitions              | `make tsd`            |

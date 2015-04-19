@@ -161,7 +161,8 @@ unittest: build _unittestOnly
 
 _unittestOnly:
 	@echo "$(TEST_STRING)"
-	@find ./dist -type f | grep "__tests__.*js\$$" | xargs ./node_modules/mocha/bin/mocha -R progress
+	@echo $$TST
+	@if [ "x$$TEST" == "x" ]; then find ./dist -type f | grep "__tests__.*js\$$" | xargs ./node_modules/mocha/bin/mocha -R progress; else find ./dist -type f | grep "__tests__.*js\$$" | xargs ./node_modules/mocha/bin/mocha -R progress --grep "$$TEST"; fi
 
 test_all: unittest lint
 

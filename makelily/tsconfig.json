@@ -60,7 +60,7 @@
         "quotemark": [true, "double"],
         "radix": true,
         "semicolon": true,
-        "triple-equals": true,
+        "triple-equals": [true, "allow-null-check"],
         "typedef": [true,
             "index-signature",
             "property-signature",
