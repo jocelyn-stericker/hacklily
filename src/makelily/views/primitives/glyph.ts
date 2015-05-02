@@ -60,30 +60,7 @@ class Glyph extends React.Component<Glyph.IProps, void> {
             SMuFL.getGlyphCode(this.props.glyphName)
         );
 
-        if (!this.props["selection-info"] || global.isChoreServer) {
-            return text;
-        } else {
-            // Some information, such as the exact position of dots and triplets
-            // is computed in the primitives layer rather than the renderer layer.
-
-            // In order to pass information about the type of object being selected
-            // up to hover and click events, we set data-selection-info. Unfortunately,
-            // "pointer-events: visible" (and friends) consider the entire (much-larger)
-            // area of the glyph to be filled, ignoring transparency. As a workaround,
-            // we set "pointer-events: none" on the text, and create an invisible rectangle
-            // with data-selection-info.
-            return React.DOM.g(null,
-                text,
-                React.DOM.rect({
-                    "data-selection-info": this.props["selection-info"],
-                    width: 4,
-                    height: 5,
-                    x: <any> (this.props.x - 1.2),
-                    y: <any> (this.props.y - 2.5),
-                    fill: "transparent",
-                    className: "mn_handle"})
-                );
-        }
+        return text;
     }
 }
 
