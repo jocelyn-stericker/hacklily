@@ -94,6 +94,7 @@ export function _extractMXMLPartsAndMeasures(input: MusicXML.ScoreTimewise,
 
     // TODO/STOPSHIP - sync division count in each measure
     var divisions = 1; // lilypond-regression 41g.xml does not specify divisions
+    let lastNote: Engine.IChord = null;
 
     let measures: Engine.Measure.IMutableMeasure[] = _.map(input.measures,
             (inMeasure, measureIdx) => {
@@ -158,11 +159,9 @@ export function _extractMXMLPartsAndMeasures(input: MusicXML.ScoreTimewise,
                 case "Note":
                     let note: MusicXML.Note = input;
 
-                    let chordContinues = !!note.chord;
-
                     // TODO: is this the case even if voice/staff don't match up?
-                    if (input.lastNote) {
-                        input.lastNote.push(note);
+                    if (!!note.chord) {
+                        lastNote.push(note);
                         note = input.lastNote;
                     } else {
                         // Notes go in the voice context.
@@ -211,7 +210,7 @@ export function _extractMXMLPartsAndMeasures(input: MusicXML.ScoreTimewise,
                         target.division += divs;
                     }
 
-                    input.lastNote = chordContinues ? note : null;
+                    lastNote = <any> note;
                     break;
                 case "Attributes":
                 case "Barline":
