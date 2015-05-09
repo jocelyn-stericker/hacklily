@@ -44,6 +44,7 @@ module ChordModel {
         };
         satieFlag: string;
         satieLedger: number[];
+        satieNotehead: string[];
         satieMultipleRest: MusicXML.MultipleRest;
     }
 

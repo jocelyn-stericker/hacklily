@@ -136,7 +136,12 @@ module IModel {
          */
         boundingBoxes$?:    IBoundingRect[];
 
-        expandable?:        boolean;
+        expandPolicy?:      ExpandPolicy;
+        
+        /**
+         * Must be set if expandPolicy is Centered
+         */
+        totalWidth?:        number;
     }
     export module ILayout {
         export function detach(layout: ILayout) {
@@ -153,6 +158,11 @@ module IModel {
             });
         }
     }
+    export enum ExpandPolicy {
+        None        = 0,
+        After       = 1,
+        Centered    = 2
+    }
 
     export interface IBoundingRect {
         frozenness:     IModel.FrozenLevel;
@@ -167,7 +177,8 @@ module IModel {
         mergePolicy: HMergePolicy;
         division: number;
         renderClass: Type;
-        expandable?: boolean;
+        expandPolicy?: ExpandPolicy;
+        totalWidth?: number;
     }
 
     export function combineLayout(layout: IModel.ILayout): ICombinedLayout {
@@ -177,8 +188,14 @@ module IModel {
             mergePolicy:    layout.mergePolicy,
             renderClass:    layout.renderClass
         };
-        if (layout.expandable) {
-            detached.expandable = true;
+        if (layout.expandPolicy) {
+            detached.expandPolicy = layout.expandPolicy;
+            if (layout.expandPolicy === ExpandPolicy.Centered) {
+                invariant(!isNaN(layout.totalWidth),
+                    "totalWidth must be a number for centered objects, but it's %s",
+                    layout.totalWidth);
+                detached.totalWidth = layout.totalWidth;
+            }
         }
         return detached;
     }
@@ -189,10 +206,16 @@ module IModel {
             x$:             layout.x,
             division:       layout.division,
             mergePolicy:    layout.mergePolicy,
-            renderClass:    layout.renderClass
+            renderClass:    layout.renderClass,
         };
-        if (layout.expandable) {
-            attached.expandable = true;
+        if (layout.expandPolicy) {
+            attached.expandPolicy = layout.expandPolicy;
+            if (layout.expandPolicy === ExpandPolicy.Centered) {
+                invariant(!isNaN(layout.totalWidth),
+                    "totalWidth must be a number for centered objects, but it's %s",
+                    layout.totalWidth);
+                attached.totalWidth = layout.totalWidth;
+            }
         }
 
         return attached;

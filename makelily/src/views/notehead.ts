@@ -27,7 +27,7 @@ import Glyph            = require("./primitives/glyph");
 /**
  * Renders a notehead.
  */
-class Notehead extends React.Component<{spec: MusicXML.Notehead | MusicXML.Position, duration: MusicXML.Count}, void> {
+class Notehead extends React.Component<{spec: MusicXML.Notehead | MusicXML.Position, notehead: string}, void> {
     render() {
         let spec = this.props.spec;
         let pos = <MusicXML.Position> spec;
@@ -46,7 +46,7 @@ class Notehead extends React.Component<{spec: MusicXML.Notehead | MusicXML.Posit
         let head = <MusicXML.Notehead> spec;
 
         if (head.type === MusicXML.NoteheadType.Normal) {
-            return Notehead.countToNotehead[this.props.duration];
+            return this.props.notehead;
         }
         throw new Error("custom noteheads not implemented");
     }
@@ -56,23 +56,6 @@ module Notehead {
     export var contextTypes = <any> {
         originX:         React.PropTypes.number.isRequired,
         originY:         React.PropTypes.number.isRequired
-    };
-
-    export let countToNotehead: { [key: number]: string } = {
-        [MusicXML.Count.Maxima]:    "noteheadDoubleWhole",
-        [MusicXML.Count.Long]:      "noteheadDoubleWhole",
-        [MusicXML.Count.Breve]:     "noteheadDoubleWhole",
-        [MusicXML.Count.Whole]:     "noteheadWhole",
-        [MusicXML.Count.Half]:      "noteheadHalf",
-        [MusicXML.Count.Quarter]:   "noteheadBlack",
-        [MusicXML.Count.Eighth]:    "noteheadBlack",
-        [MusicXML.Count._16th]:     "noteheadBlack",
-        [MusicXML.Count._32nd]:     "noteheadBlack",
-        [MusicXML.Count._64th]:     "noteheadBlack",
-        [MusicXML.Count._128th]:    "noteheadBlack",
-        [MusicXML.Count._256th]:    "noteheadBlack",
-        [MusicXML.Count._512th]:    "noteheadBlack",
-        [MusicXML.Count._1024th]:   "noteheadBlack"
     };
 }
 

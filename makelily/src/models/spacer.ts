@@ -81,11 +81,11 @@ module SpacerModel {
         mergePolicy: Engine.IModel.HMergePolicy;
         boundingBoxes$: Engine.IModel.IBoundingRect[];
         renderClass: Engine.IModel.Type;
-        expandable: boolean;
+        expandPolicy: Engine.IModel.ExpandPolicy;
     }
 
     Layout.prototype.mergePolicy = Engine.IModel.HMergePolicy.Min;
-    Layout.prototype.expandable = false;
+    Layout.prototype.expandPolicy = Engine.IModel.ExpandPolicy.None;
     Layout.prototype.renderClass = Engine.IModel.Type.Spacer;
     Layout.prototype.boundingBoxes$ = [];
     Object.freeze(Layout.prototype.boundingBoxes$);

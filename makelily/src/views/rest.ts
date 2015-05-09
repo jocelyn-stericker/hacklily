@@ -28,33 +28,15 @@ import Dot                  = require("./primitives/dot");
 import Glyph                = require("./primitives/glyph");
 import SMuFL                = require("../models/smufl");
 
-let countToRest: { [key: number]: string } = {
-    [MusicXML.Count.Maxima]:    "restLonga",
-    [MusicXML.Count.Long]:      "restLonga",
-    [MusicXML.Count.Breve]:     "restDoubleWhole",
-    [MusicXML.Count.Whole]:     "restWhole",
-    [-1]:                       "restWhole",
-    [MusicXML.Count.Half]:      "restHalf",
-    [MusicXML.Count.Quarter]:   "restQuarter",
-    [MusicXML.Count.Eighth]:    "rest8th",
-    [MusicXML.Count._16th]:     "rest16th",
-    [MusicXML.Count._32nd]:     "rest32nd",
-    [MusicXML.Count._64th]:     "rest64th",
-    [MusicXML.Count._128th]:    "rest128th",
-    [MusicXML.Count._256th]:    "rest256th",
-    [MusicXML.Count._512th]:    "rest512th",
-    [MusicXML.Count._1024th]:   "rest1024th"
-};
-
 /**
  * Renders a rest.
  */
-class Rest extends React.Component<{spec: MusicXML.Note, multipleRest?: MusicXML.MultipleRest}, void> {
+class Rest extends React.Component<{spec: MusicXML.Note, multipleRest?: MusicXML.MultipleRest, notehead?: string}, void> {
     render() {
         const spec = this.props.spec;
         const rest = spec.rest;
         invariant(!!spec.rest, "Attempting to render a non-rest with Rest");
-        const notehead = countToRest[spec.noteType.duration];
+        const notehead = this.props.notehead;
 
         const x = this.context.originX + spec.defaultX + (spec.relativeX || 0);
         const y = this.context.originY - (spec.defaultY + (spec.relativeY || 0));
@@ -69,7 +51,7 @@ class Rest extends React.Component<{spec: MusicXML.Note, multipleRest?: MusicXML
                 glyphName: notehead
             }/* Glyph */),
             rest.measure && this.props.multipleRest && React.DOM.text({
-                    x: x,
+                    x: x + SMuFL.bboxes[notehead][0]*10/2,
                     y: y - 30,
                     fontSize: 48,
                     className: "mmn_",

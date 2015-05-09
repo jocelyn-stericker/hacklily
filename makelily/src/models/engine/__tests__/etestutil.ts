@@ -114,7 +114,7 @@ export function createFakeVoiceSegment(divisions1: number, divisions2: number, i
                     division: cursor$.division$,
                     mergePolicy: Engine.IModel.HMergePolicy.Min,
                     x$: cursor$.x$ - width,
-                    expandable: true,
+                    expandPolicy: Engine.IModel.ExpandPolicy.After,
                     model: this,
                     renderClass: Engine.IModel.Type.Chord
                 };
@@ -136,7 +136,7 @@ export function createFakeVoiceSegment(divisions1: number, divisions2: number, i
                     division: cursor$.division$,
                     mergePolicy: Engine.IModel.HMergePolicy.Max,
                     x$: cursor$.x$ - width,
-                    expandable: true,
+                    expandPolicy: Engine.IModel.ExpandPolicy.After,
                     model: this,
                     renderClass: Engine.IModel.Type.Chord
                 };

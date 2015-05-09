@@ -21,11 +21,14 @@ import MusicXML         = require("musicxml-interfaces");
 import Engine           = require("./engine");
 
 export class Layout implements Engine.IModel.ILayout {
-    constructor(model: IEngravedModel, cursor$: Engine.ICursor, priority: Engine.IModel.Type, expandable: boolean) {
+    constructor(model: IEngravedModel, cursor$: Engine.ICursor, priority: Engine.IModel.Type, expandPolicy: Engine.IModel.ExpandPolicy) {
         this.model = model;
         this.priority = priority;
         this.x$ = model.defaultX + (model.defaultY || 0);
         this.division = cursor$.division$;
+        if (expandPolicy) {
+            this.expandPolicy = expandPolicy;
+        }
 
         if (model.divCount === -1) {
             cursor$.division$ += cursor$.staff.totalDivisions;
@@ -50,11 +53,11 @@ export class Layout implements Engine.IModel.ILayout {
 
     mergePolicy: Engine.IModel.HMergePolicy;
     boundingBoxes$: Engine.IModel.IBoundingRect[];
-    expandable: boolean;
+    expandPolicy: Engine.IModel.ExpandPolicy;
 }
 
 Layout.prototype.mergePolicy = Engine.IModel.HMergePolicy.Min;
-Layout.prototype.expandable = false;
+Layout.prototype.expandPolicy = Engine.IModel.ExpandPolicy.None;
 Layout.prototype.boundingBoxes$ = [];
 Object.freeze(Layout.prototype.boundingBoxes$);
 
