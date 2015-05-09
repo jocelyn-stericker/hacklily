@@ -138,18 +138,38 @@ module BarlineModel {
             const lineWidths = cursor$.header.defaults.appearance.lineWidths;
 
             const barlineSep = SMuFL.bravura.engravingDefaults.barlineSeparation;
+            
+            let setLines$ = (lines: string[]) => {
+                let x = 0;
+                this.lineStarts = [];
+                this.lineWidths = [];
+                _.forEach(lines, (line, idx) => {
+                    if (idx > 0) {
+                        x += barlineSep*10;
+                    }
+                    this.lineStarts.push(x);
+                    const width = lineWidths[line].tenths;
+                    this.lineWidths.push(width);
+                    x += width;
+                });
+                cursor$.x$ += x;
+            }
+            
             switch(this.model.barStyle.data) {
                 case MusicXML.BarStyleType.LightHeavy:
-                    this.lineStarts = [0, lineWidths["light barline"].tenths + barlineSep*10];
-                    this.lineWidths = [lineWidths["light barline"].tenths,
-                        lineWidths["heavy barline"].tenths];
-                    cursor$.x$ += lineWidths["light barline"].tenths + barlineSep*10 +
-                        lineWidths["heavy barline"].tenths;
+                    setLines$(["light barline", "heavy barline"]);
+                    break;
+                case MusicXML.BarStyleType.LightLight:
+                    setLines$(["light barline", "light barline"]);
+                    break;
+                case MusicXML.BarStyleType.HeavyHeavy:
+                    setLines$(["heavy barline", "heavy barline"]);
+                    break;
+                case MusicXML.BarStyleType.HeavyLight:
+                    setLines$(["heavy barline", "light barline"]);
                     break;
                 case MusicXML.BarStyleType.Regular:
-                    this.lineStarts = [0];
-                    this.lineWidths = [lineWidths["light barline"].tenths];
-                    cursor$.x$ += lineWidths["light barline"].tenths;
+                    setLines$(["light barline"]);
                     break;
                 default:
                     invariant(false, "Not implemented");
