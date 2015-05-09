@@ -812,5 +812,5 @@ export interface IRestSpec {
     /** 
      * The time modification (canonical tuplet), or null.
      */
-    timeModification?:  MusicXML.TimeModification
+    timeModification?:  MusicXML.TimeModification;
 }

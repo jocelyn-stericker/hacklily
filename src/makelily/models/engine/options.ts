@@ -56,7 +56,7 @@ export interface ILineLayoutResult extends Array<Measure.IMeasureLayout> {
 export interface ILineBounds {
     left:           number;
     right:          number;
-    systemLayout:   MusicXML.SystemLayout
+    systemLayout:   MusicXML.SystemLayout;
 }
 
 export module ILineBounds {

@@ -167,7 +167,7 @@ class ChordModelImpl implements ChordModel.IChordModel {
             cursor$.staff.multiRestRem = measureStyle.multipleRest.count;
         }
     }
-    
+
     private _implyNoteheads$(cursor$: Engine.ICursor) {
         if (this._isRest) {
             if (this.satieMultipleRest) {
@@ -486,7 +486,7 @@ class ChordModelImpl implements ChordModel.IChordModel {
     satieLedger: number[];
 
     satieMultipleRest: MusicXML.MultipleRest;
-    
+
     satieNotehead: string[];
 }
 
@@ -536,7 +536,7 @@ module ChordModelImpl {
             this.model.satieMultipleRest = model.satieMultipleRest;
             this.model.satieFlag = model.satieFlag;
             this.model.satieNotehead = model.satieNotehead;
-            
+
             if (model.satieMultipleRest) {
                 this.expandPolicy = Engine.IModel.ExpandPolicy.Centered;
             }

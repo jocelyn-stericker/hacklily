@@ -204,7 +204,7 @@ class NoteImpl implements MusicXML.Note {
     pitch:              MusicXML.Pitch;
 
     /*---- MusicXML.Note > Extended ---------------------------------------------------------*/
-    
+
     unpitched:          MusicXML.Unpitched;
     noteheadText:       MusicXML.NoteheadText;
     accidental:         MusicXML.Accidental;

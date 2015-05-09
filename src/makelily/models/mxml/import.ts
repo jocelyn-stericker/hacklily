@@ -203,7 +203,7 @@ export function _extractMXMLPartsAndMeasures(input: MusicXML.ScoreTimewise,
                         let newNote = factory.fromSpec(input);
                         target.output.voices[voice].push(newNote);
                         note = Engine.IChord.fromModel(newNote);
-                        
+
                         // Update target division
                         let divs = Metre.calcDivisionsNoCtx([input], target.times, divisions);
                         target.divisionPerVoice[voice] += divs;

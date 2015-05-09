@@ -41,12 +41,11 @@ export function justify(options: Options.ILayoutOptions, bounds: Options.ILineBo
     // Center whole bar rests
     _.forEach(measures$, function (measure) {
         _.forEach(measure.elements, function(segment, si) {
-            var prev: IModel.ILayout = null;
             _.forEach(segment, function(element, j) {
                 if (element.expandPolicy === IModel.ExpandPolicy.Centered) {
                     let k = j + 1;
                     var next: IModel.ILayout = segment[k];
-                    
+
                     if (next) {
                         let x = next.x$;
                         for (let sj = 0; !x && sj < measure.elements.length; ++sj) {
@@ -54,7 +53,7 @@ export function justify(options: Options.ILayoutOptions, bounds: Options.ILineBo
                         }
                         const totalWidth: number = element.totalWidth;
                         invariant(!isNaN(totalWidth), "%s must be a number", totalWidth);
-                        
+
                         element.x$ = (element.x$ + next.x$)/2 - totalWidth/2;
                     }
                 }

@@ -393,13 +393,13 @@ export function reduce(spec: ILayoutOpts): Measure.IMeasureLayout {
     }
 
     let gPadding: number;
-    
+
     if (gMaxXInMeasure === gMeasure.x || !spec.padEnd) {
         gPadding = 0;
     } else {
         gPadding = 15;
     }
-    
+
     return {
         attributes:     gSomeLastAttribs,
         elements:       gVoiceLayouts$.concat(gStaffLayoutsUnique$),

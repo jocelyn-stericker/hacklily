@@ -89,7 +89,7 @@ export module IMeasure {
 }
 
 export interface IAccidentals {
-    [key: string]:      number
+    [key: string]:      number;
 }
 
 /** 

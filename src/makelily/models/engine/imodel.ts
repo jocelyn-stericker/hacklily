@@ -137,7 +137,7 @@ module IModel {
         boundingBoxes$?:    IBoundingRect[];
 
         expandPolicy?:      ExpandPolicy;
-        
+
         /**
          * Must be set if expandPolicy is Centered
          */

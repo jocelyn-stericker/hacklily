@@ -74,7 +74,7 @@ module Glyph {
         y: number;
         opacity?: number;
         code?: string;
-        scale?: number
+        scale?: number;
     }
 }
 
