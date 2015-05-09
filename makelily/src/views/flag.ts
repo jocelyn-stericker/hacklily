@@ -75,7 +75,7 @@ module Flag {
             color: string;
             flag: string;
             direction: number;
-        }
+        };
         isGrace?: boolean;
         notehead: string;
         stemWidth: number;

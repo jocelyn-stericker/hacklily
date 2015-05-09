@@ -27,7 +27,6 @@ import Chord                = require("../models/chord");
 import Flag                 = require("./flag");
 import LedgerLine           = require("./ledgerLine");
 import Note                 = require("./note");
-import Notehead             = require("./notehead");
 import Rest                 = require("./rest");
 import Stem                 = require("./stem");
 import SMuFL                = require("../models/smufl");

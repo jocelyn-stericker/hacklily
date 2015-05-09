@@ -54,7 +54,7 @@ class ScoreHeader implements MusicXML.ScoreHeader {
         relations:                                  [],
         rights:                                     [],
         source:                                     null
-    }
+    };
 
     defaults:           MusicXML.Defaults = {
         appearance: {
@@ -169,13 +169,13 @@ class ScoreHeader implements MusicXML.ScoreHeader {
             fontStyle:                              MusicXML.NormalItalic.Normal,
             fontWeight:                             MusicXML.NormalBold.Normal
         }
-    }
+    };
 
     work:               MusicXML.Work = {
         opus:                                       null,
         workNumber:                                 "",
         workTitle:                                  ""
-    }
+    };
 
     movementTitle:      string =                    "";
     movementNumber:     string =                    "";

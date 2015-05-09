@@ -93,7 +93,7 @@ export function normalizeDivisons$(segments$: ISegment[], factor: number = 0): n
 };
 
 export interface IMeasureLayout {
-    attributes:         MusicXML.Attributes,
+    attributes:         MusicXML.Attributes;
     elements:           IModel.ILayout[][];
     width:              number;
     originX:            number;

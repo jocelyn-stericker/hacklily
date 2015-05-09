@@ -6,28 +6,28 @@
     "bundle": "vendor/typings/tsd.d.ts",
     "installed": {
         "diff/diff.d.ts": {
-            "commit": "c3acd4cd7af1ed51427acd6b78ee41b1f9ef01f8"
+            "commit": "b3834d886a95789e6ab56e8244775ec10c5293d0"
         },
         "node/node.d.ts": {
-            "commit": "c3acd4cd7af1ed51427acd6b78ee41b1f9ef01f8"
+            "commit": "b3834d886a95789e6ab56e8244775ec10c5293d0"
         },
         "lodash/lodash.d.ts": {
-            "commit": "c3acd4cd7af1ed51427acd6b78ee41b1f9ef01f8"
+            "commit": "b3834d886a95789e6ab56e8244775ec10c5293d0"
         },
         "react/react.d.ts": {
-            "commit": "c3acd4cd7af1ed51427acd6b78ee41b1f9ef01f8"
+            "commit": "b3834d886a95789e6ab56e8244775ec10c5293d0"
         },
         "mocha/mocha.d.ts": {
-            "commit": "c3acd4cd7af1ed51427acd6b78ee41b1f9ef01f8"
+            "commit": "b3834d886a95789e6ab56e8244775ec10c5293d0"
         },
         "chai/chai.d.ts": {
-            "commit": "c3acd4cd7af1ed51427acd6b78ee41b1f9ef01f8"
+            "commit": "b3834d886a95789e6ab56e8244775ec10c5293d0"
         },
         "yargs/yargs.d.ts": {
-            "commit": "c3acd4cd7af1ed51427acd6b78ee41b1f9ef01f8"
+            "commit": "b3834d886a95789e6ab56e8244775ec10c5293d0"
         },
         "superagent/superagent.d.ts": {
-            "commit": "c3acd4cd7af1ed51427acd6b78ee41b1f9ef01f8"
+            "commit": "b3834d886a95789e6ab56e8244775ec10c5293d0"
         }
     }
 }

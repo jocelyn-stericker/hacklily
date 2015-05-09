@@ -21,22 +21,22 @@
         "xml"
     ],
     "dependencies": {
-        "fast-json-patch": "^0.5.1",
-        "lodash": "3.4.0",
+        "fast-json-patch": "0.5.2",
+        "lodash": "3.8.0",
         "musicxml-interfaces": "git://github.com/ripieno/musicxml-interfaces",
-        "react": "0.13.1",
-        "yargs": "^3.5.4"
+        "react": "0.13.3",
+        "yargs": "3.8.0"
     },
     "devDependencies": {
-        "chai": "2.1.1",
+        "chai": "2.3.0",
         "dts-bundle": "0.2.0",
-        "istanbul": "^0.3.8",
-        "mocha": "^2.2.0",
-        "source-map-support": "^0.2.9",
-        "svg2png": "1.1.0",
-        "tsd": "^0.6.0-beta.5",
-        "tslint": "^2.1.1",
-        "typescript": "git://github.com/Microsoft/TypeScript.git"
+        "istanbul": "0.3.13",
+        "mocha": "2.2.4",
+        "source-map-support": "0.2.10",
+        "svg2png": "1.1.1",
+        "tsd": "0.6.0-beta.5",
+        "tslint": "2.2.0-beta",
+        "typescript": "1.5.0-beta"
     },
     "typescript": {
         "definition": "dist/satie.d.ts"
