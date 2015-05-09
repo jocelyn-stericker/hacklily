@@ -522,6 +522,10 @@ export function rebeamable(idx: number, cursor: Engine.ICursor, alt?: string): A
 }
 
 export function calcDivisions(chord: Engine.IChord, cursor: Engine.ICursor) {
+    if (_.any(chord, note => note.grace)) {
+        return 0;
+    }
+    
     var attributes = cursor.staff.attributes;
     var count = IChord.count(chord);
     if (isNaN(count)) {

@@ -45,8 +45,10 @@ class AttributesModel implements Export.IAttributesModel {
         this._measure           = cursor$.measure.idx;
         this._parent            = <any> cursor$.staff.attributes;
 
-        invariant(this._parent !== this, "Internal error. " +
-            "AttributesModel.validate$() must not be called in a context with itself as a parent!");
+        for (let a = this._parent; !!a; a = a._parent) {
+            invariant(a !== this, "Internal error. AttributesModel.validate$() must not be called in a context with itself as an ancestor.");
+        }
+        
         invariant(!!this.divisions, "Internal error. " +
             "AttributesModel.validate$() requires divisions to be set already.");
 

@@ -162,7 +162,7 @@ class ChordModelImpl implements ChordModel.IChordModel {
 
     private _checkMulitpleRest$(cursor$: Engine.ICursor) {
         let measureStyle: MusicXML.MeasureStyle = cursor$.staff.attributes.measureStyle;
-        if (measureStyle) {
+        if (measureStyle && measureStyle.multipleRest) {
             this.satieMultipleRest = measureStyle.multipleRest;
             cursor$.staff.multiRestRem = measureStyle.multipleRest.count;
         }
@@ -558,7 +558,7 @@ module ChordModelImpl {
 
             // TODO: Each note's width has a linear component proportional to log of its duration
             // with respect to the shortest length
-            let extraWidth = (Math.log(model.divCount) - Math.log(cursor$.line.shortestCount)) / Math.log(2) / 3 * 10;
+            let extraWidth = model.divCount ? (Math.log(model.divCount) - Math.log(cursor$.line.shortestCount)) / Math.log(2) / 3 * 10 : 0;
             const grace = model[0].grace; // TODO: What if only some notes are grace?
             if (grace) {
                 extraWidth /= 10; // TODO: Put grace notes in own segment

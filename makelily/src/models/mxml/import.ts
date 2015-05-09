@@ -162,7 +162,7 @@ export function _extractMXMLPartsAndMeasures(input: MusicXML.ScoreTimewise,
                     // TODO: is this the case even if voice/staff don't match up?
                     if (!!note.chord) {
                         lastNote.push(note);
-                        note = input.lastNote;
+                        note = lastNote;
                     } else {
                         // Notes go in the voice context.
                         let voice = note.voice || 1;
@@ -210,6 +210,7 @@ export function _extractMXMLPartsAndMeasures(input: MusicXML.ScoreTimewise,
                         target.division += divs;
                     }
 
+                    invariant(!!note, "Must set lastNote to a note...");
                     lastNote = <any> note;
                     break;
                 case "Attributes":
