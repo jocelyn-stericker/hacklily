@@ -29,12 +29,12 @@ import Dot                  = require("./primitives/dot");
 import Notehead             = require("./notehead");
 import SMuFL                = require("../models/smufl");
 
-class Note extends React.Component<{spec: MusicXML.Note}, void> {
+class Note extends React.Component<{spec: MusicXML.Note, satieNotehead: string}, void> {
     render() {
         const spec = this.props.spec;
         const pitch = spec.pitch;
 
-        let approxNotehead = Notehead.countToNotehead[spec.noteType.duration];
+        let approxNotehead = this.props.satieNotehead;
         var width = SMuFL.bboxes[approxNotehead][0]*10;
 
         invariant(!!pitch, "Not implemented");
@@ -48,7 +48,7 @@ class Note extends React.Component<{spec: MusicXML.Note}, void> {
                     color: spec.color,
                     type: MusicXML.NoteheadType.Normal // FIXME
                 },
-                duration: spec.noteType.duration
+                notehead: approxNotehead
             }),
             spec.dots ? _.map(spec.dots, (dot, idx) => $(Dot)({
                 key: "_1_" + idx,

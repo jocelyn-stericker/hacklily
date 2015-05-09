@@ -176,7 +176,7 @@ module BarlineModel {
         mergePolicy:    Engine.IModel.HMergePolicy;
         boundingBoxes$: Engine.IModel.IBoundingRect[];
         renderClass:    Engine.IModel.Type;
-        expandable:     boolean;
+        expandPolicy:    Engine.IModel.ExpandPolicy;
 
         /*---- Extensions ---------------------------------------------------*/
 
@@ -185,7 +185,7 @@ module BarlineModel {
     }
 
     Layout.prototype.mergePolicy = Engine.IModel.HMergePolicy.Max;
-    Layout.prototype.expandable = false;
+    Layout.prototype.expandPolicy = Engine.IModel.ExpandPolicy.None;
     Layout.prototype.renderClass = Engine.IModel.Type.Barline;
     Layout.prototype.boundingBoxes$ = [];
     Object.freeze(Layout.prototype.boundingBoxes$);

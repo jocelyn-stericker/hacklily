@@ -24,9 +24,45 @@ import Engine           = require("../engine");
 import NoteImpl         = require("./noteImpl"); // @cyclic
 import ChordModel       = require("../chord");
 import Metre            = require("./metre");
+import SMuFL            = require("../smufl");
 
 const IDEAL_STEM_HEIGHT: number    = 35;
 const MIN_STEM_HEIGHT: number      = 25;
+
+let countToNotehead: { [key: number]: string } = {
+    [MusicXML.Count.Maxima]:    "noteheadDoubleWhole",
+    [MusicXML.Count.Long]:      "noteheadDoubleWhole",
+    [MusicXML.Count.Breve]:     "noteheadDoubleWhole",
+    [MusicXML.Count.Whole]:     "noteheadWhole",
+    [MusicXML.Count.Half]:      "noteheadHalf",
+    [MusicXML.Count.Quarter]:   "noteheadBlack",
+    [MusicXML.Count.Eighth]:    "noteheadBlack",
+    [MusicXML.Count._16th]:     "noteheadBlack",
+    [MusicXML.Count._32nd]:     "noteheadBlack",
+    [MusicXML.Count._64th]:     "noteheadBlack",
+    [MusicXML.Count._128th]:    "noteheadBlack",
+    [MusicXML.Count._256th]:    "noteheadBlack",
+    [MusicXML.Count._512th]:    "noteheadBlack",
+    [MusicXML.Count._1024th]:   "noteheadBlack"
+};
+
+let countToRest: { [key: number]: string } = {
+    [MusicXML.Count.Maxima]:    "restLonga",
+    [MusicXML.Count.Long]:      "restLonga",
+    [MusicXML.Count.Breve]:     "restDoubleWhole",
+    [MusicXML.Count.Whole]:     "restWhole",
+    [-1]:                       "restWhole",
+    [MusicXML.Count.Half]:      "restHalf",
+    [MusicXML.Count.Quarter]:   "restQuarter",
+    [MusicXML.Count.Eighth]:    "rest8th",
+    [MusicXML.Count._16th]:     "rest16th",
+    [MusicXML.Count._32nd]:     "rest32nd",
+    [MusicXML.Count._64th]:     "rest64th",
+    [MusicXML.Count._128th]:    "rest128th",
+    [MusicXML.Count._256th]:    "rest256th",
+    [MusicXML.Count._512th]:    "rest512th",
+    [MusicXML.Count._1024th]:   "rest1024th"
+};
 
 /**
  * A model that represents 1 or more notes in the same voice, starting on the same beat, and each
@@ -109,7 +145,8 @@ class ChordModelImpl implements ChordModel.IChordModel {
 
         invariant(isFinite(this._count) && this._count !== null, "%s is not a valid count", this._count);
 
-        this._checkMulitpleRest(cursor$);
+        this._checkMulitpleRest$(cursor$);
+        this._implyNoteheads$(cursor$);
 
         if (!this.inBeam$ && Engine.IChord.countToIsBeamable[this._count]) {
             this.satieFlag = Engine.IChord.countToFlag[this._count];
@@ -119,15 +156,27 @@ class ChordModelImpl implements ChordModel.IChordModel {
     }
 
     layout(cursor$: Engine.ICursor): ChordModel.IChordLayout {
-        this._checkMulitpleRest(cursor$);
+        this._checkMulitpleRest$(cursor$);
         return new ChordModelImpl.Layout(this, cursor$);
     }
 
-    private _checkMulitpleRest(cursor$: Engine.ICursor) {
+    private _checkMulitpleRest$(cursor$: Engine.ICursor) {
         let measureStyle: MusicXML.MeasureStyle = cursor$.staff.attributes.measureStyle;
         if (measureStyle) {
             this.satieMultipleRest = measureStyle.multipleRest;
             cursor$.staff.multiRestRem = measureStyle.multipleRest.count;
+        }
+    }
+    
+    private _implyNoteheads$(cursor$: Engine.ICursor) {
+        if (this._isRest) {
+            if (this.satieMultipleRest) {
+                this.satieNotehead = ["restHBar"];
+            } else {
+                this.satieNotehead = [countToRest[this.count]];
+            }
+        } else {
+            this.satieNotehead = _.times(this.length, () => countToNotehead[this.count]);
         }
     }
 
@@ -434,12 +483,11 @@ class ChordModelImpl implements ChordModel.IChordModel {
 
     satieDirection: MusicXML.StemType;
 
-    /**
-     * Line numbers that need ledgers
-     */
     satieLedger: number[];
 
     satieMultipleRest: MusicXML.MultipleRest;
+    
+    satieNotehead: string[];
 }
 
 ChordModelImpl.prototype.frozenness = Engine.IModel.FrozenLevel.Warm;
@@ -453,6 +501,7 @@ module ChordModelImpl {
 
             if (cursor$.staff.multiRestRem > 0 && !model.satieMultipleRest) {
                 // This is not displayed because it is part of a multirest.
+                this.expandPolicy = Engine.IModel.ExpandPolicy.None;
                 return;
             }
 
@@ -486,6 +535,11 @@ module ChordModelImpl {
             this.model.satieLedger = model.satieLedger;
             this.model.satieMultipleRest = model.satieMultipleRest;
             this.model.satieFlag = model.satieFlag;
+            this.model.satieNotehead = model.satieNotehead;
+            
+            if (model.satieMultipleRest) {
+                this.expandPolicy = Engine.IModel.ExpandPolicy.Centered;
+            }
 
             _.forEach(this.model, note => {
                 cursor$.maxPaddingTop$ = Math.max(cursor$.maxPaddingTop$, note.defaultY - 10);
@@ -520,6 +574,9 @@ module ChordModelImpl {
             // totalWidth = Math.max(lyricWidth/2, totalWidth);
             invariant(isFinite(totalWidth), "Invalid width %s", totalWidth);
 
+            let widths = _.map(model.satieNotehead, notehead => SMuFL.bboxes[notehead][0]*10);
+            this.totalWidth = _.max(widths);
+
             cursor$.x$ += totalWidth;
 
             /*---- Misc ---------------------------------*/
@@ -534,17 +591,19 @@ module ChordModelImpl {
         model: ChordModelImpl;
         x$: number;
         division: number;
+        totalWidth: number;
+        notehead: string;
 
         // Prototype:
 
         mergePolicy: Engine.IModel.HMergePolicy;
         boundingBoxes$: Engine.IModel.IBoundingRect[];
         renderClass: Engine.IModel.Type;
-        expandable: boolean;
+        expandPolicy: Engine.IModel.ExpandPolicy;
     }
 
     Layout.prototype.mergePolicy = Engine.IModel.HMergePolicy.Min;
-    Layout.prototype.expandable = true;
+    Layout.prototype.expandPolicy = Engine.IModel.ExpandPolicy.After;
     Layout.prototype.renderClass = Engine.IModel.Type.Chord;
     Layout.prototype.boundingBoxes$ = [];
 }

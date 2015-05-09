@@ -20,6 +20,7 @@ import _                        = require("lodash");
 import invariant                = require("react/lib/invariant");
 
 import Options                  = require("./options");
+import IModel                   = require("./imodel");
 import Measure                  = require("./measure");
 import MeasureProcessor         = require("./measureProcessor");
 import Ctx                      = require("./ctx");
@@ -37,6 +38,30 @@ export function justify(options: Options.ILayoutOptions, bounds: Options.ILineBo
 
     const x = bounds.left + _.reduce(measures$, (sum, measure) => sum + measure.width, 0);
 
+    // Center whole bar rests
+    _.forEach(measures$, function (measure) {
+        _.forEach(measure.elements, function(segment, si) {
+            var prev: IModel.ILayout = null;
+            _.forEach(segment, function(element, j) {
+                if (element.expandPolicy === IModel.ExpandPolicy.Centered) {
+                    let k = j + 1;
+                    var next: IModel.ILayout = segment[k];
+                    
+                    if (next) {
+                        let x = next.x$;
+                        for (let sj = 0; !x && sj < measure.elements.length; ++sj) {
+                            x = measure.elements[sj][k].x$;
+                        }
+                        const totalWidth: number = element.totalWidth;
+                        invariant(!isNaN(totalWidth), "%s must be a number", totalWidth);
+                        
+                        element.x$ = (element.x$ + next.x$)/2 - totalWidth/2;
+                    }
+                }
+            });
+        });
+    });
+
     // x > enX is possible if a single bar's minimum size exceeds maxX, or if our
     // guess for a measure width was too liberal. In either case, we're shortening
     // the measure width here, and our partial algorithm doesn't work with negative
@@ -46,7 +71,7 @@ export function justify(options: Options.ILayoutOptions, bounds: Options.ILineBo
     let expandableCount = _.reduce(measures$, function(memo, measure$) {
         // Precondition: all layouts at a given index have the same "expandable" value.
         return _.reduce(measure$.elements[0], function(memo, element$) {
-            return memo + (element$.expandable ? 1 : 0);
+            return memo + (element$.expandPolicy ? 1 : 0);
         }, memo);
     }, 0);
 
@@ -74,8 +99,11 @@ export function justify(options: Options.ILayoutOptions, bounds: Options.ILineBo
                 measure.elements[i][j].x$ += measureExpansion;
             }
             for (let i = 0; i < measure.elements.length; ++i) {
-                if (measure.elements[i][j].expandable) {
+                if (measure.elements[i][j].expandPolicy) {
                     anyExpandable = true;
+                    if (measure.elements[i][j].expandPolicy === IModel.ExpandPolicy.Centered) {
+                        measure.elements[i][j].x$ += avgExpansion/2;
+                    }
                     measureExpansion += avgExpansion;
                     ++totalExpCount;
                     break;
@@ -90,7 +118,6 @@ export function justify(options: Options.ILayoutOptions, bounds: Options.ILineBo
 
     invariant(totalExpCount === expandableCount, "Expected %s expandable items, got %s",
         expandableCount, totalExpCount);
-    // TODO: center whole bar rests
 
     return measures$;
 }

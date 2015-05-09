@@ -98,7 +98,7 @@ describe("[engine/measureProcessor.ts]", function() {
                     {
                         boundingBoxes$: [],
                         division: 0,
-                        expandable: true,
+                        expandPolicy: Engine.IModel.ExpandPolicy.After,
                         mergePolicy: Engine.IModel.HMergePolicy.Min,
                         x$: 110,
                         model: segments[1][0],  // from first voice.
@@ -106,7 +106,7 @@ describe("[engine/measureProcessor.ts]", function() {
                     },
                     {
                         division: 1,
-                        expandable: true,
+                        expandPolicy: Engine.IModel.ExpandPolicy.After,
                         mergePolicy: Engine.IModel.HMergePolicy.Max, // 1st is min, 2nd one is max
                         x$: 120,
                         model: null,
@@ -114,7 +114,7 @@ describe("[engine/measureProcessor.ts]", function() {
                     },
                     {
                         boundingBoxes$: [],
-                        expandable: true,
+                        expandPolicy: Engine.IModel.ExpandPolicy.After,
                         division: 2,
                         mergePolicy: Engine.IModel.HMergePolicy.Max, // 1st is min, 2nd one is max
                         x$: 130,

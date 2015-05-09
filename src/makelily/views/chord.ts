@@ -42,9 +42,7 @@ class ChordView extends React.Component<{layout: Chord.IChordLayout}, void> {
         let layout = this.props.layout;
         let spec = layout.model;
 
-        // TODO: Generalize this
-        let approxNotehead = Notehead.countToNotehead[
-            spec[0].noteType.duration];
+        let maxNotehead = _.max(layout.model.satieNotehead, notehead => SMuFL.bboxes[notehead][0]);
 
         let lyKey = 0;
         let lyrics = _.chain(<MusicXML.Note[]><any>spec)
@@ -63,7 +61,7 @@ class ChordView extends React.Component<{layout: Chord.IChordLayout}, void> {
                                         break;
                                     case "Text":
                                         var textPt = <MusicXML.Text> l.lyricParts[i];
-                                        var width = SMuFL.bboxes[approxNotehead][0]*10;
+                                        var width = SMuFL.bboxes[maxNotehead][0]*10;
                                         text.push(React.DOM.text({
                                                 textAnchor: "middle",
                                                 fontSize: textPt.fontSize || "22",
@@ -81,14 +79,16 @@ class ChordView extends React.Component<{layout: Chord.IChordLayout}, void> {
         if (!!spec[0].rest) {
             return $(Rest)({
                 multipleRest: layout.model.satieMultipleRest,
-                spec: spec[0]
+                spec: spec[0],
+                notehead: spec.satieNotehead[0]
             });
         }
 
         return React.DOM.g(null,
-            _.map(spec, (spec, idx) => $(Note)({
+            _.map(spec, (noteSpec, idx) => $(Note)({
                 key: "n" + idx,
-                spec: spec
+                spec: noteSpec,
+                satieNotehead: spec.satieNotehead[0]
             })),
             spec.satieStem && $(Stem)({
                 key: "s",
@@ -100,7 +100,7 @@ class ChordView extends React.Component<{layout: Chord.IChordLayout}, void> {
                     type: spec[0].stem.type
                 },
                 width: stemThickness,
-                notehead: approxNotehead
+                notehead: maxNotehead
             }),
             _.map(spec.satieLedger, lineNumber => $(LedgerLine)({
                 key: "l" + lineNumber,
@@ -109,7 +109,7 @@ class ChordView extends React.Component<{layout: Chord.IChordLayout}, void> {
                     defaultY: (lineNumber - 3)*10,
                     color: "#000000"
                 },
-                notehead: approxNotehead
+                notehead: maxNotehead
             })),
             spec.satieFlag && $(Flag)({
                 key: "f",
@@ -123,7 +123,7 @@ class ChordView extends React.Component<{layout: Chord.IChordLayout}, void> {
                 },
                 stemWidth: stemThickness,
                 stemHeight: spec.satieStem.stemHeight,
-                notehead: approxNotehead
+                notehead: maxNotehead
             }),
             lyrics
         );

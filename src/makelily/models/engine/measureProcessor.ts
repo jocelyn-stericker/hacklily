@@ -392,8 +392,14 @@ export function reduce(spec: ILayoutOpts): Measure.IMeasureLayout {
         _.reduce(gStaffLayoutsUnique$, IModel.merge$, masterLayout);
     }
 
-    let gPadding = spec.padEnd ? 15 : 0;
-
+    let gPadding: number;
+    
+    if (gMaxXInMeasure === gMeasure.x || !spec.padEnd) {
+        gPadding = 0;
+    } else {
+        gPadding = 15;
+    }
+    
     return {
         attributes:     gSomeLastAttribs,
         elements:       gVoiceLayouts$.concat(gStaffLayoutsUnique$),
