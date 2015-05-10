@@ -51,7 +51,7 @@ describe("import/export dtd validation", function() {
     const lilyRoot = "vendor/lilypond-regression";
     const lilyFiles = fs.readdirSync(lilyRoot); // needs to be setup before leaving 'describe'
     _.forEach(lilyFiles, file => {
-        if (file.match(/[0-5]..\.xml$/)) {
+        if (file.match(/[0-9]..\.xml$/)) {
             testFile(lilyRoot, file);
         }
     });

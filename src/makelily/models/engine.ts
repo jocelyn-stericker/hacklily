@@ -279,17 +279,22 @@ export function layout$(options: Options.ILayoutOptions,
             _.map(neighbourMeasures, m => m.voices.concat(m.staves))
         );
         if (!(measure.uuid in width$)) {
-            width$[measure.uuid] = MeasureProcessor.approximateWidth({
-                attributes:     options.attributes,
-                factory:        options.modelFactory,
-                header:         options.header,
-                line:           Ctx.ILine.create(neighbourModels, measures.length, 0, 1),
-                measure:        measure,
-                prevByStaff:    [], // FIXME:
-                staves:         _.map(_.values(measure.parts), p => p.staves),
-                voices:         _.map(_.values(measure.parts), p => p.voices),
-                x:              0
-            });
+            // TODO: Use EngravedStatus
+            if (isFinite(measure.width) && measure.width > 0) {
+                width$[measure.uuid] = measure.width;
+            } else {
+                width$[measure.uuid] = MeasureProcessor.approximateWidth({
+                    attributes:     options.attributes,
+                    factory:        options.modelFactory,
+                    header:         options.header,
+                    line:           Ctx.ILine.create(neighbourModels, measures.length, 0, 1),
+                    measure:        measure,
+                    prevByStaff:    [], // FIXME:
+                    staves:         _.map(_.values(measure.parts), p => p.staves),
+                    voices:         _.map(_.values(measure.parts), p => p.voices),
+                    x:              0
+                });
+            }
         }
         return width$[measure.uuid];
     });
