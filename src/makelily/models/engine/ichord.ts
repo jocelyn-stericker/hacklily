@@ -160,7 +160,7 @@ module IChord {
 
     export function linesForClef(chord: IChord, clef: MusicXML.Clef): Array<number> {
         if (!clef) {
-            throw "Exepected a valid clef";
+            throw new Error("Exepected a valid clef");
         }
         return _.map(chord, (note: MusicXML.Note) => lineForClef(note, clef));
     };
@@ -182,7 +182,9 @@ module IChord {
                 return 3;
             }
         } else if (!!note.unpitched) {
-            throw new Error("Not implemnted");
+            return IChord.getClefOffset(clef) +
+                ((parseInt(note.unpitched.displayOctave, 10) || 0) - 3) * 3.5 +
+                    IChord.pitchOffsets[note.unpitched.displayStep];
         } else if (!!note.pitch) {
             return IChord.getClefOffset(clef) +
                 ((note.pitch.octave || 0) - 3) * 3.5 +

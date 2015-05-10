@@ -169,7 +169,17 @@ module BarlineModel {
                     setLines$(["heavy barline", "light barline"]);
                     break;
                 case MusicXML.BarStyleType.Regular:
+                case MusicXML.BarStyleType.Dashed:
+                case MusicXML.BarStyleType.Dotted:
+                case MusicXML.BarStyleType.Short:
+                case MusicXML.BarStyleType.Tick:
                     setLines$(["light barline"]);
+                    break;
+                case MusicXML.BarStyleType.Heavy:
+                    setLines$(["heavy barline"]);
+                    break;
+                case MusicXML.BarStyleType.None:
+                    setLines$([]);
                     break;
                 default:
                     invariant(false, "Not implemented");

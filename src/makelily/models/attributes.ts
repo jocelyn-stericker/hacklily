@@ -49,9 +49,10 @@ class AttributesModel implements Export.IAttributesModel {
             invariant(a !== this, "Internal error. AttributesModel.validate$() must not be called in a context with itself as an ancestor.");
         }
         
-        invariant(!!this.divisions, "Internal error. " +
-            "AttributesModel.validate$() requires divisions to be set already.");
-
+        if (!this.divisions) {
+            this.divisions = 1;
+        }
+        
         cursor$.staff.attributes = this;
 
         // Defaults
@@ -162,9 +163,12 @@ class AttributesModel implements Export.IAttributesModel {
         // Fix the clef sorting
         let sClefs = this.clefs;
         this.clefs = [];
+        sClefs.length = Math.max(sClefs.length, this._parent && this._parent.clefs ? this._parent.clefs.length : 0);
         _.forEach(sClefs, (clef, idx) => {
             if (clef) {
                 this.clefs[clef.number || idx + 1] = clef;
+            } else if (this._parent && this._parent.clefs && this._parent.clefs[idx]) {
+                this.clefs[idx] = this._parent.clefs[idx];
             }
         });
 
@@ -204,7 +208,6 @@ class AttributesModel implements Export.IAttributesModel {
             delete this._clefs;
         }
     }
-
     private _validateTime$() {
         if (!this.times) {
             // A time signature is mandatory.

@@ -192,10 +192,10 @@ export function _extractMXMLPartsAndMeasures(input: MusicXML.ScoreTimewise,
                                     <duration>${target.division - target.divisionPerVoice[voice]}</duration>
                                 </note>`);
                             (<any>spec)._class = "Note"; // TODO: add to parse.note
-                            let spacerModel = factory.fromSpec(spec);
-                            let spacerRest = Engine.IChord.fromModel(spacerModel);
+                            let restModel = factory.fromSpec(spec);
+                            let spacerRest = Engine.IChord.fromModel(restModel);
                             spacerRest[0].duration = target.division - target.divisionPerVoice[voice];
-                            target.output.voices[voice].push(spacerModel);
+                            target.output.voices[voice].push(restModel);
                             target.divisionPerVoice[voice] = target.division;
                         }
 

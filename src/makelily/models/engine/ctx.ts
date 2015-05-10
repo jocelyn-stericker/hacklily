@@ -22,11 +22,12 @@
 
 "use strict";
 
-import MusicXML     = require("musicxml-interfaces");
-import _            = require("lodash");
+import MusicXML         = require("musicxml-interfaces");
+import _                = require("lodash");
+import invariant        = require("react/lib/invariant");
 
-import Measure      = require("./measure");
-import Util         = require("./util");
+import Measure          = require("./measure");
+import Util             = require("./util");
 
 export interface IMeasure {
     /** 
@@ -226,9 +227,13 @@ export module ILine {
             line: line,
             lines: lines,
             shortestCount: _.reduce(segments, (shortest, segment) =>
-                segment ? _.reduce(segment, (shortest, model) =>
-                    Math.min(shortest, model && model.divCount ? model.divCount : Number.MAX_VALUE),
-                shortest) : shortest,
+                segment ? _.reduce(segment, (shortest, model) => {
+                    if (!(model.divCount >= 0)) {
+                        console.log("Debug:", model);
+                        invariant(model.divCount >= 0, "Counts must exceed 0.");
+                    }
+                    return Math.min(shortest, model && model.divCount ? model.divCount : Number.MAX_VALUE);
+                }, shortest) : shortest,
             Number.MAX_VALUE)
         };
     }
