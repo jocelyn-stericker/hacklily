@@ -32,12 +32,9 @@ import SMuFL                = require("../models/smufl");
 class Note extends React.Component<{spec: MusicXML.Note, satieNotehead: string}, void> {
     render() {
         const spec = this.props.spec;
-        const pitch = spec.pitch;
 
         let approxNotehead = this.props.satieNotehead;
         var width = SMuFL.bboxes[approxNotehead][0]*10;
-
-        invariant(!!pitch, "Not implemented");
 
         return React.DOM.g(null,
             $(Notehead)({

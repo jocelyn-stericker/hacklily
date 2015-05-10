@@ -215,10 +215,8 @@ function tryValidate$(options$: Options.ILayoutOptions, memo$: Options.ILinesLay
                 ensureHeader(IModel.Type.Print);
                 ensureHeader(IModel.Type.Attributes);
                 if (!searchHere(segment, segment.length - 1, IModel.Type.Barline).length) {
-                    // The goal here is to make sure this ends up at the end.
-                    // It's not elegant, but hey.
-                    const divs = segment.divisions*800 -
-                        _.reduce(segment, (divs, model) => divs + model.divCount, 0);
+                    // Make sure the barline ends up at the end.
+                    const divs = _.reduce(segment, (divs, model) => divs + model.divCount, 0);
                     if (divs !== 0) {
                         const spacer = factory.create(IModel.Type.Spacer);
                         spacer.divCount = divs;

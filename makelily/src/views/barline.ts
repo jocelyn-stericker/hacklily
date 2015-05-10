@@ -40,6 +40,11 @@ class BarlineView extends React.Component<{layout: Barline.ILayout}, {}> {
         const x = originX + model.defaultX;
         const y = originY - model.defaultY;
 
+        // TODO: render MusicXML.BarStyleType.Dashed:
+        // TODO: render MusicXML.BarStyleType.Dotted:
+        // TODO: render MusicXML.BarStyleType.Short:
+        // TODO: render MusicXML.BarStyleType.Tick:
+
         return React.DOM.g(null,
             _.map(layout.lineStarts, (start, idx) => $(Line)({
                 key: idx,
