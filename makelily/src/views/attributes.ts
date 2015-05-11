@@ -20,6 +20,7 @@ import React            = require("react");
 var $                   = React.createFactory;
 
 import Attributes       = require("../models/attributes");
+import BarNumber        = require("./barNumber");
 import Clef             = require("./clef");
 import KeySignature     = require("./keySignature");
 import TimeSignature    = require("./timeSignature");
@@ -46,6 +47,16 @@ class AttributesView extends React.Component<{layout: Attributes.ILayout}, void>
                 spec: layout.model.times[0],
                 key: "ts"
             }));
+        }
+        if (!!layout.dispMeasureNumber) {
+            children.push($(BarNumber)({
+                spec: {
+                    defaultX: 0,
+                    defaultY: 30
+                },
+                key: "measure",
+                barNumber: layout.dispMeasureNumber
+            }))
         }
         return React.DOM.g(null, children);
     }

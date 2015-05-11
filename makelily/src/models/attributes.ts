@@ -303,6 +303,19 @@ module AttributesModel {
             this.ksVisible = !!model._keySignatures && !!model._keySignatures.length || isFirstInLine;
             this.tsVisible = !!model._times && !!model._times.length; // TODO: || isFirstInPage;
             this.clefVisible = !!model._clefs && !!model._clefs.length || isFirstInLine;
+            
+            // Measure number
+            if (!cursor$.measure.implicit && parseInt(cursor$.measure.number, 10) !== 1) {
+                let shouldShowNumber = 
+                    (isFirstInLine && (!cursor$.print$ || cursor$.print$.measureNumbering.data === "system")) ||
+                    (this.division === 0 && cursor$.print$ &&
+                        (!this.model._parent || this.model._parent._measure !== this.model._measure) &&
+                        cursor$.print$.measureNumbering.data === "measure");
+                
+                if (shouldShowNumber) {
+                    this.dispMeasureNumber = cursor$.measure.number;
+                }
+            }
 
             /*---- Clef layout ------------------------------------*/
 
@@ -450,6 +463,9 @@ module AttributesModel {
 
         ksVisible: boolean;
         ksSpacing: number;
+        
+        /** undefined if no measure number should be displayed.  */
+        dispMeasureNumber: string;
     }
 
     Layout.prototype.mergePolicy = Engine.IModel.HMergePolicy.Min;
@@ -481,6 +497,8 @@ module Export {
 
         ksVisible: boolean;
         ksSpacing: number;
+        
+        dispMeasureNumber: string;
 
         staffIdx: number;
     }
