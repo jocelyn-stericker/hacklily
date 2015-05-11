@@ -183,7 +183,7 @@ class NoteImpl implements MusicXML.Note {
 
     get noteType(): MusicXML.Type {
         return {
-            duration: this._parent.count,
+            duration: this._parent.satieMultipleRest ? MusicXML.Count.Whole : this._parent.count,
             size: MusicXML.SymbolSize.Full // TODO: grace, cue
         };
     }
