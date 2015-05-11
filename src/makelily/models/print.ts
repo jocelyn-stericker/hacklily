@@ -52,6 +52,9 @@ class PrintModel implements Export.IPrintModel {
             spec                        = this;
         }
         this.sync(spec);
+        this.measureNumbering = this.measureNumbering || {
+            data: "system"
+        };
         cursor$.print$                  = this; // FIXME: inheritance for multiple papers
         this.pageNumber                 = null;
 

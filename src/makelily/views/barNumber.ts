@@ -18,15 +18,17 @@
 
 "use strict";
 
+import MusicXML             = require("musicxml-interfaces");
 import React                = require("react");
-import TypedReact           = require("typed-react");
-import PureRenderMixin      = require("react/lib/ReactComponentWithPureRenderMixin");
+import _                    = require("lodash");
+var $                       = React.createFactory;
 
-class BarNumber extends TypedReact.Component<BarNumber.IProps, {}> {
+class BarNumber extends React.Component<{spec: MusicXML.Position, barNumber: string}, void> {
     render(): any {
+        const spec = this.props.spec;
         return React.DOM.text({
-            x: this.props.x,
-            y: this.props.y,
+            x: this.context.originX + spec.defaultX + (spec.relativeX || 0),
+            y: this.context.originY - spec.defaultY - (spec.relativeY || 0),
             fontSize: 24,
             className: "bn_"
         }, this.props.barNumber);
@@ -34,13 +36,10 @@ class BarNumber extends TypedReact.Component<BarNumber.IProps, {}> {
 };
 
 module BarNumber {
-    export var Component = TypedReact.createClass(BarNumber, <any> [PureRenderMixin]);
-
-    export interface IProps {
-        barNumber: string;
-        x: number;
-        y: number;
-    }
+    export var contextTypes = <any> {
+        originX:         React.PropTypes.number.isRequired,
+        originY:         React.PropTypes.number.isRequired
+    };
 }
 
 export = BarNumber;
