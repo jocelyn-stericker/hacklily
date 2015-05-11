@@ -215,6 +215,7 @@ class AttributesModel implements Export.IAttributesModel {
             this.times = <MusicXML.Time[]> [{
                 beats: ["4"],
                 beatTypes: [4],
+                symbol: MusicXML.TimeSymbolType.Common,
                 senzaMisura: null
             }];
         } else if (!!this._times && this._times.length) {
