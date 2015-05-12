@@ -156,19 +156,31 @@ class AttributesModel implements Export.IAttributesModel {
         const staffIdx = cursor$.staff.idx;
 
         // clefs must be an array
-        if (!this.clefs) {
-            this.clefs = [];
+        if (!this._clefs) {
+            this._clefs = [];
         }
+        
+        // Remove clefs copied from parents
+        _.forEach(this._clefs, (clef, idx) => {
+            if (clef && (<any>clef).__inherited__) {
+                delete this._clefs[idx];
+            }
+        });
 
         // Fix the clef sorting
-        let sClefs = this.clefs;
-        this.clefs = [];
-        sClefs.length = Math.max(sClefs.length, this._parent && this._parent.clefs ? this._parent.clefs.length : 0);
+        this._clefs = this._clefs || [];
+        let sClefs = this._clefs;
+        let pClefs = this._parent && this._parent.clefs || [];
+        sClefs.length = Math.max(sClefs.length, pClefs.length);
         _.forEach(sClefs, (clef, idx) => {
             if (clef) {
                 this.clefs[clef.number || idx + 1] = clef;
-            } else if (this._parent && this._parent.clefs && this._parent.clefs[idx]) {
-                this.clefs[idx] = this._parent.clefs[idx];
+                this.clefs[clef.number || idx + 1].number = clef.number || idx + 1;
+            }
+            
+            if (pClefs[idx] && !sClefs[idx]) {
+                this._clefs[idx] = Object.create(pClefs[idx]);
+                (<any>this._clefs[idx]).__inherited__ = true;
             }
         });
 
@@ -205,7 +217,9 @@ class AttributesModel implements Export.IAttributesModel {
         if (parentClef && parentClef.sign === thisClef.sign && parentClef.line === thisClef.line &&
                 parentClef.clefOctaveChange === thisClef.clefOctaveChange) {
             // Clef is redundant
-            delete this._clefs;
+            this._clefs[staffIdx] = Object.create(this._clefs[staffIdx]);
+            (<any>this._clefs[staffIdx]).__inherited__ = true;
+            // delete this._clefs;
         }
     }
     private _validateTime$() {
@@ -283,6 +297,10 @@ class AttributesModel implements Export.IAttributesModel {
             cursor$.staff.multiRestRem = this.oMeasureStyle.multipleRest.count - (this._measure - this.mMeasureStyle);
         }
     }
+    
+    shouldRenderClef(owner: number, isFirstInLine: boolean) {
+        return this._clefs && this._clefs[owner] && !(<any>this._clefs[owner]).__inherited__ || isFirstInLine;
+    }
 }
 
 AttributesModel.prototype.divCount = 0;
@@ -303,7 +321,7 @@ module AttributesModel {
 
             this.ksVisible = !!model._keySignatures && !!model._keySignatures.length || isFirstInLine;
             this.tsVisible = !!model._times && !!model._times.length; // TODO: || isFirstInPage;
-            this.clefVisible = !!model._clefs && !!model._clefs.length || isFirstInLine;
+            this.clefVisible = model.shouldRenderClef(cursor$.segment.owner, isFirstInLine);
             
             // Measure number
             if (!cursor$.measure.implicit && parseInt(cursor$.measure.number, 10) !== 1) {
@@ -328,6 +346,7 @@ module AttributesModel {
 
                 let contextualSpacing$ = 0;
                 model._clefs = Object.create(model.clefs);
+                invariant(model.clefs[this.staffIdx], "Clef must be defined if visible.");
                 model._clefs[this.staffIdx] = Object.create(model.clefs[this.staffIdx], {
                     "defaultX": {
                         get: () => {
