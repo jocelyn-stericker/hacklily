@@ -98,6 +98,7 @@ export function justify(options: Options.ILayoutOptions, bounds: Options.ILineBo
                 measure.elements[i][j].x$ += measureExpansion;
             }
             for (let i = 0; i < measure.elements.length; ++i) {
+                let expandOne = false;
                 if (measure.elements[i][j].expandPolicy) {
                     anyExpandable = true;
                     if (measure.elements[i][j].expandPolicy === IModel.ExpandPolicy.Centered) {

@@ -497,16 +497,16 @@ ChordModelImpl.prototype._isRest = false;
 
 module ChordModelImpl {
     export class Layout implements ChordModel.IChordLayout {
-        constructor(model: ChordModelImpl, cursor$: Engine.ICursor) {
+        constructor(baseModel: ChordModelImpl, cursor$: Engine.ICursor) {
             this.division = cursor$.division$;
 
-            if (cursor$.staff.multiRestRem > 0 && !model.satieMultipleRest) {
+            if (cursor$.staff.multiRestRem > 0 && !baseModel.satieMultipleRest) {
                 // This is not displayed because it is part of a multirest.
                 this.expandPolicy = Engine.IModel.ExpandPolicy.None;
                 return;
             }
 
-            this.model = <any> _.map(model, note => Object.create(note, {
+            this.model = <any> _.map(baseModel, note => Object.create(note, {
                 /* Here, we're extending each note to have the correct default position.
                  * To do so, we use prototypical inheritance. See Object.create. */
 
@@ -526,19 +526,19 @@ module ChordModelImpl {
                 },
                 stem: {
                     get: () => {
-                        return model.stem || {
-                            type: model.satieDirection
+                        return baseModel.stem || {
+                            type: baseModel.satieDirection
                         };
                     }
                 }
             }));
-            this.model.satieStem = model.satieStem;
-            this.model.satieLedger = model.satieLedger;
-            this.model.satieMultipleRest = model.satieMultipleRest;
-            this.model.satieFlag = model.satieFlag;
-            this.model.satieNotehead = model.satieNotehead;
+            this.model.satieStem = baseModel.satieStem;
+            this.model.satieLedger = baseModel.satieLedger;
+            this.model.satieMultipleRest = baseModel.satieMultipleRest;
+            this.model.satieFlag = baseModel.satieFlag;
+            this.model.satieNotehead = baseModel.satieNotehead;
 
-            if (model.satieMultipleRest) {
+            if (baseModel.satieMultipleRest || baseModel.rest && baseModel.count === MusicXML.Count.Whole) { // N.B.: this.model does not have count
                 this.expandPolicy = Engine.IModel.ExpandPolicy.Centered;
             }
 
@@ -559,14 +559,14 @@ module ChordModelImpl {
 
             // TODO: Each note's width has a linear component proportional to log of its duration
             // with respect to the shortest length
-            let extraWidth = model.divCount ? (Math.log(model.divCount) - Math.log(cursor$.line.shortestCount)) / Math.log(2) / 3 * 10 : 0;
-            const grace = model[0].grace; // TODO: What if only some notes are grace?
+            let extraWidth = baseModel.divCount ? (Math.log(baseModel.divCount) - Math.log(cursor$.line.shortestCount)) / Math.log(2) / 3 * 10 : 0;
+            const grace = baseModel[0].grace; // TODO: What if only some notes are grace?
             if (grace) {
                 extraWidth /= 10; // TODO: Put grace notes in own segment
             }
             const baseWidth = grace ? 11.4 : 22.8;
             invariant(extraWidth >= 0, "Invalid extraWidth %s. shortest is %s, got %s", extraWidth,
-                    cursor$.line.shortestCount, model.divCount);
+                    cursor$.line.shortestCount, baseModel.divCount);
 
             const totalWidth = baseWidth + extraWidth + accidentalWidth;
 
@@ -575,7 +575,7 @@ module ChordModelImpl {
             // totalWidth = Math.max(lyricWidth/2, totalWidth);
             invariant(isFinite(totalWidth), "Invalid width %s", totalWidth);
 
-            let widths = _.map(model.satieNotehead, notehead => SMuFL.bboxes[notehead][0]*10);
+            let widths = _.map(baseModel.satieNotehead, notehead => SMuFL.bboxes[notehead][0]*10);
             this.totalWidth = _.max(widths);
 
             cursor$.x$ += totalWidth;
