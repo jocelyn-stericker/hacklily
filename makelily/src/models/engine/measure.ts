@@ -96,6 +96,7 @@ export interface IMeasureLayout {
     attributes:         MusicXML.Attributes;
     elements:           IModel.ILayout[][];
     width:              number;
+    maxDivisions:       number;
     originX:            number;
     originY:            number;
     paddingTop:         number;

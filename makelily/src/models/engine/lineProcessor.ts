@@ -20,11 +20,14 @@ import _                        = require("lodash");
 import invariant                = require("react/lib/invariant");
 
 import Options                  = require("./options");
+import IChord                   = require("./ichord");
 import IModel                   = require("./imodel");
 import Measure                  = require("./measure");
 import MeasureProcessor         = require("./measureProcessor");
 import Ctx                      = require("./ctx");
 import Util                     = require("./util");
+
+const UNDERFILLED_EXPANSION_WEIGHT = 0.1;
 
 /** 
  * Lays out measures within a bar & justifies.
@@ -34,12 +37,23 @@ import Util                     = require("./util");
 export function justify(options: Options.ILayoutOptions, bounds: Options.ILineBounds,
         measures: Measure.IMeasureLayout[]): Measure.IMeasureLayout[] {
 
-    let measures$ = _.map(measures, Measure.IMeasureLayout.detach);
+    let measures$: Measure.IMeasureLayout[] = _.map(measures, Measure.IMeasureLayout.detach);
 
     const x = bounds.left + _.reduce(measures$, (sum, measure) => sum + measure.width, 0);
 
-    // Center whole bar rests
-    _.forEach(measures$, function (measure) {
+    // Check for underfilled bars
+    const underfilled = _.map(measures$, (measure, idx) => {
+        let attr = measures[idx].attributes;
+        let divs = IChord.barDivisions(attr);
+        let maxDivs = measure.maxDivisions;
+        return maxDivs < divs;
+    });
+    
+    // Center things (TODO: write tests)
+    _.forEach(measures$, function centerWholeBarRests(measure, idx) {
+        if (underfilled[idx]) {
+            return;
+        }
         _.forEach(measure.elements, function(segment, si) {
             _.forEach(segment, function(element, j) {
                 if (element.expandPolicy === IModel.ExpandPolicy.Centered) {
@@ -66,11 +80,15 @@ export function justify(options: Options.ILayoutOptions, bounds: Options.ILineBo
     // the measure width here, and our partial algorithm doesn't work with negative
     // padding.
     let partial = x < bounds.right && options.line + 1 === options.lines;
+    let underfilledCount = 0;
 
-    let expandableCount = _.reduce(measures$, function(memo, measure$) {
+    let expandableCount = _.reduce(measures$, function(memo, measure$, idx) {
         // Precondition: all layouts at a given index have the same "expandable" value.
         return _.reduce(measure$.elements[0], function(memo, element$) {
-            return memo + (element$.expandPolicy ? 1 : 0);
+            if (underfilled[idx] && element$.expandPolicy) {
+                ++underfilledCount;
+            }
+            return memo + (element$.expandPolicy ? 1 : 0)*(underfilled[idx] ? UNDERFILLED_EXPANSION_WEIGHT : 1.0);
         }, memo);
     }, 0);
 
@@ -79,7 +97,7 @@ export function justify(options: Options.ILayoutOptions, bounds: Options.ILineBo
         avgExpansion = 0;
     } else if (partial) { // case 2: expanding, but not full width
         let expansionRemainingGuess = bounds.right - 3 - x;
-        let avgExpansionGuess = expansionRemainingGuess / expandableCount;
+        let avgExpansionGuess = expansionRemainingGuess / (expandableCount + (1-UNDERFILLED_EXPANSION_WEIGHT)*underfilledCount);
         let weight = Util.logistic((avgExpansionGuess - bounds.right / 80) / 20) * 2 / 3;
         avgExpansion = (1 - weight)*avgExpansionGuess;
     } else { // case 3: expanding or contracting to full width
@@ -90,7 +108,7 @@ export function justify(options: Options.ILayoutOptions, bounds: Options.ILineBo
     let anyExpandable = false;
     let totalExpCount = 0;
     let lineExpansion = 0;
-    _.forEach(measures$, function(measure) {
+    _.forEach(measures$, function(measure, measureIdx) {
         let elementArr = measure.elements[0];
         let measureExpansion = 0;
         _.forEach(elementArr, function(element, j) {
@@ -101,11 +119,12 @@ export function justify(options: Options.ILayoutOptions, bounds: Options.ILineBo
                 let expandOne = false;
                 if (measure.elements[i][j].expandPolicy) {
                     anyExpandable = true;
+                    let ratio = underfilled[measureIdx] ? UNDERFILLED_EXPANSION_WEIGHT : 1.0;
                     if (measure.elements[i][j].expandPolicy === IModel.ExpandPolicy.Centered) {
-                        measure.elements[i][j].x$ += avgExpansion/2;
+                        measure.elements[i][j].x$ += avgExpansion/2*ratio;
                     }
-                    measureExpansion += avgExpansion;
-                    ++totalExpCount;
+                    measureExpansion += avgExpansion*ratio;
+                    totalExpCount += ratio;
                     break;
                 }
             }
@@ -116,7 +135,7 @@ export function justify(options: Options.ILayoutOptions, bounds: Options.ILineBo
         lineExpansion += measureExpansion;
     });
 
-    invariant(totalExpCount === expandableCount, "Expected %s expandable items, got %s",
+    invariant(totalExpCount - expandableCount < 0.01, "Expected %s expandable items, got %s",
         expandableCount, totalExpCount);
 
     return measures$;

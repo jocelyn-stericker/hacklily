@@ -227,6 +227,25 @@ module IChord {
         return clefOffsets[clef.sign] + clef.line - defaultClefLines[clef.sign.toUpperCase()]
             - 3.5*parseInt(clef.clefOctaveChange||"0", 10);
     }
+    
+    export function barDivisions(attributes: MusicXML.Attributes) {
+        invariant(!!attributes.divisions, "Expected divisions to be set before calculating bar divisions.");
+
+        const time = attributes.times[0];
+
+        if (time.senzaMisura != null) {
+            return 1000000 * attributes.divisions;
+            return;
+        }
+
+        const firstType = time.beatTypes[0];
+
+        const totalBeats = _.reduce(time.beats, (memo, timeStr, idx) => memo +
+            _.reduce(timeStr.split("+"), (memo, timeStr) => memo +
+                parseInt(timeStr, 10)*firstType/time.beatTypes[idx], 0), 0);
+
+        return totalBeats * attributes.divisions || NaN;
+    }
 
     export var IDEAL_STEM_HEIGHT: number = 35;
     export var MIN_STEM_HEIGHT: number = 25;
