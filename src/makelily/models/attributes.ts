@@ -272,22 +272,7 @@ class AttributesModel implements Export.IAttributesModel {
     }
 
     _setTotalDivisions(cursor$: Engine.ICursor): void {
-        invariant(!!this.divisions, "Expected divisions to be set before calculating bar divisions.");
-
-        const time = this.times[0];
-
-        if (time.senzaMisura != null) {
-            cursor$.staff.totalDivisions = 1000000 * this.divisions;
-            return;
-        }
-
-        const firstType = time.beatTypes[0];
-
-        const totalBeats = _.reduce(time.beats, (memo, timeStr, idx) => memo +
-            _.reduce(timeStr.split("+"), (memo, timeStr) => memo +
-                parseInt(timeStr, 10)*firstType/time.beatTypes[idx], 0), 0);
-
-        cursor$.staff.totalDivisions = totalBeats * this.divisions || NaN;
+        cursor$.staff.totalDivisions = Engine.IChord.barDivisions(this);
     }
 
     private _updateMultiRest(cursor$: Engine.ICursor): void {

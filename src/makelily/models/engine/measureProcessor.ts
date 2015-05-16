@@ -120,6 +120,7 @@ export function reduce(spec: ILayoutOpts): Measure.IMeasureLayout {
     let gPrevByStaff                = spec.prevByStaff;
     let gValidateOnly               = spec._validateOnly;
     let gSomeLastAttribs            = <MusicXML.Attributes> null;
+    let gMaxDivisions               = 0;
 
     invariant(spec.segments.length >= 1, "_processMeasure expects at least one segment.");
 
@@ -302,6 +303,7 @@ export function reduce(spec: ILayoutOpts): Measure.IMeasureLayout {
                 (<any>layout).key           = (<any>model).key;
             }
             cursor$.division$ += model.divCount;
+            gMaxDivisions = Math.max(gMaxDivisions, cursor$.division$);
 
             if (cursor$.division$ > cursor$.staff.totalDivisions) {
                 // Note: unfortunate copy-pasta.
@@ -354,7 +356,7 @@ export function reduce(spec: ILayoutOpts): Measure.IMeasureLayout {
                 });
             }
             lastAttribs                 = cursor$.staff.attributes;
-            gSomeLastAttribs            = lastAttribs;
+            gSomeLastAttribs            = lastAttribs || lastAttribs;
             gMaxXInMeasure              = Math.max(cursor$.x$, gMaxXInMeasure);
             gMaxPaddingTopInMeasure$    = Math.max(cursor$.maxPaddingTop$, gMaxPaddingTopInMeasure$);
             gMaxPaddingBottomInMeasure$ = Math.max(
@@ -404,6 +406,7 @@ export function reduce(spec: ILayoutOpts): Measure.IMeasureLayout {
         attributes:     gSomeLastAttribs,
         elements:       gVoiceLayouts$.concat(gStaffLayoutsUnique$),
         width:          gMaxXInMeasure + gPadding - gMeasure.x,
+        maxDivisions:   gMaxDivisions,
         originX:        gMeasure.x,
         originY:        NaN,
         paddingTop:     gMaxPaddingTopInMeasure$,
