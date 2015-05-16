@@ -547,11 +547,10 @@ module ChordModelImpl {
                 cursor$.maxPaddingBottom$ = Math.max(cursor$.maxPaddingBottom$, note.defaultY - 30);
             });
 
-            // We allow accidentals to be squished, and only require 1/3 of the accidental's displayed
-            // width as padding.
+            // We allow accidentals to be slightly squished.
             let accidentalWidth = _.reduce(this.model, (maxWidth, note) => {
                 return Math.max(maxWidth, note.accidental ? -note.accidental.defaultX : 0);
-            }, 0)*1/3;
+            }, 0)*0.73;
 
             this.x$ = cursor$.x$ + accidentalWidth;
 
