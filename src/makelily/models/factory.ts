@@ -43,6 +43,7 @@ class Factory implements Engine.IModel.IFactory {
             invariant((<number>modelType) in this._constructors, "The type with id=%s does not have a factory.", modelType);
 
             return model instanceof this._constructors[modelType] ||
+                this._constructors[Engine.IModel.Type.Proxy] &&
                 model instanceof this._constructors[Engine.IModel.Type.Proxy] &&
                     (<any>model)._target instanceof this._constructors[modelType];
         });
