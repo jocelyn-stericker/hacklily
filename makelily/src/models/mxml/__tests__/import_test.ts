@@ -217,7 +217,7 @@ describe("[mxml/import.ts]", function() {
             expect(staves[2].divisions).to.eq(8);
             expect(staves[1].divisions).to.eq(8);
             expect(staves[1].length).to.eq(3);
-            expect(staves[2].length).to.eq(2); // Will be 3 once proxy is up and running
+            expect(staves[2].length).to.eq(3);
             _.forEach(staves[1], model => {
                 expect(!_.any(staves[2], m2 => model === m2));
             });

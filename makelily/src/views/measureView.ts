@@ -45,7 +45,7 @@ class MeasureView extends React.Component<{layout: Engine.Measure.IMeasureLayout
         const layout        = this.props.layout;
         return {
             originX:        layout.originX,
-            originY:        this.context.originY - layout.originY
+            originYA:       _.map(layout.originY, y => this.context.originY - y)
         };
     }
 }
@@ -53,10 +53,10 @@ class MeasureView extends React.Component<{layout: Engine.Measure.IMeasureLayout
 module MeasureView {
     export var childContextTypes = <any> {
         originX:            React.PropTypes.number.isRequired,
-        originY:            React.PropTypes.number.isRequired
+        originYA:           React.PropTypes.arrayOf(React.PropTypes.number).isRequired
     };
     export var contextTypes = <any> {
-        originY:            React.PropTypes.number.isRequired
+        originY:            React.PropTypes.number
     };
 }
 

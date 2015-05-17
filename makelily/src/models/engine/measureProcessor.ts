@@ -90,8 +90,8 @@ function createCursor(
         header:             spec.header,
         idx$:               0,
         line:               spec.line,
-        maxPaddingBottom$:  0,
-        maxPaddingTop$:     0,
+        maxPaddingBottom$:  [],
+        maxPaddingTop$:     [],
         measure:            spec.measure,
         prev$:              spec.prev,
         print$:             null,
@@ -137,8 +137,8 @@ export function reduce(spec: ILayoutOpts): Measure.IMeasureLayout {
     let gStaffLayouts$: { [key: string]: IModel.ILayout[][] } = {};
 
     let gMaxXInMeasure               = 0;
-    let gMaxPaddingTopInMeasure$     = 0;
-    let gMaxPaddingBottomInMeasure$  = 0;
+    let gMaxPaddingTopInMeasure$     = <number[]> [];
+    let gMaxPaddingBottomInMeasure$  = <number[]> [];
 
     let gDivOverflow: DivisionOverflowException = null;
 
@@ -254,6 +254,8 @@ export function reduce(spec: ILayoutOpts): Measure.IMeasureLayout {
             let atEnd = idx + 1 === list.length;
             let staffIdx: number = model.staffIdx;
             invariant(isFinite(model.staffIdx), "%s is not finite", model.staffIdx);
+            cursor$.maxPaddingTop$[model.staffIdx] = cursor$.maxPaddingTop$[model.staffIdx] || 0;
+            cursor$.maxPaddingBottom$[model.staffIdx] = cursor$.maxPaddingBottom$[model.staffIdx] || 0;
 
             // Create a voice-staff pair if needed. We'll later merge all the
             // voice staff pairs.
@@ -358,10 +360,12 @@ export function reduce(spec: ILayoutOpts): Measure.IMeasureLayout {
             lastAttribs                 = cursor$.staff.attributes;
             gSomeLastAttribs            = lastAttribs || lastAttribs;
             gMaxXInMeasure              = Math.max(cursor$.x$, gMaxXInMeasure);
-            gMaxPaddingTopInMeasure$    = Math.max(cursor$.maxPaddingTop$, gMaxPaddingTopInMeasure$);
-            gMaxPaddingBottomInMeasure$ = Math.max(
-                cursor$.maxPaddingBottom$,
-                gMaxPaddingBottomInMeasure$);
+            gMaxPaddingTopInMeasure$[model.staffIdx] = Math.max(
+                cursor$.maxPaddingTop$[model.staffIdx],
+                gMaxPaddingTopInMeasure$[model.staffIdx]||0);
+            gMaxPaddingBottomInMeasure$[model.staffIdx] = Math.max(
+                cursor$.maxPaddingBottom$[model.staffIdx],
+                gMaxPaddingBottomInMeasure$[model.staffIdx]||0);
             return layout;
         });
     });
@@ -408,7 +412,7 @@ export function reduce(spec: ILayoutOpts): Measure.IMeasureLayout {
         width:          gMaxXInMeasure + gPadding - gMeasure.x,
         maxDivisions:   gMaxDivisions,
         originX:        gMeasure.x,
-        originY:        NaN,
+        originY:        [],
         paddingTop:     gMaxPaddingTopInMeasure$,
         paddingBottom:  gMaxPaddingBottomInMeasure$
     };
@@ -445,7 +449,7 @@ export function layoutMeasure(opts: IMeasureLayoutOptions): Measure.IMeasureLayo
     let segments = _.filter(voices.concat(staves), s => !!s);
 
     let line = opts.line;
-
+    
     return reduce({
         attributes:     opts.attributes,
         factory:        opts.factory,

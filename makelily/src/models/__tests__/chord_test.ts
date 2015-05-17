@@ -86,8 +86,8 @@ function getCursor(factory: Engine.IModel.IFactory, model: Engine.IModel): Engin
         division$:          0,
         x$:                 100,
         minXBySmallest$:    {},
-        maxPaddingTop$:     0,
-        maxPaddingBottom$:  0,
+        maxPaddingTop$:     [],
+        maxPaddingBottom$:  [],
 
         page$:              NaN,
 

@@ -50,7 +50,7 @@ export function justify(options: Options.ILayoutOptions, bounds: Options.ILineBo
     });
     
     // Center things (TODO: write tests)
-    _.forEach(measures$, function centerWholeBarRests(measure, idx) {
+    _.forEach(measures$, function centerThings(measure, idx) {
         if (underfilled[idx]) {
             return;
         }
@@ -58,12 +58,15 @@ export function justify(options: Options.ILayoutOptions, bounds: Options.ILineBo
             _.forEach(segment, function(element, j) {
                 if (element.expandPolicy === IModel.ExpandPolicy.Centered) {
                     let k = j + 1;
+                    while (segment[k + 1] && segment[k].renderClass < IModel.Type.START_OF_VOICE_ELEMENTS) {
+                        ++k;
+                    }
                     var next: IModel.ILayout = segment[k];
 
                     if (next) {
                         let x = next.x$;
-                        for (let sj = 0; !x && sj < measure.elements.length; ++sj) {
-                            x = measure.elements[sj][k].x$;
+                        for (let sj = 0; sj < measure.elements.length; ++sj) {
+                            x = Math.max(x, measure.elements[sj][k].x$);
                         }
                         const totalWidth: number = element.totalWidth;
                         invariant(!isNaN(totalWidth), "%s must be a number", totalWidth);
@@ -111,21 +114,24 @@ export function justify(options: Options.ILayoutOptions, bounds: Options.ILineBo
     _.forEach(measures$, function(measure, measureIdx) {
         let elementArr = measure.elements[0];
         let measureExpansion = 0;
-        _.forEach(elementArr, function(element, j) {
+        let maxIdx = _.max(_.map(measure.elements, el => el.length));
+        _.times(maxIdx, function(j) {
             for (let i = 0; i < measure.elements.length; ++i) {
                 measure.elements[i][j].x$ += measureExpansion;
             }
+            let expandOne = false;
             for (let i = 0; i < measure.elements.length; ++i) {
-                let expandOne = false;
                 if (measure.elements[i][j].expandPolicy) {
                     anyExpandable = true;
                     let ratio = underfilled[measureIdx] ? UNDERFILLED_EXPANSION_WEIGHT : 1.0;
                     if (measure.elements[i][j].expandPolicy === IModel.ExpandPolicy.Centered) {
                         measure.elements[i][j].x$ += avgExpansion/2*ratio;
                     }
-                    measureExpansion += avgExpansion*ratio;
-                    totalExpCount += ratio;
-                    break;
+                    if (!expandOne) {
+                        measureExpansion += avgExpansion*ratio;
+                        totalExpCount += ratio;
+                    }
+                    expandOne = true;
                 }
             }
         });
@@ -175,13 +181,19 @@ export function layoutLine$(options: Options.ILayoutOptions, bounds: Options.ILi
         return clean$[measure.uuid];
     });
 
-    let paddingTop          = _.max(layouts, mre => mre.paddingTop).paddingTop;
-    let top                 = memo$.y$ - paddingTop;
-    let nextPaddingBottom   = _.max(layouts, mre => mre.paddingBottom).paddingBottom;
-    memo$.y$                = top - nextPaddingBottom - bounds.systemLayout.systemDistance;
+    invariant(attributes.staves >= 1, "Expected at least 1 staff, but there are %s", attributes.staves);
+    let tops = [null].concat(_.times(attributes.staves, staffMinusOne => {
+        let staffIdx = staffMinusOne + 1;
+        let paddingTop = _.max(layouts, mre => mre.paddingTop[staffIdx]||0).paddingTop[staffIdx]||0;
+        let paddingBottom = _.max(layouts, mre => mre.paddingBottom[staffIdx]||0).paddingBottom[staffIdx]||0;
+        let top = memo$.y$ - paddingTop;
+        memo$.y$ = top - paddingBottom - bounds.systemLayout.systemDistance;
+        return top;
+    }));
+    
     let left                = bounds.left;
     _.forEach(layouts, layout => {
-        layout.originY      = top;
+        layout.originY      = tops;
         layout.originX      = left;
         left                = left + layout.width;
     });

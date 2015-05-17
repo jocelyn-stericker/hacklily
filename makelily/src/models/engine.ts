@@ -228,7 +228,6 @@ function tryValidate$(options$: Options.ILayoutOptions, memo$: Options.ILinesLay
 
             Measure.normalizeDivisons$(segments, 0);
 
-            // The layout function is overloaded to provide validation.
             let outcome = MeasureProcessor.reduce({
                 attributes:     lastAttribs,
                 header:         options$.header,

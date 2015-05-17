@@ -38,6 +38,22 @@ class ModelView extends React.Component<{layout: Engine.IModel.ILayout}, void> {
             return null;
         }
     }
+    
+    getChildContext() {
+        const layout        = this.props.layout;
+        return {
+            originY:        this.context.originYA[layout.model.staffIdx || 1] || 0
+        };
+    }
+}
+
+module ModelView {
+    export var childContextTypes = <any> {
+        originY:            React.PropTypes.number
+    };
+    export var contextTypes = <any> {
+        originYA:           React.PropTypes.arrayOf(React.PropTypes.number).isRequired
+    };
 }
 
 export = ModelView;

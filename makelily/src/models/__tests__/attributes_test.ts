@@ -31,6 +31,7 @@ import Factory      = require("../factory");
 let expect          = chai.expect;
 
 export function makeCursor(factory: Factory, models: Engine.IModel[]): Engine.ICursor {
+    (<any>models).part = "P1";
     return {
         segment:            <any> models,
         idx$:               0,
@@ -63,7 +64,18 @@ export function makeCursor(factory: Factory, models: Engine.IModel[]): Engine.IC
             x:              100,
             attributes$:    null,
             uuid:           100,
-            parent:         null
+            parent:         <any> {
+                parts: {
+                    "P1": {
+                        staves: [
+                            null,
+                            {
+                                staves: []  
+                            }
+                        ]
+                    }
+                }
+            }
         },
         line: {
             shortestCount:  Number.MAX_VALUE,
@@ -79,8 +91,8 @@ export function makeCursor(factory: Factory, models: Engine.IModel[]): Engine.IC
         division$:          0,
         x$:                 100,
         minXBySmallest$:    {},
-        maxPaddingTop$:     0,
-        maxPaddingBottom$:  0,
+        maxPaddingTop$:     [],
+        maxPaddingBottom$:  [],
 
         page$:              NaN,
 

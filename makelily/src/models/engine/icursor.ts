@@ -49,8 +49,14 @@ interface ICursor {
     print$:             MusicXML.Print;
     header:             MusicXML.ScoreHeader;
     minXBySmallest$?:   {[key: number]: number};
-    maxPaddingTop$:     number;
-    maxPaddingBottom$:  number;
+    /**
+     * By staff
+     */
+    maxPaddingTop$:     number[];
+    /**
+     * By staff
+     */
+    maxPaddingBottom$:  number[];
 
     /**
      * Only available in second layout$

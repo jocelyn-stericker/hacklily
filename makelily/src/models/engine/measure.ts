@@ -98,9 +98,18 @@ export interface IMeasureLayout {
     width:              number;
     maxDivisions:       number;
     originX:            number;
-    originY:            number;
-    paddingTop:         number;
-    paddingBottom:      number;
+    /**
+     * Topmost (i.e., lowest) y-coordinate in tenths, indexed by staff index.
+     */
+    originY:            number[];
+    /**
+     * Positive integer in tenths. Required space above each staff beyond default 15 tenths, indexed by staff index.
+     */
+    paddingTop:         number[];
+    /**
+     * Postivie integer in tenths. Required space below each staff beyond default 15 tenths, indexed by staff index.
+     */
+    paddingBottom:      number[];
 }
 
 export module IMeasureLayout {
