@@ -68,16 +68,18 @@ class Page extends React.Component<Page.IProps, Page.IState> {
             _.reduce(layout, (width, measure) => width + measure.width, 0)
         );
 
-        let staveLineProps      = _.map(_.zip(staveTops, staveLefts, staveWidths), (d, i) => {
-            return {
-                key:    "stave_" + i,
-
-                lines:  5,
-                width:  d[2 /* width */],
-                x:      d[1 /* left */],
-                y:      d[0 /* top */]
-            };
-        });
+        let staveLineProps      = _.map(_.zip(staveTops, staveLefts, staveWidths), (d, i) =>
+            _.map(d[0/* top */], (top: number, j: number) => {
+                return {
+                    key:    `stave_${i}_${j}`,
+    
+                    lines:  5,
+                    width:  d[2 /* width */],
+                    x:      d[1 /* left */],
+                    y:      top
+                };
+            })
+        );
 
         /*--- Credits ---------------------------------------------*/
 
@@ -103,7 +105,7 @@ class Page extends React.Component<Page.IProps, Page.IState> {
                 onMouseUp:      this.props.onMouseUp
             },
             _.map(credits, (credit, idx) => $(Credit)(credit)),
-            _.map(staveLineProps, staveLineProps => $(StaveLines)(staveLineProps)),
+            _.map(staveLineProps, staveLineProps => _.map(staveLineProps, staveLineProps => $(StaveLines)(staveLineProps))),
             _.map(lineLayouts, lineLayout =>
                 _.map(lineLayout, measureLayout =>
                     $(MeasureView)({

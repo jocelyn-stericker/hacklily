@@ -60,6 +60,7 @@ class AttributesModel implements Export.IAttributesModel {
         this._validateClef$(cursor$);
         this._validateTime$();
         this._validateKey$();
+        this._validateStaves$(cursor$);
 
         this._setTotalDivisions(cursor$);
         this._updateMultiRest(cursor$);
@@ -169,7 +170,7 @@ class AttributesModel implements Export.IAttributesModel {
 
         // Fix the clef sorting
         this._clefs = this._clefs || [];
-        let sClefs = this._clefs;
+        let sClefs = this._clefs.slice();
         let pClefs = this._parent && this._parent.clefs || [];
         sClefs.length = Math.max(sClefs.length, pClefs.length);
         _.forEach(sClefs, (clef, idx) => {
@@ -269,6 +270,18 @@ class AttributesModel implements Export.IAttributesModel {
                 delete this._keySignatures;
             }
         }
+    }
+    
+    private _validateStaves$(cursor$: Engine.ICursor) {
+        this.staves = this.staves || 1;
+        let currentPartId = cursor$.segment.part;
+        let currentPart = cursor$.measure.parent.parts[currentPartId];
+        _.times(this.staves, staffMinusOne => {
+            let staff = staffMinusOne + 1;
+            if (!currentPart.staves[staff]) {
+                throw new Error("A staff is missing. The code to add it is not implemented.");
+            }
+        });
     }
 
     _setTotalDivisions(cursor$: Engine.ICursor): void {

@@ -175,8 +175,8 @@ describe("[engine/measureProcessor.ts]", function() {
             });
             // We've tested this exact case in ISegment.layout$, so we can be
             // a bit soft here.
-            expect(layout.paddingBottom).to.equal(0);
-            expect(layout.paddingTop).to.equal(0);
+            expect(layout.paddingBottom).to.deep.equal([, 0]);
+            expect(layout.paddingTop).to.deep.equal([, 0]);
             expect(layout.elements[0].length).to.equal(5);
             expect(layout.elements[0][4].x$).to.equal(190);
             expect(layout.elements[0][0].x$).to.equal(100);

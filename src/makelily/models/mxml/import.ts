@@ -94,7 +94,10 @@ export function _extractMXMLPartsAndMeasures(input: MusicXML.ScoreTimewise,
 
     // TODO/STOPSHIP - sync division count in each measure
     var divisions = 1; // lilypond-regression 41g.xml does not specify divisions
+    let gStaves = 0;
     let lastNote: Engine.IChord = null;
+    let lastAttribs: MusicXML.Attributes = null;
+    let maxVoice = 0;
 
     let measures: Engine.Measure.IMutableMeasure[] = _.map(input.measures,
             (inMeasure, measureIdx) => {
@@ -169,15 +172,12 @@ export function _extractMXMLPartsAndMeasures(input: MusicXML.ScoreTimewise,
                         let staff = note.staff || 1;
                         prevStaff = staff;
                         if (!(voice in target.output.voices)) {
-                            target.output.voices[voice] = <any> [];
-                            target.output.voices[voice].owner = voice;
-                            target.output.voices[voice].ownerType = Engine.Measure.OwnerType.Voice;
+                            createVoice(voice, target.output);
+                            maxVoice = Math.max(voice, maxVoice);
                         }
                         // Make sure there is a staff segment reserved for the given staff
                         if (!(staff in target.output.staves)) {
-                            target.output.staves[staff] = <any> [];
-                            target.output.staves[staff].owner = staff;
-                            target.output.staves[staff].ownerType = Engine.Measure.OwnerType.Staff;
+                            createStaff(staff, target.output);
                         }
 
                         // Check target voice division and add spacing if needed
@@ -232,11 +232,20 @@ export function _extractMXMLPartsAndMeasures(input: MusicXML.ScoreTimewise,
                     let newModel = factory.fromSpec(input);
                     syncAppendStaff(staff, newModel);
                     if (input._class === "Attributes") {
-                        divisions = (<MusicXML.Attributes>input).divisions || divisions;
-                        let oTimes = (<MusicXML.Attributes>input).times;
+                        lastAttribs = <MusicXML.Attributes> input;
+                        divisions = lastAttribs.divisions || divisions;
+                        let oTimes = lastAttribs.times;
                         if (oTimes && oTimes.length) {
                             target.times = oTimes;
                         }
+                        let staves = lastAttribs.staves || 1;
+                        gStaves = staves;
+                        _.times(staves, staffMinusOne => {
+                            let staff = staffMinusOne + 1;
+                            if (!(staff in target.output.staves)) {
+                                createStaff(staff, target.output);
+                            }
+                        });
                     }
                     break;
                 case "Backup":
@@ -253,7 +262,25 @@ export function _extractMXMLPartsAndMeasures(input: MusicXML.ScoreTimewise,
             ++target.idx;
         }
 
-        // Finish-up
+        // Finish up
+        
+        _.times(gStaves, staffMinusOne => {
+            let staff = staffMinusOne + 1;
+            if (!(staff in target.output.staves)) {
+                createStaff(staff, target.output);
+                maxVoice++;
+                let voice = createVoice(maxVoice, target.output);
+                let newNote: Engine.IChord = <any> factory.create(Engine.IModel.Type.Chord);
+                newNote.push({
+                    rest: {},
+                    duration: Engine.IChord.barDivisions(lastAttribs),
+                    staff: staff,
+                    voice: maxVoice
+                })
+                voice.push(<any>newNote);
+            }
+        });
+
         _.forEach(linkedParts, part => {
             // Note: target is 'var'-scoped!
             target = part;
@@ -278,7 +305,7 @@ export function _extractMXMLPartsAndMeasures(input: MusicXML.ScoreTimewise,
                 }
             });
         });
-
+        
         function syncAppendStaff(staff: number, model: Engine.IModel) {
             const divCount = target.division - (target.divisionPerStaff[staff] || 0);
             let segment = target.output.staves[staff];
@@ -329,9 +356,23 @@ export function _extractMXMLPartsAndMeasures(input: MusicXML.ScoreTimewise,
 
         return measure;
     });
-
+    
     return {
         measures:   measures,
         parts:      parts
     };
+}
+
+function createVoice(voice: number, output: Engine.Measure.IMeasurePart) {
+    output.voices[voice] = <any> [];
+    output.voices[voice].owner = voice;
+    output.voices[voice].ownerType = Engine.Measure.OwnerType.Voice;
+    return output.voices[voice];
+}
+
+function createStaff(staff: number, output:  Engine.Measure.IMeasurePart) {
+    output.staves[staff] = <any> [];
+    output.staves[staff].owner = staff;
+    output.staves[staff].ownerType = Engine.Measure.OwnerType.Staff;
+    return output.staves[staff];
 }

@@ -537,14 +537,16 @@ module ChordModelImpl {
             this.model.satieMultipleRest = baseModel.satieMultipleRest;
             this.model.satieFlag = baseModel.satieFlag;
             this.model.satieNotehead = baseModel.satieNotehead;
+            this.model.staffIdx = baseModel.staffIdx;
 
             if (baseModel.satieMultipleRest || baseModel.rest && baseModel.count === MusicXML.Count.Whole) { // N.B.: this.model does not have count
                 this.expandPolicy = Engine.IModel.ExpandPolicy.Centered;
             }
 
             _.forEach(this.model, note => {
-                cursor$.maxPaddingTop$ = Math.max(cursor$.maxPaddingTop$, note.defaultY - 10);
-                cursor$.maxPaddingBottom$ = Math.max(cursor$.maxPaddingBottom$, note.defaultY - 30);
+                invariant(!!note.staff, "Expected the staff to be a non-zero number, but its %s", note.staff);
+                cursor$.maxPaddingTop$[note.staff] = Math.max(cursor$.maxPaddingTop$[note.staff] || 0, note.defaultY - 10);
+                cursor$.maxPaddingBottom$[note.staff] = Math.max(cursor$.maxPaddingBottom$[note.staff] || 0, note.defaultY - 30);
             });
 
             // We allow accidentals to be slightly squished.
