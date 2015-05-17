@@ -57,13 +57,13 @@ class AttributesView extends React.Component<{layout: Attributes.ILayout}, void>
                 },
                 key: "measure",
                 barNumber: layout.measureNumberVisible
-            }))
+            }));
         }
         if (!!layout.partSymbolVisible) {
             children.push($(PartSymbol)({
                 key: "partSymbol",
                 spec: layout.model.partSymbol
-            }))
+            }));
         }
         return React.DOM.g(null, children);
     }

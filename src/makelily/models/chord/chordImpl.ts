@@ -539,7 +539,9 @@ module ChordModelImpl {
             this.model.satieNotehead = baseModel.satieNotehead;
             this.model.staffIdx = baseModel.staffIdx;
 
-            if (baseModel.satieMultipleRest || baseModel.rest && baseModel.count === MusicXML.Count.Whole) { // N.B.: this.model does not have count
+            if (baseModel.satieMultipleRest || baseModel.rest &&
+                    baseModel.count === MusicXML.Count.Whole) {
+                // N.B.: this.model does not have count
                 this.expandPolicy = Engine.IModel.ExpandPolicy.Centered;
             }
 
@@ -560,7 +562,10 @@ module ChordModelImpl {
 
             // TODO: Each note's width has a linear component proportional to log of its duration
             // with respect to the shortest length
-            let extraWidth = baseModel.divCount ? (Math.log(baseModel.divCount) - Math.log(cursor$.line.shortestCount)) / Math.log(2) / 3 * 10 : 0;
+            let extraWidth = baseModel.divCount ?
+                (Math.log(baseModel.divCount) - Math.log(cursor$.line.shortestCount)) /
+                    Math.log(2) / 3 * 10 :
+                0;
             const grace = baseModel[0].grace; // TODO: What if only some notes are grace?
             if (grace) {
                 extraWidth /= 10; // TODO: Put grace notes in own segment

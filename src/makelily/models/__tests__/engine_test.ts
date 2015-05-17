@@ -97,64 +97,6 @@ describe("[engine.ts]", function() {
             });
         });
     });
-    describe("layout$", function() {
-        it.skip("can lay out two lines", function() {
-            var memo$ = Engine.Options.ILinesLayoutMemo.create(NaN);
-            var padding = 20;
-
-            var segments = _.times(10, function() {
-                return {
-                    staves: [null, ETestUtil.createFakeStaffSegment(4, 4, 1)],
-                    voices: [
-                        null,
-                        ETestUtil.createFakeVoiceSegment(2, 6, 1),
-                        ETestUtil.createFakeVoiceSegment(1, 7, 2)
-                    ]
-                };
-            });
-
-            var contextOptions: Engine.Options.ILayoutOptions = {
-                attributes: null,
-                measures: _.map(segments, function(segment, idx) {
-                    return {
-                        idx:             idx,
-                        uuid:            91015 + idx,
-                        number:          (idx + 1) + "",
-                        parts: <{[key: string]: any}> {
-                            "P1": {
-                                voices: segment.voices,
-                                staves: segment.staves
-                            }
-                        }
-                    };
-                }),
-                header: null,
-                print$: <any> {
-                    pageLayout: {
-                        pageHeight: 1000,
-                        pageWidth: 1000,
-                        pageMargins: [{
-                            leftMargin: padding,
-                            rightMargin: padding,
-                            bottomMargin: padding,
-                            topMargin: padding,
-                            type: MusicXML.OddEvenBoth.Both
-                        }]
-                    }
-                },
-                page$: 0,
-                modelFactory: ETestUtil.fakeAttributeChordFactory
-            };
-
-            var result = Engine.layout$(contextOptions, memo$);
-            expect(result.length).to.equal(2);
-            var l1bars = result[0];
-            var l1EndEls = l1bars[l1bars.length - 1].elements[0];
-
-            expect(result[0][0].elements[0][0].x$).to.be.closeTo(result[1][0].elements[0][0].x$, 0.05);
-            expect(l1EndEls[l1EndEls.length - 1].x$).to.equal(1000 - 20 - 10);
-        });
-    });
     describe("validate$", function() {
         it("creates attributes and barline if missing", function() {
             var calledCount = 0;

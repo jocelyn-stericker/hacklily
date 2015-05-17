@@ -20,8 +20,6 @@
 
 import MusicXML             = require("musicxml-interfaces");
 import React                = require("react");
-import _                    = require("lodash");
-var $                       = React.createFactory;
 
 class BarNumber extends React.Component<{spec: MusicXML.Position, barNumber: string}, void> {
     render(): any {

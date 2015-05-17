@@ -46,13 +46,15 @@ class AttributesModel implements Export.IAttributesModel {
         this._parent            = <any> cursor$.staff.attributes;
 
         for (let a = this._parent; !!a; a = a._parent) {
-            invariant(a !== this, "Internal error. AttributesModel.validate$() must not be called in a context with itself as an ancestor.");
+            invariant(a !== this, "Internal error. " +
+                "AttributesModel.validate$() must not be called in a context with " +
+                "itself as an ancestor.");
         }
-        
+
         if (!this.divisions) {
             this.divisions = 1;
         }
-        
+
         cursor$.staff.attributes = this;
 
         // Defaults
@@ -160,7 +162,7 @@ class AttributesModel implements Export.IAttributesModel {
         if (!this._clefs) {
             this._clefs = [];
         }
-        
+
         // Remove clefs copied from parents
         _.forEach(this._clefs, (clef, idx) => {
             if (clef && (<any>clef).__inherited__) {
@@ -178,7 +180,7 @@ class AttributesModel implements Export.IAttributesModel {
                 this.clefs[clef.number || idx + 1] = clef;
                 this.clefs[clef.number || idx + 1].number = clef.number || idx + 1;
             }
-            
+
             if (pClefs[idx] && !sClefs[idx]) {
                 this._clefs[idx] = Object.create(pClefs[idx]);
                 (<any>this._clefs[idx]).__inherited__ = true;
@@ -271,7 +273,7 @@ class AttributesModel implements Export.IAttributesModel {
             }
         }
     }
-    
+
     private _validateStaves$(cursor$: Engine.ICursor) {
         this.staves = this.staves || 1;
         let currentPartId = cursor$.segment.part;
@@ -287,7 +289,7 @@ class AttributesModel implements Export.IAttributesModel {
                 bottomStaff: 1,
                 topStaff: this.staves,
                 type: MusicXML.PartSymbolType.Brace,
-            }
+            };
         }
     }
 
@@ -302,7 +304,7 @@ class AttributesModel implements Export.IAttributesModel {
             cursor$.staff.multiRestRem = this.oMeasureStyle.multipleRest.count - (this._measure - this.mMeasureStyle);
         }
     }
-    
+
     shouldRenderClef(owner: number, isFirstInLine: boolean) {
         return this._clefs && this._clefs[owner] && !(<any>this._clefs[owner]).__inherited__ || isFirstInLine;
     }
@@ -332,12 +334,12 @@ module AttributesModel {
 
             // Measure number
             if (!cursor$.measure.implicit && parseInt(cursor$.measure.number, 10) !== 1) {
-                let shouldShowNumber = 
+                let shouldShowNumber =
                     (isFirstInLine && (!cursor$.print$ || cursor$.print$.measureNumbering.data === "system")) ||
                     (this.division === 0 && cursor$.print$ &&
                         (!this.model._parent || this.model._parent._measure !== this.model._measure) &&
                         cursor$.print$.measureNumbering.data === "measure");
-                
+
                 if (shouldShowNumber) {
                     this.measureNumberVisible = cursor$.measure.number;
                 }
@@ -453,7 +455,7 @@ module AttributesModel {
             } else {
                 this.tsSpacing = 0;
             }
-            
+
             /*---- Part symbol ------------------------------------*/
 
             if (this.partSymbolVisible) {
@@ -502,10 +504,10 @@ module AttributesModel {
 
         ksVisible: boolean;
         ksSpacing: number;
-        
+
         /** undefined if no measure number should be displayed.  */
         measureNumberVisible: string;
-        
+
         partSymbolVisible: boolean;
     }
 
@@ -538,9 +540,9 @@ module Export {
 
         ksVisible: boolean;
         ksSpacing: number;
-        
+
         measureNumberVisible: string;
-        
+
         partSymbolVisible: boolean;
 
         staffIdx: number;
