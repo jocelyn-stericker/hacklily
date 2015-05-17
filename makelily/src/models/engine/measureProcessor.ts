@@ -449,7 +449,7 @@ export function layoutMeasure(opts: IMeasureLayoutOptions): Measure.IMeasureLayo
     let segments = _.filter(voices.concat(staves), s => !!s);
 
     let line = opts.line;
-    
+
     return reduce({
         attributes:     opts.attributes,
         factory:        opts.factory,

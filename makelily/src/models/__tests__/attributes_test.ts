@@ -70,7 +70,7 @@ export function makeCursor(factory: Factory, models: Engine.IModel[]): Engine.IC
                         staves: [
                             null,
                             {
-                                staves: []  
+                                staves: []
                             }
                         ]
                     }

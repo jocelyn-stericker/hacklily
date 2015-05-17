@@ -298,7 +298,7 @@ export function layout$(options: Options.ILayoutOptions,
         return width$[measure.uuid];
     });
 
-    let thisPrint: MusicXML.Print = null;
+    let thisPrint: MusicXML.Print = options.print$;
     function updatePrint(measure: Measure.IMutableMeasure) {
         let partWithPrint = _.find(measure.parts, part => !!part.staves[1] &&
                 options.modelFactory.searchHere(part.staves[1], 0, IModel.Type.Print).length);
@@ -344,7 +344,7 @@ export function layout$(options: Options.ILayoutOptions,
     }).opts;
 
     // layoutLine$ handles the second pass.
-    return _.map(lineOpts$, function(lineOpt$) {
+    return _.map(lineOpts$, function secondPass(lineOpt$) {
         lineOpt$.lines = lineOpts$.length;
         return LineProcessor.layoutLine$(lineOpt$, Options.ILineBounds.calculate(lineOpt$.print$,
                 options.page$), memo$);

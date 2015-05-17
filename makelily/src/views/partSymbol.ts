@@ -41,7 +41,7 @@ class PartSymbol extends React.Component<PartSymbol.IProps, void> {
 
         const height = this.context.systemBottom - this.context.systemTop;
         const bottom = this.context.systemBottom;
-        
+
         let symbol = this.getSymbol();
         return React.DOM.g(null,
             symbol,
@@ -56,19 +56,19 @@ class PartSymbol extends React.Component<PartSymbol.IProps, void> {
             })
         /* React.DOM.g */);
     }
-    
+
     getSymbol(): any {
         const spec = this.props.spec;
-        
+
         const height = this.context.systemBottom - this.context.systemTop;
         const bottom = this.context.systemBottom;
-        
+
         const defaults = SMuFL.bravura.engravingDefaults; // TODO: Use 'print'
 
         const x = this.context.originX + this.props.spec.defaultX - 14;
-        
+
         const s = height/40;
-        
+
         switch (spec.type) {
             case MusicXML.PartSymbolType.Brace:
                 return $(Glyph)({
@@ -107,7 +107,7 @@ class PartSymbol extends React.Component<PartSymbol.IProps, void> {
                         y: this.context.systemBottom + 2,
                         glyphName: "bracketBottom"
                     })
-                ]
+                ];
             case MusicXML.PartSymbolType.Line:
                 return null;
         }
@@ -116,9 +116,9 @@ class PartSymbol extends React.Component<PartSymbol.IProps, void> {
 
 module PartSymbol {
     export interface IProps {
-        spec: MusicXML.PartSymbol
+        spec: MusicXML.PartSymbol;
     }
-    
+
     export var contextTypes = <any> {
         originX:        React.PropTypes.number.isRequired,
         originY:        React.PropTypes.number.isRequired,

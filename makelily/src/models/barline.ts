@@ -107,7 +107,7 @@ module BarlineModel {
                 this.division = cursor$.division$;
                 return;
             }
-            
+
             this.partSymbol = cursor$.staff.attributes.partSymbol;
 
             this.model = Object.create(origModel, {
@@ -140,7 +140,7 @@ module BarlineModel {
             const lineWidths = cursor$.header.defaults.appearance.lineWidths;
 
             const barlineSep = SMuFL.bravura.engravingDefaults.barlineSeparation;
-            
+
             let setLines$ = (lines: string[]) => {
                 let x = 0;
                 this.lineStarts = [];
@@ -155,8 +155,8 @@ module BarlineModel {
                     x += width;
                 });
                 cursor$.x$ += x;
-            }
-            
+            };
+
             switch(this.model.barStyle.data) {
                 case MusicXML.BarStyleType.LightHeavy:
                     setLines$(["light barline", "heavy barline"]);
@@ -214,7 +214,7 @@ module BarlineModel {
 
         lineStarts:     number[];
         lineWidths:     number[];
-        
+
         partSymbol:     MusicXML.PartSymbol;
     }
 

@@ -21,7 +21,6 @@
 import MusicXML             = require("musicxml-interfaces");
 import React                = require("react");
 import _                    = require("lodash");
-import invariant            = require("react/lib/invariant");
 let $                       = React.createFactory;
 
 import Accidental           = require("./accidental");
@@ -32,7 +31,7 @@ import SMuFL                = require("../models/smufl");
 class Note extends React.Component<{spec: MusicXML.Note, satieNotehead: string}, void> {
     render() {
         const spec = this.props.spec;
-        
+
         if (!spec.printObject) {
             return null;
         }

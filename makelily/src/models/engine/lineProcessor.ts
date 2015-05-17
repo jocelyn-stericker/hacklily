@@ -48,7 +48,7 @@ export function justify(options: Options.ILayoutOptions, bounds: Options.ILineBo
         let maxDivs = measure.maxDivisions;
         return maxDivs < divs;
     });
-    
+
     // Center things (TODO: write tests)
     _.forEach(measures$, function centerThings(measure, idx) {
         if (underfilled[idx]) {
@@ -112,7 +112,6 @@ export function justify(options: Options.ILayoutOptions, bounds: Options.ILineBo
     let totalExpCount = 0;
     let lineExpansion = 0;
     _.forEach(measures$, function(measure, measureIdx) {
-        let elementArr = measure.elements[0];
         let measureExpansion = 0;
         let maxIdx = _.max(_.map(measure.elements, el => el.length));
         _.times(maxIdx, function(j) {
@@ -162,7 +161,41 @@ export function layoutLine$(options: Options.ILayoutOptions, bounds: Options.ILi
     }, []);
     let line = Ctx.ILine.create(allModels, measures.length, options.line, options.lines);
 
-    let layouts = _.map(measures, (measure, measureIdx) => {
+    if (!measures.length) {
+        return [];
+    }
+
+    let layouts = _layoutDirtyMeasures(options, line, clean$);
+    attributes = clean$[measures[measures.length - 1].uuid].attributes; // FIXME: Hack
+
+    invariant(attributes.staves >= 1, "Expected at least 1 staff, but there are %s", attributes.staves);
+    let tops = [null].concat(_.times(attributes.staves, staffMinusOne => {
+        let staffIdx = staffMinusOne + 1;
+        if (staffIdx > 1) {
+            memo$.y$ -= 100;
+        }
+        let paddingTop = _.max(layouts, mre => mre.paddingTop[staffIdx]||0).paddingTop[staffIdx]||0;
+        let paddingBottom = _.max(layouts, mre => mre.paddingBottom[staffIdx]||0).paddingBottom[staffIdx]||0;
+        let top = memo$.y$ - paddingTop;
+        memo$.y$ = top - paddingBottom;
+        return top;
+    }));
+    memo$.y$ -= bounds.systemLayout.systemDistance;
+
+    let left                = bounds.left;
+    _.forEach(layouts, layout => {
+        layout.originY      = tops;
+        layout.originX      = left;
+        left                = left + layout.width;
+    });
+
+    return justify(options, bounds, layouts);
+}
+
+function _layoutDirtyMeasures(options: Options.ILayoutOptions, line: Ctx.ILine, clean$: {[key: string]: Measure.IMeasureLayout}) {
+    let measures = options.measures;
+    let attributes = options.attributes;
+    return _.map(measures, (measure, measureIdx) => {
         line.barOnLine$ = measureIdx;
         if (!(measure.uuid in clean$)) {
             clean$[measure.uuid] = MeasureProcessor.layoutMeasure({
@@ -180,28 +213,5 @@ export function layoutLine$(options: Options.ILayoutOptions, bounds: Options.ILi
         attributes = clean$[measure.uuid].attributes;
         return clean$[measure.uuid];
     });
-
-    invariant(attributes.staves >= 1, "Expected at least 1 staff, but there are %s", attributes.staves);
-    let tops = [null].concat(_.times(attributes.staves, staffMinusOne => {
-        let staffIdx = staffMinusOne + 1;
-        if (staffIdx > 1) {
-            memo$.y$ -= 100;
-        }
-        let paddingTop = _.max(layouts, mre => mre.paddingTop[staffIdx]||0).paddingTop[staffIdx]||0;
-        let paddingBottom = _.max(layouts, mre => mre.paddingBottom[staffIdx]||0).paddingBottom[staffIdx]||0;
-        let top = memo$.y$ - paddingTop;
-        memo$.y$ = top - paddingBottom;
-        return top;
-    }));
-    memo$.y$ -= bounds.systemLayout.systemDistance
-    
-    let left                = bounds.left;
-    _.forEach(layouts, layout => {
-        layout.originY      = tops;
-        layout.originX      = left;
-        left                = left + layout.width;
-    });
-
-    return justify(options, bounds, layouts);
 }
 

@@ -18,7 +18,7 @@
 
 "use strict";
 
-import MusicXML             = require("musicxml-interfaces")
+import MusicXML             = require("musicxml-interfaces");
 import React                = require("react");
 import _                    = require("lodash");
 var $                       = React.createFactory;
@@ -45,7 +45,7 @@ class BarlineView extends React.Component<{layout: Barline.ILayout}, {}> {
         // TODO: render MusicXML.BarStyleType.Dotted:
         // TODO: render MusicXML.BarStyleType.Short:
         // TODO: render MusicXML.BarStyleType.Tick:
-        
+
         if (layout.partSymbol && layout.partSymbol.type !== MusicXML.PartSymbolType.None) {
             var yTop = <number> this.context.systemTop;
             var yBottom = <number> this.context.systemBottom;

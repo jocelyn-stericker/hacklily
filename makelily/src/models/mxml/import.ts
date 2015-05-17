@@ -263,7 +263,7 @@ export function _extractMXMLPartsAndMeasures(input: MusicXML.ScoreTimewise,
         }
 
         // Finish up
-        
+
         _.times(gStaves, staffMinusOne => {
             let staff = staffMinusOne + 1;
             if (!(staff in target.output.staves)) {
@@ -276,7 +276,7 @@ export function _extractMXMLPartsAndMeasures(input: MusicXML.ScoreTimewise,
                     duration: Engine.IChord.barDivisions(lastAttribs),
                     staff: staff,
                     voice: maxVoice
-                })
+                });
                 voice.push(<any>newNote);
             }
         });
@@ -305,7 +305,7 @@ export function _extractMXMLPartsAndMeasures(input: MusicXML.ScoreTimewise,
                 }
             });
         });
-        
+
         function syncAppendStaff(staff: number, model: Engine.IModel) {
             const divCount = target.division - (target.divisionPerStaff[staff] || 0);
             let segment = target.output.staves[staff];
@@ -356,7 +356,7 @@ export function _extractMXMLPartsAndMeasures(input: MusicXML.ScoreTimewise,
 
         return measure;
     });
-    
+
     return {
         measures:   measures,
         parts:      parts

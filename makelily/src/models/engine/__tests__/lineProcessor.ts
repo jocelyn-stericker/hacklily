@@ -60,8 +60,7 @@ describe("[lineProcessor.ts]", function() {
                     times: [{
                         senzaMisura: null,
                         beats: ["1"],
-                        beatTypes: [4],
-                        
+                        beatTypes: [4]
                     }]
                 },
                 maxX:           1000,

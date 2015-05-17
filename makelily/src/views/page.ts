@@ -72,7 +72,7 @@ class Page extends React.Component<Page.IProps, Page.IState> {
             _.map(d[0/* top */], (top: number, j: number) => {
                 return {
                     key:    `stave_${i}_${j}`,
-    
+
                     lines:  5,
                     width:  d[2 /* width */],
                     x:      d[1 /* left */],
@@ -87,7 +87,6 @@ class Page extends React.Component<Page.IProps, Page.IState> {
         _.forEach(credits, credit => Engine.key$(credit));
 
         /*--- Render ----------------------------------------------*/
-
 
         return React.DOM.svg(
             {
@@ -111,7 +110,7 @@ class Page extends React.Component<Page.IProps, Page.IState> {
                 _.map(lineLayout, measureLayout =>
                     $(MeasureView)({
                         layout:         measureLayout,
-                        key:            (<any>measureLayout).key               
+                        key:            (<any>measureLayout).key
                     })
                 )
             )
@@ -122,7 +121,7 @@ class Page extends React.Component<Page.IProps, Page.IState> {
         const defaults      = this.props.scoreHeader.defaults;
         const print         = this.props.print;
         const scale40       = defaults.scaling.millimeters / defaults.scaling.tenths * 40;
-        
+
         return {
             scale40:        scale40,
             originY:        print.pageLayout.pageHeight

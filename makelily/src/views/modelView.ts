@@ -38,7 +38,7 @@ class ModelView extends React.Component<{layout: Engine.IModel.ILayout}, void> {
             return null;
         }
     }
-    
+
     getChildContext() {
         const layout        = this.props.layout;
         return {
