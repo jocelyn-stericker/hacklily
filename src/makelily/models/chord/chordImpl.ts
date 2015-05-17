@@ -574,7 +574,9 @@ module ChordModelImpl {
             invariant(extraWidth >= 0, "Invalid extraWidth %s. shortest is %s, got %s", extraWidth,
                     cursor$.line.shortestCount, baseModel.divCount);
 
-            const totalWidth = baseWidth + extraWidth + accidentalWidth;
+            const dotWidth = _.max(_.map(baseModel, m => m.dots.length))*6;
+
+            const totalWidth = baseWidth + extraWidth + accidentalWidth + dotWidth;
 
             // TODO
             // const lyricWidth = this.getLyricWidth();
