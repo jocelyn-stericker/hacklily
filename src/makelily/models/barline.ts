@@ -107,6 +107,8 @@ module BarlineModel {
                 this.division = cursor$.division$;
                 return;
             }
+            
+            this.partSymbol = cursor$.staff.attributes.partSymbol;
 
             this.model = Object.create(origModel, {
                 defaultX: {
@@ -206,12 +208,14 @@ module BarlineModel {
         mergePolicy:    Engine.IModel.HMergePolicy;
         boundingBoxes$: Engine.IModel.IBoundingRect[];
         renderClass:    Engine.IModel.Type;
-        expandPolicy:    Engine.IModel.ExpandPolicy;
+        expandPolicy:   Engine.IModel.ExpandPolicy;
 
         /*---- Extensions ---------------------------------------------------*/
 
-        lineStarts:      number[];
-        lineWidths:      number[];
+        lineStarts:     number[];
+        lineWidths:     number[];
+        
+        partSymbol:     MusicXML.PartSymbol;
     }
 
     Layout.prototype.mergePolicy = Engine.IModel.HMergePolicy.Max;
@@ -235,12 +239,14 @@ module Export {
     }
 
     export interface ILayout extends Engine.IModel.ILayout {
-        model:      IBarlineModel;
-        height:     number;
-        yOffset:    number;
+        model:          IBarlineModel;
+        height:         number;
+        yOffset:        number;
 
-        lineStarts:      number[];
-        lineWidths:      number[];
+        lineStarts:     number[];
+        lineWidths:     number[];
+
+        partSymbol:     MusicXML.PartSymbol;
     }
 }
 

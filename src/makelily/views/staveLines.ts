@@ -39,7 +39,7 @@ class StaveLines extends React.Component<StaveLines.IProps, {}> {
                 y1:             top - 10*(i - 2),
                 y2:             top - 10*(i - 2),
                 stroke:         "#6A6A6A",
-                strokeWidth:    SMuFL.bravura.engravingDefaults.staffLineThickness*10
+                strokeWidth:    SMuFL.bravura.engravingDefaults.staffLineThickness*10 // TODO: use print
             }))
         /* React.DOM.g */);
     }
@@ -47,7 +47,6 @@ class StaveLines extends React.Component<StaveLines.IProps, {}> {
 
 module StaveLines {
     export var contextTypes = <any> {
-        scale40:            React.PropTypes.number.isRequired,
         originY:            React.PropTypes.number.isRequired
     };
     export interface IProps {

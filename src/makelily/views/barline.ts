@@ -18,6 +18,7 @@
 
 "use strict";
 
+import MusicXML             = require("musicxml-interfaces")
 import React                = require("react");
 import _                    = require("lodash");
 var $                       = React.createFactory;
@@ -44,14 +45,22 @@ class BarlineView extends React.Component<{layout: Barline.ILayout}, {}> {
         // TODO: render MusicXML.BarStyleType.Dotted:
         // TODO: render MusicXML.BarStyleType.Short:
         // TODO: render MusicXML.BarStyleType.Tick:
+        
+        if (layout.partSymbol && layout.partSymbol.type !== MusicXML.PartSymbolType.None) {
+            var yTop = <number> this.context.systemTop;
+            var yBottom = <number> this.context.systemBottom;
+        } else {
+            var yTop = y - layout.height - layout.yOffset;
+            var yBottom = y + layout.height - layout.yOffset;
+        }
 
         return React.DOM.g(null,
             _.map(layout.lineStarts, (start, idx) => $(Line)({
                 key: idx,
                 x1: x + start + layout.lineWidths[idx]/2,
                 x2: x + start + layout.lineWidths[idx]/2,
-                y1: y - layout.height - layout.yOffset,
-                y2: y + layout.height - layout.yOffset,
+                y1: yTop,
+                y2: yBottom,
                 stroke: model.barStyle.color,
                 fill: model.barStyle.color,
                 strokeWidth: layout.lineWidths[idx]
@@ -62,8 +71,10 @@ class BarlineView extends React.Component<{layout: Barline.ILayout}, {}> {
 
 module BarlineView {
     export var contextTypes = <any> {
-        originX:         React.PropTypes.number.isRequired,
-        originY:         React.PropTypes.number.isRequired
+        originX:        React.PropTypes.number.isRequired,
+        originY:        React.PropTypes.number.isRequired,
+        systemTop:      React.PropTypes.number.isRequired,
+        systemBottom:   React.PropTypes.number.isRequired
     };
 }
 

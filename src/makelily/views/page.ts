@@ -57,7 +57,7 @@ class Page extends React.Component<Page.IProps, Page.IState> {
         const pageMargins       = Engine.IPrint.getPageMargins(pageMarginsAll, pageNum);
         let systemMargins       = print.systemLayout.systemMargins;
 
-        let staveTops           = _.map(lineLayouts, measureLayouts => measureLayouts[0] ? measureLayouts[0].originY : 0);
+        let staveTops: number[][] = <any> _.map(lineLayouts, measureLayouts => measureLayouts[0] ? measureLayouts[0].originY : 0);
 
         // TODO: Move to Engine & IModel, generalize
         let staveLefts          = _.map(lineLayouts, () => {
@@ -88,6 +88,7 @@ class Page extends React.Component<Page.IProps, Page.IState> {
 
         /*--- Render ----------------------------------------------*/
 
+
         return React.DOM.svg(
             {
                 "data-page":    this.props.renderTarget === Page.RenderTarget.SvgExport ?
@@ -106,11 +107,11 @@ class Page extends React.Component<Page.IProps, Page.IState> {
             },
             _.map(credits, (credit, idx) => $(Credit)(credit)),
             _.map(staveLineProps, staveLineProps => _.map(staveLineProps, staveLineProps => $(StaveLines)(staveLineProps))),
-            _.map(lineLayouts, lineLayout =>
+            _.map(lineLayouts, (lineLayout, lineIdx) =>
                 _.map(lineLayout, measureLayout =>
                     $(MeasureView)({
-                        layout:     measureLayout,
-                        key:        (<any>measureLayout).key
+                        layout:         measureLayout,
+                        key:            (<any>measureLayout).key               
                     })
                 )
             )
@@ -121,6 +122,7 @@ class Page extends React.Component<Page.IProps, Page.IState> {
         const defaults      = this.props.scoreHeader.defaults;
         const print         = this.props.print;
         const scale40       = defaults.scaling.millimeters / defaults.scaling.tenths * 40;
+        
         return {
             scale40:        scale40,
             originY:        print.pageLayout.pageHeight
