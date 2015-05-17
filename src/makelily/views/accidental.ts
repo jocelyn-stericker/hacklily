@@ -35,8 +35,10 @@ class Accidental extends React.Component<{spec: MusicXML.Accidental}, void> {
 
         const originX = this.context.originX;
         const originY = this.context.originY;
+        const shift = spec.parentheses ? 4 : 0;
+
         var accidental = $(Glyph)({
-            x: originX + spec.defaultX + (spec.relativeX || 0),
+            x: originX + spec.defaultX + (spec.relativeX || 0) + shift,
             y: originY - (spec.defaultY + (spec.relativeY || 0)),
             fill: spec.color,
             glyphName: glyphName
@@ -46,13 +48,13 @@ class Accidental extends React.Component<{spec: MusicXML.Accidental}, void> {
             var width = SMuFL.bboxes[glyphName][0]*10;
             return React.DOM.g(null,
                 $(Glyph)({
-                        x: originX + spec.defaultX + (spec.relativeX || 0) - 7,
+                        x: originX + spec.defaultX + (spec.relativeX || 0) - 7 + shift,
                         y: originY - (spec.defaultY + (spec.relativeY || 0)),
                         glyphName: "accidentalParensLeft",
                         fill: "#000000"}),
                 accidental,
                 $(Glyph)({
-                        x: originX + spec.defaultX + (spec.relativeX || 0) + width,
+                        x: originX + spec.defaultX + (spec.relativeX || 0) + width + shift,
                         y: originY - (spec.defaultY + (spec.relativeY || 0)),
                         glyphName: "accidentalParensRight",
                         fill: "#000000" })
