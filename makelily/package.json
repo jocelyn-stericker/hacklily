@@ -46,7 +46,7 @@
         "build_dev": "make",
         "watch": "make watch",
         "start": "make watch",
-        "test": "make unittest",
+        "test": "make test_all",
         "lint": "make lint"
     }
 }
