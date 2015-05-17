@@ -16,9 +16,9 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ##
 
-.PHONY: build lint unittest tsd _gentestsuite _tsc _stageOnly _unittestOnly _lintOnly test_all 
+.PHONY: build lint test tsd _gentestsuite _tsc _stageOnly _testOnly _lintOnly test_all 
 
-all: build unittest
+all: build test
 
 
 # ---- Script to combine bundle d.ts files into a bundle --------------------------
@@ -83,7 +83,7 @@ INFO_COLOR=\x1b[36;01m
 OK_STRING=$(OK_COLOR)  ...ok!$(NO_COLOR)
 TSC_STRING=$(INFO_COLOR)» Building from tsconfig.json...$(NO_COLOR)
 WATCH_STRING=$(INFO_COLOR)» Watching from tsconfig.json...$(NO_COLOR)
-STAGE_STRING=$(INFO_COLOR)» Staging *.d.ts, *,js, *.js.map...$(NO_COLOR)
+STAGE_STRING=$(INFO_COLOR)» Staging *.d.ts, *.js, *.js.map...$(NO_COLOR)
 TEST_STRING=$(INFO_COLOR)» Testing __test__*.js ...$(NO_COLOR)
 CLEAN_STRING=$(INFO_COLOR)» Deleting generated code ...$(NO_COLOR)
 COVERAGE_STRING=$(INFO_COLOR)» Writing coverage info for __test__*.js to ./coverage ...$(NO_COLOR)
@@ -126,7 +126,7 @@ watch: _gentestsuite
 	    if [[ $$line == *TS6042* ]]; then \
 		if [[ "$$CLEAN" == "1" ]]; then \
 		    echo "$(INFO_COLOR)» $$line$(NO_COLOR)"; \
-		    (make _watchStage && make _unittestOnly) & \
+		    (make _watchStage && make _testOnly) & \
 		else \
 		    echo "$(ERROR_COLOR)» $$line$(NO_COLOR)"; \
 		fi; \
@@ -157,14 +157,14 @@ smufl:
 lint:
 	find ./src -regex ".*[a-zA-Z0-9_][a-zA-Z0-9_]\.ts" | grep -v src/tests.ts | sed 's/\(.*\)/-f\1/g' | xargs ./node_modules/tslint/bin/tslint -c ./tsconfig.json 
 
-unittest: build _unittestOnly
+test: build _testOnly
 
-_unittestOnly:
+_testOnly:
 	@echo "$(TEST_STRING)"
 	@echo $$TST
 	@if [ "x$$TEST" == "x" ]; then find ./dist -type f | grep "__tests__.*js\$$" | xargs ./node_modules/mocha/bin/mocha -R progress; else find ./dist -type f | grep "__tests__.*js\$$" | xargs ./node_modules/mocha/bin/mocha -R progress --grep "$$TEST"; fi
 
-test_all: unittest lint
+test_all: test lint
 
 coverage: build
 	@echo "$(COVERAGE_STRING)"
