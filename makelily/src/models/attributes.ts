@@ -282,6 +282,13 @@ class AttributesModel implements Export.IAttributesModel {
                 throw new Error("A staff is missing. The code to add it is not implemented.");
             }
         });
+        if (this.staves > 1 && !this.partSymbol) {
+            this.partSymbol = {
+                bottomStaff: 1,
+                topStaff: this.staves,
+                type: MusicXML.PartSymbolType.Brace,
+            }
+        }
     }
 
     _setTotalDivisions(cursor$: Engine.ICursor): void {
@@ -320,7 +327,9 @@ module AttributesModel {
             this.ksVisible = !!model._keySignatures && !!model._keySignatures.length || isFirstInLine;
             this.tsVisible = !!model._times && !!model._times.length; // TODO: || isFirstInPage;
             this.clefVisible = model.shouldRenderClef(cursor$.segment.owner, isFirstInLine);
-            
+            this.partSymbolVisible = isFirstInLine && this.model.partSymbol &&
+                this.model.partSymbol.bottomStaff === cursor$.staff.idx;
+
             // Measure number
             if (!cursor$.measure.implicit && parseInt(cursor$.measure.number, 10) !== 1) {
                 let shouldShowNumber = 
@@ -330,7 +339,7 @@ module AttributesModel {
                         cursor$.print$.measureNumbering.data === "measure");
                 
                 if (shouldShowNumber) {
-                    this.dispMeasureNumber = cursor$.measure.number;
+                    this.measureNumberVisible = cursor$.measure.number;
                 }
             }
 
@@ -444,6 +453,18 @@ module AttributesModel {
             } else {
                 this.tsSpacing = 0;
             }
+            
+            /*---- Part symbol ------------------------------------*/
+
+            if (this.partSymbolVisible) {
+                model._partSymbol = Object.create(model.partSymbol, {
+                    defaultX: {
+                        get: () => {
+                            return 0;
+                        }
+                    }
+                });
+            }
 
             /*---- Geometry ---------------------------------------*/
 
@@ -483,7 +504,9 @@ module AttributesModel {
         ksSpacing: number;
         
         /** undefined if no measure number should be displayed.  */
-        dispMeasureNumber: string;
+        measureNumberVisible: string;
+        
+        partSymbolVisible: boolean;
     }
 
     Layout.prototype.mergePolicy = Engine.IModel.HMergePolicy.Min;
@@ -516,7 +539,9 @@ module Export {
         ksVisible: boolean;
         ksSpacing: number;
         
-        dispMeasureNumber: string;
+        measureNumberVisible: string;
+        
+        partSymbolVisible: boolean;
 
         staffIdx: number;
     }
