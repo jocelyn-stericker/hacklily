@@ -545,8 +545,8 @@ module ChordModelImpl {
 
             _.forEach(this.model, note => {
                 invariant(!!note.staff, "Expected the staff to be a non-zero number, but its %s", note.staff);
-                cursor$.maxPaddingTop$[note.staff] = Math.max(cursor$.maxPaddingTop$[note.staff] || 0, note.defaultY - 10);
-                cursor$.maxPaddingBottom$[note.staff] = Math.max(cursor$.maxPaddingBottom$[note.staff] || 0, note.defaultY - 30);
+                cursor$.maxPaddingTop$[note.staff] = Math.max(cursor$.maxPaddingTop$[note.staff] || 0, note.defaultY - 50);
+                cursor$.maxPaddingBottom$[note.staff] = Math.max(cursor$.maxPaddingBottom$[note.staff] || 0, - note.defaultY - 25);
             });
 
             // We allow accidentals to be slightly squished.
