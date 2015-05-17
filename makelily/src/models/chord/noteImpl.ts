@@ -519,7 +519,7 @@ class NoteImpl implements MusicXML.Note {
             let width = SMuFL.bboxes[glyphName][0]*10;
 
             if (Engine.IChord.onLedger(this, cursor.staff.attributes.clefs[cursor.staff.idx])) {
-                acc.defaultX = -2.84;
+                acc.defaultX = -4.1;
             } else {
                 acc.defaultX = -2.04;
             }
@@ -534,7 +534,7 @@ class NoteImpl implements MusicXML.Note {
             }
 
             if (acc.parentheses) {
-                acc.defaultX -= 6.25;
+                acc.defaultX -= 10;
             }
         }
 
