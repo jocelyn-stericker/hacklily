@@ -32,6 +32,10 @@ import SMuFL                = require("../models/smufl");
 class Note extends React.Component<{spec: MusicXML.Note, satieNotehead: string}, void> {
     render() {
         const spec = this.props.spec;
+        
+        if (!spec.printObject) {
+            return null;
+        }
 
         let approxNotehead = this.props.satieNotehead;
         var width = SMuFL.bboxes[approxNotehead][0]*10;
@@ -47,7 +51,7 @@ class Note extends React.Component<{spec: MusicXML.Note, satieNotehead: string},
                 },
                 notehead: approxNotehead
             }),
-            spec.dots ? _.map(spec.dots, (dot, idx) => $(Dot)({
+            spec.dots && spec.printDot !== false ? _.map(spec.dots, (dot, idx) => $(Dot)({
                 key: "_1_" + idx,
                 fill: dot.color,
                 radius: 2.4,
