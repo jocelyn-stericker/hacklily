@@ -187,7 +187,7 @@ export function _extractMXMLPartsAndMeasures(input: MusicXML.ScoreTimewise,
                         if (target.divisionPerVoice[voice] < target.division) {
                             // Add rest
                             let spec = MusicXML.parse.note(`
-                                <note>
+                                <note print-object="no">
                                     <rest />
                                     <duration>${target.division - target.divisionPerVoice[voice]}</duration>
                                 </note>`);

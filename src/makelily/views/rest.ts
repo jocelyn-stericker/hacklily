@@ -34,6 +34,9 @@ import SMuFL                = require("../models/smufl");
 class Rest extends React.Component<{spec: MusicXML.Note, multipleRest?: MusicXML.MultipleRest, notehead?: string}, void> {
     render() {
         const spec = this.props.spec;
+        if (!spec.printObject) {
+            return null;
+        }
         const rest = spec.rest;
         invariant(!!spec.rest, "Attempting to render a non-rest with Rest");
         const notehead = this.props.notehead;
@@ -59,7 +62,7 @@ class Rest extends React.Component<{spec: MusicXML.Note, multipleRest?: MusicXML
                     textAnchor: "middle"},
                 this.props.multipleRest.count   // TODO: useSymbols
             /* React.DOM.text */),
-        spec.dots ? _.map(spec.dots, (dot, idx) => $(Dot)({
+        spec.dots && spec.printDot !== false ? _.map(spec.dots, (dot, idx) => $(Dot)({
                 key: idx + "d",
                 radius: 2.4,
                 fill: dot.color,
