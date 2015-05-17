@@ -1,37 +1,22 @@
-Satie
-=====
+Satie ![Test status][test_status]
+=================================
 
-A MusicXML renderer that uses React and SMuFL. It's in active development, and is in alpha.
-The current goal is to pass Lilypond's unofficial MusicXML test suite.
+Satie is a JavaScript library for rendering sheet music.
 
-## Copyright
-Copyright (C) 2015 Josh Netterfield <joshua@nettek.ca>.
+* Converts [MusicXML][musicxml] to [SVG][svg]. Most sheet music formats can be converted to MusicXML, and SVGs can be converted to many other formats.
+* Runs in Node and modern browsers (Chrome, Firefox, Safari, IE 10+).
+* Provides fast updates. Satie was designed to be a component of a sheet music editor.
 
-This program is free software: you can redistribute it and/or modify
-it under the terms of the GNU **Affero** General Public License as
-published by the Free Software Foundation, either version 3 of the
-License, or (at your option) any later version.
+> **Current status:** The current goal is to pass the [unofficial MusicXML test suite][musicxml_test_suite]. Satie is not yet ready for serious use.
 
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU Affero General Public License for more details.
-
-You should have received a copy of the GNU **Affero** General Public License
-along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
-## Usage
-Satie is not ready for usage. Watch this space.
-
-## Contributing
-This project is not currently accepting pull requests. You can submit issues,
-however all current work will be on getting Lilypond's unoffical test suite fully supported.
+## Contribute
+Currently, the best way to contribute is by filing issues.
 
 ### Development Setup
 To get started, you'll need [node 0.12](https://nodejs.org) and one of the following:
 
  - **Mac** (tested on Yosemite)
- - **Linux** with make (`sudo apt-get install build-essential`)
+ - **Linux** with common development tools (`sudo apt-get install build-essential xsltproc`)
  - **Windows** with [msysgit](https://github.com/msysgit/msysgit/releases/) or similar and libxslt2 installed
 
 To obtain Satie run,
@@ -53,3 +38,13 @@ To build, lint, and run unit tests:
 | Run all tests, even slow ones                       | `make test_all`       |
 | Run coverage testing                                | `make coverage`       |
 | Update TypeScript external definitions              | `make tsd`            |
+
+### License
+Ripieno is licensed under the [GNU **Affero** General Public License][agpl]. That means applications that use Satie, whether client-side or server-side, likely need to be open-source.
+
+
+[test_status]: https://travis-ci.org/ripieno/satie.svg?branch=onion
+[musicxml_test_suite]: http://www.lilypond.org/doc/v2.18/input/regression/musicxml/collated-files.html
+[agpl]: LICENSE.md
+[musicxml]: http://en.wikipedia.org/wiki/MusicXML
+[svg]: http://en.wikipedia.org/wiki/Scalable_Vector_Graphics
