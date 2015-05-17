@@ -78,9 +78,8 @@ class Page extends React.Component<Page.IProps, Page.IState> {
                     x:      d[1 /* left */],
                     y:      top
                 };
-            })
+            }).slice(1)
         );
-
         /*--- Credits ---------------------------------------------*/
 
         // Make sure our credits are keyed.
