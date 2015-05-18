@@ -43,6 +43,12 @@ class ChordView extends React.Component<{layout: Chord.IChordLayout}, void> {
 
         let maxNotehead = _.max(layout.model.satieNotehead, notehead => SMuFL.bboxes[notehead][0]);
 
+        let anyVisible = _.any(layout.model, note => note.printObject !== false);
+
+        if (!anyVisible) {
+            return null;
+        }
+
         let lyKey = 0;
         let lyrics = _.chain(<MusicXML.Note[]><any>spec)
                         .map(n => n.lyrics)
