@@ -26,6 +26,7 @@ import Engine               = require("./models/engine");
 import Page                 = require("./views/page");
 import SvgExt               = require("./views/svgext_injection");
 
+import Beam                 = require("./models/postprocessors/beam");
 import Justify              = require("./models/postprocessors/justify");
 
 SvgExt.inject();
@@ -74,7 +75,7 @@ export function renderDocument(doc: Engine.IDocument, startMeasure: number): str
         page$:          pageNum,
         modelFactory:   doc.factory,
         debug:          true,
-        postProcessors: [Justify]
+        postProcessors: [Justify, Beam]
     }, memo$);
 
     const core = React.renderToStaticMarkup($(Page)({
