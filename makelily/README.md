@@ -1,5 +1,5 @@
-Satie ![Test status][test_status]
-=================================
+Satie [![Test status][test_status]][test_link]
+==============================================
 
 Satie is a JavaScript library for rendering sheet music.
 
@@ -44,6 +44,7 @@ Ripieno is licensed under the [GNU **Affero** General Public License][agpl]. Tha
 
 
 [test_status]: https://travis-ci.org/ripieno/satie.svg?branch=onion
+[test_link]: https://travis-ci.org/ripieno/satie
 [musicxml_test_suite]: http://www.lilypond.org/doc/v2.18/input/regression/musicxml/collated-files.html
 [agpl]: LICENSE.md
 [musicxml]: http://en.wikipedia.org/wiki/MusicXML

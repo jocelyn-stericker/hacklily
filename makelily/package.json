@@ -2,7 +2,7 @@
     "name": "satie",
     "description": "A sheet music renderer for the web",
     "homepage": "http://ripieno.github.io/satie",
-    "version": "0.0.3-alpha.1",
+    "version": "0.0.3-alpha",
     "author": "Josh Netterfield",
     "license": "AGPLv3",
     "files": [

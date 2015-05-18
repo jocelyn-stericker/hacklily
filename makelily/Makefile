@@ -90,7 +90,7 @@ COVERAGE_STRING=$(INFO_COLOR)» Writing coverage info for __test__*.js to ./cove
 WARN_STRING=$(WARN_COLOR)[WARNINGS]$(NO_COLOR)
 
 _tsc: _gentestsuite
-	@echo "$(TSC_STRING)"
+	@printf "$(TSC_STRING)\n"
 	@./node_modules/typescript/bin/tsc || (make clean; exit 1)
 
 _gentestsuite: clean
@@ -98,7 +98,7 @@ _gentestsuite: clean
 	@find ./src | grep -e "__tests__.*\.ts\$$" | sed 's,\./src\/\(.*\)/\(.*\)\.ts,import \2 = require("\./\1/\2");,' >> ./src/tests.ts
 
 _stageOnly:
-	@echo "$(STAGE_STRING)"
+	@printf "$(STAGE_STRING)\n"
 # Copy directory strucutre to output folders
 	@cd src; find . -type d -print0 | xargs -0 -I _DIR_ mkdir -p ../dist/_DIR_ ../.partialBuild/_DIR_
 
@@ -110,7 +110,7 @@ _stageOnly:
 	@echo "$$DTS_BUNDLE_JS" | node
 
 _watchStage:
-	@echo "$(STAGE_STRING)"
+	@printf "$(STAGE_STRING)\n"
 # the completion message is sent before closing buffers!
 	@make _stageOnly 2>&1 > /dev/null || (sleep 5; make _stageOnly)
 
@@ -119,24 +119,24 @@ _watchStage:
 
 watch: _gentestsuite
 	@clear
-	@echo "$(WATCH_STRING)"
+	@printf "$(WATCH_STRING)\n"
 	@CLEAN="1"; \
 	./node_modules/typescript/bin/tsc -w | \
 	while read line; do \
 	    if [[ $$line == *TS6042* ]]; then \
 		if [[ "$$CLEAN" == "1" ]]; then \
-		    echo "$(INFO_COLOR)» $$line$(NO_COLOR)"; \
+		    printf "$(INFO_COLOR)» $$line$(NO_COLOR)\n"; \
 		    (make _watchStage && make _testOnly) & \
 		else \
-		    echo "$(ERROR_COLOR)» $$line$(NO_COLOR)"; \
+		    printf "$(ERROR_COLOR)» $$line$(NO_COLOR)\n"; \
 		fi; \
 	    elif [[ $$line == *TS6032* ]]; then \
 		clear; \
 		CLEAN="1"; \
-		echo "$(INFO_COLOR)» $$line$(NO_COLOR)"; \
+		printf "$(INFO_COLOR)» $$line$(NO_COLOR)\n"; \
 	    else \
 		CLEAN="0"; \
-		echo "$(ERROR_COLOR)» $$line$(NO_COLOR)"; \
+		printf "$(ERROR_COLOR)» $$line$(NO_COLOR)\n"; \
 	    fi; \
 	done;
 
@@ -152,7 +152,7 @@ smufl:
 	@bash -c "echo -ne \"$$GLYPHNAMES_HEADER\"" > ./src/models/smufl/glyphnames.ts
 	@cat ./vendor/smufl/glyphnames.json  | jq '[to_entries[] | {key: .key, value: .value.codepoint}] | from_entries' >> ./src/models/smufl/glyphnames.ts
 	@echo "; export = names;" >> ./src/models/smufl/glyphnames.ts
-	@echo "$(INFO_COLOR)» SMuFL built successfully.$(NO_COLOR)"; \
+	@printf "$(INFO_COLOR)» SMuFL built successfully.$(NO_COLOR)\n"; \
 
 lint:
 	find ./src -regex ".*[a-zA-Z0-9_][a-zA-Z0-9_]\.ts" | grep -v src/tests.ts | sed 's/\(.*\)/-f\1/g' | xargs ./node_modules/tslint/bin/tslint -c ./tsconfig.json 
@@ -160,18 +160,17 @@ lint:
 test: build _testOnly
 
 _testOnly:
-	@echo "$(TEST_STRING)"
-	@echo $$TST
+	@printf "$(TEST_STRING)\n"
 	@if [ "x$$TEST" == "x" ]; then find ./dist -type f | grep "__tests__.*js\$$" | xargs ./node_modules/mocha/bin/mocha -R progress; else find ./dist -type f | grep "__tests__.*js\$$" | xargs ./node_modules/mocha/bin/mocha -R progress --grep "$$TEST"; fi
 
 test_all: test lint
 
 coverage: build
-	@echo "$(COVERAGE_STRING)"
+	@printf "$(COVERAGE_STRING)\n"
 	@find ./dist -type f | grep "__tests__.*js\$$" | xargs istanbul cover node_modules/mocha/bin/_mocha -- -R progress
 
 clean:
-	@echo "$(CLEAN_STRING)"
+	@printf "$(CLEAN_STRING)\n"
 	@rm -rf ./.partialBuild
 	@rm -rf ./dist
 	@cd src; find . -name "*.d.ts" -print0 | xargs -0 -I _FILE_ rm _FILE_
