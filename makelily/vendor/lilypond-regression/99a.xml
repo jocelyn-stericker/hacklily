@@ -97,6 +97,7 @@
                                 <duration>96</duration>
                                 <voice>1</voice>
                                 <type>32nd</type>
+                                <beam number='1'>begin</beam>
                                 <beam number='2'>begin</beam>
                                 <beam number='3'>begin</beam>
                         </note>
