@@ -31,7 +31,7 @@ class Clef extends React.Component<{spec: MusicXML.Clef}, void> {
     render(): any {
         const spec          = this.props.spec;
 
-        if (spec.printObject !== undefined && !spec.printObject) {
+        if (spec.printObject === false) {
             return null;
         }
 

@@ -32,7 +32,10 @@ export interface ILayoutOptions {
     lines?:         number;
     modelFactory:   IModel.IFactory;
     debug?:         boolean;
+    postProcessors: PostProcessor[];
 }
+
+export type PostProcessor = (options: ILayoutOptions, bounds: ILineBounds, measures: Measure.IMeasureLayout[]) => Measure.IMeasureLayout[];
 
 export interface ILinesLayoutState {
     width$: { [key: string]: number };

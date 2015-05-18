@@ -32,7 +32,7 @@ class Note extends React.Component<{spec: MusicXML.Note, satieNotehead: string},
     render() {
         const spec = this.props.spec;
 
-        if (!spec.printObject) {
+        if (spec.printObject === false) {
             return null;
         }
 
