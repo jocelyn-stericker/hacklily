@@ -20,14 +20,9 @@ import _                        = require("lodash");
 import invariant                = require("react/lib/invariant");
 
 import Options                  = require("./options");
-import IChord                   = require("./ichord");
-import IModel                   = require("./imodel");
 import Measure                  = require("./measure");
 import MeasureProcessor         = require("./measureProcessor");
 import Ctx                      = require("./ctx");
-import Util                     = require("./util");
-
-const UNDERFILLED_EXPANSION_WEIGHT = 0.1;
 
 export function layoutLine$(options: Options.ILayoutOptions, bounds: Options.ILineBounds,
         memo$: Options.ILinesLayoutState): Options.ILineLayoutResult {

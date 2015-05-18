@@ -133,7 +133,6 @@ export import ScoreHeader       = require("./engine/scoreHeader");
 import Ctx                      = require("./engine/ctx");
 import LineProcessor            = require("./engine/lineProcessor");
 import MeasureProcessor         = require("./engine/measureProcessor");
-import Util                     = require("./engine/util");
 
 if (process.env.NODE_ENV !== "production") {
     /* tslint:disable */
@@ -376,3 +375,4 @@ export interface IDocument {
 
 export const key$ = MeasureProcessor.key$;
 export const MAX_SAFE_INTEGER = MeasureProcessor.MAX_SAFE_INTEGER;
+
