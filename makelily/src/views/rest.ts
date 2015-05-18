@@ -34,7 +34,7 @@ import SMuFL                = require("../models/smufl");
 class Rest extends React.Component<{spec: MusicXML.Note, multipleRest?: MusicXML.MultipleRest, notehead?: string}, void> {
     render() {
         const spec = this.props.spec;
-        if (!spec.printObject) {
+        if (spec.printObject === false) {
             return null;
         }
         const rest = spec.rest;

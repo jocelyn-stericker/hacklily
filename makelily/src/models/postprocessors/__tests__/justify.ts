@@ -28,9 +28,10 @@ import chai                     = require("chai");
 
 var expect                      = chai.expect;
 
-import ETestUtil                = require("./etestutil");
-import LineProcessor            = require("../lineProcessor");
-import MeasureProcessor         = require("../measureProcessor");
+import ETestUtil                = require("../../engine/__tests__/etestutil");
+import LineProcessor            = require("../../engine/lineProcessor");
+import MeasureProcessor         = require("../../engine/measureProcessor");
+import Justify                  = require("../justify");
 
 describe("[lineProcessor.ts]", function() {
     describe("justify", function() {
@@ -86,7 +87,7 @@ describe("[lineProcessor.ts]", function() {
 
             var padding = 12;
 
-            var justified = LineProcessor.justify(
+            var justified = Justify(
                 {
                     attributes: null,
                     line: 0,
@@ -107,7 +108,8 @@ describe("[lineProcessor.ts]", function() {
                             }]
                         }
                     },
-                    modelFactory: ETestUtil.fakeAttributeChordFactory
+                    modelFactory: ETestUtil.fakeAttributeChordFactory,
+                    postProcessors: [Justify]
                 },
                 {
                     left: 12,

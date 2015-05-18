@@ -184,7 +184,8 @@ describe("[engine.ts]", function() {
                     }
                 },
                 page$: 0,
-                modelFactory: createAttributesChordFactory
+                modelFactory: createAttributesChordFactory,
+                postProcessors: []
             };
 
             Engine.validate$(contextOptions, memo$);

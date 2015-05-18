@@ -49,15 +49,6 @@ export function lcm(a: number, b: number) {
 }
 
 /** 
- * Evaluates S(t), the logistic function. Used to create aesthetic transitions.
- * For example, the upper half of the logistic function is used to compute how much
- * spacing should be on the final line of a song.
- */
-export function logistic(t: number) {
-    return 1/(1 + Math.exp(-t));
-}
-
-/** 
  * Very efficient way of cloning a plain JavaScript object (i.e., one without prototypes)
  */
 export function cloneObject<T>(obj: T): T {

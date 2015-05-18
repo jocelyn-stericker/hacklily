@@ -35,6 +35,8 @@ import Proxy            = require("./models/proxy");
 import Sound            = require("./models/sound");
 import Spacer           = require("./models/spacer");
 
+import Justify          = require("./models/postprocessors/justify");
+
 export function makeFactory() {
     return new Factory([
             Attributes,
@@ -70,7 +72,8 @@ export function importXML(src: string): Engine.IDocument {
         header:         score.header,
         print$:         null,
         page$:          0,
-        modelFactory:   factory
+        modelFactory:   factory,
+        postProcessors: []
     };
     Engine.validate$(contextOptions, memo$);
     score.header.overwriteEncoding();

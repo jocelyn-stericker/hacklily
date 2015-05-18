@@ -133,6 +133,7 @@ export import ScoreHeader       = require("./engine/scoreHeader");
 import Ctx                      = require("./engine/ctx");
 import LineProcessor            = require("./engine/lineProcessor");
 import MeasureProcessor         = require("./engine/measureProcessor");
+import Util                     = require("./engine/util");
 
 if (process.env.NODE_ENV !== "production") {
     /* tslint:disable */
@@ -316,7 +317,8 @@ export function layout$(options: Options.ILayoutOptions,
             print$:         thisPrint,
             finalLine:      false,
             page$:          options.page$,
-            modelFactory:   options.modelFactory
+            modelFactory:   options.modelFactory,
+            postProcessors: options.postProcessors
         };
     }
 

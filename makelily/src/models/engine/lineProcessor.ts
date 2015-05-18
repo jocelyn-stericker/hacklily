@@ -29,123 +29,6 @@ import Util                     = require("./util");
 
 const UNDERFILLED_EXPANSION_WEIGHT = 0.1;
 
-/** 
- * Lays out measures within a bar & justifies.
- * 
- * @returns new end of line
- */
-export function justify(options: Options.ILayoutOptions, bounds: Options.ILineBounds,
-        measures: Measure.IMeasureLayout[]): Measure.IMeasureLayout[] {
-
-    let measures$: Measure.IMeasureLayout[] = _.map(measures, Measure.IMeasureLayout.detach);
-
-    const x = bounds.left + _.reduce(measures$, (sum, measure) => sum + measure.width, 0);
-
-    // Check for underfilled bars
-    const underfilled = _.map(measures$, (measure, idx) => {
-        let attr = measures[idx].attributes;
-        let divs = IChord.barDivisions(attr);
-        let maxDivs = measure.maxDivisions;
-        return maxDivs < divs;
-    });
-
-    // Center things (TODO: write tests)
-    _.forEach(measures$, function centerThings(measure, idx) {
-        if (underfilled[idx]) {
-            return;
-        }
-        _.forEach(measure.elements, function(segment, si) {
-            _.forEach(segment, function(element, j) {
-                if (element.expandPolicy === IModel.ExpandPolicy.Centered) {
-                    let k = j + 1;
-                    while (segment[k + 1] && segment[k].renderClass < IModel.Type.START_OF_VOICE_ELEMENTS) {
-                        ++k;
-                    }
-                    var next: IModel.ILayout = segment[k];
-
-                    if (next) {
-                        let x = next.x$;
-                        for (let sj = 0; sj < measure.elements.length; ++sj) {
-                            x = Math.max(x, measure.elements[sj][k].x$);
-                        }
-                        const totalWidth: number = element.totalWidth;
-                        invariant(!isNaN(totalWidth), "%s must be a number", totalWidth);
-
-                        element.x$ = (element.x$ + next.x$)/2 - totalWidth/2;
-                    }
-                }
-            });
-        });
-    });
-
-    // x > enX is possible if a single bar's minimum size exceeds maxX, or if our
-    // guess for a measure width was too liberal. In either case, we're shortening
-    // the measure width here, and our partial algorithm doesn't work with negative
-    // padding.
-    let partial = x < bounds.right && options.line + 1 === options.lines;
-    let underfilledCount = 0;
-
-    let expandableCount = _.reduce(measures$, function(memo, measure$, idx) {
-        // Precondition: all layouts at a given index have the same "expandable" value.
-        return _.reduce(measure$.elements[0], function(memo, element$) {
-            if (underfilled[idx] && element$.expandPolicy) {
-                ++underfilledCount;
-            }
-            return memo + (element$.expandPolicy ? 1 : 0)*(underfilled[idx] ? UNDERFILLED_EXPANSION_WEIGHT : 1.0);
-        }, memo);
-    }, 0);
-
-    let avgExpansion: number;
-    if (!expandableCount) { // case 1: nothing to expand
-        avgExpansion = 0;
-    } else if (partial) { // case 2: expanding, but not full width
-        let expansionRemainingGuess = bounds.right - 3 - x;
-        let avgExpansionGuess = expansionRemainingGuess / (expandableCount + (1-UNDERFILLED_EXPANSION_WEIGHT)*underfilledCount);
-        let weight = Util.logistic((avgExpansionGuess - bounds.right / 80) / 20) * 2 / 3;
-        avgExpansion = (1 - weight)*avgExpansionGuess;
-    } else { // case 3: expanding or contracting to full width
-        let exp = bounds.right - x;
-        avgExpansion = exp/expandableCount;
-    }
-
-    let anyExpandable = false;
-    let totalExpCount = 0;
-    let lineExpansion = 0;
-    _.forEach(measures$, function(measure, measureIdx) {
-        let measureExpansion = 0;
-        let maxIdx = _.max(_.map(measure.elements, el => el.length));
-        _.times(maxIdx, function(j) {
-            for (let i = 0; i < measure.elements.length; ++i) {
-                measure.elements[i][j].x$ += measureExpansion;
-            }
-            let expandOne = false;
-            for (let i = 0; i < measure.elements.length; ++i) {
-                if (measure.elements[i][j].expandPolicy) {
-                    anyExpandable = true;
-                    let ratio = underfilled[measureIdx] ? UNDERFILLED_EXPANSION_WEIGHT : 1.0;
-                    if (measure.elements[i][j].expandPolicy === IModel.ExpandPolicy.Centered) {
-                        measure.elements[i][j].x$ += avgExpansion/2*ratio;
-                    }
-                    if (!expandOne) {
-                        measureExpansion += avgExpansion*ratio;
-                        totalExpCount += ratio;
-                    }
-                    expandOne = true;
-                }
-            }
-        });
-
-        measure.width += measureExpansion;
-        measure.originX += lineExpansion;
-        lineExpansion += measureExpansion;
-    });
-
-    invariant(totalExpCount - expandableCount < 0.01, "Expected %s expandable items, got %s",
-        expandableCount, totalExpCount);
-
-    return measures$;
-}
-
 export function layoutLine$(options: Options.ILayoutOptions, bounds: Options.ILineBounds,
         memo$: Options.ILinesLayoutState): Options.ILineLayoutResult {
     let measures = options.measures;
@@ -189,7 +72,7 @@ export function layoutLine$(options: Options.ILayoutOptions, bounds: Options.ILi
         left                = left + layout.width;
     });
 
-    return justify(options, bounds, layouts);
+    return _.reduce(options.postProcessors, (layouts, filter) => filter(options, bounds, layouts), layouts);
 }
 
 function _layoutDirtyMeasures(options: Options.ILayoutOptions, line: Ctx.ILine, clean$: {[key: string]: Measure.IMeasureLayout}) {
