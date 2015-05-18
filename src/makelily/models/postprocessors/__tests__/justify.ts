@@ -29,7 +29,6 @@ import chai                     = require("chai");
 var expect                      = chai.expect;
 
 import ETestUtil                = require("../../engine/__tests__/etestutil");
-import LineProcessor            = require("../../engine/lineProcessor");
 import MeasureProcessor         = require("../../engine/measureProcessor");
 import Justify                  = require("../justify");
 

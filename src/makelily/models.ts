@@ -35,8 +35,6 @@ import Proxy            = require("./models/proxy");
 import Sound            = require("./models/sound");
 import Spacer           = require("./models/spacer");
 
-import Justify          = require("./models/postprocessors/justify");
-
 export function makeFactory() {
     return new Factory([
             Attributes,
