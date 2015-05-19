@@ -104,7 +104,6 @@ module IModel {
         END_OF_STAFF_ELEMENTS       = 199,
 
         START_OF_VOICE_ELEMENTS     = 200,
-        BeamGroup                   = 210,          // Does not implement a MusicXML API
         Chord                       = 220,          // Like MusicXML.Note[]
         END_OF_VOICE_ELEMENTS       = 299,
 
@@ -153,6 +152,11 @@ module IModel {
                     },
                     set: function(x: number) {
                         layout.barX = x;
+                    }
+                },
+                model: {
+                    get: function() {
+                        return layout.model;
                     }
                 }
             });

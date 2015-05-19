@@ -102,7 +102,7 @@ class ChordView extends React.Component<{layout: Chord.IChordLayout}, void> {
                     color: spec[0].stem.color || "#000000",
                     defaultX: spec[0].defaultX,
                     defaultY: (spec.satieStem.stemStart - 3)*10,
-                    type: spec[0].stem.type
+                    type: spec.satieStem.direction === 1 ? MusicXML.StemType.Up : MusicXML.StemType.Down
                 },
                 width: stemThickness,
                 notehead: maxNotehead
