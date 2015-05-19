@@ -414,112 +414,112 @@ class InvalidDurationError {
  * @param idx the index where the beam would start
  * @param alt a string representing an alternative beaming. See beamingPatterns.
  */
-export function rebeamable(idx: number, cursor: Engine.ICursor, alt?: string): Array<Engine.IModel> {
-    var countOffset = 0;
-    for (var i = cursor.idx$; i < idx; ++i) {
-        countOffset += cursor.segment[i].divCount;
-    }
-    var attributes = cursor.staff.attributes;
-    var divisions = attributes.divisions;
-
-    var tsName = getTSString(attributes.times) + (alt ? "_" + alt : "");
-    var replaceWith: Engine.IModel[] = [];
-    var bp = getBeamingPattern(attributes.times, alt);
-    var currDivision = cursor.division$ + countOffset;
-
-    var bpIdx = 0;
-    var bpCount = 0;
-    while (bp[bpIdx] &&
-        bpCount + _calcDivisions(IChord.count(bp[bpIdx]), IChord.dots(bp[bpIdx]), null,
-            attributes.times, attributes.divisions) <= currDivision) {
-        ++bpIdx;
-        if (!bp[bpIdx]) {
-            return replaceWith;
-        }
-        bpCount += _calcDivisions(IChord.count(bp[bpIdx]), IChord.dots(bp[bpIdx]), null,
-            attributes.times, attributes.divisions);
-    }
-
-    var needsReplacement = false;
-    var prevCount: number;
-
-    var prevInBeam = true;
-
-    var foundNote = false;
-    var timeModification: MusicXML.TimeModification;
-
-    for (var i = idx; !!cursor.segment[i]; ++i) {
-        if (cursor.factory.modelHasType(cursor.segment[i], ModelType.BeamGroup)) {
-            if (idx !== i) {
-                needsReplacement = true;
-            }
-        } else if (cursor.factory.modelHasType(cursor.segment[i], ModelType.Chord)) {
-            var prevNote = IChord.fromModel(cursor.segment[i]);
-            if (!!timeModification !== !!IChord.timeModification(prevNote) && foundNote) {
-                break;
-            }
-            foundNote = true;
-            timeModification = IChord.timeModification(prevNote);
-            prevCount = IChord.count(prevNote) || prevCount;
-
-            if (!IChord.hasFlagOrBeam(prevNote)) {
-                break;
-            }
-
-            // TODO: break if temporary!
-
-            if (tsName === "4/4" && prevCount >= 16 ||
-                tsName === "2/4" && prevCount >= 8) {
-                var alternativeOption = rebeamable(idx, cursor, "clean");
-                if (alternativeOption) {
-                    return alternativeOption;
-                } else {
-                    return null;
-                }
-            }
-
-            var bDivisions = calcDivisions(prevNote, cursor);
-
-            var bpBeats = _calcDivisions(IChord.count(bp[bpIdx]), IChord.dots(bp[bpIdx]), null,
-                attributes.times, attributes.divisions);
-
-            // Note: A quarter note between a division should have ALREADY been made 2
-            // tied eighth notes by now.
-
-            currDivision += bDivisions;
-            if (currDivision > bpCount + bpBeats) {
-                break;
-            }
-            if (prevInBeam && !IChord.inBeam(prevNote)) {
-                needsReplacement = true;
-                prevInBeam = false;
-            }
-
-            replaceWith.push(cursor.segment[i]);
-
-            if (currDivision === bpCount + bpBeats) {
-                break;
-            }
-        }
-    }
-
-    if (needsReplacement && replaceWith.length) {
-        var last = replaceWith[replaceWith.length - 1];
-        var replacementDivisions = _.reduce(replaceWith, (memo, d) => memo + d.divCount, 0);
-        if (tsName.indexOf("/4") !== -1) {
-            // Rhythmic figures that are not part of a repeated pattern may be best beamed into separate beats,
-            // so that they are not mistaken for triplets nor for groups of three quavers in compound time.
-            // (Note doesn't solve the root issue)
-            while (((currDivision % divisions) !== 0 || ((currDivision + replacementDivisions) % divisions) === 0) &&
-                    Math.floor(currDivision/divisions) !== Math.floor((currDivision + replacementDivisions)/divisions)) {
-                replaceWith.pop();
-                last = replaceWith[replaceWith.length - 1];
-            }
-        }
-        return replaceWith.length > 1 ? replaceWith : null;
-    }
-    return null;
-}
+// export function rebeamable(idx: number, cursor: Engine.ICursor, alt?: string): Array<Engine.IModel> {
+//     var countOffset = 0;
+//     for (var i = cursor.idx$; i < idx; ++i) {
+//         countOffset += cursor.segment[i].divCount;
+//     }
+//     var attributes = cursor.staff.attributes;
+//     var divisions = attributes.divisions;
+// 
+//     var tsName = getTSString(attributes.times) + (alt ? "_" + alt : "");
+//     var replaceWith: Engine.IModel[] = [];
+//     var bp = getBeamingPattern(attributes.times, alt);
+//     var currDivision = cursor.division$ + countOffset;
+// 
+//     var bpIdx = 0;
+//     var bpCount = 0;
+//     while (bp[bpIdx] &&
+//         bpCount + _calcDivisions(IChord.count(bp[bpIdx]), IChord.dots(bp[bpIdx]), null,
+//             attributes.times, attributes.divisions) <= currDivision) {
+//         ++bpIdx;
+//         if (!bp[bpIdx]) {
+//             return replaceWith;
+//         }
+//         bpCount += _calcDivisions(IChord.count(bp[bpIdx]), IChord.dots(bp[bpIdx]), null,
+//             attributes.times, attributes.divisions);
+//     }
+// 
+//     var needsReplacement = false;
+//     var prevCount: number;
+// 
+//     var prevInBeam = true;
+// 
+//     var foundNote = false;
+//     var timeModification: MusicXML.TimeModification;
+// 
+//     for (var i = idx; !!cursor.segment[i]; ++i) {
+//         if (cursor.factory.modelHasType(cursor.segment[i], ModelType.BeamGroup)) {
+//             if (idx !== i) {
+//                 needsReplacement = true;
+//             }
+//         } else if (cursor.factory.modelHasType(cursor.segment[i], ModelType.Chord)) {
+//             var prevNote = IChord.fromModel(cursor.segment[i]);
+//             if (!!timeModification !== !!IChord.timeModification(prevNote) && foundNote) {
+//                 break;
+//             }
+//             foundNote = true;
+//             timeModification = IChord.timeModification(prevNote);
+//             prevCount = IChord.count(prevNote) || prevCount;
+// 
+//             if (!IChord.hasFlagOrBeam(prevNote)) {
+//                 break;
+//             }
+// 
+//             // TODO: break if temporary!
+// 
+//             if (tsName === "4/4" && prevCount >= 16 ||
+//                 tsName === "2/4" && prevCount >= 8) {
+//                 var alternativeOption = rebeamable(idx, cursor, "clean");
+//                 if (alternativeOption) {
+//                     return alternativeOption;
+//                 } else {
+//                     return null;
+//                 }
+//             }
+// 
+//             var bDivisions = calcDivisions(prevNote, cursor);
+// 
+//             var bpBeats = _calcDivisions(IChord.count(bp[bpIdx]), IChord.dots(bp[bpIdx]), null,
+//                 attributes.times, attributes.divisions);
+// 
+//             // Note: A quarter note between a division should have ALREADY been made 2
+//             // tied eighth notes by now.
+// 
+//             currDivision += bDivisions;
+//             if (currDivision > bpCount + bpBeats) {
+//                 break;
+//             }
+//             if (prevInBeam && !IChord.inBeam(prevNote)) {
+//                 needsReplacement = true;
+//                 prevInBeam = false;
+//             }
+// 
+//             replaceWith.push(cursor.segment[i]);
+// 
+//             if (currDivision === bpCount + bpBeats) {
+//                 break;
+//             }
+//         }
+//     }
+// 
+//     if (needsReplacement && replaceWith.length) {
+//         var last = replaceWith[replaceWith.length - 1];
+//         var replacementDivisions = _.reduce(replaceWith, (memo, d) => memo + d.divCount, 0);
+//         if (tsName.indexOf("/4") !== -1) {
+//             // Rhythmic figures that are not part of a repeated pattern may be best beamed into separate beats,
+//             // so that they are not mistaken for triplets nor for groups of three quavers in compound time.
+//             // (Note doesn't solve the root issue)
+//             while (((currDivision % divisions) !== 0 || ((currDivision + replacementDivisions) % divisions) === 0) &&
+//                     Math.floor(currDivision/divisions) !== Math.floor((currDivision + replacementDivisions)/divisions)) {
+//                 replaceWith.pop();
+//                 last = replaceWith[replaceWith.length - 1];
+//             }
+//         }
+//         return replaceWith.length > 1 ? replaceWith : null;
+//     }
+//     return null;
+// }
 
 export function calcDivisions(chord: Engine.IChord, cursor: Engine.ICursor) {
     if (_.any(chord, note => note.grace)) {

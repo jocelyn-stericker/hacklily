@@ -21,7 +21,6 @@ import _                = require("lodash");
 
 import Attributes       = require("./models/attributes");
 import Barline          = require("./models/barline");
-import BeamGroup        = require("./models/beamGroup");
 import Chord            = require("./models/chord");
 import Direction        = require("./models/direction");
 import Engine           = require("./models/engine");
@@ -39,7 +38,6 @@ export function makeFactory() {
     return new Factory([
             Attributes,
             Barline,
-            BeamGroup,
             Chord,
             Direction,
             FiguredBass,

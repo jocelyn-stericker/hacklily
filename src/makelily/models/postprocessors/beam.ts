@@ -23,10 +23,12 @@ import _                        = require("lodash");
 import invariant                = require("react/lib/invariant");
 
 import Engine                   = require("../engine");
+import ChordImpl                = require("../chord/chordImpl");
 
 interface IMutableBeam {
     number: number;
     elements: Engine.IModel.ILayout[];
+    attributes: MusicXML.Attributes;
     initial: MusicXML.Beam;
 }
 
@@ -43,11 +45,15 @@ function beam(options: Engine.Options.ILayoutOptions, bounds: Engine.Options.ILi
         // Note that the `number` property of beams does NOT differentiate between sets of beams,
         // as it does with e.g., ties. See `note.mod`.
         let activeBeams: BeamSet = {};
+        let activeAttributes: MusicXML.Attributes = null;
         // Invariant: measure.elements[i].length == measure.elements[j].length for all valid i, j.
         _.times(measure.elements[0].length, i => {
             _.forEach(measure.elements, elements => {
                 let layout = elements[i];
                 let model = layout.model;
+                if (model && layout.renderClass === Engine.IModel.Type.Attributes) {
+                    activeAttributes = <any> model;
+                }
                 if (!model || layout.renderClass !== Engine.IModel.Type.Chord) {
                     return;
                 }
@@ -92,7 +98,8 @@ function beam(options: Engine.Options.ILayoutOptions, bounds: Engine.Options.ILi
                             activeBeams[voice][idx] = {
                                 number: idx,
                                 elements: [layout],
-                                initial: beam
+                                initial: beam,
+                                attributes: activeAttributes
                             };
                             break;
                         case MusicXML.BeamType.Continue:
@@ -130,10 +137,107 @@ function beam(options: Engine.Options.ILayoutOptions, bounds: Engine.Options.ILi
 }
 
 function terminateBeam$(voice: number, idx: number, beamSet$: BeamSet) {
-    _.forEach(beamSet$[voice][idx].elements, eLayout => {
-        (<Engine.IChord><any>eLayout.model)[0].printObject = false;
-    });
+    if (idx === 1) {
+        layoutBeam$(voice, idx, beamSet$);
+    }
+
     delete beamSet$[voice][idx];
 }
+
+function layoutBeam$(voice: number, idx: number, beamSet$: BeamSet) {
+    let beam = beamSet$[voice][idx];
+    let chords: ChordImpl[] = _.map(beam.elements, eLayout => <any> eLayout.model);
+    let firstChord = chords[0];
+    let lastChord = chords[chords.length - 1];
+    let clef = beam.attributes.clefs[firstChord.staffIdx];
+
+    let firstAvgLine = Engine.IChord.averageLine(firstChord, clef);
+    let lastAvgLine = Engine.IChord.averageLine(lastChord, clef);
+
+    let avgLine = (firstAvgLine + lastAvgLine)/2;
+
+    let direction = avgLine >= 3 ? -1 : 1; // TODO: MusicXML.StemType should match this!!
+
+    let Xs: number[] = [];
+    let lines: number[][] = [];
+
+    _.forEach(beam.elements, (layout, idx) => {
+        Xs.push(layout.x$);
+        lines.push(Engine.IChord.linesForClef(chords[idx], clef));
+    });
+
+    let line1 = Engine.IChord.startingLine(firstChord, direction, clef);
+    let line2 = Engine.IChord.startingLine(lastChord, direction, clef);
+
+    // y = m*x + b
+    var m = chords.length ? 10*(line2 - line1)/(chords.length - 1) : 0;
+    var stemHeight1 = 35;
+    var stemHeight2 = 35;
+
+    // Limit the slope to the range (-5, 5)
+    if (m > 5) {
+        stemHeight2 = stemHeight2 - direction*(m - 20)*(chords.length - 1);
+        m = 5;
+    }
+    if (m < -5) {
+        stemHeight2 = stemHeight2 - direction*(m + 20)*(chords.length - 1);
+        m = -5;
+    }
+
+    var dynamicM = m / (Xs[Xs.length - 1] - Xs[0]);
+
+    var b = line1*10 + stemHeight1;
+
+    function getSH(direction: number, idx: number, line: number) {
+        return (b * direction +
+            (direction === 1 ? 0 : 69) + dynamicM * (Xs[idx] - Xs[0]) * direction) - direction * line * 10;
+    }
+
+    // When the slope causes near-collisions, eliminate the slope.
+    _.each(chords, (chord, idx) => {
+        // Using -direction means that we'll be finding the closest note to the
+        // beam. This will help us avoid collisions.
+        var sh = getSH(direction, idx, Engine.IChord.startingLine(chord, -direction, clef));
+        if (sh < 30) {
+            b += direction*(30 - sh);
+            m = 0;
+        }
+    });
+
+    _.forEach(chords, (chord, idx) => {
+        chord.satieStem = Object.create(firstChord.satieStem);
+        chord.satieStem.direction = direction;
+        chord.satieStem.stemStart = Engine.IChord.startingLine(chord, direction, clef);
+        chord.satieStem.stemHeight = getSH(direction, idx, Engine.IChord.startingLine(chord, direction, clef));
+
+        chord.satieFlag = null;
+    });
+}
+
+/*
+        return React.DOM.g(null,
+            Beam({
+                beams: (spec.beams) || C.BeamCount.One,
+                variableBeams: spec.variableBeams,
+                variableX: spec.variableBeams ? Xs : null,
+                direction: direction,
+                key: "beam",
+                line1: parseFloat("" + line1) +
+                    direction * getSH(direction, 0, line1)/10,
+                line2: parseFloat("" + line2) +
+                    direction * getSH(direction, spec.beam.length - 1, line2)/10,
+                stemWidth: 1.4,
+                stroke: strokeEnabled ? strokeColor : "#000000",
+                tuplet: spec.tuplet,
+                tupletsTemporary: spec.tupletsTemporary,
+                width: Xs[Xs.length - 1] - Xs[0],
+                x: Xs[0], // should assert all in order
+                y: Ys[0], // should assert all are equal
+            }),
+            children
+        React.DOM.g);
+    }
+};
+*/
 
 export = beam;
