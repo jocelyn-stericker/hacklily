@@ -27,7 +27,7 @@ import Metre            = require("./metre");
 import SMuFL            = require("../smufl");
 
 const IDEAL_STEM_HEIGHT: number    = 35;
-const MIN_STEM_HEIGHT: number      = 25;
+const MIN_STEM_HEIGHT: number      = 30;
 
 let countToNotehead: { [key: number]: string } = {
     [MusicXML.Count.Maxima]:    "noteheadDoubleWhole",
@@ -369,7 +369,7 @@ class ChordModelImpl implements ChordModel.IChordModel {
         var idealStemHeight = IDEAL_STEM_HEIGHT + heightFromOtherNotes;
         var minStemHeight = MIN_STEM_HEIGHT + heightFromOtherNotes;
 
-        var start = Engine.IChord.heightDeterminingLine(this, direction, clef)*10;
+        var start = Engine.IChord.heightDeterminingLine(this, direction, clef)*10 + 30;
         var idealExtreme = start + direction*idealStemHeight;
 
         var result: number;
@@ -560,8 +560,7 @@ module ChordModelImpl {
             // TODO: Each note's width has a linear component proportional to log of its duration
             // with respect to the shortest length
             let extraWidth = baseModel.divCount ?
-                (Math.log(baseModel.divCount) - Math.log(cursor$.line.shortestCount)) /
-                    Math.log(2) / 3 * 10 :
+                (Math.log(baseModel.divCount) - Math.log(cursor$.line.shortestCount)) * 20 :
                 0;
             const grace = baseModel[0].grace; // TODO: What if only some notes are grace?
             if (grace) {
