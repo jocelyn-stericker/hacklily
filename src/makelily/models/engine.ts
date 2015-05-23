@@ -121,6 +121,7 @@ import MusicXML                 = require("musicxml-interfaces");
 import _                        = require("lodash");
 import invariant                = require("react/lib/invariant");
 
+export import IBeam             = require("./engine/ibeam");
 export import IChord            = require("./engine/ichord");
 export import ICursor           = require("./engine/icursor");
 export import IModel            = require("./engine/imodel");

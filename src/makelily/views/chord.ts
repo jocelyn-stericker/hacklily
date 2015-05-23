@@ -23,6 +23,7 @@ import React                = require("react");
 import _                    = require("lodash");
 let $                       = React.createFactory;
 
+import Beam                 = require("./beam");
 import Chord                = require("../models/chord");
 import Flag                 = require("./flag");
 import LedgerLine           = require("./ledgerLine");
@@ -129,6 +130,14 @@ class ChordView extends React.Component<{layout: Chord.IChordLayout}, void> {
                 stemWidth: stemThickness,
                 stemHeight: spec.satieStem.stemHeight,
                 notehead: maxNotehead
+            }),
+            spec.satieBeam && $(Beam)({
+                key: "b",
+                layout: spec.satieBeam,
+                stemWidth: stemThickness,
+                tuplet: null,
+                tupletsTemporary: null,
+                stroke: "black"
             }),
             lyrics
         );
