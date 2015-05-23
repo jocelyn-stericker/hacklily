@@ -67,45 +67,6 @@ class DirectionModel implements Export.IDirectionModel {
 
     data:               string;
 
-    /*---- I.2.3.i MusicXML.PrintStyle ----------------------------------------------------------*/
-
-    /*---- MusicXML.PrintStyle >> Position --------------------------------------------------*/
-
-    defaultX:           number; // ignored for now
-    relativeY:          number;
-    defaultY:           number;
-    relativeX:          number;
-
-    /*---- MusicXML.PrintStyle >> Font ------------------------------------------------------*/
-
-    fontFamily:         string;
-    fontWeight:         MusicXML.NormalBold;
-    fontStyle:          MusicXML.NormalItalic;
-    fontSize:           string;
-
-    /*---- MusicXML.PrintStyle >> Color -----------------------------------------------------*/
-
-    get color(): string {
-        var hex = this._color.toString(16);
-        return "#" + "000000".substr(0, 6 - hex.length) + hex;
-    }
-    set color(a: string) {
-        switch(true) {
-            case !a:
-                this._color = 0;
-                break;
-            case a[0] === "#":
-                a = a.slice(1);
-                this._color = parseInt(a, 16);
-                break;
-            default:
-                this._color = parseInt(a, 16);
-                break;
-        }
-    }
-
-    private _color:     number = 0x000000;
-
     /*---- II. Life-cycle -----------------------------------------------------------------------*/
 
     constructor(spec: MusicXML.Direction) {
@@ -129,9 +90,51 @@ DirectionModel.prototype.frozenness = Engine.IModel.FrozenLevel.Warm;
 module DirectionModel {
     export class Layout implements Export.ILayout {
         constructor(model: DirectionModel, cursor$: Engine.ICursor) {
+            model = Object.create(model);
+
             this.model = model;
             this.x$ = cursor$.x$;
             this.division = cursor$.division$;
+            
+            let defaultY = 0;
+            switch (model.placement) {
+                case MusicXML.AboveBelow.Below:
+                    defaultY = -60;
+                    break;
+                case MusicXML.AboveBelow.Above:
+                case MusicXML.AboveBelow.Unspecified:
+                default:
+                    defaultY = 70;
+                    break;
+            }
+
+            _.forEach(model.directionTypes, (type, idx) => {
+                model.directionTypes[idx] = Object.create(model.directionTypes[idx]);
+                _.forEach(type.words, (word, idx) => {
+                    let origModel = type.words[idx];
+                    type.words[idx] = Object.create(origModel, this._createPositionDescriptor(origModel, defaultY));
+                    type.words[idx].fontSize = type.words[idx].fontSize || "24";
+                });
+                if (type.dynamics) {
+                    let origDynamics = type.dynamics;
+                    type.dynamics = Object.create(origDynamics, this._createPositionDescriptor(origDynamics, defaultY));
+                }
+            });
+        }
+
+        private _createPositionDescriptor(origModel: MusicXML.Position, defaultY: number): PropertyDescriptorMap {
+            return {
+                defaultX: {
+                    get: () => {
+                        throw new Error("Please use barX instead");
+                    }
+                },
+                defaultY: {
+                    get: () => {
+                        return isNaN(origModel.defaultY) ? defaultY : origModel.defaultY;
+                    }
+                },
+            }
         }
 
         /*---- ILayout ------------------------------------------------------*/
@@ -166,6 +169,7 @@ module Export {
     }
 
     export interface ILayout extends Engine.IModel.ILayout {
+        model: IDirectionModel;
     }
 }
 

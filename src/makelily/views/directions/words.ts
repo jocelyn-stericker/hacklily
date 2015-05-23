@@ -16,64 +16,39 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import MusicXML         = require("musicxml-interfaces");
-import React            = require("react");
-import _                = require("lodash");
-import invariant        = require("react/lib/invariant");
+"use strict";
 
-import Engine           = require("../models/engine");
-import TextMixin        = require("./textMixin");
+import MusicXML             = require("musicxml-interfaces");
+import React                = require("react");
+import _                    = require("lodash");
+let $                       = React.createFactory;
+import invariant            = require("react/lib/invariant");
 
-/**                                     IMPL        TEST
- * --- words -------------------------------------------
- * justify?: LeftCenterRight;           YES
- * defaultX?: number;                   YES
- * relativeY?: number;                  YES
- * defaultY?: number;                   YES
- * relativeX?: number;                  YES
- * fontFamily?: string;                 YES
- * fontWeight?: NormalBold;             YES
- * fontStyle?: NormalItalic;            YES
- * fontSize?: string;                   YES
- * color?: string;                      YES
- * halign?: LeftCenterRight;            0.5 (not if diff. than justify)
- * valign?: TopMiddleBottomBaseline;
- * underline?: number;                  1
- * overline?: number;                   1
- * lineThrough?: number;                1
- * rotation?: number;                   YES
- * letterSpacing?: string;              YES
- * lineHeight?: string;
- * dir?: DirectionMode;                 YES
- * enclosure?: EnclosureShape;
- * --- image -------------------------[ NO              ]
- * --- page --------------------------[ N/A             ]
- * --- creditTypes -------------------[ N/A             ]
- */
-class Credit extends React.Component<MusicXML.Credit, void> implements TextMixin.ITextMixin {
-    render() {
-        const image = this.props.creditImage;
-        const words = this.props.creditWords;
-        invariant(!image, "Not implemented"); // There is either words or image, but not both
-        invariant(!!words, "Unknown component type");
+import DirectionModel       = require("../../models/direction");
+import Engine               = require("../../models/engine");
+import TextMixin            = require("../textMixin");
 
-        if (!!words && !words.length) {
-            return React.DOM.g({});
-        }
-        const initX = (words[0].defaultX + (words[0].relativeX || 0));
-        const initY = (this.context.originY - (words[0].defaultY + (words[0].relativeY || 0)));
-        let mixin: TextMixin.ITextMixin
+class Words extends React.Component<{layout: DirectionModel.ILayout}, void> implements TextMixin.ITextMixin {
+    render(): any {
+        let layout = this.props.layout;
+        let model = layout.model;
+        let wordsContainer = _.filter(model.directionTypes, dt => dt.words)[0];
+        invariant(!!wordsContainer, "No words found!");
+        let words = wordsContainer.words;
+
+        let initX = this.context.originX;
+        let initY = this.context.originY - words[0].defaultY - (words[0].relativeY||0);
 
         return React.DOM.text({
                 x: initX,
                 y: initY
             },
             _.map(words, (words, idx) =>
-                _.map(words.words.split("\n"), (line, lineNum) => React.DOM.tspan({
+                _.map(words.data.split("\n"), (line, lineNum) => React.DOM.tspan({
                     key: idx + "l" + lineNum,
                     "alignment-baseline": "hanging",
                     x: this.getX(lineNum),
-                    dx: this.getDX(words, initX, lineNum),
+                    dx: this.getDX(words, 0, lineNum),
                     dy: this.getDY(words, initY, lineNum),
                     fontFamily: words.fontFamily || "Alegreya",
                     fontSize: Engine.RenderUtil.cssSizeToTenths(this.context.scale40, words.fontSize),
@@ -101,13 +76,14 @@ class Credit extends React.Component<MusicXML.Credit, void> implements TextMixin
     getDY: (words: MusicXML.CreditWords | MusicXML.Words, initY: number, lineNum: number) => number;
 }
 
-_.extend(Credit.prototype, TextMixin.Prototype);
+_.extend(Words.prototype, TextMixin.Prototype);
 
-module Credit {
+module Words {
     export var contextTypes = <any> {
-        scale40:            React.PropTypes.number.isRequired,
-        originY:            React.PropTypes.number.isRequired
+        scale40:         React.PropTypes.number.isRequired,
+        originX:         React.PropTypes.number.isRequired,
+        originY:         React.PropTypes.number.isRequired
     };
 }
 
-export = Credit;
+export = Words;

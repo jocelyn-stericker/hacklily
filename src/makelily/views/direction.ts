@@ -18,29 +18,88 @@
 
 "use strict";
 
+import MusicXML             = require("musicxml-interfaces");
 import React                = require("react");
-import TypedReact           = require("typed-react");
+import _                    = require("lodash");
+let $                       = React.createFactory;
 
-import DirectionModel       = require("../stores/direction");
-import PureModelViewMixin   = require("./pureModelViewMixin");
+import DirectionModel       = require("../models/direction");
+import Dynamics             = require("./directions/dynamics");
+import Words                = require("./directions/words");
 
-/**
- * Renders a MusicXML direction.
- * TODO: Implement
- */
-class Direction extends TypedReact.Component<Direction.IProps, {}> {
+class Direction extends React.Component<{layout: DirectionModel.ILayout}, void> {
     render(): any {
-        return React.DOM.g(null);
+        const model = this.props.layout.model;
+        let children = _.map(model.directionTypes, (type, idx) => {
+            switch(true) {
+                case !!type.accordionRegistration:
+                    return null;
+                case !!type.bracket:
+                    return null;
+                case !!type.codas:
+                    return null;
+                case !!type.damp:
+                    return null;
+                case !!type.dampAll:
+                    return null;
+                case !!type.dashes:
+                    return null;
+                case !!type.dynamics:
+                    return $(Dynamics)({layout: this.props.layout, key: `d_${idx}`});
+                case !!type.eyeglasses:
+                    return null;
+                case !!type.harpPedals:
+                    return null;
+                case !!type.image:
+                    return null;
+                case !!type.metronome:
+                    return null;
+                case !!type.octaveShift:
+                    return null;
+                case !!type.otherDirection:
+                    return null;
+                case !!type.otherDirection:
+                    return null;
+                case !!type.pedal:
+                    return null;
+                case !!type.percussions:
+                    return null;
+                case !!type.principalVoice:
+                    return null;
+                case !!type.rehearsals:
+                    return null;
+                case !!type.scordatura:
+                    return null;
+                case !!type.segnos:
+                    return null;
+                case !!type.stringMute:
+                    return null;
+                case !!type.wedge:
+                    return null;
+                case !!type.words:
+                    return $(Words)({layout: this.props.layout, key: `d_${idx}`});
+            };
+        }).filter(el => !!el);
+        
+        switch(children.length) {
+            case 0:
+                return null;
+            case 1:
+                return children[0];
+            default:
+                return React.DOM.g(null,
+                    children
+                );
+            
+        }
     }
-};
+}
 
 module Direction {
-    export var Component = TypedReact.createClass(Direction, <any> [PureModelViewMixin]);
-
-    export interface IProps {
-        key: number;
-        spec: DirectionModel;
-    }
+    export var contextTypes = <any> {
+        originX:         React.PropTypes.number.isRequired,
+        originY:         React.PropTypes.number.isRequired
+    };
 }
 
 export = Direction;
