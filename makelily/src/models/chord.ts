@@ -42,6 +42,7 @@ module ChordModel {
             stemHeight: number;
             stemStart:  number;
         };
+        satieBeam: Engine.IBeam.ILayout;
         satieFlag: string;
         satieLedger: number[];
         satieNotehead: string[];

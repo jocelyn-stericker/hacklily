@@ -28,6 +28,7 @@ import ChordImpl                = require("../chord/chordImpl");
 interface IMutableBeam {
     number: number;
     elements: Engine.IModel.ILayout[];
+    counts: number[];
     attributes: MusicXML.Attributes;
     initial: MusicXML.Beam;
 }
@@ -81,7 +82,26 @@ function beam(options: Engine.Options.ILayoutOptions, bounds: Engine.Options.ILi
                     return;
                 }
                 let beams = noteWithBeams.beams;
-                _.forEach(beams, beam => {
+                let toTerminate: {
+                    voice: number;
+                    idx: number;
+                    beamSet: BeamSet;
+                }[] = [];
+
+                let anyInvalid = _.any(_.sortBy(beams), (beam, idx) => {
+                   let expected = idx + 1;
+                   let actual = beam.number;
+                   if (expected !== actual) {
+                       console.warn("Invalid beam number"); // TODO: fix it
+                       return true;
+                   }
+                   return false;
+                });
+                if (anyInvalid) {
+                    return;
+                }
+
+                _.chain(beams).sortBy("number").forEach(beam => {
                     let idx = beam.number;
                     let voice = noteWithBeams.voice;
                     invariant(!!idx, "A beam's number must be defined in MusicXML.");
@@ -99,8 +119,13 @@ function beam(options: Engine.Options.ILayoutOptions, bounds: Engine.Options.ILi
                                 number: idx,
                                 elements: [layout],
                                 initial: beam,
-                                attributes: activeAttributes
+                                attributes: activeAttributes,
+                                counts: [1]
                             };
+                            let counts = activeBeams[voice][1].counts;
+                            if (idx !== 1) {
+                                counts[counts.length - 1]++;
+                            }
                             break;
                         case MusicXML.BeamType.Continue:
                             invariant(voice in activeBeams,
@@ -109,6 +134,13 @@ function beam(options: Engine.Options.ILayoutOptions, bounds: Engine.Options.ILi
                             invariant(idx in activeBeams[voice], "Cannot continue non-existant " +
                                 "beam (no beam at level %s in voice %s)", idx, voice);
                             activeBeams[voice][idx].elements.push(layout);
+
+                            counts = activeBeams[voice][1].counts;
+                            if (idx === 1) {
+                                counts.push(1);
+                            } else {
+                                counts[counts.length - 1]++;
+                            }
                             break;
                         case MusicXML.BeamType.BackwardHook:
                         case MusicXML.BeamType.End:
@@ -117,10 +149,23 @@ function beam(options: Engine.Options.ILayoutOptions, bounds: Engine.Options.ILi
                             invariant(idx in activeBeams[voice], "Cannot end non-existant " +
                                 "beam (no beam at level %s in voice %s)", idx, voice);
                             activeBeams[voice][idx].elements.push(layout);
-                            terminateBeam$(voice, idx, activeBeams);
+
+                            counts = activeBeams[voice][1].counts;
+
+                            if (idx === 1) {
+                                counts.push(1);
+                            } else {
+                                counts[counts.length - 1]++;
+                            }
+                            toTerminate.push({
+                                voice: voice,
+                                idx: idx,
+                                beamSet: activeBeams
+                            });
                             break;
                     }
-                });
+                }).value();
+                _.forEach(toTerminate, t => terminateBeam$(t.voice, t.idx, t.beamSet));
             });
         });
         _.forEach(activeBeams, (beams, voice) => {
@@ -169,75 +214,60 @@ function layoutBeam$(voice: number, idx: number, beamSet$: BeamSet) {
     let line1 = Engine.IChord.startingLine(firstChord, direction, clef);
     let line2 = Engine.IChord.startingLine(lastChord, direction, clef);
 
-    // y = m*x + b
-    var m = chords.length ? 10*(line2 - line1)/(chords.length - 1) : 0;
+    var slope = (line2 - line1) / (Xs[Xs.length - 1] - Xs[0]) * 10;
     var stemHeight1 = 35;
-    var stemHeight2 = 35;
 
-    // Limit the slope to the range (-5, 5)
-    if (m > 5) {
-        stemHeight2 = stemHeight2 - direction*(m - 20)*(chords.length - 1);
-        m = 5;
+    // Limit the slope to the range (-50, 50)
+    if (slope > 0.5) {
+        slope = 0.5;
     }
-    if (m < -5) {
-        stemHeight2 = stemHeight2 - direction*(m + 20)*(chords.length - 1);
-        m = -5;
+    if (slope < -0.5) {
+        slope = -0.5;
     }
 
-    var dynamicM = m / (Xs[Xs.length - 1] - Xs[0]);
-
-    var b = line1*10 + stemHeight1;
+    var intercept = line1*10 + stemHeight1;
 
     function getSH(direction: number, idx: number, line: number) {
-        return (b * direction +
-            (direction === 1 ? 0 : 69) + dynamicM * (Xs[idx] - Xs[0]) * direction) - direction * line * 10;
+        return (intercept * direction +
+            (direction === 1 ? 0 : 69) + slope * (Xs[idx] - Xs[0]) * direction) - direction * line * 10;
     }
 
     // When the slope causes near-collisions, eliminate the slope.
+    var minSH = 1000;
+    var incrementalIntercept = 0;
     _.each(chords, (chord, idx) => {
         // Using -direction means that we'll be finding the closest note to the
         // beam. This will help us avoid collisions.
-        var sh = getSH(direction, idx, Engine.IChord.startingLine(chord, -direction, clef));
-        if (sh < 30) {
-            b += direction*(30 - sh);
-            m = 0;
+        var sh = getSH(direction, idx, Engine.IChord.heightDeterminingLine(chord, -direction, clef));
+        if (sh < minSH) {
+            minSH = sh;
+            incrementalIntercept = direction*(30 - minSH) + slope * (Xs[idx] - Xs[0]);
         }
     });
 
+    if (minSH < 30) {
+        intercept += incrementalIntercept;
+        slope = 0;
+    }
+
     _.forEach(chords, (chord, idx) => {
+        let stemStart = Engine.IChord.startingLine(chord, direction, clef);
+
         chord.satieStem = Object.create(firstChord.satieStem);
         chord.satieStem.direction = direction;
-        chord.satieStem.stemStart = Engine.IChord.startingLine(chord, direction, clef);
-        chord.satieStem.stemHeight = getSH(direction, idx, Engine.IChord.startingLine(chord, direction, clef));
+        chord.satieStem.stemStart = stemStart;
+        chord.satieStem.stemHeight = getSH(direction, idx, stemStart);
 
         chord.satieFlag = null;
     });
-}
 
-/*
-        return React.DOM.g(null,
-            Beam({
-                beams: (spec.beams) || C.BeamCount.One,
-                variableBeams: spec.variableBeams,
-                variableX: spec.variableBeams ? Xs : null,
-                direction: direction,
-                key: "beam",
-                line1: parseFloat("" + line1) +
-                    direction * getSH(direction, 0, line1)/10,
-                line2: parseFloat("" + line2) +
-                    direction * getSH(direction, spec.beam.length - 1, line2)/10,
-                stemWidth: 1.4,
-                stroke: strokeEnabled ? strokeColor : "#000000",
-                tuplet: spec.tuplet,
-                tupletsTemporary: spec.tupletsTemporary,
-                width: Xs[Xs.length - 1] - Xs[0],
-                x: Xs[0], // should assert all in order
-                y: Ys[0], // should assert all are equal
-            }),
-            children
-        React.DOM.g);
-    }
-};
-*/
+    firstChord.satieBeam = {
+        beamCount: _.times(Xs.length, idx => beam.counts[idx]),
+        direction: direction,
+        x: Xs,
+        y1: firstChord.satieStem.stemStart*10 + direction*firstChord.satieStem.stemHeight - 30,
+        y2: lastChord.satieStem.stemStart*10 + direction*lastChord.satieStem.stemHeight - 30
+    };
+}
 
 export = beam;

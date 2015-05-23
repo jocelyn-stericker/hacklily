@@ -481,14 +481,11 @@ class ChordModelImpl implements ChordModel.IChordModel {
     };
 
     satieFlag: string;
-
     satieDirection: MusicXML.StemType;
-
     satieLedger: number[];
-
     satieMultipleRest: MusicXML.MultipleRest;
-
     satieNotehead: string[];
+    satieBeam: Engine.IBeam.ILayout;
 }
 
 ChordModelImpl.prototype.frozenness = Engine.IModel.FrozenLevel.Warm;
