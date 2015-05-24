@@ -71,10 +71,10 @@ function justify(options: Engine.Options.ILayoutOptions, bounds: Engine.Options.
                         for (let sj = 0; sj < measure.elements.length; ++sj) {
                             x = Math.max(x, measure.elements[sj][k].x$);
                         }
-                        const totalWidth: number = element.totalWidth;
-                        invariant(!isNaN(totalWidth), "%s must be a number", totalWidth);
+                        const renderedWidth: number = element.renderedWidth;
+                        invariant(!isNaN(renderedWidth), "%s must be a number", renderedWidth);
 
-                        element.x$ = (element.x$ + next.x$)/2 - totalWidth/2;
+                        element.x$ = (element.x$ + next.x$)/2 - renderedWidth/2;
                     }
                 }
             });

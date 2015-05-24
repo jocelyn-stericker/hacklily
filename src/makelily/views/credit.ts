@@ -62,7 +62,6 @@ class Credit extends React.Component<MusicXML.Credit, void> implements TextMixin
         }
         const initX = (words[0].defaultX + (words[0].relativeX || 0));
         const initY = (this.context.originY - (words[0].defaultY + (words[0].relativeY || 0)));
-        let mixin: TextMixin.ITextMixin
 
         return React.DOM.text({
                 x: initX,
@@ -92,7 +91,7 @@ class Credit extends React.Component<MusicXML.Credit, void> implements TextMixin
     }
 
     /* TextMixin.ITextMixin */
-	getTextAnchor: (words: MusicXML.CreditWords | MusicXML.Words) => string;
+    getTextAnchor: (words: MusicXML.CreditWords | MusicXML.Words) => string;
     getTextDecoration: (words: MusicXML.CreditWords | MusicXML.Words) => string;
     getTransform: (words: MusicXML.CreditWords | MusicXML.Words) => string;
     getDirection: (words: MusicXML.CreditWords | MusicXML.Words) => string;

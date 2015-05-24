@@ -28,6 +28,7 @@ import Chord                = require("../models/chord");
 import Flag                 = require("./flag");
 import LedgerLine           = require("./ledgerLine");
 import Note                 = require("./note");
+import Notation             = require("./notation");
 import Rest                 = require("./rest");
 import Stem                 = require("./stem");
 import SMuFL                = require("../models/smufl");
@@ -49,6 +50,8 @@ class ChordView extends React.Component<{layout: Chord.IChordLayout}, void> {
         if (!anyVisible) {
             return null;
         }
+
+        let notations = _.flatten(_.map(spec, note => note.notations).filter(note => !!note));
 
         let lyKey = 0;
         let lyrics = _.chain(<MusicXML.Note[]><any>spec)
@@ -139,6 +142,11 @@ class ChordView extends React.Component<{layout: Chord.IChordLayout}, void> {
                 tupletsTemporary: null,
                 stroke: "black"
             }),
+            _.map(notations, (notation, idx) => $(Notation)({
+                key: `N${idx}`,
+                spec: notation,
+                layout: this.props.layout
+            })),
             lyrics
         );
     }
