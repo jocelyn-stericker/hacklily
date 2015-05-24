@@ -92,5 +92,6 @@ export function renderDocument(doc: Engine.IDocument, startMeasure: number): str
             .replace(/class="mmn_"/g, "font-family='Alegreya' " +
                         "font-style='italic' stroke='#7a7a7a'")
             .replace(/class="bn_"/g, "font-family='Alegreya' " +
-                    "font-style='italic' text-anchor='end' stroke='#7a7a7a'")}`;
+                    "font-style='italic' text-anchor='end' stroke='#7a7a7a'")
+            .replace(/<noscript><\/noscript>/g, "")}`;
 }
