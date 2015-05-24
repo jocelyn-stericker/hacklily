@@ -18,7 +18,6 @@
 
 "use strict";
 
-import MusicXML             = require("musicxml-interfaces");
 import React                = require("react");
 import _                    = require("lodash");
 let $                       = React.createFactory;
@@ -80,7 +79,7 @@ class Direction extends React.Component<{layout: DirectionModel.ILayout}, void> 
                     return $(Words)({layout: this.props.layout, key: `d_${idx}`});
             };
         }).filter(el => !!el);
-        
+
         switch(children.length) {
             case 0:
                 return null;
@@ -90,7 +89,6 @@ class Direction extends React.Component<{layout: DirectionModel.ILayout}, void> 
                 return React.DOM.g(null,
                     children
                 );
-            
         }
     }
 }

@@ -95,7 +95,7 @@ module DirectionModel {
             this.model = model;
             this.x$ = cursor$.x$;
             this.division = cursor$.division$;
-            
+
             let defaultY = 0;
             switch (model.placement) {
                 case MusicXML.AboveBelow.Below:
@@ -103,6 +103,8 @@ module DirectionModel {
                     break;
                 case MusicXML.AboveBelow.Above:
                 case MusicXML.AboveBelow.Unspecified:
+                    defaultY = 70;
+                    break;
                 default:
                     defaultY = 70;
                     break;
@@ -113,7 +115,7 @@ module DirectionModel {
                 _.forEach(type.words, (word, idx) => {
                     let origModel = type.words[idx];
                     type.words[idx] = Object.create(origModel, this._createPositionDescriptor(origModel, defaultY));
-                    type.words[idx].fontSize = type.words[idx].fontSize || "24";
+                    type.words[idx].fontSize = type.words[idx].fontSize || "18";
                 });
                 if (type.dynamics) {
                     let origDynamics = type.dynamics;
@@ -133,8 +135,8 @@ module DirectionModel {
                     get: () => {
                         return isNaN(origModel.defaultY) ? defaultY : origModel.defaultY;
                     }
-                },
-            }
+                }
+            };
         }
 
         /*---- ILayout ------------------------------------------------------*/

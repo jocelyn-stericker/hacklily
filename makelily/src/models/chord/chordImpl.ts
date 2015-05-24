@@ -503,38 +503,8 @@ module ChordModelImpl {
                 return;
             }
 
-            this.model = <any> _.map(baseModel, note => Object.create(note, {
-                /* Here, we're extending each note to have the correct default position.
-                 * To do so, we use prototypical inheritance. See Object.create. */
-
-                defaultX: {
-                    get: () => {
-                        return note.defaultX || (<any>this).barX || this.x$;
-                    }
-                },
-                defaultY: {
-                    get: () => {
-                        if (note.defaultY) {
-                            return note.defaultY;
-                        }
-                        const clef = cursor$.staff.attributes.clefs[cursor$.staff.idx];
-                        return (Engine.IChord.lineForClef(note, clef) - 3)*10;
-                    }
-                },
-                stem: {
-                    get: () => {
-                        return baseModel.stem || {
-                            type: baseModel.satieDirection
-                        };
-                    }
-                }
-            }));
-            this.model.satieStem = baseModel.satieStem;
-            this.model.satieLedger = baseModel.satieLedger;
-            this.model.satieMultipleRest = baseModel.satieMultipleRest;
-            this.model.satieFlag = baseModel.satieFlag;
-            this.model.satieNotehead = baseModel.satieNotehead;
-            this.model.staffIdx = baseModel.staffIdx;
+            this.model = this._detachModelWithContext(cursor$, baseModel);
+            this.boundingBoxes$ = this._captureBoundingBoxes();
 
             if (baseModel.satieMultipleRest || baseModel.rest &&
                     baseModel.count === MusicXML.Count.Whole) {
@@ -548,45 +518,184 @@ module ChordModelImpl {
                 cursor$.maxPaddingBottom$[note.staff] = Math.max(cursor$.maxPaddingBottom$[note.staff] || 0, - note.defaultY - 25);
             });
 
-            // We allow accidentals to be slightly squished.
-            let accidentalWidth = _.reduce(this.model, (maxWidth, note) => {
-                return Math.max(maxWidth, note.accidental ? -note.accidental.defaultX : 0);
-            }, 0)*0.73;
+            let accidentalWidth = this._calcAccidentalWidth();
+            let totalWidth = this._calcTotalWidth(cursor$, baseModel);
+            invariant(isFinite(totalWidth), "Invalid width %s", totalWidth);
+
+            let widths = _.map(baseModel.satieNotehead, notehead => SMuFL.bboxes[notehead][0]*10);
+            this.renderedWidth = _.max(widths);
 
             this.x$ = cursor$.x$ + accidentalWidth;
+            cursor$.x$ += totalWidth;
+        }
 
-            /*---- Move cursor by width -----------------*/
+        _captureBoundingBoxes(): Engine.IModel.IBoundingRect[] {
+            /*{
+                frozenness:     IModel.FrozenLevel;
+                defaultX:       number;
+                defaultY:       number;
+                relativeX?:     number;
+                relativeY?:     number;
+                w:              number;
+                h:              number;
+            }*/
+            let bboxes: Engine.IModel.IBoundingRect[] = [];
+            _.forEach(this.model, note => {
+                let notations = note.notationObj; // TODO: detach this
+                _.forEach(notations.accidentalMarks, accidentalMark => {
+                    // TODO
+                });
+                _.forEach(notations.arpeggiates, arpeggiate => {
+                    // TODO
+                });
+                if (notations.articulations) {
+                    notations.articulations = Object.create(notations.articulations);
+                }
+                _.forEach(notations.articulations, (articulation, key) => {
+                    notations.articulations[key] = Object.create(articulation);
+                    _.forEach(["accent", "breathMark", "caesura", "detachedLegato", "doit", "falloff", "plop",
+                    "scoop", "spiccato", "staccatissimo", "staccato", "stress", "strongAccent",
+                    "tenuto", "unstress"], type => {
+                        if (!(type in articulation)) {
+                            return;
+                        }
+                        let printStyle: MusicXML.PrintStyle | Engine.IModel.IBoundingRect = Object.create((<any>articulation)[type]);
+                        let boundingRect = <Engine.IModel.IBoundingRect> printStyle;
+                        let placement: MusicXML.Placement = <any> printStyle;
+                        boundingRect.frozenness = Engine.IModel.FrozenLevel.Warm;
+                        boundingRect.w = 20; // TODO
+                        boundingRect.h = 20; // TODO
+                        boundingRect.defaultX = 0;
+                        if (placement.placement === MusicXML.AboveBelow.Below) {
+                            boundingRect.defaultY = -30;
+                        } else if (placement.placement === MusicXML.AboveBelow.Above) {
+                            boundingRect.defaultY = 60;
+                        } else {
+                            console.warn("TODO: Set default above/below");
+                            // above: "fermata", "breathMark", "caesura", "strings"
+                            // below: "dynamic"
+                            boundingRect.defaultY = 0;
+                        }
+                        (<any>notations.articulations[key])[type] = printStyle;
+                        bboxes.push(<Engine.IModel.IBoundingRect> printStyle);
+                    });
+                });
+                _.forEach(notations.dynamics, dynamic => {
+                    // TODO
+                });
+                if (notations.fermatas) {
+                    notations.fermatas = Object.create(notations.fermatas);
+                }
+                _.forEach(notations.fermatas, (fermata, key) => {
+                    if (!fermata) {
+                        return;
+                    }
+                    fermata = Object.create(notations.fermatas[key]);
+                    notations.fermatas[key] = fermata;
+                    let boundingRect: Engine.IModel.IBoundingRect = <any> fermata;
+                    boundingRect.frozenness = Engine.IModel.FrozenLevel.Warm;
+
+                    if (fermata.type === MusicXML.UprightInverted.Inverted) {
+                        boundingRect.defaultY = -30;
+                    } else {
+                        boundingRect.defaultY = 60;
+                    }
+                    boundingRect.defaultX = 0;
+                    bboxes.push(boundingRect);
+                });
+                _.forEach(notations.glissandos, glissando => {
+                    // TODO
+                });
+                _.forEach(notations.nonArpeggiates, nonArpeggiate => {
+                    // TODO
+                });
+                _.forEach(notations.ornaments, ornament => {
+                    // TODO
+                });
+                _.forEach(notations.slides, slide => {
+                    // TODO
+                });
+                _.forEach(notations.slurs, slur => {
+                    // TODO
+                });
+                _.forEach(notations.technicals, technical => {
+                    // TODO
+                });
+                _.forEach(notations.tieds, tied => {
+                    // TODO
+                });
+                _.forEach(notations.tuplets, tuplet => {
+                    // TODO
+                });
+            });
+            return [];
+        }
+
+        _calcAccidentalWidth(): number {
+            // We allow accidentals to be slightly squished.
+
+            return _.reduce(this.model, (maxWidth, note) => {
+                return Math.max(maxWidth, note.accidental ? -note.accidental.defaultX : 0);
+            }, 0)*0.73;
+        }
+
+        _calcTotalWidth(cursor: Engine.ICursor, baseModel: ChordModelImpl): number {
+            let accidentalWidth = this._calcAccidentalWidth();
 
             // TODO: Each note's width has a linear component proportional to log of its duration
             // with respect to the shortest length
             let extraWidth = baseModel.divCount ?
-                (Math.log(baseModel.divCount) - Math.log(cursor$.line.shortestCount)) * 20 :
-                0;
+                (Math.log(baseModel.divCount) - Math.log(cursor.line.shortestCount)) * 20 : 0;
             const grace = baseModel[0].grace; // TODO: What if only some notes are grace?
             if (grace) {
                 extraWidth /= 10; // TODO: Put grace notes in own segment
             }
             const baseWidth = grace ? 11.4 : 22.8;
             invariant(extraWidth >= 0, "Invalid extraWidth %s. shortest is %s, got %s", extraWidth,
-                    cursor$.line.shortestCount, baseModel.divCount);
+                    cursor.line.shortestCount, baseModel.divCount);
 
             const dotWidth = _.max(_.map(baseModel, m => m.dots.length))*6;
 
-            const totalWidth = baseWidth + extraWidth + accidentalWidth + dotWidth;
+            // TODO: Calculate lyric width
 
-            // TODO
-            // const lyricWidth = this.getLyricWidth();
-            // totalWidth = Math.max(lyricWidth/2, totalWidth);
-            invariant(isFinite(totalWidth), "Invalid width %s", totalWidth);
+            return baseWidth + extraWidth + accidentalWidth + dotWidth;
+        }
 
-            let widths = _.map(baseModel.satieNotehead, notehead => SMuFL.bboxes[notehead][0]*10);
-            this.totalWidth = _.max(widths);
+        _detachModelWithContext(cursor: Engine.ICursor, baseModel: ChordModelImpl): ChordModelImpl {
+            let model: ChordModelImpl = <any> _.map(baseModel, note => Object.create(note, {
+                /* Here, we're extending each note to have the correct default position.
+                 * To do so, we use prototypical inheritance. See Object.create. */
 
-            cursor$.x$ += totalWidth;
+                defaultX: {
+                    get: () => {
+                        return note.defaultX || (<any>this).barX || this.x$;
+                    }
+                },
+                defaultY: {
+                    get: () => {
+                        if (note.defaultY) {
+                            return note.defaultY;
+                        }
+                        const clef = cursor.staff.attributes.clefs[cursor.staff.idx];
+                        return (Engine.IChord.lineForClef(note, clef) - 3)*10;
+                    }
+                },
+                stem: {
+                    get: () => {
+                        return baseModel.stem || {
+                            type: baseModel.satieDirection
+                        };
+                    }
+                }
+            }));
+            model.satieStem = baseModel.satieStem;
+            model.satieLedger = baseModel.satieLedger;
+            model.satieMultipleRest = baseModel.satieMultipleRest;
+            model.satieFlag = baseModel.satieFlag;
+            model.satieNotehead = baseModel.satieNotehead;
+            model.staffIdx = baseModel.staffIdx;
 
-            /*---- Misc ---------------------------------*/
-
-            // TODO: set min/max padding
+            return model;
         }
 
         /*---- IChordLayout ------------------------------------------------------*/
@@ -596,7 +705,7 @@ module ChordModelImpl {
         model: ChordModelImpl;
         x$: number;
         division: number;
-        totalWidth: number;
+        renderedWidth: number;
         notehead: string;
 
         // Prototype:

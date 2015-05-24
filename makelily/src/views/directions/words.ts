@@ -21,7 +21,6 @@
 import MusicXML             = require("musicxml-interfaces");
 import React                = require("react");
 import _                    = require("lodash");
-let $                       = React.createFactory;
 import invariant            = require("react/lib/invariant");
 
 import DirectionModel       = require("../../models/direction");
@@ -67,7 +66,7 @@ class Words extends React.Component<{layout: DirectionModel.ILayout}, void> impl
     }
 
     /* TextMixin.ITextMixin */
-	getTextAnchor: (words: MusicXML.CreditWords | MusicXML.Words) => string;
+    getTextAnchor: (words: MusicXML.CreditWords | MusicXML.Words) => string;
     getTextDecoration: (words: MusicXML.CreditWords | MusicXML.Words) => string;
     getTransform: (words: MusicXML.CreditWords | MusicXML.Words) => string;
     getDirection: (words: MusicXML.CreditWords | MusicXML.Words) => string;

@@ -86,38 +86,6 @@ class NoteImpl implements MusicXML.Note {
 
     /*---- NoteImpl -------------------------------------------------------------------------*/
 
-    toJSON(): {} {
-        let clone: {[key: string]: any} = {};
-
-        /* Properties owned by parent */
-        if (this.pitch) {
-            clone["pitch"]              = this.pitch;
-        }
-        if (this.rest) {
-            clone["rest"]               = this.rest;
-        }
-        if (this.chord) {
-            clone["chord"]              = this.chord;
-        }
-        if (this.color) {
-            clone["color"]              = this.color;
-        }
-        if (this.noteType) {
-            clone["noteType"]           = this.noteType;
-        }
-        if (this.timeModification) {
-            clone["timeModification"]   = this.timeModification;
-        }
-
-        /* Properties owned by MNote */
-        for (let key in this) {
-            if (this.hasOwnProperty(key) && key[0] !== "_" && !!(<any>this)[key]) {
-                clone[key] = (<any>this)[key];
-            }
-        }
-        return clone;
-    }
-
     toXML() {
         return MusicXML.serialize.note(this);
     }
@@ -357,7 +325,9 @@ class NoteImpl implements MusicXML.Note {
      * attributes. I'm not willing to put up with that, yet.
      */
     flattenNotations() {
-        if (this.notations) {
+        let notations = this.notations;
+
+        if (notations) {
             let notation: MusicXML.Notations = {
                 articulations:          combineArticulations                ("articulations"),
                 accidentalMarks:        combine<MusicXML.AccidentalMark>    ("accidentalMarks"),
@@ -381,7 +351,7 @@ class NoteImpl implements MusicXML.Note {
         }
 
         function combine<T>(key: string): T[] {
-            return _.reduce(this.notations, (memo: any, n:any) =>
+            return _.reduce(notations, (memo: any, n:any) =>
                 n[key] ? (memo||<T[]>[]).concat(n[key]) : memo, null);
         }
 
@@ -402,7 +372,7 @@ class NoteImpl implements MusicXML.Note {
         }
 
         function last<T>(key: string): T {
-            return _.reduce(this.notations, (memo: any, n:any) =>
+            return _.reduce(notations, (memo: any, n:any) =>
                 n[key] ? n[key] : memo, []);
         }
     }

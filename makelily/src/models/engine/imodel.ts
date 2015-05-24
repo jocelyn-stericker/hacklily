@@ -140,7 +140,7 @@ module IModel {
         /**
          * Must be set if expandPolicy is Centered
          */
-        totalWidth?:        number;
+        renderedWidth?:        number;
     }
     export module ILayout {
         export function detach(layout: ILayout) {
@@ -170,8 +170,10 @@ module IModel {
 
     export interface IBoundingRect {
         frozenness:     IModel.FrozenLevel;
-        x:              number;
-        y:              number;
+        defaultX:       number;
+        defaultY:       number;
+        relativeX?:     number;
+        relativeY?:     number;
         w:              number;
         h:              number;
     }
@@ -182,7 +184,7 @@ module IModel {
         division: number;
         renderClass: Type;
         expandPolicy?: ExpandPolicy;
-        totalWidth?: number;
+        renderedWidth?: number;
     }
 
     export function combineLayout(layout: IModel.ILayout): ICombinedLayout {
@@ -195,10 +197,10 @@ module IModel {
         if (layout.expandPolicy) {
             detached.expandPolicy = layout.expandPolicy;
             if (layout.expandPolicy === ExpandPolicy.Centered) {
-                invariant(!isNaN(layout.totalWidth),
-                    "totalWidth must be a number for centered objects, but it's %s",
-                    layout.totalWidth);
-                detached.totalWidth = layout.totalWidth;
+                invariant(!isNaN(layout.renderedWidth),
+                    "renderedWidth must be a number for centered objects, but it's %s",
+                    layout.renderedWidth);
+                detached.renderedWidth = layout.renderedWidth;
             }
         }
         return detached;
@@ -215,10 +217,10 @@ module IModel {
         if (layout.expandPolicy) {
             attached.expandPolicy = layout.expandPolicy;
             if (layout.expandPolicy === ExpandPolicy.Centered) {
-                invariant(!isNaN(layout.totalWidth),
-                    "totalWidth must be a number for centered objects, but it's %s",
-                    layout.totalWidth);
-                attached.totalWidth = layout.totalWidth;
+                invariant(!isNaN(layout.renderedWidth),
+                    "renderedWidth must be a number for centered objects, but it's %s",
+                    layout.renderedWidth);
+                attached.renderedWidth = layout.renderedWidth;
             }
         }
 

@@ -18,123 +18,112 @@
 
 "use strict";
 
+import MusicXML             = require("musicxml-interfaces");
 import React                = require("react");
-import TypedReact           = require("typed-react");
-import PureRenderMixin      = require("react/lib/ReactComponentWithPureRenderMixin");
+import _                    = require("lodash");
+var $                       = React.createFactory;
 
-import C                    = require("../stores/contracts");
-import _Glyph               = require("./_glyph");
-
-var    Glyph                = React.createFactory(_Glyph.Component);
+import Articulation         = require("./notations/articulation");
+import Chord                = require("../models/chord");
+import Glyph                = require("./primitives/glyph");
 
 /**
- * Renders annotations like staccato, or accents.
+ * Notations are things that are attached to notes.
  */
-class NoteNotation extends TypedReact.Component<NoteNotation.IProps, {}> {
+class Notation extends React.Component<{spec: MusicXML.Notations, layout: Chord.IChordLayout}, void> {
     render() {
-        var offset  = C.SMuFL.bravuraBBoxes[this.props.notehead][0];
-        var start   = C.SMuFL.bravuraBBoxes[this.props.notehead][3];
-        var o2      = C.SMuFL.bravuraBBoxes[this.glyphName()][3];
-        var s2      = C.SMuFL.bravuraBBoxes[this.glyphName()][0];
-        return Glyph({
-            x:                  this.props.x + this.xOffset() + (offset - start)/4/2 + (o2 - s2)/4/2,
-            y:              this.props.y - this.yOffset(),
-            fill:           this.glyphIsTemporary() ? "#A5A5A5" : "#000000",
-            glyphName:      this.glyphName(),
-            glyphIsTemporary:   this.glyphIsTemporary()
+        const model = this.props.spec;
+        const originX = this.context.originX + this.props.layout.model[0].defaultX;
+        let children: React.ReactElement<any>[] = [];
+
+        _.forEach(model.accidentalMarks, accidentalMark => {
+            // TODO
         });
-    }
 
-    directionString() {
-        if (C.SMuFL.bravuraBBoxes[this.notationName()]) {
-            return "";
-        } else if (this.direction() === 1) {
-            return "Below";
-        } else if (this.direction() === -1) {
-            return "Above";
-        }
-    }
-    shouldBeAboveStaff() {
-        var above = ["fermata", "breathMark", "caesura", "strings"];
-        for (var i = 0; i < above.length; ++i) {
-            if (this.notationName().indexOf(above[i]) === 0) {
-                return true;
-            }
-        }
-        return false;
-    }
-    shouldBeBelowStaff() {
-        var below = ["dynamic"];
-        for (var i = 0; i < below.length; ++i) {
-            if (this.notationName().indexOf(below[i]) === 0) {
-                return true;
-            }
-        }
-        return false;
-    }
-    glyphIsTemporary() {
-        return false; // MXFIX
-        // return this.props.notation.substr(0, 2) === "__";
-    }
-    glyphName() {
-        return this.notationName() + this.directionString();
-    }
-    notationName() {
-        return ""; // MXFIX
-        // var isTmp = this.glyphIsTemporary();
-        // return isTmp ? this.props.notation.substring(2) : this.props.notation;
-    }
-    direction() {
-        if (this.shouldBeAboveStaff()) {
-            return -1;
-        }
-        return this.props.direction;
-    }
-    xOffset() {
-        // MXFIX
-        // if (this.props.notation.indexOf("caesura") === 0) {
-        //     return -3/8; // TODO -- move to DurationModel and fix
-        // } else if (this.props.notation.indexOf("breathMarkComma") === 0) {
-        //     return 3/8; // TODO -- move to DurationModel and fix
-        // }
-        return 0;
-    }
-    yOffset() {
-        var m: number;
-        if (this.shouldBeAboveStaff()) {
-            m = (6.0 + this.props.idx - 3)/4;
-            if (m + 1.5 <= this.props.line/4) {
-                m = (this.props.line)/4 + 1.5;
-            }
-            return m;
-        } else if (this.shouldBeBelowStaff()) {
-            m = (-1.5 + this.props.idx - 3)/4;
-            if (m + 1.5 >= this.props.line/4) {
-                m = (this.props.line)/4 - 1.5;
-            }
-            return m;
-        }
+        _.forEach(model.arpeggiates, arpeggiate => {
+            // TODO
+        });
 
-        if (this.direction() === 1) {
-            return (this.props.line - 1.2 - (this.props.line % 1 && this.props.line - 1.2 > 0 ? 0.4 : 0) - this.props.idx - 3)/4;
-        }
+        _.forEach(model.articulations, (articulation, idx) => {
+            children.push($(Articulation)({
+                key: `art${idx}`,
+                articulation: articulation
+            }));
+        });
 
-        return (this.props.line + 1.2 + (this.props.line % 1  && this.props.line + 1.2 < 5 ? 0.4 : 0) + this.props.idx - 3)/4;
+        _.forEach(model.dynamics, dynamic => {
+            // TODO
+        });
+
+        _.forEach(model.fermatas, (fermata, idx) => {
+            let direction = (fermata.type === MusicXML.UprightInverted.Inverted) ? "Below" : "Above";
+            children.push($(Glyph)({
+                key: `fer${idx}`,
+                glyphName: `fermata${direction}`,
+                fill: "black",
+                x: originX + fermata.defaultX + (fermata.relativeX||0),
+                y: this.context.originY - fermata.defaultY - (fermata.relativeY||0)
+            }));
+        });
+
+        _.forEach(model.glissandos, glissando => {
+            // TODO
+        });
+
+        _.forEach(model.nonArpeggiates, nonArpeggiate => {
+            // TODO
+        });
+
+        _.forEach(model.ornaments, ornament => {
+            // TODO
+        });
+
+        _.forEach(model.slides, slide => {
+            // TODO
+        });
+
+        _.forEach(model.slurs, slur => {
+            // TODO
+        });
+
+        _.forEach(model.technicals, technical => {
+            // TODO
+        });
+
+        _.forEach(model.tieds, tied => {
+            // TODO
+        });
+
+        _.forEach(model.tuplets, tuplet => {
+            // TODO
+        });
+
+        switch(children.length) {
+            case 0:
+                return null;
+            case 1:
+                return children[0];
+            default:
+                return React.DOM.g(null,
+                    children
+                );
+        }
     }
+    getChildContext() {
+        return {
+            originX:        this.context.originX + this.props.layout.model[0].defaultX
+        };
+    }
+};
+
+module Notation {
+    export var childContextTypes = <any> {
+        originX:            React.PropTypes.number.isRequired
+    };
+    export var contextTypes = <any> {
+        originX:            React.PropTypes.number.isRequired,
+        originY:            React.PropTypes.number.isRequired
+    };
 }
 
-module NoteNotation {
-    export var Component = TypedReact.createClass(NoteNotation, <any> [PureRenderMixin]);
-
-    export interface IProps {
-        direction: number; // -1 or 1
-        idx: number;
-        line: number;
-        notation: C.MusicXML.Notations;
-        notehead: string;
-        x: number;
-        y: number;
-    }
-}
-
-export = NoteNotation;
+export = Notation;

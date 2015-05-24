@@ -23,7 +23,7 @@ let $                       = React.createFactory;
 import invariant            = require("react/lib/invariant");
 
 import DirectionModel       = require("../../models/direction");
-import Glyph                = require("../primitives/glyph")
+import Glyph                = require("../primitives/glyph");
 
 class Dynamics extends React.Component<{layout: DirectionModel.ILayout}, void> {
     render(): any {
@@ -35,7 +35,7 @@ class Dynamics extends React.Component<{layout: DirectionModel.ILayout}, void> {
 
         let initX = this.context.originX + layout.barX;
         let initY = this.context.originY - dynamics.defaultY - (dynamics.relativeY||0);
-        
+
         let glyphName = this.getGlyphName(dynamics);
         if (!glyphName) {
             return null;
@@ -47,11 +47,11 @@ class Dynamics extends React.Component<{layout: DirectionModel.ILayout}, void> {
             y: initY,
             fill: "black"
         });
-	}
-    
+    }
+
     getGlyphName(dynamics: MusicXML.Dynamics) {
         /* Not included in MusicXML
-        
+
           "dynamicMessaDiVoce": "U+E540",
           "dynamicMezzo": "U+E521",
           "dynamicNiente": "U+E526",
@@ -75,17 +75,17 @@ class Dynamics extends React.Component<{layout: DirectionModel.ILayout}, void> {
                 return "dynamicFFFFF";
             case dynamics.ffffff:
                 return "dynamicFFFFFF";
-            
+
             case dynamics.fp:
                 return "dynamicFortePiano";
             case dynamics.fz:
                 return "dynamicForzando";
-            
+
             case dynamics.mf:
                 return "dynamicMF";
             case dynamics.mp:
                 return "dynamicMP";
-                
+
             case dynamics.p:
                 return "dynamicPiano";
             case dynamics.pp:
@@ -98,12 +98,12 @@ class Dynamics extends React.Component<{layout: DirectionModel.ILayout}, void> {
                 return "dynamicPPPPP";
             case dynamics.pppppp:
                 return "dynamicPPPPPP";
-            
+
             case dynamics.rf:
                 return "dynamicRinforzando1";
             case dynamics.rfz:
                 return "dynamicRinforzando2";
-                
+
             case dynamics.sf:
                 return "dynamicSforzando1";
             case dynamics.sffz:
@@ -114,7 +114,7 @@ class Dynamics extends React.Component<{layout: DirectionModel.ILayout}, void> {
                 return "dynamicSforzandoPianissimo";
             case dynamics.sfz:
                 return "dynamicSforzato";
-            
+
             default:
                 console.warn("Found unknown dynamic!");
                 return null;
