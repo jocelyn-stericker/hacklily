@@ -33,7 +33,7 @@ class Dynamics extends React.Component<{layout: DirectionModel.ILayout}, void> {
         invariant(!!dynamicsContainer, "No dynamics found!");
         let dynamics = dynamicsContainer.dynamics;
 
-        let initX = this.context.originX + layout.barX;
+        let initX = this.context.originX + dynamics.defaultX + (dynamics.relativeX||0);
         let initY = this.context.originY - dynamics.defaultY - (dynamics.relativeY||0);
 
         let glyphName = this.getGlyphName(dynamics);

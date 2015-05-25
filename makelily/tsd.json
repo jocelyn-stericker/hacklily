@@ -28,6 +28,9 @@
         },
         "superagent/superagent.d.ts": {
             "commit": "b3834d886a95789e6ab56e8244775ec10c5293d0"
+        },
+        "webcola/webcola.d.ts": {
+            "commit": "aadd63ecae3feb76ea2d4be80511e266b5c2c4a7"
         }
     }
 }

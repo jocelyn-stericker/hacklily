@@ -170,12 +170,22 @@ module IModel {
 
     export interface IBoundingRect {
         frozenness:     IModel.FrozenLevel;
+        /**
+         * If unspecified, relative to line.
+         */
+        relativeTo?:    IModel.RelativeTo;
+        fixed?:         boolean;
         defaultX:       number;
         defaultY:       number;
         relativeX?:     number;
         relativeY?:     number;
         w:              number;
         h:              number;
+    }
+
+    export enum RelativeTo {
+        Line = 0,
+        Model = 1
     }
 
     export interface ICombinedLayout {

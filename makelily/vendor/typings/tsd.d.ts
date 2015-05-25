@@ -6,5 +6,5 @@
 /// <reference path="node/node.d.ts" />
 /// <reference path="react/react.d.ts" />
 /// <reference path="react-ext.d.ts" />
-/// <reference path="superagent/superagent.d.ts" />
 /// <reference path="yargs/yargs.d.ts" />
+/// <reference path="../../node_modules/WebCola/WebCola/index.d.ts" />

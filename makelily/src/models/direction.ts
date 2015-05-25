@@ -110,33 +110,34 @@ module DirectionModel {
                     break;
             }
 
+            this.boundingBoxes$ = [];
+
             _.forEach(model.directionTypes, (type, idx) => {
                 model.directionTypes[idx] = Object.create(model.directionTypes[idx]);
                 _.forEach(type.words, (word, idx) => {
                     let origModel = type.words[idx];
-                    type.words[idx] = Object.create(origModel, this._createPositionDescriptor(origModel, defaultY));
+                    type.words[idx] = Object.create(origModel);
                     type.words[idx].fontSize = type.words[idx].fontSize || "18";
+                    type.words[idx].defaultX = 0;
+                    type.words[idx].defaultY = defaultY;
+                    let boundingBox: Engine.IModel.IBoundingRect = <any> type.words[idx];
+                    boundingBox.relativeTo = Engine.IModel.RelativeTo.Model;
+                    boundingBox.w = 20; // TODO
+                    boundingBox.h = 20; // TODO
+                    this.boundingBoxes$.push(boundingBox);
                 });
                 if (type.dynamics) {
                     let origDynamics = type.dynamics;
-                    type.dynamics = Object.create(origDynamics, this._createPositionDescriptor(origDynamics, defaultY));
+                    type.dynamics = Object.create(origDynamics);
+                    type.dynamics.defaultX = 0;
+                    type.dynamics.defaultY = defaultY;
+                    let boundingBox: Engine.IModel.IBoundingRect = <any> type.dynamics;
+                    boundingBox.relativeTo = Engine.IModel.RelativeTo.Model;
+                    boundingBox.w = 20; // TODO
+                    boundingBox.h = 20; // TODO
+                    this.boundingBoxes$.push(boundingBox);
                 }
             });
-        }
-
-        private _createPositionDescriptor(origModel: MusicXML.Position, defaultY: number): PropertyDescriptorMap {
-            return {
-                defaultX: {
-                    get: () => {
-                        throw new Error("Please use barX instead");
-                    }
-                },
-                defaultY: {
-                    get: () => {
-                        return isNaN(origModel.defaultY) ? defaultY : origModel.defaultY;
-                    }
-                }
-            };
         }
 
         /*---- ILayout ------------------------------------------------------*/

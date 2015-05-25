@@ -175,6 +175,22 @@ function tryValidate$(options$: Options.ILayoutOptions, memo$: Options.ILinesLay
         return segments;
     }
 
+    // Normalize divisions on a line:
+    let allSegments: Measure.ISegment[] = [];
+    _.forEach(options$.measures, function validateMeasure(measure) {
+        let voiceSegments$ = <Measure.ISegment[]>
+            _.flatten(_.map(_.pairs(measure.parts),
+                        partx => withPart(partx[1].voices, partx[0])));
+
+        let staffSegments$ = <Measure.ISegment[]>
+            _.flatten(_.map(_.pairs(measure.parts),
+                        partx => withPart(partx[1].staves, partx[0])));
+
+        allSegments = allSegments.concat(_.filter(voiceSegments$.concat(staffSegments$), s => !!s));
+    });
+    Measure.normalizeDivisons$(allSegments, 0);
+    // TODO: check if a measure hence becomes dirty?
+
     _.forEach(options$.measures, function validateMeasure(measure) {
         if (!(measure.uuid in memo$.clean$)) {
             let voiceSegments$ = <Measure.ISegment[]>
@@ -226,8 +242,6 @@ function tryValidate$(options$: Options.ILayoutOptions, memo$: Options.ILinesLay
                     segment.splice(segment.length, 0, factory.create(IModel.Type.Barline));
                 }
             });
-
-            Measure.normalizeDivisons$(segments, 0);
 
             let outcome = MeasureProcessor.reduce({
                 attributes:     lastAttribs,

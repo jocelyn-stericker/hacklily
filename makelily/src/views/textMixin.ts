@@ -89,7 +89,7 @@ export let Prototype: ITextMixin = {
         if (lineNum > 0) {
             return undefined;
         }
-        let x = this.props.layout ? this.props.layout.barX : words.defaultX;
+        let x = words.defaultX;
         if (x) {
             return (x + (words.relativeX || 0)) - initX;
         }
