@@ -28,6 +28,7 @@ import SvgExt               = require("./views/svgext_injection");
 
 import Beam                 = require("./models/postprocessors/beam");
 import Justify              = require("./models/postprocessors/justify");
+import RemoveOverlaps       = require("./models/postprocessors/removeOverlaps");
 
 SvgExt.inject();
 
@@ -75,7 +76,7 @@ export function renderDocument(doc: Engine.IDocument, startMeasure: number): str
         page$:          pageNum,
         modelFactory:   doc.factory,
         debug:          true,
-        postProcessors: [Justify, Beam]
+        postProcessors: [Justify, Beam, RemoveOverlaps]
     }, memo$);
 
     const core = React.renderToStaticMarkup($(Page)({

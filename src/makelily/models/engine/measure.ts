@@ -78,15 +78,16 @@ export function normalizeDivisons$(segments$: ISegment[], factor: number = 0): n
         var ratio = divisions / segment.divisions;
         segment.divisions = divisions;
 
-        if (ratio !== 1) {
-            _.forEach(segment, (model: IModel) => {
-                if (model.divCount) {
-                    model.divCount *= ratio;
-                } else if ((<any>model).divisions) {
-                    (<any>model).divisions *= ratio;
-                }
-            });
-        }
+        _.forEach(segment, (model: IModel) => {
+            if (model.divCount) {
+                model.divCount *= ratio;
+            }
+
+            if ((<any>model).divisions) {
+                ratio = divisions / (<any>model).divisions;
+                (<any>model).divisions = divisions;
+            }
+        });
     });
 
     return divisions;

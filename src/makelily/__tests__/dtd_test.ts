@@ -75,19 +75,25 @@ describe("import/export dtd validation", function() {
                 readFile(root + "/" + file, function(str) {
                     try {
                         let score = Models.importXML(str);
-                        let mxmlOut = Models.exportXML(score);
 
-                        let env = Object.create(process.env);
-                        env.XML_CATALOG_FILES = "./vendor/musicxml-dtd/catalog.xml";
-                        let proc = (<any>child_process).spawnSync("xmllint",
-                                ["--valid", "--noout", "--nonet", "-"], {
-                            input: mxmlOut,
-                            env: env
-                        });
-                        const stdout = proc.stdout + "";
-                        const stderr = proc.stderr + "";
+                        let stdout: string;
+                        let stderr: string;
+                        let error: string;
+                        if (!process.env.SKIP_DTD_VALIDATION) {
+                            let mxmlOut = Models.exportXML(score);
+                            let env = Object.create(process.env);
+                            env.XML_CATALOG_FILES = "./vendor/musicxml-dtd/catalog.xml";
+                            let proc = (<any>child_process).spawnSync("xmllint",
+                                    ["--valid", "--noout", "--nonet", "-"], {
+                                input: mxmlOut,
+                                env: env
+                            });
+                            stdout = proc.stdout + "";
+                            stderr = proc.stderr + "";
+                            error = proc.error;
+                        }
                         if (stdout || stderr) {
-                            done(new Error(stderr || stdout || proc.error));
+                            done(new Error(stderr || stdout || error));
                         } else {
                             let page1Svg = Views.renderDocument(score, 0);
                             fs.writeFile("rendertest/out/" + outname, page1Svg);

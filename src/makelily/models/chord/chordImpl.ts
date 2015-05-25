@@ -34,6 +34,7 @@ let countToNotehead: { [key: number]: string } = {
     [MusicXML.Count.Long]:      "noteheadDoubleWhole",
     [MusicXML.Count.Breve]:     "noteheadDoubleWhole",
     [MusicXML.Count.Whole]:     "noteheadWhole",
+    [-1]:                       "noteheadWhole",
     [MusicXML.Count.Half]:      "noteheadHalf",
     [MusicXML.Count.Quarter]:   "noteheadBlack",
     [MusicXML.Count.Eighth]:    "noteheadBlack",
@@ -147,6 +148,9 @@ class ChordModelImpl implements ChordModel.IChordModel {
         invariant(isFinite(this._count) && this._count !== null, "%s is not a valid count", this._count);
 
         this._checkMulitpleRest$(cursor$);
+        if (this._isRest && this.count === -1) {
+            this.count = MusicXML.Count.Whole;
+        }
         this._implyNoteheads$(cursor$);
 
         if (!this.inBeam$ && Engine.IChord.countToIsBeamable[this._count]) {
@@ -163,9 +167,12 @@ class ChordModelImpl implements ChordModel.IChordModel {
 
     private _checkMulitpleRest$(cursor$: Engine.ICursor) {
         let measureStyle: MusicXML.MeasureStyle = cursor$.staff.attributes.measureStyle;
-        if (measureStyle && measureStyle.multipleRest) {
+        if (measureStyle && measureStyle.multipleRest && measureStyle.multipleRest.count > 1) {
             this.satieMultipleRest = measureStyle.multipleRest;
             cursor$.staff.multiRestRem = measureStyle.multipleRest.count;
+        } else {
+            delete this.satieMultipleRest;
+            cursor$.staff.multiRestRem = 0;
         }
     }
 
@@ -382,15 +389,19 @@ class ChordModelImpl implements ChordModel.IChordModel {
         }
 
         // All stems should in the main voice should touch the center line.
-        if (start > 30 && direction === -1 && start - result > 30) {
-            result = start - 30;
-        } else if (start < 30 && direction === 1 && start + result < 30) {
-            result = 30 - start;
+        if (start > 60 && direction === -1 && start - result > 60) {
+            result = start - 60;
+        } else if (start < 60 && direction === 1 && start + result < 60) {
+            result = 60 - start;
         }
 
         // Grace note stems are short (though still proportionally pretty tall)
         if (this[0].grace) {
             result *= 0.75;
+        }
+
+        if (Math.abs(Math.abs(result - start) % 10 - 5) >= 4) {
+            result += 3;
         }
 
         return result;
@@ -566,6 +577,7 @@ module ChordModelImpl {
                         boundingRect.w = 20; // TODO
                         boundingRect.h = 20; // TODO
                         boundingRect.defaultX = 0;
+                        boundingRect.relativeTo = Engine.IModel.RelativeTo.Model;
                         if (placement.placement === MusicXML.AboveBelow.Below) {
                             boundingRect.defaultY = -30;
                         } else if (placement.placement === MusicXML.AboveBelow.Above) {
@@ -594,6 +606,8 @@ module ChordModelImpl {
                     notations.fermatas[key] = fermata;
                     let boundingRect: Engine.IModel.IBoundingRect = <any> fermata;
                     boundingRect.frozenness = Engine.IModel.FrozenLevel.Warm;
+                    boundingRect.w = 20; // TODO
+                    boundingRect.h = 20; // TODO
 
                     if (fermata.type === MusicXML.UprightInverted.Inverted) {
                         boundingRect.defaultY = -30;
@@ -628,7 +642,7 @@ module ChordModelImpl {
                     // TODO
                 });
             });
-            return [];
+            return bboxes;
         }
 
         _calcAccidentalWidth(): number {
@@ -694,6 +708,7 @@ module ChordModelImpl {
             model.satieFlag = baseModel.satieFlag;
             model.satieNotehead = baseModel.satieNotehead;
             model.staffIdx = baseModel.staffIdx;
+            model.divCount = baseModel.divCount;
 
             return model;
         }

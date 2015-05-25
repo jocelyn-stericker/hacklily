@@ -81,6 +81,20 @@ function justify(options: Engine.Options.ILayoutOptions, bounds: Engine.Options.
         });
     });
 
+    let smallest = Number.POSITIVE_INFINITY;
+    _.forEach(measures$, function(measure, measureIdx) {
+        let maxIdx = _.max(_.map(measure.elements, el => el.length));
+        _.times(maxIdx, function(j) {
+            for (let i = 0; i < measure.elements.length; ++i) {
+                if (measure.elements[i][j].expandPolicy) {
+                    if (measure.elements[i][j].model && measure.elements[i][j].model.divCount) {
+                        smallest = Math.min(measure.elements[i][j].model.divCount, smallest);
+                    }
+                }
+            }
+        });
+    });
+
     // x > enX is possible if a single bar's minimum size exceeds maxX, or if our
     // guess for a measure width was too liberal. In either case, we're shortening
     // the measure width here, and our partial algorithm doesn't work with negative
@@ -94,7 +108,11 @@ function justify(options: Engine.Options.ILayoutOptions, bounds: Engine.Options.
             if (underfilled[idx] && element$.expandPolicy) {
                 ++underfilledCount;
             }
-            return memo + (element$.expandPolicy ? 1 : 0)*(underfilled[idx] ? UNDERFILLED_EXPANSION_WEIGHT : 1.0);
+            if (!element$.model || !element$.model.divCount) {
+                return memo;
+            }
+            return memo + (element$.expandPolicy ? (Math.log(element$.model.divCount) - Math.log(smallest) + 1) :
+                0)*(underfilled[idx] ? UNDERFILLED_EXPANSION_WEIGHT : 1.0);
         }, memo);
     }, 0);
 
@@ -125,7 +143,13 @@ function justify(options: Engine.Options.ILayoutOptions, bounds: Engine.Options.
             for (let i = 0; i < measure.elements.length; ++i) {
                 if (measure.elements[i][j].expandPolicy) {
                     anyExpandable = true;
-                    let ratio = underfilled[measureIdx] ? UNDERFILLED_EXPANSION_WEIGHT : 1.0;
+                    if (!measure.elements[i][j].model || !measure.elements[i][j].model.divCount) {
+                        continue;
+                    }
+
+                    let ratio = (Math.log(measure.elements[i][j].model.divCount) - Math.log(smallest) + 1) *
+                        (underfilled[measureIdx] ? UNDERFILLED_EXPANSION_WEIGHT : 1.0);
+
                     if (measure.elements[i][j].expandPolicy === Engine.IModel.ExpandPolicy.Centered) {
                         measure.elements[i][j].x$ += avgExpansion/2*ratio;
                     }
@@ -142,9 +166,6 @@ function justify(options: Engine.Options.ILayoutOptions, bounds: Engine.Options.
         measure.originX += lineExpansion;
         lineExpansion += measureExpansion;
     });
-
-    invariant(totalExpCount - expandableCount < 0.01, "Expected %s expandable items, got %s",
-        expandableCount, totalExpCount);
 
     return measures$;
 }

@@ -91,12 +91,21 @@ class Direction extends React.Component<{layout: DirectionModel.ILayout}, void> 
                 );
         }
     }
-}
+
+    getChildContext() {
+        return {
+            originX:        this.context.originX + this.props.layout.barX
+        };
+    }
+};
 
 module Direction {
+    export var childContextTypes = <any> {
+        originX:            React.PropTypes.number.isRequired
+    };
     export var contextTypes = <any> {
-        originX:         React.PropTypes.number.isRequired,
-        originY:         React.PropTypes.number.isRequired
+        originX:            React.PropTypes.number.isRequired,
+        originY:            React.PropTypes.number.isRequired
     };
 }
 
