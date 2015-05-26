@@ -35,12 +35,16 @@ function readStdin(onEnd: (s: string) => void) {
 }
 
 function readFile(file: string, onEnd: (s: string) => void, onErr: (err: any) => void) {
-    fs.readFile(file, "utf8", function (err, data) {
-        if (err) {
-            onErr(err);
-        }
-        onEnd(data);
-    });
+    if (file === "<stdin>") {
+        readStdin(onEnd);
+    } else {
+        fs.readFile(file, "utf8", function (err, data) {
+            if (err) {
+                onErr(err);
+            }
+            onEnd(data);
+        });
+    }
 }
 
 function cannotRead(err: any) {
@@ -69,8 +73,6 @@ function cannotRead(err: any) {
         .alias("x", "xml")
         .describe("x", "Specify a MusicXML input")
         .default("xml", ["<stdin>"])
-
-        .describe("v", "Be verbose")
 
         .alias("p", "patch")
         .describe("p", "Specify a patch generated with 'satie diff'")
@@ -108,35 +110,26 @@ function cannotRead(err: any) {
 
         .argv;
 
-    const verbose = argv.v;
-
     let log = console.log.bind(console);
 
     switch (argv._[0]) {
         case "init":
-            if (verbose) {
-                console.warn("Reading from %s", argv.xml[0]);
-            }
-            if (argv.xml[0] === "<stdin>") {
-                readStdin((<any>_).flow(Models.importXML, Models.exportXML, log));
-            } else {
-                readFile(argv.xml[0], (<any>_).flow(Models.importXML, Models.exportXML, log), cannotRead);
-            }
+            readFile(argv.xml[0],
+                str => Models.importXML(str,
+                    (err, document) => Models.exportXML(document, (err, xml) =>
+                        err ? cannotRead(err) : log(xml))),
+                cannotRead);
             break;
         case "diff":
             throw "not implemented";
         case "patch":
             throw "not implemented";
         case "render":
-            if (verbose) {
-                console.warn("Reading from %s", argv.xml[0]);
-            }
             const render = _.partialRight(Views.renderDocument, 0);
-            if (argv.xml[0] === "<stdin>") {
-                readStdin((<any>_).flow(Models.importXML, render, log));
-            } else {
-                readFile(argv.xml[0], (<any>_).flow(Models.importXML, render, log), cannotRead);
-            }
+            readFile(argv.xml[0],
+                (str: string) => Models.importXML(str,
+                    (err, document) => err ? cannotRead(err) : log(render(document))),
+                cannotRead);
             break;
     }
 }());
