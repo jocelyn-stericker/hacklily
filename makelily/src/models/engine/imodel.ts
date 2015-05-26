@@ -178,7 +178,7 @@ module IModel {
          * Position relative to parent model as computed by model.
          */
         defaultX:       number;
- 
+
         /**
          * Position relative to parent model as computed by model.
          */

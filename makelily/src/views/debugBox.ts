@@ -18,10 +18,8 @@
 
 import React                = require("react");
 import _                    = require("lodash");
-var $                       = React.createFactory;
 
 import Engine               = require("../models/engine");
-import ModelView            = require("./modelView");
 
 class DebugBox extends React.Component<{layout: Engine.Measure.IMeasureLayout}, void> {
 
@@ -41,7 +39,7 @@ class DebugBox extends React.Component<{layout: Engine.Measure.IMeasureLayout}, 
                         fill: "transparent",
                         x: layout.originX + element.barX + box.defaultX + (box.relativeX||0) + box.left,
                         width: box.right - box.left,
-                        y: context.originYA[element.model.staffIdx] - box.defaultY - (box.relativeY||0) - box.bottom, 
+                        y: context.originYA[element.model.staffIdx] - box.defaultY - (box.relativeY||0) - box.bottom,
                         height: box.bottom - box.top,
                         dangerouslySetInnerHTML: {__html: `<!-- ${Engine.IModel.Type[element.renderClass]} -->`}
                     }));

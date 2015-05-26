@@ -149,9 +149,6 @@ class ChordModelImpl implements ChordModel.IChordModel {
         invariant(isFinite(this._count) && this._count !== null, "%s is not a valid count", this._count);
 
         this._checkMulitpleRest$(cursor$);
-        if (this._isRest && this.count === -1) {
-            this.count = MusicXML.Count.Whole;
-        }
         this._implyNoteheads$(cursor$);
 
         if (!this.inBeam$ && Engine.IChord.countToIsBeamable[this._count]) {
@@ -352,7 +349,7 @@ class ChordModelImpl implements ChordModel.IChordModel {
             // Whole bar rests can still exist even when there's no single NOTE duration
             // that spans a bar.
             if (beats === ts.beats && !!this[0].rest) {
-                this._count = -1;
+                this._count = MusicXML.Count.Whole;
             } else {
                 var nextPO2 = Math.pow(2, Math.ceil(Math.log(this.count)/Math.log(2)));
                 this._count = nextPO2;

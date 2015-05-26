@@ -83,10 +83,12 @@ export function importXML(src: string, cb: (error: Error, document?: Engine.IDoc
     Fonts.loadAll((err) => {
         if (err) {
             cb(err);
-        } else try {
-            cb(null, _importXML(src));
-        } catch(err) {
-            cb(err);
+        } else {
+            try {
+                cb(null, _importXML(src));
+            } catch(err) {
+                cb(err);
+            }
         }
     });
 }

@@ -65,3 +65,4 @@ export function findIndex<T>(arr: T[], predicate: (v: T, i?: number, arr?: T[]) 
     }
     return -1;
 }
+
