@@ -22,8 +22,13 @@ import Opentype                 = require("opentype.js");
 import invariant                = require("react/lib/invariant");
 
 let fonts: {[font: string]: Opentype.Font} = {};
+let loaded = false;
 
 export function loadAll(cb: (err?: Error) => void) {
+    if (loaded) {
+        cb();
+        return;
+    }
     let remaining = 0;
 
     doLoad("Alegreya", "./vendor/alegreya/Alegreya-Regular.ttf");
@@ -37,6 +42,7 @@ export function loadAll(cb: (err?: Error) => void) {
         if (err) {
             cb(err);
         } else if (!--remaining) {
+            loaded = true;
             cb();
         }
     }
@@ -59,7 +65,7 @@ export function getTextBB(url: string, text: string, fontSize: number) {
     let minY = 10000;
     let maxX = 0;
     let maxY = 0;
-    
+
     font.forEachGlyph(text, 0, 0, fontSize, {kerning: true}, (glyph, x, y, fontSize) => {
         let scale = 1 / font.unitsPerEm * fontSize;
         minX = Math.min(x, minX);
@@ -67,7 +73,7 @@ export function getTextBB(url: string, text: string, fontSize: number) {
         minY = Math.min(y + glyph.yMin*scale, minY);
         maxY = Math.max(y + glyph.yMax*scale, maxY);
     });
-    
+
     return {
         left: minX,
         right: maxX,
@@ -75,3 +81,4 @@ export function getTextBB(url: string, text: string, fontSize: number) {
         bottom: maxY
     };
 }
+

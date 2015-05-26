@@ -19,9 +19,7 @@
 "use strict";
 
 import MusicXML             = require("musicxml-interfaces");
-import React                = require("react");
 import _                    = require("lodash");
-var $                       = React.createFactory;
 
 import Engine               = require("../engine");
 import SMuFL                = require("../smufl");
@@ -81,7 +79,6 @@ export function articulationGlyph(model: MusicXML.Articulations, direction: stri
 }
 
 export interface IGeneralNotation extends MusicXML.PrintStyle, MusicXML.Placement {
-    
 }
 
 export function getBoundingRects(model: MusicXML.Notations): Engine.IModel.IBoundingRect[] {
@@ -101,8 +98,11 @@ export function getBoundingRects(model: MusicXML.Notations): Engine.IModel.IBoun
                     "tenuto", "unstress"], type => {
             // TODO: Could this be done any less efficiently?
             if ((<any>model.articulations[idx])[type]) {
-                let glyph = articulationGlyph(articulation, (<any>model.articulations[idx])[type].placement === MusicXML.AboveBelow.Below ? "Below" : "Above");
-                (<any>model.articulations[idx])[type] = push(glyph, (<any>model.articulations[idx])[type]);
+                let glyph = articulationGlyph(articulation,
+                    (<any>model.articulations[idx])[type].placement ===
+                        MusicXML.AboveBelow.Below ? "Below" : "Above");
+                (<any>model.articulations[idx])[type] = push(glyph,
+                        (<any>model.articulations[idx])[type]);
             }
         });
     });
@@ -151,19 +151,19 @@ export function getBoundingRects(model: MusicXML.Notations): Engine.IModel.IBoun
     _.forEach(model.tuplets, tuplet => {
         // TODO
     });
-    
+
     function push(glyphName: string, notation: IGeneralNotation): IGeneralNotation {
         let box = SMuFL.bboxes[glyphName];
         if (!box) {
             console.warn("Unknown glyph", glyphName);
             return;
         }
-        
+
         const PADDING = 1.5;
 
         let printStyle: MusicXML.PrintStyle | Engine.IModel.IBoundingRect = Object.create(notation);
         let boundingRect = <Engine.IModel.IBoundingRect> printStyle;
-        
+
         boundingRect.top = box[3]*10;
         boundingRect.bottom = box[1]*10;
         boundingRect.left = box[2]*10;
@@ -180,7 +180,7 @@ export function getBoundingRects(model: MusicXML.Notations): Engine.IModel.IBoun
             boundingRect.defaultY = 0;
         }
         boxes.push(<Engine.IModel.IBoundingRect> printStyle);
- 
+
         return printStyle;
     }
 

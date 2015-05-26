@@ -91,9 +91,10 @@ describe("import/export dtd validation", function() {
                                     let stdout: string;
                                     let stderr: string;
                                     let error: string;
-                                    
+
                                     let env = Object.create(process.env);
                                     env.XML_CATALOG_FILES = "./vendor/musicxml-dtd/catalog.xml";
+                                    fs.writeFile("rendertest/out/" + outname + ".xml", mxmlOut);
                                     let proc = (<any>child_process).spawnSync("xmllint",
                                             ["--valid", "--noout", "--nonet", "-"], {
                                         input: mxmlOut,
@@ -105,7 +106,7 @@ describe("import/export dtd validation", function() {
                                     if (stdout || stderr) {
                                         done(new Error(stderr || stdout || error));
                                     } else {
-                                        done();                                        
+                                        done();
                                     }
                                 });
                             } else {

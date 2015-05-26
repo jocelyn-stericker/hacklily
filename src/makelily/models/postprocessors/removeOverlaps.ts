@@ -56,6 +56,18 @@ function removeOverlaps(options: Engine.Options.ILayoutOptions, bounds: Engine.O
         _.forEach(measure.elements, function(segment, si) {
             _.forEach(segment, function(element, j) {
                 _.forEach(element.boundingBoxes$, box => {
+                    if (box.left >= box.right) {
+                        console.warn("Invalid left >= right (%s >= %s)", box.left, box.right);
+                        box.right = box.left + 0.01;
+                    }
+                    if (box.top >= box.bottom) {
+                        console.warn("Invalid top >= bottom (%s >= %s)", box.top, box.bottom);
+                        box.bottom = box.top + 0.01;
+                    }
+                    if (isNaN(box.top) || isNaN(box.bottom) || isNaN(box.left) || isNaN(box.right)) {
+                        console.warn("Invalid box.{top, bottom, left, right} = {%s, %s, %s, %s}", box.top, box.bottom, box.left, box.right);
+                        return;
+                    }
                     let rect: IVPSCLayoutRect = <any> new Cola.vpsc.Rectangle(
                         element.barX + box.defaultX + box.left,
                         element.barX + box.defaultX + box.right,
