@@ -73,36 +73,49 @@ describe("import/export dtd validation", function() {
                 .replace(".xml", ".svg");
             it("can be imported, exported, validated, and rendered", function(done) {
                 readFile(root + "/" + file, function(str) {
-                    try {
-                        let score = Models.importXML(str);
-
-                        let stdout: string;
-                        let stderr: string;
-                        let error: string;
-                        if (!process.env.SKIP_DTD_VALIDATION) {
-                            let mxmlOut = Models.exportXML(score);
-                            let env = Object.create(process.env);
-                            env.XML_CATALOG_FILES = "./vendor/musicxml-dtd/catalog.xml";
-                            let proc = (<any>child_process).spawnSync("xmllint",
-                                    ["--valid", "--noout", "--nonet", "-"], {
-                                input: mxmlOut,
-                                env: env
-                            });
-                            stdout = proc.stdout + "";
-                            stderr = proc.stderr + "";
-                            error = proc.error;
+                    Models.importXML(str, (err, document) => {
+                        if (err) {
+                            done(err);
+                            return;
                         }
-                        if (stdout || stderr) {
-                            done(new Error(stderr || stdout || error));
-                        } else {
-                            let page1Svg = Views.renderDocument(score, 0);
+                        try {
+                            let page1Svg = Views.renderDocument(document, 0);
                             fs.writeFile("rendertest/out/" + outname, page1Svg);
-                            done();
+
+                            if (!process.env.SKIP_DTD_VALIDATION) {
+                                Models.exportXML(document, (err, mxmlOut) => {
+                                    if (err) {
+                                        done(err);
+                                        return;
+                                    }
+                                    let stdout: string;
+                                    let stderr: string;
+                                    let error: string;
+                                    
+                                    let env = Object.create(process.env);
+                                    env.XML_CATALOG_FILES = "./vendor/musicxml-dtd/catalog.xml";
+                                    let proc = (<any>child_process).spawnSync("xmllint",
+                                            ["--valid", "--noout", "--nonet", "-"], {
+                                        input: mxmlOut,
+                                        env: env
+                                    });
+                                    stdout = proc.stdout + "";
+                                    stderr = proc.stderr + "";
+                                    error = proc.error;
+                                    if (stdout || stderr) {
+                                        done(new Error(stderr || stdout || error));
+                                    } else {
+                                        done();                                        
+                                    }
+                                });
+                            } else {
+                                done();
+                            }
+                        } catch(err) {
+                            done(err);
+                            return;
                         }
-                    } catch(err) {
-                        done(err);
-                        return;
-                    }
+                    });
                 });
             });
         });

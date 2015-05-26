@@ -45,7 +45,7 @@ class Accidental extends React.Component<{spec: MusicXML.Accidental}, void> {
         });
 
         if (spec.parentheses || spec.bracket) {
-            var width = SMuFL.bboxes[glyphName][0]*10;
+            var width = SMuFL.bboxes[glyphName][0]*10; // TODO: it's actually 2 - 0!
             return React.DOM.g(null,
                 $(Glyph)({
                         x: originX + spec.defaultX + (spec.relativeX || 0) - 7 + shift,

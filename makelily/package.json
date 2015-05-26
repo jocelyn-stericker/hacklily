@@ -24,8 +24,9 @@
         "fast-json-patch": "0.5.2",
         "lodash": "3.9.1",
         "musicxml-interfaces": "ripieno/musicxml-interfaces",
+        "opentype": "nodebox/opentype.js#0.4.7",
         "react": "0.13.3",
-        "webcola": "jnetterf/WebCola#commonjs_noendl",
+        "webcola": "tgdwyer/WebCola#326dc8e9e",
         "yargs": "3.9.1"
     },
     "devDependencies": {
