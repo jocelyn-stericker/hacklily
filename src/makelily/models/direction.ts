@@ -20,6 +20,7 @@ import MusicXML         = require("musicxml-interfaces");
 import _                = require("lodash");
 
 import Engine           = require("./engine");
+import Fonts            = require("./fonts");
 
 class DirectionModel implements Export.IDirectionModel {
 
@@ -103,10 +104,10 @@ module DirectionModel {
                     break;
                 case MusicXML.AboveBelow.Above:
                 case MusicXML.AboveBelow.Unspecified:
-                    defaultY = 70;
+                    defaultY = 80;
                     break;
                 default:
-                    defaultY = 70;
+                    defaultY = 80;
                     break;
             }
 
@@ -120,10 +121,18 @@ module DirectionModel {
                     type.words[idx].fontSize = type.words[idx].fontSize || "18";
                     type.words[idx].defaultX = 0;
                     type.words[idx].defaultY = defaultY;
+                    // TODO support more than just Alegreya and Alegreya Bold!
+                    let fontBox = Fonts.getTextBB(type.words[idx].fontWeight === MusicXML.NormalBold.Normal ?
+                        "Alegreya" : "Alegreya Bold", type.words[idx].data, parseInt(type.words[idx].fontSize, 10));
+                    const scale40 = cursor$.header.defaults.scaling.millimeters / cursor$.header.defaults.scaling.tenths * 40;
                     let boundingBox: Engine.IModel.IBoundingRect = <any> type.words[idx];
-                    boundingBox.relativeTo = Engine.IModel.RelativeTo.Model;
-                    boundingBox.w = 20; // TODO
-                    boundingBox.h = 20; // TODO
+
+                    // Vertical coordinates are flipped (argh!)
+                    boundingBox.top = -Engine.RenderUtil.mmToTenths(scale40, fontBox.bottom/Engine.RenderUtil.ptPerMM)*1.1;
+                    boundingBox.bottom = -Engine.RenderUtil.mmToTenths(scale40, fontBox.top/Engine.RenderUtil.ptPerMM)*1.1;
+
+                    boundingBox.left = Engine.RenderUtil.mmToTenths(scale40, fontBox.left/Engine.RenderUtil.ptPerMM)*1.1;
+                    boundingBox.right = Engine.RenderUtil.mmToTenths(scale40, fontBox.right/Engine.RenderUtil.ptPerMM)*1.1;
                     this.boundingBoxes$.push(boundingBox);
                 });
                 if (type.dynamics) {
@@ -132,9 +141,10 @@ module DirectionModel {
                     type.dynamics.defaultX = 0;
                     type.dynamics.defaultY = defaultY;
                     let boundingBox: Engine.IModel.IBoundingRect = <any> type.dynamics;
-                    boundingBox.relativeTo = Engine.IModel.RelativeTo.Model;
-                    boundingBox.w = 20; // TODO
-                    boundingBox.h = 20; // TODO
+                    boundingBox.left = -10;
+                    boundingBox.right = 30;
+                    boundingBox.top = -10;
+                    boundingBox.bottom = 30; // TODO
                     this.boundingBoxes$.push(boundingBox);
                 }
             });

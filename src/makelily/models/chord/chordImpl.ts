@@ -21,6 +21,7 @@ import _                = require("lodash");
 import invariant        = require("react/lib/invariant");
 
 import Engine           = require("../engine");
+import Notation         = require("./notation");
 import NoteImpl         = require("./noteImpl"); // @cyclic
 import ChordModel       = require("../chord");
 import Metre            = require("./metre");
@@ -553,94 +554,7 @@ module ChordModelImpl {
             let bboxes: Engine.IModel.IBoundingRect[] = [];
             _.forEach(this.model, note => {
                 let notations = note.notationObj; // TODO: detach this
-                _.forEach(notations.accidentalMarks, accidentalMark => {
-                    // TODO
-                });
-                _.forEach(notations.arpeggiates, arpeggiate => {
-                    // TODO
-                });
-                if (notations.articulations) {
-                    notations.articulations = Object.create(notations.articulations);
-                }
-                _.forEach(notations.articulations, (articulation, key) => {
-                    notations.articulations[key] = Object.create(articulation);
-                    _.forEach(["accent", "breathMark", "caesura", "detachedLegato", "doit", "falloff", "plop",
-                    "scoop", "spiccato", "staccatissimo", "staccato", "stress", "strongAccent",
-                    "tenuto", "unstress"], type => {
-                        if (!(type in articulation)) {
-                            return;
-                        }
-                        let printStyle: MusicXML.PrintStyle | Engine.IModel.IBoundingRect = Object.create((<any>articulation)[type]);
-                        let boundingRect = <Engine.IModel.IBoundingRect> printStyle;
-                        let placement: MusicXML.Placement = <any> printStyle;
-                        boundingRect.frozenness = Engine.IModel.FrozenLevel.Warm;
-                        boundingRect.w = 20; // TODO
-                        boundingRect.h = 20; // TODO
-                        boundingRect.defaultX = 0;
-                        boundingRect.relativeTo = Engine.IModel.RelativeTo.Model;
-                        if (placement.placement === MusicXML.AboveBelow.Below) {
-                            boundingRect.defaultY = -30;
-                        } else if (placement.placement === MusicXML.AboveBelow.Above) {
-                            boundingRect.defaultY = 60;
-                        } else {
-                            console.warn("TODO: Set default above/below");
-                            // above: "fermata", "breathMark", "caesura", "strings"
-                            // below: "dynamic"
-                            boundingRect.defaultY = 0;
-                        }
-                        (<any>notations.articulations[key])[type] = printStyle;
-                        bboxes.push(<Engine.IModel.IBoundingRect> printStyle);
-                    });
-                });
-                _.forEach(notations.dynamics, dynamic => {
-                    // TODO
-                });
-                if (notations.fermatas) {
-                    notations.fermatas = Object.create(notations.fermatas);
-                }
-                _.forEach(notations.fermatas, (fermata, key) => {
-                    if (!fermata) {
-                        return;
-                    }
-                    fermata = Object.create(notations.fermatas[key]);
-                    notations.fermatas[key] = fermata;
-                    let boundingRect: Engine.IModel.IBoundingRect = <any> fermata;
-                    boundingRect.frozenness = Engine.IModel.FrozenLevel.Warm;
-                    boundingRect.w = 20; // TODO
-                    boundingRect.h = 20; // TODO
-
-                    if (fermata.type === MusicXML.UprightInverted.Inverted) {
-                        boundingRect.defaultY = -30;
-                    } else {
-                        boundingRect.defaultY = 60;
-                    }
-                    boundingRect.defaultX = 0;
-                    bboxes.push(boundingRect);
-                });
-                _.forEach(notations.glissandos, glissando => {
-                    // TODO
-                });
-                _.forEach(notations.nonArpeggiates, nonArpeggiate => {
-                    // TODO
-                });
-                _.forEach(notations.ornaments, ornament => {
-                    // TODO
-                });
-                _.forEach(notations.slides, slide => {
-                    // TODO
-                });
-                _.forEach(notations.slurs, slur => {
-                    // TODO
-                });
-                _.forEach(notations.technicals, technical => {
-                    // TODO
-                });
-                _.forEach(notations.tieds, tied => {
-                    // TODO
-                });
-                _.forEach(notations.tuplets, tuplet => {
-                    // TODO
-                });
+                bboxes = bboxes.concat(Notation.getBoundingRects(notations));
             });
             return bboxes;
         }

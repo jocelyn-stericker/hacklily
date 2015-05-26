@@ -168,24 +168,58 @@ module IModel {
         Centered    = 2
     }
 
+    /**
+     * Represents a child of a model that can move or be moved by other IBoundRects.
+     * In particular, the layout engine modifies relativeX and relativeY of elements with
+     * fixed=false to remove overlaps.
+     */
     export interface IBoundingRect {
-        frozenness:     IModel.FrozenLevel;
         /**
-         * If unspecified, relative to line.
+         * Position relative to parent model as computed by model.
          */
-        relativeTo?:    IModel.RelativeTo;
-        fixed?:         boolean;
         defaultX:       number;
+ 
+        /**
+         * Position relative to parent model as computed by model.
+         */
         defaultY:       number;
-        relativeX?:     number;
-        relativeY?:     number;
-        w:              number;
-        h:              number;
-    }
 
-    export enum RelativeTo {
-        Line = 0,
-        Model = 1
+        /**
+         * If true, relative coordinates cannot be changed by the layout engine
+         */
+        fixed?:         boolean;
+
+        /**
+         * Position relative to ideal position as computed by layout engine.
+         */
+        relativeX?:     number;
+
+        /**
+         * Position relative to ideal position as computed by layout engine.
+         */
+        relativeY?:     number;
+
+        /**
+         * Visual top of bounding box
+         */
+        top:            number;
+
+        /**
+         * Visual bottom of bounding box
+         * Invariant: bottom > top
+         */
+        bottom:         number;
+
+        /**
+         * Visual left of bounding box
+         */
+        left:           number;
+
+        /**
+         * Visual right of bounding box.
+         * Invariant: right > left
+         */
+        right:          number;
     }
 
     export interface ICombinedLayout {

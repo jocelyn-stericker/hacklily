@@ -29,18 +29,21 @@ interface IVPSCLayoutRect extends Cola.vpsc.Rectangle {
 }
 
 function colaRemoveOverlapsSomeFixed(rs: IVPSCLayoutRect[]): void {
-    var vs = rs.map(r => new Cola.vpsc.Variable(r.cx(), r.mxmlBox.fixed ? Number.POSITIVE_INFINITY : 1));
-    var cs = Cola.vpsc.generateXConstraints(rs, vs);
-    var solver = new Cola.vpsc.Solver(vs, cs);
-    solver.solve();
-    vs.forEach((v, i) => rs[i].setXCentre(v.position()));
-    vs = rs.map(function (r) {
-        return new Cola.vpsc.Variable(r.cy());
+    // Prefer y
+    let vs = rs.map(function (r) {
+        return new Cola.vpsc.Variable(r.cy(), r.mxmlBox.fixed ? Number.POSITIVE_INFINITY : 1);
     });
-    cs = Cola.vpsc.generateYConstraints(rs, vs);
-    solver = new Cola.vpsc.Solver(vs, cs);
+    let cs = Cola.vpsc.generateYConstraints(rs, vs);
+    let solver = new Cola.vpsc.Solver(vs, cs);
     solver.solve();
     vs.forEach((v, i) => rs[i].setYCentre(v.position()));
+
+    // Move x if needed
+    vs = rs.map(r => new Cola.vpsc.Variable(r.cx(), r.mxmlBox.fixed ? Number.POSITIVE_INFINITY : 1));
+    cs = Cola.vpsc.generateXConstraints(rs, vs);
+    solver = new Cola.vpsc.Solver(vs, cs);
+    solver.solve();
+    vs.forEach((v, i) => rs[i].setXCentre(v.position()));
 }
 
 function removeOverlaps(options: Engine.Options.ILayoutOptions, bounds: Engine.Options.ILineBounds,
@@ -54,8 +57,10 @@ function removeOverlaps(options: Engine.Options.ILayoutOptions, bounds: Engine.O
             _.forEach(segment, function(element, j) {
                 _.forEach(element.boundingBoxes$, box => {
                     let rect: IVPSCLayoutRect = <any> new Cola.vpsc.Rectangle(
-                        element.barX + box.defaultX, element.barX + box.defaultX + box.w,
-                        box.defaultY - box.h, box.defaultY);
+                        element.barX + box.defaultX + box.left,
+                        element.barX + box.defaultX + box.right,
+                        box.defaultY + box.top,
+                        box.defaultY + box.bottom);
                     rect.mxmlBox = box;
                     rect.parent = element;
                     boxes.push(rect);
@@ -66,12 +71,12 @@ function removeOverlaps(options: Engine.Options.ILayoutOptions, bounds: Engine.O
 
     colaRemoveOverlapsSomeFixed(boxes);
     _.forEach(boxes, box => {
-        let expectedX = box.parent.barX + box.mxmlBox.defaultX;
-        let expectedY = box.mxmlBox.defaultY - box.mxmlBox.h;
+        let expectedX = box.parent.barX + box.mxmlBox.defaultX + box.mxmlBox.left;
+        let expectedY = box.mxmlBox.defaultY + box.mxmlBox.top;
         let actualX = box.x;
         let actualY = box.y;
         box.mxmlBox.relativeX = actualX - expectedX;
-        box.mxmlBox.relativeY = expectedY - actualY;
+        box.mxmlBox.relativeY = actualY - expectedY;
     });
 
     return measures$;

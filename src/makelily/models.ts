@@ -24,6 +24,7 @@ import Barline          = require("./models/barline");
 import Chord            = require("./models/chord");
 import Direction        = require("./models/direction");
 import Engine           = require("./models/engine");
+import Fonts            = require("./models/fonts");
 import Factory          = require("./models/factory");
 import FiguredBass      = require("./models/figuredBass");
 import Grouping         = require("./models/grouping");
@@ -50,7 +51,7 @@ export function makeFactory() {
     ]);
 }
 
-export function importXML(src: string): Engine.IDocument {
+function _importXML(src: string) {
     let mxmljson    = MusicXML.parse(src);
     if ((<any>mxmljson).error) {
         throw (<any>mxmljson).error;
@@ -77,7 +78,20 @@ export function importXML(src: string): Engine.IDocument {
     return score;
 }
 
-export function exportXML(score: Engine.IDocument): string {
+export function importXML(src: string, cb: (error: Error, document?: Engine.IDocument) => void) {
+    // TODO: http version
+    Fonts.loadAll((err) => {
+        if (err) {
+            cb(err);
+        } else try {
+            cb(null, _importXML(src));
+        } catch(err) {
+            cb(err);
+        }
+    });
+}
+
+export function exportXML(score: Engine.IDocument, cb: (error: Error, xml: string) => void) {
     let out = "";
     out += score.header.toXML() + "\n";
     _.forEach(score.measures, measure => {
@@ -111,10 +125,10 @@ export function exportXML(score: Engine.IDocument): string {
         out += `</measure>\n`;
     });
 
-    return `<?xml version="1.0" encoding="UTF-8"?>
+    cb(null, `<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE score-timewise PUBLIC "-//Recordare//DTD MusicXML 1.0 Timewise//EN"
                                 "http://www.musicxml.org/dtds/timewise.dtd">
 <score-timewise>
 ${out.split("\n").map(t => "  " + t).join("\n")}
-</score-timewise>`;
+</score-timewise>`);
 }

@@ -90,7 +90,7 @@ export let Prototype: ITextMixin = {
             return undefined;
         }
         let x = words.defaultX;
-        if (x) {
+        if (!isNaN(x)) {
             return (x + (words.relativeX || 0)) - initX;
         }
         return DEF_SPACING;

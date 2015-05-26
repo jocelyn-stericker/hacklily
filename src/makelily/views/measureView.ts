@@ -20,6 +20,7 @@ import React                = require("react");
 import _                    = require("lodash");
 var $                       = React.createFactory;
 
+import DebugBox             = require("./debugBox");
 import Engine               = require("../models/engine");
 import ModelView            = require("./modelView");
 
@@ -34,7 +35,8 @@ class MeasureView extends React.Component<{layout: Engine.Measure.IMeasureLayout
                 .map((layout: Engine.IModel.ILayout) => $(ModelView)({
                     layout: layout,
                     key: (<any>layout).key}))
-                .value()
+                .value(),
+            $(DebugBox)({key: "debugBox", layout: layout})
         /*React.DOM.g*/);
 
         /* TODO: lyric boxes */
