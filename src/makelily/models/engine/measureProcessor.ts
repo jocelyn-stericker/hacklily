@@ -136,7 +136,7 @@ export function reduce(spec: ILayoutOpts): Measure.IMeasureLayout {
 
     let gStaffLayouts$: { [key: string]: IModel.ILayout[][] } = {};
 
-    let gMaxXInMeasure               = 0;
+    let gMaxXInMeasure               = gMeasure.x;
     let gMaxPaddingTopInMeasure$     = <number[]> [];
     let gMaxPaddingBottomInMeasure$  = <number[]> [];
 
@@ -471,7 +471,7 @@ export function layoutMeasure(opts: IMeasureLayoutOptions): Measure.IMeasureLayo
  * @param opts structure with __normalized__ voices and staves
  * @returns an approximate width for a measure that is not the first on a line.
  */
-export function approximateWidth(opts: IMeasureLayoutOptions): number {
+export function approximateLayout(opts: IMeasureLayoutOptions): Measure.IMeasureLayout {
     invariant(isNaN(opts.measure.width) || opts.measure.width === null,
         "Engine.approximateWidth(...) must be passed a measure without an exact width.\n" +
         "Instead, it was passed a measure with opts.measure.width === %s.\n" +
@@ -484,8 +484,7 @@ export function approximateWidth(opts: IMeasureLayoutOptions): number {
             _approximate: true,
             _detached: true
         }, opts);
-    let layout = layoutMeasure(opts);
-    return layout.width;
+    return layoutMeasure(opts);
 }
 
 export declare class Error {

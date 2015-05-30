@@ -39,6 +39,7 @@ export type PostProcessor = (options: ILayoutOptions, bounds: ILineBounds, measu
 
 export interface ILinesLayoutState {
     width$: { [key: string]: number };
+    multipleRests$: { [key: string]: number };
     clean$: { [key: string]: Measure.IMeasureLayout };
     y$: number;
 }
@@ -48,6 +49,7 @@ export module ILinesLayoutMemo {
         return {
             y$:     top,
             width$: {},
+            multipleRests$: {},
             clean$: {}
         };
     }
