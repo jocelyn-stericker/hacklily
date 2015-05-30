@@ -271,9 +271,11 @@ export function layout$(options: Options.ILayoutOptions,
 
     let measures = options.measures;
     let width$ = memo$.width$;
+    let multipleRests$ = memo$.multipleRests$;
 
     invariant(!!options.print$, "Print not defined");
     let boundsGuess = Options.ILineBounds.calculate(options.print$, options.page$);
+    let multipleRest: number = undefined;
 
     let widths = _.map(measures, function layoutMeasure(measure, idx) {
         // Create an array of the IMeasureParts of the previous, current, and next measures
@@ -297,7 +299,7 @@ export function layout$(options: Options.ILayoutOptions,
             if (isFinite(measure.width) && measure.width > 0) {
                 width$[measure.uuid] = measure.width;
             } else {
-                width$[measure.uuid] = MeasureProcessor.approximateWidth({
+                let layout = MeasureProcessor.approximateLayout({
                     attributes:     options.attributes,
                     factory:        options.modelFactory,
                     header:         options.header,
@@ -308,8 +310,18 @@ export function layout$(options: Options.ILayoutOptions,
                     voices:         _.map(_.values(measure.parts), p => p.voices),
                     x:              0
                 });
+                if (layout.attributes && layout.attributes.measureStyle && layout.attributes.measureStyle.multipleRest) {
+                    multipleRest = multipleRests$[measure.uuid] = layout.attributes.measureStyle.multipleRest.count - 1;
+                } else if (!isNaN(multipleRest)) {
+                    multipleRests$[measure.uuid] = multipleRest;
+                    layout.width = 0;
+                } else {
+                    delete multipleRests$[measure.uuid];
+                }
+                width$[measure.uuid] = layout.width;
             }
         }
+        multipleRest = multipleRest ? multipleRest - 1 : undefined;
         return width$[measure.uuid];
     });
 

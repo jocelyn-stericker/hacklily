@@ -159,7 +159,10 @@ class ChordModelImpl implements ChordModel.IChordModel {
     }
 
     layout(cursor$: Engine.ICursor): ChordModel.IChordLayout {
-        this._checkMulitpleRest$(cursor$);
+        let measureStyle: MusicXML.MeasureStyle = cursor$.staff.attributes.measureStyle;
+        if (measureStyle && measureStyle.multipleRest && measureStyle.multipleRest.count > 1) {
+            cursor$.staff.multiRestRem = measureStyle.multipleRest.count;
+        }
         return new ChordModelImpl.Layout(this, cursor$);
     }
 

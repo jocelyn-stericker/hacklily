@@ -196,7 +196,7 @@ describe("[engine/measureProcessor.ts]", function() {
                 ETestUtil.createFakeVoiceSegment(1, 7, 2)
             ];
 
-            var width = MeasureProcessor.approximateWidth({
+            var width = MeasureProcessor.approximateLayout({
                 attributes:     null,
                 maxX:           1000,
                 minX:           100,
@@ -223,7 +223,7 @@ describe("[engine/measureProcessor.ts]", function() {
                     lines:          1
                 },
                 factory:        ETestUtil.fakeAttributeChordFactory
-            });
+            }).width;
             expect(width).to.equal(90); // 100 - 10 for attribute 1. See ETestUtil.createFakeStaffSegment
         });
     });
