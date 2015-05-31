@@ -4,7 +4,7 @@
     "homepage": "http://ripieno.github.io/satie",
     "version": "0.0.3-alpha",
     "author": "Josh Netterfield",
-    "license": "AGPLv3",
+    "license": "AGPL-3.0",
     "files": [
         "dist/",
         "COPYING.txt"
@@ -25,23 +25,30 @@
         "lodash": "3.9.1",
         "musicxml-interfaces": "ripieno/musicxml-interfaces",
         "opentype": "nodebox/opentype.js#0.4.7",
-        "react": "0.13.3",
         "webcola": "tgdwyer/WebCola#326dc8e9e",
         "yargs": "3.9.1"
     },
+    "peerDependencies": {
+        "react": "0.13.x"
+    },
     "devDependencies": {
         "chai": "2.3.0",
-        "dts-bundle": "0.2.0",
+        "dts-generator": "^1.4.1",
         "istanbul": "0.3.14",
         "mocha": "2.2.5",
+        "node-libs-browser": "0.5.2",
+        "react": "0.13.3",
         "source-map-support": "0.2.10",
         "svg2png": "1.1.1",
-        "tsd": "0.6.0",
         "tslint": "2.2.0-beta",
         "typescript": "1.5.0-beta"
     },
     "typescript": {
         "definition": "dist/satie.d.ts"
+    },
+    "browser": {
+        "source-map-support": false,
+        "fs": false
     },
     "scripts": {
         "build": "NODE_ENV=production make",

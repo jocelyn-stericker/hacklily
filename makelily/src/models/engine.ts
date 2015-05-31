@@ -135,7 +135,7 @@ import Ctx                      = require("./engine/ctx");
 import LineProcessor            = require("./engine/lineProcessor");
 import MeasureProcessor         = require("./engine/measureProcessor");
 
-if (process.env.NODE_ENV !== "production") {
+if (process.env.NODE_ENV !== "production" && !(<any>process).browser) {
     /* tslint:disable */
     require("source-map-support").install();
     /* tslint:enable */

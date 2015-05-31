@@ -1,0 +1,18 @@
+@import 'common';
+
+:local(.test) {
+    margin-top: 20px;
+}
+
+:local(.page) {
+    border: 1px solid $color--border--accepted; 
+}
+
+:local(.error) {
+    border: 1px solid $color--border--error;
+    width: 100%;
+    padding: 4px;
+    display: inline-block;
+    font-size: 10px;
+    box-sizing: border-box;
+}

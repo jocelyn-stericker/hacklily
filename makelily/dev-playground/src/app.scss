@@ -1,0 +1,61 @@
+@import 'common';
+
+body {
+    font-family: $font--body;
+    margin: 40px auto;
+    max-width: 650px;
+    line-height: 1.6;
+    font-size: 18px;
+    color: $color--text;
+    padding: 0 10px;
+}
+
+h1, h2, h3 {
+    line-height:1.2
+}
+
+a {
+    color: $color--link;
+    text-decoration: none;
+}
+
+:local(.topbar) {
+    position: fixed;
+    width: 100%;
+    top: 0;
+    left: 0;
+    background-color: $color--highlight-blue;
+    height: 3px;
+}
+
+:local(.toplink) {
+    position: absolute;
+    top: 15px;
+    left: 15px;
+    
+    + h1 {
+        padding-top: 20px;
+    }
+}
+
+@media (min-width: 920px) {
+    :local(.toplink) {
+        position: fixed;
+    }
+}
+
+@media (max-width: 460px) {
+    :local(.toplink) {
+        width: 100%;
+        text-align: center;
+    }
+    h1 {
+        font-size: 1.5em;
+    }
+    h2 {
+        font-size: 1.2em;
+    }
+    h3 {
+        font-size: 1.08em;
+    }
+}

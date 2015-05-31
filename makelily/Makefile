@@ -21,25 +21,6 @@
 all: build test
 
 
-# ---- Script to combine bundle d.ts files into a bundle --------------------------
-
-define DTS_BUNDLE_JS
-    var path = require("path");
-    var bundler = require("dts-bundle");
-    var dirs = {
-	build:              path.join(__dirname, "..", "dist"),
-	partial:            path.join(__dirname, ".partialBuild"),
-    };
-
-    var files = {
-	mainDTS:            path.join(__dirname, ".partialBuild", "index.d.ts"),
-	bundleDTS:          path.join(dirs.build, "satie.d.ts"),
-    };
-    bundler.bundle({ name: "satie", main: files.mainDTS, baseDir: dirs.partial, out: files.bundleDTS, externals: true, indent: "  " });
-endef
-export DTS_BUNDLE_JS
-
-
 # ---- Headers for generated files ------------------------------------------------
 
 define BRAVURA_HEADER
@@ -105,9 +86,15 @@ _stageOnly:
 	@cd src; find . -name "*.d.ts" -print0 | xargs -0 -I _FILE_ mv _FILE_ ../.partialBuild/_FILE_
 	@cd src; find . -name "*.js" -print0 | xargs -0 -I _FILE_ mv _FILE_ ../dist/_FILE_
 	@cd src; find . -name "*.js.map" -print0 | xargs -0 -I _FILE_ mv _FILE_ ../dist/_FILE_
+	@mkdir -p ./dev-playground/node_modules
+	@mkdir -p ./dev-playground/node_modules/satie
+	@mkdir -p ./dev-playground/node_modules/satie/dist
+	@cp ./package.json ./dev-playground/node_modules/satie
+	@cp -rf ./dist/* ./dev-playground/node_modules/satie/dist/
 
 # Create satie.d.ts for TypeScript clients
-	@echo "$$DTS_BUNDLE_JS" | node
+	@./node_modules/.bin/dts-generator --name satie --baseDir ./.partialBuild/ --out ./dist/satie.d.ts ./.partialBuild/index.d.ts > /dev/null
+	@echo "declare module 'satie' { import Satie = require('satie/index'); export = Satie; }" >> ./dist/satie.d.ts
 
 _watchStage:
 	@printf "$(STAGE_STRING)\n"
@@ -173,6 +160,7 @@ clean:
 	@printf "$(CLEAN_STRING)\n"
 	@rm -rf ./.partialBuild
 	@rm -rf ./dist
+	@rm -rf ./dev-playground/node_modules/satie/dist
 	@cd src; find . -name "*.d.ts" -print0 | xargs -0 -I _FILE_ rm _FILE_
 	@cd src; find . -name "*.js" -print0 | xargs -0 -I _FILE_ rm _FILE_
 	@cd src; find . -name "*.js.map" -print0 | xargs -0 -I _FILE_ rm _FILE_
