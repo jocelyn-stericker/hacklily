@@ -20,22 +20,24 @@
 
 /// <reference path="../vendor/typings/tsd.d.ts" />
 
-import MusicXML         = require("musicxml-interfaces");
 import _                = require("lodash");
 import invariant        = require("react/lib/invariant");
 
-import MXMLImport       = require("./models/mxml/import");
+import Engine           = require("./models/engine");
 import Models           = require("./models");
 import validateURL      = require("./util/validateURL");
+export import Viewer    = require("./viewer");
 
 /*---- Public Interface -------------------------------------------------------------------------*/
+
+export type IDocument = Engine.IDocument;
 
 /**
  * Optional initialization function. Call this if you don't want the default options. Must be called
  * before any Satie component is mounted, and must only be called once.
  */
 export function init(options: ISatieOptions): void {
-    invariant(!BrowserSetup.cssInjected, "initSatie must be called before any Satie component is mounted " +
+    invariant(!BrowserSetup.cssInjected, "init must be called before any Satie component is mounted " +
         "and must only be called once");
     BrowserSetup.injectStyles(options);
 }
@@ -91,12 +93,12 @@ export interface ISatieProps {
     height: number;
 }
 
-export function toSVG(xml: string): string {
-    var mxmljson    = MusicXML.parse(xml);
-    var factory     = Models.makeFactory();
-    var score       = MXMLImport.toScore(mxmljson, factory);
-    console.log(score);
-    return "not implemented";
+export function loadDocument(xml: string, failure: (err: Error) => void, success: (doc: Engine.IDocument) => void) {
+    Models.importXML(xml, (err, document) => err ? failure(err) : success(document));
+}
+
+export function toSVG(xml: string, cb: (svg: string) => void) {
+    throw new Error("not implemented");
 }
 
 /*---- Private ----------------------------------------------------------------------------------*/

@@ -92,6 +92,7 @@ class Page extends React.Component<Page.IProps, Page.IState> {
                 "data-page":    this.props.renderTarget === Page.RenderTarget.SvgExport ?
                                     undefined : print.pageNumber,
                 ref:            "svg" + print.pageNumber,
+                className:      this.props.className,
 
                 height:         heightMM,
                 width:          widthMM,
@@ -139,6 +140,7 @@ module Page {
         print:          MusicXML.Print;
         lineLayouts:    Engine.Options.ILineLayoutResult[];
         renderTarget:   RenderTarget;
+        className:      string;
 
         onClick?:       (evt: React.MouseEvent) => void;
         onMouseDown?:   (evt: React.MouseEvent) => void;

@@ -19,20 +19,30 @@
 "use strict";
 
 import Opentype                 = require("opentype.js");
+import _                        = require("lodash");
 import invariant                = require("react/lib/invariant");
 
 let fonts: {[font: string]: Opentype.Font} = {};
 let loaded = false;
+var loading = false;
+var cbs: ((err?: Error) => void)[] = [];
 
 export function loadAll(cb: (err?: Error) => void) {
     if (loaded) {
         cb();
         return;
     }
+    cbs.push(cb);
+    if (loading) {
+        return;
+    }
+    loading = true;
     let remaining = 0;
 
-    doLoad("Alegreya", "./vendor/alegreya/Alegreya-Regular.ttf");
-    doLoad("Alegreya Bold", "./vendor/alegreya/Alegreya-Bold.ttf");
+    // TODO: Use URL from index.ts / Google Fonts
+    let isBrowser = !!(<any>process).browser;
+    doLoad("Alegreya", isBrowser ? "/vendor/alegreya/Alegreya-Regular.ttf" : "./vendor/alegreya/Alegreya-Regular.ttf");
+    doLoad("Alegreya Bold", isBrowser ? "/vendor/alegreya/Alegreya-Bold.ttf" : "./vendor/alegreya/Alegreya-Regular.ttf");
 
     function doLoad(name: string, url: string) {
         ++remaining;
@@ -40,10 +50,12 @@ export function loadAll(cb: (err?: Error) => void) {
     }
     function goOn(err: Error) {
         if (err) {
-            cb(err);
+            _.forEach(cbs, cb => cb(err));
+            cbs = null;
         } else if (!--remaining) {
             loaded = true;
-            cb();
+            _.forEach(cbs, cb => cb());
+            cbs = null;
         }
     }
 }

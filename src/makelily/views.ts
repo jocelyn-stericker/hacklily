@@ -32,15 +32,8 @@ import RemoveOverlaps       = require("./models/postprocessors/removeOverlaps");
 
 SvgExt.inject();
 
-/**
- * Renders a single page starting at `startMeasure`.
- * 
- * @param doc Validated document
- * 
- * @param startMeasure the index from 0 (not to be confused with the
- *        measure number string) of the first measure.
- */
-export function renderDocument(doc: Engine.IDocument, startMeasure: number): string {
+export function getPage(doc: Engine.IDocument, startMeasure: number,
+        renderTarget = Page.RenderTarget.SvgExport, pageClassName = ""): React.ReactElement<Page.IProps> {
     let factory = doc.factory;
     const pageNum = 1; // FIXME
     if (!factory) {
@@ -79,12 +72,25 @@ export function renderDocument(doc: Engine.IDocument, startMeasure: number): str
         postProcessors: [Justify, Beam, RemoveOverlaps]
     }, memo$);
 
-    const core = React.renderToStaticMarkup($(Page)({
+    return $(Page)({
         scoreHeader:    doc.header,
         lineLayouts:    lineLayouts,
         "print":        print,
-        renderTarget:   Page.RenderTarget.SvgExport
-    }));
+        renderTarget:   renderTarget,
+        className:      pageClassName
+    });
+}
+
+/**
+ * Renders a single page starting at `startMeasure`.
+ * 
+ * @param doc Validated document
+ * 
+ * @param startMeasure the index from 0 (not to be confused with the
+ *        measure number string) of the first measure.
+ */
+export function renderDocument(doc: Engine.IDocument, startMeasure: number): string {
+    const core = React.renderToStaticMarkup(getPage(doc, startMeasure));
 
     return `<?xml version="1.0" encoding="UTF-8" standalone="no"?>${
         core.replace("<svg", "<svg xmlns=\"http://www.w3.org/2000/svg\"")
