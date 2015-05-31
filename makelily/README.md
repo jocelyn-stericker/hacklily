@@ -7,7 +7,7 @@ Satie is a JavaScript library for rendering sheet music.
 * Runs in Node and modern browsers (Chrome, Firefox, Safari, IE 10+).
 * Provides fast updates. Satie was designed to be a component of a sheet music editor.
 
-> **Current status:** The current goal is to pass the [unofficial MusicXML test suite][musicxml_test_suite]. Satie is not yet ready for serious use.
+Satie is not yet ready for production use.
 
 ## Contribute
 Currently, the best way to contribute is by filing issues.
@@ -43,7 +43,7 @@ To build, lint, and run unit tests:
 Ripieno is licensed under the [GNU **Affero** General Public License][agpl]. That means applications that use Satie, whether client-side or server-side, likely need to be open-source.
 
 
-[test_status]: https://travis-ci.org/ripieno/satie.svg?branch=onion
+[test_status]: https://travis-ci.org/ripieno/satie.svg?branch=master
 [test_link]: https://travis-ci.org/ripieno/satie
 [musicxml_test_suite]: http://www.lilypond.org/doc/v2.18/input/regression/musicxml/collated-files.html
 [agpl]: LICENSE.md
