@@ -29,6 +29,7 @@ import chai                     = require("chai");
 var expect                      = chai.expect;
 
 import ETestUtil                = require("../../engine/__tests__/etestutil");
+import Measure                  = require("../../engine/measure");
 import MeasureProcessor         = require("../../engine/measureProcessor");
 import Justify                  = require("../justify");
 
@@ -85,6 +86,7 @@ describe("[lineProcessor.ts]", function() {
             }));
 
             var padding = 12;
+            let detachedLayouts = _.map(layouts, layout => Measure.IMeasureLayout.detach(layout));
 
             var justified = Justify(
                 {
@@ -115,7 +117,7 @@ describe("[lineProcessor.ts]", function() {
                     right: 1000 - 12,
                     systemLayout: null
                 },
-                layouts);
+                detachedLayouts);
 
             expect(justified[0].elements[0][0].x$).to.be.closeTo(layouts[0].elements[0][0].x$, 0.05);
             expect(justified[0].elements[0][2].x$).to.be.closeTo(73.7, 0.1);

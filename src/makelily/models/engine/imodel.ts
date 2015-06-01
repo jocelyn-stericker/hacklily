@@ -124,7 +124,7 @@ module IModel {
          * The final, justified position of the model within a bar.
          * Set by the renderer.
          */
-        barX?:              number;
+        overrideX?:              number;
 
         /** 
          * References to bounding rectangles for annotations such as dots, words,
@@ -144,14 +144,14 @@ module IModel {
     }
     export module ILayout {
         export function detach(layout: ILayout) {
-            layout.barX = NaN;
+            layout.overrideX = NaN;
             return Object.create(layout, {
                 x$: {
                     get: function() {
-                        return layout.barX || layout.x$;
+                        return layout.overrideX || layout.x$;
                     },
                     set: function(x: number) {
-                        layout.barX = x;
+                        layout.overrideX = x;
                     }
                 },
                 model: {

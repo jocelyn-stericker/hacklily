@@ -534,7 +534,7 @@ module ChordModelImpl {
             let totalWidth = this._calcTotalWidth(cursor$, baseModel);
             invariant(isFinite(totalWidth), "Invalid width %s", totalWidth);
 
-            let widths = _.map(baseModel.satieNotehead, notehead => SMuFL.bboxes[notehead][0]*10);
+            let widths = _.map(baseModel.satieNotehead, notehead => (SMuFL.bboxes[notehead][0] - SMuFL.bboxes[notehead][2])*10);
             this.renderedWidth = _.max(widths);
 
             this.x$ = cursor$.x$ + accidentalWidth;
@@ -596,7 +596,7 @@ module ChordModelImpl {
 
                 defaultX: {
                     get: () => {
-                        return note.defaultX || (<any>this).barX || this.x$;
+                        return note.defaultX || (<any>this).overrideX || this.x$;
                     }
                 },
                 defaultY: {

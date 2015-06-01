@@ -17,7 +17,6 @@
  */
 
 import _                        = require("lodash");
-import invariant                = require("react/lib/invariant");
 
 import Engine                   = require("../engine");
 
@@ -38,47 +37,16 @@ function logistic(t: number) {
  * @returns new end of line
  */
 function justify(options: Engine.Options.ILayoutOptions, bounds: Engine.Options.ILineBounds,
-        measures: Engine.Measure.IMeasureLayout[]): Engine.Measure.IMeasureLayout[] {
-
-    let measures$: Engine.Measure.IMeasureLayout[] = _.map(measures, Engine.Measure.IMeasureLayout.detach);
+        measures$: Engine.Measure.IMeasureLayout[]): Engine.Measure.IMeasureLayout[] {
 
     const x = bounds.left + _.reduce(measures$, (sum, measure) => sum + measure.width, 0);
 
     // Check for underfilled bars
     const underfilled = _.map(measures$, (measure, idx) => {
-        let attr = measures[idx].attributes;
+        let attr = measures$[idx].attributes;
         let divs = Engine.IChord.barDivisions(attr);
         let maxDivs = measure.maxDivisions;
         return maxDivs < divs;
-    });
-
-    // Center things (TODO: write tests)
-    _.forEach(measures$, function centerThings(measure, idx) {
-        if (underfilled[idx]) {
-            return;
-        }
-        _.forEach(measure.elements, function(segment, si) {
-            _.forEach(segment, function(element, j) {
-                if (element.expandPolicy === Engine.IModel.ExpandPolicy.Centered) {
-                    let k = j + 1;
-                    while (segment[k + 1] && segment[k].renderClass < Engine.IModel.Type.START_OF_VOICE_ELEMENTS) {
-                        ++k;
-                    }
-                    var next: Engine.IModel.ILayout = segment[k];
-
-                    if (next) {
-                        let x = next.x$;
-                        for (let sj = 0; sj < measure.elements.length; ++sj) {
-                            x = Math.max(x, measure.elements[sj][k].x$);
-                        }
-                        const renderedWidth: number = element.renderedWidth;
-                        invariant(!isNaN(renderedWidth), "%s must be a number", renderedWidth);
-
-                        element.x$ = (element.x$ + next.x$)/2 - renderedWidth/2;
-                    }
-                }
-            });
-        });
     });
 
     let smallest = Number.POSITIVE_INFINITY;
@@ -133,6 +101,8 @@ function justify(options: Engine.Options.ILayoutOptions, bounds: Engine.Options.
     let totalExpCount = 0;
     let lineExpansion = 0;
     _.forEach(measures$, function(measure, measureIdx) {
+        measure.originX += lineExpansion;
+
         let measureExpansion = 0;
         let maxIdx = _.max(_.map(measure.elements, el => el.length));
         _.times(maxIdx, function(j) {
@@ -150,9 +120,6 @@ function justify(options: Engine.Options.ILayoutOptions, bounds: Engine.Options.
                     let ratio = (Math.log(measure.elements[i][j].model.divCount) - Math.log(smallest) + 1) *
                         (underfilled[measureIdx] ? UNDERFILLED_EXPANSION_WEIGHT : 1.0);
 
-                    if (measure.elements[i][j].expandPolicy === Engine.IModel.ExpandPolicy.Centered) {
-                        measure.elements[i][j].x$ += avgExpansion/2*ratio;
-                    }
                     if (!expandOne) {
                         measureExpansion += avgExpansion*ratio;
                         totalExpCount += ratio;
@@ -163,7 +130,6 @@ function justify(options: Engine.Options.ILayoutOptions, bounds: Engine.Options.
         });
 
         measure.width += measureExpansion;
-        measure.originX += lineExpansion;
         lineExpansion += measureExpansion;
     });
 

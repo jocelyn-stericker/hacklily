@@ -114,12 +114,17 @@ export interface IMeasureLayout {
 }
 
 export module IMeasureLayout {
-    function replacer(key: string, value: any) {
-        return key === "elements" ? undefined: value;
-    }
     export function detach(layout: IMeasureLayout) {
-        var clone: IMeasureLayout = JSON.parse(JSON.stringify(layout, replacer));
-        clone.elements = _.map(layout.elements, v => _.map(v, IModel.ILayout.detach));
+        var clone: IMeasureLayout = {
+            attributes:     layout.attributes,
+            elements:       _.map(layout.elements, v => _.map(v, IModel.ILayout.detach)),
+            width:          layout.width,
+            maxDivisions:   layout.maxDivisions,
+            originX:        layout.originX,
+            originY:        layout.originY.slice(),
+            paddingTop:     layout.paddingTop.slice(),
+            paddingBottom:  layout.paddingBottom.slice()
+        };
         return clone;
     };
 }
