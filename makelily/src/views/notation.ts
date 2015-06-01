@@ -91,7 +91,7 @@ class Notation extends React.Component<{spec: MusicXML.Notations, layout: Chord.
         });
 
         _.forEach(model.tieds, tied => {
-            // TODO
+            console.log("Want to render ", tied);
         });
 
         _.forEach(model.tuplets, tuplet => {

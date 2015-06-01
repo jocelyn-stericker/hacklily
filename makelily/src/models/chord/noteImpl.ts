@@ -71,7 +71,7 @@ class NoteImpl implements MusicXML.Note {
 
         _.forEach(properties, setIfDefined);
 
-        this.flattenNotations();
+        this.cleanNotations();
 
         if (!this.staff) {
             this.staff = 1;
@@ -95,7 +95,7 @@ class NoteImpl implements MusicXML.Note {
     }
 
     validate$() {
-        this.flattenNotations();
+        this.cleanNotations();
         if (this.grace && this.cue) {
             delete this.cue;
         }
@@ -324,7 +324,7 @@ class NoteImpl implements MusicXML.Note {
      * In practice, different groups of notations could have different editorials and print-object
      * attributes. I'm not willing to put up with that, yet.
      */
-    flattenNotations() {
+    cleanNotations() {
         let notations = this.notations;
 
         if (notations) {
@@ -347,6 +347,12 @@ class NoteImpl implements MusicXML.Note {
                 level:                     last<MusicXML.Level>             ("level"),
                 printObject:               last<boolean>                    ("printObject")
             };
+
+            _.forEach(notation.tieds, tied => {
+                if (!tied.number) {
+                    tied.number = 1;
+                }
+            });
             this.notations = [notation];
         }
 
