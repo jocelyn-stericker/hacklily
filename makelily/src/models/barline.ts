@@ -112,7 +112,7 @@ module BarlineModel {
 
             this.model = Object.create(origModel, {
                 defaultX: {
-                    get: () => this.barX
+                    get: () => this.overrideX
                 }
             });
             this.model.barStyle = Object.create(this.model.barStyle) || {};
@@ -201,7 +201,7 @@ module BarlineModel {
         /**
          * Set by layout engine.
          */
-        barX:           number;
+        overrideX:           number;
 
         // Prototype:
 

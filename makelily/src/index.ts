@@ -168,13 +168,13 @@ module BrowserSetup {
                 "font-family: 'Alegreya';" +
                 "font-style: italic;" +
                 "text-anchor: middle;" +
-                "stroke: #7a7a7a;" +
+                "fill: #444;" +
             "}" +
             ".bn_ {"+
                 "font-family: 'Alegreya';" +
                 "font-style: italic;" +
                 "text-anchor: end;" +
-                "stroke: #7a7a7a;" +
+                "fill: #7a7a7a;" +
             "}";
     });
 }

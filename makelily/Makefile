@@ -160,7 +160,6 @@ clean:
 	@printf "$(CLEAN_STRING)\n"
 	@rm -rf ./.partialBuild
 	@rm -rf ./dist
-	@rm -rf ./dev-playground/node_modules/satie/dist
 	@cd src; find . -name "*.d.ts" -print0 | xargs -0 -I _FILE_ rm _FILE_
 	@cd src; find . -name "*.js" -print0 | xargs -0 -I _FILE_ rm _FILE_
 	@cd src; find . -name "*.js.map" -print0 | xargs -0 -I _FILE_ rm _FILE_

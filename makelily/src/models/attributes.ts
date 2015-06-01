@@ -360,9 +360,9 @@ module AttributesModel {
                     "defaultX": {
                         get: () => {
                             if (isFirstInLine) {
-                                return this.barX;
+                                return this.overrideX;
                             } else {
-                                return this.barX - 10.5;
+                                return this.overrideX - 10.5;
                             }
                         }
                     }
@@ -399,7 +399,7 @@ module AttributesModel {
                 model._keySignatures[0] = Object.create(model.keySignatures[0], {
                     defaultX: {
                         get: () => {
-                            return this.barX + this.clefSpacing;
+                            return this.overrideX + this.clefSpacing;
                         }
                     }
                 });
@@ -435,7 +435,7 @@ module AttributesModel {
                 model._times[0] = Object.create(model.times[0], {
                     defaultX: {
                         get: () => {
-                            return this.barX + this.clefSpacing + this.ksSpacing;
+                            return this.overrideX + this.clefSpacing + this.ksSpacing;
                         }
                     }
                 });
@@ -485,7 +485,7 @@ module AttributesModel {
         /**
          * Set by layout engine.
          */
-        barX: number;
+        overrideX: number;
 
         // Prototype:
 

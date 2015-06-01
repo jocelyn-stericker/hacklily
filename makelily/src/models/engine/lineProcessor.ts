@@ -67,7 +67,8 @@ export function layoutLine$(options: Options.ILayoutOptions, bounds: Options.ILi
         left                = left + layout.width;
     });
 
-    return _.reduce(options.postProcessors, (layouts, filter) => filter(options, bounds, layouts), layouts);
+    let detachedLayouts: Measure.IMeasureLayout[] = _.map(layouts, Measure.IMeasureLayout.detach);
+    return _.reduce(options.postProcessors, (layouts, filter) => filter(options, bounds, detachedLayouts), layouts);
 }
 
 function _layoutDirtyMeasures(options: Options.ILayoutOptions, line: Ctx.ILine, clean$: {[key: string]: Measure.IMeasureLayout}) {

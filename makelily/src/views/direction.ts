@@ -94,7 +94,7 @@ class Direction extends React.Component<{layout: DirectionModel.ILayout}, void> 
 
     getChildContext() {
         return {
-            originX:        this.context.originX + this.props.layout.barX
+            originX:        this.context.originX + this.props.layout.overrideX
         };
     }
 };

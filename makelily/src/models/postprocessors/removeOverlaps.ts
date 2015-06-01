@@ -69,8 +69,8 @@ function removeOverlaps(options: Engine.Options.ILayoutOptions, bounds: Engine.O
                         return;
                     }
                     let rect: IVPSCLayoutRect = <any> new Cola.vpsc.Rectangle(
-                        element.barX + box.defaultX + box.left,
-                        element.barX + box.defaultX + box.right,
+                        element.overrideX + box.defaultX + box.left,
+                        element.overrideX + box.defaultX + box.right,
                         box.defaultY + box.top,
                         box.defaultY + box.bottom);
                     rect.mxmlBox = box;
@@ -83,7 +83,7 @@ function removeOverlaps(options: Engine.Options.ILayoutOptions, bounds: Engine.O
 
     colaRemoveOverlapsSomeFixed(boxes);
     _.forEach(boxes, box => {
-        let expectedX = box.parent.barX + box.mxmlBox.defaultX + box.mxmlBox.left;
+        let expectedX = box.parent.overrideX + box.mxmlBox.defaultX + box.mxmlBox.left;
         let expectedY = box.mxmlBox.defaultY + box.mxmlBox.top;
         let actualX = box.x;
         let actualY = box.y;
