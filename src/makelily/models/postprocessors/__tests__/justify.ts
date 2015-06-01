@@ -110,6 +110,7 @@ describe("[lineProcessor.ts]", function() {
                         }
                     },
                     modelFactory: ETestUtil.fakeAttributeChordFactory,
+                    preProcessors: [],
                     postProcessors: [Justify]
                 },
                 {

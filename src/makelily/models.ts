@@ -16,24 +16,26 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import MusicXML         = require("musicxml-interfaces");
-import _                = require("lodash");
+import MusicXML                 = require("musicxml-interfaces");
+import _                        = require("lodash");
 
-import Attributes       = require("./models/attributes");
-import Barline          = require("./models/barline");
-import Chord            = require("./models/chord");
-import Direction        = require("./models/direction");
-import Engine           = require("./models/engine");
-import Fonts            = require("./models/fonts");
-import Factory          = require("./models/factory");
-import FiguredBass      = require("./models/figuredBass");
-import Grouping         = require("./models/grouping");
-import Harmony          = require("./models/harmony");
-import MXMLImport       = require("./models/mxml/import");
-import Print            = require("./models/print");
-import Proxy            = require("./models/proxy");
-import Sound            = require("./models/sound");
-import Spacer           = require("./models/spacer");
+import Attributes               = require("./models/attributes");
+import Barline                  = require("./models/barline");
+import Chord                    = require("./models/chord");
+import Direction                = require("./models/direction");
+import Engine                   = require("./models/engine");
+import Fonts                    = require("./models/fonts");
+import Factory                  = require("./models/factory");
+import FiguredBass              = require("./models/figuredBass");
+import Grouping                 = require("./models/grouping");
+import Harmony                  = require("./models/harmony");
+import MXMLImport               = require("./models/mxml/import");
+import Print                    = require("./models/print");
+import Proxy                    = require("./models/proxy");
+import Sound                    = require("./models/sound");
+import Spacer                   = require("./models/spacer");
+
+import VoiceStaffStemDirection  = require("./models/preprocessors/voiceStaffStemDirection");
 
 export function makeFactory() {
     return new Factory([
@@ -70,6 +72,7 @@ function _importXML(src: string) {
         print$:         null,
         page$:          0,
         modelFactory:   factory,
+        preProcessors:  [VoiceStaffStemDirection],
         postProcessors: []
     };
     Engine.validate$(contextOptions, memo$);

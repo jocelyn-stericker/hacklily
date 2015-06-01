@@ -185,6 +185,7 @@ describe("[engine.ts]", function() {
                 },
                 page$: 0,
                 modelFactory: createAttributesChordFactory,
+                preProcessors: [],
                 postProcessors: []
             };
 

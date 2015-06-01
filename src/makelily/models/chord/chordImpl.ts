@@ -410,6 +410,9 @@ class ChordModelImpl implements ChordModel.IChordModel {
 
     private _pickDirection(cursor$: Engine.ICursor) {
         // TODO: Chords should override this
+        if (this.satieDirection) {
+            return this.satieDirection;
+        }
 
         const clef = cursor$.staff.attributes.clefs[cursor$.staff.idx];
         let avgLine = Engine.IChord.averageLine(this, clef);

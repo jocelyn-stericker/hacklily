@@ -70,6 +70,7 @@ export function getPage(doc: Engine.IDocument, startMeasure: number,
         page$:          pageNum,
         modelFactory:   doc.factory,
         debug:          true,
+        preProcessors:  [],
         postProcessors: [Justify, Beam, RemoveOverlaps, Center]
     }, memo$);
 
