@@ -144,6 +144,8 @@ if (process.env.NODE_ENV !== "production" && !(<any>process).browser) {
 /*---- Engine -----------------------------------------------------------------------------------*/
 
 export function validate$(options$: Options.ILayoutOptions, memo$: Options.ILinesLayoutState): void {
+    options$.measures = _.reduce(options$.preProcessors, (measures, processor) => processor(measures), options$.measures);
+
     let shouldTryAgain: boolean;
     do {
         shouldTryAgain = false;
@@ -344,6 +346,7 @@ export function layout$(options: Options.ILayoutOptions,
             finalLine:      false,
             page$:          options.page$,
             modelFactory:   options.modelFactory,
+            preProcessors:  options.preProcessors,
             postProcessors: options.postProcessors
         };
     }

@@ -32,9 +32,11 @@ export interface ILayoutOptions {
     lines?:         number;
     modelFactory:   IModel.IFactory;
     debug?:         boolean;
+    preProcessors:  PreProcessor[];
     postProcessors: PostProcessor[];
 }
 
+export type PreProcessor = (measures: Measure.IMutableMeasure[]) => Measure.IMutableMeasure[];
 export type PostProcessor = (options: ILayoutOptions, bounds: ILineBounds, measures: Measure.IMeasureLayout[]) => Measure.IMeasureLayout[];
 
 export interface ILinesLayoutState {
