@@ -5,7 +5,7 @@ import _ = require("lodash");
 
 import Test = require("./test");
 
-const STYLES = require("./test.scss");
+const STYLES = require("./test.less");
 
 class Tests extends React.Component<Tests.IProps, Tests.IState> {
     render() {

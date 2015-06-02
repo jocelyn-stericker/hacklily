@@ -1,10 +1,5 @@
-.partialBuild
-node_modules
-npm-debug.log
 *.swp
 dist/
-coverage
+node_modules
+npm-debug.log
 rendertest/out
-
-// temporary
-vendor/TypeScript

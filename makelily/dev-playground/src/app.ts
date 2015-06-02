@@ -1,7 +1,7 @@
 import React = require("react");
 import { Route, DefaultRoute, RouteHandler, Link, RouterContext } from "react-router";
 
-var STYLES = require("./app.scss");
+const STYLES = require("./app.less");
 
 class App extends React.Component<{params: {id: string}}, void> {
     render() {

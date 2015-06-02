@@ -5,7 +5,7 @@ import _ = require("lodash");
 
 import Test = require("./test");
 
-const STYLES = require("./tests.scss");
+const STYLES = require("./tests.less");
 
 const TEST_CATEGORIES: {[key: string]: string} = {
     "01": "Pitches",

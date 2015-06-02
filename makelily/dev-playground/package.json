@@ -1,32 +1,34 @@
 {
-    "name": "satie-dev-playground",
-    "description": "For developing, testing, and showing off Satie",
-    "homepage": "http://ripieno.github.io/satie",
-    "version": "0.0.3-alpha",
-    "author": "Josh Netterfield",
-    "license": "AGPL-3.0",
-    "private": true,
-    "dependencies": {
-        "lodash": "^3.9.3",
-        "react": "0.13.3",
-        "react-router": "^0.13.3"
-    },
-    "devDependencies": {
-        "autoprefixer-core": "^5.2.0",
-        "css-loader": "^0.14.4",
-        "node-sass": "^3.1.2",
-        "postcss-loader": "^0.4.3",
-        "react-hot-loader": "^1.2.7",
-        "sass-loader": "^1.0.2",
-        "source-map-support": "0.2.10",
-        "style-loader": "^0.12.3",
-        "ts-jsx-loader": "silhouettes/ts-jsx-loader#9a9e4b931",
-        "ts-loader": "0.4.3",
-        "webpack": "1.9.10",
-        "webpack-dev-server": "^1.9.0"
-    },
-    "browser": {
-        "source-map-support": false
-    },
-    "scripts": {}
+  "name": "satie-dev-playground",
+  "description": "For developing, testing, and showing off Satie",
+  "homepage": "http://ripieno.github.io/satie",
+  "version": "0.0.3-alpha",
+  "author": "Josh Netterfield",
+  "license": "AGPL-3.0",
+  "private": true,
+  "dependencies": {
+    "lodash": "^3.9.3",
+    "react": "0.13.3",
+    "react-router": "^0.13.3"
+  },
+  "devDependencies": {
+    "autoprefixer-core": "^5.2.0",
+    "css-loader": "^0.14.4",
+    "less": "^2.3.1",
+    "less-loader": "^2.2.0",
+    "node-sass": "^3.1.1",
+    "postcss-loader": "^0.4.3",
+    "react-hot-loader": "^1.2.7",
+    "sass-loader": "^1.0.2",
+    "source-map-support": "0.2.10",
+    "style-loader": "^0.12.3",
+    "ts-jsx-loader": "silhouettes/ts-jsx-loader#9a9e4b931",
+    "ts-loader": "0.4.3",
+    "webpack": "1.9.10",
+    "webpack-dev-server": "^1.9.0"
+  },
+  "browser": {
+    "source-map-support": false
+  },
+  "scripts": {}
 }
