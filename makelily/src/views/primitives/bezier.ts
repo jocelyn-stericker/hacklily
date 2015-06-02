@@ -19,14 +19,12 @@
 "use strict";
 
 import React            = require("react");
-import TypedReact       = require("typed-react");
-import PureRenderMixin  = require("react/lib/ReactComponentWithPureRenderMixin");
 
 /**
  * Responsible for the rendering a bezier curve, such as a
  * slur or a tie.
  */
-class Bezier extends TypedReact.Component<Bezier.IProps, {}> {
+class Bezier extends React.Component<Bezier.IProps, void> {
     render() {
         return React.DOM.path({
             d: <any>
@@ -47,8 +45,6 @@ class Bezier extends TypedReact.Component<Bezier.IProps, {}> {
 }
 
 module Bezier {
-    export var Component = TypedReact.createClass(Bezier, <any> [PureRenderMixin]);
-
     export interface IProps {
         fill: string;
         stroke: string;

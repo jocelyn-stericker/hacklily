@@ -145,6 +145,7 @@ class ChordView extends React.Component<{layout: Chord.IChordLayout}, void> {
             _.map(notations, (notation, idx) => $(Notation)({
                 key: `N${idx}`,
                 spec: notation,
+                parentSpec: spec,
                 layout: this.props.layout
             })),
             lyrics
