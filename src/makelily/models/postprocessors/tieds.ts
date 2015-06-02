@@ -56,7 +56,7 @@ function tied(options: Engine.Options.ILayoutOptions, bounds: Engine.Options.ILi
                 let noteWithTieds = _.find(chord, el => el.notationObj && el.notationObj.tieds && el.notationObj.tieds.length);
                 if (noteWithTieds && noteWithTieds.grace) {
                     // TODO: grace notes
-                    return;
+                    return true;
                 }
                 if (!noteWithTieds) {
                     return;
