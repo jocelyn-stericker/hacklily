@@ -21,16 +21,18 @@
 import MusicXML             = require("musicxml-interfaces");
 import React                = require("react");
 import _                    = require("lodash");
+import invariant            = require("react/lib/invariant");
 var $                       = React.createFactory;
 
 import Articulation         = require("./notations/articulation");
+import Bezier               = require("./primitives/bezier");
 import Chord                = require("../models/chord");
 import Glyph                = require("./primitives/glyph");
 
 /**
  * Notations are things that are attached to notes.
  */
-class Notation extends React.Component<{spec: MusicXML.Notations, layout: Chord.IChordLayout}, void> {
+class Notation extends React.Component<{spec: MusicXML.Notations, parentSpec: Chord.IChordModel, layout: Chord.IChordLayout}, void> {
     render() {
         const model = this.props.spec;
         const originX = this.context.originX + this.props.layout.model[0].defaultX;
@@ -91,7 +93,61 @@ class Notation extends React.Component<{spec: MusicXML.Notations, layout: Chord.
         });
 
         _.forEach(model.tieds, tied => {
-            console.log("Want to render ", tied);
+            let tieTo: Chord.IChordLayout = (<any>tied).satieTieTo;
+            if (!tieTo) {
+                return;
+            }
+
+            var x2: number      = originX + tieTo.x$ - 45; // TODO
+            var x1: number      = originX + this.props.layout.x$ - 30; // TODO
+            var dir: number     = this.props.parentSpec.satieStem ? -this.props.parentSpec.satieStem.direction : -1;
+            var y2: number      = this.context.originY - (dir === -1 ? -5 : 30); // TODO
+            var y1: number      = this.context.originY - (dir === -1 ? -5 : 30); // TODO
+
+            var x2mx1: number   = x2 - x1;
+            var x1mx2: number   = -x2mx1;
+            var relw: number    = 3.2; // How "curved" it is
+            var y1my2: number   = y1 - y2;
+            var absw: number    = -dir*8.321228/Math.max(1, (Math.abs(y1my2)));
+            if ((y1my2 > 0 ? -1 : 1)*dir === 1) {
+                absw            = absw * 2;
+            }
+
+            invariant(!isNaN(x2), "Invalid x2 %s", x2);
+            invariant(!isNaN(x1), "Invalid x1 %s", x1);
+            invariant(!isNaN(y2), "Invalid y2 %s", y2);
+            invariant(!isNaN(y1), "Invalid y1 %s", y1);
+            invariant(!isNaN(dir), "Invalid dir %s", dir);
+            invariant(!isNaN(x2mx1), "Invalid x2mx1 %s", x2mx1);
+            invariant(!isNaN(x1mx2), "Invalid x1mx2 %s", x1mx2);
+            invariant(!isNaN(relw), "Invalid relw %s", relw);
+            invariant(!isNaN(y1my2), "Invalid y1my2 %s", y1my2);
+            invariant(!isNaN(absw), "Invalid absw %s", absw);
+
+            children.push($(Bezier)({
+                x1: x2,
+                y1: y2,
+
+                x2: 0.28278198 / 1.23897534 * x1mx2 + x2,
+                y2: ((dir === -1 ? y1my2 : 0) + absw) + y2,
+
+                x3: 0.9561935 / 1.23897534 * x1mx2 + x2,
+                y3: ((dir === -1 ? y1my2 : 0) + absw) + y2,
+
+                x4: x1,
+                y4: y1,
+
+                x5: 0.28278198 / 1.23897534 * x2mx1 + x1,
+                y5: ((dir === -1 ? 0 : -y1my2) + absw + relw) + y1,
+
+                x6: 0.95619358 / 1.23897534 * x2mx1 + x1,
+                y6: ((dir === -1 ? 0 : -y1my2) + absw + relw) + y1,
+
+                fill: "#000000",
+                strokeWidth: 1.2,
+                stroke: "#000000"
+            }));
+            console.log("Want to render ", this.props.layout.x$, tieTo.x$);
         });
 
         _.forEach(model.tuplets, tuplet => {
