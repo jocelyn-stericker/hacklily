@@ -25,7 +25,6 @@ import invariant        = require("react/lib/invariant");
 
 import Engine           = require("./models/engine");
 import Models           = require("./models");
-import validateURL      = require("./util/validateURL");
 export import Viewer    = require("./viewer");
 
 /*---- Public Interface -------------------------------------------------------------------------*/
@@ -46,30 +45,6 @@ export function init(options: ISatieOptions): void {
  * Options for initSatie. All options have defaults.
  */
 export interface ISatieOptions {
-    /**
-     * Absolute URL of Bravura font, including protocol. By default, Bravura is loaded from Rawgit's CDN.
-     * If you are using Satie in production, you should host Bravura yourself (otherwise you are relying on
-     * Rawgit's uptime, which has no guarantee).
-     *
-     * Set to "none" if Satie should not load Bravura at all. This is useful if you are also using Bravura
-     * outside of Satie.
-     *
-     * Default: location.protocol + "//cdn.rawgit.com/ripieno/satie/724fa96260b40e455e9e5217e226825066ba8312/" +
-     *          "res/bravura.woff"
-     *
-     * Server behavior: This value is ignored on the server.
-     */
-    bravuraURL?: string;
-
-    /**
-     * Download fonts from Google Fonts as needed. Currently, just Alegreya is downloaded.
-     * In future versions, other fonts defined in sheet music will also be downloaded.
-     *
-     * Default: true
-     *
-     * Server behavior: This value is ignored on the server.
-     */
-    useGoogleFonts?: boolean;
 }
 
 /**
@@ -116,43 +91,11 @@ module BrowserSetup {
             return;
         }
 
-        if (spec.useGoogleFonts !== false) {
-            (<any>window).WebFontConfig = {
-                google: { families: ["Alegreya:400italic,700italic,900italic,400,700:latin", "Alegreya+SC:700,400:latin"] }
-            };
-            var protocol = "https:" === document.location.protocol ? "https" : "http";
-            var wf = document.createElement("script");
-            wf.src = protocol +
-                "://ajax.googleapis.com/ajax/libs/webfont/1/webfont.js";
-            wf.type = "text/javascript";
-            wf.async = true;
-
-            var s = document.getElementsByTagName("script")[0];
-            s.parentNode.insertBefore(wf, s);
-        }
-
         var style = document.createElement("style");
         style.appendChild(document.createTextNode("")); // WebKit hack
         document.head.appendChild(style);
 
-        var bravuraFontFace: string;
-        if (spec.bravuraURL === "none") {
-            bravuraFontFace = "";
-        } else {
-            invariant(!spec.bravuraURL || validateURL(spec.bravuraURL),
-                "The bravuraURL must be undefined, a valid URL with protocol, or \"none\", but is \"%s\".", spec.bravuraURL);
-            var bravuraURL = spec.bravuraURL ||
-                (protocol + "://cdn.rawgit.com/ripieno/satie/724fa96260b40e455e9e5217e226825066ba8312/res/bravura.woff");
-            bravuraFontFace = "@font-face {"+
-                "font-family: 'bravura';"+
-                "src: url('" + bravuraURL + "') format('woff');"+
-                "font-weight: normal;"+
-                "font-style: normal;"+
-            "}";
-        }
-
         style.innerHTML =
-            bravuraFontFace +
             ".mn_ {"+
                 "-moz-user-select: none;"+
                 "-ms-user-select: none;"+

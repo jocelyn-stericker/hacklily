@@ -26,6 +26,8 @@ import Engine               = require("./models/engine");
 import Page                 = require("./views/page");
 import SvgExt               = require("./views/svgext_injection");
 
+import FontManager          = require("./models/fontManager");
+
 import Beam                 = require("./models/postprocessors/beam");
 import Center               = require("./models/postprocessors/center");
 import Justify              = require("./models/postprocessors/justify");
@@ -33,6 +35,9 @@ import RemoveOverlaps       = require("./models/postprocessors/removeOverlaps");
 import Tieds                = require("./models/postprocessors/tieds");
 
 SvgExt.inject();
+FontManager.requireFont("Bravura", "root://vendor/bravura/otf/Bravura.otf");
+FontManager.requireFont("Alegreya", "root://vendor/alegreya/Alegreya-Regular.ttf");
+FontManager.requireFont("Alegreya", "root://vendor/alegreya/Alegreya-Bold.ttf", "bold");
 
 export function getPage(doc: Engine.IDocument, startMeasure: number,
         renderTarget = Page.RenderTarget.SvgExport, pageClassName = ""): React.ReactElement<Page.IProps> {
