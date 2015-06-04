@@ -24,7 +24,7 @@ import Barline                  = require("./models/barline");
 import Chord                    = require("./models/chord");
 import Direction                = require("./models/direction");
 import Engine                   = require("./models/engine");
-import Fonts                    = require("./models/fonts");
+import FontManager              = require("./models/fontManager");
 import Factory                  = require("./models/factory");
 import FiguredBass              = require("./models/figuredBass");
 import Grouping                 = require("./models/grouping");
@@ -82,8 +82,7 @@ function _importXML(src: string) {
 }
 
 export function importXML(src: string, cb: (error: Error, document?: Engine.IDocument) => void) {
-    // TODO: http version
-    Fonts.loadAll((err) => {
+    FontManager.whenReady((err) => {
         if (err) {
             cb(err);
         } else {

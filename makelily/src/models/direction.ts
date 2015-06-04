@@ -20,7 +20,7 @@ import MusicXML         = require("musicxml-interfaces");
 import _                = require("lodash");
 
 import Engine           = require("./engine");
-import Fonts            = require("./fonts");
+import FontManager      = require("./fontManager");
 
 class DirectionModel implements Export.IDirectionModel {
 
@@ -121,9 +121,10 @@ module DirectionModel {
                     type.words[idx].fontSize = type.words[idx].fontSize || "18";
                     type.words[idx].defaultX = 0;
                     type.words[idx].defaultY = defaultY;
-                    // TODO support more than just Alegreya and Alegreya Bold!
-                    let fontBox = Fonts.getTextBB(type.words[idx].fontWeight === MusicXML.NormalBold.Normal ?
-                        "Alegreya" : "Alegreya Bold", type.words[idx].data, parseInt(type.words[idx].fontSize, 10));
+                    let fontBox = FontManager.getTextBB(type.words[idx].fontFamily || "Alegreya",
+                        type.words[idx].data,
+                        parseInt(type.words[idx].fontSize, 10),
+                        type.words[idx].fontWeight === MusicXML.NormalBold.Normal ? null : "bold");
                     const scale40 = cursor$.header.defaults.scaling.millimeters / cursor$.header.defaults.scaling.tenths * 40;
                     let boundingBox: Engine.IModel.IBoundingRect = <any> type.words[idx];
 
