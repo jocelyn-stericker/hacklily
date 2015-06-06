@@ -9,7 +9,7 @@ import Home = require("./home");
 import Tests = require("./tests");
 
 Satie.init({
-    useGoogleFonts: false
+    preloadedFonts: ["Alegreya", "Alegreya (bold)"]
 });
 
 var routes = React.jsx(`
@@ -22,5 +22,5 @@ var routes = React.jsx(`
 
 run(routes, HistoryLocation, function (Handler, state) {
     let params = state.params;
-    React.render(React.jsx(`<Handler params=${params}/>`), document.body);
+    React.render(React.jsx(`<Handler params=${params}/>`), document.getElementById("root"));
 });

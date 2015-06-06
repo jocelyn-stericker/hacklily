@@ -70,7 +70,6 @@ class Tests extends React.Component<Tests.IProps, Tests.IState> {
     
     componentDidUpdate(prevProps: Tests.IProps, prevState: Tests.IState) {
         if (!this.state.src) {
-            console.log("Load" + this.state.filename);
             var request = new XMLHttpRequest();
             request.open("GET", this.state.filename);
             request.onload = () => {

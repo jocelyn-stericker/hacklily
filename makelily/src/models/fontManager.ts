@@ -37,6 +37,14 @@ export function requireFont(name: string, url: string, style?: string, full?: bo
     }
 }
 
+export function setRoot(root: string) {
+    State.root = root;
+}
+
+export function markPreloaded(name: string, style?: string) {
+    State.fonts[getFullName(name, style)] = NO_PATH_DATA;
+}
+
 export function whenReady(cb: (err?: Error) => void) {
     if (!State.remaining) {
         cb();
@@ -126,6 +134,7 @@ module State {
     export let err: Error;
     // TypeScript 1.5 is smart about this, but 1.5-beta isn't, so we have to explicitly cast this.
     export let canvasContext = IS_BROWSER ? <CanvasRenderingContext2D> document.createElement("canvas").getContext("2d") : null;
+    export let root = IS_BROWSER ? location.protocol + "//" + location.host + "/vendor/" : "./vendor/";
 }
 
 function getFullName(name: string, style?: string) {
@@ -219,11 +228,7 @@ function loadFromUrl(url: string, callback: (err: Error, buffer?: ArrayBuffer) =
 }
 
 function getNativeURL(url: string) {
-    if (IS_BROWSER) {
-        return url.replace("root://", "/");
-    } else {
-        return url.replace("root://", "./");
-    }
+    return url.replace("root://", State.root);
 }
 
 const CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";

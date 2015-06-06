@@ -18,18 +18,15 @@
 
 "use strict";
 
-/// <reference path="../vendor/typings/tsd.d.ts" />
-
 import _                = require("lodash");
 import invariant        = require("react/lib/invariant");
 
 import Engine           = require("./models/engine");
+import FontManager      = require("./models/fontManager");
 import Models           = require("./models");
-export import Viewer    = require("./viewer");
+import Views            = require("./views");
 
 /*---- Public Interface -------------------------------------------------------------------------*/
-
-export type IDocument = Engine.IDocument;
 
 /**
  * Optional initialization function. Call this if you don't want the default options. Must be called
@@ -42,39 +39,55 @@ export function init(options: ISatieOptions): void {
 }
 
 /**
- * Options for initSatie. All options have defaults.
+ * Options to pass into init(...). No options are required.
  */
 export interface ISatieOptions {
+    /**
+     * For web browsers only.
+     * 
+     * A list of fonts and variants (in parentheses) that are included on a webpage, that Satie should not automatically load.
+     * You can get pretty good performance improvements by putting font loading inside your's HTML file's `<head></head>`
+     * e.g., "Alegreya", "Alegreya (bold)", "Bravura"
+     */
+    preloadedFonts?: string[];
+
+    /**
+     * For web browsers only.
+     * 
+     * Specify where all the files Satie needs are. By default, Satie looks inside `http[s]://vendor/`.
+     */
+    satieRoot?: string;
 }
 
 /**
- * Props of MusicXMLView.
+ * Represents a MusicXML document.
  */
-export interface ISatieProps {
-    /**
-     * Valid timewise or partwise MusicXML 3.0 string.
-     */
-    src: string;
+export type IDocument = Engine.IDocument;
 
-    /**
-     * Width of component in pixels. The score will be scaled to fit within the width.
-     */
-    width: number;
-
-    /**
-     * Height of component in pixels. A scroll-bar will be used if the score does not
-     * fit within this height.
-     */
-    height: number;
-}
-
+/**
+ * Parses a MusicXML document and returns an IDocument.
+ */
 export function loadDocument(xml: string, failure: (err: Error) => void, success: (doc: Engine.IDocument) => void) {
     Models.importXML(xml, (err, document) => err ? failure(err) : success(document));
 }
 
-export function toSVG(xml: string, cb: (svg: string) => void) {
-    throw new Error("not implemented");
+/**
+ * Convienience function which renders the first page of a MusicXML document as an SVG.
+ */
+export function getSVGPreview(document: Engine.IDocument, failure: (err: Error) => void, success: (svg: string) => void) {
+    try {
+        success(Views.renderDocument(document, 0));
+    } catch(err) {
+        failure(err);
+    }
 }
+
+/**
+ * A Viewer is a React component that renders a MusicXML document.
+ * 
+ * Usage: <Satie.Viewer document={document} pageClassName="satiePage" />
+ */
+export import Viewer = require("./viewer");
 
 /*---- Private ----------------------------------------------------------------------------------*/
 
@@ -82,10 +95,7 @@ module BrowserSetup {
     export var cssInjected = false;
 
     export var injectStyles = _.once(function injectStyles(spec: ISatieOptions = {}): void {
-        // Only run this function once.
-        if (cssInjected) {
-            return;
-        }
+        invariant(!cssInjected, "_.once doesn't work?");
         cssInjected = true;
         if (typeof window === "undefined") {
             return;
@@ -94,6 +104,23 @@ module BrowserSetup {
         var style = document.createElement("style");
         style.appendChild(document.createTextNode("")); // WebKit hack
         document.head.appendChild(style);
+
+        _.forEach(spec.preloadedFonts, font => {
+            let baseFont = (/[\w\s]*/.exec(font) || [""])[0].replace(/\s/g, " ").trim();
+            if (!baseFont) {
+                throw new Error("Font " + font + " is not a valid font name.");
+            }
+            let variant = (/\((\w*)\)/.exec(font) || [])[1] || undefined;
+            if (variant && variant !== "bold" && variant !== "bold italic" && variant !== "italic") {
+                throw new Error("Valid font variants are bold, bold italic, and italic");
+            }
+
+            FontManager.markPreloaded(baseFont, variant);
+        });
+
+        if (spec.satieRoot) {
+            FontManager.setRoot(spec.satieRoot);
+        }
 
         style.innerHTML =
             ".mn_ {"+
@@ -121,4 +148,3 @@ module BrowserSetup {
             "}";
     });
 }
-

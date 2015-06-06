@@ -82,6 +82,9 @@ function _importXML(src: string) {
 }
 
 export function importXML(src: string, cb: (error: Error, document?: Engine.IDocument) => void) {
+    FontManager.requireFont("Bravura", "root://bravura/otf/Bravura.otf");
+    FontManager.requireFont("Alegreya", "root://alegreya/Alegreya-Regular.ttf");
+    FontManager.requireFont("Alegreya", "root://alegreya/Alegreya-Bold.ttf", "bold");
     FontManager.whenReady((err) => {
         if (err) {
             cb(err);
