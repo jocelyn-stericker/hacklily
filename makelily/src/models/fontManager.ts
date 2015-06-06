@@ -48,6 +48,20 @@ export function whenReady(cb: (err?: Error) => void) {
 export function getTextBB(name: string, text: string, fontSize: number, style?: string) {
     let fullName = getFullName(name, style);
     let font = State.fonts[fullName];
+    if (State.canvasContext && font === NO_PATH_DATA) {
+        State.canvasContext.font = `${style || ""} ${fontSize}px ${name}`;
+
+        // We want to be consistent between web browsers. Many browsers only support measuring
+        // width, so even if we are in Chrome and have better information, we ignore that.
+        // Of course that this information is wrong, but it's good enough to place text.
+        return {
+            left: -fontSize/18,
+            right: State.canvasContext.measureText(text).width,
+            top: -4*fontSize/18,
+            bottom: fontSize
+        };
+    }
+
     if (font === NO_PATH_DATA) {
         // TODO: get width by canvas if this is the browser
         console.warn(`${fullName} was loaded without path data`);
@@ -110,6 +124,8 @@ module State {
     export let cbs: ((err?: Error) => void)[] = [];
     export let remaining = 0;
     export let err: Error;
+    // TypeScript 1.5 is smart about this, but 1.5-beta isn't, so we have to explicitly cast this.
+    export let canvasContext = IS_BROWSER ? <CanvasRenderingContext2D> document.createElement("canvas").getContext("2d") : null;
 }
 
 function getFullName(name: string, style?: string) {
