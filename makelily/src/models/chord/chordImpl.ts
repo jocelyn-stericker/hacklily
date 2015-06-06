@@ -96,13 +96,13 @@ class ChordModelImpl implements ChordModel.IChordModel {
     }
 
     validate$(cursor$: Engine.ICursor): void {
-        this.divCount = Metre.calcDivisions(this, cursor$);
-        invariant(isFinite(this.divCount), "The beat count must be numeric");
-        invariant(this.divCount >= 0, "The beat count must be non-negative.");
-
         if (!isFinite(this._count)) {
             this._implyCountFromPerformanceData(cursor$);
         }
+        this.divCount = Metre.calcDivisions(this, cursor$);
+
+        invariant(isFinite(this.divCount), "The beat count must be numeric");
+        invariant(this.divCount >= 0, "The beat count must be non-negative.");
 
         const direction = this._pickDirection(cursor$);
         const clef = cursor$.staff.attributes.clefs[cursor$.staff.idx];
