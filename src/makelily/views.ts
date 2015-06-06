@@ -102,7 +102,6 @@ export function renderDocument(doc: Engine.IDocument, startMeasure: number): str
 
     return `<?xml version="1.0" encoding="UTF-8" standalone="no"?>${
         core.replace("<svg", "<svg xmlns=\"http://www.w3.org/2000/svg\"")
-            .replace(/class="mn_"/g, "font-family='bravura'")
             .replace(/class="tn_"/g, "font-family='Alegreya'")
             .replace(/class="mmn_"/g, "font-family='Alegreya' " +
                         "font-style='italic' stroke='#7a7a7a'")
