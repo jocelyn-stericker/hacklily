@@ -451,7 +451,8 @@ module AttributesModel {
                     contextualSpacing$ = 12.5;
                 }
 
-                this.tsSpacing = 28 + contextualSpacing$;
+                let segments = _.reduce(origModel.times[0].beats, (memo, beats) => memo + beats.split("+").length, 0);
+                this.tsSpacing = contextualSpacing$ + Export.NUMBER_SPACING*segments - 6*(segments - 1);
             } else {
                 this.tsSpacing = 0;
             }
@@ -629,6 +630,7 @@ module Export {
             }
         ];
     }
+    export const NUMBER_SPACING     = 28;
 }
 
 export = Export;
