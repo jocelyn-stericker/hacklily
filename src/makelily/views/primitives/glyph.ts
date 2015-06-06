@@ -19,9 +19,10 @@
 "use strict";
 
 import React            = require("react");
-import invariant        = require("react/lib/invariant");
 
 import SMuFL            = require("../../models/smufl");
+import Engine           = require("../../models/engine");
+import FontManager      = require("../../models/fontManager");
 
 /**
  * Most musical elements are rendered as glyphs. Exceptions include
@@ -32,20 +33,9 @@ class Glyph extends React.Component<Glyph.IProps, void> {
         var px = this.props.x;
         var py = this.props.y;
 
-        if (this.props.glyphName.substr(0, 2) === "fa") {
-            invariant(!!this.props.code, "Undefined glyph.");
-            return React.DOM.text({
-                x: px,
-                y: py,
-                fill: this.props.fill,
-                fillOpacity: this.props.opacity,
-                strokeOpacity: this.props.opacity,
-                transform: this.props.transform,
-                style: { fontSize: this.props.scale ? this.props.scale + "em" : undefined },
-                className: "fa"
-            }, this.props.code);
-        } else {
-            invariant(!this.props.code, "Glyph should be falsy if not displaying an FA glpyh.");
+        if (this.context.renderTarget === Engine.RenderTarget.SvgExport) {
+            let pathData = FontManager.toPathData("Bravura", SMuFL.getGlyphCode(this.props.glyphName), px, py, 40*(this.props.scale||1));
+            return <React.ReactElement<any>> React.DOM.path({d: pathData}, null);
         }
 
         var text: React.ReactElement<any> = React.DOM.text({
@@ -65,6 +55,10 @@ class Glyph extends React.Component<Glyph.IProps, void> {
 }
 
 module Glyph {
+    export let contextTypes = <any> {
+        renderTarget: React.PropTypes.number
+    };
+
     export interface IProps {
         fill: string;
         glyphName: string;

@@ -89,7 +89,7 @@ export function getTextBB(name: string, text: string, fontSize: number, style?: 
     };
 }
 
-export function toSVGPath(name: string, text: string, x: number, y: number, fontSize: number, style?: string) {
+export function toPathData(name: string, text: string, x: number, y: number, fontSize: number, style?: string) {
     let fullName = getFullName(name, style);
     let font = State.fonts[fullName];
     if (!font) {
@@ -100,7 +100,7 @@ export function toSVGPath(name: string, text: string, x: number, y: number, font
         console.warn(`${fullName} was loaded without path data`);
         return "";
     }
-    return font.getPath(text, x, y, fontSize, {kerning: true}).toSVG(4);
+    return font.getPath(text, x, y, fontSize, {kerning: true}).toPathData(3);
 }
 
 /*---- PRIVATE ------------------------------------------------------------------------*/
@@ -124,16 +124,14 @@ function loadFont(name: string, url: string, style: string, full?: boolean) {
     let fullName = getFullName(name, style);
     url = getNativeURL(url);
 
-    if (!full) {
-        if (IS_BROWSER) {
-            let styleSheet = <CSSStyleSheet> document.styleSheets[0];
-            let fontFaceStyle = `@font-face{
-                font-family: ${name};
-                src: url(${url}) format('truetype');
-                ${style && style.toLowerCase() === "bold" ? "font-weight: bold;" : ""}
-            }`;
-            styleSheet.insertRule(fontFaceStyle, 0);
-        }
+    if (!full && IS_BROWSER) {
+        let styleSheet = <CSSStyleSheet> document.styleSheets[0];
+        let fontFaceStyle = `@font-face{
+            font-family: ${name};
+            src: url(${url}) format('truetype');
+            ${style && style.toLowerCase() === "bold" ? "font-weight: bold;" : ""}
+        }`;
+        styleSheet.insertRule(fontFaceStyle, 0);
         State.fonts[fullName] = State.fonts[fullName] || NO_PATH_DATA;
         goOn();
     } else {

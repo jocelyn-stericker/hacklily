@@ -20,11 +20,10 @@ import React                = require("react");
 
 import Engine               = require("./models/engine");
 import Views                = require("./views");
-import Page                 = require("./views/page");
 
 class Viewer extends React.Component<{document: Engine.IDocument, pageClassName?: string}, void> {
     render() {
-        let page1 = Views.getPage(this.props.document, 0, Page.RenderTarget.SvgWeb, this.props.pageClassName||"");
+        let page1 = Views.getPage(this.props.document, 0, Engine.RenderTarget.SvgWeb, this.props.pageClassName||"");
         return React.DOM.div({},
             page1
         );

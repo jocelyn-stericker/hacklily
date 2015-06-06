@@ -135,7 +135,7 @@ import Ctx                      = require("./engine/ctx");
 import LineProcessor            = require("./engine/lineProcessor");
 import MeasureProcessor         = require("./engine/measureProcessor");
 
-if (process.env.NODE_ENV !== "production" && !(<any>process).browser) {
+if (!(<any>process).browser) {
     /* tslint:disable */
     require("source-map-support").install();
     /* tslint:enable */
@@ -401,6 +401,11 @@ export interface IDocument {
     header?:    ScoreHeader;
     measures?:  Measure.IMutableMeasure[];
     parts?:     string[];
+}
+
+export enum RenderTarget {
+    SvgWeb = 0,
+    SvgExport = 1
 }
 
 export const key$ = MeasureProcessor.key$;
