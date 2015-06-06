@@ -531,12 +531,15 @@ export function calcDivisions(chord: Engine.IChord, cursor: Engine.ICursor) {
     if (isNaN(count)) {
         return _.find(chord, note => note.duration).duration;
     }
-    return _calcDivisions(
+    let intrinsicDivisions = _calcDivisions(
         IChord.count(chord),
         IChord.dots(chord),
         IChord.timeModification(chord),
         attributes.times,
         attributes.divisions);
+
+    // TODO: Make it so we can overflow without trying to add barlines?
+    return Math.min(intrinsicDivisions, cursor.staff.totalDivisions);
 }
 
 export function calcDivisionsNoCtx(chord: Engine.IChord, times: MusicXML.Time[], divisions: number) {
