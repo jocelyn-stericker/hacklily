@@ -40,7 +40,7 @@ FontManager.requireFont("Alegreya", "root://vendor/alegreya/Alegreya-Regular.ttf
 FontManager.requireFont("Alegreya", "root://vendor/alegreya/Alegreya-Bold.ttf", "bold");
 
 export function getPage(doc: Engine.IDocument, startMeasure: number,
-        renderTarget = Page.RenderTarget.SvgExport, pageClassName = ""): React.ReactElement<Page.IProps> {
+        renderTarget = Engine.RenderTarget.SvgExport, pageClassName = ""): React.ReactElement<Page.IProps> {
     let factory = doc.factory;
     const pageNum = 1; // FIXME
     if (!factory) {

@@ -40,11 +40,11 @@ class Page extends React.Component<Page.IProps, Page.IState> {
         const credits       = _.filter(this.props.scoreHeader.credits, cr =>
                                 (cr.page === parseInt(page, 10)));
         const scale40       = defaults.scaling.millimeters / defaults.scaling.tenths * 40;
-        const widthMM       = this.props.renderTarget === Page.RenderTarget.SvgExport ?
+        const widthMM       = this.props.renderTarget === Engine.RenderTarget.SvgExport ?
                                 Engine.RenderUtil.tenthsToMM(
                                     scale40, print.pageLayout.pageWidth) + "mm" :
                                 "100%";
-        const heightMM      = this.props.renderTarget === Page.RenderTarget.SvgExport ?
+        const heightMM      = this.props.renderTarget === Engine.RenderTarget.SvgExport ?
                                 Engine.RenderUtil.tenthsToMM(
                                     scale40, print.pageLayout.pageHeight) + "mm" :
                                 "100%";
@@ -89,7 +89,7 @@ class Page extends React.Component<Page.IProps, Page.IState> {
 
         return React.DOM.svg(
             {
-                "data-page":    this.props.renderTarget === Page.RenderTarget.SvgExport ?
+                "data-page":    this.props.renderTarget === Engine.RenderTarget.SvgExport ?
                                     undefined : print.pageNumber,
                 ref:            "svg" + print.pageNumber,
                 className:      this.props.className,
@@ -124,7 +124,8 @@ class Page extends React.Component<Page.IProps, Page.IState> {
 
         return {
             scale40:        scale40,
-            originY:        print.pageLayout.pageHeight
+            originY:        print.pageLayout.pageHeight,
+            renderTarget:   this.props.renderTarget
         };
     }
 }
@@ -132,14 +133,15 @@ class Page extends React.Component<Page.IProps, Page.IState> {
 module Page {
     export var childContextTypes = <any> {
         scale40:            React.PropTypes.number.isRequired,
-        originY:            React.PropTypes.number.isRequired
+        originY:            React.PropTypes.number.isRequired,
+        renderTarget:       React.PropTypes.number.isRequired // Page.RenderTarget
     };
 
     export interface IProps {
         scoreHeader:    MusicXML.ScoreHeader;
         print:          MusicXML.Print;
         lineLayouts:    Engine.Options.ILineLayoutResult[];
-        renderTarget:   RenderTarget;
+        renderTarget:   Engine.RenderTarget;
         className:      string;
 
         onClick?:       (evt: React.MouseEvent) => void;
@@ -149,10 +151,6 @@ module Page {
         onMouseUp?:     (evt: React.MouseEvent) => void;
     }
     export interface IState {
-    }
-    export enum RenderTarget {
-        SvgWeb = 0,
-        SvgExport = 1
     }
 }
 
