@@ -23,6 +23,7 @@ import React                = require("react");
 import _                    = require("lodash");
 var $                       = React.createFactory;
 
+import Attributes           = require("../models/attributes");
 import Glyph                = require("./primitives/glyph");
 
 /**
@@ -40,14 +41,14 @@ class TimeSignature extends React.Component<{spec: MusicXML.Time}, void> {
             var beats = ts.beats;
             var beatType = ts.beatType;
 
-            if (beats === 4 && beatType === 4) {
+            if (beats.length === 1 && beats[0] === 4 && beatType === 4) {
                 return $(Glyph)({
                     x: this.context.originX + spec.defaultX + (spec.relativeX || 0),
                     y: this.context.originY - (spec.defaultY + (spec.relativeY || 0)),
                     fill: spec.color,
                     glyphName: "timeSigCommon"
                 });
-            } else if (beats === 2 && beatType === 2) {
+            } else if (beats.length === 1 && beats[0] === 2 && beatType === 2) {
                 return $(Glyph)({
                     x: this.context.originX + spec.defaultX + (spec.relativeX || 0),
                     y: this.context.originY - (spec.defaultY + (spec.relativeY || 0)),
@@ -57,18 +58,31 @@ class TimeSignature extends React.Component<{spec: MusicXML.Time}, void> {
             }
             // Cannot be represented in common representation. Pass through.
         }
+
+        let numOffsets = this.numOffsets();
+
         return React.DOM.g(null,
-            $(TimeSignatureNumber)({
-                    key: "-5",
-                    stroke: spec.color,
+            _.map(ts.beats, (beats, idx) => [
+                $(TimeSignatureNumber)({
+                        key: `num_${idx}`,
+                        stroke: spec.color,
+                        x: this.context.originX + spec.defaultX + (spec.relativeX || 0) +
+                            numOffsets[idx] + idx * Attributes.NUMBER_SPACING,
+                        y: this.context.originY - (spec.defaultY + (spec.relativeY || 0) + 10)
+                    },
+                    beats
+                ),
+                (idx + 1 !== ts.beats.length) && $(Glyph)({
+                    key: `num_plus_${idx}`,
+                    glyphName: "timeSigPlusSmall",
                     x: this.context.originX + spec.defaultX + (spec.relativeX || 0) +
-                        this.numOffset(),
-                    y: this.context.originY - (spec.defaultY + (spec.relativeY || 0) + 10)
-                },
-                ts.beats
-            ),
+                        numOffsets[idx] + idx * Attributes.NUMBER_SPACING + 17,
+                    y: this.context.originY - (spec.defaultY) + (spec.relativeY || 0) - 10,
+                    fill: "black"
+                })
+            ]),
             $(TimeSignatureNumber)({
-                    key: "-6",
+                    key: "den",
                     stroke: spec.color,
                     x: this.context.originX + spec.defaultX + (spec.relativeX || 0) +
                         this.denOffset(),
@@ -79,27 +93,30 @@ class TimeSignature extends React.Component<{spec: MusicXML.Time}, void> {
         /* React.DOM.g */);
     }
 
-    numOffset() {
-        // XXX: crazy hack. fix.
+    numOffsets() {
+        // This is sketchy.
         var ts = this._displayTimeSignature();
-        if (ts.beats < 10 && ts.beatType >= 10) {
-            return 5;
-        }
-        return 0;
+        let culm = 0;
+        return _.map(ts.beats, beats => {
+            if (ts.beats[0] < 10 && ts.beatType >= 10) {
+                culm += 5;
+            }
+            return culm;
+        });
     }
     denOffset() {
-        // crazy hack. fix.
+        // This is sketchy.
         var ts = this._displayTimeSignature();
-        if (ts.beatType < 10 && ts.beats >= 10) {
-            return 5;
+        if (ts.beatType < 10 && ts.beats[0] >= 10) {
+            return 7;
         }
-        return 0;
+        return 0 + (ts.beats.length - 1)*Attributes.NUMBER_SPACING/2;
     }
 
     _displayTimeSignature() {
         const spec = this.props.spec;
         return {
-            beats:      parseInt(spec.beats[0], 10),
+            beats:      _.flatten(_.map(spec.beats, beats => beats.split("+").map(n => parseInt(n, 10)))),
             beatType:   spec.beatTypes[0],
             commonRepresentation: spec.symbol === MusicXML.TimeSymbolType.Common ||
                 spec.symbol === MusicXML.TimeSymbolType.Cut
