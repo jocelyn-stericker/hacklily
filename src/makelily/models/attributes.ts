@@ -451,8 +451,13 @@ module AttributesModel {
                     contextualSpacing$ = 12.5;
                 }
 
-                let segments = _.reduce(origModel.times[0].beats, (memo, beats) => memo + beats.split("+").length, 0);
-                this.tsSpacing = contextualSpacing$ + Export.NUMBER_SPACING*segments - 6*(segments - 1);
+                if (origModel.times[0].beatTypes) {
+                    let numeratorSegments = _.reduce(origModel.times[0].beats, (memo, beats) => memo + beats.split("+").length, 0);
+                    this.tsSpacing = contextualSpacing$ + Export.NUMBER_SPACING*numeratorSegments +
+                        (origModel.times[0].beatTypes.length - 1)*Export.PLUS_SPACING;
+                } else {
+                    this.tsSpacing = 0;
+                }
             } else {
                 this.tsSpacing = 0;
             }
@@ -631,6 +636,7 @@ module Export {
         ];
     }
     export const NUMBER_SPACING     = 28;
+    export const PLUS_SPACING       = 12;
 }
 
 export = Export;
