@@ -30,6 +30,7 @@ class AttributesView extends React.Component<{layout: Attributes.ILayout}, void>
     render(): any {
         let layout = this.props.layout;
         let children: any[] = [];
+
         if (layout.clefVisible) {
             children.push($(Clef)({
                 spec: layout.model.clefs[layout.staffIdx],

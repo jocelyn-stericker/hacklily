@@ -60,8 +60,13 @@ module IModel {
     export interface IFactory {
         create: (modelType: IModel.Type, options?: any) => IModel;
         fromSpec: (spec: any) => IModel;
+        /**
+         * If model is a proxy, return the model being proxied.
+         * Otherwise, return the model passed in.
+         */
+        identity?: (model: IModel) => IModel;
         modelHasType: (model: IModel, ...modelTypes: IModel.Type[]) => boolean;
-        searchHere: (models: IModel[], idx: number, ...types: IModel.Type[]) => IModel[];
+        search: (models: IModel[], idx: number, ...types: IModel.Type[]) => IModel[];
     }
 
     export enum FrozenLevel {

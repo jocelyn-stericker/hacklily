@@ -53,7 +53,7 @@ class Factory implements Engine.IModel.IFactory {
      * Returns all models in models with types `types` at the timestep of the model at models[idx],
      * or an empty array if none exist.
      */
-    searchHere(models: Engine.IModel[], idx: number, ...types: Engine.IModel.Type[]): Engine.IModel[] {
+    search(models: Engine.IModel[], idx: number, ...types: Engine.IModel.Type[]): Engine.IModel[] {
         let filtered: Engine.IModel[] = [];
         while (idx > 0 && !models[idx - 1].divCount) {
             --idx;
@@ -86,6 +86,13 @@ class Factory implements Engine.IModel.IFactory {
 
     inspect(): string {
         return "[Factory]";
+    }
+
+    identity(model: Engine.IModel) {
+        if ((<any>model)._omTarget) {
+            return (<any>model)._omTarget;
+        }
+        return model;
     }
 
     private _constructors: { [key: number]: any; [key: string]: Engine.IModel.Type;} = {};

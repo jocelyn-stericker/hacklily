@@ -23,7 +23,7 @@ import React                = require("react");
 import _                    = require("lodash");
 var $                       = React.createFactory;
 
-import Attributes           = require("../models/attributes");
+import IAttributes          = require("../models/engine/iattributes");
 import Glyph                = require("./primitives/glyph");
 
 /**
@@ -80,7 +80,7 @@ class TimeSignature extends React.Component<{spec: MusicXML.Time}, void> {
                                 key: `num_${idx}_${jdx}`,
                                 stroke: spec.color,
                                 x: this.context.originX + spec.defaultX + (spec.relativeX || 0) +
-                                    numOffsets[idx] + pos + jdx * Attributes.NUMBER_SPACING,
+                                    numOffsets[idx] + pos + jdx * IAttributes.NUMBER_SPACING,
                                 y: this.context.originY - (spec.defaultY + (spec.relativeY || 0) + 10)
                             },
                             beats
@@ -89,7 +89,7 @@ class TimeSignature extends React.Component<{spec: MusicXML.Time}, void> {
                             key: `num_plus_numerator_${idx}_${jdx}`,
                             glyphName: "timeSigPlusSmall",
                             x: this.context.originX + spec.defaultX + (spec.relativeX || 0) +
-                                numOffsets[idx] + pos + jdx * Attributes.NUMBER_SPACING + 17,
+                                numOffsets[idx] + pos + jdx * IAttributes.NUMBER_SPACING + 17,
                             y: this.context.originY - (spec.defaultY) + (spec.relativeY || 0) - 10,
                             fill: "black"
                         })
@@ -107,12 +107,12 @@ class TimeSignature extends React.Component<{spec: MusicXML.Time}, void> {
                         key: `num_plus_${idx}`,
                         glyphName: "timeSigPlus",
                         x: this.context.originX + spec.defaultX + (spec.relativeX || 0) +
-                            numOffsets[idx] + pos + beatsOuter.length*Attributes.NUMBER_SPACING - 10,
+                            numOffsets[idx] + pos + beatsOuter.length*IAttributes.NUMBER_SPACING - 10,
                         y: this.context.originY - (spec.defaultY) + (spec.relativeY || 0),
                         fill: "black"
                     })
                 ];
-                pos += beatsOuter.length*Attributes.NUMBER_SPACING + Attributes.PLUS_SPACING;
+                pos += beatsOuter.length*IAttributes.NUMBER_SPACING + IAttributes.PLUS_SPACING;
                 return array;
             })
         /* React.DOM.g */);
@@ -141,7 +141,7 @@ class TimeSignature extends React.Component<{spec: MusicXML.Time}, void> {
 
         return _.map(ts.beatType, (beatType, idx) => {
             let culm = 0;
-            let numToDenOffset = (ts.beats[idx].length - 1)*Attributes.NUMBER_SPACING/2;
+            let numToDenOffset = (ts.beats[idx].length - 1)*IAttributes.NUMBER_SPACING/2;
             culm += numToDenOffset;
             if (ts.beats[idx][0] >= 10 && beatType < 10) {
                 culm += 7;

@@ -47,11 +47,11 @@ export function getPage(doc: Engine.IDocument, startMeasure: number,
         throw new Error("No such measure " + startMeasure);
     }
     let partWithPrint = _.find(firstMeasure.parts, part => !!part.staves[1] &&
-            factory.searchHere(part.staves[1], 0, Engine.IModel.Type.Print).length);
+            factory.search(part.staves[1], 0, Engine.IModel.Type.Print).length);
     let print: MusicXML.Print;
 
     if (partWithPrint) {
-        print = <any> factory.searchHere(partWithPrint.staves[1], 0, Engine.IModel.Type.Print)[0];
+        print = <any> factory.search(partWithPrint.staves[1], 0, Engine.IModel.Type.Print)[0];
         invariant(!!print, "Wait what?");
     } else {
         throw new Error("Part does not contain a Print element at division 0. Is it validated?");

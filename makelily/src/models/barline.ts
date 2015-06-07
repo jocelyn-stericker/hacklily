@@ -20,21 +20,23 @@ import MusicXML             = require("musicxml-interfaces");
 import _                    = require("lodash");
 import invariant            = require("react/lib/invariant");
 
+import Attributes           = require("./attributes");
 import Engine               = require("./engine");
-import SMuFL                = require("../models/smufl");
+import IAttributes          = require("./engine/iattributes");
+import SMuFL                = require("./smufl");
 
 class BarlineModel implements Export.IBarlineModel {
 
     /*---- I.1 IModel ---------------------------------------------------------------------------*/
 
     /** @prototype only */
-    divCount:        number;
+    divCount:           number;
 
     /** defined externally */
-    staffIdx:        number;
+    staffIdx:           number;
 
     /** @prototype */
-    frozenness:      Engine.IModel.FrozenLevel;
+    frozenness:         Engine.IModel.FrozenLevel;
 
     modelDidLoad$(segment$: Engine.Measure.ISegment): void {
         // todo
@@ -58,27 +60,28 @@ class BarlineModel implements Export.IBarlineModel {
 
     /*---- I.2 C.MusicXML.Barline ---------------------------------------------------------------*/
 
-    segno:          MusicXML.Segno;
-    coda:           MusicXML.Coda;
-    location:       MusicXML.BarlineLocation;
-    codaAttrib:     string;
-    wavyLine:       MusicXML.WavyLine;
-    fermatas:       MusicXML.Fermata[];
-    segnoAttrib:    string;
-    divisions:      string;
-    barStyle:       MusicXML.BarStyle;
-    ending:         MusicXML.Ending;
-    repeat:         MusicXML.Repeat;
+    segno:              MusicXML.Segno;
+    coda:               MusicXML.Coda;
+    location:           MusicXML.BarlineLocation;
+    codaAttrib:         string;
+    wavyLine:           MusicXML.WavyLine;
+    fermatas:           MusicXML.Fermata[];
+    segnoAttrib:        string;
+    divisions:          string;
+    barStyle:           MusicXML.BarStyle;
+    ending:             MusicXML.Ending;
+    repeat:             MusicXML.Repeat;
 
     /*---- I.3 C.MusicXML.Editorial -------------------------------------------------------------*/
 
-    footnote:       MusicXML.Footnote;
-    level:          MusicXML.Level;
+    footnote:           MusicXML.Footnote;
+    level:              MusicXML.Level;
 
     /*---- II. BarlineModel (extension) ---------------------------------------------------------*/
 
-    defaultX:       number;
-    defaultY:       number;
+    defaultX:           number;
+    defaultY:           number;
+    satieAttributes:    Attributes.ILayout;
 
     /*---- Validation Implementations -----------------------------------------------------------*/
 
@@ -103,8 +106,8 @@ BarlineModel.prototype.frozenness = Engine.IModel.FrozenLevel.Warm;
 module BarlineModel {
     export class Layout implements Export.ILayout {
         constructor(origModel: BarlineModel, cursor$: Engine.ICursor) {
+            this.division = cursor$.division$;
             if (cursor$.staff.multiRestRem > 1) {
-                this.division = cursor$.division$;
                 return;
             }
 
@@ -115,6 +118,22 @@ module BarlineModel {
                     get: () => this.overrideX
                 }
             });
+
+            this.x$ = cursor$.x$;
+
+            if (!cursor$.approximate && cursor$.line.barsOnLine === cursor$.line.barOnLine$ + 1) {
+                // TODO: Figure out a way to get this to work when the attributes on the next line change
+                let nextMeasure = Engine.EscapeHatch.__currentMeasureList__[cursor$.measure.idx + 1];
+                let part = nextMeasure && nextMeasure.parts[cursor$.segment.part];
+                let segment = part && part.staves[cursor$.staff.idx];
+                let nextAttributes = segment && cursor$.factory.search(
+                        segment, 0, Engine.IModel.Type.Attributes)[0];
+                if (nextAttributes && IAttributes.needsWarning(
+                        cursor$.staff.attributes, nextAttributes, cursor$.staff.idx)) {
+                    this.model.satieAttributes = Attributes.createWarningLayout$(cursor$, nextAttributes);
+                }
+            }
+
             this.model.barStyle = Object.create(this.model.barStyle) || {};
             if (!isFinite(this.model.barStyle.data) || this.model.barStyle.data === null) {
                 let lastBarlineInSegment = !_.any(cursor$.segment.slice(cursor$.idx$ + 1),
@@ -129,8 +148,7 @@ module BarlineModel {
                 }
             }
             this.model.defaultY = 0;
-            this.x$ = cursor$.x$;
-            this.division = cursor$.division$;
+            let leadingX = cursor$.x$ - this.x$;
 
             this.yOffset = 0;   // TODO
             this.height = 20;   // TODO
@@ -149,7 +167,7 @@ module BarlineModel {
                     if (idx > 0) {
                         x += barlineSep*10;
                     }
-                    this.lineStarts.push(x);
+                    this.lineStarts.push(x + leadingX);
                     const width = lineWidths[line].tenths;
                     this.lineWidths.push(width);
                     x += width;
@@ -234,8 +252,9 @@ function Export(constructors: { [key: number]: any }) {
 
 module Export {
     export interface IBarlineModel extends Engine.IModel, MusicXML.Barline {
-        defaultX:   number;
-        defaultY:   number;
+        defaultX:           number;
+        defaultY:           number;
+        satieAttributes:    Attributes.ILayout;
     }
 
     export interface ILayout extends Engine.IModel.ILayout {
