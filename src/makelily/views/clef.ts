@@ -23,6 +23,7 @@ import React                = require("react");
 var $                       = React.createFactory;
 
 import Glyph                = require("./primitives/glyph");
+import SMuFL                = require("../models/smufl");
 
 /**
  * Responsible for the rendering of a clef.
@@ -35,13 +36,78 @@ class Clef extends React.Component<{spec: MusicXML.Clef}, void> {
             return null;
         }
 
-        return $(Glyph)({
-            x:          this.context.originX + spec.defaultX + (spec.relativeX || 0),
-            y:          this.context.originY - (
-                            spec.defaultY + (spec.relativeY || 0) + (this.line() - 3)*10),
+        let clefX = this.context.originX + spec.defaultX + (spec.relativeX || 0);
+        let clefY = this.context.originY - (spec.defaultY + (spec.relativeY || 0) +
+            (this.renderedLine() - 3)*10);
+        let clefSign = this.sign();
+
+        if (!clefSign) {
+            return null;
+        }
+
+        let clefGlyph = $(Glyph)({
+            x:          clefX,
+            y:          clefY,
             fill:       spec.color,
-            glyphName:  this.sign()
+            glyphName:  clefSign
         });
+
+        let clefOctaveChange = parseInt(spec.clefOctaveChange, 10);
+        let clefDecorations: any[] = [];
+
+        let clefSignBox = SMuFL.bboxes[clefSign];
+        let left = clefSignBox[0];
+        let top = clefSignBox[1];
+        let right = clefSignBox[2];
+        let bottom = clefSignBox[3]; // The linter doesn't like destructuring yet :()
+        let bScalingFactor = spec.sign.toUpperCase() === "F" ? 0.7 : 1; // We want it to actually touch, not just be outside the bbox 
+        let topLeftOffset = spec.sign.toUpperCase() === "G" ? left*2 : 0;
+        top = -top*10 + clefY;
+        bottom = -bottom*10*bScalingFactor + clefY;
+        left = left*10 + clefX;
+        right = right*10 + clefX;
+
+        let decorativeX = (left + right)/2;
+        if (clefOctaveChange === 2) {
+            clefDecorations.push($(Glyph)({
+                key: "15ma",
+                x: decorativeX - (SMuFL.bboxes["clef15"][0]*10 + SMuFL.bboxes["clef15"][2]*10)/2 + topLeftOffset,
+                y: top,
+                fill: spec.color,
+                glyphName: "clef15"
+            }));
+        } else if (clefOctaveChange === 1) {
+            clefDecorations.push($(Glyph)({
+                key: "8va",
+                x: decorativeX - (SMuFL.bboxes["clef8"][0]*10 + SMuFL.bboxes["clef8"][2]*10)/2 + topLeftOffset,
+                y: top,
+                fill: spec.color,
+                glyphName: "clef8"
+            }));
+        } else if (clefOctaveChange === -1) {
+            clefDecorations.push($(Glyph)({
+                key: "8vb",
+                x: decorativeX - (SMuFL.bboxes["clef8"][0]*10 + SMuFL.bboxes["clef8"][2]*10)/2,
+                y: bottom + SMuFL.bboxes["clef8"][1]*10,
+                fill: spec.color,
+                glyphName: "clef8"
+            }));
+        } else if (clefOctaveChange === -2) {
+            clefDecorations.push($(Glyph)({
+                key: "15mb",
+                x: decorativeX  - (SMuFL.bboxes["clef15"][0]*10 + SMuFL.bboxes["clef15"][2]*10)/2,
+                y: bottom + SMuFL.bboxes["clef15"][1]*10,
+                fill: spec.color,
+                glyphName: "clef15"
+            }));
+        }
+        if (clefDecorations) {
+            return React.DOM.g(null,
+                clefGlyph,
+                clefDecorations);
+        } else {
+            return clefGlyph;
+        }
     }
 
     sign() {
@@ -52,14 +118,18 @@ class Clef extends React.Component<{spec: MusicXML.Clef}, void> {
         } else if (clef === "tab") {
             return "6stringTabClef";
         } else if (clef === "none") {
-            return "staffPosRaise1";
+            return null;
         } else {
             return clef + "Clef" + (this.props.spec.size === MusicXML.SymbolSize.Cue ?
                 "Change" : "");
         }
     }
 
-    line(): number {
+    renderedLine(): number {
+        // The TAB glyph is higher than expected.
+        if (this.props.spec.sign.toLowerCase() === "tab") {
+            return this.props.spec.line - 2;
+        }
         return this.props.spec.line;
     }
 };

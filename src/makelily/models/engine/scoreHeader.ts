@@ -299,8 +299,8 @@ class ScoreHeader implements MusicXML.ScoreHeader {
             },
             encoders: [],
             softwares: [
-                "Satie Layout Engine <https://ripieno.github.io/satie> by Josh Netterfield <joshua@nettek.ca>",
-                "MusicXML Interfaces <https://ripieno.github.io/musicxml-interfaces>"
+                "Satie Layout Engine - https://ripieno.github.io/satie (joshua@nettek.ca)",
+                "MusicXML Interfaces - https://ripieno.github.io/musicxml-interfaces"
             ]
         };
     }
