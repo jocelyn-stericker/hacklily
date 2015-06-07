@@ -36,6 +36,15 @@ class TimeSignature extends React.Component<{spec: MusicXML.Time}, void> {
             return null;
         }
         let ts = this._displayTimeSignature();
+        if (ts.singleNumber && ts.beats.length === 1 && ts.beats[0].length === 1) {
+            return $(TimeSignatureNumber)({
+                    stroke: spec.color,
+                    x: this.context.originX + spec.defaultX + (spec.relativeX || 0),
+                    y: this.context.originY - (spec.defaultY + (spec.relativeY || 0))
+                },
+                ts.beats[0]
+            );
+        }
 
         if (ts.commonRepresentation) {
             var beats = ts.beats;
@@ -144,10 +153,11 @@ class TimeSignature extends React.Component<{spec: MusicXML.Time}, void> {
     _displayTimeSignature() {
         const spec = this.props.spec;
         return {
-            beats:      _.map(spec.beats, beats => beats.split("+").map(n => parseInt(n, 10))),
-            beatType:   spec.beatTypes,
-            commonRepresentation: spec.symbol === MusicXML.TimeSymbolType.Common ||
-                spec.symbol === MusicXML.TimeSymbolType.Cut
+            beats:                  _.map(spec.beats, beats => beats.split("+").map(n => parseInt(n, 10))),
+            beatType:               spec.beatTypes,
+            commonRepresentation:   spec.symbol === MusicXML.TimeSymbolType.Common ||
+                                    spec.symbol === MusicXML.TimeSymbolType.Cut,
+            singleNumber:           spec.symbol === MusicXML.TimeSymbolType.SingleNumber
         };
     }
 };
