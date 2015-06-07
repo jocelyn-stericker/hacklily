@@ -179,9 +179,10 @@ class AttributesModel implements Export.IAttributesModel {
             if (clef) {
                 this.clefs[clef.number || idx + 1] = clef;
                 this.clefs[clef.number || idx + 1].number = clef.number || idx + 1;
+                sClefs[clef.number || idx + 1] = this.clefs[clef.number || idx + 1];
             }
 
-            if (pClefs[idx] && !sClefs[idx]) {
+            if (pClefs[idx] && !sClefs[idx - 1]) {
                 this._clefs[idx] = Object.create(pClefs[idx]);
                 (<any>this._clefs[idx]).__inherited__ = true;
             }
@@ -204,11 +205,11 @@ class AttributesModel implements Export.IAttributesModel {
             clef.sign = clef.sign.toUpperCase();
         }
 
-        // Clef lines can be inferred if needed.
+        // Clef lines can be inferred.
         if (isNaN(clef.line)) {
             clef.line = (
                     _.find(Export.Clef.standardClefs,
-                        clef => clef.sign === clef.sign) ||
+                        stdClef => clef.sign.toUpperCase() === stdClef.sign.toUpperCase()) ||
                     { line: 2 } // fallback on treble clef
                 ).line;
         }
@@ -222,7 +223,7 @@ class AttributesModel implements Export.IAttributesModel {
             // Clef is redundant
             this._clefs[staffIdx] = Object.create(this._clefs[staffIdx]);
             (<any>this._clefs[staffIdx]).__inherited__ = true;
-            // delete this._clefs;
+            delete this._clefs;
         }
     }
     private _validateTime$() {
@@ -617,6 +618,44 @@ module Export {
                 // alto
                 line:               4,
                 sign:               "C",
+                additional:         false,
+                afterBarline:       false,
+                clefOctaveChange:   null,
+                color:              "#000000",
+                defaultX:           -16,
+                defaultY:           8,
+                fontFamily:         "",
+                fontSize:           "small",
+                fontStyle:          0,
+                fontWeight:         0,
+                number:             1,
+                printObject:        true,
+                relativeX:          0,
+                relativeY:          0,
+                size:               1
+            },
+            {
+                line:               3,
+                sign:               "percussion",
+                additional:         false,
+                afterBarline:       false,
+                clefOctaveChange:   null,
+                color:              "#000000",
+                defaultX:           -16,
+                defaultY:           8,
+                fontFamily:         "",
+                fontSize:           "small",
+                fontStyle:          0,
+                fontWeight:         0,
+                number:             1,
+                printObject:        true,
+                relativeX:          0,
+                relativeY:          0,
+                size:               1
+            },
+            {
+                line:               5,
+                sign:               "tab",
                 additional:         false,
                 afterBarline:       false,
                 clefOctaveChange:   null,

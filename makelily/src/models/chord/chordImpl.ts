@@ -593,6 +593,7 @@ module ChordModelImpl {
         }
 
         _detachModelWithContext(cursor: Engine.ICursor, baseModel: ChordModelImpl): ChordModelImpl {
+            const clef = cursor.staff.attributes.clefs[cursor.staff.idx];
             let model: ChordModelImpl = <any> _.map(baseModel, note => Object.create(note, {
                 /* Here, we're extending each note to have the correct default position.
                  * To do so, we use prototypical inheritance. See Object.create. */
@@ -607,7 +608,6 @@ module ChordModelImpl {
                         if (note.defaultY) {
                             return note.defaultY;
                         }
-                        const clef = cursor.staff.attributes.clefs[cursor.staff.idx];
                         return (Engine.IChord.lineForClef(note, clef) - 3)*10;
                     }
                 },
