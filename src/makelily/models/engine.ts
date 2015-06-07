@@ -24,14 +24,14 @@
  * 
  * De-serialization (JSON -> "UNVALIDATED")
  * ----------------------------------------
- *   0. MusicXML is converted to MXMLJSON via musicxml-interfaces
- *   1. MXMLJSON model is de-serialized                             (IModel.parse)
- *   2. IModel creates helper components, turns POD into     (IModel.modelDidLoad)
- *      classes
+ *   0. MusicXML is translated into MXMLJSON                      (MusicXML.parse)
+ *   1. MXMLJSON is converted to Satie Models                (MXML.Import.toScore)
+ *   2. Model does initial housework                        (IModel.modelDidLoad$)
  * 
  * Validation ("UNVALIDATED" -> "VALIDATED")
  * -----------------------------------------
- *   3. Dependencies are created & errors fixed                 (IModel.validate$)
+ *   3. A model reads the context given to it by models before it
+ *      in a bar and can modify context the for future models.  (IModel.validate$)
  *   4. Layout is guessed within a bar, voice, and staff           (IModel.layout)
  * 
  *      Models can pretend there is only one voice and one
@@ -131,6 +131,7 @@ export import Options           = require("./engine/options");
 export import RenderUtil        = require("./engine/renderUtil");
 export import ScoreHeader       = require("./engine/scoreHeader");
 
+import IAttributes              = require("./engine/iattributes");
 import Ctx                      = require("./engine/ctx");
 import LineProcessor            = require("./engine/lineProcessor");
 import MeasureProcessor         = require("./engine/measureProcessor");
@@ -164,7 +165,9 @@ export function validate$(options$: Options.ILayoutOptions, memo$: Options.ILine
 
 function tryValidate$(options$: Options.ILayoutOptions, memo$: Options.ILinesLayoutState): void {
     let factory         = options$.modelFactory;
-    let searchHere      = factory.searchHere.bind(factory);
+    let search          = factory.search.bind(factory);
+
+    EscapeHatch.__currentMeasureList__ = options$.measures;
 
     let lastAttribs: MusicXML.Attributes = null;
 
@@ -211,12 +214,12 @@ function tryValidate$(options$: Options.ILayoutOptions, memo$: Options.ILinesLay
                     return;
                 }
                 function ensureHeader(type: IModel.Type) {
-                    if (!searchHere(segment, 0, type).length) {
+                    if (!search(segment, 0, type).length) {
                         if (idx === 1) {
                             segment.splice(0, 0, factory.create(type));
                         } else {
                             let proxy = factory.create(IModel.Type.Proxy);
-                            let target = searchHere(staffSegments$[1], 0, type)[0];
+                            let target = search(staffSegments$[1], 0, type)[0];
                             (<any>proxy).target = target;
                             (<any>proxy).staffIdx = idx;
                             let tidx = -1;
@@ -233,7 +236,7 @@ function tryValidate$(options$: Options.ILayoutOptions, memo$: Options.ILinesLay
                 }
                 ensureHeader(IModel.Type.Print);
                 ensureHeader(IModel.Type.Attributes);
-                if (!searchHere(segment, segment.length - 1, IModel.Type.Barline).length) {
+                if (!search(segment, segment.length - 1, IModel.Type.Barline).length) {
                     // Make sure the barline ends up at the end.
                     const divs = _.reduce(segment, (divs, model) => divs + model.divCount, 1);
                     if (divs !== 0) {
@@ -262,10 +265,13 @@ function tryValidate$(options$: Options.ILayoutOptions, memo$: Options.ILinesLay
             lastAttribs = outcome.attributes;
         }
     });
+
+    EscapeHatch.__currentMeasureList__ = null;
 }
 
 export function layout$(options: Options.ILayoutOptions,
         memo$: Options.ILinesLayoutState): Options.ILineLayoutResult[] {
+    EscapeHatch.__currentMeasureList__ = options.measures;
 
     // We lay out measures in two passes.
     // First, we calculate the approximate width of measures and assign them to lines.
@@ -279,7 +285,7 @@ export function layout$(options: Options.ILayoutOptions,
     let boundsGuess = Options.ILineBounds.calculate(options.print$, options.page$);
     let multipleRest: number = undefined;
 
-    let widths = _.map(measures, function layoutMeasure(measure, idx) {
+    let approximateWidths = _.map(measures, function layoutMeasure(measure, idx) {
         // Create an array of the IMeasureParts of the previous, current, and next measures
         let neighbourMeasures: Measure.IMeasurePart[] = <any> _.flatten([
             !!measures[idx - 1] ? _.values(measures[idx - 1].parts) : <Measure.IMeasurePart> {
@@ -297,31 +303,38 @@ export function layout$(options: Options.ILayoutOptions,
             _.map(neighbourMeasures, m => m.voices.concat(m.staves))
         );
         if (!(measure.uuid in width$)) {
-            // TODO: Use EngravedStatus
-            if (isFinite(measure.width) && measure.width > 0) {
-                width$[measure.uuid] = measure.width;
-            } else {
-                let layout = MeasureProcessor.approximateLayout({
-                    attributes:     options.attributes,
-                    factory:        options.modelFactory,
-                    header:         options.header,
-                    line:           Ctx.ILine.create(neighbourModels, measures.length, 0, 1),
-                    measure:        measure,
-                    prevByStaff:    [], // FIXME:
-                    staves:         _.map(_.values(measure.parts), p => p.staves),
-                    voices:         _.map(_.values(measure.parts), p => p.voices),
-                    x:              0
-                });
-                if (layout.attributes && layout.attributes.measureStyle && layout.attributes.measureStyle.multipleRest) {
-                    multipleRest = multipleRests$[measure.uuid] = layout.attributes.measureStyle.multipleRest.count - 1;
-                } else if (!isNaN(multipleRest)) {
-                    multipleRests$[measure.uuid] = multipleRest;
-                    layout.width = 0;
-                } else {
-                    delete multipleRests$[measure.uuid];
-                }
-                width$[measure.uuid] = layout.width;
+            let specifiedWidth = measure.width; // TODO: Use EngravedStatus
+            if (!isNaN(measure.width) && measure.width !== null && (measure.width <= 0 || !isFinite(measure.width))) {
+                console.warn("Bad measure width %s. Ignoring", measure.width);
+                specifiedWidth = undefined;
             }
+
+            let approximateLayout = MeasureProcessor.approximateLayout({
+                attributes:     options.attributes,
+                factory:        options.modelFactory,
+                header:         options.header,
+                line:           Ctx.ILine.create(neighbourModels, measures.length, 0, 1),
+                measure:        measure,
+                prevByStaff:    [], // FIXME:
+                staves:         _.map(_.values(measure.parts), p => p.staves),
+                voices:         _.map(_.values(measure.parts), p => p.voices),
+                x:              0
+            });
+            if (approximateLayout.attributes &&
+                    approximateLayout.attributes.measureStyle &&
+                    approximateLayout.attributes.measureStyle.multipleRest) {
+                multipleRest = multipleRests$[measure.uuid] = approximateLayout.attributes.measureStyle.multipleRest.count - 1;
+            } else if (!isNaN(multipleRest)) {
+                multipleRests$[measure.uuid] = multipleRest;
+                approximateLayout.width = 0;
+            } else {
+                delete multipleRests$[measure.uuid];
+            }
+            width$[measure.uuid] = {
+                width: specifiedWidth || approximateLayout.width,
+                attributesWidthStart: IAttributes.approximateWidth(approximateLayout.attributes),
+                attributesWidthEnd: IAttributes.approximateWidth(approximateLayout.attributes, IAttributes.AtEnd.Yes)
+            };
         }
         multipleRest = multipleRest ? multipleRest - 1 : undefined;
         return width$[measure.uuid];
@@ -330,9 +343,9 @@ export function layout$(options: Options.ILayoutOptions,
     let thisPrint: MusicXML.Print = options.print$;
     function updatePrint(measure: Measure.IMutableMeasure) {
         let partWithPrint = _.find(measure.parts, part => !!part.staves[1] &&
-                options.modelFactory.searchHere(part.staves[1], 0, IModel.Type.Print).length);
+                options.modelFactory.search(part.staves[1], 0, IModel.Type.Print).length);
         if (partWithPrint) {
-            let print = <any> options.modelFactory.searchHere(partWithPrint.staves[1], 0,
+            let print = <any> options.modelFactory.search(partWithPrint.staves[1], 0,
                     IModel.Type.Print)[0];
             thisPrint = print;
         }
@@ -354,32 +367,46 @@ export function layout$(options: Options.ILayoutOptions,
     // Here we assign the lines.
     // It's currently very naive, and could use some work.
 
-    let startingWidth = boundsGuess.right - boundsGuess.left - 150;
-        // FIXME: replace 150 w/ proper __ESTIMATE__ space for start of line/staff
-    let lineOpts$ = _.reduce(widths, function(memo, width, idx) {
+    let startingWidth = boundsGuess.right - boundsGuess.left;
+    let lineOpts$ = _.reduce(approximateWidths, function(memo, width, idx) {
         updatePrint(measures[idx]);
         memo.opts[memo.opts.length - 1].print$ = thisPrint;
         invariant(!!thisPrint, "No print found");
-        if (memo.remainingWidth > width) {
-            memo.remainingWidth -= width;
+        if (width.attributesWidthStart > memo.widthAllocatedForStart) {
+            memo.remainingWidth -= width.attributesWidthStart - memo.widthAllocatedForStart;
+            memo.widthAllocatedForStart = width.attributesWidthStart;
+        }
+        if (width.attributesWidthEnd > memo.widthAllocatedForEnd) {
+            memo.remainingWidth -= width.attributesWidthEnd - memo.widthAllocatedForEnd;
+            memo.widthAllocatedForEnd = width.attributesWidthEnd;
+        }
+        if (memo.remainingWidth > width.width) {
+            memo.remainingWidth -= width.width;
         } else {
             memo.opts.push(newLayoutWithoutMeasures());
-            memo.remainingWidth = startingWidth;
+            memo.remainingWidth = startingWidth - width.width - width.attributesWidthStart - width.attributesWidthEnd;
+            memo.widthAllocatedForStart = width.attributesWidthStart;
+            memo.widthAllocatedForEnd = width.attributesWidthEnd;
         }
         memo.opts[memo.opts.length - 1].measures.push(measures[idx]);
         memo.opts[memo.opts.length - 1].line = memo.opts.length - 1;
         return memo;
     }, {
         opts: <Options.ILayoutOptions[]>[newLayoutWithoutMeasures()],
-        remainingWidth: startingWidth
+        remainingWidth: startingWidth,
+        widthAllocatedForStart: 0,
+        widthAllocatedForEnd: 0
     }).opts;
 
     // layoutLine$ handles the second pass.
-    return _.map(lineOpts$, function secondPass(lineOpt$) {
+    let layout = _.map(lineOpts$, function secondPass(lineOpt$) {
         lineOpt$.lines = lineOpts$.length;
         return LineProcessor.layoutLine$(lineOpt$, Options.ILineBounds.calculate(lineOpt$.print$,
                 options.page$), memo$);
     });
+
+    EscapeHatch.__currentMeasureList__ = null;
+    return layout;
 }
 
 export function mutate$(options: Options.ILayoutOptions,
@@ -410,4 +437,8 @@ export enum RenderTarget {
 
 export const key$ = MeasureProcessor.key$;
 export const MAX_SAFE_INTEGER = MeasureProcessor.MAX_SAFE_INTEGER;
+
+export module EscapeHatch {
+    export let __currentMeasureList__: Measure.IMutableMeasure[];
+}
 

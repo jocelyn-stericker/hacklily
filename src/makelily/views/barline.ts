@@ -23,6 +23,7 @@ import React                = require("react");
 import _                    = require("lodash");
 var $                       = React.createFactory;
 
+import Attributes           = require("./attributes");
 import Barline              = require("../models/barline");
 import Line                 = require("./primitives/line");
 
@@ -54,6 +55,10 @@ class BarlineView extends React.Component<{layout: Barline.ILayout}, {}> {
             var yBottom = y + layout.height - layout.yOffset;
         }
 
+        if (model.satieAttributes) {
+            model.satieAttributes.overrideX = layout.overrideX;
+        }
+
         return React.DOM.g(null,
             _.map(layout.lineStarts, (start, idx) => $(Line)({
                 key: idx,
@@ -64,7 +69,10 @@ class BarlineView extends React.Component<{layout: Barline.ILayout}, {}> {
                 stroke: model.barStyle.color,
                 fill: model.barStyle.color,
                 strokeWidth: layout.lineWidths[idx]
-            }))
+            })),
+            model.satieAttributes && $(Attributes)({
+                layout: model.satieAttributes
+            })
         /* React.DOM.g */);
     }
 };

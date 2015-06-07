@@ -36,11 +36,17 @@ export interface ILayoutOptions {
     postProcessors: PostProcessor[];
 }
 
+export interface IWidthInformation {
+    width:                  number;
+    attributesWidthStart:   number;
+    attributesWidthEnd:     number;
+}
+
 export type PreProcessor = (measures: Measure.IMutableMeasure[]) => Measure.IMutableMeasure[];
 export type PostProcessor = (options: ILayoutOptions, bounds: ILineBounds, measures: Measure.IMeasureLayout[]) => Measure.IMeasureLayout[];
 
 export interface ILinesLayoutState {
-    width$: { [key: string]: number };
+    width$: { [key: string]: IWidthInformation };
     multipleRests$: { [key: string]: number };
     clean$: { [key: string]: Measure.IMeasureLayout };
     y$: number;

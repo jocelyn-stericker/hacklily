@@ -35,7 +35,7 @@ export var fakeAttributeChordFactory: Engine.IModel.IFactory = {
         }
         return modelType === Engine.IModel.Type.Chord;
     },
-    searchHere: (models: Engine.IModel[], idx: number,
+    search: (models: Engine.IModel[], idx: number,
             modelType: Engine.IModel.Type): Engine.IModel[] => {
         return fakeAttributeChordFactory.modelHasType(models[idx], modelType) ? [models[idx]] : [];
     },

@@ -472,13 +472,7 @@ export function layoutMeasure(opts: IMeasureLayoutOptions): Measure.IMeasureLayo
  * @returns an approximate width for a measure that is not the first on a line.
  */
 export function approximateLayout(opts: IMeasureLayoutOptions): Measure.IMeasureLayout {
-    invariant(isNaN(opts.measure.width) || opts.measure.width === null,
-        "Engine.approximateWidth(...) must be passed a measure without an exact width.\n" +
-        "Instead, it was passed a measure with opts.measure.width === %s.\n" +
-        "This most likely means a measure was modified in a way that requires an updated " +
-        "layout, but its \"FrozenEngraved\" status was not cleared.", opts.measure.width);
-
-    invariant(!!opts.line, "An approximate line needs to be given to approximateWidth");
+    invariant(!!opts.line, "approximateLayout() needs `opts.line` to be set");
 
     opts = <IMeasureLayoutOptions> _.extend({
             _approximate: true,

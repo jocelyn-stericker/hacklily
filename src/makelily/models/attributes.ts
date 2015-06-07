@@ -21,6 +21,7 @@ import _                = require("lodash");
 import invariant        = require("react/lib/invariant");
 
 import Engine           = require("./engine");
+import IAttributes      = require("./engine/iattributes");
 
 const CLEF_INDENTATION = 7; // Gould(6): "A clef is indented into the stave by one stave-space or a little less"
 
@@ -208,19 +209,13 @@ class AttributesModel implements Export.IAttributesModel {
         // Clef lines can be inferred.
         if (isNaN(clef.line)) {
             clef.line = (
-                    _.find(Export.Clef.standardClefs,
+                    _.find(IAttributes.Clef.standardClefs,
                         stdClef => clef.sign.toUpperCase() === stdClef.sign.toUpperCase()) ||
                     { line: 2 } // fallback on treble clef
                 ).line;
         }
 
-        const parentClef = this._parent && this._parent.clefs && this._parent.clefs.length ?
-            this._parent.clefs[staffIdx] : null;
-
-        const thisClef = clef;
-        if (parentClef && parentClef.sign === thisClef.sign && parentClef.line === thisClef.line &&
-                parentClef.clefOctaveChange === thisClef.clefOctaveChange) {
-            // Clef is redundant
+        if (IAttributes.clefsEqual(this._parent, this, staffIdx)) {
             this._clefs[staffIdx] = Object.create(this._clefs[staffIdx]);
             (<any>this._clefs[staffIdx]).__inherited__ = true;
             delete this._clefs;
@@ -237,16 +232,11 @@ class AttributesModel implements Export.IAttributesModel {
                 senzaMisura: null
             }];
         } else if (!!this._times && this._times.length) {
-            const parentTime = this._parent ? this._parent.times[0] : null;
             _.forEach(this.times[0].beats, function(beat) {
                 invariant(typeof beat === "string", "Attributes validation error: beats must " +
                     "be strings, but %s is not a string", beat);
             });
-            if (parentTime && JSON.stringify(this.times[0].beats) === JSON.stringify(parentTime.beats) &&
-                    JSON.stringify(this.times[0].beatTypes) === JSON.stringify(parentTime.beatTypes) &&
-                    !!this.times[0].senzaMisura === !!parentTime.senzaMisura &&
-                    this.times[0].symbol === this.times[0].symbol) {
-                // TS is redundant
+            if (IAttributes.timesEqual(this._parent, this, 0)) {
                 delete this._times;
             }
         }
@@ -263,13 +253,7 @@ class AttributesModel implements Export.IAttributesModel {
                 keyAlters: null
             }];
         } else if (!!this._keySignatures && this._keySignatures.length) {
-            const parentKS = this._parent ? this._parent.keySignatures[0] : null;
-            if (parentKS && this.keySignatures[0].fifths === parentKS.fifths &&
-                    this.keySignatures[0].keySteps === parentKS.keySteps &&
-                    this.keySignatures[0].keyAccidentals === parentKS.keyAccidentals &&
-                    this.keySignatures[0].keyAlters === parentKS.keyAlters &&
-                    this.keySignatures[0].mode === parentKS.mode) {
-                // Key signature is redundant
+            if (IAttributes.keysEqual(this._parent, this, 0)) {
                 delete this._keySignatures;
             }
         }
@@ -317,7 +301,9 @@ AttributesModel.prototype.frozenness = Engine.IModel.FrozenLevel.Warm;
 module AttributesModel {
     export class Layout implements Export.ILayout {
         constructor(origModel: AttributesModel, cursor$: Engine.ICursor) {
-            let model = Object.create(origModel);
+            invariant(!!origModel, "Layout must be passed a model");
+
+            let model = Object.create(cursor$.factory.identity(origModel));
             this.model = model;
             this.x$ = cursor$.x$;
             this.division = cursor$.division$;
@@ -329,6 +315,7 @@ module AttributesModel {
 
             this.ksVisible = !!model._keySignatures && !!model._keySignatures.length || isFirstInLine;
             this.tsVisible = !!model._times && !!model._times.length; // TODO: || isFirstInPage;
+
             this.clefVisible = model.shouldRenderClef(cursor$.segment.owner, isFirstInLine);
             this.partSymbolVisible = isFirstInLine && this.model.partSymbol &&
                 this.model.partSymbol.bottomStaff === cursor$.staff.idx;
@@ -384,10 +371,11 @@ module AttributesModel {
                 }
 
                 if (!isFirstInLine) {
-                    this.clefSpacing = 4.2 + contextualSpacing$;
-                } else {
-                    this.clefSpacing = 24 + contextualSpacing$;
+                    contextualSpacing$ -= 19.8;
                 }
+
+                this.clefSpacing = IAttributes.clefWidth(model, this.staffIdx) +
+                    contextualSpacing$;
             } else {
                 this.clefSpacing = 0;
             }
@@ -416,14 +404,7 @@ module AttributesModel {
                     contextualSpacing$ = 10;
                 }
 
-                const keySignature = model.keySignatures[0];
-
-                const fifths: number = Math.min(7, Math.abs(keySignature.fifths));
-                if (fifths) {
-                    this.ksSpacing = contextualSpacing$ + 10.4 * fifths;
-                } else {
-                    this.ksSpacing = contextualSpacing$ - 5;
-                }
+                this.ksSpacing = contextualSpacing$ + IAttributes.keyWidth(model, 0);
             } else {
                 this.ksSpacing = 0;
             }
@@ -452,13 +433,11 @@ module AttributesModel {
                     contextualSpacing$ = 12.5;
                 }
 
-                if (origModel.times[0].beatTypes) {
-                    let numeratorSegments = _.reduce(origModel.times[0].beats, (memo, beats) => memo + beats.split("+").length, 0);
-                    this.tsSpacing = contextualSpacing$ + Export.NUMBER_SPACING*numeratorSegments +
-                        (origModel.times[0].beatTypes.length - 1)*Export.PLUS_SPACING;
-                } else {
-                    this.tsSpacing = 0;
+                if (!origModel.times[0].beatTypes) {
+                    contextualSpacing$ = 0;
                 }
+
+                this.tsSpacing = contextualSpacing$ + IAttributes.timeWidth(model, 0);
             } else {
                 this.tsSpacing = 0;
             }
@@ -555,127 +534,9 @@ module Export {
         staffIdx: number;
     }
 
-    export module Clef {
-        export const standardClefs: MusicXML.Clef[] = [
-            {
-                // Treble
-                line:               2,
-                sign:               "G",
-                additional:         false,
-                afterBarline:       false,
-                clefOctaveChange:   null,
-                color:              "#000000",
-                defaultX:           -16,
-                defaultY:           16,
-                fontFamily:         "",
-                fontSize:           "small",
-                fontStyle:          0,
-                fontWeight:         0,
-                number:             1,
-                printObject:        true,
-                relativeX:          0,
-                relativeY:          0,
-                size:               1
-            }, {
-                // bass
-                line:               4,
-                sign:               "F",
-                additional:         false,
-                afterBarline:       false,
-                clefOctaveChange:   null,
-                color:              "#000000",
-                defaultX:           -16,
-                defaultY:             4,
-                fontFamily:         "",
-                fontSize:           "small",
-                fontStyle:          0,
-                fontWeight:         0,
-                number:             1,
-                printObject:        true,
-                relativeX:          0,
-                relativeY:          0,
-                size:               1
-            }, {
-                // tenor
-                line:               3,
-                sign:               "C",
-                additional:         false,
-                afterBarline:       false,
-                clefOctaveChange:   null,
-                color:              "#000000",
-                defaultX:           -16,
-                defaultY:             0,
-                fontFamily:         "",
-                fontSize:           "small",
-                fontStyle:          0,
-                fontWeight:         0,
-                number:             1,
-                printObject:        true,
-                relativeX:          0,
-                relativeY:          0,
-                size:               1
-            }, {
-                // alto
-                line:               4,
-                sign:               "C",
-                additional:         false,
-                afterBarline:       false,
-                clefOctaveChange:   null,
-                color:              "#000000",
-                defaultX:           -16,
-                defaultY:           8,
-                fontFamily:         "",
-                fontSize:           "small",
-                fontStyle:          0,
-                fontWeight:         0,
-                number:             1,
-                printObject:        true,
-                relativeX:          0,
-                relativeY:          0,
-                size:               1
-            },
-            {
-                line:               3,
-                sign:               "percussion",
-                additional:         false,
-                afterBarline:       false,
-                clefOctaveChange:   null,
-                color:              "#000000",
-                defaultX:           -16,
-                defaultY:           8,
-                fontFamily:         "",
-                fontSize:           "small",
-                fontStyle:          0,
-                fontWeight:         0,
-                number:             1,
-                printObject:        true,
-                relativeX:          0,
-                relativeY:          0,
-                size:               1
-            },
-            {
-                line:               5,
-                sign:               "tab",
-                additional:         false,
-                afterBarline:       false,
-                clefOctaveChange:   null,
-                color:              "#000000",
-                defaultX:           -16,
-                defaultY:           8,
-                fontFamily:         "",
-                fontSize:           "small",
-                fontStyle:          0,
-                fontWeight:         0,
-                number:             1,
-                printObject:        true,
-                relativeX:          0,
-                relativeY:          0,
-                size:               1
-            }
-        ];
+    export function createWarningLayout$(cursor$: Engine.ICursor, nextAttributes: MusicXML.Attributes) {
+        return <ILayout> new AttributesModel.Layout(<any> nextAttributes, cursor$);
     }
-    export const NUMBER_SPACING     = 28;
-    export const PLUS_SPACING       = 12;
 }
 
 export = Export;

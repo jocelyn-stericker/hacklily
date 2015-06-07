@@ -121,7 +121,7 @@ describe("[engine.ts]", function() {
                     }
                     return modelType === Engine.IModel.Type.Chord;
                 },
-                searchHere: (models: Engine.IModel[], idx: number, modelType: Engine.IModel.Type):
+                search: (models: Engine.IModel[], idx: number, modelType: Engine.IModel.Type):
                         Engine.IModel[] => {
                     let model = models[idx];
                     if (model.divCount === 0) {
