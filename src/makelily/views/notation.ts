@@ -28,14 +28,18 @@ import Articulation         = require("./notations/articulation");
 import Bezier               = require("./primitives/bezier");
 import Chord                = require("../models/chord");
 import Glyph                = require("./primitives/glyph");
+import SMuFL                = require("../models/smufl");
 
 /**
  * Notations are things that are attached to notes.
  */
-class Notation extends React.Component<{spec: MusicXML.Notations, parentSpec: Chord.IChordModel, layout: Chord.IChordLayout}, void> {
+class Notation extends React.Component<{spec: MusicXML.Notations, layout: Chord.IChordLayout, note: MusicXML.Note}, void> {
     render() {
         const model = this.props.spec;
-        const originX = this.context.originX + this.props.layout.model[0].defaultX;
+        const notehead = this.props.layout.model.satieNotehead[0];
+        const bbox = SMuFL.bboxes[notehead];
+        const noteheadCenter = 10*(bbox[0] - bbox[2])/2;
+        const originX = this.context.originX + this.props.layout.model[0].defaultX + noteheadCenter;
         let children: React.ReactElement<any>[] = [];
 
         _.forEach(model.accidentalMarks, accidentalMark => {
@@ -98,11 +102,27 @@ class Notation extends React.Component<{spec: MusicXML.Notations, parentSpec: Ch
                 return;
             }
 
-            var x2: number      = originX + tieTo.x$ - 45; // TODO
-            var x1: number      = originX + this.props.layout.x$ - 30; // TODO
-            var dir: number     = this.props.parentSpec.satieStem ? -this.props.parentSpec.satieStem.direction : -1;
-            var y2: number      = this.context.originY - (dir === -1 ? -5 : 30); // TODO
-            var y1: number      = this.context.originY - (dir === -1 ? -5 : 30); // TODO
+            let bbox2           = SMuFL.bboxes[notehead];
+            let noteheadCenter2 = 10*(bbox2[0] - bbox2[2])/2;
+            let offset2         = noteheadCenter2 - noteheadCenter - 4;
+            let defaultY        = this.context.originY - this.props.note.defaultY;
+
+            let stem1           = this.props.layout.model.satieStem;
+            let stem2           = tieTo.model.satieStem;
+            let dir             = -1;
+            if (stem1 && stem2 && stem1.direction === stem2.direction) {
+                dir             = -stem1.direction;
+            } else if (stem1) {
+                dir             = -stem1.direction;
+            } else if (stem2) {
+                dir             = -stem2.direction;
+            }
+
+            // This is the correct style only if space permits. See B.B. page 62.
+            var x2: number      = originX - this.props.layout.overrideX + tieTo.x$ + offset2;
+            var x1: number      = originX;
+            var y2: number      = defaultY - (dir === -1 ? -10 : 10);
+            var y1: number      = defaultY - (dir === -1 ? -10 : 10);
 
             var x2mx1: number   = x2 - x1;
             var x1mx2: number   = -x2mx1;
@@ -147,7 +167,6 @@ class Notation extends React.Component<{spec: MusicXML.Notations, parentSpec: Ch
                 strokeWidth: 1.2,
                 stroke: "#000000"
             }));
-            console.log("Want to render ", this.props.layout.x$, tieTo.x$);
         });
 
         _.forEach(model.tuplets, tuplet => {
