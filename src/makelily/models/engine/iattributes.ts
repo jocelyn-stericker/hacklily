@@ -75,7 +75,7 @@ export function keyWidth(attributes: MusicXML.Attributes, staff: number) {
 
     const fifths: number = Math.min(7, Math.abs(keySignature.fifths));
     if (fifths) {
-        return 10.4 * fifths;
+        return 2 + _.reduce(keyWidths(keySignature), (memo, width) => memo + width, 0);
     } else {
         return -5;
     }
@@ -258,7 +258,33 @@ export module Clef {
     ];
 }
 
+export function keyWidths(spec: MusicXML.Key) {
+    let widths: number[] = [];
+    let idxes = _.times(Math.min(7, Math.abs(spec.fifths)), i => (i + Math.max(0, Math.abs(spec.fifths) - 7))%7);
+    _.forEach(idxes, i => widths[i] = getWidth(i, spec.fifths >= 0));
+    return widths;
+
+    function getWidth(i: number, sharp: boolean): number {
+        switch(true) {
+            case (sharp && 7 + i < spec.fifths):
+                return DOUBLE_SHARP_WIDTH;
+            case (sharp && 7 + i >= spec.fifths):
+                return SHARP_WIDTH;
+            case (!sharp && (7 + i < -spec.fifths)):
+                return DOUBLE_FLAT_WIDTH;
+            case (!sharp && (7 + i >= -spec.fifths)):
+                return FLAT_WIDTH;
+        }
+
+        return 10;
+    }
+}
+
 export const NUMBER_SPACING     = 28;
 export const PLUS_SPACING       = 12;
-export const CLEF_INDENTATION = 7; // Gould(6): "A clef is indented into the stave by one stave-space or a little less"
+export const CLEF_INDENTATION   = 7; // Gould(6): "A clef is indented into the stave by one stave-space or a little less"
+export const FLAT_WIDTH         = 10;
+export const DOUBLE_FLAT_WIDTH  = 19;
+export const DOUBLE_SHARP_WIDTH = 13;
+export const SHARP_WIDTH        = 11;
 

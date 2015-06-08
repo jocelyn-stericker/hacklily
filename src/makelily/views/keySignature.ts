@@ -24,6 +24,7 @@ import _                    = require("lodash");
 let $                       = React.createFactory;
 
 import Accidental           = require("./accidental");
+import IAttributes          = require("../models/engine/iattributes");
 
 // TODO: this almost looks like logic -- move.
 const sharps: { [key: string]: Array<number> } = {
@@ -59,32 +60,38 @@ class KeySignature extends React.Component<{spec: MusicXML.Key; clef: MusicXML.C
         const spec = this.props.spec;
         const clef = this.props.clef;
         const idxes = _.times(Math.min(7, Math.abs(spec.fifths)), i => (i + Math.max(0, Math.abs(spec.fifths) - 7))%7);
-
+        let widths = IAttributes.keyWidths(spec);
+        let positions: number[] = [];
+        let x$ = 0;
+        for (var i = 0; i < idxes.length; ++i) {
+            positions.push(x$);
+            x$ += widths[idxes[i]];
+        }
         return _.map(idxes, i => makeAccidental(i, spec.fifths >= 0));
 
         function makeAccidental(i: number, sharp: boolean): MusicXML.Accidental {
             let accidental: MusicXML.MxmlAccidental;
             switch(true) {
-                case (sharp && 7 + i < spec.fifths):
+                case (sharp && 7 + idxes[i] < spec.fifths):
                     accidental = MusicXML.MxmlAccidental.DoubleSharp;
                     break;
-                case (sharp && 7 + i >= spec.fifths):
+                case (sharp && 7 + idxes[i] >= spec.fifths):
                     accidental = MusicXML.MxmlAccidental.Sharp;
                     break;
-                case (!sharp && (7 + i < -spec.fifths)):
+                case (!sharp && (7 + idxes[i] < -spec.fifths)):
                     accidental = MusicXML.MxmlAccidental.DoubleFlat;
                     break;
-                case (!sharp && (7 + i >= -spec.fifths)):
+                case (!sharp && (7 + idxes[i] >= -spec.fifths)):
                     accidental = MusicXML.MxmlAccidental.Flat;
                     break;
             }
 
-            let line = (sharp ? sharps : flats)[standardClef(clef)][i];
+            let line = (sharp ? sharps : flats)[standardClef(clef)][idxes[i]];
 
             return {
                 accidental: accidental,
                 color:      spec.color,
-                defaultX:   spec.defaultX + i*10,
+                defaultX:   spec.defaultX + positions[i],
                 relativeX:  spec.relativeX,
                 defaultY:   spec.defaultY + (line - 3)*10,
                 relativeY:  (spec.relativeY || 0)
