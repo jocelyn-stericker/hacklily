@@ -121,6 +121,7 @@ module BarlineModel {
             });
 
             this.x$ = cursor$.x$;
+            let clefOffset = 0;
 
             if (!cursor$.approximate && cursor$.line.barsOnLine === cursor$.line.barOnLine$ + 1) {
                 // TODO: Figure out a way to get this to work when the attributes on the next line change
@@ -131,6 +132,8 @@ module BarlineModel {
                         segment, 0, Engine.IModel.Type.Attributes)[0];
                 if (nextAttributes && IAttributes.needsWarning(
                         cursor$.staff.attributes, nextAttributes, cursor$.staff.idx)) {
+                    clefOffset = IAttributes.clefsEqual(cursor$.staff.attributes,
+                            nextAttributes, cursor$.staff.idx) ? 0 : IAttributes.CLEF_INDENTATION;
                     this.model.satieAttributes = Attributes.createWarningLayout$(cursor$, nextAttributes);
                 }
             }
@@ -172,7 +175,7 @@ module BarlineModel {
                     this.lineWidths.push(width);
                     x += width;
                 });
-                this.model.satieAttribsOffset = x + 8;
+                this.model.satieAttribsOffset = x + 8 + clefOffset;
                 cursor$.x$ += x;
             };
 
