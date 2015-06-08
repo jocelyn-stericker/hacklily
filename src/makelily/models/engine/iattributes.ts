@@ -260,4 +260,5 @@ export module Clef {
 
 export const NUMBER_SPACING     = 28;
 export const PLUS_SPACING       = 12;
+export const CLEF_INDENTATION = 7; // Gould(6): "A clef is indented into the stave by one stave-space or a little less"
 

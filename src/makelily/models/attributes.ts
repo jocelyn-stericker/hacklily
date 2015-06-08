@@ -23,8 +23,6 @@ import invariant        = require("react/lib/invariant");
 import Engine           = require("./engine");
 import IAttributes      = require("./engine/iattributes");
 
-const CLEF_INDENTATION = 7; // Gould(6): "A clef is indented into the stave by one stave-space or a little less"
-
 class AttributesModel implements Export.IAttributesModel {
 
     /*---- I.1 IModel ---------------------------------------------------------------------------*/
@@ -338,7 +336,7 @@ module AttributesModel {
             const chord = nextIsNote ? Engine.IChord.fromModel(next) : null;
 
             if (this.clefVisible) {
-                this.x$ += CLEF_INDENTATION;
+                this.x$ += IAttributes.CLEF_INDENTATION;
                 cursor$.x$ = this.x$;
 
                 let contextualSpacing$ = 0;
