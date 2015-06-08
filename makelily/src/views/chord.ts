@@ -51,8 +51,6 @@ class ChordView extends React.Component<{layout: Chord.IChordLayout}, void> {
             return null;
         }
 
-        let notations = _.flatten(_.map(spec, note => note.notations).filter(note => !!note));
-
         let lyKey = 0;
         let lyrics = _.chain(<MusicXML.Note[]><any>spec)
                         .map(n => n.lyrics)
@@ -142,30 +140,19 @@ class ChordView extends React.Component<{layout: Chord.IChordLayout}, void> {
                 tupletsTemporary: null,
                 stroke: "black"
             }),
-            _.map(notations, (notation, idx) => $(Notation)({
-                key: `N${idx}`,
+            _.map(spec, (note, idx) => _.map(note.notations, (notation, jdx) => $(Notation)({
+                key: `N${idx}_${jdx}`,
                 spec: notation,
-                parentSpec: spec,
+                note: note,
                 layout: this.props.layout
-            })),
+            }))),
             lyrics
         );
-    }
-
-    getChildContext() {
-        return {
-            originX:        this.context.originX,
-            originY:        this.context.originY
-        };
     }
 }
 
 module ChordView {
     export var contextTypes = <any> {
-        originX:            React.PropTypes.number.isRequired,
-        originY:            React.PropTypes.number.isRequired
-    };
-    export var childContextTypes = <any> {
         originX:            React.PropTypes.number.isRequired,
         originY:            React.PropTypes.number.isRequired
     };
