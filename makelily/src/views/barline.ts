@@ -56,7 +56,7 @@ class BarlineView extends React.Component<{layout: Barline.ILayout}, {}> {
         }
 
         if (model.satieAttributes) {
-            model.satieAttributes.overrideX = layout.overrideX;
+            model.satieAttributes.overrideX = layout.overrideX + model.satieAttribsOffset;
         }
 
         return React.DOM.g(null,

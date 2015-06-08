@@ -129,9 +129,6 @@ class TimeSignature extends React.Component<{spec: MusicXML.Time}, void> {
             if (beats[0] < 10 && ts.beatType[idx] >= 10) {
                 culm += 5;
             }
-            if (beats[0] === 1) {
-                culm += 1;
-            }
             return culm;
         });
     }
@@ -146,6 +143,7 @@ class TimeSignature extends React.Component<{spec: MusicXML.Time}, void> {
             if (ts.beats[idx][0] >= 10 && beatType < 10) {
                 culm += 7;
             }
+
             return culm;
         });
     }
@@ -183,7 +181,7 @@ class TimeSignatureNumber extends React.Component<ITSNumProps, void> {
         return React.DOM.g(null,
             _.map((this.props.children + "").split(""), (c, i) => $(Glyph)({
                 key: "ts-" + i,
-                x: this.props.x + i*12,
+                x: this.props.x + i*12 + (c === "1" ? (!i && parseInt(this.props.children, 10) >= 10 ? -1 : 1) : 0),
                 y: this.props.y,
                 fill: this.props.stroke,
                 glyphName: "timeSig" + c

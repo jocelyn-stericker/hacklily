@@ -82,6 +82,7 @@ class BarlineModel implements Export.IBarlineModel {
     defaultX:           number;
     defaultY:           number;
     satieAttributes:    Attributes.ILayout;
+    satieAttribsOffset: number;
 
     /*---- Validation Implementations -----------------------------------------------------------*/
 
@@ -148,7 +149,6 @@ module BarlineModel {
                 }
             }
             this.model.defaultY = 0;
-            let leadingX = cursor$.x$ - this.x$;
 
             this.yOffset = 0;   // TODO
             this.height = 20;   // TODO
@@ -167,11 +167,12 @@ module BarlineModel {
                     if (idx > 0) {
                         x += barlineSep*10;
                     }
-                    this.lineStarts.push(x + leadingX);
+                    this.lineStarts.push(x);
                     const width = lineWidths[line].tenths;
                     this.lineWidths.push(width);
                     x += width;
                 });
+                this.model.satieAttribsOffset = x + 8;
                 cursor$.x$ += x;
             };
 
@@ -255,6 +256,7 @@ module Export {
         defaultX:           number;
         defaultY:           number;
         satieAttributes:    Attributes.ILayout;
+        satieAttribsOffset: number;
     }
 
     export interface ILayout extends Engine.IModel.ILayout {
