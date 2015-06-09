@@ -12,7 +12,7 @@ class Home extends React.Component<void, void> {
             music editor. Satie isn't ready for production use, yet.
             </p>
             <Test chrome=${false} name="01a" filename=${"/lilypond-regression/01a.xml"} />
-            <Link to="/tests"><button>run test suite »</button></Link>
+            <Link to="tests"><button>run test suite »</button></Link>
         </div>`);
     }
 }

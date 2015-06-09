@@ -3,11 +3,13 @@ import { Route, DefaultRoute, RouteHandler, Link, RouterContext } from "react-ro
 
 const STYLES = require("./app.less");
 
+let prefix = process.env.PLAYGROUND_PREFIX || "";
+
 class App extends React.Component<{params: {id: string}}, void> {
     render() {
         let router: RouterContext = this.context.router;
         let Handler: any = router.getCurrentRoutes()[this.context.routeDepth].handler;
-        let topLink = router.getCurrentPath() !== "/" && React.jsx(`<Link className=${STYLES.toplink} to='/'>« Go home</Link>`);
+        let topLink = router.getCurrentPath() !== (prefix + "/") && React.jsx(`<Link className=${STYLES.toplink} to="home">« Go home</Link>`);
         let params = this.props.params;
         return React.jsx(`<body>
             <header>

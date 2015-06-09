@@ -2,21 +2,26 @@
 
 import React = require("react");
 import Satie = require("satie");
-import {run, HistoryLocation, Route, DefaultRoute, NotFoundRoute} from "react-router";
+import {run, HistoryLocation, Route, Redirect, DefaultRoute, NotFoundRoute} from "react-router";
 
 import App = require("./app");
 import Home = require("./home");
 import Tests = require("./tests");
 
+let prefix = process.env.PLAYGROUND_PREFIX || "";
+
 Satie.init({
+    satieRoot: location.protocol + "//" + location.host + prefix + "/vendor/",
     preloadedFonts: ["Alegreya", "Alegreya (bold)"]
 });
 
 var routes = React.jsx(`
-    <Route handler=${App} path="/">
+    <Route handler=${App} name="home" path=${prefix + "/"}>
         <DefaultRoute handler=${Home} />
-        <Route name="tests" handler=${Tests} />
-        <Route name="filteredTests" path="/tests/:id" handler=${Tests} />
+        <Route name="tests" path="tests" handler=${Tests} />
+        <Redirect from="tests/" to="tests" />
+        <Route name="someTests" path="tests/:id" handler=${Tests} />
+        <Redirect from="tests/:id/" to="someTests" />
     </Route>
 `);
 

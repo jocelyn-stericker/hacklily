@@ -173,7 +173,7 @@ class Tests extends React.Component<{params: {id: string}}, void> {
         let filter = this.props.params ? this.props.params.id : null;
         let cat = _.reduce(TESTS, (memo, testName) => {
             let type = testName.substr(0, 2);
-            let link = filter ? null : React.jsx(`<Link to=${"/tests/" + type}><button>hide others</button></Link>`);
+            let link = filter ? null : React.jsx(`<Link to="someTests" params=${{id: type}}><button>hide others</button></Link>`);
             if (type !== memo.type && (!filter || type.indexOf(filter) === 0)) {
                 memo.acc.push(React.jsx(`<h2 key=${type}>${TEST_CATEGORIES[type]}&nbsp;&nbsp;${link}</h2>`));
             }
@@ -202,11 +202,12 @@ module Tests {
         render() {
             let filter = this.props.params ? this.props.params.id : null;
             if (filter) {
-                let link = filter.length > 1 ? "/tests/" + filter.substr(0, filter.length - 1) : "/tests";
+                let link = filter.length > 1 ? "someTests" : "tests";
+                let params = {id: filter.substr(0, filter.length - 1)};
 
                 return React.jsx(`<span>
                     <code>Filter: "${filter}"</code>&nbsp;&nbsp;
-                    <Link to=${link}><button>${filter.length > 1 ? "show more" : "show all"}</button></Link>
+                    <Link to=${link} params=${params}><button>${filter.length > 1 ? "show more" : "show all"}</button></Link>
                 </span>`);
             }
             return React.jsx(`<span>

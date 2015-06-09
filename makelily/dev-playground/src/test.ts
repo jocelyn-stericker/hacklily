@@ -11,7 +11,7 @@ class Tests extends React.Component<Tests.IProps, Tests.IState> {
     render() {
         let chrome = this.props.chrome !== false;
         let showFilterButton = chrome && this.props.showFilterButton;
-        let link = showFilterButton ? React.jsx(`<Link to=${"/tests/" + this.props.name}><button>hide others</button></Link>`) : null;
+        let link = showFilterButton ? React.jsx(`<Link to="someTests" params=${{id: this.props.name}}><button>hide others</button></Link>`) : null;
         if (this.state.error) {
             let errStr = "" + (<any>this.state.error).stack.toString();
             let lines = errStr.split("\n").map(s => React.jsx(`<div>${s}</div>`));
@@ -69,9 +69,10 @@ class Tests extends React.Component<Tests.IProps, Tests.IState> {
     }
     
     componentDidUpdate(prevProps: Tests.IProps, prevState: Tests.IState) {
+        let prefix = process.env.PLAYGROUND_PREFIX || "";
         if (!this.state.src) {
             var request = new XMLHttpRequest();
-            request.open("GET", this.state.filename);
+            request.open("GET", prefix + this.state.filename);
             request.onload = () => {
                 if (request.status !== 200) {
                     this.setState({
