@@ -150,13 +150,14 @@ function loadFont(name: string, url: string, style: string, full?: boolean) {
     url = getNativeURL(url);
 
     if (!full && IS_BROWSER) {
-        let styleSheet = <CSSStyleSheet> document.styleSheets[0];
-        let fontFaceStyle = `@font-face{
+        let styleSheet = document.createElement("style");
+        styleSheet.appendChild(document.createTextNode(`@font-face{
             font-family: ${name};
             src: url(${url}) format('truetype');
             ${style && style.toLowerCase() === "bold" ? "font-weight: bold;" : ""}
-        }`;
-        styleSheet.insertRule(fontFaceStyle, 0);
+        }`));
+        document.head.appendChild(styleSheet);
+
         State.fonts[fullName] = State.fonts[fullName] || NO_PATH_DATA;
         goOn();
     } else {
