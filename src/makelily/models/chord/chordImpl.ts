@@ -20,11 +20,12 @@ import MusicXML         = require("musicxml-interfaces");
 import _                = require("lodash");
 import invariant        = require("react/lib/invariant");
 
+import ChordModel       = require("../chord");
 import Engine           = require("../engine");
+import Lyrics           = require("./lyrics");
+import Metre            = require("./metre");
 import Notation         = require("./notation");
 import NoteImpl         = require("./noteImpl"); // @cyclic
-import ChordModel       = require("../chord");
-import Metre            = require("./metre");
 import SMuFL            = require("../smufl");
 
 const IDEAL_STEM_HEIGHT: number    = 35;
@@ -541,6 +542,8 @@ module ChordModelImpl {
             this.renderedWidth = _.max(widths);
 
             this.x$ = cursor$.x$ + accidentalWidth;
+            this.minSpaceAfter = this._getMinWidthAfter(cursor$);
+            this.minSpaceBefore = this._getMinWidthBefore(cursor$);
             cursor$.x$ += totalWidth;
         }
 
@@ -587,9 +590,19 @@ module ChordModelImpl {
 
             const dotWidth = _.max(_.map(baseModel, m => m.dots.length))*6;
 
-            // TODO: Calculate lyric width
-
             return baseWidth + extraWidth + accidentalWidth + dotWidth;
+        }
+
+        _getMinWidthBefore(cursor: Engine.ICursor) {
+            return this._getLyricWidth(cursor)/2;
+        }
+
+        _getMinWidthAfter(cursor: Engine.ICursor) {
+            return this._getLyricWidth(cursor)/2;
+        }
+
+        _getLyricWidth(cursor: Engine.ICursor) {
+            return Lyrics.getChordLyricWidth(this.model, 40*25.4/96); // 40 tenths in staff * pixelFactor
         }
 
         _detachModelWithContext(cursor: Engine.ICursor, baseModel: ChordModelImpl): ChordModelImpl {
@@ -639,6 +652,9 @@ module ChordModelImpl {
         division: number;
         renderedWidth: number;
         notehead: string;
+
+        minSpaceBefore: number;
+        minSpaceAfter: number;
 
         // Prototype:
 

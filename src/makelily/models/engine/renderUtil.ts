@@ -637,7 +637,7 @@ export function cssSizeToTenths(scaling40: number, css: string) {
     // 1 in = 25.4    mm
     // =================
     // 1 px = 25.4/96 mm
-    return mmToTenths(scaling40, px * 25.4/96);
+    return mmToTenths(scaling40, px * mmPerIn/96);
 }
 
 /**

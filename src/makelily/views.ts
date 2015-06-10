@@ -29,6 +29,7 @@ import SvgExt               = require("./views/svgext_injection");
 import Beam                 = require("./models/postprocessors/beam");
 import Center               = require("./models/postprocessors/center");
 import Justify              = require("./models/postprocessors/justify");
+import Pad                  = require("./models/postprocessors/pad");
 import RemoveOverlaps       = require("./models/postprocessors/removeOverlaps");
 import Tieds                = require("./models/postprocessors/tieds");
 
@@ -73,7 +74,7 @@ export function getPage(doc: Engine.IDocument, startMeasure: number,
         modelFactory:   doc.factory,
         debug:          true,
         preProcessors:  [],
-        postProcessors: [Justify, Beam, Center, Tieds, RemoveOverlaps]
+        postProcessors: [Pad, Justify, Beam, Center, Tieds, RemoveOverlaps]
     }, memo$);
 
     return $(Page)({

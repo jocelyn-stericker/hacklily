@@ -125,6 +125,9 @@ module IModel {
         division:           number;
         mergePolicy:        HMergePolicy;
 
+        minSpaceBefore?:    number;
+        minSpaceAfter?:     number;
+
         /**
          * The final, justified position of the model within a bar.
          * Set by the renderer.
