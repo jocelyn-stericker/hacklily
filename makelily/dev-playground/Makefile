@@ -27,12 +27,16 @@ build: clean
 deploy:
 	cd ../; make build
 	make build
+	git fetch origin
+	git branch -f gh-pages origin/gh-pages
 	cd ./dist/satie; \
 	git init; \
+	git remote add local ../../../.git; \
+	git fetch local; \
 	git remote add origin git@github.com:ripieno/satie; \
 	git fetch origin; \
 	git add .; \
-	git reset origin/gh-pages --soft; \
+	git reset local/gh-pages --soft; \
 	git commit -m 'Automated Deployment'; \
 	git push origin master:gh-pages
 
