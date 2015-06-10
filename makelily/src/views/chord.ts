@@ -27,6 +27,7 @@ import Beam                 = require("./beam");
 import Chord                = require("../models/chord");
 import Flag                 = require("./flag");
 import LedgerLine           = require("./ledgerLine");
+import Lyrics               = require("../models/chord/lyrics");
 import Note                 = require("./note");
 import Notation             = require("./notation");
 import Rest                 = require("./rest");
@@ -70,8 +71,9 @@ class ChordView extends React.Component<{layout: Chord.IChordLayout}, void> {
                                         var textPt = <MusicXML.Text> l.lyricParts[i];
                                         var width = SMuFL.bboxes[maxNotehead][0]*10;
                                         text.push(React.DOM.text({
+                                                fontFamily: textPt.fontFamily || Lyrics.DEFAULT_FONT,
                                                 textAnchor: "middle",
-                                                fontSize: textPt.fontSize || "22",
+                                                fontSize: textPt.fontSize || Lyrics.DEFAULT_LYRIC_SIZE,
                                                 key: ++lyKey,
                                                 x: this.context.originX + this.props.layout.x$ + width/2,
                                                 y: this.context.originY + 60

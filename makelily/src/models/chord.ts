@@ -51,6 +51,8 @@ module ChordModel {
 
     export interface IChordLayout extends Engine.IModel.ILayout {
         model: IChordModel;
+        minSpaceBefore: number;
+        minSpaceAfter: number;
     }
 }
 
