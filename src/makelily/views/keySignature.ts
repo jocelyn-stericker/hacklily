@@ -25,6 +25,7 @@ let $                       = React.createFactory;
 
 import Accidental           = require("./accidental");
 import IAttributes          = require("../models/engine/iattributes");
+import IChord               = require("../models/engine/ichord");
 
 // TODO: this almost looks like logic -- move.
 const sharps: { [key: string]: Array<number> } = {
@@ -59,17 +60,80 @@ class KeySignature extends React.Component<{spec: MusicXML.Key; clef: MusicXML.C
     getAccidentals(): MusicXML.Accidental[] {
         const spec = this.props.spec;
         const clef = this.props.clef;
-        const idxes = _.times(Math.min(7, Math.abs(spec.fifths)), i => (i + Math.max(0, Math.abs(spec.fifths) - 7))%7);
         let widths = IAttributes.keyWidths(spec);
         let positions: number[] = [];
         let x$ = 0;
-        for (var i = 0; i < idxes.length; ++i) {
-            positions.push(x$);
-            x$ += widths[idxes[i]];
-        }
-        return _.map(idxes, i => makeAccidental(i, spec.fifths >= 0));
 
-        function makeAccidental(i: number, sharp: boolean): MusicXML.Accidental {
+        if (spec.fifths) {
+            const idxes = _.times(Math.min(7, Math.abs(spec.fifths)), i => (i + Math.max(0, Math.abs(spec.fifths) - 7))%7);
+            for (var i = 0; i < idxes.length; ++i) {
+                positions.push(x$);
+                x$ += widths[idxes[i]];
+            }
+            return _.map(idxes, i => makeAccidentalFromSharps(idxes, i, spec.fifths >= 0));
+        }
+
+        for (let i = 0; i < widths.length; ++i) {
+            positions.push(x$);
+            x$ += widths[i];
+        }
+
+        if (spec.keySteps) {
+            return _.map(spec.keySteps, (keyStep, idx) => {
+                let keyAlters = spec.keyAlters[idx];
+                let octave = spec.keyOctaves && spec.keyOctaves[idx] ? spec.keyOctaves[idx].octave : null;
+                if (octave === null) {
+                    while (IChord.lineForClef_(keyStep, octave, this.props.clef) < 2) {
+                        ++octave;
+                    }
+                }
+                let line = IChord.lineForClef_(keyStep, octave, this.props.clef);
+                let accidental: MusicXML.MxmlAccidental = null;
+                switch (keyAlters) {
+                    case "-2":
+                        accidental = MusicXML.MxmlAccidental.DoubleFlat;
+                        break;
+                    case "-1.5":
+                        accidental = MusicXML.MxmlAccidental.ThreeQuartersFlat;
+                        break;
+                    case "-1":
+                        accidental = MusicXML.MxmlAccidental.Flat;
+                        break;
+                    case "-0.5":
+                        accidental = MusicXML.MxmlAccidental.QuarterFlat;
+                        break;
+                    case "0":
+                        accidental = MusicXML.MxmlAccidental.Natural;
+                        break;
+                    case "0.5":
+                        accidental = MusicXML.MxmlAccidental.QuarterSharp;
+                        break;
+                    case "1":
+                        accidental = MusicXML.MxmlAccidental.Sharp;
+                        break;
+                    case "1.5":
+                        accidental = MusicXML.MxmlAccidental.ThreeQuartersSharp;
+                        break;
+                    case "2":
+                        accidental = MusicXML.MxmlAccidental.DoubleSharp;
+                        break;
+                    default:
+                        console.warn("Unknown accidental ", keyAlters);
+                        accidental = MusicXML.MxmlAccidental.Natural;
+                }
+
+                return {
+                    accidental: accidental,
+                    color:      spec.color,
+                    defaultX:   spec.defaultX + positions[idx],
+                    relativeX:  spec.relativeX,
+                    defaultY:   spec.defaultY + (line - 3)*10,
+                    relativeY:  (spec.relativeY || 0)
+                };
+            });
+        }
+
+        function makeAccidentalFromSharps(idxes: number[], i: number, sharp: boolean): MusicXML.Accidental {
             let accidental: MusicXML.MxmlAccidental;
             switch(true) {
                 case (sharp && 7 + idxes[i] < spec.fifths):
