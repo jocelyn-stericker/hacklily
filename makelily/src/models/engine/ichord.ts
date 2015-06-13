@@ -173,25 +173,24 @@ module IChord {
             return 3;
         } else if (!!note.rest) {
             if (note.rest.displayStep) {
-                return getClefOffset(clef) +
-                        ((parseInt(note.rest.displayOctave, 10) || 0) - 3) * 3.5 +
-                    pitchOffsets[note.rest.displayStep];
+                return lineForClef_(note.rest.displayStep, note.rest.displayOctave, clef);
             } else if (note.noteType.duration === MusicXML.Count.Whole) {
                 return 4;
             } else {
                 return 3;
             }
         } else if (!!note.unpitched) {
-            return IChord.getClefOffset(clef) +
-                ((parseInt(note.unpitched.displayOctave, 10) || 0) - 3) * 3.5 +
-                    IChord.pitchOffsets[note.unpitched.displayStep];
+            return lineForClef_(note.unpitched.displayStep, note.unpitched.displayOctave, clef);
         } else if (!!note.pitch) {
-            return IChord.getClefOffset(clef) +
-                ((note.pitch.octave || 0) - 3) * 3.5 +
-                    IChord.pitchOffsets[note.pitch.step];
+            return lineForClef_(note.pitch.step, note.pitch.octave, clef);
         } else {
             throw new Error("Invalid note");
         }
+    }
+
+    export function lineForClef_(step: string, octave: string | number, clef: MusicXML.Clef): number {
+        return IChord.getClefOffset(clef) + ((parseInt(<string> octave, 10) || 0) - 3) * 3.5 + IChord.pitchOffsets[step];
+
     }
 
     /**

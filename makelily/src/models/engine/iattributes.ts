@@ -73,8 +73,7 @@ export function keyWidth(attributes: MusicXML.Attributes, staff: number) {
 
     const keySignature = attributes.keySignatures[staff];
 
-    const fifths: number = Math.min(7, Math.abs(keySignature.fifths));
-    if (fifths) {
+    if (keySignature.fifths || keySignature.keyAlters) {
         return 2 + _.reduce(keyWidths(keySignature), (memo, width) => memo + width, 0);
     } else {
         return -5;
@@ -260,6 +259,29 @@ export module Clef {
 
 export function keyWidths(spec: MusicXML.Key) {
     let widths: number[] = [];
+    if (spec.keyAlters) {
+        return _.map(spec.keyAlters, alter => {
+            switch(alter) {
+                case "-2":
+                case "-1.5":
+                    return DOUBLE_FLAT_WIDTH;
+                case "-1":
+                case "-0.5":
+                    return FLAT_WIDTH;
+                case "0":
+                    return NATURAL_WIDTH;
+                case "0.5":
+                case "1":
+                    return SHARP_WIDTH;
+                case "1.5":
+                case "2":
+                    return DOUBLE_SHARP_WIDTH;
+                default:
+                    console.warn("Unknown accidental ", alter);
+                    return SHARP_WIDTH;
+            }
+        });
+    }
     let idxes = _.times(Math.min(7, Math.abs(spec.fifths)), i => (i + Math.max(0, Math.abs(spec.fifths) - 7))%7);
     _.forEach(idxes, i => widths[i] = getWidth(i, spec.fifths >= 0));
     return widths;
@@ -287,4 +309,5 @@ export const FLAT_WIDTH         = 10;
 export const DOUBLE_FLAT_WIDTH  = 19;
 export const DOUBLE_SHARP_WIDTH = 13;
 export const SHARP_WIDTH        = 11;
+export const NATURAL_WIDTH      = 11;
 

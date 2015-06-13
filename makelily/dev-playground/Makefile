@@ -5,7 +5,7 @@ help:
 	@echo 'make deploy   Deploy to Github'
 
 watch:
-	node ./playground-server.js
+	node ./playground-server.js || make watch
 
 build: clean
 	./node_modules/.bin/webpack -p

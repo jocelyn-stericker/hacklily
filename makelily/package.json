@@ -1,62 +1,71 @@
 {
-  "name": "satie",
-  "description": "A sheet music renderer for the web",
-  "homepage": "http://ripieno.github.io/satie",
-  "version": "0.0.3-alpha",
-  "author": "Josh Netterfield",
-  "license": "AGPL-3.0",
-  "files": [
-    "dist/",
-    "COPYING.txt"
-  ],
-  "main": "./dist/index.js",
-  "keywords": [
-    "classical",
-    "composing",
-    "composition",
-    "music",
-    "musicxml",
-    "react",
-    "sheet music",
-    "xml"
-  ],
-  "dependencies": {
-    "fast-json-patch": "0.5.2",
-    "lodash": "3.9.1",
-    "musicxml-interfaces": "ripieno/musicxml-interfaces",
-    "opentype": "nodebox/opentype.js#0.4.7",
-    "webcola": "tgdwyer/WebCola#326dc8e9e",
-    "yargs": "3.9.1"
-  },
-  "peerDependencies": {
-    "react": "0.13.x"
-  },
-  "devDependencies": {
-    "chai": "2.3.0",
-    "dts-generator": "^1.4.1",
-    "istanbul": "0.3.14",
-    "mocha": "2.2.5",
-    "node-libs-browser": "0.5.2",
-    "react": "0.13.3",
-    "source-map-support": "0.2.10",
-    "svg2png": "1.1.1",
-    "tslint": "2.2.0-beta",
-    "typescript": "1.5.0-beta"
-  },
-  "typescript": {
-    "definition": "dist/satie.d.ts"
-  },
-  "browser": {
-    "source-map-support": false,
-    "fs": false
-  },
-  "scripts": {
-    "build": "make NODE_ENV=production",
-    "build_dev": "make",
-    "watch": "make watch",
-    "start": "make watch",
-    "test": "make test_all NODE_ENV=production",
-    "test_dev": "make test_all",
-    "lint": "make lint"
-  }
+    "name": "satie",
+    "version": "0.0.4",
+    "description": "A sheet music renderer for the web",
+
+    "author": "Josh Netterfield",
+    "license": "AGPL-3.0",
+    "homepage": "http://ripieno.github.io/satie",
+
+    "repository": {
+        "type": "git",
+        "url": "git://github.com/ripieno/satie"
+    },
+    "keywords": [
+        "classical",
+        "composing",
+        "composition",
+        "music",
+        "musicxml",
+        "react",
+        "sheet music",
+        "xml"
+    ],
+
+    "dependencies": {
+        "fast-json-patch": "0.5.2",
+        "lodash": "3.9.1",
+        "musicxml-interfaces": "ripieno/musicxml-interfaces#de26d5",
+        "opentype": "nodebox/opentype.js#0.4.7",
+        "webcola": "tgdwyer/WebCola#326dc8e9e",
+        "yargs": "3.9.1"
+    },
+    "peerDependencies": {
+        "react": "0.13.x"
+    },
+    "devDependencies": {
+        "chai": "2.3.0",
+        "dts-generator": "^1.4.1",
+        "istanbul": "0.3.14",
+        "mocha": "2.2.5",
+        "node-libs-browser": "0.5.2",
+        "react": "0.13.3",
+        "source-map-support": "0.3.1",
+        "svg2png": "1.1.1",
+        "tslint": "2.2.0-beta",
+        "typescript": "1.5.0-beta"
+    },
+
+    "main": "./dist/index.js",
+    "files": [
+        "dist/",
+        "COPYING.txt"
+    ],
+    "typescript": {
+        "definition": "dist/satie.d.ts"
+    },
+    "browser": {
+        "source-map-support": false,
+        "fs": false
+    },
+
+    "scripts": {
+        "build": "make NODE_ENV=production",
+        "build_dev": "make",
+        "watch": "make watch",
+        "start": "make watch",
+        "test": "make test_all NODE_ENV=production",
+        "test_dev": "make test_all",
+        "lint": "make lint"
+    }
 }

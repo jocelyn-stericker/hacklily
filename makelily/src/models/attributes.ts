@@ -170,20 +170,21 @@ class AttributesModel implements Export.IAttributesModel {
         });
 
         // Fix the clef sorting
-        this._clefs = this._clefs || [];
-        let sClefs = this._clefs.slice();
-        let pClefs = this._parent && this._parent.clefs || [];
-        sClefs.length = Math.max(sClefs.length, pClefs.length);
-        _.forEach(sClefs, (clef, idx) => {
-            if (clef) {
-                this.clefs[clef.number || idx + 1] = clef;
-                this.clefs[clef.number || idx + 1].number = clef.number || idx + 1;
-                sClefs[clef.number || idx + 1] = this.clefs[clef.number || idx + 1];
+        let previousClefs = this._parent && this._parent.clefs || [];
+        _.forEach(this._clefs.slice(), (clef, idx) => {
+            if (!clef) {
+                return;
             }
-
-            if (pClefs[idx] && !sClefs[idx - 1]) {
-                this._clefs[idx] = Object.create(pClefs[idx]);
-                (<any>this._clefs[idx]).__inherited__ = true;
+            clef.number = clef.number || idx + 1;
+            this._clefs[clef.number] = clef;
+        });
+        _.forEach(previousClefs, clef => {
+            if (!clef) {
+                return;
+            }
+            if (!this._clefs[clef.number]) {
+                this._clefs[clef.number] = Object.create(previousClefs[clef.number]);
+                (<any>this._clefs[clef.number]).__inherited__ = true;
             }
         });
 
@@ -253,6 +254,34 @@ class AttributesModel implements Export.IAttributesModel {
         } else if (!!this._keySignatures && this._keySignatures.length) {
             if (IAttributes.keysEqual(this._parent, this, 0)) {
                 delete this._keySignatures;
+            }
+        }
+
+        let ks = this.keySignatures[0];
+        if (ks.keySteps || ks.keyAlters || ks.keyOctaves) {
+            if (ks.keySteps.length !== ks.keyAlters.length) {
+                console.warn("Expected the number of steps to equal the number of alterations. Ignoring key.");
+                this.keySignatures = [{
+                    fifths: 0,
+                    keySteps: null,
+                    keyAccidentals: null,
+                    keyAlters: null,
+                }];
+            }
+            if (ks.keyAccidentals && ks.keyAccidentals.length !== ks.keySteps.length) {
+                if (ks.keyAccidentals.length) {
+                    console.warn("Currently, if `key-accidentals` are specified, they must be specified for all steps " +
+                        "in a key signature due to a limitation in musicxml-interfaces. Ignoring `key-accidentals`");
+                }
+                ks.keyAccidentals = null;
+            }
+            if (ks.keyOctaves) {
+                // Let's sort them (move to prefilter?)
+                let keyOctaves: MusicXML.KeyOctave[] = [];
+                _.forEach(ks.keyOctaves, octave => {
+                   keyOctaves[octave.number - 1] = octave;
+                });
+                ks.keyOctaves = keyOctaves;
             }
         }
     }
