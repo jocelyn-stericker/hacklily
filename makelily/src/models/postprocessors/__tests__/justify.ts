@@ -57,12 +57,14 @@ describe("[lineProcessor.ts]", function() {
 
             var layouts = _.map(segments, (seg, idx) => MeasureProcessor.layoutMeasure({
                 attributes:     {
-                    divisions:  4,
-                    times: [{
-                        senzaMisura: null,
-                        beats: ["1"],
-                        beatTypes: [4]
-                    }]
+                    P1: {
+                        divisions:  4,
+                        times: [{
+                            senzaMisura: null,
+                            beats: ["1"],
+                            beatTypes: [4]
+                        }]
+                    }
                 },
                 maxX:           1000,
                 minX:           0,
@@ -78,7 +80,13 @@ describe("[lineProcessor.ts]", function() {
                     uuid:       1248 + idx,
                     width:      NaN
                 },
-                header:         null,
+                header:         <any> {
+                    partList:   {
+                        scoreParts: [{
+                            id: "P1"
+                        }]
+                    }
+                },
                 prevByStaff:    [],
                 x:              0,
                 line:           null,
@@ -90,11 +98,17 @@ describe("[lineProcessor.ts]", function() {
 
             var justified = Justify(
                 {
-                    attributes: null,
+                    attributes: {},
                     line: 0,
                     lines: 1,
                     measures: new Array(2), // TODO: if justify uses measures, this will have to be given a proper value.
-                    header: null,
+                    header:         <any> {
+                        partList:   {
+                            scoreParts: [{
+                                id: "P1"
+                            }]
+                        }
+                    },
                     page$: 0,
                     print$: <any> {
                         pageLayout: {

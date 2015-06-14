@@ -42,7 +42,7 @@ class AttributesModel implements Export.IAttributesModel {
 
     validate$(cursor$: Engine.ICursor): void {
         this._measure           = cursor$.measure.idx;
-        this._parent            = <any> cursor$.staff.attributes;
+        this._parent            = <any> cursor$.staff.attributes[cursor$.segment.part];
 
         for (let a = this._parent; !!a; a = a._parent) {
             invariant(a !== this, "Internal error. " +
@@ -54,7 +54,8 @@ class AttributesModel implements Export.IAttributesModel {
             this.divisions = 1;
         }
 
-        cursor$.staff.attributes = this;
+        cursor$.staff.attributes = _.clone(cursor$.staff.attributes);
+        cursor$.staff.attributes[cursor$.segment.part] = this;
 
         // Defaults
 
@@ -68,7 +69,8 @@ class AttributesModel implements Export.IAttributesModel {
     }
 
     layout(cursor$: Engine.ICursor): Export.ILayout {
-        cursor$.staff.attributes = this;
+        cursor$.staff.attributes = cursor$.staff.attributes ? _.clone(cursor$.staff.attributes) : {};
+        cursor$.staff.attributes[cursor$.segment.part] = this;
 
         this._setTotalDivisions(cursor$);
         this._updateMultiRest(cursor$);

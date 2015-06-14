@@ -35,6 +35,7 @@ describe("[engine/ctx.ts]", function() {
             var orig: Ctx.IStaff = {
                 previous: null,
                 attributes: {
+                    P1: {}
                 },
                 totalDivisions: NaN,
                 accidentals$: {},
@@ -48,10 +49,10 @@ describe("[engine/ctx.ts]", function() {
             copy.previous = orig;
             copy.accidentals$["a"] = 1;
             expect(function() {
-                copy.attributes.instruments = "piano";
+                copy.attributes["P1"].instruments = "piano";
             }).to.throw(); // Frozen.
 
-            expect(copy.attributes.instruments).to.not.equal("piano"); // Frozen
+            expect(copy.attributes["P1"].instruments).to.not.equal("piano"); // Frozen
             copy.accidentals$["a"] = 1;
 
             expect(orig).to.deep.equal(orig2);
@@ -61,6 +62,7 @@ describe("[engine/ctx.ts]", function() {
             var parent: Ctx.IStaff = {
                 previous: null,
                 attributes: {
+                    P1: {}
                 },
                 totalDivisions: NaN,
                 accidentals$: {},
@@ -71,6 +73,7 @@ describe("[engine/ctx.ts]", function() {
             var orig: Ctx.IStaff = {
                 previous: parent,
                 attributes: {
+                    P1: {}
                 },
                 totalDivisions: NaN,
                 accidentals$: {},
@@ -78,12 +81,12 @@ describe("[engine/ctx.ts]", function() {
                 idx: 0
             };
             var copy = Ctx.IStaff.detach(orig);
-            orig.attributes.instruments = "piano";
+            orig.attributes["P1"].instruments = "piano";
             orig.previous.accidentals$["a"] = 1;
-            expect(orig.attributes.instruments).to.equal("piano");
-            expect(copy.attributes.instruments).to.equal("piano");
+            expect(orig.attributes["P1"].instruments).to.equal("piano");
+            expect(copy.attributes["P1"].instruments).to.equal("piano");
             expect(function() {
-                copy.attributes.instruments = "cello";
+                copy.attributes["P1"].instruments = "cello";
             }).to.throw(); // Frozen.
             expect(function() {
                 copy.previous.accidentals$["a"] = 4;

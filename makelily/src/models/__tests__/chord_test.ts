@@ -32,26 +32,30 @@ import Factory      = require("../factory");
 
 let expect          = chai.expect;
 
-function getAttributes(): MusicXML.Attributes {
+function getAttributes(): {[part: string]: MusicXML.Attributes} {
     return {
-        divisions: 6,
-        times: [{
-            beats: ["4"],
-            beatTypes: [4],
-            senzaMisura: null
-        }],
-        clefs: [{
-            clefOctaveChange: null,
-            sign: "G",
-            line: 2
-        }]
+        P1: {
+            divisions: 6,
+            times: [{
+                beats: ["4"],
+                beatTypes: [4],
+                senzaMisura: null
+            }],
+            clefs: [{
+                clefOctaveChange: null,
+                sign: "G",
+                line: 2
+            }]
+        }
     };
 }
 
 function getCursor(factory: Engine.IModel.IFactory, model: Engine.IModel): Engine.ICursor {
     let attributes = getAttributes();
+    let segment = <any> [model];
+    segment.part = "P1";
     return {
-        segment:            <any> [model],
+        segment:            segment,
         idx$:               0,
         print$:             null,
         header:             null,

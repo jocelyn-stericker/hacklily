@@ -49,12 +49,12 @@ describe("[engine/measureProcessor.ts]", function() {
 
             // test without alignment
             var opts: MeasureProcessor.ILayoutOpts = {
-                attributes:         null,
+                attributes:         {},
                 line:               Ctx.ILine.create(segments, 1, 0, 1),
                 header:             null,
                 padEnd:             false,
                 measure: {
-                    attributes$:    null,
+                    attributes$:    {},
                     idx:            0,
                     implicit:       false,
                     nonControlling: false,
@@ -101,6 +101,7 @@ describe("[engine/measureProcessor.ts]", function() {
                         expandPolicy: Engine.IModel.ExpandPolicy.After,
                         mergePolicy: Engine.IModel.HMergePolicy.Min,
                         x$: 110,
+                        part: "P1",
                         model: segments[1][0],  // from first voice.
                         renderClass: Engine.IModel.Type.Chord
                     },
@@ -118,6 +119,7 @@ describe("[engine/measureProcessor.ts]", function() {
                         division: 2,
                         mergePolicy: Engine.IModel.HMergePolicy.Max, // 1st is min, 2nd one is max
                         x$: 130,
+                        part: "P1",
                         model: segments[1][1],
                         renderClass: Engine.IModel.Type.Chord
                     },
@@ -146,8 +148,14 @@ describe("[engine/measureProcessor.ts]", function() {
             ];
 
             var layout = MeasureProcessor.layoutMeasure({
-                header:         null,
-                attributes:     null,
+                header:         <any> {
+                    partList:   {
+                        scoreParts: [{
+                            id:     "P1"
+                        }]
+                    }
+                },
+                attributes:     {},
                 maxX:           1000,
                 minX:           100,
                 measure: {
@@ -197,10 +205,16 @@ describe("[engine/measureProcessor.ts]", function() {
             ];
 
             var width = MeasureProcessor.approximateLayout({
-                attributes:     null,
+                attributes:     {},
                 maxX:           1000,
                 minX:           100,
-                header:         null,
+                header:         <any> {
+                    partList:   {
+                        scoreParts: [{
+                            id:     "P1"
+                        }]
+                    }
+                },
                 measure: {
                     idx:        0,
                     number:     "1",

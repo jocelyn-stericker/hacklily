@@ -494,7 +494,7 @@ class NoteImpl implements MusicXML.Note {
             invariant(glyphName in SMuFL.bboxes, "Expected a known glyph, got %s", glyphName);
             let width = SMuFL.bboxes[glyphName][0]*10;
 
-            if (Engine.IChord.onLedger(this, cursor.staff.attributes.clefs[cursor.staff.idx])) {
+            if (Engine.IChord.onLedger(this, cursor.staff.attributes[cursor.segment.part].clefs[cursor.staff.idx])) {
                 acc.defaultX = -4.1;
             } else {
                 acc.defaultX = -2.04;

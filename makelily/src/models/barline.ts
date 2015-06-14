@@ -112,7 +112,7 @@ module BarlineModel {
                 return;
             }
 
-            this.partSymbol = cursor$.staff.attributes.partSymbol;
+            this.partSymbol = cursor$.staff.attributes[cursor$.segment.part].partSymbol;
 
             this.model = Object.create(origModel, {
                 defaultX: {

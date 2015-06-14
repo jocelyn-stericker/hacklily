@@ -45,7 +45,7 @@ class ModelView extends React.Component<{layout: Engine.IModel.ILayout}, void> {
     getChildContext() {
         const layout        = this.props.layout;
         return {
-            originY:        this.context.originYA[layout.model.staffIdx || 1] || 0
+            originY:        this.context.originYA[layout.part][layout.model.staffIdx || 1] || 0
         };
     }
 }
@@ -55,7 +55,7 @@ module ModelView {
         originY:            React.PropTypes.number
     };
     export var contextTypes = <any> {
-        originYA:           React.PropTypes.arrayOf(React.PropTypes.number).isRequired
+        originYA:           React.PropTypes.objectOf(React.PropTypes.arrayOf(React.PropTypes.number)).isRequired,
     };
 }
 

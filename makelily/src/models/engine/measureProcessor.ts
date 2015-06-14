@@ -43,7 +43,7 @@ export function key$(t$: any) {
 }
 
 export interface IMeasureLayoutOptions {
-    attributes:     MusicXML.Attributes;
+    attributes:     {[part: string]: MusicXML.Attributes};
     header:         MusicXML.ScoreHeader;
     line:           Ctx.ILine;
     measure:        Measure.IMutableMeasure;
@@ -119,9 +119,12 @@ export function reduce(spec: ILayoutOpts): Measure.IMeasureLayout {
     let gMeasure                    = spec.measure;
     let gPrevByStaff                = spec.prevByStaff;
     let gValidateOnly               = spec._validateOnly;
-    let gSomeLastAttribs            = <MusicXML.Attributes> null;
+    let gSomeLastAttribs            = <{[part: string]: MusicXML.Attributes}> {};
     let gMaxDivisions               = 0;
 
+    if (!(spec.segments.length >= 1)) {
+        console.log(spec.segments, spec);
+    }
     invariant(spec.segments.length >= 1, "_processMeasure expects at least one segment.");
 
     let gStaffMeasure: { [key:string]: Measure.ISegment } =
@@ -143,7 +146,7 @@ export function reduce(spec: ILayoutOpts): Measure.IMeasureLayout {
     let gDivOverflow: DivisionOverflowException = null;
 
     let gVoiceLayouts$ = _.map(gVoiceMeasure, segment => {
-        let lastAttribs                                             = spec.attributes;
+        let lastAttribs                                             = Object.create(spec.attributes || {});
         let voice                                                   = <Ctx.IVoice> {};
         let part                                                    = segment.part;
 
@@ -193,6 +196,7 @@ export function reduce(spec: ILayoutOpts): Measure.IMeasureLayout {
                 model.validate$(cursor$);
             } else {
                 layout                      = model.layout(cursor$);
+                layout.part                 = part;
                 (<any>layout).key           = (<any>model).key;
             }
             invariant(isFinite(model.divCount), "%s should be a constant division count",
@@ -302,6 +306,7 @@ export function reduce(spec: ILayoutOpts): Measure.IMeasureLayout {
                 model.validate$(cursor$);
             } else {
                 layout                      = model.layout(cursor$);
+                layout.part                 = part;
                 (<any>layout).key           = (<any>model).key;
             }
             cursor$.division$ += model.divCount;
@@ -357,9 +362,9 @@ export function reduce(spec: ILayoutOpts): Measure.IMeasureLayout {
                     }
                 });
             }
-            lastAttribs                 = cursor$.staff.attributes;
-            gSomeLastAttribs            = lastAttribs || lastAttribs;
-            gMaxXInMeasure              = Math.max(cursor$.x$, gMaxXInMeasure);
+            lastAttribs[segment.part]       = cursor$.staff.attributes[segment.part];
+            gSomeLastAttribs[segment.part]  = lastAttribs[segment.part];
+            gMaxXInMeasure                  = Math.max(cursor$.x$, gMaxXInMeasure);
             gMaxPaddingTopInMeasure$[model.staffIdx] = Math.max(
                 cursor$.maxPaddingTop$[model.staffIdx],
                 gMaxPaddingTopInMeasure$[model.staffIdx]||0);
@@ -412,14 +417,14 @@ export function reduce(spec: ILayoutOpts): Measure.IMeasureLayout {
         width:          gMaxXInMeasure + gPadding - gMeasure.x,
         maxDivisions:   gMaxDivisions,
         originX:        gMeasure.x,
-        originY:        [],
+        originY:        {},
         paddingTop:     gMaxPaddingTopInMeasure$,
         paddingBottom:  gMaxPaddingBottomInMeasure$
     };
 }
 
 export interface ILayoutOpts {
-    attributes:     MusicXML.Attributes;
+    attributes:     {[part: string]: MusicXML.Attributes};
     factory:        IModel.IFactory;
     header:         MusicXML.ScoreHeader;
     line:           Ctx.ILine;
@@ -443,8 +448,9 @@ export interface ILayoutOpts {
 export function layoutMeasure(opts: IMeasureLayoutOptions): Measure.IMeasureLayout {
     let measureCtx = Ctx.IMeasure.detach(opts.measure, opts.x);
 
-    let voices = <Measure.ISegment[]> _.flatten(_.map(_.values(opts.measure.parts), part => part.voices));
-    let staves = <Measure.ISegment[]> _.flatten(_.map(_.values(opts.measure.parts), part => part.staves));
+    let parts = _.map(opts.header.partList.scoreParts, part => part.id);
+    let voices = <Measure.ISegment[]> _.flatten(_.map(parts, partId => opts.measure.parts[partId].voices));
+    let staves = <Measure.ISegment[]> _.flatten(_.map(parts, partId => opts.measure.parts[partId].staves));
 
     let segments = _.filter(voices.concat(staves), s => !!s);
 

@@ -57,16 +57,20 @@ class Page extends React.Component<Page.IProps, Page.IState> {
         const pageMargins       = Engine.IPrint.getPageMargins(pageMarginsAll, pageNum);
         let systemMargins       = print.systemLayout.systemMargins;
 
-        let staveTops: number[][] = <any> _.map(lineLayouts, measureLayouts => measureLayouts[0] ? measureLayouts[0].originY : 0);
+        let origins = _.map(lineLayouts, measureLayouts => measureLayouts[0] ? measureLayouts[0].originY : [0]);
+        let staveTops: number[][] = <any> _.flatten(_.map(origins, tops => _.values(tops)));
 
         // TODO: Move to Engine & IModel, generalize
-        let staveLefts          = _.map(lineLayouts, () => {
-            return systemMargins.leftMargin + pageMargins.leftMargin;
-        });
+        let staveLefts          = _.flatten(_.map(lineLayouts, (measureLayouts, idx) => {
+            let partCount = _.flatten(_.values(origins[idx])).length - _.keys(origins[idx]).length;
+            return _.times(partCount, () => systemMargins.leftMargin + pageMargins.leftMargin);
+        }));
 
-        let staveWidths         = _.map(lineLayouts, layout =>
-            _.reduce(layout, (width, measure) => width + measure.width, 0)
-        );
+        let staveWidths         = _.flatten(_.map(lineLayouts, (layout, idx) => {
+            let partCount = _.flatten(_.values(origins[idx])).length - _.keys(origins[idx]).length;
+            let width = _.reduce(layout, (width, measure) => width + measure.width, 0);
+            return _.times(partCount, () => width);
+        }));
 
         let staveLineProps      = _.map(_.zip(staveTops, staveLefts, staveWidths), (d, i) =>
             _.map(d[0/* top */], (top: number, j: number) => {

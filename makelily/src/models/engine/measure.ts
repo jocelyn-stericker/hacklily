@@ -94,15 +94,15 @@ export function normalizeDivisons$(segments$: ISegment[], factor: number = 0): n
 };
 
 export interface IMeasureLayout {
-    attributes:         MusicXML.Attributes;
+    attributes:         {[part: string]: MusicXML.Attributes};
     elements:           IModel.ILayout[][];
     width:              number;
     maxDivisions:       number;
     originX:            number;
     /**
-     * Topmost (i.e., lowest) y-coordinate in tenths, indexed by staff index.
+     * Topmost (i.e., lowest) y-coordinates of each staff in tenths. One part may have more than one staff.
      */
-    originY:            number[];
+    originY:            {[part: string]: number[]};
     /**
      * Positive integer in tenths. Required space above each staff beyond default 15 tenths, indexed by staff index.
      */
@@ -121,7 +121,7 @@ export module IMeasureLayout {
             width:          layout.width,
             maxDivisions:   layout.maxDivisions,
             originX:        layout.originX,
-            originY:        layout.originY.slice(),
+            originY:        _.mapValues(layout.originY, origins => origins.slice()),
             paddingTop:     layout.paddingTop.slice(),
             paddingBottom:  layout.paddingBottom.slice()
         };
