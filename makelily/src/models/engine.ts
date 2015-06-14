@@ -117,24 +117,24 @@
 
 "use strict";
 
-import MusicXML                 = require("musicxml-interfaces");
-import _                        = require("lodash");
-import invariant                = require("react/lib/invariant");
+import MusicXML = require("musicxml-interfaces");
+import _ = require("lodash");
+import invariant = require("react/lib/invariant");
 
-export import IBeam             = require("./engine/ibeam");
-export import IChord            = require("./engine/ichord");
-export import ICursor           = require("./engine/icursor");
-export import IModel            = require("./engine/imodel");
-export import IPrint            = require("./engine/iprint");
-export import Measure           = require("./engine/measure");
-export import Options           = require("./engine/options");
-export import RenderUtil        = require("./engine/renderUtil");
-export import ScoreHeader       = require("./engine/scoreHeader");
+export import IBeam = require("./engine/ibeam");
+export import IChord = require("./engine/ichord");
+export import ICursor = require("./engine/icursor");
+export import IModel = require("./engine/imodel");
+export import IPrint = require("./engine/iprint");
+export import Measure = require("./engine/measure");
+export import Options = require("./engine/options");
+export import RenderUtil = require("./engine/renderUtil");
+export import ScoreHeader = require("./engine/scoreHeader");
 
-import IAttributes              = require("./engine/iattributes");
-import Ctx                      = require("./engine/ctx");
-import LineProcessor            = require("./engine/lineProcessor");
-import MeasureProcessor         = require("./engine/measureProcessor");
+import IAttributes = require("./engine/iattributes");
+import Context = require("./engine/context");
+import LineProcessor = require("./engine/lineProcessor");
+import MeasureProcessor = require("./engine/measureProcessor");
 
 if (!(<any>process).browser) {
     /* tslint:disable */
@@ -145,7 +145,7 @@ if (!(<any>process).browser) {
 /*---- Engine -----------------------------------------------------------------------------------*/
 
 export function validate$(options$: Options.ILayoutOptions, memo$: Options.ILinesLayoutState): void {
-    options$.measures = _.reduce(options$.preProcessors, (measures, processor) => processor(measures), options$.measures);
+    options$.measures = <any> _.reduce(options$.preProcessors, call, options$.measures);
 
     let shouldTryAgain: boolean;
     do {
@@ -163,9 +163,13 @@ export function validate$(options$: Options.ILayoutOptions, memo$: Options.ILine
     } while(shouldTryAgain);
 }
 
+function call<T>(memo: T, fn: (t: T) => T) {
+    return fn(memo);
+}
+
 function tryValidate$(options$: Options.ILayoutOptions, memo$: Options.ILinesLayoutState): void {
-    let factory         = options$.modelFactory;
-    let search          = factory.search.bind(factory);
+    let factory = options$.modelFactory;
+    let search = factory.search.bind(factory);
 
     EscapeHatch.__currentMeasureList__ = options$.measures;
 
@@ -206,7 +210,7 @@ function tryValidate$(options$: Options.ILayoutOptions, memo$: Options.ILinesLay
                 _.flatten(_.map(_.pairs(measure.parts),
                             partx => withPart(partx[1].staves, partx[0])));
 
-            let measureCtx = Ctx.IMeasure.detach(measure, 0);
+            let measureCtx = Context.IMeasure.detach(measure, 0);
             let segments = _.filter(voiceSegments$.concat(staffSegments$), s => !!s);
 
             _.forEach(staffSegments$, function(segment, idx) {
@@ -249,18 +253,18 @@ function tryValidate$(options$: Options.ILayoutOptions, memo$: Options.ILinesLay
             });
 
             let outcome = MeasureProcessor.reduce({
-                attributes:     lastAttribs,
-                header:         options$.header,
-                line:           null,
-                measure:        measureCtx,
-                prevByStaff:    null,
-                padEnd:         false,
-                segments:       segments,
-                _approximate:   true,
-                _detached:      true,
-                _noAlign:       true,
-                _validateOnly:  true, // Just validate, don't make a layout
-                factory:        factory
+                attributes: lastAttribs,
+                header: options$.header,
+                line: null,
+                measure: measureCtx,
+                prevByStaff: null,
+                padEnd: false,
+                segments: segments,
+                _approximate: true,
+                _detached: true,
+                _noAlign: true,
+                _validateOnly: true, // Just validate, don't make a layout
+                factory: factory
             });
             lastAttribs = outcome.attributes;
         }
@@ -304,29 +308,32 @@ export function layout$(options: Options.ILayoutOptions,
         );
         if (!(measure.uuid in width$)) {
             let specifiedWidth = measure.width; // TODO: Use EngravedStatus
-            if (!isNaN(measure.width) && measure.width !== null && (measure.width <= 0 || !isFinite(measure.width))) {
+            let numericMeasureWidth = !isNaN(measure.width) && measure.width !== null;
+            if (numericMeasureWidth && (measure.width <= 0 || !isFinite(measure.width))) {
                 console.warn("Bad measure width %s. Ignoring", measure.width);
                 specifiedWidth = undefined;
             }
 
             let approximateLayout = MeasureProcessor.approximateLayout({
-                attributes:     options.attributes,
-                factory:        options.modelFactory,
-                header:         options.header,
-                line:           Ctx.ILine.create(neighbourModels, measures.length, 0, 1),
-                measure:        measure,
-                prevByStaff:    [], // FIXME:
-                staves:         _.map(_.values(measure.parts), p => p.staves),
-                voices:         _.map(_.values(measure.parts), p => p.voices),
-                x:              0
+                attributes: options.attributes,
+                factory: options.modelFactory,
+                header: options.header,
+                line: Context.ILine.create(neighbourModels, measures.length, 0, 1),
+                measure: measure,
+                prevByStaff: [], // FIXME:
+                staves: _.map(_.values(measure.parts), p => p.staves),
+                voices: _.map(_.values(measure.parts), p => p.voices),
+                x: 0
             });
             let firstPart = options.header.partList.scoreParts[0].id;
             // TODO: Only skip render multiple rests if __all__ visible parts have rests
-            if (approximateLayout.attributes &&
-                    approximateLayout.attributes[firstPart] &&
-                    approximateLayout.attributes[firstPart].measureStyle &&
-                    approximateLayout.attributes[firstPart].measureStyle.multipleRest) {
-                multipleRest = multipleRests$[measure.uuid] = approximateLayout.attributes[firstPart].measureStyle.multipleRest.count - 1;
+            let attributes = approximateLayout.attributes;
+            if (attributes &&
+                    attributes[firstPart] &&
+                    attributes[firstPart].measureStyle &&
+                    attributes[firstPart].measureStyle.multipleRest) {
+                multipleRest = attributes[firstPart].measureStyle.multipleRest.count - 1;
+                multipleRests$[measure.uuid] = multipleRest;
             } else if (!isNaN(multipleRest)) {
                 multipleRests$[measure.uuid] = multipleRest;
                 approximateLayout.width = 0;
@@ -335,8 +342,8 @@ export function layout$(options: Options.ILayoutOptions,
             }
             width$[measure.uuid] = {
                 width: specifiedWidth || approximateLayout.width,
-                attributesWidthStart: IAttributes.approximateWidth(approximateLayout.attributes),
-                attributesWidthEnd: IAttributes.approximateWidth(approximateLayout.attributes, IAttributes.AtEnd.Yes)
+                attributesWidthStart: IAttributes.approximateWidth(attributes),
+                attributesWidthEnd: IAttributes.approximateWidth(attributes, IAttributes.AtEnd.Yes)
             };
         }
         multipleRest = multipleRest ? multipleRest - 1 : undefined;
@@ -355,14 +362,14 @@ export function layout$(options: Options.ILayoutOptions,
     }
     function newLayoutWithoutMeasures(): Options.ILayoutOptions {
         return {
-            attributes:     null,
-            measures:       [],
-            header:         options.header,
-            print$:         thisPrint,
-            finalLine:      false,
-            page$:          options.page$,
-            modelFactory:   options.modelFactory,
-            preProcessors:  options.preProcessors,
+            attributes: null,
+            measures: [],
+            header: options.header,
+            print$: thisPrint,
+            finalLine: false,
+            page$: options.page$,
+            modelFactory: options.modelFactory,
+            preProcessors: options.preProcessors,
             postProcessors: options.postProcessors
         };
     }
@@ -387,7 +394,8 @@ export function layout$(options: Options.ILayoutOptions,
             memo.remainingWidth -= width.width;
         } else {
             memo.opts.push(newLayoutWithoutMeasures());
-            memo.remainingWidth = startingWidth - width.width - width.attributesWidthStart - width.attributesWidthEnd;
+            memo.remainingWidth = startingWidth - width.width -
+                width.attributesWidthStart - width.attributesWidthEnd;
             memo.widthAllocatedForStart = width.attributesWidthStart;
             memo.widthAllocatedForEnd = width.attributesWidthEnd;
         }
@@ -426,11 +434,11 @@ export function mutate$(options: Options.ILayoutOptions,
  * Contains data that a ScoreStore can consume.
  */
 export interface IDocument {
-    error?:     any;
-    factory?:   IModel.IFactory;
-    header?:    ScoreHeader;
-    measures?:  Measure.IMutableMeasure[];
-    parts?:     string[];
+    error?: any;
+    factory?: IModel.IFactory;
+    header?: ScoreHeader;
+    measures?: Measure.IMutableMeasure[];
+    parts?: string[];
 }
 
 export enum RenderTarget {

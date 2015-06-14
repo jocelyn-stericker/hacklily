@@ -16,25 +16,25 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import MusicXML         = require("musicxml-interfaces");
-import _                = require("lodash");
-import invariant        = require("react/lib/invariant");
+import MusicXML = require("musicxml-interfaces");
+import _ = require("lodash");
+import invariant = require("react/lib/invariant");
 
-import Engine           = require("./engine");
-import defaultsDeep     = require("../util/defaultsDeep");
+import Engine = require("./engine");
+import defaultsDeep = require("../util/defaultsDeep");
 
 class PrintModel implements Export.IPrintModel {
 
     /*---- I.1 IModel ---------------------------------------------------------------------------*/
 
     /** @prototype only */
-    divCount:        number;
+    divCount: number;
 
     /** defined externally */
-    staffIdx:        number;
+    staffIdx: number;
 
     /** @prototype */
-    frozenness:      Engine.IModel.FrozenLevel;
+    frozenness: Engine.IModel.FrozenLevel;
 
     modelDidLoad$(segment$: Engine.Measure.ISegment): void {
         // todo
@@ -46,17 +46,17 @@ class PrintModel implements Export.IPrintModel {
         var spec: MusicXML.Print;
         if (!this.once) {
             // FIXME: should always sync
-            var defaultPrint            = extractDefaultPrintFromHeader(cursor$.header);
-            spec                        = defaultsDeep(this, defaultPrint);
+            var defaultPrint = extractDefaultPrintFromHeader(cursor$.header);
+            spec = defaultsDeep(this, defaultPrint);
         } else {
-            spec                        = this;
+            spec = this;
         }
         this.sync(spec);
         this.measureNumbering = this.measureNumbering || {
             data: "system"
         };
         cursor$.print$                  = this; // FIXME: inheritance for multiple papers
-        this.pageNumber                 = null;
+        this.pageNumber = null;
 
         this.once = true;
     }
@@ -79,21 +79,21 @@ class PrintModel implements Export.IPrintModel {
 
     /*---- I.2 MusicXML.Print -------------------------------------------------------------------*/
 
-    measureNumbering:           MusicXML.MeasureNumbering;
-    partNameDisplay:            MusicXML.PartNameDisplay;
-    newSystem:                  boolean;
-    newPage:                    boolean;
-    blankPage:                  string;
-    measureLayout:              MusicXML.MeasureLayout;
-    partAbbreviationDisplay:    MusicXML.PartAbbreviationDisplay;
-    pageLayout:                 MusicXML.PageLayout;
-    systemLayout:               MusicXML.SystemLayout;
+    measureNumbering: MusicXML.MeasureNumbering;
+    partNameDisplay: MusicXML.PartNameDisplay;
+    newSystem: boolean;
+    newPage: boolean;
+    blankPage: string;
+    measureLayout: MusicXML.MeasureLayout;
+    partAbbreviationDisplay: MusicXML.PartAbbreviationDisplay;
+    pageLayout: MusicXML.PageLayout;
+    systemLayout: MusicXML.SystemLayout;
     /**
      * DEPRECATED. Use staffLayouts
      */
-    staffSpacing:               number;
-    staffLayouts:               MusicXML.StaffLayout[];
-    pageNumber:                 string;
+    staffSpacing: number;
+    staffLayouts: MusicXML.StaffLayout[];
+    pageNumber: string;
 
     /*---- II. Life-cycle -----------------------------------------------------------------------*/
 
@@ -177,29 +177,29 @@ module PrintModel {
 
 function extractDefaultPrintFromHeader(header: MusicXML.ScoreHeader): MusicXML.Print {
     return {
-        blankPage:                  "",
-        measureLayout:              null,
+        blankPage: "",
+        measureLayout: null,
         measureNumbering: {
-            relativeX:              0,
-            relativeY:              0,
-            fontSize:               "small",
-            color:                  "#000000",
-            data:                   "system",
-            defaultX:               null,
-            defaultY:               null,
-            fontFamily:             "Alegreya, serif",
-            fontStyle:              MusicXML.NormalItalic.Normal,
-            fontWeight:             MusicXML.NormalBold.Normal
+            relativeX: 0,
+            relativeY: 0,
+            fontSize: "small",
+            color: "#000000",
+            data: "system",
+            defaultX: null,
+            defaultY: null,
+            fontFamily: "Alegreya, serif",
+            fontStyle: MusicXML.NormalItalic.Normal,
+            fontWeight: MusicXML.NormalBold.Normal
         },
-        newPage:                    false,
-        newSystem:                  false,
-        partAbbreviationDisplay:    null,
-        pageLayout:                 header.defaults.pageLayout,
-        pageNumber:                 "",
-        partNameDisplay:            null,
-        staffLayouts:               header.defaults.staffLayouts,
-        staffSpacing:               null, // DEPRECATED
-        systemLayout:               header.defaults.systemLayout
+        newPage: false,
+        newSystem: false,
+        partAbbreviationDisplay: null,
+        pageLayout: header.defaults.pageLayout,
+        pageNumber: "",
+        partNameDisplay: null,
+        staffLayouts: header.defaults.staffLayouts,
+        staffSpacing: null, // DEPRECATED
+        systemLayout: header.defaults.systemLayout
     };
 }
 

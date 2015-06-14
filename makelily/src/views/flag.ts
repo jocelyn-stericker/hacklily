@@ -18,12 +18,12 @@
 
 "use strict";
 
-import React            = require("react");
-import invariant        = require("react/lib/invariant");
-let $                   = React.createFactory;
+import React = require("react");
+import invariant = require("react/lib/invariant");
+let $ = React.createFactory;
 
-import Glyph            = require("./primitives/glyph");
-import SMuFL            = require("../models/smufl");
+import Glyph = require("./primitives/glyph");
+import SMuFL = require("../models/smufl");
 
 /**
  * Responsible for rendering the "flag" on un-beamed notes shorter than quarter notes.
@@ -65,8 +65,8 @@ class Flag extends React.Component<Flag.IProps, void> {
 
 module Flag {
     export var contextTypes = <any> {
-        originX:         React.PropTypes.number.isRequired,
-        originY:         React.PropTypes.number.isRequired
+        originX: React.PropTypes.number.isRequired,
+        originY: React.PropTypes.number.isRequired
     };
     export interface IProps {
         spec: {

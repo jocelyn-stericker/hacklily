@@ -65,6 +65,7 @@ OK_STRING=$(OK_COLOR)  ...ok!$(NO_COLOR)
 TSC_STRING=$(INFO_COLOR)» Building from tsconfig.json...$(NO_COLOR)
 WATCH_STRING=$(INFO_COLOR)» Watching from tsconfig.json...$(NO_COLOR)
 STAGE_STRING=$(INFO_COLOR)» Staging *.d.ts, *.js, *.js.map...$(NO_COLOR)
+LINT_STRING=$(INFO_COLOR)» Linting *.ts...$(NO_COLOR)
 TEST_STRING=$(INFO_COLOR)» Testing __test__*.js ...$(NO_COLOR)
 CLEAN_STRING=$(INFO_COLOR)» Deleting generated code ...$(NO_COLOR)
 COVERAGE_STRING=$(INFO_COLOR)» Writing coverage info for __test__*.js to ./coverage ...$(NO_COLOR)
@@ -132,12 +133,13 @@ smufl:
 	@echo "; export = Bravura;" >> ./src/models/smufl/bravura.ts
 	
 	@bash -c "echo -ne \"$$GLYPHNAMES_HEADER\"" > ./src/models/smufl/glyphnames.ts
-	@cat ./vendor/smufl/glyphnames.json  | jq '[to_entries[] | {key: .key, value: .value.codepoint}] | from_entries' >> ./src/models/smufl/glyphnames.ts
+	@cat ./vendor/smufl/glyphnames.json | jq '[to_entries[] | {key: .key, value: .value.codepoint}] | from_entries' >> ./src/models/smufl/glyphnames.ts
 	@echo "; export = names;" >> ./src/models/smufl/glyphnames.ts
 	@printf "$(INFO_COLOR)» SMuFL built successfully.$(NO_COLOR)\n"; \
 
 lint:
-	find ./src -regex ".*[a-zA-Z0-9_][a-zA-Z0-9_]\.ts" | grep -v src/tests.ts | sed 's/\(.*\)/-f\1/g' | xargs ./node_modules/tslint/bin/tslint -c ./tsconfig.json 
+	@printf "$(LINT_STRING)\n"
+	@find ./src -regex ".*[a-zA-Z0-9_][a-zA-Z0-9_]\.ts" | grep -v src/tests.ts | sed 's/\(.*\)/-f\1/g' | xargs ./node_modules/tslint/bin/tslint -c ./tsconfig.json 
 
 test: build _testOnly
 

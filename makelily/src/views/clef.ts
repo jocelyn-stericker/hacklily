@@ -18,19 +18,19 @@
 
 "use strict";
 
-import MusicXML             = require("musicxml-interfaces");
-import React                = require("react");
-var $                       = React.createFactory;
+import MusicXML = require("musicxml-interfaces");
+import React = require("react");
+var $ = React.createFactory;
 
-import Glyph                = require("./primitives/glyph");
-import SMuFL                = require("../models/smufl");
+import Glyph = require("./primitives/glyph");
+import SMuFL = require("../models/smufl");
 
 /**
  * Responsible for the rendering of a clef.
  */
 class Clef extends React.Component<{spec: MusicXML.Clef}, void> {
     render(): any {
-        const spec          = this.props.spec;
+        const spec = this.props.spec;
 
         if (spec.printObject === false) {
             return null;
@@ -46,10 +46,10 @@ class Clef extends React.Component<{spec: MusicXML.Clef}, void> {
         }
 
         let clefGlyph = $(Glyph)({
-            x:          clefX,
-            y:          clefY,
-            fill:       spec.color,
-            glyphName:  clefSign
+            x: clefX,
+            y: clefY,
+            fill: spec.color,
+            glyphName: clefSign
         });
 
         let clefOctaveChange = parseInt(spec.clefOctaveChange, 10);
@@ -59,8 +59,10 @@ class Clef extends React.Component<{spec: MusicXML.Clef}, void> {
         let left = clefSignBox[0];
         let top = clefSignBox[1];
         let right = clefSignBox[2];
-        let bottom = clefSignBox[3]; // The linter doesn't like destructuring yet :()
-        let bScalingFactor = spec.sign.toUpperCase() === "F" ? 0.7 : 1; // We want it to actually touch, not just be outside the bbox 
+        let bottom = clefSignBox[3]; // The linter doesn't like destructuring yet :(
+
+        // We want it to actually touch, not just be outside the bbox 
+        let bScalingFactor = spec.sign.toUpperCase() === "F" ? 0.7 : 1;
         let topLeftOffset = spec.sign.toUpperCase() === "G" ? left*2 : 0;
         top = -top*10 + clefY;
         bottom = -bottom*10*bScalingFactor + clefY;
@@ -71,7 +73,8 @@ class Clef extends React.Component<{spec: MusicXML.Clef}, void> {
         if (clefOctaveChange === 2) {
             clefDecorations.push($(Glyph)({
                 key: "15ma",
-                x: decorativeX - (SMuFL.bboxes["clef15"][0]*10 + SMuFL.bboxes["clef15"][2]*10)/2 + topLeftOffset,
+                x: decorativeX - (SMuFL.bboxes["clef15"][0]*10 +
+                        SMuFL.bboxes["clef15"][2]*10)/2 + topLeftOffset,
                 y: top,
                 fill: spec.color,
                 glyphName: "clef15"
@@ -79,7 +82,8 @@ class Clef extends React.Component<{spec: MusicXML.Clef}, void> {
         } else if (clefOctaveChange === 1) {
             clefDecorations.push($(Glyph)({
                 key: "8va",
-                x: decorativeX - (SMuFL.bboxes["clef8"][0]*10 + SMuFL.bboxes["clef8"][2]*10)/2 + topLeftOffset,
+                x: decorativeX - (SMuFL.bboxes["clef8"][0]*10 +
+                        SMuFL.bboxes["clef8"][2]*10)/2 + topLeftOffset,
                 y: top,
                 fill: spec.color,
                 glyphName: "clef8"
@@ -95,7 +99,7 @@ class Clef extends React.Component<{spec: MusicXML.Clef}, void> {
         } else if (clefOctaveChange === -2) {
             clefDecorations.push($(Glyph)({
                 key: "15mb",
-                x: decorativeX  - (SMuFL.bboxes["clef15"][0]*10 + SMuFL.bboxes["clef15"][2]*10)/2,
+                x: decorativeX - (SMuFL.bboxes["clef15"][0]*10 + SMuFL.bboxes["clef15"][2]*10)/2,
                 y: bottom + SMuFL.bboxes["clef15"][1]*10,
                 fill: spec.color,
                 glyphName: "clef15"
@@ -136,8 +140,8 @@ class Clef extends React.Component<{spec: MusicXML.Clef}, void> {
 
 module Clef {
     export var contextTypes = <any> {
-        originX:         React.PropTypes.number.isRequired,
-        originY:         React.PropTypes.number.isRequired
+        originX: React.PropTypes.number.isRequired,
+        originY: React.PropTypes.number.isRequired
     };
 }
 

@@ -22,13 +22,13 @@
 
 "use strict";
 
-import IChord           = require("../ichord");
+import IChord = require("../ichord");
 
-import MusicXML         = require("musicxml-interfaces");
-import chai             = require("chai");
-var expect              = chai.expect;
+import MusicXML = require("musicxml-interfaces");
+import chai = require("chai");
+var expect = chai.expect;
 
-import AttributesTst    = require("../../__tests__/attributes_test");
+import AttributesTst = require("../../__tests__/attributes_test");
 
 describe("[engine/ichord.ts]", function() {
     describe("hasAccidental", function() {

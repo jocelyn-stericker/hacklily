@@ -23,13 +23,13 @@ export var rastalToHeight = [
     9.2, // educational
     7.9, // educational
     7.4, // piano (uncommon)
-    7,   // single stave / piano
-    6.5,  // single stave / piano
-    6,   // single stave (uncommon) / piano (uncommon)
+    7, // single stave / piano
+    6.25, // single stave / piano <STOPSHIP: Actually is 6.5>
+    6, // single stave (uncommon) / piano (uncommon)
     5.5, // choral, cue staves, or ossia
     4.8, // choral, cue staves, or ossia
-    3.7  // full score
-    // Tags from Begind Bars by Elaine Gould, pp. 483
+    3.7 // full score
+    // Tags from Behind Bars by Elaine Gould, pp. 483
 ];
 export var pageSizes = [
     // Sizes to actually display
@@ -105,8 +105,7 @@ export var defaultMargins = {
 };
 
 // This means that 4 spaces (i.e., 1 stave) equals 6.3mm.
-export var defaultStaveHeight = 6.25;
-// export var defaultStaveHeight = rastalToHeight[4]; MXFIX: Restore to this after everything else matches.
+export var defaultStaveHeight = rastalToHeight[4];
 
 export var lilypondSizes = {
     // Sizes that we support loading from Lilypond.

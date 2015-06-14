@@ -23,13 +23,13 @@
 
 "use strict";
 
-import MusicXML         = require("musicxml-interfaces");
-import _                = require("lodash");
+import MusicXML = require("musicxml-interfaces");
+import _ = require("lodash");
 
-import IPrint           = require("./iprint");
-import renderUtil       = require("./renderUtil");
-import smufl            = require("../smufl");
-import defaultsDeep     = require("../../util/defaultsDeep");
+import IPrint = require("./iprint");
+import renderUtil = require("./renderUtil");
+import smufl = require("../smufl");
+import defaultsDeep = require("../../util/defaultsDeep");
 
 /** 
  * A header is a child of parts, and includes the title and other basic
@@ -39,10 +39,10 @@ class ScoreHeader implements MusicXML.ScoreHeader {
 
     /*---- MusicXML.ScoreHeader -----------------------------------------------------------------*/
 
-    credits:            MusicXML.Credit[]           = [];
+    credits: MusicXML.Credit[] = [];
 
-    identification:     MusicXML.Identification = {
-        creators:                                   [],
+    identification: MusicXML.Identification = {
+        creators: [],
         encoding: {
             encodingDescriptions: [],
             encodingDate: null,
@@ -50,139 +50,139 @@ class ScoreHeader implements MusicXML.ScoreHeader {
             encoders: [],
             softwares: []
         },
-        miscellaneous:                              null,
-        relations:                                  [],
-        rights:                                     [],
-        source:                                     null
+        miscellaneous: null,
+        relations: [],
+        rights: [],
+        source: null
     };
 
-    defaults:           MusicXML.Defaults = {
+    defaults: MusicXML.Defaults = {
         appearance: {
             distances: {
                 hyphen: {
-                    tenths:                         10 * smufl.distances.hyphen,
-                    type:                           "hyphen"
+                    tenths: 10 * smufl.distances.hyphen,
+                    type: "hyphen"
                 },
                 beam: {
-                    tenths:                         10 * smufl.distances.beam,
-                    type:                           "beam"
+                    tenths: 10 * smufl.distances.beam,
+                    type: "beam"
                 }
             },
             lineWidths: {
                 staff: {
-                    "tenths":                       10 * smufl.bravura.engravingDefaults.staffLineThickness,
-                    "type":                         "staff"
+                    "tenths": 10 * smufl.bravura.engravingDefaults.staffLineThickness,
+                    "type": "staff"
                 },
                 wedge: {
-                    "tenths":                       10 * smufl.bravura.engravingDefaults.hairpinThickness,
-                    "type":                         "wedge"
+                    "tenths": 10 * smufl.bravura.engravingDefaults.hairpinThickness,
+                    "type": "wedge"
                 },
                 ending: {
-                    "tenths":                       10 * smufl.bravura.engravingDefaults.repeatEndingLineThickness,
-                    "type":                         "ending"
+                    "tenths": 10 * smufl.bravura.engravingDefaults.repeatEndingLineThickness,
+                    "type": "ending"
                 },
                 "heavy barline": {
-                    "tenths":                       10 * smufl.bravura.engravingDefaults.thickBarlineThickness,
-                    "type":                         "heavy barline"
+                    "tenths": 10 * smufl.bravura.engravingDefaults.thickBarlineThickness,
+                    "type": "heavy barline"
                 },
                 leger: {
-                    "tenths":                       10 * smufl.bravura.engravingDefaults.legerLineThickness,
-                    "type":                         "leger"
+                    "tenths": 10 * smufl.bravura.engravingDefaults.legerLineThickness,
+                    "type": "leger"
                 },
                 stem: {
-                    "tenths":                       10 * smufl.bravura.engravingDefaults.stemThickness,
-                    "type":                         "stem"
+                    "tenths": 10 * smufl.bravura.engravingDefaults.stemThickness,
+                    "type": "stem"
                 },
                 "tuplet bracket": {
-                    "tenths":                       10 * smufl.bravura.engravingDefaults.tupletBracketThickness,
-                    "type":                         "tuplet bracket"
+                    "tenths": 10 * smufl.bravura.engravingDefaults.tupletBracketThickness,
+                    "type": "tuplet bracket"
                 },
                 beam: {
-                    "tenths":                       10 * smufl.bravura.engravingDefaults.beamThickness,
-                    "type":                         "beam"
+                    "tenths": 10 * smufl.bravura.engravingDefaults.beamThickness,
+                    "type": "beam"
                 },
                 "light barline": {
-                    "tenths":                       10 * smufl.bravura.engravingDefaults.thinBarlineThickness,
-                    "type":                         "light barline"
+                    "tenths": 10 * smufl.bravura.engravingDefaults.thinBarlineThickness,
+                    "type": "light barline"
                 },
                 enclosure: {
-                    "tenths":                       10 * smufl.bravura.engravingDefaults.textEnclosureThickness,
-                    "type":                         "enclosure"
+                    "tenths": 10 * smufl.bravura.engravingDefaults.textEnclosureThickness,
+                    "type": "enclosure"
                 }
             },
             noteSizes: {
                 1: { // Grace
-                    "type":                         1,
-                    "size":                         60 // Not sure what 60 refers to. Our grace notes are 1.9 spaces
+                    "type": 1,
+                    "size": 60 // Not sure what 60 refers to. Our grace notes are 1.9 spaces
                 },
                 0: { // Cue
-                    "type":                         0,
-                    "size":                         60 // Not sure what 60 refers to. Our cue notes are 1.9 spaces.
+                    "type": 0,
+                    "size": 60 // Not sure what 60 refers to. Our cue notes are 1.9 spaces.
                 }
             },
-            otherAppearances:                       []
+            otherAppearances: []
         },
-        lyricFonts:                                 [],
-        lyricLanguages:                             [],
+        lyricFonts: [],
+        lyricLanguages: [],
         musicFont: {
-            fontSize:                               "20.5", // This value is completely ignored. See "scaling"
-            fontFamily:                             "Bravura, Maestro, engraved",
-            fontStyle:                              MusicXML.NormalItalic.Normal,
-            fontWeight:                             MusicXML.NormalBold.Normal
+            fontSize: "20.5", // This value is completely ignored. See "scaling"
+            fontFamily: "Bravura, Maestro, engraved",
+            fontStyle: MusicXML.NormalItalic.Normal,
+            fontWeight: MusicXML.NormalBold.Normal
         },
         pageLayout: {
-            pageHeight:                             renderUtil.mmToTenths(
-                                                        renderUtil.defaultStaveHeight, renderUtil.pageSizes[0].height),
-            pageWidth:                              renderUtil.mmToTenths(
-                                                        renderUtil.defaultStaveHeight, renderUtil.pageSizes[0].width),
+            pageHeight: renderUtil.mmToTenths(
+                renderUtil.defaultStaveHeight, renderUtil.pageSizes[0].height),
+            pageWidth: renderUtil.mmToTenths(
+                renderUtil.defaultStaveHeight, renderUtil.pageSizes[0].width),
             pageMargins: [
                 {
-                    bottomMargin:                   renderUtil.mmToTenths(
-                                                        renderUtil.defaultStaveHeight, renderUtil.defaultMargins.bottom),
-                    leftMargin:                     renderUtil.mmToTenths(
-                                                        renderUtil.defaultStaveHeight, renderUtil.defaultMargins.left),
-                    rightMargin:                    renderUtil.mmToTenths(
-                                                        renderUtil.defaultStaveHeight, renderUtil.defaultMargins.right),
-                    topMargin:                      renderUtil.mmToTenths(
-                                                        renderUtil.defaultStaveHeight, renderUtil.defaultMargins.top),
-                    type:                           MusicXML.OddEvenBoth.Both
+                    bottomMargin: renderUtil.mmToTenths(
+                        renderUtil.defaultStaveHeight, renderUtil.defaultMargins.bottom),
+                    leftMargin: renderUtil.mmToTenths(
+                        renderUtil.defaultStaveHeight, renderUtil.defaultMargins.left),
+                    rightMargin: renderUtil.mmToTenths(
+                        renderUtil.defaultStaveHeight, renderUtil.defaultMargins.right),
+                    topMargin: renderUtil.mmToTenths(
+                        renderUtil.defaultStaveHeight, renderUtil.defaultMargins.top),
+                    type: MusicXML.OddEvenBoth.Both
                 }
             ]
         },
         scaling: {
-            millimeters:                            renderUtil.defaultStaveHeight,
-            tenths:                                 40
+            millimeters: renderUtil.defaultStaveHeight,
+            tenths: 40
         },
-        staffLayouts:                               [],
+        staffLayouts: [],
         systemLayout: {
-            systemDistance:                         131,
-            systemDividers:                         null,
+            systemDistance: 131,
+            systemDividers: null,
             systemMargins: {
-                leftMargin:                         0,
-                rightMargin:                        0
+                leftMargin: 0,
+                rightMargin: 0
             },
-            topSystemDistance:                      70
+            topSystemDistance: 70
         },
         wordFont: {
-            fontSize:                               "12",
-            fontFamily:                             "Alegreya, Times New Roman, serif",
-            fontStyle:                              MusicXML.NormalItalic.Normal,
-            fontWeight:                             MusicXML.NormalBold.Normal
+            fontSize: "12",
+            fontFamily: "Alegreya, Times New Roman, serif",
+            fontStyle: MusicXML.NormalItalic.Normal,
+            fontWeight: MusicXML.NormalBold.Normal
         }
     };
 
-    work:               MusicXML.Work = {
-        opus:                                       null,
-        workNumber:                                 "",
-        workTitle:                                  ""
+    work: MusicXML.Work = {
+        opus: null,
+        workNumber: "",
+        workTitle: ""
     };
 
-    movementTitle:      string =                    "";
-    movementNumber:     string =                    "";
+    movementTitle: string = "";
+    movementNumber: string = "";
 
-    partList:           MusicXML.PartList = {
-        scoreParts:                                 [],
-        partGroups:                                 []
+    partList: MusicXML.PartList = {
+        scoreParts: [],
+        partGroups: []
     };
 
     /*---- Extensions ---------------------------------------------------------------------------*/

@@ -16,15 +16,15 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import React            = require("react");
-var $                   = React.createFactory;
+import React = require("react");
+var $ = React.createFactory;
 
-import Attributes       = require("../models/attributes");
-import BarNumber        = require("./barNumber");
-import Clef             = require("./clef");
-import PartSymbol       = require("./partSymbol");
-import KeySignature     = require("./keySignature");
-import TimeSignature    = require("./timeSignature");
+import Attributes = require("../models/attributes");
+import BarNumber = require("./barNumber");
+import Clef = require("./clef");
+import PartSymbol = require("./partSymbol");
+import KeySignature = require("./keySignature");
+import TimeSignature = require("./timeSignature");
 
 class AttributesView extends React.Component<{layout: Attributes.ILayout}, void> {
     render(): any {

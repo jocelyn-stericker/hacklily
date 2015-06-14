@@ -18,16 +18,16 @@
 
 "use strict";
 
-import MusicXML             = require("musicxml-interfaces");
-import React                = require("react");
-import _                    = require("lodash");
-import invariant            = require("react/lib/invariant");
+import MusicXML = require("musicxml-interfaces");
+import React = require("react");
+import _ = require("lodash");
+import invariant = require("react/lib/invariant");
 
-import DirectionModel       = require("../../models/direction");
-import Engine               = require("../../models/engine");
-import TextMixin            = require("../textMixin");
+import DirectionModel = require("../../models/direction");
+import Engine = require("../../models/engine");
+import TextMixin = require("../textMixin");
 
-class Words extends React.Component<{layout: DirectionModel.ILayout}, void> implements TextMixin.ITextMixin {
+class Words extends React.Component<Words.IProps, void> implements TextMixin.ITextMixin {
     render(): any {
         let layout = this.props.layout;
         let model = layout.model;
@@ -37,22 +37,28 @@ class Words extends React.Component<{layout: DirectionModel.ILayout}, void> impl
 
         let initX = this.context.originX;
         let initY = this.context.originY - words[0].defaultY - (words[0].relativeY||0);
+        let scale40 = this.context.scale40;
 
         return React.DOM.text({
                 x: initX,
                 y: initY
             },
-            _.map(words, (words, idx) =>
-                _.map(words.data.split("\n"), (line, lineNum) => React.DOM.tspan({
+            _.map(words, (words, idx) => {
+                let isBold = words.fontWeight === MusicXML.NormalBold.Bold;
+                let isItalic = words.fontStyle === MusicXML.NormalItalic.Italic;
+                let fontSize = Engine.RenderUtil.cssSizeToTenths(scale40, words.fontSize);
+
+                return _.map(words.data.split("\n"), (line, lineNum) => React.DOM.tspan({
                     key: idx + "l" + lineNum,
                     "alignment-baseline": "hanging",
                     x: this.getX(lineNum),
                     dx: this.getDX(words, 0, lineNum),
                     dy: this.getDY(words, initY, lineNum),
                     fontFamily: words.fontFamily || "Alegreya",
-                    fontSize: Engine.RenderUtil.cssSizeToTenths(this.context.scale40, words.fontSize),
-                    "font-weight": words.fontWeight === MusicXML.NormalBold.Bold ? "bold" : "normal",
-                    "font-style": words.fontStyle === MusicXML.NormalItalic.Italic ? "italic" : "normal",
+                    fontSize: fontSize,
+
+                    "font-weight": isBold ? "bold" : "normal",
+                    "font-style": isItalic ? "italic" : "normal",
                     color: words.color || "black",
                     textAnchor: this.getTextAnchor(words),
                     "text-decoration": this.getTextDecoration(words),
@@ -61,7 +67,8 @@ class Words extends React.Component<{layout: DirectionModel.ILayout}, void> impl
                         ("" + Engine.RenderUtil.cssSizeToTenths(this.context.scale40,
                                 words.letterSpacing)) : "normal",
                     direction: this.getDirection(words)
-                }, line)))
+                }, line));
+            })
         /* React.DOM.text */);
     }
 
@@ -78,10 +85,13 @@ class Words extends React.Component<{layout: DirectionModel.ILayout}, void> impl
 _.extend(Words.prototype, TextMixin.Prototype);
 
 module Words {
+    export interface IProps {
+        layout: DirectionModel.ILayout;
+    }
     export var contextTypes = <any> {
-        scale40:         React.PropTypes.number.isRequired,
-        originX:         React.PropTypes.number.isRequired,
-        originY:         React.PropTypes.number.isRequired
+        scale40: React.PropTypes.number.isRequired,
+        originX: React.PropTypes.number.isRequired,
+        originY: React.PropTypes.number.isRequired
     };
 }
 

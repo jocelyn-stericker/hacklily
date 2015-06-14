@@ -18,14 +18,14 @@
 
 "use strict";
 
-import MusicXML             = require("musicxml-interfaces");
-import React                = require("react");
-import _                    = require("lodash");
-var $                       = React.createFactory;
+import MusicXML = require("musicxml-interfaces");
+import React = require("react");
+import _ = require("lodash");
+var $ = React.createFactory;
 
-import Attributes           = require("./attributes");
-import Barline              = require("../models/barline");
-import Line                 = require("./primitives/line");
+import Attributes = require("./attributes");
+import Barline = require("../models/barline");
+import Line = require("./primitives/line");
 
 /**
  * Renders a full-stave-height barline at (x,y).
@@ -79,10 +79,10 @@ class BarlineView extends React.Component<{layout: Barline.ILayout}, {}> {
 
 module BarlineView {
     export var contextTypes = <any> {
-        originX:        React.PropTypes.number.isRequired,
-        originY:        React.PropTypes.number.isRequired,
-        systemTop:      React.PropTypes.number.isRequired,
-        systemBottom:   React.PropTypes.number.isRequired
+        originX: React.PropTypes.number.isRequired,
+        originY: React.PropTypes.number.isRequired,
+        systemTop: React.PropTypes.number.isRequired,
+        systemBottom: React.PropTypes.number.isRequired
     };
 }
 

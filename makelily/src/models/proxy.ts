@@ -16,8 +16,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import Engine           = require("./engine");
-import invariant                = require("react/lib/invariant");
+import Engine = require("./engine");
+import invariant = require("react/lib/invariant");
 
 class ProxyModel implements Export.IProxyModel {
 
@@ -46,7 +46,7 @@ class ProxyModel implements Export.IProxyModel {
     }
 
     /** @prototype */
-    frozenness:      Engine.IModel.FrozenLevel;
+    frozenness: Engine.IModel.FrozenLevel;
 
     modelDidLoad$(segment$: Engine.Measure.ISegment): void {
         // todo

@@ -18,8 +18,8 @@
 
 "use strict";
 
-import MusicXML         = require("musicxml-interfaces");
-import invariant        = require("react/lib/invariant");
+import MusicXML = require("musicxml-interfaces");
+import invariant = require("react/lib/invariant");
 
 export function getPageMargins(pageMargins: MusicXML.PageMargins[], page: number):
     MusicXML.PageMargins {

@@ -18,11 +18,11 @@
 
 "use strict";
 
-import React            = require("react");
+import React = require("react");
 
-import SMuFL            = require("../../models/smufl");
-import Engine           = require("../../models/engine");
-import FontManager      = require("../../models/fontManager");
+import SMuFL = require("../../models/smufl");
+import Engine = require("../../models/engine");
+import FontManager = require("../../models/fontManager");
 
 /**
  * Most musical elements are rendered as glyphs. Exceptions include
@@ -34,7 +34,8 @@ class Glyph extends React.Component<Glyph.IProps, void> {
         var py = this.props.y;
 
         if (this.context.renderTarget === Engine.RenderTarget.SvgExport) {
-            let pathData = FontManager.toPathData("Bravura", SMuFL.getGlyphCode(this.props.glyphName), px, py, 40*(this.props.scale||1));
+            let pathData = FontManager.toPathData("Bravura",
+                SMuFL.getGlyphCode(this.props.glyphName), px, py, 40*(this.props.scale||1));
             return <React.ReactElement<any>> React.DOM.path({d: pathData}, null);
         }
 

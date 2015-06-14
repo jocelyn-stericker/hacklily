@@ -16,27 +16,27 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import MusicXML             = require("musicxml-interfaces");
-import _                    = require("lodash");
-import invariant            = require("react/lib/invariant");
+import MusicXML = require("musicxml-interfaces");
+import _ = require("lodash");
+import invariant = require("react/lib/invariant");
 
-import Attributes           = require("./attributes");
-import Engine               = require("./engine");
-import IAttributes          = require("./engine/iattributes");
-import SMuFL                = require("./smufl");
+import Attributes = require("./attributes");
+import Engine = require("./engine");
+import IAttributes = require("./engine/iattributes");
+import SMuFL = require("./smufl");
 
 class BarlineModel implements Export.IBarlineModel {
 
     /*---- I.1 IModel ---------------------------------------------------------------------------*/
 
     /** @prototype only */
-    divCount:           number;
+    divCount: number;
 
     /** defined externally */
-    staffIdx:           number;
+    staffIdx: number;
 
     /** @prototype */
-    frozenness:         Engine.IModel.FrozenLevel;
+    frozenness: Engine.IModel.FrozenLevel;
 
     modelDidLoad$(segment$: Engine.Measure.ISegment): void {
         // todo
@@ -60,28 +60,28 @@ class BarlineModel implements Export.IBarlineModel {
 
     /*---- I.2 C.MusicXML.Barline ---------------------------------------------------------------*/
 
-    segno:              MusicXML.Segno;
-    coda:               MusicXML.Coda;
-    location:           MusicXML.BarlineLocation;
-    codaAttrib:         string;
-    wavyLine:           MusicXML.WavyLine;
-    fermatas:           MusicXML.Fermata[];
-    segnoAttrib:        string;
-    divisions:          string;
-    barStyle:           MusicXML.BarStyle;
-    ending:             MusicXML.Ending;
-    repeat:             MusicXML.Repeat;
+    segno: MusicXML.Segno;
+    coda: MusicXML.Coda;
+    location: MusicXML.BarlineLocation;
+    codaAttrib: string;
+    wavyLine: MusicXML.WavyLine;
+    fermatas: MusicXML.Fermata[];
+    segnoAttrib: string;
+    divisions: string;
+    barStyle: MusicXML.BarStyle;
+    ending: MusicXML.Ending;
+    repeat: MusicXML.Repeat;
 
     /*---- I.3 C.MusicXML.Editorial -------------------------------------------------------------*/
 
-    footnote:           MusicXML.Footnote;
-    level:              MusicXML.Level;
+    footnote: MusicXML.Footnote;
+    level: MusicXML.Level;
 
     /*---- II. BarlineModel (extension) ---------------------------------------------------------*/
 
-    defaultX:           number;
-    defaultY:           number;
-    satieAttributes:    Attributes.ILayout;
+    defaultX: number;
+    defaultY: number;
+    satieAttributes: Attributes.ILayout;
     satieAttribsOffset: number;
 
     /*---- Validation Implementations -----------------------------------------------------------*/
@@ -108,7 +108,7 @@ module BarlineModel {
     export class Layout implements Export.ILayout {
         constructor(origModel: BarlineModel, cursor$: Engine.ICursor) {
             this.division = cursor$.division$;
-            if (cursor$.staff.multiRestRem > 1) {
+            if (cursor$.staff.hiddenMeasuresRemaining > 1) {
                 return;
             }
 
@@ -124,17 +124,23 @@ module BarlineModel {
             let clefOffset = 0;
 
             if (!cursor$.approximate && cursor$.line.barsOnLine === cursor$.line.barOnLine$ + 1) {
-                // TODO: Figure out a way to get this to work when the attributes on the next line change
+                // TODO: Figure out a way to get this to work when the attributes on the next
+                // line change
                 let nextMeasure = Engine.EscapeHatch.__currentMeasureList__[cursor$.measure.idx + 1];
                 let part = nextMeasure && nextMeasure.parts[cursor$.segment.part];
                 let segment = part && part.staves[cursor$.staff.idx];
                 let nextAttributes = segment && cursor$.factory.search(
-                        segment, 0, Engine.IModel.Type.Attributes)[0];
-                if (nextAttributes && IAttributes.needsWarning(
-                        cursor$.staff.attributes, nextAttributes, cursor$.staff.idx)) {
-                    clefOffset = IAttributes.clefsEqual(cursor$.staff.attributes,
-                            nextAttributes, cursor$.staff.idx) ? 0 : IAttributes.CLEF_INDENTATION;
-                    this.model.satieAttributes = Attributes.createWarningLayout$(cursor$, nextAttributes);
+                    segment, 0, Engine.IModel.Type.Attributes)[0];
+                let attributes = cursor$.staff.attributes[cursor$.segment.part];
+                let needsWarning = nextAttributes && IAttributes.needsWarning(
+                    attributes, nextAttributes, cursor$.staff.idx);
+
+                if (needsWarning) {
+                    let clefsAreEqual = IAttributes.clefsEqual(
+                        attributes, nextAttributes, cursor$.staff.idx);
+                    clefOffset = clefsAreEqual ? 0 : IAttributes.CLEF_INDENTATION;
+                    let warningLayout = Attributes.createWarningLayout$(cursor$, nextAttributes);
+                    this.model.satieAttributes = warningLayout;
                 }
             }
 
@@ -214,30 +220,30 @@ module BarlineModel {
 
         // Constructed:
 
-        model:          BarlineModel;
-        x$:             number;
-        division:       number;
-        height:         number;
-        yOffset:        number;
+        model: BarlineModel;
+        x$: number;
+        division: number;
+        height: number;
+        yOffset: number;
 
         /**
          * Set by layout engine.
          */
-        overrideX:           number;
+        overrideX: number;
 
         // Prototype:
 
-        mergePolicy:    Engine.IModel.HMergePolicy;
+        mergePolicy: Engine.IModel.HMergePolicy;
         boundingBoxes$: Engine.IModel.IBoundingRect[];
-        renderClass:    Engine.IModel.Type;
-        expandPolicy:   Engine.IModel.ExpandPolicy;
+        renderClass: Engine.IModel.Type;
+        expandPolicy: Engine.IModel.ExpandPolicy;
 
         /*---- Extensions ---------------------------------------------------*/
 
-        lineStarts:     number[];
-        lineWidths:     number[];
+        lineStarts: number[];
+        lineWidths: number[];
 
-        partSymbol:     MusicXML.PartSymbol;
+        partSymbol: MusicXML.PartSymbol;
     }
 
     Layout.prototype.mergePolicy = Engine.IModel.HMergePolicy.Max;
@@ -256,21 +262,21 @@ function Export(constructors: { [key: number]: any }) {
 
 module Export {
     export interface IBarlineModel extends Engine.IModel, MusicXML.Barline {
-        defaultX:           number;
-        defaultY:           number;
-        satieAttributes:    Attributes.ILayout;
+        defaultX: number;
+        defaultY: number;
+        satieAttributes: Attributes.ILayout;
         satieAttribsOffset: number;
     }
 
     export interface ILayout extends Engine.IModel.ILayout {
-        model:          IBarlineModel;
-        height:         number;
-        yOffset:        number;
+        model: IBarlineModel;
+        height: number;
+        yOffset: number;
 
-        lineStarts:     number[];
-        lineWidths:     number[];
+        lineStarts: number[];
+        lineWidths: number[];
 
-        partSymbol:     MusicXML.PartSymbol;
+        partSymbol: MusicXML.PartSymbol;
     }
 }
 

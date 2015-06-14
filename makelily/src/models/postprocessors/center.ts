@@ -16,10 +16,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import _                        = require("lodash");
-import invariant                = require("react/lib/invariant");
+import _ = require("lodash");
+import invariant = require("react/lib/invariant");
 
-import Engine                   = require("../engine");
+import Engine = require("../engine");
 
 /** 
  * Centers elements marked as such
@@ -36,16 +36,20 @@ function center(options: Engine.Options.ILayoutOptions, bounds: Engine.Options.I
                 if (measure.elements[i][j].expandPolicy === Engine.IModel.ExpandPolicy.Centered) {
                     let intrinsicWidth = measure.elements[i][j].renderedWidth;
                     let originX = measure.elements[i][j].x$;
-                    invariant(isFinite(intrinsicWidth), "Intrinsic width must be set on centered items");
+                    invariant(isFinite(intrinsicWidth),
+                        "Intrinsic width must be set on centered items");
                     let measureSpaceRemaining = measure.width - originX;
                     if (measure.elements[i][j].renderClass === Engine.IModel.Type.Chord) {
                         let model: any = measure.elements[i][j].model;
-                        if (model && model.satieNotehead && _.any(model.satieNotehead, n => n === "restWhole")) {
-                            // There's some inherent spacing in whole rests to make them placed more naturally.
-                            // We need to make up for that when centering!
+                        let noteheads = model && model.satieNotehead;
+                        let isWhole = noteheads && _.any(noteheads, n => n === "restWhole");
+                        let isHBar = noteheads && _.any(noteheads, n => n === "restHBar");
+                        if (isWhole) {
+                            // There's some inherent spacing in whole rests to make them
+                            // placed more naturally. We need to make up for that when centering!
                             // TODO(jnetterf): Calculate the exact amount here
                             measure.elements[i][j].x$ -= 16.0;
-                        } else if (model && model.satieNotehead && _.any(model.satieNotehead, n => n === "restHBar")) {
+                        } else if (isHBar) {
                             // I have no idea where this comes from (!!)
                             measure.elements[i][j].x$ -= 7.0;
                         }

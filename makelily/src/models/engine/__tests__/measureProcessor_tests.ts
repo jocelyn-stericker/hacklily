@@ -22,14 +22,14 @@
 
 "use strict";
 
-import MeasureProcessor  = require("../measureProcessor");
+import MeasureProcessor = require("../measureProcessor");
 
-import chai             = require("chai");
-var expect              = chai.expect;
+import chai = require("chai");
+var expect = chai.expect;
 
-import Ctx              = require("../ctx");
-import Engine           = require("../../engine");
-import ETestUtil        = require("./etestutil");
+import Context = require("../context");
+import Engine = require("../../engine");
+import ETestUtil = require("./etestutil");
 
 describe("[engine/measureProcessor.ts]", function() {
     describe("reduce", function() {
@@ -49,24 +49,24 @@ describe("[engine/measureProcessor.ts]", function() {
 
             // test without alignment
             var opts: MeasureProcessor.ILayoutOpts = {
-                attributes:         {},
-                line:               Ctx.ILine.create(segments, 1, 0, 1),
-                header:             null,
-                padEnd:             false,
+                attributes: {},
+                line: Context.ILine.create(segments, 1, 0, 1),
+                header: null,
+                padEnd: false,
                 measure: {
-                    attributes$:    {},
-                    idx:            0,
-                    implicit:       false,
+                    attributes$: {},
+                    idx: 0,
+                    implicit: false,
                     nonControlling: false,
-                    number:         "1",
-                    uuid:           777,
-                    x:              100,
-                    parent:         null
+                    number: "1",
+                    uuid: 777,
+                    x: 100,
+                    parent: null
                 },
-                prevByStaff:        [],
-                segments:           segments,
-                _noAlign:           true,
-                factory:            ETestUtil.fakeAttributeChordFactory
+                prevByStaff: [],
+                segments: segments,
+                _noAlign: true,
+                factory: ETestUtil.fakeAttributeChordFactory
             };
             var layout = MeasureProcessor.reduce(opts).elements;
             expect(layout[0].length).to.equal(2);
@@ -79,8 +79,8 @@ describe("[engine/measureProcessor.ts]", function() {
 
             expect(layout[2].length).to.equal(2);
             expect(layout[2][0].x$).to.equal(100, "without merging");
-            expect(layout[2][1].x$).to.equal(190, "without merging"); // Occurs after division 1 or 2,
-                                                    // so add the end of the measure
+            // Occurs after division 1 or 2, so add the end of the measure
+            expect(layout[2][1].x$).to.equal(190, "without merging");
 
             // Now test 
             opts._noAlign = false;
@@ -148,38 +148,38 @@ describe("[engine/measureProcessor.ts]", function() {
             ];
 
             var layout = MeasureProcessor.layoutMeasure({
-                header:         <any> {
-                    partList:   {
+                header: <any> {
+                    partList: {
                         scoreParts: [{
-                            id:     "P1"
+                            id: "P1"
                         }]
                     }
                 },
-                attributes:     {},
-                maxX:           1000,
-                minX:           100,
+                attributes: {},
+                maxX: 1000,
+                minX: 100,
                 measure: {
-                    idx:        0,
-                    number:     "1",
+                    idx: 0,
+                    number: "1",
                     parts: {
                         "P1": {
-                            voices:     voiceSegments,
-                            staves:     staffSegments
+                            voices: voiceSegments,
+                            staves: staffSegments
                         }
                     },
-                    uuid:       248,
-                    width:      NaN
+                    uuid: 248,
+                    width: NaN
                 },
-                prevByStaff:    [],
-                x:              100,
-                line:           {
-                    barOnLine$:     0,
-                    barsOnLine:     0,
-                    shortestCount:  42,
-                    line:           0,
-                    lines:          1
+                prevByStaff: [],
+                x: 100,
+                line: {
+                    barOnLine$: 0,
+                    barsOnLine: 0,
+                    shortestCount: 42,
+                    line: 0,
+                    lines: 1
                 },
-                factory:        ETestUtil.fakeAttributeChordFactory
+                factory: ETestUtil.fakeAttributeChordFactory
             });
             // We've tested this exact case in ISegment.layout$, so we can be
             // a bit soft here.
@@ -205,40 +205,41 @@ describe("[engine/measureProcessor.ts]", function() {
             ];
 
             var width = MeasureProcessor.approximateLayout({
-                attributes:     {},
-                maxX:           1000,
-                minX:           100,
-                header:         <any> {
-                    partList:   {
+                attributes: {},
+                maxX: 1000,
+                minX: 100,
+                header: <any> {
+                    partList: {
                         scoreParts: [{
-                            id:     "P1"
+                            id: "P1"
                         }]
                     }
                 },
                 measure: {
-                    idx:        0,
-                    number:     "1",
+                    idx: 0,
+                    number: "1",
                     parts: {
                         "P1": {
                             voices: voiceSegments,
                             staves: staffSegments
                         }
                     },
-                    uuid:       1248,
-                    width:      NaN
+                    uuid: 1248,
+                    width: NaN
                 },
-                prevByStaff:    [],
-                x:              100,
-                line:           {
-                    barOnLine$:     0,
-                    barsOnLine:     0,
-                    shortestCount:  42,
-                    line:           0,
-                    lines:          1
+                prevByStaff: [],
+                x: 100,
+                line: {
+                    barOnLine$: 0,
+                    barsOnLine: 0,
+                    shortestCount: 42,
+                    line: 0,
+                    lines: 1
                 },
-                factory:        ETestUtil.fakeAttributeChordFactory
+                factory: ETestUtil.fakeAttributeChordFactory
             }).width;
-            expect(width).to.equal(90); // 100 - 10 for attribute 1. See ETestUtil.createFakeStaffSegment
+            // 100 - 10 for attribute 1. See ETestUtil.createFakeStaffSegment
+            expect(width).to.equal(90);
         });
     });
 });

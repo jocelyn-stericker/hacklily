@@ -18,13 +18,13 @@
 
 "use strict";
 
-import _                = require("lodash");
-import invariant        = require("react/lib/invariant");
+import _ = require("lodash");
+import invariant = require("react/lib/invariant");
 
-import Engine           = require("./models/engine");
-import FontManager      = require("./models/fontManager");
-import Models           = require("./models");
-import Views            = require("./views");
+import Engine = require("./models/engine");
+import FontManager = require("./models/fontManager");
+import Models = require("./models");
+import Views = require("./views");
 
 /*---- Public Interface -------------------------------------------------------------------------*/
 
@@ -33,7 +33,8 @@ import Views            = require("./views");
  * before any Satie component is mounted, and must only be called once.
  */
 export function init(options: ISatieOptions): void {
-    invariant(!BrowserSetup.cssInjected, "init must be called before any Satie component is mounted " +
+    invariant(!BrowserSetup.cssInjected,
+        "init must be called before any Satie component is mounted " +
         "and must only be called once");
     BrowserSetup.injectStyles(options);
 }
@@ -45,8 +46,10 @@ export interface ISatieOptions {
     /**
      * For web browsers only.
      * 
-     * A list of fonts and variants (in parentheses) that are included on a webpage, that Satie should not automatically load.
-     * You can get pretty good performance improvements by putting font loading inside your's HTML file's `<head></head>`
+     * A list of fonts and variants (in parentheses) that are included on a webpage, that Satie
+     * should not automatically load. You can get strong performance improvements by putting font
+     * loading inside your's HTML file's `<head></head>`
+     *
      * e.g., "Alegreya", "Alegreya (bold)", "Bravura"
      */
     preloadedFonts?: string[];
@@ -54,7 +57,8 @@ export interface ISatieOptions {
     /**
      * For web browsers only.
      * 
-     * Specify where all the files Satie needs are. By default, Satie looks inside `http[s]://vendor/`.
+     * Specify where all the files Satie needs are.
+     * By default, Satie looks inside `http[s]://vendor/`.
      */
     satieRoot?: string;
 }
@@ -64,17 +68,27 @@ export interface ISatieOptions {
  */
 export type IDocument = Engine.IDocument;
 
+export type FailCB = (err: Error) => void;
+export type DocumentCB = (doc: Engine.IDocument) => void;
+export type StringCB = (str: string) => void;
+
 /**
  * Parses a MusicXML document and returns an IDocument.
  */
-export function loadDocument(xml: string, failure: (err: Error) => void, success: (doc: Engine.IDocument) => void) {
-    Models.importXML(xml, (err, document) => err ? failure(err) : success(document));
+export function loadDocument(xml: string, failure: FailCB, success: DocumentCB) {
+    Models.importXML(xml, (err, document) => {
+        if (err) {
+            failure(err);
+        } else {
+            success(document);
+        }
+    });
 }
 
 /**
  * Convienience function which renders the first page of a MusicXML document as an SVG.
  */
-export function getSVGPreview(document: Engine.IDocument, failure: (err: Error) => void, success: (svg: string) => void) {
+export function getSVGPreview(document: Engine.IDocument, failure: FailCB, success: StringCB) {
     try {
         success(Views.renderDocument(document, 0));
     } catch(err) {

@@ -22,23 +22,23 @@
 
 "use strict";
 
-import chai         = require("chai");
+import chai = require("chai");
 
-import Attributes   = require("../attributes");
-import Engine       = require("../engine");
-import Factory      = require("../factory");
+import Attributes = require("../attributes");
+import Engine = require("../engine");
+import Factory = require("../factory");
 
-let expect          = chai.expect;
+let expect = chai.expect;
 
 export function makeCursor(factory: Factory, models: Engine.IModel[]): Engine.ICursor {
     (<any>models).part = "P1";
     return {
-        segment:            <any> models,
-        idx$:               0,
+        segment: <any> models,
+        idx$: 0,
 
-        voice:              {},
+        voice: {},
         staff: {
-            previous:       null,
+            previous: null,
             attributes: {
                 P1: {
                     divisions: 60,
@@ -55,18 +55,18 @@ export function makeCursor(factory: Factory, models: Engine.IModel[]): Engine.IC
                 }
             },
             totalDivisions: 240,
-            accidentals$:   {},
-            idx:            0
+            accidentals$: {},
+            idx: 0
         },
         measure: {
-            idx:            0,
-            number:         "1",
-            implicit:       false,
+            idx: 0,
+            number: "1",
+            implicit: false,
             nonControlling: false,
-            x:              100,
-            attributes$:    null,
-            uuid:           100,
-            parent:         <any> {
+            x: 100,
+            attributes$: null,
+            uuid: 100,
+            parent: <any> {
                 parts: {
                     "P1": {
                         staves: [
@@ -80,27 +80,27 @@ export function makeCursor(factory: Factory, models: Engine.IModel[]): Engine.IC
             }
         },
         line: {
-            shortestCount:  Number.MAX_VALUE,
-            barOnLine$:     0,
-            barsOnLine:     1,
-            line:           0,
-            lines:          1
+            shortestCount: Number.MAX_VALUE,
+            barOnLine$: 0,
+            barsOnLine: 1,
+            line: 0,
+            lines: 1
         },
-        print$:             null,
-        header:             null,
+        print$: null,
+        header: null,
 
-        prev$:              null,
-        division$:          0,
-        x$:                 100,
-        minXBySmallest$:    {},
-        maxPaddingTop$:     [],
-        maxPaddingBottom$:  [],
+        prev$: null,
+        division$: 0,
+        x$: 100,
+        minXBySmallest$: {},
+        maxPaddingTop$: [],
+        maxPaddingBottom$: [],
 
-        page$:              NaN,
+        page$: NaN,
 
-        approximate:        false,
-        detached:           true,
-        factory:            factory
+        approximate: false,
+        detached: true,
+        factory: factory
     };
 }
 
@@ -136,7 +136,8 @@ describe("[attributes.ts]", function() {
             expect(layout.ksSpacing).to.be.gt(0);
 
             expect(layout.x$).to.be.lt(cursor$.x$);
-            expect(cursor$.x$ - layout.x$).to.equal(layout.clefSpacing + layout.tsSpacing + layout.ksSpacing);
+            let expectedChange = layout.clefSpacing + layout.tsSpacing + layout.ksSpacing;
+            expect(cursor$.x$ - layout.x$).to.equal(expectedChange);
         });
     });
 });

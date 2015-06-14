@@ -18,14 +18,14 @@
 
 "use strict";
 
-import MusicXML         = require("musicxml-interfaces");
-import React            = require("react");
-import invariant        = require("react/lib/invariant");
-var $                   = React.createFactory;
+import MusicXML = require("musicxml-interfaces");
+import React = require("react");
+import invariant = require("react/lib/invariant");
+var $ = React.createFactory;
 
-import Glyph            = require("./primitives/glyph");
-import IChord           = require("../models/engine/ichord");
-import SMuFL            = require("../models/smufl");
+import Glyph = require("./primitives/glyph");
+import IChord = require("../models/engine/ichord");
+import SMuFL = require("../models/smufl");
 
 class Accidental extends React.Component<{spec: MusicXML.Accidental}, void> {
     render(): any {
@@ -67,8 +67,8 @@ class Accidental extends React.Component<{spec: MusicXML.Accidental}, void> {
 
 module Accidental {
     export var contextTypes = <any> {
-        originX:         React.PropTypes.number.isRequired,
-        originY:         React.PropTypes.number.isRequired
+        originX: React.PropTypes.number.isRequired,
+        originY: React.PropTypes.number.isRequired
     };
 }
 

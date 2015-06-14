@@ -16,20 +16,20 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import Engine           = require("./engine");
+import Engine = require("./engine");
 
 class SpacerModel implements Export.ISpacerModel {
 
     /*---- I.1 IModel ---------------------------------------------------------------------------*/
 
     /** @prototype only */
-    divCount:        number;
+    divCount: number;
 
     /** defined externally */
-    staffIdx:        number;
+    staffIdx: number;
 
     /** @prototype */
-    frozenness:      Engine.IModel.FrozenLevel;
+    frozenness: Engine.IModel.FrozenLevel;
 
     modelDidLoad$(segment$: Engine.Measure.ISegment): void {
         // Nothing to do

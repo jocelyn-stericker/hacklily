@@ -18,15 +18,15 @@
 
 "use strict";
 
-import MusicXML             = require("musicxml-interfaces");
-import React                = require("react");
-import _                    = require("lodash");
-let $                       = React.createFactory;
+import MusicXML = require("musicxml-interfaces");
+import React = require("react");
+import _ = require("lodash");
+let $ = React.createFactory;
 
-import Accidental           = require("./accidental");
-import Dot                  = require("./primitives/dot");
-import Notehead             = require("./notehead");
-import SMuFL                = require("../models/smufl");
+import Accidental = require("./accidental");
+import Dot = require("./primitives/dot");
+import Notehead = require("./notehead");
+import SMuFL = require("../models/smufl");
 
 class Note extends React.Component<{spec: MusicXML.Note, satieNotehead: string}, void> {
     render() {
@@ -67,20 +67,20 @@ class Note extends React.Component<{spec: MusicXML.Note, satieNotehead: string},
 
     getChildContext() {
         return {
-            originX:        this.context.originX + this.props.spec.defaultX,
-            originY:        this.context.originY - this.props.spec.defaultY
+            originX: this.context.originX + this.props.spec.defaultX,
+            originY: this.context.originY - this.props.spec.defaultY
         };
     }
 };
 
 module Note {
     export var childContextTypes = <any> {
-        originX:            React.PropTypes.number.isRequired,
-        originY:            React.PropTypes.number.isRequired
+        originX: React.PropTypes.number.isRequired,
+        originY: React.PropTypes.number.isRequired
     };
     export var contextTypes = <any> {
-        originX:         React.PropTypes.number.isRequired,
-        originY:         React.PropTypes.number.isRequired
+        originX: React.PropTypes.number.isRequired,
+        originY: React.PropTypes.number.isRequired
     };
 }
 

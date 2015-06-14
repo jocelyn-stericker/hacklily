@@ -16,9 +16,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import _                        = require("lodash");
+import _ = require("lodash");
 
-import Engine                   = require("../engine");
+import Engine = require("../engine");
 
 /** 
  * Respects the minSpaceBefore and minSpaceAfter of elements. minSpaceBefore and minSpaceAfter
@@ -37,15 +37,21 @@ function pad(options: Engine.Options.ILayoutOptions, bounds: Engine.Options.ILin
         let previousElementEnd = -10;
         let offset = 0;
         _.times(maxIdx, function(j) {
+            // These refer to the space needed before/after this position in all segments.
             let spaceNeededBefore = 0;
             let spaceNeededAfter = 0;
+
             for (let i = 0; i < measure.elements.length; ++i) {
-                spaceNeededBefore = Math.max(spaceNeededBefore, measure.elements[i][j].minSpaceBefore || 0);
-                spaceNeededAfter = Math.max(spaceNeededAfter, measure.elements[i][j].minSpaceAfter || 0);
+                let spaceNeededBeforeSegment = measure.elements[i][j].minSpaceBefore || 0;
+                let spaceNeededAfterSegment = measure.elements[i][j].minSpaceAfter || 0;
+
+                spaceNeededBefore = Math.max(spaceNeededBefore, spaceNeededBeforeSegment);
+                spaceNeededAfter = Math.max(spaceNeededAfter, spaceNeededAfterSegment);
                 measure.elements[i][j].x$ += offset;
             }
             if (!spaceNeededBefore && !spaceNeededAfter) {
-                // Note: we should instead have some sort of flag which means "disregard this element"
+                // TODO: we should instead have some sort of flag which means
+                // "disregard this element"
                 return;
             }
             let thisElementStart = measure.elements[0][j].x$ - spaceNeededBefore;

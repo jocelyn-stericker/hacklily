@@ -16,33 +16,37 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import MusicXML         = require("musicxml-interfaces");
-import _                = require("lodash");
-import invariant        = require("react/lib/invariant");
+import MusicXML = require("musicxml-interfaces");
+import _ = require("lodash");
+import invariant = require("react/lib/invariant");
 
-import Engine           = require("./engine");
-import IAttributes      = require("./engine/iattributes");
+import Engine = require("./engine");
+import IAttributes = require("./engine/iattributes");
+
+interface IClef extends MusicXML.Clef {
+    __inherited__?: boolean;
+}
 
 class AttributesModel implements Export.IAttributesModel {
 
     /*---- I.1 IModel ---------------------------------------------------------------------------*/
 
     /** @prototype only */
-    divCount:        number;
+    divCount: number;
 
     /** defined externally */
-    staffIdx:        number;
+    staffIdx: number;
 
     /** @prototype */
-    frozenness:      Engine.IModel.FrozenLevel;
+    frozenness: Engine.IModel.FrozenLevel;
 
     modelDidLoad$(segment$: Engine.Measure.ISegment): void {
         // todo
     }
 
     validate$(cursor$: Engine.ICursor): void {
-        this._measure           = cursor$.measure.idx;
-        this._parent            = <any> cursor$.staff.attributes[cursor$.segment.part];
+        this._measure = cursor$.measure.idx;
+        this._parent = <any> cursor$.staff.attributes[cursor$.segment.part];
 
         for (let a = this._parent; !!a; a = a._parent) {
             invariant(a !== this, "Internal error. " +
@@ -81,64 +85,134 @@ class AttributesModel implements Export.IAttributesModel {
 
     /*---- I.2 C.MusicXML.Attributes ------------------------------------------------------------*/
 
-    _parent:            AttributesModel;
+    _parent: AttributesModel;
 
-    _divisions:         number;
-    get divisions()     { return this._divisions === undefined && this._parent ? this._parent.divisions : this._divisions; }
-    set divisions       (m: number) { this._divisions = m; }
+    _divisions: number;
+    get divisions() {
+        return this._divisions === undefined && this._parent ?
+            this._parent.divisions :
+            this._divisions;
+    }
+    set divisions (m: number) {
+        this._divisions = m;
+    }
 
-    _partSymbol:        MusicXML.PartSymbol;
-    get partSymbol()    { return this._partSymbol === undefined && this._parent ? this._parent.partSymbol : this._partSymbol; }
-    set partSymbol      (m: MusicXML.PartSymbol) { this._partSymbol = m; }
+    _partSymbol: MusicXML.PartSymbol;
+    get partSymbol() {
+        return this._partSymbol === undefined && this._parent ?
+            this._parent.partSymbol :
+            this._partSymbol;
+    }
+    set partSymbol (m: MusicXML.PartSymbol) {
+        this._partSymbol = m;
+    }
 
-    _measureStyle:      MusicXML.MeasureStyle;
-    get measureStyle()  { return this._measureStyle; }
-    set measureStyle    (m: MusicXML.MeasureStyle) { this._measureStyle = m; }
+    _measureStyle: MusicXML.MeasureStyle;
+    get measureStyle() {
+        return this._measureStyle;
+    }
+    set measureStyle (m: MusicXML.MeasureStyle) {
+        this._measureStyle = m;
+    }
 
-    _staffDetails:      MusicXML.StaffDetails[];
-    get staffDetails()  { return this._staffDetails === undefined && this._parent ? this._parent.staffDetails : this._staffDetails; }
-    set staffDetails    (m: MusicXML.StaffDetails[]) { this._staffDetails = m; }
+    _staffDetails: MusicXML.StaffDetails[];
+    get staffDetails() {
+        return this._staffDetails === undefined && this._parent ?
+            this._parent.staffDetails :
+            this._staffDetails;
+    }
+    set staffDetails (m: MusicXML.StaffDetails[]) {
+        this._staffDetails = m;
+    }
 
-    _transposes:        MusicXML.Transpose[];
-    get transposes()    { return this._transposes === undefined && this._parent ? this._parent.transposes : this._transposes; }
-    set transposes      (m: MusicXML.Transpose[]) { this._transposes = m; }
+    _transposes: MusicXML.Transpose[];
+    get transposes() {
+        return this._transposes === undefined && this._parent ?
+            this._parent.transposes :
+            this._transposes;
+    }
+    set transposes (m: MusicXML.Transpose[]) {
+        this._transposes = m;
+    }
 
-    _staves:            number;
-    get staves()        { return this._staves === undefined && this._parent ? this._parent.staves : this._staves; }
-    set staves          (m: number) { this._staves = m; }
+    _staves: number;
+    get staves() {
+        return this._staves === undefined && this._parent ?
+            this._parent.staves :
+            this._staves;
+    }
+    set staves (m: number) {
+        this._staves = m;
+    }
 
-    _instruments:       string;
-    get instruments()   { return this._instruments === undefined && this._parent ? this._parent.instruments : this._instruments; }
-    set instruments     (m: string) { this._instruments = m; }
+    _instruments: string;
+    get instruments() {
+        return this._instruments === undefined && this._parent ?
+            this._parent.instruments :
+            this._instruments;
+    }
+    set instruments (m: string) {
+        this._instruments = m;
+    }
 
-    _directives:        MusicXML.Directive[];
-    get directives()    { return this._directives === undefined && this._parent ? this._parent.directives : this._directives; }
-    set directives      (m: MusicXML.Directive[]) { this._directives = m; }
+    _directives: MusicXML.Directive[];
+    get directives() {
+        return this._directives === undefined && this._parent ?
+            this._parent.directives :
+            this._directives;
+    }
+    set directives (m: MusicXML.Directive[]) {
+        this._directives = m;
+    }
 
-    _clefs:             MusicXML.Clef[];
-    get clefs()         { return this._clefs === undefined && this._parent ? this._parent.clefs : this._clefs; }
-    set clefs           (m: MusicXML.Clef[]) { this._clefs = m; }
+    _clefs: IClef[];
+    get clefs(): MusicXML.Clef[] {
+        return this._clefs === undefined && this._parent ?
+            this._parent.clefs :
+            this._clefs;
+    }
+    set clefs (m: MusicXML.Clef[]) {
+        this._clefs = m;
+    }
 
-    _times:             MusicXML.Time[];
-    get times()         { return this._times === undefined && this._parent ? this._parent.times : this._times; }
-    set times           (m: MusicXML.Time[]) { this._times = m; }
+    _times: MusicXML.Time[];
+    get times() {
+        return this._times === undefined && this._parent ?
+            this._parent.times :
+            this._times;
+    }
+    set times (m: MusicXML.Time[]) {
+        this._times = m;
+    }
 
-    _keySignatures:     MusicXML.Key[];
-    get keySignatures() { return this._keySignatures === undefined && this._parent ? this._parent.keySignatures : this._keySignatures; }
-    set keySignatures   (m: MusicXML.Key[]) { this._keySignatures = m; }
+    _keySignatures: MusicXML.Key[];
+    get keySignatures() {
+        return this._keySignatures === undefined && this._parent ?
+            this._parent.keySignatures :
+            this._keySignatures;
+    }
+    set keySignatures (m: MusicXML.Key[]) {
+        this._keySignatures = m;
+    }
 
     /*---- I.3 C.MusicXML.Editorial -------------------------------------------------------------*/
 
-    footnote:           MusicXML.Footnote;
-    level:              MusicXML.Level;
+    footnote: MusicXML.Footnote;
+    level: MusicXML.Level;
 
     /*---- I.4 Satie Ext ------------------------------------------------------------------------*/
 
-    _measure:           number;
-    get oMeasureStyle(): MusicXML.MeasureStyle
-                        { return this._measureStyle === undefined && this._parent ? this._parent.oMeasureStyle : this._measureStyle; }
-    get mMeasureStyle(): number
-                        { return this._measureStyle === undefined && this._parent ? this._parent.mMeasureStyle : this._measure; }
+    _measure: number;
+    get inheritedMeasureStyle(): MusicXML.MeasureStyle {
+        return this._measureStyle === undefined && this._parent ?
+            this._parent.inheritedMeasureStyle :
+            this._measureStyle;
+    }
+    get measureStyleStartMeasure(): number {
+        return this._measureStyle === undefined && this._parent ?
+            this._parent.measureStyleStartMeasure :
+            this._measure;
+    }
 
     /*---- Validation Implementations -----------------------------------------------------------*/
 
@@ -262,7 +336,9 @@ class AttributesModel implements Export.IAttributesModel {
         let ks = this.keySignatures[0];
         if (ks.keySteps || ks.keyAlters || ks.keyOctaves) {
             if (ks.keySteps.length !== ks.keyAlters.length) {
-                console.warn("Expected the number of steps to equal the number of alterations. Ignoring key.");
+                console.warn(
+                    "Expected the number of steps to equal the number of alterations. " +
+                    "Ignoring key.");
                 this.keySignatures = [{
                     fifths: 0,
                     keySteps: null,
@@ -272,8 +348,10 @@ class AttributesModel implements Export.IAttributesModel {
             }
             if (ks.keyAccidentals && ks.keyAccidentals.length !== ks.keySteps.length) {
                 if (ks.keyAccidentals.length) {
-                    console.warn("Currently, if `key-accidentals` are specified, they must be specified for all steps " +
-                        "in a key signature due to a limitation in musicxml-interfaces. Ignoring `key-accidentals`");
+                    console.warn(
+                        "Currently, if `key-accidentals` are specified, they must be " +
+                        "specified for all steps in a key signature due to a limitation " +
+                        "in musicxml-interfaces. Ignoring `key-accidentals`");
                 }
                 ks.keyAccidentals = null;
             }
@@ -312,15 +390,35 @@ class AttributesModel implements Export.IAttributesModel {
     }
 
     private _updateMultiRest(cursor$: Engine.ICursor): void {
-        if (!this._measureStyle && this.oMeasureStyle &&
-                this.oMeasureStyle.multipleRest &&
-                this.oMeasureStyle.multipleRest.count > this._measure - this.mMeasureStyle) {
-            cursor$.staff.multiRestRem = this.oMeasureStyle.multipleRest.count - (this._measure - this.mMeasureStyle);
+        if (!this._measureStyle && this.inheritedMeasureStyle &&
+                this.inheritedMeasureStyle.multipleRest) {
+            let multipleRestCount = this.inheritedMeasureStyle.multipleRest.count;
+            let measuresAfterStyleChange = this._measure - this.measureStyleStartMeasure;
+
+            if (multipleRestCount > measuresAfterStyleChange) {
+                cursor$.staff.hiddenMeasuresRemaining = multipleRestCount - measuresAfterStyleChange;
+            }
         }
     }
 
     shouldRenderClef(owner: number, isFirstInLine: boolean) {
-        return this._clefs && this._clefs[owner] && !(<any>this._clefs[owner]).__inherited__ || isFirstInLine;
+        if (isFirstInLine) {
+            return true;
+        }
+
+        if (!this._clefs) {
+            return false;
+        }
+
+        if (!this._clefs[owner]) {
+            return false;
+        }
+
+        if (this._clefs[owner].__inherited__) {
+            return false;
+        }
+
+        return true;
     }
 }
 
@@ -338,11 +436,14 @@ module AttributesModel {
             this.division = cursor$.division$;
             this.staffIdx = cursor$.staff.idx;
 
-            const isFirstInLine = cursor$.line && cursor$.line.barOnLine$ === 0 && !this.division;
-            const next = Engine.ICursor.next(cursor$);
-            const nextIsNote = cursor$.factory.modelHasType(next, Engine.IModel.Type.Chord);
+            let isFirstInLine = cursor$.line && cursor$.line.barOnLine$ === 0 && !this.division;
+            let next = Engine.ICursor.next(cursor$);
+            let nextIsNote = cursor$.factory.modelHasType(next, Engine.IModel.Type.Chord);
+            let parent = this.model._parent;
 
-            this.ksVisible = !!model._keySignatures && !!model._keySignatures.length || isFirstInLine;
+            let keySignatures = model._keySignatures;
+            this.ksVisible = keySignatures && !!keySignatures.length || isFirstInLine;
+
             this.tsVisible = !!model._times && !!model._times.length; // TODO: || isFirstInPage;
 
             this.clefVisible = model.shouldRenderClef(cursor$.segment.owner, isFirstInLine);
@@ -351,11 +452,17 @@ module AttributesModel {
 
             // Measure number
             if (!cursor$.measure.implicit && parseInt(cursor$.measure.number, 10) !== 1) {
-                let shouldShowNumber =
-                    (isFirstInLine && (!cursor$.print$ || cursor$.print$.measureNumbering.data === "system")) ||
-                    (this.division === 0 && cursor$.print$ &&
-                        (!this.model._parent || this.model._parent._measure !== this.model._measure) &&
-                        cursor$.print$.measureNumbering.data === "measure");
+                let measureNumbering = cursor$.print$ ?
+                    cursor$.print$.measureNumbering.data : "system";
+
+                let firstInMeasure = !parent || parent._measure !== this.model._measure;
+
+                let showNumberBecauseOfSystem = isFirstInLine && measureNumbering === "system";
+
+                let showNumberBecauseOfMeasure =
+                    this.division === 0 && measureNumbering === "measure" && firstInMeasure;
+
+                let shouldShowNumber = showNumberBecauseOfSystem || showNumberBecauseOfMeasure;
 
                 if (shouldShowNumber) {
                     this.measureNumberVisible = cursor$.measure.number;
@@ -563,7 +670,8 @@ module Export {
         staffIdx: number;
     }
 
-    export function createWarningLayout$(cursor$: Engine.ICursor, nextAttributes: MusicXML.Attributes) {
+    export function createWarningLayout$(
+            cursor$: Engine.ICursor, nextAttributes: MusicXML.Attributes) {
         return <ILayout> new AttributesModel.Layout(<any> nextAttributes, cursor$);
     }
 }

@@ -22,10 +22,10 @@
 
 "use strict";
 
-import smufl            = require("../smufl");
+import smufl = require("../smufl");
 
-import chai             = require("chai");
-var expect              = chai.expect;
+import chai = require("chai");
+var expect = chai.expect;
 
 describe("[smufl.ts]", function() {
     describe("bboxes", function() {

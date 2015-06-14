@@ -22,13 +22,13 @@
 
 "use strict";
 
-import IModel           = require("../imodel");
+import IModel = require("../imodel");
 
-import chai             = require("chai");
-import _                = require("lodash");
-var expect              = chai.expect;
+import _ = require("lodash");
+import chai = require("chai");
+var expect = chai.expect;
 
-import ETestUtil        = require("./etestutil");
+import ETestUtil = require("./etestutil");
 
 describe("[engine/imodel.ts]", function() {
     describe("merge$", function() {

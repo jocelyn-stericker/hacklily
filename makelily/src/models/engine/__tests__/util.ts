@@ -22,10 +22,10 @@
 
 "use strict";
 
-import Util             = require("../util");
+import Util = require("../util");
 
-import chai             = require("chai");
-var expect              = chai.expect;
+import chai = require("chai");
+var expect = chai.expect;
 
 describe("[engine/util.ts]", function() {
     describe("gcd", function() {

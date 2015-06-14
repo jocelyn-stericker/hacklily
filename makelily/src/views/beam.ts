@@ -18,14 +18,14 @@
 
 "use strict";
 
-import MusicXML         = require("musicxml-interfaces");
-import React            = require("react");
-import _                = require("lodash");
-var $                   = React.createFactory;
+import MusicXML = require("musicxml-interfaces");
+import React = require("react");
+import _ = require("lodash");
+var $ = React.createFactory;
 
-import IBeam            = require("../models/engine/ibeam");
-import Glyph            = require("./primitives/glyph");
-import SMuFL            = require("../models/smufl");
+import IBeam = require("../models/engine/ibeam");
+import Glyph = require("./primitives/glyph");
+import SMuFL = require("../models/smufl");
 
 /**
  * Renders a beam based on a computed layout.
@@ -105,7 +105,8 @@ class Beam extends React.Component<Beam.IProps, void> {
             this.props.layout.y1 -
             this._getYOffset() +
             this.props.layout.direction*idx*8.8 -
-            (incl || 0)*(SMuFL.bravura.engravingDefaults.beamThickness*10); // TODO: use print defaults
+            // TODO: use print defaults
+            (incl || 0)*(SMuFL.bravura.engravingDefaults.beamThickness*10);
     }
 
     private _getY2(incl: number, idx: number) {
@@ -159,16 +160,16 @@ class Beam extends React.Component<Beam.IProps, void> {
 
 module Beam {
     export var contextTypes = <any> {
-        originX:            React.PropTypes.number.isRequired,
-        originY:            React.PropTypes.number.isRequired
+        originX: React.PropTypes.number.isRequired,
+        originY: React.PropTypes.number.isRequired
     };
 
     export interface IProps {
-        layout:             IBeam.ILayout;
-        stemWidth:          number;
-        stroke:             string;
-        tuplet:             MusicXML.TimeModification;
-        tupletsTemporary:   boolean;
+        layout: IBeam.ILayout;
+        stemWidth: number;
+        stroke: string;
+        tuplet: MusicXML.TimeModification;
+        tupletsTemporary: boolean;
     }
 }
 

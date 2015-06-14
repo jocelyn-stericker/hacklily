@@ -1,13 +1,13 @@
 {
     "compilerOptions": {
-        "declaration":        true,
-        "module":             "commonjs",
-        "noEmitOnError":      true,
-        "noImplicitAny":      true,
-        "removeComments":     false,
-        "sourceMap":          true,
-        "outDir":             "dist",
-        "target":             "es5"
+        "declaration": true,
+        "module": "commonjs",
+        "noEmitOnError": true,
+        "noImplicitAny": true,
+        "removeComments": false,
+        "sourceMap": true,
+        "outDir": "dist",
+        "target": "es5"
     },
     "files": [
         "./src/index.ts",
@@ -32,7 +32,7 @@
         "jsdoc-format": false,
         "label-position": true,
         "label-undefined": true,
-        "max-line-length": [true, 140],
+        "max-line-length": [true, 101],
         "no-any": false,
         "no-arg": true,
         "no-consecutive-blank-lines": true,

@@ -18,18 +18,18 @@
 
 "use strict";
 
-import MusicXML         = require("musicxml-interfaces");
-import React            = require("react");
-import invariant        = require("react/lib/invariant");
-let $                   = React.createFactory;
+import MusicXML = require("musicxml-interfaces");
+import React = require("react");
+import invariant = require("react/lib/invariant");
+let $ = React.createFactory;
 
-import Line             = require("./primitives/line");
-import SMuFL            = require("../models/smufl");
+import Line = require("./primitives/line");
+import SMuFL = require("../models/smufl");
 
 /**
  * Renders a stem based on a height decided in Note.
  */
-class Stem extends React.Component<{spec: MusicXML.Stem, notehead: string, bestHeight: number, width: number}, void> {
+class Stem extends React.Component<Stem.IProps, void> {
     render() {
         const notehead = this.props.notehead;
         const spec = this.props.spec;
@@ -58,9 +58,15 @@ class Stem extends React.Component<{spec: MusicXML.Stem, notehead: string, bestH
 }
 
 module Stem {
+    export interface IProps {
+        spec: MusicXML.Stem;
+        notehead: string;
+        bestHeight: number;
+        width: number;
+    }
     export var contextTypes = <any> {
-        originX:         React.PropTypes.number.isRequired,
-        originY:         React.PropTypes.number.isRequired
+        originX: React.PropTypes.number.isRequired,
+        originY: React.PropTypes.number.isRequired
     };
 }
 

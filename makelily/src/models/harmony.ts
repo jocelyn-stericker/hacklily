@@ -16,23 +16,23 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import MusicXML         = require("musicxml-interfaces");
-import _                = require("lodash");
+import MusicXML = require("musicxml-interfaces");
+import _ = require("lodash");
 
-import Engine           = require("./engine");
+import Engine = require("./engine");
 
 class HarmonyModel implements Export.IHarmonyModel {
 
     /*---- I.1 IModel ---------------------------------------------------------------------------*/
 
     /** @prototype only */
-    divCount:        number;
+    divCount: number;
 
     /** defined externally */
-    staffIdx:        number;
+    staffIdx: number;
 
     /** @prototype */
-    frozenness:      Engine.IModel.FrozenLevel;
+    frozenness: Engine.IModel.FrozenLevel;
 
     modelDidLoad$(segment$: Engine.Measure.ISegment): void {
         // todo
@@ -50,45 +50,45 @@ class HarmonyModel implements Export.IHarmonyModel {
 
     /*---- I.2 MusicXML.Harmony -----------------------------------------------------------------*/
 
-    frame:              MusicXML.Frame;
-    printFrame:         boolean;
-    staff:              number;
-    type:               MusicXML.ExplicitImpliedAlternate;
-    offset:             MusicXML.Offset;
+    frame: MusicXML.Frame;
+    printFrame: boolean;
+    staff: number;
+    type: MusicXML.ExplicitImpliedAlternate;
+    offset: MusicXML.Offset;
 
     /*---- I.2.1 MusicXML.HarmonyChord ----------------------------------------------------------*/
 
-    root:               MusicXML.Root;
-    function:           MusicXML.Function;
-    kind:               MusicXML.Kind;
-    degrees:            MusicXML.Degree[];
-    inversion:          MusicXML.Inversion;
-    bass:               MusicXML.Bass;
+    root: MusicXML.Root;
+    function: MusicXML.Function;
+    kind: MusicXML.Kind;
+    degrees: MusicXML.Degree[];
+    inversion: MusicXML.Inversion;
+    bass: MusicXML.Bass;
 
     /*---- I.2.2 MusicXML.Editorial -------------------------------------------------------------*/
 
-    footnote:           MusicXML.Footnote;
-    level:              MusicXML.Level;
+    footnote: MusicXML.Footnote;
+    level: MusicXML.Level;
 
     /*---- I.2.3 MusicXML.PrintObject -----------------------------------------------------------*/
 
-    printObject:        boolean;
+    printObject: boolean;
 
     /*---- I.2.4 MusicXML.PrintStyle ------------------------------------------------------------*/
 
     /*---- MusicXML.PrintStyle >> Position --------------------------------------------------*/
 
-    defaultX:           number; // ignored for now
-    relativeY:          number;
-    defaultY:           number;
-    relativeX:          number;
+    defaultX: number; // ignored for now
+    relativeY: number;
+    defaultY: number;
+    relativeX: number;
 
     /*---- MusicXML.PrintStyle >> Font ------------------------------------------------------*/
 
-    fontFamily:         string;
-    fontWeight:         MusicXML.NormalBold;
-    fontStyle:          MusicXML.NormalItalic;
-    fontSize:           string;
+    fontFamily: string;
+    fontWeight: MusicXML.NormalBold;
+    fontStyle: MusicXML.NormalItalic;
+    fontSize: string;
 
     /*---- MusicXML.PrintStyle >> Color -----------------------------------------------------*/
 
@@ -111,11 +111,11 @@ class HarmonyModel implements Export.IHarmonyModel {
         }
     }
 
-    private _color:     number = 0x000000;
+    private _color: number = 0x000000;
 
     /*---- I.2.5 MusicXML.Placement -------------------------------------------------------------*/
 
-    placement:          MusicXML.AboveBelow;
+    placement: MusicXML.AboveBelow;
 
     /*---- II. Life-cycle -----------------------------------------------------------------------*/
 

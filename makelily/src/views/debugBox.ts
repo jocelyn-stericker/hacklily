@@ -16,10 +16,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import React                = require("react");
-import _                    = require("lodash");
+import React = require("react");
+import _ = require("lodash");
 
-import Engine               = require("../models/engine");
+import Engine = require("../models/engine");
 
 class DebugBox extends React.Component<{layout: Engine.Measure.IMeasureLayout}, void> {
 
@@ -32,16 +32,20 @@ class DebugBox extends React.Component<{layout: Engine.Measure.IMeasureLayout}, 
         let context = this.context;
         _.forEach(layout.elements, function(segment, si) {
             _.forEach(segment, function(element, j) {
+                let originX = layout.originX + element.overrideX;
+                let originY = context.originYByPartAndStaff[element.part][element.model.staffIdx];
                 _.forEach(element.boundingBoxes$, (box, k) => {
                     boxes.push(React.DOM.rect({
                         key: `debug_${si}_${j}_${k}`,
                         stroke: "red",
                         fill: "transparent",
-                        x: layout.originX + element.overrideX + box.defaultX + (box.relativeX||0) + box.left,
+                        x: originX + box.defaultX + (box.relativeX||0) + box.left,
                         width: box.right - box.left,
-                        y: context.originYA[element.part][element.model.staffIdx] - box.defaultY - (box.relativeY||0) - box.bottom,
+                        y: originY - box.defaultY - (box.relativeY||0) - box.bottom,
                         height: box.bottom - box.top,
-                        dangerouslySetInnerHTML: {__html: `<!-- ${Engine.IModel.Type[element.renderClass]} -->`}
+                        dangerouslySetInnerHTML: {
+                            __html: `<!-- ${Engine.IModel.Type[element.renderClass]} -->`
+                        }
                     }));
                 });
             });
@@ -51,10 +55,12 @@ class DebugBox extends React.Component<{layout: Engine.Measure.IMeasureLayout}, 
     }
 }
 
+const NUMBER_ARRAY = React.PropTypes.arrayOf(React.PropTypes.number);
+
 module DebugBox {
     export var contextTypes = <any> {
-        originY:            React.PropTypes.number,
-        originYA:           React.PropTypes.objectOf(React.PropTypes.arrayOf(React.PropTypes.number)).isRequired,
+        originY: React.PropTypes.number,
+        originYByPartAndStaff: React.PropTypes.objectOf(NUMBER_ARRAY).isRequired
     };
 }
 

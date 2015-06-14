@@ -22,19 +22,20 @@
 
 "use strict";
 
-import invariant        = require("react/lib/invariant");
+import invariant = require("react/lib/invariant");
 
-import ICursor          = require("./icursor"); // @circular
-import Measure          = require("./measure"); // @circular
+import ICursor = require("./icursor"); // @circular
+import Measure = require("./measure"); // @circular
 
 /** 
- * Interface for models that implement objects that have a width, can be painted, take up time (divisions),
- * and/or change state. Examples include clefs, bars and notes.
+ * Interface for things that implement objects that have a width, can be painted,
+ * take up time (divisions), make sounds, and/or change state. Examples
+ * include clefs, bars and notes.
  */
 interface IModel {
-    divCount?:       number;
-    staffIdx:        number;
-    frozenness:      IModel.FrozenLevel;
+    divCount?: number;
+    staffIdx: number;
+    frozenness: IModel.FrozenLevel;
 
     /** 
      * Life-cycle method. Called when the model is created from MusicXML.
@@ -70,13 +71,21 @@ module IModel {
     }
 
     export enum FrozenLevel {
-        /** For rests at the end of a bar only. The model is unfrozen and can be shortened as needed. */
+        /**
+         * For rests at the end of a bar only. The model is unfrozen and can be
+         * shortened as needed.
+         */
         WarmPushable,
 
-        /** The model can be modified to apply best practices. */
+        /**
+         * The model can be modified to apply best practices.
+         */
         Warm,
 
-        /** The model can be modified to apply best practices in this frame, but will be frozen to additional changes. */
+        /**
+         * The model can be modified to apply best practices in this frame, but will be
+         * frozen to additional changes.
+         */
         Freezing,
 
         /** Only downright errors can be fixed. */
@@ -87,57 +96,57 @@ module IModel {
     }
 
     export enum HMergePolicy {
-        Invalid                 = 0,
-        Max                     = 1,
-        Min                     = 2
+        Invalid = 0,
+        Max = 1,
+        Min = 2
     }
 
     export enum Type {
-        START_OF_LAYOUT_ELEMENTS    = 0,
-        Print                       = 10,           // Implements MusicXML.Print
-        Grouping                    = 30,           // Implements MusicXML.Grouping
-        FiguredBass                 = 40,           // Implements MusicXML.FiguredBass
-        END_OF_LAYOUT_ELEMENTS      = 99,
+        START_OF_LAYOUT_ELEMENTS = 0,
+        Print = 10, // Implements MusicXML.Print
+        Grouping = 30, // Implements MusicXML.Grouping
+        FiguredBass = 40, // Implements MusicXML.FiguredBass
+        END_OF_LAYOUT_ELEMENTS = 99,
 
-        START_OF_STAFF_ELEMENTS     = 100,
-        Attributes                  = 110,          // Implements MusicXML.Attributes
-        Sound                       = 120,          // Implements MusicXML.Sound
-        Direction                   = 130,          // Implements MusicXML.Direction
-        Harmony                     = 140,          // Implements MusicXML.Harmony
-        Proxy                       = 150,          // Does not implement a MusicXML API
-        Spacer                      = 160,          // Does not implement a MusicXML API
-        END_OF_STAFF_ELEMENTS       = 199,
+        START_OF_STAFF_ELEMENTS = 100,
+        Attributes = 110, // Implements MusicXML.Attributes
+        Sound = 120, // Implements MusicXML.Sound
+        Direction = 130, // Implements MusicXML.Direction
+        Harmony = 140, // Implements MusicXML.Harmony
+        Proxy = 150, // Does not implement a MusicXML API
+        Spacer = 160, // Does not implement a MusicXML API
+        END_OF_STAFF_ELEMENTS = 199,
 
-        START_OF_VOICE_ELEMENTS     = 200,
-        Chord                       = 220,          // Like MusicXML.Note[]
-        END_OF_VOICE_ELEMENTS       = 299,
+        START_OF_VOICE_ELEMENTS = 200,
+        Chord = 220, // Like MusicXML.Note[]
+        END_OF_VOICE_ELEMENTS = 299,
 
-        Barline                     = 399,          // Implements MusicXML.Barline
+        Barline = 399, // Implements MusicXML.Barline
 
-        Unknown                     = 1000
+        Unknown = 1000
     };
 
     export interface ILayout {
-        model:              IModel;
-        renderClass:        Type;
+        model: IModel;
+        renderClass: Type;
 
-        x$:                 number;
-        division:           number;
-        mergePolicy:        HMergePolicy;
+        x$: number;
+        division: number;
+        mergePolicy: HMergePolicy;
 
-        minSpaceBefore?:    number;
-        minSpaceAfter?:     number;
+        minSpaceBefore?: number;
+        minSpaceAfter?: number;
 
         /**
          * Recorded by the engine, the part the model this layout represents is in.
          */
-        part?:              string;
+        part?: string;
 
         /**
          * The final, justified position of the model within a bar.
          * Set by the renderer.
          */
-        overrideX?:              number;
+        overrideX?: number;
 
         /** 
          * References to bounding rectangles for annotations such as dots, words,
@@ -146,14 +155,14 @@ module IModel {
          * 
          * Lengths are in MusicXML tenths relative to (this.x, center line of staff),
          */
-        boundingBoxes$?:    IBoundingRect[];
+        boundingBoxes$?: IBoundingRect[];
 
-        expandPolicy?:      ExpandPolicy;
+        expandPolicy?: ExpandPolicy;
 
         /**
          * Must be set if expandPolicy is Centered
          */
-        renderedWidth?:        number;
+        renderedWidth?: number;
     }
     export module ILayout {
         export function detach(layout: ILayout) {
@@ -176,9 +185,9 @@ module IModel {
         }
     }
     export enum ExpandPolicy {
-        None        = 0,
-        After       = 1,
-        Centered    = 2
+        None = 0,
+        After = 1,
+        Centered = 2
     }
 
     /**
@@ -190,49 +199,49 @@ module IModel {
         /**
          * Position relative to parent model as computed by model.
          */
-        defaultX:       number;
+        defaultX: number;
 
         /**
          * Position relative to parent model as computed by model.
          */
-        defaultY:       number;
+        defaultY: number;
 
         /**
          * If true, relative coordinates cannot be changed by the layout engine
          */
-        fixed?:         boolean;
+        fixed?: boolean;
 
         /**
          * Position relative to ideal position as computed by layout engine.
          */
-        relativeX?:     number;
+        relativeX?: number;
 
         /**
          * Position relative to ideal position as computed by layout engine.
          */
-        relativeY?:     number;
+        relativeY?: number;
 
         /**
          * Visual top of bounding box
          */
-        top:            number;
+        top: number;
 
         /**
          * Visual bottom of bounding box
          * Invariant: bottom > top
          */
-        bottom:         number;
+        bottom: number;
 
         /**
          * Visual left of bounding box
          */
-        left:           number;
+        left: number;
 
         /**
          * Visual right of bounding box.
          * Invariant: right > left
          */
-        right:          number;
+        right: number;
     }
 
     export interface ICombinedLayout {
@@ -246,10 +255,10 @@ module IModel {
 
     export function combineLayout(layout: IModel.ILayout): ICombinedLayout {
         var detached: ICombinedLayout = {
-            x:              layout.x$,
-            division:       layout.division,
-            mergePolicy:    layout.mergePolicy,
-            renderClass:    layout.renderClass
+            x: layout.x$,
+            division: layout.division,
+            mergePolicy: layout.mergePolicy,
+            renderClass: layout.renderClass
         };
         if (layout.expandPolicy) {
             detached.expandPolicy = layout.expandPolicy;
@@ -265,11 +274,11 @@ module IModel {
 
     export function reattachLayout(layout: IModel.ICombinedLayout): ILayout {
         var attached: ILayout = {
-            model:          null,
-            x$:             layout.x,
-            division:       layout.division,
-            mergePolicy:    layout.mergePolicy,
-            renderClass:    layout.renderClass,
+            model: null,
+            x$: layout.x,
+            division: layout.division,
+            mergePolicy: layout.mergePolicy,
+            renderClass: layout.renderClass,
         };
         if (layout.expandPolicy) {
             attached.expandPolicy = layout.expandPolicy;
@@ -316,9 +325,11 @@ module IModel {
                 x = item2.x$;
                 segment1$.splice(s1_idx, 0, combineLayout(item2));
             } else {
-                invariant(!!item1, "div2 must be defined and have a valid division (is %s) & renderClass (is %s)",
+                invariant(!!item1,
+                    "div2 must be defined and have a valid division (is %s) & renderClass (is %s)",
                     div2, pri2);
-                invariant(!!item2, "div1 must be defined and have a valid division (is %s) & renderClass (is %s)",
+                invariant(!!item2,
+                    "div1 must be defined and have a valid division (is %s) & renderClass (is %s)",
                     div1, pri1);
                 invariant(pri1 === pri2, "invalid priority: %s must equal %s", pri1, pri2);
                 invariant(div1 === div2, "invalid division");

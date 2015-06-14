@@ -22,19 +22,19 @@
 
 "use strict";
 
-import MusicXML         = require("musicxml-interfaces");
-import chai             = require("chai");
+import MusicXML = require("musicxml-interfaces");
+import chai = require("chai");
 
-import Attributes       = require("../../attributes");
-import Chord            = require("../../chord");
-import Engine           = require("../../engine");
-import Factory          = require("../../factory");
-import Metre            = require("../metre");
+import Attributes = require("../../attributes");
+import Chord = require("../../chord");
+import Engine = require("../../engine");
+import Factory = require("../../factory");
+import Metre = require("../metre");
 
-import AttributesTst    = require("../../__tests__/attributes_test");
+import AttributesTst = require("../../__tests__/attributes_test");
 
-var ModelType           = Engine.IModel.Type;
-var expect              = chai.expect;
+var ModelType = Engine.IModel.Type;
+var expect = chai.expect;
 
 describe("[metre.ts]", function() {
     describe("rhythmicSpellcheck$", function() {

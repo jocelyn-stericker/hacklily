@@ -18,11 +18,11 @@
 
 "use strict";
 
-import MusicXML             = require("musicxml-interfaces");
-import _                    = require("lodash");
+import MusicXML = require("musicxml-interfaces");
+import _ = require("lodash");
 
-import Engine               = require("../engine");
-import SMuFL                = require("../smufl");
+import Engine = require("../engine");
+import SMuFL = require("../smufl");
 
 export function articulationDirectionMatters(model: MusicXML.Articulations): boolean {
     return !model.breathMark && !model.caesura;

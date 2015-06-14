@@ -16,12 +16,13 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import MusicXML         = require("musicxml-interfaces");
+import MusicXML = require("musicxml-interfaces");
 
-import Engine           = require("./engine");
+import Engine = require("./engine");
 
 export class Layout implements Engine.IModel.ILayout {
-    constructor(model: IEngravedModel, cursor$: Engine.ICursor, priority: Engine.IModel.Type, expandPolicy: Engine.IModel.ExpandPolicy) {
+    constructor(model: IEngravedModel, cursor$: Engine.ICursor,
+            priority: Engine.IModel.Type, expandPolicy: Engine.IModel.ExpandPolicy) {
         this.model = model;
         this.priority = priority;
         this.x$ = model.defaultX + (model.defaultY || 0);

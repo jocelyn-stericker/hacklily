@@ -18,16 +18,16 @@
 
 "use strict";
 
-import MusicXML         = require("musicxml-interfaces");
-import React            = require("react");
-var $                   = React.createFactory;
+import MusicXML = require("musicxml-interfaces");
+import React = require("react");
+var $ = React.createFactory;
 
-import Glyph            = require("./primitives/glyph");
+import Glyph = require("./primitives/glyph");
 
 /**
  * Renders a notehead.
  */
-class Notehead extends React.Component<{spec: MusicXML.Notehead | MusicXML.Position, notehead: string}, void> {
+class Notehead extends React.Component<Notehead.IProps, void> {
     render() {
         let spec = this.props.spec;
         let pos = <MusicXML.Position> spec;
@@ -53,9 +53,13 @@ class Notehead extends React.Component<{spec: MusicXML.Notehead | MusicXML.Posit
 }
 
 module Notehead {
+    export interface IProps {
+        spec: MusicXML.Notehead | MusicXML.Position;
+        notehead: string;
+    }
     export var contextTypes = <any> {
-        originX:         React.PropTypes.number.isRequired,
-        originY:         React.PropTypes.number.isRequired
+        originX: React.PropTypes.number.isRequired,
+        originY: React.PropTypes.number.isRequired
     };
 }
 

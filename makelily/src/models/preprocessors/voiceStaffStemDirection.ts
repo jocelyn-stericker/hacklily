@@ -18,11 +18,12 @@
 
 "use strict";
 
-import _                        = require("lodash");
+import _ = require("lodash");
 
-import Engine                   = require("../engine");
+import Engine = require("../engine");
 
-function voiceStaffStemDirection(measures: Engine.Measure.IMutableMeasure[]): Engine.Measure.IMutableMeasure[] {
+function voiceStaffStemDirection(measures: Engine.Measure.IMutableMeasure[]):
+        Engine.Measure.IMutableMeasure[] {
     _.forEach(measures, measure => {
         _.forEach(measure.parts, part => {
             let staffToVoices: {[staff: number]: {[voice: number]: Engine.IModel[]}} = {};
@@ -30,8 +31,9 @@ function voiceStaffStemDirection(measures: Engine.Measure.IMutableMeasure[]): En
                 _.forEach(voice, model => {
                     if (model.staffIdx) {
                         staffToVoices[model.staffIdx] = staffToVoices[model.staffIdx] || {};
-                        staffToVoices[model.staffIdx][voice.owner] = staffToVoices[model.staffIdx][voice.owner] || [];
-                        staffToVoices[model.staffIdx][voice.owner].push(model);
+                        let voices = staffToVoices[model.staffIdx];
+                        voices[voice.owner] = staffToVoices[model.staffIdx][voice.owner] || [];
+                        voices[voice.owner].push(model);
                     }
                 });
             });

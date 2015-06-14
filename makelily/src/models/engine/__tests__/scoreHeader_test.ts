@@ -22,11 +22,11 @@
 
 "use strict";
 
-import ScoreHeader      = require("../scoreHeader");
+import ScoreHeader = require("../scoreHeader");
 
-import MusicXML         = require("musicxml-interfaces");
-import chai             = require("chai");
-var expect              = chai.expect;
+import MusicXML = require("musicxml-interfaces");
+import chai = require("chai");
+var expect = chai.expect;
 
 describe("[engine/scoreHeader.ts]", function() {
     // NOTE: Some of the tests in mxmljson_test indirectly test ScoreHeader!
@@ -123,7 +123,8 @@ describe("[engine/scoreHeader.ts]", function() {
 });
 
 var headerTest = `<?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<!DOCTYPE score-partwise PUBLIC "-//Recordare//DTD MusicXML 3.0 Partwise//EN" "http://www.musicxml.org/dtds/partwise.dtd">
+<!DOCTYPE score-partwise PUBLIC "-//Recordare//DTD MusicXML 3.0 Partwise//EN"
+    "http://www.musicxml.org/dtds/partwise.dtd">
 <score-partwise version="3.0">
   <movement-title>Song Title</movement-title>
   <identification>
@@ -141,22 +142,30 @@ var headerTest = `<?xml version="1.0" encoding="UTF-8" standalone="no"?>
   </identification>
   <credit page="1">
     <credit-type>title</credit-type>
-    <credit-words default-x="597" default-y="1440" font-size="24" justify="center" valign="top">Song Title</credit-words>
+    <credit-words default-x="597" default-y="1440" font-size="24" justify="center" valign="top">
+        Song Title
+    </credit-words>
   </credit>
   <credit page="1">
     <credit-type>composer</credit-type>
-    <credit-words default-x="1124" default-y="1362" font-size="12" justify="right" valign="top">Song Composer</credit-words>
+    <credit-words default-x="1124" default-y="1362" font-size="12" justify="right" valign="top">
+        Song Composer
+    </credit-words>
   </credit>
   <credit page="1">
     <credit-type>rights</credit-type>
-    <credit-words default-x="597" default-y="70" font-size="10" justify="center" valign="bottom">Song Copyright</credit-words>
+    <credit-words default-x="597" default-y="70" font-size="10" justify="center" valign="bottom">
+        Song Copyright
+    </credit-words>
   </credit>
   <credit page="1">
     <credit-words default-x="70" default-y="1453" font-size="12" valign="top">Score</credit-words>
   </credit>
   <credit page="2">
     <credit-type>rights</credit-type>
-    <credit-words default-x="597" default-y="70" font-size="10" justify="center" valign="bottom">Song Copyright</credit-words>
+    <credit-words default-x="597" default-y="70" font-size="10" justify="center" valign="bottom">
+        Song Copyright
+    </credit-words>
   </credit>
   <part-list>
     <score-part id="P1">
@@ -215,7 +224,8 @@ var headerTest = `<?xml version="1.0" encoding="UTF-8" standalone="no"?>
 `;
 
 var minimalTest = `<?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<!DOCTYPE score-partwise PUBLIC "-//Recordare//DTD MusicXML 3.0 Partwise//EN" "http://www.musicxml.org/dtds/partwise.dtd">
+<!DOCTYPE score-partwise PUBLIC "-//Recordare//DTD MusicXML 3.0 Partwise//EN"
+    "http://www.musicxml.org/dtds/partwise.dtd">
 <score-partwise version="3.0">
   <part-list>
     <score-part id="P1">

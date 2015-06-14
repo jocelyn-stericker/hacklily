@@ -18,21 +18,21 @@
 
 "use strict";
 
-import MusicXML             = require("musicxml-interfaces");
-import React                = require("react");
-import _                    = require("lodash");
-let $                       = React.createFactory;
+import MusicXML = require("musicxml-interfaces");
+import React = require("react");
+import _ = require("lodash");
+let $ = React.createFactory;
 
-import Beam                 = require("./beam");
-import Chord                = require("../models/chord");
-import Flag                 = require("./flag");
-import LedgerLine           = require("./ledgerLine");
-import Lyrics               = require("../models/chord/lyrics");
-import Note                 = require("./note");
-import Notation             = require("./notation");
-import Rest                 = require("./rest");
-import Stem                 = require("./stem");
-import SMuFL                = require("../models/smufl");
+import Beam = require("./beam");
+import Chord = require("../models/chord");
+import Flag = require("./flag");
+import LedgerLine = require("./ledgerLine");
+import Lyrics = require("../models/chord/lyrics");
+import Note = require("./note");
+import Notation = require("./notation");
+import Rest = require("./rest");
+import Stem = require("./stem");
+import SMuFL = require("../models/smufl");
 
 const stemThickness: number = SMuFL.bravura.engravingDefaults.stemThickness*10;
 
@@ -54,36 +54,36 @@ class ChordView extends React.Component<{layout: Chord.IChordLayout}, void> {
 
         let lyKey = 0;
         let lyrics = _.chain(<MusicXML.Note[]><any>spec)
-                        .map(n => n.lyrics)
-                        .filter(l => !!l)
-                        .flatten(true)
-                        .filter((l: MusicXML.Lyric) => !!l)
-                        .map((l: MusicXML.Lyric) => {
-                            var text: any[] = [];
-                            var currSyllabic = MusicXML.SyllabicType.Single;
-                            for (var i = 0; i < l.lyricParts.length; ++i) {
-                                switch(l.lyricParts[i]._class) {
-                                    case "Syllabic":
-                                        var syllabic = <MusicXML.Syllabic> l.lyricParts[i];
-                                        currSyllabic = syllabic.data;
-                                        break;
-                                    case "Text":
-                                        var textPt = <MusicXML.Text> l.lyricParts[i];
-                                        var width = SMuFL.bboxes[maxNotehead][0]*10;
-                                        text.push(React.DOM.text({
-                                                fontFamily: textPt.fontFamily || Lyrics.DEFAULT_FONT,
-                                                textAnchor: "middle",
-                                                fontSize: textPt.fontSize || Lyrics.DEFAULT_LYRIC_SIZE,
-                                                key: ++lyKey,
-                                                x: this.context.originX + this.props.layout.x$ + width/2,
-                                                y: this.context.originY + 60
-                                            }, textPt.data));
-                                }
-                            };
-                            return text;
-                        })
-                        .flatten()
-                        .value();
+            .map(n => n.lyrics)
+            .filter(l => !!l)
+            .flatten(true)
+            .filter((l: MusicXML.Lyric) => !!l)
+            .map((l: MusicXML.Lyric) => {
+                var text: any[] = [];
+                var currSyllabic = MusicXML.SyllabicType.Single;
+                for (var i = 0; i < l.lyricParts.length; ++i) {
+                    switch(l.lyricParts[i]._class) {
+                        case "Syllabic":
+                            var syllabic = <MusicXML.Syllabic> l.lyricParts[i];
+                            currSyllabic = syllabic.data;
+                            break;
+                        case "Text":
+                            var textPt = <MusicXML.Text> l.lyricParts[i];
+                            var width = SMuFL.bboxes[maxNotehead][0]*10;
+                            text.push(React.DOM.text({
+                                    fontFamily: textPt.fontFamily || Lyrics.DEFAULT_FONT,
+                                    textAnchor: "middle",
+                                    fontSize: textPt.fontSize || Lyrics.DEFAULT_LYRIC_SIZE,
+                                    key: ++lyKey,
+                                    x: this.context.originX + this.props.layout.x$ + width/2,
+                                    y: this.context.originY + 60
+                                }, textPt.data));
+                    }
+                };
+                return text;
+            })
+            .flatten()
+            .value();
 
         if (!!spec[0].rest) {
             return $(Rest)({
@@ -106,7 +106,8 @@ class ChordView extends React.Component<{layout: Chord.IChordLayout}, void> {
                     color: spec[0].stem.color || "#000000",
                     defaultX: spec[0].defaultX,
                     defaultY: (spec.satieStem.stemStart - 3)*10,
-                    type: spec.satieStem.direction === 1 ? MusicXML.StemType.Up : MusicXML.StemType.Down
+                    type: spec.satieStem.direction === 1 ?
+                        MusicXML.StemType.Up : MusicXML.StemType.Down
                 },
                 width: stemThickness,
                 notehead: maxNotehead
@@ -155,8 +156,8 @@ class ChordView extends React.Component<{layout: Chord.IChordLayout}, void> {
 
 module ChordView {
     export var contextTypes = <any> {
-        originX:            React.PropTypes.number.isRequired,
-        originY:            React.PropTypes.number.isRequired
+        originX: React.PropTypes.number.isRequired,
+        originY: React.PropTypes.number.isRequired
     };
 }
 

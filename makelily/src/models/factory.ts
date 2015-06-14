@@ -16,11 +16,11 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import invariant    = require("react/lib/invariant");
-import _            = require("lodash");
+import invariant = require("react/lib/invariant");
+import _ = require("lodash");
 
-import Engine       = require("./engine");
-import Util         = require("./engine/util");
+import Engine = require("./engine");
+import Util = require("./engine/util");
 
 class Factory implements Engine.IModel.IFactory {
     constructor(models: Array<(constructors: {
@@ -33,14 +33,18 @@ class Factory implements Engine.IModel.IFactory {
     }
 
     create(modelType: Engine.IModel.Type, options?: any): Engine.IModel {
-        invariant((<number>modelType) in this._constructors, "The type with id=%s does not have a factory.", modelType);
+        invariant((<number>modelType) in this._constructors,
+            "The type with id=%s does not have a factory.",
+            modelType);
 
         return new (<any>this._constructors[modelType])(options);
     }
 
     modelHasType(model: Engine.IModel, ...modelTypes: Engine.IModel.Type[]): boolean {
         return _.any(modelTypes, modelType => {
-            invariant((<number>modelType) in this._constructors, "The type with id=%s does not have a factory.", modelType);
+            invariant((<number>modelType) in this._constructors,
+                "The type with id=%s does not have a factory.",
+                modelType);
 
             return model instanceof this._constructors[modelType] ||
                 this._constructors[Engine.IModel.Type.Proxy] &&

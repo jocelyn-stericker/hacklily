@@ -22,12 +22,12 @@
 
 "use strict";
 
-import Measure          = require("../measure");
+import Measure = require("../measure");
 
-import chai             = require("chai");
-var expect              = chai.expect;
+import chai = require("chai");
+var expect = chai.expect;
 
-import ETestUtil        = require("./etestutil");
+import ETestUtil = require("./etestutil");
 
 describe("[engine/measure.ts]", function() {
     describe("normalizeDivisions$", function() {

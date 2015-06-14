@@ -18,12 +18,12 @@
 
 "use strict";
 
-import MusicXML         = require("musicxml-interfaces");
-import React            = require("react");
-let $                   = React.createFactory;
+import MusicXML = require("musicxml-interfaces");
+import React = require("react");
+let $ = React.createFactory;
 
-import Line             = require("./primitives/line");
-import SMuFL            = require("../models/smufl");
+import Line = require("./primitives/line");
+import SMuFL = require("../models/smufl");
 
 /**
  * Renders a ledger line at (x, y + line).
@@ -35,12 +35,12 @@ class LedgerLine extends React.Component<{spec: MusicXML.PrintStyle, notehead: s
         const east = SMuFL.bboxes[this.props.notehead][0];
         const xOffset = (east - west)*10;
         return $(Line)({
-            x1:                         this.context.originX + spec.defaultX + (spec.relativeX || 0) - 3.2,
-            x2:                         this.context.originX + spec.defaultX + (spec.relativeX || 0) + xOffset - 0.2,
-            y1:                         this.context.originY - spec.defaultY - (spec.relativeX || 0),
-            y2:                         this.context.originY - spec.defaultY - (spec.relativeX || 0),
-            stroke:                     spec.color,
-            strokeWidth:                2.2
+            x1: this.context.originX + spec.defaultX + (spec.relativeX || 0) - 3.2,
+            x2: this.context.originX + spec.defaultX + (spec.relativeX || 0) + xOffset - 0.2,
+            y1: this.context.originY - spec.defaultY - (spec.relativeX || 0),
+            y2: this.context.originY - spec.defaultY - (spec.relativeX || 0),
+            stroke: spec.color,
+            strokeWidth: 2.2
                 // Ledger lines should be thicker than regular lines.
         });
     }
@@ -48,8 +48,8 @@ class LedgerLine extends React.Component<{spec: MusicXML.PrintStyle, notehead: s
 
 module LedgerLine {
     export var contextTypes = <any> {
-        originX:         React.PropTypes.number.isRequired,
-        originY:         React.PropTypes.number.isRequired
+        originX: React.PropTypes.number.isRequired,
+        originY: React.PropTypes.number.isRequired
     };
 }
 

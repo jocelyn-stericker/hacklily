@@ -22,16 +22,16 @@
 
 "use strict";
 
-import MusicXML                 = require("musicxml-interfaces");
-import _                        = require("lodash");
-import chai                     = require("chai");
+import MusicXML = require("musicxml-interfaces");
+import _ = require("lodash");
+import chai = require("chai");
 
-var expect                      = chai.expect;
+var expect = chai.expect;
 
-import ETestUtil                = require("../../engine/__tests__/etestutil");
-import Measure                  = require("../../engine/measure");
-import MeasureProcessor         = require("../../engine/measureProcessor");
-import Justify                  = require("../justify");
+import ETestUtil = require("../../engine/__tests__/etestutil");
+import Justify = require("../justify");
+import Measure = require("../../engine/measure");
+import MeasureProcessor = require("../../engine/measureProcessor");
 
 describe("[lineProcessor.ts]", function() {
     describe("justify", function() {
@@ -56,9 +56,9 @@ describe("[lineProcessor.ts]", function() {
             ];
 
             var layouts = _.map(segments, (seg, idx) => MeasureProcessor.layoutMeasure({
-                attributes:     {
+                attributes: {
                     P1: {
-                        divisions:  4,
+                        divisions: 4,
                         times: [{
                             senzaMisura: null,
                             beats: ["1"],
@@ -66,31 +66,31 @@ describe("[lineProcessor.ts]", function() {
                         }]
                     }
                 },
-                maxX:           1000,
-                minX:           0,
+                maxX: 1000,
+                minX: 0,
                 measure: {
-                    idx:        idx,
-                    number:     (idx + 1) + "",
+                    idx: idx,
+                    number: (idx + 1) + "",
                     parts: {
                         "P1": {
                             voices: seg.voices,
                             staves: seg.staves
                         }
                     },
-                    uuid:       1248 + idx,
-                    width:      NaN
+                    uuid: 1248 + idx,
+                    width: NaN
                 },
-                header:         <any> {
-                    partList:   {
+                header: <any> {
+                    partList: {
                         scoreParts: [{
                             id: "P1"
                         }]
                     }
                 },
-                prevByStaff:    [],
-                x:              0,
-                line:           null,
-                factory:        ETestUtil.fakeAttributeChordFactory
+                prevByStaff: [],
+                x: 0,
+                line: null,
+                factory: ETestUtil.fakeAttributeChordFactory
             }));
 
             var padding = 12;
@@ -101,9 +101,10 @@ describe("[lineProcessor.ts]", function() {
                     attributes: {},
                     line: 0,
                     lines: 1,
-                    measures: new Array(2), // TODO: if justify uses measures, this will have to be given a proper value.
-                    header:         <any> {
-                        partList:   {
+                    // TODO: if justify uses measures, this will have to be given a proper value:
+                    measures: new Array(2),
+                    header: <any> {
+                        partList: {
                             scoreParts: [{
                                 id: "P1"
                             }]
@@ -134,9 +135,11 @@ describe("[lineProcessor.ts]", function() {
                 },
                 detachedLayouts);
 
+            let expectedWidth = justified[0].elements[0][4].x$ -
+                justified[0].elements[0][0].x$ + 10;
             expect(justified[0].elements[0][0].x$).to.be.closeTo(layouts[0].elements[0][0].x$, 0.05);
             expect(justified[0].elements[0][2].x$).to.be.closeTo(73.7, 0.1);
-            expect(justified[0].width).to.be.closeTo(justified[0].elements[0][4].x$ - justified[0].elements[0][0].x$ + 10, 0.01);
+            expect(justified[0].width).to.be.closeTo(expectedWidth, 0.01);
             _.forEach(justified, function(just, idx) {
                 expect(just.width).to.not.equal(layouts[idx].width);
             });

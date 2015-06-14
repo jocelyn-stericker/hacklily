@@ -16,22 +16,22 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import MusicXML             = require("musicxml-interfaces");
-import React                = require("react");
-import _                    = require("lodash");
-import invariant            = require("react/lib/invariant");
-var $                       = React.createFactory;
+import MusicXML = require("musicxml-interfaces");
+import React = require("react");
+import _ = require("lodash");
+import invariant = require("react/lib/invariant");
+var $ = React.createFactory;
 
-import Engine               = require("./models/engine");
-import Page                 = require("./views/page");
-import SvgExt               = require("./views/svgext_injection");
+import Engine = require("./models/engine");
+import Page = require("./views/page");
+import SvgExt = require("./views/svgext_injection");
 
-import Beam                 = require("./models/postprocessors/beam");
-import Center               = require("./models/postprocessors/center");
-import Justify              = require("./models/postprocessors/justify");
-import Pad                  = require("./models/postprocessors/pad");
-import RemoveOverlaps       = require("./models/postprocessors/removeOverlaps");
-import Tieds                = require("./models/postprocessors/tieds");
+import Beam = require("./models/postprocessors/beam");
+import Center = require("./models/postprocessors/center");
+import Justify = require("./models/postprocessors/justify");
+import Pad = require("./models/postprocessors/pad");
+import RemoveOverlaps = require("./models/postprocessors/removeOverlaps");
+import Tieds = require("./models/postprocessors/tieds");
 
 SvgExt.inject();
 
@@ -58,31 +58,31 @@ export function getPage(doc: Engine.IDocument, startMeasure: number,
         throw new Error("Part does not contain a Print element at division 0. Is it validated?");
     }
 
-    const pageMarginsAll    = print.pageLayout.pageMargins;
-    const pageMargins       = Engine.IPrint.getPageMargins(pageMarginsAll, pageNum);
-    const top               = print.pageLayout.pageHeight -
+    const pageMarginsAll = print.pageLayout.pageMargins;
+    const pageMargins = Engine.IPrint.getPageMargins(pageMarginsAll, pageNum);
+    const top = print.pageLayout.pageHeight -
                                 (print.systemLayout.topSystemDistance +
                                  pageMargins.topMargin);
 
     let memo$ = Engine.Options.ILinesLayoutMemo.create(top);
     const lineLayouts = Engine.layout$({
-        attributes:     null,
-        measures:       doc.measures,
-        header:         doc.header,
-        print$:         print,
-        page$:          pageNum,
-        modelFactory:   doc.factory,
-        debug:          true,
-        preProcessors:  [],
+        attributes: null,
+        measures: doc.measures,
+        header: doc.header,
+        print$: print,
+        page$: pageNum,
+        modelFactory: doc.factory,
+        debug: true,
+        preProcessors: [],
         postProcessors: [Pad, Justify, Beam, Center, Tieds, RemoveOverlaps]
     }, memo$);
 
     return $(Page)({
-        scoreHeader:    doc.header,
-        lineLayouts:    lineLayouts,
-        "print":        print,
-        renderTarget:   renderTarget,
-        className:      pageClassName
+        scoreHeader: doc.header,
+        lineLayouts: lineLayouts,
+        "print": print,
+        renderTarget: renderTarget,
+        className: pageClassName
     });
 }
 

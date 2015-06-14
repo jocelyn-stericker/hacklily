@@ -18,12 +18,12 @@
 
 "use strict";
 
-import MusicXML                 = require("musicxml-interfaces");
-import _                        = require("lodash");
-import invariant                = require("react/lib/invariant");
+import MusicXML = require("musicxml-interfaces");
+import _ = require("lodash");
+import invariant = require("react/lib/invariant");
 
-import Engine                   = require("../engine");
-import ChordImpl                = require("../chord/chordImpl");
+import Engine = require("../engine");
+import ChordImpl = require("../chord/chordImpl");
 
 interface IMutableBeam {
     number: number;
@@ -112,7 +112,9 @@ function beam(options: Engine.Options.ILayoutOptions, bounds: Engine.Options.ILi
                         case MusicXML.BeamType.ForwardHook:
                             activeBeams[voice] = activeBeams[voice] || [];
                             if (activeBeams[voice][idx]) {
-                                console.warn("Beam at level %s in voice %s should have been closed before being opened again.", idx, voice);
+                                console.warn(
+                                    "Beam at level %s in voice %s should have " +
+                                    "been closed before being opened again.", idx, voice);
                                 terminateBeam$(voice, idx, activeBeams);
                             }
                             activeBeams[voice][idx] = {
@@ -173,7 +175,9 @@ function beam(options: Engine.Options.ILayoutOptions, bounds: Engine.Options.ILi
                 if (!beam) {
                     return;
                 }
-                console.warn("Beam in voice %s, level %s was not closed before the end of the measure.", voice, idx);
+                console.warn(
+                    "Beam in voice %s, level %s was not closed before the " +
+                    "end of the measure.", voice, idx);
                 terminateBeam$(parseInt(voice, 10), idx, activeBeams);
             });
         });
@@ -227,25 +231,29 @@ function layoutBeam$(voice: number, idx: number, beamSet$: BeamSet) {
 
     var intercept = line1*10 + stemHeight1;
 
-    function getSH(direction: number, idx: number, line: number) {
-        return (intercept * direction +
-            (direction === 1 ? 0 : 69) + slope * (Xs[idx] - Xs[0]) * direction) - direction * line * 10;
+    function getStemHeight(direction: number, idx: number, line: number) {
+        return intercept * direction +
+            (direction === 1 ? 0 : 69) +
+            slope * (Xs[idx] - Xs[0]) * direction -
+            direction * line * 10;
     }
 
     // When the slope causes near-collisions, eliminate the slope.
-    var minSH = 1000;
+    var minStemHeight = 1000;
     var incrementalIntercept = 0;
     _.each(chords, (chord, idx) => {
+        let heightDeterminingLine = Engine.IChord.heightDeterminingLine(chord, -direction, clef);
+
         // Using -direction means that we'll be finding the closest note to the
         // beam. This will help us avoid collisions.
-        var sh = getSH(direction, idx, Engine.IChord.heightDeterminingLine(chord, -direction, clef));
-        if (sh < minSH) {
-            minSH = sh;
-            incrementalIntercept = direction*(30 - minSH) + slope * (Xs[idx] - Xs[0]);
+        var stemHeight = getStemHeight(direction, idx, heightDeterminingLine);
+        if (stemHeight < minStemHeight) {
+            minStemHeight = stemHeight;
+            incrementalIntercept = direction*(30 - minStemHeight) + slope * (Xs[idx] - Xs[0]);
         }
     });
 
-    if (minSH < 30) {
+    if (minStemHeight < 30) {
         intercept += incrementalIntercept;
         slope = 0;
     }
@@ -256,7 +264,7 @@ function layoutBeam$(voice: number, idx: number, beamSet$: BeamSet) {
         chord.satieStem = Object.create(firstChord.satieStem);
         chord.satieStem.direction = direction;
         chord.satieStem.stemStart = stemStart;
-        chord.satieStem.stemHeight = getSH(direction, idx, stemStart);
+        chord.satieStem.stemHeight = getStemHeight(direction, idx, stemStart);
 
         chord.satieFlag = null;
     });

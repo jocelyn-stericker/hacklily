@@ -16,23 +16,23 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import MusicXML         = require("musicxml-interfaces");
-import _                = require("lodash");
+import MusicXML = require("musicxml-interfaces");
+import _ = require("lodash");
 
-import Engine           = require("./engine");
+import Engine = require("./engine");
 
 class FiguredBassModel implements Export.IFiguredBassModel {
 
     /*---- I.1 IModel ---------------------------------------------------------------------------*/
 
     /** @prototype only */
-    divCount:        number;
+    divCount: number;
 
     /** defined externally */
-    staffIdx:        number;
+    staffIdx: number;
 
     /** @prototype */
-    frozenness:      Engine.IModel.FrozenLevel;
+    frozenness: Engine.IModel.FrozenLevel;
 
     modelDidLoad$(segment$: Engine.Measure.ISegment): void {
         // todo
@@ -50,37 +50,37 @@ class FiguredBassModel implements Export.IFiguredBassModel {
 
     /*---- I.2 MusicXML.FiguredBass -------------------------------------------------------------*/
 
-    figures:            MusicXML.Figure[];
-    duration:           number;
-    parentheses:        boolean;
+    figures: MusicXML.Figure[];
+    duration: number;
+    parentheses: boolean;
 
     /*---- I.2.2 MusicXML.Editorial -------------------------------------------------------------*/
 
-    footnote:           MusicXML.Footnote;
-    level:              MusicXML.Level;
+    footnote: MusicXML.Footnote;
+    level: MusicXML.Level;
 
     /*---- I.2.3 MusicXML.Printout --------------------------------------------------------------*/
 
-    printDot:           boolean;
-    printLyric:         boolean;
-    printObject:        boolean;
-    printSpacing:       boolean;
+    printDot: boolean;
+    printLyric: boolean;
+    printObject: boolean;
+    printSpacing: boolean;
 
     /*---- I.2.4 MusicXML.PrintStyle ------------------------------------------------------------*/
 
     /*---- MusicXML.PrintStyle >> Position --------------------------------------------------*/
 
-    defaultX:           number; // ignored for now
-    relativeY:          number;
-    defaultY:           number;
-    relativeX:          number;
+    defaultX: number; // ignored for now
+    relativeY: number;
+    defaultY: number;
+    relativeX: number;
 
     /*---- MusicXML.PrintStyle >> Font ------------------------------------------------------*/
 
-    fontFamily:         string;
-    fontWeight:         MusicXML.NormalBold;
-    fontStyle:          MusicXML.NormalItalic;
-    fontSize:           string;
+    fontFamily: string;
+    fontWeight: MusicXML.NormalBold;
+    fontStyle: MusicXML.NormalItalic;
+    fontSize: string;
 
     /*---- MusicXML.PrintStyle >> Color -----------------------------------------------------*/
 
@@ -103,7 +103,7 @@ class FiguredBassModel implements Export.IFiguredBassModel {
         }
     }
 
-    private _color:     number = 0x000000;
+    private _color: number = 0x000000;
 
     /*---- II. Life-cycle -----------------------------------------------------------------------*/
 

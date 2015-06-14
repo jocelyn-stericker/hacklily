@@ -16,14 +16,14 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import React            = require("react");
-var $                   = React.createFactory;
+import React = require("react");
+var $ = React.createFactory;
 
-import Attributes       = require("./attributes");
-import Barline          = require("./barline");
-import Chord            = require("./chord");
-import Direction        = require("./direction");
-import Engine           = require("../models/engine");
+import Attributes = require("./attributes");
+import Barline = require("./barline");
+import Chord = require("./chord");
+import Direction = require("./direction");
+import Engine = require("../models/engine");
 
 class ModelView extends React.Component<{layout: Engine.IModel.ILayout}, void> {
     render(): any {
@@ -43,19 +43,21 @@ class ModelView extends React.Component<{layout: Engine.IModel.ILayout}, void> {
     }
 
     getChildContext() {
-        const layout        = this.props.layout;
+        const layout = this.props.layout;
         return {
-            originY:        this.context.originYA[layout.part][layout.model.staffIdx || 1] || 0
+            originY: this.context.originYByPartAndStaff[layout.part][layout.model.staffIdx || 1] || 0
         };
     }
 }
 
+const NUMBER_ARRAY = React.PropTypes.arrayOf(React.PropTypes.number);
+
 module ModelView {
     export var childContextTypes = <any> {
-        originY:            React.PropTypes.number
+        originY: React.PropTypes.number
     };
     export var contextTypes = <any> {
-        originYA:           React.PropTypes.objectOf(React.PropTypes.arrayOf(React.PropTypes.number)).isRequired,
+        originYByPartAndStaff: React.PropTypes.objectOf(NUMBER_ARRAY).isRequired,
     };
 }
 

@@ -16,14 +16,15 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import React                = require("react");
+import React = require("react");
 
-import Engine               = require("./models/engine");
-import Views                = require("./views");
+import Engine = require("./models/engine");
+import Views = require("./views");
 
 class Viewer extends React.Component<{document: Engine.IDocument, pageClassName?: string}, void> {
     render() {
-        let page1 = Views.getPage(this.props.document, 0, Engine.RenderTarget.SvgWeb, this.props.pageClassName||"");
+        let className = this.props.pageClassName || "";
+        let page1 = Views.getPage(this.props.document, 0, Engine.RenderTarget.SvgWeb, className);
         return React.DOM.div({},
             page1
         );

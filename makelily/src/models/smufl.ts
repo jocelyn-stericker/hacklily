@@ -11,11 +11,11 @@
 
 "use strict";
 
-import _                    = require("lodash");
-import invariant            = require("react/lib/invariant");
+import _ = require("lodash");
+import invariant = require("react/lib/invariant");
 
-export import bravura       = require("./smufl/bravura");
-import glyphNames           = require("./smufl/glyphnames");
+export import bravura = require("./smufl/bravura");
+import glyphNames = require("./smufl/glyphnames");
 
 export var bboxes: {[key:string]: any[];} = <any> _.indexBy(bravura.glyphBBoxes, 4);
 
@@ -34,7 +34,7 @@ const getAnchor = _.memoize((notehead: string) => (<any>bravura.glyphsWithAnchor
  */
 export function getFontOffset(notehead: string, direction: number) {
     "use strict";
-    var anchors 	= getAnchor(notehead);
+    var anchors = getAnchor(notehead);
 
     switch (true) {
         case !anchors:
@@ -52,3 +52,7 @@ export var distances = {
     beam: 0.88,
     hyphen: 12
 };
+
+export function getWidth(glyph: string) {
+     return bboxes[glyph][0]*10 - bboxes[glyph][2]*10;
+}

@@ -136,7 +136,7 @@
       </note>
     </measure>
     <!--=======================================================-->
-    <measure number="4">
+    <measure number="3">
       <attributes>
         <time>
           <beats>24</beats>
@@ -155,7 +155,7 @@
       </note>
     </measure>
     <!--=======================================================-->
-    <measure number="5">
+    <measure number="4">
       <note>
         <pitch>
           <step>C</step>
@@ -258,7 +258,7 @@
       </note>
     </measure>
     <!--=======================================================-->
-    <measure number="6">
+    <measure number="5">
       <attributes>
         <time>
           <beats>28</beats>
@@ -278,7 +278,7 @@
       </note>
     </measure>
     <!--=======================================================-->
-    <measure number="7">
+    <measure number="6">
       <note>
         <pitch>
           <step>C</step>

@@ -18,12 +18,12 @@
 
 "use strict";
 
-import JSONPatch        = require("fast-json-patch");
-import _                = require("lodash");
+import JSONPatch = require("fast-json-patch");
+import _ = require("lodash");
 
-import EngineType       = require("../engine");
-import Measure          = require("./measure");
-import Options          = require("./options");
+import EngineType = require("../engine");
+import Measure = require("./measure");
+import Options = require("./options");
 
 function createDiff(options: Options.ILayoutOptions, memo: Options.ILinesLayoutState,
             measureUUID: number, mutator: (measure$: Measure.IMutableMeasure) => void) {

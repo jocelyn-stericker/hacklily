@@ -22,17 +22,17 @@
 
 "use strict";
 
-import Ctx              = require("../ctx");
+import Context = require("../context");
 
-import chai             = require("chai");
-var expect              = chai.expect;
+import chai = require("chai");
+var expect = chai.expect;
 
-import Util             = require("../util");
+import Util = require("../util");
 
-describe("[engine/ctx.ts]", function() {
+describe("[engine/context.ts]", function() {
     describe("Ctx.IStaff.detach", function() {
         it("produces object independent of parent", function() {
-            var orig: Ctx.IStaff = {
+            var orig: Context.IStaff = {
                 previous: null,
                 attributes: {
                     P1: {}
@@ -43,7 +43,7 @@ describe("[engine/ctx.ts]", function() {
                 idx: 0
             };
             var orig2 = Util.cloneObject(orig);
-            var copy = Ctx.IStaff.detach(orig);
+            var copy = Context.IStaff.detach(orig);
             orig2.totalDivisions = NaN; // HACK: cloneObject makes NaN -> null
 
             copy.previous = orig;
@@ -59,7 +59,7 @@ describe("[engine/ctx.ts]", function() {
         });
 
         it("does not freeze attributes or parent of owner", function() {
-            var parent: Ctx.IStaff = {
+            var parent: Context.IStaff = {
                 previous: null,
                 attributes: {
                     P1: {}
@@ -70,7 +70,7 @@ describe("[engine/ctx.ts]", function() {
                 idx: 0
             };
 
-            var orig: Ctx.IStaff = {
+            var orig: Context.IStaff = {
                 previous: parent,
                 attributes: {
                     P1: {}
@@ -80,7 +80,7 @@ describe("[engine/ctx.ts]", function() {
                 division: 10,
                 idx: 0
             };
-            var copy = Ctx.IStaff.detach(orig);
+            var copy = Context.IStaff.detach(orig);
             orig.attributes["P1"].instruments = "piano";
             orig.previous.accidentals$["a"] = 1;
             expect(orig.attributes["P1"].instruments).to.equal("piano");

@@ -18,20 +18,20 @@
 
 "use strict";
 
-import MusicXML             = require("musicxml-interfaces");
-import React                = require("react");
-import _                    = require("lodash");
-import invariant            = require("react/lib/invariant");
-let $                       = React.createFactory;
+import MusicXML = require("musicxml-interfaces");
+import React = require("react");
+import _ = require("lodash");
+import invariant = require("react/lib/invariant");
+let $ = React.createFactory;
 
-import Dot                  = require("./primitives/dot");
-import Glyph                = require("./primitives/glyph");
-import SMuFL                = require("../models/smufl");
+import Dot = require("./primitives/dot");
+import Glyph = require("./primitives/glyph");
+import SMuFL = require("../models/smufl");
 
 /**
  * Renders a rest.
  */
-class Rest extends React.Component<{spec: MusicXML.Note, multipleRest?: MusicXML.MultipleRest, notehead?: string}, void> {
+class Rest extends React.Component<Rest.IProps, void> {
     render() {
         const spec = this.props.spec;
         if (spec.printObject === false) {
@@ -60,7 +60,7 @@ class Rest extends React.Component<{spec: MusicXML.Note, multipleRest?: MusicXML
                     className: "mmn_",
                     "font-weight": "bold",
                     textAnchor: "middle"},
-                this.props.multipleRest.count   // TODO: useSymbols
+                this.props.multipleRest.count // TODO: useSymbols
             /* React.DOM.text */),
         spec.dots && spec.printDot !== false ? _.map(spec.dots, (dot, idx) => $(Dot)({
                 key: idx + "d",
@@ -75,9 +75,14 @@ class Rest extends React.Component<{spec: MusicXML.Note, multipleRest?: MusicXML
 }
 
 module Rest {
+    export interface IProps {
+        multipleRest?: MusicXML.MultipleRest;
+        notehead?: string;
+        spec: MusicXML.Note;
+    }
     export var contextTypes = <any> {
-        originX:            React.PropTypes.number.isRequired,
-        originY:            React.PropTypes.number.isRequired
+        originX: React.PropTypes.number.isRequired,
+        originY: React.PropTypes.number.isRequired
     };
 }
 

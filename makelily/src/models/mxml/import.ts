@@ -22,12 +22,12 @@
 
 "use strict";
 
-import MusicXML         = require("musicxml-interfaces");
-import _                = require("lodash");
-import invariant        = require("react/lib/invariant");
+import MusicXML = require("musicxml-interfaces");
+import _ = require("lodash");
+import invariant = require("react/lib/invariant");
 
-import Engine           = require("../engine");
-import Metre            = require("../chord/metre");
+import Engine = require("../engine");
+import Metre = require("../chord/metre");
 
 /*---- Exports ----------------------------------------------------------------------------------*/
 
@@ -42,24 +42,24 @@ import Metre            = require("../chord/metre");
 export function toScore(score: MusicXML.ScoreTimewise,
         factory: Engine.IModel.IFactory): Engine.IDocument {
     try {
-        let header      = _extractMXMLHeader(score);
-        let partData    = _extractMXMLPartsAndMeasures(score, factory);
+        let header = _extractMXMLHeader(score);
+        let partData = _extractMXMLPartsAndMeasures(score, factory);
         if (partData.error) {
             return partData;
         }
 
         return {
-            header:     header,
-            parts:      partData.parts,
-            measures:   partData.measures,
-            factory:    factory
+            header: header,
+            parts: partData.parts,
+            measures: partData.measures,
+            factory: factory
         };
     } catch(err) {
         return {
-            header:     null,
-            parts:      null,
-            voices:     null,
-            error:      err
+            header: null,
+            parts: null,
+            voices: null,
+            error: err
         };
     }
 }
@@ -68,13 +68,13 @@ export function toScore(score: MusicXML.ScoreTimewise,
 
 export function _extractMXMLHeader(m: MusicXML.ScoreTimewise): Engine.ScoreHeader {
     let header = new Engine.ScoreHeader({
-        work:           m.work,
+        work: m.work,
         movementNumber: m.movementNumber,
-        movementTitle:  m.movementTitle,
+        movementTitle: m.movementTitle,
         identification: m.identification,
-        defaults:       m.defaults,
-        credits:        m.credits,
-        partList:       m.partList
+        defaults: m.defaults,
+        credits: m.credits,
+        partList: m.partList
     });
 
     // Add credits to help exporters don't record credits, but do record movementTitle.
@@ -90,7 +90,7 @@ export function _extractMXMLPartsAndMeasures(input: MusicXML.ScoreTimewise,
         {measures?: Engine.Measure.IMutableMeasure[]; parts?: string[]; error?: string} {
 
     let parts: string[] = _.map(input.partList.scoreParts, inPart => inPart.id);
-    let createModel     = factory.create.bind(factory);
+    let createModel = factory.create.bind(factory);
 
     // TODO/STOPSHIP - sync division count in each measure
     var divisions = 1; // lilypond-regression 41g.xml does not specify divisions
@@ -103,13 +103,13 @@ export function _extractMXMLPartsAndMeasures(input: MusicXML.ScoreTimewise,
             (inMeasure, measureIdx) => {
 
         let measure = {
-            idx:                measureIdx,
-            uuid:               Math.floor(Math.random() * Engine.MAX_SAFE_INTEGER),
-            number:             inMeasure.number,
-            implicit:           inMeasure.implicit,
-            width:              inMeasure.width,
-            nonControlling:     inMeasure.nonControlling,
-            parts:              <{[key: string]: Engine.Measure.IMeasurePart}> {}
+            idx: measureIdx,
+            uuid: Math.floor(Math.random() * Engine.MAX_SAFE_INTEGER),
+            number: inMeasure.number,
+            implicit: inMeasure.implicit,
+            width: inMeasure.width,
+            nonControlling: inMeasure.nonControlling,
+            parts: <{[key: string]: Engine.Measure.IMeasurePart}> {}
         };
 
         if (Object.keys(inMeasure.parts).length === 1 && "" in inMeasure.parts) {
@@ -123,32 +123,30 @@ export function _extractMXMLPartsAndMeasures(input: MusicXML.ScoreTimewise,
                 return null;
             }
             let output: Engine.Measure.IMeasurePart = {
-                voices:     [],
-                staves:     []
+                voices: [],
+                staves: []
             };
             invariant(!(key in measure.parts), "Duplicate part ID %s", key);
             measure.parts[key] = output;
             invariant(!!key, "Part ID must be defined");
 
             return {
-                id:                 key,
-                input:              val,
-                idx:                0,
-                division:           0,
-                divisionPerStaff:   <number[]>[],
-                divisionPerVoice:   <number[]>[],
-                times:              <MusicXML.Time[]> [{
-                    beats:              ["4"],
-                    beatTypes:          [4]
+                id: key,
+                input: val,
+                idx: 0,
+                division: 0,
+                divisionPerStaff: <number[]>[],
+                divisionPerVoice: <number[]>[],
+                times: <MusicXML.Time[]> [{
+                    beats: ["4"],
+                    beatTypes: [4]
                 }],
-                output:             output,
-                lastNote:           <Engine.IChord> null
+                output: output,
+                lastNote: <Engine.IChord> null
             };
         });
 
         linkedParts = _.filter(linkedParts, p => !!p);
-
-        // TODO/STOPSHIP - sync division count in entire measure
 
         // Create base structure
         while (!done()) {
@@ -189,17 +187,20 @@ export function _extractMXMLPartsAndMeasures(input: MusicXML.ScoreTimewise,
                             let spec = MusicXML.parse.note(`
                                 <note print-object="no">
                                     <rest />
-                                    <duration>${target.division - target.divisionPerVoice[voice]}</duration>
+                                    <duration>
+                                        ${target.division - target.divisionPerVoice[voice]}
+                                    </duration>
                                 </note>`);
-                            (<any>spec)._class = "Note"; // TODO: add to parse.note
                             let restModel = factory.fromSpec(spec);
                             let spacerRest = Engine.IChord.fromModel(restModel);
-                            spacerRest[0].duration = target.division - target.divisionPerVoice[voice];
+                            let division = target.divisionPerVoice[voice];
+                            spacerRest[0].duration = target.division - division;
                             target.output.voices[voice].push(restModel);
                             target.divisionPerVoice[voice] = target.division;
                         }
 
-                        // Add the note to the voice segment and register it as the last inserted note
+                        // Add the note to the voice segment and register it as the
+                        // last inserted note
                         let newNote = factory.fromSpec(input);
                         target.output.voices[voice].push(newNote);
                         note = Engine.IChord.fromModel(newNote);
@@ -358,8 +359,8 @@ export function _extractMXMLPartsAndMeasures(input: MusicXML.ScoreTimewise,
     });
 
     return {
-        measures:   measures,
-        parts:      parts
+        measures: measures,
+        parts: parts
     };
 }
 
@@ -370,7 +371,7 @@ function createVoice(voice: number, output: Engine.Measure.IMeasurePart) {
     return output.voices[voice];
 }
 
-function createStaff(staff: number, output:  Engine.Measure.IMeasurePart) {
+function createStaff(staff: number, output: Engine.Measure.IMeasurePart) {
     output.staves[staff] = <any> [];
     output.staves[staff].owner = staff;
     output.staves[staff].ownerType = Engine.Measure.OwnerType.Staff;

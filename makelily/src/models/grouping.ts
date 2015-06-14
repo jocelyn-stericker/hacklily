@@ -16,24 +16,24 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import MusicXML         = require("musicxml-interfaces");
-import _                = require("lodash");
+import MusicXML = require("musicxml-interfaces");
+import _ = require("lodash");
 
-import Engine           = require("./engine");
-import Util             = require("./engine/util");
+import Engine = require("./engine");
+import Util = require("./engine/util");
 
 class GroupingModel implements Export.IGroupingModel {
 
     /*---- I.1 IModel ---------------------------------------------------------------------------*/
 
     /** @prototype only */
-    divCount:        number;
+    divCount: number;
 
     /** defined externally */
-    staffIdx:        number;
+    staffIdx: number;
 
     /** @prototype */
-    frozenness:      Engine.IModel.FrozenLevel;
+    frozenness: Engine.IModel.FrozenLevel;
 
     modelDidLoad$(segment$: Engine.Measure.ISegment): void {
         // todo
@@ -51,10 +51,10 @@ class GroupingModel implements Export.IGroupingModel {
 
     /*---- I.2 MusicXML.Grouping ----------------------------------------------------------------*/
 
-    features:       MusicXML.Feature[];
-    number:         number;
-    type:           MusicXML.StartStopSingle;
-    memberOf:       string;
+    features: MusicXML.Feature[];
+    number: number;
+    type: MusicXML.StartStopSingle;
+    memberOf: string;
 
     /*---- II. Life-cycle -----------------------------------------------------------------------*/
 
@@ -110,8 +110,8 @@ module GroupingModel {
 function deepAssign<T>(a: T, b: T):T {
     if (a instanceof Array || b instanceof Array) {
         var retArr: any[] = [];
-        var aArr:   any[] = (<any>a);
-        var bArr:   any[] = (<any>b);
+        var aArr: any[] = (<any>a);
+        var bArr: any[] = (<any>b);
         for (var i = 0; i < Math.max(a ? aArr.length : 0, b ? bArr.length : 0); ++i) {
             retArr.push(deepAssign(a ? aArr[i] : null, b ? bArr[i] : null));
         }

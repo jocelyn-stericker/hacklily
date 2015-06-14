@@ -18,13 +18,13 @@
 
 "use strict";
 
-import MusicXML         = require("musicxml-interfaces");
-import React            = require("react");
+import MusicXML = require("musicxml-interfaces");
+import React = require("react");
 
-import Line             = require("./primitives/line");
-import Glyph            = require("./primitives/glyph");
-import SMuFL            = require("../models/smufl");
-var $                   = React.createFactory;
+import Line = require("./primitives/line");
+import Glyph = require("./primitives/glyph");
+import SMuFL = require("../models/smufl");
+var $ = React.createFactory;
 
 const BRACE_H_SCALE = 2.9;
 
@@ -120,10 +120,10 @@ module PartSymbol {
     }
 
     export var contextTypes = <any> {
-        originX:        React.PropTypes.number.isRequired,
-        originY:        React.PropTypes.number.isRequired,
-        systemTop:      React.PropTypes.number.isRequired,
-        systemBottom:   React.PropTypes.number.isRequired
+        originX: React.PropTypes.number.isRequired,
+        originY: React.PropTypes.number.isRequired,
+        systemTop: React.PropTypes.number.isRequired,
+        systemBottom: React.PropTypes.number.isRequired
     };
 }
 

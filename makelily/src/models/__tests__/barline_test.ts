@@ -22,13 +22,13 @@
 
 "use strict";
 
-import chai         = require("chai");
+import chai = require("chai");
 
-import Barline      = require("../barline");
-import Engine       = require("../engine");
-import Factory      = require("../factory");
+import Barline = require("../barline");
+import Engine = require("../engine");
+import Factory = require("../factory");
 
-var expect          = chai.expect;
+var expect = chai.expect;
 
 describe("[barline.ts]", function() {
     describe("BarlineModel", function() {

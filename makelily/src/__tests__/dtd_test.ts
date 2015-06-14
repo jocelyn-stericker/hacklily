@@ -22,12 +22,12 @@
 
 "use strict";
 
-import _                = require("lodash");
-import child_process    = require("child_process");
-import fs               = require("fs");
+import _ = require("lodash");
+import child_process = require("child_process");
+import fs = require("fs");
 
-import Models           = require("../models");
-import Views            = require("../views");
+import Models = require("../models");
+import Views = require("../views");
 
 function readFile(file: string, onEnd: (s: string) => void) {
     fs.readFile(file, "utf8", function (err, data) {
