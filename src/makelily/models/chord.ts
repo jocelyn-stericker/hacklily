@@ -22,10 +22,10 @@
  * number of these notes may be rests.
  */
 
-import MusicXML         = require("musicxml-interfaces");
+import MusicXML = require("musicxml-interfaces");
 
-import Engine           = require("./engine");
-import ChordModelImpl   = require("./chord/chordImpl"); // @cyclic
+import Engine = require("./engine");
+import ChordModelImpl = require("./chord/chordImpl"); // @cyclic
 
 /**
  * Registers Chord in the factory structure passed in.
@@ -38,9 +38,9 @@ import ChordModelImpl   = require("./chord/chordImpl"); // @cyclic
 module ChordModel {
     export interface IChordModel extends Engine.IModel, Engine.IChord {
         satieStem: {
-            direction:  number;
+            direction: number;
             stemHeight: number;
-            stemStart:  number;
+            stemStart: number;
         };
         satieBeam: Engine.IBeam.ILayout;
         satieFlag: string;

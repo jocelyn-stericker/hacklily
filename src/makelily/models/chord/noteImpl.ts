@@ -16,13 +16,13 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import MusicXML         = require("musicxml-interfaces");
-import _                = require("lodash");
-import invariant        = require("react/lib/invariant");
+import MusicXML = require("musicxml-interfaces");
+import _ = require("lodash");
+import invariant = require("react/lib/invariant");
 
-import ChordModelImpl   = require("./chordImpl"); // @cyclic
-import Engine           = require("../engine");
-import SMuFL            = require("../smufl");
+import ChordModelImpl = require("./chordImpl"); // @cyclic
+import Engine = require("../engine");
+import SMuFL = require("../smufl");
 
 /**
  * Represents a note in a ChordImpl.
@@ -40,34 +40,37 @@ class NoteImpl implements MusicXML.Note {
         let self : {[key:string]: any} = <any> this;
 
         /* Link to parent */
-        this._parent                    = parent;
-        this._idx                       = idx;
+        this._parent = parent;
+        this._idx = idx;
 
         if (note.pitch) {
-            note.pitch.step             = note.pitch.step.toUpperCase();
+            note.pitch.step = note.pitch.step.toUpperCase();
         }
 
         /* Properties owned by parent */
         if (updateParent) {
-            parent.dots                 = (note.dots || []).length;
+            parent.dots = (note.dots || []).length;
             if (note.rest) {
-                this.rest               = note.rest; // Assigns parent
+                this.rest = note.rest; // Assigns parent
             }
-            let count                   = note.noteType ? note.noteType.duration : parent.count;
+            let count = note.noteType ? note.noteType.duration : parent.count;
             if (count) {
-                parent.count            = count;
+                parent.count = count;
             }
 
-            parent.timeModification     = note.timeModification || parent.timeModification;
+            parent.timeModification = note.timeModification || parent.timeModification;
         }
 
         /* Properties owned by NoteImpl */
-        let properties                  = [
+        let properties = [
             "pitch", "unpitched", "noteheadText", "accidental", "instrument",
-            "attack", "endDynamics", "lyrics", "notations", "stem", "cue", "ties", "dynamics", "duration",
-            "play", "staff", "grace", "notehead", "release", "pizzicato", "beams", "voice", "footnote", "level",
-            "relativeY", "defaultY", "relativeX", "fontFamily", "fontWeight", "fontStyle", "fontSize",
-            "color", "printDot", "printLyric", "printObject", "printSpacing", "timeOnly" ];
+            "attack", "endDynamics", "lyrics", "notations", "stem", "cue",
+            "ties", "dynamics", "duration", "play", "staff", "grace", "notehead",
+            "release", "pizzicato", "beams", "voice", "footnote", "level",
+            "relativeY", "defaultY", "relativeX", "fontFamily", "fontWeight",
+            "fontStyle", "fontSize", "color", "printDot", "printLyric", "printObject",
+            "printSpacing", "timeOnly"
+        ];
 
         _.forEach(properties, setIfDefined);
 
@@ -79,7 +82,7 @@ class NoteImpl implements MusicXML.Note {
 
         function setIfDefined(property: string) {
             if (note.hasOwnProperty(property) && (<any>note)[property] !== null) {
-                self[property]          = <any> (<any>note)[property];
+                self[property] = <any> (<any>note)[property];
             }
         }
     }
@@ -169,64 +172,64 @@ class NoteImpl implements MusicXML.Note {
         this._parent.timeModification = tm;
     }
 
-    pitch:              MusicXML.Pitch;
+    pitch: MusicXML.Pitch;
 
     /*---- MusicXML.Note > Extended ---------------------------------------------------------*/
 
-    unpitched:          MusicXML.Unpitched;
-    noteheadText:       MusicXML.NoteheadText;
-    accidental:         MusicXML.Accidental;
-    instrument:         MusicXML.Instrument;
-    attack:             number;
-    endDynamics:        number;
-    lyrics:             MusicXML.Lyric[];
+    unpitched: MusicXML.Unpitched;
+    noteheadText: MusicXML.NoteheadText;
+    accidental: MusicXML.Accidental;
+    instrument: MusicXML.Instrument;
+    attack: number;
+    endDynamics: number;
+    lyrics: MusicXML.Lyric[];
     /**
      * Do not modify notations. Instead use notationObj and articulationObj
      */
-    notations:          MusicXML.Notations[];
+    notations: MusicXML.Notations[];
     get stem(): MusicXML.Stem {
         return this._parent.stem;
     }
     set stem(stem: MusicXML.Stem) {
         this._parent.stem = stem;
     }
-    cue:                MusicXML.Cue;
-    duration:           number;
+    cue: MusicXML.Cue;
+    duration: number;
     /**
      * This applies to the sound only.
      * s.a. notationObj.tieds
      */
-    ties:               MusicXML.Tie[];
-    dynamics:           number;
-    play:               MusicXML.Play;
-    staff:              number;                 // See prototype.
-    grace:              MusicXML.Grace;
-    notehead:           MusicXML.Notehead;
-    release:            number;
-    pizzicato:          boolean;
-    beams:              MusicXML.Beam[];
+    ties: MusicXML.Tie[];
+    dynamics: number;
+    play: MusicXML.Play;
+    staff: number;                 // See prototype.
+    grace: MusicXML.Grace;
+    notehead: MusicXML.Notehead;
+    release: number;
+    pizzicato: boolean;
+    beams: MusicXML.Beam[];
 
     /*---- MusicXML.PrintStyle --------------------------------------------------------------*/
 
     /*---- MusicXML.PrintStyle >> EditorialVoice --------------------------------------------*/
 
-    voice:              number;
-    footnote:           MusicXML.Footnote;
-    level:              MusicXML.Level;
+    voice: number;
+    footnote: MusicXML.Footnote;
+    level: MusicXML.Level;
 
     /*---- MusicXML.PrintStyle >> Position --------------------------------------------------*/
 
-    defaultX:           number; // ignored for now
-    relativeY:          number;
-    defaultY:           number;
-    relativeX:          number;
+    defaultX: number; // ignored for now
+    relativeY: number;
+    defaultY: number;
+    relativeX: number;
 
     /*---- MusicXML.PrintStyle >> Font ------------------------------------------------------*/
 
-    fontFamily:         string;
-    fontWeight:         MusicXML.NormalBold;
-    fontStyle:          MusicXML.NormalItalic;
-    fontSize:           string;
+    fontFamily: string;
+    fontWeight: MusicXML.NormalBold;
+    fontStyle: MusicXML.NormalItalic;
+    fontSize: string;
 
     /*---- MusicXML.PrintStyle >> Color -----------------------------------------------------*/
 
@@ -249,24 +252,24 @@ class NoteImpl implements MusicXML.Note {
         }
     }
 
-    private _color:     number = 0x000000;
+    private _color: number = 0x000000;
 
     /*---- MusicXML.Printout ----------------------------------------------------------------*/
 
-    printDot:           boolean;
-    printLyric:         boolean;
+    printDot: boolean;
+    printLyric: boolean;
 
     /*---- MusicXML.Printout >> PrintObject -------------------------------------------------*/
 
-    printObject:        boolean;
+    printObject: boolean;
 
     /*---- MusicXML.Printout >> PrintSpacing ------------------------------------------------*/
 
-    printSpacing:       boolean;
+    printSpacing: boolean;
 
     /*---- MusicXML.TimeOnly ----------------------------------------------------------------*/
 
-    timeOnly:           string;
+    timeOnly: string;
 
     /*---- Util -----------------------------------------------------------------------------*/
 
@@ -329,23 +332,23 @@ class NoteImpl implements MusicXML.Note {
 
         if (notations) {
             let notation: MusicXML.Notations = {
-                articulations:          combineArticulations                ("articulations"),
-                accidentalMarks:        combine<MusicXML.AccidentalMark>    ("accidentalMarks"),
-                arpeggiates:            combine<MusicXML.Arpeggiate>        ("arpeggiates"),
-                dynamics:               combine<MusicXML.Dynamics>          ("dynamics"),
-                fermatas:               combine<MusicXML.Fermata>           ("fermatas"),
-                glissandos:             combine<MusicXML.Glissando>         ("glissandos"),
-                nonArpeggiates:         combine<MusicXML.NonArpeggiate>     ("nonArpeggiates"),
-                ornaments:              combine<MusicXML.Ornaments>         ("ornaments"),
-                otherNotations:         combine<MusicXML.OtherNotation>     ("otherNotations"),
-                slides:                 combine<MusicXML.Slide>             ("slides"),
-                slurs:                  combine<MusicXML.Slur>              ("slurs"),
-                technicals:             combine<MusicXML.Technical>         ("technicals"),
-                tieds:                  combine<MusicXML.Tied>              ("tieds"),
-                tuplets:                combine<MusicXML.Tuplet>            ("tuplets"),
-                footnote:                  last<MusicXML.Footnote>          ("footnote"),
-                level:                     last<MusicXML.Level>             ("level"),
-                printObject:               last<boolean>                    ("printObject")
+                articulations: combineArticulations ("articulations"),
+                accidentalMarks: combine<MusicXML.AccidentalMark> ("accidentalMarks"),
+                arpeggiates: combine<MusicXML.Arpeggiate> ("arpeggiates"),
+                dynamics: combine<MusicXML.Dynamics> ("dynamics"),
+                fermatas: combine<MusicXML.Fermata> ("fermatas"),
+                glissandos: combine<MusicXML.Glissando> ("glissandos"),
+                nonArpeggiates: combine<MusicXML.NonArpeggiate> ("nonArpeggiates"),
+                ornaments: combine<MusicXML.Ornaments> ("ornaments"),
+                otherNotations: combine<MusicXML.OtherNotation> ("otherNotations"),
+                slides: combine<MusicXML.Slide> ("slides"),
+                slurs: combine<MusicXML.Slur> ("slurs"),
+                technicals: combine<MusicXML.Technical> ("technicals"),
+                tieds: combine<MusicXML.Tied> ("tieds"),
+                tuplets: combine<MusicXML.Tuplet> ("tuplets"),
+                footnote: last<MusicXML.Footnote> ("footnote"),
+                level: last<MusicXML.Level> ("level"),
+                printObject: last<boolean> ("printObject")
             };
 
             _.forEach(notation.tieds, tied => {
@@ -390,9 +393,11 @@ class NoteImpl implements MusicXML.Note {
         }
         let actual = pitch.alter || 0;
         let accidentals = cursor.staff.accidentals$;
-        invariant(!!accidentals, "Accidentals must already have been setup. Is there an Attributes element?");
+        invariant(!!accidentals,
+            "Accidentals must already have been setup. Is there an Attributes element?");
 
-        let generalTarget = accidentals[pitch.step] || null; // TODO: this is no longer sufficient due to `onion`.
+        // TODO: this is no longer sufficient if multiple voices share a staff.
+        let generalTarget = accidentals[pitch.step] || null;
         let target = accidentals[pitch.step + pitch.octave] || generalTarget;
 
         if (!target && generalTarget !== Engine.IChord.InvalidAccidental) {
@@ -440,61 +445,14 @@ class NoteImpl implements MusicXML.Note {
             };
         }
 
-        // If the encoding software tells us what kind of accidental we have, we trust it. Otherwise...
-        // TODO: Check cursor.header.identification.encoding.supports to see if we can actually trust it.
-        // TODO: Re-enable this logic.
-        if (!acc && actual === target) {
-            // We don't need to show an accidental if all of these conditions are met:
-
-            // 1. The note has the same accidental on other octave (if the note is on other octaves)
-            // let noConflicts = target === generalTarget || generalTarget === Engine.IChord.InvalidAccidental;
-
-            // 2. The note has the same accidental on all other voice (in the same bar, in the past)
-            // for (let j = 0; j < ctx.accidentalsByStaff.length && noConflicts; ++j) {
-            //     if (ctx.accidentalsByStaff[j] && target !== or3(ctx.accidentalsByStaff[j][pitch.step + pitch.octave],
-            //             ctx.accidentalsByStaff[j][pitch.step], target)) {
-            //         noConflicts = false;
-            //     }
-            // }
-
-            // // 3. The note has the same accidental on other voices with the same note (right now!)
-            // let concurrentNotes = ctx.findVertical(c => c.isNote);
-            // for (let j = 0; j < concurrentNotes.length && noConflicts; ++j) {
-            //     let otherChord = concurrentNotes[j].note.chord;
-            //     noConflicts = noConflicts && !_hasConflict(otherChord, pitch.step, target);
-            // }
-
-            // // 4. There isn't ambiguity because or a barline and this is the first beat.
-            // if (ctx.division === 0) {
-            //     let prevBarOrNote = ctx.prev(c => c.isNote && !c.isRest || c.type === Engine.IModel.Type.Barline);
-            //     if (prevBarOrNote && prevBarOrNote.type === C.Type.Barline) {
-            //         let prevNote = ctx.prev(
-            //             c => c.isNote && _.any(c.note.chord, c => c.step === pitch.step) ||
-            //             c.type === C.Type.Barline, 2);
-            //         if (prevNote && prevNote.type !== C.Type.Barline) {
-            //             noConflicts = noConflicts && !_hasConflict(prevNote.note.chord, pitch.step, target);
-            //         }
-            //     }
-            // }
-
-            // if (noConflicts) {
-            //     result[i] = NaN; // no accidental
-            //     continue;
-            // } else {
-            //     paren = true;
-            // }
-        }
-
-        // assert(actual !== Engine.IChord.InvalidAccidental, "Accidental is invalid");
-        // actual is the result
-        // paren is if there is a ( ).
-
         if (acc) {
             let glyphName = Engine.IChord.accidentalGlyphs[acc.accidental];
             invariant(glyphName in SMuFL.bboxes, "Expected a known glyph, got %s", glyphName);
             let width = SMuFL.bboxes[glyphName][0]*10;
+            let clef = cursor.staff.attributes[cursor.segment.part].clefs[cursor.staff.idx];
+            // TODO: `let clef = cursor.part.attributes.clefs[cursor.staff.idx]`
 
-            if (Engine.IChord.onLedger(this, cursor.staff.attributes[cursor.segment.part].clefs[cursor.staff.idx])) {
+            if (Engine.IChord.onLedger(this, clef)) {
                 acc.defaultX = -4.1;
             } else {
                 acc.defaultX = -2.04;

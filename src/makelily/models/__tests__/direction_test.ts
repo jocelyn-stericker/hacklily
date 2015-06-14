@@ -22,13 +22,13 @@
 
 "use strict";
 
-import chai         = require("chai");
+import chai = require("chai");
 
-import Direction    = require("../direction");
-import Engine       = require("../engine");
-import Factory      = require("../factory");
+import Direction = require("../direction");
+import Engine = require("../engine");
+import Factory = require("../factory");
 
-var expect          = chai.expect;
+var expect = chai.expect;
 
 describe("[direction.ts]", function() {
     describe("DirectionModel", function() {

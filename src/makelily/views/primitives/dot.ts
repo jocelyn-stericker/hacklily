@@ -18,7 +18,7 @@
 
 "use strict";
 
-import React            = require("react");
+import React = require("react");
 
 /**
  * Responsible for the rendering of a dot as part of a dotted note.

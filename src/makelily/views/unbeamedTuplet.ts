@@ -18,12 +18,12 @@
 
 "use strict";
 
-import MusicXML             = require("musicxml-interfaces");
-import React                = require("react");
-let $                       = React.createFactory;
+import MusicXML = require("musicxml-interfaces");
+import React = require("react");
+let $ = React.createFactory;
 
-import Glyph                = require("./primitives/glyph");
-import SMuFL                = require("../models/smufl");
+import Glyph = require("./primitives/glyph");
+import SMuFL = require("../models/smufl");
 
 class UnbeamedTuplet extends React.Component<{spec: MusicXML.Tuplet}, void> {
     render() {
@@ -128,10 +128,11 @@ class UnbeamedTuplet extends React.Component<{spec: MusicXML.Tuplet}, void> {
         if (!this.props.tuplet) {
             return null;
         } else {
-            var symbol = "tuplet" + (this.props.tuplet.actualNotes.count.toString()[0]);
-            var bbox = SMuFL.bboxes[symbol];
-            var offset = (this._getX2() - this._getX1())/2 - this.props.direction*(bbox[2] - bbox[0])*10/2;
-            var y = (this._getY1(1) +
+            let symbol = "tuplet" + (this.props.tuplet.actualNotes.count.toString()[0]);
+            let bbox = SMuFL.bboxes[symbol];
+            let width = (bbox[2] - bbox[0])*10;
+            let offset = (this._getX2() - this._getX1())/2 - this.props.direction*width/2;
+            let y = (this._getY1(1) +
                         this._getY2(1))/2 + 5.8;
 
             return React.DOM.g(null,
@@ -158,8 +159,8 @@ class UnbeamedTuplet extends React.Component<{spec: MusicXML.Tuplet}, void> {
 };
 
 module UnbeamedTuplet {
-    export var contextTypes = <any> {
-        originY:         React.PropTypes.number.isRequired
+    export let contextTypes = <any> {
+        originY: React.PropTypes.number.isRequired
     };
 }
 

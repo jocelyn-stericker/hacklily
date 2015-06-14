@@ -17,33 +17,34 @@
  */
 
 /**
- * @file engine/ctx.ts Layout and validation contexts for measures, staves, and voices
+ * @file engine/context.ts Layout and validation contexts for measures, staves, and voices
  */
 
 "use strict";
 
-import MusicXML         = require("musicxml-interfaces");
-import _                = require("lodash");
-import invariant        = require("react/lib/invariant");
+import MusicXML = require("musicxml-interfaces");
+import _ = require("lodash");
+import invariant = require("react/lib/invariant");
 
-import Measure          = require("./measure");
-import Util             = require("./util");
+import IModel = require("./imodel");
+import Measure = require("./measure");
+import Util = require("./util");
 
 export interface IMeasure {
     /** 
      * The index of a given bar, starting from 0. This may not be the same as number.
      */
-    idx:                number;
+    idx: number;
 
     /** 
      * The string that is displayed at the start of the measure in some cases.
      */
-    number:             string;
+    number: string;
 
     /** 
      * If true, the measure number should never be rendered.
      */
-    implicit:           boolean;
+    implicit: boolean;
 
     /** 
      * If true, this measure does not start at beat 0 of other parts.
@@ -51,46 +52,46 @@ export interface IMeasure {
      * Satie does not support this attribute yet. It is here so we don't lose information when
      * we load and save from MusicXML.
      */
-    nonControlling:     boolean;
+    nonControlling: boolean;
 
     /** 
      * Starting position.
      */
-    x:                  number;
+    x: number;
 
     /** 
      * Attributes from previous measure.
      */
-    attributes$:        MusicXML.Attributes;
+    attributes$: MusicXML.Attributes;
 
     /** 
      * A string uniquely identifying this bar, for collaboration
      * among other things.
      */
-    uuid:               number;
+    uuid: number;
 
-    parent:             IMutableMeasure;
+    parent: IMutableMeasure;
 }
 
 export module IMeasure {
     export function detach(measure: IMutableMeasure, x: number): IMeasure {
         return {
-            idx:                measure.idx,
-            uuid:               measure.uuid,
+            idx: measure.idx,
+            uuid: measure.uuid,
 
-            implicit:           measure.implicit,
-            attributes$:        null,
-            nonControlling:     measure.nonControlling,
-            number:             measure.number,
-            x:                  x,
+            implicit: measure.implicit,
+            attributes$: null,
+            nonControlling: measure.nonControlling,
+            number: measure.number,
+            x: x,
 
-            parent:             measure
+            parent: measure
         };
     }
 }
 
 export interface IAccidentals {
-    [key: string]:      number;
+    [key: string]: number;
 }
 
 /** 
@@ -98,15 +99,15 @@ export interface IAccidentals {
  * given measure at given division.
  */
 export interface IStaff {
-    previous:       IStaff;
+    previous: IStaff;
 
-    attributes:     {[part: string]: MusicXML.Attributes};
+    attributes: {[part: string]: MusicXML.Attributes};
     totalDivisions: number;
-    multiRestRem?:  number;
+    hiddenMeasuresRemaining?: number;
 
-    accidentals$:   IAccidentals;
+    accidentals$: IAccidentals;
 
-    idx:            number;
+    idx: number;
 }
 
 export module IStaff {
@@ -114,12 +115,12 @@ export module IStaff {
      * Creates a semi-shallow copy of a staffCtx. It does
      * not clone attributes or previous, since they are immutable.
      */
-    export function detach(sctx: IStaff): IStaff {
-        if (!sctx) {
+    export function detach(oldContext: IStaff): IStaff {
+        if (!oldContext) {
             return null;
         }
         var attributes: {[part: string]: MusicXML.Attributes} = {};
-        _.forEach(sctx.attributes, (attributeInstance, partID) => {
+        _.forEach(oldContext.attributes, (attributeInstance, partID) => {
             if (Object.isFrozen(attributeInstance)) {
                 attributes[partID] = attributeInstance;
             } else {
@@ -129,10 +130,10 @@ export module IStaff {
         });
 
         var previous: IStaff;
-        if (!sctx.previous || Object.isFrozen(sctx.previous)) {
-            previous = sctx.previous;
+        if (!oldContext.previous || Object.isFrozen(oldContext.previous)) {
+            previous = oldContext.previous;
         } else {
-            previous = Object.create(sctx.previous);
+            previous = Object.create(oldContext.previous);
             Object.freeze(previous);
         }
 
@@ -140,8 +141,8 @@ export module IStaff {
             previous: previous,
             attributes: attributes,
             totalDivisions: NaN,
-            accidentals$: Util.cloneObject(sctx.accidentals$),
-            idx: sctx.idx
+            accidentals$: Util.cloneObject(oldContext.accidentals$),
+            idx: oldContext.idx
         };
     }
 }
@@ -157,22 +158,22 @@ export module IVoice {
     /** 
      * For completeness.
      */
-    export function detatch(vctx: IVoice): IVoice {
+    export function detatch(oldContext: IVoice): IVoice {
         return {};
     }
 }
 
 export interface IMutableMeasure /* matches everything in MusicXML.Measure except for parts! */ {
-    idx:             number;
-    uuid:            number;
-    number:          string;
-    implicit?:       boolean;
-    width?:          number;
+    idx: number;
+    uuid: number;
+    number: string;
+    implicit?: boolean;
+    width?: number;
     nonControlling?: boolean;
     parts: {
         [x: string]: {
-            voices:  Measure.ISegment[];
-            staves:  Measure.ISegment[];
+            voices: Measure.ISegment[];
+            staves: Measure.ISegment[];
         }
     };
 }
@@ -220,22 +221,32 @@ export interface ILine {
     lines: number;
 }
 
+export type ISegment = Measure.ISegment;
+
 export module ILine {
-    export function create(segments: Measure.ISegment[], bars: number, line: number, lines: number): ILine {
+    export function create(segments: ISegment[], bars: number, line: number, lines: number): ILine {
         return {
             barOnLine$: 0,
             barsOnLine: bars,
             line: line,
             lines: lines,
-            shortestCount: _.reduce(segments, (shortest, segment) =>
-                segment ? _.reduce(segment, (shortest, model) => {
-                    if (!(model.divCount >= 0)) {
-                        console.log("Debug:", model);
-                        invariant(model.divCount >= 0, "Counts must exceed 0.");
-                    }
-                    return Math.min(shortest, model && model.divCount ? model.divCount : Number.MAX_VALUE);
-                }, shortest) : shortest,
-            Number.MAX_VALUE)
+            shortestCount: _.reduce(segments, reduceToShortestInSegments, Number.MAX_VALUE)
         };
     }
+}
+
+function reduceToShortestInSegments(shortest: number, segment: ISegment) {
+    if (!segment) {
+        return shortest;
+    }
+    return _.reduce(segment, reduceToShortestInSegment, shortest);
+}
+
+function reduceToShortestInSegment(shortest: number, model: IModel) {
+    if (!(model.divCount >= 0)) {
+        console.log("Debug:", model);
+        invariant(model.divCount >= 0, "Counts must exceed 0.");
+    }
+    let divCount = model && model.divCount ? model.divCount : Number.MAX_VALUE;
+    return Math.min(shortest, divCount);
 }

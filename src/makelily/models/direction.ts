@@ -16,24 +16,24 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import MusicXML         = require("musicxml-interfaces");
-import _                = require("lodash");
+import MusicXML = require("musicxml-interfaces");
+import _ = require("lodash");
 
-import Engine           = require("./engine");
-import FontManager      = require("./fontManager");
+import Engine = require("./engine");
+import FontManager = require("./fontManager");
 
 class DirectionModel implements Export.IDirectionModel {
 
     /*---- I.1 IModel ---------------------------------------------------------------------------*/
 
     /** @prototype only */
-    divCount:        number;
+    divCount: number;
 
     /** defined externally */
-    staffIdx:        number;
+    staffIdx: number;
 
     /** @prototype */
-    frozenness:      Engine.IModel.FrozenLevel;
+    frozenness: Engine.IModel.FrozenLevel;
 
     modelDidLoad$(segment$: Engine.Measure.ISegment): void {
         // todo
@@ -49,24 +49,24 @@ class DirectionModel implements Export.IDirectionModel {
 
     /*---- I.2 MusicXML.Direction ---------------------------------------------------------------*/
 
-    directionTypes:     MusicXML.DirectionType[];
-    staff:              number;
-    offset:             MusicXML.Offset;
-    sound:              MusicXML.Sound;
+    directionTypes: MusicXML.DirectionType[];
+    staff: number;
+    offset: MusicXML.Offset;
+    sound: MusicXML.Sound;
 
     /*---- I.2.1 MusicXML.Placement -------------------------------------------------------------*/
 
-    placement:          MusicXML.AboveBelow;
+    placement: MusicXML.AboveBelow;
 
     /*---- I.2.2 MusicXML.EditorialVoice --------------------------------------------------------*/
 
-    voice:              number;
-    footnote:           MusicXML.Footnote;
-    level:              MusicXML.Level;
+    voice: number;
+    footnote: MusicXML.Footnote;
+    level: MusicXML.Level;
 
     /*---- I.2.3 MusicXML.Directive -------------------------------------------------------------*/
 
-    data:               string;
+    data: string;
 
     /*---- II. Life-cycle -----------------------------------------------------------------------*/
 
@@ -117,6 +117,7 @@ module DirectionModel {
                 model.directionTypes[idx] = Object.create(model.directionTypes[idx]);
                 _.forEach(type.words, (word, idx) => {
                     let origModel = type.words[idx];
+                    let defaults = cursor$.header.defaults;
                     type.words[idx] = Object.create(origModel);
                     type.words[idx].fontSize = type.words[idx].fontSize || "18";
                     type.words[idx].defaultX = 0;
@@ -125,15 +126,20 @@ module DirectionModel {
                         type.words[idx].data,
                         parseInt(type.words[idx].fontSize, 10),
                         type.words[idx].fontWeight === MusicXML.NormalBold.Normal ? null : "bold");
-                    const scale40 = cursor$.header.defaults.scaling.millimeters / cursor$.header.defaults.scaling.tenths * 40;
+                    const scale40 = defaults.scaling.millimeters / defaults.scaling.tenths * 40;
                     let boundingBox: Engine.IModel.IBoundingRect = <any> type.words[idx];
 
                     // Vertical coordinates are flipped (argh!)
-                    boundingBox.top = -Engine.RenderUtil.mmToTenths(scale40, fontBox.bottom/Engine.RenderUtil.ptPerMM)*1.1;
-                    boundingBox.bottom = -Engine.RenderUtil.mmToTenths(scale40, fontBox.top/Engine.RenderUtil.ptPerMM)*1.1;
+                    // We give 10% padding because elements touching isn't ideal.
+                    boundingBox.top = -Engine.RenderUtil.mmToTenths(scale40,
+                            fontBox.bottom/Engine.RenderUtil.ptPerMM)*1.1;
+                    boundingBox.bottom = -Engine.RenderUtil.mmToTenths(scale40,
+                            fontBox.top/Engine.RenderUtil.ptPerMM)*1.1;
 
-                    boundingBox.left = Engine.RenderUtil.mmToTenths(scale40, fontBox.left/Engine.RenderUtil.ptPerMM)*1.1;
-                    boundingBox.right = Engine.RenderUtil.mmToTenths(scale40, fontBox.right/Engine.RenderUtil.ptPerMM)*1.1;
+                    boundingBox.left = Engine.RenderUtil.mmToTenths(scale40,
+                            fontBox.left/Engine.RenderUtil.ptPerMM)*1.1;
+                    boundingBox.right = Engine.RenderUtil.mmToTenths(scale40,
+                            fontBox.right/Engine.RenderUtil.ptPerMM)*1.1;
                     this.boundingBoxes$.push(boundingBox);
                 });
                 if (type.dynamics) {

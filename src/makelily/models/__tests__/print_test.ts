@@ -22,13 +22,13 @@
 
 "use strict";
 
-import chai         = require("chai");
+import chai = require("chai");
 
-import Print        = require("../print");
-import Engine       = require("../engine");
-import Factory      = require("../factory");
+import Print = require("../print");
+import Engine = require("../engine");
+import Factory = require("../factory");
 
-var expect          = chai.expect;
+var expect = chai.expect;
 
 describe("[print.ts]", function() {
     describe("PrintModel", function() {

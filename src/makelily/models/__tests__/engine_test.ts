@@ -22,15 +22,15 @@
 
 "use strict";
 
-import Engine                   = require("../engine");
+import Engine = require("../engine");
 
-import MusicXML                 = require("musicxml-interfaces");
-import _                        = require("lodash");
-import chai                     = require("chai");
+import MusicXML = require("musicxml-interfaces");
+import _ = require("lodash");
+import chai = require("chai");
 
-var expect                      = chai.expect;
+var expect = chai.expect;
 
-import ETestUtil                = require("../engine/__tests__/etestutil");
+import ETestUtil = require("../engine/__tests__/etestutil");
 
 describe("[engine.ts]", function() {
     describe("Options.ILineBounds.calculate", function() {
@@ -158,9 +158,9 @@ describe("[engine.ts]", function() {
                 attributes: null,
                 measures: _.map(segments, function(segment, idx) {
                     return {
-                        idx:             idx,
-                        uuid:            91015 + idx,
-                        number:          (idx + 1) + "",
+                        idx: idx,
+                        uuid: 91015 + idx,
+                        number: (idx + 1) + "",
                         parts: <{[key: string]: any}> {
                             "P1": {
                                 voices: segment.voices,

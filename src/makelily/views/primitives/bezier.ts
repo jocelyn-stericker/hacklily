@@ -18,7 +18,7 @@
 
 "use strict";
 
-import React            = require("react");
+import React = require("react");
 
 /**
  * Responsible for the rendering a bezier curve, such as a

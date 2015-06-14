@@ -18,10 +18,10 @@
 
 "use strict";
 
-import Cola                     = require("webcola");
-import _                        = require("lodash");
+import Cola = require("webcola");
+import _ = require("lodash");
 
-import Engine                   = require("../engine");
+import Engine = require("../engine");
 
 interface IVPSCLayoutRect extends Cola.vpsc.Rectangle {
     mxmlBox: Engine.IModel.IBoundingRect;
@@ -65,7 +65,9 @@ function removeOverlaps(options: Engine.Options.ILayoutOptions, bounds: Engine.O
                         box.bottom = box.top + 0.01;
                     }
                     if (isNaN(box.top) || isNaN(box.bottom) || isNaN(box.left) || isNaN(box.right)) {
-                        console.warn("Invalid box.{top, bottom, left, right} = {%s, %s, %s, %s}", box.top, box.bottom, box.left, box.right);
+                        console.warn(
+                            "Invalid box.{top, bottom, left, right} = {%s, %s, %s, %s}",
+                            box.top, box.bottom, box.left, box.right);
                         return;
                     }
                     let rect: IVPSCLayoutRect = <any> new Cola.vpsc.Rectangle(

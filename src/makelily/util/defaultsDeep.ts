@@ -18,7 +18,7 @@
 
 "use strict";
 
-import _                = require("lodash");
+import _ = require("lodash");
 
 let defaultsDeep = _.partialRight(_.merge, function recursiveDefaults(/* ... */): any {
     // Ensure dates and arrays are not recursively merged

@@ -22,32 +22,37 @@
 
 "use strict";
 
-import MusicXML         = require("musicxml-interfaces");
-import _                = require("lodash");
-import invariant        = require("react/lib/invariant");
+import MusicXML = require("musicxml-interfaces");
+import _ = require("lodash");
+import invariant = require("react/lib/invariant");
 
-import ICursor          = require("./icursor");
-import IModel           = require("./imodel");
-import Util             = require("./util");
+import ICursor = require("./icursor");
+import IModel = require("./imodel");
+import Util = require("./util");
 
 interface IChord {
     [key: number]: MusicXML.Note;
     length: number;
     push: (...notes: MusicXML.Note[]) => number;
+    _class?: string;
 }
 
 module IChord {
     export function fromModel(model: IModel) {
         var chord = <IChord><any>model;
         invariant(chord.length > 0, "%s is not a chord", model);
-        invariant(!!chord[0].pitch || !!chord[0].rest || !!chord[0].unpitched, "%s does not " +
-                "have a valid first note", model);
+        invariant(!!chord[0].pitch || !!chord[0].rest || !!chord[0].unpitched,
+            "%s does not have a valid first note", model);
         return chord;
     }
 
     export function hasAccidental(chord: IChord, cursor: ICursor) {
         return _.any(chord, function(c) {
-            return !c.rest && ((c.pitch.alter || 0) !== (cursor.staff.accidentals$[c.pitch.alter] || 0) &&
+            if (!c.pitch) {
+                return false;
+            }
+            let accidental = (cursor.staff.accidentals$[c.pitch.alter] || 0);
+            return ((c.pitch.alter || 0) !== accidental &&
                     (c.pitch.alter || 0) !==
                         (cursor.staff.accidentals$[c.pitch.alter + c.pitch.octave] || 0) ||
                 !!c.accidental);
@@ -84,7 +89,8 @@ module IChord {
             .timeModification;
     }
 
-    export function setTimeModification$(chord$: IChord, timeModification: MusicXML.TimeModification) {
+    export function setTimeModification$(chord$: IChord,
+            timeModification: MusicXML.TimeModification) {
         _.forEach(chord$, note$ => {
             note$.timeModification = Util.cloneObject(timeModification);
         });
@@ -188,9 +194,11 @@ module IChord {
         }
     }
 
-    export function lineForClef_(step: string, octave: string | number, clef: MusicXML.Clef): number {
-        return IChord.getClefOffset(clef) + ((parseInt(<string> octave, 10) || 0) - 3) * 3.5 + IChord.pitchOffsets[step];
+    export function lineForClef_(step: string, octave: string | number,
+            clef: MusicXML.Clef): number {
 
+        let octaveNum = (parseInt(<string> octave, 10) || 0);
+        return IChord.getClefOffset(clef) + (octaveNum - 3) * 3.5 + IChord.pitchOffsets[step];
     }
 
     /**
@@ -228,7 +236,8 @@ module IChord {
     }
 
     export function barDivisions(attributes: MusicXML.Attributes) {
-        invariant(!!attributes.divisions, "Expected divisions to be set before calculating bar divisions.");
+        invariant(!!attributes.divisions,
+            "Expected divisions to be set before calculating bar divisions.");
 
         const time = attributes.times[0];
 
@@ -249,21 +258,21 @@ module IChord {
     export var MIN_STEM_HEIGHT: number = 25;
 
     export var defaultClefLines: { [key: string]: number} = {
-        G:              2,
-        F:              4,
-        C:              3,
-        PERCUSSION:     3,
-        TAB:            5,
-        NONE:           3
+        G: 2,
+        F: 4,
+        C: 3,
+        PERCUSSION: 3,
+        TAB: 5,
+        NONE: 3
     };
 
     export var clefOffsets: { [key: string]: number } = {
-        G:              -3.5,
-        F:               2.5,
-        C:              -0.5,
-        PERCUSSION:     -0.5,
-        TAB:            -0.5,
-        NONE:           -0.5
+        G: -3.5,
+        F: 2.5,
+        C: -0.5,
+        PERCUSSION: -0.5,
+        TAB: -0.5,
+        NONE: -0.5
     };
 
     export var chromaticScale: { [key: string]: number } = {

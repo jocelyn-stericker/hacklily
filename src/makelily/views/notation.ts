@@ -18,22 +18,22 @@
 
 "use strict";
 
-import MusicXML             = require("musicxml-interfaces");
-import React                = require("react");
-import _                    = require("lodash");
-import invariant            = require("react/lib/invariant");
-var $                       = React.createFactory;
+import MusicXML = require("musicxml-interfaces");
+import React = require("react");
+import _ = require("lodash");
+import invariant = require("react/lib/invariant");
+var $ = React.createFactory;
 
-import Articulation         = require("./notations/articulation");
-import Bezier               = require("./primitives/bezier");
-import Chord                = require("../models/chord");
-import Glyph                = require("./primitives/glyph");
-import SMuFL                = require("../models/smufl");
+import Articulation = require("./notations/articulation");
+import Bezier = require("./primitives/bezier");
+import Chord = require("../models/chord");
+import Glyph = require("./primitives/glyph");
+import SMuFL = require("../models/smufl");
 
 /**
  * Notations are things that are attached to notes.
  */
-class Notation extends React.Component<{spec: MusicXML.Notations, layout: Chord.IChordLayout, note: MusicXML.Note}, void> {
+class Notation extends React.Component<Notation.IProps, void> {
     render() {
         const model = this.props.spec;
         const notehead = this.props.layout.model.satieNotehead[0];
@@ -102,35 +102,35 @@ class Notation extends React.Component<{spec: MusicXML.Notations, layout: Chord.
                 return;
             }
 
-            let bbox2           = SMuFL.bboxes[notehead];
+            let bbox2 = SMuFL.bboxes[notehead];
             let noteheadCenter2 = 10*(bbox2[0] - bbox2[2])/2;
-            let offset2         = noteheadCenter2 - noteheadCenter - 4;
-            let defaultY        = this.context.originY - this.props.note.defaultY;
+            let offset2 = noteheadCenter2 - noteheadCenter - 4;
+            let defaultY = this.context.originY - this.props.note.defaultY;
 
-            let stem1           = this.props.layout.model.satieStem;
-            let stem2           = tieTo.model.satieStem;
-            let dir             = -1;
+            let stem1 = this.props.layout.model.satieStem;
+            let stem2 = tieTo.model.satieStem;
+            let dir = -1;
             if (stem1 && stem2 && stem1.direction === stem2.direction) {
-                dir             = -stem1.direction;
+                dir = -stem1.direction;
             } else if (stem1) {
-                dir             = -stem1.direction;
+                dir = -stem1.direction;
             } else if (stem2) {
-                dir             = -stem2.direction;
+                dir = -stem2.direction;
             }
 
             // This is the correct style only if space permits. See B.B. page 62.
-            var x2: number      = originX - this.props.layout.overrideX + tieTo.x$ + offset2;
-            var x1: number      = originX;
-            var y2: number      = defaultY - (dir === -1 ? -10 : 10);
-            var y1: number      = defaultY - (dir === -1 ? -10 : 10);
+            var x2: number = originX - this.props.layout.overrideX + tieTo.x$ + offset2;
+            var x1: number = originX;
+            var y2: number = defaultY - (dir === -1 ? -10 : 10);
+            var y1: number = defaultY - (dir === -1 ? -10 : 10);
 
-            var x2mx1: number   = x2 - x1;
-            var x1mx2: number   = -x2mx1;
-            var relw: number    = 3.2; // How "curved" it is
-            var y1my2: number   = y1 - y2;
-            var absw: number    = -dir*8.321228/Math.max(1, (Math.abs(y1my2)));
+            var x2mx1: number = x2 - x1;
+            var x1mx2: number = -x2mx1;
+            var relw: number = 3.2; // How "curved" it is
+            var y1my2: number = y1 - y2;
+            var absw: number = -dir*8.321228/Math.max(1, (Math.abs(y1my2)));
             if ((y1my2 > 0 ? -1 : 1)*dir === 1) {
-                absw            = absw * 2;
+                absw = absw * 2;
             }
 
             invariant(!isNaN(x2), "Invalid x2 %s", x2);
@@ -186,18 +186,23 @@ class Notation extends React.Component<{spec: MusicXML.Notations, layout: Chord.
     }
     getChildContext() {
         return {
-            originX:        this.context.originX + this.props.layout.model[0].defaultX
+            originX: this.context.originX + this.props.layout.model[0].defaultX
         };
     }
 };
 
 module Notation {
+    export interface IProps {
+        spec: MusicXML.Notations;
+        layout: Chord.IChordLayout;
+        note: MusicXML.Note;
+    }
     export var childContextTypes = <any> {
-        originX:            React.PropTypes.number.isRequired
+        originX: React.PropTypes.number.isRequired
     };
     export var contextTypes = <any> {
-        originX:            React.PropTypes.number.isRequired,
-        originY:            React.PropTypes.number.isRequired
+        originX: React.PropTypes.number.isRequired,
+        originY: React.PropTypes.number.isRequired
     };
 }
 

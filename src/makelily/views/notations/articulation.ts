@@ -18,11 +18,13 @@
 
 "use strict";
 
-import MusicXML             = require("musicxml-interfaces");
-import React                = require("react");
-var $                       = React.createFactory;
+import MusicXML = require("musicxml-interfaces");
+import React = require("react");
+var $ = React.createFactory;
 
-import Glyph                = require("../primitives/glyph");
+import Glyph = require("../primitives/glyph");
+
+type MXMLArticulation = MusicXML.PrintStyle | MusicXML.Placement;
 
 class Articulation extends React.Component<{articulation: MusicXML.Articulations}, void> {
     render() {
@@ -49,7 +51,7 @@ class Articulation extends React.Component<{articulation: MusicXML.Articulations
         // "caesuraShort": "U+E4D3",
         // "caesuraThick": "U+E4D2",
 
-        let append = (type: MusicXML.PrintStyle | MusicXML.Placement, name: string, directioned = true) => {
+        let append = (type: MXMLArticulation, name: string, directioned = true) => {
             let printStyle = <MusicXML.PrintStyle> type;
             let placement = <MusicXML.Placement> type;
             let direction = (function() {
@@ -134,8 +136,8 @@ class Articulation extends React.Component<{articulation: MusicXML.Articulations
 
 module Articulation {
     export var contextTypes = <any> {
-        originX:            React.PropTypes.number.isRequired,
-        originY:            React.PropTypes.number.isRequired
+        originX: React.PropTypes.number.isRequired,
+        originY: React.PropTypes.number.isRequired
     };
 }
 

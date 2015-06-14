@@ -16,14 +16,14 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import MusicXML             = require("musicxml-interfaces");
-import React                = require("react");
-import _                    = require("lodash");
-let $                       = React.createFactory;
-import invariant            = require("react/lib/invariant");
+import MusicXML = require("musicxml-interfaces");
+import React = require("react");
+import _ = require("lodash");
+let $ = React.createFactory;
+import invariant = require("react/lib/invariant");
 
-import DirectionModel       = require("../../models/direction");
-import Glyph                = require("../primitives/glyph");
+import DirectionModel = require("../../models/direction");
+import Glyph = require("../primitives/glyph");
 
 class Dynamics extends React.Component<{layout: DirectionModel.ILayout}, void> {
     render(): any {
@@ -124,8 +124,8 @@ class Dynamics extends React.Component<{layout: DirectionModel.ILayout}, void> {
 
 module Dynamics {
     export var contextTypes = <any> {
-        originX:         React.PropTypes.number.isRequired,
-        originY:         React.PropTypes.number.isRequired
+        originX: React.PropTypes.number.isRequired,
+        originY: React.PropTypes.number.isRequired
     };
 }
 

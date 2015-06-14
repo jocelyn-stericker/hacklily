@@ -22,20 +22,20 @@
 
 "use strict";
 
-import MusicXML         = require("musicxml-interfaces");
+import MusicXML = require("musicxml-interfaces");
 
-import Ctx              = require("./ctx");
-import IModel           = require("./imodel");  // @circular
-import Measure          = require("./measure"); // @circular
+import Context = require("./context");
+import IModel = require("./imodel"); // @circular
+import Measure = require("./measure"); // @circular
 
 interface ICursor {
-    segment:            Measure.ISegment;
-    idx$:               number;
+    segment: Measure.ISegment;
+    idx$: number;
 
-    voice:              Ctx.IVoice;
-    staff:              Ctx.IStaff;
-    measure:            Ctx.IMeasure;
-    line:               Ctx.ILine;
+    voice: Context.IVoice;
+    staff: Context.IStaff;
+    measure: Context.IMeasure;
+    line: Context.ILine;
 
     /** 
      * Model that appears directly before this model. This could be:
@@ -43,31 +43,31 @@ interface ICursor {
      *  - the previous model in the current staff
      *  - a BarlineModel, BeginModel, or EndModel
      */
-    prev$:              IModel;
-    division$:          number;
-    x$:                 number;
-    print$:             MusicXML.Print;
-    header:             MusicXML.ScoreHeader;
-    minXBySmallest$?:   {[key: number]: number};
+    prev$: IModel;
+    division$: number;
+    x$: number;
+    print$: MusicXML.Print;
+    header: MusicXML.ScoreHeader;
+    minXBySmallest$?: {[key: number]: number};
     /**
      * By staff
      */
-    maxPaddingTop$:     number[];
+    maxPaddingTop$: number[];
     /**
      * By staff
      */
-    maxPaddingBottom$:  number[];
+    maxPaddingBottom$: number[];
 
     /**
      * Only available in second layout$
      */
-    page$:              number;
+    page$: number;
 
-    approximate:        boolean;
-    detached:           boolean;
-    factory:            IModel.IFactory;
+    approximate: boolean;
+    detached: boolean;
+    factory: IModel.IFactory;
 
-    hiddenCounter$?:    number;
+    hiddenCounter$?: number;
 }
 
 module ICursor {

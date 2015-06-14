@@ -16,55 +16,55 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import MusicXML         = require("musicxml-interfaces");
-import _                = require("lodash");
-import invariant        = require("react/lib/invariant");
+import MusicXML = require("musicxml-interfaces");
+import _ = require("lodash");
+import invariant = require("react/lib/invariant");
 
-import ChordModel       = require("../chord");
-import Engine           = require("../engine");
-import Lyrics           = require("./lyrics");
-import Metre            = require("./metre");
-import Notation         = require("./notation");
-import NoteImpl         = require("./noteImpl"); // @cyclic
-import SMuFL            = require("../smufl");
+import ChordModel = require("../chord");
+import Engine = require("../engine");
+import Lyrics = require("./lyrics");
+import Metre = require("./metre");
+import Notation = require("./notation");
+import NoteImpl = require("./noteImpl"); // @cyclic
+import SMuFL = require("../smufl");
 
-const IDEAL_STEM_HEIGHT: number    = 35;
-const MIN_STEM_HEIGHT: number      = 30;
+const IDEAL_STEM_HEIGHT: number = 35;
+const MIN_STEM_HEIGHT: number = 30;
 
 let countToNotehead: { [key: number]: string } = {
-    [MusicXML.Count.Maxima]:    "noteheadDoubleWhole",
-    [MusicXML.Count.Long]:      "noteheadDoubleWhole",
-    [MusicXML.Count.Breve]:     "noteheadDoubleWhole",
-    [MusicXML.Count.Whole]:     "noteheadWhole",
-    [-1]:                       "noteheadWhole",
-    [MusicXML.Count.Half]:      "noteheadHalf",
-    [MusicXML.Count.Quarter]:   "noteheadBlack",
-    [MusicXML.Count.Eighth]:    "noteheadBlack",
-    [MusicXML.Count._16th]:     "noteheadBlack",
-    [MusicXML.Count._32nd]:     "noteheadBlack",
-    [MusicXML.Count._64th]:     "noteheadBlack",
-    [MusicXML.Count._128th]:    "noteheadBlack",
-    [MusicXML.Count._256th]:    "noteheadBlack",
-    [MusicXML.Count._512th]:    "noteheadBlack",
-    [MusicXML.Count._1024th]:   "noteheadBlack"
+    [MusicXML.Count.Maxima]: "noteheadDoubleWhole",
+    [MusicXML.Count.Long]: "noteheadDoubleWhole",
+    [MusicXML.Count.Breve]: "noteheadDoubleWhole",
+    [MusicXML.Count.Whole]: "noteheadWhole",
+    [-1]: "noteheadWhole",
+    [MusicXML.Count.Half]: "noteheadHalf",
+    [MusicXML.Count.Quarter]: "noteheadBlack",
+    [MusicXML.Count.Eighth]: "noteheadBlack",
+    [MusicXML.Count._16th]: "noteheadBlack",
+    [MusicXML.Count._32nd]: "noteheadBlack",
+    [MusicXML.Count._64th]: "noteheadBlack",
+    [MusicXML.Count._128th]: "noteheadBlack",
+    [MusicXML.Count._256th]: "noteheadBlack",
+    [MusicXML.Count._512th]: "noteheadBlack",
+    [MusicXML.Count._1024th]: "noteheadBlack"
 };
 
 let countToRest: { [key: number]: string } = {
-    [MusicXML.Count.Maxima]:    "restLonga",
-    [MusicXML.Count.Long]:      "restLonga",
-    [MusicXML.Count.Breve]:     "restDoubleWhole",
-    [MusicXML.Count.Whole]:     "restWhole",
-    [-1]:                       "restWhole",
-    [MusicXML.Count.Half]:      "restHalf",
-    [MusicXML.Count.Quarter]:   "restQuarter",
-    [MusicXML.Count.Eighth]:    "rest8th",
-    [MusicXML.Count._16th]:     "rest16th",
-    [MusicXML.Count._32nd]:     "rest32nd",
-    [MusicXML.Count._64th]:     "rest64th",
-    [MusicXML.Count._128th]:    "rest128th",
-    [MusicXML.Count._256th]:    "rest256th",
-    [MusicXML.Count._512th]:    "rest512th",
-    [MusicXML.Count._1024th]:   "rest1024th"
+    [MusicXML.Count.Maxima]: "restLonga",
+    [MusicXML.Count.Long]: "restLonga",
+    [MusicXML.Count.Breve]: "restDoubleWhole",
+    [MusicXML.Count.Whole]: "restWhole",
+    [-1]: "restWhole",
+    [MusicXML.Count.Half]: "restHalf",
+    [MusicXML.Count.Quarter]: "restQuarter",
+    [MusicXML.Count.Eighth]: "rest8th",
+    [MusicXML.Count._16th]: "rest16th",
+    [MusicXML.Count._32nd]: "rest32nd",
+    [MusicXML.Count._64th]: "rest64th",
+    [MusicXML.Count._128th]: "rest128th",
+    [MusicXML.Count._256th]: "rest256th",
+    [MusicXML.Count._512th]: "rest512th",
+    [MusicXML.Count._1024th]: "rest1024th"
 };
 
 /**
@@ -76,9 +76,9 @@ class ChordModelImpl implements ChordModel.IChordModel {
     /*---- I.1 IModel ---------------------------------------------------------------------------*/
 
     /** set in validate$ */
-    divCount:        number;
+    divCount: number;
 
-    get staffIdx():  number {
+    get staffIdx(): number {
         return this[0].staff;
     }
 
@@ -89,7 +89,7 @@ class ChordModelImpl implements ChordModel.IChordModel {
     }
 
     /** @prototype */
-    frozenness:      Engine.IModel.FrozenLevel;
+    frozenness: Engine.IModel.FrozenLevel;
 
     /** @prototype only */
     modelDidLoad$(segment$: Engine.Measure.ISegment): void {
@@ -110,9 +110,9 @@ class ChordModelImpl implements ChordModel.IChordModel {
 
         if (Engine.IChord.countToHasStem[this.count]) {
             this.satieStem = {
-                direction:  direction,
+                direction: direction,
                 stemHeight: this._getStemHeight(direction, clef),
-                stemStart:  Engine.IChord.startingLine(this, direction, clef)
+                stemStart: Engine.IChord.startingLine(this, direction, clef)
             };
 
             this.satieDirection = direction === 1 ? MusicXML.StemType.Up : MusicXML.StemType.Down;
@@ -147,7 +147,8 @@ class ChordModelImpl implements ChordModel.IChordModel {
         // TODO: rhythmic spelling
         // TODO: the document must end with a marker
 
-        invariant(isFinite(this._count) && this._count !== null, "%s is not a valid count", this._count);
+        invariant(isFinite(this._count) && this._count !== null,
+            "%s is not a valid count", this._count);
 
         this._checkMulitpleRest$(cursor$);
         this._implyNoteheads$(cursor$);
@@ -160,21 +161,21 @@ class ChordModelImpl implements ChordModel.IChordModel {
     }
 
     layout(cursor$: Engine.ICursor): ChordModel.IChordLayout {
-        let measureStyle: MusicXML.MeasureStyle = cursor$.staff.attributes[cursor$.segment.part].measureStyle;
+        let measureStyle = cursor$.staff.attributes[cursor$.segment.part].measureStyle;
         if (measureStyle && measureStyle.multipleRest && measureStyle.multipleRest.count > 1) {
-            cursor$.staff.multiRestRem = measureStyle.multipleRest.count;
+            cursor$.staff.hiddenMeasuresRemaining = measureStyle.multipleRest.count;
         }
         return new ChordModelImpl.Layout(this, cursor$);
     }
 
     private _checkMulitpleRest$(cursor$: Engine.ICursor) {
-        let measureStyle: MusicXML.MeasureStyle = cursor$.staff.attributes[cursor$.segment.part].measureStyle;
+        let measureStyle = cursor$.staff.attributes[cursor$.segment.part].measureStyle;
         if (measureStyle && measureStyle.multipleRest && measureStyle.multipleRest.count > 1) {
             this.satieMultipleRest = measureStyle.multipleRest;
-            cursor$.staff.multiRestRem = measureStyle.multipleRest.count;
+            cursor$.staff.hiddenMeasuresRemaining = measureStyle.multipleRest.count;
         } else {
             delete this.satieMultipleRest;
-            cursor$.staff.multiRestRem = 0;
+            cursor$.staff.hiddenMeasuresRemaining = 0;
         }
     }
 
@@ -193,7 +194,7 @@ class ChordModelImpl implements ChordModel.IChordModel {
     /*---- I.2 IChord ---------------------------------------------------------------------------*/
 
     [key: number]: NoteImpl;
-    length: number              = 0;
+    length: number = 0;
     wholebar$: boolean;
 
     /*---- II. Life-cycle -----------------------------------------------------------------------*/
@@ -202,9 +203,9 @@ class ChordModelImpl implements ChordModel.IChordModel {
      * We accept either a Note from musicxml-interfaces, or an IChord, which 
      * is an array-like element of Notes. In either case, we create a deep copy.
      */
-    constructor(spec?: Engine.IChord | MusicXML.Note | {_class: string}) {
+    constructor(spec?: Engine.IChord | MusicXML.Note) {
         if (!!spec) {
-            if ((<{_class: string}>spec)._class === "Note") {
+            if (spec._class === "Note") {
                 this[0] = new NoteImpl(this, 0, spec);
                 this.length = 1;
             } else if ((<Engine.IChord>spec).length) {
@@ -256,7 +257,7 @@ class ChordModelImpl implements ChordModel.IChordModel {
     }
 
     set timeModification(t: MusicXML.TimeModification) {
-        this._timeModification            = t;
+        this._timeModification = t;
     }
 
     get notes(): NoteImpl[] {
@@ -445,11 +446,12 @@ class ChordModelImpl implements ChordModel.IChordModel {
             //    direction only
             let linePrev = nIdx > 0 ? Engine.IChord.averageLine(notes[nIdx - 1], clef) : 3;
             if (linePrev === 3 && nIdx > 0) {
-                // Note, the solution obtained may not be ideal, because we greedily resolve ties in a forward
-                // direction.
+                // Note, the solution obtained may not be ideal, because we greedily resolve
+                // ties in a forward direction.
                 linePrev = notes[nIdx - 1].satieDirection === 1 ? 2.99 : 3.01;
             }
-            const lineNext = nIdx + 1 < notes.length ? Engine.IChord.averageLine(notes[nIdx + 1], clef) : 3;
+            let lineNext = nIdx + 1 < notes.length ?
+                Engine.IChord.averageLine(notes[nIdx + 1], clef) : 3;
             if (linePrev > 3 && lineNext > 3) {
                 return -1;
             }
@@ -461,9 +463,10 @@ class ChordModelImpl implements ChordModel.IChordModel {
             //    of the notes that are part of the same beat or half-bar.
             //    (Note: we use the more general beaming pattern instead of half-bar to
             //     decide boundries)
-            const beamingPattern = Metre.getBeamingPattern(cursor$.staff.attributes[cursor$.segment.part].times);
-            const bpDivisions = _.map(beamingPattern, seg => Metre.calcDivisions(seg, cursor$));
-            const currDivision = cursor$.division$;
+            let times = cursor$.staff.attributes[cursor$.segment.part].times;
+            let beamingPattern = Metre.getBeamingPattern(times);
+            let bpDivisions = _.map(beamingPattern, seg => Metre.calcDivisions(seg, cursor$));
+            let currDivision = cursor$.division$;
             let prevDivisionStart = 0;
             let i = 0;
             for (; i < bpDivisions.length; ++i) {
@@ -473,8 +476,11 @@ class ChordModelImpl implements ChordModel.IChordModel {
                 prevDivisionStart += bpDivisions[i];
             }
             let nextDivisionStart = prevDivisionStart + bpDivisions[i] || NaN;
-            let considerPrev = (prevDivisionStart < currDivision) ? notes[nIdx - 1] : null;
-            let considerNext = (nextDivisionStart > currDivision + this.divCount) ? notes[nIdx + 1] : null;
+            let prevExists = prevDivisionStart < currDivision;
+            let nextExists = nextDivisionStart > currDivision + this.divCount;
+
+            let considerPrev = prevExists ? notes[nIdx - 1] : null;
+            let considerNext = nextExists ? notes[nIdx + 1] : null;
             if (considerPrev && !considerNext && linePrev !== 3) {
                 return linePrev > 3 ? -1 : 1;
             } else if (considerNext && !considerPrev && lineNext !== 3) {
@@ -491,9 +497,9 @@ class ChordModelImpl implements ChordModel.IChordModel {
     }
 
     satieStem: {
-        direction:  number;
+        direction: number;
         stemHeight: number;
-        stemStart:  number;
+        stemStart: number;
     };
 
     satieFlag: string;
@@ -512,8 +518,7 @@ module ChordModelImpl {
     export class Layout implements ChordModel.IChordLayout {
         constructor(baseModel: ChordModelImpl, cursor$: Engine.ICursor) {
             this.division = cursor$.division$;
-
-            if (cursor$.staff.multiRestRem > 0 && !baseModel.satieMultipleRest) {
+            if (cursor$.staff.hiddenMeasuresRemaining > 0 && !baseModel.satieMultipleRest) {
                 // This is not displayed because it is part of a multirest.
                 this.expandPolicy = Engine.IModel.ExpandPolicy.None;
                 return;
@@ -522,23 +527,30 @@ module ChordModelImpl {
             this.model = this._detachModelWithContext(cursor$, baseModel);
             this.boundingBoxes$ = this._captureBoundingBoxes();
 
-            if (baseModel.satieMultipleRest || baseModel.rest &&
-                    baseModel.count === MusicXML.Count.Whole) {
+            let isWhole = baseModel.count === MusicXML.Count.Whole;
+
+            if (baseModel.satieMultipleRest || baseModel.rest && isWhole) {
                 // N.B.: this.model does not have count
                 this.expandPolicy = Engine.IModel.ExpandPolicy.Centered;
             }
 
             _.forEach(this.model, note => {
-                invariant(!!note.staff, "Expected the staff to be a non-zero number, but its %s", note.staff);
-                cursor$.maxPaddingTop$[note.staff] = Math.max(cursor$.maxPaddingTop$[note.staff] || 0, note.defaultY - 50);
-                cursor$.maxPaddingBottom$[note.staff] = Math.max(cursor$.maxPaddingBottom$[note.staff] || 0, - note.defaultY - 25);
+                let staff = note.staff;
+
+                invariant(!!staff,
+                    "Expected the staff to be a non-zero number, but its %s", staff);
+                let paddingTop = cursor$.maxPaddingTop$[staff] || 0;
+                let paddingBottom = cursor$.maxPaddingBottom$[staff] || 0;
+                cursor$.maxPaddingTop$[staff] = Math.max(paddingTop, note.defaultY - 50);
+                cursor$.maxPaddingBottom$[staff] = Math.max(paddingBottom, -note.defaultY - 25);
             });
 
             let accidentalWidth = this._calcAccidentalWidth();
             let totalWidth = this._calcTotalWidth(cursor$, baseModel);
             invariant(isFinite(totalWidth), "Invalid width %s", totalWidth);
 
-            let widths = _.map(baseModel.satieNotehead, notehead => (SMuFL.bboxes[notehead][0] - SMuFL.bboxes[notehead][2])*10);
+            let noteheads = baseModel.satieNotehead;
+            let widths = _.map(noteheads, SMuFL.getWidth);
             this.renderedWidth = _.max(widths);
 
             this.x$ = cursor$.x$ + accidentalWidth;
@@ -549,13 +561,13 @@ module ChordModelImpl {
 
         _captureBoundingBoxes(): Engine.IModel.IBoundingRect[] {
             /*{
-                frozenness:     IModel.FrozenLevel;
-                defaultX:       number;
-                defaultY:       number;
-                relativeX?:     number;
-                relativeY?:     number;
-                w:              number;
-                h:              number;
+                frozenness: IModel.FrozenLevel;
+                defaultX: number;
+                defaultY: number;
+                relativeX?: number;
+                relativeY?: number;
+                w: number;
+                h: number;
             }*/
             let bboxes: Engine.IModel.IBoundingRect[] = [];
             _.forEach(this.model, note => {
@@ -602,7 +614,8 @@ module ChordModelImpl {
         }
 
         _getLyricWidth(cursor: Engine.ICursor) {
-            return Lyrics.getChordLyricWidth(this.model, 40*25.4/96); // 40 tenths in staff * pixelFactor
+            let factor = 40*25.4/96; // 40 tenths in staff * pixelFactor
+            return Lyrics.getChordLyricWidth(this.model, factor);
         }
 
         _detachModelWithContext(cursor: Engine.ICursor, baseModel: ChordModelImpl): ChordModelImpl {

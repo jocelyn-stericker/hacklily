@@ -16,8 +16,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import MusicXML             = require("musicxml-interfaces");
-import _                    = require("lodash");
+import MusicXML = require("musicxml-interfaces");
+import _ = require("lodash");
+import invariant = require("react/lib/invariant");
 
 "use strict";
 
@@ -25,6 +26,9 @@ import _                    = require("lodash");
  * Returns true if warning Attributes are required at the end of a line, and false otherwise.
  */
 export function needsWarning(end: MusicXML.Attributes, start: MusicXML.Attributes, staff: number) {
+    if ("P1" in end || "P1" in start) {
+        invariant(null, "An object with 'P1' was passed to needsWarning. Check your types!!");
+    }
     return !clefsEqual(end, start, staff) || !timesEqual(end, start, 0) || !keysEqual(end, start, 0);
 }
 
@@ -57,7 +61,8 @@ export function timeWidth(attributes: MusicXML.Attributes, staff: number) {
     if (!attributes.times || !attributes.times[staff] || !attributes.times[staff].beatTypes) {
         return 0;
     }
-    let numeratorSegments = _.reduce(attributes.times[staff].beats, (memo, beats) => memo + beats.split("+").length, 0);
+    let beats = attributes.times[staff].beats;
+    let numeratorSegments = _.reduce(beats, (memo, beats) => memo + beats.split("+").length, 0);
     return NUMBER_SPACING*numeratorSegments +
         (attributes.times[staff].beatTypes.length - 1)*PLUS_SPACING;
 }
@@ -141,118 +146,118 @@ export module Clef {
     export const standardClefs: MusicXML.Clef[] = [
         {
             // Treble
-            line:               2,
-            sign:               "G",
-            additional:         false,
-            afterBarline:       false,
-            clefOctaveChange:   null,
-            color:              "#000000",
-            defaultX:           -16,
-            defaultY:           16,
-            fontFamily:         "",
-            fontSize:           "small",
-            fontStyle:          0,
-            fontWeight:         0,
-            number:             1,
-            printObject:        true,
-            relativeX:          0,
-            relativeY:          0,
-            size:               1
+            line: 2,
+            sign: "G",
+            additional: false,
+            afterBarline: false,
+            clefOctaveChange: null,
+            color: "#000000",
+            defaultX: -16,
+            defaultY: 16,
+            fontFamily: "",
+            fontSize: "small",
+            fontStyle: 0,
+            fontWeight: 0,
+            number: 1,
+            printObject: true,
+            relativeX: 0,
+            relativeY: 0,
+            size: 1
         }, {
             // bass
-            line:               4,
-            sign:               "F",
-            additional:         false,
-            afterBarline:       false,
-            clefOctaveChange:   null,
-            color:              "#000000",
-            defaultX:           -16,
-            defaultY:             4,
-            fontFamily:         "",
-            fontSize:           "small",
-            fontStyle:          0,
-            fontWeight:         0,
-            number:             1,
-            printObject:        true,
-            relativeX:          0,
-            relativeY:          0,
-            size:               1
+            line: 4,
+            sign: "F",
+            additional: false,
+            afterBarline: false,
+            clefOctaveChange: null,
+            color: "#000000",
+            defaultX: -16,
+            defaultY: 4,
+            fontFamily: "",
+            fontSize: "small",
+            fontStyle: 0,
+            fontWeight: 0,
+            number: 1,
+            printObject: true,
+            relativeX: 0,
+            relativeY: 0,
+            size: 1
         }, {
             // tenor
-            line:               3,
-            sign:               "C",
-            additional:         false,
-            afterBarline:       false,
-            clefOctaveChange:   null,
-            color:              "#000000",
-            defaultX:           -16,
-            defaultY:             0,
-            fontFamily:         "",
-            fontSize:           "small",
-            fontStyle:          0,
-            fontWeight:         0,
-            number:             1,
-            printObject:        true,
-            relativeX:          0,
-            relativeY:          0,
-            size:               1
+            line: 3,
+            sign: "C",
+            additional: false,
+            afterBarline: false,
+            clefOctaveChange: null,
+            color: "#000000",
+            defaultX: -16,
+            defaultY: 0,
+            fontFamily: "",
+            fontSize: "small",
+            fontStyle: 0,
+            fontWeight: 0,
+            number: 1,
+            printObject: true,
+            relativeX: 0,
+            relativeY: 0,
+            size: 1
         }, {
             // alto
-            line:               4,
-            sign:               "C",
-            additional:         false,
-            afterBarline:       false,
-            clefOctaveChange:   null,
-            color:              "#000000",
-            defaultX:           -16,
-            defaultY:           8,
-            fontFamily:         "",
-            fontSize:           "small",
-            fontStyle:          0,
-            fontWeight:         0,
-            number:             1,
-            printObject:        true,
-            relativeX:          0,
-            relativeY:          0,
-            size:               1
+            line: 4,
+            sign: "C",
+            additional: false,
+            afterBarline: false,
+            clefOctaveChange: null,
+            color: "#000000",
+            defaultX: -16,
+            defaultY: 8,
+            fontFamily: "",
+            fontSize: "small",
+            fontStyle: 0,
+            fontWeight: 0,
+            number: 1,
+            printObject: true,
+            relativeX: 0,
+            relativeY: 0,
+            size: 1
         },
         {
-            line:               3,
-            sign:               "percussion",
-            additional:         false,
-            afterBarline:       false,
-            clefOctaveChange:   null,
-            color:              "#000000",
-            defaultX:           -16,
-            defaultY:           8,
-            fontFamily:         "",
-            fontSize:           "small",
-            fontStyle:          0,
-            fontWeight:         0,
-            number:             1,
-            printObject:        true,
-            relativeX:          0,
-            relativeY:          0,
-            size:               1
+            line: 3,
+            sign: "percussion",
+            additional: false,
+            afterBarline: false,
+            clefOctaveChange: null,
+            color: "#000000",
+            defaultX: -16,
+            defaultY: 8,
+            fontFamily: "",
+            fontSize: "small",
+            fontStyle: 0,
+            fontWeight: 0,
+            number: 1,
+            printObject: true,
+            relativeX: 0,
+            relativeY: 0,
+            size: 1
         },
         {
-            line:               5,
-            sign:               "tab",
-            additional:         false,
-            afterBarline:       false,
-            clefOctaveChange:   null,
-            color:              "#000000",
-            defaultX:           -16,
-            defaultY:           8,
-            fontFamily:         "",
-            fontSize:           "small",
-            fontStyle:          0,
-            fontWeight:         0,
-            number:             1,
-            printObject:        true,
-            relativeX:          0,
-            relativeY:          0,
-            size:               1
+            line: 5,
+            sign: "tab",
+            additional: false,
+            afterBarline: false,
+            clefOctaveChange: null,
+            color: "#000000",
+            defaultX: -16,
+            defaultY: 8,
+            fontFamily: "",
+            fontSize: "small",
+            fontStyle: 0,
+            fontWeight: 0,
+            number: 1,
+            printObject: true,
+            relativeX: 0,
+            relativeY: 0,
+            size: 1
         }
     ];
 }
@@ -282,7 +287,8 @@ export function keyWidths(spec: MusicXML.Key) {
             }
         });
     }
-    let idxes = _.times(Math.min(7, Math.abs(spec.fifths)), i => (i + Math.max(0, Math.abs(spec.fifths) - 7))%7);
+    let accidentalCount = Math.min(7, Math.abs(spec.fifths));
+    let idxes = _.times(accidentalCount, i => (i + Math.max(0, Math.abs(spec.fifths) - 7)) % 7);
     _.forEach(idxes, i => widths[i] = getWidth(i, spec.fifths >= 0));
     return widths;
 
@@ -302,12 +308,13 @@ export function keyWidths(spec: MusicXML.Key) {
     }
 }
 
-export const NUMBER_SPACING     = 28;
-export const PLUS_SPACING       = 12;
-export const CLEF_INDENTATION   = 7; // Gould(6): "A clef is indented into the stave by one stave-space or a little less"
-export const FLAT_WIDTH         = 10;
-export const DOUBLE_FLAT_WIDTH  = 19;
+export const NUMBER_SPACING = 28;
+export const PLUS_SPACING = 12;
+// Gould(6): "A clef is indented into the stave by one stave-space or a little less"
+export const CLEF_INDENTATION = 7;
+export const FLAT_WIDTH = 10;
+export const DOUBLE_FLAT_WIDTH = 19;
 export const DOUBLE_SHARP_WIDTH = 13;
-export const SHARP_WIDTH        = 11;
-export const NATURAL_WIDTH      = 11;
+export const SHARP_WIDTH = 11;
+export const NATURAL_WIDTH = 11;
 

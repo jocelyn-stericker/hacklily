@@ -18,12 +18,12 @@
 
 "use strict";
 
-import React                = require("react");
-import _                    = require("lodash");
-var $                       = React.createFactory;
+import React = require("react");
+import _ = require("lodash");
+var $ = React.createFactory;
 
-import Line                 = require("./primitives/line");
-import SMuFL                = require("../models/smufl");
+import Line = require("./primitives/line");
+import SMuFL = require("../models/smufl");
 
 /**
  * Renders the (usually 5) lines that make up a stave.
@@ -33,13 +33,13 @@ class StaveLines extends React.Component<StaveLines.IProps, {}> {
         let top = this.context.originY - this.props.y;
         return React.DOM.g(null,
             _.times(this.props.lines, i => $(Line)({
-                key:            "staff-" + i,
-                x1:             this.props.x,
-                x2:             this.props.x + this.props.width,
-                y1:             top - 10*(i - 2),
-                y2:             top - 10*(i - 2),
-                stroke:         "#6A6A6A",
-                strokeWidth:    SMuFL.bravura.engravingDefaults.staffLineThickness*10 // TODO: use print
+                key: "staff-" + i,
+                x1: this.props.x,
+                x2: this.props.x + this.props.width,
+                y1: top - 10*(i - 2),
+                y2: top - 10*(i - 2),
+                stroke: "#6A6A6A",
+                strokeWidth: SMuFL.bravura.engravingDefaults.staffLineThickness*10 // TODO: use print
             }))
         /* React.DOM.g */);
     }
@@ -47,13 +47,13 @@ class StaveLines extends React.Component<StaveLines.IProps, {}> {
 
 module StaveLines {
     export var contextTypes = <any> {
-        originY:            React.PropTypes.number.isRequired
+        originY: React.PropTypes.number.isRequired
     };
     export interface IProps {
-        lines:              number;
-        width:              number;
-        x:                  number;
-        y:                  number;
+        lines: number;
+        width: number;
+        x: number;
+        y: number;
     }
 }
 

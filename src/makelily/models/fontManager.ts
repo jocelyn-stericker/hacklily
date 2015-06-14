@@ -18,11 +18,11 @@
 
 "use strict";
 
-import Opentype                 = require("opentype.js");
-import _                        = require("lodash");
+import Opentype = require("opentype.js");
+import _ = require("lodash");
 
-const IS_BROWSER                = !!(<any>process).browser;
-const NO_PATH_DATA              = <Opentype.Font> {};
+const IS_BROWSER = !!(<any>process).browser;
+const NO_PATH_DATA = <Opentype.Font> {};
 
 /*---- PUBLIC -------------------------------------------------------------------------*/
 
@@ -111,7 +111,8 @@ export function getTextBB(name: string, text: string, fontSize: number, style?: 
     };
 }
 
-export function toPathData(name: string, text: string, x: number, y: number, fontSize: number, style?: string) {
+export function toPathData(name: string, text: string,
+        x: number, y: number, fontSize: number, style?: string) {
     let fullName = getFullName(name, style);
     let font = State.fonts[fullName];
     if (!font) {
@@ -133,8 +134,12 @@ module State {
     export let remaining = 0;
     export let err: Error;
     // TypeScript 1.5 is smart about this, but 1.5-beta isn't, so we have to explicitly cast this.
-    export let canvasContext = IS_BROWSER ? <CanvasRenderingContext2D> document.createElement("canvas").getContext("2d") : null;
-    export let root = IS_BROWSER ? location.protocol + "//" + location.host + "/vendor/" : "./vendor/";
+    export let canvasContext = IS_BROWSER ?
+        <CanvasRenderingContext2D> document.createElement("canvas").getContext("2d") :
+        null;
+    export let root = IS_BROWSER ?
+        location.protocol + "//" + location.host + "/vendor/" :
+        "./vendor/";
 }
 
 function getFullName(name: string, style?: string) {
@@ -171,7 +176,8 @@ function loadFont(name: string, url: string, style: string, full?: boolean) {
                 let styleSheet = <CSSStyleSheet> document.styleSheets[0];
                 let fontFaceStyle = `@font-face{
                     font-family: ${name};
-                    src: url(data:font/truetype;charset=utf-8;base64,${toBase64(buffer)}) format('truetype');
+                    src: url(data:font/truetype;charset=utf-8;base64,${toBase64(buffer)
+                        }) format('truetype');
                     ${style && style.toLowerCase() === "bold" ? "font-weight: bold;" : ""}
                 }`;
                 styleSheet.insertRule(fontFaceStyle, 0);

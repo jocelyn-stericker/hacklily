@@ -18,8 +18,8 @@
 
 "use strict";
 
-import MusicXML             = require("musicxml-interfaces");
-import React                = require("react");
+import MusicXML = require("musicxml-interfaces");
+import React = require("react");
 
 class BarNumber extends React.Component<{spec: MusicXML.Position, barNumber: string}, void> {
     render(): any {
@@ -35,8 +35,8 @@ class BarNumber extends React.Component<{spec: MusicXML.Position, barNumber: str
 
 module BarNumber {
     export var contextTypes = <any> {
-        originX:         React.PropTypes.number.isRequired,
-        originY:         React.PropTypes.number.isRequired
+        originX: React.PropTypes.number.isRequired,
+        originY: React.PropTypes.number.isRequired
     };
 }
 

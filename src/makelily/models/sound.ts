@@ -16,23 +16,23 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import MusicXML         = require("musicxml-interfaces");
-import _                = require("lodash");
+import MusicXML = require("musicxml-interfaces");
+import _ = require("lodash");
 
-import Engine           = require("./engine");
+import Engine = require("./engine");
 
 class SoundModel implements Export.ISoundModel {
 
     /*---- I.1 IModel ---------------------------------------------------------------------------*/
 
     /** @prototype only */
-    divCount:        number;
+    divCount: number;
 
     /** defined externally */
-    staffIdx:        number;
+    staffIdx: number;
 
     /** @prototype */
-    frozenness:      Engine.IModel.FrozenLevel;
+    frozenness: Engine.IModel.FrozenLevel;
 
     modelDidLoad$(segment$: Engine.Measure.ISegment): void {
         // todo
@@ -49,30 +49,30 @@ class SoundModel implements Export.ISoundModel {
 
     /*---- I.2 C.MusicXML.Sound ------------------------------------------------------------*/
 
-    softPedal:          string;
-    midiInstruments:    MusicXML.MidiInstrument[];
-    pan:                string;
-    tocoda:             string;
-    decapo:             boolean;
-    divisions:          string;
-    pizzicato:          boolean;
-    coda:               string;
-    segno:              string;
-    elevation:          string;
-    fine:               string;
-    damperPedal:        string;
-    dynamics:           string;
-    plays:              MusicXML.Play[];
-    offset:             MusicXML.Offset;
-    sostenutoPedal:     string;
-    dalsegno:           string;
-    midiDevices:        MusicXML.MidiDevice[];
-    tempo:              string;
-    forwardRepeat:      boolean;
+    softPedal: string;
+    midiInstruments: MusicXML.MidiInstrument[];
+    pan: string;
+    tocoda: string;
+    decapo: boolean;
+    divisions: string;
+    pizzicato: boolean;
+    coda: string;
+    segno: string;
+    elevation: string;
+    fine: string;
+    damperPedal: string;
+    dynamics: string;
+    plays: MusicXML.Play[];
+    offset: MusicXML.Offset;
+    sostenutoPedal: string;
+    dalsegno: string;
+    midiDevices: MusicXML.MidiDevice[];
+    tempo: string;
+    forwardRepeat: boolean;
 
     /*---- I.3 C.MusicXML.TimeOnly --------------------------------------------------------------*/
 
-    timeOnly:           string;
+    timeOnly: string;
 
     /*---- Validation Implementations -----------------------------------------------------------*/
 

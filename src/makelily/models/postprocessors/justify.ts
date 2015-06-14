@@ -16,9 +16,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import _                        = require("lodash");
+import _ = require("lodash");
 
-import Engine                   = require("../engine");
+import Engine = require("../engine");
 
 const UNDERFILLED_EXPANSION_WEIGHT = 0.1;
 
@@ -80,8 +80,13 @@ function justify(options: Engine.Options.ILayoutOptions, bounds: Engine.Options.
             if (!element$.model || !element$.model.divCount) {
                 return memo;
             }
-            return memo + (element$.expandPolicy ? (Math.log(element$.model.divCount) - Math.log(smallest) + 1) :
-                0)*(underfilled[idx] ? UNDERFILLED_EXPANSION_WEIGHT : 1.0);
+            let expandBy = 0;
+
+            if (element$.expandPolicy) { // is not none
+                expandBy = (Math.log(element$.model.divCount) - Math.log(smallest) + 1);
+            }
+
+            return memo + expandBy*(underfilled[idx] ? UNDERFILLED_EXPANSION_WEIGHT : 1.0);
         }, memo);
     }, 0);
 
@@ -90,7 +95,8 @@ function justify(options: Engine.Options.ILayoutOptions, bounds: Engine.Options.
         avgExpansion = 0;
     } else if (partial) { // case 2: expanding, but not full width
         let expansionRemainingGuess = bounds.right - 3 - x;
-        let avgExpansionGuess = expansionRemainingGuess / (expandableCount + (1-UNDERFILLED_EXPANSION_WEIGHT)*underfilledCount);
+        let avgExpansionGuess = expansionRemainingGuess /
+            (expandableCount + (1-UNDERFILLED_EXPANSION_WEIGHT)*underfilledCount);
         let weight = logistic((avgExpansionGuess - bounds.right / 80) / 20) * 2 / 3;
         avgExpansion = (1 - weight)*avgExpansionGuess;
     } else { // case 3: expanding or contracting to full width
@@ -118,7 +124,8 @@ function justify(options: Engine.Options.ILayoutOptions, bounds: Engine.Options.
                         continue;
                     }
 
-                    let ratio = (Math.log(measure.elements[i][j].model.divCount) - Math.log(smallest) + 1) *
+                    let divCount = measure.elements[i][j].model.divCount;
+                    let ratio = (Math.log(divCount) - Math.log(smallest) + 1) *
                         (underfilled[measureIdx] ? UNDERFILLED_EXPANSION_WEIGHT : 1.0);
 
                     if (!expandOne) {

@@ -18,13 +18,13 @@
 
 "use strict";
 
-import React                = require("react");
-import _                    = require("lodash");
-let $                       = React.createFactory;
+import React = require("react");
+import _ = require("lodash");
+let $ = React.createFactory;
 
-import DirectionModel       = require("../models/direction");
-import Dynamics             = require("./directions/dynamics");
-import Words                = require("./directions/words");
+import DirectionModel = require("../models/direction");
+import Dynamics = require("./directions/dynamics");
+import Words = require("./directions/words");
 
 class Direction extends React.Component<{layout: DirectionModel.ILayout}, void> {
     render(): any {
@@ -94,18 +94,18 @@ class Direction extends React.Component<{layout: DirectionModel.ILayout}, void> 
 
     getChildContext() {
         return {
-            originX:        this.context.originX + this.props.layout.overrideX
+            originX: this.context.originX + this.props.layout.overrideX
         };
     }
 };
 
 module Direction {
     export var childContextTypes = <any> {
-        originX:            React.PropTypes.number.isRequired
+        originX: React.PropTypes.number.isRequired
     };
     export var contextTypes = <any> {
-        originX:            React.PropTypes.number.isRequired,
-        originY:            React.PropTypes.number.isRequired
+        originX: React.PropTypes.number.isRequired,
+        originY: React.PropTypes.number.isRequired
     };
 }
 

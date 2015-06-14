@@ -16,11 +16,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import MusicXML         = require("musicxml-interfaces");
-import _                = require("lodash");
-
-import Engine           = require("../engine");
-import FontManager      = require("../fontManager");
+import Engine = require("../engine");
+import FontManager = require("../fontManager");
+import MusicXML = require("musicxml-interfaces");
+import _ = require("lodash");
 
 export function getChordLyricWidth(chord: Engine.IChord, scale40: number) {
     return _.reduce(chord, (maxWidth, note) =>

@@ -18,12 +18,12 @@
 
 "use strict";
 
-import MusicXML                 = require("musicxml-interfaces");
-import _                        = require("lodash");
-import invariant                = require("react/lib/invariant");
+import MusicXML = require("musicxml-interfaces");
+import _ = require("lodash");
+import invariant = require("react/lib/invariant");
 
-import Engine                   = require("../engine");
-import ChordImpl                = require("../chord/chordImpl");
+import Engine = require("../engine");
+import ChordImpl = require("../chord/chordImpl");
 
 interface IMutableTied {
     number: number;
@@ -53,7 +53,9 @@ function tied(options: Engine.Options.ILayoutOptions, bounds: Engine.Options.ILi
                     return;
                 }
                 let chord: ChordImpl = <any> model;
-                let noteWithTieds = _.find(chord, el => el.notationObj && el.notationObj.tieds && el.notationObj.tieds.length);
+                let noteWithTieds = _.find(chord, el => el.notationObj &&
+                        el.notationObj.tieds && el.notationObj.tieds.length);
+
                 if (noteWithTieds && noteWithTieds.grace) {
                     // TODO: grace notes
                     return;
@@ -63,11 +65,14 @@ function tied(options: Engine.Options.ILayoutOptions, bounds: Engine.Options.ILi
                 }
                 let tieds = noteWithTieds.notationObj.tieds;
                 _.forEach(tieds, tied => {
-                    invariant(isFinite(tied.number) && tied.number !== null, "Tieds must have an ID (tied.number)");
+                    invariant(isFinite(tied.number) && tied.number !== null,
+                        "Tieds must have an ID (tied.number)");
                     let currTied = activeTieds[tied.number];
                     if (currTied) {
                         if (tied.type === MusicXML.StartStopContinue.Start) {
-                            console.warn("Found \"Start\" Tied that continues an existing Tied:", currTied);
+                            console.warn(
+                                "Found \"Start\" Tied that continues an existing Tied:",
+                                currTied);
                         }
                         currTied.elements.push(layout);
                         terminateTied$(activeTieds, tied);
@@ -75,16 +80,18 @@ function tied(options: Engine.Options.ILayoutOptions, bounds: Engine.Options.ILi
 
                     if (tied.type !== MusicXML.StartStopContinue.Stop) {
                         activeTieds[tied.number] = {
-                            number:     tied.number,
-                            elements:   [layout],
-                            initial:    tied
+                            number: tied.number,
+                            elements: [layout],
+                            initial: tied
                         };
                     }
                 });
             });
         });
         _.forEach(activeTieds, (tied, idx) => {
-            console.warn("Tied %s was not closed before the end of the measure (this will be implemented later!)", idx);
+            console.warn(
+                "Tied %s was not closed before the end of the measure " +
+                "(this will be implemented later!)", idx);
         });
     });
     return measures;

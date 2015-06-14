@@ -18,12 +18,12 @@
 
 "use strict";
 
-import MusicXML         = require("musicxml-interfaces");
+import MusicXML = require("musicxml-interfaces");
 
-import Engine           = require("../models/engine");
+import Engine = require("../models/engine");
 
-const DEF_SPACING       = 4;
-const V_SPACING         = 4;
+const DEF_SPACING = 4;
+const V_SPACING = 4;
 
 export interface ITextMixin {
     getTextAnchor(words: MusicXML.CreditWords | MusicXML.Words): string;
@@ -68,11 +68,11 @@ export let Prototype: ITextMixin = {
     },
     getDirection: function(words: MusicXML.CreditWords | MusicXML.Words) {
         switch(words.dir) {
-            case MusicXML.DirectionMode.Lro:    // TODO: bidi
+            case MusicXML.DirectionMode.Lro: // TODO: bidi
             case MusicXML.DirectionMode.Ltr:
                 return "ltr";
 
-            case MusicXML.DirectionMode.Rlo:    // TODO: bidi
+            case MusicXML.DirectionMode.Rlo: // TODO: bidi
             case MusicXML.DirectionMode.Rtl:
                 return "rtl";
 

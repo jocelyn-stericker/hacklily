@@ -16,34 +16,35 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import MusicXML             = require("musicxml-interfaces");
+import MusicXML = require("musicxml-interfaces");
 
-import IModel               = require("./imodel");
-import IPrint               = require("./iprint");
-import Measure              = require("./measure");
+import IModel = require("./imodel");
+import IPrint = require("./iprint");
+import Measure = require("./measure");
 
 export interface ILayoutOptions {
-    attributes:     {[part: string]: MusicXML.Attributes};
-    measures:       Measure.IMutableMeasure[];
-    header:         MusicXML.ScoreHeader;
-    print$:         MusicXML.Print;
-    page$:          number;
-    line?:          number;
-    lines?:         number;
-    modelFactory:   IModel.IFactory;
-    debug?:         boolean;
-    preProcessors:  PreProcessor[];
+    attributes: {[part: string]: MusicXML.Attributes};
+    measures: Measure.IMutableMeasure[];
+    header: MusicXML.ScoreHeader;
+    print$: MusicXML.Print;
+    page$: number;
+    line?: number;
+    lines?: number;
+    modelFactory: IModel.IFactory;
+    debug?: boolean;
+    preProcessors: PreProcessor[];
     postProcessors: PostProcessor[];
 }
 
 export interface IWidthInformation {
-    width:                  number;
-    attributesWidthStart:   number;
-    attributesWidthEnd:     number;
+    width: number;
+    attributesWidthStart: number;
+    attributesWidthEnd: number;
 }
 
 export type PreProcessor = (measures: Measure.IMutableMeasure[]) => Measure.IMutableMeasure[];
-export type PostProcessor = (options: ILayoutOptions, bounds: ILineBounds, measures: Measure.IMeasureLayout[]) => Measure.IMeasureLayout[];
+export type PostProcessor = (options: ILayoutOptions, bounds: ILineBounds,
+        measures: Measure.IMeasureLayout[]) => Measure.IMeasureLayout[];
 
 export interface ILinesLayoutState {
     width$: { [key: string]: IWidthInformation };
@@ -55,7 +56,7 @@ export interface ILinesLayoutState {
 export module ILinesLayoutMemo {
     export function create(top: number): ILinesLayoutState {
         return {
-            y$:     top,
+            y$: top,
             width$: {},
             multipleRests$: {},
             clean$: {}
@@ -67,24 +68,24 @@ export interface ILineLayoutResult extends Array<Measure.IMeasureLayout> {
 }
 
 export interface ILineBounds {
-    left:           number;
-    right:          number;
-    systemLayout:   MusicXML.SystemLayout;
+    left: number;
+    right: number;
+    systemLayout: MusicXML.SystemLayout;
 }
 
 export module ILineBounds {
     export function calculate(print: MusicXML.Print, page: number): ILineBounds {
-        let pageLayout          = print.pageLayout;
-        let pageMargins         = IPrint.getPageMargins(pageLayout.pageMargins, page);
-        let systemMargins       = print.systemLayout.systemMargins;
-        let startX              = systemMargins.leftMargin + pageMargins.leftMargin;
-        let endX                = systemMargins.rightMargin + pageLayout.pageWidth -
-                                    pageMargins.rightMargin;
+        let pageLayout = print.pageLayout;
+        let pageMargins = IPrint.getPageMargins(pageLayout.pageMargins, page);
+        let systemMargins = print.systemLayout.systemMargins;
+        let startX = systemMargins.leftMargin + pageMargins.leftMargin;
+        let endX = systemMargins.rightMargin + pageLayout.pageWidth -
+                pageMargins.rightMargin;
 
         return {
-            left:           startX,
-            right:          endX,
-            systemLayout:   print.systemLayout
+            left: startX,
+            right: endX,
+            systemLayout: print.systemLayout
         };
     }
 }

@@ -22,43 +22,43 @@
 
 "use strict";
 
-import MusicXML         = require("musicxml-interfaces");
-import _                = require("lodash");
+import MusicXML = require("musicxml-interfaces");
+import _ = require("lodash");
 
-import IModel           = require("./imodel"); // @circular
-import Util             = require("./util");
+import IModel = require("./imodel"); // @circular
+import Util = require("./util");
 
 /**
  * Based on MusicXML.Measure, but with additional information, and with a staff/voice-seperated and
  * monotonic parts element.
  */
 export interface IMutableMeasure {
-    idx:                number; // 0-indexed, can change
-    uuid:               number;
-    number:             string; // 1-indexed
-    implicit?:          boolean;
-    width?:             number;
-    nonControlling?:    boolean;
+    idx: number; // 0-indexed, can change
+    uuid: number;
+    number: string; // 1-indexed
+    implicit?: boolean;
+    width?: number;
+    nonControlling?: boolean;
     parts: {
-        [id: string]:   IMeasurePart;
+        [id: string]: IMeasurePart;
     };
 }
 
 export interface IMeasurePart {
-    voices:             ISegment[];
-    staves:             ISegment[];
+    voices: ISegment[];
+    staves: ISegment[];
 }
 
 export interface ISegment extends Array<IModel> {
-    owner:              number;
-    ownerType:          OwnerType;
-    divisions:          number;
-    part?:              string;
+    owner: number;
+    ownerType: OwnerType;
+    divisions: number;
+    part?: string;
 }
 
 export enum OwnerType {
-    Voice               = 0,
-    Staff               = 1
+    Voice = 0,
+    Staff = 1
 }
 
 /** 
@@ -94,36 +94,39 @@ export function normalizeDivisons$(segments$: ISegment[], factor: number = 0): n
 };
 
 export interface IMeasureLayout {
-    attributes:         {[part: string]: MusicXML.Attributes};
-    elements:           IModel.ILayout[][];
-    width:              number;
-    maxDivisions:       number;
-    originX:            number;
+    attributes: {[part: string]: MusicXML.Attributes};
+    elements: IModel.ILayout[][];
+    width: number;
+    maxDivisions: number;
+    originX: number;
     /**
-     * Topmost (i.e., lowest) y-coordinates of each staff in tenths. One part may have more than one staff.
+     * Topmost (i.e., lowest) y-coordinates of each staff in tenths. One part may have more
+     * than one staff.
      */
-    originY:            {[part: string]: number[]};
+    originY: {[part: string]: number[]};
     /**
-     * Positive integer in tenths. Required space above each staff beyond default 15 tenths, indexed by staff index.
+     * Positive integer in tenths. Required space above each staff beyond default 15 tenths,
+     * indexed by staff index.
      */
-    paddingTop:         number[];
+    paddingTop: number[];
     /**
-     * Postivie integer in tenths. Required space below each staff beyond default 15 tenths, indexed by staff index.
+     * Postivie integer in tenths. Required space below each staff beyond default 15 tenths,
+     * indexed by staff index.
      */
-    paddingBottom:      number[];
+    paddingBottom: number[];
 }
 
 export module IMeasureLayout {
     export function detach(layout: IMeasureLayout) {
         var clone: IMeasureLayout = {
-            attributes:     layout.attributes,
-            elements:       _.map(layout.elements, v => _.map(v, IModel.ILayout.detach)),
-            width:          layout.width,
-            maxDivisions:   layout.maxDivisions,
-            originX:        layout.originX,
-            originY:        _.mapValues(layout.originY, origins => origins.slice()),
-            paddingTop:     layout.paddingTop.slice(),
-            paddingBottom:  layout.paddingBottom.slice()
+            attributes: layout.attributes,
+            elements: _.map(layout.elements, v => _.map(v, IModel.ILayout.detach)),
+            width: layout.width,
+            maxDivisions: layout.maxDivisions,
+            originX: layout.originX,
+            originY: _.mapValues(layout.originY, origins => origins.slice()),
+            paddingTop: layout.paddingTop.slice(),
+            paddingBottom: layout.paddingBottom.slice()
         };
         return clone;
     };

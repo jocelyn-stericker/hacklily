@@ -22,23 +22,23 @@
 
 "use strict";
 
-import MusicXML     = require("musicxml-interfaces");
-import _            = require("lodash");
-import chai         = require("chai");
+import MusicXML = require("musicxml-interfaces");
+import _ = require("lodash");
+import chai = require("chai");
 
-import Engine       = require("../../engine");
-import Factory      = require("../../factory");
-import MXMLImport   = require("../import");
+import Engine = require("../../engine");
+import Factory = require("../../factory");
+import MXMLImport = require("../import");
 
-import Attributes   = require("../../attributes");
-import Barline      = require("../../barline");
-import Chord        = require("../../chord");
-import Direction    = require("../../direction");
-import Print        = require("../../print");
-import Sound        = require("../../sound");
-import Spacer       = require("../../spacer");
+import Attributes = require("../../attributes");
+import Barline = require("../../barline");
+import Chord = require("../../chord");
+import Direction = require("../../direction");
+import Print = require("../../print");
+import Sound = require("../../sound");
+import Spacer = require("../../spacer");
 
-var expect          = chai.expect;
+var expect = chai.expect;
 
 describe("[mxml/import.ts]", function() {
     describe("_extractMXMLHeader", function() {
@@ -234,7 +234,8 @@ describe("[mxml/import.ts]", function() {
 /*---- samples ----------------------------------------------------------------------------------*/
 
 var helloWorldXML = `<?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<!DOCTYPE score-partwise PUBLIC "-//Recordare//DTD MusicXML 3.0 Partwise//EN" "http://www.musicxml.org/dtds/partwise.dtd">
+<!DOCTYPE score-partwise PUBLIC "-//Recordare//DTD MusicXML 3.0 Partwise//EN"
+    "http://www.musicxml.org/dtds/partwise.dtd">
 <score-partwise version="3.0">
   <movement-title>Song Title</movement-title>
   <identification>
@@ -252,22 +253,32 @@ var helloWorldXML = `<?xml version="1.0" encoding="UTF-8" standalone="no"?>
   </identification>
   <credit page="1">
     <credit-type>title</credit-type>
-    <credit-words default-x="597" default-y="1440" font-size="24" justify="center" valign="top">Song Title</credit-words>
+    <credit-words default-x="597" default-y="1440" font-size="24" justify="center" valign="top">
+      Song Title
+    </credit-words>
   </credit>
   <credit page="1">
     <credit-type>composer</credit-type>
-    <credit-words default-x="1124" default-y="1362" font-size="12" justify="right" valign="top">Song Composer</credit-words>
+    <credit-words default-x="1124" default-y="1362" font-size="12" justify="right" valign="top">
+      Song Composer
+    </credit-words>
   </credit>
   <credit page="1">
     <credit-type>rights</credit-type>
-    <credit-words default-x="597" default-y="70" font-size="10" justify="center" valign="bottom">Song Copyright</credit-words>
+    <credit-words default-x="597" default-y="70" font-size="10" justify="center" valign="bottom">
+      Song Copyright
+    </credit-words>
   </credit>
   <credit page="1">
-    <credit-words default-x="70" default-y="1453" font-size="12" valign="top">Score</credit-words>
+    <credit-words default-x="70" default-y="1453" font-size="12" valign="top">
+      Score
+    </credit-words>
   </credit>
   <credit page="2">
     <credit-type>rights</credit-type>
-    <credit-words default-x="597" default-y="70" font-size="10" justify="center" valign="bottom">Song Copyright</credit-words>
+    <credit-words default-x="597" default-y="70" font-size="10" justify="center" valign="bottom">
+      Song Copyright
+    </credit-words>
   </credit>
   <part-list>
     <score-part id="P1">

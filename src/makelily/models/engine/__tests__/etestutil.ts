@@ -22,7 +22,7 @@
 
 "use strict";
 
-import Engine           = require("../../engine");
+import Engine = require("../../engine");
 
 export var fakeAttributeChordFactory: Engine.IModel.IFactory = {
     create: (modelType: Engine.IModel.Type): Engine.IModel => {
@@ -44,7 +44,8 @@ export var fakeAttributeChordFactory: Engine.IModel.IFactory = {
     }
 };
 
-export function createFakeStaffSegment(divisions1: number, divisions2: number, idx: number): Engine.Measure.ISegment {
+export function createFakeStaffSegment(
+        divisions1: number, divisions2: number, idx: number): Engine.Measure.ISegment {
     let a: Engine.Measure.ISegment = <any> <Engine.IModel[]> [
         {
             divCount: divisions1,
@@ -96,7 +97,8 @@ export function createFakeStaffSegment(divisions1: number, divisions2: number, i
     return a;
 }
 
-export function createFakeVoiceSegment(divisions1: number, divisions2: number, idx: number): Engine.Measure.ISegment {
+export function createFakeVoiceSegment(
+        divisions1: number, divisions2: number, idx: number): Engine.Measure.ISegment {
     let a: Engine.Measure.ISegment = <any> <Engine.IModel[]> [
         {
             divCount: divisions1,

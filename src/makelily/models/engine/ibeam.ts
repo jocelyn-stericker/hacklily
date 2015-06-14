@@ -19,9 +19,9 @@
 "use strict";
 
 export interface ILayout {
-    beamCount:  number[];
-    x:          number[];
-    y1:         number;
-    y2:         number;
-    direction:  number;
+    beamCount: number[];
+    x: number[];
+    y1: number;
+    y2: number;
+    direction: number;
 }

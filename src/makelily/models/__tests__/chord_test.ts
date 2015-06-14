@@ -22,15 +22,15 @@
 
 "use strict";
 
-import MusicXML     = require("musicxml-interfaces");
-import chai         = require("chai");
+import MusicXML = require("musicxml-interfaces");
+import chai = require("chai");
 
-import Attributes   = require("../attributes");
-import Chord        = require("../chord");
-import Engine       = require("../engine");
-import Factory      = require("../factory");
+import Attributes = require("../attributes");
+import Chord = require("../chord");
+import Engine = require("../engine");
+import Factory = require("../factory");
 
-let expect          = chai.expect;
+let expect = chai.expect;
 
 function getAttributes(): {[part: string]: MusicXML.Attributes} {
     return {
@@ -55,49 +55,49 @@ function getCursor(factory: Engine.IModel.IFactory, model: Engine.IModel): Engin
     let segment = <any> [model];
     segment.part = "P1";
     return {
-        segment:            segment,
-        idx$:               0,
-        print$:             null,
-        header:             null,
+        segment: segment,
+        idx$: 0,
+        print$: null,
+        header: null,
 
-        voice:              {},
+        voice: {},
         staff: {
-            previous:       null,
-            attributes:     attributes,
+            previous: null,
+            attributes: attributes,
             totalDivisions: 12,
-            accidentals$:   {},
-            idx:            0
+            accidentals$: {},
+            idx: 0
         },
         measure: {
-            idx:            0,
-            number:         "1",
-            implicit:       false,
+            idx: 0,
+            number: "1",
+            implicit: false,
             nonControlling: false,
-            x:              100,
-            attributes$:    attributes,
-            uuid:           1,
-            parent:         null
+            x: 100,
+            attributes$: attributes,
+            uuid: 1,
+            parent: null
         },
         line: {
-            shortestCount:  1,
-            barOnLine$:     0,
-            barsOnLine:     1,
-            line:           0,
-            lines:          1
+            shortestCount: 1,
+            barOnLine$: 0,
+            barsOnLine: 1,
+            line: 0,
+            lines: 1
         },
 
-        prev$:              null,
-        division$:          0,
-        x$:                 100,
-        minXBySmallest$:    {},
-        maxPaddingTop$:     [],
-        maxPaddingBottom$:  [],
+        prev$: null,
+        division$: 0,
+        x$: 100,
+        minXBySmallest$: {},
+        maxPaddingTop$: [],
+        maxPaddingBottom$: [],
 
-        page$:              NaN,
+        page$: NaN,
 
-        approximate:        true,
-        detached:           false,
-        factory:            factory
+        approximate: true,
+        detached: false,
+        factory: factory
     };
 }
 
@@ -175,7 +175,8 @@ describe("[chord.ts]", function() {
             chord.validate$(cursor$);
             cursor$ = getCursor(factory, chord);
             chord.layout(cursor$);
-            expect(Engine.IChord.fromModel(chord)[0].duration).to.eq(2, "Duration wasn't specified so should be set here.");
+            let chordDuration = Engine.IChord.fromModel(chord)[0].duration;
+            expect(chordDuration).to.eq(2, "Duration wasn't specified so should be set here.");
         });
     });
 });

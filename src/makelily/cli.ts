@@ -16,12 +16,12 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import _                = require("lodash");
-import fs               = require("fs");
-import yargs            = require("yargs");
+import _ = require("lodash");
+import fs = require("fs");
+import yargs = require("yargs");
 
-import Models           = require("./models");
-import Views            = require("./views");
+import Models = require("./models");
+import Views = require("./views");
 
 function readStdin(onEnd: (s: string) => void) {
     var content = "";

@@ -22,12 +22,12 @@
 
 "use strict";
 
-import Engine       = require("../engine");
-import Factory      = require("../factory");
+import Engine = require("../engine");
+import Factory = require("../factory");
 
-import chai         = require("chai");
+import chai = require("chai");
 
-var expect          = chai.expect;
+var expect = chai.expect;
 
 class TestClass1 {
 }
