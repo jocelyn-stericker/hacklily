@@ -169,7 +169,7 @@ function tryValidate$(options$: Options.ILayoutOptions, memo$: Options.ILinesLay
 
     EscapeHatch.__currentMeasureList__ = options$.measures;
 
-    let lastAttribs: MusicXML.Attributes = null;
+    let lastAttribs: {[part: string]: MusicXML.Attributes} = {};
 
     function withPart(segments: Measure.ISegment[], partID: string): Measure.ISegment[] {
         _.forEach(segments, segment => {
@@ -320,10 +320,13 @@ export function layout$(options: Options.ILayoutOptions,
                 voices:         _.map(_.values(measure.parts), p => p.voices),
                 x:              0
             });
+            let firstPart = options.header.partList.scoreParts[0].id;
+            // TODO: Only skip render multiple rests if __all__ visible parts have rests
             if (approximateLayout.attributes &&
-                    approximateLayout.attributes.measureStyle &&
-                    approximateLayout.attributes.measureStyle.multipleRest) {
-                multipleRest = multipleRests$[measure.uuid] = approximateLayout.attributes.measureStyle.multipleRest.count - 1;
+                    approximateLayout.attributes[firstPart] &&
+                    approximateLayout.attributes[firstPart].measureStyle &&
+                    approximateLayout.attributes[firstPart].measureStyle.multipleRest) {
+                multipleRest = multipleRests$[measure.uuid] = approximateLayout.attributes[firstPart].measureStyle.multipleRest.count - 1;
             } else if (!isNaN(multipleRest)) {
                 multipleRests$[measure.uuid] = multipleRest;
                 approximateLayout.width = 0;

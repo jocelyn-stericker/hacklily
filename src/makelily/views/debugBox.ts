@@ -39,7 +39,7 @@ class DebugBox extends React.Component<{layout: Engine.Measure.IMeasureLayout}, 
                         fill: "transparent",
                         x: layout.originX + element.overrideX + box.defaultX + (box.relativeX||0) + box.left,
                         width: box.right - box.left,
-                        y: context.originYA[element.model.staffIdx] - box.defaultY - (box.relativeY||0) - box.bottom,
+                        y: context.originYA[element.part][element.model.staffIdx] - box.defaultY - (box.relativeY||0) - box.bottom,
                         height: box.bottom - box.top,
                         dangerouslySetInnerHTML: {__html: `<!-- ${Engine.IModel.Type[element.renderClass]} -->`}
                     }));
@@ -54,7 +54,7 @@ class DebugBox extends React.Component<{layout: Engine.Measure.IMeasureLayout}, 
 module DebugBox {
     export var contextTypes = <any> {
         originY:            React.PropTypes.number,
-        originYA:           React.PropTypes.arrayOf(React.PropTypes.number).isRequired,
+        originYA:           React.PropTypes.objectOf(React.PropTypes.arrayOf(React.PropTypes.number)).isRequired,
     };
 }
 

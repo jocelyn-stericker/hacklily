@@ -23,7 +23,7 @@ import IPrint               = require("./iprint");
 import Measure              = require("./measure");
 
 export interface ILayoutOptions {
-    attributes:     MusicXML.Attributes;
+    attributes:     {[part: string]: MusicXML.Attributes};
     measures:       Measure.IMutableMeasure[];
     header:         MusicXML.ScoreHeader;
     print$:         MusicXML.Print;

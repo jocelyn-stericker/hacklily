@@ -106,7 +106,7 @@ class ChordModelImpl implements ChordModel.IChordModel {
         invariant(this.divCount >= 0, "The beat count must be non-negative.");
 
         const direction = this._pickDirection(cursor$);
-        const clef = cursor$.staff.attributes.clefs[cursor$.staff.idx];
+        const clef = cursor$.staff.attributes[cursor$.segment.part].clefs[cursor$.staff.idx];
 
         if (Engine.IChord.countToHasStem[this.count]) {
             this.satieStem = {
@@ -160,7 +160,7 @@ class ChordModelImpl implements ChordModel.IChordModel {
     }
 
     layout(cursor$: Engine.ICursor): ChordModel.IChordLayout {
-        let measureStyle: MusicXML.MeasureStyle = cursor$.staff.attributes.measureStyle;
+        let measureStyle: MusicXML.MeasureStyle = cursor$.staff.attributes[cursor$.segment.part].measureStyle;
         if (measureStyle && measureStyle.multipleRest && measureStyle.multipleRest.count > 1) {
             cursor$.staff.multiRestRem = measureStyle.multipleRest.count;
         }
@@ -168,7 +168,7 @@ class ChordModelImpl implements ChordModel.IChordModel {
     }
 
     private _checkMulitpleRest$(cursor$: Engine.ICursor) {
-        let measureStyle: MusicXML.MeasureStyle = cursor$.staff.attributes.measureStyle;
+        let measureStyle: MusicXML.MeasureStyle = cursor$.staff.attributes[cursor$.segment.part].measureStyle;
         if (measureStyle && measureStyle.multipleRest && measureStyle.multipleRest.count > 1) {
             this.satieMultipleRest = measureStyle.multipleRest;
             cursor$.staff.multiRestRem = measureStyle.multipleRest.count;
@@ -319,8 +319,8 @@ class ChordModelImpl implements ChordModel.IChordModel {
     }
 
     private _implyCountFromPerformanceData(cursor$: Engine.ICursor) {
-        const times = cursor$.staff.attributes.times;
-        const divisions = cursor$.staff.attributes.divisions;
+        const times = cursor$.staff.attributes[cursor$.segment.part].times;
+        const divisions = cursor$.staff.attributes[cursor$.segment.part].divisions;
         const tsComplex = times[0];
         const ts = {
             beats: _.reduce(tsComplex.beats, (sum, beat) => sum + parseInt(beat, 10), 0),
@@ -415,7 +415,7 @@ class ChordModelImpl implements ChordModel.IChordModel {
             return this.satieDirection;
         }
 
-        const clef = cursor$.staff.attributes.clefs[cursor$.staff.idx];
+        const clef = cursor$.staff.attributes[cursor$.segment.part].clefs[cursor$.staff.idx];
         let avgLine = Engine.IChord.averageLine(this, clef);
         if (avgLine > 3) {
             return -1;
@@ -461,7 +461,7 @@ class ChordModelImpl implements ChordModel.IChordModel {
             //    of the notes that are part of the same beat or half-bar.
             //    (Note: we use the more general beaming pattern instead of half-bar to
             //     decide boundries)
-            const beamingPattern = Metre.getBeamingPattern(cursor$.staff.attributes.times);
+            const beamingPattern = Metre.getBeamingPattern(cursor$.staff.attributes[cursor$.segment.part].times);
             const bpDivisions = _.map(beamingPattern, seg => Metre.calcDivisions(seg, cursor$));
             const currDivision = cursor$.division$;
             let prevDivisionStart = 0;
@@ -606,7 +606,7 @@ module ChordModelImpl {
         }
 
         _detachModelWithContext(cursor: Engine.ICursor, baseModel: ChordModelImpl): ChordModelImpl {
-            const clef = cursor.staff.attributes.clefs[cursor.staff.idx];
+            const clef = cursor.staff.attributes[cursor.segment.part].clefs[cursor.staff.idx];
             let model: ChordModelImpl = <any> _.map(baseModel, note => Object.create(note, {
                 /* Here, we're extending each note to have the correct default position.
                  * To do so, we use prototypical inheritance. See Object.create. */

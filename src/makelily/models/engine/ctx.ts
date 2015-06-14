@@ -100,7 +100,7 @@ export interface IAccidentals {
 export interface IStaff {
     previous:       IStaff;
 
-    attributes:     MusicXML.Attributes;
+    attributes:     {[part: string]: MusicXML.Attributes};
     totalDivisions: number;
     multiRestRem?:  number;
 
@@ -118,14 +118,15 @@ export module IStaff {
         if (!sctx) {
             return null;
         }
-        var attributes: MusicXML.Attributes;
-
-        if (Object.isFrozen(sctx.attributes)) {
-            attributes = sctx.attributes;
-        } else {
-            attributes = Object.create(sctx.attributes);
-            Object.freeze(attributes);
-        }
+        var attributes: {[part: string]: MusicXML.Attributes} = {};
+        _.forEach(sctx.attributes, (attributeInstance, partID) => {
+            if (Object.isFrozen(attributeInstance)) {
+                attributes[partID] = attributeInstance;
+            } else {
+                attributes[partID] = Object.create(attributeInstance);
+                Object.freeze(attributes[partID]);
+            }
+        });
 
         var previous: IStaff;
         if (!sctx.previous || Object.isFrozen(sctx.previous)) {

@@ -44,7 +44,8 @@ function justify(options: Engine.Options.ILayoutOptions, bounds: Engine.Options.
     // Check for underfilled bars
     const underfilled = _.map(measures$, (measure, idx) => {
         let attr = measures$[idx].attributes;
-        let divs = Engine.IChord.barDivisions(attr);
+        let firstPart = options.header.partList.scoreParts[0].id;
+        let divs = Engine.IChord.barDivisions(attr[firstPart]);
         let maxDivs = measure.maxDivisions;
         return maxDivs < divs;
     });

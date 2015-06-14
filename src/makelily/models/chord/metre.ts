@@ -64,7 +64,7 @@ export function rhythmicSpellcheck$(cursor$: Engine.ICursor): boolean {
 
     // Get the pattern
     // TODO: allow custom beam patterns
-    var pattern = getBeamingPattern(cursor$.staff.attributes.times);
+    var pattern = getBeamingPattern(cursor$.staff.attributes[cursor$.segment.part].times);
 
     // Get the next note, if possible.
     var currNote = IChord.fromModel(curr);
@@ -346,13 +346,13 @@ export function subtract(durr1: any, divisions: number,
     var replaceWith: Engine.IChord[] = [];
     var durr1Divisions: number = isNaN(<any>durr1) ? calcDivisions(durr1, cursor) : <number> durr1;
     var beatsToFill = durr1Divisions - divisions;
-    var bp = getBeamingPattern(cursor.staff.attributes.times);
+    let attributes = cursor.staff.attributes[cursor.segment.part];
+    var bp = getBeamingPattern(attributes.times);
     var currDivision = (cursor.division$ + (divisionOffset || 0)) % cursor.staff.totalDivisions;
 
     for (var tries = 0; tries < 20; ++tries) {
         var bpIdx = 0;
         var bpCount = 0;
-        var attributes = cursor.staff.attributes;
         while (bp[bpIdx] &&
             bpCount + _calcDivisions(IChord.count(bp[bpIdx]), IChord.dots(bp[bpIdx]), null,
                 attributes.times, attributes.divisions) <= currDivision) {
@@ -526,7 +526,7 @@ export function calcDivisions(chord: Engine.IChord, cursor: Engine.ICursor) {
         return 0;
     }
 
-    var attributes = cursor.staff.attributes;
+    var attributes = cursor.staff.attributes[cursor.segment.part];
     var count = IChord.count(chord);
     if (isNaN(count)) {
         return _.find(chord, note => note.duration).duration;
@@ -604,7 +604,7 @@ function _calcDivisions(count: number, dots: number,
  */
 export function wholeNote(cursor: Engine.ICursor): Engine.IChord[] {
     var attributes = cursor.staff.attributes;
-    var tsName = getTSString(attributes.times);
+    var tsName = getTSString(attributes[cursor.segment.part].times);
     return wholeNotePatterns[tsName];
 }
 

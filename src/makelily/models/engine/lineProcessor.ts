@@ -46,18 +46,24 @@ export function layoutLine$(options: Options.ILayoutOptions, bounds: Options.ILi
     let layouts = _layoutDirtyMeasures(options, line, clean$);
     attributes = clean$[measures[measures.length - 1].uuid].attributes; // FIXME: Hack
 
-    invariant(attributes.staves >= 1, "Expected at least 1 staff, but there are %s", attributes.staves);
-    let tops = [null].concat(_.times(attributes.staves, staffMinusOne => {
-        let staffIdx = staffMinusOne + 1;
-        if (staffIdx > 1) {
-            memo$.y$ -= 100;
-        }
-        let paddingTop = _.max(layouts, mre => mre.paddingTop[staffIdx]||0).paddingTop[staffIdx]||0;
-        let paddingBottom = _.max(layouts, mre => mre.paddingBottom[staffIdx]||0).paddingBottom[staffIdx]||0;
-        let top = memo$.y$ - paddingTop;
-        memo$.y$ = top - paddingBottom;
-        return top;
-    }));
+    let partOrder: string[] = _.pluck(options.header.partList.scoreParts, "id");
+    let staffIdx = 0;
+
+    let topsInOrder = _.map(partOrder, partID => {
+        invariant(attributes[partID].staves >= 1, "Expected at least 1 staff, but there are %s", attributes[partID].staves);
+        return [null].concat(_.times(attributes[partID].staves, () => {
+            ++staffIdx;
+            if (staffIdx > 1) {
+                memo$.y$ -= 100;
+            }
+            let paddingTop = _.max(layouts, mre => mre.paddingTop[staffIdx]||0).paddingTop[staffIdx]||0;
+            let paddingBottom = _.max(layouts, mre => mre.paddingBottom[staffIdx]||0).paddingBottom[staffIdx]||0;
+            let top = memo$.y$ - paddingTop;
+            memo$.y$ = top - paddingBottom;
+            return top;
+        }));
+    });
+    let tops: {[part: string]: number[]} = <any> _.zipObject(partOrder, topsInOrder);
     memo$.y$ -= bounds.systemLayout.systemDistance;
 
     let left                = bounds.left;

@@ -46,14 +46,17 @@ class MeasureView extends React.Component<{layout: Engine.Measure.IMeasureLayout
 
     getChildContext() {
         const layout        = this.props.layout;
-        const originYA      = _.map(layout.originY, y => this.context.originY - y);
+        const originYA      = _.mapValues(layout.originY, layouts => _.map(layouts, y => this.context.originY - y));
+        let top = _.min(layout.originY, tops => tops[1])[1];
+        let bottoms = _.max(layout.originY, tops => tops[tops.length - 1]);
+        let bottom = bottoms[bottoms.length - 1];
         // TODO 1: Fix stave height
         // TODO 2: Do not ignore top/bottom staff in staffGroup of attributes
         return {
             originX:        layout.originX,
             originYA:       originYA,
-            systemTop:      originYA[1] - 20.5,
-            systemBottom:   originYA[originYA.length - 1] + 20.5
+            systemTop:      this.context.originY - top - 20.5,
+            systemBottom:   this.context.originY - bottom + 20.5
         };
     }
 }
@@ -61,7 +64,7 @@ class MeasureView extends React.Component<{layout: Engine.Measure.IMeasureLayout
 module MeasureView {
     export var childContextTypes = <any> {
         originX:            React.PropTypes.number.isRequired,
-        originYA:           React.PropTypes.arrayOf(React.PropTypes.number).isRequired,
+        originYA:           React.PropTypes.objectOf(React.PropTypes.arrayOf(React.PropTypes.number)).isRequired,
         systemTop:          React.PropTypes.number.isRequired,
         systemBottom:       React.PropTypes.number.isRequired
     };

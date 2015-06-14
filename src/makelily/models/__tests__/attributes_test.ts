@@ -40,17 +40,19 @@ export function makeCursor(factory: Factory, models: Engine.IModel[]): Engine.IC
         staff: {
             previous:       null,
             attributes: {
-                divisions: 60,
-                clefs: [{
-                    sign: "G",
-                    clefOctaveChange: "0",
-                    line: 2
-                }],
-                times: [{
-                    beats: ["4"],
-                    beatTypes: [4],
-                    senzaMisura: null
-                }]
+                P1: {
+                    divisions: 60,
+                    clefs: [{
+                        sign: "G",
+                        clefOctaveChange: "0",
+                        line: 2
+                    }],
+                    times: [{
+                        beats: ["4"],
+                        beatTypes: [4],
+                        senzaMisura: null
+                    }]
+                }
             },
             totalDivisions: 240,
             accidentals$:   {},

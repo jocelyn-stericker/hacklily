@@ -129,6 +129,11 @@ module IModel {
         minSpaceAfter?:     number;
 
         /**
+         * Recorded by the engine, the part the model this layout represents is in.
+         */
+        part?:              string;
+
+        /**
          * The final, justified position of the model within a bar.
          * Set by the renderer.
          */
