@@ -17,27 +17,20 @@
  */
 
 import MusicXML = require("musicxml-interfaces");
-import React = require("react");
+import {createFactory as $, renderToStaticMarkup, ReactElement} from "react";
 import _ = require("lodash");
 import invariant = require("react/lib/invariant");
-var $ = React.createFactory;
 
-import Engine = require("./models/engine");
-import Page = require("./views/page");
-import SvgExt = require("./views/svgext_injection");
+import Page from "./views/page";
+import {layout, ILinesLayoutMemo, IModel, IDocument, IPrint, RenderTarget} from "./engine";
 
-import Beam = require("./models/postprocessors/beam");
-import Center = require("./models/postprocessors/center");
-import Justify = require("./models/postprocessors/justify");
-import Pad = require("./models/postprocessors/pad");
-import RemoveOverlaps = require("./models/postprocessors/removeOverlaps");
-import Tieds = require("./models/postprocessors/tieds");
+import {inject as injectSVG} from "./views/svgext_injection";
 
-SvgExt.inject();
+injectSVG();
 
-export function getPage(doc: Engine.IDocument, startMeasure: number,
-        renderTarget = Engine.RenderTarget.SvgExport, pageClassName = ""):
-            React.ReactElement<Page.IProps> {
+export function getPage(doc: IDocument, startMeasure: number,
+        renderTarget = RenderTarget.SvgExport, pageClassName = ""):
+            ReactElement<Page.IProps> {
     let factory = doc.factory;
     const pageNum = 1; // FIXME
     if (!factory) {
@@ -48,41 +41,41 @@ export function getPage(doc: Engine.IDocument, startMeasure: number,
         throw new Error("No such measure " + startMeasure);
     }
     let partWithPrint = _.find(firstMeasure.parts, part => !!part.staves[1] &&
-            factory.search(part.staves[1], 0, Engine.IModel.Type.Print).length);
+            factory.search(part.staves[1], 0, IModel.Type.Print).length);
     let print: MusicXML.Print;
 
     if (partWithPrint) {
-        print = <any> factory.search(partWithPrint.staves[1], 0, Engine.IModel.Type.Print)[0];
+        print = <any> factory.search(partWithPrint.staves[1], 0, IModel.Type.Print)[0];
         invariant(!!print, "Wait what?");
     } else {
         throw new Error("Part does not contain a Print element at division 0. Is it validated?");
     }
 
     const pageMarginsAll = print.pageLayout.pageMargins;
-    const pageMargins = Engine.IPrint.getPageMargins(pageMarginsAll, pageNum);
+    const pageMargins = IPrint.getPageMargins(pageMarginsAll, pageNum);
     const top = print.pageLayout.pageHeight -
                                 (print.systemLayout.topSystemDistance +
                                  pageMargins.topMargin);
 
-    let memo$ = Engine.Options.ILinesLayoutMemo.create(top);
-    const lineLayouts = Engine.layout$({
+    let memo$ = ILinesLayoutMemo.create(top);
+    const lineLayouts = layout({
         attributes: null,
-        measures: doc.measures,
-        header: doc.header,
-        print$: print,
-        page$: pageNum,
-        modelFactory: doc.factory,
         debug: true,
-        preProcessors: [],
-        postProcessors: [Pad, Justify, Beam, Center, Tieds, RemoveOverlaps]
+        header: doc.header,
+        measures: doc.measures,
+        modelFactory: doc.factory,
+        page$: pageNum,
+        postprocessors: doc.factory.postprocessors,
+        preprocessors: [],
+        print$: print
     }, memo$);
 
     return $(Page)({
-        scoreHeader: doc.header,
+        className: pageClassName,
         lineLayouts: lineLayouts,
-        "print": print,
+        print: print,
         renderTarget: renderTarget,
-        className: pageClassName
+        scoreHeader: doc.header
     });
 }
 
@@ -94,15 +87,15 @@ export function getPage(doc: Engine.IDocument, startMeasure: number,
  * @param startMeasure the index from 0 (not to be confused with the
  *        measure number string) of the first measure.
  */
-export function renderDocument(doc: Engine.IDocument, startMeasure: number): string {
-    const core = React.renderToStaticMarkup(getPage(doc, startMeasure));
+export function renderDocument(doc: IDocument, startMeasure: number): string {
+    const core = renderToStaticMarkup(getPage(doc, startMeasure));
 
-    return `<?xml version="1.0" encoding="UTF-8" standalone="no"?>${
-        core.replace("<svg", "<svg xmlns=\"http://www.w3.org/2000/svg\"")
-            .replace(/class="tn_"/g, "font-family='Alegreya'")
-            .replace(/class="mmn_"/g, "font-family='Alegreya' " +
-                        "font-style='italic' stroke='#7a7a7a'")
-            .replace(/class="bn_"/g, "font-family='Alegreya' " +
-                    "font-style='italic' text-anchor='end' stroke='#7a7a7a'")
-            .replace(/<noscript><\/noscript>/g, "")}`;
+     return `<?xml version="1.0" encoding="UTF-8" standalone="no"?>${
+         core.replace("<svg", "<svg xmlns=\"http://www.w3.org/2000/svg\"")
+             .replace(/class="tn_"/g, "font-family='Alegreya'")
+             .replace(/class="mmn_"/g, "font-family='Alegreya' " +
+                         "font-style='italic' stroke='#7a7a7a'")
+             .replace(/class="bn_"/g, "font-family='Alegreya' " +
+                     "font-style='italic' text-anchor='end' stroke='#7a7a7a'")
+             .replace(/<noscript><\/noscript>/g, "")}`;
 }

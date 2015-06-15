@@ -24,18 +24,18 @@
 
 import chai = require("chai");
 
-import Print = require("../print");
-import Engine = require("../engine");
-import Factory = require("../factory");
+import Print from "../print";
+import {IModel} from "../../engine";
+import Factory from "../factory";
 
-var expect = chai.expect;
+let expect = chai.expect;
 
 describe("[print.ts]", function() {
     describe("PrintModel", function() {
-        var factory = new Factory([Print]);
-        var print: Engine.IModel;
+        let factory = new Factory([Print]);
+        let print: IModel;
         it("can be created", function() {
-            print = factory.create(Engine.IModel.Type.Print);
+            print = factory.create(IModel.Type.Print);
             expect(!!print).to.be.true;
         });
     });

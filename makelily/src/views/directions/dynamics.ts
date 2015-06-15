@@ -17,15 +17,14 @@
  */
 
 import MusicXML = require("musicxml-interfaces");
-import React = require("react");
+import {createFactory as $, Component, PropTypes} from "react";
 import _ = require("lodash");
-let $ = React.createFactory;
 import invariant = require("react/lib/invariant");
 
-import DirectionModel = require("../../models/direction");
-import Glyph = require("../primitives/glyph");
+import DirectionModel from "../../models/direction";
+import Glyph from "../primitives/glyph";
 
-class Dynamics extends React.Component<{layout: DirectionModel.ILayout}, void> {
+class Dynamics extends Component<{layout: DirectionModel.ILayout}, void> {
     render(): any {
         let layout = this.props.layout;
         let model = layout.model;
@@ -42,10 +41,10 @@ class Dynamics extends React.Component<{layout: DirectionModel.ILayout}, void> {
         }
 
         return $(Glyph)({
+            fill: "black",
             glyphName: glyphName,
             x: initX,
-            y: initY,
-            fill: "black"
+            y: initY
         });
     }
 
@@ -123,10 +122,10 @@ class Dynamics extends React.Component<{layout: DirectionModel.ILayout}, void> {
 }
 
 module Dynamics {
-    export var contextTypes = <any> {
-        originX: React.PropTypes.number.isRequired,
-        originY: React.PropTypes.number.isRequired
+    export let contextTypes = <any> {
+        originX: PropTypes.number.isRequired,
+        originY: PropTypes.number.isRequired
     };
 }
 
-export = Dynamics;
+export default Dynamics;

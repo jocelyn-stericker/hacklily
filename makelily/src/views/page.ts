@@ -17,15 +17,15 @@
  */
 
 import MusicXML = require("musicxml-interfaces");
-import React = require("react");
+import * as React from "react"; // TS 1.5 workaround
+import {createFactory as $, DOM, MouseEvent, PropTypes} from "react";
 import _ = require("lodash");
 import invariant = require("react/lib/invariant");
-var $ = React.createFactory;
 
-import Credit = require("./credit");
-import Engine = require("../models/engine");
-import MeasureView = require("./measureView");
-import StaveLines = require("./staveLines");
+import Credit from "./credit";
+import {ILineLayoutResult, IMeasureLayout, IPrint, RenderTarget, RenderUtil, key$} from "../engine";
+import MeasureView from "./measureView";
+import StaveLines from "./staveLines";
 
 class Page extends React.Component<Page.IProps, Page.IState> {
     render() {
@@ -40,12 +40,12 @@ class Page extends React.Component<Page.IProps, Page.IState> {
         const credits = _.filter(this.props.scoreHeader.credits, cr =>
                                 (cr.page === parseInt(page, 10)));
         const scale40 = defaults.scaling.millimeters / defaults.scaling.tenths * 40;
-        const widthMM = this.props.renderTarget === Engine.RenderTarget.SvgExport ?
-                                Engine.RenderUtil.tenthsToMM(
+        const widthMM = this.props.renderTarget === RenderTarget.SvgExport ?
+                                RenderUtil.tenthsToMM(
                                     scale40, print.pageLayout.pageWidth) + "mm" :
                                 "100%";
-        const heightMM = this.props.renderTarget === Engine.RenderTarget.SvgExport ?
-                                Engine.RenderUtil.tenthsToMM(
+        const heightMM = this.props.renderTarget === RenderTarget.SvgExport ?
+                                RenderUtil.tenthsToMM(
                                     scale40, print.pageLayout.pageHeight) + "mm" :
                                 "100%";
 
@@ -54,7 +54,7 @@ class Page extends React.Component<Page.IProps, Page.IState> {
         const lineLayouts = this.props.lineLayouts;
 
         const pageMarginsAll = print.pageLayout.pageMargins;
-        const pageMargins = Engine.IPrint.getPageMargins(pageMarginsAll, pageNum);
+        const pageMargins = IPrint.getPageMargins(pageMarginsAll, pageNum);
         let systemMargins = print.systemLayout.systemMargins;
 
         let origins = _.map(lineLayouts, extractOriginsFromLayouts);
@@ -87,34 +87,32 @@ class Page extends React.Component<Page.IProps, Page.IState> {
         /*--- Credits ---------------------------------------------*/
 
         // Make sure our credits are keyed.
-        _.forEach(credits, credit => Engine.key$(credit));
+        _.forEach(credits, credit => key$(credit));
 
         /*--- Render ----------------------------------------------*/
 
-        return React.DOM.svg(
+        return DOM.svg(
             {
-                "data-page": this.props.renderTarget === Engine.RenderTarget.SvgExport ?
-                                    undefined : print.pageNumber,
-                ref: "svg" + print.pageNumber,
                 className: this.props.className,
-
+                "data-page": this.props.renderTarget === RenderTarget.SvgExport ?
+                    undefined : print.pageNumber,
                 height: heightMM,
-                width: widthMM,
-                viewBox: `0 0 ${print.pageLayout.pageWidth} ${print.pageLayout.pageHeight}`,
-
                 onClick: this.props.onClick,
                 onMouseDown: this.props.onMouseDown,
                 onMouseLeave: this.props.onMouseLeave,
                 onMouseMove: this.props.onMouseMove,
-                onMouseUp: this.props.onMouseUp
+                onMouseUp: this.props.onMouseUp,
+                ref: "svg" + print.pageNumber,
+                viewBox: `0 0 ${print.pageLayout.pageWidth} ${print.pageLayout.pageHeight}`,
+                width: widthMM
             },
             _.map(credits, <any> $(Credit)),
             _.map(staveLineProps, staveLineProps => _.map(staveLineProps, <any> $(StaveLines))),
             _.map(lineLayouts, (lineLayout, lineIdx) =>
                 _.map(lineLayout, measureLayout =>
                     $(MeasureView)({
-                        layout: measureLayout,
-                        key: (<any>measureLayout).key
+                        key: (<any>measureLayout).key,
+                        layout: measureLayout
                     })
                 )
             )
@@ -127,14 +125,14 @@ class Page extends React.Component<Page.IProps, Page.IState> {
         const scale40 = defaults.scaling.millimeters / defaults.scaling.tenths * 40;
 
         return {
-            scale40: scale40,
             originY: print.pageLayout.pageHeight,
-            renderTarget: this.props.renderTarget
+            renderTarget: this.props.renderTarget,
+            scale40: scale40
         };
     }
 }
 
-function extractOriginsFromLayouts(measureLayouts: Engine.Measure.IMeasureLayout[]):
+function extractOriginsFromLayouts(measureLayouts: IMeasureLayout[]):
         {[key: string]: number[]} {
 
     if (!measureLayouts[0]) {
@@ -144,27 +142,27 @@ function extractOriginsFromLayouts(measureLayouts: Engine.Measure.IMeasureLayout
 }
 
 module Page {
-    export var childContextTypes = <any> {
-        scale40: React.PropTypes.number.isRequired,
-        originY: React.PropTypes.number.isRequired,
-        renderTarget: React.PropTypes.number.isRequired // Page.RenderTarget
+    export let childContextTypes = <any> {
+        originY: PropTypes.number.isRequired,
+        renderTarget: PropTypes.number.isRequired, // Page.RenderTarget
+        scale40: PropTypes.number.isRequired
     };
 
     export interface IProps {
         scoreHeader: MusicXML.ScoreHeader;
         print: MusicXML.Print;
-        lineLayouts: Engine.Options.ILineLayoutResult[];
-        renderTarget: Engine.RenderTarget;
+        lineLayouts: ILineLayoutResult[];
+        renderTarget: RenderTarget;
         className: string;
 
-        onClick?: (evt: React.MouseEvent) => void;
-        onMouseDown?: (evt: React.MouseEvent) => void;
-        onMouseLeave?: (evt: React.MouseEvent) => void;
-        onMouseMove?: (evt: React.MouseEvent) => void;
-        onMouseUp?: (evt: React.MouseEvent) => void;
+        onClick?: (evt: MouseEvent) => void;
+        onMouseDown?: (evt: MouseEvent) => void;
+        onMouseLeave?: (evt: MouseEvent) => void;
+        onMouseMove?: (evt: MouseEvent) => void;
+        onMouseUp?: (evt: MouseEvent) => void;
     }
     export interface IState {
     }
 }
 
-export = Page;
+export default Page;

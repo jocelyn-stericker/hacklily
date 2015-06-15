@@ -1,9 +1,8 @@
 import React = require("react");
-import { Route, DefaultRoute, RouteHandler, Link } from "react-router";
-import Satie = require("satie");
+import {Route, DefaultRoute, RouteHandler, Link} from "react-router";
 import _ = require("lodash");
 
-import Test = require("./test");
+import Test from "./test";
 
 const STYLES = require("./tests.less");
 
@@ -36,7 +35,7 @@ const TEST_CATEGORIES: {[key: string]: string} = {
     "74": "Figured bass",
     "75": "Other instrumental notation",
     "90": "Compressed MusicXML files",
-    "99": "Compatibility with broken MusicXML",  
+    "99": "Compatibility with broken MusicXML",
 };
 
 const TESTS = [
@@ -173,18 +172,23 @@ class Tests extends React.Component<{params: {id: string}}, void> {
         let filter = this.props.params ? this.props.params.id : null;
         let cat = _.reduce(TESTS, (memo, testName) => {
             let type = testName.substr(0, 2);
-            let link = filter ? null : React.jsx(`<Link to="someTests" params=${{id: type}}><button>hide others</button></Link>`);
+            let link = filter ?
+                null :
+                React.jsx(`<Link to="someTests" params=${{id: type}}>
+                        <button>hide others</button></Link>`);
             if (type !== memo.type && (!filter || type.indexOf(filter) === 0)) {
-                memo.acc.push(React.jsx(`<h2 key=${type}>${TEST_CATEGORIES[type]}&nbsp;&nbsp;${link}</h2>`));
+                memo.acc.push(React.jsx(`<h2 key=${type}>
+                            ${TEST_CATEGORIES[type]}&nbsp;&nbsp;${link}</h2>`));
             }
             if (!filter || testName.indexOf(filter) === 0) {
-                memo.acc.push(React.jsx(`<Test showFilterButton=${testName !== filter} name=${testName}
+                memo.acc.push(
+                        React.jsx(`<Test showFilterButton=${testName !== filter} name=${testName}
                     key=${testName} filename=${"/lilypond-regression/" + testName + ".xml"} />`));
             }
             return {
                 acc: memo.acc,
                 type: type
-            }
+            };
         }, {acc: <any[]>[], type: ""}).acc;
         return React.jsx(`<div className=${STYLES.tests}>
             ${cat}
@@ -207,16 +211,23 @@ module Tests {
 
                 return React.jsx(`<span>
                     <code>Filter: "${filter}"</code>&nbsp;&nbsp;
-                    <Link to=${link} params=${params}><button>${filter.length > 1 ? "show more" : "show all"}</button></Link>
+                    <Link to=${link} params=${params}>
+                        <button>
+                            ${filter.length > 1 ? "show more" : "show all"}
+                        </button>
+                    </Link>
                 </span>`);
             }
+            let lilypond = "http://www.lilypond.org/doc/v2.18/input/" +
+                "regression/musicxml/collated-files.html";
             return React.jsx(`<span>
-                Satie uses the <a href="http://www.lilypond.org/doc/v2.18/input/regression/musicxml/collated-files.html">
-                unoffical MusicXML test suite</a> from <a href="http://lilypond.org/">LilyPond</a> to test MusicXML parsing
-                as well as basic layout. When a rendering changes, it must be approved here to make tests pass again.
+                Satie uses the <a href=${lilypond}>unoffical MusicXML test suite</a>
+                from <a href="http://lilypond.org/">LilyPond</a>
+                to test MusicXML parsing
+                as well as basic layout.
             </span>`);
         }
     }
 }
 
-export = Tests;
+export default Tests;

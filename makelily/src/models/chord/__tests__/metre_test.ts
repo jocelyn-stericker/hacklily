@@ -25,23 +25,23 @@
 import MusicXML = require("musicxml-interfaces");
 import chai = require("chai");
 
-import Attributes = require("../../attributes");
-import Chord = require("../../chord");
-import Engine = require("../../engine");
-import Factory = require("../../factory");
-import Metre = require("../metre");
+import Attributes from "../../attributes";
+import Chord from "../../chord";
+import {IChord, IModel} from "../../../engine";
+import Factory from "../../factory";
+import {rhythmicSpellcheck$, calcDivisions} from "../metre";
 
-import AttributesTst = require("../../__tests__/attributes_test");
+import {makeCursor} from "../../__tests__/attributes_test";
 
-var ModelType = Engine.IModel.Type;
-var expect = chai.expect;
+let ModelType = IModel.Type;
+let expect = chai.expect;
 
 describe("[metre.ts]", function() {
     describe("rhythmicSpellcheck$", function() {
         it("merges two tied eighth notes", function() {
-            var factory = new Factory([Attributes, Chord]);
-            var cursor$ = AttributesTst.makeCursor(factory, [
-                factory.create(ModelType.Chord, <Engine.IChord> [{
+            let factory = new Factory([Attributes, Chord]);
+            let cursor$ = makeCursor(factory, [
+                factory.create(ModelType.Chord, <IChord> [{
                     pitch: {
                         step: "E",
                         octave: 4
@@ -52,7 +52,7 @@ describe("[metre.ts]", function() {
                     divCount: 30,
                     ties: [{}]
                 }]),
-                factory.create(ModelType.Chord, <Engine.IChord> [{
+                factory.create(ModelType.Chord, <IChord> [{
                     pitch: {
                         step: "F",
                         octave: 4
@@ -63,26 +63,26 @@ describe("[metre.ts]", function() {
                     divCount: 30
                 }])
             ]);
-            var retcode = Metre.rhythmicSpellcheck$(cursor$);
+            let retcode = rhythmicSpellcheck$(cursor$);
             expect(retcode).to.eq(true, "A change should have occured.");
 
             expect(cursor$.segment.length).to.equal(1);
-            var chord = Engine.IChord.fromModel(cursor$.segment[0]);
-            expect(Metre.calcDivisions(chord, cursor$)).to.equal(60);
+            let chord = IChord.fromModel(cursor$.segment[0]);
+            expect(calcDivisions(chord, cursor$)).to.equal(60);
             expect(chord.length).to.equal(1);
             expect(chord[0].noteType.duration).to.equal(MusicXML.Count.Quarter);
         });
         it("merges two eighth rests", function() {
-            var factory = new Factory([Attributes, Chord]);
-            var cursor$ = AttributesTst.makeCursor(factory, [
-                factory.create(ModelType.Chord, <Engine.IChord> [{
+            let factory = new Factory([Attributes, Chord]);
+            let cursor$ = makeCursor(factory, [
+                factory.create(ModelType.Chord, <IChord> [{
                     rest: {},
                     noteType: {
                         duration: MusicXML.Count.Eighth
                     },
                     divCount: 30
                 }]),
-                factory.create(ModelType.Chord, <Engine.IChord> [{
+                factory.create(ModelType.Chord, <IChord> [{
                     rest: {},
                     noteType: {
                         duration: MusicXML.Count.Eighth
@@ -90,19 +90,19 @@ describe("[metre.ts]", function() {
                     divCount: 30
                 }])
             ]);
-            var retcode = Metre.rhythmicSpellcheck$(cursor$);
+            let retcode = rhythmicSpellcheck$(cursor$);
             expect(retcode).to.eq(true, "A change should have occured.");
 
             expect(cursor$.segment.length).to.equal(1);
-            var chord = Engine.IChord.fromModel(cursor$.segment[0]);
-            expect(Metre.calcDivisions(chord, cursor$)).to.equal(60);
+            let chord = IChord.fromModel(cursor$.segment[0]);
+            expect(calcDivisions(chord, cursor$)).to.equal(60);
             expect(chord.length).to.equal(1);
             expect(chord[0].noteType.duration).to.equal(MusicXML.Count.Quarter);
         });
         it("does not merge two eighth notes that are not tied", function() {
-            var factory = new Factory([Attributes, Chord]);
-            var cursor$ = AttributesTst.makeCursor(factory, [
-                factory.create(ModelType.Chord, <Engine.IChord> [{
+            let factory = new Factory([Attributes, Chord]);
+            let cursor$ = makeCursor(factory, [
+                factory.create(ModelType.Chord, <IChord> [{
                     pitch: {
                         step: "E",
                         octave: 4
@@ -112,7 +112,7 @@ describe("[metre.ts]", function() {
                     },
                     divCount: 30
                 }]),
-                factory.create(ModelType.Chord, <Engine.IChord> [{
+                factory.create(ModelType.Chord, <IChord> [{
                     pitch: {
                         step: "F",
                         octave: 4
@@ -123,19 +123,19 @@ describe("[metre.ts]", function() {
                     divCount: 30
                 }])
             ]);
-            var retcode = Metre.rhythmicSpellcheck$(cursor$);
+            let retcode = rhythmicSpellcheck$(cursor$);
             expect(retcode).to.eq(false, "A change should not have occured.");
 
             expect(cursor$.segment.length).to.equal(2);
-            var chord = Engine.IChord.fromModel(cursor$.segment[0]);
-            expect(Metre.calcDivisions(chord, cursor$)).to.equal(30);
+            let chord = IChord.fromModel(cursor$.segment[0]);
+            expect(calcDivisions(chord, cursor$)).to.equal(30);
             expect(chord.length).to.equal(1);
             expect(chord[0].noteType.duration).to.equal(MusicXML.Count.Eighth);
         });
         it("does not merge accross boundries", function() {
-            var factory = new Factory([Attributes, Chord]);
-            var cursor$ = AttributesTst.makeCursor(factory, [
-                factory.create(ModelType.Chord, <Engine.IChord> [{
+            let factory = new Factory([Attributes, Chord]);
+            let cursor$ = makeCursor(factory, [
+                factory.create(ModelType.Chord, <IChord> [{
                     pitch: {
                         step: "E",
                         octave: 4
@@ -146,7 +146,7 @@ describe("[metre.ts]", function() {
                     dots: [{}],
                     divCount: 30
                 }]),
-                factory.create(ModelType.Chord, <Engine.IChord> [{
+                factory.create(ModelType.Chord, <IChord> [{
                     pitch: {
                         step: "F",
                         octave: 4
@@ -156,7 +156,7 @@ describe("[metre.ts]", function() {
                     },
                     divCount: 30
                 }]),
-                factory.create(ModelType.Chord, <Engine.IChord> [{
+                factory.create(ModelType.Chord, <IChord> [{
                     pitch: {
                         step: "F",
                         octave: 4
@@ -167,7 +167,7 @@ describe("[metre.ts]", function() {
                     divCount: 30
                 }])
             ]);
-            var retcode = Metre.rhythmicSpellcheck$(cursor$);
+            let retcode = rhythmicSpellcheck$(cursor$);
             expect(retcode).to.eq(false, "A change should not have occured.");
 
             expect(cursor$.segment.length).to.equal(3);

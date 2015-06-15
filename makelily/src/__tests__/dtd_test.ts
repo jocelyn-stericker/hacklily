@@ -26,8 +26,8 @@ import _ = require("lodash");
 import child_process = require("child_process");
 import fs = require("fs");
 
-import Models = require("../models");
-import Views = require("../views");
+import {importXML, exportXML} from "../index";
+import {renderDocument} from "../views";
 
 function readFile(file: string, onEnd: (s: string) => void) {
     fs.readFile(file, "utf8", function (err, data) {
@@ -73,17 +73,17 @@ describe("import/export dtd validation", function() {
                 .replace(".xml", ".svg");
             it("can be imported, exported, validated, and rendered", function(done) {
                 readFile(root + "/" + file, function(str) {
-                    Models.importXML(str, (err, document) => {
+                    importXML(str, (err, document) => {
                         if (err) {
                             done(err);
                             return;
                         }
                         try {
-                            let page1Svg = Views.renderDocument(document, 0);
+                            let page1Svg = renderDocument(document, 0);
                             fs.writeFile("rendertest/out/" + outname, page1Svg);
 
                             if (!process.env.SKIP_DTD_VALIDATION) {
-                                Models.exportXML(document, (err, mxmlOut) => {
+                                exportXML(document, (err, mxmlOut) => {
                                     if (err) {
                                         done(err);
                                         return;

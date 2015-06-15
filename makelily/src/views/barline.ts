@@ -19,19 +19,18 @@
 "use strict";
 
 import MusicXML = require("musicxml-interfaces");
-import React = require("react");
+import {createFactory as $, Component, DOM, PropTypes} from "react";
 import _ = require("lodash");
-var $ = React.createFactory;
 
-import Attributes = require("./attributes");
-import Barline = require("../models/barline");
-import Line = require("./primitives/line");
+import Attributes from "./attributes";
+import Barline from "../models/barline";
+import Line from "./primitives/line";
 
 /**
  * Renders a full-stave-height barline at (x,y).
  * Does not do any interesting calculations.
  */
-class BarlineView extends React.Component<{layout: Barline.ILayout}, {}> {
+class BarlineView extends Component<{layout: Barline.ILayout}, {}> {
     render(): any {
         const originX = this.context.originX;
         const originY = this.context.originY;
@@ -47,43 +46,45 @@ class BarlineView extends React.Component<{layout: Barline.ILayout}, {}> {
         // TODO: render MusicXML.BarStyleType.Short:
         // TODO: render MusicXML.BarStyleType.Tick:
 
+        let yTop: number;
+        let yBottom: number;
         if (layout.partSymbol && layout.partSymbol.type !== MusicXML.PartSymbolType.None) {
-            var yTop = <number> this.context.systemTop;
-            var yBottom = <number> this.context.systemBottom;
+            yTop = this.context.systemTop;
+            yBottom = this.context.systemBottom;
         } else {
-            var yTop = y - layout.height - layout.yOffset;
-            var yBottom = y + layout.height - layout.yOffset;
+            yTop = y - layout.height - layout.yOffset;
+            yBottom = y + layout.height - layout.yOffset;
         }
 
         if (model.satieAttributes) {
             model.satieAttributes.overrideX = layout.overrideX + model.satieAttribsOffset;
         }
 
-        return React.DOM.g(null,
+        return DOM.g(null,
             _.map(layout.lineStarts, (start, idx) => $(Line)({
+                fill: model.barStyle.color,
                 key: idx,
+                stroke: model.barStyle.color,
+                strokeWidth: layout.lineWidths[idx],
                 x1: x + start + layout.lineWidths[idx]/2,
                 x2: x + start + layout.lineWidths[idx]/2,
                 y1: yTop,
-                y2: yBottom,
-                stroke: model.barStyle.color,
-                fill: model.barStyle.color,
-                strokeWidth: layout.lineWidths[idx]
+                y2: yBottom
             })),
             model.satieAttributes && $(Attributes)({
                 layout: model.satieAttributes
             })
-        /* React.DOM.g */);
+        /* DOM.g */);
     }
 };
 
 module BarlineView {
-    export var contextTypes = <any> {
-        originX: React.PropTypes.number.isRequired,
-        originY: React.PropTypes.number.isRequired,
-        systemTop: React.PropTypes.number.isRequired,
-        systemBottom: React.PropTypes.number.isRequired
+    export let contextTypes = <any> {
+        originX: PropTypes.number.isRequired,
+        originY: PropTypes.number.isRequired,
+        systemBottom: PropTypes.number.isRequired,
+        systemTop: PropTypes.number.isRequired
     };
 }
 
-export = BarlineView;
+export default BarlineView;

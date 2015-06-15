@@ -16,14 +16,9 @@
         "./vendor/typings/tsd.d.ts"
     ],
     "rules": {
-        "ban": [true,
-            ["_", "isNull"],
-            ["_", "isDefined"]
-        ],
+        "ban": [true, ["_", "isNull"], ["_", "isDefined"] ],
         "class-name": true,
-        "comment-format": [true,
-            "check-space"
-        ],
+        "comment-format": [true, "check-space" ],
         "curly": true,
         "eofline": true,
         "forin": true,
@@ -51,36 +46,18 @@
         "no-unused-expression": true,
         "no-unused-variable": true,
         "no-use-before-declare": false,
+        "no-var-keyword": true,
         "no-var-requires": true,
-        "one-line": [true,
-            "check-catch",
-            "check-else",
-            "check-open-brace",
-            "check-whitespace"
-        ],
+        "one-line": [true, "check-catch", "check-else", "check-open-brace", "check-whitespace" ],
         "quotemark": [true, "double"],
         "radix": true,
         "semicolon": true,
+        "sort-object-literal-keys": false,
         "triple-equals": [true, "allow-null-check"],
-        "typedef": [true,
-            "index-signature",
-            "property-signature",
-            "member-variable-declarator"
-        ],
-        "typedef-whitespace": [true,
-            ["callSignature", "noSpace"],
-            ["catchClause", "noSpace"],
-            ["indexSignature", "space"]
-        ],
+        "typedef": [true, "index-signature", "property-signature", "member-variable-declarator" ],
+        "typedef-whitespace": [true, ["callSignature", "noSpace"], ["catchClause", "noSpace"], ["indexSignature", "space"] ],
         "use-strict": false,
         "variable-name": false,
-        "whitespace": [false,
-            "check-branch",
-            "check-decl",
-            "check-operator",
-            "check-separator",
-            "check-type",
-            "check-typecast"
-        ]
+        "whitespace": [false, "check-branch", "check-decl", "check-operator", "check-separator", "check-type", "check-typecast" ]
     }
 }

@@ -24,18 +24,18 @@
 
 import chai = require("chai");
 
-import Barline = require("../barline");
-import Engine = require("../engine");
-import Factory = require("../factory");
+import Barline from "../barline";
+import {IModel} from "../../engine";
+import Factory from "../factory";
 
-var expect = chai.expect;
+let expect = chai.expect;
 
 describe("[barline.ts]", function() {
     describe("BarlineModel", function() {
-        var factory = new Factory([Barline]);
-        var barline: Engine.IModel;
+        let factory = new Factory([Barline]);
+        let barline: IModel;
         it("can be created", function() {
-            barline = factory.create(Engine.IModel.Type.Barline);
+            barline = factory.create(IModel.Type.Barline);
             expect(!!barline).to.be.true;
         });
     });

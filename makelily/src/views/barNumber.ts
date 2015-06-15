@@ -19,25 +19,25 @@
 "use strict";
 
 import MusicXML = require("musicxml-interfaces");
-import React = require("react");
+import {Component, DOM, PropTypes} from "react";
 
-class BarNumber extends React.Component<{spec: MusicXML.Position, barNumber: string}, void> {
+class BarNumber extends Component<{spec: MusicXML.Position, barNumber: string}, void> {
     render(): any {
         const spec = this.props.spec;
-        return React.DOM.text({
-            x: this.context.originX + spec.defaultX + (spec.relativeX || 0),
-            y: this.context.originY - spec.defaultY - (spec.relativeY || 0),
+        return DOM.text({
+            className: "bn_",
             fontSize: 24,
-            className: "bn_"
+            x: this.context.originX + spec.defaultX + (spec.relativeX || 0),
+            y: this.context.originY - spec.defaultY - (spec.relativeY || 0)
         }, this.props.barNumber);
     }
 };
 
 module BarNumber {
-    export var contextTypes = <any> {
-        originX: React.PropTypes.number.isRequired,
-        originY: React.PropTypes.number.isRequired
+    export let contextTypes = <any> {
+        originX: PropTypes.number.isRequired,
+        originY: PropTypes.number.isRequired
     };
 }
 
-export = BarNumber;
+export default BarNumber;

@@ -19,16 +19,15 @@
 "use strict";
 
 import MusicXML = require("musicxml-interfaces");
-import React = require("react");
-var $ = React.createFactory;
+import {createFactory as $, Component, DOM, PropTypes} from "react";
 
-import Glyph = require("./primitives/glyph");
-import SMuFL = require("../models/smufl");
+import Glyph from "./primitives/glyph";
+import {bboxes} from "../models/smufl";
 
 /**
  * Responsible for the rendering of a clef.
  */
-class Clef extends React.Component<{spec: MusicXML.Clef}, void> {
+class Clef extends Component<{spec: MusicXML.Clef}, void> {
     render(): any {
         const spec = this.props.spec;
 
@@ -46,16 +45,16 @@ class Clef extends React.Component<{spec: MusicXML.Clef}, void> {
         }
 
         let clefGlyph = $(Glyph)({
-            x: clefX,
-            y: clefY,
             fill: spec.color,
-            glyphName: clefSign
+            glyphName: clefSign,
+            x: clefX,
+            y: clefY
         });
 
         let clefOctaveChange = parseInt(spec.clefOctaveChange, 10);
         let clefDecorations: any[] = [];
 
-        let clefSignBox = SMuFL.bboxes[clefSign];
+        let clefSignBox = bboxes[clefSign];
         let left = clefSignBox[0];
         let top = clefSignBox[1];
         let right = clefSignBox[2];
@@ -72,41 +71,41 @@ class Clef extends React.Component<{spec: MusicXML.Clef}, void> {
         let decorativeX = (left + right)/2;
         if (clefOctaveChange === 2) {
             clefDecorations.push($(Glyph)({
-                key: "15ma",
-                x: decorativeX - (SMuFL.bboxes["clef15"][0]*10 +
-                        SMuFL.bboxes["clef15"][2]*10)/2 + topLeftOffset,
-                y: top,
                 fill: spec.color,
-                glyphName: "clef15"
+                glyphName: "clef15",
+                key: "15ma",
+                x: decorativeX - (bboxes["clef15"][0]*10 +
+                        bboxes["clef15"][2]*10)/2 + topLeftOffset,
+                y: top
             }));
         } else if (clefOctaveChange === 1) {
             clefDecorations.push($(Glyph)({
-                key: "8va",
-                x: decorativeX - (SMuFL.bboxes["clef8"][0]*10 +
-                        SMuFL.bboxes["clef8"][2]*10)/2 + topLeftOffset,
-                y: top,
                 fill: spec.color,
-                glyphName: "clef8"
+                glyphName: "clef8",
+                key: "8va",
+                x: decorativeX - (bboxes["clef8"][0]*10 +
+                        bboxes["clef8"][2]*10)/2 + topLeftOffset,
+                y: top
             }));
         } else if (clefOctaveChange === -1) {
             clefDecorations.push($(Glyph)({
-                key: "8vb",
-                x: decorativeX - (SMuFL.bboxes["clef8"][0]*10 + SMuFL.bboxes["clef8"][2]*10)/2,
-                y: bottom + SMuFL.bboxes["clef8"][1]*10,
                 fill: spec.color,
-                glyphName: "clef8"
+                glyphName: "clef8",
+                key: "8vb",
+                x: decorativeX - (bboxes["clef8"][0]*10 + bboxes["clef8"][2]*10)/2,
+                y: bottom + bboxes["clef8"][1]*10
             }));
         } else if (clefOctaveChange === -2) {
             clefDecorations.push($(Glyph)({
-                key: "15mb",
-                x: decorativeX - (SMuFL.bboxes["clef15"][0]*10 + SMuFL.bboxes["clef15"][2]*10)/2,
-                y: bottom + SMuFL.bboxes["clef15"][1]*10,
                 fill: spec.color,
-                glyphName: "clef15"
+                glyphName: "clef15",
+                key: "15mb",
+                x: decorativeX - (bboxes["clef15"][0]*10 + bboxes["clef15"][2]*10)/2,
+                y: bottom + bboxes["clef15"][1]*10
             }));
         }
         if (clefDecorations) {
-            return React.DOM.g(null,
+            return DOM.g(null,
                 clefGlyph,
                 clefDecorations);
         } else {
@@ -139,10 +138,10 @@ class Clef extends React.Component<{spec: MusicXML.Clef}, void> {
 };
 
 module Clef {
-    export var contextTypes = <any> {
-        originX: React.PropTypes.number.isRequired,
-        originY: React.PropTypes.number.isRequired
+    export let contextTypes = <any> {
+        originX: PropTypes.number.isRequired,
+        originY: PropTypes.number.isRequired
     };
 }
 
-export = Clef;
+export default Clef;

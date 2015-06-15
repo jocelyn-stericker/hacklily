@@ -22,10 +22,10 @@
 
 "use strict";
 
-import smufl = require("../smufl");
-
 import chai = require("chai");
-var expect = chai.expect;
+let expect = chai.expect;
+
+import SMuFL = require("../smufl");
 
 describe("[smufl.ts]", function() {
     describe("bboxes", function() {
@@ -33,16 +33,16 @@ describe("[smufl.ts]", function() {
 
         it("is simply bravuraMetadata indexed by 4th index (key)", function() {
             // Note: you may need to change this if the Bravura order changes.
-            expect(smufl.bboxes["4stringTabClef"]).to.deep.equal(smufl.bravura.glyphBBoxes[0]);
+            expect(SMuFL.bboxes["4stringTabClef"]).to.deep.equal(SMuFL.bravura.glyphBBoxes[0]);
         });
         it("contains the same amount of information as bravuraMetadata", function() {
-            expect(Object.keys(smufl.bboxes).length).to.equal(
-                smufl.bravura.glyphBBoxes.length);
+            expect(Object.keys(SMuFL.bboxes).length).to.equal(
+                SMuFL.bravura.glyphBBoxes.length);
         });
     });
     describe("getGlyphCode", function() {
         it("returns a string with the codepoint", function() {
-            expect(smufl.getGlyphCode("flag8thUp")).to.equal("\uE240");
+            expect(SMuFL.getGlyphCode("flag8thUp")).to.equal("\uE240");
         });
     });
 });

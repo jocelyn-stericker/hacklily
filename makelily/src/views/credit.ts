@@ -17,14 +17,15 @@
  */
 
 import MusicXML = require("musicxml-interfaces");
-import React = require("react");
+import * as React from "react"; // TS 1.5 workaround
+import {DOM, PropTypes} from "react";
 import _ = require("lodash");
 import invariant = require("react/lib/invariant");
 
-import Engine = require("../models/engine");
-import TextMixin = require("./textMixin");
+import {RenderUtil} from "../engine";
+import {ITextMixin, Prototype as TextMixin} from "./textMixin";
 
-class Credit extends React.Component<MusicXML.Credit, void> implements TextMixin.ITextMixin {
+class Credit extends React.Component<MusicXML.Credit, void> implements ITextMixin {
     render() {
         let image = this.props.creditImage;
         let words = this.props.creditWords;
@@ -33,43 +34,43 @@ class Credit extends React.Component<MusicXML.Credit, void> implements TextMixin
         invariant(!!words, "Unknown component type");
 
         if (!!words && !words.length) {
-            return React.DOM.g({});
+            return DOM.g({});
         }
         const initX = (words[0].defaultX + (words[0].relativeX || 0));
         const initY = (this.context.originY - (words[0].defaultY + (words[0].relativeY || 0)));
 
-        return React.DOM.text({
+        return DOM.text({
                 x: initX,
                 y: initY
             },
             _.map(words, (words, idx) => {
                 let isItalic = words.fontStyle === MusicXML.NormalItalic.Italic;
                 let isBold = words.fontWeight === MusicXML.NormalBold.Bold;
-                let fontSize = Engine.RenderUtil.cssSizeToTenths(scale40, words.fontSize);
-                return _.map(words.words.split("\n"), (line, lineNum) => React.DOM.tspan({
-                    key: idx + "l" + lineNum,
+                let fontSize = RenderUtil.cssSizeToTenths(scale40, words.fontSize);
+                return _.map(words.words.split("\n"), (line, lineNum) => DOM.tspan({
                     "alignment-baseline": "hanging",
-                    x: this.getX(lineNum),
+                    color: words.color || "black",
+                    direction: this.getDirection(words),
                     dx: this.getDX(words, initX, lineNum),
                     dy: this.getDY(words, initY, lineNum),
+                    "font-style": isItalic ? "italic" : "normal",
+                    "font-weight": isBold ? "bold" : "normal",
                     fontFamily: words.fontFamily || "Alegreya",
                     fontSize: fontSize,
-                    "font-weight": isBold ? "bold" : "normal",
-                    "font-style": isItalic ? "italic" : "normal",
-                    color: words.color || "black",
-                    textAnchor: this.getTextAnchor(words),
-                    "text-decoration": this.getTextDecoration(words),
-                    transform: this.getTransform(words),
+                    key: idx + "l" + lineNum,
                     "letter-spacing": words.letterSpacing && words.letterSpacing !== "normal" ?
-                        ("" + Engine.RenderUtil.cssSizeToTenths(this.context.scale40,
+                        ("" + RenderUtil.cssSizeToTenths(this.context.scale40,
                                 words.letterSpacing)) : "normal",
-                    direction: this.getDirection(words)
+                    "text-decoration": this.getTextDecoration(words),
+                    textAnchor: this.getTextAnchor(words),
+                    transform: this.getTransform(words),
+                    x: this.getX(lineNum),
                 }, line));
             })
-        /* React.DOM.text */);
+        /* DOM.text */);
     }
 
-    /* TextMixin.ITextMixin */
+    /* ITextMixin */
     getTextAnchor: (words: MusicXML.CreditWords | MusicXML.Words) => string;
     getTextDecoration: (words: MusicXML.CreditWords | MusicXML.Words) => string;
     getTransform: (words: MusicXML.CreditWords | MusicXML.Words) => string;
@@ -79,13 +80,13 @@ class Credit extends React.Component<MusicXML.Credit, void> implements TextMixin
     getDY: (words: MusicXML.CreditWords | MusicXML.Words, initY: number, lineNum: number) => number;
 }
 
-_.extend(Credit.prototype, TextMixin.Prototype);
+_.extend(Credit.prototype, TextMixin);
 
 module Credit {
-    export var contextTypes = <any> {
-        scale40: React.PropTypes.number.isRequired,
-        originY: React.PropTypes.number.isRequired
+    export let contextTypes = <any> {
+        originY: PropTypes.number.isRequired,
+        scale40: PropTypes.number.isRequired
     };
 }
 
-export = Credit;
+export default Credit;

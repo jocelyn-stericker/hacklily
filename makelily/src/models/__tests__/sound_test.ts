@@ -24,18 +24,18 @@
 
 import chai = require("chai");
 
-import Sound = require("../sound");
-import Engine = require("../engine");
-import Factory = require("../factory");
+import {IModel} from "../../engine";
+import Factory from "../factory";
+import Sound from "../sound";
 
-var expect = chai.expect;
+let expect = chai.expect;
 
 describe("[sound.ts]", function() {
     describe("SoundModel", function() {
-        var factory = new Factory([Sound]);
-        var sound: Engine.IModel;
+        let factory = new Factory([Sound]);
+        let sound: IModel;
         it("can be created", function() {
-            sound = factory.create(Engine.IModel.Type.Sound);
+            sound = factory.create(IModel.Type.Sound);
             expect(!!sound).to.be.true;
         });
     });

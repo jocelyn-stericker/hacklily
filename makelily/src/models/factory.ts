@@ -19,20 +19,25 @@
 import invariant = require("react/lib/invariant");
 import _ = require("lodash");
 
-import Engine = require("./engine");
-import Util = require("./engine/util");
+import {IModel, Preprocessor, Postprocessor} from "../engine";
+import {cloneObject} from "../engine/util";
 
-class Factory implements Engine.IModel.IFactory {
-    constructor(models: Array<(constructors: {
-                [key: number]: any;
-                [key: string]: Engine.IModel.Type;
-            }) => void>) {
+export type ModelInstaller =
+    (constructors: {
+        [key: number]: any;
+        [key: string]: IModel.Type;
+    }) => void;
+
+class Factory implements IModel.IFactory {
+    constructor(models: ModelInstaller[], pre: Preprocessor[] = [], post: Postprocessor[] = []) {
         _.forEach(models, model => {
             model(this._constructors);
         });
+        this.preprocessors = pre;
+        this.postprocessors = post;
     }
 
-    create(modelType: Engine.IModel.Type, options?: any): Engine.IModel {
+    create(modelType: IModel.Type, options?: any): IModel {
         invariant((<number>modelType) in this._constructors,
             "The type with id=%s does not have a factory.",
             modelType);
@@ -40,15 +45,15 @@ class Factory implements Engine.IModel.IFactory {
         return new (<any>this._constructors[modelType])(options);
     }
 
-    modelHasType(model: Engine.IModel, ...modelTypes: Engine.IModel.Type[]): boolean {
+    modelHasType(model: IModel, ...modelTypes: IModel.Type[]): boolean {
         return _.any(modelTypes, modelType => {
             invariant((<number>modelType) in this._constructors,
                 "The type with id=%s does not have a factory.",
                 modelType);
 
             return model instanceof this._constructors[modelType] ||
-                this._constructors[Engine.IModel.Type.Proxy] &&
-                model instanceof this._constructors[Engine.IModel.Type.Proxy] &&
+                this._constructors[IModel.Type.Proxy] &&
+                model instanceof this._constructors[IModel.Type.Proxy] &&
                     (<any>model)._target instanceof this._constructors[modelType];
         });
     }
@@ -57,8 +62,8 @@ class Factory implements Engine.IModel.IFactory {
      * Returns all models in models with types `types` at the timestep of the model at models[idx],
      * or an empty array if none exist.
      */
-    search(models: Engine.IModel[], idx: number, ...types: Engine.IModel.Type[]): Engine.IModel[] {
-        let filtered: Engine.IModel[] = [];
+    search(models: IModel[], idx: number, ...types: IModel.Type[]): IModel[] {
+        let filtered: IModel[] = [];
         while (idx > 0 && !models[idx - 1].divCount) {
             --idx;
         }
@@ -72,16 +77,16 @@ class Factory implements Engine.IModel.IFactory {
         return filtered;
     }
 
-    fromSpec(spec: any): Engine.IModel {
+    fromSpec(spec: any): IModel {
         if (spec instanceof Object) {
-            spec = Util.cloneObject(spec);
+            spec = cloneObject(spec);
         } else if (typeof spec === "string" || spec instanceof String) {
             spec = JSON.parse(<string> spec);
         }
         if (!("_class" in spec)) {
             invariant(false, "fromSpec requires an MXMLJSON spec with a defined class");
         }
-        var sclass: Engine.IModel.Type = <any> Engine.IModel.Type[spec._class];
+        let sclass: IModel.Type = <any> IModel.Type[spec._class];
         if (!(sclass in this._constructors)) {
             invariant(false, "Unknown type \"%s\"", spec._class);
         }
@@ -92,14 +97,16 @@ class Factory implements Engine.IModel.IFactory {
         return "[Factory]";
     }
 
-    identity(model: Engine.IModel) {
+    identity(model: IModel) {
         if ((<any>model)._omTarget) {
             return (<any>model)._omTarget;
         }
         return model;
     }
 
-    private _constructors: { [key: number]: any; [key: string]: Engine.IModel.Type;} = {};
+    preprocessors: Preprocessor[];
+    postprocessors: Postprocessor[];
+    private _constructors: { [key: number]: any; [key: string]: IModel.Type;} = {};
 }
 
-export = Factory;
+export default Factory;

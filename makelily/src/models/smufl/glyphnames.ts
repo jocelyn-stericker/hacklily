@@ -2,7 +2,7 @@
  * Licensed under the SIL Open Font License (OFL)
  */
 
-var names: {[key: string]: string} = {
+let names: {[key: string]: string} = {
   "4stringTabClef": "U+E06E",
   "6stringTabClef": "U+E06D",
   "accSagittal11LargeDiesisDown": "U+E30D",
@@ -2411,4 +2411,4 @@ var names: {[key: string]: string} = {
   "windVeryTightEmbouchure": "U+E601",
   "windWeakAirPressure": "U+E602"
 }
-; export = names;
+; export default names;

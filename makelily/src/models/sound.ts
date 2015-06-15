@@ -19,7 +19,7 @@
 import MusicXML = require("musicxml-interfaces");
 import _ = require("lodash");
 
-import Engine = require("./engine");
+import {ICursor, IModel, ISegment} from "../engine";
 
 class SoundModel implements Export.ISoundModel {
 
@@ -32,17 +32,17 @@ class SoundModel implements Export.ISoundModel {
     staffIdx: number;
 
     /** @prototype */
-    frozenness: Engine.IModel.FrozenLevel;
+    frozenness: IModel.FrozenLevel;
 
-    modelDidLoad$(segment$: Engine.Measure.ISegment): void {
+    modelDidLoad$(segment$: ISegment): void {
         // todo
     }
 
-    validate$(cursor$: Engine.ICursor): void {
+    validate$(cursor$: ICursor): void {
         // todo
     }
 
-    layout(cursor$: Engine.ICursor): Export.ILayout {
+    layout(cursor$: ICursor): Export.ILayout {
         // mutates cursor$ as required.
         return new SoundModel.Layout(this, cursor$);
     }
@@ -92,11 +92,11 @@ class SoundModel implements Export.ISoundModel {
 }
 
 SoundModel.prototype.divCount = 0;
-SoundModel.prototype.frozenness = Engine.IModel.FrozenLevel.Warm;
+SoundModel.prototype.frozenness = IModel.FrozenLevel.Warm;
 
 module SoundModel {
     export class Layout implements Export.ILayout {
-        constructor(model: SoundModel, cursor$: Engine.ICursor) {
+        constructor(model: SoundModel, cursor$: ICursor) {
             this.model = model;
             this.x$ = cursor$.x$;
             this.division = cursor$.division$;
@@ -116,15 +116,15 @@ module SoundModel {
 
         // Prototype:
 
-        mergePolicy: Engine.IModel.HMergePolicy;
-        boundingBoxes$: Engine.IModel.IBoundingRect[];
-        renderClass: Engine.IModel.Type;
-        expandPolicy: Engine.IModel.ExpandPolicy;
+        mergePolicy: IModel.HMergePolicy;
+        boundingBoxes$: IModel.IBoundingRect[];
+        renderClass: IModel.Type;
+        expandPolicy: IModel.ExpandPolicy;
     }
 
-    Layout.prototype.mergePolicy = Engine.IModel.HMergePolicy.Min;
-    Layout.prototype.expandPolicy = Engine.IModel.ExpandPolicy.None;
-    Layout.prototype.renderClass = Engine.IModel.Type.Sound;
+    Layout.prototype.mergePolicy = IModel.HMergePolicy.Min;
+    Layout.prototype.expandPolicy = IModel.ExpandPolicy.None;
+    Layout.prototype.renderClass = IModel.Type.Sound;
     Layout.prototype.boundingBoxes$ = [];
     Object.freeze(Layout.prototype.boundingBoxes$);
 };
@@ -133,16 +133,16 @@ module SoundModel {
  * Registers Sound in the factory structure passed in.
  */
 function Export(constructors: { [key: number]: any }) {
-    constructors[Engine.IModel.Type.Sound] = SoundModel;
+    constructors[IModel.Type.Sound] = SoundModel;
 }
 
 module Export {
-    export interface ISoundModel extends Engine.IModel, MusicXML.Sound {
+    export interface ISoundModel extends IModel, MusicXML.Sound {
     }
 
-    export interface ILayout extends Engine.IModel.ILayout {
+    export interface ILayout extends IModel.ILayout {
         model: ISoundModel;
     }
 }
 
-export = Export;
+export default Export;

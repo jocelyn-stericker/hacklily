@@ -63,10 +63,10 @@ export function getTextBB(name: string, text: string, fontSize: number, style?: 
         // width, so even if we are in Chrome and have better information, we ignore that.
         // Of course that this information is wrong, but it's good enough to place text.
         return {
+            bottom: fontSize,
             left: -fontSize/18,
             right: State.canvasContext.measureText(text).width,
-            top: -4*fontSize/18,
-            bottom: fontSize
+            top: -4*fontSize/18
         };
     }
 
@@ -74,19 +74,19 @@ export function getTextBB(name: string, text: string, fontSize: number, style?: 
         // TODO: get width by canvas if this is the browser
         console.warn(`${fullName} was loaded without path data`);
         return {
+            bottom: 1,
             left: 0,
             right: 1,
             top: 0,
-            bottom: 1,
         };
     }
     if (!font) {
         console.warn(`${fullName} is not loaded`);
         return {
+            bottom: 1,
             left: 0,
             right: 1,
-            top: 0,
-            bottom: 1,
+            top: 0
         };
     }
 
@@ -104,14 +104,14 @@ export function getTextBB(name: string, text: string, fontSize: number, style?: 
     });
 
     return {
+        bottom: maxY,
         left: minX,
         right: maxX,
         top: minY,
-        bottom: maxY
     };
 }
 
-export function toPathData(name: string, text: string,
+export let toPathData = _.memoize(function(name: string, text: string,
         x: number, y: number, fontSize: number, style?: string) {
     let fullName = getFullName(name, style);
     let font = State.fonts[fullName];
@@ -124,6 +124,11 @@ export function toPathData(name: string, text: string,
         return "";
     }
     return font.getPath(text, x, y, fontSize, {kerning: true}).toPathData(3);
+}, resolvePDKey);
+
+function resolvePDKey(name: string, text: string,
+        x: number, y: number, fontSize: number, style?: string) {
+    return name + "_" + text + "_" + x + "_" + y + "_" + fontSize + "_" + (style||"");
 }
 
 /*---- PRIVATE ------------------------------------------------------------------------*/
@@ -201,7 +206,7 @@ function loadFont(name: string, url: string, style: string, full?: boolean) {
 function toArrayBuffer(buffer: Uint8Array) {
     let arrayBuffer = new ArrayBuffer(buffer.length);
     let data = new Uint8Array(arrayBuffer);
-    for (var i = 0; i < buffer.length; i += 1) {
+    for (let i = 0; i < buffer.length; i += 1) {
         data[i] = buffer[i];
     }
 

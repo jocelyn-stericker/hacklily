@@ -1,5 +1,5 @@
 import React = require("react");
-import { Route, DefaultRoute, RouteHandler, Link, RouterContext } from "react-router";
+import {Link, RouteHandler, RouterContext} from "react-router";
 
 const STYLES = require("./app.less");
 
@@ -9,9 +9,10 @@ class App extends React.Component<{params: {id: string}}, void> {
     render() {
         let router: RouterContext = this.context.router;
         let Handler: any = router.getCurrentRoutes()[this.context.routeDepth].handler;
-        let topLink = router.getCurrentPath() !== (prefix + "/") && React.jsx(`<Link className=${STYLES.toplink} to="home">« Go home</Link>`);
+        let topLink = router.getCurrentPath() !== (prefix + "/") &&
+            React.jsx(`<Link className=${STYLES.toplink} to="home">« Go home</Link>`);
         let params = this.props.params;
-        return React.jsx(`<body>
+        return React.jsx(`<div>
             <header>
                 <div className=${STYLES.topbar} />
                 ${topLink}
@@ -21,15 +22,15 @@ class App extends React.Component<{params: {id: string}}, void> {
                 </aside>
             </header>
             <RouteHandler />
-        </body>`);
-    }   
+        </div>`);
+    }
 }
 
 module App {
-    export var contextTypes = {
+    export let contextTypes = {
         routeDepth: React.PropTypes.number,
         router: React.PropTypes.func
     };
 }
 
-export = App;
+export default App;

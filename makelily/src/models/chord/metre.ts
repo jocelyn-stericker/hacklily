@@ -26,12 +26,8 @@ import MusicXML = require("musicxml-interfaces");
 import _ = require("lodash");
 import invariant = require("react/lib/invariant");
 
-import Engine = require("../engine");
-import Util = require("../engine/util");
-
-let ModelType = Engine.IModel.Type;
-let IChord = Engine.IChord;
-let ICursor = Engine.ICursor;
+import {IModel, IChord, ICursor} from "../../engine";
+import {findIndex, cloneObject} from "../../engine/util";
 
 const _512 = makeDuration({ count: 512 });
 const _256 = makeDuration({ count: 256 });
@@ -64,7 +60,7 @@ const allNotes = [_1, _2D, _2,
     _32, _64D, _64, _128D, _128, _256D, _256, _512];
 
 // Adapted from Behind Bars (E. Gould) page 155
-const BEAMING_PATTERNS: {[key: string]: Engine.IChord[]} = {
+const BEAMING_PATTERNS: {[key: string]: IChord[]} = {
     "1/16": [_16 ],
 
     "2/16": [_16, _16 ],
@@ -135,7 +131,7 @@ const BEAMING_PATTERNS: {[key: string]: Engine.IChord[]} = {
     "9/4": [_2D, _2D, _2D ]
 };
 
-const WHOLE_NOTE_PATTERNS: {[key: string]: Engine.IChord[]} = {
+const WHOLE_NOTE_PATTERNS: {[key: string]: IChord[]} = {
     "2/16": [_8 ],
     "1/8": [_8 ],
 
@@ -217,11 +213,11 @@ const WHOLE_NOTE_PATTERNS: {[key: string]: Engine.IChord[]} = {
  * @param cursor give timeSignature, and current index.
  * @returns true if a change was made, false otherwise
  */
-export function rhythmicSpellcheck$(cursor$: Engine.ICursor): boolean {
+export function rhythmicSpellcheck$(cursor$: ICursor): boolean {
     let curr = ICursor.curr(cursor$);
 
     // Only durations can be spell-checked.
-    if (!cursor$.factory.modelHasType(curr, ModelType.Chord)) {
+    if (!cursor$.factory.modelHasType(curr, IModel.Type.Chord)) {
         return false;
     }
 
@@ -240,14 +236,14 @@ export function rhythmicSpellcheck$(cursor$: Engine.ICursor): boolean {
     let currNoteStartDivision = cursor$.division$;
     let currNoteEndDivision = cursor$.division$ + curr.divCount;
 
-    let nextIdx = Util.findIndex(cursor$.segment,
-        (c: Engine.IModel) =>
-            cursor$.factory.modelHasType(c, ModelType.Chord, ModelType.Barline),
+    let nextIdx = findIndex(cursor$.segment,
+        (c: IModel) =>
+            cursor$.factory.modelHasType(c, IModel.Type.Chord, IModel.Type.Barline),
         cursor$.idx$ + 1);
 
     let nextObj = cursor$.segment[nextIdx];
 
-    let nextNote = cursor$.factory.modelHasType(nextObj, ModelType.Chord) ?
+    let nextNote = cursor$.factory.modelHasType(nextObj, IModel.Type.Chord) ?
             IChord.fromModel(nextObj) : null;
 
     // See if this note can be merged. Rests and tied notes can be merged.
@@ -255,7 +251,7 @@ export function rhythmicSpellcheck$(cursor$: Engine.ICursor): boolean {
     // TODO: Tuplets cannot be merged currently. They should be able to be merged if compatible.
     let nextEquivNote = nextIdx < cursor$.segment.length &&
         !!nextNote &&
-        nextObj.frozenness < Engine.IModel.FrozenLevel.Frozen &&
+        nextObj.frozenness < IModel.FrozenLevel.Frozen &&
         !IChord.timeModification(currNote) && !IChord.timeModification(nextNote) &&
         (
             currNote[0].rest && nextNote[0].rest ||
@@ -271,7 +267,7 @@ export function rhythmicSpellcheck$(cursor$: Engine.ICursor): boolean {
         let base = 1;
         let partial = 0;
         for (let i = cursor$.idx$; i >= 0; --i) {
-            let modelIsChord = cursor$.factory.modelHasType(cursor$.segment[i], ModelType.Chord);
+            let modelIsChord = cursor$.factory.modelHasType(cursor$.segment[i], IModel.Type.Chord);
             let chordi = modelIsChord ? IChord.fromModel(cursor$.segment[i]) : null;
             if (chordi && !IChord.timeModification(chordi)) {
                 break;
@@ -289,10 +285,10 @@ export function rhythmicSpellcheck$(cursor$: Engine.ICursor): boolean {
                     IChord.timeModification(currNote).normalNotes;
             let toAdd = subtract(toRestoreUntuplet, 0, cursor$, -cursor$.division$).map(spec => {
                 _.forEach(spec, note => {
-                    note.timeModification = Util.cloneObject(IChord.timeModification(currNote));
+                    note.timeModification = cloneObject(IChord.timeModification(currNote));
                     note.rest = {};
                 });
-                return cursor$.factory.create(ModelType.Chord, spec);
+                return cursor$.factory.create(IModel.Type.Chord, spec);
             });
             ICursor.splice$(cursor$, cursor$.idx$ + 1, 0, toAdd);
             return true;
@@ -301,7 +297,7 @@ export function rhythmicSpellcheck$(cursor$: Engine.ICursor): boolean {
 
     /*---- I.2: End of checks that apply to Frozen objects --------------------------------------*/
 
-    if (curr.frozenness >= Engine.IModel.FrozenLevel.Frozen) {
+    if (curr.frozenness >= IModel.FrozenLevel.Frozen) {
         return false;
     }
 
@@ -387,7 +383,7 @@ export function rhythmicSpellcheck$(cursor$: Engine.ICursor): boolean {
  * 
  * @internal
  */
-function merge$(curr: Engine.IChord, next: Engine.IChord, index: number, cursor$: Engine.ICursor) {
+function merge$(curr: IChord, next: IChord, index: number, cursor$: ICursor) {
     if (IChord.inBeam(next)) { // TODO: what if both are in beam?
         return false;
     }
@@ -412,7 +408,7 @@ function merge$(curr: Engine.IChord, next: Engine.IChord, index: number, cursor$
  * 
  * @internal
  */
-function clearExcessBeats(currNote: Engine.IChord, excessBeats: number, cursor$: Engine.ICursor) {
+function clearExcessBeats(currNote: IChord, excessBeats: number, cursor$: ICursor) {
     let nextIdx = cursor$.idx$ + 1;
     let replaceWith = subtract(currNote, excessBeats, cursor$).concat(
         subtract(currNote, calcDivisions(currNote, cursor$) - excessBeats,
@@ -420,12 +416,12 @@ function clearExcessBeats(currNote: Engine.IChord, excessBeats: number, cursor$:
     replaceWith.forEach((m: any) => {
         // Ideally there would be a PitchDuration constructor that would do this for us.
         _.forEach(currNote, (note, i) => {
-            m[i] = Util.cloneObject(note);
+            m[i] = cloneObject(note);
         });
     });
 
     ICursor.splice$(cursor$, cursor$.idx$, nextIdx - cursor$.idx$,
-        replaceWith.map(spec => cursor$.factory.create(ModelType.Chord, spec)));
+        replaceWith.map(spec => cursor$.factory.create(IModel.Type.Chord, spec)));
     let after = cursor$.idx$ + replaceWith.length;
     if (!IChord.rest(currNote)) {
         for (let i = cursor$.idx$; i < after - 1; ++i) {
@@ -455,7 +451,7 @@ export function getTSString(times: MusicXML.Time[]) {
 
 export function getBeamingPattern(times: MusicXML.Time[], alt?: string) {
     let time = times[0];
-    let pattern: Engine.IChord[] = BEAMING_PATTERNS[getTSString(times) + (alt ? "_" + alt : "")];
+    let pattern: IChord[] = BEAMING_PATTERNS[getTSString(times) + (alt ? "_" + alt : "")];
     let factors: {[key: number]: number[]} = {
         4: [4,3,2,1],
         8: [12,8,4,3,2,1],
@@ -488,13 +484,13 @@ export function getBeamingPattern(times: MusicXML.Time[], alt?: string) {
  * 
  * @param beatOffset number of beats after the current beat that durr1 is located.
  */
-export function add(durr1: Engine.IChord, durr2: Engine.IChord,
-        cursor: Engine.ICursor, beatOffset?: number): Engine.IChord[];
-export function add(durr1: number, durr2: Engine.IChord,
-        cursor: Engine.ICursor, beatOffset?: number): Engine.IChord[];
+export function add(durr1: IChord, durr2: IChord,
+        cursor: ICursor, beatOffset?: number): IChord[];
+export function add(durr1: number, durr2: IChord,
+        cursor: ICursor, beatOffset?: number): IChord[];
 
-export function add(durr1: any, durr2: Engine.IChord,
-        cursor: Engine.ICursor, beatOffset?: number): Engine.IChord[] {
+export function add(durr1: any, durr2: IChord,
+        cursor: ICursor, beatOffset?: number): IChord[] {
     // Bizarrely, we use subtract to add. That's just because I wrote subtract first.
     durr1 = isNaN(durr1) ? calcDivisions(durr1, cursor) : durr1;
     return subtract(durr1 + calcDivisions(durr2, cursor), 0, cursor, beatOffset);
@@ -505,19 +501,19 @@ export function add(durr1: any, durr2: Engine.IChord,
  * 
  * @param beatOffset number of beats after the current beat that durr1 is located.
  */
-export function subtract(durr1: Engine.IChord, beats: number,
-    cursor: Engine.ICursor, beatOffset?: number): Engine.IChord[];
+export function subtract(durr1: IChord, beats: number,
+    cursor: ICursor, beatOffset?: number): IChord[];
 /**
  * @returns an array of Duration specs that is the result of subtracting "beats" from "durr1".
  * 
  * @param beatOffset number of beats after the current beat that durr1 is located.
  */
 export function subtract(durr1: number, beats: number,
-    cursor: Engine.ICursor, beatOffset?: number): Engine.IChord[];
+    cursor: ICursor, beatOffset?: number): IChord[];
 
 export function subtract(durr1: any, divisions: number,
-        cursor: Engine.ICursor, divisionOffset?: number): Engine.IChord[] {
-    let replaceWith: Engine.IChord[] = [];
+        cursor: ICursor, divisionOffset?: number): IChord[] {
+    let replaceWith: IChord[] = [];
     let durr1Divisions: number = isNaN(<any>durr1) ? calcDivisions(durr1, cursor) : <number> durr1;
     let beatsToFill = durr1Divisions - divisions;
     let attributes = cursor.staff.attributes[cursor.segment.part];
@@ -587,7 +583,7 @@ export function subtract(durr1: any, divisions: number,
 class InvalidDurationError {
 };
 
-export function calcDivisions(chord: Engine.IChord, cursor: Engine.ICursor) {
+export function calcDivisions(chord: IChord, cursor: ICursor) {
     if (_.any(chord, note => note.grace)) {
         return 0;
     }
@@ -608,7 +604,7 @@ export function calcDivisions(chord: Engine.IChord, cursor: Engine.ICursor) {
     return Math.min(intrinsicDivisions, cursor.staff.totalDivisions);
 }
 
-export function calcDivisionsNoCtx(chord: Engine.IChord, times: MusicXML.Time[], divisions: number) {
+export function calcDivisionsNoCtx(chord: IChord, times: MusicXML.Time[], divisions: number) {
     let count = IChord.count(chord);
     if (isNaN(count)) {
         return _.find(chord, note => note.duration).duration;
@@ -626,8 +622,8 @@ function _calcDivisions(count: number, dots: number,
     let time = times[0];
     if (time.senzaMisura !== undefined) {
         time = {
-            beats: ["4"],
-            beatTypes: [4]
+            beatTypes: [4],
+            beats: ["4"]
         };
     }
     if (count === -1) {
@@ -668,7 +664,7 @@ function _calcDivisions(count: number, dots: number,
  * a whole note is composed of several notes, so the length of the array is not
  * always 1.
  */
-export function wholeNote(cursor: Engine.ICursor): Engine.IChord[] {
+export function wholeNote(cursor: ICursor): IChord[] {
     let attributes = cursor.staff.attributes;
     let tsName = getTSString(attributes[cursor.segment.part].times);
     return WHOLE_NOTE_PATTERNS[tsName];
@@ -685,13 +681,13 @@ export enum Beaming {
  * 
  * @param spec
  */
-function makeDuration(spec: IRestSpec): Engine.IChord {
+function makeDuration(spec: IRestSpec): IChord {
     invariant(!spec.timeModification, "timeModification is not implemented in makeDuration");
     return [{
+        dots: _.times(spec.dots || 0, () => { return {}; }),
         noteType: {
             duration: spec.count
-        },
-        dots: _.times(spec.dots || 0, () => { return {}; })
+        }
     }];
 }
 

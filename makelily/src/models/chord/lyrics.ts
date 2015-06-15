@@ -16,12 +16,13 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import Engine = require("../engine");
-import FontManager = require("../fontManager");
 import MusicXML = require("musicxml-interfaces");
 import _ = require("lodash");
 
-export function getChordLyricWidth(chord: Engine.IChord, scale40: number) {
+import {IChord, RenderUtil} from "../../engine";
+import {getTextBB} from "../fontManager";
+
+export function getChordLyricWidth(chord: IChord, scale40: number) {
     return _.reduce(chord, (maxWidth, note) =>
         Math.max(maxWidth, getNoteLyricWidth(note, scale40)), 0);
 }
@@ -37,11 +38,10 @@ export function getLyricWidth(lyric: MusicXML.Lyric, scale40: number) {
             return partWidth + SYLLABIC_SIZE;
         } else if (lyricPart._class === "Text") {
             let text = <MusicXML.Text> lyricPart;
-            return partWidth + FontManager.getTextBB(text.fontFamily || DEFAULT_FONT, text.data,
-                Engine.RenderUtil.cssSizeToTenths(scale40, text.fontSize || DEFAULT_LYRIC_SIZE),
+            return partWidth + getTextBB(text.fontFamily || DEFAULT_FONT, text.data,
+                RenderUtil.cssSizeToTenths(scale40, text.fontSize || DEFAULT_LYRIC_SIZE),
                 text.fontWeight === MusicXML.NormalBold.Bold ? "bold" : null).right;
         }
-        // FontManager.getTextBB(lyric.))
         return 0;
     }, 0);
 }

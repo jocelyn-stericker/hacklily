@@ -20,8 +20,7 @@ import MusicXML = require("musicxml-interfaces");
 import _ = require("lodash");
 import invariant = require("react/lib/invariant");
 
-import Engine = require("./engine");
-import IAttributes = require("./engine/iattributes");
+import {IAttributes, IChord, ICursor, IModel, ISegment} from "../engine";
 
 interface IClef extends MusicXML.Clef {
     __inherited__?: boolean;
@@ -38,13 +37,13 @@ class AttributesModel implements Export.IAttributesModel {
     staffIdx: number;
 
     /** @prototype */
-    frozenness: Engine.IModel.FrozenLevel;
+    frozenness: IModel.FrozenLevel;
 
-    modelDidLoad$(segment$: Engine.Measure.ISegment): void {
+    modelDidLoad$(segment$: ISegment): void {
         // todo
     }
 
-    validate$(cursor$: Engine.ICursor): void {
+    validate$(cursor$: ICursor): void {
         this._measure = cursor$.measure.idx;
         this._parent = <any> cursor$.staff.attributes[cursor$.segment.part];
 
@@ -72,7 +71,7 @@ class AttributesModel implements Export.IAttributesModel {
         this._updateMultiRest(cursor$);
     }
 
-    layout(cursor$: Engine.ICursor): Export.ILayout {
+    layout(cursor$: ICursor): Export.ILayout {
         cursor$.staff.attributes = cursor$.staff.attributes ? _.clone(cursor$.staff.attributes) : {};
         cursor$.staff.attributes[cursor$.segment.part] = this;
 
@@ -230,7 +229,7 @@ class AttributesModel implements Export.IAttributesModel {
         return this.toXML();
     }
 
-    private _validateClef$(cursor$: Engine.ICursor) {
+    private _validateClef$(cursor$: ICursor) {
         const staffIdx = cursor$.staff.idx;
 
         // clefs must be an array
@@ -366,7 +365,7 @@ class AttributesModel implements Export.IAttributesModel {
         }
     }
 
-    private _validateStaves$(cursor$: Engine.ICursor) {
+    private _validateStaves$(cursor$: ICursor) {
         this.staves = this.staves || 1;
         let currentPartId = cursor$.segment.part;
         let currentPart = cursor$.measure.parent.parts[currentPartId];
@@ -385,11 +384,11 @@ class AttributesModel implements Export.IAttributesModel {
         }
     }
 
-    _setTotalDivisions(cursor$: Engine.ICursor): void {
-        cursor$.staff.totalDivisions = Engine.IChord.barDivisions(this);
+    _setTotalDivisions(cursor$: ICursor): void {
+        cursor$.staff.totalDivisions = IChord.barDivisions(this);
     }
 
-    private _updateMultiRest(cursor$: Engine.ICursor): void {
+    private _updateMultiRest(cursor$: ICursor): void {
         if (!this._measureStyle && this.inheritedMeasureStyle &&
                 this.inheritedMeasureStyle.multipleRest) {
             let multipleRestCount = this.inheritedMeasureStyle.multipleRest.count;
@@ -423,11 +422,11 @@ class AttributesModel implements Export.IAttributesModel {
 }
 
 AttributesModel.prototype.divCount = 0;
-AttributesModel.prototype.frozenness = Engine.IModel.FrozenLevel.Warm;
+AttributesModel.prototype.frozenness = IModel.FrozenLevel.Warm;
 
 module AttributesModel {
     export class Layout implements Export.ILayout {
-        constructor(origModel: AttributesModel, cursor$: Engine.ICursor) {
+        constructor(origModel: AttributesModel, cursor$: ICursor) {
             invariant(!!origModel, "Layout must be passed a model");
 
             let model = Object.create(cursor$.factory.identity(origModel));
@@ -437,8 +436,8 @@ module AttributesModel {
             this.staffIdx = cursor$.staff.idx;
 
             let isFirstInLine = cursor$.line && cursor$.line.barOnLine$ === 0 && !this.division;
-            let next = Engine.ICursor.next(cursor$);
-            let nextIsNote = cursor$.factory.modelHasType(next, Engine.IModel.Type.Chord);
+            let next = ICursor.next(cursor$);
+            let nextIsNote = cursor$.factory.modelHasType(next, IModel.Type.Chord);
             let parent = this.model._parent;
 
             let keySignatures = model._keySignatures;
@@ -471,7 +470,7 @@ module AttributesModel {
 
             /*---- Clef layout ------------------------------------*/
 
-            const chord = nextIsNote ? Engine.IChord.fromModel(next) : null;
+            const chord = nextIsNote ? IChord.fromModel(next) : null;
 
             if (this.clefVisible) {
                 this.x$ += IAttributes.CLEF_INDENTATION;
@@ -496,7 +495,7 @@ module AttributesModel {
                     isFirstInLine ? MusicXML.SymbolSize.Full : MusicXML.SymbolSize.Cue;
 
                 if (nextIsNote && !this.ksVisible && !this.tsVisible) {
-                    if (Engine.IChord.hasAccidental(chord, cursor$)) {
+                    if (IChord.hasAccidental(chord, cursor$)) {
                         // TODO: what if there are more than 1 accidental?
                         contextualSpacing$ = 15;
                     } else {
@@ -530,7 +529,7 @@ module AttributesModel {
                 });
                 model._keySignatures[0].defaultY = 0;
                 if (nextIsNote && !this.tsVisible) {
-                    if (Engine.IChord.hasAccidental(chord, cursor$)) {
+                    if (IChord.hasAccidental(chord, cursor$)) {
                         // TODO: what if there are more than 1 accidental?
                         contextualSpacing$ = 25;
                     } else {
@@ -559,7 +558,7 @@ module AttributesModel {
                 });
                 model._times[0].defaultY = 0;
                 if (nextIsNote) {
-                    if (Engine.IChord.hasAccidental(chord, cursor$)) {
+                    if (IChord.hasAccidental(chord, cursor$)) {
                         // TODO: what if there are more than 1 accidental?
                         contextualSpacing$ = 25;
                     } else {
@@ -611,10 +610,10 @@ module AttributesModel {
 
         // Prototype:
 
-        mergePolicy: Engine.IModel.HMergePolicy;
-        boundingBoxes$: Engine.IModel.IBoundingRect[];
-        renderClass: Engine.IModel.Type;
-        expandPolicy: Engine.IModel.ExpandPolicy;
+        mergePolicy: IModel.HMergePolicy;
+        boundingBoxes$: IModel.IBoundingRect[];
+        renderClass: IModel.Type;
+        expandPolicy: IModel.ExpandPolicy;
 
         /*---- AttributesModel ----------------------------------------------*/
 
@@ -633,9 +632,9 @@ module AttributesModel {
         partSymbolVisible: boolean;
     }
 
-    Layout.prototype.mergePolicy = Engine.IModel.HMergePolicy.Min;
-    Layout.prototype.expandPolicy = Engine.IModel.ExpandPolicy.None;
-    Layout.prototype.renderClass = Engine.IModel.Type.Attributes;
+    Layout.prototype.mergePolicy = IModel.HMergePolicy.Min;
+    Layout.prototype.expandPolicy = IModel.ExpandPolicy.None;
+    Layout.prototype.renderClass = IModel.Type.Attributes;
     Layout.prototype.boundingBoxes$ = [];
     Object.freeze(Layout.prototype.boundingBoxes$);
 };
@@ -644,14 +643,14 @@ module AttributesModel {
  * Registers Attributes in the factory structure passed in.
  */
 function Export(constructors: { [key: number]: any }) {
-    constructors[Engine.IModel.Type.Attributes] = AttributesModel;
+    constructors[IModel.Type.Attributes] = AttributesModel;
 }
 
 module Export {
-    export interface IAttributesModel extends Engine.IModel, MusicXML.Attributes {
+    export interface IAttributesModel extends IModel, MusicXML.Attributes {
     }
 
-    export interface ILayout extends Engine.IModel.ILayout {
+    export interface ILayout extends IModel.ILayout {
         model: IAttributesModel;
 
         clefVisible: boolean;
@@ -671,9 +670,9 @@ module Export {
     }
 
     export function createWarningLayout$(
-            cursor$: Engine.ICursor, nextAttributes: MusicXML.Attributes) {
+            cursor$: ICursor, nextAttributes: MusicXML.Attributes) {
         return <ILayout> new AttributesModel.Layout(<any> nextAttributes, cursor$);
     }
 }
 
-export = Export;
+export default Export;

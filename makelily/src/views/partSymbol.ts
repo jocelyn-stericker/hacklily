@@ -19,12 +19,12 @@
 "use strict";
 
 import MusicXML = require("musicxml-interfaces");
-import React = require("react");
+import * as React from "react"; // TS 1.5 workaround
+import {createFactory as $, DOM, PropTypes} from "react";
 
-import Line = require("./primitives/line");
-import Glyph = require("./primitives/glyph");
-import SMuFL = require("../models/smufl");
-var $ = React.createFactory;
+import Line from "./primitives/line";
+import Glyph from "./primitives/glyph";
+import {bravura} from "../models/smufl";
 
 const BRACE_H_SCALE = 2.9;
 
@@ -37,24 +37,24 @@ class PartSymbol extends React.Component<PartSymbol.IProps, void> {
             return null;
         }
 
-        const defaults = SMuFL.bravura.engravingDefaults; // TODO: Use 'print'
+        const defaults = bravura.engravingDefaults; // TODO: Use 'print'
 
         const height = this.context.systemBottom - this.context.systemTop;
         const bottom = this.context.systemBottom;
 
         let symbol = this.getSymbol();
-        return React.DOM.g(null,
+        return DOM.g(null,
             symbol,
             $(Line)({
+                key: "line",
                 stroke: "#000000",
                 strokeWidth: defaults.thinBarlineThickness*10,
-                key: "line",
                 x1: this.context.originX + this.props.spec.defaultX,
                 x2: this.context.originX + this.props.spec.defaultX,
                 y1: bottom - height,
                 y2: bottom
             })
-        /* React.DOM.g */);
+        /* DOM.g */);
     }
 
     getSymbol(): any {
@@ -63,7 +63,7 @@ class PartSymbol extends React.Component<PartSymbol.IProps, void> {
         const height = this.context.systemBottom - this.context.systemTop;
         const bottom = this.context.systemBottom;
 
-        const defaults = SMuFL.bravura.engravingDefaults; // TODO: Use 'print'
+        const defaults = bravura.engravingDefaults; // TODO: Use 'print'
 
         const x = this.context.originX + this.props.spec.defaultX - 14;
 
@@ -72,40 +72,39 @@ class PartSymbol extends React.Component<PartSymbol.IProps, void> {
         switch (spec.type) {
             case MusicXML.PartSymbolType.Brace:
                 return $(Glyph)({
-                    transform: "scale(" + BRACE_H_SCALE + "," + s + ")" +
-                        "translate(" + (-x*(1-1/(BRACE_H_SCALE))) + "," +
-                        -(1-1/s)*bottom + ")",
                     fill: "#000000",
+                    glyphName: "brace",
                     key: "partSymbolMain",
+                    transform: "scale(" + BRACE_H_SCALE + "," + s + ")" +
+                        "translate(" + (-x*(1-1/(BRACE_H_SCALE))) + "," + -(1-1/s)*bottom + ")",
                     x: x,
                     y: bottom,
-                    glyphName: "brace"
                 });
             case MusicXML.PartSymbolType.Bracket:
             case MusicXML.PartSymbolType.Square: // TODO: Not implemented
                 return [
                     $(Line)({
+                        key: "partSymbolMain",
                         stroke: "#000000",
                         strokeWidth: defaults.bracketThickness*10,
-                        key: "partSymbolMain",
                         x1: x + 4 + 2.5,
                         x2: x + 4 + 2.5,
                         y1: bottom - height - 2 - 3,
-                        y2: bottom + 2 + 3
+                        y2: bottom + 2 + 3,
                     }),
                     $(Glyph)({
                         fill: "#000000",
+                        glyphName: "bracketTop",
                         key: "bracketTop",
                         x: x + 4,
-                        y: this.context.systemTop - 2,
-                        glyphName: "bracketTop"
+                        y: this.context.systemTop - 2
                     }),
                     $(Glyph)({
                         fill: "#000000",
+                        glyphName: "bracketBottom",
                         key: "bracketBottom",
                         x: x + 4,
-                        y: this.context.systemBottom + 2,
-                        glyphName: "bracketBottom"
+                        y: this.context.systemBottom + 2
                     })
                 ];
             case MusicXML.PartSymbolType.Line:
@@ -119,12 +118,12 @@ module PartSymbol {
         spec: MusicXML.PartSymbol;
     }
 
-    export var contextTypes = <any> {
-        originX: React.PropTypes.number.isRequired,
-        originY: React.PropTypes.number.isRequired,
-        systemTop: React.PropTypes.number.isRequired,
-        systemBottom: React.PropTypes.number.isRequired
+    export let contextTypes = <any> {
+        originX: PropTypes.number.isRequired,
+        originY: PropTypes.number.isRequired,
+        systemBottom: PropTypes.number.isRequired,
+        systemTop: PropTypes.number.isRequired
     };
 }
 
-export = PartSymbol;
+export default PartSymbol;

@@ -18,7 +18,8 @@
 
 "use strict";
 
-import React = require("react");
+import * as React from "react"; // TS 1.5 workaround
+import {DOM} from "react";
 
 /**
  * Responsible for the rendering of a dot as part of a dotted note.
@@ -27,14 +28,14 @@ import React = require("react");
 class Dot extends React.Component<Dot.IProps, void> {
     render() {
         // See rationale for hidden rect in _glyph.jsx
-        return React.DOM.g(null,
-            React.DOM.circle({
+        return DOM.g(null,
+            DOM.circle({
                 cx: this.props.x,
                 cy: this.props.y,
                 fill: this.props.fill,
                 r: <any>(this.props.radius)}
-            /*React.DOM.circle*/)
-        /*React.DOM.g*/);
+            /*DOM.circle*/)
+        /*DOM.g*/);
     }
 }
 
@@ -47,4 +48,4 @@ module Dot {
     }
 }
 
-export = Dot;
+export default Dot;

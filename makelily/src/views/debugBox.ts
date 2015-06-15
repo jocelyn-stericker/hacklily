@@ -16,52 +16,53 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import React = require("react");
+import * as React from "react"; // TS 1.5 workaround
+import {DOM, PropTypes, ReactElement} from "react";
 import _ = require("lodash");
 
-import Engine = require("../models/engine");
+import {IMeasureLayout, IModel} from "../engine";
 
-class DebugBox extends React.Component<{layout: Engine.Measure.IMeasureLayout}, void> {
+class DebugBox extends React.Component<{layout: IMeasureLayout}, void> {
 
     render(): any {
         if (!process.env["DEBUG"]) {
             return null;
         }
         let layout = this.props.layout;
-        let boxes: React.ReactElement<any>[] = [];
+        let boxes: ReactElement<any>[] = [];
         let context = this.context;
         _.forEach(layout.elements, function(segment, si) {
             _.forEach(segment, function(element, j) {
                 let originX = layout.originX + element.overrideX;
                 let originY = context.originYByPartAndStaff[element.part][element.model.staffIdx];
                 _.forEach(element.boundingBoxes$, (box, k) => {
-                    boxes.push(React.DOM.rect({
+                    boxes.push(DOM.rect({
+                        dangerouslySetInnerHTML: {
+                            __html: `<!-- ${IModel.Type[element.renderClass]} -->`
+                        },
+                        fill: "transparent",
+                        height: box.bottom - box.top,
                         key: `debug_${si}_${j}_${k}`,
                         stroke: "red",
-                        fill: "transparent",
-                        x: originX + box.defaultX + (box.relativeX||0) + box.left,
                         width: box.right - box.left,
-                        y: originY - box.defaultY - (box.relativeY||0) - box.bottom,
-                        height: box.bottom - box.top,
-                        dangerouslySetInnerHTML: {
-                            __html: `<!-- ${Engine.IModel.Type[element.renderClass]} -->`
-                        }
+                        x: originX + box.defaultX + (box.relativeX||0) + box.left,
+                        y: originY - box.defaultY - (box.relativeY||0) - box.bottom
                     }));
                 });
             });
         });
 
-        return React.DOM.g(null, boxes);
+        return DOM.g(null, boxes);
     }
 }
 
-const NUMBER_ARRAY = React.PropTypes.arrayOf(React.PropTypes.number);
+const NUMBER_ARRAY = PropTypes.arrayOf(PropTypes.number);
 
 module DebugBox {
-    export var contextTypes = <any> {
-        originY: React.PropTypes.number,
-        originYByPartAndStaff: React.PropTypes.objectOf(NUMBER_ARRAY).isRequired
+    export let contextTypes = <any> {
+        originY: PropTypes.number,
+        originYByPartAndStaff: PropTypes.objectOf(NUMBER_ARRAY).isRequired
     };
 }
 
-export = DebugBox;
+export default DebugBox;

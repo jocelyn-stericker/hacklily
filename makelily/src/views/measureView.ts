@@ -16,27 +16,27 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import React = require("react");
+import {createFactory as $, Component, DOM, PropTypes} from "react";
 import _ = require("lodash");
-var $ = React.createFactory;
 
-import DebugBox = require("./debugBox");
-import Engine = require("../models/engine");
-import ModelView = require("./modelView");
+import DebugBox from "./debugBox";
+import {IModel, IMeasureLayout} from "../engine";
+import ModelView from "./modelView";
 
-class MeasureView extends React.Component<{layout: Engine.Measure.IMeasureLayout}, void> {
+class MeasureView extends Component<{layout: IMeasureLayout}, void> {
     render(): any {
         let layout = this.props.layout;
 
-        return React.DOM.g(null,
+        return DOM.g(null,
             _.chain(_.flatten(layout.elements))
-                .filter((layout: Engine.IModel.ILayout) => !!layout.model)   // Remove helpers.
-                .map((layout: Engine.IModel.ILayout) => $(ModelView)({
-                    layout: layout,
-                    key: (<any>layout).key}))
+                .filter((layout: IModel.ILayout) => !!layout.model)   // Remove helpers.
+                .map((layout: IModel.ILayout) => $(ModelView)({
+                    key: (<any>layout).key,
+                    layout: layout
+                }))
                 .value(),
             $(DebugBox)({key: "debugBox", layout: layout})
-        /*React.DOM.g*/);
+        /*DOM.g*/);
 
         /* TODO: lyric boxes */
         /* TODO: free boxes */
@@ -54,8 +54,8 @@ class MeasureView extends React.Component<{layout: Engine.Measure.IMeasureLayout
         return {
             originX: layout.originX,
             originYByPartAndStaff: originYByPartAndStaff,
-            systemTop: this.context.originY - top - 20.5,
-            systemBottom: this.context.originY - bottom + 20.5
+            systemBottom: this.context.originY - bottom + 20.5,
+            systemTop: this.context.originY - top - 20.5
         };
     }
 
@@ -68,18 +68,18 @@ class MeasureView extends React.Component<{layout: Engine.Measure.IMeasureLayout
     }
 }
 
-const NUMBER_ARRAY = React.PropTypes.arrayOf(React.PropTypes.number);
+const NUMBER_ARRAY = PropTypes.arrayOf(PropTypes.number);
 
 module MeasureView {
-    export var childContextTypes = <any> {
-        originX: React.PropTypes.number.isRequired,
-        originYByPartAndStaff: React.PropTypes.objectOf(NUMBER_ARRAY).isRequired,
-        systemTop: React.PropTypes.number.isRequired,
-        systemBottom: React.PropTypes.number.isRequired
+    export let childContextTypes = <any> {
+        originX: PropTypes.number.isRequired,
+        originYByPartAndStaff: PropTypes.objectOf(NUMBER_ARRAY).isRequired,
+        systemBottom: PropTypes.number.isRequired,
+        systemTop: PropTypes.number.isRequired
     };
-    export var contextTypes = <any> {
-        originY: React.PropTypes.number
+    export let contextTypes = <any> {
+        originY: PropTypes.number
     };
 }
 
-export = MeasureView;
+export default MeasureView;

@@ -20,9 +20,9 @@ import MusicXML = require("musicxml-interfaces");
 import _ = require("lodash");
 import invariant = require("react/lib/invariant");
 
-import ChordModelImpl = require("./chordImpl"); // @cyclic
-import Engine = require("../engine");
-import SMuFL = require("../smufl");
+import ChordModelImpl from "./chordImpl"; // @cyclic
+import {ICursor, IChord} from "../../engine";
+import {bboxes as glyphBBoxes} from "../smufl";
 
 /**
  * Represents a note in a ChordImpl.
@@ -120,9 +120,9 @@ class NoteImpl implements MusicXML.Note {
 
     get rest(): MusicXML.Rest {
         return this._parent.rest ? {
-            measure: this._parent.wholebar$,
+            displayOctave: this._restDisplayOctave,
             displayStep: this._restDisplayStep,
-            displayOctave: this._restDisplayOctave
+            measure: this._parent.wholebar$
         } : null;
     }
     set rest(rest: MusicXML.Rest) {
@@ -332,23 +332,23 @@ class NoteImpl implements MusicXML.Note {
 
         if (notations) {
             let notation: MusicXML.Notations = {
-                articulations: combineArticulations ("articulations"),
                 accidentalMarks: combine<MusicXML.AccidentalMark> ("accidentalMarks"),
                 arpeggiates: combine<MusicXML.Arpeggiate> ("arpeggiates"),
+                articulations: combineArticulations ("articulations"),
                 dynamics: combine<MusicXML.Dynamics> ("dynamics"),
                 fermatas: combine<MusicXML.Fermata> ("fermatas"),
+                footnote: last<MusicXML.Footnote> ("footnote"),
                 glissandos: combine<MusicXML.Glissando> ("glissandos"),
+                level: last<MusicXML.Level> ("level"),
                 nonArpeggiates: combine<MusicXML.NonArpeggiate> ("nonArpeggiates"),
                 ornaments: combine<MusicXML.Ornaments> ("ornaments"),
                 otherNotations: combine<MusicXML.OtherNotation> ("otherNotations"),
+                printObject: last<boolean> ("printObject"),
                 slides: combine<MusicXML.Slide> ("slides"),
                 slurs: combine<MusicXML.Slur> ("slurs"),
                 technicals: combine<MusicXML.Technical> ("technicals"),
                 tieds: combine<MusicXML.Tied> ("tieds"),
-                tuplets: combine<MusicXML.Tuplet> ("tuplets"),
-                footnote: last<MusicXML.Footnote> ("footnote"),
-                level: last<MusicXML.Level> ("level"),
-                printObject: last<boolean> ("printObject")
+                tuplets: combine<MusicXML.Tuplet> ("tuplets")
             };
 
             _.forEach(notation.tieds, tied => {
@@ -386,7 +386,7 @@ class NoteImpl implements MusicXML.Note {
         }
     }
 
-    updateAccidental$(cursor: Engine.ICursor) {
+    updateAccidental$(cursor: ICursor) {
         let pitch = this.pitch;
         if (!pitch) {
             return;
@@ -400,7 +400,7 @@ class NoteImpl implements MusicXML.Note {
         let generalTarget = accidentals[pitch.step] || null;
         let target = accidentals[pitch.step + pitch.octave] || generalTarget;
 
-        if (!target && generalTarget !== Engine.IChord.InvalidAccidental) {
+        if (!target && generalTarget !== IChord.InvalidAccidental) {
             target = generalTarget;
         }
 
@@ -446,13 +446,13 @@ class NoteImpl implements MusicXML.Note {
         }
 
         if (acc) {
-            let glyphName = Engine.IChord.accidentalGlyphs[acc.accidental];
-            invariant(glyphName in SMuFL.bboxes, "Expected a known glyph, got %s", glyphName);
-            let width = SMuFL.bboxes[glyphName][0]*10;
+            let glyphName = IChord.accidentalGlyphs[acc.accidental];
+            invariant(glyphName in glyphBBoxes, "Expected a known glyph, got %s", glyphName);
+            let width = glyphBBoxes[glyphName][0]*10;
             let clef = cursor.staff.attributes[cursor.segment.part].clefs[cursor.staff.idx];
             // TODO: `let clef = cursor.part.attributes.clefs[cursor.staff.idx]`
 
-            if (Engine.IChord.onLedger(this, clef)) {
+            if (IChord.onLedger(this, clef)) {
                 acc.defaultX = -4.1;
             } else {
                 acc.defaultX = -2.04;
@@ -476,4 +476,4 @@ class NoteImpl implements MusicXML.Note {
     }
 }
 
-export = NoteImpl;
+export default NoteImpl;

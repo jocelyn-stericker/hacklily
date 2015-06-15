@@ -18,12 +18,12 @@
 
 "use strict";
 
-import React = require("react");
+import * as React from "react"; // TS 1.5 workaround
+import {createFactory as $, PropTypes} from "react";
 import invariant = require("react/lib/invariant");
-let $ = React.createFactory;
 
-import Glyph = require("./primitives/glyph");
-import SMuFL = require("../models/smufl");
+import Glyph from "./primitives/glyph";
+import {getFontOffset} from "../models/smufl";
 
 /**
  * Responsible for rendering the "flag" on un-beamed notes shorter than quarter notes.
@@ -33,19 +33,19 @@ class Flag extends React.Component<Flag.IProps, void> {
         const spec = this.props.spec;
         const context = this.context;
 
-        var xscale = this.props.isGrace ? 0.6 : 1.0;
-        var dir = spec.direction;
-        var fontOffsetX = SMuFL.getFontOffset(this.glyphName(), dir)[0] * xscale;
-        var noteOffsetX = SMuFL.getFontOffset(this.props.notehead, dir)[0] * xscale;
-        var noteOffsetY = SMuFL.getFontOffset(this.props.notehead, dir)[1] * 10;
+        let xscale = this.props.isGrace ? 0.6 : 1.0;
+        let dir = spec.direction;
+        let fontOffsetX = getFontOffset(this.glyphName(), dir)[0] * xscale;
+        let noteOffsetX = getFontOffset(this.props.notehead, dir)[0] * xscale;
+        let noteOffsetY = getFontOffset(this.props.notehead, dir)[1] * 10;
         return $(Glyph)({
+            fill: spec.color,
+            glyphName: this.glyphName(),
+            scale: this.props.isGrace ? 0.6 : 1.0,
             x: context.originX + spec.defaultX +
                 fontOffsetX*10 +
                 ((dir === 1) ? noteOffsetX*10 - this.props.stemWidth : 0),
-            y: context.originY - spec.defaultY - noteOffsetY*4,
-            fill: spec.color,
-            scale: this.props.isGrace ? 0.6 : 1.0,
-            glyphName: this.glyphName()
+            y: context.originY - spec.defaultY - noteOffsetY*4
         });
     }
 
@@ -64,9 +64,9 @@ class Flag extends React.Component<Flag.IProps, void> {
 }
 
 module Flag {
-    export var contextTypes = <any> {
-        originX: React.PropTypes.number.isRequired,
-        originY: React.PropTypes.number.isRequired
+    export let contextTypes = <any> {
+        originX: PropTypes.number.isRequired,
+        originY: PropTypes.number.isRequired
     };
     export interface IProps {
         spec: {
@@ -83,4 +83,4 @@ module Flag {
     };
 }
 
-export = Flag;
+export default Flag;

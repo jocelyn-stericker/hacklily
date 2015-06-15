@@ -19,14 +19,14 @@
 "use strict";
 
 import MusicXML = require("musicxml-interfaces");
-import React = require("react");
+import * as React from "react"; // TS 1.5 workaround
+import {createFactory as $, DOM, PropTypes} from "react";
 import _ = require("lodash");
 import invariant = require("react/lib/invariant");
-let $ = React.createFactory;
 
-import Dot = require("./primitives/dot");
-import Glyph = require("./primitives/glyph");
-import SMuFL = require("../models/smufl");
+import Dot from "./primitives/dot";
+import Glyph from "./primitives/glyph";
+import {bboxes} from "../models/smufl";
 
 /**
  * Renders a rest.
@@ -43,34 +43,35 @@ class Rest extends React.Component<Rest.IProps, void> {
 
         const x = this.context.originX + spec.defaultX + (spec.relativeX || 0);
         const y = this.context.originY - (spec.defaultY + (spec.relativeY || 0));
-        const dotOffset = SMuFL.bboxes[notehead][0]*10 + 6;
+        const dotOffset = bboxes[notehead][0]*10 + 6;
 
-        return React.DOM.g(null,
+        return DOM.g(null,
             $(Glyph)({
+                fill: spec.color,
+                glyphName: notehead,
                 key: "R",
                 x: x,
-                y: y,
-                fill: spec.color,
-                glyphName: notehead
+                y: y
             }/* Glyph */),
-            rest.measure && this.props.multipleRest && React.DOM.text({
-                    x: x + SMuFL.bboxes[notehead][0]*10/2,
-                    y: y - 30,
-                    fontSize: 48,
+            rest.measure && this.props.multipleRest && DOM.text({
                     className: "mmn_",
                     "font-weight": "bold",
-                    textAnchor: "middle"},
+                    fontSize: 48,
+                    textAnchor: "middle",
+                    x: x + bboxes[notehead][0]*10/2,
+                    y: y - 30
+                },
                 this.props.multipleRest.count // TODO: useSymbols
-            /* React.DOM.text */),
+            /* DOM.text */),
         spec.dots && spec.printDot !== false ? _.map(spec.dots, (dot, idx) => $(Dot)({
+                fill: dot.color,
                 key: idx + "d",
                 radius: 2.4,
-                fill: dot.color,
                 x: x + dotOffset + 6*idx,
                 y: y - (dot.defaultY + (dot.relativeY || 0))
                 // y: y + (line - 3)*10 + (((line * 2) % 2) ? 0 : 5)
             }/* Dot */)): null
-        /* React.DOM.g */);
+        /* DOM.g */);
     }
 }
 
@@ -80,10 +81,10 @@ module Rest {
         notehead?: string;
         spec: MusicXML.Note;
     }
-    export var contextTypes = <any> {
-        originX: React.PropTypes.number.isRequired,
-        originY: React.PropTypes.number.isRequired
+    export let contextTypes = <any> {
+        originX: PropTypes.number.isRequired,
+        originY: PropTypes.number.isRequired
     };
 }
 
-export = Rest;
+export default Rest;

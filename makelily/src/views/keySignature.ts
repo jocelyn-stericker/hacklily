@@ -19,29 +19,29 @@
 "use strict";
 
 import MusicXML = require("musicxml-interfaces");
-import React = require("react");
+import * as React from "react"; // TS 1.5 workaround
+import {createFactory as $, DOM} from "react";
 import _ = require("lodash");
-let $ = React.createFactory;
 
-import Accidental = require("./accidental");
-import IAttributes = require("../models/engine/iattributes");
-import IChord = require("../models/engine/ichord");
+import Accidental from "./accidental";
+import {IAttributes} from "../engine";
+import IChord from "../engine/ichord";
 
 // TODO: this almost looks like logic -- move.
 const sharps: { [key: string]: Array<number> } = {
     // "FCGDAEB"
-    treble: [5, 3.5, 5.5, 4, 2.5, 4.5, 3],
-    bass: [4, 2.5, 4.5, 3, 1.5, 3.5, 2],
     alto: [4.5, 3, 5, 3.5, 2, 4, 2.5],
-    tenor: [2, 4, 2.5, 4.5, 3, 5, 3.5]
+    bass: [4, 2.5, 4.5, 3, 1.5, 3.5, 2],
+    tenor: [2, 4, 2.5, 4.5, 3, 5, 3.5],
+    treble: [5, 3.5, 5.5, 4, 2.5, 4.5, 3]
 };
 
 const flats: { [key: string]: Array<number> } = {
     // "BEADGCF"
-    treble: [3, 4.5, 2.5, 4, 2, 3.5, 1.5],
-    bass: [2, 3.5, 1.5, 3, 1, 2.5, 0.5],
     alto: [2.5, 4, 2, 3.5, 1.5, 3, 1],
-    tenor: [3.5, 5, 3, 4.5, 2.5, 4, 2]
+    bass: [2, 3.5, 1.5, 3, 1, 2.5, 0.5],
+    tenor: [3.5, 5, 3, 4.5, 2.5, 4, 2],
+    treble: [3, 4.5, 2.5, 4, 2, 3.5, 1.5]
 };
 
 /**
@@ -49,11 +49,14 @@ const flats: { [key: string]: Array<number> } = {
  */
 class KeySignature extends React.Component<{spec: MusicXML.Key; clef: MusicXML.Clef}, void> {
     render() {
-        return React.DOM.g(null,
+        return DOM.g(null,
             _.map(this.getAccidentals(),
-                (accidental, idx) => $(Accidental)({spec: accidental, key: idx})
+                (accidental, idx) => $(Accidental)({
+                    key: idx,
+                    spec: accidental
+                })
             /* _.map */)
-        /* React.DOM.g */);
+        /* DOM.g */);
     }
 
     /**
@@ -69,7 +72,7 @@ class KeySignature extends React.Component<{spec: MusicXML.Key; clef: MusicXML.C
         if (spec.fifths) {
             let accCount = Math.min(7, Math.abs(spec.fifths));
             let idxes = _.times(accCount, i => (i + Math.max(0, Math.abs(spec.fifths) - 7))%7);
-            for (var i = 0; i < idxes.length; ++i) {
+            for (let i = 0; i < idxes.length; ++i) {
                 positions.push(x$);
                 x$ += widths[idxes[i]];
             }
@@ -130,8 +133,8 @@ class KeySignature extends React.Component<{spec: MusicXML.Key; clef: MusicXML.C
                     accidental: accidental,
                     color: spec.color,
                     defaultX: spec.defaultX + positions[idx],
-                    relativeX: spec.relativeX,
                     defaultY: spec.defaultY + (line - 3)*10,
+                    relativeX: spec.relativeX,
                     relativeY: (spec.relativeY || 0)
                 };
             });
@@ -161,8 +164,8 @@ class KeySignature extends React.Component<{spec: MusicXML.Key; clef: MusicXML.C
                 accidental: accidental,
                 color: spec.color,
                 defaultX: spec.defaultX + positions[i],
-                relativeX: spec.relativeX,
                 defaultY: spec.defaultY + (line - 3)*10,
+                relativeX: spec.relativeX,
                 relativeY: (spec.relativeY || 0)
             };
         }
@@ -185,4 +188,4 @@ function standardClef(clef: MusicXML.Clef) {
     }
 };
 
-export = KeySignature;
+export default KeySignature;

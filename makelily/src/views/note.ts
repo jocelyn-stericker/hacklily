@@ -19,14 +19,14 @@
 "use strict";
 
 import MusicXML = require("musicxml-interfaces");
-import React = require("react");
+import * as React from "react"; // TS 1.5 workaround
+import {createFactory as $, DOM, PropTypes} from "react";
 import _ = require("lodash");
-let $ = React.createFactory;
 
-import Accidental = require("./accidental");
-import Dot = require("./primitives/dot");
-import Notehead = require("./notehead");
-import SMuFL = require("../models/smufl");
+import Accidental from "./accidental";
+import Dot from "./primitives/dot";
+import Notehead from "./notehead";
+import {bboxes} from "../models/smufl";
 
 class Note extends React.Component<{spec: MusicXML.Note, satieNotehead: string}, void> {
     render() {
@@ -37,22 +37,22 @@ class Note extends React.Component<{spec: MusicXML.Note, satieNotehead: string},
         }
 
         let approxNotehead = this.props.satieNotehead;
-        var width = SMuFL.bboxes[approxNotehead][0]*10;
+        let width = bboxes[approxNotehead][0]*10;
 
-        return React.DOM.g(null,
+        return DOM.g(null,
             $(Notehead)({
                 key: "h",
+                notehead: approxNotehead,
                 spec: {
+                    color: spec.color,
                     defaultX: 0,
                     defaultY: 0,
-                    color: spec.color,
                     type: MusicXML.NoteheadType.Normal // FIXME
-                },
-                notehead: approxNotehead
+                }
             }),
             spec.dots && spec.printDot !== false ? _.map(spec.dots, (dot, idx) => $(Dot)({
-                key: "_1_" + idx,
                 fill: dot.color,
+                key: "_1_" + idx,
                 radius: 2.4,
                 x: this.context.originX + this.props.spec.defaultX + width + 6 + 6*idx,
                 y: this.context.originY - this.props.spec.defaultY -
@@ -62,7 +62,7 @@ class Note extends React.Component<{spec: MusicXML.Note, satieNotehead: string},
                 key: "a",
                 spec: this.props.spec.accidental
             }) : null
-        /* React.DOM.g */);
+        /* DOM.g */);
     }
 
     getChildContext() {
@@ -74,14 +74,14 @@ class Note extends React.Component<{spec: MusicXML.Note, satieNotehead: string},
 };
 
 module Note {
-    export var childContextTypes = <any> {
-        originX: React.PropTypes.number.isRequired,
-        originY: React.PropTypes.number.isRequired
+    export let childContextTypes = <any> {
+        originX: PropTypes.number.isRequired,
+        originY: PropTypes.number.isRequired
     };
-    export var contextTypes = <any> {
-        originX: React.PropTypes.number.isRequired,
-        originY: React.PropTypes.number.isRequired
+    export let contextTypes = <any> {
+        originX: PropTypes.number.isRequired,
+        originY: PropTypes.number.isRequired
     };
 }
 
-export = Note;
+export default Note;

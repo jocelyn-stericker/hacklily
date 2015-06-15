@@ -16,48 +16,47 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import React = require("react");
-var $ = React.createFactory;
+import {createFactory as $, Component, DOM} from "react";
 
-import Attributes = require("../models/attributes");
-import BarNumber = require("./barNumber");
-import Clef = require("./clef");
-import PartSymbol = require("./partSymbol");
-import KeySignature = require("./keySignature");
-import TimeSignature = require("./timeSignature");
+import Attributes from "../models/attributes";
+import BarNumber from "./barNumber";
+import Clef from "./clef";
+import PartSymbol from "./partSymbol";
+import KeySignature from "./keySignature";
+import TimeSignature from "./timeSignature";
 
-class AttributesView extends React.Component<{layout: Attributes.ILayout}, void> {
+class AttributesView extends Component<{layout: Attributes.ILayout}, void> {
     render(): any {
         let layout = this.props.layout;
         let children: any[] = [];
 
         if (layout.clefVisible) {
             children.push($(Clef)({
-                spec: layout.model.clefs[layout.staffIdx],
-                key: "clef"
+                key: "clef",
+                spec: layout.model.clefs[layout.staffIdx]
             }));
         }
         if (layout.ksVisible) {
             children.push($(KeySignature)({
-                spec: layout.model.keySignatures[0],
                 clef: layout.model.clefs[layout.staffIdx],
-                key: "ks"
+                key: "ks",
+                spec: layout.model.keySignatures[0]
             }));
         }
         if (layout.tsVisible) {
             children.push($(TimeSignature)({
-                spec: layout.model.times[0],
-                key: "ts"
+                key: "ts",
+                spec: layout.model.times[0]
             }));
         }
         if (!!layout.measureNumberVisible) {
             children.push($(BarNumber)({
+                barNumber: layout.measureNumberVisible,
+                key: "measure",
                 spec: {
                     defaultX: 0,
                     defaultY: 30
-                },
-                key: "measure",
-                barNumber: layout.measureNumberVisible
+                }
             }));
         }
         if (!!layout.partSymbolVisible) {
@@ -66,8 +65,8 @@ class AttributesView extends React.Component<{layout: Attributes.ILayout}, void>
                 spec: layout.model.partSymbol
             }));
         }
-        return React.DOM.g(null, children);
+        return DOM.g(null, children);
     }
 }
 
-export = AttributesView;
+export default AttributesView;

@@ -19,42 +19,44 @@
 "use strict";
 
 import MusicXML = require("musicxml-interfaces");
-import React = require("react");
-let $ = React.createFactory;
+import {createFactory as $, Component, DOM, PropTypes} from "react";
 
-import Glyph = require("./primitives/glyph");
-import SMuFL = require("../models/smufl");
+import Glyph from "./primitives/glyph";
+import SMuFL from "../models/smufl";
 
-class UnbeamedTuplet extends React.Component<{spec: MusicXML.Tuplet}, void> {
+class UnbeamedTuplet extends Component<{spec: MusicXML.Tuplet}, void> {
     render() {
-        return React.DOM.g(null,
-            React.DOM.polygon({
+        return DOM.g(null,
+            DOM.polygon({
+                fill: this.props.stroke,
                 key: "p1",
                 points: this._getX1() + "," + this._getY1(0) + " " +
                     this._getX2() + "," + this._getY2(0) + " " +
                     this._getX2() + "," + this._getY2(1) + " " +
                     this._getX1() + "," + this._getY1(1),
                 stroke: this.props.stroke,
+                strokeWidth: 0
+            }),
+            DOM.line({
                 fill: this.props.stroke,
-                strokeWidth: 0}),
-            React.DOM.line({
                 key: "p2",
+                stroke: this.props.stroke,
+                strokeWidth: SMuFL.bravura.engravingDefaults.tupletBracketThickness*10,
                 x1: this._getX1(),
                 x2: this._getX1(),
                 y1: this._getY1(this.props.direction === -1 ? 1 : 0),
-                y2: this._getY1(this.props.direction === -1 ? 0 : 1) + 4*this.props.direction,
-                stroke: this.props.stroke,
+                y2: this._getY1(this.props.direction === -1 ? 0 : 1) + 4*this.props.direction
+            }),
+            DOM.line({
                 fill: this.props.stroke,
-                strokeWidth: SMuFL.bravura.engravingDefaults.tupletBracketThickness*10}),
-            React.DOM.line({
                 key: "p3",
+                stroke: this.props.stroke,
+                strokeWidth: SMuFL.bravura.engravingDefaults.tupletBracketThickness*10,
                 x1: this._getX2(),
                 x2: this._getX2(),
                 y1: this._getY2(this.props.direction === -1 ? 1 : 0),
-                y2: this._getY2(this.props.direction === -1 ? 0 : 1) + 4*this.props.direction,
-                stroke: this.props.stroke,
-                fill: this.props.stroke,
-                strokeWidth: SMuFL.bravura.engravingDefaults.tupletBracketThickness*10}),
+                y2: this._getY2(this.props.direction === -1 ? 0 : 1) + 4*this.props.direction
+            }),
             this._tuplet()
         );
     }
@@ -122,7 +124,7 @@ class UnbeamedTuplet extends React.Component<{spec: MusicXML.Tuplet}, void> {
     }
 
     /**
-     * Returns a React component instance showing the tuplet number
+     * Returns a component instance showing the tuplet number
      */
     private _tuplet() {
         if (!this.props.tuplet) {
@@ -135,17 +137,17 @@ class UnbeamedTuplet extends React.Component<{spec: MusicXML.Tuplet}, void> {
             let y = (this._getY1(1) +
                         this._getY2(1))/2 + 5.8;
 
-            return React.DOM.g(null,
+            return DOM.g(null,
                 /* TODO: We should simply not draw here. This breaks transparent backgrounds! */
-                React.DOM.polygon({
-                    stroke: "white",
+                DOM.polygon({
                     fill: "white",
-                    strokeWidth: 0,
                     points: (
                         (this.props.x + offset - bbox[0]*10 + 4) + "," + (y - bbox[1]*10) + " " +
                         (this.props.x + offset - bbox[0]*10 + 4) + "," + (y + bbox[3]*10) + " " +
                         (this.props.x + offset + bbox[1]*10 + 4) + "," + (y + bbox[3]*10) + " " +
-                        (this.props.x + offset + bbox[1]*10 + 4) + "," + (y - bbox[1]*10))
+                        (this.props.x + offset + bbox[1]*10 + 4) + "," + (y - bbox[1]*10)),
+                    stroke: "white",
+                    strokeWidth: 0
                 }),
                 $(Glyph)({
                     fill: this.props.tupletsTemporary ? "#A5A5A5" : "#000000",
@@ -153,15 +155,15 @@ class UnbeamedTuplet extends React.Component<{spec: MusicXML.Tuplet}, void> {
                     x: this.props.x + offset,
                     y: y
                 })
-            /* React.DOM.g */);
+            /* DOM.g */);
         }
     }
 };
 
 module UnbeamedTuplet {
     export let contextTypes = <any> {
-        originY: React.PropTypes.number.isRequired
+        originY: PropTypes.number.isRequired
     };
 }
 
-export = UnbeamedTuplet;
+export default UnbeamedTuplet;

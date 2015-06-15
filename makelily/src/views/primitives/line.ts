@@ -18,21 +18,23 @@
 
 "use strict";
 
-import React = require("react");
+import * as React from "react"; // TS 1.5 workaround
+import {DOM} from "react";
 
 /**
  * Renders a straight line.
  */
 class Line extends React.Component<Line.IProps, {}> {
     render() {
-        return React.DOM.line({
+        return DOM.line({
             className: this.props.className,
+            stroke: this.props.stroke,
+            strokeWidth: <any> (this.props.strokeWidth),
             x1: <any> (this.props.x1),
             x2: <any> (this.props.x2),
             y1: <any> (this.props.y1),
-            y2: <any> (this.props.y2),
-            stroke: this.props.stroke,
-            strokeWidth: <any> (this.props.strokeWidth)});
+            y2: <any> (this.props.y2)
+        });
     }
 }
 
@@ -48,4 +50,4 @@ module Line {
     }
 }
 
-export = Line;
+export default Line;

@@ -18,7 +18,7 @@
 
 import MusicXML = require("musicxml-interfaces");
 
-import Engine = require("./engine");
+import Engine from "../engine";
 
 export class Layout implements Engine.IModel.ILayout {
     constructor(model: IEngravedModel, cursor$: Engine.ICursor,

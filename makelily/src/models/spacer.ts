@@ -16,7 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import Engine = require("./engine");
+import {ICursor, IModel, ISegment} from "../engine";
 
 class SpacerModel implements Export.ISpacerModel {
 
@@ -29,23 +29,23 @@ class SpacerModel implements Export.ISpacerModel {
     staffIdx: number;
 
     /** @prototype */
-    frozenness: Engine.IModel.FrozenLevel;
+    frozenness: IModel.FrozenLevel;
 
-    modelDidLoad$(segment$: Engine.Measure.ISegment): void {
+    modelDidLoad$(segment$: ISegment): void {
         // Nothing to do
     }
 
-    validate$(cursor$: Engine.ICursor): void {
+    validate$(cursor$: ICursor): void {
         // Nothing to do
     }
 
-    layout(cursor$: Engine.ICursor): Export.ILayout {
+    layout(cursor$: ICursor): Export.ILayout {
         return new SpacerModel.Layout(this, cursor$);
     }
 
     /*---- Validation Implementations -----------------------------------------------------------*/
 
-    constructor(target: Engine.IModel) {
+    constructor(target: IModel) {
         this._target = target;
     }
 
@@ -57,12 +57,12 @@ class SpacerModel implements Export.ISpacerModel {
         return this.toXML();
     }
 
-    _target: Engine.IModel;
+    _target: IModel;
 }
 
 module SpacerModel {
     export class Layout implements Export.ILayout {
-        constructor(model: SpacerModel, cursor$: Engine.ICursor) {
+        constructor(model: SpacerModel, cursor$: ICursor) {
             this.model = model;
             this.x$ = cursor$.x$;
             this.division = cursor$.division$;
@@ -78,36 +78,36 @@ module SpacerModel {
 
         // Prototype:
 
-        mergePolicy: Engine.IModel.HMergePolicy;
-        boundingBoxes$: Engine.IModel.IBoundingRect[];
-        renderClass: Engine.IModel.Type;
-        expandPolicy: Engine.IModel.ExpandPolicy;
+        mergePolicy: IModel.HMergePolicy;
+        boundingBoxes$: IModel.IBoundingRect[];
+        renderClass: IModel.Type;
+        expandPolicy: IModel.ExpandPolicy;
     }
 
-    Layout.prototype.mergePolicy = Engine.IModel.HMergePolicy.Min;
-    Layout.prototype.expandPolicy = Engine.IModel.ExpandPolicy.None;
-    Layout.prototype.renderClass = Engine.IModel.Type.Spacer;
+    Layout.prototype.mergePolicy = IModel.HMergePolicy.Min;
+    Layout.prototype.expandPolicy = IModel.ExpandPolicy.None;
+    Layout.prototype.renderClass = IModel.Type.Spacer;
     Layout.prototype.boundingBoxes$ = [];
     Object.freeze(Layout.prototype.boundingBoxes$);
 }
 
 SpacerModel.prototype.divCount = 0;
-SpacerModel.prototype.frozenness = Engine.IModel.FrozenLevel.Warm;
+SpacerModel.prototype.frozenness = IModel.FrozenLevel.Warm;
 
 /**
  * Registers Spacer in the factory structure passed in.
  */
 function Export(constructors: { [key: number]: any }) {
-    constructors[Engine.IModel.Type.Spacer] = SpacerModel;
+    constructors[IModel.Type.Spacer] = SpacerModel;
 }
 
 module Export {
-    export interface ISpacerModel extends Engine.IModel {
+    export interface ISpacerModel extends IModel {
     }
 
-    export interface ILayout extends Engine.IModel.ILayout {
+    export interface ILayout extends IModel.ILayout {
         model: ISpacerModel;
     }
 }
 
-export = Export;
+export default Export;

@@ -1,7 +1,7 @@
 import React = require("react");
-import { Route, DefaultRoute, RouteHandler, Link } from "react-router";
+import {Link} from "react-router";
 
-import Test = require("./test");
+import Test from "./test";
 
 class Home extends React.Component<void, void> {
     render() {
@@ -35,4 +35,4 @@ module Home {
     }
 }
 
-export = Home;
+export default Home;

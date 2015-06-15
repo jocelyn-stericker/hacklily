@@ -21,8 +21,8 @@
 import MusicXML = require("musicxml-interfaces");
 import _ = require("lodash");
 
-import Engine = require("../engine");
-import SMuFL = require("../smufl");
+import {IModel} from "../../engine";
+import {bboxes} from "../smufl";
 
 export function articulationDirectionMatters(model: MusicXML.Articulations): boolean {
     return !model.breathMark && !model.caesura;
@@ -81,8 +81,8 @@ export function articulationGlyph(model: MusicXML.Articulations, direction: stri
 export interface IGeneralNotation extends MusicXML.PrintStyle, MusicXML.Placement {
 }
 
-export function getBoundingRects(model: MusicXML.Notations): Engine.IModel.IBoundingRect[] {
-    let boxes: Engine.IModel.IBoundingRect[] = [];
+export function getBoundingRects(model: MusicXML.Notations): IModel.IBoundingRect[] {
+    let boxes: IModel.IBoundingRect[] = [];
 
     _.forEach(model.accidentalMarks, accidentalMark => {
         // TODO
@@ -153,7 +153,7 @@ export function getBoundingRects(model: MusicXML.Notations): Engine.IModel.IBoun
     });
 
     function push(glyphName: string, notation: IGeneralNotation): IGeneralNotation {
-        let box = SMuFL.bboxes[glyphName];
+        let box = bboxes[glyphName];
         if (!box) {
             console.warn("Unknown glyph", glyphName);
             return;
@@ -161,8 +161,8 @@ export function getBoundingRects(model: MusicXML.Notations): Engine.IModel.IBoun
 
         const PADDING = 1.5;
 
-        let printStyle: MusicXML.PrintStyle | Engine.IModel.IBoundingRect = Object.create(notation);
-        let boundingRect = <Engine.IModel.IBoundingRect> printStyle;
+        let printStyle: MusicXML.PrintStyle | IModel.IBoundingRect = Object.create(notation);
+        let boundingRect = <IModel.IBoundingRect> printStyle;
 
         boundingRect.top = box[3]*10;
         boundingRect.bottom = box[1]*10;
@@ -179,7 +179,7 @@ export function getBoundingRects(model: MusicXML.Notations): Engine.IModel.IBoun
             // below: "dynamic"
             boundingRect.defaultY = 0;
         }
-        boxes.push(<Engine.IModel.IBoundingRect> printStyle);
+        boxes.push(<IModel.IBoundingRect> printStyle);
 
         return printStyle;
     }

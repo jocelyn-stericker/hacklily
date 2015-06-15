@@ -22,12 +22,12 @@
 
 "use strict";
 
-import Engine = require("../engine");
-import Factory = require("../factory");
-
 import chai = require("chai");
 
-var expect = chai.expect;
+let expect = chai.expect;
+
+import {IModel} from "../../engine";
+import Factory from "../factory";
 
 class TestClass1 {
 }
@@ -37,42 +37,42 @@ class TestClass2 {
 
 describe("[factory.ts]", function() {
     describe("Factory", function() {
-        var types = [
+        let types = [
             function(types: {[key: number]: any}) {
-                types[<any>Engine.IModel.Type.Attributes] = TestClass1;
+                types[<any>IModel.Type.Attributes] = TestClass1;
             },
             function(types: {[key: number]: any}) {
-                types[<any>Engine.IModel.Type.Chord] = TestClass2;
+                types[<any>IModel.Type.Chord] = TestClass2;
             }
         ];
 
-        var factory = new Factory(types);
+        let factory = new Factory(types);
 
         it("can create multiple types", function() {
-            expect(factory.create(Engine.IModel.Type.Attributes)).to.be.an.instanceof(TestClass1);
-            expect(factory.create(Engine.IModel.Type.Chord)).to.be.an.instanceof(TestClass2);
+            expect(factory.create(IModel.Type.Attributes)).to.be.an.instanceof(TestClass1);
+            expect(factory.create(IModel.Type.Chord)).to.be.an.instanceof(TestClass2);
         });
 
         it("can discern multiple types", function() {
             expect(factory.modelHasType(<any> new TestClass1,
-                    Engine.IModel.Type.Attributes)).to.equal(true);
+                    IModel.Type.Attributes)).to.equal(true);
             expect(factory.modelHasType(<any> new TestClass1,
-                    Engine.IModel.Type.Chord)).to.equal(false);
+                    IModel.Type.Chord)).to.equal(false);
             expect(factory.modelHasType(<any> new TestClass2,
-                    Engine.IModel.Type.Chord)).to.equal(true);
+                    IModel.Type.Chord)).to.equal(true);
             expect(factory.modelHasType(<any> new TestClass2,
-                    Engine.IModel.Type.Attributes)).to.equal(false);
+                    IModel.Type.Attributes)).to.equal(false);
         });
 
         it("throws on creating invalid type", function() {
             expect(function() {
-                factory.create(Engine.IModel.Type.Print);
+                factory.create(IModel.Type.Print);
             }).to.throw();
         });
 
         it("throws on discerning invalid type", function() {
             expect(function() {
-                factory.modelHasType(<any> new TestClass1, Engine.IModel.Type.Print);
+                factory.modelHasType(<any> new TestClass1, IModel.Type.Print);
             }).to.throw();
         });
     });

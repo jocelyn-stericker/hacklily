@@ -1,21 +1,25 @@
 /// <reference path="../typings/tsd.d.ts" />
 
 import React = require("react");
-import Satie = require("satie");
-import {run, HistoryLocation, Route, Redirect, DefaultRoute, NotFoundRoute} from "react-router";
+import ReactPerf = require("react/lib/ReactDefaultPerf");
+import {init} from "satie";
+import {run, HistoryLocation, Route, Redirect, DefaultRoute} from "react-router";
 
-import App = require("./app");
-import Home = require("./home");
-import Tests = require("./tests");
+import App from "./app";
+import Home from "./home";
+import Tests from "./tests";
+
+ReactPerf.start();
+(<any>window).ReactPerf = ReactPerf;
 
 let prefix = process.env.PLAYGROUND_PREFIX || "";
 
-Satie.init({
+init({
     satieRoot: location.protocol + "//" + location.host + prefix + "/vendor/",
     preloadedFonts: ["Alegreya", "Alegreya (bold)"]
 });
 
-var routes = React.jsx(`
+let routes = React.jsx(`
     <Route handler=${App} name="home" path=${prefix + "/"}>
         <DefaultRoute handler=${Home} />
         <Route name="tests" path="tests" handler=${Tests} />

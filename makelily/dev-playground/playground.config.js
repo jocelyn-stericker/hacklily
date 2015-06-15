@@ -44,6 +44,11 @@ module.exports = {
     postcss: [ autoprefixer({ browsers: ['last 2 version'] }) ],
     plugins: [
         new webpack.HotModuleReplacementPlugin(),
-        new webpack.NoErrorsPlugin()
+        new webpack.NoErrorsPlugin(),
+        new webpack.DefinePlugin({
+            "process.env": {
+                NODE_ENV: '"dev"',
+            }
+        })
     ]
 }

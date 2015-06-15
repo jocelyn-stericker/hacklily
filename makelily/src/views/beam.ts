@@ -19,13 +19,13 @@
 "use strict";
 
 import MusicXML = require("musicxml-interfaces");
-import React = require("react");
+import * as React from "react"; // TS 1.5 workaround
+import {createFactory as $, DOM, PropTypes} from "react";
 import _ = require("lodash");
-var $ = React.createFactory;
 
-import IBeam = require("../models/engine/ibeam");
-import Glyph = require("./primitives/glyph");
-import SMuFL = require("../models/smufl");
+import IBeam from "../engine/ibeam";
+import Glyph from "./primitives/glyph";
+import {bravura, getFontOffset} from "../models/smufl";
 
 /**
  * Renders a beam based on a computed layout.
@@ -36,14 +36,14 @@ class Beam extends React.Component<Beam.IProps, void> {
         let xHi = this._getX2();
         let layout = this.props.layout;
 
-        return React.DOM.g(null,
+        return DOM.g(null,
             _.map(layout.beamCount, (beams: number, idx: number): any => {
                 if (idx === 0) {
                     return null;
                 }
                 return _.times(beams, beam => {
-                    var x1: number;
-                    var x2: number = this._withXOffset(layout.x[idx]);
+                    let x1: number;
+                    let x2: number = this._withXOffset(layout.x[idx]);
                     if (layout.beamCount[idx - 1] <= beam) {
                         if (layout.x[idx + 1] &&
                             layout.beamCount[idx + 1] === beams) {
@@ -53,7 +53,8 @@ class Beam extends React.Component<Beam.IProps, void> {
                     } else {
                         x1 = this._withXOffset(layout.x[idx - 1]);
                     }
-                    return React.DOM.polygon({
+                    return DOM.polygon({
+                        fill: this.props.stroke,
                         key: idx + "_" + beam,
                         points: x1 + "," +
                             this._getYVar(0, beam, (x1 - xLow)/(xHi - xLow)) + " " +
@@ -64,13 +65,12 @@ class Beam extends React.Component<Beam.IProps, void> {
                             x1 + "," +
                             this._getYVar(1, beam, (x1 - xLow)/(xHi - xLow)),
                         stroke: this.props.stroke,
-                        fill: this.props.stroke,
                         strokeWidth: 0
                     });
                 });
             }),
             this._tuplet()
-        /* React.DOM.g */);
+        /* DOM.g */);
     }
 
     /**
@@ -86,7 +86,7 @@ class Beam extends React.Component<Beam.IProps, void> {
 
         return x +
             this.context.originX +
-            SMuFL.getFontOffset("noteheadBlack", this.props.layout.direction)[0]*10 +
+            getFontOffset("noteheadBlack", this.props.layout.direction)[0]*10 +
             this.getLineXOffset();
     }
 
@@ -106,7 +106,7 @@ class Beam extends React.Component<Beam.IProps, void> {
             this._getYOffset() +
             this.props.layout.direction*idx*8.8 -
             // TODO: use print defaults
-            (incl || 0)*(SMuFL.bravura.engravingDefaults.beamThickness*10);
+            (incl || 0)*(bravura.engravingDefaults.beamThickness*10);
     }
 
     private _getY2(incl: number, idx: number) {
@@ -116,12 +116,12 @@ class Beam extends React.Component<Beam.IProps, void> {
             this.props.layout.y2 -
             this._getYOffset() +
             this.props.layout.direction*idx*8.8 -
-            (incl || 0)*(SMuFL.bravura.engravingDefaults.beamThickness*10);
+            (incl || 0)*(bravura.engravingDefaults.beamThickness*10);
     }
 
     private _getYVar(incl: number, idx: number, percent: number) {
-        var y1 = this._getY1(incl, idx);
-        var y2 = this._getY2(incl, idx);
+        let y1 = this._getY1(incl, idx);
+        let y2 = this._getY2(incl, idx);
         return (1 - percent) * y1 + percent * y2;
     }
 
@@ -134,15 +134,15 @@ class Beam extends React.Component<Beam.IProps, void> {
     }
 
     /**
-     * Returns a React component instance showing the tuplet number
+     * Returns a component instance showing the tuplet number
      */
     private _tuplet() {
         if (!this.props.tuplet) {
             return null;
         } else {
             let segments = this.props.layout.beamCount.length;
-            var offset = this._getX2() - this._getX1();
-            var y = (this._getY1(1, segments - 1) +
+            let offset = this._getX2() - this._getX1();
+            let y = (this._getY1(1, segments - 1) +
                         this._getY2(1, segments - 1))/2 -
                     (4 + 8*1/* FIXME: get max */)*this.props.layout.direction + 5.2;
 
@@ -159,9 +159,9 @@ class Beam extends React.Component<Beam.IProps, void> {
 };
 
 module Beam {
-    export var contextTypes = <any> {
-        originX: React.PropTypes.number.isRequired,
-        originY: React.PropTypes.number.isRequired
+    export let contextTypes = <any> {
+        originX: PropTypes.number.isRequired,
+        originY: PropTypes.number.isRequired
     };
 
     export interface IProps {
@@ -173,4 +173,4 @@ module Beam {
     }
 }
 
-export = Beam;
+export default Beam;
