@@ -19,10 +19,10 @@
 "use strict";
 
 import MusicXML = require("musicxml-interfaces");
-import React = require("react");
-var $ = React.createFactory;
+import * as React from "react"; // TS 1.5 workaround
+import {createFactory as $, PropTypes} from "react";
 
-import Glyph = require("./primitives/glyph");
+import Glyph from "./primitives/glyph";
 
 /**
  * Renders a notehead.
@@ -34,11 +34,11 @@ class Notehead extends React.Component<Notehead.IProps, void> {
         let head = <MusicXML.Notehead> spec;
 
         return $(Glyph)({
+            fill: head.color,
+            glyphName: this.getNoteheadGlyph(),
+            // scale: this.props.grace ? 0.6 : 1.0,
             x: this.context.originX + pos.defaultX + (pos.relativeX || 0),
             y: this.context.originY - pos.defaultY - (pos.relativeY || 0),
-            fill: head.color,
-            // scale: this.props.grace ? 0.6 : 1.0,
-            glyphName: this.getNoteheadGlyph()
         });
     }
     getNoteheadGlyph() {
@@ -57,10 +57,10 @@ module Notehead {
         spec: MusicXML.Notehead | MusicXML.Position;
         notehead: string;
     }
-    export var contextTypes = <any> {
-        originX: React.PropTypes.number.isRequired,
-        originY: React.PropTypes.number.isRequired
+    export let contextTypes = <any> {
+        originX: PropTypes.number.isRequired,
+        originY: PropTypes.number.isRequired
     };
 }
 
-export = Notehead;
+export default Notehead;

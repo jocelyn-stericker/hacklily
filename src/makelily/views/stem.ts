@@ -19,12 +19,12 @@
 "use strict";
 
 import MusicXML = require("musicxml-interfaces");
-import React = require("react");
+import * as React from "react"; // TS 1.5 workaround
+import {createFactory as $, PropTypes} from "react";
 import invariant = require("react/lib/invariant");
-let $ = React.createFactory;
 
-import Line = require("./primitives/line");
-import SMuFL = require("../models/smufl");
+import Line from "./primitives/line";
+import {getFontOffset} from "../models/smufl";
 
 /**
  * Renders a stem based on a height decided in Note.
@@ -38,21 +38,21 @@ class Stem extends React.Component<Stem.IProps, void> {
         }
         const direction = spec.type === MusicXML.StemType.Up ? 1 : -1; // TODO: StemType.Double
         const lineXOffset = direction * - this.props.width/2;
-        const offset = SMuFL.getFontOffset(notehead, direction);
+        const offset = getFontOffset(notehead, direction);
         const x = this.context.originX + spec.defaultX +
             (spec.relativeX || (offset[0]*10 + lineXOffset));
         invariant(isFinite(x), "Invalid x offset %s", x);
 
         return $(Line)({
+            fill: spec.color,
+            stroke: spec.color,
+            strokeWidth: this.props.width,
             x1: x,
             x2: x,
             y1: this.context.originY - spec.defaultY - (spec.relativeY || 0) -
                 offset[1]*10,
             y2: this.context.originY - spec.defaultY - (spec.relativeY || 0) -
-                offset[1]*10 - this.props.bestHeight*direction,
-            stroke: spec.color,
-            fill: spec.color,
-            strokeWidth: this.props.width
+                offset[1]*10 - this.props.bestHeight*direction
         });
     }
 }
@@ -64,10 +64,10 @@ module Stem {
         bestHeight: number;
         width: number;
     }
-    export var contextTypes = <any> {
-        originX: React.PropTypes.number.isRequired,
-        originY: React.PropTypes.number.isRequired
+    export let contextTypes = <any> {
+        originX: PropTypes.number.isRequired,
+        originY: PropTypes.number.isRequired
     };
 }
 
-export = Stem;
+export default Stem;

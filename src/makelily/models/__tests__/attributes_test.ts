@@ -24,13 +24,13 @@
 
 import chai = require("chai");
 
-import Attributes = require("../attributes");
-import Engine = require("../engine");
-import Factory = require("../factory");
+import Attributes from "../attributes";
+import {IModel, ICursor} from "../../engine";
+import Factory from "../factory";
 
 let expect = chai.expect;
 
-export function makeCursor(factory: Factory, models: Engine.IModel[]): Engine.ICursor {
+export function makeCursor(factory: Factory, models: IModel[]): ICursor {
     (<any>models).part = "P1";
     return {
         segment: <any> models,
@@ -105,7 +105,7 @@ export function makeCursor(factory: Factory, models: Engine.IModel[]): Engine.IC
 }
 
 function FakeChord(constructors: { [key: number]: any }) {
-    constructors[Engine.IModel.Type.Chord] = function() {
+    constructors[IModel.Type.Chord] = function() {
         // pass
     };
 }
@@ -113,11 +113,11 @@ function FakeChord(constructors: { [key: number]: any }) {
 describe("[attributes.ts]", function() {
     describe("AttributesModel", function() {
         let factory = new Factory([Attributes, FakeChord]);
-        let attributes: Engine.IModel;
+        let attributes: IModel;
         it("can be created", function() {
-            attributes = factory.create(Engine.IModel.Type.Attributes);
+            attributes = factory.create(IModel.Type.Attributes);
             expect(!!attributes).to.be.true;
-            // Divisions is usually set by Engine
+            // Divisions is usually set by the engine
             (<any>attributes).divisions = 100;
 
             let cursor$ = makeCursor(factory, [attributes]);

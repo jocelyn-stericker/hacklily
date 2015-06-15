@@ -16,26 +16,25 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import React = require("react");
-var $ = React.createFactory;
+import {createFactory as $, Component, PropTypes} from "react";
 
-import Attributes = require("./attributes");
-import Barline = require("./barline");
-import Chord = require("./chord");
-import Direction = require("./direction");
-import Engine = require("../models/engine");
+import Attributes from "./attributes";
+import Barline from "./barline";
+import Chord from "./chord";
+import Direction from "./direction";
+import {IModel} from "../engine";
 
-class ModelView extends React.Component<{layout: Engine.IModel.ILayout}, void> {
+class ModelView extends Component<{layout: IModel.ILayout}, void> {
     render(): any {
         let layout = <any> this.props.layout;
         switch(layout.renderClass) {
-        case Engine.IModel.Type.Attributes:
+        case IModel.Type.Attributes:
             return $(Attributes)({layout: layout});
-        case Engine.IModel.Type.Barline:
+        case IModel.Type.Barline:
             return $(Barline)({layout: layout});
-        case Engine.IModel.Type.Chord:
+        case IModel.Type.Chord:
             return $(Chord)({layout: layout});
-        case Engine.IModel.Type.Direction:
+        case IModel.Type.Direction:
             return $(Direction)({layout: layout});
         default:
             return null;
@@ -50,15 +49,15 @@ class ModelView extends React.Component<{layout: Engine.IModel.ILayout}, void> {
     }
 }
 
-const NUMBER_ARRAY = React.PropTypes.arrayOf(React.PropTypes.number);
+const NUMBER_ARRAY = PropTypes.arrayOf(PropTypes.number);
 
 module ModelView {
-    export var childContextTypes = <any> {
-        originY: React.PropTypes.number
+    export let childContextTypes = <any> {
+        originY: PropTypes.number
     };
-    export var contextTypes = <any> {
-        originYByPartAndStaff: React.PropTypes.objectOf(NUMBER_ARRAY).isRequired,
+    export let contextTypes = <any> {
+        originYByPartAndStaff: PropTypes.objectOf(NUMBER_ARRAY).isRequired,
     };
 }
 
-export = ModelView;
+export default ModelView;

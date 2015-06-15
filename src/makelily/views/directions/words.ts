@@ -19,15 +19,15 @@
 "use strict";
 
 import MusicXML = require("musicxml-interfaces");
-import React = require("react");
+import {Component, DOM, PropTypes} from "react";
 import _ = require("lodash");
 import invariant = require("react/lib/invariant");
 
-import DirectionModel = require("../../models/direction");
-import Engine = require("../../models/engine");
-import TextMixin = require("../textMixin");
+import DirectionModel from "../../models/direction";
+import {RenderUtil} from "../../engine";
+import {ITextMixin, Prototype as TextMixin} from "../textMixin";
 
-class Words extends React.Component<Words.IProps, void> implements TextMixin.ITextMixin {
+class Words extends Component<Words.IProps, void> implements ITextMixin {
     render(): any {
         let layout = this.props.layout;
         let model = layout.model;
@@ -39,37 +39,36 @@ class Words extends React.Component<Words.IProps, void> implements TextMixin.ITe
         let initY = this.context.originY - words[0].defaultY - (words[0].relativeY||0);
         let scale40 = this.context.scale40;
 
-        return React.DOM.text({
+        return DOM.text({
                 x: initX,
                 y: initY
             },
             _.map(words, (words, idx) => {
                 let isBold = words.fontWeight === MusicXML.NormalBold.Bold;
                 let isItalic = words.fontStyle === MusicXML.NormalItalic.Italic;
-                let fontSize = Engine.RenderUtil.cssSizeToTenths(scale40, words.fontSize);
+                let fontSize = RenderUtil.cssSizeToTenths(scale40, words.fontSize);
 
-                return _.map(words.data.split("\n"), (line, lineNum) => React.DOM.tspan({
-                    key: idx + "l" + lineNum,
+                return _.map(words.data.split("\n"), (line, lineNum) => DOM.tspan({
                     "alignment-baseline": "hanging",
-                    x: this.getX(lineNum),
+                    color: words.color || "black",
+                    direction: this.getDirection(words),
                     dx: this.getDX(words, 0, lineNum),
                     dy: this.getDY(words, initY, lineNum),
+                    "font-style": isItalic ? "italic" : "normal",
+                    "font-weight": isBold ? "bold" : "normal",
                     fontFamily: words.fontFamily || "Alegreya",
                     fontSize: fontSize,
-
-                    "font-weight": isBold ? "bold" : "normal",
-                    "font-style": isItalic ? "italic" : "normal",
-                    color: words.color || "black",
-                    textAnchor: this.getTextAnchor(words),
-                    "text-decoration": this.getTextDecoration(words),
-                    transform: this.getTransform(words),
+                    key: idx + "l" + lineNum,
                     "letter-spacing": words.letterSpacing && words.letterSpacing !== "normal" ?
-                        ("" + Engine.RenderUtil.cssSizeToTenths(this.context.scale40,
+                        ("" + RenderUtil.cssSizeToTenths(this.context.scale40,
                                 words.letterSpacing)) : "normal",
-                    direction: this.getDirection(words)
+                    "text-decoration": this.getTextDecoration(words),
+                    textAnchor: this.getTextAnchor(words),
+                    transform: this.getTransform(words),
+                    x: this.getX(lineNum)
                 }, line));
             })
-        /* React.DOM.text */);
+        /* DOM.text */);
     }
 
     /* TextMixin.ITextMixin */
@@ -82,17 +81,17 @@ class Words extends React.Component<Words.IProps, void> implements TextMixin.ITe
     getDY: (words: MusicXML.CreditWords | MusicXML.Words, initY: number, lineNum: number) => number;
 }
 
-_.extend(Words.prototype, TextMixin.Prototype);
+_.extend(Words.prototype, TextMixin);
 
 module Words {
     export interface IProps {
         layout: DirectionModel.ILayout;
     }
-    export var contextTypes = <any> {
-        scale40: React.PropTypes.number.isRequired,
-        originX: React.PropTypes.number.isRequired,
-        originY: React.PropTypes.number.isRequired
+    export let contextTypes = <any> {
+        originX: PropTypes.number.isRequired,
+        originY: PropTypes.number.isRequired,
+        scale40: PropTypes.number.isRequired
     };
 }
 
-export = Words;
+export default Words;

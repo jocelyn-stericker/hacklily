@@ -20,8 +20,7 @@ import MusicXML = require("musicxml-interfaces");
 import _ = require("lodash");
 import invariant = require("react/lib/invariant");
 
-import Engine = require("./engine");
-import defaultsDeep = require("../util/defaultsDeep");
+import {defaultsDeep, ICursor, IModel, ISegment} from "../engine";
 
 class PrintModel implements Export.IPrintModel {
 
@@ -34,19 +33,19 @@ class PrintModel implements Export.IPrintModel {
     staffIdx: number;
 
     /** @prototype */
-    frozenness: Engine.IModel.FrozenLevel;
+    frozenness: IModel.FrozenLevel;
 
-    modelDidLoad$(segment$: Engine.Measure.ISegment): void {
+    modelDidLoad$(segment$: ISegment): void {
         // todo
     }
 
     once: boolean;
-    validate$(cursor$: Engine.ICursor): void {
+    validate$(cursor$: ICursor): void {
         invariant(!!cursor$.header, "Cursor must have a valid header");
-        var spec: MusicXML.Print;
+        let spec: MusicXML.Print;
         if (!this.once) {
             // FIXME: should always sync
-            var defaultPrint = extractDefaultPrintFromHeader(cursor$.header);
+            let defaultPrint = extractDefaultPrintFromHeader(cursor$.header);
             spec = defaultsDeep(this, defaultPrint);
         } else {
             spec = this;
@@ -61,16 +60,16 @@ class PrintModel implements Export.IPrintModel {
         this.once = true;
     }
 
-    layout(cursor$: Engine.ICursor): Export.ILayout {
+    layout(cursor$: ICursor): Export.ILayout {
         cursor$.print$                  = this; // FIXME: inheritance for multiple papers
 
         return new PrintModel.Layout(this, cursor$);
     }
 
     sync(print: MusicXML.Print) {
-        var keys = Object.keys(Object(print));
+        let keys = Object.keys(Object(print));
 
-        for (var i = 0; i < keys.length; ++i) {
+        for (let i = 0; i < keys.length; ++i) {
             if (!(<any>this)[keys[i]]) {
                 (<any>this)[keys[i]] = (<any>print)[keys[i]];
             }
@@ -114,8 +113,8 @@ class PrintModel implements Export.IPrintModel {
     /*---- III. Extensions ----------------------------------------------------------------------*/
 
     pageMarginsFor(page: number): MusicXML.PageMargins {
-        for (var i = 0; i < this.pageLayout.pageMargins.length; ++i) {
-            var margins = this.pageLayout.pageMargins[i];
+        for (let i = 0; i < this.pageLayout.pageMargins.length; ++i) {
+            let margins = this.pageLayout.pageMargins[i];
             if (margins.type === MusicXML.OddEvenBoth.Both ||
                     (margins.type === MusicXML.OddEvenBoth.Odd) === !!(page % 2)) {
                 return margins;
@@ -127,11 +126,11 @@ class PrintModel implements Export.IPrintModel {
 }
 
 PrintModel.prototype.divCount = 0;
-PrintModel.prototype.frozenness = Engine.IModel.FrozenLevel.Warm;
+PrintModel.prototype.frozenness = IModel.FrozenLevel.Warm;
 
 module PrintModel {
     export class Layout implements Export.ILayout {
-        constructor(origModel: PrintModel, cursor$: Engine.ICursor) {
+        constructor(origModel: PrintModel, cursor$: ICursor) {
             let model = Object.create(origModel);
             this.model = model;
             model.pageNumber = "" + cursor$.page$;
@@ -162,15 +161,15 @@ module PrintModel {
 
         // Prototype:
 
-        mergePolicy: Engine.IModel.HMergePolicy;
-        boundingBoxes$: Engine.IModel.IBoundingRect[];
-        renderClass: Engine.IModel.Type;
-        expandPolicy: Engine.IModel.ExpandPolicy;
+        mergePolicy: IModel.HMergePolicy;
+        boundingBoxes$: IModel.IBoundingRect[];
+        renderClass: IModel.Type;
+        expandPolicy: IModel.ExpandPolicy;
     }
 
-    Layout.prototype.mergePolicy = Engine.IModel.HMergePolicy.Min;
-    Layout.prototype.expandPolicy = Engine.IModel.ExpandPolicy.None;
-    Layout.prototype.renderClass = Engine.IModel.Type.Print;
+    Layout.prototype.mergePolicy = IModel.HMergePolicy.Min;
+    Layout.prototype.expandPolicy = IModel.ExpandPolicy.None;
+    Layout.prototype.renderClass = IModel.Type.Print;
     Layout.prototype.boundingBoxes$ = [];
     Object.freeze(Layout.prototype.boundingBoxes$);
 };
@@ -180,22 +179,22 @@ function extractDefaultPrintFromHeader(header: MusicXML.ScoreHeader): MusicXML.P
         blankPage: "",
         measureLayout: null,
         measureNumbering: {
-            relativeX: 0,
-            relativeY: 0,
-            fontSize: "small",
             color: "#000000",
             data: "system",
             defaultX: null,
             defaultY: null,
             fontFamily: "Alegreya, serif",
+            fontSize: "small",
             fontStyle: MusicXML.NormalItalic.Normal,
-            fontWeight: MusicXML.NormalBold.Normal
+            fontWeight: MusicXML.NormalBold.Normal,
+            relativeX: 0,
+            relativeY: 0
         },
         newPage: false,
         newSystem: false,
-        partAbbreviationDisplay: null,
         pageLayout: header.defaults.pageLayout,
         pageNumber: "",
+        partAbbreviationDisplay: null,
         partNameDisplay: null,
         staffLayouts: header.defaults.staffLayouts,
         staffSpacing: null, // DEPRECATED
@@ -207,15 +206,15 @@ function extractDefaultPrintFromHeader(header: MusicXML.ScoreHeader): MusicXML.P
  * Registers Print in the factory structure passed in.
  */
 function Export(constructors: { [key: number]: any }) {
-    constructors[Engine.IModel.Type.Print] = PrintModel;
+    constructors[IModel.Type.Print] = PrintModel;
 }
 
 module Export {
-    export interface IPrintModel extends Engine.IModel, MusicXML.Print {
+    export interface IPrintModel extends IModel, MusicXML.Print {
     }
 
-    export interface ILayout extends Engine.IModel.ILayout {
+    export interface ILayout extends IModel.ILayout {
     }
 }
 
-export = Export;
+export default Export;

@@ -19,32 +19,31 @@
 "use strict";
 
 import MusicXML = require("musicxml-interfaces");
-import React = require("react");
+import {createFactory as $, Component, DOM, PropTypes, ReactElement} from "react";
 import _ = require("lodash");
-let $ = React.createFactory;
 
-import Beam = require("./beam");
-import Chord = require("../models/chord");
-import Flag = require("./flag");
-import LedgerLine = require("./ledgerLine");
-import Lyrics = require("../models/chord/lyrics");
-import Note = require("./note");
-import Notation = require("./notation");
-import Rest = require("./rest");
-import Stem = require("./stem");
-import SMuFL = require("../models/smufl");
+import Beam from "./beam";
+import Chord from "../models/chord";
+import Flag from "./flag";
+import LedgerLine from "./ledgerLine";
+import {DEFAULT_LYRIC_SIZE, DEFAULT_FONT} from "../models/chord/lyrics";
+import Note from "./note";
+import Notation from "./notation";
+import Rest from "./rest";
+import Stem from "./stem";
+import {bboxes, bravura} from "../models/smufl";
 
-const stemThickness: number = SMuFL.bravura.engravingDefaults.stemThickness*10;
+const stemThickness: number = bravura.engravingDefaults.stemThickness*10;
 
 /**
  * Renders notes and their notations.
  */
-class ChordView extends React.Component<{layout: Chord.IChordLayout}, void> {
-    render(): React.ReactElement<any> {
+class ChordView extends Component<{layout: Chord.IChordLayout}, void> {
+    render(): ReactElement<any> {
         let layout = this.props.layout;
         let spec = layout.model;
 
-        let maxNotehead = _.max(layout.model.satieNotehead, notehead => SMuFL.bboxes[notehead][0]);
+        let maxNotehead = _.max(layout.model.satieNotehead, notehead => bboxes[notehead][0]);
 
         let anyVisible = _.any(layout.model, note => note.printObject !== false);
 
@@ -59,22 +58,22 @@ class ChordView extends React.Component<{layout: Chord.IChordLayout}, void> {
             .flatten(true)
             .filter((l: MusicXML.Lyric) => !!l)
             .map((l: MusicXML.Lyric) => {
-                var text: any[] = [];
-                var currSyllabic = MusicXML.SyllabicType.Single;
-                for (var i = 0; i < l.lyricParts.length; ++i) {
+                let text: any[] = [];
+                let currSyllabic = MusicXML.SyllabicType.Single;
+                for (let i = 0; i < l.lyricParts.length; ++i) {
                     switch(l.lyricParts[i]._class) {
                         case "Syllabic":
-                            var syllabic = <MusicXML.Syllabic> l.lyricParts[i];
+                            let syllabic = <MusicXML.Syllabic> l.lyricParts[i];
                             currSyllabic = syllabic.data;
                             break;
                         case "Text":
-                            var textPt = <MusicXML.Text> l.lyricParts[i];
-                            var width = SMuFL.bboxes[maxNotehead][0]*10;
-                            text.push(React.DOM.text({
-                                    fontFamily: textPt.fontFamily || Lyrics.DEFAULT_FONT,
-                                    textAnchor: "middle",
-                                    fontSize: textPt.fontSize || Lyrics.DEFAULT_LYRIC_SIZE,
+                            let textPt = <MusicXML.Text> l.lyricParts[i];
+                            let width = bboxes[maxNotehead][0]*10;
+                            text.push(DOM.text({
+                                    fontFamily: textPt.fontFamily || DEFAULT_FONT,
+                                    fontSize: textPt.fontSize || DEFAULT_LYRIC_SIZE,
                                     key: ++lyKey,
+                                    textAnchor: "middle",
                                     x: this.context.originX + this.props.layout.x$ + width/2,
                                     y: this.context.originY + 60
                                 }, textPt.data));
@@ -88,20 +87,21 @@ class ChordView extends React.Component<{layout: Chord.IChordLayout}, void> {
         if (!!spec[0].rest) {
             return $(Rest)({
                 multipleRest: layout.model.satieMultipleRest,
-                spec: spec[0],
-                notehead: spec.satieNotehead[0]
+                notehead: spec.satieNotehead[0],
+                spec: spec[0]
             });
         }
 
-        return React.DOM.g(null,
+        return DOM.g(null,
             _.map(spec, (noteSpec, idx) => $(Note)({
                 key: "n" + idx,
-                spec: noteSpec,
-                satieNotehead: spec.satieNotehead[0]
+                satieNotehead: spec.satieNotehead[0],
+                spec: noteSpec
             })),
             spec.satieStem && $(Stem)({
-                key: "s",
                 bestHeight: spec.satieStem.stemHeight,
+                key: "s",
+                notehead: maxNotehead,
                 spec: {
                     color: spec[0].stem.color || "#000000",
                     defaultX: spec[0].defaultX,
@@ -109,45 +109,44 @@ class ChordView extends React.Component<{layout: Chord.IChordLayout}, void> {
                     type: spec.satieStem.direction === 1 ?
                         MusicXML.StemType.Up : MusicXML.StemType.Down
                 },
-                width: stemThickness,
-                notehead: maxNotehead
+                width: stemThickness
             }),
             _.map(spec.satieLedger, lineNumber => $(LedgerLine)({
                 key: "l" + lineNumber,
+                notehead: maxNotehead,
                 spec: {
+                    color: "#000000",
                     defaultX: spec[0].defaultX,
-                    defaultY: (lineNumber - 3)*10,
-                    color: "#000000"
-                },
-                notehead: maxNotehead
+                    defaultY: (lineNumber - 3)*10
+                }
             })),
             spec.satieFlag && $(Flag)({
                 key: "f",
+                notehead: maxNotehead,
                 spec: {
+                    color: spec[0].stem.color || "$000000",
                     defaultX: spec[0].defaultX,
                     defaultY: (spec.satieStem.stemStart - 3)*10 +
                         spec.satieStem.stemHeight*spec.satieStem.direction,
-                    color: spec[0].stem.color || "$000000",
-                    flag: spec.satieFlag,
-                    direction: spec.satieStem.direction
+                    direction: spec.satieStem.direction,
+                    flag: spec.satieFlag
                 },
-                stemWidth: stemThickness,
                 stemHeight: spec.satieStem.stemHeight,
-                notehead: maxNotehead
+                stemWidth: stemThickness
             }),
             spec.satieBeam && $(Beam)({
                 key: "b",
                 layout: spec.satieBeam,
                 stemWidth: stemThickness,
+                stroke: "black",
                 tuplet: null,
-                tupletsTemporary: null,
-                stroke: "black"
+                tupletsTemporary: null
             }),
             _.map(spec, (note, idx) => _.map(note.notations, (notation, jdx) => $(Notation)({
                 key: `N${idx}_${jdx}`,
-                spec: notation,
+                layout: this.props.layout,
                 note: note,
-                layout: this.props.layout
+                spec: notation
             }))),
             lyrics
         );
@@ -155,10 +154,10 @@ class ChordView extends React.Component<{layout: Chord.IChordLayout}, void> {
 }
 
 module ChordView {
-    export var contextTypes = <any> {
-        originX: React.PropTypes.number.isRequired,
-        originY: React.PropTypes.number.isRequired
+    export let contextTypes = <any> {
+        originX: PropTypes.number.isRequired,
+        originY: PropTypes.number.isRequired
     };
 }
 
-export = ChordView;
+export default ChordView;

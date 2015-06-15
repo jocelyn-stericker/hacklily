@@ -19,8 +19,8 @@
 import MusicXML = require("musicxml-interfaces");
 import _ = require("lodash");
 
-import Engine = require("./engine");
-import FontManager = require("./fontManager");
+import {ICursor, IModel, ISegment, RenderUtil} from "./../engine";
+import {getTextBB} from "./fontManager";
 
 class DirectionModel implements Export.IDirectionModel {
 
@@ -33,17 +33,17 @@ class DirectionModel implements Export.IDirectionModel {
     staffIdx: number;
 
     /** @prototype */
-    frozenness: Engine.IModel.FrozenLevel;
+    frozenness: IModel.FrozenLevel;
 
-    modelDidLoad$(segment$: Engine.Measure.ISegment): void {
+    modelDidLoad$(segment$: ISegment): void {
         // todo
     }
 
-    validate$(cursor$: Engine.ICursor): void {
+    validate$(cursor$: ICursor): void {
         // todo
     }
 
-    layout(cursor$: Engine.ICursor): Export.ILayout {
+    layout(cursor$: ICursor): Export.ILayout {
         return new DirectionModel.Layout(this, cursor$);
     }
 
@@ -86,11 +86,11 @@ class DirectionModel implements Export.IDirectionModel {
 }
 
 DirectionModel.prototype.divCount = 0;
-DirectionModel.prototype.frozenness = Engine.IModel.FrozenLevel.Warm;
+DirectionModel.prototype.frozenness = IModel.FrozenLevel.Warm;
 
 module DirectionModel {
     export class Layout implements Export.ILayout {
-        constructor(model: DirectionModel, cursor$: Engine.ICursor) {
+        constructor(model: DirectionModel, cursor$: ICursor) {
             model = Object.create(model);
 
             this.model = model;
@@ -122,24 +122,24 @@ module DirectionModel {
                     type.words[idx].fontSize = type.words[idx].fontSize || "18";
                     type.words[idx].defaultX = 0;
                     type.words[idx].defaultY = defaultY;
-                    let fontBox = FontManager.getTextBB(type.words[idx].fontFamily || "Alegreya",
+                    let fontBox = getTextBB(type.words[idx].fontFamily || "Alegreya",
                         type.words[idx].data,
                         parseInt(type.words[idx].fontSize, 10),
                         type.words[idx].fontWeight === MusicXML.NormalBold.Normal ? null : "bold");
                     const scale40 = defaults.scaling.millimeters / defaults.scaling.tenths * 40;
-                    let boundingBox: Engine.IModel.IBoundingRect = <any> type.words[idx];
+                    let boundingBox: IModel.IBoundingRect = <any> type.words[idx];
 
                     // Vertical coordinates are flipped (argh!)
                     // We give 10% padding because elements touching isn't ideal.
-                    boundingBox.top = -Engine.RenderUtil.mmToTenths(scale40,
-                            fontBox.bottom/Engine.RenderUtil.ptPerMM)*1.1;
-                    boundingBox.bottom = -Engine.RenderUtil.mmToTenths(scale40,
-                            fontBox.top/Engine.RenderUtil.ptPerMM)*1.1;
+                    boundingBox.top = -RenderUtil.mmToTenths(scale40,
+                            fontBox.bottom/RenderUtil.ptPerMM)*1.1;
+                    boundingBox.bottom = -RenderUtil.mmToTenths(scale40,
+                            fontBox.top/RenderUtil.ptPerMM)*1.1;
 
-                    boundingBox.left = Engine.RenderUtil.mmToTenths(scale40,
-                            fontBox.left/Engine.RenderUtil.ptPerMM)*1.1;
-                    boundingBox.right = Engine.RenderUtil.mmToTenths(scale40,
-                            fontBox.right/Engine.RenderUtil.ptPerMM)*1.1;
+                    boundingBox.left = RenderUtil.mmToTenths(scale40,
+                            fontBox.left/RenderUtil.ptPerMM)*1.1;
+                    boundingBox.right = RenderUtil.mmToTenths(scale40,
+                            fontBox.right/RenderUtil.ptPerMM)*1.1;
                     this.boundingBoxes$.push(boundingBox);
                 });
                 if (type.dynamics) {
@@ -147,7 +147,7 @@ module DirectionModel {
                     type.dynamics = Object.create(origDynamics);
                     type.dynamics.defaultX = 0;
                     type.dynamics.defaultY = defaultY;
-                    let boundingBox: Engine.IModel.IBoundingRect = <any> type.dynamics;
+                    let boundingBox: IModel.IBoundingRect = <any> type.dynamics;
                     boundingBox.left = -10;
                     boundingBox.right = 30;
                     boundingBox.top = -10;
@@ -167,30 +167,30 @@ module DirectionModel {
 
         // Prototype:
 
-        mergePolicy: Engine.IModel.HMergePolicy;
-        boundingBoxes$: Engine.IModel.IBoundingRect[];
-        renderClass: Engine.IModel.Type;
-        expandPolicy: Engine.IModel.ExpandPolicy;
+        mergePolicy: IModel.HMergePolicy;
+        boundingBoxes$: IModel.IBoundingRect[];
+        renderClass: IModel.Type;
+        expandPolicy: IModel.ExpandPolicy;
     }
 
-    Layout.prototype.mergePolicy = Engine.IModel.HMergePolicy.Min;
-    Layout.prototype.expandPolicy = Engine.IModel.ExpandPolicy.None;
-    Layout.prototype.renderClass = Engine.IModel.Type.Direction;
+    Layout.prototype.mergePolicy = IModel.HMergePolicy.Min;
+    Layout.prototype.expandPolicy = IModel.ExpandPolicy.None;
+    Layout.prototype.renderClass = IModel.Type.Direction;
     Layout.prototype.boundingBoxes$ = [];
     Object.freeze(Layout.prototype.boundingBoxes$);
 };
 
 function Export(constructors: { [key: number]: any }) {
-    constructors[Engine.IModel.Type.Direction] = DirectionModel;
+    constructors[IModel.Type.Direction] = DirectionModel;
 }
 
 module Export {
-    export interface IDirectionModel extends Engine.IModel, MusicXML.Direction {
+    export interface IDirectionModel extends IModel, MusicXML.Direction {
     }
 
-    export interface ILayout extends Engine.IModel.ILayout {
+    export interface ILayout extends IModel.ILayout {
         model: IDirectionModel;
     }
 }
 
-export = Export;
+export default Export;

@@ -19,17 +19,16 @@
 "use strict";
 
 import MusicXML = require("musicxml-interfaces");
-import React = require("react");
+import {createFactory as $, Component, DOM, PropTypes} from "react";
 import _ = require("lodash");
-var $ = React.createFactory;
 
-import IAttributes = require("../models/engine/iattributes");
-import Glyph = require("./primitives/glyph");
+import {IAttributes} from "../engine";
+import Glyph from "./primitives/glyph";
 
 /**
  * Renders a simple, compound, or common time signature.
  */
-class TimeSignature extends React.Component<{spec: MusicXML.Time}, void> {
+class TimeSignature extends Component<{spec: MusicXML.Time}, void> {
     render(): any {
         const spec = this.props.spec;
         if (spec.senzaMisura != null) {
@@ -47,8 +46,8 @@ class TimeSignature extends React.Component<{spec: MusicXML.Time}, void> {
         }
 
         if (ts.commonRepresentation) {
-            var beats = ts.beats;
-            var beatType = ts.beatType;
+            let beats = ts.beats;
+            let beatType = ts.beatType;
 
             let hasSingleBeat = beats.length === 1 && beats[0].length === 1;
 
@@ -57,17 +56,17 @@ class TimeSignature extends React.Component<{spec: MusicXML.Time}, void> {
 
             if (isCommon) {
                 return $(Glyph)({
-                    x: this.context.originX + spec.defaultX + (spec.relativeX || 0),
-                    y: this.context.originY - (spec.defaultY + (spec.relativeY || 0)),
                     fill: spec.color,
-                    glyphName: "timeSigCommon"
+                    glyphName: "timeSigCommon",
+                    x: this.context.originX + spec.defaultX + (spec.relativeX || 0),
+                    y: this.context.originY - (spec.defaultY + (spec.relativeY || 0))
                 });
             } else if (isCut) {
                 return $(Glyph)({
-                    x: this.context.originX + spec.defaultX + (spec.relativeX || 0),
-                    y: this.context.originY - (spec.defaultY + (spec.relativeY || 0)),
                     fill: spec.color,
-                    glyphName: "timeSigCutCommon"
+                    glyphName: "timeSigCutCommon",
+                    x: this.context.originX + spec.defaultX + (spec.relativeX || 0),
+                    y: this.context.originY - (spec.defaultY + (spec.relativeY || 0))
                 });
             }
             // Cannot be represented in common representation. Pass through.
@@ -77,7 +76,7 @@ class TimeSignature extends React.Component<{spec: MusicXML.Time}, void> {
         let denOffsets = this.denOffsets();
 
         let pos = 0;
-        return React.DOM.g(null,
+        return DOM.g(null,
             _.map(ts.beats, (beatsOuter, idx) => {
                 let array = [
                     _.map(beatsOuter, (beats, jdx) => [
@@ -92,12 +91,12 @@ class TimeSignature extends React.Component<{spec: MusicXML.Time}, void> {
                             beats
                         ),
                         (jdx + 1 !== beatsOuter.length) && $(Glyph)({
-                            key: `num_plus_numerator_${idx}_${jdx}`,
+                            fill: "black",
                             glyphName: "timeSigPlusSmall",
+                            key: `num_plus_numerator_${idx}_${jdx}`,
                             x: this.context.originX + spec.defaultX + (spec.relativeX || 0) +
                                 numOffsets[idx] + pos + jdx * IAttributes.NUMBER_SPACING + 17,
-                            y: this.context.originY - (spec.defaultY) + (spec.relativeY || 0) - 10,
-                            fill: "black"
+                            y: this.context.originY - (spec.defaultY) + (spec.relativeY || 0) - 10
                         })
                     ]),
                     $(TimeSignatureNumber)({
@@ -110,24 +109,24 @@ class TimeSignature extends React.Component<{spec: MusicXML.Time}, void> {
                         ts.beatType[idx]
                     ),
                     (idx + 1 !== ts.beats.length) && $(Glyph)({
-                        key: `num_plus_${idx}`,
+                        fill: "black",
                         glyphName: "timeSigPlus",
+                        key: `num_plus_${idx}`,
                         x: this.context.originX + spec.defaultX + (spec.relativeX || 0) +
                             numOffsets[idx] + pos +
                             beatsOuter.length*IAttributes.NUMBER_SPACING - 10,
-                        y: this.context.originY - (spec.defaultY) + (spec.relativeY || 0),
-                        fill: "black"
+                        y: this.context.originY - (spec.defaultY) + (spec.relativeY || 0)
                     })
                 ];
                 pos += beatsOuter.length*IAttributes.NUMBER_SPACING + IAttributes.PLUS_SPACING;
                 return array;
             })
-        /* React.DOM.g */);
+        /* DOM.g */);
     }
 
     numOffsets() {
         // This is sketchy.
-        var ts = this._displayTimeSignature();
+        let ts = this._displayTimeSignature();
         return _.map(ts.beats, (beats, idx) => {
             if (beats.length > 1) {
                 return 0;
@@ -141,7 +140,7 @@ class TimeSignature extends React.Component<{spec: MusicXML.Time}, void> {
     }
     denOffsets() {
         // This is sketchy.
-        var ts = this._displayTimeSignature();
+        let ts = this._displayTimeSignature();
 
         return _.map(ts.beatType, (beatType, idx) => {
             let culm = 0;
@@ -158,8 +157,8 @@ class TimeSignature extends React.Component<{spec: MusicXML.Time}, void> {
     _displayTimeSignature() {
         const spec = this.props.spec;
         return {
-            beats: _.map(spec.beats, beats => beats.split("+").map(n => parseInt(n, 10))),
             beatType: spec.beatTypes,
+            beats: _.map(spec.beats, beats => beats.split("+").map(n => parseInt(n, 10))),
             commonRepresentation: spec.symbol === MusicXML.TimeSymbolType.Common ||
                                     spec.symbol === MusicXML.TimeSymbolType.Cut,
             singleNumber: spec.symbol === MusicXML.TimeSymbolType.SingleNumber
@@ -168,9 +167,9 @@ class TimeSignature extends React.Component<{spec: MusicXML.Time}, void> {
 };
 
 module TimeSignature {
-    export var contextTypes = <any> {
-        originX: React.PropTypes.number.isRequired,
-        originY: React.PropTypes.number.isRequired
+    export let contextTypes = <any> {
+        originX: PropTypes.number.isRequired,
+        originY: PropTypes.number.isRequired
     };
 }
 
@@ -183,19 +182,19 @@ interface ITSNumProps {
 };
 
 /* private */
-class TimeSignatureNumber extends React.Component<ITSNumProps, void> {
+class TimeSignatureNumber extends Component<ITSNumProps, void> {
     render() {
-        return React.DOM.g(null,
+        return DOM.g(null,
             _.map((this.props.children + "").split(""), (numberString, i) => $(Glyph)({
+                fill: this.props.stroke,
+                glyphName: "timeSig" + numberString,
                 key: "ts-" + i,
                 x: this.props.x + i*12 + (numberString === "1" ?
-                        (!i && parseInt(this.props.children, 10) >= 10 ? -1 : 1) : 0),
+                    (!i && parseInt(this.props.children, 10) >= 10 ? -1 : 1) : 0),
                 y: this.props.y,
-                fill: this.props.stroke,
-                glyphName: "timeSig" + numberString
             /* Glyph */}))
-        /* React.DOM.g */);
+        /* DOM.g */);
     }
 }
 
-export = TimeSignature;
+export default TimeSignature;

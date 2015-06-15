@@ -24,36 +24,36 @@
 
 import MusicXML = require("musicxml-interfaces");
 
-import Engine = require("./engine");
-import ChordModelImpl = require("./chord/chordImpl"); // @cyclic
+import {IBeam, IChord, IModel} from "../engine";
+import ChordModelImpl from "./chord/chordImpl"; // @cyclic
 
 /**
  * Registers Chord in the factory structure passed in.
  */
- function ChordModel(constructors: { [key: number]: any; [key: string]: Engine.IModel.Type }) {
-    constructors["Note"] = Engine.IModel.Type.Chord;
-    constructors[Engine.IModel.Type.Chord] = ChordModelImpl;
+ function ChordModel(constructors: { [key: number]: any; [key: string]: IModel.Type }) {
+    constructors["Note"] = IModel.Type.Chord;
+    constructors[IModel.Type.Chord] = ChordModelImpl;
 }
 
 module ChordModel {
-    export interface IChordModel extends Engine.IModel, Engine.IChord {
+    export interface IChordModel extends IModel, IChord {
         satieStem: {
             direction: number;
             stemHeight: number;
             stemStart: number;
         };
-        satieBeam: Engine.IBeam.ILayout;
+        satieBeam: IBeam.ILayout;
         satieFlag: string;
         satieLedger: number[];
         satieNotehead: string[];
         satieMultipleRest: MusicXML.MultipleRest;
     }
 
-    export interface IChordLayout extends Engine.IModel.ILayout {
+    export interface IChordLayout extends IModel.ILayout {
         model: IChordModel;
         minSpaceBefore: number;
         minSpaceAfter: number;
     }
 }
 
-export = ChordModel;
+export default ChordModel;

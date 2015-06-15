@@ -16,8 +16,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import Engine = require("./engine");
 import invariant = require("react/lib/invariant");
+
+import {ICursor, IModel, ISegment} from "../engine";
 
 class ProxyModel implements Export.IProxyModel {
 
@@ -39,31 +40,31 @@ class ProxyModel implements Export.IProxyModel {
         this._omTarget.staffIdx = staffIdx;
     }
 
-    set target(target: Engine.IModel) {
+    set target(target: IModel) {
         this._target = target;
         this._omTarget = Object.create(this._target);
         this._omTarget.staffIdx = undefined;
     }
 
     /** @prototype */
-    frozenness: Engine.IModel.FrozenLevel;
+    frozenness: IModel.FrozenLevel;
 
-    modelDidLoad$(segment$: Engine.Measure.ISegment): void {
+    modelDidLoad$(segment$: ISegment): void {
         // todo
     }
 
-    validate$(cursor$: Engine.ICursor): void {
+    validate$(cursor$: ICursor): void {
         invariant(!!this._target, "A proxy must have a target.");
         this._omTarget.validate$(cursor$);
     }
 
-    layout(cursor$: Engine.ICursor): Export.ILayout {
+    layout(cursor$: ICursor): Export.ILayout {
         return this._omTarget.layout(cursor$);
     }
 
     /*---- Validation Implementations -----------------------------------------------------------*/
 
-    constructor(target: Engine.IModel) {
+    constructor(target: IModel) {
         this._target = target;
     }
 
@@ -75,26 +76,26 @@ class ProxyModel implements Export.IProxyModel {
         return this.toXML();
     }
 
-    _target: Engine.IModel;
-    _omTarget: Engine.IModel;
+    _target: IModel;
+    _omTarget: IModel;
 }
 
-ProxyModel.prototype.frozenness = Engine.IModel.FrozenLevel.Warm;
+ProxyModel.prototype.frozenness = IModel.FrozenLevel.Warm;
 
 /**
  * Registers Proxy in the factory structure passed in.
  */
 function Export(constructors: { [key: number]: any }) {
-    constructors[Engine.IModel.Type.Proxy] = ProxyModel;
+    constructors[IModel.Type.Proxy] = ProxyModel;
 }
 
 module Export {
-    export interface IProxyModel extends Engine.IModel {
+    export interface IProxyModel extends IModel {
     }
 
-    export interface ILayout extends Engine.IModel.ILayout {
+    export interface ILayout extends IModel.ILayout {
         model: IProxyModel;
     }
 }
 
-export = Export;
+export default Export;

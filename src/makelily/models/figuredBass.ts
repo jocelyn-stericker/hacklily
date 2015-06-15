@@ -19,7 +19,7 @@
 import MusicXML = require("musicxml-interfaces");
 import _ = require("lodash");
 
-import Engine = require("./engine");
+import {IModel, ISegment, ICursor} from "../engine";
 
 class FiguredBassModel implements Export.IFiguredBassModel {
 
@@ -32,17 +32,17 @@ class FiguredBassModel implements Export.IFiguredBassModel {
     staffIdx: number;
 
     /** @prototype */
-    frozenness: Engine.IModel.FrozenLevel;
+    frozenness: IModel.FrozenLevel;
 
-    modelDidLoad$(segment$: Engine.Measure.ISegment): void {
+    modelDidLoad$(segment$: ISegment): void {
         // todo
     }
 
-    validate$(cursor$: Engine.ICursor): void {
+    validate$(cursor$: ICursor): void {
         // todo
     }
 
-    layout(cursor$: Engine.ICursor): Export.ILayout {
+    layout(cursor$: ICursor): Export.ILayout {
         // todo
 
         return new FiguredBassModel.Layout(this, cursor$);
@@ -85,7 +85,7 @@ class FiguredBassModel implements Export.IFiguredBassModel {
     /*---- MusicXML.PrintStyle >> Color -----------------------------------------------------*/
 
     get color(): string {
-        var hex = this._color.toString(16);
+        let hex = this._color.toString(16);
         return "#" + "000000".substr(0, 6 - hex.length) + hex;
     }
     set color(a: string) {
@@ -123,11 +123,11 @@ class FiguredBassModel implements Export.IFiguredBassModel {
 }
 
 FiguredBassModel.prototype.divCount = 0;
-FiguredBassModel.prototype.frozenness = Engine.IModel.FrozenLevel.Warm;
+FiguredBassModel.prototype.frozenness = IModel.FrozenLevel.Warm;
 
 module FiguredBassModel {
     export class Layout implements Export.ILayout {
-        constructor(model: FiguredBassModel, cursor$: Engine.ICursor) {
+        constructor(model: FiguredBassModel, cursor$: ICursor) {
             this.model = model;
             this.x$ = cursor$.x$;
             this.division = cursor$.division$;
@@ -143,15 +143,15 @@ module FiguredBassModel {
 
         // Prototype:
 
-        mergePolicy: Engine.IModel.HMergePolicy;
-        boundingBoxes$: Engine.IModel.IBoundingRect[];
-        renderClass: Engine.IModel.Type;
-        expandPolicy: Engine.IModel.ExpandPolicy;
+        mergePolicy: IModel.HMergePolicy;
+        boundingBoxes$: IModel.IBoundingRect[];
+        renderClass: IModel.Type;
+        expandPolicy: IModel.ExpandPolicy;
     }
 
-    Layout.prototype.mergePolicy = Engine.IModel.HMergePolicy.Min;
-    Layout.prototype.expandPolicy = Engine.IModel.ExpandPolicy.None;
-    Layout.prototype.renderClass = Engine.IModel.Type.FiguredBass;
+    Layout.prototype.mergePolicy = IModel.HMergePolicy.Min;
+    Layout.prototype.expandPolicy = IModel.ExpandPolicy.None;
+    Layout.prototype.renderClass = IModel.Type.FiguredBass;
     Layout.prototype.boundingBoxes$ = [];
     Object.freeze(Layout.prototype.boundingBoxes$);
 };
@@ -160,15 +160,15 @@ module FiguredBassModel {
  * Registers FiguredBass in the factory structure passed in.
  */
 function Export(constructors: { [key: number]: any }) {
-    constructors[Engine.IModel.Type.FiguredBass] = FiguredBassModel;
+    constructors[IModel.Type.FiguredBass] = FiguredBassModel;
 }
 
 module Export {
-    export interface IFiguredBassModel extends Engine.IModel, MusicXML.FiguredBass {
+    export interface IFiguredBassModel extends IModel, MusicXML.FiguredBass {
     }
 
-    export interface ILayout extends Engine.IModel.ILayout {
+    export interface ILayout extends IModel.ILayout {
     }
 }
 
-export = Export;
+export default Export;

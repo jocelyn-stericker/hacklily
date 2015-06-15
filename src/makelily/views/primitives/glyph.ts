@@ -18,37 +18,38 @@
 
 "use strict";
 
-import React = require("react");
+import {Component, DOM, PropTypes, ReactElement} from "react";
 
-import SMuFL = require("../../models/smufl");
-import Engine = require("../../models/engine");
-import FontManager = require("../../models/fontManager");
+import {getGlyphCode} from "../../models/smufl";
+import {RenderTarget} from "../../engine";
+import {toPathData} from "../../models/fontManager";
 
 /**
  * Most musical elements are rendered as glyphs. Exceptions include
  * slurs, ties, dots in dotted notes, ledger lines, and stave lines.
  */
-class Glyph extends React.Component<Glyph.IProps, void> {
+class Glyph extends Component<Glyph.IProps, void> {
     render() {
-        var px = this.props.x;
-        var py = this.props.y;
+        let px = this.props.x;
+        let py = this.props.y;
 
-        if (this.context.renderTarget === Engine.RenderTarget.SvgExport) {
-            let pathData = FontManager.toPathData("Bravura",
-                SMuFL.getGlyphCode(this.props.glyphName), px, py, 40*(this.props.scale||1));
-            return <React.ReactElement<any>> React.DOM.path({d: pathData}, null);
+        if (this.context.renderTarget === RenderTarget.SvgExport) {
+            let pathData = toPathData("Bravura",
+                getGlyphCode(this.props.glyphName), px, py, 40*(this.props.scale||1));
+            return <ReactElement<any>> DOM.path({d: pathData}, null);
         }
 
-        var text: React.ReactElement<any> = React.DOM.text({
-                x: px,
-                y: py,
+        let text: ReactElement<any> = DOM.text({
+                className: "mn_",
                 fill: this.props.fill,
                 fillOpacity: this.props.opacity,
+                fontSize: 40*(this.props.scale||1),
                 strokeOpacity: this.props.opacity,
                 transform: this.props.transform,
-                fontSize: 40*(this.props.scale||1),
-                className: "mn_"},
-            SMuFL.getGlyphCode(this.props.glyphName)
+                x: px,
+                y: py
+            },
+            getGlyphCode(this.props.glyphName)
         );
 
         return text;
@@ -57,7 +58,7 @@ class Glyph extends React.Component<Glyph.IProps, void> {
 
 module Glyph {
     export let contextTypes = <any> {
-        renderTarget: React.PropTypes.number
+        renderTarget: PropTypes.number
     };
 
     export interface IProps {
@@ -73,4 +74,4 @@ module Glyph {
     }
 }
 
-export = Glyph;
+export default Glyph;

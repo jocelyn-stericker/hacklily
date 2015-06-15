@@ -19,45 +19,46 @@
 "use strict";
 
 import MusicXML = require("musicxml-interfaces");
-import React = require("react");
+import {createFactory as $, Component, DOM, PropTypes} from "react";
 import invariant = require("react/lib/invariant");
-var $ = React.createFactory;
 
-import Glyph = require("./primitives/glyph");
-import IChord = require("../models/engine/ichord");
-import SMuFL = require("../models/smufl");
+import Glyph from "./primitives/glyph";
+import IChord from "../engine/ichord";
+import {bboxes} from "../models/smufl";
 
-class Accidental extends React.Component<{spec: MusicXML.Accidental}, void> {
+class Accidental extends Component<{spec: MusicXML.Accidental}, void> {
     render(): any {
         let spec = this.props.spec;
         const glyphName = IChord.accidentalGlyphs[this.props.spec.accidental];
-        invariant(glyphName in SMuFL.bboxes, "Expected a glyph, got %s", glyphName);
+        invariant(glyphName in bboxes, "Expected a glyph, got %s", glyphName);
 
         const originX = this.context.originX;
         const originY = this.context.originY;
         const shift = spec.parentheses ? 4 : 0;
 
-        var accidental = $(Glyph)({
-            x: originX + spec.defaultX + (spec.relativeX || 0) + shift,
-            y: originY - (spec.defaultY + (spec.relativeY || 0)),
+        let accidental = $(Glyph)({
             fill: spec.color,
-            glyphName: glyphName
+            glyphName: glyphName,
+            x: originX + spec.defaultX + (spec.relativeX || 0) + shift,
+            y: originY - (spec.defaultY + (spec.relativeY || 0))
         });
 
         if (spec.parentheses || spec.bracket) {
-            var width = SMuFL.bboxes[glyphName][0]*10; // TODO: it's actually 2 - 0!
-            return React.DOM.g(null,
+            let width = bboxes[glyphName][0]*10; // TODO: it's actually 2 - 0!
+            return DOM.g(null,
                 $(Glyph)({
-                        x: originX + spec.defaultX + (spec.relativeX || 0) - 7 + shift,
-                        y: originY - (spec.defaultY + (spec.relativeY || 0)),
-                        glyphName: "accidentalParensLeft",
-                        fill: "#000000"}),
+                    fill: "#000000",
+                    glyphName: "accidentalParensLeft",
+                    x: originX + spec.defaultX + (spec.relativeX || 0) - 7 + shift,
+                    y: originY - (spec.defaultY + (spec.relativeY || 0))
+                }),
                 accidental,
                 $(Glyph)({
-                        x: originX + spec.defaultX + (spec.relativeX || 0) + width + shift,
-                        y: originY - (spec.defaultY + (spec.relativeY || 0)),
-                        glyphName: "accidentalParensRight",
-                        fill: "#000000" })
+                    fill: "#000000",
+                    glyphName: "accidentalParensRight",
+                    x: originX + spec.defaultX + (spec.relativeX || 0) + width + shift,
+                    y: originY - (spec.defaultY + (spec.relativeY || 0))
+                })
             /* React.DOM.g */);
         } else {
             return accidental;
@@ -66,10 +67,10 @@ class Accidental extends React.Component<{spec: MusicXML.Accidental}, void> {
 }
 
 module Accidental {
-    export var contextTypes = <any> {
-        originX: React.PropTypes.number.isRequired,
-        originY: React.PropTypes.number.isRequired
+    export let contextTypes = <any> {
+        originX: PropTypes.number.isRequired,
+        originY: PropTypes.number.isRequired
     };
 }
 
-export = Accidental;
+export default Accidental;

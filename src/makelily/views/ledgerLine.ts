@@ -19,11 +19,11 @@
 "use strict";
 
 import MusicXML = require("musicxml-interfaces");
-import React = require("react");
-let $ = React.createFactory;
+import * as React from "react"; // TS 1.5 workaround
+import {createFactory as $, PropTypes} from "react";
 
-import Line = require("./primitives/line");
-import SMuFL = require("../models/smufl");
+import Line from "./primitives/line";
+import {bboxes} from "../models/smufl";
 
 /**
  * Renders a ledger line at (x, y + line).
@@ -31,26 +31,26 @@ import SMuFL = require("../models/smufl");
 class LedgerLine extends React.Component<{spec: MusicXML.PrintStyle, notehead: string}, void> {
     render() {
         const spec = this.props.spec;
-        const west = SMuFL.bboxes[this.props.notehead][3];
-        const east = SMuFL.bboxes[this.props.notehead][0];
+        const west = bboxes[this.props.notehead][3];
+        const east = bboxes[this.props.notehead][0];
         const xOffset = (east - west)*10;
         return $(Line)({
+            stroke: spec.color,
+            strokeWidth: 2.2,
+                // Ledger lines should be thicker than regular lines.
             x1: this.context.originX + spec.defaultX + (spec.relativeX || 0) - 3.2,
             x2: this.context.originX + spec.defaultX + (spec.relativeX || 0) + xOffset - 0.2,
             y1: this.context.originY - spec.defaultY - (spec.relativeX || 0),
-            y2: this.context.originY - spec.defaultY - (spec.relativeX || 0),
-            stroke: spec.color,
-            strokeWidth: 2.2
-                // Ledger lines should be thicker than regular lines.
+            y2: this.context.originY - spec.defaultY - (spec.relativeX || 0)
         });
     }
 }
 
 module LedgerLine {
-    export var contextTypes = <any> {
-        originX: React.PropTypes.number.isRequired,
-        originY: React.PropTypes.number.isRequired
+    export let contextTypes = <any> {
+        originX: PropTypes.number.isRequired,
+        originY: PropTypes.number.isRequired
     };
 }
 
-export = LedgerLine;
+export default LedgerLine;

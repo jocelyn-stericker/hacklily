@@ -20,7 +20,7 @@
 
 import MusicXML = require("musicxml-interfaces");
 
-import Engine = require("../models/engine");
+import {RenderUtil} from "../engine";
 
 const DEF_SPACING = 4;
 const V_SPACING = 4;
@@ -36,6 +36,40 @@ export interface ITextMixin {
 }
 
 export let Prototype: ITextMixin = {
+    getDX: function(words: MusicXML.CreditWords, initX: number, lineNum: number) {
+        if (lineNum > 0) {
+            return undefined;
+        }
+        let x = words.defaultX;
+        if (!isNaN(x)) {
+            return (x + (words.relativeX || 0)) - initX;
+        }
+        return DEF_SPACING;
+    },
+    getDY: function(words: MusicXML.CreditWords, initY: number, lineNum: number) {
+        if (lineNum > 0) {
+            return V_SPACING +
+                RenderUtil.cssSizeToTenths(this.context.scale40, words.fontSize);
+        }
+        if (words.defaultY || words.relativeY) {
+            return this.context.originY - (words.defaultY + (words.relativeY || 0)) - initY;
+        }
+        return 0;
+    },
+    getDirection: function(words: MusicXML.CreditWords | MusicXML.Words) {
+        switch(words.dir) {
+            case MusicXML.DirectionMode.Lro: // TODO: bidi
+            case MusicXML.DirectionMode.Ltr:
+                return "ltr";
+
+            case MusicXML.DirectionMode.Rlo: // TODO: bidi
+            case MusicXML.DirectionMode.Rtl:
+                return "rtl";
+
+            default:
+                return "inherit";
+        }
+    },
     getTextAnchor: function(words: MusicXML.CreditWords | MusicXML.Words) {
         switch(words.halign || words.justify) {
             case MusicXML.LeftCenterRight.Right:
@@ -66,44 +100,10 @@ export let Prototype: ITextMixin = {
         }
         return undefined;
     },
-    getDirection: function(words: MusicXML.CreditWords | MusicXML.Words) {
-        switch(words.dir) {
-            case MusicXML.DirectionMode.Lro: // TODO: bidi
-            case MusicXML.DirectionMode.Ltr:
-                return "ltr";
-
-            case MusicXML.DirectionMode.Rlo: // TODO: bidi
-            case MusicXML.DirectionMode.Rtl:
-                return "rtl";
-
-            default:
-                return "inherit";
-        }
-    },
     getX: function(lineNum: number) {
         if (lineNum > 0) {
             return 10;
         }
-    },
-    getDX: function(words: MusicXML.CreditWords, initX: number, lineNum: number) {
-        if (lineNum > 0) {
-            return undefined;
-        }
-        let x = words.defaultX;
-        if (!isNaN(x)) {
-            return (x + (words.relativeX || 0)) - initX;
-        }
-        return DEF_SPACING;
-    },
-    getDY: function(words: MusicXML.CreditWords, initY: number, lineNum: number) {
-        if (lineNum > 0) {
-            return V_SPACING +
-                Engine.RenderUtil.cssSizeToTenths(this.context.scale40, words.fontSize);
-        }
-        if (words.defaultY || words.relativeY) {
-            return this.context.originY - (words.defaultY + (words.relativeY || 0)) - initY;
-        }
-        return 0;
     }
 };
 

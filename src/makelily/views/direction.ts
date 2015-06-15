@@ -18,15 +18,14 @@
 
 "use strict";
 
-import React = require("react");
+import {createFactory as $, Component, DOM, PropTypes} from "react";
 import _ = require("lodash");
-let $ = React.createFactory;
 
-import DirectionModel = require("../models/direction");
-import Dynamics = require("./directions/dynamics");
-import Words = require("./directions/words");
+import DirectionModel from "../models/direction";
+import Dynamics from "./directions/dynamics";
+import Words from "./directions/words";
 
-class Direction extends React.Component<{layout: DirectionModel.ILayout}, void> {
+class Direction extends Component<{layout: DirectionModel.ILayout}, void> {
     render(): any {
         const model = this.props.layout.model;
         let children = _.map(model.directionTypes, (type, idx) => {
@@ -44,7 +43,10 @@ class Direction extends React.Component<{layout: DirectionModel.ILayout}, void> 
                 case !!type.dashes:
                     return null;
                 case !!type.dynamics:
-                    return $(Dynamics)({layout: this.props.layout, key: `d_${idx}`});
+                    return $(Dynamics)({
+                        key: `d_${idx}`,
+                        layout: this.props.layout
+                    });
                 case !!type.eyeglasses:
                     return null;
                 case !!type.harpPedals:
@@ -76,7 +78,10 @@ class Direction extends React.Component<{layout: DirectionModel.ILayout}, void> 
                 case !!type.wedge:
                     return null;
                 case !!type.words:
-                    return $(Words)({layout: this.props.layout, key: `d_${idx}`});
+                    return $(Words)({
+                        key: `d_${idx}`,
+                        layout: this.props.layout
+                    });
             };
         }).filter(el => !!el);
 
@@ -86,7 +91,7 @@ class Direction extends React.Component<{layout: DirectionModel.ILayout}, void> 
             case 1:
                 return children[0];
             default:
-                return React.DOM.g(null,
+                return DOM.g(null,
                     children
                 );
         }
@@ -100,13 +105,13 @@ class Direction extends React.Component<{layout: DirectionModel.ILayout}, void> 
 };
 
 module Direction {
-    export var childContextTypes = <any> {
-        originX: React.PropTypes.number.isRequired
+    export let childContextTypes = <any> {
+        originX: PropTypes.number.isRequired
     };
-    export var contextTypes = <any> {
-        originX: React.PropTypes.number.isRequired,
-        originY: React.PropTypes.number.isRequired
+    export let contextTypes = <any> {
+        originX: PropTypes.number.isRequired,
+        originY: PropTypes.number.isRequired
     };
 }
 
-export = Direction;
+export default Direction;

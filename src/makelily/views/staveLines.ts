@@ -18,12 +18,12 @@
 
 "use strict";
 
-import React = require("react");
+import * as React from "react"; // TS 1.5 workaround
+import {createFactory as $, DOM, PropTypes} from "react";
 import _ = require("lodash");
-var $ = React.createFactory;
 
-import Line = require("./primitives/line");
-import SMuFL = require("../models/smufl");
+import Line from "./primitives/line";
+import {bravura} from "../models/smufl";
 
 /**
  * Renders the (usually 5) lines that make up a stave.
@@ -31,23 +31,24 @@ import SMuFL = require("../models/smufl");
 class StaveLines extends React.Component<StaveLines.IProps, {}> {
     render() {
         let top = this.context.originY - this.props.y;
-        return React.DOM.g(null,
+        return DOM.g(null,
             _.times(this.props.lines, i => $(Line)({
                 key: "staff-" + i,
+                stroke: "#6A6A6A",
+                // TODO: Use print
+                strokeWidth: bravura.engravingDefaults.staffLineThickness*10,
                 x1: this.props.x,
                 x2: this.props.x + this.props.width,
                 y1: top - 10*(i - 2),
-                y2: top - 10*(i - 2),
-                stroke: "#6A6A6A",
-                strokeWidth: SMuFL.bravura.engravingDefaults.staffLineThickness*10 // TODO: use print
+                y2: top - 10*(i - 2)
             }))
-        /* React.DOM.g */);
+        /* DOM.g */);
     }
 }
 
 module StaveLines {
-    export var contextTypes = <any> {
-        originY: React.PropTypes.number.isRequired
+    export let contextTypes = <any> {
+        originY: PropTypes.number.isRequired
     };
     export interface IProps {
         lines: number;
@@ -57,4 +58,4 @@ module StaveLines {
     }
 }
 
-export = StaveLines;
+export default StaveLines;

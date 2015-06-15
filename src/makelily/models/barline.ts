@@ -20,10 +20,9 @@ import MusicXML = require("musicxml-interfaces");
 import _ = require("lodash");
 import invariant = require("react/lib/invariant");
 
-import Attributes = require("./attributes");
-import Engine = require("./engine");
-import IAttributes = require("./engine/iattributes");
-import SMuFL = require("./smufl");
+import Attributes from "./attributes";
+import {getCurrentMeasureList, IAttributes, ICursor, IModel, ISegment} from "../engine";
+import {bravura} from "./smufl";
 
 class BarlineModel implements Export.IBarlineModel {
 
@@ -36,13 +35,13 @@ class BarlineModel implements Export.IBarlineModel {
     staffIdx: number;
 
     /** @prototype */
-    frozenness: Engine.IModel.FrozenLevel;
+    frozenness: IModel.FrozenLevel;
 
-    modelDidLoad$(segment$: Engine.Measure.ISegment): void {
+    modelDidLoad$(segment$: ISegment): void {
         // todo
     }
 
-    validate$(cursor$: Engine.ICursor): void {
+    validate$(cursor$: ICursor): void {
         if (!this.barStyle) {
             this.barStyle = {
                 data: NaN
@@ -53,7 +52,7 @@ class BarlineModel implements Export.IBarlineModel {
         }
     }
 
-    layout(cursor$: Engine.ICursor): Export.ILayout {
+    layout(cursor$: ICursor): Export.ILayout {
         // mutates cursor$ as required.
         return new BarlineModel.Layout(this, cursor$);
     }
@@ -102,11 +101,11 @@ class BarlineModel implements Export.IBarlineModel {
 }
 
 BarlineModel.prototype.divCount = 0;
-BarlineModel.prototype.frozenness = Engine.IModel.FrozenLevel.Warm;
+BarlineModel.prototype.frozenness = IModel.FrozenLevel.Warm;
 
 module BarlineModel {
     export class Layout implements Export.ILayout {
-        constructor(origModel: BarlineModel, cursor$: Engine.ICursor) {
+        constructor(origModel: BarlineModel, cursor$: ICursor) {
             this.division = cursor$.division$;
             if (cursor$.staff.hiddenMeasuresRemaining > 1) {
                 return;
@@ -126,11 +125,11 @@ module BarlineModel {
             if (!cursor$.approximate && cursor$.line.barsOnLine === cursor$.line.barOnLine$ + 1) {
                 // TODO: Figure out a way to get this to work when the attributes on the next
                 // line change
-                let nextMeasure = Engine.EscapeHatch.__currentMeasureList__[cursor$.measure.idx + 1];
+                let nextMeasure = getCurrentMeasureList()[cursor$.measure.idx + 1];
                 let part = nextMeasure && nextMeasure.parts[cursor$.segment.part];
                 let segment = part && part.staves[cursor$.staff.idx];
                 let nextAttributes = segment && cursor$.factory.search(
-                    segment, 0, Engine.IModel.Type.Attributes)[0];
+                    segment, 0, IModel.Type.Attributes)[0];
                 let attributes = cursor$.staff.attributes[cursor$.segment.part];
                 let needsWarning = nextAttributes && IAttributes.needsWarning(
                     attributes, nextAttributes, cursor$.staff.idx);
@@ -147,7 +146,7 @@ module BarlineModel {
             this.model.barStyle = Object.create(this.model.barStyle) || {};
             if (!isFinite(this.model.barStyle.data) || this.model.barStyle.data === null) {
                 let lastBarlineInSegment = !_.any(cursor$.segment.slice(cursor$.idx$ + 1),
-                        model => cursor$.factory.modelHasType(model, Engine.IModel.Type.Barline));
+                        model => cursor$.factory.modelHasType(model, IModel.Type.Barline));
 
                 if(cursor$.line.barOnLine$ + 1 === cursor$.line.barsOnLine &&
                         cursor$.line.line + 1 === cursor$.line.lines &&
@@ -166,7 +165,7 @@ module BarlineModel {
 
             const lineWidths = cursor$.header.defaults.appearance.lineWidths;
 
-            const barlineSep = SMuFL.bravura.engravingDefaults.barlineSeparation;
+            const barlineSep = bravura.engravingDefaults.barlineSeparation;
 
             let setLines$ = (lines: string[]) => {
                 let x = 0;
@@ -233,10 +232,10 @@ module BarlineModel {
 
         // Prototype:
 
-        mergePolicy: Engine.IModel.HMergePolicy;
-        boundingBoxes$: Engine.IModel.IBoundingRect[];
-        renderClass: Engine.IModel.Type;
-        expandPolicy: Engine.IModel.ExpandPolicy;
+        mergePolicy: IModel.HMergePolicy;
+        boundingBoxes$: IModel.IBoundingRect[];
+        renderClass: IModel.Type;
+        expandPolicy: IModel.ExpandPolicy;
 
         /*---- Extensions ---------------------------------------------------*/
 
@@ -246,9 +245,9 @@ module BarlineModel {
         partSymbol: MusicXML.PartSymbol;
     }
 
-    Layout.prototype.mergePolicy = Engine.IModel.HMergePolicy.Max;
-    Layout.prototype.expandPolicy = Engine.IModel.ExpandPolicy.None;
-    Layout.prototype.renderClass = Engine.IModel.Type.Barline;
+    Layout.prototype.mergePolicy = IModel.HMergePolicy.Max;
+    Layout.prototype.expandPolicy = IModel.ExpandPolicy.None;
+    Layout.prototype.renderClass = IModel.Type.Barline;
     Layout.prototype.boundingBoxes$ = [];
     Object.freeze(Layout.prototype.boundingBoxes$);
 };
@@ -257,18 +256,18 @@ module BarlineModel {
  * Registers Barline in the factory structure passed in.
  */
 function Export(constructors: { [key: number]: any }) {
-    constructors[Engine.IModel.Type.Barline] = BarlineModel;
+    constructors[IModel.Type.Barline] = BarlineModel;
 }
 
 module Export {
-    export interface IBarlineModel extends Engine.IModel, MusicXML.Barline {
+    export interface IBarlineModel extends IModel, MusicXML.Barline {
         defaultX: number;
         defaultY: number;
         satieAttributes: Attributes.ILayout;
         satieAttribsOffset: number;
     }
 
-    export interface ILayout extends Engine.IModel.ILayout {
+    export interface ILayout extends IModel.ILayout {
         model: IBarlineModel;
         height: number;
         yOffset: number;
@@ -280,4 +279,4 @@ module Export {
     }
 }
 
-export = Export;
+export default Export;

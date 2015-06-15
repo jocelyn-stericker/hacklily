@@ -19,17 +19,16 @@
 "use strict";
 
 import MusicXML = require("musicxml-interfaces");
-import React = require("react");
-var $ = React.createFactory;
+import {createFactory as $, Component, DOM, ReactElement, PropTypes} from "react";
 
-import Glyph = require("../primitives/glyph");
+import Glyph from "../primitives/glyph";
 
 type MXMLArticulation = MusicXML.PrintStyle | MusicXML.Placement;
 
-class Articulation extends React.Component<{articulation: MusicXML.Articulations}, void> {
+class Articulation extends Component<{articulation: MusicXML.Articulations}, void> {
     render() {
         const model = this.props.articulation;
-        let children: React.ReactElement<any>[] = [];
+        let children: ReactElement<any>[] = [];
         // Articulations not in MusicXML:
         // "articAccentStaccatoAbove": "U+E4B0",
         // "articAccentStaccatoBelow": "U+E4B1",
@@ -67,9 +66,9 @@ class Articulation extends React.Component<{articulation: MusicXML.Articulations
                 }
             }());
             children.push($(Glyph)({
-                key: name,
-                glyphName: `${name}${direction}`,
                 fill: "black",
+                glyphName: `${name}${direction}`,
+                key: name,
                 x: this.context.originX + printStyle.defaultX + (printStyle.relativeX||0),
                 y: this.context.originY - printStyle.defaultY - (printStyle.relativeY||0)
             }));
@@ -127,7 +126,7 @@ class Articulation extends React.Component<{articulation: MusicXML.Articulations
             case 1:
                 return children[0];
             default:
-                return React.DOM.g(null,
+                return DOM.g(null,
                     children
                 );
         }
@@ -135,10 +134,10 @@ class Articulation extends React.Component<{articulation: MusicXML.Articulations
 }
 
 module Articulation {
-    export var contextTypes = <any> {
-        originX: React.PropTypes.number.isRequired,
-        originY: React.PropTypes.number.isRequired
+    export let contextTypes = <any> {
+        originX: PropTypes.number.isRequired,
+        originY: PropTypes.number.isRequired
     };
 }
 
-export = Articulation;
+export default Articulation;

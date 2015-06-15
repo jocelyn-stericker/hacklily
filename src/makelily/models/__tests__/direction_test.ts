@@ -24,18 +24,18 @@
 
 import chai = require("chai");
 
-import Direction = require("../direction");
-import Engine = require("../engine");
-import Factory = require("../factory");
+import Direction from "../direction";
+import {IModel} from "../../engine";
+import Factory from "../factory";
 
-var expect = chai.expect;
+let expect = chai.expect;
 
 describe("[direction.ts]", function() {
     describe("DirectionModel", function() {
-        var factory = new Factory([Direction]);
-        var direction: Engine.IModel;
+        let factory = new Factory([Direction]);
+        let direction: IModel;
         it("can be created", function() {
-            direction = factory.create(Engine.IModel.Type.Direction);
+            direction = factory.create(IModel.Type.Direction);
             expect(!!direction).to.be.true;
         });
     });

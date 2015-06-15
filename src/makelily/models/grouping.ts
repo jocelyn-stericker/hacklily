@@ -19,8 +19,8 @@
 import MusicXML = require("musicxml-interfaces");
 import _ = require("lodash");
 
-import Engine = require("./engine");
-import Util = require("./engine/util");
+import {ICursor, IModel, ISegment} from "../engine";
+import {cloneObject} from "../engine/util";
 
 class GroupingModel implements Export.IGroupingModel {
 
@@ -33,17 +33,17 @@ class GroupingModel implements Export.IGroupingModel {
     staffIdx: number;
 
     /** @prototype */
-    frozenness: Engine.IModel.FrozenLevel;
+    frozenness: IModel.FrozenLevel;
 
-    modelDidLoad$(segment$: Engine.Measure.ISegment): void {
+    modelDidLoad$(segment$: ISegment): void {
         // todo
     }
 
-    validate$(cursor$: Engine.ICursor): void {
+    validate$(cursor$: ICursor): void {
         // todo
     }
 
-    layout(cursor$: Engine.ICursor): Export.ILayout {
+    layout(cursor$: ICursor): Export.ILayout {
         // todo
 
         return new GroupingModel.Layout(this, cursor$);
@@ -74,11 +74,11 @@ class GroupingModel implements Export.IGroupingModel {
 }
 
 GroupingModel.prototype.divCount = 0;
-GroupingModel.prototype.frozenness = Engine.IModel.FrozenLevel.Warm;
+GroupingModel.prototype.frozenness = IModel.FrozenLevel.Warm;
 
 module GroupingModel {
     export class Layout implements Export.ILayout {
-        constructor(model: GroupingModel, cursor$: Engine.ICursor) {
+        constructor(model: GroupingModel, cursor$: ICursor) {
             this.model = model;
             this.x$ = cursor$.x$;
             this.division = cursor$.division$;
@@ -94,31 +94,31 @@ module GroupingModel {
 
         // Prototype:
 
-        mergePolicy: Engine.IModel.HMergePolicy;
-        boundingBoxes$: Engine.IModel.IBoundingRect[];
-        renderClass: Engine.IModel.Type;
-        expandPolicy: Engine.IModel.ExpandPolicy;
+        mergePolicy: IModel.HMergePolicy;
+        boundingBoxes$: IModel.IBoundingRect[];
+        renderClass: IModel.Type;
+        expandPolicy: IModel.ExpandPolicy;
     }
 
-    Layout.prototype.mergePolicy = Engine.IModel.HMergePolicy.Min;
-    Layout.prototype.expandPolicy = Engine.IModel.ExpandPolicy.None;
-    Layout.prototype.renderClass = Engine.IModel.Type.Grouping;
+    Layout.prototype.mergePolicy = IModel.HMergePolicy.Min;
+    Layout.prototype.expandPolicy = IModel.ExpandPolicy.None;
+    Layout.prototype.renderClass = IModel.Type.Grouping;
     Layout.prototype.boundingBoxes$ = [];
     Object.freeze(Layout.prototype.boundingBoxes$);
 };
 
 function deepAssign<T>(a: T, b: T):T {
     if (a instanceof Array || b instanceof Array) {
-        var retArr: any[] = [];
-        var aArr: any[] = (<any>a);
-        var bArr: any[] = (<any>b);
-        for (var i = 0; i < Math.max(a ? aArr.length : 0, b ? bArr.length : 0); ++i) {
+        let retArr: any[] = [];
+        let aArr: any[] = (<any>a);
+        let bArr: any[] = (<any>b);
+        for (let i = 0; i < Math.max(a ? aArr.length : 0, b ? bArr.length : 0); ++i) {
             retArr.push(deepAssign(a ? aArr[i] : null, b ? bArr[i] : null));
         }
         return (<any>retArr);
     } else if (a instanceof Object || b instanceof Object) {
-        var ret: T = a ? Util.cloneObject(a) : (<T>{});
-        for (var key in b) {
+        let ret: T = a ? cloneObject(a) : (<T>{});
+        for (let key in b) {
             if (b.hasOwnProperty(key)) {
                 (<any>ret)[key] = deepAssign((<any>ret)[key], (<any>b)[key]);
             }
@@ -133,15 +133,15 @@ function deepAssign<T>(a: T, b: T):T {
  * Registers Grouping in the factory structure passed in.
  */
 function Export(constructors: { [key: number]: any }) {
-    constructors[Engine.IModel.Type.Grouping] = GroupingModel;
+    constructors[IModel.Type.Grouping] = GroupingModel;
 }
 
 module Export {
-    export interface IGroupingModel extends Engine.IModel, MusicXML.Grouping {
+    export interface IGroupingModel extends IModel, MusicXML.Grouping {
     }
 
-    export interface ILayout extends Engine.IModel.ILayout {
+    export interface ILayout extends IModel.ILayout {
     }
 }
 
-export = Export;
+export default Export;

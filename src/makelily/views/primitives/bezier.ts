@@ -18,7 +18,8 @@
 
 "use strict";
 
-import React = require("react");
+import * as React from "react"; // TS 1.5 workaround
+import {DOM} from "react";
 
 /**
  * Responsible for the rendering a bezier curve, such as a
@@ -26,7 +27,7 @@ import React = require("react");
  */
 class Bezier extends React.Component<Bezier.IProps, void> {
     render() {
-        return React.DOM.path({
+        return DOM.path({
             d: <any>
                ("M" +
                     this.props.x1 + "," + this.props.y1 +
@@ -39,8 +40,9 @@ class Bezier extends React.Component<Bezier.IProps, void> {
                     this.props.x6 + "," + this.props.y6 + " " +
                     this.props.x1 + "," + this.props.y1),
             fill: this.props.fill,
-            strokeWidth: this.props.strokeWidth,
-            stroke: this.props.stroke});
+            stroke: this.props.stroke,
+            strokeWidth: this.props.strokeWidth
+        });
     }
 }
 
@@ -54,4 +56,4 @@ module Bezier {
     }
 }
 
-export = Bezier;
+export default Bezier;

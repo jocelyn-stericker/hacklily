@@ -16,15 +16,13 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import _ = require("lodash");
 import fs = require("fs");
 import yargs = require("yargs");
 
-import Models = require("./models");
-import Views = require("./views");
+import {importXML, exportXML, getSVGPreview} from "./index";
 
 function readStdin(onEnd: (s: string) => void) {
-    var content = "";
+    let content = "";
     process.stdin.resume();
     process.stdin.on("data", function(buf: Buffer) {
         content += buf.toString();
@@ -53,7 +51,7 @@ function cannotRead(err: any) {
 }
 
 (function main() {
-    var args = yargs
+    let args = yargs
         .wrap(100)
         .usage("Usage: $0 <command> [options]")
 
@@ -100,7 +98,7 @@ function cannotRead(err: any) {
         .strict();
 
     // Some of the type definitions are lacking.
-    var argv = (<any>args)
+    let argv = (<any>args)
         .command("init", "adds revision tracking and layout information to a MusicXML file")
         .command("diff", "generate a patch between two initialized MusicXML files")
         .command("patch", "applies patch from 'satie diff' to an initialized MusicXML file")
@@ -115,8 +113,8 @@ function cannotRead(err: any) {
     switch (argv._[0]) {
         case "init":
             readFile(argv.xml[0],
-                str => Models.importXML(str,
-                    (err, document) => Models.exportXML(document, (err, xml) =>
+                str => importXML(str,
+                    (err, document) => exportXML(document, (err, xml) =>
                         err ? cannotRead(err) : log(xml))),
                 cannotRead);
             break;
@@ -125,10 +123,10 @@ function cannotRead(err: any) {
         case "patch":
             throw "not implemented";
         case "render":
-            const render = _.partialRight(Views.renderDocument, 0);
             readFile(argv.xml[0],
-                (str: string) => Models.importXML(str,
-                    (err, document) => err ? cannotRead(err) : log(render(document))),
+                (str: string) => importXML(str,
+                    (err, document) => err ? cannotRead(err) : getSVGPreview(document,
+                        (err, svg) => err ? cannotRead(err) : log(svg))),
                 cannotRead);
             break;
     }

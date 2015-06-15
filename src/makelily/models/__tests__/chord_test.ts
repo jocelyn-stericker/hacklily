@@ -25,10 +25,10 @@
 import MusicXML = require("musicxml-interfaces");
 import chai = require("chai");
 
-import Attributes = require("../attributes");
-import Chord = require("../chord");
-import Engine = require("../engine");
-import Factory = require("../factory");
+import Attributes from "../attributes";
+import Chord from "../chord";
+import {IModel, IChord, ICursor} from "../../engine";
+import Factory from "../factory";
 
 let expect = chai.expect;
 
@@ -50,7 +50,7 @@ function getAttributes(): {[part: string]: MusicXML.Attributes} {
     };
 }
 
-function getCursor(factory: Engine.IModel.IFactory, model: Engine.IModel): Engine.ICursor {
+function getCursor(factory: IModel.IFactory, model: IModel): ICursor {
     let attributes = getAttributes();
     let segment = <any> [model];
     segment.part = "P1";
@@ -104,9 +104,9 @@ function getCursor(factory: Engine.IModel.IFactory, model: Engine.IModel): Engin
 describe("[chord.ts]", function() {
     describe("ChordModel", function() {
         let factory = new Factory([Attributes, Chord]);
-        let chord: Engine.IModel;
+        let chord: IModel;
         it("can be created from scratch", function() {
-            chord = factory.create(Engine.IModel.Type.Chord);
+            chord = factory.create(IModel.Type.Chord);
             expect(!!chord).to.be.true;
             expect((<any>chord).length).to.eq(0);
         });
@@ -157,7 +157,7 @@ describe("[chord.ts]", function() {
                     alter: 1
                 }
             });
-            Engine.IChord.fromModel(chord).push(<MusicXML.Note> {
+            IChord.fromModel(chord).push(<MusicXML.Note> {
                 _class: "Note",
                 timeModification: {
                     actualNotes: 3,
@@ -175,7 +175,7 @@ describe("[chord.ts]", function() {
             chord.validate$(cursor$);
             cursor$ = getCursor(factory, chord);
             chord.layout(cursor$);
-            let chordDuration = Engine.IChord.fromModel(chord)[0].duration;
+            let chordDuration = IChord.fromModel(chord)[0].duration;
             expect(chordDuration).to.eq(2, "Duration wasn't specified so should be set here.");
         });
     });
