@@ -12,20 +12,17 @@ lint:
 
 build: clean lint
 	./node_modules/.bin/webpack -p
-	cp -rf ./static/* ./dist/satie/
+	cp -RLf ./static/* ./dist/satie/
 	cd ./dist/satie; \
 	touch ./.nojekyll; \
-	sed -i '' 's,"/,"https://ripieno.github.io/satie/,g' ./index.html; \
+	sed -i.bak 's,"/,"https://ripieno.github.io/satie/,g' ./index.html; \
+	rm *.bak; \
 	mkdir tests; \
 	ln -s ../index.html tests/; \
 	mkdir _term; \
 	ln -s ../index.html _term/; \
 	cd tests; \
-	node --harmony -e ' \
-	    Array.prototype.forEach.call("0123456789", a => \
-	    Array.prototype.forEach.call("0123456789 ", b => \
-	    Array.prototype.forEach.call(b === " " ? " " : " qwertyuiopasdfghjklzxcvbnm", c => \
-	    console.log("ln -s ../_term " + a + b + c + ";"))))' | bash --
+	node --harmony -e 'Array.prototype.forEach.call("0123456789", a => Array.prototype.forEach.call("0123456789 ", b => Array.prototype.forEach.call(b === " " ? " " : " qwertyuiopasdfghjklzxcvbnm", c => console.log("ln -s ../_term " + a + b + c + ";"))))' | bash --
 
 deploy:
 	cd ../; make build
