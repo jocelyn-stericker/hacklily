@@ -178,10 +178,7 @@ class ScoreHeader implements MusicXML.ScoreHeader {
     movementTitle: string = "";
     movementNumber: string = "";
 
-    partList: MusicXML.PartList = {
-        scoreParts: [],
-        partGroups: []
-    };
+    partList: MusicXML.PartList = [];
 
     /*---- Extensions ---------------------------------------------------------------------------*/
 

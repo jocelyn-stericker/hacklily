@@ -21,7 +21,7 @@ import invariant = require("react/lib/invariant");
 
 import {
     ILayoutOptions, ILineBounds, ILinesLayoutState, ILineLayoutResult,
-    ISegment, IMeasureLayout, Context } from "../../engine";
+    IPart, ISegment, IMeasureLayout, Context } from "../../engine";
 
 import {layoutMeasure} from "./measure";
 
@@ -50,7 +50,7 @@ export function layoutLine$(options: ILayoutOptions, bounds: ILineBounds,
     let layouts = _layoutDirtyMeasures(options, line, clean$);
     attributes = clean$[measures[measures.length - 1].uuid].attributes; // FIXME: Hack
 
-    let partOrder: string[] = _.pluck(options.header.partList.scoreParts, "id");
+    let partOrder: string[] = _.pluck(IPart.scoreParts(options.header.partList), "id");
     let staffIdx = 0;
 
     let topsInOrder = _.map(partOrder, partID => {

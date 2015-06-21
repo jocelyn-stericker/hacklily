@@ -20,7 +20,7 @@ import {createFactory as $, Component, DOM, PropTypes} from "react";
 import _ = require("lodash");
 
 import DebugBox from "./debugBox";
-import {IModel, IMeasureLayout} from "../engine";
+import {IModel, IMeasureLayout, MAX_SAFE_INTEGER} from "../engine";
 import ModelView from "./modelView";
 
 class MeasureView extends Component<{layout: IMeasureLayout}, void> {
@@ -46,11 +46,21 @@ class MeasureView extends Component<{layout: IMeasureLayout}, void> {
     getChildContext() {
         const layout = this.props.layout;
         const originYByPartAndStaff = _.mapValues(layout.originY, this.extractOrigins, this);
-        let top = _.min(layout.originY, tops => tops[1])[1];
-        let bottoms = _.max(layout.originY, tops => tops[tops.length - 1]);
-        let bottom = bottoms[bottoms.length - 1];
+        let bottom = MAX_SAFE_INTEGER;
+        let top = 0;
+        _.forEach(layout.originY, origins => {
+            _.forEach(origins, (origin, staff) => {
+                if (!staff) {
+                    return;
+                }
+                bottom = Math.min(origin, bottom);
+                top = Math.max(origin, top);
+            });
+        });
+
         // TODO 1: Fix stave height
         // TODO 2: Do not ignore top/bottom staff in staffGroup of attributes
+        // TODO 3: A part can be in many groups.
         return {
             originX: layout.originX,
             originYByPartAndStaff: originYByPartAndStaff,

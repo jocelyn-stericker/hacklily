@@ -27,7 +27,7 @@ import _ = require("lodash");
 import invariant = require("react/lib/invariant");
 
 import {
-    IMeasurePart, IMutableMeasure, ISegment, IMeasureLayout, OwnerType,
+    IMeasurePart, IMutableMeasure, IPart, ISegment, IMeasureLayout, OwnerType,
     MAX_SAFE_INTEGER, key$, ICursor, IModel, Context
 } from "../../engine";
 
@@ -383,7 +383,7 @@ export function reduceMeasure(spec: ILayoutOpts): IMeasureLayout {
     // Create a layout that satisfies the constraints in every single voice.
     // IModel.merge$ requires two passes to fully merge the layouts. We do the second pass
     // once we filter unneeded staff segments.
-    let gAllLayouts$ = gVoiceLayouts$.concat(gStaffLayoutsCombined);
+    let gAllLayouts$ = gStaffLayoutsCombined.concat(gVoiceLayouts$);
 
     // We have a staff layout for every single voice-staff combination.
     // They will be merged, so it doesn't matter which one we pick.
@@ -410,7 +410,7 @@ export function reduceMeasure(spec: ILayoutOpts): IMeasureLayout {
 
     return {
         attributes: gSomeLastAttribs,
-        elements: gVoiceLayouts$.concat(gStaffLayoutsUnique$),
+        elements: gStaffLayoutsUnique$.concat(gVoiceLayouts$),
         width: gMaxXInMeasure + gPadding - gMeasure.x,
         maxDivisions: gMaxDivisions,
         originX: gMeasure.x,
@@ -445,7 +445,7 @@ export interface ILayoutOpts {
 export function layoutMeasure(opts: IMeasureLayoutOptions): IMeasureLayout {
     let measureCtx = Context.IMeasure.detach(opts.measure, opts.x);
 
-    let parts = _.map(opts.header.partList.scoreParts, part => part.id);
+    let parts = _.map(IPart.scoreParts(opts.header.partList), part => part.id);
     let voices = <ISegment[]> _.flatten(_.map(parts,
                 partId => opts.measure.parts[partId].voices));
     let staves = <ISegment[]> _.flatten(_.map(parts,

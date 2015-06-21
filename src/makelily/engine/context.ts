@@ -244,8 +244,7 @@ function reduceToShortestInSegments(shortest: number, segment: ISegment) {
 
 function reduceToShortestInSegment(shortest: number, model: IModel) {
     if (!(model.divCount >= 0)) {
-        console.log("Debug:", model);
-        invariant(model.divCount >= 0, "Counts must exceed 0.");
+        invariant(model.divCount >= 0, "Counts must exceed 0 in", model);
     }
     let divCount = model && model.divCount ? model.divCount : Number.MAX_VALUE;
     return Math.min(shortest, divCount);

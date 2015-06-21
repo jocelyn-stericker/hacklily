@@ -21,7 +21,7 @@ import _ = require("lodash");
 import invariant = require("react/lib/invariant");
 
 import Attributes from "./attributes";
-import {getCurrentMeasureList, IAttributes, ICursor, IModel, ISegment} from "../engine";
+import {getCurrentMeasureList, IAttributes, ICursor, IModel, IPart, ISegment} from "../engine";
 import {bravura} from "./smufl";
 
 class BarlineModel implements Export.IBarlineModel {
@@ -111,6 +111,7 @@ module BarlineModel {
                 return;
             }
 
+            this.partGroups = IPart.groupsForPart(cursor$.header.partList, cursor$.segment.part);
             this.partSymbol = cursor$.staff.attributes[cursor$.segment.part].partSymbol;
 
             this.model = Object.create(origModel, {
@@ -242,6 +243,7 @@ module BarlineModel {
         lineStarts: number[];
         lineWidths: number[];
 
+        partGroups: MusicXML.PartGroup[];
         partSymbol: MusicXML.PartSymbol;
     }
 
@@ -276,6 +278,7 @@ module Export {
         lineWidths: number[];
 
         partSymbol: MusicXML.PartSymbol;
+        partGroups: MusicXML.PartGroup[];
     }
 }
 

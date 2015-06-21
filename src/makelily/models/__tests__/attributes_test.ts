@@ -87,7 +87,14 @@ export function makeCursor(factory: Factory, models: IModel[]): ICursor {
             lines: 1
         },
         print$: null,
-        header: null,
+        header: <any> {
+            partList: [
+                {
+                    _class: "ScorePart",
+                    id: "P1"
+                }
+            ],
+        },
 
         prev$: null,
         division$: 0,

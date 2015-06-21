@@ -23,9 +23,8 @@ import _ = require("lodash");
 import invariant = require("react/lib/invariant");
 
 import Credit from "./credit";
-import {ILineLayoutResult, IMeasureLayout, IPrint, RenderTarget, RenderUtil, key$} from "../engine";
+import {ILineLayoutResult, RenderTarget, RenderUtil, key$} from "../engine";
 import MeasureView from "./measureView";
-import StaveLines from "./staveLines";
 
 class Page extends React.Component<Page.IProps, Page.IState> {
     render() {
@@ -53,41 +52,10 @@ class Page extends React.Component<Page.IProps, Page.IState> {
 
         const lineLayouts = this.props.lineLayouts;
 
-        const pageMarginsAll = print.pageLayout.pageMargins;
-        const pageMargins = IPrint.getPageMargins(pageMarginsAll, pageNum);
-        let systemMargins = print.systemLayout.systemMargins;
-
-        let origins = _.map(lineLayouts, extractOriginsFromLayouts);
-        let staveTops: number[][] = <any> _.flatten(_.map(origins, tops => _.values(tops)));
-
-        // TODO: Move to Engine & IModel, generalize
-        let staveLefts = _.flatten(_.map(lineLayouts, (measureLayouts, idx) => {
-            let partCount = _.flatten(_.values(origins[idx])).length - _.keys(origins[idx]).length;
-            return _.times(partCount, () => systemMargins.leftMargin + pageMargins.leftMargin);
-        }));
-
-        let staveWidths = _.flatten(_.map(lineLayouts, (layout, idx) => {
-            let partCount = _.flatten(_.values(origins[idx])).length - _.keys(origins[idx]).length;
-            let width = _.reduce(layout, (width, measure) => width + measure.width, 0);
-            return _.times(partCount, () => width);
-        }));
-
-        let staveLineProps = _.map(_.zip(staveTops, staveLefts, staveWidths), (d, i) =>
-            _.map(d[0/* top */], (top: number, j: number) => {
-                return {
-                    key: `stave_${i}_${j}`,
-
-                    lines: 5,
-                    width: d[2 /* width */],
-                    x: d[1 /* left */],
-                    y: top
-                };
-            }).slice(1)
-        );
         /*--- Credits ---------------------------------------------*/
 
         // Make sure our credits are keyed.
-        _.forEach(credits, credit => key$(credit));
+        _.forEach(credits, key$);
 
         /*--- Render ----------------------------------------------*/
 
@@ -107,7 +75,6 @@ class Page extends React.Component<Page.IProps, Page.IState> {
                 width: widthMM
             },
             _.map(credits, <any> $(Credit)),
-            _.map(staveLineProps, staveLineProps => _.map(staveLineProps, <any> $(StaveLines))),
             _.map(lineLayouts, (lineLayout, lineIdx) =>
                 _.map(lineLayout, measureLayout =>
                     $(MeasureView)({
@@ -130,15 +97,6 @@ class Page extends React.Component<Page.IProps, Page.IState> {
             scale40: scale40
         };
     }
-}
-
-function extractOriginsFromLayouts(measureLayouts: IMeasureLayout[]):
-        {[key: string]: number[]} {
-
-    if (!measureLayouts[0]) {
-        return {};
-    }
-    return measureLayouts[0].originY;
 }
 
 module Page {

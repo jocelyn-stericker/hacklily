@@ -31,6 +31,7 @@ export {default as IBeam} from "./engine/ibeam";
 export {default as IChord} from "./engine/ichord";
 export {default as ICursor} from "./engine/icursor";
 export {default as IModel} from "./engine/imodel";
+export {default as IPart} from "./engine/ipart";
 export {default as IPrint} from "./engine/iprint";
 
 export {default as RenderUtil} from "./engine/renderUtil";

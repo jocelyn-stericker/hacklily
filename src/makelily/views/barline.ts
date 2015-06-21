@@ -48,7 +48,8 @@ class BarlineView extends Component<{layout: Barline.ILayout}, {}> {
 
         let yTop: number;
         let yBottom: number;
-        if (layout.partSymbol && layout.partSymbol.type !== MusicXML.PartSymbolType.None) {
+        if (layout.partSymbol && layout.partSymbol.type !== MusicXML.PartSymbolType.None ||
+                layout.partGroups && _.any(layout.partGroups, group => group.groupBarline)) {
             yTop = this.context.systemTop;
             yBottom = this.context.systemBottom;
         } else {

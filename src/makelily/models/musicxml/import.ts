@@ -26,7 +26,7 @@ import MusicXML = require("musicxml-interfaces");
 import _ = require("lodash");
 import invariant = require("react/lib/invariant");
 
-import {IChord, IDocument, ILayoutOptions, IModel, IMeasurePart,
+import {IChord, IDocument, ILayoutOptions, IModel, IMeasurePart, IPart,
     IMutableMeasure, MAX_SAFE_INTEGER, OwnerType, validate} from "../../engine";
 import {calcDivisionsNoCtx} from "../chord/metre";
 import ScoreHeader from "../scoreHeader";
@@ -117,7 +117,7 @@ export function _extractMXMLPartsAndMeasures(input: MusicXML.ScoreTimewise,
             factory: IModel.IFactory):
         {measures?: IMutableMeasure[]; parts?: string[]; error?: string} {
 
-    let parts: string[] = _.map(input.partList.scoreParts, inPart => inPart.id);
+    let parts: string[] = _.map(IPart.scoreParts(input.partList), inPart => inPart.id);
     let createModel = factory.create.bind(factory);
 
     // TODO/STOPSHIP - sync division count in each measure

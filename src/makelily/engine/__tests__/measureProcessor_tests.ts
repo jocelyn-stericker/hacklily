@@ -72,23 +72,23 @@ describe("[engine/measureProcessor.ts]", function() {
             };
             let layout = reduceMeasure(opts).elements;
             expect(layout[0].length).to.equal(2);
-            expect(layout[0][0].x$).to.equal(110, "without merging"); // + 10 for staff
-            expect(layout[0][1].x$).to.equal(130, "without merging"); // ...
-
-            expect(layout[1].length).to.equal(2);
-            expect(layout[1][0].x$).to.equal(110, "without merging"); // ...
-            expect(layout[1][1].x$).to.equal(120, "without merging"); // ...
+            expect(layout[0][0].x$).to.equal(100, "without merging");
+            // Occurs after division 1 or 2, so add the end of the measure
+            expect(layout[0][1].x$).to.equal(190, "without merging");
 
             expect(layout[2].length).to.equal(2);
-            expect(layout[2][0].x$).to.equal(100, "without merging");
-            // Occurs after division 1 or 2, so add the end of the measure
-            expect(layout[2][1].x$).to.equal(190, "without merging");
+            expect(layout[2][0].x$).to.equal(110, "without merging"); // + 10 for staff
+            expect(layout[2][1].x$).to.equal(120, "without merging");
+
+            expect(layout[1].length).to.equal(2);
+            expect(layout[1][0].x$).to.equal(110, "without merging");
+            expect(layout[1][1].x$).to.equal(130, "without merging");
 
             // Now test 
             opts._noAlign = false;
             layout = reduceMeasure(opts).elements;
-            layout[0].map(l => delete (<any>l).key);
-            expect(layout[0]).to.deep.equal(
+            layout[1].map(l => delete (<any>l).key);
+            expect(layout[1]).to.deep.equal(
                 [
                     {
                         division: 0,
@@ -151,11 +151,12 @@ describe("[engine/measureProcessor.ts]", function() {
 
             let layout = layoutMeasure({
                 header: <any> {
-                    partList: {
-                        scoreParts: [{
+                    partList: [
+                        {
+                            _class: "ScorePart",
                             id: "P1"
-                        }]
-                    }
+                        }
+                    ]
                 },
                 attributes: {},
                 maxX: 1000,
@@ -211,11 +212,12 @@ describe("[engine/measureProcessor.ts]", function() {
                 maxX: 1000,
                 minX: 100,
                 header: <any> {
-                    partList: {
-                        scoreParts: [{
+                    partList: [
+                        {
+                            _class: "ScorePart",
                             id: "P1"
-                        }]
-                    }
+                        }
+                    ]
                 },
                 measure: {
                     idx: 0,

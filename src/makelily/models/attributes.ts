@@ -20,7 +20,7 @@ import MusicXML = require("musicxml-interfaces");
 import _ = require("lodash");
 import invariant = require("react/lib/invariant");
 
-import {IAttributes, IChord, ICursor, IModel, ISegment} from "../engine";
+import {IAttributes, IChord, ICursor, IModel, IPart, ISegment} from "../engine";
 
 interface IClef extends MusicXML.Clef {
     __inherited__?: boolean;
@@ -66,6 +66,7 @@ class AttributesModel implements Export.IAttributesModel {
         this._validateTime$();
         this._validateKey$();
         this._validateStaves$(cursor$);
+        this._validateStaffDetails$();
 
         this._setTotalDivisions(cursor$);
         this._updateMultiRest(cursor$);
@@ -365,6 +366,37 @@ class AttributesModel implements Export.IAttributesModel {
         }
     }
 
+    private _validateStaffDetails$() {
+        // Fix the staff details sorting
+        let newStaffDetails: MusicXML.StaffDetails[] = [];
+        let previousStaffDetails = this._parent && this._parent.staffDetails || [];
+        _.forEach(this._staffDetails, (staff, idx) => {
+            if (!staff) {
+                return;
+            }
+            staff.number = staff.number || 1;
+            newStaffDetails[staff.number] = staff;
+        });
+        // Staff details are required. Staff lines are required
+        _.times(this.staves, staffIndexMinusOne => {
+            let staffIndex = staffIndexMinusOne + 1;
+            if (!newStaffDetails[staffIndex]) {
+                if (previousStaffDetails[staffIndex]) {
+                    // TODO: __inherit__ from parent?
+                    newStaffDetails[staffIndex] = Object.create(previousStaffDetails[staffIndex]);
+                } else {
+                    newStaffDetails[staffIndex] = {
+                        number: staffIndex
+                    };
+                }
+            }
+            if (!newStaffDetails[staffIndex].staffLines) {
+                newStaffDetails[staffIndex].staffLines = 5;
+            }
+        });
+        this._staffDetails = newStaffDetails;
+    }
+
     private _validateStaves$(cursor$: ICursor) {
         this.staves = this.staves || 1;
         let currentPartId = cursor$.segment.part;
@@ -380,6 +412,17 @@ class AttributesModel implements Export.IAttributesModel {
                 bottomStaff: 1,
                 topStaff: this.staves,
                 type: MusicXML.PartSymbolType.Brace,
+            };
+        }
+
+        // HACK: Convert part group symbols to part symbols.
+        // Obviously, this won't fly when we have multiple part groups
+        let groups = IPart.groupsForPart(cursor$.header.partList, cursor$.segment.part);
+        if (groups.length && !this.partSymbol) {
+            this.partSymbol = {
+                bottomStaff: 1,
+                topStaff: 1,
+                type: MusicXML.PartSymbolType.Bracket,
             };
         }
     }
