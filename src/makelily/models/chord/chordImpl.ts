@@ -392,10 +392,10 @@ class ChordModelImpl implements ChordModel.IChordModel {
         }
 
         // All stems should in the main voice should touch the center line.
-        if (start > 60 && direction === -1 && start - result > 60) {
-            result = start - 60;
-        } else if (start < 60 && direction === 1 && start + result < 60) {
-            result = 60 - start;
+        if (start > 30 && direction === -1 && start - result > 30) {
+            result = start - 30;
+        } else if (start < 30 && direction === 1 && start + result < 30) {
+            result = 30 - start;
         }
 
         // Grace note stems are short (though still proportionally pretty tall)
