@@ -24,10 +24,12 @@ import _ = require("lodash");
 import DirectionModel from "../models/direction";
 import Dynamics from "./directions/dynamics";
 import Words from "./directions/words";
+import Glyph from "./primitives/glyph";
 
 class Direction extends Component<{layout: DirectionModel.ILayout}, void> {
     render(): any {
         const model = this.props.layout.model;
+        let childContext = this.getChildContext();
         let children = _.map(model.directionTypes, (type, idx) => {
             switch(true) {
                 case !!type.accordionRegistration:
@@ -72,7 +74,14 @@ class Direction extends Component<{layout: DirectionModel.ILayout}, void> {
                 case !!type.scordatura:
                     return null;
                 case !!type.segnos:
-                    return null;
+                    return DOM.g(null,
+                        _.map(type.segnos, (segno, segnoIdx) => $(Glyph)({
+                            glyphName: "segno",
+                            key: segnoIdx,
+                            x: childContext.originX + segno.defaultX + (segno.relativeX||0),
+                            y: this.context.originY - segno.defaultY - (segno.relativeY||0),
+                            fill: segno.color
+                        })));
                 case !!type.stringMute:
                     return null;
                 case !!type.wedge:
