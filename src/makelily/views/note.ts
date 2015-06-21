@@ -47,7 +47,7 @@ class Note extends React.Component<{spec: MusicXML.Note, satieNotehead: string},
                     color: spec.color,
                     defaultX: 0,
                     defaultY: 0,
-                    type: MusicXML.NoteheadType.Normal // FIXME
+                    type: spec.notehead ? spec.notehead.type : MusicXML.NoteheadType.Normal
                 }
             }),
             spec.dots && spec.printDot !== false ? _.map(spec.dots, (dot, idx) => $(Dot)({
