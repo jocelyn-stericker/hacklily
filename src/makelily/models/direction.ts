@@ -21,6 +21,7 @@ import _ = require("lodash");
 
 import {ICursor, IModel, ISegment, RenderUtil} from "./../engine";
 import {getTextBB} from "./fontManager";
+import {bboxes as glyphBoxes} from "./smufl";
 
 class DirectionModel implements Export.IDirectionModel {
 
@@ -40,7 +41,11 @@ class DirectionModel implements Export.IDirectionModel {
     }
 
     validate$(cursor$: ICursor): void {
-        // todo
+        _.forEach(this.directionTypes, type => {
+            if (type.dynamics && this.placement === MusicXML.AboveBelow.Unspecified) {
+                this.placement = MusicXML.AboveBelow.Below;
+            }
+        });
     }
 
     layout(cursor$: ICursor): Export.ILayout {
@@ -104,10 +109,10 @@ module DirectionModel {
                     break;
                 case MusicXML.AboveBelow.Above:
                 case MusicXML.AboveBelow.Unspecified:
-                    defaultY = 80;
+                    defaultY = 60;
                     break;
                 default:
-                    defaultY = 80;
+                    defaultY = 60;
                     break;
             }
 
@@ -154,6 +159,19 @@ module DirectionModel {
                     boundingBox.bottom = 30; // TODO
                     this.boundingBoxes$.push(boundingBox);
                 }
+                _.forEach(type.segnos, (origSegno, idx) => {
+                    let segno: MusicXML.Segno = Object.create(origSegno);
+                    type.segnos[idx] = segno;
+                    segno.defaultX = segno.defaultX || -30;
+                    segno.defaultY = (segno.defaultY || defaultY);
+                    segno.color = segno.color || "black";
+                    let boundingBox: IModel.IBoundingRect = <any> segno;
+                    boundingBox.right = glyphBoxes["segno"][0]*10 + 10;
+                    boundingBox.top = -glyphBoxes["segno"][1]*10 - 10;
+                    boundingBox.left = glyphBoxes["segno"][2]*10 - 10;
+                    boundingBox.bottom = -glyphBoxes["segno"][3]*10 + 10;
+                    this.boundingBoxes$.push(boundingBox);
+                });
             });
         }
 
