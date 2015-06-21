@@ -379,7 +379,7 @@ class ChordModelImpl implements ChordModel.IChordModel {
         let idealStemHeight = IDEAL_STEM_HEIGHT + heightFromOtherNotes;
         let minStemHeight = MIN_STEM_HEIGHT + heightFromOtherNotes;
 
-        let start = IChord.heightDeterminingLine(this, direction, clef)*10 + 30;
+        let start = IChord.heightDeterminingLine(this, direction, clef)*10;
         let idealExtreme = start + direction*idealStemHeight;
 
         let result: number;
