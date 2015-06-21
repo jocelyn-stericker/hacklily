@@ -82,11 +82,12 @@ describe("[lineProcessor.ts]", function() {
                     width: NaN
                 },
                 header: <any> {
-                    partList: {
-                        scoreParts: [{
+                    partList: [
+                        {
+                            _class: "ScorePart",
                             id: "P1"
-                        }]
-                    }
+                        }
+                    ]
                 },
                 prevByStaff: [],
                 x: 0,
@@ -105,11 +106,12 @@ describe("[lineProcessor.ts]", function() {
                     // TODO: if justify uses measures, this will have to be given a proper value:
                     measures: new Array(2),
                     header: <any> {
-                        partList: {
-                            scoreParts: [{
+                        partList: [
+                            {
+                                _class: "ScorePart",
                                 id: "P1"
-                            }]
-                        }
+                            }
+                        ]
                     },
                     page$: 0,
                     print$: <any> {

@@ -221,8 +221,8 @@ module Tests {
             let lilypond = "http://www.lilypond.org/doc/v2.18/input/" +
                 "regression/musicxml/collated-files.html";
             return React.jsx(`<span>
-                Satie uses the <a href=${lilypond}>unoffical MusicXML test suite</a>
-                from <a href="http://lilypond.org/">LilyPond</a>
+                Satie uses the <a href=${lilypond}>unoffical MusicXML test suite</a>{" "}
+                from <a href="http://lilypond.org/">LilyPond</a>{" "}
                 to test MusicXML parsing
                 as well as basic layout.
             </span>`);

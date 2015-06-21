@@ -43,12 +43,13 @@ import Spacer from "./models/spacer";
 
 import VoiceStaffStemDirection from "./preprocessors/voiceStaffStemDirection";
 
-import Beam from "./postprocessors/beam";
-import Center from "./postprocessors/center";
-import Justify from "./postprocessors/justify";
-import Pad from "./postprocessors/pad";
-import RemoveOverlaps from "./postprocessors/removeOverlaps";
-import Tieds from "./postprocessors/tieds";
+import AttributesPostprocessor from "./postprocessors/attributes";
+import BeamPostprocessor from "./postprocessors/beam";
+import CenterPostprocessor from "./postprocessors/center";
+import JustifyPostprocessor from "./postprocessors/justify";
+import PadPostprocessor from "./postprocessors/pad";
+import RemoveOverlapsPostprocessor from "./postprocessors/removeOverlaps";
+import TiedsPostprocessor from "./postprocessors/tieds";
 
 /*---- Public Interface -------------------------------------------------------------------------*/
 
@@ -195,12 +196,13 @@ function makeFactory() {
             VoiceStaffStemDirection
         ],
         [
-            Pad,
-            Justify,
-            Beam,
-            Center,
-            Tieds,
-            RemoveOverlaps
+            PadPostprocessor,
+            JustifyPostprocessor,
+            BeamPostprocessor,
+            CenterPostprocessor,
+            AttributesPostprocessor,
+            TiedsPostprocessor,
+            RemoveOverlapsPostprocessor
         ]
     );
 }

@@ -137,9 +137,9 @@ smufl:
 	@echo "; export default names;" >> ./src/models/smufl/glyphnames.ts
 	@printf "$(INFO_COLOR)» SMuFL built successfully.$(NO_COLOR)\n"; \
 
-lint: vendor/tslint/bin/tslint.js
+lint: node_modules/.bin/tslint
 	@printf "$(LINT_STRING)\n"
-	@find ./src -regex ".*[a-zA-Z0-9_][a-zA-Z0-9_]\.ts" | grep -v src/tests.ts | sed 's/\(.*\)/-f\1/g' | xargs ./vendor/tslint/bin/tslint -c ./tsconfig.json
+	@find ./src -regex ".*[a-zA-Z0-9_][a-zA-Z0-9_]\.ts" | grep -v src/tests.ts | sed 's/\(.*\)/-f\1/g' | xargs ./node_modules/.bin/tslint -c ./tsconfig.json
 
 vendor/tslint/bin/tslint.js:
 	@git submodule update --init --recursive

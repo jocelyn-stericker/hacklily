@@ -513,7 +513,7 @@ let lily43eXML = `<?xml version="1.0" encoding="UTF-8"?>
   </part>
   <!--=========================================================-->
 </score-partwise>`;
-describe("[mxml/import.ts]", function() {
+describe("[musicxml/import.ts]", function() {
     describe("_extractMXMLHeader", function() {
         it("can parse all header properties", function() {
             let mxmljson = MusicXML.parse(helloWorldXML);
@@ -586,11 +586,9 @@ describe("[mxml/import.ts]", function() {
             });
 
             expect(header.movementTitle).to.eq("Song Title");
-            expect(header.partList).to.deep.equal({
-                // Not specified
-                partGroups: [],
-
-                scoreParts: [{
+            expect(header.partList).to.deep.equal([
+                {
+                    _class: "ScorePart",
                     groups: [],
                     id: "P1",
                     identification: null,
@@ -632,8 +630,8 @@ describe("[mxml/import.ts]", function() {
                         solo: null,
                         virtualInstrument: null
                     }],
-                }]
-            });
+                }
+            ]);
 
             expect(!("parts" in header), "Check _extractHeader");
 

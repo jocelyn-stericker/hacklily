@@ -25,7 +25,7 @@
     "dependencies": {
         "fast-json-patch": "0.5.2",
         "lodash": "3.9.1",
-        "musicxml-interfaces": "ripieno/musicxml-interfaces#d30982b",
+        "musicxml-interfaces": "ripieno/musicxml-interfaces#1d0c71c9e6a",
         "opentype": "nodebox/opentype.js#0.4.7",
         "webcola": "tgdwyer/WebCola#326dc8e9e",
         "yargs": "3.9.1"
@@ -42,6 +42,7 @@
         "react": "0.13.3",
         "source-map-support": "0.3.1",
         "svg2png": "1.1.1",
+        "tslint": "2.3.0-beta",
         "typescript": "1.5.0-beta"
     },
 

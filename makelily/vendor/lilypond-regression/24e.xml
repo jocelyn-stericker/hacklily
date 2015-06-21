@@ -30,6 +30,8 @@
           <sign>G</sign>
           <line>2</line>
         </clef>
+        <!-- STOPSHIP(jnetterf): Detect number of staves in preprocessor -->
+        <staves>2</staves>
       </attributes>
       <note>
         <pitch>

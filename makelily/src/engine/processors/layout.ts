@@ -29,6 +29,7 @@ import {IMeasurePart, ISegment, IMutableMeasure} from "../measure";
 import Context from "../context";
 import IAttributes from "../iattributes";
 import IModel from "../imodel";
+import IPart from "../ipart";
 
 import {approximateLayout as calcApproximateLayout} from "./measure";
 import {layoutLine$} from "./line";
@@ -85,7 +86,7 @@ export default function layout$(options: ILayoutOptions, memo$: ILinesLayoutStat
                 voices: _.map(_.values(measure.parts), p => p.voices),
                 x: 0
             });
-            let firstPart = options.header.partList.scoreParts[0].id;
+            let firstPart = IPart.scoreParts(options.header.partList)[0].id;
             // TODO: Only skip render multiple rests if __all__ visible parts have rests
             let attributes = approximateLayout.attributes;
             if (attributes &&

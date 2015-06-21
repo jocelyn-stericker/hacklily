@@ -17,6 +17,7 @@
  */
 
 import {createFactory as $, Component, DOM} from "react";
+import invariant = require("react/lib/invariant");
 
 import Attributes from "../models/attributes";
 import BarNumber from "./barNumber";
@@ -24,11 +25,26 @@ import Clef from "./clef";
 import PartSymbol from "./partSymbol";
 import KeySignature from "./keySignature";
 import TimeSignature from "./timeSignature";
+import StaffLines from "./staffLines";
 
 class AttributesView extends Component<{layout: Attributes.ILayout}, void> {
     render(): any {
         let layout = this.props.layout;
         let children: any[] = [];
+
+        // Staff lines go first, because they are underneath other attributes
+        let staffWidth = (<any>layout).staffWidth;
+        let staffLinesOffsetX = (<any>layout).staffLinesOffsetX;
+        if (!!staffWidth) {
+            invariant(layout.staffIdx in layout.model.staffDetails, "Staff details must be defined");
+            children.push($(StaffLines)({
+                key: "staffLines",
+                width: staffWidth,
+                defaultX: -staffLinesOffsetX,
+                defaultY: 0,
+                staffDetails: layout.model.staffDetails[layout.staffIdx]
+            }));
+        }
 
         if (layout.clefVisible) {
             children.push($(Clef)({
@@ -65,6 +81,7 @@ class AttributesView extends Component<{layout: Attributes.ILayout}, void> {
                 spec: layout.model.partSymbol
             }));
         }
+
         return DOM.g(null, children);
     }
 }

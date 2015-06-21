@@ -24,7 +24,7 @@ import invariant = require("react/lib/invariant");
 
 import IModel from "../imodel";
 import Context from "../context";
-import {IMutableMeasure, ISegment, normalizeDivisions$} from "../measure";
+import {IMutableMeasure, ISegment, OwnerType, normalizeDivisions$} from "../measure";
 import {ILayoutOptions, ILinesLayoutState} from "../options";
 import {setCurrentMeasureList} from "../escapeHatch";
 
@@ -104,18 +104,24 @@ function tryValidate(options$: ILayoutOptions, memo$: ILinesLayoutState): void {
                 if (!segment) {
                     return;
                 }
+                invariant(segment.ownerType === OwnerType.Staff, "Expected staff segment");
+
                 function ensureHeader(type: IModel.Type) {
                     if (!search(segment, 0, type).length) {
-                        if (idx === 1) {
+                        if (segment.owner === 1) {
                             segment.splice(0, 0, factory.create(type));
                         } else {
                             let proxy = factory.create(IModel.Type.Proxy);
-                            let target = search(staffSegments$[1], 0, type)[0];
+                            let proxiedSegment: ISegment = _.find(staffSegments$, potentialProxied =>
+                                potentialProxied &&
+                                potentialProxied.part === segment.part &&
+                                potentialProxied.owner === 1);
+                            let target = search(proxiedSegment, 0, type)[0];
                             (<any>proxy).target = target;
                             (<any>proxy).staffIdx = idx;
                             let tidx = -1;
-                            for (let i = 0; i < staffSegments$[1].length; ++i) {
-                                if (staffSegments$[1][i] === target) {
+                            for (let i = 0; i < proxiedSegment.length; ++i) {
+                                if (proxiedSegment[i] === target) {
                                     tidx = i;
                                     break;
                                 }

@@ -18,7 +18,7 @@
 
 import _ = require("lodash");
 
-import {IChord, IMeasureLayout, ILayoutOptions, ILineBounds} from "../engine";
+import {IChord, ILayoutOptions, ILineBounds, IMeasureLayout, IPart} from "../engine";
 
 const UNDERFILLED_EXPANSION_WEIGHT = 0.1;
 
@@ -44,7 +44,7 @@ function justify(options: ILayoutOptions, bounds: ILineBounds,
     // Check for underfilled bars
     const underfilled = _.map(measures$, (measure, idx) => {
         let attr = measures$[idx].attributes;
-        let firstPart = options.header.partList.scoreParts[0].id;
+        let firstPart = IPart.scoreParts(options.header.partList)[0].id;
         let divs = IChord.barDivisions(attr[firstPart]);
         let maxDivs = measure.maxDivisions;
         return maxDivs < divs;
@@ -73,7 +73,7 @@ function justify(options: ILayoutOptions, bounds: ILineBounds,
 
     let expandableCount = _.reduce(measures$, function(memo, measure$, idx) {
         // Precondition: all layouts at a given index have the same "expandable" value.
-        return _.reduce(measure$.elements[0], function(memo, element$) {
+        return _.reduce(_.last(measure$.elements), function(memo, element$) {
             if (underfilled[idx] && element$.expandPolicy) {
                 ++underfilledCount;
             }

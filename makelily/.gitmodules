@@ -1,3 +1,0 @@
-[submodule "vendor/tslint"]
-	path = vendor/tslint
-	url = https://github.com/palantir/tslint.git

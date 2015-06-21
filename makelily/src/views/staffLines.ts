@@ -18,6 +18,7 @@
 
 "use strict";
 
+import MusicXML = require("musicxml-interfaces");
 import * as React from "react"; // TS 1.5 workaround
 import {createFactory as $, DOM, PropTypes} from "react";
 import _ = require("lodash");
@@ -26,36 +27,39 @@ import Line from "./primitives/line";
 import {bravura} from "../models/smufl";
 
 /**
- * Renders the (usually 5) lines that make up a stave.
+ * Renders the (usually 5) lines that make up a staff.
  */
 class StaveLines extends React.Component<StaveLines.IProps, {}> {
-    render() {
-        let top = this.context.originY - this.props.y;
+    render(): any {
+        let middle = this.context.originY - this.props.defaultY;
+        let staffDetails = this.props.staffDetails;
+        let offset = (staffDetails.staffLines - 1)/2;
         return DOM.g(null,
-            _.times(this.props.lines, i => $(Line)({
+            _.times(staffDetails.staffLines, i => $(Line)({
                 key: "staff-" + i,
                 stroke: "#6A6A6A",
                 // TODO: Use print
                 strokeWidth: bravura.engravingDefaults.staffLineThickness*10,
-                x1: this.props.x,
-                x2: this.props.x + this.props.width,
-                y1: top - 10*(i - 2),
-                y2: top - 10*(i - 2)
+                x1: this.props.defaultX + this.context.originX,
+                x2: this.props.defaultX + this.context.originX + this.props.width,
+                y1: middle - 10*(i - offset),
+                y2: middle - 10*(i - offset)
             }))
         /* DOM.g */);
     }
 }
 
 module StaveLines {
-    export let contextTypes = <any> {
-        originY: PropTypes.number.isRequired
-    };
     export interface IProps {
-        lines: number;
         width: number;
-        x: number;
-        y: number;
+        staffDetails: MusicXML.StaffDetails;
+        defaultX: number;
+        defaultY: number;
     }
+    export let contextTypes = <any> {
+        originY: PropTypes.number.isRequired,
+        originX: PropTypes.number.isRequired
+    };
 }
 
 export default StaveLines;

@@ -8,7 +8,7 @@ watch:
 	node ./playground-server.js || make watch
 
 lint:
-	@find ./src -regex ".*[a-zA-Z0-9_][a-zA-Z0-9_]\.ts" | sed 's/\(.*\)/-f\1/g' | xargs ../vendor/tslint/bin/tslint -c ./tsconfig.json
+	@find ./src -regex ".*[a-zA-Z0-9_][a-zA-Z0-9_]\.ts" | sed 's/\(.*\)/-f\1/g' | xargs ../node_modules/.bin/tslint -c ./tsconfig.json
 
 build: clean lint
 	./node_modules/.bin/webpack -p
