@@ -7,6 +7,7 @@
   "license": "AGPL-3.0",
   "private": true,
   "dependencies": {
+    "forever": "^0.14.1",
     "lodash": "^3.9.3",
     "react": "0.13.3",
     "react-router": "^0.13.3"
@@ -16,6 +17,7 @@
     "css-loader": "^0.14.4",
     "less": "^2.3.1",
     "less-loader": "^2.2.0",
+    "node-libs-browser": "^0.5.2",
     "node-sass": "^3.1.1",
     "postcss-loader": "^0.4.3",
     "react-hot-loader": "^1.2.7",

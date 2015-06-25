@@ -24,7 +24,7 @@
 
     "dependencies": {
         "fast-json-patch": "0.5.2",
-        "lodash": "3.9.1",
+        "lodash": "3.9.3",
         "musicxml-interfaces": "0.0.4",
         "opentype": "nodebox/opentype.js#0.4.7",
         "webcola": "tgdwyer/WebCola#326dc8e9e",

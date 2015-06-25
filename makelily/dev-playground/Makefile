@@ -5,7 +5,7 @@ help:
 	@echo 'make deploy   Deploy to Github'
 
 watch:
-	node ./playground-server.js || make watch
+	./node_modules/.bin/forever --minUptime 2000 --spinSleepTime 1 ./playground-server.js
 
 lint:
 	@find ./src -regex ".*[a-zA-Z0-9_][a-zA-Z0-9_]\.ts" | sed 's/\(.*\)/-f\1/g' | xargs ../node_modules/.bin/tslint -c ./tsconfig.json
