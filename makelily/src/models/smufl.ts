@@ -54,5 +54,5 @@ export let distances = {
 };
 
 export function getWidth(glyph: string) {
-     return bboxes[glyph][0]*10 - bboxes[glyph][2]*10;
+    return bboxes[glyph][0]*10 - bboxes[glyph][2]*10;
 }

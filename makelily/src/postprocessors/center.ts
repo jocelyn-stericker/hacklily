@@ -38,22 +38,8 @@ function center(options: ILayoutOptions, bounds: ILineBounds,
                     let originX = measure.elements[i][j].x$;
                     invariant(isFinite(intrinsicWidth),
                         "Intrinsic width must be set on centered items");
-                    let measureSpaceRemaining = measure.width - originX;
-                    if (measure.elements[i][j].renderClass === IModel.Type.Chord) {
-                        let model: any = measure.elements[i][j].model;
-                        let noteheads = model && model.satieNotehead;
-                        let isWhole = noteheads && _.any(noteheads, n => n === "restWhole");
-                        let isHBar = noteheads && _.any(noteheads, n => n === "restHBar");
-                        if (isWhole) {
-                            // There's some inherent spacing in whole rests to make them
-                            // placed more naturally. We need to make up for that when centering!
-                            // TODO(jnetterf): Calculate the exact amount here
-                            measure.elements[i][j].x$ -= 16.0;
-                        } else if (isHBar) {
-                            // I have no idea where this comes from (!!)
-                            measure.elements[i][j].x$ -= 7.0;
-                        }
-                    }
+                    let measureSpaceRemaining = _.last(measure.elements[i]).overrideX -
+                        (measures$[measureIdx - 1].width - _.last(measures$[measureIdx - 1].elements[i]).overrideX);
                     measure.elements[i][j].x$ += measureSpaceRemaining/2 - intrinsicWidth/2;
                 }
             }
