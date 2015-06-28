@@ -25,8 +25,9 @@ import _ = require("lodash");
 
 import Accidental from "./accidental";
 import Dot from "./primitives/dot";
+import Glyph from "./primitives/glyph";
 import Notehead from "./notehead";
-import {getRight} from "../models/smufl";
+import {getLeft, getRight} from "../models/smufl";
 
 class Note extends React.Component<{spec: MusicXML.Note, noteheadGlyph: string}, void> {
     render() {
@@ -36,13 +37,16 @@ class Note extends React.Component<{spec: MusicXML.Note, noteheadGlyph: string},
             return null;
         }
 
-        let approxNotehead = this.props.noteheadGlyph;
-        let width = getRight(approxNotehead);
+        let noteheadGlyph = this.props.noteheadGlyph;
+        let right = getRight(noteheadGlyph);
+        let left = getLeft(noteheadGlyph);
+
+        let hasParens = spec.notehead && spec.notehead.parentheses;
 
         return DOM.g(null,
             $(Notehead)({
                 key: "h",
-                notehead: approxNotehead,
+                notehead: noteheadGlyph,
                 spec: {
                     color: spec.color,
                     defaultX: 0,
@@ -54,14 +58,26 @@ class Note extends React.Component<{spec: MusicXML.Note, noteheadGlyph: string},
                 fill: dot.color,
                 key: "_1_" + idx,
                 radius: 2.4,
-                x: this.context.originX + this.props.spec.defaultX + width + 6 + 6*idx,
+                x: this.context.originX + this.props.spec.defaultX + right + 6 + 6*idx,
                 y: this.context.originY - this.props.spec.defaultY -
                     (dot.defaultY + (dot.relativeY || 0))
             })) : null,
             this.props.spec.accidental ? $(Accidental)({
                 key: "a",
                 spec: this.props.spec.accidental
-            }) : null
+            }) : null,
+            hasParens && $(Glyph)({
+                glyphName: "noteheadParenthesisRight",
+                fill: "black",
+                y: this.context.originY - this.props.spec.defaultY,
+                x: this.context.originX + this.props.spec.defaultX + right + 2,
+            }),
+            hasParens && $(Glyph)({
+                glyphName: "noteheadParenthesisLeft",
+                fill: "black",
+                y: this.context.originY - this.props.spec.defaultY,
+                x: this.context.originX + this.props.spec.defaultX + left - 5,
+            })
         /* DOM.g */);
     }
 
