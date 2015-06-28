@@ -69,7 +69,7 @@ class AttributesModel implements Export.IAttributesModel {
         this._validateStaffDetails$();
 
         this._setTotalDivisions(cursor$);
-        this._updateMultiRest(cursor$);
+        this._validateMeasureStyles(cursor$);
     }
 
     layout(cursor$: ICursor): Export.ILayout {
@@ -77,7 +77,7 @@ class AttributesModel implements Export.IAttributesModel {
         cursor$.staff.attributes[cursor$.segment.part] = this;
 
         this._setTotalDivisions(cursor$);
-        this._updateMultiRest(cursor$);
+        this._validateMeasureStyles(cursor$);
 
         // mutates cursor$ as required.
         return new AttributesModel.Layout(this, cursor$);
@@ -107,13 +107,17 @@ class AttributesModel implements Export.IAttributesModel {
         this._partSymbol = m;
     }
 
-    _measureStyle: MusicXML.MeasureStyle;
-    get measureStyle() {
-        return this._measureStyle;
+    _measureStyles: MusicXML.MeasureStyle[];
+    get measureStyles() {
+        return this._measureStyles === undefined && this._parent ?
+            this._parent._measureStyles :
+            this._measureStyles;
     }
-    set measureStyle (m: MusicXML.MeasureStyle) {
-        this._measureStyle = m;
+    set measureStyles (m: MusicXML.MeasureStyle[]) {
+        this._measureStyles = m;
     }
+
+    satieMeasureStyle: MusicXML.MeasureStyle;
 
     _staffDetails: MusicXML.StaffDetails[];
     get staffDetails() {
@@ -203,13 +207,14 @@ class AttributesModel implements Export.IAttributesModel {
     /*---- I.4 Satie Ext ------------------------------------------------------------------------*/
 
     _measure: number;
-    get inheritedMeasureStyle(): MusicXML.MeasureStyle {
-        return this._measureStyle === undefined && this._parent ?
-            this._parent.inheritedMeasureStyle :
-            this._measureStyle;
+    get multipleRestMeasureStyle(): MusicXML.MultipleRest {
+        let multipleRest = _.find(this._measureStyles, style => style.multipleRest);
+        return !multipleRest && this._parent ?
+            this._parent.multipleRestMeasureStyle :
+            (multipleRest ? multipleRest.multipleRest : null);
     }
     get measureStyleStartMeasure(): number {
-        return this._measureStyle === undefined && this._parent ?
+        return !_.find(this._measureStyles, style => style.multipleRest) && this._parent ?
             this._parent.measureStyleStartMeasure :
             this._measure;
     }
@@ -223,7 +228,9 @@ class AttributesModel implements Export.IAttributesModel {
     }
 
     toXML(): string {
-        return MusicXML.serialize.attributes(this);
+        let copy = Object.create(this);
+        copy.measureStyles = this._measureStyles;
+        return MusicXML.serialize.attributes(copy);
     }
 
     inspect() {
@@ -377,6 +384,7 @@ class AttributesModel implements Export.IAttributesModel {
             staff.number = staff.number || 1;
             newStaffDetails[staff.number] = staff;
         });
+
         // Staff details are required. Staff lines are required
         _.times(this.staves, staffIndexMinusOne => {
             let staffIndex = staffIndexMinusOne + 1;
@@ -431,15 +439,36 @@ class AttributesModel implements Export.IAttributesModel {
         cursor$.staff.totalDivisions = IChord.barDivisions(this);
     }
 
-    private _updateMultiRest(cursor$: ICursor): void {
-        if (!this._measureStyle && this.inheritedMeasureStyle &&
-                this.inheritedMeasureStyle.multipleRest) {
-            let multipleRestCount = this.inheritedMeasureStyle.multipleRest.count;
+    private _validateMeasureStyles(cursor$: ICursor): void {
+        let multipleRestStyleIdx = _.findIndex(this.measureStyles, style => style.multipleRest);
+        if (this.multipleRestMeasureStyle) {
+            let multipleRestCount = this.multipleRestMeasureStyle.count;
             let measuresAfterStyleChange = this._measure - this.measureStyleStartMeasure;
-
-            if (multipleRestCount > measuresAfterStyleChange) {
-                cursor$.staff.hiddenMeasuresRemaining = multipleRestCount - measuresAfterStyleChange;
+            if (multipleRestCount < 2) {
+                this.measureStyles.splice(multipleRestStyleIdx, 1);
+            } else {
+                if (multipleRestCount > measuresAfterStyleChange) {
+                    cursor$.staff.hiddenMeasuresRemaining =
+                        multipleRestCount - measuresAfterStyleChange;
+                }
             }
+        }
+        this.satieMeasureStyle = {};
+        _.forEach(this.measureStyles, measureStyle => {
+            if (measureStyle.slash) {
+                if (measureStyle.slash.type === MusicXML.StartStop.Stop) {
+                    this.satieMeasureStyle.slash = null;
+                } else {
+                    this.satieMeasureStyle.slash = measureStyle.slash;
+                }
+            }
+        });
+        let multipleRestDefinedHere = !!_.find(this._measureStyles,
+            measureStyle => measureStyle.multipleRest);
+        if (multipleRestDefinedHere) {
+            this.satieMeasureStyle.multipleRest = this.multipleRestMeasureStyle;
+        } else {
+            this.satieMeasureStyle.multipleRest = null;
         }
     }
 
@@ -635,6 +664,7 @@ module AttributesModel {
             /*---- Geometry ---------------------------------------*/
 
             cursor$.x$ += this.clefSpacing + this.tsSpacing + this.ksSpacing;
+            this.renderedWidth = cursor$.x$ - this.x$ - 8;
         }
 
         /*---- ILayout ------------------------------------------------------*/
@@ -657,6 +687,7 @@ module AttributesModel {
         boundingBoxes$: IModel.IBoundingRect[];
         renderClass: IModel.Type;
         expandPolicy: IModel.ExpandPolicy;
+        renderedWidth: number;
 
         /*---- AttributesModel ----------------------------------------------*/
 
@@ -690,7 +721,7 @@ function Export(constructors: { [key: number]: any }) {
 }
 
 module Export {
-    export interface IAttributesModel extends IModel, MusicXML.Attributes {
+    export interface IAttributesModel extends IModel, IAttributes.IAttributesExt {
     }
 
     export interface ILayout extends IModel.ILayout {

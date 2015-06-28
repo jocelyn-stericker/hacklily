@@ -35,7 +35,7 @@ import {bboxes} from "../models/smufl";
 class Notation extends Component<Notation.IProps, void> {
     render() {
         const model = this.props.spec;
-        const notehead = this.props.layout.model.satieNotehead[0];
+        const notehead = this.props.layout.model.noteheadGlyph[0];
         const bbox = bboxes[notehead];
         const noteheadCenter = 10*(bbox[0] - bbox[2])/2;
         const originX = this.context.originX + this.props.layout.model[0].defaultX + noteheadCenter;

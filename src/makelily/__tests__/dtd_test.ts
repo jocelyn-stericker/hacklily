@@ -95,7 +95,7 @@ describe("import/export dtd validation", function() {
                                     let env = Object.create(process.env);
                                     env.XML_CATALOG_FILES = "./vendor/musicxml-dtd/catalog.xml";
                                     fs.writeFile("rendertest/out/" + outname + ".xml", mxmlOut);
-                                    let proc = (<any>child_process).spawnSync("xmllint",
+                                    let proc = child_process.spawnSync("xmllint",
                                             ["--valid", "--noout", "--nonet", "-"], {
                                         input: mxmlOut,
                                         env: env

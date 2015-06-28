@@ -170,7 +170,18 @@ describe("[engine.ts]", function() {
                     };
                 }),
                 header: null,
-                print$: <any> {
+                print$: {
+                    measureNumbering: null,
+                    blankPage: null,
+                    partNameDisplay: null,
+                    newSystem: null,
+                    newPage: null,
+                    measureLayout: null,
+                    partAbbreviationDisplay: null,
+                    pageNumber: null,
+                    staffLayouts: null,
+                    staffSpacing: null,
+                    systemLayout: null,
                     pageLayout: {
                         pageHeight: 1000,
                         pageWidth: 1000,

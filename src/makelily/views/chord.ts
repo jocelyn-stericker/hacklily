@@ -31,7 +31,7 @@ import Note from "./note";
 import Notation from "./notation";
 import Rest from "./rest";
 import Stem from "./stem";
-import {bboxes, bravura} from "../models/smufl";
+import {bboxes, bravura, getRight} from "../models/smufl";
 
 const stemThickness: number = bravura.engravingDefaults.stemThickness*10;
 
@@ -43,7 +43,7 @@ class ChordView extends Component<{layout: Chord.IChordLayout}, void> {
         let layout = this.props.layout;
         let spec = layout.model;
 
-        let maxNotehead = _.max(layout.model.satieNotehead, notehead => bboxes[notehead][0]);
+        let maxNotehead = _.max(layout.model.noteheadGlyph, glyph => getRight(glyph));
 
         let anyVisible = _.any(layout.model, note => note.printObject !== false);
 
@@ -87,7 +87,7 @@ class ChordView extends Component<{layout: Chord.IChordLayout}, void> {
         if (!!spec[0].rest) {
             return $(Rest)({
                 multipleRest: layout.model.satieMultipleRest,
-                notehead: spec.satieNotehead[0],
+                notehead: spec.noteheadGlyph[0],
                 spec: spec[0]
             });
         }
@@ -95,7 +95,7 @@ class ChordView extends Component<{layout: Chord.IChordLayout}, void> {
         return DOM.g(null,
             _.map(spec, (noteSpec, idx) => $(Note)({
                 key: "n" + idx,
-                satieNotehead: spec.satieNotehead[0],
+                noteheadGlyph: spec.noteheadGlyph[idx],
                 spec: noteSpec
             })),
             spec.satieStem && $(Stem)({
@@ -120,7 +120,7 @@ class ChordView extends Component<{layout: Chord.IChordLayout}, void> {
                     defaultY: (lineNumber - 3)*10
                 }
             })),
-            spec.satieFlag && $(Flag)({
+            spec.satieFlag && spec.satieStem && $(Flag)({
                 key: "f",
                 notehead: maxNotehead,
                 spec: {

@@ -26,9 +26,9 @@ import _ = require("lodash");
 import Accidental from "./accidental";
 import Dot from "./primitives/dot";
 import Notehead from "./notehead";
-import {bboxes} from "../models/smufl";
+import {getRight} from "../models/smufl";
 
-class Note extends React.Component<{spec: MusicXML.Note, satieNotehead: string}, void> {
+class Note extends React.Component<{spec: MusicXML.Note, noteheadGlyph: string}, void> {
     render() {
         const spec = this.props.spec;
 
@@ -36,8 +36,8 @@ class Note extends React.Component<{spec: MusicXML.Note, satieNotehead: string},
             return null;
         }
 
-        let approxNotehead = this.props.satieNotehead;
-        let width = bboxes[approxNotehead][0]*10;
+        let approxNotehead = this.props.noteheadGlyph;
+        let width = getRight(approxNotehead);
 
         return DOM.g(null,
             $(Notehead)({

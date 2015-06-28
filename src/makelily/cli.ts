@@ -98,7 +98,7 @@ function cannotRead(err: any) {
         .strict();
 
     // Some of the type definitions are lacking.
-    let argv = (<any>args)
+    let argv = args
         .command("init", "adds revision tracking and layout information to a MusicXML file")
         .command("diff", "generate a patch between two initialized MusicXML files")
         .command("patch", "applies patch from 'satie diff' to an initialized MusicXML file")
