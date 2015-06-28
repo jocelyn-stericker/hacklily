@@ -35,12 +35,27 @@ function center(options: ILayoutOptions, bounds: ILineBounds,
             for (let i = 0; i < measure.elements.length; ++i) {
                 if (measure.elements[i][j].expandPolicy === IModel.ExpandPolicy.Centered) {
                     let intrinsicWidth = measure.elements[i][j].renderedWidth;
-                    let originX = measure.elements[i][j].x$;
                     invariant(isFinite(intrinsicWidth),
                         "Intrinsic width must be set on centered items");
-                    let measureSpaceRemaining = _.last(measure.elements[i]).overrideX -
-                        (measures$[measureIdx - 1].width - _.last(measures$[measureIdx - 1].elements[i]).overrideX);
-                    measure.elements[i][j].x$ += measureSpaceRemaining/2 - intrinsicWidth/2;
+                    let measureSpaceRemaining: number;
+                    let attribIdx = _.findIndex(measure.elements[0],
+                        el => el.renderClass === IModel.Type.Attributes && el.renderedWidth > 0);
+                    let base = 0;
+                    if (attribIdx !== -1 && attribIdx < j) {
+                        base = measure.elements[0][attribIdx].overrideX +
+                            measure.elements[0][attribIdx].renderedWidth;
+                        measureSpaceRemaining = _.last(measure.elements[i]).overrideX - base;
+                    } else if (measures$[measureIdx - 1]) {
+                        measureSpaceRemaining = _.last(measure.elements[i]).overrideX -
+                            (measures$[measureIdx - 1].width -
+                            _.last(measures$[measureIdx - 1].elements[0]).overrideX);
+                    } else {
+                        measureSpaceRemaining = _.last(measure.elements[i]).overrideX;
+                    }
+                    if (measures$[measureIdx + 1] && measures$[measureIdx + 1].width === 0) {
+                        measureSpaceRemaining += 16.6;
+                    }
+                    measure.elements[i][j].x$ = base + measureSpaceRemaining/2 - intrinsicWidth/2;
                 }
             }
         });

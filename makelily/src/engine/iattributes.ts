@@ -320,6 +320,12 @@ export const DOUBLE_SHARP_WIDTH = 13;
 export const SHARP_WIDTH = 11;
 export const NATURAL_WIDTH = 11;
 
+export interface IAttributesExt extends MusicXML.Attributes {
+    satieMeasureStyle: MusicXML.MeasureStyle;
+    multipleRestMeasureStyle: MusicXML.MultipleRest;
+    measureStyleStartMeasure: number;
+}
+
 }
 
 export default IAttributes;

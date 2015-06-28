@@ -279,7 +279,7 @@ class ScoreHeader implements MusicXML.ScoreHeader {
             encodingDescriptions: [],
             encodingDate: {
                 month: date.getMonth() + 1,
-                day: date.getDay(),
+                day: date.getDate(),
                 year: date.getFullYear()
             },
             supports: {
@@ -292,8 +292,7 @@ class ScoreHeader implements MusicXML.ScoreHeader {
             },
             encoders: [],
             softwares: [
-                "Satie Layout Engine - https://ripieno.github.io/satie (joshua@nettek.ca)",
-                "MusicXML Interfaces - https://ripieno.github.io/musicxml-interfaces"
+                "Ripieno Satie"
             ]
         };
     }

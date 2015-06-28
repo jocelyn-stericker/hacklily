@@ -41,7 +41,7 @@ export {default as validate} from "./engine/processors/validate";
 export {default as layout} from "./engine/processors/layout";
 export {getCurrentMeasureList} from "./engine/escapeHatch";
 
-if (!(<any>process).browser) {
+if (!process.browser) {
     // Let's get TypeScript stack traces.
 
     /* tslint:disable */

@@ -21,7 +21,7 @@ import _ = require("lodash");
 import invariant = require("react/lib/invariant");
 
 import ChordModel from "../chord";
-import {IBeam, IChord, ICursor, IModel, ISegment} from "../../engine";
+import {IBeam, IChord, ICursor, IModel, ISegment, Context} from "../../engine";
 import {getChordLyricWidth} from "./lyrics";
 import {calcDivisions, getBeamingPattern} from "./metre";
 import {getBoundingRects} from "./notation";
@@ -108,19 +108,6 @@ class ChordModelImpl implements ChordModel.IChordModel {
         const direction = this._pickDirection(cursor$);
         const clef = cursor$.staff.attributes[cursor$.segment.part].clefs[cursor$.staff.idx];
 
-        if (IChord.countToHasStem[this.count]) {
-            this.satieStem = {
-                direction: direction,
-                stemHeight: this._getStemHeight(direction, clef),
-                stemStart: IChord.startingLine(this, direction, clef)
-            };
-
-            this.satieDirection = direction === 1 ? MusicXML.StemType.Up : MusicXML.StemType.Down;
-        } else {
-            this.satieStem = null;
-            this.satieDirection = NaN;
-        }
-
         this.satieLedger = IChord.ledgerLines(this, clef);
 
         _.forEach(this, note => {
@@ -158,10 +145,23 @@ class ChordModelImpl implements ChordModel.IChordModel {
         } else {
             this.satieFlag = null;
         }
+
+        if (this._hasStem()) {
+            this.satieStem = {
+                direction: direction,
+                stemHeight: this._getStemHeight(direction, clef),
+                stemStart: IChord.startingLine(this, direction, clef)
+            };
+
+            this.satieDirection = direction === 1 ? MusicXML.StemType.Up : MusicXML.StemType.Down;
+        } else {
+            this.satieStem = null;
+            this.satieDirection = NaN;
+        }
     }
 
     layout(cursor$: ICursor): ChordModel.IChordLayout {
-        let measureStyle = cursor$.staff.attributes[cursor$.segment.part].measureStyle;
+        let measureStyle: MusicXML.MeasureStyle = Context.IStaff.getMeasureStyle(cursor$);
         if (measureStyle && measureStyle.multipleRest && measureStyle.multipleRest.count > 1) {
             cursor$.staff.hiddenMeasuresRemaining = measureStyle.multipleRest.count;
         }
@@ -169,7 +169,7 @@ class ChordModelImpl implements ChordModel.IChordModel {
     }
 
     private _checkMulitpleRest$(cursor$: ICursor) {
-        let measureStyle = cursor$.staff.attributes[cursor$.segment.part].measureStyle;
+        let measureStyle: MusicXML.MeasureStyle = Context.IStaff.getMeasureStyle(cursor$);
         if (measureStyle && measureStyle.multipleRest && measureStyle.multipleRest.count > 1) {
             this.satieMultipleRest = measureStyle.multipleRest;
             cursor$.staff.hiddenMeasuresRemaining = measureStyle.multipleRest.count;
@@ -180,15 +180,38 @@ class ChordModelImpl implements ChordModel.IChordModel {
     }
 
     private _implyNoteheads$(cursor$: ICursor) {
+        let measureStyle = Context.IStaff.getMeasureStyle(cursor$);
+        if (measureStyle) {
+            _.forEach(this, note => {
+                if (measureStyle.slash) {
+                    note.notehead = note.notehead || {type: null};
+                    note.notehead.type = MusicXML.NoteheadType.Slash;
+                    if (!measureStyle.slash.useStems) {
+                        note.stem = {
+                            type: MusicXML.StemType.None
+                        };
+                    }
+                }
+            });
+        }
         if (this._isRest) {
             if (this.satieMultipleRest) {
-                this.satieNotehead = ["restHBar"];
+                this.noteheadGlyph = ["restHBar"];
             } else {
-                this.satieNotehead = [countToRest[this.count]];
+                this.noteheadGlyph = [countToRest[this.count]];
             }
         } else {
-            this.satieNotehead = _.times(this.length, () => countToNotehead[this.count]);
+            this.noteheadGlyph = _.times(this.length, () => countToNotehead[this.count]);
         }
+        this.noteheadGlyph = this.noteheadGlyph.map((stdGlyph, idx) =>
+            IChord.getNoteheadGlyph(this[idx].notehead, stdGlyph));
+    }
+
+    private _hasStem() {
+        if (this[0] && this[0].stem && this[0].stem.type === MusicXML.StemType.None) {
+            return false;
+        }
+        return IChord.countToHasStem[this.count];
     }
 
     /*---- I.2 IChord ---------------------------------------------------------------------------*/
@@ -506,7 +529,7 @@ class ChordModelImpl implements ChordModel.IChordModel {
     satieDirection: MusicXML.StemType;
     satieLedger: number[];
     satieMultipleRest: MusicXML.MultipleRest;
-    satieNotehead: string[];
+    noteheadGlyph: string[];
     satieBeam: IBeam.ILayout;
 }
 
@@ -527,9 +550,9 @@ module ChordModelImpl {
             this.model = this._detachModelWithContext(cursor$, baseModel);
             this.boundingBoxes$ = this._captureBoundingBoxes();
 
-            let isWhole = baseModel.count === MusicXML.Count.Whole;
+            let isWholeBar = baseModel.wholebar$ || baseModel.count === MusicXML.Count.Whole;
 
-            if (baseModel.satieMultipleRest || baseModel.rest && isWhole) {
+            if (baseModel.satieMultipleRest || baseModel.rest && isWholeBar) {
                 // N.B.: this.model does not have count
                 this.expandPolicy = IModel.ExpandPolicy.Centered;
             }
@@ -549,9 +572,13 @@ module ChordModelImpl {
             let totalWidth = this._calcTotalWidth(cursor$, baseModel);
             invariant(isFinite(totalWidth), "Invalid width %s", totalWidth);
 
-            let noteheads = baseModel.satieNotehead;
+            let noteheads = baseModel.noteheadGlyph;
             let widths = _.map(noteheads, getGlyphWidth);
             this.renderedWidth = _.max(widths);
+
+            if (baseModel.satieMultipleRest || baseModel.count === MusicXML.Count.Whole) {
+                _.forEach(this.model, note => note.dots = []);
+            }
 
             this.x$ = cursor$.x$ + accidentalWidth;
             this.minSpaceAfter = this._getMinWidthAfter(cursor$);
@@ -560,15 +587,6 @@ module ChordModelImpl {
         }
 
         _captureBoundingBoxes(): IModel.IBoundingRect[] {
-            /*{
-                frozenness: IModel.FrozenLevel;
-                defaultX: number;
-                defaultY: number;
-                relativeX?: number;
-                relativeY?: number;
-                w: number;
-                h: number;
-            }*/
             let bboxes: IModel.IBoundingRect[] = [];
             _.forEach(this.model, note => {
                 let notations = note.notationObj; // TODO: detach this
@@ -600,9 +618,14 @@ module ChordModelImpl {
             invariant(extraWidth >= 0, "Invalid extraWidth %s. shortest is %s, got %s", extraWidth,
                     cursor.line.shortestCount, baseModel.divCount);
 
-            const dotWidth = _.max(_.map(baseModel, m => m.dots.length))*6;
+            return baseWidth + extraWidth + accidentalWidth + this._calcDotWidth(cursor, baseModel);
+        }
 
-            return baseWidth + extraWidth + accidentalWidth + dotWidth;
+        _calcDotWidth(cursor: ICursor, baseModel: ChordModelImpl): number {
+            if (baseModel.wholebar$ || baseModel.satieMultipleRest) {
+                return 0;
+            }
+            return _.max(_.map(baseModel, m => m.dots.length))*6;
         }
 
         _getMinWidthBefore(cursor: ICursor) {
@@ -649,7 +672,7 @@ module ChordModelImpl {
             model.satieLedger = baseModel.satieLedger;
             model.satieMultipleRest = baseModel.satieMultipleRest;
             model.satieFlag = baseModel.satieFlag;
-            model.satieNotehead = baseModel.satieNotehead;
+            model.noteheadGlyph = baseModel.noteheadGlyph;
             model.staffIdx = baseModel.staffIdx;
             model.divCount = baseModel.divCount;
 

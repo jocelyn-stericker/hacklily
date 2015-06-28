@@ -35,10 +35,6 @@ describe("[smufl.ts]", function() {
             // Note: you may need to change this if the Bravura order changes.
             expect(SMuFL.bboxes["4stringTabClef"]).to.deep.equal(SMuFL.bravura.glyphBBoxes[0]);
         });
-        it("contains the same amount of information as bravuraMetadata", function() {
-            expect(Object.keys(SMuFL.bboxes).length).to.equal(
-                SMuFL.bravura.glyphBBoxes.length);
-        });
     });
     describe("getGlyphCode", function() {
         it("returns a string with the codepoint", function() {

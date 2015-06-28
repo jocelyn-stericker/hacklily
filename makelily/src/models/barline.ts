@@ -107,6 +107,7 @@ module BarlineModel {
     export class Layout implements Export.ILayout {
         constructor(origModel: BarlineModel, cursor$: ICursor) {
             this.division = cursor$.division$;
+            this.x$ = cursor$.x$;
             if (cursor$.staff.hiddenMeasuresRemaining > 1) {
                 return;
             }
@@ -120,7 +121,6 @@ module BarlineModel {
                 }
             });
 
-            this.x$ = cursor$.x$;
             let clefOffset = 0;
 
             if (!cursor$.approximate && cursor$.line.barsOnLine === cursor$.line.barOnLine$ + 1) {

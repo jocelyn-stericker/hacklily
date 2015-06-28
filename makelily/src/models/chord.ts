@@ -45,7 +45,7 @@ module ChordModel {
         satieBeam: IBeam.ILayout;
         satieFlag: string;
         satieLedger: number[];
-        satieNotehead: string[];
+        noteheadGlyph: string[];
         satieMultipleRest: MusicXML.MultipleRest;
     }
 

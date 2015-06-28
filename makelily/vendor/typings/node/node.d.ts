@@ -185,6 +185,8 @@ declare module NodeJS {
         umask(mask?: number): number;
         uptime(): number;
         hrtime(time?:number[]): number[];
+        
+        browser?: any;
 
         // Worker
         send?(message: any, sendHandle?: any): void;
@@ -730,6 +732,20 @@ declare module "child_process" {
         env?: any;
         detached?: boolean;
     }): ChildProcess;
+
+    export function spawnSync(command: string, args?: string[], options?: {
+        cwd?: string;
+        stdio?: any;
+        custom?: any;
+        env?: any;
+        detached?: boolean;
+    }): {
+        stdin:  stream.Writable;
+        stdout: stream.Readable;
+        stderr: stream.Readable;
+        error?: string;
+    };
+
     export function exec(command: string, options: {
         cwd?: string;
         stdio?: any;

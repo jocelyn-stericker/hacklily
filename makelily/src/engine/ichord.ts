@@ -379,6 +379,109 @@ module IChord {
 
     export let InvalidAccidental = -999;
 
+    const CUSTOM_NOTEHEADS: {[key: number]: string[]} = {
+        [MusicXML.NoteheadType.ArrowDown]: [
+            "noteheadLargeArrowDownBlack",
+            "noteheadLargeArrowDownHalf",
+            "noteheadLargeArrowDownWhole",
+            "noteheadLargeArrowDownDoubleWhole"],
+        [MusicXML.NoteheadType.ArrowUp]: ["noteheadLargeArrowUpBlack", "noteheadLargeArrowUpHalf",
+            "noteheadLargeArrowUpWhole", "noteheadLargeArrowUpDoubleWhole"],
+        [MusicXML.NoteheadType.BackSlashed]: ["noteheadSlashedBlack2", "noteheadSlashedHalf2",
+            "noteheadSlashedWhole2", "noteheadSlashedDoubleWhole2"],
+        [MusicXML.NoteheadType.CircleDot]: ["noteheadRoundWhiteWithDot", "noteheadCircledHalf",
+            "noteheadCircledWhole", "noteheadCircledDoubleWhole"],
+        [MusicXML.NoteheadType.CircleX]: ["noteheadCircledXLarge", "noteheadCircledXLarge",
+            "noteheadCircledXLarge", "noteheadCircledXLarge"],
+        [MusicXML.NoteheadType.Cluster]: ["noteheadNull", "noteheadNull",
+            "noteheadNull", "noteheadNull"], // TODO
+        [MusicXML.NoteheadType.Cross]: ["noteheadPlusBlack", "noteheadPlusHalf",
+            "noteheadPlusWhole", "noteheadPlusDoubleWhole"],
+        [MusicXML.NoteheadType.InvertedTriangle]: [
+            "noteheadTriangleDownBlack",
+            "noteheadTriangleDownHalf",
+            "noteheadTriangleDownWhole",
+            "noteheadTriangleDownDoubleWhole"],
+        [MusicXML.NoteheadType.LeftTriangle]: [
+            "noteheadTriangleRightBlack",
+            "noteheadTriangleRightHalf",
+            "noteheadTriangleRightWhole",
+            "noteheadTriangleRightDoubleWhole"],
+            // Finale has a different idea about what left means
+        [MusicXML.NoteheadType.None]: [
+            "noteheadNull",
+            "noteheadNull",
+            "noteheadNull",
+            "noteheadNull"],
+        [MusicXML.NoteheadType.Slash]: ["noteheadSlashHorizontalEnds", "noteheadSlashWhiteHalf",
+            "noteheadSlashWhiteWhole", "noteheadDoubleWhole"],
+        [MusicXML.NoteheadType.Slashed]: ["noteheadSlashedBlack1", "noteheadSlashedHalf1",
+            "noteheadSlashedWhole1", "noteheadSlashedDoubleWhole1"],
+
+        [MusicXML.NoteheadType.X]: ["noteheadXBlack", "noteheadXHalf",
+            "noteheadXWhole", "noteheadXDoubleWhole"],
+
+        [MusicXML.NoteheadType.Do]: ["noteheadTriangleUpBlack", "noteheadTriangleUpHalf",
+            "noteheadTriangleUpWhole", "noteheadTriangleUpDoubleWhole"],
+        [MusicXML.NoteheadType.Triangle]: ["noteheadTriangleUpBlack", "noteheadTriangleUpHalf",
+            "noteheadTriangleUpWhole", "noteheadTriangleUpDoubleWhole"],
+
+        [MusicXML.NoteheadType.Re]: ["noteheadMoonBlack", "noteheadMoonWhite",
+            "noteheadMoonWhite", "noteheadMoonWhite"],
+
+        [MusicXML.NoteheadType.Mi]: ["noteheadDiamondBlack", "noteheadDiamondHalf",
+            "noteheadDiamondWhole", "noteheadDiamondDoubleWhole"],
+        [MusicXML.NoteheadType.Diamond]: ["noteheadDiamondBlack", "noteheadDiamondHalf",
+            "noteheadDiamondWhole", "noteheadDiamondDoubleWhole"],
+
+        [MusicXML.NoteheadType.Fa]: ["noteheadTriangleUpRightBlack", "noteheadTriangleUpRightWhite",
+            "noteheadTriangleUpRightWhite", "noteheadTriangleUpRightWhite"],
+        [MusicXML.NoteheadType.FaUp]: [
+            "noteheadTriangleUpRightBlack",
+            "noteheadTriangleUpRightWhite",
+            "noteheadTriangleUpRightWhite",
+            "noteheadTriangleUpRightWhite"],
+
+        [MusicXML.NoteheadType.So]: ["noteheadBlack", "noteheadHalf",
+            "noteheadWhole", "noteheadDoubleWhole"],
+
+        [MusicXML.NoteheadType.La]: ["noteheadSquareBlack", "noteheadSquareWhite",
+            "noteheadSquareWhite", "noteheadSquareWhite"],
+        [MusicXML.NoteheadType.Square]: ["noteheadSquareBlack", "noteheadSquareWhite",
+            "noteheadSquareWhite", "noteheadSquareWhite"],
+        [MusicXML.NoteheadType.Rectangle]: ["noteheadSquareBlack", "noteheadSquareWhite",
+            "noteheadSquareWhite", "noteheadSquareWhite"],
+
+        [MusicXML.NoteheadType.Ti]: [
+            "noteheadTriangleRoundDownBlack",
+            "noteheadTriangleRoundDownWhite",
+            "noteheadTriangleRoundDownWhite",
+            "noteheadTriangleRoundDownWhite"]
+    };
+
+    export function getNoteheadGlyph(notehead: MusicXML.Notehead, stdGlyph: string) {
+        let {type} = notehead || {type: MusicXML.NoteheadType.Normal};
+
+        if (type === MusicXML.NoteheadType.Normal) {
+            return stdGlyph;
+        } else {
+            let noteheads = CUSTOM_NOTEHEADS[type];
+            if (noteheads) {
+                if (noteheads[0] && stdGlyph === "noteheadBlack") {
+                    return noteheads[0];
+                } else if (noteheads[1] && stdGlyph === "noteheadHalf") {
+                    return noteheads[1];
+                } else if (noteheads[2] && stdGlyph === "noteheadWhole") {
+                    return noteheads[2];
+                } else if (noteheads[3] && stdGlyph === "noteheadDoubleWhole") {
+                    return noteheads[3];
+                }
+            }
+        }
+        console.warn(`The custom notehead with ID ${type} cannot replace ` +
+            `${this.props.notehead}, probably because it's not implemented.`);
+        return this.props.notehead;
+    }
 }
 
 export default IChord;

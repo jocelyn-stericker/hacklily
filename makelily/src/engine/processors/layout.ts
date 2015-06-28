@@ -86,18 +86,21 @@ export default function layout$(options: ILayoutOptions, memo$: ILinesLayoutStat
                 voices: _.map(_.values(measure.parts), p => p.voices),
                 x: 0
             });
-            let firstPart = IPart.scoreParts(options.header.partList)[0].id;
+            let part = IPart.scoreParts(options.header.partList)[0].id;
             // TODO: Only skip render multiple rests if __all__ visible parts have rests
             let attributes = approximateLayout.attributes;
-            if (attributes &&
-                    attributes[firstPart] &&
-                    attributes[firstPart].measureStyle &&
-                    attributes[firstPart].measureStyle.multipleRest) {
-                multipleRest = attributes[firstPart].measureStyle.multipleRest.count - 1;
+            let measureStyle: MusicXML.MeasureStyle;
+            if (attributes && attributes[part]) {
+                measureStyle = (<IAttributes.IAttributesExt>attributes[part]).satieMeasureStyle;
+            }
+            let multipleRestEl = measureStyle && measureStyle.multipleRest;
+            if (multipleRestEl) {
+                multipleRest = multipleRestEl.count;
                 multipleRests$[measure.uuid] = multipleRest;
-            } else if (!isNaN(multipleRest)) {
+            } else if (multipleRest >= 0) {
                 multipleRests$[measure.uuid] = multipleRest;
                 approximateLayout.width = 0;
+                specifiedWidth = 0;
             } else {
                 delete multipleRests$[measure.uuid];
             }
@@ -107,7 +110,7 @@ export default function layout$(options: ILayoutOptions, memo$: ILinesLayoutStat
                 attributesWidthEnd: IAttributes.approximateWidth(attributes, IAttributes.AtEnd.Yes)
             };
         }
-        multipleRest = multipleRest ? multipleRest - 1 : undefined;
+        multipleRest = multipleRest > 0 ? multipleRest - 1 : undefined;
         return width$[measure.uuid];
     });
 
