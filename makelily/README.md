@@ -38,10 +38,25 @@ To build, lint, and run unit tests:
 | Run all tests, even slow ones                       | `make test_all`       |
 | Run coverage testing                                | `make coverage`       |
 | Update TypeScript external definitions              | `make tsd`            |
+| Run the development server on port 4200             | `make serve`          |
 
 ### License
-Ripieno is licensed under the [GNU **Affero** General Public License][agpl]. That means applications that use Satie, whether client-side or server-side, likely need to be open-source.
+Satie is licensed under the [GNU **Affero** General Public License][agpl], with
+an additional permission.
 
+Additional permission under the GNU Affero GPL version 3 section 7:
+
+If you modify this Program, or any covered work, by linking or combining it
+with a general purpose web browser (excluding extensions and add-ons), the
+licensors of this Program grant you additional permission to convey the
+resulting work.
+
+If you modify this code, you may extend this exception to your version
+of the code, but you are not obligated to do so. If you do not wish to do so,
+delete this exception statement from your version.
+
+If this license prevents you from using Satie in an open source project,
+file an issue. I want to make it work!
 
 [test_status]: https://travis-ci.org/ripieno/satie.svg?branch=master
 [test_link]: https://travis-ci.org/ripieno/satie

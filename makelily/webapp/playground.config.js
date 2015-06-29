@@ -1,4 +1,5 @@
 var webpack = require("webpack");
+var path = require("path");
 var autoprefixer = require("autoprefixer-core");
 
 var port = 4200;
@@ -18,7 +19,12 @@ module.exports = {
         publicPath: "/"
     },
     resolve: {
-        extensions: ["", ".webpack.js", ".web.js", ".js", ".ts"]
+        extensions: ["", ".webpack.js", ".web.js", ".js", ".ts"],
+        root: path.join(__dirname, "node_modules"),
+        fallback: path.join(__dirname, "..", "node_modules"),
+    },
+    resolveLoader: {
+        root: path.join(__dirname, "node_modules")
     },
     module: {
         loaders: [
@@ -44,6 +50,11 @@ module.exports = {
     postcss: [ autoprefixer({ browsers: ['last 2 version'] }) ],
     plugins: [
         new webpack.HotModuleReplacementPlugin(),
-        new webpack.NoErrorsPlugin()
+        new webpack.NoErrorsPlugin(),
+        new webpack.DefinePlugin({
+            "process.env": {
+                NODE_ENV: '"dev"',
+            }
+        })
     ]
 }

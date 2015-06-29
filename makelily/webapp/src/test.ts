@@ -1,6 +1,6 @@
 import React = require("react");
 import {Link} from "react-router";
-import {importXML, IDocument, Viewer} from "satie";
+import {importXML, IDocument, Viewer} from "../../src/index";
 import _ = require("lodash");
 
 import Test from "./test";

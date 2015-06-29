@@ -81,11 +81,6 @@ _gentestsuite: clean
 
 _stageOnly:
 	@printf "$(STAGE_STRING)\n"
-# Link directory strucutre to playground folders
-	@mkdir -p ./dev-playground/node_modules/
-	@mkdir -p ./dev-playground/node_modules/satie/
-	@test -e `pwd`/dev-playground/node_modules/satie/package.json || cp `pwd`/package.json `pwd`/dev-playground/node_modules/satie/package.json
-	@rsync -ra ./dist/ ./dev-playground/node_modules/satie/dist/
 
 # Create satie.d.ts for TypeScript clients
 	@./node_modules/.bin/dts-generator --name satie --baseDir ./dist/ --out ./dist/satie.d.ts ./dist/index.d.ts > /dev/null
@@ -157,6 +152,12 @@ test_all: test lint
 coverage: build
 	@printf "$(COVERAGE_STRING)\n"
 	@find ./dist -type f | grep "__tests__.*js\$$" | xargs istanbul cover node_modules/mocha/bin/_mocha -- -R list
+
+./webapp/node_modules:
+	cd ./webapp; npm install
+
+serve: ./webapp/node_modules
+	cd ./webapp; make serve
 
 clean:
 	@printf "$(CLEAN_STRING)\n"

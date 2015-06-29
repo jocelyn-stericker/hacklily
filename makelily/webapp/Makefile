@@ -1,10 +1,10 @@
 help:
 	@echo 'Usage:'
-	@echo 'make watch    Run a development server on 0.0.0.0:4200'
+	@echo 'make serve    Run a development server on 0.0.0.0:4200'
 	@echo 'make build    Build production "dist/" folder'
 	@echo 'make deploy   Deploy to Github'
 
-watch:
+serve:
 	./node_modules/.bin/forever --minUptime 2000 --spinSleepTime 1 ./playground-server.js
 
 lint:

@@ -649,3 +649,13 @@ You should also get your employer (if you work as a programmer) or school,
 if any, to sign a “copyright disclaimer” for the program, if necessary.
 For more information on this, and how to apply and follow the GNU AGPL, see
 &lt;<http://www.gnu.org/licenses/>&gt;.
+
+Additional permission
+=====================
+
+Additional permission under the GNU Affero GPL version 3 section 7:
+
+If you modify this Program, or any covered work, by linking or combining it
+with a general purpose web browser (excluding extensions and add-ons), the
+licensors of this Program grant you additional permission to convey the
+resulting work.

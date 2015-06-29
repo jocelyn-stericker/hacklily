@@ -2,7 +2,7 @@
 
 import React = require("react");
 import ReactPerf = require("react/lib/ReactDefaultPerf");
-import {init} from "satie";
+import {init} from "../../src/index";
 import {run, HistoryLocation, Route, Redirect, DefaultRoute} from "react-router";
 
 import App from "./app";
