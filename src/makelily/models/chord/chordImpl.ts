@@ -21,7 +21,7 @@ import _ = require("lodash");
 import invariant = require("react/lib/invariant");
 
 import ChordModel from "../chord";
-import {IBeam, IChord, ICursor, IModel, ISegment, Context} from "../../engine";
+import {IBeam, IChord, ICursor, IModel, ISegment} from "../../engine";
 import {getChordLyricWidth} from "./lyrics";
 import {calcDivisions, getBeamingPattern} from "./metre";
 import {getBoundingRects} from "./notation";

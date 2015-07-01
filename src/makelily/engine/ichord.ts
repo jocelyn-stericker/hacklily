@@ -235,7 +235,7 @@ module IChord {
         return clefOffsets[clef.sign] + clef.line - defaultClefLines[clef.sign.toUpperCase()]
             - 3.5*parseInt(clef.clefOctaveChange||"0", 10);
     }
-    
+
     export function barDivisionsDI(time: MusicXML.Time, divisions: number) {
         invariant(!!divisions,
             "Expected divisions to be set before calculating bar divisions.");

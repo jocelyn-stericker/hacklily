@@ -21,7 +21,7 @@ import MusicXML = require("musicxml-interfaces");
 import IModel from "./imodel";
 import IPrint from "./iprint";
 import {IMutableMeasure, IMeasureLayout} from "./measure";
-import IAttributes from "./iattributes"
+import IAttributes from "./iattributes";
 
 export interface ILayoutOptions {
     attributes: {[part: string]: IAttributes.ISnapshot[]};

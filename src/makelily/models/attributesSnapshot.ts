@@ -15,11 +15,10 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
- 
-import {PartSymbol, Clef, MeasureStyle, StaffDetails, Transpose, Key,
-    Time, Directive, Attributes, StartStop, MultipleRest} from "musicxml-interfaces";
 
-import {times, clone, forEach} from "lodash";
+import {StaffDetails, Attributes, StartStop} from "musicxml-interfaces";
+
+import {clone, forEach} from "lodash";
 
 import {IAttributes} from "../engine";
 
@@ -33,7 +32,6 @@ export interface ISpec {
 export function create({before, current, staff, measure}: ISpec) {
     let currentClefs = current.clefs || [];
     let currentTimes = current.times || [];
-    let currentStaffDetails = current.staffDetails || [];
     let currentTransposes = current.transposes || [];
     let currentKS = current.keySignatures || [];
 
@@ -107,10 +105,11 @@ function createMeasureStyleSnapshot(current: Attributes, style: IAttributes.IMea
             style.multipleRest = {
                 count: count - 1,
                 useSymbols: useSymbols
-            }
+            };
         } else {
             style.multipleRest = null;
         }
     }
     return style;
 };
+

@@ -118,7 +118,7 @@ class AttributesModel implements Export.IAttributesModel {
         this.times = times;
         this.keySignatures = keySignatures;
         this.footnote = footnote;
-        this.level = level; 
+        this.level = level;
     }
 
     toXML(): string {
@@ -131,7 +131,6 @@ class AttributesModel implements Export.IAttributesModel {
 
     private _validateClef$(cursor$: ICursor) {
         const staffIdx = cursor$.staff.idx;
-        let parent = this._parent;
 
         // Clefs must be an array
         this.clefs = this.clefs || [];
@@ -175,7 +174,7 @@ class AttributesModel implements Export.IAttributesModel {
     private _validateTime$() {
         // Times must be an array
         this.times = this.times || [];
-        
+
         // A time signature is mandatory.
         if (!this._parent.time && !this.times[0]) {
             this.times[0] = parseFromXML.time(`
@@ -351,7 +350,8 @@ module AttributesModel {
                 let measureNumbering = cursor$.print$ ?
                     cursor$.print$.measureNumbering.data : "system";
 
-                let firstInMeasure = !parent || parent.measure !== parseInt(cursor$.measure.number, 10);
+                let firstInMeasure = !parent ||
+                    parent.measure !== parseInt(cursor$.measure.number, 10);
 
                 let showNumberBecauseOfSystem = isFirstInLine && measureNumbering === "system";
 
@@ -412,7 +412,7 @@ module AttributesModel {
             }
 
             /*---- KS layout --------------------------------------*/
- 
+
             if (ksVisible) {
                 let {keySignature} = cursor$.staff.attributes;
                 let contextualSpacing$ = 0;

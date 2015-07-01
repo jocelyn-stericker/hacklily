@@ -17,7 +17,6 @@
  */
 
 import {createFactory as $, Component, DOM} from "react";
-import invariant = require("react/lib/invariant");
 
 import Attributes from "../models/attributes";
 import BarNumber from "./barNumber";

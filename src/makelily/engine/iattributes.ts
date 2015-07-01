@@ -17,7 +17,7 @@
  */
 
 import {Attributes, PartSymbol, Clef, MeasureStyle, Time, StaffDetails, Transpose, Key,
-    Directive, MultipleRest} from "musicxml-interfaces";
+    Directive} from "musicxml-interfaces";
 import _ = require("lodash");
 import invariant = require("react/lib/invariant");
 
