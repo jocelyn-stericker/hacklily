@@ -18,7 +18,6 @@
 
 "use strict";
 
-import MusicXML = require("musicxml-interfaces");
 import _ = require("lodash");
 import invariant = require("react/lib/invariant");
 

@@ -22,12 +22,10 @@
 
 "use strict";
 
-import MusicXML = require("musicxml-interfaces");
 import _ = require("lodash");
 import invariant = require("react/lib/invariant");
 
 import IAttributes from "./iattributes";
-import ICursor from "./icursor";
 import IModel from "./imodel";
 import {ISegment} from "./measure";
 import {cloneObject} from "./util";
