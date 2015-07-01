@@ -16,15 +16,14 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import MusicXML = require("musicxml-interfaces");
+import {Clef, PartSymbol, MeasureStyle, StaffDetails, Transpose, Directive,
+    Time, Key, Footnote, Level, Attributes, KeyOctave, PartSymbolType, SymbolSize,
+    parse as parseFromXML, serialize as serializeToXML} from "musicxml-interfaces";
 import _ = require("lodash");
 import invariant = require("react/lib/invariant");
 
 import {IAttributes, IChord, ICursor, IModel, IPart, ISegment} from "../engine";
-
-interface IClef extends MusicXML.Clef {
-    __inherited__?: boolean;
-}
+import {create as createSnapshot} from "./attributesSnapshot";
 
 class AttributesModel implements Export.IAttributesModel {
 
@@ -43,38 +42,34 @@ class AttributesModel implements Export.IAttributesModel {
         // todo
     }
 
+    _snapshot: IAttributes.ISnapshot;
     validate$(cursor$: ICursor): void {
-        this._measure = cursor$.measure.idx;
-        this._parent = <any> cursor$.staff.attributes[cursor$.segment.part];
+        this._parent = cursor$.staff.attributes || <IAttributes.ISnapshot> {};
 
-        for (let a = this._parent; !!a; a = a._parent) {
-            invariant(a !== this, "Internal error. " +
-                "AttributesModel.validate$() must not be called in a context with " +
-                "itself as an ancestor.");
+        if (!this._parent.divisions) {
+            this.divisions = this.divisions || 1;
         }
-
-        if (!this.divisions) {
-            this.divisions = 1;
-        }
-
-        cursor$.staff.attributes = _.clone(cursor$.staff.attributes);
-        cursor$.staff.attributes[cursor$.segment.part] = this;
-
-        // Defaults
 
         this._validateClef$(cursor$);
         this._validateTime$();
         this._validateKey$();
         this._validateStaves$(cursor$);
-        this._validateStaffDetails$();
+        this._validateStaffDetails$(cursor$);
+
+        this._validateMeasureStyles(cursor$);
+
+        this._snapshot = cursor$.staff.attributes = createSnapshot({
+            before: cursor$.staff.attributes || <IAttributes.ISnapshot> {},
+            current: this,
+            staff: cursor$.staff.idx,
+            measure: cursor$.measure.idx
+        });
 
         this._setTotalDivisions(cursor$);
-        this._validateMeasureStyles(cursor$);
     }
 
     layout(cursor$: ICursor): Export.ILayout {
-        cursor$.staff.attributes = cursor$.staff.attributes ? _.clone(cursor$.staff.attributes) : {};
-        cursor$.staff.attributes[cursor$.segment.part] = this;
+        cursor$.staff.attributes = this._snapshot;
 
         this._setTotalDivisions(cursor$);
         this._validateMeasureStyles(cursor$);
@@ -85,152 +80,49 @@ class AttributesModel implements Export.IAttributesModel {
 
     /*---- I.2 C.MusicXML.Attributes ------------------------------------------------------------*/
 
-    _parent: AttributesModel;
+    _parent: IAttributes.ISnapshot;
 
-    _divisions: number;
-    get divisions() {
-        return this._divisions === undefined && this._parent ?
-            this._parent.divisions :
-            this._divisions;
-    }
-    set divisions (m: number) {
-        this._divisions = m;
-    }
+    divisions: number;
 
-    _partSymbol: MusicXML.PartSymbol;
-    get partSymbol() {
-        return this._partSymbol === undefined && this._parent ?
-            this._parent.partSymbol :
-            this._partSymbol;
-    }
-    set partSymbol (m: MusicXML.PartSymbol) {
-        this._partSymbol = m;
-    }
-
-    _measureStyles: MusicXML.MeasureStyle[];
-    get measureStyles() {
-        return this._measureStyles === undefined && this._parent ?
-            this._parent._measureStyles :
-            this._measureStyles;
-    }
-    set measureStyles (m: MusicXML.MeasureStyle[]) {
-        this._measureStyles = m;
-    }
-
-    satieMeasureStyle: MusicXML.MeasureStyle;
-
-    _staffDetails: MusicXML.StaffDetails[];
-    get staffDetails() {
-        return this._staffDetails === undefined && this._parent ?
-            this._parent.staffDetails :
-            this._staffDetails;
-    }
-    set staffDetails (m: MusicXML.StaffDetails[]) {
-        this._staffDetails = m;
-    }
-
-    _transposes: MusicXML.Transpose[];
-    get transposes() {
-        return this._transposes === undefined && this._parent ?
-            this._parent.transposes :
-            this._transposes;
-    }
-    set transposes (m: MusicXML.Transpose[]) {
-        this._transposes = m;
-    }
-
-    _staves: number;
-    get staves() {
-        return this._staves === undefined && this._parent ?
-            this._parent.staves :
-            this._staves;
-    }
-    set staves (m: number) {
-        this._staves = m;
-    }
-
-    _instruments: string;
-    get instruments() {
-        return this._instruments === undefined && this._parent ?
-            this._parent.instruments :
-            this._instruments;
-    }
-    set instruments (m: string) {
-        this._instruments = m;
-    }
-
-    _directives: MusicXML.Directive[];
-    get directives() {
-        return this._directives === undefined && this._parent ?
-            this._parent.directives :
-            this._directives;
-    }
-    set directives (m: MusicXML.Directive[]) {
-        this._directives = m;
-    }
-
-    _clefs: IClef[];
-    get clefs(): MusicXML.Clef[] {
-        return this._clefs === undefined && this._parent ?
-            this._parent.clefs :
-            this._clefs;
-    }
-    set clefs (m: MusicXML.Clef[]) {
-        this._clefs = m;
-    }
-
-    _times: MusicXML.Time[];
-    get times() {
-        return this._times === undefined && this._parent ?
-            this._parent.times :
-            this._times;
-    }
-    set times (m: MusicXML.Time[]) {
-        this._times = m;
-    }
-
-    _keySignatures: MusicXML.Key[];
-    get keySignatures() {
-        return this._keySignatures === undefined && this._parent ?
-            this._parent.keySignatures :
-            this._keySignatures;
-    }
-    set keySignatures (m: MusicXML.Key[]) {
-        this._keySignatures = m;
-    }
+    partSymbol: PartSymbol;
+    measureStyles: MeasureStyle[];
+    staffDetails: StaffDetails[];
+    transposes: Transpose[];
+    staves: number;
+    instruments: string;
+    directives: Directive[];
+    clefs: Clef[];
+    times: Time[];
+    keySignatures: Key[];
 
     /*---- I.3 C.MusicXML.Editorial -------------------------------------------------------------*/
 
-    footnote: MusicXML.Footnote;
-    level: MusicXML.Level;
+    footnote: Footnote;
+    level: Level;
 
     /*---- I.4 Satie Ext ------------------------------------------------------------------------*/
 
-    _measure: number;
-    get multipleRestMeasureStyle(): MusicXML.MultipleRest {
-        let multipleRest = _.find(this._measureStyles, style => style.multipleRest);
-        return !multipleRest && this._parent ?
-            this._parent.multipleRestMeasureStyle :
-            (multipleRest ? multipleRest.multipleRest : null);
-    }
-    get measureStyleStartMeasure(): number {
-        return !_.find(this._measureStyles, style => style.multipleRest) && this._parent ?
-            this._parent.measureStyleStartMeasure :
-            this._measure;
-    }
-
     /*---- Validation Implementations -----------------------------------------------------------*/
 
-    constructor(spec: MusicXML.Attributes) {
-        _.forEach(spec, (value, key) => {
-            (<any>this)[key] = value;
-        });
+    constructor({divisions, partSymbol, measureStyles, staffDetails, transposes, staves, instruments,
+            directives, clefs, times, keySignatures, footnote, level}: Attributes = {}) {
+        this.divisions = divisions;
+        this.partSymbol = partSymbol;
+        this.measureStyles = measureStyles;
+        this.staffDetails = staffDetails;
+        this.transposes = transposes;
+        this.staves = staves;
+        this.instruments = instruments;
+        this.directives = directives;
+        this.clefs = clefs;
+        this.times = times;
+        this.keySignatures = keySignatures;
+        this.footnote = footnote;
+        this.level = level; 
     }
 
     toXML(): string {
-        let copy = Object.create(this);
-        copy.measureStyles = this._measureStyles;
-        return MusicXML.serialize.attributes(copy);
+        return serializeToXML.attributes(this);
     }
 
     inspect() {
@@ -239,109 +131,77 @@ class AttributesModel implements Export.IAttributesModel {
 
     private _validateClef$(cursor$: ICursor) {
         const staffIdx = cursor$.staff.idx;
+        let parent = this._parent;
 
-        // clefs must be an array
-        if (!this._clefs) {
-            this._clefs = [];
-        }
+        // Clefs must be an array
+        this.clefs = this.clefs || [];
 
-        // Remove clefs copied from parents
-        _.forEach(this._clefs, (clef, idx) => {
-            if (clef && (<any>clef).__inherited__) {
-                delete this._clefs[idx];
-            }
-        });
+        // Clefs must have a staff number
+        this.clefs.forEach(clef => clef.number = clef.number || 1);
 
-        // Fix the clef sorting
-        let previousClefs = this._parent && this._parent.clefs || [];
-        _.forEach(this._clefs.slice(), (clef, idx) => {
-            if (!clef) {
-                return;
-            }
-            clef.number = clef.number || idx + 1;
-            this._clefs[clef.number] = clef;
-        });
-        _.forEach(previousClefs, clef => {
-            if (!clef) {
-                return;
-            }
-            if (!this._clefs[clef.number]) {
-                this._clefs[clef.number] = Object.create(previousClefs[clef.number]);
-                (<any>this._clefs[clef.number]).__inherited__ = true;
-            }
-        });
+        // Clefs must be indexed by staff
+        this.clefs = this.clefs.reduce((clefs, clef) => {
+            if (clef) {
+                clefs[clef.number] = clef;
+            };
+            return clefs;
+        }, []);
 
         // A clef is mandatory (we haven't implemented clef-less staves yet)
-        if (!this.clefs[staffIdx]) {
-            this.clefs[staffIdx] = {
-                sign: "G",
-                line: 2,
-                clefOctaveChange: null,
-                number: staffIdx
-            };
+        if (!this._parent.clef && !this.clefs[staffIdx]) {
+            this.clefs[staffIdx] = parseFromXML.clef(`
+                <clef>
+                    <number>${staffIdx}</number>
+                    <sign>G</sign>
+                    <line>2</line>
+                </clef>
+            `);
         }
 
+        // Validate the given clef
         let clef = this.clefs[staffIdx];
-
-        // Clef signs are normalized to be uppercase.
         if (clef) {
             clef.sign = clef.sign.toUpperCase();
-        }
+            clef.line = parseInt("" + clef.line, 10);
 
-        // Clef lines can be inferred.
-        if (isNaN(clef.line)) {
-            clef.line = (
-                    _.find(IAttributes.Clef.standardClefs,
-                        stdClef => clef.sign.toUpperCase() === stdClef.sign.toUpperCase()) ||
-                    { line: 2 } // fallback on treble clef
-                ).line;
-        }
-
-        if (IAttributes.clefsEqual(this._parent, this, staffIdx)) {
-            this._clefs[staffIdx] = Object.create(this._clefs[staffIdx]);
-            (<any>this._clefs[staffIdx]).__inherited__ = true;
-            delete this._clefs;
+            // Clef lines can be inferred.
+            if (!clef.line) {
+                let sign = {clef};
+                let standardClef = _.find(IAttributes.Clef.standardClefs, {sign});
+                clef.line = standardClef ? standardClef.line : 2;
+            }
         }
     }
     private _validateTime$() {
-        if (!this.times) {
-            // A time signature is mandatory.
-
-            this.times = <MusicXML.Time[]> [{
-                beats: ["4"],
-                beatTypes: [4],
-                symbol: MusicXML.TimeSymbolType.Common,
-                senzaMisura: null
-            }];
-        } else if (!!this._times && this._times.length) {
-            _.forEach(this.times[0].beats, function(beat) {
-                invariant(typeof beat === "string", "Attributes validation error: beats must " +
-                    "be strings, but %s is not a string", beat);
-            });
-            if (IAttributes.timesEqual(this._parent, this, 0)) {
-                delete this._times;
-            }
+        // Times must be an array
+        this.times = this.times || [];
+        
+        // A time signature is mandatory.
+        if (!this._parent.time && !this.times[0]) {
+            this.times[0] = parseFromXML.time(`
+                <time symbol="common">
+                  <beats>4</beats>
+                  <beat-type>4</beat-type>
+                </time>
+            `);
         }
     }
 
     private _validateKey$() {
-        if (!this.keySignatures || !this.keySignatures.length) {
-            // A key signature is mandatory.
+        // Key signatures must be an array
+        this.keySignatures = this.keySignatures || [];
 
-            this.keySignatures = [{
-                fifths: 0,
-                keySteps: null,
-                keyAccidentals: null,
-                keyAlters: null
-            }];
-        } else if (!!this._keySignatures && this._keySignatures.length) {
-            if (IAttributes.keysEqual(this._parent, this, 0)) {
-                delete this._keySignatures;
-            }
+        if (!this._parent.keySignature && !this.keySignatures[0]) {
+            this.keySignatures[0] = parseFromXML.key(`
+                <key>
+                  <fifths>0</fifths>
+                  <mode>major</mode>
+                </key>
+            `);
         }
 
         let ks = this.keySignatures[0];
-        if (ks.keySteps || ks.keyAlters || ks.keyOctaves) {
+        if (ks && (ks.keySteps || ks.keyAlters || ks.keyOctaves)) {
             if (ks.keySteps.length !== ks.keyAlters.length) {
                 console.warn(
                     "Expected the number of steps to equal the number of alterations. " +
@@ -364,7 +224,7 @@ class AttributesModel implements Export.IAttributesModel {
             }
             if (ks.keyOctaves) {
                 // Let's sort them (move to prefilter?)
-                let keyOctaves: MusicXML.KeyOctave[] = [];
+                let keyOctaves: KeyOctave[] = [];
                 _.forEach(ks.keyOctaves, octave => {
                    keyOctaves[octave.number - 1] = octave;
                 });
@@ -373,40 +233,36 @@ class AttributesModel implements Export.IAttributesModel {
         }
     }
 
-    private _validateStaffDetails$() {
-        // Fix the staff details sorting
-        let newStaffDetails: MusicXML.StaffDetails[] = [];
-        let previousStaffDetails = this._parent && this._parent.staffDetails || [];
-        _.forEach(this._staffDetails, (staff, idx) => {
-            if (!staff) {
-                return;
-            }
-            staff.number = staff.number || 1;
-            newStaffDetails[staff.number] = staff;
-        });
+    private _validateStaffDetails$(cursor$: ICursor) {
+        // Staff details must be an array
+        this.staffDetails = this.staffDetails || [];
+
+        // Staff details must have a staff number
+        this.staffDetails.forEach(staffDetails => staffDetails.number = staffDetails.number || 1);
+
+        // Staff details must be indexed by staff
+        this.staffDetails = this.staffDetails.reduce((staffDetails, staffDetail) => {
+            if (staffDetail) {
+                staffDetails[staffDetail.number] = staffDetail;
+            };
+            return staffDetails;
+        }, []);
 
         // Staff details are required. Staff lines are required
-        _.times(this.staves, staffIndexMinusOne => {
-            let staffIndex = staffIndexMinusOne + 1;
-            if (!newStaffDetails[staffIndex]) {
-                if (previousStaffDetails[staffIndex]) {
-                    // TODO: __inherit__ from parent?
-                    newStaffDetails[staffIndex] = Object.create(previousStaffDetails[staffIndex]);
-                } else {
-                    newStaffDetails[staffIndex] = {
-                        number: staffIndex
-                    };
-                }
-            }
-            if (!newStaffDetails[staffIndex].staffLines) {
-                newStaffDetails[staffIndex].staffLines = 5;
-            }
-        });
-        this._staffDetails = newStaffDetails;
+        if (!this.staffDetails[cursor$.staff.idx]) {
+            this.staffDetails[cursor$.staff.idx] = {
+                number: cursor$.staff.idx
+            };
+        }
+
+        if ((!this._parent.staffDetails || !this._parent.staffDetails.staffLines) &&
+                !this.staffDetails[cursor$.staff.idx].staffLines) {
+            this.staffDetails[cursor$.staff.idx].staffLines = 5;
+        }
     }
 
     private _validateStaves$(cursor$: ICursor) {
-        this.staves = this.staves || 1;
+        this.staves = this.staves || 1; // FIXME!
         let currentPartId = cursor$.segment.part;
         let currentPart = cursor$.measure.parent.parts[currentPartId];
         _.times(this.staves, staffMinusOne => {
@@ -415,60 +271,33 @@ class AttributesModel implements Export.IAttributesModel {
                 throw new Error("A staff is missing. The code to add it is not implemented.");
             }
         });
-        if (this.staves > 1 && !this.partSymbol) {
+        if (this.staves > 1 && !this._parent.partSymbol && !this.partSymbol) {
             this.partSymbol = {
                 bottomStaff: 1,
                 topStaff: this.staves,
-                type: MusicXML.PartSymbolType.Brace,
+                type: PartSymbolType.Brace,
             };
         }
 
         // HACK: Convert part group symbols to part symbols.
         // Obviously, this won't fly when we have multiple part groups
         let groups = IPart.groupsForPart(cursor$.header.partList, cursor$.segment.part);
-        if (groups.length && !this.partSymbol) {
+        if (groups.length && !this._parent.partSymbol && !this.partSymbol) {
             this.partSymbol = {
                 bottomStaff: 1,
                 topStaff: 1,
-                type: MusicXML.PartSymbolType.Bracket,
+                type: PartSymbolType.Bracket,
             };
         }
     }
 
     _setTotalDivisions(cursor$: ICursor): void {
-        cursor$.staff.totalDivisions = IChord.barDivisions(this);
+        cursor$.staff.totalDivisions = IChord.barDivisions(this._snapshot);
     }
 
     private _validateMeasureStyles(cursor$: ICursor): void {
-        let multipleRestStyleIdx = _.findIndex(this.measureStyles, style => style.multipleRest);
-        if (this.multipleRestMeasureStyle) {
-            let multipleRestCount = this.multipleRestMeasureStyle.count;
-            let measuresAfterStyleChange = this._measure - this.measureStyleStartMeasure;
-            if (multipleRestCount < 2) {
-                this.measureStyles.splice(multipleRestStyleIdx, 1);
-            } else {
-                if (multipleRestCount > measuresAfterStyleChange) {
-                    cursor$.staff.hiddenMeasuresRemaining =
-                        multipleRestCount - measuresAfterStyleChange;
-                }
-            }
-        }
-        this.satieMeasureStyle = {};
-        _.forEach(this.measureStyles, measureStyle => {
-            if (measureStyle.slash) {
-                if (measureStyle.slash.type === MusicXML.StartStop.Stop) {
-                    this.satieMeasureStyle.slash = null;
-                } else {
-                    this.satieMeasureStyle.slash = measureStyle.slash;
-                }
-            }
-        });
-        let multipleRestDefinedHere = !!_.find(this._measureStyles,
-            measureStyle => measureStyle.multipleRest);
-        if (multipleRestDefinedHere) {
-            this.satieMeasureStyle.multipleRest = this.multipleRestMeasureStyle;
-        } else {
-            this.satieMeasureStyle.multipleRest = null;
+        if (!this.measureStyles) {
+            this.measureStyles = [];
         }
     }
 
@@ -477,15 +306,11 @@ class AttributesModel implements Export.IAttributesModel {
             return true;
         }
 
-        if (!this._clefs) {
+        if (!this.clefs) {
             return false;
         }
 
-        if (!this._clefs[owner]) {
-            return false;
-        }
-
-        if (this._clefs[owner].__inherited__) {
+        if (!this.clefs[owner]) {
             return false;
         }
 
@@ -501,7 +326,7 @@ module AttributesModel {
         constructor(origModel: AttributesModel, cursor$: ICursor) {
             invariant(!!origModel, "Layout must be passed a model");
 
-            let model = Object.create(cursor$.factory.identity(origModel));
+            let model: AttributesModel = Object.create(cursor$.factory.identity(origModel));
             this.model = model;
             this.x$ = cursor$.x$;
             this.division = cursor$.division$;
@@ -512,13 +337,13 @@ module AttributesModel {
             let nextIsNote = cursor$.factory.modelHasType(next, IModel.Type.Chord);
             let parent = this.model._parent;
 
-            let keySignatures = model._keySignatures;
-            this.ksVisible = keySignatures && !!keySignatures.length || isFirstInLine;
+            let keySignatures = model.keySignatures;
+            let ksVisible = keySignatures && !!keySignatures.length || isFirstInLine;
 
-            this.tsVisible = !!model._times && !!model._times.length; // TODO: || isFirstInPage;
+            let tsVisible = !!model.times && !!model.times.length; // TODO: || isFirstInPage;
 
-            this.clefVisible = model.shouldRenderClef(cursor$.segment.owner, isFirstInLine);
-            this.partSymbolVisible = isFirstInLine && this.model.partSymbol &&
+            let clefVisible = model.shouldRenderClef(cursor$.segment.owner, isFirstInLine);
+            let partSymbolVisible = isFirstInLine && this.model.partSymbol &&
                 this.model.partSymbol.bottomStaff === cursor$.staff.idx;
 
             // Measure number
@@ -526,7 +351,7 @@ module AttributesModel {
                 let measureNumbering = cursor$.print$ ?
                     cursor$.print$.measureNumbering.data : "system";
 
-                let firstInMeasure = !parent || parent._measure !== this.model._measure;
+                let firstInMeasure = !parent || parent.measure !== parseInt(cursor$.measure.number, 10);
 
                 let showNumberBecauseOfSystem = isFirstInLine && measureNumbering === "system";
 
@@ -544,14 +369,14 @@ module AttributesModel {
 
             const chord = nextIsNote ? IChord.fromModel(next) : null;
 
-            if (this.clefVisible) {
+            this.snapshotClef = cursor$.staff.attributes.clef;
+            if (clefVisible) {
+                let {clef} = cursor$.staff.attributes;
                 this.x$ += IAttributes.CLEF_INDENTATION;
                 cursor$.x$ = this.x$;
 
                 let contextualSpacing$ = 0;
-                model._clefs = Object.create(model.clefs);
-                invariant(model.clefs[this.staffIdx], "Clef must be defined if visible.");
-                model._clefs[this.staffIdx] = Object.create(model.clefs[this.staffIdx], {
+                this.clef = Object.create(clef, {
                     "defaultX": {
                         get: () => {
                             if (isFirstInLine) {
@@ -562,11 +387,10 @@ module AttributesModel {
                         }
                     }
                 });
-                model._clefs[this.staffIdx].defaultY = model._clefs[this.staffIdx].defaultY || 0;
-                model._clefs[this.staffIdx].size =
-                    isFirstInLine ? MusicXML.SymbolSize.Full : MusicXML.SymbolSize.Cue;
+                this.clef.defaultY = this.clef.defaultY || 0;
+                this.clef.size = isFirstInLine ? SymbolSize.Full : SymbolSize.Cue;
 
-                if (nextIsNote && !this.ksVisible && !this.tsVisible) {
+                if (nextIsNote && !ksVisible && !tsVisible) {
                     if (IChord.hasAccidental(chord, cursor$)) {
                         // TODO: what if there are more than 1 accidental?
                         contextualSpacing$ = 15;
@@ -588,19 +412,19 @@ module AttributesModel {
             }
 
             /*---- KS layout --------------------------------------*/
-
-            if (this.ksVisible) {
+ 
+            if (ksVisible) {
+                let {keySignature} = cursor$.staff.attributes;
                 let contextualSpacing$ = 0;
-                model._keySignatures = Object.create(model.keySignatures);
-                model._keySignatures[0] = Object.create(model.keySignatures[0], {
+                this.keySignature = Object.create(keySignature, {
                     defaultX: {
                         get: () => {
                             return this.overrideX + this.clefSpacing;
                         }
                     }
                 });
-                model._keySignatures[0].defaultY = 0;
-                if (nextIsNote && !this.tsVisible) {
+                this.keySignature.defaultY = 0;
+                if (nextIsNote && !tsVisible) {
                     if (IChord.hasAccidental(chord, cursor$)) {
                         // TODO: what if there are more than 1 accidental?
                         contextualSpacing$ = 25;
@@ -618,17 +442,17 @@ module AttributesModel {
 
             /*---- TS layout --------------------------------------*/
 
-            if (this.tsVisible) {
+            if (tsVisible) {
+                let {time} = cursor$.staff.attributes;
                 let contextualSpacing$ = 0;
-                model._times = Object.create(model.times);
-                model._times[0] = Object.create(model.times[0], {
+                this.time = Object.create(time, {
                     defaultX: {
                         get: () => {
                             return this.overrideX + this.clefSpacing + this.ksSpacing;
                         }
                     }
                 });
-                model._times[0].defaultY = 0;
+                this.time.defaultY = 0;
                 if (nextIsNote) {
                     if (IChord.hasAccidental(chord, cursor$)) {
                         // TODO: what if there are more than 1 accidental?
@@ -651,8 +475,9 @@ module AttributesModel {
 
             /*---- Part symbol ------------------------------------*/
 
-            if (this.partSymbolVisible) {
-                model._partSymbol = Object.create(model.partSymbol, {
+            if (partSymbolVisible) {
+                let {partSymbol} = cursor$.staff.attributes;
+                this.partSymbol = Object.create(partSymbol, {
                     defaultX: {
                         get: () => {
                             return 0;
@@ -660,6 +485,8 @@ module AttributesModel {
                     }
                 });
             }
+
+            this.staffDetails = cursor$.staff.attributes.staffDetails;
 
             /*---- Geometry ---------------------------------------*/
 
@@ -691,19 +518,22 @@ module AttributesModel {
 
         /*---- AttributesModel ----------------------------------------------*/
 
-        clefVisible: boolean;
+        clef: Clef;
+        snapshotClef: Clef;
         clefSpacing: number;
 
-        tsVisible: boolean;
+        time: Time;
         tsSpacing: number;
 
-        ksVisible: boolean;
+        keySignature: Key;
         ksSpacing: number;
 
         /** undefined if no measure number should be displayed.  */
         measureNumberVisible: string;
 
-        partSymbolVisible: boolean;
+        partSymbol: PartSymbol;
+
+        staffDetails: StaffDetails;
     }
 
     Layout.prototype.mergePolicy = IModel.HMergePolicy.Min;
@@ -721,30 +551,32 @@ function Export(constructors: { [key: number]: any }) {
 }
 
 module Export {
-    export interface IAttributesModel extends IModel, IAttributes.IAttributesExt {
+    export interface IAttributesModel extends Attributes, IModel {
     }
-
     export interface ILayout extends IModel.ILayout {
         model: IAttributesModel;
 
-        clefVisible: boolean;
+        clef: Clef;
+        snapshotClef: Clef;
         clefSpacing: number;
 
-        tsVisible: boolean;
+        time: Time;
         tsSpacing: number;
 
-        ksVisible: boolean;
+        keySignature: Key;
         ksSpacing: number;
 
         measureNumberVisible: string;
 
-        partSymbolVisible: boolean;
+        partSymbol: PartSymbol;
 
         staffIdx: number;
+
+        staffDetails: StaffDetails;
     }
 
     export function createWarningLayout$(
-            cursor$: ICursor, nextAttributes: MusicXML.Attributes) {
+            cursor$: ICursor, nextAttributes: Attributes) {
         return <ILayout> new AttributesModel.Layout(<any> nextAttributes, cursor$);
     }
 }

@@ -29,7 +29,7 @@ import {bravura} from "../models/smufl";
 /**
  * Renders the (usually 5) lines that make up a staff.
  */
-class StaveLines extends React.Component<StaveLines.IProps, {}> {
+class StaffLines extends React.Component<StaffLines.IProps, {}> {
     render(): any {
         let middle = this.context.originY - this.props.defaultY;
         let staffDetails = this.props.staffDetails;
@@ -49,7 +49,7 @@ class StaveLines extends React.Component<StaveLines.IProps, {}> {
     }
 }
 
-module StaveLines {
+module StaffLines {
     export interface IProps {
         width: number;
         staffDetails: MusicXML.StaffDetails;
@@ -62,4 +62,4 @@ module StaveLines {
     };
 }
 
-export default StaveLines;
+export default StaffLines;

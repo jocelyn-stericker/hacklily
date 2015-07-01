@@ -108,12 +108,15 @@ module BarlineModel {
         constructor(origModel: BarlineModel, cursor$: ICursor) {
             this.division = cursor$.division$;
             this.x$ = cursor$.x$;
-            if (cursor$.staff.hiddenMeasuresRemaining > 1) {
+            let {attributes} = cursor$.staff;
+            let {measureStyle, partSymbol} = attributes;
+            if (measureStyle.multipleRest && !measureStyle.multipleRestInitiatedHere &&
+                    measureStyle.multipleRest.count > 1) {
                 return;
             }
 
             this.partGroups = IPart.groupsForPart(cursor$.header.partList, cursor$.segment.part);
-            this.partSymbol = cursor$.staff.attributes[cursor$.segment.part].partSymbol;
+            this.partSymbol = partSymbol;
 
             this.model = Object.create(origModel, {
                 defaultX: {
@@ -131,7 +134,6 @@ module BarlineModel {
                 let segment = part && part.staves[cursor$.staff.idx];
                 let nextAttributes = segment && cursor$.factory.search(
                     segment, 0, IModel.Type.Attributes)[0];
-                let attributes = cursor$.staff.attributes[cursor$.segment.part];
                 let needsWarning = nextAttributes && IAttributes.needsWarning(
                     attributes, nextAttributes, cursor$.staff.idx);
 

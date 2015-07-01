@@ -22,6 +22,7 @@ import MusicXML = require("musicxml-interfaces");
 import _ = require("lodash");
 import invariant = require("react/lib/invariant");
 
+import IAttributes from "../iattributes";
 import IModel from "../imodel";
 import Context from "../context";
 import {IMutableMeasure, ISegment, OwnerType, normalizeDivisions$} from "../measure";
@@ -60,7 +61,7 @@ function tryValidate(options$: ILayoutOptions, memo$: ILinesLayoutState): void {
 
     setCurrentMeasureList(options$.measures);
 
-    let lastAttribs: {[part: string]: MusicXML.Attributes} = {};
+    let lastAttribs: {[part: string]: IAttributes.ISnapshot[]} = {};
 
     function withPart(segments: ISegment[], partID: string): ISegment[] {
         _.forEach(segments, segment => {
@@ -105,6 +106,7 @@ function tryValidate(options$: ILayoutOptions, memo$: ILinesLayoutState): void {
                     return;
                 }
                 invariant(segment.ownerType === OwnerType.Staff, "Expected staff segment");
+                lastAttribs[segment.part] = lastAttribs[segment.part] || [];
 
                 function ensureHeader(type: IModel.Type) {
                     if (!search(segment, 0, type).length) {

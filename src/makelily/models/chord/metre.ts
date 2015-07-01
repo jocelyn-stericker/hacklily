@@ -229,7 +229,7 @@ export function rhythmicSpellcheck$(cursor$: ICursor): boolean {
 
     // Get the pattern
     // TODO: allow custom beam patterns
-    let pattern = getBeamingPattern(cursor$.staff.attributes[cursor$.segment.part].times);
+    let pattern = getBeamingPattern(cursor$.staff.attributes.time);
 
     // Get the next note, if possible.
     let currNote = IChord.fromModel(curr);
@@ -440,8 +440,7 @@ function clearExcessBeats(currNote: IChord, excessBeats: number, cursor$: ICurso
 /**
  * @returns a TS string for lookup in the BEAMING_PATTERNS array.
  */
-export function getTSString(times: MusicXML.Time[]) {
-    let time = times[0];
+export function getTSString(time: MusicXML.Time) {
     invariant(!!time, "Time is not defined for getTSString");
     return _.reduce(time.beats, (memo, beats, idx) => {
         return beats + "/" + time.beatTypes[idx];
@@ -449,9 +448,8 @@ export function getTSString(times: MusicXML.Time[]) {
     }, "");
 }
 
-export function getBeamingPattern(times: MusicXML.Time[], alt?: string) {
-    let time = times[0];
-    let pattern: IChord[] = BEAMING_PATTERNS[getTSString(times) + (alt ? "_" + alt : "")];
+export function getBeamingPattern(time: MusicXML.Time, alt?: string) {
+    let pattern: IChord[] = BEAMING_PATTERNS[getTSString(time) + (alt ? "_" + alt : "")];
     let factors: {[key: number]: number[]} = {
         4: [4,3,2,1],
         8: [12,8,4,3,2,1],
@@ -516,8 +514,8 @@ export function subtract(durr1: any, divisions: number,
     let replaceWith: IChord[] = [];
     let durr1Divisions: number = isNaN(<any>durr1) ? calcDivisions(durr1, cursor) : <number> durr1;
     let beatsToFill = durr1Divisions - divisions;
-    let attributes = cursor.staff.attributes[cursor.segment.part];
-    let bp = getBeamingPattern(attributes.times);
+    let {attributes} = cursor.staff;
+    let bp = getBeamingPattern(attributes.time);
     let currDivision = (cursor.division$ + (divisionOffset || 0)) % cursor.staff.totalDivisions;
 
     let bpIdx = 0;
@@ -526,13 +524,13 @@ export function subtract(durr1: any, divisions: number,
         let bpCount = 0;
         while (bp[bpIdx] &&
             bpCount + _calcDivisions(IChord.count(bp[bpIdx]), IChord.dots(bp[bpIdx]), null,
-                attributes.times, attributes.divisions) <= currDivision) {
+                attributes.time, attributes.divisions) <= currDivision) {
             ++bpIdx;
             if (!bp[bpIdx]) {
                 return replaceWith;
             }
             bpCount += _calcDivisions(IChord.count(bp[bpIdx]), IChord.dots(bp[bpIdx]), null,
-                attributes.times, attributes.divisions);
+                attributes.time, attributes.divisions);
         }
 
         if (beatsToFill <= 0) {
@@ -541,7 +539,7 @@ export function subtract(durr1: any, divisions: number,
         }
         _.any(allNotes, function(note) { // stop at first 'true'
             let noteDivisions = _calcDivisions(IChord.count(note), IChord.dots(note), null,
-                attributes.times, attributes.divisions);
+                attributes.time, attributes.divisions);
 
             if (noteDivisions <= beatsToFill) {
                 // The subtraction is allowed to completely fill multiple pattern sections
@@ -555,9 +553,8 @@ export function subtract(durr1: any, divisions: number,
                     }
                     let dots = IChord.dots(bp[bpIdx + i]);
                     let count = IChord.count(bp[bpIdx + i]);
-                    let times = attributes.times;
-                    let divs = attributes.divisions;
-                    let bpBeats = _calcDivisions(count, dots, null, times, divs);
+                    let {time, divisions} = attributes;
+                    let bpBeats = _calcDivisions(count, dots, null, time, divisions);
                     if (tmpBeats === bpBeats) {
                         completelyFills = true;
                         break;
@@ -588,7 +585,7 @@ export function calcDivisions(chord: IChord, cursor: ICursor) {
         return 0;
     }
 
-    let attributes = cursor.staff.attributes[cursor.segment.part];
+    let {attributes} = cursor.staff;
     let count = IChord.count(chord);
     if (isNaN(count)) {
         return _.find(chord, note => note.duration).duration;
@@ -597,14 +594,14 @@ export function calcDivisions(chord: IChord, cursor: ICursor) {
         IChord.count(chord),
         IChord.dots(chord),
         IChord.timeModification(chord),
-        attributes.times,
+        attributes.time,
         attributes.divisions);
 
     // TODO: Make it so we can overflow without trying to add barlines?
     return Math.min(intrinsicDivisions, cursor.staff.totalDivisions);
 }
 
-export function calcDivisionsNoCtx(chord: IChord, times: MusicXML.Time[], divisions: number) {
+export function calcDivisionsNoCtx(chord: IChord, time: MusicXML.Time, divisions: number) {
     let count = IChord.count(chord);
     if (isNaN(count)) {
         return _.find(chord, note => note.duration).duration;
@@ -613,13 +610,12 @@ export function calcDivisionsNoCtx(chord: IChord, times: MusicXML.Time[], divisi
         count,
         IChord.dots(chord),
         IChord.timeModification(chord),
-        times,
+        time,
         divisions);
 }
 
 function _calcDivisions(count: number, dots: number,
-        timeModification: MusicXML.TimeModification, times: MusicXML.Time[], divisions: number) {
-    let time = times[0];
+        timeModification: MusicXML.TimeModification, time: MusicXML.Time, divisions: number) {
     if (time.senzaMisura !== undefined) {
         time = {
             beatTypes: [4],
@@ -666,7 +662,7 @@ function _calcDivisions(count: number, dots: number,
  */
 export function wholeNote(cursor: ICursor): IChord[] {
     let attributes = cursor.staff.attributes;
-    let tsName = getTSString(attributes[cursor.segment.part].times);
+    let tsName = getTSString(attributes.time);
     return WHOLE_NOTE_PATTERNS[tsName];
 }
 

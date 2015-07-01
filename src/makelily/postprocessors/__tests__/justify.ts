@@ -58,14 +58,14 @@ describe("[lineProcessor.ts]", function() {
 
             let layouts = _.map(segments, (seg, idx) => layoutMeasure({
                 attributes: {
-                    P1: {
+                    P1: [<any>{
                         divisions: 4,
-                        times: [{
+                        time: {
                             senzaMisura: null,
                             beats: ["1"],
                             beatTypes: [4]
-                        }]
-                    }
+                        }
+                    }]
                 },
                 maxX: 1000,
                 minX: 0,
