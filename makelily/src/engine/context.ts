@@ -66,7 +66,7 @@ export interface IMeasure {
     /** 
      * Attributes from previous measure.
      */
-    attributes$: MusicXML.Attributes;
+    attributes: IAttributes.ISnapshot;
 
     /** 
      * A string uniquely identifying this bar, for collaboration
@@ -84,7 +84,7 @@ export module IMeasure {
             uuid: measure.uuid,
 
             implicit: measure.implicit,
-            attributes$: null,
+            attributes: null,
             nonControlling: measure.nonControlling,
             number: measure.number,
             x: x,
@@ -105,9 +105,8 @@ export interface IAccidentals {
 export interface IStaff {
     previous: IStaff;
 
-    attributes: {[part: string]: MusicXML.Attributes};
+    attributes: IAttributes.ISnapshot;
     totalDivisions: number;
-    hiddenMeasuresRemaining?: number;
 
     accidentals$: IAccidentals;
 
@@ -123,15 +122,6 @@ export module IStaff {
         if (!oldContext) {
             return null;
         }
-        let attributes: {[part: string]: MusicXML.Attributes} = {};
-        _.forEach(oldContext.attributes, (attributeInstance, partID) => {
-            if (Object.isFrozen(attributeInstance)) {
-                attributes[partID] = attributeInstance;
-            } else {
-                attributes[partID] = Object.create(attributeInstance);
-                Object.freeze(attributes[partID]);
-            }
-        });
 
         let previous: IStaff;
         if (!oldContext.previous || Object.isFrozen(oldContext.previous)) {
@@ -143,17 +133,11 @@ export module IStaff {
 
         return {
             previous: previous,
-            attributes: attributes,
+            attributes: oldContext.attributes,
             totalDivisions: NaN,
             accidentals$: cloneObject(oldContext.accidentals$),
             idx: oldContext.idx
         };
-    }
-
-    export function getMeasureStyle(cursor: ICursor): MusicXML.MeasureStyle {
-        let {attributes} = cursor.staff;
-        let {part} = cursor.segment;
-        return (<IAttributes.IAttributesExt> attributes[part]).satieMeasureStyle;
     }
 }
 

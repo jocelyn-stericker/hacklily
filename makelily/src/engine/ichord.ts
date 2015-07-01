@@ -26,6 +26,7 @@ import MusicXML = require("musicxml-interfaces");
 import _ = require("lodash");
 import invariant = require("react/lib/invariant");
 
+import IAttributes from "./iattributes";
 import ICursor from "./icursor";
 import IModel from "./imodel";
 import {cloneObject} from "./util";
@@ -234,15 +235,13 @@ module IChord {
         return clefOffsets[clef.sign] + clef.line - defaultClefLines[clef.sign.toUpperCase()]
             - 3.5*parseInt(clef.clefOctaveChange||"0", 10);
     }
-
-    export function barDivisions(attributes: MusicXML.Attributes) {
-        invariant(!!attributes.divisions,
+    
+    export function barDivisionsDI(time: MusicXML.Time, divisions: number) {
+        invariant(!!divisions,
             "Expected divisions to be set before calculating bar divisions.");
 
-        const time = attributes.times[0];
-
         if (time.senzaMisura != null) {
-            return 1000000 * attributes.divisions;
+            return 1000000 * divisions;
         }
 
         const firstType = time.beatTypes[0];
@@ -251,7 +250,11 @@ module IChord {
             _.reduce(timeStr.split("+"), (memo, timeStr) => memo +
                 parseInt(timeStr, 10)*firstType/time.beatTypes[idx], 0), 0);
 
-        return totalBeats * attributes.divisions || NaN;
+        return totalBeats * divisions || NaN;
+    }
+
+    export function barDivisions({time, divisions}: IAttributes.ISnapshot) {
+        return barDivisionsDI(time, divisions);
     }
 
     export let IDEAL_STEM_HEIGHT: number = 35;

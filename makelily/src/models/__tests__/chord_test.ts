@@ -27,25 +27,23 @@ import chai = require("chai");
 
 import Attributes from "../attributes";
 import Chord from "../chord";
-import {IModel, IChord, ICursor} from "../../engine";
+import {IModel, IChord, ICursor, IAttributes} from "../../engine";
 import Factory from "../factory";
 
 let expect = chai.expect;
 
-function getAttributes(): {[part: string]: MusicXML.Attributes} {
-    return {
-        P1: {
-            divisions: 6,
-            times: [{
-                beats: ["4"],
-                beatTypes: [4],
-                senzaMisura: null
-            }],
-            clefs: [{
-                clefOctaveChange: null,
-                sign: "G",
-                line: 2
-            }]
+function getAttributes(): IAttributes.ISnapshot {
+    return <any> {
+        divisions: 6,
+        times: {
+            beats: ["4"],
+            beatTypes: [4],
+            senzaMisura: null
+        },
+        clef: {
+            clefOctaveChange: null,
+            sign: "G",
+            line: 2
         }
     };
 }
@@ -74,7 +72,7 @@ function getCursor(factory: IModel.IFactory, model: IModel): ICursor {
             implicit: false,
             nonControlling: false,
             x: 100,
-            attributes$: attributes,
+            attributes: attributes,
             uuid: 1,
             parent: null
         },

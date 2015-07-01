@@ -28,11 +28,11 @@ import invariant = require("react/lib/invariant");
 
 import {
     IMeasurePart, IMutableMeasure, IPart, ISegment, IMeasureLayout, OwnerType,
-    MAX_SAFE_INTEGER, key$, ICursor, IModel, Context
+    MAX_SAFE_INTEGER, key$, ICursor, IModel, Context, IAttributes
 } from "../../engine";
 
 export interface IMeasureLayoutOptions {
-    attributes: {[part: string]: MusicXML.Attributes};
+    attributes: {[part: string]: IAttributes.ISnapshot[]};
     header: MusicXML.ScoreHeader;
     line: Context.ILine;
     measure: IMutableMeasure;
@@ -108,7 +108,7 @@ export function reduceMeasure(spec: ILayoutOpts): IMeasureLayout {
     let gMeasure = spec.measure;
     let gPrevByStaff = spec.prevByStaff;
     let gValidateOnly = spec._validateOnly;
-    let gSomeLastAttribs = <{[part: string]: MusicXML.Attributes}> {};
+    let gSomeLastAttribs = <{[part: string]: IAttributes.ISnapshot[]}> {};
     let gMaxDivisions = 0;
 
     invariant(spec.segments.length >= 1, "_processMeasure expects at least one segment.");
@@ -132,13 +132,14 @@ export function reduceMeasure(spec: ILayoutOpts): IMeasureLayout {
     let gDivOverflow: DivisionOverflowException = null;
 
     let gVoiceLayouts$ = _.map(gVoiceMeasure, segment => {
-        let lastAttribs = Object.create(spec.attributes || {});
+        let lastAttribs: IAttributes.ISnapshot = Object.create(spec.attributes || {});
         let voice = <Context.IVoice> {};
-        let part = segment.part;
+        let {part} = segment;
+        gSomeLastAttribs[part] = gSomeLastAttribs[part] || [];
 
         let voiceStaves$: {[key: number]: IModel.ILayout[]}  = {};
-        let staffContexts$: {[key: number]: Context.IStaff}        = {};
-        let divisionPerStaff$: {[key: string]: number}            = {};
+        let staffContexts$: {[key: number]: Context.IStaff} = {};
+        let divisionPerStaff$: {[key: string]: number} = {};
 
         let cursor$ = createCursor({
             segment: segment,
@@ -172,9 +173,9 @@ export function reduceMeasure(spec: ILayoutOpts): IMeasureLayout {
             let oldDivision = cursor$.division$;
             let oldSegment = cursor$.segment;
             let oldIdx = cursor$.idx$;
-            cursor$.division$               = divisionPerStaff$[staffIdx];
+            cursor$.division$ = divisionPerStaff$[staffIdx];
             cursor$.segment = gStaffMeasure[`${part}_${staffIdx}`];
-            cursor$.idx$                    = voiceStaves$[staffIdx].length;
+            cursor$.idx$ = voiceStaves$[staffIdx].length;
             let layout: IModel.ILayout;
             key$(model);
             if (gValidateOnly) {
@@ -187,7 +188,7 @@ export function reduceMeasure(spec: ILayoutOpts): IMeasureLayout {
             }
             invariant(isFinite(model.divCount), "%s should be a constant division count",
                     model.divCount);
-            cursor$.division$               += model.divCount;
+            cursor$.division$ += model.divCount;
 
             if (cursor$.division$ > cursor$.staff.totalDivisions && !!gDivOverflow) {
                 // Note: unfortunate copy-pasta.
@@ -255,11 +256,12 @@ export function reduceMeasure(spec: ILayoutOpts): IMeasureLayout {
 
             // Create a voice-staff pair if needed. We'll later merge all the
             // voice staff pairs.
+            spec.attributes[part] = spec.attributes[part] || [];
             if (!voiceStaves$[staffIdx]) {
                 voiceStaves$[staffIdx] = [];
                 staffContexts$[staffIdx] = {
                     accidentals$: {},
-                    attributes: spec.attributes,
+                    attributes: spec.attributes[part][staffIdx],
                     totalDivisions: NaN,
                     previous: null,
                     idx: staffIdx
@@ -359,8 +361,8 @@ export function reduceMeasure(spec: ILayoutOpts): IMeasureLayout {
                     }
                 });
             }
-            lastAttribs[segment.part] = cursor$.staff.attributes[segment.part];
-            gSomeLastAttribs[segment.part] = lastAttribs[segment.part];
+            lastAttribs = cursor$.staff.attributes;
+            gSomeLastAttribs[segment.part][model.staffIdx] = lastAttribs;
             gMaxXInMeasure = Math.max(cursor$.x$, gMaxXInMeasure);
             gMaxPaddingTopInMeasure$[model.staffIdx] = Math.max(
                 cursor$.maxPaddingTop$[model.staffIdx],
@@ -421,7 +423,7 @@ export function reduceMeasure(spec: ILayoutOpts): IMeasureLayout {
 }
 
 export interface ILayoutOpts {
-    attributes: {[part: string]: MusicXML.Attributes};
+    attributes: {[key: string]: IAttributes.ISnapshot[]};
     factory: IModel.IFactory;
     header: MusicXML.ScoreHeader;
     line: Context.ILine;
@@ -442,31 +444,30 @@ export interface ILayoutOpts {
  * @param opts structure with __normalized__ voices and staves
  * @returns an array of staff and voice layouts with an undefined order
  */
-export function layoutMeasure(opts: IMeasureLayoutOptions): IMeasureLayout {
-    let measureCtx = Context.IMeasure.detach(opts.measure, opts.x);
+export function layoutMeasure({header, measure, line, attributes, factory, prevByStaff,
+        padEnd, _approximate, _detached, x}: IMeasureLayoutOptions): IMeasureLayout {
+    let measureCtx = Context.IMeasure.detach(measure, x);
 
-    let parts = _.map(IPart.scoreParts(opts.header.partList), part => part.id);
+    let parts = _.map(IPart.scoreParts(header.partList), part => part.id);
     let voices = <ISegment[]> _.flatten(_.map(parts,
-                partId => opts.measure.parts[partId].voices));
+                partId => measure.parts[partId].voices));
     let staves = <ISegment[]> _.flatten(_.map(parts,
-                partId => opts.measure.parts[partId].staves));
+                partId => measure.parts[partId].staves));
 
     let segments = _.filter(voices.concat(staves), s => !!s);
 
-    let line = opts.line;
-
     return reduceMeasure({
-        attributes: opts.attributes,
-        factory: opts.factory,
-        header: opts.header,
-        line: line,
+        attributes,
+        factory,
+        header,
+        line,
         measure: measureCtx,
-        prevByStaff: opts.prevByStaff,
-        segments: segments,
-        padEnd: opts.padEnd,
+        prevByStaff,
+        segments,
+        padEnd,
 
-        _approximate: opts._approximate,
-        _detached: opts._detached
+        _approximate,
+        _detached
     });
 }
 

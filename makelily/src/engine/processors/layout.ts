@@ -88,11 +88,8 @@ export default function layout$(options: ILayoutOptions, memo$: ILinesLayoutStat
             });
             let part = IPart.scoreParts(options.header.partList)[0].id;
             // TODO: Only skip render multiple rests if __all__ visible parts have rests
-            let attributes = approximateLayout.attributes;
-            let measureStyle: MusicXML.MeasureStyle;
-            if (attributes && attributes[part]) {
-                measureStyle = (<IAttributes.IAttributesExt>attributes[part]).satieMeasureStyle;
-            }
+            let {attributes} = approximateLayout;
+            let {measureStyle} = attributes[part][1];
             let multipleRestEl = measureStyle && measureStyle.multipleRest;
             if (multipleRestEl) {
                 multipleRest = multipleRestEl.count;
@@ -180,6 +177,7 @@ function reduceToLineOpts(memo: IReduceOptsMemo, width: IWidthInformation, idx: 
 
 function secondPass(lineOpt$: ILayoutOptions, key: string, lineOpts$: ILayoutOptions[]) {
     lineOpt$.lines = lineOpts$.length;
+    lineOpt$.attributes = {}; // FIXME
 
     let lineBounds = ILineBounds.calculate(lineOpt$.print$, this.options.page$);
     return layoutLine$(lineOpt$, lineBounds, this.memo$);

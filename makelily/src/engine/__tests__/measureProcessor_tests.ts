@@ -51,12 +51,12 @@ describe("[engine/measureProcessor.ts]", function() {
 
             // test without alignment
             let opts: ILayoutOpts = {
-                attributes: {},
+                attributes: <any> {},
                 line: Context.ILine.create(segments, 1, 0, 1),
                 header: null,
                 padEnd: false,
                 measure: {
-                    attributes$: {},
+                    attributes: <any> {},
                     idx: 0,
                     implicit: false,
                     nonControlling: false,

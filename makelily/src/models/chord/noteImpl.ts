@@ -449,7 +449,7 @@ class NoteImpl implements MusicXML.Note {
             let glyphName = IChord.accidentalGlyphs[acc.accidental];
             invariant(glyphName in glyphBBoxes, "Expected a known glyph, got %s", glyphName);
             let width = glyphBBoxes[glyphName][0]*10;
-            let clef = cursor.staff.attributes[cursor.segment.part].clefs[cursor.staff.idx];
+            let {clef} = cursor.staff.attributes;
             // TODO: `let clef = cursor.part.attributes.clefs[cursor.staff.idx]`
 
             if (IChord.onLedger(this, clef)) {

@@ -59,7 +59,7 @@ export function getPage(doc: IDocument, startMeasure: number,
 
     let memo$ = ILinesLayoutMemo.create(top);
     const lineLayouts = layout({
-        attributes: null,
+        attributes: {},
         debug: true,
         header: doc.header,
         measures: doc.measures,
