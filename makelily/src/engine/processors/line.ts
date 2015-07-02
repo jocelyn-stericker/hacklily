@@ -27,9 +27,8 @@ import {layoutMeasure} from "./measure";
 
 export function layoutLine$(options: ILayoutOptions, bounds: ILineBounds,
         memo$: ILinesLayoutState): ILineLayoutResult {
-    let measures = options.measures;
-    let attributes = options.attributes;
-    let clean$ = memo$.clean$;
+    let {measures, attributes} = options;
+    let {clean$} = memo$;
 
     let allModels = _.reduce(measures, function(memo, measure) {
         let voiceSegments$ = <ISegment[]>

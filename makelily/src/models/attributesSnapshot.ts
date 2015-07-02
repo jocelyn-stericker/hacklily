@@ -49,7 +49,7 @@ export function create({before, current, staff, measure}: ISpec) {
         directives: current.directives,
         staves: current.staves || before.staves,
         measureStyle: createMeasureStyleSnapshot(current,
-            clone(before.measureStyle || <IAttributes.IMeasureStyle> {}))
+            JSON.parse(JSON.stringify(before.measureStyle || <IAttributes.IMeasureStyle> {})))
     };
 
     return snapshot;
@@ -98,6 +98,10 @@ function createMeasureStyleSnapshot(current: Attributes, style: IAttributes.IMea
             style.multipleRest = currentMeasureStyle.multipleRest;
         }
     });
+
+    if (!multipleRestInitiatedHere) {
+        style.multipleRestInitiatedHere = false;
+    }
 
     if (style.multipleRest && !multipleRestInitiatedHere) {
         let {count, useSymbols} = style.multipleRest;
