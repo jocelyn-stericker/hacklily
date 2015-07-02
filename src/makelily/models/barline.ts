@@ -110,8 +110,8 @@ module BarlineModel {
             this.x$ = cursor$.x$;
             let {attributes} = cursor$.staff;
             let {measureStyle, partSymbol} = attributes;
-            if (measureStyle.multipleRest && !measureStyle.multipleRestInitiatedHere &&
-                    measureStyle.multipleRest.count > 1) {
+            if (measureStyle.multipleRest && measureStyle.multipleRest.count > 1) {
+                // TODO: removing this shows that measures are slightly misplaced
                 return;
             }
 

@@ -167,7 +167,7 @@ class ChordModelImpl implements ChordModel.IChordModel {
     private _checkMulitpleRest$(cursor$: ICursor) {
         let {measureStyle} = cursor$.staff.attributes;
         let multipleRest = measureStyle && measureStyle.multipleRest;
-        if (multipleRest && multipleRest.count > 1 && !measureStyle.multipleRestInitiatedHere) {
+        if (multipleRest && multipleRest.count > 1) {
             this.satieMultipleRest = measureStyle.multipleRest;
         }
     }
@@ -533,8 +533,7 @@ module ChordModelImpl {
         constructor(baseModel: ChordModelImpl, cursor$: ICursor) {
             this.division = cursor$.division$;
             let {measureStyle} = cursor$.staff.attributes;
-            if (measureStyle.multipleRest && !measureStyle.multipleRestInitiatedHere &&
-                    measureStyle.multipleRest.count > 0 && !baseModel.satieMultipleRest) {
+            if (measureStyle.multipleRest && !measureStyle.multipleRestInitiatedHere) {
                 // This is not displayed because it is part of a multirest.
                 this.expandPolicy = IModel.ExpandPolicy.None;
                 return;
