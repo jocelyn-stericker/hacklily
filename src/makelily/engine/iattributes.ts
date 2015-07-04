@@ -16,7 +16,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import MusicXML = require("musicxml-interfaces");
+import {Attributes, PartSymbol, Clef, MeasureStyle, Time, StaffDetails, Transpose, Key,
+    Directive} from "musicxml-interfaces";
 import _ = require("lodash");
 import invariant = require("react/lib/invariant");
 
@@ -25,16 +26,39 @@ import invariant = require("react/lib/invariant");
 module IAttributes {
 
 /**
+ * A snapshot of the current attribute state
+ */
+export interface ISnapshot {
+    measure: number;
+    divisions: number;
+    partSymbol: PartSymbol;
+    clef: Clef;
+    measureStyle: IMeasureStyle;
+    time: Time;
+    staffDetails: StaffDetails;
+    transpose: Transpose;
+    staves: number;
+    instruments: string;
+    keySignature: Key;
+    directives: Directive[];
+}
+
+export interface IMeasureStyle extends MeasureStyle {
+    multipleRestInitiatedHere: boolean;
+}
+
+/**
  * Returns true if warning Attributes are required at the end of a line, and false otherwise.
  */
-export function needsWarning(end: MusicXML.Attributes, start: MusicXML.Attributes, staff: number) {
-    if ("P1" in end || "P1" in start) {
-        invariant(null, "An object with 'P1' was passed to needsWarning. Check your types!!");
-    }
+export function needsWarning(end: ISnapshot, start: ISnapshot, staff: number) {
+    invariant(!!end && !!start,
+        "A null end or start was passed to needsWarning. Check your types!!");
+    invariant(!("P1" in end || "P1" in start),
+        "An object with 'P1' was passed to needsWarning. Check your types!!");
     return !clefsEqual(end, start, staff) || !timesEqual(end, start, 0) || !keysEqual(end, start, 0);
 }
 
-export function warningWidth(end: MusicXML.Attributes, start: MusicXML.Attributes, staff: number) {
+export function warningWidth(end: ISnapshot, start: ISnapshot, staff: number) {
     if (!start) {
         return 0;
     }
@@ -51,34 +75,34 @@ export function warningWidth(end: MusicXML.Attributes, start: MusicXML.Attribute
     return totalWidth;
 }
 
-export function clefWidth(attributes: MusicXML.Attributes, staff: number) {
+export function clefWidth(attributes: ISnapshot, staff: number) {
     return 24;
 }
 
-export function timeWidth(attributes: MusicXML.Attributes, staff: number) {
+export function timeWidth(attributes: ISnapshot, staff: number) {
     if (staff !== 0) {
         console.warn("Satie does not support different time signatures concurrently.");
     }
 
-    if (!attributes.times || !attributes.times[staff] || !attributes.times[staff].beatTypes) {
+    if (!attributes.time || !attributes.time.beatTypes) {
         return 0;
     }
-    let beats = attributes.times[staff].beats;
+    let beats = attributes.time.beats;
     let numeratorSegments = _.reduce(beats, (memo, beats) => memo + beats.split("+").length, 0);
     return NUMBER_SPACING*numeratorSegments +
-        (attributes.times[staff].beatTypes.length - 1)*PLUS_SPACING;
+        (attributes.time.beatTypes.length - 1)*PLUS_SPACING;
 }
 
-export function keyWidth(attributes: MusicXML.Attributes, staff: number) {
+export function keyWidth(attributes: ISnapshot, staff: number) {
     if (staff !== 0) {
         console.warn("Satie does not support different key signature concurrently, yet.");
     }
 
-    if (!attributes.keySignatures || !attributes.keySignatures[staff]) {
+    if (!attributes.keySignature) {
         return 0;
     }
 
-    const keySignature = attributes.keySignatures[staff];
+    const keySignature = attributes.keySignature;
 
     if (keySignature.fifths || keySignature.keyAlters) {
         return 2 + _.reduce(keyWidths(keySignature), (memo, width) => memo + width, 0);
@@ -87,9 +111,9 @@ export function keyWidth(attributes: MusicXML.Attributes, staff: number) {
     }
 }
 
-export function clefsEqual(from: MusicXML.Attributes, to: MusicXML.Attributes, staff: number) {
-    let cA = from && from.clefs && from.clefs[staff];
-    let cB = to && to.clefs && to.clefs[staff];
+export function clefsEqual(from: ISnapshot, to: ISnapshot, staff: number) {
+    let cA = from && from.clef;
+    let cB = to && to.clef;
     if (!cA || !cB) {
         return false;
     }
@@ -99,12 +123,12 @@ export function clefsEqual(from: MusicXML.Attributes, to: MusicXML.Attributes, s
         cA.clefOctaveChange === cB.clefOctaveChange;
 }
 
-export function timesEqual(from: MusicXML.Attributes, to: MusicXML.Attributes, staff: number) {
+export function timesEqual(from: ISnapshot, to: ISnapshot, staff: number) {
     if (staff !== 0) {
         console.warn("Satie does not support different time signatures concurrently.");
     }
-    let tA = from && from.times && from.times[staff];
-    let tB = to && to.times && to.times[staff];
+    let tA = from && from.time;
+    let tB = to && to.time;
     if (!tA || !tB) {
         return false;
     }
@@ -115,12 +139,12 @@ export function timesEqual(from: MusicXML.Attributes, to: MusicXML.Attributes, s
         tA.symbol === tB.symbol;
 }
 
-export function keysEqual(from: MusicXML.Attributes, to: MusicXML.Attributes, staff: number) {
+export function keysEqual(from: ISnapshot, to: ISnapshot, staff: number) {
     if (staff !== 0) {
         console.warn("Satie does not support different key signature concurrently, yet.");
     }
-    let keyA = from && from.keySignatures && from.keySignatures[staff];
-    let keyB = to && to.keySignatures && to.keySignatures[staff];
+    let keyA = from && from.keySignature;
+    let keyB = to && to.keySignature;
     if (!keyA || !keyB) {
         return false;
     }
@@ -132,7 +156,7 @@ export function keysEqual(from: MusicXML.Attributes, to: MusicXML.Attributes, st
         keyA.mode === keyB.mode;
 }
 
-export function approximateWidth(attributes: MusicXML.Attributes, atEnd = AtEnd.No) {
+export function approximateWidth(attributes: Attributes, atEnd = AtEnd.No) {
     if (atEnd) {
         return 80;
     }
@@ -145,7 +169,7 @@ export const enum AtEnd {
 }
 
 export module Clef {
-    export const standardClefs: MusicXML.Clef[] = [
+    export const standardClefs: Clef[] = [
         {
             // Treble
             line: 2,
@@ -225,7 +249,7 @@ export module Clef {
         },
         {
             line: 3,
-            sign: "percussion",
+            sign: "PERCUSSION",
             additional: false,
             afterBarline: false,
             clefOctaveChange: null,
@@ -244,7 +268,7 @@ export module Clef {
         },
         {
             line: 5,
-            sign: "tab",
+            sign: "TAB",
             additional: false,
             afterBarline: false,
             clefOctaveChange: null,
@@ -264,7 +288,7 @@ export module Clef {
     ];
 }
 
-export function keyWidths(spec: MusicXML.Key) {
+export function keyWidths(spec: Key) {
     let widths: number[] = [];
     if (spec.keyAlters) {
         return _.map(spec.keyAlters, alter => {
@@ -319,12 +343,6 @@ export const DOUBLE_FLAT_WIDTH = 19;
 export const DOUBLE_SHARP_WIDTH = 13;
 export const SHARP_WIDTH = 11;
 export const NATURAL_WIDTH = 11;
-
-export interface IAttributesExt extends MusicXML.Attributes {
-    satieMeasureStyle: MusicXML.MeasureStyle;
-    multipleRestMeasureStyle: MusicXML.MultipleRest;
-    measureStyleStartMeasure: number;
-}
 
 }
 

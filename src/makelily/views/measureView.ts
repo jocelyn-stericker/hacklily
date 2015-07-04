@@ -44,8 +44,8 @@ class MeasureView extends Component<{layout: IMeasureLayout}, void> {
     }
 
     getChildContext() {
-        const layout = this.props.layout;
-        const originYByPartAndStaff = _.mapValues(layout.originY, this.extractOrigins, this);
+        let {layout} = this.props;
+        let originYByPartAndStaff = _.mapValues(layout.originY, this.extractOrigins, this);
         let bottom = MAX_SAFE_INTEGER;
         let top = 0;
         _.forEach(layout.originY, origins => {

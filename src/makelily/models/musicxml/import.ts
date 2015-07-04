@@ -235,7 +235,7 @@ export function _extractMXMLPartsAndMeasures(input: MusicXML.ScoreTimewise,
                         note = IChord.fromModel(newNote);
 
                         // Update target division
-                        let divs = calcDivisionsNoCtx([input], target.times, divisions);
+                        let divs = calcDivisionsNoCtx([input], target.times[0], divisions);
                         target.divisionPerVoice[voice] += divs;
                         target.division += divs;
                     }
@@ -302,7 +302,7 @@ export function _extractMXMLPartsAndMeasures(input: MusicXML.ScoreTimewise,
                 let voice = createVoice(maxVoice, target.output);
                 let newNote: IChord = <any> factory.create(IModel.Type.Chord);
                 newNote.push({
-                    duration: IChord.barDivisions(lastAttribs),
+                    duration: IChord.barDivisionsDI(lastAttribs.times[0], lastAttribs.divisions),
                     rest: {},
                     staff: staff,
                     voice: maxVoice

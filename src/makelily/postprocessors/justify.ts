@@ -45,7 +45,7 @@ function justify(options: ILayoutOptions, bounds: ILineBounds,
     const underfilled = _.map(measures$, (measure, idx) => {
         let attr = measures$[idx].attributes;
         let firstPart = IPart.scoreParts(options.header.partList)[0].id;
-        let divs = IChord.barDivisions(attr[firstPart]);
+        let divs = IChord.barDivisions(attr[firstPart][1]);
         let maxDivs = measure.maxDivisions;
         return maxDivs < divs;
     });

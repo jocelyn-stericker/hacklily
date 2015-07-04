@@ -34,9 +34,7 @@ describe("[engine/context.ts]", function() {
         it("produces object independent of parent", function() {
             let orig: Context.IStaff = {
                 previous: null,
-                attributes: {
-                    P1: {}
-                },
+                attributes: <any> {},
                 totalDivisions: NaN,
                 accidentals$: {},
                 division: 10,
@@ -48,11 +46,8 @@ describe("[engine/context.ts]", function() {
 
             copy.previous = orig;
             copy.accidentals$["a"] = 1;
-            expect(function() {
-                copy.attributes["P1"].instruments = "piano";
-            }).to.throw(); // Frozen.
 
-            expect(copy.attributes["P1"].instruments).to.not.equal("piano"); // Frozen
+            expect(copy.attributes.instruments).to.not.equal("piano"); // Frozen
             copy.accidentals$["a"] = 1;
 
             expect(orig).to.deep.equal(orig2);
@@ -61,9 +56,7 @@ describe("[engine/context.ts]", function() {
         it("does not freeze attributes or parent of owner", function() {
             let parent: Context.IStaff = {
                 previous: null,
-                attributes: {
-                    P1: {}
-                },
+                attributes: <any> {},
                 totalDivisions: NaN,
                 accidentals$: {},
                 division: 10,
@@ -72,26 +65,17 @@ describe("[engine/context.ts]", function() {
 
             let orig: Context.IStaff = {
                 previous: parent,
-                attributes: {
-                    P1: {}
-                },
+                attributes: <any> {},
                 totalDivisions: NaN,
                 accidentals$: {},
                 division: 10,
                 idx: 0
             };
             let copy = Context.IStaff.detach(orig);
-            orig.attributes["P1"].instruments = "piano";
+            orig.attributes.instruments = "piano";
             orig.previous.accidentals$["a"] = 1;
-            expect(orig.attributes["P1"].instruments).to.equal("piano");
-            expect(copy.attributes["P1"].instruments).to.equal("piano");
-            expect(function() {
-                copy.attributes["P1"].instruments = "cello";
-            }).to.throw(); // Frozen.
-            expect(function() {
-                copy.previous.accidentals$["a"] = 4;
-            }).to.not.throw();
-            expect(copy.previous.accidentals$["a"]).to.equal(4);
+            expect(orig.attributes.instruments).to.equal("piano");
+            expect(copy.attributes.instruments).to.equal("piano");
         });
     });
 });

@@ -27,9 +27,8 @@ import {layoutMeasure} from "./measure";
 
 export function layoutLine$(options: ILayoutOptions, bounds: ILineBounds,
         memo$: ILinesLayoutState): ILineLayoutResult {
-    let measures = options.measures;
-    let attributes = options.attributes;
-    let clean$ = memo$.clean$;
+    let {measures, attributes} = options;
+    let {clean$} = memo$;
 
     let allModels = _.reduce(measures, function(memo, measure) {
         let voiceSegments$ = <ISegment[]>
@@ -54,11 +53,11 @@ export function layoutLine$(options: ILayoutOptions, bounds: ILineBounds,
     let staffIdx = 0;
 
     let topsInOrder = _.map(partOrder, partID => {
-        invariant(attributes[partID].staves >= 1,
+        invariant(attributes[partID][1].staves >= 1,
                 "Expected at least 1 staff, but there are %s",
-                attributes[partID].staves);
+                attributes[partID][1].staves);
 
-        return [null].concat(_.times(attributes[partID].staves, () => {
+        return [null].concat(_.times(attributes[partID].length - 1, () => {
             ++staffIdx;
             if (staffIdx > 1) {
                 memo$.y$ -= 100;

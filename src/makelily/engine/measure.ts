@@ -22,10 +22,10 @@
 
 "use strict";
 
-import MusicXML = require("musicxml-interfaces");
 import _ = require("lodash");
 
 import IModel from "./imodel"; // @circular
+import IAttributes from "./iattributes";
 import {lcm} from "./util";
 
 /**
@@ -94,7 +94,7 @@ export function normalizeDivisions$(segments$: ISegment[], factor: number = 0): 
 };
 
 export interface IMeasureLayout {
-    attributes: {[part: string]: MusicXML.Attributes};
+    attributes: {[part: string]: IAttributes.ISnapshot[]};
     elements: IModel.ILayout[][];
     width: number;
     maxDivisions: number;
