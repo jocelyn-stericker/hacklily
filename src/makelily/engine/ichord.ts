@@ -244,13 +244,11 @@ module IChord {
             return 1000000 * divisions;
         }
 
-        const firstType = time.beatTypes[0];
-
-        const totalBeats = _.reduce(time.beats, (memo, timeStr, idx) => memo +
+        const quarterNotes = _.reduce(time.beats, (memo, timeStr, idx) => memo +
             _.reduce(timeStr.split("+"), (memo, timeStr) => memo +
-                parseInt(timeStr, 10)*firstType/time.beatTypes[idx], 0), 0);
+                parseInt(timeStr, 10)*4/time.beatTypes[idx], 0), 0);
 
-        return totalBeats * divisions || NaN;
+        return quarterNotes * divisions || NaN;
     }
 
     export function barDivisions({time, divisions}: IAttributes.ISnapshot) {
