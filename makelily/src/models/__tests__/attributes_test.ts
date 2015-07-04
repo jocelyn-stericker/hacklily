@@ -41,16 +41,16 @@ export function makeCursor(factory: Factory, models: IModel[]): ICursor {
             previous: null,
             attributes: <any> {
                 divisions: 60,
-                clefs: [{
+                clef: {
                     sign: "G",
                     clefOctaveChange: "0",
                     line: 2
-                }],
-                times: [{
+                },
+                time: {
                     beats: ["4"],
                     beatTypes: [4],
                     senzaMisura: null
-                }]
+                }
             },
             totalDivisions: 240,
             accidentals$: {},

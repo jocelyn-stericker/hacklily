@@ -46,9 +46,6 @@ describe("[engine/context.ts]", function() {
 
             copy.previous = orig;
             copy.accidentals$["a"] = 1;
-            expect(function() {
-                copy.attributes.instruments = "piano";
-            }).to.throw(); // Frozen.
 
             expect(copy.attributes.instruments).to.not.equal("piano"); // Frozen
             copy.accidentals$["a"] = 1;
@@ -79,13 +76,6 @@ describe("[engine/context.ts]", function() {
             orig.previous.accidentals$["a"] = 1;
             expect(orig.attributes.instruments).to.equal("piano");
             expect(copy.attributes.instruments).to.equal("piano");
-            expect(function() {
-                copy.attributes.instruments = "cello";
-            }).to.throw(); // Frozen.
-            expect(function() {
-                copy.previous.accidentals$["a"] = 4;
-            }).to.not.throw();
-            expect(copy.previous.accidentals$["a"]).to.equal(4);
         });
     });
 });

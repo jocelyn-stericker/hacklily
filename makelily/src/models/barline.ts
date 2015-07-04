@@ -132,14 +132,16 @@ module BarlineModel {
                 let nextMeasure = getCurrentMeasureList()[cursor$.measure.idx + 1];
                 let part = nextMeasure && nextMeasure.parts[cursor$.segment.part];
                 let segment = part && part.staves[cursor$.staff.idx];
-                let nextAttributes = segment && cursor$.factory.search(
-                    segment, 0, IModel.Type.Attributes)[0];
+                let nextAttributes: IModel;
+                if (segment) {
+                    nextAttributes = cursor$.factory.search(segment, 0, IModel.Type.Attributes)[0];
+                }
                 let needsWarning = nextAttributes && IAttributes.needsWarning(
-                    attributes, nextAttributes, cursor$.staff.idx);
+                    attributes, (<any>nextAttributes)._snapshot, cursor$.staff.idx);
 
                 if (needsWarning) {
                     let clefsAreEqual = IAttributes.clefsEqual(
-                        attributes, nextAttributes, cursor$.staff.idx);
+                        attributes, (<any>nextAttributes)._snapshot, cursor$.staff.idx);
                     clefOffset = clefsAreEqual ? 0 : IAttributes.CLEF_INDENTATION;
                     let warningLayout = Attributes.createWarningLayout$(cursor$, nextAttributes);
                     this.model.satieAttributes = warningLayout;

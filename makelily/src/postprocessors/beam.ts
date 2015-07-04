@@ -23,13 +23,13 @@ import _ = require("lodash");
 import invariant = require("react/lib/invariant");
 
 import ChordImpl from "../models/chord/chordImpl";
-import {IChord, IModel, IMeasureLayout, ILayoutOptions, ILineBounds} from "../engine";
+import {IAttributes, IChord, IModel, IMeasureLayout, ILayoutOptions, ILineBounds} from "../engine";
 
 interface IMutableBeam {
     number: number;
     elements: IModel.ILayout[];
     counts: number[];
-    attributes: MusicXML.Attributes;
+    attributes: IAttributes.ISnapshot;
     initial: MusicXML.Beam;
 }
 
@@ -121,7 +121,7 @@ function beam(options: ILayoutOptions, bounds: ILineBounds,
                                 number: idx,
                                 elements: [layout],
                                 initial: beam,
-                                attributes: activeAttributes,
+                                attributes: (<any>activeAttributes)._snapshot,
                                 counts: [1]
                             };
                             let counts = activeBeams[voice][1].counts;
@@ -198,7 +198,7 @@ function layoutBeam$(voice: number, idx: number, beamSet$: BeamSet) {
     let chords: ChordImpl[] = _.map(beam.elements, eLayout => <any> eLayout.model);
     let firstChord = chords[0];
     let lastChord = chords[chords.length - 1];
-    let clef = beam.attributes.clefs[firstChord.staffIdx];
+    let {clef} = beam.attributes;
 
     let firstAvgLine = IChord.averageLine(firstChord, clef);
     let lastAvgLine = IChord.averageLine(lastChord, clef);
