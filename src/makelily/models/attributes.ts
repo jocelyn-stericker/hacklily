@@ -165,7 +165,7 @@ class AttributesModel implements Export.IAttributesModel {
 
             // Clef lines can be inferred.
             if (!clef.line) {
-                let sign = {clef};
+                let {sign} = clef;
                 let standardClef = _.find(IAttributes.Clef.standardClefs, {sign});
                 clef.line = standardClef ? standardClef.line : 2;
             }
@@ -405,7 +405,7 @@ module AttributesModel {
                     contextualSpacing$ -= 19.8;
                 }
 
-                this.clefSpacing = IAttributes.clefWidth(model, this.staffIdx) +
+                this.clefSpacing = IAttributes.clefWidth(model._snapshot, this.staffIdx) +
                     contextualSpacing$;
             } else {
                 this.clefSpacing = 0;
@@ -435,7 +435,7 @@ module AttributesModel {
                     contextualSpacing$ = 10;
                 }
 
-                this.ksSpacing = contextualSpacing$ + IAttributes.keyWidth(model, 0);
+                this.ksSpacing = contextualSpacing$ + IAttributes.keyWidth(model._snapshot, 0);
             } else {
                 this.ksSpacing = 0;
             }
@@ -468,7 +468,7 @@ module AttributesModel {
                     contextualSpacing$ = 0;
                 }
 
-                this.tsSpacing = contextualSpacing$ + IAttributes.timeWidth(model, 0);
+                this.tsSpacing = contextualSpacing$ + IAttributes.timeWidth(model._snapshot, 0);
             } else {
                 this.tsSpacing = 0;
             }
@@ -575,9 +575,12 @@ module Export {
         staffDetails: StaffDetails;
     }
 
-    export function createWarningLayout$(
-            cursor$: ICursor, nextAttributes: Attributes) {
-        return <ILayout> new AttributesModel.Layout(<any> nextAttributes, cursor$);
+    export function createWarningLayout$(cursor$: ICursor, nextAttributes: Attributes) {
+        let oldAttributes = cursor$.staff.attributes;
+        cursor$.staff.attributes = (<any>nextAttributes)._snapshot;
+        let warningLayout = <ILayout> new AttributesModel.Layout(<any> nextAttributes, cursor$);
+        cursor$.staff.attributes = oldAttributes;
+        return warningLayout;
     }
 }
 

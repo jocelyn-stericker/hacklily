@@ -97,13 +97,23 @@ describe("[lineProcessor.ts]", function() {
 
             let padding = 12;
             let detachedLayouts = _.map(layouts, layout => IMeasureLayout.detach(layout));
+            _.forEach(detachedLayouts, layout => {
+                layout.attributes = <any> {
+                    P1: [,{
+                        divisions: 4,
+                        time: {
+                            beats: ["4"],
+                            beatTypes: [4]
+                        }
+                    }]
+                };
+            });
 
             let justified = Justify(
                 {
                     attributes: {},
                     line: 0,
                     lines: 1,
-                    // TODO: if justify uses measures, this will have to be given a proper value:
                     measures: new Array(2),
                     header: <any> {
                         partList: [
@@ -141,7 +151,7 @@ describe("[lineProcessor.ts]", function() {
             let expectedWidth = justified[0].elements[0][4].x$ -
                 justified[0].elements[0][0].x$ + 10;
             expect(justified[0].elements[0][0].x$).to.be.closeTo(layouts[0].elements[0][0].x$, 0.05);
-            expect(justified[0].elements[0][2].x$).to.be.closeTo(73.7, 0.1);
+            expect(justified[0].elements[0][2].x$).to.be.closeTo(27.0, 0.1);
             expect(justified[0].width).to.be.closeTo(expectedWidth, 0.01);
             _.forEach(justified, function(just, idx) {
                 expect(just.width).to.not.equal(layouts[idx].width);

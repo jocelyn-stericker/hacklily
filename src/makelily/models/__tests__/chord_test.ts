@@ -34,8 +34,9 @@ let expect = chai.expect;
 
 function getAttributes(): IAttributes.ISnapshot {
     return <any> {
+        measureStyle: {},
         divisions: 6,
-        times: {
+        time: {
             beats: ["4"],
             beatTypes: [4],
             senzaMisura: null

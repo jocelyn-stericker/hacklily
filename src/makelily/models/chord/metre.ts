@@ -639,8 +639,7 @@ function _calcDivisions(count: number, dots: number,
     }
 
     invariant(!!time, "A time signature must be specified.");
-    // TODO: What if beatType isn't consistent?
-    let base = divisions * time.beatTypes[0]/count;
+    let base = divisions * 4/count;
 
     if (timeModification) {
         base *= timeModification.normalNotes / timeModification.actualNotes;
