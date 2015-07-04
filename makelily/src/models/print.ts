@@ -54,14 +54,14 @@ class PrintModel implements Export.IPrintModel {
         this.measureNumbering = this.measureNumbering || {
             data: "system"
         };
-        cursor$.print$                  = this; // FIXME: inheritance for multiple papers
+        cursor$.print$ = this; // FIXME: inheritance for multiple papers
         this.pageNumber = null;
 
         this.once = true;
     }
 
     layout(cursor$: ICursor): Export.ILayout {
-        cursor$.print$                  = this; // FIXME: inheritance for multiple papers
+        cursor$.print$ = this; // FIXME: inheritance for multiple papers
 
         return new PrintModel.Layout(this, cursor$);
     }

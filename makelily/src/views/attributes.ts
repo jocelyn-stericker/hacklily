@@ -17,7 +17,6 @@
  */
 
 import {createFactory as $, Component, DOM} from "react";
-import invariant = require("react/lib/invariant");
 
 import Attributes from "../models/attributes";
 import BarNumber from "./barNumber";
@@ -36,33 +35,32 @@ class AttributesView extends Component<{layout: Attributes.ILayout}, void> {
         let staffWidth = (<any>layout).staffWidth;
         let staffLinesOffsetX = (<any>layout).staffLinesOffsetX;
         if (!!staffWidth) {
-            invariant(layout.staffIdx in layout.model.staffDetails, "Staff details must be defined");
             children.push($(StaffLines)({
                 key: "staffLines",
                 width: staffWidth,
                 defaultX: -staffLinesOffsetX,
                 defaultY: 0,
-                staffDetails: layout.model.staffDetails[layout.staffIdx]
+                staffDetails: layout.staffDetails
             }));
         }
 
-        if (layout.clefVisible) {
+        if (layout.clef) {
             children.push($(Clef)({
                 key: "clef",
-                spec: layout.model.clefs[layout.staffIdx]
+                spec: layout.clef
             }));
         }
-        if (layout.ksVisible) {
+        if (layout.keySignature) {
             children.push($(KeySignature)({
-                clef: layout.model.clefs[layout.staffIdx],
+                clef: layout.snapshotClef,
                 key: "ks",
-                spec: layout.model.keySignatures[0]
+                spec: layout.keySignature
             }));
         }
-        if (layout.tsVisible) {
+        if (layout.time) {
             children.push($(TimeSignature)({
                 key: "ts",
-                spec: layout.model.times[0]
+                spec: layout.time
             }));
         }
         if (!!layout.measureNumberVisible) {
@@ -75,10 +73,10 @@ class AttributesView extends Component<{layout: Attributes.ILayout}, void> {
                 }
             }));
         }
-        if (!!layout.partSymbolVisible) {
+        if (!!layout.partSymbol) {
             children.push($(PartSymbol)({
                 key: "partSymbol",
-                spec: layout.model.partSymbol
+                spec: layout.partSymbol
             }));
         }
 

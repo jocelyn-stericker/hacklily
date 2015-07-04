@@ -39,19 +39,17 @@ export function makeCursor(factory: Factory, models: IModel[]): ICursor {
         voice: {},
         staff: {
             previous: null,
-            attributes: {
-                P1: {
-                    divisions: 60,
-                    clefs: [{
-                        sign: "G",
-                        clefOctaveChange: "0",
-                        line: 2
-                    }],
-                    times: [{
-                        beats: ["4"],
-                        beatTypes: [4],
-                        senzaMisura: null
-                    }]
+            attributes: <any> {
+                divisions: 60,
+                clef: {
+                    sign: "G",
+                    clefOctaveChange: "0",
+                    line: 2
+                },
+                time: {
+                    beats: ["4"],
+                    beatTypes: [4],
+                    senzaMisura: null
                 }
             },
             totalDivisions: 240,
@@ -64,7 +62,7 @@ export function makeCursor(factory: Factory, models: IModel[]): ICursor {
             implicit: false,
             nonControlling: false,
             x: 100,
-            attributes$: null,
+            attributes: null,
             uuid: 100,
             parent: <any> {
                 parts: {
@@ -128,16 +126,16 @@ describe("[attributes.ts]", function() {
             (<any>attributes).divisions = 100;
 
             let cursor$ = makeCursor(factory, [attributes]);
-            cursor$.staff.attributes = {};
+            cursor$.staff.attributes = <any> {};
             attributes.validate$(cursor$);
         });
         it("lays out properly when at start of song", function() {
             let cursor$ = makeCursor(factory, [attributes]);
-            cursor$.staff.attributes = {};
+            cursor$.staff.attributes = <any> {};
             let layout = <Attributes.ILayout> attributes.layout(cursor$);
-            expect(layout.ksVisible).to.be.true;
-            expect(layout.tsVisible).to.be.true;
-            expect(layout.clefVisible).to.be.true;
+            expect(!!layout.keySignature).to.be.true;
+            expect(!!layout.time).to.be.true;
+            expect(!!layout.clef).to.be.true;
             expect(layout.tsSpacing).to.be.gt(0);
             expect(layout.clefSpacing).to.be.gt(0);
             expect(layout.ksSpacing).to.be.gt(0);

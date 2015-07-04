@@ -21,7 +21,7 @@ import _ = require("lodash");
 import invariant = require("react/lib/invariant");
 
 import ChordModel from "../chord";
-import {IBeam, IChord, ICursor, IModel, ISegment, Context} from "../../engine";
+import {IBeam, IChord, ICursor, IModel, ISegment} from "../../engine";
 import {getChordLyricWidth} from "./lyrics";
 import {calcDivisions, getBeamingPattern} from "./metre";
 import {getBoundingRects} from "./notation";
@@ -106,7 +106,7 @@ class ChordModelImpl implements ChordModel.IChordModel {
         invariant(this.divCount >= 0, "The beat count must be non-negative.");
 
         const direction = this._pickDirection(cursor$);
-        const clef = cursor$.staff.attributes[cursor$.segment.part].clefs[cursor$.staff.idx];
+        const clef = cursor$.staff.attributes.clef;
 
         this.satieLedger = IChord.ledgerLines(this, clef);
 
@@ -161,26 +161,19 @@ class ChordModelImpl implements ChordModel.IChordModel {
     }
 
     layout(cursor$: ICursor): ChordModel.IChordLayout {
-        let measureStyle: MusicXML.MeasureStyle = Context.IStaff.getMeasureStyle(cursor$);
-        if (measureStyle && measureStyle.multipleRest && measureStyle.multipleRest.count > 1) {
-            cursor$.staff.hiddenMeasuresRemaining = measureStyle.multipleRest.count;
-        }
         return new ChordModelImpl.Layout(this, cursor$);
     }
 
     private _checkMulitpleRest$(cursor$: ICursor) {
-        let measureStyle: MusicXML.MeasureStyle = Context.IStaff.getMeasureStyle(cursor$);
-        if (measureStyle && measureStyle.multipleRest && measureStyle.multipleRest.count > 1) {
+        let {measureStyle} = cursor$.staff.attributes;
+        let multipleRest = measureStyle && measureStyle.multipleRest;
+        if (multipleRest && multipleRest.count > 1) {
             this.satieMultipleRest = measureStyle.multipleRest;
-            cursor$.staff.hiddenMeasuresRemaining = measureStyle.multipleRest.count;
-        } else {
-            delete this.satieMultipleRest;
-            cursor$.staff.hiddenMeasuresRemaining = 0;
         }
     }
 
     private _implyNoteheads$(cursor$: ICursor) {
-        let measureStyle = Context.IStaff.getMeasureStyle(cursor$);
+        let {measureStyle} = cursor$.staff.attributes;
         if (measureStyle) {
             _.forEach(this, note => {
                 if (measureStyle.slash) {
@@ -343,12 +336,10 @@ class ChordModelImpl implements ChordModel.IChordModel {
     }
 
     private _implyCountFromPerformanceData(cursor$: ICursor) {
-        const times = cursor$.staff.attributes[cursor$.segment.part].times;
-        const divisions = cursor$.staff.attributes[cursor$.segment.part].divisions;
-        const tsComplex = times[0];
+        const {time, divisions} = cursor$.staff.attributes;
         const ts = {
-            beatType: tsComplex.beatTypes[0], // FIXME
-            beats: _.reduce(tsComplex.beats, (sum, beat) => sum + parseInt(beat, 10), 0)
+            beatType: time.beatTypes[0], // FIXME
+            beats: _.reduce(time.beats, (sum, beat) => sum + parseInt(beat, 10), 0)
         };
 
         let factor = ts.beatType/4;
@@ -439,7 +430,7 @@ class ChordModelImpl implements ChordModel.IChordModel {
             return this.satieDirection;
         }
 
-        const clef = cursor$.staff.attributes[cursor$.segment.part].clefs[cursor$.staff.idx];
+        const {clef} = cursor$.staff.attributes;
         let avgLine = IChord.averageLine(this, clef);
         if (avgLine > 3) {
             return -1;
@@ -486,8 +477,8 @@ class ChordModelImpl implements ChordModel.IChordModel {
             //    of the notes that are part of the same beat or half-bar.
             //    (Note: we use the more general beaming pattern instead of half-bar to
             //     decide boundries)
-            let times = cursor$.staff.attributes[cursor$.segment.part].times;
-            let beamingPattern = getBeamingPattern(times);
+            let {time} = cursor$.staff.attributes;
+            let beamingPattern = getBeamingPattern(time);
             let bpDivisions = _.map(beamingPattern, seg => calcDivisions(seg, cursor$));
             let currDivision = cursor$.division$;
             let prevDivisionStart = 0;
@@ -541,7 +532,8 @@ module ChordModelImpl {
     export class Layout implements ChordModel.IChordLayout {
         constructor(baseModel: ChordModelImpl, cursor$: ICursor) {
             this.division = cursor$.division$;
-            if (cursor$.staff.hiddenMeasuresRemaining > 0 && !baseModel.satieMultipleRest) {
+            let {measureStyle} = cursor$.staff.attributes;
+            if (measureStyle.multipleRest && !measureStyle.multipleRestInitiatedHere) {
                 // This is not displayed because it is part of a multirest.
                 this.expandPolicy = IModel.ExpandPolicy.None;
                 return;
@@ -642,7 +634,7 @@ module ChordModelImpl {
         }
 
         _detachModelWithContext(cursor: ICursor, baseModel: ChordModelImpl): ChordModelImpl {
-            const clef = cursor.staff.attributes[cursor.segment.part].clefs[cursor.staff.idx];
+            let {clef} = cursor.staff.attributes;
             let model: ChordModelImpl = <any> _.map(baseModel, note => Object.create(note, {
                 /* Here, we're extending each note to have the correct default position.
                  * To do so, we use prototypical inheritance. See Object.create. */

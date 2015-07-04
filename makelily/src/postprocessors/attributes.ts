@@ -98,11 +98,12 @@ function attributes(options: ILayoutOptions, bounds: ILineBounds,
                         let oldAttributes: MusicXML.Attributes =
                             attributesByPart[partKey].model;
                         let newAttributes: MusicXML.Attributes = element.model;
-                        shouldSplit = _.any(oldAttributes.staffDetails, (details, j) => {
-                            if (!j) {
-                                return;
+                        shouldSplit = _.any(oldAttributes.staffDetails, (details, detailIndex) => {
+                            if (!details) {
+                                return false;
                             }
-                            return details.staffLines !== newAttributes.staffDetails[j].staffLines;
+                            let newDetails = newAttributes.staffDetails[detailIndex];
+                            return details.staffLines !== newDetails.staffLines;
                         });
                     }
 
