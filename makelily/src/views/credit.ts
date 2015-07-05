@@ -16,17 +16,16 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import MusicXML = require("musicxml-interfaces");
-import * as React from "react"; // TS 1.5 workaround
-import {DOM, PropTypes} from "react";
-import _ = require("lodash");
+import {Credit, NormalItalic, NormalBold, CreditWords, Words} from "musicxml-interfaces";
+import {Component, DOM, PropTypes} from "react";
+import {map, extend} from "lodash";
 import invariant = require("react/lib/invariant");
 
 import {RenderUtil} from "../engine";
 import {ITextMixin, Prototype as TextMixin} from "./textMixin";
 
-class Credit extends React.Component<MusicXML.Credit, void> implements ITextMixin {
-    render() {
+class CreditView extends Component<Credit, void> implements ITextMixin {
+    render(): any {
         let image = this.props.creditImage;
         let words = this.props.creditWords;
         let scale40 = this.context.scale40;
@@ -43,11 +42,11 @@ class Credit extends React.Component<MusicXML.Credit, void> implements ITextMixi
                 x: initX,
                 y: initY
             },
-            _.map(words, (words, idx) => {
-                let isItalic = words.fontStyle === MusicXML.NormalItalic.Italic;
-                let isBold = words.fontWeight === MusicXML.NormalBold.Bold;
+            map(words, (words, idx) => {
+                let isItalic = words.fontStyle === NormalItalic.Italic;
+                let isBold = words.fontWeight === NormalBold.Bold;
                 let fontSize = RenderUtil.cssSizeToTenths(scale40, words.fontSize);
-                return _.map(words.words.split("\n"), (line, lineNum) => DOM.tspan({
+                return map(words.words.split("\n"), (line, lineNum) => DOM.tspan({
                     "alignment-baseline": "hanging",
                     color: words.color || "black",
                     direction: this.getDirection(words),
@@ -71,22 +70,22 @@ class Credit extends React.Component<MusicXML.Credit, void> implements ITextMixi
     }
 
     /* ITextMixin */
-    getTextAnchor: (words: MusicXML.CreditWords | MusicXML.Words) => string;
-    getTextDecoration: (words: MusicXML.CreditWords | MusicXML.Words) => string;
-    getTransform: (words: MusicXML.CreditWords | MusicXML.Words) => string;
-    getDirection: (words: MusicXML.CreditWords | MusicXML.Words) => string;
+    getTextAnchor: (words: CreditWords | Words) => string;
+    getTextDecoration: (words: CreditWords | Words) => string;
+    getTransform: (words: CreditWords | Words) => string;
+    getDirection: (words: CreditWords | Words) => string;
     getX: (lineNum: number) => number;
-    getDX: (words: MusicXML.CreditWords | MusicXML.Words, initX: number, lineNum: number) => number;
-    getDY: (words: MusicXML.CreditWords | MusicXML.Words, initY: number, lineNum: number) => number;
+    getDX: (words: CreditWords | Words, initX: number, lineNum: number) => number;
+    getDY: (words: CreditWords | Words, initY: number, lineNum: number) => number;
 }
 
-_.extend(Credit.prototype, TextMixin);
+extend(CreditView.prototype, TextMixin);
 
-module Credit {
+module CreditView {
     export let contextTypes = <any> {
         originY: PropTypes.number.isRequired,
         scale40: PropTypes.number.isRequired
     };
 }
 
-export default Credit;
+export default CreditView;

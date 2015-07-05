@@ -22,13 +22,12 @@
 
 "use strict";
 
-import chai = require("chai");
+import Sound from "../sound";
+
+import {expect} from "chai";
 
 import {IModel} from "../../engine";
 import Factory from "../factory";
-import Sound from "../sound";
-
-let expect = chai.expect;
 
 describe("[sound.ts]", function() {
     describe("SoundModel", function() {

@@ -22,8 +22,9 @@
 
 "use strict";
 
-import MusicXML = require("musicxml-interfaces");
-import _ = require("lodash");
+import {ScoreTimewise, Attributes, Note, Backup, Time, parse as parseFromXML}
+    from "musicxml-interfaces";
+import {map, any, filter, min, times, all, forEach} from "lodash";
 import invariant = require("react/lib/invariant");
 
 import {IChord, IDocument, ILayoutOptions, IModel, IMeasurePart, IPart,
@@ -34,7 +35,7 @@ import ScoreHeader from "../scoreHeader";
 /*---- Exports ----------------------------------------------------------------------------------*/
 
 export function stringToDocument(src: string, memo$: any, factory: IModel.IFactory) {
-    let mxmljson = MusicXML.parse(src);
+    let mxmljson = parseFromXML(src);
     if ((<any>mxmljson).error) {
         throw (<any>mxmljson).error;
     }
@@ -67,8 +68,7 @@ export function stringToDocument(src: string, memo$: any, factory: IModel.IFacto
  * @returns A structure that can be consumed by a score. If an error occurred
  *          error will be set, and all other properties will be null.
  */
-export function timewiseStructToDocument(score: MusicXML.ScoreTimewise,
-        factory: IModel.IFactory): IDocument {
+export function timewiseStructToDocument(score: ScoreTimewise, factory: IModel.IFactory): IDocument {
     try {
         let header = _extractMXMLHeader(score);
         let partData = _extractMXMLPartsAndMeasures(score, factory);
@@ -94,7 +94,7 @@ export function timewiseStructToDocument(score: MusicXML.ScoreTimewise,
 
 /*---- Private ----------------------------------------------------------------------------------*/
 
-export function _extractMXMLHeader(m: MusicXML.ScoreTimewise): ScoreHeader {
+export function _extractMXMLHeader(m: ScoreTimewise): ScoreHeader {
     let header = new ScoreHeader({
         credits: m.credits,
         defaults: m.defaults,
@@ -113,21 +113,20 @@ export function _extractMXMLHeader(m: MusicXML.ScoreTimewise): ScoreHeader {
     return header;
 }
 
-export function _extractMXMLPartsAndMeasures(input: MusicXML.ScoreTimewise,
-            factory: IModel.IFactory):
+export function _extractMXMLPartsAndMeasures(input: ScoreTimewise, factory: IModel.IFactory):
         {measures?: IMutableMeasure[]; parts?: string[]; error?: string} {
 
-    let parts: string[] = _.map(IPart.scoreParts(input.partList), inPart => inPart.id);
+    let parts: string[] = map(IPart.scoreParts(input.partList), inPart => inPart.id);
     let createModel = factory.create.bind(factory);
 
     // TODO/STOPSHIP - sync division count in each measure
     let divisions = 1; // lilypond-regression 41g.xml does not specify divisions
     let gStaves = 0;
     let lastNote: IChord = null;
-    let lastAttribs: MusicXML.Attributes = null;
+    let lastAttribs: Attributes = null;
     let maxVoice = 0;
 
-    let measures: IMutableMeasure[] = _.map(input.measures,
+    let measures: IMutableMeasure[] = map(input.measures,
             (inMeasure, measureIdx) => {
 
         let measure = {
@@ -145,8 +144,8 @@ export function _extractMXMLPartsAndMeasures(input: MusicXML.ScoreTimewise,
             inMeasure.parts[parts[0]] = inMeasure.parts[""];
             delete inMeasure.parts[""];
         }
-        let linkedParts = _.map(inMeasure.parts, (val, key) => {
-            if (!_.any(parts, part => part === key)) {
+        let linkedParts = map(inMeasure.parts, (val, key) => {
+            if (!any(parts, part => part === key)) {
                 // See lilypond-regression >> 41h.
                 return null;
             }
@@ -167,27 +166,27 @@ export function _extractMXMLPartsAndMeasures(input: MusicXML.ScoreTimewise,
                 input: val,
                 lastNote: <IChord> null,
                 output: output,
-                times: <MusicXML.Time[]> [{
+                times: <Time[]> [{
                     beatTypes: [4],
                     beats: ["4"]
                 }]
             };
         });
 
-        linkedParts = _.filter(linkedParts, p => !!p);
+        linkedParts = filter(linkedParts, p => !!p);
 
         let target = linkedParts[0];
         // Create base structure
         while (!done()) {
             // target is accessed outside loop in syncStaffDivisions
-            target = _.min(linkedParts, part => part.idx === part.input.length ?
+            target = min(linkedParts, part => part.idx === part.input.length ?
                     MAX_SAFE_INTEGER : part.division);
             invariant(!!target, "Target not specified");
             let input = target.input[target.idx];
             let prevStaff = 1;
             switch(input._class) {
                 case "Note":
-                    let note: MusicXML.Note = input;
+                    let note: Note = input;
 
                     // TODO: is this the case even if voice/staff don't match up?
                     if (!!note.chord) {
@@ -213,7 +212,7 @@ export function _extractMXMLPartsAndMeasures(input: MusicXML.ScoreTimewise,
                                 "Ambiguous voice timing: all voices must be monotonic.");
                         if (target.divisionPerVoice[voice] < target.division) {
                             // Add rest
-                            let spec = MusicXML.parse.note(`
+                            let spec = parseFromXML.note(`
                                 <note print-object="no">
                                     <rest />
                                     <duration>
@@ -262,7 +261,7 @@ export function _extractMXMLPartsAndMeasures(input: MusicXML.ScoreTimewise,
                     let newModel = factory.fromSpec(input);
                     syncAppendStaff(staff, newModel);
                     if (input._class === "Attributes") {
-                        lastAttribs = <MusicXML.Attributes> input;
+                        lastAttribs = <Attributes> input;
                         divisions = lastAttribs.divisions || divisions;
                         let oTimes = lastAttribs.times;
                         if (oTimes && oTimes.length) {
@@ -270,7 +269,7 @@ export function _extractMXMLPartsAndMeasures(input: MusicXML.ScoreTimewise,
                         }
                         let staves = lastAttribs.staves || 1;
                         gStaves = staves;
-                        _.times(staves, staffMinusOne => {
+                        times(staves, staffMinusOne => {
                             let staff = staffMinusOne + 1;
                             if (!(staff in target.output.staves)) {
                                 createStaff(staff, target.output);
@@ -279,8 +278,8 @@ export function _extractMXMLPartsAndMeasures(input: MusicXML.ScoreTimewise,
                     }
                     break;
                 case "Backup":
-                    let backup = <MusicXML.Backup> input;
-                    _.forEach(target.output.staves, (staff, staffIdx) => {
+                    let backup = <Backup> input;
+                    forEach(target.output.staves, (staff, staffIdx) => {
                         syncAppendStaff(staffIdx, null);
                     });
                     target.division -= backup.duration;
@@ -294,7 +293,7 @@ export function _extractMXMLPartsAndMeasures(input: MusicXML.ScoreTimewise,
 
         // Finish up
 
-        _.times(gStaves, staffMinusOne => {
+        times(gStaves, staffMinusOne => {
             let staff = staffMinusOne + 1;
             if (!(staff in target.output.staves)) {
                 createStaff(staff, target.output);
@@ -311,7 +310,7 @@ export function _extractMXMLPartsAndMeasures(input: MusicXML.ScoreTimewise,
             }
         });
 
-        _.forEach(linkedParts, part => {
+        forEach(linkedParts, part => {
             // Note: target is 'var'-scoped!
             target = part;
 
@@ -320,7 +319,7 @@ export function _extractMXMLPartsAndMeasures(input: MusicXML.ScoreTimewise,
             // TODO: not implemented
 
             // Set divCounts of final elements in staff segments and divisions of all segments
-            _.forEach(target.output.staves, (staff, staffIdx) => {
+            forEach(target.output.staves, (staff, staffIdx) => {
                 syncAppendStaff(staffIdx, null);
 
                 let segment = target.output.staves[staffIdx];
@@ -328,7 +327,7 @@ export function _extractMXMLPartsAndMeasures(input: MusicXML.ScoreTimewise,
                     segment.divisions = divisions;
                 }
             });
-            _.forEach(target.output.voices, (voice, voiceIdx) => {
+            forEach(target.output.voices, (voice, voiceIdx) => {
                 let segment = target.output.voices[voiceIdx];
                 if (segment) {
                     segment.divisions = divisions;
@@ -379,7 +378,7 @@ export function _extractMXMLPartsAndMeasures(input: MusicXML.ScoreTimewise,
         }
 
         function done() {
-            return _.all(linkedParts, part => {
+            return all(linkedParts, part => {
                 return part.idx === part.input.length;
             });
         }

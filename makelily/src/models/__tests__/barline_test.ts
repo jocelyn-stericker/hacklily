@@ -22,17 +22,16 @@
 
 "use strict";
 
-import chai = require("chai");
+import BarlineModel from "../barline";
 
-import Barline from "../barline";
+import {expect} from "chai";
+
 import {IModel} from "../../engine";
 import Factory from "../factory";
 
-let expect = chai.expect;
-
 describe("[barline.ts]", function() {
     describe("BarlineModel", function() {
-        let factory = new Factory([Barline]);
+        let factory = new Factory([BarlineModel]);
         let barline: IModel;
         it("can be created", function() {
             barline = factory.create(IModel.Type.Barline);

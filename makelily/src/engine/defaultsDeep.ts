@@ -18,16 +18,16 @@
 
 "use strict";
 
-import _ = require("lodash");
+import {partialRight, isArray, isDate, merge} from "lodash";
 
-let defaultsDeep = _.partialRight(_.merge, function recursiveDefaults(/* ... */): any {
+let defaultsDeep = partialRight(merge, function recursiveDefaults(...args: any[]): any {
     // Ensure dates and arrays are not recursively merged
-    if (_.isArray(arguments[0]) || _.isArray(arguments[1])) {
-        return (arguments[0] || []).concat(arguments[1] || []);
-    } else if (_.isDate(arguments[0])) {
-        return arguments[0];
+    if (isArray(args[0]) || isArray(args[1])) {
+        return (args[0] || []).concat(args[1] || []);
+    } else if (isDate(args[0])) {
+        return args[0];
     }
-    return _.merge(arguments[0], arguments[1], recursiveDefaults);
+    return merge(args[0], args[1], recursiveDefaults);
 });
 
 export default defaultsDeep;

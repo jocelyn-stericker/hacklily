@@ -18,9 +18,8 @@
 
 "use strict";
 
-import MusicXML = require("musicxml-interfaces");
-import * as React from "react"; // TS 1.5 workaround
-import {createFactory as $, DOM, PropTypes} from "react";
+import {PartSymbol, PartSymbolType} from "musicxml-interfaces";
+import {createFactory as $, Component, DOM, PropTypes} from "react";
 
 import Line from "./primitives/line";
 import Glyph from "./primitives/glyph";
@@ -31,9 +30,9 @@ const BRACE_H_SCALE = 2.9;
 /**
  * Renders a piano bracket or other kind of brace.
  */
-class PartSymbol extends React.Component<PartSymbol.IProps, void> {
-    render() {
-        if (this.props.spec.type === MusicXML.PartSymbolType.None) {
+class PartSymbolView extends Component<PartSymbolView.IProps, void> {
+    render(): any {
+        if (this.props.spec.type === PartSymbolType.None) {
             return null;
         }
 
@@ -70,7 +69,7 @@ class PartSymbol extends React.Component<PartSymbol.IProps, void> {
         const s = height/40;
 
         switch (spec.type) {
-            case MusicXML.PartSymbolType.Brace:
+            case PartSymbolType.Brace:
                 return $(Glyph)({
                     fill: "#000000",
                     glyphName: "brace",
@@ -80,8 +79,8 @@ class PartSymbol extends React.Component<PartSymbol.IProps, void> {
                     x: x,
                     y: bottom,
                 });
-            case MusicXML.PartSymbolType.Bracket:
-            case MusicXML.PartSymbolType.Square: // TODO: Not implemented
+            case PartSymbolType.Bracket:
+            case PartSymbolType.Square: // TODO: Not implemented
                 return [
                     $(Line)({
                         key: "partSymbolMain",
@@ -107,15 +106,15 @@ class PartSymbol extends React.Component<PartSymbol.IProps, void> {
                         y: this.context.systemBottom + 2
                     })
                 ];
-            case MusicXML.PartSymbolType.Line:
+            case PartSymbolType.Line:
                 return null;
         }
     }
 }
 
-module PartSymbol {
+module PartSymbolView {
     export interface IProps {
-        spec: MusicXML.PartSymbol;
+        spec: PartSymbol;
     }
 
     export let contextTypes = <any> {
@@ -126,4 +125,4 @@ module PartSymbol {
     };
 }
 
-export default PartSymbol;
+export default PartSymbolView;

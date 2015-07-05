@@ -22,11 +22,10 @@
 
 "use strict";
 
-import chai = require("chai");
-let expect = chai.expect;
-
 import {ILayoutOpts, approximateLayout, reduceMeasure, layoutMeasure}
         from "../processors/measure";
+
+import {expect} from "chai";
 
 import Context from "../context";
 import {createFakeVoiceSegment, createFakeStaffSegment, fakeFactory} from "./etestutil";

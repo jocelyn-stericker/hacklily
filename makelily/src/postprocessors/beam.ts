@@ -270,7 +270,7 @@ function layoutBeam$(voice: number, idx: number, beamSet$: BeamSet, isUnbeamedTu
 
     let avgLine = (firstAvgLine + lastAvgLine)/2;
 
-    let direction = avgLine >= 3 ? -1 : 1; // TODO: MusicXML.StemType should match this!!
+    let direction = avgLine >= 3 ? -1 : 1; // TODO: StemType should match this!!
 
     let Xs: number[] = [];
     let lines: number[][] = [];

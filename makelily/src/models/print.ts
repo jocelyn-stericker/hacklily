@@ -16,8 +16,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import MusicXML = require("musicxml-interfaces");
-import _ = require("lodash");
+import {ScoreHeader, MeasureNumbering, PartNameDisplay, MeasureLayout, PartAbbreviationDisplay,
+    PageLayout, SystemLayout, StaffLayout, Print, PageMargins, OddEvenBoth, NormalItalic,
+    NormalBold, serialize as serializeToXML} from "musicxml-interfaces";
+import {forEach} from "lodash";
 import invariant = require("react/lib/invariant");
 
 import {defaultsDeep, ICursor, IModel, ISegment} from "../engine";
@@ -42,7 +44,7 @@ class PrintModel implements Export.IPrintModel {
     once: boolean;
     validate$(cursor$: ICursor): void {
         invariant(!!cursor$.header, "Cursor must have a valid header");
-        let spec: MusicXML.Print;
+        let spec: Print;
         if (!this.once) {
             // FIXME: should always sync
             let defaultPrint = extractDefaultPrintFromHeader(cursor$.header);
@@ -66,7 +68,7 @@ class PrintModel implements Export.IPrintModel {
         return new PrintModel.Layout(this, cursor$);
     }
 
-    sync(print: MusicXML.Print) {
+    sync(print: Print) {
         let keys = Object.keys(Object(print));
 
         for (let i = 0; i < keys.length; ++i) {
@@ -76,34 +78,34 @@ class PrintModel implements Export.IPrintModel {
         }
     }
 
-    /*---- I.2 MusicXML.Print -------------------------------------------------------------------*/
+    /*---- I.2 Print ----------------------------------------------------------------------------*/
 
-    measureNumbering: MusicXML.MeasureNumbering;
-    partNameDisplay: MusicXML.PartNameDisplay;
+    measureNumbering: MeasureNumbering;
+    partNameDisplay: PartNameDisplay;
     newSystem: boolean;
     newPage: boolean;
     blankPage: string;
-    measureLayout: MusicXML.MeasureLayout;
-    partAbbreviationDisplay: MusicXML.PartAbbreviationDisplay;
-    pageLayout: MusicXML.PageLayout;
-    systemLayout: MusicXML.SystemLayout;
+    measureLayout: MeasureLayout;
+    partAbbreviationDisplay: PartAbbreviationDisplay;
+    pageLayout: PageLayout;
+    systemLayout: SystemLayout;
     /**
      * DEPRECATED. Use staffLayouts
      */
     staffSpacing: number;
-    staffLayouts: MusicXML.StaffLayout[];
+    staffLayouts: StaffLayout[];
     pageNumber: string;
 
     /*---- II. Life-cycle -----------------------------------------------------------------------*/
 
-    constructor(spec: MusicXML.Print) {
-        _.forEach(spec, (value, key) => {
+    constructor(spec: Print) {
+        forEach(spec, (value, key) => {
             (<any>this)[key] = value;
         });
     }
 
     toXML(): string {
-        return MusicXML.serialize.print(this);
+        return serializeToXML.print(this);
     }
 
     inspect() {
@@ -112,11 +114,11 @@ class PrintModel implements Export.IPrintModel {
 
     /*---- III. Extensions ----------------------------------------------------------------------*/
 
-    pageMarginsFor(page: number): MusicXML.PageMargins {
+    pageMarginsFor(page: number): PageMargins {
         for (let i = 0; i < this.pageLayout.pageMargins.length; ++i) {
             let margins = this.pageLayout.pageMargins[i];
-            if (margins.type === MusicXML.OddEvenBoth.Both ||
-                    (margins.type === MusicXML.OddEvenBoth.Odd) === !!(page % 2)) {
+            if (margins.type === OddEvenBoth.Both ||
+                    (margins.type === OddEvenBoth.Odd) === !!(page % 2)) {
                 return margins;
             }
         }
@@ -174,7 +176,7 @@ module PrintModel {
     Object.freeze(Layout.prototype.boundingBoxes$);
 };
 
-function extractDefaultPrintFromHeader(header: MusicXML.ScoreHeader): MusicXML.Print {
+function extractDefaultPrintFromHeader(header: ScoreHeader): Print {
     return {
         blankPage: "",
         measureLayout: null,
@@ -185,8 +187,8 @@ function extractDefaultPrintFromHeader(header: MusicXML.ScoreHeader): MusicXML.P
             defaultY: null,
             fontFamily: "Alegreya, serif",
             fontSize: "small",
-            fontStyle: MusicXML.NormalItalic.Normal,
-            fontWeight: MusicXML.NormalBold.Normal,
+            fontStyle: NormalItalic.Normal,
+            fontWeight: NormalBold.Normal,
             relativeX: 0,
             relativeY: 0
         },
@@ -210,7 +212,7 @@ function Export(constructors: { [key: number]: any }) {
 }
 
 module Export {
-    export interface IPrintModel extends IModel, MusicXML.Print {
+    export interface IPrintModel extends IModel, Print {
     }
 
     export interface ILayout extends IModel.ILayout {

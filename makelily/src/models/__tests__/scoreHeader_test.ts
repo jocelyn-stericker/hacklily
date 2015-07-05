@@ -24,9 +24,9 @@
 
 import ScoreHeader from "../scoreHeader";
 
-import MusicXML = require("musicxml-interfaces");
-import chai = require("chai");
-let expect = chai.expect;
+import {expect} from "chai";
+
+import {parse as parseFromXML, LeftCenterRight} from "musicxml-interfaces";
 
 let headerTest = `<?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!DOCTYPE score-partwise PUBLIC "-//Recordare//DTD MusicXML 3.0 Partwise//EN"
@@ -148,7 +148,7 @@ let minimalTest = `<?xml version="1.0" encoding="UTF-8" standalone="no"?>
 describe("[engine/scoreHeader.ts]", function() {
     // NOTE: Some of the tests in mxmljson_test indirectly test ScoreHeader!
     it("can correctly modify metadata", function() {
-        let mxmljson = MusicXML.parse(headerTest);
+        let mxmljson = parseFromXML(headerTest);
         let scoreHeader = new ScoreHeader(mxmljson);
         expect(scoreHeader.credits.length).eq(5);
         expect(scoreHeader.identification.creators.length).eq(3);
@@ -172,7 +172,7 @@ describe("[engine/scoreHeader.ts]", function() {
         expect(scoreHeader.credits[0].creditWords[0].words).to.eq("New Title");
     });
     it("can correctly add metadata", function() {
-        let mxmljson = MusicXML.parse(minimalTest);
+        let mxmljson = parseFromXML(minimalTest);
         let scoreHeader = new ScoreHeader(mxmljson);
         expect(scoreHeader.credits.length).eq(0);
         expect(scoreHeader.identification.creators.length).eq(0);
@@ -192,7 +192,7 @@ describe("[engine/scoreHeader.ts]", function() {
                     defaultX: 664.3076923076923,
                     defaultY: 1657.8461538461538,
                     fontSize: "18px",
-                    justify: MusicXML.LeftCenterRight.Center
+                    justify: LeftCenterRight.Center
                 }],
                 page: 1
             },
@@ -205,7 +205,7 @@ describe("[engine/scoreHeader.ts]", function() {
                     defaultX: 1234.7692307692307,
                     defaultY: 1596.3076923076922,
                     fontSize: "12px",
-                    justify: MusicXML.LeftCenterRight.Right
+                    justify: LeftCenterRight.Right
                 }],
                 page: 1
             },
@@ -218,7 +218,7 @@ describe("[engine/scoreHeader.ts]", function() {
                     defaultX: 1234.7692307692307,
                     defaultY: 1503.9999999999998,
                     fontSize: "12px",
-                    justify: MusicXML.LeftCenterRight.Right
+                    justify: LeftCenterRight.Right
                 }],
                 page: 1
             },
@@ -231,7 +231,7 @@ describe("[engine/scoreHeader.ts]", function() {
                     defaultX: 1234.7692307692307,
                     defaultY: 1411.6923076923076,
                     fontSize: "12px",
-                    justify: MusicXML.LeftCenterRight.Right
+                    justify: LeftCenterRight.Right
                 }],
                 page: 1
             }

@@ -18,8 +18,7 @@
 
 "use strict";
 
-import * as React from "react"; // TS 1.5 workaround
-import {createFactory as $, PropTypes} from "react";
+import {createFactory as $, Component, PropTypes} from "react";
 import invariant = require("react/lib/invariant");
 
 import Glyph from "./primitives/glyph";
@@ -28,8 +27,8 @@ import {getFontOffset} from "../models/smufl";
 /**
  * Responsible for rendering the "flag" on un-beamed notes shorter than quarter notes.
  */
-class Flag extends React.Component<Flag.IProps, void> {
-    render() {
+class Flag extends Component<Flag.IProps, void> {
+    render(): any {
         const spec = this.props.spec;
         const context = this.context;
 

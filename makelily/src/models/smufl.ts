@@ -11,24 +11,24 @@
 
 "use strict";
 
-import _ = require("lodash");
+import {indexBy, memoize} from "lodash";
 import invariant = require("react/lib/invariant");
 
 import bravura from "./smufl/bravura";
 import glyphNames from "./smufl/glyphnames";
 
 export {default as bravura} from "./smufl/bravura";
-export let bboxes: {[key:string]: any[];} = <any> _.indexBy(bravura.glyphBBoxes, 4);
+export let bboxes: {[key:string]: any[];} = <any> indexBy(bravura.glyphBBoxes, 4);
 bboxes["noteheadNull"] = bboxes["noteheadBlack"];
 
-export let getGlyphCode = _.memoize(function getGlyphCode(name: string) {
+export let getGlyphCode = memoize(function getGlyphCode(name: string) {
     if (!(name in glyphNames)) {
         console.warn(name, " is not a valid glyph");
     }
     return String.fromCharCode(parseInt(glyphNames[name].substring(2), 16));
 });
 
-const getAnchor = _.memoize((notehead: string) => (<any>bravura.glyphsWithAnchors)[notehead]);
+const getAnchor = memoize((notehead: string) => (<any>bravura.glyphsWithAnchors)[notehead]);
 
 /**
  * Calculates where a notation should begin.

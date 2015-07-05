@@ -18,7 +18,7 @@
 
 import {Attributes, PartSymbol, Clef, MeasureStyle, Time, StaffDetails, Transpose, Key,
     Directive} from "musicxml-interfaces";
-import _ = require("lodash");
+import {times, forEach, map, reduce} from "lodash";
 import invariant = require("react/lib/invariant");
 
 "use strict";
@@ -88,7 +88,7 @@ export function timeWidth(attributes: ISnapshot, staff: number) {
         return 0;
     }
     let beats = attributes.time.beats;
-    let numeratorSegments = _.reduce(beats, (memo, beats) => memo + beats.split("+").length, 0);
+    let numeratorSegments = reduce(beats, (memo, beats) => memo + beats.split("+").length, 0);
     return NUMBER_SPACING*numeratorSegments +
         (attributes.time.beatTypes.length - 1)*PLUS_SPACING;
 }
@@ -105,7 +105,7 @@ export function keyWidth(attributes: ISnapshot, staff: number) {
     const keySignature = attributes.keySignature;
 
     if (keySignature.fifths || keySignature.keyAlters) {
-        return 2 + _.reduce(keyWidths(keySignature), (memo, width) => memo + width, 0);
+        return 2 + reduce(keyWidths(keySignature), (memo, width) => memo + width, 0);
     } else {
         return -5;
     }
@@ -291,7 +291,7 @@ export module Clef {
 export function keyWidths(spec: Key) {
     let widths: number[] = [];
     if (spec.keyAlters) {
-        return _.map(spec.keyAlters, alter => {
+        return map(spec.keyAlters, alter => {
             switch(alter) {
                 case "-2":
                 case "-1.5":
@@ -314,8 +314,8 @@ export function keyWidths(spec: Key) {
         });
     }
     let accidentalCount = Math.min(7, Math.abs(spec.fifths));
-    let idxes = _.times(accidentalCount, i => (i + Math.max(0, Math.abs(spec.fifths) - 7)) % 7);
-    _.forEach(idxes, i => widths[i] = getWidth(i, spec.fifths >= 0));
+    let idxes = times(accidentalCount, i => (i + Math.max(0, Math.abs(spec.fifths) - 7)) % 7);
+    forEach(idxes, i => widths[i] = getWidth(i, spec.fifths >= 0));
     return widths;
 
     function getWidth(i: number, sharp: boolean): number {

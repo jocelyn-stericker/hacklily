@@ -22,8 +22,8 @@
 
 "use strict";
 
-import MusicXML = require("musicxml-interfaces");
-import _ = require("lodash");
+import {ScoreHeader} from "musicxml-interfaces";
+import {indexBy, filter, map, reduce, values, flatten, forEach, extend} from "lodash";
 import invariant = require("react/lib/invariant");
 
 import {
@@ -33,7 +33,7 @@ import {
 
 export interface IMeasureLayoutOptions {
     attributes: {[part: string]: IAttributes.ISnapshot[]};
-    header: MusicXML.ScoreHeader;
+    header: ScoreHeader;
     line: Context.ILine;
     measure: IMutableMeasure;
     prevByStaff: IModel[];
@@ -61,7 +61,7 @@ function createCursor(
             _approximate: boolean;
             _detached: boolean;
             factory: IModel.IFactory;
-            header: MusicXML.ScoreHeader,
+            header: ScoreHeader,
             line: Context.ILine;
             measure: Context.IMeasure;
             prev: IModel;
@@ -114,12 +114,12 @@ export function reduceMeasure(spec: ILayoutOpts): IMeasureLayout {
     invariant(spec.segments.length >= 1, "_processMeasure expects at least one segment.");
 
     let gStaffMeasure: { [key:string]: ISegment } =
-        _.indexBy(_.filter(spec.segments,
+        indexBy(filter(spec.segments,
             seg => seg.ownerType === OwnerType.Staff),
             seg => `${seg.part}_${seg.owner}`);
 
     let gVoiceMeasure: { [key:string]: ISegment } =
-        _.indexBy(_.filter(spec.segments,
+        indexBy(filter(spec.segments,
             seg => seg.ownerType === OwnerType.Voice),
             seg => `${seg.part}_${seg.owner}`);
 
@@ -131,7 +131,7 @@ export function reduceMeasure(spec: ILayoutOpts): IMeasureLayout {
 
     let gDivOverflow: DivisionOverflowException = null;
 
-    let gVoiceLayouts$ = _.map(gVoiceMeasure, segment => {
+    let gVoiceLayouts$ = map(gVoiceMeasure, segment => {
         let lastAttribs: IAttributes.ISnapshot = Object.create(spec.attributes || {});
         let voice = <Context.IVoice> {};
         let {part} = segment;
@@ -221,7 +221,7 @@ export function reduceMeasure(spec: ILayoutOpts): IMeasureLayout {
                     invariant(ov[ov.length - 1] === model, "tx");
                 } else {
                     let divOffset = cursor$.division$ - cursor$.staff.totalDivisions -
-                        _.reduce(newStaves[staffIdx], (sum, model) => sum + model.divCount, 0);
+                        reduce(newStaves[staffIdx], (sum, model) => sum + model.divCount, 0);
                     if (divOffset > 0) {
                         let spacer = spec.factory.create(IModel.Type.Spacer);
                         spacer.divCount = divOffset;
@@ -243,7 +243,7 @@ export function reduceMeasure(spec: ILayoutOpts): IMeasureLayout {
             voiceStaves$[staffIdx].push(layout);
         }
 
-        return _.map(segment, (model, idx, list) => {
+        return map(segment, (model, idx, list) => {
             let atEnd = idx + 1 === list.length;
             let staffIdx: number = model.staffIdx;
             invariant(isFinite(model.staffIdx), "%s is not finite", model.staffIdx);
@@ -345,7 +345,7 @@ export function reduceMeasure(spec: ILayoutOpts): IMeasureLayout {
             cursor$.prev$ = model;
 
             if (atEnd) {
-                _.forEach(gStaffMeasure, (staff, idx) => {
+                forEach(gStaffMeasure, (staff, idx) => {
                     const pIdx = idx.lastIndexOf("_");
                     const staffMeasurePart = idx.substr(0, pIdx);
                     if (staffMeasurePart !== part) {
@@ -379,8 +379,8 @@ export function reduceMeasure(spec: ILayoutOpts): IMeasureLayout {
     }
 
     // Get an ideal voice layout for each voice-staff combination
-    let gStaffLayoutsUnkeyed$: IModel.ILayout[][][] = _.values(gStaffLayouts$);
-    let gStaffLayoutsCombined: IModel.ILayout[][] = <any> _.flatten(gStaffLayoutsUnkeyed$);
+    let gStaffLayoutsUnkeyed$: IModel.ILayout[][][] = values(gStaffLayouts$);
+    let gStaffLayoutsCombined: IModel.ILayout[][] = <any> flatten(gStaffLayoutsUnkeyed$);
 
     // Create a layout that satisfies the constraints in every single voice.
     // IModel.merge$ requires two passes to fully merge the layouts. We do the second pass
@@ -390,16 +390,16 @@ export function reduceMeasure(spec: ILayoutOpts): IMeasureLayout {
     // We have a staff layout for every single voice-staff combination.
     // They will be merged, so it doesn't matter which one we pick.
     // Pick the first.
-    let gStaffLayoutsUnique$ = _.map(gStaffLayoutsUnkeyed$, layouts => layouts[0]);
+    let gStaffLayoutsUnique$ = map(gStaffLayoutsUnkeyed$, layouts => layouts[0]);
 
     if (!spec._noAlign) {
         // Calculate and finish applying the master layout.
         // Two passes is always sufficient.
-        let masterLayout = _.reduce(gAllLayouts$, IModel.merge$, []);
-        _.reduce(gVoiceLayouts$, IModel.merge$, masterLayout);
+        let masterLayout = reduce(gAllLayouts$, IModel.merge$, []);
+        reduce(gVoiceLayouts$, IModel.merge$, masterLayout);
 
         // Merge in the staves
-        _.reduce(gStaffLayoutsUnique$, IModel.merge$, masterLayout);
+        reduce(gStaffLayoutsUnique$, IModel.merge$, masterLayout);
     }
 
     let gPadding: number;
@@ -425,7 +425,7 @@ export function reduceMeasure(spec: ILayoutOpts): IMeasureLayout {
 export interface ILayoutOpts {
     attributes: {[key: string]: IAttributes.ISnapshot[]};
     factory: IModel.IFactory;
-    header: MusicXML.ScoreHeader;
+    header: ScoreHeader;
     line: Context.ILine;
     measure: Context.IMeasure;
     prevByStaff: IModel[];
@@ -448,13 +448,11 @@ export function layoutMeasure({header, measure, line, attributes, factory, prevB
         padEnd, _approximate, _detached, x}: IMeasureLayoutOptions): IMeasureLayout {
     let measureCtx = Context.IMeasure.detach(measure, x);
 
-    let parts = _.map(IPart.scoreParts(header.partList), part => part.id);
-    let voices = <ISegment[]> _.flatten(_.map(parts,
-                partId => measure.parts[partId].voices));
-    let staves = <ISegment[]> _.flatten(_.map(parts,
-                partId => measure.parts[partId].staves));
+    let parts = map(IPart.scoreParts(header.partList), part => part.id);
+    let voices = <ISegment[]> flatten(map(parts, partId => measure.parts[partId].voices));
+    let staves = <ISegment[]> flatten(map(parts, partId => measure.parts[partId].staves));
 
-    let segments = _.filter(voices.concat(staves), s => !!s);
+    let segments = filter(voices.concat(staves), s => !!s);
 
     return reduceMeasure({
         attributes,
@@ -480,7 +478,7 @@ export function layoutMeasure({header, measure, line, attributes, factory, prevB
 export function approximateLayout(opts: IMeasureLayoutOptions): IMeasureLayout {
     invariant(!!opts.line, "approximateLayout() needs `opts.line` to be set");
 
-    opts = <IMeasureLayoutOptions> _.extend({
+    opts = <IMeasureLayoutOptions> extend({
             _approximate: true,
             _detached: true
         }, opts);
@@ -507,8 +505,8 @@ export class DivisionOverflowException extends Error {
     resolve$(measures$: IMutableMeasure[]) {
         let oldMeasure$ = measures$[this.measureIdx];
 
-        _.forEach(this.oldParts, (part, partID) => {
-            _.forEach(part.staves, (staff, staffIdx) => {
+        forEach(this.oldParts, (part, partID) => {
+            forEach(part.staves, (staff, staffIdx) => {
                 if (!staff) {
                     this.newParts[partID].staves[staffIdx] =
                         this.newParts[partID].staves[staffIdx] || null;

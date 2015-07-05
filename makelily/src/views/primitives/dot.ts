@@ -18,15 +18,14 @@
 
 "use strict";
 
-import * as React from "react"; // TS 1.5 workaround
-import {DOM} from "react";
+import {Component, DOM} from "react";
 
 /**
  * Responsible for the rendering of a dot as part of a dotted note.
  * This is not used to render staccatos.
  */
-class Dot extends React.Component<Dot.IProps, void> {
-    render() {
+class Dot extends Component<Dot.IProps, void> {
+    render(): any {
         // See rationale for hidden rect in _glyph.jsx
         return DOM.g(null,
             DOM.circle({

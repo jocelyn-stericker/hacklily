@@ -19,7 +19,7 @@
 import {Clef, PartSymbol, MeasureStyle, StaffDetails, Transpose, Directive,
     Time, Key, Footnote, Level, Attributes, KeyOctave, PartSymbolType, SymbolSize,
     parse as parseFromXML, serialize as serializeToXML} from "musicxml-interfaces";
-import _ = require("lodash");
+import {find, forEach, times} from "lodash";
 import invariant = require("react/lib/invariant");
 
 import {IAttributes, IChord, ICursor, IModel, IPart, ISegment} from "../engine";
@@ -78,7 +78,7 @@ class AttributesModel implements Export.IAttributesModel {
         return new AttributesModel.Layout(this, cursor$);
     }
 
-    /*---- I.2 C.MusicXML.Attributes ------------------------------------------------------------*/
+    /*---- I.2 Attributes -----------------------------------------------------------------------*/
 
     _parent: IAttributes.ISnapshot;
 
@@ -95,7 +95,7 @@ class AttributesModel implements Export.IAttributesModel {
     times: Time[];
     keySignatures: Key[];
 
-    /*---- I.3 C.MusicXML.Editorial -------------------------------------------------------------*/
+    /*---- I.3 Editorial ------------------------------------------------------------------------*/
 
     footnote: Footnote;
     level: Level;
@@ -166,7 +166,7 @@ class AttributesModel implements Export.IAttributesModel {
             // Clef lines can be inferred.
             if (!clef.line) {
                 let {sign} = clef;
-                let standardClef = _.find(IAttributes.Clef.standardClefs, {sign});
+                let standardClef = find(IAttributes.Clef.standardClefs, {sign});
                 clef.line = standardClef ? standardClef.line : 2;
             }
         }
@@ -224,7 +224,7 @@ class AttributesModel implements Export.IAttributesModel {
             if (ks.keyOctaves) {
                 // Let's sort them (move to prefilter?)
                 let keyOctaves: KeyOctave[] = [];
-                _.forEach(ks.keyOctaves, octave => {
+                forEach(ks.keyOctaves, octave => {
                    keyOctaves[octave.number - 1] = octave;
                 });
                 ks.keyOctaves = keyOctaves;
@@ -264,7 +264,7 @@ class AttributesModel implements Export.IAttributesModel {
         this.staves = this.staves || 1; // FIXME!
         let currentPartId = cursor$.segment.part;
         let currentPart = cursor$.measure.parent.parts[currentPartId];
-        _.times(this.staves, staffMinusOne => {
+        times(this.staves, staffMinusOne => {
             let staff = staffMinusOne + 1;
             if (!currentPart.staves[staff]) {
                 throw new Error("A staff is missing. The code to add it is not implemented.");

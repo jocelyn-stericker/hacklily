@@ -22,7 +22,7 @@
 
 "use strict";
 
-import MusicXML = require("musicxml-interfaces");
+import {Print, ScoreHeader} from "musicxml-interfaces";
 
 import Context from "./context";
 import IModel from "./imodel";
@@ -46,8 +46,8 @@ interface ICursor {
     prev$: IModel;
     division$: number;
     x$: number;
-    print$: MusicXML.Print;
-    header: MusicXML.ScoreHeader;
+    print$: Print;
+    header: ScoreHeader;
     minXBySmallest$?: {[key: number]: number};
     /**
      * By staff

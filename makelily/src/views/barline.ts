@@ -18,9 +18,9 @@
 
 "use strict";
 
-import MusicXML = require("musicxml-interfaces");
+import {PartSymbolType} from "musicxml-interfaces";
 import {createFactory as $, Component, DOM, PropTypes} from "react";
-import _ = require("lodash");
+import {any, map} from "lodash";
 
 import Attributes from "./attributes";
 import Barline from "../models/barline";
@@ -41,15 +41,15 @@ class BarlineView extends Component<{layout: Barline.ILayout}, {}> {
         const x = originX + model.defaultX;
         const y = originY - model.defaultY;
 
-        // TODO: render MusicXML.BarStyleType.Dashed:
-        // TODO: render MusicXML.BarStyleType.Dotted:
-        // TODO: render MusicXML.BarStyleType.Short:
-        // TODO: render MusicXML.BarStyleType.Tick:
+        // TODO: render BarStyleType.Dashed:
+        // TODO: render BarStyleType.Dotted:
+        // TODO: render BarStyleType.Short:
+        // TODO: render BarStyleType.Tick:
 
         let yTop: number;
         let yBottom: number;
-        if (layout.partSymbol && layout.partSymbol.type !== MusicXML.PartSymbolType.None ||
-                layout.partGroups && _.any(layout.partGroups, group => group.groupBarline)) {
+        if (layout.partSymbol && layout.partSymbol.type !== PartSymbolType.None ||
+                layout.partGroups && any(layout.partGroups, group => group.groupBarline)) {
             yTop = this.context.systemTop;
             yBottom = this.context.systemBottom;
         } else {
@@ -62,7 +62,7 @@ class BarlineView extends Component<{layout: Barline.ILayout}, {}> {
         }
 
         return DOM.g(null,
-            _.map(layout.lineStarts, (start, idx) => $(Line)({
+            map(layout.lineStarts, (start, idx) => $(Line)({
                 fill: model.barStyle.color,
                 key: idx,
                 stroke: model.barStyle.color,

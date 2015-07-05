@@ -16,8 +16,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import MusicXML = require("musicxml-interfaces");
-import _ = require("lodash");
+import {Feature, StartStopSingle, Grouping, serialize as serializeToXML} from "musicxml-interfaces";
+import {forEach} from "lodash";
 
 import {ICursor, IModel, ISegment} from "../engine";
 import {cloneObject} from "../engine/util";
@@ -49,23 +49,23 @@ class GroupingModel implements Export.IGroupingModel {
         return new GroupingModel.Layout(this, cursor$);
     }
 
-    /*---- I.2 MusicXML.Grouping ----------------------------------------------------------------*/
+    /*---- I.2 Grouping -------------------------------------------------------------------------*/
 
-    features: MusicXML.Feature[];
+    features: Feature[];
     number: number;
-    type: MusicXML.StartStopSingle;
+    type: StartStopSingle;
     memberOf: string;
 
     /*---- II. Life-cycle -----------------------------------------------------------------------*/
 
-    constructor(spec: MusicXML.Grouping) {
-        _.forEach(spec, (value, key) => {
+    constructor(spec: Grouping) {
+        forEach(spec, (value, key) => {
             (<any>this)[key] = value;
         });
     }
 
     toXML(): string {
-        return MusicXML.serialize.grouping(this);
+        return serializeToXML.grouping(this);
     }
 
     inspect() {
@@ -137,7 +137,7 @@ function Export(constructors: { [key: number]: any }) {
 }
 
 module Export {
-    export interface IGroupingModel extends IModel, MusicXML.Grouping {
+    export interface IGroupingModel extends IModel, Grouping {
     }
 
     export interface ILayout extends IModel.ILayout {

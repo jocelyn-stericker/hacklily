@@ -18,27 +18,26 @@
 
 "use strict";
 
-import JSONPatch = require("fast-json-patch");
-import _ = require("lodash");
+import {compare} from "fast-json-patch";
+import {clone, cloneDeep, find} from "lodash";
 
-import EngineType from "../../engine";
+import Engine from "../../engine";
 import Measure from "./measure";
 import Options from "./options";
 
 function createDiff(options: Options.ILayoutOptions, memo: Options.ILinesLayoutState,
             measureUUID: number, mutator: (measure$: Measure.IMutableMeasure) => void) {
-    let Engine: typeof EngineType = require("../../engine");
 
-    let newMemo = _.cloneDeep(memo);
-    let newOptions = _.clone(options);
+    let newMemo = cloneDeep(memo);
+    let newOptions = clone(options);
 
     delete newMemo.clean$[measureUUID];
     delete newMemo.width$[measureUUID];
     // TODO clone measure
-    mutator(_.find(newOptions.measures, {"uuid": measureUUID}));
+    mutator(find(newOptions.measures, {"uuid": measureUUID}));
 
     Engine.validate$(newOptions, newMemo);
-    return JSONPatch.compare(options.measures, newOptions.measures);
+    return compare(options.measures, newOptions.measures);
 }
 
 export default createDiff;

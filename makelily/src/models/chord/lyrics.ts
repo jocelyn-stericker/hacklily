@@ -16,31 +16,31 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import MusicXML = require("musicxml-interfaces");
-import _ = require("lodash");
+import {Note, Lyric, Text, NormalBold} from "musicxml-interfaces";
+import {reduce} from "lodash";
 
 import {IChord, RenderUtil} from "../../engine";
 import {getTextBB} from "../fontManager";
 
 export function getChordLyricWidth(chord: IChord, scale40: number) {
-    return _.reduce(chord, (maxWidth, note) =>
+    return reduce(chord, (maxWidth, note) =>
         Math.max(maxWidth, getNoteLyricWidth(note, scale40)), 0);
 }
 
-export function getNoteLyricWidth(note: MusicXML.Note, scale40: number) {
-    return _.reduce(note.lyrics, (maxWidth, lyric) =>
+export function getNoteLyricWidth(note: Note, scale40: number) {
+    return reduce(note.lyrics, (maxWidth, lyric) =>
         Math.max(maxWidth, getLyricWidth(lyric, scale40)), 0);
 }
 
-export function getLyricWidth(lyric: MusicXML.Lyric, scale40: number) {
-    return _.reduce(lyric.lyricParts, (partWidth, lyricPart) => {
+export function getLyricWidth(lyric: Lyric, scale40: number) {
+    return reduce(lyric.lyricParts, (partWidth, lyricPart) => {
         if (lyricPart._class === "Syllabic") {
             return partWidth + SYLLABIC_SIZE;
         } else if (lyricPart._class === "Text") {
-            let text = <MusicXML.Text> lyricPart;
+            let text = <Text> lyricPart;
             return partWidth + getTextBB(text.fontFamily || DEFAULT_FONT, text.data,
                 RenderUtil.cssSizeToTenths(scale40, text.fontSize || DEFAULT_LYRIC_SIZE),
-                text.fontWeight === MusicXML.NormalBold.Bold ? "bold" : null).right;
+                text.fontWeight === NormalBold.Bold ? "bold" : null).right;
         }
         return 0;
     }, 0);

@@ -18,10 +18,9 @@
 
 "use strict";
 
-import MusicXML = require("musicxml-interfaces");
-import * as React from "react"; // TS 1.5 workaround
-import {createFactory as $, DOM, PropTypes} from "react";
-import _ = require("lodash");
+import {MultipleRest, Note} from "musicxml-interfaces";
+import {createFactory as $, Component, DOM, PropTypes} from "react";
+import {map} from "lodash";
 import invariant = require("react/lib/invariant");
 
 import Dot from "./primitives/dot";
@@ -31,8 +30,8 @@ import {bboxes} from "../models/smufl";
 /**
  * Renders a rest.
  */
-class Rest extends React.Component<Rest.IProps, void> {
-    render() {
+class Rest extends Component<Rest.IProps, void> {
+    render(): any {
         const spec = this.props.spec;
         if (spec.printObject === false) {
             return null;
@@ -63,7 +62,7 @@ class Rest extends React.Component<Rest.IProps, void> {
                 },
                 this.props.multipleRest.count // TODO: useSymbols
             /* DOM.text */),
-        spec.dots && spec.printDot !== false ? _.map(spec.dots, (dot, idx) => $(Dot)({
+        spec.dots && spec.printDot !== false ? map(spec.dots, (dot, idx) => $(Dot)({
                 fill: dot.color,
                 key: idx + "d",
                 radius: 2.4,
@@ -77,9 +76,9 @@ class Rest extends React.Component<Rest.IProps, void> {
 
 module Rest {
     export interface IProps {
-        multipleRest?: MusicXML.MultipleRest;
+        multipleRest?: MultipleRest;
         notehead?: string;
-        spec: MusicXML.Note;
+        spec: Note;
     }
     export let contextTypes = <any> {
         originX: PropTypes.number.isRequired,

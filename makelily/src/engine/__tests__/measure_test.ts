@@ -22,11 +22,11 @@
 
 "use strict";
 
-import chai = require("chai");
-let expect = chai.expect;
+import {normalizeDivisions$} from "../measure";
+
+import {expect} from "chai";
 
 import {createFakeStaffSegment, createFakeVoiceSegment} from "./etestutil";
-import {normalizeDivisions$} from "../measure";
 
 describe("[engine/measure.ts]", function() {
     describe("normalizeDivisions$", function() {

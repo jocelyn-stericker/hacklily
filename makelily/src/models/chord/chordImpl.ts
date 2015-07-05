@@ -18,7 +18,7 @@
 
 import {Clef, Count, MultipleRest, Note, NoteheadType, Stem, StemType,
     Tied, TimeModification, serialize as serializeToXML} from "musicxml-interfaces";
-import _ = require("lodash");
+import {forEach, chain, times, filter, reduce, map, max} from "lodash";
 import invariant = require("react/lib/invariant");
 
 import ChordModel from "../chord";
@@ -111,7 +111,7 @@ class ChordModelImpl implements ChordModel.IChordModel {
 
         this.satieLedger = IChord.ledgerLines(this, clef);
 
-        _.forEach(this, note => {
+        forEach(this, note => {
             if (!note.duration && !note.grace) {
                 note.duration = this.divCount;
             }
@@ -176,7 +176,7 @@ class ChordModelImpl implements ChordModel.IChordModel {
     private _implyNoteheads$(cursor$: ICursor) {
         let {measureStyle} = cursor$.staff.attributes;
         if (measureStyle) {
-            _.forEach(this, note => {
+            forEach(this, note => {
                 if (measureStyle.slash) {
                     note.notehead = note.notehead || {type: null};
                     note.notehead.type = NoteheadType.Slash;
@@ -195,7 +195,7 @@ class ChordModelImpl implements ChordModel.IChordModel {
                 this.noteheadGlyph = [countToRest[this.count]];
             }
         } else {
-            this.noteheadGlyph = _.times(this.length, () => countToNotehead[this.count]);
+            this.noteheadGlyph = times(this.length, () => countToNotehead[this.count]);
         }
         this.noteheadGlyph = this.noteheadGlyph.map((stdGlyph, idx) =>
             IChord.getNoteheadGlyph(this[idx].notehead, stdGlyph));
@@ -226,7 +226,7 @@ class ChordModelImpl implements ChordModel.IChordModel {
                 this[0] = new NoteImpl(this, 0, spec);
                 this.length = 1;
             } else if ((<IChord>spec).length) {
-                _.forEach((<IChord>spec), (note, idx) => {
+                forEach((<IChord>spec), (note, idx) => {
                     this[idx] = new NoteImpl(this, idx, note);
                 });
                 this.length = (<IChord>spec).length;
@@ -256,7 +256,7 @@ class ChordModelImpl implements ChordModel.IChordModel {
     set rest(r: boolean) {
         if (!!r) {
             this._isRest = true;
-            _.times(this.length, idx => {
+            times(this.length, idx => {
                 if (idx === 0) {
                     this[idx].pitch = null;
                 } else {
@@ -278,7 +278,7 @@ class ChordModelImpl implements ChordModel.IChordModel {
     }
 
     get notes(): NoteImpl[] {
-        return _.times(this.length, i => this[i]);
+        return times(this.length, i => this[i]);
     }
 
     set notes(c: NoteImpl[]) {
@@ -287,13 +287,13 @@ class ChordModelImpl implements ChordModel.IChordModel {
     }
 
     get tieds(): Tied[] {
-        return _.chain(this.notes)
+        return chain(this.notes)
             .map(n => n.notationObj.tieds)
             .map(t => t && t.length ? t[0] : null)
             .value();
     }
     set tieds(v: Tied[]) {
-        _.forEach(this.notes, (n, i) => {
+        forEach(this.notes, (n, i) => {
             if (v[i]) {
                 n.ensureNotationsWrittable();
                 n.notationObj.tieds = [v[i]];
@@ -312,7 +312,7 @@ class ChordModelImpl implements ChordModel.IChordModel {
         invariant(!isNaN(n), "Invalid count %s", n);
         this._count = n;
         this.divCount = null; // Kill optimizer.
-        _.forEach(this, note => {
+        forEach(this, note => {
             delete note.duration; // Kill playback data.
         });
     }
@@ -328,7 +328,7 @@ class ChordModelImpl implements ChordModel.IChordModel {
     inBeam$: boolean; // set by BeamModels
 
     push(...notes: Note[]) {
-        _.forEach(notes, note => {
+        forEach(notes, note => {
             this[this.length] = new NoteImpl(this, this.length, note);
             ++this.length;
         });
@@ -340,7 +340,7 @@ class ChordModelImpl implements ChordModel.IChordModel {
         const {time, divisions} = cursor$.staff.attributes;
         const ts = {
             beatType: time.beatTypes[0], // FIXME
-            beats: _.reduce(time.beats, (sum, beat) => sum + parseInt(beat, 10), 0)
+            beats: reduce(time.beats, (sum, beat) => sum + parseInt(beat, 10), 0)
         };
 
         let factor = ts.beatType/4;
@@ -445,7 +445,7 @@ class ChordModelImpl implements ChordModel.IChordModel {
 
             let nIdx = NaN; // index of current note in 'notes'
             let nLength = 0; // temporary variable eventually indicating length of 'notes'
-            let notes = <ChordModelImpl[]> <any> _.filter(cursor$.segment, (el, idx) => {
+            let notes = <ChordModelImpl[]> <any> filter(cursor$.segment, (el, idx) => {
                 if (idx === cursor$.idx$) {
                     nIdx = nLength;
                 }
@@ -480,7 +480,7 @@ class ChordModelImpl implements ChordModel.IChordModel {
             //     decide boundries)
             let {time} = cursor$.staff.attributes;
             let beamingPattern = getBeamingPattern(time);
-            let bpDivisions = _.map(beamingPattern, seg => calcDivisions(seg, cursor$));
+            let bpDivisions = map(beamingPattern, seg => calcDivisions(seg, cursor$));
             let currDivision = cursor$.division$;
             let prevDivisionStart = 0;
             let i = 0;
@@ -551,7 +551,7 @@ module ChordModelImpl {
                 this.expandPolicy = IModel.ExpandPolicy.Centered;
             }
 
-            _.forEach(this.model, note => {
+            forEach(this.model, note => {
                 let staff = note.staff;
 
                 invariant(!!staff,
@@ -567,11 +567,11 @@ module ChordModelImpl {
             invariant(isFinite(totalWidth), "Invalid width %s", totalWidth);
 
             let noteheads = baseModel.noteheadGlyph;
-            let widths = _.map(noteheads, getGlyphWidth);
-            this.renderedWidth = _.max(widths);
+            let widths = map(noteheads, getGlyphWidth);
+            this.renderedWidth = max(widths);
 
             if (baseModel.satieMultipleRest || baseModel.count === Count.Whole) {
-                _.forEach(this.model, note => note.dots = []);
+                forEach(this.model, note => note.dots = []);
             }
 
             this.x$ = cursor$.x$ + accidentalWidth;
@@ -582,7 +582,7 @@ module ChordModelImpl {
 
         _captureBoundingBoxes(): IModel.IBoundingRect[] {
             let bboxes: IModel.IBoundingRect[] = [];
-            _.forEach(this.model, note => {
+            forEach(this.model, note => {
                 let notations = note.notationObj; // TODO: detach this
                 bboxes = bboxes.concat(getBoundingRects(notations));
             });
@@ -592,7 +592,7 @@ module ChordModelImpl {
         _calcAccidentalWidth(): number {
             // We allow accidentals to be slightly squished.
 
-            return _.reduce(this.model, (maxWidth, note) => {
+            return reduce(this.model, (maxWidth, note) => {
                 return Math.max(maxWidth, note.accidental ? -note.accidental.defaultX : 0);
             }, 0)*0.73;
         }
@@ -619,7 +619,7 @@ module ChordModelImpl {
             if (baseModel.wholebar$ || baseModel.satieMultipleRest) {
                 return 0;
             }
-            return _.max(_.map(baseModel, m => m.dots.length))*6;
+            return max(map(baseModel, m => m.dots.length))*6;
         }
 
         _getMinWidthBefore(cursor: ICursor) {
@@ -637,7 +637,7 @@ module ChordModelImpl {
 
         _detachModelWithContext(cursor: ICursor, baseModel: ChordModelImpl): ChordModelImpl {
             let {clef} = cursor.staff.attributes;
-            let model: ChordModelImpl = <any> _.map(baseModel, note => Object.create(note, {
+            let model: ChordModelImpl = <any> map(baseModel, note => Object.create(note, {
                 /* Here, we're extending each note to have the correct default position.
                  * To do so, we use prototypical inheritance. See Object.create. */
 

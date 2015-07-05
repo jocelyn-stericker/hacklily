@@ -18,14 +18,14 @@
 
 "use strict";
 
-import MusicXML = require("musicxml-interfaces");
+import {PrintStyle, Placement, Articulations, AboveBelow} from "musicxml-interfaces";
 import {createFactory as $, Component, DOM, ReactElement, PropTypes} from "react";
 
 import Glyph from "../primitives/glyph";
 
-type MXMLArticulation = MusicXML.PrintStyle | MusicXML.Placement;
+type MXMLArticulation = PrintStyle | Placement;
 
-class Articulation extends Component<{articulation: MusicXML.Articulations}, void> {
+class Articulation extends Component<{articulation: Articulations}, void> {
     render() {
         const model = this.props.articulation;
         let children: ReactElement<any>[] = [];
@@ -51,15 +51,15 @@ class Articulation extends Component<{articulation: MusicXML.Articulations}, voi
         // "caesuraThick": "U+E4D2",
 
         let append = (type: MXMLArticulation, name: string, directioned = true) => {
-            let printStyle = <MusicXML.PrintStyle> type;
-            let placement = <MusicXML.Placement> type;
+            let printStyle = <PrintStyle> type;
+            let placement = <Placement> type;
             let direction = (function() {
                 if (!directioned) { return ""; }
                 switch (placement.placement) {
-                    case MusicXML.AboveBelow.Below:
+                    case AboveBelow.Below:
                         return "Below";
-                    case MusicXML.AboveBelow.Above:
-                    case MusicXML.AboveBelow.Unspecified:
+                    case AboveBelow.Above:
+                    case AboveBelow.Unspecified:
                         return "Above";
                     default:
                         return "Above";

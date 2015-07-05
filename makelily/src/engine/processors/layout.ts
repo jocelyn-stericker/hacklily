@@ -18,8 +18,8 @@
 
 "use strict";
 
-import MusicXML = require("musicxml-interfaces");
-import _ = require("lodash");
+import {Print} from "musicxml-interfaces";
+import {map, reduce, flatten, values, find} from "lodash";
 import invariant = require("react/lib/invariant");
 
 import {ILayoutOptions, ILineBounds, ILineLayoutResult, ILinesLayoutState, IWidthInformation}
@@ -50,22 +50,22 @@ export default function layout$(options: ILayoutOptions, memo$: ILinesLayoutStat
     let boundsGuess = ILineBounds.calculate(options.print$, options.page$);
     let multipleRest: number = undefined;
 
-    let approximateWidths = _.map(measures, function layoutMeasure(measure, idx) {
+    let approximateWidths = map(measures, function layoutMeasure(measure, idx) {
         // Create an array of the IMeasureParts of the previous, current, and next measures
-        let neighbourMeasures: IMeasurePart[] = <any> _.flatten([
-            !!measures[idx - 1] ? _.values(measures[idx - 1].parts) : <IMeasurePart> {
+        let neighbourMeasures: IMeasurePart[] = <any> flatten([
+            !!measures[idx - 1] ? values(measures[idx - 1].parts) : <IMeasurePart> {
                 voices: [],
                 staves: []
             },
-            _.values(measure.parts),
-            !!measures[idx + 1] ? _.values(measures[idx + 1].parts) : <IMeasurePart> {
+            values(measure.parts),
+            !!measures[idx + 1] ? values(measures[idx + 1].parts) : <IMeasurePart> {
                 voices: [],
                 staves: []
             }
         ]);
         // Join all of the above models
-        let neighbourModels = <ISegment[]> _.flatten(
-            _.map(neighbourMeasures, m => m.voices.concat(m.staves))
+        let neighbourModels = <ISegment[]> flatten(
+            map(neighbourMeasures, m => m.voices.concat(m.staves))
         );
         if (!(measure.uuid in width$)) {
             let specifiedWidth = measure.width; // TODO: Use EngravedStatus
@@ -82,8 +82,8 @@ export default function layout$(options: ILayoutOptions, memo$: ILinesLayoutStat
                 line: Context.ILine.create(neighbourModels, measures.length, 0, 1),
                 measure: measure,
                 prevByStaff: [], // FIXME:
-                staves: _.map(_.values(measure.parts), p => p.staves),
-                voices: _.map(_.values(measure.parts), p => p.voices),
+                staves: map(values(measure.parts), p => p.staves),
+                voices: map(values(measure.parts), p => p.voices),
                 x: 0
             });
             let part = IPart.scoreParts(options.header.partList)[0].id;
@@ -115,7 +115,7 @@ export default function layout$(options: ILayoutOptions, memo$: ILinesLayoutStat
     // It's currently very naive, and could use some work.
 
     let startingWidth = boundsGuess.right - boundsGuess.left;
-    let lineOpts$ = _.reduce(approximateWidths, <any> reduceToLineOpts, {
+    let lineOpts$ = reduce(approximateWidths, <any> reduceToLineOpts, {
         opts: <ILayoutOptions[]>[newLayoutWithoutMeasures(options, options.print$)],
         thisPrint: options.print$,
         options: options,
@@ -126,7 +126,7 @@ export default function layout$(options: ILayoutOptions, memo$: ILinesLayoutStat
     }).opts;
 
     // layoutLine$ handles the second pass.
-    let layout = <ILineLayoutResult[]> _.map(lineOpts$, <any> secondPass, {
+    let layout = <ILineLayoutResult[]> map(lineOpts$, <any> secondPass, {
         options: options,
         memo$: memo$
     });
@@ -140,7 +140,7 @@ interface IReduceOptsMemo {
     opts: ILayoutOptions[];
     remainingWidth: number;
     startingWidth: number;
-    thisPrint: MusicXML.Print;
+    thisPrint: Print;
     widthAllocatedForEnd: number;
     widthAllocatedForStart: number;
 }
@@ -183,7 +183,7 @@ function secondPass(lineOpt$: ILayoutOptions, key: string, lineOpts$: ILayoutOpt
     return layoutLine$(lineOpt$, lineBounds, this.memo$);
 };
 
-function newLayoutWithoutMeasures(options: ILayoutOptions, print: MusicXML.Print): ILayoutOptions {
+function newLayoutWithoutMeasures(options: ILayoutOptions, print: Print): ILayoutOptions {
     return {
         attributes: null,
         measures: [],
@@ -198,7 +198,7 @@ function newLayoutWithoutMeasures(options: ILayoutOptions, print: MusicXML.Print
 }
 
 function updatePrint(options: ILayoutOptions, measure: IMutableMeasure) {
-    let partWithPrint = _.find(measure.parts, part => !!part.staves[1] &&
+    let partWithPrint = find(measure.parts, part => !!part.staves[1] &&
             options.modelFactory.search(part.staves[1], 0, IModel.Type.Print).length);
     if (partWithPrint) {
         return <any> options.modelFactory.search(partWithPrint.staves[1], 0,

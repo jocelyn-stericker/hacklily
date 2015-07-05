@@ -22,11 +22,9 @@
 
 "use strict";
 
-import MusicXML = require("musicxml-interfaces");
-import _ = require("lodash");
-import chai = require("chai");
-
-let expect = chai.expect;
+import {OddEvenBoth} from "musicxml-interfaces";
+import {map, forEach} from "lodash";
+import {expect} from "chai";
 
 import { createFakeVoiceSegment, createFakeStaffSegment, fakeFactory}
     from "../../engine/__tests__/etestutil";
@@ -56,7 +54,7 @@ describe("[lineProcessor.ts]", function() {
                 }
             ];
 
-            let layouts = _.map(segments, (seg, idx) => layoutMeasure({
+            let layouts = map(segments, (seg, idx) => layoutMeasure({
                 attributes: {
                     P1: [<any>{
                         divisions: 4,
@@ -96,8 +94,8 @@ describe("[lineProcessor.ts]", function() {
             }));
 
             let padding = 12;
-            let detachedLayouts = _.map(layouts, layout => IMeasureLayout.detach(layout));
-            _.forEach(detachedLayouts, layout => {
+            let detachedLayouts = map(layouts, layout => IMeasureLayout.detach(layout));
+            forEach(detachedLayouts, layout => {
                 layout.attributes = <any> {
                     P1: [,{
                         divisions: 4,
@@ -133,7 +131,7 @@ describe("[lineProcessor.ts]", function() {
                                 rightMargin: padding,
                                 bottomMargin: padding,
                                 topMargin: padding,
-                                type: MusicXML.OddEvenBoth.Both
+                                type: OddEvenBoth.Both
                             }]
                         }
                     },
@@ -153,7 +151,7 @@ describe("[lineProcessor.ts]", function() {
             expect(justified[0].elements[0][0].x$).to.be.closeTo(layouts[0].elements[0][0].x$, 0.05);
             expect(justified[0].elements[0][2].x$).to.be.closeTo(27.0, 0.1);
             expect(justified[0].width).to.be.closeTo(expectedWidth, 0.01);
-            _.forEach(justified, function(just, idx) {
+            forEach(justified, function(just, idx) {
                 expect(just.width).to.not.equal(layouts[idx].width);
             });
         });

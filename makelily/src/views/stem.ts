@@ -18,9 +18,8 @@
 
 "use strict";
 
-import MusicXML = require("musicxml-interfaces");
-import * as React from "react"; // TS 1.5 workaround
-import {createFactory as $, PropTypes} from "react";
+import {Stem, StemType} from "musicxml-interfaces";
+import {createFactory as $, Component, PropTypes} from "react";
 import invariant = require("react/lib/invariant");
 
 import Line from "./primitives/line";
@@ -29,14 +28,14 @@ import {getFontOffset} from "../models/smufl";
 /**
  * Renders a stem based on a height decided in Note.
  */
-class Stem extends React.Component<Stem.IProps, void> {
-    render() {
+class StemView extends Component<StemView.IProps, void> {
+    render(): any {
         const notehead = this.props.notehead;
         const spec = this.props.spec;
-        if (spec.type === MusicXML.StemType.Double) {
+        if (spec.type === StemType.Double) {
             return null;
         }
-        const direction = spec.type === MusicXML.StemType.Up ? 1 : -1; // TODO: StemType.Double
+        const direction = spec.type === StemType.Up ? 1 : -1; // TODO: StemType.Double
         const lineXOffset = direction * - this.props.width/2;
         const offset = getFontOffset(notehead, direction);
         const x = this.context.originX + spec.defaultX +
@@ -57,9 +56,9 @@ class Stem extends React.Component<Stem.IProps, void> {
     }
 }
 
-module Stem {
+module StemView {
     export interface IProps {
-        spec: MusicXML.Stem;
+        spec: Stem;
         notehead: string;
         bestHeight: number;
         width: number;
@@ -70,4 +69,4 @@ module Stem {
     };
 }
 
-export default Stem;
+export default StemView;

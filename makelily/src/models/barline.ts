@@ -16,8 +16,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import MusicXML = require("musicxml-interfaces");
-import _ = require("lodash");
+import {Barline, Segno, Coda, BarlineLocation, WavyLine, Fermata, BarStyle, Ending, Repeat,
+    Footnote, Level, BarStyleType, PartGroup, PartSymbol,
+    serialize as serializeToXML} from "musicxml-interfaces";
+import {any, forEach} from "lodash";
 import invariant = require("react/lib/invariant");
 
 import Attributes from "./attributes";
@@ -57,24 +59,24 @@ class BarlineModel implements Export.IBarlineModel {
         return new BarlineModel.Layout(this, cursor$);
     }
 
-    /*---- I.2 C.MusicXML.Barline ---------------------------------------------------------------*/
+    /*---- I.2 Barline --------------------------------------------------------------------------*/
 
-    segno: MusicXML.Segno;
-    coda: MusicXML.Coda;
-    location: MusicXML.BarlineLocation;
+    segno: Segno;
+    coda: Coda;
+    location: BarlineLocation;
     codaAttrib: string;
-    wavyLine: MusicXML.WavyLine;
-    fermatas: MusicXML.Fermata[];
+    wavyLine: WavyLine;
+    fermatas: Fermata[];
     segnoAttrib: string;
     divisions: string;
-    barStyle: MusicXML.BarStyle;
-    ending: MusicXML.Ending;
-    repeat: MusicXML.Repeat;
+    barStyle: BarStyle;
+    ending: Ending;
+    repeat: Repeat;
 
-    /*---- I.3 C.MusicXML.Editorial -------------------------------------------------------------*/
+    /*---- I.3 Editorial ------------------------------------------------------------------------*/
 
-    footnote: MusicXML.Footnote;
-    level: MusicXML.Level;
+    footnote: Footnote;
+    level: Level;
 
     /*---- II. BarlineModel (extension) ---------------------------------------------------------*/
 
@@ -85,14 +87,14 @@ class BarlineModel implements Export.IBarlineModel {
 
     /*---- Validation Implementations -----------------------------------------------------------*/
 
-    constructor(spec: MusicXML.Barline) {
-        _.forEach(spec, (value, key) => {
+    constructor(spec: Barline) {
+        forEach(spec, (value, key) => {
             (<any>this)[key] = value;
         });
     }
 
     toXML(): string {
-        return MusicXML.serialize.barline(this);
+        return serializeToXML.barline(this);
     }
 
     inspect() {
@@ -150,15 +152,15 @@ module BarlineModel {
 
             this.model.barStyle = Object.create(this.model.barStyle) || {};
             if (!isFinite(this.model.barStyle.data) || this.model.barStyle.data === null) {
-                let lastBarlineInSegment = !_.any(cursor$.segment.slice(cursor$.idx$ + 1),
+                let lastBarlineInSegment = !any(cursor$.segment.slice(cursor$.idx$ + 1),
                         model => cursor$.factory.modelHasType(model, IModel.Type.Barline));
 
                 if(cursor$.line.barOnLine$ + 1 === cursor$.line.barsOnLine &&
                         cursor$.line.line + 1 === cursor$.line.lines &&
                         lastBarlineInSegment) {
-                    this.model.barStyle.data = MusicXML.BarStyleType.LightHeavy;
+                    this.model.barStyle.data = BarStyleType.LightHeavy;
                 } else {
-                    this.model.barStyle.data = MusicXML.BarStyleType.Regular;
+                    this.model.barStyle.data = BarStyleType.Regular;
                 }
             }
             this.model.defaultY = 0;
@@ -176,7 +178,7 @@ module BarlineModel {
                 let x = 0;
                 this.lineStarts = [];
                 this.lineWidths = [];
-                _.forEach(lines, (line, idx) => {
+                forEach(lines, (line, idx) => {
                     if (idx > 0) {
                         x += barlineSep*10;
                     }
@@ -190,29 +192,29 @@ module BarlineModel {
             };
 
             switch(this.model.barStyle.data) {
-                case MusicXML.BarStyleType.LightHeavy:
+                case BarStyleType.LightHeavy:
                     setLines$(["light barline", "heavy barline"]);
                     break;
-                case MusicXML.BarStyleType.LightLight:
+                case BarStyleType.LightLight:
                     setLines$(["light barline", "light barline"]);
                     break;
-                case MusicXML.BarStyleType.HeavyHeavy:
+                case BarStyleType.HeavyHeavy:
                     setLines$(["heavy barline", "heavy barline"]);
                     break;
-                case MusicXML.BarStyleType.HeavyLight:
+                case BarStyleType.HeavyLight:
                     setLines$(["heavy barline", "light barline"]);
                     break;
-                case MusicXML.BarStyleType.Regular:
-                case MusicXML.BarStyleType.Dashed:
-                case MusicXML.BarStyleType.Dotted:
-                case MusicXML.BarStyleType.Short:
-                case MusicXML.BarStyleType.Tick:
+                case BarStyleType.Regular:
+                case BarStyleType.Dashed:
+                case BarStyleType.Dotted:
+                case BarStyleType.Short:
+                case BarStyleType.Tick:
                     setLines$(["light barline"]);
                     break;
-                case MusicXML.BarStyleType.Heavy:
+                case BarStyleType.Heavy:
                     setLines$(["heavy barline"]);
                     break;
-                case MusicXML.BarStyleType.None:
+                case BarStyleType.None:
                     setLines$([]);
                     break;
                 default:
@@ -247,8 +249,8 @@ module BarlineModel {
         lineStarts: number[];
         lineWidths: number[];
 
-        partGroups: MusicXML.PartGroup[];
-        partSymbol: MusicXML.PartSymbol;
+        partGroups: PartGroup[];
+        partSymbol: PartSymbol;
     }
 
     Layout.prototype.mergePolicy = IModel.HMergePolicy.Max;
@@ -266,7 +268,7 @@ function Export(constructors: { [key: number]: any }) {
 }
 
 module Export {
-    export interface IBarlineModel extends IModel, MusicXML.Barline {
+    export interface IBarlineModel extends IModel, Barline {
         defaultX: number;
         defaultY: number;
         satieAttributes: Attributes.ILayout;
@@ -281,8 +283,8 @@ module Export {
         lineStarts: number[];
         lineWidths: number[];
 
-        partSymbol: MusicXML.PartSymbol;
-        partGroups: MusicXML.PartGroup[];
+        partSymbol: PartSymbol;
+        partGroups: PartGroup[];
     }
 }
 

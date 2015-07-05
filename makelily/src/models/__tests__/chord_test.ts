@@ -22,15 +22,14 @@
 
 "use strict";
 
-import MusicXML = require("musicxml-interfaces");
-import chai = require("chai");
+import {Note, Count} from "musicxml-interfaces";
+
+import {expect} from "chai";
 
 import Attributes from "../attributes";
 import Chord from "../chord";
 import {IModel, IChord, ICursor, IAttributes} from "../../engine";
 import Factory from "../factory";
-
-let expect = chai.expect;
 
 function getAttributes(): IAttributes.ISnapshot {
     return <any> {
@@ -110,7 +109,7 @@ describe("[chord.ts]", function() {
             expect((<any>chord).length).to.eq(0);
         });
         it("can be correctly created from a simple spec", function() {
-            chord = factory.fromSpec( <MusicXML.Note> {
+            chord = factory.fromSpec( <Note> {
                 _class: "Note",
                 timeModification: {
                     actualNotes: 3,
@@ -118,7 +117,7 @@ describe("[chord.ts]", function() {
                 },
                 duration: 600, // Playback duration. Should be ignored in these tests.
                 noteType: {
-                    duration: MusicXML.Count.Eighth
+                    duration: Count.Eighth
                 },
                 pitch: {
                     step: "C",
@@ -141,14 +140,14 @@ describe("[chord.ts]", function() {
             expect(xml).to.contain("<duration>600</duration>", "Maintains playback data");
         });
         it("can be a chord generated from specs", function() {
-            chord = factory.fromSpec( <MusicXML.Note> {
+            chord = factory.fromSpec( <Note> {
                 _class: "Note",
                 timeModification: {
                     actualNotes: 3,
                     normalNotes: 2
                 },
                 noteType: {
-                    duration: MusicXML.Count.Eighth
+                    duration: Count.Eighth
                 },
                 pitch: {
                     step: "C",
@@ -156,14 +155,14 @@ describe("[chord.ts]", function() {
                     alter: 1
                 }
             });
-            IChord.fromModel(chord).push(<MusicXML.Note> {
+            IChord.fromModel(chord).push(<Note> {
                 _class: "Note",
                 timeModification: {
                     actualNotes: 3,
                     normalNotes: 2
                 },
                 noteType: {
-                    duration: MusicXML.Count.Eighth
+                    duration: Count.Eighth
                 },
                 pitch: {
                     step: "E",

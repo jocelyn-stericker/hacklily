@@ -16,7 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import MusicXML = require("musicxml-interfaces");
+import {ScoreHeader, SystemLayout, Print} from "musicxml-interfaces";
 
 import IModel from "./imodel";
 import IPrint from "./iprint";
@@ -26,8 +26,8 @@ import IAttributes from "./iattributes";
 export interface ILayoutOptions {
     attributes: {[part: string]: IAttributes.ISnapshot[]};
     measures: IMutableMeasure[];
-    header: MusicXML.ScoreHeader;
-    print$: MusicXML.Print;
+    header: ScoreHeader;
+    print$: Print;
     page$: number;
     line?: number;
     lines?: number;
@@ -71,11 +71,11 @@ export interface ILineLayoutResult extends Array<IMeasureLayout> {
 export interface ILineBounds {
     left: number;
     right: number;
-    systemLayout: MusicXML.SystemLayout;
+    systemLayout: SystemLayout;
 }
 
 export module ILineBounds {
-    export function calculate(print: MusicXML.Print, page: number): ILineBounds {
+    export function calculate(print: Print, page: number): ILineBounds {
         let pageLayout = print.pageLayout;
         let pageMargins = IPrint.getPageMargins(pageLayout.pageMargins, page);
         let systemMargins = print.systemLayout.systemMargins;
@@ -97,7 +97,7 @@ export module ILineBounds {
 export interface IDocument {
     error?: any;
     factory?: IModel.IFactory;
-    header?: MusicXML.ScoreHeader;
+    header?: ScoreHeader;
     measures?: IMutableMeasure[];
     parts?: string[];
 }

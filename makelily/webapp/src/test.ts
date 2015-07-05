@@ -1,7 +1,7 @@
 import React = require("react");
 import {Link} from "react-router";
 import {importXML, IDocument, Viewer} from "../../src/index";
-import _ = require("lodash");
+import {find, defer} from "lodash";
 
 import Test from "./test";
 
@@ -33,7 +33,7 @@ class Tests extends React.Component<Tests.IProps, Tests.IState> {
         }
 
         let misc = chrome && document.header.identification.miscellaneous;
-        let descriptionField = chrome && _.find(misc && misc.miscellaneousFields,
+        let descriptionField = chrome && find(misc && misc.miscellaneousFields,
                 field => field.name === "description");
         let description = chrome && (descriptionField ?
                 descriptionField.data :
@@ -90,7 +90,7 @@ class Tests extends React.Component<Tests.IProps, Tests.IState> {
                     (err: Error, doc: IDocument) => {
                         if (err) {
                             console.warn(err);
-                            _.defer(() => {
+                            defer(() => {
                                 this.setState({
                                     error: err,
                                     src: request.responseText

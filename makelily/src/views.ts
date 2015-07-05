@@ -16,9 +16,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import MusicXML = require("musicxml-interfaces");
+import {Print} from "musicxml-interfaces";
 import {createFactory as $, renderToStaticMarkup, ReactElement} from "react";
-import _ = require("lodash");
+import {find} from "lodash";
 import invariant = require("react/lib/invariant");
 
 import Page from "./views/page";
@@ -40,9 +40,9 @@ export function getPage(doc: IDocument, startMeasure: number,
     if (!firstMeasure) {
         throw new Error("No such measure " + startMeasure);
     }
-    let partWithPrint = _.find(firstMeasure.parts, part => !!part.staves[1] &&
+    let partWithPrint = find(firstMeasure.parts, part => !!part.staves[1] &&
             factory.search(part.staves[1], 0, IModel.Type.Print).length);
-    let print: MusicXML.Print;
+    let print: Print;
 
     if (partWithPrint) {
         print = <any> factory.search(partWithPrint.staves[1], 0, IModel.Type.Print)[0];

@@ -18,9 +18,9 @@
 
 "use strict";
 
-import MusicXML = require("musicxml-interfaces");
+import {UprightInverted, Notations, Note} from "musicxml-interfaces";
 import {createFactory as $, Component, DOM, ReactElement, PropTypes} from "react";
-import _ = require("lodash");
+import {forEach} from "lodash";
 import invariant = require("react/lib/invariant");
 
 import Articulation from "./notations/articulation";
@@ -32,7 +32,7 @@ import {bboxes} from "../models/smufl";
 /**
  * Notations are things that are attached to notes.
  */
-class Notation extends Component<Notation.IProps, void> {
+class NotationModel extends Component<NotationModel.IProps, void> {
     render() {
         const model = this.props.spec;
         const notehead = this.props.layout.model.noteheadGlyph[0];
@@ -41,27 +41,27 @@ class Notation extends Component<Notation.IProps, void> {
         const originX = this.context.originX + this.props.layout.model[0].defaultX + noteheadCenter;
         let children: ReactElement<any>[] = [];
 
-        _.forEach(model.accidentalMarks, accidentalMark => {
+        forEach(model.accidentalMarks, accidentalMark => {
             // TODO
         });
 
-        _.forEach(model.arpeggiates, arpeggiate => {
+        forEach(model.arpeggiates, arpeggiate => {
             // TODO
         });
 
-        _.forEach(model.articulations, (articulation, idx) => {
+        forEach(model.articulations, (articulation, idx) => {
             children.push($(Articulation)({
                 articulation: articulation,
                 key: `art${idx}`
             }));
         });
 
-        _.forEach(model.dynamics, dynamic => {
+        forEach(model.dynamics, dynamic => {
             // TODO
         });
 
-        _.forEach(model.fermatas, (fermata, idx) => {
-            let direction = (fermata.type === MusicXML.UprightInverted.Inverted) ? "Below" : "Above";
+        forEach(model.fermatas, (fermata, idx) => {
+            let direction = (fermata.type === UprightInverted.Inverted) ? "Below" : "Above";
             children.push($(Glyph)({
                 fill: "black",
                 glyphName: `fermata${direction}`,
@@ -71,31 +71,31 @@ class Notation extends Component<Notation.IProps, void> {
             }));
         });
 
-        _.forEach(model.glissandos, glissando => {
+        forEach(model.glissandos, glissando => {
             // TODO
         });
 
-        _.forEach(model.nonArpeggiates, nonArpeggiate => {
+        forEach(model.nonArpeggiates, nonArpeggiate => {
             // TODO
         });
 
-        _.forEach(model.ornaments, ornament => {
+        forEach(model.ornaments, ornament => {
             // TODO
         });
 
-        _.forEach(model.slides, slide => {
+        forEach(model.slides, slide => {
             // TODO
         });
 
-        _.forEach(model.slurs, slur => {
+        forEach(model.slurs, slur => {
             // TODO
         });
 
-        _.forEach(model.technicals, technical => {
+        forEach(model.technicals, technical => {
             // TODO
         });
 
-        _.forEach(model.tieds, tied => {
+        forEach(model.tieds, tied => {
             let tieTo: Chord.IChordLayout = (<any>tied).satieTieTo;
             if (!tieTo) {
                 return;
@@ -164,7 +164,7 @@ class Notation extends Component<Notation.IProps, void> {
             }));
         });
 
-        _.forEach(model.tuplets, tuplet => {
+        forEach(model.tuplets, tuplet => {
             // TODO
         });
 
@@ -186,11 +186,11 @@ class Notation extends Component<Notation.IProps, void> {
     }
 };
 
-module Notation {
+module NotationModel {
     export interface IProps {
-        spec: MusicXML.Notations;
+        spec: Notations;
         layout: Chord.IChordLayout;
-        note: MusicXML.Note;
+        note: Note;
     }
     export let childContextTypes = <any> {
         originX: PropTypes.number.isRequired
@@ -201,4 +201,4 @@ module Notation {
     };
 }
 
-export default Notation;
+export default NotationModel;

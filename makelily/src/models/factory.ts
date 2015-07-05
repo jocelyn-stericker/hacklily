@@ -17,7 +17,7 @@
  */
 
 import invariant = require("react/lib/invariant");
-import _ = require("lodash");
+import {forEach, any} from "lodash";
 
 import {IModel, Preprocessor, Postprocessor} from "../engine";
 import {cloneObject} from "../engine/util";
@@ -30,7 +30,7 @@ export type ModelInstaller =
 
 class Factory implements IModel.IFactory {
     constructor(models: ModelInstaller[], pre: Preprocessor[] = [], post: Postprocessor[] = []) {
-        _.forEach(models, model => {
+        forEach(models, model => {
             model(this._constructors);
         });
         this.preprocessors = pre;
@@ -46,7 +46,7 @@ class Factory implements IModel.IFactory {
     }
 
     modelHasType(model: IModel, ...modelTypes: IModel.Type[]): boolean {
-        return _.any(modelTypes, modelType => {
+        return any(modelTypes, modelType => {
             invariant((<number>modelType) in this._constructors,
                 "The type with id=%s does not have a factory.",
                 modelType);

@@ -16,18 +16,17 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import MusicXML = require("musicxml-interfaces");
-import * as React from "react"; // TS 1.5 workaround
-import {createFactory as $, DOM, MouseEvent, PropTypes} from "react";
-import _ = require("lodash");
+import {ScoreHeader, Print} from "musicxml-interfaces";
+import {createFactory as $, Component, DOM, MouseEvent, PropTypes} from "react";
+import {map, filter, forEach} from "lodash";
 import invariant = require("react/lib/invariant");
 
 import Credit from "./credit";
 import {ILineLayoutResult, RenderTarget, RenderUtil, key$} from "../engine";
 import MeasureView from "./measureView";
 
-class Page extends React.Component<Page.IProps, Page.IState> {
-    render() {
+class Page extends Component<Page.IProps, Page.IState> {
+    render(): any {
 
         /*--- General ---------------------------------------------*/
 
@@ -36,7 +35,7 @@ class Page extends React.Component<Page.IProps, Page.IState> {
         const pageNum = parseInt(page, 10);
         invariant(!!page, "Page %s isn't a valid page number.", pageNum);
         const defaults = this.props.scoreHeader.defaults;
-        const credits = _.filter(this.props.scoreHeader.credits, cr =>
+        const credits = filter(this.props.scoreHeader.credits, cr =>
                                 (cr.page === parseInt(page, 10)));
         const scale40 = defaults.scaling.millimeters / defaults.scaling.tenths * 40;
         const widthMM = this.props.renderTarget === RenderTarget.SvgExport ?
@@ -55,7 +54,7 @@ class Page extends React.Component<Page.IProps, Page.IState> {
         /*--- Credits ---------------------------------------------*/
 
         // Make sure our credits are keyed.
-        _.forEach(credits, key$);
+        forEach(credits, key$);
 
         /*--- Render ----------------------------------------------*/
 
@@ -74,9 +73,9 @@ class Page extends React.Component<Page.IProps, Page.IState> {
                 viewBox: `0 0 ${print.pageLayout.pageWidth} ${print.pageLayout.pageHeight}`,
                 width: widthMM
             },
-            _.map(credits, <any> $(Credit)),
-            _.map(lineLayouts, (lineLayout, lineIdx) =>
-                _.map(lineLayout, measureLayout =>
+            map(credits, <any> $(Credit)),
+            map(lineLayouts, (lineLayout, lineIdx) =>
+                map(lineLayout, measureLayout =>
                     $(MeasureView)({
                         key: (<any>measureLayout).key,
                         layout: measureLayout
@@ -107,8 +106,8 @@ module Page {
     };
 
     export interface IProps {
-        scoreHeader: MusicXML.ScoreHeader;
-        print: MusicXML.Print;
+        scoreHeader: ScoreHeader;
+        print: Print;
         lineLayouts: ILineLayoutResult[];
         renderTarget: RenderTarget;
         className: string;

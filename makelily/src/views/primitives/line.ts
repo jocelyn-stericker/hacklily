@@ -18,14 +18,13 @@
 
 "use strict";
 
-import * as React from "react"; // TS 1.5 workaround
-import {DOM} from "react";
+import {Component, DOM} from "react";
 
 /**
  * Renders a straight line.
  */
-class Line extends React.Component<Line.IProps, {}> {
-    render() {
+class Line extends Component<Line.IProps, {}> {
+    render(): any {
         return DOM.line({
             className: this.props.className,
             stroke: this.props.stroke,

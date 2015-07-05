@@ -22,8 +22,8 @@
  * @file models/chord/metre.ts Utilities for rhythm arithmetic
  */
 
-import MusicXML = require("musicxml-interfaces");
-import _ = require("lodash");
+import {StartStop, Time, TimeModification, Count} from "musicxml-interfaces";
+import {any, reduce, times, forEach, clone, find} from "lodash";
 import invariant = require("react/lib/invariant");
 
 import {IModel, IChord, ICursor} from "../../engine";
@@ -255,8 +255,8 @@ export function rhythmicSpellcheck$(cursor$: ICursor): boolean {
         !IChord.timeModification(currNote) && !IChord.timeModification(nextNote) &&
         (
             currNote[0].rest && nextNote[0].rest ||
-            !!nextNote && _.any(IChord.ties(currNote),
-                    t => t && t.type !== MusicXML.StartStop.Stop) ?
+            !!nextNote && any(IChord.ties(currNote),
+                    t => t && t.type !== StartStop.Stop) ?
             nextNote : null);
 
     /*---- I. Checks that should be done even if we are frozen ----------------------------------*/
@@ -284,7 +284,7 @@ export function rhythmicSpellcheck$(cursor$: ICursor): boolean {
                     IChord.timeModification(currNote).actualNotes /
                     IChord.timeModification(currNote).normalNotes;
             let toAdd = subtract(toRestoreUntuplet, 0, cursor$, -cursor$.division$).map(spec => {
-                _.forEach(spec, note => {
+                forEach(spec, note => {
                     note.timeModification = cloneObject(IChord.timeModification(currNote));
                     note.rest = {};
                 });
@@ -415,7 +415,7 @@ function clearExcessBeats(currNote: IChord, excessBeats: number, cursor$: ICurso
             cursor$, calcDivisions(currNote, cursor$) - excessBeats));
     replaceWith.forEach((m: any) => {
         // Ideally there would be a PitchDuration constructor that would do this for us.
-        _.forEach(currNote, (note, i) => {
+        forEach(currNote, (note, i) => {
             m[i] = cloneObject(note);
         });
     });
@@ -426,9 +426,9 @@ function clearExcessBeats(currNote: IChord, excessBeats: number, cursor$: ICurso
     if (!IChord.rest(currNote)) {
         for (let i = cursor$.idx$; i < after - 1; ++i) {
             let note = IChord.fromModel(cursor$.segment[i]);
-            IChord.setTies$(note, _.times(note.length, () => {
+            IChord.setTies$(note, times(note.length, () => {
                 return {
-                    type: MusicXML.StartStop.Start
+                    type: StartStop.Start
                 };
             }));
         }
@@ -440,15 +440,15 @@ function clearExcessBeats(currNote: IChord, excessBeats: number, cursor$: ICurso
 /**
  * @returns a TS string for lookup in the BEAMING_PATTERNS array.
  */
-export function getTSString(time: MusicXML.Time) {
+export function getTSString(time: Time) {
     invariant(!!time, "Time is not defined for getTSString");
-    return _.reduce(time.beats, (memo, beats, idx) => {
+    return reduce(time.beats, (memo, beats, idx) => {
         return beats + "/" + time.beatTypes[idx];
 
     }, "");
 }
 
-export function getBeamingPattern(time: MusicXML.Time, alt?: string) {
+export function getBeamingPattern(time: Time, alt?: string) {
     let pattern: IChord[] = BEAMING_PATTERNS[getTSString(time) + (alt ? "_" + alt : "")];
     let factors: {[key: number]: number[]} = {
         4: [4,3,2,1],
@@ -462,11 +462,11 @@ export function getBeamingPattern(time: MusicXML.Time, alt?: string) {
         // TODO: Partial & Mixed
         pattern = [];
         // TODO: Varying denominators will err for the remainder of this function
-        let beatsToAdd = _.reduce(time.beats, (memo, beat) => {
-            return memo + _.reduce(beat.split("+"), (m, b) => m + parseInt(b, 10), 0);
+        let beatsToAdd = reduce(time.beats, (memo, beat) => {
+            return memo + reduce(beat.split("+"), (m, b) => m + parseInt(b, 10), 0);
         }, 0);
         let ownFactors = factors[time.beatTypes[0]];
-        _.forEach(ownFactors, factor => {
+        forEach(ownFactors, factor => {
             while(beatsToAdd >= factor) {
                 pattern = pattern.concat(BEAMING_PATTERNS[factor + "/" + time.beatTypes[0]]);
                 beatsToAdd -= factor;
@@ -537,7 +537,7 @@ export function subtract(durr1: any, divisions: number,
             /* Exit! */
             return replaceWith;
         }
-        _.any(allNotes, function(note) { // stop at first 'true'
+        any(allNotes, function(note) { // stop at first 'true'
             let noteDivisions = _calcDivisions(IChord.count(note), IChord.dots(note), null,
                 attributes.time, attributes.divisions);
 
@@ -566,7 +566,7 @@ export function subtract(durr1: any, divisions: number,
                 if (completelyFills || (lengthOfPattern - bpIdx <= 1)) {
                     // This either fills multiple segments perfectly, or fills less than one
                     // segment.
-                    replaceWith.push(_.clone(note));
+                    replaceWith.push(clone(note));
                     beatsToFill -= noteDivisions;
                     currDivision += noteDivisions;
                     return true;
@@ -581,14 +581,14 @@ class InvalidDurationError {
 };
 
 export function calcDivisions(chord: IChord, cursor: ICursor) {
-    if (_.any(chord, note => note.grace)) {
+    if (any(chord, note => note.grace)) {
         return 0;
     }
 
     let {attributes} = cursor.staff;
     let count = IChord.count(chord);
     if (isNaN(count)) {
-        return _.find(chord, note => note.duration).duration;
+        return find(chord, note => note.duration).duration;
     }
     let intrinsicDivisions = _calcDivisions(
         IChord.count(chord),
@@ -601,10 +601,10 @@ export function calcDivisions(chord: IChord, cursor: ICursor) {
     return Math.min(intrinsicDivisions, cursor.staff.totalDivisions);
 }
 
-export function calcDivisionsNoCtx(chord: IChord, time: MusicXML.Time, divisions: number) {
+export function calcDivisionsNoCtx(chord: IChord, time: Time, divisions: number) {
     let count = IChord.count(chord);
     if (isNaN(count)) {
-        return _.find(chord, note => note.duration).duration;
+        return find(chord, note => note.duration).duration;
     }
     return _calcDivisions(
         count,
@@ -615,7 +615,7 @@ export function calcDivisionsNoCtx(chord: IChord, time: MusicXML.Time, divisions
 }
 
 function _calcDivisions(count: number, dots: number,
-        timeModification: MusicXML.TimeModification, time: MusicXML.Time, divisions: number) {
+        timeModification: TimeModification, time: Time, divisions: number) {
     if (time.senzaMisura !== undefined) {
         time = {
             beatTypes: [4],
@@ -624,17 +624,17 @@ function _calcDivisions(count: number, dots: number,
     }
     if (count === -1) {
         // TODO: What if beatType isn't consistent?
-        return divisions * _.reduce(time.beats, (memo, durr) =>
-            memo + _.reduce(durr.split("+"), (m, l) => m + parseInt(l, 10), 0), 0);
+        return divisions * reduce(time.beats, (memo, durr) =>
+            memo + reduce(durr.split("+"), (m, l) => m + parseInt(l, 10), 0), 0);
     }
 
-    if (count === MusicXML.Count.Breve) {
+    if (count === Count.Breve) {
         count = 0.5;
     }
-    if (count === MusicXML.Count.Long) {
+    if (count === Count.Long) {
         count = 0.25; // We really should...
     }
-    if (count === MusicXML.Count.Maxima) {
+    if (count === Count.Maxima) {
         count = 0.125; // ... not support these at all.
     }
 
@@ -679,7 +679,7 @@ export enum Beaming {
 function makeDuration(spec: IRestSpec): IChord {
     invariant(!spec.timeModification, "timeModification is not implemented in makeDuration");
     return [{
-        dots: _.times(spec.dots || 0, () => { return {}; }),
+        dots: times(spec.dots || 0, () => { return {}; }),
         noteType: {
             duration: spec.count
         }
@@ -707,5 +707,5 @@ export interface IRestSpec {
     /** 
      * The time modification (canonical tuplet), or null.
      */
-    timeModification?: MusicXML.TimeModification;
+    timeModification?: TimeModification;
 }

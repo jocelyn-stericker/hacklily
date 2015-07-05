@@ -22,9 +22,10 @@
 
 "use strict";
 
-import MusicXML = require("musicxml-interfaces");
-import _ = require("lodash");
-import chai = require("chai");
+import {DirectionMode, EnclosureShape, NormalItalic, NormalBold, LeftCenterRight,
+    TopMiddleBottomBaseline, parse as parseFromXML} from "musicxml-interfaces";
+import {forEach, any} from "lodash";
+import {expect} from "chai";
 
 import Factory from "../../factory";
 import {_extractMXMLHeader, _extractMXMLPartsAndMeasures} from "../import";
@@ -37,8 +38,6 @@ import Print from "../../print";
 import ScoreHeader from "../../scoreHeader";
 import Sound from "../../sound";
 import Spacer from "../../spacer";
-
-let expect = chai.expect;
 
 /*---- samples ----------------------------------------------------------------------------------*/
 
@@ -516,7 +515,7 @@ let lily43eXML = `<?xml version="1.0" encoding="UTF-8"?>
 describe("[musicxml/import.ts]", function() {
     describe("_extractMXMLHeader", function() {
         it("can parse all header properties", function() {
-            let mxmljson = MusicXML.parse(helloWorldXML);
+            let mxmljson = parseFromXML(helloWorldXML);
             let header = _extractMXMLHeader(mxmljson);
 
             expect(header).to.be.an.instanceof(ScoreHeader);
@@ -528,14 +527,14 @@ describe("[musicxml/import.ts]", function() {
                 color: "#000000",
                 defaultX: 1124,
                 defaultY: 1362,
-                dir: MusicXML.DirectionMode.Ltr,
-                enclosure: MusicXML.EnclosureShape.None,
+                dir: DirectionMode.Ltr,
+                enclosure: EnclosureShape.None,
                 fontFamily: "",
                 fontSize: "12",
-                fontStyle: MusicXML.NormalItalic.Normal,
-                fontWeight: MusicXML.NormalBold.Normal,
-                halign: MusicXML.LeftCenterRight.Right, // Agrees with justify
-                justify: MusicXML.LeftCenterRight.Right,
+                fontStyle: NormalItalic.Normal,
+                fontWeight: NormalBold.Normal,
+                halign: LeftCenterRight.Right, // Agrees with justify
+                justify: LeftCenterRight.Right,
                 letterSpacing: "normal",
                 lineHeight: "normal",
                 lineThrough: 0,
@@ -544,11 +543,11 @@ describe("[musicxml/import.ts]", function() {
                 relativeY: null,
                 rotation: 0,
                 underline: 0,
-                valign: MusicXML.TopMiddleBottomBaseline.Top,
+                valign: TopMiddleBottomBaseline.Top,
                 words: "Song Composer"
             }]);
             // Check that halign still follows justify
-            expect(header.credits[0].creditWords[0].halign).to.eq(MusicXML.LeftCenterRight.Center);
+            expect(header.credits[0].creditWords[0].halign).to.eq(LeftCenterRight.Center);
 
             expect(header.identification.creators.length).to.eq(3);
             expect(header.identification.creators[0].type).to.eq("composer");
@@ -612,9 +611,9 @@ describe("[musicxml/import.ts]", function() {
                         defaultY: null,
                         fontFamily: "",
                         fontSize: "",
-                        fontStyle: MusicXML.NormalItalic.Normal,
-                        fontWeight: MusicXML.NormalBold.Normal,
-                        justify: MusicXML.LeftCenterRight.Left,
+                        fontStyle: NormalItalic.Normal,
+                        fontWeight: NormalBold.Normal,
+                        justify: LeftCenterRight.Left,
                         partName: "MusicXML Part",
                         printObject: false,
                         relativeX: null,
@@ -645,7 +644,7 @@ describe("[musicxml/import.ts]", function() {
             let factory = new Factory([Attributes, Chord, Print, Sound, Barline]);
                 // does not need spacer
 
-            let mxmljson = MusicXML.parse(helloWorldXML);
+            let mxmljson = parseFromXML(helloWorldXML);
             let partsAndMeasures = _extractMXMLPartsAndMeasures(mxmljson, factory);
             expect(partsAndMeasures.measures.length).to.eq(1);
             expect(partsAndMeasures.measures[0].parts["P1"].staves[1].length).to.eq(4);
@@ -658,7 +657,7 @@ describe("[musicxml/import.ts]", function() {
         it("parses multi-voice, multi-staff songs with backup", function() {
             let factory = new Factory([Attributes, Direction, Chord, Print, Sound, Barline, Spacer]);
 
-            let mxmljson = MusicXML.parse(lily43eXML);
+            let mxmljson = parseFromXML(lily43eXML);
             let partsAndMeasures = _extractMXMLPartsAndMeasures(mxmljson, factory);
             expect(partsAndMeasures.measures.length).to.eq(4);
             expect(partsAndMeasures.parts).to.eql(["P1"]);
@@ -676,11 +675,11 @@ describe("[musicxml/import.ts]", function() {
             expect(staves[1].divisions).to.eq(8);
             expect(staves[1].length).to.eq(3);
             expect(staves[2].length).to.eq(3);
-            _.forEach(staves[1], model => {
-                expect(!_.any(staves[2], m2 => model === m2));
+            forEach(staves[1], model => {
+                expect(!any(staves[2], m2 => model === m2));
             });
-            _.forEach(voices[1], model => {
-                expect(!_.any(voices[2], m2 => model === m2));
+            forEach(voices[1], model => {
+                expect(!any(voices[2], m2 => model === m2));
             });
         });
     });

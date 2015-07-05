@@ -19,7 +19,7 @@
 "use strict";
 
 import {createFactory as $, Component, DOM, PropTypes} from "react";
-import _ = require("lodash");
+import {times, map} from "lodash";
 
 import IBeam from "../engine/ibeam";
 import TupletNumber from "./tupletNumber";
@@ -36,11 +36,11 @@ class Beam extends Component<Beam.IProps, void> {
         let {tuplet, beamCount, x, direction} = layout;
 
         return DOM.g(null,
-            _.map(beamCount, (beams: number, idx: number): any => {
+            map(beamCount, (beams: number, idx: number): any => {
                 if (idx === 0) {
                     return null;
                 }
-                return _.times(beams, beam => {
+                return times(beams, beam => {
                     let x1: number;
                     let x2: number = this._withXOffset(x[idx]);
                     if (beamCount[idx - 1] <= beam) {
