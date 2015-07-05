@@ -71,7 +71,7 @@ describe("[lineProcessor.ts]", function() {
                 minX: 0,
                 measure: {
                     idx: idx,
-                    number: (idx + 1) + "",
+                    number: String(idx + 1),
                     parts: {
                         "P1": {
                             voices: seg.voices,

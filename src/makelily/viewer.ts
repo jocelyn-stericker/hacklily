@@ -16,14 +16,13 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import * as React from "react"; // TS 1.5 workaround
-import {DOM} from "react";
+import {Component, DOM} from "react";
 
 import {IDocument, RenderTarget} from "./engine";
 import {getPage} from "./views";
 
-class Viewer extends React.Component<{document: IDocument, pageClassName?: string}, void> {
-    render() {
+class Viewer extends Component<{document: IDocument, pageClassName?: string}, void> {
+    render(): any {
         let className = this.props.pageClassName || "";
         let page1 = getPage(this.props.document, 0, RenderTarget.SvgWeb, className);
         return DOM.div({},

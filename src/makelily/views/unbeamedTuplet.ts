@@ -18,44 +18,58 @@
 
 "use strict";
 
-import MusicXML = require("musicxml-interfaces");
+/**
+ * @file Renders a tuplet outside of a beam. Unbeamed tuplets are created
+ * by the beam postprocessor, since they share many similaraties.
+ */
+
+// Note that we use notehadBlack regardless of the notehead.
+// This keeps spacing consistent, even in beam groups with rests.
+
+import {AboveBelow} from "musicxml-interfaces";
 import {createFactory as $, Component, DOM, PropTypes} from "react";
+import {first, last, map, reduce} from "lodash";
 
 import Glyph from "./primitives/glyph";
-import SMuFL from "../models/smufl";
+import {bravura, getFontOffset, bboxes} from "../models/smufl";
+import {IBeam} from "../engine";
 
-class UnbeamedTuplet extends Component<{spec: MusicXML.Tuplet}, void> {
-    render() {
+class UnbeamedTuplet extends Component<UnbeamedTuplet.IProps, void> {
+    render(): any {
+        let {stroke, layout} = this.props;
+        let {tuplet} = layout;
+        let {placement} = tuplet;
+        let yOffset = placement === AboveBelow.Above ? 8 : -8;
         return DOM.g(null,
             DOM.polygon({
-                fill: this.props.stroke,
+                fill: stroke,
                 key: "p1",
                 points: this._getX1() + "," + this._getY1(0) + " " +
                     this._getX2() + "," + this._getY2(0) + " " +
                     this._getX2() + "," + this._getY2(1) + " " +
                     this._getX1() + "," + this._getY1(1),
-                stroke: this.props.stroke,
+                stroke: stroke,
                 strokeWidth: 0
             }),
             DOM.line({
-                fill: this.props.stroke,
+                fill: stroke,
                 key: "p2",
-                stroke: this.props.stroke,
-                strokeWidth: SMuFL.bravura.engravingDefaults.tupletBracketThickness*10,
-                x1: this._getX1(),
-                x2: this._getX1(),
-                y1: this._getY1(this.props.direction === -1 ? 1 : 0),
-                y2: this._getY1(this.props.direction === -1 ? 0 : 1) + 4*this.props.direction
+                stroke: stroke,
+                strokeWidth: bravura.engravingDefaults.tupletBracketThickness*10,
+                x1: this._getX1() + 0.5,
+                x2: this._getX1() + 0.5,
+                y1: this._getY1(placement === AboveBelow.Below ? 1 : 0),
+                y2: this._getY1(placement === AboveBelow.Below ? 0 : 1) + yOffset
             }),
             DOM.line({
                 fill: this.props.stroke,
                 key: "p3",
                 stroke: this.props.stroke,
-                strokeWidth: SMuFL.bravura.engravingDefaults.tupletBracketThickness*10,
-                x1: this._getX2(),
-                x2: this._getX2(),
-                y1: this._getY2(this.props.direction === -1 ? 1 : 0),
-                y2: this._getY2(this.props.direction === -1 ? 0 : 1) + 4*this.props.direction
+                strokeWidth: bravura.engravingDefaults.tupletBracketThickness*10,
+                x1: this._getX2() - 0.5,
+                x2: this._getX2() - 0.5,
+                y1: this._getY2(placement === AboveBelow.Below ? 1 : 0),
+                y2: this._getY2(placement === AboveBelow.Below ? 0 : 1) + yOffset
             }),
             this._tuplet()
         );
@@ -73,97 +87,103 @@ class UnbeamedTuplet extends Component<{spec: MusicXML.Tuplet}, void> {
      * -1 if the notes go down.
      */
     direction() {
-        return this.props.direction;
+        return this.props.layout.tuplet.placement === AboveBelow.Above ? 1 : -1;
     }
 
     private _withXOffset(x: number) {
-        // Note that we use notehadBlack regardless of the note-bhead.
-        // This keeps spacing consistent, even in beam groups with rests.
         return x +
-            SMuFL.getFontOffset("noteheadBlack", this.direction())[0]*10 +
-                this.getLineXOffset();
+            this.context.originX +
+            getFontOffset("noteheadBlack", this.direction())[0]*10 +this.getLineXOffset();
     }
 
     private _getX1() {
-        return this._withXOffset(this.props.x);
+        let {x} = this.props.layout;
+        return this._withXOffset(first(x)) - 4;
     }
 
     private _getX2() {
-        return this._withXOffset(this.props.x + this.props.width);
+        let {x} = this.props.layout;
+        return this._withXOffset(last(x)) + 4;
     }
 
     private _getY1(incl: number) {
-        // Note that we use notehadBlack regardless of the notehead.
-        // This keeps spacing consistent, even in beam groups with rests.
-        return this.props.y -
-            this._getYOffset() -
-            this.direction()*SMuFL.getFontOffset("noteheadBlack", this.direction())[1]*10 -
-            (this.props.line1 - 3)*10 +
-            (incl || 0)*(SMuFL.bravura.engravingDefaults.tupletBracketThickness*10);
+        let {originY} = this.context;
+        let {layout} = this.props;
+        let {y1} = layout;
+        return originY - y1 -
+            this.direction()*getFontOffset("noteheadBlack", this.direction())[1]*10 -
+            (incl || 0)*(bravura.engravingDefaults.tupletBracketThickness*10);
     }
 
     private _getY2(incl: number) {
-        // Note that we use notehadBlack regardless of the notehead.
-        // This keeps spacing consistent, even in beam groups with rests.
-        return this.props.y -
-            this._getYOffset() -
-            this.direction()*SMuFL.getFontOffset("noteheadBlack", this.direction())[1]*10 -
-            (this.props.line2 - 3)*10 +
-            (incl || 0)*(SMuFL.bravura.engravingDefaults.tupletBracketThickness*10);
-    }
-
-    /**
-     * Offset because the note-head has a non-zero height.
-     * The note-head is NOT CENTERED at its local origin.
-     */
-    private _getYOffset() {
-        if (this.direction() === -1) {
-            return 1;
-        }
-        return 0.2;
+        let {originY} = this.context;
+        let {layout} = this.props;
+        let {y2} = layout;
+        return originY - y2 -
+            this.direction()*getFontOffset("noteheadBlack", this.direction())[1]*10 -
+            (incl || 0)*(bravura.engravingDefaults.tupletBracketThickness*10);
     }
 
     /**
      * Returns a component instance showing the tuplet number
      */
     private _tuplet() {
-        if (!this.props.tuplet) {
-            return null;
-        } else {
-            let symbol = "tuplet" + (this.props.tuplet.actualNotes.count.toString()[0]);
-            let bbox = SMuFL.bboxes[symbol];
-            let width = (bbox[2] - bbox[0])*10;
-            let offset = (this._getX2() - this._getX1())/2 - this.props.direction*width/2;
-            let y = (this._getY1(1) +
-                        this._getY2(1))/2 + 5.8;
+        let {layout} = this.props;
+        let {tuplet} = layout;
 
-            return DOM.g(null,
-                /* TODO: We should simply not draw here. This breaks transparent backgrounds! */
-                DOM.polygon({
-                    fill: "white",
-                    points: (
-                        (this.props.x + offset - bbox[0]*10 + 4) + "," + (y - bbox[1]*10) + " " +
-                        (this.props.x + offset - bbox[0]*10 + 4) + "," + (y + bbox[3]*10) + " " +
-                        (this.props.x + offset + bbox[1]*10 + 4) + "," + (y + bbox[3]*10) + " " +
-                        (this.props.x + offset + bbox[1]*10 + 4) + "," + (y - bbox[1]*10)),
-                    stroke: "white",
-                    strokeWidth: 0
-                }),
-                $(Glyph)({
-                    fill: this.props.tupletsTemporary ? "#A5A5A5" : "#000000",
+        let text = (tuplet.tupletActual.tupletNumber.text);
+        let symbols = map(text, letter => `tuplet${letter}`);
+        let boxes = map(symbols, symbol => bboxes[symbol]);
+        let widths = map(boxes, box => (box[0] - box[2])*10);
+
+        let width = reduce(widths, (total, width) => total + width, 0);
+        let offset = (this._getX2() + this._getX1())/2;
+        let xs = reduce(boxes, (memo, box) => {
+            memo.push(box[0] * 10 + last(memo));
+            return memo;
+        }, [0]);
+        let y = (this._getY1(1) + this._getY2(1))/2 + 5.8;
+
+        return DOM.g(null,
+            // Mask
+            // FIXME: We should instead split up the rectangle into
+            // two parts to avoid breaking transparent backgrounds!
+            DOM.polygon({
+                fill: "white",
+                key: `mask`,
+                points: (
+                    (offset - width/2 - 6) + "," + (y - boxes[0][1]*10) + " " +
+                    (offset - width/2 - 6) + "," + (y + boxes[0][3]*10) + " " +
+                    (offset + width/2 + 6) + "," + (y + boxes[0][3]*10) + " " +
+                    (offset + width/2 + 6) + "," + (y - boxes[0][1]*10)),
+                stroke: "white",
+                strokeWidth: 0
+            }),
+
+            // Glyphs
+            map(symbols, (symbol, index) => {
+                return $(Glyph)({
+                    key: `glyph${index}`,
+                    fill: "#000000",
                     glyphName: symbol,
-                    x: this.props.x + offset,
+                    x: xs[index] + offset - width/2,
                     y: y
-                })
-            /* DOM.g */);
-        }
+                });
+            })
+        /* DOM.g */);
     }
 };
 
 module UnbeamedTuplet {
     export let contextTypes = <any> {
+        originX: PropTypes.number.isRequired,
         originY: PropTypes.number.isRequired
     };
+    export interface IProps {
+        stroke: string;
+        stemWidth: number;
+        layout: IBeam.ILayout;
+    }
 }
 
 export default UnbeamedTuplet;
