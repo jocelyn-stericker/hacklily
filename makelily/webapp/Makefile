@@ -43,3 +43,6 @@ deploy:
 clean:
 	rm -rf ./dist
 
+patch:
+	git apply --stat --apply json3.patch
+	git apply --stat --apply ts-loader.patch

@@ -4,7 +4,7 @@
         "noEmitOnError": true,
         "noImplicitAny": true,
         "removeComments": false,
-        "sourceMap": true,
+        "sourceMap": false,
         "target": "es5"
     },
     "files": [
