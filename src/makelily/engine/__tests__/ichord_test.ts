@@ -24,16 +24,15 @@
 
 import IChord from "../ichord";
 
-import MusicXML = require("musicxml-interfaces");
-import chai = require("chai");
-let expect = chai.expect;
+import {Note, parse as parseFromXML} from "musicxml-interfaces";
+import {expect} from "chai";
 
 import {makeCursor} from "../../models/__tests__/attributes_test";
 
 describe("[engine/ichord.ts]", function() {
     describe("hasAccidental", function() {
         it("works with rests", function() {
-            let notes: MusicXML.Note[] = [{
+            let notes: Note[] = [{
                 rest: {}
             }];
             let cursor = makeCursor(null, <any> [notes]);
@@ -41,12 +40,12 @@ describe("[engine/ichord.ts]", function() {
         });
     });
 
-    const treble = MusicXML.parse.clef(`<clef>
+    const treble = parseFromXML.clef(`<clef>
         <sign>G</sign>
         <line>2</line>
     </clef>`);
 
-    const noteC = MusicXML.parse.note(`<note>
+    const noteC = parseFromXML.note(`<note>
         <pitch>
             <step>C</step>
             <octave>4</octave>
@@ -55,7 +54,7 @@ describe("[engine/ichord.ts]", function() {
         <type>quarter</type>
     </note>`);
 
-    const noteD = MusicXML.parse.note(`<note>
+    const noteD = parseFromXML.note(`<note>
         <pitch>
             <step>D</step>
             <octave>4</octave>
@@ -64,7 +63,7 @@ describe("[engine/ichord.ts]", function() {
         <type>quarter</type>
     </note>`);
 
-    const noteG = MusicXML.parse.note(`<note>
+    const noteG = parseFromXML.note(`<note>
         <pitch>
             <step>G</step>
             <octave>5</octave>
@@ -73,7 +72,7 @@ describe("[engine/ichord.ts]", function() {
         <type>quarter</type>
     </note>`);
 
-    const noteA = MusicXML.parse.note(`<note>
+    const noteA = parseFromXML.note(`<note>
         <pitch>
             <step>A</step>
             <octave>5</octave>
@@ -82,7 +81,7 @@ describe("[engine/ichord.ts]", function() {
         <type>quarter</type>
     </note>`);
 
-    const noteCHigher = MusicXML.parse.note(`<note>
+    const noteCHigher = parseFromXML.note(`<note>
         <pitch>
             <step>C</step>
             <octave>6</octave>
@@ -91,7 +90,7 @@ describe("[engine/ichord.ts]", function() {
         <type>quarter</type>
     </note>`);
 
-    const noteR = MusicXML.parse.note(`<note>
+    const noteR = parseFromXML.note(`<note>
         <rest />
         <type>half</type>
     </note>`);
@@ -106,7 +105,7 @@ describe("[engine/ichord.ts]", function() {
         });
         it("calculates middle C", function() {
 
-            let bass = MusicXML.parse.clef(`<clef>
+            let bass = parseFromXML.clef(`<clef>
                 <sign>F</sign>
                 <line>4</line>
             </clef>`);
@@ -115,12 +114,12 @@ describe("[engine/ichord.ts]", function() {
             expect(IChord.lineForClef(noteC, bass)).to.equal(6);
         });
         it("calculates whole rest", function() {
-            let note = MusicXML.parse.note(`<note>
+            let note = parseFromXML.note(`<note>
                 <rest />
                 <type>whole</type>
             </note>`);
 
-            let clef2 = MusicXML.parse.clef(`<clef>
+            let clef2 = parseFromXML.clef(`<clef>
                 <sign>C</sign>
                 <line>2</line>
             </clef>`);
@@ -129,7 +128,7 @@ describe("[engine/ichord.ts]", function() {
             expect(IChord.lineForClef(note, clef2)).to.equal(4);
         });
         it("calculates half rest", function() {
-            let clef = MusicXML.parse.clef(`<clef>
+            let clef = parseFromXML.clef(`<clef>
                 <sign>G</sign>
                 <line>2</line>
             </clef>`);
@@ -142,7 +141,7 @@ describe("[engine/ichord.ts]", function() {
             expect(IChord.linesForClef([], treble)).to.deep.equal([]);
         });
         it ("throws on null clef", function() {
-            let note1 = MusicXML.parse.note(`<note>
+            let note1 = parseFromXML.note(`<note>
                 <rest />
                 <type>half</type>
             </note>`);
@@ -150,7 +149,7 @@ describe("[engine/ichord.ts]", function() {
             expect(() => IChord.linesForClef([note1], null)).to.throw();
         });
         it("seems to work", function() {
-            let note1 = MusicXML.parse.note(`<note>
+            let note1 = parseFromXML.note(`<note>
                 <rest />
                 <type>half</type>
             </note>`);
@@ -160,7 +159,7 @@ describe("[engine/ichord.ts]", function() {
     });
     describe("heightDeterminingLine", function() {
         it("calculates single line", function() {
-            let note1 = MusicXML.parse.note(`<note>
+            let note1 = parseFromXML.note(`<note>
                 <rest />
                 <type>half</type>
             </note>`);
@@ -168,7 +167,7 @@ describe("[engine/ichord.ts]", function() {
             expect(IChord.heightDeterminingLine([note1], -1, treble)).to.deep.equal(3);
         });
         it("calculates inner line", function() {
-            let note2 = MusicXML.parse.note(`<note>
+            let note2 = parseFromXML.note(`<note>
                 <pitch>
                     <step>C</step>
                     <octave>5</octave>
@@ -192,7 +191,7 @@ describe("[engine/ichord.ts]", function() {
     });
     describe("startingLine", function() {
         it("calculates outer line for 3 notes", function() {
-            let note2 = MusicXML.parse.note(`<note>
+            let note2 = parseFromXML.note(`<note>
                 <pitch>
                     <step>C</step>
                     <octave>5</octave>
@@ -201,7 +200,7 @@ describe("[engine/ichord.ts]", function() {
                 <type>quarter</type>
             </note>`);
 
-            let note3 = MusicXML.parse.note(`<note>
+            let note3 = parseFromXML.note(`<note>
                 <pitch>
                     <step>G</step>
                     <octave>4</octave>
@@ -232,7 +231,7 @@ describe("[engine/ichord.ts]", function() {
         });
         it("determintes rests to not have ledgers", function() {
             expect(IChord.onLedger(noteR, treble)).to.be.false;
-            const noteROdd = MusicXML.parse.note(`<note>
+            const noteROdd = parseFromXML.note(`<note>
                 <rest>
                     <display-step>A</display-step>
                     <display-octave>5</display-octave>

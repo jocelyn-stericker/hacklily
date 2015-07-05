@@ -18,15 +18,14 @@
 
 "use strict";
 
-import * as React from "react"; // TS 1.5 workaround
-import {DOM} from "react";
+import {Component, DOM} from "react";
 
 /**
  * Responsible for the rendering a bezier curve, such as a
  * slur or a tie.
  */
-class Bezier extends React.Component<Bezier.IProps, void> {
-    render() {
+class Bezier extends Component<Bezier.IProps, void> {
+    render(): any {
         return DOM.path({
             d: <any>
                ("M" +

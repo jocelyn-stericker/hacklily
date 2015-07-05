@@ -18,9 +18,8 @@
 
 "use strict";
 
-import MusicXML = require("musicxml-interfaces");
-import * as React from "react"; // TS 1.5 workaround
-import {createFactory as $, PropTypes} from "react";
+import {PrintStyle} from "musicxml-interfaces";
+import {createFactory as $, Component, PropTypes} from "react";
 
 import Line from "./primitives/line";
 import {bboxes} from "../models/smufl";
@@ -28,8 +27,8 @@ import {bboxes} from "../models/smufl";
 /**
  * Renders a ledger line at (x, y + line).
  */
-class LedgerLine extends React.Component<{spec: MusicXML.PrintStyle, notehead: string}, void> {
-    render() {
+class LedgerLine extends Component<{spec: PrintStyle, notehead: string}, void> {
+    render(): any {
         const spec = this.props.spec;
         const west = bboxes[this.props.notehead][3];
         const east = bboxes[this.props.notehead][0];

@@ -107,25 +107,25 @@ module IModel {
 
     export enum Type {
         START_OF_LAYOUT_ELEMENTS = 0,
-        Print = 10, // Implements MusicXML.Print
-        Grouping = 30, // Implements MusicXML.Grouping
-        FiguredBass = 40, // Implements MusicXML.FiguredBass
+        Print = 10,
+        Grouping = 30,
+        FiguredBass = 40,
         END_OF_LAYOUT_ELEMENTS = 99,
 
         START_OF_STAFF_ELEMENTS = 100,
-        Attributes = 110, // Implements MusicXML.Attributes
-        Sound = 120, // Implements MusicXML.Sound
-        Direction = 130, // Implements MusicXML.Direction
-        Harmony = 140, // Implements MusicXML.Harmony
+        Attributes = 110,
+        Sound = 120,
+        Direction = 130,
+        Harmony = 140,
         Proxy = 150, // Does not implement a MusicXML API
         Spacer = 160, // Does not implement a MusicXML API
         END_OF_STAFF_ELEMENTS = 199,
 
         START_OF_VOICE_ELEMENTS = 200,
-        Chord = 220, // Like MusicXML.Note[]
+        Chord = 220, // Implements Note[]
         END_OF_VOICE_ELEMENTS = 299,
 
-        Barline = 399, // Implements MusicXML.Barline
+        Barline = 399, // Also deals with warning attributes
 
         Unknown = 1000
     };
@@ -302,8 +302,8 @@ module IModel {
      * Divisions in each segment must be the same.
      * 
      * @code
-     * let memo =_.reduce(segments, IModelLayout.merge$, []);
-     * _.reduce(segments, IModelLayout.merge$, memo);
+     * let memo = reduce(segments, IModelLayout.merge$, []);
+     * reduce(segments, IModelLayout.merge$, memo);
      */
     export function merge$(segment1$: ICombinedLayout[], segment2$: ILayout[]): ICombinedLayout[] {
         let s1_idx = 0;

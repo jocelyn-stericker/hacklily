@@ -18,19 +18,18 @@
 
 "use strict";
 
-import MusicXML = require("musicxml-interfaces");
-import * as React from "react"; // TS 1.5 workaround
-import {createFactory as $, DOM, PropTypes} from "react";
-import _ = require("lodash");
+import {Note, NoteheadType} from "musicxml-interfaces";
+import {createFactory as $, Component, DOM, PropTypes} from "react";
+import {map} from "lodash";
 
-import Accidental from "./accidental";
+import AccidentalView from "./accidental";
 import Dot from "./primitives/dot";
 import Glyph from "./primitives/glyph";
 import Notehead from "./notehead";
 import {getLeft, getRight} from "../models/smufl";
 
-class Note extends React.Component<{spec: MusicXML.Note, noteheadGlyph: string}, void> {
-    render() {
+class NoteView extends Component<{spec: Note, noteheadGlyph: string}, void> {
+    render(): any {
         const spec = this.props.spec;
 
         if (spec.printObject === false) {
@@ -51,10 +50,10 @@ class Note extends React.Component<{spec: MusicXML.Note, noteheadGlyph: string},
                     color: spec.color,
                     defaultX: 0,
                     defaultY: 0,
-                    type: spec.notehead ? spec.notehead.type : MusicXML.NoteheadType.Normal
+                    type: spec.notehead ? spec.notehead.type : NoteheadType.Normal
                 }
             }),
-            spec.dots && spec.printDot !== false ? _.map(spec.dots, (dot, idx) => $(Dot)({
+            spec.dots && spec.printDot !== false ? map(spec.dots, (dot, idx) => $(Dot)({
                 fill: dot.color,
                 key: "_1_" + idx,
                 radius: 2.4,
@@ -62,7 +61,7 @@ class Note extends React.Component<{spec: MusicXML.Note, noteheadGlyph: string},
                 y: this.context.originY - this.props.spec.defaultY -
                     (dot.defaultY + (dot.relativeY || 0))
             })) : null,
-            this.props.spec.accidental ? $(Accidental)({
+            this.props.spec.accidental ? $(AccidentalView)({
                 key: "a",
                 spec: this.props.spec.accidental
             }) : null,
@@ -89,7 +88,7 @@ class Note extends React.Component<{spec: MusicXML.Note, noteheadGlyph: string},
     }
 };
 
-module Note {
+module NoteView {
     export let childContextTypes = <any> {
         originX: PropTypes.number.isRequired,
         originY: PropTypes.number.isRequired
@@ -100,4 +99,4 @@ module Note {
     };
 }
 
-export default Note;
+export default NoteView;

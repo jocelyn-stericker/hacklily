@@ -18,10 +18,9 @@
 
 "use strict";
 
-import MusicXML = require("musicxml-interfaces");
-import * as React from "react"; // TS 1.5 workaround
-import {createFactory as $, DOM, PropTypes} from "react";
-import _ = require("lodash");
+import {StaffDetails} from "musicxml-interfaces";
+import {createFactory as $, Component, DOM, PropTypes} from "react";
+import {times} from "lodash";
 
 import Line from "./primitives/line";
 import {bravura} from "../models/smufl";
@@ -29,13 +28,13 @@ import {bravura} from "../models/smufl";
 /**
  * Renders the (usually 5) lines that make up a staff.
  */
-class StaffLines extends React.Component<StaffLines.IProps, {}> {
+class StaffLines extends Component<StaffLines.IProps, {}> {
     render(): any {
         let middle = this.context.originY - this.props.defaultY;
         let staffDetails = this.props.staffDetails;
         let offset = (staffDetails.staffLines - 1)/2;
         return DOM.g(null,
-            _.times(staffDetails.staffLines, i => $(Line)({
+            times(staffDetails.staffLines, i => $(Line)({
                 key: "staff-" + i,
                 stroke: "#6A6A6A",
                 // TODO: Use print
@@ -52,7 +51,7 @@ class StaffLines extends React.Component<StaffLines.IProps, {}> {
 module StaffLines {
     export interface IProps {
         width: number;
-        staffDetails: MusicXML.StaffDetails;
+        staffDetails: StaffDetails;
         defaultX: number;
         defaultY: number;
     }

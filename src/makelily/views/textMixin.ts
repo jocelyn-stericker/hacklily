@@ -18,7 +18,7 @@
 
 "use strict";
 
-import MusicXML = require("musicxml-interfaces");
+import {CreditWords, Words, DirectionMode, LeftCenterRight} from "musicxml-interfaces";
 
 import {RenderUtil} from "../engine";
 
@@ -26,17 +26,17 @@ const DEF_SPACING = 4;
 const V_SPACING = 4;
 
 export interface ITextMixin {
-    getTextAnchor(words: MusicXML.CreditWords | MusicXML.Words): string;
-    getTextDecoration(words: MusicXML.CreditWords | MusicXML.Words): string;
-    getTransform(words: MusicXML.CreditWords | MusicXML.Words): string;
-    getDirection(words: MusicXML.CreditWords | MusicXML.Words): string;
+    getTextAnchor(words: CreditWords | Words): string;
+    getTextDecoration(words: CreditWords | Words): string;
+    getTransform(words: CreditWords | Words): string;
+    getDirection(words: CreditWords | Words): string;
     getX(lineNum: number): number;
-    getDX(words: MusicXML.CreditWords | MusicXML.Words, initX: number, lineNum: number): number;
-    getDY(words: MusicXML.CreditWords | MusicXML.Words, initY: number, lineNum: number): number;
+    getDX(words: CreditWords | Words, initX: number, lineNum: number): number;
+    getDY(words: CreditWords | Words, initY: number, lineNum: number): number;
 }
 
 export let Prototype: ITextMixin = {
-    getDX: function(words: MusicXML.CreditWords, initX: number, lineNum: number) {
+    getDX: function(words: CreditWords, initX: number, lineNum: number) {
         if (lineNum > 0) {
             return undefined;
         }
@@ -46,7 +46,7 @@ export let Prototype: ITextMixin = {
         }
         return DEF_SPACING;
     },
-    getDY: function(words: MusicXML.CreditWords, initY: number, lineNum: number) {
+    getDY: function(words: CreditWords, initY: number, lineNum: number) {
         if (lineNum > 0) {
             return V_SPACING +
                 RenderUtil.cssSizeToTenths(this.context.scale40, words.fontSize);
@@ -56,33 +56,33 @@ export let Prototype: ITextMixin = {
         }
         return 0;
     },
-    getDirection: function(words: MusicXML.CreditWords | MusicXML.Words) {
+    getDirection: function(words: CreditWords | Words) {
         switch(words.dir) {
-            case MusicXML.DirectionMode.Lro: // TODO: bidi
-            case MusicXML.DirectionMode.Ltr:
+            case DirectionMode.Lro: // TODO: bidi
+            case DirectionMode.Ltr:
                 return "ltr";
 
-            case MusicXML.DirectionMode.Rlo: // TODO: bidi
-            case MusicXML.DirectionMode.Rtl:
+            case DirectionMode.Rlo: // TODO: bidi
+            case DirectionMode.Rtl:
                 return "rtl";
 
             default:
                 return "inherit";
         }
     },
-    getTextAnchor: function(words: MusicXML.CreditWords | MusicXML.Words) {
+    getTextAnchor: function(words: CreditWords | Words) {
         switch(words.halign || words.justify) {
-            case MusicXML.LeftCenterRight.Right:
+            case LeftCenterRight.Right:
                 return "end";
-            case MusicXML.LeftCenterRight.Center:
+            case LeftCenterRight.Center:
                 return "middle";
-            case MusicXML.LeftCenterRight.Left:
+            case LeftCenterRight.Left:
                 return "start";
             default:
                 return "inherit";
         }
     },
-    getTextDecoration: function(words: MusicXML.CreditWords | MusicXML.Words) {
+    getTextDecoration: function(words: CreditWords | Words) {
         if (words.underline) {
             return "underline";
         }
@@ -94,7 +94,7 @@ export let Prototype: ITextMixin = {
         }
         return "none";
     },
-    getTransform: function(words: MusicXML.CreditWords | MusicXML.Words) {
+    getTransform: function(words: CreditWords | Words) {
         if (words.rotation) {
             return `rotate(${words.rotation})`;
         }

@@ -18,8 +18,8 @@
 
 "use strict";
 
-import MusicXML = require("musicxml-interfaces");
-import _ = require("lodash");
+import {Attributes} from "musicxml-interfaces";
+import {forEach, sortedIndex, any} from "lodash";
 
 import {IModel, IMeasureLayout, ILayoutOptions, ILineBounds} from "../engine";
 
@@ -37,9 +37,9 @@ function attributes(options: ILayoutOptions, bounds: ILineBounds,
     let targetsByPart: {[part: string]: number[]} = {};
     let isBarlineByPart: {[part: string]: boolean[]} = {};
 
-    _.forEach(measures, measure => {
-        _.forEach(measure.elements, elements => {
-            _.forEach(elements, (element, index) => {
+    forEach(measures, measure => {
+        forEach(measure.elements, elements => {
+            forEach(elements, (element, index) => {
                 if (!element.model) {
                     return;
                 }
@@ -52,14 +52,14 @@ function attributes(options: ILayoutOptions, bounds: ILineBounds,
                     }
                     let targets = targetsByPart[partKey];
                     let x = element.x$ + measureStartX;
-                    let sortedIndex = _.sortedIndex(targets, x);
+                    let index = sortedIndex(targets, x);
                     let isBarline = element.renderClass === IModel.Type.Barline;
-                    if (targets[sortedIndex] === x) {
-                        isBarlineByPart[partKey][sortedIndex] =
-                            isBarlineByPart[partKey][sortedIndex] || isBarline;
+                    if (targets[index] === x) {
+                        isBarlineByPart[partKey][index] =
+                            isBarlineByPart[partKey][index] || isBarline;
                     } else {
-                        targets.splice(sortedIndex, 0, element.x$ + measureStartX);
-                        isBarlineByPart[partKey].splice(sortedIndex, 0, isBarline);
+                        targets.splice(index, 0, element.x$ + measureStartX);
+                        isBarlineByPart[partKey].splice(index, 0, isBarline);
                     }
                 }
             });
@@ -69,9 +69,9 @@ function attributes(options: ILayoutOptions, bounds: ILineBounds,
 
     measureStartX = 0;
 
-    _.forEach(measures, measure => {
-        _.forEach(measure.elements, elements => {
-            _.forEach(elements, (element, index) => {
+    forEach(measures, measure => {
+        forEach(measure.elements, elements => {
+            forEach(elements, (element, index) => {
                 if (!element.model) {
                     return;
                 }
@@ -80,7 +80,7 @@ function attributes(options: ILayoutOptions, bounds: ILineBounds,
                     let targetIsBarline = true;
                     if (attributesByPart[partKey]) {
                         let targets = targetsByPart[partKey] || [];
-                        let targetIdx = _.sortedIndex(targets, element.x$ + measureStartX) - 1;
+                        let targetIdx = sortedIndex(targets, element.x$ + measureStartX) - 1;
                         targetIsBarline = isBarlineByPart[partKey][targetIdx];
                         if (!targetIsBarline) {
                             targetIdx++;
@@ -95,10 +95,9 @@ function attributes(options: ILayoutOptions, bounds: ILineBounds,
                     if (!attributesByPart[partKey]) {
                         shouldSplit = true;
                     } else {
-                        let oldAttributes: MusicXML.Attributes =
-                            attributesByPart[partKey].model;
-                        let newAttributes: MusicXML.Attributes = element.model;
-                        shouldSplit = _.any(oldAttributes.staffDetails, (details, detailIndex) => {
+                        let oldAttributes: Attributes = attributesByPart[partKey].model;
+                        let newAttributes: Attributes = element.model;
+                        shouldSplit = any(oldAttributes.staffDetails, (details, detailIndex) => {
                             if (!details) {
                                 return false;
                             }
@@ -110,7 +109,7 @@ function attributes(options: ILayoutOptions, bounds: ILineBounds,
                     if (shouldSplit) {
                         attributesByPart[partKey] = element;
                         let targets = targetsByPart[partKey] || [];
-                        let targetIdx = _.sortedIndex(targets, element.x$ + measureStartX) - 1;
+                        let targetIdx = sortedIndex(targets, element.x$ + measureStartX) - 1;
                         let attrTarget = targets[targetIdx] || 0;
                         if (!targetIsBarline) {
                             ++targetIdx;
@@ -130,7 +129,7 @@ function attributes(options: ILayoutOptions, bounds: ILineBounds,
         });
         measureStartX += measure.width;
     });
-    _.forEach(attributesByPart, (attributes, partKey) => {
+    forEach(attributesByPart, (attributes, partKey) => {
         (<any>attributes).staffWidth = measureStartX - originXByPart[partKey];
     });
     return measures;

@@ -24,8 +24,7 @@
 
 import Context from "../context";
 
-import chai = require("chai");
-let expect = chai.expect;
+import {expect} from "chai";
 
 import {cloneObject} from "../util";
 

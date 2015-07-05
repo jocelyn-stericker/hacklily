@@ -17,8 +17,8 @@
 
 "use strict";
 
-import MusicXML = require("musicxml-interfaces");
-import _ = require("lodash");
+import {serialize as serializeToXML} from "musicxml-interfaces";
+import {forEach, map, once} from "lodash";
 import invariant = require("react/lib/invariant");
 
 import {IDocument, ILinesLayoutMemo} from "./engine";
@@ -117,16 +117,16 @@ export function importXML(src: string, cb: (error: Error, document?: IDocument) 
 
 export function exportXML(score: IDocument, cb: (error: Error, xml: string) => void) {
     let out = "";
-    out += MusicXML.serialize.scoreHeader(score.header) + "\n";
-    _.forEach(score.measures, measure => {
+    out += serializeToXML.scoreHeader(score.header) + "\n";
+    forEach(score.measures, measure => {
         // TODO: dehack
         out += `<measure number="${measure.number}">\n`;
-        _.forEach(measure.parts, (part, id) => {
+        forEach(measure.parts, (part, id) => {
             out += `  <part id="${id}">\n`;
             // TODO: merge
-            _.forEach(part.voices, voice => {
+            forEach(part.voices, voice => {
                 if (voice) {
-                    out += (_.map(voice, model =>
+                    out += (map(voice, model =>
                             (<any>model).toXML())
                                 .join("\n")
                                 .split("\n")
@@ -134,9 +134,9 @@ export function exportXML(score: IDocument, cb: (error: Error, xml: string) => v
                                 .join("\n")) + "\n";
                 }
             });
-            _.forEach(part.staves, staff => {
+            forEach(part.staves, staff => {
                 if (staff) {
-                    out += (_.map(staff, model =>
+                    out += (map(staff, model =>
                                 (<any>model).toXML())
                                     .join("\n")
                                     .split("\n")
@@ -210,8 +210,7 @@ function makeFactory() {
 module BrowserSetup {
     export let cssInjected = false;
 
-    export let injectStyles = _.once(function injectStyles(spec: ISatieOptions = {}): void {
-        invariant(!cssInjected, "_.once doesn't work?");
+    export let injectStyles = once(function injectStyles(spec: ISatieOptions = {}): void {
         cssInjected = true;
         if (typeof window === "undefined") {
             return;
@@ -221,7 +220,7 @@ module BrowserSetup {
         style.appendChild(document.createTextNode("")); // WebKit hack
         document.head.appendChild(style);
 
-        _.forEach(spec.preloadedFonts, font => {
+        forEach(spec.preloadedFonts, font => {
             let baseFont = (/[\w\s]*/.exec(font) || [""])[0].replace(/\s/g, " ").trim();
             if (!baseFont) {
                 throw new Error("Font " + font + " is not a valid font name.");

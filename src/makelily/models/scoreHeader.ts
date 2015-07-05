@@ -23,8 +23,10 @@
 
 "use strict";
 
-import MusicXML = require("musicxml-interfaces");
-import _ = require("lodash");
+import {ScoreHeader, Credit, Identification, Defaults, NormalItalic, NormalBold,
+    OddEvenBoth, Work, PartList, LeftCenterRight,
+    serialize as serializeToXML} from "musicxml-interfaces";
+import {forEach, any} from "lodash";
 
 import {defaultsDeep, IPrint, RenderUtil} from "../engine";
 import {distances, bravura} from "./smufl";
@@ -33,13 +35,13 @@ import {distances, bravura} from "./smufl";
  * A header is a child of parts, and includes the title and other basic
  * information.
  */
-class ScoreHeader implements MusicXML.ScoreHeader {
+class ScoreHeaderModel implements ScoreHeader {
 
-    /*---- MusicXML.ScoreHeader -----------------------------------------------------------------*/
+    /*---- ScoreHeader --------------------------------------------------------------------------*/
 
-    credits: MusicXML.Credit[] = [];
+    credits: Credit[] = [];
 
-    identification: MusicXML.Identification = {
+    identification: Identification = {
         creators: [],
         encoding: {
             encodingDescriptions: [],
@@ -54,7 +56,7 @@ class ScoreHeader implements MusicXML.ScoreHeader {
         source: null
     };
 
-    defaults: MusicXML.Defaults = {
+    defaults: Defaults = {
         appearance: {
             distances: {
                 hyphen: {
@@ -125,8 +127,8 @@ class ScoreHeader implements MusicXML.ScoreHeader {
         musicFont: {
             fontSize: "20.5", // This value is completely ignored. See "scaling"
             fontFamily: "Bravura, Maestro, engraved",
-            fontStyle: MusicXML.NormalItalic.Normal,
-            fontWeight: MusicXML.NormalBold.Normal
+            fontStyle: NormalItalic.Normal,
+            fontWeight: NormalBold.Normal
         },
         pageLayout: {
             pageHeight: RenderUtil.mmToTenths(
@@ -143,7 +145,7 @@ class ScoreHeader implements MusicXML.ScoreHeader {
                         RenderUtil.defaultStaveHeight, RenderUtil.defaultMargins.right),
                     topMargin: RenderUtil.mmToTenths(
                         RenderUtil.defaultStaveHeight, RenderUtil.defaultMargins.top),
-                    type: MusicXML.OddEvenBoth.Both
+                    type: OddEvenBoth.Both
                 }
             ]
         },
@@ -164,12 +166,12 @@ class ScoreHeader implements MusicXML.ScoreHeader {
         wordFont: {
             fontSize: "12",
             fontFamily: "Alegreya, Times New Roman, serif",
-            fontStyle: MusicXML.NormalItalic.Normal,
-            fontWeight: MusicXML.NormalBold.Normal
+            fontStyle: NormalItalic.Normal,
+            fontWeight: NormalBold.Normal
         }
     };
 
-    work: MusicXML.Work = {
+    work: Work = {
         opus: null,
         workNumber: "",
         workTitle: ""
@@ -178,11 +180,11 @@ class ScoreHeader implements MusicXML.ScoreHeader {
     movementTitle: string = "";
     movementNumber: string = "";
 
-    partList: MusicXML.PartList = [];
+    partList: PartList = [];
 
     /*---- Extensions ---------------------------------------------------------------------------*/
 
-    constructor(spec: MusicXML.ScoreHeader) {
+    constructor(spec: ScoreHeader) {
         if (spec) {
             defaultsDeep(spec, this);
         }
@@ -194,7 +196,7 @@ class ScoreHeader implements MusicXML.ScoreHeader {
     }
 
     toXML(): string {
-        return MusicXML.serialize.scoreHeader(this);
+        return serializeToXML.scoreHeader(this);
     }
 
     inspect() {
@@ -207,7 +209,7 @@ class ScoreHeader implements MusicXML.ScoreHeader {
 
     set composer(composer: string) {
         this._setIdentification("composer", composer);
-        this._setCredits("composer", composer, MusicXML.LeftCenterRight.Right, "12px", 20);
+        this._setCredits("composer", composer, LeftCenterRight.Right, "12px", 20);
     }
 
     get arranger() {
@@ -216,7 +218,7 @@ class ScoreHeader implements MusicXML.ScoreHeader {
 
     set arranger(arranger: string) {
         this._setIdentification("arranger", arranger);
-        this._setCredits("arranger", arranger, MusicXML.LeftCenterRight.Right, "12px", 35);
+        this._setCredits("arranger", arranger, LeftCenterRight.Right, "12px", 35);
     }
 
     get lyricist() {
@@ -225,7 +227,7 @@ class ScoreHeader implements MusicXML.ScoreHeader {
 
     set lyricist(lyricist: string) {
         this._setIdentification("lyricist", lyricist);
-        this._setCredits("lyricist", lyricist, MusicXML.LeftCenterRight.Right, "12px", 50);
+        this._setCredits("lyricist", lyricist, LeftCenterRight.Right, "12px", 50);
     }
 
     private _getIdentificationOrCredit(type: string) {
@@ -257,12 +259,12 @@ class ScoreHeader implements MusicXML.ScoreHeader {
             };
         this.identification.creators = this.identification.creators || [];
 
-        _.forEach(this.identification.creators, c => {
+        forEach(this.identification.creators, c => {
             if (c.type === type) {
                 c.creator = val;
             }
         });
-        if (!_.any(this.identification.creators, c => c.type === type)) {
+        if (!any(this.identification.creators, c => c.type === type)) {
             // ...or add a val
             this.identification.creators.push({
                 creator: val,
@@ -274,7 +276,7 @@ class ScoreHeader implements MusicXML.ScoreHeader {
     overwriteEncoding() {
         let date = new Date;
 
-        this.identification = this.identification || (new ScoreHeader(null)).identification;
+        this.identification = this.identification || (new ScoreHeaderModel(null)).identification;
         this.identification.encoding = {
             encodingDescriptions: [],
             encodingDate: {
@@ -298,12 +300,12 @@ class ScoreHeader implements MusicXML.ScoreHeader {
     }
 
     private _setCredits(type: string, val: string,
-            justification: MusicXML.LeftCenterRight, fontSize: string, top: number) {
+            justification: LeftCenterRight, fontSize: string, top: number) {
         const mm = this.defaults.scaling.millimeters;
         const pageLayout = this.defaults.pageLayout;
 
         this.credits = this.credits || [];
-        _.forEach(this.credits, (c, idx) => {
+        forEach(this.credits, (c, idx) => {
             if (!c.creditWords) {
                 return false;
             }
@@ -318,19 +320,19 @@ class ScoreHeader implements MusicXML.ScoreHeader {
                 }
             }
         });
-        if (!_.any(this.credits, c => !!c.creditWords && !!~c.creditTypes.indexOf(type))) {
+        if (!any(this.credits, c => !!c.creditWords && !!~c.creditTypes.indexOf(type))) {
             let defaultX = NaN;
             let margins = IPrint.getPageMargins(this.defaults.pageLayout.pageMargins, 1);
             // TODO: Throughout this file, use own instead of default values
             switch (justification) {
-                case MusicXML.LeftCenterRight.Center:
+                case LeftCenterRight.Center:
                     defaultX = (margins.leftMargin - margins.rightMargin +
                             pageLayout.pageWidth)/2;
                     break;
-                case MusicXML.LeftCenterRight.Right:
+                case LeftCenterRight.Right:
                     defaultX = pageLayout.pageWidth - margins.rightMargin;
                     break;
-                case MusicXML.LeftCenterRight.Left:
+                case LeftCenterRight.Left:
                     defaultX = margins.leftMargin;
                     break;
                 default:
@@ -361,8 +363,8 @@ class ScoreHeader implements MusicXML.ScoreHeader {
         // Set meta-data
         this.movementTitle = title;
 
-        this._setCredits("title", title, MusicXML.LeftCenterRight.Center, "18px", 10);
+        this._setCredits("title", title, LeftCenterRight.Center, "18px", 10);
     }
 }
 
-export default ScoreHeader;
+export default ScoreHeaderModel;

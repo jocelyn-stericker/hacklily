@@ -22,8 +22,9 @@
 
 "use strict";
 
-import MusicXML = require("musicxml-interfaces");
-import chai = require("chai");
+import {Count} from "musicxml-interfaces";
+
+import {expect} from "chai";
 
 import Attributes from "../../attributes";
 import Chord from "../../chord";
@@ -33,32 +34,29 @@ import {rhythmicSpellcheck$, calcDivisions} from "../metre";
 
 import {makeCursor} from "../../__tests__/attributes_test";
 
-let ModelType = IModel.Type;
-let expect = chai.expect;
-
 describe("[metre.ts]", function() {
     describe("rhythmicSpellcheck$", function() {
         it("merges two tied eighth notes", function() {
             let factory = new Factory([Attributes, Chord]);
             let cursor$ = makeCursor(factory, [
-                factory.create(ModelType.Chord, <IChord> [{
+                factory.create(IModel.Type.Chord, <IChord> [{
                     pitch: {
                         step: "E",
                         octave: 4
                     },
                     noteType: {
-                        duration: MusicXML.Count.Eighth
+                        duration: Count.Eighth
                     },
                     divCount: 30,
                     ties: [{}]
                 }]),
-                factory.create(ModelType.Chord, <IChord> [{
+                factory.create(IModel.Type.Chord, <IChord> [{
                     pitch: {
                         step: "F",
                         octave: 4
                     },
                     noteType: {
-                        duration: MusicXML.Count.Eighth
+                        duration: Count.Eighth
                     },
                     divCount: 30
                 }])
@@ -70,22 +68,22 @@ describe("[metre.ts]", function() {
             let chord = IChord.fromModel(cursor$.segment[0]);
             expect(calcDivisions(chord, cursor$)).to.equal(60);
             expect(chord.length).to.equal(1);
-            expect(chord[0].noteType.duration).to.equal(MusicXML.Count.Quarter);
+            expect(chord[0].noteType.duration).to.equal(Count.Quarter);
         });
         it("merges two eighth rests", function() {
             let factory = new Factory([Attributes, Chord]);
             let cursor$ = makeCursor(factory, [
-                factory.create(ModelType.Chord, <IChord> [{
+                factory.create(IModel.Type.Chord, <IChord> [{
                     rest: {},
                     noteType: {
-                        duration: MusicXML.Count.Eighth
+                        duration: Count.Eighth
                     },
                     divCount: 30
                 }]),
-                factory.create(ModelType.Chord, <IChord> [{
+                factory.create(IModel.Type.Chord, <IChord> [{
                     rest: {},
                     noteType: {
-                        duration: MusicXML.Count.Eighth
+                        duration: Count.Eighth
                     },
                     divCount: 30
                 }])
@@ -97,28 +95,28 @@ describe("[metre.ts]", function() {
             let chord = IChord.fromModel(cursor$.segment[0]);
             expect(calcDivisions(chord, cursor$)).to.equal(60);
             expect(chord.length).to.equal(1);
-            expect(chord[0].noteType.duration).to.equal(MusicXML.Count.Quarter);
+            expect(chord[0].noteType.duration).to.equal(Count.Quarter);
         });
         it("does not merge two eighth notes that are not tied", function() {
             let factory = new Factory([Attributes, Chord]);
             let cursor$ = makeCursor(factory, [
-                factory.create(ModelType.Chord, <IChord> [{
+                factory.create(IModel.Type.Chord, <IChord> [{
                     pitch: {
                         step: "E",
                         octave: 4
                     },
                     noteType: {
-                        duration: MusicXML.Count.Eighth
+                        duration: Count.Eighth
                     },
                     divCount: 30
                 }]),
-                factory.create(ModelType.Chord, <IChord> [{
+                factory.create(IModel.Type.Chord, <IChord> [{
                     pitch: {
                         step: "F",
                         octave: 4
                     },
                     noteType: {
-                        duration: MusicXML.Count.Eighth
+                        duration: Count.Eighth
                     },
                     divCount: 30
                 }])
@@ -130,39 +128,39 @@ describe("[metre.ts]", function() {
             let chord = IChord.fromModel(cursor$.segment[0]);
             expect(calcDivisions(chord, cursor$)).to.equal(30);
             expect(chord.length).to.equal(1);
-            expect(chord[0].noteType.duration).to.equal(MusicXML.Count.Eighth);
+            expect(chord[0].noteType.duration).to.equal(Count.Eighth);
         });
         it("does not merge accross boundries", function() {
             let factory = new Factory([Attributes, Chord]);
             let cursor$ = makeCursor(factory, [
-                factory.create(ModelType.Chord, <IChord> [{
+                factory.create(IModel.Type.Chord, <IChord> [{
                     pitch: {
                         step: "E",
                         octave: 4
                     },
                     noteType: {
-                        duration: MusicXML.Count.Quarter
+                        duration: Count.Quarter
                     },
                     dots: [{}],
                     divCount: 30
                 }]),
-                factory.create(ModelType.Chord, <IChord> [{
+                factory.create(IModel.Type.Chord, <IChord> [{
                     pitch: {
                         step: "F",
                         octave: 4
                     },
                     noteType: {
-                        duration: MusicXML.Count.Eighth
+                        duration: Count.Eighth
                     },
                     divCount: 30
                 }]),
-                factory.create(ModelType.Chord, <IChord> [{
+                factory.create(IModel.Type.Chord, <IChord> [{
                     pitch: {
                         step: "F",
                         octave: 4
                     },
                     noteType: {
-                        duration: MusicXML.Count.Eighth
+                        duration: Count.Eighth
                     },
                     divCount: 30
                 }])

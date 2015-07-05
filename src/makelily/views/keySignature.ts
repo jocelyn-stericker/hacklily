@@ -18,12 +18,11 @@
 
 "use strict";
 
-import MusicXML = require("musicxml-interfaces");
-import * as React from "react"; // TS 1.5 workaround
-import {createFactory as $, DOM} from "react";
-import _ = require("lodash");
+import {Key, Clef, Accidental, MxmlAccidental} from "musicxml-interfaces";
+import {createFactory as $, Component, DOM} from "react";
+import {times, map} from "lodash";
 
-import Accidental from "./accidental";
+import AccidentalView from "./accidental";
 import {IAttributes} from "../engine";
 import IChord from "../engine/ichord";
 
@@ -47,22 +46,22 @@ const flats: { [key: string]: Array<number> } = {
 /**
  * Renders a key signature.
  */
-class KeySignature extends React.Component<{spec: MusicXML.Key; clef: MusicXML.Clef}, void> {
-    render() {
+class KeyView extends Component<{spec: Key; clef: Clef}, void> {
+    render(): any {
         return DOM.g(null,
-            _.map(this.getAccidentals(),
-                (accidental, idx) => $(Accidental)({
+            map(this.getAccidentals(),
+                (accidental, idx) => $(AccidentalView)({
                     key: idx,
                     spec: accidental
                 })
-            /* _.map */)
+            /* map */)
         /* DOM.g */);
     }
 
     /**
      * Returns an array representing the position and glyphName of each accidental.
      */
-    getAccidentals(): MusicXML.Accidental[] {
+    getAccidentals(): Accidental[] {
         let spec = this.props.spec;
         let clef = this.props.clef;
         let widths = IAttributes.keyWidths(spec);
@@ -71,12 +70,12 @@ class KeySignature extends React.Component<{spec: MusicXML.Key; clef: MusicXML.C
 
         if (spec.fifths) {
             let accCount = Math.min(7, Math.abs(spec.fifths));
-            let idxes = _.times(accCount, i => (i + Math.max(0, Math.abs(spec.fifths) - 7))%7);
+            let idxes = times(accCount, i => (i + Math.max(0, Math.abs(spec.fifths) - 7))%7);
             for (let i = 0; i < idxes.length; ++i) {
                 positions.push(x$);
                 x$ += widths[idxes[i]];
             }
-            return _.map(idxes, i => makeAccidentalFromSharps(idxes, i, spec.fifths >= 0));
+            return map(idxes, i => makeAccidentalFromSharps(idxes, i, spec.fifths >= 0));
         }
 
         for (let i = 0; i < widths.length; ++i) {
@@ -85,7 +84,7 @@ class KeySignature extends React.Component<{spec: MusicXML.Key; clef: MusicXML.C
         }
 
         if (spec.keySteps) {
-            return _.map(spec.keySteps, (keyStep, idx) => {
+            return map(spec.keySteps, (keyStep, idx) => {
                 let keyAlters = spec.keyAlters[idx];
                 let hasOctave = spec.keyOctaves && spec.keyOctaves[idx];
                 let octave = hasOctave ? spec.keyOctaves[idx].octave : null;
@@ -95,38 +94,38 @@ class KeySignature extends React.Component<{spec: MusicXML.Key; clef: MusicXML.C
                     }
                 }
                 let line = IChord.lineForClef_(keyStep, octave, this.props.clef);
-                let accidental: MusicXML.MxmlAccidental = null;
+                let accidental: MxmlAccidental = null;
                 switch (keyAlters) {
                     case "-2":
-                        accidental = MusicXML.MxmlAccidental.DoubleFlat;
+                        accidental = MxmlAccidental.DoubleFlat;
                         break;
                     case "-1.5":
-                        accidental = MusicXML.MxmlAccidental.ThreeQuartersFlat;
+                        accidental = MxmlAccidental.ThreeQuartersFlat;
                         break;
                     case "-1":
-                        accidental = MusicXML.MxmlAccidental.Flat;
+                        accidental = MxmlAccidental.Flat;
                         break;
                     case "-0.5":
-                        accidental = MusicXML.MxmlAccidental.QuarterFlat;
+                        accidental = MxmlAccidental.QuarterFlat;
                         break;
                     case "0":
-                        accidental = MusicXML.MxmlAccidental.Natural;
+                        accidental = MxmlAccidental.Natural;
                         break;
                     case "0.5":
-                        accidental = MusicXML.MxmlAccidental.QuarterSharp;
+                        accidental = MxmlAccidental.QuarterSharp;
                         break;
                     case "1":
-                        accidental = MusicXML.MxmlAccidental.Sharp;
+                        accidental = MxmlAccidental.Sharp;
                         break;
                     case "1.5":
-                        accidental = MusicXML.MxmlAccidental.ThreeQuartersSharp;
+                        accidental = MxmlAccidental.ThreeQuartersSharp;
                         break;
                     case "2":
-                        accidental = MusicXML.MxmlAccidental.DoubleSharp;
+                        accidental = MxmlAccidental.DoubleSharp;
                         break;
                     default:
                         console.warn("Unknown accidental ", keyAlters);
-                        accidental = MusicXML.MxmlAccidental.Natural;
+                        accidental = MxmlAccidental.Natural;
                 }
 
                 return {
@@ -140,21 +139,20 @@ class KeySignature extends React.Component<{spec: MusicXML.Key; clef: MusicXML.C
             });
         }
 
-        function makeAccidentalFromSharps(idxes: number[], i: number, sharp: boolean):
-                MusicXML.Accidental {
-            let accidental: MusicXML.MxmlAccidental;
+        function makeAccidentalFromSharps(idxes: number[], i: number, sharp: boolean): Accidental {
+            let accidental: MxmlAccidental;
             switch(true) {
                 case (sharp && 7 + idxes[i] < spec.fifths):
-                    accidental = MusicXML.MxmlAccidental.DoubleSharp;
+                    accidental = MxmlAccidental.DoubleSharp;
                     break;
                 case (sharp && 7 + idxes[i] >= spec.fifths):
-                    accidental = MusicXML.MxmlAccidental.Sharp;
+                    accidental = MxmlAccidental.Sharp;
                     break;
                 case (!sharp && (7 + idxes[i] < -spec.fifths)):
-                    accidental = MusicXML.MxmlAccidental.DoubleFlat;
+                    accidental = MxmlAccidental.DoubleFlat;
                     break;
                 case (!sharp && (7 + idxes[i] >= -spec.fifths)):
-                    accidental = MusicXML.MxmlAccidental.Flat;
+                    accidental = MxmlAccidental.Flat;
                     break;
             }
 
@@ -172,7 +170,7 @@ class KeySignature extends React.Component<{spec: MusicXML.Key; clef: MusicXML.C
     }
 };
 
-function standardClef(clef: MusicXML.Clef) {
+function standardClef(clef: Clef) {
     switch (true) {
         case (clef.sign === "G"):
             return "treble";
@@ -188,4 +186,4 @@ function standardClef(clef: MusicXML.Clef) {
     }
 };
 
-export default KeySignature;
+export default KeyView;

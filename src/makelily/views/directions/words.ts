@@ -18,20 +18,20 @@
 
 "use strict";
 
-import MusicXML = require("musicxml-interfaces");
+import {NormalItalic, NormalBold, CreditWords, Words} from "musicxml-interfaces";
 import {Component, DOM, PropTypes} from "react";
-import _ = require("lodash");
+import {filter, map, extend} from "lodash";
 import invariant = require("react/lib/invariant");
 
 import DirectionModel from "../../models/direction";
 import {RenderUtil} from "../../engine";
 import {ITextMixin, Prototype as TextMixin} from "../textMixin";
 
-class Words extends Component<Words.IProps, void> implements ITextMixin {
+class WordsView extends Component<WordsView.IProps, void> implements ITextMixin {
     render(): any {
         let layout = this.props.layout;
         let model = layout.model;
-        let wordsContainer = _.filter(model.directionTypes, dt => dt.words)[0];
+        let wordsContainer = filter(model.directionTypes, dt => dt.words)[0];
         invariant(!!wordsContainer, "No words found!");
         let words = wordsContainer.words;
 
@@ -43,12 +43,12 @@ class Words extends Component<Words.IProps, void> implements ITextMixin {
                 x: initX,
                 y: initY
             },
-            _.map(words, (words, idx) => {
-                let isBold = words.fontWeight === MusicXML.NormalBold.Bold;
-                let isItalic = words.fontStyle === MusicXML.NormalItalic.Italic;
+            map(words, (words, idx) => {
+                let isBold = words.fontWeight === NormalBold.Bold;
+                let isItalic = words.fontStyle === NormalItalic.Italic;
                 let fontSize = RenderUtil.cssSizeToTenths(scale40, words.fontSize);
 
-                return _.map(words.data.split("\n"), (line, lineNum) => DOM.tspan({
+                return map(words.data.split("\n"), (line, lineNum) => DOM.tspan({
                     "alignment-baseline": "hanging",
                     color: words.color || "black",
                     direction: this.getDirection(words),
@@ -72,18 +72,18 @@ class Words extends Component<Words.IProps, void> implements ITextMixin {
     }
 
     /* TextMixin.ITextMixin */
-    getTextAnchor: (words: MusicXML.CreditWords | MusicXML.Words) => string;
-    getTextDecoration: (words: MusicXML.CreditWords | MusicXML.Words) => string;
-    getTransform: (words: MusicXML.CreditWords | MusicXML.Words) => string;
-    getDirection: (words: MusicXML.CreditWords | MusicXML.Words) => string;
+    getTextAnchor: (words: CreditWords | Words) => string;
+    getTextDecoration: (words: CreditWords | Words) => string;
+    getTransform: (words: CreditWords | Words) => string;
+    getDirection: (words: CreditWords | Words) => string;
     getX: (lineNum: number) => number;
-    getDX: (words: MusicXML.CreditWords | MusicXML.Words, initX: number, lineNum: number) => number;
-    getDY: (words: MusicXML.CreditWords | MusicXML.Words, initY: number, lineNum: number) => number;
+    getDX: (words: CreditWords | Words, initX: number, lineNum: number) => number;
+    getDY: (words: CreditWords | Words, initY: number, lineNum: number) => number;
 }
 
-_.extend(Words.prototype, TextMixin);
+extend(WordsView.prototype, TextMixin);
 
-module Words {
+module WordsView {
     export interface IProps {
         layout: DirectionModel.ILayout;
     }
@@ -94,4 +94,4 @@ module Words {
     };
 }
 
-export default Words;
+export default WordsView;

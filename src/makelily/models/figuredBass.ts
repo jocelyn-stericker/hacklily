@@ -16,8 +16,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import MusicXML = require("musicxml-interfaces");
-import _ = require("lodash");
+import {FiguredBass, Figure, Footnote, Level, NormalBold, NormalItalic,
+    serialize as serializeToXML} from "musicxml-interfaces";
+import {forEach} from "lodash";
 
 import {IModel, ISegment, ICursor} from "../engine";
 
@@ -48,41 +49,41 @@ class FiguredBassModel implements Export.IFiguredBassModel {
         return new FiguredBassModel.Layout(this, cursor$);
     }
 
-    /*---- I.2 MusicXML.FiguredBass -------------------------------------------------------------*/
+    /*---- I.2 FiguredBass ----------------------------------------------------------------------*/
 
-    figures: MusicXML.Figure[];
+    figures: Figure[];
     duration: number;
     parentheses: boolean;
 
-    /*---- I.2.2 MusicXML.Editorial -------------------------------------------------------------*/
+    /*---- I.2.2 Editorial ----------------------------------------------------------------------*/
 
-    footnote: MusicXML.Footnote;
-    level: MusicXML.Level;
+    footnote: Footnote;
+    level: Level;
 
-    /*---- I.2.3 MusicXML.Printout --------------------------------------------------------------*/
+    /*---- I.2.3 Printout -----------------------------------------------------------------------*/
 
     printDot: boolean;
     printLyric: boolean;
     printObject: boolean;
     printSpacing: boolean;
 
-    /*---- I.2.4 MusicXML.PrintStyle ------------------------------------------------------------*/
+    /*---- I.2.4 PrintStyle ---------------------------------------------------------------------*/
 
-    /*---- MusicXML.PrintStyle >> Position --------------------------------------------------*/
+    /*---- PrintStyle > Positition ----------------------------------------------------------*/
 
     defaultX: number; // ignored for now
     relativeY: number;
     defaultY: number;
     relativeX: number;
 
-    /*---- MusicXML.PrintStyle >> Font ------------------------------------------------------*/
+    /*---- PrintStyle > Font ----------------------------------------------------------------*/
 
     fontFamily: string;
-    fontWeight: MusicXML.NormalBold;
-    fontStyle: MusicXML.NormalItalic;
+    fontWeight: NormalBold;
+    fontStyle: NormalItalic;
     fontSize: string;
 
-    /*---- MusicXML.PrintStyle >> Color -----------------------------------------------------*/
+    /*---- PrintStyle > Color ---------------------------------------------------------------*/
 
     get color(): string {
         let hex = this._color.toString(16);
@@ -107,14 +108,14 @@ class FiguredBassModel implements Export.IFiguredBassModel {
 
     /*---- II. Life-cycle -----------------------------------------------------------------------*/
 
-    constructor(spec: MusicXML.FiguredBass) {
-        _.forEach(spec, (value, key) => {
+    constructor(spec: FiguredBass) {
+        forEach(spec, (value, key) => {
             (<any>this)[key] = value;
         });
     }
 
     toXML(): string {
-        return MusicXML.serialize.figuredBass(this);
+        return serializeToXML.figuredBass(this);
     }
 
     inspect() {
@@ -164,7 +165,7 @@ function Export(constructors: { [key: number]: any }) {
 }
 
 module Export {
-    export interface IFiguredBassModel extends IModel, MusicXML.FiguredBass {
+    export interface IFiguredBassModel extends IModel, FiguredBass {
     }
 
     export interface ILayout extends IModel.ILayout {

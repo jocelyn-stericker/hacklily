@@ -115,9 +115,9 @@ class NoteImpl implements Note {
         }
     }
 
-    /*---- MusicXML.Note --------------------------------------------------------------------*/
+    /*---- Note -----------------------------------------------------------------------------*/
 
-    /*---- MusicXML.Note > Core -------------------------------------------------------------*/
+    /*---- Note > Core ----------------------------------------------------------------------*/
 
     get chord(): Chord {
         return this._idx + 1 !== this._parent.length;
@@ -179,7 +179,7 @@ class NoteImpl implements Note {
 
     pitch: Pitch;
 
-    /*---- MusicXML.Note > Extended ---------------------------------------------------------*/
+    /*---- Extended -------------------------------------------------------------------------*/
 
     unpitched: Unpitched;
     noteheadText: NoteheadText;
@@ -214,29 +214,29 @@ class NoteImpl implements Note {
     pizzicato: boolean;
     beams: Beam[];
 
-    /*---- MusicXML.PrintStyle --------------------------------------------------------------*/
+    /*---- PrintStyle -----------------------------------------------------------------------*/
 
-    /*---- MusicXML.PrintStyle >> EditorialVoice --------------------------------------------*/
+    /*---- PrintStyle > EditorialVoice ------------------------------------------------------*/
 
     voice: number;
     footnote: Footnote;
     level: Level;
 
-    /*---- MusicXML.PrintStyle >> Position --------------------------------------------------*/
+    /*---- PrintStyle > Position ------------------------------------------------------------*/
 
     defaultX: number; // ignored for now
     relativeY: number;
     defaultY: number;
     relativeX: number;
 
-    /*---- MusicXML.PrintStyle >> Font ------------------------------------------------------*/
+    /*---- PrintStyle > Font ----------------------------------------------------------------*/
 
     fontFamily: string;
     fontWeight: NormalBold;
     fontStyle: NormalItalic;
     fontSize: string;
 
-    /*---- MusicXML.PrintStyle >> Color -----------------------------------------------------*/
+    /*---- PrintStyle > Color ---------------------------------------------------------------*/
 
     get color(): string {
         let hex = this._color.toString(16);
@@ -259,20 +259,20 @@ class NoteImpl implements Note {
 
     private _color: number = 0x000000;
 
-    /*---- MusicXML.Printout ----------------------------------------------------------------*/
+    /*---- Printout -------------------------------------------------------------------------*/
 
     printDot: boolean;
     printLyric: boolean;
 
-    /*---- MusicXML.Printout >> PrintObject -------------------------------------------------*/
+    /*---- Printout > PrintObject -----------------------------------------------------------*/
 
     printObject: boolean;
 
-    /*---- MusicXML.Printout >> PrintSpacing ------------------------------------------------*/
+    /*---- Printout > PrintSpacing ----------------------------------------------------------*/
 
     printSpacing: boolean;
 
-    /*---- MusicXML.TimeOnly ----------------------------------------------------------------*/
+    /*---- TimeOnly -------------------------------------------------------------------------*/
 
     timeOnly: string;
 

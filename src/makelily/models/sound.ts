@@ -16,8 +16,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import MusicXML = require("musicxml-interfaces");
-import _ = require("lodash");
+import {MidiInstrument, Play, Offset, MidiDevice, Sound,
+    serialize as serializeToXML} from "musicxml-interfaces";
+import {forEach} from "lodash";
 
 import {ICursor, IModel, ISegment} from "../engine";
 
@@ -47,10 +48,10 @@ class SoundModel implements Export.ISoundModel {
         return new SoundModel.Layout(this, cursor$);
     }
 
-    /*---- I.2 C.MusicXML.Sound ------------------------------------------------------------*/
+    /*---- I.2 Sound -----------------------------------------------------------------------*/
 
     softPedal: string;
-    midiInstruments: MusicXML.MidiInstrument[];
+    midiInstruments: MidiInstrument[];
     pan: string;
     tocoda: string;
     decapo: boolean;
@@ -62,28 +63,28 @@ class SoundModel implements Export.ISoundModel {
     fine: string;
     damperPedal: string;
     dynamics: string;
-    plays: MusicXML.Play[];
-    offset: MusicXML.Offset;
+    plays: Play[];
+    offset: Offset;
     sostenutoPedal: string;
     dalsegno: string;
-    midiDevices: MusicXML.MidiDevice[];
+    midiDevices: MidiDevice[];
     tempo: string;
     forwardRepeat: boolean;
 
-    /*---- I.3 C.MusicXML.TimeOnly --------------------------------------------------------------*/
+    /*---- I.3 C.TimeOnly -----------------------------------------------------------------------*/
 
     timeOnly: string;
 
     /*---- Validation Implementations -----------------------------------------------------------*/
 
-    constructor(spec: MusicXML.Sound) {
-        _.forEach(spec, (value, key) => {
+    constructor(spec: Sound) {
+        forEach(spec, (value, key) => {
             (<any>this)[key] = value;
         });
     }
 
     toXML(): string {
-        return MusicXML.serialize.sound(this);
+        return serializeToXML.sound(this);
     }
 
     inspect() {
@@ -137,7 +138,7 @@ function Export(constructors: { [key: number]: any }) {
 }
 
 module Export {
-    export interface ISoundModel extends IModel, MusicXML.Sound {
+    export interface ISoundModel extends IModel, Sound {
     }
 
     export interface ILayout extends IModel.ILayout {

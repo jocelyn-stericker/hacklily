@@ -18,20 +18,19 @@
 
 "use strict";
 
-import MusicXML = require("musicxml-interfaces");
-import * as React from "react"; // TS 1.5 workaround
-import {createFactory as $, PropTypes} from "react";
+import {Position, Notehead} from "musicxml-interfaces";
+import {createFactory as $, Component, PropTypes} from "react";
 
 import Glyph from "./primitives/glyph";
 
 /**
  * Renders a notehead.
  */
-class Notehead extends React.Component<Notehead.IProps, void> {
-    render() {
+class NoteheadView extends Component<NoteheadView.IProps, void> {
+    render(): any {
         let spec = this.props.spec;
-        let pos = <MusicXML.Position> spec;
-        let head = <MusicXML.Notehead> spec;
+        let pos = <Position> spec;
+        let head = <Notehead> spec;
 
         return $(Glyph)({
             fill: head.color,
@@ -43,9 +42,9 @@ class Notehead extends React.Component<Notehead.IProps, void> {
     }
 }
 
-module Notehead {
+module NoteheadView {
     export interface IProps {
-        spec: MusicXML.Notehead | MusicXML.Position;
+        spec: Notehead | Position;
         notehead: string;
     }
     export let contextTypes = <any> {
@@ -54,4 +53,4 @@ module Notehead {
     };
 }
 
-export default Notehead;
+export default NoteheadView;

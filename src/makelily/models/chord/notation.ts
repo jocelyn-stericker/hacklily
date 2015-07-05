@@ -18,17 +18,18 @@
 
 "use strict";
 
-import MusicXML = require("musicxml-interfaces");
-import _ = require("lodash");
+import {Articulations, Placement, Notations, AboveBelow, UprightInverted,
+    PrintStyle} from "musicxml-interfaces";
+import {forEach} from "lodash";
 
 import {IModel} from "../../engine";
 import {bboxes} from "../smufl";
 
-export function articulationDirectionMatters(model: MusicXML.Articulations): boolean {
+export function articulationDirectionMatters(model: Articulations): boolean {
     return !model.breathMark && !model.caesura;
 }
 
-export function articulationGlyph(model: MusicXML.Articulations, direction: string): string {
+export function articulationGlyph(model: Articulations, direction: string): string {
     if (model.accent) {
         return `articAccent${direction}`;
     }
@@ -78,77 +79,77 @@ export function articulationGlyph(model: MusicXML.Articulations, direction: stri
     return null;
 }
 
-export interface IGeneralNotation extends MusicXML.PrintStyle, MusicXML.Placement {
+export interface IGeneralNotation extends PrintStyle, Placement {
 }
 
-export function getBoundingRects(model: MusicXML.Notations): IModel.IBoundingRect[] {
+export function getBoundingRects(model: Notations): IModel.IBoundingRect[] {
     let boxes: IModel.IBoundingRect[] = [];
 
-    _.forEach(model.accidentalMarks, accidentalMark => {
+    forEach(model.accidentalMarks, accidentalMark => {
         // TODO
     });
 
-    _.forEach(model.arpeggiates, arpeggiate => {
+    forEach(model.arpeggiates, arpeggiate => {
         // TODO
     });
 
-    _.forEach(model.articulations, (articulation, idx) => {
-        _.forEach(["accent", "breathMark", "caesura", "detachedLegato", "doit", "falloff", "plop",
+    forEach(model.articulations, (articulation, idx) => {
+        forEach(["accent", "breathMark", "caesura", "detachedLegato", "doit", "falloff", "plop",
                     "scoop", "spiccato", "staccatissimo", "staccato", "stress", "strongAccent",
                     "tenuto", "unstress"], type => {
             // TODO: Could this be done any less efficiently?
             if ((<any>model.articulations[idx])[type]) {
                 let glyph = articulationGlyph(articulation,
                     (<any>model.articulations[idx])[type].placement ===
-                        MusicXML.AboveBelow.Below ? "Below" : "Above");
+                        AboveBelow.Below ? "Below" : "Above");
                 (<any>model.articulations[idx])[type] = push(glyph,
                         (<any>model.articulations[idx])[type]);
             }
         });
     });
 
-    _.forEach(model.dynamics, dynamic => {
+    forEach(model.dynamics, dynamic => {
         // TODO
     });
 
-    _.forEach(model.fermatas, (fermata, idx) => {
-        if (fermata.type === MusicXML.UprightInverted.Inverted) {
-            (<any>fermata).placement = MusicXML.AboveBelow.Below;
+    forEach(model.fermatas, (fermata, idx) => {
+        if (fermata.type === UprightInverted.Inverted) {
+            (<any>fermata).placement = AboveBelow.Below;
         } else {
-            (<any>fermata).placement = MusicXML.AboveBelow.Above;
+            (<any>fermata).placement = AboveBelow.Above;
         }
         model.fermatas[idx] = <any> push("fermataAbove", fermata);
     });
 
-    _.forEach(model.glissandos, glissando => {
+    forEach(model.glissandos, glissando => {
         // TODO
     });
 
-    _.forEach(model.nonArpeggiates, nonArpeggiate => {
+    forEach(model.nonArpeggiates, nonArpeggiate => {
         // TODO
     });
 
-    _.forEach(model.ornaments, ornament => {
+    forEach(model.ornaments, ornament => {
         // TODO
     });
 
-    _.forEach(model.slides, slide => {
+    forEach(model.slides, slide => {
         // TODO
     });
 
-    _.forEach(model.slurs, slur => {
+    forEach(model.slurs, slur => {
         // TODO
     });
 
-    _.forEach(model.technicals, technical => {
+    forEach(model.technicals, technical => {
         // TODO
     });
 
-    _.forEach(model.tieds, tied => {
+    forEach(model.tieds, tied => {
         // TODO
     });
 
-    _.forEach(model.tuplets, tuplet => {
+    forEach(model.tuplets, tuplet => {
         // TODO
     });
 
@@ -161,7 +162,7 @@ export function getBoundingRects(model: MusicXML.Notations): IModel.IBoundingRec
 
         const PADDING = 1.5;
 
-        let printStyle: MusicXML.PrintStyle | IModel.IBoundingRect = Object.create(notation);
+        let printStyle: PrintStyle | IModel.IBoundingRect = Object.create(notation);
         let boundingRect = <IModel.IBoundingRect> printStyle;
 
         boundingRect.top = box[3]*10;
@@ -169,9 +170,9 @@ export function getBoundingRects(model: MusicXML.Notations): IModel.IBoundingRec
         boundingRect.left = box[2]*10;
         boundingRect.right = box[0]*10;
         boundingRect.defaultX = 0;
-        if (notation.placement === MusicXML.AboveBelow.Below) {
+        if (notation.placement === AboveBelow.Below) {
             boundingRect.defaultY = -30 + box[3]*10*PADDING;
-        } else if (notation.placement === MusicXML.AboveBelow.Above) {
+        } else if (notation.placement === AboveBelow.Above) {
             boundingRect.defaultY = 60 + box[3]*10*PADDING;
         } else {
             console.warn("TODO: Set default above/below");

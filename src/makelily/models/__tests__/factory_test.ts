@@ -22,12 +22,11 @@
 
 "use strict";
 
-import chai = require("chai");
+import Factory from "../factory";
 
-let expect = chai.expect;
+import {expect} from "chai";
 
 import {IModel} from "../../engine";
-import Factory from "../factory";
 
 class TestClass1 {
 }

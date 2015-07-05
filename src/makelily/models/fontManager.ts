@@ -18,11 +18,11 @@
 
 "use strict";
 
-import Opentype = require("opentype.js");
-import _ = require("lodash");
+import {Font, parse as parseFont} from "opentype.js";
+import {memoize, forEach} from "lodash";
 
 const IS_BROWSER = !!(<any>process).browser;
-const NO_PATH_DATA = <Opentype.Font> {};
+const NO_PATH_DATA = <Font> {};
 
 /*---- PUBLIC -------------------------------------------------------------------------*/
 
@@ -111,7 +111,7 @@ export function getTextBB(name: string, text: string, fontSize: number, style?: 
     };
 }
 
-export let toPathData = _.memoize(function(name: string, text: string,
+export let toPathData = memoize(function(name: string, text: string,
         x: number, y: number, fontSize: number, style?: string) {
     let fullName = getFullName(name, style);
     let font = State.fonts[fullName];
@@ -134,7 +134,7 @@ function resolvePDKey(name: string, text: string,
 /*---- PRIVATE ------------------------------------------------------------------------*/
 
 module State {
-    export let fonts: {[font: string]: Opentype.Font} = {};
+    export let fonts: {[font: string]: Font} = {};
     export let cbs: ((err?: Error) => void)[] = [];
     export let remaining = 0;
     export let err: Error;
@@ -175,7 +175,7 @@ function loadFont(name: string, url: string, style: string, full?: boolean) {
             if (err) {
                 return goOn(err);
             }
-            let font = Opentype.parse(buffer);
+            let font = parseFont(buffer);
             State.fonts[fullName] = font;
             if (IS_BROWSER) {
                 let styleSheet = <CSSStyleSheet> document.styleSheets[0];
@@ -195,7 +195,7 @@ function loadFont(name: string, url: string, style: string, full?: boolean) {
         --State.remaining;
 
         if (!State.remaining) {
-            _.forEach(State.cbs, cb => cb(State.err));
+            forEach(State.cbs, cb => cb(State.err));
             State.cbs = [];
         }
     }

@@ -18,16 +18,16 @@
 
 "use strict";
 
-import MusicXML = require("musicxml-interfaces");
+import {Note, Lyric, Syllabic, SyllabicType, Text, StemType} from "musicxml-interfaces";
 import {createFactory as $, Component, DOM, PropTypes, ReactElement} from "react";
-import _ = require("lodash");
+import {map, any, chain, max} from "lodash";
 
 import Beam from "./beam";
 import Chord from "../models/chord";
 import Flag from "./flag";
 import LedgerLine from "./ledgerLine";
 import {DEFAULT_LYRIC_SIZE, DEFAULT_FONT} from "../models/chord/lyrics";
-import Note from "./note";
+import NoteView from "./note";
 import Notation from "./notation";
 import Rest from "./rest";
 import Stem from "./stem";
@@ -44,31 +44,31 @@ class ChordView extends Component<{layout: Chord.IChordLayout}, void> {
         let layout = this.props.layout;
         let spec = layout.model;
 
-        let maxNotehead = _.max(layout.model.noteheadGlyph, glyph => getRight(glyph));
+        let maxNotehead = max(layout.model.noteheadGlyph, glyph => getRight(glyph));
 
-        let anyVisible = _.any(layout.model, note => note.printObject !== false);
+        let anyVisible = any(layout.model, note => note.printObject !== false);
 
         if (!anyVisible) {
             return null;
         }
 
         let lyKey = 0;
-        let lyrics = _.chain(<MusicXML.Note[]><any>spec)
+        let lyrics = chain(<Note[]><any>spec)
             .map(n => n.lyrics)
             .filter(l => !!l)
             .flatten(true)
-            .filter((l: MusicXML.Lyric) => !!l)
-            .map((l: MusicXML.Lyric) => {
+            .filter((l: Lyric) => !!l)
+            .map((l: Lyric) => {
                 let text: any[] = [];
-                let currSyllabic = MusicXML.SyllabicType.Single;
+                let currSyllabic = SyllabicType.Single;
                 for (let i = 0; i < l.lyricParts.length; ++i) {
                     switch(l.lyricParts[i]._class) {
                         case "Syllabic":
-                            let syllabic = <MusicXML.Syllabic> l.lyricParts[i];
+                            let syllabic = <Syllabic> l.lyricParts[i];
                             currSyllabic = syllabic.data;
                             break;
                         case "Text":
-                            let textPt = <MusicXML.Text> l.lyricParts[i];
+                            let textPt = <Text> l.lyricParts[i];
                             let width = bboxes[maxNotehead][0]*10;
                             text.push(DOM.text({
                                     fontFamily: textPt.fontFamily || DEFAULT_FONT,
@@ -94,7 +94,7 @@ class ChordView extends Component<{layout: Chord.IChordLayout}, void> {
         }
 
         return DOM.g(null,
-            _.map(spec, (noteSpec, idx) => $(Note)({
+            map(spec, (noteSpec, idx) => $(NoteView)({
                 key: "n" + idx,
                 noteheadGlyph: spec.noteheadGlyph[idx],
                 spec: noteSpec
@@ -107,12 +107,11 @@ class ChordView extends Component<{layout: Chord.IChordLayout}, void> {
                     color: spec[0].stem.color || "#000000",
                     defaultX: spec[0].defaultX,
                     defaultY: (spec.satieStem.stemStart - 3)*10,
-                    type: spec.satieStem.direction === 1 ?
-                        MusicXML.StemType.Up : MusicXML.StemType.Down
+                    type: spec.satieStem.direction === 1 ?  StemType.Up : StemType.Down
                 },
                 width: stemThickness
             }),
-            _.map(spec.satieLedger, lineNumber => $(LedgerLine)({
+            map(spec.satieLedger, lineNumber => $(LedgerLine)({
                 key: "l" + lineNumber,
                 notehead: maxNotehead,
                 spec: {
@@ -147,7 +146,7 @@ class ChordView extends Component<{layout: Chord.IChordLayout}, void> {
                 stemWidth: stemThickness,
                 stroke: "black"
             }),
-            _.map(spec, (note, idx) => _.map(note.notations, (notation, jdx) => $(Notation)({
+            map(spec, (note, idx) => map(note.notations, (notation, jdx) => $(Notation)({
                 key: `N${idx}_${jdx}`,
                 layout: this.props.layout,
                 note: note,

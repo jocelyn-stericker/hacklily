@@ -22,7 +22,7 @@
 
 "use strict";
 
-import _ = require("lodash");
+import {forEach} from "lodash";
 import child_process = require("child_process");
 import fs = require("fs");
 
@@ -50,7 +50,7 @@ function mkdirp(path: string) {
 describe("import/export dtd validation", function() {
     const lilyRoot = "vendor/lilypond-regression";
     const lilyFiles = fs.readdirSync(lilyRoot); // needs to be setup before leaving 'describe'
-    _.forEach(lilyFiles, file => {
+    forEach(lilyFiles, file => {
         if (file.match(/[0-9]..\.xml$/)) {
             testFile(lilyRoot, file);
         }
@@ -58,7 +58,7 @@ describe("import/export dtd validation", function() {
 
     const satieRoot = "vendor/satie-regression";
     const satieFiles = fs.readdirSync(satieRoot); // needs to be setup before leaving 'describe'
-    _.forEach(satieFiles, file => {
+    forEach(satieFiles, file => {
         if (file.match(/\.xml$/)) {
             testFile(satieRoot, file);
         }

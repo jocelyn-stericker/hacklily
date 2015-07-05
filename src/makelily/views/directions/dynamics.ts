@@ -16,19 +16,19 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import MusicXML = require("musicxml-interfaces");
+import {Dynamics} from "musicxml-interfaces";
 import {createFactory as $, Component, PropTypes} from "react";
-import _ = require("lodash");
+import {filter} from "lodash";
 import invariant = require("react/lib/invariant");
 
 import DirectionModel from "../../models/direction";
 import Glyph from "../primitives/glyph";
 
-class Dynamics extends Component<{layout: DirectionModel.ILayout}, void> {
+class DynamicsView extends Component<{layout: DirectionModel.ILayout}, void> {
     render(): any {
         let layout = this.props.layout;
         let model = layout.model;
-        let dynamicsContainer = _.filter(model.directionTypes, dt => dt.dynamics)[0];
+        let dynamicsContainer = filter(model.directionTypes, dt => dt.dynamics)[0];
         invariant(!!dynamicsContainer, "No dynamics found!");
         let dynamics = dynamicsContainer.dynamics;
 
@@ -48,8 +48,8 @@ class Dynamics extends Component<{layout: DirectionModel.ILayout}, void> {
         });
     }
 
-    getGlyphName(dynamics: MusicXML.Dynamics) {
-        /* Not included in MusicXML
+    getGlyphName(dynamics: Dynamics) {
+        /* Not included in MusicXML:
 
           "dynamicMessaDiVoce": "U+E540",
           "dynamicMezzo": "U+E521",
@@ -121,11 +121,11 @@ class Dynamics extends Component<{layout: DirectionModel.ILayout}, void> {
     }
 }
 
-module Dynamics {
+module DynamicsView {
     export let contextTypes = <any> {
         originX: PropTypes.number.isRequired,
         originY: PropTypes.number.isRequired
     };
 }
 
-export default Dynamics;
+export default DynamicsView;

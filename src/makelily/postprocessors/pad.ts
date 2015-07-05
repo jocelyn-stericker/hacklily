@@ -16,7 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import _ = require("lodash");
+import {forEach, max, map, times} from "lodash";
 
 import {ILayoutOptions, ILineBounds, IMeasureLayout} from "../engine";
 
@@ -30,13 +30,13 @@ function pad(options: ILayoutOptions, bounds: ILineBounds,
         measures$: IMeasureLayout[]): IMeasureLayout[] {
 
     let measureOffset = 0;
-    _.forEach(measures$, function(measure, measureIdx) {
+    forEach(measures$, function(measure, measureIdx) {
         measure.originX += measureOffset;
 
-        let maxIdx = _.max(_.map(measure.elements, el => el.length));
+        let maxIdx = max(map(measure.elements, el => el.length));
         let previousElementEnd = -10;
         let offset = 0;
-        _.times(maxIdx, function(j) {
+        times(maxIdx, function(j) {
             // These refer to the space needed before/after this position in all segments.
             let spaceNeededBefore = 0;
             let spaceNeededAfter = 0;

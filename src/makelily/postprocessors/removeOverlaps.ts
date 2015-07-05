@@ -19,7 +19,7 @@
 "use strict";
 
 import Cola = require("webcola");
-import _ = require("lodash");
+import {forEach} from "lodash";
 
 import {IModel, IMeasureLayout, ILayoutOptions, ILineBounds} from "../engine";
 
@@ -52,10 +52,10 @@ function removeOverlaps(options: ILayoutOptions, bounds: ILineBounds,
     let measures$: IMeasureLayout[] = measures; // FIXME We should detach
     let boxes: IVPSCLayoutRect[] = [];
 
-    _.forEach(measures$, function centerThings(measure, idx) {
-        _.forEach(measure.elements, function(segment, si) {
-            _.forEach(segment, function(element, j) {
-                _.forEach(element.boundingBoxes$, box => {
+    forEach(measures$, function centerThings(measure, idx) {
+        forEach(measure.elements, function(segment, si) {
+            forEach(segment, function(element, j) {
+                forEach(element.boundingBoxes$, box => {
                     if (box.left >= box.right) {
                         console.warn("Invalid left >= right (%s >= %s)", box.left, box.right);
                         box.right = box.left + 0.01;
@@ -84,7 +84,7 @@ function removeOverlaps(options: ILayoutOptions, bounds: ILineBounds,
     });
 
     colaRemoveOverlapsSomeFixed(boxes);
-    _.forEach(boxes, box => {
+    forEach(boxes, box => {
         let expectedX = box.parent.overrideX + box.mxmlBox.defaultX + box.mxmlBox.left;
         let expectedY = box.mxmlBox.defaultY + box.mxmlBox.top;
         let actualX = box.x;

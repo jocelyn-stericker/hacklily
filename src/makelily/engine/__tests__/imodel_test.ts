@@ -24,21 +24,20 @@
 
 import IModel from "../imodel";
 
-import _ = require("lodash");
-import chai = require("chai");
-let expect = chai.expect;
+import {times, reduce} from "lodash";
+import {expect} from "chai";
 
 import {createFakeLayout} from "./etestutil";
 
 describe("[engine/imodel.ts]", function() {
     describe("merge$", function() {
         it("handles multiple segments", function() {
-            let layout1 = _.times(5, idx => createFakeLayout(idx, 0, true));
-            let layout2 = _.times(5, idx => createFakeLayout(idx, idx ? 2 : 0, true));
+            let layout1 = times(5, idx => createFakeLayout(idx, 0, true));
+            let layout2 = times(5, idx => createFakeLayout(idx, idx ? 2 : 0, true));
             let combinedLayout: IModel.ICombinedLayout[] = [];
 
-            combinedLayout = _.reduce([layout1, layout2], IModel.merge$, combinedLayout);
-            combinedLayout = _.reduce([layout1, layout2], IModel.merge$, combinedLayout);
+            combinedLayout = reduce([layout1, layout2], IModel.merge$, combinedLayout);
+            combinedLayout = reduce([layout1, layout2], IModel.merge$, combinedLayout);
 
             expect(combinedLayout).to.deep.equal([
                 {

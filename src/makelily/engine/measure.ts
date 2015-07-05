@@ -22,14 +22,14 @@
 
 "use strict";
 
-import _ = require("lodash");
+import {reduce, forEach, map, mapValues} from "lodash";
 
 import IModel from "./imodel"; // @circular
 import IAttributes from "./iattributes";
 import {lcm} from "./util";
 
 /**
- * Based on MusicXML.Measure, but with additional information, and with a staff/voice-seperated and
+ * Based on Measure, but with additional information, and with a staff/voice-seperated and
  * monotonic parts element.
  */
 export interface IMutableMeasure {
@@ -67,10 +67,10 @@ export enum OwnerType {
  * Returns the division count.
  */
 export function normalizeDivisions$(segments$: ISegment[], factor: number = 0): number {
-    let divisions = _.reduce(segments$, (div1, seg) =>
+    let divisions = reduce(segments$, (div1, seg) =>
         div1 ? lcm(div1, seg.divisions) : 1, factor);
 
-    _.forEach(segments$, segment => {
+    forEach(segments$, segment => {
         if (!segment) {
             return;
         }
@@ -78,7 +78,7 @@ export function normalizeDivisions$(segments$: ISegment[], factor: number = 0): 
         let ratio = divisions / segment.divisions;
         segment.divisions = divisions;
 
-        _.forEach(segment, (model: IModel) => {
+        forEach(segment, (model: IModel) => {
             if (model.divCount) {
                 model.divCount *= ratio;
             }
@@ -120,11 +120,11 @@ export module IMeasureLayout {
     export function detach(layout: IMeasureLayout) {
         let clone: IMeasureLayout = {
             attributes: layout.attributes,
-            elements: _.map(layout.elements, v => _.map(v, IModel.ILayout.detach)),
+            elements: map(layout.elements, v => map(v, IModel.ILayout.detach)),
             width: layout.width,
             maxDivisions: layout.maxDivisions,
             originX: layout.originX,
-            originY: _.mapValues(layout.originY, origins => origins.slice()),
+            originY: mapValues(layout.originY, origins => origins.slice()),
             paddingTop: layout.paddingTop.slice(),
             paddingBottom: layout.paddingBottom.slice()
         };

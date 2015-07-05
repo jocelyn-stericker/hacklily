@@ -16,8 +16,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import MusicXML = require("musicxml-interfaces");
-import _ = require("lodash");
+import {AboveBelow, DirectionType, Offset, Sound, Footnote, Level, Direction,
+    NormalBold, Segno, serialize as serializeToXML} from "musicxml-interfaces";
+import {forEach} from "lodash";
 
 import {ICursor, IModel, ISegment, RenderUtil} from "./../engine";
 import {getTextBB} from "./fontManager";
@@ -41,9 +42,9 @@ class DirectionModel implements Export.IDirectionModel {
     }
 
     validate$(cursor$: ICursor): void {
-        _.forEach(this.directionTypes, type => {
-            if (type.dynamics && this.placement === MusicXML.AboveBelow.Unspecified) {
-                this.placement = MusicXML.AboveBelow.Below;
+        forEach(this.directionTypes, type => {
+            if (type.dynamics && this.placement === AboveBelow.Unspecified) {
+                this.placement = AboveBelow.Below;
             }
         });
     }
@@ -52,37 +53,37 @@ class DirectionModel implements Export.IDirectionModel {
         return new DirectionModel.Layout(this, cursor$);
     }
 
-    /*---- I.2 MusicXML.Direction ---------------------------------------------------------------*/
+    /*---- I.2 Direction ------------------------------------------------------------------------*/
 
-    directionTypes: MusicXML.DirectionType[];
+    directionTypes: DirectionType[];
     staff: number;
-    offset: MusicXML.Offset;
-    sound: MusicXML.Sound;
+    offset: Offset;
+    sound: Sound;
 
-    /*---- I.2.1 MusicXML.Placement -------------------------------------------------------------*/
+    /*---- I.2.1 Placement ----------------------------------------------------------------------*/
 
-    placement: MusicXML.AboveBelow;
+    placement: AboveBelow;
 
-    /*---- I.2.2 MusicXML.EditorialVoice --------------------------------------------------------*/
+    /*---- I.2.2 EditorialVoice -----------------------------------------------------------------*/
 
     voice: number;
-    footnote: MusicXML.Footnote;
-    level: MusicXML.Level;
+    footnote: Footnote;
+    level: Level;
 
-    /*---- I.2.3 MusicXML.Directive -------------------------------------------------------------*/
+    /*---- I.2.3 Directive ----------------------------------------------------------------------*/
 
     data: string;
 
     /*---- II. Life-cycle -----------------------------------------------------------------------*/
 
-    constructor(spec: MusicXML.Direction) {
-        _.forEach(spec, (value, key) => {
+    constructor(spec: Direction) {
+        forEach(spec, (value, key) => {
             (<any>this)[key] = value;
         });
     }
 
     toXML(): string {
-        return MusicXML.serialize.direction(this);
+        return serializeToXML.direction(this);
     }
 
     inspect() {
@@ -104,11 +105,11 @@ module DirectionModel {
 
             let defaultY = 0;
             switch (model.placement) {
-                case MusicXML.AboveBelow.Below:
+                case AboveBelow.Below:
                     defaultY = -60;
                     break;
-                case MusicXML.AboveBelow.Above:
-                case MusicXML.AboveBelow.Unspecified:
+                case AboveBelow.Above:
+                case AboveBelow.Unspecified:
                     defaultY = 60;
                     break;
                 default:
@@ -118,9 +119,9 @@ module DirectionModel {
 
             this.boundingBoxes$ = [];
 
-            _.forEach(model.directionTypes, (type, idx) => {
+            forEach(model.directionTypes, (type, idx) => {
                 model.directionTypes[idx] = Object.create(model.directionTypes[idx]);
-                _.forEach(type.words, (word, idx) => {
+                forEach(type.words, (word, idx) => {
                     let origModel = type.words[idx];
                     let defaults = cursor$.header.defaults;
                     type.words[idx] = Object.create(origModel);
@@ -130,7 +131,7 @@ module DirectionModel {
                     let fontBox = getTextBB(type.words[idx].fontFamily || "Alegreya",
                         type.words[idx].data,
                         parseInt(type.words[idx].fontSize, 10),
-                        type.words[idx].fontWeight === MusicXML.NormalBold.Normal ? null : "bold");
+                        type.words[idx].fontWeight === NormalBold.Normal ? null : "bold");
                     const scale40 = defaults.scaling.millimeters / defaults.scaling.tenths * 40;
                     let boundingBox: IModel.IBoundingRect = <any> type.words[idx];
 
@@ -159,8 +160,8 @@ module DirectionModel {
                     boundingBox.bottom = 30; // TODO
                     this.boundingBoxes$.push(boundingBox);
                 }
-                _.forEach(type.segnos, (origSegno, idx) => {
-                    let segno: MusicXML.Segno = Object.create(origSegno);
+                forEach(type.segnos, (origSegno, idx) => {
+                    let segno: Segno = Object.create(origSegno);
                     type.segnos[idx] = segno;
                     segno.defaultX = segno.defaultX || -30;
                     segno.defaultY = (segno.defaultY || defaultY);
@@ -203,7 +204,7 @@ function Export(constructors: { [key: number]: any }) {
 }
 
 module Export {
-    export interface IDirectionModel extends IModel, MusicXML.Direction {
+    export interface IDirectionModel extends IModel, Direction {
     }
 
     export interface ILayout extends IModel.ILayout {

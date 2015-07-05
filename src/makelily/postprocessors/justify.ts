@@ -16,7 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import _ = require("lodash");
+import {reduce, map, max, times, last, forEach} from "lodash";
 
 import {IChord, ILayoutOptions, ILineBounds, IMeasureLayout, IPart} from "../engine";
 
@@ -39,10 +39,10 @@ function logistic(t: number) {
 function justify(options: ILayoutOptions, bounds: ILineBounds,
         measures$: IMeasureLayout[]): IMeasureLayout[] {
 
-    const x = bounds.left + _.reduce(measures$, (sum, measure) => sum + measure.width, 0);
+    const x = bounds.left + reduce(measures$, (sum, measure) => sum + measure.width, 0);
 
     // Check for underfilled bars
-    const underfilled = _.map(measures$, (measure, idx) => {
+    const underfilled = map(measures$, (measure, idx) => {
         let attr = measures$[idx].attributes;
         let firstPart = IPart.scoreParts(options.header.partList)[0].id;
         let divs = IChord.barDivisions(attr[firstPart][1]);
@@ -51,9 +51,9 @@ function justify(options: ILayoutOptions, bounds: ILineBounds,
     });
 
     let smallest = Number.POSITIVE_INFINITY;
-    _.forEach(measures$, function(measure, measureIdx) {
-        let maxIdx = _.max(_.map(measure.elements, el => el.length));
-        _.times(maxIdx, function(j) {
+    forEach(measures$, function(measure, measureIdx) {
+        let maxIdx = max(map(measure.elements, el => el.length));
+        times(maxIdx, function(j) {
             for (let i = 0; i < measure.elements.length; ++i) {
                 if (measure.elements[i][j].expandPolicy) {
                     if (measure.elements[i][j].model && measure.elements[i][j].model.divCount) {
@@ -71,9 +71,9 @@ function justify(options: ILayoutOptions, bounds: ILineBounds,
     let partial = x < bounds.right && options.line + 1 === options.lines;
     let underfilledCount = 0;
 
-    let expandableCount = _.reduce(measures$, function(memo, measure$, idx) {
+    let expandableCount = reduce(measures$, function(memo, measure$, idx) {
         // Precondition: all layouts at a given index have the same "expandable" value.
-        return _.reduce(_.last(measure$.elements), function(memo, element$) {
+        return reduce(last(measure$.elements), function(memo, element$) {
             if (underfilled[idx] && element$.expandPolicy) {
                 ++underfilledCount;
             }
@@ -107,12 +107,12 @@ function justify(options: ILayoutOptions, bounds: ILineBounds,
     let anyExpandable = false;
     let totalExpCount = 0;
     let lineExpansion = 0;
-    _.forEach(measures$, function(measure, measureIdx) {
+    forEach(measures$, function(measure, measureIdx) {
         measure.originX += lineExpansion;
 
         let measureExpansion = 0;
-        let maxIdx = _.max(_.map(measure.elements, el => el.length));
-        _.times(maxIdx, function(j) {
+        let maxIdx = max(map(measure.elements, el => el.length));
+        times(maxIdx, function(j) {
             for (let i = 0; i < measure.elements.length; ++i) {
                 measure.elements[i][j].x$ += measureExpansion;
             }

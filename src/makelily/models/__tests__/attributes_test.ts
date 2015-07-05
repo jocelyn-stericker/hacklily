@@ -22,13 +22,12 @@
 
 "use strict";
 
-import chai = require("chai");
+import AttributesModel from "../attributes";
 
-import Attributes from "../attributes";
+import {expect} from "chai";
+
 import {IModel, ICursor} from "../../engine";
 import Factory from "../factory";
-
-let expect = chai.expect;
 
 export function makeCursor(factory: Factory, models: IModel[]): ICursor {
     (<any>models).part = "P1";
@@ -117,7 +116,7 @@ function FakeChord(constructors: { [key: number]: any }) {
 
 describe("[attributes.ts]", function() {
     describe("AttributesModel", function() {
-        let factory = new Factory([Attributes, FakeChord]);
+        let factory = new Factory([AttributesModel, FakeChord]);
         let attributes: IModel;
         it("can be created", function() {
             attributes = factory.create(IModel.Type.Attributes);
@@ -132,7 +131,7 @@ describe("[attributes.ts]", function() {
         it("lays out properly when at start of song", function() {
             let cursor$ = makeCursor(factory, [attributes]);
             cursor$.staff.attributes = <any> {};
-            let layout = <Attributes.ILayout> attributes.layout(cursor$);
+            let layout = <AttributesModel.ILayout> attributes.layout(cursor$);
             expect(!!layout.keySignature).to.be.true;
             expect(!!layout.time).to.be.true;
             expect(!!layout.clef).to.be.true;

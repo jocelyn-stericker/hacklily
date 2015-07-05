@@ -22,13 +22,11 @@
 
 "use strict";
 
-import chai = require("chai");
+import {expect} from "chai";
 
 import Direction from "../direction";
 import {IModel} from "../../engine";
 import Factory from "../factory";
-
-let expect = chai.expect;
 
 describe("[direction.ts]", function() {
     describe("DirectionModel", function() {

@@ -17,7 +17,7 @@
  */
 
 import {createFactory as $, Component, DOM, PropTypes} from "react";
-import _ = require("lodash");
+import {chain, flatten, mapValues, map, forEach} from "lodash";
 
 import DebugBox from "./debugBox";
 import {IModel, IMeasureLayout, MAX_SAFE_INTEGER} from "../engine";
@@ -28,7 +28,7 @@ class MeasureView extends Component<{layout: IMeasureLayout}, void> {
         let layout = this.props.layout;
 
         return DOM.g(null,
-            _.chain(_.flatten(layout.elements))
+            chain(flatten(layout.elements))
                 .filter((layout: IModel.ILayout) => !!layout.model)   // Remove helpers.
                 .map((layout: IModel.ILayout) => $(ModelView)({
                     key: (<any>layout).key,
@@ -45,11 +45,11 @@ class MeasureView extends Component<{layout: IMeasureLayout}, void> {
 
     getChildContext() {
         let {layout} = this.props;
-        let originYByPartAndStaff = _.mapValues(layout.originY, this.extractOrigins, this);
+        let originYByPartAndStaff = mapValues(layout.originY, this.extractOrigins, this);
         let bottom = MAX_SAFE_INTEGER;
         let top = 0;
-        _.forEach(layout.originY, origins => {
-            _.forEach(origins, (origin, staff) => {
+        forEach(layout.originY, origins => {
+            forEach(origins, (origin, staff) => {
                 if (!staff) {
                     return;
                 }
@@ -70,7 +70,7 @@ class MeasureView extends Component<{layout: IMeasureLayout}, void> {
     }
 
     extractOrigins(layouts: number[]) {
-        return _.map(layouts, this.invert, this);
+        return map(layouts, this.invert, this);
     }
 
     invert(y: number) {

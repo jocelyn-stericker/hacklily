@@ -16,14 +16,12 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import * as React from "react"; // TS 1.5 workaround
-import {DOM, PropTypes, ReactElement} from "react";
-import _ = require("lodash");
+import {Component, DOM, PropTypes, ReactElement} from "react";
+import {forEach} from "lodash";
 
 import {IMeasureLayout, IModel} from "../engine";
 
-class DebugBox extends React.Component<{layout: IMeasureLayout}, void> {
-
+class DebugBox extends Component<{layout: IMeasureLayout}, void> {
     render(): any {
         if (!process.env["DEBUG"]) {
             return null;
@@ -31,11 +29,11 @@ class DebugBox extends React.Component<{layout: IMeasureLayout}, void> {
         let layout = this.props.layout;
         let boxes: ReactElement<any>[] = [];
         let context = this.context;
-        _.forEach(layout.elements, function(segment, si) {
-            _.forEach(segment, function(element, j) {
+        forEach(layout.elements, function(segment, si) {
+            forEach(segment, function(element, j) {
                 let originX = layout.originX + element.overrideX;
                 let originY = context.originYByPartAndStaff[element.part][element.model.staffIdx];
-                _.forEach(element.boundingBoxes$, (box, k) => {
+                forEach(element.boundingBoxes$, (box, k) => {
                     boxes.push(DOM.rect({
                         dangerouslySetInnerHTML: {
                             __html: `<!-- ${IModel.Type[element.renderClass]} -->`

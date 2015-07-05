@@ -22,11 +22,9 @@
 
 "use strict";
 
-import MusicXML = require("musicxml-interfaces");
-import _ = require("lodash");
-import chai = require("chai");
-
-let expect = chai.expect;
+import {Print, OddEvenBoth} from "musicxml-interfaces";
+import {map} from "lodash";
+import {expect} from "chai";
 
 import {validate,ILayoutOptions, ICursor, ILineBounds, ILinesLayoutMemo, IModel, ISegment}
         from "../engine";
@@ -35,7 +33,7 @@ import {createFakeStaffSegment, createFakeVoiceSegment} from "../engine/__tests_
 describe("[engine.ts]", function() {
     describe("Options.ILineBounds.calculate", function() {
         it("works", function() {
-            let spec1: MusicXML.Print = {
+            let spec1: Print = {
                 measureNumbering: {
                     data: "system"
                 },
@@ -63,14 +61,14 @@ describe("[engine.ts]", function() {
                             leftMargin: 11,
                             rightMargin: 12,
                             topMargin: 13,
-                            type: MusicXML.OddEvenBoth.Odd
+                            type: OddEvenBoth.Odd
                         },
                         {
                             bottomMargin: 10,
                             leftMargin: 21,
                             rightMargin: 22,
                             topMargin: 13,
-                            type: MusicXML.OddEvenBoth.Even
+                            type: OddEvenBoth.Even
                         }
                     ]
                 }
@@ -156,7 +154,7 @@ describe("[engine.ts]", function() {
 
             let contextOptions: ILayoutOptions = {
                 attributes: null,
-                measures: _.map(segments, function(segment, idx) {
+                measures: map(segments, function(segment, idx) {
                     return {
                         idx: idx,
                         uuid: 91015 + idx,
@@ -190,7 +188,7 @@ describe("[engine.ts]", function() {
                             rightMargin: padding,
                             bottomMargin: padding,
                             topMargin: padding,
-                            type: MusicXML.OddEvenBoth.Both
+                            type: OddEvenBoth.Both
                         }]
                     }
                 },

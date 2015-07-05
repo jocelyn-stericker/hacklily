@@ -19,7 +19,7 @@
 "use strict";
 
 import {createFactory as $, Component, DOM, PropTypes} from "react";
-import _ = require("lodash");
+import {map} from "lodash";
 
 import DirectionModel from "../models/direction";
 import Dynamics from "./directions/dynamics";
@@ -30,7 +30,7 @@ class Direction extends Component<{layout: DirectionModel.ILayout}, void> {
     render(): any {
         const model = this.props.layout.model;
         let childContext = this.getChildContext();
-        let children = _.map(model.directionTypes, (type, idx) => {
+        let children = map(model.directionTypes, (type, idx) => {
             switch(true) {
                 case !!type.accordionRegistration:
                     return null;
@@ -75,7 +75,7 @@ class Direction extends Component<{layout: DirectionModel.ILayout}, void> {
                     return null;
                 case !!type.segnos:
                     return DOM.g(null,
-                        _.map(type.segnos, (segno, segnoIdx) => $(Glyph)({
+                        map(type.segnos, (segno, segnoIdx) => $(Glyph)({
                             glyphName: "segno",
                             key: segnoIdx,
                             x: childContext.originX + segno.defaultX + (segno.relativeX||0),

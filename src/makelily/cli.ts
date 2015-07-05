@@ -16,7 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import fs = require("fs");
+import {readFile} from "fs";
 import yargs = require("yargs");
 
 import {importXML, exportXML, getSVGPreview} from "./index";
@@ -32,11 +32,11 @@ function readStdin(onEnd: (s: string) => void) {
     });
 }
 
-function readFile(file: string, onEnd: (s: string) => void, onErr: (err: any) => void) {
+function read(file: string, onEnd: (s: string) => void, onErr: (err: any) => void) {
     if (file === "<stdin>") {
         readStdin(onEnd);
     } else {
-        fs.readFile(file, "utf8", function (err, data) {
+        readFile(file, "utf8", function (err, data) {
             if (err) {
                 onErr(err);
             }
@@ -112,7 +112,7 @@ function cannotRead(err: any) {
 
     switch (argv._[0]) {
         case "init":
-            readFile(argv.xml[0],
+            read(argv.xml[0],
                 str => importXML(str,
                     (err, document) => exportXML(document, (err, xml) =>
                         err ? cannotRead(err) : log(xml))),
@@ -123,7 +123,7 @@ function cannotRead(err: any) {
         case "patch":
             throw "not implemented";
         case "render":
-            readFile(argv.xml[0],
+            read(argv.xml[0],
                 (str: string) => importXML(str,
                     (err, document) => err ? cannotRead(err) : getSVGPreview(document,
                         (err, svg) => err ? cannotRead(err) : log(svg))),

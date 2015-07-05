@@ -18,7 +18,7 @@
 
 "use strict";
 
-import _ = require("lodash");
+import {reduce, forEach, flatten, filter, find, map, pairs} from "lodash";
 import invariant = require("react/lib/invariant");
 
 import IAttributes from "../iattributes";
@@ -31,7 +31,7 @@ import {setCurrentMeasureList} from "../escapeHatch";
 import {reduceMeasure, DivisionOverflowException} from "./measure";
 
 export default function validate(options$: ILayoutOptions, memo$: ILinesLayoutState): void {
-    options$.measures = <any> _.reduce(options$.preprocessors, call, options$.measures);
+    options$.measures = <any> reduce(options$.preprocessors, call, options$.measures);
 
     let shouldTryAgain: boolean;
 
@@ -63,7 +63,7 @@ function tryValidate(options$: ILayoutOptions, memo$: ILinesLayoutState): void {
     let lastAttribs: {[part: string]: IAttributes.ISnapshot[]} = {};
 
     function withPart(segments: ISegment[], partID: string): ISegment[] {
-        _.forEach(segments, segment => {
+        forEach(segments, segment => {
             if (segment) {
                 segment.part = partID;
             }
@@ -73,34 +73,30 @@ function tryValidate(options$: ILayoutOptions, memo$: ILinesLayoutState): void {
 
     // Normalize divisions on a line:
     let allSegments: ISegment[] = [];
-    _.forEach(options$.measures, function validateMeasure(measure) {
+    forEach(options$.measures, function validateMeasure(measure) {
         let voiceSegments$ = <ISegment[]>
-            _.flatten(_.map(_.pairs(measure.parts),
-                        partx => withPart(partx[1].voices, partx[0])));
+            flatten(map(pairs(measure.parts), partx => withPart(partx[1].voices, partx[0])));
 
         let staffSegments$ = <ISegment[]>
-            _.flatten(_.map(_.pairs(measure.parts),
-                        partx => withPart(partx[1].staves, partx[0])));
+            flatten(map(pairs(measure.parts), partx => withPart(partx[1].staves, partx[0])));
 
-        allSegments = allSegments.concat(_.filter(voiceSegments$.concat(staffSegments$), s => !!s));
+        allSegments = allSegments.concat(filter(voiceSegments$.concat(staffSegments$), s => !!s));
     });
     normalizeDivisions$(allSegments, 0);
     // TODO: check if a measure hence becomes dirty?
 
-    _.forEach(options$.measures, function validateMeasure(measure) {
+    forEach(options$.measures, function validateMeasure(measure) {
         if (!(measure.uuid in memo$.clean$)) {
             let voiceSegments$ = <ISegment[]>
-                _.flatten(_.map(_.pairs(measure.parts),
-                            partx => withPart(partx[1].voices, partx[0])));
+                flatten(map(pairs(measure.parts), partx => withPart(partx[1].voices, partx[0])));
 
             let staffSegments$ = <ISegment[]>
-                _.flatten(_.map(_.pairs(measure.parts),
-                            partx => withPart(partx[1].staves, partx[0])));
+                flatten(map(pairs(measure.parts), partx => withPart(partx[1].staves, partx[0])));
 
             let measureCtx = Context.IMeasure.detach(measure, 0);
-            let segments = _.filter(voiceSegments$.concat(staffSegments$), s => !!s);
+            let segments = filter(voiceSegments$.concat(staffSegments$), s => !!s);
 
-            _.forEach(staffSegments$, function(segment, idx) {
+            forEach(staffSegments$, function(segment, idx) {
                 if (!segment) {
                     return;
                 }
@@ -113,7 +109,7 @@ function tryValidate(options$: ILayoutOptions, memo$: ILinesLayoutState): void {
                             segment.splice(0, 0, factory.create(type));
                         } else {
                             let proxy = factory.create(IModel.Type.Proxy);
-                            let proxiedSegment: ISegment = _.find(staffSegments$, potentialProxied =>
+                            let proxiedSegment: ISegment = find(staffSegments$, potentialProxied =>
                                 potentialProxied &&
                                 potentialProxied.part === segment.part &&
                                 potentialProxied.owner === 1);
@@ -136,7 +132,7 @@ function tryValidate(options$: ILayoutOptions, memo$: ILinesLayoutState): void {
                 ensureHeader(IModel.Type.Attributes);
                 if (!search(segment, segment.length - 1, IModel.Type.Barline).length) {
                     // Make sure the barline ends up at the end.
-                    const divs = _.reduce(segment, (divs, model) => divs + model.divCount, 1);
+                    const divs = reduce(segment, (divs, model) => divs + model.divCount, 1);
                     if (divs !== 0) {
                         const spacer = factory.create(IModel.Type.Spacer);
                         spacer.divCount = divs;
@@ -172,7 +168,7 @@ export function mutate(options: ILayoutOptions,
         mutator: (measure$: IMutableMeasure) => void) {
     delete memo$.clean$[measureUUID];
     delete memo$.width$[measureUUID];
-    mutator(_.find(options.measures, {"uuid": measureUUID}));
+    mutator(find(options.measures, {"uuid": measureUUID}));
     // XXX: Call layout
     throw "Not implemented";
 }

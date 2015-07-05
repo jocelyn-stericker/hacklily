@@ -18,17 +18,16 @@
 
 "use strict";
 
-import MusicXML = require("musicxml-interfaces");
+import {PageMargins, OddEvenBoth} from "musicxml-interfaces";
 import invariant = require("react/lib/invariant");
 
 module IPrint {
 
-export function getPageMargins(pageMargins: MusicXML.PageMargins[], page: number):
-    MusicXML.PageMargins {
+export function getPageMargins(pageMargins: PageMargins[], page: number): PageMargins {
     for (let i = 0; i < pageMargins.length; ++i) {
-        if (pageMargins[i].type === MusicXML.OddEvenBoth.Both ||
-                pageMargins[i].type === MusicXML.OddEvenBoth.Even && (page % 2 === 0) ||
-                pageMargins[i].type === MusicXML.OddEvenBoth.Odd && (page % 2 === 1)) {
+        if (pageMargins[i].type === OddEvenBoth.Both ||
+                pageMargins[i].type === OddEvenBoth.Even && (page % 2 === 0) ||
+                pageMargins[i].type === OddEvenBoth.Odd && (page % 2 === 1)) {
             return pageMargins[i];
         }
     }

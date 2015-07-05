@@ -16,13 +16,13 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import MusicXML = require("musicxml-interfaces");
+import {Position} from "musicxml-interfaces";
 
-import Engine from "../engine";
+import {IModel} from "../engine";
 
-export class Layout implements Engine.IModel.ILayout {
+export class Layout implements IModel.ILayout {
     constructor(model: IEngravedModel, cursor$: Engine.ICursor,
-            priority: Engine.IModel.Type, expandPolicy: Engine.IModel.ExpandPolicy) {
+            priority: IModel.Type, expandPolicy: IModel.ExpandPolicy) {
         this.model = model;
         this.priority = priority;
         this.x$ = model.defaultX + (model.defaultY || 0);
@@ -48,20 +48,20 @@ export class Layout implements Engine.IModel.ILayout {
     model: IEngravedModel;
     x$: number;
     division: number;
-    priority: Engine.IModel.Type;
+    priority: IModel.Type;
 
     // Prototype:
 
-    mergePolicy: Engine.IModel.HMergePolicy;
-    boundingBoxes$: Engine.IModel.IBoundingRect[];
-    expandPolicy: Engine.IModel.ExpandPolicy;
+    mergePolicy: IModel.HMergePolicy;
+    boundingBoxes$: IModel.IBoundingRect[];
+    expandPolicy: IModel.ExpandPolicy;
 }
 
-Layout.prototype.mergePolicy = Engine.IModel.HMergePolicy.Min;
-Layout.prototype.expandPolicy = Engine.IModel.ExpandPolicy.None;
+Layout.prototype.mergePolicy = IModel.HMergePolicy.Min;
+Layout.prototype.expandPolicy = IModel.ExpandPolicy.None;
 Layout.prototype.boundingBoxes$ = [];
 Object.freeze(Layout.prototype.boundingBoxes$);
 
-export interface IEngravedModel extends Engine.IModel, MusicXML.Position {
+export interface IEngravedModel extends IModel, Position {
     calcWidth(): number;
 }

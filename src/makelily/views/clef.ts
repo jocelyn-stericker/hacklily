@@ -18,7 +18,7 @@
 
 "use strict";
 
-import MusicXML = require("musicxml-interfaces");
+import {Clef, SymbolSize} from "musicxml-interfaces";
 import {createFactory as $, Component, DOM, PropTypes} from "react";
 
 import Glyph from "./primitives/glyph";
@@ -27,7 +27,7 @@ import {bboxes} from "../models/smufl";
 /**
  * Responsible for the rendering of a clef.
  */
-class Clef extends Component<{spec: MusicXML.Clef}, void> {
+class ClefView extends Component<{spec: Clef}, void> {
     render(): any {
         const spec = this.props.spec;
 
@@ -123,7 +123,7 @@ class Clef extends Component<{spec: MusicXML.Clef}, void> {
         } else if (clef === "none") {
             return null;
         } else {
-            return clef + "Clef" + (this.props.spec.size === MusicXML.SymbolSize.Cue ?
+            return clef + "Clef" + (this.props.spec.size === SymbolSize.Cue ?
                 "Change" : "");
         }
     }
@@ -137,11 +137,11 @@ class Clef extends Component<{spec: MusicXML.Clef}, void> {
     }
 };
 
-module Clef {
+module ClefView {
     export let contextTypes = <any> {
         originX: PropTypes.number.isRequired,
         originY: PropTypes.number.isRequired
     };
 }
 
-export default Clef;
+export default ClefView;

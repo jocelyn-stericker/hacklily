@@ -16,8 +16,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import MusicXML = require("musicxml-interfaces");
-import _ = require("lodash");
+import {Frame, ExplicitImpliedAlternate, Root, Function, Kind, Degree, Inversion, Bass,
+    Footnote, Level, NormalBold, NormalItalic, AboveBelow, Harmony, Offset,
+    serialize as serializeToXML} from "musicxml-interfaces";
+import {forEach} from "lodash";
 
 import {ICursor, IModel, ISegment} from "../engine";
 
@@ -48,49 +50,49 @@ class HarmonyModel implements Export.IHarmonyModel {
         return new HarmonyModel.Layout(this, cursor$);
     }
 
-    /*---- I.2 MusicXML.Harmony -----------------------------------------------------------------*/
+    /*---- I.2 Harmony --------------------------------------------------------------------------*/
 
-    frame: MusicXML.Frame;
+    frame: Frame;
     printFrame: boolean;
     staff: number;
-    type: MusicXML.ExplicitImpliedAlternate;
-    offset: MusicXML.Offset;
+    type: ExplicitImpliedAlternate;
+    offset: Offset;
 
-    /*---- I.2.1 MusicXML.HarmonyChord ----------------------------------------------------------*/
+    /*---- I.2.1 HarmonyChord -------------------------------------------------------------------*/
 
-    root: MusicXML.Root;
-    function: MusicXML.Function;
-    kind: MusicXML.Kind;
-    degrees: MusicXML.Degree[];
-    inversion: MusicXML.Inversion;
-    bass: MusicXML.Bass;
+    root: Root;
+    function: Function;
+    kind: Kind;
+    degrees: Degree[];
+    inversion: Inversion;
+    bass: Bass;
 
-    /*---- I.2.2 MusicXML.Editorial -------------------------------------------------------------*/
+    /*---- I.2.2 Editorial ----------------------------------------------------------------------*/
 
-    footnote: MusicXML.Footnote;
-    level: MusicXML.Level;
+    footnote: Footnote;
+    level: Level;
 
-    /*---- I.2.3 MusicXML.PrintObject -----------------------------------------------------------*/
+    /*---- I.2.3 PrintObject --------------------------------------------------------------------*/
 
     printObject: boolean;
 
-    /*---- I.2.4 MusicXML.PrintStyle ------------------------------------------------------------*/
+    /*---- I.2.4 PrintStyle ---------------------------------------------------------------------*/
 
-    /*---- MusicXML.PrintStyle >> Position --------------------------------------------------*/
+    /*---- PrintStyle > Position ------------------------------------------------------------*/
 
     defaultX: number; // ignored for now
     relativeY: number;
     defaultY: number;
     relativeX: number;
 
-    /*---- MusicXML.PrintStyle >> Font ------------------------------------------------------*/
+    /*---- PrintStyle > Font ----------------------------------------------------------------*/
 
     fontFamily: string;
-    fontWeight: MusicXML.NormalBold;
-    fontStyle: MusicXML.NormalItalic;
+    fontWeight: NormalBold;
+    fontStyle: NormalItalic;
     fontSize: string;
 
-    /*---- MusicXML.PrintStyle >> Color -----------------------------------------------------*/
+    /*---- PrintStyle > Color ---------------------------------------------------------------*/
 
     get color(): string {
         let hex = this._color.toString(16);
@@ -113,20 +115,20 @@ class HarmonyModel implements Export.IHarmonyModel {
 
     private _color: number = 0x000000;
 
-    /*---- I.2.5 MusicXML.Placement -------------------------------------------------------------*/
+    /*---- I.2.5 Placement ----------------------------------------------------------------------*/
 
-    placement: MusicXML.AboveBelow;
+    placement: AboveBelow;
 
     /*---- II. Life-cycle -----------------------------------------------------------------------*/
 
-    constructor(spec: MusicXML.Harmony) {
-        _.forEach(spec, (value, key) => {
+    constructor(spec: Harmony) {
+        forEach(spec, (value, key) => {
             (<any>this)[key] = value;
         });
     }
 
     toXML(): string {
-        return MusicXML.serialize.harmony(this);
+        return serializeToXML.harmony(this);
     }
 
     inspect() {
@@ -176,7 +178,7 @@ function Export(constructors: { [key: number]: any }) {
 }
 
 module Export {
-    export interface IHarmonyModel extends IModel, MusicXML.Harmony {
+    export interface IHarmonyModel extends IModel, Harmony {
     }
 
     export interface ILayout extends IModel.ILayout {

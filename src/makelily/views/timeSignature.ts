@@ -18,9 +18,9 @@
 
 "use strict";
 
-import MusicXML = require("musicxml-interfaces");
+import {Time, TimeSymbolType} from "musicxml-interfaces";
 import {createFactory as $, Component, DOM, PropTypes} from "react";
-import _ = require("lodash");
+import {map} from "lodash";
 
 import {IAttributes} from "../engine";
 import Glyph from "./primitives/glyph";
@@ -28,7 +28,7 @@ import Glyph from "./primitives/glyph";
 /**
  * Renders a simple, compound, or common time signature.
  */
-class TimeSignature extends Component<{spec: MusicXML.Time}, void> {
+class TimeSignature extends Component<{spec: Time}, void> {
     render(): any {
         const spec = this.props.spec;
         if (spec.senzaMisura != null) {
@@ -77,9 +77,9 @@ class TimeSignature extends Component<{spec: MusicXML.Time}, void> {
 
         let pos = 0;
         return DOM.g(null,
-            _.map(ts.beats, (beatsOuter, idx) => {
+            map(ts.beats, (beatsOuter, idx) => {
                 let array = [
-                    _.map(beatsOuter, (beats, jdx) => [
+                    map(beatsOuter, (beats, jdx) => [
                         $(TimeSignatureNumber)({
                                 key: `num_${idx}_${jdx}`,
                                 stroke: spec.color,
@@ -127,7 +127,7 @@ class TimeSignature extends Component<{spec: MusicXML.Time}, void> {
     numOffsets() {
         // This is sketchy.
         let ts = this._displayTimeSignature();
-        return _.map(ts.beats, (beats, idx) => {
+        return map(ts.beats, (beats, idx) => {
             if (beats.length > 1) {
                 return 0;
             }
@@ -142,7 +142,7 @@ class TimeSignature extends Component<{spec: MusicXML.Time}, void> {
         // This is sketchy.
         let ts = this._displayTimeSignature();
 
-        return _.map(ts.beatType, (beatType, idx) => {
+        return map(ts.beatType, (beatType, idx) => {
             let culm = 0;
             let numToDenOffset = (ts.beats[idx].length - 1)*IAttributes.NUMBER_SPACING/2;
             culm += numToDenOffset;
@@ -158,10 +158,10 @@ class TimeSignature extends Component<{spec: MusicXML.Time}, void> {
         const spec = this.props.spec;
         return {
             beatType: spec.beatTypes,
-            beats: _.map(spec.beats, beats => beats.split("+").map(n => parseInt(n, 10))),
-            commonRepresentation: spec.symbol === MusicXML.TimeSymbolType.Common ||
-                                    spec.symbol === MusicXML.TimeSymbolType.Cut,
-            singleNumber: spec.symbol === MusicXML.TimeSymbolType.SingleNumber
+            beats: map(spec.beats, beats => beats.split("+").map(n => parseInt(n, 10))),
+            commonRepresentation: spec.symbol === TimeSymbolType.Common ||
+                                    spec.symbol === TimeSymbolType.Cut,
+            singleNumber: spec.symbol === TimeSymbolType.SingleNumber
         };
     }
 };
@@ -185,7 +185,7 @@ interface ITSNumProps {
 class TimeSignatureNumber extends Component<ITSNumProps, void> {
     render() {
         return DOM.g(null,
-            _.map((String(this.props.children)).split(""), (numberString, i) => $(Glyph)({
+            map((String(this.props.children)).split(""), (numberString, i) => $(Glyph)({
                 fill: this.props.stroke,
                 glyphName: "timeSig" + numberString,
                 key: "ts-" + i,

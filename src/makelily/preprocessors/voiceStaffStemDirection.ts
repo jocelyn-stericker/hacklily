@@ -18,16 +18,16 @@
 
 "use strict";
 
-import _ = require("lodash");
+import {forEach} from "lodash";
 
 import {IModel, IMutableMeasure} from "../engine";
 
 function voiceStaffStemDirection(measures: IMutableMeasure[]): IMutableMeasure[] {
-    _.forEach(measures, measure => {
-        _.forEach(measure.parts, part => {
+    forEach(measures, measure => {
+        forEach(measure.parts, part => {
             let staffToVoices: {[staff: number]: {[voice: number]: IModel[]}} = {};
-            _.forEach(part.voices, voice => {
-                _.forEach(voice, model => {
+            forEach(part.voices, voice => {
+                forEach(voice, model => {
                     if (model.staffIdx) {
                         staffToVoices[model.staffIdx] = staffToVoices[model.staffIdx] || {};
                         let voices = staffToVoices[model.staffIdx];
@@ -36,12 +36,12 @@ function voiceStaffStemDirection(measures: IMutableMeasure[]): IMutableMeasure[]
                     }
                 });
             });
-            _.forEach(staffToVoices, (staff: {[voice: number]: IModel[]}) => {
+            forEach(staffToVoices, (staff: {[voice: number]: IModel[]}) => {
                 if (Object.keys(staff).length > 1) {
-                    _.forEach(staff[1], els => {
+                    forEach(staff[1], els => {
                         (<any>els).satieDirection = 1;
                     });
-                    _.forEach(staff[2], els => {
+                    forEach(staff[2], els => {
                         (<any>els).satieDirection = -1;
                     });
                 }

@@ -22,7 +22,7 @@
 
 "use strict";
 
-import _ = require("lodash");
+import {reduce} from "lodash";
 import invariant = require("react/lib/invariant");
 
 import IAttributes from "./iattributes";
@@ -155,7 +155,7 @@ export module IVoice {
     }
 }
 
-export interface IMutableMeasure /* matches everything in MusicXML.Measure except for parts! */ {
+export interface IMutableMeasure /* matches everything in Measure except for parts! */ {
     idx: number;
     uuid: number;
     number: string;
@@ -220,7 +220,7 @@ export module ILine {
             barsOnLine: bars,
             line: line,
             lines: lines,
-            shortestCount: _.reduce(segments, reduceToShortestInSegments, Number.MAX_VALUE)
+            shortestCount: reduce(segments, reduceToShortestInSegments, Number.MAX_VALUE)
         };
     }
 }
@@ -229,7 +229,7 @@ function reduceToShortestInSegments(shortest: number, segment: ISegment) {
     if (!segment) {
         return shortest;
     }
-    return _.reduce(segment, reduceToShortestInSegment, shortest);
+    return reduce(segment, reduceToShortestInSegment, shortest);
 }
 
 function reduceToShortestInSegment(shortest: number, model: IModel) {

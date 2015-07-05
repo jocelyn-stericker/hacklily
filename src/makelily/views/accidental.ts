@@ -18,7 +18,7 @@
 
 "use strict";
 
-import MusicXML = require("musicxml-interfaces");
+import {Accidental} from "musicxml-interfaces";
 import {createFactory as $, Component, DOM, PropTypes} from "react";
 import invariant = require("react/lib/invariant");
 
@@ -26,7 +26,7 @@ import Glyph from "./primitives/glyph";
 import IChord from "../engine/ichord";
 import {bboxes} from "../models/smufl";
 
-class Accidental extends Component<{spec: MusicXML.Accidental}, void> {
+class AccidentalView extends Component<{spec: Accidental}, void> {
     render(): any {
         let spec = this.props.spec;
         const glyphName = IChord.accidentalGlyphs[this.props.spec.accidental];
@@ -59,18 +59,18 @@ class Accidental extends Component<{spec: MusicXML.Accidental}, void> {
                     x: originX + spec.defaultX + (spec.relativeX || 0) + width + shift,
                     y: originY - (spec.defaultY + (spec.relativeY || 0))
                 })
-            /* React.DOM.g */);
+            /* DOM.g */);
         } else {
             return accidental;
         }
     }
 }
 
-module Accidental {
+module AccidentalView {
     export let contextTypes = <any> {
         originX: PropTypes.number.isRequired,
         originY: PropTypes.number.isRequired
     };
 }
 
-export default Accidental;
+export default AccidentalView;
