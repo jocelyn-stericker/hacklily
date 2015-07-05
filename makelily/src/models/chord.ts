@@ -22,7 +22,7 @@
  * number of these notes may be rests.
  */
 
-import MusicXML = require("musicxml-interfaces");
+import {MultipleRest} from "musicxml-interfaces";
 
 import {IBeam, IChord, IModel} from "../engine";
 import ChordModelImpl from "./chord/chordImpl"; // @cyclic
@@ -46,7 +46,8 @@ module ChordModel {
         satieFlag: string;
         satieLedger: number[];
         noteheadGlyph: string[];
-        satieMultipleRest: MusicXML.MultipleRest;
+        satieMultipleRest: MultipleRest;
+        satieUnbeamedTuplet: IBeam.ILayout;
     }
 
     export interface IChordLayout extends IModel.ILayout {

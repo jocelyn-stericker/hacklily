@@ -160,7 +160,7 @@ describe("[engine.ts]", function() {
                     return {
                         idx: idx,
                         uuid: 91015 + idx,
-                        number: (idx + 1) + "",
+                        number: String(idx + 1),
                         parts: <{[key: string]: any}> {
                             "P1": {
                                 voices: segment.voices,
