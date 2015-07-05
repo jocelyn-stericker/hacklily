@@ -1,19 +1,18 @@
 /**
- * (C) Josh Netterfield <joshua@nettek.ca> 2015.
- * Part of the Satie music engraver <https://github.com/ripieno/satie>.
+ * @source: https://github.com/ripieno/satie/
  *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Affero General Public License as
- * published by the Free Software Foundation, either version 3 of the
- * License, or (at your option) any later version.
+ * @license
+ * (C) Copyright Josh Netterfield <joshua@nettek.ca> 2015.
+ * This project contains the Satie music engraver <https://github.com/ripieno/satie>.
  *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Affero General Public License for more details.
+ * Satie is free software: you can redistribute it and/or modify it under the terms of
+ * the GNU Affero General Public License as published by the Free Software
+ * Foundation, either version 3 of the License, or (at your option) any later version.
+ * The code is distributed WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU AGPL for more details.
  *
- * You should have received a copy of the GNU Affero General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * Satie is licensed with additional permissions under the GNU Affero GPL version 3 section 7.
+ * For details, see https://github.com/ripieno/satie/
  */
 
 "use strict";
@@ -51,8 +50,6 @@ import PadPostprocessor from "./postprocessors/pad";
 import RemoveOverlapsPostprocessor from "./postprocessors/removeOverlaps";
 import TiedsPostprocessor from "./postprocessors/tieds";
 
-/*---- Public Interface -------------------------------------------------------------------------*/
-
 /**
  * Optional initialization function. Call this if you don't want the default options. Must be called
  * before any Satie component is mounted, and must only be called once.
@@ -61,7 +58,10 @@ export function init(options: ISatieOptions): void {
     invariant(!BrowserSetup.cssInjected,
         "init must be called before any Satie component is mounted " +
         "and must only be called once");
+
     BrowserSetup.injectStyles(options);
+
+    printMsg();
 }
 
 /**
@@ -149,12 +149,14 @@ export function exportXML(score: IDocument, cb: (error: Error, xml: string) => v
         out += `</measure>\n`;
     });
 
-    cb(null, `<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE score-timewise PUBLIC "-//Recordare//DTD MusicXML 1.0 Timewise//EN"
-                                "http://www.musicxml.org/dtds/timewise.dtd">
-<score-timewise>
-${out.split("\n").map(t => "  " + t).join("\n")}
-</score-timewise>`);
+    cb(null,
+        "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+        "<!DOCTYPE score-timewise PUBLIC \"-//Recordare//DTD MusicXML 3.0 Timewise//EN\"\n" +
+        "                                \"http://www.musicxml.org/dtds/timewise.dtd\">\n" +
+        "<score-timewise>\n" +
+        out.split("\n").map(t => "  " + t).join("\n") +
+        "</score-timewise>"
+    );
 }
 
 /**
@@ -174,8 +176,6 @@ export function getSVGPreview(document: IDocument, cb: (err: Error, svg?: string
  * Usage: <Satie.Viewer document={document} pageClassName="satiePage" />
  */
 export {default as Viewer} from "./viewer";
-
-/*---- Private ----------------------------------------------------------------------------------*/
 
 function makeFactory() {
     return new Factory(
@@ -263,4 +263,25 @@ module BrowserSetup {
                 "fill: #7a7a7a;" +
             "}";
     });
+}
+
+function printMsg() {
+    if (!window.console || !window.console.log) {
+        return;
+    }
+
+    console.log(
+        "This application uses Satie, a JavaScript library for rendering sheet music.\n" +
+        "https://github.com/ripieno/satie/\n" +
+        "\n" +
+        "Satie is free software: you can redistribute it and/or modify it under the terms of\n" +
+        "the GNU Affero General Public License as published by the Free Software\n" +
+        "Foundation, either version 3 of the License, or (at your option) any later version.\n" +
+        "The code is distributed WITHOUT ANY WARRANTY; without even the implied warranty of\n" +
+        "MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. " +
+        "See the GNU AGPL for more details.\n" +
+        "\n" +
+        "Satie is licensed with additional permissions under the GNU Affero GPL version 3\n" +
+        "section 7. For details, see https://github.com/ripieno/satie/\n"
+    );
 }

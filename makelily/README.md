@@ -41,17 +41,25 @@ To build, lint, and run unit tests:
 | Run the development server on port 4200             | `make serve`          |
 
 ### License
-Satie is licensed under the [GNU **Affero** General Public License][agpl], with
-an additional permission.
+Satie is free software: you can redistribute it and/or modify it under the terms of
+the [GNU **Affero** General Public License][agpl] as published by the Free Software
+Foundation, either version 3 of the License, or (at your option) any later version.
+The code is distributed WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU AGPL for more details.
 
-Additional permission under the GNU Affero GPL version 3 section 7:
+Additional permissions under the GNU Affero GPL version 3 section 7:
 
-If you modify this Program, or any covered work, by linking or combining it
-with a general purpose web browser (excluding extensions and add-ons), the
-licensors of this Program grant you additional permission to convey the
+ - If you modify this Program, or any covered work, by linking or combining it
+with a general purpose web browser (excluding extensions and excluding add-ons),
+the licensors of this Program grant you additional permission to convey the
 resulting work.
 
-If you modify this code, you may extend this exception to your version
+ - You may distribute non-source (e.g., minimized or compacted) forms of
+that code without the copy of the GNU GPL normally required by
+section 4, provided you include this license notice and a URL
+through which recipients can access the Corresponding Source.
+
+ - If you modify this code, you may extend these exception to your version
 of the code, but you are not obligated to do so. If you do not wish to do so,
 delete this exception statement from your version.
 
