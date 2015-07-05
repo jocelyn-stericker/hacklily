@@ -139,9 +139,7 @@ class ChordView extends Component<{layout: Chord.IChordLayout}, void> {
                 key: "b",
                 layout: spec.satieBeam,
                 stemWidth: stemThickness,
-                stroke: "black",
-                tuplet: null,
-                tupletsTemporary: null
+                stroke: "black"
             }),
             spec.satieUnbeamedTuplet && $(UnbeamedTuplet)({
                 key: "ut",

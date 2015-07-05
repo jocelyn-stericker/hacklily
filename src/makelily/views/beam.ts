@@ -18,12 +18,11 @@
 
 "use strict";
 
-import MusicXML = require("musicxml-interfaces");
 import {createFactory as $, Component, DOM, PropTypes} from "react";
 import _ = require("lodash");
 
 import IBeam from "../engine/ibeam";
-import Glyph from "./primitives/glyph";
+import TupletNumber from "./tupletNumber";
 import {bravura, getFontOffset} from "../models/smufl";
 
 /**
@@ -32,43 +31,50 @@ import {bravura, getFontOffset} from "../models/smufl";
 class Beam extends Component<Beam.IProps, void> {
     render(): any {
         let xLow = this._getX1();
-        let xHi = this._getX2();
-        let layout = this.props.layout;
+        let xHigh = this._getX2();
+        let {layout} = this.props;
+        let {tuplet, beamCount, x, direction} = layout;
 
         return DOM.g(null,
-            _.map(layout.beamCount, (beams: number, idx: number): any => {
+            _.map(beamCount, (beams: number, idx: number): any => {
                 if (idx === 0) {
                     return null;
                 }
                 return _.times(beams, beam => {
                     let x1: number;
-                    let x2: number = this._withXOffset(layout.x[idx]);
-                    if (layout.beamCount[idx - 1] <= beam) {
-                        if (layout.x[idx + 1] &&
-                            layout.beamCount[idx + 1] === beams) {
+                    let x2: number = this._withXOffset(x[idx]);
+                    if (beamCount[idx - 1] <= beam) {
+                        if (x[idx + 1] &&
+                            beamCount[idx + 1] === beams) {
                             return null;
                         }
-                        x1 = this._withXOffset((layout.x[idx - 1] + layout.x[idx] * 3) / 4);
+                        x1 = this._withXOffset((x[idx - 1] + x[idx] * 3) / 4);
                     } else {
-                        x1 = this._withXOffset(layout.x[idx - 1]);
+                        x1 = this._withXOffset(x[idx - 1]);
                     }
                     return DOM.polygon({
                         fill: this.props.stroke,
                         key: idx + "_" + beam,
                         points: x1 + "," +
-                            this._getYVar(0, beam, (x1 - xLow)/(xHi - xLow)) + " " +
+                            this._getYVar(0, beam, (x1 - xLow)/(xHigh - xLow)) + " " +
                             x2 + "," +
-                            this._getYVar(0, beam, (x2 - xLow)/(xHi - xLow)) + " " +
+                            this._getYVar(0, beam, (x2 - xLow)/(xHigh - xLow)) + " " +
                             x2 + "," +
-                            this._getYVar(1, beam, (x2 - xLow)/(xHi - xLow)) + " " +
+                            this._getYVar(1, beam, (x2 - xLow)/(xHigh - xLow)) + " " +
                             x1 + "," +
-                            this._getYVar(1, beam, (x1 - xLow)/(xHi - xLow)),
+                            this._getYVar(1, beam, (x1 - xLow)/(xHigh - xLow)),
                         stroke: this.props.stroke,
                         strokeWidth: 0
                     });
                 });
             }),
-            this._tuplet()
+            tuplet && $(TupletNumber)({
+                tuplet,
+                x1: xLow,
+                x2: xHigh,
+                y1: this._getYVar(0, -1, 0) - (direction >= 1 ? 8.5 : -1.8),
+                y2: this._getYVar(0, -1, 1) - (direction >= 1 ? 8.5 : -1.8)
+            })
         /* DOM.g */);
     }
 
@@ -131,30 +137,6 @@ class Beam extends Component<Beam.IProps, void> {
     private _getYOffset() {
         return -3;
     }
-
-    /**
-     * Returns a component instance showing the tuplet number
-     */
-    private _tuplet() {
-        if (!this.props.tuplet) {
-            return null;
-        } else {
-            let segments = this.props.layout.beamCount.length;
-            let offset = this._getX2() - this._getX1();
-            let y = (this._getY1(1, segments - 1) +
-                        this._getY2(1, segments - 1))/2 -
-                    (4 + 8*1/* FIXME: get max */)*this.props.layout.direction + 5.2;
-
-            // TODO: all tuplets are drawn as triplets.
-            return $(Glyph)({
-                "selection-info": "beamTuplet",
-                fill: this.props.tupletsTemporary ? "#A5A5A5" : "#000000",
-                glyphName: "tuplet3",
-                x: this.props.layout.x[0] + offset/2,
-                y: y
-            });
-        }
-    }
 };
 
 module Beam {
@@ -167,8 +149,6 @@ module Beam {
         layout: IBeam.ILayout;
         stemWidth: number;
         stroke: string;
-        tuplet: MusicXML.TimeModification;
-        tupletsTemporary: boolean;
     }
 }
 

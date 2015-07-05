@@ -29,8 +29,6 @@ import invariant = require("react/lib/invariant");
 import ChordImpl from "../models/chord/chordImpl";
 import {IAttributes, IChord, IModel, IMeasureLayout, ILayoutOptions, ILineBounds} from "../engine";
 
-const UNBEAMED_TUPLET = 0;
-
 interface IMutableBeam {
     number: number;
     elements: IModel.ILayout[];
@@ -53,6 +51,7 @@ function beam(options: ILayoutOptions, bounds: ILineBounds,
         // Note that the `number` property of beams does NOT differentiate between sets of beams,
         // as it does with e.g., ties. See `note.mod`.
         let activeBeams: BeamSet = {};
+        let activeUnbeamedTuplets: BeamSet = {};
         let activeAttributes: Attributes = null;
         // Invariant: measure.elements[i].length == measure.elements[j].length for all valid i, j.
         times(measure.elements[0].length, i => {
@@ -88,12 +87,12 @@ function beam(options: ILayoutOptions, bounds: ILineBounds,
                             return;
                         }
                         forEach(activeBeams[note.voice], (beam, idx) => {
-                            if (!beam || idx === 0) {
+                            if (!beam) {
                                 return;
                             }
                             console.warn("Beam in voice %s, level %s was not explicitly closed " +
                                 "before another note was added.", note.voice, idx);
-                            terminateBeam$(note.voice, idx, activeBeams);
+                            terminateBeam$(note.voice, idx, activeBeams, false);
                         });
                     });
                     return;
@@ -105,6 +104,7 @@ function beam(options: ILayoutOptions, bounds: ILineBounds,
                 let toTerminate: {
                     voice: number;
                     idx: number;
+                    isUnbeamedTuplet: boolean;
                     beamSet: BeamSet;
                 }[] = [];
 
@@ -122,24 +122,31 @@ function beam(options: ILayoutOptions, bounds: ILineBounds,
                 }
 
                 if (!beams.length && tuplet.type === StartStop.Start) {
-                    activeBeams[voice] = activeBeams[voice] || [];
-                    activeBeams[voice][UNBEAMED_TUPLET] = {
-                        number: UNBEAMED_TUPLET,
+                    activeUnbeamedTuplets[voice] = activeUnbeamedTuplets[voice] || [];
+                    activeUnbeamedTuplets[voice][tuplet.number || 1] = {
+                        number: tuplet.number || 1,
                         elements: [layout],
                         initial: null,
                         attributes: (<any>activeAttributes)._snapshot,
                         counts: [1],
                         tuplet: tuplet
                     };
-                } else if (activeBeams[voice] && activeBeams[voice][UNBEAMED_TUPLET]) {
-                    activeBeams[voice][UNBEAMED_TUPLET].elements.push(layout);
+                } else {
+                    forEach(activeUnbeamedTuplets[voice], unbeamedTuplet => {
+                        if (unbeamedTuplet) {
+                            unbeamedTuplet.elements.push(layout);
+                        }
+                    });
                 }
 
-                if (!beams.length && tuplet.type === StartStop.Stop) {
+                if (tuplet && tuplet.type === StartStop.Stop &&
+                        activeUnbeamedTuplets[voice] &&
+                        activeUnbeamedTuplets[voice][tuplet.number || 1]) {
                     toTerminate.push({
                         voice: voice,
-                        idx: 0,
-                        beamSet: activeBeams
+                        isUnbeamedTuplet: true,
+                        idx: tuplet.number || 1,
+                        beamSet: activeUnbeamedTuplets
                     });
                 }
 
@@ -156,7 +163,7 @@ function beam(options: ILayoutOptions, bounds: ILineBounds,
                                 console.warn(
                                     "Beam at level %s in voice %s should have " +
                                     "been closed before being opened again.", idx, voice);
-                                terminateBeam$(voice, idx, activeBeams);
+                                terminateBeam$(voice, idx, activeBeams, false);
                             }
                             activeBeams[voice][idx] = {
                                 number: idx,
@@ -204,12 +211,28 @@ function beam(options: ILayoutOptions, bounds: ILineBounds,
                             toTerminate.push({
                                 voice: voice,
                                 idx: idx,
+                                isUnbeamedTuplet: false,
                                 beamSet: activeBeams
                             });
+
+                            let groupTuplet = activeBeams[voice][idx].tuplet;
+                            if (groupTuplet && (!tuplet || tuplet.type !== StartStop.Stop)) {
+                                activeBeams[voice][idx].tuplet = null;
+                                activeUnbeamedTuplets[voice] = activeUnbeamedTuplets[voice] || [];
+                                activeUnbeamedTuplets[voice][groupTuplet.number || 1] = {
+                                    number: groupTuplet.number || 1,
+                                    elements: activeBeams[voice][idx].elements.slice(),
+                                    initial: null,
+                                    attributes: activeBeams[voice][idx].attributes,
+                                    counts: activeBeams[voice][idx].counts.slice(),
+                                    tuplet: groupTuplet
+                                };
+                            }
                             break;
                     }
                 }).value();
-                forEach(toTerminate, t => terminateBeam$(t.voice, t.idx, t.beamSet));
+                forEach(toTerminate, t =>
+                    terminateBeam$(t.voice, t.idx, t.beamSet, t.isUnbeamedTuplet));
             });
         });
         forEach(activeBeams, (beams, voice) => {
@@ -220,22 +243,22 @@ function beam(options: ILayoutOptions, bounds: ILineBounds,
                 console.warn(
                     "Beam in voice %s, level %s was not closed before the " +
                     "end of the measure.", voice, idx);
-                terminateBeam$(parseInt(voice, 10), idx, activeBeams);
+                terminateBeam$(parseInt(voice, 10), idx, activeBeams, false);
             });
         });
     });
     return measures;
 }
 
-function terminateBeam$(voice: number, idx: number, beamSet$: BeamSet) {
-    if (idx === 0 || idx === 1) {
-        layoutBeam$(voice, idx, beamSet$);
+function terminateBeam$(voice: number, idx: number, beamSet$: BeamSet, isUnbeamedTuplet: boolean) {
+    if (isUnbeamedTuplet || idx === 1) {
+        layoutBeam$(voice, idx, beamSet$, isUnbeamedTuplet);
     }
 
     delete beamSet$[voice][idx];
 }
 
-function layoutBeam$(voice: number, idx: number, beamSet$: BeamSet) {
+function layoutBeam$(voice: number, idx: number, beamSet$: BeamSet, isUnbeamedTuplet: boolean) {
     let beam = beamSet$[voice][idx];
     let chords: ChordImpl[] = map(beam.elements, eLayout => <any> eLayout.model);
     let firstChord = first(chords);
@@ -300,7 +323,7 @@ function layoutBeam$(voice: number, idx: number, beamSet$: BeamSet) {
         slope = 0;
     }
 
-    if (idx === UNBEAMED_TUPLET) {
+    if (isUnbeamedTuplet) {
         let offsetY = direction > 0 ? -13 : -53;
         forEach(chords, (chord, idx) => {
             let stemStart = IChord.startingLine(chord, direction, clef);
@@ -345,7 +368,7 @@ function layoutBeam$(voice: number, idx: number, beamSet$: BeamSet) {
             x: Xs,
             y1: firstStem.stemStart*10 + direction*firstStem.stemHeight - 30,
             y2: lastStem.stemStart*10 + direction*lastStem.stemHeight - 30,
-            // tuplet: beam.tuplet
+            tuplet: beam.tuplet
         };
     }
 }

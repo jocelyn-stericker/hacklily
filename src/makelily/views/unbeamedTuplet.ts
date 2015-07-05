@@ -28,10 +28,10 @@
 
 import {AboveBelow} from "musicxml-interfaces";
 import {createFactory as $, Component, DOM, PropTypes} from "react";
-import {first, last, map, reduce} from "lodash";
+import {first, last} from "lodash";
 
-import Glyph from "./primitives/glyph";
-import {bravura, getFontOffset, bboxes} from "../models/smufl";
+import TupletNumber from "./tupletNumber";
+import {bravura, getFontOffset} from "../models/smufl";
 import {IBeam} from "../engine";
 
 class UnbeamedTuplet extends Component<UnbeamedTuplet.IProps, void> {
@@ -40,38 +40,51 @@ class UnbeamedTuplet extends Component<UnbeamedTuplet.IProps, void> {
         let {tuplet} = layout;
         let {placement} = tuplet;
         let yOffset = placement === AboveBelow.Above ? 8 : -8;
+
+        let x1 = this._getX1();
+        let x2 = this._getX2();
+        let y1 = this._getY1(1);
+        let y2 = this._getY2(1);
+        let y1Low = this._getY1(0);
+        let y2Low = this._getY2(0);
+
+        let y1Near = placement === AboveBelow.Below ? y1 : y1Low;
+        let y1Far = placement === AboveBelow.Below ? y1Low : y1;
+        let y2Near = placement === AboveBelow.Below ? y2 : y2Low;
+        let y2Far = placement === AboveBelow.Below ? y2Low : y2;
+
         return DOM.g(null,
             DOM.polygon({
                 fill: stroke,
                 key: "p1",
-                points: this._getX1() + "," + this._getY1(0) + " " +
-                    this._getX2() + "," + this._getY2(0) + " " +
-                    this._getX2() + "," + this._getY2(1) + " " +
-                    this._getX1() + "," + this._getY1(1),
+                points: x1 + "," + y1Low + " " +
+                    x2 + "," + y2Low + " " +
+                    x2 + "," + y2 + " " +
+                    x1 + "," + y1,
                 stroke: stroke,
                 strokeWidth: 0
             }),
             DOM.line({
                 fill: stroke,
                 key: "p2",
-                stroke: stroke,
+                stroke,
                 strokeWidth: bravura.engravingDefaults.tupletBracketThickness*10,
-                x1: this._getX1() + 0.5,
-                x2: this._getX1() + 0.5,
-                y1: this._getY1(placement === AboveBelow.Below ? 1 : 0),
-                y2: this._getY1(placement === AboveBelow.Below ? 0 : 1) + yOffset
+                x1: x1 + 0.5,
+                x2: x1 + 0.5,
+                y1: y1Near,
+                y2: y1Far + yOffset
             }),
             DOM.line({
                 fill: this.props.stroke,
                 key: "p3",
-                stroke: this.props.stroke,
+                stroke,
                 strokeWidth: bravura.engravingDefaults.tupletBracketThickness*10,
-                x1: this._getX2() - 0.5,
-                x2: this._getX2() - 0.5,
-                y1: this._getY2(placement === AboveBelow.Below ? 1 : 0),
-                y2: this._getY2(placement === AboveBelow.Below ? 0 : 1) + yOffset
+                x1: x2 - 0.5,
+                x2: x2 - 0.5,
+                y1: y2Near,
+                y2: y2Far + yOffset
             }),
-            this._tuplet()
+            $(TupletNumber)({tuplet, x1, x2, y1, y2})
         );
     }
 
@@ -122,55 +135,6 @@ class UnbeamedTuplet extends Component<UnbeamedTuplet.IProps, void> {
         return originY - y2 -
             this.direction()*getFontOffset("noteheadBlack", this.direction())[1]*10 -
             (incl || 0)*(bravura.engravingDefaults.tupletBracketThickness*10);
-    }
-
-    /**
-     * Returns a component instance showing the tuplet number
-     */
-    private _tuplet() {
-        let {layout} = this.props;
-        let {tuplet} = layout;
-
-        let text = (tuplet.tupletActual.tupletNumber.text);
-        let symbols = map(text, letter => `tuplet${letter}`);
-        let boxes = map(symbols, symbol => bboxes[symbol]);
-        let widths = map(boxes, box => (box[0] - box[2])*10);
-
-        let width = reduce(widths, (total, width) => total + width, 0);
-        let offset = (this._getX2() + this._getX1())/2;
-        let xs = reduce(boxes, (memo, box) => {
-            memo.push(box[0] * 10 + last(memo));
-            return memo;
-        }, [0]);
-        let y = (this._getY1(1) + this._getY2(1))/2 + 5.8;
-
-        return DOM.g(null,
-            // Mask
-            // FIXME: We should instead split up the rectangle into
-            // two parts to avoid breaking transparent backgrounds!
-            DOM.polygon({
-                fill: "white",
-                key: `mask`,
-                points: (
-                    (offset - width/2 - 6) + "," + (y - boxes[0][1]*10) + " " +
-                    (offset - width/2 - 6) + "," + (y + boxes[0][3]*10) + " " +
-                    (offset + width/2 + 6) + "," + (y + boxes[0][3]*10) + " " +
-                    (offset + width/2 + 6) + "," + (y - boxes[0][1]*10)),
-                stroke: "white",
-                strokeWidth: 0
-            }),
-
-            // Glyphs
-            map(symbols, (symbol, index) => {
-                return $(Glyph)({
-                    key: `glyph${index}`,
-                    fill: "#000000",
-                    glyphName: symbol,
-                    x: xs[index] + offset - width/2,
-                    y: y
-                });
-            })
-        /* DOM.g */);
     }
 };
 
