@@ -37,9 +37,10 @@ import {IBeam} from "../engine";
 class UnbeamedTuplet extends Component<UnbeamedTuplet.IProps, void> {
     render(): any {
         let {stroke, layout} = this.props;
-        let {tuplet} = layout;
+        let {tuplet, x} = layout;
         let {placement} = tuplet;
         let yOffset = placement === AboveBelow.Above ? 8 : -8;
+        let isSingleNote = x.length === 1;
 
         let x1 = this._getX1();
         let x2 = this._getX2();
@@ -54,7 +55,7 @@ class UnbeamedTuplet extends Component<UnbeamedTuplet.IProps, void> {
         let y2Far = placement === AboveBelow.Below ? y2Low : y2;
 
         return DOM.g(null,
-            DOM.polygon({
+            !isSingleNote && DOM.polygon({
                 fill: stroke,
                 key: "p1",
                 points: x1 + "," + y1Low + " " +
@@ -64,7 +65,7 @@ class UnbeamedTuplet extends Component<UnbeamedTuplet.IProps, void> {
                 stroke: stroke,
                 strokeWidth: 0
             }),
-            DOM.line({
+            !isSingleNote && DOM.line({
                 fill: stroke,
                 key: "p2",
                 stroke,
@@ -74,7 +75,7 @@ class UnbeamedTuplet extends Component<UnbeamedTuplet.IProps, void> {
                 y1: y1Near,
                 y2: y1Far + yOffset
             }),
-            DOM.line({
+            !isSingleNote && DOM.line({
                 fill: this.props.stroke,
                 key: "p3",
                 stroke,

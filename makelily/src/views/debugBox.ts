@@ -32,7 +32,7 @@ class DebugBox extends Component<{layout: IMeasureLayout}, void> {
         forEach(layout.elements, function(segment, si) {
             forEach(segment, function(element, j) {
                 let originX = layout.originX + element.overrideX;
-                let originY = context.originYByPartAndStaff[element.part][element.model.staffIdx];
+                let originY = context.originYByPartAndStaff["P1"][1]; // FIXME
                 forEach(element.boundingBoxes$, (box, k) => {
                     boxes.push(DOM.rect({
                         dangerouslySetInnerHTML: {

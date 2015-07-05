@@ -16,7 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import {Clef, Count, MultipleRest, Note, NoteheadType, Stem, StemType,
+import {Clef, Count, MultipleRest, Note, NoteheadType, Stem, StemType, Tremolo,
     Tied, TimeModification, serialize as serializeToXML} from "musicxml-interfaces";
 import {forEach, chain, times, filter, reduce, map, max} from "lodash";
 import invariant = require("react/lib/invariant");
@@ -515,6 +515,7 @@ class ChordModelImpl implements ChordModel.IChordModel {
         direction: number;
         stemHeight: number;
         stemStart: number;
+        tremolo?: Tremolo;
     };
 
     satieFlag: string;
@@ -584,7 +585,7 @@ module ChordModelImpl {
             let bboxes: IModel.IBoundingRect[] = [];
             forEach(this.model, note => {
                 let notations = note.notationObj; // TODO: detach this
-                bboxes = bboxes.concat(getBoundingRects(notations));
+                bboxes = bboxes.concat(getBoundingRects(notations, note, this.model));
             });
             return bboxes;
         }

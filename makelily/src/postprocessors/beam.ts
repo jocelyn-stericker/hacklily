@@ -66,13 +66,17 @@ function beam(options: ILayoutOptions, bounds: ILineBounds,
                 }
                 let chord: IChord = <any> model;
                 let targetNote = find(chord, note => !!note.beams);
-                let tuplet: Tuplet;
+                let startTuplet: Tuplet;
+                let stopTuplet: Tuplet;
                 forEach(chord, note => {
-                    return forEach(note.notations, notation => {
-                       return forEach(notation.tuplets, aTuplet => {
+                    forEach(note.notations, notation => {
+                       forEach(notation.tuplets, aTuplet => {
                            targetNote = targetNote || note;
-                           tuplet = aTuplet;
-                           return !tuplet;
+                           if (aTuplet.type === StartStop.Start) {
+                               startTuplet = aTuplet;
+                           } else {
+                               stopTuplet = aTuplet;
+                           }
                        });
                     });
                 });
@@ -121,15 +125,15 @@ function beam(options: ILayoutOptions, bounds: ILineBounds,
                     return;
                 }
 
-                if (!beams.length && tuplet.type === StartStop.Start) {
+                if (!beams.length && startTuplet) {
                     activeUnbeamedTuplets[voice] = activeUnbeamedTuplets[voice] || [];
-                    activeUnbeamedTuplets[voice][tuplet.number || 1] = {
-                        number: tuplet.number || 1,
+                    activeUnbeamedTuplets[voice][startTuplet.number || 1] = {
+                        number: startTuplet.number || 1,
                         elements: [layout],
                         initial: null,
                         attributes: (<any>activeAttributes)._snapshot,
                         counts: [1],
-                        tuplet: tuplet
+                        tuplet: startTuplet
                     };
                 } else {
                     forEach(activeUnbeamedTuplets[voice], unbeamedTuplet => {
@@ -139,13 +143,12 @@ function beam(options: ILayoutOptions, bounds: ILineBounds,
                     });
                 }
 
-                if (tuplet && tuplet.type === StartStop.Stop &&
-                        activeUnbeamedTuplets[voice] &&
-                        activeUnbeamedTuplets[voice][tuplet.number || 1]) {
+                if (stopTuplet && activeUnbeamedTuplets[voice] &&
+                        activeUnbeamedTuplets[voice][stopTuplet.number || 1]) {
                     toTerminate.push({
                         voice: voice,
                         isUnbeamedTuplet: true,
-                        idx: tuplet.number || 1,
+                        idx: stopTuplet.number || 1,
                         beamSet: activeUnbeamedTuplets
                     });
                 }
@@ -171,7 +174,7 @@ function beam(options: ILayoutOptions, bounds: ILineBounds,
                                 initial: beam,
                                 attributes: (<any>activeAttributes)._snapshot,
                                 counts: [1],
-                                tuplet: tuplet
+                                tuplet: startTuplet
                             };
                             let counts = activeBeams[voice][1].counts;
                             if (idx !== 1) {
@@ -216,7 +219,10 @@ function beam(options: ILayoutOptions, bounds: ILineBounds,
                             });
 
                             let groupTuplet = activeBeams[voice][idx].tuplet;
-                            if (groupTuplet && (!tuplet || tuplet.type !== StartStop.Stop)) {
+                            if (groupTuplet && !stopTuplet) {
+                                // We optimisticly attached the tuplet to the beam, but it extends
+                                // beyond the beam. Detach the tuplet from the beam, and create an
+                                // unbeamed tuplet.
                                 activeBeams[voice][idx].tuplet = null;
                                 activeUnbeamedTuplets[voice] = activeUnbeamedTuplets[voice] || [];
                                 activeUnbeamedTuplets[voice][groupTuplet.number || 1] = {
@@ -327,11 +333,16 @@ function layoutBeam$(voice: number, idx: number, beamSet$: BeamSet, isUnbeamedTu
         let offsetY = direction > 0 ? -13 : -53;
         forEach(chords, (chord, idx) => {
             let stemStart = IChord.startingLine(chord, direction, clef);
+            let stemHeight = getStemHeight(direction, idx, stemStart);
 
             chord.satieStem = Object.create(firstChord.satieStem);
             chord.satieStem.direction = direction;
             chord.satieStem.stemStart = stemStart;
-            chord.satieStem.stemHeight = getStemHeight(direction, idx, stemStart);
+            if (isFinite(stemHeight)) {
+                chord.satieStem.stemHeight = stemHeight;
+            } else {
+                invariant(chords.length === 1, "stemHeight must be defined for 2+ notes");
+            }
         });
         let tuplet: Tuplet = Object.create(beam.tuplet);
         tuplet.placement = direction > 0 ? AboveBelow.Above : AboveBelow.Below;

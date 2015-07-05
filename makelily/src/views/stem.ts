@@ -18,11 +18,12 @@
 
 "use strict";
 
-import {Stem, StemType} from "musicxml-interfaces";
-import {createFactory as $, Component, PropTypes} from "react";
+import {Stem, StemType, Tremolo} from "musicxml-interfaces";
+import {createFactory as $, Component, DOM, PropTypes} from "react";
 import invariant = require("react/lib/invariant");
 
 import Line from "./primitives/line";
+import Glyph from "./primitives/glyph";
 import {getFontOffset} from "../models/smufl";
 
 /**
@@ -30,29 +31,46 @@ import {getFontOffset} from "../models/smufl";
  */
 class StemView extends Component<StemView.IProps, void> {
     render(): any {
-        const notehead = this.props.notehead;
-        const spec = this.props.spec;
+        const {spec, notehead, tremolo, width} = this.props;
+        const {defaultX, relativeX, defaultY, relativeY, color} = spec;
         if (spec.type === StemType.Double) {
             return null;
         }
         const direction = spec.type === StemType.Up ? 1 : -1; // TODO: StemType.Double
-        const lineXOffset = direction * - this.props.width/2;
+        const lineXOffset = direction * - width/2;
         const offset = getFontOffset(notehead, direction);
-        const x = this.context.originX + spec.defaultX +
-            (spec.relativeX || (offset[0]*10 + lineXOffset));
+        const x = this.context.originX + defaultX + (relativeX || (offset[0]*10 + lineXOffset));
         invariant(isFinite(x), "Invalid x offset %s", x);
 
-        return $(Line)({
-            fill: spec.color,
-            stroke: spec.color,
-            strokeWidth: this.props.width,
+        const dY = this.props.bestHeight*direction;
+
+        let elements: any[] = [];
+        elements.push($(Line)({
+            key: "s",
+            fill: color,
+            stroke: color,
+            strokeWidth: width,
             x1: x,
             x2: x,
-            y1: this.context.originY - spec.defaultY - (spec.relativeY || 0) -
-                offset[1]*10,
-            y2: this.context.originY - spec.defaultY - (spec.relativeY || 0) -
-                offset[1]*10 - this.props.bestHeight*direction
-        });
+            y1: this.context.originY - defaultY - (relativeY || 0) - offset[1]*10,
+            y2: this.context.originY - defaultY - (relativeY || 0) - offset[1]*10 - dY
+        }));
+
+        if (tremolo) {
+            elements.push($(Glyph)({
+                key: "t",
+                glyphName: `tremolo${tremolo.data || "1"}`,
+                x: x,
+                fill: "black",
+                y: this.context.originY - defaultY - (relativeY || 0) - dY*4/5
+            }));
+        }
+
+        if (elements.length === 1) {
+            return elements[0];
+        } else {
+            return DOM.g(null, elements);
+        }
     }
 }
 
@@ -62,6 +80,7 @@ module StemView {
         notehead: string;
         bestHeight: number;
         width: number;
+        tremolo: Tremolo;
     }
     export let contextTypes = <any> {
         originX: PropTypes.number.isRequired,

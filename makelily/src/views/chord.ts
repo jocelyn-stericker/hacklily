@@ -101,6 +101,7 @@ class ChordView extends Component<{layout: Chord.IChordLayout}, void> {
             })),
             spec.satieStem && $(Stem)({
                 bestHeight: spec.satieStem.stemHeight,
+                tremolo: spec.satieStem.tremolo,
                 key: "s",
                 notehead: maxNotehead,
                 spec: {

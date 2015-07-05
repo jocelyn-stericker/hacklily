@@ -19,11 +19,14 @@
 "use strict";
 
 import {Articulations, Placement, Notations, AboveBelow, UprightInverted,
-    PrintStyle} from "musicxml-interfaces";
+    PrintStyle, Note, StemType} from "musicxml-interfaces";
 import {forEach} from "lodash";
 
 import {IModel} from "../../engine";
-import {bboxes} from "../smufl";
+import {bboxes, getLeft, getRight} from "../smufl";
+import ChordImpl from "./chordImpl";
+
+const PADDING = 1.5;
 
 export function articulationDirectionMatters(model: Articulations): boolean {
     return !model.breathMark && !model.caesura;
@@ -82,7 +85,8 @@ export function articulationGlyph(model: Articulations, direction: string): stri
 export interface IGeneralNotation extends PrintStyle, Placement {
 }
 
-export function getBoundingRects(model: Notations): IModel.IBoundingRect[] {
+export function getBoundingRects(model: Notations, note: Note, chord: ChordImpl):
+        IModel.IBoundingRect[] {
     let boxes: IModel.IBoundingRect[] = [];
 
     forEach(model.accidentalMarks, accidentalMark => {
@@ -98,12 +102,32 @@ export function getBoundingRects(model: Notations): IModel.IBoundingRect[] {
                     "scoop", "spiccato", "staccatissimo", "staccato", "stress", "strongAccent",
                     "tenuto", "unstress"], type => {
             // TODO: Could this be done any less efficiently?
-            if ((<any>model.articulations[idx])[type]) {
-                let glyph = articulationGlyph(articulation,
-                    (<any>model.articulations[idx])[type].placement ===
-                        AboveBelow.Below ? "Below" : "Above");
-                (<any>model.articulations[idx])[type] = push(glyph,
-                        (<any>model.articulations[idx])[type]);
+            let thisArticulation: Placement = (<any>model.articulations[idx])[type];
+            if (thisArticulation) {
+                let {placement} = thisArticulation;
+                let isBelow = placement === AboveBelow.Below;
+                let glyph = articulationGlyph(articulation, isBelow ? "Below" : "Above");
+                if (!glyph) {
+                    console.warn(Object.keys(articulation)[0], "not implented in chord/notation.ts");
+                    return;
+                }
+                let y: number;
+                let noteheadGlyph = chord.noteheadGlyph[0];
+
+                let center = (getLeft(noteheadGlyph) + getRight(noteheadGlyph))/2 -
+                    (getLeft(glyph) + getRight(glyph))/2 - 0.5;
+                if (!chord.satieStem || (note.stem.type === StemType.Up) === isBelow) {
+                    y = note.defaultY + (isBelow ? -9 : 9);
+                    if (-note.defaultY % 10 === 0) {
+                        y += isBelow ? -5 : 5;
+                    }
+                } else {
+                    y = note.defaultY + chord.satieStem.stemHeight + (isBelow ? -12 : 12);
+                    if (-note.defaultY % 10 === 0) {
+                        y += isBelow ? -5 : 5;
+                    }
+                }
+                (<any>model.articulations[idx])[type] = push(glyph, thisArticulation, center, y);
             }
         });
     });
@@ -129,7 +153,10 @@ export function getBoundingRects(model: Notations): IModel.IBoundingRect[] {
         // TODO
     });
 
-    forEach(model.ornaments, ornament => {
+    forEach(model.ornaments, (ornament, idx) => {
+        if (ornament.tremolo) {
+            chord.satieStem.tremolo = ornament.tremolo;
+        }
         // TODO
     });
 
@@ -153,14 +180,26 @@ export function getBoundingRects(model: Notations): IModel.IBoundingRect[] {
         // TODO
     });
 
-    function push(glyphName: string, notation: IGeneralNotation): IGeneralNotation {
+    function push(glyphName: string, notation: IGeneralNotation, defaultX = 0,
+            defaultY: number = NaN): IGeneralNotation {
         let box = bboxes[glyphName];
         if (!box) {
             console.warn("Unknown glyph", glyphName);
             return;
         }
 
-        const PADDING = 1.5;
+        if (isNaN(defaultY)) {
+            if (notation.placement === AboveBelow.Below) {
+                defaultY = -30 + box[3]*10*PADDING;
+            } else if (notation.placement === AboveBelow.Above) {
+                defaultY = 60 + box[3]*10*PADDING;
+            } else {
+                console.warn("TODO: Set default above/below");
+                // above: "fermata", "breathMark", "caesura", "strings"
+                // below: "dynamic"
+                defaultY = 0;
+            }
+        }
 
         let printStyle: PrintStyle | IModel.IBoundingRect = Object.create(notation);
         let boundingRect = <IModel.IBoundingRect> printStyle;
@@ -169,17 +208,9 @@ export function getBoundingRects(model: Notations): IModel.IBoundingRect[] {
         boundingRect.bottom = box[1]*10;
         boundingRect.left = box[2]*10;
         boundingRect.right = box[0]*10;
-        boundingRect.defaultX = 0;
-        if (notation.placement === AboveBelow.Below) {
-            boundingRect.defaultY = -30 + box[3]*10*PADDING;
-        } else if (notation.placement === AboveBelow.Above) {
-            boundingRect.defaultY = 60 + box[3]*10*PADDING;
-        } else {
-            console.warn("TODO: Set default above/below");
-            // above: "fermata", "breathMark", "caesura", "strings"
-            // below: "dynamic"
-            boundingRect.defaultY = 0;
-        }
+        boundingRect.defaultX = defaultX;
+        boundingRect.defaultY = defaultY;
+
         boxes.push(<IModel.IBoundingRect> printStyle);
 
         return printStyle;
