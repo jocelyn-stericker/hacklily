@@ -22,7 +22,7 @@
  * number of these notes may be rests.
  */
 
-import {MultipleRest} from "musicxml-interfaces";
+import {MultipleRest, Tremolo} from "musicxml-interfaces";
 
 import {IBeam, IChord, IModel} from "../engine";
 import ChordModelImpl from "./chord/chordImpl"; // @cyclic
@@ -41,6 +41,7 @@ module ChordModel {
             direction: number;
             stemHeight: number;
             stemStart: number;
+            tremolo?: Tremolo;
         };
         satieBeam: IBeam.ILayout;
         satieFlag: string;

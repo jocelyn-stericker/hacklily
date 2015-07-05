@@ -18,12 +18,12 @@
 
 "use strict";
 
-import Cola = require("webcola");
+import {vpsc as VPSC} from "webcola";
 import {forEach} from "lodash";
 
 import {IModel, IMeasureLayout, ILayoutOptions, ILineBounds} from "../engine";
 
-interface IVPSCLayoutRect extends Cola.vpsc.Rectangle {
+interface IVPSCLayoutRect extends VPSC.Rectangle {
     mxmlBox: IModel.IBoundingRect;
     parent: IModel.ILayout;
 }
@@ -31,17 +31,17 @@ interface IVPSCLayoutRect extends Cola.vpsc.Rectangle {
 function colaRemoveOverlapsSomeFixed(rs: IVPSCLayoutRect[]): void {
     // Prefer y
     let vs = rs.map(function (r) {
-        return new Cola.vpsc.Variable(r.cy(), r.mxmlBox.fixed ? Number.POSITIVE_INFINITY : 1);
+        return new VPSC.Variable(r.cy(), r.mxmlBox.fixed ? Number.POSITIVE_INFINITY : 1);
     });
-    let cs = Cola.vpsc.generateYConstraints(rs, vs);
-    let solver = new Cola.vpsc.Solver(vs, cs);
+    let cs = VPSC.generateYConstraints(rs, vs);
+    let solver = new VPSC.Solver(vs, cs);
     solver.solve();
     vs.forEach((v, i) => rs[i].setYCentre(v.position()));
 
     // Move x if needed
-    vs = rs.map(r => new Cola.vpsc.Variable(r.cx(), r.mxmlBox.fixed ? Number.POSITIVE_INFINITY : 1));
-    cs = Cola.vpsc.generateXConstraints(rs, vs);
-    solver = new Cola.vpsc.Solver(vs, cs);
+    vs = rs.map(r => new VPSC.Variable(r.cx(), r.mxmlBox.fixed ? Number.POSITIVE_INFINITY : 1));
+    cs = VPSC.generateXConstraints(rs, vs);
+    solver = new VPSC.Solver(vs, cs);
     solver.solve();
     vs.forEach((v, i) => rs[i].setXCentre(v.position()));
 }
@@ -49,10 +49,8 @@ function colaRemoveOverlapsSomeFixed(rs: IVPSCLayoutRect[]): void {
 function removeOverlaps(options: ILayoutOptions, bounds: ILineBounds,
         measures: IMeasureLayout[]): IMeasureLayout[] {
 
-    let measures$: IMeasureLayout[] = measures; // FIXME We should detach
-    let boxes: IVPSCLayoutRect[] = [];
-
-    forEach(measures$, function centerThings(measure, idx) {
+    forEach(measures, function centerThings(measure, idx) {
+        let boxes: IVPSCLayoutRect[] = [];
         forEach(measure.elements, function(segment, si) {
             forEach(segment, function(element, j) {
                 forEach(element.boundingBoxes$, box => {
@@ -70,7 +68,7 @@ function removeOverlaps(options: ILayoutOptions, bounds: ILineBounds,
                             box.top, box.bottom, box.left, box.right);
                         return;
                     }
-                    let rect: IVPSCLayoutRect = <any> new Cola.vpsc.Rectangle(
+                    let rect: IVPSCLayoutRect = <any> new VPSC.Rectangle(
                         element.overrideX + box.defaultX + box.left,
                         element.overrideX + box.defaultX + box.right,
                         box.defaultY + box.top,
@@ -81,19 +79,18 @@ function removeOverlaps(options: ILayoutOptions, bounds: ILineBounds,
                 });
             });
         });
+        colaRemoveOverlapsSomeFixed(boxes);
+        forEach(boxes, box => {
+            let expectedX = box.parent.overrideX + box.mxmlBox.defaultX + box.mxmlBox.left;
+            let expectedY = box.mxmlBox.defaultY + box.mxmlBox.top;
+            let actualX = box.x;
+            let actualY = box.y;
+            box.mxmlBox.relativeX = actualX - expectedX;
+            box.mxmlBox.relativeY = actualY - expectedY;
+        });
     });
 
-    colaRemoveOverlapsSomeFixed(boxes);
-    forEach(boxes, box => {
-        let expectedX = box.parent.overrideX + box.mxmlBox.defaultX + box.mxmlBox.left;
-        let expectedY = box.mxmlBox.defaultY + box.mxmlBox.top;
-        let actualX = box.x;
-        let actualY = box.y;
-        box.mxmlBox.relativeX = actualX - expectedX;
-        box.mxmlBox.relativeY = actualY - expectedY;
-    });
-
-    return measures$;
+    return measures;
 }
 
 export default removeOverlaps;
