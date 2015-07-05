@@ -185,7 +185,7 @@ interface ITSNumProps {
 class TimeSignatureNumber extends Component<ITSNumProps, void> {
     render() {
         return DOM.g(null,
-            _.map((this.props.children + "").split(""), (numberString, i) => $(Glyph)({
+            _.map((String(this.props.children)).split(""), (numberString, i) => $(Glyph)({
                 fill: this.props.stroke,
                 glyphName: "timeSig" + numberString,
                 key: "ts-" + i,

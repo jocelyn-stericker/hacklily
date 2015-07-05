@@ -31,6 +31,7 @@ import Note from "./note";
 import Notation from "./notation";
 import Rest from "./rest";
 import Stem from "./stem";
+import UnbeamedTuplet from "./unbeamedTuplet";
 import {bboxes, bravura, getRight} from "../models/smufl";
 
 const stemThickness: number = bravura.engravingDefaults.stemThickness*10;
@@ -141,6 +142,12 @@ class ChordView extends Component<{layout: Chord.IChordLayout}, void> {
                 stroke: "black",
                 tuplet: null,
                 tupletsTemporary: null
+            }),
+            spec.satieUnbeamedTuplet && $(UnbeamedTuplet)({
+                key: "ut",
+                layout: spec.satieUnbeamedTuplet,
+                stemWidth: stemThickness,
+                stroke: "black"
             }),
             _.map(spec, (note, idx) => _.map(note.notations, (notation, jdx) => $(Notation)({
                 key: `N${idx}_${jdx}`,

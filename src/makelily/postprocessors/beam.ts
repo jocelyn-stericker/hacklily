@@ -16,21 +16,28 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+/**
+ * @file Creates beams and tuplets
+ */
+
 "use strict";
 
-import MusicXML = require("musicxml-interfaces");
-import _ = require("lodash");
+import {Attributes, Beam, BeamType, StartStop, Tuplet, AboveBelow} from "musicxml-interfaces";
+import {any, chain, forEach, find, map, sortBy, times, first, last} from "lodash";
 import invariant = require("react/lib/invariant");
 
 import ChordImpl from "../models/chord/chordImpl";
 import {IAttributes, IChord, IModel, IMeasureLayout, ILayoutOptions, ILineBounds} from "../engine";
+
+const UNBEAMED_TUPLET = 0;
 
 interface IMutableBeam {
     number: number;
     elements: IModel.ILayout[];
     counts: number[];
     attributes: IAttributes.ISnapshot;
-    initial: MusicXML.Beam;
+    initial: Beam;
+    tuplet: Tuplet;
 }
 
 type BeamSet = {[voice: string]: IMutableBeam[]};
@@ -42,14 +49,14 @@ type BeamSet = {[voice: string]: IMutableBeam[]};
  */
 function beam(options: ILayoutOptions, bounds: ILineBounds,
         measures: IMeasureLayout[]): IMeasureLayout[] {
-    _.forEach(measures, measure => {
+    forEach(measures, measure => {
         // Note that the `number` property of beams does NOT differentiate between sets of beams,
         // as it does with e.g., ties. See `note.mod`.
         let activeBeams: BeamSet = {};
-        let activeAttributes: MusicXML.Attributes = null;
+        let activeAttributes: Attributes = null;
         // Invariant: measure.elements[i].length == measure.elements[j].length for all valid i, j.
-        _.times(measure.elements[0].length, i => {
-            _.forEach(measure.elements, elements => {
+        times(measure.elements[0].length, i => {
+            forEach(measure.elements, elements => {
                 let layout = elements[i];
                 let model = layout.model;
                 if (model && layout.renderClass === IModel.Type.Attributes) {
@@ -59,19 +66,29 @@ function beam(options: ILayoutOptions, bounds: ILineBounds,
                     return;
                 }
                 let chord: IChord = <any> model;
-                let noteWithBeams = _.find(chord, el => !!el.beams);
-                if (noteWithBeams && noteWithBeams.grace) {
+                let targetNote = find(chord, note => !!note.beams);
+                let tuplet: Tuplet;
+                forEach(chord, note => {
+                    return forEach(note.notations, notation => {
+                       return forEach(notation.tuplets, aTuplet => {
+                           targetNote = targetNote || note;
+                           tuplet = aTuplet;
+                           return !tuplet;
+                       });
+                    });
+                });
+                if (targetNote && targetNote.grace) {
                     // TODO: grace notes
                     return;
                 }
-                if (!noteWithBeams) {
-                    _.forEach(chord, note => {
+                if (!targetNote) {
+                    forEach(chord, note => {
                         if (!note || note.grace) {
                             // TODO: grace notes
                             return;
                         }
-                        _.forEach(activeBeams[note.voice], (beam, idx) => {
-                            if (!beam) {
+                        forEach(activeBeams[note.voice], (beam, idx) => {
+                            if (!beam || idx === 0) {
                                 return;
                             }
                             console.warn("Beam in voice %s, level %s was not explicitly closed " +
@@ -81,14 +98,17 @@ function beam(options: ILayoutOptions, bounds: ILineBounds,
                     });
                     return;
                 }
-                let beams = noteWithBeams.beams;
+                let {beams, voice} = targetNote;
+                if (!beams) {
+                    beams = [];
+                }
                 let toTerminate: {
                     voice: number;
                     idx: number;
                     beamSet: BeamSet;
                 }[] = [];
 
-                let anyInvalid = _.any(_.sortBy(beams), (beam, idx) => {
+                let anyInvalid = any(sortBy(beams), (beam, idx) => {
                    let expected = idx + 1;
                    let actual = beam.number;
                    if (expected !== actual) {
@@ -101,15 +121,36 @@ function beam(options: ILayoutOptions, bounds: ILineBounds,
                     return;
                 }
 
-                _.chain(beams).sortBy("number").forEach(beam => {
+                if (!beams.length && tuplet.type === StartStop.Start) {
+                    activeBeams[voice] = activeBeams[voice] || [];
+                    activeBeams[voice][UNBEAMED_TUPLET] = {
+                        number: UNBEAMED_TUPLET,
+                        elements: [layout],
+                        initial: null,
+                        attributes: (<any>activeAttributes)._snapshot,
+                        counts: [1],
+                        tuplet: tuplet
+                    };
+                } else if (activeBeams[voice] && activeBeams[voice][UNBEAMED_TUPLET]) {
+                    activeBeams[voice][UNBEAMED_TUPLET].elements.push(layout);
+                }
+
+                if (!beams.length && tuplet.type === StartStop.Stop) {
+                    toTerminate.push({
+                        voice: voice,
+                        idx: 0,
+                        beamSet: activeBeams
+                    });
+                }
+
+                chain(beams).sortBy("number").forEach(beam => {
                     let idx = beam.number;
-                    let voice = noteWithBeams.voice;
                     invariant(!!idx, "A beam's number must be defined in MusicXML.");
                     invariant(!!voice, "A beam's voice must be defined in MusicXML.");
                     activeBeams[voice] = activeBeams[voice] || [];
                     switch(beam.type) {
-                        case MusicXML.BeamType.Begin:
-                        case MusicXML.BeamType.ForwardHook:
+                        case BeamType.Begin:
+                        case BeamType.ForwardHook:
                             activeBeams[voice] = activeBeams[voice] || [];
                             if (activeBeams[voice][idx]) {
                                 console.warn(
@@ -122,14 +163,15 @@ function beam(options: ILayoutOptions, bounds: ILineBounds,
                                 elements: [layout],
                                 initial: beam,
                                 attributes: (<any>activeAttributes)._snapshot,
-                                counts: [1]
+                                counts: [1],
+                                tuplet: tuplet
                             };
                             let counts = activeBeams[voice][1].counts;
                             if (idx !== 1) {
                                 counts[counts.length - 1]++;
                             }
                             break;
-                        case MusicXML.BeamType.Continue:
+                        case BeamType.Continue:
                             invariant(voice in activeBeams,
                                 "Cannot continue non-existant beam (no beam at all " +
                                 "in current voice %s)", voice);
@@ -144,8 +186,8 @@ function beam(options: ILayoutOptions, bounds: ILineBounds,
                                 counts[counts.length - 1]++;
                             }
                             break;
-                        case MusicXML.BeamType.BackwardHook:
-                        case MusicXML.BeamType.End:
+                        case BeamType.BackwardHook:
+                        case BeamType.End:
                             invariant(voice in activeBeams, "Cannot end non-existant beam " +
                                 "(no beam at all in current voice %s)", voice);
                             invariant(idx in activeBeams[voice], "Cannot end non-existant " +
@@ -167,11 +209,11 @@ function beam(options: ILayoutOptions, bounds: ILineBounds,
                             break;
                     }
                 }).value();
-                _.forEach(toTerminate, t => terminateBeam$(t.voice, t.idx, t.beamSet));
+                forEach(toTerminate, t => terminateBeam$(t.voice, t.idx, t.beamSet));
             });
         });
-        _.forEach(activeBeams, (beams, voice) => {
-            _.forEach(beams, (beam, idx) => {
+        forEach(activeBeams, (beams, voice) => {
+            forEach(beams, (beam, idx) => {
                 if (!beam) {
                     return;
                 }
@@ -186,7 +228,7 @@ function beam(options: ILayoutOptions, bounds: ILineBounds,
 }
 
 function terminateBeam$(voice: number, idx: number, beamSet$: BeamSet) {
-    if (idx === 1) {
+    if (idx === 0 || idx === 1) {
         layoutBeam$(voice, idx, beamSet$);
     }
 
@@ -195,9 +237,9 @@ function terminateBeam$(voice: number, idx: number, beamSet$: BeamSet) {
 
 function layoutBeam$(voice: number, idx: number, beamSet$: BeamSet) {
     let beam = beamSet$[voice][idx];
-    let chords: ChordImpl[] = _.map(beam.elements, eLayout => <any> eLayout.model);
-    let firstChord = chords[0];
-    let lastChord = chords[chords.length - 1];
+    let chords: ChordImpl[] = map(beam.elements, eLayout => <any> eLayout.model);
+    let firstChord = first(chords);
+    let lastChord = last(chords);
     let {clef} = beam.attributes;
 
     let firstAvgLine = IChord.averageLine(firstChord, clef);
@@ -210,7 +252,7 @@ function layoutBeam$(voice: number, idx: number, beamSet$: BeamSet) {
     let Xs: number[] = [];
     let lines: number[][] = [];
 
-    _.forEach(beam.elements, (layout, idx) => {
+    forEach(beam.elements, (layout, idx) => {
         Xs.push(layout.x$);
         lines.push(IChord.linesForClef(chords[idx], clef));
     });
@@ -218,7 +260,7 @@ function layoutBeam$(voice: number, idx: number, beamSet$: BeamSet) {
     let line1 = IChord.startingLine(firstChord, direction, clef);
     let line2 = IChord.startingLine(lastChord, direction, clef);
 
-    let slope = (line2 - line1) / (Xs[Xs.length - 1] - Xs[0]) * 10;
+    let slope = (line2 - line1) / (last(Xs) - first(Xs)) * 10;
     let stemHeight1 = 35;
 
     // Limit the slope to the range (-50, 50)
@@ -234,14 +276,14 @@ function layoutBeam$(voice: number, idx: number, beamSet$: BeamSet) {
     function getStemHeight(direction: number, idx: number, line: number) {
         return intercept * direction +
             (direction === 1 ? 0 : 69) +
-            slope * (Xs[idx] - Xs[0]) * direction -
+            slope * (Xs[idx] - first(Xs)) * direction -
             direction * line * 10;
     }
 
     // When the slope causes near-collisions, eliminate the slope.
     let minStemHeight = 1000;
     let incrementalIntercept = 0;
-    _.each(chords, (chord, idx) => {
+    forEach(chords, (chord, idx) => {
         let heightDeterminingLine = IChord.heightDeterminingLine(chord, -direction, clef);
 
         // Using -direction means that we'll be finding the closest note to the
@@ -249,7 +291,7 @@ function layoutBeam$(voice: number, idx: number, beamSet$: BeamSet) {
         let stemHeight = getStemHeight(direction, idx, heightDeterminingLine);
         if (stemHeight < minStemHeight) {
             minStemHeight = stemHeight;
-            incrementalIntercept = direction*(30 - minStemHeight) + slope * (Xs[idx] - Xs[0]);
+            incrementalIntercept = direction*(30 - minStemHeight) + slope * (Xs[idx] - first(Xs));
         }
     });
 
@@ -258,24 +300,54 @@ function layoutBeam$(voice: number, idx: number, beamSet$: BeamSet) {
         slope = 0;
     }
 
-    _.forEach(chords, (chord, idx) => {
-        let stemStart = IChord.startingLine(chord, direction, clef);
+    if (idx === UNBEAMED_TUPLET) {
+        let offsetY = direction > 0 ? -13 : -53;
+        forEach(chords, (chord, idx) => {
+            let stemStart = IChord.startingLine(chord, direction, clef);
 
-        chord.satieStem = Object.create(firstChord.satieStem);
-        chord.satieStem.direction = direction;
-        chord.satieStem.stemStart = stemStart;
-        chord.satieStem.stemHeight = getStemHeight(direction, idx, stemStart);
+            chord.satieStem = Object.create(firstChord.satieStem);
+            chord.satieStem.direction = direction;
+            chord.satieStem.stemStart = stemStart;
+            chord.satieStem.stemHeight = getStemHeight(direction, idx, stemStart);
+        });
+        let tuplet: Tuplet = Object.create(beam.tuplet);
+        tuplet.placement = direction > 0 ? AboveBelow.Above : AboveBelow.Below;
 
-        chord.satieFlag = null;
-    });
+        let firstStem = firstChord.satieStem;
+        let lastStem = lastChord.satieStem;
 
-    firstChord.satieBeam = {
-        beamCount: _.times(Xs.length, idx => beam.counts[idx]),
-        direction: direction,
-        x: Xs,
-        y1: firstChord.satieStem.stemStart*10 + direction*firstChord.satieStem.stemHeight - 30,
-        y2: lastChord.satieStem.stemStart*10 + direction*lastChord.satieStem.stemHeight - 30
-    };
+        firstChord.satieUnbeamedTuplet = {
+            beamCount: null,
+            direction: direction,
+            x: Xs,
+            y1: firstStem.stemStart*10 + direction*firstStem.stemHeight + offsetY,
+            y2: lastStem.stemStart*10 + direction*lastStem.stemHeight + offsetY,
+            tuplet
+        };
+    } else {
+        forEach(chords, (chord, idx) => {
+            let stemStart = IChord.startingLine(chord, direction, clef);
+
+            chord.satieStem = Object.create(firstChord.satieStem);
+            chord.satieStem.direction = direction;
+            chord.satieStem.stemStart = stemStart;
+            chord.satieStem.stemHeight = getStemHeight(direction, idx, stemStart);
+
+            chord.satieFlag = null;
+        });
+
+        let firstStem = firstChord.satieStem;
+        let lastStem = lastChord.satieStem;
+
+        firstChord.satieBeam = {
+            beamCount: times(Xs.length, idx => beam.counts[idx]),
+            direction: direction,
+            x: Xs,
+            y1: firstStem.stemStart*10 + direction*firstStem.stemHeight - 30,
+            y2: lastStem.stemStart*10 + direction*lastStem.stemHeight - 30,
+            // tuplet: beam.tuplet
+        };
+    }
 }
 
 export default beam;

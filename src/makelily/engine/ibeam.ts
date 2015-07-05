@@ -18,6 +18,8 @@
 
 "use strict";
 
+import {Tuplet} from "musicxml-interfaces";
+
 module IBeam {
 
 export interface ILayout {
@@ -26,6 +28,7 @@ export interface ILayout {
     y1: number;
     y2: number;
     direction: number;
+    tuplet?: Tuplet;
 }
 
 }

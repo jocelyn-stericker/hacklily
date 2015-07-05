@@ -100,8 +100,8 @@ describe("import/export dtd validation", function() {
                                         input: mxmlOut,
                                         env: env
                                     });
-                                    stdout = proc.stdout + "";
-                                    stderr = proc.stderr + "";
+                                    stdout = String(proc.stdout);
+                                    stderr = String(proc.stderr);
                                     error = proc.error;
                                     if (stdout || stderr) {
                                         done(new Error(stderr || stdout || error));

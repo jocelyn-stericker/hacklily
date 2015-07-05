@@ -16,7 +16,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import MusicXML = require("musicxml-interfaces");
+import {Clef, Count, MultipleRest, Note, NoteheadType, Stem, StemType,
+    Tied, TimeModification, serialize as serializeToXML} from "musicxml-interfaces";
 import _ = require("lodash");
 import invariant = require("react/lib/invariant");
 
@@ -32,39 +33,39 @@ const IDEAL_STEM_HEIGHT: number = 35;
 const MIN_STEM_HEIGHT: number = 30;
 
 let countToNotehead: { [key: number]: string } = {
-    [MusicXML.Count.Maxima]: "noteheadDoubleWhole",
-    [MusicXML.Count.Long]: "noteheadDoubleWhole",
-    [MusicXML.Count.Breve]: "noteheadDoubleWhole",
-    [MusicXML.Count.Whole]: "noteheadWhole",
+    [Count.Maxima]: "noteheadDoubleWhole",
+    [Count.Long]: "noteheadDoubleWhole",
+    [Count.Breve]: "noteheadDoubleWhole",
+    [Count.Whole]: "noteheadWhole",
     [-1]: "noteheadWhole",
-    [MusicXML.Count.Half]: "noteheadHalf",
-    [MusicXML.Count.Quarter]: "noteheadBlack",
-    [MusicXML.Count.Eighth]: "noteheadBlack",
-    [MusicXML.Count._16th]: "noteheadBlack",
-    [MusicXML.Count._32nd]: "noteheadBlack",
-    [MusicXML.Count._64th]: "noteheadBlack",
-    [MusicXML.Count._128th]: "noteheadBlack",
-    [MusicXML.Count._256th]: "noteheadBlack",
-    [MusicXML.Count._512th]: "noteheadBlack",
-    [MusicXML.Count._1024th]: "noteheadBlack"
+    [Count.Half]: "noteheadHalf",
+    [Count.Quarter]: "noteheadBlack",
+    [Count.Eighth]: "noteheadBlack",
+    [Count._16th]: "noteheadBlack",
+    [Count._32nd]: "noteheadBlack",
+    [Count._64th]: "noteheadBlack",
+    [Count._128th]: "noteheadBlack",
+    [Count._256th]: "noteheadBlack",
+    [Count._512th]: "noteheadBlack",
+    [Count._1024th]: "noteheadBlack"
 };
 
 let countToRest: { [key: number]: string } = {
-    [MusicXML.Count.Maxima]: "restLonga",
-    [MusicXML.Count.Long]: "restLonga",
-    [MusicXML.Count.Breve]: "restDoubleWhole",
-    [MusicXML.Count.Whole]: "restWhole",
+    [Count.Maxima]: "restLonga",
+    [Count.Long]: "restLonga",
+    [Count.Breve]: "restDoubleWhole",
+    [Count.Whole]: "restWhole",
     [-1]: "restWhole",
-    [MusicXML.Count.Half]: "restHalf",
-    [MusicXML.Count.Quarter]: "restQuarter",
-    [MusicXML.Count.Eighth]: "rest8th",
-    [MusicXML.Count._16th]: "rest16th",
-    [MusicXML.Count._32nd]: "rest32nd",
-    [MusicXML.Count._64th]: "rest64th",
-    [MusicXML.Count._128th]: "rest128th",
-    [MusicXML.Count._256th]: "rest256th",
-    [MusicXML.Count._512th]: "rest512th",
-    [MusicXML.Count._1024th]: "rest1024th"
+    [Count.Half]: "restHalf",
+    [Count.Quarter]: "restQuarter",
+    [Count.Eighth]: "rest8th",
+    [Count._16th]: "rest16th",
+    [Count._32nd]: "rest32nd",
+    [Count._64th]: "rest64th",
+    [Count._128th]: "rest128th",
+    [Count._256th]: "rest256th",
+    [Count._512th]: "rest512th",
+    [Count._1024th]: "rest1024th"
 };
 
 /**
@@ -153,7 +154,7 @@ class ChordModelImpl implements ChordModel.IChordModel {
                 stemStart: IChord.startingLine(this, direction, clef)
             };
 
-            this.satieDirection = direction === 1 ? MusicXML.StemType.Up : MusicXML.StemType.Down;
+            this.satieDirection = direction === 1 ? StemType.Up : StemType.Down;
         } else {
             this.satieStem = null;
             this.satieDirection = NaN;
@@ -178,10 +179,10 @@ class ChordModelImpl implements ChordModel.IChordModel {
             _.forEach(this, note => {
                 if (measureStyle.slash) {
                     note.notehead = note.notehead || {type: null};
-                    note.notehead.type = MusicXML.NoteheadType.Slash;
+                    note.notehead.type = NoteheadType.Slash;
                     if (!measureStyle.slash.useStems) {
                         note.stem = {
-                            type: MusicXML.StemType.None
+                            type: StemType.None
                         };
                     }
                 }
@@ -201,7 +202,7 @@ class ChordModelImpl implements ChordModel.IChordModel {
     }
 
     private _hasStem() {
-        if (this[0] && this[0].stem && this[0].stem.type === MusicXML.StemType.None) {
+        if (this[0] && this[0].stem && this[0].stem.type === StemType.None) {
             return false;
         }
         return IChord.countToHasStem[this.count];
@@ -219,7 +220,7 @@ class ChordModelImpl implements ChordModel.IChordModel {
      * We accept either a Note from musicxml-interfaces, or an IChord, which 
      * is an array-like element of Notes. In either case, we create a deep copy.
      */
-    constructor(spec?: IChord | MusicXML.Note) {
+    constructor(spec?: IChord | Note) {
         if (!!spec) {
             if (spec._class === "Note") {
                 this[0] = new NoteImpl(this, 0, spec);
@@ -236,7 +237,7 @@ class ChordModelImpl implements ChordModel.IChordModel {
     toXML(): string {
         let xml = "";
         for (let i = 0; i < this.length; ++i) {
-            xml += MusicXML.serialize.note(this[i]) + "\n";
+            xml += serializeToXML.note(this[i]) + "\n";
         }
         return xml;
     }
@@ -272,7 +273,7 @@ class ChordModelImpl implements ChordModel.IChordModel {
         return this._timeModification;
     }
 
-    set timeModification(t: MusicXML.TimeModification) {
+    set timeModification(t: TimeModification) {
         this._timeModification = t;
     }
 
@@ -285,13 +286,13 @@ class ChordModelImpl implements ChordModel.IChordModel {
         throw new Error("not implemented");
     }
 
-    get tieds(): MusicXML.Tied[] {
+    get tieds(): Tied[] {
         return _.chain(this.notes)
             .map(n => n.notationObj.tieds)
             .map(t => t && t.length ? t[0] : null)
             .value();
     }
-    set tieds(v: MusicXML.Tied[]) {
+    set tieds(v: Tied[]) {
         _.forEach(this.notes, (n, i) => {
             if (v[i]) {
                 n.ensureNotationsWrittable();
@@ -307,7 +308,7 @@ class ChordModelImpl implements ChordModel.IChordModel {
         return this._count;
     }
 
-    set count(n: MusicXML.Count) {
+    set count(n: Count) {
         invariant(!isNaN(n), "Invalid count %s", n);
         this._count = n;
         this.divCount = null; // Kill optimizer.
@@ -316,17 +317,17 @@ class ChordModelImpl implements ChordModel.IChordModel {
         });
     }
 
-    stem: MusicXML.Stem;
+    stem: Stem;
 
-    private _count: MusicXML.Count;
-    private _timeModification: MusicXML.TimeModification;
+    private _count: Count;
+    private _timeModification: TimeModification;
 
     /** @prototype */
     dots: number;
 
     inBeam$: boolean; // set by BeamModels
 
-    push(...notes: MusicXML.Note[]) {
+    push(...notes: Note[]) {
         _.forEach(notes, note => {
             this[this.length] = new NoteImpl(this, this.length, note);
             ++this.length;
@@ -368,7 +369,7 @@ class ChordModelImpl implements ChordModel.IChordModel {
             // Whole bar rests can still exist even when there's no single NOTE duration
             // that spans a bar.
             if (beats === ts.beats && !!this[0].rest) {
-                this._count = MusicXML.Count.Whole;
+                this._count = Count.Whole;
             } else {
                 let nextPO2 = Math.pow(2, Math.ceil(Math.log(this.count)/Math.log(2)));
                 this._count = nextPO2;
@@ -387,7 +388,7 @@ class ChordModelImpl implements ChordModel.IChordModel {
         }
     }
 
-    private _getStemHeight(direction: number, clef: MusicXML.Clef): number {
+    private _getStemHeight(direction: number, clef: Clef): number {
         let heightFromOtherNotes = (IChord.highestLine(this, clef) -
             IChord.lowestLine(this, clef)) * 10;
         let idealStemHeight = IDEAL_STEM_HEIGHT + heightFromOtherNotes;
@@ -517,11 +518,12 @@ class ChordModelImpl implements ChordModel.IChordModel {
     };
 
     satieFlag: string;
-    satieDirection: MusicXML.StemType;
+    satieDirection: StemType;
     satieLedger: number[];
-    satieMultipleRest: MusicXML.MultipleRest;
+    satieMultipleRest: MultipleRest;
     noteheadGlyph: string[];
     satieBeam: IBeam.ILayout;
+    satieUnbeamedTuplet: IBeam.ILayout;
 }
 
 ChordModelImpl.prototype.frozenness = IModel.FrozenLevel.Warm;
@@ -542,7 +544,7 @@ module ChordModelImpl {
             this.model = this._detachModelWithContext(cursor$, baseModel);
             this.boundingBoxes$ = this._captureBoundingBoxes();
 
-            let isWholeBar = baseModel.wholebar$ || baseModel.count === MusicXML.Count.Whole;
+            let isWholeBar = baseModel.wholebar$ || baseModel.count === Count.Whole;
 
             if (baseModel.satieMultipleRest || baseModel.rest && isWholeBar) {
                 // N.B.: this.model does not have count
@@ -568,7 +570,7 @@ module ChordModelImpl {
             let widths = _.map(noteheads, getGlyphWidth);
             this.renderedWidth = _.max(widths);
 
-            if (baseModel.satieMultipleRest || baseModel.count === MusicXML.Count.Whole) {
+            if (baseModel.satieMultipleRest || baseModel.count === Count.Whole) {
                 _.forEach(this.model, note => note.dots = []);
             }
 
