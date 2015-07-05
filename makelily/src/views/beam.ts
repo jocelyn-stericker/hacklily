@@ -19,8 +19,7 @@
 "use strict";
 
 import MusicXML = require("musicxml-interfaces");
-import * as React from "react"; // TS 1.5 workaround
-import {createFactory as $, DOM, PropTypes} from "react";
+import {createFactory as $, Component, DOM, PropTypes} from "react";
 import _ = require("lodash");
 
 import IBeam from "../engine/ibeam";
@@ -30,8 +29,8 @@ import {bravura, getFontOffset} from "../models/smufl";
 /**
  * Renders a beam based on a computed layout.
  */
-class Beam extends React.Component<Beam.IProps, void> {
-    render() {
+class Beam extends Component<Beam.IProps, void> {
+    render(): any {
         let xLow = this._getX1();
         let xHi = this._getX2();
         let layout = this.props.layout;

@@ -16,8 +16,13 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import MusicXML = require("musicxml-interfaces");
-import _ = require("lodash");
+import {Note, Chord, Rest, Dot, Type, Count, SymbolSize, TimeModification, Pitch,
+    Unpitched, NoteheadText, Accidental, Instrument, Lyric, Notations, Stem, Cue,
+    Tie, Play, Grace, Notehead, Beam, NormalBold, NormalItalic, Level, Footnote,
+    Articulations, AccidentalMark, Arpeggiate, Dynamics, Fermata, Glissando,
+    NonArpeggiate, Ornaments, OtherNotation, Slide, Slur, Technical, Tied, Tuplet,
+    MxmlAccidental, serialize as serializeToXML} from "musicxml-interfaces";
+import {times, forEach, reduce, map} from "lodash";
 import invariant = require("react/lib/invariant");
 
 import ChordModelImpl from "./chordImpl"; // @cyclic
@@ -31,11 +36,11 @@ import {bboxes as glyphBBoxes} from "../smufl";
  *  - You need to set a a noteType, not a noteType.duration. Setting noteType.duration
  *    has no effect.
  */
-class NoteImpl implements MusicXML.Note {
+class NoteImpl implements Note {
     _parent: ChordModelImpl;
     _idx: number;
 
-    constructor(parent: ChordModelImpl, idx: number, note: MusicXML.Note,
+    constructor(parent: ChordModelImpl, idx: number, note: Note,
             updateParent: boolean = true) {
         let self : {[key:string]: any} = <any> this;
 
@@ -72,7 +77,7 @@ class NoteImpl implements MusicXML.Note {
             "printSpacing", "timeOnly"
         ];
 
-        _.forEach(properties, setIfDefined);
+        forEach(properties, setIfDefined);
 
         this.cleanNotations();
 
@@ -90,7 +95,7 @@ class NoteImpl implements MusicXML.Note {
     /*---- NoteImpl -------------------------------------------------------------------------*/
 
     toXML() {
-        return MusicXML.serialize.note(this);
+        return serializeToXML.note(this);
     }
 
     inspect() {
@@ -114,18 +119,18 @@ class NoteImpl implements MusicXML.Note {
 
     /*---- MusicXML.Note > Core -------------------------------------------------------------*/
 
-    get chord(): MusicXML.Chord {
+    get chord(): Chord {
         return this._idx + 1 !== this._parent.length;
     }
 
-    get rest(): MusicXML.Rest {
+    get rest(): Rest {
         return this._parent.rest ? {
             displayOctave: this._restDisplayOctave,
             displayStep: this._restDisplayStep,
             measure: this._parent.wholebar$
         } : null;
     }
-    set rest(rest: MusicXML.Rest) {
+    set rest(rest: Rest) {
         this._parent.rest = !!rest;
         if (rest) {
             this._restDisplayStep = rest.displayStep;
@@ -140,82 +145,82 @@ class NoteImpl implements MusicXML.Note {
     _restDisplayStep: string;
     _restDisplayOctave: string;
 
-    get dots(): MusicXML.Dot[] {
+    get dots(): Dot[] {
         let offset = this.defaultY % 10 === 0 ? 5 : 0;
-        return _.times(this._parent.dots, () => <MusicXML.Dot> {
+        return times(this._parent.dots, () => <Dot> {
             defaultY: offset
             // TODO: save/restore dot formatting
             // TODO: display dot formatting
         });
     }
-    set dots(dots: MusicXML.Dot[]) {
+    set dots(dots: Dot[]) {
         this._parent.dots = dots.length;
     }
 
-    get noteType(): MusicXML.Type {
+    get noteType(): Type {
         return {
-            duration: this._parent.satieMultipleRest ? MusicXML.Count.Whole : this._parent.count,
-            size: MusicXML.SymbolSize.Full // TODO: grace, cue
+            duration: this._parent.satieMultipleRest ? Count.Whole : this._parent.count,
+            size: SymbolSize.Full // TODO: grace, cue
         };
     }
 
-    set noteType(type: MusicXML.Type) {
+    set noteType(type: Type) {
         // TODO: grace, cue
         this._parent.count = type.duration;
     }
 
-    get timeModification(): MusicXML.TimeModification {
+    get timeModification(): TimeModification {
         return this._parent.timeModification;
     }
 
-    set timeModification(tm: MusicXML.TimeModification) {
+    set timeModification(tm: TimeModification) {
         this._parent.timeModification = tm;
     }
 
-    pitch: MusicXML.Pitch;
+    pitch: Pitch;
 
     /*---- MusicXML.Note > Extended ---------------------------------------------------------*/
 
-    unpitched: MusicXML.Unpitched;
-    noteheadText: MusicXML.NoteheadText;
-    accidental: MusicXML.Accidental;
-    instrument: MusicXML.Instrument;
+    unpitched: Unpitched;
+    noteheadText: NoteheadText;
+    accidental: Accidental;
+    instrument: Instrument;
     attack: number;
     endDynamics: number;
-    lyrics: MusicXML.Lyric[];
+    lyrics: Lyric[];
     /**
      * Do not modify notations. Instead use notationObj and articulationObj
      */
-    notations: MusicXML.Notations[];
-    get stem(): MusicXML.Stem {
+    notations: Notations[];
+    get stem(): Stem {
         return this._parent.stem;
     }
-    set stem(stem: MusicXML.Stem) {
+    set stem(stem: Stem) {
         this._parent.stem = stem;
     }
-    cue: MusicXML.Cue;
+    cue: Cue;
     duration: number;
     /**
      * This applies to the sound only.
      * s.a. notationObj.tieds
      */
-    ties: MusicXML.Tie[];
+    ties: Tie[];
     dynamics: number;
-    play: MusicXML.Play;
+    play: Play;
     staff: number;                 // See prototype.
-    grace: MusicXML.Grace;
-    notehead: MusicXML.Notehead;
+    grace: Grace;
+    notehead: Notehead;
     release: number;
     pizzicato: boolean;
-    beams: MusicXML.Beam[];
+    beams: Beam[];
 
     /*---- MusicXML.PrintStyle --------------------------------------------------------------*/
 
     /*---- MusicXML.PrintStyle >> EditorialVoice --------------------------------------------*/
 
     voice: number;
-    footnote: MusicXML.Footnote;
-    level: MusicXML.Level;
+    footnote: Footnote;
+    level: Level;
 
     /*---- MusicXML.PrintStyle >> Position --------------------------------------------------*/
 
@@ -227,8 +232,8 @@ class NoteImpl implements MusicXML.Note {
     /*---- MusicXML.PrintStyle >> Font ------------------------------------------------------*/
 
     fontFamily: string;
-    fontWeight: MusicXML.NormalBold;
-    fontStyle: MusicXML.NormalItalic;
+    fontWeight: NormalBold;
+    fontStyle: NormalItalic;
     fontSize: string;
 
     /*---- MusicXML.PrintStyle >> Color -----------------------------------------------------*/
@@ -276,7 +281,7 @@ class NoteImpl implements MusicXML.Note {
     ensureNotationsWrittable() {
         this.notations = this.notations || [{}];
     }
-    get notationObj(): MusicXML.Notations {
+    get notationObj(): Notations {
         return this.notations ? this.notations[0] : Object.freeze({});
     }
 
@@ -284,7 +289,7 @@ class NoteImpl implements MusicXML.Note {
         this.ensureNotationsWrittable();
         this.notationObj.articulations = this.notationObj.articulations || [{}];
     }
-    get articulationObj(): MusicXML.Articulations {
+    get articulationObj(): Articulations {
         return this.notationObj.articulations ?
             this.notationObj.articulations[0] : Object.freeze({});
     }
@@ -331,45 +336,69 @@ class NoteImpl implements MusicXML.Note {
         let notations = this.notations;
 
         if (notations) {
-            let notation: MusicXML.Notations = {
-                accidentalMarks: combine<MusicXML.AccidentalMark> ("accidentalMarks"),
-                arpeggiates: combine<MusicXML.Arpeggiate> ("arpeggiates"),
+            let notation: Notations = {
+                accidentalMarks: combine<AccidentalMark> ("accidentalMarks"),
+                arpeggiates: combine<Arpeggiate> ("arpeggiates"),
                 articulations: combineArticulations ("articulations"),
-                dynamics: combine<MusicXML.Dynamics> ("dynamics"),
-                fermatas: combine<MusicXML.Fermata> ("fermatas"),
-                footnote: last<MusicXML.Footnote> ("footnote"),
-                glissandos: combine<MusicXML.Glissando> ("glissandos"),
-                level: last<MusicXML.Level> ("level"),
-                nonArpeggiates: combine<MusicXML.NonArpeggiate> ("nonArpeggiates"),
-                ornaments: combine<MusicXML.Ornaments> ("ornaments"),
-                otherNotations: combine<MusicXML.OtherNotation> ("otherNotations"),
+                dynamics: combine<Dynamics> ("dynamics"),
+                fermatas: combine<Fermata> ("fermatas"),
+                footnote: last<Footnote> ("footnote"),
+                glissandos: combine<Glissando> ("glissandos"),
+                level: last<Level> ("level"),
+                nonArpeggiates: combine<NonArpeggiate> ("nonArpeggiates"),
+                ornaments: combine<Ornaments> ("ornaments"),
+                otherNotations: combine<OtherNotation> ("otherNotations"),
                 printObject: last<boolean> ("printObject"),
-                slides: combine<MusicXML.Slide> ("slides"),
-                slurs: combine<MusicXML.Slur> ("slurs"),
-                technicals: combine<MusicXML.Technical> ("technicals"),
-                tieds: combine<MusicXML.Tied> ("tieds"),
-                tuplets: combine<MusicXML.Tuplet> ("tuplets")
+                slides: combine<Slide> ("slides"),
+                slurs: combine<Slur> ("slurs"),
+                technicals: combine<Technical> ("technicals"),
+                tieds: combine<Tied> ("tieds"),
+                tuplets: combine<Tuplet> ("tuplets")
             };
 
-            _.forEach(notation.tieds, tied => {
+            forEach(notation.tieds, tied => {
                 if (!tied.number) {
                     tied.number = 1;
                 }
             });
+
+            forEach(notation.tuplets, tuplet => {
+                if (!tuplet.tupletActual) {
+                    tuplet.tupletActual = {};
+                }
+                if (!tuplet.tupletNormal) {
+                    tuplet.tupletNormal = {};
+                }
+                if (!tuplet.tupletActual.tupletNumber) {
+                    tuplet.tupletActual.tupletNumber = {
+                        text: String(this.timeModification.actualNotes)
+                    };
+                }
+                if (!tuplet.tupletNormal.tupletNumber) {
+                    tuplet.tupletNormal.tupletNumber = {
+                        text: String(this.timeModification.normalNotes)
+                    };
+                }
+                if (!tuplet.tupletNormal.tupletDots) {
+                    tuplet.tupletNormal.tupletDots =
+                        map(this.timeModification.normalDots, () => ({}));
+                }
+            });
+
             this.notations = [notation];
         }
 
         function combine<T>(key: string): T[] {
-            return _.reduce(notations, (memo: any, n:any) =>
+            return reduce(notations, (memo: any, n:any) =>
                 n[key] ? (memo||<T[]>[]).concat(n[key]) : memo, null);
         }
 
-        function combineArticulations(key: string): MusicXML.Articulations[] {
-            let array = combine<MusicXML.Articulations>(key);
+        function combineArticulations(key: string): Articulations[] {
+            let array = combine<Articulations>(key);
             if (!array) {
                 return null;
             }
-            let articulations: MusicXML.Articulations = <any> {};
+            let articulations: Articulations = <any> {};
             for (let i = 0; i < array.length; ++i) {
                 for (let akey in array[i]) {
                     if (array[i].hasOwnProperty(akey)) {
@@ -381,7 +410,7 @@ class NoteImpl implements MusicXML.Note {
         }
 
         function last<T>(key: string): T {
-            return _.reduce(notations, (memo: any, n:any) =>
+            return reduce(notations, (memo: any, n:any) =>
                 n[key] ? n[key] : memo, []);
         }
     }
@@ -407,34 +436,34 @@ class NoteImpl implements MusicXML.Note {
         let acc = this.accidental;
 
         if (!acc && (actual||0) !== (target||0)) {
-            let accType: MusicXML.MxmlAccidental = null;
+            let accType: MxmlAccidental = null;
             switch (actual) {
                 case 2:
-                    accType = MusicXML.MxmlAccidental.DoubleSharp;
+                    accType = MxmlAccidental.DoubleSharp;
                     break;
                 case 1.5:
-                    accType = MusicXML.MxmlAccidental.ThreeQuartersSharp;
+                    accType = MxmlAccidental.ThreeQuartersSharp;
                     break;
                 case 1:
-                    accType = MusicXML.MxmlAccidental.Sharp;
+                    accType = MxmlAccidental.Sharp;
                     break;
                 case 0.5:
-                    accType = MusicXML.MxmlAccidental.QuarterSharp;
+                    accType = MxmlAccidental.QuarterSharp;
                     break;
                 case 0:
-                    accType = MusicXML.MxmlAccidental.Natural;
+                    accType = MxmlAccidental.Natural;
                     break;
                 case -0.5:
-                    accType = MusicXML.MxmlAccidental.QuarterFlat;
+                    accType = MxmlAccidental.QuarterFlat;
                     break;
                 case -1:
-                    accType = MusicXML.MxmlAccidental.Flat;
+                    accType = MxmlAccidental.Flat;
                     break;
                 case -1.5:
-                    accType = MusicXML.MxmlAccidental.ThreeQuartersFlat;
+                    accType = MxmlAccidental.ThreeQuartersFlat;
                     break;
                 case -2:
-                    accType = MusicXML.MxmlAccidental.DoubleFlat;
+                    accType = MxmlAccidental.DoubleFlat;
                     break;
                 default:
                     invariant(false, "Not implemented: unknown accidental for offset %s", actual);
