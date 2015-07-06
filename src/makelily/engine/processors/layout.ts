@@ -81,7 +81,6 @@ export default function layout$(options: ILayoutOptions, memo$: ILinesLayoutStat
                 header: options.header,
                 line: Context.ILine.create(neighbourModels, measures.length, 0, 1),
                 measure: measure,
-                prevByStaff: [], // FIXME:
                 staves: map(values(measure.parts), p => p.staves),
                 voices: map(values(measure.parts), p => p.voices),
                 x: 0

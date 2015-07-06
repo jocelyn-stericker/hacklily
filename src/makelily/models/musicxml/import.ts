@@ -24,11 +24,12 @@
 
 import {ScoreTimewise, Attributes, Note, Backup, Time, parse as parseFromXML}
     from "musicxml-interfaces";
-import {map, any, filter, min, times, all, forEach} from "lodash";
+import {map, reduce, any, filter, min, times, all, forEach} from "lodash";
 import invariant = require("react/lib/invariant");
 
 import {IChord, IDocument, ILayoutOptions, IModel, IMeasurePart, IPart,
     IMutableMeasure, MAX_SAFE_INTEGER, OwnerType, validate} from "../../engine";
+import {lcm} from "../../engine/util";
 import {calcDivisionsNoCtx} from "../chord/metre";
 import ScoreHeader from "../scoreHeader";
 
@@ -175,6 +176,29 @@ export function _extractMXMLPartsAndMeasures(input: ScoreTimewise, factory: IMod
 
         linkedParts = filter(linkedParts, p => !!p);
 
+        let commonDivisions = reduce(linkedParts, (memo, part) => {
+            return reduce(part.input, (memo, input) => {
+                if (input._class === "Attributes" && input.divisions) {
+                    return lcm(memo, input.divisions);
+                }
+                return memo;
+            }, memo);
+        }, 1);
+
+        // Lets normalize divisions here.
+        forEach(linkedParts, part => {
+            forEach(part.input, input => {
+                let previousDivisions = 1;
+                if (input.divisions) {
+                    previousDivisions = input.divisions;
+                    input.divisions = commonDivisions;
+                }
+                if (input.count) {
+                    input.count *= commonDivisions/previousDivisions;
+                }
+            });
+        });
+
         let target = linkedParts[0];
         // Create base structure
         while (!done()) {
@@ -313,10 +337,6 @@ export function _extractMXMLPartsAndMeasures(input: ScoreTimewise, factory: IMod
         forEach(linkedParts, part => {
             // Note: target is 'var'-scoped!
             target = part;
-
-            // Create proxies for attributes, barlines, prints, and sounds.
-            // let rootStaff = target.output.staves[1];
-            // TODO: not implemented
 
             // Set divCounts of final elements in staff segments and divisions of all segments
             forEach(target.output.staves, (staff, staffIdx) => {

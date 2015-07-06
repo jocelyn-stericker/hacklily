@@ -100,7 +100,6 @@ function _layoutDirtyMeasures(options: ILayoutOptions, line: Context.ILine,
                 line: line,
                 measure: measure,
                 padEnd: measureIdx !== measures.length - 1,
-                prevByStaff: [], // FIXME: include this.
                 x: 0 // Final offset set recorded in justify(...).
             });
         }

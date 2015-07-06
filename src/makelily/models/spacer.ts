@@ -78,13 +78,11 @@ module SpacerModel {
 
         // Prototype:
 
-        mergePolicy: IModel.HMergePolicy;
         boundingBoxes$: IModel.IBoundingRect[];
         renderClass: IModel.Type;
         expandPolicy: IModel.ExpandPolicy;
     }
 
-    Layout.prototype.mergePolicy = IModel.HMergePolicy.Min;
     Layout.prototype.expandPolicy = IModel.ExpandPolicy.None;
     Layout.prototype.renderClass = IModel.Type.Spacer;
     Layout.prototype.boundingBoxes$ = [];

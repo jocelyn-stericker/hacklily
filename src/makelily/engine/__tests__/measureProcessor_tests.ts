@@ -64,7 +64,6 @@ describe("[engine/measureProcessor.ts]", function() {
                     x: 100,
                     parent: null
                 },
-                prevByStaff: [],
                 segments: segments,
                 _noAlign: true,
                 factory: fakeFactory
@@ -91,7 +90,6 @@ describe("[engine/measureProcessor.ts]", function() {
                 [
                     {
                         division: 0,
-                        mergePolicy: IModel.HMergePolicy.Min,
                         x$: 100,
                         model: null,
                         renderClass: IModel.Type.Attributes
@@ -100,7 +98,6 @@ describe("[engine/measureProcessor.ts]", function() {
                         boundingBoxes$: [],
                         division: 0,
                         expandPolicy: IModel.ExpandPolicy.After,
-                        mergePolicy: IModel.HMergePolicy.Min,
                         x$: 110,
                         part: "P1",
                         model: segments[1][0],  // from first voice.
@@ -109,7 +106,6 @@ describe("[engine/measureProcessor.ts]", function() {
                     {
                         division: 1,
                         expandPolicy: IModel.ExpandPolicy.After,
-                        mergePolicy: IModel.HMergePolicy.Max, // 1st is min, 2nd one is max
                         x$: 120,
                         model: null,
                         renderClass: IModel.Type.Chord
@@ -118,7 +114,6 @@ describe("[engine/measureProcessor.ts]", function() {
                         boundingBoxes$: [],
                         expandPolicy: IModel.ExpandPolicy.After,
                         division: 2,
-                        mergePolicy: IModel.HMergePolicy.Max, // 1st is min, 2nd one is max
                         x$: 130,
                         part: "P1",
                         model: segments[1][1],
@@ -126,7 +121,6 @@ describe("[engine/measureProcessor.ts]", function() {
                     },
                     {
                         division: 4,
-                        mergePolicy: IModel.HMergePolicy.Max,
                         x$: 190,
                         model: null,
                         renderClass: IModel.Type.Attributes
@@ -172,7 +166,6 @@ describe("[engine/measureProcessor.ts]", function() {
                     uuid: 248,
                     width: NaN
                 },
-                prevByStaff: [],
                 x: 100,
                 line: {
                     barOnLine$: 0,
@@ -230,7 +223,6 @@ describe("[engine/measureProcessor.ts]", function() {
                     uuid: 1248,
                     width: NaN
                 },
-                prevByStaff: [],
                 x: 100,
                 line: {
                     barOnLine$: 0,

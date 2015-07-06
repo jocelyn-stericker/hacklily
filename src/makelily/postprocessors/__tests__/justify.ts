@@ -87,7 +87,6 @@ describe("[lineProcessor.ts]", function() {
                         }
                     ]
                 },
-                prevByStaff: [],
                 x: 0,
                 line: null,
                 factory: fakeFactory
@@ -149,7 +148,7 @@ describe("[lineProcessor.ts]", function() {
             let expectedWidth = justified[0].elements[0][4].x$ -
                 justified[0].elements[0][0].x$ + 10;
             expect(justified[0].elements[0][0].x$).to.be.closeTo(layouts[0].elements[0][0].x$, 0.05);
-            expect(justified[0].elements[0][2].x$).to.be.closeTo(27.0, 0.1);
+            expect(justified[0].elements[0][2].x$).to.be.closeTo(24.16, 0.1);
             expect(justified[0].width).to.be.closeTo(expectedWidth, 0.01);
             forEach(justified, function(just, idx) {
                 expect(just.width).to.not.equal(layouts[idx].width);

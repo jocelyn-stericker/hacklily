@@ -510,7 +510,6 @@ module AttributesModel {
 
         // Prototype:
 
-        mergePolicy: IModel.HMergePolicy;
         boundingBoxes$: IModel.IBoundingRect[];
         renderClass: IModel.Type;
         expandPolicy: IModel.ExpandPolicy;
@@ -536,7 +535,6 @@ module AttributesModel {
         staffDetails: StaffDetails;
     }
 
-    Layout.prototype.mergePolicy = IModel.HMergePolicy.Min;
     Layout.prototype.expandPolicy = IModel.ExpandPolicy.None;
     Layout.prototype.renderClass = IModel.Type.Attributes;
     Layout.prototype.boundingBoxes$ = [];
