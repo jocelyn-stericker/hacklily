@@ -36,7 +36,6 @@ export interface IMeasureLayoutOptions {
     header: ScoreHeader;
     line: Context.ILine;
     measure: IMutableMeasure;
-    prevByStaff: IModel[];
     /** Starts at 0. */
     x: number;
 
@@ -64,7 +63,6 @@ function createCursor(
             header: ScoreHeader,
             line: Context.ILine;
             measure: Context.IMeasure;
-            prev: IModel;
             segment: ISegment;
             staff: Context.IStaff;
             voice: Context.IVoice;
@@ -82,7 +80,6 @@ function createCursor(
         maxPaddingBottom$: [],
         maxPaddingTop$: [],
         measure: spec.measure,
-        prev$: spec.prev,
         print$: null,
         segment: spec.segment,
         staff: Context.IStaff.detach(spec.staff),
@@ -106,7 +103,6 @@ function createCursor(
 export function reduceMeasure(spec: ILayoutOpts): IMeasureLayout {
     let gLine = spec.line;
     let gMeasure = spec.measure;
-    let gPrevByStaff = spec.prevByStaff;
     let gValidateOnly = spec._validateOnly;
     let gSomeLastAttribs = <{[part: string]: IAttributes.ISnapshot[]}> {};
     let gMaxDivisions = 0;
@@ -140,6 +136,7 @@ export function reduceMeasure(spec: ILayoutOpts): IMeasureLayout {
         let voiceStaves$: {[key: number]: IModel.ILayout[]}  = {};
         let staffContexts$: {[key: number]: Context.IStaff} = {};
         let divisionPerStaff$: {[key: string]: number} = {};
+        let xPerStaff$: {[key: number]: number} = [];
 
         let cursor$ = createCursor({
             segment: segment,
@@ -151,7 +148,6 @@ export function reduceMeasure(spec: ILayoutOpts): IMeasureLayout {
             line: gLine,
             header: spec.header,
 
-            prev: gPrevByStaff ? gPrevByStaff[0] : null, // FIXME!
             division$: 0,
             x: gMeasure.x,
 
@@ -165,7 +161,7 @@ export function reduceMeasure(spec: ILayoutOpts): IMeasureLayout {
         /**
          * Processes a staff model within this voice's context.
          */
-        function pushStaffSegment(staffIdx: number, model: IModel) {
+        function pushStaffSegment(staffIdx: number, model: IModel, catchUp: boolean) {
             if (!model) {
                 divisionPerStaff$[staffIdx] = cursor$.division$ + 1;
                 return;
@@ -174,6 +170,9 @@ export function reduceMeasure(spec: ILayoutOpts): IMeasureLayout {
             let oldSegment = cursor$.segment;
             let oldIdx = cursor$.idx$;
             cursor$.division$ = divisionPerStaff$[staffIdx];
+            if (catchUp) {
+                cursor$.x$ = xPerStaff$[staffIdx];
+            }
             cursor$.segment = gStaffMeasure[`${part}_${staffIdx}`];
             cursor$.idx$ = voiceStaves$[staffIdx].length;
             let layout: IModel.ILayout;
@@ -232,10 +231,10 @@ export function reduceMeasure(spec: ILayoutOpts): IMeasureLayout {
             }
 
             divisionPerStaff$[staffIdx] = cursor$.division$;
-            cursor$.division$               = oldDivision;
-            cursor$.prev$                   = model;
+            xPerStaff$[staffIdx] = cursor$.x$;
+            cursor$.division$ = oldDivision;
             cursor$.segment = oldSegment;
-            cursor$.idx$                    = oldIdx;
+            cursor$.idx$ = oldIdx;
 
             if (!gValidateOnly) {
                 invariant(!!layout, "%s must be a valid layout", layout);
@@ -270,6 +269,7 @@ export function reduceMeasure(spec: ILayoutOpts): IMeasureLayout {
                 gStaffLayouts$[`${part}_${staffIdx}`] = gStaffLayouts$[`${part}_${staffIdx}`] || [];
                 gStaffLayouts$[`${part}_${staffIdx}`].push(voiceStaves$[staffIdx]);
                 divisionPerStaff$[staffIdx] = 0;
+                xPerStaff$[staffIdx] = 0;
             }
 
             cursor$.idx$ = idx;
@@ -288,7 +288,8 @@ export function reduceMeasure(spec: ILayoutOpts): IMeasureLayout {
                 }
 
                 // Process a staff model within a voice context.
-                pushStaffSegment(staffIdx, nextStaffEl);
+                let catchUp = divisionPerStaff$[staffIdx] < cursor$.division$;
+                pushStaffSegment(staffIdx, nextStaffEl, catchUp);
                 invariant(isFinite(divisionPerStaff$[staffIdx]), "divisionPerStaff$ is supposed " +
                     "to be a number, got %s", divisionPerStaff$[staffIdx]);
             }
@@ -342,8 +343,6 @@ export function reduceMeasure(spec: ILayoutOpts): IMeasureLayout {
                 newVoices[segment.owner].push(model);
             }
 
-            cursor$.prev$ = model;
-
             if (atEnd) {
                 forEach(gStaffMeasure, (staff, idx) => {
                     const pIdx = idx.lastIndexOf("_");
@@ -356,7 +355,7 @@ export function reduceMeasure(spec: ILayoutOpts): IMeasureLayout {
                     let voiceStaff = voiceStaves$[<any>nidx];
                     if (!!staff && !!voiceStaff) {
                         while (voiceStaff.length < staff.length) {
-                            pushStaffSegment(nidx, staff[voiceStaff.length]);
+                            pushStaffSegment(nidx, staff[voiceStaff.length], false);
                         }
                     }
                 });
@@ -396,6 +395,19 @@ export function reduceMeasure(spec: ILayoutOpts): IMeasureLayout {
         // Calculate and finish applying the master layout.
         // Two passes is always sufficient.
         let masterLayout = reduce(gAllLayouts$, IModel.merge$, []);
+        // Avoid lining up different divisions
+        reduce(masterLayout, ({prevDivision, min}: ISpreadMemo, layout: IModel.ICombinedLayout) => {
+            let newMin = layout.x;
+            if (min >= layout.x && layout.division !== prevDivision &&
+                    layout.renderClass !== IModel.Type.Spacer &&
+                    layout.renderClass !== IModel.Type.Barline) {
+                layout.x = min + 20;
+            }
+            return {
+                prevDivision: layout.division,
+                min: newMin
+            };
+        }, {prevDivision: -1, min: -10});
         reduce(gVoiceLayouts$, IModel.merge$, masterLayout);
 
         // Merge in the staves
@@ -422,13 +434,17 @@ export function reduceMeasure(spec: ILayoutOpts): IMeasureLayout {
     };
 }
 
+interface ISpreadMemo {
+    prevDivision: number;
+    min: number;
+}
+
 export interface ILayoutOpts {
     attributes: {[key: string]: IAttributes.ISnapshot[]};
     factory: IModel.IFactory;
     header: ScoreHeader;
     line: Context.ILine;
     measure: Context.IMeasure;
-    prevByStaff: IModel[];
     segments: ISegment[];
 
     _noAlign?: boolean;
@@ -444,7 +460,7 @@ export interface ILayoutOpts {
  * @param opts structure with __normalized__ voices and staves
  * @returns an array of staff and voice layouts with an undefined order
  */
-export function layoutMeasure({header, measure, line, attributes, factory, prevByStaff,
+export function layoutMeasure({header, measure, line, attributes, factory,
         padEnd, _approximate, _detached, x}: IMeasureLayoutOptions): IMeasureLayout {
     let measureCtx = Context.IMeasure.detach(measure, x);
 
@@ -460,7 +476,6 @@ export function layoutMeasure({header, measure, line, attributes, factory, prevB
         header,
         line,
         measure: measureCtx,
-        prevByStaff,
         segments,
         padEnd,
 

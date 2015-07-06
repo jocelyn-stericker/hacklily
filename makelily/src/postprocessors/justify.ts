@@ -18,7 +18,8 @@
 
 import {reduce, map, max, times, last, forEach} from "lodash";
 
-import {IChord, ILayoutOptions, ILineBounds, IMeasureLayout, IPart} from "../engine";
+import {IChord, ILayoutOptions, ILineBounds, IMeasureLayout, IPart,
+    MAX_SAFE_INTEGER} from "../engine";
 
 const UNDERFILLED_EXPANSION_WEIGHT = 0.1;
 
@@ -117,6 +118,7 @@ function justify(options: ILayoutOptions, bounds: ILineBounds,
                 measure.elements[i][j].x$ += measureExpansion;
             }
             let expandOne = false;
+            let minRatio = MAX_SAFE_INTEGER;
             for (let i = 0; i < measure.elements.length; ++i) {
                 if (measure.elements[i][j].expandPolicy) {
                     anyExpandable = true;
@@ -128,12 +130,14 @@ function justify(options: ILayoutOptions, bounds: ILineBounds,
                     let ratio = (Math.log(divCount) - Math.log(smallest) + 1) *
                         (underfilled[measureIdx] ? UNDERFILLED_EXPANSION_WEIGHT : 1.0);
 
-                    if (!expandOne) {
-                        measureExpansion += avgExpansion*ratio;
-                        totalExpCount += ratio;
-                    }
+                    minRatio = Math.min(minRatio, ratio);
                     expandOne = true;
                 }
+            }
+            if (expandOne) {
+                // FIXME: We can overshoot, like on Lily 23f. 
+                measureExpansion += avgExpansion*minRatio;
+                totalExpCount += minRatio;
             }
         });
 

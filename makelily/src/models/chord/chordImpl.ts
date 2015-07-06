@@ -689,13 +689,11 @@ module ChordModelImpl {
 
         // Prototype:
 
-        mergePolicy: IModel.HMergePolicy;
         boundingBoxes$: IModel.IBoundingRect[];
         renderClass: IModel.Type;
         expandPolicy: IModel.ExpandPolicy;
     }
 
-    Layout.prototype.mergePolicy = IModel.HMergePolicy.Min;
     Layout.prototype.expandPolicy = IModel.ExpandPolicy.After;
     Layout.prototype.renderClass = IModel.Type.Chord;
     Layout.prototype.boundingBoxes$ = [];

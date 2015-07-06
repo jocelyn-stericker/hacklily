@@ -118,7 +118,7 @@
 				<voice>2</voice>
 				<type>16th</type>
 				<staff>2</staff>
-				<beam number="2">begin</beam>
+				<beam number="1">begin</beam>
 			</note>
 			<note>
 				<pitch><step>B</step><octave>2</octave></pitch>
@@ -126,7 +126,7 @@
 				<voice>2</voice>
 				<type>16th</type>
 				<staff>2</staff>
-				<beam number="2">continue</beam>
+				<beam number="1">continue</beam>
 			</note>
 			<note>
 				<pitch><step>C</step><octave>3</octave></pitch>
@@ -134,7 +134,7 @@
 				<voice>2</voice>
 				<type>16th</type>
 				<staff>2</staff>
-				<beam number="2">continue</beam>
+				<beam number="1">continue</beam>
 			</note>
 			<note>
 				<pitch><step>D</step><octave>3</octave></pitch>
@@ -142,7 +142,7 @@
 				<voice>2</voice>
 				<type>16th</type>
 				<staff>2</staff>
-				<beam number="2">end</beam>
+				<beam number="1">end</beam>
 			</note>
 
 			<note>
@@ -152,7 +152,7 @@
 				<type>16th</type>
 				<time-modification><actual-notes>3</actual-notes><normal-notes>2</normal-notes></time-modification>
 				<staff>2</staff>
-				<beam number="2">begin</beam>
+				<beam number="1">begin</beam>
 			</note>
 			<note>
 				<pitch><step>F</step><octave>3</octave></pitch>
@@ -161,7 +161,7 @@
 				<type>16th</type>
 				<time-modification><actual-notes>3</actual-notes><normal-notes>2</normal-notes></time-modification>
 				<staff>2</staff>
-				<beam number="2">continue</beam>
+				<beam number="1">continue</beam>
 			</note>
 			<note>
 				<pitch><step>G</step><octave>3</octave></pitch>
@@ -170,7 +170,7 @@
 				<type>16th</type>
 				<time-modification><actual-notes>3</actual-notes><normal-notes>2</normal-notes></time-modification>
 				<staff>2</staff>
-				<beam number="2">continue</beam>
+				<beam number="1">continue</beam>
 			</note>
 			<note>
 				<pitch><step>A</step><octave>3</octave></pitch>
@@ -179,7 +179,7 @@
 				<type>16th</type>
 				<time-modification><actual-notes>3</actual-notes><normal-notes>2</normal-notes></time-modification>
 				<staff>2</staff>
-				<beam number="2">continue</beam>
+				<beam number="1">continue</beam>
 			</note>
 			<note>
 				<pitch><step>B</step><octave>3</octave></pitch>
@@ -188,7 +188,7 @@
 				<type>16th</type>
 				<time-modification><actual-notes>3</actual-notes><normal-notes>2</normal-notes></time-modification>
 				<staff>2</staff>
-				<beam number="2">continue</beam>
+				<beam number="1">continue</beam>
 			</note>
 			<note>
 				<pitch><step>C</step><octave>4</octave></pitch>
@@ -197,7 +197,7 @@
 				<type>16th</type>
 				<time-modification><actual-notes>3</actual-notes><normal-notes>2</normal-notes></time-modification>
 				<staff>2</staff>
-				<beam number="2">end</beam>
+				<beam number="1">end</beam>
 			</note>
 		</measure>
 	</part>

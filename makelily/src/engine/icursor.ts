@@ -37,13 +37,6 @@ interface ICursor {
     measure: Context.IMeasure;
     line: Context.ILine;
 
-    /** 
-     * Model that appears directly before this model. This could be:
-     *  - the previous model in the current voice
-     *  - the previous model in the current staff
-     *  - a BarlineModel, BeginModel, or EndModel
-     */
-    prev$: IModel;
     division$: number;
     x$: number;
     print$: Print;

@@ -63,7 +63,6 @@ export function createFakeStaffSegment(
                 return {
                     boundingBoxes$: [],
                     division: cursor$.division$,
-                    mergePolicy: IModel.HMergePolicy.Min,
                     x$: cursor$.x$ - width,
                     model: this,
                     renderClass: IModel.Type.Attributes
@@ -84,7 +83,6 @@ export function createFakeStaffSegment(
                 return {
                     boundingBoxes$: [],
                     division: cursor$.division$,
-                    mergePolicy: IModel.HMergePolicy.Max,
                     x$: cursor$.x$ - width,
                     model: this,
                     renderClass: IModel.Type.Attributes
@@ -116,7 +114,6 @@ export function createFakeVoiceSegment(
                 return {
                     boundingBoxes$: [],
                     division: cursor$.division$,
-                    mergePolicy: IModel.HMergePolicy.Min,
                     x$: cursor$.x$ - width,
                     expandPolicy: IModel.ExpandPolicy.After,
                     model: this,
@@ -138,7 +135,6 @@ export function createFakeVoiceSegment(
                 return {
                     boundingBoxes$: [],
                     division: cursor$.division$,
-                    mergePolicy: IModel.HMergePolicy.Max,
                     x$: cursor$.x$ - width,
                     expandPolicy: IModel.ExpandPolicy.After,
                     model: this,
@@ -159,7 +155,6 @@ export function createFakeLayout(idx: number, offset: number, max: boolean): IMo
         model: <any> {},
         x$: idx*100 + Math.log(1 + offset)/Math.log(2) * 10,
         division: idx*4 + offset,
-        mergePolicy: max ? IModel.HMergePolicy.Max : IModel.HMergePolicy.Min,
         boundingBoxes$: [],
         renderClass: IModel.Type.Attributes
     };

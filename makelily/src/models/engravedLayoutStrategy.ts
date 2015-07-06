@@ -52,12 +52,10 @@ export class Layout implements IModel.ILayout {
 
     // Prototype:
 
-    mergePolicy: IModel.HMergePolicy;
     boundingBoxes$: IModel.IBoundingRect[];
     expandPolicy: IModel.ExpandPolicy;
 }
 
-Layout.prototype.mergePolicy = IModel.HMergePolicy.Min;
 Layout.prototype.expandPolicy = IModel.ExpandPolicy.None;
 Layout.prototype.boundingBoxes$ = [];
 Object.freeze(Layout.prototype.boundingBoxes$);

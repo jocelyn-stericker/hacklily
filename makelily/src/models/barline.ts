@@ -239,7 +239,6 @@ module BarlineModel {
 
         // Prototype:
 
-        mergePolicy: IModel.HMergePolicy;
         boundingBoxes$: IModel.IBoundingRect[];
         renderClass: IModel.Type;
         expandPolicy: IModel.ExpandPolicy;
@@ -253,7 +252,6 @@ module BarlineModel {
         partSymbol: PartSymbol;
     }
 
-    Layout.prototype.mergePolicy = IModel.HMergePolicy.Max;
     Layout.prototype.expandPolicy = IModel.ExpandPolicy.None;
     Layout.prototype.renderClass = IModel.Type.Barline;
     Layout.prototype.boundingBoxes$ = [];

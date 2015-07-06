@@ -147,7 +147,6 @@ function tryValidate(options$: ILayoutOptions, memo$: ILinesLayoutState): void {
                 header: options$.header,
                 line: null,
                 measure: measureCtx,
-                prevByStaff: null,
                 padEnd: false,
                 segments: segments,
                 _approximate: true,

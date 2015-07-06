@@ -99,12 +99,6 @@ module IModel {
         FrozenEngraved
     }
 
-    export enum HMergePolicy {
-        Invalid = 0,
-        Max = 1,
-        Min = 2
-    }
-
     export enum Type {
         START_OF_LAYOUT_ELEMENTS = 0,
         Print = 10,
@@ -136,7 +130,6 @@ module IModel {
 
         x$: number;
         division: number;
-        mergePolicy: HMergePolicy;
 
         minSpaceBefore?: number;
         minSpaceAfter?: number;
@@ -250,7 +243,6 @@ module IModel {
 
     export interface ICombinedLayout {
         x: number;
-        mergePolicy: HMergePolicy;
         division: number;
         renderClass: Type;
         expandPolicy?: ExpandPolicy;
@@ -261,7 +253,6 @@ module IModel {
         let detached: ICombinedLayout = {
             x: layout.x$,
             division: layout.division,
-            mergePolicy: layout.mergePolicy,
             renderClass: layout.renderClass
         };
         if (layout.expandPolicy) {
@@ -281,7 +272,6 @@ module IModel {
             model: null,
             x$: layout.x,
             division: layout.division,
-            mergePolicy: layout.mergePolicy,
             renderClass: layout.renderClass,
         };
         if (layout.expandPolicy) {
@@ -308,8 +298,7 @@ module IModel {
     export function merge$(segment1$: ICombinedLayout[], segment2$: ILayout[]): ICombinedLayout[] {
         let s1_idx = 0;
         let s2_idx = 0;
-        let division: number;
-        let x: number;
+        let x = 0;
 
         while (s1_idx < segment1$.length || s2_idx < segment2$.length) {
             let item1 = segment1$[s1_idx];
@@ -320,7 +309,6 @@ module IModel {
             let div2 = !!item2 ? item2.division : Number.MAX_VALUE;
             let pri2 = !!item2 ? item2.renderClass : Number.MAX_VALUE;
 
-            division = Math.min(div1, div2);
             if (div1 < div2 || div1 === div2 && pri1 < pri2) {
                 x = item1.x;
                 invariant(!!segment2$, "Segment2 must be defined");
@@ -337,18 +325,7 @@ module IModel {
                     div1, pri1);
                 invariant(pri1 === pri2, "invalid priority: %s must equal %s", pri1, pri2);
                 invariant(div1 === div2, "invalid division");
-                switch(segment2$[s2_idx].mergePolicy) {
-                    case HMergePolicy.Max:
-                        x = Math.max(item1.x, item2.x$);
-                        break;
-                    case HMergePolicy.Min:
-                        x = Math.min(item1.x, item2.x$);
-                        break;
-                    default:
-                        invariant(false, "Invalid merge policy %s", segment2$[s2_idx].mergePolicy);
-                        break;
-                }
-                item1.x = item2.x$ = x;
+                item1.x = item2.x$ = x = Math.max(item1.x || 0, item2.x$ || 0, x);
             }
             ++s1_idx;
             ++s2_idx;
