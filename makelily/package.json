@@ -1,0 +1,27 @@
+{
+  "name": "dragon",
+  "private": true,
+  "version": "0.0.3-alpha1",
+  "description": "Audio and MIDI for node",
+  "main": "build/Release/lib.js",
+  "scripts": {
+    "prepublish": "node node_modules/typescript/bin/tsc.js",
+    "prestart": "node -e \"require('shelljs/global'); a = console.assert; a(!exec('node-gyp build').code); a(!exec('npm run prepublish').code);\"",
+    "start": "node ./build/Release/lib.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "audio",
+    "midi",
+    "realtime"
+  ],
+  "author": "Josh Netterfield",
+  "dependencies": {},
+  "devDependencies": {
+    "nan": "^1.8.4",
+    "node-gyp": "^2.0.2",
+    "shelljs": "^0.5.1",
+    "touch": "^1.0.0",
+    "typescript": "^1.5.0-beta"
+  }
+}

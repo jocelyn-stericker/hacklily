@@ -1,0 +1,3 @@
+[submodule "vendor/portaudio"]
+	path = vendor/portaudio
+	url = https://github.com/D-Programming-Deimos/portaudio.git

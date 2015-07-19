@@ -1,0 +1,18 @@
+libsndfile D bindings
+------------------
+
+Introduction:
+
+Libsndfile is a C library for reading and writing files containing sampled sound (such as MS Windows WAV and the Apple/SGI AIFF format) through one standard library interface. It is released in source code format under the Gnu Lesser General Public License.
+http://www.mega-nerd.com/libsndfile/
+
+License:
+libsndfile and the D bindings are released under the LGPL license.
+
+Binding version: 1.0.25
+
+Example:
+See examples/ folder
+
+High-Level Wrapper:
+not available

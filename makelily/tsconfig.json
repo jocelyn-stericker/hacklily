@@ -1,0 +1,14 @@
+{
+    "compilerOptions": {
+        "module": "commonjs",
+        "noImplicitAny": true,
+        "removeComments": false,
+        "preserveConstEnums": true,
+        "outDir": "./build/Release",
+        "sourceMap": false,
+        "target": "es5"
+    },
+    "files": [
+        "./source/terabithia/lib.ts"
+    ]
+}

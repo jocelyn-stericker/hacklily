@@ -1,0 +1,15 @@
+.dub
+docs.json
+__dummy.html
+*.o
+*.obj
+*.sw?
+build
+.DS_Store
+dub.selections.json
+node_modules
+npm-debug.log
+vendor/gm/*.tar.gz
+vendor/gm/*.sf2
+vendor/gm/*.doc
+vendor/gm/*.txt
