@@ -203,8 +203,6 @@ export AudioEngineImpl streamToRTThread(AudioEngineImpl oldState, int input, int
     }
 
     rtThread.send(RTCommand.Activate);
-    rtThread.send(RTCommand.Connect, 1, 3, 1, 1, -1);
-    rtThread.send(RTCommand.Connect, 2, 4, 1, 1, -1);
     return newState;
 }
 

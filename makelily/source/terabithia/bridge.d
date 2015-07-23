@@ -11,9 +11,14 @@ import std.json;
 import std.stdio: writeln; // for debugging
 
 import live.core.store: Store;
-import live.core.effect: RTCommand;
+import live.core.effect: RTCommand, AudioWidth;
 import live.engine.audio: AudioEngine, Lifecycle, AudioError;
 import live.engine.midi: MidiEngine, MidiError;
+import live.engine.rtthread: ReceivePoke;
+
+// So they can be created.
+import live.effects.soundfont;
+import live.effects.sequencer;
 
 // TLS for dragon_receive thread!
 AudioEngine audioEngine;
@@ -38,9 +43,6 @@ struct StreamCmd {
 
 struct ReceiveQuit {
     string ack;
-}
-
-struct ReceivePoke {
 }
 
 enum QUIT_CMD = -1;
@@ -90,9 +92,8 @@ extern(C) {
                         auto streamFrom = audioEngine.devices.filter!(device => device.name == stream.fromName).front;
                         auto streamTo = audioEngine.devices.filter!(device => device.name == stream.toName).front;
                         audioEngine.stream(streamFrom, streamTo, store);
+                        midiEngine.stream(store);
                         writeln("[bridge.d] Looks like we're streaming!");
-                        auto rtThread = "rtThread".locate;
-                        rtThread.send(RTCommand.Connect, 1, 3, 1, 1, -1);
                     },
                 );
             } catch(AudioError error) {
@@ -147,10 +148,11 @@ extern(C) {
         return dragon_buffer.length.to!int;
     }
     
-    void dragon_send(const char* commandPtr, int commandLen, const char* jsonPtr, int jsonLen) {
+    int dragon_send(const char* commandPtr, int commandLen, const char* jsonPtr, int jsonLen) {
         import std.stdio;
         string command = commandPtr[0..commandLen].idup;
         string json = jsonPtr[0..jsonLen].idup;
+        writeln("Received: ", command, " ", json);
         if (command == "stream") {
             JSONValue val = json.parseJSON;
             StreamCmd streamCmd = {
@@ -160,14 +162,30 @@ extern(C) {
             locate("receivingThread").send(streamCmd);
         } else if (command == "connect") {
             JSONValue val = json.parseJSON;
-            locate("rtThread").send(RTCommand.Connect,
-                val["from"].integer,
-                val["to"].integer,
-                val["startChannel"].integer,
-                val["endChannel"].integer,
-                val["offset"].integer);
+            "rtThread".locate.send(RTCommand.Connect,
+                val["from"].integer.to!int,
+                val["to"].integer.to!int,
+                val["startChannel"].integer.to!int,
+                val["endChannel"].integer.to!int,
+                val["offset"].integer.to!int);
+        } else if (command == "create") {
+            JSONValue val = json.parseJSON;
+            auto newID = store.getNewID();
+            "rtThread".locate.send(RTCommand.Create,
+                newID,
+                val["id"].str,
+                val["channels"].integer.to!int,
+                AudioWidth.Float
+            );
+            return newID;
+        } else if (command == "toEffect") {
+            JSONValue val = json.parseJSON;
+            "rtThread".locate.send(RTCommand.MessageIn,
+                val["effect"].integer.to!int,
+                val["msg"].str
+            );
         }
-        writeln("Received: ", command, " ", json);
+        return -1;
     }
     
     void dragon_init() {

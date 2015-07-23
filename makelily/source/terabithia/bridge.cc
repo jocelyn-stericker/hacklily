@@ -11,7 +11,7 @@ using v8::String;
 
 extern "C" {
     int dragon_receive(const char** ptr);
-    void dragon_send(const char* commandPtr, int commandLen, const char* jsonPtr, int jsonLen);
+    int dragon_send(const char* commandPtr, int commandLen, const char* jsonPtr, int jsonLen);
     void dragon_quit();
     void dragon_poke();
     void dragon_init();
@@ -62,8 +62,8 @@ NAN_METHOD(sendCommand) {
     NanScope();
     NanUtf8String param1(args[0]->ToString());
     NanUtf8String param2(args[1]->ToString());
-    dragon_send(*param1, param1.length(), *param2, param2.length());
-    NanReturnUndefined();
+    int token = dragon_send(*param1, param1.length(), *param2, param2.length());
+    NanReturnValue(NanNew<v8::Number>(token));
 }
 
 NAN_METHOD(quit) {

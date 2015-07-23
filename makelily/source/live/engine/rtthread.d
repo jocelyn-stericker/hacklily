@@ -53,6 +53,9 @@ class ReceiverG(type) : Effect!type {
 class Receiver : ReceiverG!float {}
 class ReceiverD : ReceiverG!double {}
 
+struct ReceivePoke {
+}
+
 shared bool quitting = false;
 
 private class Connection(audiotype) {
@@ -243,6 +246,11 @@ void rtLoop(int nframes, int sampleRate, shared Store store) {
             ref Effect!(type)[int] effects,
             ref Connection!(type)[][int][int] cons, bool hardware) {
         effects[id] = cast(Effect!type) Object.factory(symbol);
+        if (!effects[id]) {
+            import std.stdio;
+            ("[rtthread.d] WARNING: Invalid symbol " ~ symbol).writeln;
+            return;
+        }
         effects[id].initialize(id, channels, nframes, sampleRate);
         cons[id] = null;
         if(!hardware) foreach (channel; 0..channels) {
@@ -262,6 +270,13 @@ void rtLoop(int nframes, int sampleRate, shared Store store) {
             Effect!(type1)[int] effects, type2 ev) {
         if (id in effects) {
             connections[id].process(ev, id);
+        }
+    }
+
+    void stateDidChange() {
+        auto receivingThread = "receivingThread".locate;
+        if (receivingThread != Tid.init) {
+            receivingThread.send(ReceivePoke.init);
         }
     }
 
@@ -379,9 +394,17 @@ void rtLoop(int nframes, int sampleRate, shared Store store) {
             (RTCommand command, int i) {
                 switch(command) {
                 case RTCommand.SetSampleRate:
+                    if (isInProc) {
+                        // defer this until after the cycle.
+                        thisTid.send(command, i);
+                        return;
+                    }
+
                     writeln("SetSampleRate called. This isn't yet supported.");
                     enforce(sampleRate == i);
                     sampleRate = i;
+
+                    stateDidChange();
                     break;
                 case RTCommand.Destroy: {
                     int id = i;
@@ -400,6 +423,7 @@ void rtLoop(int nframes, int sampleRate, shared Store store) {
                         assert(0, "Deleting a non-existant effect.");
                     }
                     store.remove(id);
+                    stateDidChange();
                     break;
                 }
                 default:
@@ -411,6 +435,7 @@ void rtLoop(int nframes, int sampleRate, shared Store store) {
             (RTCommand command, int id1, int id2, int start, int end, int chOffset) {
                 if (isInProc) {
                     thisTid.send(command, id1, id2, start, end, chOffset);
+                    return;
                 }
 
                 if (command == RTCommand.Disconnect) {
@@ -433,6 +458,8 @@ void rtLoop(int nframes, int sampleRate, shared Store store) {
                 if ((id1 in floatEffects) && (id2 in doubleEffects)) {
                     assert(0, "Float -> Double audio is not yet supported");
                 }
+
+                stateDidChange();
             },
             
             // Create
@@ -465,6 +492,8 @@ void rtLoop(int nframes, int sampleRate, shared Store store) {
                     create(symbol, channels, id, doubleEffects,
                             doubleConnections, !!(w & AudioWidth.HWIN));
                 }
+
+                stateDidChange();
             },
             
             // Hardware Audio In - float

@@ -10,7 +10,7 @@ import deimos.portmidi:
     Pm_Write, Pm_Poll, Pm_MessageStatus, Pm_MessageData1, Pm_MessageData2, Pm_GetDeviceInfo,
     Pm_CountDevices, Pm_OpenInput, Pm_OpenOutput, Pm_Message, Pm_Read;
 import std.algorithm: map;
-import std.concurrency: thisTid, receiveTimeout, send, register, locate, OwnerTerminated;
+import std.concurrency: thisTid, receiveTimeout, send, register, locate, spawn, OwnerTerminated;
 import std.conv: to;
 import std.exception: Exception, enforce;
 import std.json: JSONValue;
@@ -118,6 +118,20 @@ export class MidiEngine {
     } body {
         devices = null;
         state = Lifecycle.UNINITIALIZED;
+        return this;
+    }
+
+    MidiEngine stream(shared Store store)
+    in {
+        enforce(state == Lifecycle.INITIALIZED,
+            new MidiError("Cannot stream. Not initialized yet."));
+    } out {
+        enforce(state == Lifecycle.STREAMING,
+            new MidiError("Failed to stream."));
+    } body {
+        devices = null;
+        state = Lifecycle.STREAMING;
+        (&midiThread).spawn(store);
         return this;
     }
 

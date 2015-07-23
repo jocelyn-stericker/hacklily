@@ -22,7 +22,8 @@ export interface MidiDevice {
 }
 
 export interface Effect {
-    id: string;
+    id: number;
+    name: string;
     type: string;
     midiIn: boolean;
     midiOut: boolean;
@@ -32,6 +33,11 @@ export interface Effect {
 
 export interface EffectFactory {
     id: string;
+}
+
+export interface EffectSpec {
+    id: string;
+    channels: number;
 }
 
 export interface Connection {
@@ -69,7 +75,7 @@ export interface TransientError {
 
 interface IDragon {
     onStateChange: (cb: (engineState: string /* "EngineState" */) => void) => void;
-    sendCommand: (func: string, options: string) => void;
+    sendCommand: (func: string, options: string) => number;
     poke: () => void;
     quit: () => void;
 }
@@ -90,6 +96,18 @@ var startRunning = function() {
         } else {
             parsedState.audio.state = Lifecycle[parsedState.audio.state];
             parsedState.midi.state = Lifecycle[parsedState.midi.state];
+            // We don't have a good way of querying yet, so this is hardcoded.
+            parsedState.factories = [
+                {
+                    id: "live.effects.sequencer.Sequencer"
+                },
+                {
+                    id: "live.effects.soundfont.Soundfont"
+                },
+                {
+                    id: "live.engine.rtthread.Passthrough"
+                },
+            ];
             runner(null, parsedState);
         }
     });
@@ -125,12 +143,15 @@ export function disconnect(connection: Connection) {
     Dragon.sendCommand("disconnect", JSON.stringify(connection));
 }
 
-export function create(factory: EffectFactory) {
-    Dragon.sendCommand("create", JSON.stringify(factory));
+export function create(spec: EffectSpec) {
+    return Dragon.sendCommand("create", JSON.stringify(spec));
 }
 
 export function toEffect(effect: Effect, anything: {}) {
-    Dragon.sendCommand("toEffect", JSON.stringify(anything));
+    Dragon.sendCommand("toEffect", JSON.stringify({
+        effect: effect.id,
+        msg: JSON.stringify(anything)
+    }));
 }
 
 export function quit() {
