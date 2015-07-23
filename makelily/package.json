@@ -5,8 +5,8 @@
   "description": "Audio and MIDI for node",
   "main": "build/Release/lib.js",
   "scripts": {
-    "prepublish": "node node_modules/typescript/bin/tsc.js",
-    "prestart": "node -e \"require('shelljs/global'); a = console.assert; a(!exec('node-gyp build').code); a(!exec('npm run prepublish').code);\"",
+    "prepublish": "node node_modules/ntypescript/bin/tsc.js",
+    "prestart": "node -e \"require('touch')('./source/terabithia/bridge.cc'); require('shelljs/global'); a = console.assert; a(!exec('node-gyp build').code); a(!exec('npm run prepublish').code);\"",
     "start": "node ./build/Release/lib.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -16,12 +16,15 @@
     "realtime"
   ],
   "author": "Josh Netterfield",
-  "dependencies": {},
+  "dependencies": {
+    "lodash": "^3.10.0"
+  },
   "devDependencies": {
+    "electron-prebuilt": "^0.30.0",
     "nan": "^1.8.4",
     "node-gyp": "^2.0.2",
+    "ntypescript": "^1.201507152343.1",
     "shelljs": "^0.5.1",
-    "touch": "^1.0.0",
-    "typescript": "^1.5.0-beta"
+    "touch": "^1.0.0"
   }
 }

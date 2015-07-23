@@ -10,7 +10,7 @@
             "libraries": [
                 "./libdragon.a",
                 "-L/usr/local/lib",
-                "-lphobos2",
+                "/usr/local/lib/libphobos2.a",
                 "-lportaudio",
                 "-lportmidi",
                 "-lsndfile",
@@ -29,13 +29,6 @@
                     "inputs": ["./source/**.d"],
                     "outputs": ["build/libdragon.a"],
                     "action": ["dub", "build", "--force"],
-                },
-                {
-                    "action_name": "update_bridge_cc",
-                    "message": "Updating bridge.cc...",
-                    "inputs": ["./source/**.d"],
-                    "outputs": ["./source/terabithia/bridge.cc"],
-                    "action": ["node", "-e", "\"require('touch')('./source/terabithia/bridge.cc')\""],
                 }
             ]
         }

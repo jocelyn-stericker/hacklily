@@ -4,7 +4,7 @@ module live.engine.rtthread;
 
 import core.memory: GC;
 import std.array: popFront;
-import std.concurrency: thisTid, receive, send, OwnerTerminated, Tid;
+import std.concurrency: thisTid, receive, locate, send, OwnerTerminated, Tid;
 import std.conv: to;
 import std.exception: enforce;
 import std.variant: Variant;
@@ -142,18 +142,18 @@ void rtLoop(int nframes, int sampleRate, shared Store store) {
         auto chan = t.chan;
         auto buffer = t.buffer;
 
-        foreach (conl; connections[effect.dragonID]) {
+        foreach (conl; connections[effect.id]) {
             foreach (con; conl) {
                 auto senderBk = sender;
                 scope(exit) sender = senderBk;
-                sender = effect.dragonID;
+                sender = effect.id;
 
                 if (con.startChannel == -1 ||
                         chan + con.channelOffset < con.startChannel ||
                         chan + con.channelOffset > con.endChannel)
                     continue;
 
-                int iID = con.b.dragonID;
+                int iID = con.b.id;
                 int ichan = chan + con.channelOffset;
                 auto iInputs = con.b.inputs;
 
@@ -239,29 +239,29 @@ void rtLoop(int nframes, int sampleRate, shared Store store) {
         }
     }
     
-    void create(type)(string symbol, int channels, int dragonID,
+    void create(type)(string symbol, int channels, int id,
             ref Effect!(type)[int] effects,
             ref Connection!(type)[][int][int] cons, bool hardware) {
-        effects[dragonID] = cast(Effect!type) Object.factory(symbol);
-        effects[dragonID].initialize(dragonID, channels, nframes, sampleRate);
-        cons[dragonID] = null;
+        effects[id] = cast(Effect!type) Object.factory(symbol);
+        effects[id].initialize(id, channels, nframes, sampleRate);
+        cons[id] = null;
         if(!hardware) foreach (channel; 0..channels) {
-            disconnected[dragonID*10000 + channel] = true;
+            disconnected[id*10000 + channel] = true;
         }
     }
 
     void sendToEffect(type1, type2)
-            (int dragonID, Effect!(type1)[int] effects, type2 ev) {
-        if (dragonID in effects) {
-            effects[dragonID].process(ev);
+            (int id, Effect!(type1)[int] effects, type2 ev) {
+        if (id in effects) {
+            effects[id].process(ev);
         }
     }
 
-    void sendFromEffect(type1, type2)(int dragonID,
+    void sendFromEffect(type1, type2)(int id,
             Connection!(type1)[][int][int] connections,
             Effect!(type1)[int] effects, type2 ev) {
-        if (dragonID in effects) {
-            connections[dragonID].process(ev, dragonID);
+        if (id in effects) {
+            connections[id].process(ev, id);
         }
     }
 
@@ -292,6 +292,7 @@ void rtLoop(int nframes, int sampleRate, shared Store store) {
     RecurseGraphData!double[] dqueue;
 
     int gcTimer = 0;
+    string quittingThread;
 
     ///////////////////////////////
 
@@ -354,6 +355,15 @@ void rtLoop(int nframes, int sampleRate, shared Store store) {
                 }
             },
 
+            (RTCommand command, string threadName) {
+                if (command == RTCommand.Quit) {
+                    running = false;
+                    quittingThread = threadName;
+                } else{
+                    assert(0, "Invalid signature");
+                }
+            },
+
             // .Ping
             (RTCommand command, Tid tid, string msg) {
                 switch (command) {
@@ -374,22 +384,22 @@ void rtLoop(int nframes, int sampleRate, shared Store store) {
                     sampleRate = i;
                     break;
                 case RTCommand.Destroy: {
-                    int dragonID = i;
+                    int id = i;
                     if (isInProc) {
                         // defer this until after the cycle.
-                        thisTid.send(command, dragonID);
+                        thisTid.send(command, id);
                         return;
                     }
-                    if (dragonID in floatEffects) {
-                        auto d = floatEffects[dragonID];
+                    if (id in floatEffects) {
+                        auto d = floatEffects[id];
                         delete d;
-                    } else if (dragonID in doubleEffects) {
-                        auto d = doubleEffects[dragonID];
+                    } else if (id in doubleEffects) {
+                        auto d = doubleEffects[id];
                         delete d;
                     } else {
                         assert(0, "Deleting a non-existant effect.");
                     }
-                    store.remove(dragonID);
+                    store.remove(id);
                     break;
                 }
                 default:
@@ -426,22 +436,22 @@ void rtLoop(int nframes, int sampleRate, shared Store store) {
             },
             
             // Create
-            (RTCommand command, int dragonID, string symbol, int channels,
+            (RTCommand command, int id, string symbol, int channels,
                     AudioWidth w) {
 
                 if (isInProc) {
                     // defer this until after the cycle.
-                    thisTid.send(command, dragonID, symbol, channels, w);
+                    thisTid.send(command, id, symbol, channels, w);
                     return;
                 }
 
                 if (command != RTCommand.Create) {
                     return;
                 }
-                if (dragonID in floatEffects) {
+                if (id in floatEffects) {
                     return;
                 }
-                if (dragonID in doubleEffects) {
+                if (id in doubleEffects) {
                     return;
                 }
 
@@ -449,88 +459,88 @@ void rtLoop(int nframes, int sampleRate, shared Store store) {
                 scope(exit) isActive = true;
 
                 if (w & AudioWidth.Float) {
-                    create(symbol, channels, dragonID, floatEffects,
+                    create(symbol, channels, id, floatEffects,
                             floatConnections, !!(w & AudioWidth.HWIN));
                 } else if (w & AudioWidth.Double) {
-                    create(symbol, channels, dragonID, doubleEffects,
+                    create(symbol, channels, id, doubleEffects,
                             doubleConnections, !!(w & AudioWidth.HWIN));
                 }
             },
             
             // Hardware Audio In - float
-            (RTCommand command, int dragonID, immutable(float)* data, int nframes) {
+            (RTCommand command, int id, immutable(float)* data, int nframes) {
                 assert(isInProc, "AudioIn is a low level function which is " ~
                         "called during the process cycle");
 
-                if ((dragonID in floatEffects) && command == RTCommand.AudioIn) {
+                if ((id in floatEffects) && command == RTCommand.AudioIn) {
                     recurseGraph!(float)(floatConnections, queue,
-                            floatEffects[dragonID], data, 0,
+                            floatEffects[id], data, 0,
                             floatMixerBuffers);
                 }
             },
-            (RTCommand command, int dragonID, shared(float)* data, int nframes) {
+            (RTCommand command, int id, shared(float)* data, int nframes) {
                 assert(!isInProc);
 
-                if ((dragonID in floatEffects) &&
+                if ((id in floatEffects) &&
                     command == RTCommand.AudioOutPtr) {
-                    Receiver rec = cast(Receiver) floatEffects[dragonID];
+                    Receiver rec = cast(Receiver) floatEffects[id];
                     assert(rec, "AudioOutPtr sent to invalid destination");
                     rec.buffer = data;
                 }
             },
             
             // Hardware Audio In - double
-            (RTCommand audioIn, int dragonID, immutable(double)* data, int nframes) {
+            (RTCommand audioIn, int id, immutable(double)* data, int nframes) {
                 assert(isInProc, "AudioOutPtr is a low level function which " ~
                         "is called during the process cycle");
-                if ((dragonID in doubleEffects) && audioIn == RTCommand.AudioIn) {
+                if ((id in doubleEffects) && audioIn == RTCommand.AudioIn) {
                     recurseGraph!(double)(doubleConnections, dqueue,
-                            doubleEffects[dragonID], data, 0,
+                            doubleEffects[id], data, 0,
                             doubleMixerBuffers);
                 }
             },
 
-            (RTCommand command, int dragonID, shared(double)* data, int nframes) {
+            (RTCommand command, int id, shared(double)* data, int nframes) {
                 assert(isInProc, "AudioOutPtr is a low level function which " ~
                         "is called during the process cycle");
 
-                if ((dragonID in doubleEffects) &&
+                if ((id in doubleEffects) &&
                     command == RTCommand.AudioOutPtr) {
-                    ReceiverD rec = cast(ReceiverD) doubleEffects[dragonID];
+                    ReceiverD rec = cast(ReceiverD) doubleEffects[id];
                     assert(rec, "AudioOutPtr sent to invalid destination");
                     rec.buffer = data;
                 }
             },
             
             // Midi I/O
-            (RTCommand midi, int dragonID, MidiEvent ev) {
+            (RTCommand midi, int id, MidiEvent ev) {
                 if (isInProc) {
-                    thisTid.send(midi, dragonID, ev);
+                    thisTid.send(midi, id, ev);
                     return;
                 }
 
                 if (midi == RTCommand.MidiIn) {
-                    sendToEffect(dragonID, floatEffects, ev);
-                    sendToEffect(dragonID, doubleEffects, ev);
+                    sendToEffect(id, floatEffects, ev);
+                    sendToEffect(id, doubleEffects, ev);
                 } else if (midi == RTCommand.MidiOut) {
-                    sendFromEffect(dragonID, floatConnections, floatEffects, ev);
-                    sendFromEffect(dragonID, doubleConnections, doubleEffects, ev);
+                    sendFromEffect(id, floatConnections, floatEffects, ev);
+                    sendFromEffect(id, doubleConnections, doubleEffects, ev);
                 }
             },
             
             // Message I/O
-            (RTCommand command, int dragonID, string ev) {
+            (RTCommand command, int id, string ev) {
                 if (isInProc) {
-                    thisTid.send(command, dragonID, ev);
+                    thisTid.send(command, id, ev);
                     return;
                 }
 
                 if (command == RTCommand.MessageIn) {
-                    sendToEffect(dragonID, floatEffects, ev);
-                    sendToEffect(dragonID, doubleEffects, ev);
+                    sendToEffect(id, floatEffects, ev);
+                    sendToEffect(id, doubleEffects, ev);
                 } else if (command == RTCommand.MessageOut) {
-                    sendFromEffect(dragonID, floatConnections, floatEffects, ev);
-                    sendFromEffect(dragonID, doubleConnections, doubleEffects, ev);
+                    sendFromEffect(id, floatConnections, floatEffects, ev);
+                    sendFromEffect(id, doubleConnections, doubleEffects, ev);
                 }
             },
 
@@ -553,6 +563,9 @@ void rtLoop(int nframes, int sampleRate, shared Store store) {
 
     GC.enable();
     quitting = true;
+    if (quittingThread) {
+        quittingThread.locate().send(true);
+    }
 }
 
 unittest {

@@ -1,18 +1,24 @@
 export enum Lifecycle {
-    UNINITIALIZED,
-    ERROR,
+    Uninitialized,
+    Error,
 
-    INITIALIZED,
-    STREAMING,
+    Initialized,
+    Streaming,
 }
 
 export interface AudioDevice {
-    name: string;
-    maxInputChannels: number;
-    maxOutputChannels: number;
     defaultSampleRate: number;
     isDefaultInput: boolean;
     isDefaultOutput: boolean;
+    maxInputChannels: number;
+    maxOutputChannels: number;
+    name: string;
+}
+
+export interface MidiDevice {
+    input: boolean;
+    name: string;
+    output: boolean;
 }
 
 export interface Effect {
@@ -29,38 +35,79 @@ export interface EffectFactory {
 }
 
 export interface Connection {
-    from: string;
-    to: string;
+    from: number;
+    to: number;
     startChannel: number;
     endChannel: number;
     offset: number;
-    midi: boolean;
+}
+
+export interface AudioEngine {
+    state: Lifecycle;
+    error: string;
+    devices: AudioDevice[];
+}
+
+export interface MidiEngine {
+    state: Lifecycle;
+    error: string;
+    devices: MidiDevice[];
 }
 
 export interface EngineState {
-    state: Lifecycle;
-    error: string;
-    audioDevices: AudioDevice[];
-    effects: Effect[];
-    graph: Connection[];
+    audio: AudioEngine;
     factories: EffectFactory[];
+    graph: Connection[];
+    midi: MidiEngine;
+    store: Effect[];
+}
+
+export interface TransientError {
+    error: string;
+    transient: boolean;
 }
 
 interface IDragon {
     onStateChange: (cb: (engineState: string /* "EngineState" */) => void) => void;
     sendCommand: (func: string, options: string) => void;
+    poke: () => void;
+    quit: () => void;
 }
 
 declare function require(name: string): any;
 var Dragon: IDragon = require("./dragon");
 
-export function initialize(cb: (engineState: EngineState) => void) {
-    Dragon.onStateChange(engineState => cb(JSON.parse(engineState)));
-    Dragon.sendCommand("initialize", "");
+var runner: (error: TransientError, engineState: EngineState) => void = null;
+var running = false;
+var startRunning = function() {
+    Dragon.onStateChange(engineState => {
+        if (!runner) {
+            return;
+        }
+        let parsedState = JSON.parse(engineState);
+        if (parsedState.transient) {
+            runner(parsedState, null);
+        } else {
+            parsedState.audio.state = Lifecycle[parsedState.audio.state];
+            parsedState.midi.state = Lifecycle[parsedState.midi.state];
+            runner(null, parsedState);
+        }
+    });
+    running = true;
+}
+export function run(cb: (error: TransientError, engineState: EngineState) => void) {
+    runner = cb;
+    if (!running) {
+        startRunning();
+    } else {
+        setTimeout(function() {
+            Dragon.poke();
+        }, 10);
+    }
 }
 
 export function stop() {
-    Dragon.sendCommand("stop", "");
+    Dragon.sendCommand("stop", JSON.stringify({}));
 }
 
 export function startStreaming(audioDeviceIn: AudioDevice, audioDeviceOut: AudioDevice) {
@@ -86,12 +133,15 @@ export function toEffect(effect: Effect, anything: {}) {
     Dragon.sendCommand("toEffect", JSON.stringify(anything));
 }
 
+export function quit() {
+    runner = null;
+    startRunning = null;
+    Dragon.quit();
+}
+
 /**
  *
  */
 
 // initialize(function(engineState: EngineState) {
 // });
-initialize(function(engineState: EngineState) {
-    console.log(JSON.stringify(engineState, null, 2));
-});

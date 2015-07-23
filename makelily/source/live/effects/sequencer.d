@@ -46,8 +46,8 @@ class Sequencer : Effect!float {
         return m_audio;
     }
 
-    void initialize(int dragonID, int channels, int nframes, int sampleRate) {
-        RTBase.initialize(dragonID, channels, nframes, sampleRate);
+    void initialize(int id, int channels, int nframes, int sampleRate) {
+        RTBase.initialize(id, channels, nframes, sampleRate);
 
         foreach (channel; 0 .. channels) {
             import std.stdio;
@@ -245,8 +245,8 @@ class Sequencer : Effect!float {
         import live.util.track: dragon_waveform_getEndFrame, dragon_waveform_getWidth,
                dragon_waveform_setData;
 
-        int end = dragonID.dragon_waveform_getEndFrame();
-        int width = dragonID.dragon_waveform_getWidth();
+        int end = id.dragon_waveform_getEndFrame();
+        int width = id.dragon_waveform_getWidth();
         if (end <= 0 || width <= 0) {
             return;
         }
@@ -283,7 +283,7 @@ class Sequencer : Effect!float {
                 clientData[xidx] = t;
             }
         }
-        dragonID.dragon_waveform_setData(&clientData[0], width);
+        id.dragon_waveform_setData(&clientData[0], width);
     }
 
     void emitPosition() {

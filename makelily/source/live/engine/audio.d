@@ -2,20 +2,30 @@
 
 module live.engine.audio;
 
-import std.algorithm: canFind, countUntil;
+import std.algorithm: canFind, countUntil, map;
 import std.conv: to;
 import std.exception: Exception, enforce;
+import std.json: JSONValue;
+import std.range: array;
 import std.stdio: writeln;
-import std.string: fromStringz;
+import std.string: fromStringz, capitalize;
 
 import live.core.store: Store;
-import live.engine.audioImpl: DeviceInfo, AudioEngineImpl, initialize, disconnect, streamToRTThread;
+import live.engine.audioImpl: DeviceInfo, AudioEngineImpl, initialize, abort, streamToRTThread;
 
-export import live.engine.audioImpl: Lifecycle;
+export import live.engine.lifecycle: Lifecycle;
 
-class APIError : Exception {
+class AudioError : Exception {
     this(string msg, string file = __FILE__, size_t line = __LINE__) {
         super(msg, file, line);
+    }
+    JSONValue serialize() {
+        auto jsonValue = JSONValue([
+            "error": msg.to!JSONValue,
+            "transient": true.to!JSONValue,
+        ]);
+
+        return jsonValue;
     }
 }
 
@@ -32,7 +42,7 @@ class AudioEngine {
 
     string error()
     in {
-        enforce(state == Lifecycle.ERROR, new APIError("There is not currently an error."));
+        enforce(state == Lifecycle.ERROR, new AudioError("There is not currently an error."));
     } body {
         return _impl.error;
     }
@@ -40,7 +50,7 @@ class AudioEngine {
     const(DeviceInfo[]) devices()
     in {
         enforce(state == Lifecycle.INITIALIZED,
-            new APIError("To query devices, audio must be initialized"));
+            new AudioError("To query devices, audio must be initialized"));
     } body {
         return _impl.devices;
     }
@@ -48,7 +58,7 @@ class AudioEngine {
     AudioEngine initialize()
     in {
         enforce(state == Lifecycle.UNINITIALIZED,
-            new APIError("initialize must only be called when uninitialized."));
+            new AudioError("initialize must only be called when uninitialized."));
     } body {
         _impl = _impl.initialize;
         return this;
@@ -57,17 +67,17 @@ class AudioEngine {
     AudioEngine stream(DeviceInfo input, DeviceInfo output, shared Store store)
     in {
         enforce(state == Lifecycle.INITIALIZED,
-            new APIError("start must only be called when initialized."));
+            new AudioError("start must only be called when initialized."));
         enforce(devices.canFind(input),
-            new APIError("cannot find requested input"));
+            new AudioError("cannot find requested input"));
         enforce(devices.canFind(output),
-            new APIError("cannot find requested output"));
+            new AudioError("cannot find requested output"));
         enforce(input.maxInputChannels > 0,
-            new APIError("device specified for input has no input channels"));
+            new AudioError("device specified for input has no input channels"));
         enforce(output.maxOutputChannels > 0,
-            new APIError("device specified for output has no output channels"));
+            new AudioError("device specified for output has no output channels"));
         enforce(input.defaultSampleRate == output.defaultSampleRate,
-            new APIError("The input and output device must have the same sample rate."));
+            new AudioError("The input and output device must have the same sample rate."));
     } body {
         _impl = _impl.streamToRTThread(
             _impl.devices.countUntil(input).to!int,
@@ -80,11 +90,35 @@ class AudioEngine {
         return this;
     }
 
-    AudioEngine close()
+    AudioEngine abort()
     in {
-        enforce(state == Lifecycle.STREAMING, new APIError("Must be streaming"));
+        // Can be in any state
+    } out {
+        enforce(state == Lifecycle.UNINITIALIZED,
+            new AudioError("could not uninitialize"));
     } body {
-        _impl = _impl.disconnect;
+        _impl = _impl.abort;
         return this;
     }
+
+    JSONValue serialize() {
+        return JSONValue([
+            "state": state.to!string.capitalize.to!JSONValue,
+            "error": state == Lifecycle.ERROR ? error.to!JSONValue : JSONValue(null),
+            "devices": state == Lifecycle.INITIALIZED ?
+                devices.map!(device => device.serialize).array.to!JSONValue :
+                JSONValue(null),
+        ]);
+    }
+}
+
+JSONValue serialize(DeviceInfo deviceInfo) {
+    return JSONValue([
+        "name": deviceInfo.name.to!JSONValue,
+        "maxInputChannels": deviceInfo.maxInputChannels.to!JSONValue,
+        "maxOutputChannels": deviceInfo.maxOutputChannels.to!JSONValue,
+        "defaultSampleRate": deviceInfo.defaultSampleRate.to!JSONValue,
+        "isDefaultInput": deviceInfo.isDefaultInput.to!JSONValue,
+        "isDefaultOutput": deviceInfo.isDefaultOutput.to!JSONValue
+    ]);
 }

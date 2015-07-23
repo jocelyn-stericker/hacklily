@@ -1,57 +1,201 @@
 /** Part of dragon. Copyright (C) Josh Netterfield <joshua@nettek.ca> 2015. */
 module terabithia.bridge;
 
+import core.memory: GC;
 import core.runtime: Runtime;
-import std.stdio;
+import core.thread: thread_attachThis;
+import std.algorithm: filter;
+import std.concurrency: thisTid, register, receive, receiveOnly, locate, send, Tid;
+import std.conv: to;
+import std.json;
+import std.stdio: writeln; // for debugging
 
 import live.core.store: Store;
-import live.engine.audio: AudioEngine;
+import live.core.effect: RTCommand;
+import live.engine.audio: AudioEngine, Lifecycle, AudioError;
+import live.engine.midi: MidiEngine, MidiError;
 
-// TLS for dragon_receive thread! {
-AudioEngine engine;
-char[] dragon_buffer;
-// }
+// TLS for dragon_receive thread!
+AudioEngine audioEngine;
+MidiEngine midiEngine;
+string dragon_buffer;
 
-extern(C):
+shared Store store;
 
-void dragon_sendToUIThread(int dragonID, const char* msg) {
+string recordState() {
+    JSONValue state = JSONValue([
+        "audio": audioEngine.serialize,
+        "midi": midiEngine.serialize,
+        "store": store.serialize,
+    ]);
+    return (&state).toJSON(true /* pretty */);
 }
 
-int dragon_waveform_getEndFrame() {
-    return 0;
-}
-int dragon_waveform_getWidth() {
-    return 0;
-}
-int dragon_waveform_setData() {
-    return 0;
+struct StreamCmd {
+    string fromName;
+    string toName;
 }
 
-int dragon_receive(char** ptr) {
-    writeln("YOLO--");
-    return 0;
-    // if (!engine) {
-    //     engine = new AudioEngine;
-    //     engine.initialize;
-    //     foreach(device; engine.devices) {
-    //         device.writeln;
-    //     }
-    //     auto store = new shared Store("rtThread");
-    //     engine.stream(engine.devices[0], engine.devices[1], store);
-    // }
-    // import std.stdio;
-    // writeln("YOLO");
-    // dragon_buffer[] = "YOLO";
-    // *ptr = dragon_buffer.ptr;
-    // writeln("YOLO");
-    // return 4; // length
+struct ReceiveQuit {
+    string ack;
 }
 
-void dragon_send(const char* ptr, int len) {
-    import std.stdio;
-    writeln("YOLO 2");
+struct ReceivePoke {
 }
 
-void dragon_init() {
-    Runtime.initialize();
+enum QUIT_CMD = -1;
+
+extern(C) {
+    void dragon_sendToUIThread(int id, const char* msg) {
+    }
+    
+    int dragon_waveform_getEndFrame() {
+        return 0;
+    }
+    int dragon_waveform_getWidth() {
+        return 0;
+    }
+    int dragon_waveform_setData() {
+        return 0;
+    }
+    
+    int dragon_receive(char** ptr) {
+        bool shouldQuit = false;
+        string quittingThreadName;
+        if (!audioEngine) {
+            thread_attachThis();
+            "receivingThread".register(thisTid);
+            audioEngine = new AudioEngine;
+            midiEngine = new MidiEngine;
+            store = new shared Store("rtThread");
+        } else if (audioEngine.state == Lifecycle.UNINITIALIZED) {
+            // Fix that.
+            audioEngine.initialize;
+        } else if (audioEngine.state == Lifecycle.INITIALIZED) {
+            // Wait for a request to stream.
+            try {
+                receive(
+                    (ReceiveQuit quit) {
+                        quittingThreadName = quit.ack;
+                        shouldQuit = true;
+                    },
+                    (ReceivePoke poke) {
+                        // Return the state.
+                    },
+                    (string command) {
+                        writeln("[bridge.d] It works.");
+                    },
+                    (StreamCmd stream) {
+                        writeln("[bridge.d] Attempting to stream from ", stream.fromName, " to ", stream.toName);
+                        auto streamFrom = audioEngine.devices.filter!(device => device.name == stream.fromName).front;
+                        auto streamTo = audioEngine.devices.filter!(device => device.name == stream.toName).front;
+                        audioEngine.stream(streamFrom, streamTo, store);
+                        writeln("[bridge.d] Looks like we're streaming!");
+                        auto rtThread = "rtThread".locate;
+                        rtThread.send(RTCommand.Connect, 1, 3, 1, 1, -1);
+                    },
+                );
+            } catch(AudioError error) {
+                auto jsonValue = error.serialize();
+                dragon_buffer = (&jsonValue).toJSON(true /* pretty */);
+                *ptr = cast(char*) dragon_buffer.ptr;
+                return dragon_buffer.length.to!int;
+            } catch(MidiError error) {
+                // TODO: merge
+                auto jsonValue = error.serialize();
+                dragon_buffer = (&jsonValue).toJSON(true /* pretty */);
+                *ptr = cast(char*) dragon_buffer.ptr;
+                return dragon_buffer.length.to!int;
+            }
+        } else if (audioEngine.state == Lifecycle.STREAMING) {
+            receive(
+                (ReceiveQuit quit) {
+                    quittingThreadName = quit.ack;
+                    shouldQuit = true;
+                },
+                (ReceivePoke poke) {
+                    // Return the state.
+                },
+                (string command) {
+                    writeln("[bridge.d] It works.");
+                },
+            );
+        } else if (audioEngine.state == Lifecycle.ERROR) {
+            receive(
+                (ReceiveQuit quit) {
+                    quittingThreadName = quit.ack;
+                    shouldQuit = true;
+                },
+                (ReceivePoke poke) {
+                    // Return the state.
+                },
+                (string command) {
+                    writeln("[bridge.d] It works.");
+                },
+            );
+        }
+        if (shouldQuit) {
+            audioEngine.abort();
+            audioEngine = null;
+            midiEngine.abort();
+            midiEngine = null;
+            quittingThreadName.locate.send(true);
+            return QUIT_CMD;
+        }
+        dragon_buffer = recordState;
+        *ptr = cast(char*) dragon_buffer.ptr;
+        return dragon_buffer.length.to!int;
+    }
+    
+    void dragon_send(const char* commandPtr, int commandLen, const char* jsonPtr, int jsonLen) {
+        import std.stdio;
+        string command = commandPtr[0..commandLen].idup;
+        string json = jsonPtr[0..jsonLen].idup;
+        if (command == "stream") {
+            JSONValue val = json.parseJSON;
+            StreamCmd streamCmd = {
+                fromName: val["from"].str,
+                toName: val["to"].str,
+            };
+            locate("receivingThread").send(streamCmd);
+        } else if (command == "connect") {
+            JSONValue val = json.parseJSON;
+            locate("rtThread").send(RTCommand.Connect,
+                val["from"].integer,
+                val["to"].integer,
+                val["startChannel"].integer,
+                val["endChannel"].integer,
+                val["offset"].integer);
+        }
+        writeln("Received: ", command, " ", json);
+    }
+    
+    void dragon_init() {
+        Runtime.initialize();
+    }
+
+    void dragon_quit() {
+        "quittingThread".register(thisTid);
+
+        auto receiver = locate("receivingThread");
+        if (receiver != Tid.init) {
+            receiver.send(ReceiveQuit("quittingThread"));
+            receiveOnly!bool();
+        }
+
+        auto rtThread = locate("rtThread");
+        if (rtThread != Tid.init) {
+            rtThread.send(RTCommand.Quit, "quittingThread");
+            receiveOnly!bool();
+        }
+        writeln("[bridge.d] Terminating.");
+        Runtime.terminate();
+    }
+
+    void dragon_poke() {
+        auto receiver = locate("receivingThread");
+        if (receiver != Tid.init) {
+            receiver.send(ReceivePoke());
+        }
+    }
 }

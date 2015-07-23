@@ -13,3 +13,4 @@ vendor/gm/*.tar.gz
 vendor/gm/*.sf2
 vendor/gm/*.doc
 vendor/gm/*.txt
+uitest/tmp

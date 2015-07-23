@@ -20,20 +20,13 @@ import std.string: fromStringz, toStringz;
 
 import live.core.effect: AudioWidth, Connectivity;
 import live.core.store: Store;
+import live.engine.lifecycle: Lifecycle;
 import live.engine.rtthread: RTCommand, rtLoop;
 
 class ImplementationError : Exception {
     this(string msg, string file = __FILE__, size_t line = __LINE__) {
         super(msg, file, line);
     }
-}
-
-export enum Lifecycle {
-    UNINITIALIZED,
-    ERROR,
-
-    INITIALIZED,
-    STREAMING,
 }
 
 export struct DeviceInfo {
@@ -215,12 +208,11 @@ export AudioEngineImpl streamToRTThread(AudioEngineImpl oldState, int input, int
     return newState;
 }
 
-export AudioEngineImpl disconnect(AudioEngineImpl oldState) {
-    Pa_StopStream(oldState.userData.stream);
-    Pa_CloseStream(oldState.userData.stream);
-
-    auto rtThread = oldState.userData.threadName.locate;
-    rtThread.send(RTCommand.Quit);
+export AudioEngineImpl abort(AudioEngineImpl oldState) {
+    if (oldState.userData.stream) {
+        Pa_StopStream(oldState.userData.stream);
+        Pa_CloseStream(oldState.userData.stream);
+    }
 
     return AudioEngineImpl.init;
 }

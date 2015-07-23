@@ -5,47 +5,52 @@ module live.core.store;
 import live.core.effect;
 
 import core.atomic: atomicOp;
+import std.algorithm: keys, map;
 import std.concurrency: send, locate;
 import std.conv: to;
+import std.json: JSONValue;
+import std.range: array;
 import std.string: toStringz;
 import std.traits: EnumMembers;
 
 synchronized class Store {
     struct Entry {
-        int dragonID = -1;
+        int id = -1;
         string name = "";
         AudioWidth audioWidth = AudioWidth.Dummy;
         bool isMidi = false;
         bool isHardware = false;
         Connectivity connectivity = Connectivity.None;
-        this(int c_dragonID, string c_name, AudioWidth c_width,
+        string threadName;
+        this(int c_id, string c_name, AudioWidth c_width,
                 bool c_isMidi, bool c_isHardware,
-                Connectivity c_connectivity) {
-            dragonID = c_dragonID;
-            name = c_name;
-            audioWidth = c_width;
-            isMidi = c_isMidi;
-            isHardware = c_isHardware;
-            connectivity = c_connectivity;
+                Connectivity c_connectivity,
+                string c_threadName) {
+            this.id = c_id;
+            this.name = c_name;
+            this.audioWidth = c_width;
+            this.isMidi = c_isMidi;
+            this.isHardware = c_isHardware;
+            this.connectivity = c_connectivity;
+            this.threadName = c_threadName;
         }
 
         void toRTThread(string s) {
-            auto rtThread = locate("rtThread");
-            rtThread.send(RTCommand.MessageIn, dragonID, s);
+            auto rtThread = locate(threadName);
+            rtThread.send(RTCommand.MessageIn, id, s);
         }
         void toUIThread(string s) {
-            dragon_sendToUIThread(dragonID, s.toStringz());
+            dragon_sendToUIThread(id, s.toStringz());
         }
-        string toString() {
-            return "{\n" ~
-                "   \"dragonID\": " ~ dragonID.to!string() ~ ", \n" ~
-                "   \"name\": \"" ~ name ~ "\", \n" ~
-                "   \"audioWidth\": \"" ~ to!string(audioWidth) ~ "\", \n" ~
-                "   \"isMidi\": \"" ~ (isMidi ? "True" : "False") ~ "\", \n" ~
-                "   \"isHardware\": \"" ~ (isHardware ? "True" : "False") ~
-                       "\", \n" ~
-                "   \"connectivity\": \"" ~ to!string(connectivity) ~ "\"\n" ~
-                "}";
+        JSONValue serialize() {
+            return JSONValue([
+                "id": id.to!JSONValue,
+                "name": name.to!JSONValue,
+                "audioWidth": audioWidth.to!string.to!JSONValue,
+                "isMidi": isMidi.to!JSONValue,
+                "isHardware": isHardware.to!JSONValue,
+                "connectivity": connectivity.to!string.to!JSONValue,
+            ]);
         }
     }
 
@@ -182,7 +187,7 @@ synchronized class Store {
     void insert(Entry e) {
         e.name ~= (e.connectivity & Connectivity.Input ? " In" :
              (e.connectivity & Connectivity.Output ? " Out" : ""));
-        m_byId[e.dragonID] = e;
+        m_byId[e.id] = e;
         m_byName[e.name] = e;
         m_byWidth[e.audioWidth][e] = true;
         m_byIsMidi[e.isMidi][e] = true;
@@ -205,22 +210,22 @@ synchronized class Store {
         m_all[e] = true;
     }
 
-    void insert(int c_dragonID, string c_name, AudioWidth c_width,
+    void insert(int c_id, string c_name, AudioWidth c_width,
                 bool c_isMidi, bool c_isHardware,
                 Connectivity c_connectivity) {
-        insert(Entry(c_dragonID, c_name, c_width, c_isMidi, c_isHardware,
-                c_connectivity));
+        insert(Entry(c_id, c_name, c_width, c_isMidi, c_isHardware,
+                c_connectivity, threadName));
     }
 
-    void insert(int c_dragonID, string c_name, string c_width,
+    void insert(int c_id, string c_name, string c_width,
                 bool c_isMidi, bool c_isHardware,
                 string c_connectivity) {
-        insert(c_dragonID, c_name, c_width, c_isMidi, c_isHardware,
+        insert(c_id, c_name, c_width, c_isMidi, c_isHardware,
                 c_connectivity);
     }
 
     void remove(Entry e) {
-        m_byId.remove(e.dragonID);
+        m_byId.remove(e.id);
         m_byName.remove(e.name);
         m_byWidth[e.audioWidth].remove(e);
         m_byIsMidi[e.isMidi].remove(e);
@@ -236,6 +241,10 @@ synchronized class Store {
 
     void remove(int id) {
         remove(m_byId[id]);
+    }
+
+    JSONValue serialize() {
+        return all.keys.map!(entry => entry.serialize).array.to!JSONValue;
     }
 
     string threadName;

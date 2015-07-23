@@ -1,5 +1,8 @@
 #include <iostream>
+#include <stdio.h>
 #include <nan.h>
+
+#define QUIT_CMD -1
 
 using v8::FunctionTemplate;
 using v8::Handle;
@@ -8,7 +11,9 @@ using v8::String;
 
 extern "C" {
     int dragon_receive(const char** ptr);
-    void dragon_send(const char* ptr, int len);
+    void dragon_send(const char* commandPtr, int commandLen, const char* jsonPtr, int jsonLen);
+    void dragon_quit();
+    void dragon_poke();
     void dragon_init();
 }
 
@@ -26,6 +31,9 @@ public:
         while (true) {
             const char* msg;
             int len = dragon_receive(&msg);
+            if (len == QUIT_CMD) {
+                break;
+            }
             progress.Send(msg, len);
         }
     }
@@ -53,7 +61,20 @@ NAN_METHOD(onStateChange) {
 NAN_METHOD(sendCommand) {
     NanScope();
     NanUtf8String param1(args[0]->ToString());
-    dragon_send(*param1, param1.length());
+    NanUtf8String param2(args[1]->ToString());
+    dragon_send(*param1, param1.length(), *param2, param2.length());
+    NanReturnUndefined();
+}
+
+NAN_METHOD(quit) {
+    NanScope();
+    dragon_quit();
+    NanReturnUndefined();
+}
+
+NAN_METHOD(poke) {
+    NanScope();
+    dragon_poke();
     NanReturnUndefined();
 }
 
@@ -65,6 +86,12 @@ void InitAll(Handle<Object> exports) {
 
   exports->Set(NanNew<String>("sendCommand"),
     NanNew<FunctionTemplate>(sendCommand)->GetFunction());
+
+  exports->Set(NanNew<String>("quit"),
+    NanNew<FunctionTemplate>(quit)->GetFunction());
+
+  exports->Set(NanNew<String>("poke"),
+    NanNew<FunctionTemplate>(poke)->GetFunction());
 }
 
 NODE_MODULE(NativeExtension, InitAll)

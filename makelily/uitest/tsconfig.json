@@ -1,0 +1,15 @@
+{
+    "compilerOptions": {
+        "module": "commonjs",
+        "noImplicitAny": true,
+        "removeComments": false,
+        "outDir": "./tmp",
+        "preserveConstEnums": true,
+        "sourceMap": false,
+        "jsx": "react",
+        "target": "es5"
+    },
+    "files": [
+        "./app.tsx"
+    ]
+}

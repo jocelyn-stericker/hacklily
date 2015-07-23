@@ -11,7 +11,24 @@ brew install dmd dub fluid-synth lame libogg libsndfile libvorbis mpg123 node po
 npm install
 ```
 
+To switch to the Electron version:
+```
+./switch-to-electron.sh
+```
+
+To switch back to the CLI version
+```
+rm -rf ./build
+npm install
+```
+
 ## Building and Running
+To run the CLI version:
 ```
 npm start
+```
+
+To run the Electron version:
+```
+./run-uitest.sh
 ```
