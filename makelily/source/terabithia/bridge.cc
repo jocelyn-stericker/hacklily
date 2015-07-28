@@ -14,9 +14,9 @@ using v8::String;
 extern "C" {
     int dragon_receive(const char** ptr);
     int dragon_send(const char* commandPtr, int commandLen, const char* jsonPtr, int jsonLen);
-    void dragon_quit();
-    void dragon_poke();
-    void dragon_init();
+    int dragon_quit();
+    int dragon_poke();
+    int dragon_init();
 }
 
 class DragonMsgReceiver: public NanAsyncProgressWorker {
@@ -70,30 +70,36 @@ NAN_METHOD(sendCommand) {
 
 NAN_METHOD(quit) {
     NanScope();
-    dragon_quit();
+    if (!dragon_quit()) {
+        std::cerr << "[bridge.cc] Could not stop dragon runtime.\n";
+    }
     NanReturnUndefined();
 }
 
 NAN_METHOD(poke) {
     NanScope();
-    dragon_poke();
+    if (!dragon_poke()) {
+        std::cerr << "[bridge.cc] Could not poke dragon.\n";
+    }
     NanReturnUndefined();
 }
 
 void InitAll(Handle<Object> exports) {
-  dragon_init();
+    if (!dragon_init()) {
+        std::cerr << "[bridge.cc] Could not initialize dragon runtime.\n";
+    }
 
-  exports->Set(NanNew<String>("onStateChange"),
-    NanNew<FunctionTemplate>(onStateChange)->GetFunction());
+    exports->Set(NanNew<String>("onStateChange"),
+            NanNew<FunctionTemplate>(onStateChange)->GetFunction());
 
-  exports->Set(NanNew<String>("sendCommand"),
-    NanNew<FunctionTemplate>(sendCommand)->GetFunction());
+    exports->Set(NanNew<String>("sendCommand"),
+            NanNew<FunctionTemplate>(sendCommand)->GetFunction());
 
-  exports->Set(NanNew<String>("quit"),
-    NanNew<FunctionTemplate>(quit)->GetFunction());
+    exports->Set(NanNew<String>("quit"),
+            NanNew<FunctionTemplate>(quit)->GetFunction());
 
-  exports->Set(NanNew<String>("poke"),
-    NanNew<FunctionTemplate>(poke)->GetFunction());
+    exports->Set(NanNew<String>("poke"),
+            NanNew<FunctionTemplate>(poke)->GetFunction());
 }
 
 NODE_MODULE(NativeExtension, InitAll)

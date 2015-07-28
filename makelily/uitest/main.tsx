@@ -46,16 +46,15 @@ export default class Main extends React.Component<{}, {engineState?: Dragon.Engi
                 toChannel: 0,
             });
 
-            let id = Dragon.create({
+            let soundfontId = Dragon.create({
                 id: "live.effects.soundfont.Soundfont",
                 channels: 2,
             });
 
-            Dragon.toEffect({id: 7} as any, {action: "loadSoundfont", url: "/Users/josh/ripieno/dragon/vendor/gm/gm.sf2"});
-            Dragon.connect({from: 5, to: 7, fromChannel: -1, toChannel: -1} as any);
-            Dragon.connect({from: 7, to: 4, fromChannel: 1, toChannel: 1} as any);
-            Dragon.connect({from: 7, to: 3, fromChannel: 2, toChannel: 2} as any);
-            console.log(id);
+            Dragon.toEffect({id: soundfontId} as any, {action: "loadSoundfont", url: "/Users/josh/ripieno/dragon/vendor/gm/gm.sf2"});
+            Dragon.connect({from: 5, to: soundfontId, fromChannel: -1, toChannel: -1} as any);
+            Dragon.connect({from: soundfontId, to: 4, fromChannel: 0, toChannel: 0} as any);
+            Dragon.connect({from: soundfontId, to: 3, fromChannel: 1, toChannel: 0} as any);
         }
     }
     constructor() {

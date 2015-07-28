@@ -219,7 +219,7 @@ export AudioEngineImpl streamToRTThread(AudioEngineImpl oldState, int input, int
 }
 
 export AudioEngineImpl abort(AudioEngineImpl oldState) {
-    if (oldState.userData.stream) {
+    if (oldState.userData && oldState.userData.stream) {
         Pa_StopStream(oldState.userData.stream);
         Pa_CloseStream(oldState.userData.stream);
     }

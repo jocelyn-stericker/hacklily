@@ -223,25 +223,36 @@ void rtLoop(int nframes, int sampleRate, shared Store store) {
         }
     }
 
-    void connect(type)(int id1, int id2, int fromChannel, int toChannel,
+    bool connect(type)(int id1, int id2, int fromChannel, int toChannel,
             ref Connection!(type)[int][int][int] connections,
             ref Effect!(type)[int] effects,
             ref type*[int] mixerBuffers) {
 
-        if ((id1 in effects) && (id2 in effects)) {
-            connections[id1][id2][fromChannel] = 
-                new Connection!type(effects[id2], fromChannel, toChannel);
-
-            auto count = effects[id2].inputs[toChannel];
-
-            if (count == 1) {
-                disconnected.remove(id2*10000 + toChannel);
-            } else if (count == 2) {
-                mixerBuffers[id2*10000 + toChannel] = cast(type*) GC.calloc(
-                    type.sizeof * nframes);
-                inputsToGo[id2*10000 + toChannel] = count;
-            }
+        if (!(id1 in effects) || !(id2 in effects)) {
+            return false;
         }
+        if (fromChannel >= effects[id1].channels) {
+            requestWasInvalid("Invalid fromChannel " ~ fromChannel.to!string ~ " in connection from id " ~ id1.to!string);
+            return true;
+        }
+        if (toChannel >= effects[id1].channels) {
+            requestWasInvalid("Invalid toChannel " ~ toChannel.to!string ~ " in connection to id " ~ id2.to!string);
+            return true;
+        }
+        connections[id1][id2][fromChannel] = 
+            new Connection!type(effects[id2], fromChannel, toChannel);
+
+        auto count = effects[id2].inputs[toChannel];
+
+        if (count == 1) {
+            disconnected.remove(id2*10000 + toChannel);
+        } else if (count == 2) {
+            mixerBuffers[id2*10000 + toChannel] = cast(type*) GC.calloc(
+                type.sizeof * nframes);
+            inputsToGo[id2*10000 + toChannel] = count;
+        }
+
+        return true;
     }
     
     void create(type)(string symbol, int channels, int id,
@@ -437,10 +448,15 @@ void rtLoop(int nframes, int sampleRate, shared Store store) {
                     return;
                 }
 
-                connect(id1, id2, fromChannel, toChannel,
-                        floatConnections, floatEffects, floatMixerBuffers);
-                connect(id1, id2, fromChannel, toChannel,
-                        doubleConnections, doubleEffects, doubleMixerBuffers);
+                auto endpointsExist =
+                    connect(id1, id2, fromChannel, toChannel,
+                        floatConnections, floatEffects, floatMixerBuffers) ||
+                    connect(id1, id2, fromChannel, toChannel,
+                            doubleConnections, doubleEffects, doubleMixerBuffers);
+
+                if (!endpointsExist) {
+                    requestWasInvalid("Invalid connection: " ~ id1.to!string ~ " -> " ~ id2.to!string);
+                }
 
                 stateDidChange();
             },
@@ -484,8 +500,9 @@ void rtLoop(int nframes, int sampleRate, shared Store store) {
                     return;
                 }
 
+                auto oldIsActive = isActive;
                 isActive = false;
-                scope(exit) isActive = true;
+                scope(exit) isActive = oldIsActive;
 
                 if (w & AudioWidth.Float) {
                     create(symbol, channels, id, floatEffects,
