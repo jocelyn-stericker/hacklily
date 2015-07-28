@@ -1,6 +1,6 @@
 var app = require('app');  // Module to control application life.
 var BrowserWindow = require('browser-window');  // Module to create native browser window.
-var Dragon = require("../build/Release/lib");
+var Dragon = require("../build/Release/bridge");
 
 var PACKAGED = false;
 

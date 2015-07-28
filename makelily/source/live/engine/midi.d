@@ -7,19 +7,22 @@ import core.time: dur;
 import deimos.portmidi:
     PortMidiStream, PmEvent, PmDeviceInfo,
     
-    Pm_Write, Pm_Poll, Pm_MessageStatus, Pm_MessageData1, Pm_MessageData2, Pm_GetDeviceInfo,
-    Pm_CountDevices, Pm_OpenInput, Pm_OpenOutput, Pm_Message, Pm_Read;
+    Pm_Write, Pm_Poll, Pm_MessageStatus, Pm_MessageData1, Pm_MessageData2,
+    Pm_GetDeviceInfo, Pm_CountDevices, Pm_OpenInput, Pm_OpenOutput,
+    Pm_Message, Pm_Read;
 import std.algorithm: map;
-import std.concurrency: thisTid, receiveTimeout, send, register, locate, spawn, OwnerTerminated;
+import std.concurrency: thisTid, receiveTimeout, send, register, locate,
+    spawn, OwnerTerminated, Tid, receiveOnly;
 import std.conv: to;
 import std.exception: Exception, enforce;
 import std.json: JSONValue;
 import std.range: array;
 import std.string: capitalize;
 
-import live.core.effect: Effect, AudioWidth, Connectivity, RTCommand;
+import live.core.effect: Effect, AudioWidth, Connectivity;
 import live.core.event: MidiEvent;
 import live.core.store: Store;
+import live.engine.rtcommands: RTCreate, RTMidiInEvent;
 
 export import live.engine.lifecycle: Lifecycle;
 
@@ -29,6 +32,10 @@ static this() {
     if (!pmMutex) {
         pmMutex = new Mutex;
     }
+}
+
+export struct MidiQuit {
+    string ack;
 }
 
 class MidiError : Exception {
@@ -118,6 +125,14 @@ export class MidiEngine {
     } body {
         devices = null;
         state = Lifecycle.UNINITIALIZED;
+
+        "midiQuittingThread".register(thisTid);
+        auto midiThread = locate("midiThread");
+        if (midiThread != Tid.init) {
+            midiThread.send(MidiQuit("midiQuittingThread"));
+            receiveOnly!bool();
+        }
+
         return this;
     }
 
@@ -138,7 +153,9 @@ export class MidiEngine {
     JSONValue serialize() {
         auto jsonValue = JSONValue([
             "state": state.to!string.capitalize.to!JSONValue,
-            "error": state == Lifecycle.ERROR ? error.to!JSONValue : JSONValue(null),
+            "error": state == Lifecycle.ERROR ?
+                error.to!JSONValue :
+                JSONValue(null),
             "devices": state == Lifecycle.INITIALIZED ?
                 devices.map!(device => device.serialize).array.to!JSONValue :
                 JSONValue(null),
@@ -167,6 +184,7 @@ export void midiThread(shared Store store) {
 
     Device[string] inputs;
     Device[string] outputs;
+    string quittingThreadName;
 
     auto rtThread = locate("rtThread");
     void refresh() {
@@ -190,9 +208,13 @@ export void midiThread(shared Store store) {
                     store.insert(d.id, info.name.to!string(),
                         AudioWidth.Float, true, true, Connectivity.Input);
 
-                    rtThread.send(RTCommand.Create, d.id,
-                            "live.engine.rtthread.Passthrough", 1,
-                            AudioWidth.Float);
+                    RTCreate cmd = {
+                        id: d.id,
+                        symbol: "live.engine.rtthread.Passthrough",
+                        channels: 1,
+                        width: AudioWidth.Float,
+                    };
+                    rtThread.send(cmd);
                 } else if (info.output) {
                     Pm_OpenOutput(
                             &d.stream,
@@ -208,9 +230,13 @@ export void midiThread(shared Store store) {
                     store.insert(d.id, info.name.to!string(),
                         AudioWidth.Float, true, true, Connectivity.Output);
 
-                    rtThread.send(RTCommand.Create, d.id,
-                            "live.engine.midi.MidiOut", 1,
-                            AudioWidth.Float);
+                    RTCreate cmd = {
+                        id: d.id,
+                        symbol: "live.engine.midi.MidiOut",
+                        channels: 1,
+                        width: AudioWidth.Float,
+                    };
+                    rtThread.send(cmd);
                 }
             }
         }
@@ -240,12 +266,14 @@ export void midiThread(shared Store store) {
                 }
                 synchronized(pmMutex) {
                     PmEvent* pmev = new PmEvent;
-                    pmev.message = Pm_Message(ev.message, ev.status1, ev.status2);
+                    pmev.message = Pm_Message(ev.message, ev.status1,
+                        ev.status2);
                     pmev.timestamp = 0;
                     Pm_Write(outputs[l].stream, pmev, 1);
                 }
             },
-            (bool) {
+            (MidiQuit quit) {
+                quittingThreadName = quit.ack;
                 running = false;
             },
             (OwnerTerminated t) {
@@ -263,10 +291,18 @@ export void midiThread(shared Store store) {
                             cast(byte) Pm_MessageData1(evnp.message),
                             cast(byte) Pm_MessageData2(evnp.message)
                         );
-                        rtThread.send(RTCommand.MidiIn, input.id, ev);
+                        RTMidiInEvent cmd = {
+                            id: input.id,
+                            ev: ev,
+                        };
+                        rtThread.send(cmd);
                     }
                 }
             }
         }
+    }
+
+    if (quittingThreadName) {
+        quittingThreadName.locate.send(true);
     }
 }

@@ -1,16 +1,17 @@
-// The require("Dragon") happy dance:
-import __remote = require("remote");
-import __Dragon = require("../source/terabithia/lib");
-import {TransientError, EngineState, MidiDevice} from "../source/terabithia/lib";
-var remote: typeof __remote = (window as any).require("remote");
-var Dragon: typeof __Dragon = remote.require("../build/Release/lib");
-var Dialog: any = remote.require("dialog");
-var App: GitHubElectron.App = remote.require("app");
+/**
+ * Renders the device settings modal.
+ * To be shown only when audio is initialized, but not streaming.
+ */
+
+import App from "./vendor/app";
+import Dialog from "./vendor/dialog";
+import remote from "./vendor/remote";
 
 import React = require("react");
-var Bootstrap = require("react-bootstrap") as any;
-var {Button, OverlayTrigger, Modal, Input} = Bootstrap;
+import {Button, OverlayTrigger, Modal, Input} from "react-bootstrap";
 import {defer, filter, map, find} from "lodash";
+
+import {EngineState, MidiDevice, Lifecycle, startStreaming} from "./vendor/bridge";
 
 export default class DeviceSettings extends React.Component<
     {
@@ -23,7 +24,7 @@ export default class DeviceSettings extends React.Component<
         let {engineState} = this.props;
         let {audio} = engineState;
         let {midi} = engineState;
-        return <Modal show={audio.state === Dragon.Lifecycle.Initialized} onHide={this.quit}>
+        return <Modal show={audio.state === Lifecycle.Initialized} onHide={this.quit}>
             <Modal.Header closeButton>
                 <Modal.Title>Device setup</Modal.Title>
             </Modal.Header>
@@ -83,7 +84,7 @@ export default class DeviceSettings extends React.Component<
         let midiIn = (this.refs["midiIn"] as any).getValue();
 
         let {midi, audio} = this.props.engineState;
-        Dragon.startStreaming(
+        startStreaming(
             find(audio.devices, device => device.name === audioIn),
             find(audio.devices, device => device.name === audioOut)
         );

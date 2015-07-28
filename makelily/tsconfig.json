@@ -9,6 +9,6 @@
         "target": "es5"
     },
     "files": [
-        "./source/terabithia/lib.ts"
+        "./source/terabithia/bridge.ts"
     ]
 }

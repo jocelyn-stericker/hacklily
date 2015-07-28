@@ -23,7 +23,7 @@
     "electron-prebuilt": "^0.30.0",
     "nan": "^1.8.4",
     "node-gyp": "^2.0.2",
-    "ntypescript": "^1.201507152343.1",
+    "ntypescript": "*",
     "shelljs": "^0.5.1",
     "touch": "^1.0.0"
   }

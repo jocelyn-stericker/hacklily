@@ -11,30 +11,17 @@ import std.json;
 import std.stdio: writeln; // for debugging
 
 import live.core.store: Store;
-import live.core.effect: RTCommand, AudioWidth;
+import live.core.effect: AudioWidth;
 import live.engine.audio: AudioEngine, Lifecycle, AudioError;
-import live.engine.midi: MidiEngine, MidiError;
-import live.engine.rtthread: ReceivePoke;
+import live.engine.midi: MidiEngine, MidiError, MidiQuit;
+import live.engine.receivecommands: ReceivePoke, ReceiveInvalidRequest;
+import live.engine.rtcommands: RTConnect, RTDisconnect, RTCreate, RTMessageIn;
 
 // So they can be created.
 import live.effects.soundfont;
 import live.effects.sequencer;
 
-// TLS for dragon_receive thread!
-AudioEngine audioEngine;
-MidiEngine midiEngine;
-string dragon_buffer;
-
 shared Store store;
-
-string recordState() {
-    JSONValue state = JSONValue([
-        "audio": audioEngine.serialize,
-        "midi": midiEngine.serialize,
-        "store": store.serialize,
-    ]);
-    return (&state).toJSON(true /* pretty */);
-}
 
 struct StreamCmd {
     string fromName;
@@ -45,7 +32,18 @@ struct ReceiveQuit {
     string ack;
 }
 
-enum QUIT_CMD = -1;
+string recordState(AudioEngine audioEngine, MidiEngine midiEngine,
+        shared Store store) {
+
+    JSONValue state = JSONValue([
+        "audio": audioEngine.serialize,
+        "midi": midiEngine.serialize,
+        "store": store.serialize,
+    ]);
+    return (&state).toJSON(true /* pretty */);
+}
+
+enum JS_BRIDGE_QUIT_CMD = -1;
 
 extern(C) {
     void dragon_sendToUIThread(int id, const char* msg) {
@@ -62,6 +60,10 @@ extern(C) {
     }
     
     int dragon_receive(char** ptr) {
+        static AudioEngine audioEngine;
+        static MidiEngine midiEngine;
+        static string dragon_buffer;
+
         bool shouldQuit = false;
         string quittingThreadName;
         if (!audioEngine) {
@@ -84,13 +86,22 @@ extern(C) {
                     (ReceivePoke poke) {
                         // Return the state.
                     },
+                    (ReceiveInvalidRequest invalidRequest) {
+                        JSONValue transiantError = JSONValue([
+                            "transiant": true.to!JSONValue,
+                            "error": invalidRequest.explanation.to!JSONValue,
+                        ]);
+                    },
                     (string command) {
                         writeln("[bridge.d] It works.");
                     },
                     (StreamCmd stream) {
-                        writeln("[bridge.d] Attempting to stream from ", stream.fromName, " to ", stream.toName);
-                        auto streamFrom = audioEngine.devices.filter!(device => device.name == stream.fromName).front;
-                        auto streamTo = audioEngine.devices.filter!(device => device.name == stream.toName).front;
+                        writeln("[bridge.d] Attempting to stream from ",
+                            stream.fromName, " to ", stream.toName);
+                        auto streamFrom = audioEngine.devices.filter!(
+                            device => device.name == stream.fromName).front;
+                        auto streamTo = audioEngine.devices.filter!(
+                            device => device.name == stream.toName).front;
                         audioEngine.stream(streamFrom, streamTo, store);
                         midiEngine.stream(store);
                         writeln("[bridge.d] Looks like we're streaming!");
@@ -141,14 +152,15 @@ extern(C) {
             midiEngine.abort();
             midiEngine = null;
             quittingThreadName.locate.send(true);
-            return QUIT_CMD;
+            return JS_BRIDGE_QUIT_CMD;
         }
-        dragon_buffer = recordState;
+        dragon_buffer = recordState(audioEngine, midiEngine, store);
         *ptr = cast(char*) dragon_buffer.ptr;
         return dragon_buffer.length.to!int;
     }
     
-    int dragon_send(const char* commandPtr, int commandLen, const char* jsonPtr, int jsonLen) {
+    int dragon_send(const char* commandPtr, int commandLen,
+            const char* jsonPtr, int jsonLen) {
         import std.stdio;
         string command = commandPtr[0..commandLen].idup;
         string json = jsonPtr[0..jsonLen].idup;
@@ -162,28 +174,40 @@ extern(C) {
             locate("receivingThread").send(streamCmd);
         } else if (command == "connect") {
             JSONValue val = json.parseJSON;
-            "rtThread".locate.send(RTCommand.Connect,
-                val["from"].integer.to!int,
-                val["to"].integer.to!int,
-                val["startChannel"].integer.to!int,
-                val["endChannel"].integer.to!int,
-                val["offset"].integer.to!int);
+            RTConnect cmd = {
+                id1: val["from"].integer.to!int,
+                id2: val["to"].integer.to!int,
+                fromChannel: val["fromChannel"].integer.to!int,
+                toChannel: val["toChannel"].integer.to!int,
+            };
+            "rtThread".locate.send(cmd);
+        } else if (command == "disconnect") {
+            JSONValue val = json.parseJSON;
+            RTDisconnect cmd = {
+                id1: val["from"].integer.to!int,
+                id2: val["to"].integer.to!int,
+                fromChannel: val["fromChannel"].integer.to!int,
+                toChannel: val["toChannel"].integer.to!int,
+            };
+            "rtThread".locate.send(cmd);
         } else if (command == "create") {
             JSONValue val = json.parseJSON;
             auto newID = store.getNewID();
-            "rtThread".locate.send(RTCommand.Create,
-                newID,
-                val["id"].str,
-                val["channels"].integer.to!int,
-                AudioWidth.Float
-            );
+            RTCreate cmd = {
+                id: newID,
+                symbol: val["id"].str,
+                channels: val["channels"].integer.to!int,
+                width: AudioWidth.Float,
+            };
+            "rtThread".locate.send(cmd);
             return newID;
         } else if (command == "toEffect") {
             JSONValue val = json.parseJSON;
-            "rtThread".locate.send(RTCommand.MessageIn,
-                val["effect"].integer.to!int,
-                val["msg"].str
-            );
+            RTMessageIn cmd = {
+                id: val["effect"].integer.to!int,
+                ev: val["msg"].str,
+            };
+            "rtThread".locate.send(cmd);
         }
         return -1;
     }
@@ -201,11 +225,6 @@ extern(C) {
             receiveOnly!bool();
         }
 
-        auto rtThread = locate("rtThread");
-        if (rtThread != Tid.init) {
-            rtThread.send(RTCommand.Quit, "quittingThread");
-            receiveOnly!bool();
-        }
         writeln("[bridge.d] Terminating.");
         Runtime.terminate();
     }

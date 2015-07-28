@@ -4,8 +4,10 @@
 
 #define QUIT_CMD -1
 
+using v8::Function;
 using v8::FunctionTemplate;
 using v8::Handle;
+using v8::Number;
 using v8::Object;
 using v8::String;
 
@@ -53,7 +55,7 @@ private:
 
 NAN_METHOD(onStateChange) {
     NanScope();
-    NanCallback *callback = new NanCallback(args[0].As<v8::Function>());
+    NanCallback *callback = new NanCallback(args[0].As<Function>());
     NanAsyncQueueWorker(new DragonMsgReceiver(callback, callback));
     NanReturnUndefined();
 }
@@ -63,7 +65,7 @@ NAN_METHOD(sendCommand) {
     NanUtf8String param1(args[0]->ToString());
     NanUtf8String param2(args[1]->ToString());
     int token = dragon_send(*param1, param1.length(), *param2, param2.length());
-    NanReturnValue(NanNew<v8::Number>(token));
+    NanReturnValue(NanNew<Number>(token));
 }
 
 NAN_METHOD(quit) {

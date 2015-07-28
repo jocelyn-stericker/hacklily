@@ -21,7 +21,9 @@ import std.string: fromStringz, toStringz;
 import live.core.effect: AudioWidth, Connectivity;
 import live.core.store: Store;
 import live.engine.lifecycle: Lifecycle;
-import live.engine.rtthread: RTCommand, rtLoop;
+import live.engine.rtcommands: RTCreate, RTQuit, RTActivate, RTBeginProc,
+    RTAudioIn, RTAudioOutPtr, RTEndProc;
+import live.engine.rtthread: rtLoop;
 
 class ImplementationError : Exception {
     this(string msg, string file = __FILE__, size_t line = __LINE__) {
@@ -168,8 +170,13 @@ export AudioEngineImpl streamToRTThread(AudioEngineImpl oldState, int input, int
     foreach (i; 0..inChannels) {
         int id = store.getNewID();
 
-        rtThread.send(RTCommand.Create, id, "live.engine.rtthread.Passthrough", 1,
-                AudioWidth.FloatHWIN);
+        RTCreate cmd = {
+            id: id,
+            symbol: "live.engine.rtthread.Passthrough",
+            channels: 1,
+            width: AudioWidth.FloatHWIN,
+        };
+        rtThread.send(cmd);
 
         store.insert(id, "Input " ~ i.to!string,
             AudioWidth.FloatHWIN, false, true, Connectivity.Input);
@@ -181,8 +188,13 @@ export AudioEngineImpl streamToRTThread(AudioEngineImpl oldState, int input, int
     foreach (i; 0..outChannels) {
         int id = store.getNewID();
 
-        rtThread.send(RTCommand.Create, id, "live.engine.rtthread.Receiver", 1,
-                AudioWidth.Float);
+        RTCreate cmd = {
+            id: id,
+            symbol: "live.engine.rtthread.ReceiverF",
+            channels: 1,
+            width: AudioWidth.Float,
+        };
+        rtThread.send(cmd);
 
         store.insert(id, "Output " ~ i.to!string,
             AudioWidth.Float, false, true, Connectivity.Output);
@@ -194,7 +206,7 @@ export AudioEngineImpl streamToRTThread(AudioEngineImpl oldState, int input, int
     err = Pa_StartStream(newState.userData.stream);
 
     if (err != paNoError) {
-        rtThread.send(RTCommand.Quit);
+        rtThread.send(RTQuit.init);
         AudioEngineImpl failureState = {
             state: Lifecycle.ERROR,
             error: Pa_GetErrorText(err).to!string
@@ -202,7 +214,7 @@ export AudioEngineImpl streamToRTThread(AudioEngineImpl oldState, int input, int
         return failureState;
     }
 
-    rtThread.send(RTCommand.Activate);
+    rtThread.send(RTActivate.init);
     return newState;
 }
 
@@ -229,19 +241,39 @@ extern(C) int process(const(void)* inputBufferPtr, void* outputBufferPtr,
 
     /////
     foreach(index, id; userData.outputIDs) {
-        rtThread.send(RTCommand.AudioOutPtr, cast(int) id, outputBuffer[index], cast(int) nframes);
+        RTAudioOutPtr!float cmd = {
+            id: id,
+            data: outputBuffer[index],
+            nframes: nframes.to!int,
+        };
+        rtThread.send(cmd);
     }
 
-    rtThread.send(RTCommand.BeginProc);
+    rtThread.send(RTBeginProc.init);
 
     foreach(index, id; userData.inputIDs) {
-        rtThread.send(RTCommand.AudioIn, cast(int) id, inputBuffer[index], cast(int) nframes);
+        RTAudioIn!float cmd = {
+            id: id,
+            data: inputBuffer[index],
+            nframes: nframes.to!int,
+        };
+        rtThread.send(cmd);
     }
 
-    rtThread.send(RTCommand.EndProc, thisTid);
+    {
+        RTEndProc cmd = {
+            requester: cast(shared(Tid)) thisTid,
+        };
+        rtThread.send(cmd);
+    }
 
     foreach(id; userData.outputIDs) {
-        rtThread.send(RTCommand.AudioOutPtr, cast(int) id, cast(shared(float)*) null, cast(int) nframes);
+        RTAudioOutPtr!float cmd = {
+            id: id,
+            data: null,
+            nframes: nframes.to!int,
+        };
+        rtThread.send(cmd);
     }
     if (!receiveTimeout(dur!("seconds")(2), (bool) {})) {
         "Realtime thread is dead. Bye.".writeln;

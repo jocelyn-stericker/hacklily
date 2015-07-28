@@ -3,6 +3,7 @@
 module live.core.store;
 
 import live.core.effect;
+import live.engine.rtcommands: RTMessageIn;
 
 import core.atomic: atomicOp;
 import std.algorithm: keys, map;
@@ -37,7 +38,11 @@ synchronized class Store {
 
         void toRTThread(string s) {
             auto rtThread = locate(threadName);
-            rtThread.send(RTCommand.MessageIn, id, s);
+            RTMessageIn cmd = {
+                id: id,
+                ev: s,
+            };
+            rtThread.send(cmd);
         }
         void toUIThread(string s) {
             dragon_sendToUIThread(id, s.toStringz());

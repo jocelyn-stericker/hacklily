@@ -3,6 +3,7 @@
 module live.engine.audio;
 
 import std.algorithm: canFind, countUntil, map;
+import std.concurrency: thisTid, register, receive, receiveOnly, locate, send, Tid;
 import std.conv: to;
 import std.exception: Exception, enforce;
 import std.json: JSONValue;
@@ -12,6 +13,7 @@ import std.string: fromStringz, capitalize;
 
 import live.core.store: Store;
 import live.engine.audioImpl: DeviceInfo, AudioEngineImpl, initialize, abort, streamToRTThread;
+import live.engine.rtcommands: RTQuit;
 
 export import live.engine.lifecycle: Lifecycle;
 
@@ -98,6 +100,14 @@ class AudioEngine {
             new AudioError("could not uninitialize"));
     } body {
         _impl = _impl.abort;
+
+        "audioQuittingThread".register(thisTid);
+        auto rtThread = locate("rtThread");
+        if (rtThread != Tid.init) {
+            rtThread.send(RTQuit("audioQuittingThread"));
+            receiveOnly!bool();
+        }
+
         return this;
     }
 

@@ -5,6 +5,7 @@ module live.core.effect;
 import std.concurrency: Tid;
 
 import live.core.event: MidiEvent;
+import live.engine.rtcommands: RTMidiOutEvent, RTMessageOut;
 import live.util.assignOnce: AssignOnce;
 
 public enum Features {
@@ -69,11 +70,19 @@ public mixin template RealtimeEffect(Features f) {
     }
 
     void emit(MidiEvent ev) {
-        rtThread_effect.send(RTCommand.MidiOut, id, ev);
+        RTMidiOutEvent cmd = {
+            id: id,
+            ev: ev,
+        };
+        rtThread_effect.send(cmd);
     }
 
     void emit(string str) {
-        rtThread_effect.send(RTCommand.MessageOut, id, str);
+        RTMessageOut cmd = {
+            id: id,
+            ev: str,
+        };
+        rtThread_effect.send(cmd);
     }
 
     void toUIThread(immutable string str) {
@@ -84,28 +93,6 @@ public mixin template RealtimeEffect(Features f) {
         assert(thisTid == rtThread_effect);
     }
 }
-
-public enum RTCommand {
-    Connect = 0,    /* id1, id2, channelOffset */
-    Disconnect = 1, /* id1, id2 */
-    BeginProc = 2,  /* called before any AudioIn */
-    EndProc = 3,    /* called after all AudioIn */
-                    /* garbage collection happens here*/
-    Create,         /* id creatable, string factory */
-    Destroy,        /* id active */
-    AudioIn,        /* id to, <float|double>* data, nframes */
-    AudioOutPtr,    /* id from, <float|double>* bufferPtr, nframes */
-    MidiIn,         /* id to, MidiEvent */
-    MidiOut,        /* id from, MidiEvent */
-    MessageIn,      /* id to, string */
-    MessageOut,     /* id from, string */
-    SetSampleRate,  /* sampleRate */
-
-    Ping,           /* TId */
-
-    Activate,
-    Quit
-};
 
 public Tid rtThread_effect;
 public extern(C) void dragon_sendToUIThread(int id, const char* msg);

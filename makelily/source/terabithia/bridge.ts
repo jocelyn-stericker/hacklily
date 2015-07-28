@@ -43,9 +43,8 @@ export interface EffectSpec {
 export interface Connection {
     from: number;
     to: number;
-    startChannel: number;
-    endChannel: number;
-    offset: number;
+    fromChannel: number;
+    toChannel: number;
 }
 
 export interface AudioEngine {

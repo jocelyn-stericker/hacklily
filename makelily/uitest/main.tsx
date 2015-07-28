@@ -1,18 +1,16 @@
-// The require("Dragon") happy dance:
-import __remote = require("remote");
-import __Dragon = require("../source/terabithia/lib");
-import {TransientError, EngineState, MidiDevice} from "../source/terabithia/lib";
-var remote: typeof __remote = (window as any).require("remote");
-var Dragon: typeof __Dragon = remote.require("../build/Release/lib");
+/**
+ * Renders the application.
+ */
 
+import Dragon = require("./vendor/bridge");
 import React = require("react");
-var Bootstrap = require("react-bootstrap") as any;
-var {Button, OverlayTrigger, Modal, Input} = Bootstrap;
+
+import {Button, OverlayTrigger, Modal, Input} from "react-bootstrap";
 import {defer, filter, map, find} from "lodash";
 
 import DeviceSettings from "./deviceSettings";
 
-export default class Main extends React.Component<{}, {engineState?: EngineState}> {
+export default class Main extends React.Component<{}, {engineState?: Dragon.EngineState, midiIn?: Dragon.MidiDevice}> {
     render() {
         let {engineState} = this.state;
         let {audio, midi, store, graph} = engineState;
@@ -29,7 +27,7 @@ export default class Main extends React.Component<{}, {engineState?: EngineState
                 setMidiIn={midiIn => this.setState({midiIn})} />
         </div>;
     }
-    componentWillUpdate(nextProps: {}, nextState: {engineState: EngineState}) {
+    componentWillUpdate(nextProps: {}, nextState: {engineState: Dragon.EngineState}) {
         if (nextState.engineState.audio.state === Dragon.Lifecycle.Streaming &&
                 this.state.engineState.audio.state === Dragon.Lifecycle.Initialized) {
             let devices = nextState.engineState.store;
@@ -37,17 +35,15 @@ export default class Main extends React.Component<{}, {engineState?: EngineState
             Dragon.connect({
                 from: find(devices, device => device.name === 'Input 0 In').id,
                 to: find(devices, device => device.name === 'Output 0 Out').id,
-                startChannel: 1,
-                endChannel: 1,
-                offset: -1
+                fromChannel: 0,
+                toChannel: 0,
             });
 
             Dragon.connect({
                 from: find(devices, device => device.name === 'Input 1 In').id,
                 to: find(devices, device => device.name === 'Output 1 Out').id,
-                startChannel: 1,
-                endChannel: 1,
-                offset: -1
+                fromChannel: 0,
+                toChannel: 0,
             });
 
             let id = Dragon.create({
@@ -56,9 +52,9 @@ export default class Main extends React.Component<{}, {engineState?: EngineState
             });
 
             Dragon.toEffect({id: 7} as any, {action: "loadSoundfont", url: "/Users/josh/ripieno/dragon/vendor/gm/gm.sf2"});
-            Dragon.connect({from: 5, to: 7, startChannel: 0, endChannel: 0, offset: 0} as any);
-            Dragon.connect({from: 7, to: 4, startChannel: 1, endChannel: 1, offset: -1} as any);
-            Dragon.connect({from: 7, to: 3, startChannel: 2, endChannel: 2, offset: -2} as any);
+            Dragon.connect({from: 5, to: 7, fromChannel: -1, toChannel: -1} as any);
+            Dragon.connect({from: 7, to: 4, fromChannel: 1, toChannel: 1} as any);
+            Dragon.connect({from: 7, to: 3, fromChannel: 2, toChannel: 2} as any);
             console.log(id);
         }
     }
@@ -81,7 +77,7 @@ export default class Main extends React.Component<{}, {engineState?: EngineState
                 factories: null
             }
         }
-        Dragon.run((error: TransientError, engineState: EngineState) => {
+        Dragon.run((error: Dragon.TransientError, engineState: Dragon.EngineState) => {
             if (error) {
                 alert(error.error);
                 console.warn(error.error);

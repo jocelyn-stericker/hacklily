@@ -1,0 +1,11 @@
+import __Dragon = require("../../source/terabithia/bridge");
+import __remote = require("remote");
+export {TransientError, EngineState, MidiDevice} from "../../source/terabithia/bridge";
+var remote: typeof __remote = (window as any).require("remote");
+var Dragon: typeof __Dragon = remote.require("../build/Release/bridge");
+export let Lifecycle = Dragon.Lifecycle;
+export let connect = Dragon.connect;
+export let create = Dragon.create;
+export let toEffect = Dragon.toEffect;
+export let run = Dragon.run;
+export let startStreaming = Dragon.startStreaming;
