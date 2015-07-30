@@ -10,6 +10,8 @@ import {defer, filter, map, find} from "lodash";
 
 import DeviceSettings from "./deviceSettings";
 
+let stateIdx = 0;
+
 export default class Main extends React.Component<{}, {engineState?: Dragon.EngineState, midiIn?: Dragon.MidiDevice}> {
     render() {
         let {engineState} = this.state;
@@ -81,7 +83,13 @@ export default class Main extends React.Component<{}, {engineState?: Dragon.Engi
                 alert(error.error);
                 console.warn(error.error);
             } else if (engineState) {
-                defer(() => this.setState({engineState: engineState}));
+                if (engineState.stateIdx < stateIdx) {
+                    return;
+                }
+                stateIdx = engineState.stateIdx;
+                setTimeout(() => {
+                    this.setState({engineState});
+                }, 0);
             }
         });
     }

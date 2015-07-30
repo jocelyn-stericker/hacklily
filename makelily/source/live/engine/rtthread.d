@@ -12,7 +12,8 @@ import std.variant: Variant;
 import live.core.effect: AudioWidth, Effect, rtThread_effect;
 import live.core.event: MidiEvent;
 import live.core.store: Store;
-import live.engine.receivecommands: ReceivePoke, ReceiveInvalidRequest;
+import live.engine.receivecommands: ReceivePoke, ReceiveInvalidRequest,
+    ReceiveConnectionReceipt, ReceiveDisconnectionReceipt;
 import live.engine.rtcommands: RTActivate, RTBeginProc, RTEndProc,
     RTPing, RTQuit, RTSetSampleRate, RTDestroyEffect, RTConnect, RTDisconnect,
     RTCreate, RTAudioIn, RTAudioOutPtr, RTMidiInEvent, RTMidiOutEvent,
@@ -69,25 +70,47 @@ export class ReceiverD : Receiver!double {
 
 shared bool quitting = false;
 
-private class Connection(audiotype) {
-    Effect!audiotype b;
+private class Connection(audioType) {
+    Effect!audioType from;
+    Effect!audioType to;
     int fromChannel;
     int toChannel = -1;
-    this(Effect!audiotype other, int from, int to) {
-        b = other;
-        fromChannel = from;
-        toChannel = to;
+    this(Effect!audioType from, Effect!audioType to, int fromChannel, int toChannel) {
+        this.from = from;
+        this.to = to;
+        this.fromChannel = fromChannel;
+        this.toChannel = toChannel;
         this();
     }
     this() {
-        b.inputs[toChannel] = b.inputs.get(toChannel, 0) + 1;
+        to.inputs[toChannel] = to.inputs.get(toChannel, 0) + 1;
+        auto receivingThread = "receivingThread".locate;
+        if (receivingThread != Tid.init) {
+            ReceiveConnectionReceipt receipt = {
+                fromId: from.id,
+                toId: to.id,
+                fromChannel: fromChannel,
+                toChannel: toChannel,
+            };
+            receivingThread.send(receipt);
+        }
     }
     ~this() {
-        if (quitting || toChannel == -1) {
+        if (quitting || toChannel == -400) {
             return;
         }
-        b.inputs[toChannel] = b.inputs.get(toChannel, 0) - 1;
-        toChannel = -1;
+        auto receivingThread = "receivingThread".locate;
+        if (receivingThread != Tid.init) {
+            ReceiveDisconnectionReceipt receipt = {
+                fromId: from.id,
+                toId: to.id,
+                fromChannel: fromChannel,
+                toChannel: toChannel,
+            };
+            receivingThread.send(receipt);
+        }
+        to.inputs[toChannel] = to.inputs.get(toChannel, 0) - 1;
+        toChannel = -400;
     }
 }
 
@@ -102,7 +125,7 @@ void process(audioType, msgType)(Connection!(audioType)[int][int] connections, m
             scope(exit) sender = senderBk;
             sender = from;
 
-            connection.b.process(ev);
+            connection.to.process(ev);
             break;
         }
     }
@@ -157,11 +180,11 @@ void rtLoop(int nframes, int sampleRate, shared Store store) {
                 scope(exit) sender = senderBk;
                 sender = effect.id;
 
-                int iID = connection.b.id;
-                auto iInputs = connection.b.inputs;
+                int iID = connection.to.id;
+                auto iInputs = connection.to.inputs;
 
                 if (iInputs[connection.toChannel] == 1) {
-                    recurseGraph(connections, queue, connection.b, buffer,
+                    recurseGraph(connections, queue, connection.to, buffer,
                             connection.toChannel, mixerBuffer);
                 } else {
                     assert(iInputs[connection.toChannel] > 1, "recurseGraphContinue expected a valid connection");
@@ -171,7 +194,7 @@ void rtLoop(int nframes, int sampleRate, shared Store store) {
                     buffer2[0..nframes] += buffer[0..nframes];
                     --inputsToGo[code];
                     if (!inputsToGo[code]) {
-                        recurseGraph(connections, queue, connection.b,
+                        recurseGraph(connections, queue, connection.to,
                                 cast(immutable(type)*) buffer2,
                                 connection.toChannel, mixerBuffer);
                     }
@@ -240,7 +263,7 @@ void rtLoop(int nframes, int sampleRate, shared Store store) {
             return true;
         }
         connections[id1][id2][fromChannel] = 
-            new Connection!type(effects[id2], fromChannel, toChannel);
+            new Connection!type(effects[id1], effects[id2], fromChannel, toChannel);
 
         auto count = effects[id2].inputs[toChannel];
 

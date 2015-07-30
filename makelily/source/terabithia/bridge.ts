@@ -64,6 +64,7 @@ export interface EngineState {
     factories: EffectFactory[];
     graph: Connection[];
     midi: MidiEngine;
+    stateIdx?: number;
     store: Effect[];
 }
 
@@ -81,20 +82,25 @@ interface IDragon {
 
 declare function require(name: string): any;
 var Dragon: IDragon = require("./dragon");
+var stateIdx = 0;
 
 var runner: (error: TransientError, engineState: EngineState) => void = null;
 var running = false;
 var startRunning = function() {
     Dragon.onStateChange(engineState => {
+        // This runs in the main thread, but has access to render variabled?
         if (!runner) {
             return;
         }
         let parsedState = JSON.parse(engineState);
         if (parsedState.transient) {
-            runner(parsedState, null);
+            setTimeout(function() {
+                runner(parsedState, null);
+            }, 1);
         } else {
             parsedState.audio.state = Lifecycle[parsedState.audio.state];
             parsedState.midi.state = Lifecycle[parsedState.midi.state];
+            parsedState.stateIdx = ++stateIdx;
             // We don't have a good way of querying yet, so this is hardcoded.
             parsedState.factories = [
                 {

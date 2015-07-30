@@ -4,17 +4,20 @@ module terabithia.bridge;
 import core.memory: GC;
 import core.runtime: Runtime;
 import core.thread: thread_attachThis;
-import std.algorithm: filter;
-import std.concurrency: thisTid, register, receive, receiveOnly, locate, send, Tid;
+import core.time: dur;
+import std.algorithm.iteration: filter, map;
+import std.array: array;
+import std.concurrency: thisTid, register, receive, receiveOnly, locate, receiveTimeout, send, Tid;
 import std.conv: to;
 import std.json;
 import std.stdio: writeln; // for debugging
+import std.variant: Variant;
 
 import live.core.store: Store;
 import live.core.effect: AudioWidth;
 import live.engine.audio: AudioEngine, Lifecycle, AudioError;
 import live.engine.midi: MidiEngine, MidiError, MidiQuit;
-import live.engine.receivecommands: ReceivePoke, ReceiveInvalidRequest;
+import live.engine.receivecommands: ReceivePoke, ReceiveInvalidRequest, ReceiveConnectionReceipt, ReceiveDisconnectionReceipt;
 import live.engine.rtcommands: RTConnect, RTDisconnect, RTCreate, RTMessageIn;
 
 // So they can be created.
@@ -33,12 +36,13 @@ struct ReceiveQuit {
 }
 
 string recordState(AudioEngine audioEngine, MidiEngine midiEngine,
-        shared Store store) {
+        shared Store store, in ReceiveConnectionReceipt[] connections) {
 
     JSONValue state = JSONValue([
         "audio": audioEngine.serialize,
         "midi": midiEngine.serialize,
         "store": store.serialize,
+        "graph": connections.map!(connection => connection.serialize).array.to!JSONValue,
     ]);
     return (&state).toJSON(true /* pretty */);
 }
@@ -63,6 +67,7 @@ extern(C) nothrow {
         static AudioEngine audioEngine;
         static MidiEngine midiEngine;
         static string dragon_buffer;
+        static ReceiveConnectionReceipt[] connections;
 
         bool shouldQuit = false;
         string quittingThreadName;
@@ -102,6 +107,9 @@ extern(C) nothrow {
                             midiEngine.stream(store);
                             writeln("[bridge.d] Looks like we're streaming!");
                         },
+                        (Variant v) {
+                            writeln("Unknown command for INITIALIZED state", v);
+                        },
                     );
                 } catch(AudioError error) {
                     auto jsonValue = error.serialize();
@@ -133,6 +141,15 @@ extern(C) nothrow {
                     (string command) {
                         writeln("[bridge.d] It works.");
                     },
+                    (ReceiveConnectionReceipt connection) {
+                        connections ~= connection;
+                    },
+                    (ReceiveDisconnectionReceipt disconnection) {
+                        connections = disconnection.apply(connections);
+                    },
+                    (Variant v) {
+                        writeln("Unknown command for STREAMING state", v);
+                    },
                 );
             } else if (audioEngine.state == Lifecycle.ERROR) {
                 receive(
@@ -145,6 +162,9 @@ extern(C) nothrow {
                     },
                     (string command) {
                         writeln("[bridge.d] It works.");
+                    },
+                    (Variant v) {
+                        writeln("Unknown command for ERROR state", v);
                     },
                 );
             }
@@ -163,7 +183,7 @@ extern(C) nothrow {
             if (transientError != JSONValue.init) {
                 dragon_buffer = (&transientError).toJSON(true /* pretty */);
             } else {
-                dragon_buffer = recordState(audioEngine, midiEngine, store);
+                dragon_buffer = recordState(audioEngine, midiEngine, store, connections);
             }
             *ptr = cast(char*) dragon_buffer.ptr;
             return dragon_buffer.length.to!int;
@@ -262,6 +282,14 @@ extern(C) nothrow {
 
             auto receiver = locate("receivingThread");
             if (receiver != Tid.init) {
+                while (receiveTimeout(1.dur!"msecs",
+                    (Variant v) {
+                        writeln("GOT", v);
+                        // ignore it
+                    }
+                )) {
+                    // Continue
+                }
                 receiver.send(ReceiveQuit("quittingThread"));
                 receiveOnly!bool();
             }
