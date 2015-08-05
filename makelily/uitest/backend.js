@@ -24,26 +24,27 @@ app.on('window-all-closed', function() {
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
 app.on('ready', function() {
-    console.log('ready');
-    // Create the browser window.
-    mainWindow = new BrowserWindow({width: 800, height: 600});
+    setTimeout(function() {
+        // Create the browser window.
+        mainWindow = new BrowserWindow({width: 800, height: 600});
 
-    // and load the index.html of the app.
-    if (PACKAGED) {
-      mainWindow.loadUrl('file://' + __dirname + '/static/index.html');
-    } else {
-      mainWindow.loadUrl('http://127.0.0.1:4800');
-    }
+        // and load the index.html of the app.
+        if (PACKAGED) {
+            mainWindow.loadUrl('file://' + __dirname + '/static/index.html');
+        } else {
+            // Make life better.
+            mainWindow.openDevTools();
 
-    // Open the devtools.
-    mainWindow.openDevTools();
+            mainWindow.loadUrl('http://127.0.0.1:4800');
+        }
 
-    // Emitted when the window is closed.
-    mainWindow.on('closed', function() {
-        // Dereference the window object, usually you would store windows
-        // in an array if your app supports multi windows, this is the time
-        // when you should delete the corresponding element.
-        mainWindow.destroy();
-        mainWindow = null;
-    });
+        // Emitted when the window is closed.
+        mainWindow.on('closed', function() {
+            // Dereference the window object, usually you would store windows
+            // in an array if your app supports multi windows, this is the time
+            // when you should delete the corresponding element.
+            mainWindow.destroy();
+            mainWindow = null;
+        });
+    }, 1000);
 });

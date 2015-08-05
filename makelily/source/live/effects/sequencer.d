@@ -74,7 +74,7 @@ class Sequencer : Effect!float {
         v.object["flag"] = JSONValue(flag == State.Writeback ? "Overdubbing" : flag.to!string());
         v.object["value"] = JSONValue();
         v.object["value"] = value ? true : false;
-        toUIThread((&v).toJSON());
+        toUIThread(v);
     }
 
     @property bool recording() {
@@ -294,7 +294,7 @@ class Sequencer : Effect!float {
         v.object["pos"].integer = m_pos;
         v.object["sampleRate"] = JSONValue();
         v.object["sampleRate"].integer = sampleRate;
-        toUIThread((&v).toJSON());
+        toUIThread(v);
     }
 
     void process(string data) {
@@ -343,7 +343,7 @@ class Sequencer : Effect!float {
             auto v = JSONValue();
             v["action"] = JSONValue("exception");
             v["exception"] = JSONValue(e.to!string());
-            toUIThread((&v).toJSON());
+            toUIThread(v);
         }
     }
 

@@ -438,17 +438,18 @@ void rtLoop(int nframes, int sampleRate, shared Store store) {
                     return;
                 }
                 if (id in floatEffects) {
-                    auto d = floatEffects[id];
-                    delete d;
+                    floatEffects[id].destroy();
+                    floatEffects.remove(id);
                 } else if (id in doubleEffects) {
-                    auto d = doubleEffects[id];
-                    delete d;
+                    doubleEffects[id].destroy();
+                    doubleEffects.remove(id);
                 } else {
                     requestWasInvalid("Deleting a non-existant effect.");
                     return;
                 }
                 store.remove(id);
                 stateDidChange();
+                writeln("DESTROYED");
             },
 
             (RTConnect connectCmd) {
@@ -495,10 +496,13 @@ void rtLoop(int nframes, int sampleRate, shared Store store) {
                     return;
                 }
 
-                disconnect(id1, id2, fromChannel, toChannel,
-                    floatConnections, floatEffects, floatMixerBuffers);
-                disconnect(id1, id2, fromChannel, toChannel,
-                    doubleConnections, doubleEffects, doubleMixerBuffers);
+                if ((id1 in floatConnections) && (id2 in floatConnections[id1])) {
+                    disconnect(id1, id2, fromChannel, toChannel,
+                        floatConnections, floatEffects, floatMixerBuffers);
+                } else {
+                    disconnect(id1, id2, fromChannel, toChannel,
+                        doubleConnections, doubleEffects, doubleMixerBuffers);
+                }
 
                 stateDidChange();
             },

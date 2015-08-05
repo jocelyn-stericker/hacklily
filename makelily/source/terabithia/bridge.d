@@ -17,8 +17,9 @@ import live.core.store: Store;
 import live.core.effect: AudioWidth;
 import live.engine.audio: AudioEngine, Lifecycle, AudioError;
 import live.engine.midi: MidiEngine, MidiError, MidiQuit;
-import live.engine.receivecommands: ReceivePoke, ReceiveInvalidRequest, ReceiveConnectionReceipt, ReceiveDisconnectionReceipt;
-import live.engine.rtcommands: RTConnect, RTDisconnect, RTCreate, RTMessageIn;
+import live.engine.receivecommands: ReceivePoke, ReceiveInvalidRequest, ReceiveConnectionReceipt,
+       ReceiveDisconnectionReceipt, ReceiveUIThreadMsg;
+import live.engine.rtcommands: RTConnect, RTDisconnect, RTCreate, RTDestroyEffect, RTMessageIn;
 
 // So they can be created.
 import live.effects.soundfont;
@@ -50,9 +51,6 @@ string recordState(AudioEngine audioEngine, MidiEngine midiEngine,
 enum JS_BRIDGE_QUIT_CMD = -1;
 
 extern(C) nothrow {
-    void dragon_sendToUIThread(int id, const char* msg) {
-    }
-    
     int dragon_waveform_getEndFrame() {
         return 0;
     }
@@ -71,7 +69,7 @@ extern(C) nothrow {
 
         bool shouldQuit = false;
         string quittingThreadName;
-        JSONValue transientError;
+        JSONValue transientMsg;
         try {
             if (!audioEngine) {
                 thread_attachThis();
@@ -130,7 +128,7 @@ extern(C) nothrow {
                         shouldQuit = true;
                     },
                     (ReceiveInvalidRequest invalidRequest) {
-                        transientError = JSONValue([
+                        transientMsg = JSONValue([
                             "transient": true.to!JSONValue,
                             "error": invalidRequest.explanation.to!JSONValue,
                         ]);
@@ -146,6 +144,13 @@ extern(C) nothrow {
                     },
                     (ReceiveDisconnectionReceipt disconnection) {
                         connections = disconnection.apply(connections);
+                    },
+                    (ReceiveUIThreadMsg msg) {
+                        transientMsg = JSONValue([
+                            "transient": true.to!JSONValue,
+                            "toId": msg.effectId.to!JSONValue,
+                            "msg": msg.msg.parseJSON
+                        ]);
                     },
                     (Variant v) {
                         writeln("Unknown command for STREAMING state", v);
@@ -180,8 +185,8 @@ extern(C) nothrow {
                 quittingThreadName.locate.send(true);
                 return JS_BRIDGE_QUIT_CMD;
             }
-            if (transientError != JSONValue.init) {
-                dragon_buffer = (&transientError).toJSON(true /* pretty */);
+            if (transientMsg != JSONValue.init) {
+                dragon_buffer = (&transientMsg).toJSON(true /* pretty */);
             } else {
                 dragon_buffer = recordState(audioEngine, midiEngine, store, connections);
             }
@@ -190,11 +195,11 @@ extern(C) nothrow {
         } catch (Throwable err) {
             try {
                 writeln("Yikes. dragon_receive got an exception ", err);
-                transientError = JSONValue([
+                transientMsg = JSONValue([
                     "transient": true.to!JSONValue,
                     "error": err.toString.to!JSONValue,
                 ]);
-                dragon_buffer = (&transientError).toJSON(true /* pretty */);
+                dragon_buffer = (&transientMsg).toJSON(true /* pretty */);
                 *ptr = cast(char*) dragon_buffer.ptr;
                 return dragon_buffer.length.to!int;
             } catch (Throwable err) {
@@ -240,12 +245,18 @@ extern(C) nothrow {
                 auto newID = store.getNewID();
                 RTCreate cmd = {
                     id: newID,
-                    symbol: val["id"].str,
+                    symbol: val["symbol"].str,
                     channels: val["channels"].integer.to!int,
                     width: AudioWidth.Float,
                 };
                 "rtThread".locate.send(cmd);
                 return newID;
+            } else if (command == "destroy") {
+                JSONValue val = json.parseJSON;
+                RTDestroyEffect cmd = {
+                    effectId: val["id"].integer.to!int,
+                };
+                "rtThread".locate.send(cmd);
             } else if (command == "toEffect") {
                 JSONValue val = json.parseJSON;
                 RTMessageIn cmd = {

@@ -6,6 +6,7 @@
         "outDir": "./tmp",
         "preserveConstEnums": true,
         "sourceMap": false,
+        "experimentalDecorators": true,
         "jsx": "react",
         "target": "es5"
     },

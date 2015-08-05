@@ -4,12 +4,13 @@ module live.core.store;
 
 import live.core.effect;
 import live.engine.rtcommands: RTMessageIn;
+import live.engine.receivecommands: ReceiveUIThreadMsg;
 
 import core.atomic: atomicOp;
 import std.algorithm: keys, map;
 import std.concurrency: send, locate;
 import std.conv: to;
-import std.json: JSONValue;
+import std.json: JSONValue, toJSON;
 import std.range: array;
 import std.string: toStringz;
 import std.traits: EnumMembers;
@@ -44,8 +45,12 @@ synchronized class Store {
             };
             rtThread.send(cmd);
         }
-        void toUIThread(string s) {
-            dragon_sendToUIThread(id, s.toStringz());
+        void toUIThread(JSONValue msg) {
+            ReceiveUIThreadMsg receiveMsg = {
+                effectId: this.id,
+                msg: (&msg).toJSON(true /* pretty */)
+            };
+            "receivingThread".locate.send(receiveMsg);
         }
         JSONValue serialize() {
             return JSONValue([
@@ -245,7 +250,9 @@ synchronized class Store {
     }
 
     void remove(int id) {
-        remove(m_byId[id]);
+        if (id in m_byId) {
+            remove(m_byId[id]);
+        }
     }
 
     JSONValue serialize() {

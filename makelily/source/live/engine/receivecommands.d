@@ -43,3 +43,8 @@ export struct ReceiveDisconnectionReceipt {
         }).array;
     }
 }
+
+export struct ReceiveUIThreadMsg {
+    int effectId;
+    string msg;
+}

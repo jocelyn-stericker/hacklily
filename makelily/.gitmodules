@@ -1,3 +1,6 @@
 [submodule "vendor/portaudio"]
 	path = vendor/portaudio
 	url = https://github.com/D-Programming-Deimos/portaudio.git
+[submodule "uitest/node_modules/react-bootstrap"]
+	path = uitest/node_modules/react-bootstrap
+	url = https://github.com/andrew-d/react-bootstrap.git

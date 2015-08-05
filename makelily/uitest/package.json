@@ -9,7 +9,7 @@
     "less-loader": "^2.2.0",
     "lodash": "^3.10.0",
     "postcss-loader": "^0.5.1",
-    "react-bootstrap": "^0.23.7",
+    "react-bootstrap": "andrew-d/react-bootstrap#react-0.14",
     "react-hot-loader": "^1.2.8",
     "style-loader": "^0.12.3",
     "ts-loader": "^0.4.7"
@@ -22,7 +22,7 @@
     "autoprefixer-core": "^5.2.1",
     "node-libs-browser": "^0.5.2",
     "ntypescript": "^1.201507152343.1",
-    "react": "^0.13.3",
+    "react": "0.14.0-beta2",
     "webpack": "^1.10.1",
     "webpack-dev-server": "^1.10.1"
   }

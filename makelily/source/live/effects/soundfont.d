@@ -47,6 +47,7 @@ class Soundfont : Effect!float {
             return;
         }
 
+        import std.stdio;
         enforce(channel >= 0 && channel <= channels);
         enforce(m_remaining >= 0 && m_remaining <= channels);
 
@@ -122,7 +123,7 @@ class Soundfont : Effect!float {
             auto v = JSONValue();
             v["action"] = JSONValue("exception");
             v["exception"] = JSONValue(e.to!string());
-            toUIThread((&v).toJSON());
+            toUIThread(v);
         }
     }
 
@@ -136,7 +137,7 @@ class Soundfont : Effect!float {
         v.object["action"] = JSONValue("programChange");
         v.object["channel"] = JSONValue(channel.to!string());
         v.object["program"] = JSONValue(program.to!string());
-        toUIThread((&v).toJSON());
+        toUIThread(v);
     }
 };
 

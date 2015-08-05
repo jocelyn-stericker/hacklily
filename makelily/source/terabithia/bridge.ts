@@ -25,10 +25,10 @@ export interface Effect {
     id: number;
     name: string;
     type: string;
-    midiIn: boolean;
-    midiOut: boolean;
-    audioIn: number;
-    audioOut: number;
+    audioWidth: string;
+    connectivity: string;
+    isHardware: boolean;
+    isMidi: boolean;
 }
 
 export interface EffectFactory {
@@ -36,7 +36,7 @@ export interface EffectFactory {
 }
 
 export interface EffectSpec {
-    id: string;
+    symbol: string;
     channels: number;
 }
 
@@ -68,8 +68,27 @@ export interface EngineState {
     store: Effect[];
 }
 
-export interface TransientError {
-    error: string;
+export interface TransientMsg {
+    /**
+     * The target effect, or 'undefined' if the target is the root component.
+     */
+    toId?: number;
+
+    /**
+     * The error, if the transient message is an error.
+     */
+    error?: string;
+
+    /**
+     * The message, if the transient message is not an error.
+     */
+    msg?: string;
+
+    /**
+     * True.
+     * 
+     * Set to allow reflection.
+     */
     transient: boolean;
 }
 
@@ -84,7 +103,7 @@ declare function require(name: string): any;
 var Dragon: IDragon = require("./dragon");
 var stateIdx = 0;
 
-var runner: (error: TransientError, engineState: EngineState) => void = null;
+var runner: (transientMsg: TransientMsg, engineState: EngineState) => void = null;
 var running = false;
 var startRunning = function() {
     Dragon.onStateChange(engineState => {
@@ -118,7 +137,7 @@ var startRunning = function() {
     });
     running = true;
 }
-export function run(cb: (error: TransientError, engineState: EngineState) => void) {
+export function run(cb: (transientMsg: TransientMsg, engineState: EngineState) => void) {
     runner = cb;
     if (!running) {
         startRunning();
@@ -152,6 +171,10 @@ export function create(spec: EffectSpec) {
     return Dragon.sendCommand("create", JSON.stringify(spec));
 }
 
+export function destroy(spec: {id: number}) {
+    return Dragon.sendCommand("destroy", JSON.stringify(spec));
+}
+
 export function toEffect(effect: Effect, anything: {}) {
     Dragon.sendCommand("toEffect", JSON.stringify({
         effect: effect.id,
@@ -165,9 +188,3 @@ export function quit() {
     Dragon.quit();
 }
 
-/**
- *
- */
-
-// initialize(function(engineState: EngineState) {
-// });

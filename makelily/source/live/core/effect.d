@@ -2,10 +2,12 @@
 
 module live.core.effect;
 
-import std.concurrency: Tid;
+import std.concurrency: Tid, locate, send;
+import std.json: JSONValue, toJSON;
 
 import live.core.event: MidiEvent;
 import live.engine.rtcommands: RTMidiOutEvent, RTMessageOut;
+import live.engine.receivecommands: ReceiveUIThreadMsg;
 import live.util.assignOnce: AssignOnce;
 
 public enum Features {
@@ -85,8 +87,12 @@ public mixin template RealtimeEffect(Features f) {
         rtThread_effect.send(cmd);
     }
 
-    void toUIThread(immutable string str) {
-        dragon_sendToUIThread(id, str.toStringz());
+    void toUIThread(JSONValue str) {
+        ReceiveUIThreadMsg msg = {
+            effectId: id,
+            msg: (&str).toJSON(),
+        };
+        "receivingThread".locate.send(msg);
     }
 
     invariant() {
@@ -95,7 +101,6 @@ public mixin template RealtimeEffect(Features f) {
 }
 
 public Tid rtThread_effect;
-public extern(C) void dragon_sendToUIThread(int id, const char* msg);
 
 public interface Effect(audiotype) {
     void process(immutable(audiotype)* f,
