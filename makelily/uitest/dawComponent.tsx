@@ -97,7 +97,13 @@ export default function DAWComponent<P, S extends IDAWState>(symbol: string, cha
             let _dragonId = Dragon.create({channels, symbol});
 
             self.setState({_dragonId}, () => self.adjust());
-            Dragon.register(_dragonId, (msg: any) => self.setState({remote: Object.freeze(msg)}));
+            Dragon.register(_dragonId, (msg: any) => {
+                if (msg.exception) {
+                    console.warn(msg);
+                } else {
+                    self.setState({remote: Object.freeze(msg)})
+                }
+            });
 
             if (originalComponentWillMount) {
                 originalComponentWillMount.call(self);

@@ -9,6 +9,7 @@ import DragonApp from "./dragonApp";
 import PhysicalInput from "./physicalInput";
 import PhysicalOutput from "./physicalOutput";
 import Soundfont from "./soundfont";
+import MidiBridge from "./midiBridge";
 
 import {Button, OverlayTrigger, Modal, Input} from "react-bootstrap";
 import {defer, filter, map, find} from "lodash";
@@ -27,7 +28,7 @@ export default class Main extends React.Component<{}, {engineState?: Dragon.Engi
                     onStateChanged={engineState => this.setState({engineState})}>
                 <PhysicalOutput all audio>
                     <Soundfont>
-                        <PhysicalInput all midi />
+                        <MidiBridge />
                     </Soundfont>
                 </PhysicalOutput>
             </DragonApp>

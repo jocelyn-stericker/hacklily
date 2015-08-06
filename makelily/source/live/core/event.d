@@ -177,12 +177,12 @@ unittest {
         m_time = t;
 
         enforce(hasValidType, new Exception("MidiEvent is malformed."));
-        enforce(hasValidByte2, new Exception("The second byte must be less " ~
+        enforce(hasValidByte2, new Exception("The second ubyte must be less " ~
                     "or equal to 0x7F"));
-        enforce(hasValidByte3, new Exception("The third byte must be less " ~
+        enforce(hasValidByte3, new Exception("The third ubyte must be less " ~
                     "or equal to 0x7F"));
     }
-    this(byte msg, byte st1, byte st2, long t = cast(long) ((cast(float)
+    this(ubyte msg, ubyte st1, ubyte st2, long t = cast(long) ((cast(float)
             TickDuration.currSystemTick().hnsecs -
             TickDuration.appOrigin.hnsecs)*625.0/3.0)) { // to nframes
         this((msg << 16) | (st1 << 8) | st2);
@@ -229,9 +229,9 @@ unittest {
     }
     invariant() {
         assert(hasValidType, "MidiEvent does not have a valid type.");
-        assert(hasValidByte3, "The third byte for NON SYSEX events shall be " ~
+        assert(hasValidByte3, "The third ubyte for NON SYSEX events shall be " ~
                 "less than or equal to 0x7F");
-        assert(hasValidByte2, "The second byte for NON SYSEX events shall " ~
+        assert(hasValidByte2, "The second ubyte for NON SYSEX events shall " ~
                 "be less than or equal to 0x7F");
         assert(m_time >= 0);
     }

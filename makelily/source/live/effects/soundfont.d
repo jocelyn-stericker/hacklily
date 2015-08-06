@@ -7,7 +7,7 @@ import deimos.fluidsynth:
        fluid_settings_t, fluid_synth_t, new_fluid_synth, new_fluid_settings,
        fluid_settings_setnum, fluid_synth_write_float, fluid_synth_noteoff, fluid_synth_noteon,
        fluid_synth_cc, fluid_synth_channel_pressure, new_fluid_synth, fluid_synth_pitch_bend,
-       fluid_synth_sfload, fluid_synth_program_change;
+       fluid_synth_sfload, fluid_synth_sfunload, fluid_synth_program_change;
 import std.conv: to;
 import std.exception: enforce;
 import std.json: JSONValue, toJSON, parseJSON, JSON_TYPE;
@@ -93,30 +93,41 @@ class Soundfont : Effect!float {
                 break; 
         }
     }
+    int sfID = -1;
+    string currentSFURL;
+    int[int] programByChannel;
     void process(string data) {
         import std.stdio;
         try {
             auto root = data.parseJSON();
             enforce(root.type == JSON_TYPE.OBJECT, "Not a JSON object, " ~ data);
-            enforce("action" in root.object);
-            enforce(root["action"].type == JSON_TYPE.STRING);
-
-            if (root["action"].str == "loadSoundfont") {
-                enforce("url" in root.object);
-                enforce(root["url"].type == JSON_TYPE.STRING);
-
-                fluid_synth_sfload(m_synth, root["url"].str.toStringz(), 1);
-                m_loaded = true;
+            if ("channels" in root) {
+                auto channels = root["channels"].array;
+                foreach(int channel, channelInfo; channels) {
+                    enforce("program" in channelInfo);
+                    int newProgram = channelInfo["program"].integer.to!int;
+                    if (!(channel in programByChannel) || programByChannel[channel] != newProgram) {
+                        setProgram(channel, newProgram);
+                    }
+                }
             }
-
-            if (root["action"].str == "setProgram") {
-                enforce("channel" in root.object);
-                enforce("program" in root.object);
-                enforce(root["channel"].type == JSON_TYPE.INTEGER);
-                enforce(root["program"].type == JSON_TYPE.INTEGER);
-
-                setProgram(cast(int) root["channel"].integer,
-                        cast(int) root["program"].integer);
+            if ("soundfont" in root) {
+                enforce("soundfont" in root);
+                if (root["soundfont"].type == JSON_TYPE.NULL) {
+                    if (m_loaded) {
+                        fluid_synth_sfunload(m_synth, sfID, 1);
+                        sfID = -1;
+                        m_loaded = false;
+                    }
+                } else {
+                    auto soundfontURL = root["soundfont"].str;
+                    if (currentSFURL != soundfontURL) {
+                        sfID = fluid_synth_sfload(m_synth, soundfontURL.toStringz(), 1);
+                        currentSFURL = soundfontURL;
+                        m_loaded = true;
+                        pushState();
+                    }
+                }
             }
         } catch(Exception e) {
             writeln("oops.", e);
@@ -128,16 +139,30 @@ class Soundfont : Effect!float {
     }
 
     void setProgram(int channel, int program) {
-        import std.stdio;
-        writeln("setprogram", channel, program);
         m_synth.fluid_synth_program_change(channel, program);
-        auto v = JSONValue();
+        programByChannel[channel] = program;
+        pushState();
+    }
+
+    void pushState() {
+        JSONValue[] programByChannelArr = [];
+        foreach(channel, program; this.programByChannel) {
+            if (programByChannelArr.length <= channel) {
+                programByChannelArr.length = channel + 1;
+            }
+            auto channelObject = JSONValue();
+            JSONValue[string] channelObjectInit;
+            channelObject.object = channelObjectInit;
+            channelObject["program"] = program;
+            programByChannelArr[channel] = channelObject;
+        }
+
+        auto state = JSONValue();
         JSONValue[string] t;
-        v.object = t;
-        v.object["action"] = JSONValue("programChange");
-        v.object["channel"] = JSONValue(channel.to!string());
-        v.object["program"] = JSONValue(program.to!string());
-        toUIThread(v);
+        state.object = t;
+        state.object["soundfont"] = JSONValue(this.currentSFURL);
+        state.object["channels"] = programByChannelArr.to!JSONValue;
+        toUIThread(state);
     }
 };
 

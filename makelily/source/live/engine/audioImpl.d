@@ -276,8 +276,7 @@ extern(C) int process(const(void)* inputBufferPtr, void* outputBufferPtr,
         rtThread.send(cmd);
     }
     if (!receiveTimeout(dur!("seconds")(2), (bool) {})) {
-        "Realtime thread is dead. Bye.".writeln;
-        assert(0);
+        "Realtime thread is dead.".writeln;
     }
     /////
     

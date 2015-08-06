@@ -22,6 +22,7 @@ import live.engine.receivecommands: ReceivePoke, ReceiveInvalidRequest, ReceiveC
 import live.engine.rtcommands: RTConnect, RTDisconnect, RTCreate, RTDestroyEffect, RTMessageIn;
 
 // So they can be created.
+import live.effects.midiBridge;
 import live.effects.soundfont;
 import live.effects.sequencer;
 

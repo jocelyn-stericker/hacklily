@@ -1,7 +1,7 @@
 import React = require("react");
 import DAWComponent from "./dawComponent";
 
-@DAWComponent("live.effects.soundfont.Soundfont", 2)
+@DAWComponent("live.effects.midiBridge.MidiBridge", 2)
 class Soundfont extends React.Component<
     {
         children?: any
@@ -10,14 +10,14 @@ class Soundfont extends React.Component<
         remote?: any
     }> {
 
-    componentDidMount() {
+    press() {
         this.setRemoteState({
-            soundfont: "/Users/josh/ripieno/dragon/vendor/gm/gm.sf2",
-            channels: [
-                {
-                    program: 0
-                }
-            ]
+            event: {
+                type: "NOTE_ON",
+                note: 80,
+                velocity: 80,
+                channel: 1,
+            }
         });
     }
 
@@ -26,6 +26,7 @@ class Soundfont extends React.Component<
     render() {
         console.log(this.state);
         return <span>
+            <button onClick={() => this.press()}>TEST</button>
             {this.props.children}
         </span>;
     }
