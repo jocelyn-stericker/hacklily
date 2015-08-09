@@ -1,6 +1,6 @@
 var app = require('app');  // Module to control application life.
 var BrowserWindow = require('browser-window');  // Module to create native browser window.
-var Dragon = require("../build/Release/bridge");
+var DragonBackend = require("../backends/realtime/build/Release/bridge");
 
 var PACKAGED = false;
 
@@ -12,7 +12,7 @@ require('crash-reporter').start();
 var mainWindow = null;
 
 app.on('before-quit', function() {
-    Dragon.quit();
+    DragonBackend.quit();
 });
 
 // Quit when all windows are closed.

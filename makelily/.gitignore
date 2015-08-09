@@ -9,8 +9,8 @@ build
 dub.selections.json
 node_modules
 npm-debug.log
-vendor/gm/*.tar.gz
-vendor/gm/*.sf2
-vendor/gm/*.doc
-vendor/gm/*.txt
+backends/realtime/vendor/gm/*.tar.gz
+backends/realtime/vendor/gm/*.sf2
+backends/realtime/vendor/gm/*.doc
+backends/realtime/vendor/gm/*.txt
 uitest/tmp

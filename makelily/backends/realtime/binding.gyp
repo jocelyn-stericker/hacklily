@@ -3,7 +3,7 @@
         {
             "target_name": "dragon",
             "dependencies": ["dragon-dlang"],
-            "sources": [ "source/terabithia/bridge.cc" ],
+            "sources": [ "source/bridge/bridge.cc" ],
             "include_dirs" : [
                 "<!(node -e \"require('nan')\")"
             ],

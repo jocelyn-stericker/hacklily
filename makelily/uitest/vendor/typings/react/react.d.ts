@@ -1,6 +1,6 @@
-// Type definitions for __React v0.13.1 (external module)
+// Type definitions for React v0.14.0 (external module)
 // Project: http://facebook.github.io/react/
-// Definitions by: Asana <https://asana.com>, AssureSign <http://www.assuresign.com>, Microsoft <https://microsoft.com>
+// Definitions by: Josh Netterfield <joshua@nettek.ca>, Asana <https://asana.com>, AssureSign <http://www.assuresign.com>, Microsoft <https://microsoft.com>
 // Definitions: https://github.com/borisyankov/DefinitelyTyped
 
 declare module __React {
@@ -98,29 +98,7 @@ declare module __React {
         props?: P,
         ...children: __ReactNode[]): ReactElement<P>;
 
-    function render<P>(
-        element: DOMElement<P>,
-        container: Element,
-        callback?: () => any): DOMComponent<P>;
-    function render<P, S>(
-        element: ClassicElement<P>,
-        container: Element,
-        callback?: () => any): ClassicComponent<P, S>;
-    function render<P, S>(
-        element: ReactElement<P>,
-        container: Element,
-        callback?: () => any): Component<P, S>;
-
-    function unmountComponentAtNode(container: Element): boolean;
-    function renderToString(element: ReactElement<any>): string;
-    function renderToStaticMarkup(element: ReactElement<any>): string;
     function isValidElement(object: {}): boolean;
-    function initializeTouchEvents(shouldUseTouch: boolean): void;
-
-    function findDOMNode<TElement extends Element>(
-        componentOrElement: Component<any, any> | Element): TElement;
-    function findDOMNode(
-        componentOrElement: Component<any, any> | Element): Element;
 
     var DOM: __ReactDOM;
     var PropTypes: __ReactPropTypes;

@@ -1,5 +1,6 @@
 // Type definitions for react-bootstrap
 // Project: https://react-bootstrap.github.io/
+// Definitions by: Josh Netterfield <https://github/jnetterf>
 // Definitions by: René Verheij <https://github.com/flyon>
 // Definitions: https://github.com/borisyankov/DefinitelyTyped
 /// <reference path="../react/react.d.ts" />

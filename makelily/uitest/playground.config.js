@@ -21,13 +21,17 @@ module.exports = {
     resolve: {
         extensions: ["", ".webpack.js", ".web.js", ".js", ".ts", ".tsx"],
         root: path.join(__dirname, "node_modules"),
-        fallback: path.join(__dirname, "..", "node_modules"),
+    },
+    resolveLoader: {
+        extensions: ["", ".webpack.js", ".web.js", ".js", ".ts", ".tsx"],
+        root: path.join(__dirname, "node_modules"),
     },
     module: {
         loaders: [
             {
                 test: /\.ts(x?)$/,
-                loader: "react-hot!ts-loader?compiler=ntypescript"
+                loader: "react-hot!ts-loader?compiler=ntypescript",
+                include: path.join(__dirname, ".."),
             },
             {
                 test: /\.less$/,
@@ -41,10 +45,6 @@ module.exports = {
         ]
     },
     postcss: [ autoprefixer({ browsers: ['last 2 version'] }) ],
-    stats: {
-      colors: true,
-      progress: true,
-    },
     plugins: [
         new webpack.HotModuleReplacementPlugin(),
         new webpack.NoErrorsPlugin(),

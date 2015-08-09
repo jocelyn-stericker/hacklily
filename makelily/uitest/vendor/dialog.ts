@@ -1,3 +1,3 @@
 import remote from "./remote";
-let Dialog: any = remote.require("dialog");
+let Dialog: any = remote && remote.require("dialog");
 export default Dialog;

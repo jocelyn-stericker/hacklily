@@ -1,5 +1,5 @@
 /** Part of dragon. Copyright (C) Josh Netterfield <joshua@nettek.ca> 2015. */
-module terabithia.bridge;
+module bridge.bridge;
 
 import core.memory: GC;
 import core.runtime: Runtime;
