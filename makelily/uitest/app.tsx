@@ -19,7 +19,10 @@
 /// <reference path="./vendor/typings/tsd.d.ts" />
 
 import ReactDOM = require("react-dom");
-import React = require("react");
+
+/* tslint:disable */
+import React = require("react"); // needed for <Main />.
+/* tslint:enable */
 
 import Main from "./main";
 

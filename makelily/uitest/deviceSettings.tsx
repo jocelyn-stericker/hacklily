@@ -10,7 +10,7 @@ import React = require("react");
 import {Button, Modal, Input} from "react-bootstrap";
 import {find} from "lodash";
 
-import {EngineState, MidiDevice, Lifecycle, DragonBackend} from "../backends/spec";
+import {EngineState, Lifecycle, DragonBackend} from "../backends/spec";
 
 export interface IProps {
     backend: DragonBackend;
@@ -32,7 +32,7 @@ export default class DeviceSettings extends React.Component<IProps, void> {
         let audioIn = (this.refs["audioIn"] as any).getValue();
         let audioOut = (this.refs["audioOut"] as any).getValue();
 
-        let {midi, audio} = this.props.engineState;
+        let {audio} = this.props.engineState;
         this.props.backend.startStreaming(
             find(audio.devices, device => device.name === audioIn),
             find(audio.devices, device => device.name === audioOut)
@@ -42,7 +42,6 @@ export default class DeviceSettings extends React.Component<IProps, void> {
     render() {
         let {engineState} = this.props;
         let {audio} = engineState;
-        let {midi} = engineState;
         return <Modal show={audio.state === Lifecycle.Initialized} onHide={this.quit}>
             <Modal.Header closeButton>
                 <Modal.Title>Device setup</Modal.Title>
