@@ -14,3 +14,4 @@ backends/realtime/vendor/gm/*.sf2
 backends/realtime/vendor/gm/*.doc
 backends/realtime/vendor/gm/*.txt
 uitest/tmp
+dist

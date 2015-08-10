@@ -19,19 +19,19 @@
 import React = require("react");
 import {reduce} from "lodash";
 
-import {EngineState, Effect} from "../backends/spec";
+import {IEngineState, IEffect} from "../backends/spec";
 
 export interface IProps {
     audio?: boolean;
     midi?: boolean;
 
     all?: boolean;
-    outputs?: Effect[];
+    outputs?: IEffect[];
     children?: any;
 }
 
 export interface IState {
-    engineState: EngineState;
+    engineState: IEngineState;
 }
 
 /**
@@ -43,7 +43,7 @@ export interface IState {
 class PhysicalOutput extends React.Component<IProps, IState> {
 
     context: {
-        dragonEngineState: EngineState;
+        dragonEngineState: IEngineState;
     };
 
     getChildContext() {

@@ -18,24 +18,24 @@
 
 import React = require("react");
 
-import {TransientMsg, EngineState, Lifecycle, DragonBackend} from "../backends/spec";
+import {ITransientMsg, IEngineState, Lifecycle, IDragonBackend} from "../backends/spec";
 import {run} from "./runtime";
 
 let stateIdx = -1;
 
 export interface IProps {
-    backend: DragonBackend;
-    onMessage?: (msg: TransientMsg) => void;
-    onStateChanged?: (state: EngineState) => void;
+    backend: IDragonBackend;
+    onMessage?: (msg: ITransientMsg) => void;
+    onStateChanged?: (state: IEngineState) => void;
     children?: any;
 }
 export interface IState {
-    engineState: EngineState;
+    engineState: IEngineState;
 }
 
 class DragonEngine extends React.Component<IProps, IState> {
     componentWillMount() {
-        run(this.props.backend, (msg: TransientMsg, engineState: EngineState) => {
+        run(this.props.backend, (msg: ITransientMsg, engineState: IEngineState) => {
             if (msg) {
                 this.props.onMessage(msg);
             } else if (engineState) {
@@ -46,7 +46,7 @@ class DragonEngine extends React.Component<IProps, IState> {
                 setTimeout(() => {
                     this.setState({engineState});
                     this.props.onStateChanged(engineState);
-                });
+                }, 0);
             }
         });
     }

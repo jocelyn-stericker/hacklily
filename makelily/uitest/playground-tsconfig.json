@@ -1,6 +1,5 @@
 {
     "compilerOptions": {
-        "declaration": true,
         "experimentalDecorators": true,
         "jsx": "react",
         "module": "commonjs",
@@ -8,11 +7,9 @@
         "outDir": "./tmp",
         "preserveConstEnums": true,
         "removeComments": false,
-        "sourceMap": true,
         "target": "es5"
     },
     "files": [
-        "./app.tsx",
-        "../frontend/tests.ts"
+        "./app.tsx"
     ]
 }

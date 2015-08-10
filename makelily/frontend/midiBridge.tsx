@@ -22,7 +22,9 @@ import DAWComponent from "./dawComponent";
 
 export interface IProps {
     children?: any;
+    ref?: string;
     channel: number;
+    key?: any;
 }
 export interface IState {
     remote?: any;

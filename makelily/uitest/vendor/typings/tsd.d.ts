@@ -5,3 +5,6 @@
 /// <reference path="react/react-dom.d.ts" />
 /// <reference path="react-bootstrap/react-bootstrap.d.ts" />
 /// <reference path="lodash/lodash.d.ts" />
+/// <reference path="chai/chai.d.ts" />
+/// <reference path="mocha/mocha.d.ts" />
+/// <reference path="jsdom/jsdom.d.ts" />

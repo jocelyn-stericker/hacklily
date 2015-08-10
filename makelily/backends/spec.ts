@@ -16,7 +16,7 @@ export enum Lifecycle {
 
     /** 
      * A permenant error has occured.
-     * See also TransientMsg
+     * See also ITransientMsg
      */
     Error = 1,
 
@@ -31,7 +31,7 @@ export enum Lifecycle {
     Streaming = 3,
 }
 
-export interface AudioDevice {
+export interface IAudioDevice {
     defaultSampleRate: number;
     isDefaultInput: boolean;
     isDefaultOutput: boolean;
@@ -40,60 +40,59 @@ export interface AudioDevice {
     name: string;
 }
 
-export interface MidiDevice {
+export interface IMidiDevice {
     input: boolean;
     name: string;
     output: boolean;
 }
 
-export interface Effect {
+export interface IEffect {
     id: number;
     name: string;
-    type: string;
     audioWidth: string;
     connectivity: string;
     isHardware: boolean;
     isMidi: boolean;
 }
 
-export interface EffectFactory {
+export interface IEffectFactory {
     id: string;
 }
 
-export interface EffectSpec {
+export interface IEffectSpec {
     symbol: string;
     channels: number;
 }
 
-export interface Connection {
+export interface IConnection {
     from: number;
     to: number;
     fromChannel: number;
     toChannel: number;
 }
 
-export interface AudioEngine {
+export interface IAudioEngine {
     state: Lifecycle;
     error: string;
-    devices: AudioDevice[];
+    devices: IAudioDevice[];
 }
 
-export interface MidiEngine {
+export interface IMidiEngine {
     state: Lifecycle;
     error: string;
-    devices: MidiDevice[];
+    devices: IMidiDevice[];
 }
 
-export interface EngineState {
-    audio: AudioEngine;
-    factories: EffectFactory[];
-    graph: Connection[];
-    midi: MidiEngine;
+export interface IEngineState {
+    audio: IAudioEngine;
+    factories: IEffectFactory[];
+    graph: IConnection[];
+    midi: IMidiEngine;
     stateIdx?: number;
-    store: Effect[];
+    store: IEffect[];
 }
 
-export interface TransientMsg {
+export interface ITransientMsg {
     /**
      * The target effect, or 'undefined' if the target is the root component.
      */
@@ -120,15 +119,15 @@ export interface TransientMsg {
 /**
  * The Dragon backend API, which is injected into the frontend's DragonApp
  */
-export interface DragonBackend {
-    run: (cb: (transientMsg: TransientMsg, engineState: EngineState) => void) => void;
+export interface IDragonBackend {
+    run: (cb: (transientMsg: ITransientMsg, engineState: IEngineState) => void) => void;
     stop: () => void;
-    startStreaming: (audioDeviceIn: AudioDevice, audioDeviceOut: AudioDevice) => void;
-    connect: (connection: Connection) => void;
-    disconnect: (connection: Connection) => void;
-    create: (spec: EffectSpec) => number;
+    startStreaming: (audioDeviceIn: IAudioDevice, audioDeviceOut: IAudioDevice) => void;
+    connect: (connection: IConnection) => void;
+    disconnect: (connection: IConnection) => void;
+    create: (spec: IEffectSpec) => number;
     destroy: (spec: {id: number}) => void;
-    toEffect: (effect: Effect, anything: {}) => void;
+    toEffect: (effect: IEffect, anything: {}) => void;
     quit: () => void;
 }
 

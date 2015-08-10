@@ -22,9 +22,12 @@
   },
   "devDependencies": {
     "autoprefixer-core": "^5.2.1",
+    "chai": "^3.2.0",
+    "jsdom": "^6.0.1",
+    "mocha": "^2.2.5",
     "node-libs-browser": "^0.5.2",
     "ntypescript": "^1.201507152343.1",
-    "react": "0.14.0-beta2",
+    "react": "0.14.0-beta3",
     "tslint": "2.5.0-dev.1",
     "webpack": "^1.10.1",
     "webpack-dev-server": "^1.10.1"

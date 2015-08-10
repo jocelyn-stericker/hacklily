@@ -19,18 +19,19 @@
 import React = require("react");
 import {reduce, forEach, values} from "lodash";
 
-import {DragonBackend, EngineState, Effect, Connection} from "../backends/spec";
+import {IDragonBackend, IEngineState, IEffect, IConnection} from "../backends/spec";
 
 export interface IProps {
     audio?: boolean;
     midi?: boolean;
 
     all?: boolean;
-    inputs?: Effect[];
+    inputs?: IEffect[];
     children?: any;
+    key?: any;
 }
 export interface IState {
-    engineState: EngineState;
+    engineState: IEngineState;
 }
 
 /**
@@ -40,12 +41,12 @@ export interface IState {
 class PhysicalInput extends React.Component<IProps, IState> {
 
     context: {
-        dragonEngineState: EngineState;
-        dragonBackend: DragonBackend;
+        dragonEngineState: IEngineState;
+        dragonBackend: IDragonBackend;
         dragonOutputs: {[input: number]: {id: number; inChan: number}[]};
     };
 
-    currentConnections: {[key: string]: Connection};
+    currentConnections: {[key: string]: IConnection};
 
     adjust() {
         let dragonOutputs = this.context.dragonOutputs;
@@ -140,7 +141,7 @@ class PhysicalInput extends React.Component<IProps, IState> {
     }
 
     clear() {
-        forEach(values(this.currentConnections) as Connection[], connection => {
+        forEach(values(this.currentConnections) as IConnection[], connection => {
             this.context.dragonBackend.disconnect(connection);
         });
         this.currentConnections = {};

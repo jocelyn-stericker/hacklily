@@ -20,51 +20,55 @@ class MidiBridge : Effect!float {
     }
 
     void process(MidiEvent e) {
-        auto json = JSONValue();
+        auto event = JSONValue();
         final switch(e.type) {
             case MidiEventType.NOTE_OFF:
-                json["type"] = JSONValue("NOTE_OFF");
-                json["channel"] = JSONValue(e.channel);
-                json["note"] = JSONValue(e.note);
+                event.object["type"] = JSONValue("NOTE_OFF");
+                event.object["channel"] = JSONValue(e.channel);
+                event.object["note"] = JSONValue(e.note);
+                event.object["velocity"] = JSONValue(e.velocity);
                 break;
             case MidiEventType.NOTE_ON:
-                json["type"] = JSONValue("NOTE_ON");
-                json["channel"] = JSONValue(e.channel);
-                json["note"] = JSONValue(e.note);
-                json["velocity"] = JSONValue(e.velocity);
+                event.object["type"] = JSONValue("NOTE_ON");
+                event.object["channel"] = JSONValue(e.channel);
+                event.object["note"] = JSONValue(e.note);
+                event.object["velocity"] = JSONValue(e.velocity);
                 break;
             case MidiEventType.POLYPHONIC_AFTERTOUCH:
-                json["type"] = JSONValue("POLYPHONIC_AFTERTOUCH");
-                json["channel"] = JSONValue(e.channel);
-                json["note"] = JSONValue(e.note);
-                json["velocity"] = JSONValue(e.velocity);
+                event.object["type"] = JSONValue("POLYPHONIC_AFTERTOUCH");
+                event.object["channel"] = JSONValue(e.channel);
+                event.object["note"] = JSONValue(e.note);
+                event.object["velocity"] = JSONValue(e.velocity);
                 break; 
             case MidiEventType.CONTROL_CHANGE:
-                json["type"] = JSONValue("CONTROL_CHANGE");
-                json["channel"] = JSONValue(e.channel);
-                json["controller"] = JSONValue(e.controller);
-                json["controllerValue"] = JSONValue(e.controllerValue);
+                event.object["type"] = JSONValue("CONTROL_CHANGE");
+                event.object["channel"] = JSONValue(e.channel);
+                event.object["controller"] = JSONValue(e.controller);
+                event.object["controllerValue"] = JSONValue(e.controllerValue);
                 break; 
             case MidiEventType.PROGRAM_CHANGE:
-                json["type"] = JSONValue("PROGRAM_CHANGE");
-                json["channel"] = JSONValue(e.channel);
-                json["program"] = JSONValue(e.program);
+                event.object["type"] = JSONValue("PROGRAM_CHANGE");
+                event.object["channel"] = JSONValue(e.channel);
+                event.object["program"] = JSONValue(e.program);
                 break; 
             case MidiEventType.CHANNEL_AFTERTOUCH:
-                json["type"] = JSONValue("CHANNEL_AFTERTOUCH");
-                json["channel"] = JSONValue(e.channel);
-                json["velocity"] = JSONValue(e.velocity);
+                event.object["type"] = JSONValue("CHANNEL_AFTERTOUCH");
+                event.object["channel"] = JSONValue(e.channel);
+                event.object["velocity"] = JSONValue(e.velocity);
                 break; 
             case MidiEventType.PITCH_WHEEL:
-                json["type"] = JSONValue("PITCH_WHEEL");
-                json["channel"] = JSONValue(e.channel);
-                json["pitchWheel"] = JSONValue(e.pitchWheel);
+                event.object["type"] = JSONValue("PITCH_WHEEL");
+                event.object["channel"] = JSONValue(e.channel);
+                event.object["pitchWheel"] = JSONValue(e.pitchWheel);
                 break; 
             case MidiEventType.SYSEX:
                 import std.stdio;
                 writeln("Ignoring sysex.");
                 return;
         }
+        auto json = JSONValue();
+        json.object["event"] = event;
+
         toUIThread(json);
     }
 

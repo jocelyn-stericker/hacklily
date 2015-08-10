@@ -10,11 +10,11 @@ import React = require("react");
 import {Button, Modal, Input} from "react-bootstrap";
 import {find} from "lodash";
 
-import {EngineState, Lifecycle, DragonBackend} from "../backends/spec";
+import {IEngineState, Lifecycle, IDragonBackend} from "../backends/spec";
 
 export interface IProps {
-    backend: DragonBackend;
-    engineState?: EngineState;
+    backend: IDragonBackend;
+    engineState?: IEngineState;
 }
 
 export default class DeviceSettings extends React.Component<IProps, void> {

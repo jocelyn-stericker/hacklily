@@ -30,7 +30,7 @@ module.exports = {
         loaders: [
             {
                 test: /\.ts(x?)$/,
-                loader: "react-hot!ts-loader?compiler=ntypescript",
+                loader: "react-hot!ts-loader?compiler=ntypescript&configFileName=playground-tsconfig.json",
                 include: path.join(__dirname, ".."),
             },
             {

@@ -18,19 +18,23 @@
 
 import React = require("react");
 
-import {EngineState, MidiDevice, Lifecycle, TransientMsg} from "../backends/spec";
+import {IEngineState, Lifecycle, ITransientMsg} from "../backends/spec";
+import DummyBackend, {Test} from "../backends/dummy/dummy";
+(window as any).test = Test;
 
 import DragonApp from "../frontend/dragonApp";
 import PhysicalOutput from "../frontend/physicalOutput";
+import PhysicalInput from "../frontend/physicalInput";
 import Synth from "../frontend/synth";
 import MidiBridge from "../frontend/midiBridge";
 
 import DeviceSettings from "./deviceSettings";
 import remote from "./vendor/remote";
 
-let DragonBackend = remote.require("../backends/realtime/build/Release/bridge");
+let DragonBackend = remote ? remote.require("../backends/realtime/build/Release/bridge") : DummyBackend;
+let SOUNDFONT_URL = remote ? remote.require("process").cwd() + "/../backends/realtime/vendor/gm/gm.sf2" : "yolo";
 
-export default class Main extends React.Component<{}, {engineState?: EngineState}> {
+export default class Main extends React.Component<{}, {engineState?: IEngineState}> {
     render() {
         let {engineState} = this.state;
         let {audio, midi, store, graph} = engineState;
@@ -39,13 +43,14 @@ export default class Main extends React.Component<{}, {engineState?: EngineState
                     onStateChanged={engineState => this.setState({engineState})}>
                 <PhysicalOutput all audio>
                     <Synth
-                            soundfont={remote.require("process").cwd() + "/../backends/realtime/vendor/gm/gm.sf2"}
+                            soundfont={SOUNDFONT_URL}
                             channels={[
                                 {
                                     program: 0
                                 }
                             ]}>
-                        <MidiBridge channel={0} />
+                        <MidiBridge channel={0} ref="midiBridge" />
+                        <PhysicalInput all midi/>
                     </Synth>
                 </PhysicalOutput>
             </DragonApp>
@@ -61,7 +66,7 @@ export default class Main extends React.Component<{}, {engineState?: EngineState
             <DeviceSettings backend={DragonBackend} engineState={engineState} />
         </div>;
     }
-    handleMsg(msg: TransientMsg) {
+    handleMsg(msg: ITransientMsg) {
         if (msg.error) {
             alert(msg.error);
             console.warn(msg.error);

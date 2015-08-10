@@ -16,10 +16,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import {Lifecycle, AudioDevice, Effect, EffectSpec, Connection, EngineState, TransientMsg, DragonBackend} from "../../../spec";
+import {Lifecycle, IAudioDevice, IEffect, IEffectSpec, IConnection, IEngineState, ITransientMsg, IDragonBackend} from "./spec";
 
 interface ICPPBridge {
-    onStateChange: (cb: (engineState: string /* "EngineState" */) => void) => void;
+    onStateChange: (cb: (engineState: string /* "IEngineState" */) => void) => void;
     sendCommand: (func: string, options: string) => number;
     poke: () => void;
     quit: () => void;
@@ -29,7 +29,7 @@ declare function require(name: string): any;
 let CPPBridge: ICPPBridge = require("./dragon");
 let stateIdx: number = 0;
 
-let runner: (transientMsg: TransientMsg, engineState: EngineState) => void = null;
+let runner: (transientMsg: ITransientMsg, engineState: IEngineState) => void = null;
 let running: boolean = false;
 
 let startRunning = function(): void {
@@ -38,9 +38,9 @@ let startRunning = function(): void {
         if (!runner) {
             return;
         }
-        let parsed: TransientMsg | EngineState = JSON.parse(newEngineState);
-        let parsedState: EngineState = parsed as any;
-        let transientMsg: TransientMsg = parsed as any;
+        let parsed: ITransientMsg | IEngineState = JSON.parse(newEngineState);
+        let parsedState: IEngineState = parsed as any;
+        let transientMsg: ITransientMsg = parsed as any;
         if (transientMsg.transient) {
             setTimeout(function(): void {
                 runner(transientMsg, null);
@@ -60,6 +60,9 @@ let startRunning = function(): void {
                 {
                     id: "live.engine.rtthread.Passthrough"
                 },
+                {
+                    id: "live.effects.midiBridge.MidiBridge"
+                }
             ];
             runner(null, parsedState);
         }
@@ -68,7 +71,7 @@ let startRunning = function(): void {
 };
 
 module IDragon {
-    export function run(cb: (newTransientMsg: TransientMsg, newEngineState: EngineState) => void): void {
+    export function run(cb: (newTransientMsg: ITransientMsg, newEngineState: IEngineState) => void): void {
         runner = cb;
         if (!running) {
             startRunning();
@@ -83,22 +86,22 @@ module IDragon {
         CPPBridge.sendCommand("stop", JSON.stringify({}));
     }
 
-    export function startStreaming(audioDeviceIn: AudioDevice, audioDeviceOut: AudioDevice): void {
+    export function startStreaming(audioDeviceIn: IAudioDevice, audioDeviceOut: IAudioDevice): void {
         CPPBridge.sendCommand("stream", JSON.stringify({
             from: audioDeviceIn.name,
             to: audioDeviceOut.name
         }));
     }
 
-    export function connect(connection: Connection): void {
+    export function connect(connection: IConnection): void {
         CPPBridge.sendCommand("connect", JSON.stringify(connection));
     }
 
-    export function disconnect(connection: Connection): void {
+    export function disconnect(connection: IConnection): void {
         CPPBridge.sendCommand("disconnect", JSON.stringify(connection));
     }
 
-    export function create(spec: EffectSpec): number {
+    export function create(spec: IEffectSpec): number {
         return CPPBridge.sendCommand("create", JSON.stringify(spec));
     }
 
@@ -106,7 +109,7 @@ module IDragon {
         CPPBridge.sendCommand("destroy", JSON.stringify(spec));
     }
 
-    export function toEffect(effect: Effect, anything: {}): void {
+    export function toEffect(effect: IEffect, anything: {}): void {
         CPPBridge.sendCommand("toEffect", JSON.stringify({
             effect: effect.id,
             msg: JSON.stringify(anything)
@@ -120,4 +123,4 @@ module IDragon {
     }
 }
 
-export default IDragon as DragonBackend;
+export = IDragon as IDragonBackend;

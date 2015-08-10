@@ -16,7 +16,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import {TransientMsg, EngineState, DragonBackend} from "../backends/spec";
+import {defer} from "lodash";
+
+import {ITransientMsg, IEngineState, IDragonBackend} from "../backends/spec";
 
 let _effectCbs: {[key: number]: (msg: any) => void} = {};
 
@@ -32,18 +34,21 @@ export function unregister(id: number) {
  * Start the MIDI/Audio server and start receiving callbacks.
  * 
  * @param backend the service to use
- * @param cb.transientMsg remote(TransientMsg)
- * @param cb.engineState remote(EngineState)
+ * @param cb.transientMsg remote(ITransientMsg)
+ * @param cb.engineState remote(IEngineState)
  */
-export function run(backend: DragonBackend, cb: (transientMsg: TransientMsg, engineState: EngineState) => void) {
-    backend.run(function runWrapper(transientMsg: TransientMsg, engineState: EngineState) {
-        if (transientMsg && transientMsg.toId) {
-            console.assert(!transientMsg.error, "Transient messages to effects must not be errors");
-            if (_effectCbs[transientMsg.toId]) {
-                _effectCbs[transientMsg.toId](transientMsg.msg)
+export function run(backend: IDragonBackend, cb: (transientMsg: ITransientMsg, engineState: IEngineState) => void) {
+    backend.run(function runWrapper(transientMsg: ITransientMsg, engineState: IEngineState) {
+        // this could have happened from within a sync atom get (yikes.)
+        defer(function() {
+            if (transientMsg && transientMsg.toId) {
+                console.assert(!transientMsg.error, "ITransient messages to effects must not be errors");
+                if (_effectCbs[transientMsg.toId]) {
+                    _effectCbs[transientMsg.toId](transientMsg.msg);
+                }
+            } else {
+                cb(transientMsg, engineState);
             }
-        } else {
-            cb(transientMsg, engineState);
-        }
+        });
     });
 }

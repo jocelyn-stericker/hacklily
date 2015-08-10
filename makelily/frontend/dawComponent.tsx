@@ -19,7 +19,7 @@
 import React = require("react");
 import {delay, extend, forEach, times, values} from "lodash";
 
-import {DragonBackend, Connection} from "../backends/spec";
+import {IDragonBackend, IConnection} from "../backends/spec";
 import {register, unregister} from "./runtime";
 
 import WrappedDAWComponent from "./anyComponent";
@@ -108,7 +108,7 @@ export default function DAWComponent<P, S extends IDAWComponentState>(symbol: st
         let originalComponentWillMount = component.prototype.componentWillMount;
         component.prototype.componentWillMount = function dragonComponentWillMountWrapper() {
             let self = this as WrappedDAWComponent<P, IDAWComponentState>;
-            let dragonBackend: DragonBackend = self.context.dragonBackend;
+            let dragonBackend: IDragonBackend = self.context.dragonBackend;
             let _dragonId = dragonBackend.create({channels, symbol});
 
             self.setState({_dragonId}, () => self.adjust());
@@ -128,22 +128,22 @@ export default function DAWComponent<P, S extends IDAWComponentState>(symbol: st
         let originalComponentWillUnmount = component.prototype.componentWillUnmount;
         component.prototype.componentWillUnmount = function dragonComponentWillUnmountWrapper() {
             let self = this as WrappedDAWComponent<P, IDAWComponentState>;
-            self.adjust();
-            let dragonBackend: DragonBackend = self.context.dragonBackend;
+            let dragonBackend: IDragonBackend = self.context.dragonBackend;
             let id = this.state._dragonId;
 
-            let currentConnections: {[key: string]: Connection} = this.currentConnections;
-            forEach(values(currentConnections) as Connection[], connection => {
-                dragonBackend.disconnect(connection);
+            let currentConnections: {[key: string]: IConnection} = this.currentConnections;
+            let keysToRemove: string[] = [];
+            forEach(currentConnections, (connection, key) => {
+                dragonBackend.disconnect(connection); //!!!
+                delete currentConnections[key];
             });
-            this.currentConnections = {};
 
             unregister(id);
 
             // wait until this is completely unmounted.
             delay(function() {
                 dragonBackend.destroy({id});
-            }, 100);
+            }, 0);
 
             if (originalComponentWillUnmount) {
                 originalComponentWillUnmount.call(self);
@@ -152,7 +152,7 @@ export default function DAWComponent<P, S extends IDAWComponentState>(symbol: st
 
         component.prototype.setRemoteState = function(remoteState: any) {
             let self = this as WrappedDAWComponent<P, IDAWComponentState>;
-            let dragonBackend: DragonBackend = self.context.dragonBackend;
+            let dragonBackend: IDragonBackend = self.context.dragonBackend;
 
             dragonBackend.toEffect({
                 id: self.state._dragonId,
@@ -160,14 +160,13 @@ export default function DAWComponent<P, S extends IDAWComponentState>(symbol: st
                 audioWidth: undefined,
                 connectivity: undefined,
                 isHardware: undefined,
-                isMidi: undefined,
-                type: undefined
+                isMidi: undefined
             }, remoteState);
         };
 
         let originalRender = component.prototype.render;
         component.prototype.render = function() {
-            component.prototype.adjust();
+            this.adjust();
             return originalRender.call(this);
         };
 
@@ -175,12 +174,12 @@ export default function DAWComponent<P, S extends IDAWComponentState>(symbol: st
             if (!this.currentConnections) {
                 this.currentConnections = {};
             }
-            let currentConnections: {[key: string]: Connection} = this.currentConnections;
+            let currentConnections: {[key: string]: IConnection} = this.currentConnections;
             if (!this.context) {
                 return;
             }
             let self = this as WrappedDAWComponent<P, IDAWComponentState>;
-            let dragonBackend: DragonBackend = self.context.dragonBackend;
+            let dragonBackend: IDragonBackend = self.context.dragonBackend;
             let dragonOutputs: {[outChan: number]: {id: number; inChan: number}[]} = self.context.dragonOutputs;
 
             let dragonInputs: {[outChan: number]: {id: number; inChan: number}[]} = {};
@@ -220,11 +219,16 @@ export default function DAWComponent<P, S extends IDAWComponentState>(symbol: st
                 });
             });
 
+            let keysToRemove: string[] = [];
             forEach(currentConnections, (connection, key) => {
                 if (!visited[key]) {
-                    dragonBackend.disconnect(connection);
-                    delete this.currentConnections[key];
+                    keysToRemove.push(key);
+                    dragonBackend.disconnect(connection); //!!!
                 }
+            });
+
+            forEach(keysToRemove, key => {
+                delete this.currentConnections[key];
             });
         };
 
