@@ -232,6 +232,8 @@ module DragonDummy {
             throw new Error("Invalid call to disconnect: the connection does not exist");
         }
         state.graph.splice(idx, 1);
+
+        sendState();
     }
 
     export function create(spec: IEffectSpec): number {

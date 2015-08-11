@@ -9,18 +9,18 @@ Here's an application that converts key presses on all MIDI devices into piano s
 ```javascript
 import React from 'react';
 
-import DragonRT from 'dragon-realtime';
-import {DragonApp, PhysicalAudioOut, Synth, PhysicalMIDIIn} from 'dragon-framework';
+import DragonRT from 'dragon/lib/realtime';
+import {DragonApp, PhysicalDestination, Synth, PhysicalSource} from 'dragon/lib/framework';
 
 export default class React.Component {
   render() {
     return <DragonApp engine={DragonRT} onMessage={this.handleMsg.bind(this}
         onStateChanged={engineState => this.setState({engineState})>
-      <PhysicalOutput all audio>
+      <PhysicalDestination all audio>
         <Synth program="Acoustic Grand Piano">
-          <PhysicalInput all midi/>
+          <PhysicalSource all midi/>
         </Synth>
-      </PhysicalOutput>
+      </PhysicalDestination>
     </DragonApp>;
   }
 }
@@ -35,7 +35,7 @@ First, set up a React + Electron application. [Electron React Boilerplate](https
 Then, add Dragon and the realtime (i.e., native) Dragon backend:
 
 ```bash
-npm install --save ripieno/dragon ripieno/dragon-realtime
+npm install --save ripieno/dragon
 ```
 
 Next, copy the above component somewhere, and mount it.
@@ -52,6 +52,31 @@ This is the top-level component. All Dragon applications need one. This can live
 ```
 TODO
 ```
+
+## TODO
+
+ - Finish writing this
+ - Input -> Source, Output -> Destination ?
+ - NamedDestination/NamedSource from fan-out (i.e., Portal):
+
+ ```
+   <DragonApp engine={DragonWeb}>
+     <NamedDestination name="midi">
+       <MidiBridge channel={0} ref="midiBridge" />
+       <PhysicalSource all midi />
+     </NamedDestination>
+
+     <PhysicalDestination all audio>
+       <Synth program="Acoustic Grand Piano">
+         <NamedSource name="midi" />
+       </Synth>
+     </PhysicalDestination>
+
+     <RipienoInput key="cow">
+       <NamedSource name="midi" />
+     </RipienoInput>
+   </DragonApp>
+ ```
 
 ## Why the name?
 

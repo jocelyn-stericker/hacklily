@@ -18,9 +18,9 @@
 
 import React = require("react");
 
-import {IEngineState, Lifecycle, ITransientMsg} from "../backends/spec";
-import DummyBackend, {Test} from "../backends/dummy/dummy";
-(window as any).test = Test;
+import {IDragonBackend, IEngineState, Lifecycle, ITransientMsg} from "../backends/spec";
+import DummyBackend from "../backends/dummy/dummy";
+import WebBackend, {isSupported as webBackendSupported} from "../backends/web/web";
 
 import DragonApp from "../frontend/dragonApp";
 import PhysicalOutput from "../frontend/physicalOutput";
@@ -31,8 +31,20 @@ import MidiBridge from "../frontend/midiBridge";
 import DeviceSettings from "./deviceSettings";
 import remote from "./vendor/remote";
 
-let DragonBackend = remote ? remote.require("../backends/realtime/build/Release/bridge") : DummyBackend;
+let DragonBackend = getDragonBackend();
 let SOUNDFONT_URL = remote ? remote.require("process").cwd() + "/../backends/realtime/vendor/gm/gm.sf2" : "yolo";
+
+function getDragonBackend() {
+    if (remote) {
+        return remote.require("../backends/realtime/build/Release/bridge") as IDragonBackend;
+    }
+    if (webBackendSupported) {
+        return WebBackend;
+    }
+    
+    console.warn("Using dummy backend.");
+    return DummyBackend;
+}
 
 export default class Main extends React.Component<{}, {engineState?: IEngineState}> {
     render() {
@@ -73,6 +85,12 @@ export default class Main extends React.Component<{}, {engineState?: IEngineStat
         } else if (msg.msg) {
             console.log(msg.msg);
         }
+    }
+
+    componentDidMount() {
+        // setInterval(() => {
+        //     (this.refs["midiBridge"] as any).noteOn(60);
+        // }, 1200);
     }
 
     constructor() {

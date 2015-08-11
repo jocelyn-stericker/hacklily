@@ -43,15 +43,17 @@ class MidiBridge extends React.Component<IProps, IState> {
         this.setRemoteState({event});
     }
 
-    noteOff(note: number, velocity: number) {
+    noteOff(note: number) {
         let {channel} = this.props;
-        let type = "NOTE_ON";
+        let type = "NOTE_OFF";
+        let velocity = 0;
         let event = {type, note, velocity, channel};
 
         this.setRemoteState({event});
     }
 
     render() {
+        (window as any).$rx = this;
         return <span>
             {this.props.children}
         </span>;
