@@ -23,6 +23,11 @@ import IMidiEv from "./midiEv";
 
 let SoundfontPlayer = require("soundfont-player") as any;
 
+function silence(gainProxy: GainNode) {
+    let ctx = gainProxy.context;
+    gainProxy.gain.setTargetAtTime(0.0, ctx.currentTime + 0.01, 0.175);
+}
+
 class WebSoundfont extends Effect {
     state: any;
     soundfontPlayer: any;
@@ -30,6 +35,9 @@ class WebSoundfont extends Effect {
     ctx: AudioContext;
     events: {[key: string]: AudioBufferSourceNode} = {};
     gainProxy: {[key: string]: GainNode} = {};
+    sustain: boolean = false;
+    sustainedEvents: AudioBufferSourceNode[] = [];
+    sustainedGainProxies: GainNode[] = [];
 
     constructor(args: IEffectArgs, ctx: AudioContext) {
         super(args);
@@ -65,7 +73,6 @@ class WebSoundfont extends Effect {
         let noteName = NOTE_NAMES[(ev.note + 60) % 12];
         let octave = Math.floor(ev.note / 12);
         let key = noteName + octave;
-        console.log("!!", ev.type);
         switch (ev.type) {
             case "NOTE_ON":
                 if (this.events[key]) {
@@ -76,19 +83,54 @@ class WebSoundfont extends Effect {
                 this.gainProxy[key] = this.ctx.createGain();
                 this.gainProxy[key].connect(this.audioNodeOut);
                 this.gainProxy[key].gain.value = (ev.velocity/128)*2;
+                // Re-route through the proxy
                 this.events[key].disconnect();
                 this.events[key].connect(this.gainProxy[key]);
                 break;
             case "NOTE_OFF":
                 if (this.events[key]) {
-                    this.gainProxy[key].gain.setTargetAtTime(0.0, this.ctx.currentTime + 0.01, 0.075);
-                    setTimeout(() => {
-                        this.events[key].stop();
-                        this.events[key].disconnect();
-                        this.gainProxy[key].disconnect();
-                        this.gainProxy[key] = null;
-                        this.events[key] = null;
-                    }, 500);
+                    if (this.sustain) {
+                        this.sustainedEvents.push(this.events[key]);
+                        this.sustainedGainProxies.push(this.gainProxy[key]);
+                    } else {
+                        silence(this.gainProxy[key]);
+                        let event = this.events[key];
+                        let gainProxy = this.gainProxy[key];
+                        setTimeout(() => {
+                            event.stop();
+                            event.disconnect();
+                            gainProxy.disconnect();
+                            if (event === this.events[key]) {
+                                this.gainProxy[key] = null;
+                                this.events[key] = null;
+                            }
+                        }, 500);
+                    }
+                }
+                break;
+            case "CONTROL_CHANGE":
+                if (ev.note === 64) {
+                    if (ev.velocity) {
+                        this.sustain = true;
+                    } else {
+                        let sustainedEvents = this.sustainedEvents;
+                        let sustainedGainProxies = this.sustainedGainProxies;
+                        sustainedGainProxies.forEach(silence);
+                        setTimeout(() => {
+                            sustainedGainProxies.forEach(proxy => {
+                                proxy.disconnect();
+                            });
+                            sustainedEvents.forEach(event => {
+                                event.stop();
+                                event.disconnect();
+                            });
+                        }, 500);
+                        this.sustainedEvents = [];
+                        this.sustainedGainProxies = [];
+                        this.sustain = false;
+                    }
+                } else {
+                    console.warn(`Unknown control ${ev.note}`);
                 }
                 break;
             default:

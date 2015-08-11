@@ -126,6 +126,77 @@ let startRunning = function(): void {
         audioNodeOut: null,
     });
 
+    if (navigator.requestMIDIAccess) {
+        navigator.requestMIDIAccess().
+            then((midi) => {
+                midi.inputs.forEach((key: WebMidi.MIDIInput, port: string) => {
+                    let effectID = DragonWeb.create({
+                        symbol: "live.effects.midiBridge.MidiBridge",
+                        channels: 2
+                    });
+
+                    state.store.push({
+                        audioWidth: "Float",
+                        connectivity: "Input",
+                        id: effectID,
+                        isHardware: true,
+                        isMidi: true,
+                        name: `${key.name} (${key.manufacturer})`
+                    });
+
+                    key.onmidimessage = function(event) {
+                        let str = "MIDI message received at timestamp " + event.timeStamp + "[" + event.data.length + " bytes]: ";
+                        let b1 = event.data[0];
+                        let eventType = Math.floor(b1/16);
+                        let channel = b1 % 16;
+                        let note = event.data[1];
+                        let velocity = event.data[2];
+
+                        // for (let i = 0; i < event.data.length; ++i) {
+                        //     str += "0x" + event.data[i].toString(16) + " ";
+                        // }
+                        // console.log(str);
+                        let ev: IMidiEv;
+                        if (eventType === 9) {
+                            ev = {
+                                type: "NOTE_ON",
+                                note,
+                                velocity,
+                                channel
+                            };
+                        } else if (eventType === 8) {
+                            ev = {
+                                type: "NOTE_OFF",
+                                note,
+                                velocity: 0,
+                                channel
+                            };
+                        } else if (eventType === 0xB) {
+                            ev = {
+                                type: "CONTROL_CHANGE",
+                                note, // 0x40 is damper
+                                velocity, // either 128 or 0
+                                channel
+                            }
+                        } else {
+                            console.log("Ignoring event ", eventType, channel, note, velocity);
+                        }
+
+                        if (ev) {
+                            DragonWeb.toEffect({id: effectID} as any, {
+                                event: ev,
+                            });
+                        }
+                    }
+                });
+            }).
+            catch(function error(err) {
+                console.log("Could not get MIDI access", err);
+            });
+    } else {
+        console.log("MIDI access unsupported on this system.");
+    }
+
     // TODO(jnetterf): Mode to replace it with [webkit]getUserMedia({audio: true}, ..., ...)
     // Likely, this will be done by a request after initialization. e.g., in response to a
     // connection from the input?
