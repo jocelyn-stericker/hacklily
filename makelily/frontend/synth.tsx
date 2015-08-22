@@ -23,6 +23,7 @@ export interface IProps {
     children?: any;
     soundfont: string;
     channels: {program: number}[];
+    onReady?: () => void;
 }
 
 export interface IState {
@@ -41,6 +42,14 @@ class Synth extends React.Component<IProps, IState> {
 
     componentWillReceiveProps(props: IProps) {
         this.sync(props);
+    }
+    
+    componentWillUpdate(nextProps: IProps, nextState: IState) {
+        if (nextState && nextState.remote.ready && (!this.state.remote || !this.state.remote.ready)) {
+            if (this.props.onReady) {
+                this.props.onReady();
+            }
+        }
     }
 
     sync(props: IProps) {

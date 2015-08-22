@@ -116,7 +116,7 @@ export default function DAWComponent<P, S extends IDAWComponentState>(symbol: st
                 if (msg.exception) {
                     console.warn(msg);
                 } else {
-                    self.setState({remote: Object.freeze(msg)});
+                    self.setState({remote: JSON.parse(JSON.stringify(msg))});
                 }
             });
 

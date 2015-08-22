@@ -41,7 +41,9 @@ class ReceiverF extends Effect {
     }
 
     audioEvent(chan: number, ev: string) {
-        console.assert(!this.received[chan]); // only one message per frame
+        if (this.received[chan]) {
+            throw new Error("Only one message per frame");
+        }
         this.received[chan] = ev;
     }
 

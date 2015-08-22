@@ -23,6 +23,11 @@ import IMidiEv from "./midiEv";
 
 let SoundfontPlayer = require("soundfont-player") as any;
 
+// Duck-punch to allow mp3, for iOS.
+SoundfontPlayer.nameToUrl = function (name: string) {
+    return 'https://cdn.rawgit.com/gleitz/midi-js-Soundfonts/master/FluidR3_GM/' + name + '-mp3.js'
+};
+
 function silence(gainProxy: GainNode) {
     let ctx = gainProxy.context;
     gainProxy.gain.setTargetAtTime(0.0, ctx.currentTime + 0.01, 0.175);
@@ -49,8 +54,13 @@ class WebSoundfont extends Effect {
             createGain: ctx.createGain.bind(ctx),
             destination: this.audioNodeOut
         };
+        
         this.soundfontPlayer = new SoundfontPlayer(fakeAudioContext);
         this.instrument = this.soundfontPlayer.instrument("acoustic_grand_piano");
+        this.instrument.onready(() => {
+            this.state.ready = true;
+            this.toUI(this.state);
+        });
         this.ctx = ctx;
     }
 
@@ -70,8 +80,8 @@ class WebSoundfont extends Effect {
             10: "Bb",
             11: "B"
         }
-        let noteName = NOTE_NAMES[(ev.note + 60) % 12];
-        let octave = Math.floor(ev.note / 12);
+        let noteName = NOTE_NAMES[(ev.note*1 + 60) % 12];
+        let octave = Math.floor(ev.note*1 / 12);
         let key = noteName + octave;
         switch (ev.type) {
             case "NOTE_ON":
@@ -79,7 +89,7 @@ class WebSoundfont extends Effect {
                     this.events[key].disconnect();
                     this.events[key] = null;
                 }
-                this.events[key] = this.instrument.play(key, this.ctx.currentTime + 0.01);
+                this.events[key] = this.instrument.play(key, this.ctx.currentTime + 0.01, this.ctx.currentTime + 10000);
                 this.gainProxy[key] = this.ctx.createGain();
                 this.gainProxy[key].connect(this.audioNodeOut);
                 this.gainProxy[key].gain.value = (ev.velocity/128)*2;
@@ -97,9 +107,9 @@ class WebSoundfont extends Effect {
                         let event = this.events[key];
                         let gainProxy = this.gainProxy[key];
                         setTimeout(() => {
-                            event.stop();
-                            event.disconnect();
-                            gainProxy.disconnect();
+                            try { event.stop(); } catch(err) {}
+                            try { event.disconnect(); } catch(err) {}
+                            try { gainProxy.disconnect(); } catch(err) {}
                             if (event === this.events[key]) {
                                 this.gainProxy[key] = null;
                                 this.events[key] = null;

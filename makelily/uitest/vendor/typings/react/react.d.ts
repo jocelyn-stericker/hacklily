@@ -375,6 +375,7 @@ declare module __React {
         fillOpacity?: number;
         strokeOpacity?: number;
         strokeWidth?: number;
+        verticalAlign?: string;
     }
 
     interface HTMLAttributes extends DOMAttributes {
@@ -486,7 +487,7 @@ declare module __React {
         value?: string;
         width?: number | string;
         wmode?: string;
-
+        
         // Non-standard Attributes
         autoCapitalize?: boolean;
         autoCorrect?: boolean;

@@ -27,8 +27,7 @@ import ReceiverF from "./receiverF";
 import ReceiverM from "./receiverM";
 import Effect from "./effect";
 
-let webkitAudioContext: typeof AudioContext;
-let AudioContextImpl = AudioContext || webkitAudioContext;
+let AudioContextImpl = (window as any).AudioContext || (window as any).webkitAudioContext;
 
 let runner: (transientMsg: ITransientMsg, engineState: IEngineState) => void = null;
 let running: boolean = false;
@@ -74,11 +73,13 @@ function sendState() {
 let context: AudioContext;
 
 let startRunning = function(): void {
-    console.assert(!context);
+    if (context) {
+        throw new Error("Context already exists");
+    }
     context = new AudioContextImpl;
 
     let destination = context.destination;
-    destination.channelCount = 2; // Attempt to force stereo. We also should really have a mono implementation.
+    // destination.channelCount = 2; // Attempt to force stereo. We also should really have a mono implementation.
 
     let merger = context.createChannelMerger();
     merger.connect(destination);
@@ -362,5 +363,31 @@ module DragonWeb {
 }
 
 export let isSupported = !!AudioContextImpl;
+let enabled = false;
+
+export function enableCB() {
+    // create empty buffer
+	var buffer = context.createBuffer(1, 1, 22050);
+	var source = context.createBufferSource();
+	source.buffer = buffer;
+
+	// connect to output (your speakers)
+	source.connect(context.destination);
+
+	// play the file
+	source.start(0);
+    
+    setTimeout(function() {
+        let nsource = state as any;
+            if((nsource.playbackState === nsource.PLAYING_STATE || nsource.playbackState === nsource.FINISHED_STATE)) {
+                console.log("Ensured iOS enabled");
+                window.removeEventListener("mousedown", enableCB, false);
+            }
+        }, 0);
+}
+
+export function ensureEnabled() {
+    window.addEventListener("mousedown", enableCB, false);
+}
 
 export default DragonWeb as IDragonBackend;

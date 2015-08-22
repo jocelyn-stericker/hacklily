@@ -28,14 +28,17 @@ class DummySoundfont extends Effect {
 
     constructor(args: IEffectArgs) {
         super(args);
-        this.state = {};
+        this.state = {
+            ready: true
+        };
+        this.toUI(this.state);
     }
 
     midiEvent(ev: IMidiEv) {
-        console.assert(!isNaN(ev.channel));
-        console.assert(!isNaN(ev.note));
-        console.assert(!isNaN(ev.velocity));
-        console.assert(ev.type === "NOTE_ON" || ev.type === "NOTE_OFF");
+        if (isNaN(ev.channel)) throw new Error();
+        if (isNaN(ev.note)) throw new Error();
+        if (isNaN(ev.velocity)) throw new Error();
+        if (ev.type !== "NOTE_ON" && ev.type !== "NOTE_OFF") throw new Error();
         this.nextMIDIEvent = `${ev.type}(Program ${this.state.channels[ev.channel].program}, ${ev.note}, ${ev.velocity})`;
         this.channelsToEmit = this.channels;
     }

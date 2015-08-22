@@ -42,7 +42,9 @@ export function run(backend: IDragonBackend, cb: (transientMsg: ITransientMsg, e
         // this could have happened from within a sync atom get (yikes.)
         defer(function() {
             if (transientMsg && transientMsg.toId) {
-                console.assert(!transientMsg.error, "ITransient messages to effects must not be errors");
+                if (transientMsg.error) {
+                    throw new Error("ITransient messages to effects must not be errors");
+                }
                 if (_effectCbs[transientMsg.toId]) {
                     _effectCbs[transientMsg.toId](transientMsg.msg);
                 }
