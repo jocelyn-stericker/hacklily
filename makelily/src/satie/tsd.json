@@ -1,0 +1,36 @@
+{
+    "version": "v4",
+    "repo": "borisyankov/DefinitelyTyped",
+    "ref": "master",
+    "path": "vendor/typings",
+    "bundle": "vendor/typings/tsd.d.ts",
+    "installed": {
+        "diff/diff.d.ts": {
+            "commit": "b3834d886a95789e6ab56e8244775ec10c5293d0"
+        },
+        "node/node.d.ts": {
+            "commit": "b3834d886a95789e6ab56e8244775ec10c5293d0"
+        },
+        "lodash/lodash.d.ts": {
+            "commit": "b3834d886a95789e6ab56e8244775ec10c5293d0"
+        },
+        "react/react.d.ts": {
+            "commit": "b3834d886a95789e6ab56e8244775ec10c5293d0"
+        },
+        "mocha/mocha.d.ts": {
+            "commit": "b3834d886a95789e6ab56e8244775ec10c5293d0"
+        },
+        "chai/chai.d.ts": {
+            "commit": "b3834d886a95789e6ab56e8244775ec10c5293d0"
+        },
+        "yargs/yargs.d.ts": {
+            "commit": "b3834d886a95789e6ab56e8244775ec10c5293d0"
+        },
+        "superagent/superagent.d.ts": {
+            "commit": "b3834d886a95789e6ab56e8244775ec10c5293d0"
+        },
+        "webcola/webcola.d.ts": {
+            "commit": "aadd63ecae3feb76ea2d4be80511e266b5c2c4a7"
+        }
+    }
+}

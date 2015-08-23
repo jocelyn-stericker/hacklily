@@ -1,0 +1,17 @@
+language: node_js
+branches:
+  only:
+    - master
+node_js:
+  - '0.12'
+before_install:
+  - openssl aes-256-cbc -K $encrypted_09c4bc6b875a_key -iv $encrypted_09c4bc6b875a_iv -in .travis_rsa.enc -out ./.travis_rsa -d
+  - npm install -g grunt-cli
+  - sudo apt-get install xsltproc
+after_success:
+  - cp ./.travis_rsa ~/.ssh/id_rsa
+  - chmod 600 ~/.ssh/id_rsa
+  - echo -e "Host github.com\n\tStrictHostKeyChecking no\n\tUser git\n\tIdentityFile ~/.ssh/id_rsa\n\tCheckHostIP no\n" >> ~/.ssh/config
+  - git config --global user.email "builds@travis-ci.com"
+  - git config --global user.name "Travis CI"
+  - test $TRAVIS_PULL_REQUEST == "false" && test $TRAVIS_BRANCH == "master" && git remote rm origin && git remote add origin git@github.com:ripieno/satie && git fetch --unshallow && (cd ./webapp; npm install; make patch; make deploy) || true
