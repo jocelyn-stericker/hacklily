@@ -27,7 +27,7 @@ import {bboxes} from "../models/smufl";
 /**
  * Renders a ledger line at (x, y + line).
  */
-class LedgerLine extends Component<{spec: PrintStyle, notehead: string}, void> {
+class LedgerLine extends Component<LedgerLine.IProps, void> {
     render(): any {
         const spec = this.props.spec;
         const west = bboxes[this.props.notehead][3];
@@ -46,6 +46,11 @@ class LedgerLine extends Component<{spec: PrintStyle, notehead: string}, void> {
 }
 
 module LedgerLine {
+    export interface IProps {
+        key?: string | number;
+        spec: PrintStyle;
+        notehead: string;
+    }
     export let contextTypes = <any> {
         originX: PropTypes.number.isRequired,
         originY: PropTypes.number.isRequired

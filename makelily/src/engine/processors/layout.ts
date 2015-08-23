@@ -20,7 +20,7 @@
 
 import {Print} from "musicxml-interfaces";
 import {map, reduce, flatten, values, find} from "lodash";
-import invariant = require("react/lib/invariant");
+import invariant = require("invariant");
 
 import {ILayoutOptions, ILineBounds, ILineLayoutResult, ILinesLayoutState, IWidthInformation}
     from "../options";
@@ -81,8 +81,8 @@ export default function layout$(options: ILayoutOptions, memo$: ILinesLayoutStat
                 header: options.header,
                 line: Context.ILine.create(neighbourModels, measures.length, 0, 1),
                 measure: measure,
-                staves: map(values(measure.parts), p => p.staves),
-                voices: map(values(measure.parts), p => p.voices),
+                // staves: map(values(measure.parts), p => p.staves),
+                // voices: map(values(measure.parts), p => p.voices),
                 x: 0
             });
             let part = IPart.scoreParts(options.header.partList)[0].id;
@@ -188,7 +188,6 @@ function newLayoutWithoutMeasures(options: ILayoutOptions, print: Print): ILayou
         measures: [],
         header: options.header,
         print$: print,
-        finalLine: false,
         page$: options.page$,
         modelFactory: options.modelFactory,
         preprocessors: options.preprocessors,

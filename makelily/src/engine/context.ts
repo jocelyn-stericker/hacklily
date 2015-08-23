@@ -23,7 +23,7 @@
 "use strict";
 
 import {reduce} from "lodash";
-import invariant = require("react/lib/invariant");
+import invariant = require("invariant");
 
 import IAttributes from "./iattributes";
 import IModel from "./imodel";

@@ -19,7 +19,7 @@
 import {Attributes, PartSymbol, Clef, MeasureStyle, Time, StaffDetails, Transpose, Key,
     Directive} from "musicxml-interfaces";
 import {times, forEach, map, reduce} from "lodash";
-import invariant = require("react/lib/invariant");
+import invariant = require("invariant");
 
 "use strict";
 

@@ -44,5 +44,10 @@ clean:
 	rm -rf ./dist
 
 patch:
+	git submodule update --init --recursive
+	cd ./vendor/react-router
+	npm install
+	rm -rf ./node_modules/react
+	cd ../..
 	git apply --stat --apply json3.patch
 	git apply --stat --apply ts-loader.patch

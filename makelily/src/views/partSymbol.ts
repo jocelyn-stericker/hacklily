@@ -114,6 +114,7 @@ class PartSymbolView extends Component<PartSymbolView.IProps, void> {
 
 module PartSymbolView {
     export interface IProps {
+        key?: string | number;
         spec: PartSymbol;
     }
 

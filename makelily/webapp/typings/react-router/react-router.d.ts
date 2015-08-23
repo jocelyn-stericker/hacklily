@@ -36,57 +36,25 @@ declare module "react-router" {
     ): void;
   }
 
-  //
-  // Route Configuration
-  // ----------------------------------------------------------------------
-  // DefaultRoute
-  interface DefaultRouteProp {
-    name?: string;
-    handler: React.ComponentClass<any>;
-  }
-  interface DefaultRoute extends React.ReactElement<DefaultRouteProp> {}
-  interface DefaultRouteClass extends React.ComponentClass<DefaultRouteProp> {}
-
-  // NotFoundRoute
-  interface NotFoundRouteProp {
-    name?: string;
-    handler: React.ComponentClass<any>;
-  }
-  interface NotFoundRoute extends React.ReactElement<NotFoundRouteProp> {}
-  interface NotFoundRouteClass extends React.ComponentClass<NotFoundRouteProp> {}
-
   // Redirect
   interface RedirectProp {
     path?: string;
     from?: string;
     to?: string;
   }
-  interface Redirect extends React.ReactElement<RedirectProp> {}
-  interface RedirectClass extends React.ComponentClass<RedirectProp> {}
+  class Redirect extends React.Component<RedirectProp, any> { render(): any }
 
   // Route
   interface RouteProp {
     name?: string;
     path?: string;
-    handler?: React.ComponentClass<any>;
+    component?: any;
+    components?: {[key: string]: any};
     ignoreScrollBehavior?: boolean;
   }
-  interface Route extends React.ReactElement<RouteProp> {}
-  interface RouteClass extends React.ComponentClass<RouteProp> {}
+  class Route extends React.Component<RouteProp, any> { render(): any }
+  class Router extends React.Component<any, any> { render(): any }
   
-  interface RouterContext {
-      getCurrentParams: () => {[key: string]: any};
-      getCurrentPath: () => string;
-      getCurrentPathname: () => string;
-      getCurrentQuery: () => {[key: string]: any};
-      getCurrentRoutes: () => {[key: string]: RouteProp};
-  }
-
-  var DefaultRoute: DefaultRouteClass;
-  var NotFoundRoute: NotFoundRouteClass;
-  var Redirect: RedirectClass;
-  var Route: RouteClass;
-
   interface CreateRouteOptions {
     name?: string;
     path?: string;
@@ -95,7 +63,7 @@ declare module "react-router" {
     isNotFound?: boolean;
     onEnter?: (transition: Transition, params: {}, query: {}, callback: Function) => void;
     onLeave?: (transition: Transition, wtf: any, callback: Function) => void;
-    handler?: Function;
+    component?: Function;
     parentRoute?: Route;
   }
 
@@ -127,30 +95,15 @@ declare module "react-router" {
     params?: {};
     query?: {};
     onClick?: Function;
+    className?: string;
   }
-  interface Link extends React.ReactElement<LinkProp>, Navigation, State {
+  class Link extends React.Component<LinkProp, any> {
+    render(): any;
     handleClick(event: any): void;
     getHref(): string;
     getClassName(): string;
     getActiveState(): boolean;
   }
-  interface LinkClass extends React.ComponentClass<LinkProp> {}
-
-  // RouteHandler
-  interface RouteHandlerProp { }
-  interface RouteHandlerChildContext {
-    routeDepth: number;
-  }
-  interface RouteHandler extends React.ReactElement<RouteHandlerProp> {
-    getChildContext(): RouteHandlerChildContext;
-    getRouteDepth(): number;
-    createChildRouteHandler(props: {}): RouteHandler;
-  }
-  interface RouteHandlerClass extends React.ReactElement<RouteHandlerProp> {}
-
-  var Link: LinkClass;
-  var RouteHandler: RouteHandlerClass;
-
 
   //
   // Top-Level
@@ -176,11 +129,11 @@ declare module "react-router" {
     onAbort?: (error: any) => void;
   }
 
-  type RouterRunCallback = (Handler: RouteClass, state: RouterState) => void;
+  type RouterRunCallback = (Handler: React.Component<any, any>, state: RouterState) => void;
 
   function create(options: RouterCreateOption): Router;
-  function run(routes: Route, callback: RouterRunCallback): Router;
-  function run(routes: Route, location: LocationBase, callback: RouterRunCallback): Router;
+  function run(routes: React.ReactElement<any>, callback: RouterRunCallback): Router;
+  function run(routes: React.ReactElement<any>, location: LocationBase, callback: RouterRunCallback): Router;
 
 
   //
@@ -259,45 +212,4 @@ declare module "react-router" {
     length: number;
   }
   var History: History;
-}
-
-
-declare module "react" {
-  import ReactRouter = require("react-router");
-
-  // for DefaultRoute
-  function createElement(
-    type: ReactRouter.DefaultRouteClass,
-    props: ReactRouter.DefaultRouteProp,
-    ...children: ReactNode[]): ReactRouter.DefaultRoute;
-
-  // for Link
-  function createElement(
-    type: ReactRouter.LinkClass,
-    props: ReactRouter.LinkProp,
-    ...children: ReactNode[]): ReactRouter.Link;
-
-  // for NotFoundRoute
-  function createElement(
-    type: ReactRouter.NotFoundRouteClass,
-    props: ReactRouter.NotFoundRouteProp,
-    ...children: ReactNode[]): ReactRouter.NotFoundRoute;
-
-  // for Redirect
-  function createElement(
-    type: ReactRouter.RedirectClass,
-    props: ReactRouter.RedirectProp,
-    ...children: ReactNode[]): ReactRouter.Redirect;
-
-  // for Route
-  function createElement(
-    type: ReactRouter.RouteClass,
-    props: ReactRouter.RouteProp,
-    ...children: ReactNode[]): ReactRouter.Route;
-
-  // for RouteHandler
-  function createElement(
-    type: ReactRouter.RouteHandlerClass,
-    props: ReactRouter.RouteHandlerProp,
-    ...children: ReactNode[]): ReactRouter.RouteHandler;
 }

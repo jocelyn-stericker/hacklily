@@ -39,6 +39,7 @@ class Line extends Component<Line.IProps, {}> {
 
 module Line {
     export interface IProps {
+        key?: string | number;
         className?: string;
         stroke: string;
         strokeWidth: number;

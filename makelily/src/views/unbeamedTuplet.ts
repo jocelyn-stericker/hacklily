@@ -145,6 +145,7 @@ module UnbeamedTuplet {
         originY: PropTypes.number.isRequired
     };
     export interface IProps {
+        key?: string | number;
         stroke: string;
         stemWidth: number;
         layout: IBeam.ILayout;

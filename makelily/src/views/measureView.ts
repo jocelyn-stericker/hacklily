@@ -23,7 +23,7 @@ import DebugBox from "./debugBox";
 import {IModel, IMeasureLayout, MAX_SAFE_INTEGER} from "../engine";
 import ModelView from "./modelView";
 
-class MeasureView extends Component<{layout: IMeasureLayout}, void> {
+class MeasureView extends Component<{layout: IMeasureLayout, key?: string | number}, void> {
     render(): any {
         let layout = this.props.layout;
 

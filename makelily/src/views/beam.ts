@@ -146,6 +146,7 @@ module Beam {
     };
 
     export interface IProps {
+        key?: string | number;
         layout: IBeam.ILayout;
         stemWidth: number;
         stroke: string;

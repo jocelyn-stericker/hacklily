@@ -19,7 +19,7 @@
 import {Credit, NormalItalic, NormalBold, CreditWords, Words} from "musicxml-interfaces";
 import {Component, DOM, PropTypes} from "react";
 import {map, extend} from "lodash";
-import invariant = require("react/lib/invariant");
+import invariant = require("invariant");
 
 import {RenderUtil} from "../engine";
 import {ITextMixin, Prototype as TextMixin} from "./textMixin";
@@ -48,7 +48,7 @@ class CreditView extends Component<Credit, void> implements ITextMixin {
                 let fontSize = RenderUtil.cssSizeToTenths(scale40, words.fontSize);
                 return map(words.words.split("\n"), (line, lineNum) => DOM.tspan({
                     "alignment-baseline": "hanging",
-                    color: words.color || "black",
+                    fill: words.color || "black",
                     direction: this.getDirection(words),
                     dx: this.getDX(words, initX, lineNum),
                     dy: this.getDY(words, initY, lineNum),

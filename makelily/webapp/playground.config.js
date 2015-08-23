@@ -1,5 +1,6 @@
 var webpack = require("webpack");
 var path = require("path");
+var cssnext = require("cssnext");
 var autoprefixer = require("autoprefixer-core");
 
 var port = 4200;
@@ -11,7 +12,7 @@ module.exports = {
     entry: [
         "webpack-dev-server/client?http://" + host + ":" + port,
         "webpack/hot/dev-server",
-        "./src/index.ts"
+        "./src/index.tsx"
     ],
     output: {
         path: __dirname,
@@ -19,7 +20,7 @@ module.exports = {
         publicPath: "/"
     },
     resolve: {
-        extensions: ["", ".webpack.js", ".web.js", ".js", ".ts"],
+        extensions: ["", ".webpack.js", ".web.js", ".js", ".ts", ".tsx"],
         root: path.join(__dirname, "node_modules"),
         fallback: path.join(__dirname, "..", "node_modules"),
     },
@@ -29,25 +30,26 @@ module.exports = {
     module: {
         loaders: [
             {
-                test: /\.ts$/,
+                test: /\.ts(x?)$/,
                 loaders: [
                     "react-hot",
-                    "ts-loader",
-                    "ts-jsx-loader"
+                    "ts-loader?compiler=ntypescript"
                 ]
             },
             {
-                test: /\.less$/,
+                test: /\.css$/,
                 loaders: [
                     "style-loader",
-                    "css-loader",
-                    "less-loader",
+                    "css-loader?sourceMap",
                     "postcss-loader"
                 ]
             }
         ]
     },
-    postcss: [ autoprefixer({ browsers: ['last 2 version'] }) ],
+        postcss: [
+            autoprefixer({ browsers: ['last 2 version'] }),
+            cssnext({ url: false })
+        ],
     plugins: [
         new webpack.HotModuleReplacementPlugin(),
         new webpack.NoErrorsPlugin(),

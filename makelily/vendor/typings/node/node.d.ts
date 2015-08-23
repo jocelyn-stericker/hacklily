@@ -739,6 +739,7 @@ declare module "child_process" {
         custom?: any;
         env?: any;
         detached?: boolean;
+        input?: string;
     }): {
         stdin:  stream.Writable;
         stdout: stream.Readable;

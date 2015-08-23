@@ -19,12 +19,12 @@
 import {Dynamics} from "musicxml-interfaces";
 import {createFactory as $, Component, PropTypes} from "react";
 import {filter} from "lodash";
-import invariant = require("react/lib/invariant");
+import invariant = require("invariant");
 
 import DirectionModel from "../../models/direction";
 import Glyph from "../primitives/glyph";
 
-class DynamicsView extends Component<{layout: DirectionModel.ILayout}, void> {
+class DynamicsView extends Component<{layout: DirectionModel.ILayout, key?: string | number}, void> {
     render(): any {
         let layout = this.props.layout;
         let model = layout.model;

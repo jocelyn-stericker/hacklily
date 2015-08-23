@@ -20,7 +20,7 @@ import {Barline, Segno, Coda, BarlineLocation, WavyLine, Fermata, BarStyle, Endi
     Footnote, Level, BarStyleType, PartGroup, PartSymbol,
     serialize as serializeToXML} from "musicxml-interfaces";
 import {any, forEach} from "lodash";
-import invariant = require("react/lib/invariant");
+import invariant = require("invariant");
 
 import Attributes from "./attributes";
 import {getCurrentMeasureList, IAttributes, ICursor, IModel, IPart, ISegment} from "../engine";

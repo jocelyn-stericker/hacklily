@@ -1,15 +1,15 @@
-@import 'common';
+@import './common.css';
 
 :local(.test) {
     margin-top: 20px;
 }
 
 :local(.page) {
-    border: 1px solid @color--border--accepted; 
+    border: 1px solid var(--color--border--accepted);
 }
 
 :local(.error) {
-    border: 1px solid @color--border--error;
+    border: 1px solid var(--color--border--error);
     width: 100%;
     padding: 4px;
     display: inline-block;

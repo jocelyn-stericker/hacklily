@@ -27,7 +27,7 @@ import {bboxes} from "../models/smufl";
 /**
  * Responsible for the rendering of a clef.
  */
-class ClefView extends Component<{spec: Clef}, void> {
+class ClefView extends Component<{spec: Clef, key?: string | number}, void> {
     render(): any {
         const spec = this.props.spec;
 

@@ -1,11 +1,11 @@
-// Type definitions for React v0.13.1 (external module)
+// Type definitions for React v0.14.0 (external module)
 // Project: http://facebook.github.io/react/
-// Definitions by: Asana <https://asana.com>, AssureSign <http://www.assuresign.com>
+// Definitions by: Josh Netterfield <joshua@nettek.ca>, Asana <https://asana.com>, AssureSign <http://www.assuresign.com>, Microsoft <https://microsoft.com>
 // Definitions: https://github.com/borisyankov/DefinitelyTyped
 
-declare module "react" {
+declare module __React {
     //
-    // React Elements
+    // __React Elements
     // ----------------------------------------------------------------------
 
     type ReactType = ComponentClass<any> | string;
@@ -35,31 +35,32 @@ declare module "react" {
     // ----------------------------------------------------------------------
 
     interface Factory<P> {
-        (props?: P, ...children: ReactNode[]): ReactElement<P>;
+        (props?: P, ...children: __ReactNode[]): ReactElement<P>;
     }
 
     interface ClassicFactory<P> extends Factory<P> {
-        (props?: P, ...children: ReactNode[]): ClassicElement<P>;
+        (props?: P, ...children: __ReactNode[]): ClassicElement<P>;
     }
 
     interface DOMFactory<P> extends ClassicFactory<P> {
-        (props?: P, ...children: ReactNode[]): DOMElement<P>;
+        (props?: P, ...children: __ReactNode[]): DOMElement<P>;
     }
 
     type HTMLFactory = DOMFactory<HTMLAttributes>;
     type SVGFactory = DOMFactory<SVGAttributes>;
+    type SVGElementFactory = DOMFactory<SVGElementAttributes>;
 
     //
-    // React Nodes
+    // __React Nodes
     // http://facebook.github.io/react/docs/glossary.html
     // ----------------------------------------------------------------------
 
-    type ReactText = string | number;
-    type ReactChild = ReactElement<any> | ReactText;
+    type __ReactText = string | number;
+    type __ReactChild = ReactElement<any> | __ReactText;
 
-    // Should be Array<ReactNode> but type aliases cannot be recursive
-    type ReactFragment = {} | Array<ReactChild | any[] | boolean>;
-    type ReactNode = ReactChild | ReactFragment | boolean;
+    // Should be Array<__ReactNode> but type aliases cannot be recursive
+    type __ReactFragment = {} | Array<__ReactChild | any[] | boolean>;
+    type __ReactNode = __ReactChild | __ReactFragment | boolean;
 
     //
     // Top Level API
@@ -74,56 +75,34 @@ declare module "react" {
     function createElement<P>(
         type: string,
         props?: P,
-        ...children: ReactNode[]): DOMElement<P>;
+        ...children: __ReactNode[]): DOMElement<P>;
     function createElement<P>(
         type: ClassicComponentClass<P> | string,
         props?: P,
-        ...children: ReactNode[]): ClassicElement<P>;
+        ...children: __ReactNode[]): ClassicElement<P>;
     function createElement<P>(
         type: ComponentClass<P>,
         props?: P,
-        ...children: ReactNode[]): ReactElement<P>;
+        ...children: __ReactNode[]): ReactElement<P>;
 
     function cloneElement<P>(
         element: DOMElement<P>,
         props?: P,
-        ...children: ReactNode[]): DOMElement<P>;
+        ...children: __ReactNode[]): DOMElement<P>;
     function cloneElement<P>(
         element: ClassicElement<P>,
         props?: P,
-        ...children: ReactNode[]): ClassicElement<P>;
+        ...children: __ReactNode[]): ClassicElement<P>;
     function cloneElement<P>(
         element: ReactElement<P>,
         props?: P,
-        ...children: ReactNode[]): ReactElement<P>;
+        ...children: __ReactNode[]): ReactElement<P>;
 
-    function render<P>(
-        element: DOMElement<P>,
-        container: Element,
-        callback?: () => any): DOMComponent<P>;
-    function render<P, S>(
-        element: ClassicElement<P>,
-        container: Element,
-        callback?: () => any): ClassicComponent<P, S>;
-    function render<P, S>(
-        element: ReactElement<P>,
-        container: Element,
-        callback?: () => any): Component<P, S>;
-
-    function unmountComponentAtNode(container: Element): boolean;
-    function renderToString(element: ReactElement<any>): string;
-    function renderToStaticMarkup(element: ReactElement<any>): string;
     function isValidElement(object: {}): boolean;
-    function initializeTouchEvents(shouldUseTouch: boolean): void;
 
-    function findDOMNode<TElement extends Element>(
-        componentOrElement: Component<any, any> | Element): TElement;
-    function findDOMNode(
-        componentOrElement: Component<any, any> | Element): Element;
-
-    var DOM: ReactDOM;
-    var PropTypes: ReactPropTypes;
-    var Children: ReactChildren;
+    var DOM: __ReactDOM;
+    var PropTypes: __ReactPropTypes;
+    var Children: __ReactChildren;
 
     //
     // Component API
@@ -327,7 +306,7 @@ declare module "react" {
     // ----------------------------------------------------------------------
 
     interface Props<T> {
-        children?: ReactNode;
+        children?: __ReactNode;
         key?: string | number;
         ref?: string | ((component: T) => any);
     }
@@ -374,7 +353,7 @@ declare module "react" {
     }
 
     // This interface is not complete. Only properties accepting
-    // unitless numbers are listed here (see CSSProperty.js in React)
+    // unitless numbers are listed here (see CSSProperty.js in __React)
     interface CSSProperties {
         boxFlex?: number;
         boxFlexGroup?: number;
@@ -391,6 +370,25 @@ declare module "react" {
         widows?: number;
         zIndex?: number;
         zoom?: number;
+
+        top?: any;
+        bottom?: any;
+        left?: any;
+        right?: any;
+        width?: any;
+        height?: any;
+        
+        fontFamily?: string;
+        fontSize?: any;
+        position?: any;
+        textAlign?: any;
+        padding?: any;
+        marginBottom?: any;
+        marginTop?: any;
+        marginLeft?: any;
+        marginRight?: any;
+        display?: string;
+        verticalAlign?: string;
 
         // SVG-related properties
         fillOpacity?: number;
@@ -435,10 +433,16 @@ declare module "react" {
         draggable?: boolean;
         encType?: string;
         form?: string;
+        formAction?: string;
+        formEncType?: string;
+        formMethod?: string;
         formNoValidate?: boolean;
+        formTarget?: string;
         frameBorder?: number | string;
+        headers?: string;
         height?: number | string;
         hidden?: boolean;
+        high?: number;
         href?: string;
         hrefLang?: string;
         htmlFor?: string;
@@ -449,7 +453,10 @@ declare module "react" {
         lang?: string;
         list?: string;
         loop?: boolean;
+        low?: number;
         manifest?: string;
+        marginHeight?: number;
+        marginWidth?: number;
         max?: number | string;
         maxLength?: number;
         media?: string;
@@ -461,6 +468,7 @@ declare module "react" {
         name?: string;
         noValidate?: boolean;
         open?: boolean;
+        optimum?: number;
         pattern?: string;
         placeholder?: string;
         poster?: string;
@@ -474,9 +482,8 @@ declare module "react" {
         rowSpan?: number;
         sandbox?: string;
         scope?: string;
-        scrollLeft?: number;
+        scoped?: boolean;
         scrolling?: string;
-        scrollTop?: number;
         seamless?: boolean;
         selected?: boolean;
         shape?: string;
@@ -506,6 +513,15 @@ declare module "react" {
         itemProp?: string;
         itemScope?: boolean;
         itemType?: string;
+        unselectable?: boolean;
+    }
+
+    interface SVGElementAttributes extends HTMLAttributes {
+        viewBox?: string;
+        preserveAspectRatio?: string;
+
+        // Ripieno EXT
+        "data-page"?: string;
     }
 
     interface SVGAttributes extends DOMAttributes {
@@ -554,13 +570,24 @@ declare module "react" {
         y1?: number | string;
         y2?: number | string
         y?: number | string;
+
+        // Ripieno EXT
+        className?: string;
+        "font-weight"?: string;
+        "alignment-baseline"?: string;
+        height?: number;
+        direction?: string;
+        "font-style"?: string;
+        "letter-spacing"?: string;
+        "text-decoration"?: string;
+        width?: number;
     }
 
     //
-    // React.DOM
+    // __React.DOM
     // ----------------------------------------------------------------------
 
-    interface ReactDOM {
+    interface __ReactDOM {
         // HTML
         a: HTMLFactory;
         abbr: HTMLFactory;
@@ -676,6 +703,7 @@ declare module "react" {
         wbr: HTMLFactory;
 
         // SVG
+        svg: SVGElementFactory;
         circle: SVGFactory;
         defs: SVGFactory;
         ellipse: SVGFactory;
@@ -690,13 +718,12 @@ declare module "react" {
         radialGradient: SVGFactory;
         rect: SVGFactory;
         stop: SVGFactory;
-        svg: SVGFactory;
         text: SVGFactory;
         tspan: SVGFactory;
     }
 
     //
-    // React.PropTypes
+    // __React.PropTypes
     // ----------------------------------------------------------------------
 
     interface Validator<T> {
@@ -711,7 +738,7 @@ declare module "react" {
         [key: string]: Validator<T>;
     }
 
-    interface ReactPropTypes {
+    interface __ReactPropTypes {
         any: Requireable<any>;
         array: Requireable<any>;
         bool: Requireable<any>;
@@ -730,14 +757,14 @@ declare module "react" {
     }
 
     //
-    // React.Children
+    // __React.Children
     // ----------------------------------------------------------------------
 
-    interface ReactChildren {
-        map<T>(children: ReactNode, fn: (child: ReactChild) => T): { [key:string]: T };
-        forEach(children: ReactNode, fn: (child: ReactChild) => any): void;
-        count(children: ReactNode): number;
-        only(children: ReactNode): ReactChild;
+    interface __ReactChildren {
+        map<T>(children: __ReactNode, fn: (child: __ReactChild) => T): { [key:string]: T };
+        forEach(children: __ReactNode, fn: (child: __ReactChild) => any): void;
+        count(children: __ReactNode): number;
+        only(children: __ReactNode): __ReactChild;
     }
 
     //
@@ -769,3 +796,150 @@ declare module "react" {
     }
 }
 
+declare module JSX {
+    interface Element extends __React.ReactElement<any> { }
+    interface ElementClass extends __React.Component<any, any> {
+        render(): JSX.Element;
+    }
+    interface ElementAttributesProperty { props: {}; }
+
+    interface IntrinsicElements {
+        // HTML
+        a: __React.HTMLAttributes;
+        abbr: __React.HTMLAttributes;
+        address: __React.HTMLAttributes;
+        area: __React.HTMLAttributes;
+        article: __React.HTMLAttributes;
+        aside: __React.HTMLAttributes;
+        audio: __React.HTMLAttributes;
+        b: __React.HTMLAttributes;
+        base: __React.HTMLAttributes;
+        bdi: __React.HTMLAttributes;
+        bdo: __React.HTMLAttributes;
+        big: __React.HTMLAttributes;
+        blockquote: __React.HTMLAttributes;
+        body: __React.HTMLAttributes;
+        br: __React.HTMLAttributes;
+        button: __React.HTMLAttributes;
+        canvas: __React.HTMLAttributes;
+        caption: __React.HTMLAttributes;
+        cite: __React.HTMLAttributes;
+        code: __React.HTMLAttributes;
+        col: __React.HTMLAttributes;
+        colgroup: __React.HTMLAttributes;
+        data: __React.HTMLAttributes;
+        datalist: __React.HTMLAttributes;
+        dd: __React.HTMLAttributes;
+        del: __React.HTMLAttributes;
+        details: __React.HTMLAttributes;
+        dfn: __React.HTMLAttributes;
+        dialog: __React.HTMLAttributes;
+        div: __React.HTMLAttributes;
+        dl: __React.HTMLAttributes;
+        dt: __React.HTMLAttributes;
+        em: __React.HTMLAttributes;
+        embed: __React.HTMLAttributes;
+        fieldset: __React.HTMLAttributes;
+        figcaption: __React.HTMLAttributes;
+        figure: __React.HTMLAttributes;
+        footer: __React.HTMLAttributes;
+        form: __React.HTMLAttributes;
+        h1: __React.HTMLAttributes;
+        h2: __React.HTMLAttributes;
+        h3: __React.HTMLAttributes;
+        h4: __React.HTMLAttributes;
+        h5: __React.HTMLAttributes;
+        h6: __React.HTMLAttributes;
+        head: __React.HTMLAttributes;
+        header: __React.HTMLAttributes;
+        hr: __React.HTMLAttributes;
+        html: __React.HTMLAttributes;
+        i: __React.HTMLAttributes;
+        iframe: __React.HTMLAttributes;
+        img: __React.HTMLAttributes;
+        input: __React.HTMLAttributes;
+        ins: __React.HTMLAttributes;
+        kbd: __React.HTMLAttributes;
+        keygen: __React.HTMLAttributes;
+        label: __React.HTMLAttributes;
+        legend: __React.HTMLAttributes;
+        li: __React.HTMLAttributes;
+        link: __React.HTMLAttributes;
+        main: __React.HTMLAttributes;
+        map: __React.HTMLAttributes;
+        mark: __React.HTMLAttributes;
+        menu: __React.HTMLAttributes;
+        menuitem: __React.HTMLAttributes;
+        meta: __React.HTMLAttributes;
+        meter: __React.HTMLAttributes;
+        nav: __React.HTMLAttributes;
+        noscript: __React.HTMLAttributes;
+        object: __React.HTMLAttributes;
+        ol: __React.HTMLAttributes;
+        optgroup: __React.HTMLAttributes;
+        option: __React.HTMLAttributes;
+        output: __React.HTMLAttributes;
+        p: __React.HTMLAttributes;
+        param: __React.HTMLAttributes;
+        picture: __React.HTMLAttributes;
+        pre: __React.HTMLAttributes;
+        progress: __React.HTMLAttributes;
+        q: __React.HTMLAttributes;
+        rp: __React.HTMLAttributes;
+        rt: __React.HTMLAttributes;
+        ruby: __React.HTMLAttributes;
+        s: __React.HTMLAttributes;
+        samp: __React.HTMLAttributes;
+        script: __React.HTMLAttributes;
+        section: __React.HTMLAttributes;
+        select: __React.HTMLAttributes;
+        small: __React.HTMLAttributes;
+        source: __React.HTMLAttributes;
+        span: __React.HTMLAttributes;
+        strong: __React.HTMLAttributes;
+        style: __React.HTMLAttributes;
+        sub: __React.HTMLAttributes;
+        summary: __React.HTMLAttributes;
+        sup: __React.HTMLAttributes;
+        table: __React.HTMLAttributes;
+        tbody: __React.HTMLAttributes;
+        td: __React.HTMLAttributes;
+        textarea: __React.HTMLAttributes;
+        tfoot: __React.HTMLAttributes;
+        th: __React.HTMLAttributes;
+        thead: __React.HTMLAttributes;
+        time: __React.HTMLAttributes;
+        title: __React.HTMLAttributes;
+        tr: __React.HTMLAttributes;
+        track: __React.HTMLAttributes;
+        u: __React.HTMLAttributes;
+        ul: __React.HTMLAttributes;
+        "var": __React.HTMLAttributes;
+        video: __React.HTMLAttributes;
+        wbr: __React.HTMLAttributes;
+
+        // SVG
+        svg: __React.SVGElementAttributes;
+
+        circle: __React.SVGAttributes;
+        defs: __React.SVGAttributes;
+        ellipse: __React.SVGAttributes;
+        g: __React.SVGAttributes;
+        line: __React.SVGAttributes;
+        linearGradient: __React.SVGAttributes;
+        mask: __React.SVGAttributes;
+        path: __React.SVGAttributes;
+        pattern: __React.SVGAttributes;
+        polygon: __React.SVGAttributes;
+        polyline: __React.SVGAttributes;
+        radialGradient: __React.SVGAttributes;
+        rect: __React.SVGAttributes;
+        stop: __React.SVGAttributes;
+        text: __React.SVGAttributes;
+        tspan: __React.SVGAttributes;
+    }
+}
+
+declare module "react" {
+    export = __React;
+}

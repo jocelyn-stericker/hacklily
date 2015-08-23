@@ -28,7 +28,7 @@ import Glyph from "./primitives/glyph";
 import Notehead from "./notehead";
 import {getLeft, getRight} from "../models/smufl";
 
-class NoteView extends Component<{spec: Note, noteheadGlyph: string}, void> {
+class NoteView extends Component<{spec: Note, noteheadGlyph: string, key?: string}, void> {
     render(): any {
         const spec = this.props.spec;
 

@@ -20,7 +20,7 @@
 
 import {Stem, StemType, Tremolo} from "musicxml-interfaces";
 import {createFactory as $, Component, DOM, PropTypes} from "react";
-import invariant = require("react/lib/invariant");
+import invariant = require("invariant");
 
 import Line from "./primitives/line";
 import Glyph from "./primitives/glyph";
@@ -47,7 +47,6 @@ class StemView extends Component<StemView.IProps, void> {
         let elements: any[] = [];
         elements.push($(Line)({
             key: "s",
-            fill: color,
             stroke: color,
             strokeWidth: width,
             x1: x,
@@ -76,6 +75,7 @@ class StemView extends Component<StemView.IProps, void> {
 
 module StemView {
     export interface IProps {
+        key?: string | number;
         spec: Stem;
         notehead: string;
         bestHeight: number;

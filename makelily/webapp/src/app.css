@@ -1,7 +1,7 @@
-@import 'common';
+@import './common.css';
 
 body {
-    font-family: @font--body;
+    font-family: var(--font--body);
     margin: 40px auto;
     max-width: 650px;
     line-height: 1.6;
@@ -15,7 +15,7 @@ h1, h2, h3 {
 }
 
 a {
-    color: @color--link;
+    color: var(--color--link);
     text-decoration: none;
 }
 
@@ -24,7 +24,7 @@ a {
     width: 100%;
     top: 0;
     left: 0;
-    background-color: @color--highlight-blue;
+    background-color: var(--color--highlight-blue);
     height: 3px;
 }
 

@@ -25,7 +25,7 @@ import Glyph from "../primitives/glyph";
 
 type MXMLArticulation = PrintStyle | Placement;
 
-class Articulation extends Component<{articulation: Articulations}, void> {
+class Articulation extends Component<{articulation: Articulations, key?: string | number}, void> {
     render() {
         const model = this.props.articulation;
         let children: ReactElement<any>[] = [];

@@ -24,7 +24,7 @@
 
 import {ScoreHeader} from "musicxml-interfaces";
 import {indexBy, filter, map, reduce, values, flatten, forEach, extend} from "lodash";
-import invariant = require("react/lib/invariant");
+import invariant = require("invariant");
 
 import {
     IMeasurePart, IMutableMeasure, IPart, ISegment, IMeasureLayout, OwnerType,
@@ -140,7 +140,6 @@ export function reduceMeasure(spec: ILayoutOpts): IMeasureLayout {
 
         let cursor$ = createCursor({
             segment: segment,
-            idx$: 0,
 
             voice: voice,
             staff: null,
@@ -148,7 +147,6 @@ export function reduceMeasure(spec: ILayoutOpts): IMeasureLayout {
             line: gLine,
             header: spec.header,
 
-            division$: 0,
             x: gMeasure.x,
 
             page: spec._approximate ? NaN : 1,

@@ -19,7 +19,7 @@
 import {ScoreHeader, Print} from "musicxml-interfaces";
 import {createFactory as $, Component, DOM, MouseEvent, PropTypes} from "react";
 import {map, filter, forEach} from "lodash";
-import invariant = require("react/lib/invariant");
+import invariant = require("invariant");
 
 import Credit from "./credit";
 import {ILineLayoutResult, RenderTarget, RenderUtil, key$} from "../engine";

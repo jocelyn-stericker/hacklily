@@ -25,7 +25,7 @@
 import {ScoreTimewise, Attributes, Note, Backup, Time, parse as parseFromXML}
     from "musicxml-interfaces";
 import {map, reduce, any, filter, min, times, all, forEach} from "lodash";
-import invariant = require("react/lib/invariant");
+import invariant = require("invariant");
 
 import {IChord, IDocument, ILayoutOptions, IModel, IMeasurePart, IPart,
     IMutableMeasure, MAX_SAFE_INTEGER, OwnerType, validate} from "../../engine";
@@ -88,7 +88,6 @@ export function timewiseStructToDocument(score: ScoreTimewise, factory: IModel.I
             error: err,
             header: null,
             parts: null,
-            voices: null
         };
     }
 }

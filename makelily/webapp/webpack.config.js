@@ -4,7 +4,7 @@ var autoprefixer = require("autoprefixer-core");
 
 module.exports = {
     entry: [
-        "./src/index.ts"
+        "./src/index.tsx"
     ],
     output: {
         path: __dirname + "/dist/satie",
@@ -22,18 +22,17 @@ module.exports = {
     module: {
         loaders: [
             {
-                test: /\.ts$/,
+                test: /\.ts(x)?$/,
                 loaders: [
                     "ts-loader",
                     "ts-jsx-loader"
                 ]
             },
             {
-                test: /\.less$/,
+                test: /\.css$/,
                 loaders: [
                     "style-loader",
                     "css-loader",
-                    "less-loader",
                     "postcss-loader"
                 ]
             }

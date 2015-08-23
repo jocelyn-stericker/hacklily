@@ -19,7 +19,7 @@
 import {Clef, Count, MultipleRest, Note, NoteheadType, Stem, StemType, Tremolo,
     Tied, TimeModification, serialize as serializeToXML} from "musicxml-interfaces";
 import {forEach, chain, times, filter, reduce, map, max} from "lodash";
-import invariant = require("react/lib/invariant");
+import invariant = require("invariant");
 
 import ChordModel from "../chord";
 import {IBeam, IChord, ICursor, IModel, ISegment} from "../../engine";

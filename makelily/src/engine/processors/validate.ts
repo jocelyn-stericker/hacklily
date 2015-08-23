@@ -19,7 +19,7 @@
 "use strict";
 
 import {reduce, forEach, flatten, filter, find, map, pairs} from "lodash";
-import invariant = require("react/lib/invariant");
+import invariant = require("invariant");
 
 import IAttributes from "../iattributes";
 import IModel from "../imodel";

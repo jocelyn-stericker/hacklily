@@ -36,7 +36,7 @@ describe("[engine/context.ts]", function() {
                 attributes: <any> {},
                 totalDivisions: NaN,
                 accidentals$: {},
-                division: 10,
+                // division: 10,
                 idx: 0
             };
             let orig2 = cloneObject(orig);
@@ -58,7 +58,7 @@ describe("[engine/context.ts]", function() {
                 attributes: <any> {},
                 totalDivisions: NaN,
                 accidentals$: {},
-                division: 10,
+                // division: 10,
                 idx: 0
             };
 
@@ -67,7 +67,7 @@ describe("[engine/context.ts]", function() {
                 attributes: <any> {},
                 totalDivisions: NaN,
                 accidentals$: {},
-                division: 10,
+                // division: 10,
                 idx: 0
             };
             let copy = Context.IStaff.detach(orig);

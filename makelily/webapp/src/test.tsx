@@ -3,51 +3,50 @@ import {Link} from "react-router";
 import {importXML, IDocument, Viewer} from "../../src/index";
 import {find, defer} from "lodash";
 
-import Test from "./test";
+import {prefix} from "./config";
+const STYLES = require("./test.css");
 
-const STYLES = require("./test.less");
-
-class Tests extends React.Component<Tests.IProps, Tests.IState> {
+class Test extends React.Component<Test.IProps, Test.IState> {
     render() {
         let chrome = this.props.chrome !== false;
         let showFilterButton = chrome && this.props.showFilterButton;
         let link = showFilterButton ?
-            React.jsx(`<Link to="someTests" params=${{id: this.props.name}}>
-                    <button>hide others</button></Link>`) : null;
+            <Link to={`${prefix}/tests/${this.props.name}`}>
+                    <button>hide others</button></Link> : null;
         if (this.state.error) {
-            let errStr = "" + (<any>this.state.error).stack.toString();
-            let lines = errStr.split("\n").map(s => React.jsx(`<div>${s}</div>`));
-            return React.jsx(`<div className=${STYLES.test}>
-                <h3>Test ${this.state.filename}&nbsp;&nbsp;${link}</h3>
-                <code className=${STYLES.error}>
-                    ${lines}
+            let errStr = "" + (this.state.error as any).stack.toString();
+            let lines = errStr.split("\n").map(s => <div>{s}</div>);
+            return <div className={STYLES.test}>
+                <h3>Test {this.state.filename}&nbsp;&nbsp;{link}</h3>
+                <code className={STYLES.error}>
+                    {lines}
                 </code>
-            </div>`);
+            </div>;
         }
 
         let document = this.state.document;
         if (!document) {
-            return React.jsx(`<div>
+            return <div>
                 Loading...
-            </div>`);
+            </div>;
         }
 
         let misc = chrome && document.header.identification.miscellaneous;
         let descriptionField = chrome && find(misc && misc.miscellaneousFields,
-                field => field.name === "description");
+                (field: any) => field.name === "description"); // TODO(jnetterf): Why cast?
         let description = chrome && (descriptionField ?
                 descriptionField.data :
-                React.jsx(`<p>No description.</p>`));
-        let title = chrome && React.jsx(`<h3>Test ${this.state.filename}&nbsp;&nbsp;${link}</h3>`);
-        return React.jsx(`<div className=${STYLES.test}>
-            ${title}
-            ${description}
+                <p>No description.</p>);
+        let title = chrome && <h3>Test {this.state.filename}&nbsp;&nbsp;{link}</h3>;
+        return <div className={STYLES.test}>
+            {title}
+            {description}
             <br />
-            <Viewer document=${document} pageClassName=${STYLES.page} />
-        </div>`);
+            <Viewer document={document} pageClassName={STYLES.page} />
+        </div>;
     }
 
-    state: Tests.IState = {
+    state: Test.IState = {
         filename: null,
         src: null,
         document: null
@@ -63,7 +62,7 @@ class Tests extends React.Component<Tests.IProps, Tests.IState> {
         });
     }
 
-    componentWillReceiveProps(nextProps: Tests.IProps) {
+    componentWillReceiveProps(nextProps: Test.IProps) {
         if (this.props.filename !== nextProps.filename) {
             this.setState({
                 filename: nextProps.filename,
@@ -73,7 +72,7 @@ class Tests extends React.Component<Tests.IProps, Tests.IState> {
         }
     }
 
-    componentDidUpdate(prevProps: Tests.IProps, prevState: Tests.IState) {
+    componentDidUpdate(prevProps: Test.IProps, prevState: Test.IState) {
         let prefix = process.env.PLAYGROUND_PREFIX || "";
         if (!this.state.src) {
             let request = new XMLHttpRequest();
@@ -110,11 +109,12 @@ class Tests extends React.Component<Tests.IProps, Tests.IState> {
     }
 }
 
-module Tests {
+module Test {
     export interface IProps {
+        key?: string | number;
         chrome?: boolean;
         name: string;
-        showFilterButton: boolean;
+        showFilterButton?: boolean;
         filename: string;
     }
     export interface IState {
@@ -125,4 +125,4 @@ module Tests {
     }
 }
 
-export default Tests;
+export default Test;

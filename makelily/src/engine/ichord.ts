@@ -25,7 +25,7 @@
 import {Note, Count, TimeModification, Tie, Clef, Rest, Time, MxmlAccidental,
     Notehead, NoteheadType} from "musicxml-interfaces";
 import {any, find, forEach, times, map, reduce, filter,} from "lodash";
-import invariant = require("react/lib/invariant");
+import invariant = require("invariant");
 
 import IAttributes from "./iattributes";
 import ICursor from "./icursor";

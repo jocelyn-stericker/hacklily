@@ -1,10 +1,11 @@
 import React = require("react");
-import {Route, DefaultRoute, RouteHandler, Link} from "react-router";
+import {Route, Link} from "react-router";
 import _ = require("lodash");
 
 import Test from "./test";
 
-const STYLES = require("./tests.less");
+import {prefix} from "./config";
+const STYLES = require("./tests.css");
 
 const TEST_CATEGORIES: {[key: string]: string} = {
     "01": "Pitches",
@@ -174,58 +175,57 @@ class Tests extends React.Component<{params: {id: string}}, void> {
             let type = testName.substr(0, 2);
             let link = filter ?
                 null :
-                React.jsx(`<Link to="someTests" params=${{id: type}}>
-                        <button>hide others</button></Link>`);
+                <Link to={`${prefix}/tests/${type}`}>
+                        <button>hide others</button></Link>;
             if (type !== memo.type && (!filter || type.indexOf(filter) === 0)) {
-                memo.acc.push(React.jsx(`<h2 key=${type}>
-                            ${TEST_CATEGORIES[type]}&nbsp;&nbsp;${link}</h2>`));
+                memo.acc.push(<h2 key={type}>
+                            {TEST_CATEGORIES[type]}&nbsp;&nbsp;{link}</h2>);
             }
             if (!filter || testName.indexOf(filter) === 0) {
                 memo.acc.push(
-                        React.jsx(`<Test showFilterButton=${testName !== filter} name=${testName}
-                    key=${testName} filename=${"/lilypond-regression/" + testName + ".xml"} />`));
+                        <Test showFilterButton={testName !== filter} name={testName}
+                    key={testName} filename={"/lilypond-regression/" + testName + ".xml"} />);
             }
             return {
                 acc: memo.acc,
                 type: type
             };
-        }, {acc: <any[]>[], type: ""}).acc;
-        return React.jsx(`<div className=${STYLES.tests}>
-            ${cat}
-        </div>`);
+        }, {acc: [] as any[], type: ""}).acc;
+        return <div className={STYLES.tests}>
+            {cat}
+        </div>;
     }
 }
 
 module Tests {
     export class Header extends React.Component<{params: {id: string}}, void> {
         render() {
-            return React.jsx(`<span>LilyPond Test Suite</span>`);
+            return <span>LilyPond Test Suite</span>;
         }
     }
     export class Description extends React.Component<{params: {id: string}}, void> {
         render() {
             let filter = this.props.params ? this.props.params.id : null;
             if (filter) {
-                let link = filter.length > 1 ? "someTests" : "tests";
-                let params = {id: filter.substr(0, filter.length - 1)};
+                let link = filter.length > 1 ? `${prefix}/tests/${filter.substr(0, filter.length - 1)}` : "/tests";
 
-                return React.jsx(`<span>
-                    <code>Filter: "${filter}"</code>&nbsp;&nbsp;
-                    <Link to=${link} params=${params}>
+                return <span>
+                    <code>Filter: {`"${filter}`}</code>&nbsp;&nbsp;
+                    <Link to={link}>
                         <button>
-                            ${filter.length > 1 ? "show more" : "show all"}
+                            {filter.length > 1 ? "show more" : "show all"}
                         </button>
                     </Link>
-                </span>`);
+                </span>;
             }
             let lilypond = "http://www.lilypond.org/doc/v2.18/input/" +
                 "regression/musicxml/collated-files.html";
-            return React.jsx(`<span>
-                Satie uses the <a href=${lilypond}>unoffical MusicXML test suite</a>{" "}
+            return <span>
+                Satie uses the <a href={lilypond}>unoffical MusicXML test suite</a>{" "}
                 from <a href="http://lilypond.org/">LilyPond</a>{" "}
                 to test MusicXML parsing
                 as well as basic layout.
-            </span>`);
+            </span>;
         }
     }
 }
