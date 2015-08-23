@@ -1,0 +1,11 @@
+{
+  "name": "ripieno-webapp",
+  "version": "0.0.4",
+  "description": "The Ripieno editor",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Josh Netterfield",
+  "license": "SEE LICENSE IN LICENSE.TXT"
+}
