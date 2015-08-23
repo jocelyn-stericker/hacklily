@@ -20,7 +20,7 @@ import {ScoreHeader, MeasureNumbering, PartNameDisplay, MeasureLayout, PartAbbre
     PageLayout, SystemLayout, StaffLayout, Print, PageMargins, OddEvenBoth, NormalItalic,
     NormalBold, serialize as serializeToXML} from "musicxml-interfaces";
 import {forEach} from "lodash";
-import invariant = require("react/lib/invariant");
+import invariant = require("invariant");
 
 import {defaultsDeep, ICursor, IModel, ISegment} from "../engine";
 

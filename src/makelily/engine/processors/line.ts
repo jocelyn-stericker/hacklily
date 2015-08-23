@@ -17,7 +17,7 @@
  */
 
 import {reduce, flatten, map, values, pluck, times, max, zipObject, forEach, filter} from "lodash";
-import invariant = require("react/lib/invariant");
+import invariant = require("invariant");
 
 import {ILayoutOptions, ILineBounds, ILinesLayoutState, ILineLayoutResult,
     IPart, ISegment, IMeasureLayout, Context } from "../../engine";

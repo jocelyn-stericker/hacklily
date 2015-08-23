@@ -21,7 +21,7 @@
 import {Position} from "musicxml-interfaces";
 import {Component, DOM, PropTypes} from "react";
 
-class BarNumber extends Component<{spec: Position, barNumber: string}, void> {
+class BarNumber extends Component<{spec: Position, barNumber: string, key?: string | number}, void> {
     render(): any {
         const spec = this.props.spec;
         return DOM.text({

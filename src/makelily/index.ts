@@ -19,7 +19,7 @@
 
 import {serialize as serializeToXML} from "musicxml-interfaces";
 import {forEach, map, once} from "lodash";
-import invariant = require("react/lib/invariant");
+import invariant = require("invariant");
 
 import {IDocument, ILinesLayoutMemo} from "./engine";
 import {markPreloaded, setRoot} from "./models/fontManager";

@@ -21,7 +21,7 @@
 import {NormalItalic, NormalBold, CreditWords, Words} from "musicxml-interfaces";
 import {Component, DOM, PropTypes} from "react";
 import {filter, map, extend} from "lodash";
-import invariant = require("react/lib/invariant");
+import invariant = require("invariant");
 
 import DirectionModel from "../../models/direction";
 import {RenderUtil} from "../../engine";
@@ -50,7 +50,7 @@ class WordsView extends Component<WordsView.IProps, void> implements ITextMixin 
 
                 return map(words.data.split("\n"), (line, lineNum) => DOM.tspan({
                     "alignment-baseline": "hanging",
-                    color: words.color || "black",
+                    fill: words.color || "black",
                     direction: this.getDirection(words),
                     dx: this.getDX(words, 0, lineNum),
                     dy: this.getDY(words, initY, lineNum),
@@ -86,6 +86,7 @@ extend(WordsView.prototype, TextMixin);
 module WordsView {
     export interface IProps {
         layout: DirectionModel.ILayout;
+        key?: string | number;
     }
     export let contextTypes = <any> {
         originX: PropTypes.number.isRequired,

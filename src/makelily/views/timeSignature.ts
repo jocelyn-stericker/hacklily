@@ -28,7 +28,7 @@ import Glyph from "./primitives/glyph";
 /**
  * Renders a simple, compound, or common time signature.
  */
-class TimeSignature extends Component<{spec: Time}, void> {
+class TimeSignature extends Component<{spec: Time, key?: string | number}, void> {
     render(): any {
         const spec = this.props.spec;
         if (spec.senzaMisura != null) {
@@ -175,6 +175,7 @@ module TimeSignature {
 
 /* private */
 interface ITSNumProps {
+    key?: string | number;
     x: number;
     y: number;
     stroke: string;

@@ -21,7 +21,7 @@
 import {MultipleRest, Note} from "musicxml-interfaces";
 import {createFactory as $, Component, DOM, PropTypes} from "react";
 import {map} from "lodash";
-import invariant = require("react/lib/invariant");
+import invariant = require("invariant");
 
 import Dot from "./primitives/dot";
 import Glyph from "./primitives/glyph";

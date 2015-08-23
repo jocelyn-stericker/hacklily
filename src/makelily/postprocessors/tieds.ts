@@ -20,7 +20,7 @@
 
 import {Tied, StartStopContinue} from "musicxml-interfaces";
 import {forEach, times, find} from "lodash";
-import invariant = require("react/lib/invariant");
+import invariant = require("invariant");
 
 import ChordImpl from "../models/chord/chordImpl";
 import {IModel, ILayoutOptions, ILineBounds, IMeasureLayout} from "../engine";

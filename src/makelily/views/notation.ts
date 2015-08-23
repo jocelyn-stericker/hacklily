@@ -21,7 +21,7 @@
 import {UprightInverted, Notations, Note} from "musicxml-interfaces";
 import {createFactory as $, Component, DOM, ReactElement, PropTypes} from "react";
 import {forEach} from "lodash";
-import invariant = require("react/lib/invariant");
+import invariant = require("invariant");
 
 import Articulation from "./notations/articulation";
 import Bezier from "./primitives/bezier";
@@ -32,7 +32,7 @@ import {bboxes} from "../models/smufl";
 /**
  * Notations are things that are attached to notes.
  */
-class NotationModel extends Component<NotationModel.IProps, void> {
+class NotationView extends Component<NotationView.IProps, void> {
     render() {
         const model = this.props.spec;
         const notehead = this.props.layout.model.noteheadGlyph[0];
@@ -186,8 +186,9 @@ class NotationModel extends Component<NotationModel.IProps, void> {
     }
 };
 
-module NotationModel {
+module NotationView {
     export interface IProps {
+        key?: string;
         spec: Notations;
         layout: Chord.IChordLayout;
         note: Note;
@@ -201,4 +202,4 @@ module NotationModel {
     };
 }
 
-export default NotationModel;
+export default NotationView;

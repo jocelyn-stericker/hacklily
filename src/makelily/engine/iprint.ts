@@ -19,7 +19,7 @@
 "use strict";
 
 import {PageMargins, OddEvenBoth} from "musicxml-interfaces";
-import invariant = require("react/lib/invariant");
+import invariant = require("invariant");
 
 module IPrint {
 

@@ -50,6 +50,7 @@ class StaffLines extends Component<StaffLines.IProps, {}> {
 
 module StaffLines {
     export interface IProps {
+        key?: string | number;
         width: number;
         staffDetails: StaffDetails;
         defaultX: number;

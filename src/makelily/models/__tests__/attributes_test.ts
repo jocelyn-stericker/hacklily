@@ -93,7 +93,6 @@ export function makeCursor(factory: Factory, models: IModel[]): ICursor {
             ],
         },
 
-        prev$: null,
         division$: 0,
         x$: 100,
         minXBySmallest$: {},

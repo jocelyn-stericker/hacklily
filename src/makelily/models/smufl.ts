@@ -12,7 +12,7 @@
 "use strict";
 
 import {indexBy, memoize} from "lodash";
-import invariant = require("react/lib/invariant");
+import invariant = require("invariant");
 
 import bravura from "./smufl/bravura";
 import glyphNames from "./smufl/glyphnames";

@@ -22,7 +22,7 @@
 
 "use strict";
 
-import invariant = require("react/lib/invariant");
+import invariant = require("invariant");
 
 import ICursor from "./icursor"; // @circular
 import {ISegment} from "./measure"; // @circular

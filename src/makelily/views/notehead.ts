@@ -44,6 +44,7 @@ class NoteheadView extends Component<NoteheadView.IProps, void> {
 
 module NoteheadView {
     export interface IProps {
+        key?: string | number;
         spec: Notehead | Position;
         notehead: string;
     }

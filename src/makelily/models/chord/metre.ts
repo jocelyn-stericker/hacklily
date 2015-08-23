@@ -24,7 +24,7 @@
 
 import {StartStop, Time, TimeModification, Count} from "musicxml-interfaces";
 import {any, reduce, times, forEach, clone, find} from "lodash";
-import invariant = require("react/lib/invariant");
+import invariant = require("invariant");
 
 import {IModel, IChord, ICursor} from "../../engine";
 import {findIndex, cloneObject} from "../../engine/util";

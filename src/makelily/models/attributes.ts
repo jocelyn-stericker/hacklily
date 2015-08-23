@@ -20,7 +20,7 @@ import {Clef, PartSymbol, MeasureStyle, StaffDetails, Transpose, Directive,
     Time, Key, Footnote, Level, Attributes, KeyOctave, PartSymbolType, SymbolSize,
     parse as parseFromXML, serialize as serializeToXML} from "musicxml-interfaces";
 import {find, forEach, times} from "lodash";
-import invariant = require("react/lib/invariant");
+import invariant = require("invariant");
 
 import {IAttributes, IChord, ICursor, IModel, IPart, ISegment} from "../engine";
 import {create as createSnapshot} from "./attributesSnapshot";

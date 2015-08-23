@@ -24,7 +24,7 @@ import Chord from "./chord";
 import Direction from "./direction";
 import {IModel} from "../engine";
 
-class ModelView extends Component<{layout: IModel.ILayout}, void> {
+class ModelView extends Component<{layout: IModel.ILayout, key?: string | number}, void> {
     render(): any {
         let layout = <any> this.props.layout;
         switch(layout.renderClass) {

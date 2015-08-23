@@ -24,7 +24,7 @@
 
 import {Attributes, Beam, BeamType, StartStop, Tuplet, AboveBelow} from "musicxml-interfaces";
 import {any, chain, forEach, find, map, sortBy, times, first, last} from "lodash";
-import invariant = require("react/lib/invariant");
+import invariant = require("invariant");
 
 import ChordImpl from "../models/chord/chordImpl";
 import {IAttributes, IChord, IModel, IMeasureLayout, ILayoutOptions, ILineBounds} from "../engine";

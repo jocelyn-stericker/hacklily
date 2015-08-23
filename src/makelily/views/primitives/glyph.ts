@@ -62,6 +62,7 @@ module Glyph {
     };
 
     export interface IProps {
+        key?: string | number;
         fill: string;
         glyphName: string;
         "selection-info"?: string;

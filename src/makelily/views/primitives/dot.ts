@@ -40,6 +40,7 @@ class Dot extends Component<Dot.IProps, void> {
 
 module Dot {
     export interface IProps {
+        key?: number | string;
         x: number;
         y: number;
         radius: number;

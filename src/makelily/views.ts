@@ -17,9 +17,10 @@
  */
 
 import {Print} from "musicxml-interfaces";
-import {createFactory as $, renderToStaticMarkup, ReactElement} from "react";
+import {createFactory as $, ReactElement} from "react";
+import {renderToStaticMarkup} from "react-dom/server";
 import {find} from "lodash";
-import invariant = require("react/lib/invariant");
+import invariant = require("invariant");
 
 import Page from "./views/page";
 import {layout, ILinesLayoutMemo, IModel, IDocument, IPrint, RenderTarget} from "./engine";

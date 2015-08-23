@@ -65,8 +65,6 @@ describe("[lineProcessor.ts]", function() {
                         }
                     }]
                 },
-                maxX: 1000,
-                minX: 0,
                 measure: {
                     idx: idx,
                     number: String(idx + 1),

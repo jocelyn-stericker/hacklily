@@ -16,7 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import invariant = require("react/lib/invariant");
+import invariant = require("invariant");
 
 import {ICursor, IModel, ISegment} from "../engine";
 

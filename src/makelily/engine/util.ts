@@ -22,7 +22,7 @@
 
 "use strict";
 
-import invariant = require("react/lib/invariant");
+import invariant = require("invariant");
 
 /** 
  * Finds the positive greatest common factor of two numbers by using Euclid's algorithm.

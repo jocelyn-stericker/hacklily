@@ -19,7 +19,7 @@
 "use strict";
 
 import {createFactory as $, Component, PropTypes} from "react";
-import invariant = require("react/lib/invariant");
+import invariant = require("invariant");
 
 import Glyph from "./primitives/glyph";
 import {getFontOffset} from "../models/smufl";
@@ -68,6 +68,7 @@ module Flag {
         originY: PropTypes.number.isRequired
     };
     export interface IProps {
+        key?: string | number;
         spec: {
             defaultX: number;
             defaultY: number;

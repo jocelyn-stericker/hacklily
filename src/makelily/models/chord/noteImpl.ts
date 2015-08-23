@@ -23,7 +23,7 @@ import {Note, Chord, Rest, Dot, Type, Count, SymbolSize, TimeModification, Pitch
     NonArpeggiate, Ornaments, OtherNotation, Slide, Slur, Technical, Tied, Tuplet,
     MxmlAccidental, serialize as serializeToXML} from "musicxml-interfaces";
 import {times, forEach, reduce, map} from "lodash";
-import invariant = require("react/lib/invariant");
+import invariant = require("invariant");
 
 import ChordModelImpl from "./chordImpl"; // @cyclic
 import {ICursor, IChord} from "../../engine";

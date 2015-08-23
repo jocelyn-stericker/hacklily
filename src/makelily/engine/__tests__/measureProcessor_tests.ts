@@ -152,8 +152,6 @@ describe("[engine/measureProcessor.ts]", function() {
                     ]
                 },
                 attributes: {},
-                maxX: 1000,
-                minX: 100,
                 measure: {
                     idx: 0,
                     number: "1",
@@ -201,8 +199,6 @@ describe("[engine/measureProcessor.ts]", function() {
 
             let width = approximateLayout({
                 attributes: {},
-                maxX: 1000,
-                minX: 100,
                 header: <any> {
                     partList: [
                         {

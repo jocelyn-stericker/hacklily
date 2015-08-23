@@ -17,7 +17,7 @@
  */
 
 import {forEach, max, map, times, findIndex, last} from "lodash";
-import invariant = require("react/lib/invariant");
+import invariant = require("invariant");
 
 import {IModel, IMeasureLayout, ILayoutOptions, ILineBounds} from "../engine";
 

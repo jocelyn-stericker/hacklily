@@ -84,7 +84,6 @@ function getCursor(factory: IModel.IFactory, model: IModel): ICursor {
             lines: 1
         },
 
-        prev$: null,
         division$: 0,
         x$: 100,
         minXBySmallest$: {},

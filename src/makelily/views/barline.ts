@@ -63,7 +63,6 @@ class BarlineView extends Component<{layout: Barline.ILayout}, {}> {
 
         return DOM.g(null,
             map(layout.lineStarts, (start, idx) => $(Line)({
-                fill: model.barStyle.color,
                 key: idx,
                 stroke: model.barStyle.color,
                 strokeWidth: layout.lineWidths[idx],

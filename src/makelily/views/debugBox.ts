@@ -21,7 +21,7 @@ import {forEach} from "lodash";
 
 import {IMeasureLayout, IModel} from "../engine";
 
-class DebugBox extends Component<{layout: IMeasureLayout}, void> {
+class DebugBox extends Component<{layout: IMeasureLayout, key?: string | number}, void> {
     render(): any {
         if (!process.env["DEBUG"]) {
             return null;
