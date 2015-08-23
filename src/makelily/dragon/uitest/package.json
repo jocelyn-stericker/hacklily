@@ -1,0 +1,36 @@
+{
+  "name": "dragon-testui",
+  "version": "0.0.3-alpha1",
+  "main": "backend.js",
+  "dependencies": {
+    "css-loader": "^0.15.5",
+    "electron-prebuilt": "^0.30.2",
+    "jsx-loader": "^0.13.2",
+    "less": "^2.5.1",
+    "less-loader": "^2.2.0",
+    "lodash": "^3.10.0",
+    "postcss-loader": "^0.5.1",
+    "react-bootstrap": "jnetterf/bilious-waddle",
+    "react-dom": "^0.14.0-beta3",
+    "react-hot-loader": "^1.2.8",
+    "soundfont-player": "^0.4.0",
+    "style-loader": "^0.12.3",
+    "ts-loader": "^0.4.7"
+  },
+  "scripts": {
+    "hot-dev-server": "node playground-server.js",
+    "start-hot": "HOT=1 NODE_ENV=development electron ."
+  },
+  "devDependencies": {
+    "autoprefixer-core": "^5.2.1",
+    "chai": "^3.2.0",
+    "jsdom": "^6.0.1",
+    "mocha": "^2.2.5",
+    "node-libs-browser": "^0.5.2",
+    "ntypescript": "^1.201507152343.1",
+    "react": "0.14.0-beta3",
+    "tslint": "2.5.0-dev.1",
+    "webpack": "^1.10.1",
+    "webpack-dev-server": "^1.10.1"
+  }
+}

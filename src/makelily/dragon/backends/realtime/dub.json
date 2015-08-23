@@ -1,0 +1,20 @@
+{
+    "name": "dragon",
+    "description": "Cross platform audio and MIDI engine",
+    "copyright": "Copyright © 2015, Josh Netterfield",
+    "authors": ["Josh Netterfield <joshua@nettek.ca>"],
+    "targetPath": "build",
+    "importPaths": [
+        "vendor/fluidsynth",
+        "vendor/libmp3lame",
+        "vendor/libsndfile",
+        "vendor/mpg123",
+        "vendor/portaudio",
+        "vendor/portmidi"
+    ],
+    "systemDependencies": "portaudio, portmidi, sndfile, mpg123, fluidsynth, mp3lame",
+    "targetType": "staticLibrary",
+    "libs": ["portaudio", "portmidi", "sndfile", "mpg123", "fluidsynth", "mp3lame"],
+    "dependencies": {
+    }
+}

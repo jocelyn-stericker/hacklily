@@ -1,0 +1,27 @@
+{
+  "version": "v4",
+  "repo": "borisyankov/DefinitelyTyped",
+  "ref": "master",
+  "path": "typings",
+  "bundle": "typings/tsd.d.ts",
+  "installed": {
+    "github-electron/github-electron.d.ts": {
+      "commit": "db475daba23206e8cd0ac04d47f0764f4a62f7da"
+    },
+    "github-electron/github-electron-renderer.d.ts": {
+      "commit": "db475daba23206e8cd0ac04d47f0764f4a62f7da"
+    },
+    "node/node.d.ts": {
+      "commit": "db475daba23206e8cd0ac04d47f0764f4a62f7da"
+    },
+    "react/react.d.ts": {
+      "commit": "db475daba23206e8cd0ac04d47f0764f4a62f7da"
+    },
+    "lodash/lodash.d.ts": {
+      "commit": "8f51d25ad3523cd01f2d92e343247852f6b70dff"
+    },
+    "mocha/mocha.d.ts": {
+      "commit": "3b0f362204ea965952dafdb682a5274d527ef9d0"
+    }
+  }
+}
