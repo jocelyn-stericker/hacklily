@@ -1,0 +1,31 @@
+.postcssIsBuggy {}
+@import "./common.css";
+
+html, body, :global(#root), .Yolo {
+    height: 100%;
+}
+
+.Yolo {
+    flex: 1;
+    flex-direction: row;
+    display: flex;
+}
+
+.LeftPane, .RightPane {
+    flex: 1;
+    display: flex;
+}
+
+.LeftPane textarea {
+    width: 100%;
+    flex: 1;
+    font-family: "Inconsolata", monospace;
+}
+
+.RightPane > div {
+    width: 100%;
+}
+
+.Page {
+    border: 1px solid var(--color--border--accepted);
+}

@@ -18,7 +18,7 @@
 
 import {Clef, Count, MultipleRest, Note, NoteheadType, Stem, StemType, Tremolo,
     Tied, TimeModification, serialize as serializeToXML} from "musicxml-interfaces";
-import {forEach, chain, times, filter, reduce, map, max} from "lodash";
+import {forEach, chain, times, filter, reduce, map, max, List} from "lodash";
 import invariant = require("invariant");
 
 import ChordModel from "../chord";
@@ -72,7 +72,7 @@ let countToRest: { [key: number]: string } = {
  * A model that represents 1 or more notes in the same voice, starting on the same beat, and each
  * with the same duration. Any number of these notes may be rests.
  */
-class ChordModelImpl implements ChordModel.IChordModel {
+class ChordModelImpl implements ChordModel.IChordModel, List<NoteImpl> {
 
     /*---- I.1 IModel ---------------------------------------------------------------------------*/
 
@@ -109,8 +109,7 @@ class ChordModelImpl implements ChordModel.IChordModel {
         const direction = this._pickDirection(cursor$);
         const clef = cursor$.staff.attributes.clef;
 
-        this.satieLedger = IChord.ledgerLines(this, clef);
-
+        this._clef = clef;
         forEach(this, note => {
             if (!note.duration && !note.grace) {
                 note.duration = this.divCount;
@@ -520,11 +519,34 @@ class ChordModelImpl implements ChordModel.IChordModel {
 
     satieFlag: string;
     satieDirection: StemType;
-    satieLedger: number[];
     satieMultipleRest: MultipleRest;
     noteheadGlyph: string[];
     satieBeam: IBeam.ILayout;
     satieUnbeamedTuplet: IBeam.ILayout;
+    _clef: Clef;
+
+    get satieLedger(): number[] {
+        return IChord.ledgerLines(this, this._clef);
+    }
+    
+    toJSON() {
+        let data: any = {
+            group: {
+                satieStem: this.satieStem,
+                satieFlag: this.satieFlag,
+                satieDirection: this.satieDirection,
+                satieMultipleRest: this.satieMultipleRest,
+                satieBeam: this.satieBeam,
+                satieUnbeamedTuplet: this.satieUnbeamedTuplet,
+                frozenness: this.frozenness,
+                wholebar$: this.wholebar$,
+                divCount: this.divCount,
+                dots: this.dots,
+            },
+            notes: map(this, (note) => note)
+        };
+        return data;
+    }
 }
 
 ChordModelImpl.prototype.frozenness = IModel.FrozenLevel.Warm;
@@ -661,15 +683,25 @@ module ChordModelImpl {
                             type: baseModel.satieDirection
                         };
                     }
-                }
+                },
             }));
-            model.satieStem = baseModel.satieStem;
-            model.satieLedger = baseModel.satieLedger;
-            model.satieMultipleRest = baseModel.satieMultipleRest;
-            model.satieFlag = baseModel.satieFlag;
-            model.noteheadGlyph = baseModel.noteheadGlyph;
             model.staffIdx = baseModel.staffIdx;
+            model.satieStem = baseModel.satieStem;
+            model.noteheadGlyph = baseModel.noteheadGlyph;
             model.divCount = baseModel.divCount;
+            model.satieFlag = baseModel.satieFlag;
+            Object.defineProperties(model, {
+                satieLedger: {
+                    enumerable: true,
+                    configurable: false,
+                    get: () => baseModel.satieLedger
+                },
+                satieMultipleRest: {
+                    enumerable: true,
+                    configurable: false,
+                    get: () => baseModel.satieMultipleRest
+                },
+            });
 
             return model;
         }

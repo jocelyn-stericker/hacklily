@@ -246,7 +246,6 @@ module BrowserSetup {
                 "cursor: default;"+
                 "font-family: 'bravura';"+
                 "user-select: none;"+
-                "pointer-events: none;"+
                 "text-rendering: optimizeSpeed;"+
             "}" +
             ".mmn_ {"+

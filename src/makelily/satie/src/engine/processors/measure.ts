@@ -174,7 +174,8 @@ export function reduceMeasure(spec: ILayoutOpts): IMeasureLayout {
             cursor$.segment = gStaffMeasure[`${part}_${staffIdx}`];
             cursor$.idx$ = voiceStaves$[staffIdx].length;
             let layout: IModel.ILayout;
-            key$(model);
+            model.key = `SATIE${cursor$.measure.uuid}_parts_${cursor$.segment.part}_staves_${
+                cursor$.segment.owner}_${cursor$.idx$}`
             if (gValidateOnly) {
                 model.staffIdx = cursor$.staff.idx;
                 model.validate$(cursor$);
@@ -294,7 +295,8 @@ export function reduceMeasure(spec: ILayoutOpts): IMeasureLayout {
 
             // All layout that can be controlled by the model is done here.
             let layout: IModel.ILayout;
-            key$(model);
+            model.key = `SATIE${cursor$.measure.uuid}_parts_${cursor$.segment.part}_voices_${
+                cursor$.segment.owner}_${cursor$.idx$}`
             if (gValidateOnly) {
                 model.staffIdx = cursor$.staff.idx;
                 model.validate$(cursor$);
@@ -376,7 +378,7 @@ export function reduceMeasure(spec: ILayoutOpts): IMeasureLayout {
     }
 
     // Get an ideal voice layout for each voice-staff combination
-    let gStaffLayoutsUnkeyed$: IModel.ILayout[][][] = values(gStaffLayouts$);
+    let gStaffLayoutsUnkeyed$: IModel.ILayout[][][] = values(gStaffLayouts$) as IModel.ILayout[][][];
     let gStaffLayoutsCombined: IModel.ILayout[][] = <any> flatten(gStaffLayoutsUnkeyed$);
 
     // Create a layout that satisfies the constraints in every single voice.

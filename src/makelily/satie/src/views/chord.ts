@@ -33,6 +33,7 @@ import Rest from "./rest";
 import Stem from "./stem";
 import UnbeamedTuplet from "./unbeamedTuplet";
 import {bboxes, bravura, getRight} from "../models/smufl";
+import {set as setMetadata, clear as clearMetadata} from "./metadata";
 
 const stemThickness: number = bravura.engravingDefaults.stemThickness*10;
 
@@ -47,6 +48,12 @@ class ChordView extends Component<{layout: Chord.IChordLayout}, void> {
         let maxNotehead = max(layout.model.noteheadGlyph, glyph => getRight(glyph));
 
         let anyVisible = any(layout.model, note => note.printObject !== false);
+        
+        setMetadata(layout.key,
+            this.context.originX + this.props.layout.x$ - 2,
+            this.context.originX + this.props.layout.x$ + this.props.layout.renderedWidth,
+            this.context.originY - 60,
+            this.context.originY + 60);
 
         if (!anyVisible) {
             return null;
@@ -155,6 +162,10 @@ class ChordView extends Component<{layout: Chord.IChordLayout}, void> {
             }))),
             lyrics
         );
+    }
+
+    componentWillUnmount() {
+        clearMetadata(this.props.layout.key);
     }
 }
 
