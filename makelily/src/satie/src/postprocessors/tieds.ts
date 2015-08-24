@@ -19,10 +19,11 @@
 "use strict";
 
 import {Tied, StartStopContinue} from "musicxml-interfaces";
-import {forEach, times, find} from "lodash";
+import {forEach, times, find, List} from "lodash";
 import invariant = require("invariant");
 
 import ChordImpl from "../models/chord/chordImpl";
+import NoteImpl from "../models/chord/noteImpl";
 import {IModel, ILayoutOptions, ILineBounds, IMeasureLayout} from "../engine";
 
 interface IMutableTied {
@@ -52,7 +53,7 @@ function tied(options: ILayoutOptions, bounds: ILineBounds,
                 if (!model || layout.renderClass !== IModel.Type.Chord) {
                     return;
                 }
-                let chord: ChordImpl = <any> model;
+                let chord: List<NoteImpl> = model as ChordImpl;
                 let noteWithTieds = find(chord, el => el.notationObj &&
                         el.notationObj.tieds && el.notationObj.tieds.length);
 

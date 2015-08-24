@@ -23,17 +23,15 @@ import {find} from "lodash";
 import invariant = require("invariant");
 
 import Page from "./views/page";
-import {layout, ILinesLayoutMemo, IModel, IDocument, IPrint, RenderTarget} from "./engine";
+import {layout, ILinesLayoutState, ILinesLayoutMemo, IModel, IDocument, IPrint,
+    RenderTarget} from "./engine";
 
 import {inject as injectSVG} from "./views/svgext_injection";
 
 injectSVG();
 
-export function getPage(doc: IDocument, startMeasure: number,
-        renderTarget = RenderTarget.SvgExport, pageClassName = ""):
-            ReactElement<Page.IProps> {
+export function getPrint(doc: IDocument, startMeasure: number): Print {
     let factory = doc.factory;
-    const pageNum = 1; // FIXME
     if (!factory) {
         throw new Error("Document has no factory");
     }
@@ -43,22 +41,35 @@ export function getPage(doc: IDocument, startMeasure: number,
     }
     let partWithPrint = find(firstMeasure.parts, part => !!part.staves[1] &&
             factory.search(part.staves[1], 0, IModel.Type.Print).length);
-    let print: Print;
 
     if (partWithPrint) {
-        print = <any> factory.search(partWithPrint.staves[1], 0, IModel.Type.Print)[0];
-        invariant(!!print, "Wait what?");
-    } else {
-        throw new Error("Part does not contain a Print element at division 0. Is it validated?");
+        return <any> factory.search(partWithPrint.staves[1], 0, IModel.Type.Print)[0];
     }
+    
+    throw new Error("Part does not contain a Print element at division 0. Is it validated?");
+}
 
+export function getTop(print: Print, pageNum: number) {
     const pageMarginsAll = print.pageLayout.pageMargins;
     const pageMargins = IPrint.getPageMargins(pageMarginsAll, pageNum);
-    const top = print.pageLayout.pageHeight -
-                                (print.systemLayout.topSystemDistance +
-                                 pageMargins.topMargin);
 
-    let memo$ = ILinesLayoutMemo.create(top);
+    return print.pageLayout.pageHeight -
+        (print.systemLayout.topSystemDistance +
+            pageMargins.topMargin);
+}
+
+/**
+ * @param doc a validated snapshot
+ * @param memo$ created from ILinesLayoutMemo.create(). You can pass memo$ back
+ *  after a change for incremental updates.
+ */
+export function getPage(doc: IDocument, startMeasure: number,
+        memo$: ILinesLayoutState, renderTarget = RenderTarget.SvgExport,
+        pageClassName = ""): ReactElement<Page.IProps> {
+    let print = getPrint(doc, startMeasure);
+
+    const pageNum = 1; // FIXME
+
     const lineLayouts = layout({
         attributes: {},
         debug: true,
@@ -89,7 +100,10 @@ export function getPage(doc: IDocument, startMeasure: number,
  *        measure number string) of the first measure.
  */
 export function renderDocument(doc: IDocument, startMeasure: number): string {
-    const core = renderToStaticMarkup(getPage(doc, startMeasure));
+    let print = getPrint(doc, startMeasure);
+    let top = getTop(print, 0);
+    let memo$ = ILinesLayoutMemo.create(top);
+    const core = renderToStaticMarkup(getPage(doc, startMeasure, memo$));
 
      return `<?xml version="1.0" encoding="UTF-8" standalone="no"?>${
          core.replace("<svg", "<svg xmlns=\"http://www.w3.org/2000/svg\"")

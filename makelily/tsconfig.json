@@ -1,0 +1,17 @@
+{
+    "compilerOptions": {
+        "declaration": true,
+        "experimentalDecorators": true,
+        "jsx": "react",
+        "module": "commonjs",
+        "noImplicitAny": true,
+        "outDir": "./distlib",
+        "preserveConstEnums": true,
+        "removeComments": false,
+        "sourceMap": true,
+        "target": "es5"
+    },
+    "files": [
+        "./src/index.tsx"
+    ]
+}

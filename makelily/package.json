@@ -12,15 +12,37 @@
   "license": "SEE LICENSE IN LICENSE.TXT",
   "dependencies": {
     "history": "^1.8.0",
+    "invariant": "^2.1.0",
     "lodash": "^3.10.1",
+    "musicxml-interfaces": "ripieno/musicxml-interfaces",
     "react": "^0.14.0-beta3",
     "react-dom": "^0.14.0-beta3",
+    "react-redux": "^0.9.0",
     "redux": "^1.0.1",
-    "redux-thunk": "^0.1.0"
+    "redux-thunk": "^0.1.0",
+    "webcola": "tgdwyer/WebCola#326dc8e9e",
+    "whatwg-fetch": "^0.9.0"
   },
   "devDependencies": {
     "forever": "0.14.2",
     "react-ts": "git+ssh://git@phabricator.ripieno.io/diffusion/RTS/react-ts.git",
+    "redux-devtools": "^1.1.1",
     "tsd": "^0.6.3"
+  },
+  "reduction.ts": {
+    "devServer": {
+      "host": "localhost",
+      "port": 4220
+    },
+    "assets": {
+      "contentBase": "static",
+      "publicPath": "/"
+    },
+    "output": {
+      "filename": "dist.js",
+      "directory": "dist"
+    },
+    "tsconfig": "tsconfig.json",
+    "banner": "BANNER.txt"
   }
 }

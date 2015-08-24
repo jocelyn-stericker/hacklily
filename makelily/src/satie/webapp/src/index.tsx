@@ -4,7 +4,7 @@ import React = require("react");
 import ReactDOM = require("react-dom");
 import ReactPerf = require("react/lib/ReactDefaultPerf");
 import {init} from "../../src/index";
-import {run, Router, Route, Redirect} from "react-router";
+import {Router, Route, Redirect} from "react-router";
 
 var createBrowserHistory = require("history/lib/createBrowserHistory");
 

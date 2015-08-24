@@ -45,7 +45,10 @@ class NoteImpl implements Note {
         let self : {[key:string]: any} = <any> this;
 
         /* Link to parent */
-        this._parent = parent;
+        Object.defineProperty(this, "_parent", {
+            enumerable: false,
+            value: parent            
+        });
         this._idx = idx;
 
         if (note.pitch) {
