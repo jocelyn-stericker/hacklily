@@ -11,3 +11,6 @@
 /// <reference path="opentype.d.ts" />
 /// <reference path="yargs/yargs.d.ts" />
 /// <reference path="../../node_modules/webcola/WebCola/index.d.ts" />
+/// <reference path="../../node_modules/ntypescript/bin/ntypescript.d.ts" />
+/// <reference path="superagent/superagent.d.ts" />
+/// <reference path="webcola/webcola.d.ts" />
