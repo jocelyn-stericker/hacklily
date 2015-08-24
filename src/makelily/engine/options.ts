@@ -112,6 +112,7 @@ export enum RenderTarget {
  */
 export function key$(t$: any) {
     if (!t$.key) {
+        console.warn(t$, "did not have a key. Interaction will be broken");
         t$.key = Math.floor(Math.random() * MAX_SAFE_INTEGER);
     }
 }
