@@ -1,9 +1,9 @@
 /**
- * @source: https://github.com/ripieno/satie/
+ * @source: https://github.com/jnetterf/satie/
  *
  * @license
  * (C) Copyright Josh Netterfield <joshua@nettek.ca> 2015.
- * This project contains the Satie music engraver <https://github.com/ripieno/satie>.
+ * This project contains the Satie music engraver <https://github.com/jnetterf/satie>.
  *
  * Satie is free software: you can redistribute it and/or modify it under the terms of
  * the GNU Affero General Public License as published by the Free Software
@@ -12,7 +12,7 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU AGPL for more details.
  *
  * Satie is licensed with additional permissions under the GNU Affero GPL version 3 section 7.
- * For details, see https://github.com/ripieno/satie/
+ * For details, see https://github.com/jnetterf/satie/
  */
 
 "use strict";
@@ -271,7 +271,7 @@ function printMsg() {
 
     console.log(
         "This application uses Satie, a JavaScript library for rendering sheet music.\n" +
-        "https://github.com/ripieno/satie/\n" +
+        "https://github.com/jnetterf/satie/\n" +
         "\n" +
         "Satie is free software: you can redistribute it and/or modify it under the terms of\n" +
         "the GNU Affero General Public License as published by the Free Software\n" +
@@ -281,6 +281,6 @@ function printMsg() {
         "See the GNU AGPL for more details.\n" +
         "\n" +
         "Satie is licensed with additional permissions under the GNU Affero GPL version 3\n" +
-        "section 7. For details, see https://github.com/ripieno/satie/\n"
+        "section 7. For details, see https://github.com/jnetterf/satie/\n"
     );
 }
