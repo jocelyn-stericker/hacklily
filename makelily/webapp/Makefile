@@ -15,7 +15,7 @@ build: clean lint
 	cp -RLf ./static/* ./dist/satie/
 	cd ./dist/satie; \
 	touch ./.nojekyll; \
-	sed -i.bak 's,"/,"https://ripieno.github.io/satie/,g' ./index.html; \
+	sed -i.bak 's,"/,"https://jnetterf.github.io/satie/,g' ./index.html; \
 	rm *.bak; \
 	mkdir tests; \
 	ln -s ../index.html tests/; \
@@ -33,7 +33,7 @@ deploy:
 	git init; \
 	git remote add local ../../../.git; \
 	git fetch local; \
-	git remote add origin git@github.com:ripieno/satie; \
+	git remote add origin git@github.com:jnetterf/satie; \
 	git fetch origin; \
 	git add .; \
 	git reset local/gh-pages --soft; \
@@ -45,9 +45,7 @@ clean:
 
 patch:
 	git submodule update --init --recursive
-	cd ./vendor/react-router
-	npm install
-	rm -rf ./node_modules/react
-	cd ../..
+	cd ./vendor/react-router && npm install
+	rm -rf ./vendor/react-router/node_modules/react
 	git apply --stat --apply json3.patch
 	git apply --stat --apply ts-loader.patch

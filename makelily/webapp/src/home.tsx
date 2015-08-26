@@ -29,7 +29,7 @@ module Home {
             return <span>
                 You can use Satie to embed sheet music on a page, render sheet music
                 on a server, or create open-source sheet music
-                applications. <a href="https://github.com/ripieno/satie/">
+                applications. <a href="https://github.com/jnetterf/satie/">
                 Learn more at GitHub »</a>
             </span>;
         }

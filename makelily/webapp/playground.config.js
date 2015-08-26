@@ -46,10 +46,10 @@ module.exports = {
             }
         ]
     },
-        postcss: [
-            autoprefixer({ browsers: ['last 2 version'] }),
-            cssnext({ url: false })
-        ],
+    postcss: [
+        autoprefixer({ browsers: ['last 2 version'] }),
+        cssnext({ url: false })
+    ],
     plugins: [
         new webpack.HotModuleReplacementPlugin(),
         new webpack.NoErrorsPlugin(),

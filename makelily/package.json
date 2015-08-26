@@ -4,10 +4,10 @@
   "description": "A sheet music renderer for the web",
   "author": "Josh Netterfield",
   "license": "AGPL-3.0",
-  "homepage": "http://ripieno.github.io/satie",
+  "homepage": "http://jnetterf.github.io/satie",
   "repository": {
     "type": "git",
-    "url": "git://github.com/ripieno/satie"
+    "url": "git://github.com/jnetterf/satie"
   },
   "keywords": [
     "classical",
@@ -23,7 +23,7 @@
     "fast-json-patch": "0.5.2",
     "invariant": "^2.1.0",
     "lodash": "3.9.3",
-    "musicxml-interfaces": "ripieno/musicxml-interfaces#547c49b19be26",
+    "musicxml-interfaces": "jnetterf/musicxml-interfaces#547c49b19be26",
     "ntypescript": "^1.201508220702.1",
     "opentype": "nodebox/opentype.js#0.4.7",
     "webcola": "tgdwyer/WebCola#326dc8e9e",

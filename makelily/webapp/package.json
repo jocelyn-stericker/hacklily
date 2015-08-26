@@ -4,11 +4,11 @@
   "description": "For developing, testing, and showing off Satie",
   "author": "Josh Netterfield",
   "license": "AGPL-3.0",
-  "homepage": "http://ripieno.github.io/satie",
+  "homepage": "http://jnetterf.github.io/satie",
   "private": true,
   "repository": {
     "type": "git",
-    "url": "git://github.com/ripieno/satie"
+    "url": "git://github.com/jnetterf/satie"
   },
   "dependencies": {
     "forever": "0.14.2",
@@ -21,7 +21,7 @@
     "postcss-loader": "^0.5.1",
     "react-hot-loader": "^1.2.7",
     "style-loader": "^0.12.3",
-    "ts-loader": "0.4.6",
+    "ts-loader": "0.4.7",
     "webpack": "1.10.1",
     "webpack-dev-server": "1.10.1"
   },
