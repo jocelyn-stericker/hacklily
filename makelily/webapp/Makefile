@@ -47,5 +47,5 @@ patch:
 	git submodule update --init --recursive
 	cd ./vendor/react-router && npm install
 	rm -rf ./vendor/react-router/node_modules/react
+	ln -s ../ ./node_modules/dashboard-ui
 	git apply --stat --apply json3.patch
-	git apply --stat --apply ts-loader.patch

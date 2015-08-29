@@ -834,6 +834,20 @@ declare module "child_process" {
         env?: any;
         detached?: boolean;
     }): ChildProcess;
+    export function spawnSync(command: string, args?: string[], options?: {
+        cwd?: string;
+        stdio?: any;
+        custom?: any;
+        env?: any;
+        detached?: boolean;
+        input?: string;
+    }): {
+        stdin:  stream.Writable;
+        stdout: stream.Readable;
+        stderr: stream.Readable;
+        error?: string;
+    };
+
     export function exec(command: string, options: {
         cwd?: string;
         stdio?: any;

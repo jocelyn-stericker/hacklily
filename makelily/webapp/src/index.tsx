@@ -1,8 +1,7 @@
 /// <reference path="../typings/tsd.d.ts" />
 
 import React = require("react");
-import ReactDOM = require("react-dom");
-import ReactPerf = require("react/lib/ReactDefaultPerf");
+var ReactDOM = require("react-dom");
 import {init} from "../../src/index";
 import {Router, Route, Redirect} from "react-router";
 
@@ -11,9 +10,6 @@ var createBrowserHistory = require("history/lib/createBrowserHistory");
 import App from "./app";
 import Home from "./home";
 import Tests from "./tests";
-
-ReactPerf.start();
-(window as any).ReactPerf = ReactPerf;
 
 let prefix = process.env.PLAYGROUND_PREFIX || "";
 
