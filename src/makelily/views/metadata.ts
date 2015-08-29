@@ -21,9 +21,9 @@ export function set(key: string, x1: number, x2: number, y1: number, y2: number)
 }
 
 export function clear(key: string) {
-    
+    // Not implemented
 }
 
 export function get(x: number, y: number) {
-    
+    // Not implemented
 }

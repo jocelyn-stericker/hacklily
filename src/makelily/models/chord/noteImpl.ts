@@ -47,7 +47,7 @@ class NoteImpl implements Note {
         /* Link to parent */
         Object.defineProperty(this, "_parent", {
             enumerable: false,
-            value: parent            
+            value: parent,
         });
         this._idx = idx;
 

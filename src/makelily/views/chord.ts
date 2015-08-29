@@ -48,7 +48,7 @@ class ChordView extends Component<{layout: Chord.IChordLayout}, void> {
         let maxNotehead = max(layout.model.noteheadGlyph, glyph => getRight(glyph));
 
         let anyVisible = any(layout.model, note => note.printObject !== false);
-        
+
         setMetadata(layout.key,
             this.context.originX + this.props.layout.x$ - 2,
             this.context.originX + this.props.layout.x$ + this.props.layout.renderedWidth,

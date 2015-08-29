@@ -53,7 +53,7 @@ function tied(options: ILayoutOptions, bounds: ILineBounds,
                 if (!model || layout.renderClass !== IModel.Type.Chord) {
                     return;
                 }
-                let chord: List<NoteImpl> = model as ChordImpl;
+                let chord: List<NoteImpl> = <ChordImpl> model;
                 let noteWithTieds = find(chord, el => el.notationObj &&
                         el.notationObj.tieds && el.notationObj.tieds.length);
 
