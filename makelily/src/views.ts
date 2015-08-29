@@ -20,7 +20,6 @@ import {Print} from "musicxml-interfaces";
 import {createFactory as $, ReactElement} from "react";
 import {renderToStaticMarkup} from "react-dom/server";
 import {find} from "lodash";
-import invariant = require("invariant");
 
 import Page from "./views/page";
 import {layout, ILinesLayoutState, ILinesLayoutMemo, IModel, IDocument, IPrint,
@@ -45,7 +44,7 @@ export function getPrint(doc: IDocument, startMeasure: number): Print {
     if (partWithPrint) {
         return <any> factory.search(partWithPrint.staves[1], 0, IModel.Type.Print)[0];
     }
-    
+
     throw new Error("Part does not contain a Print element at division 0. Is it validated?");
 }
 

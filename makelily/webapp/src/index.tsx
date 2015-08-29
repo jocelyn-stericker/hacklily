@@ -19,25 +19,26 @@ init({
 });
 
 let history = createBrowserHistory();
+console.log(prefix);
 
 ReactDOM.render(
     <Router history={history}>
-        <Route component={App} path={prefix}>
-            <Route path="/tests"
+        <Route component={App} path="/">
+            <Route path={`${prefix}/tests`}
                 components={{
                     main: Tests,
                     header: Tests.Header,
                     description: Tests.Description
                 }}/>
-            <Redirect from="/tests/" to="tests" />
-            <Route path="/tests/:id"
+            <Redirect from={`${prefix}/tests/`} to={`${prefix}/tests`} />
+            <Route path={`${prefix}/tests/:id`}
                 components={{
                     main: Tests,
                     header: Tests.Header,
                     description: Tests.Description
                 }}/>
-            <Redirect from="/tests/:id/" to="someTests" />
-            <Route path="/"
+            <Redirect from={`${prefix}/tests/:id/`} to={`${prefix}/tests/:id/`} />
+            <Route path={`${prefix}/`}
                 components={{
                     main: Home,
                     header: Home.Header,
