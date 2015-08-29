@@ -6,7 +6,6 @@
 /// <reference path="node/node.d.ts" />
 /// <reference path="react/react.d.ts" />
 /// <reference path="react/react-dom.d.ts" />
-/// <reference path="react-ext.d.ts" />
 /// <reference path="invariant.d.ts" />
 /// <reference path="opentype.d.ts" />
 /// <reference path="yargs/yargs.d.ts" />
