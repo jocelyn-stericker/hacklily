@@ -1,6 +1,6 @@
 /**
  * (C) Josh Netterfield <joshua@nettek.ca> 2015.
- * Part of the Satie music engraver <https://github.com/ripieno/satie>.
+ * Part of the Satie music engraver <https://github.com/jnetterf/satie>.
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -65,7 +65,7 @@ export function stringToDocument(src: string, memo$: any, factory: IModel.IFacto
  * Converts a timewise MXMLJSON score to an uninitialized Satie score.
  * See also Models.importXML.
  * 
- * @param score produced by github.com/ripieno/musicxml-interfaces
+ * @param score produced by github.com/jnetterf/musicxml-interfaces
  * @returns A structure that can be consumed by a score. If an error occurred
  *          error will be set, and all other properties will be null.
  */

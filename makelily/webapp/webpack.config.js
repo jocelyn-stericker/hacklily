@@ -1,5 +1,6 @@
 var webpack = require("webpack");
 var path = require("path");
+var cssnext = require("cssnext");
 var autoprefixer = require("autoprefixer-core");
 
 module.exports = {
@@ -12,7 +13,7 @@ module.exports = {
         publicPath: "/"
     },
     resolve: {
-        extensions: ["", ".webpack.js", ".web.js", ".js", ".ts"],
+        extensions: ["", ".webpack.js", ".web.js", ".js", ".ts", ".tsx"],
         root: path.join(__dirname, "node_modules"),
         fallback: path.join(__dirname, "..", "node_modules")
     },
@@ -24,21 +25,23 @@ module.exports = {
             {
                 test: /\.ts(x)?$/,
                 loaders: [
-                    "ts-loader",
-                    "ts-jsx-loader"
+                    "ts-loader?compiler=ntypescript"
                 ]
             },
             {
                 test: /\.css$/,
                 loaders: [
                     "style-loader",
-                    "css-loader",
+                    "css-loader?sourceMap",
                     "postcss-loader"
                 ]
             }
         ]
     },
-    postcss: [ autoprefixer({ browsers: ['last 2 version'] }) ],
+    postcss: [
+        autoprefixer({ browsers: ['last 2 version'] }),
+        cssnext({ url: false })
+    ],
     plugins: [
         new webpack.DefinePlugin({
             "process.env": {

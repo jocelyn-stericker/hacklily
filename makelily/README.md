@@ -22,7 +22,7 @@ To get started, you'll need [node 0.12](https://nodejs.org) and one of the follo
 To obtain Satie run,
 
 ```
-git clone git@github.com:ripieno/satie.git
+git clone git@github.com:jnetterf/satie.git
 cd satie
 ```
 
@@ -66,8 +66,8 @@ delete this exception statement from your version.
 If this license prevents you from using Satie in an open source project,
 file an issue. I want to make it work!
 
-[test_status]: https://travis-ci.org/ripieno/satie.svg?branch=master
-[test_link]: https://travis-ci.org/ripieno/satie
+[test_status]: https://travis-ci.org/jnetterf/satie.svg?branch=master
+[test_link]: https://travis-ci.org/jnetterf/satie
 [musicxml_test_suite]: http://www.lilypond.org/doc/v2.18/input/regression/musicxml/collated-files.html
 [agpl]: LICENSE.md
 [musicxml]: http://en.wikipedia.org/wiki/MusicXML
