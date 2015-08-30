@@ -15,7 +15,7 @@ build: clean lint
 	cp -RLf ./static/* ./dist/satie/
 	cd ./dist/satie; \
 	touch ./.nojekyll; \
-	sed -i.bak 's,"/,"https://jnetterf.github.io/satie/,g' ./index.html; \
+	sed -i.bak 's,"/,"https://nettek.ca/satie/,g' ./index.html; \
 	rm *.bak; \
 	mkdir tests; \
 	ln -s ../index.html tests/; \

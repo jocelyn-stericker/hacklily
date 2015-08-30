@@ -19,11 +19,10 @@ init({
 });
 
 let history = createBrowserHistory();
-console.log(prefix);
 
 ReactDOM.render(
     <Router history={history}>
-        <Route component={App} path="/">
+        <Route component={App} path="">
             <Route path={`${prefix}/tests`}
                 components={{
                     main: Tests,
