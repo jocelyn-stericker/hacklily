@@ -4,9 +4,10 @@ import {Link} from "react-router";
 import {prefix} from "./config";
 const STYLES = require("./app.css");
 
-class App extends React.Component<{children: any, params: {id: string}, route: {path: string}, header: any, description: any, main: any}, void> {
+class App extends React.Component<App.IProps, void> {
     render() {
-        let topLink = this.props.route.path !== (prefix + "/") &&
+        let path = this.props.location.pathname;
+        let topLink = path !== (prefix + "/") && path !== prefix &&
             <Link className={STYLES.toplink} to={`${prefix}/`}>« Go home</Link>;
         let params = this.props.params;
         return <div>
@@ -24,6 +25,18 @@ class App extends React.Component<{children: any, params: {id: string}, route: {
 }
 
 module App {
+    export interface IProps {
+        children: any;
+        params: {
+            id: string;
+        },
+        location: {
+            pathname: string;
+        },
+        header: any;
+        description: any;
+        main: any;
+    }
 }
 
 export default App;

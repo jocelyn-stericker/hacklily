@@ -1,8 +1,8 @@
 {
     "compilerOptions": {
         "declaration": true,
-        "module": "commonjs",
         "noEmitOnError": true,
+        "module": "commonjs",
         "noImplicitAny": true,
         "removeComments": false,
         "sourceMap": true,

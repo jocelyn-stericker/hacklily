@@ -56,7 +56,7 @@ interface IModel {
      * At this point, all segments are frozen and must not be changed.
      */
     layout(cursor$: ICursor): IModel.ILayout;
-    
+
     key?: string;
 };
 
@@ -162,7 +162,7 @@ module IModel {
          * Must be set if expandPolicy is Centered
          */
         renderedWidth?: number;
-        
+
         key?: string;
     }
     export module ILayout {

@@ -41,6 +41,10 @@ export {default as validate} from "./engine/processors/validate";
 export {default as layout} from "./engine/processors/layout";
 export {getCurrentMeasureList} from "./engine/escapeHatch";
 
+declare module process {
+  let browser: boolean;
+}
+
 if (!process.browser) {
     // Let's get TypeScript stack traces.
 

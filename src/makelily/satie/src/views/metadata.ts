@@ -1,6 +1,6 @@
 /** 
  * (C) Josh Netterfield <joshua@nettek.ca> 2015.
- * Part of the Satie music engraver <https://github.com/ripieno/satie>.
+ * Part of the Satie music engraver <https://github.com/jnetterf/satie>.
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -17,13 +17,13 @@
  */
 
 export function set(key: string, x1: number, x2: number, y1: number, y2: number) {
-    console.log(key, x1, x2, y1, y2);
+    // console.log(key, x1, x2, y1, y2);
 }
 
 export function clear(key: string) {
-    
+    // Not implemented
 }
 
 export function get(x: number, y: number) {
-    
+    // Not implemented
 }

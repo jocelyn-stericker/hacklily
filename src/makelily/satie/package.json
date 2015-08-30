@@ -23,8 +23,7 @@
     "fast-json-patch": "0.5.2",
     "invariant": "^2.1.0",
     "lodash": "3.9.3",
-    "musicxml-interfaces": "jnetterf/musicxml-interfaces#547c49b19be26",
-    "ntypescript": "^1.201508220702.1",
+    "musicxml-interfaces": "jnetterf/musicxml-interfaces#3c752d98c39df029068d",
     "opentype": "nodebox/opentype.js#0.4.7",
     "webcola": "tgdwyer/WebCola#326dc8e9e",
     "yargs": "3.9.1"
@@ -38,6 +37,7 @@
     "istanbul": "0.3.14",
     "mocha": "2.2.5",
     "node-libs-browser": "0.5.2",
+    "ntypescript": "^1.201508290004.1",
     "react": "0.14.0-beta3",
     "react-dom": "0.14.0-beta3",
     "source-map-support": "0.3.1",

@@ -210,7 +210,7 @@ module Tests {
                 let link = filter.length > 1 ? `${prefix}/tests/${filter.substr(0, filter.length - 1)}` : "/tests";
 
                 return <span>
-                    <code>Filter: {`"${filter}`}</code>&nbsp;&nbsp;
+                    <code>Filter: {`"${filter}"`}</code>&nbsp;&nbsp;
                     <Link to={link}>
                         <button>
                             {filter.length > 1 ? "show more" : "show all"}

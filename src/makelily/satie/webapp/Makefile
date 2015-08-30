@@ -15,7 +15,7 @@ build: clean lint
 	cp -RLf ./static/* ./dist/satie/
 	cd ./dist/satie; \
 	touch ./.nojekyll; \
-	sed -i.bak 's,"/,"https://jnetterf.github.io/satie/,g' ./index.html; \
+	sed -i.bak 's,"/,"https://nettek.ca/satie/,g' ./index.html; \
 	rm *.bak; \
 	mkdir tests; \
 	ln -s ../index.html tests/; \
@@ -47,5 +47,5 @@ patch:
 	git submodule update --init --recursive
 	cd ./vendor/react-router && npm install
 	rm -rf ./vendor/react-router/node_modules/react
+	ln -s ../vendor/react-router/ ./node_modules/react-router
 	git apply --stat --apply json3.patch
-	git apply --stat --apply ts-loader.patch

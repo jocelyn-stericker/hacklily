@@ -1,12 +1,12 @@
 {
     "compilerOptions": {
         "module": "commonjs",
-        "noEmitOnError": true,
         "noImplicitAny": true,
         "removeComments": false,
         "sourceMap": true,
         "jsx": "react",
         "outDir": "distlib",
+        "isolatedModules": true,
         "target": "es5"
     },
     "files": [

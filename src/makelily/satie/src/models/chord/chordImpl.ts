@@ -528,7 +528,7 @@ class ChordModelImpl implements ChordModel.IChordModel, List<NoteImpl> {
     get satieLedger(): number[] {
         return IChord.ledgerLines(this, this._clef);
     }
-    
+
     toJSON() {
         let data: any = {
             group: {

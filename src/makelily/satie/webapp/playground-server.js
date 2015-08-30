@@ -7,6 +7,7 @@ new WebpackDevServer(webpack(config), {
   contentBase: "static",
   publicPath: config.output.publicPath,
   hot: true,
+  stats: { colors: true },
   historyApiFallback: true
 }).listen(config.port, config.host, function (err, result) {
   if (err) {
