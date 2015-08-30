@@ -28,7 +28,7 @@ import invariant = require("invariant");
 
 import {
     IMeasurePart, IMutableMeasure, IPart, ISegment, IMeasureLayout, OwnerType,
-    MAX_SAFE_INTEGER, key$, ICursor, IModel, Context, IAttributes
+    MAX_SAFE_INTEGER, ICursor, IModel, Context, IAttributes
 } from "../../engine";
 
 export interface IMeasureLayoutOptions {
@@ -175,7 +175,7 @@ export function reduceMeasure(spec: ILayoutOpts): IMeasureLayout {
             cursor$.idx$ = voiceStaves$[staffIdx].length;
             let layout: IModel.ILayout;
             model.key = `SATIE${cursor$.measure.uuid}_parts_${cursor$.segment.part}_staves_${
-                cursor$.segment.owner}_${cursor$.idx$}`
+                cursor$.segment.owner}_${cursor$.idx$}`;
             if (gValidateOnly) {
                 model.staffIdx = cursor$.staff.idx;
                 model.validate$(cursor$);
@@ -296,7 +296,7 @@ export function reduceMeasure(spec: ILayoutOpts): IMeasureLayout {
             // All layout that can be controlled by the model is done here.
             let layout: IModel.ILayout;
             model.key = `SATIE${cursor$.measure.uuid}_parts_${cursor$.segment.part}_voices_${
-                cursor$.segment.owner}_${cursor$.idx$}`
+                cursor$.segment.owner}_${cursor$.idx$}`;
             if (gValidateOnly) {
                 model.staffIdx = cursor$.staff.idx;
                 model.validate$(cursor$);

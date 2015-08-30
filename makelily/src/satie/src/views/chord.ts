@@ -55,6 +55,12 @@ class ChordView extends Component<{layout: Chord.IChordLayout}, void> {
             this.context.originY - 60,
             this.context.originY + 60);
 
+        setMetadata(layout.key,
+            this.context.originX + this.props.layout.x$ - 2,
+            this.context.originX + this.props.layout.x$ + this.props.layout.renderedWidth,
+            this.context.originY - 60,
+            this.context.originY + 60);
+
         if (!anyVisible) {
             return null;
         }

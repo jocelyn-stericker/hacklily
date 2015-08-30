@@ -20,7 +20,6 @@ import {Print} from "musicxml-interfaces";
 import {createFactory as $, ReactElement} from "react";
 import {renderToStaticMarkup} from "react-dom/server";
 import {find} from "lodash";
-import invariant = require("invariant");
 
 import Page from "./views/page";
 import {layout, ILinesLayoutState, ILinesLayoutMemo, IModel, IDocument, IPrint,

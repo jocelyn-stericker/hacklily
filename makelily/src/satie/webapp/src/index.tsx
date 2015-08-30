@@ -1,8 +1,7 @@
 /// <reference path="../typings/tsd.d.ts" />
 
 import React = require("react");
-import ReactDOM = require("react-dom");
-import ReactPerf = require("react/lib/ReactDefaultPerf");
+var ReactDOM = require("react-dom");
 import {init} from "../../src/index";
 import {Router, Route, Redirect} from "react-router";
 
@@ -11,9 +10,6 @@ var createBrowserHistory = require("history/lib/createBrowserHistory");
 import App from "./app";
 import Home from "./home";
 import Tests from "./tests";
-
-ReactPerf.start();
-(window as any).ReactPerf = ReactPerf;
 
 let prefix = process.env.PLAYGROUND_PREFIX || "";
 
@@ -26,22 +22,22 @@ let history = createBrowserHistory();
 
 ReactDOM.render(
     <Router history={history}>
-        <Route component={App} path={prefix}>
-            <Route path="/tests"
+        <Route component={App} path="">
+            <Route path={`${prefix}/tests`}
                 components={{
                     main: Tests,
                     header: Tests.Header,
                     description: Tests.Description
                 }}/>
-            <Redirect from="/tests/" to="tests" />
-            <Route path="/tests/:id"
+            <Redirect from={`${prefix}/tests/`} to={`${prefix}/tests`} />
+            <Route path={`${prefix}/tests/:id`}
                 components={{
                     main: Tests,
                     header: Tests.Header,
                     description: Tests.Description
                 }}/>
-            <Redirect from="/tests/:id/" to="someTests" />
-            <Route path="/"
+            <Redirect from={`${prefix}/tests/:id/`} to={`${prefix}/tests/:id/`} />
+            <Route path={`${prefix}/`}
                 components={{
                     main: Home,
                     header: Home.Header,
