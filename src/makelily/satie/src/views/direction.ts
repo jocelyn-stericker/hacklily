@@ -25,9 +25,11 @@ import DirectionModel from "../models/direction";
 import Dynamics from "./directions/dynamics";
 import Words from "./directions/words";
 import Glyph from "./primitives/glyph";
+import {Targetable} from "./metadata"
 
-class Direction extends Component<{layout: DirectionModel.ILayout}, void> {
-    render(): any {
+@Targetable()
+class Direction extends Component<{layout: DirectionModel.ILayout}, {}> {
+    render() {
         const model = this.props.layout.model;
         let childContext = this.getChildContext();
         let children = map(model.directionTypes, (type, idx) => {

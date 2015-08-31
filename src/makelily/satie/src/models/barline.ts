@@ -220,6 +220,8 @@ module BarlineModel {
                 default:
                     invariant(false, "Not implemented");
             }
+
+            this.renderedWidth = cursor$.x$ - this.x$ + 8;
         }
 
         /*---- ILayout ------------------------------------------------------*/
@@ -231,6 +233,7 @@ module BarlineModel {
         division: number;
         height: number;
         yOffset: number;
+        renderedWidth: number;
 
         /**
          * Set by layout engine.

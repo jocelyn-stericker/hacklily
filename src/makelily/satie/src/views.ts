@@ -69,6 +69,7 @@ export function getPage(doc: IDocument, startMeasure: number,
 
     const pageNum = 1; // FIXME
 
+    console.time("lineLayouts");
     const lineLayouts = layout({
         attributes: {},
         debug: true,
@@ -80,6 +81,7 @@ export function getPage(doc: IDocument, startMeasure: number,
         preprocessors: [],
         print$: print
     }, memo$);
+    console.timeEnd("lineLayouts");
 
     return $(Page)({
         className: pageClassName,

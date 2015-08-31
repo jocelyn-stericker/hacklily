@@ -24,8 +24,8 @@ import invariant = require("invariant");
 import DirectionModel from "../../models/direction";
 import Glyph from "../primitives/glyph";
 
-class DynamicsView extends Component<{layout: DirectionModel.ILayout, key?: string | number}, void> {
-    render(): any {
+class DynamicsView extends Component<{layout: DirectionModel.ILayout, key?: string | number}, {}> {
+    render() {
         let layout = this.props.layout;
         let model = layout.model;
         let dynamicsContainer = filter(model.directionTypes, dt => dt.dynamics)[0];

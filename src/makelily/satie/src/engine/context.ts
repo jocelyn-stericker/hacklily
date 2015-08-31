@@ -73,6 +73,12 @@ export interface IMeasure {
     uuid: number;
 
     parent: IMutableMeasure;
+
+    /**
+     * Incremented whenever anything in the measure changes.
+     * Local only and monotonic.
+     */
+    version: number;
 }
 
 export module IMeasure {
@@ -87,7 +93,8 @@ export module IMeasure {
             number: measure.number,
             x: x,
 
-            parent: measure
+            parent: measure,
+            version: measure.version
         };
     }
 }
@@ -155,7 +162,10 @@ export module IVoice {
     }
 }
 
-export interface IMutableMeasure /* matches everything in Measure except for parts! */ {
+/**
+ * Matches everything in Measure except for parts and version!
+ */
+export interface IMutableMeasure {
     idx: number;
     uuid: number;
     number: string;
@@ -168,6 +178,12 @@ export interface IMutableMeasure /* matches everything in Measure except for par
             staves: ISegment[];
         }
     };
+
+    /**
+     * Incremented whenever anything in the measure changes.
+     * Local only and monotonic.
+     */
+    version: number;
 }
 
 /** 

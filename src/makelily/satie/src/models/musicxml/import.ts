@@ -136,7 +136,8 @@ export function _extractMXMLPartsAndMeasures(input: ScoreTimewise, factory: IMod
             number: inMeasure.number,
             parts: <{[key: string]: IMeasurePart}> {},
             uuid: Math.floor(Math.random() * MAX_SAFE_INTEGER),
-            width: inMeasure.width
+            width: inMeasure.width,
+            version: 0
         };
 
         if (Object.keys(inMeasure.parts).length === 1 && "" in inMeasure.parts) {

@@ -13,7 +13,7 @@ import {AnyOperation} from "./ot";
 import {IAppState} from "./reducers/session";
 
 import Store from "./store/index";
-import {edit, loadConstDocument, ICollaborativeDocument, _rectify} from "./actions/session"
+import {preview, loadConstDocument, ICollaborativeDocument, _rectify} from "./actions/session"
 
 var {DevTools, DebugPanel, LogMonitor} = require('redux-devtools/lib/react');
 
@@ -26,12 +26,10 @@ function select(state: IAppState) {
 }
  
 @connect(select)
-class Yolo extends React.Component<Yolo.IProps, {debugModel: IModel}> {
-    state = {
-        debugModel: null as IModel
-    }
+class Yolo extends React.Component<IProps, IState> {
+    state: IState = {}
     render() {
-        if (this.props.rootDocument) {
+        if (this.props.rootDocument && !this.state.preview) {
             _rectify(this.props.rootDocument, this.props.operations);
         }
 
@@ -66,19 +64,38 @@ class Yolo extends React.Component<Yolo.IProps, {debugModel: IModel}> {
     }
     
     componentDidMount() {
-       // For debugging
-       Store.dispatch(loadConstDocument("https://ripieno.github.io/satie/lilypond-regression/01a.xml"));
-       (window as any).yolo = (op: AnyOperation) => Store.dispatch(edit(op));
-       (window as any).firstBar = () => this.props.rootDocument.measures[0].uuid;
+        // For debugging
+        Store.dispatch(loadConstDocument("/lilypond-regression/01a.xml"));
+        (window as any).yolo = (op: AnyOperation) => {
+            console.time("yolo");
+            console.time("dispatch");
+            Store.dispatch(preview(op));
+            console.timeEnd("dispatch");
+            console.time("preview");
+            this.setState({
+                preview: true
+            });
+            console.timeEnd("preview");
+            console.timeEnd("yolo");
+        };
+        (window as any).firstBar = () => this.props.rootDocument.measures[0].uuid;
+    }
+
+    componentWillReceiveProps(props: IProps) {
+        this.setState({
+            preview: false
+        });
     }
 }
+export interface IProps extends IAppState {
+    operations?: AnyOperation[];
+    error?: string;
+    rootDocument?: ICollaborativeDocument;
+}
 
-module Yolo {
-    export interface IProps extends IAppState {
-        operations?: AnyOperation[];
-        error?: string;
-        rootDocument?: ICollaborativeDocument;
-    }
+export interface IState {
+    debugModel?: IModel;
+    preview?: boolean;
 }
 
 export default Yolo

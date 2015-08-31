@@ -33,14 +33,15 @@ import Rest from "./rest";
 import Stem from "./stem";
 import UnbeamedTuplet from "./unbeamedTuplet";
 import {bboxes, bravura, getRight} from "../models/smufl";
-import {set as setMetadata, clear as clearMetadata} from "./metadata";
+import {Targetable} from "./metadata";
 
 const stemThickness: number = bravura.engravingDefaults.stemThickness*10;
 
 /**
  * Renders notes and their notations.
  */
-class ChordView extends Component<{layout: Chord.IChordLayout}, void> {
+@Targetable()
+class ChordView extends Component<IProps, {}> {
     render(): ReactElement<any> {
         let layout = this.props.layout;
         let spec = layout.model;
@@ -49,18 +50,6 @@ class ChordView extends Component<{layout: Chord.IChordLayout}, void> {
 
         let anyVisible = any(layout.model, note => note.printObject !== false);
         
-        setMetadata(layout.key,
-            this.context.originX + this.props.layout.x$ - 2,
-            this.context.originX + this.props.layout.x$ + this.props.layout.renderedWidth,
-            this.context.originY - 60,
-            this.context.originY + 60);
-
-        setMetadata(layout.key,
-            this.context.originX + this.props.layout.x$ - 2,
-            this.context.originX + this.props.layout.x$ + this.props.layout.renderedWidth,
-            this.context.originY - 60,
-            this.context.originY + 60);
-
         if (!anyVisible) {
             return null;
         }
@@ -169,10 +158,6 @@ class ChordView extends Component<{layout: Chord.IChordLayout}, void> {
             lyrics
         );
     }
-
-    componentWillUnmount() {
-        clearMetadata(this.props.layout.key);
-    }
 }
 
 module ChordView {
@@ -180,6 +165,10 @@ module ChordView {
         originX: PropTypes.number.isRequired,
         originY: PropTypes.number.isRequired
     };
+}
+
+export interface IProps {
+    layout: Chord.IChordLayout;
 }
 
 export default ChordView;

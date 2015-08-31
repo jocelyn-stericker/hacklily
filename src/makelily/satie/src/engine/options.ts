@@ -51,6 +51,7 @@ export interface ILinesLayoutState {
     width$: { [key: string]: IWidthInformation };
     multipleRests$: { [key: string]: number };
     clean$: { [key: string]: IMeasureLayout };
+    reduced$: { [key: string]: ILineLayoutResult };
     y$: number;
 }
 
@@ -60,7 +61,8 @@ export module ILinesLayoutMemo {
             y$: top,
             width$: {},
             multipleRests$: {},
-            clean$: {}
+            clean$: {},
+            reduced$: {}
         };
     }
 }

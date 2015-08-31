@@ -81,9 +81,14 @@ export function layoutLine$(options: ILayoutOptions, bounds: ILineBounds,
         left = left + layout.width;
     });
 
-    let detachedLayouts: IMeasureLayout[] = map(layouts, IMeasureLayout.detach);
-    return reduce(options.postprocessors,
-        (layouts, filter) => filter(options, bounds, detachedLayouts), layouts);
+    let key = `${options.page$}_${options.line}`;
+    if (!memo$.reduced$[key]) {
+        let detachedLayouts: IMeasureLayout[] = map(layouts, IMeasureLayout.detach);
+        memo$.reduced$[key] = reduce(options.postprocessors,
+            (layouts, filter) => filter(options, bounds, detachedLayouts), layouts);
+    }
+
+    return memo$.reduced$[key];
 }
 
 function _layoutDirtyMeasures(options: ILayoutOptions, line: Context.ILine,

@@ -152,6 +152,7 @@ class ChordModelImpl implements ChordModel.IChordModel, List<NoteImpl> {
                 stemHeight: this._getStemHeight(direction, clef),
                 stemStart: IChord.startingLine(this, direction, clef)
             };
+            let self = this;
 
             this.satieDirection = direction === 1 ? StemType.Up : StemType.Down;
         } else {
