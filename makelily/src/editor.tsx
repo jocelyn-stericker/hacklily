@@ -5,34 +5,47 @@
  
 import React = require("react");
 let invariant = require("invariant");
-import {find} from "lodash";
+import {find, throttle} from "lodash";
 
 import {RenderTarget, ILinesLayoutMemo, ILinesLayoutState} from "./satie/src/engine";
 import {ICollaborativeDocument} from "./actions/session";
 import {getPage, getPrint, getTop} from "./satie/src/views";
 import {AnyOperation} from "./ot";
 import {IModel} from "./satie/src/engine";
+import {get as getByPosition} from "./satie/src/views/metadata";
 
 let _prevDebug: IModel = null;
 class Editor extends React.Component<Editor.IProps, Editor.IState> {
+    _svg: any;
+    _pt: any;
     mouseMove = (ev: any) => {
         let svg: any = find(ev.path, (el: any) => el.tagName === "svg");
         if (!svg) {
+            this._svg = null;
             return;
         }
 
-        // Create an SVGPoint for future math
-        var pt = svg.createSVGPoint();
-        
+        if (svg !== this._svg) {
+            this._svg = svg;
+            this._pt = this._svg.createSVGPoint();
+        }
+
+        let pt = this._pt;
+
         // Get point in global SVG space
         function cursorPoint(evt: React.MouseEvent) {
-            pt.x = evt.clientX; pt.y = evt.clientY;
+            pt.x = evt.clientX;
+            pt.y = evt.clientY;
             return pt.matrixTransform(svg.getScreenCTM().inverse());
         }
+
         let p = cursorPoint(ev);
-        console.log(p.x, p.y);
-        
-        let path = ev.dispatchMarker.match(/SATIE([0-9]*)_(\w*)_(\w*)_(\w*)_(\w*)_(\w*).*\./);
+        this.handleCursorPosition(p);
+    }
+    handleCursorPosition = throttle((p: {x: number; y: number;}) => {
+        let element = getByPosition(p);
+
+        let path = element && element.key.match(/SATIE([0-9]*)_(\w*)_(\w*)_(\w*)_(\w*)_(\w*)/);
         if (!path) {
             if (_prevDebug !== null) {
                 _prevDebug = null;
@@ -48,7 +61,11 @@ class Editor extends React.Component<Editor.IProps, Editor.IState> {
             _prevDebug = el;
             this.props.debugSelected(el);
         }
-    }
+        if (el) {
+            el.toXML();
+        }
+    }, 18);
+
     render(): any {
         let {document, pageClassName} = this.props;
         let {memo$} = this.state;

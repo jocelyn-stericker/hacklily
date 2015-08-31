@@ -16,6 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import invariant = require("invariant");
 import {createFactory as $, Component, DOM, PropTypes} from "react";
 import {chain, flatten, mapValues, map, forEach} from "lodash";
 
@@ -23,9 +24,12 @@ import DebugBox from "./debugBox";
 import {IModel, IMeasureLayout, MAX_SAFE_INTEGER} from "../engine";
 import ModelView from "./modelView";
 
-class MeasureView extends Component<{layout: IMeasureLayout, key?: string | number}, void> {
+class MeasureView extends Component<IProps, IState> {
+    _version: number = -1;
+
     render(): any {
         let layout = this.props.layout;
+        this._version = this.props.layout.getVersion();
 
         return DOM.g(null,
             chain(flatten(layout.elements))
@@ -76,6 +80,11 @@ class MeasureView extends Component<{layout: IMeasureLayout, key?: string | numb
     invert(y: number) {
         return this.context.originY - y;
     }
+    
+    shouldComponentUpdate(nextProps: IProps, nextState: IState) {
+        invariant(!isNaN(this._version), `Invalid non-numeric version ${this._version}`);
+        return this._version < this.props.layout.getVersion();
+    }
 }
 
 const NUMBER_ARRAY = PropTypes.arrayOf(PropTypes.number);
@@ -90,6 +99,14 @@ module MeasureView {
     export let contextTypes = <any> {
         originY: PropTypes.number
     };
+}
+
+export interface IProps {
+    layout: IMeasureLayout;
+    key?: string | number;
+}
+
+export interface IState {
 }
 
 export default MeasureView;

@@ -265,8 +265,10 @@ module IModel {
                 invariant(!isNaN(layout.renderedWidth),
                     "renderedWidth must be a number for centered objects, but it's %s",
                     layout.renderedWidth);
-                detached.renderedWidth = layout.renderedWidth;
             }
+        }
+        if (!isNaN(layout.renderedWidth)) {
+            detached.renderedWidth = layout.renderedWidth;
         }
         return detached;
     }
@@ -284,8 +286,10 @@ module IModel {
                 invariant(!isNaN(layout.renderedWidth),
                     "renderedWidth must be a number for centered objects, but it's %s",
                     layout.renderedWidth);
-                attached.renderedWidth = layout.renderedWidth;
             }
+        }
+        if (!isNaN(layout.renderedWidth)) {
+            attached.renderedWidth = layout.renderedWidth;
         }
 
         return attached;

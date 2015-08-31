@@ -42,6 +42,12 @@ export interface IMutableMeasure {
     parts: {
         [id: string]: IMeasurePart;
     };
+
+    /**
+     * Incremented whenever anything in the measure changes.
+     * Local only and monotonic.
+     */
+    version: number;
 }
 
 export interface IMeasurePart {
@@ -113,6 +119,8 @@ export interface IMeasureLayout {
      * indexed by staff index.
      */
     paddingBottom: number[];
+
+    getVersion: () => number;
 }
 
 export module IMeasureLayout {
@@ -125,7 +133,8 @@ export module IMeasureLayout {
             originX: layout.originX,
             originY: mapValues(layout.originY, origins => origins.slice()),
             paddingTop: layout.paddingTop.slice(),
-            paddingBottom: layout.paddingBottom.slice()
+            paddingBottom: layout.paddingBottom.slice(),
+            getVersion: layout.getVersion
         };
         return clone;
     };

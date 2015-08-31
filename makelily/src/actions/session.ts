@@ -58,6 +58,7 @@ function _applyOp$(doc$: IDocument, op: AnyOperation) {
     
     let part = measure.parts[path[2]];
     invariant(Boolean(part), `Invalid operation path: no such part ${part}`);
+    ++measure.version;
     
     invariant(path[3] === "voices" || path[3] === "staves",
         `Invalid operation path: ${path[3]} should have been "voices" or "staves`);
@@ -119,7 +120,7 @@ export function _rectify(doc$: ICollaborativeDocument, operations: AnyOperation[
 export enum SessionAction {
     SET_ROOT_DOCUMENT,
     SET_ERROR,
-    EDIT,
+    EDIT
 }
 
 export interface ISessionAction {
@@ -184,5 +185,31 @@ export function edit(operation: AnyOperation): ThunkFn {
                 operation: operation as any
             });
         }
+    }
+}
+
+/**
+ * Performs an action without committing it.
+ */
+export function preview(operation: AnyOperation): ThunkFn {
+    return (dispatch, getState) => {
+        let state = getState();
+        let doc$ = state.rootDocument;
+        let ok = true;
+        // Reset to the documents state.
+        _rectify(doc$, state.operations)
+
+        try {
+            // Apply to document snapshot, but not the actual state.
+            _applyOp$(doc$, operation);
+            doc$.appliedOperations$.push(operation);
+        } catch(err) {
+            // TODO: right now we could be in a really bad state if the change
+            // partially applied. In the future, we should have a way of reloading from a known
+            // good state for this type of situation.
+            console.warn(err);
+            ok = false;
+        }
+
     }
 }

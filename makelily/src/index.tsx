@@ -17,7 +17,7 @@ import {init as initSatie} from "./satie/src/index";
 import Yolo from "./yolo";
 
 initSatie({
-    satieRoot: "https://ripieno.github.io/satie/vendor/",
+    satieRoot: "https://nettek.ca/satie/vendor/",
     preloadedFonts: ["Alegreya", "Alegreya (bold)"]
 });
 

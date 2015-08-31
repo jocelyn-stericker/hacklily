@@ -430,7 +430,8 @@ export function reduceMeasure(spec: ILayoutOpts): IMeasureLayout {
         originX: gMeasure.x,
         originY: {},
         paddingTop: gMaxPaddingTopInMeasure$,
-        paddingBottom: gMaxPaddingBottomInMeasure$
+        paddingBottom: gMaxPaddingBottomInMeasure$,
+        getVersion: () => gMeasure.parent.version
     };
 }
 
@@ -543,7 +544,8 @@ export class DivisionOverflowException extends Error {
             implicit: false,
             width: NaN,
             nonControlling: false,
-            parts: this.newParts
+            parts: this.newParts,
+            version: 0
         };
 
         oldMeasure$.parts = this.oldParts;

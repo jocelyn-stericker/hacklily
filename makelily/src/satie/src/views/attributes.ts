@@ -16,7 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import {createFactory as $, Component, DOM} from "react";
+import {createFactory as $, Component, DOM, PropTypes} from "react";
 
 import Attributes from "../models/attributes";
 import BarNumber from "./barNumber";
@@ -25,9 +25,11 @@ import PartSymbol from "./partSymbol";
 import KeySignature from "./keySignature";
 import TimeSignature from "./timeSignature";
 import StaffLines from "./staffLines";
+import {Targetable} from "./metadata";
 
-class AttributesView extends Component<{layout: Attributes.ILayout}, void> {
-    render(): any {
+@Targetable()
+class AttributesView extends Component<{layout: Attributes.ILayout}, {}> {
+    render() {
         let layout = this.props.layout;
         let children: any[] = [];
 
@@ -82,6 +84,13 @@ class AttributesView extends Component<{layout: Attributes.ILayout}, void> {
 
         return DOM.g(null, children);
     }
+}
+
+module AttributesView {
+    export let contextTypes = <any> {
+        originX: PropTypes.number.isRequired,
+        originY: PropTypes.number.isRequired
+    };
 }
 
 export default AttributesView;

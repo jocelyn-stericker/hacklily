@@ -28,8 +28,8 @@ import {bravura, getFontOffset} from "../models/smufl";
 /**
  * Renders a beam based on a computed layout.
  */
-class Beam extends Component<Beam.IProps, void> {
-    render(): any {
+class Beam extends Component<Beam.IProps, {}> {
+    render() {
         let xLow = this._getX1();
         let xHigh = this._getX2();
         let {layout} = this.props;

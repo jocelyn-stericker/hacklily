@@ -25,13 +25,15 @@ import {any, map} from "lodash";
 import Attributes from "./attributes";
 import Barline from "../models/barline";
 import Line from "./primitives/line";
+import {Targetable} from "./metadata"
 
 /**
  * Renders a full-stave-height barline at (x,y).
  * Does not do any interesting calculations.
  */
+@Targetable()
 class BarlineView extends Component<{layout: Barline.ILayout}, {}> {
-    render(): any {
+    render() {
         const originX = this.context.originX;
         const originY = this.context.originY;
 

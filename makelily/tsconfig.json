@@ -1,6 +1,5 @@
 {
     "compilerOptions": {
-        "declaration": true,
         "experimentalDecorators": true,
         "jsx": "react",
         "module": "commonjs",
@@ -9,6 +8,7 @@
         "preserveConstEnums": true,
         "removeComments": false,
         "sourceMap": true,
+        "isolatedModules": true,
         "target": "es5"
     },
     "files": [
