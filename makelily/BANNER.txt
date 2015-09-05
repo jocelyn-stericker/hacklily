@@ -1,4 +1,0 @@
-The Ripieno editor
-(C) Joshua Netterfield <joshua@nettek.ca> 2014-2015.
-
-This project contains open source components. See https://github.com/ripieno

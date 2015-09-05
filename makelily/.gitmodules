@@ -1,9 +1,3 @@
-[submodule "src/dragon/backends/realtime/vendor/portaudio"]
-	path = src/dragon/backends/realtime/vendor/portaudio
-	url = https://github.com/D-Programming-Deimos/portaudio.git
-[submodule "src/satie/uitest/node_modules/react-bootstrap"]
-	path = src/dragon/uitest/node_modules/react-bootstrap
-	url = https://github.com/andrew-d/react-bootstrap.git
-[submodule "src/satie/react-router"]
-	path = src/satie/webapp/vendor/react-router
+[submodule "react-router"]
+	path = webapp/vendor/react-router
 	url = https://github.com/rackt/react-router

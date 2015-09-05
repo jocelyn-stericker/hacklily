@@ -1,49 +1,68 @@
 {
-  "name": "ripieno-webapp",
+  "name": "satie",
   "version": "0.0.4",
-  "description": "The Ripieno editor",
-  "main": "index.js",
-  "private": "true",
-  "scripts": {
-    "start": "node ./node_modules/react-ts/src/main.js serve",
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
+  "description": "A sheet music renderer for the web",
   "author": "Josh Netterfield",
-  "license": "SEE LICENSE IN LICENSE.TXT",
+  "license": "AGPL-3.0",
+  "homepage": "http://jnetterf.github.io/satie",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/jnetterf/satie"
+  },
+  "keywords": [
+    "classical",
+    "composing",
+    "composition",
+    "music",
+    "musicxml",
+    "react",
+    "sheet music",
+    "xml"
+  ],
   "dependencies": {
-    "history": "^1.8.0",
+    "fast-json-patch": "0.5.2",
     "invariant": "^2.1.0",
-    "lodash": "^3.10.1",
+    "lodash": "3.9.3",
     "musicxml-interfaces": "jnetterf/musicxml-interfaces#3c752d98c39df029068d",
     "opentype": "nodebox/opentype.js#0.4.7",
-    "react": "^0.14.0-beta3",
-    "react-dom": "^0.14.0-beta3",
-    "react-redux": "^0.9.0",
-    "redux": "^1.0.1",
-    "redux-thunk": "^0.1.0",
     "webcola": "tgdwyer/WebCola#326dc8e9e",
-    "whatwg-fetch": "^0.9.0"
+    "yargs": "3.9.1"
+  },
+  "peerDependencies": {
+    "react": "0.14.0-beta3"
   },
   "devDependencies": {
-    "forever": "0.14.2",
-    "react-ts": "git+ssh://git@phabricator.ripieno.io/diffusion/RTS/react-ts.git",
-    "redux-devtools": "^1.1.1",
-    "tsd": "^0.6.3"
+    "chai": "2.3.0",
+    "dts-generator": "^1.4.1",
+    "istanbul": "0.3.14",
+    "mocha": "2.2.5",
+    "node-libs-browser": "0.5.2",
+    "ntypescript": "^1.201508290004.1",
+    "react": "0.14.0-beta3",
+    "react-dom": "0.14.0-beta3",
+    "source-map-support": "0.3.1",
+    "svg2png": "1.1.1",
+    "tslint": "2.3.0-beta"
   },
-  "reduction.ts": {
-    "devServer": {
-      "host": "localhost",
-      "port": 4220
-    },
-    "assets": {
-      "contentBase": "static",
-      "publicPath": "/"
-    },
-    "output": {
-      "filename": "dist.js",
-      "directory": "dist"
-    },
-    "tsconfig": "tsconfig.json",
-    "banner": "BANNER.txt"
+  "main": "./dist/index.js",
+  "files": [
+    "dist/",
+    "COPYING.txt"
+  ],
+  "typescript": {
+    "definition": "dist/satie.d.ts"
+  },
+  "browser": {
+    "source-map-support": false,
+    "fs": false
+  },
+  "scripts": {
+    "build": "make NODE_ENV=production",
+    "build_dev": "make",
+    "watch": "make watch",
+    "start": "make watch",
+    "test": "make test_all NODE_ENV=production",
+    "test_dev": "make test_all",
+    "lint": "make lint"
   }
 }

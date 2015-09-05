@@ -1,7 +1,0 @@
-*.swp
-dist/
-distlib/
-node_modules
-npm-debug.log
-rendertest/out
-.DS_Store

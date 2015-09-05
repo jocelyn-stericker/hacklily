@@ -1,4 +1,4 @@
-*.sw?
+*.swp
 dist/
 distlib/
 node_modules
