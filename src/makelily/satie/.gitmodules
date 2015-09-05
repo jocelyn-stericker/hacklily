@@ -1,3 +1,0 @@
-[submodule "react-router"]
-	path = webapp/vendor/react-router
-	url = https://github.com/rackt/react-router
