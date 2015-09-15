@@ -141,7 +141,7 @@ declare module __React {
         state: S;
         context: {};
         refs: {
-            [key: string]: Component<any, any>
+            [key: string]: any
         };
     }
 
