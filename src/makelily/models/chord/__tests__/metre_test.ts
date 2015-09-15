@@ -135,7 +135,7 @@ describe("[metre.ts]", function() {
                     noteType: {
                         duration: Count.Quarter
                     },
-                    dots: [{}],
+                    dots: [{}]
                 }]),
                 factory.create(IModel.Type.Chord, <IChord> [{
                     pitch: {
@@ -144,7 +144,7 @@ describe("[metre.ts]", function() {
                     },
                     noteType: {
                         duration: Count.Eighth
-                    },
+                    }
                 }]),
                 factory.create(IModel.Type.Chord, <IChord> [{
                     pitch: {
@@ -153,7 +153,7 @@ describe("[metre.ts]", function() {
                     },
                     noteType: {
                         duration: Count.Eighth
-                    },
+                    }
                 }])
             ]);
             let retcode = rhythmicSpellcheck$(cursor$);

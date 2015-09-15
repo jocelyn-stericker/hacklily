@@ -37,7 +37,7 @@ class ClefView extends Component<{spec: Clef, key?: string | number}, void> {
 
         let clefX = this.context.originX + spec.defaultX + (spec.relativeX || 0);
         let clefY = this.context.originY - (spec.defaultY + (spec.relativeY || 0) +
-            (this.renderedLine() - 3)*10);
+            (this.renderedLine() - 3) * 10);
         let clefSign = this.sign();
 
         if (!clefSign) {
@@ -62,20 +62,20 @@ class ClefView extends Component<{spec: Clef, key?: string | number}, void> {
 
         // We want it to actually touch, not just be outside the bbox 
         let bScalingFactor = spec.sign.toUpperCase() === "F" ? 0.7 : 1;
-        let topLeftOffset = spec.sign.toUpperCase() === "G" ? left*2 : 0;
-        top = -top*10 + clefY;
-        bottom = -bottom*10*bScalingFactor + clefY;
-        left = left*10 + clefX;
-        right = right*10 + clefX;
+        let topLeftOffset = spec.sign.toUpperCase() === "G" ? left * 2 : 0;
+        top = -top * 10 + clefY;
+        bottom = -bottom * 10 * bScalingFactor + clefY;
+        left = left * 10 + clefX;
+        right = right * 10 + clefX;
 
-        let decorativeX = (left + right)/2;
+        let decorativeX = (left + right) / 2;
         if (clefOctaveChange === 2) {
             clefDecorations.push($(Glyph)({
                 fill: spec.color,
                 glyphName: "clef15",
                 key: "15ma",
-                x: decorativeX - (bboxes["clef15"][0]*10 +
-                        bboxes["clef15"][2]*10)/2 + topLeftOffset,
+                x: decorativeX - (bboxes["clef15"][0] * 10 +
+                        bboxes["clef15"][2] * 10) / 2 + topLeftOffset,
                 y: top
             }));
         } else if (clefOctaveChange === 1) {
@@ -83,8 +83,8 @@ class ClefView extends Component<{spec: Clef, key?: string | number}, void> {
                 fill: spec.color,
                 glyphName: "clef8",
                 key: "8va",
-                x: decorativeX - (bboxes["clef8"][0]*10 +
-                        bboxes["clef8"][2]*10)/2 + topLeftOffset,
+                x: decorativeX - (bboxes["clef8"][0] * 10 +
+                        bboxes["clef8"][2] * 10) / 2 + topLeftOffset,
                 y: top
             }));
         } else if (clefOctaveChange === -1) {
@@ -92,16 +92,16 @@ class ClefView extends Component<{spec: Clef, key?: string | number}, void> {
                 fill: spec.color,
                 glyphName: "clef8",
                 key: "8vb",
-                x: decorativeX - (bboxes["clef8"][0]*10 + bboxes["clef8"][2]*10)/2,
-                y: bottom + bboxes["clef8"][1]*10
+                x: decorativeX - (bboxes["clef8"][0] * 10 + bboxes["clef8"][2] * 10) / 2,
+                y: bottom + bboxes["clef8"][1] * 10
             }));
         } else if (clefOctaveChange === -2) {
             clefDecorations.push($(Glyph)({
                 fill: spec.color,
                 glyphName: "clef15",
                 key: "15mb",
-                x: decorativeX - (bboxes["clef15"][0]*10 + bboxes["clef15"][2]*10)/2,
-                y: bottom + bboxes["clef15"][1]*10
+                x: decorativeX - (bboxes["clef15"][0] * 10 + bboxes["clef15"][2] * 10) / 2,
+                y: bottom + bboxes["clef15"][1] * 10
             }));
         }
         if (clefDecorations) {

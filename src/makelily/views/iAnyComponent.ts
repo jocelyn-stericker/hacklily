@@ -24,7 +24,7 @@ interface IAnyComponent<P, S> extends React.Component<P, S>, React.ComponentLife
     state: S;
     context: any;
     refs: {
-        [key: string]: React.Component<any, any>
+        [key: string]: any;
     };
 
     // standard React methods
@@ -38,7 +38,7 @@ interface IAnyComponent<P, S> extends React.Component<P, S>, React.ComponentLife
     componentWillUpdate?(nextProps: P, nextState: S, nextContext: any): void;
     componentDidUpdate?(prevProps: P, prevState: S, prevContext: any): void;
     componentWillUnmount?(): void;
-    render?(): void;
+    render(): JSX.Element;
 
     getChildContext?(): void;
 }

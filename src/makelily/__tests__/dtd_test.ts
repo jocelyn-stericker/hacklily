@@ -40,7 +40,7 @@ function readFile(file: string, onEnd: (s: string) => void) {
 function mkdirp(path: string) {
     try {
         fs.mkdirSync(path);
-    } catch(e) {
+    } catch (e) {
         if (e.code !== "EEXIST") {
             throw e;
         }
@@ -112,7 +112,7 @@ describe("import/export dtd validation", function() {
                             } else {
                                 done();
                             }
-                        } catch(err) {
+                        } catch (err) {
                             done(err);
                             return;
                         }

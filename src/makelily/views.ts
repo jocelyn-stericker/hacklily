@@ -44,7 +44,7 @@ export function getPrint(doc: IDocument, startMeasure: number): Print {
     if (partWithPrint) {
         return <any> factory.search(partWithPrint.staves[1], 0, IModel.Type.Print)[0];
     }
-    
+
     throw new Error("Part does not contain a Print element at division 0. Is it validated?");
 }
 

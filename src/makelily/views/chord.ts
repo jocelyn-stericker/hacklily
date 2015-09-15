@@ -33,11 +33,9 @@ import Rest from "./rest";
 import Stem from "./stem";
 import UnbeamedTuplet from "./unbeamedTuplet";
 import {bboxes, bravura, getRight} from "../models/smufl";
-import {IChord} from "../engine";
 import {Targetable} from "./metadata";
-let {getNoteheadGlyph} = IChord;
 
-const stemThickness: number = bravura.engravingDefaults.stemThickness*10;
+const stemThickness: number = bravura.engravingDefaults.stemThickness * 10;
 
 /**
  * Renders notes and their notations.
@@ -52,7 +50,7 @@ class ChordView extends Component<IProps, {}> {
         let maxNotehead = max(base.noteheadGlyph, glyph => getRight(glyph));
 
         let anyVisible = any(spec, note => note.printObject !== false);
-        
+
         if (!anyVisible) {
             return null;
         }
@@ -67,22 +65,25 @@ class ChordView extends Component<IProps, {}> {
                 let text: any[] = [];
                 let currSyllabic = SyllabicType.Single;
                 for (let i = 0; i < l.lyricParts.length; ++i) {
-                    switch(l.lyricParts[i]._class) {
+                    switch (l.lyricParts[i]._class) {
                         case "Syllabic":
                             let syllabic = <Syllabic> l.lyricParts[i];
                             currSyllabic = syllabic.data;
                             break;
                         case "Text":
                             let textPt = <Text> l.lyricParts[i];
-                            let width = bboxes[maxNotehead][0]*10;
+                            let width = bboxes[maxNotehead][0] * 10;
                             text.push(DOM.text({
                                     fontFamily: textPt.fontFamily || DEFAULT_FONT,
                                     fontSize: textPt.fontSize || DEFAULT_LYRIC_SIZE,
                                     key: ++lyKey,
                                     textAnchor: "middle",
-                                    x: this.context.originX + this.props.layout.x$ + width/2,
+                                    x: this.context.originX + this.props.layout.x$ + width / 2,
                                     y: this.context.originY + 60
                                 }, textPt.data));
+                            break;
+                        default:
+                            throw new Error(`Unknown class ${l.lyricParts[i]._class}`);
                     }
                 };
                 return text;
@@ -112,7 +113,7 @@ class ChordView extends Component<IProps, {}> {
                 spec: {
                     color: spec[0].stem.color || "#000000",
                     defaultX: spec[0].defaultX,
-                    defaultY: (base.satieStem.stemStart - 3)*10,
+                    defaultY: (base.satieStem.stemStart - 3) * 10,
                     type: base.satieStem.direction === 1 ?  StemType.Up : StemType.Down
                 },
                 width: stemThickness
@@ -123,7 +124,7 @@ class ChordView extends Component<IProps, {}> {
                 spec: {
                     color: "#000000",
                     defaultX: spec[0].defaultX,
-                    defaultY: (lineNumber - 3)*10
+                    defaultY: (lineNumber - 3) * 10
                 }
             })),
             base.satieFlag && base.satieStem && $(Flag)({
@@ -132,7 +133,7 @@ class ChordView extends Component<IProps, {}> {
                 spec: {
                     color: spec[0].stem.color || "$000000",
                     defaultX: spec[0].defaultX,
-                    defaultY: (base.satieStem.stemStart - 3)*10 +
+                    defaultY: (base.satieStem.stemStart - 3) * 10 +
                         base.satieStem.stemHeight * base.satieStem.direction,
                     direction: base.satieStem.direction,
                     flag: base.satieFlag

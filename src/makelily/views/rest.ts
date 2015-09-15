@@ -42,7 +42,7 @@ class Rest extends Component<Rest.IProps, void> {
 
         const x = this.context.originX + spec.defaultX + (spec.relativeX || 0);
         const y = this.context.originY - (spec.defaultY + (spec.relativeY || 0));
-        const dotOffset = bboxes[notehead][0]*10 + 6;
+        const dotOffset = bboxes[notehead][0] * 10 + 6;
 
         return DOM.g(null,
             $(Glyph)({
@@ -57,7 +57,7 @@ class Rest extends Component<Rest.IProps, void> {
                     "font-weight": "bold",
                     fontSize: 48,
                     textAnchor: "middle",
-                    x: x + bboxes[notehead][0]*10/2,
+                    x: x + bboxes[notehead][0] * 10 / 2,
                     y: y - 30
                 },
                 this.props.multipleRest.count // TODO: useSymbols
@@ -66,10 +66,10 @@ class Rest extends Component<Rest.IProps, void> {
                 fill: dot.color,
                 key: idx + "d",
                 radius: 2.4,
-                x: x + dotOffset + 6*idx,
+                x: x + dotOffset + 6 * idx,
                 y: y - (dot.defaultY + (dot.relativeY || 0))
                 // y: y + (line - 3)*10 + (((line * 2) % 2) ? 0 : 5)
-            }/* Dot */)): null
+            }/* Dot */)) : null
         /* DOM.g */);
     }
 }

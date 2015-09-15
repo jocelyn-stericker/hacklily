@@ -61,10 +61,10 @@ export function layoutLine$(options: ILayoutOptions, bounds: ILineBounds,
             }
 
             let paddingTop = max(layouts, mre =>
-                mre.paddingTop[staffIdx]||0).paddingTop[staffIdx]||0;
+                mre.paddingTop[staffIdx] || 0).paddingTop[staffIdx] || 0;
 
             let paddingBottom = max(layouts, mre =>
-                mre.paddingBottom[staffIdx]||0).paddingBottom[staffIdx]||0;
+                mre.paddingBottom[staffIdx] || 0).paddingBottom[staffIdx] || 0;
 
             let top = memo$.y$ - paddingTop;
             memo$.y$ = top - paddingBottom;

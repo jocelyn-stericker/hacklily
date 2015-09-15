@@ -70,7 +70,7 @@ class KeyView extends Component<{spec: Key; clef: Clef, key?: string | number}, 
 
         if (spec.fifths) {
             let accCount = Math.min(7, Math.abs(spec.fifths));
-            let idxes = times(accCount, i => (i + Math.max(0, Math.abs(spec.fifths) - 7))%7);
+            let idxes = times(accCount, i => (i + Math.max(0, Math.abs(spec.fifths) - 7)) % 7);
             for (let i = 0; i < idxes.length; ++i) {
                 positions.push(x$);
                 x$ += widths[idxes[i]];
@@ -132,7 +132,7 @@ class KeyView extends Component<{spec: Key; clef: Clef, key?: string | number}, 
                     accidental: accidental,
                     color: spec.color,
                     defaultX: spec.defaultX + positions[idx],
-                    defaultY: spec.defaultY + (line - 3)*10,
+                    defaultY: spec.defaultY + (line - 3) * 10,
                     relativeX: spec.relativeX,
                     relativeY: (spec.relativeY || 0)
                 };
@@ -141,7 +141,7 @@ class KeyView extends Component<{spec: Key; clef: Clef, key?: string | number}, 
 
         function makeAccidentalFromSharps(idxes: number[], i: number, sharp: boolean): Accidental {
             let accidental: MxmlAccidental;
-            switch(true) {
+            switch (true) {
                 case (sharp && 7 + idxes[i] < spec.fifths):
                     accidental = MxmlAccidental.DoubleSharp;
                     break;
@@ -154,6 +154,8 @@ class KeyView extends Component<{spec: Key; clef: Clef, key?: string | number}, 
                 case (!sharp && (7 + idxes[i] >= -spec.fifths)):
                     accidental = MxmlAccidental.Flat;
                     break;
+                default:
+                    throw new Error("Impossible!");
             }
 
             let line = (sharp ? sharps : flats)[standardClef(clef)][idxes[i]];
@@ -162,7 +164,7 @@ class KeyView extends Component<{spec: Key; clef: Clef, key?: string | number}, 
                 accidental: accidental,
                 color: spec.color,
                 defaultX: spec.defaultX + positions[i],
-                defaultY: spec.defaultY + (line - 3)*10,
+                defaultY: spec.defaultY + (line - 3) * 10,
                 relativeX: spec.relativeX,
                 relativeY: (spec.relativeY || 0)
             };

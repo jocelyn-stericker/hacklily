@@ -38,7 +38,7 @@ class NotationView extends Component<NotationView.IProps, void> {
         const base = this.props.layout.model.baseModel;
         const notehead = base.noteheadGlyph[0];
         const bbox = bboxes[notehead];
-        const noteheadCenter = 10*(bbox[0] - bbox[2])/2;
+        const noteheadCenter = 10 * (bbox[0] - bbox[2]) / 2;
         const originX = this.context.originX + this.props.layout.model[0].defaultX + noteheadCenter;
         let children: ReactElement<any>[] = [];
 
@@ -67,8 +67,8 @@ class NotationView extends Component<NotationView.IProps, void> {
                 fill: "black",
                 glyphName: `fermata${direction}`,
                 key: `fer${idx}`,
-                x: originX + fermata.defaultX + (fermata.relativeX||0),
-                y: this.context.originY - fermata.defaultY - (fermata.relativeY||0)
+                x: originX + fermata.defaultX + (fermata.relativeX || 0),
+                y: this.context.originY - fermata.defaultY - (fermata.relativeY || 0)
             }));
         });
 
@@ -103,7 +103,7 @@ class NotationView extends Component<NotationView.IProps, void> {
             }
 
             let bbox2 = bboxes[notehead];
-            let noteheadCenter2 = 10*(bbox2[0] - bbox2[2])/2;
+            let noteheadCenter2 = 10 * (bbox2[0] - bbox2[2]) / 2;
             let offset2 = noteheadCenter2 - noteheadCenter - 4;
             let defaultY = this.context.originY - this.props.note.defaultY;
 
@@ -128,8 +128,8 @@ class NotationView extends Component<NotationView.IProps, void> {
             let x1mx2: number = -x2mx1;
             let relw: number = 3.2; // How "curved" it is
             let y1my2: number = y1 - y2;
-            let absw: number = -dir*8.321228/Math.max(1, (Math.abs(y1my2)));
-            if ((y1my2 > 0 ? -1 : 1)*dir === 1) {
+            let absw: number = -dir * 8.321228 / Math.max(1, (Math.abs(y1my2)));
+            if ((y1my2 > 0 ? -1 : 1) * dir === 1) {
                 absw = absw * 2;
             }
 
@@ -169,7 +169,7 @@ class NotationView extends Component<NotationView.IProps, void> {
             // TODO
         });
 
-        switch(children.length) {
+        switch (children.length) {
             case 0:
                 return null;
             case 1:

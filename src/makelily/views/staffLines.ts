@@ -32,17 +32,17 @@ class StaffLines extends Component<StaffLines.IProps, {}> {
     render(): any {
         let middle = this.context.originY - this.props.defaultY;
         let staffDetails = this.props.staffDetails;
-        let offset = (staffDetails.staffLines - 1)/2;
+        let offset = (staffDetails.staffLines - 1) / 2;
         return DOM.g(null,
             times(staffDetails.staffLines, i => $(Line)({
                 key: "staff-" + i,
                 stroke: "#6A6A6A",
                 // TODO: Use print
-                strokeWidth: bravura.engravingDefaults.staffLineThickness*10,
+                strokeWidth: bravura.engravingDefaults.staffLineThickness * 10,
                 x1: this.props.defaultX + this.context.originX,
                 x2: this.props.defaultX + this.context.originX + this.props.width,
-                y1: middle - 10*(i - offset),
-                y2: middle - 10*(i - offset)
+                y1: middle - 10 * (i - offset),
+                y2: middle - 10 * (i - offset)
             }))
         /* DOM.g */);
     }

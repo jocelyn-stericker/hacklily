@@ -31,6 +31,14 @@ class SpacerModel implements Export.ISpacerModel {
     /** @prototype */
     frozenness: IModel.FrozenLevel;
 
+    private _target: IModel;
+
+    /*---- Implementation -----------------------------------------------------------------------*/
+
+    constructor(target: IModel) {
+        this._target = target;
+    }
+
     modelDidLoad$(segment$: ISegment): void {
         // Nothing to do
     }
@@ -43,12 +51,6 @@ class SpacerModel implements Export.ISpacerModel {
         return new SpacerModel.Layout(this, cursor$);
     }
 
-    /*---- Validation Implementations -----------------------------------------------------------*/
-
-    constructor(target: IModel) {
-        this._target = target;
-    }
-
     toXML(): string {
         return `<!-- spacer: ${this.divCount} divs -->\n`;
     }
@@ -56,8 +58,6 @@ class SpacerModel implements Export.ISpacerModel {
     inspect() {
         return this.toXML();
     }
-
-    _target: IModel;
 }
 
 module SpacerModel {

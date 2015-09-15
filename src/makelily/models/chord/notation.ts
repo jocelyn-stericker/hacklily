@@ -24,7 +24,6 @@ import {forEach} from "lodash";
 
 import {IModel} from "../../engine";
 import {bboxes, getLeft, getRight} from "../smufl";
-import ChordImpl from "./chordImpl";
 import ChordModel from "../chord";
 
 const PADDING = 1.5;
@@ -115,8 +114,8 @@ export function getBoundingRects(model: Notations, note: Note, chord: ChordModel
                 let y: number;
                 let noteheadGlyph = chord.baseModel.noteheadGlyph[0];
 
-                let center = (getLeft(noteheadGlyph) + getRight(noteheadGlyph))/2 -
-                    (getLeft(glyph) + getRight(glyph))/2 - 0.5;
+                let center = (getLeft(noteheadGlyph) + getRight(noteheadGlyph)) / 2 -
+                    (getLeft(glyph) + getRight(glyph)) / 2 - 0.5;
                 if (!chord.baseModel.satieStem || (note.stem.type === StemType.Up) === isBelow) {
                     y = note.defaultY + (isBelow ? -9 : 9);
                     if (-note.defaultY % 10 === 0) {
@@ -191,9 +190,9 @@ export function getBoundingRects(model: Notations, note: Note, chord: ChordModel
 
         if (isNaN(defaultY)) {
             if (notation.placement === AboveBelow.Below) {
-                defaultY = -30 + box[3]*10*PADDING;
+                defaultY = -30 + box[3] * 10 * PADDING;
             } else if (notation.placement === AboveBelow.Above) {
-                defaultY = 60 + box[3]*10*PADDING;
+                defaultY = 60 + box[3] * 10 * PADDING;
             } else {
                 console.warn("TODO: Set default above/below");
                 // above: "fermata", "breathMark", "caesura", "strings"
@@ -205,10 +204,10 @@ export function getBoundingRects(model: Notations, note: Note, chord: ChordModel
         let printStyle: PrintStyle | IModel.IBoundingRect = Object.create(notation);
         let boundingRect = <IModel.IBoundingRect> printStyle;
 
-        boundingRect.top = box[3]*10;
-        boundingRect.bottom = box[1]*10;
-        boundingRect.left = box[2]*10;
-        boundingRect.right = box[0]*10;
+        boundingRect.top = box[3] * 10;
+        boundingRect.bottom = box[1] * 10;
+        boundingRect.left = box[2] * 10;
+        boundingRect.right = box[0] * 10;
         boundingRect.defaultX = defaultX;
         boundingRect.defaultY = defaultY;
 

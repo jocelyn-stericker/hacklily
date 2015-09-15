@@ -69,7 +69,7 @@ class UnbeamedTuplet extends Component<UnbeamedTuplet.IProps, void> {
                 fill: stroke,
                 key: "p2",
                 stroke,
-                strokeWidth: bravura.engravingDefaults.tupletBracketThickness*10,
+                strokeWidth: bravura.engravingDefaults.tupletBracketThickness * 10,
                 x1: x1 + 0.5,
                 x2: x1 + 0.5,
                 y1: y1Near,
@@ -79,7 +79,7 @@ class UnbeamedTuplet extends Component<UnbeamedTuplet.IProps, void> {
                 fill: this.props.stroke,
                 key: "p3",
                 stroke,
-                strokeWidth: bravura.engravingDefaults.tupletBracketThickness*10,
+                strokeWidth: bravura.engravingDefaults.tupletBracketThickness * 10,
                 x1: x2 - 0.5,
                 x2: x2 - 0.5,
                 y1: y2Near,
@@ -107,7 +107,7 @@ class UnbeamedTuplet extends Component<UnbeamedTuplet.IProps, void> {
     private _withXOffset(x: number) {
         return x +
             this.context.originX +
-            getFontOffset("noteheadBlack", this.direction())[0]*10 +this.getLineXOffset();
+            getFontOffset("noteheadBlack", this.direction())[0] * 10 + this.getLineXOffset();
     }
 
     private _getX1() {
@@ -125,8 +125,8 @@ class UnbeamedTuplet extends Component<UnbeamedTuplet.IProps, void> {
         let {layout} = this.props;
         let {y1} = layout;
         return originY - y1 -
-            this.direction()*getFontOffset("noteheadBlack", this.direction())[1]*10 -
-            (incl || 0)*(bravura.engravingDefaults.tupletBracketThickness*10);
+            this.direction() * getFontOffset("noteheadBlack", this.direction())[1] * 10 -
+            (incl || 0) * (bravura.engravingDefaults.tupletBracketThickness * 10);
     }
 
     private _getY2(incl: number) {
@@ -134,8 +134,8 @@ class UnbeamedTuplet extends Component<UnbeamedTuplet.IProps, void> {
         let {layout} = this.props;
         let {y2} = layout;
         return originY - y2 -
-            this.direction()*getFontOffset("noteheadBlack", this.direction())[1]*10 -
-            (incl || 0)*(bravura.engravingDefaults.tupletBracketThickness*10);
+            this.direction() * getFontOffset("noteheadBlack", this.direction())[1] * 10 -
+            (incl || 0) * (bravura.engravingDefaults.tupletBracketThickness * 10);
     }
 };
 

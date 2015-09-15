@@ -25,7 +25,7 @@ import {any, map} from "lodash";
 import Attributes from "./attributes";
 import Barline from "../models/barline";
 import Line from "./primitives/line";
-import {Targetable} from "./metadata"
+import {Targetable} from "./metadata";
 
 /**
  * Renders a full-stave-height barline at (x,y).
@@ -68,8 +68,8 @@ class BarlineView extends Component<{layout: Barline.ILayout}, {}> {
                 key: idx,
                 stroke: model.barStyle.color,
                 strokeWidth: layout.lineWidths[idx],
-                x1: x + start + layout.lineWidths[idx]/2,
-                x2: x + start + layout.lineWidths[idx]/2,
+                x1: x + start + layout.lineWidths[idx] / 2,
+                x2: x + start + layout.lineWidths[idx] / 2,
                 y1: yTop,
                 y2: yBottom
             })),

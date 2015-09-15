@@ -24,113 +24,6 @@ import {memoize, forEach} from "lodash";
 const IS_BROWSER = !!(<any>process).browser;
 const NO_PATH_DATA = <Font> {};
 
-/*---- PUBLIC -------------------------------------------------------------------------*/
-
-export function requireFont(name: string, url: string, style?: string, full?: boolean) {
-    let fullName = getFullName(name, style);
-    if (full && State.fonts[fullName] === NO_PATH_DATA) {
-        delete State.fonts[fullName];
-    }
-    if (!(fullName in State.fonts)) {
-        State.fonts[fullName] = null; // Indicate it's pending
-        loadFont(name, url, style, full);
-    }
-}
-
-export function setRoot(root: string) {
-    State.root = root;
-}
-
-export function markPreloaded(name: string, style?: string) {
-    State.fonts[getFullName(name, style)] = NO_PATH_DATA;
-}
-
-export function whenReady(cb: (err?: Error) => void) {
-    if (!State.remaining) {
-        cb();
-        return;
-    }
-    State.cbs.push(cb);
-}
-
-export function getTextBB(name: string, text: string, fontSize: number, style?: string) {
-    let fullName = getFullName(name, style);
-    let font = State.fonts[fullName];
-    if (State.canvasContext && font === NO_PATH_DATA) {
-        State.canvasContext.font = `${style || ""} ${fontSize}px ${name}`;
-
-        // We want to be consistent between web browsers. Many browsers only support measuring
-        // width, so even if we are in Chrome and have better information, we ignore that.
-        // Of course that this information is wrong, but it's good enough to place text.
-        return {
-            bottom: fontSize,
-            left: -fontSize/18,
-            right: State.canvasContext.measureText(text).width,
-            top: -4*fontSize/18
-        };
-    }
-
-    if (font === NO_PATH_DATA) {
-        // TODO: get width by canvas if this is the browser
-        console.warn(`${fullName} was loaded without path data`);
-        return {
-            bottom: 1,
-            left: 0,
-            right: 1,
-            top: 0,
-        };
-    }
-    if (!font) {
-        console.warn(`${fullName} is not loaded`);
-        return {
-            bottom: 1,
-            left: 0,
-            right: 1,
-            top: 0
-        };
-    }
-
-    let minX = 10000;
-    let minY = 10000;
-    let maxX = 0;
-    let maxY = 0;
-
-    font.forEachGlyph(text, 0, 0, fontSize, {kerning: true}, (glyph, x, y, fontSize) => {
-        let scale = 1 / font.unitsPerEm * fontSize;
-        minX = Math.min(x, minX);
-        maxX = Math.max(x, maxX);
-        minY = Math.min(y + glyph.yMin*scale, minY);
-        maxY = Math.max(y + glyph.yMax*scale, maxY);
-    });
-
-    return {
-        bottom: maxY,
-        left: minX,
-        right: maxX,
-        top: minY,
-    };
-}
-
-export let toPathData = memoize(function(name: string, text: string,
-        x: number, y: number, fontSize: number, style?: string) {
-    let fullName = getFullName(name, style);
-    let font = State.fonts[fullName];
-    if (!font) {
-        console.warn(`${fullName} is not loaded`);
-        return "";
-    }
-    if (font === NO_PATH_DATA) {
-        console.warn(`${fullName} was loaded without path data`);
-        return "";
-    }
-    return font.getPath(text, x, y, fontSize, {kerning: true}).toPathData(3);
-}, resolvePDKey);
-
-function resolvePDKey(name: string, text: string,
-        x: number, y: number, fontSize: number, style?: string) {
-    return name + "_" + text + "_" + x + "_" + y + "_" + fontSize + "_" + (style||"");
-}
-
 /*---- PRIVATE ------------------------------------------------------------------------*/
 
 module State {
@@ -138,7 +31,6 @@ module State {
     export let cbs: ((err?: Error) => void)[] = [];
     export let remaining = 0;
     export let err: Error;
-    // TypeScript 1.5 is smart about this, but 1.5-beta isn't, so we have to explicitly cast this.
     export let canvasContext = IS_BROWSER ?
         <CanvasRenderingContext2D> document.createElement("canvas").getContext("2d") :
         null;
@@ -214,7 +106,7 @@ function toArrayBuffer(buffer: Uint8Array) {
 }
 
 function loadFromFile(path: string, callback: (err: Error, buffer?: ArrayBuffer) => void) {
-    let fs = require("fs");
+    const fs = require("fs");
     fs.readFile(path, function(err: Error, buffer: Uint8Array) {
         if (err) {
             return callback(err);
@@ -250,10 +142,12 @@ function toBase64(buffer: ArrayBuffer) {
     let len = bytes.length, base64 = "";
 
     for (let i = 0; i < len; i += 3) {
-      base64 += CHARS[bytes[i] >> 2];
-      base64 += CHARS[((bytes[i] & 3) << 4) | (bytes[i + 1] >> 4)];
-      base64 += CHARS[((bytes[i + 1] & 15) << 2) | (bytes[i + 2] >> 6)];
-      base64 += CHARS[bytes[i + 2] & 63];
+        /* tslint:disable */
+        base64 += CHARS[bytes[i] >> 2];
+        base64 += CHARS[((bytes[i] & 3) << 4) | (bytes[i + 1] >> 4)];
+        base64 += CHARS[((bytes[i + 1] & 15) << 2) | (bytes[i + 2] >> 6)];
+        base64 += CHARS[bytes[i + 2] & 63];
+        /* tslint:enable */
     }
 
     if ((len % 3) === 2) {
@@ -264,3 +158,111 @@ function toBase64(buffer: ArrayBuffer) {
 
     return base64;
 }
+
+/*---- PUBLIC -------------------------------------------------------------------------*/
+
+export function requireFont(name: string, url: string, style?: string, full?: boolean) {
+    let fullName = getFullName(name, style);
+    if (full && State.fonts[fullName] === NO_PATH_DATA) {
+        delete State.fonts[fullName];
+    }
+    if (!(fullName in State.fonts)) {
+        State.fonts[fullName] = null; // Indicate it's pending
+        loadFont(name, url, style, full);
+    }
+}
+
+export function setRoot(root: string) {
+    State.root = root;
+}
+
+export function markPreloaded(name: string, style?: string) {
+    State.fonts[getFullName(name, style)] = NO_PATH_DATA;
+}
+
+export function whenReady(cb: (err?: Error) => void) {
+    if (!State.remaining) {
+        cb();
+        return;
+    }
+    State.cbs.push(cb);
+}
+
+export function getTextBB(name: string, text: string, fontSize: number, style?: string) {
+    let fullName = getFullName(name, style);
+    let font = State.fonts[fullName];
+    if (State.canvasContext && font === NO_PATH_DATA) {
+        State.canvasContext.font = `${style || ""} ${fontSize}px ${name}`;
+
+        // We want to be consistent between web browsers. Many browsers only support measuring
+        // width, so even if we are in Chrome and have better information, we ignore that.
+        // Of course that this information is wrong, but it's good enough to place text.
+        return {
+            bottom: fontSize,
+            left: -fontSize / 18,
+            right: State.canvasContext.measureText(text).width,
+            top: -4 * fontSize / 18
+        };
+    }
+
+    if (font === NO_PATH_DATA) {
+        // TODO: get width by canvas if this is the browser
+        console.warn(`${fullName} was loaded without path data`);
+        return {
+            bottom: 1,
+            left: 0,
+            right: 1,
+            top: 0
+        };
+    }
+    if (!font) {
+        console.warn(`${fullName} is not loaded`);
+        return {
+            bottom: 1,
+            left: 0,
+            right: 1,
+            top: 0
+        };
+    }
+
+    let minX = 10000;
+    let minY = 10000;
+    let maxX = 0;
+    let maxY = 0;
+
+    font.forEachGlyph(text, 0, 0, fontSize, {kerning: true}, (glyph, x, y, fontSize) => {
+        let scale = 1 / font.unitsPerEm * fontSize;
+        minX = Math.min(x, minX);
+        maxX = Math.max(x, maxX);
+        minY = Math.min(y + glyph.yMin * scale, minY);
+        maxY = Math.max(y + glyph.yMax * scale, maxY);
+    });
+
+    return {
+        bottom: maxY,
+        left: minX,
+        right: maxX,
+        top: minY
+    };
+}
+
+export let toPathData = memoize(function(name: string, text: string,
+        x: number, y: number, fontSize: number, style?: string) {
+    let fullName = getFullName(name, style);
+    let font = State.fonts[fullName];
+    if (!font) {
+        console.warn(`${fullName} is not loaded`);
+        return "";
+    }
+    if (font === NO_PATH_DATA) {
+        console.warn(`${fullName} was loaded without path data`);
+        return "";
+    }
+    return font.getPath(text, x, y, fontSize, {kerning: true}).toPathData(3);
+}, resolvePDKey);
+
+function resolvePDKey(name: string, text: string,
+        x: number, y: number, fontSize: number, style?: string) {
+    return name + "_" + text + "_" + x + "_" + y + "_" + fontSize + "_" + (style || "");
+}
+

@@ -26,8 +26,8 @@ import {Print, OddEvenBoth} from "musicxml-interfaces";
 import {map} from "lodash";
 import {expect} from "chai";
 
-import {validate,ILayoutOptions, ICursor, ILineBounds, ILinesLayoutMemo, IModel, ISegment}
-        from "../engine";
+import {validate, ILayoutOptions, ICursor, ILineBounds, ILinesLayoutMemo, IModel, ISegment}
+    from "../engine";
 import {createFakeStaffSegment, createFakeVoiceSegment} from "../engine/__tests__/etestutil";
 
 describe("[engine.ts]", function() {
@@ -159,6 +159,7 @@ describe("[engine.ts]", function() {
                         idx: idx,
                         uuid: 91015 + idx,
                         number: String(idx + 1),
+                        version: 0,
                         parts: <{[key: string]: any}> {
                             "P1": {
                                 voices: segment.voices,

@@ -42,9 +42,9 @@ class Flag extends Component<Flag.IProps, void> {
             glyphName: this.glyphName(),
             scale: this.props.isGrace ? 0.6 : 1.0,
             x: context.originX + spec.defaultX +
-                fontOffsetX*10 +
-                ((dir === 1) ? noteOffsetX*10 - this.props.stemWidth : 0),
-            y: context.originY - spec.defaultY - noteOffsetY*4
+                fontOffsetX * 10 +
+                ((dir === 1) ? noteOffsetX * 10 - this.props.stemWidth : 0),
+            y: context.originY - spec.defaultY - noteOffsetY * 4
         });
     }
 

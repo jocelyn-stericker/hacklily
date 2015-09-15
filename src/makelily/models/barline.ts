@@ -39,26 +39,6 @@ class BarlineModel implements Export.IBarlineModel {
     /** @prototype */
     frozenness: IModel.FrozenLevel;
 
-    modelDidLoad$(segment$: ISegment): void {
-        // todo
-    }
-
-    validate$(cursor$: ICursor): void {
-        if (!this.barStyle) {
-            this.barStyle = {
-                data: NaN
-            };
-        }
-        if (!this.barStyle.color) {
-            this.barStyle.color = "black";
-        }
-    }
-
-    layout(cursor$: ICursor): Export.ILayout {
-        // mutates cursor$ as required.
-        return new BarlineModel.Layout(this, cursor$);
-    }
-
     /*---- I.2 Barline --------------------------------------------------------------------------*/
 
     segno: Segno;
@@ -85,12 +65,32 @@ class BarlineModel implements Export.IBarlineModel {
     satieAttributes: Attributes.ILayout;
     satieAttribsOffset: number;
 
-    /*---- Validation Implementations -----------------------------------------------------------*/
+    /*---- Implementation -----------------------------------------------------------------------*/
 
     constructor(spec: Barline) {
         forEach(spec, (value, key) => {
             (<any>this)[key] = value;
         });
+    }
+
+    modelDidLoad$(segment$: ISegment): void {
+        // todo
+    }
+
+    validate$(cursor$: ICursor): void {
+        if (!this.barStyle) {
+            this.barStyle = {
+                data: NaN
+            };
+        }
+        if (!this.barStyle.color) {
+            this.barStyle.color = "black";
+        }
+    }
+
+    layout(cursor$: ICursor): Export.ILayout {
+        // mutates cursor$ as required.
+        return new BarlineModel.Layout(this, cursor$);
     }
 
     toXML(): string {
@@ -155,7 +155,7 @@ module BarlineModel {
                 let lastBarlineInSegment = !any(cursor$.segment.slice(cursor$.idx$ + 1),
                         model => cursor$.factory.modelHasType(model, IModel.Type.Barline));
 
-                if(cursor$.line.barOnLine$ + 1 === cursor$.line.barsOnLine &&
+                if (cursor$.line.barOnLine$ + 1 === cursor$.line.barsOnLine &&
                         cursor$.line.line + 1 === cursor$.line.lines &&
                         lastBarlineInSegment) {
                     this.model.barStyle.data = BarStyleType.LightHeavy;
@@ -180,7 +180,7 @@ module BarlineModel {
                 this.lineWidths = [];
                 forEach(lines, (line, idx) => {
                     if (idx > 0) {
-                        x += barlineSep*10;
+                        x += barlineSep * 10;
                     }
                     this.lineStarts.push(x);
                     const width = lineWidths[line].tenths;
@@ -191,7 +191,7 @@ module BarlineModel {
                 cursor$.x$ += x;
             };
 
-            switch(this.model.barStyle.data) {
+            switch (this.model.barStyle.data) {
                 case BarStyleType.LightHeavy:
                     setLines$(["light barline", "heavy barline"]);
                     break;

@@ -39,7 +39,7 @@ export default function validate(options$: ILayoutOptions, memo$: ILinesLayoutSt
         shouldTryAgain = false;
         try {
             tryValidate(options$, memo$);
-        } catch(err) {
+        } catch (err) {
             if (err instanceof DivisionOverflowException) {
                 (<DivisionOverflowException>err).resolve$(options$.measures);
                 shouldTryAgain = true;
@@ -47,7 +47,7 @@ export default function validate(options$: ILayoutOptions, memo$: ILinesLayoutSt
                 throw err;
             }
         }
-    } while(shouldTryAgain);
+    } while (shouldTryAgain);
 }
 
 function call<T>(memo: T, fn: (t: T) => T) {

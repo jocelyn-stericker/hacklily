@@ -37,6 +37,7 @@ interface IModel {
     divCount?: number;
     staffIdx: number;
     frozenness: IModel.FrozenLevel;
+    key?: string;
 
     /** 
      * Life-cycle method. Called when the model is created from MusicXML.
@@ -56,8 +57,6 @@ interface IModel {
      * At this point, all segments are frozen and must not be changed.
      */
     layout(cursor$: ICursor): IModel.ILayout;
-
-    key?: string;
 };
 
 module IModel {
@@ -278,7 +277,7 @@ module IModel {
             model: null,
             x$: layout.x,
             division: layout.division,
-            renderClass: layout.renderClass,
+            renderClass: layout.renderClass
         };
         if (layout.expandPolicy) {
             attached.expandPolicy = layout.expandPolicy;

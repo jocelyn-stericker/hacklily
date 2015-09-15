@@ -158,7 +158,7 @@ function beam(options: ILayoutOptions, bounds: ILineBounds,
                     invariant(!!idx, "A beam's number must be defined in MusicXML.");
                     invariant(!!voice, "A beam's voice must be defined in MusicXML.");
                     activeBeams[voice] = activeBeams[voice] || [];
-                    switch(beam.type) {
+                    switch (beam.type) {
                         case BeamType.Begin:
                         case BeamType.ForwardHook:
                             activeBeams[voice] = activeBeams[voice] || [];
@@ -235,6 +235,8 @@ function beam(options: ILayoutOptions, bounds: ILineBounds,
                                 };
                             }
                             break;
+                        default:
+                            throw new Error(`Unknown type ${beam.type}`);
                     }
                 }).value();
                 forEach(toTerminate, t =>
@@ -274,7 +276,7 @@ function layoutBeam$(voice: number, idx: number, beamSet$: BeamSet, isUnbeamedTu
     let firstAvgLine = IChord.averageLine(firstChord, clef);
     let lastAvgLine = IChord.averageLine(lastChord, clef);
 
-    let avgLine = (firstAvgLine + lastAvgLine)/2;
+    let avgLine = (firstAvgLine + lastAvgLine) / 2;
 
     let direction = avgLine >= 3 ? -1 : 1; // TODO: StemType should match this!!
 
@@ -300,7 +302,7 @@ function layoutBeam$(voice: number, idx: number, beamSet$: BeamSet, isUnbeamedTu
         slope = -0.5;
     }
 
-    let intercept = line1*10 + stemHeight1;
+    let intercept = line1 * 10 + stemHeight1;
 
     function getStemHeight(direction: number, idx: number, line: number) {
         return intercept * direction +
@@ -320,7 +322,7 @@ function layoutBeam$(voice: number, idx: number, beamSet$: BeamSet, isUnbeamedTu
         let stemHeight = getStemHeight(direction, idx, heightDeterminingLine);
         if (stemHeight < minStemHeight) {
             minStemHeight = stemHeight;
-            incrementalIntercept = direction*(30 - minStemHeight) + slope * (Xs[idx] - first(Xs));
+            incrementalIntercept = direction * (30 - minStemHeight) + slope * (Xs[idx] - first(Xs));
         }
     });
 
@@ -335,7 +337,7 @@ function layoutBeam$(voice: number, idx: number, beamSet$: BeamSet, isUnbeamedTu
             let stemStart = IChord.startingLine(chord, direction, clef);
             let stemHeight = getStemHeight(direction, idx, stemStart);
 
-            chord.satieStem = Object.create(firstChord.satieStem);
+            chord.satieStem = firstChord.satieStem ? Object.create(firstChord.satieStem) : {};
             chord.satieStem.direction = direction;
             chord.satieStem.stemStart = stemStart;
             if (isFinite(stemHeight)) {
@@ -354,15 +356,15 @@ function layoutBeam$(voice: number, idx: number, beamSet$: BeamSet, isUnbeamedTu
             beamCount: null,
             direction: direction,
             x: Xs,
-            y1: firstStem.stemStart*10 + direction*firstStem.stemHeight + offsetY,
-            y2: lastStem.stemStart*10 + direction*lastStem.stemHeight + offsetY,
+            y1: firstStem.stemStart * 10 + direction * firstStem.stemHeight + offsetY,
+            y2: lastStem.stemStart * 10 + direction * lastStem.stemHeight + offsetY,
             tuplet
         };
     } else {
         forEach(chords, (chord, idx) => {
             let stemStart = IChord.startingLine(chord, direction, clef);
 
-            chord.satieStem = Object.create(firstChord.satieStem);
+            chord.satieStem = firstChord.satieStem ? Object.create(firstChord.satieStem) : {};
             chord.satieStem.direction = direction;
             chord.satieStem.stemStart = stemStart;
             chord.satieStem.stemHeight = getStemHeight(direction, idx, stemStart);
@@ -377,8 +379,8 @@ function layoutBeam$(voice: number, idx: number, beamSet$: BeamSet, isUnbeamedTu
             beamCount: times(Xs.length, idx => beam.counts[idx]),
             direction: direction,
             x: Xs,
-            y1: firstStem.stemStart*10 + direction*firstStem.stemHeight - 30,
-            y2: lastStem.stemStart*10 + direction*lastStem.stemHeight - 30,
+            y1: firstStem.stemStart * 10 + direction * firstStem.stemHeight - 30,
+            y2: lastStem.stemStart * 10 + direction * lastStem.stemHeight - 30,
             tuplet: beam.tuplet
         };
     }

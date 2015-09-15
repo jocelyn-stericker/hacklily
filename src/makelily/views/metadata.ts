@@ -16,7 +16,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import React = require("react");
 import invariant = require("invariant");
 import {isEqual, sortedIndex, indexOf} from "lodash";
 
@@ -118,8 +117,8 @@ export function Targetable<P extends IBaseProps, S>() {
         component.prototype.componentWillReceiveProps = function metaComponentWillReceiveProps(nextProps: P) {
             let self = this as IMetaComponent<P, S>;
 
-            if (originalComponentWillUnmount) {
-                originalComponentWillUnmount.call(self);
+            if (originalComponentWillReceiveProps) {
+                originalComponentWillReceiveProps.call(self);
             }
         };
     };

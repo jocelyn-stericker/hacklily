@@ -38,11 +38,36 @@ class AttributesModel implements Export.IAttributesModel {
     /** @prototype */
     frozenness: IModel.FrozenLevel;
 
+    _snapshot: IAttributes.ISnapshot;
+
+    /*---- I.2 Attributes -----------------------------------------------------------------------*/
+
+    _parent: IAttributes.ISnapshot;
+
+    divisions: number;
+
+    partSymbol: PartSymbol;
+    measureStyles: MeasureStyle[];
+    staffDetails: StaffDetails[];
+    transposes: Transpose[];
+    staves: number;
+    instruments: string;
+    directives: Directive[];
+    clefs: Clef[];
+    times: Time[];
+    keySignatures: Key[];
+
+    /*---- I.3 Editorial ------------------------------------------------------------------------*/
+
+    footnote: Footnote;
+    level: Level;
+
+    /*---- Implementation -----------------------------------------------------------------------*/
+
     modelDidLoad$(segment$: ISegment): void {
         // todo
     }
 
-    _snapshot: IAttributes.ISnapshot;
     validate$(cursor$: ICursor): void {
         this._parent = cursor$.staff.attributes || <IAttributes.ISnapshot> {};
 
@@ -78,32 +103,6 @@ class AttributesModel implements Export.IAttributesModel {
         return new AttributesModel.Layout(this, cursor$);
     }
 
-    /*---- I.2 Attributes -----------------------------------------------------------------------*/
-
-    _parent: IAttributes.ISnapshot;
-
-    divisions: number;
-
-    partSymbol: PartSymbol;
-    measureStyles: MeasureStyle[];
-    staffDetails: StaffDetails[];
-    transposes: Transpose[];
-    staves: number;
-    instruments: string;
-    directives: Directive[];
-    clefs: Clef[];
-    times: Time[];
-    keySignatures: Key[];
-
-    /*---- I.3 Editorial ------------------------------------------------------------------------*/
-
-    footnote: Footnote;
-    level: Level;
-
-    /*---- I.4 Satie Ext ------------------------------------------------------------------------*/
-
-    /*---- Validation Implementations -----------------------------------------------------------*/
-
     constructor({divisions, partSymbol, measureStyles, staffDetails, transposes, staves, instruments,
             directives, clefs, times, keySignatures, footnote, level}: Attributes = {}) {
         this.divisions = divisions;
@@ -127,6 +126,26 @@ class AttributesModel implements Export.IAttributesModel {
 
     inspect() {
         return this.toXML();
+    }
+
+    shouldRenderClef(owner: number, isFirstInLine: boolean) {
+        if (isFirstInLine) {
+            return true;
+        }
+
+        if (!this.clefs) {
+            return false;
+        }
+
+        if (!this.clefs[owner]) {
+            return false;
+        }
+
+        return true;
+    }
+
+    private _setTotalDivisions(cursor$: ICursor): void {
+        cursor$.staff.totalDivisions = IChord.barDivisions(this._snapshot);
     }
 
     private _validateClef$(cursor$: ICursor) {
@@ -171,6 +190,7 @@ class AttributesModel implements Export.IAttributesModel {
             }
         }
     }
+
     private _validateTime$() {
         // Times must be an array
         this.times = this.times || [];
@@ -209,7 +229,7 @@ class AttributesModel implements Export.IAttributesModel {
                     fifths: 0,
                     keySteps: null,
                     keyAccidentals: null,
-                    keyAlters: null,
+                    keyAlters: null
                 }];
             }
             if (ks.keyAccidentals && ks.keyAccidentals.length !== ks.keySteps.length) {
@@ -274,7 +294,7 @@ class AttributesModel implements Export.IAttributesModel {
             this.partSymbol = {
                 bottomStaff: 1,
                 topStaff: this.staves,
-                type: PartSymbolType.Brace,
+                type: PartSymbolType.Brace
             };
         }
 
@@ -285,35 +305,15 @@ class AttributesModel implements Export.IAttributesModel {
             this.partSymbol = {
                 bottomStaff: 1,
                 topStaff: 1,
-                type: PartSymbolType.Bracket,
+                type: PartSymbolType.Bracket
             };
         }
-    }
-
-    _setTotalDivisions(cursor$: ICursor): void {
-        cursor$.staff.totalDivisions = IChord.barDivisions(this._snapshot);
     }
 
     private _validateMeasureStyles(cursor$: ICursor): void {
         if (!this.measureStyles) {
             this.measureStyles = [];
         }
-    }
-
-    shouldRenderClef(owner: number, isFirstInLine: boolean) {
-        if (isFirstInLine) {
-            return true;
-        }
-
-        if (!this.clefs) {
-            return false;
-        }
-
-        if (!this.clefs[owner]) {
-            return false;
-        }
-
-        return true;
     }
 }
 

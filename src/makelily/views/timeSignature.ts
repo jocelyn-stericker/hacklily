@@ -114,11 +114,11 @@ class TimeSignature extends Component<{spec: Time, key?: string | number}, void>
                         key: `num_plus_${idx}`,
                         x: this.context.originX + spec.defaultX + (spec.relativeX || 0) +
                             numOffsets[idx] + pos +
-                            beatsOuter.length*IAttributes.NUMBER_SPACING - 10,
+                            beatsOuter.length * IAttributes.NUMBER_SPACING - 10,
                         y: this.context.originY - (spec.defaultY) + (spec.relativeY || 0)
                     })
                 ];
-                pos += beatsOuter.length*IAttributes.NUMBER_SPACING + IAttributes.PLUS_SPACING;
+                pos += beatsOuter.length * IAttributes.NUMBER_SPACING + IAttributes.PLUS_SPACING;
                 return array;
             })
         /* DOM.g */);
@@ -144,7 +144,7 @@ class TimeSignature extends Component<{spec: Time, key?: string | number}, void>
 
         return map(ts.beatType, (beatType, idx) => {
             let culm = 0;
-            let numToDenOffset = (ts.beats[idx].length - 1)*IAttributes.NUMBER_SPACING/2;
+            let numToDenOffset = (ts.beats[idx].length - 1) * IAttributes.NUMBER_SPACING / 2;
             culm += numToDenOffset;
             if (ts.beats[idx][0] >= 10 && beatType < 10) {
                 culm += 7;
@@ -190,9 +190,9 @@ class TimeSignatureNumber extends Component<ITSNumProps, void> {
                 fill: this.props.stroke,
                 glyphName: "timeSig" + numberString,
                 key: "ts-" + i,
-                x: this.props.x + i*12 + (numberString === "1" ?
+                x: this.props.x + i * 12 + (numberString === "1" ?
                     (!i && parseInt(this.props.children, 10) >= 10 ? -1 : 1) : 0),
-                y: this.props.y,
+                y: this.props.y
             /* Glyph */}))
         /* DOM.g */);
     }

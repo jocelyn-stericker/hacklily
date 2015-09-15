@@ -22,6 +22,10 @@ import {reduce} from "lodash";
 import {IChord, RenderUtil} from "../../engine";
 import {getTextBB} from "../fontManager";
 
+export const DEFAULT_LYRIC_SIZE = "22";
+export const DEFAULT_FONT = "Alegreya";
+export const SYLLABIC_SIZE = 20;
+
 export function getChordLyricWidth(chord: IChord, scale40: number) {
     return reduce(chord, (maxWidth, note) =>
         Math.max(maxWidth, getNoteLyricWidth(note, scale40)), 0);
@@ -45,8 +49,4 @@ export function getLyricWidth(lyric: Lyric, scale40: number) {
         return 0;
     }, 0);
 }
-
-export const DEFAULT_LYRIC_SIZE = "22";
-export const DEFAULT_FONT = "Alegreya";
-export const SYLLABIC_SIZE = 20;
 

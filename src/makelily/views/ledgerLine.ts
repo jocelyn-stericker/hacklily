@@ -32,7 +32,7 @@ class LedgerLine extends Component<LedgerLine.IProps, void> {
         const spec = this.props.spec;
         const west = bboxes[this.props.notehead][3];
         const east = bboxes[this.props.notehead][0];
-        const xOffset = (east - west)*10;
+        const xOffset = (east - west) * 10;
         return $(Line)({
             stroke: spec.color,
             strokeWidth: 2.2,

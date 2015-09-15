@@ -37,22 +37,6 @@ class DirectionModel implements Export.IDirectionModel {
     /** @prototype */
     frozenness: IModel.FrozenLevel;
 
-    modelDidLoad$(segment$: ISegment): void {
-        // todo
-    }
-
-    validate$(cursor$: ICursor): void {
-        forEach(this.directionTypes, type => {
-            if (type.dynamics && this.placement === AboveBelow.Unspecified) {
-                this.placement = AboveBelow.Below;
-            }
-        });
-    }
-
-    layout(cursor$: ICursor): Export.ILayout {
-        return new DirectionModel.Layout(this, cursor$);
-    }
-
     /*---- I.2 Direction ------------------------------------------------------------------------*/
 
     directionTypes: DirectionType[];
@@ -74,12 +58,28 @@ class DirectionModel implements Export.IDirectionModel {
 
     data: string;
 
-    /*---- II. Life-cycle -----------------------------------------------------------------------*/
+    /*---- Implementation -----------------------------------------------------------------------*/
 
     constructor(spec: Direction) {
         forEach(spec, (value, key) => {
             (<any>this)[key] = value;
         });
+    }
+
+    modelDidLoad$(segment$: ISegment): void {
+        // todo
+    }
+
+    validate$(cursor$: ICursor): void {
+        forEach(this.directionTypes, type => {
+            if (type.dynamics && this.placement === AboveBelow.Unspecified) {
+                this.placement = AboveBelow.Below;
+            }
+        });
+    }
+
+    layout(cursor$: ICursor): Export.ILayout {
+        return new DirectionModel.Layout(this, cursor$);
     }
 
     toXML(): string {
@@ -138,14 +138,14 @@ module DirectionModel {
                     // Vertical coordinates are flipped (argh!)
                     // We give 10% padding because elements touching isn't ideal.
                     boundingBox.top = -RenderUtil.mmToTenths(scale40,
-                            fontBox.bottom/RenderUtil.ptPerMM)*1.1;
+                            fontBox.bottom / RenderUtil.ptPerMM) * 1.1;
                     boundingBox.bottom = -RenderUtil.mmToTenths(scale40,
-                            fontBox.top/RenderUtil.ptPerMM)*1.1;
+                            fontBox.top / RenderUtil.ptPerMM) * 1.1;
 
                     boundingBox.left = RenderUtil.mmToTenths(scale40,
-                            fontBox.left/RenderUtil.ptPerMM)*1.1;
+                            fontBox.left / RenderUtil.ptPerMM) * 1.1;
                     boundingBox.right = RenderUtil.mmToTenths(scale40,
-                            fontBox.right/RenderUtil.ptPerMM)*1.1;
+                            fontBox.right / RenderUtil.ptPerMM) * 1.1;
                     this.boundingBoxes$.push(boundingBox);
                 });
                 if (type.dynamics) {
@@ -167,10 +167,10 @@ module DirectionModel {
                     segno.defaultY = (segno.defaultY || defaultY);
                     segno.color = segno.color || "black";
                     let boundingBox: IModel.IBoundingRect = <any> segno;
-                    boundingBox.right = glyphBoxes["segno"][0]*10 + 10;
-                    boundingBox.top = -glyphBoxes["segno"][1]*10 - 10;
-                    boundingBox.left = glyphBoxes["segno"][2]*10 - 10;
-                    boundingBox.bottom = -glyphBoxes["segno"][3]*10 + 10;
+                    boundingBox.right = glyphBoxes["segno"][0] * 10 + 10;
+                    boundingBox.top = -glyphBoxes["segno"][1] * 10 - 10;
+                    boundingBox.left = glyphBoxes["segno"][2] * 10 - 10;
+                    boundingBox.bottom = -glyphBoxes["segno"][3] * 10 + 10;
                     this.boundingBoxes$.push(boundingBox);
                 });
             });

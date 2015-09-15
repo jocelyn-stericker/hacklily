@@ -28,6 +28,15 @@ import {RenderUtil} from "../../engine";
 import {ITextMixin, Prototype as TextMixin} from "../textMixin";
 
 class WordsView extends Component<WordsView.IProps, void> implements ITextMixin {
+    /* TextMixin.ITextMixin */
+    getTextAnchor: (words: CreditWords | Words) => string;
+    getTextDecoration: (words: CreditWords | Words) => string;
+    getTransform: (words: CreditWords | Words) => string;
+    getDirection: (words: CreditWords | Words) => string;
+    getX: (lineNum: number) => number;
+    getDX: (words: CreditWords | Words, initX: number, lineNum: number) => number;
+    getDY: (words: CreditWords | Words, initY: number, lineNum: number) => number;
+
     render(): any {
         let layout = this.props.layout;
         let model = layout.model;
@@ -36,7 +45,7 @@ class WordsView extends Component<WordsView.IProps, void> implements ITextMixin 
         let words = wordsContainer.words;
 
         let initX = this.context.originX;
-        let initY = this.context.originY - words[0].defaultY - (words[0].relativeY||0);
+        let initY = this.context.originY - words[0].defaultY - (words[0].relativeY || 0);
         let scale40 = this.context.scale40;
 
         return DOM.text({
@@ -70,15 +79,6 @@ class WordsView extends Component<WordsView.IProps, void> implements ITextMixin 
             })
         /* DOM.text */);
     }
-
-    /* TextMixin.ITextMixin */
-    getTextAnchor: (words: CreditWords | Words) => string;
-    getTextDecoration: (words: CreditWords | Words) => string;
-    getTransform: (words: CreditWords | Words) => string;
-    getDirection: (words: CreditWords | Words) => string;
-    getX: (lineNum: number) => number;
-    getDX: (words: CreditWords | Words, initX: number, lineNum: number) => number;
-    getDY: (words: CreditWords | Words, initY: number, lineNum: number) => number;
 }
 
 extend(WordsView.prototype, TextMixin);

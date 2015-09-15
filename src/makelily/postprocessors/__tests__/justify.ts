@@ -68,6 +68,7 @@ describe("[lineProcessor.ts]", function() {
                 measure: {
                     idx: idx,
                     number: String(idx + 1),
+                    version: 0,
                     parts: {
                         "P1": {
                             voices: seg.voices,
@@ -94,7 +95,7 @@ describe("[lineProcessor.ts]", function() {
             let detachedLayouts = map(layouts, layout => IMeasureLayout.detach(layout));
             forEach(detachedLayouts, layout => {
                 layout.attributes = <any> {
-                    P1: [,{
+                    P1: [, {
                         divisions: 4,
                         time: {
                             beats: ["4"],

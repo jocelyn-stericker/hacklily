@@ -50,6 +50,62 @@ import PadPostprocessor from "./postprocessors/pad";
 import RemoveOverlapsPostprocessor from "./postprocessors/removeOverlaps";
 import TiedsPostprocessor from "./postprocessors/tieds";
 
+module BrowserSetup {
+    export let cssInjected = false;
+
+    export let injectStyles = once(function injectStyles(spec: ISatieOptions = {}): void {
+        cssInjected = true;
+        if (typeof window === "undefined") {
+            return;
+        }
+
+        let style = document.createElement("style");
+        style.appendChild(document.createTextNode("")); // WebKit hack
+        document.head.appendChild(style);
+
+        forEach(spec.preloadedFonts, font => {
+            let baseFont = (/[\w\s]*/.exec(font) || [""])[0].replace(/\s/g, " ").trim();
+            if (!baseFont) {
+                throw new Error("Font " + font + " is not a valid font name.");
+            }
+            let variant = (/\((\w*)\)/.exec(font) || [])[1] || undefined;
+            if (variant && variant !== "bold" && variant !== "bold italic" && variant !== "italic") {
+                throw new Error("Valid font variants are bold, bold italic, and italic");
+            }
+
+            markPreloaded(baseFont, variant);
+        });
+
+        if (spec.satieRoot) {
+            setRoot(spec.satieRoot);
+        }
+
+        style.innerHTML =
+            ".mn_ {" +
+                "-moz-user-select: none;" +
+                "-ms-user-select: none;" +
+                "-webkit-touch-callout: none;" +
+                "-webkit-user-select: none;" +
+                "cursor: default;" +
+                "font-family: 'bravura';" +
+                "user-select: none;" +
+                "text-rendering: optimizeSpeed;" +
+            "}" +
+            ".mmn_ {" +
+                "font-family: 'Alegreya';" +
+                "font-style: italic;" +
+                "text-anchor: middle;" +
+                "fill: #444;" +
+            "}" +
+            ".bn_ {" +
+                "font-family: 'Alegreya';" +
+                "font-style: italic;" +
+                "text-anchor: end;" +
+                "fill: #7a7a7a;" +
+            "}";
+    });
+}
+
 /**
  * Optional initialization function. Call this if you don't want the default options. Must be called
  * before any Satie component is mounted, and must only be called once.
@@ -108,7 +164,7 @@ export function importXML(src: string, cb: (error: Error, document?: IDocument) 
                 let memo$ = ILinesLayoutMemo.create(NaN);
                 let factory = makeFactory();
                 cb(null, musicxmlStringToDocument(src, memo$, factory));
-            } catch(err) {
+            } catch (err) {
                 cb(err);
             }
         }
@@ -165,7 +221,7 @@ export function exportXML(score: IDocument, cb: (error: Error, xml: string) => v
 export function getSVGPreview(document: IDocument, cb: (err: Error, svg?: string) => void) {
     try {
         cb(null, renderDocument(document, 0));
-    } catch(err) {
+    } catch (err) {
         cb(err);
     }
 }
@@ -205,62 +261,6 @@ function makeFactory() {
             RemoveOverlapsPostprocessor
         ]
     );
-}
-
-module BrowserSetup {
-    export let cssInjected = false;
-
-    export let injectStyles = once(function injectStyles(spec: ISatieOptions = {}): void {
-        cssInjected = true;
-        if (typeof window === "undefined") {
-            return;
-        }
-
-        let style = document.createElement("style");
-        style.appendChild(document.createTextNode("")); // WebKit hack
-        document.head.appendChild(style);
-
-        forEach(spec.preloadedFonts, font => {
-            let baseFont = (/[\w\s]*/.exec(font) || [""])[0].replace(/\s/g, " ").trim();
-            if (!baseFont) {
-                throw new Error("Font " + font + " is not a valid font name.");
-            }
-            let variant = (/\((\w*)\)/.exec(font) || [])[1] || undefined;
-            if (variant && variant !== "bold" && variant !== "bold italic" && variant !== "italic") {
-                throw new Error("Valid font variants are bold, bold italic, and italic");
-            }
-
-            markPreloaded(baseFont, variant);
-        });
-
-        if (spec.satieRoot) {
-            setRoot(spec.satieRoot);
-        }
-
-        style.innerHTML =
-            ".mn_ {"+
-                "-moz-user-select: none;"+
-                "-ms-user-select: none;"+
-                "-webkit-touch-callout: none;"+
-                "-webkit-user-select: none;"+
-                "cursor: default;"+
-                "font-family: 'bravura';"+
-                "user-select: none;"+
-                "text-rendering: optimizeSpeed;"+
-            "}" +
-            ".mmn_ {"+
-                "font-family: 'Alegreya';" +
-                "font-style: italic;" +
-                "text-anchor: middle;" +
-                "fill: #444;" +
-            "}" +
-            ".bn_ {"+
-                "font-family: 'Alegreya';" +
-                "font-style: italic;" +
-                "text-anchor: end;" +
-                "fill: #7a7a7a;" +
-            "}";
-    });
 }
 
 function printMsg() {

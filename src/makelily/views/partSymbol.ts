@@ -47,7 +47,7 @@ class PartSymbolView extends Component<PartSymbolView.IProps, void> {
             $(Line)({
                 key: "line",
                 stroke: "#000000",
-                strokeWidth: defaults.thinBarlineThickness*10,
+                strokeWidth: defaults.thinBarlineThickness * 10,
                 x1: this.context.originX + this.props.spec.defaultX,
                 x2: this.context.originX + this.props.spec.defaultX,
                 y1: bottom - height,
@@ -66,7 +66,7 @@ class PartSymbolView extends Component<PartSymbolView.IProps, void> {
 
         const x = this.context.originX + this.props.spec.defaultX - 14;
 
-        const s = height/40;
+        const s = height / 40;
 
         switch (spec.type) {
             case PartSymbolType.Brace:
@@ -75,9 +75,10 @@ class PartSymbolView extends Component<PartSymbolView.IProps, void> {
                     glyphName: "brace",
                     key: "partSymbolMain",
                     transform: "scale(" + BRACE_H_SCALE + "," + s + ")" +
-                        "translate(" + (-x*(1-1/(BRACE_H_SCALE))) + "," + -(1-1/s)*bottom + ")",
+                        "translate(" + (-x * (1 - 1 / (BRACE_H_SCALE))) + "," +
+                        -1 * (1 - 1 / s) * bottom + ")",
                     x: x,
-                    y: bottom,
+                    y: bottom
                 });
             case PartSymbolType.Bracket:
             case PartSymbolType.Square: // TODO: Not implemented
@@ -85,11 +86,11 @@ class PartSymbolView extends Component<PartSymbolView.IProps, void> {
                     $(Line)({
                         key: "partSymbolMain",
                         stroke: "#000000",
-                        strokeWidth: defaults.bracketThickness*10,
+                        strokeWidth: defaults.bracketThickness * 10,
                         x1: x + 4 + 2.5,
                         x2: x + 4 + 2.5,
                         y1: bottom - height - 2 - 3,
-                        y2: bottom + 2 + 3,
+                        y2: bottom + 2 + 3
                     }),
                     $(Glyph)({
                         fill: "#000000",
@@ -108,6 +109,8 @@ class PartSymbolView extends Component<PartSymbolView.IProps, void> {
                 ];
             case PartSymbolType.Line:
                 return null;
+            default:
+                throw new Error(`Invalid PartSymbolType ${spec.type}`);
         }
     }
 }

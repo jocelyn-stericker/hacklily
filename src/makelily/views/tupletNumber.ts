@@ -37,15 +37,15 @@ class TupletNumber extends Component<TupletNumber.IProps, void> {
         let text = (tuplet.tupletActual.tupletNumber.text);
         let symbols = map(text, char => `tuplet${char}`);
         let boxes = map(symbols, symbol => bboxes[symbol]);
-        let widths = map(boxes, box => (box[0] - box[2])*10);
+        let widths = map(boxes, box => (box[0] - box[2]) * 10);
 
         let width = reduce(widths, (total, width) => total + width, 0);
-        let offset = (x1 + x2)/2;
+        let offset = (x1 + x2) / 2;
         let xs = reduce(boxes, (memo, box) => {
             memo.push(box[0] * 10 + last(memo));
             return memo;
         }, [0]);
-        let y = (y1 + y2)/2 + (placement === AboveBelow.Above ? 7.5 : 9.5);
+        let y = (y1 + y2) / 2 + (placement === AboveBelow.Above ? 7.5 : 9.5);
 
         return DOM.g(null,
             // Mask
@@ -55,10 +55,10 @@ class TupletNumber extends Component<TupletNumber.IProps, void> {
                 fill: "white",
                 key: `mask`,
                 points: (
-                    (offset - width/2 - 6) + "," + (y - boxes[0][1]*10) + " " +
-                    (offset - width/2 - 6) + "," + (y + boxes[0][3]*10) + " " +
-                    (offset + width/2 + 6) + "," + (y + boxes[0][3]*10) + " " +
-                    (offset + width/2 + 6) + "," + (y - boxes[0][1]*10)),
+                    (offset - width / 2 - 6) + "," + (y - boxes[0][1] * 10) + " " +
+                    (offset - width / 2 - 6) + "," + (y + boxes[0][3] * 10) + " " +
+                    (offset + width / 2 + 6) + "," + (y + boxes[0][3] * 10) + " " +
+                    (offset + width / 2 + 6) + "," + (y - boxes[0][1] * 10)),
                 stroke: "white",
                 strokeWidth: 0
             }),
@@ -69,7 +69,7 @@ class TupletNumber extends Component<TupletNumber.IProps, void> {
                     key: `glyph${index}`,
                     fill: "#000000",
                     glyphName: symbol,
-                    x: xs[index] + offset - width/2,
+                    x: xs[index] + offset - width / 2,
                     y: y
                 });
             })

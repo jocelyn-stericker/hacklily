@@ -35,6 +35,21 @@ class GroupingModel implements Export.IGroupingModel {
     /** @prototype */
     frozenness: IModel.FrozenLevel;
 
+    /*---- I.2 Grouping -------------------------------------------------------------------------*/
+
+    features: Feature[];
+    number: number;
+    type: StartStopSingle;
+    memberOf: string;
+
+    /*---- Implementation -----------------------------------------------------------------------*/
+
+    constructor(spec: Grouping) {
+        forEach(spec, (value, key) => {
+            (<any>this)[key] = value;
+        });
+    }
+
     modelDidLoad$(segment$: ISegment): void {
         // todo
     }
@@ -47,21 +62,6 @@ class GroupingModel implements Export.IGroupingModel {
         // todo
 
         return new GroupingModel.Layout(this, cursor$);
-    }
-
-    /*---- I.2 Grouping -------------------------------------------------------------------------*/
-
-    features: Feature[];
-    number: number;
-    type: StartStopSingle;
-    memberOf: string;
-
-    /*---- II. Life-cycle -----------------------------------------------------------------------*/
-
-    constructor(spec: Grouping) {
-        forEach(spec, (value, key) => {
-            (<any>this)[key] = value;
-        });
     }
 
     toXML(): string {
@@ -105,7 +105,7 @@ module GroupingModel {
     Object.freeze(Layout.prototype.boundingBoxes$);
 };
 
-function deepAssign<T>(a: T, b: T):T {
+function deepAssign<T>(a: T, b: T): T {
     if (a instanceof Array || b instanceof Array) {
         let retArr: any[] = [];
         let aArr: any[] = (<any>a);

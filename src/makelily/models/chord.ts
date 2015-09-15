@@ -53,7 +53,7 @@ module ChordModel {
     export interface IChordModel extends IBaseModel, IModel, IChord {
     }
     export interface IDetachedChordModel extends IModel, IChord {
-        baseModel: IBaseModel
+        baseModel: IBaseModel;
     }
     export interface IChordLayout extends IModel.ILayout {
         model: IDetachedChordModel;

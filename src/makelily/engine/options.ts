@@ -23,6 +23,8 @@ import IPrint from "./iprint";
 import {IMutableMeasure, IMeasureLayout} from "./measure";
 import IAttributes from "./iattributes";
 
+export const MAX_SAFE_INTEGER = 9007199254740991;
+
 export interface ILayoutOptions {
     attributes: {[part: string]: IAttributes.ISnapshot[]};
     measures: IMutableMeasure[];
@@ -126,4 +128,3 @@ export function key$(t$: any) {
     }
 }
 
-export const MAX_SAFE_INTEGER = 9007199254740991;

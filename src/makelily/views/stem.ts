@@ -37,12 +37,12 @@ class StemView extends Component<StemView.IProps, void> {
             return null;
         }
         const direction = spec.type === StemType.Up ? 1 : -1; // TODO: StemType.Double
-        const lineXOffset = direction * - width/2;
+        const lineXOffset = direction * - width / 2;
         const offset = getFontOffset(notehead, direction);
-        const x = this.context.originX + defaultX + (relativeX || (offset[0]*10 + lineXOffset));
+        const x = this.context.originX + defaultX + (relativeX || (offset[0] * 10 + lineXOffset));
         invariant(isFinite(x), "Invalid x offset %s", x);
 
-        const dY = this.props.bestHeight*direction;
+        const dY = this.props.bestHeight * direction;
 
         let elements: any[] = [];
         elements.push($(Line)({
@@ -51,8 +51,8 @@ class StemView extends Component<StemView.IProps, void> {
             strokeWidth: width,
             x1: x,
             x2: x,
-            y1: this.context.originY - defaultY - (relativeY || 0) - offset[1]*10,
-            y2: this.context.originY - defaultY - (relativeY || 0) - offset[1]*10 - dY
+            y1: this.context.originY - defaultY - (relativeY || 0) - offset[1] * 10,
+            y2: this.context.originY - defaultY - (relativeY || 0) - offset[1] * 10 - dY
         }));
 
         if (tremolo) {
@@ -61,7 +61,7 @@ class StemView extends Component<StemView.IProps, void> {
                 glyphName: `tremolo${tremolo.data || "1"}`,
                 x: x,
                 fill: "black",
-                y: this.context.originY - defaultY - (relativeY || 0) - dY*4/5
+                y: this.context.originY - defaultY - (relativeY || 0) - dY * 4 / 5
             }));
         }
 
