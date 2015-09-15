@@ -29,6 +29,10 @@ export type ModelInstaller =
     }) => void;
 
 class Factory implements IModel.IFactory {
+    preprocessors: Preprocessor[];
+    postprocessors: Postprocessor[];
+    private _constructors: { [key: number]: any; [key: string]: IModel.Type; } = {};
+
     constructor(models: ModelInstaller[], pre: Preprocessor[] = [], post: Postprocessor[] = []) {
         forEach(models, model => {
             model(this._constructors);
@@ -103,10 +107,6 @@ class Factory implements IModel.IFactory {
         }
         return model;
     }
-
-    preprocessors: Preprocessor[];
-    postprocessors: Postprocessor[];
-    private _constructors: { [key: number]: any; [key: string]: IModel.Type;} = {};
 }
 
 export default Factory;

@@ -628,7 +628,7 @@ describe("[musicxml/import.ts]", function() {
                         instrumentSound: "",
                         solo: null,
                         virtualInstrument: null
-                    }],
+                    }]
                 }
             ]);
 

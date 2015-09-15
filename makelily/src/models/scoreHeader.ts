@@ -36,7 +36,6 @@ import {distances, bravura} from "./smufl";
  * information.
  */
 class ScoreHeaderModel implements ScoreHeader {
-
     /*---- ScoreHeader --------------------------------------------------------------------------*/
 
     credits: Credit[] = [];
@@ -182,27 +181,6 @@ class ScoreHeaderModel implements ScoreHeader {
 
     partList: PartList = [];
 
-    /*---- Extensions ---------------------------------------------------------------------------*/
-
-    constructor(spec: ScoreHeader) {
-        if (spec) {
-            defaultsDeep(spec, this);
-        }
-        for(let key in spec) {
-            if (spec.hasOwnProperty(key) && typeof key === "string" && !!(<any>spec)[key]) {
-                (<any>this)[key] = (<any>spec)[key];
-            }
-        }
-    }
-
-    toXML(): string {
-        return serializeToXML.scoreHeader(this);
-    }
-
-    inspect() {
-        return this.toXML();
-    }
-
     get composer() {
         return this._getIdentificationOrCredit("composer");
     }
@@ -230,8 +208,65 @@ class ScoreHeaderModel implements ScoreHeader {
         this._setCredits("lyricist", lyricist, LeftCenterRight.Right, "12px", 50);
     }
 
+    get title() {
+        return this.movementTitle;
+    }
+    set title(title: string) {
+        // Set meta-data
+        this.movementTitle = title;
+
+        this._setCredits("title", title, LeftCenterRight.Center, "18px", 10);
+    }
+
+    /*---- Extensions ---------------------------------------------------------------------------*/
+
+    constructor(spec: ScoreHeader) {
+        if (spec) {
+            defaultsDeep(spec, this);
+        }
+        for (let key in spec) {
+            if (spec.hasOwnProperty(key) && typeof key === "string" && !!(<any>spec)[key]) {
+                (<any>this)[key] = (<any>spec)[key];
+            }
+        }
+    }
+
+    toXML(): string {
+        return serializeToXML.scoreHeader(this);
+    }
+
+    inspect() {
+        return this.toXML();
+    }
+
+    overwriteEncoding() {
+        let date = new Date;
+
+        this.identification = this.identification || (new ScoreHeaderModel(null)).identification;
+        this.identification.encoding = {
+            encodingDescriptions: [],
+            encodingDate: {
+                month: date.getMonth() + 1,
+                day: date.getDate(),
+                year: date.getFullYear()
+            },
+            supports: {
+                "satie-ext": {
+                    element: "satie-ext",
+                    value: null,
+                    type: "yes",
+                    attribute: null
+                }
+            },
+            encoders: [],
+            softwares: [
+                "Ripieno Satie"
+            ]
+        };
+    }
+
     private _getIdentificationOrCredit(type: string) {
-        if (this.identification && (this.identification.creators||[]).length) {
+        if (this.identification && (this.identification.creators || []).length) {
             let idComposer = this.identification.creators
                 .filter(c => c.type === type)
                 .map(c => c.creator)
@@ -242,7 +277,7 @@ class ScoreHeaderModel implements ScoreHeader {
             }
         }
 
-        return this.credits.filter(c => !!~c.creditTypes.indexOf(type))
+        return this.credits.filter(c => c.creditTypes.indexOf(type) !== -1)
             .map(m => m.creditWords)
             .map(w => w.map(w => w.words).join(", "))
             .join(", ");
@@ -273,32 +308,6 @@ class ScoreHeaderModel implements ScoreHeader {
         }
     }
 
-    overwriteEncoding() {
-        let date = new Date;
-
-        this.identification = this.identification || (new ScoreHeaderModel(null)).identification;
-        this.identification.encoding = {
-            encodingDescriptions: [],
-            encodingDate: {
-                month: date.getMonth() + 1,
-                day: date.getDate(),
-                year: date.getFullYear()
-            },
-            supports: {
-                "satie-ext": {
-                    element: "satie-ext",
-                    value: null,
-                    type: "yes",
-                    attribute: null
-                }
-            },
-            encoders: [],
-            softwares: [
-                "Ripieno Satie"
-            ]
-        };
-    }
-
     private _setCredits(type: string, val: string,
             justification: LeftCenterRight, fontSize: string, top: number) {
         const mm = this.defaults.scaling.millimeters;
@@ -310,7 +319,7 @@ class ScoreHeaderModel implements ScoreHeader {
                 return false;
             }
             // Replace a credit...
-            let isComposer = !!~c.creditTypes.indexOf(type);
+            let isComposer = c.creditTypes.indexOf(type) !== -1;
             if (isComposer) {
                 if (!c.creditWords.length) {
                     delete this.credits[idx];
@@ -320,14 +329,14 @@ class ScoreHeaderModel implements ScoreHeader {
                 }
             }
         });
-        if (!any(this.credits, c => !!c.creditWords && !!~c.creditTypes.indexOf(type))) {
+        if (!any(this.credits, c => Boolean(c.creditWords) && c.creditTypes.indexOf(type) !== -1)) {
             let defaultX = NaN;
             let margins = IPrint.getPageMargins(this.defaults.pageLayout.pageMargins, 1);
             // TODO: Throughout this file, use own instead of default values
             switch (justification) {
                 case LeftCenterRight.Center:
                     defaultX = (margins.leftMargin - margins.rightMargin +
-                            pageLayout.pageWidth)/2;
+                        pageLayout.pageWidth) / 2;
                     break;
                 case LeftCenterRight.Right:
                     defaultX = pageLayout.pageWidth - margins.rightMargin;
@@ -354,16 +363,6 @@ class ScoreHeaderModel implements ScoreHeader {
                 page: 1
             });
         }
-    }
-
-    get title() {
-        return this.movementTitle;
-    }
-    set title(title: string) {
-        // Set meta-data
-        this.movementTitle = title;
-
-        this._setCredits("title", title, LeftCenterRight.Center, "18px", 10);
     }
 }
 

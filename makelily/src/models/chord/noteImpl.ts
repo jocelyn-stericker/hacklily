@@ -27,7 +27,7 @@ import invariant = require("invariant");
 
 import ChordModelImpl from "./chordImpl"; // @cyclic
 import {ICursor, IChord} from "../../engine";
-var {notationObj} = IChord;
+const {notationObj} = IChord;
 import {bboxes as glyphBBoxes} from "../smufl";
 
 /**
@@ -41,9 +41,12 @@ class NoteImpl implements Note {
     _parent: ChordModelImpl;
     _idx: number;
 
+    _restDisplayStep: string;
+    _restDisplayOctave: string;
+
     constructor(parent: ChordModelImpl, idx: number, note: Note,
             updateParent: boolean = true) {
-        let self : {[key:string]: any} = <any> this;
+        let self: {[key: string]: any} = this as any;
 
         /* Link to parent */
         Object.defineProperty(this, "_parent", {
@@ -96,29 +99,6 @@ class NoteImpl implements Note {
         }
     }
 
-    /*---- NoteImpl -------------------------------------------------------------------------*/
-
-    toXML() {
-        return serializeToXML.note(this);
-    }
-
-    inspect() {
-        return this.toXML();
-    }
-
-    validate$() {
-        this.cleanNotations();
-        if (this.grace && this.cue) {
-            delete this.cue;
-        }
-        if (this.unpitched && (this.rest || this.pitch)) {
-            delete this.unpitched;
-        }
-        if (this.pitch && this.rest) {
-            delete this.pitch;
-        }
-    }
-
     /*---- Note -----------------------------------------------------------------------------*/
 
     /*---- Note > Core ----------------------------------------------------------------------*/
@@ -146,8 +126,6 @@ class NoteImpl implements Note {
             }
         }
     }
-    _restDisplayStep: string;
-    _restDisplayOctave: string;
 
     get dots(): Dot[] {
         let offset = this.defaultY % 10 === 0 ? 5 : 0;
@@ -247,7 +225,7 @@ class NoteImpl implements Note {
         return "#" + "000000".substr(0, 6 - hex.length) + hex;
     }
     set color(a: string) {
-        switch(true) {
+        switch (true) {
             case !a:
                 this._color = 0;
                 break;
@@ -260,8 +238,6 @@ class NoteImpl implements Note {
                 break;
         }
     }
-
-    private _color: number = 0x000000;
 
     /*---- Printout -------------------------------------------------------------------------*/
 
@@ -279,6 +255,33 @@ class NoteImpl implements Note {
     /*---- TimeOnly -------------------------------------------------------------------------*/
 
     timeOnly: string;
+
+    /*---- Private --------------------------------------------------------------------------*/
+
+    private _color: number = 0x000000;
+
+    /*---- Implementation -------------------------------------------------------------------*/
+
+    toXML() {
+        return serializeToXML.note(this);
+    }
+
+    inspect() {
+        return this.toXML();
+    }
+
+    validate$() {
+        this.cleanNotations();
+        if (this.grace && this.cue) {
+            delete this.cue;
+        }
+        if (this.unpitched && (this.rest || this.pitch)) {
+            delete this.unpitched;
+        }
+        if (this.pitch && this.rest) {
+            delete this.pitch;
+        }
+    }
 
     /*---- Util -----------------------------------------------------------------------------*/
 
@@ -386,8 +389,8 @@ class NoteImpl implements Note {
         }
 
         function combine<T>(key: string): T[] {
-            return reduce(notations, (memo: any, n:any) =>
-                n[key] ? (memo||<T[]>[]).concat(n[key]) : memo, null);
+            return reduce(notations, (memo: any, n: any) =>
+                n[key] ? (memo || <T[]>[]).concat(n[key]) : memo, null);
         }
 
         function combineArticulations(key: string): Articulations[] {
@@ -407,7 +410,7 @@ class NoteImpl implements Note {
         }
 
         function last<T>(key: string): T {
-            return reduce(notations, (memo: any, n:any) =>
+            return reduce(notations, (memo: any, n: any) =>
                 n[key] ? n[key] : memo, []);
         }
     }
@@ -432,7 +435,7 @@ class NoteImpl implements Note {
 
         let acc = this.accidental;
 
-        if (!acc && (actual||0) !== (target||0)) {
+        if (!acc && (actual || 0) !== (target || 0)) {
             let accType: MxmlAccidental = null;
             switch (actual) {
                 case 2:
@@ -474,7 +477,7 @@ class NoteImpl implements Note {
         if (acc) {
             let glyphName = IChord.accidentalGlyphs[acc.accidental];
             invariant(glyphName in glyphBBoxes, "Expected a known glyph, got %s", glyphName);
-            let width = glyphBBoxes[glyphName][0]*10;
+            let width = glyphBBoxes[glyphName][0] * 10;
             let {clef} = cursor.staff.attributes;
             // TODO: `let clef = cursor.part.attributes.clefs[cursor.staff.idx]`
 

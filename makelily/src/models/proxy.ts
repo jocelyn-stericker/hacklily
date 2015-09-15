@@ -21,6 +21,11 @@ import invariant = require("invariant");
 import {ICursor, IModel, ISegment} from "../engine";
 
 class ProxyModel implements Export.IProxyModel {
+    /** @prototype */
+    frozenness: IModel.FrozenLevel;
+
+    private _target: IModel;
+    private _omTarget: IModel;
 
     /*---- I.1 IModel ---------------------------------------------------------------------------*/
 
@@ -46,22 +51,6 @@ class ProxyModel implements Export.IProxyModel {
         this._omTarget.staffIdx = undefined;
     }
 
-    /** @prototype */
-    frozenness: IModel.FrozenLevel;
-
-    modelDidLoad$(segment$: ISegment): void {
-        // todo
-    }
-
-    validate$(cursor$: ICursor): void {
-        invariant(!!this._target, "A proxy must have a target.");
-        this._omTarget.validate$(cursor$);
-    }
-
-    layout(cursor$: ICursor): Export.ILayout {
-        return this._omTarget.layout(cursor$);
-    }
-
     /*---- Validation Implementations -----------------------------------------------------------*/
 
     constructor(target: IModel) {
@@ -76,8 +65,18 @@ class ProxyModel implements Export.IProxyModel {
         return this.toXML();
     }
 
-    _target: IModel;
-    _omTarget: IModel;
+    modelDidLoad$(segment$: ISegment): void {
+        // todo
+    }
+
+    validate$(cursor$: ICursor): void {
+        invariant(!!this._target, "A proxy must have a target.");
+        this._omTarget.validate$(cursor$);
+    }
+
+    layout(cursor$: ICursor): Export.ILayout {
+        return this._omTarget.layout(cursor$);
+    }
 }
 
 ProxyModel.prototype.frozenness = IModel.FrozenLevel.Warm;

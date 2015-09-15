@@ -20,6 +20,14 @@
 
 module RenderUtil {
 
+export let ptPerMM = 2.842;
+
+export let mmPerIn = 25.4;
+
+export let V_PADDING = 20;
+
+export let staveSeperation = 3.24;
+
 export let rastalToHeight = [
     /* largest is '0' */
     9.2, // educational
@@ -58,7 +66,7 @@ export let pageSizes = [
         unit: "mm"
     },
     {
-        name:"ISO B4",
+        name: "ISO B4",
         lilypondName: "b4",
         width: 250,
         height: 353,
@@ -602,8 +610,8 @@ export function mmToTenths(scaling40: number, mm: number) {
 export function cssSizeToTenths(scaling40: number, css: string) {
     let px = NaN;
     // The xx-small - xx-large values were found from Chrome computed sizes.
-    switch(true) {
-        case !!~css.indexOf("px"):
+    switch (true) {
+        case css.indexOf("px") !== -1:
         case !isNaN(parseFloat(css)):
             px = parseFloat(css.split("px")[0]);
             break;
@@ -638,7 +646,7 @@ export function cssSizeToTenths(scaling40: number, css: string) {
     // 1 in = 25.4    mm
     // =================
     // 1 px = 25.4/96 mm
-    return mmToTenths(scaling40, px * mmPerIn/96);
+    return mmToTenths(scaling40, px * mmPerIn / 96);
 }
 
 /**
@@ -649,13 +657,6 @@ export function cssSizeToTenths(scaling40: number, css: string) {
 export function tenthsToMM(scaling40: number, tenths: number) {
     return scaling40 * tenths / 40;
 }
-
-export let ptPerMM = 2.842;
-
-export let mmPerIn = 25.4;
-
-export let V_PADDING = 20;
-
 export function getHeaderHeight(header: any) {
     let height = 0;
     if (header.title) {
@@ -666,8 +667,6 @@ export function getHeaderHeight(header: any) {
     }
     return height;
 }
-
-export let staveSeperation = 3.24;
 
 }
 

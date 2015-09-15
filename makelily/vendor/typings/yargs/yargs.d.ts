@@ -10,6 +10,7 @@ declare module "yargs" {
 			argv: any;
 			(...args: any[]): any;
 			parse(...args: any[]): any;
+                        array(x: string): any;
 
 			alias(shortName: string, longName: string): Argv;
 			alias(aliases: { [shortName: string]: string }): Argv;

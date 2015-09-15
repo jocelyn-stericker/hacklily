@@ -139,7 +139,7 @@ declare module __React {
         render(): JSX.Element;
         props: P;
         state: S;
-        context: {};
+        context: any;
         refs: {
             [key: string]: any
         };

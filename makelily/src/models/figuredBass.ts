@@ -35,20 +35,6 @@ class FiguredBassModel implements Export.IFiguredBassModel {
     /** @prototype */
     frozenness: IModel.FrozenLevel;
 
-    modelDidLoad$(segment$: ISegment): void {
-        // todo
-    }
-
-    validate$(cursor$: ICursor): void {
-        // todo
-    }
-
-    layout(cursor$: ICursor): Export.ILayout {
-        // todo
-
-        return new FiguredBassModel.Layout(this, cursor$);
-    }
-
     /*---- I.2 FiguredBass ----------------------------------------------------------------------*/
 
     figures: Figure[];
@@ -90,7 +76,7 @@ class FiguredBassModel implements Export.IFiguredBassModel {
         return "#" + "000000".substr(0, 6 - hex.length) + hex;
     }
     set color(a: string) {
-        switch(true) {
+        switch (true) {
             case !a:
                 this._color = 0;
                 break;
@@ -106,12 +92,27 @@ class FiguredBassModel implements Export.IFiguredBassModel {
 
     private _color: number = 0x000000;
 
-    /*---- II. Life-cycle -----------------------------------------------------------------------*/
+    /*---- Implementation -----------------------------------------------------------------------*/
 
     constructor(spec: FiguredBass) {
         forEach(spec, (value, key) => {
             (<any>this)[key] = value;
         });
+    }
+
+
+    modelDidLoad$(segment$: ISegment): void {
+        // todo
+    }
+
+    validate$(cursor$: ICursor): void {
+        // todo
+    }
+
+    layout(cursor$: ICursor): Export.ILayout {
+        // todo
+
+        return new FiguredBassModel.Layout(this, cursor$);
     }
 
     toXML(): string {

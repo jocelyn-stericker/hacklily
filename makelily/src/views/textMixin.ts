@@ -57,7 +57,7 @@ export let Prototype: ITextMixin = {
         return 0;
     },
     getDirection: function(words: CreditWords | Words) {
-        switch(words.dir) {
+        switch (words.dir) {
             case DirectionMode.Lro: // TODO: bidi
             case DirectionMode.Ltr:
                 return "ltr";
@@ -71,7 +71,7 @@ export let Prototype: ITextMixin = {
         }
     },
     getTextAnchor: function(words: CreditWords | Words) {
-        switch(words.halign || words.justify) {
+        switch (words.halign || words.justify) {
             case LeftCenterRight.Right:
                 return "end";
             case LeftCenterRight.Center:

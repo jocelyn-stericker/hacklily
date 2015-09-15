@@ -60,6 +60,7 @@ describe("[engine/measureProcessor.ts]", function() {
                     implicit: false,
                     nonControlling: false,
                     number: "1",
+                    version: 0,
                     uuid: 777,
                     x: 100,
                     parent: null
@@ -155,6 +156,7 @@ describe("[engine/measureProcessor.ts]", function() {
                 measure: {
                     idx: 0,
                     number: "1",
+                    version: 0,
                     parts: {
                         "P1": {
                             voices: voiceSegments,
@@ -210,6 +212,7 @@ describe("[engine/measureProcessor.ts]", function() {
                 measure: {
                     idx: 0,
                     number: "1",
+                    version: 0,
                     parts: {
                         "P1": {
                             voices: voiceSegments,

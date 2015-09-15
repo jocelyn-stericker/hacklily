@@ -57,7 +57,7 @@ class NoteView extends Component<{spec: Note, noteheadGlyph: string, key?: strin
                 fill: dot.color,
                 key: "_1_" + idx,
                 radius: 2.4,
-                x: this.context.originX + this.props.spec.defaultX + right + 6 + 6*idx,
+                x: this.context.originX + this.props.spec.defaultX + right + 6 + 6 * idx,
                 y: this.context.originY - this.props.spec.defaultY -
                     (dot.defaultY + (dot.relativeY || 0))
             })) : null,
@@ -69,13 +69,13 @@ class NoteView extends Component<{spec: Note, noteheadGlyph: string, key?: strin
                 glyphName: "noteheadParenthesisRight",
                 fill: "black",
                 y: this.context.originY - this.props.spec.defaultY,
-                x: this.context.originX + this.props.spec.defaultX + right + 2,
+                x: this.context.originX + this.props.spec.defaultX + right + 2
             }),
             hasParens && $(Glyph)({
                 glyphName: "noteheadParenthesisLeft",
                 fill: "black",
                 y: this.context.originY - this.props.spec.defaultY,
-                x: this.context.originX + this.props.spec.defaultX + left - 5,
+                x: this.context.originX + this.props.spec.defaultX + left - 5
             })
         /* DOM.g */);
     }

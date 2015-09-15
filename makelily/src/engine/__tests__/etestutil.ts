@@ -130,7 +130,7 @@ export function createFakeVoiceSegment(
                 // pass
             },
             layout: function(cursor$: ICursor): IModel.ILayout {
-                let width = divisions2*10;
+                let width = divisions2 * 10;
                 cursor$.x$ += width;
                 return {
                     boundingBoxes$: [],
@@ -153,8 +153,8 @@ export function createFakeVoiceSegment(
 export function createFakeLayout(idx: number, offset: number, max: boolean): IModel.ILayout {
     return {
         model: <any> {},
-        x$: idx*100 + Math.log(1 + offset)/Math.log(2) * 10,
-        division: idx*4 + offset,
+        x$: idx * 100 + Math.log(1 + offset) / Math.log(2) * 10,
+        division: idx * 4 + offset,
         boundingBoxes$: [],
         renderClass: IModel.Type.Attributes
     };

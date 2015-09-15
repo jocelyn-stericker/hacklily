@@ -92,6 +92,8 @@ function cannotRead(err: any) {
                     throw argv["_"][0] + " is not implemented, yet.";
                 case "patch":
                     throw argv["_"][0] + " is not implemented, yet.";
+                default:
+                    throw new Error(`Invalid operation ${argv["_"][0]}`);
             }
             return true;
         })
@@ -129,6 +131,8 @@ function cannotRead(err: any) {
                         (err, svg) => err ? cannotRead(err) : log(svg))),
                 cannotRead);
             break;
+        default:
+            throw new Error(`Invalid operation ${argv._[0]}`);
     }
 }());
 

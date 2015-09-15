@@ -53,7 +53,7 @@ const _2DD = makeDuration({ count: 2, dots: 2 }); // TODO: conditionally include
 const _1 = makeDuration({ count: 1 });
 const _1D = makeDuration({ count: 1, dots: 1 }); // TODO: conditionally include on allNotes
 const _1DD = makeDuration({ count: 1, dots: 2 }); // TODO: conditionally include on allNotes
-const _05 = makeDuration({ count: 1/2 }); // TODO: conditionally include on allNotes
+const _05 = makeDuration({ count: 1 / 2 }); // TODO: conditionally include on allNotes
 
 const allNotes = [_1, _2D, _2,
     _4DD, _4D, _4, _8DD, _8D, _8, _16DD, _16D, _16, _32D,
@@ -99,7 +99,7 @@ const BEAMING_PATTERNS: {[key: string]: IChord[]} = {
     "8/8_alt": [_4D, _4, _4D ],
     "8/8_alt2": [_4, _4D, _4D ],
     "4/4": [_2, _2 ],
-    "4/4_clean":[_4, _4, _4, _4 ],
+    "4/4_clean": [_4, _4, _4, _4 ],
     "2/2": [_2, _2 ],
     "1/1": [_1 ], // << If only they were all like this...
 
@@ -107,7 +107,7 @@ const BEAMING_PATTERNS: {[key: string]: IChord[]} = {
 
     "10/8": [_2, _4D, _4D ],
     "10/8_alt": [_4D, _2, _4D ],
-    "10/8_alt2":[_4D, _4D, _2 ],
+    "10/8_alt2": [_4D, _4D, _2 ],
     "5/4": [_2D, _2 ],
     "5/4_alt": [_2, _2D ],
 
@@ -174,7 +174,7 @@ const WHOLE_NOTE_PATTERNS: {[key: string]: IChord[]} = {
 
     "10/8": [_2, _2D ],
     "10/8_alt": [_4D, _2, _4D ],
-    "10/8_alt2":[_2D, _2 ],
+    "10/8_alt2": [_2D, _2 ],
     "5/4": [_2D, _2 ],
     "5/4_alt": [_2, _2D ],
 
@@ -451,9 +451,9 @@ export function getTSString(time: Time) {
 export function getBeamingPattern(time: Time, alt?: string) {
     let pattern: IChord[] = BEAMING_PATTERNS[getTSString(time) + (alt ? "_" + alt : "")];
     let factors: {[key: number]: number[]} = {
-        4: [4,3,2,1],
-        8: [12,8,4,3,2,1],
-        16: [4,3,2,1]
+        4: [4, 3, 2, 1],
+        8: [12, 8, 4, 3, 2, 1],
+        16: [4, 3, 2, 1]
     };
     if (time.senzaMisura != null) {
         return [];
@@ -467,7 +467,7 @@ export function getBeamingPattern(time: Time, alt?: string) {
         }, 0);
         let ownFactors = factors[time.beatTypes[0]];
         forEach(ownFactors, factor => {
-            while(beatsToAdd >= factor) {
+            while (beatsToAdd >= factor) {
                 pattern = pattern.concat(BEAMING_PATTERNS[factor + "/" + time.beatTypes[0]]);
                 beatsToAdd -= factor;
             }
@@ -639,7 +639,7 @@ function _calcDivisions(count: number, dots: number,
     }
 
     invariant(!!time, "A time signature must be specified.");
-    let base = divisions * 4/count;
+    let base = divisions * 4 / count;
 
     if (timeModification) {
         base *= timeModification.normalNotes / timeModification.actualNotes;

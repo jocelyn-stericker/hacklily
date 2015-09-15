@@ -33,7 +33,7 @@ module.exports = {
                 test: /\.ts(x?)$/,
                 loaders: [
                     "react-hot",
-                    "ts-loader?compiler=ntypescript"
+                    "ts-loader"
                 ]
             },
             {

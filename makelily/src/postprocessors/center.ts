@@ -55,7 +55,7 @@ function center(options: ILayoutOptions, bounds: ILineBounds,
                     if (measures$[measureIdx + 1] && measures$[measureIdx + 1].width === 0) {
                         measureSpaceRemaining += 16.6;
                     }
-                    measure.elements[i][j].x$ = base + measureSpaceRemaining/2 - intrinsicWidth/2;
+                    measure.elements[i][j].x$ = base + measureSpaceRemaining / 2 - intrinsicWidth / 2;
                 }
             }
         });

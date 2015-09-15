@@ -56,13 +56,13 @@ class Beam extends Component<Beam.IProps, {}> {
                         fill: this.props.stroke,
                         key: idx + "_" + beam,
                         points: x1 + "," +
-                            this._getYVar(0, beam, (x1 - xLow)/(xHigh - xLow)) + " " +
+                            this._getYVar(0, beam, (x1 - xLow) / (xHigh - xLow)) + " " +
                             x2 + "," +
-                            this._getYVar(0, beam, (x2 - xLow)/(xHigh - xLow)) + " " +
+                            this._getYVar(0, beam, (x2 - xLow) / (xHigh - xLow)) + " " +
                             x2 + "," +
-                            this._getYVar(1, beam, (x2 - xLow)/(xHigh - xLow)) + " " +
+                            this._getYVar(1, beam, (x2 - xLow) / (xHigh - xLow)) + " " +
                             x1 + "," +
-                            this._getYVar(1, beam, (x1 - xLow)/(xHigh - xLow)),
+                            this._getYVar(1, beam, (x1 - xLow) / (xHigh - xLow)),
                         stroke: this.props.stroke,
                         strokeWidth: 0
                     });
@@ -91,7 +91,7 @@ class Beam extends Component<Beam.IProps, {}> {
 
         return x +
             this.context.originX +
-            getFontOffset("noteheadBlack", this.props.layout.direction)[0]*10 +
+            getFontOffset("noteheadBlack", this.props.layout.direction)[0] * 10 +
             this.getLineXOffset();
     }
 
@@ -109,9 +109,9 @@ class Beam extends Component<Beam.IProps, {}> {
         return this.context.originY -
             this.props.layout.y1 -
             this._getYOffset() +
-            this.props.layout.direction*idx*8.8 -
+            this.props.layout.direction * idx * 8.8 -
             // TODO: use print defaults
-            (incl || 0)*(bravura.engravingDefaults.beamThickness*10);
+            (incl || 0) * (bravura.engravingDefaults.beamThickness * 10);
     }
 
     private _getY2(incl: number, idx: number) {
@@ -120,8 +120,8 @@ class Beam extends Component<Beam.IProps, {}> {
         return this.context.originY -
             this.props.layout.y2 -
             this._getYOffset() +
-            this.props.layout.direction*idx*8.8 -
-            (incl || 0)*(bravura.engravingDefaults.beamThickness*10);
+            this.props.layout.direction * idx * 8.8 -
+            (incl || 0) * (bravura.engravingDefaults.beamThickness * 10);
     }
 
     private _getYVar(incl: number, idx: number, percent: number) {

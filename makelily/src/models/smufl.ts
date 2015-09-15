@@ -18,7 +18,7 @@ import bravura from "./smufl/bravura";
 import glyphNames from "./smufl/glyphnames";
 
 export {default as bravura} from "./smufl/bravura";
-export let bboxes: {[key:string]: any[];} = <any> indexBy(bravura.glyphBBoxes, 4);
+export let bboxes: {[key: string]: any[]; } = <any> indexBy(bravura.glyphBBoxes, 4);
 bboxes["noteheadNull"] = bboxes["noteheadBlack"];
 
 export let getGlyphCode = memoize(function getGlyphCode(name: string) {
@@ -55,22 +55,22 @@ export let distances = {
 };
 
 export function getWidth(glyph: string) {
-    return bboxes[glyph][0]*10 - bboxes[glyph][2]*10;
+    return bboxes[glyph][0] * 10 - bboxes[glyph][2] * 10;
 }
 
 export function getRight(glyph: string) {
-    return bboxes[glyph][0]*10;
+    return bboxes[glyph][0] * 10;
 }
 
 export function getLeft(glyph: string) {
-    return bboxes[glyph][2]*10;
+    return bboxes[glyph][2] * 10;
 }
 
 export function getTop(glyph: string) {
-    return bboxes[glyph][1]*10;
+    return bboxes[glyph][1] * 10;
 }
 
 export function getBottom(glyph: string) {
-    return bboxes[glyph][3]*10;
+    return bboxes[glyph][3] * 10;
 }
 

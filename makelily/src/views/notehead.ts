@@ -37,7 +37,7 @@ class NoteheadView extends Component<NoteheadView.IProps, void> {
             glyphName: this.props.notehead,
             // scale: this.props.grace ? 0.6 : 1.0,
             x: this.context.originX + pos.defaultX + (pos.relativeX || 0),
-            y: this.context.originY - pos.defaultY - (pos.relativeY || 0),
+            y: this.context.originY - pos.defaultY - (pos.relativeY || 0)
         });
     }
 }

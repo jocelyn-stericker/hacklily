@@ -59,6 +59,7 @@ export function makeCursor(factory: Factory, models: IModel[]): ICursor {
             idx: 0,
             number: "1",
             implicit: false,
+            version: 0,
             nonControlling: false,
             x: 100,
             attributes: null,
@@ -90,7 +91,7 @@ export function makeCursor(factory: Factory, models: IModel[]): ICursor {
                     _class: "ScorePart",
                     id: "P1"
                 }
-            ],
+            ]
         },
 
         division$: 0,

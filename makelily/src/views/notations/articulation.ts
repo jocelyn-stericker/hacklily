@@ -69,8 +69,8 @@ class Articulation extends Component<{articulation: Articulations, key?: string 
                 fill: "black",
                 glyphName: `${name}${direction}`,
                 key: name,
-                x: this.context.originX + printStyle.defaultX + (printStyle.relativeX||0),
-                y: this.context.originY - printStyle.defaultY - (printStyle.relativeY||0)
+                x: this.context.originX + printStyle.defaultX + (printStyle.relativeX || 0),
+                y: this.context.originY - printStyle.defaultY - (printStyle.relativeY || 0)
             }));
         };
 
@@ -120,7 +120,7 @@ class Articulation extends Component<{articulation: Articulations, key?: string 
             append(model.unstress, "articUnstress");
         }
 
-        switch(children.length) {
+        switch (children.length) {
             case 0:
                 return null;
             case 1:

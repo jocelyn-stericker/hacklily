@@ -17,7 +17,7 @@
  */
 
 /* tslint:disable */
-let DOMProperty = require("react/lib/DOMProperty");
+const DOMProperty = require("react/lib/DOMProperty");
 /* tslint:enable */
 
 export function inject() {

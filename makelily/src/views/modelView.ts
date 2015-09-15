@@ -27,17 +27,17 @@ import {IModel} from "../engine";
 class ModelView extends Component<{layout: IModel.ILayout, key?: string | number}, void> {
     render(): any {
         let layout = <any> this.props.layout;
-        switch(layout.renderClass) {
-        case IModel.Type.Attributes:
-            return $(Attributes)({layout: layout});
-        case IModel.Type.Barline:
-            return $(Barline)({layout: layout});
-        case IModel.Type.Chord:
-            return $(Chord)({layout: layout});
-        case IModel.Type.Direction:
-            return $(Direction)({layout: layout});
-        default:
-            return null;
+        switch (layout.renderClass) {
+            case IModel.Type.Attributes:
+                return $(Attributes)({layout: layout});
+            case IModel.Type.Barline:
+                return $(Barline)({layout: layout});
+            case IModel.Type.Chord:
+                return $(Chord)({layout: layout});
+            case IModel.Type.Direction:
+                return $(Direction)({layout: layout});
+            default:
+                return null;
         }
     }
 
@@ -56,7 +56,7 @@ module ModelView {
         originY: PropTypes.number
     };
     export let contextTypes = <any> {
-        originYByPartAndStaff: PropTypes.objectOf(NUMBER_ARRAY).isRequired,
+        originYByPartAndStaff: PropTypes.objectOf(NUMBER_ARRAY).isRequired
     };
 }
 

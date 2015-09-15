@@ -109,12 +109,12 @@ export function reduceMeasure(spec: ILayoutOpts): IMeasureLayout {
 
     invariant(spec.segments.length >= 1, "_processMeasure expects at least one segment.");
 
-    let gStaffMeasure: { [key:string]: ISegment } =
+    let gStaffMeasure: { [key: string]: ISegment } =
         indexBy(filter(spec.segments,
             seg => seg.ownerType === OwnerType.Staff),
             seg => `${seg.part}_${seg.owner}`);
 
-    let gVoiceMeasure: { [key:string]: ISegment } =
+    let gVoiceMeasure: { [key: string]: ISegment } =
         indexBy(filter(spec.segments,
             seg => seg.ownerType === OwnerType.Voice),
             seg => `${seg.part}_${seg.owner}`);
@@ -365,10 +365,10 @@ export function reduceMeasure(spec: ILayoutOpts): IMeasureLayout {
             gMaxXInMeasure = Math.max(cursor$.x$, gMaxXInMeasure);
             gMaxPaddingTopInMeasure$[model.staffIdx] = Math.max(
                 cursor$.maxPaddingTop$[model.staffIdx],
-                gMaxPaddingTopInMeasure$[model.staffIdx]||0);
+                gMaxPaddingTopInMeasure$[model.staffIdx] || 0);
             gMaxPaddingBottomInMeasure$[model.staffIdx] = Math.max(
                 cursor$.maxPaddingBottom$[model.staffIdx],
-                gMaxPaddingBottomInMeasure$[model.staffIdx]||0);
+                gMaxPaddingBottomInMeasure$[model.staffIdx] || 0);
             return layout;
         });
     });
@@ -509,6 +509,15 @@ export declare class Error {
 }
 
 export class DivisionOverflowException extends Error {
+    maxDiv: number;
+    oldParts: {
+        [id: string]: IMeasurePart;
+    };
+    newParts: {
+        [id: string]: IMeasurePart;
+    } = {};
+    measureIdx: number;
+
     constructor(maxDiv: number, measure: IMutableMeasure) {
         super();
         this.measureIdx = measure.idx;
@@ -552,14 +561,4 @@ export class DivisionOverflowException extends Error {
         oldMeasure$.parts = this.oldParts;
         measures$.splice(this.measureIdx + 1, 0, newMeasure);
     }
-
-    maxDiv: number;
-    oldParts: {
-        [id: string]: IMeasurePart;
-    };
-    newParts: {
-        [id: string]: IMeasurePart;
-    } = {};
-
-    measureIdx: number;
 }

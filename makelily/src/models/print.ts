@@ -25,7 +25,6 @@ import invariant = require("invariant");
 import {defaultsDeep, ICursor, IModel, ISegment} from "../engine";
 
 class PrintModel implements Export.IPrintModel {
-
     /*---- I.1 IModel ---------------------------------------------------------------------------*/
 
     /** @prototype only */
@@ -36,47 +35,6 @@ class PrintModel implements Export.IPrintModel {
 
     /** @prototype */
     frozenness: IModel.FrozenLevel;
-
-    modelDidLoad$(segment$: ISegment): void {
-        // todo
-    }
-
-    once: boolean;
-    validate$(cursor$: ICursor): void {
-        invariant(!!cursor$.header, "Cursor must have a valid header");
-        let spec: Print;
-        if (!this.once) {
-            // FIXME: should always sync
-            let defaultPrint = extractDefaultPrintFromHeader(cursor$.header);
-            spec = defaultsDeep(this, defaultPrint);
-        } else {
-            spec = this;
-        }
-        this.sync(spec);
-        this.measureNumbering = this.measureNumbering || {
-            data: "system"
-        };
-        cursor$.print$ = this; // FIXME: inheritance for multiple papers
-        this.pageNumber = null;
-
-        this.once = true;
-    }
-
-    layout(cursor$: ICursor): Export.ILayout {
-        cursor$.print$ = this; // FIXME: inheritance for multiple papers
-
-        return new PrintModel.Layout(this, cursor$);
-    }
-
-    sync(print: Print) {
-        let keys = Object.keys(Object(print));
-
-        for (let i = 0; i < keys.length; ++i) {
-            if (!(<any>this)[keys[i]]) {
-                (<any>this)[keys[i]] = (<any>print)[keys[i]];
-            }
-        }
-    }
 
     /*---- I.2 Print ----------------------------------------------------------------------------*/
 
@@ -96,12 +54,56 @@ class PrintModel implements Export.IPrintModel {
     staffLayouts: StaffLayout[];
     pageNumber: string;
 
-    /*---- II. Life-cycle -----------------------------------------------------------------------*/
+    /*---- Private ------------------------------------------------------------------------------*/
+
+    private _once: boolean;
+
+    /*---- Implementation -----------------------------------------------------------------------*/
 
     constructor(spec: Print) {
         forEach(spec, (value, key) => {
             (<any>this)[key] = value;
         });
+    }
+
+    modelDidLoad$(segment$: ISegment): void {
+        // todo
+    }
+
+    validate$(cursor$: ICursor): void {
+        invariant(!!cursor$.header, "Cursor must have a valid header");
+        let spec: Print;
+        if (!this._once) {
+            // FIXME: should always sync
+            let defaultPrint = extractDefaultPrintFromHeader(cursor$.header);
+            spec = defaultsDeep(this, defaultPrint);
+        } else {
+            spec = this;
+        }
+        this.sync(spec);
+        this.measureNumbering = this.measureNumbering || {
+            data: "system"
+        };
+        cursor$.print$ = this; // FIXME: inheritance for multiple papers
+        this.pageNumber = null;
+
+        this._once = true;
+    }
+
+    layout(cursor$: ICursor): Export.ILayout {
+        cursor$.print$ = this; // FIXME: inheritance for multiple papers
+
+        return new PrintModel.Layout(this, cursor$);
+    }
+
+    sync(print: Print) {
+        let keys = Object.keys(Object(print));
+
+        for (let i = 0; i < keys.length; ++i) {
+            if (!(<any>this)[keys[i]]) {
+                (<any>this)[keys[i]] = (<any>print)[keys[i]];
+            }
+        }
     }
 
     toXML(): string {

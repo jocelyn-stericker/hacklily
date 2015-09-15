@@ -1,11 +1,10 @@
 /// <reference path="../typings/tsd.d.ts" />
 
-import React = require("react");
-var ReactDOM = require("react-dom");
+const ReactDOM = require("react-dom");
 import {init} from "../../src/index";
 import {Router, Route, Redirect} from "react-router";
 
-var createBrowserHistory = require("history/lib/createBrowserHistory");
+const createBrowserHistory = require("history/lib/createBrowserHistory");
 
 import App from "./app";
 import Home from "./home";
@@ -28,27 +27,27 @@ ReactDOM.render(
                     main: Tests,
                     header: Tests.Header,
                     description: Tests.Description
-                }}/>
+                }} />
             <Redirect from={`${prefix}/tests/`} to={`${prefix}/tests`} />
             <Route path={`${prefix}/tests/:id`}
                 components={{
                     main: Tests,
                     header: Tests.Header,
                     description: Tests.Description
-                }}/>
+                }} />
             <Redirect from={`${prefix}/tests/:id/`} to={`${prefix}/tests/:id/`} />
             <Route path={`${prefix}/`}
                 components={{
                     main: Home,
                     header: Home.Header,
                     description: Home.Description
-                }}/>
+                }} />
             <Route path="*"
                 components={{
                     main: Home,
                     header: Home.Header,
                     description: Home.Description
-                }}/>
+                }} />
         </Route>
     </Router>,
     document.getElementById("root"));

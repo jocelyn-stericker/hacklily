@@ -35,19 +35,6 @@ class SoundModel implements Export.ISoundModel {
     /** @prototype */
     frozenness: IModel.FrozenLevel;
 
-    modelDidLoad$(segment$: ISegment): void {
-        // todo
-    }
-
-    validate$(cursor$: ICursor): void {
-        // todo
-    }
-
-    layout(cursor$: ICursor): Export.ILayout {
-        // mutates cursor$ as required.
-        return new SoundModel.Layout(this, cursor$);
-    }
-
     /*---- I.2 Sound -----------------------------------------------------------------------*/
 
     softPedal: string;
@@ -75,12 +62,25 @@ class SoundModel implements Export.ISoundModel {
 
     timeOnly: string;
 
-    /*---- Validation Implementations -----------------------------------------------------------*/
+    /*---- Implementation -----------------------------------------------------------------------*/
 
     constructor(spec: Sound) {
         forEach(spec, (value, key) => {
             (<any>this)[key] = value;
         });
+    }
+
+    modelDidLoad$(segment$: ISegment): void {
+        // todo
+    }
+
+    validate$(cursor$: ICursor): void {
+        // todo
+    }
+
+    layout(cursor$: ICursor): Export.ILayout {
+        // mutates cursor$ as required.
+        return new SoundModel.Layout(this, cursor$);
     }
 
     toXML(): string {

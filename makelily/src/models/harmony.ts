@@ -36,20 +36,6 @@ class HarmonyModel implements Export.IHarmonyModel {
     /** @prototype */
     frozenness: IModel.FrozenLevel;
 
-    modelDidLoad$(segment$: ISegment): void {
-        // todo
-    }
-
-    validate$(cursor$: ICursor): void {
-        // todo
-    }
-
-    layout(cursor$: ICursor): Export.ILayout {
-        // todo
-
-        return new HarmonyModel.Layout(this, cursor$);
-    }
-
     /*---- I.2 Harmony --------------------------------------------------------------------------*/
 
     frame: Frame;
@@ -99,7 +85,7 @@ class HarmonyModel implements Export.IHarmonyModel {
         return "#" + "000000".substr(0, 6 - hex.length) + hex;
     }
     set color(a: string) {
-        switch(true) {
+        switch (true) {
             case !a:
                 this._color = 0;
                 break;
@@ -113,19 +99,36 @@ class HarmonyModel implements Export.IHarmonyModel {
         }
     }
 
-    private _color: number = 0x000000;
-
     /*---- I.2.5 Placement ----------------------------------------------------------------------*/
 
     placement: AboveBelow;
 
-    /*---- II. Life-cycle -----------------------------------------------------------------------*/
+    /*---- Private ------------------------------------------------------------------------------*/
+
+    private _color: number = 0x000000;
+
+    /*---- Implementation -----------------------------------------------------------------------*/
 
     constructor(spec: Harmony) {
         forEach(spec, (value, key) => {
             (<any>this)[key] = value;
         });
     }
+
+    modelDidLoad$(segment$: ISegment): void {
+        // todo
+    }
+
+    validate$(cursor$: ICursor): void {
+        // todo
+    }
+
+    layout(cursor$: ICursor): Export.ILayout {
+        // todo
+
+        return new HarmonyModel.Layout(this, cursor$);
+    }
+
 
     toXML(): string {
         return serializeToXML.harmony(this);

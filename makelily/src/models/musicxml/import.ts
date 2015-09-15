@@ -83,11 +83,11 @@ export function timewiseStructToDocument(score: ScoreTimewise, factory: IModel.I
             measures: partData.measures,
             parts: partData.parts
         };
-    } catch(err) {
+    } catch (err) {
         return {
             error: err,
             header: null,
-            parts: null,
+            parts: null
         };
     }
 }
@@ -194,7 +194,7 @@ export function _extractMXMLPartsAndMeasures(input: ScoreTimewise, factory: IMod
                     input.divisions = commonDivisions;
                 }
                 if (input.count) {
-                    input.count *= commonDivisions/previousDivisions;
+                    input.count *= commonDivisions / previousDivisions;
                 }
             });
         });
@@ -208,7 +208,7 @@ export function _extractMXMLPartsAndMeasures(input: ScoreTimewise, factory: IMod
             invariant(!!target, "Target not specified");
             let input = target.input[target.idx];
             let prevStaff = 1;
-            switch(input._class) {
+            switch (input._class) {
                 case "Note":
                     let note: Note = input;
 

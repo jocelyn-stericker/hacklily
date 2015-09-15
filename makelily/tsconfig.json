@@ -1,12 +1,15 @@
 {
     "compilerOptions": {
-        "declaration": true,
-        "noEmitOnError": true,
+        "experimentalDecorators": true,
+        "emitDecoratorMetadata": false,
+        "declaration": false,
+        "jsx": "react",
         "module": "commonjs",
         "noImplicitAny": true,
+        "outDir": "dist",
+        "preserveConstEnums": true,
         "removeComments": false,
         "sourceMap": true,
-        "outDir": "dist",
         "target": "es5"
     },
     "files": [

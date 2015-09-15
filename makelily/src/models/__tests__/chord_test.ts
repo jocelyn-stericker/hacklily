@@ -70,6 +70,7 @@ function getCursor(factory: IModel.IFactory, model: IModel): ICursor {
             idx: 0,
             number: "1",
             implicit: false,
+            version: 0,
             nonControlling: false,
             x: 100,
             attributes: attributes,

@@ -32,8 +32,8 @@ class DynamicsView extends Component<{layout: DirectionModel.ILayout, key?: stri
         invariant(!!dynamicsContainer, "No dynamics found!");
         let dynamics = dynamicsContainer.dynamics;
 
-        let initX = this.context.originX + dynamics.defaultX + (dynamics.relativeX||0);
-        let initY = this.context.originY - dynamics.defaultY - (dynamics.relativeY||0);
+        let initX = this.context.originX + dynamics.defaultX + (dynamics.relativeX || 0);
+        let initY = this.context.originY - dynamics.defaultY - (dynamics.relativeY || 0);
 
         let glyphName = this.getGlyphName(dynamics);
         if (!glyphName) {
@@ -61,7 +61,7 @@ class DynamicsView extends Component<{layout: DirectionModel.ILayout, key?: stri
           "dynamicSforzatoPiano": "U+E53A",
           "dynamicZ": "U+E525",
         */
-        switch(true) {
+        switch (true) {
             case dynamics.f:
                 return "dynamicForte";
             case dynamics.ff:

@@ -29,7 +29,7 @@ const UNDERFILLED_EXPANSION_WEIGHT = 0.1;
  * spacing should be on the final line of a song.
  */
 function logistic(t: number) {
-    return 1/(1 + Math.exp(-t));
+    return 1 / (1 + Math.exp(-t));
 }
 
 /** 
@@ -87,7 +87,7 @@ function justify(options: ILayoutOptions, bounds: ILineBounds,
                 expandBy = (Math.log(element$.model.divCount) - Math.log(smallest) + 1);
             }
 
-            return memo + expandBy*(underfilled[idx] ? UNDERFILLED_EXPANSION_WEIGHT : 1.0);
+            return memo + expandBy * (underfilled[idx] ? UNDERFILLED_EXPANSION_WEIGHT : 1.0);
         }, memo);
     }, 0);
 
@@ -97,12 +97,12 @@ function justify(options: ILayoutOptions, bounds: ILineBounds,
     } else if (partial) { // case 2: expanding, but not full width
         let expansionRemainingGuess = bounds.right - 3 - x;
         let avgExpansionGuess = expansionRemainingGuess /
-            (expandableCount + (1-UNDERFILLED_EXPANSION_WEIGHT)*underfilledCount);
+            (expandableCount + (1 - UNDERFILLED_EXPANSION_WEIGHT) * underfilledCount);
         let weight = logistic((avgExpansionGuess - bounds.right / 80) / 20) * 2 / 3;
-        avgExpansion = (1 - weight)*avgExpansionGuess;
+        avgExpansion = (1 - weight) * avgExpansionGuess;
     } else { // case 3: expanding or contracting to full width
         let exp = bounds.right - x;
-        avgExpansion = exp/expandableCount;
+        avgExpansion = exp / expandableCount;
     }
 
     let anyExpandable = false;
@@ -136,7 +136,7 @@ function justify(options: ILayoutOptions, bounds: ILineBounds,
             }
             if (expandOne) {
                 // FIXME: We can overshoot, like on Lily 23f. 
-                measureExpansion += avgExpansion*minRatio;
+                measureExpansion += avgExpansion * minRatio;
                 totalExpCount += minRatio;
             }
         });

@@ -1,17 +1,17 @@
-/** 
+/**
  * (C) Josh Netterfield <joshua@nettek.ca> 2015.
  * Part of the Satie music engraver <https://github.com/jnetterf/satie>.
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Affero General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
@@ -158,7 +158,7 @@ module IChord {
     /**
      * The line of the notehead closest to the dangling end of the stem. For single notes,
      * startingLine and heightDeterminingLine are equal.
-     * 
+     *
      * Note: The minimum size of a stem is determinted by this value.
      */
     export function heightDeterminingLine(chord: IChord, direction: number, clef: Clef) {
@@ -197,12 +197,32 @@ module IChord {
             throw new Error("Invalid note");
         }
     }
-    
+
+    export let offsetToPitch: { [key: string]: string } = {
+        0: "C",
+        0.5: "D",
+        1: "E",
+        1.5: "F",
+        2: "G",
+        2.5: "A",
+        3: "B"
+    };
+
+    export let pitchOffsets: { [key: string]: number } = {
+        C: 0,
+        D: 0.5,
+        E: 1,
+        F: 1.5,
+        G: 2,
+        A: 2.5,
+        B: 3
+    };
+
     export function pitchForClef(relativeY: number, clef: Clef): Pitch {
         let line = relativeY / 10 + 3;
         let clefOffset = IChord.getClefOffset(clef);
-        let octave = Math.floor((-clefOffset + 3 * 3.5 + line)/3.5);
-        let stepQuant = Math.round((line + clefOffset - (octave - 5)*3.5)*2)/2;
+        let octave = Math.floor((-clefOffset + 3 * 3.5 + line) / 3.5);
+        let stepQuant = Math.round((line + clefOffset - (octave - 5) * 3.5) * 2) / 2;
         if (stepQuant === 3.5) {
             octave = octave + 1;
             stepQuant = 0;
@@ -212,7 +232,7 @@ module IChord {
         return {
             octave,
             step
-        }
+        };
     }
 
     export function lineForClef_(step: string, octave: string | number,
@@ -251,33 +271,6 @@ module IChord {
         return !chord.length || chord[0].rest;
     }
 
-    export function getClefOffset(clef: Clef) {
-        return clefOffsets[clef.sign] + clef.line - defaultClefLines[clef.sign.toUpperCase()]
-            - 3.5*parseInt(clef.clefOctaveChange||"0", 10);
-    }
-
-    export function barDivisionsDI(time: Time, divisions: number) {
-        invariant(!!divisions,
-            "Expected divisions to be set before calculating bar divisions.");
-
-        if (time.senzaMisura != null) {
-            return 1000000 * divisions;
-        }
-
-        const quarterNotes = reduce(time.beats, (memo, timeStr, idx) => memo +
-            reduce(timeStr.split("+"), (memo, timeStr) => memo +
-                parseInt(timeStr, 10)*4/time.beatTypes[idx], 0), 0);
-
-        return quarterNotes * divisions || NaN;
-    }
-
-    export function barDivisions({time, divisions}: IAttributes.ISnapshot) {
-        return barDivisionsDI(time, divisions);
-    }
-
-    export let IDEAL_STEM_HEIGHT: number = 35;
-    export let MIN_STEM_HEIGHT: number = 25;
-
     export let defaultClefLines: { [key: string]: number} = {
         G: 2,
         F: 4,
@@ -295,6 +288,33 @@ module IChord {
         TAB: -0.5,
         NONE: -0.5
     };
+
+    export function getClefOffset(clef: Clef) {
+        return clefOffsets[clef.sign] + clef.line - defaultClefLines[clef.sign.toUpperCase()]
+            - 3.5 * parseInt(clef.clefOctaveChange || "0", 10);
+    }
+
+    export function barDivisionsDI(time: Time, divisions: number) {
+        invariant(!!divisions,
+            "Expected divisions to be set before calculating bar divisions.");
+
+        if (time.senzaMisura != null) {
+            return 1000000 * divisions;
+        }
+
+        const quarterNotes = reduce(time.beats, (memo, timeStr, idx) => memo +
+            reduce(timeStr.split("+"), (memo, timeStr) => memo +
+                parseInt(timeStr, 10) * 4 / time.beatTypes[idx], 0), 0);
+
+        return quarterNotes * divisions || NaN;
+    }
+
+    export function barDivisions({time, divisions}: IAttributes.ISnapshot) {
+        return barDivisionsDI(time, divisions);
+    }
+
+    export let IDEAL_STEM_HEIGHT: number = 35;
+    export let MIN_STEM_HEIGHT: number = 25;
 
     export let chromaticScale: { [key: string]: number } = {
         c: 0, d: 2, e: 4, f: 5, g: 7, a: 9, b: 11
@@ -325,26 +345,6 @@ module IChord {
         256: true,
         512: true,
         1024: true
-    };
-
-    export let offsetToPitch: { [key: string]: string } = {
-        0: "C",
-        0.5: "D",
-        1: "E",
-        1.5: "F",
-        2: "G",
-        2.5: "A",
-        3: "B"
-    };
-
-    export let pitchOffsets: { [key: string]: number } = {
-        C: 0,
-        D: 0.5,
-        E: 1,
-        F: 1.5,
-        G: 2,
-        A: 2.5,
-        B: 3
     };
 
     export let countToFlag: { [key: string]: string } = {
@@ -503,17 +503,17 @@ module IChord {
             `${this.props.notehead}, probably because it's not implemented.`);
         return this.props.notehead;
     }
-    
+
     export function notationObj(n: Note): Notations {
         invariant(!n.notations || n.notations.length === 1, "Deprecated notations format");
         return n.notations ? n.notations[0] : EMPTY_FROZEN;
     }
-    
+
     export function articulationObj(n: Note): Articulations {
         return notationObj(n).articulations ?
             notationObj(n).articulations[0] : Object.freeze({});
     }
-    
+
     export function tieds(n: Note[]): Tied[] {
         return chain(n)
             .map(n => notationObj(n).tieds)

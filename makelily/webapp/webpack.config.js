@@ -25,7 +25,7 @@ module.exports = {
             {
                 test: /\.ts(x)?$/,
                 loaders: [
-                    "ts-loader?compiler=ntypescript"
+                    "ts-loader"
                 ]
             },
             {

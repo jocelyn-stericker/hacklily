@@ -35,7 +35,7 @@ class Glyph extends Component<Glyph.IProps, void> {
 
         if (this.context.renderTarget === RenderTarget.SvgExport) {
             let pathData = toPathData("Bravura",
-                getGlyphCode(this.props.glyphName), px, py, 40*(this.props.scale||1));
+                getGlyphCode(this.props.glyphName), px, py, 40 * (this.props.scale || 1));
             return <ReactElement<any>> DOM.path({d: pathData}, null);
         }
 
@@ -43,7 +43,7 @@ class Glyph extends Component<Glyph.IProps, void> {
                 className: "mn_",
                 fill: this.props.fill,
                 fillOpacity: this.props.opacity,
-                fontSize: 40*(this.props.scale||1),
+                fontSize: 40 * (this.props.scale || 1),
                 strokeOpacity: this.props.opacity,
                 transform: this.props.transform,
                 x: px,

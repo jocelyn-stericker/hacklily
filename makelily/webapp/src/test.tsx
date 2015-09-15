@@ -7,6 +7,12 @@ import {prefix} from "./config";
 const STYLES = require("./test.css");
 
 class Test extends React.Component<Test.IProps, Test.IState> {
+    state: Test.IState = {
+        filename: null,
+        src: null,
+        document: null
+    };
+
     render() {
         let chrome = this.props.chrome !== false;
         let showFilterButton = chrome && this.props.showFilterButton;
@@ -33,7 +39,7 @@ class Test extends React.Component<Test.IProps, Test.IState> {
 
         let misc = chrome && document.header.identification.miscellaneous;
         let descriptionField = chrome && find(misc && misc.miscellaneousFields,
-                (field: any) => field.name === "description"); // TODO(jnetterf): Why cast?
+                (field: any) => field.name === "description"); // TODO(jnetterf): why cast?
         let description = chrome && (descriptionField ?
                 descriptionField.data :
                 <p>No description.</p>);
@@ -45,12 +51,6 @@ class Test extends React.Component<Test.IProps, Test.IState> {
             <Viewer document={document} pageClassName={STYLES.page} />
         </div>;
     }
-
-    state: Test.IState = {
-        filename: null,
-        src: null,
-        document: null
-    };
 
     componentDidMount() {
         this.componentDidUpdate(null, null);

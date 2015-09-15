@@ -1,5 +1,5 @@
 import React = require("react");
-import {Route, Link} from "react-router";
+import {Link} from "react-router";
 import _ = require("lodash");
 
 import Test from "./test";
@@ -36,7 +36,7 @@ const TEST_CATEGORIES: {[key: string]: string} = {
     "74": "Figured bass",
     "75": "Other instrumental notation",
     "90": "Compressed MusicXML files",
-    "99": "Compatibility with broken MusicXML",
+    "99": "Compatibility with broken MusicXML"
 };
 
 const TESTS = [

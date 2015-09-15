@@ -43,8 +43,8 @@ class DebugBox extends Component<{layout: IMeasureLayout, key?: string | number}
                         key: `debug_${si}_${j}_${k}`,
                         stroke: "red",
                         width: box.right - box.left,
-                        x: originX + box.defaultX + (box.relativeX||0) + box.left,
-                        y: originY - box.defaultY - (box.relativeY||0) - box.bottom
+                        x: originX + box.defaultX + (box.relativeX || 0) + box.left,
+                        y: originY - box.defaultY - (box.relativeY || 0) - box.bottom
                     }));
                 });
             });

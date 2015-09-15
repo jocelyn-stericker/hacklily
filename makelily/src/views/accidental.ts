@@ -44,7 +44,7 @@ class AccidentalView extends Component<{spec: Accidental, key?: string | number}
         });
 
         if (spec.parentheses || spec.bracket) {
-            let width = bboxes[glyphName][0]*10; // TODO: it's actually 2 - 0!
+            let width = bboxes[glyphName][0] * 10; // TODO: it's actually 2 - 0!
             return DOM.g(null,
                 $(Glyph)({
                     fill: "#000000",

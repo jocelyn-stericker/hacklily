@@ -12,8 +12,6 @@ declare module __React {
         className?: string;
         "font-weight"?: string;
         "alignment-baseline"?: string;
-        width?: number
-        height?: number;
         direction?: string;
         "font-style"?: string;
         "letter-spacing"?: string;

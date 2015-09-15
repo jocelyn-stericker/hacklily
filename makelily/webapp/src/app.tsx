@@ -9,7 +9,6 @@ class App extends React.Component<App.IProps, void> {
         let path = this.props.location.pathname;
         let topLink = path !== (prefix + "/") && path !== prefix &&
             <Link className={STYLES.toplink} to={`${prefix}/`}>« Go home</Link>;
-        let params = this.props.params;
         return <div>
             <header>
                 <div className={STYLES.topbar} />
@@ -29,10 +28,10 @@ module App {
         children: any;
         params: {
             id: string;
-        },
+        };
         location: {
             pathname: string;
-        },
+        };
         header: any;
         description: any;
         main: any;

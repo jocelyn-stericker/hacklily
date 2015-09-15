@@ -25,7 +25,7 @@ import DirectionModel from "../models/direction";
 import Dynamics from "./directions/dynamics";
 import Words from "./directions/words";
 import Glyph from "./primitives/glyph";
-import {Targetable} from "./metadata"
+import {Targetable} from "./metadata";
 
 @Targetable()
 class Direction extends Component<{layout: DirectionModel.ILayout}, {}> {
@@ -33,7 +33,7 @@ class Direction extends Component<{layout: DirectionModel.ILayout}, {}> {
         const model = this.props.layout.model;
         let childContext = this.getChildContext();
         let children = map(model.directionTypes, (type, idx) => {
-            switch(true) {
+            switch (true) {
                 case !!type.accordionRegistration:
                     return null;
                 case !!type.bracket:
@@ -80,8 +80,8 @@ class Direction extends Component<{layout: DirectionModel.ILayout}, {}> {
                         map(type.segnos, (segno, segnoIdx) => $(Glyph)({
                             glyphName: "segno",
                             key: segnoIdx,
-                            x: childContext.originX + segno.defaultX + (segno.relativeX||0),
-                            y: this.context.originY - segno.defaultY - (segno.relativeY||0),
+                            x: childContext.originX + segno.defaultX + (segno.relativeX || 0),
+                            y: this.context.originY - segno.defaultY - (segno.relativeY || 0),
                             fill: segno.color
                         })));
                 case !!type.stringMute:
@@ -93,10 +93,12 @@ class Direction extends Component<{layout: DirectionModel.ILayout}, {}> {
                         key: `d_${idx}`,
                         layout: this.props.layout
                     });
+                default:
+                    throw new Error("Invalid direction in " + type);
             };
         }).filter(el => !!el);
 
-        switch(children.length) {
+        switch (children.length) {
             case 0:
                 return null;
             case 1:

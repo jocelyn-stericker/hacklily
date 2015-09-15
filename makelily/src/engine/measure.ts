@@ -73,7 +73,7 @@ export enum OwnerType {
  * Returns the division count.
  */
 export function normalizeDivisions$(segments$: ISegment[], factor: number = 0): number {
-    let divisions = reduce(segments$, (div1, seg) =>div1 ? lcm(div1, seg.divisions) : 1, factor);
+    let divisions = reduce(segments$, (div1, seg) => div1 ? lcm(div1, seg.divisions) : 1, factor);
 
     forEach(segments$, segment => {
         if (!segment) {

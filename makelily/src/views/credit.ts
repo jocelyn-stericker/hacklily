@@ -25,6 +25,15 @@ import {RenderUtil} from "../engine";
 import {ITextMixin, Prototype as TextMixin} from "./textMixin";
 
 class CreditView extends Component<Credit, void> implements ITextMixin {
+    /* ITextMixin */
+    getTextAnchor: (words: CreditWords | Words) => string;
+    getTextDecoration: (words: CreditWords | Words) => string;
+    getTransform: (words: CreditWords | Words) => string;
+    getDirection: (words: CreditWords | Words) => string;
+    getX: (lineNum: number) => number;
+    getDX: (words: CreditWords | Words, initX: number, lineNum: number) => number;
+    getDY: (words: CreditWords | Words, initY: number, lineNum: number) => number;
+
     render(): any {
         let image = this.props.creditImage;
         let words = this.props.creditWords;
@@ -63,20 +72,11 @@ class CreditView extends Component<Credit, void> implements ITextMixin {
                     "text-decoration": this.getTextDecoration(words),
                     textAnchor: this.getTextAnchor(words),
                     transform: this.getTransform(words),
-                    x: this.getX(lineNum),
+                    x: this.getX(lineNum)
                 }, line));
             })
         /* DOM.text */);
     }
-
-    /* ITextMixin */
-    getTextAnchor: (words: CreditWords | Words) => string;
-    getTextDecoration: (words: CreditWords | Words) => string;
-    getTransform: (words: CreditWords | Words) => string;
-    getDirection: (words: CreditWords | Words) => string;
-    getX: (lineNum: number) => number;
-    getDX: (words: CreditWords | Words, initX: number, lineNum: number) => number;
-    getDY: (words: CreditWords | Words, initY: number, lineNum: number) => number;
 }
 
 extend(CreditView.prototype, TextMixin);
