@@ -20,7 +20,8 @@ import {AboveBelow, DirectionType, Offset, Sound, Footnote, Level, Direction,
     NormalBold, Segno, serialize as serializeToXML} from "musicxml-interfaces";
 import {forEach} from "lodash";
 
-import {ICursor, IModel, ISegment, RenderUtil} from "./../engine";
+import {ICursor, IModel, ISegment} from "../engine";
+import {mmToTenths, ptPerMM} from "../engine/renderUtil";
 import {getTextBB} from "./fontManager";
 import {bboxes as glyphBoxes} from "./smufl";
 
@@ -137,15 +138,15 @@ module DirectionModel {
 
                     // Vertical coordinates are flipped (argh!)
                     // We give 10% padding because elements touching isn't ideal.
-                    boundingBox.top = -RenderUtil.mmToTenths(scale40,
-                            fontBox.bottom / RenderUtil.ptPerMM) * 1.1;
-                    boundingBox.bottom = -RenderUtil.mmToTenths(scale40,
-                            fontBox.top / RenderUtil.ptPerMM) * 1.1;
+                    boundingBox.top = -mmToTenths(scale40,
+                            fontBox.bottom / ptPerMM) * 1.1;
+                    boundingBox.bottom = -mmToTenths(scale40,
+                            fontBox.top / ptPerMM) * 1.1;
 
-                    boundingBox.left = RenderUtil.mmToTenths(scale40,
-                            fontBox.left / RenderUtil.ptPerMM) * 1.1;
-                    boundingBox.right = RenderUtil.mmToTenths(scale40,
-                            fontBox.right / RenderUtil.ptPerMM) * 1.1;
+                    boundingBox.left = mmToTenths(scale40,
+                            fontBox.left / ptPerMM) * 1.1;
+                    boundingBox.right = mmToTenths(scale40,
+                            fontBox.right / ptPerMM) * 1.1;
                     this.boundingBoxes$.push(boundingBox);
                 });
                 if (type.dynamics) {

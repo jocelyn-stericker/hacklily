@@ -22,7 +22,8 @@ import {map, filter, forEach} from "lodash";
 import invariant = require("invariant");
 
 import Credit from "./credit";
-import {ILineLayoutResult, RenderTarget, RenderUtil, key$} from "../engine";
+import {ILineLayoutResult, RenderTarget, key$} from "../engine";
+import {tenthsToMM} from "../engine/renderUtil";
 import MeasureView from "./measureView";
 
 class Page extends Component<Page.IProps, Page.IState> {
@@ -39,13 +40,9 @@ class Page extends Component<Page.IProps, Page.IState> {
                                 (cr.page === parseInt(page, 10)));
         const scale40 = defaults.scaling.millimeters / defaults.scaling.tenths * 40;
         const widthMM = this.props.renderTarget === RenderTarget.SvgExport ?
-                                RenderUtil.tenthsToMM(
-                                    scale40, print.pageLayout.pageWidth) + "mm" :
-                                "100%";
+                                tenthsToMM(scale40, print.pageLayout.pageWidth) + "mm" : "100%";
         const heightMM = this.props.renderTarget === RenderTarget.SvgExport ?
-                                RenderUtil.tenthsToMM(
-                                    scale40, print.pageLayout.pageHeight) + "mm" :
-                                "100%";
+                                tenthsToMM(scale40, print.pageLayout.pageHeight) + "mm" : "100%";
 
         /*--- Staves ----------------------------------------------*/
 

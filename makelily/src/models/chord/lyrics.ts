@@ -19,7 +19,8 @@
 import {Note, Lyric, Text, NormalBold} from "musicxml-interfaces";
 import {reduce} from "lodash";
 
-import {IChord, RenderUtil} from "../../engine";
+import {IChord} from "../../engine";
+import {cssSizeToTenths} from "../../engine/renderUtil"
 import {getTextBB} from "../fontManager";
 
 export const DEFAULT_LYRIC_SIZE = "22";
@@ -43,7 +44,7 @@ export function getLyricWidth(lyric: Lyric, scale40: number) {
         } else if (lyricPart._class === "Text") {
             let text = <Text> lyricPart;
             return partWidth + getTextBB(text.fontFamily || DEFAULT_FONT, text.data,
-                RenderUtil.cssSizeToTenths(scale40, text.fontSize || DEFAULT_LYRIC_SIZE),
+                cssSizeToTenths(scale40, text.fontSize || DEFAULT_LYRIC_SIZE),
                 text.fontWeight === NormalBold.Bold ? "bold" : null).right;
         }
         return 0;
