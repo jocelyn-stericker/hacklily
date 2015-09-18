@@ -34,7 +34,6 @@ export {default as IModel} from "./engine/imodel";
 export {default as IPart} from "./engine/ipart";
 export {default as IPrint} from "./engine/iprint";
 
-export {default as RenderUtil} from "./engine/renderUtil";
 export {default as defaultsDeep} from "./engine/defaultsDeep";
 
 export {default as validate} from "./engine/processors/validate";

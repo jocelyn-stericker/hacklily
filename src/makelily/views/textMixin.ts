@@ -20,7 +20,7 @@
 
 import {CreditWords, Words, DirectionMode, LeftCenterRight} from "musicxml-interfaces";
 
-import {RenderUtil} from "../engine";
+import {cssSizeToTenths} from "../engine/renderUtil";
 
 const DEF_SPACING = 4;
 const V_SPACING = 4;
@@ -49,7 +49,7 @@ export let Prototype: ITextMixin = {
     getDY: function(words: CreditWords, initY: number, lineNum: number) {
         if (lineNum > 0) {
             return V_SPACING +
-                RenderUtil.cssSizeToTenths(this.context.scale40, words.fontSize);
+                cssSizeToTenths(this.context.scale40, words.fontSize);
         }
         if (words.defaultY || words.relativeY) {
             return this.context.originY - (words.defaultY + (words.relativeY || 0)) - initY;

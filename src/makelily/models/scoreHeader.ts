@@ -28,7 +28,8 @@ import {ScoreHeader, Credit, Identification, Defaults, NormalItalic, NormalBold,
     serialize as serializeToXML} from "musicxml-interfaces";
 import {forEach, any} from "lodash";
 
-import {defaultsDeep, IPrint, RenderUtil} from "../engine";
+import {defaultsDeep, IPrint} from "../engine";
+import {mmToTenths, defaultStaveHeight, pageSizes, defaultMargins} from "../engine/renderUtil";
 import {distances, bravura} from "./smufl";
 
 /** 
@@ -130,26 +131,26 @@ class ScoreHeaderModel implements ScoreHeader {
             fontWeight: NormalBold.Normal
         },
         pageLayout: {
-            pageHeight: RenderUtil.mmToTenths(
-                RenderUtil.defaultStaveHeight, RenderUtil.pageSizes[0].height),
-            pageWidth: RenderUtil.mmToTenths(
-                RenderUtil.defaultStaveHeight, RenderUtil.pageSizes[0].width),
+            pageHeight: mmToTenths(
+                defaultStaveHeight, pageSizes[0].height),
+            pageWidth: mmToTenths(
+                defaultStaveHeight, pageSizes[0].width),
             pageMargins: [
                 {
-                    bottomMargin: RenderUtil.mmToTenths(
-                        RenderUtil.defaultStaveHeight, RenderUtil.defaultMargins.bottom),
-                    leftMargin: RenderUtil.mmToTenths(
-                        RenderUtil.defaultStaveHeight, RenderUtil.defaultMargins.left),
-                    rightMargin: RenderUtil.mmToTenths(
-                        RenderUtil.defaultStaveHeight, RenderUtil.defaultMargins.right),
-                    topMargin: RenderUtil.mmToTenths(
-                        RenderUtil.defaultStaveHeight, RenderUtil.defaultMargins.top),
+                    bottomMargin: mmToTenths(
+                        defaultStaveHeight, defaultMargins.bottom),
+                    leftMargin: mmToTenths(
+                        defaultStaveHeight, defaultMargins.left),
+                    rightMargin: mmToTenths(
+                        defaultStaveHeight, defaultMargins.right),
+                    topMargin: mmToTenths(
+                        defaultStaveHeight, defaultMargins.top),
                     type: OddEvenBoth.Both
                 }
             ]
         },
         scaling: {
-            millimeters: RenderUtil.defaultStaveHeight,
+            millimeters: defaultStaveHeight,
             tenths: 40
         },
         staffLayouts: [],
@@ -357,7 +358,7 @@ class ScoreHeaderModel implements ScoreHeader {
                     words: val,
                     defaultX: defaultX,
                     justify: justification,
-                    defaultY: pageLayout.pageHeight - RenderUtil.mmToTenths(mm, top),
+                    defaultY: pageLayout.pageHeight - mmToTenths(mm, top),
                     fontSize: fontSize
                 }],
                 page: 1

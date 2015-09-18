@@ -21,7 +21,7 @@ import {Component, DOM, PropTypes} from "react";
 import {map, extend} from "lodash";
 import invariant = require("invariant");
 
-import {RenderUtil} from "../engine";
+import {cssSizeToTenths} from "../engine/renderUtil";
 import {ITextMixin, Prototype as TextMixin} from "./textMixin";
 
 class CreditView extends Component<Credit, void> implements ITextMixin {
@@ -54,7 +54,7 @@ class CreditView extends Component<Credit, void> implements ITextMixin {
             map(words, (words, idx) => {
                 let isItalic = words.fontStyle === NormalItalic.Italic;
                 let isBold = words.fontWeight === NormalBold.Bold;
-                let fontSize = RenderUtil.cssSizeToTenths(scale40, words.fontSize);
+                let fontSize = cssSizeToTenths(scale40, words.fontSize);
                 return map(words.words.split("\n"), (line, lineNum) => DOM.tspan({
                     "alignment-baseline": "hanging",
                     fill: words.color || "black",
@@ -67,7 +67,7 @@ class CreditView extends Component<Credit, void> implements ITextMixin {
                     fontSize: fontSize,
                     key: idx + "l" + lineNum,
                     "letter-spacing": words.letterSpacing && words.letterSpacing !== "normal" ?
-                        ("" + RenderUtil.cssSizeToTenths(this.context.scale40,
+                        ("" + cssSizeToTenths(this.context.scale40,
                                 words.letterSpacing)) : "normal",
                     "text-decoration": this.getTextDecoration(words),
                     textAnchor: this.getTextAnchor(words),

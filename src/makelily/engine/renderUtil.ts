@@ -18,8 +18,6 @@
 
 "use strict";
 
-module RenderUtil {
-
 export let ptPerMM = 2.842;
 
 export let mmPerIn = 25.4;
@@ -667,7 +665,3 @@ export function getHeaderHeight(header: any) {
     }
     return height;
 }
-
-}
-
-export default RenderUtil;

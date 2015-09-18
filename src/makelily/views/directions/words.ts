@@ -24,7 +24,7 @@ import {filter, map, extend} from "lodash";
 import invariant = require("invariant");
 
 import DirectionModel from "../../models/direction";
-import {RenderUtil} from "../../engine";
+import {cssSizeToTenths} from "../../engine/renderUtil";
 import {ITextMixin, Prototype as TextMixin} from "../textMixin";
 
 class WordsView extends Component<WordsView.IProps, void> implements ITextMixin {
@@ -55,7 +55,7 @@ class WordsView extends Component<WordsView.IProps, void> implements ITextMixin 
             map(words, (words, idx) => {
                 let isBold = words.fontWeight === NormalBold.Bold;
                 let isItalic = words.fontStyle === NormalItalic.Italic;
-                let fontSize = RenderUtil.cssSizeToTenths(scale40, words.fontSize);
+                let fontSize = cssSizeToTenths(scale40, words.fontSize);
 
                 return map(words.data.split("\n"), (line, lineNum) => DOM.tspan({
                     "alignment-baseline": "hanging",
@@ -69,7 +69,7 @@ class WordsView extends Component<WordsView.IProps, void> implements ITextMixin 
                     fontSize: fontSize,
                     key: idx + "l" + lineNum,
                     "letter-spacing": words.letterSpacing && words.letterSpacing !== "normal" ?
-                        ("" + RenderUtil.cssSizeToTenths(this.context.scale40,
+                        ("" + cssSizeToTenths(this.context.scale40,
                                 words.letterSpacing)) : "normal",
                     "text-decoration": this.getTextDecoration(words),
                     textAnchor: this.getTextAnchor(words),
