@@ -6287,12 +6287,12 @@ function xmlToKeyOctave(node: Node) {
  */
 export interface Key extends PrintStyle, PrintObject {
     cancel?: Cancel;
-    keySteps: string[];
+    keySteps?: string[];
     keyOctaves?: KeyOctave[];
     number?: number;
-    fifths: number;
-    keyAlters: string[];
-    keyAccidentals: string[];
+    fifths?: number;
+    keyAlters?: string[];
+    keyAccidentals?: string[];
     mode?: string;
     _class?: string;
 }
@@ -6806,7 +6806,7 @@ function xmlToPartSymbol(node: Node) {
  * additional attribute has been set to "yes".
  */
 export interface Clef extends PrintStyle, PrintObject {
-    clefOctaveChange: string;
+    clefOctaveChange?: string;
     sign: string;
     number?: number;
     size?: SymbolSize;
@@ -7785,7 +7785,7 @@ function xmlToChord(node: Node) {
  */
 export interface Unpitched {
     displayStep?: string;
-    displayOctave?: string;
+    displayOctave?: number;
 }
 
 function xmlToUnpitched(node: Node) {
@@ -7797,7 +7797,7 @@ function xmlToUnpitched(node: Node) {
             ret.displayStep = dataDisplayStep;
         }
         if (ch.nodeName === "display-octave") {
-            let dataDisplayOctave = getString(ch, true);
+            let dataDisplayOctave = getNumber(ch, true);
             ret.displayOctave = dataDisplayOctave;
         }
     }
@@ -7899,7 +7899,7 @@ function xmlToFullNote(node: Node) {
 export interface Rest {
     measure?: boolean;
     displayStep?: string;
-    displayOctave?: string;
+    displayOctave?: number;
 }
 
 function xmlToRest(node: Node) {
@@ -7912,7 +7912,7 @@ function xmlToRest(node: Node) {
             ret.displayStep = dataDisplayStep;
         }
         if (ch.nodeName === "display-octave") {
-            let dataDisplayOctave = getString(ch, true);
+            let dataDisplayOctave = getNumber(ch, true);
             ret.displayOctave = dataDisplayOctave;
         }
     }

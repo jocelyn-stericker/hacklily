@@ -16,12 +16,15 @@ function makePatch<T, U>(original: T, updates: any, childBuilders: U, explicitPa
   }).filter(p => Boolean(p));
 
   Object.keys(childBuilders).map(key => {
-    if (original[key] === undefined) patches.push({p: [key], oi: childBuilders[key].build()});
-    let subpatches = childBuilders[key].patch().map(patch => {
-      patch.p = [key].concat(patch.p);
-      return patch;
-    })
-    patches = patches.concat(subpatches);
+    if (original[key] === undefined) {
+      patches.push({p: [key], oi: childBuilders[key].build()});
+    } else {
+      let subpatches = childBuilders[key].patch().map(patch => {
+        patch.p = [key].concat(patch.p);
+        return patch;
+      })
+      patches = patches.concat(subpatches);
+    }
   });
   return patches.concat(explicitPatches);
 }
@@ -1318,6 +1321,11 @@ export interface IPrintStyleBuilder {
   relativeY: (relativeY: number) => IPrintStyleBuilder;
   defaultY: (defaultY: number) => IPrintStyleBuilder;
   relativeX: (relativeX: number) => IPrintStyleBuilder;
+  fontFamily: (fontFamily: string) => IPrintStyleBuilder;
+  fontWeight: (fontWeight: NormalBold) => IPrintStyleBuilder;
+  fontStyle: (fontStyle: NormalItalic) => IPrintStyleBuilder;
+  fontSize: (fontSize: string) => IPrintStyleBuilder;
+  color: (color: string) => IPrintStyleBuilder;
 }
 
 class PrintStyleBuilder implements IPrintStyleBuilder {
@@ -1327,6 +1335,11 @@ class PrintStyleBuilder implements IPrintStyleBuilder {
   relativeY: (relativeY: number) => IPrintStyleBuilder;
   defaultY: (defaultY: number) => IPrintStyleBuilder;
   relativeX: (relativeX: number) => IPrintStyleBuilder;
+  fontFamily: (fontFamily: string) => IPrintStyleBuilder;
+  fontWeight: (fontWeight: NormalBold) => IPrintStyleBuilder;
+  fontStyle: (fontStyle: NormalItalic) => IPrintStyleBuilder;
+  fontSize: (fontSize: string) => IPrintStyleBuilder;
+  color: (color: string) => IPrintStyleBuilder;
   constructor(original?: PrintStyle) {
     let updates: PrintStyle = {} as any;
     let childBuilders: {[key: string]: any} = {};
@@ -1387,6 +1400,41 @@ class PrintStyleBuilder implements IPrintStyleBuilder {
                 modifiedKeys["relativeX"] = true;
                 return this;
             }
+
+            this.fontFamily = (spec: string): IPrintStyleBuilder => {
+                updates["fontFamily"] = spec;
+                delete childBuilders["fontFamily;"];
+                modifiedKeys["fontFamily"] = true;
+                return this;
+            }
+
+            this.fontWeight = (spec: NormalBold): IPrintStyleBuilder => {
+                updates["fontWeight"] = spec;
+                delete childBuilders["fontWeight;"];
+                modifiedKeys["fontWeight"] = true;
+                return this;
+            }
+
+            this.fontStyle = (spec: NormalItalic): IPrintStyleBuilder => {
+                updates["fontStyle"] = spec;
+                delete childBuilders["fontStyle;"];
+                modifiedKeys["fontStyle"] = true;
+                return this;
+            }
+
+            this.fontSize = (spec: string): IPrintStyleBuilder => {
+                updates["fontSize"] = spec;
+                delete childBuilders["fontSize;"];
+                modifiedKeys["fontSize"] = true;
+                return this;
+            }
+
+            this.color = (spec: string): IPrintStyleBuilder => {
+                updates["color"] = spec;
+                delete childBuilders["color;"];
+                modifiedKeys["color"] = true;
+                return this;
+            }
   }
 }
 export function patchPrintStyle(base: PrintStyle, builder: (build: IPrintStyleBuilder) => IPrintStyleBuilder): IAny[] { return builder(new PrintStyleBuilder(base)).patch(); }
@@ -1399,6 +1447,13 @@ export interface IPrintStyleAlignBuilder {
   relativeY: (relativeY: number) => IPrintStyleAlignBuilder;
   defaultY: (defaultY: number) => IPrintStyleAlignBuilder;
   relativeX: (relativeX: number) => IPrintStyleAlignBuilder;
+  fontFamily: (fontFamily: string) => IPrintStyleAlignBuilder;
+  fontWeight: (fontWeight: NormalBold) => IPrintStyleAlignBuilder;
+  fontStyle: (fontStyle: NormalItalic) => IPrintStyleAlignBuilder;
+  fontSize: (fontSize: string) => IPrintStyleAlignBuilder;
+  color: (color: string) => IPrintStyleAlignBuilder;
+  halign: (halign: LeftCenterRight) => IPrintStyleAlignBuilder;
+  valign: (valign: TopMiddleBottomBaseline) => IPrintStyleAlignBuilder;
 }
 
 class PrintStyleAlignBuilder implements IPrintStyleAlignBuilder {
@@ -1408,6 +1463,13 @@ class PrintStyleAlignBuilder implements IPrintStyleAlignBuilder {
   relativeY: (relativeY: number) => IPrintStyleAlignBuilder;
   defaultY: (defaultY: number) => IPrintStyleAlignBuilder;
   relativeX: (relativeX: number) => IPrintStyleAlignBuilder;
+  fontFamily: (fontFamily: string) => IPrintStyleAlignBuilder;
+  fontWeight: (fontWeight: NormalBold) => IPrintStyleAlignBuilder;
+  fontStyle: (fontStyle: NormalItalic) => IPrintStyleAlignBuilder;
+  fontSize: (fontSize: string) => IPrintStyleAlignBuilder;
+  color: (color: string) => IPrintStyleAlignBuilder;
+  halign: (halign: LeftCenterRight) => IPrintStyleAlignBuilder;
+  valign: (valign: TopMiddleBottomBaseline) => IPrintStyleAlignBuilder;
   constructor(original?: PrintStyleAlign) {
     let updates: PrintStyleAlign = {} as any;
     let childBuilders: {[key: string]: any} = {};
@@ -1466,6 +1528,55 @@ class PrintStyleAlignBuilder implements IPrintStyleAlignBuilder {
                 updates["relativeX"] = spec;
                 delete childBuilders["relativeX;"];
                 modifiedKeys["relativeX"] = true;
+                return this;
+            }
+
+            this.fontFamily = (spec: string): IPrintStyleAlignBuilder => {
+                updates["fontFamily"] = spec;
+                delete childBuilders["fontFamily;"];
+                modifiedKeys["fontFamily"] = true;
+                return this;
+            }
+
+            this.fontWeight = (spec: NormalBold): IPrintStyleAlignBuilder => {
+                updates["fontWeight"] = spec;
+                delete childBuilders["fontWeight;"];
+                modifiedKeys["fontWeight"] = true;
+                return this;
+            }
+
+            this.fontStyle = (spec: NormalItalic): IPrintStyleAlignBuilder => {
+                updates["fontStyle"] = spec;
+                delete childBuilders["fontStyle;"];
+                modifiedKeys["fontStyle"] = true;
+                return this;
+            }
+
+            this.fontSize = (spec: string): IPrintStyleAlignBuilder => {
+                updates["fontSize"] = spec;
+                delete childBuilders["fontSize;"];
+                modifiedKeys["fontSize"] = true;
+                return this;
+            }
+
+            this.color = (spec: string): IPrintStyleAlignBuilder => {
+                updates["color"] = spec;
+                delete childBuilders["color;"];
+                modifiedKeys["color"] = true;
+                return this;
+            }
+
+            this.halign = (spec: LeftCenterRight): IPrintStyleAlignBuilder => {
+                updates["halign"] = spec;
+                delete childBuilders["halign;"];
+                modifiedKeys["halign"] = true;
+                return this;
+            }
+
+            this.valign = (spec: TopMiddleBottomBaseline): IPrintStyleAlignBuilder => {
+                updates["valign"] = spec;
+                delete childBuilders["valign;"];
+                modifiedKeys["valign"] = true;
                 return this;
             }
   }
@@ -1758,6 +1869,7 @@ export interface IPrintoutBuilder {
   printDot: (printDot: boolean) => IPrintoutBuilder;
   printLyric: (printLyric: boolean) => IPrintoutBuilder;
   printObject: (printObject: boolean) => IPrintoutBuilder;
+  printSpacing: (printSpacing: boolean) => IPrintoutBuilder;
 }
 
 class PrintoutBuilder implements IPrintoutBuilder {
@@ -1766,6 +1878,7 @@ class PrintoutBuilder implements IPrintoutBuilder {
   printDot: (printDot: boolean) => IPrintoutBuilder;
   printLyric: (printLyric: boolean) => IPrintoutBuilder;
   printObject: (printObject: boolean) => IPrintoutBuilder;
+  printSpacing: (printSpacing: boolean) => IPrintoutBuilder;
   constructor(original?: Printout) {
     let updates: Printout = {} as any;
     let childBuilders: {[key: string]: any} = {};
@@ -1819,6 +1932,13 @@ class PrintoutBuilder implements IPrintoutBuilder {
                 modifiedKeys["printObject"] = true;
                 return this;
             }
+
+            this.printSpacing = (spec: boolean): IPrintoutBuilder => {
+                updates["printSpacing"] = spec;
+                delete childBuilders["printSpacing;"];
+                modifiedKeys["printSpacing"] = true;
+                return this;
+            }
   }
 }
 export function patchPrintout(base: Printout, builder: (build: IPrintoutBuilder) => IPrintoutBuilder): IAny[] { return builder(new PrintoutBuilder(base)).patch(); }
@@ -1828,12 +1948,50 @@ export interface ITextFormattingBuilder {
   build?: () => TextFormatting;
   patch: () => IAny[];
   justify: (justify: LeftCenterRight) => ITextFormattingBuilder;
+  defaultX: (defaultX: number) => ITextFormattingBuilder;
+  relativeY: (relativeY: number) => ITextFormattingBuilder;
+  defaultY: (defaultY: number) => ITextFormattingBuilder;
+  relativeX: (relativeX: number) => ITextFormattingBuilder;
+  fontFamily: (fontFamily: string) => ITextFormattingBuilder;
+  fontWeight: (fontWeight: NormalBold) => ITextFormattingBuilder;
+  fontStyle: (fontStyle: NormalItalic) => ITextFormattingBuilder;
+  fontSize: (fontSize: string) => ITextFormattingBuilder;
+  color: (color: string) => ITextFormattingBuilder;
+  halign: (halign: LeftCenterRight) => ITextFormattingBuilder;
+  valign: (valign: TopMiddleBottomBaseline) => ITextFormattingBuilder;
+  underline: (underline: number) => ITextFormattingBuilder;
+  overline: (overline: number) => ITextFormattingBuilder;
+  lineThrough: (lineThrough: number) => ITextFormattingBuilder;
+  rotation: (rotation: number) => ITextFormattingBuilder;
+  letterSpacing: (letterSpacing: string) => ITextFormattingBuilder;
+  lineHeight: (lineHeight: string) => ITextFormattingBuilder;
+  dir: (dir: DirectionMode) => ITextFormattingBuilder;
+  enclosure: (enclosure: EnclosureShape) => ITextFormattingBuilder;
 }
 
 class TextFormattingBuilder implements ITextFormattingBuilder {
   build: () => TextFormatting;
   patch: () => IAny[];
   justify: (justify: LeftCenterRight) => ITextFormattingBuilder;
+  defaultX: (defaultX: number) => ITextFormattingBuilder;
+  relativeY: (relativeY: number) => ITextFormattingBuilder;
+  defaultY: (defaultY: number) => ITextFormattingBuilder;
+  relativeX: (relativeX: number) => ITextFormattingBuilder;
+  fontFamily: (fontFamily: string) => ITextFormattingBuilder;
+  fontWeight: (fontWeight: NormalBold) => ITextFormattingBuilder;
+  fontStyle: (fontStyle: NormalItalic) => ITextFormattingBuilder;
+  fontSize: (fontSize: string) => ITextFormattingBuilder;
+  color: (color: string) => ITextFormattingBuilder;
+  halign: (halign: LeftCenterRight) => ITextFormattingBuilder;
+  valign: (valign: TopMiddleBottomBaseline) => ITextFormattingBuilder;
+  underline: (underline: number) => ITextFormattingBuilder;
+  overline: (overline: number) => ITextFormattingBuilder;
+  lineThrough: (lineThrough: number) => ITextFormattingBuilder;
+  rotation: (rotation: number) => ITextFormattingBuilder;
+  letterSpacing: (letterSpacing: string) => ITextFormattingBuilder;
+  lineHeight: (lineHeight: string) => ITextFormattingBuilder;
+  dir: (dir: DirectionMode) => ITextFormattingBuilder;
+  enclosure: (enclosure: EnclosureShape) => ITextFormattingBuilder;
   constructor(original?: TextFormatting) {
     let updates: TextFormatting = {} as any;
     let childBuilders: {[key: string]: any} = {};
@@ -1871,6 +2029,139 @@ class TextFormattingBuilder implements ITextFormattingBuilder {
                 updates["justify"] = spec;
                 delete childBuilders["justify;"];
                 modifiedKeys["justify"] = true;
+                return this;
+            }
+
+            this.defaultX = (spec: number): ITextFormattingBuilder => {
+                updates["defaultX"] = spec;
+                delete childBuilders["defaultX;"];
+                modifiedKeys["defaultX"] = true;
+                return this;
+            }
+
+            this.relativeY = (spec: number): ITextFormattingBuilder => {
+                updates["relativeY"] = spec;
+                delete childBuilders["relativeY;"];
+                modifiedKeys["relativeY"] = true;
+                return this;
+            }
+
+            this.defaultY = (spec: number): ITextFormattingBuilder => {
+                updates["defaultY"] = spec;
+                delete childBuilders["defaultY;"];
+                modifiedKeys["defaultY"] = true;
+                return this;
+            }
+
+            this.relativeX = (spec: number): ITextFormattingBuilder => {
+                updates["relativeX"] = spec;
+                delete childBuilders["relativeX;"];
+                modifiedKeys["relativeX"] = true;
+                return this;
+            }
+
+            this.fontFamily = (spec: string): ITextFormattingBuilder => {
+                updates["fontFamily"] = spec;
+                delete childBuilders["fontFamily;"];
+                modifiedKeys["fontFamily"] = true;
+                return this;
+            }
+
+            this.fontWeight = (spec: NormalBold): ITextFormattingBuilder => {
+                updates["fontWeight"] = spec;
+                delete childBuilders["fontWeight;"];
+                modifiedKeys["fontWeight"] = true;
+                return this;
+            }
+
+            this.fontStyle = (spec: NormalItalic): ITextFormattingBuilder => {
+                updates["fontStyle"] = spec;
+                delete childBuilders["fontStyle;"];
+                modifiedKeys["fontStyle"] = true;
+                return this;
+            }
+
+            this.fontSize = (spec: string): ITextFormattingBuilder => {
+                updates["fontSize"] = spec;
+                delete childBuilders["fontSize;"];
+                modifiedKeys["fontSize"] = true;
+                return this;
+            }
+
+            this.color = (spec: string): ITextFormattingBuilder => {
+                updates["color"] = spec;
+                delete childBuilders["color;"];
+                modifiedKeys["color"] = true;
+                return this;
+            }
+
+            this.halign = (spec: LeftCenterRight): ITextFormattingBuilder => {
+                updates["halign"] = spec;
+                delete childBuilders["halign;"];
+                modifiedKeys["halign"] = true;
+                return this;
+            }
+
+            this.valign = (spec: TopMiddleBottomBaseline): ITextFormattingBuilder => {
+                updates["valign"] = spec;
+                delete childBuilders["valign;"];
+                modifiedKeys["valign"] = true;
+                return this;
+            }
+
+            this.underline = (spec: number): ITextFormattingBuilder => {
+                updates["underline"] = spec;
+                delete childBuilders["underline;"];
+                modifiedKeys["underline"] = true;
+                return this;
+            }
+
+            this.overline = (spec: number): ITextFormattingBuilder => {
+                updates["overline"] = spec;
+                delete childBuilders["overline;"];
+                modifiedKeys["overline"] = true;
+                return this;
+            }
+
+            this.lineThrough = (spec: number): ITextFormattingBuilder => {
+                updates["lineThrough"] = spec;
+                delete childBuilders["lineThrough;"];
+                modifiedKeys["lineThrough"] = true;
+                return this;
+            }
+
+            this.rotation = (spec: number): ITextFormattingBuilder => {
+                updates["rotation"] = spec;
+                delete childBuilders["rotation;"];
+                modifiedKeys["rotation"] = true;
+                return this;
+            }
+
+            this.letterSpacing = (spec: string): ITextFormattingBuilder => {
+                updates["letterSpacing"] = spec;
+                delete childBuilders["letterSpacing;"];
+                modifiedKeys["letterSpacing"] = true;
+                return this;
+            }
+
+            this.lineHeight = (spec: string): ITextFormattingBuilder => {
+                updates["lineHeight"] = spec;
+                delete childBuilders["lineHeight;"];
+                modifiedKeys["lineHeight"] = true;
+                return this;
+            }
+
+            this.dir = (spec: DirectionMode): ITextFormattingBuilder => {
+                updates["dir"] = spec;
+                delete childBuilders["dir;"];
+                modifiedKeys["dir"] = true;
+                return this;
+            }
+
+            this.enclosure = (spec: EnclosureShape): ITextFormattingBuilder => {
+                updates["enclosure"] = spec;
+                delete childBuilders["enclosure;"];
+                modifiedKeys["enclosure"] = true;
                 return this;
             }
   }
@@ -2420,6 +2711,25 @@ export interface IFootnoteBuilder {
   patch: () => IAny[];
   text: (text: string) => IFootnoteBuilder;
   justify: (justify: LeftCenterRight) => IFootnoteBuilder;
+  defaultX: (defaultX: number) => IFootnoteBuilder;
+  relativeY: (relativeY: number) => IFootnoteBuilder;
+  defaultY: (defaultY: number) => IFootnoteBuilder;
+  relativeX: (relativeX: number) => IFootnoteBuilder;
+  fontFamily: (fontFamily: string) => IFootnoteBuilder;
+  fontWeight: (fontWeight: NormalBold) => IFootnoteBuilder;
+  fontStyle: (fontStyle: NormalItalic) => IFootnoteBuilder;
+  fontSize: (fontSize: string) => IFootnoteBuilder;
+  color: (color: string) => IFootnoteBuilder;
+  halign: (halign: LeftCenterRight) => IFootnoteBuilder;
+  valign: (valign: TopMiddleBottomBaseline) => IFootnoteBuilder;
+  underline: (underline: number) => IFootnoteBuilder;
+  overline: (overline: number) => IFootnoteBuilder;
+  lineThrough: (lineThrough: number) => IFootnoteBuilder;
+  rotation: (rotation: number) => IFootnoteBuilder;
+  letterSpacing: (letterSpacing: string) => IFootnoteBuilder;
+  lineHeight: (lineHeight: string) => IFootnoteBuilder;
+  dir: (dir: DirectionMode) => IFootnoteBuilder;
+  enclosure: (enclosure: EnclosureShape) => IFootnoteBuilder;
 }
 
 class FootnoteBuilder implements IFootnoteBuilder {
@@ -2427,6 +2737,25 @@ class FootnoteBuilder implements IFootnoteBuilder {
   patch: () => IAny[];
   text: (text: string) => IFootnoteBuilder;
   justify: (justify: LeftCenterRight) => IFootnoteBuilder;
+  defaultX: (defaultX: number) => IFootnoteBuilder;
+  relativeY: (relativeY: number) => IFootnoteBuilder;
+  defaultY: (defaultY: number) => IFootnoteBuilder;
+  relativeX: (relativeX: number) => IFootnoteBuilder;
+  fontFamily: (fontFamily: string) => IFootnoteBuilder;
+  fontWeight: (fontWeight: NormalBold) => IFootnoteBuilder;
+  fontStyle: (fontStyle: NormalItalic) => IFootnoteBuilder;
+  fontSize: (fontSize: string) => IFootnoteBuilder;
+  color: (color: string) => IFootnoteBuilder;
+  halign: (halign: LeftCenterRight) => IFootnoteBuilder;
+  valign: (valign: TopMiddleBottomBaseline) => IFootnoteBuilder;
+  underline: (underline: number) => IFootnoteBuilder;
+  overline: (overline: number) => IFootnoteBuilder;
+  lineThrough: (lineThrough: number) => IFootnoteBuilder;
+  rotation: (rotation: number) => IFootnoteBuilder;
+  letterSpacing: (letterSpacing: string) => IFootnoteBuilder;
+  lineHeight: (lineHeight: string) => IFootnoteBuilder;
+  dir: (dir: DirectionMode) => IFootnoteBuilder;
+  enclosure: (enclosure: EnclosureShape) => IFootnoteBuilder;
   constructor(original?: Footnote) {
     let updates: Footnote = {} as any;
     let childBuilders: {[key: string]: any} = {};
@@ -2476,6 +2805,139 @@ class FootnoteBuilder implements IFootnoteBuilder {
                 updates["justify"] = spec;
                 delete childBuilders["justify;"];
                 modifiedKeys["justify"] = true;
+                return this;
+            }
+
+            this.defaultX = (spec: number): IFootnoteBuilder => {
+                updates["defaultX"] = spec;
+                delete childBuilders["defaultX;"];
+                modifiedKeys["defaultX"] = true;
+                return this;
+            }
+
+            this.relativeY = (spec: number): IFootnoteBuilder => {
+                updates["relativeY"] = spec;
+                delete childBuilders["relativeY;"];
+                modifiedKeys["relativeY"] = true;
+                return this;
+            }
+
+            this.defaultY = (spec: number): IFootnoteBuilder => {
+                updates["defaultY"] = spec;
+                delete childBuilders["defaultY;"];
+                modifiedKeys["defaultY"] = true;
+                return this;
+            }
+
+            this.relativeX = (spec: number): IFootnoteBuilder => {
+                updates["relativeX"] = spec;
+                delete childBuilders["relativeX;"];
+                modifiedKeys["relativeX"] = true;
+                return this;
+            }
+
+            this.fontFamily = (spec: string): IFootnoteBuilder => {
+                updates["fontFamily"] = spec;
+                delete childBuilders["fontFamily;"];
+                modifiedKeys["fontFamily"] = true;
+                return this;
+            }
+
+            this.fontWeight = (spec: NormalBold): IFootnoteBuilder => {
+                updates["fontWeight"] = spec;
+                delete childBuilders["fontWeight;"];
+                modifiedKeys["fontWeight"] = true;
+                return this;
+            }
+
+            this.fontStyle = (spec: NormalItalic): IFootnoteBuilder => {
+                updates["fontStyle"] = spec;
+                delete childBuilders["fontStyle;"];
+                modifiedKeys["fontStyle"] = true;
+                return this;
+            }
+
+            this.fontSize = (spec: string): IFootnoteBuilder => {
+                updates["fontSize"] = spec;
+                delete childBuilders["fontSize;"];
+                modifiedKeys["fontSize"] = true;
+                return this;
+            }
+
+            this.color = (spec: string): IFootnoteBuilder => {
+                updates["color"] = spec;
+                delete childBuilders["color;"];
+                modifiedKeys["color"] = true;
+                return this;
+            }
+
+            this.halign = (spec: LeftCenterRight): IFootnoteBuilder => {
+                updates["halign"] = spec;
+                delete childBuilders["halign;"];
+                modifiedKeys["halign"] = true;
+                return this;
+            }
+
+            this.valign = (spec: TopMiddleBottomBaseline): IFootnoteBuilder => {
+                updates["valign"] = spec;
+                delete childBuilders["valign;"];
+                modifiedKeys["valign"] = true;
+                return this;
+            }
+
+            this.underline = (spec: number): IFootnoteBuilder => {
+                updates["underline"] = spec;
+                delete childBuilders["underline;"];
+                modifiedKeys["underline"] = true;
+                return this;
+            }
+
+            this.overline = (spec: number): IFootnoteBuilder => {
+                updates["overline"] = spec;
+                delete childBuilders["overline;"];
+                modifiedKeys["overline"] = true;
+                return this;
+            }
+
+            this.lineThrough = (spec: number): IFootnoteBuilder => {
+                updates["lineThrough"] = spec;
+                delete childBuilders["lineThrough;"];
+                modifiedKeys["lineThrough"] = true;
+                return this;
+            }
+
+            this.rotation = (spec: number): IFootnoteBuilder => {
+                updates["rotation"] = spec;
+                delete childBuilders["rotation;"];
+                modifiedKeys["rotation"] = true;
+                return this;
+            }
+
+            this.letterSpacing = (spec: string): IFootnoteBuilder => {
+                updates["letterSpacing"] = spec;
+                delete childBuilders["letterSpacing;"];
+                modifiedKeys["letterSpacing"] = true;
+                return this;
+            }
+
+            this.lineHeight = (spec: string): IFootnoteBuilder => {
+                updates["lineHeight"] = spec;
+                delete childBuilders["lineHeight;"];
+                modifiedKeys["lineHeight"] = true;
+                return this;
+            }
+
+            this.dir = (spec: DirectionMode): IFootnoteBuilder => {
+                updates["dir"] = spec;
+                delete childBuilders["dir;"];
+                modifiedKeys["dir"] = true;
+                return this;
+            }
+
+            this.enclosure = (spec: EnclosureShape): IFootnoteBuilder => {
+                updates["enclosure"] = spec;
+                delete childBuilders["enclosure;"];
+                modifiedKeys["enclosure"] = true;
                 return this;
             }
   }
@@ -2587,6 +3049,11 @@ export interface IFermataBuilder {
   relativeY: (relativeY: number) => IFermataBuilder;
   defaultY: (defaultY: number) => IFermataBuilder;
   relativeX: (relativeX: number) => IFermataBuilder;
+  fontFamily: (fontFamily: string) => IFermataBuilder;
+  fontWeight: (fontWeight: NormalBold) => IFermataBuilder;
+  fontStyle: (fontStyle: NormalItalic) => IFermataBuilder;
+  fontSize: (fontSize: string) => IFermataBuilder;
+  color: (color: string) => IFermataBuilder;
 }
 
 class FermataBuilder implements IFermataBuilder {
@@ -2598,6 +3065,11 @@ class FermataBuilder implements IFermataBuilder {
   relativeY: (relativeY: number) => IFermataBuilder;
   defaultY: (defaultY: number) => IFermataBuilder;
   relativeX: (relativeX: number) => IFermataBuilder;
+  fontFamily: (fontFamily: string) => IFermataBuilder;
+  fontWeight: (fontWeight: NormalBold) => IFermataBuilder;
+  fontStyle: (fontStyle: NormalItalic) => IFermataBuilder;
+  fontSize: (fontSize: string) => IFermataBuilder;
+  color: (color: string) => IFermataBuilder;
   constructor(original?: Fermata) {
     let updates: Fermata = {} as any;
     let childBuilders: {[key: string]: any} = {};
@@ -2677,6 +3149,41 @@ class FermataBuilder implements IFermataBuilder {
                 modifiedKeys["relativeX"] = true;
                 return this;
             }
+
+            this.fontFamily = (spec: string): IFermataBuilder => {
+                updates["fontFamily"] = spec;
+                delete childBuilders["fontFamily;"];
+                modifiedKeys["fontFamily"] = true;
+                return this;
+            }
+
+            this.fontWeight = (spec: NormalBold): IFermataBuilder => {
+                updates["fontWeight"] = spec;
+                delete childBuilders["fontWeight;"];
+                modifiedKeys["fontWeight"] = true;
+                return this;
+            }
+
+            this.fontStyle = (spec: NormalItalic): IFermataBuilder => {
+                updates["fontStyle"] = spec;
+                delete childBuilders["fontStyle;"];
+                modifiedKeys["fontStyle"] = true;
+                return this;
+            }
+
+            this.fontSize = (spec: string): IFermataBuilder => {
+                updates["fontSize"] = spec;
+                delete childBuilders["fontSize;"];
+                modifiedKeys["fontSize"] = true;
+                return this;
+            }
+
+            this.color = (spec: string): IFermataBuilder => {
+                updates["color"] = spec;
+                delete childBuilders["color;"];
+                modifiedKeys["color"] = true;
+                return this;
+            }
   }
 }
 export function patchFermata(base: Fermata, builder: (build: IFermataBuilder) => IFermataBuilder): IAny[] { return builder(new FermataBuilder(base)).patch(); }
@@ -2691,6 +3198,15 @@ export interface IWavyLineBuilder {
   relativeY: (relativeY: number) => IWavyLineBuilder;
   defaultY: (defaultY: number) => IWavyLineBuilder;
   relativeX: (relativeX: number) => IWavyLineBuilder;
+  color: (color: string) => IWavyLineBuilder;
+  placement: (placement: AboveBelow) => IWavyLineBuilder;
+  startNote: (startNote: UpperMainBelow) => IWavyLineBuilder;
+  accelerate: (accelerate: boolean) => IWavyLineBuilder;
+  beats: (beats: number) => IWavyLineBuilder;
+  lastBeat: (lastBeat: number) => IWavyLineBuilder;
+  trillStep: (trillStep: WholeHalfUnison) => IWavyLineBuilder;
+  twoNoteTurn: (twoNoteTurn: WholeHalfNone) => IWavyLineBuilder;
+  secondBeat: (secondBeat: number) => IWavyLineBuilder;
 }
 
 class WavyLineBuilder implements IWavyLineBuilder {
@@ -2702,6 +3218,15 @@ class WavyLineBuilder implements IWavyLineBuilder {
   relativeY: (relativeY: number) => IWavyLineBuilder;
   defaultY: (defaultY: number) => IWavyLineBuilder;
   relativeX: (relativeX: number) => IWavyLineBuilder;
+  color: (color: string) => IWavyLineBuilder;
+  placement: (placement: AboveBelow) => IWavyLineBuilder;
+  startNote: (startNote: UpperMainBelow) => IWavyLineBuilder;
+  accelerate: (accelerate: boolean) => IWavyLineBuilder;
+  beats: (beats: number) => IWavyLineBuilder;
+  lastBeat: (lastBeat: number) => IWavyLineBuilder;
+  trillStep: (trillStep: WholeHalfUnison) => IWavyLineBuilder;
+  twoNoteTurn: (twoNoteTurn: WholeHalfNone) => IWavyLineBuilder;
+  secondBeat: (secondBeat: number) => IWavyLineBuilder;
   constructor(original?: WavyLine) {
     let updates: WavyLine = {} as any;
     let childBuilders: {[key: string]: any} = {};
@@ -2781,6 +3306,69 @@ class WavyLineBuilder implements IWavyLineBuilder {
                 modifiedKeys["relativeX"] = true;
                 return this;
             }
+
+            this.color = (spec: string): IWavyLineBuilder => {
+                updates["color"] = spec;
+                delete childBuilders["color;"];
+                modifiedKeys["color"] = true;
+                return this;
+            }
+
+            this.placement = (spec: AboveBelow): IWavyLineBuilder => {
+                updates["placement"] = spec;
+                delete childBuilders["placement;"];
+                modifiedKeys["placement"] = true;
+                return this;
+            }
+
+            this.startNote = (spec: UpperMainBelow): IWavyLineBuilder => {
+                updates["startNote"] = spec;
+                delete childBuilders["startNote;"];
+                modifiedKeys["startNote"] = true;
+                return this;
+            }
+
+            this.accelerate = (spec: boolean): IWavyLineBuilder => {
+                updates["accelerate"] = spec;
+                delete childBuilders["accelerate;"];
+                modifiedKeys["accelerate"] = true;
+                return this;
+            }
+
+            this.beats = (spec: number): IWavyLineBuilder => {
+                updates["beats"] = spec;
+                delete childBuilders["beats;"];
+                modifiedKeys["beats"] = true;
+                return this;
+            }
+
+            this.lastBeat = (spec: number): IWavyLineBuilder => {
+                updates["lastBeat"] = spec;
+                delete childBuilders["lastBeat;"];
+                modifiedKeys["lastBeat"] = true;
+                return this;
+            }
+
+            this.trillStep = (spec: WholeHalfUnison): IWavyLineBuilder => {
+                updates["trillStep"] = spec;
+                delete childBuilders["trillStep;"];
+                modifiedKeys["trillStep"] = true;
+                return this;
+            }
+
+            this.twoNoteTurn = (spec: WholeHalfNone): IWavyLineBuilder => {
+                updates["twoNoteTurn"] = spec;
+                delete childBuilders["twoNoteTurn;"];
+                modifiedKeys["twoNoteTurn"] = true;
+                return this;
+            }
+
+            this.secondBeat = (spec: number): IWavyLineBuilder => {
+                updates["secondBeat"] = spec;
+                delete childBuilders["secondBeat;"];
+                modifiedKeys["secondBeat"] = true;
+                return this;
+            }
   }
 }
 export function patchWavyLine(base: WavyLine, builder: (build: IWavyLineBuilder) => IWavyLineBuilder): IAny[] { return builder(new WavyLineBuilder(base)).patch(); }
@@ -2793,6 +3381,13 @@ export interface ISegnoBuilder {
   relativeY: (relativeY: number) => ISegnoBuilder;
   defaultY: (defaultY: number) => ISegnoBuilder;
   relativeX: (relativeX: number) => ISegnoBuilder;
+  fontFamily: (fontFamily: string) => ISegnoBuilder;
+  fontWeight: (fontWeight: NormalBold) => ISegnoBuilder;
+  fontStyle: (fontStyle: NormalItalic) => ISegnoBuilder;
+  fontSize: (fontSize: string) => ISegnoBuilder;
+  color: (color: string) => ISegnoBuilder;
+  halign: (halign: LeftCenterRight) => ISegnoBuilder;
+  valign: (valign: TopMiddleBottomBaseline) => ISegnoBuilder;
 }
 
 class SegnoBuilder implements ISegnoBuilder {
@@ -2802,6 +3397,13 @@ class SegnoBuilder implements ISegnoBuilder {
   relativeY: (relativeY: number) => ISegnoBuilder;
   defaultY: (defaultY: number) => ISegnoBuilder;
   relativeX: (relativeX: number) => ISegnoBuilder;
+  fontFamily: (fontFamily: string) => ISegnoBuilder;
+  fontWeight: (fontWeight: NormalBold) => ISegnoBuilder;
+  fontStyle: (fontStyle: NormalItalic) => ISegnoBuilder;
+  fontSize: (fontSize: string) => ISegnoBuilder;
+  color: (color: string) => ISegnoBuilder;
+  halign: (halign: LeftCenterRight) => ISegnoBuilder;
+  valign: (valign: TopMiddleBottomBaseline) => ISegnoBuilder;
   constructor(original?: Segno) {
     let updates: Segno = {} as any;
     let childBuilders: {[key: string]: any} = {};
@@ -2862,6 +3464,55 @@ class SegnoBuilder implements ISegnoBuilder {
                 modifiedKeys["relativeX"] = true;
                 return this;
             }
+
+            this.fontFamily = (spec: string): ISegnoBuilder => {
+                updates["fontFamily"] = spec;
+                delete childBuilders["fontFamily;"];
+                modifiedKeys["fontFamily"] = true;
+                return this;
+            }
+
+            this.fontWeight = (spec: NormalBold): ISegnoBuilder => {
+                updates["fontWeight"] = spec;
+                delete childBuilders["fontWeight;"];
+                modifiedKeys["fontWeight"] = true;
+                return this;
+            }
+
+            this.fontStyle = (spec: NormalItalic): ISegnoBuilder => {
+                updates["fontStyle"] = spec;
+                delete childBuilders["fontStyle;"];
+                modifiedKeys["fontStyle"] = true;
+                return this;
+            }
+
+            this.fontSize = (spec: string): ISegnoBuilder => {
+                updates["fontSize"] = spec;
+                delete childBuilders["fontSize;"];
+                modifiedKeys["fontSize"] = true;
+                return this;
+            }
+
+            this.color = (spec: string): ISegnoBuilder => {
+                updates["color"] = spec;
+                delete childBuilders["color;"];
+                modifiedKeys["color"] = true;
+                return this;
+            }
+
+            this.halign = (spec: LeftCenterRight): ISegnoBuilder => {
+                updates["halign"] = spec;
+                delete childBuilders["halign;"];
+                modifiedKeys["halign"] = true;
+                return this;
+            }
+
+            this.valign = (spec: TopMiddleBottomBaseline): ISegnoBuilder => {
+                updates["valign"] = spec;
+                delete childBuilders["valign;"];
+                modifiedKeys["valign"] = true;
+                return this;
+            }
   }
 }
 export function patchSegno(base: Segno, builder: (build: ISegnoBuilder) => ISegnoBuilder): IAny[] { return builder(new SegnoBuilder(base)).patch(); }
@@ -2874,6 +3525,13 @@ export interface ICodaBuilder {
   relativeY: (relativeY: number) => ICodaBuilder;
   defaultY: (defaultY: number) => ICodaBuilder;
   relativeX: (relativeX: number) => ICodaBuilder;
+  fontFamily: (fontFamily: string) => ICodaBuilder;
+  fontWeight: (fontWeight: NormalBold) => ICodaBuilder;
+  fontStyle: (fontStyle: NormalItalic) => ICodaBuilder;
+  fontSize: (fontSize: string) => ICodaBuilder;
+  color: (color: string) => ICodaBuilder;
+  halign: (halign: LeftCenterRight) => ICodaBuilder;
+  valign: (valign: TopMiddleBottomBaseline) => ICodaBuilder;
 }
 
 class CodaBuilder implements ICodaBuilder {
@@ -2883,6 +3541,13 @@ class CodaBuilder implements ICodaBuilder {
   relativeY: (relativeY: number) => ICodaBuilder;
   defaultY: (defaultY: number) => ICodaBuilder;
   relativeX: (relativeX: number) => ICodaBuilder;
+  fontFamily: (fontFamily: string) => ICodaBuilder;
+  fontWeight: (fontWeight: NormalBold) => ICodaBuilder;
+  fontStyle: (fontStyle: NormalItalic) => ICodaBuilder;
+  fontSize: (fontSize: string) => ICodaBuilder;
+  color: (color: string) => ICodaBuilder;
+  halign: (halign: LeftCenterRight) => ICodaBuilder;
+  valign: (valign: TopMiddleBottomBaseline) => ICodaBuilder;
   constructor(original?: Coda) {
     let updates: Coda = {} as any;
     let childBuilders: {[key: string]: any} = {};
@@ -2941,6 +3606,55 @@ class CodaBuilder implements ICodaBuilder {
                 updates["relativeX"] = spec;
                 delete childBuilders["relativeX;"];
                 modifiedKeys["relativeX"] = true;
+                return this;
+            }
+
+            this.fontFamily = (spec: string): ICodaBuilder => {
+                updates["fontFamily"] = spec;
+                delete childBuilders["fontFamily;"];
+                modifiedKeys["fontFamily"] = true;
+                return this;
+            }
+
+            this.fontWeight = (spec: NormalBold): ICodaBuilder => {
+                updates["fontWeight"] = spec;
+                delete childBuilders["fontWeight;"];
+                modifiedKeys["fontWeight"] = true;
+                return this;
+            }
+
+            this.fontStyle = (spec: NormalItalic): ICodaBuilder => {
+                updates["fontStyle"] = spec;
+                delete childBuilders["fontStyle;"];
+                modifiedKeys["fontStyle"] = true;
+                return this;
+            }
+
+            this.fontSize = (spec: string): ICodaBuilder => {
+                updates["fontSize"] = spec;
+                delete childBuilders["fontSize;"];
+                modifiedKeys["fontSize"] = true;
+                return this;
+            }
+
+            this.color = (spec: string): ICodaBuilder => {
+                updates["color"] = spec;
+                delete childBuilders["color;"];
+                modifiedKeys["color"] = true;
+                return this;
+            }
+
+            this.halign = (spec: LeftCenterRight): ICodaBuilder => {
+                updates["halign"] = spec;
+                delete childBuilders["halign;"];
+                modifiedKeys["halign"] = true;
+                return this;
+            }
+
+            this.valign = (spec: TopMiddleBottomBaseline): ICodaBuilder => {
+                updates["valign"] = spec;
+                delete childBuilders["valign;"];
+                modifiedKeys["valign"] = true;
                 return this;
             }
   }
@@ -3024,6 +3738,18 @@ export interface IDynamicsBuilder {
   relativeY: (relativeY: number) => IDynamicsBuilder;
   defaultY: (defaultY: number) => IDynamicsBuilder;
   relativeX: (relativeX: number) => IDynamicsBuilder;
+  fontFamily: (fontFamily: string) => IDynamicsBuilder;
+  fontWeight: (fontWeight: NormalBold) => IDynamicsBuilder;
+  fontStyle: (fontStyle: NormalItalic) => IDynamicsBuilder;
+  fontSize: (fontSize: string) => IDynamicsBuilder;
+  color: (color: string) => IDynamicsBuilder;
+  halign: (halign: LeftCenterRight) => IDynamicsBuilder;
+  valign: (valign: TopMiddleBottomBaseline) => IDynamicsBuilder;
+  underline: (underline: number) => IDynamicsBuilder;
+  overline: (overline: number) => IDynamicsBuilder;
+  lineThrough: (lineThrough: number) => IDynamicsBuilder;
+  enclosure: (enclosure: EnclosureShape) => IDynamicsBuilder;
+  placement: (placement: AboveBelow) => IDynamicsBuilder;
 }
 
 class DynamicsBuilder implements IDynamicsBuilder {
@@ -3057,6 +3783,18 @@ class DynamicsBuilder implements IDynamicsBuilder {
   relativeY: (relativeY: number) => IDynamicsBuilder;
   defaultY: (defaultY: number) => IDynamicsBuilder;
   relativeX: (relativeX: number) => IDynamicsBuilder;
+  fontFamily: (fontFamily: string) => IDynamicsBuilder;
+  fontWeight: (fontWeight: NormalBold) => IDynamicsBuilder;
+  fontStyle: (fontStyle: NormalItalic) => IDynamicsBuilder;
+  fontSize: (fontSize: string) => IDynamicsBuilder;
+  color: (color: string) => IDynamicsBuilder;
+  halign: (halign: LeftCenterRight) => IDynamicsBuilder;
+  valign: (valign: TopMiddleBottomBaseline) => IDynamicsBuilder;
+  underline: (underline: number) => IDynamicsBuilder;
+  overline: (overline: number) => IDynamicsBuilder;
+  lineThrough: (lineThrough: number) => IDynamicsBuilder;
+  enclosure: (enclosure: EnclosureShape) => IDynamicsBuilder;
+  placement: (placement: AboveBelow) => IDynamicsBuilder;
   constructor(original?: Dynamics) {
     let updates: Dynamics = {} as any;
     let childBuilders: {[key: string]: any} = {};
@@ -3400,6 +4138,90 @@ class DynamicsBuilder implements IDynamicsBuilder {
                 modifiedKeys["relativeX"] = true;
                 return this;
             }
+
+            this.fontFamily = (spec: string): IDynamicsBuilder => {
+                updates["fontFamily"] = spec;
+                delete childBuilders["fontFamily;"];
+                modifiedKeys["fontFamily"] = true;
+                return this;
+            }
+
+            this.fontWeight = (spec: NormalBold): IDynamicsBuilder => {
+                updates["fontWeight"] = spec;
+                delete childBuilders["fontWeight;"];
+                modifiedKeys["fontWeight"] = true;
+                return this;
+            }
+
+            this.fontStyle = (spec: NormalItalic): IDynamicsBuilder => {
+                updates["fontStyle"] = spec;
+                delete childBuilders["fontStyle;"];
+                modifiedKeys["fontStyle"] = true;
+                return this;
+            }
+
+            this.fontSize = (spec: string): IDynamicsBuilder => {
+                updates["fontSize"] = spec;
+                delete childBuilders["fontSize;"];
+                modifiedKeys["fontSize"] = true;
+                return this;
+            }
+
+            this.color = (spec: string): IDynamicsBuilder => {
+                updates["color"] = spec;
+                delete childBuilders["color;"];
+                modifiedKeys["color"] = true;
+                return this;
+            }
+
+            this.halign = (spec: LeftCenterRight): IDynamicsBuilder => {
+                updates["halign"] = spec;
+                delete childBuilders["halign;"];
+                modifiedKeys["halign"] = true;
+                return this;
+            }
+
+            this.valign = (spec: TopMiddleBottomBaseline): IDynamicsBuilder => {
+                updates["valign"] = spec;
+                delete childBuilders["valign;"];
+                modifiedKeys["valign"] = true;
+                return this;
+            }
+
+            this.underline = (spec: number): IDynamicsBuilder => {
+                updates["underline"] = spec;
+                delete childBuilders["underline;"];
+                modifiedKeys["underline"] = true;
+                return this;
+            }
+
+            this.overline = (spec: number): IDynamicsBuilder => {
+                updates["overline"] = spec;
+                delete childBuilders["overline;"];
+                modifiedKeys["overline"] = true;
+                return this;
+            }
+
+            this.lineThrough = (spec: number): IDynamicsBuilder => {
+                updates["lineThrough"] = spec;
+                delete childBuilders["lineThrough;"];
+                modifiedKeys["lineThrough"] = true;
+                return this;
+            }
+
+            this.enclosure = (spec: EnclosureShape): IDynamicsBuilder => {
+                updates["enclosure"] = spec;
+                delete childBuilders["enclosure;"];
+                modifiedKeys["enclosure"] = true;
+                return this;
+            }
+
+            this.placement = (spec: AboveBelow): IDynamicsBuilder => {
+                updates["placement"] = spec;
+                delete childBuilders["placement;"];
+                modifiedKeys["placement"] = true;
+                return this;
+            }
   }
 }
 export function patchDynamics(base: Dynamics, builder: (build: IDynamicsBuilder) => IDynamicsBuilder): IAny[] { return builder(new DynamicsBuilder(base)).patch(); }
@@ -3415,6 +4237,12 @@ export interface IFingeringBuilder {
   relativeY: (relativeY: number) => IFingeringBuilder;
   defaultY: (defaultY: number) => IFingeringBuilder;
   relativeX: (relativeX: number) => IFingeringBuilder;
+  fontFamily: (fontFamily: string) => IFingeringBuilder;
+  fontWeight: (fontWeight: NormalBold) => IFingeringBuilder;
+  fontStyle: (fontStyle: NormalItalic) => IFingeringBuilder;
+  fontSize: (fontSize: string) => IFingeringBuilder;
+  color: (color: string) => IFingeringBuilder;
+  placement: (placement: AboveBelow) => IFingeringBuilder;
 }
 
 class FingeringBuilder implements IFingeringBuilder {
@@ -3427,6 +4255,12 @@ class FingeringBuilder implements IFingeringBuilder {
   relativeY: (relativeY: number) => IFingeringBuilder;
   defaultY: (defaultY: number) => IFingeringBuilder;
   relativeX: (relativeX: number) => IFingeringBuilder;
+  fontFamily: (fontFamily: string) => IFingeringBuilder;
+  fontWeight: (fontWeight: NormalBold) => IFingeringBuilder;
+  fontStyle: (fontStyle: NormalItalic) => IFingeringBuilder;
+  fontSize: (fontSize: string) => IFingeringBuilder;
+  color: (color: string) => IFingeringBuilder;
+  placement: (placement: AboveBelow) => IFingeringBuilder;
   constructor(original?: Fingering) {
     let updates: Fingering = {} as any;
     let childBuilders: {[key: string]: any} = {};
@@ -3508,6 +4342,48 @@ class FingeringBuilder implements IFingeringBuilder {
                 modifiedKeys["relativeX"] = true;
                 return this;
             }
+
+            this.fontFamily = (spec: string): IFingeringBuilder => {
+                updates["fontFamily"] = spec;
+                delete childBuilders["fontFamily;"];
+                modifiedKeys["fontFamily"] = true;
+                return this;
+            }
+
+            this.fontWeight = (spec: NormalBold): IFingeringBuilder => {
+                updates["fontWeight"] = spec;
+                delete childBuilders["fontWeight;"];
+                modifiedKeys["fontWeight"] = true;
+                return this;
+            }
+
+            this.fontStyle = (spec: NormalItalic): IFingeringBuilder => {
+                updates["fontStyle"] = spec;
+                delete childBuilders["fontStyle;"];
+                modifiedKeys["fontStyle"] = true;
+                return this;
+            }
+
+            this.fontSize = (spec: string): IFingeringBuilder => {
+                updates["fontSize"] = spec;
+                delete childBuilders["fontSize;"];
+                modifiedKeys["fontSize"] = true;
+                return this;
+            }
+
+            this.color = (spec: string): IFingeringBuilder => {
+                updates["color"] = spec;
+                delete childBuilders["color;"];
+                modifiedKeys["color"] = true;
+                return this;
+            }
+
+            this.placement = (spec: AboveBelow): IFingeringBuilder => {
+                updates["placement"] = spec;
+                delete childBuilders["placement;"];
+                modifiedKeys["placement"] = true;
+                return this;
+            }
   }
 }
 export function patchFingering(base: Fingering, builder: (build: IFingeringBuilder) => IFingeringBuilder): IAny[] { return builder(new FingeringBuilder(base)).patch(); }
@@ -3521,6 +4397,7 @@ export interface IFretBuilder {
   fontWeight: (fontWeight: NormalBold) => IFretBuilder;
   fontStyle: (fontStyle: NormalItalic) => IFretBuilder;
   fontSize: (fontSize: string) => IFretBuilder;
+  color: (color: string) => IFretBuilder;
 }
 
 class FretBuilder implements IFretBuilder {
@@ -3531,6 +4408,7 @@ class FretBuilder implements IFretBuilder {
   fontWeight: (fontWeight: NormalBold) => IFretBuilder;
   fontStyle: (fontStyle: NormalItalic) => IFretBuilder;
   fontSize: (fontSize: string) => IFretBuilder;
+  color: (color: string) => IFretBuilder;
   constructor(original?: Fret) {
     let updates: Fret = {} as any;
     let childBuilders: {[key: string]: any} = {};
@@ -3603,6 +4481,13 @@ class FretBuilder implements IFretBuilder {
                 modifiedKeys["fontSize"] = true;
                 return this;
             }
+
+            this.color = (spec: string): IFretBuilder => {
+                updates["color"] = spec;
+                delete childBuilders["color;"];
+                modifiedKeys["color"] = true;
+                return this;
+            }
   }
 }
 export function patchFret(base: Fret, builder: (build: IFretBuilder) => IFretBuilder): IAny[] { return builder(new FretBuilder(base)).patch(); }
@@ -3616,6 +4501,12 @@ export interface IStringBuilder {
   relativeY: (relativeY: number) => IStringBuilder;
   defaultY: (defaultY: number) => IStringBuilder;
   relativeX: (relativeX: number) => IStringBuilder;
+  fontFamily: (fontFamily: string) => IStringBuilder;
+  fontWeight: (fontWeight: NormalBold) => IStringBuilder;
+  fontStyle: (fontStyle: NormalItalic) => IStringBuilder;
+  fontSize: (fontSize: string) => IStringBuilder;
+  color: (color: string) => IStringBuilder;
+  placement: (placement: AboveBelow) => IStringBuilder;
 }
 
 class StringBuilder implements IStringBuilder {
@@ -3626,6 +4517,12 @@ class StringBuilder implements IStringBuilder {
   relativeY: (relativeY: number) => IStringBuilder;
   defaultY: (defaultY: number) => IStringBuilder;
   relativeX: (relativeX: number) => IStringBuilder;
+  fontFamily: (fontFamily: string) => IStringBuilder;
+  fontWeight: (fontWeight: NormalBold) => IStringBuilder;
+  fontStyle: (fontStyle: NormalItalic) => IStringBuilder;
+  fontSize: (fontSize: string) => IStringBuilder;
+  color: (color: string) => IStringBuilder;
+  placement: (placement: AboveBelow) => IStringBuilder;
   constructor(original?: String) {
     let updates: String = {} as any;
     let childBuilders: {[key: string]: any} = {};
@@ -3698,6 +4595,48 @@ class StringBuilder implements IStringBuilder {
                 modifiedKeys["relativeX"] = true;
                 return this;
             }
+
+            this.fontFamily = (spec: string): IStringBuilder => {
+                updates["fontFamily"] = spec;
+                delete childBuilders["fontFamily;"];
+                modifiedKeys["fontFamily"] = true;
+                return this;
+            }
+
+            this.fontWeight = (spec: NormalBold): IStringBuilder => {
+                updates["fontWeight"] = spec;
+                delete childBuilders["fontWeight;"];
+                modifiedKeys["fontWeight"] = true;
+                return this;
+            }
+
+            this.fontStyle = (spec: NormalItalic): IStringBuilder => {
+                updates["fontStyle"] = spec;
+                delete childBuilders["fontStyle;"];
+                modifiedKeys["fontStyle"] = true;
+                return this;
+            }
+
+            this.fontSize = (spec: string): IStringBuilder => {
+                updates["fontSize"] = spec;
+                delete childBuilders["fontSize;"];
+                modifiedKeys["fontSize"] = true;
+                return this;
+            }
+
+            this.color = (spec: string): IStringBuilder => {
+                updates["color"] = spec;
+                delete childBuilders["color;"];
+                modifiedKeys["color"] = true;
+                return this;
+            }
+
+            this.placement = (spec: AboveBelow): IStringBuilder => {
+                updates["placement"] = spec;
+                delete childBuilders["placement;"];
+                modifiedKeys["placement"] = true;
+                return this;
+            }
   }
 }
 export function patchString(base: String, builder: (build: IStringBuilder) => IStringBuilder): IAny[] { return builder(new StringBuilder(base)).patch(); }
@@ -3708,6 +4647,25 @@ export interface IDisplayTextBuilder {
   patch: () => IAny[];
   text: (text: string) => IDisplayTextBuilder;
   justify: (justify: LeftCenterRight) => IDisplayTextBuilder;
+  defaultX: (defaultX: number) => IDisplayTextBuilder;
+  relativeY: (relativeY: number) => IDisplayTextBuilder;
+  defaultY: (defaultY: number) => IDisplayTextBuilder;
+  relativeX: (relativeX: number) => IDisplayTextBuilder;
+  fontFamily: (fontFamily: string) => IDisplayTextBuilder;
+  fontWeight: (fontWeight: NormalBold) => IDisplayTextBuilder;
+  fontStyle: (fontStyle: NormalItalic) => IDisplayTextBuilder;
+  fontSize: (fontSize: string) => IDisplayTextBuilder;
+  color: (color: string) => IDisplayTextBuilder;
+  halign: (halign: LeftCenterRight) => IDisplayTextBuilder;
+  valign: (valign: TopMiddleBottomBaseline) => IDisplayTextBuilder;
+  underline: (underline: number) => IDisplayTextBuilder;
+  overline: (overline: number) => IDisplayTextBuilder;
+  lineThrough: (lineThrough: number) => IDisplayTextBuilder;
+  rotation: (rotation: number) => IDisplayTextBuilder;
+  letterSpacing: (letterSpacing: string) => IDisplayTextBuilder;
+  lineHeight: (lineHeight: string) => IDisplayTextBuilder;
+  dir: (dir: DirectionMode) => IDisplayTextBuilder;
+  enclosure: (enclosure: EnclosureShape) => IDisplayTextBuilder;
 }
 
 class DisplayTextBuilder implements IDisplayTextBuilder {
@@ -3715,6 +4673,25 @@ class DisplayTextBuilder implements IDisplayTextBuilder {
   patch: () => IAny[];
   text: (text: string) => IDisplayTextBuilder;
   justify: (justify: LeftCenterRight) => IDisplayTextBuilder;
+  defaultX: (defaultX: number) => IDisplayTextBuilder;
+  relativeY: (relativeY: number) => IDisplayTextBuilder;
+  defaultY: (defaultY: number) => IDisplayTextBuilder;
+  relativeX: (relativeX: number) => IDisplayTextBuilder;
+  fontFamily: (fontFamily: string) => IDisplayTextBuilder;
+  fontWeight: (fontWeight: NormalBold) => IDisplayTextBuilder;
+  fontStyle: (fontStyle: NormalItalic) => IDisplayTextBuilder;
+  fontSize: (fontSize: string) => IDisplayTextBuilder;
+  color: (color: string) => IDisplayTextBuilder;
+  halign: (halign: LeftCenterRight) => IDisplayTextBuilder;
+  valign: (valign: TopMiddleBottomBaseline) => IDisplayTextBuilder;
+  underline: (underline: number) => IDisplayTextBuilder;
+  overline: (overline: number) => IDisplayTextBuilder;
+  lineThrough: (lineThrough: number) => IDisplayTextBuilder;
+  rotation: (rotation: number) => IDisplayTextBuilder;
+  letterSpacing: (letterSpacing: string) => IDisplayTextBuilder;
+  lineHeight: (lineHeight: string) => IDisplayTextBuilder;
+  dir: (dir: DirectionMode) => IDisplayTextBuilder;
+  enclosure: (enclosure: EnclosureShape) => IDisplayTextBuilder;
   constructor(original?: DisplayText) {
     let updates: DisplayText = {} as any;
     let childBuilders: {[key: string]: any} = {};
@@ -3766,6 +4743,139 @@ class DisplayTextBuilder implements IDisplayTextBuilder {
                 modifiedKeys["justify"] = true;
                 return this;
             }
+
+            this.defaultX = (spec: number): IDisplayTextBuilder => {
+                updates["defaultX"] = spec;
+                delete childBuilders["defaultX;"];
+                modifiedKeys["defaultX"] = true;
+                return this;
+            }
+
+            this.relativeY = (spec: number): IDisplayTextBuilder => {
+                updates["relativeY"] = spec;
+                delete childBuilders["relativeY;"];
+                modifiedKeys["relativeY"] = true;
+                return this;
+            }
+
+            this.defaultY = (spec: number): IDisplayTextBuilder => {
+                updates["defaultY"] = spec;
+                delete childBuilders["defaultY;"];
+                modifiedKeys["defaultY"] = true;
+                return this;
+            }
+
+            this.relativeX = (spec: number): IDisplayTextBuilder => {
+                updates["relativeX"] = spec;
+                delete childBuilders["relativeX;"];
+                modifiedKeys["relativeX"] = true;
+                return this;
+            }
+
+            this.fontFamily = (spec: string): IDisplayTextBuilder => {
+                updates["fontFamily"] = spec;
+                delete childBuilders["fontFamily;"];
+                modifiedKeys["fontFamily"] = true;
+                return this;
+            }
+
+            this.fontWeight = (spec: NormalBold): IDisplayTextBuilder => {
+                updates["fontWeight"] = spec;
+                delete childBuilders["fontWeight;"];
+                modifiedKeys["fontWeight"] = true;
+                return this;
+            }
+
+            this.fontStyle = (spec: NormalItalic): IDisplayTextBuilder => {
+                updates["fontStyle"] = spec;
+                delete childBuilders["fontStyle;"];
+                modifiedKeys["fontStyle"] = true;
+                return this;
+            }
+
+            this.fontSize = (spec: string): IDisplayTextBuilder => {
+                updates["fontSize"] = spec;
+                delete childBuilders["fontSize;"];
+                modifiedKeys["fontSize"] = true;
+                return this;
+            }
+
+            this.color = (spec: string): IDisplayTextBuilder => {
+                updates["color"] = spec;
+                delete childBuilders["color;"];
+                modifiedKeys["color"] = true;
+                return this;
+            }
+
+            this.halign = (spec: LeftCenterRight): IDisplayTextBuilder => {
+                updates["halign"] = spec;
+                delete childBuilders["halign;"];
+                modifiedKeys["halign"] = true;
+                return this;
+            }
+
+            this.valign = (spec: TopMiddleBottomBaseline): IDisplayTextBuilder => {
+                updates["valign"] = spec;
+                delete childBuilders["valign;"];
+                modifiedKeys["valign"] = true;
+                return this;
+            }
+
+            this.underline = (spec: number): IDisplayTextBuilder => {
+                updates["underline"] = spec;
+                delete childBuilders["underline;"];
+                modifiedKeys["underline"] = true;
+                return this;
+            }
+
+            this.overline = (spec: number): IDisplayTextBuilder => {
+                updates["overline"] = spec;
+                delete childBuilders["overline;"];
+                modifiedKeys["overline"] = true;
+                return this;
+            }
+
+            this.lineThrough = (spec: number): IDisplayTextBuilder => {
+                updates["lineThrough"] = spec;
+                delete childBuilders["lineThrough;"];
+                modifiedKeys["lineThrough"] = true;
+                return this;
+            }
+
+            this.rotation = (spec: number): IDisplayTextBuilder => {
+                updates["rotation"] = spec;
+                delete childBuilders["rotation;"];
+                modifiedKeys["rotation"] = true;
+                return this;
+            }
+
+            this.letterSpacing = (spec: string): IDisplayTextBuilder => {
+                updates["letterSpacing"] = spec;
+                delete childBuilders["letterSpacing;"];
+                modifiedKeys["letterSpacing"] = true;
+                return this;
+            }
+
+            this.lineHeight = (spec: string): IDisplayTextBuilder => {
+                updates["lineHeight"] = spec;
+                delete childBuilders["lineHeight;"];
+                modifiedKeys["lineHeight"] = true;
+                return this;
+            }
+
+            this.dir = (spec: DirectionMode): IDisplayTextBuilder => {
+                updates["dir"] = spec;
+                delete childBuilders["dir;"];
+                modifiedKeys["dir"] = true;
+                return this;
+            }
+
+            this.enclosure = (spec: EnclosureShape): IDisplayTextBuilder => {
+                updates["enclosure"] = spec;
+                delete childBuilders["enclosure;"];
+                modifiedKeys["enclosure"] = true;
+                return this;
+            }
   }
 }
 export function patchDisplayText(base: DisplayText, builder: (build: IDisplayTextBuilder) => IDisplayTextBuilder): IAny[] { return builder(new DisplayTextBuilder(base)).patch(); }
@@ -3776,6 +4886,25 @@ export interface IAccidentalTextBuilder {
   patch: () => IAny[];
   text: (text: string) => IAccidentalTextBuilder;
   justify: (justify: LeftCenterRight) => IAccidentalTextBuilder;
+  defaultX: (defaultX: number) => IAccidentalTextBuilder;
+  relativeY: (relativeY: number) => IAccidentalTextBuilder;
+  defaultY: (defaultY: number) => IAccidentalTextBuilder;
+  relativeX: (relativeX: number) => IAccidentalTextBuilder;
+  fontFamily: (fontFamily: string) => IAccidentalTextBuilder;
+  fontWeight: (fontWeight: NormalBold) => IAccidentalTextBuilder;
+  fontStyle: (fontStyle: NormalItalic) => IAccidentalTextBuilder;
+  fontSize: (fontSize: string) => IAccidentalTextBuilder;
+  color: (color: string) => IAccidentalTextBuilder;
+  halign: (halign: LeftCenterRight) => IAccidentalTextBuilder;
+  valign: (valign: TopMiddleBottomBaseline) => IAccidentalTextBuilder;
+  underline: (underline: number) => IAccidentalTextBuilder;
+  overline: (overline: number) => IAccidentalTextBuilder;
+  lineThrough: (lineThrough: number) => IAccidentalTextBuilder;
+  rotation: (rotation: number) => IAccidentalTextBuilder;
+  letterSpacing: (letterSpacing: string) => IAccidentalTextBuilder;
+  lineHeight: (lineHeight: string) => IAccidentalTextBuilder;
+  dir: (dir: DirectionMode) => IAccidentalTextBuilder;
+  enclosure: (enclosure: EnclosureShape) => IAccidentalTextBuilder;
 }
 
 class AccidentalTextBuilder implements IAccidentalTextBuilder {
@@ -3783,6 +4912,25 @@ class AccidentalTextBuilder implements IAccidentalTextBuilder {
   patch: () => IAny[];
   text: (text: string) => IAccidentalTextBuilder;
   justify: (justify: LeftCenterRight) => IAccidentalTextBuilder;
+  defaultX: (defaultX: number) => IAccidentalTextBuilder;
+  relativeY: (relativeY: number) => IAccidentalTextBuilder;
+  defaultY: (defaultY: number) => IAccidentalTextBuilder;
+  relativeX: (relativeX: number) => IAccidentalTextBuilder;
+  fontFamily: (fontFamily: string) => IAccidentalTextBuilder;
+  fontWeight: (fontWeight: NormalBold) => IAccidentalTextBuilder;
+  fontStyle: (fontStyle: NormalItalic) => IAccidentalTextBuilder;
+  fontSize: (fontSize: string) => IAccidentalTextBuilder;
+  color: (color: string) => IAccidentalTextBuilder;
+  halign: (halign: LeftCenterRight) => IAccidentalTextBuilder;
+  valign: (valign: TopMiddleBottomBaseline) => IAccidentalTextBuilder;
+  underline: (underline: number) => IAccidentalTextBuilder;
+  overline: (overline: number) => IAccidentalTextBuilder;
+  lineThrough: (lineThrough: number) => IAccidentalTextBuilder;
+  rotation: (rotation: number) => IAccidentalTextBuilder;
+  letterSpacing: (letterSpacing: string) => IAccidentalTextBuilder;
+  lineHeight: (lineHeight: string) => IAccidentalTextBuilder;
+  dir: (dir: DirectionMode) => IAccidentalTextBuilder;
+  enclosure: (enclosure: EnclosureShape) => IAccidentalTextBuilder;
   constructor(original?: AccidentalText) {
     let updates: AccidentalText = {} as any;
     let childBuilders: {[key: string]: any} = {};
@@ -3832,6 +4980,139 @@ class AccidentalTextBuilder implements IAccidentalTextBuilder {
                 updates["justify"] = spec;
                 delete childBuilders["justify;"];
                 modifiedKeys["justify"] = true;
+                return this;
+            }
+
+            this.defaultX = (spec: number): IAccidentalTextBuilder => {
+                updates["defaultX"] = spec;
+                delete childBuilders["defaultX;"];
+                modifiedKeys["defaultX"] = true;
+                return this;
+            }
+
+            this.relativeY = (spec: number): IAccidentalTextBuilder => {
+                updates["relativeY"] = spec;
+                delete childBuilders["relativeY;"];
+                modifiedKeys["relativeY"] = true;
+                return this;
+            }
+
+            this.defaultY = (spec: number): IAccidentalTextBuilder => {
+                updates["defaultY"] = spec;
+                delete childBuilders["defaultY;"];
+                modifiedKeys["defaultY"] = true;
+                return this;
+            }
+
+            this.relativeX = (spec: number): IAccidentalTextBuilder => {
+                updates["relativeX"] = spec;
+                delete childBuilders["relativeX;"];
+                modifiedKeys["relativeX"] = true;
+                return this;
+            }
+
+            this.fontFamily = (spec: string): IAccidentalTextBuilder => {
+                updates["fontFamily"] = spec;
+                delete childBuilders["fontFamily;"];
+                modifiedKeys["fontFamily"] = true;
+                return this;
+            }
+
+            this.fontWeight = (spec: NormalBold): IAccidentalTextBuilder => {
+                updates["fontWeight"] = spec;
+                delete childBuilders["fontWeight;"];
+                modifiedKeys["fontWeight"] = true;
+                return this;
+            }
+
+            this.fontStyle = (spec: NormalItalic): IAccidentalTextBuilder => {
+                updates["fontStyle"] = spec;
+                delete childBuilders["fontStyle;"];
+                modifiedKeys["fontStyle"] = true;
+                return this;
+            }
+
+            this.fontSize = (spec: string): IAccidentalTextBuilder => {
+                updates["fontSize"] = spec;
+                delete childBuilders["fontSize;"];
+                modifiedKeys["fontSize"] = true;
+                return this;
+            }
+
+            this.color = (spec: string): IAccidentalTextBuilder => {
+                updates["color"] = spec;
+                delete childBuilders["color;"];
+                modifiedKeys["color"] = true;
+                return this;
+            }
+
+            this.halign = (spec: LeftCenterRight): IAccidentalTextBuilder => {
+                updates["halign"] = spec;
+                delete childBuilders["halign;"];
+                modifiedKeys["halign"] = true;
+                return this;
+            }
+
+            this.valign = (spec: TopMiddleBottomBaseline): IAccidentalTextBuilder => {
+                updates["valign"] = spec;
+                delete childBuilders["valign;"];
+                modifiedKeys["valign"] = true;
+                return this;
+            }
+
+            this.underline = (spec: number): IAccidentalTextBuilder => {
+                updates["underline"] = spec;
+                delete childBuilders["underline;"];
+                modifiedKeys["underline"] = true;
+                return this;
+            }
+
+            this.overline = (spec: number): IAccidentalTextBuilder => {
+                updates["overline"] = spec;
+                delete childBuilders["overline;"];
+                modifiedKeys["overline"] = true;
+                return this;
+            }
+
+            this.lineThrough = (spec: number): IAccidentalTextBuilder => {
+                updates["lineThrough"] = spec;
+                delete childBuilders["lineThrough;"];
+                modifiedKeys["lineThrough"] = true;
+                return this;
+            }
+
+            this.rotation = (spec: number): IAccidentalTextBuilder => {
+                updates["rotation"] = spec;
+                delete childBuilders["rotation;"];
+                modifiedKeys["rotation"] = true;
+                return this;
+            }
+
+            this.letterSpacing = (spec: string): IAccidentalTextBuilder => {
+                updates["letterSpacing"] = spec;
+                delete childBuilders["letterSpacing;"];
+                modifiedKeys["letterSpacing"] = true;
+                return this;
+            }
+
+            this.lineHeight = (spec: string): IAccidentalTextBuilder => {
+                updates["lineHeight"] = spec;
+                delete childBuilders["lineHeight;"];
+                modifiedKeys["lineHeight"] = true;
+                return this;
+            }
+
+            this.dir = (spec: DirectionMode): IAccidentalTextBuilder => {
+                updates["dir"] = spec;
+                delete childBuilders["dir;"];
+                modifiedKeys["dir"] = true;
+                return this;
+            }
+
+            this.enclosure = (spec: EnclosureShape): IAccidentalTextBuilder => {
+                updates["enclosure"] = spec;
+                delete childBuilders["enclosure;"];
+                modifiedKeys["enclosure"] = true;
                 return this;
             }
   }
@@ -5039,12 +6320,34 @@ export interface ILeftDividerBuilder {
   build?: () => LeftDivider;
   patch: () => IAny[];
   printObject: (printObject: boolean) => ILeftDividerBuilder;
+  defaultX: (defaultX: number) => ILeftDividerBuilder;
+  relativeY: (relativeY: number) => ILeftDividerBuilder;
+  defaultY: (defaultY: number) => ILeftDividerBuilder;
+  relativeX: (relativeX: number) => ILeftDividerBuilder;
+  fontFamily: (fontFamily: string) => ILeftDividerBuilder;
+  fontWeight: (fontWeight: NormalBold) => ILeftDividerBuilder;
+  fontStyle: (fontStyle: NormalItalic) => ILeftDividerBuilder;
+  fontSize: (fontSize: string) => ILeftDividerBuilder;
+  color: (color: string) => ILeftDividerBuilder;
+  halign: (halign: LeftCenterRight) => ILeftDividerBuilder;
+  valign: (valign: TopMiddleBottomBaseline) => ILeftDividerBuilder;
 }
 
 class LeftDividerBuilder implements ILeftDividerBuilder {
   build: () => LeftDivider;
   patch: () => IAny[];
   printObject: (printObject: boolean) => ILeftDividerBuilder;
+  defaultX: (defaultX: number) => ILeftDividerBuilder;
+  relativeY: (relativeY: number) => ILeftDividerBuilder;
+  defaultY: (defaultY: number) => ILeftDividerBuilder;
+  relativeX: (relativeX: number) => ILeftDividerBuilder;
+  fontFamily: (fontFamily: string) => ILeftDividerBuilder;
+  fontWeight: (fontWeight: NormalBold) => ILeftDividerBuilder;
+  fontStyle: (fontStyle: NormalItalic) => ILeftDividerBuilder;
+  fontSize: (fontSize: string) => ILeftDividerBuilder;
+  color: (color: string) => ILeftDividerBuilder;
+  halign: (halign: LeftCenterRight) => ILeftDividerBuilder;
+  valign: (valign: TopMiddleBottomBaseline) => ILeftDividerBuilder;
   constructor(original?: LeftDivider) {
     let updates: LeftDivider = {} as any;
     let childBuilders: {[key: string]: any} = {};
@@ -5084,6 +6387,83 @@ class LeftDividerBuilder implements ILeftDividerBuilder {
                 modifiedKeys["printObject"] = true;
                 return this;
             }
+
+            this.defaultX = (spec: number): ILeftDividerBuilder => {
+                updates["defaultX"] = spec;
+                delete childBuilders["defaultX;"];
+                modifiedKeys["defaultX"] = true;
+                return this;
+            }
+
+            this.relativeY = (spec: number): ILeftDividerBuilder => {
+                updates["relativeY"] = spec;
+                delete childBuilders["relativeY;"];
+                modifiedKeys["relativeY"] = true;
+                return this;
+            }
+
+            this.defaultY = (spec: number): ILeftDividerBuilder => {
+                updates["defaultY"] = spec;
+                delete childBuilders["defaultY;"];
+                modifiedKeys["defaultY"] = true;
+                return this;
+            }
+
+            this.relativeX = (spec: number): ILeftDividerBuilder => {
+                updates["relativeX"] = spec;
+                delete childBuilders["relativeX;"];
+                modifiedKeys["relativeX"] = true;
+                return this;
+            }
+
+            this.fontFamily = (spec: string): ILeftDividerBuilder => {
+                updates["fontFamily"] = spec;
+                delete childBuilders["fontFamily;"];
+                modifiedKeys["fontFamily"] = true;
+                return this;
+            }
+
+            this.fontWeight = (spec: NormalBold): ILeftDividerBuilder => {
+                updates["fontWeight"] = spec;
+                delete childBuilders["fontWeight;"];
+                modifiedKeys["fontWeight"] = true;
+                return this;
+            }
+
+            this.fontStyle = (spec: NormalItalic): ILeftDividerBuilder => {
+                updates["fontStyle"] = spec;
+                delete childBuilders["fontStyle;"];
+                modifiedKeys["fontStyle"] = true;
+                return this;
+            }
+
+            this.fontSize = (spec: string): ILeftDividerBuilder => {
+                updates["fontSize"] = spec;
+                delete childBuilders["fontSize;"];
+                modifiedKeys["fontSize"] = true;
+                return this;
+            }
+
+            this.color = (spec: string): ILeftDividerBuilder => {
+                updates["color"] = spec;
+                delete childBuilders["color;"];
+                modifiedKeys["color"] = true;
+                return this;
+            }
+
+            this.halign = (spec: LeftCenterRight): ILeftDividerBuilder => {
+                updates["halign"] = spec;
+                delete childBuilders["halign;"];
+                modifiedKeys["halign"] = true;
+                return this;
+            }
+
+            this.valign = (spec: TopMiddleBottomBaseline): ILeftDividerBuilder => {
+                updates["valign"] = spec;
+                delete childBuilders["valign;"];
+                modifiedKeys["valign"] = true;
+                return this;
+            }
   }
 }
 export function patchLeftDivider(base: LeftDivider, builder: (build: ILeftDividerBuilder) => ILeftDividerBuilder): IAny[] { return builder(new LeftDividerBuilder(base)).patch(); }
@@ -5093,12 +6473,34 @@ export interface IRightDividerBuilder {
   build?: () => RightDivider;
   patch: () => IAny[];
   printObject: (printObject: boolean) => IRightDividerBuilder;
+  defaultX: (defaultX: number) => IRightDividerBuilder;
+  relativeY: (relativeY: number) => IRightDividerBuilder;
+  defaultY: (defaultY: number) => IRightDividerBuilder;
+  relativeX: (relativeX: number) => IRightDividerBuilder;
+  fontFamily: (fontFamily: string) => IRightDividerBuilder;
+  fontWeight: (fontWeight: NormalBold) => IRightDividerBuilder;
+  fontStyle: (fontStyle: NormalItalic) => IRightDividerBuilder;
+  fontSize: (fontSize: string) => IRightDividerBuilder;
+  color: (color: string) => IRightDividerBuilder;
+  halign: (halign: LeftCenterRight) => IRightDividerBuilder;
+  valign: (valign: TopMiddleBottomBaseline) => IRightDividerBuilder;
 }
 
 class RightDividerBuilder implements IRightDividerBuilder {
   build: () => RightDivider;
   patch: () => IAny[];
   printObject: (printObject: boolean) => IRightDividerBuilder;
+  defaultX: (defaultX: number) => IRightDividerBuilder;
+  relativeY: (relativeY: number) => IRightDividerBuilder;
+  defaultY: (defaultY: number) => IRightDividerBuilder;
+  relativeX: (relativeX: number) => IRightDividerBuilder;
+  fontFamily: (fontFamily: string) => IRightDividerBuilder;
+  fontWeight: (fontWeight: NormalBold) => IRightDividerBuilder;
+  fontStyle: (fontStyle: NormalItalic) => IRightDividerBuilder;
+  fontSize: (fontSize: string) => IRightDividerBuilder;
+  color: (color: string) => IRightDividerBuilder;
+  halign: (halign: LeftCenterRight) => IRightDividerBuilder;
+  valign: (valign: TopMiddleBottomBaseline) => IRightDividerBuilder;
   constructor(original?: RightDivider) {
     let updates: RightDivider = {} as any;
     let childBuilders: {[key: string]: any} = {};
@@ -5136,6 +6538,83 @@ class RightDividerBuilder implements IRightDividerBuilder {
                 updates["printObject"] = spec;
                 delete childBuilders["printObject;"];
                 modifiedKeys["printObject"] = true;
+                return this;
+            }
+
+            this.defaultX = (spec: number): IRightDividerBuilder => {
+                updates["defaultX"] = spec;
+                delete childBuilders["defaultX;"];
+                modifiedKeys["defaultX"] = true;
+                return this;
+            }
+
+            this.relativeY = (spec: number): IRightDividerBuilder => {
+                updates["relativeY"] = spec;
+                delete childBuilders["relativeY;"];
+                modifiedKeys["relativeY"] = true;
+                return this;
+            }
+
+            this.defaultY = (spec: number): IRightDividerBuilder => {
+                updates["defaultY"] = spec;
+                delete childBuilders["defaultY;"];
+                modifiedKeys["defaultY"] = true;
+                return this;
+            }
+
+            this.relativeX = (spec: number): IRightDividerBuilder => {
+                updates["relativeX"] = spec;
+                delete childBuilders["relativeX;"];
+                modifiedKeys["relativeX"] = true;
+                return this;
+            }
+
+            this.fontFamily = (spec: string): IRightDividerBuilder => {
+                updates["fontFamily"] = spec;
+                delete childBuilders["fontFamily;"];
+                modifiedKeys["fontFamily"] = true;
+                return this;
+            }
+
+            this.fontWeight = (spec: NormalBold): IRightDividerBuilder => {
+                updates["fontWeight"] = spec;
+                delete childBuilders["fontWeight;"];
+                modifiedKeys["fontWeight"] = true;
+                return this;
+            }
+
+            this.fontStyle = (spec: NormalItalic): IRightDividerBuilder => {
+                updates["fontStyle"] = spec;
+                delete childBuilders["fontStyle;"];
+                modifiedKeys["fontStyle"] = true;
+                return this;
+            }
+
+            this.fontSize = (spec: string): IRightDividerBuilder => {
+                updates["fontSize"] = spec;
+                delete childBuilders["fontSize;"];
+                modifiedKeys["fontSize"] = true;
+                return this;
+            }
+
+            this.color = (spec: string): IRightDividerBuilder => {
+                updates["color"] = spec;
+                delete childBuilders["color;"];
+                modifiedKeys["color"] = true;
+                return this;
+            }
+
+            this.halign = (spec: LeftCenterRight): IRightDividerBuilder => {
+                updates["halign"] = spec;
+                delete childBuilders["halign;"];
+                modifiedKeys["halign"] = true;
+                return this;
+            }
+
+            this.valign = (spec: TopMiddleBottomBaseline): IRightDividerBuilder => {
+                updates["valign"] = spec;
+                delete childBuilders["valign;"];
+                modifiedKeys["valign"] = true;
                 return this;
             }
   }
@@ -6853,6 +8332,12 @@ export interface IKeyBuilder {
   relativeY: (relativeY: number) => IKeyBuilder;
   defaultY: (defaultY: number) => IKeyBuilder;
   relativeX: (relativeX: number) => IKeyBuilder;
+  fontFamily: (fontFamily: string) => IKeyBuilder;
+  fontWeight: (fontWeight: NormalBold) => IKeyBuilder;
+  fontStyle: (fontStyle: NormalItalic) => IKeyBuilder;
+  fontSize: (fontSize: string) => IKeyBuilder;
+  color: (color: string) => IKeyBuilder;
+  printObject: (printObject: boolean) => IKeyBuilder;
 }
 
 class KeyBuilder implements IKeyBuilder {
@@ -6872,6 +8357,12 @@ class KeyBuilder implements IKeyBuilder {
   relativeY: (relativeY: number) => IKeyBuilder;
   defaultY: (defaultY: number) => IKeyBuilder;
   relativeX: (relativeX: number) => IKeyBuilder;
+  fontFamily: (fontFamily: string) => IKeyBuilder;
+  fontWeight: (fontWeight: NormalBold) => IKeyBuilder;
+  fontStyle: (fontStyle: NormalItalic) => IKeyBuilder;
+  fontSize: (fontSize: string) => IKeyBuilder;
+  color: (color: string) => IKeyBuilder;
+  printObject: (printObject: boolean) => IKeyBuilder;
   constructor(original?: Key) {
     let updates: Key = {} as any;
     let childBuilders: {[key: string]: any} = {};
@@ -6892,26 +8383,6 @@ class KeyBuilder implements IKeyBuilder {
         }
     
     function checkInvariants() {
-      console.assert(
-          (original && !modifiedKeys["keySteps"]) ||
-          childBuilders["keySteps"] !== undefined ||
-          updates.keySteps !== undefined,
-        "keySteps is a required field");
-      console.assert(
-          (original && !modifiedKeys["fifths"]) ||
-          childBuilders["fifths"] !== undefined ||
-          updates.fifths !== undefined,
-        "fifths is a required field");
-      console.assert(
-          (original && !modifiedKeys["keyAlters"]) ||
-          childBuilders["keyAlters"] !== undefined ||
-          updates.keyAlters !== undefined,
-        "keyAlters is a required field");
-      console.assert(
-          (original && !modifiedKeys["keyAccidentals"]) ||
-          childBuilders["keyAccidentals"] !== undefined ||
-          updates.keyAccidentals !== undefined,
-        "keyAccidentals is a required field");
     }
     if (!original) {
       this.build = (): Key => {
@@ -7070,6 +8541,48 @@ class KeyBuilder implements IKeyBuilder {
                 modifiedKeys["relativeX"] = true;
                 return this;
             }
+
+            this.fontFamily = (spec: string): IKeyBuilder => {
+                updates["fontFamily"] = spec;
+                delete childBuilders["fontFamily;"];
+                modifiedKeys["fontFamily"] = true;
+                return this;
+            }
+
+            this.fontWeight = (spec: NormalBold): IKeyBuilder => {
+                updates["fontWeight"] = spec;
+                delete childBuilders["fontWeight;"];
+                modifiedKeys["fontWeight"] = true;
+                return this;
+            }
+
+            this.fontStyle = (spec: NormalItalic): IKeyBuilder => {
+                updates["fontStyle"] = spec;
+                delete childBuilders["fontStyle;"];
+                modifiedKeys["fontStyle"] = true;
+                return this;
+            }
+
+            this.fontSize = (spec: string): IKeyBuilder => {
+                updates["fontSize"] = spec;
+                delete childBuilders["fontSize;"];
+                modifiedKeys["fontSize"] = true;
+                return this;
+            }
+
+            this.color = (spec: string): IKeyBuilder => {
+                updates["color"] = spec;
+                delete childBuilders["color;"];
+                modifiedKeys["color"] = true;
+                return this;
+            }
+
+            this.printObject = (spec: boolean): IKeyBuilder => {
+                updates["printObject"] = spec;
+                delete childBuilders["printObject;"];
+                modifiedKeys["printObject"] = true;
+                return this;
+            }
   }
 }
 export function patchKey(base: Key, builder: (build: IKeyBuilder) => IKeyBuilder): IAny[] { return builder(new KeyBuilder(base)).patch(); }
@@ -7082,7 +8595,20 @@ export interface ITimeBuilder {
   beats: (beats: string[]) => ITimeBuilder;
   beatTypes: (beatTypes: number[]) => ITimeBuilder;
   senzaMisura: (senzaMisura: string) => ITimeBuilder;
+  printObject: (printObject: boolean) => ITimeBuilder;
+  defaultX: (defaultX: number) => ITimeBuilder;
+  relativeY: (relativeY: number) => ITimeBuilder;
+  defaultY: (defaultY: number) => ITimeBuilder;
+  relativeX: (relativeX: number) => ITimeBuilder;
+  fontFamily: (fontFamily: string) => ITimeBuilder;
+  fontWeight: (fontWeight: NormalBold) => ITimeBuilder;
+  fontStyle: (fontStyle: NormalItalic) => ITimeBuilder;
+  fontSize: (fontSize: string) => ITimeBuilder;
+  color: (color: string) => ITimeBuilder;
+  halign: (halign: LeftCenterRight) => ITimeBuilder;
+  valign: (valign: TopMiddleBottomBaseline) => ITimeBuilder;
   symbol: (symbol: TimeSymbolType) => ITimeBuilder;
+  separator: (separator: SeparatorType) => ITimeBuilder;
 }
 
 class TimeBuilder implements ITimeBuilder {
@@ -7092,7 +8618,20 @@ class TimeBuilder implements ITimeBuilder {
   beats: (beats: string[]) => ITimeBuilder;
   beatTypes: (beatTypes: number[]) => ITimeBuilder;
   senzaMisura: (senzaMisura: string) => ITimeBuilder;
+  printObject: (printObject: boolean) => ITimeBuilder;
+  defaultX: (defaultX: number) => ITimeBuilder;
+  relativeY: (relativeY: number) => ITimeBuilder;
+  defaultY: (defaultY: number) => ITimeBuilder;
+  relativeX: (relativeX: number) => ITimeBuilder;
+  fontFamily: (fontFamily: string) => ITimeBuilder;
+  fontWeight: (fontWeight: NormalBold) => ITimeBuilder;
+  fontStyle: (fontStyle: NormalItalic) => ITimeBuilder;
+  fontSize: (fontSize: string) => ITimeBuilder;
+  color: (color: string) => ITimeBuilder;
+  halign: (halign: LeftCenterRight) => ITimeBuilder;
+  valign: (valign: TopMiddleBottomBaseline) => ITimeBuilder;
   symbol: (symbol: TimeSymbolType) => ITimeBuilder;
+  separator: (separator: SeparatorType) => ITimeBuilder;
   constructor(original?: Time) {
     let updates: Time = {} as any;
     let childBuilders: {[key: string]: any} = {};
@@ -7171,10 +8710,101 @@ class TimeBuilder implements ITimeBuilder {
                 return this;
             }
 
+            this.printObject = (spec: boolean): ITimeBuilder => {
+                updates["printObject"] = spec;
+                delete childBuilders["printObject;"];
+                modifiedKeys["printObject"] = true;
+                return this;
+            }
+
+            this.defaultX = (spec: number): ITimeBuilder => {
+                updates["defaultX"] = spec;
+                delete childBuilders["defaultX;"];
+                modifiedKeys["defaultX"] = true;
+                return this;
+            }
+
+            this.relativeY = (spec: number): ITimeBuilder => {
+                updates["relativeY"] = spec;
+                delete childBuilders["relativeY;"];
+                modifiedKeys["relativeY"] = true;
+                return this;
+            }
+
+            this.defaultY = (spec: number): ITimeBuilder => {
+                updates["defaultY"] = spec;
+                delete childBuilders["defaultY;"];
+                modifiedKeys["defaultY"] = true;
+                return this;
+            }
+
+            this.relativeX = (spec: number): ITimeBuilder => {
+                updates["relativeX"] = spec;
+                delete childBuilders["relativeX;"];
+                modifiedKeys["relativeX"] = true;
+                return this;
+            }
+
+            this.fontFamily = (spec: string): ITimeBuilder => {
+                updates["fontFamily"] = spec;
+                delete childBuilders["fontFamily;"];
+                modifiedKeys["fontFamily"] = true;
+                return this;
+            }
+
+            this.fontWeight = (spec: NormalBold): ITimeBuilder => {
+                updates["fontWeight"] = spec;
+                delete childBuilders["fontWeight;"];
+                modifiedKeys["fontWeight"] = true;
+                return this;
+            }
+
+            this.fontStyle = (spec: NormalItalic): ITimeBuilder => {
+                updates["fontStyle"] = spec;
+                delete childBuilders["fontStyle;"];
+                modifiedKeys["fontStyle"] = true;
+                return this;
+            }
+
+            this.fontSize = (spec: string): ITimeBuilder => {
+                updates["fontSize"] = spec;
+                delete childBuilders["fontSize;"];
+                modifiedKeys["fontSize"] = true;
+                return this;
+            }
+
+            this.color = (spec: string): ITimeBuilder => {
+                updates["color"] = spec;
+                delete childBuilders["color;"];
+                modifiedKeys["color"] = true;
+                return this;
+            }
+
+            this.halign = (spec: LeftCenterRight): ITimeBuilder => {
+                updates["halign"] = spec;
+                delete childBuilders["halign;"];
+                modifiedKeys["halign"] = true;
+                return this;
+            }
+
+            this.valign = (spec: TopMiddleBottomBaseline): ITimeBuilder => {
+                updates["valign"] = spec;
+                delete childBuilders["valign;"];
+                modifiedKeys["valign"] = true;
+                return this;
+            }
+
             this.symbol = (spec: TimeSymbolType): ITimeBuilder => {
                 updates["symbol"] = spec;
                 delete childBuilders["symbol;"];
                 modifiedKeys["symbol"] = true;
+                return this;
+            }
+
+            this.separator = (spec: SeparatorType): ITimeBuilder => {
+                updates["separator"] = spec;
+                delete childBuilders["separator;"];
+                modifiedKeys["separator"] = true;
                 return this;
             }
   }
@@ -7189,6 +8819,7 @@ export interface IInterchangeableBuilder {
   beatTypes: (beatTypes: number[]) => IInterchangeableBuilder;
   timeRelation: (timeRelation: string) => IInterchangeableBuilder;
   symbol: (symbol: TimeSymbolType) => IInterchangeableBuilder;
+  separator: (separator: SeparatorType) => IInterchangeableBuilder;
 }
 
 class InterchangeableBuilder implements IInterchangeableBuilder {
@@ -7198,6 +8829,7 @@ class InterchangeableBuilder implements IInterchangeableBuilder {
   beatTypes: (beatTypes: number[]) => IInterchangeableBuilder;
   timeRelation: (timeRelation: string) => IInterchangeableBuilder;
   symbol: (symbol: TimeSymbolType) => IInterchangeableBuilder;
+  separator: (separator: SeparatorType) => IInterchangeableBuilder;
   constructor(original?: Interchangeable) {
     let updates: Interchangeable = {} as any;
     let childBuilders: {[key: string]: any} = {};
@@ -7268,6 +8900,13 @@ class InterchangeableBuilder implements IInterchangeableBuilder {
                 modifiedKeys["symbol"] = true;
                 return this;
             }
+
+            this.separator = (spec: SeparatorType): IInterchangeableBuilder => {
+                updates["separator"] = spec;
+                delete childBuilders["separator;"];
+                modifiedKeys["separator"] = true;
+                return this;
+            }
   }
 }
 export function patchInterchangeable(base: Interchangeable, builder: (build: IInterchangeableBuilder) => IInterchangeableBuilder): IAny[] { return builder(new InterchangeableBuilder(base)).patch(); }
@@ -7283,6 +8922,7 @@ export interface IPartSymbolBuilder {
   relativeY: (relativeY: number) => IPartSymbolBuilder;
   defaultY: (defaultY: number) => IPartSymbolBuilder;
   relativeX: (relativeX: number) => IPartSymbolBuilder;
+  color: (color: string) => IPartSymbolBuilder;
 }
 
 class PartSymbolBuilder implements IPartSymbolBuilder {
@@ -7295,6 +8935,7 @@ class PartSymbolBuilder implements IPartSymbolBuilder {
   relativeY: (relativeY: number) => IPartSymbolBuilder;
   defaultY: (defaultY: number) => IPartSymbolBuilder;
   relativeX: (relativeX: number) => IPartSymbolBuilder;
+  color: (color: string) => IPartSymbolBuilder;
   constructor(original?: PartSymbol) {
     let updates: PartSymbol = {} as any;
     let childBuilders: {[key: string]: any} = {};
@@ -7381,6 +9022,13 @@ class PartSymbolBuilder implements IPartSymbolBuilder {
                 modifiedKeys["relativeX"] = true;
                 return this;
             }
+
+            this.color = (spec: string): IPartSymbolBuilder => {
+                updates["color"] = spec;
+                delete childBuilders["color;"];
+                modifiedKeys["color"] = true;
+                return this;
+            }
   }
 }
 export function patchPartSymbol(base: PartSymbol, builder: (build: IPartSymbolBuilder) => IPartSymbolBuilder): IAny[] { return builder(new PartSymbolBuilder(base)).patch(); }
@@ -7400,6 +9048,12 @@ export interface IClefBuilder {
   relativeY: (relativeY: number) => IClefBuilder;
   defaultY: (defaultY: number) => IClefBuilder;
   relativeX: (relativeX: number) => IClefBuilder;
+  fontFamily: (fontFamily: string) => IClefBuilder;
+  fontWeight: (fontWeight: NormalBold) => IClefBuilder;
+  fontStyle: (fontStyle: NormalItalic) => IClefBuilder;
+  fontSize: (fontSize: string) => IClefBuilder;
+  color: (color: string) => IClefBuilder;
+  printObject: (printObject: boolean) => IClefBuilder;
 }
 
 class ClefBuilder implements IClefBuilder {
@@ -7416,6 +9070,12 @@ class ClefBuilder implements IClefBuilder {
   relativeY: (relativeY: number) => IClefBuilder;
   defaultY: (defaultY: number) => IClefBuilder;
   relativeX: (relativeX: number) => IClefBuilder;
+  fontFamily: (fontFamily: string) => IClefBuilder;
+  fontWeight: (fontWeight: NormalBold) => IClefBuilder;
+  fontStyle: (fontStyle: NormalItalic) => IClefBuilder;
+  fontSize: (fontSize: string) => IClefBuilder;
+  color: (color: string) => IClefBuilder;
+  printObject: (printObject: boolean) => IClefBuilder;
   constructor(original?: Clef) {
     let updates: Clef = {} as any;
     let childBuilders: {[key: string]: any} = {};
@@ -7436,11 +9096,6 @@ class ClefBuilder implements IClefBuilder {
         }
     
     function checkInvariants() {
-      console.assert(
-          (original && !modifiedKeys["clefOctaveChange"]) ||
-          childBuilders["clefOctaveChange"] !== undefined ||
-          updates.clefOctaveChange !== undefined,
-        "clefOctaveChange is a required field");
       console.assert(
           (original && !modifiedKeys["sign"]) ||
           childBuilders["sign"] !== undefined ||
@@ -7538,6 +9193,48 @@ class ClefBuilder implements IClefBuilder {
                 updates["relativeX"] = spec;
                 delete childBuilders["relativeX;"];
                 modifiedKeys["relativeX"] = true;
+                return this;
+            }
+
+            this.fontFamily = (spec: string): IClefBuilder => {
+                updates["fontFamily"] = spec;
+                delete childBuilders["fontFamily;"];
+                modifiedKeys["fontFamily"] = true;
+                return this;
+            }
+
+            this.fontWeight = (spec: NormalBold): IClefBuilder => {
+                updates["fontWeight"] = spec;
+                delete childBuilders["fontWeight;"];
+                modifiedKeys["fontWeight"] = true;
+                return this;
+            }
+
+            this.fontStyle = (spec: NormalItalic): IClefBuilder => {
+                updates["fontStyle"] = spec;
+                delete childBuilders["fontStyle;"];
+                modifiedKeys["fontStyle"] = true;
+                return this;
+            }
+
+            this.fontSize = (spec: string): IClefBuilder => {
+                updates["fontSize"] = spec;
+                delete childBuilders["fontSize;"];
+                modifiedKeys["fontSize"] = true;
+                return this;
+            }
+
+            this.color = (spec: string): IClefBuilder => {
+                updates["color"] = spec;
+                delete childBuilders["color;"];
+                modifiedKeys["color"] = true;
+                return this;
+            }
+
+            this.printObject = (spec: boolean): IClefBuilder => {
+                updates["printObject"] = spec;
+                delete childBuilders["printObject;"];
+                modifiedKeys["printObject"] = true;
                 return this;
             }
   }
@@ -7654,6 +9351,7 @@ export interface IStaffDetailsBuilder {
   number: (number: number) => IStaffDetailsBuilder;
   staffType: (staffType: string) => IStaffDetailsBuilder;
   printObject: (printObject: boolean) => IStaffDetailsBuilder;
+  printSpacing: (printSpacing: boolean) => IStaffDetailsBuilder;
 }
 
 class StaffDetailsBuilder implements IStaffDetailsBuilder {
@@ -7669,6 +9367,7 @@ class StaffDetailsBuilder implements IStaffDetailsBuilder {
   number: (number: number) => IStaffDetailsBuilder;
   staffType: (staffType: string) => IStaffDetailsBuilder;
   printObject: (printObject: boolean) => IStaffDetailsBuilder;
+  printSpacing: (printSpacing: boolean) => IStaffDetailsBuilder;
   constructor(original?: StaffDetails) {
     let updates: StaffDetails = {} as any;
     let childBuilders: {[key: string]: any} = {};
@@ -7810,6 +9509,13 @@ class StaffDetailsBuilder implements IStaffDetailsBuilder {
                 updates["printObject"] = spec;
                 delete childBuilders["printObject;"];
                 modifiedKeys["printObject"] = true;
+                return this;
+            }
+
+            this.printSpacing = (spec: boolean): IStaffDetailsBuilder => {
+                updates["printSpacing"] = spec;
+                delete childBuilders["printSpacing;"];
+                modifiedKeys["printSpacing"] = true;
                 return this;
             }
   }
@@ -7972,6 +9678,11 @@ export interface IDirectiveBuilder {
   relativeY: (relativeY: number) => IDirectiveBuilder;
   defaultY: (defaultY: number) => IDirectiveBuilder;
   relativeX: (relativeX: number) => IDirectiveBuilder;
+  fontFamily: (fontFamily: string) => IDirectiveBuilder;
+  fontWeight: (fontWeight: NormalBold) => IDirectiveBuilder;
+  fontStyle: (fontStyle: NormalItalic) => IDirectiveBuilder;
+  fontSize: (fontSize: string) => IDirectiveBuilder;
+  color: (color: string) => IDirectiveBuilder;
 }
 
 class DirectiveBuilder implements IDirectiveBuilder {
@@ -7982,6 +9693,11 @@ class DirectiveBuilder implements IDirectiveBuilder {
   relativeY: (relativeY: number) => IDirectiveBuilder;
   defaultY: (defaultY: number) => IDirectiveBuilder;
   relativeX: (relativeX: number) => IDirectiveBuilder;
+  fontFamily: (fontFamily: string) => IDirectiveBuilder;
+  fontWeight: (fontWeight: NormalBold) => IDirectiveBuilder;
+  fontStyle: (fontStyle: NormalItalic) => IDirectiveBuilder;
+  fontSize: (fontSize: string) => IDirectiveBuilder;
+  color: (color: string) => IDirectiveBuilder;
   constructor(original?: Directive) {
     let updates: Directive = {} as any;
     let childBuilders: {[key: string]: any} = {};
@@ -8052,6 +9768,41 @@ class DirectiveBuilder implements IDirectiveBuilder {
                 updates["relativeX"] = spec;
                 delete childBuilders["relativeX;"];
                 modifiedKeys["relativeX"] = true;
+                return this;
+            }
+
+            this.fontFamily = (spec: string): IDirectiveBuilder => {
+                updates["fontFamily"] = spec;
+                delete childBuilders["fontFamily;"];
+                modifiedKeys["fontFamily"] = true;
+                return this;
+            }
+
+            this.fontWeight = (spec: NormalBold): IDirectiveBuilder => {
+                updates["fontWeight"] = spec;
+                delete childBuilders["fontWeight;"];
+                modifiedKeys["fontWeight"] = true;
+                return this;
+            }
+
+            this.fontStyle = (spec: NormalItalic): IDirectiveBuilder => {
+                updates["fontStyle"] = spec;
+                delete childBuilders["fontStyle;"];
+                modifiedKeys["fontStyle"] = true;
+                return this;
+            }
+
+            this.fontSize = (spec: string): IDirectiveBuilder => {
+                updates["fontSize"] = spec;
+                delete childBuilders["fontSize;"];
+                modifiedKeys["fontSize"] = true;
+                return this;
+            }
+
+            this.color = (spec: string): IDirectiveBuilder => {
+                updates["color"] = spec;
+                delete childBuilders["color;"];
+                modifiedKeys["color"] = true;
                 return this;
             }
   }
@@ -8569,6 +10320,7 @@ export interface IMeasureStyleBuilder {
   fontWeight: (fontWeight: NormalBold) => IMeasureStyleBuilder;
   fontStyle: (fontStyle: NormalItalic) => IMeasureStyleBuilder;
   fontSize: (fontSize: string) => IMeasureStyleBuilder;
+  color: (color: string) => IMeasureStyleBuilder;
 }
 
 class MeasureStyleBuilder implements IMeasureStyleBuilder {
@@ -8583,6 +10335,7 @@ class MeasureStyleBuilder implements IMeasureStyleBuilder {
   fontWeight: (fontWeight: NormalBold) => IMeasureStyleBuilder;
   fontStyle: (fontStyle: NormalItalic) => IMeasureStyleBuilder;
   fontSize: (fontSize: string) => IMeasureStyleBuilder;
+  color: (color: string) => IMeasureStyleBuilder;
   constructor(original?: MeasureStyle) {
     let updates: MeasureStyle = {} as any;
     let childBuilders: {[key: string]: any} = {};
@@ -8704,6 +10457,13 @@ class MeasureStyleBuilder implements IMeasureStyleBuilder {
                 updates["fontSize"] = spec;
                 delete childBuilders["fontSize;"];
                 modifiedKeys["fontSize"] = true;
+                return this;
+            }
+
+            this.color = (spec: string): IMeasureStyleBuilder => {
+                updates["color"] = spec;
+                delete childBuilders["color;"];
+                modifiedKeys["color"] = true;
                 return this;
             }
   }
@@ -9487,14 +11247,14 @@ export interface IUnpitchedBuilder {
   build?: () => Unpitched;
   patch: () => IAny[];
   displayStep: (displayStep: string) => IUnpitchedBuilder;
-  displayOctave: (displayOctave: string) => IUnpitchedBuilder;
+  displayOctave: (displayOctave: number) => IUnpitchedBuilder;
 }
 
 class UnpitchedBuilder implements IUnpitchedBuilder {
   build: () => Unpitched;
   patch: () => IAny[];
   displayStep: (displayStep: string) => IUnpitchedBuilder;
-  displayOctave: (displayOctave: string) => IUnpitchedBuilder;
+  displayOctave: (displayOctave: number) => IUnpitchedBuilder;
   constructor(original?: Unpitched) {
     let updates: Unpitched = {} as any;
     let childBuilders: {[key: string]: any} = {};
@@ -9535,7 +11295,7 @@ class UnpitchedBuilder implements IUnpitchedBuilder {
                 return this;
             }
 
-            this.displayOctave = (spec: string): IUnpitchedBuilder => {
+            this.displayOctave = (spec: number): IUnpitchedBuilder => {
                 updates["displayOctave"] = spec;
                 delete childBuilders["displayOctave;"];
                 modifiedKeys["displayOctave"] = true;
@@ -9737,7 +11497,7 @@ export interface IRestBuilder {
   patch: () => IAny[];
   measure: (measure: boolean) => IRestBuilder;
   displayStep: (displayStep: string) => IRestBuilder;
-  displayOctave: (displayOctave: string) => IRestBuilder;
+  displayOctave: (displayOctave: number) => IRestBuilder;
 }
 
 class RestBuilder implements IRestBuilder {
@@ -9745,7 +11505,7 @@ class RestBuilder implements IRestBuilder {
   patch: () => IAny[];
   measure: (measure: boolean) => IRestBuilder;
   displayStep: (displayStep: string) => IRestBuilder;
-  displayOctave: (displayOctave: string) => IRestBuilder;
+  displayOctave: (displayOctave: number) => IRestBuilder;
   constructor(original?: Rest) {
     let updates: Rest = {} as any;
     let childBuilders: {[key: string]: any} = {};
@@ -9793,7 +11553,7 @@ class RestBuilder implements IRestBuilder {
                 return this;
             }
 
-            this.displayOctave = (spec: string): IRestBuilder => {
+            this.displayOctave = (spec: number): IRestBuilder => {
                 updates["displayOctave"] = spec;
                 delete childBuilders["displayOctave;"];
                 modifiedKeys["displayOctave"] = true;
@@ -9961,9 +11721,27 @@ export interface INoteBuilder {
   beamsAt: (idx: number, build: Beam | ((builder: IBeamBuilder) => IBeamBuilder)) => INoteBuilder;
   beamsSplice: (start: number, deleteCount: number, ...items: Beam[]) => INoteBuilder;
   beams: (beams: Beam[]) => INoteBuilder;
+  defaultX: (defaultX: number) => INoteBuilder;
+  relativeY: (relativeY: number) => INoteBuilder;
+  defaultY: (defaultY: number) => INoteBuilder;
+  relativeX: (relativeX: number) => INoteBuilder;
+  fontFamily: (fontFamily: string) => INoteBuilder;
+  fontWeight: (fontWeight: NormalBold) => INoteBuilder;
+  fontStyle: (fontStyle: NormalItalic) => INoteBuilder;
+  fontSize: (fontSize: string) => INoteBuilder;
+  color: (color: string) => INoteBuilder;
+  timeOnly: (timeOnly: string) => INoteBuilder;
   voice: (voice: number) => INoteBuilder;
   footnote: (build: Footnote | ((builder: IFootnoteBuilder) => IFootnoteBuilder)) => INoteBuilder;
   level: (build: Level | ((builder: ILevelBuilder) => ILevelBuilder)) => INoteBuilder;
+  printDot: (printDot: boolean) => INoteBuilder;
+  printLyric: (printLyric: boolean) => INoteBuilder;
+  printObject: (printObject: boolean) => INoteBuilder;
+  printSpacing: (printSpacing: boolean) => INoteBuilder;
+  unpitched: (build: Unpitched | ((builder: IUnpitchedBuilder) => IUnpitchedBuilder)) => INoteBuilder;
+  chord: (build: Chord | ((builder: IChordBuilder) => IChordBuilder)) => INoteBuilder;
+  pitch: (build: Pitch | ((builder: IPitchBuilder) => IPitchBuilder)) => INoteBuilder;
+  rest: (build: Rest | ((builder: IRestBuilder) => IRestBuilder)) => INoteBuilder;
 }
 
 class NoteBuilder implements INoteBuilder {
@@ -10001,9 +11779,27 @@ class NoteBuilder implements INoteBuilder {
   beamsAt: (idx: number, build: Beam | ((builder: IBeamBuilder) => IBeamBuilder)) => INoteBuilder;
   beamsSplice: (start: number, deleteCount: number, ...items: Beam[]) => INoteBuilder;
   beams: (beams: Beam[]) => INoteBuilder;
+  defaultX: (defaultX: number) => INoteBuilder;
+  relativeY: (relativeY: number) => INoteBuilder;
+  defaultY: (defaultY: number) => INoteBuilder;
+  relativeX: (relativeX: number) => INoteBuilder;
+  fontFamily: (fontFamily: string) => INoteBuilder;
+  fontWeight: (fontWeight: NormalBold) => INoteBuilder;
+  fontStyle: (fontStyle: NormalItalic) => INoteBuilder;
+  fontSize: (fontSize: string) => INoteBuilder;
+  color: (color: string) => INoteBuilder;
+  timeOnly: (timeOnly: string) => INoteBuilder;
   voice: (voice: number) => INoteBuilder;
   footnote: (build: Footnote | ((builder: IFootnoteBuilder) => IFootnoteBuilder)) => INoteBuilder;
   level: (build: Level | ((builder: ILevelBuilder) => ILevelBuilder)) => INoteBuilder;
+  printDot: (printDot: boolean) => INoteBuilder;
+  printLyric: (printLyric: boolean) => INoteBuilder;
+  printObject: (printObject: boolean) => INoteBuilder;
+  printSpacing: (printSpacing: boolean) => INoteBuilder;
+  unpitched: (build: Unpitched | ((builder: IUnpitchedBuilder) => IUnpitchedBuilder)) => INoteBuilder;
+  chord: (build: Chord | ((builder: IChordBuilder) => IChordBuilder)) => INoteBuilder;
+  pitch: (build: Pitch | ((builder: IPitchBuilder) => IPitchBuilder)) => INoteBuilder;
+  rest: (build: Rest | ((builder: IRestBuilder) => IRestBuilder)) => INoteBuilder;
   constructor(original?: Note) {
     let updates: Note = {} as any;
     let childBuilders: {[key: string]: any} = {};
@@ -10536,6 +12332,76 @@ class NoteBuilder implements INoteBuilder {
                   return this;
                 }
 
+            this.defaultX = (spec: number): INoteBuilder => {
+                updates["defaultX"] = spec;
+                delete childBuilders["defaultX;"];
+                modifiedKeys["defaultX"] = true;
+                return this;
+            }
+
+            this.relativeY = (spec: number): INoteBuilder => {
+                updates["relativeY"] = spec;
+                delete childBuilders["relativeY;"];
+                modifiedKeys["relativeY"] = true;
+                return this;
+            }
+
+            this.defaultY = (spec: number): INoteBuilder => {
+                updates["defaultY"] = spec;
+                delete childBuilders["defaultY;"];
+                modifiedKeys["defaultY"] = true;
+                return this;
+            }
+
+            this.relativeX = (spec: number): INoteBuilder => {
+                updates["relativeX"] = spec;
+                delete childBuilders["relativeX;"];
+                modifiedKeys["relativeX"] = true;
+                return this;
+            }
+
+            this.fontFamily = (spec: string): INoteBuilder => {
+                updates["fontFamily"] = spec;
+                delete childBuilders["fontFamily;"];
+                modifiedKeys["fontFamily"] = true;
+                return this;
+            }
+
+            this.fontWeight = (spec: NormalBold): INoteBuilder => {
+                updates["fontWeight"] = spec;
+                delete childBuilders["fontWeight;"];
+                modifiedKeys["fontWeight"] = true;
+                return this;
+            }
+
+            this.fontStyle = (spec: NormalItalic): INoteBuilder => {
+                updates["fontStyle"] = spec;
+                delete childBuilders["fontStyle;"];
+                modifiedKeys["fontStyle"] = true;
+                return this;
+            }
+
+            this.fontSize = (spec: string): INoteBuilder => {
+                updates["fontSize"] = spec;
+                delete childBuilders["fontSize;"];
+                modifiedKeys["fontSize"] = true;
+                return this;
+            }
+
+            this.color = (spec: string): INoteBuilder => {
+                updates["color"] = spec;
+                delete childBuilders["color;"];
+                modifiedKeys["color"] = true;
+                return this;
+            }
+
+            this.timeOnly = (spec: string): INoteBuilder => {
+                updates["timeOnly"] = spec;
+                delete childBuilders["timeOnly;"];
+                modifiedKeys["timeOnly"] = true;
+                return this;
+            }
+
             this.voice = (spec: number): INoteBuilder => {
                 updates["voice"] = spec;
                 delete childBuilders["voice;"];
@@ -10568,6 +12434,90 @@ class NoteBuilder implements INoteBuilder {
                     delete childBuilders["level;"];
                   }
                   modifiedKeys["level"] = true;
+                  return this;
+                }
+
+            this.printDot = (spec: boolean): INoteBuilder => {
+                updates["printDot"] = spec;
+                delete childBuilders["printDot;"];
+                modifiedKeys["printDot"] = true;
+                return this;
+            }
+
+            this.printLyric = (spec: boolean): INoteBuilder => {
+                updates["printLyric"] = spec;
+                delete childBuilders["printLyric;"];
+                modifiedKeys["printLyric"] = true;
+                return this;
+            }
+
+            this.printObject = (spec: boolean): INoteBuilder => {
+                updates["printObject"] = spec;
+                delete childBuilders["printObject;"];
+                modifiedKeys["printObject"] = true;
+                return this;
+            }
+
+            this.printSpacing = (spec: boolean): INoteBuilder => {
+                updates["printSpacing"] = spec;
+                delete childBuilders["printSpacing;"];
+                modifiedKeys["printSpacing"] = true;
+                return this;
+            }
+
+                this.unpitched = (build: Unpitched | ((builder: IUnpitchedBuilder) => IUnpitchedBuilder)): INoteBuilder => {
+                  if (typeof build === 'function') {
+                    delete updates["unpitched"]
+                    const builder = (build as any)(new UnpitchedBuilder(original && original["unpitched"]));
+                    if (!original) updates["unpitched"] = builder.build();
+                    else childBuilders["unpitched"] = builder;
+                  } else {
+                    updates.unpitched = build as any;
+                    delete childBuilders["unpitched;"];
+                  }
+                  modifiedKeys["unpitched"] = true;
+                  return this;
+                }
+
+                this.chord = (build: Chord | ((builder: IChordBuilder) => IChordBuilder)): INoteBuilder => {
+                  if (typeof build === 'function') {
+                    delete updates["chord"]
+                    const builder = (build as any)(new ChordBuilder(original && original["chord"]));
+                    if (!original) updates["chord"] = builder.build();
+                    else childBuilders["chord"] = builder;
+                  } else {
+                    updates.chord = build as any;
+                    delete childBuilders["chord;"];
+                  }
+                  modifiedKeys["chord"] = true;
+                  return this;
+                }
+
+                this.pitch = (build: Pitch | ((builder: IPitchBuilder) => IPitchBuilder)): INoteBuilder => {
+                  if (typeof build === 'function') {
+                    delete updates["pitch"]
+                    const builder = (build as any)(new PitchBuilder(original && original["pitch"]));
+                    if (!original) updates["pitch"] = builder.build();
+                    else childBuilders["pitch"] = builder;
+                  } else {
+                    updates.pitch = build as any;
+                    delete childBuilders["pitch;"];
+                  }
+                  modifiedKeys["pitch"] = true;
+                  return this;
+                }
+
+                this.rest = (build: Rest | ((builder: IRestBuilder) => IRestBuilder)): INoteBuilder => {
+                  if (typeof build === 'function') {
+                    delete updates["rest"]
+                    const builder = (build as any)(new RestBuilder(original && original["rest"]));
+                    if (!original) updates["rest"] = builder.build();
+                    else childBuilders["rest"] = builder;
+                  } else {
+                    updates.rest = build as any;
+                    delete childBuilders["rest;"];
+                  }
+                  modifiedKeys["rest"] = true;
                   return this;
                 }
   }
@@ -10650,6 +12600,12 @@ export interface IDotBuilder {
   relativeY: (relativeY: number) => IDotBuilder;
   defaultY: (defaultY: number) => IDotBuilder;
   relativeX: (relativeX: number) => IDotBuilder;
+  fontFamily: (fontFamily: string) => IDotBuilder;
+  fontWeight: (fontWeight: NormalBold) => IDotBuilder;
+  fontStyle: (fontStyle: NormalItalic) => IDotBuilder;
+  fontSize: (fontSize: string) => IDotBuilder;
+  color: (color: string) => IDotBuilder;
+  placement: (placement: AboveBelow) => IDotBuilder;
 }
 
 class DotBuilder implements IDotBuilder {
@@ -10659,6 +12615,12 @@ class DotBuilder implements IDotBuilder {
   relativeY: (relativeY: number) => IDotBuilder;
   defaultY: (defaultY: number) => IDotBuilder;
   relativeX: (relativeX: number) => IDotBuilder;
+  fontFamily: (fontFamily: string) => IDotBuilder;
+  fontWeight: (fontWeight: NormalBold) => IDotBuilder;
+  fontStyle: (fontStyle: NormalItalic) => IDotBuilder;
+  fontSize: (fontSize: string) => IDotBuilder;
+  color: (color: string) => IDotBuilder;
+  placement: (placement: AboveBelow) => IDotBuilder;
   constructor(original?: Dot) {
     let updates: Dot = {} as any;
     let childBuilders: {[key: string]: any} = {};
@@ -10719,6 +12681,48 @@ class DotBuilder implements IDotBuilder {
                 modifiedKeys["relativeX"] = true;
                 return this;
             }
+
+            this.fontFamily = (spec: string): IDotBuilder => {
+                updates["fontFamily"] = spec;
+                delete childBuilders["fontFamily;"];
+                modifiedKeys["fontFamily"] = true;
+                return this;
+            }
+
+            this.fontWeight = (spec: NormalBold): IDotBuilder => {
+                updates["fontWeight"] = spec;
+                delete childBuilders["fontWeight;"];
+                modifiedKeys["fontWeight"] = true;
+                return this;
+            }
+
+            this.fontStyle = (spec: NormalItalic): IDotBuilder => {
+                updates["fontStyle"] = spec;
+                delete childBuilders["fontStyle;"];
+                modifiedKeys["fontStyle"] = true;
+                return this;
+            }
+
+            this.fontSize = (spec: string): IDotBuilder => {
+                updates["fontSize"] = spec;
+                delete childBuilders["fontSize;"];
+                modifiedKeys["fontSize"] = true;
+                return this;
+            }
+
+            this.color = (spec: string): IDotBuilder => {
+                updates["color"] = spec;
+                delete childBuilders["color;"];
+                modifiedKeys["color"] = true;
+                return this;
+            }
+
+            this.placement = (spec: AboveBelow): IDotBuilder => {
+                updates["placement"] = spec;
+                delete childBuilders["placement;"];
+                modifiedKeys["placement"] = true;
+                return this;
+            }
   }
 }
 export function patchDot(base: Dot, builder: (build: IDotBuilder) => IDotBuilder): IAny[] { return builder(new DotBuilder(base)).patch(); }
@@ -10730,6 +12734,15 @@ export interface IAccidentalBuilder {
   cautionary: (cautionary: boolean) => IAccidentalBuilder;
   accidental: (accidental: MxmlAccidental) => IAccidentalBuilder;
   editorial: (editorial: boolean) => IAccidentalBuilder;
+  defaultX: (defaultX: number) => IAccidentalBuilder;
+  relativeY: (relativeY: number) => IAccidentalBuilder;
+  defaultY: (defaultY: number) => IAccidentalBuilder;
+  relativeX: (relativeX: number) => IAccidentalBuilder;
+  fontFamily: (fontFamily: string) => IAccidentalBuilder;
+  fontWeight: (fontWeight: NormalBold) => IAccidentalBuilder;
+  fontStyle: (fontStyle: NormalItalic) => IAccidentalBuilder;
+  fontSize: (fontSize: string) => IAccidentalBuilder;
+  color: (color: string) => IAccidentalBuilder;
   bracket: (bracket: boolean) => IAccidentalBuilder;
   size: (size: SymbolSize) => IAccidentalBuilder;
   parentheses: (parentheses: boolean) => IAccidentalBuilder;
@@ -10741,6 +12754,15 @@ class AccidentalBuilder implements IAccidentalBuilder {
   cautionary: (cautionary: boolean) => IAccidentalBuilder;
   accidental: (accidental: MxmlAccidental) => IAccidentalBuilder;
   editorial: (editorial: boolean) => IAccidentalBuilder;
+  defaultX: (defaultX: number) => IAccidentalBuilder;
+  relativeY: (relativeY: number) => IAccidentalBuilder;
+  defaultY: (defaultY: number) => IAccidentalBuilder;
+  relativeX: (relativeX: number) => IAccidentalBuilder;
+  fontFamily: (fontFamily: string) => IAccidentalBuilder;
+  fontWeight: (fontWeight: NormalBold) => IAccidentalBuilder;
+  fontStyle: (fontStyle: NormalItalic) => IAccidentalBuilder;
+  fontSize: (fontSize: string) => IAccidentalBuilder;
+  color: (color: string) => IAccidentalBuilder;
   bracket: (bracket: boolean) => IAccidentalBuilder;
   size: (size: SymbolSize) => IAccidentalBuilder;
   parentheses: (parentheses: boolean) => IAccidentalBuilder;
@@ -10800,6 +12822,69 @@ class AccidentalBuilder implements IAccidentalBuilder {
                 updates["editorial"] = spec;
                 delete childBuilders["editorial;"];
                 modifiedKeys["editorial"] = true;
+                return this;
+            }
+
+            this.defaultX = (spec: number): IAccidentalBuilder => {
+                updates["defaultX"] = spec;
+                delete childBuilders["defaultX;"];
+                modifiedKeys["defaultX"] = true;
+                return this;
+            }
+
+            this.relativeY = (spec: number): IAccidentalBuilder => {
+                updates["relativeY"] = spec;
+                delete childBuilders["relativeY;"];
+                modifiedKeys["relativeY"] = true;
+                return this;
+            }
+
+            this.defaultY = (spec: number): IAccidentalBuilder => {
+                updates["defaultY"] = spec;
+                delete childBuilders["defaultY;"];
+                modifiedKeys["defaultY"] = true;
+                return this;
+            }
+
+            this.relativeX = (spec: number): IAccidentalBuilder => {
+                updates["relativeX"] = spec;
+                delete childBuilders["relativeX;"];
+                modifiedKeys["relativeX"] = true;
+                return this;
+            }
+
+            this.fontFamily = (spec: string): IAccidentalBuilder => {
+                updates["fontFamily"] = spec;
+                delete childBuilders["fontFamily;"];
+                modifiedKeys["fontFamily"] = true;
+                return this;
+            }
+
+            this.fontWeight = (spec: NormalBold): IAccidentalBuilder => {
+                updates["fontWeight"] = spec;
+                delete childBuilders["fontWeight;"];
+                modifiedKeys["fontWeight"] = true;
+                return this;
+            }
+
+            this.fontStyle = (spec: NormalItalic): IAccidentalBuilder => {
+                updates["fontStyle"] = spec;
+                delete childBuilders["fontStyle;"];
+                modifiedKeys["fontStyle"] = true;
+                return this;
+            }
+
+            this.fontSize = (spec: string): IAccidentalBuilder => {
+                updates["fontSize"] = spec;
+                delete childBuilders["fontSize;"];
+                modifiedKeys["fontSize"] = true;
+                return this;
+            }
+
+            this.color = (spec: string): IAccidentalBuilder => {
+                updates["color"] = spec;
+                delete childBuilders["color;"];
+                modifiedKeys["color"] = true;
                 return this;
             }
 
@@ -10986,6 +13071,7 @@ export interface IStemBuilder {
   relativeY: (relativeY: number) => IStemBuilder;
   defaultY: (defaultY: number) => IStemBuilder;
   relativeX: (relativeX: number) => IStemBuilder;
+  color: (color: string) => IStemBuilder;
 }
 
 class StemBuilder implements IStemBuilder {
@@ -10996,6 +13082,7 @@ class StemBuilder implements IStemBuilder {
   relativeY: (relativeY: number) => IStemBuilder;
   defaultY: (defaultY: number) => IStemBuilder;
   relativeX: (relativeX: number) => IStemBuilder;
+  color: (color: string) => IStemBuilder;
   constructor(original?: Stem) {
     let updates: Stem = {} as any;
     let childBuilders: {[key: string]: any} = {};
@@ -11068,6 +13155,13 @@ class StemBuilder implements IStemBuilder {
                 modifiedKeys["relativeX"] = true;
                 return this;
             }
+
+            this.color = (spec: string): IStemBuilder => {
+                updates["color"] = spec;
+                delete childBuilders["color;"];
+                modifiedKeys["color"] = true;
+                return this;
+            }
   }
 }
 export function patchStem(base: Stem, builder: (build: IStemBuilder) => IStemBuilder): IAny[] { return builder(new StemBuilder(base)).patch(); }
@@ -11083,6 +13177,7 @@ export interface INoteheadBuilder {
   fontWeight: (fontWeight: NormalBold) => INoteheadBuilder;
   fontStyle: (fontStyle: NormalItalic) => INoteheadBuilder;
   fontSize: (fontSize: string) => INoteheadBuilder;
+  color: (color: string) => INoteheadBuilder;
 }
 
 class NoteheadBuilder implements INoteheadBuilder {
@@ -11095,6 +13190,7 @@ class NoteheadBuilder implements INoteheadBuilder {
   fontWeight: (fontWeight: NormalBold) => INoteheadBuilder;
   fontStyle: (fontStyle: NormalItalic) => INoteheadBuilder;
   fontSize: (fontSize: string) => INoteheadBuilder;
+  color: (color: string) => INoteheadBuilder;
   constructor(original?: Notehead) {
     let updates: Notehead = {} as any;
     let childBuilders: {[key: string]: any} = {};
@@ -11179,6 +13275,13 @@ class NoteheadBuilder implements INoteheadBuilder {
                 updates["fontSize"] = spec;
                 delete childBuilders["fontSize;"];
                 modifiedKeys["fontSize"] = true;
+                return this;
+            }
+
+            this.color = (spec: string): INoteheadBuilder => {
+                updates["color"] = spec;
+                delete childBuilders["color;"];
+                modifiedKeys["color"] = true;
                 return this;
             }
   }
@@ -11440,6 +13543,7 @@ export interface INotationsBuilder {
   otherNotationsAt: (idx: number, build: OtherNotation | ((builder: IOtherNotationBuilder) => IOtherNotationBuilder)) => INotationsBuilder;
   otherNotationsSplice: (start: number, deleteCount: number, ...items: OtherNotation[]) => INotationsBuilder;
   otherNotations: (otherNotations: OtherNotation[]) => INotationsBuilder;
+  printObject: (printObject: boolean) => INotationsBuilder;
   footnote: (build: Footnote | ((builder: IFootnoteBuilder) => IFootnoteBuilder)) => INotationsBuilder;
   level: (build: Level | ((builder: ILevelBuilder) => ILevelBuilder)) => INotationsBuilder;
 }
@@ -11489,6 +13593,7 @@ class NotationsBuilder implements INotationsBuilder {
   otherNotationsAt: (idx: number, build: OtherNotation | ((builder: IOtherNotationBuilder) => IOtherNotationBuilder)) => INotationsBuilder;
   otherNotationsSplice: (start: number, deleteCount: number, ...items: OtherNotation[]) => INotationsBuilder;
   otherNotations: (otherNotations: OtherNotation[]) => INotationsBuilder;
+  printObject: (printObject: boolean) => INotationsBuilder;
   footnote: (build: Footnote | ((builder: IFootnoteBuilder) => IFootnoteBuilder)) => INotationsBuilder;
   level: (build: Level | ((builder: ILevelBuilder) => ILevelBuilder)) => INotationsBuilder;
   constructor(original?: Notations) {
@@ -12392,6 +14497,13 @@ class NotationsBuilder implements INotationsBuilder {
                   return this;
                 }
 
+            this.printObject = (spec: boolean): INotationsBuilder => {
+                updates["printObject"] = spec;
+                delete childBuilders["printObject;"];
+                modifiedKeys["printObject"] = true;
+                return this;
+            }
+
                 this.footnote = (build: Footnote | ((builder: IFootnoteBuilder) => IFootnoteBuilder)): INotationsBuilder => {
                   if (typeof build === 'function') {
                     delete updates["footnote"]
@@ -12429,7 +14541,22 @@ export interface ITiedBuilder {
   patch: () => IAny[];
   number: (number: number) => ITiedBuilder;
   type: (type: StartStopContinue) => ITiedBuilder;
+  defaultX: (defaultX: number) => ITiedBuilder;
+  relativeY: (relativeY: number) => ITiedBuilder;
+  defaultY: (defaultY: number) => ITiedBuilder;
+  relativeX: (relativeX: number) => ITiedBuilder;
+  color: (color: string) => ITiedBuilder;
+  placement: (placement: AboveBelow) => ITiedBuilder;
   lineType: (lineType: SolidDashedDottedWavy) => ITiedBuilder;
+  dashLength: (dashLength: number) => ITiedBuilder;
+  spaceLength: (spaceLength: number) => ITiedBuilder;
+  orientation: (orientation: OverUnder) => ITiedBuilder;
+  bezierX2: (bezierX2: number) => ITiedBuilder;
+  bezierOffset: (bezierOffset: number) => ITiedBuilder;
+  bezierOffset2: (bezierOffset2: number) => ITiedBuilder;
+  bezierX: (bezierX: number) => ITiedBuilder;
+  bezierY: (bezierY: number) => ITiedBuilder;
+  bezierY2: (bezierY2: number) => ITiedBuilder;
 }
 
 class TiedBuilder implements ITiedBuilder {
@@ -12437,7 +14564,22 @@ class TiedBuilder implements ITiedBuilder {
   patch: () => IAny[];
   number: (number: number) => ITiedBuilder;
   type: (type: StartStopContinue) => ITiedBuilder;
+  defaultX: (defaultX: number) => ITiedBuilder;
+  relativeY: (relativeY: number) => ITiedBuilder;
+  defaultY: (defaultY: number) => ITiedBuilder;
+  relativeX: (relativeX: number) => ITiedBuilder;
+  color: (color: string) => ITiedBuilder;
+  placement: (placement: AboveBelow) => ITiedBuilder;
   lineType: (lineType: SolidDashedDottedWavy) => ITiedBuilder;
+  dashLength: (dashLength: number) => ITiedBuilder;
+  spaceLength: (spaceLength: number) => ITiedBuilder;
+  orientation: (orientation: OverUnder) => ITiedBuilder;
+  bezierX2: (bezierX2: number) => ITiedBuilder;
+  bezierOffset: (bezierOffset: number) => ITiedBuilder;
+  bezierOffset2: (bezierOffset2: number) => ITiedBuilder;
+  bezierX: (bezierX: number) => ITiedBuilder;
+  bezierY: (bezierY: number) => ITiedBuilder;
+  bezierY2: (bezierY2: number) => ITiedBuilder;
   constructor(original?: Tied) {
     let updates: Tied = {} as any;
     let childBuilders: {[key: string]: any} = {};
@@ -12490,10 +14632,115 @@ class TiedBuilder implements ITiedBuilder {
                 return this;
             }
 
+            this.defaultX = (spec: number): ITiedBuilder => {
+                updates["defaultX"] = spec;
+                delete childBuilders["defaultX;"];
+                modifiedKeys["defaultX"] = true;
+                return this;
+            }
+
+            this.relativeY = (spec: number): ITiedBuilder => {
+                updates["relativeY"] = spec;
+                delete childBuilders["relativeY;"];
+                modifiedKeys["relativeY"] = true;
+                return this;
+            }
+
+            this.defaultY = (spec: number): ITiedBuilder => {
+                updates["defaultY"] = spec;
+                delete childBuilders["defaultY;"];
+                modifiedKeys["defaultY"] = true;
+                return this;
+            }
+
+            this.relativeX = (spec: number): ITiedBuilder => {
+                updates["relativeX"] = spec;
+                delete childBuilders["relativeX;"];
+                modifiedKeys["relativeX"] = true;
+                return this;
+            }
+
+            this.color = (spec: string): ITiedBuilder => {
+                updates["color"] = spec;
+                delete childBuilders["color;"];
+                modifiedKeys["color"] = true;
+                return this;
+            }
+
+            this.placement = (spec: AboveBelow): ITiedBuilder => {
+                updates["placement"] = spec;
+                delete childBuilders["placement;"];
+                modifiedKeys["placement"] = true;
+                return this;
+            }
+
             this.lineType = (spec: SolidDashedDottedWavy): ITiedBuilder => {
                 updates["lineType"] = spec;
                 delete childBuilders["lineType;"];
                 modifiedKeys["lineType"] = true;
+                return this;
+            }
+
+            this.dashLength = (spec: number): ITiedBuilder => {
+                updates["dashLength"] = spec;
+                delete childBuilders["dashLength;"];
+                modifiedKeys["dashLength"] = true;
+                return this;
+            }
+
+            this.spaceLength = (spec: number): ITiedBuilder => {
+                updates["spaceLength"] = spec;
+                delete childBuilders["spaceLength;"];
+                modifiedKeys["spaceLength"] = true;
+                return this;
+            }
+
+            this.orientation = (spec: OverUnder): ITiedBuilder => {
+                updates["orientation"] = spec;
+                delete childBuilders["orientation;"];
+                modifiedKeys["orientation"] = true;
+                return this;
+            }
+
+            this.bezierX2 = (spec: number): ITiedBuilder => {
+                updates["bezierX2"] = spec;
+                delete childBuilders["bezierX2;"];
+                modifiedKeys["bezierX2"] = true;
+                return this;
+            }
+
+            this.bezierOffset = (spec: number): ITiedBuilder => {
+                updates["bezierOffset"] = spec;
+                delete childBuilders["bezierOffset;"];
+                modifiedKeys["bezierOffset"] = true;
+                return this;
+            }
+
+            this.bezierOffset2 = (spec: number): ITiedBuilder => {
+                updates["bezierOffset2"] = spec;
+                delete childBuilders["bezierOffset2;"];
+                modifiedKeys["bezierOffset2"] = true;
+                return this;
+            }
+
+            this.bezierX = (spec: number): ITiedBuilder => {
+                updates["bezierX"] = spec;
+                delete childBuilders["bezierX;"];
+                modifiedKeys["bezierX"] = true;
+                return this;
+            }
+
+            this.bezierY = (spec: number): ITiedBuilder => {
+                updates["bezierY"] = spec;
+                delete childBuilders["bezierY;"];
+                modifiedKeys["bezierY"] = true;
+                return this;
+            }
+
+            this.bezierY2 = (spec: number): ITiedBuilder => {
+                updates["bezierY2"] = spec;
+                delete childBuilders["bezierY2;"];
+                modifiedKeys["bezierY2"] = true;
                 return this;
             }
   }
@@ -12506,7 +14753,22 @@ export interface ISlurBuilder {
   patch: () => IAny[];
   number: (number: number) => ISlurBuilder;
   type: (type: StartStopContinue) => ISlurBuilder;
+  defaultX: (defaultX: number) => ISlurBuilder;
+  relativeY: (relativeY: number) => ISlurBuilder;
+  defaultY: (defaultY: number) => ISlurBuilder;
+  relativeX: (relativeX: number) => ISlurBuilder;
+  color: (color: string) => ISlurBuilder;
+  placement: (placement: AboveBelow) => ISlurBuilder;
   lineType: (lineType: SolidDashedDottedWavy) => ISlurBuilder;
+  dashLength: (dashLength: number) => ISlurBuilder;
+  spaceLength: (spaceLength: number) => ISlurBuilder;
+  orientation: (orientation: OverUnder) => ISlurBuilder;
+  bezierX2: (bezierX2: number) => ISlurBuilder;
+  bezierOffset: (bezierOffset: number) => ISlurBuilder;
+  bezierOffset2: (bezierOffset2: number) => ISlurBuilder;
+  bezierX: (bezierX: number) => ISlurBuilder;
+  bezierY: (bezierY: number) => ISlurBuilder;
+  bezierY2: (bezierY2: number) => ISlurBuilder;
 }
 
 class SlurBuilder implements ISlurBuilder {
@@ -12514,7 +14776,22 @@ class SlurBuilder implements ISlurBuilder {
   patch: () => IAny[];
   number: (number: number) => ISlurBuilder;
   type: (type: StartStopContinue) => ISlurBuilder;
+  defaultX: (defaultX: number) => ISlurBuilder;
+  relativeY: (relativeY: number) => ISlurBuilder;
+  defaultY: (defaultY: number) => ISlurBuilder;
+  relativeX: (relativeX: number) => ISlurBuilder;
+  color: (color: string) => ISlurBuilder;
+  placement: (placement: AboveBelow) => ISlurBuilder;
   lineType: (lineType: SolidDashedDottedWavy) => ISlurBuilder;
+  dashLength: (dashLength: number) => ISlurBuilder;
+  spaceLength: (spaceLength: number) => ISlurBuilder;
+  orientation: (orientation: OverUnder) => ISlurBuilder;
+  bezierX2: (bezierX2: number) => ISlurBuilder;
+  bezierOffset: (bezierOffset: number) => ISlurBuilder;
+  bezierOffset2: (bezierOffset2: number) => ISlurBuilder;
+  bezierX: (bezierX: number) => ISlurBuilder;
+  bezierY: (bezierY: number) => ISlurBuilder;
+  bezierY2: (bezierY2: number) => ISlurBuilder;
   constructor(original?: Slur) {
     let updates: Slur = {} as any;
     let childBuilders: {[key: string]: any} = {};
@@ -12567,10 +14844,115 @@ class SlurBuilder implements ISlurBuilder {
                 return this;
             }
 
+            this.defaultX = (spec: number): ISlurBuilder => {
+                updates["defaultX"] = spec;
+                delete childBuilders["defaultX;"];
+                modifiedKeys["defaultX"] = true;
+                return this;
+            }
+
+            this.relativeY = (spec: number): ISlurBuilder => {
+                updates["relativeY"] = spec;
+                delete childBuilders["relativeY;"];
+                modifiedKeys["relativeY"] = true;
+                return this;
+            }
+
+            this.defaultY = (spec: number): ISlurBuilder => {
+                updates["defaultY"] = spec;
+                delete childBuilders["defaultY;"];
+                modifiedKeys["defaultY"] = true;
+                return this;
+            }
+
+            this.relativeX = (spec: number): ISlurBuilder => {
+                updates["relativeX"] = spec;
+                delete childBuilders["relativeX;"];
+                modifiedKeys["relativeX"] = true;
+                return this;
+            }
+
+            this.color = (spec: string): ISlurBuilder => {
+                updates["color"] = spec;
+                delete childBuilders["color;"];
+                modifiedKeys["color"] = true;
+                return this;
+            }
+
+            this.placement = (spec: AboveBelow): ISlurBuilder => {
+                updates["placement"] = spec;
+                delete childBuilders["placement;"];
+                modifiedKeys["placement"] = true;
+                return this;
+            }
+
             this.lineType = (spec: SolidDashedDottedWavy): ISlurBuilder => {
                 updates["lineType"] = spec;
                 delete childBuilders["lineType;"];
                 modifiedKeys["lineType"] = true;
+                return this;
+            }
+
+            this.dashLength = (spec: number): ISlurBuilder => {
+                updates["dashLength"] = spec;
+                delete childBuilders["dashLength;"];
+                modifiedKeys["dashLength"] = true;
+                return this;
+            }
+
+            this.spaceLength = (spec: number): ISlurBuilder => {
+                updates["spaceLength"] = spec;
+                delete childBuilders["spaceLength;"];
+                modifiedKeys["spaceLength"] = true;
+                return this;
+            }
+
+            this.orientation = (spec: OverUnder): ISlurBuilder => {
+                updates["orientation"] = spec;
+                delete childBuilders["orientation;"];
+                modifiedKeys["orientation"] = true;
+                return this;
+            }
+
+            this.bezierX2 = (spec: number): ISlurBuilder => {
+                updates["bezierX2"] = spec;
+                delete childBuilders["bezierX2;"];
+                modifiedKeys["bezierX2"] = true;
+                return this;
+            }
+
+            this.bezierOffset = (spec: number): ISlurBuilder => {
+                updates["bezierOffset"] = spec;
+                delete childBuilders["bezierOffset;"];
+                modifiedKeys["bezierOffset"] = true;
+                return this;
+            }
+
+            this.bezierOffset2 = (spec: number): ISlurBuilder => {
+                updates["bezierOffset2"] = spec;
+                delete childBuilders["bezierOffset2;"];
+                modifiedKeys["bezierOffset2"] = true;
+                return this;
+            }
+
+            this.bezierX = (spec: number): ISlurBuilder => {
+                updates["bezierX"] = spec;
+                delete childBuilders["bezierX;"];
+                modifiedKeys["bezierX"] = true;
+                return this;
+            }
+
+            this.bezierY = (spec: number): ISlurBuilder => {
+                updates["bezierY"] = spec;
+                delete childBuilders["bezierY;"];
+                modifiedKeys["bezierY"] = true;
+                return this;
+            }
+
+            this.bezierY2 = (spec: number): ISlurBuilder => {
+                updates["bezierY2"] = spec;
+                delete childBuilders["bezierY2;"];
+                modifiedKeys["bezierY2"] = true;
                 return this;
             }
   }
@@ -12588,6 +14970,11 @@ export interface ITupletBuilder {
   type: (type: StartStop) => ITupletBuilder;
   showType: (showType: ActualBothNone) => ITupletBuilder;
   tupletActual: (build: TupletActual | ((builder: ITupletActualBuilder) => ITupletActualBuilder)) => ITupletBuilder;
+  defaultX: (defaultX: number) => ITupletBuilder;
+  relativeY: (relativeY: number) => ITupletBuilder;
+  defaultY: (defaultY: number) => ITupletBuilder;
+  relativeX: (relativeX: number) => ITupletBuilder;
+  placement: (placement: AboveBelow) => ITupletBuilder;
   lineShape: (lineShape: StraightCurved) => ITupletBuilder;
 }
 
@@ -12601,6 +14988,11 @@ class TupletBuilder implements ITupletBuilder {
   type: (type: StartStop) => ITupletBuilder;
   showType: (showType: ActualBothNone) => ITupletBuilder;
   tupletActual: (build: TupletActual | ((builder: ITupletActualBuilder) => ITupletActualBuilder)) => ITupletBuilder;
+  defaultX: (defaultX: number) => ITupletBuilder;
+  relativeY: (relativeY: number) => ITupletBuilder;
+  defaultY: (defaultY: number) => ITupletBuilder;
+  relativeX: (relativeX: number) => ITupletBuilder;
+  placement: (placement: AboveBelow) => ITupletBuilder;
   lineShape: (lineShape: StraightCurved) => ITupletBuilder;
   constructor(original?: Tuplet) {
     let updates: Tuplet = {} as any;
@@ -12707,6 +15099,41 @@ class TupletBuilder implements ITupletBuilder {
                   modifiedKeys["tupletActual"] = true;
                   return this;
                 }
+
+            this.defaultX = (spec: number): ITupletBuilder => {
+                updates["defaultX"] = spec;
+                delete childBuilders["defaultX;"];
+                modifiedKeys["defaultX"] = true;
+                return this;
+            }
+
+            this.relativeY = (spec: number): ITupletBuilder => {
+                updates["relativeY"] = spec;
+                delete childBuilders["relativeY;"];
+                modifiedKeys["relativeY"] = true;
+                return this;
+            }
+
+            this.defaultY = (spec: number): ITupletBuilder => {
+                updates["defaultY"] = spec;
+                delete childBuilders["defaultY;"];
+                modifiedKeys["defaultY"] = true;
+                return this;
+            }
+
+            this.relativeX = (spec: number): ITupletBuilder => {
+                updates["relativeX"] = spec;
+                delete childBuilders["relativeX;"];
+                modifiedKeys["relativeX"] = true;
+                return this;
+            }
+
+            this.placement = (spec: AboveBelow): ITupletBuilder => {
+                updates["placement"] = spec;
+                delete childBuilders["placement;"];
+                modifiedKeys["placement"] = true;
+                return this;
+            }
 
             this.lineShape = (spec: StraightCurved): ITupletBuilder => {
                 updates["lineShape"] = spec;
@@ -13017,6 +15444,7 @@ export interface ITupletNumberBuilder {
   fontWeight: (fontWeight: NormalBold) => ITupletNumberBuilder;
   fontStyle: (fontStyle: NormalItalic) => ITupletNumberBuilder;
   fontSize: (fontSize: string) => ITupletNumberBuilder;
+  color: (color: string) => ITupletNumberBuilder;
 }
 
 class TupletNumberBuilder implements ITupletNumberBuilder {
@@ -13027,6 +15455,7 @@ class TupletNumberBuilder implements ITupletNumberBuilder {
   fontWeight: (fontWeight: NormalBold) => ITupletNumberBuilder;
   fontStyle: (fontStyle: NormalItalic) => ITupletNumberBuilder;
   fontSize: (fontSize: string) => ITupletNumberBuilder;
+  color: (color: string) => ITupletNumberBuilder;
   constructor(original?: TupletNumber) {
     let updates: TupletNumber = {} as any;
     let childBuilders: {[key: string]: any} = {};
@@ -13099,6 +15528,13 @@ class TupletNumberBuilder implements ITupletNumberBuilder {
                 modifiedKeys["fontSize"] = true;
                 return this;
             }
+
+            this.color = (spec: string): ITupletNumberBuilder => {
+                updates["color"] = spec;
+                delete childBuilders["color;"];
+                modifiedKeys["color"] = true;
+                return this;
+            }
   }
 }
 export function patchTupletNumber(base: TupletNumber, builder: (build: ITupletNumberBuilder) => ITupletNumberBuilder): IAny[] { return builder(new TupletNumberBuilder(base)).patch(); }
@@ -13112,6 +15548,7 @@ export interface ITupletTypeBuilder {
   fontWeight: (fontWeight: NormalBold) => ITupletTypeBuilder;
   fontStyle: (fontStyle: NormalItalic) => ITupletTypeBuilder;
   fontSize: (fontSize: string) => ITupletTypeBuilder;
+  color: (color: string) => ITupletTypeBuilder;
 }
 
 class TupletTypeBuilder implements ITupletTypeBuilder {
@@ -13122,6 +15559,7 @@ class TupletTypeBuilder implements ITupletTypeBuilder {
   fontWeight: (fontWeight: NormalBold) => ITupletTypeBuilder;
   fontStyle: (fontStyle: NormalItalic) => ITupletTypeBuilder;
   fontSize: (fontSize: string) => ITupletTypeBuilder;
+  color: (color: string) => ITupletTypeBuilder;
   constructor(original?: TupletType) {
     let updates: TupletType = {} as any;
     let childBuilders: {[key: string]: any} = {};
@@ -13194,6 +15632,13 @@ class TupletTypeBuilder implements ITupletTypeBuilder {
                 modifiedKeys["fontSize"] = true;
                 return this;
             }
+
+            this.color = (spec: string): ITupletTypeBuilder => {
+                updates["color"] = spec;
+                delete childBuilders["color;"];
+                modifiedKeys["color"] = true;
+                return this;
+            }
   }
 }
 export function patchTupletType(base: TupletType, builder: (build: ITupletTypeBuilder) => ITupletTypeBuilder): IAny[] { return builder(new TupletTypeBuilder(base)).patch(); }
@@ -13206,6 +15651,7 @@ export interface ITupletDotBuilder {
   fontWeight: (fontWeight: NormalBold) => ITupletDotBuilder;
   fontStyle: (fontStyle: NormalItalic) => ITupletDotBuilder;
   fontSize: (fontSize: string) => ITupletDotBuilder;
+  color: (color: string) => ITupletDotBuilder;
 }
 
 class TupletDotBuilder implements ITupletDotBuilder {
@@ -13215,6 +15661,7 @@ class TupletDotBuilder implements ITupletDotBuilder {
   fontWeight: (fontWeight: NormalBold) => ITupletDotBuilder;
   fontStyle: (fontStyle: NormalItalic) => ITupletDotBuilder;
   fontSize: (fontSize: string) => ITupletDotBuilder;
+  color: (color: string) => ITupletDotBuilder;
   constructor(original?: TupletDot) {
     let updates: TupletDot = {} as any;
     let childBuilders: {[key: string]: any} = {};
@@ -13275,6 +15722,13 @@ class TupletDotBuilder implements ITupletDotBuilder {
                 modifiedKeys["fontSize"] = true;
                 return this;
             }
+
+            this.color = (spec: string): ITupletDotBuilder => {
+                updates["color"] = spec;
+                delete childBuilders["color;"];
+                modifiedKeys["color"] = true;
+                return this;
+            }
   }
 }
 export function patchTupletDot(base: TupletDot, builder: (build: ITupletDotBuilder) => ITupletDotBuilder): IAny[] { return builder(new TupletDotBuilder(base)).patch(); }
@@ -13286,7 +15740,18 @@ export interface IGlissandoBuilder {
   text: (text: string) => IGlissandoBuilder;
   type: (type: StartStop) => IGlissandoBuilder;
   normal: (normal: number) => IGlissandoBuilder;
+  defaultX: (defaultX: number) => IGlissandoBuilder;
+  relativeY: (relativeY: number) => IGlissandoBuilder;
+  defaultY: (defaultY: number) => IGlissandoBuilder;
+  relativeX: (relativeX: number) => IGlissandoBuilder;
+  fontFamily: (fontFamily: string) => IGlissandoBuilder;
+  fontWeight: (fontWeight: NormalBold) => IGlissandoBuilder;
+  fontStyle: (fontStyle: NormalItalic) => IGlissandoBuilder;
+  fontSize: (fontSize: string) => IGlissandoBuilder;
+  color: (color: string) => IGlissandoBuilder;
   lineType: (lineType: SolidDashedDottedWavy) => IGlissandoBuilder;
+  dashLength: (dashLength: number) => IGlissandoBuilder;
+  spaceLength: (spaceLength: number) => IGlissandoBuilder;
 }
 
 class GlissandoBuilder implements IGlissandoBuilder {
@@ -13295,7 +15760,18 @@ class GlissandoBuilder implements IGlissandoBuilder {
   text: (text: string) => IGlissandoBuilder;
   type: (type: StartStop) => IGlissandoBuilder;
   normal: (normal: number) => IGlissandoBuilder;
+  defaultX: (defaultX: number) => IGlissandoBuilder;
+  relativeY: (relativeY: number) => IGlissandoBuilder;
+  defaultY: (defaultY: number) => IGlissandoBuilder;
+  relativeX: (relativeX: number) => IGlissandoBuilder;
+  fontFamily: (fontFamily: string) => IGlissandoBuilder;
+  fontWeight: (fontWeight: NormalBold) => IGlissandoBuilder;
+  fontStyle: (fontStyle: NormalItalic) => IGlissandoBuilder;
+  fontSize: (fontSize: string) => IGlissandoBuilder;
+  color: (color: string) => IGlissandoBuilder;
   lineType: (lineType: SolidDashedDottedWavy) => IGlissandoBuilder;
+  dashLength: (dashLength: number) => IGlissandoBuilder;
+  spaceLength: (spaceLength: number) => IGlissandoBuilder;
   constructor(original?: Glissando) {
     let updates: Glissando = {} as any;
     let childBuilders: {[key: string]: any} = {};
@@ -13355,10 +15831,87 @@ class GlissandoBuilder implements IGlissandoBuilder {
                 return this;
             }
 
+            this.defaultX = (spec: number): IGlissandoBuilder => {
+                updates["defaultX"] = spec;
+                delete childBuilders["defaultX;"];
+                modifiedKeys["defaultX"] = true;
+                return this;
+            }
+
+            this.relativeY = (spec: number): IGlissandoBuilder => {
+                updates["relativeY"] = spec;
+                delete childBuilders["relativeY;"];
+                modifiedKeys["relativeY"] = true;
+                return this;
+            }
+
+            this.defaultY = (spec: number): IGlissandoBuilder => {
+                updates["defaultY"] = spec;
+                delete childBuilders["defaultY;"];
+                modifiedKeys["defaultY"] = true;
+                return this;
+            }
+
+            this.relativeX = (spec: number): IGlissandoBuilder => {
+                updates["relativeX"] = spec;
+                delete childBuilders["relativeX;"];
+                modifiedKeys["relativeX"] = true;
+                return this;
+            }
+
+            this.fontFamily = (spec: string): IGlissandoBuilder => {
+                updates["fontFamily"] = spec;
+                delete childBuilders["fontFamily;"];
+                modifiedKeys["fontFamily"] = true;
+                return this;
+            }
+
+            this.fontWeight = (spec: NormalBold): IGlissandoBuilder => {
+                updates["fontWeight"] = spec;
+                delete childBuilders["fontWeight;"];
+                modifiedKeys["fontWeight"] = true;
+                return this;
+            }
+
+            this.fontStyle = (spec: NormalItalic): IGlissandoBuilder => {
+                updates["fontStyle"] = spec;
+                delete childBuilders["fontStyle;"];
+                modifiedKeys["fontStyle"] = true;
+                return this;
+            }
+
+            this.fontSize = (spec: string): IGlissandoBuilder => {
+                updates["fontSize"] = spec;
+                delete childBuilders["fontSize;"];
+                modifiedKeys["fontSize"] = true;
+                return this;
+            }
+
+            this.color = (spec: string): IGlissandoBuilder => {
+                updates["color"] = spec;
+                delete childBuilders["color;"];
+                modifiedKeys["color"] = true;
+                return this;
+            }
+
             this.lineType = (spec: SolidDashedDottedWavy): IGlissandoBuilder => {
                 updates["lineType"] = spec;
                 delete childBuilders["lineType;"];
                 modifiedKeys["lineType"] = true;
+                return this;
+            }
+
+            this.dashLength = (spec: number): IGlissandoBuilder => {
+                updates["dashLength"] = spec;
+                delete childBuilders["dashLength;"];
+                modifiedKeys["dashLength"] = true;
+                return this;
+            }
+
+            this.spaceLength = (spec: number): IGlissandoBuilder => {
+                updates["spaceLength"] = spec;
+                delete childBuilders["spaceLength;"];
+                modifiedKeys["spaceLength"] = true;
                 return this;
             }
   }
@@ -13372,7 +15925,22 @@ export interface ISlideBuilder {
   text: (text: string) => ISlideBuilder;
   type: (type: StartStop) => ISlideBuilder;
   normal: (normal: number) => ISlideBuilder;
+  defaultX: (defaultX: number) => ISlideBuilder;
+  relativeY: (relativeY: number) => ISlideBuilder;
+  defaultY: (defaultY: number) => ISlideBuilder;
+  relativeX: (relativeX: number) => ISlideBuilder;
+  fontFamily: (fontFamily: string) => ISlideBuilder;
+  fontWeight: (fontWeight: NormalBold) => ISlideBuilder;
+  fontStyle: (fontStyle: NormalItalic) => ISlideBuilder;
+  fontSize: (fontSize: string) => ISlideBuilder;
+  color: (color: string) => ISlideBuilder;
   lineType: (lineType: SolidDashedDottedWavy) => ISlideBuilder;
+  dashLength: (dashLength: number) => ISlideBuilder;
+  spaceLength: (spaceLength: number) => ISlideBuilder;
+  accelerate: (accelerate: boolean) => ISlideBuilder;
+  beats: (beats: number) => ISlideBuilder;
+  firstBeat: (firstBeat: number) => ISlideBuilder;
+  lastBeat: (lastBeat: number) => ISlideBuilder;
 }
 
 class SlideBuilder implements ISlideBuilder {
@@ -13381,7 +15949,22 @@ class SlideBuilder implements ISlideBuilder {
   text: (text: string) => ISlideBuilder;
   type: (type: StartStop) => ISlideBuilder;
   normal: (normal: number) => ISlideBuilder;
+  defaultX: (defaultX: number) => ISlideBuilder;
+  relativeY: (relativeY: number) => ISlideBuilder;
+  defaultY: (defaultY: number) => ISlideBuilder;
+  relativeX: (relativeX: number) => ISlideBuilder;
+  fontFamily: (fontFamily: string) => ISlideBuilder;
+  fontWeight: (fontWeight: NormalBold) => ISlideBuilder;
+  fontStyle: (fontStyle: NormalItalic) => ISlideBuilder;
+  fontSize: (fontSize: string) => ISlideBuilder;
+  color: (color: string) => ISlideBuilder;
   lineType: (lineType: SolidDashedDottedWavy) => ISlideBuilder;
+  dashLength: (dashLength: number) => ISlideBuilder;
+  spaceLength: (spaceLength: number) => ISlideBuilder;
+  accelerate: (accelerate: boolean) => ISlideBuilder;
+  beats: (beats: number) => ISlideBuilder;
+  firstBeat: (firstBeat: number) => ISlideBuilder;
+  lastBeat: (lastBeat: number) => ISlideBuilder;
   constructor(original?: Slide) {
     let updates: Slide = {} as any;
     let childBuilders: {[key: string]: any} = {};
@@ -13441,10 +16024,115 @@ class SlideBuilder implements ISlideBuilder {
                 return this;
             }
 
+            this.defaultX = (spec: number): ISlideBuilder => {
+                updates["defaultX"] = spec;
+                delete childBuilders["defaultX;"];
+                modifiedKeys["defaultX"] = true;
+                return this;
+            }
+
+            this.relativeY = (spec: number): ISlideBuilder => {
+                updates["relativeY"] = spec;
+                delete childBuilders["relativeY;"];
+                modifiedKeys["relativeY"] = true;
+                return this;
+            }
+
+            this.defaultY = (spec: number): ISlideBuilder => {
+                updates["defaultY"] = spec;
+                delete childBuilders["defaultY;"];
+                modifiedKeys["defaultY"] = true;
+                return this;
+            }
+
+            this.relativeX = (spec: number): ISlideBuilder => {
+                updates["relativeX"] = spec;
+                delete childBuilders["relativeX;"];
+                modifiedKeys["relativeX"] = true;
+                return this;
+            }
+
+            this.fontFamily = (spec: string): ISlideBuilder => {
+                updates["fontFamily"] = spec;
+                delete childBuilders["fontFamily;"];
+                modifiedKeys["fontFamily"] = true;
+                return this;
+            }
+
+            this.fontWeight = (spec: NormalBold): ISlideBuilder => {
+                updates["fontWeight"] = spec;
+                delete childBuilders["fontWeight;"];
+                modifiedKeys["fontWeight"] = true;
+                return this;
+            }
+
+            this.fontStyle = (spec: NormalItalic): ISlideBuilder => {
+                updates["fontStyle"] = spec;
+                delete childBuilders["fontStyle;"];
+                modifiedKeys["fontStyle"] = true;
+                return this;
+            }
+
+            this.fontSize = (spec: string): ISlideBuilder => {
+                updates["fontSize"] = spec;
+                delete childBuilders["fontSize;"];
+                modifiedKeys["fontSize"] = true;
+                return this;
+            }
+
+            this.color = (spec: string): ISlideBuilder => {
+                updates["color"] = spec;
+                delete childBuilders["color;"];
+                modifiedKeys["color"] = true;
+                return this;
+            }
+
             this.lineType = (spec: SolidDashedDottedWavy): ISlideBuilder => {
                 updates["lineType"] = spec;
                 delete childBuilders["lineType;"];
                 modifiedKeys["lineType"] = true;
+                return this;
+            }
+
+            this.dashLength = (spec: number): ISlideBuilder => {
+                updates["dashLength"] = spec;
+                delete childBuilders["dashLength;"];
+                modifiedKeys["dashLength"] = true;
+                return this;
+            }
+
+            this.spaceLength = (spec: number): ISlideBuilder => {
+                updates["spaceLength"] = spec;
+                delete childBuilders["spaceLength;"];
+                modifiedKeys["spaceLength"] = true;
+                return this;
+            }
+
+            this.accelerate = (spec: boolean): ISlideBuilder => {
+                updates["accelerate"] = spec;
+                delete childBuilders["accelerate;"];
+                modifiedKeys["accelerate"] = true;
+                return this;
+            }
+
+            this.beats = (spec: number): ISlideBuilder => {
+                updates["beats"] = spec;
+                delete childBuilders["beats;"];
+                modifiedKeys["beats"] = true;
+                return this;
+            }
+
+            this.firstBeat = (spec: number): ISlideBuilder => {
+                updates["firstBeat"] = spec;
+                delete childBuilders["firstBeat;"];
+                modifiedKeys["firstBeat"] = true;
+                return this;
+            }
+
+            this.lastBeat = (spec: number): ISlideBuilder => {
+                updates["lastBeat"] = spec;
+                delete childBuilders["lastBeat;"];
+                modifiedKeys["lastBeat"] = true;
                 return this;
             }
   }
@@ -13457,7 +16145,17 @@ export interface IOtherNotationBuilder {
   patch: () => IAny[];
   type: (type: StartStopSingle) => IOtherNotationBuilder;
   data: (data: string) => IOtherNotationBuilder;
+  defaultX: (defaultX: number) => IOtherNotationBuilder;
+  relativeY: (relativeY: number) => IOtherNotationBuilder;
+  defaultY: (defaultY: number) => IOtherNotationBuilder;
+  relativeX: (relativeX: number) => IOtherNotationBuilder;
+  fontFamily: (fontFamily: string) => IOtherNotationBuilder;
+  fontWeight: (fontWeight: NormalBold) => IOtherNotationBuilder;
+  fontStyle: (fontStyle: NormalItalic) => IOtherNotationBuilder;
+  fontSize: (fontSize: string) => IOtherNotationBuilder;
+  color: (color: string) => IOtherNotationBuilder;
   printObject: (printObject: boolean) => IOtherNotationBuilder;
+  placement: (placement: AboveBelow) => IOtherNotationBuilder;
 }
 
 class OtherNotationBuilder implements IOtherNotationBuilder {
@@ -13465,7 +16163,17 @@ class OtherNotationBuilder implements IOtherNotationBuilder {
   patch: () => IAny[];
   type: (type: StartStopSingle) => IOtherNotationBuilder;
   data: (data: string) => IOtherNotationBuilder;
+  defaultX: (defaultX: number) => IOtherNotationBuilder;
+  relativeY: (relativeY: number) => IOtherNotationBuilder;
+  defaultY: (defaultY: number) => IOtherNotationBuilder;
+  relativeX: (relativeX: number) => IOtherNotationBuilder;
+  fontFamily: (fontFamily: string) => IOtherNotationBuilder;
+  fontWeight: (fontWeight: NormalBold) => IOtherNotationBuilder;
+  fontStyle: (fontStyle: NormalItalic) => IOtherNotationBuilder;
+  fontSize: (fontSize: string) => IOtherNotationBuilder;
+  color: (color: string) => IOtherNotationBuilder;
   printObject: (printObject: boolean) => IOtherNotationBuilder;
+  placement: (placement: AboveBelow) => IOtherNotationBuilder;
   constructor(original?: OtherNotation) {
     let updates: OtherNotation = {} as any;
     let childBuilders: {[key: string]: any} = {};
@@ -13518,10 +16226,80 @@ class OtherNotationBuilder implements IOtherNotationBuilder {
                 return this;
             }
 
+            this.defaultX = (spec: number): IOtherNotationBuilder => {
+                updates["defaultX"] = spec;
+                delete childBuilders["defaultX;"];
+                modifiedKeys["defaultX"] = true;
+                return this;
+            }
+
+            this.relativeY = (spec: number): IOtherNotationBuilder => {
+                updates["relativeY"] = spec;
+                delete childBuilders["relativeY;"];
+                modifiedKeys["relativeY"] = true;
+                return this;
+            }
+
+            this.defaultY = (spec: number): IOtherNotationBuilder => {
+                updates["defaultY"] = spec;
+                delete childBuilders["defaultY;"];
+                modifiedKeys["defaultY"] = true;
+                return this;
+            }
+
+            this.relativeX = (spec: number): IOtherNotationBuilder => {
+                updates["relativeX"] = spec;
+                delete childBuilders["relativeX;"];
+                modifiedKeys["relativeX"] = true;
+                return this;
+            }
+
+            this.fontFamily = (spec: string): IOtherNotationBuilder => {
+                updates["fontFamily"] = spec;
+                delete childBuilders["fontFamily;"];
+                modifiedKeys["fontFamily"] = true;
+                return this;
+            }
+
+            this.fontWeight = (spec: NormalBold): IOtherNotationBuilder => {
+                updates["fontWeight"] = spec;
+                delete childBuilders["fontWeight;"];
+                modifiedKeys["fontWeight"] = true;
+                return this;
+            }
+
+            this.fontStyle = (spec: NormalItalic): IOtherNotationBuilder => {
+                updates["fontStyle"] = spec;
+                delete childBuilders["fontStyle;"];
+                modifiedKeys["fontStyle"] = true;
+                return this;
+            }
+
+            this.fontSize = (spec: string): IOtherNotationBuilder => {
+                updates["fontSize"] = spec;
+                delete childBuilders["fontSize;"];
+                modifiedKeys["fontSize"] = true;
+                return this;
+            }
+
+            this.color = (spec: string): IOtherNotationBuilder => {
+                updates["color"] = spec;
+                delete childBuilders["color;"];
+                modifiedKeys["color"] = true;
+                return this;
+            }
+
             this.printObject = (spec: boolean): IOtherNotationBuilder => {
                 updates["printObject"] = spec;
                 delete childBuilders["printObject;"];
                 modifiedKeys["printObject"] = true;
+                return this;
+            }
+
+            this.placement = (spec: AboveBelow): IOtherNotationBuilder => {
+                updates["placement"] = spec;
+                delete childBuilders["placement;"];
+                modifiedKeys["placement"] = true;
                 return this;
             }
   }
@@ -13534,6 +16312,17 @@ export interface IOtherDirectionBuilder {
   patch: () => IAny[];
   data: (data: string) => IOtherDirectionBuilder;
   printObject: (printObject: boolean) => IOtherDirectionBuilder;
+  defaultX: (defaultX: number) => IOtherDirectionBuilder;
+  relativeY: (relativeY: number) => IOtherDirectionBuilder;
+  defaultY: (defaultY: number) => IOtherDirectionBuilder;
+  relativeX: (relativeX: number) => IOtherDirectionBuilder;
+  fontFamily: (fontFamily: string) => IOtherDirectionBuilder;
+  fontWeight: (fontWeight: NormalBold) => IOtherDirectionBuilder;
+  fontStyle: (fontStyle: NormalItalic) => IOtherDirectionBuilder;
+  fontSize: (fontSize: string) => IOtherDirectionBuilder;
+  color: (color: string) => IOtherDirectionBuilder;
+  halign: (halign: LeftCenterRight) => IOtherDirectionBuilder;
+  valign: (valign: TopMiddleBottomBaseline) => IOtherDirectionBuilder;
 }
 
 class OtherDirectionBuilder implements IOtherDirectionBuilder {
@@ -13541,6 +16330,17 @@ class OtherDirectionBuilder implements IOtherDirectionBuilder {
   patch: () => IAny[];
   data: (data: string) => IOtherDirectionBuilder;
   printObject: (printObject: boolean) => IOtherDirectionBuilder;
+  defaultX: (defaultX: number) => IOtherDirectionBuilder;
+  relativeY: (relativeY: number) => IOtherDirectionBuilder;
+  defaultY: (defaultY: number) => IOtherDirectionBuilder;
+  relativeX: (relativeX: number) => IOtherDirectionBuilder;
+  fontFamily: (fontFamily: string) => IOtherDirectionBuilder;
+  fontWeight: (fontWeight: NormalBold) => IOtherDirectionBuilder;
+  fontStyle: (fontStyle: NormalItalic) => IOtherDirectionBuilder;
+  fontSize: (fontSize: string) => IOtherDirectionBuilder;
+  color: (color: string) => IOtherDirectionBuilder;
+  halign: (halign: LeftCenterRight) => IOtherDirectionBuilder;
+  valign: (valign: TopMiddleBottomBaseline) => IOtherDirectionBuilder;
   constructor(original?: OtherDirection) {
     let updates: OtherDirection = {} as any;
     let childBuilders: {[key: string]: any} = {};
@@ -13592,6 +16392,83 @@ class OtherDirectionBuilder implements IOtherDirectionBuilder {
                 modifiedKeys["printObject"] = true;
                 return this;
             }
+
+            this.defaultX = (spec: number): IOtherDirectionBuilder => {
+                updates["defaultX"] = spec;
+                delete childBuilders["defaultX;"];
+                modifiedKeys["defaultX"] = true;
+                return this;
+            }
+
+            this.relativeY = (spec: number): IOtherDirectionBuilder => {
+                updates["relativeY"] = spec;
+                delete childBuilders["relativeY;"];
+                modifiedKeys["relativeY"] = true;
+                return this;
+            }
+
+            this.defaultY = (spec: number): IOtherDirectionBuilder => {
+                updates["defaultY"] = spec;
+                delete childBuilders["defaultY;"];
+                modifiedKeys["defaultY"] = true;
+                return this;
+            }
+
+            this.relativeX = (spec: number): IOtherDirectionBuilder => {
+                updates["relativeX"] = spec;
+                delete childBuilders["relativeX;"];
+                modifiedKeys["relativeX"] = true;
+                return this;
+            }
+
+            this.fontFamily = (spec: string): IOtherDirectionBuilder => {
+                updates["fontFamily"] = spec;
+                delete childBuilders["fontFamily;"];
+                modifiedKeys["fontFamily"] = true;
+                return this;
+            }
+
+            this.fontWeight = (spec: NormalBold): IOtherDirectionBuilder => {
+                updates["fontWeight"] = spec;
+                delete childBuilders["fontWeight;"];
+                modifiedKeys["fontWeight"] = true;
+                return this;
+            }
+
+            this.fontStyle = (spec: NormalItalic): IOtherDirectionBuilder => {
+                updates["fontStyle"] = spec;
+                delete childBuilders["fontStyle;"];
+                modifiedKeys["fontStyle"] = true;
+                return this;
+            }
+
+            this.fontSize = (spec: string): IOtherDirectionBuilder => {
+                updates["fontSize"] = spec;
+                delete childBuilders["fontSize;"];
+                modifiedKeys["fontSize"] = true;
+                return this;
+            }
+
+            this.color = (spec: string): IOtherDirectionBuilder => {
+                updates["color"] = spec;
+                delete childBuilders["color;"];
+                modifiedKeys["color"] = true;
+                return this;
+            }
+
+            this.halign = (spec: LeftCenterRight): IOtherDirectionBuilder => {
+                updates["halign"] = spec;
+                delete childBuilders["halign;"];
+                modifiedKeys["halign"] = true;
+                return this;
+            }
+
+            this.valign = (spec: TopMiddleBottomBaseline): IOtherDirectionBuilder => {
+                updates["valign"] = spec;
+                delete childBuilders["valign;"];
+                modifiedKeys["valign"] = true;
+                return this;
+            }
   }
 }
 export function patchOtherDirection(base: OtherDirection, builder: (build: IOtherDirectionBuilder) => IOtherDirectionBuilder): IAny[] { return builder(new OtherDirectionBuilder(base)).patch(); }
@@ -13620,6 +16497,19 @@ export interface IOrnamentsBuilder {
   relativeY: (relativeY: number) => IOrnamentsBuilder;
   defaultY: (defaultY: number) => IOrnamentsBuilder;
   relativeX: (relativeX: number) => IOrnamentsBuilder;
+  fontFamily: (fontFamily: string) => IOrnamentsBuilder;
+  fontWeight: (fontWeight: NormalBold) => IOrnamentsBuilder;
+  fontStyle: (fontStyle: NormalItalic) => IOrnamentsBuilder;
+  fontSize: (fontSize: string) => IOrnamentsBuilder;
+  color: (color: string) => IOrnamentsBuilder;
+  placement: (placement: AboveBelow) => IOrnamentsBuilder;
+  startNote: (startNote: UpperMainBelow) => IOrnamentsBuilder;
+  accelerate: (accelerate: boolean) => IOrnamentsBuilder;
+  beats: (beats: number) => IOrnamentsBuilder;
+  lastBeat: (lastBeat: number) => IOrnamentsBuilder;
+  trillStep: (trillStep: WholeHalfUnison) => IOrnamentsBuilder;
+  twoNoteTurn: (twoNoteTurn: WholeHalfNone) => IOrnamentsBuilder;
+  secondBeat: (secondBeat: number) => IOrnamentsBuilder;
 }
 
 class OrnamentsBuilder implements IOrnamentsBuilder {
@@ -13645,6 +16535,19 @@ class OrnamentsBuilder implements IOrnamentsBuilder {
   relativeY: (relativeY: number) => IOrnamentsBuilder;
   defaultY: (defaultY: number) => IOrnamentsBuilder;
   relativeX: (relativeX: number) => IOrnamentsBuilder;
+  fontFamily: (fontFamily: string) => IOrnamentsBuilder;
+  fontWeight: (fontWeight: NormalBold) => IOrnamentsBuilder;
+  fontStyle: (fontStyle: NormalItalic) => IOrnamentsBuilder;
+  fontSize: (fontSize: string) => IOrnamentsBuilder;
+  color: (color: string) => IOrnamentsBuilder;
+  placement: (placement: AboveBelow) => IOrnamentsBuilder;
+  startNote: (startNote: UpperMainBelow) => IOrnamentsBuilder;
+  accelerate: (accelerate: boolean) => IOrnamentsBuilder;
+  beats: (beats: number) => IOrnamentsBuilder;
+  lastBeat: (lastBeat: number) => IOrnamentsBuilder;
+  trillStep: (trillStep: WholeHalfUnison) => IOrnamentsBuilder;
+  twoNoteTurn: (twoNoteTurn: WholeHalfNone) => IOrnamentsBuilder;
+  secondBeat: (secondBeat: number) => IOrnamentsBuilder;
   constructor(original?: Ornaments) {
     let updates: Ornaments = {} as any;
     let childBuilders: {[key: string]: any} = {};
@@ -13949,6 +16852,97 @@ class OrnamentsBuilder implements IOrnamentsBuilder {
                 modifiedKeys["relativeX"] = true;
                 return this;
             }
+
+            this.fontFamily = (spec: string): IOrnamentsBuilder => {
+                updates["fontFamily"] = spec;
+                delete childBuilders["fontFamily;"];
+                modifiedKeys["fontFamily"] = true;
+                return this;
+            }
+
+            this.fontWeight = (spec: NormalBold): IOrnamentsBuilder => {
+                updates["fontWeight"] = spec;
+                delete childBuilders["fontWeight;"];
+                modifiedKeys["fontWeight"] = true;
+                return this;
+            }
+
+            this.fontStyle = (spec: NormalItalic): IOrnamentsBuilder => {
+                updates["fontStyle"] = spec;
+                delete childBuilders["fontStyle;"];
+                modifiedKeys["fontStyle"] = true;
+                return this;
+            }
+
+            this.fontSize = (spec: string): IOrnamentsBuilder => {
+                updates["fontSize"] = spec;
+                delete childBuilders["fontSize;"];
+                modifiedKeys["fontSize"] = true;
+                return this;
+            }
+
+            this.color = (spec: string): IOrnamentsBuilder => {
+                updates["color"] = spec;
+                delete childBuilders["color;"];
+                modifiedKeys["color"] = true;
+                return this;
+            }
+
+            this.placement = (spec: AboveBelow): IOrnamentsBuilder => {
+                updates["placement"] = spec;
+                delete childBuilders["placement;"];
+                modifiedKeys["placement"] = true;
+                return this;
+            }
+
+            this.startNote = (spec: UpperMainBelow): IOrnamentsBuilder => {
+                updates["startNote"] = spec;
+                delete childBuilders["startNote;"];
+                modifiedKeys["startNote"] = true;
+                return this;
+            }
+
+            this.accelerate = (spec: boolean): IOrnamentsBuilder => {
+                updates["accelerate"] = spec;
+                delete childBuilders["accelerate;"];
+                modifiedKeys["accelerate"] = true;
+                return this;
+            }
+
+            this.beats = (spec: number): IOrnamentsBuilder => {
+                updates["beats"] = spec;
+                delete childBuilders["beats;"];
+                modifiedKeys["beats"] = true;
+                return this;
+            }
+
+            this.lastBeat = (spec: number): IOrnamentsBuilder => {
+                updates["lastBeat"] = spec;
+                delete childBuilders["lastBeat;"];
+                modifiedKeys["lastBeat"] = true;
+                return this;
+            }
+
+            this.trillStep = (spec: WholeHalfUnison): IOrnamentsBuilder => {
+                updates["trillStep"] = spec;
+                delete childBuilders["trillStep;"];
+                modifiedKeys["trillStep"] = true;
+                return this;
+            }
+
+            this.twoNoteTurn = (spec: WholeHalfNone): IOrnamentsBuilder => {
+                updates["twoNoteTurn"] = spec;
+                delete childBuilders["twoNoteTurn;"];
+                modifiedKeys["twoNoteTurn"] = true;
+                return this;
+            }
+
+            this.secondBeat = (spec: number): IOrnamentsBuilder => {
+                updates["secondBeat"] = spec;
+                delete childBuilders["secondBeat;"];
+                modifiedKeys["secondBeat"] = true;
+                return this;
+            }
   }
 }
 export function patchOrnaments(base: Ornaments, builder: (build: IOrnamentsBuilder) => IOrnamentsBuilder): IAny[] { return builder(new OrnamentsBuilder(base)).patch(); }
@@ -13961,6 +16955,19 @@ export interface ITrillMarkBuilder {
   relativeY: (relativeY: number) => ITrillMarkBuilder;
   defaultY: (defaultY: number) => ITrillMarkBuilder;
   relativeX: (relativeX: number) => ITrillMarkBuilder;
+  fontFamily: (fontFamily: string) => ITrillMarkBuilder;
+  fontWeight: (fontWeight: NormalBold) => ITrillMarkBuilder;
+  fontStyle: (fontStyle: NormalItalic) => ITrillMarkBuilder;
+  fontSize: (fontSize: string) => ITrillMarkBuilder;
+  color: (color: string) => ITrillMarkBuilder;
+  placement: (placement: AboveBelow) => ITrillMarkBuilder;
+  startNote: (startNote: UpperMainBelow) => ITrillMarkBuilder;
+  accelerate: (accelerate: boolean) => ITrillMarkBuilder;
+  beats: (beats: number) => ITrillMarkBuilder;
+  lastBeat: (lastBeat: number) => ITrillMarkBuilder;
+  trillStep: (trillStep: WholeHalfUnison) => ITrillMarkBuilder;
+  twoNoteTurn: (twoNoteTurn: WholeHalfNone) => ITrillMarkBuilder;
+  secondBeat: (secondBeat: number) => ITrillMarkBuilder;
 }
 
 class TrillMarkBuilder implements ITrillMarkBuilder {
@@ -13970,6 +16977,19 @@ class TrillMarkBuilder implements ITrillMarkBuilder {
   relativeY: (relativeY: number) => ITrillMarkBuilder;
   defaultY: (defaultY: number) => ITrillMarkBuilder;
   relativeX: (relativeX: number) => ITrillMarkBuilder;
+  fontFamily: (fontFamily: string) => ITrillMarkBuilder;
+  fontWeight: (fontWeight: NormalBold) => ITrillMarkBuilder;
+  fontStyle: (fontStyle: NormalItalic) => ITrillMarkBuilder;
+  fontSize: (fontSize: string) => ITrillMarkBuilder;
+  color: (color: string) => ITrillMarkBuilder;
+  placement: (placement: AboveBelow) => ITrillMarkBuilder;
+  startNote: (startNote: UpperMainBelow) => ITrillMarkBuilder;
+  accelerate: (accelerate: boolean) => ITrillMarkBuilder;
+  beats: (beats: number) => ITrillMarkBuilder;
+  lastBeat: (lastBeat: number) => ITrillMarkBuilder;
+  trillStep: (trillStep: WholeHalfUnison) => ITrillMarkBuilder;
+  twoNoteTurn: (twoNoteTurn: WholeHalfNone) => ITrillMarkBuilder;
+  secondBeat: (secondBeat: number) => ITrillMarkBuilder;
   constructor(original?: TrillMark) {
     let updates: TrillMark = {} as any;
     let childBuilders: {[key: string]: any} = {};
@@ -14030,6 +17050,97 @@ class TrillMarkBuilder implements ITrillMarkBuilder {
                 modifiedKeys["relativeX"] = true;
                 return this;
             }
+
+            this.fontFamily = (spec: string): ITrillMarkBuilder => {
+                updates["fontFamily"] = spec;
+                delete childBuilders["fontFamily;"];
+                modifiedKeys["fontFamily"] = true;
+                return this;
+            }
+
+            this.fontWeight = (spec: NormalBold): ITrillMarkBuilder => {
+                updates["fontWeight"] = spec;
+                delete childBuilders["fontWeight;"];
+                modifiedKeys["fontWeight"] = true;
+                return this;
+            }
+
+            this.fontStyle = (spec: NormalItalic): ITrillMarkBuilder => {
+                updates["fontStyle"] = spec;
+                delete childBuilders["fontStyle;"];
+                modifiedKeys["fontStyle"] = true;
+                return this;
+            }
+
+            this.fontSize = (spec: string): ITrillMarkBuilder => {
+                updates["fontSize"] = spec;
+                delete childBuilders["fontSize;"];
+                modifiedKeys["fontSize"] = true;
+                return this;
+            }
+
+            this.color = (spec: string): ITrillMarkBuilder => {
+                updates["color"] = spec;
+                delete childBuilders["color;"];
+                modifiedKeys["color"] = true;
+                return this;
+            }
+
+            this.placement = (spec: AboveBelow): ITrillMarkBuilder => {
+                updates["placement"] = spec;
+                delete childBuilders["placement;"];
+                modifiedKeys["placement"] = true;
+                return this;
+            }
+
+            this.startNote = (spec: UpperMainBelow): ITrillMarkBuilder => {
+                updates["startNote"] = spec;
+                delete childBuilders["startNote;"];
+                modifiedKeys["startNote"] = true;
+                return this;
+            }
+
+            this.accelerate = (spec: boolean): ITrillMarkBuilder => {
+                updates["accelerate"] = spec;
+                delete childBuilders["accelerate;"];
+                modifiedKeys["accelerate"] = true;
+                return this;
+            }
+
+            this.beats = (spec: number): ITrillMarkBuilder => {
+                updates["beats"] = spec;
+                delete childBuilders["beats;"];
+                modifiedKeys["beats"] = true;
+                return this;
+            }
+
+            this.lastBeat = (spec: number): ITrillMarkBuilder => {
+                updates["lastBeat"] = spec;
+                delete childBuilders["lastBeat;"];
+                modifiedKeys["lastBeat"] = true;
+                return this;
+            }
+
+            this.trillStep = (spec: WholeHalfUnison): ITrillMarkBuilder => {
+                updates["trillStep"] = spec;
+                delete childBuilders["trillStep;"];
+                modifiedKeys["trillStep"] = true;
+                return this;
+            }
+
+            this.twoNoteTurn = (spec: WholeHalfNone): ITrillMarkBuilder => {
+                updates["twoNoteTurn"] = spec;
+                delete childBuilders["twoNoteTurn;"];
+                modifiedKeys["twoNoteTurn"] = true;
+                return this;
+            }
+
+            this.secondBeat = (spec: number): ITrillMarkBuilder => {
+                updates["secondBeat"] = spec;
+                delete childBuilders["secondBeat;"];
+                modifiedKeys["secondBeat"] = true;
+                return this;
+            }
   }
 }
 export function patchTrillMark(base: TrillMark, builder: (build: ITrillMarkBuilder) => ITrillMarkBuilder): IAny[] { return builder(new TrillMarkBuilder(base)).patch(); }
@@ -14043,6 +17154,19 @@ export interface ITurnBuilder {
   relativeY: (relativeY: number) => ITurnBuilder;
   defaultY: (defaultY: number) => ITurnBuilder;
   relativeX: (relativeX: number) => ITurnBuilder;
+  fontFamily: (fontFamily: string) => ITurnBuilder;
+  fontWeight: (fontWeight: NormalBold) => ITurnBuilder;
+  fontStyle: (fontStyle: NormalItalic) => ITurnBuilder;
+  fontSize: (fontSize: string) => ITurnBuilder;
+  color: (color: string) => ITurnBuilder;
+  placement: (placement: AboveBelow) => ITurnBuilder;
+  startNote: (startNote: UpperMainBelow) => ITurnBuilder;
+  accelerate: (accelerate: boolean) => ITurnBuilder;
+  beats: (beats: number) => ITurnBuilder;
+  lastBeat: (lastBeat: number) => ITurnBuilder;
+  trillStep: (trillStep: WholeHalfUnison) => ITurnBuilder;
+  twoNoteTurn: (twoNoteTurn: WholeHalfNone) => ITurnBuilder;
+  secondBeat: (secondBeat: number) => ITurnBuilder;
 }
 
 class TurnBuilder implements ITurnBuilder {
@@ -14053,6 +17177,19 @@ class TurnBuilder implements ITurnBuilder {
   relativeY: (relativeY: number) => ITurnBuilder;
   defaultY: (defaultY: number) => ITurnBuilder;
   relativeX: (relativeX: number) => ITurnBuilder;
+  fontFamily: (fontFamily: string) => ITurnBuilder;
+  fontWeight: (fontWeight: NormalBold) => ITurnBuilder;
+  fontStyle: (fontStyle: NormalItalic) => ITurnBuilder;
+  fontSize: (fontSize: string) => ITurnBuilder;
+  color: (color: string) => ITurnBuilder;
+  placement: (placement: AboveBelow) => ITurnBuilder;
+  startNote: (startNote: UpperMainBelow) => ITurnBuilder;
+  accelerate: (accelerate: boolean) => ITurnBuilder;
+  beats: (beats: number) => ITurnBuilder;
+  lastBeat: (lastBeat: number) => ITurnBuilder;
+  trillStep: (trillStep: WholeHalfUnison) => ITurnBuilder;
+  twoNoteTurn: (twoNoteTurn: WholeHalfNone) => ITurnBuilder;
+  secondBeat: (secondBeat: number) => ITurnBuilder;
   constructor(original?: Turn) {
     let updates: Turn = {} as any;
     let childBuilders: {[key: string]: any} = {};
@@ -14120,6 +17257,97 @@ class TurnBuilder implements ITurnBuilder {
                 modifiedKeys["relativeX"] = true;
                 return this;
             }
+
+            this.fontFamily = (spec: string): ITurnBuilder => {
+                updates["fontFamily"] = spec;
+                delete childBuilders["fontFamily;"];
+                modifiedKeys["fontFamily"] = true;
+                return this;
+            }
+
+            this.fontWeight = (spec: NormalBold): ITurnBuilder => {
+                updates["fontWeight"] = spec;
+                delete childBuilders["fontWeight;"];
+                modifiedKeys["fontWeight"] = true;
+                return this;
+            }
+
+            this.fontStyle = (spec: NormalItalic): ITurnBuilder => {
+                updates["fontStyle"] = spec;
+                delete childBuilders["fontStyle;"];
+                modifiedKeys["fontStyle"] = true;
+                return this;
+            }
+
+            this.fontSize = (spec: string): ITurnBuilder => {
+                updates["fontSize"] = spec;
+                delete childBuilders["fontSize;"];
+                modifiedKeys["fontSize"] = true;
+                return this;
+            }
+
+            this.color = (spec: string): ITurnBuilder => {
+                updates["color"] = spec;
+                delete childBuilders["color;"];
+                modifiedKeys["color"] = true;
+                return this;
+            }
+
+            this.placement = (spec: AboveBelow): ITurnBuilder => {
+                updates["placement"] = spec;
+                delete childBuilders["placement;"];
+                modifiedKeys["placement"] = true;
+                return this;
+            }
+
+            this.startNote = (spec: UpperMainBelow): ITurnBuilder => {
+                updates["startNote"] = spec;
+                delete childBuilders["startNote;"];
+                modifiedKeys["startNote"] = true;
+                return this;
+            }
+
+            this.accelerate = (spec: boolean): ITurnBuilder => {
+                updates["accelerate"] = spec;
+                delete childBuilders["accelerate;"];
+                modifiedKeys["accelerate"] = true;
+                return this;
+            }
+
+            this.beats = (spec: number): ITurnBuilder => {
+                updates["beats"] = spec;
+                delete childBuilders["beats;"];
+                modifiedKeys["beats"] = true;
+                return this;
+            }
+
+            this.lastBeat = (spec: number): ITurnBuilder => {
+                updates["lastBeat"] = spec;
+                delete childBuilders["lastBeat;"];
+                modifiedKeys["lastBeat"] = true;
+                return this;
+            }
+
+            this.trillStep = (spec: WholeHalfUnison): ITurnBuilder => {
+                updates["trillStep"] = spec;
+                delete childBuilders["trillStep;"];
+                modifiedKeys["trillStep"] = true;
+                return this;
+            }
+
+            this.twoNoteTurn = (spec: WholeHalfNone): ITurnBuilder => {
+                updates["twoNoteTurn"] = spec;
+                delete childBuilders["twoNoteTurn;"];
+                modifiedKeys["twoNoteTurn"] = true;
+                return this;
+            }
+
+            this.secondBeat = (spec: number): ITurnBuilder => {
+                updates["secondBeat"] = spec;
+                delete childBuilders["secondBeat;"];
+                modifiedKeys["secondBeat"] = true;
+                return this;
+            }
   }
 }
 export function patchTurn(base: Turn, builder: (build: ITurnBuilder) => ITurnBuilder): IAny[] { return builder(new TurnBuilder(base)).patch(); }
@@ -14133,6 +17361,19 @@ export interface IDelayedTurnBuilder {
   relativeY: (relativeY: number) => IDelayedTurnBuilder;
   defaultY: (defaultY: number) => IDelayedTurnBuilder;
   relativeX: (relativeX: number) => IDelayedTurnBuilder;
+  fontFamily: (fontFamily: string) => IDelayedTurnBuilder;
+  fontWeight: (fontWeight: NormalBold) => IDelayedTurnBuilder;
+  fontStyle: (fontStyle: NormalItalic) => IDelayedTurnBuilder;
+  fontSize: (fontSize: string) => IDelayedTurnBuilder;
+  color: (color: string) => IDelayedTurnBuilder;
+  placement: (placement: AboveBelow) => IDelayedTurnBuilder;
+  startNote: (startNote: UpperMainBelow) => IDelayedTurnBuilder;
+  accelerate: (accelerate: boolean) => IDelayedTurnBuilder;
+  beats: (beats: number) => IDelayedTurnBuilder;
+  lastBeat: (lastBeat: number) => IDelayedTurnBuilder;
+  trillStep: (trillStep: WholeHalfUnison) => IDelayedTurnBuilder;
+  twoNoteTurn: (twoNoteTurn: WholeHalfNone) => IDelayedTurnBuilder;
+  secondBeat: (secondBeat: number) => IDelayedTurnBuilder;
 }
 
 class DelayedTurnBuilder implements IDelayedTurnBuilder {
@@ -14143,6 +17384,19 @@ class DelayedTurnBuilder implements IDelayedTurnBuilder {
   relativeY: (relativeY: number) => IDelayedTurnBuilder;
   defaultY: (defaultY: number) => IDelayedTurnBuilder;
   relativeX: (relativeX: number) => IDelayedTurnBuilder;
+  fontFamily: (fontFamily: string) => IDelayedTurnBuilder;
+  fontWeight: (fontWeight: NormalBold) => IDelayedTurnBuilder;
+  fontStyle: (fontStyle: NormalItalic) => IDelayedTurnBuilder;
+  fontSize: (fontSize: string) => IDelayedTurnBuilder;
+  color: (color: string) => IDelayedTurnBuilder;
+  placement: (placement: AboveBelow) => IDelayedTurnBuilder;
+  startNote: (startNote: UpperMainBelow) => IDelayedTurnBuilder;
+  accelerate: (accelerate: boolean) => IDelayedTurnBuilder;
+  beats: (beats: number) => IDelayedTurnBuilder;
+  lastBeat: (lastBeat: number) => IDelayedTurnBuilder;
+  trillStep: (trillStep: WholeHalfUnison) => IDelayedTurnBuilder;
+  twoNoteTurn: (twoNoteTurn: WholeHalfNone) => IDelayedTurnBuilder;
+  secondBeat: (secondBeat: number) => IDelayedTurnBuilder;
   constructor(original?: DelayedTurn) {
     let updates: DelayedTurn = {} as any;
     let childBuilders: {[key: string]: any} = {};
@@ -14210,6 +17464,97 @@ class DelayedTurnBuilder implements IDelayedTurnBuilder {
                 modifiedKeys["relativeX"] = true;
                 return this;
             }
+
+            this.fontFamily = (spec: string): IDelayedTurnBuilder => {
+                updates["fontFamily"] = spec;
+                delete childBuilders["fontFamily;"];
+                modifiedKeys["fontFamily"] = true;
+                return this;
+            }
+
+            this.fontWeight = (spec: NormalBold): IDelayedTurnBuilder => {
+                updates["fontWeight"] = spec;
+                delete childBuilders["fontWeight;"];
+                modifiedKeys["fontWeight"] = true;
+                return this;
+            }
+
+            this.fontStyle = (spec: NormalItalic): IDelayedTurnBuilder => {
+                updates["fontStyle"] = spec;
+                delete childBuilders["fontStyle;"];
+                modifiedKeys["fontStyle"] = true;
+                return this;
+            }
+
+            this.fontSize = (spec: string): IDelayedTurnBuilder => {
+                updates["fontSize"] = spec;
+                delete childBuilders["fontSize;"];
+                modifiedKeys["fontSize"] = true;
+                return this;
+            }
+
+            this.color = (spec: string): IDelayedTurnBuilder => {
+                updates["color"] = spec;
+                delete childBuilders["color;"];
+                modifiedKeys["color"] = true;
+                return this;
+            }
+
+            this.placement = (spec: AboveBelow): IDelayedTurnBuilder => {
+                updates["placement"] = spec;
+                delete childBuilders["placement;"];
+                modifiedKeys["placement"] = true;
+                return this;
+            }
+
+            this.startNote = (spec: UpperMainBelow): IDelayedTurnBuilder => {
+                updates["startNote"] = spec;
+                delete childBuilders["startNote;"];
+                modifiedKeys["startNote"] = true;
+                return this;
+            }
+
+            this.accelerate = (spec: boolean): IDelayedTurnBuilder => {
+                updates["accelerate"] = spec;
+                delete childBuilders["accelerate;"];
+                modifiedKeys["accelerate"] = true;
+                return this;
+            }
+
+            this.beats = (spec: number): IDelayedTurnBuilder => {
+                updates["beats"] = spec;
+                delete childBuilders["beats;"];
+                modifiedKeys["beats"] = true;
+                return this;
+            }
+
+            this.lastBeat = (spec: number): IDelayedTurnBuilder => {
+                updates["lastBeat"] = spec;
+                delete childBuilders["lastBeat;"];
+                modifiedKeys["lastBeat"] = true;
+                return this;
+            }
+
+            this.trillStep = (spec: WholeHalfUnison): IDelayedTurnBuilder => {
+                updates["trillStep"] = spec;
+                delete childBuilders["trillStep;"];
+                modifiedKeys["trillStep"] = true;
+                return this;
+            }
+
+            this.twoNoteTurn = (spec: WholeHalfNone): IDelayedTurnBuilder => {
+                updates["twoNoteTurn"] = spec;
+                delete childBuilders["twoNoteTurn;"];
+                modifiedKeys["twoNoteTurn"] = true;
+                return this;
+            }
+
+            this.secondBeat = (spec: number): IDelayedTurnBuilder => {
+                updates["secondBeat"] = spec;
+                delete childBuilders["secondBeat;"];
+                modifiedKeys["secondBeat"] = true;
+                return this;
+            }
   }
 }
 export function patchDelayedTurn(base: DelayedTurn, builder: (build: IDelayedTurnBuilder) => IDelayedTurnBuilder): IAny[] { return builder(new DelayedTurnBuilder(base)).patch(); }
@@ -14223,6 +17568,19 @@ export interface IInvertedTurnBuilder {
   relativeY: (relativeY: number) => IInvertedTurnBuilder;
   defaultY: (defaultY: number) => IInvertedTurnBuilder;
   relativeX: (relativeX: number) => IInvertedTurnBuilder;
+  fontFamily: (fontFamily: string) => IInvertedTurnBuilder;
+  fontWeight: (fontWeight: NormalBold) => IInvertedTurnBuilder;
+  fontStyle: (fontStyle: NormalItalic) => IInvertedTurnBuilder;
+  fontSize: (fontSize: string) => IInvertedTurnBuilder;
+  color: (color: string) => IInvertedTurnBuilder;
+  placement: (placement: AboveBelow) => IInvertedTurnBuilder;
+  startNote: (startNote: UpperMainBelow) => IInvertedTurnBuilder;
+  accelerate: (accelerate: boolean) => IInvertedTurnBuilder;
+  beats: (beats: number) => IInvertedTurnBuilder;
+  lastBeat: (lastBeat: number) => IInvertedTurnBuilder;
+  trillStep: (trillStep: WholeHalfUnison) => IInvertedTurnBuilder;
+  twoNoteTurn: (twoNoteTurn: WholeHalfNone) => IInvertedTurnBuilder;
+  secondBeat: (secondBeat: number) => IInvertedTurnBuilder;
 }
 
 class InvertedTurnBuilder implements IInvertedTurnBuilder {
@@ -14233,6 +17591,19 @@ class InvertedTurnBuilder implements IInvertedTurnBuilder {
   relativeY: (relativeY: number) => IInvertedTurnBuilder;
   defaultY: (defaultY: number) => IInvertedTurnBuilder;
   relativeX: (relativeX: number) => IInvertedTurnBuilder;
+  fontFamily: (fontFamily: string) => IInvertedTurnBuilder;
+  fontWeight: (fontWeight: NormalBold) => IInvertedTurnBuilder;
+  fontStyle: (fontStyle: NormalItalic) => IInvertedTurnBuilder;
+  fontSize: (fontSize: string) => IInvertedTurnBuilder;
+  color: (color: string) => IInvertedTurnBuilder;
+  placement: (placement: AboveBelow) => IInvertedTurnBuilder;
+  startNote: (startNote: UpperMainBelow) => IInvertedTurnBuilder;
+  accelerate: (accelerate: boolean) => IInvertedTurnBuilder;
+  beats: (beats: number) => IInvertedTurnBuilder;
+  lastBeat: (lastBeat: number) => IInvertedTurnBuilder;
+  trillStep: (trillStep: WholeHalfUnison) => IInvertedTurnBuilder;
+  twoNoteTurn: (twoNoteTurn: WholeHalfNone) => IInvertedTurnBuilder;
+  secondBeat: (secondBeat: number) => IInvertedTurnBuilder;
   constructor(original?: InvertedTurn) {
     let updates: InvertedTurn = {} as any;
     let childBuilders: {[key: string]: any} = {};
@@ -14300,6 +17671,97 @@ class InvertedTurnBuilder implements IInvertedTurnBuilder {
                 modifiedKeys["relativeX"] = true;
                 return this;
             }
+
+            this.fontFamily = (spec: string): IInvertedTurnBuilder => {
+                updates["fontFamily"] = spec;
+                delete childBuilders["fontFamily;"];
+                modifiedKeys["fontFamily"] = true;
+                return this;
+            }
+
+            this.fontWeight = (spec: NormalBold): IInvertedTurnBuilder => {
+                updates["fontWeight"] = spec;
+                delete childBuilders["fontWeight;"];
+                modifiedKeys["fontWeight"] = true;
+                return this;
+            }
+
+            this.fontStyle = (spec: NormalItalic): IInvertedTurnBuilder => {
+                updates["fontStyle"] = spec;
+                delete childBuilders["fontStyle;"];
+                modifiedKeys["fontStyle"] = true;
+                return this;
+            }
+
+            this.fontSize = (spec: string): IInvertedTurnBuilder => {
+                updates["fontSize"] = spec;
+                delete childBuilders["fontSize;"];
+                modifiedKeys["fontSize"] = true;
+                return this;
+            }
+
+            this.color = (spec: string): IInvertedTurnBuilder => {
+                updates["color"] = spec;
+                delete childBuilders["color;"];
+                modifiedKeys["color"] = true;
+                return this;
+            }
+
+            this.placement = (spec: AboveBelow): IInvertedTurnBuilder => {
+                updates["placement"] = spec;
+                delete childBuilders["placement;"];
+                modifiedKeys["placement"] = true;
+                return this;
+            }
+
+            this.startNote = (spec: UpperMainBelow): IInvertedTurnBuilder => {
+                updates["startNote"] = spec;
+                delete childBuilders["startNote;"];
+                modifiedKeys["startNote"] = true;
+                return this;
+            }
+
+            this.accelerate = (spec: boolean): IInvertedTurnBuilder => {
+                updates["accelerate"] = spec;
+                delete childBuilders["accelerate;"];
+                modifiedKeys["accelerate"] = true;
+                return this;
+            }
+
+            this.beats = (spec: number): IInvertedTurnBuilder => {
+                updates["beats"] = spec;
+                delete childBuilders["beats;"];
+                modifiedKeys["beats"] = true;
+                return this;
+            }
+
+            this.lastBeat = (spec: number): IInvertedTurnBuilder => {
+                updates["lastBeat"] = spec;
+                delete childBuilders["lastBeat;"];
+                modifiedKeys["lastBeat"] = true;
+                return this;
+            }
+
+            this.trillStep = (spec: WholeHalfUnison): IInvertedTurnBuilder => {
+                updates["trillStep"] = spec;
+                delete childBuilders["trillStep;"];
+                modifiedKeys["trillStep"] = true;
+                return this;
+            }
+
+            this.twoNoteTurn = (spec: WholeHalfNone): IInvertedTurnBuilder => {
+                updates["twoNoteTurn"] = spec;
+                delete childBuilders["twoNoteTurn;"];
+                modifiedKeys["twoNoteTurn"] = true;
+                return this;
+            }
+
+            this.secondBeat = (spec: number): IInvertedTurnBuilder => {
+                updates["secondBeat"] = spec;
+                delete childBuilders["secondBeat;"];
+                modifiedKeys["secondBeat"] = true;
+                return this;
+            }
   }
 }
 export function patchInvertedTurn(base: InvertedTurn, builder: (build: IInvertedTurnBuilder) => IInvertedTurnBuilder): IAny[] { return builder(new InvertedTurnBuilder(base)).patch(); }
@@ -14313,6 +17775,19 @@ export interface IDelayedInvertedTurnBuilder {
   relativeY: (relativeY: number) => IDelayedInvertedTurnBuilder;
   defaultY: (defaultY: number) => IDelayedInvertedTurnBuilder;
   relativeX: (relativeX: number) => IDelayedInvertedTurnBuilder;
+  fontFamily: (fontFamily: string) => IDelayedInvertedTurnBuilder;
+  fontWeight: (fontWeight: NormalBold) => IDelayedInvertedTurnBuilder;
+  fontStyle: (fontStyle: NormalItalic) => IDelayedInvertedTurnBuilder;
+  fontSize: (fontSize: string) => IDelayedInvertedTurnBuilder;
+  color: (color: string) => IDelayedInvertedTurnBuilder;
+  placement: (placement: AboveBelow) => IDelayedInvertedTurnBuilder;
+  startNote: (startNote: UpperMainBelow) => IDelayedInvertedTurnBuilder;
+  accelerate: (accelerate: boolean) => IDelayedInvertedTurnBuilder;
+  beats: (beats: number) => IDelayedInvertedTurnBuilder;
+  lastBeat: (lastBeat: number) => IDelayedInvertedTurnBuilder;
+  trillStep: (trillStep: WholeHalfUnison) => IDelayedInvertedTurnBuilder;
+  twoNoteTurn: (twoNoteTurn: WholeHalfNone) => IDelayedInvertedTurnBuilder;
+  secondBeat: (secondBeat: number) => IDelayedInvertedTurnBuilder;
 }
 
 class DelayedInvertedTurnBuilder implements IDelayedInvertedTurnBuilder {
@@ -14323,6 +17798,19 @@ class DelayedInvertedTurnBuilder implements IDelayedInvertedTurnBuilder {
   relativeY: (relativeY: number) => IDelayedInvertedTurnBuilder;
   defaultY: (defaultY: number) => IDelayedInvertedTurnBuilder;
   relativeX: (relativeX: number) => IDelayedInvertedTurnBuilder;
+  fontFamily: (fontFamily: string) => IDelayedInvertedTurnBuilder;
+  fontWeight: (fontWeight: NormalBold) => IDelayedInvertedTurnBuilder;
+  fontStyle: (fontStyle: NormalItalic) => IDelayedInvertedTurnBuilder;
+  fontSize: (fontSize: string) => IDelayedInvertedTurnBuilder;
+  color: (color: string) => IDelayedInvertedTurnBuilder;
+  placement: (placement: AboveBelow) => IDelayedInvertedTurnBuilder;
+  startNote: (startNote: UpperMainBelow) => IDelayedInvertedTurnBuilder;
+  accelerate: (accelerate: boolean) => IDelayedInvertedTurnBuilder;
+  beats: (beats: number) => IDelayedInvertedTurnBuilder;
+  lastBeat: (lastBeat: number) => IDelayedInvertedTurnBuilder;
+  trillStep: (trillStep: WholeHalfUnison) => IDelayedInvertedTurnBuilder;
+  twoNoteTurn: (twoNoteTurn: WholeHalfNone) => IDelayedInvertedTurnBuilder;
+  secondBeat: (secondBeat: number) => IDelayedInvertedTurnBuilder;
   constructor(original?: DelayedInvertedTurn) {
     let updates: DelayedInvertedTurn = {} as any;
     let childBuilders: {[key: string]: any} = {};
@@ -14390,6 +17878,97 @@ class DelayedInvertedTurnBuilder implements IDelayedInvertedTurnBuilder {
                 modifiedKeys["relativeX"] = true;
                 return this;
             }
+
+            this.fontFamily = (spec: string): IDelayedInvertedTurnBuilder => {
+                updates["fontFamily"] = spec;
+                delete childBuilders["fontFamily;"];
+                modifiedKeys["fontFamily"] = true;
+                return this;
+            }
+
+            this.fontWeight = (spec: NormalBold): IDelayedInvertedTurnBuilder => {
+                updates["fontWeight"] = spec;
+                delete childBuilders["fontWeight;"];
+                modifiedKeys["fontWeight"] = true;
+                return this;
+            }
+
+            this.fontStyle = (spec: NormalItalic): IDelayedInvertedTurnBuilder => {
+                updates["fontStyle"] = spec;
+                delete childBuilders["fontStyle;"];
+                modifiedKeys["fontStyle"] = true;
+                return this;
+            }
+
+            this.fontSize = (spec: string): IDelayedInvertedTurnBuilder => {
+                updates["fontSize"] = spec;
+                delete childBuilders["fontSize;"];
+                modifiedKeys["fontSize"] = true;
+                return this;
+            }
+
+            this.color = (spec: string): IDelayedInvertedTurnBuilder => {
+                updates["color"] = spec;
+                delete childBuilders["color;"];
+                modifiedKeys["color"] = true;
+                return this;
+            }
+
+            this.placement = (spec: AboveBelow): IDelayedInvertedTurnBuilder => {
+                updates["placement"] = spec;
+                delete childBuilders["placement;"];
+                modifiedKeys["placement"] = true;
+                return this;
+            }
+
+            this.startNote = (spec: UpperMainBelow): IDelayedInvertedTurnBuilder => {
+                updates["startNote"] = spec;
+                delete childBuilders["startNote;"];
+                modifiedKeys["startNote"] = true;
+                return this;
+            }
+
+            this.accelerate = (spec: boolean): IDelayedInvertedTurnBuilder => {
+                updates["accelerate"] = spec;
+                delete childBuilders["accelerate;"];
+                modifiedKeys["accelerate"] = true;
+                return this;
+            }
+
+            this.beats = (spec: number): IDelayedInvertedTurnBuilder => {
+                updates["beats"] = spec;
+                delete childBuilders["beats;"];
+                modifiedKeys["beats"] = true;
+                return this;
+            }
+
+            this.lastBeat = (spec: number): IDelayedInvertedTurnBuilder => {
+                updates["lastBeat"] = spec;
+                delete childBuilders["lastBeat;"];
+                modifiedKeys["lastBeat"] = true;
+                return this;
+            }
+
+            this.trillStep = (spec: WholeHalfUnison): IDelayedInvertedTurnBuilder => {
+                updates["trillStep"] = spec;
+                delete childBuilders["trillStep;"];
+                modifiedKeys["trillStep"] = true;
+                return this;
+            }
+
+            this.twoNoteTurn = (spec: WholeHalfNone): IDelayedInvertedTurnBuilder => {
+                updates["twoNoteTurn"] = spec;
+                delete childBuilders["twoNoteTurn;"];
+                modifiedKeys["twoNoteTurn"] = true;
+                return this;
+            }
+
+            this.secondBeat = (spec: number): IDelayedInvertedTurnBuilder => {
+                updates["secondBeat"] = spec;
+                delete childBuilders["secondBeat;"];
+                modifiedKeys["secondBeat"] = true;
+                return this;
+            }
   }
 }
 export function patchDelayedInvertedTurn(base: DelayedInvertedTurn, builder: (build: IDelayedInvertedTurnBuilder) => IDelayedInvertedTurnBuilder): IAny[] { return builder(new DelayedInvertedTurnBuilder(base)).patch(); }
@@ -14402,6 +17981,19 @@ export interface IVerticalTurnBuilder {
   relativeY: (relativeY: number) => IVerticalTurnBuilder;
   defaultY: (defaultY: number) => IVerticalTurnBuilder;
   relativeX: (relativeX: number) => IVerticalTurnBuilder;
+  fontFamily: (fontFamily: string) => IVerticalTurnBuilder;
+  fontWeight: (fontWeight: NormalBold) => IVerticalTurnBuilder;
+  fontStyle: (fontStyle: NormalItalic) => IVerticalTurnBuilder;
+  fontSize: (fontSize: string) => IVerticalTurnBuilder;
+  color: (color: string) => IVerticalTurnBuilder;
+  placement: (placement: AboveBelow) => IVerticalTurnBuilder;
+  startNote: (startNote: UpperMainBelow) => IVerticalTurnBuilder;
+  accelerate: (accelerate: boolean) => IVerticalTurnBuilder;
+  beats: (beats: number) => IVerticalTurnBuilder;
+  lastBeat: (lastBeat: number) => IVerticalTurnBuilder;
+  trillStep: (trillStep: WholeHalfUnison) => IVerticalTurnBuilder;
+  twoNoteTurn: (twoNoteTurn: WholeHalfNone) => IVerticalTurnBuilder;
+  secondBeat: (secondBeat: number) => IVerticalTurnBuilder;
 }
 
 class VerticalTurnBuilder implements IVerticalTurnBuilder {
@@ -14411,6 +18003,19 @@ class VerticalTurnBuilder implements IVerticalTurnBuilder {
   relativeY: (relativeY: number) => IVerticalTurnBuilder;
   defaultY: (defaultY: number) => IVerticalTurnBuilder;
   relativeX: (relativeX: number) => IVerticalTurnBuilder;
+  fontFamily: (fontFamily: string) => IVerticalTurnBuilder;
+  fontWeight: (fontWeight: NormalBold) => IVerticalTurnBuilder;
+  fontStyle: (fontStyle: NormalItalic) => IVerticalTurnBuilder;
+  fontSize: (fontSize: string) => IVerticalTurnBuilder;
+  color: (color: string) => IVerticalTurnBuilder;
+  placement: (placement: AboveBelow) => IVerticalTurnBuilder;
+  startNote: (startNote: UpperMainBelow) => IVerticalTurnBuilder;
+  accelerate: (accelerate: boolean) => IVerticalTurnBuilder;
+  beats: (beats: number) => IVerticalTurnBuilder;
+  lastBeat: (lastBeat: number) => IVerticalTurnBuilder;
+  trillStep: (trillStep: WholeHalfUnison) => IVerticalTurnBuilder;
+  twoNoteTurn: (twoNoteTurn: WholeHalfNone) => IVerticalTurnBuilder;
+  secondBeat: (secondBeat: number) => IVerticalTurnBuilder;
   constructor(original?: VerticalTurn) {
     let updates: VerticalTurn = {} as any;
     let childBuilders: {[key: string]: any} = {};
@@ -14471,6 +18076,97 @@ class VerticalTurnBuilder implements IVerticalTurnBuilder {
                 modifiedKeys["relativeX"] = true;
                 return this;
             }
+
+            this.fontFamily = (spec: string): IVerticalTurnBuilder => {
+                updates["fontFamily"] = spec;
+                delete childBuilders["fontFamily;"];
+                modifiedKeys["fontFamily"] = true;
+                return this;
+            }
+
+            this.fontWeight = (spec: NormalBold): IVerticalTurnBuilder => {
+                updates["fontWeight"] = spec;
+                delete childBuilders["fontWeight;"];
+                modifiedKeys["fontWeight"] = true;
+                return this;
+            }
+
+            this.fontStyle = (spec: NormalItalic): IVerticalTurnBuilder => {
+                updates["fontStyle"] = spec;
+                delete childBuilders["fontStyle;"];
+                modifiedKeys["fontStyle"] = true;
+                return this;
+            }
+
+            this.fontSize = (spec: string): IVerticalTurnBuilder => {
+                updates["fontSize"] = spec;
+                delete childBuilders["fontSize;"];
+                modifiedKeys["fontSize"] = true;
+                return this;
+            }
+
+            this.color = (spec: string): IVerticalTurnBuilder => {
+                updates["color"] = spec;
+                delete childBuilders["color;"];
+                modifiedKeys["color"] = true;
+                return this;
+            }
+
+            this.placement = (spec: AboveBelow): IVerticalTurnBuilder => {
+                updates["placement"] = spec;
+                delete childBuilders["placement;"];
+                modifiedKeys["placement"] = true;
+                return this;
+            }
+
+            this.startNote = (spec: UpperMainBelow): IVerticalTurnBuilder => {
+                updates["startNote"] = spec;
+                delete childBuilders["startNote;"];
+                modifiedKeys["startNote"] = true;
+                return this;
+            }
+
+            this.accelerate = (spec: boolean): IVerticalTurnBuilder => {
+                updates["accelerate"] = spec;
+                delete childBuilders["accelerate;"];
+                modifiedKeys["accelerate"] = true;
+                return this;
+            }
+
+            this.beats = (spec: number): IVerticalTurnBuilder => {
+                updates["beats"] = spec;
+                delete childBuilders["beats;"];
+                modifiedKeys["beats"] = true;
+                return this;
+            }
+
+            this.lastBeat = (spec: number): IVerticalTurnBuilder => {
+                updates["lastBeat"] = spec;
+                delete childBuilders["lastBeat;"];
+                modifiedKeys["lastBeat"] = true;
+                return this;
+            }
+
+            this.trillStep = (spec: WholeHalfUnison): IVerticalTurnBuilder => {
+                updates["trillStep"] = spec;
+                delete childBuilders["trillStep;"];
+                modifiedKeys["trillStep"] = true;
+                return this;
+            }
+
+            this.twoNoteTurn = (spec: WholeHalfNone): IVerticalTurnBuilder => {
+                updates["twoNoteTurn"] = spec;
+                delete childBuilders["twoNoteTurn;"];
+                modifiedKeys["twoNoteTurn"] = true;
+                return this;
+            }
+
+            this.secondBeat = (spec: number): IVerticalTurnBuilder => {
+                updates["secondBeat"] = spec;
+                delete childBuilders["secondBeat;"];
+                modifiedKeys["secondBeat"] = true;
+                return this;
+            }
   }
 }
 export function patchVerticalTurn(base: VerticalTurn, builder: (build: IVerticalTurnBuilder) => IVerticalTurnBuilder): IAny[] { return builder(new VerticalTurnBuilder(base)).patch(); }
@@ -14483,6 +18179,19 @@ export interface IShakeBuilder {
   relativeY: (relativeY: number) => IShakeBuilder;
   defaultY: (defaultY: number) => IShakeBuilder;
   relativeX: (relativeX: number) => IShakeBuilder;
+  fontFamily: (fontFamily: string) => IShakeBuilder;
+  fontWeight: (fontWeight: NormalBold) => IShakeBuilder;
+  fontStyle: (fontStyle: NormalItalic) => IShakeBuilder;
+  fontSize: (fontSize: string) => IShakeBuilder;
+  color: (color: string) => IShakeBuilder;
+  placement: (placement: AboveBelow) => IShakeBuilder;
+  startNote: (startNote: UpperMainBelow) => IShakeBuilder;
+  accelerate: (accelerate: boolean) => IShakeBuilder;
+  beats: (beats: number) => IShakeBuilder;
+  lastBeat: (lastBeat: number) => IShakeBuilder;
+  trillStep: (trillStep: WholeHalfUnison) => IShakeBuilder;
+  twoNoteTurn: (twoNoteTurn: WholeHalfNone) => IShakeBuilder;
+  secondBeat: (secondBeat: number) => IShakeBuilder;
 }
 
 class ShakeBuilder implements IShakeBuilder {
@@ -14492,6 +18201,19 @@ class ShakeBuilder implements IShakeBuilder {
   relativeY: (relativeY: number) => IShakeBuilder;
   defaultY: (defaultY: number) => IShakeBuilder;
   relativeX: (relativeX: number) => IShakeBuilder;
+  fontFamily: (fontFamily: string) => IShakeBuilder;
+  fontWeight: (fontWeight: NormalBold) => IShakeBuilder;
+  fontStyle: (fontStyle: NormalItalic) => IShakeBuilder;
+  fontSize: (fontSize: string) => IShakeBuilder;
+  color: (color: string) => IShakeBuilder;
+  placement: (placement: AboveBelow) => IShakeBuilder;
+  startNote: (startNote: UpperMainBelow) => IShakeBuilder;
+  accelerate: (accelerate: boolean) => IShakeBuilder;
+  beats: (beats: number) => IShakeBuilder;
+  lastBeat: (lastBeat: number) => IShakeBuilder;
+  trillStep: (trillStep: WholeHalfUnison) => IShakeBuilder;
+  twoNoteTurn: (twoNoteTurn: WholeHalfNone) => IShakeBuilder;
+  secondBeat: (secondBeat: number) => IShakeBuilder;
   constructor(original?: Shake) {
     let updates: Shake = {} as any;
     let childBuilders: {[key: string]: any} = {};
@@ -14552,6 +18274,97 @@ class ShakeBuilder implements IShakeBuilder {
                 modifiedKeys["relativeX"] = true;
                 return this;
             }
+
+            this.fontFamily = (spec: string): IShakeBuilder => {
+                updates["fontFamily"] = spec;
+                delete childBuilders["fontFamily;"];
+                modifiedKeys["fontFamily"] = true;
+                return this;
+            }
+
+            this.fontWeight = (spec: NormalBold): IShakeBuilder => {
+                updates["fontWeight"] = spec;
+                delete childBuilders["fontWeight;"];
+                modifiedKeys["fontWeight"] = true;
+                return this;
+            }
+
+            this.fontStyle = (spec: NormalItalic): IShakeBuilder => {
+                updates["fontStyle"] = spec;
+                delete childBuilders["fontStyle;"];
+                modifiedKeys["fontStyle"] = true;
+                return this;
+            }
+
+            this.fontSize = (spec: string): IShakeBuilder => {
+                updates["fontSize"] = spec;
+                delete childBuilders["fontSize;"];
+                modifiedKeys["fontSize"] = true;
+                return this;
+            }
+
+            this.color = (spec: string): IShakeBuilder => {
+                updates["color"] = spec;
+                delete childBuilders["color;"];
+                modifiedKeys["color"] = true;
+                return this;
+            }
+
+            this.placement = (spec: AboveBelow): IShakeBuilder => {
+                updates["placement"] = spec;
+                delete childBuilders["placement;"];
+                modifiedKeys["placement"] = true;
+                return this;
+            }
+
+            this.startNote = (spec: UpperMainBelow): IShakeBuilder => {
+                updates["startNote"] = spec;
+                delete childBuilders["startNote;"];
+                modifiedKeys["startNote"] = true;
+                return this;
+            }
+
+            this.accelerate = (spec: boolean): IShakeBuilder => {
+                updates["accelerate"] = spec;
+                delete childBuilders["accelerate;"];
+                modifiedKeys["accelerate"] = true;
+                return this;
+            }
+
+            this.beats = (spec: number): IShakeBuilder => {
+                updates["beats"] = spec;
+                delete childBuilders["beats;"];
+                modifiedKeys["beats"] = true;
+                return this;
+            }
+
+            this.lastBeat = (spec: number): IShakeBuilder => {
+                updates["lastBeat"] = spec;
+                delete childBuilders["lastBeat;"];
+                modifiedKeys["lastBeat"] = true;
+                return this;
+            }
+
+            this.trillStep = (spec: WholeHalfUnison): IShakeBuilder => {
+                updates["trillStep"] = spec;
+                delete childBuilders["trillStep;"];
+                modifiedKeys["trillStep"] = true;
+                return this;
+            }
+
+            this.twoNoteTurn = (spec: WholeHalfNone): IShakeBuilder => {
+                updates["twoNoteTurn"] = spec;
+                delete childBuilders["twoNoteTurn;"];
+                modifiedKeys["twoNoteTurn"] = true;
+                return this;
+            }
+
+            this.secondBeat = (spec: number): IShakeBuilder => {
+                updates["secondBeat"] = spec;
+                delete childBuilders["secondBeat;"];
+                modifiedKeys["secondBeat"] = true;
+                return this;
+            }
   }
 }
 export function patchShake(base: Shake, builder: (build: IShakeBuilder) => IShakeBuilder): IAny[] { return builder(new ShakeBuilder(base)).patch(); }
@@ -14567,6 +18380,19 @@ export interface IMordentBuilder {
   relativeY: (relativeY: number) => IMordentBuilder;
   defaultY: (defaultY: number) => IMordentBuilder;
   relativeX: (relativeX: number) => IMordentBuilder;
+  fontFamily: (fontFamily: string) => IMordentBuilder;
+  fontWeight: (fontWeight: NormalBold) => IMordentBuilder;
+  fontStyle: (fontStyle: NormalItalic) => IMordentBuilder;
+  fontSize: (fontSize: string) => IMordentBuilder;
+  color: (color: string) => IMordentBuilder;
+  placement: (placement: AboveBelow) => IMordentBuilder;
+  startNote: (startNote: UpperMainBelow) => IMordentBuilder;
+  accelerate: (accelerate: boolean) => IMordentBuilder;
+  beats: (beats: number) => IMordentBuilder;
+  lastBeat: (lastBeat: number) => IMordentBuilder;
+  trillStep: (trillStep: WholeHalfUnison) => IMordentBuilder;
+  twoNoteTurn: (twoNoteTurn: WholeHalfNone) => IMordentBuilder;
+  secondBeat: (secondBeat: number) => IMordentBuilder;
 }
 
 class MordentBuilder implements IMordentBuilder {
@@ -14579,6 +18405,19 @@ class MordentBuilder implements IMordentBuilder {
   relativeY: (relativeY: number) => IMordentBuilder;
   defaultY: (defaultY: number) => IMordentBuilder;
   relativeX: (relativeX: number) => IMordentBuilder;
+  fontFamily: (fontFamily: string) => IMordentBuilder;
+  fontWeight: (fontWeight: NormalBold) => IMordentBuilder;
+  fontStyle: (fontStyle: NormalItalic) => IMordentBuilder;
+  fontSize: (fontSize: string) => IMordentBuilder;
+  color: (color: string) => IMordentBuilder;
+  placement: (placement: AboveBelow) => IMordentBuilder;
+  startNote: (startNote: UpperMainBelow) => IMordentBuilder;
+  accelerate: (accelerate: boolean) => IMordentBuilder;
+  beats: (beats: number) => IMordentBuilder;
+  lastBeat: (lastBeat: number) => IMordentBuilder;
+  trillStep: (trillStep: WholeHalfUnison) => IMordentBuilder;
+  twoNoteTurn: (twoNoteTurn: WholeHalfNone) => IMordentBuilder;
+  secondBeat: (secondBeat: number) => IMordentBuilder;
   constructor(original?: Mordent) {
     let updates: Mordent = {} as any;
     let childBuilders: {[key: string]: any} = {};
@@ -14660,6 +18499,97 @@ class MordentBuilder implements IMordentBuilder {
                 modifiedKeys["relativeX"] = true;
                 return this;
             }
+
+            this.fontFamily = (spec: string): IMordentBuilder => {
+                updates["fontFamily"] = spec;
+                delete childBuilders["fontFamily;"];
+                modifiedKeys["fontFamily"] = true;
+                return this;
+            }
+
+            this.fontWeight = (spec: NormalBold): IMordentBuilder => {
+                updates["fontWeight"] = spec;
+                delete childBuilders["fontWeight;"];
+                modifiedKeys["fontWeight"] = true;
+                return this;
+            }
+
+            this.fontStyle = (spec: NormalItalic): IMordentBuilder => {
+                updates["fontStyle"] = spec;
+                delete childBuilders["fontStyle;"];
+                modifiedKeys["fontStyle"] = true;
+                return this;
+            }
+
+            this.fontSize = (spec: string): IMordentBuilder => {
+                updates["fontSize"] = spec;
+                delete childBuilders["fontSize;"];
+                modifiedKeys["fontSize"] = true;
+                return this;
+            }
+
+            this.color = (spec: string): IMordentBuilder => {
+                updates["color"] = spec;
+                delete childBuilders["color;"];
+                modifiedKeys["color"] = true;
+                return this;
+            }
+
+            this.placement = (spec: AboveBelow): IMordentBuilder => {
+                updates["placement"] = spec;
+                delete childBuilders["placement;"];
+                modifiedKeys["placement"] = true;
+                return this;
+            }
+
+            this.startNote = (spec: UpperMainBelow): IMordentBuilder => {
+                updates["startNote"] = spec;
+                delete childBuilders["startNote;"];
+                modifiedKeys["startNote"] = true;
+                return this;
+            }
+
+            this.accelerate = (spec: boolean): IMordentBuilder => {
+                updates["accelerate"] = spec;
+                delete childBuilders["accelerate;"];
+                modifiedKeys["accelerate"] = true;
+                return this;
+            }
+
+            this.beats = (spec: number): IMordentBuilder => {
+                updates["beats"] = spec;
+                delete childBuilders["beats;"];
+                modifiedKeys["beats"] = true;
+                return this;
+            }
+
+            this.lastBeat = (spec: number): IMordentBuilder => {
+                updates["lastBeat"] = spec;
+                delete childBuilders["lastBeat;"];
+                modifiedKeys["lastBeat"] = true;
+                return this;
+            }
+
+            this.trillStep = (spec: WholeHalfUnison): IMordentBuilder => {
+                updates["trillStep"] = spec;
+                delete childBuilders["trillStep;"];
+                modifiedKeys["trillStep"] = true;
+                return this;
+            }
+
+            this.twoNoteTurn = (spec: WholeHalfNone): IMordentBuilder => {
+                updates["twoNoteTurn"] = spec;
+                delete childBuilders["twoNoteTurn;"];
+                modifiedKeys["twoNoteTurn"] = true;
+                return this;
+            }
+
+            this.secondBeat = (spec: number): IMordentBuilder => {
+                updates["secondBeat"] = spec;
+                delete childBuilders["secondBeat;"];
+                modifiedKeys["secondBeat"] = true;
+                return this;
+            }
   }
 }
 export function patchMordent(base: Mordent, builder: (build: IMordentBuilder) => IMordentBuilder): IAny[] { return builder(new MordentBuilder(base)).patch(); }
@@ -14675,6 +18605,19 @@ export interface IInvertedMordentBuilder {
   relativeY: (relativeY: number) => IInvertedMordentBuilder;
   defaultY: (defaultY: number) => IInvertedMordentBuilder;
   relativeX: (relativeX: number) => IInvertedMordentBuilder;
+  fontFamily: (fontFamily: string) => IInvertedMordentBuilder;
+  fontWeight: (fontWeight: NormalBold) => IInvertedMordentBuilder;
+  fontStyle: (fontStyle: NormalItalic) => IInvertedMordentBuilder;
+  fontSize: (fontSize: string) => IInvertedMordentBuilder;
+  color: (color: string) => IInvertedMordentBuilder;
+  placement: (placement: AboveBelow) => IInvertedMordentBuilder;
+  startNote: (startNote: UpperMainBelow) => IInvertedMordentBuilder;
+  accelerate: (accelerate: boolean) => IInvertedMordentBuilder;
+  beats: (beats: number) => IInvertedMordentBuilder;
+  lastBeat: (lastBeat: number) => IInvertedMordentBuilder;
+  trillStep: (trillStep: WholeHalfUnison) => IInvertedMordentBuilder;
+  twoNoteTurn: (twoNoteTurn: WholeHalfNone) => IInvertedMordentBuilder;
+  secondBeat: (secondBeat: number) => IInvertedMordentBuilder;
 }
 
 class InvertedMordentBuilder implements IInvertedMordentBuilder {
@@ -14687,6 +18630,19 @@ class InvertedMordentBuilder implements IInvertedMordentBuilder {
   relativeY: (relativeY: number) => IInvertedMordentBuilder;
   defaultY: (defaultY: number) => IInvertedMordentBuilder;
   relativeX: (relativeX: number) => IInvertedMordentBuilder;
+  fontFamily: (fontFamily: string) => IInvertedMordentBuilder;
+  fontWeight: (fontWeight: NormalBold) => IInvertedMordentBuilder;
+  fontStyle: (fontStyle: NormalItalic) => IInvertedMordentBuilder;
+  fontSize: (fontSize: string) => IInvertedMordentBuilder;
+  color: (color: string) => IInvertedMordentBuilder;
+  placement: (placement: AboveBelow) => IInvertedMordentBuilder;
+  startNote: (startNote: UpperMainBelow) => IInvertedMordentBuilder;
+  accelerate: (accelerate: boolean) => IInvertedMordentBuilder;
+  beats: (beats: number) => IInvertedMordentBuilder;
+  lastBeat: (lastBeat: number) => IInvertedMordentBuilder;
+  trillStep: (trillStep: WholeHalfUnison) => IInvertedMordentBuilder;
+  twoNoteTurn: (twoNoteTurn: WholeHalfNone) => IInvertedMordentBuilder;
+  secondBeat: (secondBeat: number) => IInvertedMordentBuilder;
   constructor(original?: InvertedMordent) {
     let updates: InvertedMordent = {} as any;
     let childBuilders: {[key: string]: any} = {};
@@ -14768,6 +18724,97 @@ class InvertedMordentBuilder implements IInvertedMordentBuilder {
                 modifiedKeys["relativeX"] = true;
                 return this;
             }
+
+            this.fontFamily = (spec: string): IInvertedMordentBuilder => {
+                updates["fontFamily"] = spec;
+                delete childBuilders["fontFamily;"];
+                modifiedKeys["fontFamily"] = true;
+                return this;
+            }
+
+            this.fontWeight = (spec: NormalBold): IInvertedMordentBuilder => {
+                updates["fontWeight"] = spec;
+                delete childBuilders["fontWeight;"];
+                modifiedKeys["fontWeight"] = true;
+                return this;
+            }
+
+            this.fontStyle = (spec: NormalItalic): IInvertedMordentBuilder => {
+                updates["fontStyle"] = spec;
+                delete childBuilders["fontStyle;"];
+                modifiedKeys["fontStyle"] = true;
+                return this;
+            }
+
+            this.fontSize = (spec: string): IInvertedMordentBuilder => {
+                updates["fontSize"] = spec;
+                delete childBuilders["fontSize;"];
+                modifiedKeys["fontSize"] = true;
+                return this;
+            }
+
+            this.color = (spec: string): IInvertedMordentBuilder => {
+                updates["color"] = spec;
+                delete childBuilders["color;"];
+                modifiedKeys["color"] = true;
+                return this;
+            }
+
+            this.placement = (spec: AboveBelow): IInvertedMordentBuilder => {
+                updates["placement"] = spec;
+                delete childBuilders["placement;"];
+                modifiedKeys["placement"] = true;
+                return this;
+            }
+
+            this.startNote = (spec: UpperMainBelow): IInvertedMordentBuilder => {
+                updates["startNote"] = spec;
+                delete childBuilders["startNote;"];
+                modifiedKeys["startNote"] = true;
+                return this;
+            }
+
+            this.accelerate = (spec: boolean): IInvertedMordentBuilder => {
+                updates["accelerate"] = spec;
+                delete childBuilders["accelerate;"];
+                modifiedKeys["accelerate"] = true;
+                return this;
+            }
+
+            this.beats = (spec: number): IInvertedMordentBuilder => {
+                updates["beats"] = spec;
+                delete childBuilders["beats;"];
+                modifiedKeys["beats"] = true;
+                return this;
+            }
+
+            this.lastBeat = (spec: number): IInvertedMordentBuilder => {
+                updates["lastBeat"] = spec;
+                delete childBuilders["lastBeat;"];
+                modifiedKeys["lastBeat"] = true;
+                return this;
+            }
+
+            this.trillStep = (spec: WholeHalfUnison): IInvertedMordentBuilder => {
+                updates["trillStep"] = spec;
+                delete childBuilders["trillStep;"];
+                modifiedKeys["trillStep"] = true;
+                return this;
+            }
+
+            this.twoNoteTurn = (spec: WholeHalfNone): IInvertedMordentBuilder => {
+                updates["twoNoteTurn"] = spec;
+                delete childBuilders["twoNoteTurn;"];
+                modifiedKeys["twoNoteTurn"] = true;
+                return this;
+            }
+
+            this.secondBeat = (spec: number): IInvertedMordentBuilder => {
+                updates["secondBeat"] = spec;
+                delete childBuilders["secondBeat;"];
+                modifiedKeys["secondBeat"] = true;
+                return this;
+            }
   }
 }
 export function patchInvertedMordent(base: InvertedMordent, builder: (build: IInvertedMordentBuilder) => IInvertedMordentBuilder): IAny[] { return builder(new InvertedMordentBuilder(base)).patch(); }
@@ -14780,6 +18827,12 @@ export interface ISchleiferBuilder {
   relativeY: (relativeY: number) => ISchleiferBuilder;
   defaultY: (defaultY: number) => ISchleiferBuilder;
   relativeX: (relativeX: number) => ISchleiferBuilder;
+  fontFamily: (fontFamily: string) => ISchleiferBuilder;
+  fontWeight: (fontWeight: NormalBold) => ISchleiferBuilder;
+  fontStyle: (fontStyle: NormalItalic) => ISchleiferBuilder;
+  fontSize: (fontSize: string) => ISchleiferBuilder;
+  color: (color: string) => ISchleiferBuilder;
+  placement: (placement: AboveBelow) => ISchleiferBuilder;
 }
 
 class SchleiferBuilder implements ISchleiferBuilder {
@@ -14789,6 +18842,12 @@ class SchleiferBuilder implements ISchleiferBuilder {
   relativeY: (relativeY: number) => ISchleiferBuilder;
   defaultY: (defaultY: number) => ISchleiferBuilder;
   relativeX: (relativeX: number) => ISchleiferBuilder;
+  fontFamily: (fontFamily: string) => ISchleiferBuilder;
+  fontWeight: (fontWeight: NormalBold) => ISchleiferBuilder;
+  fontStyle: (fontStyle: NormalItalic) => ISchleiferBuilder;
+  fontSize: (fontSize: string) => ISchleiferBuilder;
+  color: (color: string) => ISchleiferBuilder;
+  placement: (placement: AboveBelow) => ISchleiferBuilder;
   constructor(original?: Schleifer) {
     let updates: Schleifer = {} as any;
     let childBuilders: {[key: string]: any} = {};
@@ -14849,6 +18908,48 @@ class SchleiferBuilder implements ISchleiferBuilder {
                 modifiedKeys["relativeX"] = true;
                 return this;
             }
+
+            this.fontFamily = (spec: string): ISchleiferBuilder => {
+                updates["fontFamily"] = spec;
+                delete childBuilders["fontFamily;"];
+                modifiedKeys["fontFamily"] = true;
+                return this;
+            }
+
+            this.fontWeight = (spec: NormalBold): ISchleiferBuilder => {
+                updates["fontWeight"] = spec;
+                delete childBuilders["fontWeight;"];
+                modifiedKeys["fontWeight"] = true;
+                return this;
+            }
+
+            this.fontStyle = (spec: NormalItalic): ISchleiferBuilder => {
+                updates["fontStyle"] = spec;
+                delete childBuilders["fontStyle;"];
+                modifiedKeys["fontStyle"] = true;
+                return this;
+            }
+
+            this.fontSize = (spec: string): ISchleiferBuilder => {
+                updates["fontSize"] = spec;
+                delete childBuilders["fontSize;"];
+                modifiedKeys["fontSize"] = true;
+                return this;
+            }
+
+            this.color = (spec: string): ISchleiferBuilder => {
+                updates["color"] = spec;
+                delete childBuilders["color;"];
+                modifiedKeys["color"] = true;
+                return this;
+            }
+
+            this.placement = (spec: AboveBelow): ISchleiferBuilder => {
+                updates["placement"] = spec;
+                delete childBuilders["placement;"];
+                modifiedKeys["placement"] = true;
+                return this;
+            }
   }
 }
 export function patchSchleifer(base: Schleifer, builder: (build: ISchleiferBuilder) => ISchleiferBuilder): IAny[] { return builder(new SchleiferBuilder(base)).patch(); }
@@ -14863,6 +18964,12 @@ export interface ITremoloBuilder {
   relativeY: (relativeY: number) => ITremoloBuilder;
   defaultY: (defaultY: number) => ITremoloBuilder;
   relativeX: (relativeX: number) => ITremoloBuilder;
+  fontFamily: (fontFamily: string) => ITremoloBuilder;
+  fontWeight: (fontWeight: NormalBold) => ITremoloBuilder;
+  fontStyle: (fontStyle: NormalItalic) => ITremoloBuilder;
+  fontSize: (fontSize: string) => ITremoloBuilder;
+  color: (color: string) => ITremoloBuilder;
+  placement: (placement: AboveBelow) => ITremoloBuilder;
 }
 
 class TremoloBuilder implements ITremoloBuilder {
@@ -14874,6 +18981,12 @@ class TremoloBuilder implements ITremoloBuilder {
   relativeY: (relativeY: number) => ITremoloBuilder;
   defaultY: (defaultY: number) => ITremoloBuilder;
   relativeX: (relativeX: number) => ITremoloBuilder;
+  fontFamily: (fontFamily: string) => ITremoloBuilder;
+  fontWeight: (fontWeight: NormalBold) => ITremoloBuilder;
+  fontStyle: (fontStyle: NormalItalic) => ITremoloBuilder;
+  fontSize: (fontSize: string) => ITremoloBuilder;
+  color: (color: string) => ITremoloBuilder;
+  placement: (placement: AboveBelow) => ITremoloBuilder;
   constructor(original?: Tremolo) {
     let updates: Tremolo = {} as any;
     let childBuilders: {[key: string]: any} = {};
@@ -14953,6 +19066,48 @@ class TremoloBuilder implements ITremoloBuilder {
                 modifiedKeys["relativeX"] = true;
                 return this;
             }
+
+            this.fontFamily = (spec: string): ITremoloBuilder => {
+                updates["fontFamily"] = spec;
+                delete childBuilders["fontFamily;"];
+                modifiedKeys["fontFamily"] = true;
+                return this;
+            }
+
+            this.fontWeight = (spec: NormalBold): ITremoloBuilder => {
+                updates["fontWeight"] = spec;
+                delete childBuilders["fontWeight;"];
+                modifiedKeys["fontWeight"] = true;
+                return this;
+            }
+
+            this.fontStyle = (spec: NormalItalic): ITremoloBuilder => {
+                updates["fontStyle"] = spec;
+                delete childBuilders["fontStyle;"];
+                modifiedKeys["fontStyle"] = true;
+                return this;
+            }
+
+            this.fontSize = (spec: string): ITremoloBuilder => {
+                updates["fontSize"] = spec;
+                delete childBuilders["fontSize;"];
+                modifiedKeys["fontSize"] = true;
+                return this;
+            }
+
+            this.color = (spec: string): ITremoloBuilder => {
+                updates["color"] = spec;
+                delete childBuilders["color;"];
+                modifiedKeys["color"] = true;
+                return this;
+            }
+
+            this.placement = (spec: AboveBelow): ITremoloBuilder => {
+                updates["placement"] = spec;
+                delete childBuilders["placement;"];
+                modifiedKeys["placement"] = true;
+                return this;
+            }
   }
 }
 export function patchTremolo(base: Tremolo, builder: (build: ITremoloBuilder) => ITremoloBuilder): IAny[] { return builder(new TremoloBuilder(base)).patch(); }
@@ -14967,6 +19122,12 @@ export interface IOtherOrnamentBuilder {
   relativeY: (relativeY: number) => IOtherOrnamentBuilder;
   defaultY: (defaultY: number) => IOtherOrnamentBuilder;
   relativeX: (relativeX: number) => IOtherOrnamentBuilder;
+  fontFamily: (fontFamily: string) => IOtherOrnamentBuilder;
+  fontWeight: (fontWeight: NormalBold) => IOtherOrnamentBuilder;
+  fontStyle: (fontStyle: NormalItalic) => IOtherOrnamentBuilder;
+  fontSize: (fontSize: string) => IOtherOrnamentBuilder;
+  color: (color: string) => IOtherOrnamentBuilder;
+  placement: (placement: AboveBelow) => IOtherOrnamentBuilder;
 }
 
 class OtherOrnamentBuilder implements IOtherOrnamentBuilder {
@@ -14978,6 +19139,12 @@ class OtherOrnamentBuilder implements IOtherOrnamentBuilder {
   relativeY: (relativeY: number) => IOtherOrnamentBuilder;
   defaultY: (defaultY: number) => IOtherOrnamentBuilder;
   relativeX: (relativeX: number) => IOtherOrnamentBuilder;
+  fontFamily: (fontFamily: string) => IOtherOrnamentBuilder;
+  fontWeight: (fontWeight: NormalBold) => IOtherOrnamentBuilder;
+  fontStyle: (fontStyle: NormalItalic) => IOtherOrnamentBuilder;
+  fontSize: (fontSize: string) => IOtherOrnamentBuilder;
+  color: (color: string) => IOtherOrnamentBuilder;
+  placement: (placement: AboveBelow) => IOtherOrnamentBuilder;
   constructor(original?: OtherOrnament) {
     let updates: OtherOrnament = {} as any;
     let childBuilders: {[key: string]: any} = {};
@@ -15057,6 +19224,48 @@ class OtherOrnamentBuilder implements IOtherOrnamentBuilder {
                 modifiedKeys["relativeX"] = true;
                 return this;
             }
+
+            this.fontFamily = (spec: string): IOtherOrnamentBuilder => {
+                updates["fontFamily"] = spec;
+                delete childBuilders["fontFamily;"];
+                modifiedKeys["fontFamily"] = true;
+                return this;
+            }
+
+            this.fontWeight = (spec: NormalBold): IOtherOrnamentBuilder => {
+                updates["fontWeight"] = spec;
+                delete childBuilders["fontWeight;"];
+                modifiedKeys["fontWeight"] = true;
+                return this;
+            }
+
+            this.fontStyle = (spec: NormalItalic): IOtherOrnamentBuilder => {
+                updates["fontStyle"] = spec;
+                delete childBuilders["fontStyle;"];
+                modifiedKeys["fontStyle"] = true;
+                return this;
+            }
+
+            this.fontSize = (spec: string): IOtherOrnamentBuilder => {
+                updates["fontSize"] = spec;
+                delete childBuilders["fontSize;"];
+                modifiedKeys["fontSize"] = true;
+                return this;
+            }
+
+            this.color = (spec: string): IOtherOrnamentBuilder => {
+                updates["color"] = spec;
+                delete childBuilders["color;"];
+                modifiedKeys["color"] = true;
+                return this;
+            }
+
+            this.placement = (spec: AboveBelow): IOtherOrnamentBuilder => {
+                updates["placement"] = spec;
+                delete childBuilders["placement;"];
+                modifiedKeys["placement"] = true;
+                return this;
+            }
   }
 }
 export function patchOtherOrnament(base: OtherOrnament, builder: (build: IOtherOrnamentBuilder) => IOtherOrnamentBuilder): IAny[] { return builder(new OtherOrnamentBuilder(base)).patch(); }
@@ -15070,6 +19279,12 @@ export interface IAccidentalMarkBuilder {
   relativeY: (relativeY: number) => IAccidentalMarkBuilder;
   defaultY: (defaultY: number) => IAccidentalMarkBuilder;
   relativeX: (relativeX: number) => IAccidentalMarkBuilder;
+  fontFamily: (fontFamily: string) => IAccidentalMarkBuilder;
+  fontWeight: (fontWeight: NormalBold) => IAccidentalMarkBuilder;
+  fontStyle: (fontStyle: NormalItalic) => IAccidentalMarkBuilder;
+  fontSize: (fontSize: string) => IAccidentalMarkBuilder;
+  color: (color: string) => IAccidentalMarkBuilder;
+  placement: (placement: AboveBelow) => IAccidentalMarkBuilder;
 }
 
 class AccidentalMarkBuilder implements IAccidentalMarkBuilder {
@@ -15080,6 +19295,12 @@ class AccidentalMarkBuilder implements IAccidentalMarkBuilder {
   relativeY: (relativeY: number) => IAccidentalMarkBuilder;
   defaultY: (defaultY: number) => IAccidentalMarkBuilder;
   relativeX: (relativeX: number) => IAccidentalMarkBuilder;
+  fontFamily: (fontFamily: string) => IAccidentalMarkBuilder;
+  fontWeight: (fontWeight: NormalBold) => IAccidentalMarkBuilder;
+  fontStyle: (fontStyle: NormalItalic) => IAccidentalMarkBuilder;
+  fontSize: (fontSize: string) => IAccidentalMarkBuilder;
+  color: (color: string) => IAccidentalMarkBuilder;
+  placement: (placement: AboveBelow) => IAccidentalMarkBuilder;
   constructor(original?: AccidentalMark) {
     let updates: AccidentalMark = {} as any;
     let childBuilders: {[key: string]: any} = {};
@@ -15150,6 +19371,48 @@ class AccidentalMarkBuilder implements IAccidentalMarkBuilder {
                 updates["relativeX"] = spec;
                 delete childBuilders["relativeX;"];
                 modifiedKeys["relativeX"] = true;
+                return this;
+            }
+
+            this.fontFamily = (spec: string): IAccidentalMarkBuilder => {
+                updates["fontFamily"] = spec;
+                delete childBuilders["fontFamily;"];
+                modifiedKeys["fontFamily"] = true;
+                return this;
+            }
+
+            this.fontWeight = (spec: NormalBold): IAccidentalMarkBuilder => {
+                updates["fontWeight"] = spec;
+                delete childBuilders["fontWeight;"];
+                modifiedKeys["fontWeight"] = true;
+                return this;
+            }
+
+            this.fontStyle = (spec: NormalItalic): IAccidentalMarkBuilder => {
+                updates["fontStyle"] = spec;
+                delete childBuilders["fontStyle;"];
+                modifiedKeys["fontStyle"] = true;
+                return this;
+            }
+
+            this.fontSize = (spec: string): IAccidentalMarkBuilder => {
+                updates["fontSize"] = spec;
+                delete childBuilders["fontSize;"];
+                modifiedKeys["fontSize"] = true;
+                return this;
+            }
+
+            this.color = (spec: string): IAccidentalMarkBuilder => {
+                updates["color"] = spec;
+                delete childBuilders["color;"];
+                modifiedKeys["color"] = true;
+                return this;
+            }
+
+            this.placement = (spec: AboveBelow): IAccidentalMarkBuilder => {
+                updates["placement"] = spec;
+                delete childBuilders["placement;"];
+                modifiedKeys["placement"] = true;
                 return this;
             }
   }
@@ -15593,6 +19856,12 @@ export interface IUpBowBuilder {
   relativeY: (relativeY: number) => IUpBowBuilder;
   defaultY: (defaultY: number) => IUpBowBuilder;
   relativeX: (relativeX: number) => IUpBowBuilder;
+  fontFamily: (fontFamily: string) => IUpBowBuilder;
+  fontWeight: (fontWeight: NormalBold) => IUpBowBuilder;
+  fontStyle: (fontStyle: NormalItalic) => IUpBowBuilder;
+  fontSize: (fontSize: string) => IUpBowBuilder;
+  color: (color: string) => IUpBowBuilder;
+  placement: (placement: AboveBelow) => IUpBowBuilder;
 }
 
 class UpBowBuilder implements IUpBowBuilder {
@@ -15602,6 +19871,12 @@ class UpBowBuilder implements IUpBowBuilder {
   relativeY: (relativeY: number) => IUpBowBuilder;
   defaultY: (defaultY: number) => IUpBowBuilder;
   relativeX: (relativeX: number) => IUpBowBuilder;
+  fontFamily: (fontFamily: string) => IUpBowBuilder;
+  fontWeight: (fontWeight: NormalBold) => IUpBowBuilder;
+  fontStyle: (fontStyle: NormalItalic) => IUpBowBuilder;
+  fontSize: (fontSize: string) => IUpBowBuilder;
+  color: (color: string) => IUpBowBuilder;
+  placement: (placement: AboveBelow) => IUpBowBuilder;
   constructor(original?: UpBow) {
     let updates: UpBow = {} as any;
     let childBuilders: {[key: string]: any} = {};
@@ -15662,6 +19937,48 @@ class UpBowBuilder implements IUpBowBuilder {
                 modifiedKeys["relativeX"] = true;
                 return this;
             }
+
+            this.fontFamily = (spec: string): IUpBowBuilder => {
+                updates["fontFamily"] = spec;
+                delete childBuilders["fontFamily;"];
+                modifiedKeys["fontFamily"] = true;
+                return this;
+            }
+
+            this.fontWeight = (spec: NormalBold): IUpBowBuilder => {
+                updates["fontWeight"] = spec;
+                delete childBuilders["fontWeight;"];
+                modifiedKeys["fontWeight"] = true;
+                return this;
+            }
+
+            this.fontStyle = (spec: NormalItalic): IUpBowBuilder => {
+                updates["fontStyle"] = spec;
+                delete childBuilders["fontStyle;"];
+                modifiedKeys["fontStyle"] = true;
+                return this;
+            }
+
+            this.fontSize = (spec: string): IUpBowBuilder => {
+                updates["fontSize"] = spec;
+                delete childBuilders["fontSize;"];
+                modifiedKeys["fontSize"] = true;
+                return this;
+            }
+
+            this.color = (spec: string): IUpBowBuilder => {
+                updates["color"] = spec;
+                delete childBuilders["color;"];
+                modifiedKeys["color"] = true;
+                return this;
+            }
+
+            this.placement = (spec: AboveBelow): IUpBowBuilder => {
+                updates["placement"] = spec;
+                delete childBuilders["placement;"];
+                modifiedKeys["placement"] = true;
+                return this;
+            }
   }
 }
 export function patchUpBow(base: UpBow, builder: (build: IUpBowBuilder) => IUpBowBuilder): IAny[] { return builder(new UpBowBuilder(base)).patch(); }
@@ -15674,6 +19991,12 @@ export interface IDownBowBuilder {
   relativeY: (relativeY: number) => IDownBowBuilder;
   defaultY: (defaultY: number) => IDownBowBuilder;
   relativeX: (relativeX: number) => IDownBowBuilder;
+  fontFamily: (fontFamily: string) => IDownBowBuilder;
+  fontWeight: (fontWeight: NormalBold) => IDownBowBuilder;
+  fontStyle: (fontStyle: NormalItalic) => IDownBowBuilder;
+  fontSize: (fontSize: string) => IDownBowBuilder;
+  color: (color: string) => IDownBowBuilder;
+  placement: (placement: AboveBelow) => IDownBowBuilder;
 }
 
 class DownBowBuilder implements IDownBowBuilder {
@@ -15683,6 +20006,12 @@ class DownBowBuilder implements IDownBowBuilder {
   relativeY: (relativeY: number) => IDownBowBuilder;
   defaultY: (defaultY: number) => IDownBowBuilder;
   relativeX: (relativeX: number) => IDownBowBuilder;
+  fontFamily: (fontFamily: string) => IDownBowBuilder;
+  fontWeight: (fontWeight: NormalBold) => IDownBowBuilder;
+  fontStyle: (fontStyle: NormalItalic) => IDownBowBuilder;
+  fontSize: (fontSize: string) => IDownBowBuilder;
+  color: (color: string) => IDownBowBuilder;
+  placement: (placement: AboveBelow) => IDownBowBuilder;
   constructor(original?: DownBow) {
     let updates: DownBow = {} as any;
     let childBuilders: {[key: string]: any} = {};
@@ -15743,6 +20072,48 @@ class DownBowBuilder implements IDownBowBuilder {
                 modifiedKeys["relativeX"] = true;
                 return this;
             }
+
+            this.fontFamily = (spec: string): IDownBowBuilder => {
+                updates["fontFamily"] = spec;
+                delete childBuilders["fontFamily;"];
+                modifiedKeys["fontFamily"] = true;
+                return this;
+            }
+
+            this.fontWeight = (spec: NormalBold): IDownBowBuilder => {
+                updates["fontWeight"] = spec;
+                delete childBuilders["fontWeight;"];
+                modifiedKeys["fontWeight"] = true;
+                return this;
+            }
+
+            this.fontStyle = (spec: NormalItalic): IDownBowBuilder => {
+                updates["fontStyle"] = spec;
+                delete childBuilders["fontStyle;"];
+                modifiedKeys["fontStyle"] = true;
+                return this;
+            }
+
+            this.fontSize = (spec: string): IDownBowBuilder => {
+                updates["fontSize"] = spec;
+                delete childBuilders["fontSize;"];
+                modifiedKeys["fontSize"] = true;
+                return this;
+            }
+
+            this.color = (spec: string): IDownBowBuilder => {
+                updates["color"] = spec;
+                delete childBuilders["color;"];
+                modifiedKeys["color"] = true;
+                return this;
+            }
+
+            this.placement = (spec: AboveBelow): IDownBowBuilder => {
+                updates["placement"] = spec;
+                delete childBuilders["placement;"];
+                modifiedKeys["placement"] = true;
+                return this;
+            }
   }
 }
 export function patchDownBow(base: DownBow, builder: (build: IDownBowBuilder) => IDownBowBuilder): IAny[] { return builder(new DownBowBuilder(base)).patch(); }
@@ -15756,7 +20127,17 @@ export interface IHarmonicBuilder {
   soundingPitch: (soundingPitch: boolean) => IHarmonicBuilder;
   natural: (natural: boolean) => IHarmonicBuilder;
   basePitch: (basePitch: boolean) => IHarmonicBuilder;
+  defaultX: (defaultX: number) => IHarmonicBuilder;
+  relativeY: (relativeY: number) => IHarmonicBuilder;
+  defaultY: (defaultY: number) => IHarmonicBuilder;
+  relativeX: (relativeX: number) => IHarmonicBuilder;
+  fontFamily: (fontFamily: string) => IHarmonicBuilder;
+  fontWeight: (fontWeight: NormalBold) => IHarmonicBuilder;
+  fontStyle: (fontStyle: NormalItalic) => IHarmonicBuilder;
+  fontSize: (fontSize: string) => IHarmonicBuilder;
+  color: (color: string) => IHarmonicBuilder;
   printObject: (printObject: boolean) => IHarmonicBuilder;
+  placement: (placement: AboveBelow) => IHarmonicBuilder;
 }
 
 class HarmonicBuilder implements IHarmonicBuilder {
@@ -15767,7 +20148,17 @@ class HarmonicBuilder implements IHarmonicBuilder {
   soundingPitch: (soundingPitch: boolean) => IHarmonicBuilder;
   natural: (natural: boolean) => IHarmonicBuilder;
   basePitch: (basePitch: boolean) => IHarmonicBuilder;
+  defaultX: (defaultX: number) => IHarmonicBuilder;
+  relativeY: (relativeY: number) => IHarmonicBuilder;
+  defaultY: (defaultY: number) => IHarmonicBuilder;
+  relativeX: (relativeX: number) => IHarmonicBuilder;
+  fontFamily: (fontFamily: string) => IHarmonicBuilder;
+  fontWeight: (fontWeight: NormalBold) => IHarmonicBuilder;
+  fontStyle: (fontStyle: NormalItalic) => IHarmonicBuilder;
+  fontSize: (fontSize: string) => IHarmonicBuilder;
+  color: (color: string) => IHarmonicBuilder;
   printObject: (printObject: boolean) => IHarmonicBuilder;
+  placement: (placement: AboveBelow) => IHarmonicBuilder;
   constructor(original?: Harmonic) {
     let updates: Harmonic = {} as any;
     let childBuilders: {[key: string]: any} = {};
@@ -15861,10 +20252,80 @@ class HarmonicBuilder implements IHarmonicBuilder {
                 return this;
             }
 
+            this.defaultX = (spec: number): IHarmonicBuilder => {
+                updates["defaultX"] = spec;
+                delete childBuilders["defaultX;"];
+                modifiedKeys["defaultX"] = true;
+                return this;
+            }
+
+            this.relativeY = (spec: number): IHarmonicBuilder => {
+                updates["relativeY"] = spec;
+                delete childBuilders["relativeY;"];
+                modifiedKeys["relativeY"] = true;
+                return this;
+            }
+
+            this.defaultY = (spec: number): IHarmonicBuilder => {
+                updates["defaultY"] = spec;
+                delete childBuilders["defaultY;"];
+                modifiedKeys["defaultY"] = true;
+                return this;
+            }
+
+            this.relativeX = (spec: number): IHarmonicBuilder => {
+                updates["relativeX"] = spec;
+                delete childBuilders["relativeX;"];
+                modifiedKeys["relativeX"] = true;
+                return this;
+            }
+
+            this.fontFamily = (spec: string): IHarmonicBuilder => {
+                updates["fontFamily"] = spec;
+                delete childBuilders["fontFamily;"];
+                modifiedKeys["fontFamily"] = true;
+                return this;
+            }
+
+            this.fontWeight = (spec: NormalBold): IHarmonicBuilder => {
+                updates["fontWeight"] = spec;
+                delete childBuilders["fontWeight;"];
+                modifiedKeys["fontWeight"] = true;
+                return this;
+            }
+
+            this.fontStyle = (spec: NormalItalic): IHarmonicBuilder => {
+                updates["fontStyle"] = spec;
+                delete childBuilders["fontStyle;"];
+                modifiedKeys["fontStyle"] = true;
+                return this;
+            }
+
+            this.fontSize = (spec: string): IHarmonicBuilder => {
+                updates["fontSize"] = spec;
+                delete childBuilders["fontSize;"];
+                modifiedKeys["fontSize"] = true;
+                return this;
+            }
+
+            this.color = (spec: string): IHarmonicBuilder => {
+                updates["color"] = spec;
+                delete childBuilders["color;"];
+                modifiedKeys["color"] = true;
+                return this;
+            }
+
             this.printObject = (spec: boolean): IHarmonicBuilder => {
                 updates["printObject"] = spec;
                 delete childBuilders["printObject;"];
                 modifiedKeys["printObject"] = true;
+                return this;
+            }
+
+            this.placement = (spec: AboveBelow): IHarmonicBuilder => {
+                updates["placement"] = spec;
+                delete childBuilders["placement;"];
+                modifiedKeys["placement"] = true;
                 return this;
             }
   }
@@ -15879,6 +20340,12 @@ export interface IOpenStringBuilder {
   relativeY: (relativeY: number) => IOpenStringBuilder;
   defaultY: (defaultY: number) => IOpenStringBuilder;
   relativeX: (relativeX: number) => IOpenStringBuilder;
+  fontFamily: (fontFamily: string) => IOpenStringBuilder;
+  fontWeight: (fontWeight: NormalBold) => IOpenStringBuilder;
+  fontStyle: (fontStyle: NormalItalic) => IOpenStringBuilder;
+  fontSize: (fontSize: string) => IOpenStringBuilder;
+  color: (color: string) => IOpenStringBuilder;
+  placement: (placement: AboveBelow) => IOpenStringBuilder;
 }
 
 class OpenStringBuilder implements IOpenStringBuilder {
@@ -15888,6 +20355,12 @@ class OpenStringBuilder implements IOpenStringBuilder {
   relativeY: (relativeY: number) => IOpenStringBuilder;
   defaultY: (defaultY: number) => IOpenStringBuilder;
   relativeX: (relativeX: number) => IOpenStringBuilder;
+  fontFamily: (fontFamily: string) => IOpenStringBuilder;
+  fontWeight: (fontWeight: NormalBold) => IOpenStringBuilder;
+  fontStyle: (fontStyle: NormalItalic) => IOpenStringBuilder;
+  fontSize: (fontSize: string) => IOpenStringBuilder;
+  color: (color: string) => IOpenStringBuilder;
+  placement: (placement: AboveBelow) => IOpenStringBuilder;
   constructor(original?: OpenString) {
     let updates: OpenString = {} as any;
     let childBuilders: {[key: string]: any} = {};
@@ -15948,6 +20421,48 @@ class OpenStringBuilder implements IOpenStringBuilder {
                 modifiedKeys["relativeX"] = true;
                 return this;
             }
+
+            this.fontFamily = (spec: string): IOpenStringBuilder => {
+                updates["fontFamily"] = spec;
+                delete childBuilders["fontFamily;"];
+                modifiedKeys["fontFamily"] = true;
+                return this;
+            }
+
+            this.fontWeight = (spec: NormalBold): IOpenStringBuilder => {
+                updates["fontWeight"] = spec;
+                delete childBuilders["fontWeight;"];
+                modifiedKeys["fontWeight"] = true;
+                return this;
+            }
+
+            this.fontStyle = (spec: NormalItalic): IOpenStringBuilder => {
+                updates["fontStyle"] = spec;
+                delete childBuilders["fontStyle;"];
+                modifiedKeys["fontStyle"] = true;
+                return this;
+            }
+
+            this.fontSize = (spec: string): IOpenStringBuilder => {
+                updates["fontSize"] = spec;
+                delete childBuilders["fontSize;"];
+                modifiedKeys["fontSize"] = true;
+                return this;
+            }
+
+            this.color = (spec: string): IOpenStringBuilder => {
+                updates["color"] = spec;
+                delete childBuilders["color;"];
+                modifiedKeys["color"] = true;
+                return this;
+            }
+
+            this.placement = (spec: AboveBelow): IOpenStringBuilder => {
+                updates["placement"] = spec;
+                delete childBuilders["placement;"];
+                modifiedKeys["placement"] = true;
+                return this;
+            }
   }
 }
 export function patchOpenString(base: OpenString, builder: (build: IOpenStringBuilder) => IOpenStringBuilder): IAny[] { return builder(new OpenStringBuilder(base)).patch(); }
@@ -15960,6 +20475,12 @@ export interface IThumbPositionBuilder {
   relativeY: (relativeY: number) => IThumbPositionBuilder;
   defaultY: (defaultY: number) => IThumbPositionBuilder;
   relativeX: (relativeX: number) => IThumbPositionBuilder;
+  fontFamily: (fontFamily: string) => IThumbPositionBuilder;
+  fontWeight: (fontWeight: NormalBold) => IThumbPositionBuilder;
+  fontStyle: (fontStyle: NormalItalic) => IThumbPositionBuilder;
+  fontSize: (fontSize: string) => IThumbPositionBuilder;
+  color: (color: string) => IThumbPositionBuilder;
+  placement: (placement: AboveBelow) => IThumbPositionBuilder;
 }
 
 class ThumbPositionBuilder implements IThumbPositionBuilder {
@@ -15969,6 +20490,12 @@ class ThumbPositionBuilder implements IThumbPositionBuilder {
   relativeY: (relativeY: number) => IThumbPositionBuilder;
   defaultY: (defaultY: number) => IThumbPositionBuilder;
   relativeX: (relativeX: number) => IThumbPositionBuilder;
+  fontFamily: (fontFamily: string) => IThumbPositionBuilder;
+  fontWeight: (fontWeight: NormalBold) => IThumbPositionBuilder;
+  fontStyle: (fontStyle: NormalItalic) => IThumbPositionBuilder;
+  fontSize: (fontSize: string) => IThumbPositionBuilder;
+  color: (color: string) => IThumbPositionBuilder;
+  placement: (placement: AboveBelow) => IThumbPositionBuilder;
   constructor(original?: ThumbPosition) {
     let updates: ThumbPosition = {} as any;
     let childBuilders: {[key: string]: any} = {};
@@ -16029,6 +20556,48 @@ class ThumbPositionBuilder implements IThumbPositionBuilder {
                 modifiedKeys["relativeX"] = true;
                 return this;
             }
+
+            this.fontFamily = (spec: string): IThumbPositionBuilder => {
+                updates["fontFamily"] = spec;
+                delete childBuilders["fontFamily;"];
+                modifiedKeys["fontFamily"] = true;
+                return this;
+            }
+
+            this.fontWeight = (spec: NormalBold): IThumbPositionBuilder => {
+                updates["fontWeight"] = spec;
+                delete childBuilders["fontWeight;"];
+                modifiedKeys["fontWeight"] = true;
+                return this;
+            }
+
+            this.fontStyle = (spec: NormalItalic): IThumbPositionBuilder => {
+                updates["fontStyle"] = spec;
+                delete childBuilders["fontStyle;"];
+                modifiedKeys["fontStyle"] = true;
+                return this;
+            }
+
+            this.fontSize = (spec: string): IThumbPositionBuilder => {
+                updates["fontSize"] = spec;
+                delete childBuilders["fontSize;"];
+                modifiedKeys["fontSize"] = true;
+                return this;
+            }
+
+            this.color = (spec: string): IThumbPositionBuilder => {
+                updates["color"] = spec;
+                delete childBuilders["color;"];
+                modifiedKeys["color"] = true;
+                return this;
+            }
+
+            this.placement = (spec: AboveBelow): IThumbPositionBuilder => {
+                updates["placement"] = spec;
+                delete childBuilders["placement;"];
+                modifiedKeys["placement"] = true;
+                return this;
+            }
   }
 }
 export function patchThumbPosition(base: ThumbPosition, builder: (build: IThumbPositionBuilder) => IThumbPositionBuilder): IAny[] { return builder(new ThumbPositionBuilder(base)).patch(); }
@@ -16042,6 +20611,12 @@ export interface IPluckBuilder {
   relativeY: (relativeY: number) => IPluckBuilder;
   defaultY: (defaultY: number) => IPluckBuilder;
   relativeX: (relativeX: number) => IPluckBuilder;
+  fontFamily: (fontFamily: string) => IPluckBuilder;
+  fontWeight: (fontWeight: NormalBold) => IPluckBuilder;
+  fontStyle: (fontStyle: NormalItalic) => IPluckBuilder;
+  fontSize: (fontSize: string) => IPluckBuilder;
+  color: (color: string) => IPluckBuilder;
+  placement: (placement: AboveBelow) => IPluckBuilder;
 }
 
 class PluckBuilder implements IPluckBuilder {
@@ -16052,6 +20627,12 @@ class PluckBuilder implements IPluckBuilder {
   relativeY: (relativeY: number) => IPluckBuilder;
   defaultY: (defaultY: number) => IPluckBuilder;
   relativeX: (relativeX: number) => IPluckBuilder;
+  fontFamily: (fontFamily: string) => IPluckBuilder;
+  fontWeight: (fontWeight: NormalBold) => IPluckBuilder;
+  fontStyle: (fontStyle: NormalItalic) => IPluckBuilder;
+  fontSize: (fontSize: string) => IPluckBuilder;
+  color: (color: string) => IPluckBuilder;
+  placement: (placement: AboveBelow) => IPluckBuilder;
   constructor(original?: Pluck) {
     let updates: Pluck = {} as any;
     let childBuilders: {[key: string]: any} = {};
@@ -16124,6 +20705,48 @@ class PluckBuilder implements IPluckBuilder {
                 modifiedKeys["relativeX"] = true;
                 return this;
             }
+
+            this.fontFamily = (spec: string): IPluckBuilder => {
+                updates["fontFamily"] = spec;
+                delete childBuilders["fontFamily;"];
+                modifiedKeys["fontFamily"] = true;
+                return this;
+            }
+
+            this.fontWeight = (spec: NormalBold): IPluckBuilder => {
+                updates["fontWeight"] = spec;
+                delete childBuilders["fontWeight;"];
+                modifiedKeys["fontWeight"] = true;
+                return this;
+            }
+
+            this.fontStyle = (spec: NormalItalic): IPluckBuilder => {
+                updates["fontStyle"] = spec;
+                delete childBuilders["fontStyle;"];
+                modifiedKeys["fontStyle"] = true;
+                return this;
+            }
+
+            this.fontSize = (spec: string): IPluckBuilder => {
+                updates["fontSize"] = spec;
+                delete childBuilders["fontSize;"];
+                modifiedKeys["fontSize"] = true;
+                return this;
+            }
+
+            this.color = (spec: string): IPluckBuilder => {
+                updates["color"] = spec;
+                delete childBuilders["color;"];
+                modifiedKeys["color"] = true;
+                return this;
+            }
+
+            this.placement = (spec: AboveBelow): IPluckBuilder => {
+                updates["placement"] = spec;
+                delete childBuilders["placement;"];
+                modifiedKeys["placement"] = true;
+                return this;
+            }
   }
 }
 export function patchPluck(base: Pluck, builder: (build: IPluckBuilder) => IPluckBuilder): IAny[] { return builder(new PluckBuilder(base)).patch(); }
@@ -16136,6 +20759,12 @@ export interface IDoubleTongueBuilder {
   relativeY: (relativeY: number) => IDoubleTongueBuilder;
   defaultY: (defaultY: number) => IDoubleTongueBuilder;
   relativeX: (relativeX: number) => IDoubleTongueBuilder;
+  fontFamily: (fontFamily: string) => IDoubleTongueBuilder;
+  fontWeight: (fontWeight: NormalBold) => IDoubleTongueBuilder;
+  fontStyle: (fontStyle: NormalItalic) => IDoubleTongueBuilder;
+  fontSize: (fontSize: string) => IDoubleTongueBuilder;
+  color: (color: string) => IDoubleTongueBuilder;
+  placement: (placement: AboveBelow) => IDoubleTongueBuilder;
 }
 
 class DoubleTongueBuilder implements IDoubleTongueBuilder {
@@ -16145,6 +20774,12 @@ class DoubleTongueBuilder implements IDoubleTongueBuilder {
   relativeY: (relativeY: number) => IDoubleTongueBuilder;
   defaultY: (defaultY: number) => IDoubleTongueBuilder;
   relativeX: (relativeX: number) => IDoubleTongueBuilder;
+  fontFamily: (fontFamily: string) => IDoubleTongueBuilder;
+  fontWeight: (fontWeight: NormalBold) => IDoubleTongueBuilder;
+  fontStyle: (fontStyle: NormalItalic) => IDoubleTongueBuilder;
+  fontSize: (fontSize: string) => IDoubleTongueBuilder;
+  color: (color: string) => IDoubleTongueBuilder;
+  placement: (placement: AboveBelow) => IDoubleTongueBuilder;
   constructor(original?: DoubleTongue) {
     let updates: DoubleTongue = {} as any;
     let childBuilders: {[key: string]: any} = {};
@@ -16205,6 +20840,48 @@ class DoubleTongueBuilder implements IDoubleTongueBuilder {
                 modifiedKeys["relativeX"] = true;
                 return this;
             }
+
+            this.fontFamily = (spec: string): IDoubleTongueBuilder => {
+                updates["fontFamily"] = spec;
+                delete childBuilders["fontFamily;"];
+                modifiedKeys["fontFamily"] = true;
+                return this;
+            }
+
+            this.fontWeight = (spec: NormalBold): IDoubleTongueBuilder => {
+                updates["fontWeight"] = spec;
+                delete childBuilders["fontWeight;"];
+                modifiedKeys["fontWeight"] = true;
+                return this;
+            }
+
+            this.fontStyle = (spec: NormalItalic): IDoubleTongueBuilder => {
+                updates["fontStyle"] = spec;
+                delete childBuilders["fontStyle;"];
+                modifiedKeys["fontStyle"] = true;
+                return this;
+            }
+
+            this.fontSize = (spec: string): IDoubleTongueBuilder => {
+                updates["fontSize"] = spec;
+                delete childBuilders["fontSize;"];
+                modifiedKeys["fontSize"] = true;
+                return this;
+            }
+
+            this.color = (spec: string): IDoubleTongueBuilder => {
+                updates["color"] = spec;
+                delete childBuilders["color;"];
+                modifiedKeys["color"] = true;
+                return this;
+            }
+
+            this.placement = (spec: AboveBelow): IDoubleTongueBuilder => {
+                updates["placement"] = spec;
+                delete childBuilders["placement;"];
+                modifiedKeys["placement"] = true;
+                return this;
+            }
   }
 }
 export function patchDoubleTongue(base: DoubleTongue, builder: (build: IDoubleTongueBuilder) => IDoubleTongueBuilder): IAny[] { return builder(new DoubleTongueBuilder(base)).patch(); }
@@ -16217,6 +20894,12 @@ export interface ITripleTongueBuilder {
   relativeY: (relativeY: number) => ITripleTongueBuilder;
   defaultY: (defaultY: number) => ITripleTongueBuilder;
   relativeX: (relativeX: number) => ITripleTongueBuilder;
+  fontFamily: (fontFamily: string) => ITripleTongueBuilder;
+  fontWeight: (fontWeight: NormalBold) => ITripleTongueBuilder;
+  fontStyle: (fontStyle: NormalItalic) => ITripleTongueBuilder;
+  fontSize: (fontSize: string) => ITripleTongueBuilder;
+  color: (color: string) => ITripleTongueBuilder;
+  placement: (placement: AboveBelow) => ITripleTongueBuilder;
 }
 
 class TripleTongueBuilder implements ITripleTongueBuilder {
@@ -16226,6 +20909,12 @@ class TripleTongueBuilder implements ITripleTongueBuilder {
   relativeY: (relativeY: number) => ITripleTongueBuilder;
   defaultY: (defaultY: number) => ITripleTongueBuilder;
   relativeX: (relativeX: number) => ITripleTongueBuilder;
+  fontFamily: (fontFamily: string) => ITripleTongueBuilder;
+  fontWeight: (fontWeight: NormalBold) => ITripleTongueBuilder;
+  fontStyle: (fontStyle: NormalItalic) => ITripleTongueBuilder;
+  fontSize: (fontSize: string) => ITripleTongueBuilder;
+  color: (color: string) => ITripleTongueBuilder;
+  placement: (placement: AboveBelow) => ITripleTongueBuilder;
   constructor(original?: TripleTongue) {
     let updates: TripleTongue = {} as any;
     let childBuilders: {[key: string]: any} = {};
@@ -16286,6 +20975,48 @@ class TripleTongueBuilder implements ITripleTongueBuilder {
                 modifiedKeys["relativeX"] = true;
                 return this;
             }
+
+            this.fontFamily = (spec: string): ITripleTongueBuilder => {
+                updates["fontFamily"] = spec;
+                delete childBuilders["fontFamily;"];
+                modifiedKeys["fontFamily"] = true;
+                return this;
+            }
+
+            this.fontWeight = (spec: NormalBold): ITripleTongueBuilder => {
+                updates["fontWeight"] = spec;
+                delete childBuilders["fontWeight;"];
+                modifiedKeys["fontWeight"] = true;
+                return this;
+            }
+
+            this.fontStyle = (spec: NormalItalic): ITripleTongueBuilder => {
+                updates["fontStyle"] = spec;
+                delete childBuilders["fontStyle;"];
+                modifiedKeys["fontStyle"] = true;
+                return this;
+            }
+
+            this.fontSize = (spec: string): ITripleTongueBuilder => {
+                updates["fontSize"] = spec;
+                delete childBuilders["fontSize;"];
+                modifiedKeys["fontSize"] = true;
+                return this;
+            }
+
+            this.color = (spec: string): ITripleTongueBuilder => {
+                updates["color"] = spec;
+                delete childBuilders["color;"];
+                modifiedKeys["color"] = true;
+                return this;
+            }
+
+            this.placement = (spec: AboveBelow): ITripleTongueBuilder => {
+                updates["placement"] = spec;
+                delete childBuilders["placement;"];
+                modifiedKeys["placement"] = true;
+                return this;
+            }
   }
 }
 export function patchTripleTongue(base: TripleTongue, builder: (build: ITripleTongueBuilder) => ITripleTongueBuilder): IAny[] { return builder(new TripleTongueBuilder(base)).patch(); }
@@ -16298,6 +21029,12 @@ export interface IStoppedBuilder {
   relativeY: (relativeY: number) => IStoppedBuilder;
   defaultY: (defaultY: number) => IStoppedBuilder;
   relativeX: (relativeX: number) => IStoppedBuilder;
+  fontFamily: (fontFamily: string) => IStoppedBuilder;
+  fontWeight: (fontWeight: NormalBold) => IStoppedBuilder;
+  fontStyle: (fontStyle: NormalItalic) => IStoppedBuilder;
+  fontSize: (fontSize: string) => IStoppedBuilder;
+  color: (color: string) => IStoppedBuilder;
+  placement: (placement: AboveBelow) => IStoppedBuilder;
 }
 
 class StoppedBuilder implements IStoppedBuilder {
@@ -16307,6 +21044,12 @@ class StoppedBuilder implements IStoppedBuilder {
   relativeY: (relativeY: number) => IStoppedBuilder;
   defaultY: (defaultY: number) => IStoppedBuilder;
   relativeX: (relativeX: number) => IStoppedBuilder;
+  fontFamily: (fontFamily: string) => IStoppedBuilder;
+  fontWeight: (fontWeight: NormalBold) => IStoppedBuilder;
+  fontStyle: (fontStyle: NormalItalic) => IStoppedBuilder;
+  fontSize: (fontSize: string) => IStoppedBuilder;
+  color: (color: string) => IStoppedBuilder;
+  placement: (placement: AboveBelow) => IStoppedBuilder;
   constructor(original?: Stopped) {
     let updates: Stopped = {} as any;
     let childBuilders: {[key: string]: any} = {};
@@ -16367,6 +21110,48 @@ class StoppedBuilder implements IStoppedBuilder {
                 modifiedKeys["relativeX"] = true;
                 return this;
             }
+
+            this.fontFamily = (spec: string): IStoppedBuilder => {
+                updates["fontFamily"] = spec;
+                delete childBuilders["fontFamily;"];
+                modifiedKeys["fontFamily"] = true;
+                return this;
+            }
+
+            this.fontWeight = (spec: NormalBold): IStoppedBuilder => {
+                updates["fontWeight"] = spec;
+                delete childBuilders["fontWeight;"];
+                modifiedKeys["fontWeight"] = true;
+                return this;
+            }
+
+            this.fontStyle = (spec: NormalItalic): IStoppedBuilder => {
+                updates["fontStyle"] = spec;
+                delete childBuilders["fontStyle;"];
+                modifiedKeys["fontStyle"] = true;
+                return this;
+            }
+
+            this.fontSize = (spec: string): IStoppedBuilder => {
+                updates["fontSize"] = spec;
+                delete childBuilders["fontSize;"];
+                modifiedKeys["fontSize"] = true;
+                return this;
+            }
+
+            this.color = (spec: string): IStoppedBuilder => {
+                updates["color"] = spec;
+                delete childBuilders["color;"];
+                modifiedKeys["color"] = true;
+                return this;
+            }
+
+            this.placement = (spec: AboveBelow): IStoppedBuilder => {
+                updates["placement"] = spec;
+                delete childBuilders["placement;"];
+                modifiedKeys["placement"] = true;
+                return this;
+            }
   }
 }
 export function patchStopped(base: Stopped, builder: (build: IStoppedBuilder) => IStoppedBuilder): IAny[] { return builder(new StoppedBuilder(base)).patch(); }
@@ -16379,6 +21164,12 @@ export interface ISnapPizzicatoBuilder {
   relativeY: (relativeY: number) => ISnapPizzicatoBuilder;
   defaultY: (defaultY: number) => ISnapPizzicatoBuilder;
   relativeX: (relativeX: number) => ISnapPizzicatoBuilder;
+  fontFamily: (fontFamily: string) => ISnapPizzicatoBuilder;
+  fontWeight: (fontWeight: NormalBold) => ISnapPizzicatoBuilder;
+  fontStyle: (fontStyle: NormalItalic) => ISnapPizzicatoBuilder;
+  fontSize: (fontSize: string) => ISnapPizzicatoBuilder;
+  color: (color: string) => ISnapPizzicatoBuilder;
+  placement: (placement: AboveBelow) => ISnapPizzicatoBuilder;
 }
 
 class SnapPizzicatoBuilder implements ISnapPizzicatoBuilder {
@@ -16388,6 +21179,12 @@ class SnapPizzicatoBuilder implements ISnapPizzicatoBuilder {
   relativeY: (relativeY: number) => ISnapPizzicatoBuilder;
   defaultY: (defaultY: number) => ISnapPizzicatoBuilder;
   relativeX: (relativeX: number) => ISnapPizzicatoBuilder;
+  fontFamily: (fontFamily: string) => ISnapPizzicatoBuilder;
+  fontWeight: (fontWeight: NormalBold) => ISnapPizzicatoBuilder;
+  fontStyle: (fontStyle: NormalItalic) => ISnapPizzicatoBuilder;
+  fontSize: (fontSize: string) => ISnapPizzicatoBuilder;
+  color: (color: string) => ISnapPizzicatoBuilder;
+  placement: (placement: AboveBelow) => ISnapPizzicatoBuilder;
   constructor(original?: SnapPizzicato) {
     let updates: SnapPizzicato = {} as any;
     let childBuilders: {[key: string]: any} = {};
@@ -16448,6 +21245,48 @@ class SnapPizzicatoBuilder implements ISnapPizzicatoBuilder {
                 modifiedKeys["relativeX"] = true;
                 return this;
             }
+
+            this.fontFamily = (spec: string): ISnapPizzicatoBuilder => {
+                updates["fontFamily"] = spec;
+                delete childBuilders["fontFamily;"];
+                modifiedKeys["fontFamily"] = true;
+                return this;
+            }
+
+            this.fontWeight = (spec: NormalBold): ISnapPizzicatoBuilder => {
+                updates["fontWeight"] = spec;
+                delete childBuilders["fontWeight;"];
+                modifiedKeys["fontWeight"] = true;
+                return this;
+            }
+
+            this.fontStyle = (spec: NormalItalic): ISnapPizzicatoBuilder => {
+                updates["fontStyle"] = spec;
+                delete childBuilders["fontStyle;"];
+                modifiedKeys["fontStyle"] = true;
+                return this;
+            }
+
+            this.fontSize = (spec: string): ISnapPizzicatoBuilder => {
+                updates["fontSize"] = spec;
+                delete childBuilders["fontSize;"];
+                modifiedKeys["fontSize"] = true;
+                return this;
+            }
+
+            this.color = (spec: string): ISnapPizzicatoBuilder => {
+                updates["color"] = spec;
+                delete childBuilders["color;"];
+                modifiedKeys["color"] = true;
+                return this;
+            }
+
+            this.placement = (spec: AboveBelow): ISnapPizzicatoBuilder => {
+                updates["placement"] = spec;
+                delete childBuilders["placement;"];
+                modifiedKeys["placement"] = true;
+                return this;
+            }
   }
 }
 export function patchSnapPizzicato(base: SnapPizzicato, builder: (build: ISnapPizzicatoBuilder) => ISnapPizzicatoBuilder): IAny[] { return builder(new SnapPizzicatoBuilder(base)).patch(); }
@@ -16463,6 +21302,12 @@ export interface IHammerOnBuilder {
   relativeY: (relativeY: number) => IHammerOnBuilder;
   defaultY: (defaultY: number) => IHammerOnBuilder;
   relativeX: (relativeX: number) => IHammerOnBuilder;
+  fontFamily: (fontFamily: string) => IHammerOnBuilder;
+  fontWeight: (fontWeight: NormalBold) => IHammerOnBuilder;
+  fontStyle: (fontStyle: NormalItalic) => IHammerOnBuilder;
+  fontSize: (fontSize: string) => IHammerOnBuilder;
+  color: (color: string) => IHammerOnBuilder;
+  placement: (placement: AboveBelow) => IHammerOnBuilder;
 }
 
 class HammerOnBuilder implements IHammerOnBuilder {
@@ -16475,6 +21320,12 @@ class HammerOnBuilder implements IHammerOnBuilder {
   relativeY: (relativeY: number) => IHammerOnBuilder;
   defaultY: (defaultY: number) => IHammerOnBuilder;
   relativeX: (relativeX: number) => IHammerOnBuilder;
+  fontFamily: (fontFamily: string) => IHammerOnBuilder;
+  fontWeight: (fontWeight: NormalBold) => IHammerOnBuilder;
+  fontStyle: (fontStyle: NormalItalic) => IHammerOnBuilder;
+  fontSize: (fontSize: string) => IHammerOnBuilder;
+  color: (color: string) => IHammerOnBuilder;
+  placement: (placement: AboveBelow) => IHammerOnBuilder;
   constructor(original?: HammerOn) {
     let updates: HammerOn = {} as any;
     let childBuilders: {[key: string]: any} = {};
@@ -16561,6 +21412,48 @@ class HammerOnBuilder implements IHammerOnBuilder {
                 modifiedKeys["relativeX"] = true;
                 return this;
             }
+
+            this.fontFamily = (spec: string): IHammerOnBuilder => {
+                updates["fontFamily"] = spec;
+                delete childBuilders["fontFamily;"];
+                modifiedKeys["fontFamily"] = true;
+                return this;
+            }
+
+            this.fontWeight = (spec: NormalBold): IHammerOnBuilder => {
+                updates["fontWeight"] = spec;
+                delete childBuilders["fontWeight;"];
+                modifiedKeys["fontWeight"] = true;
+                return this;
+            }
+
+            this.fontStyle = (spec: NormalItalic): IHammerOnBuilder => {
+                updates["fontStyle"] = spec;
+                delete childBuilders["fontStyle;"];
+                modifiedKeys["fontStyle"] = true;
+                return this;
+            }
+
+            this.fontSize = (spec: string): IHammerOnBuilder => {
+                updates["fontSize"] = spec;
+                delete childBuilders["fontSize;"];
+                modifiedKeys["fontSize"] = true;
+                return this;
+            }
+
+            this.color = (spec: string): IHammerOnBuilder => {
+                updates["color"] = spec;
+                delete childBuilders["color;"];
+                modifiedKeys["color"] = true;
+                return this;
+            }
+
+            this.placement = (spec: AboveBelow): IHammerOnBuilder => {
+                updates["placement"] = spec;
+                delete childBuilders["placement;"];
+                modifiedKeys["placement"] = true;
+                return this;
+            }
   }
 }
 export function patchHammerOn(base: HammerOn, builder: (build: IHammerOnBuilder) => IHammerOnBuilder): IAny[] { return builder(new HammerOnBuilder(base)).patch(); }
@@ -16576,6 +21469,12 @@ export interface IPullOffBuilder {
   relativeY: (relativeY: number) => IPullOffBuilder;
   defaultY: (defaultY: number) => IPullOffBuilder;
   relativeX: (relativeX: number) => IPullOffBuilder;
+  fontFamily: (fontFamily: string) => IPullOffBuilder;
+  fontWeight: (fontWeight: NormalBold) => IPullOffBuilder;
+  fontStyle: (fontStyle: NormalItalic) => IPullOffBuilder;
+  fontSize: (fontSize: string) => IPullOffBuilder;
+  color: (color: string) => IPullOffBuilder;
+  placement: (placement: AboveBelow) => IPullOffBuilder;
 }
 
 class PullOffBuilder implements IPullOffBuilder {
@@ -16588,6 +21487,12 @@ class PullOffBuilder implements IPullOffBuilder {
   relativeY: (relativeY: number) => IPullOffBuilder;
   defaultY: (defaultY: number) => IPullOffBuilder;
   relativeX: (relativeX: number) => IPullOffBuilder;
+  fontFamily: (fontFamily: string) => IPullOffBuilder;
+  fontWeight: (fontWeight: NormalBold) => IPullOffBuilder;
+  fontStyle: (fontStyle: NormalItalic) => IPullOffBuilder;
+  fontSize: (fontSize: string) => IPullOffBuilder;
+  color: (color: string) => IPullOffBuilder;
+  placement: (placement: AboveBelow) => IPullOffBuilder;
   constructor(original?: PullOff) {
     let updates: PullOff = {} as any;
     let childBuilders: {[key: string]: any} = {};
@@ -16674,6 +21579,48 @@ class PullOffBuilder implements IPullOffBuilder {
                 modifiedKeys["relativeX"] = true;
                 return this;
             }
+
+            this.fontFamily = (spec: string): IPullOffBuilder => {
+                updates["fontFamily"] = spec;
+                delete childBuilders["fontFamily;"];
+                modifiedKeys["fontFamily"] = true;
+                return this;
+            }
+
+            this.fontWeight = (spec: NormalBold): IPullOffBuilder => {
+                updates["fontWeight"] = spec;
+                delete childBuilders["fontWeight;"];
+                modifiedKeys["fontWeight"] = true;
+                return this;
+            }
+
+            this.fontStyle = (spec: NormalItalic): IPullOffBuilder => {
+                updates["fontStyle"] = spec;
+                delete childBuilders["fontStyle;"];
+                modifiedKeys["fontStyle"] = true;
+                return this;
+            }
+
+            this.fontSize = (spec: string): IPullOffBuilder => {
+                updates["fontSize"] = spec;
+                delete childBuilders["fontSize;"];
+                modifiedKeys["fontSize"] = true;
+                return this;
+            }
+
+            this.color = (spec: string): IPullOffBuilder => {
+                updates["color"] = spec;
+                delete childBuilders["color;"];
+                modifiedKeys["color"] = true;
+                return this;
+            }
+
+            this.placement = (spec: AboveBelow): IPullOffBuilder => {
+                updates["placement"] = spec;
+                delete childBuilders["placement;"];
+                modifiedKeys["placement"] = true;
+                return this;
+            }
   }
 }
 export function patchPullOff(base: PullOff, builder: (build: IPullOffBuilder) => IPullOffBuilder): IAny[] { return builder(new PullOffBuilder(base)).patch(); }
@@ -16690,6 +21637,15 @@ export interface IBendBuilder {
   relativeY: (relativeY: number) => IBendBuilder;
   defaultY: (defaultY: number) => IBendBuilder;
   relativeX: (relativeX: number) => IBendBuilder;
+  fontFamily: (fontFamily: string) => IBendBuilder;
+  fontWeight: (fontWeight: NormalBold) => IBendBuilder;
+  fontStyle: (fontStyle: NormalItalic) => IBendBuilder;
+  fontSize: (fontSize: string) => IBendBuilder;
+  color: (color: string) => IBendBuilder;
+  accelerate: (accelerate: boolean) => IBendBuilder;
+  beats: (beats: number) => IBendBuilder;
+  firstBeat: (firstBeat: number) => IBendBuilder;
+  lastBeat: (lastBeat: number) => IBendBuilder;
 }
 
 class BendBuilder implements IBendBuilder {
@@ -16703,6 +21659,15 @@ class BendBuilder implements IBendBuilder {
   relativeY: (relativeY: number) => IBendBuilder;
   defaultY: (defaultY: number) => IBendBuilder;
   relativeX: (relativeX: number) => IBendBuilder;
+  fontFamily: (fontFamily: string) => IBendBuilder;
+  fontWeight: (fontWeight: NormalBold) => IBendBuilder;
+  fontStyle: (fontStyle: NormalItalic) => IBendBuilder;
+  fontSize: (fontSize: string) => IBendBuilder;
+  color: (color: string) => IBendBuilder;
+  accelerate: (accelerate: boolean) => IBendBuilder;
+  beats: (beats: number) => IBendBuilder;
+  firstBeat: (firstBeat: number) => IBendBuilder;
+  lastBeat: (lastBeat: number) => IBendBuilder;
   constructor(original?: Bend) {
     let updates: Bend = {} as any;
     let childBuilders: {[key: string]: any} = {};
@@ -16813,6 +21778,69 @@ class BendBuilder implements IBendBuilder {
                 modifiedKeys["relativeX"] = true;
                 return this;
             }
+
+            this.fontFamily = (spec: string): IBendBuilder => {
+                updates["fontFamily"] = spec;
+                delete childBuilders["fontFamily;"];
+                modifiedKeys["fontFamily"] = true;
+                return this;
+            }
+
+            this.fontWeight = (spec: NormalBold): IBendBuilder => {
+                updates["fontWeight"] = spec;
+                delete childBuilders["fontWeight;"];
+                modifiedKeys["fontWeight"] = true;
+                return this;
+            }
+
+            this.fontStyle = (spec: NormalItalic): IBendBuilder => {
+                updates["fontStyle"] = spec;
+                delete childBuilders["fontStyle;"];
+                modifiedKeys["fontStyle"] = true;
+                return this;
+            }
+
+            this.fontSize = (spec: string): IBendBuilder => {
+                updates["fontSize"] = spec;
+                delete childBuilders["fontSize;"];
+                modifiedKeys["fontSize"] = true;
+                return this;
+            }
+
+            this.color = (spec: string): IBendBuilder => {
+                updates["color"] = spec;
+                delete childBuilders["color;"];
+                modifiedKeys["color"] = true;
+                return this;
+            }
+
+            this.accelerate = (spec: boolean): IBendBuilder => {
+                updates["accelerate"] = spec;
+                delete childBuilders["accelerate;"];
+                modifiedKeys["accelerate"] = true;
+                return this;
+            }
+
+            this.beats = (spec: number): IBendBuilder => {
+                updates["beats"] = spec;
+                delete childBuilders["beats;"];
+                modifiedKeys["beats"] = true;
+                return this;
+            }
+
+            this.firstBeat = (spec: number): IBendBuilder => {
+                updates["firstBeat"] = spec;
+                delete childBuilders["firstBeat;"];
+                modifiedKeys["firstBeat"] = true;
+                return this;
+            }
+
+            this.lastBeat = (spec: number): IBendBuilder => {
+                updates["lastBeat"] = spec;
+                delete childBuilders["lastBeat;"];
+                modifiedKeys["lastBeat"] = true;
+                return this;
+            }
   }
 }
 export function patchBend(base: Bend, builder: (build: IBendBuilder) => IBendBuilder): IAny[] { return builder(new BendBuilder(base)).patch(); }
@@ -16826,6 +21854,12 @@ export interface IWithBarBuilder {
   relativeY: (relativeY: number) => IWithBarBuilder;
   defaultY: (defaultY: number) => IWithBarBuilder;
   relativeX: (relativeX: number) => IWithBarBuilder;
+  fontFamily: (fontFamily: string) => IWithBarBuilder;
+  fontWeight: (fontWeight: NormalBold) => IWithBarBuilder;
+  fontStyle: (fontStyle: NormalItalic) => IWithBarBuilder;
+  fontSize: (fontSize: string) => IWithBarBuilder;
+  color: (color: string) => IWithBarBuilder;
+  placement: (placement: AboveBelow) => IWithBarBuilder;
 }
 
 class WithBarBuilder implements IWithBarBuilder {
@@ -16836,6 +21870,12 @@ class WithBarBuilder implements IWithBarBuilder {
   relativeY: (relativeY: number) => IWithBarBuilder;
   defaultY: (defaultY: number) => IWithBarBuilder;
   relativeX: (relativeX: number) => IWithBarBuilder;
+  fontFamily: (fontFamily: string) => IWithBarBuilder;
+  fontWeight: (fontWeight: NormalBold) => IWithBarBuilder;
+  fontStyle: (fontStyle: NormalItalic) => IWithBarBuilder;
+  fontSize: (fontSize: string) => IWithBarBuilder;
+  color: (color: string) => IWithBarBuilder;
+  placement: (placement: AboveBelow) => IWithBarBuilder;
   constructor(original?: WithBar) {
     let updates: WithBar = {} as any;
     let childBuilders: {[key: string]: any} = {};
@@ -16908,6 +21948,48 @@ class WithBarBuilder implements IWithBarBuilder {
                 modifiedKeys["relativeX"] = true;
                 return this;
             }
+
+            this.fontFamily = (spec: string): IWithBarBuilder => {
+                updates["fontFamily"] = spec;
+                delete childBuilders["fontFamily;"];
+                modifiedKeys["fontFamily"] = true;
+                return this;
+            }
+
+            this.fontWeight = (spec: NormalBold): IWithBarBuilder => {
+                updates["fontWeight"] = spec;
+                delete childBuilders["fontWeight;"];
+                modifiedKeys["fontWeight"] = true;
+                return this;
+            }
+
+            this.fontStyle = (spec: NormalItalic): IWithBarBuilder => {
+                updates["fontStyle"] = spec;
+                delete childBuilders["fontStyle;"];
+                modifiedKeys["fontStyle"] = true;
+                return this;
+            }
+
+            this.fontSize = (spec: string): IWithBarBuilder => {
+                updates["fontSize"] = spec;
+                delete childBuilders["fontSize;"];
+                modifiedKeys["fontSize"] = true;
+                return this;
+            }
+
+            this.color = (spec: string): IWithBarBuilder => {
+                updates["color"] = spec;
+                delete childBuilders["color;"];
+                modifiedKeys["color"] = true;
+                return this;
+            }
+
+            this.placement = (spec: AboveBelow): IWithBarBuilder => {
+                updates["placement"] = spec;
+                delete childBuilders["placement;"];
+                modifiedKeys["placement"] = true;
+                return this;
+            }
   }
 }
 export function patchWithBar(base: WithBar, builder: (build: IWithBarBuilder) => IWithBarBuilder): IAny[] { return builder(new WithBarBuilder(base)).patch(); }
@@ -16921,6 +22003,12 @@ export interface ITapBuilder {
   relativeY: (relativeY: number) => ITapBuilder;
   defaultY: (defaultY: number) => ITapBuilder;
   relativeX: (relativeX: number) => ITapBuilder;
+  fontFamily: (fontFamily: string) => ITapBuilder;
+  fontWeight: (fontWeight: NormalBold) => ITapBuilder;
+  fontStyle: (fontStyle: NormalItalic) => ITapBuilder;
+  fontSize: (fontSize: string) => ITapBuilder;
+  color: (color: string) => ITapBuilder;
+  placement: (placement: AboveBelow) => ITapBuilder;
 }
 
 class TapBuilder implements ITapBuilder {
@@ -16931,6 +22019,12 @@ class TapBuilder implements ITapBuilder {
   relativeY: (relativeY: number) => ITapBuilder;
   defaultY: (defaultY: number) => ITapBuilder;
   relativeX: (relativeX: number) => ITapBuilder;
+  fontFamily: (fontFamily: string) => ITapBuilder;
+  fontWeight: (fontWeight: NormalBold) => ITapBuilder;
+  fontStyle: (fontStyle: NormalItalic) => ITapBuilder;
+  fontSize: (fontSize: string) => ITapBuilder;
+  color: (color: string) => ITapBuilder;
+  placement: (placement: AboveBelow) => ITapBuilder;
   constructor(original?: Tap) {
     let updates: Tap = {} as any;
     let childBuilders: {[key: string]: any} = {};
@@ -17003,6 +22097,48 @@ class TapBuilder implements ITapBuilder {
                 modifiedKeys["relativeX"] = true;
                 return this;
             }
+
+            this.fontFamily = (spec: string): ITapBuilder => {
+                updates["fontFamily"] = spec;
+                delete childBuilders["fontFamily;"];
+                modifiedKeys["fontFamily"] = true;
+                return this;
+            }
+
+            this.fontWeight = (spec: NormalBold): ITapBuilder => {
+                updates["fontWeight"] = spec;
+                delete childBuilders["fontWeight;"];
+                modifiedKeys["fontWeight"] = true;
+                return this;
+            }
+
+            this.fontStyle = (spec: NormalItalic): ITapBuilder => {
+                updates["fontStyle"] = spec;
+                delete childBuilders["fontStyle;"];
+                modifiedKeys["fontStyle"] = true;
+                return this;
+            }
+
+            this.fontSize = (spec: string): ITapBuilder => {
+                updates["fontSize"] = spec;
+                delete childBuilders["fontSize;"];
+                modifiedKeys["fontSize"] = true;
+                return this;
+            }
+
+            this.color = (spec: string): ITapBuilder => {
+                updates["color"] = spec;
+                delete childBuilders["color;"];
+                modifiedKeys["color"] = true;
+                return this;
+            }
+
+            this.placement = (spec: AboveBelow): ITapBuilder => {
+                updates["placement"] = spec;
+                delete childBuilders["placement;"];
+                modifiedKeys["placement"] = true;
+                return this;
+            }
   }
 }
 export function patchTap(base: Tap, builder: (build: ITapBuilder) => ITapBuilder): IAny[] { return builder(new TapBuilder(base)).patch(); }
@@ -17016,6 +22152,12 @@ export interface IHeelBuilder {
   relativeY: (relativeY: number) => IHeelBuilder;
   defaultY: (defaultY: number) => IHeelBuilder;
   relativeX: (relativeX: number) => IHeelBuilder;
+  fontFamily: (fontFamily: string) => IHeelBuilder;
+  fontWeight: (fontWeight: NormalBold) => IHeelBuilder;
+  fontStyle: (fontStyle: NormalItalic) => IHeelBuilder;
+  fontSize: (fontSize: string) => IHeelBuilder;
+  color: (color: string) => IHeelBuilder;
+  placement: (placement: AboveBelow) => IHeelBuilder;
 }
 
 class HeelBuilder implements IHeelBuilder {
@@ -17026,6 +22168,12 @@ class HeelBuilder implements IHeelBuilder {
   relativeY: (relativeY: number) => IHeelBuilder;
   defaultY: (defaultY: number) => IHeelBuilder;
   relativeX: (relativeX: number) => IHeelBuilder;
+  fontFamily: (fontFamily: string) => IHeelBuilder;
+  fontWeight: (fontWeight: NormalBold) => IHeelBuilder;
+  fontStyle: (fontStyle: NormalItalic) => IHeelBuilder;
+  fontSize: (fontSize: string) => IHeelBuilder;
+  color: (color: string) => IHeelBuilder;
+  placement: (placement: AboveBelow) => IHeelBuilder;
   constructor(original?: Heel) {
     let updates: Heel = {} as any;
     let childBuilders: {[key: string]: any} = {};
@@ -17093,6 +22241,48 @@ class HeelBuilder implements IHeelBuilder {
                 modifiedKeys["relativeX"] = true;
                 return this;
             }
+
+            this.fontFamily = (spec: string): IHeelBuilder => {
+                updates["fontFamily"] = spec;
+                delete childBuilders["fontFamily;"];
+                modifiedKeys["fontFamily"] = true;
+                return this;
+            }
+
+            this.fontWeight = (spec: NormalBold): IHeelBuilder => {
+                updates["fontWeight"] = spec;
+                delete childBuilders["fontWeight;"];
+                modifiedKeys["fontWeight"] = true;
+                return this;
+            }
+
+            this.fontStyle = (spec: NormalItalic): IHeelBuilder => {
+                updates["fontStyle"] = spec;
+                delete childBuilders["fontStyle;"];
+                modifiedKeys["fontStyle"] = true;
+                return this;
+            }
+
+            this.fontSize = (spec: string): IHeelBuilder => {
+                updates["fontSize"] = spec;
+                delete childBuilders["fontSize;"];
+                modifiedKeys["fontSize"] = true;
+                return this;
+            }
+
+            this.color = (spec: string): IHeelBuilder => {
+                updates["color"] = spec;
+                delete childBuilders["color;"];
+                modifiedKeys["color"] = true;
+                return this;
+            }
+
+            this.placement = (spec: AboveBelow): IHeelBuilder => {
+                updates["placement"] = spec;
+                delete childBuilders["placement;"];
+                modifiedKeys["placement"] = true;
+                return this;
+            }
   }
 }
 export function patchHeel(base: Heel, builder: (build: IHeelBuilder) => IHeelBuilder): IAny[] { return builder(new HeelBuilder(base)).patch(); }
@@ -17106,6 +22296,12 @@ export interface IToeBuilder {
   relativeY: (relativeY: number) => IToeBuilder;
   defaultY: (defaultY: number) => IToeBuilder;
   relativeX: (relativeX: number) => IToeBuilder;
+  fontFamily: (fontFamily: string) => IToeBuilder;
+  fontWeight: (fontWeight: NormalBold) => IToeBuilder;
+  fontStyle: (fontStyle: NormalItalic) => IToeBuilder;
+  fontSize: (fontSize: string) => IToeBuilder;
+  color: (color: string) => IToeBuilder;
+  placement: (placement: AboveBelow) => IToeBuilder;
 }
 
 class ToeBuilder implements IToeBuilder {
@@ -17116,6 +22312,12 @@ class ToeBuilder implements IToeBuilder {
   relativeY: (relativeY: number) => IToeBuilder;
   defaultY: (defaultY: number) => IToeBuilder;
   relativeX: (relativeX: number) => IToeBuilder;
+  fontFamily: (fontFamily: string) => IToeBuilder;
+  fontWeight: (fontWeight: NormalBold) => IToeBuilder;
+  fontStyle: (fontStyle: NormalItalic) => IToeBuilder;
+  fontSize: (fontSize: string) => IToeBuilder;
+  color: (color: string) => IToeBuilder;
+  placement: (placement: AboveBelow) => IToeBuilder;
   constructor(original?: Toe) {
     let updates: Toe = {} as any;
     let childBuilders: {[key: string]: any} = {};
@@ -17183,6 +22385,48 @@ class ToeBuilder implements IToeBuilder {
                 modifiedKeys["relativeX"] = true;
                 return this;
             }
+
+            this.fontFamily = (spec: string): IToeBuilder => {
+                updates["fontFamily"] = spec;
+                delete childBuilders["fontFamily;"];
+                modifiedKeys["fontFamily"] = true;
+                return this;
+            }
+
+            this.fontWeight = (spec: NormalBold): IToeBuilder => {
+                updates["fontWeight"] = spec;
+                delete childBuilders["fontWeight;"];
+                modifiedKeys["fontWeight"] = true;
+                return this;
+            }
+
+            this.fontStyle = (spec: NormalItalic): IToeBuilder => {
+                updates["fontStyle"] = spec;
+                delete childBuilders["fontStyle;"];
+                modifiedKeys["fontStyle"] = true;
+                return this;
+            }
+
+            this.fontSize = (spec: string): IToeBuilder => {
+                updates["fontSize"] = spec;
+                delete childBuilders["fontSize;"];
+                modifiedKeys["fontSize"] = true;
+                return this;
+            }
+
+            this.color = (spec: string): IToeBuilder => {
+                updates["color"] = spec;
+                delete childBuilders["color;"];
+                modifiedKeys["color"] = true;
+                return this;
+            }
+
+            this.placement = (spec: AboveBelow): IToeBuilder => {
+                updates["placement"] = spec;
+                delete childBuilders["placement;"];
+                modifiedKeys["placement"] = true;
+                return this;
+            }
   }
 }
 export function patchToe(base: Toe, builder: (build: IToeBuilder) => IToeBuilder): IAny[] { return builder(new ToeBuilder(base)).patch(); }
@@ -17195,6 +22439,12 @@ export interface IFingernailsBuilder {
   relativeY: (relativeY: number) => IFingernailsBuilder;
   defaultY: (defaultY: number) => IFingernailsBuilder;
   relativeX: (relativeX: number) => IFingernailsBuilder;
+  fontFamily: (fontFamily: string) => IFingernailsBuilder;
+  fontWeight: (fontWeight: NormalBold) => IFingernailsBuilder;
+  fontStyle: (fontStyle: NormalItalic) => IFingernailsBuilder;
+  fontSize: (fontSize: string) => IFingernailsBuilder;
+  color: (color: string) => IFingernailsBuilder;
+  placement: (placement: AboveBelow) => IFingernailsBuilder;
 }
 
 class FingernailsBuilder implements IFingernailsBuilder {
@@ -17204,6 +22454,12 @@ class FingernailsBuilder implements IFingernailsBuilder {
   relativeY: (relativeY: number) => IFingernailsBuilder;
   defaultY: (defaultY: number) => IFingernailsBuilder;
   relativeX: (relativeX: number) => IFingernailsBuilder;
+  fontFamily: (fontFamily: string) => IFingernailsBuilder;
+  fontWeight: (fontWeight: NormalBold) => IFingernailsBuilder;
+  fontStyle: (fontStyle: NormalItalic) => IFingernailsBuilder;
+  fontSize: (fontSize: string) => IFingernailsBuilder;
+  color: (color: string) => IFingernailsBuilder;
+  placement: (placement: AboveBelow) => IFingernailsBuilder;
   constructor(original?: Fingernails) {
     let updates: Fingernails = {} as any;
     let childBuilders: {[key: string]: any} = {};
@@ -17264,6 +22520,48 @@ class FingernailsBuilder implements IFingernailsBuilder {
                 modifiedKeys["relativeX"] = true;
                 return this;
             }
+
+            this.fontFamily = (spec: string): IFingernailsBuilder => {
+                updates["fontFamily"] = spec;
+                delete childBuilders["fontFamily;"];
+                modifiedKeys["fontFamily"] = true;
+                return this;
+            }
+
+            this.fontWeight = (spec: NormalBold): IFingernailsBuilder => {
+                updates["fontWeight"] = spec;
+                delete childBuilders["fontWeight;"];
+                modifiedKeys["fontWeight"] = true;
+                return this;
+            }
+
+            this.fontStyle = (spec: NormalItalic): IFingernailsBuilder => {
+                updates["fontStyle"] = spec;
+                delete childBuilders["fontStyle;"];
+                modifiedKeys["fontStyle"] = true;
+                return this;
+            }
+
+            this.fontSize = (spec: string): IFingernailsBuilder => {
+                updates["fontSize"] = spec;
+                delete childBuilders["fontSize;"];
+                modifiedKeys["fontSize"] = true;
+                return this;
+            }
+
+            this.color = (spec: string): IFingernailsBuilder => {
+                updates["color"] = spec;
+                delete childBuilders["color;"];
+                modifiedKeys["color"] = true;
+                return this;
+            }
+
+            this.placement = (spec: AboveBelow): IFingernailsBuilder => {
+                updates["placement"] = spec;
+                delete childBuilders["placement;"];
+                modifiedKeys["placement"] = true;
+                return this;
+            }
   }
 }
 export function patchFingernails(base: Fingernails, builder: (build: IFingernailsBuilder) => IFingernailsBuilder): IAny[] { return builder(new FingernailsBuilder(base)).patch(); }
@@ -17279,6 +22577,12 @@ export interface IHoleBuilder {
   relativeY: (relativeY: number) => IHoleBuilder;
   defaultY: (defaultY: number) => IHoleBuilder;
   relativeX: (relativeX: number) => IHoleBuilder;
+  fontFamily: (fontFamily: string) => IHoleBuilder;
+  fontWeight: (fontWeight: NormalBold) => IHoleBuilder;
+  fontStyle: (fontStyle: NormalItalic) => IHoleBuilder;
+  fontSize: (fontSize: string) => IHoleBuilder;
+  color: (color: string) => IHoleBuilder;
+  placement: (placement: AboveBelow) => IHoleBuilder;
 }
 
 class HoleBuilder implements IHoleBuilder {
@@ -17291,6 +22595,12 @@ class HoleBuilder implements IHoleBuilder {
   relativeY: (relativeY: number) => IHoleBuilder;
   defaultY: (defaultY: number) => IHoleBuilder;
   relativeX: (relativeX: number) => IHoleBuilder;
+  fontFamily: (fontFamily: string) => IHoleBuilder;
+  fontWeight: (fontWeight: NormalBold) => IHoleBuilder;
+  fontStyle: (fontStyle: NormalItalic) => IHoleBuilder;
+  fontSize: (fontSize: string) => IHoleBuilder;
+  color: (color: string) => IHoleBuilder;
+  placement: (placement: AboveBelow) => IHoleBuilder;
   constructor(original?: Hole) {
     let updates: Hole = {} as any;
     let childBuilders: {[key: string]: any} = {};
@@ -17389,6 +22699,48 @@ class HoleBuilder implements IHoleBuilder {
                 modifiedKeys["relativeX"] = true;
                 return this;
             }
+
+            this.fontFamily = (spec: string): IHoleBuilder => {
+                updates["fontFamily"] = spec;
+                delete childBuilders["fontFamily;"];
+                modifiedKeys["fontFamily"] = true;
+                return this;
+            }
+
+            this.fontWeight = (spec: NormalBold): IHoleBuilder => {
+                updates["fontWeight"] = spec;
+                delete childBuilders["fontWeight;"];
+                modifiedKeys["fontWeight"] = true;
+                return this;
+            }
+
+            this.fontStyle = (spec: NormalItalic): IHoleBuilder => {
+                updates["fontStyle"] = spec;
+                delete childBuilders["fontStyle;"];
+                modifiedKeys["fontStyle"] = true;
+                return this;
+            }
+
+            this.fontSize = (spec: string): IHoleBuilder => {
+                updates["fontSize"] = spec;
+                delete childBuilders["fontSize;"];
+                modifiedKeys["fontSize"] = true;
+                return this;
+            }
+
+            this.color = (spec: string): IHoleBuilder => {
+                updates["color"] = spec;
+                delete childBuilders["color;"];
+                modifiedKeys["color"] = true;
+                return this;
+            }
+
+            this.placement = (spec: AboveBelow): IHoleBuilder => {
+                updates["placement"] = spec;
+                delete childBuilders["placement;"];
+                modifiedKeys["placement"] = true;
+                return this;
+            }
   }
 }
 export function patchHole(base: Hole, builder: (build: IHoleBuilder) => IHoleBuilder): IAny[] { return builder(new HoleBuilder(base)).patch(); }
@@ -17472,6 +22824,12 @@ export interface IArrowBuilder {
   relativeY: (relativeY: number) => IArrowBuilder;
   defaultY: (defaultY: number) => IArrowBuilder;
   relativeX: (relativeX: number) => IArrowBuilder;
+  fontFamily: (fontFamily: string) => IArrowBuilder;
+  fontWeight: (fontWeight: NormalBold) => IArrowBuilder;
+  fontStyle: (fontStyle: NormalItalic) => IArrowBuilder;
+  fontSize: (fontSize: string) => IArrowBuilder;
+  color: (color: string) => IArrowBuilder;
+  placement: (placement: AboveBelow) => IArrowBuilder;
 }
 
 class ArrowBuilder implements IArrowBuilder {
@@ -17484,6 +22842,12 @@ class ArrowBuilder implements IArrowBuilder {
   relativeY: (relativeY: number) => IArrowBuilder;
   defaultY: (defaultY: number) => IArrowBuilder;
   relativeX: (relativeX: number) => IArrowBuilder;
+  fontFamily: (fontFamily: string) => IArrowBuilder;
+  fontWeight: (fontWeight: NormalBold) => IArrowBuilder;
+  fontStyle: (fontStyle: NormalItalic) => IArrowBuilder;
+  fontSize: (fontSize: string) => IArrowBuilder;
+  color: (color: string) => IArrowBuilder;
+  placement: (placement: AboveBelow) => IArrowBuilder;
   constructor(original?: Arrow) {
     let updates: Arrow = {} as any;
     let childBuilders: {[key: string]: any} = {};
@@ -17565,6 +22929,48 @@ class ArrowBuilder implements IArrowBuilder {
                 modifiedKeys["relativeX"] = true;
                 return this;
             }
+
+            this.fontFamily = (spec: string): IArrowBuilder => {
+                updates["fontFamily"] = spec;
+                delete childBuilders["fontFamily;"];
+                modifiedKeys["fontFamily"] = true;
+                return this;
+            }
+
+            this.fontWeight = (spec: NormalBold): IArrowBuilder => {
+                updates["fontWeight"] = spec;
+                delete childBuilders["fontWeight;"];
+                modifiedKeys["fontWeight"] = true;
+                return this;
+            }
+
+            this.fontStyle = (spec: NormalItalic): IArrowBuilder => {
+                updates["fontStyle"] = spec;
+                delete childBuilders["fontStyle;"];
+                modifiedKeys["fontStyle"] = true;
+                return this;
+            }
+
+            this.fontSize = (spec: string): IArrowBuilder => {
+                updates["fontSize"] = spec;
+                delete childBuilders["fontSize;"];
+                modifiedKeys["fontSize"] = true;
+                return this;
+            }
+
+            this.color = (spec: string): IArrowBuilder => {
+                updates["color"] = spec;
+                delete childBuilders["color;"];
+                modifiedKeys["color"] = true;
+                return this;
+            }
+
+            this.placement = (spec: AboveBelow): IArrowBuilder => {
+                updates["placement"] = spec;
+                delete childBuilders["placement;"];
+                modifiedKeys["placement"] = true;
+                return this;
+            }
   }
 }
 export function patchArrow(base: Arrow, builder: (build: IArrowBuilder) => IArrowBuilder): IAny[] { return builder(new ArrowBuilder(base)).patch(); }
@@ -17578,6 +22984,12 @@ export interface IHandbellBuilder {
   relativeY: (relativeY: number) => IHandbellBuilder;
   defaultY: (defaultY: number) => IHandbellBuilder;
   relativeX: (relativeX: number) => IHandbellBuilder;
+  fontFamily: (fontFamily: string) => IHandbellBuilder;
+  fontWeight: (fontWeight: NormalBold) => IHandbellBuilder;
+  fontStyle: (fontStyle: NormalItalic) => IHandbellBuilder;
+  fontSize: (fontSize: string) => IHandbellBuilder;
+  color: (color: string) => IHandbellBuilder;
+  placement: (placement: AboveBelow) => IHandbellBuilder;
 }
 
 class HandbellBuilder implements IHandbellBuilder {
@@ -17588,6 +23000,12 @@ class HandbellBuilder implements IHandbellBuilder {
   relativeY: (relativeY: number) => IHandbellBuilder;
   defaultY: (defaultY: number) => IHandbellBuilder;
   relativeX: (relativeX: number) => IHandbellBuilder;
+  fontFamily: (fontFamily: string) => IHandbellBuilder;
+  fontWeight: (fontWeight: NormalBold) => IHandbellBuilder;
+  fontStyle: (fontStyle: NormalItalic) => IHandbellBuilder;
+  fontSize: (fontSize: string) => IHandbellBuilder;
+  color: (color: string) => IHandbellBuilder;
+  placement: (placement: AboveBelow) => IHandbellBuilder;
   constructor(original?: Handbell) {
     let updates: Handbell = {} as any;
     let childBuilders: {[key: string]: any} = {};
@@ -17660,6 +23078,48 @@ class HandbellBuilder implements IHandbellBuilder {
                 modifiedKeys["relativeX"] = true;
                 return this;
             }
+
+            this.fontFamily = (spec: string): IHandbellBuilder => {
+                updates["fontFamily"] = spec;
+                delete childBuilders["fontFamily;"];
+                modifiedKeys["fontFamily"] = true;
+                return this;
+            }
+
+            this.fontWeight = (spec: NormalBold): IHandbellBuilder => {
+                updates["fontWeight"] = spec;
+                delete childBuilders["fontWeight;"];
+                modifiedKeys["fontWeight"] = true;
+                return this;
+            }
+
+            this.fontStyle = (spec: NormalItalic): IHandbellBuilder => {
+                updates["fontStyle"] = spec;
+                delete childBuilders["fontStyle;"];
+                modifiedKeys["fontStyle"] = true;
+                return this;
+            }
+
+            this.fontSize = (spec: string): IHandbellBuilder => {
+                updates["fontSize"] = spec;
+                delete childBuilders["fontSize;"];
+                modifiedKeys["fontSize"] = true;
+                return this;
+            }
+
+            this.color = (spec: string): IHandbellBuilder => {
+                updates["color"] = spec;
+                delete childBuilders["color;"];
+                modifiedKeys["color"] = true;
+                return this;
+            }
+
+            this.placement = (spec: AboveBelow): IHandbellBuilder => {
+                updates["placement"] = spec;
+                delete childBuilders["placement;"];
+                modifiedKeys["placement"] = true;
+                return this;
+            }
   }
 }
 export function patchHandbell(base: Handbell, builder: (build: IHandbellBuilder) => IHandbellBuilder): IAny[] { return builder(new HandbellBuilder(base)).patch(); }
@@ -17673,6 +23133,12 @@ export interface IOtherTechnicalBuilder {
   relativeY: (relativeY: number) => IOtherTechnicalBuilder;
   defaultY: (defaultY: number) => IOtherTechnicalBuilder;
   relativeX: (relativeX: number) => IOtherTechnicalBuilder;
+  fontFamily: (fontFamily: string) => IOtherTechnicalBuilder;
+  fontWeight: (fontWeight: NormalBold) => IOtherTechnicalBuilder;
+  fontStyle: (fontStyle: NormalItalic) => IOtherTechnicalBuilder;
+  fontSize: (fontSize: string) => IOtherTechnicalBuilder;
+  color: (color: string) => IOtherTechnicalBuilder;
+  placement: (placement: AboveBelow) => IOtherTechnicalBuilder;
 }
 
 class OtherTechnicalBuilder implements IOtherTechnicalBuilder {
@@ -17683,6 +23149,12 @@ class OtherTechnicalBuilder implements IOtherTechnicalBuilder {
   relativeY: (relativeY: number) => IOtherTechnicalBuilder;
   defaultY: (defaultY: number) => IOtherTechnicalBuilder;
   relativeX: (relativeX: number) => IOtherTechnicalBuilder;
+  fontFamily: (fontFamily: string) => IOtherTechnicalBuilder;
+  fontWeight: (fontWeight: NormalBold) => IOtherTechnicalBuilder;
+  fontStyle: (fontStyle: NormalItalic) => IOtherTechnicalBuilder;
+  fontSize: (fontSize: string) => IOtherTechnicalBuilder;
+  color: (color: string) => IOtherTechnicalBuilder;
+  placement: (placement: AboveBelow) => IOtherTechnicalBuilder;
   constructor(original?: OtherTechnical) {
     let updates: OtherTechnical = {} as any;
     let childBuilders: {[key: string]: any} = {};
@@ -17753,6 +23225,48 @@ class OtherTechnicalBuilder implements IOtherTechnicalBuilder {
                 updates["relativeX"] = spec;
                 delete childBuilders["relativeX;"];
                 modifiedKeys["relativeX"] = true;
+                return this;
+            }
+
+            this.fontFamily = (spec: string): IOtherTechnicalBuilder => {
+                updates["fontFamily"] = spec;
+                delete childBuilders["fontFamily;"];
+                modifiedKeys["fontFamily"] = true;
+                return this;
+            }
+
+            this.fontWeight = (spec: NormalBold): IOtherTechnicalBuilder => {
+                updates["fontWeight"] = spec;
+                delete childBuilders["fontWeight;"];
+                modifiedKeys["fontWeight"] = true;
+                return this;
+            }
+
+            this.fontStyle = (spec: NormalItalic): IOtherTechnicalBuilder => {
+                updates["fontStyle"] = spec;
+                delete childBuilders["fontStyle;"];
+                modifiedKeys["fontStyle"] = true;
+                return this;
+            }
+
+            this.fontSize = (spec: string): IOtherTechnicalBuilder => {
+                updates["fontSize"] = spec;
+                delete childBuilders["fontSize;"];
+                modifiedKeys["fontSize"] = true;
+                return this;
+            }
+
+            this.color = (spec: string): IOtherTechnicalBuilder => {
+                updates["color"] = spec;
+                delete childBuilders["color;"];
+                modifiedKeys["color"] = true;
+                return this;
+            }
+
+            this.placement = (spec: AboveBelow): IOtherTechnicalBuilder => {
+                updates["placement"] = spec;
+                delete childBuilders["placement;"];
+                modifiedKeys["placement"] = true;
                 return this;
             }
   }
@@ -18120,6 +23634,12 @@ export interface IAccentBuilder {
   relativeY: (relativeY: number) => IAccentBuilder;
   defaultY: (defaultY: number) => IAccentBuilder;
   relativeX: (relativeX: number) => IAccentBuilder;
+  fontFamily: (fontFamily: string) => IAccentBuilder;
+  fontWeight: (fontWeight: NormalBold) => IAccentBuilder;
+  fontStyle: (fontStyle: NormalItalic) => IAccentBuilder;
+  fontSize: (fontSize: string) => IAccentBuilder;
+  color: (color: string) => IAccentBuilder;
+  placement: (placement: AboveBelow) => IAccentBuilder;
 }
 
 class AccentBuilder implements IAccentBuilder {
@@ -18129,6 +23649,12 @@ class AccentBuilder implements IAccentBuilder {
   relativeY: (relativeY: number) => IAccentBuilder;
   defaultY: (defaultY: number) => IAccentBuilder;
   relativeX: (relativeX: number) => IAccentBuilder;
+  fontFamily: (fontFamily: string) => IAccentBuilder;
+  fontWeight: (fontWeight: NormalBold) => IAccentBuilder;
+  fontStyle: (fontStyle: NormalItalic) => IAccentBuilder;
+  fontSize: (fontSize: string) => IAccentBuilder;
+  color: (color: string) => IAccentBuilder;
+  placement: (placement: AboveBelow) => IAccentBuilder;
   constructor(original?: Accent) {
     let updates: Accent = {} as any;
     let childBuilders: {[key: string]: any} = {};
@@ -18189,6 +23715,48 @@ class AccentBuilder implements IAccentBuilder {
                 modifiedKeys["relativeX"] = true;
                 return this;
             }
+
+            this.fontFamily = (spec: string): IAccentBuilder => {
+                updates["fontFamily"] = spec;
+                delete childBuilders["fontFamily;"];
+                modifiedKeys["fontFamily"] = true;
+                return this;
+            }
+
+            this.fontWeight = (spec: NormalBold): IAccentBuilder => {
+                updates["fontWeight"] = spec;
+                delete childBuilders["fontWeight;"];
+                modifiedKeys["fontWeight"] = true;
+                return this;
+            }
+
+            this.fontStyle = (spec: NormalItalic): IAccentBuilder => {
+                updates["fontStyle"] = spec;
+                delete childBuilders["fontStyle;"];
+                modifiedKeys["fontStyle"] = true;
+                return this;
+            }
+
+            this.fontSize = (spec: string): IAccentBuilder => {
+                updates["fontSize"] = spec;
+                delete childBuilders["fontSize;"];
+                modifiedKeys["fontSize"] = true;
+                return this;
+            }
+
+            this.color = (spec: string): IAccentBuilder => {
+                updates["color"] = spec;
+                delete childBuilders["color;"];
+                modifiedKeys["color"] = true;
+                return this;
+            }
+
+            this.placement = (spec: AboveBelow): IAccentBuilder => {
+                updates["placement"] = spec;
+                delete childBuilders["placement;"];
+                modifiedKeys["placement"] = true;
+                return this;
+            }
   }
 }
 export function patchAccent(base: Accent, builder: (build: IAccentBuilder) => IAccentBuilder): IAny[] { return builder(new AccentBuilder(base)).patch(); }
@@ -18202,6 +23770,12 @@ export interface IStrongAccentBuilder {
   relativeY: (relativeY: number) => IStrongAccentBuilder;
   defaultY: (defaultY: number) => IStrongAccentBuilder;
   relativeX: (relativeX: number) => IStrongAccentBuilder;
+  fontFamily: (fontFamily: string) => IStrongAccentBuilder;
+  fontWeight: (fontWeight: NormalBold) => IStrongAccentBuilder;
+  fontStyle: (fontStyle: NormalItalic) => IStrongAccentBuilder;
+  fontSize: (fontSize: string) => IStrongAccentBuilder;
+  color: (color: string) => IStrongAccentBuilder;
+  placement: (placement: AboveBelow) => IStrongAccentBuilder;
 }
 
 class StrongAccentBuilder implements IStrongAccentBuilder {
@@ -18212,6 +23786,12 @@ class StrongAccentBuilder implements IStrongAccentBuilder {
   relativeY: (relativeY: number) => IStrongAccentBuilder;
   defaultY: (defaultY: number) => IStrongAccentBuilder;
   relativeX: (relativeX: number) => IStrongAccentBuilder;
+  fontFamily: (fontFamily: string) => IStrongAccentBuilder;
+  fontWeight: (fontWeight: NormalBold) => IStrongAccentBuilder;
+  fontStyle: (fontStyle: NormalItalic) => IStrongAccentBuilder;
+  fontSize: (fontSize: string) => IStrongAccentBuilder;
+  color: (color: string) => IStrongAccentBuilder;
+  placement: (placement: AboveBelow) => IStrongAccentBuilder;
   constructor(original?: StrongAccent) {
     let updates: StrongAccent = {} as any;
     let childBuilders: {[key: string]: any} = {};
@@ -18279,6 +23859,48 @@ class StrongAccentBuilder implements IStrongAccentBuilder {
                 modifiedKeys["relativeX"] = true;
                 return this;
             }
+
+            this.fontFamily = (spec: string): IStrongAccentBuilder => {
+                updates["fontFamily"] = spec;
+                delete childBuilders["fontFamily;"];
+                modifiedKeys["fontFamily"] = true;
+                return this;
+            }
+
+            this.fontWeight = (spec: NormalBold): IStrongAccentBuilder => {
+                updates["fontWeight"] = spec;
+                delete childBuilders["fontWeight;"];
+                modifiedKeys["fontWeight"] = true;
+                return this;
+            }
+
+            this.fontStyle = (spec: NormalItalic): IStrongAccentBuilder => {
+                updates["fontStyle"] = spec;
+                delete childBuilders["fontStyle;"];
+                modifiedKeys["fontStyle"] = true;
+                return this;
+            }
+
+            this.fontSize = (spec: string): IStrongAccentBuilder => {
+                updates["fontSize"] = spec;
+                delete childBuilders["fontSize;"];
+                modifiedKeys["fontSize"] = true;
+                return this;
+            }
+
+            this.color = (spec: string): IStrongAccentBuilder => {
+                updates["color"] = spec;
+                delete childBuilders["color;"];
+                modifiedKeys["color"] = true;
+                return this;
+            }
+
+            this.placement = (spec: AboveBelow): IStrongAccentBuilder => {
+                updates["placement"] = spec;
+                delete childBuilders["placement;"];
+                modifiedKeys["placement"] = true;
+                return this;
+            }
   }
 }
 export function patchStrongAccent(base: StrongAccent, builder: (build: IStrongAccentBuilder) => IStrongAccentBuilder): IAny[] { return builder(new StrongAccentBuilder(base)).patch(); }
@@ -18291,6 +23913,12 @@ export interface IStaccatoBuilder {
   relativeY: (relativeY: number) => IStaccatoBuilder;
   defaultY: (defaultY: number) => IStaccatoBuilder;
   relativeX: (relativeX: number) => IStaccatoBuilder;
+  fontFamily: (fontFamily: string) => IStaccatoBuilder;
+  fontWeight: (fontWeight: NormalBold) => IStaccatoBuilder;
+  fontStyle: (fontStyle: NormalItalic) => IStaccatoBuilder;
+  fontSize: (fontSize: string) => IStaccatoBuilder;
+  color: (color: string) => IStaccatoBuilder;
+  placement: (placement: AboveBelow) => IStaccatoBuilder;
 }
 
 class StaccatoBuilder implements IStaccatoBuilder {
@@ -18300,6 +23928,12 @@ class StaccatoBuilder implements IStaccatoBuilder {
   relativeY: (relativeY: number) => IStaccatoBuilder;
   defaultY: (defaultY: number) => IStaccatoBuilder;
   relativeX: (relativeX: number) => IStaccatoBuilder;
+  fontFamily: (fontFamily: string) => IStaccatoBuilder;
+  fontWeight: (fontWeight: NormalBold) => IStaccatoBuilder;
+  fontStyle: (fontStyle: NormalItalic) => IStaccatoBuilder;
+  fontSize: (fontSize: string) => IStaccatoBuilder;
+  color: (color: string) => IStaccatoBuilder;
+  placement: (placement: AboveBelow) => IStaccatoBuilder;
   constructor(original?: Staccato) {
     let updates: Staccato = {} as any;
     let childBuilders: {[key: string]: any} = {};
@@ -18360,6 +23994,48 @@ class StaccatoBuilder implements IStaccatoBuilder {
                 modifiedKeys["relativeX"] = true;
                 return this;
             }
+
+            this.fontFamily = (spec: string): IStaccatoBuilder => {
+                updates["fontFamily"] = spec;
+                delete childBuilders["fontFamily;"];
+                modifiedKeys["fontFamily"] = true;
+                return this;
+            }
+
+            this.fontWeight = (spec: NormalBold): IStaccatoBuilder => {
+                updates["fontWeight"] = spec;
+                delete childBuilders["fontWeight;"];
+                modifiedKeys["fontWeight"] = true;
+                return this;
+            }
+
+            this.fontStyle = (spec: NormalItalic): IStaccatoBuilder => {
+                updates["fontStyle"] = spec;
+                delete childBuilders["fontStyle;"];
+                modifiedKeys["fontStyle"] = true;
+                return this;
+            }
+
+            this.fontSize = (spec: string): IStaccatoBuilder => {
+                updates["fontSize"] = spec;
+                delete childBuilders["fontSize;"];
+                modifiedKeys["fontSize"] = true;
+                return this;
+            }
+
+            this.color = (spec: string): IStaccatoBuilder => {
+                updates["color"] = spec;
+                delete childBuilders["color;"];
+                modifiedKeys["color"] = true;
+                return this;
+            }
+
+            this.placement = (spec: AboveBelow): IStaccatoBuilder => {
+                updates["placement"] = spec;
+                delete childBuilders["placement;"];
+                modifiedKeys["placement"] = true;
+                return this;
+            }
   }
 }
 export function patchStaccato(base: Staccato, builder: (build: IStaccatoBuilder) => IStaccatoBuilder): IAny[] { return builder(new StaccatoBuilder(base)).patch(); }
@@ -18372,6 +24048,12 @@ export interface ITenutoBuilder {
   relativeY: (relativeY: number) => ITenutoBuilder;
   defaultY: (defaultY: number) => ITenutoBuilder;
   relativeX: (relativeX: number) => ITenutoBuilder;
+  fontFamily: (fontFamily: string) => ITenutoBuilder;
+  fontWeight: (fontWeight: NormalBold) => ITenutoBuilder;
+  fontStyle: (fontStyle: NormalItalic) => ITenutoBuilder;
+  fontSize: (fontSize: string) => ITenutoBuilder;
+  color: (color: string) => ITenutoBuilder;
+  placement: (placement: AboveBelow) => ITenutoBuilder;
 }
 
 class TenutoBuilder implements ITenutoBuilder {
@@ -18381,6 +24063,12 @@ class TenutoBuilder implements ITenutoBuilder {
   relativeY: (relativeY: number) => ITenutoBuilder;
   defaultY: (defaultY: number) => ITenutoBuilder;
   relativeX: (relativeX: number) => ITenutoBuilder;
+  fontFamily: (fontFamily: string) => ITenutoBuilder;
+  fontWeight: (fontWeight: NormalBold) => ITenutoBuilder;
+  fontStyle: (fontStyle: NormalItalic) => ITenutoBuilder;
+  fontSize: (fontSize: string) => ITenutoBuilder;
+  color: (color: string) => ITenutoBuilder;
+  placement: (placement: AboveBelow) => ITenutoBuilder;
   constructor(original?: Tenuto) {
     let updates: Tenuto = {} as any;
     let childBuilders: {[key: string]: any} = {};
@@ -18441,6 +24129,48 @@ class TenutoBuilder implements ITenutoBuilder {
                 modifiedKeys["relativeX"] = true;
                 return this;
             }
+
+            this.fontFamily = (spec: string): ITenutoBuilder => {
+                updates["fontFamily"] = spec;
+                delete childBuilders["fontFamily;"];
+                modifiedKeys["fontFamily"] = true;
+                return this;
+            }
+
+            this.fontWeight = (spec: NormalBold): ITenutoBuilder => {
+                updates["fontWeight"] = spec;
+                delete childBuilders["fontWeight;"];
+                modifiedKeys["fontWeight"] = true;
+                return this;
+            }
+
+            this.fontStyle = (spec: NormalItalic): ITenutoBuilder => {
+                updates["fontStyle"] = spec;
+                delete childBuilders["fontStyle;"];
+                modifiedKeys["fontStyle"] = true;
+                return this;
+            }
+
+            this.fontSize = (spec: string): ITenutoBuilder => {
+                updates["fontSize"] = spec;
+                delete childBuilders["fontSize;"];
+                modifiedKeys["fontSize"] = true;
+                return this;
+            }
+
+            this.color = (spec: string): ITenutoBuilder => {
+                updates["color"] = spec;
+                delete childBuilders["color;"];
+                modifiedKeys["color"] = true;
+                return this;
+            }
+
+            this.placement = (spec: AboveBelow): ITenutoBuilder => {
+                updates["placement"] = spec;
+                delete childBuilders["placement;"];
+                modifiedKeys["placement"] = true;
+                return this;
+            }
   }
 }
 export function patchTenuto(base: Tenuto, builder: (build: ITenutoBuilder) => ITenutoBuilder): IAny[] { return builder(new TenutoBuilder(base)).patch(); }
@@ -18453,6 +24183,12 @@ export interface IDetachedLegatoBuilder {
   relativeY: (relativeY: number) => IDetachedLegatoBuilder;
   defaultY: (defaultY: number) => IDetachedLegatoBuilder;
   relativeX: (relativeX: number) => IDetachedLegatoBuilder;
+  fontFamily: (fontFamily: string) => IDetachedLegatoBuilder;
+  fontWeight: (fontWeight: NormalBold) => IDetachedLegatoBuilder;
+  fontStyle: (fontStyle: NormalItalic) => IDetachedLegatoBuilder;
+  fontSize: (fontSize: string) => IDetachedLegatoBuilder;
+  color: (color: string) => IDetachedLegatoBuilder;
+  placement: (placement: AboveBelow) => IDetachedLegatoBuilder;
 }
 
 class DetachedLegatoBuilder implements IDetachedLegatoBuilder {
@@ -18462,6 +24198,12 @@ class DetachedLegatoBuilder implements IDetachedLegatoBuilder {
   relativeY: (relativeY: number) => IDetachedLegatoBuilder;
   defaultY: (defaultY: number) => IDetachedLegatoBuilder;
   relativeX: (relativeX: number) => IDetachedLegatoBuilder;
+  fontFamily: (fontFamily: string) => IDetachedLegatoBuilder;
+  fontWeight: (fontWeight: NormalBold) => IDetachedLegatoBuilder;
+  fontStyle: (fontStyle: NormalItalic) => IDetachedLegatoBuilder;
+  fontSize: (fontSize: string) => IDetachedLegatoBuilder;
+  color: (color: string) => IDetachedLegatoBuilder;
+  placement: (placement: AboveBelow) => IDetachedLegatoBuilder;
   constructor(original?: DetachedLegato) {
     let updates: DetachedLegato = {} as any;
     let childBuilders: {[key: string]: any} = {};
@@ -18522,6 +24264,48 @@ class DetachedLegatoBuilder implements IDetachedLegatoBuilder {
                 modifiedKeys["relativeX"] = true;
                 return this;
             }
+
+            this.fontFamily = (spec: string): IDetachedLegatoBuilder => {
+                updates["fontFamily"] = spec;
+                delete childBuilders["fontFamily;"];
+                modifiedKeys["fontFamily"] = true;
+                return this;
+            }
+
+            this.fontWeight = (spec: NormalBold): IDetachedLegatoBuilder => {
+                updates["fontWeight"] = spec;
+                delete childBuilders["fontWeight;"];
+                modifiedKeys["fontWeight"] = true;
+                return this;
+            }
+
+            this.fontStyle = (spec: NormalItalic): IDetachedLegatoBuilder => {
+                updates["fontStyle"] = spec;
+                delete childBuilders["fontStyle;"];
+                modifiedKeys["fontStyle"] = true;
+                return this;
+            }
+
+            this.fontSize = (spec: string): IDetachedLegatoBuilder => {
+                updates["fontSize"] = spec;
+                delete childBuilders["fontSize;"];
+                modifiedKeys["fontSize"] = true;
+                return this;
+            }
+
+            this.color = (spec: string): IDetachedLegatoBuilder => {
+                updates["color"] = spec;
+                delete childBuilders["color;"];
+                modifiedKeys["color"] = true;
+                return this;
+            }
+
+            this.placement = (spec: AboveBelow): IDetachedLegatoBuilder => {
+                updates["placement"] = spec;
+                delete childBuilders["placement;"];
+                modifiedKeys["placement"] = true;
+                return this;
+            }
   }
 }
 export function patchDetachedLegato(base: DetachedLegato, builder: (build: IDetachedLegatoBuilder) => IDetachedLegatoBuilder): IAny[] { return builder(new DetachedLegatoBuilder(base)).patch(); }
@@ -18534,6 +24318,12 @@ export interface IStaccatissimoBuilder {
   relativeY: (relativeY: number) => IStaccatissimoBuilder;
   defaultY: (defaultY: number) => IStaccatissimoBuilder;
   relativeX: (relativeX: number) => IStaccatissimoBuilder;
+  fontFamily: (fontFamily: string) => IStaccatissimoBuilder;
+  fontWeight: (fontWeight: NormalBold) => IStaccatissimoBuilder;
+  fontStyle: (fontStyle: NormalItalic) => IStaccatissimoBuilder;
+  fontSize: (fontSize: string) => IStaccatissimoBuilder;
+  color: (color: string) => IStaccatissimoBuilder;
+  placement: (placement: AboveBelow) => IStaccatissimoBuilder;
 }
 
 class StaccatissimoBuilder implements IStaccatissimoBuilder {
@@ -18543,6 +24333,12 @@ class StaccatissimoBuilder implements IStaccatissimoBuilder {
   relativeY: (relativeY: number) => IStaccatissimoBuilder;
   defaultY: (defaultY: number) => IStaccatissimoBuilder;
   relativeX: (relativeX: number) => IStaccatissimoBuilder;
+  fontFamily: (fontFamily: string) => IStaccatissimoBuilder;
+  fontWeight: (fontWeight: NormalBold) => IStaccatissimoBuilder;
+  fontStyle: (fontStyle: NormalItalic) => IStaccatissimoBuilder;
+  fontSize: (fontSize: string) => IStaccatissimoBuilder;
+  color: (color: string) => IStaccatissimoBuilder;
+  placement: (placement: AboveBelow) => IStaccatissimoBuilder;
   constructor(original?: Staccatissimo) {
     let updates: Staccatissimo = {} as any;
     let childBuilders: {[key: string]: any} = {};
@@ -18603,6 +24399,48 @@ class StaccatissimoBuilder implements IStaccatissimoBuilder {
                 modifiedKeys["relativeX"] = true;
                 return this;
             }
+
+            this.fontFamily = (spec: string): IStaccatissimoBuilder => {
+                updates["fontFamily"] = spec;
+                delete childBuilders["fontFamily;"];
+                modifiedKeys["fontFamily"] = true;
+                return this;
+            }
+
+            this.fontWeight = (spec: NormalBold): IStaccatissimoBuilder => {
+                updates["fontWeight"] = spec;
+                delete childBuilders["fontWeight;"];
+                modifiedKeys["fontWeight"] = true;
+                return this;
+            }
+
+            this.fontStyle = (spec: NormalItalic): IStaccatissimoBuilder => {
+                updates["fontStyle"] = spec;
+                delete childBuilders["fontStyle;"];
+                modifiedKeys["fontStyle"] = true;
+                return this;
+            }
+
+            this.fontSize = (spec: string): IStaccatissimoBuilder => {
+                updates["fontSize"] = spec;
+                delete childBuilders["fontSize;"];
+                modifiedKeys["fontSize"] = true;
+                return this;
+            }
+
+            this.color = (spec: string): IStaccatissimoBuilder => {
+                updates["color"] = spec;
+                delete childBuilders["color;"];
+                modifiedKeys["color"] = true;
+                return this;
+            }
+
+            this.placement = (spec: AboveBelow): IStaccatissimoBuilder => {
+                updates["placement"] = spec;
+                delete childBuilders["placement;"];
+                modifiedKeys["placement"] = true;
+                return this;
+            }
   }
 }
 export function patchStaccatissimo(base: Staccatissimo, builder: (build: IStaccatissimoBuilder) => IStaccatissimoBuilder): IAny[] { return builder(new StaccatissimoBuilder(base)).patch(); }
@@ -18615,6 +24453,12 @@ export interface ISpiccatoBuilder {
   relativeY: (relativeY: number) => ISpiccatoBuilder;
   defaultY: (defaultY: number) => ISpiccatoBuilder;
   relativeX: (relativeX: number) => ISpiccatoBuilder;
+  fontFamily: (fontFamily: string) => ISpiccatoBuilder;
+  fontWeight: (fontWeight: NormalBold) => ISpiccatoBuilder;
+  fontStyle: (fontStyle: NormalItalic) => ISpiccatoBuilder;
+  fontSize: (fontSize: string) => ISpiccatoBuilder;
+  color: (color: string) => ISpiccatoBuilder;
+  placement: (placement: AboveBelow) => ISpiccatoBuilder;
 }
 
 class SpiccatoBuilder implements ISpiccatoBuilder {
@@ -18624,6 +24468,12 @@ class SpiccatoBuilder implements ISpiccatoBuilder {
   relativeY: (relativeY: number) => ISpiccatoBuilder;
   defaultY: (defaultY: number) => ISpiccatoBuilder;
   relativeX: (relativeX: number) => ISpiccatoBuilder;
+  fontFamily: (fontFamily: string) => ISpiccatoBuilder;
+  fontWeight: (fontWeight: NormalBold) => ISpiccatoBuilder;
+  fontStyle: (fontStyle: NormalItalic) => ISpiccatoBuilder;
+  fontSize: (fontSize: string) => ISpiccatoBuilder;
+  color: (color: string) => ISpiccatoBuilder;
+  placement: (placement: AboveBelow) => ISpiccatoBuilder;
   constructor(original?: Spiccato) {
     let updates: Spiccato = {} as any;
     let childBuilders: {[key: string]: any} = {};
@@ -18684,6 +24534,48 @@ class SpiccatoBuilder implements ISpiccatoBuilder {
                 modifiedKeys["relativeX"] = true;
                 return this;
             }
+
+            this.fontFamily = (spec: string): ISpiccatoBuilder => {
+                updates["fontFamily"] = spec;
+                delete childBuilders["fontFamily;"];
+                modifiedKeys["fontFamily"] = true;
+                return this;
+            }
+
+            this.fontWeight = (spec: NormalBold): ISpiccatoBuilder => {
+                updates["fontWeight"] = spec;
+                delete childBuilders["fontWeight;"];
+                modifiedKeys["fontWeight"] = true;
+                return this;
+            }
+
+            this.fontStyle = (spec: NormalItalic): ISpiccatoBuilder => {
+                updates["fontStyle"] = spec;
+                delete childBuilders["fontStyle;"];
+                modifiedKeys["fontStyle"] = true;
+                return this;
+            }
+
+            this.fontSize = (spec: string): ISpiccatoBuilder => {
+                updates["fontSize"] = spec;
+                delete childBuilders["fontSize;"];
+                modifiedKeys["fontSize"] = true;
+                return this;
+            }
+
+            this.color = (spec: string): ISpiccatoBuilder => {
+                updates["color"] = spec;
+                delete childBuilders["color;"];
+                modifiedKeys["color"] = true;
+                return this;
+            }
+
+            this.placement = (spec: AboveBelow): ISpiccatoBuilder => {
+                updates["placement"] = spec;
+                delete childBuilders["placement;"];
+                modifiedKeys["placement"] = true;
+                return this;
+            }
   }
 }
 export function patchSpiccato(base: Spiccato, builder: (build: ISpiccatoBuilder) => ISpiccatoBuilder): IAny[] { return builder(new SpiccatoBuilder(base)).patch(); }
@@ -18692,12 +24584,38 @@ export function buildSpiccato(builder: (build: ISpiccatoBuilder) => ISpiccatoBui
 export interface IScoopBuilder {
   build?: () => Scoop;
   patch: () => IAny[];
+  defaultX: (defaultX: number) => IScoopBuilder;
+  relativeY: (relativeY: number) => IScoopBuilder;
+  defaultY: (defaultY: number) => IScoopBuilder;
+  relativeX: (relativeX: number) => IScoopBuilder;
+  fontFamily: (fontFamily: string) => IScoopBuilder;
+  fontWeight: (fontWeight: NormalBold) => IScoopBuilder;
+  fontStyle: (fontStyle: NormalItalic) => IScoopBuilder;
+  fontSize: (fontSize: string) => IScoopBuilder;
+  color: (color: string) => IScoopBuilder;
+  placement: (placement: AboveBelow) => IScoopBuilder;
+  lineType: (lineType: SolidDashedDottedWavy) => IScoopBuilder;
+  dashLength: (dashLength: number) => IScoopBuilder;
+  spaceLength: (spaceLength: number) => IScoopBuilder;
   lineShape: (lineShape: StraightCurved) => IScoopBuilder;
 }
 
 class ScoopBuilder implements IScoopBuilder {
   build: () => Scoop;
   patch: () => IAny[];
+  defaultX: (defaultX: number) => IScoopBuilder;
+  relativeY: (relativeY: number) => IScoopBuilder;
+  defaultY: (defaultY: number) => IScoopBuilder;
+  relativeX: (relativeX: number) => IScoopBuilder;
+  fontFamily: (fontFamily: string) => IScoopBuilder;
+  fontWeight: (fontWeight: NormalBold) => IScoopBuilder;
+  fontStyle: (fontStyle: NormalItalic) => IScoopBuilder;
+  fontSize: (fontSize: string) => IScoopBuilder;
+  color: (color: string) => IScoopBuilder;
+  placement: (placement: AboveBelow) => IScoopBuilder;
+  lineType: (lineType: SolidDashedDottedWavy) => IScoopBuilder;
+  dashLength: (dashLength: number) => IScoopBuilder;
+  spaceLength: (spaceLength: number) => IScoopBuilder;
   lineShape: (lineShape: StraightCurved) => IScoopBuilder;
   constructor(original?: Scoop) {
     let updates: Scoop = {} as any;
@@ -18732,6 +24650,97 @@ class ScoopBuilder implements IScoopBuilder {
       return makePatch(original, updates, childBuilders, patches, modifiedKeys);
     }
 
+            this.defaultX = (spec: number): IScoopBuilder => {
+                updates["defaultX"] = spec;
+                delete childBuilders["defaultX;"];
+                modifiedKeys["defaultX"] = true;
+                return this;
+            }
+
+            this.relativeY = (spec: number): IScoopBuilder => {
+                updates["relativeY"] = spec;
+                delete childBuilders["relativeY;"];
+                modifiedKeys["relativeY"] = true;
+                return this;
+            }
+
+            this.defaultY = (spec: number): IScoopBuilder => {
+                updates["defaultY"] = spec;
+                delete childBuilders["defaultY;"];
+                modifiedKeys["defaultY"] = true;
+                return this;
+            }
+
+            this.relativeX = (spec: number): IScoopBuilder => {
+                updates["relativeX"] = spec;
+                delete childBuilders["relativeX;"];
+                modifiedKeys["relativeX"] = true;
+                return this;
+            }
+
+            this.fontFamily = (spec: string): IScoopBuilder => {
+                updates["fontFamily"] = spec;
+                delete childBuilders["fontFamily;"];
+                modifiedKeys["fontFamily"] = true;
+                return this;
+            }
+
+            this.fontWeight = (spec: NormalBold): IScoopBuilder => {
+                updates["fontWeight"] = spec;
+                delete childBuilders["fontWeight;"];
+                modifiedKeys["fontWeight"] = true;
+                return this;
+            }
+
+            this.fontStyle = (spec: NormalItalic): IScoopBuilder => {
+                updates["fontStyle"] = spec;
+                delete childBuilders["fontStyle;"];
+                modifiedKeys["fontStyle"] = true;
+                return this;
+            }
+
+            this.fontSize = (spec: string): IScoopBuilder => {
+                updates["fontSize"] = spec;
+                delete childBuilders["fontSize;"];
+                modifiedKeys["fontSize"] = true;
+                return this;
+            }
+
+            this.color = (spec: string): IScoopBuilder => {
+                updates["color"] = spec;
+                delete childBuilders["color;"];
+                modifiedKeys["color"] = true;
+                return this;
+            }
+
+            this.placement = (spec: AboveBelow): IScoopBuilder => {
+                updates["placement"] = spec;
+                delete childBuilders["placement;"];
+                modifiedKeys["placement"] = true;
+                return this;
+            }
+
+            this.lineType = (spec: SolidDashedDottedWavy): IScoopBuilder => {
+                updates["lineType"] = spec;
+                delete childBuilders["lineType;"];
+                modifiedKeys["lineType"] = true;
+                return this;
+            }
+
+            this.dashLength = (spec: number): IScoopBuilder => {
+                updates["dashLength"] = spec;
+                delete childBuilders["dashLength;"];
+                modifiedKeys["dashLength"] = true;
+                return this;
+            }
+
+            this.spaceLength = (spec: number): IScoopBuilder => {
+                updates["spaceLength"] = spec;
+                delete childBuilders["spaceLength;"];
+                modifiedKeys["spaceLength"] = true;
+                return this;
+            }
+
             this.lineShape = (spec: StraightCurved): IScoopBuilder => {
                 updates["lineShape"] = spec;
                 delete childBuilders["lineShape;"];
@@ -18746,12 +24755,38 @@ export function buildScoop(builder: (build: IScoopBuilder) => IScoopBuilder): Sc
 export interface IPlopBuilder {
   build?: () => Plop;
   patch: () => IAny[];
+  defaultX: (defaultX: number) => IPlopBuilder;
+  relativeY: (relativeY: number) => IPlopBuilder;
+  defaultY: (defaultY: number) => IPlopBuilder;
+  relativeX: (relativeX: number) => IPlopBuilder;
+  fontFamily: (fontFamily: string) => IPlopBuilder;
+  fontWeight: (fontWeight: NormalBold) => IPlopBuilder;
+  fontStyle: (fontStyle: NormalItalic) => IPlopBuilder;
+  fontSize: (fontSize: string) => IPlopBuilder;
+  color: (color: string) => IPlopBuilder;
+  placement: (placement: AboveBelow) => IPlopBuilder;
+  lineType: (lineType: SolidDashedDottedWavy) => IPlopBuilder;
+  dashLength: (dashLength: number) => IPlopBuilder;
+  spaceLength: (spaceLength: number) => IPlopBuilder;
   lineShape: (lineShape: StraightCurved) => IPlopBuilder;
 }
 
 class PlopBuilder implements IPlopBuilder {
   build: () => Plop;
   patch: () => IAny[];
+  defaultX: (defaultX: number) => IPlopBuilder;
+  relativeY: (relativeY: number) => IPlopBuilder;
+  defaultY: (defaultY: number) => IPlopBuilder;
+  relativeX: (relativeX: number) => IPlopBuilder;
+  fontFamily: (fontFamily: string) => IPlopBuilder;
+  fontWeight: (fontWeight: NormalBold) => IPlopBuilder;
+  fontStyle: (fontStyle: NormalItalic) => IPlopBuilder;
+  fontSize: (fontSize: string) => IPlopBuilder;
+  color: (color: string) => IPlopBuilder;
+  placement: (placement: AboveBelow) => IPlopBuilder;
+  lineType: (lineType: SolidDashedDottedWavy) => IPlopBuilder;
+  dashLength: (dashLength: number) => IPlopBuilder;
+  spaceLength: (spaceLength: number) => IPlopBuilder;
   lineShape: (lineShape: StraightCurved) => IPlopBuilder;
   constructor(original?: Plop) {
     let updates: Plop = {} as any;
@@ -18786,6 +24821,97 @@ class PlopBuilder implements IPlopBuilder {
       return makePatch(original, updates, childBuilders, patches, modifiedKeys);
     }
 
+            this.defaultX = (spec: number): IPlopBuilder => {
+                updates["defaultX"] = spec;
+                delete childBuilders["defaultX;"];
+                modifiedKeys["defaultX"] = true;
+                return this;
+            }
+
+            this.relativeY = (spec: number): IPlopBuilder => {
+                updates["relativeY"] = spec;
+                delete childBuilders["relativeY;"];
+                modifiedKeys["relativeY"] = true;
+                return this;
+            }
+
+            this.defaultY = (spec: number): IPlopBuilder => {
+                updates["defaultY"] = spec;
+                delete childBuilders["defaultY;"];
+                modifiedKeys["defaultY"] = true;
+                return this;
+            }
+
+            this.relativeX = (spec: number): IPlopBuilder => {
+                updates["relativeX"] = spec;
+                delete childBuilders["relativeX;"];
+                modifiedKeys["relativeX"] = true;
+                return this;
+            }
+
+            this.fontFamily = (spec: string): IPlopBuilder => {
+                updates["fontFamily"] = spec;
+                delete childBuilders["fontFamily;"];
+                modifiedKeys["fontFamily"] = true;
+                return this;
+            }
+
+            this.fontWeight = (spec: NormalBold): IPlopBuilder => {
+                updates["fontWeight"] = spec;
+                delete childBuilders["fontWeight;"];
+                modifiedKeys["fontWeight"] = true;
+                return this;
+            }
+
+            this.fontStyle = (spec: NormalItalic): IPlopBuilder => {
+                updates["fontStyle"] = spec;
+                delete childBuilders["fontStyle;"];
+                modifiedKeys["fontStyle"] = true;
+                return this;
+            }
+
+            this.fontSize = (spec: string): IPlopBuilder => {
+                updates["fontSize"] = spec;
+                delete childBuilders["fontSize;"];
+                modifiedKeys["fontSize"] = true;
+                return this;
+            }
+
+            this.color = (spec: string): IPlopBuilder => {
+                updates["color"] = spec;
+                delete childBuilders["color;"];
+                modifiedKeys["color"] = true;
+                return this;
+            }
+
+            this.placement = (spec: AboveBelow): IPlopBuilder => {
+                updates["placement"] = spec;
+                delete childBuilders["placement;"];
+                modifiedKeys["placement"] = true;
+                return this;
+            }
+
+            this.lineType = (spec: SolidDashedDottedWavy): IPlopBuilder => {
+                updates["lineType"] = spec;
+                delete childBuilders["lineType;"];
+                modifiedKeys["lineType"] = true;
+                return this;
+            }
+
+            this.dashLength = (spec: number): IPlopBuilder => {
+                updates["dashLength"] = spec;
+                delete childBuilders["dashLength;"];
+                modifiedKeys["dashLength"] = true;
+                return this;
+            }
+
+            this.spaceLength = (spec: number): IPlopBuilder => {
+                updates["spaceLength"] = spec;
+                delete childBuilders["spaceLength;"];
+                modifiedKeys["spaceLength"] = true;
+                return this;
+            }
+
             this.lineShape = (spec: StraightCurved): IPlopBuilder => {
                 updates["lineShape"] = spec;
                 delete childBuilders["lineShape;"];
@@ -18800,12 +24926,38 @@ export function buildPlop(builder: (build: IPlopBuilder) => IPlopBuilder): Plop 
 export interface IDoitBuilder {
   build?: () => Doit;
   patch: () => IAny[];
+  defaultX: (defaultX: number) => IDoitBuilder;
+  relativeY: (relativeY: number) => IDoitBuilder;
+  defaultY: (defaultY: number) => IDoitBuilder;
+  relativeX: (relativeX: number) => IDoitBuilder;
+  fontFamily: (fontFamily: string) => IDoitBuilder;
+  fontWeight: (fontWeight: NormalBold) => IDoitBuilder;
+  fontStyle: (fontStyle: NormalItalic) => IDoitBuilder;
+  fontSize: (fontSize: string) => IDoitBuilder;
+  color: (color: string) => IDoitBuilder;
+  placement: (placement: AboveBelow) => IDoitBuilder;
+  lineType: (lineType: SolidDashedDottedWavy) => IDoitBuilder;
+  dashLength: (dashLength: number) => IDoitBuilder;
+  spaceLength: (spaceLength: number) => IDoitBuilder;
   lineShape: (lineShape: StraightCurved) => IDoitBuilder;
 }
 
 class DoitBuilder implements IDoitBuilder {
   build: () => Doit;
   patch: () => IAny[];
+  defaultX: (defaultX: number) => IDoitBuilder;
+  relativeY: (relativeY: number) => IDoitBuilder;
+  defaultY: (defaultY: number) => IDoitBuilder;
+  relativeX: (relativeX: number) => IDoitBuilder;
+  fontFamily: (fontFamily: string) => IDoitBuilder;
+  fontWeight: (fontWeight: NormalBold) => IDoitBuilder;
+  fontStyle: (fontStyle: NormalItalic) => IDoitBuilder;
+  fontSize: (fontSize: string) => IDoitBuilder;
+  color: (color: string) => IDoitBuilder;
+  placement: (placement: AboveBelow) => IDoitBuilder;
+  lineType: (lineType: SolidDashedDottedWavy) => IDoitBuilder;
+  dashLength: (dashLength: number) => IDoitBuilder;
+  spaceLength: (spaceLength: number) => IDoitBuilder;
   lineShape: (lineShape: StraightCurved) => IDoitBuilder;
   constructor(original?: Doit) {
     let updates: Doit = {} as any;
@@ -18840,6 +24992,97 @@ class DoitBuilder implements IDoitBuilder {
       return makePatch(original, updates, childBuilders, patches, modifiedKeys);
     }
 
+            this.defaultX = (spec: number): IDoitBuilder => {
+                updates["defaultX"] = spec;
+                delete childBuilders["defaultX;"];
+                modifiedKeys["defaultX"] = true;
+                return this;
+            }
+
+            this.relativeY = (spec: number): IDoitBuilder => {
+                updates["relativeY"] = spec;
+                delete childBuilders["relativeY;"];
+                modifiedKeys["relativeY"] = true;
+                return this;
+            }
+
+            this.defaultY = (spec: number): IDoitBuilder => {
+                updates["defaultY"] = spec;
+                delete childBuilders["defaultY;"];
+                modifiedKeys["defaultY"] = true;
+                return this;
+            }
+
+            this.relativeX = (spec: number): IDoitBuilder => {
+                updates["relativeX"] = spec;
+                delete childBuilders["relativeX;"];
+                modifiedKeys["relativeX"] = true;
+                return this;
+            }
+
+            this.fontFamily = (spec: string): IDoitBuilder => {
+                updates["fontFamily"] = spec;
+                delete childBuilders["fontFamily;"];
+                modifiedKeys["fontFamily"] = true;
+                return this;
+            }
+
+            this.fontWeight = (spec: NormalBold): IDoitBuilder => {
+                updates["fontWeight"] = spec;
+                delete childBuilders["fontWeight;"];
+                modifiedKeys["fontWeight"] = true;
+                return this;
+            }
+
+            this.fontStyle = (spec: NormalItalic): IDoitBuilder => {
+                updates["fontStyle"] = spec;
+                delete childBuilders["fontStyle;"];
+                modifiedKeys["fontStyle"] = true;
+                return this;
+            }
+
+            this.fontSize = (spec: string): IDoitBuilder => {
+                updates["fontSize"] = spec;
+                delete childBuilders["fontSize;"];
+                modifiedKeys["fontSize"] = true;
+                return this;
+            }
+
+            this.color = (spec: string): IDoitBuilder => {
+                updates["color"] = spec;
+                delete childBuilders["color;"];
+                modifiedKeys["color"] = true;
+                return this;
+            }
+
+            this.placement = (spec: AboveBelow): IDoitBuilder => {
+                updates["placement"] = spec;
+                delete childBuilders["placement;"];
+                modifiedKeys["placement"] = true;
+                return this;
+            }
+
+            this.lineType = (spec: SolidDashedDottedWavy): IDoitBuilder => {
+                updates["lineType"] = spec;
+                delete childBuilders["lineType;"];
+                modifiedKeys["lineType"] = true;
+                return this;
+            }
+
+            this.dashLength = (spec: number): IDoitBuilder => {
+                updates["dashLength"] = spec;
+                delete childBuilders["dashLength;"];
+                modifiedKeys["dashLength"] = true;
+                return this;
+            }
+
+            this.spaceLength = (spec: number): IDoitBuilder => {
+                updates["spaceLength"] = spec;
+                delete childBuilders["spaceLength;"];
+                modifiedKeys["spaceLength"] = true;
+                return this;
+            }
+
             this.lineShape = (spec: StraightCurved): IDoitBuilder => {
                 updates["lineShape"] = spec;
                 delete childBuilders["lineShape;"];
@@ -18854,12 +25097,38 @@ export function buildDoit(builder: (build: IDoitBuilder) => IDoitBuilder): Doit 
 export interface IFalloffBuilder {
   build?: () => Falloff;
   patch: () => IAny[];
+  defaultX: (defaultX: number) => IFalloffBuilder;
+  relativeY: (relativeY: number) => IFalloffBuilder;
+  defaultY: (defaultY: number) => IFalloffBuilder;
+  relativeX: (relativeX: number) => IFalloffBuilder;
+  fontFamily: (fontFamily: string) => IFalloffBuilder;
+  fontWeight: (fontWeight: NormalBold) => IFalloffBuilder;
+  fontStyle: (fontStyle: NormalItalic) => IFalloffBuilder;
+  fontSize: (fontSize: string) => IFalloffBuilder;
+  color: (color: string) => IFalloffBuilder;
+  placement: (placement: AboveBelow) => IFalloffBuilder;
+  lineType: (lineType: SolidDashedDottedWavy) => IFalloffBuilder;
+  dashLength: (dashLength: number) => IFalloffBuilder;
+  spaceLength: (spaceLength: number) => IFalloffBuilder;
   lineShape: (lineShape: StraightCurved) => IFalloffBuilder;
 }
 
 class FalloffBuilder implements IFalloffBuilder {
   build: () => Falloff;
   patch: () => IAny[];
+  defaultX: (defaultX: number) => IFalloffBuilder;
+  relativeY: (relativeY: number) => IFalloffBuilder;
+  defaultY: (defaultY: number) => IFalloffBuilder;
+  relativeX: (relativeX: number) => IFalloffBuilder;
+  fontFamily: (fontFamily: string) => IFalloffBuilder;
+  fontWeight: (fontWeight: NormalBold) => IFalloffBuilder;
+  fontStyle: (fontStyle: NormalItalic) => IFalloffBuilder;
+  fontSize: (fontSize: string) => IFalloffBuilder;
+  color: (color: string) => IFalloffBuilder;
+  placement: (placement: AboveBelow) => IFalloffBuilder;
+  lineType: (lineType: SolidDashedDottedWavy) => IFalloffBuilder;
+  dashLength: (dashLength: number) => IFalloffBuilder;
+  spaceLength: (spaceLength: number) => IFalloffBuilder;
   lineShape: (lineShape: StraightCurved) => IFalloffBuilder;
   constructor(original?: Falloff) {
     let updates: Falloff = {} as any;
@@ -18894,6 +25163,97 @@ class FalloffBuilder implements IFalloffBuilder {
       return makePatch(original, updates, childBuilders, patches, modifiedKeys);
     }
 
+            this.defaultX = (spec: number): IFalloffBuilder => {
+                updates["defaultX"] = spec;
+                delete childBuilders["defaultX;"];
+                modifiedKeys["defaultX"] = true;
+                return this;
+            }
+
+            this.relativeY = (spec: number): IFalloffBuilder => {
+                updates["relativeY"] = spec;
+                delete childBuilders["relativeY;"];
+                modifiedKeys["relativeY"] = true;
+                return this;
+            }
+
+            this.defaultY = (spec: number): IFalloffBuilder => {
+                updates["defaultY"] = spec;
+                delete childBuilders["defaultY;"];
+                modifiedKeys["defaultY"] = true;
+                return this;
+            }
+
+            this.relativeX = (spec: number): IFalloffBuilder => {
+                updates["relativeX"] = spec;
+                delete childBuilders["relativeX;"];
+                modifiedKeys["relativeX"] = true;
+                return this;
+            }
+
+            this.fontFamily = (spec: string): IFalloffBuilder => {
+                updates["fontFamily"] = spec;
+                delete childBuilders["fontFamily;"];
+                modifiedKeys["fontFamily"] = true;
+                return this;
+            }
+
+            this.fontWeight = (spec: NormalBold): IFalloffBuilder => {
+                updates["fontWeight"] = spec;
+                delete childBuilders["fontWeight;"];
+                modifiedKeys["fontWeight"] = true;
+                return this;
+            }
+
+            this.fontStyle = (spec: NormalItalic): IFalloffBuilder => {
+                updates["fontStyle"] = spec;
+                delete childBuilders["fontStyle;"];
+                modifiedKeys["fontStyle"] = true;
+                return this;
+            }
+
+            this.fontSize = (spec: string): IFalloffBuilder => {
+                updates["fontSize"] = spec;
+                delete childBuilders["fontSize;"];
+                modifiedKeys["fontSize"] = true;
+                return this;
+            }
+
+            this.color = (spec: string): IFalloffBuilder => {
+                updates["color"] = spec;
+                delete childBuilders["color;"];
+                modifiedKeys["color"] = true;
+                return this;
+            }
+
+            this.placement = (spec: AboveBelow): IFalloffBuilder => {
+                updates["placement"] = spec;
+                delete childBuilders["placement;"];
+                modifiedKeys["placement"] = true;
+                return this;
+            }
+
+            this.lineType = (spec: SolidDashedDottedWavy): IFalloffBuilder => {
+                updates["lineType"] = spec;
+                delete childBuilders["lineType;"];
+                modifiedKeys["lineType"] = true;
+                return this;
+            }
+
+            this.dashLength = (spec: number): IFalloffBuilder => {
+                updates["dashLength"] = spec;
+                delete childBuilders["dashLength;"];
+                modifiedKeys["dashLength"] = true;
+                return this;
+            }
+
+            this.spaceLength = (spec: number): IFalloffBuilder => {
+                updates["spaceLength"] = spec;
+                delete childBuilders["spaceLength;"];
+                modifiedKeys["spaceLength"] = true;
+                return this;
+            }
+
             this.lineShape = (spec: StraightCurved): IFalloffBuilder => {
                 updates["lineShape"] = spec;
                 delete childBuilders["lineShape;"];
@@ -18909,6 +25269,19 @@ export interface IBreathMarkBuilder {
   build?: () => BreathMark;
   patch: () => IAny[];
   type: (type: BreathMarkType) => IBreathMarkBuilder;
+  defaultX: (defaultX: number) => IBreathMarkBuilder;
+  relativeY: (relativeY: number) => IBreathMarkBuilder;
+  defaultY: (defaultY: number) => IBreathMarkBuilder;
+  relativeX: (relativeX: number) => IBreathMarkBuilder;
+  fontFamily: (fontFamily: string) => IBreathMarkBuilder;
+  fontWeight: (fontWeight: NormalBold) => IBreathMarkBuilder;
+  fontStyle: (fontStyle: NormalItalic) => IBreathMarkBuilder;
+  fontSize: (fontSize: string) => IBreathMarkBuilder;
+  color: (color: string) => IBreathMarkBuilder;
+  placement: (placement: AboveBelow) => IBreathMarkBuilder;
+  lineType: (lineType: SolidDashedDottedWavy) => IBreathMarkBuilder;
+  dashLength: (dashLength: number) => IBreathMarkBuilder;
+  spaceLength: (spaceLength: number) => IBreathMarkBuilder;
   lineShape: (lineShape: StraightCurved) => IBreathMarkBuilder;
 }
 
@@ -18916,6 +25289,19 @@ class BreathMarkBuilder implements IBreathMarkBuilder {
   build: () => BreathMark;
   patch: () => IAny[];
   type: (type: BreathMarkType) => IBreathMarkBuilder;
+  defaultX: (defaultX: number) => IBreathMarkBuilder;
+  relativeY: (relativeY: number) => IBreathMarkBuilder;
+  defaultY: (defaultY: number) => IBreathMarkBuilder;
+  relativeX: (relativeX: number) => IBreathMarkBuilder;
+  fontFamily: (fontFamily: string) => IBreathMarkBuilder;
+  fontWeight: (fontWeight: NormalBold) => IBreathMarkBuilder;
+  fontStyle: (fontStyle: NormalItalic) => IBreathMarkBuilder;
+  fontSize: (fontSize: string) => IBreathMarkBuilder;
+  color: (color: string) => IBreathMarkBuilder;
+  placement: (placement: AboveBelow) => IBreathMarkBuilder;
+  lineType: (lineType: SolidDashedDottedWavy) => IBreathMarkBuilder;
+  dashLength: (dashLength: number) => IBreathMarkBuilder;
+  spaceLength: (spaceLength: number) => IBreathMarkBuilder;
   lineShape: (lineShape: StraightCurved) => IBreathMarkBuilder;
   constructor(original?: BreathMark) {
     let updates: BreathMark = {} as any;
@@ -18962,6 +25348,97 @@ class BreathMarkBuilder implements IBreathMarkBuilder {
                 return this;
             }
 
+            this.defaultX = (spec: number): IBreathMarkBuilder => {
+                updates["defaultX"] = spec;
+                delete childBuilders["defaultX;"];
+                modifiedKeys["defaultX"] = true;
+                return this;
+            }
+
+            this.relativeY = (spec: number): IBreathMarkBuilder => {
+                updates["relativeY"] = spec;
+                delete childBuilders["relativeY;"];
+                modifiedKeys["relativeY"] = true;
+                return this;
+            }
+
+            this.defaultY = (spec: number): IBreathMarkBuilder => {
+                updates["defaultY"] = spec;
+                delete childBuilders["defaultY;"];
+                modifiedKeys["defaultY"] = true;
+                return this;
+            }
+
+            this.relativeX = (spec: number): IBreathMarkBuilder => {
+                updates["relativeX"] = spec;
+                delete childBuilders["relativeX;"];
+                modifiedKeys["relativeX"] = true;
+                return this;
+            }
+
+            this.fontFamily = (spec: string): IBreathMarkBuilder => {
+                updates["fontFamily"] = spec;
+                delete childBuilders["fontFamily;"];
+                modifiedKeys["fontFamily"] = true;
+                return this;
+            }
+
+            this.fontWeight = (spec: NormalBold): IBreathMarkBuilder => {
+                updates["fontWeight"] = spec;
+                delete childBuilders["fontWeight;"];
+                modifiedKeys["fontWeight"] = true;
+                return this;
+            }
+
+            this.fontStyle = (spec: NormalItalic): IBreathMarkBuilder => {
+                updates["fontStyle"] = spec;
+                delete childBuilders["fontStyle;"];
+                modifiedKeys["fontStyle"] = true;
+                return this;
+            }
+
+            this.fontSize = (spec: string): IBreathMarkBuilder => {
+                updates["fontSize"] = spec;
+                delete childBuilders["fontSize;"];
+                modifiedKeys["fontSize"] = true;
+                return this;
+            }
+
+            this.color = (spec: string): IBreathMarkBuilder => {
+                updates["color"] = spec;
+                delete childBuilders["color;"];
+                modifiedKeys["color"] = true;
+                return this;
+            }
+
+            this.placement = (spec: AboveBelow): IBreathMarkBuilder => {
+                updates["placement"] = spec;
+                delete childBuilders["placement;"];
+                modifiedKeys["placement"] = true;
+                return this;
+            }
+
+            this.lineType = (spec: SolidDashedDottedWavy): IBreathMarkBuilder => {
+                updates["lineType"] = spec;
+                delete childBuilders["lineType;"];
+                modifiedKeys["lineType"] = true;
+                return this;
+            }
+
+            this.dashLength = (spec: number): IBreathMarkBuilder => {
+                updates["dashLength"] = spec;
+                delete childBuilders["dashLength;"];
+                modifiedKeys["dashLength"] = true;
+                return this;
+            }
+
+            this.spaceLength = (spec: number): IBreathMarkBuilder => {
+                updates["spaceLength"] = spec;
+                delete childBuilders["spaceLength;"];
+                modifiedKeys["spaceLength"] = true;
+                return this;
+            }
+
             this.lineShape = (spec: StraightCurved): IBreathMarkBuilder => {
                 updates["lineShape"] = spec;
                 delete childBuilders["lineShape;"];
@@ -18980,6 +25457,12 @@ export interface ICaesuraBuilder {
   relativeY: (relativeY: number) => ICaesuraBuilder;
   defaultY: (defaultY: number) => ICaesuraBuilder;
   relativeX: (relativeX: number) => ICaesuraBuilder;
+  fontFamily: (fontFamily: string) => ICaesuraBuilder;
+  fontWeight: (fontWeight: NormalBold) => ICaesuraBuilder;
+  fontStyle: (fontStyle: NormalItalic) => ICaesuraBuilder;
+  fontSize: (fontSize: string) => ICaesuraBuilder;
+  color: (color: string) => ICaesuraBuilder;
+  placement: (placement: AboveBelow) => ICaesuraBuilder;
 }
 
 class CaesuraBuilder implements ICaesuraBuilder {
@@ -18989,6 +25472,12 @@ class CaesuraBuilder implements ICaesuraBuilder {
   relativeY: (relativeY: number) => ICaesuraBuilder;
   defaultY: (defaultY: number) => ICaesuraBuilder;
   relativeX: (relativeX: number) => ICaesuraBuilder;
+  fontFamily: (fontFamily: string) => ICaesuraBuilder;
+  fontWeight: (fontWeight: NormalBold) => ICaesuraBuilder;
+  fontStyle: (fontStyle: NormalItalic) => ICaesuraBuilder;
+  fontSize: (fontSize: string) => ICaesuraBuilder;
+  color: (color: string) => ICaesuraBuilder;
+  placement: (placement: AboveBelow) => ICaesuraBuilder;
   constructor(original?: Caesura) {
     let updates: Caesura = {} as any;
     let childBuilders: {[key: string]: any} = {};
@@ -19049,6 +25538,48 @@ class CaesuraBuilder implements ICaesuraBuilder {
                 modifiedKeys["relativeX"] = true;
                 return this;
             }
+
+            this.fontFamily = (spec: string): ICaesuraBuilder => {
+                updates["fontFamily"] = spec;
+                delete childBuilders["fontFamily;"];
+                modifiedKeys["fontFamily"] = true;
+                return this;
+            }
+
+            this.fontWeight = (spec: NormalBold): ICaesuraBuilder => {
+                updates["fontWeight"] = spec;
+                delete childBuilders["fontWeight;"];
+                modifiedKeys["fontWeight"] = true;
+                return this;
+            }
+
+            this.fontStyle = (spec: NormalItalic): ICaesuraBuilder => {
+                updates["fontStyle"] = spec;
+                delete childBuilders["fontStyle;"];
+                modifiedKeys["fontStyle"] = true;
+                return this;
+            }
+
+            this.fontSize = (spec: string): ICaesuraBuilder => {
+                updates["fontSize"] = spec;
+                delete childBuilders["fontSize;"];
+                modifiedKeys["fontSize"] = true;
+                return this;
+            }
+
+            this.color = (spec: string): ICaesuraBuilder => {
+                updates["color"] = spec;
+                delete childBuilders["color;"];
+                modifiedKeys["color"] = true;
+                return this;
+            }
+
+            this.placement = (spec: AboveBelow): ICaesuraBuilder => {
+                updates["placement"] = spec;
+                delete childBuilders["placement;"];
+                modifiedKeys["placement"] = true;
+                return this;
+            }
   }
 }
 export function patchCaesura(base: Caesura, builder: (build: ICaesuraBuilder) => ICaesuraBuilder): IAny[] { return builder(new CaesuraBuilder(base)).patch(); }
@@ -19061,6 +25592,12 @@ export interface IStressBuilder {
   relativeY: (relativeY: number) => IStressBuilder;
   defaultY: (defaultY: number) => IStressBuilder;
   relativeX: (relativeX: number) => IStressBuilder;
+  fontFamily: (fontFamily: string) => IStressBuilder;
+  fontWeight: (fontWeight: NormalBold) => IStressBuilder;
+  fontStyle: (fontStyle: NormalItalic) => IStressBuilder;
+  fontSize: (fontSize: string) => IStressBuilder;
+  color: (color: string) => IStressBuilder;
+  placement: (placement: AboveBelow) => IStressBuilder;
 }
 
 class StressBuilder implements IStressBuilder {
@@ -19070,6 +25607,12 @@ class StressBuilder implements IStressBuilder {
   relativeY: (relativeY: number) => IStressBuilder;
   defaultY: (defaultY: number) => IStressBuilder;
   relativeX: (relativeX: number) => IStressBuilder;
+  fontFamily: (fontFamily: string) => IStressBuilder;
+  fontWeight: (fontWeight: NormalBold) => IStressBuilder;
+  fontStyle: (fontStyle: NormalItalic) => IStressBuilder;
+  fontSize: (fontSize: string) => IStressBuilder;
+  color: (color: string) => IStressBuilder;
+  placement: (placement: AboveBelow) => IStressBuilder;
   constructor(original?: Stress) {
     let updates: Stress = {} as any;
     let childBuilders: {[key: string]: any} = {};
@@ -19130,6 +25673,48 @@ class StressBuilder implements IStressBuilder {
                 modifiedKeys["relativeX"] = true;
                 return this;
             }
+
+            this.fontFamily = (spec: string): IStressBuilder => {
+                updates["fontFamily"] = spec;
+                delete childBuilders["fontFamily;"];
+                modifiedKeys["fontFamily"] = true;
+                return this;
+            }
+
+            this.fontWeight = (spec: NormalBold): IStressBuilder => {
+                updates["fontWeight"] = spec;
+                delete childBuilders["fontWeight;"];
+                modifiedKeys["fontWeight"] = true;
+                return this;
+            }
+
+            this.fontStyle = (spec: NormalItalic): IStressBuilder => {
+                updates["fontStyle"] = spec;
+                delete childBuilders["fontStyle;"];
+                modifiedKeys["fontStyle"] = true;
+                return this;
+            }
+
+            this.fontSize = (spec: string): IStressBuilder => {
+                updates["fontSize"] = spec;
+                delete childBuilders["fontSize;"];
+                modifiedKeys["fontSize"] = true;
+                return this;
+            }
+
+            this.color = (spec: string): IStressBuilder => {
+                updates["color"] = spec;
+                delete childBuilders["color;"];
+                modifiedKeys["color"] = true;
+                return this;
+            }
+
+            this.placement = (spec: AboveBelow): IStressBuilder => {
+                updates["placement"] = spec;
+                delete childBuilders["placement;"];
+                modifiedKeys["placement"] = true;
+                return this;
+            }
   }
 }
 export function patchStress(base: Stress, builder: (build: IStressBuilder) => IStressBuilder): IAny[] { return builder(new StressBuilder(base)).patch(); }
@@ -19142,6 +25727,12 @@ export interface IUnstressBuilder {
   relativeY: (relativeY: number) => IUnstressBuilder;
   defaultY: (defaultY: number) => IUnstressBuilder;
   relativeX: (relativeX: number) => IUnstressBuilder;
+  fontFamily: (fontFamily: string) => IUnstressBuilder;
+  fontWeight: (fontWeight: NormalBold) => IUnstressBuilder;
+  fontStyle: (fontStyle: NormalItalic) => IUnstressBuilder;
+  fontSize: (fontSize: string) => IUnstressBuilder;
+  color: (color: string) => IUnstressBuilder;
+  placement: (placement: AboveBelow) => IUnstressBuilder;
 }
 
 class UnstressBuilder implements IUnstressBuilder {
@@ -19151,6 +25742,12 @@ class UnstressBuilder implements IUnstressBuilder {
   relativeY: (relativeY: number) => IUnstressBuilder;
   defaultY: (defaultY: number) => IUnstressBuilder;
   relativeX: (relativeX: number) => IUnstressBuilder;
+  fontFamily: (fontFamily: string) => IUnstressBuilder;
+  fontWeight: (fontWeight: NormalBold) => IUnstressBuilder;
+  fontStyle: (fontStyle: NormalItalic) => IUnstressBuilder;
+  fontSize: (fontSize: string) => IUnstressBuilder;
+  color: (color: string) => IUnstressBuilder;
+  placement: (placement: AboveBelow) => IUnstressBuilder;
   constructor(original?: Unstress) {
     let updates: Unstress = {} as any;
     let childBuilders: {[key: string]: any} = {};
@@ -19211,6 +25808,48 @@ class UnstressBuilder implements IUnstressBuilder {
                 modifiedKeys["relativeX"] = true;
                 return this;
             }
+
+            this.fontFamily = (spec: string): IUnstressBuilder => {
+                updates["fontFamily"] = spec;
+                delete childBuilders["fontFamily;"];
+                modifiedKeys["fontFamily"] = true;
+                return this;
+            }
+
+            this.fontWeight = (spec: NormalBold): IUnstressBuilder => {
+                updates["fontWeight"] = spec;
+                delete childBuilders["fontWeight;"];
+                modifiedKeys["fontWeight"] = true;
+                return this;
+            }
+
+            this.fontStyle = (spec: NormalItalic): IUnstressBuilder => {
+                updates["fontStyle"] = spec;
+                delete childBuilders["fontStyle;"];
+                modifiedKeys["fontStyle"] = true;
+                return this;
+            }
+
+            this.fontSize = (spec: string): IUnstressBuilder => {
+                updates["fontSize"] = spec;
+                delete childBuilders["fontSize;"];
+                modifiedKeys["fontSize"] = true;
+                return this;
+            }
+
+            this.color = (spec: string): IUnstressBuilder => {
+                updates["color"] = spec;
+                delete childBuilders["color;"];
+                modifiedKeys["color"] = true;
+                return this;
+            }
+
+            this.placement = (spec: AboveBelow): IUnstressBuilder => {
+                updates["placement"] = spec;
+                delete childBuilders["placement;"];
+                modifiedKeys["placement"] = true;
+                return this;
+            }
   }
 }
 export function patchUnstress(base: Unstress, builder: (build: IUnstressBuilder) => IUnstressBuilder): IAny[] { return builder(new UnstressBuilder(base)).patch(); }
@@ -19224,6 +25863,12 @@ export interface IOtherArticulationBuilder {
   relativeY: (relativeY: number) => IOtherArticulationBuilder;
   defaultY: (defaultY: number) => IOtherArticulationBuilder;
   relativeX: (relativeX: number) => IOtherArticulationBuilder;
+  fontFamily: (fontFamily: string) => IOtherArticulationBuilder;
+  fontWeight: (fontWeight: NormalBold) => IOtherArticulationBuilder;
+  fontStyle: (fontStyle: NormalItalic) => IOtherArticulationBuilder;
+  fontSize: (fontSize: string) => IOtherArticulationBuilder;
+  color: (color: string) => IOtherArticulationBuilder;
+  placement: (placement: AboveBelow) => IOtherArticulationBuilder;
 }
 
 class OtherArticulationBuilder implements IOtherArticulationBuilder {
@@ -19234,6 +25879,12 @@ class OtherArticulationBuilder implements IOtherArticulationBuilder {
   relativeY: (relativeY: number) => IOtherArticulationBuilder;
   defaultY: (defaultY: number) => IOtherArticulationBuilder;
   relativeX: (relativeX: number) => IOtherArticulationBuilder;
+  fontFamily: (fontFamily: string) => IOtherArticulationBuilder;
+  fontWeight: (fontWeight: NormalBold) => IOtherArticulationBuilder;
+  fontStyle: (fontStyle: NormalItalic) => IOtherArticulationBuilder;
+  fontSize: (fontSize: string) => IOtherArticulationBuilder;
+  color: (color: string) => IOtherArticulationBuilder;
+  placement: (placement: AboveBelow) => IOtherArticulationBuilder;
   constructor(original?: OtherArticulation) {
     let updates: OtherArticulation = {} as any;
     let childBuilders: {[key: string]: any} = {};
@@ -19306,6 +25957,48 @@ class OtherArticulationBuilder implements IOtherArticulationBuilder {
                 modifiedKeys["relativeX"] = true;
                 return this;
             }
+
+            this.fontFamily = (spec: string): IOtherArticulationBuilder => {
+                updates["fontFamily"] = spec;
+                delete childBuilders["fontFamily;"];
+                modifiedKeys["fontFamily"] = true;
+                return this;
+            }
+
+            this.fontWeight = (spec: NormalBold): IOtherArticulationBuilder => {
+                updates["fontWeight"] = spec;
+                delete childBuilders["fontWeight;"];
+                modifiedKeys["fontWeight"] = true;
+                return this;
+            }
+
+            this.fontStyle = (spec: NormalItalic): IOtherArticulationBuilder => {
+                updates["fontStyle"] = spec;
+                delete childBuilders["fontStyle;"];
+                modifiedKeys["fontStyle"] = true;
+                return this;
+            }
+
+            this.fontSize = (spec: string): IOtherArticulationBuilder => {
+                updates["fontSize"] = spec;
+                delete childBuilders["fontSize;"];
+                modifiedKeys["fontSize"] = true;
+                return this;
+            }
+
+            this.color = (spec: string): IOtherArticulationBuilder => {
+                updates["color"] = spec;
+                delete childBuilders["color;"];
+                modifiedKeys["color"] = true;
+                return this;
+            }
+
+            this.placement = (spec: AboveBelow): IOtherArticulationBuilder => {
+                updates["placement"] = spec;
+                delete childBuilders["placement;"];
+                modifiedKeys["placement"] = true;
+                return this;
+            }
   }
 }
 export function patchOtherArticulation(base: OtherArticulation, builder: (build: IOtherArticulationBuilder) => IOtherArticulationBuilder): IAny[] { return builder(new OtherArticulationBuilder(base)).patch(); }
@@ -19320,6 +26013,8 @@ export interface IArpeggiateBuilder {
   relativeY: (relativeY: number) => IArpeggiateBuilder;
   defaultY: (defaultY: number) => IArpeggiateBuilder;
   relativeX: (relativeX: number) => IArpeggiateBuilder;
+  color: (color: string) => IArpeggiateBuilder;
+  placement: (placement: AboveBelow) => IArpeggiateBuilder;
 }
 
 class ArpeggiateBuilder implements IArpeggiateBuilder {
@@ -19331,6 +26026,8 @@ class ArpeggiateBuilder implements IArpeggiateBuilder {
   relativeY: (relativeY: number) => IArpeggiateBuilder;
   defaultY: (defaultY: number) => IArpeggiateBuilder;
   relativeX: (relativeX: number) => IArpeggiateBuilder;
+  color: (color: string) => IArpeggiateBuilder;
+  placement: (placement: AboveBelow) => IArpeggiateBuilder;
   constructor(original?: Arpeggiate) {
     let updates: Arpeggiate = {} as any;
     let childBuilders: {[key: string]: any} = {};
@@ -19405,6 +26102,20 @@ class ArpeggiateBuilder implements IArpeggiateBuilder {
                 modifiedKeys["relativeX"] = true;
                 return this;
             }
+
+            this.color = (spec: string): IArpeggiateBuilder => {
+                updates["color"] = spec;
+                delete childBuilders["color;"];
+                modifiedKeys["color"] = true;
+                return this;
+            }
+
+            this.placement = (spec: AboveBelow): IArpeggiateBuilder => {
+                updates["placement"] = spec;
+                delete childBuilders["placement;"];
+                modifiedKeys["placement"] = true;
+                return this;
+            }
   }
 }
 export function patchArpeggiate(base: Arpeggiate, builder: (build: IArpeggiateBuilder) => IArpeggiateBuilder): IAny[] { return builder(new ArpeggiateBuilder(base)).patch(); }
@@ -19419,6 +26130,8 @@ export interface INonArpeggiateBuilder {
   relativeY: (relativeY: number) => INonArpeggiateBuilder;
   defaultY: (defaultY: number) => INonArpeggiateBuilder;
   relativeX: (relativeX: number) => INonArpeggiateBuilder;
+  color: (color: string) => INonArpeggiateBuilder;
+  placement: (placement: AboveBelow) => INonArpeggiateBuilder;
 }
 
 class NonArpeggiateBuilder implements INonArpeggiateBuilder {
@@ -19430,6 +26143,8 @@ class NonArpeggiateBuilder implements INonArpeggiateBuilder {
   relativeY: (relativeY: number) => INonArpeggiateBuilder;
   defaultY: (defaultY: number) => INonArpeggiateBuilder;
   relativeX: (relativeX: number) => INonArpeggiateBuilder;
+  color: (color: string) => INonArpeggiateBuilder;
+  placement: (placement: AboveBelow) => INonArpeggiateBuilder;
   constructor(original?: NonArpeggiate) {
     let updates: NonArpeggiate = {} as any;
     let childBuilders: {[key: string]: any} = {};
@@ -19507,6 +26222,20 @@ class NonArpeggiateBuilder implements INonArpeggiateBuilder {
                 updates["relativeX"] = spec;
                 delete childBuilders["relativeX;"];
                 modifiedKeys["relativeX"] = true;
+                return this;
+            }
+
+            this.color = (spec: string): INonArpeggiateBuilder => {
+                updates["color"] = spec;
+                delete childBuilders["color;"];
+                modifiedKeys["color"] = true;
+                return this;
+            }
+
+            this.placement = (spec: AboveBelow): INonArpeggiateBuilder => {
+                updates["placement"] = spec;
+                delete childBuilders["placement;"];
+                modifiedKeys["placement"] = true;
                 return this;
             }
   }
@@ -19745,7 +26474,16 @@ export interface ILyricBuilder {
   lyricParts: (lyricParts: boolean[]) => ILyricBuilder;
   number: (number: number) => ILyricBuilder;
   name: (name: string) => ILyricBuilder;
+  defaultX: (defaultX: number) => ILyricBuilder;
+  relativeY: (relativeY: number) => ILyricBuilder;
+  defaultY: (defaultY: number) => ILyricBuilder;
+  relativeX: (relativeX: number) => ILyricBuilder;
+  color: (color: string) => ILyricBuilder;
+  printObject: (printObject: boolean) => ILyricBuilder;
   justify: (justify: LeftCenterRight) => ILyricBuilder;
+  placement: (placement: AboveBelow) => ILyricBuilder;
+  footnote: (build: Footnote | ((builder: IFootnoteBuilder) => IFootnoteBuilder)) => ILyricBuilder;
+  level: (build: Level | ((builder: ILevelBuilder) => ILevelBuilder)) => ILyricBuilder;
 }
 
 class LyricBuilder implements ILyricBuilder {
@@ -19754,7 +26492,16 @@ class LyricBuilder implements ILyricBuilder {
   lyricParts: (lyricParts: boolean[]) => ILyricBuilder;
   number: (number: number) => ILyricBuilder;
   name: (name: string) => ILyricBuilder;
+  defaultX: (defaultX: number) => ILyricBuilder;
+  relativeY: (relativeY: number) => ILyricBuilder;
+  defaultY: (defaultY: number) => ILyricBuilder;
+  relativeX: (relativeX: number) => ILyricBuilder;
+  color: (color: string) => ILyricBuilder;
+  printObject: (printObject: boolean) => ILyricBuilder;
   justify: (justify: LeftCenterRight) => ILyricBuilder;
+  placement: (placement: AboveBelow) => ILyricBuilder;
+  footnote: (build: Footnote | ((builder: IFootnoteBuilder) => IFootnoteBuilder)) => ILyricBuilder;
+  level: (build: Level | ((builder: ILevelBuilder) => ILevelBuilder)) => ILyricBuilder;
   constructor(original?: Lyric) {
     let updates: Lyric = {} as any;
     let childBuilders: {[key: string]: any} = {};
@@ -19814,12 +26561,89 @@ class LyricBuilder implements ILyricBuilder {
                 return this;
             }
 
+            this.defaultX = (spec: number): ILyricBuilder => {
+                updates["defaultX"] = spec;
+                delete childBuilders["defaultX;"];
+                modifiedKeys["defaultX"] = true;
+                return this;
+            }
+
+            this.relativeY = (spec: number): ILyricBuilder => {
+                updates["relativeY"] = spec;
+                delete childBuilders["relativeY;"];
+                modifiedKeys["relativeY"] = true;
+                return this;
+            }
+
+            this.defaultY = (spec: number): ILyricBuilder => {
+                updates["defaultY"] = spec;
+                delete childBuilders["defaultY;"];
+                modifiedKeys["defaultY"] = true;
+                return this;
+            }
+
+            this.relativeX = (spec: number): ILyricBuilder => {
+                updates["relativeX"] = spec;
+                delete childBuilders["relativeX;"];
+                modifiedKeys["relativeX"] = true;
+                return this;
+            }
+
+            this.color = (spec: string): ILyricBuilder => {
+                updates["color"] = spec;
+                delete childBuilders["color;"];
+                modifiedKeys["color"] = true;
+                return this;
+            }
+
+            this.printObject = (spec: boolean): ILyricBuilder => {
+                updates["printObject"] = spec;
+                delete childBuilders["printObject;"];
+                modifiedKeys["printObject"] = true;
+                return this;
+            }
+
             this.justify = (spec: LeftCenterRight): ILyricBuilder => {
                 updates["justify"] = spec;
                 delete childBuilders["justify;"];
                 modifiedKeys["justify"] = true;
                 return this;
             }
+
+            this.placement = (spec: AboveBelow): ILyricBuilder => {
+                updates["placement"] = spec;
+                delete childBuilders["placement;"];
+                modifiedKeys["placement"] = true;
+                return this;
+            }
+
+                this.footnote = (build: Footnote | ((builder: IFootnoteBuilder) => IFootnoteBuilder)): ILyricBuilder => {
+                  if (typeof build === 'function') {
+                    delete updates["footnote"]
+                    const builder = (build as any)(new FootnoteBuilder(original && original["footnote"]));
+                    if (!original) updates["footnote"] = builder.build();
+                    else childBuilders["footnote"] = builder;
+                  } else {
+                    updates.footnote = build as any;
+                    delete childBuilders["footnote;"];
+                  }
+                  modifiedKeys["footnote"] = true;
+                  return this;
+                }
+
+                this.level = (build: Level | ((builder: ILevelBuilder) => ILevelBuilder)): ILyricBuilder => {
+                  if (typeof build === 'function') {
+                    delete updates["level"]
+                    const builder = (build as any)(new LevelBuilder(original && original["level"]));
+                    if (!original) updates["level"] = builder.build();
+                    else childBuilders["level"] = builder;
+                  } else {
+                    updates.level = build as any;
+                    delete childBuilders["level;"];
+                  }
+                  modifiedKeys["level"] = true;
+                  return this;
+                }
   }
 }
 export function patchLyric(base: Lyric, builder: (build: ILyricBuilder) => ILyricBuilder): IAny[] { return builder(new LyricBuilder(base)).patch(); }
@@ -19833,6 +26657,13 @@ export interface ITextBuilder {
   fontWeight: (fontWeight: NormalBold) => ITextBuilder;
   fontStyle: (fontStyle: NormalItalic) => ITextBuilder;
   fontSize: (fontSize: string) => ITextBuilder;
+  color: (color: string) => ITextBuilder;
+  underline: (underline: number) => ITextBuilder;
+  overline: (overline: number) => ITextBuilder;
+  lineThrough: (lineThrough: number) => ITextBuilder;
+  rotation: (rotation: number) => ITextBuilder;
+  letterSpacing: (letterSpacing: string) => ITextBuilder;
+  dir: (dir: DirectionMode) => ITextBuilder;
 }
 
 class TextBuilder implements ITextBuilder {
@@ -19843,6 +26674,13 @@ class TextBuilder implements ITextBuilder {
   fontWeight: (fontWeight: NormalBold) => ITextBuilder;
   fontStyle: (fontStyle: NormalItalic) => ITextBuilder;
   fontSize: (fontSize: string) => ITextBuilder;
+  color: (color: string) => ITextBuilder;
+  underline: (underline: number) => ITextBuilder;
+  overline: (overline: number) => ITextBuilder;
+  lineThrough: (lineThrough: number) => ITextBuilder;
+  rotation: (rotation: number) => ITextBuilder;
+  letterSpacing: (letterSpacing: string) => ITextBuilder;
+  dir: (dir: DirectionMode) => ITextBuilder;
   constructor(original?: Text) {
     let updates: Text = {} as any;
     let childBuilders: {[key: string]: any} = {};
@@ -19915,6 +26753,55 @@ class TextBuilder implements ITextBuilder {
                 modifiedKeys["fontSize"] = true;
                 return this;
             }
+
+            this.color = (spec: string): ITextBuilder => {
+                updates["color"] = spec;
+                delete childBuilders["color;"];
+                modifiedKeys["color"] = true;
+                return this;
+            }
+
+            this.underline = (spec: number): ITextBuilder => {
+                updates["underline"] = spec;
+                delete childBuilders["underline;"];
+                modifiedKeys["underline"] = true;
+                return this;
+            }
+
+            this.overline = (spec: number): ITextBuilder => {
+                updates["overline"] = spec;
+                delete childBuilders["overline;"];
+                modifiedKeys["overline"] = true;
+                return this;
+            }
+
+            this.lineThrough = (spec: number): ITextBuilder => {
+                updates["lineThrough"] = spec;
+                delete childBuilders["lineThrough;"];
+                modifiedKeys["lineThrough"] = true;
+                return this;
+            }
+
+            this.rotation = (spec: number): ITextBuilder => {
+                updates["rotation"] = spec;
+                delete childBuilders["rotation;"];
+                modifiedKeys["rotation"] = true;
+                return this;
+            }
+
+            this.letterSpacing = (spec: string): ITextBuilder => {
+                updates["letterSpacing"] = spec;
+                delete childBuilders["letterSpacing;"];
+                modifiedKeys["letterSpacing"] = true;
+                return this;
+            }
+
+            this.dir = (spec: DirectionMode): ITextBuilder => {
+                updates["dir"] = spec;
+                delete childBuilders["dir;"];
+                modifiedKeys["dir"] = true;
+                return this;
+            }
   }
 }
 export function patchText(base: Text, builder: (build: ITextBuilder) => ITextBuilder): IAny[] { return builder(new TextBuilder(base)).patch(); }
@@ -19928,6 +26815,7 @@ export interface ISyllabicBuilder {
   fontWeight: (fontWeight: NormalBold) => ISyllabicBuilder;
   fontStyle: (fontStyle: NormalItalic) => ISyllabicBuilder;
   fontSize: (fontSize: string) => ISyllabicBuilder;
+  color: (color: string) => ISyllabicBuilder;
 }
 
 class SyllabicBuilder implements ISyllabicBuilder {
@@ -19938,6 +26826,7 @@ class SyllabicBuilder implements ISyllabicBuilder {
   fontWeight: (fontWeight: NormalBold) => ISyllabicBuilder;
   fontStyle: (fontStyle: NormalItalic) => ISyllabicBuilder;
   fontSize: (fontSize: string) => ISyllabicBuilder;
+  color: (color: string) => ISyllabicBuilder;
   constructor(original?: Syllabic) {
     let updates: Syllabic = {} as any;
     let childBuilders: {[key: string]: any} = {};
@@ -20010,6 +26899,13 @@ class SyllabicBuilder implements ISyllabicBuilder {
                 modifiedKeys["fontSize"] = true;
                 return this;
             }
+
+            this.color = (spec: string): ISyllabicBuilder => {
+                updates["color"] = spec;
+                delete childBuilders["color;"];
+                modifiedKeys["color"] = true;
+                return this;
+            }
   }
 }
 export function patchSyllabic(base: Syllabic, builder: (build: ISyllabicBuilder) => ISyllabicBuilder): IAny[] { return builder(new SyllabicBuilder(base)).patch(); }
@@ -20023,6 +26919,7 @@ export interface IElisionBuilder {
   fontWeight: (fontWeight: NormalBold) => IElisionBuilder;
   fontStyle: (fontStyle: NormalItalic) => IElisionBuilder;
   fontSize: (fontSize: string) => IElisionBuilder;
+  color: (color: string) => IElisionBuilder;
 }
 
 class ElisionBuilder implements IElisionBuilder {
@@ -20033,6 +26930,7 @@ class ElisionBuilder implements IElisionBuilder {
   fontWeight: (fontWeight: NormalBold) => IElisionBuilder;
   fontStyle: (fontStyle: NormalItalic) => IElisionBuilder;
   fontSize: (fontSize: string) => IElisionBuilder;
+  color: (color: string) => IElisionBuilder;
   constructor(original?: Elision) {
     let updates: Elision = {} as any;
     let childBuilders: {[key: string]: any} = {};
@@ -20105,6 +27003,13 @@ class ElisionBuilder implements IElisionBuilder {
                 modifiedKeys["fontSize"] = true;
                 return this;
             }
+
+            this.color = (spec: string): IElisionBuilder => {
+                updates["color"] = spec;
+                delete childBuilders["color;"];
+                modifiedKeys["color"] = true;
+                return this;
+            }
   }
 }
 export function patchElision(base: Elision, builder: (build: IElisionBuilder) => IElisionBuilder): IAny[] { return builder(new ElisionBuilder(base)).patch(); }
@@ -20118,6 +27023,11 @@ export interface IExtendBuilder {
   relativeY: (relativeY: number) => IExtendBuilder;
   defaultY: (defaultY: number) => IExtendBuilder;
   relativeX: (relativeX: number) => IExtendBuilder;
+  fontFamily: (fontFamily: string) => IExtendBuilder;
+  fontWeight: (fontWeight: NormalBold) => IExtendBuilder;
+  fontStyle: (fontStyle: NormalItalic) => IExtendBuilder;
+  fontSize: (fontSize: string) => IExtendBuilder;
+  color: (color: string) => IExtendBuilder;
 }
 
 class ExtendBuilder implements IExtendBuilder {
@@ -20128,6 +27038,11 @@ class ExtendBuilder implements IExtendBuilder {
   relativeY: (relativeY: number) => IExtendBuilder;
   defaultY: (defaultY: number) => IExtendBuilder;
   relativeX: (relativeX: number) => IExtendBuilder;
+  fontFamily: (fontFamily: string) => IExtendBuilder;
+  fontWeight: (fontWeight: NormalBold) => IExtendBuilder;
+  fontStyle: (fontStyle: NormalItalic) => IExtendBuilder;
+  fontSize: (fontSize: string) => IExtendBuilder;
+  color: (color: string) => IExtendBuilder;
   constructor(original?: Extend) {
     let updates: Extend = {} as any;
     let childBuilders: {[key: string]: any} = {};
@@ -20195,6 +27110,41 @@ class ExtendBuilder implements IExtendBuilder {
                 modifiedKeys["relativeX"] = true;
                 return this;
             }
+
+            this.fontFamily = (spec: string): IExtendBuilder => {
+                updates["fontFamily"] = spec;
+                delete childBuilders["fontFamily;"];
+                modifiedKeys["fontFamily"] = true;
+                return this;
+            }
+
+            this.fontWeight = (spec: NormalBold): IExtendBuilder => {
+                updates["fontWeight"] = spec;
+                delete childBuilders["fontWeight;"];
+                modifiedKeys["fontWeight"] = true;
+                return this;
+            }
+
+            this.fontStyle = (spec: NormalItalic): IExtendBuilder => {
+                updates["fontStyle"] = spec;
+                delete childBuilders["fontStyle;"];
+                modifiedKeys["fontStyle"] = true;
+                return this;
+            }
+
+            this.fontSize = (spec: string): IExtendBuilder => {
+                updates["fontSize"] = spec;
+                delete childBuilders["fontSize;"];
+                modifiedKeys["fontSize"] = true;
+                return this;
+            }
+
+            this.color = (spec: string): IExtendBuilder => {
+                updates["color"] = spec;
+                delete childBuilders["color;"];
+                modifiedKeys["color"] = true;
+                return this;
+            }
   }
 }
 export function patchExtend(base: Extend, builder: (build: IExtendBuilder) => IExtendBuilder): IAny[] { return builder(new ExtendBuilder(base)).patch(); }
@@ -20208,8 +27158,21 @@ export interface IFiguredBassBuilder {
   figures: (figures: Figure[]) => IFiguredBassBuilder;
   duration: (duration: number) => IFiguredBassBuilder;
   parentheses: (parentheses: boolean) => IFiguredBassBuilder;
+  defaultX: (defaultX: number) => IFiguredBassBuilder;
+  relativeY: (relativeY: number) => IFiguredBassBuilder;
+  defaultY: (defaultY: number) => IFiguredBassBuilder;
+  relativeX: (relativeX: number) => IFiguredBassBuilder;
+  fontFamily: (fontFamily: string) => IFiguredBassBuilder;
+  fontWeight: (fontWeight: NormalBold) => IFiguredBassBuilder;
+  fontStyle: (fontStyle: NormalItalic) => IFiguredBassBuilder;
+  fontSize: (fontSize: string) => IFiguredBassBuilder;
+  color: (color: string) => IFiguredBassBuilder;
   footnote: (build: Footnote | ((builder: IFootnoteBuilder) => IFootnoteBuilder)) => IFiguredBassBuilder;
   level: (build: Level | ((builder: ILevelBuilder) => ILevelBuilder)) => IFiguredBassBuilder;
+  printDot: (printDot: boolean) => IFiguredBassBuilder;
+  printLyric: (printLyric: boolean) => IFiguredBassBuilder;
+  printObject: (printObject: boolean) => IFiguredBassBuilder;
+  printSpacing: (printSpacing: boolean) => IFiguredBassBuilder;
 }
 
 class FiguredBassBuilder implements IFiguredBassBuilder {
@@ -20220,8 +27183,21 @@ class FiguredBassBuilder implements IFiguredBassBuilder {
   figures: (figures: Figure[]) => IFiguredBassBuilder;
   duration: (duration: number) => IFiguredBassBuilder;
   parentheses: (parentheses: boolean) => IFiguredBassBuilder;
+  defaultX: (defaultX: number) => IFiguredBassBuilder;
+  relativeY: (relativeY: number) => IFiguredBassBuilder;
+  defaultY: (defaultY: number) => IFiguredBassBuilder;
+  relativeX: (relativeX: number) => IFiguredBassBuilder;
+  fontFamily: (fontFamily: string) => IFiguredBassBuilder;
+  fontWeight: (fontWeight: NormalBold) => IFiguredBassBuilder;
+  fontStyle: (fontStyle: NormalItalic) => IFiguredBassBuilder;
+  fontSize: (fontSize: string) => IFiguredBassBuilder;
+  color: (color: string) => IFiguredBassBuilder;
   footnote: (build: Footnote | ((builder: IFootnoteBuilder) => IFootnoteBuilder)) => IFiguredBassBuilder;
   level: (build: Level | ((builder: ILevelBuilder) => ILevelBuilder)) => IFiguredBassBuilder;
+  printDot: (printDot: boolean) => IFiguredBassBuilder;
+  printLyric: (printLyric: boolean) => IFiguredBassBuilder;
+  printObject: (printObject: boolean) => IFiguredBassBuilder;
+  printSpacing: (printSpacing: boolean) => IFiguredBassBuilder;
   constructor(original?: FiguredBass) {
     let updates: FiguredBass = {} as any;
     let childBuilders: {[key: string]: any} = {};
@@ -20336,6 +27312,69 @@ class FiguredBassBuilder implements IFiguredBassBuilder {
                 return this;
             }
 
+            this.defaultX = (spec: number): IFiguredBassBuilder => {
+                updates["defaultX"] = spec;
+                delete childBuilders["defaultX;"];
+                modifiedKeys["defaultX"] = true;
+                return this;
+            }
+
+            this.relativeY = (spec: number): IFiguredBassBuilder => {
+                updates["relativeY"] = spec;
+                delete childBuilders["relativeY;"];
+                modifiedKeys["relativeY"] = true;
+                return this;
+            }
+
+            this.defaultY = (spec: number): IFiguredBassBuilder => {
+                updates["defaultY"] = spec;
+                delete childBuilders["defaultY;"];
+                modifiedKeys["defaultY"] = true;
+                return this;
+            }
+
+            this.relativeX = (spec: number): IFiguredBassBuilder => {
+                updates["relativeX"] = spec;
+                delete childBuilders["relativeX;"];
+                modifiedKeys["relativeX"] = true;
+                return this;
+            }
+
+            this.fontFamily = (spec: string): IFiguredBassBuilder => {
+                updates["fontFamily"] = spec;
+                delete childBuilders["fontFamily;"];
+                modifiedKeys["fontFamily"] = true;
+                return this;
+            }
+
+            this.fontWeight = (spec: NormalBold): IFiguredBassBuilder => {
+                updates["fontWeight"] = spec;
+                delete childBuilders["fontWeight;"];
+                modifiedKeys["fontWeight"] = true;
+                return this;
+            }
+
+            this.fontStyle = (spec: NormalItalic): IFiguredBassBuilder => {
+                updates["fontStyle"] = spec;
+                delete childBuilders["fontStyle;"];
+                modifiedKeys["fontStyle"] = true;
+                return this;
+            }
+
+            this.fontSize = (spec: string): IFiguredBassBuilder => {
+                updates["fontSize"] = spec;
+                delete childBuilders["fontSize;"];
+                modifiedKeys["fontSize"] = true;
+                return this;
+            }
+
+            this.color = (spec: string): IFiguredBassBuilder => {
+                updates["color"] = spec;
+                delete childBuilders["color;"];
+                modifiedKeys["color"] = true;
+                return this;
+            }
+
                 this.footnote = (build: Footnote | ((builder: IFootnoteBuilder) => IFootnoteBuilder)): IFiguredBassBuilder => {
                   if (typeof build === 'function') {
                     delete updates["footnote"]
@@ -20363,6 +27402,34 @@ class FiguredBassBuilder implements IFiguredBassBuilder {
                   modifiedKeys["level"] = true;
                   return this;
                 }
+
+            this.printDot = (spec: boolean): IFiguredBassBuilder => {
+                updates["printDot"] = spec;
+                delete childBuilders["printDot;"];
+                modifiedKeys["printDot"] = true;
+                return this;
+            }
+
+            this.printLyric = (spec: boolean): IFiguredBassBuilder => {
+                updates["printLyric"] = spec;
+                delete childBuilders["printLyric;"];
+                modifiedKeys["printLyric"] = true;
+                return this;
+            }
+
+            this.printObject = (spec: boolean): IFiguredBassBuilder => {
+                updates["printObject"] = spec;
+                delete childBuilders["printObject;"];
+                modifiedKeys["printObject"] = true;
+                return this;
+            }
+
+            this.printSpacing = (spec: boolean): IFiguredBassBuilder => {
+                updates["printSpacing"] = spec;
+                delete childBuilders["printSpacing;"];
+                modifiedKeys["printSpacing"] = true;
+                return this;
+            }
   }
 }
 export function patchFiguredBass(base: FiguredBass, builder: (build: IFiguredBassBuilder) => IFiguredBassBuilder): IAny[] { return builder(new FiguredBassBuilder(base)).patch(); }
@@ -20379,6 +27446,11 @@ export interface IFigureBuilder {
   relativeY: (relativeY: number) => IFigureBuilder;
   defaultY: (defaultY: number) => IFigureBuilder;
   relativeX: (relativeX: number) => IFigureBuilder;
+  fontFamily: (fontFamily: string) => IFigureBuilder;
+  fontWeight: (fontWeight: NormalBold) => IFigureBuilder;
+  fontStyle: (fontStyle: NormalItalic) => IFigureBuilder;
+  fontSize: (fontSize: string) => IFigureBuilder;
+  color: (color: string) => IFigureBuilder;
 }
 
 class FigureBuilder implements IFigureBuilder {
@@ -20392,6 +27464,11 @@ class FigureBuilder implements IFigureBuilder {
   relativeY: (relativeY: number) => IFigureBuilder;
   defaultY: (defaultY: number) => IFigureBuilder;
   relativeX: (relativeX: number) => IFigureBuilder;
+  fontFamily: (fontFamily: string) => IFigureBuilder;
+  fontWeight: (fontWeight: NormalBold) => IFigureBuilder;
+  fontStyle: (fontStyle: NormalItalic) => IFigureBuilder;
+  fontSize: (fontSize: string) => IFigureBuilder;
+  color: (color: string) => IFigureBuilder;
   constructor(original?: Figure) {
     let updates: Figure = {} as any;
     let childBuilders: {[key: string]: any} = {};
@@ -20508,6 +27585,41 @@ class FigureBuilder implements IFigureBuilder {
                 modifiedKeys["relativeX"] = true;
                 return this;
             }
+
+            this.fontFamily = (spec: string): IFigureBuilder => {
+                updates["fontFamily"] = spec;
+                delete childBuilders["fontFamily;"];
+                modifiedKeys["fontFamily"] = true;
+                return this;
+            }
+
+            this.fontWeight = (spec: NormalBold): IFigureBuilder => {
+                updates["fontWeight"] = spec;
+                delete childBuilders["fontWeight;"];
+                modifiedKeys["fontWeight"] = true;
+                return this;
+            }
+
+            this.fontStyle = (spec: NormalItalic): IFigureBuilder => {
+                updates["fontStyle"] = spec;
+                delete childBuilders["fontStyle;"];
+                modifiedKeys["fontStyle"] = true;
+                return this;
+            }
+
+            this.fontSize = (spec: string): IFigureBuilder => {
+                updates["fontSize"] = spec;
+                delete childBuilders["fontSize;"];
+                modifiedKeys["fontSize"] = true;
+                return this;
+            }
+
+            this.color = (spec: string): IFigureBuilder => {
+                updates["color"] = spec;
+                delete childBuilders["color;"];
+                modifiedKeys["color"] = true;
+                return this;
+            }
   }
 }
 export function patchFigure(base: Figure, builder: (build: IFigureBuilder) => IFigureBuilder): IAny[] { return builder(new FigureBuilder(base)).patch(); }
@@ -20521,6 +27633,11 @@ export interface IPrefixBuilder {
   relativeY: (relativeY: number) => IPrefixBuilder;
   defaultY: (defaultY: number) => IPrefixBuilder;
   relativeX: (relativeX: number) => IPrefixBuilder;
+  fontFamily: (fontFamily: string) => IPrefixBuilder;
+  fontWeight: (fontWeight: NormalBold) => IPrefixBuilder;
+  fontStyle: (fontStyle: NormalItalic) => IPrefixBuilder;
+  fontSize: (fontSize: string) => IPrefixBuilder;
+  color: (color: string) => IPrefixBuilder;
 }
 
 class PrefixBuilder implements IPrefixBuilder {
@@ -20531,6 +27648,11 @@ class PrefixBuilder implements IPrefixBuilder {
   relativeY: (relativeY: number) => IPrefixBuilder;
   defaultY: (defaultY: number) => IPrefixBuilder;
   relativeX: (relativeX: number) => IPrefixBuilder;
+  fontFamily: (fontFamily: string) => IPrefixBuilder;
+  fontWeight: (fontWeight: NormalBold) => IPrefixBuilder;
+  fontStyle: (fontStyle: NormalItalic) => IPrefixBuilder;
+  fontSize: (fontSize: string) => IPrefixBuilder;
+  color: (color: string) => IPrefixBuilder;
   constructor(original?: Prefix) {
     let updates: Prefix = {} as any;
     let childBuilders: {[key: string]: any} = {};
@@ -20603,6 +27725,41 @@ class PrefixBuilder implements IPrefixBuilder {
                 modifiedKeys["relativeX"] = true;
                 return this;
             }
+
+            this.fontFamily = (spec: string): IPrefixBuilder => {
+                updates["fontFamily"] = spec;
+                delete childBuilders["fontFamily;"];
+                modifiedKeys["fontFamily"] = true;
+                return this;
+            }
+
+            this.fontWeight = (spec: NormalBold): IPrefixBuilder => {
+                updates["fontWeight"] = spec;
+                delete childBuilders["fontWeight;"];
+                modifiedKeys["fontWeight"] = true;
+                return this;
+            }
+
+            this.fontStyle = (spec: NormalItalic): IPrefixBuilder => {
+                updates["fontStyle"] = spec;
+                delete childBuilders["fontStyle;"];
+                modifiedKeys["fontStyle"] = true;
+                return this;
+            }
+
+            this.fontSize = (spec: string): IPrefixBuilder => {
+                updates["fontSize"] = spec;
+                delete childBuilders["fontSize;"];
+                modifiedKeys["fontSize"] = true;
+                return this;
+            }
+
+            this.color = (spec: string): IPrefixBuilder => {
+                updates["color"] = spec;
+                delete childBuilders["color;"];
+                modifiedKeys["color"] = true;
+                return this;
+            }
   }
 }
 export function patchPrefix(base: Prefix, builder: (build: IPrefixBuilder) => IPrefixBuilder): IAny[] { return builder(new PrefixBuilder(base)).patch(); }
@@ -20616,6 +27773,11 @@ export interface IFigureNumberBuilder {
   relativeY: (relativeY: number) => IFigureNumberBuilder;
   defaultY: (defaultY: number) => IFigureNumberBuilder;
   relativeX: (relativeX: number) => IFigureNumberBuilder;
+  fontFamily: (fontFamily: string) => IFigureNumberBuilder;
+  fontWeight: (fontWeight: NormalBold) => IFigureNumberBuilder;
+  fontStyle: (fontStyle: NormalItalic) => IFigureNumberBuilder;
+  fontSize: (fontSize: string) => IFigureNumberBuilder;
+  color: (color: string) => IFigureNumberBuilder;
 }
 
 class FigureNumberBuilder implements IFigureNumberBuilder {
@@ -20626,6 +27788,11 @@ class FigureNumberBuilder implements IFigureNumberBuilder {
   relativeY: (relativeY: number) => IFigureNumberBuilder;
   defaultY: (defaultY: number) => IFigureNumberBuilder;
   relativeX: (relativeX: number) => IFigureNumberBuilder;
+  fontFamily: (fontFamily: string) => IFigureNumberBuilder;
+  fontWeight: (fontWeight: NormalBold) => IFigureNumberBuilder;
+  fontStyle: (fontStyle: NormalItalic) => IFigureNumberBuilder;
+  fontSize: (fontSize: string) => IFigureNumberBuilder;
+  color: (color: string) => IFigureNumberBuilder;
   constructor(original?: FigureNumber) {
     let updates: FigureNumber = {} as any;
     let childBuilders: {[key: string]: any} = {};
@@ -20698,6 +27865,41 @@ class FigureNumberBuilder implements IFigureNumberBuilder {
                 modifiedKeys["relativeX"] = true;
                 return this;
             }
+
+            this.fontFamily = (spec: string): IFigureNumberBuilder => {
+                updates["fontFamily"] = spec;
+                delete childBuilders["fontFamily;"];
+                modifiedKeys["fontFamily"] = true;
+                return this;
+            }
+
+            this.fontWeight = (spec: NormalBold): IFigureNumberBuilder => {
+                updates["fontWeight"] = spec;
+                delete childBuilders["fontWeight;"];
+                modifiedKeys["fontWeight"] = true;
+                return this;
+            }
+
+            this.fontStyle = (spec: NormalItalic): IFigureNumberBuilder => {
+                updates["fontStyle"] = spec;
+                delete childBuilders["fontStyle;"];
+                modifiedKeys["fontStyle"] = true;
+                return this;
+            }
+
+            this.fontSize = (spec: string): IFigureNumberBuilder => {
+                updates["fontSize"] = spec;
+                delete childBuilders["fontSize;"];
+                modifiedKeys["fontSize"] = true;
+                return this;
+            }
+
+            this.color = (spec: string): IFigureNumberBuilder => {
+                updates["color"] = spec;
+                delete childBuilders["color;"];
+                modifiedKeys["color"] = true;
+                return this;
+            }
   }
 }
 export function patchFigureNumber(base: FigureNumber, builder: (build: IFigureNumberBuilder) => IFigureNumberBuilder): IAny[] { return builder(new FigureNumberBuilder(base)).patch(); }
@@ -20711,6 +27913,11 @@ export interface ISuffixBuilder {
   relativeY: (relativeY: number) => ISuffixBuilder;
   defaultY: (defaultY: number) => ISuffixBuilder;
   relativeX: (relativeX: number) => ISuffixBuilder;
+  fontFamily: (fontFamily: string) => ISuffixBuilder;
+  fontWeight: (fontWeight: NormalBold) => ISuffixBuilder;
+  fontStyle: (fontStyle: NormalItalic) => ISuffixBuilder;
+  fontSize: (fontSize: string) => ISuffixBuilder;
+  color: (color: string) => ISuffixBuilder;
 }
 
 class SuffixBuilder implements ISuffixBuilder {
@@ -20721,6 +27928,11 @@ class SuffixBuilder implements ISuffixBuilder {
   relativeY: (relativeY: number) => ISuffixBuilder;
   defaultY: (defaultY: number) => ISuffixBuilder;
   relativeX: (relativeX: number) => ISuffixBuilder;
+  fontFamily: (fontFamily: string) => ISuffixBuilder;
+  fontWeight: (fontWeight: NormalBold) => ISuffixBuilder;
+  fontStyle: (fontStyle: NormalItalic) => ISuffixBuilder;
+  fontSize: (fontSize: string) => ISuffixBuilder;
+  color: (color: string) => ISuffixBuilder;
   constructor(original?: Suffix) {
     let updates: Suffix = {} as any;
     let childBuilders: {[key: string]: any} = {};
@@ -20791,6 +28003,41 @@ class SuffixBuilder implements ISuffixBuilder {
                 updates["relativeX"] = spec;
                 delete childBuilders["relativeX;"];
                 modifiedKeys["relativeX"] = true;
+                return this;
+            }
+
+            this.fontFamily = (spec: string): ISuffixBuilder => {
+                updates["fontFamily"] = spec;
+                delete childBuilders["fontFamily;"];
+                modifiedKeys["fontFamily"] = true;
+                return this;
+            }
+
+            this.fontWeight = (spec: NormalBold): ISuffixBuilder => {
+                updates["fontWeight"] = spec;
+                delete childBuilders["fontWeight;"];
+                modifiedKeys["fontWeight"] = true;
+                return this;
+            }
+
+            this.fontStyle = (spec: NormalItalic): ISuffixBuilder => {
+                updates["fontStyle"] = spec;
+                delete childBuilders["fontStyle;"];
+                modifiedKeys["fontStyle"] = true;
+                return this;
+            }
+
+            this.fontSize = (spec: string): ISuffixBuilder => {
+                updates["fontSize"] = spec;
+                delete childBuilders["fontSize;"];
+                modifiedKeys["fontSize"] = true;
+                return this;
+            }
+
+            this.color = (spec: string): ISuffixBuilder => {
+                updates["color"] = spec;
+                delete childBuilders["color;"];
+                modifiedKeys["color"] = true;
                 return this;
             }
   }
@@ -21367,6 +28614,15 @@ export interface IEndingBuilder {
   textY: (textY: number) => IEndingBuilder;
   type: (type: StartStopDiscontinue) => IEndingBuilder;
   ending: (ending: string) => IEndingBuilder;
+  defaultX: (defaultX: number) => IEndingBuilder;
+  relativeY: (relativeY: number) => IEndingBuilder;
+  defaultY: (defaultY: number) => IEndingBuilder;
+  relativeX: (relativeX: number) => IEndingBuilder;
+  fontFamily: (fontFamily: string) => IEndingBuilder;
+  fontWeight: (fontWeight: NormalBold) => IEndingBuilder;
+  fontStyle: (fontStyle: NormalItalic) => IEndingBuilder;
+  fontSize: (fontSize: string) => IEndingBuilder;
+  color: (color: string) => IEndingBuilder;
   printObject: (printObject: boolean) => IEndingBuilder;
 }
 
@@ -21379,6 +28635,15 @@ class EndingBuilder implements IEndingBuilder {
   textY: (textY: number) => IEndingBuilder;
   type: (type: StartStopDiscontinue) => IEndingBuilder;
   ending: (ending: string) => IEndingBuilder;
+  defaultX: (defaultX: number) => IEndingBuilder;
+  relativeY: (relativeY: number) => IEndingBuilder;
+  defaultY: (defaultY: number) => IEndingBuilder;
+  relativeX: (relativeX: number) => IEndingBuilder;
+  fontFamily: (fontFamily: string) => IEndingBuilder;
+  fontWeight: (fontWeight: NormalBold) => IEndingBuilder;
+  fontStyle: (fontStyle: NormalItalic) => IEndingBuilder;
+  fontSize: (fontSize: string) => IEndingBuilder;
+  color: (color: string) => IEndingBuilder;
   printObject: (printObject: boolean) => IEndingBuilder;
   constructor(original?: Ending) {
     let updates: Ending = {} as any;
@@ -21477,6 +28742,69 @@ class EndingBuilder implements IEndingBuilder {
                 updates["ending"] = spec;
                 delete childBuilders["ending;"];
                 modifiedKeys["ending"] = true;
+                return this;
+            }
+
+            this.defaultX = (spec: number): IEndingBuilder => {
+                updates["defaultX"] = spec;
+                delete childBuilders["defaultX;"];
+                modifiedKeys["defaultX"] = true;
+                return this;
+            }
+
+            this.relativeY = (spec: number): IEndingBuilder => {
+                updates["relativeY"] = spec;
+                delete childBuilders["relativeY;"];
+                modifiedKeys["relativeY"] = true;
+                return this;
+            }
+
+            this.defaultY = (spec: number): IEndingBuilder => {
+                updates["defaultY"] = spec;
+                delete childBuilders["defaultY;"];
+                modifiedKeys["defaultY"] = true;
+                return this;
+            }
+
+            this.relativeX = (spec: number): IEndingBuilder => {
+                updates["relativeX"] = spec;
+                delete childBuilders["relativeX;"];
+                modifiedKeys["relativeX"] = true;
+                return this;
+            }
+
+            this.fontFamily = (spec: string): IEndingBuilder => {
+                updates["fontFamily"] = spec;
+                delete childBuilders["fontFamily;"];
+                modifiedKeys["fontFamily"] = true;
+                return this;
+            }
+
+            this.fontWeight = (spec: NormalBold): IEndingBuilder => {
+                updates["fontWeight"] = spec;
+                delete childBuilders["fontWeight;"];
+                modifiedKeys["fontWeight"] = true;
+                return this;
+            }
+
+            this.fontStyle = (spec: NormalItalic): IEndingBuilder => {
+                updates["fontStyle"] = spec;
+                delete childBuilders["fontStyle;"];
+                modifiedKeys["fontStyle"] = true;
+                return this;
+            }
+
+            this.fontSize = (spec: string): IEndingBuilder => {
+                updates["fontSize"] = spec;
+                delete childBuilders["fontSize;"];
+                modifiedKeys["fontSize"] = true;
+                return this;
+            }
+
+            this.color = (spec: string): IEndingBuilder => {
+                updates["color"] = spec;
+                delete childBuilders["color;"];
+                modifiedKeys["color"] = true;
                 return this;
             }
 
@@ -21587,9 +28915,11 @@ export interface IDirectionBuilder {
   staff: (staff: number) => IDirectionBuilder;
   offset: (build: Offset | ((builder: IOffsetBuilder) => IOffsetBuilder)) => IDirectionBuilder;
   sound: (build: Sound | ((builder: ISoundBuilder) => ISoundBuilder)) => IDirectionBuilder;
+  placement: (placement: AboveBelow) => IDirectionBuilder;
   voice: (voice: number) => IDirectionBuilder;
   footnote: (build: Footnote | ((builder: IFootnoteBuilder) => IFootnoteBuilder)) => IDirectionBuilder;
   level: (build: Level | ((builder: ILevelBuilder) => ILevelBuilder)) => IDirectionBuilder;
+  directive: (directive: boolean) => IDirectionBuilder;
 }
 
 class DirectionBuilder implements IDirectionBuilder {
@@ -21601,9 +28931,11 @@ class DirectionBuilder implements IDirectionBuilder {
   staff: (staff: number) => IDirectionBuilder;
   offset: (build: Offset | ((builder: IOffsetBuilder) => IOffsetBuilder)) => IDirectionBuilder;
   sound: (build: Sound | ((builder: ISoundBuilder) => ISoundBuilder)) => IDirectionBuilder;
+  placement: (placement: AboveBelow) => IDirectionBuilder;
   voice: (voice: number) => IDirectionBuilder;
   footnote: (build: Footnote | ((builder: IFootnoteBuilder) => IFootnoteBuilder)) => IDirectionBuilder;
   level: (build: Level | ((builder: ILevelBuilder) => ILevelBuilder)) => IDirectionBuilder;
+  directive: (directive: boolean) => IDirectionBuilder;
   constructor(original?: Direction) {
     let updates: Direction = {} as any;
     let childBuilders: {[key: string]: any} = {};
@@ -21739,6 +29071,13 @@ class DirectionBuilder implements IDirectionBuilder {
                   return this;
                 }
 
+            this.placement = (spec: AboveBelow): IDirectionBuilder => {
+                updates["placement"] = spec;
+                delete childBuilders["placement;"];
+                modifiedKeys["placement"] = true;
+                return this;
+            }
+
             this.voice = (spec: number): IDirectionBuilder => {
                 updates["voice"] = spec;
                 delete childBuilders["voice;"];
@@ -21773,6 +29112,13 @@ class DirectionBuilder implements IDirectionBuilder {
                   modifiedKeys["level"] = true;
                   return this;
                 }
+
+            this.directive = (spec: boolean): IDirectionBuilder => {
+                updates["directive"] = spec;
+                delete childBuilders["directive;"];
+                modifiedKeys["directive"] = true;
+                return this;
+            }
   }
 }
 export function patchDirection(base: Direction, builder: (build: IDirectionBuilder) => IDirectionBuilder): IAny[] { return builder(new DirectionBuilder(base)).patch(); }
@@ -22535,6 +29881,25 @@ export interface IRehearsalBuilder {
   patch: () => IAny[];
   data: (data: string) => IRehearsalBuilder;
   justify: (justify: LeftCenterRight) => IRehearsalBuilder;
+  defaultX: (defaultX: number) => IRehearsalBuilder;
+  relativeY: (relativeY: number) => IRehearsalBuilder;
+  defaultY: (defaultY: number) => IRehearsalBuilder;
+  relativeX: (relativeX: number) => IRehearsalBuilder;
+  fontFamily: (fontFamily: string) => IRehearsalBuilder;
+  fontWeight: (fontWeight: NormalBold) => IRehearsalBuilder;
+  fontStyle: (fontStyle: NormalItalic) => IRehearsalBuilder;
+  fontSize: (fontSize: string) => IRehearsalBuilder;
+  color: (color: string) => IRehearsalBuilder;
+  halign: (halign: LeftCenterRight) => IRehearsalBuilder;
+  valign: (valign: TopMiddleBottomBaseline) => IRehearsalBuilder;
+  underline: (underline: number) => IRehearsalBuilder;
+  overline: (overline: number) => IRehearsalBuilder;
+  lineThrough: (lineThrough: number) => IRehearsalBuilder;
+  rotation: (rotation: number) => IRehearsalBuilder;
+  letterSpacing: (letterSpacing: string) => IRehearsalBuilder;
+  lineHeight: (lineHeight: string) => IRehearsalBuilder;
+  dir: (dir: DirectionMode) => IRehearsalBuilder;
+  enclosure: (enclosure: EnclosureShape) => IRehearsalBuilder;
 }
 
 class RehearsalBuilder implements IRehearsalBuilder {
@@ -22542,6 +29907,25 @@ class RehearsalBuilder implements IRehearsalBuilder {
   patch: () => IAny[];
   data: (data: string) => IRehearsalBuilder;
   justify: (justify: LeftCenterRight) => IRehearsalBuilder;
+  defaultX: (defaultX: number) => IRehearsalBuilder;
+  relativeY: (relativeY: number) => IRehearsalBuilder;
+  defaultY: (defaultY: number) => IRehearsalBuilder;
+  relativeX: (relativeX: number) => IRehearsalBuilder;
+  fontFamily: (fontFamily: string) => IRehearsalBuilder;
+  fontWeight: (fontWeight: NormalBold) => IRehearsalBuilder;
+  fontStyle: (fontStyle: NormalItalic) => IRehearsalBuilder;
+  fontSize: (fontSize: string) => IRehearsalBuilder;
+  color: (color: string) => IRehearsalBuilder;
+  halign: (halign: LeftCenterRight) => IRehearsalBuilder;
+  valign: (valign: TopMiddleBottomBaseline) => IRehearsalBuilder;
+  underline: (underline: number) => IRehearsalBuilder;
+  overline: (overline: number) => IRehearsalBuilder;
+  lineThrough: (lineThrough: number) => IRehearsalBuilder;
+  rotation: (rotation: number) => IRehearsalBuilder;
+  letterSpacing: (letterSpacing: string) => IRehearsalBuilder;
+  lineHeight: (lineHeight: string) => IRehearsalBuilder;
+  dir: (dir: DirectionMode) => IRehearsalBuilder;
+  enclosure: (enclosure: EnclosureShape) => IRehearsalBuilder;
   constructor(original?: Rehearsal) {
     let updates: Rehearsal = {} as any;
     let childBuilders: {[key: string]: any} = {};
@@ -22593,6 +29977,139 @@ class RehearsalBuilder implements IRehearsalBuilder {
                 modifiedKeys["justify"] = true;
                 return this;
             }
+
+            this.defaultX = (spec: number): IRehearsalBuilder => {
+                updates["defaultX"] = spec;
+                delete childBuilders["defaultX;"];
+                modifiedKeys["defaultX"] = true;
+                return this;
+            }
+
+            this.relativeY = (spec: number): IRehearsalBuilder => {
+                updates["relativeY"] = spec;
+                delete childBuilders["relativeY;"];
+                modifiedKeys["relativeY"] = true;
+                return this;
+            }
+
+            this.defaultY = (spec: number): IRehearsalBuilder => {
+                updates["defaultY"] = spec;
+                delete childBuilders["defaultY;"];
+                modifiedKeys["defaultY"] = true;
+                return this;
+            }
+
+            this.relativeX = (spec: number): IRehearsalBuilder => {
+                updates["relativeX"] = spec;
+                delete childBuilders["relativeX;"];
+                modifiedKeys["relativeX"] = true;
+                return this;
+            }
+
+            this.fontFamily = (spec: string): IRehearsalBuilder => {
+                updates["fontFamily"] = spec;
+                delete childBuilders["fontFamily;"];
+                modifiedKeys["fontFamily"] = true;
+                return this;
+            }
+
+            this.fontWeight = (spec: NormalBold): IRehearsalBuilder => {
+                updates["fontWeight"] = spec;
+                delete childBuilders["fontWeight;"];
+                modifiedKeys["fontWeight"] = true;
+                return this;
+            }
+
+            this.fontStyle = (spec: NormalItalic): IRehearsalBuilder => {
+                updates["fontStyle"] = spec;
+                delete childBuilders["fontStyle;"];
+                modifiedKeys["fontStyle"] = true;
+                return this;
+            }
+
+            this.fontSize = (spec: string): IRehearsalBuilder => {
+                updates["fontSize"] = spec;
+                delete childBuilders["fontSize;"];
+                modifiedKeys["fontSize"] = true;
+                return this;
+            }
+
+            this.color = (spec: string): IRehearsalBuilder => {
+                updates["color"] = spec;
+                delete childBuilders["color;"];
+                modifiedKeys["color"] = true;
+                return this;
+            }
+
+            this.halign = (spec: LeftCenterRight): IRehearsalBuilder => {
+                updates["halign"] = spec;
+                delete childBuilders["halign;"];
+                modifiedKeys["halign"] = true;
+                return this;
+            }
+
+            this.valign = (spec: TopMiddleBottomBaseline): IRehearsalBuilder => {
+                updates["valign"] = spec;
+                delete childBuilders["valign;"];
+                modifiedKeys["valign"] = true;
+                return this;
+            }
+
+            this.underline = (spec: number): IRehearsalBuilder => {
+                updates["underline"] = spec;
+                delete childBuilders["underline;"];
+                modifiedKeys["underline"] = true;
+                return this;
+            }
+
+            this.overline = (spec: number): IRehearsalBuilder => {
+                updates["overline"] = spec;
+                delete childBuilders["overline;"];
+                modifiedKeys["overline"] = true;
+                return this;
+            }
+
+            this.lineThrough = (spec: number): IRehearsalBuilder => {
+                updates["lineThrough"] = spec;
+                delete childBuilders["lineThrough;"];
+                modifiedKeys["lineThrough"] = true;
+                return this;
+            }
+
+            this.rotation = (spec: number): IRehearsalBuilder => {
+                updates["rotation"] = spec;
+                delete childBuilders["rotation;"];
+                modifiedKeys["rotation"] = true;
+                return this;
+            }
+
+            this.letterSpacing = (spec: string): IRehearsalBuilder => {
+                updates["letterSpacing"] = spec;
+                delete childBuilders["letterSpacing;"];
+                modifiedKeys["letterSpacing"] = true;
+                return this;
+            }
+
+            this.lineHeight = (spec: string): IRehearsalBuilder => {
+                updates["lineHeight"] = spec;
+                delete childBuilders["lineHeight;"];
+                modifiedKeys["lineHeight"] = true;
+                return this;
+            }
+
+            this.dir = (spec: DirectionMode): IRehearsalBuilder => {
+                updates["dir"] = spec;
+                delete childBuilders["dir;"];
+                modifiedKeys["dir"] = true;
+                return this;
+            }
+
+            this.enclosure = (spec: EnclosureShape): IRehearsalBuilder => {
+                updates["enclosure"] = spec;
+                delete childBuilders["enclosure;"];
+                modifiedKeys["enclosure"] = true;
+                return this;
+            }
   }
 }
 export function patchRehearsal(base: Rehearsal, builder: (build: IRehearsalBuilder) => IRehearsalBuilder): IAny[] { return builder(new RehearsalBuilder(base)).patch(); }
@@ -22603,6 +30120,25 @@ export interface IWordsBuilder {
   patch: () => IAny[];
   data: (data: string) => IWordsBuilder;
   justify: (justify: LeftCenterRight) => IWordsBuilder;
+  defaultX: (defaultX: number) => IWordsBuilder;
+  relativeY: (relativeY: number) => IWordsBuilder;
+  defaultY: (defaultY: number) => IWordsBuilder;
+  relativeX: (relativeX: number) => IWordsBuilder;
+  fontFamily: (fontFamily: string) => IWordsBuilder;
+  fontWeight: (fontWeight: NormalBold) => IWordsBuilder;
+  fontStyle: (fontStyle: NormalItalic) => IWordsBuilder;
+  fontSize: (fontSize: string) => IWordsBuilder;
+  color: (color: string) => IWordsBuilder;
+  halign: (halign: LeftCenterRight) => IWordsBuilder;
+  valign: (valign: TopMiddleBottomBaseline) => IWordsBuilder;
+  underline: (underline: number) => IWordsBuilder;
+  overline: (overline: number) => IWordsBuilder;
+  lineThrough: (lineThrough: number) => IWordsBuilder;
+  rotation: (rotation: number) => IWordsBuilder;
+  letterSpacing: (letterSpacing: string) => IWordsBuilder;
+  lineHeight: (lineHeight: string) => IWordsBuilder;
+  dir: (dir: DirectionMode) => IWordsBuilder;
+  enclosure: (enclosure: EnclosureShape) => IWordsBuilder;
 }
 
 class WordsBuilder implements IWordsBuilder {
@@ -22610,6 +30146,25 @@ class WordsBuilder implements IWordsBuilder {
   patch: () => IAny[];
   data: (data: string) => IWordsBuilder;
   justify: (justify: LeftCenterRight) => IWordsBuilder;
+  defaultX: (defaultX: number) => IWordsBuilder;
+  relativeY: (relativeY: number) => IWordsBuilder;
+  defaultY: (defaultY: number) => IWordsBuilder;
+  relativeX: (relativeX: number) => IWordsBuilder;
+  fontFamily: (fontFamily: string) => IWordsBuilder;
+  fontWeight: (fontWeight: NormalBold) => IWordsBuilder;
+  fontStyle: (fontStyle: NormalItalic) => IWordsBuilder;
+  fontSize: (fontSize: string) => IWordsBuilder;
+  color: (color: string) => IWordsBuilder;
+  halign: (halign: LeftCenterRight) => IWordsBuilder;
+  valign: (valign: TopMiddleBottomBaseline) => IWordsBuilder;
+  underline: (underline: number) => IWordsBuilder;
+  overline: (overline: number) => IWordsBuilder;
+  lineThrough: (lineThrough: number) => IWordsBuilder;
+  rotation: (rotation: number) => IWordsBuilder;
+  letterSpacing: (letterSpacing: string) => IWordsBuilder;
+  lineHeight: (lineHeight: string) => IWordsBuilder;
+  dir: (dir: DirectionMode) => IWordsBuilder;
+  enclosure: (enclosure: EnclosureShape) => IWordsBuilder;
   constructor(original?: Words) {
     let updates: Words = {} as any;
     let childBuilders: {[key: string]: any} = {};
@@ -22661,6 +30216,139 @@ class WordsBuilder implements IWordsBuilder {
                 modifiedKeys["justify"] = true;
                 return this;
             }
+
+            this.defaultX = (spec: number): IWordsBuilder => {
+                updates["defaultX"] = spec;
+                delete childBuilders["defaultX;"];
+                modifiedKeys["defaultX"] = true;
+                return this;
+            }
+
+            this.relativeY = (spec: number): IWordsBuilder => {
+                updates["relativeY"] = spec;
+                delete childBuilders["relativeY;"];
+                modifiedKeys["relativeY"] = true;
+                return this;
+            }
+
+            this.defaultY = (spec: number): IWordsBuilder => {
+                updates["defaultY"] = spec;
+                delete childBuilders["defaultY;"];
+                modifiedKeys["defaultY"] = true;
+                return this;
+            }
+
+            this.relativeX = (spec: number): IWordsBuilder => {
+                updates["relativeX"] = spec;
+                delete childBuilders["relativeX;"];
+                modifiedKeys["relativeX"] = true;
+                return this;
+            }
+
+            this.fontFamily = (spec: string): IWordsBuilder => {
+                updates["fontFamily"] = spec;
+                delete childBuilders["fontFamily;"];
+                modifiedKeys["fontFamily"] = true;
+                return this;
+            }
+
+            this.fontWeight = (spec: NormalBold): IWordsBuilder => {
+                updates["fontWeight"] = spec;
+                delete childBuilders["fontWeight;"];
+                modifiedKeys["fontWeight"] = true;
+                return this;
+            }
+
+            this.fontStyle = (spec: NormalItalic): IWordsBuilder => {
+                updates["fontStyle"] = spec;
+                delete childBuilders["fontStyle;"];
+                modifiedKeys["fontStyle"] = true;
+                return this;
+            }
+
+            this.fontSize = (spec: string): IWordsBuilder => {
+                updates["fontSize"] = spec;
+                delete childBuilders["fontSize;"];
+                modifiedKeys["fontSize"] = true;
+                return this;
+            }
+
+            this.color = (spec: string): IWordsBuilder => {
+                updates["color"] = spec;
+                delete childBuilders["color;"];
+                modifiedKeys["color"] = true;
+                return this;
+            }
+
+            this.halign = (spec: LeftCenterRight): IWordsBuilder => {
+                updates["halign"] = spec;
+                delete childBuilders["halign;"];
+                modifiedKeys["halign"] = true;
+                return this;
+            }
+
+            this.valign = (spec: TopMiddleBottomBaseline): IWordsBuilder => {
+                updates["valign"] = spec;
+                delete childBuilders["valign;"];
+                modifiedKeys["valign"] = true;
+                return this;
+            }
+
+            this.underline = (spec: number): IWordsBuilder => {
+                updates["underline"] = spec;
+                delete childBuilders["underline;"];
+                modifiedKeys["underline"] = true;
+                return this;
+            }
+
+            this.overline = (spec: number): IWordsBuilder => {
+                updates["overline"] = spec;
+                delete childBuilders["overline;"];
+                modifiedKeys["overline"] = true;
+                return this;
+            }
+
+            this.lineThrough = (spec: number): IWordsBuilder => {
+                updates["lineThrough"] = spec;
+                delete childBuilders["lineThrough;"];
+                modifiedKeys["lineThrough"] = true;
+                return this;
+            }
+
+            this.rotation = (spec: number): IWordsBuilder => {
+                updates["rotation"] = spec;
+                delete childBuilders["rotation;"];
+                modifiedKeys["rotation"] = true;
+                return this;
+            }
+
+            this.letterSpacing = (spec: string): IWordsBuilder => {
+                updates["letterSpacing"] = spec;
+                delete childBuilders["letterSpacing;"];
+                modifiedKeys["letterSpacing"] = true;
+                return this;
+            }
+
+            this.lineHeight = (spec: string): IWordsBuilder => {
+                updates["lineHeight"] = spec;
+                delete childBuilders["lineHeight;"];
+                modifiedKeys["lineHeight"] = true;
+                return this;
+            }
+
+            this.dir = (spec: DirectionMode): IWordsBuilder => {
+                updates["dir"] = spec;
+                delete childBuilders["dir;"];
+                modifiedKeys["dir"] = true;
+                return this;
+            }
+
+            this.enclosure = (spec: EnclosureShape): IWordsBuilder => {
+                updates["enclosure"] = spec;
+                delete childBuilders["enclosure;"];
+                modifiedKeys["enclosure"] = true;
+                return this;
+            }
   }
 }
 export function patchWords(base: Words, builder: (build: IWordsBuilder) => IWordsBuilder): IAny[] { return builder(new WordsBuilder(base)).patch(); }
@@ -22673,7 +30361,14 @@ export interface IWedgeBuilder {
   niente: (niente: boolean) => IWedgeBuilder;
   type: (type: WedgeType) => IWedgeBuilder;
   spread: (spread: number) => IWedgeBuilder;
+  defaultX: (defaultX: number) => IWedgeBuilder;
+  relativeY: (relativeY: number) => IWedgeBuilder;
+  defaultY: (defaultY: number) => IWedgeBuilder;
+  relativeX: (relativeX: number) => IWedgeBuilder;
+  color: (color: string) => IWedgeBuilder;
   lineType: (lineType: SolidDashedDottedWavy) => IWedgeBuilder;
+  dashLength: (dashLength: number) => IWedgeBuilder;
+  spaceLength: (spaceLength: number) => IWedgeBuilder;
 }
 
 class WedgeBuilder implements IWedgeBuilder {
@@ -22683,7 +30378,14 @@ class WedgeBuilder implements IWedgeBuilder {
   niente: (niente: boolean) => IWedgeBuilder;
   type: (type: WedgeType) => IWedgeBuilder;
   spread: (spread: number) => IWedgeBuilder;
+  defaultX: (defaultX: number) => IWedgeBuilder;
+  relativeY: (relativeY: number) => IWedgeBuilder;
+  defaultY: (defaultY: number) => IWedgeBuilder;
+  relativeX: (relativeX: number) => IWedgeBuilder;
+  color: (color: string) => IWedgeBuilder;
   lineType: (lineType: SolidDashedDottedWavy) => IWedgeBuilder;
+  dashLength: (dashLength: number) => IWedgeBuilder;
+  spaceLength: (spaceLength: number) => IWedgeBuilder;
   constructor(original?: Wedge) {
     let updates: Wedge = {} as any;
     let childBuilders: {[key: string]: any} = {};
@@ -22765,10 +30467,59 @@ class WedgeBuilder implements IWedgeBuilder {
                 return this;
             }
 
+            this.defaultX = (spec: number): IWedgeBuilder => {
+                updates["defaultX"] = spec;
+                delete childBuilders["defaultX;"];
+                modifiedKeys["defaultX"] = true;
+                return this;
+            }
+
+            this.relativeY = (spec: number): IWedgeBuilder => {
+                updates["relativeY"] = spec;
+                delete childBuilders["relativeY;"];
+                modifiedKeys["relativeY"] = true;
+                return this;
+            }
+
+            this.defaultY = (spec: number): IWedgeBuilder => {
+                updates["defaultY"] = spec;
+                delete childBuilders["defaultY;"];
+                modifiedKeys["defaultY"] = true;
+                return this;
+            }
+
+            this.relativeX = (spec: number): IWedgeBuilder => {
+                updates["relativeX"] = spec;
+                delete childBuilders["relativeX;"];
+                modifiedKeys["relativeX"] = true;
+                return this;
+            }
+
+            this.color = (spec: string): IWedgeBuilder => {
+                updates["color"] = spec;
+                delete childBuilders["color;"];
+                modifiedKeys["color"] = true;
+                return this;
+            }
+
             this.lineType = (spec: SolidDashedDottedWavy): IWedgeBuilder => {
                 updates["lineType"] = spec;
                 delete childBuilders["lineType;"];
                 modifiedKeys["lineType"] = true;
+                return this;
+            }
+
+            this.dashLength = (spec: number): IWedgeBuilder => {
+                updates["dashLength"] = spec;
+                delete childBuilders["dashLength;"];
+                modifiedKeys["dashLength"] = true;
+                return this;
+            }
+
+            this.spaceLength = (spec: number): IWedgeBuilder => {
+                updates["spaceLength"] = spec;
+                delete childBuilders["spaceLength;"];
+                modifiedKeys["spaceLength"] = true;
                 return this;
             }
   }
@@ -22781,6 +30532,11 @@ export interface IDashesBuilder {
   patch: () => IAny[];
   number: (number: number) => IDashesBuilder;
   type: (type: StartStopContinue) => IDashesBuilder;
+  defaultX: (defaultX: number) => IDashesBuilder;
+  relativeY: (relativeY: number) => IDashesBuilder;
+  defaultY: (defaultY: number) => IDashesBuilder;
+  relativeX: (relativeX: number) => IDashesBuilder;
+  color: (color: string) => IDashesBuilder;
   dashLength: (dashLength: number) => IDashesBuilder;
   spaceLength: (spaceLength: number) => IDashesBuilder;
 }
@@ -22790,6 +30546,11 @@ class DashesBuilder implements IDashesBuilder {
   patch: () => IAny[];
   number: (number: number) => IDashesBuilder;
   type: (type: StartStopContinue) => IDashesBuilder;
+  defaultX: (defaultX: number) => IDashesBuilder;
+  relativeY: (relativeY: number) => IDashesBuilder;
+  defaultY: (defaultY: number) => IDashesBuilder;
+  relativeX: (relativeX: number) => IDashesBuilder;
+  color: (color: string) => IDashesBuilder;
   dashLength: (dashLength: number) => IDashesBuilder;
   spaceLength: (spaceLength: number) => IDashesBuilder;
   constructor(original?: Dashes) {
@@ -22849,6 +30610,41 @@ class DashesBuilder implements IDashesBuilder {
                 return this;
             }
 
+            this.defaultX = (spec: number): IDashesBuilder => {
+                updates["defaultX"] = spec;
+                delete childBuilders["defaultX;"];
+                modifiedKeys["defaultX"] = true;
+                return this;
+            }
+
+            this.relativeY = (spec: number): IDashesBuilder => {
+                updates["relativeY"] = spec;
+                delete childBuilders["relativeY;"];
+                modifiedKeys["relativeY"] = true;
+                return this;
+            }
+
+            this.defaultY = (spec: number): IDashesBuilder => {
+                updates["defaultY"] = spec;
+                delete childBuilders["defaultY;"];
+                modifiedKeys["defaultY"] = true;
+                return this;
+            }
+
+            this.relativeX = (spec: number): IDashesBuilder => {
+                updates["relativeX"] = spec;
+                delete childBuilders["relativeX;"];
+                modifiedKeys["relativeX"] = true;
+                return this;
+            }
+
+            this.color = (spec: string): IDashesBuilder => {
+                updates["color"] = spec;
+                delete childBuilders["color;"];
+                modifiedKeys["color"] = true;
+                return this;
+            }
+
             this.dashLength = (spec: number): IDashesBuilder => {
                 updates["dashLength"] = spec;
                 delete childBuilders["dashLength;"];
@@ -22874,7 +30670,14 @@ export interface IBracketBuilder {
   number: (number: number) => IBracketBuilder;
   type: (type: StartStopContinue) => IBracketBuilder;
   lineEnd: (lineEnd: LineEndType) => IBracketBuilder;
+  defaultX: (defaultX: number) => IBracketBuilder;
+  relativeY: (relativeY: number) => IBracketBuilder;
+  defaultY: (defaultY: number) => IBracketBuilder;
+  relativeX: (relativeX: number) => IBracketBuilder;
+  color: (color: string) => IBracketBuilder;
   lineType: (lineType: SolidDashedDottedWavy) => IBracketBuilder;
+  dashLength: (dashLength: number) => IBracketBuilder;
+  spaceLength: (spaceLength: number) => IBracketBuilder;
 }
 
 class BracketBuilder implements IBracketBuilder {
@@ -22884,7 +30687,14 @@ class BracketBuilder implements IBracketBuilder {
   number: (number: number) => IBracketBuilder;
   type: (type: StartStopContinue) => IBracketBuilder;
   lineEnd: (lineEnd: LineEndType) => IBracketBuilder;
+  defaultX: (defaultX: number) => IBracketBuilder;
+  relativeY: (relativeY: number) => IBracketBuilder;
+  defaultY: (defaultY: number) => IBracketBuilder;
+  relativeX: (relativeX: number) => IBracketBuilder;
+  color: (color: string) => IBracketBuilder;
   lineType: (lineType: SolidDashedDottedWavy) => IBracketBuilder;
+  dashLength: (dashLength: number) => IBracketBuilder;
+  spaceLength: (spaceLength: number) => IBracketBuilder;
   constructor(original?: Bracket) {
     let updates: Bracket = {} as any;
     let childBuilders: {[key: string]: any} = {};
@@ -22966,10 +30776,59 @@ class BracketBuilder implements IBracketBuilder {
                 return this;
             }
 
+            this.defaultX = (spec: number): IBracketBuilder => {
+                updates["defaultX"] = spec;
+                delete childBuilders["defaultX;"];
+                modifiedKeys["defaultX"] = true;
+                return this;
+            }
+
+            this.relativeY = (spec: number): IBracketBuilder => {
+                updates["relativeY"] = spec;
+                delete childBuilders["relativeY;"];
+                modifiedKeys["relativeY"] = true;
+                return this;
+            }
+
+            this.defaultY = (spec: number): IBracketBuilder => {
+                updates["defaultY"] = spec;
+                delete childBuilders["defaultY;"];
+                modifiedKeys["defaultY"] = true;
+                return this;
+            }
+
+            this.relativeX = (spec: number): IBracketBuilder => {
+                updates["relativeX"] = spec;
+                delete childBuilders["relativeX;"];
+                modifiedKeys["relativeX"] = true;
+                return this;
+            }
+
+            this.color = (spec: string): IBracketBuilder => {
+                updates["color"] = spec;
+                delete childBuilders["color;"];
+                modifiedKeys["color"] = true;
+                return this;
+            }
+
             this.lineType = (spec: SolidDashedDottedWavy): IBracketBuilder => {
                 updates["lineType"] = spec;
                 delete childBuilders["lineType;"];
                 modifiedKeys["lineType"] = true;
+                return this;
+            }
+
+            this.dashLength = (spec: number): IBracketBuilder => {
+                updates["dashLength"] = spec;
+                delete childBuilders["dashLength;"];
+                modifiedKeys["dashLength"] = true;
+                return this;
+            }
+
+            this.spaceLength = (spec: number): IBracketBuilder => {
+                updates["spaceLength"] = spec;
+                delete childBuilders["spaceLength;"];
+                modifiedKeys["spaceLength"] = true;
                 return this;
             }
   }
@@ -22987,6 +30846,13 @@ export interface IPedalBuilder {
   relativeY: (relativeY: number) => IPedalBuilder;
   defaultY: (defaultY: number) => IPedalBuilder;
   relativeX: (relativeX: number) => IPedalBuilder;
+  fontFamily: (fontFamily: string) => IPedalBuilder;
+  fontWeight: (fontWeight: NormalBold) => IPedalBuilder;
+  fontStyle: (fontStyle: NormalItalic) => IPedalBuilder;
+  fontSize: (fontSize: string) => IPedalBuilder;
+  color: (color: string) => IPedalBuilder;
+  halign: (halign: LeftCenterRight) => IPedalBuilder;
+  valign: (valign: TopMiddleBottomBaseline) => IPedalBuilder;
 }
 
 class PedalBuilder implements IPedalBuilder {
@@ -22999,6 +30865,13 @@ class PedalBuilder implements IPedalBuilder {
   relativeY: (relativeY: number) => IPedalBuilder;
   defaultY: (defaultY: number) => IPedalBuilder;
   relativeX: (relativeX: number) => IPedalBuilder;
+  fontFamily: (fontFamily: string) => IPedalBuilder;
+  fontWeight: (fontWeight: NormalBold) => IPedalBuilder;
+  fontStyle: (fontStyle: NormalItalic) => IPedalBuilder;
+  fontSize: (fontSize: string) => IPedalBuilder;
+  color: (color: string) => IPedalBuilder;
+  halign: (halign: LeftCenterRight) => IPedalBuilder;
+  valign: (valign: TopMiddleBottomBaseline) => IPedalBuilder;
   constructor(original?: Pedal) {
     let updates: Pedal = {} as any;
     let childBuilders: {[key: string]: any} = {};
@@ -23095,6 +30968,55 @@ class PedalBuilder implements IPedalBuilder {
                 modifiedKeys["relativeX"] = true;
                 return this;
             }
+
+            this.fontFamily = (spec: string): IPedalBuilder => {
+                updates["fontFamily"] = spec;
+                delete childBuilders["fontFamily;"];
+                modifiedKeys["fontFamily"] = true;
+                return this;
+            }
+
+            this.fontWeight = (spec: NormalBold): IPedalBuilder => {
+                updates["fontWeight"] = spec;
+                delete childBuilders["fontWeight;"];
+                modifiedKeys["fontWeight"] = true;
+                return this;
+            }
+
+            this.fontStyle = (spec: NormalItalic): IPedalBuilder => {
+                updates["fontStyle"] = spec;
+                delete childBuilders["fontStyle;"];
+                modifiedKeys["fontStyle"] = true;
+                return this;
+            }
+
+            this.fontSize = (spec: string): IPedalBuilder => {
+                updates["fontSize"] = spec;
+                delete childBuilders["fontSize;"];
+                modifiedKeys["fontSize"] = true;
+                return this;
+            }
+
+            this.color = (spec: string): IPedalBuilder => {
+                updates["color"] = spec;
+                delete childBuilders["color;"];
+                modifiedKeys["color"] = true;
+                return this;
+            }
+
+            this.halign = (spec: LeftCenterRight): IPedalBuilder => {
+                updates["halign"] = spec;
+                delete childBuilders["halign;"];
+                modifiedKeys["halign"] = true;
+                return this;
+            }
+
+            this.valign = (spec: TopMiddleBottomBaseline): IPedalBuilder => {
+                updates["valign"] = spec;
+                delete childBuilders["valign;"];
+                modifiedKeys["valign"] = true;
+                return this;
+            }
   }
 }
 export function patchPedal(base: Pedal, builder: (build: IPedalBuilder) => IPedalBuilder): IAny[] { return builder(new PedalBuilder(base)).patch(); }
@@ -23117,10 +31039,18 @@ export interface IMetronomeBuilder {
   beatUnitDotsChangeSplice: (start: number, deleteCount: number, ...items: BeatUnitDot[]) => IMetronomeBuilder;
   beatUnitDotsChange: (beatUnitDotsChange: BeatUnitDot[]) => IMetronomeBuilder;
   metronomeRelation: (metronomeRelation: string) => IMetronomeBuilder;
+  justify: (justify: LeftCenterRight) => IMetronomeBuilder;
   defaultX: (defaultX: number) => IMetronomeBuilder;
   relativeY: (relativeY: number) => IMetronomeBuilder;
   defaultY: (defaultY: number) => IMetronomeBuilder;
   relativeX: (relativeX: number) => IMetronomeBuilder;
+  fontFamily: (fontFamily: string) => IMetronomeBuilder;
+  fontWeight: (fontWeight: NormalBold) => IMetronomeBuilder;
+  fontStyle: (fontStyle: NormalItalic) => IMetronomeBuilder;
+  fontSize: (fontSize: string) => IMetronomeBuilder;
+  color: (color: string) => IMetronomeBuilder;
+  halign: (halign: LeftCenterRight) => IMetronomeBuilder;
+  valign: (valign: TopMiddleBottomBaseline) => IMetronomeBuilder;
 }
 
 class MetronomeBuilder implements IMetronomeBuilder {
@@ -23140,10 +31070,18 @@ class MetronomeBuilder implements IMetronomeBuilder {
   beatUnitDotsChangeSplice: (start: number, deleteCount: number, ...items: BeatUnitDot[]) => IMetronomeBuilder;
   beatUnitDotsChange: (beatUnitDotsChange: BeatUnitDot[]) => IMetronomeBuilder;
   metronomeRelation: (metronomeRelation: string) => IMetronomeBuilder;
+  justify: (justify: LeftCenterRight) => IMetronomeBuilder;
   defaultX: (defaultX: number) => IMetronomeBuilder;
   relativeY: (relativeY: number) => IMetronomeBuilder;
   defaultY: (defaultY: number) => IMetronomeBuilder;
   relativeX: (relativeX: number) => IMetronomeBuilder;
+  fontFamily: (fontFamily: string) => IMetronomeBuilder;
+  fontWeight: (fontWeight: NormalBold) => IMetronomeBuilder;
+  fontStyle: (fontStyle: NormalItalic) => IMetronomeBuilder;
+  fontSize: (fontSize: string) => IMetronomeBuilder;
+  color: (color: string) => IMetronomeBuilder;
+  halign: (halign: LeftCenterRight) => IMetronomeBuilder;
+  valign: (valign: TopMiddleBottomBaseline) => IMetronomeBuilder;
   constructor(original?: Metronome) {
     let updates: Metronome = {} as any;
     let childBuilders: {[key: string]: any} = {};
@@ -23445,6 +31383,13 @@ class MetronomeBuilder implements IMetronomeBuilder {
                 return this;
             }
 
+            this.justify = (spec: LeftCenterRight): IMetronomeBuilder => {
+                updates["justify"] = spec;
+                delete childBuilders["justify;"];
+                modifiedKeys["justify"] = true;
+                return this;
+            }
+
             this.defaultX = (spec: number): IMetronomeBuilder => {
                 updates["defaultX"] = spec;
                 delete childBuilders["defaultX;"];
@@ -23470,6 +31415,55 @@ class MetronomeBuilder implements IMetronomeBuilder {
                 updates["relativeX"] = spec;
                 delete childBuilders["relativeX;"];
                 modifiedKeys["relativeX"] = true;
+                return this;
+            }
+
+            this.fontFamily = (spec: string): IMetronomeBuilder => {
+                updates["fontFamily"] = spec;
+                delete childBuilders["fontFamily;"];
+                modifiedKeys["fontFamily"] = true;
+                return this;
+            }
+
+            this.fontWeight = (spec: NormalBold): IMetronomeBuilder => {
+                updates["fontWeight"] = spec;
+                delete childBuilders["fontWeight;"];
+                modifiedKeys["fontWeight"] = true;
+                return this;
+            }
+
+            this.fontStyle = (spec: NormalItalic): IMetronomeBuilder => {
+                updates["fontStyle"] = spec;
+                delete childBuilders["fontStyle;"];
+                modifiedKeys["fontStyle"] = true;
+                return this;
+            }
+
+            this.fontSize = (spec: string): IMetronomeBuilder => {
+                updates["fontSize"] = spec;
+                delete childBuilders["fontSize;"];
+                modifiedKeys["fontSize"] = true;
+                return this;
+            }
+
+            this.color = (spec: string): IMetronomeBuilder => {
+                updates["color"] = spec;
+                delete childBuilders["color;"];
+                modifiedKeys["color"] = true;
+                return this;
+            }
+
+            this.halign = (spec: LeftCenterRight): IMetronomeBuilder => {
+                updates["halign"] = spec;
+                delete childBuilders["halign;"];
+                modifiedKeys["halign"] = true;
+                return this;
+            }
+
+            this.valign = (spec: TopMiddleBottomBaseline): IMetronomeBuilder => {
+                updates["valign"] = spec;
+                delete childBuilders["valign;"];
+                modifiedKeys["valign"] = true;
                 return this;
             }
   }
@@ -24169,6 +32163,15 @@ export interface IOctaveShiftBuilder {
   number: (number: number) => IOctaveShiftBuilder;
   size: (size: number) => IOctaveShiftBuilder;
   type: (type: OctaveShiftType) => IOctaveShiftBuilder;
+  defaultX: (defaultX: number) => IOctaveShiftBuilder;
+  relativeY: (relativeY: number) => IOctaveShiftBuilder;
+  defaultY: (defaultY: number) => IOctaveShiftBuilder;
+  relativeX: (relativeX: number) => IOctaveShiftBuilder;
+  fontFamily: (fontFamily: string) => IOctaveShiftBuilder;
+  fontWeight: (fontWeight: NormalBold) => IOctaveShiftBuilder;
+  fontStyle: (fontStyle: NormalItalic) => IOctaveShiftBuilder;
+  fontSize: (fontSize: string) => IOctaveShiftBuilder;
+  color: (color: string) => IOctaveShiftBuilder;
   dashLength: (dashLength: number) => IOctaveShiftBuilder;
   spaceLength: (spaceLength: number) => IOctaveShiftBuilder;
 }
@@ -24179,6 +32182,15 @@ class OctaveShiftBuilder implements IOctaveShiftBuilder {
   number: (number: number) => IOctaveShiftBuilder;
   size: (size: number) => IOctaveShiftBuilder;
   type: (type: OctaveShiftType) => IOctaveShiftBuilder;
+  defaultX: (defaultX: number) => IOctaveShiftBuilder;
+  relativeY: (relativeY: number) => IOctaveShiftBuilder;
+  defaultY: (defaultY: number) => IOctaveShiftBuilder;
+  relativeX: (relativeX: number) => IOctaveShiftBuilder;
+  fontFamily: (fontFamily: string) => IOctaveShiftBuilder;
+  fontWeight: (fontWeight: NormalBold) => IOctaveShiftBuilder;
+  fontStyle: (fontStyle: NormalItalic) => IOctaveShiftBuilder;
+  fontSize: (fontSize: string) => IOctaveShiftBuilder;
+  color: (color: string) => IOctaveShiftBuilder;
   dashLength: (dashLength: number) => IOctaveShiftBuilder;
   spaceLength: (spaceLength: number) => IOctaveShiftBuilder;
   constructor(original?: OctaveShift) {
@@ -24250,6 +32262,69 @@ class OctaveShiftBuilder implements IOctaveShiftBuilder {
                 return this;
             }
 
+            this.defaultX = (spec: number): IOctaveShiftBuilder => {
+                updates["defaultX"] = spec;
+                delete childBuilders["defaultX;"];
+                modifiedKeys["defaultX"] = true;
+                return this;
+            }
+
+            this.relativeY = (spec: number): IOctaveShiftBuilder => {
+                updates["relativeY"] = spec;
+                delete childBuilders["relativeY;"];
+                modifiedKeys["relativeY"] = true;
+                return this;
+            }
+
+            this.defaultY = (spec: number): IOctaveShiftBuilder => {
+                updates["defaultY"] = spec;
+                delete childBuilders["defaultY;"];
+                modifiedKeys["defaultY"] = true;
+                return this;
+            }
+
+            this.relativeX = (spec: number): IOctaveShiftBuilder => {
+                updates["relativeX"] = spec;
+                delete childBuilders["relativeX;"];
+                modifiedKeys["relativeX"] = true;
+                return this;
+            }
+
+            this.fontFamily = (spec: string): IOctaveShiftBuilder => {
+                updates["fontFamily"] = spec;
+                delete childBuilders["fontFamily;"];
+                modifiedKeys["fontFamily"] = true;
+                return this;
+            }
+
+            this.fontWeight = (spec: NormalBold): IOctaveShiftBuilder => {
+                updates["fontWeight"] = spec;
+                delete childBuilders["fontWeight;"];
+                modifiedKeys["fontWeight"] = true;
+                return this;
+            }
+
+            this.fontStyle = (spec: NormalItalic): IOctaveShiftBuilder => {
+                updates["fontStyle"] = spec;
+                delete childBuilders["fontStyle;"];
+                modifiedKeys["fontStyle"] = true;
+                return this;
+            }
+
+            this.fontSize = (spec: string): IOctaveShiftBuilder => {
+                updates["fontSize"] = spec;
+                delete childBuilders["fontSize;"];
+                modifiedKeys["fontSize"] = true;
+                return this;
+            }
+
+            this.color = (spec: string): IOctaveShiftBuilder => {
+                updates["color"] = spec;
+                delete childBuilders["color;"];
+                modifiedKeys["color"] = true;
+                return this;
+            }
+
             this.dashLength = (spec: number): IOctaveShiftBuilder => {
                 updates["dashLength"] = spec;
                 delete childBuilders["dashLength;"];
@@ -24278,6 +32353,13 @@ export interface IHarpPedalsBuilder {
   relativeY: (relativeY: number) => IHarpPedalsBuilder;
   defaultY: (defaultY: number) => IHarpPedalsBuilder;
   relativeX: (relativeX: number) => IHarpPedalsBuilder;
+  fontFamily: (fontFamily: string) => IHarpPedalsBuilder;
+  fontWeight: (fontWeight: NormalBold) => IHarpPedalsBuilder;
+  fontStyle: (fontStyle: NormalItalic) => IHarpPedalsBuilder;
+  fontSize: (fontSize: string) => IHarpPedalsBuilder;
+  color: (color: string) => IHarpPedalsBuilder;
+  halign: (halign: LeftCenterRight) => IHarpPedalsBuilder;
+  valign: (valign: TopMiddleBottomBaseline) => IHarpPedalsBuilder;
 }
 
 class HarpPedalsBuilder implements IHarpPedalsBuilder {
@@ -24290,6 +32372,13 @@ class HarpPedalsBuilder implements IHarpPedalsBuilder {
   relativeY: (relativeY: number) => IHarpPedalsBuilder;
   defaultY: (defaultY: number) => IHarpPedalsBuilder;
   relativeX: (relativeX: number) => IHarpPedalsBuilder;
+  fontFamily: (fontFamily: string) => IHarpPedalsBuilder;
+  fontWeight: (fontWeight: NormalBold) => IHarpPedalsBuilder;
+  fontStyle: (fontStyle: NormalItalic) => IHarpPedalsBuilder;
+  fontSize: (fontSize: string) => IHarpPedalsBuilder;
+  color: (color: string) => IHarpPedalsBuilder;
+  halign: (halign: LeftCenterRight) => IHarpPedalsBuilder;
+  valign: (valign: TopMiddleBottomBaseline) => IHarpPedalsBuilder;
   constructor(original?: HarpPedals) {
     let updates: HarpPedals = {} as any;
     let childBuilders: {[key: string]: any} = {};
@@ -24417,6 +32506,55 @@ class HarpPedalsBuilder implements IHarpPedalsBuilder {
                 modifiedKeys["relativeX"] = true;
                 return this;
             }
+
+            this.fontFamily = (spec: string): IHarpPedalsBuilder => {
+                updates["fontFamily"] = spec;
+                delete childBuilders["fontFamily;"];
+                modifiedKeys["fontFamily"] = true;
+                return this;
+            }
+
+            this.fontWeight = (spec: NormalBold): IHarpPedalsBuilder => {
+                updates["fontWeight"] = spec;
+                delete childBuilders["fontWeight;"];
+                modifiedKeys["fontWeight"] = true;
+                return this;
+            }
+
+            this.fontStyle = (spec: NormalItalic): IHarpPedalsBuilder => {
+                updates["fontStyle"] = spec;
+                delete childBuilders["fontStyle;"];
+                modifiedKeys["fontStyle"] = true;
+                return this;
+            }
+
+            this.fontSize = (spec: string): IHarpPedalsBuilder => {
+                updates["fontSize"] = spec;
+                delete childBuilders["fontSize;"];
+                modifiedKeys["fontSize"] = true;
+                return this;
+            }
+
+            this.color = (spec: string): IHarpPedalsBuilder => {
+                updates["color"] = spec;
+                delete childBuilders["color;"];
+                modifiedKeys["color"] = true;
+                return this;
+            }
+
+            this.halign = (spec: LeftCenterRight): IHarpPedalsBuilder => {
+                updates["halign"] = spec;
+                delete childBuilders["halign;"];
+                modifiedKeys["halign"] = true;
+                return this;
+            }
+
+            this.valign = (spec: TopMiddleBottomBaseline): IHarpPedalsBuilder => {
+                updates["valign"] = spec;
+                delete childBuilders["valign;"];
+                modifiedKeys["valign"] = true;
+                return this;
+            }
   }
 }
 export function patchHarpPedals(base: HarpPedals, builder: (build: IHarpPedalsBuilder) => IHarpPedalsBuilder): IAny[] { return builder(new HarpPedalsBuilder(base)).patch(); }
@@ -24502,6 +32640,13 @@ export interface IDampBuilder {
   relativeY: (relativeY: number) => IDampBuilder;
   defaultY: (defaultY: number) => IDampBuilder;
   relativeX: (relativeX: number) => IDampBuilder;
+  fontFamily: (fontFamily: string) => IDampBuilder;
+  fontWeight: (fontWeight: NormalBold) => IDampBuilder;
+  fontStyle: (fontStyle: NormalItalic) => IDampBuilder;
+  fontSize: (fontSize: string) => IDampBuilder;
+  color: (color: string) => IDampBuilder;
+  halign: (halign: LeftCenterRight) => IDampBuilder;
+  valign: (valign: TopMiddleBottomBaseline) => IDampBuilder;
 }
 
 class DampBuilder implements IDampBuilder {
@@ -24511,6 +32656,13 @@ class DampBuilder implements IDampBuilder {
   relativeY: (relativeY: number) => IDampBuilder;
   defaultY: (defaultY: number) => IDampBuilder;
   relativeX: (relativeX: number) => IDampBuilder;
+  fontFamily: (fontFamily: string) => IDampBuilder;
+  fontWeight: (fontWeight: NormalBold) => IDampBuilder;
+  fontStyle: (fontStyle: NormalItalic) => IDampBuilder;
+  fontSize: (fontSize: string) => IDampBuilder;
+  color: (color: string) => IDampBuilder;
+  halign: (halign: LeftCenterRight) => IDampBuilder;
+  valign: (valign: TopMiddleBottomBaseline) => IDampBuilder;
   constructor(original?: Damp) {
     let updates: Damp = {} as any;
     let childBuilders: {[key: string]: any} = {};
@@ -24571,6 +32723,55 @@ class DampBuilder implements IDampBuilder {
                 modifiedKeys["relativeX"] = true;
                 return this;
             }
+
+            this.fontFamily = (spec: string): IDampBuilder => {
+                updates["fontFamily"] = spec;
+                delete childBuilders["fontFamily;"];
+                modifiedKeys["fontFamily"] = true;
+                return this;
+            }
+
+            this.fontWeight = (spec: NormalBold): IDampBuilder => {
+                updates["fontWeight"] = spec;
+                delete childBuilders["fontWeight;"];
+                modifiedKeys["fontWeight"] = true;
+                return this;
+            }
+
+            this.fontStyle = (spec: NormalItalic): IDampBuilder => {
+                updates["fontStyle"] = spec;
+                delete childBuilders["fontStyle;"];
+                modifiedKeys["fontStyle"] = true;
+                return this;
+            }
+
+            this.fontSize = (spec: string): IDampBuilder => {
+                updates["fontSize"] = spec;
+                delete childBuilders["fontSize;"];
+                modifiedKeys["fontSize"] = true;
+                return this;
+            }
+
+            this.color = (spec: string): IDampBuilder => {
+                updates["color"] = spec;
+                delete childBuilders["color;"];
+                modifiedKeys["color"] = true;
+                return this;
+            }
+
+            this.halign = (spec: LeftCenterRight): IDampBuilder => {
+                updates["halign"] = spec;
+                delete childBuilders["halign;"];
+                modifiedKeys["halign"] = true;
+                return this;
+            }
+
+            this.valign = (spec: TopMiddleBottomBaseline): IDampBuilder => {
+                updates["valign"] = spec;
+                delete childBuilders["valign;"];
+                modifiedKeys["valign"] = true;
+                return this;
+            }
   }
 }
 export function patchDamp(base: Damp, builder: (build: IDampBuilder) => IDampBuilder): IAny[] { return builder(new DampBuilder(base)).patch(); }
@@ -24583,6 +32784,13 @@ export interface IDampAllBuilder {
   relativeY: (relativeY: number) => IDampAllBuilder;
   defaultY: (defaultY: number) => IDampAllBuilder;
   relativeX: (relativeX: number) => IDampAllBuilder;
+  fontFamily: (fontFamily: string) => IDampAllBuilder;
+  fontWeight: (fontWeight: NormalBold) => IDampAllBuilder;
+  fontStyle: (fontStyle: NormalItalic) => IDampAllBuilder;
+  fontSize: (fontSize: string) => IDampAllBuilder;
+  color: (color: string) => IDampAllBuilder;
+  halign: (halign: LeftCenterRight) => IDampAllBuilder;
+  valign: (valign: TopMiddleBottomBaseline) => IDampAllBuilder;
 }
 
 class DampAllBuilder implements IDampAllBuilder {
@@ -24592,6 +32800,13 @@ class DampAllBuilder implements IDampAllBuilder {
   relativeY: (relativeY: number) => IDampAllBuilder;
   defaultY: (defaultY: number) => IDampAllBuilder;
   relativeX: (relativeX: number) => IDampAllBuilder;
+  fontFamily: (fontFamily: string) => IDampAllBuilder;
+  fontWeight: (fontWeight: NormalBold) => IDampAllBuilder;
+  fontStyle: (fontStyle: NormalItalic) => IDampAllBuilder;
+  fontSize: (fontSize: string) => IDampAllBuilder;
+  color: (color: string) => IDampAllBuilder;
+  halign: (halign: LeftCenterRight) => IDampAllBuilder;
+  valign: (valign: TopMiddleBottomBaseline) => IDampAllBuilder;
   constructor(original?: DampAll) {
     let updates: DampAll = {} as any;
     let childBuilders: {[key: string]: any} = {};
@@ -24652,6 +32867,55 @@ class DampAllBuilder implements IDampAllBuilder {
                 modifiedKeys["relativeX"] = true;
                 return this;
             }
+
+            this.fontFamily = (spec: string): IDampAllBuilder => {
+                updates["fontFamily"] = spec;
+                delete childBuilders["fontFamily;"];
+                modifiedKeys["fontFamily"] = true;
+                return this;
+            }
+
+            this.fontWeight = (spec: NormalBold): IDampAllBuilder => {
+                updates["fontWeight"] = spec;
+                delete childBuilders["fontWeight;"];
+                modifiedKeys["fontWeight"] = true;
+                return this;
+            }
+
+            this.fontStyle = (spec: NormalItalic): IDampAllBuilder => {
+                updates["fontStyle"] = spec;
+                delete childBuilders["fontStyle;"];
+                modifiedKeys["fontStyle"] = true;
+                return this;
+            }
+
+            this.fontSize = (spec: string): IDampAllBuilder => {
+                updates["fontSize"] = spec;
+                delete childBuilders["fontSize;"];
+                modifiedKeys["fontSize"] = true;
+                return this;
+            }
+
+            this.color = (spec: string): IDampAllBuilder => {
+                updates["color"] = spec;
+                delete childBuilders["color;"];
+                modifiedKeys["color"] = true;
+                return this;
+            }
+
+            this.halign = (spec: LeftCenterRight): IDampAllBuilder => {
+                updates["halign"] = spec;
+                delete childBuilders["halign;"];
+                modifiedKeys["halign"] = true;
+                return this;
+            }
+
+            this.valign = (spec: TopMiddleBottomBaseline): IDampAllBuilder => {
+                updates["valign"] = spec;
+                delete childBuilders["valign;"];
+                modifiedKeys["valign"] = true;
+                return this;
+            }
   }
 }
 export function patchDampAll(base: DampAll, builder: (build: IDampAllBuilder) => IDampAllBuilder): IAny[] { return builder(new DampAllBuilder(base)).patch(); }
@@ -24664,6 +32928,13 @@ export interface IEyeglassesBuilder {
   relativeY: (relativeY: number) => IEyeglassesBuilder;
   defaultY: (defaultY: number) => IEyeglassesBuilder;
   relativeX: (relativeX: number) => IEyeglassesBuilder;
+  fontFamily: (fontFamily: string) => IEyeglassesBuilder;
+  fontWeight: (fontWeight: NormalBold) => IEyeglassesBuilder;
+  fontStyle: (fontStyle: NormalItalic) => IEyeglassesBuilder;
+  fontSize: (fontSize: string) => IEyeglassesBuilder;
+  color: (color: string) => IEyeglassesBuilder;
+  halign: (halign: LeftCenterRight) => IEyeglassesBuilder;
+  valign: (valign: TopMiddleBottomBaseline) => IEyeglassesBuilder;
 }
 
 class EyeglassesBuilder implements IEyeglassesBuilder {
@@ -24673,6 +32944,13 @@ class EyeglassesBuilder implements IEyeglassesBuilder {
   relativeY: (relativeY: number) => IEyeglassesBuilder;
   defaultY: (defaultY: number) => IEyeglassesBuilder;
   relativeX: (relativeX: number) => IEyeglassesBuilder;
+  fontFamily: (fontFamily: string) => IEyeglassesBuilder;
+  fontWeight: (fontWeight: NormalBold) => IEyeglassesBuilder;
+  fontStyle: (fontStyle: NormalItalic) => IEyeglassesBuilder;
+  fontSize: (fontSize: string) => IEyeglassesBuilder;
+  color: (color: string) => IEyeglassesBuilder;
+  halign: (halign: LeftCenterRight) => IEyeglassesBuilder;
+  valign: (valign: TopMiddleBottomBaseline) => IEyeglassesBuilder;
   constructor(original?: Eyeglasses) {
     let updates: Eyeglasses = {} as any;
     let childBuilders: {[key: string]: any} = {};
@@ -24733,6 +33011,55 @@ class EyeglassesBuilder implements IEyeglassesBuilder {
                 modifiedKeys["relativeX"] = true;
                 return this;
             }
+
+            this.fontFamily = (spec: string): IEyeglassesBuilder => {
+                updates["fontFamily"] = spec;
+                delete childBuilders["fontFamily;"];
+                modifiedKeys["fontFamily"] = true;
+                return this;
+            }
+
+            this.fontWeight = (spec: NormalBold): IEyeglassesBuilder => {
+                updates["fontWeight"] = spec;
+                delete childBuilders["fontWeight;"];
+                modifiedKeys["fontWeight"] = true;
+                return this;
+            }
+
+            this.fontStyle = (spec: NormalItalic): IEyeglassesBuilder => {
+                updates["fontStyle"] = spec;
+                delete childBuilders["fontStyle;"];
+                modifiedKeys["fontStyle"] = true;
+                return this;
+            }
+
+            this.fontSize = (spec: string): IEyeglassesBuilder => {
+                updates["fontSize"] = spec;
+                delete childBuilders["fontSize;"];
+                modifiedKeys["fontSize"] = true;
+                return this;
+            }
+
+            this.color = (spec: string): IEyeglassesBuilder => {
+                updates["color"] = spec;
+                delete childBuilders["color;"];
+                modifiedKeys["color"] = true;
+                return this;
+            }
+
+            this.halign = (spec: LeftCenterRight): IEyeglassesBuilder => {
+                updates["halign"] = spec;
+                delete childBuilders["halign;"];
+                modifiedKeys["halign"] = true;
+                return this;
+            }
+
+            this.valign = (spec: TopMiddleBottomBaseline): IEyeglassesBuilder => {
+                updates["valign"] = spec;
+                delete childBuilders["valign;"];
+                modifiedKeys["valign"] = true;
+                return this;
+            }
   }
 }
 export function patchEyeglasses(base: Eyeglasses, builder: (build: IEyeglassesBuilder) => IEyeglassesBuilder): IAny[] { return builder(new EyeglassesBuilder(base)).patch(); }
@@ -24746,6 +33073,13 @@ export interface IStringMuteBuilder {
   relativeY: (relativeY: number) => IStringMuteBuilder;
   defaultY: (defaultY: number) => IStringMuteBuilder;
   relativeX: (relativeX: number) => IStringMuteBuilder;
+  fontFamily: (fontFamily: string) => IStringMuteBuilder;
+  fontWeight: (fontWeight: NormalBold) => IStringMuteBuilder;
+  fontStyle: (fontStyle: NormalItalic) => IStringMuteBuilder;
+  fontSize: (fontSize: string) => IStringMuteBuilder;
+  color: (color: string) => IStringMuteBuilder;
+  halign: (halign: LeftCenterRight) => IStringMuteBuilder;
+  valign: (valign: TopMiddleBottomBaseline) => IStringMuteBuilder;
 }
 
 class StringMuteBuilder implements IStringMuteBuilder {
@@ -24756,6 +33090,13 @@ class StringMuteBuilder implements IStringMuteBuilder {
   relativeY: (relativeY: number) => IStringMuteBuilder;
   defaultY: (defaultY: number) => IStringMuteBuilder;
   relativeX: (relativeX: number) => IStringMuteBuilder;
+  fontFamily: (fontFamily: string) => IStringMuteBuilder;
+  fontWeight: (fontWeight: NormalBold) => IStringMuteBuilder;
+  fontStyle: (fontStyle: NormalItalic) => IStringMuteBuilder;
+  fontSize: (fontSize: string) => IStringMuteBuilder;
+  color: (color: string) => IStringMuteBuilder;
+  halign: (halign: LeftCenterRight) => IStringMuteBuilder;
+  valign: (valign: TopMiddleBottomBaseline) => IStringMuteBuilder;
   constructor(original?: StringMute) {
     let updates: StringMute = {} as any;
     let childBuilders: {[key: string]: any} = {};
@@ -24826,6 +33167,55 @@ class StringMuteBuilder implements IStringMuteBuilder {
                 updates["relativeX"] = spec;
                 delete childBuilders["relativeX;"];
                 modifiedKeys["relativeX"] = true;
+                return this;
+            }
+
+            this.fontFamily = (spec: string): IStringMuteBuilder => {
+                updates["fontFamily"] = spec;
+                delete childBuilders["fontFamily;"];
+                modifiedKeys["fontFamily"] = true;
+                return this;
+            }
+
+            this.fontWeight = (spec: NormalBold): IStringMuteBuilder => {
+                updates["fontWeight"] = spec;
+                delete childBuilders["fontWeight;"];
+                modifiedKeys["fontWeight"] = true;
+                return this;
+            }
+
+            this.fontStyle = (spec: NormalItalic): IStringMuteBuilder => {
+                updates["fontStyle"] = spec;
+                delete childBuilders["fontStyle;"];
+                modifiedKeys["fontStyle"] = true;
+                return this;
+            }
+
+            this.fontSize = (spec: string): IStringMuteBuilder => {
+                updates["fontSize"] = spec;
+                delete childBuilders["fontSize;"];
+                modifiedKeys["fontSize"] = true;
+                return this;
+            }
+
+            this.color = (spec: string): IStringMuteBuilder => {
+                updates["color"] = spec;
+                delete childBuilders["color;"];
+                modifiedKeys["color"] = true;
+                return this;
+            }
+
+            this.halign = (spec: LeftCenterRight): IStringMuteBuilder => {
+                updates["halign"] = spec;
+                delete childBuilders["halign;"];
+                modifiedKeys["halign"] = true;
+                return this;
+            }
+
+            this.valign = (spec: TopMiddleBottomBaseline): IStringMuteBuilder => {
+                updates["valign"] = spec;
+                delete childBuilders["valign;"];
+                modifiedKeys["valign"] = true;
                 return this;
             }
   }
@@ -25061,6 +33451,8 @@ export interface IImageBuilder {
   relativeY: (relativeY: number) => IImageBuilder;
   defaultY: (defaultY: number) => IImageBuilder;
   relativeX: (relativeX: number) => IImageBuilder;
+  halign: (halign: LeftCenterRight) => IImageBuilder;
+  valignImage: (valignImage: TopMiddleBottomBaseline) => IImageBuilder;
 }
 
 class ImageBuilder implements IImageBuilder {
@@ -25072,6 +33464,8 @@ class ImageBuilder implements IImageBuilder {
   relativeY: (relativeY: number) => IImageBuilder;
   defaultY: (defaultY: number) => IImageBuilder;
   relativeX: (relativeX: number) => IImageBuilder;
+  halign: (halign: LeftCenterRight) => IImageBuilder;
+  valignImage: (valignImage: TopMiddleBottomBaseline) => IImageBuilder;
   constructor(original?: Image) {
     let updates: Image = {} as any;
     let childBuilders: {[key: string]: any} = {};
@@ -25156,6 +33550,20 @@ class ImageBuilder implements IImageBuilder {
                 modifiedKeys["relativeX"] = true;
                 return this;
             }
+
+            this.halign = (spec: LeftCenterRight): IImageBuilder => {
+                updates["halign"] = spec;
+                delete childBuilders["halign;"];
+                modifiedKeys["halign"] = true;
+                return this;
+            }
+
+            this.valignImage = (spec: TopMiddleBottomBaseline): IImageBuilder => {
+                updates["valignImage"] = spec;
+                delete childBuilders["valignImage;"];
+                modifiedKeys["valignImage"] = true;
+                return this;
+            }
   }
 }
 export function patchImage(base: Image, builder: (build: IImageBuilder) => IImageBuilder): IAny[] { return builder(new ImageBuilder(base)).patch(); }
@@ -25171,6 +33579,13 @@ export interface IPrincipalVoiceBuilder {
   relativeY: (relativeY: number) => IPrincipalVoiceBuilder;
   defaultY: (defaultY: number) => IPrincipalVoiceBuilder;
   relativeX: (relativeX: number) => IPrincipalVoiceBuilder;
+  fontFamily: (fontFamily: string) => IPrincipalVoiceBuilder;
+  fontWeight: (fontWeight: NormalBold) => IPrincipalVoiceBuilder;
+  fontStyle: (fontStyle: NormalItalic) => IPrincipalVoiceBuilder;
+  fontSize: (fontSize: string) => IPrincipalVoiceBuilder;
+  color: (color: string) => IPrincipalVoiceBuilder;
+  halign: (halign: LeftCenterRight) => IPrincipalVoiceBuilder;
+  valign: (valign: TopMiddleBottomBaseline) => IPrincipalVoiceBuilder;
 }
 
 class PrincipalVoiceBuilder implements IPrincipalVoiceBuilder {
@@ -25183,6 +33598,13 @@ class PrincipalVoiceBuilder implements IPrincipalVoiceBuilder {
   relativeY: (relativeY: number) => IPrincipalVoiceBuilder;
   defaultY: (defaultY: number) => IPrincipalVoiceBuilder;
   relativeX: (relativeX: number) => IPrincipalVoiceBuilder;
+  fontFamily: (fontFamily: string) => IPrincipalVoiceBuilder;
+  fontWeight: (fontWeight: NormalBold) => IPrincipalVoiceBuilder;
+  fontStyle: (fontStyle: NormalItalic) => IPrincipalVoiceBuilder;
+  fontSize: (fontSize: string) => IPrincipalVoiceBuilder;
+  color: (color: string) => IPrincipalVoiceBuilder;
+  halign: (halign: LeftCenterRight) => IPrincipalVoiceBuilder;
+  valign: (valign: TopMiddleBottomBaseline) => IPrincipalVoiceBuilder;
   constructor(original?: PrincipalVoice) {
     let updates: PrincipalVoice = {} as any;
     let childBuilders: {[key: string]: any} = {};
@@ -25274,6 +33696,55 @@ class PrincipalVoiceBuilder implements IPrincipalVoiceBuilder {
                 modifiedKeys["relativeX"] = true;
                 return this;
             }
+
+            this.fontFamily = (spec: string): IPrincipalVoiceBuilder => {
+                updates["fontFamily"] = spec;
+                delete childBuilders["fontFamily;"];
+                modifiedKeys["fontFamily"] = true;
+                return this;
+            }
+
+            this.fontWeight = (spec: NormalBold): IPrincipalVoiceBuilder => {
+                updates["fontWeight"] = spec;
+                delete childBuilders["fontWeight;"];
+                modifiedKeys["fontWeight"] = true;
+                return this;
+            }
+
+            this.fontStyle = (spec: NormalItalic): IPrincipalVoiceBuilder => {
+                updates["fontStyle"] = spec;
+                delete childBuilders["fontStyle;"];
+                modifiedKeys["fontStyle"] = true;
+                return this;
+            }
+
+            this.fontSize = (spec: string): IPrincipalVoiceBuilder => {
+                updates["fontSize"] = spec;
+                delete childBuilders["fontSize;"];
+                modifiedKeys["fontSize"] = true;
+                return this;
+            }
+
+            this.color = (spec: string): IPrincipalVoiceBuilder => {
+                updates["color"] = spec;
+                delete childBuilders["color;"];
+                modifiedKeys["color"] = true;
+                return this;
+            }
+
+            this.halign = (spec: LeftCenterRight): IPrincipalVoiceBuilder => {
+                updates["halign"] = spec;
+                delete childBuilders["halign;"];
+                modifiedKeys["halign"] = true;
+                return this;
+            }
+
+            this.valign = (spec: TopMiddleBottomBaseline): IPrincipalVoiceBuilder => {
+                updates["valign"] = spec;
+                delete childBuilders["valign;"];
+                modifiedKeys["valign"] = true;
+                return this;
+            }
   }
 }
 export function patchPrincipalVoice(base: PrincipalVoice, builder: (build: IPrincipalVoiceBuilder) => IPrincipalVoiceBuilder): IAny[] { return builder(new PrincipalVoiceBuilder(base)).patch(); }
@@ -25289,6 +33760,13 @@ export interface IAccordionRegistrationBuilder {
   relativeY: (relativeY: number) => IAccordionRegistrationBuilder;
   defaultY: (defaultY: number) => IAccordionRegistrationBuilder;
   relativeX: (relativeX: number) => IAccordionRegistrationBuilder;
+  fontFamily: (fontFamily: string) => IAccordionRegistrationBuilder;
+  fontWeight: (fontWeight: NormalBold) => IAccordionRegistrationBuilder;
+  fontStyle: (fontStyle: NormalItalic) => IAccordionRegistrationBuilder;
+  fontSize: (fontSize: string) => IAccordionRegistrationBuilder;
+  color: (color: string) => IAccordionRegistrationBuilder;
+  halign: (halign: LeftCenterRight) => IAccordionRegistrationBuilder;
+  valign: (valign: TopMiddleBottomBaseline) => IAccordionRegistrationBuilder;
 }
 
 class AccordionRegistrationBuilder implements IAccordionRegistrationBuilder {
@@ -25301,6 +33779,13 @@ class AccordionRegistrationBuilder implements IAccordionRegistrationBuilder {
   relativeY: (relativeY: number) => IAccordionRegistrationBuilder;
   defaultY: (defaultY: number) => IAccordionRegistrationBuilder;
   relativeX: (relativeX: number) => IAccordionRegistrationBuilder;
+  fontFamily: (fontFamily: string) => IAccordionRegistrationBuilder;
+  fontWeight: (fontWeight: NormalBold) => IAccordionRegistrationBuilder;
+  fontStyle: (fontStyle: NormalItalic) => IAccordionRegistrationBuilder;
+  fontSize: (fontSize: string) => IAccordionRegistrationBuilder;
+  color: (color: string) => IAccordionRegistrationBuilder;
+  halign: (halign: LeftCenterRight) => IAccordionRegistrationBuilder;
+  valign: (valign: TopMiddleBottomBaseline) => IAccordionRegistrationBuilder;
   constructor(original?: AccordionRegistration) {
     let updates: AccordionRegistration = {} as any;
     let childBuilders: {[key: string]: any} = {};
@@ -25397,6 +33882,55 @@ class AccordionRegistrationBuilder implements IAccordionRegistrationBuilder {
                 modifiedKeys["relativeX"] = true;
                 return this;
             }
+
+            this.fontFamily = (spec: string): IAccordionRegistrationBuilder => {
+                updates["fontFamily"] = spec;
+                delete childBuilders["fontFamily;"];
+                modifiedKeys["fontFamily"] = true;
+                return this;
+            }
+
+            this.fontWeight = (spec: NormalBold): IAccordionRegistrationBuilder => {
+                updates["fontWeight"] = spec;
+                delete childBuilders["fontWeight;"];
+                modifiedKeys["fontWeight"] = true;
+                return this;
+            }
+
+            this.fontStyle = (spec: NormalItalic): IAccordionRegistrationBuilder => {
+                updates["fontStyle"] = spec;
+                delete childBuilders["fontStyle;"];
+                modifiedKeys["fontStyle"] = true;
+                return this;
+            }
+
+            this.fontSize = (spec: string): IAccordionRegistrationBuilder => {
+                updates["fontSize"] = spec;
+                delete childBuilders["fontSize;"];
+                modifiedKeys["fontSize"] = true;
+                return this;
+            }
+
+            this.color = (spec: string): IAccordionRegistrationBuilder => {
+                updates["color"] = spec;
+                delete childBuilders["color;"];
+                modifiedKeys["color"] = true;
+                return this;
+            }
+
+            this.halign = (spec: LeftCenterRight): IAccordionRegistrationBuilder => {
+                updates["halign"] = spec;
+                delete childBuilders["halign;"];
+                modifiedKeys["halign"] = true;
+                return this;
+            }
+
+            this.valign = (spec: TopMiddleBottomBaseline): IAccordionRegistrationBuilder => {
+                updates["valign"] = spec;
+                delete childBuilders["valign;"];
+                modifiedKeys["valign"] = true;
+                return this;
+            }
   }
 }
 export function patchAccordionRegistration(base: AccordionRegistration, builder: (build: IAccordionRegistrationBuilder) => IAccordionRegistrationBuilder): IAny[] { return builder(new AccordionRegistrationBuilder(base)).patch(); }
@@ -25420,6 +33954,14 @@ export interface IPercussionBuilder {
   relativeY: (relativeY: number) => IPercussionBuilder;
   defaultY: (defaultY: number) => IPercussionBuilder;
   relativeX: (relativeX: number) => IPercussionBuilder;
+  fontFamily: (fontFamily: string) => IPercussionBuilder;
+  fontWeight: (fontWeight: NormalBold) => IPercussionBuilder;
+  fontStyle: (fontStyle: NormalItalic) => IPercussionBuilder;
+  fontSize: (fontSize: string) => IPercussionBuilder;
+  color: (color: string) => IPercussionBuilder;
+  halign: (halign: LeftCenterRight) => IPercussionBuilder;
+  valign: (valign: TopMiddleBottomBaseline) => IPercussionBuilder;
+  enclosure: (enclosure: EnclosureShape) => IPercussionBuilder;
 }
 
 class PercussionBuilder implements IPercussionBuilder {
@@ -25440,6 +33982,14 @@ class PercussionBuilder implements IPercussionBuilder {
   relativeY: (relativeY: number) => IPercussionBuilder;
   defaultY: (defaultY: number) => IPercussionBuilder;
   relativeX: (relativeX: number) => IPercussionBuilder;
+  fontFamily: (fontFamily: string) => IPercussionBuilder;
+  fontWeight: (fontWeight: NormalBold) => IPercussionBuilder;
+  fontStyle: (fontStyle: NormalItalic) => IPercussionBuilder;
+  fontSize: (fontSize: string) => IPercussionBuilder;
+  color: (color: string) => IPercussionBuilder;
+  halign: (halign: LeftCenterRight) => IPercussionBuilder;
+  valign: (valign: TopMiddleBottomBaseline) => IPercussionBuilder;
+  enclosure: (enclosure: EnclosureShape) => IPercussionBuilder;
   constructor(original?: Percussion) {
     let updates: Percussion = {} as any;
     let childBuilders: {[key: string]: any} = {};
@@ -25651,6 +34201,62 @@ class PercussionBuilder implements IPercussionBuilder {
                 updates["relativeX"] = spec;
                 delete childBuilders["relativeX;"];
                 modifiedKeys["relativeX"] = true;
+                return this;
+            }
+
+            this.fontFamily = (spec: string): IPercussionBuilder => {
+                updates["fontFamily"] = spec;
+                delete childBuilders["fontFamily;"];
+                modifiedKeys["fontFamily"] = true;
+                return this;
+            }
+
+            this.fontWeight = (spec: NormalBold): IPercussionBuilder => {
+                updates["fontWeight"] = spec;
+                delete childBuilders["fontWeight;"];
+                modifiedKeys["fontWeight"] = true;
+                return this;
+            }
+
+            this.fontStyle = (spec: NormalItalic): IPercussionBuilder => {
+                updates["fontStyle"] = spec;
+                delete childBuilders["fontStyle;"];
+                modifiedKeys["fontStyle"] = true;
+                return this;
+            }
+
+            this.fontSize = (spec: string): IPercussionBuilder => {
+                updates["fontSize"] = spec;
+                delete childBuilders["fontSize;"];
+                modifiedKeys["fontSize"] = true;
+                return this;
+            }
+
+            this.color = (spec: string): IPercussionBuilder => {
+                updates["color"] = spec;
+                delete childBuilders["color;"];
+                modifiedKeys["color"] = true;
+                return this;
+            }
+
+            this.halign = (spec: LeftCenterRight): IPercussionBuilder => {
+                updates["halign"] = spec;
+                delete childBuilders["halign;"];
+                modifiedKeys["halign"] = true;
+                return this;
+            }
+
+            this.valign = (spec: TopMiddleBottomBaseline): IPercussionBuilder => {
+                updates["valign"] = spec;
+                delete childBuilders["valign;"];
+                modifiedKeys["valign"] = true;
+                return this;
+            }
+
+            this.enclosure = (spec: EnclosureShape): IPercussionBuilder => {
+                updates["enclosure"] = spec;
+                delete childBuilders["enclosure;"];
+                modifiedKeys["enclosure"] = true;
                 return this;
             }
   }
@@ -26167,6 +34773,19 @@ export interface IHarmonyBuilder {
   staff: (staff: number) => IHarmonyBuilder;
   type: (type: ExplicitImpliedAlternate) => IHarmonyBuilder;
   offset: (build: Offset | ((builder: IOffsetBuilder) => IOffsetBuilder)) => IHarmonyBuilder;
+  defaultX: (defaultX: number) => IHarmonyBuilder;
+  relativeY: (relativeY: number) => IHarmonyBuilder;
+  defaultY: (defaultY: number) => IHarmonyBuilder;
+  relativeX: (relativeX: number) => IHarmonyBuilder;
+  fontFamily: (fontFamily: string) => IHarmonyBuilder;
+  fontWeight: (fontWeight: NormalBold) => IHarmonyBuilder;
+  fontStyle: (fontStyle: NormalItalic) => IHarmonyBuilder;
+  fontSize: (fontSize: string) => IHarmonyBuilder;
+  color: (color: string) => IHarmonyBuilder;
+  printObject: (printObject: boolean) => IHarmonyBuilder;
+  placement: (placement: AboveBelow) => IHarmonyBuilder;
+  footnote: (build: Footnote | ((builder: IFootnoteBuilder) => IFootnoteBuilder)) => IHarmonyBuilder;
+  level: (build: Level | ((builder: ILevelBuilder) => ILevelBuilder)) => IHarmonyBuilder;
   root: (build: Root | ((builder: IRootBuilder) => IRootBuilder)) => IHarmonyBuilder;
   function: (build: Function | ((builder: IFunctionBuilder) => IFunctionBuilder)) => IHarmonyBuilder;
   kind: (build: Kind | ((builder: IKindBuilder) => IKindBuilder)) => IHarmonyBuilder;
@@ -26185,6 +34804,19 @@ class HarmonyBuilder implements IHarmonyBuilder {
   staff: (staff: number) => IHarmonyBuilder;
   type: (type: ExplicitImpliedAlternate) => IHarmonyBuilder;
   offset: (build: Offset | ((builder: IOffsetBuilder) => IOffsetBuilder)) => IHarmonyBuilder;
+  defaultX: (defaultX: number) => IHarmonyBuilder;
+  relativeY: (relativeY: number) => IHarmonyBuilder;
+  defaultY: (defaultY: number) => IHarmonyBuilder;
+  relativeX: (relativeX: number) => IHarmonyBuilder;
+  fontFamily: (fontFamily: string) => IHarmonyBuilder;
+  fontWeight: (fontWeight: NormalBold) => IHarmonyBuilder;
+  fontStyle: (fontStyle: NormalItalic) => IHarmonyBuilder;
+  fontSize: (fontSize: string) => IHarmonyBuilder;
+  color: (color: string) => IHarmonyBuilder;
+  printObject: (printObject: boolean) => IHarmonyBuilder;
+  placement: (placement: AboveBelow) => IHarmonyBuilder;
+  footnote: (build: Footnote | ((builder: IFootnoteBuilder) => IFootnoteBuilder)) => IHarmonyBuilder;
+  level: (build: Level | ((builder: ILevelBuilder) => ILevelBuilder)) => IHarmonyBuilder;
   root: (build: Root | ((builder: IRootBuilder) => IRootBuilder)) => IHarmonyBuilder;
   function: (build: Function | ((builder: IFunctionBuilder) => IFunctionBuilder)) => IHarmonyBuilder;
   kind: (build: Kind | ((builder: IKindBuilder) => IKindBuilder)) => IHarmonyBuilder;
@@ -26327,6 +34959,111 @@ class HarmonyBuilder implements IHarmonyBuilder {
                     delete childBuilders["offset;"];
                   }
                   modifiedKeys["offset"] = true;
+                  return this;
+                }
+
+            this.defaultX = (spec: number): IHarmonyBuilder => {
+                updates["defaultX"] = spec;
+                delete childBuilders["defaultX;"];
+                modifiedKeys["defaultX"] = true;
+                return this;
+            }
+
+            this.relativeY = (spec: number): IHarmonyBuilder => {
+                updates["relativeY"] = spec;
+                delete childBuilders["relativeY;"];
+                modifiedKeys["relativeY"] = true;
+                return this;
+            }
+
+            this.defaultY = (spec: number): IHarmonyBuilder => {
+                updates["defaultY"] = spec;
+                delete childBuilders["defaultY;"];
+                modifiedKeys["defaultY"] = true;
+                return this;
+            }
+
+            this.relativeX = (spec: number): IHarmonyBuilder => {
+                updates["relativeX"] = spec;
+                delete childBuilders["relativeX;"];
+                modifiedKeys["relativeX"] = true;
+                return this;
+            }
+
+            this.fontFamily = (spec: string): IHarmonyBuilder => {
+                updates["fontFamily"] = spec;
+                delete childBuilders["fontFamily;"];
+                modifiedKeys["fontFamily"] = true;
+                return this;
+            }
+
+            this.fontWeight = (spec: NormalBold): IHarmonyBuilder => {
+                updates["fontWeight"] = spec;
+                delete childBuilders["fontWeight;"];
+                modifiedKeys["fontWeight"] = true;
+                return this;
+            }
+
+            this.fontStyle = (spec: NormalItalic): IHarmonyBuilder => {
+                updates["fontStyle"] = spec;
+                delete childBuilders["fontStyle;"];
+                modifiedKeys["fontStyle"] = true;
+                return this;
+            }
+
+            this.fontSize = (spec: string): IHarmonyBuilder => {
+                updates["fontSize"] = spec;
+                delete childBuilders["fontSize;"];
+                modifiedKeys["fontSize"] = true;
+                return this;
+            }
+
+            this.color = (spec: string): IHarmonyBuilder => {
+                updates["color"] = spec;
+                delete childBuilders["color;"];
+                modifiedKeys["color"] = true;
+                return this;
+            }
+
+            this.printObject = (spec: boolean): IHarmonyBuilder => {
+                updates["printObject"] = spec;
+                delete childBuilders["printObject;"];
+                modifiedKeys["printObject"] = true;
+                return this;
+            }
+
+            this.placement = (spec: AboveBelow): IHarmonyBuilder => {
+                updates["placement"] = spec;
+                delete childBuilders["placement;"];
+                modifiedKeys["placement"] = true;
+                return this;
+            }
+
+                this.footnote = (build: Footnote | ((builder: IFootnoteBuilder) => IFootnoteBuilder)): IHarmonyBuilder => {
+                  if (typeof build === 'function') {
+                    delete updates["footnote"]
+                    const builder = (build as any)(new FootnoteBuilder(original && original["footnote"]));
+                    if (!original) updates["footnote"] = builder.build();
+                    else childBuilders["footnote"] = builder;
+                  } else {
+                    updates.footnote = build as any;
+                    delete childBuilders["footnote;"];
+                  }
+                  modifiedKeys["footnote"] = true;
+                  return this;
+                }
+
+                this.level = (build: Level | ((builder: ILevelBuilder) => ILevelBuilder)): IHarmonyBuilder => {
+                  if (typeof build === 'function') {
+                    delete updates["level"]
+                    const builder = (build as any)(new LevelBuilder(original && original["level"]));
+                    if (!original) updates["level"] = builder.build();
+                    else childBuilders["level"] = builder;
+                  } else {
+                    updates.level = build as any;
+                    delete childBuilders["level;"];
+                  }
+                  modifiedKeys["level"] = true;
                   return this;
                 }
 
@@ -26562,6 +35299,11 @@ export interface IRootStepBuilder {
   relativeY: (relativeY: number) => IRootStepBuilder;
   defaultY: (defaultY: number) => IRootStepBuilder;
   relativeX: (relativeX: number) => IRootStepBuilder;
+  fontFamily: (fontFamily: string) => IRootStepBuilder;
+  fontWeight: (fontWeight: NormalBold) => IRootStepBuilder;
+  fontStyle: (fontStyle: NormalItalic) => IRootStepBuilder;
+  fontSize: (fontSize: string) => IRootStepBuilder;
+  color: (color: string) => IRootStepBuilder;
 }
 
 class RootStepBuilder implements IRootStepBuilder {
@@ -26573,6 +35315,11 @@ class RootStepBuilder implements IRootStepBuilder {
   relativeY: (relativeY: number) => IRootStepBuilder;
   defaultY: (defaultY: number) => IRootStepBuilder;
   relativeX: (relativeX: number) => IRootStepBuilder;
+  fontFamily: (fontFamily: string) => IRootStepBuilder;
+  fontWeight: (fontWeight: NormalBold) => IRootStepBuilder;
+  fontStyle: (fontStyle: NormalItalic) => IRootStepBuilder;
+  fontSize: (fontSize: string) => IRootStepBuilder;
+  color: (color: string) => IRootStepBuilder;
   constructor(original?: RootStep) {
     let updates: RootStep = {} as any;
     let childBuilders: {[key: string]: any} = {};
@@ -26657,6 +35404,41 @@ class RootStepBuilder implements IRootStepBuilder {
                 modifiedKeys["relativeX"] = true;
                 return this;
             }
+
+            this.fontFamily = (spec: string): IRootStepBuilder => {
+                updates["fontFamily"] = spec;
+                delete childBuilders["fontFamily;"];
+                modifiedKeys["fontFamily"] = true;
+                return this;
+            }
+
+            this.fontWeight = (spec: NormalBold): IRootStepBuilder => {
+                updates["fontWeight"] = spec;
+                delete childBuilders["fontWeight;"];
+                modifiedKeys["fontWeight"] = true;
+                return this;
+            }
+
+            this.fontStyle = (spec: NormalItalic): IRootStepBuilder => {
+                updates["fontStyle"] = spec;
+                delete childBuilders["fontStyle;"];
+                modifiedKeys["fontStyle"] = true;
+                return this;
+            }
+
+            this.fontSize = (spec: string): IRootStepBuilder => {
+                updates["fontSize"] = spec;
+                delete childBuilders["fontSize;"];
+                modifiedKeys["fontSize"] = true;
+                return this;
+            }
+
+            this.color = (spec: string): IRootStepBuilder => {
+                updates["color"] = spec;
+                delete childBuilders["color;"];
+                modifiedKeys["color"] = true;
+                return this;
+            }
   }
 }
 export function patchRootStep(base: RootStep, builder: (build: IRootStepBuilder) => IRootStepBuilder): IAny[] { return builder(new RootStepBuilder(base)).patch(); }
@@ -26667,6 +35449,15 @@ export interface IRootAlterBuilder {
   patch: () => IAny[];
   location: (location: LeftRight) => IRootAlterBuilder;
   data: (data: string) => IRootAlterBuilder;
+  defaultX: (defaultX: number) => IRootAlterBuilder;
+  relativeY: (relativeY: number) => IRootAlterBuilder;
+  defaultY: (defaultY: number) => IRootAlterBuilder;
+  relativeX: (relativeX: number) => IRootAlterBuilder;
+  fontFamily: (fontFamily: string) => IRootAlterBuilder;
+  fontWeight: (fontWeight: NormalBold) => IRootAlterBuilder;
+  fontStyle: (fontStyle: NormalItalic) => IRootAlterBuilder;
+  fontSize: (fontSize: string) => IRootAlterBuilder;
+  color: (color: string) => IRootAlterBuilder;
   printObject: (printObject: boolean) => IRootAlterBuilder;
 }
 
@@ -26675,6 +35466,15 @@ class RootAlterBuilder implements IRootAlterBuilder {
   patch: () => IAny[];
   location: (location: LeftRight) => IRootAlterBuilder;
   data: (data: string) => IRootAlterBuilder;
+  defaultX: (defaultX: number) => IRootAlterBuilder;
+  relativeY: (relativeY: number) => IRootAlterBuilder;
+  defaultY: (defaultY: number) => IRootAlterBuilder;
+  relativeX: (relativeX: number) => IRootAlterBuilder;
+  fontFamily: (fontFamily: string) => IRootAlterBuilder;
+  fontWeight: (fontWeight: NormalBold) => IRootAlterBuilder;
+  fontStyle: (fontStyle: NormalItalic) => IRootAlterBuilder;
+  fontSize: (fontSize: string) => IRootAlterBuilder;
+  color: (color: string) => IRootAlterBuilder;
   printObject: (printObject: boolean) => IRootAlterBuilder;
   constructor(original?: RootAlter) {
     let updates: RootAlter = {} as any;
@@ -26733,6 +35533,69 @@ class RootAlterBuilder implements IRootAlterBuilder {
                 return this;
             }
 
+            this.defaultX = (spec: number): IRootAlterBuilder => {
+                updates["defaultX"] = spec;
+                delete childBuilders["defaultX;"];
+                modifiedKeys["defaultX"] = true;
+                return this;
+            }
+
+            this.relativeY = (spec: number): IRootAlterBuilder => {
+                updates["relativeY"] = spec;
+                delete childBuilders["relativeY;"];
+                modifiedKeys["relativeY"] = true;
+                return this;
+            }
+
+            this.defaultY = (spec: number): IRootAlterBuilder => {
+                updates["defaultY"] = spec;
+                delete childBuilders["defaultY;"];
+                modifiedKeys["defaultY"] = true;
+                return this;
+            }
+
+            this.relativeX = (spec: number): IRootAlterBuilder => {
+                updates["relativeX"] = spec;
+                delete childBuilders["relativeX;"];
+                modifiedKeys["relativeX"] = true;
+                return this;
+            }
+
+            this.fontFamily = (spec: string): IRootAlterBuilder => {
+                updates["fontFamily"] = spec;
+                delete childBuilders["fontFamily;"];
+                modifiedKeys["fontFamily"] = true;
+                return this;
+            }
+
+            this.fontWeight = (spec: NormalBold): IRootAlterBuilder => {
+                updates["fontWeight"] = spec;
+                delete childBuilders["fontWeight;"];
+                modifiedKeys["fontWeight"] = true;
+                return this;
+            }
+
+            this.fontStyle = (spec: NormalItalic): IRootAlterBuilder => {
+                updates["fontStyle"] = spec;
+                delete childBuilders["fontStyle;"];
+                modifiedKeys["fontStyle"] = true;
+                return this;
+            }
+
+            this.fontSize = (spec: string): IRootAlterBuilder => {
+                updates["fontSize"] = spec;
+                delete childBuilders["fontSize;"];
+                modifiedKeys["fontSize"] = true;
+                return this;
+            }
+
+            this.color = (spec: string): IRootAlterBuilder => {
+                updates["color"] = spec;
+                delete childBuilders["color;"];
+                modifiedKeys["color"] = true;
+                return this;
+            }
+
             this.printObject = (spec: boolean): IRootAlterBuilder => {
                 updates["printObject"] = spec;
                 delete childBuilders["printObject;"];
@@ -26752,6 +35615,11 @@ export interface IFunctionBuilder {
   relativeY: (relativeY: number) => IFunctionBuilder;
   defaultY: (defaultY: number) => IFunctionBuilder;
   relativeX: (relativeX: number) => IFunctionBuilder;
+  fontFamily: (fontFamily: string) => IFunctionBuilder;
+  fontWeight: (fontWeight: NormalBold) => IFunctionBuilder;
+  fontStyle: (fontStyle: NormalItalic) => IFunctionBuilder;
+  fontSize: (fontSize: string) => IFunctionBuilder;
+  color: (color: string) => IFunctionBuilder;
 }
 
 class FunctionBuilder implements IFunctionBuilder {
@@ -26762,6 +35630,11 @@ class FunctionBuilder implements IFunctionBuilder {
   relativeY: (relativeY: number) => IFunctionBuilder;
   defaultY: (defaultY: number) => IFunctionBuilder;
   relativeX: (relativeX: number) => IFunctionBuilder;
+  fontFamily: (fontFamily: string) => IFunctionBuilder;
+  fontWeight: (fontWeight: NormalBold) => IFunctionBuilder;
+  fontStyle: (fontStyle: NormalItalic) => IFunctionBuilder;
+  fontSize: (fontSize: string) => IFunctionBuilder;
+  color: (color: string) => IFunctionBuilder;
   constructor(original?: Function) {
     let updates: Function = {} as any;
     let childBuilders: {[key: string]: any} = {};
@@ -26834,6 +35707,41 @@ class FunctionBuilder implements IFunctionBuilder {
                 modifiedKeys["relativeX"] = true;
                 return this;
             }
+
+            this.fontFamily = (spec: string): IFunctionBuilder => {
+                updates["fontFamily"] = spec;
+                delete childBuilders["fontFamily;"];
+                modifiedKeys["fontFamily"] = true;
+                return this;
+            }
+
+            this.fontWeight = (spec: NormalBold): IFunctionBuilder => {
+                updates["fontWeight"] = spec;
+                delete childBuilders["fontWeight;"];
+                modifiedKeys["fontWeight"] = true;
+                return this;
+            }
+
+            this.fontStyle = (spec: NormalItalic): IFunctionBuilder => {
+                updates["fontStyle"] = spec;
+                delete childBuilders["fontStyle;"];
+                modifiedKeys["fontStyle"] = true;
+                return this;
+            }
+
+            this.fontSize = (spec: string): IFunctionBuilder => {
+                updates["fontSize"] = spec;
+                delete childBuilders["fontSize;"];
+                modifiedKeys["fontSize"] = true;
+                return this;
+            }
+
+            this.color = (spec: string): IFunctionBuilder => {
+                updates["color"] = spec;
+                delete childBuilders["color;"];
+                modifiedKeys["color"] = true;
+                return this;
+            }
   }
 }
 export function patchFunction(base: Function, builder: (build: IFunctionBuilder) => IFunctionBuilder): IAny[] { return builder(new FunctionBuilder(base)).patch(); }
@@ -26852,6 +35760,13 @@ export interface IKindBuilder {
   relativeY: (relativeY: number) => IKindBuilder;
   defaultY: (defaultY: number) => IKindBuilder;
   relativeX: (relativeX: number) => IKindBuilder;
+  fontFamily: (fontFamily: string) => IKindBuilder;
+  fontWeight: (fontWeight: NormalBold) => IKindBuilder;
+  fontStyle: (fontStyle: NormalItalic) => IKindBuilder;
+  fontSize: (fontSize: string) => IKindBuilder;
+  color: (color: string) => IKindBuilder;
+  halign: (halign: LeftCenterRight) => IKindBuilder;
+  valign: (valign: TopMiddleBottomBaseline) => IKindBuilder;
 }
 
 class KindBuilder implements IKindBuilder {
@@ -26867,6 +35782,13 @@ class KindBuilder implements IKindBuilder {
   relativeY: (relativeY: number) => IKindBuilder;
   defaultY: (defaultY: number) => IKindBuilder;
   relativeX: (relativeX: number) => IKindBuilder;
+  fontFamily: (fontFamily: string) => IKindBuilder;
+  fontWeight: (fontWeight: NormalBold) => IKindBuilder;
+  fontStyle: (fontStyle: NormalItalic) => IKindBuilder;
+  fontSize: (fontSize: string) => IKindBuilder;
+  color: (color: string) => IKindBuilder;
+  halign: (halign: LeftCenterRight) => IKindBuilder;
+  valign: (valign: TopMiddleBottomBaseline) => IKindBuilder;
   constructor(original?: Kind) {
     let updates: Kind = {} as any;
     let childBuilders: {[key: string]: any} = {};
@@ -26999,6 +35921,55 @@ class KindBuilder implements IKindBuilder {
                 modifiedKeys["relativeX"] = true;
                 return this;
             }
+
+            this.fontFamily = (spec: string): IKindBuilder => {
+                updates["fontFamily"] = spec;
+                delete childBuilders["fontFamily;"];
+                modifiedKeys["fontFamily"] = true;
+                return this;
+            }
+
+            this.fontWeight = (spec: NormalBold): IKindBuilder => {
+                updates["fontWeight"] = spec;
+                delete childBuilders["fontWeight;"];
+                modifiedKeys["fontWeight"] = true;
+                return this;
+            }
+
+            this.fontStyle = (spec: NormalItalic): IKindBuilder => {
+                updates["fontStyle"] = spec;
+                delete childBuilders["fontStyle;"];
+                modifiedKeys["fontStyle"] = true;
+                return this;
+            }
+
+            this.fontSize = (spec: string): IKindBuilder => {
+                updates["fontSize"] = spec;
+                delete childBuilders["fontSize;"];
+                modifiedKeys["fontSize"] = true;
+                return this;
+            }
+
+            this.color = (spec: string): IKindBuilder => {
+                updates["color"] = spec;
+                delete childBuilders["color;"];
+                modifiedKeys["color"] = true;
+                return this;
+            }
+
+            this.halign = (spec: LeftCenterRight): IKindBuilder => {
+                updates["halign"] = spec;
+                delete childBuilders["halign;"];
+                modifiedKeys["halign"] = true;
+                return this;
+            }
+
+            this.valign = (spec: TopMiddleBottomBaseline): IKindBuilder => {
+                updates["valign"] = spec;
+                delete childBuilders["valign;"];
+                modifiedKeys["valign"] = true;
+                return this;
+            }
   }
 }
 export function patchKind(base: Kind, builder: (build: IKindBuilder) => IKindBuilder): IAny[] { return builder(new KindBuilder(base)).patch(); }
@@ -27012,6 +35983,11 @@ export interface IInversionBuilder {
   relativeY: (relativeY: number) => IInversionBuilder;
   defaultY: (defaultY: number) => IInversionBuilder;
   relativeX: (relativeX: number) => IInversionBuilder;
+  fontFamily: (fontFamily: string) => IInversionBuilder;
+  fontWeight: (fontWeight: NormalBold) => IInversionBuilder;
+  fontStyle: (fontStyle: NormalItalic) => IInversionBuilder;
+  fontSize: (fontSize: string) => IInversionBuilder;
+  color: (color: string) => IInversionBuilder;
 }
 
 class InversionBuilder implements IInversionBuilder {
@@ -27022,6 +35998,11 @@ class InversionBuilder implements IInversionBuilder {
   relativeY: (relativeY: number) => IInversionBuilder;
   defaultY: (defaultY: number) => IInversionBuilder;
   relativeX: (relativeX: number) => IInversionBuilder;
+  fontFamily: (fontFamily: string) => IInversionBuilder;
+  fontWeight: (fontWeight: NormalBold) => IInversionBuilder;
+  fontStyle: (fontStyle: NormalItalic) => IInversionBuilder;
+  fontSize: (fontSize: string) => IInversionBuilder;
+  color: (color: string) => IInversionBuilder;
   constructor(original?: Inversion) {
     let updates: Inversion = {} as any;
     let childBuilders: {[key: string]: any} = {};
@@ -27092,6 +36073,41 @@ class InversionBuilder implements IInversionBuilder {
                 updates["relativeX"] = spec;
                 delete childBuilders["relativeX;"];
                 modifiedKeys["relativeX"] = true;
+                return this;
+            }
+
+            this.fontFamily = (spec: string): IInversionBuilder => {
+                updates["fontFamily"] = spec;
+                delete childBuilders["fontFamily;"];
+                modifiedKeys["fontFamily"] = true;
+                return this;
+            }
+
+            this.fontWeight = (spec: NormalBold): IInversionBuilder => {
+                updates["fontWeight"] = spec;
+                delete childBuilders["fontWeight;"];
+                modifiedKeys["fontWeight"] = true;
+                return this;
+            }
+
+            this.fontStyle = (spec: NormalItalic): IInversionBuilder => {
+                updates["fontStyle"] = spec;
+                delete childBuilders["fontStyle;"];
+                modifiedKeys["fontStyle"] = true;
+                return this;
+            }
+
+            this.fontSize = (spec: string): IInversionBuilder => {
+                updates["fontSize"] = spec;
+                delete childBuilders["fontSize;"];
+                modifiedKeys["fontSize"] = true;
+                return this;
+            }
+
+            this.color = (spec: string): IInversionBuilder => {
+                updates["color"] = spec;
+                delete childBuilders["color;"];
+                modifiedKeys["color"] = true;
                 return this;
             }
   }
@@ -27195,6 +36211,11 @@ export interface IBassStepBuilder {
   relativeY: (relativeY: number) => IBassStepBuilder;
   defaultY: (defaultY: number) => IBassStepBuilder;
   relativeX: (relativeX: number) => IBassStepBuilder;
+  fontFamily: (fontFamily: string) => IBassStepBuilder;
+  fontWeight: (fontWeight: NormalBold) => IBassStepBuilder;
+  fontStyle: (fontStyle: NormalItalic) => IBassStepBuilder;
+  fontSize: (fontSize: string) => IBassStepBuilder;
+  color: (color: string) => IBassStepBuilder;
 }
 
 class BassStepBuilder implements IBassStepBuilder {
@@ -27206,6 +36227,11 @@ class BassStepBuilder implements IBassStepBuilder {
   relativeY: (relativeY: number) => IBassStepBuilder;
   defaultY: (defaultY: number) => IBassStepBuilder;
   relativeX: (relativeX: number) => IBassStepBuilder;
+  fontFamily: (fontFamily: string) => IBassStepBuilder;
+  fontWeight: (fontWeight: NormalBold) => IBassStepBuilder;
+  fontStyle: (fontStyle: NormalItalic) => IBassStepBuilder;
+  fontSize: (fontSize: string) => IBassStepBuilder;
+  color: (color: string) => IBassStepBuilder;
   constructor(original?: BassStep) {
     let updates: BassStep = {} as any;
     let childBuilders: {[key: string]: any} = {};
@@ -27290,6 +36316,41 @@ class BassStepBuilder implements IBassStepBuilder {
                 modifiedKeys["relativeX"] = true;
                 return this;
             }
+
+            this.fontFamily = (spec: string): IBassStepBuilder => {
+                updates["fontFamily"] = spec;
+                delete childBuilders["fontFamily;"];
+                modifiedKeys["fontFamily"] = true;
+                return this;
+            }
+
+            this.fontWeight = (spec: NormalBold): IBassStepBuilder => {
+                updates["fontWeight"] = spec;
+                delete childBuilders["fontWeight;"];
+                modifiedKeys["fontWeight"] = true;
+                return this;
+            }
+
+            this.fontStyle = (spec: NormalItalic): IBassStepBuilder => {
+                updates["fontStyle"] = spec;
+                delete childBuilders["fontStyle;"];
+                modifiedKeys["fontStyle"] = true;
+                return this;
+            }
+
+            this.fontSize = (spec: string): IBassStepBuilder => {
+                updates["fontSize"] = spec;
+                delete childBuilders["fontSize;"];
+                modifiedKeys["fontSize"] = true;
+                return this;
+            }
+
+            this.color = (spec: string): IBassStepBuilder => {
+                updates["color"] = spec;
+                delete childBuilders["color;"];
+                modifiedKeys["color"] = true;
+                return this;
+            }
   }
 }
 export function patchBassStep(base: BassStep, builder: (build: IBassStepBuilder) => IBassStepBuilder): IAny[] { return builder(new BassStepBuilder(base)).patch(); }
@@ -27300,6 +36361,15 @@ export interface IBassAlterBuilder {
   patch: () => IAny[];
   location: (location: LeftRight) => IBassAlterBuilder;
   data: (data: string) => IBassAlterBuilder;
+  defaultX: (defaultX: number) => IBassAlterBuilder;
+  relativeY: (relativeY: number) => IBassAlterBuilder;
+  defaultY: (defaultY: number) => IBassAlterBuilder;
+  relativeX: (relativeX: number) => IBassAlterBuilder;
+  fontFamily: (fontFamily: string) => IBassAlterBuilder;
+  fontWeight: (fontWeight: NormalBold) => IBassAlterBuilder;
+  fontStyle: (fontStyle: NormalItalic) => IBassAlterBuilder;
+  fontSize: (fontSize: string) => IBassAlterBuilder;
+  color: (color: string) => IBassAlterBuilder;
   printObject: (printObject: boolean) => IBassAlterBuilder;
 }
 
@@ -27308,6 +36378,15 @@ class BassAlterBuilder implements IBassAlterBuilder {
   patch: () => IAny[];
   location: (location: LeftRight) => IBassAlterBuilder;
   data: (data: string) => IBassAlterBuilder;
+  defaultX: (defaultX: number) => IBassAlterBuilder;
+  relativeY: (relativeY: number) => IBassAlterBuilder;
+  defaultY: (defaultY: number) => IBassAlterBuilder;
+  relativeX: (relativeX: number) => IBassAlterBuilder;
+  fontFamily: (fontFamily: string) => IBassAlterBuilder;
+  fontWeight: (fontWeight: NormalBold) => IBassAlterBuilder;
+  fontStyle: (fontStyle: NormalItalic) => IBassAlterBuilder;
+  fontSize: (fontSize: string) => IBassAlterBuilder;
+  color: (color: string) => IBassAlterBuilder;
   printObject: (printObject: boolean) => IBassAlterBuilder;
   constructor(original?: BassAlter) {
     let updates: BassAlter = {} as any;
@@ -27363,6 +36442,69 @@ class BassAlterBuilder implements IBassAlterBuilder {
                 updates["data"] = spec;
                 delete childBuilders["data;"];
                 modifiedKeys["data"] = true;
+                return this;
+            }
+
+            this.defaultX = (spec: number): IBassAlterBuilder => {
+                updates["defaultX"] = spec;
+                delete childBuilders["defaultX;"];
+                modifiedKeys["defaultX"] = true;
+                return this;
+            }
+
+            this.relativeY = (spec: number): IBassAlterBuilder => {
+                updates["relativeY"] = spec;
+                delete childBuilders["relativeY;"];
+                modifiedKeys["relativeY"] = true;
+                return this;
+            }
+
+            this.defaultY = (spec: number): IBassAlterBuilder => {
+                updates["defaultY"] = spec;
+                delete childBuilders["defaultY;"];
+                modifiedKeys["defaultY"] = true;
+                return this;
+            }
+
+            this.relativeX = (spec: number): IBassAlterBuilder => {
+                updates["relativeX"] = spec;
+                delete childBuilders["relativeX;"];
+                modifiedKeys["relativeX"] = true;
+                return this;
+            }
+
+            this.fontFamily = (spec: string): IBassAlterBuilder => {
+                updates["fontFamily"] = spec;
+                delete childBuilders["fontFamily;"];
+                modifiedKeys["fontFamily"] = true;
+                return this;
+            }
+
+            this.fontWeight = (spec: NormalBold): IBassAlterBuilder => {
+                updates["fontWeight"] = spec;
+                delete childBuilders["fontWeight;"];
+                modifiedKeys["fontWeight"] = true;
+                return this;
+            }
+
+            this.fontStyle = (spec: NormalItalic): IBassAlterBuilder => {
+                updates["fontStyle"] = spec;
+                delete childBuilders["fontStyle;"];
+                modifiedKeys["fontStyle"] = true;
+                return this;
+            }
+
+            this.fontSize = (spec: string): IBassAlterBuilder => {
+                updates["fontSize"] = spec;
+                delete childBuilders["fontSize;"];
+                modifiedKeys["fontSize"] = true;
+                return this;
+            }
+
+            this.color = (spec: string): IBassAlterBuilder => {
+                updates["color"] = spec;
+                delete childBuilders["color;"];
+                modifiedKeys["color"] = true;
                 return this;
             }
 
@@ -27504,6 +36646,11 @@ export interface IDegreeValueBuilder {
   relativeY: (relativeY: number) => IDegreeValueBuilder;
   defaultY: (defaultY: number) => IDegreeValueBuilder;
   relativeX: (relativeX: number) => IDegreeValueBuilder;
+  fontFamily: (fontFamily: string) => IDegreeValueBuilder;
+  fontWeight: (fontWeight: NormalBold) => IDegreeValueBuilder;
+  fontStyle: (fontStyle: NormalItalic) => IDegreeValueBuilder;
+  fontSize: (fontSize: string) => IDegreeValueBuilder;
+  color: (color: string) => IDegreeValueBuilder;
 }
 
 class DegreeValueBuilder implements IDegreeValueBuilder {
@@ -27516,6 +36663,11 @@ class DegreeValueBuilder implements IDegreeValueBuilder {
   relativeY: (relativeY: number) => IDegreeValueBuilder;
   defaultY: (defaultY: number) => IDegreeValueBuilder;
   relativeX: (relativeX: number) => IDegreeValueBuilder;
+  fontFamily: (fontFamily: string) => IDegreeValueBuilder;
+  fontWeight: (fontWeight: NormalBold) => IDegreeValueBuilder;
+  fontStyle: (fontStyle: NormalItalic) => IDegreeValueBuilder;
+  fontSize: (fontSize: string) => IDegreeValueBuilder;
+  color: (color: string) => IDegreeValueBuilder;
   constructor(original?: DegreeValue) {
     let updates: DegreeValue = {} as any;
     let childBuilders: {[key: string]: any} = {};
@@ -27612,6 +36764,41 @@ class DegreeValueBuilder implements IDegreeValueBuilder {
                 modifiedKeys["relativeX"] = true;
                 return this;
             }
+
+            this.fontFamily = (spec: string): IDegreeValueBuilder => {
+                updates["fontFamily"] = spec;
+                delete childBuilders["fontFamily;"];
+                modifiedKeys["fontFamily"] = true;
+                return this;
+            }
+
+            this.fontWeight = (spec: NormalBold): IDegreeValueBuilder => {
+                updates["fontWeight"] = spec;
+                delete childBuilders["fontWeight;"];
+                modifiedKeys["fontWeight"] = true;
+                return this;
+            }
+
+            this.fontStyle = (spec: NormalItalic): IDegreeValueBuilder => {
+                updates["fontStyle"] = spec;
+                delete childBuilders["fontStyle;"];
+                modifiedKeys["fontStyle"] = true;
+                return this;
+            }
+
+            this.fontSize = (spec: string): IDegreeValueBuilder => {
+                updates["fontSize"] = spec;
+                delete childBuilders["fontSize;"];
+                modifiedKeys["fontSize"] = true;
+                return this;
+            }
+
+            this.color = (spec: string): IDegreeValueBuilder => {
+                updates["color"] = spec;
+                delete childBuilders["color;"];
+                modifiedKeys["color"] = true;
+                return this;
+            }
   }
 }
 export function patchDegreeValue(base: DegreeValue, builder: (build: IDegreeValueBuilder) => IDegreeValueBuilder): IAny[] { return builder(new DegreeValueBuilder(base)).patch(); }
@@ -27626,6 +36813,11 @@ export interface IDegreeAlterBuilder {
   relativeY: (relativeY: number) => IDegreeAlterBuilder;
   defaultY: (defaultY: number) => IDegreeAlterBuilder;
   relativeX: (relativeX: number) => IDegreeAlterBuilder;
+  fontFamily: (fontFamily: string) => IDegreeAlterBuilder;
+  fontWeight: (fontWeight: NormalBold) => IDegreeAlterBuilder;
+  fontStyle: (fontStyle: NormalItalic) => IDegreeAlterBuilder;
+  fontSize: (fontSize: string) => IDegreeAlterBuilder;
+  color: (color: string) => IDegreeAlterBuilder;
 }
 
 class DegreeAlterBuilder implements IDegreeAlterBuilder {
@@ -27637,6 +36829,11 @@ class DegreeAlterBuilder implements IDegreeAlterBuilder {
   relativeY: (relativeY: number) => IDegreeAlterBuilder;
   defaultY: (defaultY: number) => IDegreeAlterBuilder;
   relativeX: (relativeX: number) => IDegreeAlterBuilder;
+  fontFamily: (fontFamily: string) => IDegreeAlterBuilder;
+  fontWeight: (fontWeight: NormalBold) => IDegreeAlterBuilder;
+  fontStyle: (fontStyle: NormalItalic) => IDegreeAlterBuilder;
+  fontSize: (fontSize: string) => IDegreeAlterBuilder;
+  color: (color: string) => IDegreeAlterBuilder;
   constructor(original?: DegreeAlter) {
     let updates: DegreeAlter = {} as any;
     let childBuilders: {[key: string]: any} = {};
@@ -27721,6 +36918,41 @@ class DegreeAlterBuilder implements IDegreeAlterBuilder {
                 modifiedKeys["relativeX"] = true;
                 return this;
             }
+
+            this.fontFamily = (spec: string): IDegreeAlterBuilder => {
+                updates["fontFamily"] = spec;
+                delete childBuilders["fontFamily;"];
+                modifiedKeys["fontFamily"] = true;
+                return this;
+            }
+
+            this.fontWeight = (spec: NormalBold): IDegreeAlterBuilder => {
+                updates["fontWeight"] = spec;
+                delete childBuilders["fontWeight;"];
+                modifiedKeys["fontWeight"] = true;
+                return this;
+            }
+
+            this.fontStyle = (spec: NormalItalic): IDegreeAlterBuilder => {
+                updates["fontStyle"] = spec;
+                delete childBuilders["fontStyle;"];
+                modifiedKeys["fontStyle"] = true;
+                return this;
+            }
+
+            this.fontSize = (spec: string): IDegreeAlterBuilder => {
+                updates["fontSize"] = spec;
+                delete childBuilders["fontSize;"];
+                modifiedKeys["fontSize"] = true;
+                return this;
+            }
+
+            this.color = (spec: string): IDegreeAlterBuilder => {
+                updates["color"] = spec;
+                delete childBuilders["color;"];
+                modifiedKeys["color"] = true;
+                return this;
+            }
   }
 }
 export function patchDegreeAlter(base: DegreeAlter, builder: (build: IDegreeAlterBuilder) => IDegreeAlterBuilder): IAny[] { return builder(new DegreeAlterBuilder(base)).patch(); }
@@ -27735,6 +36967,11 @@ export interface IDegreeTypeBuilder {
   relativeY: (relativeY: number) => IDegreeTypeBuilder;
   defaultY: (defaultY: number) => IDegreeTypeBuilder;
   relativeX: (relativeX: number) => IDegreeTypeBuilder;
+  fontFamily: (fontFamily: string) => IDegreeTypeBuilder;
+  fontWeight: (fontWeight: NormalBold) => IDegreeTypeBuilder;
+  fontStyle: (fontStyle: NormalItalic) => IDegreeTypeBuilder;
+  fontSize: (fontSize: string) => IDegreeTypeBuilder;
+  color: (color: string) => IDegreeTypeBuilder;
 }
 
 class DegreeTypeBuilder implements IDegreeTypeBuilder {
@@ -27746,6 +36983,11 @@ class DegreeTypeBuilder implements IDegreeTypeBuilder {
   relativeY: (relativeY: number) => IDegreeTypeBuilder;
   defaultY: (defaultY: number) => IDegreeTypeBuilder;
   relativeX: (relativeX: number) => IDegreeTypeBuilder;
+  fontFamily: (fontFamily: string) => IDegreeTypeBuilder;
+  fontWeight: (fontWeight: NormalBold) => IDegreeTypeBuilder;
+  fontStyle: (fontStyle: NormalItalic) => IDegreeTypeBuilder;
+  fontSize: (fontSize: string) => IDegreeTypeBuilder;
+  color: (color: string) => IDegreeTypeBuilder;
   constructor(original?: DegreeType) {
     let updates: DegreeType = {} as any;
     let childBuilders: {[key: string]: any} = {};
@@ -27830,6 +37072,41 @@ class DegreeTypeBuilder implements IDegreeTypeBuilder {
                 modifiedKeys["relativeX"] = true;
                 return this;
             }
+
+            this.fontFamily = (spec: string): IDegreeTypeBuilder => {
+                updates["fontFamily"] = spec;
+                delete childBuilders["fontFamily;"];
+                modifiedKeys["fontFamily"] = true;
+                return this;
+            }
+
+            this.fontWeight = (spec: NormalBold): IDegreeTypeBuilder => {
+                updates["fontWeight"] = spec;
+                delete childBuilders["fontWeight;"];
+                modifiedKeys["fontWeight"] = true;
+                return this;
+            }
+
+            this.fontStyle = (spec: NormalItalic): IDegreeTypeBuilder => {
+                updates["fontStyle"] = spec;
+                delete childBuilders["fontStyle;"];
+                modifiedKeys["fontStyle"] = true;
+                return this;
+            }
+
+            this.fontSize = (spec: string): IDegreeTypeBuilder => {
+                updates["fontSize"] = spec;
+                delete childBuilders["fontSize;"];
+                modifiedKeys["fontSize"] = true;
+                return this;
+            }
+
+            this.color = (spec: string): IDegreeTypeBuilder => {
+                updates["color"] = spec;
+                delete childBuilders["color;"];
+                modifiedKeys["color"] = true;
+                return this;
+            }
   }
 }
 export function patchDegreeType(base: DegreeType, builder: (build: IDegreeTypeBuilder) => IDegreeTypeBuilder): IAny[] { return builder(new DegreeTypeBuilder(base)).patch(); }
@@ -27851,6 +37128,9 @@ export interface IFrameBuilder {
   relativeY: (relativeY: number) => IFrameBuilder;
   defaultY: (defaultY: number) => IFrameBuilder;
   relativeX: (relativeX: number) => IFrameBuilder;
+  color: (color: string) => IFrameBuilder;
+  halign: (halign: LeftCenterRight) => IFrameBuilder;
+  valignImage: (valignImage: TopMiddleBottomBaseline) => IFrameBuilder;
 }
 
 class FrameBuilder implements IFrameBuilder {
@@ -27869,6 +37149,9 @@ class FrameBuilder implements IFrameBuilder {
   relativeY: (relativeY: number) => IFrameBuilder;
   defaultY: (defaultY: number) => IFrameBuilder;
   relativeX: (relativeX: number) => IFrameBuilder;
+  color: (color: string) => IFrameBuilder;
+  halign: (halign: LeftCenterRight) => IFrameBuilder;
+  valignImage: (valignImage: TopMiddleBottomBaseline) => IFrameBuilder;
   constructor(original?: Frame) {
     let updates: Frame = {} as any;
     let childBuilders: {[key: string]: any} = {};
@@ -28073,6 +37356,27 @@ class FrameBuilder implements IFrameBuilder {
                 updates["relativeX"] = spec;
                 delete childBuilders["relativeX;"];
                 modifiedKeys["relativeX"] = true;
+                return this;
+            }
+
+            this.color = (spec: string): IFrameBuilder => {
+                updates["color"] = spec;
+                delete childBuilders["color;"];
+                modifiedKeys["color"] = true;
+                return this;
+            }
+
+            this.halign = (spec: LeftCenterRight): IFrameBuilder => {
+                updates["halign"] = spec;
+                delete childBuilders["halign;"];
+                modifiedKeys["halign"] = true;
+                return this;
+            }
+
+            this.valignImage = (spec: TopMiddleBottomBaseline): IFrameBuilder => {
+                updates["valignImage"] = spec;
+                delete childBuilders["valignImage;"];
+                modifiedKeys["valignImage"] = true;
                 return this;
             }
   }
@@ -28919,6 +38223,13 @@ export interface IMeasureNumberingBuilder {
   relativeY: (relativeY: number) => IMeasureNumberingBuilder;
   defaultY: (defaultY: number) => IMeasureNumberingBuilder;
   relativeX: (relativeX: number) => IMeasureNumberingBuilder;
+  fontFamily: (fontFamily: string) => IMeasureNumberingBuilder;
+  fontWeight: (fontWeight: NormalBold) => IMeasureNumberingBuilder;
+  fontStyle: (fontStyle: NormalItalic) => IMeasureNumberingBuilder;
+  fontSize: (fontSize: string) => IMeasureNumberingBuilder;
+  color: (color: string) => IMeasureNumberingBuilder;
+  halign: (halign: LeftCenterRight) => IMeasureNumberingBuilder;
+  valign: (valign: TopMiddleBottomBaseline) => IMeasureNumberingBuilder;
 }
 
 class MeasureNumberingBuilder implements IMeasureNumberingBuilder {
@@ -28929,6 +38240,13 @@ class MeasureNumberingBuilder implements IMeasureNumberingBuilder {
   relativeY: (relativeY: number) => IMeasureNumberingBuilder;
   defaultY: (defaultY: number) => IMeasureNumberingBuilder;
   relativeX: (relativeX: number) => IMeasureNumberingBuilder;
+  fontFamily: (fontFamily: string) => IMeasureNumberingBuilder;
+  fontWeight: (fontWeight: NormalBold) => IMeasureNumberingBuilder;
+  fontStyle: (fontStyle: NormalItalic) => IMeasureNumberingBuilder;
+  fontSize: (fontSize: string) => IMeasureNumberingBuilder;
+  color: (color: string) => IMeasureNumberingBuilder;
+  halign: (halign: LeftCenterRight) => IMeasureNumberingBuilder;
+  valign: (valign: TopMiddleBottomBaseline) => IMeasureNumberingBuilder;
   constructor(original?: MeasureNumbering) {
     let updates: MeasureNumbering = {} as any;
     let childBuilders: {[key: string]: any} = {};
@@ -28999,6 +38317,55 @@ class MeasureNumberingBuilder implements IMeasureNumberingBuilder {
                 updates["relativeX"] = spec;
                 delete childBuilders["relativeX;"];
                 modifiedKeys["relativeX"] = true;
+                return this;
+            }
+
+            this.fontFamily = (spec: string): IMeasureNumberingBuilder => {
+                updates["fontFamily"] = spec;
+                delete childBuilders["fontFamily;"];
+                modifiedKeys["fontFamily"] = true;
+                return this;
+            }
+
+            this.fontWeight = (spec: NormalBold): IMeasureNumberingBuilder => {
+                updates["fontWeight"] = spec;
+                delete childBuilders["fontWeight;"];
+                modifiedKeys["fontWeight"] = true;
+                return this;
+            }
+
+            this.fontStyle = (spec: NormalItalic): IMeasureNumberingBuilder => {
+                updates["fontStyle"] = spec;
+                delete childBuilders["fontStyle;"];
+                modifiedKeys["fontStyle"] = true;
+                return this;
+            }
+
+            this.fontSize = (spec: string): IMeasureNumberingBuilder => {
+                updates["fontSize"] = spec;
+                delete childBuilders["fontSize;"];
+                modifiedKeys["fontSize"] = true;
+                return this;
+            }
+
+            this.color = (spec: string): IMeasureNumberingBuilder => {
+                updates["color"] = spec;
+                delete childBuilders["color;"];
+                modifiedKeys["color"] = true;
+                return this;
+            }
+
+            this.halign = (spec: LeftCenterRight): IMeasureNumberingBuilder => {
+                updates["halign"] = spec;
+                delete childBuilders["halign;"];
+                modifiedKeys["halign"] = true;
+                return this;
+            }
+
+            this.valign = (spec: TopMiddleBottomBaseline): IMeasureNumberingBuilder => {
+                updates["valign"] = spec;
+                delete childBuilders["valign;"];
+                modifiedKeys["valign"] = true;
                 return this;
             }
   }
@@ -30569,6 +39936,25 @@ export interface ICreditWordsBuilder {
   patch: () => IAny[];
   words: (words: string) => ICreditWordsBuilder;
   justify: (justify: LeftCenterRight) => ICreditWordsBuilder;
+  defaultX: (defaultX: number) => ICreditWordsBuilder;
+  relativeY: (relativeY: number) => ICreditWordsBuilder;
+  defaultY: (defaultY: number) => ICreditWordsBuilder;
+  relativeX: (relativeX: number) => ICreditWordsBuilder;
+  fontFamily: (fontFamily: string) => ICreditWordsBuilder;
+  fontWeight: (fontWeight: NormalBold) => ICreditWordsBuilder;
+  fontStyle: (fontStyle: NormalItalic) => ICreditWordsBuilder;
+  fontSize: (fontSize: string) => ICreditWordsBuilder;
+  color: (color: string) => ICreditWordsBuilder;
+  halign: (halign: LeftCenterRight) => ICreditWordsBuilder;
+  valign: (valign: TopMiddleBottomBaseline) => ICreditWordsBuilder;
+  underline: (underline: number) => ICreditWordsBuilder;
+  overline: (overline: number) => ICreditWordsBuilder;
+  lineThrough: (lineThrough: number) => ICreditWordsBuilder;
+  rotation: (rotation: number) => ICreditWordsBuilder;
+  letterSpacing: (letterSpacing: string) => ICreditWordsBuilder;
+  lineHeight: (lineHeight: string) => ICreditWordsBuilder;
+  dir: (dir: DirectionMode) => ICreditWordsBuilder;
+  enclosure: (enclosure: EnclosureShape) => ICreditWordsBuilder;
 }
 
 class CreditWordsBuilder implements ICreditWordsBuilder {
@@ -30576,6 +39962,25 @@ class CreditWordsBuilder implements ICreditWordsBuilder {
   patch: () => IAny[];
   words: (words: string) => ICreditWordsBuilder;
   justify: (justify: LeftCenterRight) => ICreditWordsBuilder;
+  defaultX: (defaultX: number) => ICreditWordsBuilder;
+  relativeY: (relativeY: number) => ICreditWordsBuilder;
+  defaultY: (defaultY: number) => ICreditWordsBuilder;
+  relativeX: (relativeX: number) => ICreditWordsBuilder;
+  fontFamily: (fontFamily: string) => ICreditWordsBuilder;
+  fontWeight: (fontWeight: NormalBold) => ICreditWordsBuilder;
+  fontStyle: (fontStyle: NormalItalic) => ICreditWordsBuilder;
+  fontSize: (fontSize: string) => ICreditWordsBuilder;
+  color: (color: string) => ICreditWordsBuilder;
+  halign: (halign: LeftCenterRight) => ICreditWordsBuilder;
+  valign: (valign: TopMiddleBottomBaseline) => ICreditWordsBuilder;
+  underline: (underline: number) => ICreditWordsBuilder;
+  overline: (overline: number) => ICreditWordsBuilder;
+  lineThrough: (lineThrough: number) => ICreditWordsBuilder;
+  rotation: (rotation: number) => ICreditWordsBuilder;
+  letterSpacing: (letterSpacing: string) => ICreditWordsBuilder;
+  lineHeight: (lineHeight: string) => ICreditWordsBuilder;
+  dir: (dir: DirectionMode) => ICreditWordsBuilder;
+  enclosure: (enclosure: EnclosureShape) => ICreditWordsBuilder;
   constructor(original?: CreditWords) {
     let updates: CreditWords = {} as any;
     let childBuilders: {[key: string]: any} = {};
@@ -30627,6 +40032,139 @@ class CreditWordsBuilder implements ICreditWordsBuilder {
                 modifiedKeys["justify"] = true;
                 return this;
             }
+
+            this.defaultX = (spec: number): ICreditWordsBuilder => {
+                updates["defaultX"] = spec;
+                delete childBuilders["defaultX;"];
+                modifiedKeys["defaultX"] = true;
+                return this;
+            }
+
+            this.relativeY = (spec: number): ICreditWordsBuilder => {
+                updates["relativeY"] = spec;
+                delete childBuilders["relativeY;"];
+                modifiedKeys["relativeY"] = true;
+                return this;
+            }
+
+            this.defaultY = (spec: number): ICreditWordsBuilder => {
+                updates["defaultY"] = spec;
+                delete childBuilders["defaultY;"];
+                modifiedKeys["defaultY"] = true;
+                return this;
+            }
+
+            this.relativeX = (spec: number): ICreditWordsBuilder => {
+                updates["relativeX"] = spec;
+                delete childBuilders["relativeX;"];
+                modifiedKeys["relativeX"] = true;
+                return this;
+            }
+
+            this.fontFamily = (spec: string): ICreditWordsBuilder => {
+                updates["fontFamily"] = spec;
+                delete childBuilders["fontFamily;"];
+                modifiedKeys["fontFamily"] = true;
+                return this;
+            }
+
+            this.fontWeight = (spec: NormalBold): ICreditWordsBuilder => {
+                updates["fontWeight"] = spec;
+                delete childBuilders["fontWeight;"];
+                modifiedKeys["fontWeight"] = true;
+                return this;
+            }
+
+            this.fontStyle = (spec: NormalItalic): ICreditWordsBuilder => {
+                updates["fontStyle"] = spec;
+                delete childBuilders["fontStyle;"];
+                modifiedKeys["fontStyle"] = true;
+                return this;
+            }
+
+            this.fontSize = (spec: string): ICreditWordsBuilder => {
+                updates["fontSize"] = spec;
+                delete childBuilders["fontSize;"];
+                modifiedKeys["fontSize"] = true;
+                return this;
+            }
+
+            this.color = (spec: string): ICreditWordsBuilder => {
+                updates["color"] = spec;
+                delete childBuilders["color;"];
+                modifiedKeys["color"] = true;
+                return this;
+            }
+
+            this.halign = (spec: LeftCenterRight): ICreditWordsBuilder => {
+                updates["halign"] = spec;
+                delete childBuilders["halign;"];
+                modifiedKeys["halign"] = true;
+                return this;
+            }
+
+            this.valign = (spec: TopMiddleBottomBaseline): ICreditWordsBuilder => {
+                updates["valign"] = spec;
+                delete childBuilders["valign;"];
+                modifiedKeys["valign"] = true;
+                return this;
+            }
+
+            this.underline = (spec: number): ICreditWordsBuilder => {
+                updates["underline"] = spec;
+                delete childBuilders["underline;"];
+                modifiedKeys["underline"] = true;
+                return this;
+            }
+
+            this.overline = (spec: number): ICreditWordsBuilder => {
+                updates["overline"] = spec;
+                delete childBuilders["overline;"];
+                modifiedKeys["overline"] = true;
+                return this;
+            }
+
+            this.lineThrough = (spec: number): ICreditWordsBuilder => {
+                updates["lineThrough"] = spec;
+                delete childBuilders["lineThrough;"];
+                modifiedKeys["lineThrough"] = true;
+                return this;
+            }
+
+            this.rotation = (spec: number): ICreditWordsBuilder => {
+                updates["rotation"] = spec;
+                delete childBuilders["rotation;"];
+                modifiedKeys["rotation"] = true;
+                return this;
+            }
+
+            this.letterSpacing = (spec: string): ICreditWordsBuilder => {
+                updates["letterSpacing"] = spec;
+                delete childBuilders["letterSpacing;"];
+                modifiedKeys["letterSpacing"] = true;
+                return this;
+            }
+
+            this.lineHeight = (spec: string): ICreditWordsBuilder => {
+                updates["lineHeight"] = spec;
+                delete childBuilders["lineHeight;"];
+                modifiedKeys["lineHeight"] = true;
+                return this;
+            }
+
+            this.dir = (spec: DirectionMode): ICreditWordsBuilder => {
+                updates["dir"] = spec;
+                delete childBuilders["dir;"];
+                modifiedKeys["dir"] = true;
+                return this;
+            }
+
+            this.enclosure = (spec: EnclosureShape): ICreditWordsBuilder => {
+                updates["enclosure"] = spec;
+                delete childBuilders["enclosure;"];
+                modifiedKeys["enclosure"] = true;
+                return this;
+            }
   }
 }
 export function patchCreditWords(base: CreditWords, builder: (build: ICreditWordsBuilder) => ICreditWordsBuilder): IAny[] { return builder(new CreditWordsBuilder(base)).patch(); }
@@ -30641,6 +40179,8 @@ export interface ICreditImageBuilder {
   relativeY: (relativeY: number) => ICreditImageBuilder;
   defaultY: (defaultY: number) => ICreditImageBuilder;
   relativeX: (relativeX: number) => ICreditImageBuilder;
+  halign: (halign: LeftCenterRight) => ICreditImageBuilder;
+  valignImage: (valignImage: TopMiddleBottomBaseline) => ICreditImageBuilder;
 }
 
 class CreditImageBuilder implements ICreditImageBuilder {
@@ -30652,6 +40192,8 @@ class CreditImageBuilder implements ICreditImageBuilder {
   relativeY: (relativeY: number) => ICreditImageBuilder;
   defaultY: (defaultY: number) => ICreditImageBuilder;
   relativeX: (relativeX: number) => ICreditImageBuilder;
+  halign: (halign: LeftCenterRight) => ICreditImageBuilder;
+  valignImage: (valignImage: TopMiddleBottomBaseline) => ICreditImageBuilder;
   constructor(original?: CreditImage) {
     let updates: CreditImage = {} as any;
     let childBuilders: {[key: string]: any} = {};
@@ -30734,6 +40276,20 @@ class CreditImageBuilder implements ICreditImageBuilder {
                 updates["relativeX"] = spec;
                 delete childBuilders["relativeX;"];
                 modifiedKeys["relativeX"] = true;
+                return this;
+            }
+
+            this.halign = (spec: LeftCenterRight): ICreditImageBuilder => {
+                updates["halign"] = spec;
+                delete childBuilders["halign;"];
+                modifiedKeys["halign"] = true;
+                return this;
+            }
+
+            this.valignImage = (spec: TopMiddleBottomBaseline): ICreditImageBuilder => {
+                updates["valignImage"] = spec;
+                delete childBuilders["valignImage;"];
+                modifiedKeys["valignImage"] = true;
                 return this;
             }
   }
@@ -31151,6 +40707,13 @@ export interface IPartNameBuilder {
   relativeY: (relativeY: number) => IPartNameBuilder;
   defaultY: (defaultY: number) => IPartNameBuilder;
   relativeX: (relativeX: number) => IPartNameBuilder;
+  fontFamily: (fontFamily: string) => IPartNameBuilder;
+  fontWeight: (fontWeight: NormalBold) => IPartNameBuilder;
+  fontStyle: (fontStyle: NormalItalic) => IPartNameBuilder;
+  fontSize: (fontSize: string) => IPartNameBuilder;
+  color: (color: string) => IPartNameBuilder;
+  printObject: (printObject: boolean) => IPartNameBuilder;
+  justify: (justify: LeftCenterRight) => IPartNameBuilder;
 }
 
 class PartNameBuilder implements IPartNameBuilder {
@@ -31161,6 +40724,13 @@ class PartNameBuilder implements IPartNameBuilder {
   relativeY: (relativeY: number) => IPartNameBuilder;
   defaultY: (defaultY: number) => IPartNameBuilder;
   relativeX: (relativeX: number) => IPartNameBuilder;
+  fontFamily: (fontFamily: string) => IPartNameBuilder;
+  fontWeight: (fontWeight: NormalBold) => IPartNameBuilder;
+  fontStyle: (fontStyle: NormalItalic) => IPartNameBuilder;
+  fontSize: (fontSize: string) => IPartNameBuilder;
+  color: (color: string) => IPartNameBuilder;
+  printObject: (printObject: boolean) => IPartNameBuilder;
+  justify: (justify: LeftCenterRight) => IPartNameBuilder;
   constructor(original?: PartName) {
     let updates: PartName = {} as any;
     let childBuilders: {[key: string]: any} = {};
@@ -31233,6 +40803,55 @@ class PartNameBuilder implements IPartNameBuilder {
                 modifiedKeys["relativeX"] = true;
                 return this;
             }
+
+            this.fontFamily = (spec: string): IPartNameBuilder => {
+                updates["fontFamily"] = spec;
+                delete childBuilders["fontFamily;"];
+                modifiedKeys["fontFamily"] = true;
+                return this;
+            }
+
+            this.fontWeight = (spec: NormalBold): IPartNameBuilder => {
+                updates["fontWeight"] = spec;
+                delete childBuilders["fontWeight;"];
+                modifiedKeys["fontWeight"] = true;
+                return this;
+            }
+
+            this.fontStyle = (spec: NormalItalic): IPartNameBuilder => {
+                updates["fontStyle"] = spec;
+                delete childBuilders["fontStyle;"];
+                modifiedKeys["fontStyle"] = true;
+                return this;
+            }
+
+            this.fontSize = (spec: string): IPartNameBuilder => {
+                updates["fontSize"] = spec;
+                delete childBuilders["fontSize;"];
+                modifiedKeys["fontSize"] = true;
+                return this;
+            }
+
+            this.color = (spec: string): IPartNameBuilder => {
+                updates["color"] = spec;
+                delete childBuilders["color;"];
+                modifiedKeys["color"] = true;
+                return this;
+            }
+
+            this.printObject = (spec: boolean): IPartNameBuilder => {
+                updates["printObject"] = spec;
+                delete childBuilders["printObject;"];
+                modifiedKeys["printObject"] = true;
+                return this;
+            }
+
+            this.justify = (spec: LeftCenterRight): IPartNameBuilder => {
+                updates["justify"] = spec;
+                delete childBuilders["justify;"];
+                modifiedKeys["justify"] = true;
+                return this;
+            }
   }
 }
 export function patchPartName(base: PartName, builder: (build: IPartNameBuilder) => IPartNameBuilder): IAny[] { return builder(new PartNameBuilder(base)).patch(); }
@@ -31246,6 +40865,13 @@ export interface IPartAbbreviationBuilder {
   relativeY: (relativeY: number) => IPartAbbreviationBuilder;
   defaultY: (defaultY: number) => IPartAbbreviationBuilder;
   relativeX: (relativeX: number) => IPartAbbreviationBuilder;
+  fontFamily: (fontFamily: string) => IPartAbbreviationBuilder;
+  fontWeight: (fontWeight: NormalBold) => IPartAbbreviationBuilder;
+  fontStyle: (fontStyle: NormalItalic) => IPartAbbreviationBuilder;
+  fontSize: (fontSize: string) => IPartAbbreviationBuilder;
+  color: (color: string) => IPartAbbreviationBuilder;
+  printObject: (printObject: boolean) => IPartAbbreviationBuilder;
+  justify: (justify: LeftCenterRight) => IPartAbbreviationBuilder;
 }
 
 class PartAbbreviationBuilder implements IPartAbbreviationBuilder {
@@ -31256,6 +40882,13 @@ class PartAbbreviationBuilder implements IPartAbbreviationBuilder {
   relativeY: (relativeY: number) => IPartAbbreviationBuilder;
   defaultY: (defaultY: number) => IPartAbbreviationBuilder;
   relativeX: (relativeX: number) => IPartAbbreviationBuilder;
+  fontFamily: (fontFamily: string) => IPartAbbreviationBuilder;
+  fontWeight: (fontWeight: NormalBold) => IPartAbbreviationBuilder;
+  fontStyle: (fontStyle: NormalItalic) => IPartAbbreviationBuilder;
+  fontSize: (fontSize: string) => IPartAbbreviationBuilder;
+  color: (color: string) => IPartAbbreviationBuilder;
+  printObject: (printObject: boolean) => IPartAbbreviationBuilder;
+  justify: (justify: LeftCenterRight) => IPartAbbreviationBuilder;
   constructor(original?: PartAbbreviation) {
     let updates: PartAbbreviation = {} as any;
     let childBuilders: {[key: string]: any} = {};
@@ -31326,6 +40959,55 @@ class PartAbbreviationBuilder implements IPartAbbreviationBuilder {
                 updates["relativeX"] = spec;
                 delete childBuilders["relativeX;"];
                 modifiedKeys["relativeX"] = true;
+                return this;
+            }
+
+            this.fontFamily = (spec: string): IPartAbbreviationBuilder => {
+                updates["fontFamily"] = spec;
+                delete childBuilders["fontFamily;"];
+                modifiedKeys["fontFamily"] = true;
+                return this;
+            }
+
+            this.fontWeight = (spec: NormalBold): IPartAbbreviationBuilder => {
+                updates["fontWeight"] = spec;
+                delete childBuilders["fontWeight;"];
+                modifiedKeys["fontWeight"] = true;
+                return this;
+            }
+
+            this.fontStyle = (spec: NormalItalic): IPartAbbreviationBuilder => {
+                updates["fontStyle"] = spec;
+                delete childBuilders["fontStyle;"];
+                modifiedKeys["fontStyle"] = true;
+                return this;
+            }
+
+            this.fontSize = (spec: string): IPartAbbreviationBuilder => {
+                updates["fontSize"] = spec;
+                delete childBuilders["fontSize;"];
+                modifiedKeys["fontSize"] = true;
+                return this;
+            }
+
+            this.color = (spec: string): IPartAbbreviationBuilder => {
+                updates["color"] = spec;
+                delete childBuilders["color;"];
+                modifiedKeys["color"] = true;
+                return this;
+            }
+
+            this.printObject = (spec: boolean): IPartAbbreviationBuilder => {
+                updates["printObject"] = spec;
+                delete childBuilders["printObject;"];
+                modifiedKeys["printObject"] = true;
+                return this;
+            }
+
+            this.justify = (spec: LeftCenterRight): IPartAbbreviationBuilder => {
+                updates["justify"] = spec;
+                delete childBuilders["justify;"];
+                modifiedKeys["justify"] = true;
                 return this;
             }
   }
@@ -31593,6 +41275,12 @@ export interface IGroupNameBuilder {
   relativeY: (relativeY: number) => IGroupNameBuilder;
   defaultY: (defaultY: number) => IGroupNameBuilder;
   relativeX: (relativeX: number) => IGroupNameBuilder;
+  fontFamily: (fontFamily: string) => IGroupNameBuilder;
+  fontWeight: (fontWeight: NormalBold) => IGroupNameBuilder;
+  fontStyle: (fontStyle: NormalItalic) => IGroupNameBuilder;
+  fontSize: (fontSize: string) => IGroupNameBuilder;
+  color: (color: string) => IGroupNameBuilder;
+  justify: (justify: LeftCenterRight) => IGroupNameBuilder;
 }
 
 class GroupNameBuilder implements IGroupNameBuilder {
@@ -31603,6 +41291,12 @@ class GroupNameBuilder implements IGroupNameBuilder {
   relativeY: (relativeY: number) => IGroupNameBuilder;
   defaultY: (defaultY: number) => IGroupNameBuilder;
   relativeX: (relativeX: number) => IGroupNameBuilder;
+  fontFamily: (fontFamily: string) => IGroupNameBuilder;
+  fontWeight: (fontWeight: NormalBold) => IGroupNameBuilder;
+  fontStyle: (fontStyle: NormalItalic) => IGroupNameBuilder;
+  fontSize: (fontSize: string) => IGroupNameBuilder;
+  color: (color: string) => IGroupNameBuilder;
+  justify: (justify: LeftCenterRight) => IGroupNameBuilder;
   constructor(original?: GroupName) {
     let updates: GroupName = {} as any;
     let childBuilders: {[key: string]: any} = {};
@@ -31673,6 +41367,48 @@ class GroupNameBuilder implements IGroupNameBuilder {
                 updates["relativeX"] = spec;
                 delete childBuilders["relativeX;"];
                 modifiedKeys["relativeX"] = true;
+                return this;
+            }
+
+            this.fontFamily = (spec: string): IGroupNameBuilder => {
+                updates["fontFamily"] = spec;
+                delete childBuilders["fontFamily;"];
+                modifiedKeys["fontFamily"] = true;
+                return this;
+            }
+
+            this.fontWeight = (spec: NormalBold): IGroupNameBuilder => {
+                updates["fontWeight"] = spec;
+                delete childBuilders["fontWeight;"];
+                modifiedKeys["fontWeight"] = true;
+                return this;
+            }
+
+            this.fontStyle = (spec: NormalItalic): IGroupNameBuilder => {
+                updates["fontStyle"] = spec;
+                delete childBuilders["fontStyle;"];
+                modifiedKeys["fontStyle"] = true;
+                return this;
+            }
+
+            this.fontSize = (spec: string): IGroupNameBuilder => {
+                updates["fontSize"] = spec;
+                delete childBuilders["fontSize;"];
+                modifiedKeys["fontSize"] = true;
+                return this;
+            }
+
+            this.color = (spec: string): IGroupNameBuilder => {
+                updates["color"] = spec;
+                delete childBuilders["color;"];
+                modifiedKeys["color"] = true;
+                return this;
+            }
+
+            this.justify = (spec: LeftCenterRight): IGroupNameBuilder => {
+                updates["justify"] = spec;
+                delete childBuilders["justify;"];
+                modifiedKeys["justify"] = true;
                 return this;
             }
   }
@@ -31815,6 +41551,12 @@ export interface IGroupAbbreviationBuilder {
   relativeY: (relativeY: number) => IGroupAbbreviationBuilder;
   defaultY: (defaultY: number) => IGroupAbbreviationBuilder;
   relativeX: (relativeX: number) => IGroupAbbreviationBuilder;
+  fontFamily: (fontFamily: string) => IGroupAbbreviationBuilder;
+  fontWeight: (fontWeight: NormalBold) => IGroupAbbreviationBuilder;
+  fontStyle: (fontStyle: NormalItalic) => IGroupAbbreviationBuilder;
+  fontSize: (fontSize: string) => IGroupAbbreviationBuilder;
+  color: (color: string) => IGroupAbbreviationBuilder;
+  justify: (justify: LeftCenterRight) => IGroupAbbreviationBuilder;
 }
 
 class GroupAbbreviationBuilder implements IGroupAbbreviationBuilder {
@@ -31825,6 +41567,12 @@ class GroupAbbreviationBuilder implements IGroupAbbreviationBuilder {
   relativeY: (relativeY: number) => IGroupAbbreviationBuilder;
   defaultY: (defaultY: number) => IGroupAbbreviationBuilder;
   relativeX: (relativeX: number) => IGroupAbbreviationBuilder;
+  fontFamily: (fontFamily: string) => IGroupAbbreviationBuilder;
+  fontWeight: (fontWeight: NormalBold) => IGroupAbbreviationBuilder;
+  fontStyle: (fontStyle: NormalItalic) => IGroupAbbreviationBuilder;
+  fontSize: (fontSize: string) => IGroupAbbreviationBuilder;
+  color: (color: string) => IGroupAbbreviationBuilder;
+  justify: (justify: LeftCenterRight) => IGroupAbbreviationBuilder;
   constructor(original?: GroupAbbreviation) {
     let updates: GroupAbbreviation = {} as any;
     let childBuilders: {[key: string]: any} = {};
@@ -31895,6 +41643,48 @@ class GroupAbbreviationBuilder implements IGroupAbbreviationBuilder {
                 updates["relativeX"] = spec;
                 delete childBuilders["relativeX;"];
                 modifiedKeys["relativeX"] = true;
+                return this;
+            }
+
+            this.fontFamily = (spec: string): IGroupAbbreviationBuilder => {
+                updates["fontFamily"] = spec;
+                delete childBuilders["fontFamily;"];
+                modifiedKeys["fontFamily"] = true;
+                return this;
+            }
+
+            this.fontWeight = (spec: NormalBold): IGroupAbbreviationBuilder => {
+                updates["fontWeight"] = spec;
+                delete childBuilders["fontWeight;"];
+                modifiedKeys["fontWeight"] = true;
+                return this;
+            }
+
+            this.fontStyle = (spec: NormalItalic): IGroupAbbreviationBuilder => {
+                updates["fontStyle"] = spec;
+                delete childBuilders["fontStyle;"];
+                modifiedKeys["fontStyle"] = true;
+                return this;
+            }
+
+            this.fontSize = (spec: string): IGroupAbbreviationBuilder => {
+                updates["fontSize"] = spec;
+                delete childBuilders["fontSize;"];
+                modifiedKeys["fontSize"] = true;
+                return this;
+            }
+
+            this.color = (spec: string): IGroupAbbreviationBuilder => {
+                updates["color"] = spec;
+                delete childBuilders["color;"];
+                modifiedKeys["color"] = true;
+                return this;
+            }
+
+            this.justify = (spec: LeftCenterRight): IGroupAbbreviationBuilder => {
+                updates["justify"] = spec;
+                delete childBuilders["justify;"];
+                modifiedKeys["justify"] = true;
                 return this;
             }
   }
@@ -32037,6 +41827,7 @@ export interface IGroupSymbolBuilder {
   relativeY: (relativeY: number) => IGroupSymbolBuilder;
   defaultY: (defaultY: number) => IGroupSymbolBuilder;
   relativeX: (relativeX: number) => IGroupSymbolBuilder;
+  color: (color: string) => IGroupSymbolBuilder;
 }
 
 class GroupSymbolBuilder implements IGroupSymbolBuilder {
@@ -32047,6 +41838,7 @@ class GroupSymbolBuilder implements IGroupSymbolBuilder {
   relativeY: (relativeY: number) => IGroupSymbolBuilder;
   defaultY: (defaultY: number) => IGroupSymbolBuilder;
   relativeX: (relativeX: number) => IGroupSymbolBuilder;
+  color: (color: string) => IGroupSymbolBuilder;
   constructor(original?: GroupSymbol) {
     let updates: GroupSymbol = {} as any;
     let childBuilders: {[key: string]: any} = {};
@@ -32117,6 +41909,13 @@ class GroupSymbolBuilder implements IGroupSymbolBuilder {
                 updates["relativeX"] = spec;
                 delete childBuilders["relativeX;"];
                 modifiedKeys["relativeX"] = true;
+                return this;
+            }
+
+            this.color = (spec: string): IGroupSymbolBuilder => {
+                updates["color"] = spec;
+                delete childBuilders["color;"];
+                modifiedKeys["color"] = true;
                 return this;
             }
   }
@@ -32742,6 +42541,15 @@ export interface IScoreTimewiseBuilder {
   measuresSplice: (start: number, deleteCount: number, ...items: Measure[]) => IScoreTimewiseBuilder;
   measures: (measures: Measure[]) => IScoreTimewiseBuilder;
   version: (version: string) => IScoreTimewiseBuilder;
+  movementTitle: (movementTitle: string) => IScoreTimewiseBuilder;
+  identification: (build: Identification | ((builder: IIdentificationBuilder) => IIdentificationBuilder)) => IScoreTimewiseBuilder;
+  defaults: (build: Defaults | ((builder: IDefaultsBuilder) => IDefaultsBuilder)) => IScoreTimewiseBuilder;
+  work: (build: Work | ((builder: IWorkBuilder) => IWorkBuilder)) => IScoreTimewiseBuilder;
+  creditsAt: (idx: number, build: Credit | ((builder: ICreditBuilder) => ICreditBuilder)) => IScoreTimewiseBuilder;
+  creditsSplice: (start: number, deleteCount: number, ...items: Credit[]) => IScoreTimewiseBuilder;
+  credits: (credits: Credit[]) => IScoreTimewiseBuilder;
+  partList: (partList: PartList) => IScoreTimewiseBuilder;
+  movementNumber: (movementNumber: string) => IScoreTimewiseBuilder;
 }
 
 class ScoreTimewiseBuilder implements IScoreTimewiseBuilder {
@@ -32751,6 +42559,15 @@ class ScoreTimewiseBuilder implements IScoreTimewiseBuilder {
   measuresSplice: (start: number, deleteCount: number, ...items: Measure[]) => IScoreTimewiseBuilder;
   measures: (measures: Measure[]) => IScoreTimewiseBuilder;
   version: (version: string) => IScoreTimewiseBuilder;
+  movementTitle: (movementTitle: string) => IScoreTimewiseBuilder;
+  identification: (build: Identification | ((builder: IIdentificationBuilder) => IIdentificationBuilder)) => IScoreTimewiseBuilder;
+  defaults: (build: Defaults | ((builder: IDefaultsBuilder) => IDefaultsBuilder)) => IScoreTimewiseBuilder;
+  work: (build: Work | ((builder: IWorkBuilder) => IWorkBuilder)) => IScoreTimewiseBuilder;
+  creditsAt: (idx: number, build: Credit | ((builder: ICreditBuilder) => ICreditBuilder)) => IScoreTimewiseBuilder;
+  creditsSplice: (start: number, deleteCount: number, ...items: Credit[]) => IScoreTimewiseBuilder;
+  credits: (credits: Credit[]) => IScoreTimewiseBuilder;
+  partList: (partList: PartList) => IScoreTimewiseBuilder;
+  movementNumber: (movementNumber: string) => IScoreTimewiseBuilder;
   constructor(original?: ScoreTimewise) {
     let updates: ScoreTimewise = {} as any;
     let childBuilders: {[key: string]: any} = {};
@@ -32781,6 +42598,41 @@ class ScoreTimewiseBuilder implements IScoreTimewiseBuilder {
           childBuilders["version"] !== undefined ||
           updates.version !== undefined,
         "version is a required field");
+      console.assert(
+          (original && !modifiedKeys["movementTitle"]) ||
+          childBuilders["movementTitle"] !== undefined ||
+          updates.movementTitle !== undefined,
+        "movementTitle is a required field");
+      console.assert(
+          (original && !modifiedKeys["identification"]) ||
+          childBuilders["identification"] !== undefined ||
+          updates.identification !== undefined,
+        "identification is a required field");
+      console.assert(
+          (original && !modifiedKeys["defaults"]) ||
+          childBuilders["defaults"] !== undefined ||
+          updates.defaults !== undefined,
+        "defaults is a required field");
+      console.assert(
+          (original && !modifiedKeys["work"]) ||
+          childBuilders["work"] !== undefined ||
+          updates.work !== undefined,
+        "work is a required field");
+      console.assert(
+          (original && !modifiedKeys["credits"]) ||
+          childBuilders["credits"] !== undefined ||
+          updates.credits !== undefined,
+        "credits is a required field");
+      console.assert(
+          (original && !modifiedKeys["partList"]) ||
+          childBuilders["partList"] !== undefined ||
+          updates.partList !== undefined,
+        "partList is a required field");
+      console.assert(
+          (original && !modifiedKeys["movementNumber"]) ||
+          childBuilders["movementNumber"] !== undefined ||
+          updates.movementNumber !== undefined,
+        "movementNumber is a required field");
     }
     if (!original) {
       this.build = (): ScoreTimewise => {
@@ -32860,6 +42712,131 @@ class ScoreTimewiseBuilder implements IScoreTimewiseBuilder {
                 updates["version"] = spec;
                 delete childBuilders["version;"];
                 modifiedKeys["version"] = true;
+                return this;
+            }
+
+            this.movementTitle = (spec: string): IScoreTimewiseBuilder => {
+                updates["movementTitle"] = spec;
+                delete childBuilders["movementTitle;"];
+                modifiedKeys["movementTitle"] = true;
+                return this;
+            }
+
+                this.identification = (build: Identification | ((builder: IIdentificationBuilder) => IIdentificationBuilder)): IScoreTimewiseBuilder => {
+                  if (typeof build === 'function') {
+                    delete updates["identification"]
+                    const builder = (build as any)(new IdentificationBuilder(original && original["identification"]));
+                    if (!original) updates["identification"] = builder.build();
+                    else childBuilders["identification"] = builder;
+                  } else {
+                    updates.identification = build as any;
+                    delete childBuilders["identification;"];
+                  }
+                  modifiedKeys["identification"] = true;
+                  return this;
+                }
+
+                this.defaults = (build: Defaults | ((builder: IDefaultsBuilder) => IDefaultsBuilder)): IScoreTimewiseBuilder => {
+                  if (typeof build === 'function') {
+                    delete updates["defaults"]
+                    const builder = (build as any)(new DefaultsBuilder(original && original["defaults"]));
+                    if (!original) updates["defaults"] = builder.build();
+                    else childBuilders["defaults"] = builder;
+                  } else {
+                    updates.defaults = build as any;
+                    delete childBuilders["defaults;"];
+                  }
+                  modifiedKeys["defaults"] = true;
+                  return this;
+                }
+
+                this.work = (build: Work | ((builder: IWorkBuilder) => IWorkBuilder)): IScoreTimewiseBuilder => {
+                  if (typeof build === 'function') {
+                    delete updates["work"]
+                    const builder = (build as any)(new WorkBuilder(original && original["work"]));
+                    if (!original) updates["work"] = builder.build();
+                    else childBuilders["work"] = builder;
+                  } else {
+                    updates.work = build as any;
+                    delete childBuilders["work;"];
+                  }
+                  modifiedKeys["work"] = true;
+                  return this;
+                }
+
+            this.credits = (spec: Credit[]): IScoreTimewiseBuilder => {
+                updates["credits"] = spec;
+                delete childBuilders["credits;"];
+                modifiedKeys["credits"] = true;
+                return this;
+            }
+
+                this.creditsAt = (idx: number, build: Credit | ((builder: ICreditBuilder) => ICreditBuilder)): IScoreTimewiseBuilder => {
+                  makeReference("credits");
+                  if (frozen["credits"][idx]) {
+                      throw new Error("Patching credits." + idx + " twice in a builder is unsupported.");
+                  }
+                  if (typeof build === 'function' && reference["credits"][idx]) {
+                    let patch = (build as any)(new CreditBuilder(reference["credits"][idx])).patch();
+                    patches = patches.concat(patch.map(patch => {
+                      // TODO: detach?
+                      patch.p = ["credits", idx].concat(patch.p);
+                      return patch;
+                    }));
+                    frozen["credits"][idx] = true;
+                    return this;
+                  }
+                  let update = typeof build === 'function' ? (build as any)(new CreditBuilder(reference["credits"][idx])).build() : build;
+                  if (original) {
+                    patches.push({p: ["credits", idx], li: update});
+                  } else {
+                    updates["credits"] = reference["credits"]; // TODO: Merge?
+                  } 
+                  reference["credits"][idx] = update;
+                  frozen["credits"][idx] = true;
+                  return this;
+                }
+            
+                this.creditsSplice = (start: number, deleteCount: number, ...items: Credit[]): IScoreTimewiseBuilder => {
+                  makeReference("credits");
+                  let idx = start;
+                  if (original) {
+                    for (; idx < start + deleteCount && idx < start + items.length; ++idx) {
+                      if (frozen["credits"][idx]) {
+                        throw new Error("Replacing credits." + idx + " after patching in a builder is unsupported.");
+                      }
+                      let ld = reference["credits"][idx];
+                      patches.push({p: ["credits", idx], ld, li: items[idx - start]});
+                      frozen["credits"][idx] = true;
+                    }
+                    for (; idx < start + deleteCount; ++idx) {
+                      if (frozen["credits"][idx]) {
+                        throw new Error("Removing credits." + idx + " after patching in a builder is unsupported.");
+                      }
+                      let ld = reference["credits"][idx];
+                      patches.push({p: ["credits", idx], ld});
+                    }
+                    for (; idx < start + items.length; ++idx) {
+                      patches.push({p: ["credits", idx], li: items[idx - start]});
+                      frozen["credits"][idx] = true;
+                    }
+                  }
+                  reference["credits"].splice(start, deleteCount, ...items);
+                  frozen["credits"].splice(start, deleteCount, ...items.map(i => true));
+                  return this;
+                }
+
+            this.partList = (spec: PartList): IScoreTimewiseBuilder => {
+                updates["partList"] = spec;
+                delete childBuilders["partList;"];
+                modifiedKeys["partList"] = true;
+                return this;
+            }
+
+            this.movementNumber = (spec: string): IScoreTimewiseBuilder => {
+                updates["movementNumber"] = spec;
+                delete childBuilders["movementNumber;"];
+                modifiedKeys["movementNumber"] = true;
                 return this;
             }
   }

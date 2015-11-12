@@ -506,7 +506,8 @@ function processTree(sourceFile: ts.SourceFile): any {
                     kind: SyntaxKind[node.kind],
                     name: icNode.name.text,
                     members: getMembers(icNode.members),
-                    extends: icNode.heritageClauses ? icNode.heritageClauses.map(clause => (clause.types[0].expression as any).text) : []
+                    extends: flatten(icNode.heritageClauses ? icNode.heritageClauses.map(clause =>
+                            (clause.types.map(t => (t as any).expression.text))) : [])
                 };
                 asts.push(ast);
                 break;

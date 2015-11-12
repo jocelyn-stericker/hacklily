@@ -60,6 +60,9 @@ while (Object.keys(exFrom).length) {
         if (exFrom.hasOwnProperty(zkey) && (!exTo[zkey] || !exTo[zkey].length)) {
             exFrom[zkey].forEach(tkey => {
                 exTo[tkey] = exTo[tkey].filter(okey => okey !== zkey);
+                if (!exTo[tkey].length) {
+                    delete exTo[tkey];
+                }
                 _.extend(interfaces[tkey], interfaces[zkey]);
             });
             delete exFrom[zkey];
@@ -117,12 +120,15 @@ function makePatch<T, U>(original: T, updates: any, childBuilders: U, explicitPa
   }).filter(p => Boolean(p));
 
   Object.keys(childBuilders).map(key => {
-    if (original[key] === undefined) patches.push({p: [key], oi: childBuilders[key].build()});
-    let subpatches = childBuilders[key].patch().map(patch => {
-      patch.p = [key].concat(patch.p);
-      return patch;
-    })
-    patches = patches.concat(subpatches);
+    if (original[key] === undefined) {
+      patches.push({p: [key], oi: childBuilders[key].build()});
+    } else {
+      let subpatches = childBuilders[key].patch().map(patch => {
+        patch.p = [key].concat(patch.p);
+        return patch;
+      })
+      patches = patches.concat(subpatches);
+    }
   });
   return patches.concat(explicitPatches);
 }`); // makePatch
