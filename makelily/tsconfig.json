@@ -1,0 +1,21 @@
+{
+    "compilerOptions": {
+        "experimentalDecorators": true,
+        "emitDecoratorMetadata": false,
+        "declaration": true,
+        "jsx": "react",
+        "module": "commonjs",
+        "noImplicitAny": true,
+        "outDir": "dist",
+        "preserveConstEnums": true,
+        "removeComments": false,
+        "sourceMap": true,
+        "target": "es5"
+    },
+    "files": [
+        "./src/index.ts",
+        "./src/tests.ts",
+        "./src/cli.ts",
+        "./typings/tsd.d.ts"
+    ]
+}

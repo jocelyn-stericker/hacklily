@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE score-timewise PUBLIC "-//Recordare//DTD MusicXML 3.0 Timewise//EN"
+                                "http://www.musicxml.org/dtds/timewise.dtd">
+<score-timewise>
+  <!-- no work metadata -->
+  <identification>
+    <encoding>
+      <encoding-date>2015-11-12</encoding-date>
+      <software>Ripieno Satie</software>
+      <supports type="yes" element="satie-ext" />
+    </encoding>
+    <miscellaneous>
+      <miscellaneous-field name="description">This piece has more part elements
+                    than the part-list section gives. One can either convert all
+                    the parts present, but not listed in the part-list, or simply 
+                    not import / ignore them.</miscellaneous-field>
+    </miscellaneous>
+  </identification>
+  <defaults>
+    <scaling>
+      <millimeters>6.5</millimeters>
+      <tenths>40</tenths>
+    </scaling>
+    <page-layout>
+      <page-height>1719.3846153846152</page-height>
+      <page-width>1328.6153846153845</page-width>
+      <page-margins type="both">
+        <left-margin>93.84615384615385</left-margin>
+        <right-margin>93.84615384615385</right-margin>
+        <top-margin>93.84615384615385</top-margin>
+        <bottom-margin>93.84615384615385</bottom-margin>
+      </page-margins>
+    </page-layout>
+    <system-layout>
+      <system-margins>
+        <left-margin>0</left-margin>
+        <right-margin>0</right-margin>
+      </system-margins>
+      <system-distance>131</system-distance>
+      <top-system-distance>70</top-system-distance>
+    </system-layout>
+    <appearance>
+      <line-width type="staff">1.3</line-width>
+      <line-width type="wedge">1.6</line-width>
+      <line-width type="ending">1.6</line-width>
+      <line-width type="heavy barline">5</line-width>
+      <line-width type="leger">1.6</line-width>
+      <line-width type="stem">1.2</line-width>
+      <line-width type="tuplet bracket">1.6</line-width>
+      <line-width type="beam">5</line-width>
+      <line-width type="light barline">1.6</line-width>
+      <line-width type="enclosure">1.6</line-width>
+      <note-size type="cue">60</note-size>
+      <note-size type="grace">60</note-size>
+      <distance type="hyphen">120</distance>
+      <distance type="beam">8.8</distance>
+    </appearance>
+    <music-font font-family="Bravura, Maestro, engraved" font-style="normal" font-size="20.5" font-weight="normal" />
+    <word-font font-family="Alegreya, Times New Roman, serif" font-style="normal" font-size="12" font-weight="normal" />
+  </defaults>
+  <part-list>
+    <score-part id="P1">
+      <part-name font-style="normal" font-weight="normal" color="#000000" print-object="no" justify="left">MusicXML Part</part-name>
+    </score-part>
+  </part-list>
+  <measure number="1">
+    <part id="P1">
+      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+        <rest measure="yes">
+          
+        </rest>
+        <duration>4</duration>
+        <voice>1</voice>
+        <type>whole</type>
+        <staff>1</staff>
+      </note>
+      
+      <attributes>
+        <!--musicxml-interfaces:debug>
+          <div-count>0</div-count>
+        </musicxml-interfaces:debug-->
+        <divisions>1</divisions>
+        <key>
+          <fifths>0</fifths>
+          <mode>major</mode>
+        </key>
+        <time symbol="common">
+          <beats>4</beats>
+          <beat-type>4</beat-type>
+        </time>
+        <staves>1</staves>
+        <clef number="1">
+          <sign>G</sign>
+          <line>2</line>
+        </clef>
+        <staff-details number="1">
+          <staff-lines>5</staff-lines>
+        </staff-details>
+      </attributes>
+      <print new-system="no" new-page="no" page-number="1">
+        <!--musicxml-interfaces:debug>
+          <div-count>0</div-count>
+        </musicxml-interfaces:debug-->
+        <page-layout>
+          <page-height>1719.3846153846152</page-height>
+          <page-width>1328.6153846153845</page-width>
+          <page-margins type="both">
+            <left-margin>93.84615384615385</left-margin>
+            <right-margin>93.84615384615385</right-margin>
+            <top-margin>93.84615384615385</top-margin>
+            <bottom-margin>93.84615384615385</bottom-margin>
+          </page-margins>
+        </page-layout>
+        <system-layout>
+          <system-margins>
+            <left-margin>0</left-margin>
+            <right-margin>0</right-margin>
+          </system-margins>
+          <system-distance>131</system-distance>
+          <top-system-distance>70</top-system-distance>
+        </system-layout>
+        <measure-numbering relative-x="0" relative-y="0" font-family="Alegreya, serif" font-style="normal" font-size="small" font-weight="normal" color="#000000">system</measure-numbering>
+      </print>
+      <!-- spacer: 4 divs -->
+      
+      <!-- spacer: 5 divs -->
+      
+      <barline>
+        <!--musicxml-interfaces:debug>
+          <div-count>0</div-count>
+        </musicxml-interfaces:debug-->
+        <bar-style color="black"></bar-style>
+      </barline>
+    </part>
+  </measure>
+  </score-timewise>

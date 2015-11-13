@@ -1,0 +1,15 @@
+{
+    "compilerOptions": {
+        "module": "commonjs",
+        "noImplicitAny": true,
+        "removeComments": false,
+        "experimentalDecorators": true,
+        "sourceMap": true,
+        "jsx": "react",
+        "outDir": "dist",
+        "target": "es5"
+    },
+    "files": [
+        "./src/index.tsx"
+    ]
+}
