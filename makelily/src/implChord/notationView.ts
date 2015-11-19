@@ -22,7 +22,7 @@
 import {UprightInverted, Notations, Note} from "musicxml-interfaces";
 import {createFactory as $, Component, DOM, ReactElement, PropTypes} from "react";
 import {forEach} from "lodash";
-import invariant = require("invariant");
+import * as invariant from "invariant";
 
 import Bezier from "../private/views/bezier";
 import Glyph from "../private/views/glyph";

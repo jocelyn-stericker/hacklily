@@ -19,7 +19,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import invariant = require("invariant");
+import * as invariant from "invariant";
 import {IAny, IObjectReplace, IObjectDelete} from "musicxml-interfaces/operations";
 
 import ILinesLayoutState from "../private/linesLayoutState";

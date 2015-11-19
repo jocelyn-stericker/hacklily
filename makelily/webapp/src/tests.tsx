@@ -1,7 +1,7 @@
 import * as React from "react";
 import {Component} from "react";
 import {Link} from "react-router";
-import _ = require("lodash");
+import {reduce} from "lodash";
 
 import Test from "./test";
 
@@ -172,7 +172,7 @@ const TESTS = [
 class Tests extends Component<{params: {id: string}}, void> {
     render() {
         let filter = this.props.params ? this.props.params.id : null;
-        let cat = _.reduce(TESTS, (memo, testName) => {
+        let cat = reduce(TESTS, (memo, testName) => {
             let type = testName.substr(0, 2);
             let link = filter ?
                 null :

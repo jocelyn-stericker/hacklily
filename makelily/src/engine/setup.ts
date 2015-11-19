@@ -20,7 +20,7 @@
  */
 
 import {forEach, once} from "lodash";
-import invariant = require("invariant");
+import * as invariant from "invariant";
 
 import {markPreloaded, setRoot} from "../private/fontManager";
 

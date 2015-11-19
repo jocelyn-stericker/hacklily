@@ -20,7 +20,7 @@
  */
 
 import {readFile} from "fs";
-import yargs = require("yargs");
+import * as yargs from "yargs";
 
 import Application from "./engine/application";
 

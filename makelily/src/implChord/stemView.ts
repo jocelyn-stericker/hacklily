@@ -21,7 +21,7 @@
 
 import {Stem, StemType, Tremolo} from "musicxml-interfaces";
 import {createFactory as $, Component, DOM, PropTypes} from "react";
-import invariant = require("invariant");
+import * as invariant from "invariant";
 
 import Line from "../private/views/line";
 import Glyph from "../private/views/glyph";

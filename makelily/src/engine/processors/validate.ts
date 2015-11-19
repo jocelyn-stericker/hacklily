@@ -20,7 +20,7 @@
  */
 
 import {reduce, forEach, flatten, filter, find, map, pairs} from "lodash";
-import invariant = require("invariant");
+import * as invariant from "invariant";
 import {IAny} from "musicxml-interfaces/operations";
 
 import Type from "../../document/types";

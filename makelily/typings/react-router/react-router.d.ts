@@ -130,7 +130,7 @@ declare namespace ReactRouter {
         query?: H.Query
         state?: H.LocationState
     }
-    interface Redirect extends __React.ReactElement<RedirectProps> {}
+    interface Redirect extends __React.ComponentClass<RedirectProps> {}
     interface RedirectElement extends __React.ReactElement<RedirectProps> {}
     const Redirect: Redirect
 

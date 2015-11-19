@@ -21,7 +21,7 @@
 
 import {Print} from "musicxml-interfaces";
 import {map, reduce, flatten, values, find} from "lodash";
-import invariant = require("invariant");
+import * as invariant from "invariant";
 
 import IMeasure from "../../document/measure";
 import ISegment from "../../document/segment";

@@ -26,7 +26,7 @@ import {Note, Chord, Rest, Dot, Type, Count, SymbolSize, TimeModification, Pitch
     NonArpeggiate, Ornaments, OtherNotation, Slide, Slur, Technical, Tied, Tuplet,
     MxmlAccidental, serializeNote} from "musicxml-interfaces";
 import {times, forEach, reduce, map} from "lodash";
-import invariant = require("invariant");
+import * as invariant from "invariant";
 
 import ICursor from "../private/cursor";
 import {notationObj, accidentalGlyphs, onLedger, InvalidAccidental} from "../private/chord";

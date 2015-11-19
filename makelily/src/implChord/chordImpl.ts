@@ -23,7 +23,7 @@ import {Clef, Count, MultipleRest, Note, NoteheadType, Stem, StemType, Tremolo,
     Tied, TimeModification, serializeNote} from "musicxml-interfaces";
 import {IAny} from "musicxml-interfaces/operations";
 import {forEach, times, filter, reduce, map, max, any, extend} from "lodash";
-import invariant = require("invariant");
+import * as invariant from "invariant";
 
 import Type from "../document/types";
 import FrozenLevel from "../document/frozenLevels";

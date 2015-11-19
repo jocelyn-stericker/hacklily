@@ -23,7 +23,7 @@ import {defer, forEach, isEqual, isObject, isFunction, isString, throttle, find}
 import {createElement, ReactElement} from "react";
 import {Pitch} from "musicxml-interfaces";
 import {IAny, invert} from "musicxml-interfaces/operations";
-import invariant = require("invariant");
+import * as invariant from "invariant";
 
 import IModel from "../document/model";
 import IDocument, {Document} from "../document/document";

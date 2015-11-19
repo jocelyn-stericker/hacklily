@@ -22,7 +22,7 @@
 import {Credit, NormalItalic, NormalBold, CreditWords, Words} from "musicxml-interfaces";
 import {Component, DOM, PropTypes} from "react";
 import {map, extend} from "lodash";
-import invariant = require("invariant");
+import * as invariant from "invariant";
 
 import {cssSizeToTenths} from "../private/renderUtil";
 import {ITextMixin, Prototype as TextMixin} from "../private/views/textMixin";

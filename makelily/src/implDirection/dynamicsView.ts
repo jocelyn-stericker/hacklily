@@ -22,7 +22,7 @@
 import {Dynamics} from "musicxml-interfaces";
 import {createFactory as $, ReactElement, Component, PropTypes} from "react";
 import {filter} from "lodash";
-import invariant = require("invariant");
+import * as invariant from "invariant";
 
 import Glyph from "../private/views/glyph";
 

@@ -1,8 +1,9 @@
 help:
 	@echo 'Usage:'
-	@echo 'make serve    Run a development server on 0.0.0.0:4200'
+	@echo 'make watch    Enter development mode'
 	@echo 'make build    Build production "dist/" folder'
 	@echo 'make deploy   Deploy to Github'
+	@echo 'make lint     Lint TypeScript'
 
 NO_COLOR=\033[0m
 OK_COLOR=\033[32;01m
@@ -11,13 +12,15 @@ WARN_COLOR=\033[33;01m
 INFO_COLOR=\033[36;01m
 
 OK_STRING=$(OK_COLOR)  ...ok!$(NO_COLOR)
-TSC_STRING=webapp$(INFO_COLOR)» Building from tsconfig.json...$(NO_COLOR)
-BUNDLE_PROD_STRING=webapp$(INFO_COLOR)» Bundling...$(NO_COLOR)
-WATCH_STRING=webapp$(INFO_COLOR)» Watching from tsconfig.json...$(NO_COLOR)
-LINT_STRING=webapp$(INFO_COLOR)» Linting *.ts...$(NO_COLOR)
-CLEAN_STRING=webapp$(INFO_COLOR)» Deleting generated code ...$(NO_COLOR)
+TSC_STRING=satieapp$(INFO_COLOR)» Building from tsconfig.json...$(NO_COLOR)
+BUNDLE_PROD_STRING=satieapp$(INFO_COLOR)» Bundling...$(NO_COLOR)
+WATCH_STRING=satieapp$(INFO_COLOR)» Watching from tsconfig.json...$(NO_COLOR)
+LINT_STRING=satieapp$(INFO_COLOR)» Linting *.ts...$(NO_COLOR)
+CLEAN_STRING=satieapp$(INFO_COLOR)» Deleting generated code ...$(NO_COLOR)
 
-serve:
+TS_FILES = $(shell find src/ -type f -name '*.ts')
+
+watch:
 	@clear
 	@printf "$(WATCH_STRING)\n"
 	@CLEAN="1"; \
@@ -26,15 +29,15 @@ serve:
 	while read line; do \
 	    if [[ $$line == *TS6042* ]]; then \
 		if [[ "$$CLEAN" == "1" ]]; then \
-		    printf "webapp$(INFO_COLOR)» $$line$(NO_COLOR)\n"; \
+		    printf "satieapp$(INFO_COLOR)» $$line$(NO_COLOR)\n"; \
 		    cd ./src; \
-		    find -type f -name \\*.css -exec install -m 644-D {} ../dist/{} ';'; \
+		    find -type f -name "*.css" -exec install -m 644 -D "{}" ../dist/{} ";" ; \
 		    cd ..; \
 		    if [[ "$$INIT" == "0" ]]; then \
 			if [[ "x$$RUN_LINT" != "x" ]]; then \
 			    ../node_modules/.bin/nodemon --quiet --exec "make lint" -w ./dist/ -d 2 &\
 			else \
-			    printf "webapp$(WARN_COLOR)» Linting is disabled. Run 'make watch RUN_LINT=1' to run tests. $(NO_COLOR)\n"; \
+			    printf "satieapp$(WARN_COLOR)» Linting is disabled. Run 'make watch RUN_LINT=1' to run tests. $(NO_COLOR)\n"; \
 			fi; \
 			if [[ "x$$RUN_DEVSRV" != "x" ]]; then \
 			    ../node_modules/.bin/webpack-dev-server \
@@ -50,25 +53,26 @@ serve:
 				--host 0.0.0.0 \
 				--port 4200 & \
 			else \
-			    printf "webapp$(WARN_COLOR)» The dev server is disabled. Run 'make watch RUN_DEVSRV=1' to enable. $(NO_COLOR)\n"; \
+			    printf "satieapp$(WARN_COLOR)» The dev server is disabled. Run 'make watch RUN_DEVSRV=1' to enable. $(NO_COLOR)\n"; \
 			fi; \
 			INIT="1"; \
 		    fi; \
 		else \
-		    printf "webapp$(ERROR_COLOR)» $$line$(NO_COLOR)\n"; \
+		    printf "satieapp$(ERROR_COLOR)» $$line$(NO_COLOR)\n"; \
 		fi; \
 	    elif [[ $$line == *TS6032* ]]; then \
 		clear; \
 		CLEAN="1"; \
-		printf "webapp$(INFO_COLOR)» $$line$(NO_COLOR)\n"; \
+		printf "satieapp$(INFO_COLOR)» $$line$(NO_COLOR)\n"; \
 	    else \
 		CLEAN="0"; \
-		printf "webapp$(ERROR_COLOR)» $$line$(NO_COLOR)\n"; \
+		printf "satieapp$(ERROR_COLOR)» $$line$(NO_COLOR)\n"; \
 	    fi; \
 	done;
 
 lint:
-	@find ./src -regex ".*[a-zA-Z0-9_][a-zA-Z0-9_]\.ts" | sed 's/\(.*\)/-f\1/g' | xargs ../node_modules/.bin/tslint -c ./tsconfig.json
+	@printf "$(LINT_STRING)\n"
+	@set -o pipefail; ../node_modules/.bin/tslint $(TS_FILES) | sed -e "s/\(.*\)/[tslint] \x1b[31;01m\1\x1b[0m/"
 
 build: clean lint
 	./node_modules/.bin/webpack -p

@@ -20,7 +20,7 @@
  */
 
 import {forEach, max, map, times, findIndex, last} from "lodash";
-import invariant = require("invariant");
+import * as invariant from "invariant";
 
 import ExpandPolicy from "../document/expandPolicies";
 import Type from "../document/types";

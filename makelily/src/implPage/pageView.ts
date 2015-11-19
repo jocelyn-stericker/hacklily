@@ -22,7 +22,7 @@
 import {ScoreHeader, Print} from "musicxml-interfaces";
 import {createFactory as $, Component, DOM, MouseEvent, PropTypes} from "react";
 import {map, filter, forEach} from "lodash";
-import invariant = require("invariant");
+import * as invariant from "invariant";
 
 import IModel, {generateKey} from "../document/model";
 

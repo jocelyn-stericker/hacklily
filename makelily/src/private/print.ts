@@ -20,7 +20,7 @@
  */
 
 import {PageMargins, OddEvenBoth} from "musicxml-interfaces";
-import invariant = require("invariant");
+import * as invariant from "invariant";
 
 export function getPageMargins(pageMargins: PageMargins[], page: number): PageMargins {
     for (let i = 0; i < pageMargins.length; ++i) {

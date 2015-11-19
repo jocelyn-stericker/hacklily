@@ -25,7 +25,7 @@
 
 import {StartStop, Time, TimeModification, Count} from "musicxml-interfaces";
 import {any, reduce, times, forEach, clone, find} from "lodash";
-import invariant = require("invariant");
+import * as invariant from "invariant";
 
 import IModel from "../document/model";
 import Type from "../document/types";

@@ -21,7 +21,7 @@
 
 import {Component, ComponentLifecycle} from "react";
 
-import invariant = require("invariant");
+import * as invariant from "invariant";
 import {isEqual, sortedIndex, indexOf} from "lodash";
 
 export interface IBaseProps {

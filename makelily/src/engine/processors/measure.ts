@@ -26,7 +26,7 @@
 import {ScoreHeader} from "musicxml-interfaces";
 import {IAny} from "musicxml-interfaces/operations";
 import {indexBy, filter, map, reduce, values, flatten, forEach, extend} from "lodash";
-import invariant = require("invariant");
+import * as invariant from "invariant";
 
 import IMeasure from "../../document/measure";
 import IModel from "../../document/model";

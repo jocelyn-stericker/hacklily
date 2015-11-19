@@ -120,6 +120,14 @@ watch: _gentestsuite
 			else \
 			    printf "$(WARN_COLOR)» Linting is disabled. Run 'make watch RUN_LINT=1' to run tests. $(NO_COLOR)\n"; \
 			fi; \
+			if [[ "x$$RUN_SATIEAPP" != "x" ]]; then \
+			    sleep 5; \
+			    cd ./webapp; \
+			    make watch RUN_DEVSRV=1 & \
+			    cd ..; \
+			else \
+			    printf "$(WARN_COLOR)» The Satie app is disabled. Run 'make watch RUN_SATIEAPP=1' to run the test server. $(NO_COLOR)\n"; \
+			fi; \
 			if [[ "x$$RUN_DEVSRV" != "x" ]]; then \
 			    ./node_modules/.bin/webpack-dev-server \
 				--debug \
@@ -189,9 +197,6 @@ coverage: build
 
 ./webapp/node_modules:
 	cd ./webapp; npm install
-
-serve: ./webapp/node_modules
-	cd ./webapp; make serve
 
 clean:
 	@printf "$(CLEAN_STRING)\n"

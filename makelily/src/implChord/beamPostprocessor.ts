@@ -25,7 +25,7 @@
 
 import {Attributes, Beam, BeamType, StartStop, Tuplet, AboveBelow} from "musicxml-interfaces";
 import {any, chain, forEach, find, map, sortBy, times, first, last} from "lodash";
-import invariant = require("invariant");
+import * as invariant from "invariant";
 
 import Type from "../document/types";
 
