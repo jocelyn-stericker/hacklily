@@ -1,17 +1,20 @@
 /**
+ * @source: https://github.com/jnetterf/satie/
+ *
+ * @license
  * (C) Josh Netterfield <joshua@nettek.ca> 2015.
  * Part of the Satie music engraver <https://github.com/jnetterf/satie>.
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Affero General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
@@ -20,15 +23,25 @@
  * @file part of Satie test suite
  */
 
-"use strict";
-
 import {Print, OddEvenBoth} from "musicxml-interfaces";
+import {IAny} from "musicxml-interfaces/operations";
+
 import {map} from "lodash";
 import {expect} from "chai";
 
-import {validate, ILayoutOptions, ICursor, ILineBounds, ILinesLayoutMemo, IModel, ISegment}
-    from "../engine";
+import Type from "../document/types";
+import FrozenLevel from "../document/frozenLevels";
+import IModel from "../document/model";
+
+import ILayout from "../private/layout";
+import IFactory from "../private/factory";
+import {newLayoutState} from "../private/linesLayoutState";
+import {calculate as calculateLineBounds} from "../private/lineBounds";
+import ILayoutOptions from "../private/layoutOptions";
+import ICursor from "../private/cursor";
+
 import {createFakeStaffSegment, createFakeVoiceSegment} from "../engine/__tests__/etestutil";
+import validate from "../engine/processors/validate";
 
 describe("[engine.ts]", function() {
     describe("Options.ILineBounds.calculate", function() {
@@ -73,7 +86,7 @@ describe("[engine.ts]", function() {
                     ]
                 }
             };
-            expect(ILineBounds.calculate(spec1, 1)).to.deep.equal({
+            expect(calculateLineBounds(spec1, 1)).to.deep.equal({
                 left: 11,
                 right: 1000 - 12,
                 systemLayout: {
@@ -83,7 +96,7 @@ describe("[engine.ts]", function() {
                     }
                 }
             });
-            expect(ILineBounds.calculate(spec1, 2)).to.deep.equal({
+            expect(calculateLineBounds(spec1, 2)).to.deep.equal({
                 left: 21,
                 right: 1000 - 22,
                 systemLayout: {
@@ -95,52 +108,57 @@ describe("[engine.ts]", function() {
             });
         });
     });
-    describe("validate$", function() {
+    describe("__validate", function() {
         it("creates attributes and barline if missing", function() {
             let calledCount = 0;
 
-            let createAttributesChordFactory: IModel.IFactory = {
-                create: (modelType: IModel.Type): IModel => {
+            let createAttributesChordFactory: IFactory = {
+                create: (modelType: Type): IModel => {
                     ++calledCount;
                     return {
                         divCount: 0,
+                        divisions: 0,
                         staffIdx: 1,
-                        frozenness: IModel.FrozenLevel.Warm,
-                        modelDidLoad$: (segment$: ISegment) => { /* pass */ },
-                        validate$: (cursor$: ICursor) => { /* pass */ },
-                        layout: function(cursor$: ICursor): IModel.ILayout {
+                        frozenness: FrozenLevel.Warm,
+
+                        checkSemantics: (cursor: ICursor): IAny[] => {
+                            return [];
+                        },
+
+                        __validate: (cursor: ICursor) => { /* pass */ },
+                        __layout: function(cursor: ICursor): ILayout {
                             throw "not reached";
                         }
                     };
                 },
-                modelHasType: (model: IModel, modelType: IModel.Type): boolean => {
+                modelHasType: (model: IModel, modelType: Type): boolean => {
                     if (model.divCount === 0) {
-                        return modelType === IModel.Type.Attributes;
+                        return modelType === Type.Attributes;
                     }
-                    return modelType === IModel.Type.Chord;
+                    return modelType === Type.Chord;
                 },
-                search: (models: IModel[], idx: number, modelType: IModel.Type):
+                search: (models: IModel[], idx: number, modelType: Type):
                         IModel[] => {
                     let model = models[idx];
                     if (model.divCount === 0) {
-                        if (modelType === IModel.Type.Attributes) {
+                        if (modelType === Type.Attributes) {
                             return [model];
                         } else {
                             return [];
                         }
                     }
-                    if (modelType === IModel.Type.Chord) {
+                    if (modelType === Type.Chord) {
                         return [model];
                     } else {
                         return [];
                     }
                 },
                 fromSpec: (model: any): IModel => {
-                    throw "Not implemented";
+                    return createAttributesChordFactory.create(Type[model._class] as any);
                 }
             };
 
-            let memo$ = ILinesLayoutMemo.create(NaN);
+            let memo$ = newLayoutState(NaN);
             let padding = 20;
 
             let segments = [{
@@ -153,6 +171,9 @@ describe("[engine.ts]", function() {
             }];
 
             let contextOptions: ILayoutOptions = {
+                preview: false,
+                fixup: null,
+
                 attributes: null,
                 measures: map(segments, function(segment, idx) {
                     return {

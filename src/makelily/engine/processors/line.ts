@@ -1,52 +1,65 @@
-/** 
+/**
+ * @source: https://github.com/jnetterf/satie/
+ *
+ * @license
  * (C) Josh Netterfield <joshua@nettek.ca> 2015.
  * Part of the Satie music engraver <https://github.com/jnetterf/satie>.
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Affero General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 import {reduce, flatten, map, values, pluck, times, max, zipObject, forEach, filter} from "lodash";
-import invariant = require("invariant");
+import * as invariant from "invariant";
 
-import {ILayoutOptions, ILineBounds, ILinesLayoutState, ILineLayoutResult,
-    IPart, ISegment, IMeasureLayout, Context } from "../../engine";
+import ISegment from "../../document/segment";
+import IMeasurePart from "../../document/measurePart";
+
+import ILayoutOptions from "../../private/layoutOptions";
+import ILineBounds from "../../private/lineBounds";
+import ILinesLayoutState from "../../private/linesLayoutState";
+import ILineLayoutResult from "../../private/lineLayoutResult";
+import ILineContext, {createLineContext} from "../../private/lineContext";
+import IMeasureLayout, {detach as detachMeasureLayout} from "../../private/measureLayout";
+import {scoreParts} from "../../private/part";
 
 import {layoutMeasure} from "./measure";
 
 export function layoutLine$(options: ILayoutOptions, bounds: ILineBounds,
         memo$: ILinesLayoutState): ILineLayoutResult {
     let {measures, attributes} = options;
-    let {clean$} = memo$;
+    let {clean$, reduced$} = memo$;
 
     let allModels = reduce(measures, function(memo, measure) {
-        let voiceSegments$ = <ISegment[]> flatten(map(values(measure.parts), part => part.voices));
+        let voiceSegments$ = <ISegment[]> flatten(map(values<IMeasurePart>(measure.parts),
+            part => part.voices));
 
-        let staffSegments$ = <ISegment[]> flatten(map(values(measure.parts), part => part.staves));
+        let staffSegments$ = <ISegment[]> flatten(map(values<IMeasurePart>(measure.parts),
+            part => part.staves));
 
         let segments = filter(voiceSegments$.concat(staffSegments$), s => !!s);
         return memo.concat(segments);
     }, []);
-    let line = Context.ILine.create(allModels, measures.length, options.line, options.lines);
+    let line = createLineContext(allModels, measures.length, options.line, options.lines);
 
     if (!measures.length) {
         return [];
     }
 
-    let layouts = _layoutDirtyMeasures(options, line, clean$);
+    let layouts = _layoutDirtyMeasures(options, line, clean$, reduced$, memo$);
     attributes = clean$[measures[measures.length - 1].uuid].attributes; // FIXME: Hack
 
-    let partOrder: string[] = pluck(IPart.scoreParts(options.header.partList), "id");
+    let partOrder: string[] = pluck(scoreParts(options.header.partList), "id");
     let staffIdx = 0;
 
     let topsInOrder = map(partOrder, partID => {
@@ -83,7 +96,7 @@ export function layoutLine$(options: ILayoutOptions, bounds: ILineBounds,
 
     let key = `${options.page$}_${options.line}`;
     if (!memo$.reduced$[key]) {
-        let detachedLayouts: IMeasureLayout[] = map(layouts, IMeasureLayout.detach);
+        let detachedLayouts: IMeasureLayout[] = map(layouts, detachMeasureLayout);
         memo$.reduced$[key] = reduce(options.postprocessors,
             (layouts, filter) => filter(options, bounds, detachedLayouts), layouts);
     }
@@ -91,13 +104,18 @@ export function layoutLine$(options: ILayoutOptions, bounds: ILineBounds,
     return memo$.reduced$[key];
 }
 
-function _layoutDirtyMeasures(options: ILayoutOptions, line: Context.ILine,
-        clean$: {[key: string]: IMeasureLayout}) {
+function _layoutDirtyMeasures(options: ILayoutOptions, line: ILineContext,
+        clean$: {[key: string]: IMeasureLayout}, reduced$: {[key: string]: ILineLayoutResult},
+        memo$: ILinesLayoutState) {
     let measures = options.measures;
     let attributes = options.attributes;
     return map(measures, (measure, measureIdx) => {
         line.barOnLine$ = measureIdx;
         if (!clean$[measure.uuid]) {
+            if (!options.preview) {
+                reduced$[`${options.page$}_${options.line}`] = null;
+            }
+
             clean$[measure.uuid] = layoutMeasure({
                 attributes: attributes,
                 factory: options.modelFactory,
@@ -105,7 +123,10 @@ function _layoutDirtyMeasures(options: ILayoutOptions, line: Context.ILine,
                 line: line,
                 measure: measure,
                 padEnd: measureIdx !== measures.length - 1,
-                x: 0 // Final offset set recorded in justify(...).
+                x: 0, // Final offset set recorded in justify(...).
+                preview: options.preview,
+                memo$,
+                fixup: options.fixup
             });
         }
         // Update attributes for next measure

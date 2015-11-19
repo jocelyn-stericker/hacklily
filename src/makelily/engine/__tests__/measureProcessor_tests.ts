@@ -1,17 +1,20 @@
 /**
+ * @source: https://github.com/jnetterf/satie/
+ *
+ * @license
  * (C) Josh Netterfield <joshua@nettek.ca> 2015.
  * Part of the Satie music engraver <https://github.com/jnetterf/satie>.
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Affero General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
@@ -20,17 +23,18 @@
  * @file part of Satie test suite
  */
 
-"use strict";
-
 import {ILayoutOpts, approximateLayout, reduceMeasure, layoutMeasure}
         from "../processors/measure";
 
 import {expect} from "chai";
 
-import Context from "../context";
+import ExpandPolicy from "../../document/expandPolicies";
+import Type from "../../document/types";
+import {normalizeDivisionsInPlace} from "../../document/segment";
+
+import {createLineContext} from "../../private/lineContext";
+
 import {createFakeVoiceSegment, createFakeStaffSegment, fakeFactory} from "./etestutil";
-import IModel from "../imodel";
-import {normalizeDivisions$} from "../measure";
 
 describe("[engine/measureProcessor.ts]", function() {
     describe("reduce", function() {
@@ -46,12 +50,16 @@ describe("[engine/measureProcessor.ts]", function() {
             segments[1].part = "P1";
             segments[2].owner = 2;
             segments[2].part = "P1";
-            normalizeDivisions$(segments);
+            normalizeDivisionsInPlace(segments);
 
             // test without alignment
             let opts: ILayoutOpts = {
+                preview: false,
+                memo$: null,
+                fixup: null,
+
                 attributes: <any> {},
-                line: Context.ILine.create(segments, 1, 0, 1),
+                line: createLineContext(segments, 1, 0, 1),
                 header: null,
                 padEnd: false,
                 measure: {
@@ -63,7 +71,13 @@ describe("[engine/measureProcessor.ts]", function() {
                     version: 0,
                     uuid: 777,
                     x: 100,
-                    parent: null
+                    parent: {
+                        idx: 0,
+                        uuid: 777,
+                        number: "1",
+                        parts: {},
+                        version: 0,
+                    }
                 },
                 segments: segments,
                 _noAlign: true,
@@ -93,38 +107,38 @@ describe("[engine/measureProcessor.ts]", function() {
                         division: 0,
                         x$: 100,
                         model: null,
-                        renderClass: IModel.Type.Attributes
+                        renderClass: Type.Attributes
                     },
                     {
                         boundingBoxes$: [],
                         division: 0,
-                        expandPolicy: IModel.ExpandPolicy.After,
+                        expandPolicy: ExpandPolicy.After,
                         x$: 110,
                         part: "P1",
                         model: segments[1][0],  // from first voice.
-                        renderClass: IModel.Type.Chord
+                        renderClass: Type.Chord
                     },
                     {
                         division: 1,
-                        expandPolicy: IModel.ExpandPolicy.After,
+                        expandPolicy: ExpandPolicy.After,
                         x$: 120,
                         model: null,
-                        renderClass: IModel.Type.Chord
+                        renderClass: Type.Chord
                     },
                     {
                         boundingBoxes$: [],
-                        expandPolicy: IModel.ExpandPolicy.After,
+                        expandPolicy: ExpandPolicy.After,
                         division: 2,
                         x$: 130,
                         part: "P1",
                         model: segments[1][1],
-                        renderClass: IModel.Type.Chord
+                        renderClass: Type.Chord
                     },
                     {
                         division: 4,
                         x$: 190,
                         model: null,
-                        renderClass: IModel.Type.Attributes
+                        renderClass: Type.Attributes
                     },
                 ]
             );
@@ -144,6 +158,10 @@ describe("[engine/measureProcessor.ts]", function() {
             ];
 
             let layout = layoutMeasure({
+                preview: false,
+                memo$: null,
+                fixup: null,
+
                 header: <any> {
                     partList: [
                         {
@@ -200,6 +218,10 @@ describe("[engine/measureProcessor.ts]", function() {
             ];
 
             let width = approximateLayout({
+                preview: false,
+                memo$: null,
+                fixup: null,
+
                 attributes: {},
                 header: <any> {
                     partList: [

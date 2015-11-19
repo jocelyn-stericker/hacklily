@@ -1,17 +1,20 @@
 /**
+ * @source: https://github.com/jnetterf/satie/
+ *
+ * @license
  * (C) Josh Netterfield <joshua@nettek.ca> 2015.
  * Part of the Satie music engraver <https://github.com/jnetterf/satie>.
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Affero General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
@@ -20,29 +23,36 @@
  * @file part of Satie test suite
  */
 
-"use strict";
+import {IAny} from "musicxml-interfaces/operations";
 
-import ICursor from "../icursor";
-import IModel from "../imodel";
-import {ISegment, OwnerType} from "../measure";
+import OwnerType from "../../document/ownerTypes";
+import ISegment from "../../document/segment";
+import IModel from "../../document/model";
+import FrozenLevel from "../../document/frozenLevels";
+import Type from "../../document/types";
+import ExpandPolicy from "../../document/expandPolicies";
 
-export let fakeFactory: IModel.IFactory = {
-    create: (modelType: IModel.Type): IModel => {
+import IFactory from "../../private/factory";
+import ILayout from "../../private/layout";
+import ICursor from "../../private/cursor";
+
+export let fakeFactory: IFactory = {
+    create: (modelType: Type): IModel => {
         chai.assert(false, "not reached");
         return null;
     },
-    modelHasType: (model: IModel, modelType: IModel.Type): boolean => {
+    modelHasType: (model: IModel, modelType: Type): boolean => {
         if (model.divCount === 0) {
-            return modelType === IModel.Type.Attributes;
+            return modelType === Type.Attributes;
         }
-        return modelType === IModel.Type.Chord;
+        return modelType === Type.Chord;
     },
     search: (models: IModel[], idx: number,
-            modelType: IModel.Type): IModel[] => {
+            modelType: Type): IModel[] => {
         return fakeFactory.modelHasType(models[idx], modelType) ? [models[idx]] : [];
     },
     fromSpec: (spec: any): IModel => {
-        throw "Not implemented";
+        throw new Error("Not implemented");
     }
 };
 
@@ -52,12 +62,16 @@ export function createFakeStaffSegment(
         {
             divCount: divisions1,
             staffIdx: 1,
-            frozenness: IModel.FrozenLevel.Warm,
-            modelDidLoad$: (segment$: ISegment) => { /* pass */ },
-            validate$: function(cursor$: ICursor) {
+            frozenness: FrozenLevel.Warm,
+
+            checkSemantics: function(cursor$: ICursor): IAny[] {
+                return [];
+            },
+
+            __validate: function(cursor$: ICursor) {
                 // pass
             },
-            layout: function(cursor$: ICursor): IModel.ILayout {
+            __layout: function(cursor$: ICursor): ILayout {
                 let width = cursor$.detached ? 0 : 10;
                 cursor$.x$ += width;
                 return {
@@ -65,19 +79,23 @@ export function createFakeStaffSegment(
                     division: cursor$.division$,
                     x$: cursor$.x$ - width,
                     model: this,
-                    renderClass: IModel.Type.Attributes
+                    renderClass: Type.Attributes
                 };
             }
         },
         {
             divCount: divisions2,
             staffIdx: 1,
-            frozenness: IModel.FrozenLevel.Warm,
-            modelDidLoad$: (segment$: ISegment) => { /* pass */ },
-            validate$: function(cursor$: ICursor) {
+            frozenness: FrozenLevel.Warm,
+
+            checkSemantics: function(cursor$: ICursor): IAny[] {
+                return [];
+            },
+
+            __validate: function(cursor$: ICursor) {
                 // pass
             },
-            layout: function(cursor$: ICursor): IModel.ILayout {
+            __layout: function(cursor$: ICursor): ILayout {
                 let width = 10;
                 cursor$.x$ += width;
                 return {
@@ -85,7 +103,7 @@ export function createFakeStaffSegment(
                     division: cursor$.division$,
                     x$: cursor$.x$ - width,
                     model: this,
-                    renderClass: IModel.Type.Attributes
+                    renderClass: Type.Attributes
                 };
             }
         }
@@ -103,42 +121,52 @@ export function createFakeVoiceSegment(
         {
             divCount: divisions1,
             staffIdx: 1,
-            frozenness: IModel.FrozenLevel.Warm,
-            modelDidLoad$: (segment$: ISegment) => { /* pass */ },
-            validate$: function(cursor$: ICursor) {
+            frozenness: FrozenLevel.Warm,
+
+            checkSemantics: function(cursor$: ICursor): IAny[] {
+                return [];
+            },
+
+            __validate: function(cursor$: ICursor) {
                 // pass
             },
-            layout: function(cursor$: ICursor): IModel.ILayout {
+
+            __layout: function(cursor$: ICursor): ILayout {
                 let width = divisions1 * 10;
                 cursor$.x$ += width;
                 return {
                     boundingBoxes$: [],
                     division: cursor$.division$,
                     x$: cursor$.x$ - width,
-                    expandPolicy: IModel.ExpandPolicy.After,
+                    expandPolicy: ExpandPolicy.After,
                     model: this,
-                    renderClass: IModel.Type.Chord
+                    renderClass: Type.Chord
                 };
             }
         },
         {
             divCount: divisions2,
             staffIdx: 1,
-            frozenness: IModel.FrozenLevel.Warm,
-            modelDidLoad$: (segment$: ISegment) => { /* pass */ },
-            validate$: function(cursor$: ICursor) {
+            frozenness: FrozenLevel.Warm,
+
+            checkSemantics: function(cursor$: ICursor): IAny[] {
+                return [];
+            },
+
+            __validate: function(cursor$: ICursor) {
                 // pass
             },
-            layout: function(cursor$: ICursor): IModel.ILayout {
+
+            __layout: function(cursor$: ICursor): ILayout {
                 let width = divisions2 * 10;
                 cursor$.x$ += width;
                 return {
                     boundingBoxes$: [],
                     division: cursor$.division$,
                     x$: cursor$.x$ - width,
-                    expandPolicy: IModel.ExpandPolicy.After,
+                    expandPolicy: ExpandPolicy.After,
                     model: this,
-                    renderClass: IModel.Type.Chord
+                    renderClass: Type.Chord
                 };
             }
         }
@@ -150,12 +178,12 @@ export function createFakeVoiceSegment(
     return a;
 }
 
-export function createFakeLayout(idx: number, offset: number, max: boolean): IModel.ILayout {
+export function createFakeLayout(idx: number, offset: number, max: boolean): ILayout {
     return {
         model: <any> {},
         x$: idx * 100 + Math.log(1 + offset) / Math.log(2) * 10,
         division: idx * 4 + offset,
         boundingBoxes$: [],
-        renderClass: IModel.Type.Attributes
+        renderClass: Type.Attributes
     };
 }

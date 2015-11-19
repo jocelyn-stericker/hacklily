@@ -1,32 +1,41 @@
-/** 
+/**
+ * @source: https://github.com/jnetterf/satie/
+ *
+ * @license
  * (C) Josh Netterfield <joshua@nettek.ca> 2015.
  * Part of the Satie music engraver <https://github.com/jnetterf/satie>.
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Affero General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-"use strict";
-
 import {reduce, forEach, flatten, filter, find, map, pairs} from "lodash";
-import invariant = require("invariant");
+import * as invariant from "invariant";
+import {IAny} from "musicxml-interfaces/operations";
 
-import IAttributes from "../iattributes";
-import IModel from "../imodel";
-import Context from "../context";
-import {IMutableMeasure, ISegment, OwnerType, normalizeDivisions$} from "../measure";
-import {ILayoutOptions, ILinesLayoutState} from "../options";
-import {setCurrentMeasureList} from "../escapeHatch";
+import Type from "../../document/types";
+import IMeasure from "../../document/measure";
+import ISegment, {normalizeDivisionsInPlace} from "../../document/segment";
+import OwnerType from "../../document/ownerTypes";
+
+import IAttributesSnapshot from "../../private/attributesSnapshot";
+import ILayoutOptions from "../../private/layoutOptions";
+import ILinesLayoutState from "../../private/linesLayoutState";
+import {detachMeasureContext} from "../../private/measureContext";
+
+import segmentMutator from "../../implSegment/segmentMutator";
+
+import {setCurrentMeasureList} from "../measureList";
 
 import {reduceMeasure, DivisionOverflowException} from "./measure";
 
@@ -60,7 +69,7 @@ function tryValidate(options$: ILayoutOptions, memo$: ILinesLayoutState): void {
 
     setCurrentMeasureList(options$.measures);
 
-    let lastAttribs: {[part: string]: IAttributes.ISnapshot[]} = {};
+    let lastAttribs: {[part: string]: IAttributesSnapshot[]} = {};
 
     function withPart(segments: ISegment[], partID: string): ISegment[] {
         forEach(segments, segment => {
@@ -82,7 +91,7 @@ function tryValidate(options$: ILayoutOptions, memo$: ILinesLayoutState): void {
 
         allSegments = allSegments.concat(filter(voiceSegments$.concat(staffSegments$), s => !!s));
     });
-    normalizeDivisions$(allSegments, 0);
+    normalizeDivisionsInPlace(allSegments, 0);
     // TODO: check if a measure hence becomes dirty?
 
     forEach(options$.measures, function validateMeasure(measure) {
@@ -93,7 +102,17 @@ function tryValidate(options$: ILayoutOptions, memo$: ILinesLayoutState): void {
             let staffSegments$ = <ISegment[]>
                 flatten(map(pairs(measure.parts), partx => withPart(partx[1].staves, partx[0])));
 
-            let measureCtx = Context.IMeasure.detach(measure, 0);
+            let measureCtx = detachMeasureContext(measure, 0);
+
+            function rootFixup(segment: ISegment, operations: IAny[]) {
+                forEach(operations, operation => {
+                    segmentMutator(factory, memo$, measureCtx, segment, operation);
+                });
+                if (options$.fixup) {
+                    options$.fixup(segment, operations);
+                }
+            }
+
             let segments = filter(voiceSegments$.concat(staffSegments$), s => !!s);
 
             forEach(staffSegments$, function(segment, idx) {
@@ -103,12 +122,27 @@ function tryValidate(options$: ILayoutOptions, memo$: ILinesLayoutState): void {
                 invariant(segment.ownerType === OwnerType.Staff, "Expected staff segment");
                 lastAttribs[segment.part] = lastAttribs[segment.part] || [];
 
-                function ensureHeader(type: IModel.Type) {
+                function ensureHeader(type: Type) {
                     if (!search(segment, 0, type).length) {
                         if (segment.owner === 1) {
-                            segment.splice(0, 0, factory.create(type));
+                            rootFixup(segment, [{
+
+                                p: [
+                                    String(measure.uuid),
+                                    "parts",
+                                    segment.part,
+                                    "staves",
+                                    segment.owner,
+                                    0
+                                ],
+
+                                li: {
+                                    _class: Type[type]
+                                }
+
+                            }]);
                         } else {
-                            let proxy = factory.create(IModel.Type.Proxy);
+                            let proxy = factory.create(Type.Proxy);
                             let proxiedSegment: ISegment = find(staffSegments$, potentialProxied =>
                                 potentialProxied &&
                                 potentialProxied.part === segment.part &&
@@ -124,21 +158,38 @@ function tryValidate(options$: ILayoutOptions, memo$: ILinesLayoutState): void {
                                 }
                             }
                             invariant(tidx !== -1, "Could not find required model.");
+                            // Warning: without fixup.
+                            // STOPSHIP: Also add ability to remove/retarget proxy
                             segment.splice(tidx, 0, proxy);
                         }
                     }
                 }
-                ensureHeader(IModel.Type.Print);
-                ensureHeader(IModel.Type.Attributes);
-                if (!search(segment, segment.length - 1, IModel.Type.Barline).length) {
+                ensureHeader(Type.Print);
+                ensureHeader(Type.Attributes);
+                if (!search(segment, segment.length - 1, Type.Barline).length) {
                     // Make sure the barline ends up at the end.
                     const divs = reduce(segment, (divs, model) => divs + model.divCount, 1);
                     if (divs !== 0) {
-                        const spacer = factory.create(IModel.Type.Spacer);
+                        const spacer = factory.create(Type.Spacer);
                         spacer.divCount = divs;
+                        // Warning: without fixup
+                        // STOPSHIP: Also add ability to remove/retarget spacer
                         segment.splice(segment.length, 0, spacer);
                     }
-                    segment.splice(segment.length, 0, factory.create(IModel.Type.Barline));
+                    rootFixup(segment, [{
+                        p: [
+                            String(measure.uuid),
+                            "parts",
+                            segment.part,
+                            "staves",
+                            segment.owner,
+                            segment.length
+                        ],
+
+                        li: {
+                            _class: Type[Type.Barline]
+                        }
+                    }]);
                 }
             });
 
@@ -153,7 +204,10 @@ function tryValidate(options$: ILayoutOptions, memo$: ILinesLayoutState): void {
                 _detached: true,
                 _noAlign: true,
                 _validateOnly: true, // Just validate, don't make a layout
-                factory: factory
+                factory: factory,
+                preview: options$.preview,
+                memo$,
+                fixup: rootFixup
             });
             lastAttribs = outcome.attributes;
         }
@@ -164,10 +218,10 @@ function tryValidate(options$: ILayoutOptions, memo$: ILinesLayoutState): void {
 
 export function mutate(options: ILayoutOptions,
         memo$: ILinesLayoutState, measureUUID: number,
-        mutator: (measure$: IMutableMeasure) => void) {
+        mutator: (measure$: IMeasure) => void) {
     delete memo$.clean$[measureUUID];
     delete memo$.width$[measureUUID];
     mutator(find(options.measures, {"uuid": measureUUID}));
     // XXX: Call layout
-    throw "Not implemented";
+    throw new Error("Not implemented");
 }
