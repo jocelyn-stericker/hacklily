@@ -21,7 +21,7 @@
 
 import {Key} from "musicxml-interfaces";
 import {times, forEach, map, reduce} from "lodash";
-import invariant = require("invariant");
+import * as invariant from "invariant";
 
 import IAttributesSnapshot from "../private/attributesSnapshot";
 

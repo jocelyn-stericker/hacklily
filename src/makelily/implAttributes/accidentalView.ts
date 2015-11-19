@@ -21,7 +21,7 @@
 
 import {Accidental} from "musicxml-interfaces";
 import {createFactory as $, Component, DOM, PropTypes} from "react";
-import invariant = require("invariant");
+import * as invariant from "invariant";
 
 import Glyph from "../private/views/glyph";
 import {accidentalGlyphs} from "../private/chord";

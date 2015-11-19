@@ -20,7 +20,7 @@
  */
 
 import {reduce} from "lodash";
-import invariant = require("invariant");
+import * as invariant from "invariant";
 
 import IModel from "../document/model";
 import ISegment from "../document/segment";

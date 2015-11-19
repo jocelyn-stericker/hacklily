@@ -24,8 +24,8 @@
  */
 
 import {forEach} from "lodash";
-import child_process = require("child_process");
-import fs = require("fs");
+import * as child_process from "child_process";
+import * as fs from "fs";
 
 import Song from "../engine/song";
 

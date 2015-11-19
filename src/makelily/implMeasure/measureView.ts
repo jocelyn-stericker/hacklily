@@ -19,7 +19,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import invariant = require("invariant");
+import * as invariant from "invariant";
 import {createFactory as $, Component, DOM, PropTypes} from "react";
 import {chain, flatten, mapValues, map, forEach} from "lodash";
 

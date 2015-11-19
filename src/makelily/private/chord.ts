@@ -26,7 +26,7 @@
 import {Note, Count, TimeModification, Tie, Clef, Rest, Time, MxmlAccidental,
     Notehead, NoteheadType, Notations, Articulations, Tied, Pitch} from "musicxml-interfaces";
 import {any, find, forEach, times, map, reduce, filter, chain} from "lodash";
-import invariant = require("invariant");
+import * as invariant from "invariant";
 
 import IModel from "../document/model";
 

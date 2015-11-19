@@ -24,7 +24,7 @@ import {ScoreHeader, MeasureNumbering, PartNameDisplay, MeasureLayout, PartAbbre
     NormalBold, serializePrint} from "musicxml-interfaces";
 import {IAny} from "musicxml-interfaces/operations";
 import {forEach} from "lodash";
-import invariant = require("invariant");
+import * as invariant from "invariant";
 
 import IModel from "../document/model";
 import FrozenLevel from "../document/frozenLevels";

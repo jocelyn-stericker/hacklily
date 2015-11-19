@@ -25,7 +25,7 @@ import {Clef, PartSymbol, MeasureStyle, StaffDetails, Transpose, Directive,
 import {IAny} from "musicxml-interfaces/operations";
 import {buildClef, buildTime, buildKey} from "musicxml-interfaces/builders";
 import {find, forEach, times} from "lodash";
-import invariant = require("invariant");
+import * as invariant from "invariant";
 
 import FrozenLevel from "../document/frozenLevels";
 import IModel from "../document/model";

@@ -22,7 +22,7 @@
 import {MultipleRest, Note} from "musicxml-interfaces";
 import {createFactory as $, Component, DOM, PropTypes} from "react";
 import {map} from "lodash";
-import invariant = require("invariant");
+import * as invariant from "invariant";
 
 import Dot from "../private/views/dot";
 import Glyph from "../private/views/glyph";

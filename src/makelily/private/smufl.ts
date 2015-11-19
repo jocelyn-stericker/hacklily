@@ -10,7 +10,7 @@
  */
 
 import {indexBy, memoize} from "lodash";
-import invariant = require("invariant");
+import * as invariant from "invariant";
 
 import bravura from "./smufl/bravura";
 import glyphNames from "./smufl/glyphnames";

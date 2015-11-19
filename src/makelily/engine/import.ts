@@ -27,7 +27,7 @@ import {ScoreTimewise, Attributes, Note, Backup, Time, parseScore}
     from "musicxml-interfaces";
 import {buildNote} from "musicxml-interfaces/builders";
 import {map, reduce, any, filter, min, times, all, forEach} from "lodash";
-import invariant = require("invariant");
+import * as invariant from "invariant";
 
 import {Document} from "../document/document";
 

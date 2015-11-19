@@ -24,7 +24,7 @@ import {Barline, Segno, Coda, BarlineLocation, WavyLine, Fermata, BarStyle, Endi
     serializeBarline} from "musicxml-interfaces";
 import {IAny} from "musicxml-interfaces/operations";
 import {any, forEach} from "lodash";
-import invariant = require("invariant");
+import * as invariant from "invariant";
 
 import IModel from "../document/model";
 import Type from "../document/types";

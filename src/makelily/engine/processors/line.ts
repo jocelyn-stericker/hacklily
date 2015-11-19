@@ -20,7 +20,7 @@
  */
 
 import {reduce, flatten, map, values, pluck, times, max, zipObject, forEach, filter} from "lodash";
-import invariant = require("invariant");
+import * as invariant from "invariant";
 
 import ISegment from "../../document/segment";
 import IMeasurePart from "../../document/measurePart";
