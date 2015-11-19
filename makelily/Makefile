@@ -16,7 +16,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ##
 
-.PHONY: build lint test tsd _gentestsuite _tsc _stageOnly _testOnly _lintOnly test_all
+.PHONY: build lint test tsd _gentestsuite _tsc _stageOnly _testOnly test_all _bundleOnly
 
 all: build test
 
@@ -53,7 +53,7 @@ export GLYPHNAMES_HEADER
 
 dist/*.js: build
 
-build: _tsc _stageOnly
+build: _tsc _stageOnly _bundleOnly
 
 NO_COLOR=\033[0m
 OK_COLOR=\033[32;01m
@@ -62,13 +62,14 @@ WARN_COLOR=\033[33;01m
 INFO_COLOR=\033[36;01m
 
 OK_STRING=$(OK_COLOR)  ...ok!$(NO_COLOR)
-TSC_STRING=$(INFO_COLOR)» Building from tsconfig.json...$(NO_COLOR)
-WATCH_STRING=$(INFO_COLOR)» Watching from tsconfig.json...$(NO_COLOR)
-STAGE_STRING=$(INFO_COLOR)» Staging *.d.ts, *.js, *.js.map...$(NO_COLOR)
-LINT_STRING=$(INFO_COLOR)» Linting *.ts...$(NO_COLOR)
-TEST_STRING=$(INFO_COLOR)» Testing __test__*.js ...$(NO_COLOR)
-CLEAN_STRING=$(INFO_COLOR)» Deleting generated code ...$(NO_COLOR)
-COVERAGE_STRING=$(INFO_COLOR)» Writing coverage info for __test__*.js to ./coverage ...$(NO_COLOR)
+TSC_STRING=$(INFO_COLOR)satie» Building from tsconfig.json...$(NO_COLOR)
+BUNDLE_PROD_STRING=$(INFO_COLOR)satie» Bundling dist/satie-browser-prod.js...$(NO_COLOR)
+WATCH_STRING=$(INFO_COLOR)satie» Watching from tsconfig.json...$(NO_COLOR)
+STAGE_STRING=$(INFO_COLOR)satie» Updating dist/satie.d.ts...$(NO_COLOR)
+LINT_STRING=$(INFO_COLOR)satie» Linting src/**.ts...$(NO_COLOR)
+TEST_STRING=$(INFO_COLOR)satie» Testing __test__*.js ...$(NO_COLOR)
+CLEAN_STRING=$(INFO_COLOR)satie» Deleting generated code ...$(NO_COLOR)
+COVERAGE_STRING=$(INFO_COLOR)satie» Writing coverage info for __test__*.js to ./coverage ...$(NO_COLOR)
 WARN_STRING=$(WARN_COLOR)[WARNINGS]$(NO_COLOR)
 
 _tsc: _gentestsuite
@@ -83,8 +84,7 @@ _stageOnly:
 	@printf "$(STAGE_STRING)\n"
 
 # Create satie.d.ts for TypeScript clients
-	@./node_modules/.bin/dts-generator --name satie --baseDir ./dist/ --out ./dist/satie.d.ts ./dist/index.d.ts > /dev/null
-	@echo "declare module 'satie' { import Satie = require('satie/index'); export = Satie; }" >> ./dist/satie.d.ts
+	@./node_modules/.bin/dts-generator --name satie --out ./dist/satie.d.ts --main 'satie/index' --baseDir ./src ./src/index.ts > /dev/null
 	@cd dist; find . | grep ".*\.d.ts" | grep -v satie.d.ts | xargs -I_FILE_ rm _FILE_
 
 _watchStage:
@@ -92,6 +92,9 @@ _watchStage:
 # the completion message is sent before closing buffers!
 	@make _stageOnly 2>&1 > /dev/null || (sleep 5; make _stageOnly)
 
+_bundleOnly: _stageOnly _testOnly lint
+	@printf "$(BUNDLE_PROD_STRING)\n"
+	@./node_modules/.bin/webpack --config ./webpack.config.prod.js -p ./dist/index.js ./dist/satie-bundled-min.js
 
 # ---- Other build modes ----------------------------------------------------------
 
@@ -99,12 +102,49 @@ watch: _gentestsuite
 	@clear
 	@printf "$(WATCH_STRING)\n"
 	@CLEAN="1"; \
+	INIT="0"; \
 	./node_modules/.bin/tsc -w | \
 	while read line; do \
 	    if [[ $$line == *TS6042* ]]; then \
 		if [[ "$$CLEAN" == "1" ]]; then \
 		    printf "$(INFO_COLOR)» $$line$(NO_COLOR)\n"; \
-		    (make _watchStage && make _testOnly) & \
+		    (make _watchStage) & \
+		    if [[ "$$INIT" == "0" ]]; then \
+			if [[ "x$$RUN_TESTS" != "x" ]]; then \
+			    ./node_modules/.bin/nodemon --quiet --exec "make _testOnly" -w ./dist/ -d 2 & \
+			else \
+			    printf "$(WARN_COLOR)» Tests are disabled. Run 'make watch RUN_TESTS=1' to run tests. $(NO_COLOR)\n"; \
+			fi; \
+			if [[ "x$$RUN_LINT" != "x" ]]; then \
+			    ./node_modules/.bin/nodemon --quiet --exec "make lint" -w ./dist/ -d 2 &\
+			else \
+			    printf "$(WARN_COLOR)» Linting is disabled. Run 'make watch RUN_LINT=1' to run tests. $(NO_COLOR)\n"; \
+			fi; \
+			if [[ "x$$RUN_SATIEAPP" != "x" ]]; then \
+			    sleep 5; \
+			    cd ./webapp; \
+			    make watch RUN_DEVSRV=1 & \
+			    cd ..; \
+			else \
+			    printf "$(WARN_COLOR)» The Satie app is disabled. Run 'make watch RUN_SATIEAPP=1' to run the test server. $(NO_COLOR)\n"; \
+			fi; \
+			if [[ "x$$RUN_DEVSRV" != "x" ]]; then \
+			    ./node_modules/.bin/webpack-dev-server \
+				--debug \
+				--devtool source-map \
+				--output-pathinfo \
+				--hot \
+				--no-info \
+				--progress \
+				--watch \
+				./dist/index.js \
+				--host 0.0.0.0 \
+				--port 8009 & \
+			else \
+			    printf "$(WARN_COLOR)» The dev server is disabled. Run 'make watch RUN_DEVSRV=1' to enable. $(NO_COLOR)\n"; \
+			fi; \
+			INIT="1"; \
+		    fi; \
 		else \
 		    printf "$(ERROR_COLOR)» $$line$(NO_COLOR)\n"; \
 		fi; \
@@ -132,20 +172,22 @@ smufl:
 	@echo "; export default names;" >> ./src/models/smufl/glyphnames.ts
 	@printf "$(INFO_COLOR)» SMuFL built successfully.$(NO_COLOR)\n"; \
 
+TS_FILES = $(shell find src/ -type f -name '*.ts')
+
 lint: node_modules/.bin/tslint
 	@printf "$(LINT_STRING)\n"
-	@find ./src -regex ".*[a-zA-Z0-9_][a-zA-Z0-9_]\.ts" | grep -v src/tests.ts | sed 's/\(.*\)/-f\1/g' | xargs ./node_modules/.bin/tslint -c ./tsconfig.json
+	@set -o pipefail; ./node_modules/.bin/tslint $(TS_FILES) | sed -e "s/\(.*\)/[tslint] \x1b[31;01m\1\x1b[0m/"
 
 vendor/tslint/bin/tslint.js:
 	@git submodule update --init --recursive
 	@cd ./vendor/tslint/; NODE_ENV=dev npm install
 	@cd ./vendor/tslint/; grunt
 
-test: build _testOnly
+test: build _testOnly lint
 
 _testOnly:
 	@printf "$(TEST_STRING)\n"
-	@if [ "x$$TEST" == "x" ]; then find ./dist -type f | grep "__tests__.*js\$$" | xargs ./node_modules/mocha/bin/mocha -R tap -t 3000; else find ./dist -type f | grep "__tests__.*js\$$" | xargs ./node_modules/mocha/bin/mocha -R tap -t 3000 --grep "$$TEST"; fi
+	@if [ "x$$TEST" == "x" ]; then find ./dist -type f | grep "__tests__.*js\$$" | xargs ./node_modules/mocha/bin/mocha -t 3000; else find ./dist -type f | grep "__tests__.*js\$$" | xargs ./node_modules/mocha/bin/mocha -t 3000 --grep "$$TEST" 2>&1; fi
 
 test_all: test lint
 
@@ -155,9 +197,6 @@ coverage: build
 
 ./webapp/node_modules:
 	cd ./webapp; npm install
-
-serve: ./webapp/node_modules
-	cd ./webapp; make serve
 
 clean:
 	@printf "$(CLEAN_STRING)\n"

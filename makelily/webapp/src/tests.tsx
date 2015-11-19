@@ -1,6 +1,7 @@
-import React = require("react");
+import * as React from "react";
+import {Component} from "react";
 import {Link} from "react-router";
-import _ = require("lodash");
+import {reduce} from "lodash";
 
 import Test from "./test";
 
@@ -168,10 +169,10 @@ const TESTS = [
     "99a",
     "99b"
 ];
-class Tests extends React.Component<{params: {id: string}}, void> {
+class Tests extends Component<{params: {id: string}}, void> {
     render() {
         let filter = this.props.params ? this.props.params.id : null;
-        let cat = _.reduce(TESTS, (memo, testName) => {
+        let cat = reduce(TESTS, (memo, testName) => {
             let type = testName.substr(0, 2);
             let link = filter ?
                 null :
@@ -198,12 +199,12 @@ class Tests extends React.Component<{params: {id: string}}, void> {
 }
 
 module Tests {
-    export class Header extends React.Component<{params: {id: string}}, void> {
+    export class Header extends Component<{params: {id: string}}, void> {
         render() {
-            return <span>LilyPond Test Suite</span>;
+            return <span>Satie &ndash; LilyPond Test Suite</span>;
         }
     }
-    export class Description extends React.Component<{params: {id: string}}, void> {
+    export class Description extends Component<{params: {id: string}}, void> {
         render() {
             let filter = this.props.params ? this.props.params.id : null;
             if (filter) {

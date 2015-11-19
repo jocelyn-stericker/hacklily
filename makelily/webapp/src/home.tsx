@@ -1,10 +1,11 @@
-import React = require("react");
+import * as React from "react";
+import {Component} from "react";
 import {Link} from "react-router";
 
 import Test from "./test";
 import {prefix} from "./config";
 
-class Home extends React.Component<void, void> {
+class Home extends Component<void, void> {
     render() {
         return <div>
             <p>
@@ -19,17 +20,17 @@ class Home extends React.Component<void, void> {
 }
 
 module Home {
-    export class Header {
+    export class Header extends Component<void, void> {
         render() {
-            return <span>exquisite sheet music for the web</span>;
+            return <span>Satie is a sheet music toolkit.</span>;
         }
     }
-    export class Description {
+    export class Description extends Component<void, void> {
         render() {
             return <span>
-                You can use Satie to embed sheet music on a page, render sheet music
-                on a server, or create open-source sheet music
-                applications. <a href="https://github.com/jnetterf/satie/">
+                Satie is designed to help JavaScript developers create interactive
+                sheet music applications.{" "}
+                <a href="https://github.com/jnetterf/satie/">
                 Learn more at GitHub »</a>
             </span>;
         }

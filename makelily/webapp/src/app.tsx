@@ -1,10 +1,24 @@
-import React = require("react");
+import * as React from "react";
+import {Component} from "react";
 import {Link} from "react-router";
 
 import {prefix} from "./config";
 const STYLES = require("./app.css");
 
-class App extends React.Component<App.IProps, void> {
+export interface IProps {
+    children: any;
+    params: {
+        id: string;
+    };
+    location: {
+        pathname: string;
+    };
+    header: any;
+    description: any;
+    main: any;
+}
+
+export default class App extends Component<IProps, void> {
     render() {
         let path = this.props.location.pathname;
         let topLink = path !== (prefix + "/") && path !== prefix &&
@@ -13,7 +27,7 @@ class App extends React.Component<App.IProps, void> {
             <header>
                 <div className={STYLES.topbar} />
                 {topLink}
-                <h1>Satie &ndash; {this.props.header}</h1>
+                <h1>{this.props.header}</h1>
                 <aside>
                     {this.props.description}
                 </aside>
@@ -22,20 +36,3 @@ class App extends React.Component<App.IProps, void> {
         </div>;
     }
 }
-
-module App {
-    export interface IProps {
-        children: any;
-        params: {
-            id: string;
-        };
-        location: {
-            pathname: string;
-        };
-        header: any;
-        description: any;
-        main: any;
-    }
-}
-
-export default App;

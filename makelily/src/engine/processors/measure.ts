@@ -1,12 +1,15 @@
 /**
+ * @source: https://github.com/jnetterf/satie/
+ *
+ * @license
  * (C) Josh Netterfield <joshua@nettek.ca> 2015.
  * Part of the Satie music engraver <https://github.com/jnetterf/satie>.
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
@@ -20,22 +23,39 @@
  * @file engine/measureProcessor.ts provides function for validating or laying out a measure
  */
 
-"use strict";
-
 import {ScoreHeader} from "musicxml-interfaces";
+import {IAny} from "musicxml-interfaces/operations";
 import {indexBy, filter, map, reduce, values, flatten, forEach, extend} from "lodash";
-import invariant = require("invariant");
+import * as invariant from "invariant";
 
-import {
-    IMeasurePart, IMutableMeasure, IPart, ISegment, IMeasureLayout, OwnerType,
-    MAX_SAFE_INTEGER, ICursor, IModel, Context, IAttributes
-} from "../../engine";
+import IMeasure from "../../document/measure";
+import IModel from "../../document/model";
+import Type from "../../document/types";
+import ISegment from "../../document/segment";
+import IMeasurePart from "../../document/measurePart";
+import OwnerType from "../../document/ownerTypes";
+
+import ICursor from "../../private/cursor";
+import IAttributesSnapshot from "../../private/attributesSnapshot";
+import ILineContext from "../../private/lineContext";
+import IMeasureContext, {detachMeasureContext} from "../../private/measureContext";
+import IVoiceContext from "../../private/voiceContext";
+import IStaffContext, {detachStaffContext} from "../../private/staffContext";
+import IFactory from "../../private/factory";
+import ILayout from "../../private/layout";
+import ICombinedLayout, {mergeSegmentsInPlace} from "../../private/combinedLayout";
+import IMeasureLayout from "../../private/measureLayout";
+import ILinesLayoutState from "../../private/linesLayoutState";
+import IChord from "../../private/chord";
+import {MAX_SAFE_INTEGER} from "../../private/constants";
+import {scoreParts} from "../../private/part";
+import {subtract} from "../../private/metre";
 
 export interface IMeasureLayoutOptions {
-    attributes: {[part: string]: IAttributes.ISnapshot[]};
+    attributes: {[part: string]: IAttributesSnapshot[]};
     header: ScoreHeader;
-    line: Context.ILine;
-    measure: IMutableMeasure;
+    line: ILineContext;
+    measure: IMeasure;
     /** Starts at 0. */
     x: number;
 
@@ -47,27 +67,32 @@ export interface IMeasureLayoutOptions {
 
     padEnd?: boolean;
 
-    factory: IModel.IFactory;
+    factory: IFactory;
+    preview: boolean;
+    memo$: ILinesLayoutState;
+    fixup: (segment: ISegment, operations: IAny[]) => void;
 }
 
 /**
  * Given a cursor skeleton, creates a detached mutable cursor.
- * 
+ *
  * For use by MeasureProcessor.
  */
 function createCursor(
         spec: {
             _approximate: boolean;
             _detached: boolean;
-            factory: IModel.IFactory;
+            factory: IFactory;
             header: ScoreHeader,
-            line: Context.ILine;
-            measure: Context.IMeasure;
+            line: ILineContext;
+            measure: IMeasureContext;
             segment: ISegment;
-            staff: Context.IStaff;
-            voice: Context.IVoice;
+            staff: IStaffContext;
+            voice: IVoiceContext;
             x: number;
             page: number;
+            fixup?: (segment: ISegment, operations: IAny[]) => void;
+            memo$: ILinesLayoutState;
         }): ICursor {
     return {
         approximate: spec._approximate,
@@ -82,29 +107,30 @@ function createCursor(
         measure: spec.measure,
         print$: null,
         segment: spec.segment,
-        staff: Context.IStaff.detach(spec.staff),
+        staff: detachStaffContext(spec.staff),
         voice: spec.voice,
         x$: spec.x,
-        page$: spec.page
+        page$: spec.page,
+        fixup: spec.fixup
     };
 }
 
-/** 
+/**
  * Given a bunch of segments and the context (measure, line), returns information needed to lay the
  * models out. Note that the order of the output is arbitrary and may not correspond to the order
  * of the input segments.
- * 
+ *
  * @segments Models to lay out or validate.
  * @measure Model to which the model belongs to.
  * @line Line context
- * 
+ *
  * Complexity: O(staff-voice pairs)
  */
 export function reduceMeasure(spec: ILayoutOpts): IMeasureLayout {
     let gLine = spec.line;
     let gMeasure = spec.measure;
     let gValidateOnly = spec._validateOnly;
-    let gSomeLastAttribs = <{[part: string]: IAttributes.ISnapshot[]}> {};
+    let gSomeLastAttribs = <{[part: string]: IAttributesSnapshot[]}> {};
     let gMaxDivisions = 0;
 
     invariant(spec.segments.length >= 1, "_processMeasure expects at least one segment.");
@@ -119,7 +145,7 @@ export function reduceMeasure(spec: ILayoutOpts): IMeasureLayout {
             seg => seg.ownerType === OwnerType.Voice),
             seg => `${seg.part}_${seg.owner}`);
 
-    let gStaffLayouts$: { [key: string]: IModel.ILayout[][] } = {};
+    let gStaffLayouts$: { [key: string]: ILayout[][] } = {};
 
     let gMaxXInMeasure = gMeasure.x;
     let gMaxPaddingTopInMeasure$     = <number[]> [];
@@ -128,13 +154,13 @@ export function reduceMeasure(spec: ILayoutOpts): IMeasureLayout {
     let gDivOverflow: DivisionOverflowException = null;
 
     let gVoiceLayouts$ = map(gVoiceMeasure, segment => {
-        let lastAttribs: IAttributes.ISnapshot = Object.create(spec.attributes || {});
-        let voice = <Context.IVoice> {};
+        let lastAttribs: IAttributesSnapshot = Object.create(spec.attributes || {});
+        let voice = {} as IVoiceContext;
         let {part} = segment;
         gSomeLastAttribs[part] = gSomeLastAttribs[part] || [];
 
-        let voiceStaves$: {[key: number]: IModel.ILayout[]}  = {};
-        let staffContexts$: {[key: number]: Context.IStaff} = {};
+        let voiceStaves$: {[key: number]: ILayout[]}  = {};
+        let staffContexts$: {[key: number]: IStaffContext} = {};
         let divisionPerStaff$: {[key: string]: number} = {};
         let xPerStaff$: {[key: number]: number} = [];
 
@@ -153,7 +179,9 @@ export function reduceMeasure(spec: ILayoutOpts): IMeasureLayout {
 
             _approximate: spec._approximate,
             _detached: spec._detached,
-            factory: spec.factory
+            factory: spec.factory,
+            memo$: spec.memo$,
+            fixup: spec.fixup
         });
 
         /**
@@ -173,14 +201,14 @@ export function reduceMeasure(spec: ILayoutOpts): IMeasureLayout {
             }
             cursor$.segment = gStaffMeasure[`${part}_${staffIdx}`];
             cursor$.idx$ = voiceStaves$[staffIdx].length;
-            let layout: IModel.ILayout;
+            let layout: ILayout;
             model.key = `SATIE${cursor$.measure.uuid}_parts_${cursor$.segment.part}_staves_${
                 cursor$.segment.owner}_${cursor$.idx$}`;
             if (gValidateOnly) {
                 model.staffIdx = cursor$.staff.idx;
-                model.validate$(cursor$);
+                model.__validate(cursor$);
             } else {
-                layout = model.layout(cursor$);
+                layout = model.__layout(cursor$);
                 layout.part = part;
                 (<any>layout).key = (<any>model).key;
             }
@@ -221,7 +249,7 @@ export function reduceMeasure(spec: ILayoutOpts): IMeasureLayout {
                     let divOffset = cursor$.division$ - cursor$.staff.totalDivisions -
                         reduce(newStaves[staffIdx], (sum, model) => sum + model.divCount, 0);
                     if (divOffset > 0) {
-                        let spacer = spec.factory.create(IModel.Type.Spacer);
+                        let spacer = spec.factory.create(Type.Spacer);
                         spacer.divCount = divOffset;
                         newStaves[staffIdx].push(spacer);
                     }
@@ -241,9 +269,12 @@ export function reduceMeasure(spec: ILayoutOpts): IMeasureLayout {
             voiceStaves$[staffIdx].push(layout);
         }
 
-        return map(segment, (model, idx, list) => {
-            let atEnd = idx + 1 === list.length;
-            let staffIdx: number = model.staffIdx;
+        let segmentLayout$: ILayout[] = [];
+        for (let i = 0; i < segment.length; ++i) {
+            const model = segment[i];
+
+            const atEnd = i + 1 === segment.length;
+            const staffIdx: number = model.staffIdx;
             invariant(isFinite(model.staffIdx), "%s is not finite", model.staffIdx);
             if (!cursor$.maxPaddingTop$[model.staffIdx]) {
                 cursor$.maxPaddingTop$[model.staffIdx] = 0;
@@ -271,7 +302,7 @@ export function reduceMeasure(spec: ILayoutOpts): IMeasureLayout {
                 xPerStaff$[staffIdx] = 0;
             }
 
-            cursor$.idx$ = idx;
+            cursor$.idx$ = i;
             cursor$.staff = staffContexts$[staffIdx];
 
             while (divisionPerStaff$[staffIdx] <= cursor$.division$) {
@@ -281,7 +312,7 @@ export function reduceMeasure(spec: ILayoutOpts): IMeasureLayout {
                 // We can mostly ignore priorities here, since except for one exception,
                 // staff segments are more important than voice segments. The one exception
                 // is barlines:
-                let nextIsBarline = spec.factory.modelHasType(nextStaffEl, IModel.Type.Barline);
+                let nextIsBarline = spec.factory.modelHasType(nextStaffEl, Type.Barline);
                 if (nextIsBarline && divisionPerStaff$[staffIdx] === cursor$.division$) {
                     break;
                 }
@@ -294,21 +325,21 @@ export function reduceMeasure(spec: ILayoutOpts): IMeasureLayout {
             }
 
             // All layout that can be controlled by the model is done here.
-            let layout: IModel.ILayout;
+            let layout: ILayout;
             model.key = `SATIE${cursor$.measure.uuid}_parts_${cursor$.segment.part}_voices_${
                 cursor$.segment.owner}_${cursor$.idx$}`;
             if (gValidateOnly) {
                 model.staffIdx = cursor$.staff.idx;
-                model.validate$(cursor$);
+                model.__validate(cursor$);
             } else {
-                layout = model.layout(cursor$);
+                layout = model.__layout(cursor$);
                 layout.part = part;
                 (<any>layout).key = (<any>model).key;
             }
             cursor$.division$ += model.divCount;
             gMaxDivisions = Math.max(gMaxDivisions, cursor$.division$);
 
-            if (cursor$.division$ > cursor$.staff.totalDivisions) {
+            if (cursor$.division$ > cursor$.staff.totalDivisions && !spec.preview) {
                 // Note: unfortunate copy-pasta.
                 if (!gDivOverflow) {
                     gDivOverflow = new DivisionOverflowException(
@@ -344,21 +375,52 @@ export function reduceMeasure(spec: ILayoutOpts): IMeasureLayout {
             }
 
             if (atEnd) {
-                forEach(gStaffMeasure, (staff, idx) => {
-                    const pIdx = idx.lastIndexOf("_");
-                    const staffMeasurePart = idx.substr(0, pIdx);
-                    if (staffMeasurePart !== part) {
-                        return;
-                    }
-                    const nidx = parseInt(idx.substr(pIdx + 1), 10);
+                if (cursor$.division$ < cursor$.staff.totalDivisions &&
+                        (!cursor$.staff.attributes ||
+                            cursor$.staff.attributes.time.senzaMisura === null) &&
+                        !spec.preview) {
+                    const durationSpecs = subtract(cursor$.staff.totalDivisions,
+                            cursor$.division$, cursor$);
+                    const restSpecs: IChord[] = map(durationSpecs, durationSpec => {
+                        let chord = [{
+                            rest: {},
+                            dots: durationSpec[0].dots,
+                            noteType: durationSpec[0].noteType
+                        }] as IChord;
+                        chord._class = "Chord";
+                        return chord;
+                    });
 
-                    let voiceStaff = voiceStaves$[<any>nidx];
-                    if (!!staff && !!voiceStaff) {
-                        while (voiceStaff.length < staff.length) {
-                            pushStaffSegment(nidx, staff[voiceStaff.length], false);
+                    cursor$.fixup(segment, map(restSpecs, (spec, idx) => ({
+                        p: [
+                            String(cursor$.measure.uuid),
+                            "parts",
+                            part,
+                            "voices",
+                            segment.owner,
+                            segment.length + idx
+                        ],
+
+                        li: spec
+                    })));
+                } else {
+                    // Finalize.
+                    forEach(gStaffMeasure, (staff, idx) => {
+                        const pIdx = idx.lastIndexOf("_");
+                        const staffMeasurePart = idx.substr(0, pIdx);
+                        if (staffMeasurePart !== part) {
+                            return;
                         }
-                    }
-                });
+                        const nidx = parseInt(idx.substr(pIdx + 1), 10);
+
+                        let voiceStaff = voiceStaves$[<any>nidx];
+                        if (!!staff && !!voiceStaff) {
+                            while (voiceStaff.length < staff.length) {
+                                pushStaffSegment(nidx, staff[voiceStaff.length], false);
+                            }
+                        }
+                    });
+                }
             }
             lastAttribs = cursor$.staff.attributes;
             gSomeLastAttribs[segment.part][model.staffIdx] = lastAttribs;
@@ -369,8 +431,10 @@ export function reduceMeasure(spec: ILayoutOpts): IMeasureLayout {
             gMaxPaddingBottomInMeasure$[model.staffIdx] = Math.max(
                 cursor$.maxPaddingBottom$[model.staffIdx],
                 gMaxPaddingBottomInMeasure$[model.staffIdx] || 0);
-            return layout;
-        });
+            segmentLayout$.push(layout);
+        }
+
+        return segmentLayout$;
     });
 
     if (gDivOverflow) {
@@ -378,12 +442,12 @@ export function reduceMeasure(spec: ILayoutOpts): IMeasureLayout {
     }
 
     // Get an ideal voice layout for each voice-staff combination
-    let gStaffLayoutsUnkeyed$: IModel.ILayout[][][] = values(gStaffLayouts$) as IModel.ILayout[][][];
-    let gStaffLayoutsCombined: IModel.ILayout[][] = <any> flatten(gStaffLayoutsUnkeyed$);
+    let gStaffLayoutsUnkeyed$: ILayout[][][] = values(gStaffLayouts$) as ILayout[][][];
+    let gStaffLayoutsCombined: ILayout[][] = <any> flatten(gStaffLayoutsUnkeyed$);
 
     // Create a layout that satisfies the constraints in every single voice.
-    // IModel.merge$ requires two passes to fully merge the layouts. We do the second pass
-    // once we filter unneeded staff segments.
+    // IModel.mergeSegmentsInPlace requires two passes to fully merge the layouts.
+    // We do the second pass once we filter unneeded staff segments.
     let gAllLayouts$ = gStaffLayoutsCombined.concat(gVoiceLayouts$);
 
     // We have a staff layout for every single voice-staff combination.
@@ -394,13 +458,13 @@ export function reduceMeasure(spec: ILayoutOpts): IMeasureLayout {
     if (!spec._noAlign) {
         // Calculate and finish applying the master layout.
         // Two passes is always sufficient.
-        let masterLayout = reduce(gAllLayouts$, IModel.merge$, []);
+        let masterLayout = reduce(gAllLayouts$, mergeSegmentsInPlace, []);
         // Avoid lining up different divisions
-        reduce(masterLayout, ({prevDivision, min}: ISpreadMemo, layout: IModel.ICombinedLayout) => {
+        reduce(masterLayout, ({prevDivision, min}: ISpreadMemo, layout: ICombinedLayout) => {
             let newMin = layout.x;
             if (min >= layout.x && layout.division !== prevDivision &&
-                    layout.renderClass !== IModel.Type.Spacer &&
-                    layout.renderClass !== IModel.Type.Barline) {
+                    layout.renderClass !== Type.Spacer &&
+                    layout.renderClass !== Type.Barline) {
                 layout.x = min + 20;
             }
             return {
@@ -408,10 +472,10 @@ export function reduceMeasure(spec: ILayoutOpts): IMeasureLayout {
                 min: newMin
             };
         }, {prevDivision: -1, min: -10});
-        reduce(gVoiceLayouts$, IModel.merge$, masterLayout);
+        reduce(gVoiceLayouts$, mergeSegmentsInPlace, masterLayout);
 
         // Merge in the staves
-        reduce(gStaffLayoutsUnique$, IModel.merge$, masterLayout);
+        reduce(gStaffLayoutsUnique$, mergeSegmentsInPlace, masterLayout);
     }
 
     let gPadding: number;
@@ -442,11 +506,11 @@ interface ISpreadMemo {
 }
 
 export interface ILayoutOpts {
-    attributes: {[key: string]: IAttributes.ISnapshot[]};
-    factory: IModel.IFactory;
+    attributes: {[key: string]: IAttributesSnapshot[]};
+    factory: IFactory;
     header: ScoreHeader;
-    line: Context.ILine;
-    measure: Context.IMeasure;
+    line: ILineContext;
+    measure: IMeasureContext;
     segments: ISegment[];
 
     _noAlign?: boolean;
@@ -454,21 +518,38 @@ export interface ILayoutOpts {
     _detached?: boolean;
     _validateOnly?: boolean;
     padEnd: boolean;
+    preview: boolean;
+    memo$: ILinesLayoutState;
+    fixup: (segment: ISegment, operations: IAny[]) => void;
 }
 
-/** 
+/**
  * Given the context and constraints given, creates a possible layout for items within a measure.
- * 
+ *
  * @param opts structure with __normalized__ voices and staves
  * @returns an array of staff and voice layouts with an undefined order
  */
-export function layoutMeasure({header, measure, line, attributes, factory,
-        padEnd, _approximate, _detached, x}: IMeasureLayoutOptions): IMeasureLayout {
-    let measureCtx = Context.IMeasure.detach(measure, x);
+export function layoutMeasure(
+        {
+            header,
+            measure,
+            line,
+            attributes,
+            factory,
+            padEnd,
+            _approximate,
+            _detached,
+            x,
+            preview,
+            memo$,
+            fixup
+        }: IMeasureLayoutOptions): IMeasureLayout {
 
-    let parts = map(IPart.scoreParts(header.partList), part => part.id);
-    let voices = <ISegment[]> flatten(map(parts, partId => measure.parts[partId].voices));
-    let staves = <ISegment[]> flatten(map(parts, partId => measure.parts[partId].staves));
+    let measureCtx = detachMeasureContext(measure, x);
+
+    let parts = map(scoreParts(header.partList), part => part.id);
+    let staves = flatten(map(parts, partId => measure.parts[partId].staves)) as ISegment[];
+    let voices = flatten(map(parts, partId => measure.parts[partId].voices)) as ISegment[];
 
     let segments = filter(voices.concat(staves), s => !!s);
 
@@ -482,13 +563,16 @@ export function layoutMeasure({header, measure, line, attributes, factory,
         padEnd,
 
         _approximate,
-        _detached
+        _detached,
+        preview,
+        memo$,
+        fixup
     });
 }
 
-/** 
+/**
  * Given the context and constraints given, estimates a width. These widths do not
- * 
+ *
  * @param opts structure with __normalized__ voices and staves
  * @returns an approximate width for a measure that is not the first on a line.
  */
@@ -518,7 +602,7 @@ export class DivisionOverflowException extends Error {
     } = {};
     measureIdx: number;
 
-    constructor(maxDiv: number, measure: IMutableMeasure) {
+    constructor(maxDiv: number, measure: IMeasure) {
         super();
         this.measureIdx = measure.idx;
         this.message = "DivisionOverflowException: max division should be " +
@@ -528,7 +612,7 @@ export class DivisionOverflowException extends Error {
         this.oldParts = measure.parts;
     }
 
-    resolve$(measures$: IMutableMeasure[]) {
+    resolve$(measures$: IMeasure[]) {
         let oldMeasure$ = measures$[this.measureIdx];
 
         forEach(this.oldParts, (part, partID) => {

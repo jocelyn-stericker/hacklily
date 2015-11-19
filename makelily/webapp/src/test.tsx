@@ -1,16 +1,37 @@
-import React = require("react");
+import * as React from "react";
+import {Component} from "react";
 import {Link} from "react-router";
-import {importXML, IDocument, Viewer} from "../../src/index";
+import {ISong, Application} from "satie";
 import {find, defer} from "lodash";
 
 import {prefix} from "./config";
 const STYLES = require("./test.css");
 
-class Test extends React.Component<Test.IProps, Test.IState> {
-    state: Test.IState = {
+let satieApplication = new Application({
+    satieRoot: location.protocol + "//" + location.host + prefix + "/vendor/",
+    preloadedFonts: ["Alegreya", "Alegreya (bold)"]
+});
+
+export interface IProps {
+    key?: string | number;
+    chrome?: boolean;
+    name: string;
+    showFilterButton?: boolean;
+    filename: string;
+}
+
+export interface IState {
+    filename?: string;
+    src?: string;
+    song?: ISong;
+    error?: Error;
+}
+
+export default class Test extends Component<IProps, IState> {
+    state: IState = {
         filename: null,
         src: null,
-        document: null
+        song: null
     };
 
     render() {
@@ -30,14 +51,14 @@ class Test extends React.Component<Test.IProps, Test.IState> {
             </div>;
         }
 
-        let document = this.state.document;
-        if (!document) {
+        const {song} = this.state;
+        if (!song) {
             return <div>
                 Loading...
             </div>;
         }
 
-        let misc = chrome && document.header.identification.miscellaneous;
+        let misc = chrome && song.getDocument().header.identification.miscellaneous;
         let descriptionField = chrome && find(misc && misc.miscellaneousFields,
                 (field: any) => field.name === "description"); // TODO(jnetterf): why cast?
         let description = chrome && (descriptionField ?
@@ -48,7 +69,7 @@ class Test extends React.Component<Test.IProps, Test.IState> {
             {title}
             {description}
             <br />
-            <Viewer document={document} pageClassName={STYLES.page} />
+            {this.state.song.toReactElement()}
         </div>;
     }
 
@@ -62,17 +83,17 @@ class Test extends React.Component<Test.IProps, Test.IState> {
         });
     }
 
-    componentWillReceiveProps(nextProps: Test.IProps) {
+    componentWillReceiveProps(nextProps: IProps) {
         if (this.props.filename !== nextProps.filename) {
             this.setState({
                 filename: nextProps.filename,
                 src: null,
-                document: null
+                song: null
             });
         }
     }
 
-    componentDidUpdate(prevProps: Test.IProps, prevState: Test.IState) {
+    componentDidUpdate(prevProps: IProps, prevState: IState) {
         let prefix = process.env.PLAYGROUND_PREFIX || "";
         if (!this.state.src) {
             let request = new XMLHttpRequest();
@@ -85,9 +106,10 @@ class Test extends React.Component<Test.IProps, Test.IState> {
                     });
                     return;
                 }
-                importXML(request.responseText,
-                    (err: Error, doc: IDocument) => {
-                        if (err) {
+                this.setState({
+                    src: request.responseText,
+                    song: satieApplication.newSong({
+                        errorHandler: (err) => {
                             console.warn(err);
                             defer(() => {
                                 this.setState({
@@ -95,34 +117,19 @@ class Test extends React.Component<Test.IProps, Test.IState> {
                                     src: request.responseText
                                 });
                             });
-                        } else {
-                            this.setState({
-                                src: request.responseText,
-                                document: doc
-                            });
-                        }
-                    }
-                );
+                        },
+                        changeHandler: () => {
+                            this.forceUpdate();
+                        },
+                        mouseMoveHandler: () => void 0,
+                        mouseClickHandler: () => void 0,
+                        musicXML: request.responseText,
+                        pageClassName: STYLES.page
+                    })
+                });
             };
             request.send();
         }
     }
 }
 
-module Test {
-    export interface IProps {
-        key?: string | number;
-        chrome?: boolean;
-        name: string;
-        showFilterButton?: boolean;
-        filename: string;
-    }
-    export interface IState {
-        filename?: string;
-        src?: string;
-        document?: IDocument;
-        error?: Error;
-    }
-}
-
-export default Test;

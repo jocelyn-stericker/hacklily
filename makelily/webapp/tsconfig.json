@@ -3,10 +3,10 @@
         "module": "commonjs",
         "noImplicitAny": true,
         "removeComments": false,
+        "experimentalDecorators": true,
         "sourceMap": true,
         "jsx": "react",
-        "outDir": "distlib",
-        "isolatedModules": true,
+        "outDir": "dist",
         "target": "es5"
     },
     "files": [

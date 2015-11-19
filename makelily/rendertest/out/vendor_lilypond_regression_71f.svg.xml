@@ -1,0 +1,1512 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE score-timewise PUBLIC "-//Recordare//DTD MusicXML 3.0 Timewise//EN"
+                                "http://www.musicxml.org/dtds/timewise.dtd">
+<score-timewise>
+  <!-- no work metadata -->
+  <movement-title>All MusicXML chord names/types with &lt;root&gt;</movement-title>
+  <identification>
+    <encoding>
+      <encoding-date>2015-11-18</encoding-date>
+      <software>Ripieno Satie</software>
+      <supports type="yes" element="satie-ext" />
+    </encoding>
+    <miscellaneous>
+      <miscellaneous-field name="description">All chord types defined in 
+                MusicXML. The staff will only contain one c' note (NO chord) for 
+                all of them, but the chord names should be properly 
+                printed.</miscellaneous-field>
+    </miscellaneous>
+  </identification>
+  <defaults>
+    <scaling>
+      <millimeters>6.5</millimeters>
+      <tenths>40</tenths>
+    </scaling>
+    <page-layout>
+      <page-height>1719.3846153846152</page-height>
+      <page-width>1328.6153846153845</page-width>
+      <page-margins type="both">
+        <left-margin>93.84615384615385</left-margin>
+        <right-margin>93.84615384615385</right-margin>
+        <top-margin>93.84615384615385</top-margin>
+        <bottom-margin>93.84615384615385</bottom-margin>
+      </page-margins>
+    </page-layout>
+    <system-layout>
+      <system-margins>
+        <left-margin>0</left-margin>
+        <right-margin>0</right-margin>
+      </system-margins>
+      <system-distance>131</system-distance>
+      <top-system-distance>70</top-system-distance>
+    </system-layout>
+    <appearance>
+      <line-width type="staff">1.3</line-width>
+      <line-width type="wedge">1.6</line-width>
+      <line-width type="ending">1.6</line-width>
+      <line-width type="heavy barline">5</line-width>
+      <line-width type="leger">1.6</line-width>
+      <line-width type="stem">1.2</line-width>
+      <line-width type="tuplet bracket">1.6</line-width>
+      <line-width type="beam">5</line-width>
+      <line-width type="light barline">1.6</line-width>
+      <line-width type="enclosure">1.6</line-width>
+      <note-size type="cue">60</note-size>
+      <note-size type="grace">60</note-size>
+      <distance type="hyphen">120</distance>
+      <distance type="beam">8.8</distance>
+    </appearance>
+    <music-font font-family="Bravura, Maestro, engraved" font-style="normal" font-size="20.5" font-weight="normal" />
+    <word-font font-family="Alegreya, Times New Roman, serif" font-style="normal" font-size="12" font-weight="normal" />
+  </defaults>
+  <credit page="1">
+    <credit-type>title</credit-type>
+    <credit-words justify="center" default-x="664.3076923076923" default-y="1657.8461538461538" font-size="18px">All MusicXML chord names/types with &lt;root&gt;</credit-words>
+  </credit>
+  <part-list>
+    <score-part id="P1">
+      <part-name font-style="normal" font-weight="normal" color="#000000" print-object="yes" justify="left">MusicXML Part</part-name>
+    </score-part>
+  </part-list>
+  <measure number="1">
+    <part id="P1">
+      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+        <pitch>
+          <step>C</step>
+          <octave>4</octave>
+        </pitch>
+        <duration>2</duration>
+        <voice>1</voice>
+        <type>quarter</type>
+        <staff>1</staff>
+        <lyric number="1" justify="left" relative-x="0" relative-y="0" color="#000000" print-object="yes">
+          <text font-style="normal" font-weight="normal" color="#000000" underline="0" overline="0" line-through="0" rotation="0" letter-spacing="normal" dir="ltr">major</text>
+        </lyric>
+      </note>
+      
+      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+        <pitch>
+          <step>C</step>
+          <octave>4</octave>
+        </pitch>
+        <duration>2</duration>
+        <voice>1</voice>
+        <type>quarter</type>
+        <staff>1</staff>
+        <lyric number="1" justify="left" relative-x="0" relative-y="0" color="#000000" print-object="yes">
+          <text font-style="normal" font-weight="normal" color="#000000" underline="0" overline="0" line-through="0" rotation="0" letter-spacing="normal" dir="ltr">minor</text>
+        </lyric>
+      </note>
+      
+      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+        <pitch>
+          <step>C</step>
+          <octave>4</octave>
+        </pitch>
+        <duration>2</duration>
+        <voice>1</voice>
+        <type>quarter</type>
+        <staff>1</staff>
+        <lyric number="1" justify="left" relative-x="0" relative-y="0" color="#000000" print-object="yes">
+          <text font-style="normal" font-weight="normal" color="#000000" underline="0" overline="0" line-through="0" rotation="0" letter-spacing="normal" dir="ltr">augmented</text>
+        </lyric>
+      </note>
+      
+      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+        <pitch>
+          <step>C</step>
+          <octave>4</octave>
+        </pitch>
+        <duration>2</duration>
+        <voice>1</voice>
+        <type>quarter</type>
+        <staff>1</staff>
+        <lyric number="1" justify="left" relative-x="0" relative-y="0" color="#000000" print-object="yes">
+          <text font-style="normal" font-weight="normal" color="#000000" underline="0" overline="0" line-through="0" rotation="0" letter-spacing="normal" dir="ltr">diminished</text>
+        </lyric>
+      </note>
+      
+      <print new-system="no" new-page="no" page-number="1">
+        <!--musicxml-interfaces:debug>
+          <div-count>0</div-count>
+        </musicxml-interfaces:debug-->
+        <page-layout>
+          <page-height>1719.3846153846152</page-height>
+          <page-width>1328.6153846153845</page-width>
+          <page-margins type="both">
+            <left-margin>93.84615384615385</left-margin>
+            <right-margin>93.84615384615385</right-margin>
+            <top-margin>93.84615384615385</top-margin>
+            <bottom-margin>93.84615384615385</bottom-margin>
+          </page-margins>
+        </page-layout>
+        <system-layout>
+          <system-margins>
+            <left-margin>0</left-margin>
+            <right-margin>0</right-margin>
+          </system-margins>
+          <system-distance>131</system-distance>
+          <top-system-distance>70</top-system-distance>
+        </system-layout>
+        <measure-numbering relative-x="0" relative-y="0" font-family="Alegreya, serif" font-style="normal" font-size="small" font-weight="normal" color="#000000">system</measure-numbering>
+      </print>
+      <attributes>
+        <!--musicxml-interfaces:debug>
+          <div-count>0</div-count>
+        </musicxml-interfaces:debug-->
+        <divisions>2</divisions>
+        <key font-style="normal" font-weight="normal" color="#000000" print-object="yes">
+          <fifths>0</fifths>
+          <mode>major</mode>
+        </key>
+        <time symbol="common" separator="none" font-style="normal" font-weight="normal" color="#000000" halign="left" valign="bottom" print-object="yes">
+          <beats>4</beats>
+          <beat-type>4</beat-type>
+        </time>
+        <staves>1</staves>
+        <clef number="1" additional="no" size="full" after-barline="no" font-style="normal" font-weight="normal" color="#000000" print-object="yes">
+          <sign>G</sign>
+          <line>2</line>
+        </clef>
+        <staff-details number="1">
+          <staff-lines>5</staff-lines>
+        </staff-details>
+      </attributes>
+      <harmony print-object="yes" font-style="normal" font-weight="normal" color="#000000">
+        <!--musicxml-interfaces:debug>
+          <div-count>2</div-count>
+        </musicxml-interfaces:debug-->
+        <root>
+          <root-step font-style="normal" font-weight="normal" color="#000000">C</root-step>
+        </root>
+        <kind font-style="normal" font-weight="normal" color="#000000" halign="left" valign="bottom">
+        major</kind>
+        <staff>null</staff>
+      </harmony>
+      <harmony print-object="yes" font-style="normal" font-weight="normal" color="#000000">
+        <!--musicxml-interfaces:debug>
+          <div-count>2</div-count>
+        </musicxml-interfaces:debug-->
+        <root>
+          <root-step font-style="normal" font-weight="normal" color="#000000">C</root-step>
+        </root>
+        <kind font-style="normal" font-weight="normal" color="#000000" halign="left" valign="bottom">
+        minor</kind>
+        <staff>null</staff>
+      </harmony>
+      <harmony print-object="yes" font-style="normal" font-weight="normal" color="#000000">
+        <!--musicxml-interfaces:debug>
+          <div-count>2</div-count>
+        </musicxml-interfaces:debug-->
+        <root>
+          <root-step font-style="normal" font-weight="normal" color="#000000">C</root-step>
+        </root>
+        <kind font-style="normal" font-weight="normal" color="#000000" halign="left" valign="bottom">
+        augmented</kind>
+        <staff>null</staff>
+      </harmony>
+      <harmony print-object="yes" font-style="normal" font-weight="normal" color="#000000">
+        <!--musicxml-interfaces:debug>
+          <div-count>2</div-count>
+        </musicxml-interfaces:debug-->
+        <root>
+          <root-step font-style="normal" font-weight="normal" color="#000000">C</root-step>
+        </root>
+        <kind font-style="normal" font-weight="normal" color="#000000" halign="left" valign="bottom">
+        diminished</kind>
+        <staff>null</staff>
+      </harmony>
+      <!-- spacer: 9 divs -->
+      
+      <barline>
+        <!--musicxml-interfaces:debug>
+          <div-count>0</div-count>
+        </musicxml-interfaces:debug-->
+        <bar-style color="black"></bar-style>
+      </barline>
+    </part>
+  </measure>
+  <measure number="2">
+    <part id="P1">
+      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+        <pitch>
+          <step>C</step>
+          <octave>4</octave>
+        </pitch>
+        <duration>2</duration>
+        <voice>1</voice>
+        <type>quarter</type>
+        <staff>1</staff>
+        <lyric number="1" justify="left" relative-x="0" relative-y="0" color="#000000" print-object="yes">
+          <text font-style="normal" font-weight="normal" color="#000000" underline="0" overline="0" line-through="0" rotation="0" letter-spacing="normal" dir="ltr">dominant</text>
+        </lyric>
+      </note>
+      
+      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+        <pitch>
+          <step>C</step>
+          <octave>4</octave>
+        </pitch>
+        <duration>2</duration>
+        <voice>1</voice>
+        <type>quarter</type>
+        <staff>1</staff>
+        <lyric number="1" justify="left" relative-x="0" relative-y="0" color="#000000" print-object="yes">
+          <text font-style="normal" font-weight="normal" color="#000000" underline="0" overline="0" line-through="0" rotation="0" letter-spacing="normal" dir="ltr">major-seventh</text>
+        </lyric>
+      </note>
+      
+      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+        <pitch>
+          <step>C</step>
+          <octave>4</octave>
+        </pitch>
+        <duration>2</duration>
+        <voice>1</voice>
+        <type>quarter</type>
+        <staff>1</staff>
+        <lyric number="1" justify="left" relative-x="0" relative-y="0" color="#000000" print-object="yes">
+          <text font-style="normal" font-weight="normal" color="#000000" underline="0" overline="0" line-through="0" rotation="0" letter-spacing="normal" dir="ltr">minor-seventh</text>
+        </lyric>
+      </note>
+      
+      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+        <pitch>
+          <step>C</step>
+          <octave>4</octave>
+        </pitch>
+        <duration>2</duration>
+        <voice>1</voice>
+        <type>quarter</type>
+        <staff>1</staff>
+        <lyric number="1" justify="left" relative-x="0" relative-y="0" color="#000000" print-object="yes">
+          <text font-style="normal" font-weight="normal" color="#000000" underline="0" overline="0" line-through="0" rotation="0" letter-spacing="normal" dir="ltr">diminished-seventh</text>
+        </lyric>
+      </note>
+      
+      <attributes>
+        <!--musicxml-interfaces:debug>
+          <div-count>0</div-count>
+        </musicxml-interfaces:debug-->
+        <staves>1</staves>
+        <staff-details number="1">
+          <staff-lines>5</staff-lines>
+        </staff-details>
+      </attributes>
+      <print new-system="no" new-page="no" page-number="1">
+        <!--musicxml-interfaces:debug>
+          <div-count>0</div-count>
+        </musicxml-interfaces:debug-->
+        <page-layout>
+          <page-height>1719.3846153846152</page-height>
+          <page-width>1328.6153846153845</page-width>
+          <page-margins type="both">
+            <left-margin>93.84615384615385</left-margin>
+            <right-margin>93.84615384615385</right-margin>
+            <top-margin>93.84615384615385</top-margin>
+            <bottom-margin>93.84615384615385</bottom-margin>
+          </page-margins>
+        </page-layout>
+        <system-layout>
+          <system-margins>
+            <left-margin>0</left-margin>
+            <right-margin>0</right-margin>
+          </system-margins>
+          <system-distance>131</system-distance>
+          <top-system-distance>70</top-system-distance>
+        </system-layout>
+        <measure-numbering relative-x="0" relative-y="0" font-family="Alegreya, serif" font-style="normal" font-size="small" font-weight="normal" color="#000000">system</measure-numbering>
+      </print>
+      <harmony print-object="yes" font-style="normal" font-weight="normal" color="#000000">
+        <!--musicxml-interfaces:debug>
+          <div-count>2</div-count>
+        </musicxml-interfaces:debug-->
+        <root>
+          <root-step font-style="normal" font-weight="normal" color="#000000">C</root-step>
+        </root>
+        <kind font-style="normal" font-weight="normal" color="#000000" halign="left" valign="bottom">
+        dominant</kind>
+        <staff>null</staff>
+      </harmony>
+      <harmony print-object="yes" font-style="normal" font-weight="normal" color="#000000">
+        <!--musicxml-interfaces:debug>
+          <div-count>2</div-count>
+        </musicxml-interfaces:debug-->
+        <root>
+          <root-step font-style="normal" font-weight="normal" color="#000000">C</root-step>
+        </root>
+        <kind font-style="normal" font-weight="normal" color="#000000" halign="left" valign="bottom">
+        major-seventh</kind>
+        <staff>null</staff>
+      </harmony>
+      <harmony print-object="yes" font-style="normal" font-weight="normal" color="#000000">
+        <!--musicxml-interfaces:debug>
+          <div-count>2</div-count>
+        </musicxml-interfaces:debug-->
+        <root>
+          <root-step font-style="normal" font-weight="normal" color="#000000">C</root-step>
+        </root>
+        <kind font-style="normal" font-weight="normal" color="#000000" halign="left" valign="bottom">
+        minor-seventh</kind>
+        <staff>null</staff>
+      </harmony>
+      <harmony print-object="yes" font-style="normal" font-weight="normal" color="#000000">
+        <!--musicxml-interfaces:debug>
+          <div-count>2</div-count>
+        </musicxml-interfaces:debug-->
+        <root>
+          <root-step font-style="normal" font-weight="normal" color="#000000">C</root-step>
+        </root>
+        <kind font-style="normal" font-weight="normal" color="#000000" halign="left" valign="bottom">
+        diminished-seventh</kind>
+        <staff>null</staff>
+      </harmony>
+      <!-- spacer: 9 divs -->
+      
+      <barline>
+        <!--musicxml-interfaces:debug>
+          <div-count>0</div-count>
+        </musicxml-interfaces:debug-->
+        <bar-style color="black"></bar-style>
+      </barline>
+    </part>
+  </measure>
+  <measure number="3">
+    <part id="P1">
+      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+        <pitch>
+          <step>C</step>
+          <octave>4</octave>
+        </pitch>
+        <duration>2</duration>
+        <voice>1</voice>
+        <type>quarter</type>
+        <staff>1</staff>
+        <lyric number="1" justify="left" relative-x="0" relative-y="0" color="#000000" print-object="yes">
+          <text font-style="normal" font-weight="normal" color="#000000" underline="0" overline="0" line-through="0" rotation="0" letter-spacing="normal" dir="ltr">augmented-seventh</text>
+        </lyric>
+      </note>
+      
+      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+        <pitch>
+          <step>C</step>
+          <octave>4</octave>
+        </pitch>
+        <duration>2</duration>
+        <voice>1</voice>
+        <type>quarter</type>
+        <staff>1</staff>
+        <lyric number="1" justify="left" relative-x="0" relative-y="0" color="#000000" print-object="yes">
+          <text font-style="normal" font-weight="normal" color="#000000" underline="0" overline="0" line-through="0" rotation="0" letter-spacing="normal" dir="ltr">half-diminished</text>
+        </lyric>
+      </note>
+      
+      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+        <pitch>
+          <step>C</step>
+          <octave>4</octave>
+        </pitch>
+        <duration>2</duration>
+        <voice>1</voice>
+        <type>quarter</type>
+        <staff>1</staff>
+        <lyric number="1" justify="left" relative-x="0" relative-y="0" color="#000000" print-object="yes">
+          <text font-style="normal" font-weight="normal" color="#000000" underline="0" overline="0" line-through="0" rotation="0" letter-spacing="normal" dir="ltr">major-minor</text>
+        </lyric>
+      </note>
+      
+      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+        <pitch>
+          <step>C</step>
+          <octave>4</octave>
+        </pitch>
+        <duration>2</duration>
+        <voice>1</voice>
+        <type>quarter</type>
+        <staff>1</staff>
+        <lyric number="1" justify="left" relative-x="0" relative-y="0" color="#000000" print-object="yes">
+          <text font-style="normal" font-weight="normal" color="#000000" underline="0" overline="0" line-through="0" rotation="0" letter-spacing="normal" dir="ltr">major-sixth</text>
+        </lyric>
+      </note>
+      
+      <attributes>
+        <!--musicxml-interfaces:debug>
+          <div-count>0</div-count>
+        </musicxml-interfaces:debug-->
+        <staves>1</staves>
+        <staff-details number="1">
+          <staff-lines>5</staff-lines>
+        </staff-details>
+      </attributes>
+      <print new-system="no" new-page="no" page-number="1">
+        <!--musicxml-interfaces:debug>
+          <div-count>0</div-count>
+        </musicxml-interfaces:debug-->
+        <page-layout>
+          <page-height>1719.3846153846152</page-height>
+          <page-width>1328.6153846153845</page-width>
+          <page-margins type="both">
+            <left-margin>93.84615384615385</left-margin>
+            <right-margin>93.84615384615385</right-margin>
+            <top-margin>93.84615384615385</top-margin>
+            <bottom-margin>93.84615384615385</bottom-margin>
+          </page-margins>
+        </page-layout>
+        <system-layout>
+          <system-margins>
+            <left-margin>0</left-margin>
+            <right-margin>0</right-margin>
+          </system-margins>
+          <system-distance>131</system-distance>
+          <top-system-distance>70</top-system-distance>
+        </system-layout>
+        <measure-numbering relative-x="0" relative-y="0" font-family="Alegreya, serif" font-style="normal" font-size="small" font-weight="normal" color="#000000">system</measure-numbering>
+      </print>
+      <harmony print-object="yes" font-style="normal" font-weight="normal" color="#000000">
+        <!--musicxml-interfaces:debug>
+          <div-count>2</div-count>
+        </musicxml-interfaces:debug-->
+        <root>
+          <root-step font-style="normal" font-weight="normal" color="#000000">C</root-step>
+        </root>
+        <kind font-style="normal" font-weight="normal" color="#000000" halign="left" valign="bottom">
+        augmented-seventh</kind>
+        <staff>null</staff>
+      </harmony>
+      <harmony print-object="yes" font-style="normal" font-weight="normal" color="#000000">
+        <!--musicxml-interfaces:debug>
+          <div-count>2</div-count>
+        </musicxml-interfaces:debug-->
+        <root>
+          <root-step font-style="normal" font-weight="normal" color="#000000">C</root-step>
+        </root>
+        <kind font-style="normal" font-weight="normal" color="#000000" halign="left" valign="bottom">
+        half-diminished</kind>
+        <staff>null</staff>
+      </harmony>
+      <harmony print-object="yes" font-style="normal" font-weight="normal" color="#000000">
+        <!--musicxml-interfaces:debug>
+          <div-count>2</div-count>
+        </musicxml-interfaces:debug-->
+        <root>
+          <root-step font-style="normal" font-weight="normal" color="#000000">C</root-step>
+        </root>
+        <kind font-style="normal" font-weight="normal" color="#000000" halign="left" valign="bottom">
+        major-minor</kind>
+        <staff>null</staff>
+      </harmony>
+      <harmony print-object="yes" font-style="normal" font-weight="normal" color="#000000">
+        <!--musicxml-interfaces:debug>
+          <div-count>2</div-count>
+        </musicxml-interfaces:debug-->
+        <root>
+          <root-step font-style="normal" font-weight="normal" color="#000000">C</root-step>
+        </root>
+        <kind font-style="normal" font-weight="normal" color="#000000" halign="left" valign="bottom">
+        major-sixth</kind>
+        <staff>null</staff>
+      </harmony>
+      <!-- spacer: 9 divs -->
+      
+      <barline>
+        <!--musicxml-interfaces:debug>
+          <div-count>0</div-count>
+        </musicxml-interfaces:debug-->
+        <bar-style color="black"></bar-style>
+      </barline>
+    </part>
+  </measure>
+  <measure number="4">
+    <part id="P1">
+      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+        <pitch>
+          <step>C</step>
+          <octave>4</octave>
+        </pitch>
+        <duration>2</duration>
+        <voice>1</voice>
+        <type>quarter</type>
+        <staff>1</staff>
+        <lyric number="1" justify="left" relative-x="0" relative-y="0" color="#000000" print-object="yes">
+          <text font-style="normal" font-weight="normal" color="#000000" underline="0" overline="0" line-through="0" rotation="0" letter-spacing="normal" dir="ltr">minor-sixth</text>
+        </lyric>
+      </note>
+      
+      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+        <pitch>
+          <step>C</step>
+          <octave>4</octave>
+        </pitch>
+        <duration>2</duration>
+        <voice>1</voice>
+        <type>quarter</type>
+        <staff>1</staff>
+        <lyric number="1" justify="left" relative-x="0" relative-y="0" color="#000000" print-object="yes">
+          <text font-style="normal" font-weight="normal" color="#000000" underline="0" overline="0" line-through="0" rotation="0" letter-spacing="normal" dir="ltr">dominant-ninth</text>
+        </lyric>
+      </note>
+      
+      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+        <pitch>
+          <step>C</step>
+          <octave>4</octave>
+        </pitch>
+        <duration>2</duration>
+        <voice>1</voice>
+        <type>quarter</type>
+        <staff>1</staff>
+        <lyric number="1" justify="left" relative-x="0" relative-y="0" color="#000000" print-object="yes">
+          <text font-style="normal" font-weight="normal" color="#000000" underline="0" overline="0" line-through="0" rotation="0" letter-spacing="normal" dir="ltr">major-ninth</text>
+        </lyric>
+      </note>
+      
+      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+        <pitch>
+          <step>C</step>
+          <octave>4</octave>
+        </pitch>
+        <duration>2</duration>
+        <voice>1</voice>
+        <type>quarter</type>
+        <staff>1</staff>
+        <lyric number="1" justify="left" relative-x="0" relative-y="0" color="#000000" print-object="yes">
+          <text font-style="normal" font-weight="normal" color="#000000" underline="0" overline="0" line-through="0" rotation="0" letter-spacing="normal" dir="ltr">minor-ninth</text>
+        </lyric>
+      </note>
+      
+      <attributes>
+        <!--musicxml-interfaces:debug>
+          <div-count>0</div-count>
+        </musicxml-interfaces:debug-->
+        <staves>1</staves>
+        <staff-details number="1">
+          <staff-lines>5</staff-lines>
+        </staff-details>
+      </attributes>
+      <print new-system="no" new-page="no" page-number="1">
+        <!--musicxml-interfaces:debug>
+          <div-count>0</div-count>
+        </musicxml-interfaces:debug-->
+        <page-layout>
+          <page-height>1719.3846153846152</page-height>
+          <page-width>1328.6153846153845</page-width>
+          <page-margins type="both">
+            <left-margin>93.84615384615385</left-margin>
+            <right-margin>93.84615384615385</right-margin>
+            <top-margin>93.84615384615385</top-margin>
+            <bottom-margin>93.84615384615385</bottom-margin>
+          </page-margins>
+        </page-layout>
+        <system-layout>
+          <system-margins>
+            <left-margin>0</left-margin>
+            <right-margin>0</right-margin>
+          </system-margins>
+          <system-distance>131</system-distance>
+          <top-system-distance>70</top-system-distance>
+        </system-layout>
+        <measure-numbering relative-x="0" relative-y="0" font-family="Alegreya, serif" font-style="normal" font-size="small" font-weight="normal" color="#000000">system</measure-numbering>
+      </print>
+      <harmony print-object="yes" font-style="normal" font-weight="normal" color="#000000">
+        <!--musicxml-interfaces:debug>
+          <div-count>2</div-count>
+        </musicxml-interfaces:debug-->
+        <root>
+          <root-step font-style="normal" font-weight="normal" color="#000000">C</root-step>
+        </root>
+        <kind font-style="normal" font-weight="normal" color="#000000" halign="left" valign="bottom">
+        minor-sixth</kind>
+        <staff>null</staff>
+      </harmony>
+      <harmony print-object="yes" font-style="normal" font-weight="normal" color="#000000">
+        <!--musicxml-interfaces:debug>
+          <div-count>2</div-count>
+        </musicxml-interfaces:debug-->
+        <root>
+          <root-step font-style="normal" font-weight="normal" color="#000000">C</root-step>
+        </root>
+        <kind font-style="normal" font-weight="normal" color="#000000" halign="left" valign="bottom">
+        dominant-ninth</kind>
+        <staff>null</staff>
+      </harmony>
+      <harmony print-object="yes" font-style="normal" font-weight="normal" color="#000000">
+        <!--musicxml-interfaces:debug>
+          <div-count>2</div-count>
+        </musicxml-interfaces:debug-->
+        <root>
+          <root-step font-style="normal" font-weight="normal" color="#000000">C</root-step>
+        </root>
+        <kind font-style="normal" font-weight="normal" color="#000000" halign="left" valign="bottom">
+        major-ninth</kind>
+        <staff>null</staff>
+      </harmony>
+      <harmony print-object="yes" font-style="normal" font-weight="normal" color="#000000">
+        <!--musicxml-interfaces:debug>
+          <div-count>2</div-count>
+        </musicxml-interfaces:debug-->
+        <root>
+          <root-step font-style="normal" font-weight="normal" color="#000000">C</root-step>
+        </root>
+        <kind font-style="normal" font-weight="normal" color="#000000" halign="left" valign="bottom">
+        minor-ninth</kind>
+        <staff>null</staff>
+      </harmony>
+      <!-- spacer: 9 divs -->
+      
+      <barline>
+        <!--musicxml-interfaces:debug>
+          <div-count>0</div-count>
+        </musicxml-interfaces:debug-->
+        <bar-style color="black"></bar-style>
+      </barline>
+    </part>
+  </measure>
+  <measure number="5">
+    <part id="P1">
+      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+        <pitch>
+          <step>C</step>
+          <octave>4</octave>
+        </pitch>
+        <duration>2</duration>
+        <voice>1</voice>
+        <type>quarter</type>
+        <staff>1</staff>
+        <lyric number="1" justify="left" relative-x="0" relative-y="0" color="#000000" print-object="yes">
+          <text font-style="normal" font-weight="normal" color="#000000" underline="0" overline="0" line-through="0" rotation="0" letter-spacing="normal" dir="ltr">dominant-11th</text>
+        </lyric>
+      </note>
+      
+      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+        <pitch>
+          <step>C</step>
+          <octave>4</octave>
+        </pitch>
+        <duration>2</duration>
+        <voice>1</voice>
+        <type>quarter</type>
+        <staff>1</staff>
+        <lyric number="1" justify="left" relative-x="0" relative-y="0" color="#000000" print-object="yes">
+          <text font-style="normal" font-weight="normal" color="#000000" underline="0" overline="0" line-through="0" rotation="0" letter-spacing="normal" dir="ltr">major-11th</text>
+        </lyric>
+      </note>
+      
+      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+        <pitch>
+          <step>C</step>
+          <octave>4</octave>
+        </pitch>
+        <duration>2</duration>
+        <voice>1</voice>
+        <type>quarter</type>
+        <staff>1</staff>
+        <lyric number="1" justify="left" relative-x="0" relative-y="0" color="#000000" print-object="yes">
+          <text font-style="normal" font-weight="normal" color="#000000" underline="0" overline="0" line-through="0" rotation="0" letter-spacing="normal" dir="ltr">minor-11th</text>
+        </lyric>
+      </note>
+      
+      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+        <pitch>
+          <step>C</step>
+          <octave>4</octave>
+        </pitch>
+        <duration>2</duration>
+        <voice>1</voice>
+        <type>quarter</type>
+        <staff>1</staff>
+        <lyric number="1" justify="left" relative-x="0" relative-y="0" color="#000000" print-object="yes">
+          <text font-style="normal" font-weight="normal" color="#000000" underline="0" overline="0" line-through="0" rotation="0" letter-spacing="normal" dir="ltr">dominant-13th</text>
+        </lyric>
+      </note>
+      
+      <attributes>
+        <!--musicxml-interfaces:debug>
+          <div-count>0</div-count>
+        </musicxml-interfaces:debug-->
+        <staves>1</staves>
+        <staff-details number="1">
+          <staff-lines>5</staff-lines>
+        </staff-details>
+      </attributes>
+      <print new-system="no" new-page="no" page-number="1">
+        <!--musicxml-interfaces:debug>
+          <div-count>0</div-count>
+        </musicxml-interfaces:debug-->
+        <page-layout>
+          <page-height>1719.3846153846152</page-height>
+          <page-width>1328.6153846153845</page-width>
+          <page-margins type="both">
+            <left-margin>93.84615384615385</left-margin>
+            <right-margin>93.84615384615385</right-margin>
+            <top-margin>93.84615384615385</top-margin>
+            <bottom-margin>93.84615384615385</bottom-margin>
+          </page-margins>
+        </page-layout>
+        <system-layout>
+          <system-margins>
+            <left-margin>0</left-margin>
+            <right-margin>0</right-margin>
+          </system-margins>
+          <system-distance>131</system-distance>
+          <top-system-distance>70</top-system-distance>
+        </system-layout>
+        <measure-numbering relative-x="0" relative-y="0" font-family="Alegreya, serif" font-style="normal" font-size="small" font-weight="normal" color="#000000">system</measure-numbering>
+      </print>
+      <harmony print-object="yes" font-style="normal" font-weight="normal" color="#000000">
+        <!--musicxml-interfaces:debug>
+          <div-count>2</div-count>
+        </musicxml-interfaces:debug-->
+        <root>
+          <root-step font-style="normal" font-weight="normal" color="#000000">C</root-step>
+        </root>
+        <kind font-style="normal" font-weight="normal" color="#000000" halign="left" valign="bottom">
+        dominant-11th</kind>
+        <staff>null</staff>
+      </harmony>
+      <harmony print-object="yes" font-style="normal" font-weight="normal" color="#000000">
+        <!--musicxml-interfaces:debug>
+          <div-count>2</div-count>
+        </musicxml-interfaces:debug-->
+        <root>
+          <root-step font-style="normal" font-weight="normal" color="#000000">C</root-step>
+        </root>
+        <kind font-style="normal" font-weight="normal" color="#000000" halign="left" valign="bottom">
+        major-11th</kind>
+        <staff>null</staff>
+      </harmony>
+      <harmony print-object="yes" font-style="normal" font-weight="normal" color="#000000">
+        <!--musicxml-interfaces:debug>
+          <div-count>2</div-count>
+        </musicxml-interfaces:debug-->
+        <root>
+          <root-step font-style="normal" font-weight="normal" color="#000000">C</root-step>
+        </root>
+        <kind font-style="normal" font-weight="normal" color="#000000" halign="left" valign="bottom">
+        minor-11th</kind>
+        <staff>null</staff>
+      </harmony>
+      <harmony print-object="yes" font-style="normal" font-weight="normal" color="#000000">
+        <!--musicxml-interfaces:debug>
+          <div-count>2</div-count>
+        </musicxml-interfaces:debug-->
+        <root>
+          <root-step font-style="normal" font-weight="normal" color="#000000">C</root-step>
+        </root>
+        <kind font-style="normal" font-weight="normal" color="#000000" halign="left" valign="bottom">
+        dominant-13th</kind>
+        <staff>null</staff>
+      </harmony>
+      <!-- spacer: 9 divs -->
+      
+      <barline>
+        <!--musicxml-interfaces:debug>
+          <div-count>0</div-count>
+        </musicxml-interfaces:debug-->
+        <bar-style color="black"></bar-style>
+      </barline>
+    </part>
+  </measure>
+  <measure number="6">
+    <part id="P1">
+      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+        <pitch>
+          <step>C</step>
+          <octave>4</octave>
+        </pitch>
+        <duration>2</duration>
+        <voice>1</voice>
+        <type>quarter</type>
+        <staff>1</staff>
+        <lyric number="1" justify="left" relative-x="0" relative-y="0" color="#000000" print-object="yes">
+          <text font-style="normal" font-weight="normal" color="#000000" underline="0" overline="0" line-through="0" rotation="0" letter-spacing="normal" dir="ltr">major-13th</text>
+        </lyric>
+      </note>
+      
+      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+        <pitch>
+          <step>C</step>
+          <octave>4</octave>
+        </pitch>
+        <duration>2</duration>
+        <voice>1</voice>
+        <type>quarter</type>
+        <staff>1</staff>
+        <lyric number="1" justify="left" relative-x="0" relative-y="0" color="#000000" print-object="yes">
+          <text font-style="normal" font-weight="normal" color="#000000" underline="0" overline="0" line-through="0" rotation="0" letter-spacing="normal" dir="ltr">minor-13th</text>
+        </lyric>
+      </note>
+      
+      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+        <pitch>
+          <step>C</step>
+          <octave>4</octave>
+        </pitch>
+        <duration>2</duration>
+        <voice>1</voice>
+        <type>quarter</type>
+        <staff>1</staff>
+        <lyric number="1" justify="left" relative-x="0" relative-y="0" color="#000000" print-object="yes">
+          <text font-style="normal" font-weight="normal" color="#000000" underline="0" overline="0" line-through="0" rotation="0" letter-spacing="normal" dir="ltr">suspended-second</text>
+        </lyric>
+      </note>
+      
+      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+        <pitch>
+          <step>C</step>
+          <octave>4</octave>
+        </pitch>
+        <duration>2</duration>
+        <voice>1</voice>
+        <type>quarter</type>
+        <staff>1</staff>
+        <lyric number="1" justify="left" relative-x="0" relative-y="0" color="#000000" print-object="yes">
+          <text font-style="normal" font-weight="normal" color="#000000" underline="0" overline="0" line-through="0" rotation="0" letter-spacing="normal" dir="ltr">suspended-fourth</text>
+        </lyric>
+      </note>
+      
+      <attributes>
+        <!--musicxml-interfaces:debug>
+          <div-count>0</div-count>
+        </musicxml-interfaces:debug-->
+        <staves>1</staves>
+        <staff-details number="1">
+          <staff-lines>5</staff-lines>
+        </staff-details>
+      </attributes>
+      <print new-system="no" new-page="no" page-number="1">
+        <!--musicxml-interfaces:debug>
+          <div-count>0</div-count>
+        </musicxml-interfaces:debug-->
+        <page-layout>
+          <page-height>1719.3846153846152</page-height>
+          <page-width>1328.6153846153845</page-width>
+          <page-margins type="both">
+            <left-margin>93.84615384615385</left-margin>
+            <right-margin>93.84615384615385</right-margin>
+            <top-margin>93.84615384615385</top-margin>
+            <bottom-margin>93.84615384615385</bottom-margin>
+          </page-margins>
+        </page-layout>
+        <system-layout>
+          <system-margins>
+            <left-margin>0</left-margin>
+            <right-margin>0</right-margin>
+          </system-margins>
+          <system-distance>131</system-distance>
+          <top-system-distance>70</top-system-distance>
+        </system-layout>
+        <measure-numbering relative-x="0" relative-y="0" font-family="Alegreya, serif" font-style="normal" font-size="small" font-weight="normal" color="#000000">system</measure-numbering>
+      </print>
+      <harmony print-object="yes" font-style="normal" font-weight="normal" color="#000000">
+        <!--musicxml-interfaces:debug>
+          <div-count>2</div-count>
+        </musicxml-interfaces:debug-->
+        <root>
+          <root-step font-style="normal" font-weight="normal" color="#000000">C</root-step>
+        </root>
+        <kind font-style="normal" font-weight="normal" color="#000000" halign="left" valign="bottom">
+        major-13th</kind>
+        <staff>null</staff>
+      </harmony>
+      <harmony print-object="yes" font-style="normal" font-weight="normal" color="#000000">
+        <!--musicxml-interfaces:debug>
+          <div-count>2</div-count>
+        </musicxml-interfaces:debug-->
+        <root>
+          <root-step font-style="normal" font-weight="normal" color="#000000">C</root-step>
+        </root>
+        <kind font-style="normal" font-weight="normal" color="#000000" halign="left" valign="bottom">
+        minor-13th</kind>
+        <staff>null</staff>
+      </harmony>
+      <harmony print-object="yes" font-style="normal" font-weight="normal" color="#000000">
+        <!--musicxml-interfaces:debug>
+          <div-count>2</div-count>
+        </musicxml-interfaces:debug-->
+        <root>
+          <root-step font-style="normal" font-weight="normal" color="#000000">C</root-step>
+        </root>
+        <kind font-style="normal" font-weight="normal" color="#000000" halign="left" valign="bottom">
+        suspended-second</kind>
+        <staff>null</staff>
+      </harmony>
+      <harmony print-object="yes" font-style="normal" font-weight="normal" color="#000000">
+        <!--musicxml-interfaces:debug>
+          <div-count>2</div-count>
+        </musicxml-interfaces:debug-->
+        <root>
+          <root-step font-style="normal" font-weight="normal" color="#000000">C</root-step>
+        </root>
+        <kind font-style="normal" font-weight="normal" color="#000000" halign="left" valign="bottom">
+        suspended-fourth</kind>
+        <staff>null</staff>
+      </harmony>
+      <!-- spacer: 9 divs -->
+      
+      <barline>
+        <!--musicxml-interfaces:debug>
+          <div-count>0</div-count>
+        </musicxml-interfaces:debug-->
+        <bar-style color="black"></bar-style>
+      </barline>
+    </part>
+  </measure>
+  <measure number="7">
+    <part id="P1">
+      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+        <pitch>
+          <step>C</step>
+          <octave>4</octave>
+        </pitch>
+        <duration>2</duration>
+        <voice>1</voice>
+        <type>quarter</type>
+        <staff>1</staff>
+        <lyric number="1" justify="left" relative-x="0" relative-y="0" color="#000000" print-object="yes">
+          <text font-style="normal" font-weight="normal" color="#000000" underline="0" overline="0" line-through="0" rotation="0" letter-spacing="normal" dir="ltr">Neapolitan</text>
+        </lyric>
+      </note>
+      
+      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+        <pitch>
+          <step>C</step>
+          <octave>4</octave>
+        </pitch>
+        <duration>2</duration>
+        <voice>1</voice>
+        <type>quarter</type>
+        <staff>1</staff>
+        <lyric number="1" justify="left" relative-x="0" relative-y="0" color="#000000" print-object="yes">
+          <text font-style="normal" font-weight="normal" color="#000000" underline="0" overline="0" line-through="0" rotation="0" letter-spacing="normal" dir="ltr">Italians</text>
+        </lyric>
+      </note>
+      
+      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+        <pitch>
+          <step>C</step>
+          <octave>4</octave>
+        </pitch>
+        <duration>2</duration>
+        <voice>1</voice>
+        <type>quarter</type>
+        <staff>1</staff>
+        <lyric number="1" justify="left" relative-x="0" relative-y="0" color="#000000" print-object="yes">
+          <text font-style="normal" font-weight="normal" color="#000000" underline="0" overline="0" line-through="0" rotation="0" letter-spacing="normal" dir="ltr">French</text>
+        </lyric>
+      </note>
+      
+      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+        <pitch>
+          <step>C</step>
+          <octave>4</octave>
+        </pitch>
+        <duration>2</duration>
+        <voice>1</voice>
+        <type>quarter</type>
+        <staff>1</staff>
+        <lyric number="1" justify="left" relative-x="0" relative-y="0" color="#000000" print-object="yes">
+          <text font-style="normal" font-weight="normal" color="#000000" underline="0" overline="0" line-through="0" rotation="0" letter-spacing="normal" dir="ltr">German</text>
+        </lyric>
+      </note>
+      
+      <attributes>
+        <!--musicxml-interfaces:debug>
+          <div-count>0</div-count>
+        </musicxml-interfaces:debug-->
+        <staves>1</staves>
+        <staff-details number="1">
+          <staff-lines>5</staff-lines>
+        </staff-details>
+      </attributes>
+      <print new-system="no" new-page="no" page-number="1">
+        <!--musicxml-interfaces:debug>
+          <div-count>0</div-count>
+        </musicxml-interfaces:debug-->
+        <page-layout>
+          <page-height>1719.3846153846152</page-height>
+          <page-width>1328.6153846153845</page-width>
+          <page-margins type="both">
+            <left-margin>93.84615384615385</left-margin>
+            <right-margin>93.84615384615385</right-margin>
+            <top-margin>93.84615384615385</top-margin>
+            <bottom-margin>93.84615384615385</bottom-margin>
+          </page-margins>
+        </page-layout>
+        <system-layout>
+          <system-margins>
+            <left-margin>0</left-margin>
+            <right-margin>0</right-margin>
+          </system-margins>
+          <system-distance>131</system-distance>
+          <top-system-distance>70</top-system-distance>
+        </system-layout>
+        <measure-numbering relative-x="0" relative-y="0" font-family="Alegreya, serif" font-style="normal" font-size="small" font-weight="normal" color="#000000">system</measure-numbering>
+      </print>
+      <harmony print-object="yes" font-style="normal" font-weight="normal" color="#000000">
+        <!--musicxml-interfaces:debug>
+          <div-count>2</div-count>
+        </musicxml-interfaces:debug-->
+        <root>
+          <root-step font-style="normal" font-weight="normal" color="#000000">C</root-step>
+        </root>
+        <kind font-style="normal" font-weight="normal" color="#000000" halign="left" valign="bottom">
+        Neapolitan</kind>
+        <staff>null</staff>
+      </harmony>
+      <harmony print-object="yes" font-style="normal" font-weight="normal" color="#000000">
+        <!--musicxml-interfaces:debug>
+          <div-count>2</div-count>
+        </musicxml-interfaces:debug-->
+        <root>
+          <root-step font-style="normal" font-weight="normal" color="#000000">C</root-step>
+        </root>
+        <kind font-style="normal" font-weight="normal" color="#000000" halign="left" valign="bottom">
+        Italian</kind>
+        <staff>null</staff>
+      </harmony>
+      <harmony print-object="yes" font-style="normal" font-weight="normal" color="#000000">
+        <!--musicxml-interfaces:debug>
+          <div-count>2</div-count>
+        </musicxml-interfaces:debug-->
+        <root>
+          <root-step font-style="normal" font-weight="normal" color="#000000">C</root-step>
+        </root>
+        <kind font-style="normal" font-weight="normal" color="#000000" halign="left" valign="bottom">
+        French</kind>
+        <staff>null</staff>
+      </harmony>
+      <harmony print-object="yes" font-style="normal" font-weight="normal" color="#000000">
+        <!--musicxml-interfaces:debug>
+          <div-count>2</div-count>
+        </musicxml-interfaces:debug-->
+        <root>
+          <root-step font-style="normal" font-weight="normal" color="#000000">C</root-step>
+        </root>
+        <kind font-style="normal" font-weight="normal" color="#000000" halign="left" valign="bottom">
+        German</kind>
+        <staff>null</staff>
+      </harmony>
+      <!-- spacer: 9 divs -->
+      
+      <barline>
+        <!--musicxml-interfaces:debug>
+          <div-count>0</div-count>
+        </musicxml-interfaces:debug-->
+        <bar-style color="black"></bar-style>
+      </barline>
+    </part>
+  </measure>
+  <measure number="8">
+    <part id="P1">
+      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+        <pitch>
+          <step>C</step>
+          <octave>4</octave>
+        </pitch>
+        <duration>2</duration>
+        <voice>1</voice>
+        <type>quarter</type>
+        <staff>1</staff>
+        <lyric number="1" justify="left" relative-x="0" relative-y="0" color="#000000" print-object="yes">
+          <text font-style="normal" font-weight="normal" color="#000000" underline="0" overline="0" line-through="0" rotation="0" letter-spacing="normal" dir="ltr">pedal</text>
+        </lyric>
+      </note>
+      
+      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+        <pitch>
+          <step>C</step>
+          <octave>4</octave>
+        </pitch>
+        <duration>2</duration>
+        <voice>1</voice>
+        <type>quarter</type>
+        <staff>1</staff>
+        <lyric number="1" justify="left" relative-x="0" relative-y="0" color="#000000" print-object="yes">
+          <text font-style="normal" font-weight="normal" color="#000000" underline="0" overline="0" line-through="0" rotation="0" letter-spacing="normal" dir="ltr">power</text>
+        </lyric>
+      </note>
+      
+      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+        <pitch>
+          <step>C</step>
+          <octave>4</octave>
+        </pitch>
+        <duration>2</duration>
+        <voice>1</voice>
+        <type>quarter</type>
+        <staff>1</staff>
+        <lyric number="1" justify="left" relative-x="0" relative-y="0" color="#000000" print-object="yes">
+          <text font-style="normal" font-weight="normal" color="#000000" underline="0" overline="0" line-through="0" rotation="0" letter-spacing="normal" dir="ltr">Tristan</text>
+        </lyric>
+      </note>
+      
+      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+        <pitch>
+          <step>C</step>
+          <octave>4</octave>
+        </pitch>
+        <duration>2</duration>
+        <voice>1</voice>
+        <type>quarter</type>
+        <staff>1</staff>
+        <lyric number="1" justify="left" relative-x="0" relative-y="0" color="#000000" print-object="yes">
+          <text font-style="normal" font-weight="normal" color="#000000" underline="0" overline="0" line-through="0" rotation="0" letter-spacing="normal" dir="ltr">other</text>
+        </lyric>
+      </note>
+      
+      <attributes>
+        <!--musicxml-interfaces:debug>
+          <div-count>0</div-count>
+        </musicxml-interfaces:debug-->
+        <staves>1</staves>
+        <staff-details number="1">
+          <staff-lines>5</staff-lines>
+        </staff-details>
+      </attributes>
+      <print new-system="no" new-page="no" page-number="1">
+        <!--musicxml-interfaces:debug>
+          <div-count>0</div-count>
+        </musicxml-interfaces:debug-->
+        <page-layout>
+          <page-height>1719.3846153846152</page-height>
+          <page-width>1328.6153846153845</page-width>
+          <page-margins type="both">
+            <left-margin>93.84615384615385</left-margin>
+            <right-margin>93.84615384615385</right-margin>
+            <top-margin>93.84615384615385</top-margin>
+            <bottom-margin>93.84615384615385</bottom-margin>
+          </page-margins>
+        </page-layout>
+        <system-layout>
+          <system-margins>
+            <left-margin>0</left-margin>
+            <right-margin>0</right-margin>
+          </system-margins>
+          <system-distance>131</system-distance>
+          <top-system-distance>70</top-system-distance>
+        </system-layout>
+        <measure-numbering relative-x="0" relative-y="0" font-family="Alegreya, serif" font-style="normal" font-size="small" font-weight="normal" color="#000000">system</measure-numbering>
+      </print>
+      <harmony print-object="yes" font-style="normal" font-weight="normal" color="#000000">
+        <!--musicxml-interfaces:debug>
+          <div-count>2</div-count>
+        </musicxml-interfaces:debug-->
+        <root>
+          <root-step font-style="normal" font-weight="normal" color="#000000">C</root-step>
+        </root>
+        <kind font-style="normal" font-weight="normal" color="#000000" halign="left" valign="bottom">
+        pedal</kind>
+        <staff>null</staff>
+      </harmony>
+      <harmony print-object="yes" font-style="normal" font-weight="normal" color="#000000">
+        <!--musicxml-interfaces:debug>
+          <div-count>2</div-count>
+        </musicxml-interfaces:debug-->
+        <root>
+          <root-step font-style="normal" font-weight="normal" color="#000000">C</root-step>
+        </root>
+        <kind font-style="normal" font-weight="normal" color="#000000" halign="left" valign="bottom">
+        power</kind>
+        <staff>null</staff>
+      </harmony>
+      <harmony print-object="yes" font-style="normal" font-weight="normal" color="#000000">
+        <!--musicxml-interfaces:debug>
+          <div-count>2</div-count>
+        </musicxml-interfaces:debug-->
+        <root>
+          <root-step font-style="normal" font-weight="normal" color="#000000">C</root-step>
+        </root>
+        <kind font-style="normal" font-weight="normal" color="#000000" halign="left" valign="bottom">
+        Tristan</kind>
+        <staff>null</staff>
+      </harmony>
+      <harmony print-object="yes" font-style="normal" font-weight="normal" color="#000000">
+        <!--musicxml-interfaces:debug>
+          <div-count>2</div-count>
+        </musicxml-interfaces:debug-->
+        <root>
+          <root-step font-style="normal" font-weight="normal" color="#000000">C</root-step>
+        </root>
+        <kind font-style="normal" font-weight="normal" color="#000000" halign="left" valign="bottom">
+        other</kind>
+        <staff>null</staff>
+      </harmony>
+      <!-- spacer: 9 divs -->
+      
+      <barline>
+        <!--musicxml-interfaces:debug>
+          <div-count>0</div-count>
+        </musicxml-interfaces:debug-->
+        <bar-style color="black"></bar-style>
+      </barline>
+    </part>
+  </measure>
+  <measure number="9">
+    <part id="P1">
+      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+        <pitch>
+          <step>C</step>
+          <octave>4</octave>
+        </pitch>
+        <duration>4</duration>
+        <voice>1</voice>
+        <type>half</type>
+        <staff>1</staff>
+        <lyric number="1" justify="left" relative-x="0" relative-y="0" color="#000000" print-object="yes">
+          <text font-style="normal" font-weight="normal" color="#000000" underline="0" overline="0" line-through="0" rotation="0" letter-spacing="normal" dir="ltr">Inversion</text>
+        </lyric>
+      </note>
+      
+      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+        <pitch>
+          <step>C</step>
+          <octave>4</octave>
+        </pitch>
+        <duration>1</duration>
+        <voice>1</voice>
+        <type>eighth</type>
+        <staff>1</staff>
+        <lyric number="1" justify="left" relative-x="0" relative-y="0" color="#000000" print-object="yes">
+          <text font-style="normal" font-weight="normal" color="#000000" underline="0" overline="0" line-through="0" rotation="0" letter-spacing="normal" dir="ltr">Fbb/C</text>
+        </lyric>
+      </note>
+      
+      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+        <pitch>
+          <step>C</step>
+          <octave>4</octave>
+        </pitch>
+        <duration>1</duration>
+        <voice>1</voice>
+        <type>eighth</type>
+        <staff>1</staff>
+        <lyric number="1" justify="left" relative-x="0" relative-y="0" color="#000000" print-object="yes">
+          <text font-style="normal" font-weight="normal" color="#000000" underline="0" overline="0" line-through="0" rotation="0" letter-spacing="normal" dir="ltr">G#/D#</text>
+        </lyric>
+      </note>
+      
+      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+        <rest measure="no">
+          
+        </rest>
+        <duration>2</duration>
+        <voice>1</voice>
+        <type>quarter</type>
+        <staff>1</staff>
+        <lyric number="1" justify="left" relative-x="0" relative-y="0" color="#000000" print-object="yes">
+          <text font-style="normal" font-weight="normal" color="#000000" underline="0" overline="0" line-through="0" rotation="0" letter-spacing="normal" dir="ltr">C</text>
+        </lyric>
+      </note>
+      
+      <attributes>
+        <!--musicxml-interfaces:debug>
+          <div-count>0</div-count>
+        </musicxml-interfaces:debug-->
+        <staves>1</staves>
+        <staff-details number="1">
+          <staff-lines>5</staff-lines>
+        </staff-details>
+      </attributes>
+      <print new-system="no" new-page="no" page-number="1">
+        <!--musicxml-interfaces:debug>
+          <div-count>0</div-count>
+        </musicxml-interfaces:debug-->
+        <page-layout>
+          <page-height>1719.3846153846152</page-height>
+          <page-width>1328.6153846153845</page-width>
+          <page-margins type="both">
+            <left-margin>93.84615384615385</left-margin>
+            <right-margin>93.84615384615385</right-margin>
+            <top-margin>93.84615384615385</top-margin>
+            <bottom-margin>93.84615384615385</bottom-margin>
+          </page-margins>
+        </page-layout>
+        <system-layout>
+          <system-margins>
+            <left-margin>0</left-margin>
+            <right-margin>0</right-margin>
+          </system-margins>
+          <system-distance>131</system-distance>
+          <top-system-distance>70</top-system-distance>
+        </system-layout>
+        <measure-numbering relative-x="0" relative-y="0" font-family="Alegreya, serif" font-style="normal" font-size="small" font-weight="normal" color="#000000">system</measure-numbering>
+      </print>
+      <harmony print-object="yes" font-style="normal" font-weight="normal" color="#000000">
+        <!--musicxml-interfaces:debug>
+          <div-count>4</div-count>
+        </musicxml-interfaces:debug-->
+        <root>
+          <root-step font-style="normal" font-weight="normal" color="#000000">F</root-step>
+          <root-alter print-object="yes" font-style="normal" font-weight="normal" color="#000000">1</root-alter>
+        </root>
+        <kind font-style="normal" font-weight="normal" color="#000000" halign="left" valign="bottom">
+        major</kind>
+        <inversion font-style="normal" font-weight="normal" color="#000000">2</inversion>
+        <staff>null</staff>
+      </harmony>
+      <harmony print-object="yes" font-style="normal" font-weight="normal" color="#000000">
+        <!--musicxml-interfaces:debug>
+          <div-count>1</div-count>
+        </musicxml-interfaces:debug-->
+        <root>
+          <root-step font-style="normal" font-weight="normal" color="#000000">F</root-step>
+          <root-alter print-object="yes" font-style="normal" font-weight="normal" color="#000000">-2</root-alter>
+        </root>
+        <kind font-style="normal" font-weight="normal" color="#000000" halign="left" valign="bottom">
+        major</kind>
+        <bass>
+          <bass-step font-style="normal" font-weight="normal" color="#000000">C</bass-step>
+        </bass>
+        <staff>null</staff>
+      </harmony>
+      <harmony print-object="yes" font-style="normal" font-weight="normal" color="#000000">
+        <!--musicxml-interfaces:debug>
+          <div-count>1</div-count>
+        </musicxml-interfaces:debug-->
+        <root>
+          <root-step font-style="normal" font-weight="normal" color="#000000">G</root-step>
+          <root-alter print-object="yes" font-style="normal" font-weight="normal" color="#000000">1</root-alter>
+        </root>
+        <kind font-style="normal" font-weight="normal" color="#000000" halign="left" valign="bottom">
+        major</kind>
+        <bass>
+          <bass-step font-style="normal" font-weight="normal" color="#000000">D</bass-step>
+          <bass-alter print-object="yes" font-style="normal" font-weight="normal" color="#000000">1</bass-alter>
+        </bass>
+        <staff>null</staff>
+      </harmony>
+      <harmony print-object="yes" font-style="normal" font-weight="normal" color="#000000">
+        <!--musicxml-interfaces:debug>
+          <div-count>2</div-count>
+        </musicxml-interfaces:debug-->
+        <root>
+          <root-step font-style="normal" font-weight="normal" color="#000000">C</root-step>
+        </root>
+        <kind font-style="normal" font-weight="normal" color="#000000" halign="left" valign="bottom">
+        major</kind>
+        <staff>null</staff>
+      </harmony>
+      <!-- spacer: 9 divs -->
+      
+      <barline>
+        <!--musicxml-interfaces:debug>
+          <div-count>0</div-count>
+        </musicxml-interfaces:debug-->
+        <bar-style color="black"></bar-style>
+      </barline>
+    </part>
+  </measure>
+  <measure number="10">
+    <part id="P1">
+      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+        <pitch>
+          <step>C</step>
+          <octave>4</octave>
+        </pitch>
+        <duration>2</duration>
+        <voice>1</voice>
+        <type>quarter</type>
+        <staff>1</staff>
+        <lyric number="1" justify="left" relative-x="0" relative-y="0" color="#000000" print-object="yes">
+          <text font-style="normal" font-weight="normal" color="#000000" underline="0" overline="0" line-through="0" rotation="0" letter-spacing="normal" dir="ltr">C-3+5b</text>
+        </lyric>
+      </note>
+      
+      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+        <pitch>
+          <step>C</step>
+          <octave>4</octave>
+        </pitch>
+        <duration>2</duration>
+        <voice>1</voice>
+        <type>quarter</type>
+        <staff>1</staff>
+        <lyric number="1" justify="left" relative-x="0" relative-y="0" color="#000000" print-object="yes">
+          <text font-style="normal" font-weight="normal" color="#000000" underline="0" overline="0" line-through="0" rotation="0" letter-spacing="normal" dir="ltr">C-1+6b</text>
+        </lyric>
+      </note>
+      
+      <attributes>
+        <!--musicxml-interfaces:debug>
+          <div-count>0</div-count>
+        </musicxml-interfaces:debug-->
+        <staves>1</staves>
+        <staff-details number="1">
+          <staff-lines>5</staff-lines>
+        </staff-details>
+      </attributes>
+      <print new-system="no" new-page="no" page-number="1">
+        <!--musicxml-interfaces:debug>
+          <div-count>0</div-count>
+        </musicxml-interfaces:debug-->
+        <page-layout>
+          <page-height>1719.3846153846152</page-height>
+          <page-width>1328.6153846153845</page-width>
+          <page-margins type="both">
+            <left-margin>93.84615384615385</left-margin>
+            <right-margin>93.84615384615385</right-margin>
+            <top-margin>93.84615384615385</top-margin>
+            <bottom-margin>93.84615384615385</bottom-margin>
+          </page-margins>
+        </page-layout>
+        <system-layout>
+          <system-margins>
+            <left-margin>0</left-margin>
+            <right-margin>0</right-margin>
+          </system-margins>
+          <system-distance>131</system-distance>
+          <top-system-distance>70</top-system-distance>
+        </system-layout>
+        <measure-numbering relative-x="0" relative-y="0" font-family="Alegreya, serif" font-style="normal" font-size="small" font-weight="normal" color="#000000">system</measure-numbering>
+      </print>
+      <harmony print-object="yes" font-style="normal" font-weight="normal" color="#000000">
+        <!--musicxml-interfaces:debug>
+          <div-count>2</div-count>
+        </musicxml-interfaces:debug-->
+        <root>
+          <root-step font-style="normal" font-weight="normal" color="#000000">C</root-step>
+        </root>
+        <kind font-style="normal" font-weight="normal" color="#000000" halign="left" valign="bottom">
+        major</kind>
+        <degree print-object="yes">
+          <degree-value font-style="normal" font-weight="normal" color="#000000">3</degree-value>
+          <degree-alter font-style="normal" font-weight="normal" color="#000000">0</degree-alter>
+          <degree-type font-style="normal" font-weight="normal" color="#000000">subtract</degree-type>
+        </degree>
+        <degree print-object="yes">
+          <degree-value font-style="normal" font-weight="normal" color="#000000">5</degree-value>
+          <degree-alter font-style="normal" font-weight="normal" color="#000000">-1</degree-alter>
+          <degree-type font-style="normal" font-weight="normal" color="#000000">alter</degree-type>
+        </degree>
+        <staff>null</staff>
+      </harmony>
+      <harmony print-object="yes" font-style="normal" font-weight="normal" color="#000000">
+        <!--musicxml-interfaces:debug>
+          <div-count>2</div-count>
+        </musicxml-interfaces:debug-->
+        <root>
+          <root-step font-style="normal" font-weight="normal" color="#000000">C</root-step>
+        </root>
+        <kind font-style="normal" font-weight="normal" color="#000000" halign="left" valign="bottom">
+        major</kind>
+        <degree print-object="yes">
+          <degree-value font-style="normal" font-weight="normal" color="#000000">1</degree-value>
+          <degree-alter font-style="normal" font-weight="normal" color="#000000">0</degree-alter>
+          <degree-type font-style="normal" font-weight="normal" color="#000000">subtract</degree-type>
+        </degree>
+        <degree print-object="yes">
+          <degree-value font-style="normal" font-weight="normal" color="#000000">6</degree-value>
+          <degree-alter font-style="normal" font-weight="normal" color="#000000">-1</degree-alter>
+          <degree-type font-style="normal" font-weight="normal" color="#000000">add</degree-type>
+        </degree>
+        <staff>null</staff>
+      </harmony>
+      <barline location="right">
+        <!--musicxml-interfaces:debug>
+          <div-count>0</div-count>
+        </musicxml-interfaces:debug-->
+        <bar-style color="#000000">light-heavy</bar-style>
+      </barline>
+    </part>
+  </measure>
+  </score-timewise>

@@ -1,7 +1,8 @@
-/// <reference path="../typings/tsd.d.ts" />
+/// <reference path="../../typings/tsd.d.ts" />
+/// <reference path="../../dist/satie.d.ts" />
 
-const ReactDOM = require("react-dom");
-import {init} from "../../src/index";
+import * as React from "react";
+import {render} from "react-dom";
 import {Router, Route, Redirect} from "react-router";
 
 const createBrowserHistory = require("history/lib/createBrowserHistory");
@@ -12,14 +13,9 @@ import Tests from "./tests";
 
 let prefix = process.env.PLAYGROUND_PREFIX || "";
 
-init({
-    satieRoot: location.protocol + "//" + location.host + prefix + "/vendor/",
-    preloadedFonts: ["Alegreya", "Alegreya (bold)"]
-});
-
 let history = createBrowserHistory();
 
-ReactDOM.render(
+let rootInstance = render(
     <Router history={history}>
         <Route component={App} path="">
             <Route path={`${prefix}/tests`}
@@ -51,3 +47,12 @@ ReactDOM.render(
         </Route>
     </Router>,
     document.getElementById("root"));
+
+if ((module as any).hot) {
+  require('react-hot-loader/Injection').RootInstanceProvider.injectProvider({
+    getRootInstances: function () {
+      // Help React Hot Loader figure out the root component instances on the page:
+      return [rootInstance];
+    }
+  });
+}

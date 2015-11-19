@@ -1,4 +1,7 @@
 /**
+ * @source: https://github.com/jnetterf/satie/
+ *
+ * @license
  * (C) Josh Netterfield <joshua@nettek.ca> 2015.
  * Part of the Satie music engraver <https://github.com/jnetterf/satie>.
  *
@@ -17,9 +20,9 @@
  */
 
 import {readFile} from "fs";
-import yargs = require("yargs");
+import * as yargs from "yargs";
 
-import {importXML, exportXML, getSVGPreview} from "./index";
+import Application from "./engine/application";
 
 function readStdin(onEnd: (s: string) => void) {
     let content = "";
@@ -61,8 +64,8 @@ function cannotRead(err: any) {
         .example("$0 diff -x old.xml -x new.xml", "print a patch from old to new")
         .example("$0 diff -x old.xml", "print a patch from old to stdin")
 
-        .example("$0 patch -x old.xml -p p.mdiff", "print p.mdiff applied to old.xml")
-        .example("$0 patch -p p.mdiff", "print p.mdiff applied to stdin")
+        .example("$0 patch -x old.xml -p p.json", "print p.json applied to old.xml")
+        .example("$0 patch -p p.json", "print p.json applied to stdin")
 
         .example("$0 render -x in.xml", "prints multiple svgs concatenated")
         .example("$0 render -x in.xml --as out", "writes out001.svg, out002.svg, ...")
@@ -110,15 +113,34 @@ function cannotRead(err: any) {
 
         .argv;
 
+    let application = new Application({
+        satieRoot: "https://nettek.ca/satie/vendor/",
+        preloadedFonts: []
+    });
+
     let log = console.log.bind(console);
 
     switch (argv._[0]) {
         case "init":
             read(argv.xml[0],
-                str => importXML(str,
-                    (err, document) => exportXML(document, (err, xml) =>
-                        err ? cannotRead(err) : log(xml))),
-                cannotRead);
+                musicXML => {
+                    let song = application.newSong({
+                        musicXML,
+
+                        errorHandler: cannotRead,
+                        changeHandler: () => {
+                            song.toMusicXML((err: Error, musicXML: string) => {
+                                if (err) {
+                                    cannotRead(err);
+                                } else {
+                                    log(musicXML);
+                                }
+                            });
+                        },
+                        mouseMoveHandler: () => void 0,
+                        mouseClickHandler: () => void 0
+                    });
+                }, cannotRead);
             break;
         case "diff":
             throw "not implemented";
@@ -126,10 +148,24 @@ function cannotRead(err: any) {
             throw "not implemented";
         case "render":
             read(argv.xml[0],
-                (str: string) => importXML(str,
-                    (err, document) => err ? cannotRead(err) : getSVGPreview(document,
-                        (err, svg) => err ? cannotRead(err) : log(svg))),
-                cannotRead);
+                musicXML => {
+                    let song = application.newSong({
+                        musicXML,
+
+                        errorHandler: cannotRead,
+                        changeHandler: () => {
+                            song.toSVG((err: Error, svg: string) => {
+                                if (err) {
+                                    cannotRead(err);
+                                } else {
+                                    log(svg);
+                                }
+                            });
+                        },
+                        mouseMoveHandler: () => void 0,
+                        mouseClickHandler: () => void 0
+                    });
+                }, cannotRead);
             break;
         default:
             throw new Error(`Invalid operation ${argv._[0]}`);
