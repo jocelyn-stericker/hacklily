@@ -25,9 +25,6 @@ If you want to view songs inside your web browser, you also need React DOM:
 npm install react-dom
 ```
 
-Linux-specific instructions: you need some common development tools. (`sudo apt-get install build-essential xsltproc`)
-Windows-specific instructions: you need git bash or similar, make, and libxslt2 installed
-
 # Rendering songs
 
 ## Into a web page
@@ -88,7 +85,9 @@ Song.addChangeListener(function() {
 });
 ```
 
-## Contributing
+## Developing Satie
+
+### Obtaining
 
 To obtain Satie run,
 
@@ -97,7 +96,16 @@ git clone git@github.com:jnetterf/satie.git
 cd satie
 ```
 
+### Development environment
+
+Mac OS X with node and a recent XCode should just work.
+
+Linux-specific instructions: you need some common development tools. (`sudo apt-get install build-essential xsltproc`)
+
+Windows-specific instructions: you need git bash or similar, make, and libxslt2 installed.
+
 ### Building
+
 To build, lint, and run unit tests:
 
 | Task                                                | Command               |
@@ -111,7 +119,7 @@ To build, lint, and run unit tests:
 | Update TypeScript external definitions              | `make tsd`            |
 | Run the development server on port 4200             | `make serve`          |
 
-### License
+## License
 Satie is free software: you can redistribute it and/or modify it under the terms of
 the [GNU **Affero** General Public License][agpl] as published by the Free Software
 Foundation, either version 3 of the License, or (at your option) any later version.
