@@ -78,7 +78,7 @@ build: clean lint
 	bash -c "../node_modules/.bin/tsc"
 	bash -c "cd ./src; \
 	    find -type f -name \"*.css\" -exec install -m 644 -D \"{}\" ../dist/{} \";\" ;"
-	bash -c "../node_modules/.bin/webpack -p"
+	bash -c "../node_modules/.bin/webpack -p --config \"webpack.config.prod.js\""
 	bash -c "cp -RLf ./static/* ./dist/satie/"
 	bash -c "cp ../dist/satie-bundled-min.js ./dist/satie/satie.js"
 	bash -c "mv ./dist/satie/index-prod.html ./dist/satie/index.html"
@@ -92,7 +92,6 @@ build: clean lint
 	node --harmony -e 'Array.prototype.forEach.call(\"0123456789\", a => Array.prototype.forEach.call(\"0123456789 \", b => Array.prototype.forEach.call(b === \" \" ? \" \" : \" qwertyuiopasdfghjklzxcvbnm\", c => console.log(\"ln -s ../_term \" + a + b + c + \";\"))))' | bash --"
 
 deploy:
-	cd ../; make build
 	make build
 	git fetch origin
 	git branch -f gh-pages origin/gh-pages

@@ -21,19 +21,7 @@ module.exports = {
         "lodash": "_"
     },
     module: {
-        preLoaders: [
-            {
-                test: /dist\/.*\.js$/,
-                loader: "source-map-loader"
-            }
-        ],
         loaders: [
-            {
-                test: /dist\/.*\.js$/,
-                loaders: [
-                    "react-hot"
-                ]
-            },
             {
                 test: /\.css$/,
                 loaders: [
