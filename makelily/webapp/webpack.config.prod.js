@@ -43,6 +43,7 @@ module.exports = {
         new webpack.DefinePlugin({
             "process.env": {
                 NODE_ENV: '"production"',
+                PLAYGROUND_PREFIX: '"/satie"'
             }
         })
     ]
