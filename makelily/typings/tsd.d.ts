@@ -15,7 +15,6 @@
 /// <reference path="superagent/superagent.d.ts" />
 /// <reference path="yargs/yargs.d.ts" />
 /// <reference path="node/node.d.ts" />
-/// <reference path="../node_modules/definition-header/dist/index.d.ts" />
 /// <reference path="../node_modules/musicxml-interfaces/lib/musicxml-interfaces.d.ts" />
 /// <reference path="../node_modules/webcola/WebCola/index.d.ts" />
 /// <reference path="react/react-dom.d.ts" />

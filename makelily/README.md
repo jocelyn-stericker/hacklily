@@ -1,23 +1,94 @@
 Satie [![Test status][test_status]][test_link]
 ==============================================
 
-Satie is a JavaScript library for rendering sheet music.
+Render and edit sheet music in your browser or Node application.
 
-* Converts [MusicXML][musicxml] to [SVG][svg]. Most sheet music formats can be converted to MusicXML, and SVGs can be converted to many other formats.
-* Runs in Node and modern browsers (Chrome, Firefox, Safari, IE 10+).
-* Provides fast updates. Satie was designed to be a component of a sheet music editor.
+# Features
 
-Satie is not yet ready for production use.
+ - [MusicXML!][musicxml] Satie natively supports MusicXML for viewing and editing songs.
+ - Satie renders sheet music to [SVG][svg]. SVGs can be embedded in a web page or exported. SVGs can be converted to other image formats.
+ - Patch-based editing. Updates are fast enough for most real-time editing.
 
-## Contribute
-Currently, the best way to contribute is by filing issues.
+# Quickstart
 
-### Development Setup
-To get started, you'll need [node 0.12](https://nodejs.org) and one of the following:
+The easiest way to install Satie is via npm (to get npm, [install Node.js](http://nodejs.org/download/)).
 
- - **Mac** (tested on Yosemite)
- - **Linux** with common development tools (`sudo apt-get install build-essential xsltproc`)
- - **Windows** with [msysgit](https://github.com/msysgit/msysgit/releases/) or similar and libxslt2 installed
+Add `satie` and React to your project via npm:
+
+```
+npm install satie react;
+```
+
+If you want to view songs inside your web browser, you also need React DOM:
+
+```
+npm install react-dom
+```
+
+Linux-specific instructions: you need some common development tools. (`sudo apt-get install build-essential xsltproc`)
+Windows-specific instructions: you need git bash or similar, make, and libxslt2 installed
+
+# Rendering songs
+
+## Into a web page
+
+For this part of the guide you need:
+
+ - basic knowledge of React. See React's [getting started guide](https://facebook.github.io/react/docs/getting-started.html).
+ - a working development server with React.
+ - a MusicXML string you wish to render
+
+Inside your application, this is how you render a song to an element with the ID "root":
+
+```
+var SatieApplication = require("satie");
+var ReactDOM = require("react-dom");
+
+let satieApp = new SatieApplication();
+
+let song = new satieApp.Song({
+    musicXML: sourceOfMusicXML
+
+    errorHandler: function(err) {
+        // This is called when the song has a non-recoverable error (e.g., a song could not be opened).
+        console.error(err);
+    },
+});
+
+Song.addChangeListener(function() {
+    ReactDOM.render(song.render(), document.getElementById("root"));
+});
+```
+
+## As an SVG
+
+For this part of the guide you need:
+
+ - basic knowledge of React. See React's [getting started guide](https://facebook.github.io/react/docs/getting-started.html).
+ - a MusicXML string you wish to export to an SVG.
+
+Inside your application, this is how you render a song to an element with the ID root:
+
+```
+var SatieApplication = require("satie");
+
+let satieApp = new SatieApplication();
+
+let song = new satieApp.Song({
+    musicXML: sourceOfMusicXML
+
+    errorHandler: function(err) {
+        // This is called when the song has a non-recoverable error (e.g., a song could not be opened).
+        console.error(err);
+    },
+});
+
+Song.addChangeListener(function() {
+    console.log(song.toSVG());
+});
+```
+
+## Contributing
 
 To obtain Satie run,
 
@@ -66,8 +137,8 @@ delete this exception statement from your version.
 If this license prevents you from using Satie in an open source project,
 file an issue. I want to make it work!
 
-[test_status]: https://travis-ci.org/jnetterf/satie.svg?branch=master
-[test_link]: https://travis-ci.org/jnetterf/satie
+[test_status]: https://magnum.travis-ci.com/jnetterf/satie.svg?token=CyuSS4hk66NJ4i9k2wRq&branch=master
+[test_link]: https://magnum.travis-ci.com/jnetterf/satie
 [musicxml_test_suite]: http://www.lilypond.org/doc/v2.18/input/regression/musicxml/collated-files.html
 [agpl]: LICENSE.md
 [musicxml]: http://en.wikipedia.org/wiki/MusicXML
