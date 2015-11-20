@@ -94,7 +94,7 @@ _watchStage:
 
 _bundleOnly: _stageOnly _testOnly lint
 	@printf "$(BUNDLE_PROD_STRING)\n"
-	@./node_modules/.bin/webpack --config ./webpack.config.prod.js -p ./dist/index.js ./dist/satie-bundled-min.js
+	@bash -c "./node_modules/.bin/webpack --config ./webpack.config.prod.js -p ./dist/index.js ./dist/satie-bundled-min.js"
 
 # ---- Other build modes ----------------------------------------------------------
 
@@ -172,7 +172,7 @@ smufl:
 	@bash -c "echo '; export default names;' >> ./src/models/smufl/glyphnames.ts"
 	@printf "$(INFO_COLOR)» SMuFL built successfully.$(NO_COLOR)\n"; \
 
-TS_FILES = $(shell find src/ -type f -name '*.ts')
+TS_FILES = $(shell bash -c "find src/ -type f -name '*.ts'")
 
 lint: node_modules/.bin/tslint
 	@printf "$(LINT_STRING)\n"

@@ -9,7 +9,7 @@ var host = "localhost";
 
 module.exports = {
     entry: [
-        "webpack-dev-server/client?http://ripieno.local:" + port,
+        `webpack-dev-server/client?http://${host}:port`,
         "webpack/hot/dev-server",
         "./dist/index.js"
     ],
