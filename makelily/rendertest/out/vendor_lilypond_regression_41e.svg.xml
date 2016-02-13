@@ -5,7 +5,7 @@
   <!-- no work metadata -->
   <identification>
     <encoding>
-      <encoding-date>2015-11-20</encoding-date>
+      <encoding-date>2016-02-13</encoding-date>
       <software>Ripieno Satie</software>
       <supports type="yes" element="satie-ext" />
     </encoding>
@@ -58,10 +58,10 @@
   </defaults>
   <part-list>
     <score-part id="P1">
-      <part-name font-style="normal" font-weight="normal" color="#000000" print-object="yes" justify="left">Long
-      Staff
+      <part-name font-style="normal" font-weight="normal" color="#000000" print-object="yes" justify="left">Long
+      Staff
       Name</part-name>
-      <part-abbreviation font-style="normal" font-weight="normal" color="#000000" print-object="yes" justify="left">St.
+      <part-abbreviation font-style="normal" font-weight="normal" color="#000000" print-object="yes" justify="left">St.
       Nm.</part-abbreviation>
     </score-part>
   </part-list>
