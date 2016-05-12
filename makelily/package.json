@@ -61,7 +61,7 @@
     "fs": false
   },
   "scripts": {
-    "build": "make NODE_ENV=production",
+    "build": "make build NODE_ENV=production",
     "build_dev": "make",
     "watch": "make watch",
     "start": "make watch",
