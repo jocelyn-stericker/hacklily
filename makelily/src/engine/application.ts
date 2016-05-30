@@ -20,6 +20,7 @@
  */
 
 import {Pitch} from "musicxml-interfaces";
+import {IAny} from "musicxml-interfaces/operations";
 
 import ISong from "../document/song";
 
@@ -47,7 +48,9 @@ export default class Application {
                 mouseClickHandler: IHandler,
 
                 musicXML: string,
-                pageClassName?: string
+                pageClassName?: string,
+                singleLineMode?: boolean,
+                onOperationsAppended?: (ops: IAny[], isPreview: boolean) => void,
             }) {
         return new Song(options) as ISong;
     }

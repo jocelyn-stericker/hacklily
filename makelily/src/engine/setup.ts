@@ -155,10 +155,10 @@ export function makeFactory() {
             Print,
             Proxy,
             Sound,
-            Spacer
+            Spacer,
         ],
         [
-            VoiceStaffStemDirection
+            VoiceStaffStemDirection,
         ],
         [
             PadPostprocessor,
@@ -167,7 +167,7 @@ export function makeFactory() {
             CenterPostprocessor,
             AttributesPostprocessor,
             TiedsPostprocessor,
-            RemoveOverlapsPostprocessor
+            RemoveOverlapsPostprocessor,
         ]
     );
 }

@@ -10,6 +10,8 @@
         "target": "es5"
     },
     "files": [
-        "./src/index.tsx"
+        "./src/index.tsx",
+        "../typings/browser.d.ts",
+        "../dist/satie.d.ts"
     ]
 }

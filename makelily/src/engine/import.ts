@@ -128,7 +128,7 @@ export function _extractMXMLPartsAndMeasures(input: ScoreTimewise, factory: IFac
         {measures?: IMeasure[]; parts?: string[]; error?: string} {
 
     let parts: string[] = map(scoreParts(input.partList), inPart => inPart.id);
-    let createModel = factory.create.bind(factory);
+    let createModel: typeof factory.create = factory.create.bind(factory);
 
     // TODO/STOPSHIP - sync division count in each measure
     let divisions = 1; // lilypond-regression 41g.xml does not specify divisions
@@ -136,6 +136,8 @@ export function _extractMXMLPartsAndMeasures(input: ScoreTimewise, factory: IFac
     let lastNote: IChord = null;
     let lastAttribs: Attributes = null;
     let maxVoice = 0;
+
+    let fakeUUID = 11; // STOPSHIP: Actually be able to import/export these
 
     let measures: IMeasure[] = map(input.measures,
             (inMeasure, measureIdx) => {
@@ -146,7 +148,7 @@ export function _extractMXMLPartsAndMeasures(input: ScoreTimewise, factory: IFac
             nonControlling: inMeasure.nonControlling,
             number: inMeasure.number,
             parts: <{[key: string]: IMeasurePart}> {},
-            uuid: Math.floor(Math.random() * MAX_SAFE_INTEGER),
+            uuid: ++fakeUUID,
             width: inMeasure.width,
             version: 0
         };
@@ -198,14 +200,17 @@ export function _extractMXMLPartsAndMeasures(input: ScoreTimewise, factory: IFac
 
         // Lets normalize divisions here.
         forEach(linkedParts, part => {
+            let previousDivisions = divisions;
             forEach(part.input, input => {
-                let previousDivisions = 1;
                 if (input.divisions) {
                     previousDivisions = input.divisions;
                     input.divisions = commonDivisions;
                 }
                 if (input.count) {
                     input.count *= commonDivisions / previousDivisions;
+                }
+                if (input.duration) {
+                    input.duration *= commonDivisions / previousDivisions;
                 }
             });
         });
@@ -298,7 +303,7 @@ export function _extractMXMLPartsAndMeasures(input: ScoreTimewise, factory: IFac
                         target.output.staves[staff].ownerType = OwnerType.Staff;
                     }
                     let newModel = factory.fromSpec(input);
-                    syncAppendStaff(staff, newModel);
+                    syncAppendStaff(staff, newModel, input.divisions || divisions);
                     if (input._class === "Attributes") {
                         lastAttribs = <Attributes> input;
                         divisions = lastAttribs.divisions || divisions;
@@ -319,7 +324,7 @@ export function _extractMXMLPartsAndMeasures(input: ScoreTimewise, factory: IFac
                 case "Backup":
                     let backup = <Backup> input;
                     forEach(target.output.staves, (staff, staffIdx) => {
-                        syncAppendStaff(staffIdx, null);
+                        syncAppendStaff(staffIdx, null, input.divisions || divisions);
                     });
                     target.division -= backup.duration;
                     break;
@@ -355,7 +360,7 @@ export function _extractMXMLPartsAndMeasures(input: ScoreTimewise, factory: IFac
 
             // Set divCounts of final elements in staff segments and divisions of all segments
             forEach(target.output.staves, (staff, staffIdx) => {
-                syncAppendStaff(staffIdx, null);
+                syncAppendStaff(staffIdx, null, divisions);
 
                 let segment = target.output.staves[staffIdx];
                 if (segment) {
@@ -370,8 +375,9 @@ export function _extractMXMLPartsAndMeasures(input: ScoreTimewise, factory: IFac
             });
         });
 
-        function syncAppendStaff(staff: number, model: IModel) {
-            const divCount = target.division - (target.divisionPerStaff[staff] || 0);
+        function syncAppendStaff(staff: number, model: IModel, localDivisions: number) {
+            let ratio = localDivisions / divisions || 1;
+            const divCount = ratio * (target.division - (target.divisionPerStaff[staff] || 0));
             let segment = target.output.staves[staff];
             invariant(!!model && !!segment || !model, "Unknown staff %s");
 
@@ -382,9 +388,10 @@ export function _extractMXMLPartsAndMeasures(input: ScoreTimewise, factory: IFac
                         model.divCount = model.divCount || 0;
                         model.divCount += divCount;
                     } else {
-                        let model = createModel(Type.Spacer);
-                        model.divCount = divCount;
-                        model.staff = staff;
+                        let model = createModel(Type.Spacer, {
+                            divCount,
+                            staff
+                        });
                         segment.push(model);
                     }
                 }
@@ -445,7 +452,7 @@ function createStaff(staff: number, output: IMeasurePart) {
  * Parses a MusicXML document and returns a Document.
  */
 export function importXML(src: string, memo: ILinesLayoutState,
-        cb: (error: Error, document?: Document) => void) {
+        cb: (error: Error, document?: Document, factory?: IFactory) => void) {
     requireFont("Bravura", "root://bravura/otf/Bravura.otf");
     requireFont("Alegreya", "root://alegreya/Alegreya-Regular.ttf");
     requireFont("Alegreya", "root://alegreya/Alegreya-Bold.ttf", "bold");
@@ -455,7 +462,7 @@ export function importXML(src: string, memo: ILinesLayoutState,
         } else {
             try {
                 let factory = makeFactory();
-                cb(null, stringToDocument(src, memo, factory));
+                cb(null, stringToDocument(src, memo, factory), factory);
             } catch (err) {
                 cb(err);
             }

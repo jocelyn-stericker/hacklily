@@ -132,7 +132,7 @@ export default function layout(options: ILayoutOptions, memo$: ILinesLayoutState
         remainingWidth: startingWidth,
         startingWidth: startingWidth,
         widthAllocatedForStart: 0,
-        widthAllocatedForEnd: 0
+        widthAllocatedForEnd: 0,
     }).opts;
 
     // layoutLine$ handles the second pass.
@@ -163,22 +163,24 @@ function reduceToLineOpts(memo: IReduceOptsMemo, width: IWidthInformation, idx: 
     memo.thisPrint = updatePrint(options, measures[idx]) || memo.thisPrint;
     memo.opts[memo.opts.length - 1].print$ = memo.thisPrint;
     invariant(!!memo.thisPrint, "No print found");
-    if (width.attributesWidthStart > memo.widthAllocatedForStart) {
-        memo.remainingWidth -= width.attributesWidthStart - memo.widthAllocatedForStart;
-        memo.widthAllocatedForStart = width.attributesWidthStart;
-    }
-    if (width.attributesWidthEnd > memo.widthAllocatedForEnd) {
-        memo.remainingWidth -= width.attributesWidthEnd - memo.widthAllocatedForEnd;
-        memo.widthAllocatedForEnd = width.attributesWidthEnd;
-    }
-    if (memo.remainingWidth > width.width) {
-        memo.remainingWidth -= width.width;
-    } else {
-        memo.opts.push(newLayoutWithoutMeasures(options, memo.thisPrint));
-        memo.remainingWidth = memo.startingWidth - width.width -
-            width.attributesWidthStart - width.attributesWidthEnd;
-        memo.widthAllocatedForStart = width.attributesWidthStart;
-        memo.widthAllocatedForEnd = width.attributesWidthEnd;
+    if (!memo.options.singleLineMode) {
+        if (width.attributesWidthStart > memo.widthAllocatedForStart) {
+            memo.remainingWidth -= width.attributesWidthStart - memo.widthAllocatedForStart;
+            memo.widthAllocatedForStart = width.attributesWidthStart;
+        }
+        if (width.attributesWidthEnd > memo.widthAllocatedForEnd) {
+            memo.remainingWidth -= width.attributesWidthEnd - memo.widthAllocatedForEnd;
+            memo.widthAllocatedForEnd = width.attributesWidthEnd;
+        }
+        if (memo.remainingWidth > width.width) {
+            memo.remainingWidth -= width.width;
+        } else {
+            memo.opts.push(newLayoutWithoutMeasures(options, memo.thisPrint));
+            memo.remainingWidth = memo.startingWidth - width.width -
+                width.attributesWidthStart - width.attributesWidthEnd;
+            memo.widthAllocatedForStart = width.attributesWidthStart;
+            memo.widthAllocatedForEnd = width.attributesWidthEnd;
+        }
     }
     memo.opts[memo.opts.length - 1].measures.push(measures[idx]);
     memo.opts[memo.opts.length - 1].line = memo.opts.length - 1;
@@ -204,7 +206,8 @@ function newLayoutWithoutMeasures(options: ILayoutOptions, print: Print): ILayou
         modelFactory: options.modelFactory,
         preprocessors: options.preprocessors,
         postprocessors: options.postprocessors,
-        fixup: options.fixup
+        fixup: options.fixup,
+        singleLineMode: options.singleLineMode
     };
 }
 

@@ -102,7 +102,11 @@ class Factory implements IFactory {
             spec = JSON.parse(<string> spec);
         }
         if (!("_class" in spec)) {
-            invariant(false, "fromSpec requires an MXMLJSON spec with a defined class");
+            if (spec[0]._class === "Note") {
+                spec._class = "Chord";
+            } else {
+                invariant(false, "fromSpec requires an MXMLJSON spec with a defined class");
+            }
         }
         let sclass: Type = <any> Type[spec._class];
         if (!(sclass in this._constructors)) {

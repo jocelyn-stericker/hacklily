@@ -99,6 +99,28 @@ class BarlineModel implements Export.IBarlineModel {
                 data: NaN
             };
         }
+        let divs = cursor$.staff.totalDivisions - cursor$.division$;
+        if (divs > 0) {
+            const patches: IAny[] = [];
+            const measure = cursor$.measure;
+            const segment = cursor$.segment;
+            patches.push({
+                p: [
+                    String(measure.uuid),
+                    "parts",
+                    segment.part,
+                    "staves",
+                    segment.owner,
+                    cursor$.idx$
+                ],
+                li: {
+                    _class: Type[Type.Spacer],
+                    divCount: divs
+                }
+            });
+            cursor$.division$ += divs;
+            cursor$.fixup(patches);
+        }
         if (!this.barStyle.color) {
             this.barStyle.color = "black";
         }

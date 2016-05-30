@@ -36,8 +36,7 @@ export function calculate(print: Print, page: number): ILineBounds {
     let pageMargins = getPageMargins(pageLayout.pageMargins, page);
     let systemMargins = print.systemLayout.systemMargins;
     let startX = systemMargins.leftMargin + pageMargins.leftMargin;
-    let endX = systemMargins.rightMargin + pageLayout.pageWidth -
-            pageMargins.rightMargin;
+    let endX = systemMargins.rightMargin + pageLayout.pageWidth - pageMargins.rightMargin;
 
     return {
         left: startX,

@@ -21,7 +21,7 @@
 
 import {ScoreHeader, Print} from "musicxml-interfaces";
 import {createFactory as $, Component, DOM, MouseEvent, PropTypes} from "react";
-import {map, filter, forEach} from "lodash";
+import {map, filter, forEach, last} from "lodash";
 import * as invariant from "invariant";
 
 import IModel, {generateKey} from "../document/model";
@@ -29,6 +29,8 @@ import IModel, {generateKey} from "../document/model";
 import ILineLayoutResult from "../private/lineLayoutResult";
 import RenderTarget from "../private/renderTargets";
 import {tenthsToMM} from "../private/renderUtil";
+import {getPageMargins} from "../private/print";
+import {calculate as calculateLineBounds} from "../private/lineBounds";
 
 import MeasureView from "../implMeasure/measureView";
 
@@ -40,6 +42,7 @@ export interface IProps {
     lineLayouts: ILineLayoutResult[];
     renderTarget: RenderTarget;
     className: string;
+    singleLineMode?: boolean;
 
     onClick?: (evt: MouseEvent) => void;
     onMouseDown?: (evt: MouseEvent) => void;
@@ -57,6 +60,10 @@ export default class Page extends Component<IProps, void> {
 
     render(): any {
 
+        /*--- Staves ----------------------------------------------*/
+
+        const lineLayouts = this.props.lineLayouts;
+
         /*--- General ---------------------------------------------*/
 
         const print = this.props.print;
@@ -72,9 +79,17 @@ export default class Page extends Component<IProps, void> {
         const heightMM = this.props.renderTarget === RenderTarget.SvgExport ?
                                 tenthsToMM(scale40, print.pageLayout.pageHeight) + "mm" : "100%";
 
-        /*--- Staves ----------------------------------------------*/
+        const firstLineBounds = calculateLineBounds(print, 0);
 
-        const lineLayouts = this.props.lineLayouts;
+        const pageWidth = this.props.singleLineMode ?
+            last(lineLayouts[0]).originX + last(lineLayouts[0]).width +
+                getPageMargins(print.pageLayout.pageMargins, 0).rightMargin :
+            print.pageLayout.pageWidth;
+
+        const pageHeight = this.props.singleLineMode ?
+            firstLineBounds.systemLayout.topSystemDistance +
+                firstLineBounds.systemLayout.systemDistance*2 :
+            print.pageLayout.pageHeight;
 
         /*--- Credits ---------------------------------------------*/
 
@@ -86,6 +101,9 @@ export default class Page extends Component<IProps, void> {
         return DOM.svg(
             {
                 className: this.props.className,
+                style: {
+                    width: "auto",
+                },
                 "data-page": this.props.renderTarget === RenderTarget.SvgExport ?
                     undefined : print.pageNumber,
                 height: heightMM,
@@ -95,10 +113,10 @@ export default class Page extends Component<IProps, void> {
                 onMouseMove: this.props.onMouseMove,
                 onMouseUp: this.props.onMouseUp,
                 ref: "svg" + print.pageNumber,
-                viewBox: `0 0 ${print.pageLayout.pageWidth} ${print.pageLayout.pageHeight}`,
+                viewBox: `0 0 ${pageWidth} ${pageHeight}`,
                 width: widthMM
             },
-            map(credits, <any> $(CreditView)),
+            !this.props.singleLineMode && map(credits, <any> $(CreditView)),
             map(lineLayouts, (lineLayout, lineIdx) =>
                 map(lineLayout, measureLayout =>
                     $(MeasureView)({

@@ -24,7 +24,7 @@
  */
 
 import {Note, Count, TimeModification, Tie, Clef, Rest, Time, MxmlAccidental,
-    Notehead, NoteheadType, Notations, Articulations, Tied, Pitch} from "musicxml-interfaces";
+    Notehead, NoteheadType, Notations, Articulations, Tied, Pitch, Beam} from "musicxml-interfaces";
 import {any, find, forEach, times, map, reduce, filter, chain} from "lodash";
 import * as invariant from "invariant";
 
@@ -114,9 +114,12 @@ export function setTies$(chord$: IChord, ties: Tie[]) {
     });
 }
 
-export function inBeam(chord: IChord): boolean {
-    // TODO: not implemented. Will likely involve hacks.
-    return false;
+export function beams(chord: IChord): Beam[] {
+    let target = find(chord, note => !!note.beams);
+    if (target) {
+        return target.beams;
+    }
+    return null;
 }
 
 export function hasFlagOrBeam(chord: IChord): boolean {

@@ -16,6 +16,6 @@
         "./src/index.ts",
         "./src/tests.ts",
         "./src/cli.ts",
-        "./typings/tsd.d.ts"
+        "./typings/browser.d.ts"
     ]
 }

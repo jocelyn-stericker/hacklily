@@ -90,9 +90,6 @@ function attributes(options: ILayoutOptions, bounds: ILineBounds,
                     if (attributesByPart[partKey]) {
                         let targets = targetsByPart[partKey] || [];
                         let targetIdx = sortedIndex(targets, element.x$ + measureStartX) - 1;
-                        if (!isBarlineByPart[partKey]) {
-                            console.log("IS_BARLINE", isBarlineByPart, partKey);
-                        }
                         targetIsBarline = isBarlineByPart[partKey][targetIdx];
                         if (!targetIsBarline) {
                             targetIdx++;

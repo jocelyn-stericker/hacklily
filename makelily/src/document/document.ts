@@ -23,6 +23,7 @@ import {createFactory as $, ReactElement} from "react";
 import {renderToStaticMarkup} from "react-dom/server";
 
 import {ScoreHeader, Print} from "musicxml-interfaces";
+import {IAny} from "musicxml-interfaces/operations";
 import {find} from "lodash";
 
 import IMeasure from "./measure";
@@ -132,7 +133,8 @@ export class Document implements IDocument {
     renderToStaticMarkup(startMeasure: number): string {
         let top = this.getTop(0, 0);
         let memo$ = newLayoutState(top);
-        const core = renderToStaticMarkup(this.__getPage(startMeasure, memo$, false));
+        const core = renderToStaticMarkup(
+            this.__getPage(startMeasure, memo$, false, RenderTarget.SvgExport, null, false));
 
         return `<?xml version="1.0" encoding="UTF-8" standalone="no"?>${
             core.replace("<svg", "<svg xmlns=\"http://www.w3.org/2000/svg\"")
@@ -161,7 +163,8 @@ export class Document implements IDocument {
      * Invariant: document must be validated.
      */
     __getPage: (startMeasure: number, memo$: ILinesLayoutState, preview: boolean,
-        renderTarget?: RenderTarget, pageClassName?: string) => ReactElement<any>;
+        renderTarget?: RenderTarget, pageClassName?: string, singleLineMode?: boolean,
+        onOperationsAppended?: (ops: IAny[]) => void) => ReactElement<any>;
 
     constructor(header: ScoreHeader, measures: IMeasure[], parts: string[],
             internalFactory: IFactory, error?: Error) {
@@ -181,7 +184,8 @@ export class Document implements IDocument {
 
         this.__getPage = (startMeasure: number,
                 memo$: ILinesLayoutState, preview: boolean, renderTarget = RenderTarget.SvgExport,
-                pageClassName = ""): ReactElement<any> => {
+                pageClassName = "", singleLineMode?: boolean,
+                onOperationsAppended?: (ops: IAny[]) => void): ReactElement<any> => {
 
             let print = this.getPrint(startMeasure);
 
@@ -198,7 +202,10 @@ export class Document implements IDocument {
                 preprocessors: [],
                 print$: print,
                 preview,
-                fixup: null
+                singleLineMode,
+                fixup: onOperationsAppended ? (segment, patch) => {
+                    onOperationsAppended(patch);
+                } : null,
             };
 
             validate(opts, memo$);
@@ -209,7 +216,8 @@ export class Document implements IDocument {
                 lineLayouts: lineLayouts,
                 print: print,
                 renderTarget: renderTarget,
-                scoreHeader: this.header
+                scoreHeader: this.header,
+                singleLineMode,
             });
         };
     }

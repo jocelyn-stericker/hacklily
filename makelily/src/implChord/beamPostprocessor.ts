@@ -29,6 +29,8 @@ import * as invariant from "invariant";
 
 import Type from "../document/types";
 
+import ChordModel from "../implChord/chordModel";
+
 import IMeasureLayout from "../private/measureLayout";
 import ILayout from "../private/layout";
 import ILayoutOptions from "../private/layoutOptions";
@@ -37,7 +39,7 @@ import IAttributesSnapshot from "../private/attributesSnapshot";
 import IChord, {averageLine, startingLine, linesForClef,
     heightDeterminingLine} from "../private/chord";
 
-import ChordImpl from "./chordImpl";
+type IDetachedChordModel = ChordModel.IDetachedChordModel;
 
 interface IMutableBeam {
     number: number;
@@ -170,6 +172,7 @@ function beam(options: ILayoutOptions, bounds: ILineBounds,
                     activeBeams[voice] = activeBeams[voice] || [];
                     switch (beam.type) {
                         case BeamType.Begin:
+                        case BeamType.BackwardHook:
                         case BeamType.ForwardHook:
                             activeBeams[voice] = activeBeams[voice] || [];
                             if (activeBeams[voice][idx]) {
@@ -190,23 +193,10 @@ function beam(options: ILayoutOptions, bounds: ILineBounds,
                             if (idx !== 1) {
                                 counts[counts.length - 1]++;
                             }
-                            break;
-                        case BeamType.Continue:
-                            invariant(voice in activeBeams,
-                                "Cannot continue non-existant beam (no beam at all " +
-                                "in current voice %s)", voice);
-                            invariant(idx in activeBeams[voice], "Cannot continue non-existant " +
-                                "beam (no beam at level %s in voice %s)", idx, voice);
-                            activeBeams[voice][idx].elements.push(layout);
-
-                            counts = activeBeams[voice][1].counts;
-                            if (idx === 1) {
-                                counts.push(1);
-                            } else {
-                                counts[counts.length - 1]++;
+                            if (beam.type === BeamType.Begin) {
+                                break;
                             }
-                            break;
-                        case BeamType.BackwardHook:
+                            // Passthrough for BackwardHook and ForwardHook, which are single note things
                         case BeamType.End:
                             invariant(voice in activeBeams, "Cannot end non-existant beam " +
                                 "(no beam at all in current voice %s)", voice);
@@ -216,10 +206,12 @@ function beam(options: ILayoutOptions, bounds: ILineBounds,
 
                             counts = activeBeams[voice][1].counts;
 
-                            if (idx === 1) {
-                                counts.push(1);
-                            } else {
-                                counts[counts.length - 1]++;
+                            if (beam.type === BeamType.End) {
+                                if (idx === 1) {
+                                    counts.push(1);
+                                } else {
+                                    counts[counts.length - 1]++;
+                                }
                             }
                             toTerminate.push({
                                 voice: voice,
@@ -243,6 +235,21 @@ function beam(options: ILayoutOptions, bounds: ILineBounds,
                                     counts: activeBeams[voice][idx].counts.slice(),
                                     tuplet: groupTuplet
                                 };
+                            }
+                            break;
+                        case BeamType.Continue:
+                            invariant(voice in activeBeams,
+                                "Cannot continue non-existant beam (no beam at all " +
+                                "in current voice %s)", voice);
+                            invariant(idx in activeBeams[voice], "Cannot continue non-existant " +
+                                "beam (no beam at level %s in voice %s)", idx, voice);
+                            activeBeams[voice][idx].elements.push(layout);
+
+                            counts = activeBeams[voice][1].counts;
+                            if (idx === 1) {
+                                counts.push(1);
+                            } else {
+                                counts[counts.length - 1]++;
                             }
                             break;
                         default:
@@ -278,7 +285,7 @@ function terminateBeam$(voice: number, idx: number, beamSet$: BeamSet, isUnbeame
 
 function layoutBeam$(voice: number, idx: number, beamSet$: BeamSet, isUnbeamedTuplet: boolean) {
     let beam = beamSet$[voice][idx];
-    let chords: ChordImpl[] = map(beam.elements, eLayout => <any> eLayout.model);
+    let chords: IDetachedChordModel[] = map(beam.elements, eLayout => <any> eLayout.model);
     let firstChord = first(chords);
     let lastChord = last(chords);
     let {clef} = beam.attributes;
@@ -347,11 +354,11 @@ function layoutBeam$(voice: number, idx: number, beamSet$: BeamSet, isUnbeamedTu
             let stemStart = startingLine(chord, direction, clef);
             let stemHeight = getStemHeight(direction, idx, stemStart);
 
-            chord.satieStem = firstChord.satieStem ? Object.create(firstChord.satieStem) : {};
-            chord.satieStem.direction = direction;
-            chord.satieStem.stemStart = stemStart;
+            chord.baseModel.satieStem = firstChord.baseModel.satieStem ? Object.create(firstChord.baseModel.satieStem) : {};
+            chord.baseModel.satieStem.direction = direction;
+            chord.baseModel.satieStem.stemStart = stemStart;
             if (isFinite(stemHeight)) {
-                chord.satieStem.stemHeight = stemHeight;
+                chord.baseModel.satieStem.stemHeight = stemHeight;
             } else {
                 invariant(chords.length === 1, "stemHeight must be defined for 2+ notes");
             }
@@ -359,10 +366,10 @@ function layoutBeam$(voice: number, idx: number, beamSet$: BeamSet, isUnbeamedTu
         let tuplet: Tuplet = Object.create(beam.tuplet);
         tuplet.placement = direction > 0 ? AboveBelow.Above : AboveBelow.Below;
 
-        let firstStem = firstChord.satieStem;
-        let lastStem = lastChord.satieStem;
+        let firstStem = firstChord.baseModel.satieStem;
+        let lastStem = lastChord.baseModel.satieStem;
 
-        firstChord.satieUnbeamedTuplet = {
+        firstChord.baseModel.satieUnbeamedTuplet = {
             beamCount: null,
             direction: direction,
             x: Xs,
@@ -374,18 +381,18 @@ function layoutBeam$(voice: number, idx: number, beamSet$: BeamSet, isUnbeamedTu
         forEach(chords, (chord, idx) => {
             let stemStart = startingLine(chord, direction, clef);
 
-            chord.satieStem = firstChord.satieStem ? Object.create(firstChord.satieStem) : {};
-            chord.satieStem.direction = direction;
-            chord.satieStem.stemStart = stemStart;
-            chord.satieStem.stemHeight = getStemHeight(direction, idx, stemStart);
+            chord.baseModel.satieStem = firstChord.baseModel.satieStem ? Object.create(firstChord.baseModel.satieStem) : {};
+            chord.baseModel.satieStem.direction = direction;
+            chord.baseModel.satieStem.stemStart = stemStart;
+            chord.baseModel.satieStem.stemHeight = getStemHeight(direction, idx, stemStart);
 
-            chord.satieFlag = null;
+            chord.baseModel.satieFlag = null;
         });
 
-        let firstStem = firstChord.satieStem;
-        let lastStem = lastChord.satieStem;
+        let firstStem = firstChord.baseModel.satieStem;
+        let lastStem = lastChord.baseModel.satieStem;
 
-        firstChord.satieBeam = {
+        firstChord.baseModel.satieBeam = {
             beamCount: times(Xs.length, idx => beam.counts[idx]),
             direction: direction,
             x: Xs,

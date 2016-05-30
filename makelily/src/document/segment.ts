@@ -24,6 +24,9 @@ import {lcm} from "../private/util";
 
 import IModel from "./model";
 import OwnerType from "./ownerTypes";
+import IFactory from "../private/factory";
+import Type from "./types";
+import {fromModel as chordFromModel} from "../private/chord";
 
 interface ISegment extends Array<IModel> {
     owner: number;
@@ -39,7 +42,8 @@ export default ISegment;
  * 
  * Returns the division count.
  */
-export function normalizeDivisionsInPlace(segments$: ISegment[], factor: number = 0): number {
+export function normalizeDivisionsInPlace(factory: IFactory,
+                                          segments$: ISegment[], factor: number = 0): number {
     let divisions: number = reduce(segments$, (div1, seg) => {
         if (!div1) {
             return 1;
@@ -61,9 +65,22 @@ export function normalizeDivisionsInPlace(segments$: ISegment[], factor: number 
                 model.divCount *= ratio;
             }
 
+            if (factory.modelHasType(model, Type.Chord)) {
+                let chordi = chordFromModel(model);
+                forEach(chordi, note => {
+                    if (note.duration) {
+                        note.duration *= ratio;
+                    }
+                });
+            }
+
             if (model.divisions) {
                 ratio = divisions / model.divisions;
-                model.divisions = divisions;
+                try {
+                    model.divisions = divisions;
+                } catch(err) {
+                    console.warn("Could not set divisions");
+                }
             }
         });
     });

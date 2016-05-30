@@ -169,14 +169,15 @@ const TESTS = [
     "99a",
     "99b"
 ];
-class Tests extends Component<{params: {id: string}}, void> {
+class Tests extends Component<{params: {id: string}, location: {query: {mode: string}}}, void> {
     render() {
-        let filter = this.props.params ? this.props.params.id : null;
-        let cat = reduce(TESTS, (memo, testName) => {
+        const isSingleLine = this.props.location.query.mode === "singleline";
+        const filter = this.props.params ? this.props.params.id : null;
+        const cat = reduce(TESTS, (memo, testName) => {
             let type = testName.substr(0, 2);
             let link = filter ?
                 null :
-                <Link to={`${prefix}/tests/${type}`}>
+                <Link to={`${prefix}/tests/${type}/?mode=${isSingleLine ? "singleline" : "page"}`}>
                         <button>hide others</button></Link>;
             if (type !== memo.type && (!filter || type.indexOf(filter) === 0)) {
                 memo.acc.push(<h2 key={type}>
@@ -184,7 +185,7 @@ class Tests extends Component<{params: {id: string}}, void> {
             }
             if (!filter || testName.indexOf(filter) === 0) {
                 memo.acc.push(
-                        <Test showFilterButton={testName !== filter} name={testName}
+                        <Test singleLine={isSingleLine} showFilterButton={testName !== filter} name={testName}
                     key={testName} filename={"/lilypond-regression/" + testName + ".xml"} />);
             }
             return {
@@ -204,17 +205,29 @@ module Tests {
             return <span>Satie &ndash; LilyPond Test Suite</span>;
         }
     }
-    export class Description extends Component<{params: {id: string}}, void> {
+    export class Description extends Component<{params: {id: string}, location: {query: {mode: string}}}, void> {
         render() {
             let filter = this.props.params ? this.props.params.id : null;
             if (filter) {
-                let link = filter.length > 1 ? `${prefix}/tests/${filter.substr(0, filter.length - 1)}` : "/tests";
+                const isSingleLine = this.props.location.query.mode === "singleline";
+                const showMoreLink = filter.length > 1 ?
+                    `${prefix}/tests/${filter.substr(0, filter.length - 1)}/?mode=${isSingleLine ? "singleline" : "page"}` :
+                    `/tests?mode=${isSingleLine ? "singleline" : "page"}`;
+                const swapModeLink = `${prefix}/tests/${filter}?mode=${isSingleLine ? "page": "singleline"}`;
 
                 return <span>
                     <code>Filter: {`"${filter}"`}</code>&nbsp;&nbsp;
-                    <Link to={link}>
+                    <Link to={showMoreLink}>
                         <button>
                             {filter.length > 1 ? "show more" : "show all"}
+                        </button>
+                    </Link><br />
+                    <code>Render: {`"${isSingleLine ? "Single line" : "Page"}"`}</code>&nbsp;&nbsp;
+                    <Link to={swapModeLink}>
+                        <button>
+                            {isSingleLine ?
+                                "render full pages" :
+                                "render single lines"}
                         </button>
                     </Link>
                 </span>;

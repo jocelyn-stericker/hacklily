@@ -199,7 +199,5 @@ export function keyWidths(spec: Key) {
             default:
                 throw new Error("Impossible.");
         }
-
-        return 10;
     }
 }

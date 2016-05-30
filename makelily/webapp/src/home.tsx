@@ -13,7 +13,7 @@ class Home extends Component<void, void> {
             component of <a href="https://ripieno.io">Ripieno</a>, a collaborative sheet
             music editor. Satie isn't ready for production use, yet.
             </p>
-            <Test chrome={false} name="01a" filename={"/lilypond-regression/01a.xml"} />
+            <Test singleLine={false} chrome={false} name="01a" filename={"/lilypond-regression/01a.xml"} />
             <Link to={`${prefix}/tests`}><button>Run test suite »</button></Link>
         </div>;
     }

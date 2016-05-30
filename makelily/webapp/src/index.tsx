@@ -1,22 +1,17 @@
-/// <reference path="../../typings/tsd.d.ts" />
-/// <reference path="../../dist/satie.d.ts" />
 
 import * as React from "react";
 import {render} from "react-dom";
-import {Router, Route, Redirect} from "react-router";
-
-const createBrowserHistory = require("history/lib/createBrowserHistory");
+import {Router, Route, Redirect, browserHistory} from "react-router";
 
 import App from "./app";
 import Home from "./home";
 import Tests from "./tests";
+import Sandbox from "./sandbox";
 
 let prefix = process.env.PLAYGROUND_PREFIX || "";
 
-let history = createBrowserHistory();
-
 let rootInstance = render(
-    <Router history={history}>
+    <Router history={browserHistory}>
         <Route component={App} path="">
             <Route path={`${prefix}/tests`}
                 components={{
@@ -38,6 +33,12 @@ let rootInstance = render(
                     header: Home.Header,
                     description: Home.Description
                 }} />
+            <Route path={`${prefix}/sandbox`}
+                components={{
+                    main: Sandbox,
+                    header: Sandbox.Header
+                }} />
+            <Redirect from={`${prefix}/sandbox/`} to={`${prefix}/sandbox`} />
             <Route path="*"
                 components={{
                     main: Home,

@@ -33,6 +33,7 @@ import RenderTarget from "../private/renderTargets";
 import {newLayoutState} from "../private/linesLayoutState";
 import {pitchForClef} from "../private/chord";
 import {get as getByPosition} from "../private/views/metadata";
+import IFactory from "../private/factory";
 
 import {importXML} from "./import";
 import {exportXML} from "./export";
@@ -86,7 +87,7 @@ export default class Song implements ISong {
         throw new Error(NOT_READY_ERROR);
     };
 
-    toReactElement = (): ReactElement<any> => {
+    toReactElement = (height?: number): ReactElement<any> => {
         throw new Error(NOT_READY_ERROR);
     };
 
@@ -104,6 +105,8 @@ export default class Song implements ISong {
                 changeHandler: () => void,
                 mouseMoveHandler: IHandler,
                 mouseClickHandler: IHandler,
+                singleLineMode?: boolean,
+                onOperationsAppended?: (ops: IAny[], isPreview: boolean) => void,
 
                 musicXML: string,
                 pageClassName?: string
@@ -113,7 +116,7 @@ export default class Song implements ISong {
         invariant(isObject(options), INVALID_OPTIONS_ERROR);
 
         const {errorHandler, changeHandler, mouseMoveHandler, mouseClickHandler,
-            musicXML, pageClassName} = options;
+            musicXML, pageClassName, singleLineMode, onOperationsAppended} = options;
 
         invariant(isFunction(errorHandler), INVALID_OPTIONS_ERROR);
         invariant(isString(musicXML), INVALID_OPTIONS_ERROR);
@@ -123,6 +126,7 @@ export default class Song implements ISong {
         invariant(isFunction(mouseClickHandler), INVALID_OPTIONS_ERROR);
 
         let document: Document;
+        let factory: IFactory;
         let operations: IAny[] = [];
         let memo = newLayoutState(NaN);
         let preview: boolean = false;
@@ -146,14 +150,14 @@ export default class Song implements ISong {
             let initialCommon = commonVersion();
             if (operations.length > initialCommon) {
                 forEach(invert(operations.slice(initialCommon)), (op) => {
-                    applyOp(document, op, memo);
+                    applyOp(document.measures, factory, op, memo);
                     operations.pop();
                 });
             }
 
             if (operations.length < newOperations.length) {
                 forEach(newOperations.slice(operations.length), (op) => {
-                    applyOp(document, op, memo);
+                    applyOp(document.measures, factory, op, memo);
                     operations.push(op);
                 });
             }
@@ -241,18 +245,34 @@ export default class Song implements ISong {
                 }
             };
 
-            this.toReactElement = () => {
+            this.toReactElement = (height?: number) => {
                 const targetType = RenderTarget.SvgWeb;
-                const page1 = document.__getPage(0, memo, preview, targetType, pageClassName || "");
+                const page1 = document.__getPage(
+                    0,
+                    memo,
+                    preview,
+                    targetType,
+                    pageClassName || "",
+                    singleLineMode,
+                    (ops: IAny[]) => {
+                        rectify(operations.concat(ops));
+                        onOperationsAppended(ops, preview);
+                    });
+                const style: any = singleLineMode ? {
+                    height: height || "100%",
+                    overflowX: "scroll",
+                    overflowY: "hidden",
+                }: {};
                 return createElement("div", {
                         onMouseMove: handleMouseMove,
-                        onClick: handleClick
+                        onClick: handleClick,
+                        style,
                     } as any, page1);
             };
 
             this.toSVG = (cb: (err: Error, svg: string) => void) => {
                 try {
-                    cb(null, this.getDocument().renderToStaticMarkup(0));
+                    cb(null, document.renderToStaticMarkup(0));
                 } catch(err) {
                     cb(err, null);
                 }
@@ -276,11 +296,12 @@ export default class Song implements ISong {
             defer(changeHandler);
         };
 
-        importXML(musicXML, memo, (error, loadedDocument) => {
+        importXML(musicXML, memo, (error, loadedDocument, loadedFactory) => {
             if (error) {
                 errorHandler(error);
             } else {
                 document = loadedDocument;
+                factory = loadedFactory;
                 setup();
             }
         });

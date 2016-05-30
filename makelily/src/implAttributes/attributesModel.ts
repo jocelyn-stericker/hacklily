@@ -87,6 +87,10 @@ class AttributesModel implements Export.IAttributesModel {
     }
 
     __validate(cursor$: ICursor): void {
+        if (this._parent && this._parent !== cursor$.staff.attributes) {
+            // STOPSHIP: This will break when a model is inserted in the middle of nowhere.
+            cursor$.staff.attributes = this._parent;
+        }
         this._parent = cursor$.staff.attributes || <IAttributesSnapshot> {};
 
         if (!this._parent.divisions) {

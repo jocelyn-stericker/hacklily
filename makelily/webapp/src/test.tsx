@@ -7,7 +7,7 @@ import {find, defer} from "lodash";
 import {prefix} from "./config";
 const STYLES = require("./test.css");
 
-let satieApplication = new Application({
+export let satieApplication = new Application({
     satieRoot: location.protocol + "//" + location.host + prefix + "/vendor/",
     preloadedFonts: ["Alegreya", "Alegreya (bold)"]
 });
@@ -18,6 +18,7 @@ export interface IProps {
     name: string;
     showFilterButton?: boolean;
     filename: string;
+    singleLine: boolean;
 }
 
 export interface IState {
@@ -35,14 +36,15 @@ export default class Test extends Component<IProps, IState> {
     };
 
     render() {
+        const isSingleLine = this.props.singleLine;
         let chrome = this.props.chrome !== false;
         let showFilterButton = chrome && this.props.showFilterButton;
         let link = showFilterButton ?
-            <Link to={`${prefix}/tests/${this.props.name}`}>
+            <Link to={`${prefix}/tests/${this.props.name}/?mode=${isSingleLine ? "singleline" : "page"}`}>
                     <button>hide others</button></Link> : null;
         if (this.state.error) {
             let errStr = "" + (this.state.error as any).stack.toString();
-            let lines = errStr.split("\n").map(s => <div>{s}</div>);
+            let lines = errStr.split("\n").map((s, idx) => <div key={idx}>{s}</div>);
             return <div className={STYLES.test}>
                 <h3>Test {this.state.filename}&nbsp;&nbsp;{link}</h3>
                 <code className={STYLES.error}>
@@ -95,7 +97,7 @@ export default class Test extends Component<IProps, IState> {
 
     componentDidUpdate(prevProps: IProps, prevState: IState) {
         let prefix = process.env.PLAYGROUND_PREFIX || "";
-        if (!this.state.src) {
+        if (!this.state.src || (prevProps.singleLine !== this.props.singleLine)) {
             let request = new XMLHttpRequest();
             request.open("GET", prefix + this.state.filename);
             request.onload = () => {
@@ -124,8 +126,9 @@ export default class Test extends Component<IProps, IState> {
                         mouseMoveHandler: () => void 0,
                         mouseClickHandler: () => void 0,
                         musicXML: request.responseText,
-                        pageClassName: STYLES.page
-                    })
+                        pageClassName: !this.props.singleLine && STYLES.page,
+                        singleLineMode: this.props.singleLine,
+                    }),
                 });
             };
             request.send();

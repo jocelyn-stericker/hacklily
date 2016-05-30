@@ -44,6 +44,7 @@ interface ILayoutOptions {
     preprocessors: IPreprocessor[];
     postprocessors: IPostprocessor[];
     fixup: (segment: ISegment, operations: IAny[]) => void;
+    singleLineMode?: boolean;
 }
 
 export default ILayoutOptions;

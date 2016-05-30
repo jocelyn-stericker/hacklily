@@ -248,7 +248,7 @@ export function getTextBB(name: string, text: string, fontSize: number, style?: 
 }
 
 export let toPathData = memoize(function(name: string, text: string,
-        x: number, y: number, fontSize: number, style?: string) {
+        x: number, y: number, fontSize: number, style?: string): string {
     let fullName = getFullName(name, style);
     let font = State.fonts[fullName];
     if (!font) {

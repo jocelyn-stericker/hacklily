@@ -1,6 +1,5 @@
 var webpack = require("webpack");
 var path = require("path");
-var autoprefixer = require("autoprefixer");
 var cssnext = require("postcss-cssnext");
 var cssimport = require("postcss-import");
 
@@ -9,7 +8,7 @@ var host = "localhost";
 
 module.exports = {
     entry: [
-        `webpack-dev-server/client?http://${host}:port`,
+        `webpack-dev-server/client?http://${host}:${port}`,
         "webpack/hot/dev-server",
         "./dist/index.js"
     ],
@@ -23,7 +22,22 @@ module.exports = {
         "react-dom": "ReactDOM",
         "react-dom/server": "ReactDOMServer",
         "satie": "Satie",
+        "musicxml-interfaces": "Satie.MusicXML",
+        "musicxml-interfaces/operations": "Satie.MusicXML_Operations",
+        "musicxml-interfaces/builders": "Satie.MusicXML_Builders",
         "lodash": "_"
+    },
+    resolve: {
+        modulesDirectories: [
+            "node_modules",
+            "./webapp/node_modules",
+        ]
+    },
+    resolveLoader: {
+        modulesDirectories: [
+            "node_modules",
+            "./webapp/node_modules",
+        ]
     },
     module: {
         preLoaders: [
@@ -54,7 +68,6 @@ module.exports = {
         }),
         cssnext({
         }),
-        autoprefixer({ browsers: ['last 2 version'] })
     ],
     plugins: [
         new webpack.DefinePlugin({

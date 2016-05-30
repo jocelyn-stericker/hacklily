@@ -33,7 +33,7 @@ import FrozenLevel from "../document/frozenLevels";
 
 import ICursor, {curr as modelAt, splice$} from "./cursor";
 import IChord, {fromModel as chordFromModel, timeModification, ties, setCount$,
-    setTies$, setTimeModification$, setDots$, count, dots, rest, inBeam} from "./chord";
+    setTies$, setTimeModification$, setDots$, count, dots, rest, beams} from "./chord";
 import {findIndex, cloneObject} from "./util";
 
 const _512 = makeDuration({ count: 512 });
@@ -61,6 +61,17 @@ const _1 = makeDuration({ count: 1 });
 const _1D = makeDuration({ count: 1, dots: 1 }); // TODO: conditionally include on allNotes
 const _1DD = makeDuration({ count: 1, dots: 2 }); // TODO: conditionally include on allNotes
 const _05 = makeDuration({ count: 1 / 2 }); // TODO: conditionally include on allNotes
+
+export interface IMicroCursor {
+    division$: number;
+    staff: {
+        attributes: {
+            time: Time;
+            divisions: number;
+        };
+        totalDivisions: number;
+    };
+}
 
 const allNotes = [_1, _2D, _2,
     _4DD, _4D, _4, _8DD, _8D, _8, _16DD, _16D, _16, _32D,
@@ -391,7 +402,7 @@ export function rhythmicSpellcheck$(cursor$: ICursor): boolean {
  * @internal
  */
 function merge$(curr: IChord, next: IChord, index: number, cursor$: ICursor) {
-    if (inBeam(next)) { // TODO: what if both are in beam?
+    if (beams(next)) { // TODO: what if both are in beam?
         return false;
     }
     let replaceWithMaybe = add(curr, next, cursor$);
@@ -448,7 +459,7 @@ function clearExcessBeats(currNote: IChord, excessBeats: number, cursor$: ICurso
  * @returns a TS string for lookup in the BEAMING_PATTERNS array.
  */
 export function getTSString(time: Time) {
-    invariant(!!time, "Time is not defined for getTSString");
+    invariant(!!time, "Expected time to be defined.");
     return reduce(time.beats, (memo, beats, idx) => {
         return beats + "/" + time.beatTypes[idx];
 
@@ -507,19 +518,17 @@ export function add(durr1: any, durr2: IChord,
  * @param beatOffset number of beats after the current beat that durr1 is located.
  */
 export function subtract(durr1: IChord, beats: number,
-    cursor: ICursor, beatOffset?: number): IChord[];
+    cursor: IMicroCursor, beatOffset?: number): IChord[];
 /**
  * @returns an array of Duration specs that is the result of subtracting "beats" from "durr1".
  * 
  * @param beatOffset number of beats after the current beat that durr1 is located.
  */
 export function subtract(durr1: number, beats: number,
-    cursor: ICursor, beatOffset?: number): IChord[];
+    cursor: IMicroCursor, beatOffset?: number): IChord[];
 
 export function subtract(durr1: any, divisions: number,
-        cursor: ICursor, divisionOffset: number = 0): IChord[] {
-
-    console.log(cursor.staff.attributes.time);
+        cursor: IMicroCursor, divisionOffset: number = 0): IChord[] {
 
     let replaceWith: IChord[] = [];
     let durr1Divisions: number = isNaN(<any>durr1) ? calcDivisions(durr1, cursor) : <number> durr1;
@@ -533,11 +542,11 @@ export function subtract(durr1: any, divisions: number,
         bpIdx = 0;
         let bpCount = 0;
         while (bp[bpIdx] &&
-            bpCount + _calcDivisions(count(bp[bpIdx]), dots(bp[bpIdx]), null,
+                    bpCount + _calcDivisions(count(bp[bpIdx]), dots(bp[bpIdx]), null,
                 attributes.time, attributes.divisions) <= currDivision) {
             ++bpIdx;
             if (!bp[bpIdx]) {
-                return replaceWith;
+                break;
             }
             bpCount += _calcDivisions(count(bp[bpIdx]), dots(bp[bpIdx]), null,
                 attributes.time, attributes.divisions);
@@ -587,7 +596,7 @@ export function subtract(durr1: any, divisions: number,
     throw new Error(`Could not subtract duration. ${durr1}, ${divisions}, ${divisionOffset}`);
 }
 
-export function calcDivisions(chord: IChord, cursor: ICursor) {
+export function calcDivisions(chord: IChord, cursor: IMicroCursor) {
     if (any(chord, note => note.grace)) {
         return 0;
     }
@@ -621,7 +630,7 @@ export function calcDivisionsNoCtx(chord: IChord, time: Time, divisions: number)
         divisions);
 }
 
-function _calcDivisions(count: number, dots: number,
+export function _calcDivisions(count: number, dots: number,
         timeModification: TimeModification, time: Time, divisions: number) {
     if (time.senzaMisura !== undefined) {
         time = {
