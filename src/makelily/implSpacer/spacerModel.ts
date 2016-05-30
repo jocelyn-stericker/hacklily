@@ -52,6 +52,7 @@ class SpacerModel implements Export.ISpacerModel {
 
     constructor(target: IModel) {
         this._target = target;
+        this.divCount = target.divCount;
     }
 
     checkSemantics(cursor: ICursor): IAny[] {

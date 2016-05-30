@@ -25,7 +25,7 @@
 
 import {ScoreHeader} from "musicxml-interfaces";
 import {IAny} from "musicxml-interfaces/operations";
-import {indexBy, filter, map, reduce, values, flatten, forEach, extend} from "lodash";
+import {indexBy, filter, map, reduce, values, flatten, forEach, extend, any} from "lodash";
 import * as invariant from "invariant";
 
 import IMeasure from "../../document/measure";
@@ -46,10 +46,8 @@ import ILayout from "../../private/layout";
 import ICombinedLayout, {mergeSegmentsInPlace} from "../../private/combinedLayout";
 import IMeasureLayout from "../../private/measureLayout";
 import ILinesLayoutState from "../../private/linesLayoutState";
-import IChord from "../../private/chord";
 import {MAX_SAFE_INTEGER} from "../../private/constants";
 import {scoreParts} from "../../private/part";
-import {subtract} from "../../private/metre";
 
 export interface IMeasureLayoutOptions {
     attributes: {[part: string]: IAttributesSnapshot[]};
@@ -71,6 +69,7 @@ export interface IMeasureLayoutOptions {
     preview: boolean;
     memo$: ILinesLayoutState;
     fixup: (segment: ISegment, operations: IAny[]) => void;
+
 }
 
 /**
@@ -91,7 +90,7 @@ function createCursor(
             voice: IVoiceContext;
             x: number;
             page: number;
-            fixup?: (segment: ISegment, operations: IAny[]) => void;
+            fixup?: (operations: IAny[]) => void;
             memo$: ILinesLayoutState;
         }): ICursor {
     return {
@@ -153,10 +152,10 @@ export function reduceMeasure(spec: ILayoutOpts): IMeasureLayout {
 
     let gDivOverflow: DivisionOverflowException = null;
 
-    let gVoiceLayouts$ = map(gVoiceMeasure, segment => {
+    let gVoiceLayouts$ = map(gVoiceMeasure, voiceSegment => {
         let lastAttribs: IAttributesSnapshot = Object.create(spec.attributes || {});
         let voice = {} as IVoiceContext;
-        let {part} = segment;
+        let {part} = voiceSegment;
         gSomeLastAttribs[part] = gSomeLastAttribs[part] || [];
 
         let voiceStaves$: {[key: number]: ILayout[]}  = {};
@@ -165,7 +164,7 @@ export function reduceMeasure(spec: ILayoutOpts): IMeasureLayout {
         let xPerStaff$: {[key: number]: number} = [];
 
         let cursor$ = createCursor({
-            segment: segment,
+            segment: voiceSegment,
 
             voice: voice,
             staff: null,
@@ -181,7 +180,28 @@ export function reduceMeasure(spec: ILayoutOpts): IMeasureLayout {
             _detached: spec._detached,
             factory: spec.factory,
             memo$: spec.memo$,
-            fixup: spec.fixup
+            fixup: (operations: IAny[]) => {
+                const localSegment = cursor$.segment;
+                const restartRequired = any(operations, op => {
+                    invariant(String(op.p[0]) === String(spec.measure.uuid),
+                        `Unexpected fixup for a measure ${op.p[0]} ` +
+                            `other than the current ${spec.measure.uuid}`);
+                    invariant(op.p[1] === "parts", "Expected p[1] to be parts");
+                    invariant(op.p[2] === localSegment.part, `Expected part ${op.p[2]} to be ${localSegment.part}`);
+                    if (localSegment.ownerType === OwnerType.Voice) {
+                        invariant(op.p[3] === "voices", "We are in a voice, so we can only patch the voice");
+                        invariant(op.p[4] === localSegment.owner, `Expected voice owner ${localSegment.owner}, got ${op.p[4]}`);
+                        return op.p.length === 6 && (op.p[5] <= cursor$.idx$) || op.p[5] < cursor$.idx$;
+                    } else if (localSegment.ownerType === OwnerType.Staff) {
+                        invariant(op.p[3] === "staves", "We are in a staff, so we can only patch the staff");
+                        invariant(op.p[4] === localSegment.owner, `Expected staff owner ${localSegment.owner}, got ${op.p[4]}`);
+                        return op.p.length === 6 && (op.p[5] <= cursor$.idx$) || op.p[5] < cursor$.idx$;
+                    }
+                    invariant(false, `Invalid segment owner type ${localSegment.ownerType}`);
+                });
+
+                spec.fixup(localSegment, operations, restartRequired);
+            },
         });
 
         /**
@@ -227,14 +247,14 @@ export function reduceMeasure(spec: ILayoutOpts): IMeasureLayout {
                         "Divisions are not consistent. Found %s but expected %s",
                         cursor$.staff.totalDivisions, gDivOverflow.maxDiv);
 
-                if (!gDivOverflow.newParts[segment.part]) {
-                    gDivOverflow.newParts[segment.part] = {
+                if (!gDivOverflow.newParts[voiceSegment.part]) {
+                    gDivOverflow.newParts[voiceSegment.part] = {
                         voices: [],
                         staves: []
                     };
                 }
-                let newStaves = gDivOverflow.newParts[segment.part].staves;
-                let oldStaves = gDivOverflow.oldParts[segment.part].staves;
+                let newStaves = gDivOverflow.newParts[voiceSegment.part].staves;
+                let oldStaves = gDivOverflow.oldParts[voiceSegment.part].staves;
                 if (!newStaves[staffIdx]) {
                     let length = voiceStaves$[staffIdx].length + 1;
                     let nv = newStaves[staffIdx] = <any> [];
@@ -270,10 +290,10 @@ export function reduceMeasure(spec: ILayoutOpts): IMeasureLayout {
         }
 
         let segmentLayout$: ILayout[] = [];
-        for (let i = 0; i < segment.length; ++i) {
-            const model = segment[i];
+        for (let i = 0; i < voiceSegment.length; ++i) {
+            const model = voiceSegment[i];
 
-            const atEnd = i + 1 === segment.length;
+            const atEnd = i + 1 === voiceSegment.length;
             const staffIdx: number = model.staffIdx;
             invariant(isFinite(model.staffIdx), "%s is not finite", model.staffIdx);
             if (!cursor$.maxPaddingTop$[model.staffIdx]) {
@@ -349,21 +369,21 @@ export function reduceMeasure(spec: ILayoutOpts): IMeasureLayout {
                 invariant(cursor$.staff.totalDivisions === gDivOverflow.maxDiv,
                         "Divisions are not consistent. Found %s but expected %s",
                         cursor$.staff.totalDivisions, gDivOverflow.maxDiv);
-                invariant(!!segment.part,
+                invariant(!!voiceSegment.part,
                     "Part must be defined -- is this spec from Engine.validate$?");
 
-                if (!gDivOverflow.newParts[segment.part]) {
-                    gDivOverflow.newParts[segment.part] = {
+                if (!gDivOverflow.newParts[voiceSegment.part]) {
+                    gDivOverflow.newParts[voiceSegment.part] = {
                         voices: [],
                         staves: []
                     };
                 }
-                let newVoices = gDivOverflow.newParts[segment.part].voices;
-                let oldVoices = gDivOverflow.oldParts[segment.part].voices;
+                let newVoices = gDivOverflow.newParts[voiceSegment.part].voices;
+                let oldVoices = gDivOverflow.oldParts[voiceSegment.part].voices;
 
-                if (!newVoices[segment.owner]) {
-                    let nv = newVoices[segment.owner] = <any> [];
-                    let ov = oldVoices[segment.owner] = <any> segment.slice(0, cursor$.idx$);
+                if (!newVoices[voiceSegment.owner]) {
+                    let nv = newVoices[voiceSegment.owner] = <any> [];
+                    let ov = oldVoices[voiceSegment.owner] = <any> voiceSegment.slice(0, cursor$.idx$);
 
                     ov.owner = nv.owner = cursor$.segment.owner;
                     ov.ownerType = nv.ownerType = OwnerType.Voice;
@@ -371,59 +391,29 @@ export function reduceMeasure(spec: ILayoutOpts): IMeasureLayout {
                     ov.part = nv.part = cursor$.segment.part;
                 }
 
-                newVoices[segment.owner].push(model);
+                newVoices[voiceSegment.owner].push(model);
             }
 
             if (atEnd) {
-                if (cursor$.division$ < cursor$.staff.totalDivisions &&
-                        (!cursor$.staff.attributes ||
-                            cursor$.staff.attributes.time.senzaMisura === null) &&
-                        !spec.preview) {
-                    const durationSpecs = subtract(cursor$.staff.totalDivisions,
-                            cursor$.division$, cursor$);
-                    const restSpecs: IChord[] = map(durationSpecs, durationSpec => {
-                        let chord = [{
-                            rest: {},
-                            dots: durationSpec[0].dots,
-                            noteType: durationSpec[0].noteType
-                        }] as IChord;
-                        chord._class = "Chord";
-                        return chord;
-                    });
+                // Finalize.
+                forEach(gStaffMeasure, (staff, idx) => {
+                    const pIdx = idx.lastIndexOf("_");
+                    const staffMeasurePart = idx.substr(0, pIdx);
+                    if (staffMeasurePart !== part) {
+                        return;
+                    }
+                    const nidx = parseInt(idx.substr(pIdx + 1), 10);
 
-                    cursor$.fixup(segment, map(restSpecs, (spec, idx) => ({
-                        p: [
-                            String(cursor$.measure.uuid),
-                            "parts",
-                            part,
-                            "voices",
-                            segment.owner,
-                            segment.length + idx
-                        ],
-
-                        li: spec
-                    })));
-                } else {
-                    // Finalize.
-                    forEach(gStaffMeasure, (staff, idx) => {
-                        const pIdx = idx.lastIndexOf("_");
-                        const staffMeasurePart = idx.substr(0, pIdx);
-                        if (staffMeasurePart !== part) {
-                            return;
+                    let voiceStaff = voiceStaves$[<any>nidx];
+                    if (!!staff && !!voiceStaff) {
+                        while (voiceStaff.length < staff.length) {
+                            pushStaffSegment(nidx, staff[voiceStaff.length], false);
                         }
-                        const nidx = parseInt(idx.substr(pIdx + 1), 10);
-
-                        let voiceStaff = voiceStaves$[<any>nidx];
-                        if (!!staff && !!voiceStaff) {
-                            while (voiceStaff.length < staff.length) {
-                                pushStaffSegment(nidx, staff[voiceStaff.length], false);
-                            }
-                        }
-                    });
-                }
+                    }
+                });
             }
             lastAttribs = cursor$.staff.attributes;
-            gSomeLastAttribs[segment.part][model.staffIdx] = lastAttribs;
+            gSomeLastAttribs[voiceSegment.part][model.staffIdx] = lastAttribs;
             gMaxXInMeasure = Math.max(cursor$.x$, gMaxXInMeasure);
             gMaxPaddingTopInMeasure$[model.staffIdx] = Math.max(
                 cursor$.maxPaddingTop$[model.staffIdx],
@@ -520,7 +510,8 @@ export interface ILayoutOpts {
     padEnd: boolean;
     preview: boolean;
     memo$: ILinesLayoutState;
-    fixup: (segment: ISegment, operations: IAny[]) => void;
+    fixup: (segment: ISegment, operations: IAny[], restartRequired: boolean) => void;
+
 }
 
 /**
@@ -612,37 +603,15 @@ export class DivisionOverflowException extends Error {
         this.oldParts = measure.parts;
     }
 
-    resolve$(measures$: IMeasure[]) {
-        let oldMeasure$ = measures$[this.measureIdx];
-
-        forEach(this.oldParts, (part, partID) => {
-            forEach(part.staves, (staff, staffIdx) => {
-                if (!staff) {
-                    this.newParts[partID].staves[staffIdx] =
-                        this.newParts[partID].staves[staffIdx] || null;
-                } else {
-                    this.newParts[partID].staves[staffIdx] =
-                        this.newParts[partID].staves[staffIdx] || <any>[];
-                    let nv = this.newParts[partID].staves[staffIdx];
-                    nv.divisions = staff.divisions;
-                    nv.part = staff.part;
-                    nv.owner = staff.owner;
-                    nv.ownerType = staff.ownerType;
-                }
-            });
-        });
-        let newMeasure = {
-            idx: this.measureIdx + 1,
-            uuid: Math.floor(Math.random() * MAX_SAFE_INTEGER),
-            number: "" + (parseInt(oldMeasure$.number, 10) + 1),
-            implicit: false,
-            width: NaN,
-            nonControlling: false,
-            parts: this.newParts,
-            version: 0
-        };
-
-        oldMeasure$.parts = this.oldParts;
-        measures$.splice(this.measureIdx + 1, 0, newMeasure);
+    resolve$(fixup: (segment: ISegment, operations: IAny[]) => void) {
+        fixup(null, [
+            {
+                li: {
+                    uuid: Math.floor(Math.random() * MAX_SAFE_INTEGER),
+                    newParts: this.newParts,
+                },
+                p: ["measures", this.measureIdx],
+            }
+        ]);
     }
 }

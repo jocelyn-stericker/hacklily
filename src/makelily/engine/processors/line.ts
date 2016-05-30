@@ -29,7 +29,7 @@ import ILayoutOptions from "../../private/layoutOptions";
 import ILineBounds from "../../private/lineBounds";
 import ILinesLayoutState from "../../private/linesLayoutState";
 import ILineLayoutResult from "../../private/lineLayoutResult";
-import ILineContext, {createLineContext} from "../../private/lineContext";
+import ILineContext, {createLineContext, reduceToShortestInSegments} from "../../private/lineContext";
 import IMeasureLayout, {detach as detachMeasureLayout} from "../../private/measureLayout";
 import {scoreParts} from "../../private/part";
 
@@ -110,6 +110,18 @@ function _layoutDirtyMeasures(options: ILayoutOptions, line: ILineContext,
     let measures = options.measures;
     let attributes = options.attributes;
     return map(measures, (measure, measureIdx) => {
+        if (options.singleLineMode) {
+            // Reset the shortestCount at every measure.
+            let voiceSegments$ = <ISegment[]> flatten(map(values<IMeasurePart>(measure.parts),
+                part => part.voices));
+
+            let staffSegments$ = <ISegment[]> flatten(map(values<IMeasurePart>(measure.parts),
+                part => part.staves));
+
+            let segments = filter(voiceSegments$.concat(staffSegments$), s => !!s);
+            line.shortestCount = reduce(segments, reduceToShortestInSegments, Number.MAX_VALUE)/2;
+        }
+
         line.barOnLine$ = measureIdx;
         if (!clean$[measure.uuid]) {
             if (!options.preview) {

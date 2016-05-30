@@ -28,6 +28,8 @@ import {Note, Chord, Rest, Dot, Type, Count, SymbolSize, TimeModification, Pitch
 import {times, forEach, reduce, map} from "lodash";
 import * as invariant from "invariant";
 
+import OwnerType from "../document/ownerTypes";
+
 import ICursor from "../private/cursor";
 import {notationObj, accidentalGlyphs, onLedger, InvalidAccidental} from "../private/chord";
 import {bboxes as glyphBBoxes} from "../private/smufl";
@@ -274,7 +276,7 @@ class NoteImpl implements Note {
         return this.toXML();
     }
 
-    validate$() {
+    validate$(cursor$: ICursor) {
         this.cleanNotations();
         if (this.grace && this.cue) {
             delete this.cue;
@@ -285,6 +287,9 @@ class NoteImpl implements Note {
         if (this.pitch && this.rest) {
             delete this.pitch;
         }
+        invariant(cursor$.segment.ownerType === OwnerType.Voice,
+            "Expected to be in voice's context during validation");
+        this.voice = cursor$.segment.owner;
     }
 
     /*---- Util -----------------------------------------------------------------------------*/

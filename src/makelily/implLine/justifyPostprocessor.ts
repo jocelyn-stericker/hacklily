@@ -47,6 +47,12 @@ function logistic(t: number) {
 function justify(options: ILayoutOptions, bounds: ILineBounds,
         measures$: IMeasureLayout[]): IMeasureLayout[] {
 
+    if (options.singleLineMode) {
+        // Skip: note that in this case, we set the shortestCount in each measure to half what it
+        // needs to be to fake justification in each measure.
+        return measures$;
+    }
+
     const x = bounds.left + reduce(measures$, (sum, measure) => sum + measure.width, 0);
 
     // Check for underfilled bars

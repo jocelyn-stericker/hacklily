@@ -56,20 +56,30 @@ export default class Beam extends Component<IProps, {}> {
 
         return DOM.g(null,
             map(beamCount, (beams: number, idx: number): any => {
-                if (idx === 0) {
-                    return null;
-                }
                 return times(beams, beam => {
                     let x1: number;
                     let x2: number = this._withXOffset(x[idx]);
                     if (beamCount[idx - 1] <= beam) {
-                        if (x[idx + 1] &&
-                            beamCount[idx + 1] === beams) {
+                        if (x[idx + 1] && beamCount[idx + 1] === beams) {
                             return null;
                         }
                         x1 = this._withXOffset((x[idx - 1] + x[idx] * 3) / 4);
+
+                        if (idx === 0) {
+                            return null;
+                        }
+                    } else if (beamCount[idx + 1] <= beam) {
+                        if (x[idx + 1] && beamCount[idx - 1] === beams) {
+                            return null;
+                        }
+                        x1 = this._withXOffset(x[idx]);
+                        x2 = this._withXOffset((x[idx + 1] + x[idx] * 3) / 4);
                     } else {
                         x1 = this._withXOffset(x[idx - 1]);
+
+                        if (idx === 0) {
+                            return null;
+                        }
                     }
                     return DOM.polygon({
                         fill: this.props.stroke,

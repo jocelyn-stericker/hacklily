@@ -118,10 +118,7 @@ export function Targetable<P extends IBaseProps, S>() {
         component.prototype.componentWillUnmount =
             function metaComponentWillUnmountWrapper() {
                 let self = this as IMetaComponent<P, S>;
-                if (self.props.layout.key !== self._record.key) {
-                    clearMeta(self);
-                    updateMeta(self, self.props);
-                }
+                clearMeta(self);
 
                 if (originalComponentWillUnmount) {
                     originalComponentWillUnmount.call(self);

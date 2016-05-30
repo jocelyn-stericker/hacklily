@@ -68,7 +68,8 @@ interface ICursor {
     factory: IFactory;
 
     hiddenCounter$?: number;
-    fixup: (segment: ISegment, operations: IAny[]) => void;
+    fixup: (operations: IAny[]) => void;
+
 }
 
 export default ICursor;

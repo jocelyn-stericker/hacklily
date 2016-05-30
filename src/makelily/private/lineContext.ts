@@ -85,14 +85,14 @@ export function createLineContext(
     };
 }
 
-function reduceToShortestInSegments(shortest: number, segment: ISegment) {
+export function reduceToShortestInSegments(shortest: number, segment: ISegment) {
     if (!segment) {
         return shortest;
     }
     return reduce(segment, reduceToShortestInSegment, shortest);
 }
 
-function reduceToShortestInSegment(shortest: number, model: IModel) {
+export function reduceToShortestInSegment(shortest: number, model: IModel) {
     if (!(model.divCount >= 0)) {
         invariant(model.divCount >= 0, "Counts must exceed 0 in", model);
     }

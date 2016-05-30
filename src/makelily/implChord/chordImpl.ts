@@ -139,8 +139,6 @@ class ChordModelImpl implements ChordModel.IChordModel, IList<NoteImpl> {
     /** @prototype */
     dots: number;
 
-    inBeam$: boolean; // set by BeamModels
-
     private _count: Count;
     private _timeModification: TimeModification;
     private _recentLayout: ChordModelImpl.Layout;
@@ -253,6 +251,7 @@ class ChordModelImpl implements ChordModel.IChordModel, IList<NoteImpl> {
         return [];
     }
 
+    _init: boolean = false;
     __validate(cursor$: ICursor): void {
         if (!isFinite(this._count)) {
             this._implyCountFromPerformanceData(cursor$);
@@ -270,7 +269,7 @@ class ChordModelImpl implements ChordModel.IChordModel, IList<NoteImpl> {
             if (!note.duration && !note.grace) {
                 note.duration = this.divCount;
             }
-            note.validate$();
+            note.validate$(cursor$);
             note.updateAccidental$(cursor$);
             if (note.pitch) {
                 // Update the accidental status.
@@ -296,30 +295,33 @@ class ChordModelImpl implements ChordModel.IChordModel, IList<NoteImpl> {
         this._checkMulitpleRest$(cursor$);
         this._implyNoteheads$(cursor$);
 
-        if (!this.inBeam$ && countToIsBeamable[this._count]) {
-            this.satieFlag = countToFlag[this._count];
-        } else {
-            this.satieFlag = null;
-        }
+        if (!cursor$.approximate || !this._init) {
+            if (countToIsBeamable[this._count]) {
+                this.satieFlag = countToFlag[this._count];
+            } else {
+                this.satieFlag = null;
+            }
 
-        if (this._hasStem()) {
-            this.satieStem = {
-                direction,
-                stemHeight: this._getStemHeight(direction, clef),
-                stemStart: startingLine(this, direction, clef)
-            };
-            this.satieDirection = direction === 1 ? StemType.Up : StemType.Down;
-        } else {
-            this.satieStem = null;
-            this.satieDirection = NaN;
-        }
+            if (this._hasStem()) {
+                this.satieStem = {
+                    direction,
+                    stemHeight: this._getStemHeight(direction, clef),
+                    stemStart: startingLine(this, direction, clef)
+                };
+                this.satieDirection = direction === 1 ? StemType.Up : StemType.Down;
+            } else {
+                this.satieStem = null;
+                this.satieDirection = NaN;
+            }
 
-        if (this._recentLayout) {
-            this._recentLayout.sync$(this, cursor$);
+            if (this._recentLayout) {
+                this._recentLayout.sync$(this, cursor$);
+            }
         }
     }
 
     __layout(cursor$: ICursor): ChordModel.IChordLayout {
+        this._init = true;
         this._recentLayout = new ChordModelImpl.Layout(this, cursor$);
         return this._recentLayout;
     }
@@ -687,7 +689,9 @@ module ChordModelImpl {
             invariant(extraWidth >= 0, "Invalid extraWidth %s. shortest is %s, got %s", extraWidth,
                     cursor.line.shortestCount, baseModel.divCount);
 
-            return baseWidth + extraWidth + accidentalWidth + this._calcDotWidth(cursor, baseModel);
+            const totalWidth = baseWidth + extraWidth +
+                accidentalWidth + this._calcDotWidth(cursor, baseModel);
+            return totalWidth;
         }
 
         private _calcDotWidth(cursor: ICursor, baseModel: ChordModelImpl): number {

@@ -19,8 +19,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/// <reference path="../typings/tsd.d.ts" />
-
 export const VERSION = process.env.SATIE_VERSION || "";
 
 /* The web application API */
@@ -41,12 +39,19 @@ import {pageSizes as ePageSizes} from "./private/renderUtil";
 import EKeySignature from "./implAttributes/keySignatureView";
 import ETimeSignature from "./implAttributes/timeSignatureView";
 
+/* Patches */
+import eCreatePatch from "./patch/createPatch";
+
 export module Addons {
     export const getGlyphCode = eGetGlyphCode;
     export const pageSizes = ePageSizes;
 
     export const KeySignature = EKeySignature;
     export const TimeSignature = ETimeSignature;
+}
+
+export module Patch {
+    export const createPatch = eCreatePatch;
 }
 
 // Expose MusicXML in build (but not in types).

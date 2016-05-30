@@ -19,7 +19,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import * as invariant from "invariant";
 import {createFactory as $, Component, DOM, PropTypes} from "react";
 import {chain, flatten, mapValues, map, forEach} from "lodash";
 
@@ -110,8 +109,9 @@ export default class MeasureView extends Component<IProps, void> {
     }
 
     shouldComponentUpdate(nextProps: IProps) {
-        invariant(!isNaN(this._version), `Invalid non-numeric version ${this._version}`);
-        return this._version < this.props.layout.getVersion();
+        return true;
+        // invariant(!isNaN(this._version), `Invalid non-numeric version ${this._version}`);
+        // return this._version < this.props.layout.getVersion();
     }
 }
 

@@ -58,6 +58,7 @@ export default function chordMutator(memo$: ILinesLayoutState, chord: ChordImpl,
                 invariant(false, "Unsupported operation");
             }
 
+            chord._init = false;
             markDirty(memo$, chord);
         } else {
             let note = chord[parseInt(String(op.p[1]), 10)];
@@ -67,6 +68,7 @@ export default function chordMutator(memo$: ILinesLayoutState, chord: ChordImpl,
             localOp.p = path.slice(2);
             noteMutator(memo$, note, localOp);
 
+            chord._init = false;
             markDirty(memo$, chord);
         }
     } else if (op.p[0] === "count") {
@@ -81,4 +83,3 @@ export default function chordMutator(memo$: ILinesLayoutState, chord: ChordImpl,
         invariant(false, `Invalid/unimplemented operation path for chord: ${op.p[0]}`);
     }
 }
-

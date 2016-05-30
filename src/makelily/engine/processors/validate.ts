@@ -33,8 +33,7 @@ import ILayoutOptions from "../../private/layoutOptions";
 import ILinesLayoutState from "../../private/linesLayoutState";
 import {detachMeasureContext} from "../../private/measureContext";
 
-import segmentMutator from "../../implSegment/segmentMutator";
-
+import applyOp from "../applyOp";
 import {setCurrentMeasureList} from "../measureList";
 
 import {reduceMeasure, DivisionOverflowException} from "./measure";
@@ -50,7 +49,7 @@ export default function validate(options$: ILayoutOptions, memo$: ILinesLayoutSt
             tryValidate(options$, memo$);
         } catch (err) {
             if (err instanceof DivisionOverflowException) {
-                (<DivisionOverflowException>err).resolve$(options$.measures);
+                (<DivisionOverflowException>err).resolve$(options$.fixup);
                 shouldTryAgain = true;
             } else {
                 throw err;
@@ -62,6 +61,8 @@ export default function validate(options$: ILayoutOptions, memo$: ILinesLayoutSt
 function call<T>(memo: T, fn: (t: T) => T) {
     return fn(memo);
 }
+
+class RestartMeasureValidation {}
 
 function tryValidate(options$: ILayoutOptions, memo$: ILinesLayoutState): void {
     let factory = options$.modelFactory;
@@ -91,125 +92,150 @@ function tryValidate(options$: ILayoutOptions, memo$: ILinesLayoutState): void {
 
         allSegments = allSegments.concat(filter(voiceSegments$.concat(staffSegments$), s => !!s));
     });
-    normalizeDivisionsInPlace(allSegments, 0);
+    normalizeDivisionsInPlace(factory, allSegments, 0);
     // TODO: check if a measure hence becomes dirty?
 
     forEach(options$.measures, function validateMeasure(measure) {
-        if (!memo$.clean$[measure.uuid]) {
-            let voiceSegments$ = <ISegment[]>
-                flatten(map(pairs(measure.parts), partx => withPart(partx[1].voices, partx[0])));
+        if (memo$.clean$[measure.uuid]) {
+            return;
+        }
 
-            let staffSegments$ = <ISegment[]>
-                flatten(map(pairs(measure.parts), partx => withPart(partx[1].staves, partx[0])));
+        let tries = 0;
+        let debugFixupOperations: IAny[][] = [];
+        // Fixups can require multiple passes.
+        for (let tryAgain = true; tryAgain;) {
+            if (++tries > 100) {
+                console.warn("-------------- too many fixups: aborting -------------- ");
+                console.warn(debugFixupOperations);
+                throw new Error("Internal Satie Error: fixup loop!");
+            }
+            tryAgain = false;
+            try {
+                let voiceSegments$ = <ISegment[]>
+                    flatten(map(pairs(measure.parts), partx => withPart(partx[1].voices, partx[0])));
 
-            let measureCtx = detachMeasureContext(measure, 0);
+                let staffSegments$ = <ISegment[]>
+                    flatten(map(pairs(measure.parts), partx => withPart(partx[1].staves, partx[0])));
 
-            function rootFixup(segment: ISegment, operations: IAny[]) {
-                forEach(operations, operation => {
-                    segmentMutator(factory, memo$, measureCtx, segment, operation);
+                let measureCtx = detachMeasureContext(measure, 0);
+
+                function rootFixup(segment: ISegment, operations: IAny[], restartRequired: boolean) {
+                    debugFixupOperations.push(operations);
+                    if (options$.fixup) {
+                        options$.fixup(segment, operations);
+                    } else {
+                        forEach(operations, operation => {
+                            applyOp(options$.measures, factory, operation, memo$);
+                        });
+                    }
+
+                    if (restartRequired) {
+                        console.log("Recalculating measure...");
+                        throw new RestartMeasureValidation();
+                    }
+                }
+
+                let segments = filter(voiceSegments$.concat(staffSegments$), s => !!s);
+
+                forEach(staffSegments$, function(segment, idx) {
+                    if (!segment) {
+                        return;
+                    }
+                    invariant(segment.ownerType === OwnerType.Staff, "Expected staff segment");
+                    lastAttribs[segment.part] = lastAttribs[segment.part] || [];
+
+                    function ensureHeader(type: Type) {
+                        if (!search(segment, 0, type).length) {
+                            if (segment.owner === 1) {
+                                rootFixup(segment, [{
+
+                                    p: [
+                                        String(measure.uuid),
+                                        "parts",
+                                        segment.part,
+                                        "staves",
+                                        segment.owner,
+                                        0
+                                    ],
+
+                                    li: {
+                                        _class: Type[type]
+                                    }
+
+                                }], false);
+                            } else {
+                                let proxy = factory.create(Type.Proxy);
+                                let proxiedSegment: ISegment = find(staffSegments$, potentialProxied =>
+                                    potentialProxied &&
+                                    potentialProxied.part === segment.part &&
+                                    potentialProxied.owner === 1);
+                                let target = search(proxiedSegment, 0, type)[0];
+                                (<any>proxy).target = target;
+                                (<any>proxy).staffIdx = idx;
+                                let tidx = -1;
+                                for (let i = 0; i < proxiedSegment.length; ++i) {
+                                    if (proxiedSegment[i] === target) {
+                                        tidx = i;
+                                        break;
+                                    }
+                                }
+                                invariant(tidx !== -1, "Could not find required model.");
+                                // Warning: without fixup.
+                                // STOPSHIP: Also add ability to remove/retarget proxy
+                                segment.splice(tidx, 0, proxy);
+                            }
+                        }
+                    }
+                    ensureHeader(Type.Print);
+                    ensureHeader(Type.Attributes);
+                    if (!search(segment, segment.length - 1, Type.Barline).length) {
+                        // Make sure the barline ends up at the end.
+                        const patches: IAny[] = [];
+                        patches.push({
+                            p: [
+                                String(measure.uuid),
+                                "parts",
+                                segment.part,
+                                "staves",
+                                segment.owner,
+                                segment.length + patches.length
+                            ],
+
+                            li: {
+                                _class: Type[Type.Barline],
+                                barStyle: {
+                                    data: "light-heavy",
+                                },
+                            }
+                        });
+                        rootFixup(segment, patches, false);
+                    }
                 });
-                if (options$.fixup) {
-                    options$.fixup(segment, operations);
+
+                let outcome = reduceMeasure({
+                    attributes: lastAttribs,
+                    header: options$.header,
+                    line: null,
+                    measure: measureCtx,
+                    padEnd: false,
+                    segments: segments,
+                    _approximate: true,
+                    _detached: true,
+                    _noAlign: true,
+                    _validateOnly: true, // Just validate, don't make a layout
+                    factory: factory,
+                    preview: options$.preview,
+                    memo$,
+                    fixup: rootFixup
+                });
+                lastAttribs = outcome.attributes;
+            } catch (ex) {
+                if (ex instanceof RestartMeasureValidation) {
+                    tryAgain = true;
+                } else {
+                    throw ex;
                 }
             }
-
-            let segments = filter(voiceSegments$.concat(staffSegments$), s => !!s);
-
-            forEach(staffSegments$, function(segment, idx) {
-                if (!segment) {
-                    return;
-                }
-                invariant(segment.ownerType === OwnerType.Staff, "Expected staff segment");
-                lastAttribs[segment.part] = lastAttribs[segment.part] || [];
-
-                function ensureHeader(type: Type) {
-                    if (!search(segment, 0, type).length) {
-                        if (segment.owner === 1) {
-                            rootFixup(segment, [{
-
-                                p: [
-                                    String(measure.uuid),
-                                    "parts",
-                                    segment.part,
-                                    "staves",
-                                    segment.owner,
-                                    0
-                                ],
-
-                                li: {
-                                    _class: Type[type]
-                                }
-
-                            }]);
-                        } else {
-                            let proxy = factory.create(Type.Proxy);
-                            let proxiedSegment: ISegment = find(staffSegments$, potentialProxied =>
-                                potentialProxied &&
-                                potentialProxied.part === segment.part &&
-                                potentialProxied.owner === 1);
-                            let target = search(proxiedSegment, 0, type)[0];
-                            (<any>proxy).target = target;
-                            (<any>proxy).staffIdx = idx;
-                            let tidx = -1;
-                            for (let i = 0; i < proxiedSegment.length; ++i) {
-                                if (proxiedSegment[i] === target) {
-                                    tidx = i;
-                                    break;
-                                }
-                            }
-                            invariant(tidx !== -1, "Could not find required model.");
-                            // Warning: without fixup.
-                            // STOPSHIP: Also add ability to remove/retarget proxy
-                            segment.splice(tidx, 0, proxy);
-                        }
-                    }
-                }
-                ensureHeader(Type.Print);
-                ensureHeader(Type.Attributes);
-                if (!search(segment, segment.length - 1, Type.Barline).length) {
-                    // Make sure the barline ends up at the end.
-                    const divs = reduce(segment, (divs, model) => divs + model.divCount, 1);
-                    if (divs !== 0) {
-                        const spacer = factory.create(Type.Spacer);
-                        spacer.divCount = divs;
-                        // Warning: without fixup
-                        // STOPSHIP: Also add ability to remove/retarget spacer
-                        segment.splice(segment.length, 0, spacer);
-                    }
-                    rootFixup(segment, [{
-                        p: [
-                            String(measure.uuid),
-                            "parts",
-                            segment.part,
-                            "staves",
-                            segment.owner,
-                            segment.length
-                        ],
-
-                        li: {
-                            _class: Type[Type.Barline]
-                        }
-                    }]);
-                }
-            });
-
-            let outcome = reduceMeasure({
-                attributes: lastAttribs,
-                header: options$.header,
-                line: null,
-                measure: measureCtx,
-                padEnd: false,
-                segments: segments,
-                _approximate: true,
-                _detached: true,
-                _noAlign: true,
-                _validateOnly: true, // Just validate, don't make a layout
-                factory: factory,
-                preview: options$.preview,
-                memo$,
-                fixup: rootFixup
-            });
-            lastAttribs = outcome.attributes;
         }
     });
 

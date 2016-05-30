@@ -30,7 +30,8 @@ interface ISong {
 
     setOperations: (operations: IAny[]) => void;
     previewOperations: (operations: IAny[]) => void;
-    toReactElement: () => ReactElement<any>;
+
+    toReactElement: (height?: number) => ReactElement<any>;
     toSVG: (cb: (error: Error, svg: string) => void) => void;
     toMusicXML: (cb: (error: Error, xml: string) => void) => void;
 }

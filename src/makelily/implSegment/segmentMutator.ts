@@ -27,13 +27,11 @@ import OwnerType from "../document/ownerTypes";
 
 import IFactory from "../private/factory";
 import ILinesLayoutState from "../private/linesLayoutState";
-import IMeasureContext from "../private/measureContext";
 
 export default function segmentMutator(factory: IFactory, memo$: ILinesLayoutState,
-        measure: IMeasureContext, segment: ISegment, op: IAny) {
+        segment: ISegment, op: IAny) {
     const {part, ownerType} = segment; // p[2]
 
-    invariant(op.p[0] === String(measure.uuid), "Invalid fixup measure.");
     invariant(op.p[1] === "parts", "Malformed path.");
     invariant(op.p[2] === part, "Invalid pixup part.");
     invariant(op.p[3] === "voices" || op.p[3] === "staves",
@@ -44,6 +42,9 @@ export default function segmentMutator(factory: IFactory, memo$: ILinesLayoutSta
     if ("li" in op && !("ld" in op)) {
         let liop = op as IListInsert<any>;
         segment.splice(op.p[5] as number, 0, factory.fromSpec(liop.li));
+    } else if ("ld" in op && !("li" in op)) {
+        // Note: we don't check if op.ld is valid
+        segment.splice(op.p[5] as number, 1);
     } else {
         invariant(false, "Unsupported operation type");
     }
