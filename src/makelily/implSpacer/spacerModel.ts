@@ -82,6 +82,7 @@ module SpacerModel {
             this.model = model;
             this.x$ = cursor$.x$;
             this.division = cursor$.division$;
+            this.renderedWidth = 0;
         }
 
         /*---- ILayout ------------------------------------------------------*/
@@ -91,6 +92,7 @@ module SpacerModel {
         model: SpacerModel;
         x$: number;
         division: number;
+        renderedWidth: number;
 
         // Prototype:
 
@@ -122,6 +124,7 @@ module Export {
 
     export interface ISpacerLayout extends ILayout {
         model: ISpacerModel;
+        renderedWidth: number;
     }
 }
 

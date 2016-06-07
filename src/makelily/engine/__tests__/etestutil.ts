@@ -44,8 +44,10 @@ export let fakeFactory: IFactory = {
     modelHasType: (model: IModel, modelType: Type): boolean => {
         if (model.divCount === 0) {
             return modelType === Type.Attributes;
+        } else if ("length" in model) {
+            return modelType === Type.Chord;
         }
-        return modelType === Type.Chord;
+        return modelType === Type.Spacer;
     },
     search: (models: IModel[], idx: number,
             modelType: Type): IModel[] => {
@@ -117,11 +119,22 @@ export function createFakeStaffSegment(
 
 export function createFakeVoiceSegment(
         divisions1: number, divisions2: number, idx: number): ISegment {
-    let a: ISegment = <any> <IModel[]> [
+    let a: ISegment = <any> <(IModel & {length: number; 0: any})[]> [
         {
             divCount: divisions1,
             staffIdx: 1,
             frozenness: FrozenLevel.Warm,
+            length: 1,
+            [0]: {
+                pitch: {
+                    step: "E",
+                    octave: 4
+                },
+                noteType: {
+                    duration: 8,
+                },
+                ties: [{}]
+            },
 
             checkSemantics: function(cursor$: ICursor): IAny[] {
                 return [];
@@ -148,6 +161,17 @@ export function createFakeVoiceSegment(
             divCount: divisions2,
             staffIdx: 1,
             frozenness: FrozenLevel.Warm,
+            length: 1,
+            [0]: {
+                pitch: {
+                    step: "E",
+                    octave: 4
+                },
+                noteType: {
+                    duration: 8,
+                },
+                ties: [{}]
+            },
 
             checkSemantics: function(cursor$: ICursor): IAny[] {
                 return [];

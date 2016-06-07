@@ -25,7 +25,7 @@
 
 import {Note, Count, TimeModification, Tie, Clef, Rest, Time, MxmlAccidental,
     Notehead, NoteheadType, Notations, Articulations, Tied, Pitch, Beam} from "musicxml-interfaces";
-import {any, find, forEach, times, map, reduce, filter, chain} from "lodash";
+import {some, find, forEach, times, map, reduce, filter, chain} from "lodash";
 import * as invariant from "invariant";
 
 import IModel from "../document/model";
@@ -54,7 +54,7 @@ export function fromModel(model: IModel) {
 }
 
 export function hasAccidental(chord: IChord, cursor: ICursor) {
-    return any(chord, function(c) {
+    return some(chord, function(c) {
         if (!c.pitch) {
             return false;
         }
@@ -124,7 +124,7 @@ export function beams(chord: IChord): Beam[] {
 
 export function hasFlagOrBeam(chord: IChord): boolean {
     // TODO: check if flag/beam forcefully set to "off"
-    return any(chord, note => note.noteType.duration <= Count.Eighth);
+    return some(chord, note => note.noteType.duration <= Count.Eighth);
 }
 
 /**

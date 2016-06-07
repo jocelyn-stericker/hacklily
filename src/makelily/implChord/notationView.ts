@@ -42,16 +42,11 @@ export interface IProps {
  * Notations are things that are attached to notes.
  */
 export default class NotationView extends Component<IProps, void> {
-    static childContextTypes = {
-        originX: PropTypes.number.isRequired
-    } as any;
     static contextTypes = {
-        originX: PropTypes.number.isRequired,
         originY: PropTypes.number.isRequired
     } as any;
 
     context: {
-        originX: number;
         originY: number;
     };
 
@@ -61,7 +56,7 @@ export default class NotationView extends Component<IProps, void> {
         const notehead = base.noteheadGlyph[0];
         const bbox = bboxes[notehead];
         const noteheadCenter = 10 * (bbox[0] - bbox[2]) / 2;
-        const originX = this.context.originX + this.props.layout.model[0].defaultX + noteheadCenter;
+        const originX = this.props.layout.model[0].defaultX + noteheadCenter;
         let children: ReactElement<any>[] = [];
 
         forEach(model.accidentalMarks, accidentalMark => {
@@ -75,7 +70,8 @@ export default class NotationView extends Component<IProps, void> {
         forEach(model.articulations, (articulation, idx) => {
             children.push($(Articulation)({
                 articulation: articulation,
-                key: `art${idx}`
+                key: `art${idx}`,
+                defaultX: this.props.layout.model[0].defaultX,
             }));
         });
 
@@ -201,10 +197,5 @@ export default class NotationView extends Component<IProps, void> {
                     children
                 );
         }
-    }
-    getChildContext() {
-        return {
-            originX: this.context.originX + this.props.layout.model[0].defaultX
-        };
     }
 };

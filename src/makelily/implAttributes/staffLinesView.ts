@@ -39,12 +39,10 @@ export interface IProps {
  */
 export default class StaffLines extends Component<IProps, {}> {
     static contextTypes = {
-        originX: PropTypes.number.isRequired,
         originY: PropTypes.number.isRequired
     } as any;
 
     context: {
-        originX: number;
         originY: number;
     };
 
@@ -58,8 +56,8 @@ export default class StaffLines extends Component<IProps, {}> {
                 stroke: "#6A6A6A",
                 // TODO: Use print
                 strokeWidth: bravura.engravingDefaults.staffLineThickness * 10,
-                x1: this.props.defaultX + this.context.originX,
-                x2: this.props.defaultX + this.context.originX + this.props.width,
+                x1: this.props.defaultX,
+                x2: this.props.defaultX + this.props.width,
                 y1: middle - 10 * (i - offset),
                 y2: middle - 10 * (i - offset)
             }))

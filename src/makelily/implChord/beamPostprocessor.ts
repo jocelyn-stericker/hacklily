@@ -24,7 +24,7 @@
  */
 
 import {Attributes, Beam, BeamType, StartStop, Tuplet, AboveBelow} from "musicxml-interfaces";
-import {any, chain, forEach, find, map, sortBy, times, first, last} from "lodash";
+import {some, chain, forEach, find, map, sortBy, times, first, last} from "lodash";
 import * as invariant from "invariant";
 
 import Type from "../document/types";
@@ -124,7 +124,7 @@ function beam(options: ILayoutOptions, bounds: ILineBounds,
                     beamSet: BeamSet;
                 }[] = [];
 
-                let anyInvalid = any(sortBy(beams), (beam, idx) => {
+                let anyInvalid = some(sortBy(beams), (beam, idx) => {
                    let expected = idx + 1;
                    let actual = beam.number;
                    if (expected !== actual) {
@@ -391,8 +391,9 @@ function layoutBeam$(voice: number, idx: number, beamSet$: BeamSet, isUnbeamedTu
 
         let firstStem = firstChord.baseModel.satieStem;
         let lastStem = lastChord.baseModel.satieStem;
+        let firstLayout = first(beam.elements) as any as ChordModel.IChordLayout;
 
-        firstChord.baseModel.satieBeam = {
+        firstLayout.satieBeam = {
             beamCount: times(Xs.length, idx => beam.counts[idx]),
             direction: direction,
             x: Xs,

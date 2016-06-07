@@ -44,17 +44,14 @@ export interface IProps {
 
 export default class NoteView extends Component<IProps, void> {
     static childContextTypes = <any> {
-        originX: PropTypes.number.isRequired,
         originY: PropTypes.number.isRequired
     };
 
     static contextTypes = <any> {
-        originX: PropTypes.number.isRequired,
         originY: PropTypes.number.isRequired
     };
 
     context: {
-        originX: number;
         originY: number;
     };
 
@@ -78,7 +75,7 @@ export default class NoteView extends Component<IProps, void> {
                 notehead: noteheadGlyph,
                 spec: {
                     color: spec.color,
-                    defaultX: 0,
+                    defaultX,
                     defaultY: 0,
                     type: spec.notehead ? spec.notehead.type : NoteheadType.Normal
                 }
@@ -87,34 +84,32 @@ export default class NoteView extends Component<IProps, void> {
                 fill: dot.color,
                 key: "_1_" + idx,
                 radius: 2.4,
-                x: this.context.originX + defaultX + right + 6 + 6 * idx,
+                x: defaultX + right + 6 + 6 * idx,
                 y: this.context.originY - this.props.spec.defaultY -
                     (dot.defaultY + (dot.relativeY || 0))
             })) : null,
             this.props.spec.accidental ? $AccidentalView({
                 key: "a",
-                spec: this.props.spec.accidental
+                spec: this.props.spec.accidental,
+                noteDefaultX: defaultX,
             }) : null,
             hasParens && $Glyph({
                 glyphName: "noteheadParenthesisRight",
                 fill: "black",
                 y: this.context.originY - this.props.spec.defaultY,
-                x: this.context.originX + defaultX + right + 2
+                x: defaultX + right + 2
             }),
             hasParens && $Glyph({
                 glyphName: "noteheadParenthesisLeft",
                 fill: "black",
                 y: this.context.originY - this.props.spec.defaultY,
-                x: this.context.originX + defaultX + left - 5
+                x: defaultX + left - 5
             })
         /* DOM.g */);
     }
 
     getChildContext() {
-        const defaultX = this.props.defaultX || this.props.spec.defaultX;
-
         return {
-            originX: this.context.originX + defaultX,
             originY: this.context.originY - this.props.spec.defaultY
         };
     }

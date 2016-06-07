@@ -47,12 +47,10 @@ export interface IProps {
 
 export default class UnbeamedTuplet extends Component<IProps, void> {
     static contextTypes = {
-        originX: PropTypes.number.isRequired,
         originY: PropTypes.number.isRequired
     } as any;
 
     context: {
-        originX: number;
         originY: number;
     };
 
@@ -127,7 +125,6 @@ export default class UnbeamedTuplet extends Component<IProps, void> {
 
     private _withXOffset(x: number) {
         return x +
-            this.context.originX +
             getFontOffset("noteheadBlack", this.direction())[0] * 10 + this.getLineXOffset();
     }
 

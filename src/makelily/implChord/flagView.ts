@@ -45,12 +45,10 @@ export interface IProps {
  */
 export default class Flag extends Component<IProps, void> {
     static contextTypes = {
-        originX: PropTypes.number.isRequired,
         originY: PropTypes.number.isRequired
     } as any;
 
     context: {
-        originX: number;
         originY: number;
     };
 
@@ -67,7 +65,7 @@ export default class Flag extends Component<IProps, void> {
             fill: spec.color,
             glyphName: this.glyphName(),
             scale: this.props.isGrace ? 0.6 : 1.0,
-            x: context.originX + spec.defaultX +
+            x: spec.defaultX +
                 fontOffsetX * 10 +
                 ((dir === 1) ? noteOffsetX * 10 - this.props.stemWidth : 0),
             y: context.originY - spec.defaultY - noteOffsetY * 4

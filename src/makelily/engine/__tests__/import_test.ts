@@ -25,7 +25,7 @@
 
 import {DirectionMode, EnclosureShape, NormalItalic, NormalBold, LeftCenterRight,
     TopMiddleBottomBaseline, parseScore} from "musicxml-interfaces";
-import {forEach, any} from "lodash";
+import {forEach, some} from "lodash";
 import {expect} from "chai";
 
 import Factory from "../factory";
@@ -678,10 +678,10 @@ describe("[musicxml/import.ts]", function() {
             expect(staves[1].length).to.eq(3);
             expect(staves[2].length).to.eq(3);
             forEach(staves[1], model => {
-                expect(!any(staves[2], m2 => model === m2));
+                expect(!some(staves[2], m2 => model === m2));
             });
             forEach(voices[1], model => {
-                expect(!any(voices[2], m2 => model === m2));
+                expect(!some(voices[2], m2 => model === m2));
             });
         });
     });

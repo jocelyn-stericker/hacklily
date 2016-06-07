@@ -26,7 +26,7 @@
 import {ScoreTimewise, Attributes, Note, Backup, Time, parseScore}
     from "musicxml-interfaces";
 import {buildNote} from "musicxml-interfaces/builders";
-import {map, reduce, any, filter, min, times, all, forEach} from "lodash";
+import {map, reduce, some, filter, minBy, times, every, forEach} from "lodash";
 import * as invariant from "invariant";
 
 import {Document} from "../document/document";
@@ -159,7 +159,7 @@ export function _extractMXMLPartsAndMeasures(input: ScoreTimewise, factory: IFac
             delete inMeasure.parts[""];
         }
         let linkedParts = map(inMeasure.parts, (val, key) => {
-            if (!any(parts, part => part === key)) {
+            if (!some(parts, part => part === key)) {
                 // See lilypond-regression >> 41h.
                 return null;
             }
@@ -196,7 +196,7 @@ export function _extractMXMLPartsAndMeasures(input: ScoreTimewise, factory: IFac
                 }
                 return memo;
             }, memo);
-        }, 1);
+        }, divisions);
 
         // Lets normalize divisions here.
         forEach(linkedParts, part => {
@@ -219,7 +219,7 @@ export function _extractMXMLPartsAndMeasures(input: ScoreTimewise, factory: IFac
         // Create base structure
         while (!done()) {
             // target is accessed outside loop in syncStaffDivisions
-            target = min(linkedParts, part => part.idx === part.input.length ?
+            target = minBy(linkedParts, part => part.idx === part.input.length ?
                     MAX_SAFE_INTEGER : part.division);
             invariant(!!target, "Target not specified");
             let input = target.input[target.idx];
@@ -420,7 +420,7 @@ export function _extractMXMLPartsAndMeasures(input: ScoreTimewise, factory: IFac
         }
 
         function done() {
-            return all(linkedParts, part => {
+            return every(linkedParts, part => {
                 return part.idx === part.input.length;
             });
         }

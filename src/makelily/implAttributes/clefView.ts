@@ -30,12 +30,10 @@ import {bboxes} from "../private/smufl";
  */
 export default class ClefView extends Component<{spec: Clef, key?: string | number}, void> {
     static contextTypes = {
-        originX: PropTypes.number.isRequired,
         originY: PropTypes.number.isRequired
     } as any;
 
     context: {
-        originX: number;
         originY: number;
     };
 
@@ -46,7 +44,7 @@ export default class ClefView extends Component<{spec: Clef, key?: string | numb
             return null;
         }
 
-        let clefX = this.context.originX + spec.defaultX + (spec.relativeX || 0);
+        let clefX = spec.defaultX + (spec.relativeX || 0);
         let clefY = this.context.originY - (spec.defaultY + (spec.relativeY || 0) +
             (this.renderedLine() - 3) * 10);
         let clefSign = this.sign();

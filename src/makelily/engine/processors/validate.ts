@@ -19,7 +19,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import {reduce, forEach, flatten, filter, find, map, pairs} from "lodash";
+import {reduce, forEach, flatten, filter, find, map, toPairs} from "lodash";
 import * as invariant from "invariant";
 import {IAny} from "musicxml-interfaces/operations";
 
@@ -29,7 +29,7 @@ import ISegment, {normalizeDivisionsInPlace} from "../../document/segment";
 import OwnerType from "../../document/ownerTypes";
 
 import IAttributesSnapshot from "../../private/attributesSnapshot";
-import ILayoutOptions from "../../private/layoutOptions";
+import ILayoutOptions, {IFixupFn} from "../../private/layoutOptions";
 import ILinesLayoutState from "../../private/linesLayoutState";
 import {detachMeasureContext} from "../../private/measureContext";
 
@@ -38,18 +38,67 @@ import {setCurrentMeasureList} from "../measureList";
 
 import {reduceMeasure, DivisionOverflowException} from "./measure";
 
+/**
+ * Reducer for a collection of functions, calling each one.
+ */
+function call<T>(memo: T, fn: (t: T) => T) {
+    return fn(memo);
+}
+
+/**
+ * Exception that indicates the measure must be validated again.
+ * This can occur when a measure was modified in a position before the cursor.
+ */
+class RestartMeasureValidation {}
+
+/**
+ * Validate the measure.
+ */
 export default function validate(options$: ILayoutOptions, memo$: ILinesLayoutState): void {
     options$.measures = <any> reduce(options$.preprocessors, call, options$.measures);
 
     let shouldTryAgain: boolean;
 
+    /**
+     * The operations that have been applied while validating.
+     * This is for debug output when we get stuck in a loop.
+     * This is reset every measure.
+     */
+    let debugFixupOperations: IAny[][] = [];
+
+    /**
+     * This function applies a patch as part of validation.
+     * 
+     * A fixup function may have been passed in (if we are in an editor). If not, we just
+     * mutate the song in-place. Note that this implementation does not allow for undo/redo.
+     */
+    function rootFixup(segment: ISegment, operations: IAny[], restartRequired: boolean) {
+        debugFixupOperations.push(operations);
+        if (options$.fixup) {
+            options$.fixup(segment, operations);
+        } else {
+            forEach(operations, operation => {
+                applyOp(options$.measures, options$.modelFactory, operation, memo$);
+            });
+        }
+
+        if (restartRequired) {
+            throw new RestartMeasureValidation();
+        }
+    }
+
+    let rootFixupOpts$ = {
+        debugFixupOperations,
+        rootFixup,
+    };
+
     do {
         shouldTryAgain = false;
         try {
-            tryValidate(options$, memo$);
+            tryValidate(options$, memo$, rootFixupOpts$);
         } catch (err) {
             if (err instanceof DivisionOverflowException) {
-                (<DivisionOverflowException>err).resolve$(options$.fixup);
+                (<DivisionOverflowException>err).resolve$(rootFixup);
                 shouldTryAgain = true;
             } else {
                 throw err;
@@ -58,13 +107,8 @@ export default function validate(options$: ILayoutOptions, memo$: ILinesLayoutSt
     } while (shouldTryAgain);
 }
 
-function call<T>(memo: T, fn: (t: T) => T) {
-    return fn(memo);
-}
-
-class RestartMeasureValidation {}
-
-function tryValidate(options$: ILayoutOptions, memo$: ILinesLayoutState): void {
+function tryValidate(options$: ILayoutOptions, memo$: ILinesLayoutState,
+        rootFixupOpts$: {debugFixupOperations: IAny[][], rootFixup: IFixupFn}): void {
     let factory = options$.modelFactory;
     let search = factory.search.bind(factory);
 
@@ -85,10 +129,10 @@ function tryValidate(options$: ILayoutOptions, memo$: ILinesLayoutState): void {
     let allSegments: ISegment[] = [];
     forEach(options$.measures, function validateMeasure(measure) {
         let voiceSegments$ = <ISegment[]>
-            flatten(map(pairs(measure.parts), partx => withPart(partx[1].voices, partx[0])));
+            flatten(map(toPairs(measure.parts), partx => withPart(partx[1].voices, partx[0])));
 
         let staffSegments$ = <ISegment[]>
-            flatten(map(pairs(measure.parts), partx => withPart(partx[1].staves, partx[0])));
+            flatten(map(toPairs(measure.parts), partx => withPart(partx[1].staves, partx[0])));
 
         allSegments = allSegments.concat(filter(voiceSegments$.concat(staffSegments$), s => !!s));
     });
@@ -96,44 +140,28 @@ function tryValidate(options$: ILayoutOptions, memo$: ILinesLayoutState): void {
     // TODO: check if a measure hence becomes dirty?
 
     forEach(options$.measures, function validateMeasure(measure) {
+        rootFixupOpts$.debugFixupOperations = [];
         if (memo$.clean$[measure.uuid]) {
             return;
         }
 
         let tries = 0;
-        let debugFixupOperations: IAny[][] = [];
         // Fixups can require multiple passes.
         for (let tryAgain = true; tryAgain;) {
             if (++tries > 100) {
                 console.warn("-------------- too many fixups: aborting -------------- ");
-                console.warn(debugFixupOperations);
+                console.warn(rootFixupOpts$.debugFixupOperations);
                 throw new Error("Internal Satie Error: fixup loop!");
             }
             tryAgain = false;
             try {
                 let voiceSegments$ = <ISegment[]>
-                    flatten(map(pairs(measure.parts), partx => withPart(partx[1].voices, partx[0])));
+                    flatten(map(toPairs(measure.parts), partx => withPart(partx[1].voices, partx[0])));
 
                 let staffSegments$ = <ISegment[]>
-                    flatten(map(pairs(measure.parts), partx => withPart(partx[1].staves, partx[0])));
+                    flatten(map(toPairs(measure.parts), partx => withPart(partx[1].staves, partx[0])));
 
                 let measureCtx = detachMeasureContext(measure, 0);
-
-                function rootFixup(segment: ISegment, operations: IAny[], restartRequired: boolean) {
-                    debugFixupOperations.push(operations);
-                    if (options$.fixup) {
-                        options$.fixup(segment, operations);
-                    } else {
-                        forEach(operations, operation => {
-                            applyOp(options$.measures, factory, operation, memo$);
-                        });
-                    }
-
-                    if (restartRequired) {
-                        console.log("Recalculating measure...");
-                        throw new RestartMeasureValidation();
-                    }
-                }
 
                 let segments = filter(voiceSegments$.concat(staffSegments$), s => !!s);
 
@@ -147,7 +175,7 @@ function tryValidate(options$: ILayoutOptions, memo$: ILinesLayoutState): void {
                     function ensureHeader(type: Type) {
                         if (!search(segment, 0, type).length) {
                             if (segment.owner === 1) {
-                                rootFixup(segment, [{
+                                rootFixupOpts$.rootFixup(segment, [{
 
                                     p: [
                                         String(measure.uuid),
@@ -208,7 +236,7 @@ function tryValidate(options$: ILayoutOptions, memo$: ILinesLayoutState): void {
                                 },
                             }
                         });
-                        rootFixup(segment, patches, false);
+                        rootFixupOpts$.rootFixup(segment, patches, false);
                     }
                 });
 
@@ -226,7 +254,7 @@ function tryValidate(options$: ILayoutOptions, memo$: ILinesLayoutState): void {
                     factory: factory,
                     preview: options$.preview,
                     memo$,
-                    fixup: rootFixup
+                    fixup: rootFixupOpts$.rootFixup
                 });
                 lastAttribs = outcome.attributes;
             } catch (ex) {

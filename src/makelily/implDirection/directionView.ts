@@ -23,31 +23,22 @@ import {createFactory as $, ReactElement, Component, DOM, PropTypes} from "react
 import {map} from "lodash";
 
 import Glyph from "../private/views/glyph";
-import {Targetable} from "../private/views/metadata";
 
 import Dynamics from "./dynamicsView";
 import Words from "./wordsView";
 import DirectionModel from "./directionModel";
 
-@Targetable()
 export default class Direction extends Component<{layout: DirectionModel.IDirectionLayout}, {}> {
-    static childContextTypes = {
-        originX: PropTypes.number.isRequired
-    } as any;
-
     static contextTypes = {
-        originX: PropTypes.number.isRequired,
         originY: PropTypes.number.isRequired
     } as any;
 
     context: {
-        originX: number;
         originY: number;
     };
 
     render(): ReactElement<any> {
         const model = this.props.layout.model;
-        let childContext = this.getChildContext();
         let children = map(model.directionTypes, (type, idx) => {
             switch (true) {
                 case !!type.accordionRegistration:
@@ -65,7 +56,7 @@ export default class Direction extends Component<{layout: DirectionModel.IDirect
                 case !!type.dynamics:
                     return $(Dynamics)({
                         key: `d_${idx}`,
-                        layout: this.props.layout
+                        layout: this.props.layout,
                     });
                 case !!type.eyeglasses:
                     return null;
@@ -96,7 +87,7 @@ export default class Direction extends Component<{layout: DirectionModel.IDirect
                         map(type.segnos, (segno, segnoIdx) => $(Glyph)({
                             glyphName: "segno",
                             key: segnoIdx,
-                            x: childContext.originX + segno.defaultX + (segno.relativeX || 0),
+                            x: this.props.layout.overrideX + segno.defaultX + (segno.relativeX || 0),
                             y: this.context.originY - segno.defaultY - (segno.relativeY || 0),
                             fill: segno.color
                         })));
@@ -107,7 +98,7 @@ export default class Direction extends Component<{layout: DirectionModel.IDirect
                 case !!type.words:
                     return $(Words)({
                         key: `d_${idx}`,
-                        layout: this.props.layout
+                        layout: this.props.layout,
                     });
                 default:
                     throw new Error("Invalid direction in " + type);
@@ -124,12 +115,6 @@ export default class Direction extends Component<{layout: DirectionModel.IDirect
                     children
                 );
         }
-    }
-
-    getChildContext() {
-        return {
-            originX: this.context.originX + this.props.layout.overrideX
-        };
     }
 };
 

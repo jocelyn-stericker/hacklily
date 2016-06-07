@@ -19,7 +19,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import {any, filter} from "lodash";
+import {some, filter} from "lodash";
 import {PartList, PartGroup, ScorePart, StartStop} from "musicxml-interfaces";
 
 export function scoreParts(scoreParts: PartList): ScorePart[] {
@@ -29,7 +29,7 @@ export function scoreParts(scoreParts: PartList): ScorePart[] {
 export function groupsForPart(scoreParts: PartList, partID: string): PartGroup[] {
     let groups: PartGroup[] = [];
 
-    any(scoreParts, partOrGroup => {
+    some(scoreParts, partOrGroup => {
         if (partOrGroup._class === "PartGroup") {
             let group = <PartGroup> partOrGroup;
             if (group.type === StartStop.Start) {

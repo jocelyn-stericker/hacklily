@@ -36,13 +36,11 @@ export interface IProps {
 
 export default class WordsView extends Component<IProps, void> implements ITextMixin {
     static contextTypes = {
-        originX: PropTypes.number.isRequired,
         originY: PropTypes.number.isRequired,
         scale40: PropTypes.number.isRequired
     } as any;
 
     context: {
-        originX: number;
         originY: number;
         scale40: number;
     };
@@ -63,7 +61,7 @@ export default class WordsView extends Component<IProps, void> implements ITextM
         invariant(!!wordsContainer, "No words found!");
         let words = wordsContainer.words;
 
-        let initX = this.context.originX;
+        let initX = this.props.layout.overrideX;
         let initY = this.context.originY - words[0].defaultY - (words[0].relativeY || 0);
         let scale40 = this.context.scale40;
 

@@ -25,7 +25,7 @@
 
 import {ScoreHeader} from "musicxml-interfaces";
 import {IAny} from "musicxml-interfaces/operations";
-import {indexBy, filter, map, reduce, values, flatten, forEach, extend, any} from "lodash";
+import {keyBy, filter, map, reduce, values, flatten, forEach, extend, some} from "lodash";
 import * as invariant from "invariant";
 
 import IMeasure from "../../document/measure";
@@ -48,6 +48,7 @@ import IMeasureLayout from "../../private/measureLayout";
 import ILinesLayoutState from "../../private/linesLayoutState";
 import {MAX_SAFE_INTEGER} from "../../private/constants";
 import {scoreParts} from "../../private/part";
+import {IFixupFn} from "../../private/layoutOptions";
 
 export interface IMeasureLayoutOptions {
     attributes: {[part: string]: IAttributesSnapshot[]};
@@ -135,12 +136,12 @@ export function reduceMeasure(spec: ILayoutOpts): IMeasureLayout {
     invariant(spec.segments.length >= 1, "_processMeasure expects at least one segment.");
 
     let gStaffMeasure: { [key: string]: ISegment } =
-        indexBy(filter(spec.segments,
+        keyBy(filter(spec.segments,
             seg => seg.ownerType === OwnerType.Staff),
             seg => `${seg.part}_${seg.owner}`);
 
     let gVoiceMeasure: { [key: string]: ISegment } =
-        indexBy(filter(spec.segments,
+        keyBy(filter(spec.segments,
             seg => seg.ownerType === OwnerType.Voice),
             seg => `${seg.part}_${seg.owner}`);
 
@@ -182,7 +183,7 @@ export function reduceMeasure(spec: ILayoutOpts): IMeasureLayout {
             memo$: spec.memo$,
             fixup: (operations: IAny[]) => {
                 const localSegment = cursor$.segment;
-                const restartRequired = any(operations, op => {
+                const restartRequired = some(operations, op => {
                     invariant(String(op.p[0]) === String(spec.measure.uuid),
                         `Unexpected fixup for a measure ${op.p[0]} ` +
                             `other than the current ${spec.measure.uuid}`);
@@ -603,7 +604,7 @@ export class DivisionOverflowException extends Error {
         this.oldParts = measure.parts;
     }
 
-    resolve$(fixup: (segment: ISegment, operations: IAny[]) => void) {
+    resolve$(fixup: IFixupFn) {
         fixup(null, [
             {
                 li: {

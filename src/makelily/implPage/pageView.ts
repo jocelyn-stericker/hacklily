@@ -101,7 +101,7 @@ export default class Page extends Component<IProps, void> {
         return DOM.svg(
             {
                 className: this.props.className,
-                style: {
+                style: this.props.renderTarget === RenderTarget.SvgExport ? undefined : {
                     width: "auto",
                 },
                 "data-page": this.props.renderTarget === RenderTarget.SvgExport ?
@@ -121,7 +121,8 @@ export default class Page extends Component<IProps, void> {
                 map(lineLayout, measureLayout =>
                     $(MeasureView)({
                         key: measureLayout.uuid,
-                        layout: measureLayout
+                        layout: measureLayout,
+                        version: measureLayout.getVersion(),
                     })
                 )
             )

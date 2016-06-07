@@ -26,9 +26,8 @@
 
 import {ScoreHeader, Credit, Identification, Defaults, NormalItalic, NormalBold,
     OddEvenBoth, Work, PartList, LeftCenterRight, serializeScoreHeader} from "musicxml-interfaces";
-import {forEach, any} from "lodash";
+import {forEach, some, defaultsDeep} from "lodash";
 
-import defaultsDeep from "../private/defaultsDeep";
 import {getPageMargins} from "../private/print";
 import {distances, bravura} from "../private/smufl";
 import {mmToTenths, defaultStaveHeight, pageSizes, defaultMargins} from "../private/renderUtil";
@@ -302,7 +301,7 @@ class ScoreHeaderModel implements ScoreHeader {
                 c.creator = val;
             }
         });
-        if (!any(this.identification.creators, c => c.type === type)) {
+        if (!some(this.identification.creators, c => c.type === type)) {
             // ...or add a val
             this.identification.creators.push({
                 creator: val,
@@ -332,7 +331,7 @@ class ScoreHeaderModel implements ScoreHeader {
                 }
             }
         });
-        if (!any(this.credits, c => Boolean(c.creditWords) && c.creditTypes.indexOf(type) !== -1)) {
+        if (!some(this.credits, c => Boolean(c.creditWords) && c.creditTypes.indexOf(type) !== -1)) {
             let defaultX = NaN;
             let margins = getPageMargins(this.defaults.pageLayout.pageMargins, 1);
             // TODO: Throughout this file, use own instead of default values

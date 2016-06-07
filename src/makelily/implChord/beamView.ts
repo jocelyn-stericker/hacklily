@@ -39,12 +39,10 @@ export interface IProps {
  */
 export default class Beam extends Component<IProps, {}> {
     static contextTypes = {
-        originX: PropTypes.number.isRequired,
         originY: PropTypes.number.isRequired
     } as any;
 
     context: {
-        originX: number;
         originY: number;
     };
 
@@ -68,10 +66,7 @@ export default class Beam extends Component<IProps, {}> {
                         if (idx === 0) {
                             return null;
                         }
-                    } else if (beamCount[idx + 1] <= beam) {
-                        if (x[idx + 1] && beamCount[idx - 1] === beams) {
-                            return null;
-                        }
+                    } else if (beamCount[idx + 1] <= beam && (!x[idx + 1] || beamCount[idx - 1] !== beams)) {
                         x1 = this._withXOffset(x[idx]);
                         x2 = this._withXOffset((x[idx + 1] + x[idx] * 3) / 4);
                     } else {
@@ -119,7 +114,6 @@ export default class Beam extends Component<IProps, {}> {
         // This keeps spacing consistent, even in beam groups with rests.
 
         return x +
-            this.context.originX +
             getFontOffset("noteheadBlack", this.props.layout.direction)[0] * 10 +
             this.getLineXOffset();
     }

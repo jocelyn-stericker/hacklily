@@ -19,8 +19,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import {Attributes} from "musicxml-interfaces";
-import {forEach, sortedIndex, any} from "lodash";
+import {forEach, sortedIndex} from "lodash";
 
 import Type from "../document/types";
 
@@ -86,52 +85,31 @@ function attributes(options: ILayoutOptions, bounds: ILineBounds,
                 }
                 let partKey = element.part + "_" + element.model.staffIdx;
                 if (element.renderClass === Type.Attributes && element.model) {
-                    let targetIsBarline = true;
-                    if (attributesByPart[partKey]) {
+                    // Calculate the width for the staff lines in the previous attributes element.
+                    {
                         let targets = targetsByPart[partKey] || [];
                         let targetIdx = sortedIndex(targets, element.x$ + measureStartX) - 1;
-                        targetIsBarline = isBarlineByPart[partKey][targetIdx];
+                        let targetIsBarline = isBarlineByPart[partKey][targetIdx];
                         if (!targetIsBarline) {
                             targetIdx++;
                         }
-                        let target = targets[targetIdx];
-                        (<any>attributesByPart[partKey]).staffWidth = target -
-                            originXByPart[partKey];
+                        if (attributesByPart[partKey]) {
+                            let target = targets[targetIdx];
+                            (<any>attributesByPart[partKey]).staffWidth = target -
+                                originXByPart[partKey];
+                        }
                     }
 
-                    let shouldSplit = false;
-
-                    if (!attributesByPart[partKey]) {
-                        shouldSplit = true;
-                    } else {
-                        let oldAttributes: Attributes = attributesByPart[partKey].model;
-                        let newAttributes: Attributes = element.model;
-                        shouldSplit = any(oldAttributes.staffDetails, (details, detailIndex) => {
-                            if (!details) {
-                                return false;
-                            }
-                            let newDetails = newAttributes.staffDetails[detailIndex];
-                            return details.staffLines !== newDetails.staffLines;
-                        });
-                    }
-
-                    if (shouldSplit) {
+                    // Capture the new attributes element.
+                    {
                         attributesByPart[partKey] = element;
                         let targets = targetsByPart[partKey] || [];
                         let targetIdx = sortedIndex(targets, element.x$ + measureStartX) - 1;
                         let attrTarget = targets[targetIdx] || 0;
-                        if (!targetIsBarline) {
-                            ++targetIdx;
-                        }
                         let target = targets[targetIdx] || 0;
                         originXByPart[partKey] = target;
-                        if (measureStartX === 0) {
-                            // FIXME
-                            (<any>element).staffLinesOffsetX = 0;
-                        } else {
-                            (<any>element).staffLinesOffsetX = element.x$ + measureStartX -
-                                target - (target - attrTarget);
-                        }
+                        (<any>element).staffLinesOffsetX = element.x$ + measureStartX -
+                            target - (target - attrTarget);
                     }
                 }
             });

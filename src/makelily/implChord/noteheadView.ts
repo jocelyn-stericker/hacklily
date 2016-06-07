@@ -37,12 +37,10 @@ export interface IProps {
  */
 export default class NoteheadView extends Component<IProps, void> {
     static contextTypes = {
-        originX: PropTypes.number.isRequired,
         originY: PropTypes.number.isRequired
     } as any;
 
     context: {
-        originX: number;
         originY: number;
     };
 
@@ -55,7 +53,7 @@ export default class NoteheadView extends Component<IProps, void> {
             fill: head.color,
             glyphName: this.props.notehead,
             // scale: this.props.grace ? 0.6 : 1.0,
-            x: this.context.originX + pos.defaultX + (pos.relativeX || 0),
+            x: pos.defaultX + (pos.relativeX || 0),
             y: this.context.originY - pos.defaultY - (pos.relativeY || 0)
         });
     }

@@ -77,6 +77,12 @@ describe("Import/export tests", function() {
 
                    errorHandler: done,
                    changeHandler: () => {
+                       // HACK: Don't change encoding dates
+                       song.getDocument().header.identification.encoding.encodingDate = {
+                           day: 1,
+                           month: 1,
+                           year: 2016,
+                       };
                        song.toSVG((error, page1Svg) => {
                            if (error) {
                                done(error);

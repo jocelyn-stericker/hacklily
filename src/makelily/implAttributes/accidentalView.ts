@@ -30,16 +30,15 @@ import {bboxes} from "../private/smufl";
 export interface IProps {
     spec: Accidental;
     key?: string | number;
+    noteDefaultX?: number;
 }
 
 export default class AccidentalView extends Component<IProps, void> {
     static contextTypes = {
-        originX: PropTypes.number.isRequired,
         originY: PropTypes.number.isRequired
     } as any;
 
     context: {
-        originX: number,
         originY: number
     };
 
@@ -48,14 +47,13 @@ export default class AccidentalView extends Component<IProps, void> {
         const glyphName = accidentalGlyphs[this.props.spec.accidental];
         invariant(glyphName in bboxes, "Expected a glyph, got %s", glyphName);
 
-        const originX = this.context.originX;
         const originY = this.context.originY;
         const shift = spec.parentheses ? 4 : 0;
 
         let accidental = $(Glyph)({
             fill: spec.color,
             glyphName: glyphName,
-            x: originX + spec.defaultX + (spec.relativeX || 0) + shift,
+            x: (this.props.noteDefaultX || 0) + spec.defaultX + (spec.relativeX || 0) + shift,
             y: originY - (spec.defaultY + (spec.relativeY || 0))
         });
 
@@ -65,14 +63,14 @@ export default class AccidentalView extends Component<IProps, void> {
                 $(Glyph)({
                     fill: "#000000",
                     glyphName: "accidentalParensLeft",
-                    x: originX + spec.defaultX + (spec.relativeX || 0) - 7 + shift,
+                    x: (this.props.noteDefaultX || 0) + spec.defaultX + (spec.relativeX || 0) - 7 + shift,
                     y: originY - (spec.defaultY + (spec.relativeY || 0))
                 }),
                 accidental,
                 $(Glyph)({
                     fill: "#000000",
                     glyphName: "accidentalParensRight",
-                    x: originX + spec.defaultX + (spec.relativeX || 0) + width + shift,
+                    x: (this.props.noteDefaultX || 0) + spec.defaultX + (spec.relativeX || 0) + width + shift,
                     y: originY - (spec.defaultY + (spec.relativeY || 0))
                 })
             /* DOM.g */);

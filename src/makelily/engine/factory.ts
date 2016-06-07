@@ -20,7 +20,7 @@
  */
 
 import * as invariant from "invariant";
-import {forEach, any} from "lodash";
+import {forEach, some} from "lodash";
 
 import IModel from "../document/model";
 import Type from "../document/types";
@@ -64,7 +64,7 @@ class Factory implements IFactory {
     }
 
     modelHasType(model: IModel, ...modelTypes: Type[]): boolean {
-        return any(modelTypes, modelType => {
+        return some(modelTypes, modelType => {
             invariant((<number>modelType) in this._constructors,
                 "The type with id=%s does not have a factory.",
                 modelType);

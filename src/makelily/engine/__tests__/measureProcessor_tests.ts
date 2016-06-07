@@ -50,7 +50,7 @@ describe("[engine/measureProcessor.ts]", function() {
             segments[1].part = "P1";
             segments[2].owner = 2;
             segments[2].part = "P1";
-            normalizeDivisionsInPlace(segments);
+            normalizeDivisionsInPlace(fakeFactory, segments);
 
             // test without alignment
             let opts: ILayoutOpts = {
