@@ -6,7 +6,7 @@
   <movement-title>MusicXML directions (attached to staff)</movement-title>
   <identification>
     <encoding>
-      <encoding-date>2016-02-13</encoding-date>
+      <encoding-date>2016-01-01</encoding-date>
       <software>Ripieno Satie</software>
       <supports type="yes" element="satie-ext" />
     </encoding>
@@ -203,8 +203,6 @@
           <rehearsal justify="left" font-style="normal" font-weight="normal" color="#000000" halign="left" valign="bottom" underline="0" overline="0" line-through="0" rotation="0" letter-spacing="normal" line-height="normal" dir="ltr" enclosure="circle">Crc</rehearsal>
         </direction-type>
       </direction>
-      <!-- spacer: 5 divs -->
-      
       <barline>
         <!--musicxml-interfaces:debug>
           <div-count>0</div-count>
@@ -336,8 +334,6 @@
           <eyeglasses font-style="normal" font-weight="normal" color="#000000" halign="left" valign="bottom" />
         </direction-type>
       </direction>
-      <!-- spacer: 5 divs -->
-      
       <barline>
         <!--musicxml-interfaces:debug>
           <div-count>0</div-count>
@@ -477,8 +473,6 @@
           </dynamics>
         </direction-type>
       </direction>
-      <!-- spacer: 5 divs -->
-      
       <barline>
         <!--musicxml-interfaces:debug>
           <div-count>0</div-count>
@@ -618,8 +612,6 @@
           </dynamics>
         </direction-type>
       </direction>
-      <!-- spacer: 5 divs -->
-      
       <barline>
         <!--musicxml-interfaces:debug>
           <div-count>0</div-count>
@@ -759,8 +751,6 @@
           </dynamics>
         </direction-type>
       </direction>
-      <!-- spacer: 5 divs -->
-      
       <barline>
         <!--musicxml-interfaces:debug>
           <div-count>0</div-count>
@@ -900,8 +890,6 @@
           </dynamics>
         </direction-type>
       </direction>
-      <!-- spacer: 5 divs -->
-      
       <barline>
         <!--musicxml-interfaces:debug>
           <div-count>0</div-count>
@@ -1041,8 +1029,6 @@
           </dynamics>
         </direction-type>
       </direction>
-      <!-- spacer: 5 divs -->
-      
       <barline>
         <!--musicxml-interfaces:debug>
           <div-count>0</div-count>
@@ -1182,8 +1168,6 @@
           </dynamics>
         </direction-type>
       </direction>
-      <!-- spacer: 5 divs -->
-      
       <barline>
         <!--musicxml-interfaces:debug>
           <div-count>0</div-count>
@@ -1319,8 +1303,6 @@
           <dashes type="stop" number="1" dash-length="1" space-length="1" color="#000000" />
         </direction-type>
       </direction>
-      <!-- spacer: 5 divs -->
-      
       <barline>
         <!--musicxml-interfaces:debug>
           <div-count>0</div-count>
@@ -1456,8 +1438,6 @@
           <octave-shift type="stop" size="8" dash-length="1" space-length="1" font-style="normal" font-weight="normal" color="#000000" />
         </direction-type>
       </direction>
-      <!-- spacer: 5 divs -->
-      
       <barline>
         <!--musicxml-interfaces:debug>
           <div-count>0</div-count>
@@ -1581,8 +1561,6 @@
           <pedal type="stop" font-style="normal" font-weight="normal" color="#000000" halign="left" valign="bottom" />
         </direction-type>
       </direction>
-      <!-- spacer: 5 divs -->
-      
       <barline>
         <!--musicxml-interfaces:debug>
           <div-count>0</div-count>
@@ -1746,8 +1724,6 @@
           <damp-all font-style="normal" font-weight="normal" color="#000000" halign="left" valign="bottom" />
         </direction-type>
       </direction>
-      <!-- spacer: 5 divs -->
-      
       <barline>
         <!--musicxml-interfaces:debug>
           <div-count>0</div-count>

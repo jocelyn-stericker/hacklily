@@ -5,7 +5,7 @@
   <!-- no work metadata -->
   <identification>
     <encoding>
-      <encoding-date>2016-02-13</encoding-date>
+      <encoding-date>2016-01-01</encoding-date>
       <software>Ripieno Satie</software>
       <supports type="yes" element="satie-ext" />
     </encoding>
@@ -435,8 +435,6 @@
           <staff-lines>5</staff-lines>
         </staff-details>
       </attributes>
-      <!-- spacer: 2041 divs -->
-      
       <barline>
         <!--musicxml-interfaces:debug>
           <div-count>0</div-count>
@@ -807,8 +805,6 @@
       </print>
       <!-- spacer: 2040 divs -->
       
-      <!-- spacer: 2041 divs -->
-      
       <barline>
         <!--musicxml-interfaces:debug>
           <div-count>0</div-count>
@@ -1178,8 +1174,6 @@
         <measure-numbering relative-x="0" relative-y="0" font-family="Alegreya, serif" font-style="normal" font-size="small" font-weight="normal" color="#000000">system</measure-numbering>
       </print>
       <!-- spacer: 2040 divs -->
-      
-      <!-- spacer: 2041 divs -->
       
       <barline>
         <!--musicxml-interfaces:debug>
@@ -1602,6 +1596,8 @@
         <measure-numbering relative-x="0" relative-y="0" font-family="Alegreya, serif" font-style="normal" font-size="small" font-weight="normal" color="#000000">system</measure-numbering>
       </print>
       <!-- spacer: 1632 divs -->
+      
+      <!-- spacer: 408 divs -->
       
       <barline location="right">
         <!--musicxml-interfaces:debug>

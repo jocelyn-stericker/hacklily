@@ -6,7 +6,7 @@
   <movement-title>Rest unit test</movement-title>
   <identification>
     <encoding>
-      <encoding-date>2016-02-13</encoding-date>
+      <encoding-date>2016-01-01</encoding-date>
       <software>Ripieno Satie</software>
       <supports type="yes" element="satie-ext" />
     </encoding>
@@ -128,8 +128,6 @@
           <multiple-rest use-symbols="no">2</multiple-rest>
         </measure-style>
       </attributes>
-      <!-- spacer: 129 divs -->
-      
       <barline>
         <!--musicxml-interfaces:debug>
           <div-count>0</div-count>
@@ -185,8 +183,6 @@
       </print>
       <!-- spacer: 128 divs -->
       
-      <!-- spacer: 129 divs -->
-      
       <barline>
         <!--musicxml-interfaces:debug>
           <div-count>0</div-count>
@@ -241,8 +237,6 @@
         <measure-numbering relative-x="0" relative-y="0" font-family="Alegreya, serif" font-style="normal" font-size="small" font-weight="normal" color="#000000">system</measure-numbering>
       </print>
       <!-- spacer: 128 divs -->
-      
-      <!-- spacer: 129 divs -->
       
       <barline>
         <!--musicxml-interfaces:debug>
@@ -369,8 +363,6 @@
       </print>
       <!-- spacer: 128 divs -->
       
-      <!-- spacer: 129 divs -->
-      
       <barline>
         <!--musicxml-interfaces:debug>
           <div-count>0</div-count>
@@ -436,8 +428,6 @@
         <measure-numbering relative-x="0" relative-y="0" font-family="Alegreya, serif" font-style="normal" font-size="small" font-weight="normal" color="#000000">system</measure-numbering>
       </print>
       <!-- spacer: 128 divs -->
-      
-      <!-- spacer: 129 divs -->
       
       <barline>
         <!--musicxml-interfaces:debug>
@@ -549,6 +539,8 @@
         <measure-numbering relative-x="0" relative-y="0" font-family="Alegreya, serif" font-style="normal" font-size="small" font-weight="normal" color="#000000">system</measure-numbering>
       </print>
       <!-- spacer: 94.5 divs -->
+      
+      <!-- spacer: 33.5 divs -->
       
       <barline location="right">
         <!--musicxml-interfaces:debug>

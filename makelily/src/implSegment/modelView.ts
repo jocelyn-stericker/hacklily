@@ -23,6 +23,7 @@ import {createFactory as $, Component, PropTypes} from "react";
 
 import Type from "../document/types";
 import ILayout from "../private/layout";
+import {Targetable} from "../private/views/metadata";
 
 import AttributesView from "../implAttributes/attributesView";
 import BarlineView from "../implBarline/barlineView";
@@ -36,13 +37,24 @@ const $DirectionView = $(DirectionView);
 
 const NUMBER_ARRAY = PropTypes.arrayOf(PropTypes.number);
 
-export default class ModelView extends Component<{layout: ILayout, key?: string | number}, void> {
+export interface IProps {
+    layout: ILayout;
+    version: number;
+    key?: string | number;
+    originX: number;
+}
+
+export interface IState {
+}
+
+@Targetable()
+export default class ModelView extends Component<IProps, IState> {
     static childContextTypes = {
-        originY: PropTypes.number
+        originY: PropTypes.number,
     } as any;
 
     static contextTypes = {
-        originYByPartAndStaff: PropTypes.objectOf(NUMBER_ARRAY).isRequired
+        originYByPartAndStaff: PropTypes.objectOf(NUMBER_ARRAY).isRequired,
     } as any;
 
     context: {
@@ -70,5 +82,18 @@ export default class ModelView extends Component<{layout: ILayout, key?: string 
         return {
             originY: this.context.originYByPartAndStaff[layout.part][layout.model.staffIdx || 1] || 0
         };
+    }
+
+    shouldComponentUpdate(nextProps: IProps, nextState: IState) {
+        if (nextProps.version > this.props.version) {
+            return true;
+        }
+
+        if (this.props.layout.renderClass === Type.Attributes &&
+                (<any>this.props.layout).staffWidth !== (<any>nextProps.layout).staffWidth) {
+            return true;
+        }
+
+        return false;
     }
 }

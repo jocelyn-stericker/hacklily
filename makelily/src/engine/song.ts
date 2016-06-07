@@ -213,12 +213,12 @@ export default class Song implements ISong {
 
                 path = path.slice(1);
                 let measure: any = find(document.measures,
-                    (measure) => 1 * measure.uuid === 1 * path[0]);
+                    (measure) => 1 * measure.uuid === parseInt(path[0], 10));
 
                 let el = measure[path[1]][path[2]][path[3]][path[4]][path[5]];
                 if (el) {
                     _prevDebug = el;
-                    let originY = element.obj._reactInternalInstance._context.originY;
+                    let originY = element.originY;
                     let clef = el._clef;
                     let pitch: Pitch;
                     if (clef && originY) {

@@ -10,7 +10,7 @@ module.exports = {
     entry: [
         `webpack-dev-server/client?http://${host}:${port}`,
         "webpack/hot/dev-server",
-        "./dist/index.js"
+        "./dist/webapp/src/index.js"
     ],
     output: {
         path: __dirname + "/dist/satie",
@@ -21,10 +21,6 @@ module.exports = {
         "react": "React",
         "react-dom": "ReactDOM",
         "react-dom/server": "ReactDOMServer",
-        "satie": "Satie",
-        "musicxml-interfaces": "Satie.MusicXML",
-        "musicxml-interfaces/operations": "Satie.MusicXML_Operations",
-        "musicxml-interfaces/builders": "Satie.MusicXML_Builders",
         "lodash": "_"
     },
     resolve: {
@@ -69,6 +65,9 @@ module.exports = {
         cssnext({
         }),
     ],
+    node: {
+        fs: "empty"
+    },
     plugins: [
         new webpack.DefinePlugin({
             "process.env": {

@@ -20,19 +20,20 @@
  */
 
 import {Component, ComponentLifecycle} from "react";
-
 import * as invariant from "invariant";
 import {isEqual, sortedIndex, indexOf} from "lodash";
 
+import ILayout from "../layout";
+
 export interface IBaseProps {
-    layout: {
-        x$: number;
-        renderedWidth?: number;
-        key?: string;
-    };
+    layout: ILayout;
+    originX: number;
 }
 
 export interface IMetaComponent<P, S> extends Component<P, S>, ComponentLifecycle<P, S> {
+    context: {
+        originYByPartAndStaff: {[key: string]: number[]};
+    };
     _record?: IRecord;
 }
 
@@ -48,15 +49,20 @@ export interface IRecord {
     x2: number;
     y1: number;
     y2: number;
+    originY: number;
 }
 
 /**
- * Interactive is an ES7 decorator that records the position of a component.
+ * A decorator that records the position of a component.
  */
 export function Targetable<P extends IBaseProps, S>() {
     return function decorator(component: {prototype: IMetaComponent<P, S>}) {
         function updateMeta(self: IMetaComponent<P, S>, props: P) {
-            let {originX, originY} = (self.context as any);
+            const layout = props.layout;
+
+            let originX: number = props.originX;
+            let originY = self.context.originYByPartAndStaff[
+                layout.part][layout.model.staffIdx || 1] || 0;
 
             let newRecord: IRecord  = {
                 key: props.layout.key,
@@ -64,7 +70,8 @@ export function Targetable<P extends IBaseProps, S>() {
                 x1: originX + props.layout.x$ - 2,
                 x2: originX + props.layout.x$ + props.layout.renderedWidth,
                 y1: originY - 60,
-                y2: originY + 60
+                y2: originY + 60,
+                originY,
             };
 
             if (self._record) {
@@ -74,8 +81,9 @@ export function Targetable<P extends IBaseProps, S>() {
 
                 clearMeta(self);
             }
-            if (!props.layout.renderedWidth) {
+            if (isNaN(props.layout.renderedWidth)) {
                 console.warn("Missing rendered width in", props.layout.key);
+                return;
             }
 
             self._record = {
@@ -84,7 +92,8 @@ export function Targetable<P extends IBaseProps, S>() {
                 x1: originX + props.layout.x$ - 2,
                 x2: originX + props.layout.x$ + props.layout.renderedWidth,
                 y1: originY - 60,
-                y2: originY + 60
+                y2: originY + 60,
+                originY,
             };
 
             set(self._record);
@@ -163,7 +172,7 @@ function clear(record: IRecord) {
     _weights.splice(idx, 1);
 }
 
-export function get(lookup: ILookup): any {
+export function get(lookup: ILookup): IRecord {
     let {x, y} = lookup;
     let weight = weightForLookup(lookup);
     let firstPossibleIdx = sortedIndex(_weights, weight);

@@ -6,7 +6,7 @@
   <movement-title>All MusicXML chord names/types with &lt;root&gt;</movement-title>
   <identification>
     <encoding>
-      <encoding-date>2016-02-13</encoding-date>
+      <encoding-date>2016-01-01</encoding-date>
       <software>Ripieno Satie</software>
       <supports type="yes" element="satie-ext" />
     </encoding>
@@ -216,8 +216,6 @@
         diminished</kind>
         <staff>null</staff>
       </harmony>
-      <!-- spacer: 9 divs -->
-      
       <barline>
         <!--musicxml-interfaces:debug>
           <div-count>0</div-count>
@@ -361,8 +359,6 @@
         diminished-seventh</kind>
         <staff>null</staff>
       </harmony>
-      <!-- spacer: 9 divs -->
-      
       <barline>
         <!--musicxml-interfaces:debug>
           <div-count>0</div-count>
@@ -506,8 +502,6 @@
         major-sixth</kind>
         <staff>null</staff>
       </harmony>
-      <!-- spacer: 9 divs -->
-      
       <barline>
         <!--musicxml-interfaces:debug>
           <div-count>0</div-count>
@@ -651,8 +645,6 @@
         minor-ninth</kind>
         <staff>null</staff>
       </harmony>
-      <!-- spacer: 9 divs -->
-      
       <barline>
         <!--musicxml-interfaces:debug>
           <div-count>0</div-count>
@@ -796,8 +788,6 @@
         dominant-13th</kind>
         <staff>null</staff>
       </harmony>
-      <!-- spacer: 9 divs -->
-      
       <barline>
         <!--musicxml-interfaces:debug>
           <div-count>0</div-count>
@@ -941,8 +931,6 @@
         suspended-fourth</kind>
         <staff>null</staff>
       </harmony>
-      <!-- spacer: 9 divs -->
-      
       <barline>
         <!--musicxml-interfaces:debug>
           <div-count>0</div-count>
@@ -1086,8 +1074,6 @@
         German</kind>
         <staff>null</staff>
       </harmony>
-      <!-- spacer: 9 divs -->
-      
       <barline>
         <!--musicxml-interfaces:debug>
           <div-count>0</div-count>
@@ -1231,8 +1217,6 @@
         other</kind>
         <staff>null</staff>
       </harmony>
-      <!-- spacer: 9 divs -->
-      
       <barline>
         <!--musicxml-interfaces:debug>
           <div-count>0</div-count>
@@ -1386,8 +1370,6 @@
         major</kind>
         <staff>null</staff>
       </harmony>
-      <!-- spacer: 9 divs -->
-      
       <barline>
         <!--musicxml-interfaces:debug>
           <div-count>0</div-count>
@@ -1501,6 +1483,8 @@
         </degree>
         <staff>null</staff>
       </harmony>
+      <!-- spacer: 4 divs -->
+      
       <barline location="right">
         <!--musicxml-interfaces:debug>
           <div-count>0</div-count>

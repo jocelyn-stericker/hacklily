@@ -5,7 +5,7 @@
   <!-- no work metadata -->
   <identification>
     <encoding>
-      <encoding-date>2016-02-13</encoding-date>
+      <encoding-date>2016-01-01</encoding-date>
       <software>Ripieno Satie</software>
       <supports type="yes" element="satie-ext" />
     </encoding>
@@ -121,8 +121,6 @@
           <staff-lines>5</staff-lines>
         </staff-details>
       </attributes>
-      <!-- spacer: 3 divs -->
-      
       <barline>
         <!--musicxml-interfaces:debug>
           <div-count>0</div-count>
@@ -179,8 +177,6 @@
           <multiple-rest use-symbols="no">1</multiple-rest>
         </measure-style>
       </attributes>
-      <!-- spacer: 3 divs -->
-      
       <barline>
         <!--musicxml-interfaces:debug>
           <div-count>0</div-count>
@@ -239,8 +235,6 @@
           <staff-lines>5</staff-lines>
         </staff-details>
       </attributes>
-      <!-- spacer: 5 divs -->
-      
       <barline>
         <!--musicxml-interfaces:debug>
           <div-count>0</div-count>
@@ -297,8 +291,6 @@
           <multiple-rest use-symbols="no">1</multiple-rest>
         </measure-style>
       </attributes>
-      <!-- spacer: 5 divs -->
-      
       <barline>
         <!--musicxml-interfaces:debug>
           <div-count>0</div-count>
@@ -358,8 +350,6 @@
           <staff-lines>5</staff-lines>
         </staff-details>
       </attributes>
-      <!-- spacer: 13 divs -->
-      
       <barline>
         <!--musicxml-interfaces:debug>
           <div-count>0</div-count>
@@ -417,8 +407,6 @@
           <multiple-rest use-symbols="no">1</multiple-rest>
         </measure-style>
       </attributes>
-      <!-- spacer: 13 divs -->
-      
       <barline>
         <!--musicxml-interfaces:debug>
           <div-count>0</div-count>
@@ -477,8 +465,6 @@
           <staff-lines>5</staff-lines>
         </staff-details>
       </attributes>
-      <!-- spacer: 17 divs -->
-      
       <barline>
         <!--musicxml-interfaces:debug>
           <div-count>0</div-count>
@@ -535,8 +521,6 @@
           <multiple-rest use-symbols="no">1</multiple-rest>
         </measure-style>
       </attributes>
-      <!-- spacer: 17 divs -->
-      
       <barline>
         <!--musicxml-interfaces:debug>
           <div-count>0</div-count>
@@ -606,8 +590,6 @@
           <staff-lines>5</staff-lines>
         </staff-details>
       </attributes>
-      <!-- spacer: 6 divs -->
-      
       <barline>
         <!--musicxml-interfaces:debug>
           <div-count>0</div-count>
@@ -664,8 +646,6 @@
           <multiple-rest use-symbols="no">1</multiple-rest>
         </measure-style>
       </attributes>
-      <!-- spacer: 6 divs -->
-      
       <barline>
         <!--musicxml-interfaces:debug>
           <div-count>0</div-count>
@@ -726,8 +706,6 @@
           <staff-lines>5</staff-lines>
         </staff-details>
       </attributes>
-      <!-- spacer: 15 divs -->
-      
       <barline>
         <!--musicxml-interfaces:debug>
           <div-count>0</div-count>
@@ -786,8 +764,6 @@
           <multiple-rest use-symbols="no">1</multiple-rest>
         </measure-style>
       </attributes>
-      <!-- spacer: 15 divs -->
-      
       <barline>
         <!--musicxml-interfaces:debug>
           <div-count>0</div-count>
@@ -857,8 +833,6 @@
           <staff-lines>5</staff-lines>
         </staff-details>
       </attributes>
-      <!-- spacer: 19 divs -->
-      
       <barline>
         <!--musicxml-interfaces:debug>
           <div-count>0</div-count>
@@ -915,8 +889,6 @@
           <multiple-rest use-symbols="no">1</multiple-rest>
         </measure-style>
       </attributes>
-      <!-- spacer: 19 divs -->
-      
       <barline>
         <!--musicxml-interfaces:debug>
           <div-count>0</div-count>
@@ -975,7 +947,7 @@
           <staff-lines>5</staff-lines>
         </staff-details>
       </attributes>
-      <!-- spacer: 2 divs -->
+      <!-- spacer: 61 divs -->
       
       <barline>
         <!--musicxml-interfaces:debug>
@@ -1033,8 +1005,6 @@
           <multiple-rest use-symbols="no">1</multiple-rest>
         </measure-style>
       </attributes>
-      <!-- spacer: 63 divs -->
-      
       <barline>
         <!--musicxml-interfaces:debug>
           <div-count>0</div-count>
@@ -1093,8 +1063,6 @@
           <staff-lines>5</staff-lines>
         </staff-details>
       </attributes>
-      <!-- spacer: 17 divs -->
-      
       <barline>
         <!--musicxml-interfaces:debug>
           <div-count>0</div-count>

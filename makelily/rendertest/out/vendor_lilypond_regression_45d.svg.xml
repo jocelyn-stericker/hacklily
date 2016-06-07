@@ -5,7 +5,7 @@
   <!-- no work metadata -->
   <identification>
     <encoding>
-      <encoding-date>2016-02-13</encoding-date>
+      <encoding-date>2016-01-01</encoding-date>
       <software>Ripieno Satie</software>
       <supports type="yes" element="satie-ext" />
     </encoding>
@@ -119,8 +119,6 @@
           <staff-lines>5</staff-lines>
         </staff-details>
       </attributes>
-      <!-- spacer: 5 divs -->
-      
       <barline>
         <!--musicxml-interfaces:debug>
           <div-count>0</div-count>
@@ -174,6 +172,8 @@
         </system-layout>
         <measure-numbering relative-x="0" relative-y="0" font-family="Alegreya, serif" font-style="normal" font-size="small" font-weight="normal" color="#000000">system</measure-numbering>
       </print>
+      <!-- spacer: 4 divs -->
+      
       <barline location="left">
         <!--musicxml-interfaces:debug>
           <div-count>4</div-count>
@@ -236,6 +236,8 @@
         </system-layout>
         <measure-numbering relative-x="0" relative-y="0" font-family="Alegreya, serif" font-style="normal" font-size="small" font-weight="normal" color="#000000">system</measure-numbering>
       </print>
+      <!-- spacer: 4 divs -->
+      
       <barline location="left">
         <!--musicxml-interfaces:debug>
           <div-count>4</div-count>
@@ -291,8 +293,6 @@
         <measure-numbering relative-x="0" relative-y="0" font-family="Alegreya, serif" font-style="normal" font-size="small" font-weight="normal" color="#000000">system</measure-numbering>
       </print>
       <!-- spacer: 4 divs -->
-      
-      <!-- spacer: 5 divs -->
       
       <barline>
         <!--musicxml-interfaces:debug>
@@ -403,6 +403,8 @@
         </system-layout>
         <measure-numbering relative-x="0" relative-y="0" font-family="Alegreya, serif" font-style="normal" font-size="small" font-weight="normal" color="#000000">system</measure-numbering>
       </print>
+      <!-- spacer: 4 divs -->
+      
       <barline location="left">
         <!--musicxml-interfaces:debug>
           <div-count>4</div-count>
@@ -466,8 +468,6 @@
       </print>
       <!-- spacer: 4 divs -->
       
-      <!-- spacer: 5 divs -->
-      
       <barline>
         <!--musicxml-interfaces:debug>
           <div-count>0</div-count>
@@ -522,8 +522,6 @@
         <measure-numbering relative-x="0" relative-y="0" font-family="Alegreya, serif" font-style="normal" font-size="small" font-weight="normal" color="#000000">system</measure-numbering>
       </print>
       <!-- spacer: 4 divs -->
-      
-      <!-- spacer: 5 divs -->
       
       <barline>
         <!--musicxml-interfaces:debug>
@@ -580,8 +578,6 @@
       </print>
       <!-- spacer: 4 divs -->
       
-      <!-- spacer: 5 divs -->
-      
       <barline>
         <!--musicxml-interfaces:debug>
           <div-count>0</div-count>
@@ -635,6 +631,8 @@
         </system-layout>
         <measure-numbering relative-x="0" relative-y="0" font-family="Alegreya, serif" font-style="normal" font-size="small" font-weight="normal" color="#000000">system</measure-numbering>
       </print>
+      <!-- spacer: 4 divs -->
+      
       <barline location="left">
         <!--musicxml-interfaces:debug>
           <div-count>4</div-count>
@@ -696,6 +694,8 @@
         </system-layout>
         <measure-numbering relative-x="0" relative-y="0" font-family="Alegreya, serif" font-style="normal" font-size="small" font-weight="normal" color="#000000">system</measure-numbering>
       </print>
+      <!-- spacer: 4 divs -->
+      
       <barline location="left">
         <!--musicxml-interfaces:debug>
           <div-count>4</div-count>

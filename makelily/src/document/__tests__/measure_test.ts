@@ -27,7 +27,7 @@ import {normalizeDivisionsInPlace} from "../segment";
 
 import {expect} from "chai";
 
-import {createFakeStaffSegment, createFakeVoiceSegment} from "../../engine/__tests__/etestutil";
+import {createFakeStaffSegment, createFakeVoiceSegment, fakeFactory} from "../../engine/__tests__/etestutil";
 
 describe("[document/segment.ts]", function() {
     describe("normalizeDivisionsInPlace", function() {
@@ -37,7 +37,7 @@ describe("[document/segment.ts]", function() {
                 createFakeVoiceSegment(2, 6, 1),
                 createFakeVoiceSegment(4, 12, 2),
             ];
-            normalizeDivisionsInPlace(segments);
+            normalizeDivisionsInPlace(fakeFactory, segments);
             expect(segments[0].divisions).to.equal(16);
             expect(segments[1].divisions).to.equal(16);
             expect(segments[2].divisions).to.equal(16);

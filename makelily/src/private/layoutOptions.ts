@@ -30,6 +30,8 @@ import IFactory from "./factory";
 import IPreprocessor from "./preprocessor";
 import IPostprocessor from "./postprocessor";
 
+export type IFixupFn = (segment: ISegment, operations: IAny[], restartRequired?: boolean) => void;
+
 interface ILayoutOptions {
     attributes: {[part: string]: IAttributesSnapshot[]};
     preview: boolean;
@@ -43,7 +45,7 @@ interface ILayoutOptions {
     debug?: boolean;
     preprocessors: IPreprocessor[];
     postprocessors: IPostprocessor[];
-    fixup: (segment: ISegment, operations: IAny[]) => void;
+    fixup: IFixupFn;
     singleLineMode?: boolean;
 }
 

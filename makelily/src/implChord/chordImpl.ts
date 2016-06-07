@@ -22,7 +22,7 @@
 import {Clef, Count, MultipleRest, Note, NoteheadType, Stem, StemType, Tremolo,
     Tied, TimeModification, serializeNote} from "musicxml-interfaces";
 import {IAny} from "musicxml-interfaces/operations";
-import {forEach, times, filter, reduce, map, max, any, extend} from "lodash";
+import {forEach, times, filter, reduce, map, max, some, extend} from "lodash";
 import * as invariant from "invariant";
 
 import Type from "../document/types";
@@ -129,7 +129,6 @@ class ChordModelImpl implements ChordModel.IChordModel, IList<NoteImpl> {
     satieDirection: StemType;
     satieMultipleRest: MultipleRest;
     noteheadGlyph: string[];
-    satieBeam: IBeamLayout;
     satieUnbeamedTuplet: IBeamLayout;
     _clef: Clef;
     key: string;
@@ -148,7 +147,7 @@ class ChordModelImpl implements ChordModel.IChordModel, IList<NoteImpl> {
     }
 
     get rest() {
-        return any(this, note => note.rest);
+        return some(this, note => note.rest);
     }
     set rest(r: boolean) {
         if (!!r) {
@@ -333,7 +332,6 @@ class ChordModelImpl implements ChordModel.IChordModel, IList<NoteImpl> {
                 satieFlag: this.satieFlag,
                 satieDirection: this.satieDirection,
                 satieMultipleRest: this.satieMultipleRest,
-                satieBeam: this.satieBeam,
                 satieUnbeamedTuplet: this.satieUnbeamedTuplet,
                 frozenness: this.frozenness,
                 wholebar$: this.wholebar$,
@@ -597,6 +595,8 @@ module ChordModelImpl {
         boundingBoxes$: IBoundingRect[];
         renderClass: Type;
         expandPolicy: ExpandPolicy;
+
+        satieBeam: IBeamLayout;
 
         /*---- Implementation ----------------------------------------------------*/
 

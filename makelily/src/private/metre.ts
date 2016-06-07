@@ -24,7 +24,7 @@
  */
 
 import {StartStop, Time, TimeModification, Count} from "musicxml-interfaces";
-import {any, reduce, times, forEach, clone, find} from "lodash";
+import {some, reduce, times, forEach, clone, find} from "lodash";
 import * as invariant from "invariant";
 
 import IModel from "../document/model";
@@ -273,7 +273,7 @@ export function rhythmicSpellcheck$(cursor$: ICursor): boolean {
         !timeModification(currNote) && !timeModification(nextNote) &&
         (
             currNote[0].rest && nextNote[0].rest ||
-            !!nextNote && any(ties(currNote),
+            !!nextNote && some(ties(currNote),
                     t => t && t.type !== StartStop.Stop) ?
             nextNote : null);
 
@@ -556,7 +556,7 @@ export function subtract(durr1: any, divisions: number,
             /* Exit! */
             return replaceWith;
         }
-        any(allNotes, function(note) { // stop at first 'true'
+        some(allNotes, function(note) { // stop at first 'true'
             let noteDivisions = _calcDivisions(count(note), dots(note), null,
                 attributes.time, attributes.divisions);
 
@@ -597,7 +597,7 @@ export function subtract(durr1: any, divisions: number,
 }
 
 export function calcDivisions(chord: IChord, cursor: IMicroCursor) {
-    if (any(chord, note => note.grace)) {
+    if (some(chord, note => note.grace)) {
         return 0;
     }
 

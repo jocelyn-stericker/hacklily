@@ -39,12 +39,10 @@ export interface IProps {
  */
 export default class Rest extends Component<IProps, void> {
     static contextTypes = <any> {
-        originX: PropTypes.number.isRequired,
         originY: PropTypes.number.isRequired
     };
 
     context: {
-        originX: number;
         originY: number;
     };
 
@@ -57,7 +55,7 @@ export default class Rest extends Component<IProps, void> {
         invariant(!!spec.rest, "Attempting to render a non-rest with Rest");
         const notehead = this.props.notehead;
 
-        const x = this.context.originX + spec.defaultX + (spec.relativeX || 0);
+        const x = spec.defaultX + (spec.relativeX || 0);
         const y = this.context.originY - (spec.defaultY + (spec.relativeY || 0));
         const dotOffset = bboxes[notehead][0] * 10 + 6;
 

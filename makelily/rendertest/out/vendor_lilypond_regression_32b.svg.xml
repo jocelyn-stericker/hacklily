@@ -5,7 +5,7 @@
   <!-- no work metadata -->
   <identification>
     <encoding>
-      <encoding-date>2016-02-13</encoding-date>
+      <encoding-date>2016-01-01</encoding-date>
       <software>Ripieno Satie</software>
       <supports type="yes" element="satie-ext" />
     </encoding>
@@ -135,7 +135,7 @@
           <words justify="left" default-x="0" default-y="-60" font-style="normal" font-size="medium" font-weight="bold" color="#000000" halign="left" valign="bottom" underline="0" overline="0" line-through="0" rotation="0" letter-spacing="normal" line-height="normal" dir="ltr" enclosure="none">Bold, Medium</words>
         </direction-type>
       </direction>
-      <!-- spacer: 49 divs -->
+      <!-- spacer: 336 divs -->
       
       <barline>
         <!--musicxml-interfaces:debug>
@@ -207,8 +207,6 @@
           <words justify="left" default-x="0" default-y="-60" font-style="normal" font-size="large" font-weight="bold" color="#000000" halign="left" valign="bottom" underline="0" overline="0" line-through="0" rotation="0" letter-spacing="normal" line-height="normal" dir="ltr" enclosure="none">Bold, Large</words>
         </direction-type>
       </direction>
-      <!-- spacer: 385 divs -->
-      
       <barline>
         <!--musicxml-interfaces:debug>
           <div-count>0</div-count>
@@ -287,8 +285,6 @@
           <words justify="left" default-x="0" default-y="-60" font-style="normal" font-size="small" font-weight="normal" color="#FF8000" halign="left" valign="bottom" underline="0" overline="0" line-through="0" rotation="0" letter-spacing="normal" line-height="normal" dir="ltr" enclosure="none">Normal, Small, Colored, Below</words>
         </direction-type>
       </direction>
-      <!-- spacer: 385 divs -->
-      
       <barline>
         <!--musicxml-interfaces:debug>
           <div-count>0</div-count>

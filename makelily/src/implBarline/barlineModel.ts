@@ -23,7 +23,7 @@ import {Barline, Segno, Coda, BarlineLocation, WavyLine, Fermata, BarStyle, Endi
     Footnote, Level, BarStyleType, PartGroup, PartSymbol,
     serializeBarline} from "musicxml-interfaces";
 import {IAny} from "musicxml-interfaces/operations";
-import {any, forEach} from "lodash";
+import {some, forEach} from "lodash";
 import * as invariant from "invariant";
 
 import IModel from "../document/model";
@@ -190,7 +190,7 @@ module BarlineModel {
 
             this.model.barStyle = Object.create(this.model.barStyle) || {};
             if (!isFinite(this.model.barStyle.data) || this.model.barStyle.data === null) {
-                let lastBarlineInSegment = !any(cursor$.segment.slice(cursor$.idx$ + 1),
+                let lastBarlineInSegment = !some(cursor$.segment.slice(cursor$.idx$ + 1),
                         model => cursor$.factory.modelHasType(model, Type.Barline));
 
                 if (cursor$.line.barOnLine$ + 1 === cursor$.line.barsOnLine &&

@@ -7,7 +7,7 @@
   <identification>
     <creator type="composer">Composer</creator>
     <encoding>
-      <encoding-date>2016-02-13</encoding-date>
+      <encoding-date>2016-01-01</encoding-date>
       <software>Ripieno Satie</software>
       <supports type="yes" element="satie-ext" />
     </encoding>
@@ -25,12 +25,6 @@
         <right-margin>70</right-margin>
         <top-margin>88</top-margin>
         <bottom-margin>88</bottom-margin>
-      </page-margins>
-      <page-margins type="both">
-        <left-margin>93.84615384615385</left-margin>
-        <right-margin>93.84615384615385</right-margin>
-        <top-margin>93.84615384615385</top-margin>
-        <bottom-margin>93.84615384615385</bottom-margin>
       </page-margins>
     </page-layout>
     <system-layout>
@@ -137,12 +131,6 @@
             <right-margin>70</right-margin>
             <top-margin>88</top-margin>
             <bottom-margin>88</bottom-margin>
-          </page-margins>
-          <page-margins type="both">
-            <left-margin>93.84615384615385</left-margin>
-            <right-margin>93.84615384615385</right-margin>
-            <top-margin>93.84615384615385</top-margin>
-            <bottom-margin>93.84615384615385</bottom-margin>
           </page-margins>
         </page-layout>
         <system-layout>

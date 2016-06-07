@@ -136,10 +136,7 @@ export default function layout(options: ILayoutOptions, memo$: ILinesLayoutState
     }).opts;
 
     // layoutLine$ handles the second pass.
-    let layout = <ILineLayoutResult[]> map(lineOpts$, <any> secondPass, {
-        options: options,
-        memo$: memo$
-    });
+    let layout = <ILineLayoutResult[]> map(lineOpts$, lineOpt => secondPass(lineOpt, lineOpts$, options, memo$));
 
     setCurrentMeasureList(null);
     return layout;
@@ -187,12 +184,12 @@ function reduceToLineOpts(memo: IReduceOptsMemo, width: IWidthInformation, idx: 
     return memo;
 }
 
-function secondPass(lineOpt$: ILayoutOptions, key: string, lineOpts$: ILayoutOptions[]) {
+function secondPass(lineOpt$: ILayoutOptions, lineOpts$: ILayoutOptions[], options: ILayoutOptions, memo$: ILinesLayoutState) {
     lineOpt$.lines = lineOpts$.length;
     lineOpt$.attributes = {}; // FIXME
 
-    let lineBounds = calculateLineBounds(lineOpt$.print$, this.options.page$);
-    return layoutLine$(lineOpt$, lineBounds, this.memo$);
+    let lineBounds = calculateLineBounds(lineOpt$.print$, options.page$);
+    return layoutLine$(lineOpt$, lineBounds, memo$);
 };
 
 function newLayoutWithoutMeasures(options: ILayoutOptions, print: Print): ILayoutOptions {

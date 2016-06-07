@@ -6,7 +6,7 @@
   <movement-title>Layout options</movement-title>
   <identification>
     <encoding>
-      <encoding-date>2016-02-13</encoding-date>
+      <encoding-date>2016-01-01</encoding-date>
       <software>Ripieno Satie</software>
       <supports type="yes" element="satie-ext" />
     </encoding>
@@ -29,12 +29,6 @@
         <right-margin>212</right-margin>
         <top-margin>53</top-margin>
         <bottom-margin>74</bottom-margin>
-      </page-margins>
-      <page-margins type="both">
-        <left-margin>93.84615384615385</left-margin>
-        <right-margin>93.84615384615385</right-margin>
-        <top-margin>93.84615384615385</top-margin>
-        <bottom-margin>93.84615384615385</bottom-margin>
       </page-margins>
     </page-layout>
     <system-layout>
@@ -104,12 +98,6 @@
             <top-margin>53</top-margin>
             <bottom-margin>74</bottom-margin>
           </page-margins>
-          <page-margins type="both">
-            <left-margin>93.84615384615385</left-margin>
-            <right-margin>93.84615384615385</right-margin>
-            <top-margin>93.84615384615385</top-margin>
-            <bottom-margin>93.84615384615385</bottom-margin>
-          </page-margins>
         </page-layout>
         <system-layout>
           <system-margins>
@@ -143,8 +131,6 @@
           <staff-lines>5</staff-lines>
         </staff-details>
       </attributes>
-      <!-- spacer: 5 divs -->
-      
       <barline>
         <!--musicxml-interfaces:debug>
           <div-count>0</div-count>
@@ -187,12 +173,6 @@
             <top-margin>53</top-margin>
             <bottom-margin>74</bottom-margin>
           </page-margins>
-          <page-margins type="both">
-            <left-margin>93.84615384615385</left-margin>
-            <right-margin>93.84615384615385</right-margin>
-            <top-margin>93.84615384615385</top-margin>
-            <bottom-margin>93.84615384615385</bottom-margin>
-          </page-margins>
         </page-layout>
         <system-layout>
           <system-margins>
@@ -205,8 +185,6 @@
         <measure-numbering relative-x="0" relative-y="0" font-family="Alegreya, serif" font-style="normal" font-size="small" font-weight="normal" color="#000000">system</measure-numbering>
       </print>
       <!-- spacer: 4 divs -->
-      
-      <!-- spacer: 5 divs -->
       
       <barline>
         <!--musicxml-interfaces:debug>
@@ -249,12 +227,6 @@
             <right-margin>212</right-margin>
             <top-margin>53</top-margin>
             <bottom-margin>74</bottom-margin>
-          </page-margins>
-          <page-margins type="both">
-            <left-margin>93.84615384615385</left-margin>
-            <right-margin>93.84615384615385</right-margin>
-            <top-margin>93.84615384615385</top-margin>
-            <bottom-margin>93.84615384615385</bottom-margin>
           </page-margins>
         </page-layout>
         <system-layout>

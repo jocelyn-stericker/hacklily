@@ -21,10 +21,9 @@
 
 import {PartSymbolType} from "musicxml-interfaces";
 import {createFactory as $, Component, DOM, PropTypes} from "react";
-import {any, map} from "lodash";
+import {some, map} from "lodash";
 
 import Line from "../private/views/line";
-import {Targetable} from "../private/views/metadata";
 
 import AttributesView from "../implAttributes/attributesView";
 
@@ -36,30 +35,26 @@ const $AttributesView = $(AttributesView);
  * Renders a full-stave-height barline at (x,y).
  * Does not do any interesting calculations.
  */
-@Targetable()
 export default class BarlineView extends Component<{layout: BarlineModel.IBarlineLayout}, {}> {
     static contextTypes = {
-        originX: PropTypes.number.isRequired,
         originY: PropTypes.number.isRequired,
         systemBottom: PropTypes.number.isRequired,
         systemTop: PropTypes.number.isRequired
     } as any;
 
     context: {
-        originX: number;
         originY: number;
         systemBottom: number;
         systemTop: number;
     };
 
     render() {
-        const originX = this.context.originX;
         const originY = this.context.originY;
 
         const layout = this.props.layout;
         const model = layout.model;
 
-        const x = originX + model.defaultX;
+        const x = model.defaultX;
         const y = originY - model.defaultY;
 
         // TODO: render BarStyleType.Dashed:
@@ -70,7 +65,7 @@ export default class BarlineView extends Component<{layout: BarlineModel.IBarlin
         let yTop: number;
         let yBottom: number;
         if (layout.partSymbol && layout.partSymbol.type !== PartSymbolType.None ||
-                layout.partGroups && any(layout.partGroups, group => group.groupBarline)) {
+                layout.partGroups && some(layout.partGroups, group => group.groupBarline)) {
             yTop = this.context.systemTop;
             yBottom = this.context.systemBottom;
         } else {

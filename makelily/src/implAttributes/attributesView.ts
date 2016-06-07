@@ -21,8 +21,6 @@
 
 import {createFactory as $, Component, DOM, PropTypes} from "react";
 
-import {Targetable} from "../private/views/metadata";
-
 import Attributes from "./attributesModel";
 import BarNumber from "./barNumberView";
 import Clef from "./clefView";
@@ -31,15 +29,12 @@ import KeySignature from "./keySignatureView";
 import TimeSignature from "./timeSignatureView";
 import StaffLines from "./staffLinesView";
 
-@Targetable()
 export default class AttributesView extends Component<{layout: Attributes.IAttributesLayout}, {}> {
     static contextTypes = {
-        originX: PropTypes.number.isRequired,
         originY: PropTypes.number.isRequired
     } as any;
 
     context: {
-        originX: number,
         originY: number
     };
 
@@ -54,7 +49,7 @@ export default class AttributesView extends Component<{layout: Attributes.IAttri
             children.push($(StaffLines)({
                 key: "staffLines",
                 width: staffWidth,
-                defaultX: -staffLinesOffsetX,
+                defaultX: this.props.layout.overrideX - staffLinesOffsetX,
                 defaultY: 0,
                 staffDetails: layout.staffDetails
             }));

@@ -3,3 +3,11 @@
 :local(.tests) {
     margin-top: 20px;
 }
+
+.page {
+    height: 300px;
+}
+
+.page svg {
+    height: calc(100% - 10px);
+}

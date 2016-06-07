@@ -29,16 +29,15 @@ type MXMLArticulation = PrintStyle | Placement;
 export interface IProps {
     articulation: Articulations;
     key?: string | number;
+    defaultX?: number;
 }
 
 export default class Articulation extends Component<IProps, void> {
     static contextTypes = {
-        originX: PropTypes.number.isRequired,
         originY: PropTypes.number.isRequired
     } as any;
 
     context: {
-        originX: number;
         originY: number;
     };
 
@@ -85,7 +84,7 @@ export default class Articulation extends Component<IProps, void> {
                 fill: "black",
                 glyphName: `${name}${direction}`,
                 key: name,
-                x: this.context.originX + printStyle.defaultX + (printStyle.relativeX || 0),
+                x: this.props.defaultX + printStyle.defaultX + (printStyle.relativeX || 0),
                 y: this.context.originY - printStyle.defaultY - (printStyle.relativeY || 0)
             }));
         };

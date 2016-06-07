@@ -134,8 +134,10 @@ describe("[engine.ts]", function() {
                 modelHasType: (model: IModel, modelType: Type): boolean => {
                     if (model.divCount === 0) {
                         return modelType === Type.Attributes;
+                    } else if ("length" in model) {
+                        return modelType === Type.Chord;
                     }
-                    return modelType === Type.Chord;
+                    return modelType === Type.Spacer;
                 },
                 search: (models: IModel[], idx: number, modelType: Type):
                         IModel[] => {
@@ -222,7 +224,7 @@ describe("[engine.ts]", function() {
 
             validate(contextOptions, memo$);
 
-            expect(calledCount).to.equal(3);
+            expect(calledCount).to.equal(2);
         });
     });
 });

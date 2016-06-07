@@ -9,14 +9,14 @@
  * See http://smufl.org for more details.
  */
 
-import {indexBy, memoize} from "lodash";
+import {keyBy, memoize} from "lodash";
 import * as invariant from "invariant";
 
 import bravura from "./smufl/bravura";
 import glyphNames from "./smufl/glyphnames";
 
 export {default as bravura} from "./smufl/bravura";
-export let bboxes: {[key: string]: any[]; } = <any> indexBy(bravura.glyphBBoxes, 4);
+export let bboxes: {[key: string]: any[]; } = <any> keyBy(bravura.glyphBBoxes, 4);
 bboxes["noteheadNull"] = bboxes["noteheadBlack"];
 
 export let getGlyphCode = memoize(function getGlyphCode(name: string) {

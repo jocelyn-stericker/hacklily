@@ -21,6 +21,7 @@
 
 import {createFactory as $, Component, DOM, PropTypes} from "react";
 import {chain, flatten, mapValues, map, forEach} from "lodash";
+import * as invariant from "invariant";
 
 import IMeasureLayout from "../private/measureLayout";
 import ILayout from "../private/layout";
@@ -32,13 +33,13 @@ import ModelView from "../implSegment/modelView";
 export interface IProps {
     layout: IMeasureLayout;
     key?: string | number;
+    version: number;
 }
 
 const NUMBER_ARRAY = PropTypes.arrayOf(PropTypes.number);
 
 export default class MeasureView extends Component<IProps, void> {
     static childContextTypes = {
-        originX: PropTypes.number.isRequired,
         originYByPartAndStaff: PropTypes.objectOf(NUMBER_ARRAY).isRequired,
         systemBottom: PropTypes.number.isRequired,
         systemTop: PropTypes.number.isRequired
@@ -52,18 +53,17 @@ export default class MeasureView extends Component<IProps, void> {
         originY: number;
     };
 
-    _version: number = -1;
-
     render(): any {
-        let layout = this.props.layout;
-        this._version = this.props.layout.getVersion();
+        const layout = this.props.layout;
 
-        return DOM.g(null,
+        return DOM.g({transform: `translate(${this.props.layout.originX})`},
             chain(flatten(layout.elements))
                 .filter((layout: ILayout) => !!layout.model)   // Remove helpers.
                 .map((layout: ILayout) => $(ModelView)({
                     key: (<any>layout).key,
-                    layout: layout
+                    version: this.props.layout.getVersion(),
+                    layout,
+                    originX: this.props.layout.originX,
                 }))
                 .value(),
             $(DebugBox)({key: "debugBox", layout: layout})
@@ -76,7 +76,7 @@ export default class MeasureView extends Component<IProps, void> {
 
     getChildContext() {
         let {layout} = this.props;
-        let originYByPartAndStaff = mapValues(layout.originY, this.extractOrigins, this);
+        let originYByPartAndStaff = mapValues(layout.originY, layouts => this.extractOrigins(layouts));
         let bottom = MAX_SAFE_INTEGER;
         let top = 0;
         forEach(layout.originY, origins => {
@@ -93,7 +93,6 @@ export default class MeasureView extends Component<IProps, void> {
         // TODO 2: Do not ignore top/bottom staff in staffGroup of attributes
         // TODO 3: A part can be in many groups.
         return {
-            originX: layout.originX,
             originYByPartAndStaff: originYByPartAndStaff,
             systemBottom: this.context.originY - bottom + 20.5,
             systemTop: this.context.originY - top - 20.5
@@ -101,7 +100,7 @@ export default class MeasureView extends Component<IProps, void> {
     }
 
     extractOrigins(layouts: number[]) {
-        return map(layouts, this.invert, this);
+        return map(layouts, layout => this.invert(layout));
     }
 
     invert(y: number) {
@@ -109,9 +108,9 @@ export default class MeasureView extends Component<IProps, void> {
     }
 
     shouldComponentUpdate(nextProps: IProps) {
-        return true;
-        // invariant(!isNaN(this._version), `Invalid non-numeric version ${this._version}`);
-        // return this._version < this.props.layout.getVersion();
+        invariant(!isNaN(this.props.version), `Invalid non-numeric version ${this.props.version}`);
+        return this.props.version !== nextProps.version ||
+            this.props.layout.originX !== nextProps.layout.originX;
     }
 }
 

@@ -36,12 +36,10 @@ export interface IProps {
  */
 export default class LedgerLine extends Component<IProps, void> {
     static contextTypes = {
-        originX: PropTypes.number.isRequired,
         originY: PropTypes.number.isRequired
     } as any;
 
     context: {
-        originX: number;
         originY: number;
     };
 
@@ -54,8 +52,8 @@ export default class LedgerLine extends Component<IProps, void> {
             stroke: spec.color,
             strokeWidth: 2.2,
                 // Ledger lines should be thicker than regular lines.
-            x1: this.context.originX + spec.defaultX + (spec.relativeX || 0) - 3.2,
-            x2: this.context.originX + spec.defaultX + (spec.relativeX || 0) + xOffset - 0.2,
+            x1: spec.defaultX + (spec.relativeX || 0) - 3.2,
+            x2: spec.defaultX + (spec.relativeX || 0) + xOffset - 0.2,
             y1: this.context.originY - spec.defaultY - (spec.relativeX || 0),
             y2: this.context.originY - spec.defaultY - (spec.relativeX || 0)
         });

@@ -21,10 +21,9 @@
 
 import {Note, Lyric, Syllabic, SyllabicType, Text, StemType} from "musicxml-interfaces";
 import {createFactory as $, Component, DOM, PropTypes, ReactElement} from "react";
-import {map, any, chain, max} from "lodash";
+import {map, some, chain, maxBy} from "lodash";
 
 import {bboxes, bravura, getRight} from "../private/smufl";
-import {Targetable} from "../private/views/metadata";
 
 import BeamView from "./beamView";
 import ChordModel from "./chordModel";
@@ -55,15 +54,12 @@ export interface IProps {
 /**
  * Renders notes and their notations.
  */
-@Targetable()
 export default class ChordView extends Component<IProps, {}> {
     static contextTypes = {
-        originX: PropTypes.number.isRequired,
         originY: PropTypes.number.isRequired
     } as any;
 
     context: {
-        originX: number;
         originY: number;
     };
 
@@ -73,9 +69,9 @@ export default class ChordView extends Component<IProps, {}> {
         let staleSpec = this.props.layout.model;
         let base = freshSpec.baseModel;
 
-        let maxNotehead = max(base.noteheadGlyph, glyph => getRight(glyph));
+        let maxNotehead = maxBy(base.noteheadGlyph, glyph => getRight(glyph));
 
-        let anyVisible = any(freshSpec, note => note.printObject !== false);
+        let anyVisible = some(freshSpec, note => note.printObject !== false);
 
         if (!anyVisible) {
             return null;
@@ -104,7 +100,7 @@ export default class ChordView extends Component<IProps, {}> {
                                     fontSize: textPt.fontSize || DEFAULT_LYRIC_SIZE,
                                     key: ++lyKey,
                                     textAnchor: "middle",
-                                    x: this.context.originX + this.props.layout.x$ + width / 2,
+                                    x: this.props.layout.x$ + width / 2,
                                     y: this.context.originY + 60
                                 }, textPt.data));
                             break;
@@ -179,9 +175,9 @@ export default class ChordView extends Component<IProps, {}> {
                 stemHeight: base.satieStem.stemHeight,
                 stemWidth: stemThickness
             }),
-            base.satieBeam && $BeamView({
+            this.props.layout.satieBeam && $BeamView({
                 key: "b",
-                layout: base.satieBeam,
+                layout: this.props.layout.satieBeam,
                 stemWidth: stemThickness,
                 stroke: "black"
             }),

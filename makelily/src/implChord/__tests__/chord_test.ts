@@ -30,6 +30,7 @@ import {expect} from "chai";
 
 import IModel from "../../document/model";
 import Type from "../../document/types";
+import OwnerType from "../../document/ownerTypes";
 
 import IFactory from "../../private/factory";
 import IAttributesSnapshot from "../../private/attributesSnapshot";
@@ -61,6 +62,7 @@ function getCursor(factory: IFactory, model: IModel): ICursor {
     let attributes = getAttributes();
     let segment = <any> [model];
     segment.part = "P1";
+    segment.ownerType = OwnerType.Voice;
     return {
         fixup: null,
 

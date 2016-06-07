@@ -38,14 +38,12 @@ export interface IProps {
  */
 export default class PartSymbolView extends Component<IProps, void> {
     static contextTypes = {
-        originX: PropTypes.number.isRequired,
         originY: PropTypes.number.isRequired,
         systemBottom: PropTypes.number.isRequired,
         systemTop: PropTypes.number.isRequired
     } as any;
 
     context: {
-        originX: number;
         originY: number;
         systemBottom: number;
         systemTop: number;
@@ -68,8 +66,8 @@ export default class PartSymbolView extends Component<IProps, void> {
                 key: "line",
                 stroke: "#000000",
                 strokeWidth: defaults.thinBarlineThickness * 10,
-                x1: this.context.originX + this.props.spec.defaultX,
-                x2: this.context.originX + this.props.spec.defaultX,
+                x1: this.props.spec.defaultX,
+                x2: this.props.spec.defaultX,
                 y1: bottom - height,
                 y2: bottom
             })
@@ -84,7 +82,7 @@ export default class PartSymbolView extends Component<IProps, void> {
 
         const defaults = bravura.engravingDefaults; // TODO: Use 'print'
 
-        const x = this.context.originX + this.props.spec.defaultX - 14;
+        const x = this.props.spec.defaultX - 14;
 
         const s = height / 40;
 

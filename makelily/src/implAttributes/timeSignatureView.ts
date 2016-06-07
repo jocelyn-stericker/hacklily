@@ -32,12 +32,10 @@ import {NUMBER_SPACING, PLUS_SPACING} from "./attributesData";
  */
 export default class TimeSignature extends Component<{spec: Time, key?: string | number}, void> {
     static contextTypes = {
-        originX: PropTypes.number.isRequired,
         originY: PropTypes.number.isRequired
     } as any;
 
     context: {
-        originX: number;
         originY: number;
     };
 
@@ -50,7 +48,7 @@ export default class TimeSignature extends Component<{spec: Time, key?: string |
         if (ts.singleNumber && ts.beats.length === 1 && ts.beats[0].length === 1) {
             return $(TimeSignatureNumber)({
                     stroke: spec.color,
-                    x: this.context.originX + spec.defaultX + (spec.relativeX || 0),
+                    x: spec.defaultX + (spec.relativeX || 0),
                     y: this.context.originY - (spec.defaultY + (spec.relativeY || 0))
                 },
                 ts.beats[0]
@@ -70,14 +68,14 @@ export default class TimeSignature extends Component<{spec: Time, key?: string |
                 return $(Glyph)({
                     fill: spec.color,
                     glyphName: "timeSigCommon",
-                    x: this.context.originX + spec.defaultX + (spec.relativeX || 0),
+                    x: spec.defaultX + (spec.relativeX || 0),
                     y: this.context.originY - (spec.defaultY + (spec.relativeY || 0))
                 });
             } else if (isCut) {
                 return $(Glyph)({
                     fill: spec.color,
                     glyphName: "timeSigCutCommon",
-                    x: this.context.originX + spec.defaultX + (spec.relativeX || 0),
+                    x: spec.defaultX + (spec.relativeX || 0),
                     y: this.context.originY - (spec.defaultY + (spec.relativeY || 0))
                 });
             }
@@ -95,7 +93,7 @@ export default class TimeSignature extends Component<{spec: Time, key?: string |
                         $(TimeSignatureNumber)({
                                 key: `num_${idx}_${jdx}`,
                                 stroke: spec.color,
-                                x: this.context.originX + spec.defaultX + (spec.relativeX || 0) +
+                                x: spec.defaultX + (spec.relativeX || 0) +
                                     numOffsets[idx] + pos + jdx * NUMBER_SPACING,
                                 y: this.context.originY -
                                     (spec.defaultY + (spec.relativeY || 0) + 10)
@@ -106,7 +104,7 @@ export default class TimeSignature extends Component<{spec: Time, key?: string |
                             fill: "black",
                             glyphName: "timeSigPlusSmall",
                             key: `num_plus_numerator_${idx}_${jdx}`,
-                            x: this.context.originX + spec.defaultX + (spec.relativeX || 0) +
+                            x: spec.defaultX + (spec.relativeX || 0) +
                                 numOffsets[idx] + pos + jdx * NUMBER_SPACING + 17,
                             y: this.context.originY - (spec.defaultY) + (spec.relativeY || 0) - 10
                         })
@@ -114,7 +112,7 @@ export default class TimeSignature extends Component<{spec: Time, key?: string |
                     $(TimeSignatureNumber)({
                             key: "den",
                             stroke: spec.color,
-                            x: this.context.originX + spec.defaultX + (spec.relativeX || 0) +
+                            x: spec.defaultX + (spec.relativeX || 0) +
                                 denOffsets[idx] + pos,
                             y: this.context.originY - (spec.defaultY + (spec.relativeY || 0) - 10)
                         },
@@ -124,7 +122,7 @@ export default class TimeSignature extends Component<{spec: Time, key?: string |
                         fill: "black",
                         glyphName: "timeSigPlus",
                         key: `num_plus_${idx}`,
-                        x: this.context.originX + spec.defaultX + (spec.relativeX || 0) +
+                        x: spec.defaultX + (spec.relativeX || 0) +
                             numOffsets[idx] + pos +
                             beatsOuter.length * NUMBER_SPACING - 10,
                         y: this.context.originY - (spec.defaultY) + (spec.relativeY || 0)

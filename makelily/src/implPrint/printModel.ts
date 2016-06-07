@@ -23,7 +23,7 @@ import {ScoreHeader, MeasureNumbering, PartNameDisplay, MeasureLayout, PartAbbre
     PageLayout, SystemLayout, StaffLayout, Print, PageMargins, OddEvenBoth, NormalItalic,
     NormalBold, serializePrint} from "musicxml-interfaces";
 import {IAny} from "musicxml-interfaces/operations";
-import {forEach} from "lodash";
+import {forEach, defaultsDeep} from "lodash";
 import * as invariant from "invariant";
 
 import IModel from "../document/model";
@@ -34,8 +34,6 @@ import ExpandPolicy from "../document/expandPolicies";
 import ICursor from "../private/cursor";
 import ILayout from "../private/layout";
 import IBoundingRect from "../private/boundingRect";
-
-import defaultsDeep from "../private/defaultsDeep";
 
 class PrintModel implements Export.IPrintModel {
     /*---- I.1 IModel ---------------------------------------------------------------------------*/
@@ -92,7 +90,7 @@ class PrintModel implements Export.IPrintModel {
         if (!this._once) {
             // FIXME: should always sync
             let defaultPrint = extractDefaultPrintFromHeader(cursor$.header);
-            spec = defaultsDeep(this, defaultPrint);
+            spec = defaultsDeep<PrintModel, PrintModel>(this, defaultPrint);
         } else {
             spec = this;
         }
@@ -170,6 +168,7 @@ module PrintModel {
 
             // FIXME/STOPSHIP: get the layout version of print in view.ts
             origModel.pageNumber = model.pageNumber;
+            this.renderedWidth = 0;
         }
 
         /*---- ILayout ------------------------------------------------------*/
@@ -179,6 +178,8 @@ module PrintModel {
         model: PrintModel;
         x$: number;
         division: number;
+
+        renderedWidth: number;
 
         // Prototype:
 
@@ -233,6 +234,7 @@ module Export {
     }
 
     export interface IPrintLayout extends ILayout {
+        renderedWidth: number;
     }
 }
 

@@ -52,7 +52,6 @@ module ChordModel {
             stemStart: number;
             tremolo?: Tremolo;
         };
-        satieBeam: IBeamLayout;
         satieFlag: string;
         satieLedger: number[];
         noteheadGlyph: string[];
@@ -68,6 +67,7 @@ module ChordModel {
         model: IDetachedChordModel;
         minSpaceBefore: number;
         minSpaceAfter: number;
+        satieBeam: IBeamLayout;
         freshest(): IChordLayout;
     }
 }

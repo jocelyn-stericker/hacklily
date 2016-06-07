@@ -5,7 +5,7 @@
   <!-- no work metadata -->
   <identification>
     <encoding>
-      <encoding-date>2016-02-13</encoding-date>
+      <encoding-date>2016-01-01</encoding-date>
       <software>Ripieno Satie</software>
       <supports type="yes" element="satie-ext" />
     </encoding>
@@ -71,7 +71,7 @@
           <step>C</step>
           <octave>5</octave>
         </pitch>
-        <duration>1</duration>
+        <duration>152</duration>
         <voice>1</voice>
         <type>quarter</type>
         <staff>1</staff>
@@ -82,7 +82,7 @@
           <step>C</step>
           <octave>5</octave>
         </pitch>
-        <duration>1</duration>
+        <duration>152</duration>
         <voice>1</voice>
         <type>quarter</type>
         <staff>1</staff>
@@ -93,7 +93,7 @@
           <step>C</step>
           <octave>5</octave>
         </pitch>
-        <duration>8</duration>
+        <duration>152</duration>
         <voice>1</voice>
         <type>quarter</type>
         <staff>1</staff>
@@ -104,7 +104,7 @@
           <step>C</step>
           <octave>5</octave>
         </pitch>
-        <duration>8</duration>
+        <duration>152</duration>
         <voice>1</voice>
         <type>quarter</type>
         <staff>1</staff>
@@ -166,8 +166,6 @@
           <staff-lines>5</staff-lines>
         </staff-details>
       </attributes>
-      <!-- spacer: 609 divs -->
-      
       <barline>
         <!--musicxml-interfaces:debug>
           <div-count>0</div-count>
@@ -183,7 +181,7 @@
           <step>C</step>
           <octave>5</octave>
         </pitch>
-        <duration>16</duration>
+        <duration>304</duration>
         <voice>1</voice>
         <type>half</type>
         <staff>1</staff>
@@ -194,7 +192,7 @@
           <step>C</step>
           <octave>5</octave>
         </pitch>
-        <duration>76</duration>
+        <duration>304</duration>
         <voice>1</voice>
         <type>half</type>
         <staff>1</staff>
@@ -233,7 +231,7 @@
         </system-layout>
         <measure-numbering relative-x="0" relative-y="0" font-family="Alegreya, serif" font-style="normal" font-size="small" font-weight="normal" color="#000000">system</measure-numbering>
       </print>
-      <!-- spacer: 64 divs -->
+      <!-- spacer: 304 divs -->
       
       <attributes>
         <!--musicxml-interfaces:debug>

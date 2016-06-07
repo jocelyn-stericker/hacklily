@@ -30,12 +30,10 @@ export interface IProps {
 
 export default class BarNumber extends Component<IProps, void> {
     static contextTypes = {
-        originX: PropTypes.number.isRequired,
         originY: PropTypes.number.isRequired
     } as any;
 
     context: {
-        originX: number;
         originY: number;
     };
 
@@ -44,7 +42,7 @@ export default class BarNumber extends Component<IProps, void> {
         return DOM.text({
             className: "bn_",
             fontSize: 24,
-            x: this.context.originX + spec.defaultX + (spec.relativeX || 0),
+            x: spec.defaultX + (spec.relativeX || 0),
             y: this.context.originY - spec.defaultY - (spec.relativeY || 0)
         }, this.props.barNumber);
     }

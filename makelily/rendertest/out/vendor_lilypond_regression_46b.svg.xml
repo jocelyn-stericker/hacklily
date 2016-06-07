@@ -5,7 +5,7 @@
   <!-- no work metadata -->
   <identification>
     <encoding>
-      <encoding-date>2016-02-13</encoding-date>
+      <encoding-date>2016-01-01</encoding-date>
       <software>Ripieno Satie</software>
       <supports type="yes" element="satie-ext" />
     </encoding>
@@ -153,6 +153,8 @@
           <staff-lines>5</staff-lines>
         </staff-details>
       </attributes>
+      <!-- spacer: 2 divs -->
+      
       <barline location="middle">
         <!--musicxml-interfaces:debug>
           <div-count>2</div-count>

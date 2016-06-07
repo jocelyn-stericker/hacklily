@@ -19,7 +19,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import {reduce, flatten, map, values, pluck, times, max, zipObject, forEach, filter} from "lodash";
+import {reduce, flatten, map, values, times, maxBy, zipObject, forEach, filter} from "lodash";
 import * as invariant from "invariant";
 
 import ISegment from "../../document/segment";
@@ -59,7 +59,7 @@ export function layoutLine$(options: ILayoutOptions, bounds: ILineBounds,
     let layouts = _layoutDirtyMeasures(options, line, clean$, reduced$, memo$);
     attributes = clean$[measures[measures.length - 1].uuid].attributes; // FIXME: Hack
 
-    let partOrder: string[] = pluck(scoreParts(options.header.partList), "id");
+    let partOrder = map(scoreParts(options.header.partList), t => t.id);
     let staffIdx = 0;
 
     let topsInOrder = map(partOrder, partID => {
@@ -73,10 +73,10 @@ export function layoutLine$(options: ILayoutOptions, bounds: ILineBounds,
                 memo$.y$ -= 100;
             }
 
-            let paddingTop = max(layouts, mre =>
+            let paddingTop = maxBy(layouts, mre =>
                 mre.paddingTop[staffIdx] || 0).paddingTop[staffIdx] || 0;
 
-            let paddingBottom = max(layouts, mre =>
+            let paddingBottom = maxBy(layouts, mre =>
                 mre.paddingBottom[staffIdx] || 0).paddingBottom[staffIdx] || 0;
 
             let top = memo$.y$ - paddingTop;
