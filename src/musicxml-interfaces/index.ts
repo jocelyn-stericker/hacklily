@@ -7834,7 +7834,7 @@ function xmlToPitch(node: Node) {
         }
         if (ch.nodeName === "step") {
             let dataStep = getString(ch, true);
-            ret.step = dataStep;
+            ret.step = dataStep.toLowerCase();
         }
         if (ch.nodeName === "octave") {
             let dataOctave = getNumber(ch, true);
@@ -26374,7 +26374,7 @@ function noteToXML(note: Note) {
         */
         let pitchElements: string[] = [];
         if (note.pitch.step) {
-            pitchElements.push(xml `<step>${note.pitch.step}</step>`);
+            pitchElements.push(xml `<step>${note.pitch.step.toUpperCase()}</step>`);
         }
         if (note.pitch.alter) {
             pitchElements.push(xml `<alter>${note.pitch.alter}</alter>`);
