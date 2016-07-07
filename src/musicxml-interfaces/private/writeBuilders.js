@@ -287,6 +287,7 @@ _.forEach(interfaces, (spec, key) => {
                     }
                   }
                   reference["${fieldName}"].splice(start, deleteCount, ...items);
+                  updates["${fieldName}"] = reference["${fieldName}"];
                   frozen["${fieldName}"].splice(start, deleteCount, ...items.map(i => true));
                   return this;
                 }`) // ${fieldName}(...): ${key}Builder

@@ -207,7 +207,7 @@ export let serializeGrouping = <(grouping: Grouping) => string> groupingToXML;
 
 declare let require: {
     (id: string): any;
-    resolve(id:string): string;
+    resolve(id: string): string;
     cache: any;
     extensions: any;
     main: any;
@@ -3528,30 +3528,30 @@ function xmlToNormalDot(node: Node) {
  * dynamics.
  */
 export interface Dynamics extends PrintStyleAlign, Placement, TextDecoration, Enclosure {
-    fp: boolean;
-    pp: boolean;
-    ppp: boolean;
-    fff: boolean;
-    sf: boolean;
-    rf: boolean;
-    mp: boolean;
-    sfpp: boolean;
-    f: boolean;
-    ffffff: boolean;
-    sfz: boolean;
-    ff: boolean;
-    pppppp: boolean;
-    rfz: boolean;
+    f?: boolean;
+    ff?: boolean;
+    fff?: boolean;
+    ffff?: boolean;
+    fffff?: boolean;
+    ffffff?: boolean;
+    fp?: boolean;
+    fz?: boolean;
+    mf?: boolean;
+    mp?: boolean;
     otherDynamics?: string;
-    fz: boolean;
-    ppppp: boolean;
-    mf: boolean;
-    pppp: boolean;
-    fffff: boolean;
-    sffz: boolean;
-    sfp: boolean;
-    p: boolean;
-    ffff: boolean;
+    p?: boolean;
+    pp?: boolean;
+    ppp?: boolean;
+    pppp?: boolean;
+    ppppp?: boolean;
+    pppppp?: boolean;
+    rf?: boolean;
+    rfz?: boolean;
+    sf?: boolean;
+    sffz?: boolean;
+    sfp?: boolean;
+    sfpp?: boolean;
+    sfz?: boolean;
 }
 
 function xmlToDynamics(node: Node) {
@@ -5769,12 +5769,12 @@ function xmlToMiscellaneous(node: Node) {
  * are based on Dublin Core.
  */
 export interface Identification {
-    miscellaneous: Miscellaneous;
+    miscellaneous?: Miscellaneous;
     creators?: Creator[];
     relations?: Relation[];
     rights?: Rights[];
-    encoding: Encoding;
-    source: string;
+    encoding?: Encoding;
+    source?: string;
 }
 
 function xmlToIdentification(node: Node) {
@@ -5827,8 +5827,8 @@ function xmlToIdentification(node: Node) {
 export interface Supports {
     element: string;
     attribute?: string;
-    value: string;
-    type: string;
+    value?: string;
+    type: boolean;
 }
 
 function xmlToSupports(node: Node) {
@@ -5851,14 +5851,14 @@ function xmlToSupports(node: Node) {
             ret.value = dataValue;
         }
         if (ch2.name === "type") {
-            let dataType = getString(ch2, true);
+            let dataType = xmlToYesNo(ch2);
             ret.type = dataType;
         }
     }
     ret.element = ret.element || "";
     ret.attribute = ret.attribute || "";
     ret.value = ret.value || "";
-    ret.type = ret.type || "";
+    ret.type = defined(ret.type) ? ret.type : true;
     return ret;
 }
 
@@ -7596,7 +7596,7 @@ function xmlToMeasureStyle(node: Node) {
  * music in score order, not in MusicXML document order.
  */
 export interface Attributes extends Editorial {
-    divisions: number;
+    divisions?: number;
     partSymbol?: PartSymbol;
     clefs?: Clef[];
     measureStyles?: MeasureStyle[];
@@ -17579,11 +17579,11 @@ export interface Barline extends Editorial {
     segno?: Segno;
     coda?: Coda;
     location?: BarlineLocation;
-    codaAttrib: string;
+    codaAttrib?: string;
     wavyLine?: WavyLine;
     fermatas?: Fermata[];
-    segnoAttrib: string;
-    divisions: number;
+    segnoAttrib?: string;
+    divisions?: number;
     barStyle?: BarStyle;
     ending?: Ending;
     repeat?: Repeat;
@@ -18126,28 +18126,28 @@ function xmlToDirection(node: Node) {
  * common.mod file.
  */
 export interface DirectionType {
-    percussions: Percussion[];
-    rehearsals: Rehearsal[];
-    pedal: Pedal;
-    principalVoice: PrincipalVoice;
-    accordionRegistration: AccordionRegistration;
-    eyeglasses: Eyeglasses;
-    image: Image;
-    harpPedals: HarpPedals;
-    metronome: Metronome;
-    otherDirection: OtherDirection;
-    segnos: Segno[];
-    scordatura: Scordatura;
-    stringMute: StringMute;
+    percussions?: Percussion[];
+    rehearsals?: Rehearsal[];
+    pedal?: Pedal;
+    principalVoice?: PrincipalVoice;
+    accordionRegistration?: AccordionRegistration;
+    eyeglasses?: Eyeglasses;
+    image?: Image;
+    harpPedals?: HarpPedals;
+    metronome?: Metronome;
+    otherDirection?: OtherDirection;
+    segnos?: Segno[];
+    scordatura?: Scordatura;
+    stringMute?: StringMute;
     wedge?: Wedge;
     dashes?: Dashes;
-    damp: Damp;
-    bracket: Bracket;
+    damp?: Damp;
+    bracket?: Bracket;
     dynamics?: Dynamics;
-    octaveShift: OctaveShift;
-    words: Words[];
-    dampAll: DampAll;
-    codas: Coda[];
+    octaveShift?: OctaveShift;
+    words?: Words[];
+    dampAll?: DampAll;
+    codas?: Coda[];
 }
 
 function xmlToDirectionType(node: Node) {
@@ -18640,10 +18640,10 @@ function getWedgeType(node: Node, fallbackVal?: WedgeType) {
  * multiple segments.
  */
 export interface Wedge extends LineType, DashedFormatting, Position, Color {
-    number: number;
-    niente: boolean;
+    number?: number;
+    niente?: boolean;
     type: WedgeType;
-    spread: number;
+    spread?: number;
 }
 
 function xmlToWedge(node: Node) {
@@ -23376,18 +23376,18 @@ function xmlToPartList(node: Node): PartList {
 }
 
 export interface ScorePart {
-    identification: Identification;
-    partNameDisplay: PartNameDisplay;
-    scoreInstruments: ScoreInstrument[];
-    midiDevices: MidiDevice[];
+    identification?: Identification;
+    partNameDisplay?: PartNameDisplay;
+    scoreInstruments?: ScoreInstrument[];
+    midiDevices?: MidiDevice[];
     partName: PartName;
-    partAbbreviationDisplay: PartAbbreviationDisplay;
-    partAbbreviation: PartAbbreviation;
-    groups: string[];
-    midiInstruments: MidiInstrument[];
+    partAbbreviationDisplay?: PartAbbreviationDisplay;
+    partAbbreviation?: PartAbbreviation;
+    groups?: string[];
+    midiInstruments?: MidiInstrument[];
     id: string;
     /** Equals "ScorePart" */
-    _class: string;
+    _class?: string;
 }
 
 function xmlToScorePart(node: Node) {
@@ -23684,7 +23684,7 @@ export interface PartGroup extends Editorial {
     type: StartStop;
     groupTime: GroupTime;
     /** Equals "PartGroup" */
-    _class: string;
+    _class?: string;
 }
 
 function xmlToPartGroup(node: Node) {
@@ -24080,11 +24080,11 @@ function xmlToGroupTime(node: Node) {
  */
 export interface ScoreInstrument {
     instrumentName: string;
-    instrumentSound: string;
-    ensemble: string;
-    virtualInstrument: VirtualInstrument;
-    instrumentAbbreviation: string;
-    solo: Solo;
+    instrumentSound?: string;
+    ensemble?: string;
+    virtualInstrument?: VirtualInstrument;
+    instrumentAbbreviation?: string;
+    solo?: Solo;
     id: string;
 }
 
@@ -24351,10 +24351,10 @@ function xmlToPart(node: Node) {
  */
 export interface Measure {
     number: string;
-    implicit: boolean;
-    width: number;
+    implicit?: boolean;
+    width?: number;
     parts: {[key: string]: any[]};
-    nonControlling: boolean;
+    nonControlling?: boolean;
 }
 
 /*---- Serialization ----------------------------------------------------------------------------*/
@@ -25045,9 +25045,6 @@ function scorePartToXML(scorePart: ScorePart): string {
             children.push(midiInstrumentToXML(scorePart.midiInstruments[idx]));
         }
     });
-    (scorePart.midiInstruments || []).forEach(midiInstrument => {
-        children.push(midiInstrumentToXML(midiInstrument));
-    });
     if (defined(scorePart.id)) {
         attribs += xml ` id="${scorePart.id}"`;
     }
@@ -25402,7 +25399,9 @@ function forwardToXML(forward: Forward): string {
     let children: string[] = [];
     children.push(xml `<duration>${forward.duration}</duration>`);
     children = children.concat(editorialVoiceToXML(forward));
-    children.push(xml `<staff>${forward.staff}</staff>`);
+    if (forward.staff) {
+        children.push(xml `<staff>${forward.staff}</staff>`);
+    }
     return dangerous `<forward>\n${children.join("\n").split("\n")
         .map(n => "  " + n).join("\n")}\n</forward>`;
 }
@@ -26232,7 +26231,7 @@ function measureToXML(measure: Measure) {
         attribs += yesNo ` implicit="${measure.implicit}"`;
     }
     if (defined(measure.nonControlling)) {
-        attribs += yesNo ` implicit="${measure.nonControlling}"`;
+        attribs += yesNo ` non-controlling="${measure.nonControlling}"`;
     }
     if (defined(measure.width)) {
         attribs += xml ` width="${measure.width}"`;
@@ -26286,7 +26285,7 @@ function partToXML(part: any[], id: string) {
             case "Bookmark":
                 return "<!-- bookmark not implemented -->";
             default:
-                return "<!-- unknown type (was _class set?) -->";
+                return xml `<!-- unknown type (class ${element._class}) -->`;
         }
     });
     return dangerous `<part${attribs}>\n${elements.join("\n").split("\n")
@@ -27007,7 +27006,32 @@ function noteToXML(note: Note) {
                     placementToXML(technical.thumbPosition)
                 } />`);
             }
+            //
+            // <!ELEMENT fingering (#PCDATA)>
+            // <!ATTLIST fingering
+            //     substitution %yes-no; #IMPLIED
+            //     alternate %yes-no; #IMPLIED
+            //     %print-style; 
+            //     %placement;
+            // >
             // 
+            if (technical.fingering) {
+                let substitution = "";
+                if (defined(technical.fingering.substitution)) {
+                    substitution += yesNo ` substitution="${technical.fingering.substitution}"`;
+                }
+                let alternate = "";
+                if (defined(technical.fingering.alternate)) {
+                    alternate += yesNo ` alternate="${technical.fingering.alternate}"`;
+                }
+                oChildren.push(dangerous `<fingering${
+                    substitution +
+                    alternate +
+                    printStyleToXML(technical.fingering) +
+                    placementToXML(technical.fingering)
+                }>${String(parseInt(String(technical.fingering.finger), 10))}</fingering>`);
+            }
+            //
             // <!ELEMENT pluck (#PCDATA)>
             // <!ATTLIST pluck
             //     %print-style;
@@ -27246,7 +27270,7 @@ function noteToXML(note: Note) {
                         ${technical.arrow.arrowStyle}</arrow-style>`);
                 }
                 if (defined(technical.arrow.circularArrow)) {
-                    arrowChildren.push(xml `<circular-arrow>>
+                    arrowChildren.push(xml `<circular-arrow>
                         ${technical.arrow.circularArrow}</circular-arrow>`);
                 }
                 oChildren.push(dangerous `<arrow${

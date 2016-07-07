@@ -3710,30 +3710,30 @@ export function buildNormalDot(builder: (build: INormalDotBuilder) => INormalDot
 export interface IDynamicsBuilder {
   build?: () => Dynamics;
   patch: () => IAny[];
+  f: (f: boolean) => IDynamicsBuilder;
+  ff: (ff: boolean) => IDynamicsBuilder;
+  fff: (fff: boolean) => IDynamicsBuilder;
+  ffff: (ffff: boolean) => IDynamicsBuilder;
+  fffff: (fffff: boolean) => IDynamicsBuilder;
+  ffffff: (ffffff: boolean) => IDynamicsBuilder;
   fp: (fp: boolean) => IDynamicsBuilder;
+  fz: (fz: boolean) => IDynamicsBuilder;
+  mf: (mf: boolean) => IDynamicsBuilder;
+  mp: (mp: boolean) => IDynamicsBuilder;
+  otherDynamics: (otherDynamics: string) => IDynamicsBuilder;
+  p: (p: boolean) => IDynamicsBuilder;
   pp: (pp: boolean) => IDynamicsBuilder;
   ppp: (ppp: boolean) => IDynamicsBuilder;
-  fff: (fff: boolean) => IDynamicsBuilder;
-  sf: (sf: boolean) => IDynamicsBuilder;
-  rf: (rf: boolean) => IDynamicsBuilder;
-  mp: (mp: boolean) => IDynamicsBuilder;
-  sfpp: (sfpp: boolean) => IDynamicsBuilder;
-  f: (f: boolean) => IDynamicsBuilder;
-  ffffff: (ffffff: boolean) => IDynamicsBuilder;
-  sfz: (sfz: boolean) => IDynamicsBuilder;
-  ff: (ff: boolean) => IDynamicsBuilder;
-  pppppp: (pppppp: boolean) => IDynamicsBuilder;
-  rfz: (rfz: boolean) => IDynamicsBuilder;
-  otherDynamics: (otherDynamics: string) => IDynamicsBuilder;
-  fz: (fz: boolean) => IDynamicsBuilder;
-  ppppp: (ppppp: boolean) => IDynamicsBuilder;
-  mf: (mf: boolean) => IDynamicsBuilder;
   pppp: (pppp: boolean) => IDynamicsBuilder;
-  fffff: (fffff: boolean) => IDynamicsBuilder;
+  ppppp: (ppppp: boolean) => IDynamicsBuilder;
+  pppppp: (pppppp: boolean) => IDynamicsBuilder;
+  rf: (rf: boolean) => IDynamicsBuilder;
+  rfz: (rfz: boolean) => IDynamicsBuilder;
+  sf: (sf: boolean) => IDynamicsBuilder;
   sffz: (sffz: boolean) => IDynamicsBuilder;
   sfp: (sfp: boolean) => IDynamicsBuilder;
-  p: (p: boolean) => IDynamicsBuilder;
-  ffff: (ffff: boolean) => IDynamicsBuilder;
+  sfpp: (sfpp: boolean) => IDynamicsBuilder;
+  sfz: (sfz: boolean) => IDynamicsBuilder;
   defaultX: (defaultX: number) => IDynamicsBuilder;
   relativeY: (relativeY: number) => IDynamicsBuilder;
   defaultY: (defaultY: number) => IDynamicsBuilder;
@@ -3755,30 +3755,30 @@ export interface IDynamicsBuilder {
 class DynamicsBuilder implements IDynamicsBuilder {
   build: () => Dynamics;
   patch: () => IAny[];
+  f: (f: boolean) => IDynamicsBuilder;
+  ff: (ff: boolean) => IDynamicsBuilder;
+  fff: (fff: boolean) => IDynamicsBuilder;
+  ffff: (ffff: boolean) => IDynamicsBuilder;
+  fffff: (fffff: boolean) => IDynamicsBuilder;
+  ffffff: (ffffff: boolean) => IDynamicsBuilder;
   fp: (fp: boolean) => IDynamicsBuilder;
+  fz: (fz: boolean) => IDynamicsBuilder;
+  mf: (mf: boolean) => IDynamicsBuilder;
+  mp: (mp: boolean) => IDynamicsBuilder;
+  otherDynamics: (otherDynamics: string) => IDynamicsBuilder;
+  p: (p: boolean) => IDynamicsBuilder;
   pp: (pp: boolean) => IDynamicsBuilder;
   ppp: (ppp: boolean) => IDynamicsBuilder;
-  fff: (fff: boolean) => IDynamicsBuilder;
-  sf: (sf: boolean) => IDynamicsBuilder;
-  rf: (rf: boolean) => IDynamicsBuilder;
-  mp: (mp: boolean) => IDynamicsBuilder;
-  sfpp: (sfpp: boolean) => IDynamicsBuilder;
-  f: (f: boolean) => IDynamicsBuilder;
-  ffffff: (ffffff: boolean) => IDynamicsBuilder;
-  sfz: (sfz: boolean) => IDynamicsBuilder;
-  ff: (ff: boolean) => IDynamicsBuilder;
-  pppppp: (pppppp: boolean) => IDynamicsBuilder;
-  rfz: (rfz: boolean) => IDynamicsBuilder;
-  otherDynamics: (otherDynamics: string) => IDynamicsBuilder;
-  fz: (fz: boolean) => IDynamicsBuilder;
-  ppppp: (ppppp: boolean) => IDynamicsBuilder;
-  mf: (mf: boolean) => IDynamicsBuilder;
   pppp: (pppp: boolean) => IDynamicsBuilder;
-  fffff: (fffff: boolean) => IDynamicsBuilder;
+  ppppp: (ppppp: boolean) => IDynamicsBuilder;
+  pppppp: (pppppp: boolean) => IDynamicsBuilder;
+  rf: (rf: boolean) => IDynamicsBuilder;
+  rfz: (rfz: boolean) => IDynamicsBuilder;
+  sf: (sf: boolean) => IDynamicsBuilder;
   sffz: (sffz: boolean) => IDynamicsBuilder;
   sfp: (sfp: boolean) => IDynamicsBuilder;
-  p: (p: boolean) => IDynamicsBuilder;
-  ffff: (ffff: boolean) => IDynamicsBuilder;
+  sfpp: (sfpp: boolean) => IDynamicsBuilder;
+  sfz: (sfz: boolean) => IDynamicsBuilder;
   defaultX: (defaultX: number) => IDynamicsBuilder;
   relativeY: (relativeY: number) => IDynamicsBuilder;
   defaultY: (defaultY: number) => IDynamicsBuilder;
@@ -3815,121 +3815,6 @@ class DynamicsBuilder implements IDynamicsBuilder {
         }
     
     function checkInvariants() {
-      console.assert(
-          (original && !modifiedKeys["fp"]) ||
-          childBuilders["fp"] !== undefined ||
-          updates.fp !== undefined,
-        "fp is a required field");
-      console.assert(
-          (original && !modifiedKeys["pp"]) ||
-          childBuilders["pp"] !== undefined ||
-          updates.pp !== undefined,
-        "pp is a required field");
-      console.assert(
-          (original && !modifiedKeys["ppp"]) ||
-          childBuilders["ppp"] !== undefined ||
-          updates.ppp !== undefined,
-        "ppp is a required field");
-      console.assert(
-          (original && !modifiedKeys["fff"]) ||
-          childBuilders["fff"] !== undefined ||
-          updates.fff !== undefined,
-        "fff is a required field");
-      console.assert(
-          (original && !modifiedKeys["sf"]) ||
-          childBuilders["sf"] !== undefined ||
-          updates.sf !== undefined,
-        "sf is a required field");
-      console.assert(
-          (original && !modifiedKeys["rf"]) ||
-          childBuilders["rf"] !== undefined ||
-          updates.rf !== undefined,
-        "rf is a required field");
-      console.assert(
-          (original && !modifiedKeys["mp"]) ||
-          childBuilders["mp"] !== undefined ||
-          updates.mp !== undefined,
-        "mp is a required field");
-      console.assert(
-          (original && !modifiedKeys["sfpp"]) ||
-          childBuilders["sfpp"] !== undefined ||
-          updates.sfpp !== undefined,
-        "sfpp is a required field");
-      console.assert(
-          (original && !modifiedKeys["f"]) ||
-          childBuilders["f"] !== undefined ||
-          updates.f !== undefined,
-        "f is a required field");
-      console.assert(
-          (original && !modifiedKeys["ffffff"]) ||
-          childBuilders["ffffff"] !== undefined ||
-          updates.ffffff !== undefined,
-        "ffffff is a required field");
-      console.assert(
-          (original && !modifiedKeys["sfz"]) ||
-          childBuilders["sfz"] !== undefined ||
-          updates.sfz !== undefined,
-        "sfz is a required field");
-      console.assert(
-          (original && !modifiedKeys["ff"]) ||
-          childBuilders["ff"] !== undefined ||
-          updates.ff !== undefined,
-        "ff is a required field");
-      console.assert(
-          (original && !modifiedKeys["pppppp"]) ||
-          childBuilders["pppppp"] !== undefined ||
-          updates.pppppp !== undefined,
-        "pppppp is a required field");
-      console.assert(
-          (original && !modifiedKeys["rfz"]) ||
-          childBuilders["rfz"] !== undefined ||
-          updates.rfz !== undefined,
-        "rfz is a required field");
-      console.assert(
-          (original && !modifiedKeys["fz"]) ||
-          childBuilders["fz"] !== undefined ||
-          updates.fz !== undefined,
-        "fz is a required field");
-      console.assert(
-          (original && !modifiedKeys["ppppp"]) ||
-          childBuilders["ppppp"] !== undefined ||
-          updates.ppppp !== undefined,
-        "ppppp is a required field");
-      console.assert(
-          (original && !modifiedKeys["mf"]) ||
-          childBuilders["mf"] !== undefined ||
-          updates.mf !== undefined,
-        "mf is a required field");
-      console.assert(
-          (original && !modifiedKeys["pppp"]) ||
-          childBuilders["pppp"] !== undefined ||
-          updates.pppp !== undefined,
-        "pppp is a required field");
-      console.assert(
-          (original && !modifiedKeys["fffff"]) ||
-          childBuilders["fffff"] !== undefined ||
-          updates.fffff !== undefined,
-        "fffff is a required field");
-      console.assert(
-          (original && !modifiedKeys["sffz"]) ||
-          childBuilders["sffz"] !== undefined ||
-          updates.sffz !== undefined,
-        "sffz is a required field");
-      console.assert(
-          (original && !modifiedKeys["sfp"]) ||
-          childBuilders["sfp"] !== undefined ||
-          updates.sfp !== undefined,
-        "sfp is a required field");
-      console.assert(
-          (original && !modifiedKeys["p"]) ||
-          childBuilders["p"] !== undefined ||
-          updates.p !== undefined,
-        "p is a required field");
-      console.assert(
-          (original && !modifiedKeys["ffff"]) ||
-          childBuilders["ffff"] !== undefined ||
-          updates.ffff !== undefined,
-        "ffff is a required field");
     }
     if (!original) {
       this.build = (): Dynamics => {
@@ -3943,10 +3828,87 @@ class DynamicsBuilder implements IDynamicsBuilder {
       return makePatch(original, updates, childBuilders, patches, modifiedKeys);
     }
 
+            this.f = (spec: boolean): IDynamicsBuilder => {
+                updates["f"] = spec;
+                delete childBuilders["f;"];
+                modifiedKeys["f"] = true;
+                return this;
+            }
+
+            this.ff = (spec: boolean): IDynamicsBuilder => {
+                updates["ff"] = spec;
+                delete childBuilders["ff;"];
+                modifiedKeys["ff"] = true;
+                return this;
+            }
+
+            this.fff = (spec: boolean): IDynamicsBuilder => {
+                updates["fff"] = spec;
+                delete childBuilders["fff;"];
+                modifiedKeys["fff"] = true;
+                return this;
+            }
+
+            this.ffff = (spec: boolean): IDynamicsBuilder => {
+                updates["ffff"] = spec;
+                delete childBuilders["ffff;"];
+                modifiedKeys["ffff"] = true;
+                return this;
+            }
+
+            this.fffff = (spec: boolean): IDynamicsBuilder => {
+                updates["fffff"] = spec;
+                delete childBuilders["fffff;"];
+                modifiedKeys["fffff"] = true;
+                return this;
+            }
+
+            this.ffffff = (spec: boolean): IDynamicsBuilder => {
+                updates["ffffff"] = spec;
+                delete childBuilders["ffffff;"];
+                modifiedKeys["ffffff"] = true;
+                return this;
+            }
+
             this.fp = (spec: boolean): IDynamicsBuilder => {
                 updates["fp"] = spec;
                 delete childBuilders["fp;"];
                 modifiedKeys["fp"] = true;
+                return this;
+            }
+
+            this.fz = (spec: boolean): IDynamicsBuilder => {
+                updates["fz"] = spec;
+                delete childBuilders["fz;"];
+                modifiedKeys["fz"] = true;
+                return this;
+            }
+
+            this.mf = (spec: boolean): IDynamicsBuilder => {
+                updates["mf"] = spec;
+                delete childBuilders["mf;"];
+                modifiedKeys["mf"] = true;
+                return this;
+            }
+
+            this.mp = (spec: boolean): IDynamicsBuilder => {
+                updates["mp"] = spec;
+                delete childBuilders["mp;"];
+                modifiedKeys["mp"] = true;
+                return this;
+            }
+
+            this.otherDynamics = (spec: string): IDynamicsBuilder => {
+                updates["otherDynamics"] = spec;
+                delete childBuilders["otherDynamics;"];
+                modifiedKeys["otherDynamics"] = true;
+                return this;
+            }
+
+            this.p = (spec: boolean): IDynamicsBuilder => {
+                updates["p"] = spec;
+                delete childBuilders["p;"];
+                modifiedKeys["p"] = true;
                 return this;
             }
 
@@ -3964,94 +3926,10 @@ class DynamicsBuilder implements IDynamicsBuilder {
                 return this;
             }
 
-            this.fff = (spec: boolean): IDynamicsBuilder => {
-                updates["fff"] = spec;
-                delete childBuilders["fff;"];
-                modifiedKeys["fff"] = true;
-                return this;
-            }
-
-            this.sf = (spec: boolean): IDynamicsBuilder => {
-                updates["sf"] = spec;
-                delete childBuilders["sf;"];
-                modifiedKeys["sf"] = true;
-                return this;
-            }
-
-            this.rf = (spec: boolean): IDynamicsBuilder => {
-                updates["rf"] = spec;
-                delete childBuilders["rf;"];
-                modifiedKeys["rf"] = true;
-                return this;
-            }
-
-            this.mp = (spec: boolean): IDynamicsBuilder => {
-                updates["mp"] = spec;
-                delete childBuilders["mp;"];
-                modifiedKeys["mp"] = true;
-                return this;
-            }
-
-            this.sfpp = (spec: boolean): IDynamicsBuilder => {
-                updates["sfpp"] = spec;
-                delete childBuilders["sfpp;"];
-                modifiedKeys["sfpp"] = true;
-                return this;
-            }
-
-            this.f = (spec: boolean): IDynamicsBuilder => {
-                updates["f"] = spec;
-                delete childBuilders["f;"];
-                modifiedKeys["f"] = true;
-                return this;
-            }
-
-            this.ffffff = (spec: boolean): IDynamicsBuilder => {
-                updates["ffffff"] = spec;
-                delete childBuilders["ffffff;"];
-                modifiedKeys["ffffff"] = true;
-                return this;
-            }
-
-            this.sfz = (spec: boolean): IDynamicsBuilder => {
-                updates["sfz"] = spec;
-                delete childBuilders["sfz;"];
-                modifiedKeys["sfz"] = true;
-                return this;
-            }
-
-            this.ff = (spec: boolean): IDynamicsBuilder => {
-                updates["ff"] = spec;
-                delete childBuilders["ff;"];
-                modifiedKeys["ff"] = true;
-                return this;
-            }
-
-            this.pppppp = (spec: boolean): IDynamicsBuilder => {
-                updates["pppppp"] = spec;
-                delete childBuilders["pppppp;"];
-                modifiedKeys["pppppp"] = true;
-                return this;
-            }
-
-            this.rfz = (spec: boolean): IDynamicsBuilder => {
-                updates["rfz"] = spec;
-                delete childBuilders["rfz;"];
-                modifiedKeys["rfz"] = true;
-                return this;
-            }
-
-            this.otherDynamics = (spec: string): IDynamicsBuilder => {
-                updates["otherDynamics"] = spec;
-                delete childBuilders["otherDynamics;"];
-                modifiedKeys["otherDynamics"] = true;
-                return this;
-            }
-
-            this.fz = (spec: boolean): IDynamicsBuilder => {
-                updates["fz"] = spec;
-                delete childBuilders["fz;"];
-                modifiedKeys["fz"] = true;
+            this.pppp = (spec: boolean): IDynamicsBuilder => {
+                updates["pppp"] = spec;
+                delete childBuilders["pppp;"];
+                modifiedKeys["pppp"] = true;
                 return this;
             }
 
@@ -4062,24 +3940,31 @@ class DynamicsBuilder implements IDynamicsBuilder {
                 return this;
             }
 
-            this.mf = (spec: boolean): IDynamicsBuilder => {
-                updates["mf"] = spec;
-                delete childBuilders["mf;"];
-                modifiedKeys["mf"] = true;
+            this.pppppp = (spec: boolean): IDynamicsBuilder => {
+                updates["pppppp"] = spec;
+                delete childBuilders["pppppp;"];
+                modifiedKeys["pppppp"] = true;
                 return this;
             }
 
-            this.pppp = (spec: boolean): IDynamicsBuilder => {
-                updates["pppp"] = spec;
-                delete childBuilders["pppp;"];
-                modifiedKeys["pppp"] = true;
+            this.rf = (spec: boolean): IDynamicsBuilder => {
+                updates["rf"] = spec;
+                delete childBuilders["rf;"];
+                modifiedKeys["rf"] = true;
                 return this;
             }
 
-            this.fffff = (spec: boolean): IDynamicsBuilder => {
-                updates["fffff"] = spec;
-                delete childBuilders["fffff;"];
-                modifiedKeys["fffff"] = true;
+            this.rfz = (spec: boolean): IDynamicsBuilder => {
+                updates["rfz"] = spec;
+                delete childBuilders["rfz;"];
+                modifiedKeys["rfz"] = true;
+                return this;
+            }
+
+            this.sf = (spec: boolean): IDynamicsBuilder => {
+                updates["sf"] = spec;
+                delete childBuilders["sf;"];
+                modifiedKeys["sf"] = true;
                 return this;
             }
 
@@ -4097,17 +3982,17 @@ class DynamicsBuilder implements IDynamicsBuilder {
                 return this;
             }
 
-            this.p = (spec: boolean): IDynamicsBuilder => {
-                updates["p"] = spec;
-                delete childBuilders["p;"];
-                modifiedKeys["p"] = true;
+            this.sfpp = (spec: boolean): IDynamicsBuilder => {
+                updates["sfpp"] = spec;
+                delete childBuilders["sfpp;"];
+                modifiedKeys["sfpp"] = true;
                 return this;
             }
 
-            this.ffff = (spec: boolean): IDynamicsBuilder => {
-                updates["ffff"] = spec;
-                delete childBuilders["ffff;"];
-                modifiedKeys["ffff"] = true;
+            this.sfz = (spec: boolean): IDynamicsBuilder => {
+                updates["sfz"] = spec;
+                delete childBuilders["sfz;"];
+                modifiedKeys["sfz"] = true;
                 return this;
             }
 
@@ -5232,6 +5117,7 @@ class PartNameDisplayBuilder implements IPartNameDisplayBuilder {
                     }
                   }
                   reference["name"].splice(start, deleteCount, ...items);
+                  updates["name"] = reference["name"];
                   frozen["name"].splice(start, deleteCount, ...items.map(i => true));
                   return this;
                 }
@@ -5359,6 +5245,7 @@ class PartAbbreviationDisplayBuilder implements IPartAbbreviationDisplayBuilder 
                     }
                   }
                   reference["name"].splice(start, deleteCount, ...items);
+                  updates["name"] = reference["name"];
                   frozen["name"].splice(start, deleteCount, ...items.map(i => true));
                   return this;
                 }
@@ -6053,6 +5940,7 @@ class PageLayoutBuilder implements IPageLayoutBuilder {
                     }
                   }
                   reference["pageMargins"].splice(start, deleteCount, ...items);
+                  updates["pageMargins"] = reference["pageMargins"];
                   frozen["pageMargins"].splice(start, deleteCount, ...items.map(i => true));
                   return this;
                 }
@@ -7494,6 +7382,7 @@ class MiscellaneousBuilder implements IMiscellaneousBuilder {
                     }
                   }
                   reference["miscellaneousFields"].splice(start, deleteCount, ...items);
+                  updates["miscellaneousFields"] = reference["miscellaneousFields"];
                   frozen["miscellaneousFields"].splice(start, deleteCount, ...items.map(i => true));
                   return this;
                 }
@@ -7554,21 +7443,6 @@ class IdentificationBuilder implements IIdentificationBuilder {
         }
     
     function checkInvariants() {
-      console.assert(
-          (original && !modifiedKeys["miscellaneous"]) ||
-          childBuilders["miscellaneous"] !== undefined ||
-          updates.miscellaneous !== undefined,
-        "miscellaneous is a required field");
-      console.assert(
-          (original && !modifiedKeys["encoding"]) ||
-          childBuilders["encoding"] !== undefined ||
-          updates.encoding !== undefined,
-        "encoding is a required field");
-      console.assert(
-          (original && !modifiedKeys["source"]) ||
-          childBuilders["source"] !== undefined ||
-          updates.source !== undefined,
-        "source is a required field");
     }
     if (!original) {
       this.build = (): Identification => {
@@ -7654,6 +7528,7 @@ class IdentificationBuilder implements IIdentificationBuilder {
                     }
                   }
                   reference["creators"].splice(start, deleteCount, ...items);
+                  updates["creators"] = reference["creators"];
                   frozen["creators"].splice(start, deleteCount, ...items.map(i => true));
                   return this;
                 }
@@ -7716,6 +7591,7 @@ class IdentificationBuilder implements IIdentificationBuilder {
                     }
                   }
                   reference["relations"].splice(start, deleteCount, ...items);
+                  updates["relations"] = reference["relations"];
                   frozen["relations"].splice(start, deleteCount, ...items.map(i => true));
                   return this;
                 }
@@ -7778,6 +7654,7 @@ class IdentificationBuilder implements IIdentificationBuilder {
                     }
                   }
                   reference["rights"].splice(start, deleteCount, ...items);
+                  updates["rights"] = reference["rights"];
                   frozen["rights"].splice(start, deleteCount, ...items.map(i => true));
                   return this;
                 }
@@ -7813,7 +7690,7 @@ export interface ISupportsBuilder {
   element: (element: string) => ISupportsBuilder;
   attribute: (attribute: string) => ISupportsBuilder;
   value: (value: string) => ISupportsBuilder;
-  type: (type: string) => ISupportsBuilder;
+  type: (type: boolean) => ISupportsBuilder;
 }
 
 class SupportsBuilder implements ISupportsBuilder {
@@ -7822,7 +7699,7 @@ class SupportsBuilder implements ISupportsBuilder {
   element: (element: string) => ISupportsBuilder;
   attribute: (attribute: string) => ISupportsBuilder;
   value: (value: string) => ISupportsBuilder;
-  type: (type: string) => ISupportsBuilder;
+  type: (type: boolean) => ISupportsBuilder;
   constructor(original?: Supports) {
     let updates: Supports = {} as any;
     let childBuilders: {[key: string]: any} = {};
@@ -7848,11 +7725,6 @@ class SupportsBuilder implements ISupportsBuilder {
           childBuilders["element"] !== undefined ||
           updates.element !== undefined,
         "element is a required field");
-      console.assert(
-          (original && !modifiedKeys["value"]) ||
-          childBuilders["value"] !== undefined ||
-          updates.value !== undefined,
-        "value is a required field");
       console.assert(
           (original && !modifiedKeys["type"]) ||
           childBuilders["type"] !== undefined ||
@@ -7892,7 +7764,7 @@ class SupportsBuilder implements ISupportsBuilder {
                 return this;
             }
 
-            this.type = (spec: string): ISupportsBuilder => {
+            this.type = (spec: boolean): ISupportsBuilder => {
                 updates["type"] = spec;
                 delete childBuilders["type;"];
                 modifiedKeys["type"] = true;
@@ -8042,6 +7914,7 @@ class EncodingBuilder implements IEncodingBuilder {
                     }
                   }
                   reference["encoders"].splice(start, deleteCount, ...items);
+                  updates["encoders"] = reference["encoders"];
                   frozen["encoders"].splice(start, deleteCount, ...items.map(i => true));
                   return this;
                 }
@@ -8475,6 +8348,7 @@ class KeyBuilder implements IKeyBuilder {
                     }
                   }
                   reference["keyOctaves"].splice(start, deleteCount, ...items);
+                  updates["keyOctaves"] = reference["keyOctaves"];
                   frozen["keyOctaves"].splice(start, deleteCount, ...items.map(i => true));
                   return this;
                 }
@@ -9466,6 +9340,7 @@ class StaffDetailsBuilder implements IStaffDetailsBuilder {
                     }
                   }
                   reference["staffTunings"].splice(start, deleteCount, ...items);
+                  updates["staffTunings"] = reference["staffTunings"];
                   frozen["staffTunings"].splice(start, deleteCount, ...items.map(i => true));
                   return this;
                 }
@@ -10132,6 +10007,7 @@ class BeatRepeatBuilder implements IBeatRepeatBuilder {
                     }
                   }
                   reference["slashDots"].splice(start, deleteCount, ...items);
+                  updates["slashDots"] = reference["slashDots"];
                   frozen["slashDots"].splice(start, deleteCount, ...items.map(i => true));
                   return this;
                 }
@@ -10293,6 +10169,7 @@ class SlashBuilder implements ISlashBuilder {
                     }
                   }
                   reference["slashDots"].splice(start, deleteCount, ...items);
+                  updates["slashDots"] = reference["slashDots"];
                   frozen["slashDots"].splice(start, deleteCount, ...items.map(i => true));
                   return this;
                 }
@@ -10553,11 +10430,6 @@ class AttributesBuilder implements IAttributesBuilder {
         }
     
     function checkInvariants() {
-      console.assert(
-          (original && !modifiedKeys["divisions"]) ||
-          childBuilders["divisions"] !== undefined ||
-          updates.divisions !== undefined,
-        "divisions is a required field");
     }
     if (!original) {
       this.build = (): Attributes => {
@@ -10650,6 +10522,7 @@ class AttributesBuilder implements IAttributesBuilder {
                     }
                   }
                   reference["clefs"].splice(start, deleteCount, ...items);
+                  updates["clefs"] = reference["clefs"];
                   frozen["clefs"].splice(start, deleteCount, ...items.map(i => true));
                   return this;
                 }
@@ -10712,6 +10585,7 @@ class AttributesBuilder implements IAttributesBuilder {
                     }
                   }
                   reference["measureStyles"].splice(start, deleteCount, ...items);
+                  updates["measureStyles"] = reference["measureStyles"];
                   frozen["measureStyles"].splice(start, deleteCount, ...items.map(i => true));
                   return this;
                 }
@@ -10774,6 +10648,7 @@ class AttributesBuilder implements IAttributesBuilder {
                     }
                   }
                   reference["times"].splice(start, deleteCount, ...items);
+                  updates["times"] = reference["times"];
                   frozen["times"].splice(start, deleteCount, ...items.map(i => true));
                   return this;
                 }
@@ -10836,6 +10711,7 @@ class AttributesBuilder implements IAttributesBuilder {
                     }
                   }
                   reference["staffDetails"].splice(start, deleteCount, ...items);
+                  updates["staffDetails"] = reference["staffDetails"];
                   frozen["staffDetails"].splice(start, deleteCount, ...items.map(i => true));
                   return this;
                 }
@@ -10898,6 +10774,7 @@ class AttributesBuilder implements IAttributesBuilder {
                     }
                   }
                   reference["transposes"].splice(start, deleteCount, ...items);
+                  updates["transposes"] = reference["transposes"];
                   frozen["transposes"].splice(start, deleteCount, ...items.map(i => true));
                   return this;
                 }
@@ -10974,6 +10851,7 @@ class AttributesBuilder implements IAttributesBuilder {
                     }
                   }
                   reference["keySignatures"].splice(start, deleteCount, ...items);
+                  updates["keySignatures"] = reference["keySignatures"];
                   frozen["keySignatures"].splice(start, deleteCount, ...items.map(i => true));
                   return this;
                 }
@@ -11036,6 +10914,7 @@ class AttributesBuilder implements IAttributesBuilder {
                     }
                   }
                   reference["directives"].splice(start, deleteCount, ...items);
+                  updates["directives"] = reference["directives"];
                   frozen["directives"].splice(start, deleteCount, ...items.map(i => true));
                   return this;
                 }
@@ -11961,6 +11840,7 @@ class NoteBuilder implements INoteBuilder {
                     }
                   }
                   reference["lyrics"].splice(start, deleteCount, ...items);
+                  updates["lyrics"] = reference["lyrics"];
                   frozen["lyrics"].splice(start, deleteCount, ...items.map(i => true));
                   return this;
                 }
@@ -12023,6 +11903,7 @@ class NoteBuilder implements INoteBuilder {
                     }
                   }
                   reference["dots"].splice(start, deleteCount, ...items);
+                  updates["dots"] = reference["dots"];
                   frozen["dots"].splice(start, deleteCount, ...items.map(i => true));
                   return this;
                 }
@@ -12085,6 +11966,7 @@ class NoteBuilder implements INoteBuilder {
                     }
                   }
                   reference["notations"].splice(start, deleteCount, ...items);
+                  updates["notations"] = reference["notations"];
                   frozen["notations"].splice(start, deleteCount, ...items.map(i => true));
                   return this;
                 }
@@ -12203,6 +12085,7 @@ class NoteBuilder implements INoteBuilder {
                     }
                   }
                   reference["ties"].splice(start, deleteCount, ...items);
+                  updates["ties"] = reference["ties"];
                   frozen["ties"].splice(start, deleteCount, ...items.map(i => true));
                   return this;
                 }
@@ -12328,6 +12211,7 @@ class NoteBuilder implements INoteBuilder {
                     }
                   }
                   reference["beams"].splice(start, deleteCount, ...items);
+                  updates["beams"] = reference["beams"];
                   frozen["beams"].splice(start, deleteCount, ...items.map(i => true));
                   return this;
                 }
@@ -13055,6 +12939,7 @@ class TimeModificationBuilder implements ITimeModificationBuilder {
                     }
                   }
                   reference["normalDots"].splice(start, deleteCount, ...items);
+                  updates["normalDots"] = reference["normalDots"];
                   frozen["normalDots"].splice(start, deleteCount, ...items.map(i => true));
                   return this;
                 }
@@ -13399,6 +13284,7 @@ class NoteheadTextBuilder implements INoteheadTextBuilder {
                     }
                   }
                   reference["text"].splice(start, deleteCount, ...items);
+                  updates["text"] = reference["text"];
                   frozen["text"].splice(start, deleteCount, ...items.map(i => true));
                   return this;
                 }
@@ -13687,6 +13573,7 @@ class NotationsBuilder implements INotationsBuilder {
                     }
                   }
                   reference["slurs"].splice(start, deleteCount, ...items);
+                  updates["slurs"] = reference["slurs"];
                   frozen["slurs"].splice(start, deleteCount, ...items.map(i => true));
                   return this;
                 }
@@ -13749,6 +13636,7 @@ class NotationsBuilder implements INotationsBuilder {
                     }
                   }
                   reference["articulations"].splice(start, deleteCount, ...items);
+                  updates["articulations"] = reference["articulations"];
                   frozen["articulations"].splice(start, deleteCount, ...items.map(i => true));
                   return this;
                 }
@@ -13811,6 +13699,7 @@ class NotationsBuilder implements INotationsBuilder {
                     }
                   }
                   reference["slides"].splice(start, deleteCount, ...items);
+                  updates["slides"] = reference["slides"];
                   frozen["slides"].splice(start, deleteCount, ...items.map(i => true));
                   return this;
                 }
@@ -13873,6 +13762,7 @@ class NotationsBuilder implements INotationsBuilder {
                     }
                   }
                   reference["technicals"].splice(start, deleteCount, ...items);
+                  updates["technicals"] = reference["technicals"];
                   frozen["technicals"].splice(start, deleteCount, ...items.map(i => true));
                   return this;
                 }
@@ -13935,6 +13825,7 @@ class NotationsBuilder implements INotationsBuilder {
                     }
                   }
                   reference["tieds"].splice(start, deleteCount, ...items);
+                  updates["tieds"] = reference["tieds"];
                   frozen["tieds"].splice(start, deleteCount, ...items.map(i => true));
                   return this;
                 }
@@ -13997,6 +13888,7 @@ class NotationsBuilder implements INotationsBuilder {
                     }
                   }
                   reference["tuplets"].splice(start, deleteCount, ...items);
+                  updates["tuplets"] = reference["tuplets"];
                   frozen["tuplets"].splice(start, deleteCount, ...items.map(i => true));
                   return this;
                 }
@@ -14059,6 +13951,7 @@ class NotationsBuilder implements INotationsBuilder {
                     }
                   }
                   reference["glissandos"].splice(start, deleteCount, ...items);
+                  updates["glissandos"] = reference["glissandos"];
                   frozen["glissandos"].splice(start, deleteCount, ...items.map(i => true));
                   return this;
                 }
@@ -14121,6 +14014,7 @@ class NotationsBuilder implements INotationsBuilder {
                     }
                   }
                   reference["dynamics"].splice(start, deleteCount, ...items);
+                  updates["dynamics"] = reference["dynamics"];
                   frozen["dynamics"].splice(start, deleteCount, ...items.map(i => true));
                   return this;
                 }
@@ -14183,6 +14077,7 @@ class NotationsBuilder implements INotationsBuilder {
                     }
                   }
                   reference["fermatas"].splice(start, deleteCount, ...items);
+                  updates["fermatas"] = reference["fermatas"];
                   frozen["fermatas"].splice(start, deleteCount, ...items.map(i => true));
                   return this;
                 }
@@ -14245,6 +14140,7 @@ class NotationsBuilder implements INotationsBuilder {
                     }
                   }
                   reference["accidentalMarks"].splice(start, deleteCount, ...items);
+                  updates["accidentalMarks"] = reference["accidentalMarks"];
                   frozen["accidentalMarks"].splice(start, deleteCount, ...items.map(i => true));
                   return this;
                 }
@@ -14307,6 +14203,7 @@ class NotationsBuilder implements INotationsBuilder {
                     }
                   }
                   reference["ornaments"].splice(start, deleteCount, ...items);
+                  updates["ornaments"] = reference["ornaments"];
                   frozen["ornaments"].splice(start, deleteCount, ...items.map(i => true));
                   return this;
                 }
@@ -14369,6 +14266,7 @@ class NotationsBuilder implements INotationsBuilder {
                     }
                   }
                   reference["arpeggiates"].splice(start, deleteCount, ...items);
+                  updates["arpeggiates"] = reference["arpeggiates"];
                   frozen["arpeggiates"].splice(start, deleteCount, ...items.map(i => true));
                   return this;
                 }
@@ -14431,6 +14329,7 @@ class NotationsBuilder implements INotationsBuilder {
                     }
                   }
                   reference["nonArpeggiates"].splice(start, deleteCount, ...items);
+                  updates["nonArpeggiates"] = reference["nonArpeggiates"];
                   frozen["nonArpeggiates"].splice(start, deleteCount, ...items.map(i => true));
                   return this;
                 }
@@ -14493,6 +14392,7 @@ class NotationsBuilder implements INotationsBuilder {
                     }
                   }
                   reference["otherNotations"].splice(start, deleteCount, ...items);
+                  updates["otherNotations"] = reference["otherNotations"];
                   frozen["otherNotations"].splice(start, deleteCount, ...items.map(i => true));
                   return this;
                 }
@@ -15269,6 +15169,7 @@ class TupletActualBuilder implements ITupletActualBuilder {
                     }
                   }
                   reference["tupletDots"].splice(start, deleteCount, ...items);
+                  updates["tupletDots"] = reference["tupletDots"];
                   frozen["tupletDots"].splice(start, deleteCount, ...items.map(i => true));
                   return this;
                 }
@@ -15414,6 +15315,7 @@ class TupletNormalBuilder implements ITupletNormalBuilder {
                     }
                   }
                   reference["tupletDots"].splice(start, deleteCount, ...items);
+                  updates["tupletDots"] = reference["tupletDots"];
                   frozen["tupletDots"].splice(start, deleteCount, ...items.map(i => true));
                   return this;
                 }
@@ -16765,6 +16667,7 @@ class OrnamentsBuilder implements IOrnamentsBuilder {
                     }
                   }
                   reference["accidentalMarks"].splice(start, deleteCount, ...items);
+                  updates["accidentalMarks"] = reference["accidentalMarks"];
                   frozen["accidentalMarks"].splice(start, deleteCount, ...items.map(i => true));
                   return this;
                 }
@@ -23451,6 +23354,7 @@ class ArticulationsBuilder implements IArticulationsBuilder {
                     }
                   }
                   reference["otherArticulations"].splice(start, deleteCount, ...items);
+                  updates["otherArticulations"] = reference["otherArticulations"];
                   frozen["otherArticulations"].splice(start, deleteCount, ...items.map(i => true));
                   return this;
                 }
@@ -27294,6 +27198,7 @@ class FiguredBassBuilder implements IFiguredBassBuilder {
                     }
                   }
                   reference["figures"].splice(start, deleteCount, ...items);
+                  updates["figures"] = reference["figures"];
                   frozen["figures"].splice(start, deleteCount, ...items.map(i => true));
                   return this;
                 }
@@ -28303,21 +28208,6 @@ class BarlineBuilder implements IBarlineBuilder {
         }
     
     function checkInvariants() {
-      console.assert(
-          (original && !modifiedKeys["codaAttrib"]) ||
-          childBuilders["codaAttrib"] !== undefined ||
-          updates.codaAttrib !== undefined,
-        "codaAttrib is a required field");
-      console.assert(
-          (original && !modifiedKeys["segnoAttrib"]) ||
-          childBuilders["segnoAttrib"] !== undefined ||
-          updates.segnoAttrib !== undefined,
-        "segnoAttrib is a required field");
-      console.assert(
-          (original && !modifiedKeys["divisions"]) ||
-          childBuilders["divisions"] !== undefined ||
-          updates.divisions !== undefined,
-        "divisions is a required field");
     }
     if (!original) {
       this.build = (): Barline => {
@@ -28445,6 +28335,7 @@ class BarlineBuilder implements IBarlineBuilder {
                     }
                   }
                   reference["fermatas"].splice(start, deleteCount, ...items);
+                  updates["fermatas"] = reference["fermatas"];
                   frozen["fermatas"].splice(start, deleteCount, ...items.map(i => true));
                   return this;
                 }
@@ -29032,6 +28923,7 @@ class DirectionBuilder implements IDirectionBuilder {
                     }
                   }
                   reference["directionTypes"].splice(start, deleteCount, ...items);
+                  updates["directionTypes"] = reference["directionTypes"];
                   frozen["directionTypes"].splice(start, deleteCount, ...items.map(i => true));
                   return this;
                 }
@@ -29216,101 +29108,6 @@ class DirectionTypeBuilder implements IDirectionTypeBuilder {
         }
     
     function checkInvariants() {
-      console.assert(
-          (original && !modifiedKeys["percussions"]) ||
-          childBuilders["percussions"] !== undefined ||
-          updates.percussions !== undefined,
-        "percussions is a required field");
-      console.assert(
-          (original && !modifiedKeys["rehearsals"]) ||
-          childBuilders["rehearsals"] !== undefined ||
-          updates.rehearsals !== undefined,
-        "rehearsals is a required field");
-      console.assert(
-          (original && !modifiedKeys["pedal"]) ||
-          childBuilders["pedal"] !== undefined ||
-          updates.pedal !== undefined,
-        "pedal is a required field");
-      console.assert(
-          (original && !modifiedKeys["principalVoice"]) ||
-          childBuilders["principalVoice"] !== undefined ||
-          updates.principalVoice !== undefined,
-        "principalVoice is a required field");
-      console.assert(
-          (original && !modifiedKeys["accordionRegistration"]) ||
-          childBuilders["accordionRegistration"] !== undefined ||
-          updates.accordionRegistration !== undefined,
-        "accordionRegistration is a required field");
-      console.assert(
-          (original && !modifiedKeys["eyeglasses"]) ||
-          childBuilders["eyeglasses"] !== undefined ||
-          updates.eyeglasses !== undefined,
-        "eyeglasses is a required field");
-      console.assert(
-          (original && !modifiedKeys["image"]) ||
-          childBuilders["image"] !== undefined ||
-          updates.image !== undefined,
-        "image is a required field");
-      console.assert(
-          (original && !modifiedKeys["harpPedals"]) ||
-          childBuilders["harpPedals"] !== undefined ||
-          updates.harpPedals !== undefined,
-        "harpPedals is a required field");
-      console.assert(
-          (original && !modifiedKeys["metronome"]) ||
-          childBuilders["metronome"] !== undefined ||
-          updates.metronome !== undefined,
-        "metronome is a required field");
-      console.assert(
-          (original && !modifiedKeys["otherDirection"]) ||
-          childBuilders["otherDirection"] !== undefined ||
-          updates.otherDirection !== undefined,
-        "otherDirection is a required field");
-      console.assert(
-          (original && !modifiedKeys["segnos"]) ||
-          childBuilders["segnos"] !== undefined ||
-          updates.segnos !== undefined,
-        "segnos is a required field");
-      console.assert(
-          (original && !modifiedKeys["scordatura"]) ||
-          childBuilders["scordatura"] !== undefined ||
-          updates.scordatura !== undefined,
-        "scordatura is a required field");
-      console.assert(
-          (original && !modifiedKeys["stringMute"]) ||
-          childBuilders["stringMute"] !== undefined ||
-          updates.stringMute !== undefined,
-        "stringMute is a required field");
-      console.assert(
-          (original && !modifiedKeys["damp"]) ||
-          childBuilders["damp"] !== undefined ||
-          updates.damp !== undefined,
-        "damp is a required field");
-      console.assert(
-          (original && !modifiedKeys["bracket"]) ||
-          childBuilders["bracket"] !== undefined ||
-          updates.bracket !== undefined,
-        "bracket is a required field");
-      console.assert(
-          (original && !modifiedKeys["octaveShift"]) ||
-          childBuilders["octaveShift"] !== undefined ||
-          updates.octaveShift !== undefined,
-        "octaveShift is a required field");
-      console.assert(
-          (original && !modifiedKeys["words"]) ||
-          childBuilders["words"] !== undefined ||
-          updates.words !== undefined,
-        "words is a required field");
-      console.assert(
-          (original && !modifiedKeys["dampAll"]) ||
-          childBuilders["dampAll"] !== undefined ||
-          updates.dampAll !== undefined,
-        "dampAll is a required field");
-      console.assert(
-          (original && !modifiedKeys["codas"]) ||
-          childBuilders["codas"] !== undefined ||
-          updates.codas !== undefined,
-        "codas is a required field");
     }
     if (!original) {
       this.build = (): DirectionType => {
@@ -29382,6 +29179,7 @@ class DirectionTypeBuilder implements IDirectionTypeBuilder {
                     }
                   }
                   reference["percussions"].splice(start, deleteCount, ...items);
+                  updates["percussions"] = reference["percussions"];
                   frozen["percussions"].splice(start, deleteCount, ...items.map(i => true));
                   return this;
                 }
@@ -29444,6 +29242,7 @@ class DirectionTypeBuilder implements IDirectionTypeBuilder {
                     }
                   }
                   reference["rehearsals"].splice(start, deleteCount, ...items);
+                  updates["rehearsals"] = reference["rehearsals"];
                   frozen["rehearsals"].splice(start, deleteCount, ...items.map(i => true));
                   return this;
                 }
@@ -29618,6 +29417,7 @@ class DirectionTypeBuilder implements IDirectionTypeBuilder {
                     }
                   }
                   reference["segnos"].splice(start, deleteCount, ...items);
+                  updates["segnos"] = reference["segnos"];
                   frozen["segnos"].splice(start, deleteCount, ...items.map(i => true));
                   return this;
                 }
@@ -29792,6 +29592,7 @@ class DirectionTypeBuilder implements IDirectionTypeBuilder {
                     }
                   }
                   reference["words"].splice(start, deleteCount, ...items);
+                  updates["words"] = reference["words"];
                   frozen["words"].splice(start, deleteCount, ...items.map(i => true));
                   return this;
                 }
@@ -29868,6 +29669,7 @@ class DirectionTypeBuilder implements IDirectionTypeBuilder {
                     }
                   }
                   reference["codas"].splice(start, deleteCount, ...items);
+                  updates["codas"] = reference["codas"];
                   frozen["codas"].splice(start, deleteCount, ...items.map(i => true));
                   return this;
                 }
@@ -30407,25 +30209,10 @@ class WedgeBuilder implements IWedgeBuilder {
     
     function checkInvariants() {
       console.assert(
-          (original && !modifiedKeys["number"]) ||
-          childBuilders["number"] !== undefined ||
-          updates.number !== undefined,
-        "number is a required field");
-      console.assert(
-          (original && !modifiedKeys["niente"]) ||
-          childBuilders["niente"] !== undefined ||
-          updates.niente !== undefined,
-        "niente is a required field");
-      console.assert(
           (original && !modifiedKeys["type"]) ||
           childBuilders["type"] !== undefined ||
           updates.type !== undefined,
         "type is a required field");
-      console.assert(
-          (original && !modifiedKeys["spread"]) ||
-          childBuilders["spread"] !== undefined ||
-          updates.spread !== undefined,
-        "spread is a required field");
     }
     if (!original) {
       this.build = (): Wedge => {
@@ -31213,6 +31000,7 @@ class MetronomeBuilder implements IMetronomeBuilder {
                     }
                   }
                   reference["metronomeNotes"].splice(start, deleteCount, ...items);
+                  updates["metronomeNotes"] = reference["metronomeNotes"];
                   frozen["metronomeNotes"].splice(start, deleteCount, ...items.map(i => true));
                   return this;
                 }
@@ -31303,6 +31091,7 @@ class MetronomeBuilder implements IMetronomeBuilder {
                     }
                   }
                   reference["beatUnitDots"].splice(start, deleteCount, ...items);
+                  updates["beatUnitDots"] = reference["beatUnitDots"];
                   frozen["beatUnitDots"].splice(start, deleteCount, ...items.map(i => true));
                   return this;
                 }
@@ -31372,6 +31161,7 @@ class MetronomeBuilder implements IMetronomeBuilder {
                     }
                   }
                   reference["beatUnitDotsChange"].splice(start, deleteCount, ...items);
+                  updates["beatUnitDotsChange"] = reference["beatUnitDotsChange"];
                   frozen["beatUnitDotsChange"].splice(start, deleteCount, ...items.map(i => true));
                   return this;
                 }
@@ -31746,6 +31536,7 @@ class MetronomeNoteBuilder implements IMetronomeNoteBuilder {
                     }
                   }
                   reference["metronomeDots"].splice(start, deleteCount, ...items);
+                  updates["metronomeDots"] = reference["metronomeDots"];
                   frozen["metronomeDots"].splice(start, deleteCount, ...items.map(i => true));
                   return this;
                 }
@@ -31808,6 +31599,7 @@ class MetronomeNoteBuilder implements IMetronomeNoteBuilder {
                     }
                   }
                   reference["metronomeBeams"].splice(start, deleteCount, ...items);
+                  updates["metronomeBeams"] = reference["metronomeBeams"];
                   frozen["metronomeBeams"].splice(start, deleteCount, ...items.map(i => true));
                   return this;
                 }
@@ -32149,6 +31941,7 @@ class MetronomeTupletBuilder implements IMetronomeTupletBuilder {
                     }
                   }
                   reference["normalDots"].splice(start, deleteCount, ...items);
+                  updates["normalDots"] = reference["normalDots"];
                   frozen["normalDots"].splice(start, deleteCount, ...items.map(i => true));
                   return this;
                 }
@@ -32475,6 +32268,7 @@ class HarpPedalsBuilder implements IHarpPedalsBuilder {
                     }
                   }
                   reference["pedalTunings"].splice(start, deleteCount, ...items);
+                  updates["pedalTunings"] = reference["pedalTunings"];
                   frozen["pedalTunings"].splice(start, deleteCount, ...items.map(i => true));
                   return this;
                 }
@@ -33333,6 +33127,7 @@ class ScordaturaBuilder implements IScordaturaBuilder {
                     }
                   }
                   reference["accords"].splice(start, deleteCount, ...items);
+                  updates["accords"] = reference["accords"];
                   frozen["accords"].splice(start, deleteCount, ...items.map(i => true));
                   return this;
                 }
@@ -34729,6 +34524,7 @@ class HarmonyChordBuilder implements IHarmonyChordBuilder {
                     }
                   }
                   reference["degrees"].splice(start, deleteCount, ...items);
+                  updates["degrees"] = reference["degrees"];
                   frozen["degrees"].splice(start, deleteCount, ...items.map(i => true));
                   return this;
                 }
@@ -35167,6 +34963,7 @@ class HarmonyBuilder implements IHarmonyBuilder {
                     }
                   }
                   reference["degrees"].splice(start, deleteCount, ...items);
+                  updates["degrees"] = reference["degrees"];
                   frozen["degrees"].splice(start, deleteCount, ...items.map(i => true));
                   return this;
                 }
@@ -37285,6 +37082,7 @@ class FrameBuilder implements IFrameBuilder {
                     }
                   }
                   reference["frameNotes"].splice(start, deleteCount, ...items);
+                  updates["frameNotes"] = reference["frameNotes"];
                   frozen["frameNotes"].splice(start, deleteCount, ...items.map(i => true));
                   return this;
                 }
@@ -37799,6 +37597,7 @@ class GroupingBuilder implements IGroupingBuilder {
                     }
                   }
                   reference["features"].splice(start, deleteCount, ...items);
+                  updates["features"] = reference["features"];
                   frozen["features"].splice(start, deleteCount, ...items.map(i => true));
                   return this;
                 }
@@ -38200,6 +37999,7 @@ class PrintBuilder implements IPrintBuilder {
                     }
                   }
                   reference["staffLayouts"].splice(start, deleteCount, ...items);
+                  updates["staffLayouts"] = reference["staffLayouts"];
                   frozen["staffLayouts"].splice(start, deleteCount, ...items.map(i => true));
                   return this;
                 }
@@ -38633,6 +38433,7 @@ class SoundBuilder implements ISoundBuilder {
                     }
                   }
                   reference["midiInstruments"].splice(start, deleteCount, ...items);
+                  updates["midiInstruments"] = reference["midiInstruments"];
                   frozen["midiInstruments"].splice(start, deleteCount, ...items.map(i => true));
                   return this;
                 }
@@ -38772,6 +38573,7 @@ class SoundBuilder implements ISoundBuilder {
                     }
                   }
                   reference["plays"].splice(start, deleteCount, ...items);
+                  updates["plays"] = reference["plays"];
                   frozen["plays"].splice(start, deleteCount, ...items.map(i => true));
                   return this;
                 }
@@ -38862,6 +38664,7 @@ class SoundBuilder implements ISoundBuilder {
                     }
                   }
                   reference["midiDevices"].splice(start, deleteCount, ...items);
+                  updates["midiDevices"] = reference["midiDevices"];
                   frozen["midiDevices"].splice(start, deleteCount, ...items.map(i => true));
                   return this;
                 }
@@ -39218,6 +39021,7 @@ class DefaultsBuilder implements IDefaultsBuilder {
                     }
                   }
                   reference["lyricLanguages"].splice(start, deleteCount, ...items);
+                  updates["lyricLanguages"] = reference["lyricLanguages"];
                   frozen["lyricLanguages"].splice(start, deleteCount, ...items.map(i => true));
                   return this;
                 }
@@ -39280,6 +39084,7 @@ class DefaultsBuilder implements IDefaultsBuilder {
                     }
                   }
                   reference["lyricFonts"].splice(start, deleteCount, ...items);
+                  updates["lyricFonts"] = reference["lyricFonts"];
                   frozen["lyricFonts"].splice(start, deleteCount, ...items.map(i => true));
                   return this;
                 }
@@ -39398,6 +39203,7 @@ class DefaultsBuilder implements IDefaultsBuilder {
                     }
                   }
                   reference["staffLayouts"].splice(start, deleteCount, ...items);
+                  updates["staffLayouts"] = reference["staffLayouts"];
                   frozen["staffLayouts"].splice(start, deleteCount, ...items.map(i => true));
                   return this;
                 }
@@ -39902,6 +39708,7 @@ class CreditBuilder implements ICreditBuilder {
                     }
                   }
                   reference["creditWords"].splice(start, deleteCount, ...items);
+                  updates["creditWords"] = reference["creditWords"];
                   frozen["creditWords"].splice(start, deleteCount, ...items.map(i => true));
                   return this;
                 }
@@ -40358,60 +40165,15 @@ class ScorePartBuilder implements IScorePartBuilder {
     
     function checkInvariants() {
       console.assert(
-          (original && !modifiedKeys["identification"]) ||
-          childBuilders["identification"] !== undefined ||
-          updates.identification !== undefined,
-        "identification is a required field");
-      console.assert(
-          (original && !modifiedKeys["partNameDisplay"]) ||
-          childBuilders["partNameDisplay"] !== undefined ||
-          updates.partNameDisplay !== undefined,
-        "partNameDisplay is a required field");
-      console.assert(
-          (original && !modifiedKeys["scoreInstruments"]) ||
-          childBuilders["scoreInstruments"] !== undefined ||
-          updates.scoreInstruments !== undefined,
-        "scoreInstruments is a required field");
-      console.assert(
-          (original && !modifiedKeys["midiDevices"]) ||
-          childBuilders["midiDevices"] !== undefined ||
-          updates.midiDevices !== undefined,
-        "midiDevices is a required field");
-      console.assert(
           (original && !modifiedKeys["partName"]) ||
           childBuilders["partName"] !== undefined ||
           updates.partName !== undefined,
         "partName is a required field");
       console.assert(
-          (original && !modifiedKeys["partAbbreviationDisplay"]) ||
-          childBuilders["partAbbreviationDisplay"] !== undefined ||
-          updates.partAbbreviationDisplay !== undefined,
-        "partAbbreviationDisplay is a required field");
-      console.assert(
-          (original && !modifiedKeys["partAbbreviation"]) ||
-          childBuilders["partAbbreviation"] !== undefined ||
-          updates.partAbbreviation !== undefined,
-        "partAbbreviation is a required field");
-      console.assert(
-          (original && !modifiedKeys["groups"]) ||
-          childBuilders["groups"] !== undefined ||
-          updates.groups !== undefined,
-        "groups is a required field");
-      console.assert(
-          (original && !modifiedKeys["midiInstruments"]) ||
-          childBuilders["midiInstruments"] !== undefined ||
-          updates.midiInstruments !== undefined,
-        "midiInstruments is a required field");
-      console.assert(
           (original && !modifiedKeys["id"]) ||
           childBuilders["id"] !== undefined ||
           updates.id !== undefined,
         "id is a required field");
-      console.assert(
-          (original && !modifiedKeys["_class"]) ||
-          childBuilders["_class"] !== undefined ||
-          updates._class !== undefined,
-        "_class is a required field");
     }
     if (!original) {
       this.build = (): ScorePart => {
@@ -40511,6 +40273,7 @@ class ScorePartBuilder implements IScorePartBuilder {
                     }
                   }
                   reference["scoreInstruments"].splice(start, deleteCount, ...items);
+                  updates["scoreInstruments"] = reference["scoreInstruments"];
                   frozen["scoreInstruments"].splice(start, deleteCount, ...items.map(i => true));
                   return this;
                 }
@@ -40573,6 +40336,7 @@ class ScorePartBuilder implements IScorePartBuilder {
                     }
                   }
                   reference["midiDevices"].splice(start, deleteCount, ...items);
+                  updates["midiDevices"] = reference["midiDevices"];
                   frozen["midiDevices"].splice(start, deleteCount, ...items.map(i => true));
                   return this;
                 }
@@ -40684,6 +40448,7 @@ class ScorePartBuilder implements IScorePartBuilder {
                     }
                   }
                   reference["midiInstruments"].splice(start, deleteCount, ...items);
+                  updates["midiInstruments"] = reference["midiInstruments"];
                   frozen["midiInstruments"].splice(start, deleteCount, ...items.map(i => true));
                   return this;
                 }
@@ -41528,6 +41293,7 @@ class GroupNameDisplayBuilder implements IGroupNameDisplayBuilder {
                     }
                   }
                   reference["name"].splice(start, deleteCount, ...items);
+                  updates["name"] = reference["name"];
                   frozen["name"].splice(start, deleteCount, ...items.map(i => true));
                   return this;
                 }
@@ -41804,6 +41570,7 @@ class GroupAbbreviationDisplayBuilder implements IGroupAbbreviationDisplayBuilde
                     }
                   }
                   reference["name"].splice(start, deleteCount, ...items);
+                  updates["name"] = reference["name"];
                   frozen["name"].splice(start, deleteCount, ...items.map(i => true));
                   return this;
                 }
@@ -42083,31 +41850,6 @@ class ScoreInstrumentBuilder implements IScoreInstrumentBuilder {
           childBuilders["instrumentName"] !== undefined ||
           updates.instrumentName !== undefined,
         "instrumentName is a required field");
-      console.assert(
-          (original && !modifiedKeys["instrumentSound"]) ||
-          childBuilders["instrumentSound"] !== undefined ||
-          updates.instrumentSound !== undefined,
-        "instrumentSound is a required field");
-      console.assert(
-          (original && !modifiedKeys["ensemble"]) ||
-          childBuilders["ensemble"] !== undefined ||
-          updates.ensemble !== undefined,
-        "ensemble is a required field");
-      console.assert(
-          (original && !modifiedKeys["virtualInstrument"]) ||
-          childBuilders["virtualInstrument"] !== undefined ||
-          updates.virtualInstrument !== undefined,
-        "virtualInstrument is a required field");
-      console.assert(
-          (original && !modifiedKeys["instrumentAbbreviation"]) ||
-          childBuilders["instrumentAbbreviation"] !== undefined ||
-          updates.instrumentAbbreviation !== undefined,
-        "instrumentAbbreviation is a required field");
-      console.assert(
-          (original && !modifiedKeys["solo"]) ||
-          childBuilders["solo"] !== undefined ||
-          updates.solo !== undefined,
-        "solo is a required field");
       console.assert(
           (original && !modifiedKeys["id"]) ||
           childBuilders["id"] !== undefined ||
@@ -42512,6 +42254,7 @@ class ScoreHeaderBuilder implements IScoreHeaderBuilder {
                     }
                   }
                   reference["credits"].splice(start, deleteCount, ...items);
+                  updates["credits"] = reference["credits"];
                   frozen["credits"].splice(start, deleteCount, ...items.map(i => true));
                   return this;
                 }
@@ -42704,6 +42447,7 @@ class ScoreTimewiseBuilder implements IScoreTimewiseBuilder {
                     }
                   }
                   reference["measures"].splice(start, deleteCount, ...items);
+                  updates["measures"] = reference["measures"];
                   frozen["measures"].splice(start, deleteCount, ...items.map(i => true));
                   return this;
                 }
@@ -42822,6 +42566,7 @@ class ScoreTimewiseBuilder implements IScoreTimewiseBuilder {
                     }
                   }
                   reference["credits"].splice(start, deleteCount, ...items);
+                  updates["credits"] = reference["credits"];
                   frozen["credits"].splice(start, deleteCount, ...items.map(i => true));
                   return this;
                 }
@@ -42887,21 +42632,6 @@ class MeasureBuilder implements IMeasureBuilder {
           childBuilders["number"] !== undefined ||
           updates.number !== undefined,
         "number is a required field");
-      console.assert(
-          (original && !modifiedKeys["implicit"]) ||
-          childBuilders["implicit"] !== undefined ||
-          updates.implicit !== undefined,
-        "implicit is a required field");
-      console.assert(
-          (original && !modifiedKeys["width"]) ||
-          childBuilders["width"] !== undefined ||
-          updates.width !== undefined,
-        "width is a required field");
-      console.assert(
-          (original && !modifiedKeys["nonControlling"]) ||
-          childBuilders["nonControlling"] !== undefined ||
-          updates.nonControlling !== undefined,
-        "nonControlling is a required field");
     }
     if (!original) {
       this.build = (): Measure => {
