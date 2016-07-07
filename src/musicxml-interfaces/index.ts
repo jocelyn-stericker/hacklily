@@ -171,8 +171,8 @@ export function parseGrouping(str: string) {
 
 /*---- Serialization API ------------------------------------------------------------------------*/
 
-export function serializeScore(score: ScoreTimewise): string {
-    return `<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+export function serializeScore(score: ScoreTimewise, parttime: boolean = false): string {
+    let timewise = `<?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!DOCTYPE score-timewise
   PUBLIC "-//Recordare//DTD MusicXML 3.0 Timewise//EN" "http://www.musicxml.org/dtds/timewise.dtd">
 <score-timewise version="3.0">
@@ -180,6 +180,10 @@ ${scoreHeaderToXML(score).join("\n").split("\n").map(line => "  " + line).join("
 ${score.measures.map(measure => measureToXML(measure)).join("\n")
     .split("\n").map(line => "  " + line).join("\n")}
 </score-timewise>`;
+    if (!parttime) {
+        return timewise;
+    }
+    return timewiseToPartwise(timewise);
 }
 
 export function serializeScoreHeader(scoreHeader: ScoreHeader) {
@@ -233,10 +237,12 @@ let isIE = typeof window !== "undefined" && "ActiveXObject" in window;
 let isNode = typeof window === "undefined" || typeof (<any>process) !== "undefined" && !(<any>process).browser;
 
 var xmlToParttimeDoc: (str: string) => Document;
+var timewiseToPartwise: (str: string) => string;
 var xmlToDoc: (str: string) => Document;
 
 (function init() {
     let parttimeXSLBuffer = "<?xml version=\"1.0\" encoding=\"UTF-8\"?> <xsl:stylesheet version=\"1.0\" xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\"> <xsl:output method=\"xml\" indent=\"yes\" encoding=\"UTF-8\" omit-xml-declaration=\"no\" standalone=\"no\" doctype-system=\"http://www.musicxml.org/dtds/timewise.dtd\" doctype-public=\"-//Recordare//DTD MusicXML 3.0 Timewise//EN\" /> <xsl:template match=\"/\"> <xsl:apply-templates select=\"./score-partwise\"/> <xsl:apply-templates select=\"./score-timewise\"/> </xsl:template> <xsl:template match=\"score-timewise\"> <xsl:copy-of select=\".\" /> </xsl:template> <xsl:template match=\"text()\"> <xsl:value-of select=\".\" /> </xsl:template> <xsl:template match=\"*|@*|comment()|processing-instruction()\"> <xsl:copy><xsl:apply-templates select=\"*|@*|comment()|processing-instruction()|text()\" /></xsl:copy> </xsl:template> <xsl:template match=\"score-partwise\"> <xsl:element name=\"score-timewise\"> <xsl:apply-templates select=\"@version[.!='1.0']\"/> <xsl:apply-templates select=\"work\"/> <xsl:apply-templates select=\"movement-number\"/> <xsl:apply-templates select=\"movement-title\"/> <xsl:apply-templates select=\"identification\"/> <xsl:apply-templates select=\"defaults\"/> <xsl:apply-templates select=\"credit\"/> <xsl:apply-templates select=\"part-list\"/> <xsl:for-each select=\"part[1]/measure\"> <xsl:variable name=\"measure-number\"> <xsl:value-of select=\"@number\"/> </xsl:variable> <xsl:element name=\"measure\"> <xsl:attribute name=\"number\"> <xsl:value-of select=\"$measure-number\"/> </xsl:attribute> <xsl:if test=\"@implicit[. = 'yes']\"> <xsl:attribute name=\"implicit\"> <xsl:value-of select=\"@implicit\"/> </xsl:attribute> </xsl:if> <xsl:if test=\"@non-controlling[. = 'yes']\"> <xsl:attribute name=\"non-controlling\"> <xsl:value-of select=\"@non-controlling\"/> </xsl:attribute> </xsl:if> <xsl:if test=\"@width\"> <xsl:attribute name=\"width\"> <xsl:value-of select=\"@width\"/> </xsl:attribute> </xsl:if> <xsl:for-each select=\"../../part/measure\"> <xsl:if test=\"@number=$measure-number\"> <xsl:element name=\"part\"> <xsl:attribute name=\"id\"> <xsl:value-of select=\"parent::part/@id\"/> </xsl:attribute> <xsl:apply-templates /> </xsl:element> </xsl:if> </xsl:for-each> </xsl:element> </xsl:for-each> </xsl:element> </xsl:template> </xsl:stylesheet>";
+    let timepartXSLBuffer = "<?xml version=\"1.0\" encoding=\"UTF-8\"?> <xsl:stylesheet version=\"1.0\" xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\"> <xsl:output method=\"xml\" indent=\"yes\" encoding=\"UTF-8\" omit-xml-declaration=\"no\" standalone=\"no\" doctype-system=\"http://www.musicxml.org/dtds/partwise.dtd\" doctype-public=\"-//Recordare//DTD MusicXML 3.0 Partwise//EN\" /> <xsl:template match=\"/\"> <xsl:apply-templates select=\"./score-partwise\"/> <xsl:apply-templates select=\"./score-timewise\"/> </xsl:template> <xsl:template match=\"score-partwise\"> <xsl:copy-of select=\".\" /> </xsl:template> <xsl:template match=\"text()\"> <xsl:value-of select=\".\" /> </xsl:template> <xsl:template match=\"*|@*|comment()|processing-instruction()\"> <xsl:copy><xsl:apply-templates select=\"*|@*|comment()|processing-instruction()|text()\" /></xsl:copy> </xsl:template> <xsl:template match=\"score-timewise\"> <xsl:element name=\"score-partwise\"> <xsl:apply-templates select=\"@version[.!='1.0']\"/> <xsl:apply-templates select=\"work\"/> <xsl:apply-templates select=\"movement-number\"/> <xsl:apply-templates select=\"movement-title\"/> <xsl:apply-templates select=\"identification\"/> <xsl:apply-templates select=\"defaults\"/> <xsl:apply-templates select=\"credit\"/> <xsl:apply-templates select=\"part-list\"/> <xsl:for-each select=\"measure[1]/part\"> <xsl:variable name=\"part-id\"> <xsl:value-of select=\"@id\"/> </xsl:variable> <xsl:element name=\"part\"> <xsl:copy-of select=\"@id\" /> <xsl:for-each select=\"../../measure/part\"> <xsl:if test=\"@id=$part-id\"> <xsl:element name=\"measure\"> <xsl:attribute name=\"number\"> <xsl:value-of select=\"parent::measure/@number\"/> </xsl:attribute> <xsl:if test=\"parent::measure/@implicit[. = 'yes']\"> <xsl:attribute name=\"implicit\"> <xsl:value-of select=\"parent::measure/@implicit\"/> </xsl:attribute> </xsl:if> <xsl:if test=\"parent::measure/@non-controlling[. = 'yes']\"> <xsl:attribute name=\"non-controlling\"> <xsl:value-of select=\"parent::measure/@non-controlling\"/> </xsl:attribute> </xsl:if> <xsl:if test=\"parent::measure/@width\"> <xsl:attribute name=\"width\"> <xsl:value-of select=\"parent::measure/@width\"/> </xsl:attribute> </xsl:if> <xsl:apply-templates /> </xsl:element> </xsl:if> </xsl:for-each> </xsl:element> </xsl:for-each> </xsl:element> </xsl:template> </xsl:stylesheet>";
 
     if (isIE) {
         var DOMParser = (<any>window).DOMParser;
@@ -262,6 +268,25 @@ var xmlToDoc: (str: string) => Document;
             xslProc.transform();
             return xmlToDoc(xslProc.output);
         }
+        timewiseToPartwise = function(str: string) {
+            let xslt = new ActiveXObject("Msxml2.XSLTemplate");
+            let xmlDoc = new ActiveXObject("Msxml2.DOMDocument");
+            let xslDoc = new ActiveXObject("Msxml2.FreeThreadedDOMDocument");
+
+            // Why these aren't set by default completely flabbergasts me.
+            xmlDoc.validateOnParse = false;
+            xslDoc.validateOnParse = false;
+            xmlDoc.resolveExternals = false;
+            xslDoc.resolveExternals = false;
+
+            xmlDoc.loadXML(str);
+            xslDoc.loadXML(timepartXSLBuffer);
+            xslt.stylesheet = xslDoc;
+            let xslProc = xslt.createProcessor();
+            xslProc.input = xmlDoc;
+            xslProc.transform();
+            return xslProc.output;
+        }
     } else if (isNode) {
         var DOMParser: typeof DOMParser = require("xmldom").DOMParser;
         let spawnSync = (<any>require("child_process")).spawnSync;
@@ -282,12 +307,29 @@ var xmlToDoc: (str: string) => Document;
             }
             return xmlToDoc(res.stdout.toString());
         }
+        timewiseToPartwise = function(str: string) {
+            let res = spawnSync("xsltproc",
+                ["--nonet", "./vendor/musicxml-dtd/timepart.xsl", "-"],
+                {
+                    input: str,
+                    env: {
+                        "XML_CATALOG_FILES": "./vendor/musicxml-dtd/catalog.xml"
+                    }
+                });
+            if (res.error) {
+                throw res.error;
+            }
+            return res.stdout.toString();
+        }
     } else {
         var DOMParser = (<any>window).DOMParser;
         let parttimeXSLDoc = (new DOMParser).parseFromString(parttimeXSLBuffer, "text/xml");
+        let timepartXSLDoc = (new DOMParser).parseFromString(timepartXSLBuffer, "text/xml");
 
         let parttimeXSLProcessor: XSLTProcessor = new XSLTProcessor;
         parttimeXSLProcessor.importStylesheet(parttimeXSLDoc);
+        let timepartXSLProcessor: XSLTProcessor = new XSLTProcessor;
+        timepartXSLProcessor.importStylesheet(timepartXSLDoc);
 
         xmlToDoc = function(str: string) {
             return (new DOMParser).parseFromString(str, "text/xml");
@@ -296,6 +338,10 @@ var xmlToDoc: (str: string) => Document;
         xmlToParttimeDoc = function(str: string) {
             let dom: Document = (new DOMParser).parseFromString(str, "text/xml");
             return parttimeXSLProcessor.transformToDocument(dom);
+        }
+        timewiseToPartwise = function(str: string) {
+            let dom: Document = (new DOMParser).parseFromString(str, "text/xml");
+            return new XMLSerializer().serializeToString(timepartXSLProcessor.transformToDocument(dom).documentElement);
         }
     }
 }());
