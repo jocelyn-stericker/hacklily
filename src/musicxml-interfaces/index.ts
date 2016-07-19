@@ -290,16 +290,17 @@ var xmlToDoc: (str: string) => Document;
     } else if (isNode) {
         var DOMParser: typeof DOMParser = require("xmldom").DOMParser;
         let spawnSync = (<any>require("child_process")).spawnSync;
+        let path = (<any>require("path"));
         xmlToDoc = function(str: string) {
             return (new DOMParser).parseFromString(str, "text/xml");
         }
         xmlToParttimeDoc = function(str: string) {
             let res = spawnSync("xsltproc",
-                ["--nonet", "./vendor/musicxml-dtd/parttime.xsl", "-"],
+                ["--nonet", path.join(__dirname, "..", "vendor", "musicxml-dtd", "parttime.xsl"), "-"],
                 {
                     input: str,
                     env: {
-                        "XML_CATALOG_FILES": "./vendor/musicxml-dtd/catalog.xml"
+                        "XML_CATALOG_FILES": path.join(__dirname, "..", "vendor", "musicxml-dtd", "catalog.xml"),
                     }
                 });
             if (res.error) {
@@ -309,11 +310,11 @@ var xmlToDoc: (str: string) => Document;
         }
         timewiseToPartwise = function(str: string) {
             let res = spawnSync("xsltproc",
-                ["--nonet", "./vendor/musicxml-dtd/timepart.xsl", "-"],
+                ["--nonet", path.join(__dirname, "..", "vendor", "musicxml-dtd", "parttime.xsl"), "-"],
                 {
                     input: str,
                     env: {
-                        "XML_CATALOG_FILES": "./vendor/musicxml-dtd/catalog.xml"
+                        "XML_CATALOG_FILES": path.join(__dirname, "..", "vendor", "musicxml-dtd", "catalog.xml"),
                     }
                 });
             if (res.error) {
