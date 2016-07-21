@@ -6,8 +6,8 @@
   <identification>
     <encoding>
       <encoding-date>2016-01-01</encoding-date>
-      <software>Ripieno Satie</software>
-      <supports type="yes" element="satie-ext" />
+      <software>Songhaus Satie</software>
+      <supports type="yes" element="satie-collaboration" />
     </encoding>
     <miscellaneous>
       <miscellaneous-field name="description">The &lt;voice&gt; element 
@@ -65,21 +65,11 @@
   </part-list>
   <measure number="1">
     <part id="P1">
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
-        <pitch>
-          <step>G</step>
-          <octave>4</octave>
-        </pitch>
-        <duration>16</duration>
-        <voice>1</voice>
-        <type>whole</type>
-        <staff>1</staff>
-        <lyric number="1" justify="left" relative-x="0" relative-y="0" color="#000000" print-object="yes">
-          <syllabic>single</syllabic>
-          <text font-style="normal" font-weight="normal" color="#000000" underline="0" overline="0" line-through="0" rotation="0" letter-spacing="normal" dir="ltr">A</text>
-        </lyric>
-      </note>
-      
+      <!-- measure metadata (Satie) -->
+      <direction placement="below"><direction-type><words default-y="-70" relative-x="-5000">SATIE_SONG_META = {};</words></direction-type></direction>
+      <direction placement="below"><direction-type><words default-y="-70" relative-x="-5000">SATIE_MEASURE_META = {"uuid":764125715419229};</words></direction-type></direction>
+      <!-- end of measure metadata (Satie) -->
+      <!-- staff 1 -->
       <print new-system="no" new-page="no" page-number="1">
         <!--musicxml-interfaces:debug>
           <div-count>0</div-count>
@@ -104,6 +94,8 @@
         </system-layout>
         <measure-numbering relative-x="0" relative-y="0" font-family="Alegreya, serif" font-style="normal" font-size="small" font-weight="normal" color="#000000">system</measure-numbering>
       </print>
+      <forward><duration>0</duration></forward>
+      
       <attributes>
         <!--musicxml-interfaces:debug>
           <div-count>16</div-count>
@@ -126,12 +118,36 @@
           <staff-lines>5</staff-lines>
         </staff-details>
       </attributes>
+      <forward><duration>16</duration></forward>
+      
       <barline location="right">
         <!--musicxml-interfaces:debug>
           <div-count>0</div-count>
         </musicxml-interfaces:debug-->
         <bar-style color="#000000">light-heavy</bar-style>
       </barline>
+      <forward><duration>0</duration></forward>
+      
+      <backup><duration>16</duration></backup>
+      <!-- end of staff 1 -->
+      <!-- voice 1 -->
+      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+        <pitch>
+          <step>G</step>
+          <octave>4</octave>
+        </pitch>
+        <duration>16</duration>
+        <voice>1</voice>
+        <type>whole</type>
+        <staff>1</staff>
+        <lyric number="1" justify="left" relative-x="0" relative-y="0" color="#000000" print-object="yes">
+          <syllabic>single</syllabic>
+          <text font-style="normal" font-weight="normal" color="#000000" underline="0" overline="0" line-through="0" rotation="0" letter-spacing="normal" dir="ltr">A</text>
+        </lyric>
+      </note>
+      
+      <backup><duration>16</duration></backup>
+      <!-- end of voice 1 -->
     </part>
   </measure>
   </score-timewise>

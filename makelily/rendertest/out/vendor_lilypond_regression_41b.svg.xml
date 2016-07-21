@@ -6,8 +6,8 @@
   <identification>
     <encoding>
       <encoding-date>2016-01-01</encoding-date>
-      <software>Ripieno Satie</software>
-      <supports type="yes" element="satie-ext" />
+      <software>Songhaus Satie</software>
+      <supports type="yes" element="satie-collaboration" />
     </encoding>
     <miscellaneous>
       <miscellaneous-field name="description">A piece with 
@@ -122,16 +122,11 @@
   </part-list>
   <measure number="1">
     <part id="P0">
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
-        <rest measure="yes">
-          
-        </rest>
-        <duration>3840</duration>
-        <voice>1</voice>
-        <type>whole</type>
-        <staff>1</staff>
-      </note>
-      
+      <!-- measure metadata (Satie) -->
+      <direction placement="below"><direction-type><words default-y="-70" relative-x="-5000">SATIE_SONG_META = {};</words></direction-type></direction>
+      <direction placement="below"><direction-type><words default-y="-70" relative-x="-5000">SATIE_MEASURE_META = {"uuid":8662279185028149};</words></direction-type></direction>
+      <!-- end of measure metadata (Satie) -->
+      <!-- staff 1 -->
       <print new-system="no" new-page="no" page-number="1">
         <!--musicxml-interfaces:debug>
           <div-count>0</div-count>
@@ -156,6 +151,8 @@
         </system-layout>
         <measure-numbering relative-x="0" relative-y="0" font-family="Alegreya, serif" font-style="normal" font-size="small" font-weight="normal" color="#000000">system</measure-numbering>
       </print>
+      <forward><duration>0</duration></forward>
+      
       <attributes>
         <!--musicxml-interfaces:debug>
           <div-count>3840</div-count>
@@ -178,24 +175,37 @@
           <staff-lines>5</staff-lines>
         </staff-details>
       </attributes>
+      <forward><duration>3840</duration></forward>
+      
       <barline>
         <!--musicxml-interfaces:debug>
           <div-count>0</div-count>
         </musicxml-interfaces:debug-->
         <bar-style color="black"></bar-style>
       </barline>
+      <forward><duration>0</duration></forward>
+      
+      <backup><duration>3840</duration></backup>
+      <!-- end of staff 1 -->
+      <!-- voice 1 -->
+      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+        <rest measure="yes">
+          
+        </rest>
+        <duration>3840</duration>
+        <voice>1</voice>
+        <type>whole</type>
+        <staff>1</staff>
+      </note>
+      
+      <backup><duration>3840</duration></backup>
+      <!-- end of voice 1 -->
     </part>
     <part id="P1">
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
-        <rest measure="yes">
-          
-        </rest>
-        <duration>3840</duration>
-        <voice>1</voice>
-        <type>whole</type>
-        <staff>1</staff>
-      </note>
-      
+      <!-- measure metadata (Satie) -->
+      <direction placement="below"><direction-type><words default-y="-70" relative-x="-5000">SATIE_MEASURE_META = {"uuid":8662279185028149};</words></direction-type></direction>
+      <!-- end of measure metadata (Satie) -->
+      <!-- staff 1 -->
       <print new-system="no" new-page="no" page-number="1">
         <!--musicxml-interfaces:debug>
           <div-count>0</div-count>
@@ -220,6 +230,8 @@
         </system-layout>
         <measure-numbering relative-x="0" relative-y="0" font-family="Alegreya, serif" font-style="normal" font-size="small" font-weight="normal" color="#000000">system</measure-numbering>
       </print>
+      <forward><duration>0</duration></forward>
+      
       <attributes>
         <!--musicxml-interfaces:debug>
           <div-count>3840</div-count>
@@ -242,24 +254,37 @@
           <staff-lines>5</staff-lines>
         </staff-details>
       </attributes>
+      <forward><duration>3840</duration></forward>
+      
       <barline>
         <!--musicxml-interfaces:debug>
           <div-count>0</div-count>
         </musicxml-interfaces:debug-->
         <bar-style color="black"></bar-style>
       </barline>
+      <forward><duration>0</duration></forward>
+      
+      <backup><duration>3840</duration></backup>
+      <!-- end of staff 1 -->
+      <!-- voice 1 -->
+      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+        <rest measure="yes">
+          
+        </rest>
+        <duration>3840</duration>
+        <voice>1</voice>
+        <type>whole</type>
+        <staff>1</staff>
+      </note>
+      
+      <backup><duration>3840</duration></backup>
+      <!-- end of voice 1 -->
     </part>
     <part id="P2">
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
-        <rest measure="yes">
-          
-        </rest>
-        <duration>3840</duration>
-        <voice>1</voice>
-        <type>whole</type>
-        <staff>1</staff>
-      </note>
-      
+      <!-- measure metadata (Satie) -->
+      <direction placement="below"><direction-type><words default-y="-70" relative-x="-5000">SATIE_MEASURE_META = {"uuid":8662279185028149};</words></direction-type></direction>
+      <!-- end of measure metadata (Satie) -->
+      <!-- staff 1 -->
       <print new-system="no" new-page="no" page-number="1">
         <!--musicxml-interfaces:debug>
           <div-count>0</div-count>
@@ -284,6 +309,8 @@
         </system-layout>
         <measure-numbering relative-x="0" relative-y="0" font-family="Alegreya, serif" font-style="normal" font-size="small" font-weight="normal" color="#000000">system</measure-numbering>
       </print>
+      <forward><duration>0</duration></forward>
+      
       <attributes>
         <!--musicxml-interfaces:debug>
           <div-count>3840</div-count>
@@ -306,24 +333,37 @@
           <staff-lines>5</staff-lines>
         </staff-details>
       </attributes>
+      <forward><duration>3840</duration></forward>
+      
       <barline>
         <!--musicxml-interfaces:debug>
           <div-count>0</div-count>
         </musicxml-interfaces:debug-->
         <bar-style color="black"></bar-style>
       </barline>
+      <forward><duration>0</duration></forward>
+      
+      <backup><duration>3840</duration></backup>
+      <!-- end of staff 1 -->
+      <!-- voice 1 -->
+      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+        <rest measure="yes">
+          
+        </rest>
+        <duration>3840</duration>
+        <voice>1</voice>
+        <type>whole</type>
+        <staff>1</staff>
+      </note>
+      
+      <backup><duration>3840</duration></backup>
+      <!-- end of voice 1 -->
     </part>
     <part id="P3">
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
-        <rest measure="yes">
-          
-        </rest>
-        <duration>3840</duration>
-        <voice>1</voice>
-        <type>whole</type>
-        <staff>1</staff>
-      </note>
-      
+      <!-- measure metadata (Satie) -->
+      <direction placement="below"><direction-type><words default-y="-70" relative-x="-5000">SATIE_MEASURE_META = {"uuid":8662279185028149};</words></direction-type></direction>
+      <!-- end of measure metadata (Satie) -->
+      <!-- staff 1 -->
       <print new-system="no" new-page="no" page-number="1">
         <!--musicxml-interfaces:debug>
           <div-count>0</div-count>
@@ -348,6 +388,8 @@
         </system-layout>
         <measure-numbering relative-x="0" relative-y="0" font-family="Alegreya, serif" font-style="normal" font-size="small" font-weight="normal" color="#000000">system</measure-numbering>
       </print>
+      <forward><duration>0</duration></forward>
+      
       <attributes>
         <!--musicxml-interfaces:debug>
           <div-count>3840</div-count>
@@ -370,24 +412,37 @@
           <staff-lines>5</staff-lines>
         </staff-details>
       </attributes>
+      <forward><duration>3840</duration></forward>
+      
       <barline>
         <!--musicxml-interfaces:debug>
           <div-count>0</div-count>
         </musicxml-interfaces:debug-->
         <bar-style color="black"></bar-style>
       </barline>
+      <forward><duration>0</duration></forward>
+      
+      <backup><duration>3840</duration></backup>
+      <!-- end of staff 1 -->
+      <!-- voice 1 -->
+      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+        <rest measure="yes">
+          
+        </rest>
+        <duration>3840</duration>
+        <voice>1</voice>
+        <type>whole</type>
+        <staff>1</staff>
+      </note>
+      
+      <backup><duration>3840</duration></backup>
+      <!-- end of voice 1 -->
     </part>
     <part id="P4">
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
-        <rest measure="yes">
-          
-        </rest>
-        <duration>3840</duration>
-        <voice>1</voice>
-        <type>whole</type>
-        <staff>1</staff>
-      </note>
-      
+      <!-- measure metadata (Satie) -->
+      <direction placement="below"><direction-type><words default-y="-70" relative-x="-5000">SATIE_MEASURE_META = {"uuid":8662279185028149};</words></direction-type></direction>
+      <!-- end of measure metadata (Satie) -->
+      <!-- staff 1 -->
       <print new-system="no" new-page="no" page-number="1">
         <!--musicxml-interfaces:debug>
           <div-count>0</div-count>
@@ -412,6 +467,8 @@
         </system-layout>
         <measure-numbering relative-x="0" relative-y="0" font-family="Alegreya, serif" font-style="normal" font-size="small" font-weight="normal" color="#000000">system</measure-numbering>
       </print>
+      <forward><duration>0</duration></forward>
+      
       <attributes>
         <!--musicxml-interfaces:debug>
           <div-count>3840</div-count>
@@ -434,24 +491,37 @@
           <staff-lines>5</staff-lines>
         </staff-details>
       </attributes>
+      <forward><duration>3840</duration></forward>
+      
       <barline>
         <!--musicxml-interfaces:debug>
           <div-count>0</div-count>
         </musicxml-interfaces:debug-->
         <bar-style color="black"></bar-style>
       </barline>
+      <forward><duration>0</duration></forward>
+      
+      <backup><duration>3840</duration></backup>
+      <!-- end of staff 1 -->
+      <!-- voice 1 -->
+      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+        <rest measure="yes">
+          
+        </rest>
+        <duration>3840</duration>
+        <voice>1</voice>
+        <type>whole</type>
+        <staff>1</staff>
+      </note>
+      
+      <backup><duration>3840</duration></backup>
+      <!-- end of voice 1 -->
     </part>
     <part id="P5">
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
-        <rest measure="yes">
-          
-        </rest>
-        <duration>3840</duration>
-        <voice>1</voice>
-        <type>whole</type>
-        <staff>1</staff>
-      </note>
-      
+      <!-- measure metadata (Satie) -->
+      <direction placement="below"><direction-type><words default-y="-70" relative-x="-5000">SATIE_MEASURE_META = {"uuid":8662279185028149};</words></direction-type></direction>
+      <!-- end of measure metadata (Satie) -->
+      <!-- staff 1 -->
       <print new-system="no" new-page="no" page-number="1">
         <!--musicxml-interfaces:debug>
           <div-count>0</div-count>
@@ -476,6 +546,8 @@
         </system-layout>
         <measure-numbering relative-x="0" relative-y="0" font-family="Alegreya, serif" font-style="normal" font-size="small" font-weight="normal" color="#000000">system</measure-numbering>
       </print>
+      <forward><duration>0</duration></forward>
+      
       <attributes>
         <!--musicxml-interfaces:debug>
           <div-count>3840</div-count>
@@ -498,24 +570,37 @@
           <staff-lines>5</staff-lines>
         </staff-details>
       </attributes>
+      <forward><duration>3840</duration></forward>
+      
       <barline>
         <!--musicxml-interfaces:debug>
           <div-count>0</div-count>
         </musicxml-interfaces:debug-->
         <bar-style color="black"></bar-style>
       </barline>
+      <forward><duration>0</duration></forward>
+      
+      <backup><duration>3840</duration></backup>
+      <!-- end of staff 1 -->
+      <!-- voice 1 -->
+      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+        <rest measure="yes">
+          
+        </rest>
+        <duration>3840</duration>
+        <voice>1</voice>
+        <type>whole</type>
+        <staff>1</staff>
+      </note>
+      
+      <backup><duration>3840</duration></backup>
+      <!-- end of voice 1 -->
     </part>
     <part id="P6">
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
-        <rest measure="yes">
-          
-        </rest>
-        <duration>3840</duration>
-        <voice>1</voice>
-        <type>whole</type>
-        <staff>1</staff>
-      </note>
-      
+      <!-- measure metadata (Satie) -->
+      <direction placement="below"><direction-type><words default-y="-70" relative-x="-5000">SATIE_MEASURE_META = {"uuid":8662279185028149};</words></direction-type></direction>
+      <!-- end of measure metadata (Satie) -->
+      <!-- staff 1 -->
       <print new-system="no" new-page="no" page-number="1">
         <!--musicxml-interfaces:debug>
           <div-count>0</div-count>
@@ -540,6 +625,8 @@
         </system-layout>
         <measure-numbering relative-x="0" relative-y="0" font-family="Alegreya, serif" font-style="normal" font-size="small" font-weight="normal" color="#000000">system</measure-numbering>
       </print>
+      <forward><duration>0</duration></forward>
+      
       <attributes>
         <!--musicxml-interfaces:debug>
           <div-count>3840</div-count>
@@ -562,24 +649,37 @@
           <staff-lines>5</staff-lines>
         </staff-details>
       </attributes>
+      <forward><duration>3840</duration></forward>
+      
       <barline>
         <!--musicxml-interfaces:debug>
           <div-count>0</div-count>
         </musicxml-interfaces:debug-->
         <bar-style color="black"></bar-style>
       </barline>
+      <forward><duration>0</duration></forward>
+      
+      <backup><duration>3840</duration></backup>
+      <!-- end of staff 1 -->
+      <!-- voice 1 -->
+      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+        <rest measure="yes">
+          
+        </rest>
+        <duration>3840</duration>
+        <voice>1</voice>
+        <type>whole</type>
+        <staff>1</staff>
+      </note>
+      
+      <backup><duration>3840</duration></backup>
+      <!-- end of voice 1 -->
     </part>
     <part id="P7">
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
-        <rest measure="yes">
-          
-        </rest>
-        <duration>3840</duration>
-        <voice>1</voice>
-        <type>whole</type>
-        <staff>1</staff>
-      </note>
-      
+      <!-- measure metadata (Satie) -->
+      <direction placement="below"><direction-type><words default-y="-70" relative-x="-5000">SATIE_MEASURE_META = {"uuid":8662279185028149};</words></direction-type></direction>
+      <!-- end of measure metadata (Satie) -->
+      <!-- staff 1 -->
       <print new-system="no" new-page="no" page-number="1">
         <!--musicxml-interfaces:debug>
           <div-count>0</div-count>
@@ -604,6 +704,8 @@
         </system-layout>
         <measure-numbering relative-x="0" relative-y="0" font-family="Alegreya, serif" font-style="normal" font-size="small" font-weight="normal" color="#000000">system</measure-numbering>
       </print>
+      <forward><duration>0</duration></forward>
+      
       <attributes>
         <!--musicxml-interfaces:debug>
           <div-count>3840</div-count>
@@ -626,24 +728,37 @@
           <staff-lines>5</staff-lines>
         </staff-details>
       </attributes>
+      <forward><duration>3840</duration></forward>
+      
       <barline>
         <!--musicxml-interfaces:debug>
           <div-count>0</div-count>
         </musicxml-interfaces:debug-->
         <bar-style color="black"></bar-style>
       </barline>
+      <forward><duration>0</duration></forward>
+      
+      <backup><duration>3840</duration></backup>
+      <!-- end of staff 1 -->
+      <!-- voice 1 -->
+      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+        <rest measure="yes">
+          
+        </rest>
+        <duration>3840</duration>
+        <voice>1</voice>
+        <type>whole</type>
+        <staff>1</staff>
+      </note>
+      
+      <backup><duration>3840</duration></backup>
+      <!-- end of voice 1 -->
     </part>
     <part id="P8">
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
-        <rest measure="yes">
-          
-        </rest>
-        <duration>3840</duration>
-        <voice>1</voice>
-        <type>whole</type>
-        <staff>1</staff>
-      </note>
-      
+      <!-- measure metadata (Satie) -->
+      <direction placement="below"><direction-type><words default-y="-70" relative-x="-5000">SATIE_MEASURE_META = {"uuid":8662279185028149};</words></direction-type></direction>
+      <!-- end of measure metadata (Satie) -->
+      <!-- staff 1 -->
       <print new-system="no" new-page="no" page-number="1">
         <!--musicxml-interfaces:debug>
           <div-count>0</div-count>
@@ -668,6 +783,8 @@
         </system-layout>
         <measure-numbering relative-x="0" relative-y="0" font-family="Alegreya, serif" font-style="normal" font-size="small" font-weight="normal" color="#000000">system</measure-numbering>
       </print>
+      <forward><duration>0</duration></forward>
+      
       <attributes>
         <!--musicxml-interfaces:debug>
           <div-count>3840</div-count>
@@ -690,24 +807,37 @@
           <staff-lines>5</staff-lines>
         </staff-details>
       </attributes>
+      <forward><duration>3840</duration></forward>
+      
       <barline>
         <!--musicxml-interfaces:debug>
           <div-count>0</div-count>
         </musicxml-interfaces:debug-->
         <bar-style color="black"></bar-style>
       </barline>
+      <forward><duration>0</duration></forward>
+      
+      <backup><duration>3840</duration></backup>
+      <!-- end of staff 1 -->
+      <!-- voice 1 -->
+      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+        <rest measure="yes">
+          
+        </rest>
+        <duration>3840</duration>
+        <voice>1</voice>
+        <type>whole</type>
+        <staff>1</staff>
+      </note>
+      
+      <backup><duration>3840</duration></backup>
+      <!-- end of voice 1 -->
     </part>
     <part id="P9">
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
-        <rest measure="yes">
-          
-        </rest>
-        <duration>3840</duration>
-        <voice>1</voice>
-        <type>whole</type>
-        <staff>1</staff>
-      </note>
-      
+      <!-- measure metadata (Satie) -->
+      <direction placement="below"><direction-type><words default-y="-70" relative-x="-5000">SATIE_MEASURE_META = {"uuid":8662279185028149};</words></direction-type></direction>
+      <!-- end of measure metadata (Satie) -->
+      <!-- staff 1 -->
       <print new-system="no" new-page="no" page-number="1">
         <!--musicxml-interfaces:debug>
           <div-count>0</div-count>
@@ -732,6 +862,8 @@
         </system-layout>
         <measure-numbering relative-x="0" relative-y="0" font-family="Alegreya, serif" font-style="normal" font-size="small" font-weight="normal" color="#000000">system</measure-numbering>
       </print>
+      <forward><duration>0</duration></forward>
+      
       <attributes>
         <!--musicxml-interfaces:debug>
           <div-count>3840</div-count>
@@ -754,24 +886,37 @@
           <staff-lines>5</staff-lines>
         </staff-details>
       </attributes>
+      <forward><duration>3840</duration></forward>
+      
       <barline>
         <!--musicxml-interfaces:debug>
           <div-count>0</div-count>
         </musicxml-interfaces:debug-->
         <bar-style color="black"></bar-style>
       </barline>
+      <forward><duration>0</duration></forward>
+      
+      <backup><duration>3840</duration></backup>
+      <!-- end of staff 1 -->
+      <!-- voice 1 -->
+      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+        <rest measure="yes">
+          
+        </rest>
+        <duration>3840</duration>
+        <voice>1</voice>
+        <type>whole</type>
+        <staff>1</staff>
+      </note>
+      
+      <backup><duration>3840</duration></backup>
+      <!-- end of voice 1 -->
     </part>
     <part id="P10">
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
-        <rest measure="yes">
-          
-        </rest>
-        <duration>3840</duration>
-        <voice>1</voice>
-        <type>whole</type>
-        <staff>1</staff>
-      </note>
-      
+      <!-- measure metadata (Satie) -->
+      <direction placement="below"><direction-type><words default-y="-70" relative-x="-5000">SATIE_MEASURE_META = {"uuid":8662279185028149};</words></direction-type></direction>
+      <!-- end of measure metadata (Satie) -->
+      <!-- staff 1 -->
       <print new-system="no" new-page="no" page-number="1">
         <!--musicxml-interfaces:debug>
           <div-count>0</div-count>
@@ -796,6 +941,8 @@
         </system-layout>
         <measure-numbering relative-x="0" relative-y="0" font-family="Alegreya, serif" font-style="normal" font-size="small" font-weight="normal" color="#000000">system</measure-numbering>
       </print>
+      <forward><duration>0</duration></forward>
+      
       <attributes>
         <!--musicxml-interfaces:debug>
           <div-count>3840</div-count>
@@ -818,24 +965,37 @@
           <staff-lines>5</staff-lines>
         </staff-details>
       </attributes>
+      <forward><duration>3840</duration></forward>
+      
       <barline>
         <!--musicxml-interfaces:debug>
           <div-count>0</div-count>
         </musicxml-interfaces:debug-->
         <bar-style color="black"></bar-style>
       </barline>
+      <forward><duration>0</duration></forward>
+      
+      <backup><duration>3840</duration></backup>
+      <!-- end of staff 1 -->
+      <!-- voice 1 -->
+      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+        <rest measure="yes">
+          
+        </rest>
+        <duration>3840</duration>
+        <voice>1</voice>
+        <type>whole</type>
+        <staff>1</staff>
+      </note>
+      
+      <backup><duration>3840</duration></backup>
+      <!-- end of voice 1 -->
     </part>
     <part id="P11">
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
-        <rest measure="yes">
-          
-        </rest>
-        <duration>3840</duration>
-        <voice>1</voice>
-        <type>whole</type>
-        <staff>1</staff>
-      </note>
-      
+      <!-- measure metadata (Satie) -->
+      <direction placement="below"><direction-type><words default-y="-70" relative-x="-5000">SATIE_MEASURE_META = {"uuid":8662279185028149};</words></direction-type></direction>
+      <!-- end of measure metadata (Satie) -->
+      <!-- staff 1 -->
       <print new-system="no" new-page="no" page-number="1">
         <!--musicxml-interfaces:debug>
           <div-count>0</div-count>
@@ -860,6 +1020,8 @@
         </system-layout>
         <measure-numbering relative-x="0" relative-y="0" font-family="Alegreya, serif" font-style="normal" font-size="small" font-weight="normal" color="#000000">system</measure-numbering>
       </print>
+      <forward><duration>0</duration></forward>
+      
       <attributes>
         <!--musicxml-interfaces:debug>
           <div-count>3840</div-count>
@@ -882,24 +1044,37 @@
           <staff-lines>5</staff-lines>
         </staff-details>
       </attributes>
+      <forward><duration>3840</duration></forward>
+      
       <barline>
         <!--musicxml-interfaces:debug>
           <div-count>0</div-count>
         </musicxml-interfaces:debug-->
         <bar-style color="black"></bar-style>
       </barline>
+      <forward><duration>0</duration></forward>
+      
+      <backup><duration>3840</duration></backup>
+      <!-- end of staff 1 -->
+      <!-- voice 1 -->
+      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+        <rest measure="yes">
+          
+        </rest>
+        <duration>3840</duration>
+        <voice>1</voice>
+        <type>whole</type>
+        <staff>1</staff>
+      </note>
+      
+      <backup><duration>3840</duration></backup>
+      <!-- end of voice 1 -->
     </part>
     <part id="P12">
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
-        <rest measure="yes">
-          
-        </rest>
-        <duration>3840</duration>
-        <voice>1</voice>
-        <type>whole</type>
-        <staff>1</staff>
-      </note>
-      
+      <!-- measure metadata (Satie) -->
+      <direction placement="below"><direction-type><words default-y="-70" relative-x="-5000">SATIE_MEASURE_META = {"uuid":8662279185028149};</words></direction-type></direction>
+      <!-- end of measure metadata (Satie) -->
+      <!-- staff 1 -->
       <print new-system="no" new-page="no" page-number="1">
         <!--musicxml-interfaces:debug>
           <div-count>0</div-count>
@@ -924,6 +1099,8 @@
         </system-layout>
         <measure-numbering relative-x="0" relative-y="0" font-family="Alegreya, serif" font-style="normal" font-size="small" font-weight="normal" color="#000000">system</measure-numbering>
       </print>
+      <forward><duration>0</duration></forward>
+      
       <attributes>
         <!--musicxml-interfaces:debug>
           <div-count>3840</div-count>
@@ -946,24 +1123,37 @@
           <staff-lines>5</staff-lines>
         </staff-details>
       </attributes>
+      <forward><duration>3840</duration></forward>
+      
       <barline>
         <!--musicxml-interfaces:debug>
           <div-count>0</div-count>
         </musicxml-interfaces:debug-->
         <bar-style color="black"></bar-style>
       </barline>
+      <forward><duration>0</duration></forward>
+      
+      <backup><duration>3840</duration></backup>
+      <!-- end of staff 1 -->
+      <!-- voice 1 -->
+      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+        <rest measure="yes">
+          
+        </rest>
+        <duration>3840</duration>
+        <voice>1</voice>
+        <type>whole</type>
+        <staff>1</staff>
+      </note>
+      
+      <backup><duration>3840</duration></backup>
+      <!-- end of voice 1 -->
     </part>
     <part id="P13">
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
-        <rest measure="yes">
-          
-        </rest>
-        <duration>3840</duration>
-        <voice>1</voice>
-        <type>whole</type>
-        <staff>1</staff>
-      </note>
-      
+      <!-- measure metadata (Satie) -->
+      <direction placement="below"><direction-type><words default-y="-70" relative-x="-5000">SATIE_MEASURE_META = {"uuid":8662279185028149};</words></direction-type></direction>
+      <!-- end of measure metadata (Satie) -->
+      <!-- staff 1 -->
       <print new-system="no" new-page="no" page-number="1">
         <!--musicxml-interfaces:debug>
           <div-count>0</div-count>
@@ -988,6 +1178,8 @@
         </system-layout>
         <measure-numbering relative-x="0" relative-y="0" font-family="Alegreya, serif" font-style="normal" font-size="small" font-weight="normal" color="#000000">system</measure-numbering>
       </print>
+      <forward><duration>0</duration></forward>
+      
       <attributes>
         <!--musicxml-interfaces:debug>
           <div-count>3840</div-count>
@@ -1010,24 +1202,37 @@
           <staff-lines>5</staff-lines>
         </staff-details>
       </attributes>
+      <forward><duration>3840</duration></forward>
+      
       <barline>
         <!--musicxml-interfaces:debug>
           <div-count>0</div-count>
         </musicxml-interfaces:debug-->
         <bar-style color="black"></bar-style>
       </barline>
+      <forward><duration>0</duration></forward>
+      
+      <backup><duration>3840</duration></backup>
+      <!-- end of staff 1 -->
+      <!-- voice 1 -->
+      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+        <rest measure="yes">
+          
+        </rest>
+        <duration>3840</duration>
+        <voice>1</voice>
+        <type>whole</type>
+        <staff>1</staff>
+      </note>
+      
+      <backup><duration>3840</duration></backup>
+      <!-- end of voice 1 -->
     </part>
     <part id="P14">
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
-        <rest measure="yes">
-          
-        </rest>
-        <duration>3840</duration>
-        <voice>1</voice>
-        <type>whole</type>
-        <staff>1</staff>
-      </note>
-      
+      <!-- measure metadata (Satie) -->
+      <direction placement="below"><direction-type><words default-y="-70" relative-x="-5000">SATIE_MEASURE_META = {"uuid":8662279185028149};</words></direction-type></direction>
+      <!-- end of measure metadata (Satie) -->
+      <!-- staff 1 -->
       <print new-system="no" new-page="no" page-number="1">
         <!--musicxml-interfaces:debug>
           <div-count>0</div-count>
@@ -1052,6 +1257,8 @@
         </system-layout>
         <measure-numbering relative-x="0" relative-y="0" font-family="Alegreya, serif" font-style="normal" font-size="small" font-weight="normal" color="#000000">system</measure-numbering>
       </print>
+      <forward><duration>0</duration></forward>
+      
       <attributes>
         <!--musicxml-interfaces:debug>
           <div-count>3840</div-count>
@@ -1074,24 +1281,37 @@
           <staff-lines>5</staff-lines>
         </staff-details>
       </attributes>
+      <forward><duration>3840</duration></forward>
+      
       <barline>
         <!--musicxml-interfaces:debug>
           <div-count>0</div-count>
         </musicxml-interfaces:debug-->
         <bar-style color="black"></bar-style>
       </barline>
+      <forward><duration>0</duration></forward>
+      
+      <backup><duration>3840</duration></backup>
+      <!-- end of staff 1 -->
+      <!-- voice 1 -->
+      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+        <rest measure="yes">
+          
+        </rest>
+        <duration>3840</duration>
+        <voice>1</voice>
+        <type>whole</type>
+        <staff>1</staff>
+      </note>
+      
+      <backup><duration>3840</duration></backup>
+      <!-- end of voice 1 -->
     </part>
     <part id="P15">
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
-        <rest measure="yes">
-          
-        </rest>
-        <duration>3840</duration>
-        <voice>1</voice>
-        <type>whole</type>
-        <staff>1</staff>
-      </note>
-      
+      <!-- measure metadata (Satie) -->
+      <direction placement="below"><direction-type><words default-y="-70" relative-x="-5000">SATIE_MEASURE_META = {"uuid":8662279185028149};</words></direction-type></direction>
+      <!-- end of measure metadata (Satie) -->
+      <!-- staff 1 -->
       <print new-system="no" new-page="no" page-number="1">
         <!--musicxml-interfaces:debug>
           <div-count>0</div-count>
@@ -1116,6 +1336,8 @@
         </system-layout>
         <measure-numbering relative-x="0" relative-y="0" font-family="Alegreya, serif" font-style="normal" font-size="small" font-weight="normal" color="#000000">system</measure-numbering>
       </print>
+      <forward><duration>0</duration></forward>
+      
       <attributes>
         <!--musicxml-interfaces:debug>
           <div-count>3840</div-count>
@@ -1138,24 +1360,37 @@
           <staff-lines>5</staff-lines>
         </staff-details>
       </attributes>
+      <forward><duration>3840</duration></forward>
+      
       <barline>
         <!--musicxml-interfaces:debug>
           <div-count>0</div-count>
         </musicxml-interfaces:debug-->
         <bar-style color="black"></bar-style>
       </barline>
+      <forward><duration>0</duration></forward>
+      
+      <backup><duration>3840</duration></backup>
+      <!-- end of staff 1 -->
+      <!-- voice 1 -->
+      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+        <rest measure="yes">
+          
+        </rest>
+        <duration>3840</duration>
+        <voice>1</voice>
+        <type>whole</type>
+        <staff>1</staff>
+      </note>
+      
+      <backup><duration>3840</duration></backup>
+      <!-- end of voice 1 -->
     </part>
     <part id="P16">
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
-        <rest measure="yes">
-          
-        </rest>
-        <duration>3840</duration>
-        <voice>1</voice>
-        <type>whole</type>
-        <staff>1</staff>
-      </note>
-      
+      <!-- measure metadata (Satie) -->
+      <direction placement="below"><direction-type><words default-y="-70" relative-x="-5000">SATIE_MEASURE_META = {"uuid":8662279185028149};</words></direction-type></direction>
+      <!-- end of measure metadata (Satie) -->
+      <!-- staff 1 -->
       <print new-system="no" new-page="no" page-number="1">
         <!--musicxml-interfaces:debug>
           <div-count>0</div-count>
@@ -1180,6 +1415,8 @@
         </system-layout>
         <measure-numbering relative-x="0" relative-y="0" font-family="Alegreya, serif" font-style="normal" font-size="small" font-weight="normal" color="#000000">system</measure-numbering>
       </print>
+      <forward><duration>0</duration></forward>
+      
       <attributes>
         <!--musicxml-interfaces:debug>
           <div-count>3840</div-count>
@@ -1202,24 +1439,37 @@
           <staff-lines>5</staff-lines>
         </staff-details>
       </attributes>
+      <forward><duration>3840</duration></forward>
+      
       <barline>
         <!--musicxml-interfaces:debug>
           <div-count>0</div-count>
         </musicxml-interfaces:debug-->
         <bar-style color="black"></bar-style>
       </barline>
+      <forward><duration>0</duration></forward>
+      
+      <backup><duration>3840</duration></backup>
+      <!-- end of staff 1 -->
+      <!-- voice 1 -->
+      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+        <rest measure="yes">
+          
+        </rest>
+        <duration>3840</duration>
+        <voice>1</voice>
+        <type>whole</type>
+        <staff>1</staff>
+      </note>
+      
+      <backup><duration>3840</duration></backup>
+      <!-- end of voice 1 -->
     </part>
     <part id="P17">
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
-        <rest measure="yes">
-          
-        </rest>
-        <duration>3840</duration>
-        <voice>1</voice>
-        <type>whole</type>
-        <staff>1</staff>
-      </note>
-      
+      <!-- measure metadata (Satie) -->
+      <direction placement="below"><direction-type><words default-y="-70" relative-x="-5000">SATIE_MEASURE_META = {"uuid":8662279185028149};</words></direction-type></direction>
+      <!-- end of measure metadata (Satie) -->
+      <!-- staff 1 -->
       <print new-system="no" new-page="no" page-number="1">
         <!--musicxml-interfaces:debug>
           <div-count>0</div-count>
@@ -1244,6 +1494,8 @@
         </system-layout>
         <measure-numbering relative-x="0" relative-y="0" font-family="Alegreya, serif" font-style="normal" font-size="small" font-weight="normal" color="#000000">system</measure-numbering>
       </print>
+      <forward><duration>0</duration></forward>
+      
       <attributes>
         <!--musicxml-interfaces:debug>
           <div-count>3840</div-count>
@@ -1266,24 +1518,37 @@
           <staff-lines>5</staff-lines>
         </staff-details>
       </attributes>
+      <forward><duration>3840</duration></forward>
+      
       <barline>
         <!--musicxml-interfaces:debug>
           <div-count>0</div-count>
         </musicxml-interfaces:debug-->
         <bar-style color="black"></bar-style>
       </barline>
+      <forward><duration>0</duration></forward>
+      
+      <backup><duration>3840</duration></backup>
+      <!-- end of staff 1 -->
+      <!-- voice 1 -->
+      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+        <rest measure="yes">
+          
+        </rest>
+        <duration>3840</duration>
+        <voice>1</voice>
+        <type>whole</type>
+        <staff>1</staff>
+      </note>
+      
+      <backup><duration>3840</duration></backup>
+      <!-- end of voice 1 -->
     </part>
     <part id="P18">
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
-        <rest measure="yes">
-          
-        </rest>
-        <duration>3840</duration>
-        <voice>1</voice>
-        <type>whole</type>
-        <staff>1</staff>
-      </note>
-      
+      <!-- measure metadata (Satie) -->
+      <direction placement="below"><direction-type><words default-y="-70" relative-x="-5000">SATIE_MEASURE_META = {"uuid":8662279185028149};</words></direction-type></direction>
+      <!-- end of measure metadata (Satie) -->
+      <!-- staff 1 -->
       <print new-system="no" new-page="no" page-number="1">
         <!--musicxml-interfaces:debug>
           <div-count>0</div-count>
@@ -1308,6 +1573,8 @@
         </system-layout>
         <measure-numbering relative-x="0" relative-y="0" font-family="Alegreya, serif" font-style="normal" font-size="small" font-weight="normal" color="#000000">system</measure-numbering>
       </print>
+      <forward><duration>0</duration></forward>
+      
       <attributes>
         <!--musicxml-interfaces:debug>
           <div-count>3840</div-count>
@@ -1330,24 +1597,37 @@
           <staff-lines>5</staff-lines>
         </staff-details>
       </attributes>
+      <forward><duration>3840</duration></forward>
+      
       <barline>
         <!--musicxml-interfaces:debug>
           <div-count>0</div-count>
         </musicxml-interfaces:debug-->
         <bar-style color="black"></bar-style>
       </barline>
+      <forward><duration>0</duration></forward>
+      
+      <backup><duration>3840</duration></backup>
+      <!-- end of staff 1 -->
+      <!-- voice 1 -->
+      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+        <rest measure="yes">
+          
+        </rest>
+        <duration>3840</duration>
+        <voice>1</voice>
+        <type>whole</type>
+        <staff>1</staff>
+      </note>
+      
+      <backup><duration>3840</duration></backup>
+      <!-- end of voice 1 -->
     </part>
     <part id="P19">
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
-        <rest measure="yes">
-          
-        </rest>
-        <duration>3840</duration>
-        <voice>1</voice>
-        <type>whole</type>
-        <staff>1</staff>
-      </note>
-      
+      <!-- measure metadata (Satie) -->
+      <direction placement="below"><direction-type><words default-y="-70" relative-x="-5000">SATIE_MEASURE_META = {"uuid":8662279185028149};</words></direction-type></direction>
+      <!-- end of measure metadata (Satie) -->
+      <!-- staff 1 -->
       <print new-system="no" new-page="no" page-number="1">
         <!--musicxml-interfaces:debug>
           <div-count>0</div-count>
@@ -1372,6 +1652,8 @@
         </system-layout>
         <measure-numbering relative-x="0" relative-y="0" font-family="Alegreya, serif" font-style="normal" font-size="small" font-weight="normal" color="#000000">system</measure-numbering>
       </print>
+      <forward><duration>0</duration></forward>
+      
       <attributes>
         <!--musicxml-interfaces:debug>
           <div-count>3840</div-count>
@@ -1394,12 +1676,31 @@
           <staff-lines>5</staff-lines>
         </staff-details>
       </attributes>
+      <forward><duration>3840</duration></forward>
+      
       <barline>
         <!--musicxml-interfaces:debug>
           <div-count>0</div-count>
         </musicxml-interfaces:debug-->
         <bar-style color="black"></bar-style>
       </barline>
+      <forward><duration>0</duration></forward>
+      
+      <backup><duration>3840</duration></backup>
+      <!-- end of staff 1 -->
+      <!-- voice 1 -->
+      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+        <rest measure="yes">
+          
+        </rest>
+        <duration>3840</duration>
+        <voice>1</voice>
+        <type>whole</type>
+        <staff>1</staff>
+      </note>
+      
+      <backup><duration>3840</duration></backup>
+      <!-- end of voice 1 -->
     </part>
   </measure>
   </score-timewise>

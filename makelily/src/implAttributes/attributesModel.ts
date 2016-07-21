@@ -143,7 +143,7 @@ class AttributesModel implements Export.IAttributesModel {
     }
 
     toXML(): string {
-        return serializeAttributes(this);
+        return `${serializeAttributes(this)}\n<forward><duration>${this.divCount}</duration></forward>\n`;
     }
 
     inspect() {

@@ -253,8 +253,8 @@ class ScoreHeaderModel implements ScoreHeader {
                 year: date.getFullYear()
             },
             supports: {
-                "satie-ext": {
-                    element: "satie-ext",
+                "satie-collaboration": {
+                    element: "satie-collaboration",
                     value: null,
                     type: "yes",
                     attribute: null
@@ -262,7 +262,7 @@ class ScoreHeaderModel implements ScoreHeader {
             },
             encoders: [],
             softwares: [
-                "Ripieno Satie"
+                "Songhaus Satie"
             ]
         };
     }

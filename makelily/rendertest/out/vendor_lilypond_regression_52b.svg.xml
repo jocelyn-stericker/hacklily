@@ -6,8 +6,8 @@
   <identification>
     <encoding>
       <encoding-date>2016-01-01</encoding-date>
-      <software>Ripieno Satie</software>
-      <supports type="yes" element="satie-ext" />
+      <software>Songhaus Satie</software>
+      <supports type="yes" element="satie-collaboration" />
     </encoding>
     <miscellaneous>
       <miscellaneous-field name="description">System and page breaks, given in 
@@ -63,17 +63,11 @@
   </part-list>
   <measure number="1">
     <part id="P1">
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
-        <pitch>
-          <step>C</step>
-          <octave>5</octave>
-        </pitch>
-        <duration>4</duration>
-        <voice>1</voice>
-        <type>whole</type>
-        <staff>1</staff>
-      </note>
-      
+      <!-- measure metadata (Satie) -->
+      <direction placement="below"><direction-type><words default-y="-70" relative-x="-5000">SATIE_SONG_META = {};</words></direction-type></direction>
+      <direction placement="below"><direction-type><words default-y="-70" relative-x="-5000">SATIE_MEASURE_META = {"uuid":5920417024676199};</words></direction-type></direction>
+      <!-- end of measure metadata (Satie) -->
+      <!-- staff 1 -->
       <print new-system="no" new-page="no" page-number="1">
         <!--musicxml-interfaces:debug>
           <div-count>0</div-count>
@@ -98,6 +92,8 @@
         </system-layout>
         <measure-numbering relative-x="0" relative-y="0" font-family="Alegreya, serif" font-style="normal" font-size="small" font-weight="normal" color="#000000">system</measure-numbering>
       </print>
+      <forward><duration>0</duration></forward>
+      
       <attributes>
         <!--musicxml-interfaces:debug>
           <div-count>4</div-count>
@@ -120,16 +116,19 @@
           <staff-lines>5</staff-lines>
         </staff-details>
       </attributes>
+      <forward><duration>4</duration></forward>
+      
       <barline>
         <!--musicxml-interfaces:debug>
           <div-count>0</div-count>
         </musicxml-interfaces:debug-->
         <bar-style color="black"></bar-style>
       </barline>
-    </part>
-  </measure>
-  <measure number="2">
-    <part id="P1">
+      <forward><duration>0</duration></forward>
+      
+      <backup><duration>4</duration></backup>
+      <!-- end of staff 1 -->
+      <!-- voice 1 -->
       <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>C</step>
@@ -141,6 +140,16 @@
         <staff>1</staff>
       </note>
       
+      <backup><duration>4</duration></backup>
+      <!-- end of voice 1 -->
+    </part>
+  </measure>
+  <measure number="2">
+    <part id="P1">
+      <!-- measure metadata (Satie) -->
+      <direction placement="below"><direction-type><words default-y="-70" relative-x="-5000">SATIE_MEASURE_META = {"uuid":1261442893600289};</words></direction-type></direction>
+      <!-- end of measure metadata (Satie) -->
+      <!-- staff 1 -->
       <attributes>
         <!--musicxml-interfaces:debug>
           <div-count>0</div-count>
@@ -150,6 +159,8 @@
           <staff-lines>5</staff-lines>
         </staff-details>
       </attributes>
+      <forward><duration>0</duration></forward>
+      
       <print new-system="yes" new-page="no" page-number="1">
         <!--musicxml-interfaces:debug>
           <div-count>4</div-count>
@@ -174,16 +185,19 @@
         </system-layout>
         <measure-numbering relative-x="0" relative-y="0" font-family="Alegreya, serif" font-style="normal" font-size="small" font-weight="normal" color="#000000">system</measure-numbering>
       </print>
+      <forward><duration>4</duration></forward>
+      
       <barline>
         <!--musicxml-interfaces:debug>
           <div-count>0</div-count>
         </musicxml-interfaces:debug-->
         <bar-style color="black"></bar-style>
       </barline>
-    </part>
-  </measure>
-  <measure number="3">
-    <part id="P1">
+      <forward><duration>0</duration></forward>
+      
+      <backup><duration>4</duration></backup>
+      <!-- end of staff 1 -->
+      <!-- voice 1 -->
       <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>C</step>
@@ -195,6 +209,16 @@
         <staff>1</staff>
       </note>
       
+      <backup><duration>4</duration></backup>
+      <!-- end of voice 1 -->
+    </part>
+  </measure>
+  <measure number="3">
+    <part id="P1">
+      <!-- measure metadata (Satie) -->
+      <direction placement="below"><direction-type><words default-y="-70" relative-x="-5000">SATIE_MEASURE_META = {"uuid":2540325355458443};</words></direction-type></direction>
+      <!-- end of measure metadata (Satie) -->
+      <!-- staff 1 -->
       <attributes>
         <!--musicxml-interfaces:debug>
           <div-count>0</div-count>
@@ -204,6 +228,8 @@
           <staff-lines>5</staff-lines>
         </staff-details>
       </attributes>
+      <forward><duration>0</duration></forward>
+      
       <print new-system="no" new-page="yes" page-number="1">
         <!--musicxml-interfaces:debug>
           <div-count>4</div-count>
@@ -228,12 +254,32 @@
         </system-layout>
         <measure-numbering relative-x="0" relative-y="0" font-family="Alegreya, serif" font-style="normal" font-size="small" font-weight="normal" color="#000000">system</measure-numbering>
       </print>
+      <forward><duration>4</duration></forward>
+      
       <barline>
         <!--musicxml-interfaces:debug>
           <div-count>0</div-count>
         </musicxml-interfaces:debug-->
         <bar-style color="black"></bar-style>
       </barline>
+      <forward><duration>0</duration></forward>
+      
+      <backup><duration>4</duration></backup>
+      <!-- end of staff 1 -->
+      <!-- voice 1 -->
+      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+        <pitch>
+          <step>C</step>
+          <octave>5</octave>
+        </pitch>
+        <duration>4</duration>
+        <voice>1</voice>
+        <type>whole</type>
+        <staff>1</staff>
+      </note>
+      
+      <backup><duration>4</duration></backup>
+      <!-- end of voice 1 -->
     </part>
   </measure>
   </score-timewise>

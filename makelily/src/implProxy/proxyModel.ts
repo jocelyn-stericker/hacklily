@@ -71,7 +71,8 @@ class ProxyModel implements Export.IProxyModel {
     }
 
     toXML(): string {
-        return `<!-- proxy for ${(<any>this._target).toXML().replace(/--/g, "\\-\\-")} -->\n`;
+        return `<!-- proxy for ${(<any>this._target).toXML().replace(/--/g, "\\-\\-")} -->\n` +
+            `<forward><duration>${this.divCount}</duration></forward>\n`;
     }
 
     inspect() {

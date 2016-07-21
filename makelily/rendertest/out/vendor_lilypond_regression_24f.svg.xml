@@ -6,8 +6,8 @@
   <identification>
     <encoding>
       <encoding-date>2016-01-01</encoding-date>
-      <software>Ripieno Satie</software>
-      <supports type="yes" element="satie-ext" />
+      <software>Songhaus Satie</software>
+      <supports type="yes" element="satie-collaboration" />
     </encoding>
     <miscellaneous>
       <miscellaneous-field name="description">A grace note with a slur to the
@@ -64,6 +64,72 @@
   </part-list>
   <measure number="25">
     <part id="P1">
+      <!-- measure metadata (Satie) -->
+      <direction placement="below"><direction-type><words default-y="-70" relative-x="-5000">SATIE_SONG_META = {};</words></direction-type></direction>
+      <direction placement="below"><direction-type><words default-y="-70" relative-x="-5000">SATIE_MEASURE_META = {"uuid":710239081936687};</words></direction-type></direction>
+      <!-- end of measure metadata (Satie) -->
+      <!-- staff 1 -->
+      <print new-system="no" new-page="no" page-number="1">
+        <!--musicxml-interfaces:debug>
+          <div-count>0</div-count>
+        </musicxml-interfaces:debug-->
+        <page-layout>
+          <page-height>1719.3846153846152</page-height>
+          <page-width>1328.6153846153845</page-width>
+          <page-margins type="both">
+            <left-margin>93.84615384615385</left-margin>
+            <right-margin>93.84615384615385</right-margin>
+            <top-margin>93.84615384615385</top-margin>
+            <bottom-margin>93.84615384615385</bottom-margin>
+          </page-margins>
+        </page-layout>
+        <system-layout>
+          <system-margins>
+            <left-margin>0</left-margin>
+            <right-margin>0</right-margin>
+          </system-margins>
+          <system-distance>131</system-distance>
+          <top-system-distance>70</top-system-distance>
+        </system-layout>
+        <measure-numbering relative-x="0" relative-y="0" font-family="Alegreya, serif" font-style="normal" font-size="small" font-weight="normal" color="#000000">system</measure-numbering>
+      </print>
+      <forward><duration>0</duration></forward>
+      
+      <attributes>
+        <!--musicxml-interfaces:debug>
+          <div-count>136</div-count>
+        </musicxml-interfaces:debug-->
+        <divisions>32</divisions>
+        <key font-style="normal" font-weight="normal" color="#000000" print-object="yes">
+          <fifths>0</fifths>
+          <mode>major</mode>
+        </key>
+        <time symbol="common" separator="none" font-style="normal" font-weight="normal" color="#000000" halign="left" valign="bottom" print-object="yes">
+          <beats>4</beats>
+          <beat-type>4</beat-type>
+        </time>
+        <staves>1</staves>
+        <clef number="1" additional="no" size="full" after-barline="no" font-style="normal" font-weight="normal" color="#000000" print-object="yes">
+          <sign>G</sign>
+          <line>2</line>
+        </clef>
+        <staff-details number="1">
+          <staff-lines>5</staff-lines>
+        </staff-details>
+      </attributes>
+      <forward><duration>136</duration></forward>
+      
+      <barline>
+        <!--musicxml-interfaces:debug>
+          <div-count>0</div-count>
+        </musicxml-interfaces:debug-->
+        <bar-style color="black"></bar-style>
+      </barline>
+      <forward><duration>0</duration></forward>
+      
+      <backup><duration>136</duration></backup>
+      <!-- end of staff 1 -->
+      <!-- voice 1 -->
       <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>E</step>
@@ -103,58 +169,8 @@
         </notations>
       </note>
       
-      <print new-system="no" new-page="no" page-number="1">
-        <!--musicxml-interfaces:debug>
-          <div-count>0</div-count>
-        </musicxml-interfaces:debug-->
-        <page-layout>
-          <page-height>1719.3846153846152</page-height>
-          <page-width>1328.6153846153845</page-width>
-          <page-margins type="both">
-            <left-margin>93.84615384615385</left-margin>
-            <right-margin>93.84615384615385</right-margin>
-            <top-margin>93.84615384615385</top-margin>
-            <bottom-margin>93.84615384615385</bottom-margin>
-          </page-margins>
-        </page-layout>
-        <system-layout>
-          <system-margins>
-            <left-margin>0</left-margin>
-            <right-margin>0</right-margin>
-          </system-margins>
-          <system-distance>131</system-distance>
-          <top-system-distance>70</top-system-distance>
-        </system-layout>
-        <measure-numbering relative-x="0" relative-y="0" font-family="Alegreya, serif" font-style="normal" font-size="small" font-weight="normal" color="#000000">system</measure-numbering>
-      </print>
-      <attributes>
-        <!--musicxml-interfaces:debug>
-          <div-count>136</div-count>
-        </musicxml-interfaces:debug-->
-        <divisions>32</divisions>
-        <key font-style="normal" font-weight="normal" color="#000000" print-object="yes">
-          <fifths>0</fifths>
-          <mode>major</mode>
-        </key>
-        <time symbol="common" separator="none" font-style="normal" font-weight="normal" color="#000000" halign="left" valign="bottom" print-object="yes">
-          <beats>4</beats>
-          <beat-type>4</beat-type>
-        </time>
-        <staves>1</staves>
-        <clef number="1" additional="no" size="full" after-barline="no" font-style="normal" font-weight="normal" color="#000000" print-object="yes">
-          <sign>G</sign>
-          <line>2</line>
-        </clef>
-        <staff-details number="1">
-          <staff-lines>5</staff-lines>
-        </staff-details>
-      </attributes>
-      <barline>
-        <!--musicxml-interfaces:debug>
-          <div-count>0</div-count>
-        </musicxml-interfaces:debug-->
-        <bar-style color="black"></bar-style>
-      </barline>
+      <backup><duration>128</duration></backup>
+      <!-- end of voice 1 -->
     </part>
   </measure>
   </score-timewise>

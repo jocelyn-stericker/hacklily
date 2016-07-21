@@ -23,10 +23,10 @@
  * @file models/musicxml/import.ts tools for converting MXMLJSON to SatieJSON
  */
 
-import {ScoreTimewise, Attributes, Note, Backup, Time, parseScore}
+import {ScoreTimewise, Attributes, Note, Backup, Forward, Time, Direction, parseScore}
     from "musicxml-interfaces";
 import {buildNote} from "musicxml-interfaces/builders";
-import {map, reduce, some, filter, minBy, times, every, forEach} from "lodash";
+import {map, reduce, some, filter, minBy, times, every, forEach, startsWith, endsWith} from "lodash";
 import * as invariant from "invariant";
 
 import {Document} from "../document/document";
@@ -137,8 +137,6 @@ export function _extractMXMLPartsAndMeasures(input: ScoreTimewise, factory: IFac
     let lastAttribs: Attributes = null;
     let maxVoice = 0;
 
-    let fakeUUID = 11; // STOPSHIP: Actually be able to import/export these
-
     let measures: IMeasure[] = map(input.measures,
             (inMeasure, measureIdx) => {
 
@@ -148,7 +146,7 @@ export function _extractMXMLPartsAndMeasures(input: ScoreTimewise, factory: IFac
             nonControlling: inMeasure.nonControlling,
             number: inMeasure.number,
             parts: <{[key: string]: IMeasurePart}> {},
-            uuid: ++fakeUUID,
+            uuid: Math.floor(Math.random() * MAX_SAFE_INTEGER),
             width: inMeasure.width,
             version: 0
         };
@@ -303,6 +301,24 @@ export function _extractMXMLPartsAndMeasures(input: ScoreTimewise, factory: IFac
                         target.output.staves[staff].ownerType = OwnerType.Staff;
                     }
                     let newModel = factory.fromSpec(input);
+
+                    // Check if this is metadata:
+                    if (input._class === "Direction") {
+                        let direction = newModel as any as Direction;
+                        let words = direction.directionTypes.length === 1 && direction.directionTypes[0].words;
+                        if (words && words.length === 1) {
+                            let maybeMeta = words[0].data.trim();
+                            if (startsWith(maybeMeta, "SATIE_SONG_META = ") && endsWith(maybeMeta, ";")) {
+                                // let songMeta = JSON.parse(maybeMeta.replace(/^SATIE_SONG_META = /, "").replace(/;$/, ""));
+                                break; // Do not actually import as direction
+                            } else if (startsWith(maybeMeta, "SATIE_MEASURE_META = ") && endsWith(maybeMeta, ";")) {
+                                let measureMeta = JSON.parse(maybeMeta.replace(/^SATIE_MEASURE_META = /, "").replace(/;$/, ""));
+                                measure.uuid = measureMeta.uuid;
+                                break; // Do not actually import as direction
+                            }
+                        }
+                    }
+
                     syncAppendStaff(staff, newModel, input.divisions || divisions);
                     if (input._class === "Attributes") {
                         lastAttribs = <Attributes> input;
@@ -320,6 +336,13 @@ export function _extractMXMLPartsAndMeasures(input: ScoreTimewise, factory: IFac
                             }
                         });
                     }
+                    break;
+                case "Forward":
+                    let forward = <Forward> input;
+                    forEach(target.output.staves, (staff, staffIdx) => {
+                        syncAppendStaff(staffIdx, null, input.divisions || divisions);
+                    });
+                    target.division += forward.duration;
                     break;
                 case "Backup":
                     let backup = <Backup> input;

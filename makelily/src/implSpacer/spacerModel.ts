@@ -68,7 +68,7 @@ class SpacerModel implements Export.ISpacerModel {
     }
 
     toXML(): string {
-        return `<!-- spacer: ${this.divCount} divs -->\n`;
+        return `<!-- spacer -->\n<forward><duration>${this.divCount}</duration></forward>\n`;
     }
 
     inspect() {
