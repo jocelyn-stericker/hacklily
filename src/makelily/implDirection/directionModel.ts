@@ -98,7 +98,7 @@ class DirectionModel implements Export.IDirectionModel {
     }
 
     toXML(): string {
-        return serializeDirection(this);
+        return `${serializeDirection(this)}\n<forward><duration>${this.divCount}</duration></forward>\n`;
     }
 
     inspect() {

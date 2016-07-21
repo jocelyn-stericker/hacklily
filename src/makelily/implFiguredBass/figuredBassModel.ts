@@ -129,7 +129,7 @@ class FiguredBassModel implements Export.IFiguredBassModel {
     }
 
     toXML(): string {
-        return serializeFiguredBass(this);
+        return `${serializeFiguredBass(this)}\n<forward><duration>${this.divCount}</duration></forward>\n`;
     }
 
     inspect() {

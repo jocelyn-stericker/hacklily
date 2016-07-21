@@ -144,7 +144,7 @@ class HarmonyModel implements Export.IHarmonyModel {
     }
 
     toXML(): string {
-        return serializeHarmony(this);
+        return `${serializeHarmony(this)}\n<forward><duration>${this.divCount}</duration></forward>\n`;
     }
 
     inspect() {

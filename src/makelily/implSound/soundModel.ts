@@ -95,7 +95,7 @@ class SoundModel implements Export.ISoundModel {
     }
 
     toXML(): string {
-        return serializeSound(this);
+        return `${serializeSound(this)}\n<forward><duration>${this.divCount}</duration></forward>\n`;
     }
 
     inspect() {

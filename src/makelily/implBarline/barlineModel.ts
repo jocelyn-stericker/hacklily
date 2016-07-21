@@ -132,7 +132,7 @@ class BarlineModel implements Export.IBarlineModel {
     }
 
     toXML(): string {
-        return serializeBarline(this);
+        return `${serializeBarline(this)}\n<forward><duration>${this.divCount}</duration></forward>\n`;
     }
 
     inspect() {

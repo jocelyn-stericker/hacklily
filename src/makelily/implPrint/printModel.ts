@@ -121,7 +121,7 @@ class PrintModel implements Export.IPrintModel {
     }
 
     toXML(): string {
-        return serializePrint(this);
+        return `${serializePrint(this)}\n<forward><duration>${this.divCount}</duration></forward>\n`;
     }
 
     inspect() {

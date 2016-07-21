@@ -79,7 +79,7 @@ class GroupingModel implements Export.IGroupingModel {
     }
 
     toXML(): string {
-        return serializeGrouping(this);
+        return `${serializeGrouping(this)}\n<forward><duration>${this.divCount}</duration></forward>\n`;
     }
 
     inspect() {
