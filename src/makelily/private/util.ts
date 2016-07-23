@@ -20,7 +20,7 @@
  */
 
 /**
- * @file engine/util.ts Math and other utilites used privately by the engine.
+ * @file private/util.ts Math and other utilites used privately by the engine.
  */
 
 import * as invariant from "invariant";
@@ -50,18 +50,14 @@ export function lcm(a: number, b: number) {
 }
 
 /** 
- * Very efficient way of cloning a plain JavaScript object (i.e., one without prototypes)
+ * Very efficient way of cloning a plain JavaScript object (i.e., one without prototypes, getters, or setters)
  */
 export function cloneObject<T>(obj: T): T {
     if (obj === undefined || obj === null) {
         return obj;
     }
 
-    let cloned = JSON.parse(JSON.stringify(obj)) as T;
-    if ((obj as any)._class) {
-        (cloned as any)._class = (obj as any)._class;
-    }
-    return cloned;
+    return JSON.parse(JSON.stringify(obj)) as T;
 }
 
 export function findIndex<T>(arr: T[], predicate: (v: T, i?: number, arr?: T[]) => boolean,

@@ -95,23 +95,25 @@ class Factory implements IFactory {
         return filtered;
     }
 
+    /**
+     * Accepts a JSON string, or a plain object, and creates a spec.
+     */
     fromSpec(spec: any): IModel {
-        if (spec instanceof Object) {
-            spec = cloneObject(spec);
-        } else if (typeof spec === "string" || spec instanceof String) {
+        if (typeof spec === "string" || spec instanceof String) {
             spec = JSON.parse(<string> spec);
+        } else {
+            spec = cloneObject(spec);
         }
+
         if (!("_class" in spec)) {
-            if (spec[0]._class === "Note") {
-                spec._class = "Chord";
-            } else {
-                invariant(false, "fromSpec requires an MXMLJSON spec with a defined class");
-            }
+            // It may be a note.
+            invariant(spec[0] && spec[0]._class === "Note", "Specs must have the _class property set");
+            spec._class = "Chord";
         }
+
         let sclass: Type = <any> Type[spec._class];
-        if (!(sclass in this._constructors)) {
-            invariant(false, "Unknown type \"%s\"", spec._class);
-        }
+        invariant(sclass in this._constructors, "\"%s\" must be a known type", spec._class);
+
         return this.create(sclass, spec);
     }
 

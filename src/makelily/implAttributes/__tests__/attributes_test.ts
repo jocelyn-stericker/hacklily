@@ -37,7 +37,12 @@ import Factory from "../../engine/factory";
 export function makeCursor(factory: Factory, models: IModel[]): ICursor {
     (<any>models).part = "P1";
     return {
+        document: {
+            __fakeDocument: true
+        } as any,
         fixup: null,
+        patch: null,
+        advance: null,
 
         segment: <any> models,
         idx$: 0,

@@ -173,6 +173,9 @@ describe("[engine.ts]", function() {
             }];
 
             let contextOptions: ILayoutOptions = {
+                document: {
+                    __fakeDocument: true
+                } as any,
                 preview: false,
                 fixup: null,
 
@@ -221,6 +224,7 @@ describe("[engine.ts]", function() {
                 preprocessors: [],
                 postprocessors: []
             };
+            contextOptions.document.measures = contextOptions.measures;
 
             validate(contextOptions, memo$);
 

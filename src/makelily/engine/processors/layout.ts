@@ -84,7 +84,9 @@ export default function layout(options: ILayoutOptions, memo$: ILinesLayoutState
             }
 
             let approximateLayout = calcApproximateLayout({
+                document: options.document,
                 attributes: options.attributes,
+                print: options.print$,
                 factory: options.modelFactory,
                 header: options.header,
                 line: createLineContext(neighbourModels, measures.length, 0, 1),
@@ -158,7 +160,9 @@ function reduceToLineOpts(memo: IReduceOptsMemo, width: IWidthInformation, idx: 
     let measures = options.measures;
 
     memo.thisPrint = updatePrint(options, measures[idx]) || memo.thisPrint;
-    memo.opts[memo.opts.length - 1].print$ = memo.thisPrint;
+    if (!memo.opts[memo.opts.length - 1].print$) {
+        memo.opts[memo.opts.length - 1].print$ = memo.thisPrint;
+    }
     invariant(!!memo.thisPrint, "No print found");
     if (!memo.options.singleLineMode) {
         if (width.attributesWidthStart > memo.widthAllocatedForStart) {
@@ -194,6 +198,7 @@ function secondPass(lineOpt$: ILayoutOptions, lineOpts$: ILayoutOptions[], optio
 
 function newLayoutWithoutMeasures(options: ILayoutOptions, print: Print): ILayoutOptions {
     return {
+        document: options.document,
         attributes: null,
         preview: options.preview,
         measures: [],

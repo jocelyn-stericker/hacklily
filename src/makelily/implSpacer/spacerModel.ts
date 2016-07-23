@@ -31,6 +31,7 @@ import IBoundingRect from "../private/boundingRect";
 import ILayout from "../private/layout";
 
 class SpacerModel implements Export.ISpacerModel {
+    _class = "Spacer";
 
     /*---- I.1 IModel ---------------------------------------------------------------------------*/
 
@@ -51,8 +52,10 @@ class SpacerModel implements Export.ISpacerModel {
     /*---- Implementation -----------------------------------------------------------------------*/
 
     constructor(target: IModel) {
-        this._target = target;
-        this.divCount = target.divCount;
+        if (target) {
+            this._target = target;
+            this.divCount = target.divCount;
+        }
     }
 
     checkSemantics(cursor: ICursor): IAny[] {

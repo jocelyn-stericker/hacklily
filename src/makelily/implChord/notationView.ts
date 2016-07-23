@@ -52,8 +52,7 @@ export default class NotationView extends Component<IProps, void> {
 
     render() {
         const model = this.props.spec;
-        const base = this.props.layout.model.baseModel;
-        const notehead = base.noteheadGlyph[0];
+        const notehead = this.props.layout.model.noteheadGlyph[0];
         const bbox = bboxes[notehead];
         const noteheadCenter = 10 * (bbox[0] - bbox[2]) / 2;
         const originX = this.props.layout.model[0].defaultX + noteheadCenter;
@@ -125,8 +124,8 @@ export default class NotationView extends Component<IProps, void> {
             let offset2 = noteheadCenter2 - noteheadCenter - 4;
             let defaultY = this.context.originY - this.props.note.defaultY;
 
-            let stem1 = base.satieStem;
-            let stem2 = tieTo.model.baseModel.satieStem;
+            let stem1 = this.props.layout.satieStem;
+            let stem2 = tieTo.satieStem;
             let dir = -1;
             if (stem1 && stem2 && stem1.direction === stem2.direction) {
                 dir = -stem1.direction;

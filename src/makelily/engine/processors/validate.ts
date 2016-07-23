@@ -19,12 +19,12 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import {reduce, forEach, flatten, filter, find, map, toPairs} from "lodash";
+import {reduce, forEach, flatten, filter, find, map, toPairs, last} from "lodash";
 import * as invariant from "invariant";
+import {Print, BarStyleType} from "musicxml-interfaces";
 import {IAny} from "musicxml-interfaces/operations";
 
 import Type from "../../document/types";
-import IMeasure from "../../document/measure";
 import ISegment, {normalizeDivisionsInPlace} from "../../document/segment";
 import OwnerType from "../../document/ownerTypes";
 
@@ -36,7 +36,8 @@ import {detachMeasureContext} from "../../private/measureContext";
 import applyOp from "../applyOp";
 import {setCurrentMeasureList} from "../measureList";
 
-import {reduceMeasure, DivisionOverflowException} from "./measure";
+import DivisionOverflowException from "./divisionOverflowException";
+import {reduceMeasure} from "./measure";
 
 /**
  * Reducer for a collection of functions, calling each one.
@@ -99,6 +100,10 @@ export default function validate(options$: ILayoutOptions, memo$: ILinesLayoutSt
         } catch (err) {
             if (err instanceof DivisionOverflowException) {
                 (<DivisionOverflowException>err).resolve$(rootFixup);
+                memo$.clean$ = {};
+                memo$.reduced$ = {};
+                memo$.width$ = {};
+                options$.measures.forEach(measure => measure.version++);
                 shouldTryAgain = true;
             } else {
                 throw err;
@@ -115,6 +120,7 @@ function tryValidate(options$: ILayoutOptions, memo$: ILinesLayoutState,
     setCurrentMeasureList(options$.measures);
 
     let lastAttribs: {[part: string]: IAttributesSnapshot[]} = {};
+    let lastPrint: Print = options$.print$;
 
     function withPart(segments: ISegment[], partID: string): ISegment[] {
         forEach(segments, segment => {
@@ -142,6 +148,16 @@ function tryValidate(options$: ILayoutOptions, memo$: ILinesLayoutState,
     forEach(options$.measures, function validateMeasure(measure) {
         rootFixupOpts$.debugFixupOperations = [];
         if (memo$.clean$[measure.uuid]) {
+            let voiceSegments$ = <ISegment[]>
+                flatten(map(toPairs(measure.parts), partx => withPart(partx[1].voices, partx[0])));
+
+            let staffSegments$ = <ISegment[]>
+                flatten(map(toPairs(measure.parts), partx => withPart(partx[1].staves, partx[0])));
+            let segments: ISegment[] = filter(voiceSegments$.concat(staffSegments$), s => !!s);
+
+            forEach(segments, function(segment, idx) {
+                lastAttribs[segment.part] = memo$.clean$[measure.uuid].attributes[segment.part];
+            });
             return;
         }
 
@@ -232,7 +248,8 @@ function tryValidate(options$: ILayoutOptions, memo$: ILinesLayoutState,
                             li: {
                                 _class: Type[Type.Barline],
                                 barStyle: {
-                                    data: "light-heavy",
+                                    data: measure.idx === last(options$.document.measures).idx ?
+                                        BarStyleType.LightHeavy : BarStyleType.Regular,
                                 },
                             }
                         });
@@ -241,7 +258,9 @@ function tryValidate(options$: ILayoutOptions, memo$: ILinesLayoutState,
                 });
 
                 let outcome = reduceMeasure({
+                    document: options$.document,
                     attributes: lastAttribs,
+                    print: lastPrint,
                     header: options$.header,
                     line: null,
                     measure: measureCtx,
@@ -257,6 +276,7 @@ function tryValidate(options$: ILayoutOptions, memo$: ILinesLayoutState,
                     fixup: rootFixupOpts$.rootFixup
                 });
                 lastAttribs = outcome.attributes;
+                lastPrint = outcome.print;
             } catch (ex) {
                 if (ex instanceof RestartMeasureValidation) {
                     tryAgain = true;
@@ -268,14 +288,4 @@ function tryValidate(options$: ILayoutOptions, memo$: ILinesLayoutState,
     });
 
     setCurrentMeasureList(null);
-}
-
-export function mutate(options: ILayoutOptions,
-        memo$: ILinesLayoutState, measureUUID: number,
-        mutator: (measure$: IMeasure) => void) {
-    delete memo$.clean$[measureUUID];
-    delete memo$.width$[measureUUID];
-    mutator(find(options.measures, {"uuid": measureUUID}));
-    // XXX: Call layout
-    throw new Error("Not implemented");
 }

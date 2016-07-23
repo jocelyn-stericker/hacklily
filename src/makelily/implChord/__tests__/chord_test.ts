@@ -64,7 +64,12 @@ function getCursor(factory: IFactory, model: IModel): ICursor {
     segment.part = "P1";
     segment.ownerType = OwnerType.Voice;
     return {
+        document: {
+            __fakeDocument: true
+        } as any,
         fixup: null,
+        patch: null,
+        advance: null,
 
         segment: segment,
         idx$: 0,

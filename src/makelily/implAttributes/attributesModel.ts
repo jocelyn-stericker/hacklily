@@ -44,6 +44,7 @@ import {standardClefs} from "./clefData";
 import {CLEF_INDENTATION, clefWidth, keyWidth, timeWidth} from "./attributesData";
 
 class AttributesModel implements Export.IAttributesModel {
+    _class = "Attributes";
 
     /*---- I.1 IModel ---------------------------------------------------------------------------*/
 
@@ -146,6 +147,42 @@ class AttributesModel implements Export.IAttributesModel {
         return `${serializeAttributes(this)}\n<forward><duration>${this.divCount}</duration></forward>\n`;
     }
 
+    toJSON(): any {
+        let {
+            _class,
+            divisions,
+            partSymbol,
+            measureStyles,
+            staffDetails,
+            transposes,
+            staves,
+            instruments,
+            directives,
+            clefs,
+            times,
+            keySignatures,
+            footnote,
+            level,
+        } = this;
+
+        return {
+            _class,
+            divisions,
+            partSymbol,
+            measureStyles,
+            staffDetails,
+            transposes,
+            staves,
+            instruments,
+            directives,
+            clefs,
+            times,
+            keySignatures,
+            footnote,
+            level,
+        };
+    }
+
     inspect() {
         return this.toXML();
     }
@@ -177,7 +214,11 @@ class AttributesModel implements Export.IAttributesModel {
         this.clefs = this.clefs || [];
 
         // Clefs must have a staff number
-        this.clefs.forEach(clef => clef.number = clef.number || 1);
+        this.clefs.forEach(clef => {
+            if (clef) {
+                clef.number = clef.number || 1;
+            }
+        });
 
         // Clefs must be indexed by staff
         this.clefs = this.clefs.reduce((clefs, clef) => {
@@ -271,7 +312,11 @@ class AttributesModel implements Export.IAttributesModel {
         this.staffDetails = this.staffDetails || [];
 
         // Staff details must have a staff number
-        this.staffDetails.forEach(staffDetails => staffDetails.number = staffDetails.number || 1);
+        this.staffDetails.forEach(staffDetails => {
+            if (staffDetails) {
+                staffDetails.number = staffDetails.number || 1;
+            }
+        });
 
         // Staff details must be indexed by staff
         this.staffDetails = this.staffDetails.reduce((staffDetails, staffDetail) => {

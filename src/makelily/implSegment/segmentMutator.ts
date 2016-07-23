@@ -43,7 +43,9 @@ export default function segmentMutator(factory: IFactory, memo$: ILinesLayoutSta
         let liop = op as IListInsert<any>;
         segment.splice(op.p[5] as number, 0, factory.fromSpec(liop.li));
     } else if ("ld" in op && !("li" in op)) {
-        // Note: we don't check if op.ld is valid
+        // STOPSHIP: We're not asserting that this is true, which may
+        // cause problems with collaboration and undoing!
+        // invariant(isEqual(op.ld, cloneObject(segment[op.p[5] as number])), "The removed element must be equal to the current element");
         segment.splice(op.p[5] as number, 1);
     } else {
         invariant(false, "Unsupported operation type");

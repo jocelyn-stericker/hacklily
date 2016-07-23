@@ -20,7 +20,8 @@
  */
 
 import * as invariant from "invariant";
-import {find, cloneDeep, forEach} from "lodash";
+import {find, cloneDeep, forEach, isPlainObject, isArray, isUndefined, isNull,
+    isBoolean, isNumber, isString} from "lodash";
 import {IAny} from "musicxml-interfaces/operations";
 
 import Type from "../document/types";
@@ -30,8 +31,26 @@ import IMeasurePart from "../document/measurePart";
 import ILinesLayoutState from "../private/linesLayoutState";
 import IFactory from "../private/factory";
 
+import barlineMutator from "../implBarline/barlineMutator";
 import chordMutator from "../implChord/chordMutator";
 import segmentMutator from "../implSegment/segmentMutator";
+
+/**
+ * Checks whether this object is safe to JSON.stringify and JSON.parse.
+ * The only difference between the two should be presence of undefined values in Arrays and Objects.
+ * In Objects that previously had undefined values, after serializing, these keys will be removed.
+ * In Arrays that previously had undefined values, after serializing, these values will be replaced with null.
+ */
+function isSerializable(obj: any): boolean {
+    if (isUndefined(obj) || isNull(obj) || isBoolean(obj) || isNumber(obj) || isString(obj)) {
+        return true;
+    } else if (isArray(obj)) {
+        return (obj as Array<any>).every(isSerializable);
+    } else if (isPlainObject(obj)) {
+        return Object.keys(obj).every(key => isSerializable(obj[key]));
+    }
+    return false;
+}
 
 /**
  * Applies an operation to the given set of measures, usually part of a document.
@@ -42,6 +61,20 @@ import segmentMutator from "../implSegment/segmentMutator";
  * @param op.p [measureUUID, ("part"|"voice")]
  */
 export default function applyOp(measures: IMeasure[], factory: IFactory, op: IAny, memo: ILinesLayoutState) {
+    // Operations must be entirely serializable, because the way collaborative editing will work
+    // is operations will be serialized and sent over the network. One way of ensuring that elements
+    // are entirely serializable is by checking that the object is either:
+    //   - a simple data type (number, string, ...)
+    //   - a plain object (object with prototype Object), and that the same is true for all children
+    //   - a plain array, and that the same is true for all items
+    invariant(isSerializable(op), "All operations must be serializable.");
+
+    // FIXME -- this line should eventually be unnecessary. It appears we're accidentally mutating this somewhere
+    // so, I'm leaving it here for now.
+    //  - [ ] Assert that during this operation, op does not change.
+    //  - [ ] Remove the following line.
+    op = JSON.parse(JSON.stringify(op));
+
     let path = op.p;
     if (path.length === 2 && path[0] === "measures") {
         // Song-wide measure addition/removal
@@ -97,28 +130,66 @@ export default function applyOp(measures: IMeasure[], factory: IFactory, op: IAn
             segmentMutator(factory, memo, staff, op);
             return;
         }
-        invariant(false, "Stave changes not implemented");
+
+        let element = staff[parseInt(String(path[5]), 10)];
+        invariant(Boolean(element),
+            `Invalid operation path: No such element ${path.slice(0,5).join(", ")}`);
+
+        let localOp: IAny = cloneDeep(op);
+        localOp.p = path.slice(6);
+        if (factory.modelHasType(element, Type.Barline)) {
+            barlineMutator(memo, element as any, localOp);
+        } else {
+            invariant(false, "Invalid operation path: No reducer for", element);
+        }
     }
 }
 
 export function applyMeasureOp(measures: IMeasure[], factory: IFactory, op: IAny, memo: ILinesLayoutState) {
-    if ((typeof op.li !== "undefined") && (typeof op.ld === "undefined") && op.p.length === 1) {
+    let ok = false;
+    let oldMeasure: IMeasure;
+
+    if (op.ld !== undefined && op.p.length === 1) {
+        ok = true;
+        const measureIdx = op.p[0] as number;
+        invariant(!isNaN(measureIdx), `Measure index ${measureIdx} must be`);
+        invariant(Boolean(op.ld.uuid), "uuid must be specified");
+        invariant(op.ld.uuid === measures[measureIdx].uuid,
+            `invalid uuid ${op.ld.uuid} != ${measures[measureIdx].uuid}`);
+        oldMeasure = measures[measureIdx];
+        measures.splice(measureIdx, 1);
+        measures.forEach(measure => ++measure.version);
+        memo.clean$ = {};
+    }
+
+    if (op.li !== undefined && op.p.length === 1) {
+        ok = true;
+
         const measureIdx = op.p[0] as number;
         invariant(!isNaN(measureIdx), `Measure index ${measureIdx} must be`);
         invariant(Boolean(op.li.uuid), "uuid must be specified");
-        let oldMeasure$ = measures[measureIdx];
-        const oldParts = oldMeasure$.parts;
+        oldMeasure = oldMeasure || measures[measureIdx - 1] || measures[measureIdx + 1]; // note, we don't support empty docs
+        const oldParts = oldMeasure.parts;
         const newParts: {
             [id: string]: IMeasurePart;
-        } = op.li.newParts;
+        } = op.li.parts || {};
         forEach(oldParts, (part, partID) => {
+            newParts[partID] = newParts[partID] || {
+                voices: [],
+                staves: [],
+            };
             forEach(part.staves, (staff, staffIdx) => {
                 if (!staff) {
                     newParts[partID].staves[staffIdx] =
                         newParts[partID].staves[staffIdx] || null;
                 } else {
-                    newParts[partID].staves[staffIdx] =
-                        newParts[partID].staves[staffIdx] || <any>[];
+                    if (newParts[partID].staves[staffIdx]) {
+                        newParts[partID].staves[staffIdx] =
+                            newParts[partID].staves[staffIdx].
+                                map(i => factory.fromSpec(i)) || <any>[];
+                    } else {
+                        newParts[partID].staves[staffIdx] = [] as any;
+                    }
                     let nv = newParts[partID].staves[staffIdx];
                     nv.divisions = staff.divisions;
                     nv.part = staff.part;
@@ -126,11 +197,30 @@ export function applyMeasureOp(measures: IMeasure[], factory: IFactory, op: IAny
                     nv.ownerType = staff.ownerType;
                 }
             });
+            forEach(part.voices, (voice, voiceIdx) => {
+                if (!voice) {
+                    newParts[partID].voices[voiceIdx] =
+                        newParts[partID].voices[voiceIdx] || null;
+                } else {
+                    if (newParts[partID].voices[voiceIdx]) {
+                        newParts[partID].voices[voiceIdx] =
+                            newParts[partID].voices[voiceIdx].
+                                map(i => factory.fromSpec(i)) || <any>[];
+                    } else {
+                        newParts[partID].voices[voiceIdx] = [] as any;
+                    }
+                    let nv = newParts[partID].voices[voiceIdx];
+                    nv.divisions = voice.divisions;
+                    nv.part = voice.part;
+                    nv.owner = voice.owner;
+                    nv.ownerType = voice.ownerType;
+                }
+            });
         });
         let newMeasure = {
-            idx: measureIdx + 1,
+            idx: measureIdx,
             uuid: op.li.uuid,
-            number: "" + (parseInt(oldMeasure$.number, 10) + 1),
+            number: "" + (measureIdx + 1),
             implicit: false,
             width: NaN,
             nonControlling: false,
@@ -138,16 +228,11 @@ export function applyMeasureOp(measures: IMeasure[], factory: IFactory, op: IAny
             version: 0
         };
 
-        oldMeasure$.parts = oldParts;
-        measures.splice(measureIdx + 1, 0, newMeasure);
-    } else if ((typeof op.li === "undefined") && (typeof op.ld !== "undefined")) {
-        const measureIdx = op.p[0] as number;
-        invariant(!isNaN(measureIdx), `Measure index ${measureIdx} must be`);
-        invariant(Boolean(op.ld.uuid), "uuid must be specified");
-        invariant(op.ld.uuid === measures[measureIdx + 1].uuid,
-            `invalid uuid ${op.ld.uuid} != ${measures[measureIdx + 1].uuid}`);
-        measures.splice(measureIdx + 1, 1);
-    } else {
-        invariant(false, `Invalid operation type ${JSON.stringify(op)}`);
+        oldMeasure.parts = oldParts;
+        measures.splice(measureIdx, 0, newMeasure);
+        measures.forEach(measure => ++measure.version);
+        memo.clean$ = {};
     }
+
+    invariant(ok, `Invalid operation type for applyMeasureOp's context: ${JSON.stringify(op)}`);
 }

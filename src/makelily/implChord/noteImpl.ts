@@ -44,6 +44,7 @@ import ChordModelImpl from "./chordImpl"; // @cyclic
  *    has no effect.
  */
 class NoteImpl implements Note {
+    _class = "Note";
     _parent: ChordModelImpl;
     _idx: number;
 

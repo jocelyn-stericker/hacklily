@@ -192,6 +192,7 @@ export class Document implements IDocument {
             const pageNum = 1; // FIXME
 
             let opts: ILayoutOptions = {
+                document: this,
                 attributes: {},
                 debug: true,
                 header: this.header,

@@ -22,6 +22,7 @@
 import {ScoreHeader, Print} from "musicxml-interfaces";
 import {IAny} from "musicxml-interfaces/operations";
 
+import IDocument from "../document/document";
 import IMeasure from "../document/measure";
 import ISegment from "../document/segment";
 
@@ -33,6 +34,7 @@ import IPostprocessor from "./postprocessor";
 export type IFixupFn = (segment: ISegment, operations: IAny[], restartRequired?: boolean) => void;
 
 interface ILayoutOptions {
+    document: IDocument;
     attributes: {[part: string]: IAttributesSnapshot[]};
     preview: boolean;
     measures: IMeasure[];

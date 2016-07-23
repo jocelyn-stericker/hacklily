@@ -25,9 +25,11 @@
 
 import {Print, ScoreHeader} from "musicxml-interfaces";
 import {IAny} from "musicxml-interfaces/operations";
+import {VoiceBuilder, StaffBuilder} from "../patch/createPatch";
 
 import IModel from "../document/model";
 import ISegment from "../document/segment";
+import IDocument from "../document/document";
 
 import IVoiceContext from "./voiceContext";
 import IStaffContext from "./staffContext";
@@ -36,6 +38,8 @@ import ILineContext from "./lineContext";
 import IFactory from "./factory";
 
 interface ICursor {
+    document: IDocument;
+
     segment: ISegment;
     idx$: number;
 
@@ -69,7 +73,8 @@ interface ICursor {
 
     hiddenCounter$?: number;
     fixup: (operations: IAny[]) => void;
-
+    patch: (builder: (partBuilder: VoiceBuilder & StaffBuilder) => (VoiceBuilder | StaffBuilder)) => void;
+    advance: (divs: number) => void;
 }
 
 export default ICursor;

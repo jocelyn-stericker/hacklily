@@ -45,7 +45,19 @@ function ChordModel(constructors: { [key: number]: any; [key: string]: Type }) {
 }
 
 module ChordModel {
-    export interface IBaseModel {
+    export interface IChordModel extends IModel, IChord {
+    }
+    export interface IDetachedChordModel extends IModel, IChord {
+        satieLedger: number[];
+        noteheadGlyph: string[];
+        satieMultipleRest: MultipleRest;
+        satieUnbeamedTuplet: IBeamLayout;
+    }
+    export interface IChordLayout extends ILayout {
+        model: IDetachedChordModel;
+        minSpaceBefore: number;
+        minSpaceAfter: number;
+        satieBeam: IBeamLayout;
         satieStem: {
             direction: number;
             stemHeight: number;
@@ -53,22 +65,6 @@ module ChordModel {
             tremolo?: Tremolo;
         };
         satieFlag: string;
-        satieLedger: number[];
-        noteheadGlyph: string[];
-        satieMultipleRest: MultipleRest;
-        satieUnbeamedTuplet: IBeamLayout;
-    }
-    export interface IChordModel extends IBaseModel, IModel, IChord {
-    }
-    export interface IDetachedChordModel extends IModel, IChord {
-        baseModel: IBaseModel;
-    }
-    export interface IChordLayout extends ILayout {
-        model: IDetachedChordModel;
-        minSpaceBefore: number;
-        minSpaceAfter: number;
-        satieBeam: IBeamLayout;
-        freshest(): IChordLayout;
     }
 }
 

@@ -20,7 +20,7 @@
  */
 
 import * as invariant from "invariant";
-import {IAny, IObjectReplace, IObjectDelete} from "musicxml-interfaces/operations";
+import {IAny, IObjectReplace, IObjectDelete, IObjectInsert} from "musicxml-interfaces/operations";
 
 import ILinesLayoutState from "../private/linesLayoutState";
 import {replace, remove, set} from "../private/mutate";
@@ -40,7 +40,7 @@ export default function noteMutator(memo$: ILinesLayoutState, note: NoteImpl, op
         remove(note, op as IObjectDelete<any>);
     } else if ("oi" in op) {
         invariant(!(note as any)[op.p[0]], "Object already set");
-        set(note, op.p, op.oi);
+        set(note, op as IObjectInsert<any>);
     } else {
         invariant(false, "Unknown operation");
     }

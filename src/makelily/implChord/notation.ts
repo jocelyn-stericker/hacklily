@@ -88,7 +88,7 @@ export interface IGeneralNotation extends PrintStyle, Placement {
 }
 
 export function getBoundingRects(model: Notations, note: Note,
-        chord: ChordModel.IDetachedChordModel): IBoundingRect[] {
+        chord: ChordModel.IChordLayout): IBoundingRect[] {
     let boxes: IBoundingRect[] = [];
 
     forEach(model.accidentalMarks, accidentalMark => {
@@ -114,17 +114,17 @@ export function getBoundingRects(model: Notations, note: Note,
                     return;
                 }
                 let y: number;
-                let noteheadGlyph = chord.baseModel.noteheadGlyph[0];
+                let noteheadGlyph = chord.model.noteheadGlyph[0];
 
                 let center = (getLeft(noteheadGlyph) + getRight(noteheadGlyph)) / 2 -
                     (getLeft(glyph) + getRight(glyph)) / 2 - 0.5;
-                if (!chord.baseModel.satieStem || (note.stem.type === StemType.Up) === isBelow) {
+                if (!chord.satieStem || (note.stem.type === StemType.Up) === isBelow) {
                     y = note.defaultY + (isBelow ? -9 : 9);
                     if (-note.defaultY % 10 === 0) {
                         y += isBelow ? -5 : 5;
                     }
                 } else {
-                    y = note.defaultY + chord.baseModel.satieStem.stemHeight + (isBelow ? -12 : 12);
+                    y = note.defaultY + chord.satieStem.stemHeight + (isBelow ? -12 : 12);
                     if (-note.defaultY % 10 === 0) {
                         y += isBelow ? -5 : 5;
                     }
@@ -157,7 +157,7 @@ export function getBoundingRects(model: Notations, note: Note,
 
     forEach(model.ornaments, (ornament, idx) => {
         if (ornament.tremolo) {
-            chord.baseModel.satieStem.tremolo = ornament.tremolo;
+            chord.satieStem.tremolo = ornament.tremolo;
         }
         // TODO
     });
