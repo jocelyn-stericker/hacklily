@@ -130,7 +130,7 @@ function deepAssign<T>(a: T, b: T): T {
         }
         return (<any>retArr);
     } else if (a instanceof Object || b instanceof Object) {
-        let ret: T = a ? cloneObject(a) : (<T>{});
+        let ret: T = cloneObject(a) || (<T>{});
         for (let key in b) {
             if (b.hasOwnProperty(key)) {
                 (<any>ret)[key] = deepAssign((<any>ret)[key], (<any>b)[key]);

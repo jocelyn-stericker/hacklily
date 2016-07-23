@@ -70,7 +70,7 @@
     <part id="P1">
       <!-- measure metadata (Satie) -->
       <direction placement="below"><direction-type><words default-y="-70" relative-x="-5000">SATIE_SONG_META = {};</words></direction-type></direction>
-      <direction placement="below"><direction-type><words default-y="-70" relative-x="-5000">SATIE_MEASURE_META = {"uuid":5287079674511517};</words></direction-type></direction>
+      <direction placement="below"><direction-type><words default-y="-70" relative-x="-5000">SATIE_MEASURE_META = {"uuid":8998257192105033};</words></direction-type></direction>
       <!-- end of measure metadata (Satie) -->
       <!-- staff 1 -->
       <print new-system="no" new-page="no" page-number="1">
@@ -101,7 +101,7 @@
       
       <attributes>
         <!--musicxml-interfaces:debug>
-          <div-count>82</div-count>
+          <div-count>0</div-count>
         </musicxml-interfaces:debug-->
         <divisions>1</divisions>
         <key font-style="normal" font-weight="normal" color="#000000" print-object="yes">
@@ -121,17 +121,20 @@
           <staff-lines>5</staff-lines>
         </staff-details>
       </attributes>
-      <forward><duration>82</duration></forward>
+      <forward><duration>0</duration></forward>
+      
+      <!-- spacer -->
+      <forward><duration>2</duration></forward>
       
       <barline>
         <!--musicxml-interfaces:debug>
           <div-count>0</div-count>
         </musicxml-interfaces:debug-->
-        <bar-style color="black"></bar-style>
+        <bar-style color="black">regular</bar-style>
       </barline>
       <forward><duration>0</duration></forward>
       
-      <backup><duration>82</duration></backup>
+      <backup><duration>2</duration></backup>
       <!-- end of staff 1 -->
       <!-- voice 1 -->
       <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
@@ -163,7 +166,7 @@
   <measure number="2">
     <part id="P1">
       <!-- measure metadata (Satie) -->
-      <direction placement="below"><direction-type><words default-y="-70" relative-x="-5000">SATIE_MEASURE_META = {"uuid":2604853107331765};</words></direction-type></direction>
+      <direction placement="below"><direction-type><words default-y="-70" relative-x="-5000">SATIE_MEASURE_META = {"uuid":7300511702862915};</words></direction-type></direction>
       <!-- end of measure metadata (Satie) -->
       <!-- staff 1 -->
       <attributes>
@@ -210,7 +213,7 @@
         <!--musicxml-interfaces:debug>
           <div-count>0</div-count>
         </musicxml-interfaces:debug-->
-        <bar-style color="black"></bar-style>
+        <bar-style color="black">regular</bar-style>
       </barline>
       <forward><duration>0</duration></forward>
       
@@ -250,7 +253,7 @@
   <measure number="3">
     <part id="P1">
       <!-- measure metadata (Satie) -->
-      <direction placement="below"><direction-type><words default-y="-70" relative-x="-5000">SATIE_MEASURE_META = {"uuid":4515775234481777};</words></direction-type></direction>
+      <direction placement="below"><direction-type><words default-y="-70" relative-x="-5000">SATIE_MEASURE_META = {"uuid":1150869735512327};</words></direction-type></direction>
       <!-- end of measure metadata (Satie) -->
       <!-- staff 1 -->
       <attributes>
@@ -297,7 +300,7 @@
         <!--musicxml-interfaces:debug>
           <div-count>0</div-count>
         </musicxml-interfaces:debug-->
-        <bar-style color="black"></bar-style>
+        <bar-style color="black">regular</bar-style>
       </barline>
       <forward><duration>0</duration></forward>
       
@@ -337,7 +340,7 @@
   <measure number="4">
     <part id="P1">
       <!-- measure metadata (Satie) -->
-      <direction placement="below"><direction-type><words default-y="-70" relative-x="-5000">SATIE_MEASURE_META = {"uuid":6497411343069897};</words></direction-type></direction>
+      <direction placement="below"><direction-type><words default-y="-70" relative-x="-5000">SATIE_MEASURE_META = {"uuid":6631453457901791};</words></direction-type></direction>
       <!-- end of measure metadata (Satie) -->
       <!-- staff 1 -->
       <attributes>
@@ -384,7 +387,7 @@
         <!--musicxml-interfaces:debug>
           <div-count>0</div-count>
         </musicxml-interfaces:debug-->
-        <bar-style color="black"></bar-style>
+        <bar-style color="black">regular</bar-style>
       </barline>
       <forward><duration>0</duration></forward>
       
@@ -422,7 +425,7 @@
   <measure number="5">
     <part id="P1">
       <!-- measure metadata (Satie) -->
-      <direction placement="below"><direction-type><words default-y="-70" relative-x="-5000">SATIE_MEASURE_META = {"uuid":7858985215037403};</words></direction-type></direction>
+      <direction placement="below"><direction-type><words default-y="-70" relative-x="-5000">SATIE_MEASURE_META = {"uuid":6451477950706915};</words></direction-type></direction>
       <!-- end of measure metadata (Satie) -->
       <!-- staff 1 -->
       <attributes>
@@ -469,7 +472,7 @@
         <!--musicxml-interfaces:debug>
           <div-count>0</div-count>
         </musicxml-interfaces:debug-->
-        <bar-style color="black"></bar-style>
+        <bar-style color="black">regular</bar-style>
       </barline>
       <forward><duration>0</duration></forward>
       
@@ -509,7 +512,7 @@
   <measure number="6">
     <part id="P1">
       <!-- measure metadata (Satie) -->
-      <direction placement="below"><direction-type><words default-y="-70" relative-x="-5000">SATIE_MEASURE_META = {"uuid":487935117306915};</words></direction-type></direction>
+      <direction placement="below"><direction-type><words default-y="-70" relative-x="-5000">SATIE_MEASURE_META = {"uuid":2646030452032723};</words></direction-type></direction>
       <!-- end of measure metadata (Satie) -->
       <!-- staff 1 -->
       <attributes>
@@ -556,7 +559,7 @@
         <!--musicxml-interfaces:debug>
           <div-count>0</div-count>
         </musicxml-interfaces:debug-->
-        <bar-style color="black"></bar-style>
+        <bar-style color="black">regular</bar-style>
       </barline>
       <forward><duration>0</duration></forward>
       
@@ -596,7 +599,7 @@
   <measure number="7">
     <part id="P1">
       <!-- measure metadata (Satie) -->
-      <direction placement="below"><direction-type><words default-y="-70" relative-x="-5000">SATIE_MEASURE_META = {"uuid":6346509126681357};</words></direction-type></direction>
+      <direction placement="below"><direction-type><words default-y="-70" relative-x="-5000">SATIE_MEASURE_META = {"uuid":4900515847901217};</words></direction-type></direction>
       <!-- end of measure metadata (Satie) -->
       <!-- staff 1 -->
       <attributes>
@@ -643,7 +646,7 @@
         <!--musicxml-interfaces:debug>
           <div-count>0</div-count>
         </musicxml-interfaces:debug-->
-        <bar-style color="black"></bar-style>
+        <bar-style color="black">regular</bar-style>
       </barline>
       <forward><duration>0</duration></forward>
       
@@ -681,7 +684,7 @@
   <measure number="8">
     <part id="P1">
       <!-- measure metadata (Satie) -->
-      <direction placement="below"><direction-type><words default-y="-70" relative-x="-5000">SATIE_MEASURE_META = {"uuid":5838354210411309};</words></direction-type></direction>
+      <direction placement="below"><direction-type><words default-y="-70" relative-x="-5000">SATIE_MEASURE_META = {"uuid":3657608381135489};</words></direction-type></direction>
       <!-- end of measure metadata (Satie) -->
       <!-- staff 1 -->
       <attributes>
@@ -728,7 +731,7 @@
         <!--musicxml-interfaces:debug>
           <div-count>0</div-count>
         </musicxml-interfaces:debug-->
-        <bar-style color="black"></bar-style>
+        <bar-style color="black">regular</bar-style>
       </barline>
       <forward><duration>0</duration></forward>
       
@@ -768,7 +771,7 @@
   <measure number="9">
     <part id="P1">
       <!-- measure metadata (Satie) -->
-      <direction placement="below"><direction-type><words default-y="-70" relative-x="-5000">SATIE_MEASURE_META = {"uuid":1400042638743557};</words></direction-type></direction>
+      <direction placement="below"><direction-type><words default-y="-70" relative-x="-5000">SATIE_MEASURE_META = {"uuid":8116197960302821};</words></direction-type></direction>
       <!-- end of measure metadata (Satie) -->
       <!-- staff 1 -->
       <attributes>
@@ -815,7 +818,7 @@
         <!--musicxml-interfaces:debug>
           <div-count>0</div-count>
         </musicxml-interfaces:debug-->
-        <bar-style color="black"></bar-style>
+        <bar-style color="black">regular</bar-style>
       </barline>
       <forward><duration>0</duration></forward>
       
@@ -855,7 +858,7 @@
   <measure number="10">
     <part id="P1">
       <!-- measure metadata (Satie) -->
-      <direction placement="below"><direction-type><words default-y="-70" relative-x="-5000">SATIE_MEASURE_META = {"uuid":7314177837882477};</words></direction-type></direction>
+      <direction placement="below"><direction-type><words default-y="-70" relative-x="-5000">SATIE_MEASURE_META = {"uuid":2293350565639373};</words></direction-type></direction>
       <!-- end of measure metadata (Satie) -->
       <!-- staff 1 -->
       <attributes>
@@ -902,7 +905,7 @@
         <!--musicxml-interfaces:debug>
           <div-count>0</div-count>
         </musicxml-interfaces:debug-->
-        <bar-style color="black"></bar-style>
+        <bar-style color="black">regular</bar-style>
       </barline>
       <forward><duration>0</duration></forward>
       
@@ -940,7 +943,7 @@
   <measure number="11">
     <part id="P1">
       <!-- measure metadata (Satie) -->
-      <direction placement="below"><direction-type><words default-y="-70" relative-x="-5000">SATIE_MEASURE_META = {"uuid":8863668601506149};</words></direction-type></direction>
+      <direction placement="below"><direction-type><words default-y="-70" relative-x="-5000">SATIE_MEASURE_META = {"uuid":4175137261321053};</words></direction-type></direction>
       <!-- end of measure metadata (Satie) -->
       <!-- staff 1 -->
       <attributes>
@@ -987,7 +990,7 @@
         <!--musicxml-interfaces:debug>
           <div-count>0</div-count>
         </musicxml-interfaces:debug-->
-        <bar-style color="black"></bar-style>
+        <bar-style color="black">regular</bar-style>
       </barline>
       <forward><duration>0</duration></forward>
       
@@ -1027,7 +1030,7 @@
   <measure number="12">
     <part id="P1">
       <!-- measure metadata (Satie) -->
-      <direction placement="below"><direction-type><words default-y="-70" relative-x="-5000">SATIE_MEASURE_META = {"uuid":936845980218597};</words></direction-type></direction>
+      <direction placement="below"><direction-type><words default-y="-70" relative-x="-5000">SATIE_MEASURE_META = {"uuid":1153104560647283};</words></direction-type></direction>
       <!-- end of measure metadata (Satie) -->
       <!-- staff 1 -->
       <attributes>
@@ -1074,7 +1077,7 @@
         <!--musicxml-interfaces:debug>
           <div-count>0</div-count>
         </musicxml-interfaces:debug-->
-        <bar-style color="black"></bar-style>
+        <bar-style color="black">regular</bar-style>
       </barline>
       <forward><duration>0</duration></forward>
       
@@ -1114,7 +1117,7 @@
   <measure number="13">
     <part id="P1">
       <!-- measure metadata (Satie) -->
-      <direction placement="below"><direction-type><words default-y="-70" relative-x="-5000">SATIE_MEASURE_META = {"uuid":6997073486419613};</words></direction-type></direction>
+      <direction placement="below"><direction-type><words default-y="-70" relative-x="-5000">SATIE_MEASURE_META = {"uuid":735899098363779};</words></direction-type></direction>
       <!-- end of measure metadata (Satie) -->
       <!-- staff 1 -->
       <attributes>
@@ -1161,7 +1164,7 @@
         <!--musicxml-interfaces:debug>
           <div-count>0</div-count>
         </musicxml-interfaces:debug-->
-        <bar-style color="black"></bar-style>
+        <bar-style color="black">regular</bar-style>
       </barline>
       <forward><duration>0</duration></forward>
       
@@ -1199,7 +1202,7 @@
   <measure number="14">
     <part id="P1">
       <!-- measure metadata (Satie) -->
-      <direction placement="below"><direction-type><words default-y="-70" relative-x="-5000">SATIE_MEASURE_META = {"uuid":3477607440880781};</words></direction-type></direction>
+      <direction placement="below"><direction-type><words default-y="-70" relative-x="-5000">SATIE_MEASURE_META = {"uuid":2517052470199231};</words></direction-type></direction>
       <!-- end of measure metadata (Satie) -->
       <!-- staff 1 -->
       <attributes>
@@ -1246,7 +1249,7 @@
         <!--musicxml-interfaces:debug>
           <div-count>0</div-count>
         </musicxml-interfaces:debug-->
-        <bar-style color="black"></bar-style>
+        <bar-style color="black">regular</bar-style>
       </barline>
       <forward><duration>0</duration></forward>
       
@@ -1286,7 +1289,7 @@
   <measure number="15">
     <part id="P1">
       <!-- measure metadata (Satie) -->
-      <direction placement="below"><direction-type><words default-y="-70" relative-x="-5000">SATIE_MEASURE_META = {"uuid":833052703072413};</words></direction-type></direction>
+      <direction placement="below"><direction-type><words default-y="-70" relative-x="-5000">SATIE_MEASURE_META = {"uuid":2275817946410743};</words></direction-type></direction>
       <!-- end of measure metadata (Satie) -->
       <!-- staff 1 -->
       <attributes>
@@ -1333,7 +1336,7 @@
         <!--musicxml-interfaces:debug>
           <div-count>0</div-count>
         </musicxml-interfaces:debug-->
-        <bar-style color="black"></bar-style>
+        <bar-style color="black">regular</bar-style>
       </barline>
       <forward><duration>0</duration></forward>
       
@@ -1373,7 +1376,7 @@
   <measure number="16">
     <part id="P1">
       <!-- measure metadata (Satie) -->
-      <direction placement="below"><direction-type><words default-y="-70" relative-x="-5000">SATIE_MEASURE_META = {"uuid":5677370094729211};</words></direction-type></direction>
+      <direction placement="below"><direction-type><words default-y="-70" relative-x="-5000">SATIE_MEASURE_META = {"uuid":6257684354497731};</words></direction-type></direction>
       <!-- end of measure metadata (Satie) -->
       <!-- staff 1 -->
       <attributes>
@@ -1420,7 +1423,7 @@
         <!--musicxml-interfaces:debug>
           <div-count>0</div-count>
         </musicxml-interfaces:debug-->
-        <bar-style color="black"></bar-style>
+        <bar-style color="black">regular</bar-style>
       </barline>
       <forward><duration>0</duration></forward>
       
@@ -1458,7 +1461,7 @@
   <measure number="17">
     <part id="P1">
       <!-- measure metadata (Satie) -->
-      <direction placement="below"><direction-type><words default-y="-70" relative-x="-5000">SATIE_MEASURE_META = {"uuid":7533114701540617};</words></direction-type></direction>
+      <direction placement="below"><direction-type><words default-y="-70" relative-x="-5000">SATIE_MEASURE_META = {"uuid":3088067415821603};</words></direction-type></direction>
       <!-- end of measure metadata (Satie) -->
       <!-- staff 1 -->
       <attributes>
@@ -1505,7 +1508,7 @@
         <!--musicxml-interfaces:debug>
           <div-count>0</div-count>
         </musicxml-interfaces:debug-->
-        <bar-style color="black"></bar-style>
+        <bar-style color="black">regular</bar-style>
       </barline>
       <forward><duration>0</duration></forward>
       
@@ -1545,7 +1548,7 @@
   <measure number="18">
     <part id="P1">
       <!-- measure metadata (Satie) -->
-      <direction placement="below"><direction-type><words default-y="-70" relative-x="-5000">SATIE_MEASURE_META = {"uuid":2212239340124537};</words></direction-type></direction>
+      <direction placement="below"><direction-type><words default-y="-70" relative-x="-5000">SATIE_MEASURE_META = {"uuid":1681107939920345};</words></direction-type></direction>
       <!-- end of measure metadata (Satie) -->
       <!-- staff 1 -->
       <attributes>
@@ -1592,7 +1595,7 @@
         <!--musicxml-interfaces:debug>
           <div-count>0</div-count>
         </musicxml-interfaces:debug-->
-        <bar-style color="black"></bar-style>
+        <bar-style color="black">regular</bar-style>
       </barline>
       <forward><duration>0</duration></forward>
       
@@ -1632,7 +1635,7 @@
   <measure number="19">
     <part id="P1">
       <!-- measure metadata (Satie) -->
-      <direction placement="below"><direction-type><words default-y="-70" relative-x="-5000">SATIE_MEASURE_META = {"uuid":1139114855900553};</words></direction-type></direction>
+      <direction placement="below"><direction-type><words default-y="-70" relative-x="-5000">SATIE_MEASURE_META = {"uuid":8683984626702611};</words></direction-type></direction>
       <!-- end of measure metadata (Satie) -->
       <!-- staff 1 -->
       <attributes>
@@ -1679,7 +1682,7 @@
         <!--musicxml-interfaces:debug>
           <div-count>0</div-count>
         </musicxml-interfaces:debug-->
-        <bar-style color="black"></bar-style>
+        <bar-style color="black">regular</bar-style>
       </barline>
       <forward><duration>0</duration></forward>
       
@@ -1717,7 +1720,7 @@
   <measure number="20">
     <part id="P1">
       <!-- measure metadata (Satie) -->
-      <direction placement="below"><direction-type><words default-y="-70" relative-x="-5000">SATIE_MEASURE_META = {"uuid":1682344897888257};</words></direction-type></direction>
+      <direction placement="below"><direction-type><words default-y="-70" relative-x="-5000">SATIE_MEASURE_META = {"uuid":265102430956643};</words></direction-type></direction>
       <!-- end of measure metadata (Satie) -->
       <!-- staff 1 -->
       <attributes>
@@ -1764,7 +1767,7 @@
         <!--musicxml-interfaces:debug>
           <div-count>0</div-count>
         </musicxml-interfaces:debug-->
-        <bar-style color="black"></bar-style>
+        <bar-style color="black">regular</bar-style>
       </barline>
       <forward><duration>0</duration></forward>
       
@@ -1804,7 +1807,7 @@
   <measure number="21">
     <part id="P1">
       <!-- measure metadata (Satie) -->
-      <direction placement="below"><direction-type><words default-y="-70" relative-x="-5000">SATIE_MEASURE_META = {"uuid":1638198877973447};</words></direction-type></direction>
+      <direction placement="below"><direction-type><words default-y="-70" relative-x="-5000">SATIE_MEASURE_META = {"uuid":2003503690440591};</words></direction-type></direction>
       <!-- end of measure metadata (Satie) -->
       <!-- staff 1 -->
       <attributes>
@@ -1851,7 +1854,7 @@
         <!--musicxml-interfaces:debug>
           <div-count>0</div-count>
         </musicxml-interfaces:debug-->
-        <bar-style color="black"></bar-style>
+        <bar-style color="black">regular</bar-style>
       </barline>
       <forward><duration>0</duration></forward>
       
@@ -1891,7 +1894,7 @@
   <measure number="22">
     <part id="P1">
       <!-- measure metadata (Satie) -->
-      <direction placement="below"><direction-type><words default-y="-70" relative-x="-5000">SATIE_MEASURE_META = {"uuid":6596242148882895};</words></direction-type></direction>
+      <direction placement="below"><direction-type><words default-y="-70" relative-x="-5000">SATIE_MEASURE_META = {"uuid":759199420501989};</words></direction-type></direction>
       <!-- end of measure metadata (Satie) -->
       <!-- staff 1 -->
       <attributes>
@@ -1938,7 +1941,7 @@
         <!--musicxml-interfaces:debug>
           <div-count>0</div-count>
         </musicxml-interfaces:debug-->
-        <bar-style color="black"></bar-style>
+        <bar-style color="black">regular</bar-style>
       </barline>
       <forward><duration>0</duration></forward>
       
@@ -1976,7 +1979,7 @@
   <measure number="23">
     <part id="P1">
       <!-- measure metadata (Satie) -->
-      <direction placement="below"><direction-type><words default-y="-70" relative-x="-5000">SATIE_MEASURE_META = {"uuid":3820662802267841};</words></direction-type></direction>
+      <direction placement="below"><direction-type><words default-y="-70" relative-x="-5000">SATIE_MEASURE_META = {"uuid":5599153693747207};</words></direction-type></direction>
       <!-- end of measure metadata (Satie) -->
       <!-- staff 1 -->
       <attributes>
@@ -2023,7 +2026,7 @@
         <!--musicxml-interfaces:debug>
           <div-count>0</div-count>
         </musicxml-interfaces:debug-->
-        <bar-style color="black"></bar-style>
+        <bar-style color="black">regular</bar-style>
       </barline>
       <forward><duration>0</duration></forward>
       
@@ -2063,7 +2066,7 @@
   <measure number="24">
     <part id="P1">
       <!-- measure metadata (Satie) -->
-      <direction placement="below"><direction-type><words default-y="-70" relative-x="-5000">SATIE_MEASURE_META = {"uuid":8580654408865183};</words></direction-type></direction>
+      <direction placement="below"><direction-type><words default-y="-70" relative-x="-5000">SATIE_MEASURE_META = {"uuid":6674765631409817};</words></direction-type></direction>
       <!-- end of measure metadata (Satie) -->
       <!-- staff 1 -->
       <attributes>
@@ -2110,7 +2113,7 @@
         <!--musicxml-interfaces:debug>
           <div-count>0</div-count>
         </musicxml-interfaces:debug-->
-        <bar-style color="black"></bar-style>
+        <bar-style color="black">regular</bar-style>
       </barline>
       <forward><duration>0</duration></forward>
       
@@ -2150,7 +2153,7 @@
   <measure number="25">
     <part id="P1">
       <!-- measure metadata (Satie) -->
-      <direction placement="below"><direction-type><words default-y="-70" relative-x="-5000">SATIE_MEASURE_META = {"uuid":132493355079819};</words></direction-type></direction>
+      <direction placement="below"><direction-type><words default-y="-70" relative-x="-5000">SATIE_MEASURE_META = {"uuid":3614010684914083};</words></direction-type></direction>
       <!-- end of measure metadata (Satie) -->
       <!-- staff 1 -->
       <attributes>
@@ -2197,7 +2200,7 @@
         <!--musicxml-interfaces:debug>
           <div-count>0</div-count>
         </musicxml-interfaces:debug-->
-        <bar-style color="black"></bar-style>
+        <bar-style color="black">regular</bar-style>
       </barline>
       <forward><duration>0</duration></forward>
       
@@ -2235,7 +2238,7 @@
   <measure number="26">
     <part id="P1">
       <!-- measure metadata (Satie) -->
-      <direction placement="below"><direction-type><words default-y="-70" relative-x="-5000">SATIE_MEASURE_META = {"uuid":8224148254525443};</words></direction-type></direction>
+      <direction placement="below"><direction-type><words default-y="-70" relative-x="-5000">SATIE_MEASURE_META = {"uuid":375335128380015};</words></direction-type></direction>
       <!-- end of measure metadata (Satie) -->
       <!-- staff 1 -->
       <attributes>
@@ -2282,7 +2285,7 @@
         <!--musicxml-interfaces:debug>
           <div-count>0</div-count>
         </musicxml-interfaces:debug-->
-        <bar-style color="black"></bar-style>
+        <bar-style color="black">regular</bar-style>
       </barline>
       <forward><duration>0</duration></forward>
       
@@ -2322,7 +2325,7 @@
   <measure number="27">
     <part id="P1">
       <!-- measure metadata (Satie) -->
-      <direction placement="below"><direction-type><words default-y="-70" relative-x="-5000">SATIE_MEASURE_META = {"uuid":8640870547674791};</words></direction-type></direction>
+      <direction placement="below"><direction-type><words default-y="-70" relative-x="-5000">SATIE_MEASURE_META = {"uuid":8143370692499379};</words></direction-type></direction>
       <!-- end of measure metadata (Satie) -->
       <!-- staff 1 -->
       <attributes>
@@ -2369,7 +2372,7 @@
         <!--musicxml-interfaces:debug>
           <div-count>0</div-count>
         </musicxml-interfaces:debug-->
-        <bar-style color="black"></bar-style>
+        <bar-style color="black">regular</bar-style>
       </barline>
       <forward><duration>0</duration></forward>
       
@@ -2409,7 +2412,7 @@
   <measure number="28">
     <part id="P1">
       <!-- measure metadata (Satie) -->
-      <direction placement="below"><direction-type><words default-y="-70" relative-x="-5000">SATIE_MEASURE_META = {"uuid":997462862103289};</words></direction-type></direction>
+      <direction placement="below"><direction-type><words default-y="-70" relative-x="-5000">SATIE_MEASURE_META = {"uuid":8492578421924733};</words></direction-type></direction>
       <!-- end of measure metadata (Satie) -->
       <!-- staff 1 -->
       <attributes>
@@ -2456,7 +2459,7 @@
         <!--musicxml-interfaces:debug>
           <div-count>0</div-count>
         </musicxml-interfaces:debug-->
-        <bar-style color="black"></bar-style>
+        <bar-style color="black">regular</bar-style>
       </barline>
       <forward><duration>0</duration></forward>
       
@@ -2494,7 +2497,7 @@
   <measure number="29">
     <part id="P1">
       <!-- measure metadata (Satie) -->
-      <direction placement="below"><direction-type><words default-y="-70" relative-x="-5000">SATIE_MEASURE_META = {"uuid":7402792921340025};</words></direction-type></direction>
+      <direction placement="below"><direction-type><words default-y="-70" relative-x="-5000">SATIE_MEASURE_META = {"uuid":424225681077047};</words></direction-type></direction>
       <!-- end of measure metadata (Satie) -->
       <!-- staff 1 -->
       <attributes>
@@ -2541,7 +2544,7 @@
         <!--musicxml-interfaces:debug>
           <div-count>0</div-count>
         </musicxml-interfaces:debug-->
-        <bar-style color="black"></bar-style>
+        <bar-style color="black">regular</bar-style>
       </barline>
       <forward><duration>0</duration></forward>
       
@@ -2581,7 +2584,7 @@
   <measure number="30">
     <part id="P1">
       <!-- measure metadata (Satie) -->
-      <direction placement="below"><direction-type><words default-y="-70" relative-x="-5000">SATIE_MEASURE_META = {"uuid":8061207896399453};</words></direction-type></direction>
+      <direction placement="below"><direction-type><words default-y="-70" relative-x="-5000">SATIE_MEASURE_META = {"uuid":1044664133344771};</words></direction-type></direction>
       <!-- end of measure metadata (Satie) -->
       <!-- staff 1 -->
       <attributes>
@@ -2628,7 +2631,7 @@
         <!--musicxml-interfaces:debug>
           <div-count>0</div-count>
         </musicxml-interfaces:debug-->
-        <bar-style color="black"></bar-style>
+        <bar-style color="black">regular</bar-style>
       </barline>
       <forward><duration>0</duration></forward>
       
@@ -2668,7 +2671,7 @@
   <measure number="31">
     <part id="P1">
       <!-- measure metadata (Satie) -->
-      <direction placement="below"><direction-type><words default-y="-70" relative-x="-5000">SATIE_MEASURE_META = {"uuid":6504183774484927};</words></direction-type></direction>
+      <direction placement="below"><direction-type><words default-y="-70" relative-x="-5000">SATIE_MEASURE_META = {"uuid":7843970604969535};</words></direction-type></direction>
       <!-- end of measure metadata (Satie) -->
       <!-- staff 1 -->
       <attributes>
@@ -2715,7 +2718,7 @@
         <!--musicxml-interfaces:debug>
           <div-count>0</div-count>
         </musicxml-interfaces:debug-->
-        <bar-style color="black"></bar-style>
+        <bar-style color="black">regular</bar-style>
       </barline>
       <forward><duration>0</duration></forward>
       
@@ -2753,7 +2756,7 @@
   <measure number="32">
     <part id="P1">
       <!-- measure metadata (Satie) -->
-      <direction placement="below"><direction-type><words default-y="-70" relative-x="-5000">SATIE_MEASURE_META = {"uuid":6103161553020031};</words></direction-type></direction>
+      <direction placement="below"><direction-type><words default-y="-70" relative-x="-5000">SATIE_MEASURE_META = {"uuid":4202192748014167};</words></direction-type></direction>
       <!-- end of measure metadata (Satie) -->
       <!-- staff 1 -->
       <attributes>
@@ -2800,7 +2803,7 @@
         <!--musicxml-interfaces:debug>
           <div-count>0</div-count>
         </musicxml-interfaces:debug-->
-        <bar-style color="black"></bar-style>
+        <bar-style color="black">regular</bar-style>
       </barline>
       <forward><duration>0</duration></forward>
       
@@ -2840,7 +2843,7 @@
   <measure number="33">
     <part id="P1">
       <!-- measure metadata (Satie) -->
-      <direction placement="below"><direction-type><words default-y="-70" relative-x="-5000">SATIE_MEASURE_META = {"uuid":1550690198873027};</words></direction-type></direction>
+      <direction placement="below"><direction-type><words default-y="-70" relative-x="-5000">SATIE_MEASURE_META = {"uuid":6882796010428239};</words></direction-type></direction>
       <!-- end of measure metadata (Satie) -->
       <!-- staff 1 -->
       <attributes>
@@ -2887,7 +2890,7 @@
         <!--musicxml-interfaces:debug>
           <div-count>0</div-count>
         </musicxml-interfaces:debug-->
-        <bar-style color="black"></bar-style>
+        <bar-style color="black">regular</bar-style>
       </barline>
       <forward><duration>0</duration></forward>
       
@@ -2927,7 +2930,7 @@
   <measure number="34">
     <part id="P1">
       <!-- measure metadata (Satie) -->
-      <direction placement="below"><direction-type><words default-y="-70" relative-x="-5000">SATIE_MEASURE_META = {"uuid":5602094166382199};</words></direction-type></direction>
+      <direction placement="below"><direction-type><words default-y="-70" relative-x="-5000">SATIE_MEASURE_META = {"uuid":3030686930911467};</words></direction-type></direction>
       <!-- end of measure metadata (Satie) -->
       <!-- staff 1 -->
       <attributes>
@@ -2974,7 +2977,7 @@
         <!--musicxml-interfaces:debug>
           <div-count>0</div-count>
         </musicxml-interfaces:debug-->
-        <bar-style color="black"></bar-style>
+        <bar-style color="black">regular</bar-style>
       </barline>
       <forward><duration>0</duration></forward>
       
@@ -3012,7 +3015,7 @@
   <measure number="35">
     <part id="P1">
       <!-- measure metadata (Satie) -->
-      <direction placement="below"><direction-type><words default-y="-70" relative-x="-5000">SATIE_MEASURE_META = {"uuid":1521803927769395};</words></direction-type></direction>
+      <direction placement="below"><direction-type><words default-y="-70" relative-x="-5000">SATIE_MEASURE_META = {"uuid":1285846377026665};</words></direction-type></direction>
       <!-- end of measure metadata (Satie) -->
       <!-- staff 1 -->
       <attributes>
@@ -3059,7 +3062,7 @@
         <!--musicxml-interfaces:debug>
           <div-count>0</div-count>
         </musicxml-interfaces:debug-->
-        <bar-style color="black"></bar-style>
+        <bar-style color="black">regular</bar-style>
       </barline>
       <forward><duration>0</duration></forward>
       
@@ -3099,7 +3102,7 @@
   <measure number="36">
     <part id="P1">
       <!-- measure metadata (Satie) -->
-      <direction placement="below"><direction-type><words default-y="-70" relative-x="-5000">SATIE_MEASURE_META = {"uuid":2612230119968635};</words></direction-type></direction>
+      <direction placement="below"><direction-type><words default-y="-70" relative-x="-5000">SATIE_MEASURE_META = {"uuid":3823798166517453};</words></direction-type></direction>
       <!-- end of measure metadata (Satie) -->
       <!-- staff 1 -->
       <attributes>
@@ -3146,7 +3149,7 @@
         <!--musicxml-interfaces:debug>
           <div-count>0</div-count>
         </musicxml-interfaces:debug-->
-        <bar-style color="black"></bar-style>
+        <bar-style color="black">regular</bar-style>
       </barline>
       <forward><duration>0</duration></forward>
       
@@ -3186,7 +3189,7 @@
   <measure number="37">
     <part id="P1">
       <!-- measure metadata (Satie) -->
-      <direction placement="below"><direction-type><words default-y="-70" relative-x="-5000">SATIE_MEASURE_META = {"uuid":4070933447720303};</words></direction-type></direction>
+      <direction placement="below"><direction-type><words default-y="-70" relative-x="-5000">SATIE_MEASURE_META = {"uuid":4833529846778155};</words></direction-type></direction>
       <!-- end of measure metadata (Satie) -->
       <!-- staff 1 -->
       <attributes>
@@ -3233,7 +3236,7 @@
         <!--musicxml-interfaces:debug>
           <div-count>0</div-count>
         </musicxml-interfaces:debug-->
-        <bar-style color="black"></bar-style>
+        <bar-style color="black">regular</bar-style>
       </barline>
       <forward><duration>0</duration></forward>
       
@@ -3271,7 +3274,7 @@
   <measure number="38">
     <part id="P1">
       <!-- measure metadata (Satie) -->
-      <direction placement="below"><direction-type><words default-y="-70" relative-x="-5000">SATIE_MEASURE_META = {"uuid":2812489798027759};</words></direction-type></direction>
+      <direction placement="below"><direction-type><words default-y="-70" relative-x="-5000">SATIE_MEASURE_META = {"uuid":6138181941751891};</words></direction-type></direction>
       <!-- end of measure metadata (Satie) -->
       <!-- staff 1 -->
       <attributes>
@@ -3318,7 +3321,7 @@
         <!--musicxml-interfaces:debug>
           <div-count>0</div-count>
         </musicxml-interfaces:debug-->
-        <bar-style color="black"></bar-style>
+        <bar-style color="black">regular</bar-style>
       </barline>
       <forward><duration>0</duration></forward>
       
@@ -3358,7 +3361,7 @@
   <measure number="39">
     <part id="P1">
       <!-- measure metadata (Satie) -->
-      <direction placement="below"><direction-type><words default-y="-70" relative-x="-5000">SATIE_MEASURE_META = {"uuid":199637360931249};</words></direction-type></direction>
+      <direction placement="below"><direction-type><words default-y="-70" relative-x="-5000">SATIE_MEASURE_META = {"uuid":5028837936232317};</words></direction-type></direction>
       <!-- end of measure metadata (Satie) -->
       <!-- staff 1 -->
       <attributes>
@@ -3405,7 +3408,7 @@
         <!--musicxml-interfaces:debug>
           <div-count>0</div-count>
         </musicxml-interfaces:debug-->
-        <bar-style color="black"></bar-style>
+        <bar-style color="black">regular</bar-style>
       </barline>
       <forward><duration>0</duration></forward>
       
@@ -3445,7 +3448,7 @@
   <measure number="40">
     <part id="P1">
       <!-- measure metadata (Satie) -->
-      <direction placement="below"><direction-type><words default-y="-70" relative-x="-5000">SATIE_MEASURE_META = {"uuid":3909825461089697};</words></direction-type></direction>
+      <direction placement="below"><direction-type><words default-y="-70" relative-x="-5000">SATIE_MEASURE_META = {"uuid":1968361203294539};</words></direction-type></direction>
       <!-- end of measure metadata (Satie) -->
       <!-- staff 1 -->
       <attributes>
@@ -3492,7 +3495,7 @@
         <!--musicxml-interfaces:debug>
           <div-count>0</div-count>
         </musicxml-interfaces:debug-->
-        <bar-style color="black"></bar-style>
+        <bar-style color="black">regular</bar-style>
       </barline>
       <forward><duration>0</duration></forward>
       
@@ -3530,7 +3533,7 @@
   <measure number="41">
     <part id="P1">
       <!-- measure metadata (Satie) -->
-      <direction placement="below"><direction-type><words default-y="-70" relative-x="-5000">SATIE_MEASURE_META = {"uuid":6949611995811207};</words></direction-type></direction>
+      <direction placement="below"><direction-type><words default-y="-70" relative-x="-5000">SATIE_MEASURE_META = {"uuid":8357973986214543};</words></direction-type></direction>
       <!-- end of measure metadata (Satie) -->
       <!-- staff 1 -->
       <attributes>
@@ -3577,7 +3580,7 @@
         <!--musicxml-interfaces:debug>
           <div-count>0</div-count>
         </musicxml-interfaces:debug-->
-        <bar-style color="black"></bar-style>
+        <bar-style color="black">light-heavy</bar-style>
       </barline>
       <forward><duration>0</duration></forward>
       

@@ -85,7 +85,7 @@ export default class ModelView extends Component<IProps, IState> {
     }
 
     shouldComponentUpdate(nextProps: IProps, nextState: IState) {
-        if (nextProps.version > this.props.version) {
+        if (nextProps.version !== this.props.version) {
             return true;
         }
 

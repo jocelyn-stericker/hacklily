@@ -19,6 +19,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import {Print} from "musicxml-interfaces";
 import {map, mapValues} from "lodash";
 
 import IAttributesSnapshot from "./attributesSnapshot";
@@ -26,6 +27,7 @@ import ILayout, {detach as detachLayout} from "./layout";
 
 interface IMeasureLayout {
     attributes: {[part: string]: IAttributesSnapshot[]};
+    print: Print;
     elements: ILayout[][];
     width: number;
     maxDivisions: number;
@@ -55,6 +57,7 @@ export default IMeasureLayout;
 export function detach(layout: IMeasureLayout) {
     let clone: IMeasureLayout = {
         attributes: layout.attributes,
+        print: layout.print,
         elements: map(layout.elements, v => map(v, detachLayout)),
         width: layout.width,
         maxDivisions: layout.maxDivisions,

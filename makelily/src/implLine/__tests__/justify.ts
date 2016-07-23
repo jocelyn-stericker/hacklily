@@ -57,7 +57,11 @@ describe("[lineProcessor.ts]", function() {
             ];
 
             let layouts = map(segments, (seg, idx) => layoutMeasure({
+                document: {
+                    __fakeDocument: true
+                } as any,
                 preview: false,
+                print: null,
                 memo$: null,
                 fixup: null,
 
@@ -98,7 +102,7 @@ describe("[lineProcessor.ts]", function() {
             }));
 
             let padding = 12;
-            let detachedLayouts = map(layouts, layout => detach(layout));
+            let detachedLayouts = map(layouts, detach);
             forEach(detachedLayouts, layout => {
                 layout.attributes = <any> {
                     P1: [, {
@@ -113,6 +117,9 @@ describe("[lineProcessor.ts]", function() {
 
             let justified = Justify(
                 {
+                    document: {
+                        __fakeDocument: true
+                    } as any,
                     preview: false,
                     fixup: null,
 

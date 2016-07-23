@@ -22,7 +22,7 @@
 import {Clef, Count, MultipleRest, Note, NoteheadType, Stem, StemType, Tremolo,
     Tied, TimeModification, serializeNote} from "musicxml-interfaces";
 import {IAny} from "musicxml-interfaces/operations";
-import {forEach, times, filter, reduce, map, max, some, extend} from "lodash";
+import {forEach, times, filter, reduce, map, max, some} from "lodash";
 import * as invariant from "invariant";
 
 import Type from "../document/types";
@@ -140,7 +140,7 @@ class ChordModelImpl implements ChordModel.IChordModel, IList<NoteImpl> {
 
     private _count: Count;
     private _timeModification: TimeModification;
-    private _recentLayout: ChordModelImpl.Layout;
+    private _layout: ChordModelImpl.Layout;
 
     get satieLedger(): number[] {
         return ledgerLines(this, this._clef);
@@ -312,34 +312,20 @@ class ChordModelImpl implements ChordModel.IChordModel, IList<NoteImpl> {
                 this.satieStem = null;
                 this.satieDirection = NaN;
             }
-
-            if (this._recentLayout) {
-                this._recentLayout.sync$(this, cursor$);
-            }
         }
     }
 
     __layout(cursor$: ICursor): ChordModel.IChordLayout {
         this._init = true;
-        this._recentLayout = new ChordModelImpl.Layout(this, cursor$);
-        return this._recentLayout;
+        if (!this._layout) {
+            this._layout = new ChordModelImpl.Layout();
+        }
+        this._layout._refresh(this, cursor$);
+        return this._layout;
     }
 
     toJSON() {
-        let data: any = {
-            group: {
-                satieStem: this.satieStem,
-                satieFlag: this.satieFlag,
-                satieDirection: this.satieDirection,
-                satieMultipleRest: this.satieMultipleRest,
-                satieUnbeamedTuplet: this.satieUnbeamedTuplet,
-                frozenness: this.frozenness,
-                wholebar$: this.wholebar$,
-                divCount: this.divCount,
-                dots: this.dots
-            },
-            notes: map(this, (note) => note)
-        };
+        let data: any = map(this, note => note);
         return data;
     }
 
@@ -597,10 +583,19 @@ module ChordModelImpl {
         expandPolicy: ExpandPolicy;
 
         satieBeam: IBeamLayout;
+        satieStem: {
+            direction: number;
+            stemHeight: number;
+            stemStart: number;
+            tremolo?: Tremolo;
+        };
+        satieFlag: string;
 
         /*---- Implementation ----------------------------------------------------*/
 
-        constructor(baseModel: ChordModelImpl, cursor$: ICursor) {
+        _refresh(baseModel: ChordModelImpl, cursor$: ICursor) {
+            // ** this function should not modify baseModel **
+
             this.division = cursor$.division$;
             let {measureStyle} = cursor$.staff.attributes;
             if (measureStyle.multipleRest && !measureStyle.multipleRestInitiatedHere) {
@@ -610,14 +605,14 @@ module ChordModelImpl {
             }
 
             this.model = this._detachModelWithContext(cursor$, baseModel);
+            this.satieStem = baseModel.satieStem;
+            this.satieFlag = baseModel.satieFlag;
             this.boundingBoxes$ = this._captureBoundingBoxes();
 
             let isWholeBar = baseModel.wholebar$ || baseModel.count === Count.Whole;
 
-            if (baseModel.satieMultipleRest || baseModel.rest && isWholeBar) {
-                // N.B.: this.model does not have count
-                this.expandPolicy = ExpandPolicy.Centered;
-            }
+            this.expandPolicy = baseModel.satieMultipleRest || baseModel.rest &&
+                isWholeBar ? ExpandPolicy.Centered : ExpandPolicy.After;
 
             forEach(this.model, note => {
                 let staff = note.staff;
@@ -648,20 +643,11 @@ module ChordModelImpl {
             cursor$.x$ += totalWidth;
         }
 
-        sync$(baseModel: ChordModelImpl, cursor$: ICursor) {
-            extend(this.model, this._detachModelWithContext(cursor$, baseModel));
-            this.model.length = baseModel.length;
-        }
-
-        freshest(): ChordModelImpl.Layout {
-            return (this.model.baseModel as any)._recentLayout;
-        }
-
         private _captureBoundingBoxes(): IBoundingRect[] {
             let bboxes: IBoundingRect[] = [];
             forEach(this.model, note => {
                 let notations = notationObj(note); // TODO: detach this
-                bboxes = bboxes.concat(getBoundingRects(notations, note, this.model));
+                bboxes = bboxes.concat(getBoundingRects(notations, note, this));
             });
             return bboxes;
         }
@@ -751,9 +737,12 @@ module ChordModelImpl {
                     });
                 }) as any;
 
-            model.baseModel = baseModel;
             model.staffIdx = baseModel.staffIdx;
             model.divCount = baseModel.divCount;
+            model.satieLedger = baseModel.satieLedger;
+            model.noteheadGlyph = baseModel.noteheadGlyph;
+            model.satieMultipleRest = baseModel.satieMultipleRest;
+            model.satieUnbeamedTuplet = baseModel.satieUnbeamedTuplet;
             return model;
         }
     }

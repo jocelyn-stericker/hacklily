@@ -64,6 +64,7 @@ export function stringToDocument(src: string, memo$: any, factory: IFactory) {
     }
 
     let contextOptions: ILayoutOptions = {
+        document,
         attributes: null,
         preview: false,
         header: document.header,

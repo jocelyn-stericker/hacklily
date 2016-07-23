@@ -574,13 +574,13 @@ describe("[musicxml/import.ts]", function() {
                     accidental: {
                         attribute: "",
                         element: "accidental",
-                        type: "yes",
+                        type: true,
                         value: ""
                     },
                     print_newPage: {
                         attribute: "new-page",
                         element: "print",
-                        type: "yes",
+                        type: true,
                         value: "yes"
                     }
                 }

@@ -98,20 +98,13 @@
       <score-instrument id="P1-I1">
         <instrument-name>SmartMusic SoftSynth 1</instrument-name>
       </score-instrument>
-      <midi-instrument id="P1-I1">
-        <midi-channel>1</midi-channel>
-        <midi-bank>15489</midi-bank>
-        <midi-program>1</midi-program>
-        <volume>80</volume>
-        <pan>0</pan>
-      </midi-instrument>
     </score-part>
   </part-list>
   <measure number="1">
     <part id="P1">
       <!-- measure metadata (Satie) -->
       <direction placement="below"><direction-type><words default-y="-70" relative-x="-5000">SATIE_SONG_META = {};</words></direction-type></direction>
-      <direction placement="below"><direction-type><words default-y="-70" relative-x="-5000">SATIE_MEASURE_META = {"uuid":6574611164866989};</words></direction-type></direction>
+      <direction placement="below"><direction-type><words default-y="-70" relative-x="-5000">SATIE_MEASURE_META = {"uuid":6509545037004009};</words></direction-type></direction>
       <!-- end of measure metadata (Satie) -->
       <!-- staff 1 -->
       <print new-system="no" new-page="no" page-number="1">

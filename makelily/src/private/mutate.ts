@@ -20,8 +20,8 @@
  */
 
 import * as invariant from "invariant";
-import {last, isEqual} from "lodash";
-import {IObjectReplace, IObjectDelete, OTPath} from "musicxml-interfaces/operations";
+import {last, union, isEqual, isObject, isArray} from "lodash";
+import {IAny, IObjectReplace, IObjectDelete, IObjectInsert, OTPath} from "musicxml-interfaces/operations";
 
 export function get(obj: any, p: OTPath) {
     for (let i = 0; i < p.length; ++i) {
@@ -39,21 +39,70 @@ export function findParent(obj: any, p: OTPath): any {
     return obj;
 }
 
-export function set(obj: any, p: OTPath, val: any) {
-    findParent(obj, p)[last(p)] = val;
+export function allKeys(a: any): string[] {
+    let keys: string[] = [];
+    do {
+        keys = keys.concat(a.__proto__);
+        a = a.__proto__;
+    } while(a);
+    return keys;
 }
 
-export function delete_(obj: any, p: OTPath) {
-    delete findParent(obj, p)[last(p)];
+export function expectEqualish(a: any, b: any, op: IAny) {
+    if (isArray(a) || isArray(b) || !isObject(a) || !isObject(b)) {
+        if (!isEqual(a, b)) {
+            throw new Error(`a[] != b[] when evaluating ${JSON.stringify(op)}`);
+        }
+        return;
+    }
+
+    let aKeys = allKeys(a);
+    let bKeys = allKeys(b);
+    union(aKeys, bKeys).forEach(key => {
+        if (!isEqual(a[key], b[key])) {
+            throw new Error(`a.${key} != b.${key} when evaluating ${JSON.stringify(op)}`);
+        }
+    });
+}
+
+export function set(obj: any, op: IObjectInsert<any>) {
+    let parent = findParent(obj, op.p);
+    let key = last(op.p);
+    parent[key] = op.oi;
+    // STOPSHIP: this could cause problems during collaboration/undo
+    // expectEqualish(parent[key], op.oi, op);
 }
 
 export function replace(obj: any, op: IObjectReplace<any>) {
-    let current = get(obj, op.p);
-    invariant(isEqual(current, op.od), `Invalid replace: ${op.od} does not deep equal ${current}`);
-    set(obj, op.p, op.oi);
+    let parent = findParent(obj, op.p);
+    let key = last(op.p);
+    // STOPSHIP: this could cause problems during collaboration/undo
+    // expectEqualish(parent[key], op.od, op);
+    parent[key] = op.oi;
 }
 
 export function remove(obj: any, op: IObjectDelete<any>) {
-   delete_(obj, op.p);
+    let parent = findParent(obj, op.p);
+    let key = last(op.p);
+    // STOPSHIP: this could cause problems during collaboration/undo
+    // expectEqualish(parent[key], op.od, op);
+
+    // We decide to not actually delete the object. This:
+    //   - is more efficient
+    //   - supports chained objects (prototypical inheritance) 
+    //   - supports getters/setters.
+    parent[key] = undefined;
+}
+
+export function mutate(obj: any, op: IAny) {
+    if ("od" in op && "oi" in op) {
+        replace(obj, op as IObjectReplace<any>);
+    } else if ("od" in op) {
+        remove(obj, op as IObjectReplace<any>);
+    } else if ("oi" in op) {
+        set(obj, op as IObjectInsert<any>);
+    } else {
+        invariant(false, "Unsupported operation");
+    }
 }
 

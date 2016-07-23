@@ -22,8 +22,9 @@
 import {Barline, Segno, Coda, BarlineLocation, WavyLine, Fermata, BarStyle, Ending, Repeat,
     Footnote, Level, BarStyleType, PartGroup, PartSymbol,
     serializeBarline} from "musicxml-interfaces";
+import {buildBarStyle} from "musicxml-interfaces/builders";
 import {IAny} from "musicxml-interfaces/operations";
-import {some, forEach} from "lodash";
+import {some, forEach, last} from "lodash";
 import * as invariant from "invariant";
 
 import IModel from "../document/model";
@@ -95,34 +96,41 @@ class BarlineModel implements Export.IBarlineModel {
 
     __validate(cursor$: ICursor): void {
         if (!this.barStyle) {
-            this.barStyle = {
-                data: NaN
-            };
+            cursor$.patch(staff => staff
+                .barline(barline => barline
+                    .barStyle(buildBarStyle(barStyle => barStyle
+                        .data(BarStyleType.Regular)
+                        .color("black")
+                    ))
+                )
+            );
         }
-        let divs = cursor$.staff.totalDivisions - cursor$.division$;
-        if (divs > 0) {
-            const patches: IAny[] = [];
-            const measure = cursor$.measure;
-            const segment = cursor$.segment;
-            patches.push({
-                p: [
-                    String(measure.uuid),
-                    "parts",
-                    segment.part,
-                    "staves",
-                    segment.owner,
-                    cursor$.idx$
-                ],
-                li: {
-                    _class: Type[Type.Spacer],
-                    divCount: divs
-                }
-            });
-            cursor$.division$ += divs;
-            cursor$.fixup(patches);
+        let divsToAdvance = cursor$.staff.totalDivisions - cursor$.division$;
+        if (divsToAdvance > 0) {
+            cursor$.advance(divsToAdvance);
+        }
+        if (!isFinite(this.barStyle.data) || this.barStyle.data === null) {
+            let lastBarlineInSegment = !some(cursor$.segment.slice(cursor$.idx$ + 1),
+                    model => cursor$.factory.modelHasType(model, Type.Barline));
+            let isLast = cursor$.measure.idx === last(cursor$.document.measures).idx &&
+                    lastBarlineInSegment;
+
+            cursor$.patch(staff => staff
+                .barline(barline => barline
+                    .barStyle({
+                        data: isLast ? BarStyleType.LightHeavy : BarStyleType.Regular,
+                    })
+                )
+            );
         }
         if (!this.barStyle.color) {
-            this.barStyle.color = "black";
+            cursor$.patch(staff => staff
+                .barline(barline => barline
+                    .barStyle(barStyle => barStyle
+                        .color("black")
+                    )
+                )
+            );
         }
     }
 
@@ -188,19 +196,6 @@ module BarlineModel {
                 }
             }
 
-            this.model.barStyle = Object.create(this.model.barStyle) || {};
-            if (!isFinite(this.model.barStyle.data) || this.model.barStyle.data === null) {
-                let lastBarlineInSegment = !some(cursor$.segment.slice(cursor$.idx$ + 1),
-                        model => cursor$.factory.modelHasType(model, Type.Barline));
-
-                if (cursor$.line.barOnLine$ + 1 === cursor$.line.barsOnLine &&
-                        cursor$.line.line + 1 === cursor$.line.lines &&
-                        lastBarlineInSegment) {
-                    this.model.barStyle.data = BarStyleType.LightHeavy;
-                } else {
-                    this.model.barStyle.data = BarStyleType.Regular;
-                }
-            }
             this.model.defaultY = 0;
 
             this.yOffset = 0;   // TODO

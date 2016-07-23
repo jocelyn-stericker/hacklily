@@ -64,21 +64,19 @@ export default class ChordView extends Component<IProps, {}> {
     };
 
     render(): ReactElement<any> {
-        let freshLayout = this.props.layout.freshest();
-        let freshSpec = freshLayout.model;
-        let staleSpec = this.props.layout.model;
-        let base = freshSpec.baseModel;
+        let layout = this.props.layout;
+        let spec = layout.model;
 
-        let maxNotehead = maxBy(base.noteheadGlyph, glyph => getRight(glyph));
+        let maxNotehead = maxBy(spec.noteheadGlyph, glyph => getRight(glyph));
 
-        let anyVisible = some(freshSpec, note => note.printObject !== false);
+        let anyVisible = some(spec, note => note.printObject !== false);
 
         if (!anyVisible) {
             return null;
         }
 
         let lyKey = 0;
-        let lyrics = chain(<Note[]><any>freshSpec)
+        let lyrics = chain(<Note[]><any>spec)
             .map(n => n.lyrics)
             .filter(l => !!l)
             .flatten(true)
@@ -119,60 +117,60 @@ export default class ChordView extends Component<IProps, {}> {
             .flatten()
             .value();
 
-        if (!!freshSpec[0].rest) {
+        if (!!spec[0].rest) {
             return $RestView({
-                multipleRest: base.satieMultipleRest,
-                notehead: base.noteheadGlyph[0],
-                spec: freshSpec[0]
+                multipleRest: spec.satieMultipleRest,
+                notehead: spec.noteheadGlyph[0],
+                spec: spec[0]
             });
         }
 
         return DOM.g(null,
-            map(freshSpec.baseModel as any, (noteSpec: Note, idx: number) => {
-                if (!freshSpec[idx]) {
+            map(spec, (noteSpec: Note, idx: number) => {
+                if (!spec[idx]) {
                     return null;
                 }
                 return $NoteView({
                     key: "n" + idx,
-                    noteheadGlyph: base.noteheadGlyph[idx],
-                    spec: freshSpec[idx],
-                    defaultX: staleSpec[0].defaultX
+                    noteheadGlyph: spec.noteheadGlyph[idx],
+                    spec: spec[idx],
+                    defaultX: spec[0].defaultX
                 });
             }),
-            base.satieStem && $StemView({
-                bestHeight: base.satieStem.stemHeight,
-                tremolo: base.satieStem.tremolo,
+            layout.satieStem && $StemView({
+                bestHeight: layout.satieStem.stemHeight,
+                tremolo: layout.satieStem.tremolo,
                 key: "s",
                 notehead: maxNotehead,
                 spec: {
-                    color: freshSpec[0].stem.color || "#000000",
-                    defaultX: staleSpec[0].defaultX,
-                    defaultY: (base.satieStem.stemStart - 3) * 10,
-                    type: base.satieStem.direction === 1 ?  StemType.Up : StemType.Down
+                    color: spec[0].stem.color || "#000000",
+                    defaultX: spec[0].defaultX,
+                    defaultY: (layout.satieStem.stemStart - 3) * 10,
+                    type: layout.satieStem.direction === 1 ?  StemType.Up : StemType.Down
                 },
                 width: stemThickness
             }),
-            map(base.satieLedger, lineNumber => $LedgerLineView({
+            map(spec.satieLedger, lineNumber => $LedgerLineView({
                 key: "l" + lineNumber,
                 notehead: maxNotehead,
                 spec: {
                     color: "#000000",
-                    defaultX: staleSpec[0].defaultX,
+                    defaultX: spec[0].defaultX,
                     defaultY: (lineNumber - 3) * 10
                 }
             })),
-            base.satieFlag && base.satieStem && $FlagView({
+            layout.satieFlag && layout.satieStem && $FlagView({
                 key: "f",
                 notehead: maxNotehead,
                 spec: {
-                    color: freshSpec[0].stem.color || "$000000",
-                    defaultX: staleSpec[0].defaultX,
-                    defaultY: (base.satieStem.stemStart - 3) * 10 +
-                        base.satieStem.stemHeight * base.satieStem.direction,
-                    direction: base.satieStem.direction,
-                    flag: base.satieFlag
+                    color: spec[0].stem.color || "$000000",
+                    defaultX: spec[0].defaultX,
+                    defaultY: (layout.satieStem.stemStart - 3) * 10 +
+                        layout.satieStem.stemHeight * layout.satieStem.direction,
+                    direction: layout.satieStem.direction,
+                    flag: layout.satieFlag
                 },
-                stemHeight: base.satieStem.stemHeight,
+                stemHeight: layout.satieStem.stemHeight,
                 stemWidth: stemThickness
             }),
             this.props.layout.satieBeam && $BeamView({
@@ -181,13 +179,13 @@ export default class ChordView extends Component<IProps, {}> {
                 stemWidth: stemThickness,
                 stroke: "black"
             }),
-            base.satieUnbeamedTuplet && $UnbeamedTupletView({
+            spec.satieUnbeamedTuplet && $UnbeamedTupletView({
                 key: "ut",
-                layout: base.satieUnbeamedTuplet,
+                layout: spec.satieUnbeamedTuplet,
                 stemWidth: stemThickness,
                 stroke: "black"
             }),
-            map(freshSpec, (note, idx) => map(note.notations, (notation, jdx) => $NotationView({
+            map(spec, (note, idx) => map(note.notations, (notation, jdx) => $NotationView({
                 key: `N${idx}_${jdx}`,
                 layout: this.props.layout,
                 note: note,

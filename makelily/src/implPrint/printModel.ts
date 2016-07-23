@@ -36,6 +36,8 @@ import ILayout from "../private/layout";
 import IBoundingRect from "../private/boundingRect";
 
 class PrintModel implements Export.IPrintModel {
+    _class = "Print";
+
     /*---- I.1 IModel ---------------------------------------------------------------------------*/
 
     /** @prototype only */
@@ -98,8 +100,10 @@ class PrintModel implements Export.IPrintModel {
         this.measureNumbering = this.measureNumbering || {
             data: "system"
         };
-        cursor$.print$ = this; // FIXME: inheritance for multiple papers
-        this.pageNumber = null;
+        if (!cursor$.print$) {
+            cursor$.print$ = this; // FIXME: inheritance for multiple papers
+        }
+        this.pageNumber = "1"; // TODO
 
         this._once = true;
     }
@@ -122,6 +126,40 @@ class PrintModel implements Export.IPrintModel {
 
     toXML(): string {
         return `${serializePrint(this)}\n<forward><duration>${this.divCount}</duration></forward>\n`;
+    }
+
+    toJSON(): any {
+        let {
+            _class,
+            measureNumbering,
+            partNameDisplay,
+            newSystem,
+            newPage,
+            blankPage,
+            measureLayout,
+            partAbbreviationDisplay,
+            pageLayout,
+            systemLayout,
+            staffSpacing,
+            staffLayouts,
+            pageNumber,
+        } = this;
+
+        return {
+            _class,
+            measureNumbering,
+            partNameDisplay,
+            newSystem,
+            newPage,
+            blankPage,
+            measureLayout,
+            partAbbreviationDisplay,
+            pageLayout,
+            systemLayout,
+            staffSpacing,
+            staffLayouts,
+            pageNumber,
+        };
     }
 
     inspect() {

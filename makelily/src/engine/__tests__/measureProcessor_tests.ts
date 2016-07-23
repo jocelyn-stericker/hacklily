@@ -54,7 +54,11 @@ describe("[engine/measureProcessor.ts]", function() {
 
             // test without alignment
             let opts: ILayoutOpts = {
+                document: {
+                    __fakeDocument: true
+                } as any,
                 preview: false,
+                print: null,
                 memo$: null,
                 fixup: null,
 
@@ -158,7 +162,11 @@ describe("[engine/measureProcessor.ts]", function() {
             ];
 
             let layout = layoutMeasure({
+                document: {
+                    __fakeDocument: true
+                } as any,
                 preview: false,
+                print: null,
                 memo$: null,
                 fixup: null,
 
@@ -218,6 +226,10 @@ describe("[engine/measureProcessor.ts]", function() {
             ];
 
             let width = approximateLayout({
+                document: {
+                    __fakeDocument: true
+                } as any,
+                print: null,
                 preview: false,
                 memo$: null,
                 fixup: null,

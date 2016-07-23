@@ -2,7 +2,7 @@
  * @source: https://github.com/jnetterf/satie/
  *
  * @license
- * (C) Josh Netterfield <joshua@nettek.ca> 2015.
+ * (C) Josh Netterfield <joshua@nettek.ca> 2015 - present.
  * Part of the Satie music engraver <https://github.com/jnetterf/satie>.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -19,22 +19,15 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import {ReactElement} from "react";
 import {IAny} from "musicxml-interfaces/operations";
 
-import IDocument from "../document/document";
+import ILinesLayoutState from "../private/linesLayoutState";
 
-interface ISong {
-    getDocument: () => IDocument;
-    getOperations: () => IAny[];
+import BarlineModel from "./barlineModel";
 
-    setOperations: (operations: IAny[]) => IAny[];
-    previewOperations: (operations: IAny[]) => IAny[];
+import {mutate} from "../private/mutate";
 
-    toReactElement: (height?: number) => ReactElement<any>;
-    toSVG: (cb: (error: Error, svg: string) => void) => void;
-    toMusicXML: (cb: (error: Error, xml: string) => void) => void;
+export default function barlineMutator(memo$: ILinesLayoutState,
+        barline: BarlineModel.IBarlineModel, op: IAny) {
+    mutate(barline, op);
 }
-
-export default ISong;
-

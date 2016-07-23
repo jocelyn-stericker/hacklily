@@ -98,7 +98,7 @@ export function layoutLine$(options: ILayoutOptions, bounds: ILineBounds,
     if (!memo$.reduced$[key]) {
         let detachedLayouts: IMeasureLayout[] = map(layouts, detachMeasureLayout);
         memo$.reduced$[key] = reduce(options.postprocessors,
-            (layouts, filter) => filter(options, bounds, detachedLayouts), layouts);
+            (layouts, filter) => filter(options, bounds, layouts), detachedLayouts);
     }
 
     return memo$.reduced$[key];
@@ -109,6 +109,7 @@ function _layoutDirtyMeasures(options: ILayoutOptions, line: ILineContext,
         memo$: ILinesLayoutState) {
     let measures = options.measures;
     let attributes = options.attributes;
+    let print = options.print$;
     return map(measures, (measure, measureIdx) => {
         if (options.singleLineMode) {
             // Reset the shortestCount at every measure.
@@ -129,7 +130,9 @@ function _layoutDirtyMeasures(options: ILayoutOptions, line: ILineContext,
             }
 
             clean$[measure.uuid] = layoutMeasure({
+                document: options.document,
                 attributes: attributes,
+                print: print,
                 factory: options.modelFactory,
                 header: options.header,
                 line: line,
@@ -143,6 +146,7 @@ function _layoutDirtyMeasures(options: ILayoutOptions, line: ILineContext,
         }
         // Update attributes for next measure
         attributes = clean$[measure.uuid].attributes;
+        print = clean$[measure.uuid].print;
         return clean$[measure.uuid];
     });
 }

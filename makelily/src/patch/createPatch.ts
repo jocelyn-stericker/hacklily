@@ -22,16 +22,15 @@
 import {Time, BeamType, Beam, Count} from "musicxml-interfaces";
 import {IAny} from "musicxml-interfaces/operations";
 import {
-    patchPrint, IPrintBuilder,
-    patchGrouping, IGroupingBuilder,
-    patchFiguredBass, IFiguredBassBuilder,
-    patchAttributes, IAttributesBuilder,
-    patchSound, ISoundBuilder,
-    patchDirection, IDirectionBuilder,
-    patchHarmony, IHarmonyBuilder,
-    patchNote, INoteBuilder,
-    patchBarline, IBarlineBuilder,
-    buildNote,
+    buildPrint, patchPrint, IPrintBuilder,
+    buildGrouping, patchGrouping, IGroupingBuilder,
+    buildFiguredBass, patchFiguredBass, IFiguredBassBuilder,
+    buildAttributes, patchAttributes, IAttributesBuilder,
+    buildSound, patchSound, ISoundBuilder,
+    buildDirection, patchDirection, IDirectionBuilder,
+    buildHarmony, patchHarmony, IHarmonyBuilder,
+    buildNote, patchNote, INoteBuilder,
+    buildBarline, patchBarline, IBarlineBuilder,
     buildBeam,
 } from "musicxml-interfaces/builders";
 import {find, forEach, last, some, times} from "lodash";
@@ -56,80 +55,147 @@ function _prependPatch(...prefix: any[]) {
     };
 }
 
+function genUUID(): number {
+    const MAX_SAFE_INTEGER = 9007199254740991;
+    return Math.floor(Math.random() * MAX_SAFE_INTEGER);
+}
+
 export class StaffBuilder {
     private _segment: ISegment;
     private _patches: IAny[] = [];
+    private _document: IDocument;
+    private _idx: number;
 
     get patches(): IAny[] {
         return this._patches.slice();
     }
 
-    constructor(segment: ISegment) {
+    constructor(segment: ISegment, document: IDocument, idx?: number) {
         this._segment = segment;
+        this._document = document;
+        this._idx = idx;
     }
 
-    print(idx: number, document: IDocument, builder: (build: IPrintBuilder) => IPrintBuilder) {
+    print(builder: (build: IPrintBuilder) => IPrintBuilder, idx = this._idx) {
         let model = this._segment[idx] as any;
         invariant(model, "no such model");
-        invariant(document.modelHasType(model, Type.Print), "model is not print");
+        invariant(this._document.modelHasType(model, Type.Print), "model is not print");
         this._patches = this._patches.concat(
             patchPrint(model, builder).map(_prependPatch(idx)));
         return this;
     }
-    grouping(idx: number, document: IDocument, builder: (build: IGroupingBuilder) => IGroupingBuilder) {
+    insertPrint(builder: (build: IPrintBuilder) => IPrintBuilder, idx = this._idx) {
+        let li = buildPrint(builder);
+        let p = [idx];
+        this._patches = this._patches.concat({li, p});
+        return this;
+    }
+    grouping(builder: (build: IGroupingBuilder) => IGroupingBuilder, idx = this._idx) {
         let model = this._segment[idx] as any;
         invariant(model, "no such model");
-        invariant(document.modelHasType(model, Type.Grouping), "model is not grouping");
+        invariant(this._document.modelHasType(model, Type.Grouping), "model is not grouping");
         this._patches = this._patches.concat(
             patchGrouping(model, builder).map(_prependPatch(idx)));
         return this;
     }
-    figuredBass(idx: number, document: IDocument, builder: (build: IFiguredBassBuilder) => IFiguredBassBuilder) {
+    insertGrouping(builder: (build: IGroupingBuilder) => IGroupingBuilder, idx = this._idx) {
+        let li = buildGrouping(builder);
+        let p = [idx];
+        this._patches = this._patches.concat({li, p});
+        return this;
+    }
+    figuredBass(builder: (build: IFiguredBassBuilder) => IFiguredBassBuilder, idx = this._idx) {
         let model = this._segment[idx] as any;
         invariant(model, "no such model");
-        invariant(document.modelHasType(model, Type.Grouping), "model is not figuredBass");
+        invariant(this._document.modelHasType(model, Type.Grouping), "model is not figuredBass");
         this._patches = this._patches.concat(
             patchFiguredBass(model, builder).map(_prependPatch(idx)));
         return this;
     }
-    attributes(idx: number, document: IDocument, builder: (build: IAttributesBuilder) => IAttributesBuilder) {
+    insertFiguredBass(builder: (build: IFiguredBassBuilder) => IFiguredBassBuilder, idx = this._idx) {
+        let li = buildFiguredBass(builder);
+        let p = [idx];
+        this._patches = this._patches.concat({li, p});
+        return this;
+    }
+    attributes(builder: (build: IAttributesBuilder) => IAttributesBuilder, idx = this._idx) {
         let model = this._segment[idx] as any;
         invariant(model, "no such model");
-        invariant(document.modelHasType(model, Type.Attributes), "model is not attributes");
+        invariant(this._document.modelHasType(model, Type.Attributes), "model is not attributes");
         this._patches = this._patches.concat(
             patchAttributes(model, builder).map(_prependPatch(idx)));
         return this;
     }
-    sound(idx: number, document: IDocument, builder: (build: ISoundBuilder) => ISoundBuilder) {
+    insertAttributes(builder: (build: IAttributesBuilder) => IAttributesBuilder, idx = this._idx) {
+        let li = buildAttributes(builder);
+        let p = [idx];
+        this._patches = this._patches.concat({li, p});
+        return this;
+    }
+    sound(builder: (build: ISoundBuilder) => ISoundBuilder, idx = this._idx) {
         let model = this._segment[idx] as any;
         invariant(model, "no such model");
-        invariant(document.modelHasType(model, Type.Sound), "model is not sound");
+        invariant(this._document.modelHasType(model, Type.Sound), "model is not sound");
         this._patches = this._patches.concat(
             patchSound(model, builder).map(_prependPatch(idx)));
         return this;
     }
-    direction(idx: number, document: IDocument, builder: (build: IDirectionBuilder) => IDirectionBuilder) {
+    insertSound(builder: (build: ISoundBuilder) => ISoundBuilder, idx = this._idx) {
+        let li = buildSound(builder);
+        let p = [idx];
+        this._patches = this._patches.concat({li, p});
+        return this;
+    }
+    direction(builder: (build: IDirectionBuilder) => IDirectionBuilder, idx = this._idx) {
         let model = this._segment[idx] as any;
         invariant(model, "no such model");
-        invariant(document.modelHasType(model, Type.Direction), "model is not direction");
+        invariant(this._document.modelHasType(model, Type.Direction), "model is not direction");
         this._patches = this._patches.concat(
             patchDirection(model, builder).map(_prependPatch(idx)));
         return this;
     }
-    harmony(idx: number, document: IDocument, builder: (build: IHarmonyBuilder) => IHarmonyBuilder) {
+    insertDirection(builder: (build: IDirectionBuilder) => IDirectionBuilder, idx = this._idx) {
+        let li = buildDirection(builder);
+        let p = [idx];
+        this._patches = this._patches.concat({li, p});
+        return this;
+    }
+    harmony(builder: (build: IHarmonyBuilder) => IHarmonyBuilder, idx = this._idx) {
         let model = this._segment[idx] as any;
         invariant(model, "no such model");
-        invariant(document.modelHasType(model, Type.Harmony), "model is not harmony");
+        invariant(this._document.modelHasType(model, Type.Harmony), "model is not harmony");
         this._patches = this._patches.concat(
             patchHarmony(model, builder).map(_prependPatch(idx)));
         return this;
     }
-    barline(idx: number, document: IDocument, builder: (build: IBarlineBuilder) => IBarlineBuilder) {
+    insertHarmony(builder: (build: IHarmonyBuilder) => IHarmonyBuilder, idx = this._idx) {
+        let li = buildHarmony(builder);
+        let p = [idx];
+        this._patches = this._patches.concat({li, p});
+        return this;
+    }
+    barline(builder: (build: IBarlineBuilder) => IBarlineBuilder, idx = this._idx) {
         let model = this._segment[idx] as any;
         invariant(model, "no such model");
-        invariant(document.modelHasType(model, Type.Barline), "model is not barline");
+        invariant(this._document.modelHasType(model, Type.Barline), "model is not barline");
         this._patches = this._patches.concat(
             patchBarline(model, builder).map(_prependPatch(idx)));
+        return this;
+    }
+    insertBarline(builder: (build: IBarlineBuilder) => IBarlineBuilder, idx = this._idx) {
+        let li = buildBarline(builder);
+        let p = [idx];
+        this._patches = this._patches.concat({li, p});
+        return this;
+    }
+
+    remove(idx: number) {
+        this._patches = this._patches.concat(
+            {
+                p: [idx],
+                ld: this._segment[idx]
+            }
+        );
         return this;
     }
 }
@@ -137,23 +203,47 @@ export class StaffBuilder {
 export class VoiceBuilder {
     private _segment: ISegment;
     private _patches: IAny[] = [];
+    private _document: IDocument;
+    private _idx: number;
 
     get patches(): IAny[] {
         return this._patches.slice();
     }
 
-    constructor(segment: ISegment) {
+    constructor(segment: ISegment, document: IDocument, idx?: number) {
         this._segment = segment;
+        this._document = document;
+        this._idx = idx;
     }
 
-    note(idx: number, noteIDX: number, document: IDocument, builder: (build: INoteBuilder) => INoteBuilder) {
+    note(noteIDX: number, builder: (build: INoteBuilder) => INoteBuilder, idx: number = this._idx) {
         let model = this._segment[idx] as any;
         invariant(model, "no such model");
-        invariant(document.modelHasType(model, Type.Chord), "model is not a chord");
+        invariant(this._document.modelHasType(model, Type.Chord), "model is not a chord");
         let note = model[noteIDX];
         invariant(note, "invalid note");
         this._patches = this._patches.concat(
             patchNote(note, builder).map(_prependPatch(idx, "notes", noteIDX)));
+        return this;
+    }
+
+    insertChord(builders: ((build: INoteBuilder) => INoteBuilder)[], idx = this._idx) {
+        let li = builders.map(builder => buildNote(builder)) as IChord;
+        li._class = "Chord";
+        let p = [idx];
+        this._patches = this._patches.concat({li, p});
+        return this;
+    }
+
+    insertNote(position: number, builder: (builder: INoteBuilder) => INoteBuilder, idx = this._idx) {
+        let model = this._segment[idx] as any;
+        invariant(model, "no such model");
+        invariant(this._document.modelHasType(model, Type.Chord), "model is not a chord");
+        let li = buildNote(builder);
+        let chord = model as IChord;
+        invariant(chord[position - 1] || chord[position + 1] || !chord.length, "Invalid position for note");
+        let p = [idx, "notes", position];
+        this._patches = this._patches.concat({p, li});
         return this;
     }
 
@@ -171,33 +261,35 @@ export class VoiceBuilder {
 export class PartBuilder {
     private _part: IMeasurePart;
     private _patches: IAny[] = [];
+    private _document: IDocument;
 
     get patches(): IAny[] {
         return this._patches.slice();
     }
 
-    constructor(part: IMeasurePart) {
+    constructor(part: IMeasurePart, document: IDocument) {
         this._part = part;
+        this._document = document;
     }
 
-    voice(voiceID: number, builder: (build: VoiceBuilder) => VoiceBuilder): this {
-        const voice = this._part.voices[voiceID];
-        invariant(Boolean(voice), "invalid voice");
+    voice(voiceID: number, builder: (build: VoiceBuilder) => VoiceBuilder, idx?: number): this {
+        const voice = this._part ? this._part.voices[voiceID] : null;
+        invariant(!this._part || Boolean(voice), "invalid voice");
         this._patches = this._patches.concat(
-            builder(new VoiceBuilder(voice))
+            builder(new VoiceBuilder(voice, this._document, idx))
                 .patches
                 .map(_prependPatch("voices", voiceID))
         );
         return this;
     }
 
-    staff(staffID: number, builder: (build: StaffBuilder) => StaffBuilder): this {
-        const staff = this._part.staves[staffID];
-        invariant(Boolean(staff), "invalid staff");
+    staff(staffID: number, builder: (build: StaffBuilder) => StaffBuilder, idx?: number): this {
+        const staff = this._part ? this._part.staves[staffID] : null;
+        invariant(!this._part || Boolean(staff), "invalid staff");
         this._patches = this._patches.concat(
-            builder(new StaffBuilder(staff))
+            builder(new StaffBuilder(staff, this._document, idx))
                 .patches
-                .map(_prependPatch("staff", staffID))
+                .map(_prependPatch("staves", staffID))
         );
         return this;
     }
@@ -206,26 +298,27 @@ export class PartBuilder {
 export class MeasureBuilder {
     private _measure: IMeasure;
     private _patches: IAny[] = [];
+    private _document: IDocument;
 
     get patches(): IAny[] {
         return this._patches.slice();
     }
 
-    constructor(measure: IMeasure) {
+    constructor(measure: IMeasure, document: IDocument) {
         this._measure = measure;
+        this._document = document;
     }
 
     part(partID: string, builder: (build: PartBuilder) => PartBuilder): this {
-        const part = this._measure.parts[partID];
-        invariant(Boolean(part), "invalid part id");
+        const part = this._measure ? this._measure.parts[partID] : null;
+        invariant(!this._measure || Boolean(part), "invalid part id");
         this._patches = this._patches.concat(
-            builder(new PartBuilder(part))
+            builder(new PartBuilder(part, this._document))
                 .patches
                 .map(_prependPatch("parts", partID))
         );
         return this;
     }
-
 }
 
 export class DocumentBuilder {
@@ -244,9 +337,24 @@ export class DocumentBuilder {
         let measure = find(this._doc.measures, it => it.uuid === measureUUID);
         invariant(Boolean(measure), "invalid measure uuid");
         this._patches = this._patches.concat(
-            builder(new MeasureBuilder(measure))
+            builder(new MeasureBuilder(measure, this._doc))
                 .patches
                 .map(_prependPatch(measureUUID))
+        );
+        return this;
+    }
+
+    insertMeasure(measureIndex: number, builder: (build: MeasureBuilder) => MeasureBuilder, uuid: number = genUUID()): this {
+        this._patches = this._patches.concat({
+            li: {
+                uuid,
+            },
+            p: ["measures", measureIndex],
+        });
+
+        this._patches = this._patches.concat(builder(new MeasureBuilder(null, this._doc))
+            .patches
+            .map(_prependPatch(uuid))
         );
         return this;
     }
@@ -260,6 +368,7 @@ export default function createPatch(
             part: string,
             builder: (partBuilder: PartBuilder) => PartBuilder):
         IAny[];
+
 export default function createPatch(
             isPreview: boolean,
             document: IDocument,
@@ -267,15 +376,17 @@ export default function createPatch(
         IAny[];
 
 export default function createPatch(isPreview: boolean,
-        document: IDocument, builderOrMeasure: number | ((build: DocumentBuilder) => DocumentBuilder),
-        part?: string, partBuilder?: (partBuilder: PartBuilder) => PartBuilder) {
+        document: IDocument,
+        builderOrMeasure: number | ((build: DocumentBuilder) => DocumentBuilder),
+        part?: string,
+        partBuilder?: (partBuilder: PartBuilder) => PartBuilder) {
     let patches: IAny[];
     if (typeof builderOrMeasure === "function") {
         invariant(part === undefined && partBuilder === undefined, "createPatch: invalid usage");
         let builder = builderOrMeasure as ((build: DocumentBuilder) => DocumentBuilder);
         patches = builder(new DocumentBuilder(document)).patches;
-        patches = fixMetre(document, patches);
         if (!isPreview) {
+            patches = fixMetre(document, patches);
             patches = addBeams(document, patches);
         }
     } else {
@@ -283,7 +394,7 @@ export default function createPatch(isPreview: boolean,
         let builder = partBuilder;
         patches = createPatch(isPreview, document, document => document
             .measure(measure, measure => measure
-                .part("P1", builder)));
+                .part(part, builder)));
     }
     return patches;
 }
@@ -319,7 +430,10 @@ function getMutationInfo(document: IDocument, patches: IAny[]) {
         }
         let measureUUID = parseInt(patch.p[0] as string, 10);
         let measure = find(document.measures, doc => doc.uuid === measureUUID);
-        invariant(measure, `measure ${measureUUID} should exist`);
+        if (!measure) {
+            // TODO: validate blank measures
+            return;
+        }
         if (patch.p[1] !== "parts") {
             return;
         }
@@ -337,14 +451,15 @@ function getMutationInfo(document: IDocument, patches: IAny[]) {
             segments[segID] = voice;
             let currDiv = 0;
             attributes[segID] = (document.search(part.staves[1], 0, Type.Attributes)[0] as any)._snapshot as IAttributesSnapshot;
-
             let time = attributes[segID].time; // TODO: TS changes
+            let divisions = attributes[segID].divisions;
+
             elementInfos[segID] = voice.reduce((elementInfo, model) => {
                 if (!document.modelHasType(model, Type.Chord)) {
                     return;
                 }
                 let chord = chordFromModel(model);
-                let divs = calcDivisionsNoCtx(chord, time, voice.divisions);
+                let divs = calcDivisionsNoCtx(chord, time, divisions);
                 let info = {
                     start: currDiv,
                     previousDivisions: divs,
@@ -361,12 +476,13 @@ function getMutationInfo(document: IDocument, patches: IAny[]) {
                 return elementInfo.concat(info);
             }, [] as IElementInfo[]);
         }
+        let divisions = attributes[segID].divisions;
 
         if (patch.p.length === 6) {
             if (patch.li) {
                 let c = count(patch.li);
                 let d = dots(patch.li);
-                let divs = calcDivisionsNoCtx(patch.li, attributes[segID].time, voice.divisions);
+                let divs = calcDivisionsNoCtx(patch.li, attributes[segID].time, divisions);
                 let start: number;
                 let spliceIdx = parseInt(patch.p[5] as string, 10);
                 if (spliceIdx === 0) {
@@ -394,7 +510,7 @@ function getMutationInfo(document: IDocument, patches: IAny[]) {
                 elementInfos[segID].splice(spliceIdx, 0, newInfo);
             }
             if (patch.ld) {
-                let divs = calcDivisionsNoCtx(patch.ld, attributes[segID].time, voice.divisions);
+                let divs = calcDivisionsNoCtx(patch.ld, attributes[segID].time, divisions);
                 let spliceIdx = parseInt(patch.p[5] as string, 10);
 
                 elementInfos[segID].splice(spliceIdx, 1);
@@ -416,17 +532,17 @@ function getMutationInfo(document: IDocument, patches: IAny[]) {
         let info = elementInfoByChord[el.key];
 
         if (patch.p.length === 9 && patch.p[8] === "pitch") {
-            if (typeof patch.oi !== "undefined") {
+            if (patch.oi !== undefined) {
                 info.rest = !patch.oi;
-            } else if (typeof (patch.od !== "undefined")) {
+            } else if (patch.od !== undefined) {
                 info.rest = true;
             }
         }
 
         if (patch.p.length === 9 && patch.p[8] === "rest") {
-            if (typeof patch.oi !== "undefined") {
+            if (patch.oi !== undefined) {
                 info.rest = !!patch.oi;
-            } else if (typeof (patch.od !== "undefined")) {
+            } else if (patch.od !== undefined) {
                 info.rest = false;
             }
         }
@@ -445,7 +561,7 @@ function getMutationInfo(document: IDocument, patches: IAny[]) {
             info.newDots = 0;
         }
         // STOPSHIP: TIME MODIFICATION
-        info.newDivisions = _calcDivisions(info.newCount, info.newDots, null, info.time, voice.divisions);
+        info.newDivisions = _calcDivisions(info.newCount, info.newDots, null, info.time, divisions);
         info.touched = true;
     });
     return {
@@ -466,6 +582,7 @@ function fixMetre(document: IDocument, patches: IAny[]): IAny[] {
         let newIndex = 0;
         voiceInfo.forEach((elInfo, originalIdx) => {
             if (elInfo.newDivisions < elInfo.previousDivisions) {
+                // We want to add rests to fill up any empty space.
                 const end = elInfo.start + elInfo.newDivisions;
 
                 const durationSpecs = subtract(elInfo.start + elInfo.previousDivisions,
@@ -498,6 +615,49 @@ function fixMetre(document: IDocument, patches: IAny[]): IAny[] {
                     li: spec
                 })));
                 newIndex += restSpecs.length;
+            } else if (elInfo.newDivisions > elInfo.previousDivisions) {
+                // We want to remove rests that follow, if possible.
+                let next = voiceInfo[originalIdx + 1];
+                if (next && next.rest && next.newDivisions === next.previousDivisions && !next.touched) {
+                    next.touched = true;
+                    const newEnd = next.start + elInfo.newDivisions - elInfo.previousDivisions;
+                    const durationSpecs = subtract(next.start + next.previousDivisions,
+                            newEnd, {
+                                division$: newEnd,
+                                staff: {
+                                    attributes: {
+                                        time: attributes[key].time,
+                                        divisions: segment.divisions,
+                                    },
+                                    totalDivisions: barDivisions(attributes[key]),
+                                }
+                            }, 0);
+
+                    const restSpecs: IChord[] = durationSpecs.map(durationSpec => {
+                        let chord = [buildNote(note => note
+                            .rest({})
+                            .dots(durationSpec[0].dots)
+                            .noteType(durationSpec[0].noteType))
+                        ] as IChord;
+                        chord._class = "Chord";
+                        return chord;
+                    });
+
+                    patches = patches.concat({
+                        p: (key.split("++") as (number | string)[]).concat(newIndex + 1),
+                        ld: JSON.parse(JSON.stringify(segment[originalIdx + 1])),
+                    });
+
+                    patches = patches.concat(restSpecs.map((spec, idx) => ({
+                        p: (key.split("++") as (number | string)[]).concat([
+                            newIndex + 1 + idx
+                        ]),
+
+                        li: spec
+                    })));
+
+                    newIndex = newIndex - 1 + restSpecs.length;
+                }
             }
             newIndex += 1;
         });

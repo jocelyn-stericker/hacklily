@@ -75,7 +75,7 @@ export default class Song implements ISong {
      * Sets the operations to that specified. If the result is not stable, more operations
      * may be added.
      */
-    setOperations = (operations: IAny[]) => {
+    setOperations = (operations: IAny[]): IAny[] => {
         throw new Error(NOT_READY_ERROR);
     };
 
@@ -83,7 +83,7 @@ export default class Song implements ISong {
      * Sets the operations to those specified, without adjusting the layout. The operations may
      * give an unstable state.
      */
-    previewOperations = (operations: IAny[]) => {
+    previewOperations = (operations: IAny[]): IAny[] => {
         throw new Error(NOT_READY_ERROR);
     };
 
@@ -106,7 +106,6 @@ export default class Song implements ISong {
                 mouseMoveHandler: IHandler,
                 mouseClickHandler: IHandler,
                 singleLineMode?: boolean,
-                onOperationsAppended?: (ops: IAny[], isPreview: boolean) => void,
 
                 musicXML: string,
                 pageClassName?: string
@@ -116,7 +115,7 @@ export default class Song implements ISong {
         invariant(isObject(options), INVALID_OPTIONS_ERROR);
 
         const {errorHandler, changeHandler, mouseMoveHandler, mouseClickHandler,
-            musicXML, pageClassName, singleLineMode, onOperationsAppended} = options;
+            musicXML, pageClassName, singleLineMode} = options;
 
         invariant(isFunction(errorHandler), INVALID_OPTIONS_ERROR);
         invariant(isString(musicXML), INVALID_OPTIONS_ERROR);
@@ -148,19 +147,17 @@ export default class Song implements ISong {
             };
 
             let initialCommon = commonVersion();
-            if (operations.length > initialCommon) {
-                forEach(invert(operations.slice(initialCommon)), (op) => {
-                    applyOp(document.measures, factory, op, memo);
-                    operations.pop();
-                });
-            }
+            // Undo actions not in common
+            forEach(invert(operations.slice(initialCommon)), (op) => {
+                applyOp(document.measures, factory, op, memo);
+                operations.pop();
+            });
 
-            if (operations.length < newOperations.length) {
-                forEach(newOperations.slice(operations.length), (op) => {
-                    applyOp(document.measures, factory, op, memo);
-                    operations.push(op);
-                });
-            }
+            // Perform actions that are expected.
+            forEach(newOperations.slice(operations.length), (op) => {
+                applyOp(document.measures, factory, op, memo);
+                operations.push(op);
+            });
 
             invariant(operations.length === newOperations.length,
                 "Something went wrong in _rectify. The current state is now invalid.");
@@ -169,6 +166,21 @@ export default class Song implements ISong {
             invariant(!!memo, "Internal error: trying to rectify a document that hasn't loaded.");
             memo.y$ = top;
         };
+
+        let makeReactElement: () => ReactElement<any> = () => {
+            const targetType = RenderTarget.SvgWeb;
+            return document.__getPage(
+                0,
+                memo,
+                preview,
+                targetType,
+                pageClassName || "",
+                singleLineMode,
+                (ops: IAny[]) => {
+                    rectify(operations.concat(ops));
+                });
+        };
+        let page1: ReactElement<any> = null;
 
         let setup = () => {
             this.getDocument = () => document;
@@ -246,18 +258,6 @@ export default class Song implements ISong {
             };
 
             this.toReactElement = (height?: number) => {
-                const targetType = RenderTarget.SvgWeb;
-                const page1 = document.__getPage(
-                    0,
-                    memo,
-                    preview,
-                    targetType,
-                    pageClassName || "",
-                    singleLineMode,
-                    (ops: IAny[]) => {
-                        rectify(operations.concat(ops));
-                        onOperationsAppended(ops, preview);
-                    });
                 const style: any = singleLineMode ? {
                     height: height || "100%",
                     overflowX: "scroll",
@@ -280,15 +280,21 @@ export default class Song implements ISong {
 
             this.setOperations = (newOperations: IAny[]) => {
                 preview = false;
+                newOperations = newOperations.slice();
                 rectify(newOperations);
                 operations = newOperations;
                 defer(changeHandler);
+                page1 = makeReactElement();
+                return newOperations.slice();
             };
 
             this.previewOperations = (newOperations: IAny[]) => {
                 preview = true;
+                newOperations = newOperations.slice();
                 rectify(newOperations);
                 defer(changeHandler);
+                page1 = makeReactElement();
+                return newOperations;
             };
 
             rectify([]);
@@ -303,6 +309,7 @@ export default class Song implements ISong {
                 document = loadedDocument;
                 factory = loadedFactory;
                 setup();
+                page1 = makeReactElement();
             }
         });
     }

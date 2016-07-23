@@ -348,17 +348,18 @@ function layoutBeam$(voice: number, idx: number, beamSet$: BeamSet, isUnbeamedTu
         slope = 0;
     }
 
+    const layouts = beam.elements as any as ChordModel.IChordLayout[];
     if (isUnbeamedTuplet) {
         let offsetY = direction > 0 ? -13 : -53;
-        forEach(chords, (chord, idx) => {
-            let stemStart = startingLine(chord, direction, clef);
+        forEach(layouts, (chordLayout, idx) => {
+            let stemStart = startingLine(chordLayout.model, direction, clef);
             let stemHeight = getStemHeight(direction, idx, stemStart);
 
-            chord.baseModel.satieStem = firstChord.baseModel.satieStem ? Object.create(firstChord.baseModel.satieStem) : {};
-            chord.baseModel.satieStem.direction = direction;
-            chord.baseModel.satieStem.stemStart = stemStart;
+            chordLayout.satieStem = first(layouts).satieStem ? Object.create(first(layouts).satieStem) : {};
+            chordLayout.satieStem.direction = direction;
+            chordLayout.satieStem.stemStart = stemStart;
             if (isFinite(stemHeight)) {
-                chord.baseModel.satieStem.stemHeight = stemHeight;
+                chordLayout.satieStem.stemHeight = stemHeight;
             } else {
                 invariant(chords.length === 1, "stemHeight must be defined for 2+ notes");
             }
@@ -366,10 +367,10 @@ function layoutBeam$(voice: number, idx: number, beamSet$: BeamSet, isUnbeamedTu
         let tuplet: Tuplet = Object.create(beam.tuplet);
         tuplet.placement = direction > 0 ? AboveBelow.Above : AboveBelow.Below;
 
-        let firstStem = firstChord.baseModel.satieStem;
-        let lastStem = lastChord.baseModel.satieStem;
+        let firstStem = first(layouts).satieStem;
+        let lastStem = last(layouts).satieStem;
 
-        firstChord.baseModel.satieUnbeamedTuplet = {
+        firstChord.satieUnbeamedTuplet = {
             beamCount: null,
             direction: direction,
             x: Xs,
@@ -378,19 +379,18 @@ function layoutBeam$(voice: number, idx: number, beamSet$: BeamSet, isUnbeamedTu
             tuplet
         };
     } else {
-        forEach(chords, (chord, idx) => {
-            let stemStart = startingLine(chord, direction, clef);
+        forEach(layouts, (chordLayout, idx) => {
+            let stemStart = startingLine(chordLayout.model, direction, clef);
 
-            chord.baseModel.satieStem = firstChord.baseModel.satieStem ? Object.create(firstChord.baseModel.satieStem) : {};
-            chord.baseModel.satieStem.direction = direction;
-            chord.baseModel.satieStem.stemStart = stemStart;
-            chord.baseModel.satieStem.stemHeight = getStemHeight(direction, idx, stemStart);
-
-            chord.baseModel.satieFlag = null;
+            chordLayout.satieStem = layouts[0].satieStem ? Object.create(layouts[0].satieStem) : {};
+            chordLayout.satieStem.direction = direction;
+            chordLayout.satieStem.stemStart = stemStart;
+            chordLayout.satieStem.stemHeight = getStemHeight(direction, idx, stemStart);
+            chordLayout.satieFlag = null;
         });
 
-        let firstStem = firstChord.baseModel.satieStem;
-        let lastStem = lastChord.baseModel.satieStem;
+        let firstStem = first(layouts).satieStem;
+        let lastStem = last(layouts).satieStem;
         let firstLayout = first(beam.elements) as any as ChordModel.IChordLayout;
 
         firstLayout.satieBeam = {
