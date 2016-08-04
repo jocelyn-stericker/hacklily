@@ -77,12 +77,18 @@ describe("Import/export tests", function() {
 
                    errorHandler: done,
                    changeHandler: () => {
-                       // HACK: Don't change encoding dates
+                       // HACK: Overwrite encoding date to always be the same, so test results don't change overnight.
+                       // Note: this is not the correct way of modifying a document -- use patches!
                        song.getDocument().header.identification.encoding.encodingDate = {
                            day: 1,
                            month: 1,
                            year: 2016,
                        };
+                       // HACK: overwrite UUIDs, so test results don't change every time.
+                       // Note: this is not the correct way of modifying a document -- use patches!
+                       song.getDocument().measures.forEach((measure, idx) => {
+                           measure.uuid = 42 + idx;
+                       });
                        song.toSVG((error, page1Svg) => {
                            if (error) {
                                done(error);

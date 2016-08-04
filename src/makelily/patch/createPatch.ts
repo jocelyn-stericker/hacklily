@@ -19,7 +19,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import {Time, BeamType, Beam, Count} from "musicxml-interfaces";
+import {Time, BeamType, Beam, Count, BarStyleType} from "musicxml-interfaces";
 import {IAny} from "musicxml-interfaces/operations";
 import {
     buildPrint, patchPrint, IPrintBuilder,
@@ -33,7 +33,7 @@ import {
     buildBarline, patchBarline, IBarlineBuilder,
     buildBeam,
 } from "musicxml-interfaces/builders";
-import {find, forEach, last, some, times} from "lodash";
+import {find, forEach, last, some, times, findLastIndex} from "lodash";
 import * as invariant from "invariant";
 
 import IDocument from "../document/document";
@@ -47,6 +47,8 @@ import IChord, {count, dots, barDivisions,
 import IAttributesSnapshot from "../private/attributesSnapshot";
 import {subtract, calcDivisionsNoCtx, _calcDivisions,
     getBeamingPattern} from "../private/metre";
+
+// TODO: Get rid of all P1-hardcoding!
 
 function _prependPatch(...prefix: any[]) {
     return function __prependPatch(patch: IAny) {
@@ -228,6 +230,7 @@ export class VoiceBuilder {
     }
 
     insertChord(builders: ((build: INoteBuilder) => INoteBuilder)[], idx = this._idx) {
+        invariant(!isNaN(idx), "%s must be a number", idx);
         let li = builders.map(builder => buildNote(builder)) as IChord;
         li._class = "Chord";
         let p = [idx];
@@ -388,6 +391,7 @@ export default function createPatch(isPreview: boolean,
         if (!isPreview) {
             patches = fixMetre(document, patches);
             patches = addBeams(document, patches);
+            patches = fixBarlines(document, patches);
         }
     } else {
         let measure = builderOrMeasure as number;
@@ -663,6 +667,37 @@ function fixMetre(document: IDocument, patches: IAny[]): IAny[] {
         });
     });
 
+    return patches;
+}
+
+function fixBarlines(doc: IDocument, patches: IAny[]): IAny[] {
+    const measureCount = doc.measures.length;
+    const previouslyLastMeasure = doc.measures[measureCount - 1];
+    forEach(previouslyLastMeasure.parts, (part, partName) => {
+        const segment = part.staves[1];
+        const barlineIdx = findLastIndex(segment, el => doc.modelHasType(el, Type.Barline));
+
+        patches = patches.slice();
+        patches.forEach(patch => {
+            if (patch.p[0] === "measures" &&
+                    patch.p.length === 2 &&
+                    patch.p[1] === previouslyLastMeasure.idx + 1) {
+
+                const removeDoubleBarline = createPatch(false, doc,
+                    previouslyLastMeasure.uuid, partName,
+                    part => part.staff(1, staff => staff
+                        .barline(barline => barline
+                            .barStyle(barStyle => barStyle
+                                .data(BarStyleType.Regular)
+                            )
+                        ),
+                        barlineIdx
+                    )
+                );
+                patches = patches.concat(removeDoubleBarline);
+            }
+        });
+    });
     return patches;
 }
 
