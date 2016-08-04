@@ -117,23 +117,8 @@ class Tests extends Component<{params: {id: string}}, IState> {
         this.state.song.setOperations(this.state.operations);
         const doc = this.state.song.getDocument();
         const measureCount = doc.measures.length;
-        const previouslyLastMeasure = doc.measures[measureCount - 1];
-        const segment = previouslyLastMeasure.parts["P1"].staves[1];
-        const barlineIdx = findLastIndex(segment, el => doc.modelHasType(el, Type.Barline));
 
-        const removeDoubleBarline = Patch.createPatch(false, doc,
-            previouslyLastMeasure.uuid, "P1",
-            part => part.staff(1, staff => staff
-                .barline(barline => barline
-                    .barStyle(barStyle => barStyle
-                        .data(BarStyleType.Regular)
-                    )
-                ),
-                barlineIdx
-            )
-        );
-
-        const newMeasure: IAny[] = Patch.createPatch(false, doc,
+        const patch = Patch.createPatch(false, doc,
             document => document
                 .insertMeasure(measureCount, measure => measure
                     .part("P1", part => part
@@ -145,13 +130,11 @@ class Tests extends Component<{params: {id: string}}, IState> {
                                     .noteType(type => type
                                         .duration(Count.Whole)
                                     )
-                            ])
+                            ], 0)
                         )
                     )
               )
         );
-
-        let patch = removeDoubleBarline.concat(newMeasure);
 
         let oldOperations = this.state.oldOperations.concat([this.state.operations.slice()]);
         let operations = this.state.operations.concat(patch);

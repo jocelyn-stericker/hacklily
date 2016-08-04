@@ -14,6 +14,7 @@ import "./implDirection/__tests__/direction_test";
 import "./implLine/__tests__/justify";
 import "./implPrint/__tests__/print_test";
 import "./implSound/__tests__/sound_test";
+import "./patch/__tests__/createPatch";
 import "./private/__tests__/chord_test";
 import "./private/__tests__/combinedLayout_test";
 import "./private/__tests__/metre_test";

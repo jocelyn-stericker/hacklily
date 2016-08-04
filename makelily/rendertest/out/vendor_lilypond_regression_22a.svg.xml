@@ -70,7 +70,7 @@
     <part id="P1">
       <!-- measure metadata (Satie) -->
       <direction placement="below"><direction-type><words default-y="-70" relative-x="-5000">SATIE_SONG_META = {};</words></direction-type></direction>
-      <direction placement="below"><direction-type><words default-y="-70" relative-x="-5000">SATIE_MEASURE_META = {"uuid":2112384054849569};</words></direction-type></direction>
+      <direction placement="below"><direction-type><words default-y="-70" relative-x="-5000">SATIE_MEASURE_META = {"uuid":42};</words></direction-type></direction>
       <!-- end of measure metadata (Satie) -->
       <!-- staff 1 -->
       <print new-system="no" new-page="no" page-number="1">
@@ -192,7 +192,7 @@
   <measure number="2">
     <part id="P1">
       <!-- measure metadata (Satie) -->
-      <direction placement="below"><direction-type><words default-y="-70" relative-x="-5000">SATIE_MEASURE_META = {"uuid":3141309935819979};</words></direction-type></direction>
+      <direction placement="below"><direction-type><words default-y="-70" relative-x="-5000">SATIE_MEASURE_META = {"uuid":43};</words></direction-type></direction>
       <!-- end of measure metadata (Satie) -->
       <!-- staff 1 -->
       <attributes>
@@ -304,7 +304,7 @@
   <measure number="3">
     <part id="P1">
       <!-- measure metadata (Satie) -->
-      <direction placement="below"><direction-type><words default-y="-70" relative-x="-5000">SATIE_MEASURE_META = {"uuid":1574977047242143};</words></direction-type></direction>
+      <direction placement="below"><direction-type><words default-y="-70" relative-x="-5000">SATIE_MEASURE_META = {"uuid":44};</words></direction-type></direction>
       <!-- end of measure metadata (Satie) -->
       <!-- staff 1 -->
       <attributes>
@@ -416,7 +416,7 @@
   <measure number="4">
     <part id="P1">
       <!-- measure metadata (Satie) -->
-      <direction placement="below"><direction-type><words default-y="-70" relative-x="-5000">SATIE_MEASURE_META = {"uuid":6570373008195167};</words></direction-type></direction>
+      <direction placement="below"><direction-type><words default-y="-70" relative-x="-5000">SATIE_MEASURE_META = {"uuid":45};</words></direction-type></direction>
       <!-- end of measure metadata (Satie) -->
       <!-- staff 1 -->
       <attributes>
@@ -528,7 +528,7 @@
   <measure number="5">
     <part id="P1">
       <!-- measure metadata (Satie) -->
-      <direction placement="below"><direction-type><words default-y="-70" relative-x="-5000">SATIE_MEASURE_META = {"uuid":2073900179321717};</words></direction-type></direction>
+      <direction placement="below"><direction-type><words default-y="-70" relative-x="-5000">SATIE_MEASURE_META = {"uuid":46};</words></direction-type></direction>
       <!-- end of measure metadata (Satie) -->
       <!-- staff 1 -->
       <attributes>
@@ -640,7 +640,7 @@
   <measure number="6">
     <part id="P1">
       <!-- measure metadata (Satie) -->
-      <direction placement="below"><direction-type><words default-y="-70" relative-x="-5000">SATIE_MEASURE_META = {"uuid":1919681409970575};</words></direction-type></direction>
+      <direction placement="below"><direction-type><words default-y="-70" relative-x="-5000">SATIE_MEASURE_META = {"uuid":47};</words></direction-type></direction>
       <!-- end of measure metadata (Satie) -->
       <!-- staff 1 -->
       <attributes>
@@ -752,7 +752,7 @@
   <measure number="7">
     <part id="P1">
       <!-- measure metadata (Satie) -->
-      <direction placement="below"><direction-type><words default-y="-70" relative-x="-5000">SATIE_MEASURE_META = {"uuid":465375736205917};</words></direction-type></direction>
+      <direction placement="below"><direction-type><words default-y="-70" relative-x="-5000">SATIE_MEASURE_META = {"uuid":48};</words></direction-type></direction>
       <!-- end of measure metadata (Satie) -->
       <!-- staff 1 -->
       <attributes>
@@ -864,7 +864,7 @@
   <measure number="8">
     <part id="P1">
       <!-- measure metadata (Satie) -->
-      <direction placement="below"><direction-type><words default-y="-70" relative-x="-5000">SATIE_MEASURE_META = {"uuid":1926343954391437};</words></direction-type></direction>
+      <direction placement="below"><direction-type><words default-y="-70" relative-x="-5000">SATIE_MEASURE_META = {"uuid":49};</words></direction-type></direction>
       <!-- end of measure metadata (Satie) -->
       <!-- staff 1 -->
       <attributes>
@@ -976,7 +976,7 @@
   <measure number="9">
     <part id="P1">
       <!-- measure metadata (Satie) -->
-      <direction placement="below"><direction-type><words default-y="-70" relative-x="-5000">SATIE_MEASURE_META = {"uuid":7193033732652195};</words></direction-type></direction>
+      <direction placement="below"><direction-type><words default-y="-70" relative-x="-5000">SATIE_MEASURE_META = {"uuid":50};</words></direction-type></direction>
       <!-- end of measure metadata (Satie) -->
       <!-- staff 1 -->
       <attributes>
@@ -1088,7 +1088,7 @@
   <measure number="10">
     <part id="P1">
       <!-- measure metadata (Satie) -->
-      <direction placement="below"><direction-type><words default-y="-70" relative-x="-5000">SATIE_MEASURE_META = {"uuid":926544169079513};</words></direction-type></direction>
+      <direction placement="below"><direction-type><words default-y="-70" relative-x="-5000">SATIE_MEASURE_META = {"uuid":51};</words></direction-type></direction>
       <!-- end of measure metadata (Satie) -->
       <!-- staff 1 -->
       <attributes>
@@ -1200,7 +1200,7 @@
   <measure number="11">
     <part id="P1">
       <!-- measure metadata (Satie) -->
-      <direction placement="below"><direction-type><words default-y="-70" relative-x="-5000">SATIE_MEASURE_META = {"uuid":7860740249902863};</words></direction-type></direction>
+      <direction placement="below"><direction-type><words default-y="-70" relative-x="-5000">SATIE_MEASURE_META = {"uuid":52};</words></direction-type></direction>
       <!-- end of measure metadata (Satie) -->
       <!-- staff 1 -->
       <attributes>
@@ -1312,7 +1312,7 @@
   <measure number="12">
     <part id="P1">
       <!-- measure metadata (Satie) -->
-      <direction placement="below"><direction-type><words default-y="-70" relative-x="-5000">SATIE_MEASURE_META = {"uuid":2379589121986811};</words></direction-type></direction>
+      <direction placement="below"><direction-type><words default-y="-70" relative-x="-5000">SATIE_MEASURE_META = {"uuid":53};</words></direction-type></direction>
       <!-- end of measure metadata (Satie) -->
       <!-- staff 1 -->
       <attributes>
@@ -1424,7 +1424,7 @@
   <measure number="13">
     <part id="P1">
       <!-- measure metadata (Satie) -->
-      <direction placement="below"><direction-type><words default-y="-70" relative-x="-5000">SATIE_MEASURE_META = {"uuid":451288235116187};</words></direction-type></direction>
+      <direction placement="below"><direction-type><words default-y="-70" relative-x="-5000">SATIE_MEASURE_META = {"uuid":54};</words></direction-type></direction>
       <!-- end of measure metadata (Satie) -->
       <!-- staff 1 -->
       <attributes>
@@ -1536,7 +1536,7 @@
   <measure number="14">
     <part id="P1">
       <!-- measure metadata (Satie) -->
-      <direction placement="below"><direction-type><words default-y="-70" relative-x="-5000">SATIE_MEASURE_META = {"uuid":5563149996291833};</words></direction-type></direction>
+      <direction placement="below"><direction-type><words default-y="-70" relative-x="-5000">SATIE_MEASURE_META = {"uuid":55};</words></direction-type></direction>
       <!-- end of measure metadata (Satie) -->
       <!-- staff 1 -->
       <attributes>
@@ -1648,7 +1648,7 @@
   <measure number="15">
     <part id="P1">
       <!-- measure metadata (Satie) -->
-      <direction placement="below"><direction-type><words default-y="-70" relative-x="-5000">SATIE_MEASURE_META = {"uuid":5466435913572619};</words></direction-type></direction>
+      <direction placement="below"><direction-type><words default-y="-70" relative-x="-5000">SATIE_MEASURE_META = {"uuid":56};</words></direction-type></direction>
       <!-- end of measure metadata (Satie) -->
       <!-- staff 1 -->
       <attributes>
@@ -1760,7 +1760,7 @@
   <measure number="16">
     <part id="P1">
       <!-- measure metadata (Satie) -->
-      <direction placement="below"><direction-type><words default-y="-70" relative-x="-5000">SATIE_MEASURE_META = {"uuid":2605152912350315};</words></direction-type></direction>
+      <direction placement="below"><direction-type><words default-y="-70" relative-x="-5000">SATIE_MEASURE_META = {"uuid":57};</words></direction-type></direction>
       <!-- end of measure metadata (Satie) -->
       <!-- staff 1 -->
       <attributes>
@@ -1851,7 +1851,7 @@
   <measure number="17">
     <part id="P1">
       <!-- measure metadata (Satie) -->
-      <direction placement="below"><direction-type><words default-y="-70" relative-x="-5000">SATIE_MEASURE_META = {"uuid":7663795028463271};</words></direction-type></direction>
+      <direction placement="below"><direction-type><words default-y="-70" relative-x="-5000">SATIE_MEASURE_META = {"uuid":58};</words></direction-type></direction>
       <!-- end of measure metadata (Satie) -->
       <!-- staff 1 -->
       <attributes>
@@ -1942,7 +1942,7 @@
   <measure number="18">
     <part id="P1">
       <!-- measure metadata (Satie) -->
-      <direction placement="below"><direction-type><words default-y="-70" relative-x="-5000">SATIE_MEASURE_META = {"uuid":2617336854383307};</words></direction-type></direction>
+      <direction placement="below"><direction-type><words default-y="-70" relative-x="-5000">SATIE_MEASURE_META = {"uuid":59};</words></direction-type></direction>
       <!-- end of measure metadata (Satie) -->
       <!-- staff 1 -->
       <attributes>
@@ -2033,7 +2033,7 @@
   <measure number="19">
     <part id="P1">
       <!-- measure metadata (Satie) -->
-      <direction placement="below"><direction-type><words default-y="-70" relative-x="-5000">SATIE_MEASURE_META = {"uuid":6818663723604381};</words></direction-type></direction>
+      <direction placement="below"><direction-type><words default-y="-70" relative-x="-5000">SATIE_MEASURE_META = {"uuid":60};</words></direction-type></direction>
       <!-- end of measure metadata (Satie) -->
       <!-- staff 1 -->
       <attributes>
@@ -2124,7 +2124,7 @@
   <measure number="20">
     <part id="P1">
       <!-- measure metadata (Satie) -->
-      <direction placement="below"><direction-type><words default-y="-70" relative-x="-5000">SATIE_MEASURE_META = {"uuid":5408005960794001};</words></direction-type></direction>
+      <direction placement="below"><direction-type><words default-y="-70" relative-x="-5000">SATIE_MEASURE_META = {"uuid":61};</words></direction-type></direction>
       <!-- end of measure metadata (Satie) -->
       <!-- staff 1 -->
       <attributes>
@@ -2215,7 +2215,7 @@
   <measure number="21">
     <part id="P1">
       <!-- measure metadata (Satie) -->
-      <direction placement="below"><direction-type><words default-y="-70" relative-x="-5000">SATIE_MEASURE_META = {"uuid":2705927824022107};</words></direction-type></direction>
+      <direction placement="below"><direction-type><words default-y="-70" relative-x="-5000">SATIE_MEASURE_META = {"uuid":62};</words></direction-type></direction>
       <!-- end of measure metadata (Satie) -->
       <!-- staff 1 -->
       <attributes>
@@ -2306,7 +2306,7 @@
   <measure number="22">
     <part id="P1">
       <!-- measure metadata (Satie) -->
-      <direction placement="below"><direction-type><words default-y="-70" relative-x="-5000">SATIE_MEASURE_META = {"uuid":6560186026012493};</words></direction-type></direction>
+      <direction placement="below"><direction-type><words default-y="-70" relative-x="-5000">SATIE_MEASURE_META = {"uuid":63};</words></direction-type></direction>
       <!-- end of measure metadata (Satie) -->
       <!-- staff 1 -->
       <attributes>
@@ -2397,7 +2397,7 @@
   <measure number="23">
     <part id="P1">
       <!-- measure metadata (Satie) -->
-      <direction placement="below"><direction-type><words default-y="-70" relative-x="-5000">SATIE_MEASURE_META = {"uuid":3093021569293165};</words></direction-type></direction>
+      <direction placement="below"><direction-type><words default-y="-70" relative-x="-5000">SATIE_MEASURE_META = {"uuid":64};</words></direction-type></direction>
       <!-- end of measure metadata (Satie) -->
       <!-- staff 1 -->
       <attributes>
@@ -2509,7 +2509,7 @@
   <measure number="24">
     <part id="P1">
       <!-- measure metadata (Satie) -->
-      <direction placement="below"><direction-type><words default-y="-70" relative-x="-5000">SATIE_MEASURE_META = {"uuid":8374178649920803};</words></direction-type></direction>
+      <direction placement="below"><direction-type><words default-y="-70" relative-x="-5000">SATIE_MEASURE_META = {"uuid":65};</words></direction-type></direction>
       <!-- end of measure metadata (Satie) -->
       <!-- staff 1 -->
       <attributes>
@@ -2621,7 +2621,7 @@
   <measure number="25">
     <part id="P1">
       <!-- measure metadata (Satie) -->
-      <direction placement="below"><direction-type><words default-y="-70" relative-x="-5000">SATIE_MEASURE_META = {"uuid":6158571063238095};</words></direction-type></direction>
+      <direction placement="below"><direction-type><words default-y="-70" relative-x="-5000">SATIE_MEASURE_META = {"uuid":66};</words></direction-type></direction>
       <!-- end of measure metadata (Satie) -->
       <!-- staff 1 -->
       <attributes>
@@ -2733,7 +2733,7 @@
   <measure number="26">
     <part id="P1">
       <!-- measure metadata (Satie) -->
-      <direction placement="below"><direction-type><words default-y="-70" relative-x="-5000">SATIE_MEASURE_META = {"uuid":5963652684829393};</words></direction-type></direction>
+      <direction placement="below"><direction-type><words default-y="-70" relative-x="-5000">SATIE_MEASURE_META = {"uuid":67};</words></direction-type></direction>
       <!-- end of measure metadata (Satie) -->
       <!-- staff 1 -->
       <attributes>
@@ -2845,7 +2845,7 @@
   <measure number="27">
     <part id="P1">
       <!-- measure metadata (Satie) -->
-      <direction placement="below"><direction-type><words default-y="-70" relative-x="-5000">SATIE_MEASURE_META = {"uuid":6569364605632341};</words></direction-type></direction>
+      <direction placement="below"><direction-type><words default-y="-70" relative-x="-5000">SATIE_MEASURE_META = {"uuid":68};</words></direction-type></direction>
       <!-- end of measure metadata (Satie) -->
       <!-- staff 1 -->
       <attributes>
@@ -2957,7 +2957,7 @@
   <measure number="28">
     <part id="P1">
       <!-- measure metadata (Satie) -->
-      <direction placement="below"><direction-type><words default-y="-70" relative-x="-5000">SATIE_MEASURE_META = {"uuid":8550863383404467};</words></direction-type></direction>
+      <direction placement="below"><direction-type><words default-y="-70" relative-x="-5000">SATIE_MEASURE_META = {"uuid":69};</words></direction-type></direction>
       <!-- end of measure metadata (Satie) -->
       <!-- staff 1 -->
       <attributes>
@@ -3069,7 +3069,7 @@
   <measure number="29">
     <part id="P1">
       <!-- measure metadata (Satie) -->
-      <direction placement="below"><direction-type><words default-y="-70" relative-x="-5000">SATIE_MEASURE_META = {"uuid":7035209190434385};</words></direction-type></direction>
+      <direction placement="below"><direction-type><words default-y="-70" relative-x="-5000">SATIE_MEASURE_META = {"uuid":70};</words></direction-type></direction>
       <!-- end of measure metadata (Satie) -->
       <!-- staff 1 -->
       <attributes>
@@ -3181,7 +3181,7 @@
   <measure number="30">
     <part id="P1">
       <!-- measure metadata (Satie) -->
-      <direction placement="below"><direction-type><words default-y="-70" relative-x="-5000">SATIE_MEASURE_META = {"uuid":8574020267423813};</words></direction-type></direction>
+      <direction placement="below"><direction-type><words default-y="-70" relative-x="-5000">SATIE_MEASURE_META = {"uuid":71};</words></direction-type></direction>
       <!-- end of measure metadata (Satie) -->
       <!-- staff 1 -->
       <print new-system="no" new-page="no" page-number="1">
@@ -3305,7 +3305,7 @@
   <measure number="31">
     <part id="P1">
       <!-- measure metadata (Satie) -->
-      <direction placement="below"><direction-type><words default-y="-70" relative-x="-5000">SATIE_MEASURE_META = {"uuid":2798048872831751};</words></direction-type></direction>
+      <direction placement="below"><direction-type><words default-y="-70" relative-x="-5000">SATIE_MEASURE_META = {"uuid":72};</words></direction-type></direction>
       <!-- end of measure metadata (Satie) -->
       <!-- staff 1 -->
       <attributes>
@@ -3430,7 +3430,7 @@
   <measure number="32">
     <part id="P1">
       <!-- measure metadata (Satie) -->
-      <direction placement="below"><direction-type><words default-y="-70" relative-x="-5000">SATIE_MEASURE_META = {"uuid":6504423406425307};</words></direction-type></direction>
+      <direction placement="below"><direction-type><words default-y="-70" relative-x="-5000">SATIE_MEASURE_META = {"uuid":73};</words></direction-type></direction>
       <!-- end of measure metadata (Satie) -->
       <!-- staff 1 -->
       <print new-system="no" new-page="no" page-number="1">
@@ -3552,7 +3552,7 @@
   <measure number="33">
     <part id="P1">
       <!-- measure metadata (Satie) -->
-      <direction placement="below"><direction-type><words default-y="-70" relative-x="-5000">SATIE_MEASURE_META = {"uuid":4366759316335237};</words></direction-type></direction>
+      <direction placement="below"><direction-type><words default-y="-70" relative-x="-5000">SATIE_MEASURE_META = {"uuid":74};</words></direction-type></direction>
       <!-- end of measure metadata (Satie) -->
       <!-- staff 1 -->
       <attributes>

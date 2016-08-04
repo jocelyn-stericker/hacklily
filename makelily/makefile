@@ -16,7 +16,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ##
 
-.PHONY: build lint test _gentestsuite _tsc _stageOnly _testOnly test_all _bundleOnly
+.PHONY: build lint test _gentestsuite _tsc _stageOnly _testOnly test_all _bundleOnly quicktest
 
 all: build test
 
@@ -120,7 +120,12 @@ vendor/tslint/bin/tslint.js:
 	@cd ./vendor/tslint/; NODE_ENV=dev npm install
 	@cd ./vendor/tslint/; grunt
 
-test: build _testOnly lint
+test: build
+	@make _testOnly
+	@make lint
+
+quicktest: _tsc
+	@make _testOnly
 
 _testOnly:
 	@printf "$(TEST_STRING)\n"
