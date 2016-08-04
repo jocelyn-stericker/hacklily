@@ -144,9 +144,9 @@
         <voice>1</voice>
         <type>32nd</type>
         <staff>1</staff>
-        <beam number="1" repeater="no" fan="none">begin</beam>
-        <beam number="2" repeater="no" fan="none">begin</beam>
-        <beam number="3" repeater="no" fan="none">begin</beam>
+        <beam number="1">begin</beam>
+        <beam number="2">begin</beam>
+        <beam number="3">begin</beam>
         <notations print-object="yes">
           <slur type="start" number="1" line-type="solid" dash-length="1" space-length="1" color="#000000" />
         </notations>
@@ -163,9 +163,9 @@
         <type>32nd</type>
         <accidental>sharp</accidental>
         <staff>1</staff>
-        <beam number="1" repeater="no" fan="none">continue</beam>
-        <beam number="2" repeater="no" fan="none">continue</beam>
-        <beam number="3" repeater="no" fan="none">continue</beam>
+        <beam number="1">continue</beam>
+        <beam number="2">continue</beam>
+        <beam number="3">continue</beam>
       </note>
       
       <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="31" end-dynamics="90" pizzicato="no">
@@ -178,7 +178,9 @@
         <voice>1</voice>
         <type>32nd</type>
         <staff>1</staff>
-        <beam number="1" repeater="no" fan="none">continue</beam>
+        <beam number="1">continue</beam>
+        <beam number="2">end</beam>
+        <beam number="3">end</beam>
       </note>
       
       <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="31" end-dynamics="90" pizzicato="no">
@@ -191,6 +193,7 @@
         <voice>1</voice>
         <type>eighth</type>
         <staff>1</staff>
+        <beam number="1">continue</beam>
       </note>
       
       <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="47" end-dynamics="90" pizzicato="no">
@@ -204,9 +207,9 @@
         <type>32nd</type>
         <accidental>sharp</accidental>
         <staff>1</staff>
-        <beam number="1" repeater="no" fan="none">begin</beam>
-        <beam number="2" repeater="no" fan="none">begin</beam>
-        <beam number="3" repeater="no" fan="none">begin</beam>
+        <beam number="1">continue</beam>
+        <beam number="2">begin</beam>
+        <beam number="3">begin</beam>
       </note>
       
       <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="47" end-dynamics="90" pizzicato="no">
@@ -218,9 +221,9 @@
         <voice>1</voice>
         <type>32nd</type>
         <staff>1</staff>
-        <beam number="1" repeater="no" fan="none">continue</beam>
-        <beam number="2" repeater="no" fan="none">continue</beam>
-        <beam number="3" repeater="no" fan="none">continue</beam>
+        <beam number="1">end</beam>
+        <beam number="2">end</beam>
+        <beam number="3">end</beam>
         <notations print-object="yes">
           <slur type="stop" number="1" line-type="solid" dash-length="1" space-length="1" color="#000000" />
         </notations>

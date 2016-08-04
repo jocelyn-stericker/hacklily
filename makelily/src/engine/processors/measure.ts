@@ -273,6 +273,9 @@ export function reduceMeasure(spec: ILayoutOpts): IMeasureLayout {
                     invariant(op.p[1] === "parts", "Expected p[1] to be parts");
                     invariant(op.p[2] === localSegment.part, `Expected part ${op.p[2]} to be ${localSegment.part}`);
                     if (localSegment.ownerType === OwnerType.Voice) {
+                        if (typeof op.p[4] === "string") {
+                            op.p[4] = parseInt(op.p[4] as string, 10);
+                        }
                         invariant(op.p[3] === "voices", "We are in a voice, so we can only patch the voice");
                         invariant(op.p[4] === localSegment.owner, `Expected voice owner ${localSegment.owner}, got ${op.p[4]}`);
                         return op.p.length === 6 && (op.p[5] <= cursor$.idx$) || op.p[5] < cursor$.idx$;

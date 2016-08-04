@@ -251,6 +251,7 @@
         <voice>1</voice>
         <type>quarter</type>
         <dot />
+        <accidental>flat</accidental>
         <staff>1</staff>
       </note>
       <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" attack="NaN" release="NaN" pizzicato="no">
@@ -263,7 +264,6 @@
         <voice>1</voice>
         <type>quarter</type>
         <dot />
-        <accidental>flat</accidental>
         <staff>1</staff>
       </note>
       
@@ -299,6 +299,7 @@
         <duration>8</duration>
         <voice>1</voice>
         <type>quarter</type>
+        <accidental>flat</accidental>
         <staff>1</staff>
       </note>
       <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" attack="NaN" release="NaN" pizzicato="no">
@@ -310,7 +311,6 @@
         <duration>8</duration>
         <voice>1</voice>
         <type>quarter</type>
-        <accidental>flat</accidental>
         <staff>1</staff>
       </note>
       
