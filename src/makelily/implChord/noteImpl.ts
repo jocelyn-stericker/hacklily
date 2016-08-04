@@ -25,7 +25,7 @@ import {Note, Chord, Rest, Dot, Type, Count, SymbolSize, TimeModification, Pitch
     Articulations, AccidentalMark, Arpeggiate, Dynamics, Fermata, Glissando,
     NonArpeggiate, Ornaments, OtherNotation, Slide, Slur, Technical, Tied, Tuplet,
     MxmlAccidental, serializeNote} from "musicxml-interfaces";
-import {times, forEach, reduce, map} from "lodash";
+import {times, forEach, reduce, map, isEqual} from "lodash";
 import * as invariant from "invariant";
 
 import OwnerType from "../document/ownerTypes";
@@ -511,7 +511,10 @@ class NoteImpl implements Note {
             }
         }
 
-        this.accidental = acc;
+        if (!isEqual(this.accidental, acc) && cursor.patch) {
+            // cursor.patch is disabled for some testing.
+            cursor.patch(part => part.note(0, note => note.accidental(acc)));
+        }
     }
 }
 
