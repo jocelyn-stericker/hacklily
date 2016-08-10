@@ -541,8 +541,10 @@
         <duration>1</duration>
         <voice>1</voice>
         <type>eighth</type>
+        <accidental>natural</accidental>
         <stem>none</stem>
         <staff>1</staff>
+        <beam number="1">begin</beam>
         <notations print-object="yes">
           <technical>
             
@@ -592,7 +594,6 @@
         <duration>1</duration>
         <voice>1</voice>
         <type>eighth</type>
-        <accidental>natural</accidental>
         <stem>none</stem>
         <staff>1</staff>
         <notations print-object="yes">
@@ -609,7 +610,6 @@
         <duration>1</duration>
         <voice>1</voice>
         <type>eighth</type>
-        <accidental>natural</accidental>
         <stem>none</stem>
         <staff>1</staff>
         <notations print-object="yes">
@@ -630,6 +630,7 @@
         <accidental>natural</accidental>
         <stem>none</stem>
         <staff>1</staff>
+        <beam number="1">end</beam>
         <notations print-object="yes">
           <technical>
             
@@ -2570,6 +2571,7 @@
         <duration>2</duration>
         <voice>1</voice>
         <type>quarter</type>
+        <accidental>sharp</accidental>
         <stem>none</stem>
         <staff>1</staff>
         <notations print-object="yes">
@@ -2588,7 +2590,6 @@
         <duration>2</duration>
         <voice>1</voice>
         <type>quarter</type>
-        <accidental>sharp</accidental>
         <stem>none</stem>
         <staff>1</staff>
         <notations print-object="yes">

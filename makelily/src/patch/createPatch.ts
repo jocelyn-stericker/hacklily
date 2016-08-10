@@ -33,7 +33,7 @@ import {
     buildBarline, patchBarline, IBarlineBuilder,
     buildBeam,
 } from "musicxml-interfaces/builders";
-import {find, forEach, last, some, times, findLastIndex} from "lodash";
+import {find, forEach, last, some, times, findIndex, findLastIndex} from "lodash";
 import * as invariant from "invariant";
 
 import IDocument from "../document/document";
@@ -730,12 +730,20 @@ function addBeams(document: IDocument, patches: IAny[]): IAny[] {
         let beamingPattern: IChord[] = stdBP;
 
         function applyCandidate() {
+            // Remove all rests at the end and beginning.
+            const start = findIndex(beamGroup, i => !voiceInfo[i].rest);
+            const end = findLastIndex(beamGroup, i => !voiceInfo[i].rest);
+            beamBeams = beamBeams.slice(start, end + 1);
+            beamGroup = beamGroup.slice(start, end + 1);
+
             if (beamGroup.length < 2) {
                 return;
             }
+
+            // Mark elements in the candidate
             beamGroup.forEach(b => inCandidate[b] = true);
             if (!some(beamGroup, i => voiceInfo[i].touched)) {
-                // It may be like this on purpose XD
+                // We did not modify this beam group, so don't change it here.
                 return;
             }
 
@@ -796,7 +804,7 @@ function addBeams(document: IDocument, patches: IAny[]): IAny[] {
             let divs = _calcDivisions(elInfo.newCount, elInfo.newDots,
                                       null, time, segment.divisions);
             const isCandidate = countToIsBeamable[elInfo.newCount] &&
-                !elInfo.rest &&
+                (!elInfo.rest || elInfo.beam) &&
                 divs <= divisionsInCurrentBucket;
 
             if (isCandidate) {
