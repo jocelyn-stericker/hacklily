@@ -108,7 +108,6 @@ function beam(options: ILayoutOptions, bounds: ILineBounds,
                             }
                             console.warn("Beam in voice %s, level %s was not explicitly closed " +
                                 "before another note was added.", note.voice, idx);
-                            terminateBeam$(note.voice, idx, activeBeams, false);
                         });
                     });
                     return;
