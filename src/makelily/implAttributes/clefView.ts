@@ -20,10 +20,12 @@
  */
 
 import {Clef, SymbolSize} from "musicxml-interfaces";
-import {createFactory as $, Component, DOM, PropTypes} from "react";
+import {createFactory, Component, DOM, PropTypes} from "react";
 
 import Glyph from "../private/views/glyph";
 import {bboxes} from "../private/smufl";
+
+const $Glyph = createFactory(Glyph);
 
 /**
  * Responsible for the rendering of a clef.
@@ -53,7 +55,7 @@ export default class ClefView extends Component<{spec: Clef, key?: string | numb
             return null;
         }
 
-        let clefGlyph = $(Glyph)({
+        let clefGlyph = $Glyph({
             fill: spec.color,
             glyphName: clefSign,
             x: clefX,
@@ -79,7 +81,7 @@ export default class ClefView extends Component<{spec: Clef, key?: string | numb
 
         let decorativeX = (left + right) / 2;
         if (clefOctaveChange === 2) {
-            clefDecorations.push($(Glyph)({
+            clefDecorations.push($Glyph({
                 fill: spec.color,
                 glyphName: "clef15",
                 key: "15ma",
@@ -88,7 +90,7 @@ export default class ClefView extends Component<{spec: Clef, key?: string | numb
                 y: top
             }));
         } else if (clefOctaveChange === 1) {
-            clefDecorations.push($(Glyph)({
+            clefDecorations.push($Glyph({
                 fill: spec.color,
                 glyphName: "clef8",
                 key: "8va",
@@ -97,7 +99,7 @@ export default class ClefView extends Component<{spec: Clef, key?: string | numb
                 y: top
             }));
         } else if (clefOctaveChange === -1) {
-            clefDecorations.push($(Glyph)({
+            clefDecorations.push($Glyph({
                 fill: spec.color,
                 glyphName: "clef8",
                 key: "8vb",
@@ -105,7 +107,7 @@ export default class ClefView extends Component<{spec: Clef, key?: string | numb
                 y: bottom + bboxes["clef8"][1] * 10
             }));
         } else if (clefOctaveChange === -2) {
-            clefDecorations.push($(Glyph)({
+            clefDecorations.push($Glyph({
                 fill: spec.color,
                 glyphName: "clef15",
                 key: "15mb",

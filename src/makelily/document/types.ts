@@ -39,12 +39,13 @@ enum Type {
     Chord = 220, // Implements Note[]
     END_OF_VOICE_ELEMENTS = 299,
 
+    VisualCursor = 398,
     Barline = 399, // Also deals with warning attributes
 
     Unknown = 1000
 };
 
-// Hack: register Notes as Chord.
+// Notes and chords are treated as the same type.
 (Type as any)["Note"] = Type.Chord;
 
 export default Type;

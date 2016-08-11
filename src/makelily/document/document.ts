@@ -19,7 +19,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import {createFactory as $, ReactElement} from "react";
+import {createFactory, ReactElement} from "react";
 import {renderToStaticMarkup} from "react-dom/server";
 
 import {ScoreHeader, Print} from "musicxml-interfaces";
@@ -42,7 +42,7 @@ import layout from "../engine/processors/layout";
 
 import PageView from "../implPage/pageView";
 
-const $PageView = $(PageView);
+const $PageView = createFactory(PageView);
 
 interface IDocument {
     /**
@@ -164,7 +164,8 @@ export class Document implements IDocument {
      */
     __getPage: (startMeasure: number, memo$: ILinesLayoutState, preview: boolean,
         renderTarget?: RenderTarget, pageClassName?: string, singleLineMode?: boolean,
-        onOperationsAppended?: (ops: IAny[]) => void) => ReactElement<any>;
+        onOperationsAppended?: (ops: IAny[]) => void,
+        ref?: (svg: SVGSVGElement) => void) => ReactElement<any>;
 
     constructor(header: ScoreHeader, measures: IMeasure[], parts: string[],
             internalFactory: IFactory, error?: Error) {
@@ -185,7 +186,8 @@ export class Document implements IDocument {
         this.__getPage = (startMeasure: number,
                 memo$: ILinesLayoutState, preview: boolean, renderTarget = RenderTarget.SvgExport,
                 pageClassName = "", singleLineMode?: boolean,
-                onOperationsAppended?: (ops: IAny[]) => void): ReactElement<any> => {
+                onOperationsAppended?: (ops: IAny[]) => void,
+                ref?: (svg: SVGSVGElement) => void): ReactElement<any> => {
 
             let print = this.getPrint(startMeasure);
 
@@ -219,6 +221,7 @@ export class Document implements IDocument {
                 renderTarget: renderTarget,
                 scoreHeader: this.header,
                 singleLineMode,
+                svgRef: ref,
             });
         };
     }

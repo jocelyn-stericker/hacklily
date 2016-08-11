@@ -20,12 +20,15 @@
  */
 
 import {Stem, StemType, Tremolo} from "musicxml-interfaces";
-import {createFactory as $, Component, DOM, PropTypes} from "react";
+import {createFactory, Component, DOM, PropTypes} from "react";
 import * as invariant from "invariant";
 
 import Line from "../private/views/line";
 import Glyph from "../private/views/glyph";
 import {getFontOffset} from "../private/smufl";
+
+const $Line = createFactory(Line);
+const $Glyph = createFactory(Glyph);
 
 export interface IProps {
     key?: string | number;
@@ -63,7 +66,7 @@ export default class StemView extends Component<IProps, void> {
         const dY = this.props.bestHeight * direction;
 
         let elements: any[] = [];
-        elements.push($(Line)({
+        elements.push($Line({
             key: "s",
             stroke: color,
             strokeWidth: width,
@@ -74,7 +77,7 @@ export default class StemView extends Component<IProps, void> {
         }));
 
         if (tremolo) {
-            elements.push($(Glyph)({
+            elements.push($Glyph({
                 key: "t",
                 glyphName: `tremolo${tremolo.data || "1"}`,
                 x: x,

@@ -24,11 +24,13 @@
  */
 
 import {AboveBelow, Tuplet} from "musicxml-interfaces";
-import {createFactory as $, Component, DOM} from "react";
+import {createFactory, Component, DOM} from "react";
 import {last, map, reduce} from "lodash";
 
 import Glyph from "../private/views/glyph";
 import {bboxes} from "../private/smufl";
+
+const $Glyph = createFactory(Glyph);
 
 export interface IProps {
     tuplet: Tuplet;
@@ -74,7 +76,7 @@ export default class TupletNumber extends Component<IProps, void> {
 
             // Glyphs
             map(symbols, (symbol, index) => {
-                return $(Glyph)({
+                return $Glyph({
                     key: `glyph${index}`,
                     fill: "#000000",
                     glyphName: symbol,

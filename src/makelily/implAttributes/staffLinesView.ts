@@ -20,11 +20,13 @@
  */
 
 import {StaffDetails} from "musicxml-interfaces";
-import {createFactory as $, Component, DOM, PropTypes} from "react";
+import {createFactory, Component, DOM, PropTypes} from "react";
 import {times} from "lodash";
 
 import Line from "../private/views/line";
 import {bravura} from "../private/smufl";
+
+const $Line = createFactory(Line);
 
 export interface IProps {
     key?: string | number;
@@ -51,7 +53,7 @@ export default class StaffLines extends Component<IProps, {}> {
         let staffDetails = this.props.staffDetails;
         let offset = (staffDetails.staffLines - 1) / 2;
         return DOM.g(null,
-            times(staffDetails.staffLines, i => $(Line)({
+            times(staffDetails.staffLines, i => $Line({
                 key: "staff-" + i,
                 stroke: "#6A6A6A",
                 // TODO: Use print

@@ -20,13 +20,16 @@
  */
 
 import {MultipleRest, Note} from "musicxml-interfaces";
-import {createFactory as $, Component, DOM, PropTypes} from "react";
+import {createFactory, Component, DOM, PropTypes} from "react";
 import {map} from "lodash";
 import * as invariant from "invariant";
 
 import Dot from "../private/views/dot";
 import Glyph from "../private/views/glyph";
 import {bboxes} from "../private/smufl";
+
+const $Dot = createFactory(Dot);
+const $Glyph = createFactory(Glyph);
 
 export interface IProps {
     multipleRest?: MultipleRest;
@@ -60,7 +63,7 @@ export default class Rest extends Component<IProps, void> {
         const dotOffset = bboxes[notehead][0] * 10 + 6;
 
         return DOM.g(null,
-            $(Glyph)({
+            $Glyph({
                 fill: spec.color,
                 glyphName: notehead,
                 key: "R",
@@ -77,7 +80,7 @@ export default class Rest extends Component<IProps, void> {
                 },
                 this.props.multipleRest.count // TODO: useSymbols
             /* DOM.text */),
-        spec.dots && spec.printDot !== false ? map(spec.dots, (dot, idx) => $(Dot)({
+        spec.dots && spec.printDot !== false ? map(spec.dots, (dot, idx) => $Dot({
                 fill: dot.color,
                 key: idx + "d",
                 radius: 2.4,

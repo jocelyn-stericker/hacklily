@@ -20,11 +20,11 @@
  */
 
 import {Position, Notehead} from "musicxml-interfaces";
-import {createFactory as $, Component, PropTypes} from "react";
+import {createFactory, Component, PropTypes} from "react";
 
 import Glyph from "../private/views/glyph";
 
-const $Glyph = $(Glyph);
+const $Glyph = createFactory(Glyph);
 
 export interface IProps {
     key?: string | number;

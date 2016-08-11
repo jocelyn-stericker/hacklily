@@ -20,7 +20,7 @@
  */
 
 import {ScoreHeader, Print} from "musicxml-interfaces";
-import {createFactory as $, Component, DOM, MouseEvent, PropTypes} from "react";
+import {createFactory, Component, DOM, MouseEvent, PropTypes} from "react";
 import {map, filter, forEach, last} from "lodash";
 import * as invariant from "invariant";
 
@@ -33,8 +33,10 @@ import {getPageMargins} from "../private/print";
 import {calculate as calculateLineBounds} from "../private/lineBounds";
 
 import MeasureView from "../implMeasure/measureView";
-
 import CreditView from "./creditView";
+
+const $MeasureView = createFactory(MeasureView);
+const $CreditView = createFactory(CreditView);
 
 export interface IProps {
     scoreHeader: ScoreHeader;
@@ -49,6 +51,7 @@ export interface IProps {
     onMouseLeave?: (evt: MouseEvent) => void;
     onMouseMove?: (evt: MouseEvent) => void;
     onMouseUp?: (evt: MouseEvent) => void;
+    svgRef?: (svg: SVGSVGElement) => void;
 }
 
 export default class Page extends Component<IProps, void> {
@@ -112,14 +115,14 @@ export default class Page extends Component<IProps, void> {
                 onMouseLeave: this.props.onMouseLeave,
                 onMouseMove: this.props.onMouseMove,
                 onMouseUp: this.props.onMouseUp,
-                ref: "svg" + print.pageNumber,
+                ref: this._setSVG,
                 viewBox: `0 0 ${pageWidth} ${pageHeight}`,
                 width: widthMM
             },
-            !this.props.singleLineMode && map(credits, <any> $(CreditView)),
+            !this.props.singleLineMode && map(credits, $CreditView),
             map(lineLayouts, (lineLayout, lineIdx) =>
                 map(lineLayout, measureLayout =>
-                    $(MeasureView)({
+                    $MeasureView({
                         key: measureLayout.uuid,
                         layout: measureLayout,
                         version: measureLayout.getVersion(),
@@ -128,6 +131,12 @@ export default class Page extends Component<IProps, void> {
             )
         );
     }
+
+    private _setSVG: (svg: SVGSVGElement) => void = (svg) => {
+        if (this.props.svgRef) {
+            this.props.svgRef(svg);
+        };
+    };
 
     getChildContext() {
         const defaults = this.props.scoreHeader.defaults;

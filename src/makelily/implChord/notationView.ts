@@ -20,7 +20,7 @@
  */
 
 import {UprightInverted, Notations, Note} from "musicxml-interfaces";
-import {createFactory as $, Component, DOM, ReactElement, PropTypes} from "react";
+import {createFactory, Component, DOM, ReactElement, PropTypes} from "react";
 import {forEach} from "lodash";
 import * as invariant from "invariant";
 
@@ -30,6 +30,10 @@ import {bboxes} from "../private/smufl";
 
 import Articulation from "./articulationView";
 import Chord from "./chordModel";
+
+const $Bezier = createFactory(Bezier);
+const $Glyph = createFactory(Glyph);
+const $Articulation = createFactory(Articulation);
 
 export interface IProps {
     key?: string;
@@ -67,7 +71,7 @@ export default class NotationView extends Component<IProps, void> {
         });
 
         forEach(model.articulations, (articulation, idx) => {
-            children.push($(Articulation)({
+            children.push($Articulation({
                 articulation: articulation,
                 key: `art${idx}`,
                 defaultX: this.props.layout.model[0].defaultX,
@@ -80,7 +84,7 @@ export default class NotationView extends Component<IProps, void> {
 
         forEach(model.fermatas, (fermata, idx) => {
             let direction = (fermata.type === UprightInverted.Inverted) ? "Below" : "Above";
-            children.push($(Glyph)({
+            children.push($Glyph({
                 fill: "black",
                 glyphName: `fermata${direction}`,
                 key: `fer${idx}`,
@@ -161,7 +165,7 @@ export default class NotationView extends Component<IProps, void> {
             invariant(!isNaN(y1my2), "Invalid y1my2 %s", y1my2);
             invariant(!isNaN(absw), "Invalid absw %s", absw);
 
-            children.push($(Bezier)({
+            children.push($Bezier({
                 fill: "#000000",
                 stroke: "#000000",
                 strokeWidth: 1.2,

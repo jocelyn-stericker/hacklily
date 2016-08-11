@@ -20,7 +20,7 @@
  */
 
 import {Note, Lyric, Syllabic, SyllabicType, Text, StemType} from "musicxml-interfaces";
-import {createFactory as $, Component, DOM, PropTypes, ReactElement} from "react";
+import {createFactory, Component, DOM, PropTypes, ReactElement} from "react";
 import {map, some, chain, maxBy} from "lodash";
 
 import {bboxes, bravura, getRight} from "../private/smufl";
@@ -38,14 +38,14 @@ import UnbeamedTupletView from "./unbeamedTupletView";
 
 const stemThickness: number = bravura.engravingDefaults.stemThickness * 10;
 
-const $BeamView = $(BeamView);
-const $FlagView = $(FlagView);
-const $LedgerLineView = $(LedgerLineView);
-const $NoteView = $(NoteView);
-const $NotationView = $(NotationView);
-const $RestView = $(RestView);
-const $StemView = $(StemView);
-const $UnbeamedTupletView = $(UnbeamedTupletView);
+const $BeamView = createFactory(BeamView);
+const $FlagView = createFactory(FlagView);
+const $LedgerLineView = createFactory(LedgerLineView);
+const $NoteView = createFactory(NoteView);
+const $NotationView = createFactory(NotationView);
+const $RestView = createFactory(RestView);
+const $StemView = createFactory(StemView);
+const $UnbeamedTupletView = createFactory(UnbeamedTupletView);
 
 export interface IProps {
     layout: ChordModel.IChordLayout;

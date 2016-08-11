@@ -19,7 +19,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import {createFactory as $, Component, PropTypes} from "react";
+import {createFactory, Component, PropTypes} from "react";
 
 import Type from "../document/types";
 import ILayout from "../private/layout";
@@ -29,11 +29,13 @@ import AttributesView from "../implAttributes/attributesView";
 import BarlineView from "../implBarline/barlineView";
 import ChordView from "../implChord/chordView";
 import DirectionView from "../implDirection/directionView";
+import VisualCursorView from "../implVisualCursor/visualCursorView";
 
-const $AttributesView = $(AttributesView);
-const $BarlineView = $(BarlineView);
-const $ChordView = $(ChordView);
-const $DirectionView = $(DirectionView);
+const $AttributesView = createFactory(AttributesView);
+const $BarlineView = createFactory(BarlineView);
+const $ChordView = createFactory(ChordView);
+const $DirectionView = createFactory(DirectionView);
+const $VisualCursorView = createFactory(VisualCursorView);
 
 const NUMBER_ARRAY = PropTypes.arrayOf(PropTypes.number);
 
@@ -72,6 +74,8 @@ export default class ModelView extends Component<IProps, IState> {
                 return $ChordView({layout});
             case Type.Direction:
                 return $DirectionView({layout});
+            case Type.VisualCursor:
+                return $VisualCursorView({layout});
             default:
                 return null;
         }

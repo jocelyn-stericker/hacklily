@@ -19,7 +19,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import {createFactory as $, Component, DOM, PropTypes} from "react";
+import {createFactory, Component, DOM, PropTypes} from "react";
 
 import Attributes from "./attributesModel";
 import BarNumber from "./barNumberView";
@@ -28,6 +28,13 @@ import PartSymbol from "./partSymbolView";
 import KeySignature from "./keySignatureView";
 import TimeSignature from "./timeSignatureView";
 import StaffLines from "./staffLinesView";
+
+const $StaffLines = createFactory(StaffLines);
+const $Clef = createFactory(Clef);
+const $KeySignature = createFactory(KeySignature);
+const $TimeSignature = createFactory(TimeSignature);
+const $BarNumber = createFactory(BarNumber);
+const $PartSymbol = createFactory(PartSymbol);
 
 export default class AttributesView extends Component<{layout: Attributes.IAttributesLayout}, {}> {
     static contextTypes = {
@@ -46,7 +53,7 @@ export default class AttributesView extends Component<{layout: Attributes.IAttri
         let staffWidth = (<any>layout).staffWidth;
         let staffLinesOffsetX = (<any>layout).staffLinesOffsetX;
         if (!!staffWidth) {
-            children.push($(StaffLines)({
+            children.push($StaffLines({
                 key: "staffLines",
                 width: staffWidth,
                 defaultX: this.props.layout.overrideX - staffLinesOffsetX,
@@ -56,26 +63,26 @@ export default class AttributesView extends Component<{layout: Attributes.IAttri
         }
 
         if (layout.clef) {
-            children.push($(Clef)({
+            children.push($Clef({
                 key: "clef",
                 spec: layout.clef
             }));
         }
         if (layout.keySignature) {
-            children.push($(KeySignature)({
+            children.push($KeySignature({
                 clef: layout.snapshotClef,
                 key: "ks",
                 spec: layout.keySignature
             }));
         }
         if (layout.time) {
-            children.push($(TimeSignature)({
+            children.push($TimeSignature({
                 key: "ts",
                 spec: layout.time
             }));
         }
         if (!!layout.measureNumberVisible) {
-            children.push($(BarNumber)({
+            children.push($BarNumber({
                 barNumber: layout.measureNumberVisible,
                 key: "measure",
                 spec: {
@@ -85,7 +92,7 @@ export default class AttributesView extends Component<{layout: Attributes.IAttri
             }));
         }
         if (!!layout.partSymbol) {
-            children.push($(PartSymbol)({
+            children.push($PartSymbol({
                 key: "partSymbol",
                 spec: layout.partSymbol
             }));

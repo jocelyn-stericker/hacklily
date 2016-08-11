@@ -19,14 +19,18 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import {createFactory as $, ReactElement, Component, DOM, PropTypes} from "react";
+import {createFactory, ReactElement, Component, DOM, PropTypes} from "react";
 import {map} from "lodash";
 
 import Glyph from "../private/views/glyph";
-
 import Dynamics from "./dynamicsView";
 import Words from "./wordsView";
+
 import DirectionModel from "./directionModel";
+
+const $Glyph = createFactory(Glyph);
+const $Dynamics = createFactory(Dynamics);
+const $Words = createFactory(Words);
 
 export default class Direction extends Component<{layout: DirectionModel.IDirectionLayout}, {}> {
     static contextTypes = {
@@ -54,7 +58,7 @@ export default class Direction extends Component<{layout: DirectionModel.IDirect
                 case !!type.dashes:
                     return null;
                 case !!type.dynamics:
-                    return $(Dynamics)({
+                    return $Dynamics({
                         key: `d_${idx}`,
                         layout: this.props.layout,
                     });
@@ -84,7 +88,7 @@ export default class Direction extends Component<{layout: DirectionModel.IDirect
                     return null;
                 case !!type.segnos:
                     return DOM.g(null,
-                        map(type.segnos, (segno, segnoIdx) => $(Glyph)({
+                        map(type.segnos, (segno, segnoIdx) => $Glyph({
                             glyphName: "segno",
                             key: segnoIdx,
                             x: this.props.layout.overrideX + segno.defaultX + (segno.relativeX || 0),
@@ -96,7 +100,7 @@ export default class Direction extends Component<{layout: DirectionModel.IDirect
                 case !!type.wedge:
                     return null;
                 case !!type.words:
-                    return $(Words)({
+                    return $Words({
                         key: `d_${idx}`,
                         layout: this.props.layout,
                     });

@@ -23,6 +23,7 @@ import {readFile} from "fs";
 import * as yargs from "yargs";
 
 import Application from "./engine/application";
+import Song from "./engine/song";
 
 function readStdin(onEnd: (s: string) => void) {
     let content = "";
@@ -113,10 +114,12 @@ function cannotRead(err: any) {
 
         .argv;
 
-    let application = new Application({
+    /* tslint:disable */
+    new Application({
         satieRoot: "https://nettek.ca/satie/vendor/",
         preloadedFonts: []
     });
+    /* tslint:enable */
 
     let log = console.log.bind(console);
 
@@ -124,21 +127,18 @@ function cannotRead(err: any) {
         case "init":
             read(argv.xml[0],
                 musicXML => {
-                    let song = application.newSong({
-                        musicXML,
+                    let song = new Song({
+                        baseSrc: musicXML,
 
-                        errorHandler: cannotRead,
-                        changeHandler: () => {
-                            song.toMusicXML((err: Error, musicXML: string) => {
-                                if (err) {
-                                    cannotRead(err);
-                                } else {
-                                    log(musicXML);
-                                }
-                            });
+                        onError: cannotRead,
+                        onLoaded: () => {
+                            try {
+                                const musicXML = song.toMusicXML();
+                                log(musicXML);
+                            } catch(err) {
+                                cannotRead(err);
+                            }
                         },
-                        mouseMoveHandler: () => void 0,
-                        mouseClickHandler: () => void 0
                     });
                 }, cannotRead);
             break;
@@ -149,21 +149,18 @@ function cannotRead(err: any) {
         case "render":
             read(argv.xml[0],
                 musicXML => {
-                    let song = application.newSong({
-                        musicXML,
+                    let song = new Song({
+                        baseSrc: musicXML,
 
-                        errorHandler: cannotRead,
-                        changeHandler: () => {
-                            song.toSVG((err: Error, svg: string) => {
-                                if (err) {
-                                    cannotRead(err);
-                                } else {
-                                    log(svg);
-                                }
-                            });
+                        onError: cannotRead,
+                        onLoaded: () => {
+                            try {
+                                const svg = song.toSVG();
+                                log(svg);
+                            } catch (err) {
+                                cannotRead(err);
+                            }
                         },
-                        mouseMoveHandler: () => void 0,
-                        mouseClickHandler: () => void 0
                     });
                 }, cannotRead);
             break;

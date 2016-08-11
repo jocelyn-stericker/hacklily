@@ -19,7 +19,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import {createFactory as $, Component, DOM, PropTypes} from "react";
+import {createFactory, Component, DOM, PropTypes} from "react";
 import {chain, flatten, mapValues, map, forEach} from "lodash";
 import * as invariant from "invariant";
 
@@ -29,6 +29,9 @@ import DebugBox from "../private/views/debugBox";
 import {MAX_SAFE_INTEGER} from "../private/constants";
 
 import ModelView from "../implSegment/modelView";
+
+const $DebugBox = createFactory(DebugBox);
+const $ModelView = createFactory(ModelView);
 
 export interface IProps {
     layout: IMeasureLayout;
@@ -56,17 +59,17 @@ export default class MeasureView extends Component<IProps, void> {
     render(): any {
         const layout = this.props.layout;
 
-        return DOM.g({transform: `translate(${this.props.layout.originX})`},
+        return DOM.g({transform: `translate(${layout.originX})`},
             chain(flatten(layout.elements))
                 .filter((layout: ILayout) => !!layout.model)   // Remove helpers.
-                .map((layout: ILayout) => $(ModelView)({
+                .map((layout: ILayout) => $ModelView({
                     key: (<any>layout).key,
                     version: this.props.layout.getVersion(),
                     layout,
                     originX: this.props.layout.originX,
                 }))
                 .value(),
-            $(DebugBox)({key: "debugBox", layout: layout})
+            $DebugBox({key: "debugBox", layout: layout})
         /*DOM.g*/);
 
         /* TODO: lyric boxes */
@@ -110,7 +113,8 @@ export default class MeasureView extends Component<IProps, void> {
     shouldComponentUpdate(nextProps: IProps) {
         invariant(!isNaN(this.props.version), `Invalid non-numeric version ${this.props.version}`);
         return this.props.version !== nextProps.version ||
-            this.props.layout.originX !== nextProps.layout.originX;
+            this.props.layout.originX !== nextProps.layout.originX ||
+            this.props.layout.width !== nextProps.layout.width;
     }
 }
 
