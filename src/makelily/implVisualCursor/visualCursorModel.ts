@@ -19,11 +19,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import {IAny} from "musicxml-interfaces/operations";
-
 import Type from "../document/types";
 import IModel from "../document/model";
-import FrozenLevel from "../document/frozenLevels";
 import ILayout from "../private/layout";
 import ICursor from "../private/cursor";
 
@@ -43,17 +40,10 @@ class VisualCursorModel implements Export.IVisualCursorModel {
 
     staffIdx: number = 1;
 
-    /** @prototype */
-    frozenness: FrozenLevel;
-
     /*---- Implementation -----------------------------------------------------------------------*/
 
     constructor(spec: VisualCursorModel) {
         // no-op
-    }
-
-    checkSemantics(cursor: ICursor): IAny[] {
-        return [];
     }
 
     __validate(cursor$: ICursor): void {
@@ -85,7 +75,6 @@ class VisualCursorModel implements Export.IVisualCursorModel {
 
 VisualCursorModel.prototype.divCount = 0;
 VisualCursorModel.prototype.divisions = 0;
-VisualCursorModel.prototype.frozenness = FrozenLevel.Warm;
 
 module VisualCursorModel {
     export class Layout implements Export.IVisualCursorLayout {

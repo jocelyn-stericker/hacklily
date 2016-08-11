@@ -21,12 +21,10 @@
 
 import {Clef, Count, MultipleRest, Note, NoteheadType, Stem, StemType, Tremolo,
     Tied, TimeModification, serializeNote} from "musicxml-interfaces";
-import {IAny} from "musicxml-interfaces/operations";
 import {forEach, times, reduce, map, max, some} from "lodash";
 import * as invariant from "invariant";
 
 import Type from "../document/types";
-import FrozenLevel from "../document/frozenLevels";
 import ExpandPolicy from "../document/expandPolicies";
 
 import IBoundingRect from "../private/boundingRect";
@@ -105,9 +103,6 @@ class ChordModelImpl implements ChordModel.IChordModel, IList<NoteImpl> {
             invariant(false, "cannot call set staffIdx on chord model");
         }
     }
-
-    /** @prototype */
-    frozenness: FrozenLevel;
 
     /*---- I.2 IChord ---------------------------------------------------------------------------*/
 
@@ -244,10 +239,6 @@ class ChordModelImpl implements ChordModel.IChordModel, IList<NoteImpl> {
                 this.length = (<IChord>spec).length;
             }
         }
-    }
-
-    checkSemantics(cursor: ICursor): IAny[] {
-        return [];
     }
 
     _init: boolean = false;
@@ -548,7 +539,6 @@ class ChordModelImpl implements ChordModel.IChordModel, IList<NoteImpl> {
     }
 }
 
-ChordModelImpl.prototype.frozenness = FrozenLevel.Warm;
 ChordModelImpl.prototype.dots = 0;
 
 module ChordModelImpl {

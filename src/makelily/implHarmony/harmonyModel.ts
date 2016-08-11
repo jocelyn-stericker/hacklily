@@ -22,11 +22,9 @@
 import {Frame, ExplicitImpliedAlternate, Root, Function, Kind, Degree, Inversion, Bass,
     Footnote, Level, NormalBold, NormalItalic, AboveBelow, Harmony, Offset,
     serializeHarmony} from "musicxml-interfaces";
-import {IAny} from "musicxml-interfaces/operations";
 import {forEach} from "lodash";
 
 import IModel from "../document/model";
-import FrozenLevel from "../document/frozenLevels";
 import Type from "../document/types";
 import ExpandPolicy from "../document/expandPolicies";
 
@@ -46,9 +44,6 @@ class HarmonyModel implements Export.IHarmonyModel {
 
     /** defined externally */
     staffIdx: number;
-
-    /** @prototype */
-    frozenness: FrozenLevel;
 
     /*---- I.2 Harmony --------------------------------------------------------------------------*/
 
@@ -129,10 +124,6 @@ class HarmonyModel implements Export.IHarmonyModel {
         });
     }
 
-    checkSemantics(cursor: ICursor): IAny[] {
-        return [];
-    }
-
     __validate(cursor$: ICursor): void {
         // todo
     }
@@ -154,7 +145,6 @@ class HarmonyModel implements Export.IHarmonyModel {
 
 HarmonyModel.prototype.divCount = 0;
 HarmonyModel.prototype.divisions = 0;
-HarmonyModel.prototype.frozenness = FrozenLevel.Warm;
 
 module HarmonyModel {
     export class Layout implements Export.IHarmonyLayout {

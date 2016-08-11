@@ -19,10 +19,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import {IAny} from "musicxml-interfaces/operations";
-
 import IModel from "../document/model";
-import FrozenLevel from "../document/frozenLevels";
 import ExpandPolicy from "../document/expandPolicies";
 import Type from "../document/types";
 
@@ -44,9 +41,6 @@ class SpacerModel implements Export.ISpacerModel {
     /** defined externally */
     staffIdx: number;
 
-    /** @prototype */
-    frozenness: FrozenLevel;
-
     private _target: IModel;
 
     /*---- Implementation -----------------------------------------------------------------------*/
@@ -56,10 +50,6 @@ class SpacerModel implements Export.ISpacerModel {
             this._target = target;
             this.divCount = target.divCount;
         }
-    }
-
-    checkSemantics(cursor: ICursor): IAny[] {
-        return [];
     }
 
     __validate(cursor$: ICursor): void {
@@ -112,7 +102,6 @@ module SpacerModel {
 
 SpacerModel.prototype.divCount = 0;
 SpacerModel.prototype.divisions = 0;
-SpacerModel.prototype.frozenness = FrozenLevel.Warm;
 
 /**
  * Registers Spacer in the factory structure passed in.

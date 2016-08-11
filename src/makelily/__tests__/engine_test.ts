@@ -24,13 +24,11 @@
  */
 
 import {Print, OddEvenBoth} from "musicxml-interfaces";
-import {IAny} from "musicxml-interfaces/operations";
 
 import {map} from "lodash";
 import {expect} from "chai";
 
 import Type from "../document/types";
-import FrozenLevel from "../document/frozenLevels";
 import IModel from "../document/model";
 
 import ILayout from "../private/layout";
@@ -119,11 +117,6 @@ describe("[engine.ts]", function() {
                         divCount: 0,
                         divisions: 0,
                         staffIdx: 1,
-                        frozenness: FrozenLevel.Warm,
-
-                        checkSemantics: (cursor: ICursor): IAny[] => {
-                            return [];
-                        },
 
                         __validate: (cursor: ICursor) => { /* pass */ },
                         __layout: function(cursor: ICursor): ILayout {

@@ -19,10 +19,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import {IAny} from "musicxml-interfaces/operations";
-
-import FrozenLevel from "./frozenLevels";
-
 import ICursor from "../private/cursor";
 import ILayout from "../private/layout";
 import {MAX_SAFE_INTEGER} from "../private/constants";
@@ -37,13 +33,7 @@ interface IModel {
     divisions: number;
 
     staffIdx: number;
-    frozenness: FrozenLevel;
     key?: string;
-
-    /**
-     * Returns operations that will put the model into a semantically-valid state.
-     */
-    checkSemantics(cursor: ICursor): IAny[];
 
     /** 
      * Life-cycle method. Called before an attempt is made to layout the models.

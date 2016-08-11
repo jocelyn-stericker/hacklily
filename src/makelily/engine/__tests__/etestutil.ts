@@ -23,12 +23,9 @@
  * @file part of Satie test suite
  */
 
-import {IAny} from "musicxml-interfaces/operations";
-
 import OwnerType from "../../document/ownerTypes";
 import ISegment from "../../document/segment";
 import IModel from "../../document/model";
-import FrozenLevel from "../../document/frozenLevels";
 import Type from "../../document/types";
 import ExpandPolicy from "../../document/expandPolicies";
 
@@ -64,11 +61,6 @@ export function createFakeStaffSegment(
         {
             divCount: divisions1,
             staffIdx: 1,
-            frozenness: FrozenLevel.Warm,
-
-            checkSemantics: function(cursor$: ICursor): IAny[] {
-                return [];
-            },
 
             __validate: function(cursor$: ICursor) {
                 // pass
@@ -88,11 +80,6 @@ export function createFakeStaffSegment(
         {
             divCount: divisions2,
             staffIdx: 1,
-            frozenness: FrozenLevel.Warm,
-
-            checkSemantics: function(cursor$: ICursor): IAny[] {
-                return [];
-            },
 
             __validate: function(cursor$: ICursor) {
                 // pass
@@ -123,7 +110,6 @@ export function createFakeVoiceSegment(
         {
             divCount: divisions1,
             staffIdx: 1,
-            frozenness: FrozenLevel.Warm,
             length: 1,
             [0]: {
                 pitch: {
@@ -134,10 +120,6 @@ export function createFakeVoiceSegment(
                     duration: 8,
                 },
                 ties: [{}]
-            },
-
-            checkSemantics: function(cursor$: ICursor): IAny[] {
-                return [];
             },
 
             __validate: function(cursor$: ICursor) {
@@ -160,7 +142,6 @@ export function createFakeVoiceSegment(
         {
             divCount: divisions2,
             staffIdx: 1,
-            frozenness: FrozenLevel.Warm,
             length: 1,
             [0]: {
                 pitch: {
@@ -171,10 +152,6 @@ export function createFakeVoiceSegment(
                     duration: 8,
                 },
                 ties: [{}]
-            },
-
-            checkSemantics: function(cursor$: ICursor): IAny[] {
-                return [];
             },
 
             __validate: function(cursor$: ICursor) {

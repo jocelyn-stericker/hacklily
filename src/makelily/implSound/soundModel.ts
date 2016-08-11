@@ -21,13 +21,11 @@
 
 import {MidiInstrument, Play, Offset, MidiDevice, Sound,
     serializeSound} from "musicxml-interfaces";
-import {IAny} from "musicxml-interfaces/operations";
 import {forEach} from "lodash";
 
 import IModel from "../document/model";
 import ExpandPolicy from "../document/expandPolicies";
 import Type from "../document/types";
-import FrozenLevel from "../document/frozenLevels";
 
 import ICursor from "../private/cursor";
 import IBoundingRect from "../private/boundingRect";
@@ -42,9 +40,6 @@ class SoundModel implements Export.ISoundModel {
 
     /** defined externally */
     staffIdx: number;
-
-    /** @prototype */
-    frozenness: FrozenLevel;
 
     /*---- I.2 Sound -----------------------------------------------------------------------*/
 
@@ -81,10 +76,6 @@ class SoundModel implements Export.ISoundModel {
         });
     }
 
-    checkSemantics(cursor: ICursor): IAny[] {
-        return [];
-    }
-
     __validate(cursor$: ICursor): void {
         // todo
     }
@@ -104,7 +95,6 @@ class SoundModel implements Export.ISoundModel {
 }
 
 SoundModel.prototype.divCount = 0;
-SoundModel.prototype.frozenness = FrozenLevel.Warm;
 
 module SoundModel {
     export class Layout implements Export.ISoundLayout {

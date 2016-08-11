@@ -20,19 +20,14 @@
  */
 
 import * as invariant from "invariant";
-import {IAny} from "musicxml-interfaces/operations";
 
 import IModel from "../document/model";
-import FrozenLevel from "../document/frozenLevels";
 import Type from "../document/types";
 
 import ICursor from "../private/cursor";
 import ILayout from "../private/layout";
 
 class ProxyModel implements Export.IProxyModel {
-    /** @prototype */
-    frozenness: FrozenLevel;
-
     private _target: IModel;
     private _omTarget: IModel;
 
@@ -79,11 +74,6 @@ class ProxyModel implements Export.IProxyModel {
         return this.toXML();
     }
 
-    checkSemantics(cursor: ICursor): IAny[] {
-        invariant(!!this._target, "A proxy must have a target.");
-        return this._omTarget.checkSemantics(cursor);
-    }
-
     __validate(cursor$: ICursor): void {
         invariant(!!this._target, "A proxy must have a target.");
         this._omTarget.__validate(cursor$);
@@ -93,8 +83,6 @@ class ProxyModel implements Export.IProxyModel {
         return this._omTarget.__layout(cursor$);
     }
 }
-
-ProxyModel.prototype.frozenness = FrozenLevel.Warm;
 
 /**
  * Registers Proxy in the factory structure passed in.
