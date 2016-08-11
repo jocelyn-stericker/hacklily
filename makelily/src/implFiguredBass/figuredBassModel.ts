@@ -21,11 +21,9 @@
 
 import {FiguredBass, Figure, Footnote, Level, NormalBold, NormalItalic,
     serializeFiguredBass} from "musicxml-interfaces";
-import {IAny} from "musicxml-interfaces/operations";
 import {forEach} from "lodash";
 
 import IModel from "../document/model";
-import FrozenLevel from "../document/frozenLevels";
 import Type from "../document/types";
 import ExpandPolicy from "../document/expandPolicies";
 
@@ -45,9 +43,6 @@ class FiguredBassModel implements Export.IFiguredBassModel {
 
     /** defined externally */
     staffIdx: number;
-
-    /** @prototype */
-    frozenness: FrozenLevel;
 
     /*---- I.2 FiguredBass ----------------------------------------------------------------------*/
 
@@ -114,10 +109,6 @@ class FiguredBassModel implements Export.IFiguredBassModel {
         });
     }
 
-    checkSemantics(cursor: ICursor): IAny[] {
-        return [];
-    }
-
     __validate(cursor$: ICursor): void {
         // todo
     }
@@ -139,7 +130,6 @@ class FiguredBassModel implements Export.IFiguredBassModel {
 
 FiguredBassModel.prototype.divCount = 0;
 FiguredBassModel.prototype.divisions = 0;
-FiguredBassModel.prototype.frozenness = FrozenLevel.Warm;
 
 module FiguredBassModel {
     export class Layout implements Export.IFiguredBassLayout {

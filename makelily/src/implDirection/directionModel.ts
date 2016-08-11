@@ -21,11 +21,9 @@
 
 import {AboveBelow, DirectionType, Offset, Sound, Footnote, Level, Direction,
     NormalBold, Segno, serializeDirection} from "musicxml-interfaces";
-import {IAny} from "musicxml-interfaces/operations";
 import {forEach} from "lodash";
 
 import IModel from "../document/model";
-import FrozenLevel from "../document/frozenLevels";
 import Type from "../document/types";
 import ExpandPolicy from "../document/expandPolicies";
 
@@ -48,9 +46,6 @@ class DirectionModel implements Export.IDirectionModel {
 
     /** defined externally */
     staffIdx: number;
-
-    /** @prototype */
-    frozenness: FrozenLevel;
 
     /*---- I.2 Direction ------------------------------------------------------------------------*/
 
@@ -81,10 +76,6 @@ class DirectionModel implements Export.IDirectionModel {
         });
     }
 
-    checkSemantics(cursor: ICursor): IAny[] {
-        return [];
-    }
-
     __validate(cursor$: ICursor): void {
         forEach(this.directionTypes, type => {
             if (type.dynamics && this.placement === AboveBelow.Unspecified) {
@@ -108,7 +99,6 @@ class DirectionModel implements Export.IDirectionModel {
 
 DirectionModel.prototype.divCount = 0;
 DirectionModel.prototype.divisions = 0;
-DirectionModel.prototype.frozenness = FrozenLevel.Warm;
 
 module DirectionModel {
     export class Layout implements Export.IDirectionLayout {

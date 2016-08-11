@@ -22,12 +22,10 @@
 import {ScoreHeader, MeasureNumbering, PartNameDisplay, MeasureLayout, PartAbbreviationDisplay,
     PageLayout, SystemLayout, StaffLayout, Print, PageMargins, OddEvenBoth, NormalItalic,
     NormalBold, serializePrint} from "musicxml-interfaces";
-import {IAny} from "musicxml-interfaces/operations";
 import {forEach, defaultsDeep} from "lodash";
 import * as invariant from "invariant";
 
 import IModel from "../document/model";
-import FrozenLevel from "../document/frozenLevels";
 import Type from "../document/types";
 import ExpandPolicy from "../document/expandPolicies";
 
@@ -48,9 +46,6 @@ class PrintModel implements Export.IPrintModel {
 
     /** defined externally */
     staffIdx: number;
-
-    /** @prototype */
-    frozenness: FrozenLevel;
 
     /*---- I.2 Print ----------------------------------------------------------------------------*/
 
@@ -80,10 +75,6 @@ class PrintModel implements Export.IPrintModel {
         forEach<any>(spec, (value, key) => {
             (this as any)[key] = value;
         });
-    }
-
-    checkSemantics(cursor: ICursor): IAny[] {
-        return [];
     }
 
     __validate(cursor$: ICursor): void {
@@ -183,7 +174,6 @@ class PrintModel implements Export.IPrintModel {
 
 PrintModel.prototype.divCount = 0;
 PrintModel.prototype.divisions = 0;
-PrintModel.prototype.frozenness = FrozenLevel.Warm;
 
 module PrintModel {
     export class Layout implements Export.IPrintLayout {

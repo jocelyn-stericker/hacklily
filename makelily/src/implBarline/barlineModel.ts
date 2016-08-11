@@ -23,13 +23,11 @@ import {Barline, Segno, Coda, BarlineLocation, WavyLine, Fermata, BarStyle, Endi
     Footnote, Level, BarStyleType, PartGroup, PartSymbol,
     serializeBarline} from "musicxml-interfaces";
 import {buildBarStyle} from "musicxml-interfaces/builders";
-import {IAny} from "musicxml-interfaces/operations";
 import {some, forEach, last} from "lodash";
 import * as invariant from "invariant";
 
 import IModel from "../document/model";
 import Type from "../document/types";
-import FrozenLevel from "../document/frozenLevels";
 import ExpandPolicy from "../document/expandPolicies";
 
 import {getCurrentMeasureList} from "../engine/measureList";
@@ -52,9 +50,6 @@ class BarlineModel implements Export.IBarlineModel {
 
     /** defined externally */
     staffIdx: number;
-
-    /** @prototype */
-    frozenness: FrozenLevel;
 
     /*---- I.2 Barline --------------------------------------------------------------------------*/
 
@@ -88,10 +83,6 @@ class BarlineModel implements Export.IBarlineModel {
         forEach<any>(spec, (value, key) => {
             (this as any)[key] = value;
         });
-    }
-
-    checkSemantics(cursor: ICursor): IAny[] {
-        return [];
     }
 
     __validate(cursor$: ICursor): void {
@@ -149,7 +140,6 @@ class BarlineModel implements Export.IBarlineModel {
 }
 
 BarlineModel.prototype.divCount = 0;
-BarlineModel.prototype.frozenness = FrozenLevel.Warm;
 
 module BarlineModel {
     export class Layout implements Export.IBarlineLayout {

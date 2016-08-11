@@ -29,7 +29,6 @@ import * as invariant from "invariant";
 
 import IModel from "../document/model";
 import Type from "../document/types";
-import FrozenLevel from "../document/frozenLevels";
 
 import ICursor, {curr as modelAt, splice$} from "./cursor";
 import IChord, {fromModel as chordFromModel, timeModification, ties, setCount$,
@@ -269,7 +268,6 @@ export function rhythmicSpellcheck$(cursor$: ICursor): boolean {
     // TODO: Tuplets cannot be merged currently. They should be able to be merged if compatible.
     let nextEquivNote = nextIdx < cursor$.segment.length &&
         !!nextNote &&
-        nextObj.frozenness < FrozenLevel.Frozen &&
         !timeModification(currNote) && !timeModification(nextNote) &&
         (
             currNote[0].rest && nextNote[0].rest ||
@@ -311,12 +309,6 @@ export function rhythmicSpellcheck$(cursor$: ICursor): boolean {
             splice$(cursor$, cursor$.idx$ + 1, 0, toAdd);
             return true;
         }
-    }
-
-    /*---- I.2: End of checks that apply to Frozen objects --------------------------------------*/
-
-    if (curr.frozenness >= FrozenLevel.Frozen) {
-        return false;
     }
 
     /*---- II. Checks that should be done only if the annotation status isn't User --------------*/

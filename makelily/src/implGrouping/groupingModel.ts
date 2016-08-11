@@ -20,11 +20,9 @@
  */
 
 import {Feature, StartStopSingle, Grouping, serializeGrouping} from "musicxml-interfaces";
-import {IAny} from "musicxml-interfaces/operations";
 import {forEach} from "lodash";
 
 import IModel from "../document/model";
-import FrozenLevel from "../document/frozenLevels";
 import Type from "../document/types";
 import ExpandPolicy from "../document/expandPolicies";
 
@@ -46,9 +44,6 @@ class GroupingModel implements Export.IGroupingModel {
     /** defined externally */
     staffIdx: number;
 
-    /** @prototype */
-    frozenness: FrozenLevel;
-
     /*---- I.2 Grouping -------------------------------------------------------------------------*/
 
     features: Feature[];
@@ -62,10 +57,6 @@ class GroupingModel implements Export.IGroupingModel {
         forEach<any>(spec, (value, key) => {
             (this as any)[key] = value;
         });
-    }
-
-    checkSemantics(cursor: ICursor): IAny[] {
-        return [];
     }
 
     __validate(cursor$: ICursor): void {
@@ -89,7 +80,6 @@ class GroupingModel implements Export.IGroupingModel {
 
 GroupingModel.prototype.divCount = 0;
 GroupingModel.prototype.divisions = 0;
-GroupingModel.prototype.frozenness = FrozenLevel.Warm;
 
 module GroupingModel {
     export class Layout implements Export.IGroupingLayout {

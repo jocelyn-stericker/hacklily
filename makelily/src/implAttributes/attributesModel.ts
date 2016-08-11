@@ -22,12 +22,10 @@
 import {Clef, PartSymbol, MeasureStyle, StaffDetails, Transpose, Directive,
     Time, Key, Footnote, Level, Attributes, KeyOctave, PartSymbolType, SymbolSize,
     TimeSymbolType, serializeAttributes} from "musicxml-interfaces";
-import {IAny} from "musicxml-interfaces/operations";
 import {buildClef, buildTime, buildKey} from "musicxml-interfaces/builders";
 import {find, forEach, times} from "lodash";
 import * as invariant from "invariant";
 
-import FrozenLevel from "../document/frozenLevels";
 import IModel from "../document/model";
 import Type from "../document/types";
 import ExpandPolicy from "../document/expandPolicies";
@@ -54,9 +52,6 @@ class AttributesModel implements Export.IAttributesModel {
     /** defined externally */
     staffIdx: number;
 
-    /** @prototype */
-    frozenness: FrozenLevel;
-
     _snapshot: IAttributesSnapshot;
 
     /*---- I.2 Attributes -----------------------------------------------------------------------*/
@@ -82,10 +77,6 @@ class AttributesModel implements Export.IAttributesModel {
     level: Level;
 
     /*---- Implementation -----------------------------------------------------------------------*/
-
-    checkSemantics(cursor: ICursor): IAny[] {
-        return [];
-    }
 
     __validate(cursor$: ICursor): void {
         if (this._parent && this._parent !== cursor$.staff.attributes) {
@@ -377,7 +368,6 @@ class AttributesModel implements Export.IAttributesModel {
 }
 
 AttributesModel.prototype.divCount = 0;
-AttributesModel.prototype.frozenness = FrozenLevel.Warm;
 
 module AttributesModel {
     export class Layout implements Export.IAttributesLayout {
