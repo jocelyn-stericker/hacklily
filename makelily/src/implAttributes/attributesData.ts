@@ -46,23 +46,6 @@ export function needsWarning(end: IAttributesSnapshot, start: IAttributesSnapsho
     return !clefsEqual(end, start, staff) || !timesEqual(end, start, 0) || !keysEqual(end, start, 0);
 }
 
-export function warningWidth(end: IAttributesSnapshot, start: IAttributesSnapshot, staff: number) {
-    if (!start) {
-        return 0;
-    }
-    let totalWidth = 0;
-    if (!clefsEqual(end, start, staff)) {
-        totalWidth += clefWidth(start, staff);
-    }
-    if (!timesEqual(end, start, 0)) {
-        totalWidth += timeWidth(start, 0);
-    }
-    if (!keysEqual(end, start, 0)) {
-        totalWidth += keyWidth(start, 0);
-    }
-    return totalWidth;
-}
-
 export function clefWidth(attributes: IAttributesSnapshot, staff: number) {
     return 24;
 }

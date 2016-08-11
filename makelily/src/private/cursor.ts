@@ -27,7 +27,6 @@ import {Print, ScoreHeader} from "musicxml-interfaces";
 import {IAny} from "musicxml-interfaces/operations";
 import {VoiceBuilder, StaffBuilder} from "../patch/createPatch";
 
-import IModel from "../document/model";
 import ISegment from "../document/segment";
 import IDocument from "../document/document";
 
@@ -78,17 +77,3 @@ interface ICursor {
 }
 
 export default ICursor;
-
-export function curr(cursor: ICursor): IModel {
-    return cursor.segment[cursor.idx$] || null;
-}
-
-export function next(cursor: ICursor): IModel {
-    return cursor.segment[cursor.idx$ + 1] || null;
-}
-
-export function splice$(cursor$: ICursor, idx: number, toRemove: number, toAdd?: IModel[]) {
-    Array.prototype.splice.apply(cursor$.segment,
-        [idx, toRemove].concat(<any>toAdd || []));
-}
-

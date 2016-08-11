@@ -20,8 +20,8 @@
  */
 
 import {ScoreHeader, MeasureNumbering, PartNameDisplay, MeasureLayout, PartAbbreviationDisplay,
-    PageLayout, SystemLayout, StaffLayout, Print, PageMargins, OddEvenBoth, NormalItalic,
-    NormalBold, serializePrint} from "musicxml-interfaces";
+    PageLayout, SystemLayout, StaffLayout, Print, NormalItalic, NormalBold, serializePrint}
+    from "musicxml-interfaces";
 import {forEach, defaultsDeep} from "lodash";
 import * as invariant from "invariant";
 
@@ -155,20 +155,6 @@ class PrintModel implements Export.IPrintModel {
 
     inspect() {
         return this.toXML();
-    }
-
-    /*---- III. Extensions ----------------------------------------------------------------------*/
-
-    pageMarginsFor(page: number): PageMargins {
-        for (let i = 0; i < this.pageLayout.pageMargins.length; ++i) {
-            let margins = this.pageLayout.pageMargins[i];
-            if (margins.type === OddEvenBoth.Both ||
-                    (margins.type === OddEvenBoth.Odd) === !!(page % 2)) {
-                return margins;
-            }
-        }
-        console.warn("No valid page margins for current page...");
-        return null;
     }
 }
 

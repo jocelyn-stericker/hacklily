@@ -30,7 +30,7 @@ import {forEach, some, defaultsDeep} from "lodash";
 
 import {getPageMargins} from "../private/print";
 import {distances, bravura} from "../private/smufl";
-import {mmToTenths, defaultStaveHeight, pageSizes, defaultMargins} from "../private/renderUtil";
+import {mmToTenths, defaultStaveHeight, defaultPageSize, defaultMargins} from "../private/renderUtil";
 
 /** 
  * A header is a child of parts, and includes the title and other basic
@@ -132,9 +132,9 @@ class ScoreHeaderModel implements ScoreHeader {
         },
         pageLayout: {
             pageHeight: mmToTenths(
-                defaultStaveHeight, pageSizes[0].height),
+                defaultStaveHeight, defaultPageSize().height),
             pageWidth: mmToTenths(
-                defaultStaveHeight, pageSizes[0].width),
+                defaultStaveHeight, defaultPageSize().width),
             pageMargins: [
                 {
                     bottomMargin: mmToTenths(

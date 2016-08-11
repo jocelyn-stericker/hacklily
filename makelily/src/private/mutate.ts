@@ -20,16 +20,8 @@
  */
 
 import * as invariant from "invariant";
-import {last, union, isEqual, isObject, isArray} from "lodash";
+import {last} from "lodash";
 import {IAny, IObjectReplace, IObjectDelete, IObjectInsert, OTPath} from "musicxml-interfaces/operations";
-
-export function get(obj: any, p: OTPath) {
-    for (let i = 0; i < p.length; ++i) {
-        invariant(obj, `Invalid path: ${p.join(", ")}`);
-        obj = obj[p[i]];
-    }
-    return obj;
-}
 
 export function findParent(obj: any, p: OTPath): any {
     for (let i = 0; i < p.length - 1; ++i) {
@@ -37,32 +29,6 @@ export function findParent(obj: any, p: OTPath): any {
         invariant(obj, `Invalid path: ${p.join(", ")}`);
     }
     return obj;
-}
-
-export function allKeys(a: any): string[] {
-    let keys: string[] = [];
-    do {
-        keys = keys.concat(a.__proto__);
-        a = a.__proto__;
-    } while(a);
-    return keys;
-}
-
-export function expectEqualish(a: any, b: any, op: IAny) {
-    if (isArray(a) || isArray(b) || !isObject(a) || !isObject(b)) {
-        if (!isEqual(a, b)) {
-            throw new Error(`a[] != b[] when evaluating ${JSON.stringify(op)}`);
-        }
-        return;
-    }
-
-    let aKeys = allKeys(a);
-    let bKeys = allKeys(b);
-    union(aKeys, bKeys).forEach(key => {
-        if (!isEqual(a[key], b[key])) {
-            throw new Error(`a.${key} != b.${key} when evaluating ${JSON.stringify(op)}`);
-        }
-    });
 }
 
 export function set(obj: any, op: IObjectInsert<any>) {
