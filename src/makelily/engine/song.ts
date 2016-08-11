@@ -226,6 +226,7 @@ export default class Song extends Component<IProps, IState> implements ISong {
         return exportXML(this.state.document);
     };
 
+    private _fakeMounted: boolean;
     run() {
         this.setState = (state: IState, cb: Function) => {
             extend(this.state, state);
@@ -236,7 +237,10 @@ export default class Song extends Component<IProps, IState> implements ISong {
         this.forceUpdate = () => {
             // no-op
         };
-        this.componentWillMount();
+        if (!this._fakeMounted) {
+            this.componentWillMount();
+        }
+        this._fakeMounted = true;
         this.componentWillReceiveProps(this.props);
     }
 

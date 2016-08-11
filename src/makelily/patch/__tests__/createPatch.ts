@@ -2,6 +2,7 @@ import {BarStyleType, Count, MxmlAccidental} from "musicxml-interfaces";
 import {expect} from "chai";
 import {find} from "lodash";
 
+import Type from "../../document/types";
 import Song from "../../engine/song";
 import IChord from "../../private/chord";
 import {Patch} from "../../index";
@@ -119,13 +120,19 @@ describe("patches", function() {
 
         const expandedPatch = song.createCanonicalPatch({raw: patch});
 
+        // check state of document
+        const patchedDocument = song.getDocument(expandedPatch);
+        expect(patchedDocument.measures.length).to.equal(4);
+        expect(patchedDocument.measures[3].parts["P1"].voices[1][0].divCount).to.equal(4);
+        expect(patchedDocument.modelHasType(patchedDocument.measures[3].parts["P1"].staves[1][3],
+            Type.Barline)).to.be.true;
+
         // Does not change previous patch.
         expect(patch.length).to.equal(3);
 
         let barStylePatch = find((expandedPatch as any).content, (p: any) => p.li && p.li._class === "Barline");
         expect(barStylePatch).to.deep.equal({
-            // TODO: remove String()
-            p: [String(newMeasureUUID), "parts", "P1", "staves", 1, 2], // May eventually be 3?
+            p: [newMeasureUUID, "parts", "P1", "staves", 1, 2], // May eventually be 3?
             li: {
                 _class: "Barline",
                 barStyle: {
@@ -262,6 +269,56 @@ describe("patches", function() {
             });
 
         // changed barline
+        done();
+    });
+    it("can add a note and remove measures", done => {
+        let song = new Song({
+            baseSrc: songTemplate,
+
+            onError: done,
+            onLoaded: () => {
+                // no-op
+            },
+        });
+        song.run();
+
+        const patch = song.createCanonicalPatch(
+            {
+                part: "P1",
+                measure: song.getDocument(null).measures[0].uuid,
+                partBuilder: part => part.voice(1, voice => voice
+                    .insertChord([
+                        note => note
+                            .pitch(pitch => pitch.step("C").octave(4))
+                            .staff(1)
+                            .noteType(type => type.duration(Count.Half))
+                    ]), 0),
+            },
+            {
+                part: "P1",
+                measure: song.getDocument(null).measures[0].uuid,
+                partBuilder: part => part.voice(1, voice => voice
+                    .insertNote(1,
+                        note => note
+                            .pitch(pitch => pitch.step("E").octave(4))
+                            .staff(1)
+                            .noteType(type => type.duration(Count.Half))
+                        )
+                    , 0)
+            },
+            {
+                documentBuilder: doc => doc.removeMeasure(2).removeMeasure(1)
+            }
+        );
+
+        // Apply the patch.
+        song.props.patches = patch;
+        song.run();
+
+        let src = song.toMusicXML();
+        expect(src.match(/<note /g).length).to.equal(3);
+        expect(src.match(/<chord /g).length).to.equal(1);
+        expect(src.match(/<rest /g).length).to.equal(1);
         done();
     });
 });

@@ -29,7 +29,6 @@ import ExpandPolicy from "../document/expandPolicies";
 import ICursor from "../private/cursor";
 import ILayout from "../private/layout";
 import IBoundingRect from "../private/boundingRect";
-import {cloneObject} from "../private/util";
 
 class GroupingModel implements Export.IGroupingModel {
 
@@ -109,28 +108,6 @@ module GroupingModel {
     Layout.prototype.boundingBoxes$ = [];
     Object.freeze(Layout.prototype.boundingBoxes$);
 };
-
-function deepAssign<T>(a: T, b: T): T {
-    if (a instanceof Array || b instanceof Array) {
-        let retArr: any[] = [];
-        let aArr: any[] = (<any>a);
-        let bArr: any[] = (<any>b);
-        for (let i = 0; i < Math.max(a ? aArr.length : 0, b ? bArr.length : 0); ++i) {
-            retArr.push(deepAssign(a ? aArr[i] : null, b ? bArr[i] : null));
-        }
-        return (<any>retArr);
-    } else if (a instanceof Object || b instanceof Object) {
-        let ret: T = cloneObject(a) || (<T>{});
-        for (let key in b) {
-            if (b.hasOwnProperty(key)) {
-                (<any>ret)[key] = deepAssign((<any>ret)[key], (<any>b)[key]);
-            }
-        }
-        return ret;
-    } else {
-        return (a === undefined) ? b : a;
-    }
-}
 
 /**
  * Registers Grouping in the factory structure passed in.

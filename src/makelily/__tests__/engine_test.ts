@@ -167,6 +167,7 @@ describe("[engine.ts]", function() {
 
             let contextOptions: ILayoutOptions = {
                 document: {
+                    modelHasType: createAttributesChordFactory.modelHasType,
                     __fakeDocument: true
                 } as any,
                 preview: false,

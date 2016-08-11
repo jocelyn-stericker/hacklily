@@ -25,12 +25,10 @@ import * as invariant from "invariant";
 
 import IMeasureLayout from "../private/measureLayout";
 import ILayout from "../private/layout";
-import DebugBox from "../private/views/debugBox";
 import {MAX_SAFE_INTEGER} from "../private/constants";
 
 import ModelView from "../implSegment/modelView";
 
-const $DebugBox = createFactory(DebugBox);
 const $ModelView = createFactory(ModelView);
 
 export interface IProps {
@@ -68,8 +66,7 @@ export default class MeasureView extends Component<IProps, void> {
                     layout,
                     originX: this.props.layout.originX,
                 }))
-                .value(),
-            $DebugBox({key: "debugBox", layout: layout})
+                .value()
         /*DOM.g*/);
 
         /* TODO: lyric boxes */

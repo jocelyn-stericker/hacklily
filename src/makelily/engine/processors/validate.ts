@@ -33,6 +33,8 @@ import ILayoutOptions, {IFixupFn} from "../../private/layoutOptions";
 import ILinesLayoutState from "../../private/linesLayoutState";
 import {detachMeasureContext} from "../../private/measureContext";
 
+import createPatch from "../../patch/createPatch";
+
 import applyOp from "../applyOp";
 import {setCurrentMeasureList} from "../measureList";
 
@@ -234,25 +236,20 @@ function tryValidate(options$: ILayoutOptions, memo$: ILinesLayoutState,
                     ensureHeader(Type.Attributes);
                     if (!search(segment, segment.length - 1, Type.Barline).length) {
                         // Make sure the barline ends up at the end.
-                        const patches: IAny[] = [];
-                        patches.push({
-                            p: [
-                                String(measure.uuid),
-                                "parts",
-                                segment.part,
-                                "staves",
+                        const patches = createPatch(false, options$.document, measure.uuid,
+                            segment.part,
+                            part => part.staff(
                                 segment.owner,
-                                segment.length + patches.length
-                            ],
-
-                            li: {
-                                _class: Type[Type.Barline],
-                                barStyle: {
-                                    data: measure.idx === last(options$.document.measures).idx ?
-                                        BarStyleType.LightHeavy : BarStyleType.Regular,
-                                },
-                            }
-                        });
+                                staff => staff
+                                    .insertBarline(barline => barline
+                                        .barStyle({
+                                            data: measure.idx === last(options$.document.measures).idx ?
+                                                BarStyleType.LightHeavy : BarStyleType.Regular,
+                                        })
+                                    ),
+                                segment.length
+                            )
+                        );
                         rootFixupOpts$.rootFixup(segment, patches, false);
                     }
                 });

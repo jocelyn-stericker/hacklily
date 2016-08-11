@@ -60,14 +60,3 @@ export function cloneObject<T>(obj: T): T {
     return JSON.parse(JSON.stringify(obj)) as T;
 }
 
-export function findIndex<T>(arr: T[], predicate: (v: T, i?: number, arr?: T[]) => boolean,
-        startAt: number = 0) {
-    let len = arr.length;
-    for (let i = startAt; i < len; ++i) {
-        if (predicate(arr[i], i, arr)) {
-            return i;
-        }
-    }
-    return -1;
-}
-

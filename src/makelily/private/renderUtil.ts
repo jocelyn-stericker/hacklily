@@ -656,14 +656,4 @@ export function cssSizeToTenths(scaling40: number, css: string) {
 export function tenthsToMM(scaling40: number, tenths: number) {
     return scaling40 * tenths / 40;
 }
-export function getHeaderHeight(header: any) {
-    let height = 0;
-    if (header.title) {
-        height += 2;
-    }
-    if (header.composer) {
-        height += 0.75;
-    }
-    return height;
-}
 

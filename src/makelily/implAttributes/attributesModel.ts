@@ -33,7 +33,7 @@ import ExpandPolicy from "../document/expandPolicies";
 import ILayout from "../private/layout";
 import IBoundingRect from "../private/boundingRect";
 import IAttributesSnapshot from "../private/attributesSnapshot";
-import ICursor, {next as cursorNext} from "../private/cursor";
+import ICursor from "../private/cursor";
 import {barDivisions, fromModel as chordFromModel, hasAccidental} from "../private/chord";
 import {groupsForPart} from "../private/part";
 import {create as createSnapshot} from "../private/attributesSnapshot";
@@ -381,7 +381,7 @@ module AttributesModel {
             this.staffIdx = cursor$.staff.idx;
 
             let isFirstInLine = cursor$.line && cursor$.line.barOnLine$ === 0 && !this.division;
-            let next = cursorNext(cursor$);
+            let next = cursor$.segment[cursor$.idx$ + 1];
             let nextIsNote = cursor$.factory.modelHasType(next, Type.Chord);
             let parent = this.model._parent;
 

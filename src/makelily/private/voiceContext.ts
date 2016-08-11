@@ -27,10 +27,3 @@ interface IVoiceContext {
 }
 
 export default IVoiceContext;
-
-/** 
- * For completeness.
- */
-export function detatchVoiceContext(oldContext: IVoiceContext): IVoiceContext {
-    return {};
-}
