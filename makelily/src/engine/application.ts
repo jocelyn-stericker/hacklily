@@ -21,10 +21,7 @@
 
 import {Pitch} from "musicxml-interfaces";
 
-import ISong from "../document/song";
-
 import {init, ISatieOptions} from "./setup";
-import Song from "./song";
 
 export type IHandler = (path: (string|number)[], pitch: Pitch) => void;
 
@@ -39,18 +36,4 @@ export default class Application {
         _didInit = true;
         init(options);
     }
-
-    newSong(options: {
-                errorHandler: (error: Error) => void,
-                changeHandler: () => void,
-                mouseMoveHandler: IHandler,
-                mouseClickHandler: IHandler,
-
-                musicXML: string,
-                pageClassName?: string,
-                singleLineMode?: boolean,
-            }) {
-        return new Song(options) as ISong;
-    }
 }
-

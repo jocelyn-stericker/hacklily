@@ -20,7 +20,7 @@
  */
 
 import {PartSymbolType} from "musicxml-interfaces";
-import {createFactory as $, Component, DOM, PropTypes} from "react";
+import {createFactory, Component, DOM, PropTypes} from "react";
 import {some, map} from "lodash";
 
 import Line from "../private/views/line";
@@ -29,7 +29,8 @@ import AttributesView from "../implAttributes/attributesView";
 
 import BarlineModel from "./barlineModel";
 
-const $AttributesView = $(AttributesView);
+const $AttributesView = createFactory(AttributesView);
+const $Line = createFactory(Line);
 
 /**
  * Renders a full-stave-height barline at (x,y).
@@ -78,7 +79,7 @@ export default class BarlineView extends Component<{layout: BarlineModel.IBarlin
         }
 
         return DOM.g(null,
-            map(layout.lineStarts, (start, idx) => $(Line)({
+            map(layout.lineStarts, (start, idx) => $Line({
                 key: idx,
                 stroke: model.barStyle.color,
                 strokeWidth: layout.lineWidths[idx],

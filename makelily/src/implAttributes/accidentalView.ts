@@ -20,12 +20,14 @@
  */
 
 import {Accidental} from "musicxml-interfaces";
-import {createFactory as $, Component, DOM, PropTypes} from "react";
+import {createFactory, Component, DOM, PropTypes} from "react";
 import * as invariant from "invariant";
 
 import Glyph from "../private/views/glyph";
 import {accidentalGlyphs} from "../private/chord";
 import {bboxes} from "../private/smufl";
+
+const $Glyph = createFactory(Glyph);
 
 export interface IProps {
     spec: Accidental;
@@ -50,7 +52,7 @@ export default class AccidentalView extends Component<IProps, void> {
         const originY = this.context.originY;
         const shift = spec.parentheses ? 4 : 0;
 
-        let accidental = $(Glyph)({
+        let accidental = $Glyph({
             fill: spec.color,
             glyphName: glyphName,
             x: (this.props.noteDefaultX || 0) + spec.defaultX + (spec.relativeX || 0) + shift,
@@ -60,14 +62,14 @@ export default class AccidentalView extends Component<IProps, void> {
         if (spec.parentheses || spec.bracket) {
             let width = bboxes[glyphName][0] * 10; // TODO: it's actually 2 - 0!
             return DOM.g(null,
-                $(Glyph)({
+                $Glyph({
                     fill: "#000000",
                     glyphName: "accidentalParensLeft",
                     x: (this.props.noteDefaultX || 0) + spec.defaultX + (spec.relativeX || 0) - 7 + shift,
                     y: originY - (spec.defaultY + (spec.relativeY || 0))
                 }),
                 accidental,
-                $(Glyph)({
+                $Glyph({
                     fill: "#000000",
                     glyphName: "accidentalParensRight",
                     x: (this.props.noteDefaultX || 0) + spec.defaultX + (spec.relativeX || 0) + width + shift,

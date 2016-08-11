@@ -70,17 +70,16 @@ const songTemplate = `<?xml version="1.0" encoding="UTF-8"?>
 describe("patches", function() {
     it("can append a bar, and adjust barlines accordingly, and this can be undone", function(done) {
         let song = new Song({
-            musicXML: songTemplate,
+            baseSrc: songTemplate,
 
-            errorHandler: done,
-            changeHandler: () => {
+            onError: done,
+            onLoaded: () => {
                 // no-op
             },
-            mouseMoveHandler: () => void 0,
-            mouseClickHandler: () => void 0
         });
+        song.run();
 
-        const patch = Patch.createPatch(false, song.getDocument(),
+        const patch = Patch.createPatch(false, song.getDocument(null),
             document => document
                 .insertMeasure(3, measure => measure
                     .part("P1", part => part
@@ -97,7 +96,7 @@ describe("patches", function() {
                     )
               )
         );
-        let thirdMeasureUUID = song.getDocument().measures[2].uuid;
+        let thirdMeasureUUID = song.getDocument(null).measures[2].uuid;
 
         // new measure
         expect(patch[0].p).to.deep.equal(["measures", 3]);
@@ -118,12 +117,12 @@ describe("patches", function() {
         // No other patches
         expect(patch.length).to.equal(3);
 
-        const expandedPatch = song.setOperations(patch);
+        const expandedPatch = song.createCanonicalPatch({raw: patch});
 
         // Does not change previous patch.
         expect(patch.length).to.equal(3);
 
-        let barStylePatch = find(expandedPatch, p => p.li && p.li._class === "Barline");
+        let barStylePatch = find((expandedPatch as any).content, (p: any) => p.li && p.li._class === "Barline");
         expect(barStylePatch).to.deep.equal({
             // TODO: remove String()
             p: [String(newMeasureUUID), "parts", "P1", "staves", 1, 2], // May eventually be 3?
@@ -137,10 +136,10 @@ describe("patches", function() {
         });
 
         // Try undoing everything
-        const newPatch = song.setOperations([]);
-        expect(newPatch.length).to.equal(0);
-        expect(song.getDocument().measures.length).to.equal(3);
-        const barline = song.getDocument().measures[2].parts["P1"].staves[1][3];
+        const newPatch = song.createCanonicalPatch(null);
+        expect((newPatch as any).content.length).to.equal(0);
+        expect(song.getDocument(newPatch).measures.length).to.equal(3);
+        const barline = song.getDocument(newPatch).measures[2].parts["P1"].staves[1][3];
         expect((barline as any)._class).to.equal("Barline");
         expect((barline as any).barStyle.data === BarStyleType.LightHeavy);
 
@@ -149,21 +148,18 @@ describe("patches", function() {
     });
     it("can replace a rest with a shorter note", function(done) {
         let song = new Song({
-            musicXML: songTemplate,
+            baseSrc: songTemplate,
 
-            errorHandler: done,
-            changeHandler: () => {
+            onError: done,
+            onLoaded: () => {
                 // no-op
             },
-            mouseMoveHandler: () => void 0,
-            mouseClickHandler: () => void 0
         });
+        song.run();
 
-        const measureUUID = song.getDocument().measures[0].uuid;
+        const measureUUID = song.getDocument(null).measures[0].uuid;
 
-        console.log(song.getDocument().measures[0].parts["P1"].voices[1]);
-
-        const patch = Patch.createPatch(false, song.getDocument(), measureUUID, "P1", part => part
+        const patch = Patch.createPatch(false, song.getDocument(null), measureUUID, "P1", part => part
             .voice(1, voice => voice
                 .note(0, note => note
                     .pitch(pitch => pitch
@@ -251,15 +247,14 @@ describe("patches", function() {
             }
         ]);
 
-        const expandedPatch = song.setOperations(patch);
+        const expandedPatch = song.createCanonicalPatch({raw: patch});
 
         // No other changes should be needed
-        expect(expandedPatch).to.deep.equal(patch);
+        expect((expandedPatch as any).content).to.deep.equal(patch);
 
         // Try undoing this, making sure the first note is now a rest.
-        const newPatch = song.setOperations([]);
-        expect(newPatch.length).to.equal(0);
-        expect((song.getDocument().measures[0].parts["P1"].voices[1][0] as any as IChord)[0].rest).
+        const newPatch = song.createCanonicalPatch(null);
+        expect((song.getDocument(newPatch).measures[0].parts["P1"].voices[1][0] as any as IChord)[0].rest).
             to.deep.equal({
                 displayOctave: undefined,
                 displayStep: undefined,

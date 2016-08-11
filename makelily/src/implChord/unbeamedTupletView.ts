@@ -28,7 +28,7 @@
 // This keeps spacing consistent, even in beam groups with rests.
 
 import {AboveBelow} from "musicxml-interfaces";
-import {createFactory as $, Component, DOM, PropTypes} from "react";
+import {createFactory, Component, DOM, PropTypes} from "react";
 import {first, last} from "lodash";
 
 import {bravura, getFontOffset} from "../private/smufl";
@@ -36,7 +36,7 @@ import {bravura, getFontOffset} from "../private/smufl";
 import TupletNumberView from "./tupletNumberView";
 import IBeamLayout from "./beamLayout";
 
-const $TupletNumberView = $(TupletNumberView);
+const $TupletNumberView = createFactory(TupletNumberView);
 
 export interface IProps {
     key?: string | number;

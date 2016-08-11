@@ -404,6 +404,7 @@ export default function createPatch(isPreview: boolean,
 }
 
 interface IElementInfo {
+    idx: number;
     start: number;
     previousDivisions: number;
     newDivisions: number;
@@ -458,13 +459,25 @@ function getMutationInfo(document: IDocument, patches: IAny[]) {
             let time = attributes[segID].time; // TODO: TS changes
             let divisions = attributes[segID].divisions;
 
-            elementInfos[segID] = voice.reduce((elementInfo, model) => {
+            elementInfos[segID] = voice.reduce((elementInfo, model, idx) => {
                 if (!document.modelHasType(model, Type.Chord)) {
-                    return;
+                    return elementInfo.concat({
+                        idx: idx,
+                        start: currDiv,
+                        previousDivisions: 0,
+                        newDivisions: 0,
+                        newCount: 0,
+                        newDots: 0,
+                        time: time,
+                        rest: true,
+                        beam: null,
+                        touched: false,
+                    });
                 }
                 let chord = chordFromModel(model);
                 let divs = calcDivisionsNoCtx(chord, time, divisions);
                 let info = {
+                    idx: idx,
                     start: currDiv,
                     previousDivisions: divs,
                     newDivisions: divs,
@@ -496,6 +509,7 @@ function getMutationInfo(document: IDocument, patches: IAny[]) {
                 }
 
                 let newInfo: IElementInfo = {
+                    idx: spliceIdx,
                     newCount: c,
                     newDivisions: divs,
                     newDots: d,
@@ -509,6 +523,7 @@ function getMutationInfo(document: IDocument, patches: IAny[]) {
 
                 for (let i = spliceIdx; i < elementInfos[segID].length; ++i) {
                     elementInfos[segID][i].start += divs;
+                    elementInfos[segID][i].idx += 1;
                 }
 
                 elementInfos[segID].splice(spliceIdx, 0, newInfo);
@@ -521,6 +536,7 @@ function getMutationInfo(document: IDocument, patches: IAny[]) {
 
                 for (let i = spliceIdx; i < elementInfos[segID].length; ++i) {
                     elementInfos[segID][i].start -= divs;
+                    elementInfos[segID][i].idx -= 1;
                 }
             }
             return;
@@ -801,6 +817,10 @@ function addBeams(document: IDocument, patches: IAny[]): IAny[] {
         advanceBP(0);
 
         voiceInfo.forEach((elInfo, originalIdx) => {
+            if (!elInfo.newDivisions) {
+                // Skip this non-note.
+                return;
+            }
             let divs = _calcDivisions(elInfo.newCount, elInfo.newDots,
                                       null, time, segment.divisions);
             const isCandidate = countToIsBeamable[elInfo.newCount] &&

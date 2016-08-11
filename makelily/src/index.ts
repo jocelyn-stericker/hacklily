@@ -26,7 +26,8 @@ export {default as Application} from "./engine/application";
 
 /* Root-scope interfaces: Songs, documents, models */
 export {default as IHandler} from "./engine/application";
-export {default as ISong} from "./document/song";
+export {default as Song} from "./engine/song";
+
 export {default as IDocument} from "./document/document";
 export {default as IModel} from "./document/model";
 export {default as Type} from "./document/types";

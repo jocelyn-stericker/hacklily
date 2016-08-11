@@ -20,13 +20,15 @@
  */
 
 import {Key, Clef, Accidental, MxmlAccidental} from "musicxml-interfaces";
-import {createFactory as $, Component, DOM} from "react";
+import {createFactory, Component, DOM} from "react";
 import {times, map} from "lodash";
 
 import AccidentalView from "./accidentalView";
 import {keyWidths} from "./attributesData";
 
 import {lineForClef_} from "../private/chord";
+
+const $AccidentalView = createFactory(AccidentalView);
 
 // TODO: this almost looks like logic -- move.
 const sharps: { [key: string]: Array<number> } = {
@@ -52,7 +54,7 @@ class KeyView extends Component<{spec: Key; clef: Clef, key?: string | number}, 
     render(): any {
         return DOM.g(null,
             map(this.getAccidentals(),
-                (accidental, idx) => $(AccidentalView)({
+                (accidental, idx) => $AccidentalView({
                     key: idx,
                     spec: accidental
                 })
@@ -64,6 +66,7 @@ class KeyView extends Component<{spec: Key; clef: Clef, key?: string | number}, 
      * Returns an array representing the position and glyphName of each accidental.
      */
     getAccidentals(): Accidental[] {
+        // TODO: this is expensive -- compute in attributes!
         let spec = this.props.spec;
         let clef = this.props.clef;
         let widths = keyWidths(spec);

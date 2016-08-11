@@ -20,13 +20,15 @@
  */
 
 import {Dynamics} from "musicxml-interfaces";
-import {createFactory as $, ReactElement, Component, PropTypes} from "react";
+import {createFactory, ReactElement, Component, PropTypes} from "react";
 import {filter} from "lodash";
 import * as invariant from "invariant";
 
 import Glyph from "../private/views/glyph";
 
 import DirectionModel from "./directionModel";
+
+const $Glyph = createFactory(Glyph);
 
 export interface IProps {
     layout: DirectionModel.IDirectionLayout;
@@ -57,7 +59,7 @@ export default class DynamicsView extends Component<IProps, {}> {
             return null;
         }
 
-        return $(Glyph)({
+        return $Glyph({
             fill: "black",
             glyphName: glyphName,
             x: initX,

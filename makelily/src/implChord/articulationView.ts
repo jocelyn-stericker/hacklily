@@ -20,9 +20,11 @@
  */
 
 import {PrintStyle, Placement, Articulations, AboveBelow} from "musicxml-interfaces";
-import {createFactory as $, Component, DOM, ReactElement, PropTypes} from "react";
+import {createFactory, Component, DOM, ReactElement, PropTypes} from "react";
 
 import Glyph from "../private/views/glyph";
+
+const $Glyph = createFactory(Glyph);
 
 type MXMLArticulation = PrintStyle | Placement;
 
@@ -80,7 +82,7 @@ export default class Articulation extends Component<IProps, void> {
                         return "Above";
                 }
             }());
-            children.push($(Glyph)({
+            children.push($Glyph({
                 fill: "black",
                 glyphName: `${name}${direction}`,
                 key: name,

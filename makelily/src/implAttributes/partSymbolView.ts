@@ -20,11 +20,14 @@
  */
 
 import {PartSymbol, PartSymbolType} from "musicxml-interfaces";
-import {createFactory as $, Component, DOM, PropTypes} from "react";
+import {createFactory, Component, DOM, PropTypes} from "react";
 
 import Line from "../private/views/line";
 import Glyph from "../private/views/glyph";
 import {bravura} from "../private/smufl";
+
+const $Line = createFactory(Line);
+const $Glyph = createFactory(Glyph);
 
 const BRACE_H_SCALE = 2.9;
 
@@ -62,7 +65,7 @@ export default class PartSymbolView extends Component<IProps, void> {
         let symbol = this.getSymbol();
         return DOM.g(null,
             symbol,
-            $(Line)({
+            $Line({
                 key: "line",
                 stroke: "#000000",
                 strokeWidth: defaults.thinBarlineThickness * 10,
@@ -88,7 +91,7 @@ export default class PartSymbolView extends Component<IProps, void> {
 
         switch (spec.type) {
             case PartSymbolType.Brace:
-                return $(Glyph)({
+                return $Glyph({
                     fill: "#000000",
                     glyphName: "brace",
                     key: "partSymbolMain",
@@ -101,7 +104,7 @@ export default class PartSymbolView extends Component<IProps, void> {
             case PartSymbolType.Bracket:
             case PartSymbolType.Square: // TODO: Not implemented
                 return [
-                    $(Line)({
+                    $Line({
                         key: "partSymbolMain",
                         stroke: "#000000",
                         strokeWidth: defaults.bracketThickness * 10,
@@ -110,14 +113,14 @@ export default class PartSymbolView extends Component<IProps, void> {
                         y1: bottom - height - 2 - 3,
                         y2: bottom + 2 + 3
                     }),
-                    $(Glyph)({
+                    $Glyph({
                         fill: "#000000",
                         glyphName: "bracketTop",
                         key: "bracketTop",
                         x: x + 4,
                         y: this.context.systemTop - 2
                     }),
-                    $(Glyph)({
+                    $Glyph({
                         fill: "#000000",
                         glyphName: "bracketBottom",
                         key: "bracketBottom",

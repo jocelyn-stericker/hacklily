@@ -19,13 +19,15 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import {createFactory as $, Component, DOM, PropTypes} from "react";
+import {createFactory, Component, DOM, PropTypes} from "react";
 import {times, map} from "lodash";
 
 import {bravura, getFontOffset} from "../private/smufl";
 
 import IBeamLayout from "./beamLayout";
 import TupletNumber from "./tupletNumberView";
+
+const $TupletNumber = createFactory(TupletNumber);
 
 export interface IProps {
     key?: string | number;
@@ -92,7 +94,7 @@ export default class Beam extends Component<IProps, {}> {
                     });
                 });
             }),
-            tuplet && $(TupletNumber)({
+            tuplet && $TupletNumber({
                 tuplet,
                 x1: xLow,
                 x2: xHigh,

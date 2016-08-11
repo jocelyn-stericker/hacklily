@@ -73,69 +73,58 @@ describe("Import/export tests", function() {
        it(file, function(done) {
            readFile(root + "/" + file, function(musicXML) {
                let song = new Song({
-                   musicXML,
+                   baseSrc: musicXML,
 
-                   errorHandler: done,
-                   changeHandler: () => {
-                       // HACK: Overwrite encoding date to always be the same, so test results don't change overnight.
-                       // Note: this is not the correct way of modifying a document -- use patches!
-                       song.getDocument().header.identification.encoding.encodingDate = {
-                           day: 1,
-                           month: 1,
-                           year: 2016,
-                       };
-                       // HACK: overwrite UUIDs, so test results don't change every time.
-                       // Note: this is not the correct way of modifying a document -- use patches!
-                       song.getDocument().measures.forEach((measure, idx) => {
-                           measure.uuid = 42 + idx;
-                       });
-                       song.toSVG((error, page1Svg) => {
-                           if (error) {
-                               done(error);
-                               return;
-                           }
-                           try {
-                               fs.writeFile("rendertest/out/" + outname, page1Svg);
+                   onError: done,
+                   onLoaded: () => {
+                       try {
+                            // HACK: Overwrite encoding date to always be the same, so test results don't change overnight.
+                            // Note: this is not the correct way of modifying a document -- use patches!
+                            song.header.identification.encoding.encodingDate = {
+                                day: 1,
+                                month: 1,
+                                year: 2016,
+                            };
+                            // HACK: overwrite UUIDs, so test results don't change every time.
+                            // Note: this is not the correct way of modifying a document -- use patches!
+                            song.getDocument(null).measures.forEach((measure, idx) => {
+                                measure.uuid = 42 + idx;
+                            });
+                            const page1Svg = song.toSVG();
+                            fs.writeFile("rendertest/out/" + outname, page1Svg);
 
-                               if (!process.env.SKIP_DTD_VALIDATION) {
-                                   song.toMusicXML((err, mxmlOut) => {
-                                       if (err) {
-                                           done(err);
-                                           return;
-                                       }
-                                       let stdout: string;
-                                       let stderr: string;
-                                       let error: string;
+                            if (!process.env.SKIP_DTD_VALIDATION) {
+                                let mxmlOut = song.toMusicXML();
+                                let stdout: string;
+                                let stderr: string;
+                                let error: string;
 
-                                       let env = Object.create(process.env);
-                                       env.XML_CATALOG_FILES = "./vendor/musicxml-dtd/catalog.xml";
-                                       fs.writeFile("rendertest/out/" + outname + ".xml", mxmlOut);
-                                       let proc = child_process.spawnSync("xmllint",
-                                               ["--valid", "--noout", "--nonet", "-"], {
-                                           input: mxmlOut,
-                                           env: env
-                                       });
-                                       stdout = String(proc.stdout);
-                                       stderr = String(proc.stderr);
-                                       error = "" + proc.error;
-                                       if (stdout || stderr) {
-                                           done(new Error(stderr || stdout || error));
-                                       } else {
-                                           done();
-                                       }
-                                   });
-                               } else {
-                                   done();
-                               }
-                           } catch (err) {
-                               done(err);
-                               return;
-                           }
-                       });
+                                let env = Object.create(process.env);
+                                env.XML_CATALOG_FILES = "./vendor/musicxml-dtd/catalog.xml";
+                                fs.writeFile("rendertest/out/" + outname + ".xml", mxmlOut);
+                                let proc = child_process.spawnSync("xmllint",
+                                        ["--valid", "--noout", "--nonet", "-"], {
+                                    input: mxmlOut,
+                                    env: env
+                                });
+                                stdout = String(proc.stdout);
+                                stderr = String(proc.stderr);
+                                error = "" + proc.error;
+                                if (stdout || stderr) {
+                                    done(new Error(stderr || stdout || error));
+                                } else {
+                                    done();
+                                }
+                            } else {
+                                done();
+                            }
+                       } catch(err) {
+                           done(err);
+                           return;
+                       }
                    },
-                   mouseMoveHandler: () => void 0,
-                   mouseClickHandler: () => void 0
                });
+               song.run();
            });
        });
     }

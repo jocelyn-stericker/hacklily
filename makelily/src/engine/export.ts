@@ -24,7 +24,7 @@ import {forEach, map} from "lodash";
 
 import IDocument from "../document/document";
 
-export function exportXML(score: IDocument, cb: (error: Error, xml: string) => void) {
+export function exportXML(score: IDocument): string {
     let out = "";
     out += serializeScoreHeader(score.header) + "\n";
     let recordedSongMeta = false;
@@ -77,13 +77,11 @@ export function exportXML(score: IDocument, cb: (error: Error, xml: string) => v
         out += `</measure>\n`;
     });
 
-    cb(null,
-        "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+    return "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
         "<!DOCTYPE score-timewise PUBLIC \"-//Recordare//DTD MusicXML 3.0 Timewise//EN\"\n" +
         "                                \"http://www.musicxml.org/dtds/timewise.dtd\">\n" +
         "<score-timewise>\n" +
         out.split("\n").map(t => "  " + t).join("\n") +
-        "</score-timewise>"
-    );
+        "</score-timewise>";
 }
 

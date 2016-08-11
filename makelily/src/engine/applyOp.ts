@@ -69,12 +69,6 @@ export default function applyOp(measures: IMeasure[], factory: IFactory, op: IAn
     //   - a plain array, and that the same is true for all items
     invariant(isSerializable(op), "All operations must be serializable.");
 
-    // FIXME -- this line should eventually be unnecessary. It appears we're accidentally mutating this somewhere
-    // so, I'm leaving it here for now.
-    //  - [ ] Assert that during this operation, op does not change.
-    //  - [ ] Remove the following line.
-    op = JSON.parse(JSON.stringify(op));
-
     let path = op.p;
     if (path.length === 2 && path[0] === "measures") {
         // Song-wide measure addition/removal
@@ -107,6 +101,7 @@ export default function applyOp(measures: IMeasure[], factory: IFactory, op: IAn
 
         if (path.length === 6 && (op.li && !op.ld) || (!op.li && op.ld)) {
             segmentMutator(factory, memo, voice, op);
+            memo.clean$[measure.uuid] = null;
             return;
         }
 
@@ -128,6 +123,7 @@ export default function applyOp(measures: IMeasure[], factory: IFactory, op: IAn
 
         if (path.length === 6 && (op.li && !op.ld) || (!op.li && op.ld)) {
             segmentMutator(factory, memo, staff, op);
+            memo.clean$[measure.uuid] = null;
             return;
         }
 

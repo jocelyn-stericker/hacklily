@@ -20,7 +20,7 @@
  */
 
 import {Note, NoteheadType} from "musicxml-interfaces";
-import {createFactory as $, Component, DOM, PropTypes} from "react";
+import {createFactory, Component, DOM, PropTypes} from "react";
 import {map} from "lodash";
 
 import Dot from "../private/views/dot";
@@ -28,12 +28,12 @@ import Glyph from "../private/views/glyph";
 import {getLeft, getRight} from "../private/smufl";
 
 import AccidentalView from "../implAttributes/accidentalView";
-
 import NoteheadView from "./noteheadView";
 
-const $AccidentalView = $(AccidentalView);
-const $NoteheadView = $(NoteheadView);
-const $Glyph = $(Glyph);
+const $AccidentalView = createFactory(AccidentalView);
+const $Dot = createFactory(Dot);
+const $NoteheadView = createFactory(NoteheadView);
+const $Glyph = createFactory(Glyph);
 
 export interface IProps {
     spec: Note;
@@ -80,7 +80,7 @@ export default class NoteView extends Component<IProps, void> {
                     type: spec.notehead ? spec.notehead.type : NoteheadType.Normal
                 }
             }),
-            spec.dots && spec.printDot !== false ? map(spec.dots, (dot, idx) => $(Dot)({
+            spec.dots && spec.printDot !== false ? map(spec.dots, (dot, idx) => $Dot({
                 fill: dot.color,
                 key: "_1_" + idx,
                 radius: 2.4,

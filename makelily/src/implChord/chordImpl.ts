@@ -22,7 +22,7 @@
 import {Clef, Count, MultipleRest, Note, NoteheadType, Stem, StemType, Tremolo,
     Tied, TimeModification, serializeNote} from "musicxml-interfaces";
 import {IAny} from "musicxml-interfaces/operations";
-import {forEach, times, filter, reduce, map, max, some} from "lodash";
+import {forEach, times, reduce, map, max, some} from "lodash";
 import * as invariant from "invariant";
 
 import Type from "../document/types";
@@ -446,19 +446,9 @@ class ChordModelImpl implements ChordModel.IChordModel, IList<NoteImpl> {
             // TODO: Consider notes outside current stave
             // TODO: Handle clef changes correctly
 
-            let nIdx = NaN; // index of current note in 'notes'
-            let nLength = 0; // temporary variable eventually indicating length of 'notes'
-            let notes = <ChordModelImpl[]> <any> filter(cursor$.segment, (el, idx) => {
-                if (idx === cursor$.idx$) {
-                    nIdx = nLength;
-                }
-                let ret = cursor$.factory.modelHasType(el, Type.Chord);
-                if (ret) {
-                    ++nLength;
-                }
-                return nLength;
-            });
-            invariant(notes.length === nLength, "Invalid filtration");
+            let notes: ChordModelImpl[] =
+                cursor$.segment.filter(el => cursor$.factory.modelHasType(el, Type.Chord)) as any;
+            let nIdx = notes.indexOf(this);
 
             // 1. Continue the stem direction of surrounding stems that are in one
             //    direction only

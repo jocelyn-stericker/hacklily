@@ -19,11 +19,13 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import {createFactory as $, Component, PropTypes} from "react";
+import {createFactory, Component, PropTypes} from "react";
 import * as invariant from "invariant";
 
 import Glyph from "../private/views/glyph";
 import {getFontOffset} from "../private/smufl";
+
+const $Glyph = createFactory(Glyph);
 
 export interface IProps {
     key?: string | number;
@@ -61,7 +63,7 @@ export default class Flag extends Component<IProps, void> {
         let fontOffsetX = getFontOffset(this.glyphName(), dir)[0] * xscale;
         let noteOffsetX = getFontOffset(this.props.notehead, dir)[0] * xscale;
         let noteOffsetY = getFontOffset(this.props.notehead, dir)[1] * 10;
-        return $(Glyph)({
+        return $Glyph({
             fill: spec.color,
             glyphName: this.glyphName(),
             scale: this.props.isGrace ? 0.6 : 1.0,

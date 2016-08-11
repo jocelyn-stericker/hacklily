@@ -1,13 +1,13 @@
 import * as React from "react";
 import {Component} from "react";
 import {Link} from "react-router";
-import {ISong, Application} from "../../src/index";
+import {Application, Song} from "../../src/index";
 import {find, defer} from "lodash";
 
 import {prefix} from "./config";
 const STYLES = require("./test.css");
 
-export let satieApplication = new Application({
+export const satieApplication = new Application({
     satieRoot: location.protocol + "//" + location.host + prefix + "/vendor/",
     preloadedFonts: ["Alegreya", "Alegreya (bold)"]
 });
@@ -24,23 +24,25 @@ export interface IProps {
 export interface IState {
     filename?: string;
     src?: string;
-    song?: ISong;
     error?: Error;
+    loaded?: boolean;
 }
 
 export default class Test extends Component<IProps, IState> {
     state: IState = {
         filename: null,
         src: null,
-        song: null
+        loaded: false,
     };
+    _song: Song;
 
     render() {
         const isSingleLine = this.props.singleLine;
         let chrome = this.props.chrome !== false;
         let showFilterButton = chrome && this.props.showFilterButton;
         let link = showFilterButton ?
-            <Link to={`${prefix}/tests/${this.props.name}/?mode=${isSingleLine ? "singleline" : "page"}`}>
+            <Link to={`${prefix}/tests/${this.props.name}/?mode=${isSingleLine ?
+                        "singleline" : "page"}`}>
                     <button>hide others</button></Link> : null;
         if (this.state.error) {
             let errStr = "" + (this.state.error as any).stack.toString();
@@ -53,16 +55,9 @@ export default class Test extends Component<IProps, IState> {
             </div>;
         }
 
-        const {song} = this.state;
-        if (!song) {
-            return <div>
-                Loading...
-            </div>;
-        }
-
-        let misc = chrome && song.getDocument().header.identification.miscellaneous;
+        let misc = chrome && this._song && this._song.header.identification.miscellaneous;
         let descriptionField = chrome && find(misc && misc.miscellaneousFields,
-                (field: any) => field.name === "description"); // TODO(jnetterf): why cast?
+                (field) => field.name === "description");
         let description = chrome && (descriptionField ?
                 descriptionField.data :
                 <p>No description.</p>);
@@ -70,13 +65,19 @@ export default class Test extends Component<IProps, IState> {
         return <div className={STYLES.test}>
             {title}
             {description}
+            {!this.state.loaded && <div>Loading...</div>}
             <br />
-            {this.state.song.toReactElement()}
+            {this.state.src && <Song baseSrc={this.state.src}
+                ref={this._setSongRef}
+                onError={this._handleError}
+                onLoaded={this._handleLoaded}
+                pageClassName={!this.props.singleLine && STYLES.page}
+                singleLineMode={this.props.singleLine} />}
         </div>;
     }
 
     componentDidMount() {
-        this.componentDidUpdate(null, null);
+        this.componentDidUpdate(null, {});
     }
 
     componentWillMount() {
@@ -90,14 +91,14 @@ export default class Test extends Component<IProps, IState> {
             this.setState({
                 filename: nextProps.filename,
                 src: null,
-                song: null
             });
         }
     }
 
     componentDidUpdate(prevProps: IProps, prevState: IState) {
         let prefix = process.env.PLAYGROUND_PREFIX || "";
-        if (!this.state.src || (prevProps.singleLine !== this.props.singleLine)) {
+        if (this.state.filename !== prevState.filename ||
+                prevProps.singleLine !== this.props.singleLine) {
             let request = new XMLHttpRequest();
             request.open("GET", prefix + this.state.filename);
             request.onload = () => {
@@ -109,30 +110,33 @@ export default class Test extends Component<IProps, IState> {
                     return;
                 }
                 this.setState({
-                    src: request.responseText,
-                    song: satieApplication.newSong({
-                        errorHandler: (err) => {
-                            console.warn(err);
-                            defer(() => {
-                                this.setState({
-                                    error: err,
-                                    src: request.responseText
-                                });
-                            });
-                        },
-                        changeHandler: () => {
-                            this.forceUpdate();
-                        },
-                        mouseMoveHandler: () => void 0,
-                        mouseClickHandler: () => void 0,
-                        musicXML: request.responseText,
-                        pageClassName: !this.props.singleLine && STYLES.page,
-                        singleLineMode: this.props.singleLine,
-                    }),
+                    src: request.responseText
                 });
             };
             request.send();
+            this._song = null;
+            this.setState({
+                loaded: false,
+            });
         }
     }
+
+    private _handleError = (error: Error) => {
+        this._song = null;
+        this.setState({
+            error,
+            loaded: false,
+        });
+    };
+
+    private _handleLoaded = () => {
+        this.setState({
+            loaded: true
+        });
+    };
+
+    private _setSongRef = (song: Song) => {
+        this._song = song;
+    };
 }
 

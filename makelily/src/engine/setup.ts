@@ -42,6 +42,7 @@ import Print from "../implPrint/printModel";
 import Proxy from "../implProxy/proxyModel";
 import Sound from "../implSound/soundModel";
 import Spacer from "../implSpacer/spacerModel";
+import VisualCursorModel from "../implVisualCursor/visualCursorModel";
 
 import CenterPostprocessor from "../implLine/centerPostprocessor";
 import JustifyPostprocessor from "../implLine/justifyPostprocessor";
@@ -156,6 +157,7 @@ export function makeFactory() {
             Proxy,
             Sound,
             Spacer,
+            VisualCursorModel,
         ],
         [
             VoiceStaffStemDirection,

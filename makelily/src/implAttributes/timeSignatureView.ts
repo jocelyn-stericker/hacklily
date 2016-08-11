@@ -20,17 +20,35 @@
  */
 
 import {Time, TimeSymbolType} from "musicxml-interfaces";
-import {createFactory as $, Component, DOM, PropTypes} from "react";
+import {createFactory, Component, DOM, PropTypes} from "react";
 import {map} from "lodash";
 
 import Glyph from "../private/views/glyph";
 
 import {NUMBER_SPACING, PLUS_SPACING} from "./attributesData";
 
+const $Glyph = createFactory(Glyph);
+/* private */
+class TimeSignatureNumber extends Component<ITSNumProps, void> {
+    render() {
+        return DOM.g(null,
+            map((String(this.props.children)).split(""), (numberString, i) => $Glyph({
+                fill: this.props.stroke,
+                glyphName: "timeSig" + numberString,
+                key: "ts-" + i,
+                x: this.props.x + i * 12 + (numberString === "1" ?
+                    (!i && parseInt(this.props.children, 10) >= 10 ? -1 : 1) : 0),
+                y: this.props.y
+            /* Glyph */}))
+        /* DOM.g */);
+    }
+}
+const $TimeSignatureNumber = createFactory(TimeSignatureNumber);
+
 /**
  * Renders a simple, compound, or common time signature.
  */
-export default class TimeSignature extends Component<{spec: Time, key?: string | number}, void> {
+export default class TimeSignatureView extends Component<{spec: Time, key?: string | number}, void> {
     static contextTypes = {
         originY: PropTypes.number.isRequired
     } as any;
@@ -46,7 +64,7 @@ export default class TimeSignature extends Component<{spec: Time, key?: string |
         }
         let ts = this._displayTimeSignature();
         if (ts.singleNumber && ts.beats.length === 1 && ts.beats[0].length === 1) {
-            return $(TimeSignatureNumber)({
+            return $TimeSignatureNumber({
                     stroke: spec.color,
                     x: spec.defaultX + (spec.relativeX || 0),
                     y: this.context.originY - (spec.defaultY + (spec.relativeY || 0))
@@ -65,14 +83,14 @@ export default class TimeSignature extends Component<{spec: Time, key?: string |
             let isCut = hasSingleBeat && beats[0][0] === 2 && beatType[0] === 2;
 
             if (isCommon) {
-                return $(Glyph)({
+                return $Glyph({
                     fill: spec.color,
                     glyphName: "timeSigCommon",
                     x: spec.defaultX + (spec.relativeX || 0),
                     y: this.context.originY - (spec.defaultY + (spec.relativeY || 0))
                 });
             } else if (isCut) {
-                return $(Glyph)({
+                return $Glyph({
                     fill: spec.color,
                     glyphName: "timeSigCutCommon",
                     x: spec.defaultX + (spec.relativeX || 0),
@@ -90,7 +108,7 @@ export default class TimeSignature extends Component<{spec: Time, key?: string |
             map(ts.beats, (beatsOuter, idx) => {
                 let array = [
                     map(beatsOuter, (beats, jdx) => [
-                        $(TimeSignatureNumber)({
+                        $TimeSignatureNumber({
                                 key: `num_${idx}_${jdx}`,
                                 stroke: spec.color,
                                 x: spec.defaultX + (spec.relativeX || 0) +
@@ -100,7 +118,7 @@ export default class TimeSignature extends Component<{spec: Time, key?: string |
                             },
                             beats
                         ),
-                        (jdx + 1 !== beatsOuter.length) && $(Glyph)({
+                        (jdx + 1 !== beatsOuter.length) && $Glyph({
                             fill: "black",
                             glyphName: "timeSigPlusSmall",
                             key: `num_plus_numerator_${idx}_${jdx}`,
@@ -109,7 +127,7 @@ export default class TimeSignature extends Component<{spec: Time, key?: string |
                             y: this.context.originY - (spec.defaultY) + (spec.relativeY || 0) - 10
                         })
                     ]),
-                    $(TimeSignatureNumber)({
+                    $TimeSignatureNumber({
                             key: "den",
                             stroke: spec.color,
                             x: spec.defaultX + (spec.relativeX || 0) +
@@ -118,7 +136,7 @@ export default class TimeSignature extends Component<{spec: Time, key?: string |
                         },
                         ts.beatType[idx]
                     ),
-                    (idx + 1 !== ts.beats.length) && $(Glyph)({
+                    (idx + 1 !== ts.beats.length) && $Glyph({
                         fill: "black",
                         glyphName: "timeSigPlus",
                         key: `num_plus_${idx}`,
@@ -184,19 +202,3 @@ interface ITSNumProps {
     stroke: string;
     children?: string;
 };
-
-/* private */
-class TimeSignatureNumber extends Component<ITSNumProps, void> {
-    render() {
-        return DOM.g(null,
-            map((String(this.props.children)).split(""), (numberString, i) => $(Glyph)({
-                fill: this.props.stroke,
-                glyphName: "timeSig" + numberString,
-                key: "ts-" + i,
-                x: this.props.x + i * 12 + (numberString === "1" ?
-                    (!i && parseInt(this.props.children, 10) >= 10 ? -1 : 1) : 0),
-                y: this.props.y
-            /* Glyph */}))
-        /* DOM.g */);
-    }
-}

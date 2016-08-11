@@ -1,7 +1,7 @@
 import * as React from "react";
 import {Component} from "react";
 import {Link} from "react-router";
-import {reduce, defer, find, last, findLastIndex} from "lodash";
+import {reduce, defer, find, last, findLastIndex, isEqual} from "lodash";
 
 import {Pitch, Note, Count, BeamType, MxmlAccidental, BarStyleType} from "musicxml-interfaces";
 import {buildNote, patchNote} from "musicxml-interfaces/builders";
@@ -11,18 +11,19 @@ import Test, {satieApplication} from "./test";
 import {prefix} from "./config";
 const STYLES = require("./tests.css");
 
-import {ISong, Application, Patch, Type} from "../../src/index";
+import {Application, Song, Patch, Type} from "../../src/index";
 
 const MAX_SAFE_INTEGER = 9007199254740991;
 
 interface IState {
-    src?: string;
     error?: Error;
-    song?: ISong;
-    operations?: IAny[];
+    operations?: any;
+    canonicalOperations?: any;
     oldOperations?: IAny[][];
     note?: Count;
     type?: "N" | "R";
+    lastPath?: (number | string)[];
+    lastPitch?: Pitch;
 }
 
 const songTemplate = `<?xml version="1.0" encoding="UTF-8"?>
@@ -88,13 +89,14 @@ const songTemplate = `<?xml version="1.0" encoding="UTF-8"?>
 
 class Tests extends Component<{params: {id: string}}, IState> {
     state: IState = {
-        src: null,
         error: null,
-        operations: [],
-        oldOperations: [[]],
-        song: null,
+        canonicalOperations: null,
+        operations: null,
+        oldOperations: [null],
         note: Count.Eighth,
         type: "N",
+        lastPath: null,
+        lastPitch: null,
     };
 
     private _setNote(note: number) {
@@ -107,39 +109,54 @@ class Tests extends Component<{params: {id: string}}, IState> {
             type,
         });
     }
+    private _song: Song;
     private _undo() {
-        let old = this.state.oldOperations.pop();
-        this.state.song.setOperations(old);
-        this.state.operations = old.slice();
-        this.forceUpdate();
+        this.setState({
+            operations: this.state.oldOperations[this.state.oldOperations.length - 1],
+            canonicalOperations: this.state.oldOperations[this.state.oldOperations.length - 1],
+            oldOperations: this.state.oldOperations.slice(0, this.state.oldOperations.length - 1)
+        });
     }
     private _newMeasure() {
-        this.state.song.setOperations(this.state.operations);
-        const doc = this.state.song.getDocument();
+        const doc = this._song.getDocument(this.state.canonicalOperations);
         const measureCount = doc.measures.length;
 
-        const patch = Patch.createPatch(false, doc,
-            document => document
-                .insertMeasure(measureCount, measure => measure
-                    .part("P1", part => part
-                        .voice(1, voice => voice
-                            .insertChord([
-                                note => note
-                                    .rest({})
-                                    .staff(1)
-                                    .noteType(type => type
-                                        .duration(Count.Whole)
-                                    )
-                            ], 0)
+        let oldOperations = this.state.oldOperations.concat([this.state.canonicalOperations]);
+        let operations = this._song.createCanonicalPatch(this.state.canonicalOperations,
+            {
+                documentBuilder: (document) => document
+                    .insertMeasure(measureCount, measure => measure
+                        .part("P1", part => part
+                            .voice(1, voice => voice
+                                .insertChord([
+                                    note => note
+                                        .rest({})
+                                        .staff(1)
+                                        .noteType(type => type
+                                            .duration(Count.Whole)
+                                        )
+                                ], 0)
+                            )
                         )
-                    )
-              )
+                )
+            }
         );
-
-        let oldOperations = this.state.oldOperations.concat([this.state.operations.slice()]);
-        let operations = this.state.operations.concat(patch);
-        operations = this.state.song.setOperations(operations);
-        this.setState({operations, oldOperations});
+        this.setState({operations, oldOperations, canonicalOperations: operations});
+    }
+    private _newCursor() {
+        const doc = this._song.getDocument(this.state.canonicalOperations);
+        const patch = [
+            {
+                p: [doc.measures[0].uuid, "parts", "P1", "voices", "1", 1],
+                li: {
+                    "_class": "VisualCursor",
+                },
+            },
+        ];
+        let oldOperations = this.state.oldOperations.concat([this.state.operations]);
+        let operations = this._song.createCanonicalPatch(
+            this.state.canonicalOperations, {raw: patch});
+        this.setState({operations, oldOperations, canonicalOperations: operations});
     }
     render() {
         return <div className={STYLES.tests}>
@@ -167,128 +184,137 @@ class Tests extends Component<{params: {id: string}}, IState> {
                     onClick={this._undo.bind(this)}>Undo</a></li>
                 <li style={{padding: 10}}><a href="javascript:void(0)"
                     onClick={this._newMeasure.bind(this)}>+</a></li>
+                <li style={{padding: 10}}><a href="javascript:void(0)"
+                    onClick={this._newCursor.bind(this)}>+</a></li>
             </ul>
-            {this.state.song && this.state.song.toReactElement()}
-            <pre style={{fontSize: 8, height: 400, overflow: "scroll"}}>{this.state.song &&
-                JSON.stringify(this.state.song.getOperations().slice().reverse(), null, 2)}</pre>
+            <Song baseSrc={songTemplate}
+                onError={this._errorHandler}
+                patches={this.state.operations}
+                onMouseClick={this._mouseClickHandler}
+                onMouseMove={this._mouseMoveHandler}
+                pageClassName={STYLES.page}
+                singleLineMode={true}
+                ref={this._setSongRef} />
+            {/*<pre style={{fontSize: 8, height: 400, overflow: "scroll"}}>{
+                JSON.stringify(this.state.operations, null, 2)}</pre>*/}
         </div>;
     }
-    componentDidMount() {
-        const handler = (path: (string | number)[], pitch: Pitch,
-                setOperations: (operations: IAny[]) => IAny[],
-                isPreview: boolean): boolean => {
-            let oldOperations = this.state.oldOperations.concat([this.state.operations.slice()]);
-            let operations = this.state.operations.slice();
-            setOperations(operations);
-            const doc = song.getDocument();
-            const measure = find(doc.measures, fmeasure => String(fmeasure.uuid) === path[0]);
-            if (!measure || path[1] !== "parts" || !measure.parts[path[2]]) {
+    private _errorHandler = (err: Error) => {
+        console.warn(err);
+        defer(() => {
+            this.setState({
+                error: err,
+            });
+        });
+    };
+    private _setSongRef = (song: Song) => {
+        this._song = song;
+        (window as any)["_song"] = song;
+    }
+    private _mouseMoveHandler = (path: (string | number)[], pitch: Pitch) => {
+        if (isEqual(this.state.lastPath, path) && isEqual(pitch, this.state.lastPitch)) {
+            return;
+        }
+        if (!this._handler(path, pitch, true)) {
+            this.setState({operations: this.state.canonicalOperations});
+        }
+    };
+    private _mouseClickHandler = (path: (string | number)[], pitch: Pitch) => {
+        this._handler(path, pitch, false);
+    };
+    private _handler(path: (string | number)[], pitch: Pitch, isPreview: boolean): boolean {
+        let oldOperations = this.state.oldOperations.concat([this.state.canonicalOperations]);
+        let operations = this.state.canonicalOperations;
+        const doc = this._song.getDocument(operations); // TODO: remove getDocument
+        const measure = find(doc.measures, fmeasure => String(fmeasure.uuid) === path[0]);
+        if (!measure || path[1] !== "parts" || !measure.parts[path[2]]) {
+            return false;
+        }
+        const part = measure.parts[path[2]];
+        if (path[3] === "staves") {
+            const staff = part.staves[parseInt(path[4] as string, 10)];
+            if (!staff) {
                 return false;
             }
-            const part = measure.parts[path[2]];
-            if (path[3] === "staves") {
-                const staff = part.staves[parseInt(path[4] as string, 10)];
-                if (!staff) {
-                    return false;
-                }
-            } else if (path[3] === "voices") {
-                const voice = part.voices[parseInt(path[4] as string, 10)];
-                if (!voice) {
-                    return false;
-                }
-                const elIdx = parseInt(path[5] as string, 10);
-                const el = voice[elIdx];
-                if (!el) {
-                    return false;
-                }
-                const isChord = doc.modelHasType(el, Type.Chord);
-                if (!isChord) {
-                    return false;
-                }
-                pitch.alter = 1;
-                const chord = el as any as Note[];
-                const measureUUID = parseInt(path[0] as string, 10);
-                let patch: IAny[];
-                if (this.state.type === "N" && chord.length === 1 && chord[0].rest ||
-                        this.state.type === "R" && chord.length === 1 && !chord[0].rest) {
-                    patch = Patch.createPatch(isPreview, doc, measureUUID, "P1", part => part
-                        .voice(1, voice => voice
-                            .note(0, note => this.state.type === "R" ?
-                                note
-                                    .pitch(null)
-                                    .dots([])
-                                    .noteType(noteType => noteType
-                                        .duration(this.state.note)
-                                    )
-                                    .color(isPreview ? "#cecece" : "#000000") :
-                                note
-                                    .pitch(pitch)
-                                    .dots([])
-                                    .noteType(noteType => noteType
-                                        .duration(this.state.note)
-                                    )
-                                    .accidental(accidental => accidental
-                                        .accidental(MxmlAccidental.Sharp)
-                                    )
-                                    .color(isPreview ? "#cecece" : "#000000"),
-
-                                elIdx
-                            )
-                        )
-                    );
-                } else if (this.state.type === "N" && chord.length && !chord[0].rest &&
-                                chord[0].noteType.duration !== this.state.note) {
-                    patch = Patch.createPatch(isPreview, doc, measureUUID, "P1", part => part
-                        .voice(1, voice => voice
-                            .note(0, note => note
+        } else if (path[3] === "voices") {
+            const voice = part.voices[parseInt(path[4] as string, 10)];
+            if (!voice) {
+                return false;
+            }
+            const elIdx = parseInt(path[5] as string, 10);
+            const el = voice[elIdx];
+            if (!el) {
+                return false;
+            }
+            const isChord = doc.modelHasType(el, Type.Chord);
+            if (!isChord) {
+                return false;
+            }
+            const chord = el as any as Note[];
+            const measureUUID = parseInt(path[0] as string, 10);
+            let patch: IAny[];
+            if (this.state.type === "N" && chord.length === 1 && chord[0].rest ||
+                    this.state.type === "R" && chord.length === 1 && !chord[0].rest) {
+                patch = Patch.createPatch(isPreview, doc, measureUUID, "P1", part => part
+                    .voice(1, voice => voice
+                        .note(0, note => this.state.type === "R" ?
+                            note
+                                .pitch(null)
+                                .dots([])
                                 .noteType(noteType => noteType
                                     .duration(this.state.note)
                                 )
-                                .color(isPreview ? "#cecece": "#000000")
-                            ), elIdx
-                        )
-                    );
-                }
+                                .color(isPreview ? "#cecece" : "#000000") :
+                            note
+                                .pitch(pitch)
+                                .dots([])
+                                .noteType(noteType => noteType
+                                    .duration(this.state.note)
+                                )
+                                .accidental(accidental => accidental
+                                    .accidental(MxmlAccidental.Sharp)
+                                )
+                                .color(isPreview ? "#cecece" : "#000000"),
 
-                if (patch) {
-                    operations = setOperations(operations.concat(patch));
-                    if (!isPreview) {
-                        this.setState({operations: operations.slice(), oldOperations});
-                    }
-                    this.forceUpdate();
-                    return true;
-                }
+                            elIdx
+                        )
+                    )
+                );
+            } else if (this.state.type === "N" && chord.length && !chord[0].rest &&
+                            chord[0].noteType.duration !== this.state.note) {
+                patch = Patch.createPatch(isPreview, doc, measureUUID, "P1", part => part
+                    .voice(1, voice => voice
+                        .note(0, note => note
+                            .noteType(noteType => noteType
+                                .duration(this.state.note)
+                            )
+                            .color(isPreview ? "#cecece": "#000000")
+                        ), elIdx
+                    )
+                );
             }
-            return false;
-        };
-        const song = satieApplication.newSong({
-            errorHandler: (err) => {
-                console.warn(err);
-                defer(() => {
+
+            if (patch) {
+                if (isPreview) {
                     this.setState({
-                        error: err,
-                        src: songTemplate,
+                        operations: this._song.createPreviewPatch(operations, {raw: patch}),
+                        lastPath: path,
+                        lastPitch: pitch,
                     });
-                });
-            },
-            changeHandler: () => {
-                this.forceUpdate();
-            },
-            mouseMoveHandler: (path: (string | number)[], pitch: Pitch) => {
-                handler(path, pitch, song.previewOperations.bind(song), true);
-            },
-            mouseClickHandler: (path: (string | number)[], pitch: Pitch) => {
-                handler(path, pitch, song.setOperations.bind(song), false);
-            },
-            musicXML: songTemplate,
-            pageClassName: STYLES.page,
-            singleLineMode: true,
-        });
-        this.setState({
-            src: songTemplate,
-            song: song,
-        });
-        (window as any)["_song"] = song as any;
+                } else {
+                    let newOperations = this._song.createCanonicalPatch(operations, {raw: patch});
+                    this.setState({
+                        operations: newOperations,
+                        canonicalOperations: newOperations,
+                        lastPath: null,
+                        lastPitch: null,
+                        oldOperations
+                    });
+                }
+                return true;
+            }
+        }
+        return false;
     }
 }
 

@@ -33,7 +33,7 @@ export default function segmentMutator(factory: IFactory, memo$: ILinesLayoutSta
     const {part, ownerType} = segment; // p[2]
 
     invariant(op.p[1] === "parts", "Malformed path.");
-    invariant(op.p[2] === part, "Invalid pixup part.");
+    invariant(op.p[2] === part, "Invalid fixup part.");
     invariant(op.p[3] === "voices" || op.p[3] === "staves",
         "Only voice and staff fixups are supported.");
     invariant(op.p[3] === "voices" && ownerType === OwnerType.Voice ||
