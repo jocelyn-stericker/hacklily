@@ -242,7 +242,7 @@ class ChordModelImpl implements ChordModel.IChordModel, IList<NoteImpl> {
     }
 
     _init: boolean = false;
-    __validate(cursor$: ICursor): void {
+    validate(cursor$: ICursor): void {
         if (!isFinite(this._count)) {
             this._implyCountFromPerformanceData(cursor$);
         }
@@ -306,7 +306,7 @@ class ChordModelImpl implements ChordModel.IChordModel, IList<NoteImpl> {
         }
     }
 
-    __layout(cursor$: ICursor): ChordModel.IChordLayout {
+    getLayout(cursor$: ICursor): ChordModel.IChordLayout {
         this._init = true;
         if (!this._layout) {
             this._layout = new ChordModelImpl.Layout();

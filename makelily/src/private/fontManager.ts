@@ -235,8 +235,8 @@ export function getTextBB(name: string, text: string, fontSize: number, style?: 
         let scale = 1 / font.unitsPerEm * fontSize;
         minX = Math.min(x, minX);
         maxX = Math.max(x, maxX);
-        minY = Math.min(y + glyph.yMin * scale, minY);
-        maxY = Math.max(y + glyph.yMax * scale, maxY);
+        minY = Math.min(y + (glyph as any).yMin * scale, minY);
+        maxY = Math.max(y + (glyph as any).yMax * scale, maxY);
     });
 
     return {

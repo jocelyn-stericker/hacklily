@@ -432,6 +432,7 @@ export function _extractMXMLPartsAndMeasures(input: ScoreTimewise, factory: IFac
                         offset += segment[i].divCount;
                         if (offset >= 0) {
                             model.divCount = segment[i].divCount - offset;
+                            invariant(isFinite(model.divCount), "Invalid loaded divCount");
                             segment[i].divCount = offset;
                             segment.splice(i + 1, 0, model);
                             spliced = true;

@@ -354,14 +354,13 @@ function layoutBeam$(voice: number, idx: number, beamSet$: BeamSet, isUnbeamedTu
             let stemStart = startingLine(chordLayout.model, direction, clef);
             let stemHeight = getStemHeight(direction, idx, stemStart);
 
-            chordLayout.satieStem = first(layouts).satieStem ? Object.create(first(layouts).satieStem) : {};
-            chordLayout.satieStem.direction = direction;
-            chordLayout.satieStem.stemStart = stemStart;
-            if (isFinite(stemHeight)) {
-                chordLayout.satieStem.stemHeight = stemHeight;
-            } else {
-                invariant(chords.length === 1, "stemHeight must be defined for 2+ notes");
-            }
+            invariant(chords.length === 1 || isFinite(stemHeight), "stemHeight must be defined for 2+ notes");
+            chordLayout.satieStem = {
+                direction,
+                stemStart,
+                stemHeight,
+                tremolo: first(layouts).satieStem ? first(layouts).satieStem.tremolo : null,
+            };
         });
         let tuplet: Tuplet = Object.create(beam.tuplet);
         tuplet.placement = direction > 0 ? AboveBelow.Above : AboveBelow.Below;
@@ -381,10 +380,13 @@ function layoutBeam$(voice: number, idx: number, beamSet$: BeamSet, isUnbeamedTu
         forEach(layouts, (chordLayout, idx) => {
             let stemStart = startingLine(chordLayout.model, direction, clef);
 
-            chordLayout.satieStem = layouts[0].satieStem ? Object.create(layouts[0].satieStem) : {};
-            chordLayout.satieStem.direction = direction;
-            chordLayout.satieStem.stemStart = stemStart;
-            chordLayout.satieStem.stemHeight = getStemHeight(direction, idx, stemStart);
+            chordLayout.satieStem = {
+                direction,
+                stemStart,
+                stemHeight: getStemHeight(direction, idx, stemStart),
+                tremolo: layouts[0].satieStem ? layouts[0].satieStem.tremolo : null,
+            };
+
             chordLayout.satieFlag = null;
         });
 

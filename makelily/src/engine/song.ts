@@ -73,7 +73,7 @@ export default class Song extends Component<IProps, IState> implements ISong {
         factory: null,
     };
 
-    render() {
+    render(): ReactElement<any> {
         // Note: we rectify/render before this is called. We assume shouldComponentUpdate
         // stops temporary states from being rendered.
         const style: any = this.props.singleLineMode ? {

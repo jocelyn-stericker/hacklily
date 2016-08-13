@@ -86,7 +86,7 @@ export default class CreditView extends Component<Credit, void> implements IText
                     textAnchor: this.getTextAnchor(words),
                     transform: this.getTransform(words),
                     x: this.getX(lineNum)
-                }, line));
+                } as any, line));
             })
         /* DOM.text */);
     }

@@ -51,9 +51,9 @@ ERROR_COLOR="\033[31;01m";
         echo ""; 
         echo ""; 
         CLEAN="1"; 
-        printf "satie/lib${INFO_COLOR}: $line${NO_COLOR}\n"; 
+        printf "satie/lib${INFO_COLOR}: %s${NO_COLOR}\n" "$line"; 
     else 
         CLEAN="0"; 
-        printf "satie/lib${ERROR_COLOR}: $line${NO_COLOR}\n"; 
+        printf "satie/lib${ERROR_COLOR}: %s${NO_COLOR}\n" "$line"; 
     fi; 
 done;

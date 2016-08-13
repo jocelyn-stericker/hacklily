@@ -10,12 +10,12 @@
         "preserveConstEnums": true,
         "removeComments": false,
         "sourceMap": true,
-        "target": "es5"
+        "target": "es5",
+        "pretty": true
     },
     "files": [
         "./src/index.ts",
         "./src/tests.ts",
-        "./src/cli.ts",
-        "./typings/browser.d.ts"
+        "./src/cli.ts"
     ]
 }

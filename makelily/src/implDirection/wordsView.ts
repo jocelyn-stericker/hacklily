@@ -92,7 +92,7 @@ export default class WordsView extends Component<IProps, void> implements ITextM
                     textAnchor: this.getTextAnchor(words),
                     transform: this.getTransform(words),
                     x: this.getX(lineNum)
-                }, line));
+                } as any, line));
             })
         /* DOM.text */);
     }

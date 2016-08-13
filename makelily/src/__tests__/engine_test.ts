@@ -106,7 +106,7 @@ describe("[engine.ts]", function() {
             });
         });
     });
-    describe("__validate", function() {
+    describe("validate", function() {
         it("creates attributes and barline if missing", function() {
             let calledCount = 0;
 
@@ -115,11 +115,10 @@ describe("[engine.ts]", function() {
                     ++calledCount;
                     return {
                         divCount: 0,
-                        divisions: 0,
                         staffIdx: 1,
 
-                        __validate: (cursor: Cursor) => { /* pass */ },
-                        __layout: function(cursor: Cursor): ILayout {
+                        validate: (cursor: Cursor) => { /* pass */ },
+                        getLayout: function(cursor: Cursor): ILayout {
                             throw "not reached";
                         }
                     };

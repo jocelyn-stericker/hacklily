@@ -76,11 +76,11 @@ class SoundModel implements Export.ISoundModel {
         });
     }
 
-    __validate(cursor$: ICursor): void {
+    validate(cursor$: ICursor): void {
         // todo
     }
 
-    __layout(cursor$: ICursor): Export.ISoundLayout {
+    getLayout(cursor$: ICursor): Export.ISoundLayout {
         // mutates cursor$ as required.
         return new SoundModel.Layout(this, cursor$);
     }

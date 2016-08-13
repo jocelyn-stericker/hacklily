@@ -62,10 +62,10 @@ export function createFakeStaffSegment(
             divCount: divisions1,
             staffIdx: 1,
 
-            __validate: function(cursor$: ICursor) {
+            validate: function(cursor$: ICursor) {
                 // pass
             },
-            __layout: function(cursor$: ICursor): ILayout {
+            getLayout: function(cursor$: ICursor): ILayout {
                 let width = cursor$.detached ? 0 : 10;
                 cursor$.x$ += width;
                 return {
@@ -81,10 +81,10 @@ export function createFakeStaffSegment(
             divCount: divisions2,
             staffIdx: 1,
 
-            __validate: function(cursor$: ICursor) {
+            validate: function(cursor$: ICursor) {
                 // pass
             },
-            __layout: function(cursor$: ICursor): ILayout {
+            getLayout: function(cursor$: ICursor): ILayout {
                 let width = 10;
                 cursor$.x$ += width;
                 return {
@@ -122,11 +122,11 @@ export function createFakeVoiceSegment(
                 ties: [{}]
             },
 
-            __validate: function(cursor$: ICursor) {
+            validate: function(cursor$: ICursor) {
                 // pass
             },
 
-            __layout: function(cursor$: ICursor): ILayout {
+            getLayout: function(cursor$: ICursor): ILayout {
                 let width = divisions1 * 10;
                 cursor$.x$ += width;
                 return {
@@ -154,11 +154,11 @@ export function createFakeVoiceSegment(
                 ties: [{}]
             },
 
-            __validate: function(cursor$: ICursor) {
+            validate: function(cursor$: ICursor) {
                 // pass
             },
 
-            __layout: function(cursor$: ICursor): ILayout {
+            getLayout: function(cursor$: ICursor): ILayout {
                 let width = divisions2 * 10;
                 cursor$.x$ += width;
                 return {

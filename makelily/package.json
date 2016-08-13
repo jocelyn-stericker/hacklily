@@ -21,8 +21,8 @@
   ],
   "dependencies": {
     "invariant": "2.2.1",
-    "lodash": "4.13.1",
-    "musicxml-interfaces": "0.0.17",
+    "lodash": "4.14.2",
+    "musicxml-interfaces": "0.0.18",
     "opentype.js": "nodebox/opentype.js#0.4.7",
     "webcola": "tgdwyer/WebCola#326dc8e9e",
     "yargs": "3.29.0"
@@ -31,7 +31,18 @@
     "react": "0.14.x"
   },
   "devDependencies": {
-    "chai": "3.4.0",
+    "@types/chai": "3.4.30",
+    "@types/d3": "0.0.31",
+    "@types/invariant": "2.2.27",
+    "@types/lodash": "4.14.30",
+    "@types/mocha": "2.2.29",
+    "@types/node": "6.0.33",
+    "@types/opentype": "0.0.2",
+    "@types/react": "0.14.29",
+    "@types/react-dom": "0.14.14",
+    "@types/react-router": "file:./vendor/updated-react-router-types",
+    "@types/yargs": "0.0.29",
+    "chai": "3.4.1",
     "dts-generator": "1.7.0",
     "istanbul": "0.4.0",
     "mocha": "2.3.3",
@@ -44,7 +55,7 @@
     "source-map-support": "0.4.0",
     "tsd": "^0.6.5",
     "tslint": "3.6.0",
-    "typescript": "1.8.10",
+    "typescript": "2.0.0",
     "webpack": "1.13.0",
     "webpack-dev-server": "1.14.1"
   },

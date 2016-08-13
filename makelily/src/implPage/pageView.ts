@@ -46,11 +46,11 @@ export interface IProps {
     className: string;
     singleLineMode?: boolean;
 
-    onClick?: (evt: MouseEvent) => void;
-    onMouseDown?: (evt: MouseEvent) => void;
-    onMouseLeave?: (evt: MouseEvent) => void;
-    onMouseMove?: (evt: MouseEvent) => void;
-    onMouseUp?: (evt: MouseEvent) => void;
+    onClick?: (evt: MouseEvent<SVGSVGElement>) => void;
+    onMouseDown?: (evt: MouseEvent<SVGSVGElement>) => void;
+    onMouseLeave?: (evt: MouseEvent<SVGSVGElement>) => void;
+    onMouseMove?: (evt: MouseEvent<SVGSVGElement>) => void;
+    onMouseUp?: (evt: MouseEvent<SVGSVGElement>) => void;
     svgRef?: (svg: SVGSVGElement) => void;
 }
 
@@ -108,7 +108,8 @@ export default class Page extends Component<IProps, void> {
                     width: "auto",
                 },
                 "data-page": this.props.renderTarget === RenderTarget.SvgExport ?
-                    undefined : print.pageNumber,
+                    undefined :
+                    print.pageNumber,
                 height: heightMM,
                 onClick: this.props.onClick,
                 onMouseDown: this.props.onMouseDown,
@@ -118,7 +119,7 @@ export default class Page extends Component<IProps, void> {
                 ref: this._setSVG,
                 viewBox: `0 0 ${pageWidth} ${pageHeight}`,
                 width: widthMM
-            },
+            } as any,
             !this.props.singleLineMode && map(credits, $CreditView),
             map(lineLayouts, (lineLayout, lineIdx) =>
                 map(lineLayout, measureLayout =>

@@ -491,7 +491,7 @@ const CUSTOM_NOTEHEADS: {[key: number]: string[]} = {
 };
 
 export function getNoteheadGlyph(notehead: Notehead, stdGlyph: string) {
-    let {type} = notehead || {type: NoteheadType.Normal};
+    let type = notehead ? notehead.type : NoteheadType.Normal;
 
     if (type === NoteheadType.Normal) {
         return stdGlyph;

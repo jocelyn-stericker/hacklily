@@ -116,7 +116,6 @@ export function reduceMeasure(spec: ILayoutOpts): IMeasureLayout {
     let lastPrint = spec.print;
 
     let gVoiceLayouts$ = map(gVoiceMeasure, voiceSegment => {
-        let lastAttribs: IAttributesSnapshot = Object.create(spec.attributes || {});
         let voice = {} as IVoiceContext;
         let {part} = voiceSegment;
         gSomeLastAttribs[part] = gSomeLastAttribs[part] || [];
@@ -194,9 +193,9 @@ export function reduceMeasure(spec: ILayoutOpts): IMeasureLayout {
                 cursor$.segment.owner}_${cursor$.idx$}`;
             if (gValidateOnly) {
                 model.staffIdx = cursor$.staff.idx;
-                model.__validate(cursor$);
+                model.validate(cursor$);
             } else {
-                layout = model.__layout(cursor$);
+                layout = model.getLayout(cursor$);
                 layout.part = part;
                 (<any>layout).key = (<any>model).key;
             }
@@ -289,9 +288,9 @@ export function reduceMeasure(spec: ILayoutOpts): IMeasureLayout {
                 cursor$.segment.owner}_${cursor$.idx$}`;
             if (gValidateOnly) {
                 model.staffIdx = cursor$.staff.idx;
-                model.__validate(cursor$);
+                model.validate(cursor$);
             } else {
-                layout = model.__layout(cursor$);
+                layout = model.getLayout(cursor$);
                 layout.part = part;
                 (<any>layout).key = (<any>model).key;
             }
@@ -330,7 +329,7 @@ export function reduceMeasure(spec: ILayoutOpts): IMeasureLayout {
                     }
                 });
             }
-            lastAttribs = cursor$.staff.attributes;
+            let lastAttribs = cursor$.staff.attributes;
             gSomeLastAttribs[voiceSegment.part][model.staffIdx] = lastAttribs;
             gPrint = cursor$.print$;
             gMaxXInMeasure = Math.max(cursor$.x$, gMaxXInMeasure);

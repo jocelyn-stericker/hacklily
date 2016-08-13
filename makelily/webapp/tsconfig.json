@@ -1,16 +1,16 @@
 {
     "compilerOptions": {
+        "experimentalDecorators": true,
+        "jsx": "react",
         "module": "commonjs",
         "noImplicitAny": true,
-        "removeComments": false,
-        "experimentalDecorators": true,
-        "sourceMap": true,
-        "jsx": "react",
         "outDir": "dist",
+        "pretty": true,
+        "removeComments": false,
+        "sourceMap": true,
         "target": "es5"
     },
     "files": [
-        "./src/index.tsx",
-        "../typings/browser.d.ts"
+        "./src/index.tsx"
     ]
 }

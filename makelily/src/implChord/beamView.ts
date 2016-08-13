@@ -19,7 +19,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import {createFactory, Component, DOM, PropTypes} from "react";
+import {createFactory, Component, DOM, PropTypes, ReactElement} from "react";
 import {times, map} from "lodash";
 
 import {bravura, getFontOffset} from "../private/smufl";
@@ -48,7 +48,7 @@ export default class Beam extends Component<IProps, {}> {
         originY: number;
     };
 
-    render() {
+    render(): ReactElement<any> {
         let xLow = this._getX1();
         let xHigh = this._getX2();
         let {layout} = this.props;

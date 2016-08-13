@@ -16,6 +16,8 @@
     "react-router": "2.0.0"
   },
   "devDependencies": {
+    "@types/node": "6.0.33",
+    "@types/opentype": "0.0.2",
     "autoprefixer": "6.0.3",
     "css-loader": "0.22.0",
     "postcss-cssnext": "2.1.0",

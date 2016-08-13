@@ -30,7 +30,6 @@ import {MAX_SAFE_INTEGER} from "../private/constants";
  */
 interface IModel {
     divCount: number;
-    divisions: number;
 
     staffIdx: number;
     key?: string;
@@ -40,13 +39,13 @@ interface IModel {
      * Any changes to the current segment should be done here. For example, notation
      * checking is done here.
      */
-    __validate(cursor: ICursor): void;
+    validate(cursor: ICursor): void;
 
     /** 
      * Life-cycle method. Called to layout the models.
      * At this point, all segments are frozen and must not be changed.
      */
-    __layout(cursor: ICursor): ILayout;
+    getLayout(cursor: ICursor): ILayout;
 };
 
 export default IModel;

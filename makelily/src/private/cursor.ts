@@ -21,6 +21,7 @@
 
 import {Print, ScoreHeader} from "musicxml-interfaces";
 import {IAny} from "musicxml-interfaces/operations";
+import * as invariant from "invariant";
 
 import createPatch, {VoiceBuilder, StaffBuilder} from "../patch/createPatch";
 

@@ -47,7 +47,14 @@ class AttributesModel implements Export.IAttributesModel {
     /*---- I.1 IModel ---------------------------------------------------------------------------*/
 
     /** @prototype only */
-    divCount: number;
+    private _divCount = 0;
+    get divCount() {
+        return this._divCount;
+    }
+    set divCount(count: number) {
+        invariant(isFinite(count), "Count must be finite.");
+        this._divCount = count;
+    }
 
     /** defined externally */
     staffIdx: number;
@@ -78,7 +85,7 @@ class AttributesModel implements Export.IAttributesModel {
 
     /*---- Implementation -----------------------------------------------------------------------*/
 
-    __validate(cursor$: ICursor): void {
+    validate(cursor$: ICursor): void {
         if (this._parent && this._parent !== cursor$.staff.attributes) {
             // STOPSHIP: This will break when a model is inserted in the middle of nowhere.
             cursor$.staff.attributes = this._parent;
@@ -107,7 +114,7 @@ class AttributesModel implements Export.IAttributesModel {
         this._setTotalDivisions(cursor$);
     }
 
-    __layout(cursor$: ICursor): Export.IAttributesLayout {
+    getLayout(cursor$: ICursor): Export.IAttributesLayout {
         cursor$.staff.attributes = this._snapshot;
 
         this._setTotalDivisions(cursor$);
@@ -367,14 +374,12 @@ class AttributesModel implements Export.IAttributesModel {
     }
 }
 
-AttributesModel.prototype.divCount = 0;
-
 module AttributesModel {
     export class Layout implements Export.IAttributesLayout {
         constructor(origModel: AttributesModel, cursor$: ICursor) {
             invariant(!!origModel, "Layout must be passed a model");
 
-            let model: AttributesModel = Object.create(cursor$.factory.identity(origModel));
+            let model = Object.create(cursor$.factory.identity(origModel)) as AttributesModel;
             this.model = model;
             this.x$ = cursor$.x$;
             this.division = cursor$.division$;
@@ -599,6 +604,7 @@ function Export(constructors: { [key: number]: any }) {
 
 module Export {
     export interface IAttributesModel extends Attributes, IModel {
+        divisions: number;
     }
     export interface IAttributesLayout extends ILayout {
         model: IAttributesModel;

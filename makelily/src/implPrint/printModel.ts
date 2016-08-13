@@ -77,7 +77,7 @@ class PrintModel implements Export.IPrintModel {
         });
     }
 
-    __validate(cursor$: ICursor): void {
+    validate(cursor$: ICursor): void {
         invariant(!!cursor$.header, "Cursor must have a valid header");
         let spec: Print;
         if (!this._once) {
@@ -99,7 +99,7 @@ class PrintModel implements Export.IPrintModel {
         this._once = true;
     }
 
-    __layout(cursor$: ICursor): Export.IPrintLayout {
+    getLayout(cursor$: ICursor): Export.IPrintLayout {
         cursor$.print$ = this; // FIXME: inheritance for multiple papers
 
         return new PrintModel.Layout(this, cursor$);
