@@ -27,7 +27,7 @@ import IModel from "../document/model";
 import ExpandPolicy from "../document/expandPolicies";
 import Type from "../document/types";
 
-import ICursor from "../private/cursor";
+import {ICursor} from "../private/cursor";
 import IBoundingRect from "../private/boundingRect";
 import ILayout from "../private/layout";
 

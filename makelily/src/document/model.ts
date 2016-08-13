@@ -19,7 +19,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import ICursor from "../private/cursor";
+import {ICursor} from "../private/cursor";
 import ILayout from "../private/layout";
 import {MAX_SAFE_INTEGER} from "../private/constants";
 

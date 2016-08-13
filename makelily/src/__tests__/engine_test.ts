@@ -36,7 +36,7 @@ import IFactory from "../private/factory";
 import {newLayoutState} from "../private/linesLayoutState";
 import {calculate as calculateLineBounds} from "../private/lineBounds";
 import ILayoutOptions from "../private/layoutOptions";
-import ICursor from "../private/cursor";
+import Cursor from "../private/cursor";
 
 import {createFakeStaffSegment, createFakeVoiceSegment} from "../engine/__tests__/etestutil";
 import validate from "../engine/processors/validate";
@@ -118,8 +118,8 @@ describe("[engine.ts]", function() {
                         divisions: 0,
                         staffIdx: 1,
 
-                        __validate: (cursor: ICursor) => { /* pass */ },
-                        __layout: function(cursor: ICursor): ILayout {
+                        __validate: (cursor: Cursor) => { /* pass */ },
+                        __layout: function(cursor: Cursor): ILayout {
                             throw "not reached";
                         }
                     };
