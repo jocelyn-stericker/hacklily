@@ -34,7 +34,7 @@ import IChord, {ledgerLines, notationObj, countToIsBeamable, countToFlag,
     heightDeterminingLine, countToHasStem, getNoteheadGlyph,
     lineForClef} from "../private/chord";
 import IList from "../private/list";
-import ICursor from "../private/cursor";
+import {ICursor} from "../private/cursor";
 
 import ChordModel from "./chordModel";
 import IBeamLayout from "./beamLayout";

@@ -22,7 +22,7 @@
 import Type from "../document/types";
 import IModel from "../document/model";
 import ILayout from "../private/layout";
-import ICursor from "../private/cursor";
+import {ICursor} from "../private/cursor";
 
 import ExpandPolicy from "../document/expandPolicies";
 import IBoundingRect from "../private/boundingRect";

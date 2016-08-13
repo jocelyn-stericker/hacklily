@@ -24,7 +24,7 @@ import * as invariant from "invariant";
 import IModel from "../document/model";
 import Type from "../document/types";
 
-import ICursor from "../private/cursor";
+import {ICursor} from "../private/cursor";
 import ILayout from "../private/layout";
 
 class ProxyModel implements Export.IProxyModel {

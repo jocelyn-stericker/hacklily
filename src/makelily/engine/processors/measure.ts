@@ -35,20 +35,17 @@ import ISegment from "../../document/segment";
 import OwnerType from "../../document/ownerTypes";
 import Type from "../../document/types";
 
-import createPatch, {VoiceBuilder, StaffBuilder} from "../../patch/createPatch";
-
 import IAttributesSnapshot from "../../private/attributesSnapshot";
 import ICombinedLayout, {mergeSegmentsInPlace} from "../../private/combinedLayout";
-import ICursor from "../../private/cursor";
+import Cursor from "../../private/cursor";
 import IFactory from "../../private/factory";
 import ILayout from "../../private/layout";
 import ILineContext from "../../private/lineContext";
 import ILinesLayoutState from "../../private/linesLayoutState";
 import IMeasureContext, {detachMeasureContext} from "../../private/measureContext";
 import IMeasureLayout from "../../private/measureLayout";
-import IStaffContext, {detachStaffContext} from "../../private/staffContext";
+import IStaffContext from "../../private/staffContext";
 import IVoiceContext from "../../private/voiceContext";
-import {cloneObject} from "../../private/util";
 import {scoreParts} from "../../private/part";
 
 import DivisionOverflowException from "./divisionOverflowException";
@@ -76,122 +73,6 @@ export interface IMeasureLayoutOptions {
     memo$: ILinesLayoutState;
     fixup: (segment: ISegment, operations: IAny[]) => void;
 
-}
-
-/**
- * For use by MeasureProcessor.
- */
-class Cursor implements ICursor {
-    document: IDocument;
-
-    segment: ISegment;
-    idx$: number;
-
-    voice: IVoiceContext;
-    staff: IStaffContext;
-    measure: IMeasureContext;
-    line: ILineContext;
-
-    division$: number;
-    x$: number;
-    print$: Print;
-    header: ScoreHeader;
-    minXBySmallest$: {[key: number]: number};
-    /**
-     * By staff
-     */
-    maxPaddingTop$: number[];
-    /**
-     * By staff
-     */
-    maxPaddingBottom$: number[];
-
-    /**
-     * Only available in second layout$
-     */
-    page$: number;
-
-    approximate: boolean;
-    detached: boolean;
-    factory: IFactory;
-
-    hiddenCounter$: number;
-    fixup: (operations: IAny[]) => void;
-
-    constructor(spec: {
-                document: IDocument;
-                _approximate: boolean;
-                _detached: boolean;
-                factory: IFactory;
-                fixup?: (operations: IAny[]) => void;
-                header: ScoreHeader,
-                line: ILineContext;
-                measure: IMeasureContext;
-                memo$: ILinesLayoutState;
-                page: number;
-                print: Print;
-                segment: ISegment;
-                staff: IStaffContext;
-                voice: IVoiceContext;
-                x: number;
-            }) {
-        this.document = spec.document;
-        this.approximate = spec._approximate;
-        this.detached = spec._detached;
-        this.division$ = 0;
-        this.factory = spec.factory;
-        this.header = spec.header;
-        this.idx$ = 0;
-        this.line = spec.line;
-        this.maxPaddingBottom$ = [];
-        this.maxPaddingTop$ = [];
-        this.measure = spec.measure;
-        this.print$ = spec.print;
-        this.segment = spec.segment;
-        this.staff = detachStaffContext(spec.staff);
-        this.voice = spec.voice;
-        this.x$ = spec.x;
-        this.page$ = spec.page;
-        this.fixup = spec.fixup;
-    }
-
-    patch(builder: (partBuilder: VoiceBuilder & StaffBuilder) => (VoiceBuilder & StaffBuilder)) {
-        // Creat the patch based on wheter the current context is a staff context or a voice context.
-        let patch = createPatch(false, this.document, this.measure.uuid,
-             this.segment.part, part => {
-                 if (this.segment.ownerType === OwnerType.Staff) {
-                     return part.staff(this.segment.owner, builder, this.idx$);
-                 } else if (this.segment.ownerType === OwnerType.Voice) {
-                     return part.voice(this.segment.owner, builder, this.idx$);
-                 } else {
-                     throw new Error("Not reached");
-                 }
-             }
-        );
-        // All patches must be serializable, so we can:
-        //   - Send them over a network
-        //   - Invert them
-        this.fixup(cloneObject(patch));
-    }
-
-    advance(divs: number) {
-        invariant(this.segment.ownerType === OwnerType.Staff, "Only valid in staff context");
-        this.division$ += divs;
-        this.fixup([{
-            p: [
-                String(this.measure.uuid),
-                "parts",
-                this.segment.part,
-                "staves",
-                this.segment.owner,
-                this.idx$
-            ],
-            li: {
-                _class: Type[Type.Spacer],
-                divCount: divs
-            }
-        }]);
-    }
 }
 
 /**

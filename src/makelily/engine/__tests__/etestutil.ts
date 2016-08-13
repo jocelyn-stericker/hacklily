@@ -31,7 +31,7 @@ import ExpandPolicy from "../../document/expandPolicies";
 
 import IFactory from "../../private/factory";
 import ILayout from "../../private/layout";
-import ICursor from "../../private/cursor";
+import {ICursor} from "../../private/cursor";
 
 export let fakeFactory: IFactory = {
     create: (modelType: Type): IModel => {

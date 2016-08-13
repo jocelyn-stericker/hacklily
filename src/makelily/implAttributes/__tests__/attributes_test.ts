@@ -30,7 +30,7 @@ import {expect} from "chai";
 import IModel from "../../document/model";
 import Type from "../../document/types";
 
-import ICursor from "../../private/cursor";
+import {ICursor} from "../../private/cursor";
 
 import Factory from "../../engine/factory";
 

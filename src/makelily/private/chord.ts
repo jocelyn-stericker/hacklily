@@ -31,7 +31,7 @@ import * as invariant from "invariant";
 import IModel from "../document/model";
 
 import IAttributesSnapshot from "./attributesSnapshot";
-import ICursor from "./cursor";
+import {ICursor} from "./cursor";
 import {cloneObject} from "./util";
 
 interface IChord {

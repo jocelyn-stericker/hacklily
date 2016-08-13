@@ -32,7 +32,7 @@ import ExpandPolicy from "../document/expandPolicies";
 
 import {getCurrentMeasureList} from "../engine/measureList";
 
-import ICursor from "../private/cursor";
+import {ICursor} from "../private/cursor";
 import IBoundingRect from "../private/boundingRect";
 import ILayout from "../private/layout";
 import {groupsForPart} from "../private/part";

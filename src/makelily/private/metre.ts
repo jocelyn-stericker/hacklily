@@ -27,7 +27,7 @@ import {Time, TimeModification, Count} from "musicxml-interfaces";
 import {some, reduce, times, forEach, clone, find} from "lodash";
 import * as invariant from "invariant";
 
-import ICursor from "./cursor";
+import {ICursor} from "./cursor";
 import IChord, {timeModification, count, dots} from "./chord";
 
 const _512 = makeDuration({ count: 512 });

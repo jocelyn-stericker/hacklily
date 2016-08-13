@@ -30,7 +30,7 @@ import * as invariant from "invariant";
 
 import OwnerType from "../document/ownerTypes";
 
-import ICursor from "../private/cursor";
+import {ICursor} from "../private/cursor";
 import {notationObj, accidentalGlyphs, onLedger, InvalidAccidental} from "../private/chord";
 import {bboxes as glyphBBoxes} from "../private/smufl";
 

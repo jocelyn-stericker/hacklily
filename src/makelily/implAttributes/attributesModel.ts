@@ -33,7 +33,7 @@ import ExpandPolicy from "../document/expandPolicies";
 import ILayout from "../private/layout";
 import IBoundingRect from "../private/boundingRect";
 import IAttributesSnapshot from "../private/attributesSnapshot";
-import ICursor from "../private/cursor";
+import {ICursor} from "../private/cursor";
 import {barDivisions, fromModel as chordFromModel, hasAccidental} from "../private/chord";
 import {groupsForPart} from "../private/part";
 import {create as createSnapshot} from "../private/attributesSnapshot";
