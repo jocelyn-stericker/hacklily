@@ -12,8 +12,8 @@
   },
   "dependencies": {
     "history": "1.13.0",
-    "react": "0.14.7",
-    "react-router": "2.0.0"
+    "react": "15.3.0",
+    "react-router": "2.5.2"
   },
   "devDependencies": {
     "@types/node": "6.0.33",
