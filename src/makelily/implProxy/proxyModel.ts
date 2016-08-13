@@ -37,10 +37,6 @@ class ProxyModel implements Export.IProxyModel {
         return this._omTarget.divCount;
     }
 
-    get divisions() {
-        return this._omTarget.divisions;
-    }
-
     set divCount(divCount: number) {
         this._omTarget.divCount = divCount;
     }
@@ -74,13 +70,13 @@ class ProxyModel implements Export.IProxyModel {
         return this.toXML();
     }
 
-    __validate(cursor$: ICursor): void {
+    validate(cursor$: ICursor): void {
         invariant(!!this._target, "A proxy must have a target.");
-        this._omTarget.__validate(cursor$);
+        this._omTarget.validate(cursor$);
     }
 
-    __layout(cursor$: ICursor): Export.IProxyLayout {
-        return this._omTarget.__layout(cursor$);
+    getLayout(cursor$: ICursor): Export.IProxyLayout {
+        return this._omTarget.getLayout(cursor$);
     }
 }
 

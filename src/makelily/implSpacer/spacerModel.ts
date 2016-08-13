@@ -52,11 +52,11 @@ class SpacerModel implements Export.ISpacerModel {
         }
     }
 
-    __validate(cursor$: ICursor): void {
+    validate(cursor$: ICursor): void {
         // Nothing to do
     }
 
-    __layout(cursor$: ICursor): Export.ISpacerLayout {
+    getLayout(cursor$: ICursor): Export.ISpacerLayout {
         return new SpacerModel.Layout(this, cursor$);
     }
 

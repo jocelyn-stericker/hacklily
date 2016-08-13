@@ -85,7 +85,7 @@ class BarlineModel implements Export.IBarlineModel {
         });
     }
 
-    __validate(cursor$: ICursor): void {
+    validate(cursor$: ICursor): void {
         if (!this.barStyle) {
             cursor$.patch(staff => staff
                 .barline(barline => barline
@@ -125,7 +125,7 @@ class BarlineModel implements Export.IBarlineModel {
         }
     }
 
-    __layout(cursor$: ICursor): Export.IBarlineLayout {
+    getLayout(cursor$: ICursor): Export.IBarlineLayout {
         // mutates cursor$ as required.
         return new BarlineModel.Layout(this, cursor$);
     }
@@ -293,6 +293,7 @@ function Export(constructors: { [key: number]: any }) {
 
 module Export {
     export interface IBarlineModel extends IModel, Barline {
+        divisions: number;
         defaultX: number;
         defaultY: number;
         satieAttributes: Attributes.IAttributesLayout;

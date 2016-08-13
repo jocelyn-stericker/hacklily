@@ -109,11 +109,11 @@ class FiguredBassModel implements Export.IFiguredBassModel {
         });
     }
 
-    __validate(cursor$: ICursor): void {
+    validate(cursor$: ICursor): void {
         // todo
     }
 
-    __layout(cursor$: ICursor): Export.IFiguredBassLayout {
+    getLayout(cursor$: ICursor): Export.IFiguredBassLayout {
         // todo
 
         return new FiguredBassModel.Layout(this, cursor$);

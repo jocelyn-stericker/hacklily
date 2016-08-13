@@ -74,10 +74,12 @@ export function normalizeDivisionsInPlace(factory: IFactory,
                 });
             }
 
-            if (model.divisions) {
-                ratio = divisions / model.divisions;
+            if ("divisions" in model && (model as any).divisions) {
+                // This could be an attributes item or a note.
+                const divModel = (model as any) as {divisions: number};
+                ratio = divisions / divModel.divisions;
                 try {
-                    model.divisions = divisions;
+                    divModel.divisions = divisions;
                 } catch(err) {
                     console.warn("Could not set divisions");
                 }

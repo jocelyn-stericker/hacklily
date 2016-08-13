@@ -19,7 +19,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import {createFactory, Component, DOM, PropTypes} from "react";
+import {createFactory, Component, DOM, PropTypes, ReactElement} from "react";
 
 import Attributes from "./attributesModel";
 import BarNumber from "./barNumberView";
@@ -45,7 +45,7 @@ export default class AttributesView extends Component<{layout: Attributes.IAttri
         originY: number
     };
 
-    render() {
+    render(): ReactElement<any> {
         let layout = this.props.layout;
         let children: any[] = [];
 

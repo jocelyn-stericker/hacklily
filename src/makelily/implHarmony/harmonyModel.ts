@@ -124,11 +124,11 @@ class HarmonyModel implements Export.IHarmonyModel {
         });
     }
 
-    __validate(cursor$: ICursor): void {
+    validate(cursor$: ICursor): void {
         // todo
     }
 
-    __layout(cursor$: ICursor): Export.IHarmonyLayout {
+    getLayout(cursor$: ICursor): Export.IHarmonyLayout {
         // todo
 
         return new HarmonyModel.Layout(this, cursor$);

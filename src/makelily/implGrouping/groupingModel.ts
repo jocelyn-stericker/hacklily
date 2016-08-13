@@ -58,11 +58,11 @@ class GroupingModel implements Export.IGroupingModel {
         });
     }
 
-    __validate(cursor$: ICursor): void {
+    validate(cursor$: ICursor): void {
         // todo
     }
 
-    __layout(cursor$: ICursor): Export.IGroupingLayout {
+    getLayout(cursor$: ICursor): Export.IGroupingLayout {
         // todo
 
         return new GroupingModel.Layout(this, cursor$);

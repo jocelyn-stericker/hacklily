@@ -20,7 +20,7 @@
  */
 
 import {PartSymbolType} from "musicxml-interfaces";
-import {createFactory, Component, DOM, PropTypes} from "react";
+import {createFactory, Component, DOM, PropTypes, ReactElement} from "react";
 import {some, map} from "lodash";
 
 import Line from "../private/views/line";
@@ -49,7 +49,7 @@ export default class BarlineView extends Component<{layout: BarlineModel.IBarlin
         systemTop: number;
     };
 
-    render() {
+    render(): ReactElement<any> {
         const originY = this.context.originY;
 
         const layout = this.props.layout;

@@ -77,7 +77,7 @@ export default class Rest extends Component<IProps, void> {
                     textAnchor: "middle",
                     x: x + bboxes[notehead][0] * 10 / 2,
                     y: y - 30
-                },
+                } as any,
                 this.props.multipleRest.count // TODO: useSymbols
             /* DOM.text */),
         spec.dots && spec.printDot !== false ? map(spec.dots, (dot, idx) => $Dot({

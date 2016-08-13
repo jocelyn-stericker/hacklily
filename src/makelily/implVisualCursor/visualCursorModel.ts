@@ -46,11 +46,11 @@ class VisualCursorModel implements Export.IVisualCursorModel {
         // no-op
     }
 
-    __validate(cursor$: ICursor): void {
+    validate(cursor$: ICursor): void {
         // no-op
     }
 
-    __layout(cursor$: ICursor): Export.IVisualCursorLayout {
+    getLayout(cursor$: ICursor): Export.IVisualCursorLayout {
         return new VisualCursorModel.Layout(this, cursor$);
     }
 

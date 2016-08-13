@@ -144,11 +144,11 @@ describe("[chord.ts]", function() {
                 }
             });
             let cursor$ = getCursor(factory, chord);
-            chord.__validate(cursor$);
+            chord.validate(cursor$);
 
             cursor$ = getCursor(factory, chord);
             expect(cursor$.division$).to.eq(0);
-            chord.__layout(cursor$);
+            chord.getLayout(cursor$);
             expect(cursor$.division$).to.eq(0, "layout must not affect cursor division");
             let xml = (<any>chord).inspect();
             expect(xml).to.contain("<step>C</step>");
@@ -188,9 +188,9 @@ describe("[chord.ts]", function() {
                 }
             });
             let cursor$ = getCursor(factory, chord);
-            chord.__validate(cursor$);
+            chord.validate(cursor$);
             cursor$ = getCursor(factory, chord);
-            chord.__layout(cursor$);
+            chord.getLayout(cursor$);
             let chordDuration = chordFromModel(chord)[0].duration;
             expect(chordDuration).to.eq(2, "Duration wasn't specified so should be set here.");
         });

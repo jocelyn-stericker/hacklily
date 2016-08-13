@@ -76,7 +76,7 @@ class DirectionModel implements Export.IDirectionModel {
         });
     }
 
-    __validate(cursor$: ICursor): void {
+    validate(cursor$: ICursor): void {
         forEach(this.directionTypes, type => {
             if (type.dynamics && this.placement === AboveBelow.Unspecified) {
                 this.placement = AboveBelow.Below;
@@ -84,7 +84,7 @@ class DirectionModel implements Export.IDirectionModel {
         });
     }
 
-    __layout(cursor$: ICursor): Export.IDirectionLayout {
+    getLayout(cursor$: ICursor): Export.IDirectionLayout {
         return new DirectionModel.Layout(this, cursor$);
     }
 

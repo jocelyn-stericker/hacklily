@@ -256,7 +256,7 @@ class ScoreHeaderModel implements ScoreHeader {
                 "satie-collaboration": {
                     element: "satie-collaboration",
                     value: null,
-                    type: "yes",
+                    type: true,
                     attribute: null
                 }
             },

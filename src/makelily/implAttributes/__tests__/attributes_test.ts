@@ -138,12 +138,12 @@ describe("[attributes.ts]", function() {
 
             let cursor$ = makeCursor(factory, [attributes]);
             cursor$.staff.attributes = <any> {};
-            attributes.__validate(cursor$);
+            attributes.validate(cursor$);
         });
         it("lays out properly when at start of song", function() {
             let cursor$ = makeCursor(factory, [attributes]);
             cursor$.staff.attributes = <any> {};
-            let layout = attributes.__layout(cursor$) as AttributesModel.IAttributesLayout;
+            let layout = attributes.getLayout(cursor$) as AttributesModel.IAttributesLayout;
             expect(!!layout.keySignature).to.be.true;
             expect(!!layout.time).to.be.true;
             expect(!!layout.clef).to.be.true;
