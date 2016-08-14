@@ -331,7 +331,7 @@ interface StringLiteralTypeNode extends ts.TypeNode {
 	text: string;
 }
 
-interface Options {
+export interface Options {
 	files?: string[];
 	exclude?: string[];
 	externs?: string[];
