@@ -72,7 +72,7 @@ export default class Rest extends Component<IProps, void> {
             }/* Glyph */),
             rest.measure && this.props.multipleRest && DOM.text({
                     className: "mmn_",
-                    "font-weight": "bold",
+                    fontWeight: "bold",
                     fontSize: 48,
                     textAnchor: "middle",
                     x: x + bboxes[notehead][0] * 10 / 2,

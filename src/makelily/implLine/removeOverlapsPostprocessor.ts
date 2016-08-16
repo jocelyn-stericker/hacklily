@@ -19,8 +19,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/// <reference path="./webcola.d.ts" />
-
 import {vpsc as VPSC} from "webcola";
 import {forEach} from "lodash";
 

@@ -351,7 +351,7 @@ export default class Song extends Component<IProps, IState> implements ISong {
     private _pt: SVGPoint;
     private _syncSVG$ = (svg: SVGSVGElement) => {
         this._svg = svg;
-        this._pt = svg.createSVGPoint();
+        this._pt = svg ? svg.createSVGPoint() : null;
     };
 
     private _getPos(ev: MouseEvent) {

@@ -75,20 +75,20 @@ export default class WordsView extends Component<IProps, void> implements ITextM
                 let fontSize = cssSizeToTenths(scale40, words.fontSize);
 
                 return map(words.data.split("\n"), (line, lineNum) => DOM.tspan({
-                    "alignment-baseline": "hanging",
+                    alignmentBaseline: "hanging",
                     fill: words.color || "black",
                     direction: this.getDirection(words),
                     dx: this.getDX(words, 0, lineNum),
                     dy: this.getDY(words, initY, lineNum),
-                    "font-style": isItalic ? "italic" : "normal",
-                    "font-weight": isBold ? "bold" : "normal",
+                    fontStyle: isItalic ? "italic" : "normal",
+                    fontWeight: isBold ? "bold" : "normal",
                     fontFamily: words.fontFamily || "Alegreya",
                     fontSize: fontSize,
                     key: idx + "l" + lineNum,
-                    "letter-spacing": words.letterSpacing && words.letterSpacing !== "normal" ?
+                    letterSpacing: words.letterSpacing && words.letterSpacing !== "normal" ?
                         ("" + cssSizeToTenths(this.context.scale40,
                                 words.letterSpacing)) : "normal",
-                    "text-decoration": this.getTextDecoration(words),
+                    textDecoration: this.getTextDecoration(words),
                     textAnchor: this.getTextAnchor(words),
                     transform: this.getTransform(words),
                     x: this.getX(lineNum)
