@@ -210,7 +210,7 @@ class Tests extends Component<{params: {id: string}}, IState> {
     private _setSongRef = (song: Song) => {
         this._song = song;
         (window as any)["_song"] = song;
-    }
+    };
     private _mouseMoveHandler = (path: (string | number)[], pitch: Pitch) => {
         if (isEqual(this.state.lastPath, path) && isEqual(pitch, this.state.lastPitch)) {
             return;

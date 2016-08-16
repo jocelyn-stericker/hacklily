@@ -15,7 +15,6 @@ ERROR_COLOR="\033[31;01m";
             cd ./dist; 
             find . -type f -name "*.js" -exec touch "{}" ";" ; 
             cd ..; 
-		    (make _watchStage) &
             if [[ "$INIT" == "0" ]]; then 
             if [[ "x$RUN_LINT" != "x" ]]; then 
                 ../node_modules/.bin/nodemon -I -e js,ts --exec "make lint || true" -w ./dist/ -d 2 &
@@ -33,7 +32,7 @@ ERROR_COLOR="\033[31;01m";
 			    make watch RUN_DEVSRV=1 &
 			    cd ..;
 			else \
-			    printf "$(WARN_COLOR)» The Satie app is disabled. Run 'make watch RUN_SATIEAPP=1' to run the test server. $(NO_COLOR)\n";
+			    printf "${WARN_COLOR}» The Satie app is disabled. Run 'make watch RUN_SATIEAPP=1' to run the test server. ${NO_COLOR}\n";
 			fi; \
             if [[ "x$RUN_DEVSRV" != "x" ]]; then 
                 ./bin/run_devsrv.sh &

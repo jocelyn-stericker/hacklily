@@ -22,12 +22,13 @@
   "dependencies": {
     "invariant": "2.2.1",
     "lodash": "4.14.2",
-    "musicxml-interfaces": "0.0.18",
+    "musicxml-interfaces": "0.0.19",
     "opentype.js": "nodebox/opentype.js#0.4.7",
     "webcola": "tgdwyer/WebCola#326dc8e9e",
     "yargs": "3.29.0"
   },
   "peerDependencies": {
+    "musicxml-interfaces": "0.0.19",
     "react": "15.x.x"
   },
   "devDependencies": {
@@ -41,9 +42,9 @@
     "@types/react": "0.14.29",
     "@types/react-dom": "0.14.14",
     "@types/react-router": "file:./vendor/updated-react-router-types",
+    "@types/webcola": "file:./vendor/webcola-types",
     "@types/yargs": "0.0.29",
     "chai": "3.4.1",
-    "dts-generator": "1.7.0",
     "istanbul": "0.4.0",
     "mocha": "2.3.3",
     "node-libs-browser": "0.5.3",
@@ -54,19 +55,19 @@
     "source-map-loader": "0.1.5",
     "source-map-support": "0.4.0",
     "tsd": "^0.6.5",
-    "tslint": "3.6.0",
-    "typescript": "2.0.0",
+    "tslint": "3.14.0",
+    "typescript": "2.1.0-dev.20160802",
     "webpack": "1.13.0",
     "webpack-dev-server": "1.14.1"
   },
   "main": "./dist/index.js",
   "files": [
+    "COPYING.txt",
     "dist/",
-    "COPYING.txt"
+    "src/",
+    "index.d.ts"
   ],
-  "typescript": {
-    "definition": "dist/satie.d.ts"
-  },
+  "typings": "dist/index.d.ts",
   "browser": {
     "source-map-support": false,
     "fs": false

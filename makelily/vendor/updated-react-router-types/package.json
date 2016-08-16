@@ -1,0 +1,32 @@
+{
+  "author": {
+    "name": "Sergey Buturlakin",
+    "email": "https://github.com/sergey-buturlakin"
+  },
+  "dependencies": {},
+  "description": "TypeScript definitions for react-router v2.0.0",
+  "devDependencies": {},
+  "directories": {},
+  "dist": {
+    "shasum": "853ac27fe1a5abff3a9ee6ecf4f349ef1c0daabb",
+    "tarball": "https://registry.npmjs.org/@types/react-router/-/react-router-2.0.30.tgz"
+  },
+  "license": "MIT",
+  "main": "",
+  "maintainers": [
+    {
+      "name": "types",
+      "email": "ryan.cavanaugh@microsoft.com"
+    }
+  ],
+  "name": "@types/react-router",
+  "optionalDependencies": {},
+  "readme": "ERROR: No README data found!",
+  "repository": {
+    "type": "git",
+    "url": "https://www.github.com/DefinitelyTyped/DefinitelyTyped.git"
+  },
+  "scripts": {},
+  "typings": "react-router.d.ts",
+  "version": "2.0.30-x"
+}
