@@ -1,6 +1,6 @@
 {
   "name": "satie",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "description": "A sheet music renderer for the web",
   "author": "Josh Netterfield",
   "license": "AGPL-3.0",
@@ -63,6 +63,7 @@
   "files": [
     "COPYING.txt",
     "dist/",
+    "src/",
     "index.d.ts"
   ],
   "typings": "dist/index.d.ts",
