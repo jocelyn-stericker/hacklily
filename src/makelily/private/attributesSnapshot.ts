@@ -140,4 +140,3 @@ function createMeasureStyleSnapshot(current: Attributes, style: IMeasureStyle) {
     }
     return style;
 };
-

@@ -25,4 +25,3 @@ enum RenderTarget {
 }
 
 export default RenderTarget;
-

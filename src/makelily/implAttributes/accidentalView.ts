@@ -81,4 +81,3 @@ export default class AccidentalView extends Component<IProps, void> {
         }
     }
 }
-

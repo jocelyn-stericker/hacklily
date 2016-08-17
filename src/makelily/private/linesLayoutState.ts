@@ -51,4 +51,3 @@ export function newLayoutState(top: number): ILinesLayoutState {
         reduced$: {}
     };
 }
-

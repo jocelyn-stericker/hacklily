@@ -151,4 +151,3 @@ export default class Page extends Component<IProps, void> {
         };
     }
 }
-

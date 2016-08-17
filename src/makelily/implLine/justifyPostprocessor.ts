@@ -162,4 +162,3 @@ function justify(options: ILayoutOptions, bounds: ILineBounds,
 }
 
 export default justify;
-

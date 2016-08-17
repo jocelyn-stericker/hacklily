@@ -75,4 +75,3 @@ function center(options: ILayoutOptions, bounds: ILineBounds,
 }
 
 export default center;
-

@@ -51,4 +51,3 @@ export default function segmentMutator(factory: IFactory, memo$: ILinesLayoutSta
         invariant(false, "Unsupported operation type");
     }
 }
-

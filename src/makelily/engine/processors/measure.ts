@@ -502,4 +502,3 @@ export function approximateLayout(opts: IMeasureLayoutOptions): IMeasureLayout {
         }, opts);
     return layoutMeasure(opts);
 }
-

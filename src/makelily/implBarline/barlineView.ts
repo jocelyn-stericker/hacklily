@@ -94,4 +94,3 @@ export default class BarlineView extends Component<{layout: BarlineModel.IBarlin
         /* DOM.g */);
     }
 };
-

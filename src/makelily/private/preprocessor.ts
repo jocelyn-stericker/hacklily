@@ -24,4 +24,3 @@ import IMeasure from "../document/measure";
 type IPreprocessor = (measures: IMeasure[]) => IMeasure[];
 
 export default IPreprocessor;
-

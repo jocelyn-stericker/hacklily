@@ -70,4 +70,3 @@ export function getTop(glyph: string) {
 export function getBottom(glyph: string) {
     return bboxes[glyph][3] * 10;
 }
-

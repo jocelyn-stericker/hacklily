@@ -26,4 +26,3 @@ interface IWidthInformation {
 }
 
 export default IWidthInformation;
-

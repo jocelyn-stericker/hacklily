@@ -168,4 +168,3 @@ function cannotRead(err: any) {
             throw new Error(`Invalid operation ${argv._[0]}`);
     }
 }());
-

@@ -84,4 +84,3 @@ export function exportXML(score: IDocument): string {
         out.split("\n").map(t => "  " + t).join("\n") +
         "</score-timewise>";
 }
-

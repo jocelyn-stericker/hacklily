@@ -163,4 +163,3 @@ export default class Beam extends Component<IProps, {}> {
         return -3;
     }
 };
-

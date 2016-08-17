@@ -99,4 +99,3 @@ export default class WordsView extends Component<IProps, void> implements ITextM
 }
 
 extend(WordsView.prototype, TextMixin);
-

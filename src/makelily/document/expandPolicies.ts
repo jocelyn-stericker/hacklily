@@ -26,4 +26,3 @@ enum ExpandPolicy {
 }
 
 export default ExpandPolicy;
-

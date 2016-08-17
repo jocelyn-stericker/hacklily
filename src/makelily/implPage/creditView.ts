@@ -93,4 +93,3 @@ export default class CreditView extends Component<Credit, void> implements IText
 }
 
 extend(CreditView.prototype, TextMixin);
-

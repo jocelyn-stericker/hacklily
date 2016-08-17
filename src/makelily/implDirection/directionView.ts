@@ -121,4 +121,3 @@ export default class Direction extends Component<{layout: DirectionModel.IDirect
         }
     }
 };
-

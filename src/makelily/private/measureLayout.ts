@@ -70,4 +70,3 @@ export function detach(layout: IMeasureLayout) {
     };
     return clone;
 };
-

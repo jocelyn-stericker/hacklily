@@ -149,4 +149,3 @@ export default class Articulation extends Component<IProps, void> {
         }
     }
 }
-

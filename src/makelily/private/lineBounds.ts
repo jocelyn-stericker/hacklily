@@ -44,4 +44,3 @@ export function calculate(print: Print, page: number): ILineBounds {
         systemLayout: print.systemLayout
     };
 }
-

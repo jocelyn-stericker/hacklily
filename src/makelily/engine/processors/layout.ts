@@ -222,4 +222,3 @@ function updatePrint(options: ILayoutOptions, measure: IMeasure) {
     }
     return null;
 }
-

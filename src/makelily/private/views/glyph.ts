@@ -77,4 +77,3 @@ export default class Glyph extends Component<IProps, void> {
         return text;
     }
 }
-

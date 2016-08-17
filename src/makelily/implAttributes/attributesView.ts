@@ -101,4 +101,3 @@ export default class AttributesView extends Component<{layout: Attributes.IAttri
         return DOM.g(null, children);
     }
 }
-

@@ -114,4 +114,3 @@ export default class MeasureView extends Component<IProps, void> {
             this.props.layout.width !== nextProps.layout.width;
     }
 }
-
