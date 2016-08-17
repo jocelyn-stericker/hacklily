@@ -91,4 +91,3 @@ export default class Rest extends Component<IProps, void> {
         /* DOM.g */);
     }
 }
-

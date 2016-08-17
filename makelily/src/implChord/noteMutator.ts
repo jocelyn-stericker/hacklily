@@ -45,4 +45,3 @@ export default function noteMutator(memo$: ILinesLayoutState, note: NoteImpl, op
         invariant(false, "Unknown operation");
     }
 }
-

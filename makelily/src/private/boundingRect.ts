@@ -74,4 +74,3 @@ interface IBoundingRect {
 }
 
 export default IBoundingRect;
-

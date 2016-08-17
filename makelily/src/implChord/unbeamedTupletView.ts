@@ -156,4 +156,3 @@ export default class UnbeamedTuplet extends Component<IProps, void> {
             (incl || 0) * (bravura.engravingDefaults.tupletBracketThickness * 10);
     }
 };
-

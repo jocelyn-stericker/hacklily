@@ -150,4 +150,3 @@ function _layoutDirtyMeasures(options: ILayoutOptions, line: ILineContext,
         return clean$[measure.uuid];
     });
 }
-

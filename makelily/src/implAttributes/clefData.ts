@@ -138,4 +138,3 @@ export const standardClefs: Clef[] = [
         size: 1
     }
 ];
-

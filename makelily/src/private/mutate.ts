@@ -71,4 +71,3 @@ export function mutate(obj: any, op: IAny) {
         invariant(false, "Unsupported operation");
     }
 }
-

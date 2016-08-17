@@ -494,4 +494,3 @@ export function importXML(src: string, memo: ILinesLayoutState,
         }
     });
 }
-

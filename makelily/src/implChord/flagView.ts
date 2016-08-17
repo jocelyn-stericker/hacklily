@@ -87,4 +87,3 @@ export default class Flag extends Component<IProps, void> {
         return this.props.spec.flag + this.directionString();
     }
 }
-

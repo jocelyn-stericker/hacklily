@@ -1,6 +1,6 @@
 {
   "name": "satie",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "description": "A sheet music renderer for the web",
   "author": "Josh Netterfield",
   "license": "AGPL-3.0",
@@ -54,7 +54,6 @@
     "react-hot-loader": "1.3.0",
     "source-map-loader": "0.1.5",
     "source-map-support": "0.4.0",
-    "tsd": "^0.6.5",
     "tslint": "3.14.0",
     "typescript": "2.1.0-dev.20160802",
     "webpack": "1.13.0",
@@ -64,7 +63,6 @@
   "files": [
     "COPYING.txt",
     "dist/",
-    "src/",
     "index.d.ts"
   ],
   "typings": "dist/index.d.ts",

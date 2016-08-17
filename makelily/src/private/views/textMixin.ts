@@ -107,4 +107,3 @@ export let Prototype: ITextMixin = {
         }
     }
 };
-

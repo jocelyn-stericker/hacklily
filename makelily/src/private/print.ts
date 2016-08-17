@@ -33,4 +33,3 @@ export function getPageMargins(pageMargins: PageMargins[], page: number): PageMa
     invariant(false, "Invalid page margins");
     return null;
 }
-

@@ -266,4 +266,3 @@ function resolvePDKey(name: string, text: string,
         x: number, y: number, fontSize: number, style?: string) {
     return name + "_" + text + "_" + x + "_" + y + "_" + fontSize + "_" + (style || "");
 }
-

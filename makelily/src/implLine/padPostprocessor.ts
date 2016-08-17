@@ -84,4 +84,3 @@ function pad(options: ILayoutOptions, bounds: ILineBounds,
 }
 
 export default pad;
-

@@ -25,4 +25,3 @@ enum OwnerType {
 }
 
 export default OwnerType;
-

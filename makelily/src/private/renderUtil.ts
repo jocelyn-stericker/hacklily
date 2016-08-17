@@ -656,4 +656,3 @@ export function cssSizeToTenths(scaling40: number, css: string) {
 export function tenthsToMM(scaling40: number, tenths: number) {
     return scaling40 * tenths / 40;
 }
-

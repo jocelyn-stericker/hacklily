@@ -89,4 +89,3 @@ export function detachMeasureContext(measure: IMeasure, x: number): IMeasureCont
         version: measure.version
     };
 }
-

@@ -147,4 +147,3 @@ export default class ClefView extends Component<{spec: Clef, key?: string | numb
         return this.props.spec.line;
     }
 };
-

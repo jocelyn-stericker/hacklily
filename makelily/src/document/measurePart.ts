@@ -27,4 +27,3 @@ interface IMeasurePart {
 }
 
 export default IMeasurePart;
-

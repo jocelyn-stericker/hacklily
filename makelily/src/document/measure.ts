@@ -44,4 +44,3 @@ interface IMeasure {
 };
 
 export default IMeasure;
-

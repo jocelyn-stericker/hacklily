@@ -53,4 +53,3 @@ export function getLyricWidth(lyric: Lyric, scale40: number) {
         return 0;
     }, 0);
 }
-

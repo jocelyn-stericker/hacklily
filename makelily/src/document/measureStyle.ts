@@ -26,4 +26,3 @@ interface IMeasureStyle extends MeasureStyle {
 }
 
 export default IMeasureStyle;
-
