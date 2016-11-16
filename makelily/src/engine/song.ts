@@ -19,7 +19,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import {Component} from "react";
+import {Component, SyntheticEvent} from "react";
 
 import {forEach, isEqual, throttle, find, extend} from "lodash";
 import {createElement, ReactElement} from "react";
@@ -28,7 +28,7 @@ import {IAny, invert} from "musicxml-interfaces/operations";
 import * as invariant from "invariant";
 
 import IDocument, {Document} from "../document/document";
-import ISong, {IPatchSpec, specIsDocBuilder, specIsPartBuilder, specIsRaw, IProps} from "../document/song";
+import ISong, {IPatchSpec, specIsDocBuilder, specIsPartBuilder, specIsRaw, IProps, IMouseEvent} from "../document/song";
 import createPatch from "../patch/createPatch";
 
 import RenderTarget from "../private/renderTargets";
@@ -42,7 +42,7 @@ import {importXML} from "./import";
 import {exportXML} from "./export";
 import applyOp from "./applyOp";
 
-export type IHandler = (path: (string|number)[], pitch: Pitch) => void;
+export type Handler = (ev: IMouseEvent) => void;
 
 const NOT_READY_ERROR = "The document is not yet initialized.";
 const SATIE_ELEMENT_RX = /SATIE([0-9]*)_(\w*)_(\w*)_(\w*)_(\w*)_(\w*)/;
@@ -354,24 +354,29 @@ export default class Song extends Component<IProps, IState> implements ISong {
         this._pt = svg ? svg.createSVGPoint() : null;
     };
 
-    private _getPos(ev: MouseEvent) {
-        if (!this._svg.contains(ev.target as Node)) {
+    private _getPos(ev: SyntheticEvent<Node>) {
+        if (!this._svg.contains(ev.target)) {
             return null;
         }
 
         // Get point in global SVG space
-        this._pt.x = ev.clientX;
-        this._pt.y = ev.clientY;
+        this._pt.x = (ev as any).clientX;
+        this._pt.y = (ev as any).clientY;
 
         return this._pt.matrixTransform(this._svg.getScreenCTM().inverse());
     }
 
-    private _handleCursorPosition = throttle((p: {x: number; y: number}, handler: IHandler) => {
-        let element = getByPosition(p);
+    private _handleCursorPosition = throttle((p: {x: number; y: number}, handler: Handler) => {
+        let match = getByPosition(p);
 
-        let path = element && element.key.match(SATIE_ELEMENT_RX);
+        let path = match && match.key.match(SATIE_ELEMENT_RX);
         if (!path) {
-            handler([], null);
+            handler({
+                path: [],
+                pitch: null,
+                pos: p,
+                matchedOriginY: null,
+            });
             return;
         }
 
@@ -381,17 +386,22 @@ export default class Song extends Component<IProps, IState> implements ISong {
 
         let el = measure[path[1]][path[2]][path[3]][path[4]][path[5]];
         if (el) {
-            let originY = element.originY;
+            let originY = match.originY;
             let clef = el._clef;
             let pitch: Pitch;
             if (clef && originY) {
                 pitch = pitchForClef(originY - p.y, clef);
             }
-            handler(path, pitch);
+            handler({
+                path,
+                pitch,
+                pos: p,
+                matchedOriginY: originY,
+            });
         }
     }, 18);
 
-    private _handleMouseMove = (ev: any) => {
+    private _handleMouseMove = (ev: SyntheticEvent<Node>) => {
         let p = this._getPos(ev);
         if (p) {
             this._handleCursorPosition(p, this.props.onMouseMove);

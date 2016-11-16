@@ -32,6 +32,7 @@ export {default as IDocument} from "./document/document";
 export {default as IModel} from "./document/model";
 export {default as Type} from "./document/types";
 export {default as IMeasure} from "./document/measure";
+export {IMouseEvent} from "./document/song";
 
 /* Experimental addons */
 import {getGlyphCode as eGetGlyphCode} from "./private/smufl";

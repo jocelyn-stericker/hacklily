@@ -105,7 +105,7 @@ lint: node_modules/.bin/tslint
 
 vendor/tslint/bin/tslint.js:
 	@git submodule update --init --recursive
-	@cd ./vendor/tslint/; NODE_ENV=dev npm install
+	@cd ./vendor/tslint/; NODE_ENV=dev yarn
 	@cd ./vendor/tslint/; grunt
 
 test: build
@@ -127,12 +127,11 @@ coverage: build
 
 ./webapp/node_modules: webapp/package.json
 	@printf "$(WARN_COLOR)Regenerating satie/webapp/node_modules...$(NO_COLOR)\n";
-	@cd ./webapp; npm prune; npm install --cache-min 1000000;
+	@cd ./webapp; yarn;
 
 ./node_modules: package.json
 	@printf "$(WARN_COLOR)Regenerating satie/node_modules...$(NO_COLOR)\n";
-	@npm prune
-	@npm install --cache-min 1000000
+	@yarn
 
 clean:
 	@printf "$(CLEAN_STRING)\n"

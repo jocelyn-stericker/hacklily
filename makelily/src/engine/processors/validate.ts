@@ -243,7 +243,7 @@ function tryValidate(options$: ILayoutOptions, memo$: ILinesLayoutState,
                                 staff => staff
                                     .insertBarline(barline => barline
                                         .barStyle({
-                                            data: measure.idx === last(options$.document.measures).idx ?
+                                            data: measure.uuid === last(options$.document.measures).uuid ?
                                                 BarStyleType.LightHeavy : BarStyleType.Regular,
                                         })
                                     ),

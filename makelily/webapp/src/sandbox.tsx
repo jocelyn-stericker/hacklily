@@ -11,7 +11,7 @@ import Test, {satieApplication} from "./test";
 import {prefix} from "./config";
 const STYLES = require("./tests.css");
 
-import {Application, Song, Patch, Type} from "../../src/index";
+import {Application, Song, Patch, Type, IMouseEvent} from "../../src/index";
 
 const MAX_SAFE_INTEGER = 9007199254740991;
 
@@ -211,20 +211,21 @@ class Tests extends Component<{params: {id: string}}, IState> {
         this._song = song;
         (window as any)["_song"] = song;
     };
-    private _mouseMoveHandler = (path: (string | number)[], pitch: Pitch) => {
-        if (isEqual(this.state.lastPath, path) && isEqual(pitch, this.state.lastPitch)) {
+    private _mouseMoveHandler = (ev: IMouseEvent) => {
+        if (isEqual(this.state.lastPath, ev.path) && isEqual(ev.pitch, this.state.lastPitch)) {
             return;
         }
-        if (!this._handler(path, pitch, true)) {
+        if (!this._handler(ev, true)) {
             this.setState({operations: this.state.canonicalOperations});
         }
     };
-    private _mouseClickHandler = (path: (string | number)[], pitch: Pitch) => {
-        this._handler(path, pitch, false);
+    private _mouseClickHandler = (ev: IMouseEvent) => {
+        this._handler(ev, false);
     };
-    private _handler(path: (string | number)[], pitch: Pitch, isPreview: boolean): boolean {
-        let oldOperations = this.state.oldOperations.concat([this.state.canonicalOperations]);
-        let operations = this.state.canonicalOperations;
+    private _handler(ev: IMouseEvent, isPreview: boolean): boolean {
+        const {path, pitch} = ev;
+        const oldOperations = this.state.oldOperations.concat([this.state.canonicalOperations]);
+        const operations = this.state.canonicalOperations;
         const doc = this._song.getDocument(operations); // TODO: remove getDocument
         const measure = find(doc.measures, fmeasure => String(fmeasure.uuid) === path[0]);
         if (!measure || path[1] !== "parts" || !measure.parts[path[2]]) {

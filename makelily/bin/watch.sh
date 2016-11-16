@@ -17,12 +17,13 @@ ERROR_COLOR="\033[31;01m";
             cd ..; 
             if [[ "$INIT" == "0" ]]; then 
             if [[ "x$RUN_LINT" != "x" ]]; then 
-                ../node_modules/.bin/nodemon -I -e js,ts --exec "make lint || true" -w ./dist/ -d 2 &
+                pwd
+                ./node_modules/.bin/nodemon -I -e js,ts --exec "make lint || true" -w ./dist/ -d 2 &
             else 
                 printf "satie/lib${WARN_COLOR}: Linting is disabled. Run 'env RUN_LINT=1 make watch' to run tests. ${NO_COLOR}\n"; 
             fi; 
             if [[ "x$RUN_TEST" != "x" ]]; then 
-                ../node_modules/.bin/nodemon -I -e js,ts --exec "make _testOnly || true" -w ./dist/ -d 2 &
+                ./node_modules/.bin/nodemon -I -e js,ts --exec "make _testOnly || true" -w ./dist/ -d 2 &
             else 
                 printf "satie/lib${WARN_COLOR}: Testing is disabled. Run 'env RUN_TEST=1 make watch' to run tests. ${NO_COLOR}\n"; 
             fi; 
