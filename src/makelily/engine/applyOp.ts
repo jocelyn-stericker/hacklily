@@ -32,6 +32,7 @@ import ILinesLayoutState from "../private/linesLayoutState";
 import IFactory from "../private/factory";
 
 import barlineMutator from "../implBarline/barlineMutator";
+import attributesMutator from "../implAttributes/attributesMutator";
 import chordMutator from "../implChord/chordMutator";
 import segmentMutator from "../implSegment/segmentMutator";
 
@@ -135,8 +136,10 @@ export default function applyOp(measures: IMeasure[], factory: IFactory, op: IAn
         localOp.p = path.slice(6);
         if (factory.modelHasType(element, Type.Barline)) {
             barlineMutator(memo, element as any, localOp);
+        } else if (factory.modelHasType(element, Type.Attributes)) {
+            attributesMutator(memo, element as any, localOp);
         } else {
-            invariant(false, "Invalid operation path: No reducer for", element);
+            invariant(false, "Invalid operation path: No reducer for %s", element);
         }
     }
 }

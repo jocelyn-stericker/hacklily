@@ -103,7 +103,7 @@ class BarlineModel implements Export.IBarlineModel {
         if (!isFinite(this.barStyle.data) || this.barStyle.data === null) {
             let lastBarlineInSegment = !some(cursor$.segment.slice(cursor$.idx$ + 1),
                     model => cursor$.factory.modelHasType(model, Type.Barline));
-            let isLast = cursor$.measure.idx === last(cursor$.document.measures).idx &&
+            let isLast = cursor$.measure.uuid === last(cursor$.document.measures).uuid &&
                     lastBarlineInSegment;
 
             cursor$.patch(staff => staff

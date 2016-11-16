@@ -28,6 +28,27 @@ import {PartBuilder, DocumentBuilder} from "../patch/createPatch";
 
 export type PrivatePatches = {isPatches: boolean};
 
+export interface IMouseEvent {
+    /**
+     * The JSON0 path to the element under the cursor.
+     * If there is no element under the cursor, returns an empty array.
+     */
+    path: (string|number)[];
+
+    /**
+     * The pitch in the staff under the cursor.
+     */
+    pitch: Pitch;
+
+    /**
+     * The position of the mouse cursor in the rendered svg, relative to
+     * the top-left.
+     */
+    pos: {x: number, y: number};
+
+    matchedOriginY: number;
+}
+
 export interface IProps {
     baseSrc: string;
     patches?: PrivatePatches;
@@ -37,8 +58,8 @@ export interface IProps {
 
     onError: (err: Error) => void;
     onLoaded?: () => void;
-    onMouseMove?: (path: (string|number)[], pitch: Pitch) => void;
-    onMouseClick?: (path: (string|number)[], pitch: Pitch) => void;
+    onMouseMove?: (event: IMouseEvent) => void;
+    onMouseClick?: (event: IMouseEvent) => void;
 }
 
 export interface IPatchSpec {

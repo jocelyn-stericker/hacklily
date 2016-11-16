@@ -24,7 +24,8 @@ import {IAny} from "musicxml-interfaces/operations";
 import {
     buildNote, patchNote, INoteBuilder,
     buildBarline, patchBarline, IBarlineBuilder,
-    buildBeam,
+    buildBeam, buildAttributes, patchAttributes,
+    IAttributesBuilder,
 } from "musicxml-interfaces/builders";
 import {find, forEach, last, some, times, findIndex, findLastIndex} from "lodash";
 import * as invariant from "invariant";
@@ -82,6 +83,22 @@ export class StaffBuilder {
 
     insertBarline(builder: (build: IBarlineBuilder) => IBarlineBuilder, idx = this._idx) {
         let li = buildBarline(builder);
+        let p = [idx];
+        this._patches = this._patches.concat({li, p});
+        return this;
+    }
+
+    attributes(builder: (builder: IAttributesBuilder) => IAttributesBuilder, idx = this._idx) {
+        let model = this._segment[idx] as any;
+        invariant(model, "no such model");
+        invariant(this._document.modelHasType(model, Type.Attributes), "model is not attributes");
+        this._patches = this._patches.concat(
+            patchAttributes(model, builder).map(_prependPatch(idx)));
+        return this;
+    }
+
+    insertAttributes(builder: (build: IAttributesBuilder) => IAttributesBuilder, idx = this._idx) {
+        let li = buildAttributes(builder);
         let p = [idx];
         this._patches = this._patches.concat({li, p});
         return this;
@@ -234,7 +251,7 @@ export class DocumentBuilder {
 
     measure(measureUUID: number, builder: (build: MeasureBuilder) => MeasureBuilder): this {
         let measure = find(this._doc.measures, it => it.uuid === measureUUID);
-        invariant(Boolean(measure), "invalid measure uuid");
+        invariant(Boolean(measure), `invalid measure uuid ${measureUUID}`);
         this._patches = this._patches.concat(
             builder(new MeasureBuilder(measure, this._doc))
                 .patches
