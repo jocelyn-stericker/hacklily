@@ -29,6 +29,7 @@ interface ILinesLayoutState {
     clean$: { [key: string]: IMeasureLayout };
     reduced$: { [key: string]: ILineLayoutResult };
     y$: number;
+    shortest$: number;
 }
 
 export default ILinesLayoutState;
@@ -48,6 +49,7 @@ export function newLayoutState(top: number): ILinesLayoutState {
         width$: {},
         multipleRests$: {},
         clean$: {},
-        reduced$: {}
+        reduced$: {},
+        shortest$: 0,
     };
 }

@@ -38,7 +38,7 @@ import {layoutMeasure} from "./measure";
 export function layoutLine$(options: ILayoutOptions, bounds: ILineBounds,
         memo$: ILinesLayoutState): ILineLayoutResult {
     let {measures, attributes} = options;
-    let {clean$, reduced$} = memo$;
+    let key = `${options.page$}_${options.line}`;
 
     let allModels = reduce(measures, function(memo, measure) {
         let voiceSegments$ = <ISegment[]> flatten(map(values<IMeasurePart>(measure.parts),
@@ -51,13 +51,22 @@ export function layoutLine$(options: ILayoutOptions, bounds: ILineBounds,
         return memo.concat(segments);
     }, []);
     let line = createLineContext(allModels, measures.length, options.line, options.lines);
+    if (memo$.shortest$ !== line.shortestCount && !options.preview) {
+        memo$.shortest$ = line.shortestCount;
+        delete memo$.reduced$[key];
+        memo$.clean$ = {};
+        measures.forEach(measure => ++measure.version);
+    } else if (!options.preview /* TODO: && widths changes */) {
+        delete memo$.reduced$[key];
+        measures.forEach(measure => ++measure.version);
+    }
 
     if (!measures.length) {
         return [];
     }
 
-    let layouts = _layoutDirtyMeasures(options, line, clean$, reduced$, memo$);
-    attributes = clean$[measures[measures.length - 1].uuid].attributes; // FIXME: Hack
+    let layouts = _layoutDirtyMeasures(options, line, memo$.clean$, memo$.reduced$, memo$);
+    attributes = memo$.clean$[measures[measures.length - 1].uuid].attributes; // FIXME: Hack
 
     let partOrder = map(scoreParts(options.header.partList), t => t.id);
     let staffIdx = 0;
@@ -94,8 +103,10 @@ export function layoutLine$(options: ILayoutOptions, bounds: ILineBounds,
         left = left + layout.width;
     });
 
-    let key = `${options.page$}_${options.line}`;
     if (!memo$.reduced$[key]) {
+        if (options.preview) {
+            console.warn("RERENDERING IN PREVIEW!");
+        }
         let detachedLayouts: IMeasureLayout[] = map(layouts, detachMeasureLayout);
         memo$.reduced$[key] = reduce(options.postprocessors,
             (layouts, filter) => filter(options, bounds, layouts), detachedLayouts);

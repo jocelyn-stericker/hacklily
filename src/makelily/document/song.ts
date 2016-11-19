@@ -35,6 +35,7 @@ export interface IMouseEvent {
      */
     path: (string|number)[];
 
+
     /**
      * The pitch in the staff under the cursor.
      */
@@ -47,6 +48,14 @@ export interface IMouseEvent {
     pos: {x: number, y: number};
 
     matchedOriginY: number;
+
+    /**
+     * The rendered react component under the element.
+     * If there is no element under the cursor, returns null.
+     * 
+     * Experimental, and will change or be removed without fanfare.
+     */
+    _private: any;
 }
 
 export interface IProps {
