@@ -103,10 +103,10 @@ export default class Song extends Component<IProps, IState> implements ISong {
             this._preRender$();
         } else if (nextProps.patches !== this.props.patches) {
             const patches = nextProps.patches;
-            if (!patches) {
-                this._update$([], false);
-            } else if (PrivatePatches.verify(patches)) {
+            if (PrivatePatches.verify(patches)) {
                 this._update$(patches.content, patches.isPreview);
+            } else if (!patches) {
+                this._update$([], false);
             } else {
                 throw new Error("Invalid patch.");
             }
@@ -376,6 +376,7 @@ export default class Song extends Component<IProps, IState> implements ISong {
                 pitch: null,
                 pos: p,
                 matchedOriginY: null,
+                _private: null,
             });
             return;
         }
@@ -397,6 +398,7 @@ export default class Song extends Component<IProps, IState> implements ISong {
                 pitch,
                 pos: p,
                 matchedOriginY: originY,
+                _private: match.obj,
             });
         }
     }, 18);
