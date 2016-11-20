@@ -153,16 +153,16 @@ _.forEach(interfaces, (spec, key) => {
     emit(`    let frozen: {[key: string]: boolean[]} = {};`);
     emit(`    let patches: any[] = [];`);
     emit(`
-        function makeReference(fieldName: string) {
-                  if (!reference[fieldName]) {
-                    if (original) {
-                      reference[fieldName] = (original[fieldName] as any[] || [] as any[]).slice();
-                    } else {
-                      reference[fieldName] = [];
-                    }
-                    frozen[fieldName] = reference[fieldName].map(a => false);
-                  }
+    function makeReference(fieldName: string) {
+      if (!reference[fieldName]) {
+        if (original) {
+          reference[fieldName] = ((original._snapshot || original)[fieldName] as any[] || [] as any[]).slice();
+        } else {
+          reference[fieldName] = [];
         }
+        frozen[fieldName] = reference[fieldName].map(a => false);
+      }
+    }
     `);
     emit(`    function checkInvariants() {`); // invariants
     _.forEach(spec, (fieldSpec, fieldName) => {
@@ -176,7 +176,7 @@ _.forEach(interfaces, (spec, key) => {
             emit(`        "${fieldName} is a required field");`);
         }
     });
-    emit(`    }`); // checkInvariants
+    emit(`    }\n`); // checkInvariants
 
     emit(`    if (!original) {`);
     emit(`      this.build = (): ${key} => {`);
@@ -211,86 +211,90 @@ _.forEach(interfaces, (spec, key) => {
 
         if (interfaces[realFieldSpec]) {
             emit(`
-                this.${fieldName} = (build: ${realFieldSpec} | ((builder: I${realFieldSpec}Builder) => I${realFieldSpec}Builder)): I${key}Builder => {
-                  if (typeof build === 'function') {
-                    delete updates["${fieldName}"]
-                    const builder = (build as any)(new ${realFieldSpec}Builder(original && original["${fieldName}"]));
-                    if (!original) updates["${fieldName}"] = builder.build();
-                    else childBuilders["${fieldName}"] = builder;
-                  } else {
-                    updates.${fieldName} = build as any;
-                    delete childBuilders["${fieldName};"];
-                  }
-                  modifiedKeys["${fieldName}"] = true;
-                  return this;
-                }`) // ${fieldName}(...): ${key}Builder
+    this.${fieldName} = (build: ${realFieldSpec} | ((builder: I${realFieldSpec}Builder) => I${realFieldSpec}Builder)): I${key}Builder => {
+      if (typeof build === 'function') {
+        delete updates["${fieldName}"]
+        const builder = (build as any)(new ${realFieldSpec}Builder(original && original["${fieldName}"]));
+        if (!original) updates["${fieldName}"] = builder.build();
+        else childBuilders["${fieldName}"] = builder;
+      } else {
+        updates.${fieldName} = build as any;
+        delete childBuilders["${fieldName};"];
+      }
+      modifiedKeys["${fieldName}"] = true;
+      return this;
+    }`) // ${fieldName}(...): ${key}Builder
             return;
         }
         emit(`
-            this.${fieldName} = (spec: ${realFieldSpec}): I${key}Builder => {
-                updates["${fieldName}"] = spec;
-                delete childBuilders["${fieldName};"];
-                modifiedKeys["${fieldName}"] = true;
-                return this;
-            }`) // ${fieldName}
+    this.${fieldName} = (spec: ${realFieldSpec}): I${key}Builder => {
+        updates["${fieldName}"] = spec;
+        delete childBuilders["${fieldName};"];
+        modifiedKeys["${fieldName}"] = true;
+        return this;
+    }`) // ${fieldName}
 
         if (isArray && interfaces[containedFieldSpec]) {
             emit(`
-                this.${fieldName}At = (idx: number, build: ${containedFieldSpec} | ((builder: I${containedFieldSpec}Builder) => I${containedFieldSpec}Builder)): I${key}Builder => {
-                  makeReference("${fieldName}");
-                  if (frozen["${fieldName}"][idx]) {
-                      throw new Error("Patching ${fieldName}." + idx + " twice in a builder is unsupported.");
-                  }
-                  if (typeof build === 'function' && reference["${fieldName}"][idx]) {
-                    let patch = (build as any)(new ${containedFieldSpec}Builder(reference["${fieldName}"][idx])).patch();
-                    patches = patches.concat(patch.map(patch => {
-                      // TODO: detach?
-                      patch.p = ["${fieldName}", idx].concat(patch.p);
-                      return patch;
-                    }));
-                    frozen["${fieldName}"][idx] = true;
-                    return this;
-                  }
-                  let update = typeof build === 'function' ? (build as any)(new ${containedFieldSpec}Builder(reference["${fieldName}"][idx])).build() : build;
-                  if (original) {
-                    patches.push({p: ["${fieldName}", idx], li: update});
-                  } else {
-                    updates["${fieldName}"] = reference["${fieldName}"]; // TODO: Merge?
-                  } 
-                  reference["${fieldName}"][idx] = update;
-                  frozen["${fieldName}"][idx] = true;
-                  return this;
-                }
-            
-                this.${fieldName}Splice = (start: number, deleteCount: number, ...items: ${containedFieldSpec}[]): I${key}Builder => {
-                  makeReference("${fieldName}");
-                  let idx = start;
-                  if (original) {
-                    for (; idx < start + deleteCount && idx < start + items.length; ++idx) {
-                      if (frozen["${fieldName}"][idx]) {
-                        throw new Error("Replacing ${fieldName}." + idx + " after patching in a builder is unsupported.");
-                      }
-                      let ld = reference["${fieldName}"][idx];
-                      patches.push({p: ["${fieldName}", idx], ld, li: items[idx - start]});
-                      frozen["${fieldName}"][idx] = true;
-                    }
-                    for (; idx < start + deleteCount; ++idx) {
-                      if (frozen["${fieldName}"][idx]) {
-                        throw new Error("Removing ${fieldName}." + idx + " after patching in a builder is unsupported.");
-                      }
-                      let ld = reference["${fieldName}"][idx];
-                      patches.push({p: ["${fieldName}", idx], ld});
-                    }
-                    for (; idx < start + items.length; ++idx) {
-                      patches.push({p: ["${fieldName}", idx], li: items[idx - start]});
-                      frozen["${fieldName}"][idx] = true;
-                    }
-                  }
-                  reference["${fieldName}"].splice(start, deleteCount, ...items);
-                  updates["${fieldName}"] = reference["${fieldName}"];
-                  frozen["${fieldName}"].splice(start, deleteCount, ...items.map(i => true));
-                  return this;
-                }`) // ${fieldName}(...): ${key}Builder
+    this.${fieldName}At = (idx: number, build: ${containedFieldSpec} | ((builder: I${containedFieldSpec}Builder) => I${containedFieldSpec}Builder)): I${key}Builder => {
+      makeReference("${fieldName}");
+      if (frozen["${fieldName}"][idx]) {
+          throw new Error("Patching ${fieldName}." + idx + " twice in a builder is unsupported.");
+      }
+      if (original && original._snapshot && original._snapshot["${fieldName}"] && original._snapshot["${fieldName}"][idx] && !original["${fieldName}"][idx]) {
+          // Clone snapshot.
+          patches.push({p: ["${fieldName}", idx], li: original._snapshot["${fieldName}"]});
+      }
+      if (typeof build === 'function' && reference["${fieldName}"][idx]) {
+        let patch = (build as any)(new ${containedFieldSpec}Builder(reference["${fieldName}"][idx])).patch();
+        patches = patches.concat(patch.map(patch => {
+          // TODO: detach?
+          patch.p = ["${fieldName}", idx].concat(patch.p);
+          return patch;
+        }));
+        frozen["${fieldName}"][idx] = true;
+        return this;
+      }
+      let update = typeof build === 'function' ? (build as any)(new ${containedFieldSpec}Builder(reference["${fieldName}"][idx])).build() : build;
+      if (original) {
+        patches.push({p: ["${fieldName}", idx], li: update});
+      } else {
+        updates["${fieldName}"] = reference["${fieldName}"]; // TODO: Merge?
+      } 
+      reference["${fieldName}"][idx] = update;
+      frozen["${fieldName}"][idx] = true;
+      return this;
+    }
+
+    this.${fieldName}Splice = (start: number, deleteCount: number, ...items: ${containedFieldSpec}[]): I${key}Builder => {
+      makeReference("${fieldName}");
+      let idx = start;
+      if (original) {
+        for (; idx < start + deleteCount && idx < start + items.length; ++idx) {
+          if (frozen["${fieldName}"][idx]) {
+            throw new Error("Replacing ${fieldName}." + idx + " after patching in a builder is unsupported.");
+          }
+          let ld = reference["${fieldName}"][idx];
+          patches.push({p: ["${fieldName}", idx], ld, li: items[idx - start]});
+          frozen["${fieldName}"][idx] = true;
+        }
+        for (; idx < start + deleteCount; ++idx) {
+          if (frozen["${fieldName}"][idx]) {
+            throw new Error("Removing ${fieldName}." + idx + " after patching in a builder is unsupported.");
+          }
+          let ld = reference["${fieldName}"][idx];
+          patches.push({p: ["${fieldName}", idx], ld});
+        }
+        for (; idx < start + items.length; ++idx) {
+          patches.push({p: ["${fieldName}", idx], li: items[idx - start]});
+          frozen["${fieldName}"][idx] = true;
+        }
+      }
+      reference["${fieldName}"].splice(start, deleteCount, ...items);
+      updates["${fieldName}"] = reference["${fieldName}"];
+      frozen["${fieldName}"].splice(start, deleteCount, ...items.map(i => true));
+      return this;
+    }`) // ${fieldName}(...): ${key}Builder
         }
     });
 
