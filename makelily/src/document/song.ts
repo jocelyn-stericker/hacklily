@@ -35,7 +35,6 @@ export interface IMouseEvent {
      */
     path: (string|number)[];
 
-
     /**
      * The pitch in the staff under the cursor.
      */

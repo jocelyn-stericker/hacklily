@@ -1,6 +1,6 @@
 {
   "name": "satie",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "description": "A sheet music renderer for the web",
   "author": "Josh Netterfield",
   "license": "AGPL-3.0",
@@ -22,13 +22,13 @@
   "dependencies": {
     "invariant": "2.2.1",
     "lodash": "4.14.2",
-    "musicxml-interfaces": "0.0.19",
+    "musicxml-interfaces": "0.0.20",
     "opentype.js": "nodebox/opentype.js#0.4.7",
     "webcola": "tgdwyer/WebCola#326dc8e9e",
     "yargs": "3.29.0"
   },
   "peerDependencies": {
-    "musicxml-interfaces": "0.0.19",
+    "musicxml-interfaces": "0.0.20",
     "react": "15.x.x"
   },
   "devDependencies": {

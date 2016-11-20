@@ -146,7 +146,7 @@ class AttributesModel implements Export.IAttributesModel {
     }
 
     toJSON(): any {
-        let {
+        const {
             _class,
             divisions,
             partSymbol,
@@ -331,7 +331,8 @@ class AttributesModel implements Export.IAttributesModel {
             };
         }
 
-        if ((!this._parent.staffDetails || !this._parent.staffDetails.staffLines) &&
+        if ((!this._parent.staffDetails || !this._parent.staffDetails[cursor$.staff.idx] ||
+                !this._parent.staffDetails[cursor$.staff.idx].staffLines) &&
                 !this.staffDetails[cursor$.staff.idx].staffLines) {
             this.staffDetails[cursor$.staff.idx].staffLines = 5;
         }
@@ -540,7 +541,7 @@ module AttributesModel {
                 });
             }
 
-            this.staffDetails = cursor$.staff.attributes.staffDetails;
+            this.staffDetails = cursor$.staff.attributes.staffDetails[this.staffIdx];
 
             /*---- Geometry ---------------------------------------*/
 
