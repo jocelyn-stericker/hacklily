@@ -20,14 +20,20 @@
  */
 
 import {IAny} from "musicxml-interfaces/operations";
+import * as invariant from "invariant";
 
 import ILinesLayoutState from "../private/linesLayoutState";
 
 import AttributesModel from "./attributesModel";
 
-import {mutate} from "../private/mutate";
+import {mutate, parentExists} from "../private/mutate";
 
 export default function attributesModel(memo$: ILinesLayoutState,
         attributes: AttributesModel.IAttributesModel, op: IAny) {
+    // Check if we are being asked to clone & create.
+    invariant(parentExists(attributes, op.p), "Invalid patch -- it's likely to a " +
+        "model that only exists in a snapshot. You'll need to explicitly create it.");
+
+    // Bye.
     mutate(attributes, op);
 }

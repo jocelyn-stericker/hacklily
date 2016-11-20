@@ -29,14 +29,20 @@ import IMeasureStyle from "../document/measureStyle";
 /**
  * A snapshot of the current attribute state
  */
-interface IAttributesSnapshot {
+interface IAttributesSnapshot extends Attributes {
     measure: number;
     divisions: number;
     partSymbol: PartSymbol;
+
+    clefs: Clef[];
+    times: Time[];
+    transposes: Transpose[];
+    keySignatures: Key[];
+
     clef: Clef;
     measureStyle: IMeasureStyle;
     time: Time;
-    staffDetails: StaffDetails;
+    staffDetails: StaffDetails[];
     transpose: Transpose;
     staves: number;
     instruments: string;
@@ -59,21 +65,54 @@ export function create({before, current, staff, measure}: ISpec) {
     let currentTransposes = current.transposes || [];
     let currentKS = current.keySignatures || [];
 
+    let staffDetails: StaffDetails[] = [];
+    let beforeDetails = before.staffDetails || [];
+    let currentDetails = current.staffDetails || [];
+    for (let i = 0; i < beforeDetails.length || i < currentDetails.length; ++i) {
+        staffDetails[i] = createStaffDetailsSnapshot(currentDetails[i] || {},
+                clone(beforeDetails[i] || {}));
+    }
+
+    let clefs: Clef[] = [];
+    let beforeClefs = before.clefs || [];
+    for (let i = 0; i < beforeClefs.length || i < currentClefs.length; ++i) {
+        clefs[i] = currentClefs[i] || beforeClefs[i];
+    }
+    let times: Time[] = [];
+    let beforeTimes = before.times || [];
+    for (let i = 0; i < beforeTimes.length || i < currentTimes.length; ++i) {
+        times[i] = currentTimes[i] || beforeTimes[i];
+    }
+    let transposes: Transpose[] = [];
+    let beforeTransposes = before.transposes || [];
+    for (let i = 0; i < beforeTransposes.length || i < currentTransposes.length; ++i) {
+        transposes[i] = currentTransposes[i] || beforeTransposes[i];
+    }
+    let keySignatures: Key[] = [];
+    let beforeKS = before.transposes || [];
+    for (let i = 0; i < beforeKS.length || i < currentKS.length; ++i) {
+        keySignatures[i] = currentKS[i] || beforeKS[i];
+    }
+
     let snapshot: IAttributesSnapshot = {
         measure,
         divisions: current.divisions || before.divisions,
         partSymbol: current.partSymbol || before.partSymbol,
         clef: currentClefs[staff] || before.clef,
         time: currentTimes[0] || before.time, // TODO: time signatures per staff
-        staffDetails: createStaffDetailsSnapshot(current.staffDetails[staff],
-            clone(before.staffDetails || {})),
+        staffDetails,
         transpose: currentTransposes[staff] || before.transpose,
         instruments: current.instruments || before.instruments,
         keySignature: currentKS[0] || before.keySignature,
         directives: current.directives,
         staves: current.staves || before.staves,
         measureStyle: createMeasureStyleSnapshot(current,
-            JSON.parse(JSON.stringify(before.measureStyle || <IMeasureStyle> {})))
+            JSON.parse(JSON.stringify(before.measureStyle || <IMeasureStyle> {}))),
+
+        clefs,
+        times,
+        transposes,
+        keySignatures,
     };
 
     return snapshot;

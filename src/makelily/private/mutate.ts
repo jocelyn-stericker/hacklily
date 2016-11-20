@@ -23,6 +23,16 @@ import * as invariant from "invariant";
 import {last} from "lodash";
 import {IAny, IObjectReplace, IObjectDelete, IObjectInsert, OTPath} from "musicxml-interfaces/operations";
 
+export function parentExists(obj: any, p: OTPath): boolean {
+    for (let i = 0; i < p.length - 1; ++i) {
+        obj = obj[p[i]];
+        if (!obj) {
+            return false;
+        }
+    }
+    return true;
+}
+
 export function findParent(obj: any, p: OTPath): any {
     for (let i = 0; i < p.length - 1; ++i) {
         obj = obj[p[i]];

@@ -85,6 +85,7 @@ export function articulationGlyph(model: Articulations, direction: string): stri
 }
 
 export interface IGeneralNotation extends PrintStyle, Placement {
+    _snapshot?: IGeneralNotation;
 }
 
 export function getBoundingRects(model: Notations, note: Note,
