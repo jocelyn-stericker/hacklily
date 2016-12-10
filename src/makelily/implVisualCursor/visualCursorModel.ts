@@ -40,6 +40,9 @@ class VisualCursorModel implements Export.IVisualCursorModel {
 
     staffIdx: number = 1;
 
+    static _lastIdx = 1;
+    _myIdx = ++VisualCursorModel._lastIdx;
+
     /*---- Implementation -----------------------------------------------------------------------*/
 
     constructor(spec: VisualCursorModel) {
@@ -47,7 +50,10 @@ class VisualCursorModel implements Export.IVisualCursorModel {
     }
 
     validate(cursor$: ICursor): void {
-        // no-op
+        if (cursor$.document._visualCursor && cursor$.document._visualCursor !== this) {
+            cursor$.patch(voice => voice.remove(cursor$.idx$));
+        }
+        cursor$.document._visualCursor = this;
     }
 
     getLayout(cursor$: ICursor): Export.IVisualCursorLayout {
@@ -109,7 +115,7 @@ module VisualCursorModel {
 };
 
 /**
- * Registers Print in the factory structure passed in.
+ * Registers VisualCursor in the factory structure passed in.
  */
 function Export(constructors: { [key: number]: any }) {
     constructors[Type.VisualCursor] = VisualCursorModel;

@@ -121,9 +121,11 @@ export default class DivisionOverflowException extends Error {
 
     resolve$(fixup: IFixupFn) {
         const oldDivisions = this.oldParts["P1"].voices[1].reduce((divs, item) =>
-                  calcDivisionsNoCtx(item as any, this.attributes.time, this.attributes.divisions) + divs, 0);
+                  divs + (("length" in item) ?
+                    calcDivisionsNoCtx(item as any, this.attributes.time, this.attributes.divisions) : 0), 0);
         const newDivisions = this.newParts["P1"].voices[1].reduce((divs, item) =>
-                  calcDivisionsNoCtx(item as any, this.attributes.time, this.attributes.divisions) + divs, 0);
+                  divs + (("length" in item) ?
+                    calcDivisionsNoCtx(item as any, this.attributes.time, this.attributes.divisions) : 0), 0);
         const totalDivisions = barDivisions(this.attributes);
         const oldDurationSpecs = subtract(totalDivisions, oldDivisions, {
                     division$: newDivisions,

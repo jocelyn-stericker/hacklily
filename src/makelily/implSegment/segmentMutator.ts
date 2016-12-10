@@ -20,16 +20,17 @@
  */
 
 import * as invariant from "invariant";
-import {IAny, IListInsert} from "musicxml-interfaces/operations";
+import {IAny, IListInsert, IListDelete} from "musicxml-interfaces/operations";
 
 import ISegment from "../document/segment";
 import OwnerType from "../document/ownerTypes";
+import IDocument from "../document/document";
 
 import IFactory from "../private/factory";
 import ILinesLayoutState from "../private/linesLayoutState";
 
 export default function segmentMutator(factory: IFactory, memo$: ILinesLayoutState,
-        segment: ISegment, op: IAny) {
+        segment: ISegment, op: IAny, doc: IDocument) {
     const {part, ownerType} = segment; // p[2]
 
     invariant(op.p[1] === "parts", "Malformed path.");
@@ -41,11 +42,20 @@ export default function segmentMutator(factory: IFactory, memo$: ILinesLayoutSta
 
     if ("li" in op && !("ld" in op)) {
         let liop = op as IListInsert<any>;
-        segment.splice(op.p[5] as number, 0, factory.fromSpec(liop.li));
+        let newModel = factory.fromSpec(liop.li);
+        if (liop.li._class === "VisualCursor") {
+            doc._visualCursor = newModel;
+        }
+        segment.splice(op.p[5] as number, 0, newModel);
     } else if ("ld" in op && !("li" in op)) {
         // STOPSHIP: We're not asserting that this is true, which may
         // cause problems with collaboration and undoing!
         // invariant(isEqual(op.ld, cloneObject(segment[op.p[5] as number])), "The removed element must be equal to the current element");
+        let ldop = op as IListDelete<any>;
+
+        if (ldop.ld._class === "VisualCursor") {
+            doc._visualCursor = null;
+        }
         segment.splice(op.p[5] as number, 1);
     } else {
         invariant(false, "Unsupported operation type");

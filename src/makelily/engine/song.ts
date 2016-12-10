@@ -183,15 +183,14 @@ export default class Song extends Component<IProps, IState> implements ISong {
     }
 
     /**
-     * Given a set of operations, returns a set of operations that the "patches" prop can
-     * be set to.
+     * Given a set of OT diffs, returns something the "patches" prop can be set to.
      */
     createCanonicalPatch = (...patchSpecs: IPatchSpec[]): {isPatches: boolean} => {
         return this._createPatch(false, patchSpecs);
     };
 
     /**
-     * Given a set of operations, returns a set of operations that  the "preview" prop can
+     * Given a set of operations, returns a set of operations that the "preview" prop can
      * be set to.
      */
     createPreviewPatch = (...patchSpecs: IPatchSpec[]): {isPatches: boolean} => {
@@ -297,13 +296,13 @@ export default class Song extends Component<IProps, IState> implements ISong {
 
         // Undo actions not in common
         forEach(invert(docPatches.slice(initialCommon)), (op) => {
-            applyOp(this.state.document.measures, factory, op, memo);
+            applyOp(this.state.document.measures, factory, op, memo, this.state.document);
             docPatches.pop();
         });
 
         // Perform actions that are expected.
         forEach(newPatches.slice(this._docPatches.length), (op) => {
-            applyOp(this.state.document.measures, factory, op, memo);
+            applyOp(this.state.document.measures, factory, op, memo, this.state.document);
             docPatches.push(op);
         });
 
@@ -355,7 +354,7 @@ export default class Song extends Component<IProps, IState> implements ISong {
     };
 
     private _getPos(ev: SyntheticEvent<Node>) {
-        if (!this._svg.contains(ev.target)) {
+        if (!this._svg.contains(ev.target as Node)) {
             return null;
         }
 

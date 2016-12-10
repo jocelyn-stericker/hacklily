@@ -273,6 +273,31 @@ class NoteImpl implements Note {
         return serializeNote(this);
     }
 
+    toJSON() {
+        let {
+            pitch, unpitched, noteheadText, accidental, instrument,
+            attack, endDynamics, lyrics, notations, stem, cue,
+            ties, dynamics, duration, play, staff, grace, notehead,
+            release, pizzicato, beams, voice, footnote, level,
+            relativeY, defaultY, relativeX, fontFamily, fontWeight,
+            fontStyle, fontSize, color, printDot, printLyric, printObject,
+            printSpacing, timeOnly, noteType
+        } = this;
+
+        return {
+            pitch, unpitched, noteheadText, accidental, instrument,
+            attack, endDynamics, lyrics, notations, stem, cue,
+            ties, dynamics, duration, play, staff, grace, notehead,
+            release, pizzicato, beams, voice, footnote, level,
+            relativeY, defaultY, relativeX, fontFamily, fontWeight,
+            fontStyle, fontSize, color, printDot, printLyric, printObject,
+            printSpacing, timeOnly, noteType,
+
+            _class: "Note",
+            _fromJSON: true,
+        };
+    }
+
     inspect() {
         return this.toXML();
     }
