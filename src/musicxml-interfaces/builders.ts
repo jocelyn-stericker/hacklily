@@ -5121,7 +5121,7 @@ class PartNameDisplayBuilder implements IPartNameDisplayBuilder {
       if (frozen["name"][idx]) {
           throw new Error("Patching name." + idx + " twice in a builder is unsupported.");
       }
-      if (original && original._snapshot && original._snapshot["name"] && !original["name"]) {
+      if (original && original._snapshot && original._snapshot["name"] && original._snapshot["name"][idx] && !original["name"][idx]) {
           // Clone snapshot.
           patches.push({p: ["name", idx], li: original._snapshot["name"]});
       }
@@ -5254,7 +5254,7 @@ class PartAbbreviationDisplayBuilder implements IPartAbbreviationDisplayBuilder 
       if (frozen["name"][idx]) {
           throw new Error("Patching name." + idx + " twice in a builder is unsupported.");
       }
-      if (original && original._snapshot && original._snapshot["name"] && !original["name"]) {
+      if (original && original._snapshot && original._snapshot["name"] && original._snapshot["name"][idx] && !original["name"][idx]) {
           // Clone snapshot.
           patches.push({p: ["name", idx], li: original._snapshot["name"]});
       }
@@ -5960,7 +5960,7 @@ class PageLayoutBuilder implements IPageLayoutBuilder {
       if (frozen["pageMargins"][idx]) {
           throw new Error("Patching pageMargins." + idx + " twice in a builder is unsupported.");
       }
-      if (original && original._snapshot && original._snapshot["pageMargins"] && !original["pageMargins"]) {
+      if (original && original._snapshot && original._snapshot["pageMargins"] && original._snapshot["pageMargins"][idx] && !original["pageMargins"][idx]) {
           // Clone snapshot.
           patches.push({p: ["pageMargins", idx], li: original._snapshot["pageMargins"]});
       }
@@ -7423,7 +7423,7 @@ class MiscellaneousBuilder implements IMiscellaneousBuilder {
       if (frozen["miscellaneousFields"][idx]) {
           throw new Error("Patching miscellaneousFields." + idx + " twice in a builder is unsupported.");
       }
-      if (original && original._snapshot && original._snapshot["miscellaneousFields"] && !original["miscellaneousFields"]) {
+      if (original && original._snapshot && original._snapshot["miscellaneousFields"] && original._snapshot["miscellaneousFields"][idx] && !original["miscellaneousFields"][idx]) {
           // Clone snapshot.
           patches.push({p: ["miscellaneousFields", idx], li: original._snapshot["miscellaneousFields"]});
       }
@@ -7574,7 +7574,7 @@ class IdentificationBuilder implements IIdentificationBuilder {
       if (frozen["creators"][idx]) {
           throw new Error("Patching creators." + idx + " twice in a builder is unsupported.");
       }
-      if (original && original._snapshot && original._snapshot["creators"] && !original["creators"]) {
+      if (original && original._snapshot && original._snapshot["creators"] && original._snapshot["creators"][idx] && !original["creators"][idx]) {
           // Clone snapshot.
           patches.push({p: ["creators", idx], li: original._snapshot["creators"]});
       }
@@ -7641,7 +7641,7 @@ class IdentificationBuilder implements IIdentificationBuilder {
       if (frozen["relations"][idx]) {
           throw new Error("Patching relations." + idx + " twice in a builder is unsupported.");
       }
-      if (original && original._snapshot && original._snapshot["relations"] && !original["relations"]) {
+      if (original && original._snapshot && original._snapshot["relations"] && original._snapshot["relations"][idx] && !original["relations"][idx]) {
           // Clone snapshot.
           patches.push({p: ["relations", idx], li: original._snapshot["relations"]});
       }
@@ -7708,7 +7708,7 @@ class IdentificationBuilder implements IIdentificationBuilder {
       if (frozen["rights"][idx]) {
           throw new Error("Patching rights." + idx + " twice in a builder is unsupported.");
       }
-      if (original && original._snapshot && original._snapshot["rights"] && !original["rights"]) {
+      if (original && original._snapshot && original._snapshot["rights"] && original._snapshot["rights"][idx] && !original["rights"][idx]) {
           // Clone snapshot.
           patches.push({p: ["rights", idx], li: original._snapshot["rights"]});
       }
@@ -7974,7 +7974,7 @@ class EncodingBuilder implements IEncodingBuilder {
       if (frozen["encoders"][idx]) {
           throw new Error("Patching encoders." + idx + " twice in a builder is unsupported.");
       }
-      if (original && original._snapshot && original._snapshot["encoders"] && !original["encoders"]) {
+      if (original && original._snapshot && original._snapshot["encoders"] && original._snapshot["encoders"][idx] && !original["encoders"][idx]) {
           // Clone snapshot.
           patches.push({p: ["encoders", idx], li: original._snapshot["encoders"]});
       }
@@ -8417,7 +8417,7 @@ class KeyBuilder implements IKeyBuilder {
       if (frozen["keyOctaves"][idx]) {
           throw new Error("Patching keyOctaves." + idx + " twice in a builder is unsupported.");
       }
-      if (original && original._snapshot && original._snapshot["keyOctaves"] && !original["keyOctaves"]) {
+      if (original && original._snapshot && original._snapshot["keyOctaves"] && original._snapshot["keyOctaves"][idx] && !original["keyOctaves"][idx]) {
           // Clone snapshot.
           patches.push({p: ["keyOctaves", idx], li: original._snapshot["keyOctaves"]});
       }
@@ -9419,7 +9419,7 @@ class StaffDetailsBuilder implements IStaffDetailsBuilder {
       if (frozen["staffTunings"][idx]) {
           throw new Error("Patching staffTunings." + idx + " twice in a builder is unsupported.");
       }
-      if (original && original._snapshot && original._snapshot["staffTunings"] && !original["staffTunings"]) {
+      if (original && original._snapshot && original._snapshot["staffTunings"] && original._snapshot["staffTunings"][idx] && !original["staffTunings"][idx]) {
           // Clone snapshot.
           patches.push({p: ["staffTunings", idx], li: original._snapshot["staffTunings"]});
       }
@@ -10097,7 +10097,7 @@ class BeatRepeatBuilder implements IBeatRepeatBuilder {
       if (frozen["slashDots"][idx]) {
           throw new Error("Patching slashDots." + idx + " twice in a builder is unsupported.");
       }
-      if (original && original._snapshot && original._snapshot["slashDots"] && !original["slashDots"]) {
+      if (original && original._snapshot && original._snapshot["slashDots"] && original._snapshot["slashDots"][idx] && !original["slashDots"][idx]) {
           // Clone snapshot.
           patches.push({p: ["slashDots", idx], li: original._snapshot["slashDots"]});
       }
@@ -10264,7 +10264,7 @@ class SlashBuilder implements ISlashBuilder {
       if (frozen["slashDots"][idx]) {
           throw new Error("Patching slashDots." + idx + " twice in a builder is unsupported.");
       }
-      if (original && original._snapshot && original._snapshot["slashDots"] && !original["slashDots"]) {
+      if (original && original._snapshot && original._snapshot["slashDots"] && original._snapshot["slashDots"][idx] && !original["slashDots"][idx]) {
           // Clone snapshot.
           patches.push({p: ["slashDots", idx], li: original._snapshot["slashDots"]});
       }
@@ -10623,7 +10623,7 @@ class AttributesBuilder implements IAttributesBuilder {
       if (frozen["clefs"][idx]) {
           throw new Error("Patching clefs." + idx + " twice in a builder is unsupported.");
       }
-      if (original && original._snapshot && original._snapshot["clefs"] && !original["clefs"]) {
+      if (original && original._snapshot && original._snapshot["clefs"] && original._snapshot["clefs"][idx] && !original["clefs"][idx]) {
           // Clone snapshot.
           patches.push({p: ["clefs", idx], li: original._snapshot["clefs"]});
       }
@@ -10690,7 +10690,7 @@ class AttributesBuilder implements IAttributesBuilder {
       if (frozen["measureStyles"][idx]) {
           throw new Error("Patching measureStyles." + idx + " twice in a builder is unsupported.");
       }
-      if (original && original._snapshot && original._snapshot["measureStyles"] && !original["measureStyles"]) {
+      if (original && original._snapshot && original._snapshot["measureStyles"] && original._snapshot["measureStyles"][idx] && !original["measureStyles"][idx]) {
           // Clone snapshot.
           patches.push({p: ["measureStyles", idx], li: original._snapshot["measureStyles"]});
       }
@@ -10757,7 +10757,7 @@ class AttributesBuilder implements IAttributesBuilder {
       if (frozen["times"][idx]) {
           throw new Error("Patching times." + idx + " twice in a builder is unsupported.");
       }
-      if (original && original._snapshot && original._snapshot["times"] && !original["times"]) {
+      if (original && original._snapshot && original._snapshot["times"] && original._snapshot["times"][idx] && !original["times"][idx]) {
           // Clone snapshot.
           patches.push({p: ["times", idx], li: original._snapshot["times"]});
       }
@@ -10824,7 +10824,7 @@ class AttributesBuilder implements IAttributesBuilder {
       if (frozen["staffDetails"][idx]) {
           throw new Error("Patching staffDetails." + idx + " twice in a builder is unsupported.");
       }
-      if (original && original._snapshot && original._snapshot["staffDetails"] && !original["staffDetails"]) {
+      if (original && original._snapshot && original._snapshot["staffDetails"] && original._snapshot["staffDetails"][idx] && !original["staffDetails"][idx]) {
           // Clone snapshot.
           patches.push({p: ["staffDetails", idx], li: original._snapshot["staffDetails"]});
       }
@@ -10891,7 +10891,7 @@ class AttributesBuilder implements IAttributesBuilder {
       if (frozen["transposes"][idx]) {
           throw new Error("Patching transposes." + idx + " twice in a builder is unsupported.");
       }
-      if (original && original._snapshot && original._snapshot["transposes"] && !original["transposes"]) {
+      if (original && original._snapshot && original._snapshot["transposes"] && original._snapshot["transposes"][idx] && !original["transposes"][idx]) {
           // Clone snapshot.
           patches.push({p: ["transposes", idx], li: original._snapshot["transposes"]});
       }
@@ -10972,7 +10972,7 @@ class AttributesBuilder implements IAttributesBuilder {
       if (frozen["keySignatures"][idx]) {
           throw new Error("Patching keySignatures." + idx + " twice in a builder is unsupported.");
       }
-      if (original && original._snapshot && original._snapshot["keySignatures"] && !original["keySignatures"]) {
+      if (original && original._snapshot && original._snapshot["keySignatures"] && original._snapshot["keySignatures"][idx] && !original["keySignatures"][idx]) {
           // Clone snapshot.
           patches.push({p: ["keySignatures", idx], li: original._snapshot["keySignatures"]});
       }
@@ -11039,7 +11039,7 @@ class AttributesBuilder implements IAttributesBuilder {
       if (frozen["directives"][idx]) {
           throw new Error("Patching directives." + idx + " twice in a builder is unsupported.");
       }
-      if (original && original._snapshot && original._snapshot["directives"] && !original["directives"]) {
+      if (original && original._snapshot && original._snapshot["directives"] && original._snapshot["directives"][idx] && !original["directives"][idx]) {
           // Clone snapshot.
           patches.push({p: ["directives", idx], li: original._snapshot["directives"]});
       }
@@ -11979,7 +11979,7 @@ class NoteBuilder implements INoteBuilder {
       if (frozen["lyrics"][idx]) {
           throw new Error("Patching lyrics." + idx + " twice in a builder is unsupported.");
       }
-      if (original && original._snapshot && original._snapshot["lyrics"] && !original["lyrics"]) {
+      if (original && original._snapshot && original._snapshot["lyrics"] && original._snapshot["lyrics"][idx] && !original["lyrics"][idx]) {
           // Clone snapshot.
           patches.push({p: ["lyrics", idx], li: original._snapshot["lyrics"]});
       }
@@ -12046,7 +12046,7 @@ class NoteBuilder implements INoteBuilder {
       if (frozen["dots"][idx]) {
           throw new Error("Patching dots." + idx + " twice in a builder is unsupported.");
       }
-      if (original && original._snapshot && original._snapshot["dots"] && !original["dots"]) {
+      if (original && original._snapshot && original._snapshot["dots"] && original._snapshot["dots"][idx] && !original["dots"][idx]) {
           // Clone snapshot.
           patches.push({p: ["dots", idx], li: original._snapshot["dots"]});
       }
@@ -12113,7 +12113,7 @@ class NoteBuilder implements INoteBuilder {
       if (frozen["notations"][idx]) {
           throw new Error("Patching notations." + idx + " twice in a builder is unsupported.");
       }
-      if (original && original._snapshot && original._snapshot["notations"] && !original["notations"]) {
+      if (original && original._snapshot && original._snapshot["notations"] && original._snapshot["notations"][idx] && !original["notations"][idx]) {
           // Clone snapshot.
           patches.push({p: ["notations", idx], li: original._snapshot["notations"]});
       }
@@ -12236,7 +12236,7 @@ class NoteBuilder implements INoteBuilder {
       if (frozen["ties"][idx]) {
           throw new Error("Patching ties." + idx + " twice in a builder is unsupported.");
       }
-      if (original && original._snapshot && original._snapshot["ties"] && !original["ties"]) {
+      if (original && original._snapshot && original._snapshot["ties"] && original._snapshot["ties"][idx] && !original["ties"][idx]) {
           // Clone snapshot.
           patches.push({p: ["ties", idx], li: original._snapshot["ties"]});
       }
@@ -12366,7 +12366,7 @@ class NoteBuilder implements INoteBuilder {
       if (frozen["beams"][idx]) {
           throw new Error("Patching beams." + idx + " twice in a builder is unsupported.");
       }
-      if (original && original._snapshot && original._snapshot["beams"] && !original["beams"]) {
+      if (original && original._snapshot && original._snapshot["beams"] && original._snapshot["beams"][idx] && !original["beams"][idx]) {
           // Clone snapshot.
           patches.push({p: ["beams", idx], li: original._snapshot["beams"]});
       }
@@ -13102,7 +13102,7 @@ class TimeModificationBuilder implements ITimeModificationBuilder {
       if (frozen["normalDots"][idx]) {
           throw new Error("Patching normalDots." + idx + " twice in a builder is unsupported.");
       }
-      if (original && original._snapshot && original._snapshot["normalDots"] && !original["normalDots"]) {
+      if (original && original._snapshot && original._snapshot["normalDots"] && original._snapshot["normalDots"][idx] && !original["normalDots"][idx]) {
           // Clone snapshot.
           patches.push({p: ["normalDots", idx], li: original._snapshot["normalDots"]});
       }
@@ -13454,7 +13454,7 @@ class NoteheadTextBuilder implements INoteheadTextBuilder {
       if (frozen["text"][idx]) {
           throw new Error("Patching text." + idx + " twice in a builder is unsupported.");
       }
-      if (original && original._snapshot && original._snapshot["text"] && !original["text"]) {
+      if (original && original._snapshot && original._snapshot["text"] && original._snapshot["text"][idx] && !original["text"][idx]) {
           // Clone snapshot.
           patches.push({p: ["text", idx], li: original._snapshot["text"]});
       }
@@ -13749,7 +13749,7 @@ class NotationsBuilder implements INotationsBuilder {
       if (frozen["slurs"][idx]) {
           throw new Error("Patching slurs." + idx + " twice in a builder is unsupported.");
       }
-      if (original && original._snapshot && original._snapshot["slurs"] && !original["slurs"]) {
+      if (original && original._snapshot && original._snapshot["slurs"] && original._snapshot["slurs"][idx] && !original["slurs"][idx]) {
           // Clone snapshot.
           patches.push({p: ["slurs", idx], li: original._snapshot["slurs"]});
       }
@@ -13816,7 +13816,7 @@ class NotationsBuilder implements INotationsBuilder {
       if (frozen["articulations"][idx]) {
           throw new Error("Patching articulations." + idx + " twice in a builder is unsupported.");
       }
-      if (original && original._snapshot && original._snapshot["articulations"] && !original["articulations"]) {
+      if (original && original._snapshot && original._snapshot["articulations"] && original._snapshot["articulations"][idx] && !original["articulations"][idx]) {
           // Clone snapshot.
           patches.push({p: ["articulations", idx], li: original._snapshot["articulations"]});
       }
@@ -13883,7 +13883,7 @@ class NotationsBuilder implements INotationsBuilder {
       if (frozen["slides"][idx]) {
           throw new Error("Patching slides." + idx + " twice in a builder is unsupported.");
       }
-      if (original && original._snapshot && original._snapshot["slides"] && !original["slides"]) {
+      if (original && original._snapshot && original._snapshot["slides"] && original._snapshot["slides"][idx] && !original["slides"][idx]) {
           // Clone snapshot.
           patches.push({p: ["slides", idx], li: original._snapshot["slides"]});
       }
@@ -13950,7 +13950,7 @@ class NotationsBuilder implements INotationsBuilder {
       if (frozen["technicals"][idx]) {
           throw new Error("Patching technicals." + idx + " twice in a builder is unsupported.");
       }
-      if (original && original._snapshot && original._snapshot["technicals"] && !original["technicals"]) {
+      if (original && original._snapshot && original._snapshot["technicals"] && original._snapshot["technicals"][idx] && !original["technicals"][idx]) {
           // Clone snapshot.
           patches.push({p: ["technicals", idx], li: original._snapshot["technicals"]});
       }
@@ -14017,7 +14017,7 @@ class NotationsBuilder implements INotationsBuilder {
       if (frozen["tieds"][idx]) {
           throw new Error("Patching tieds." + idx + " twice in a builder is unsupported.");
       }
-      if (original && original._snapshot && original._snapshot["tieds"] && !original["tieds"]) {
+      if (original && original._snapshot && original._snapshot["tieds"] && original._snapshot["tieds"][idx] && !original["tieds"][idx]) {
           // Clone snapshot.
           patches.push({p: ["tieds", idx], li: original._snapshot["tieds"]});
       }
@@ -14084,7 +14084,7 @@ class NotationsBuilder implements INotationsBuilder {
       if (frozen["tuplets"][idx]) {
           throw new Error("Patching tuplets." + idx + " twice in a builder is unsupported.");
       }
-      if (original && original._snapshot && original._snapshot["tuplets"] && !original["tuplets"]) {
+      if (original && original._snapshot && original._snapshot["tuplets"] && original._snapshot["tuplets"][idx] && !original["tuplets"][idx]) {
           // Clone snapshot.
           patches.push({p: ["tuplets", idx], li: original._snapshot["tuplets"]});
       }
@@ -14151,7 +14151,7 @@ class NotationsBuilder implements INotationsBuilder {
       if (frozen["glissandos"][idx]) {
           throw new Error("Patching glissandos." + idx + " twice in a builder is unsupported.");
       }
-      if (original && original._snapshot && original._snapshot["glissandos"] && !original["glissandos"]) {
+      if (original && original._snapshot && original._snapshot["glissandos"] && original._snapshot["glissandos"][idx] && !original["glissandos"][idx]) {
           // Clone snapshot.
           patches.push({p: ["glissandos", idx], li: original._snapshot["glissandos"]});
       }
@@ -14218,7 +14218,7 @@ class NotationsBuilder implements INotationsBuilder {
       if (frozen["dynamics"][idx]) {
           throw new Error("Patching dynamics." + idx + " twice in a builder is unsupported.");
       }
-      if (original && original._snapshot && original._snapshot["dynamics"] && !original["dynamics"]) {
+      if (original && original._snapshot && original._snapshot["dynamics"] && original._snapshot["dynamics"][idx] && !original["dynamics"][idx]) {
           // Clone snapshot.
           patches.push({p: ["dynamics", idx], li: original._snapshot["dynamics"]});
       }
@@ -14285,7 +14285,7 @@ class NotationsBuilder implements INotationsBuilder {
       if (frozen["fermatas"][idx]) {
           throw new Error("Patching fermatas." + idx + " twice in a builder is unsupported.");
       }
-      if (original && original._snapshot && original._snapshot["fermatas"] && !original["fermatas"]) {
+      if (original && original._snapshot && original._snapshot["fermatas"] && original._snapshot["fermatas"][idx] && !original["fermatas"][idx]) {
           // Clone snapshot.
           patches.push({p: ["fermatas", idx], li: original._snapshot["fermatas"]});
       }
@@ -14352,7 +14352,7 @@ class NotationsBuilder implements INotationsBuilder {
       if (frozen["accidentalMarks"][idx]) {
           throw new Error("Patching accidentalMarks." + idx + " twice in a builder is unsupported.");
       }
-      if (original && original._snapshot && original._snapshot["accidentalMarks"] && !original["accidentalMarks"]) {
+      if (original && original._snapshot && original._snapshot["accidentalMarks"] && original._snapshot["accidentalMarks"][idx] && !original["accidentalMarks"][idx]) {
           // Clone snapshot.
           patches.push({p: ["accidentalMarks", idx], li: original._snapshot["accidentalMarks"]});
       }
@@ -14419,7 +14419,7 @@ class NotationsBuilder implements INotationsBuilder {
       if (frozen["ornaments"][idx]) {
           throw new Error("Patching ornaments." + idx + " twice in a builder is unsupported.");
       }
-      if (original && original._snapshot && original._snapshot["ornaments"] && !original["ornaments"]) {
+      if (original && original._snapshot && original._snapshot["ornaments"] && original._snapshot["ornaments"][idx] && !original["ornaments"][idx]) {
           // Clone snapshot.
           patches.push({p: ["ornaments", idx], li: original._snapshot["ornaments"]});
       }
@@ -14486,7 +14486,7 @@ class NotationsBuilder implements INotationsBuilder {
       if (frozen["arpeggiates"][idx]) {
           throw new Error("Patching arpeggiates." + idx + " twice in a builder is unsupported.");
       }
-      if (original && original._snapshot && original._snapshot["arpeggiates"] && !original["arpeggiates"]) {
+      if (original && original._snapshot && original._snapshot["arpeggiates"] && original._snapshot["arpeggiates"][idx] && !original["arpeggiates"][idx]) {
           // Clone snapshot.
           patches.push({p: ["arpeggiates", idx], li: original._snapshot["arpeggiates"]});
       }
@@ -14553,7 +14553,7 @@ class NotationsBuilder implements INotationsBuilder {
       if (frozen["nonArpeggiates"][idx]) {
           throw new Error("Patching nonArpeggiates." + idx + " twice in a builder is unsupported.");
       }
-      if (original && original._snapshot && original._snapshot["nonArpeggiates"] && !original["nonArpeggiates"]) {
+      if (original && original._snapshot && original._snapshot["nonArpeggiates"] && original._snapshot["nonArpeggiates"][idx] && !original["nonArpeggiates"][idx]) {
           // Clone snapshot.
           patches.push({p: ["nonArpeggiates", idx], li: original._snapshot["nonArpeggiates"]});
       }
@@ -14620,7 +14620,7 @@ class NotationsBuilder implements INotationsBuilder {
       if (frozen["otherNotations"][idx]) {
           throw new Error("Patching otherNotations." + idx + " twice in a builder is unsupported.");
       }
-      if (original && original._snapshot && original._snapshot["otherNotations"] && !original["otherNotations"]) {
+      if (original && original._snapshot && original._snapshot["otherNotations"] && original._snapshot["otherNotations"][idx] && !original["otherNotations"][idx]) {
           // Clone snapshot.
           patches.push({p: ["otherNotations", idx], li: original._snapshot["otherNotations"]});
       }
@@ -15405,7 +15405,7 @@ class TupletActualBuilder implements ITupletActualBuilder {
       if (frozen["tupletDots"][idx]) {
           throw new Error("Patching tupletDots." + idx + " twice in a builder is unsupported.");
       }
-      if (original && original._snapshot && original._snapshot["tupletDots"] && !original["tupletDots"]) {
+      if (original && original._snapshot && original._snapshot["tupletDots"] && original._snapshot["tupletDots"][idx] && !original["tupletDots"][idx]) {
           // Clone snapshot.
           patches.push({p: ["tupletDots", idx], li: original._snapshot["tupletDots"]});
       }
@@ -15556,7 +15556,7 @@ class TupletNormalBuilder implements ITupletNormalBuilder {
       if (frozen["tupletDots"][idx]) {
           throw new Error("Patching tupletDots." + idx + " twice in a builder is unsupported.");
       }
-      if (original && original._snapshot && original._snapshot["tupletDots"] && !original["tupletDots"]) {
+      if (original && original._snapshot && original._snapshot["tupletDots"] && original._snapshot["tupletDots"][idx] && !original["tupletDots"][idx]) {
           // Clone snapshot.
           patches.push({p: ["tupletDots", idx], li: original._snapshot["tupletDots"]});
       }
@@ -16920,7 +16920,7 @@ class OrnamentsBuilder implements IOrnamentsBuilder {
       if (frozen["accidentalMarks"][idx]) {
           throw new Error("Patching accidentalMarks." + idx + " twice in a builder is unsupported.");
       }
-      if (original && original._snapshot && original._snapshot["accidentalMarks"] && !original["accidentalMarks"]) {
+      if (original && original._snapshot && original._snapshot["accidentalMarks"] && original._snapshot["accidentalMarks"][idx] && !original["accidentalMarks"][idx]) {
           // Clone snapshot.
           patches.push({p: ["accidentalMarks", idx], li: original._snapshot["accidentalMarks"]});
       }
@@ -23649,7 +23649,7 @@ class ArticulationsBuilder implements IArticulationsBuilder {
       if (frozen["otherArticulations"][idx]) {
           throw new Error("Patching otherArticulations." + idx + " twice in a builder is unsupported.");
       }
-      if (original && original._snapshot && original._snapshot["otherArticulations"] && !original["otherArticulations"]) {
+      if (original && original._snapshot && original._snapshot["otherArticulations"] && original._snapshot["otherArticulations"][idx] && !original["otherArticulations"][idx]) {
           // Clone snapshot.
           patches.push({p: ["otherArticulations", idx], li: original._snapshot["otherArticulations"]});
       }
@@ -27526,7 +27526,7 @@ class FiguredBassBuilder implements IFiguredBassBuilder {
       if (frozen["figures"][idx]) {
           throw new Error("Patching figures." + idx + " twice in a builder is unsupported.");
       }
-      if (original && original._snapshot && original._snapshot["figures"] && !original["figures"]) {
+      if (original && original._snapshot && original._snapshot["figures"] && original._snapshot["figures"][idx] && !original["figures"][idx]) {
           // Clone snapshot.
           patches.push({p: ["figures", idx], li: original._snapshot["figures"]});
       }
@@ -28674,7 +28674,7 @@ class BarlineBuilder implements IBarlineBuilder {
       if (frozen["fermatas"][idx]) {
           throw new Error("Patching fermatas." + idx + " twice in a builder is unsupported.");
       }
-      if (original && original._snapshot && original._snapshot["fermatas"] && !original["fermatas"]) {
+      if (original && original._snapshot && original._snapshot["fermatas"] && original._snapshot["fermatas"][idx] && !original["fermatas"][idx]) {
           // Clone snapshot.
           patches.push({p: ["fermatas", idx], li: original._snapshot["fermatas"]});
       }
@@ -29270,7 +29270,7 @@ class DirectionBuilder implements IDirectionBuilder {
       if (frozen["directionTypes"][idx]) {
           throw new Error("Patching directionTypes." + idx + " twice in a builder is unsupported.");
       }
-      if (original && original._snapshot && original._snapshot["directionTypes"] && !original["directionTypes"]) {
+      if (original && original._snapshot && original._snapshot["directionTypes"] && original._snapshot["directionTypes"][idx] && !original["directionTypes"][idx]) {
           // Clone snapshot.
           patches.push({p: ["directionTypes", idx], li: original._snapshot["directionTypes"]});
       }
@@ -29531,7 +29531,7 @@ class DirectionTypeBuilder implements IDirectionTypeBuilder {
       if (frozen["percussions"][idx]) {
           throw new Error("Patching percussions." + idx + " twice in a builder is unsupported.");
       }
-      if (original && original._snapshot && original._snapshot["percussions"] && !original["percussions"]) {
+      if (original && original._snapshot && original._snapshot["percussions"] && original._snapshot["percussions"][idx] && !original["percussions"][idx]) {
           // Clone snapshot.
           patches.push({p: ["percussions", idx], li: original._snapshot["percussions"]});
       }
@@ -29598,7 +29598,7 @@ class DirectionTypeBuilder implements IDirectionTypeBuilder {
       if (frozen["rehearsals"][idx]) {
           throw new Error("Patching rehearsals." + idx + " twice in a builder is unsupported.");
       }
-      if (original && original._snapshot && original._snapshot["rehearsals"] && !original["rehearsals"]) {
+      if (original && original._snapshot && original._snapshot["rehearsals"] && original._snapshot["rehearsals"][idx] && !original["rehearsals"][idx]) {
           // Clone snapshot.
           patches.push({p: ["rehearsals", idx], li: original._snapshot["rehearsals"]});
       }
@@ -29777,7 +29777,7 @@ class DirectionTypeBuilder implements IDirectionTypeBuilder {
       if (frozen["segnos"][idx]) {
           throw new Error("Patching segnos." + idx + " twice in a builder is unsupported.");
       }
-      if (original && original._snapshot && original._snapshot["segnos"] && !original["segnos"]) {
+      if (original && original._snapshot && original._snapshot["segnos"] && original._snapshot["segnos"][idx] && !original["segnos"][idx]) {
           // Clone snapshot.
           patches.push({p: ["segnos", idx], li: original._snapshot["segnos"]});
       }
@@ -29956,7 +29956,7 @@ class DirectionTypeBuilder implements IDirectionTypeBuilder {
       if (frozen["words"][idx]) {
           throw new Error("Patching words." + idx + " twice in a builder is unsupported.");
       }
-      if (original && original._snapshot && original._snapshot["words"] && !original["words"]) {
+      if (original && original._snapshot && original._snapshot["words"] && original._snapshot["words"][idx] && !original["words"][idx]) {
           // Clone snapshot.
           patches.push({p: ["words", idx], li: original._snapshot["words"]});
       }
@@ -30037,7 +30037,7 @@ class DirectionTypeBuilder implements IDirectionTypeBuilder {
       if (frozen["codas"][idx]) {
           throw new Error("Patching codas." + idx + " twice in a builder is unsupported.");
       }
-      if (original && original._snapshot && original._snapshot["codas"] && !original["codas"]) {
+      if (original && original._snapshot && original._snapshot["codas"] && original._snapshot["codas"][idx] && !original["codas"][idx]) {
           // Clone snapshot.
           patches.push({p: ["codas", idx], li: original._snapshot["codas"]});
       }
@@ -31379,7 +31379,7 @@ class MetronomeBuilder implements IMetronomeBuilder {
       if (frozen["metronomeNotes"][idx]) {
           throw new Error("Patching metronomeNotes." + idx + " twice in a builder is unsupported.");
       }
-      if (original && original._snapshot && original._snapshot["metronomeNotes"] && !original["metronomeNotes"]) {
+      if (original && original._snapshot && original._snapshot["metronomeNotes"] && original._snapshot["metronomeNotes"][idx] && !original["metronomeNotes"][idx]) {
           // Clone snapshot.
           patches.push({p: ["metronomeNotes", idx], li: original._snapshot["metronomeNotes"]});
       }
@@ -31474,7 +31474,7 @@ class MetronomeBuilder implements IMetronomeBuilder {
       if (frozen["beatUnitDots"][idx]) {
           throw new Error("Patching beatUnitDots." + idx + " twice in a builder is unsupported.");
       }
-      if (original && original._snapshot && original._snapshot["beatUnitDots"] && !original["beatUnitDots"]) {
+      if (original && original._snapshot && original._snapshot["beatUnitDots"] && original._snapshot["beatUnitDots"][idx] && !original["beatUnitDots"][idx]) {
           // Clone snapshot.
           patches.push({p: ["beatUnitDots", idx], li: original._snapshot["beatUnitDots"]});
       }
@@ -31548,7 +31548,7 @@ class MetronomeBuilder implements IMetronomeBuilder {
       if (frozen["beatUnitDotsChange"][idx]) {
           throw new Error("Patching beatUnitDotsChange." + idx + " twice in a builder is unsupported.");
       }
-      if (original && original._snapshot && original._snapshot["beatUnitDotsChange"] && !original["beatUnitDotsChange"]) {
+      if (original && original._snapshot && original._snapshot["beatUnitDotsChange"] && original._snapshot["beatUnitDotsChange"][idx] && !original["beatUnitDotsChange"][idx]) {
           // Clone snapshot.
           patches.push({p: ["beatUnitDotsChange", idx], li: original._snapshot["beatUnitDotsChange"]});
       }
@@ -31930,7 +31930,7 @@ class MetronomeNoteBuilder implements IMetronomeNoteBuilder {
       if (frozen["metronomeDots"][idx]) {
           throw new Error("Patching metronomeDots." + idx + " twice in a builder is unsupported.");
       }
-      if (original && original._snapshot && original._snapshot["metronomeDots"] && !original["metronomeDots"]) {
+      if (original && original._snapshot && original._snapshot["metronomeDots"] && original._snapshot["metronomeDots"][idx] && !original["metronomeDots"][idx]) {
           // Clone snapshot.
           patches.push({p: ["metronomeDots", idx], li: original._snapshot["metronomeDots"]});
       }
@@ -31997,7 +31997,7 @@ class MetronomeNoteBuilder implements IMetronomeNoteBuilder {
       if (frozen["metronomeBeams"][idx]) {
           throw new Error("Patching metronomeBeams." + idx + " twice in a builder is unsupported.");
       }
-      if (original && original._snapshot && original._snapshot["metronomeBeams"] && !original["metronomeBeams"]) {
+      if (original && original._snapshot && original._snapshot["metronomeBeams"] && original._snapshot["metronomeBeams"][idx] && !original["metronomeBeams"][idx]) {
           // Clone snapshot.
           patches.push({p: ["metronomeBeams", idx], li: original._snapshot["metronomeBeams"]});
       }
@@ -32346,7 +32346,7 @@ class MetronomeTupletBuilder implements IMetronomeTupletBuilder {
       if (frozen["normalDots"][idx]) {
           throw new Error("Patching normalDots." + idx + " twice in a builder is unsupported.");
       }
-      if (original && original._snapshot && original._snapshot["normalDots"] && !original["normalDots"]) {
+      if (original && original._snapshot && original._snapshot["normalDots"] && original._snapshot["normalDots"][idx] && !original["normalDots"][idx]) {
           // Clone snapshot.
           patches.push({p: ["normalDots", idx], li: original._snapshot["normalDots"]});
       }
@@ -32679,7 +32679,7 @@ class HarpPedalsBuilder implements IHarpPedalsBuilder {
       if (frozen["pedalTunings"][idx]) {
           throw new Error("Patching pedalTunings." + idx + " twice in a builder is unsupported.");
       }
-      if (original && original._snapshot && original._snapshot["pedalTunings"] && !original["pedalTunings"]) {
+      if (original && original._snapshot && original._snapshot["pedalTunings"] && original._snapshot["pedalTunings"][idx] && !original["pedalTunings"][idx]) {
           // Clone snapshot.
           patches.push({p: ["pedalTunings", idx], li: original._snapshot["pedalTunings"]});
       }
@@ -33548,7 +33548,7 @@ class ScordaturaBuilder implements IScordaturaBuilder {
       if (frozen["accords"][idx]) {
           throw new Error("Patching accords." + idx + " twice in a builder is unsupported.");
       }
-      if (original && original._snapshot && original._snapshot["accords"] && !original["accords"]) {
+      if (original && original._snapshot && original._snapshot["accords"] && original._snapshot["accords"][idx] && !original["accords"][idx]) {
           // Clone snapshot.
           patches.push({p: ["accords", idx], li: original._snapshot["accords"]});
       }
@@ -34959,7 +34959,7 @@ class HarmonyChordBuilder implements IHarmonyChordBuilder {
       if (frozen["degrees"][idx]) {
           throw new Error("Patching degrees." + idx + " twice in a builder is unsupported.");
       }
-      if (original && original._snapshot && original._snapshot["degrees"] && !original["degrees"]) {
+      if (original && original._snapshot && original._snapshot["degrees"] && original._snapshot["degrees"][idx] && !original["degrees"][idx]) {
           // Clone snapshot.
           patches.push({p: ["degrees", idx], li: original._snapshot["degrees"]});
       }
@@ -35403,7 +35403,7 @@ class HarmonyBuilder implements IHarmonyBuilder {
       if (frozen["degrees"][idx]) {
           throw new Error("Patching degrees." + idx + " twice in a builder is unsupported.");
       }
-      if (original && original._snapshot && original._snapshot["degrees"] && !original["degrees"]) {
+      if (original && original._snapshot && original._snapshot["degrees"] && original._snapshot["degrees"][idx] && !original["degrees"][idx]) {
           // Clone snapshot.
           patches.push({p: ["degrees", idx], li: original._snapshot["degrees"]});
       }
@@ -37540,7 +37540,7 @@ class FrameBuilder implements IFrameBuilder {
       if (frozen["frameNotes"][idx]) {
           throw new Error("Patching frameNotes." + idx + " twice in a builder is unsupported.");
       }
-      if (original && original._snapshot && original._snapshot["frameNotes"] && !original["frameNotes"]) {
+      if (original && original._snapshot && original._snapshot["frameNotes"] && original._snapshot["frameNotes"][idx] && !original["frameNotes"][idx]) {
           // Clone snapshot.
           patches.push({p: ["frameNotes", idx], li: original._snapshot["frameNotes"]});
       }
@@ -38063,7 +38063,7 @@ class GroupingBuilder implements IGroupingBuilder {
       if (frozen["features"][idx]) {
           throw new Error("Patching features." + idx + " twice in a builder is unsupported.");
       }
-      if (original && original._snapshot && original._snapshot["features"] && !original["features"]) {
+      if (original && original._snapshot && original._snapshot["features"] && original._snapshot["features"][idx] && !original["features"][idx]) {
           // Clone snapshot.
           patches.push({p: ["features", idx], li: original._snapshot["features"]});
       }
@@ -38471,7 +38471,7 @@ class PrintBuilder implements IPrintBuilder {
       if (frozen["staffLayouts"][idx]) {
           throw new Error("Patching staffLayouts." + idx + " twice in a builder is unsupported.");
       }
-      if (original && original._snapshot && original._snapshot["staffLayouts"] && !original["staffLayouts"]) {
+      if (original && original._snapshot && original._snapshot["staffLayouts"] && original._snapshot["staffLayouts"][idx] && !original["staffLayouts"][idx]) {
           // Clone snapshot.
           patches.push({p: ["staffLayouts", idx], li: original._snapshot["staffLayouts"]});
       }
@@ -38911,7 +38911,7 @@ class SoundBuilder implements ISoundBuilder {
       if (frozen["midiInstruments"][idx]) {
           throw new Error("Patching midiInstruments." + idx + " twice in a builder is unsupported.");
       }
-      if (original && original._snapshot && original._snapshot["midiInstruments"] && !original["midiInstruments"]) {
+      if (original && original._snapshot && original._snapshot["midiInstruments"] && original._snapshot["midiInstruments"][idx] && !original["midiInstruments"][idx]) {
           // Clone snapshot.
           patches.push({p: ["midiInstruments", idx], li: original._snapshot["midiInstruments"]});
       }
@@ -39055,7 +39055,7 @@ class SoundBuilder implements ISoundBuilder {
       if (frozen["plays"][idx]) {
           throw new Error("Patching plays." + idx + " twice in a builder is unsupported.");
       }
-      if (original && original._snapshot && original._snapshot["plays"] && !original["plays"]) {
+      if (original && original._snapshot && original._snapshot["plays"] && original._snapshot["plays"][idx] && !original["plays"][idx]) {
           // Clone snapshot.
           patches.push({p: ["plays", idx], li: original._snapshot["plays"]});
       }
@@ -39150,7 +39150,7 @@ class SoundBuilder implements ISoundBuilder {
       if (frozen["midiDevices"][idx]) {
           throw new Error("Patching midiDevices." + idx + " twice in a builder is unsupported.");
       }
-      if (original && original._snapshot && original._snapshot["midiDevices"] && !original["midiDevices"]) {
+      if (original && original._snapshot && original._snapshot["midiDevices"] && original._snapshot["midiDevices"][idx] && !original["midiDevices"][idx]) {
           // Clone snapshot.
           patches.push({p: ["midiDevices", idx], li: original._snapshot["midiDevices"]});
       }
@@ -39514,7 +39514,7 @@ class DefaultsBuilder implements IDefaultsBuilder {
       if (frozen["lyricLanguages"][idx]) {
           throw new Error("Patching lyricLanguages." + idx + " twice in a builder is unsupported.");
       }
-      if (original && original._snapshot && original._snapshot["lyricLanguages"] && !original["lyricLanguages"]) {
+      if (original && original._snapshot && original._snapshot["lyricLanguages"] && original._snapshot["lyricLanguages"][idx] && !original["lyricLanguages"][idx]) {
           // Clone snapshot.
           patches.push({p: ["lyricLanguages", idx], li: original._snapshot["lyricLanguages"]});
       }
@@ -39581,7 +39581,7 @@ class DefaultsBuilder implements IDefaultsBuilder {
       if (frozen["lyricFonts"][idx]) {
           throw new Error("Patching lyricFonts." + idx + " twice in a builder is unsupported.");
       }
-      if (original && original._snapshot && original._snapshot["lyricFonts"] && !original["lyricFonts"]) {
+      if (original && original._snapshot && original._snapshot["lyricFonts"] && original._snapshot["lyricFonts"][idx] && !original["lyricFonts"][idx]) {
           // Clone snapshot.
           patches.push({p: ["lyricFonts", idx], li: original._snapshot["lyricFonts"]});
       }
@@ -39704,7 +39704,7 @@ class DefaultsBuilder implements IDefaultsBuilder {
       if (frozen["staffLayouts"][idx]) {
           throw new Error("Patching staffLayouts." + idx + " twice in a builder is unsupported.");
       }
-      if (original && original._snapshot && original._snapshot["staffLayouts"] && !original["staffLayouts"]) {
+      if (original && original._snapshot && original._snapshot["staffLayouts"] && original._snapshot["staffLayouts"][idx] && !original["staffLayouts"][idx]) {
           // Clone snapshot.
           patches.push({p: ["staffLayouts", idx], li: original._snapshot["staffLayouts"]});
       }
@@ -40218,7 +40218,7 @@ class CreditBuilder implements ICreditBuilder {
       if (frozen["creditWords"][idx]) {
           throw new Error("Patching creditWords." + idx + " twice in a builder is unsupported.");
       }
-      if (original && original._snapshot && original._snapshot["creditWords"] && !original["creditWords"]) {
+      if (original && original._snapshot && original._snapshot["creditWords"] && original._snapshot["creditWords"][idx] && !original["creditWords"][idx]) {
           // Clone snapshot.
           patches.push({p: ["creditWords", idx], li: original._snapshot["creditWords"]});
       }
@@ -40790,7 +40790,7 @@ class ScorePartBuilder implements IScorePartBuilder {
       if (frozen["scoreInstruments"][idx]) {
           throw new Error("Patching scoreInstruments." + idx + " twice in a builder is unsupported.");
       }
-      if (original && original._snapshot && original._snapshot["scoreInstruments"] && !original["scoreInstruments"]) {
+      if (original && original._snapshot && original._snapshot["scoreInstruments"] && original._snapshot["scoreInstruments"][idx] && !original["scoreInstruments"][idx]) {
           // Clone snapshot.
           patches.push({p: ["scoreInstruments", idx], li: original._snapshot["scoreInstruments"]});
       }
@@ -40857,7 +40857,7 @@ class ScorePartBuilder implements IScorePartBuilder {
       if (frozen["midiDevices"][idx]) {
           throw new Error("Patching midiDevices." + idx + " twice in a builder is unsupported.");
       }
-      if (original && original._snapshot && original._snapshot["midiDevices"] && !original["midiDevices"]) {
+      if (original && original._snapshot && original._snapshot["midiDevices"] && original._snapshot["midiDevices"][idx] && !original["midiDevices"][idx]) {
           // Clone snapshot.
           patches.push({p: ["midiDevices", idx], li: original._snapshot["midiDevices"]});
       }
@@ -40973,7 +40973,7 @@ class ScorePartBuilder implements IScorePartBuilder {
       if (frozen["midiInstruments"][idx]) {
           throw new Error("Patching midiInstruments." + idx + " twice in a builder is unsupported.");
       }
-      if (original && original._snapshot && original._snapshot["midiInstruments"] && !original["midiInstruments"]) {
+      if (original && original._snapshot && original._snapshot["midiInstruments"] && original._snapshot["midiInstruments"][idx] && !original["midiInstruments"][idx]) {
           // Clone snapshot.
           patches.push({p: ["midiInstruments", idx], li: original._snapshot["midiInstruments"]});
       }
@@ -41827,7 +41827,7 @@ class GroupNameDisplayBuilder implements IGroupNameDisplayBuilder {
       if (frozen["name"][idx]) {
           throw new Error("Patching name." + idx + " twice in a builder is unsupported.");
       }
-      if (original && original._snapshot && original._snapshot["name"] && !original["name"]) {
+      if (original && original._snapshot && original._snapshot["name"] && original._snapshot["name"][idx] && !original["name"][idx]) {
           // Clone snapshot.
           patches.push({p: ["name", idx], li: original._snapshot["name"]});
       }
@@ -42110,7 +42110,7 @@ class GroupAbbreviationDisplayBuilder implements IGroupAbbreviationDisplayBuilde
       if (frozen["name"][idx]) {
           throw new Error("Patching name." + idx + " twice in a builder is unsupported.");
       }
-      if (original && original._snapshot && original._snapshot["name"] && !original["name"]) {
+      if (original && original._snapshot && original._snapshot["name"] && original._snapshot["name"][idx] && !original["name"][idx]) {
           // Clone snapshot.
           patches.push({p: ["name", idx], li: original._snapshot["name"]});
       }
@@ -42805,7 +42805,7 @@ class ScoreHeaderBuilder implements IScoreHeaderBuilder {
       if (frozen["credits"][idx]) {
           throw new Error("Patching credits." + idx + " twice in a builder is unsupported.");
       }
-      if (original && original._snapshot && original._snapshot["credits"] && !original["credits"]) {
+      if (original && original._snapshot && original._snapshot["credits"] && original._snapshot["credits"][idx] && !original["credits"][idx]) {
           // Clone snapshot.
           patches.push({p: ["credits", idx], li: original._snapshot["credits"]});
       }
@@ -43003,7 +43003,7 @@ class ScoreTimewiseBuilder implements IScoreTimewiseBuilder {
       if (frozen["measures"][idx]) {
           throw new Error("Patching measures." + idx + " twice in a builder is unsupported.");
       }
-      if (original && original._snapshot && original._snapshot["measures"] && !original["measures"]) {
+      if (original && original._snapshot && original._snapshot["measures"] && original._snapshot["measures"][idx] && !original["measures"][idx]) {
           // Clone snapshot.
           patches.push({p: ["measures", idx], li: original._snapshot["measures"]});
       }
@@ -43126,7 +43126,7 @@ class ScoreTimewiseBuilder implements IScoreTimewiseBuilder {
       if (frozen["credits"][idx]) {
           throw new Error("Patching credits." + idx + " twice in a builder is unsupported.");
       }
-      if (original && original._snapshot && original._snapshot["credits"] && !original["credits"]) {
+      if (original && original._snapshot && original._snapshot["credits"] && original._snapshot["credits"][idx] && !original["credits"][idx]) {
           // Clone snapshot.
           patches.push({p: ["credits", idx], li: original._snapshot["credits"]});
       }
