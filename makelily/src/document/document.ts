@@ -68,6 +68,8 @@ interface IDocument {
      */
     parts: string[];
 
+    _visualCursor: any;
+
     /**
      * Returns true if the model is any of the types provided. If so, it can be casted to the
      * equivilent MusicXML interface.
@@ -112,6 +114,7 @@ export class Document implements IDocument {
     header: ScoreHeader;
     measures: IMeasure[];
     parts: string[];
+    _visualCursor: any;
     modelHasType: (model: IModel, ...modelTypes: Type[]) => boolean;
     search: (models: IModel[], idx: number, ...types: Type[]) => IModel[];
 

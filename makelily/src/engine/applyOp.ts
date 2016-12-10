@@ -27,9 +27,11 @@ import {IAny} from "musicxml-interfaces/operations";
 import Type from "../document/types";
 import IMeasure from "../document/measure";
 import IMeasurePart from "../document/measurePart";
+import IDocument from "../document/document";
 
 import ILinesLayoutState from "../private/linesLayoutState";
 import IFactory from "../private/factory";
+import {cloneObject} from "../private/util";
 
 import barlineMutator from "../implBarline/barlineMutator";
 import attributesMutator from "../implAttributes/attributesMutator";
@@ -61,10 +63,9 @@ function isSerializable(obj: any): boolean {
  *
  * @param op.p [measureUUID, ("part"|"voice")]
  */
-export default function applyOp(measures: IMeasure[], factory: IFactory, op: IAny, memo: ILinesLayoutState) {
-    // Operations must be entirely serializable, because the way collaborative editing will work
-    // is operations will be serialized and sent over the network. One way of ensuring that elements
-    // are entirely serializable is by checking that the object is either:
+export default function applyOp(measures: IMeasure[], factory: IFactory, op: IAny, memo: ILinesLayoutState,
+        document: IDocument) {
+    // Operations must be entirely serializable, to be sent over the work. Serializble means it is one of:
     //   - a simple data type (number, string, ...)
     //   - a plain object (object with prototype Object), and that the same is true for all children
     //   - a plain array, and that the same is true for all items
@@ -78,7 +79,7 @@ export default function applyOp(measures: IMeasure[], factory: IFactory, op: IAn
             ld: op.ld,
             li: op.li,
         };
-        applyMeasureOp(measures, factory, localOp, memo);
+        applyMeasureOp(measures, factory, localOp, memo, document);
         return;
     }
     let measureUUID = parseInt(String(path[0]), 10);
@@ -101,7 +102,7 @@ export default function applyOp(measures: IMeasure[], factory: IFactory, op: IAn
             `Invalid operation path: No such voice ${path.slice(0,4).join(", ")}`);
 
         if (path.length === 6 && (op.li && !op.ld) || (!op.li && op.ld)) {
-            segmentMutator(factory, memo, voice, op);
+            segmentMutator(factory, memo, voice, op, document);
             memo.clean$[measure.uuid] = null;
             return;
         }
@@ -123,7 +124,7 @@ export default function applyOp(measures: IMeasure[], factory: IFactory, op: IAn
             `Invalid operation path: No such staff ${path.slice(0,4).join(", ")}`);
 
         if (path.length === 6 && (op.li && !op.ld) || (!op.li && op.ld)) {
-            segmentMutator(factory, memo, staff, op);
+            segmentMutator(factory, memo, staff, op, document);
             memo.clean$[measure.uuid] = null;
             return;
         }
@@ -144,7 +145,8 @@ export default function applyOp(measures: IMeasure[], factory: IFactory, op: IAn
     }
 }
 
-export function applyMeasureOp(measures: IMeasure[], factory: IFactory, op: IAny, memo: ILinesLayoutState) {
+export function applyMeasureOp(measures: IMeasure[], factory: IFactory, op: IAny, memo: ILinesLayoutState,
+        doc: IDocument) {
     let ok = false;
     let oldMeasure: IMeasure;
 
@@ -171,7 +173,7 @@ export function applyMeasureOp(measures: IMeasure[], factory: IFactory, op: IAny
         const oldParts = oldMeasure.parts;
         const newParts: {
             [id: string]: IMeasurePart;
-        } = op.li.parts || {};
+        } = cloneObject(op.li.parts) || {};
         forEach(oldParts, (part, partID) => {
             newParts[partID] = newParts[partID] || {
                 voices: [],
@@ -204,7 +206,14 @@ export function applyMeasureOp(measures: IMeasure[], factory: IFactory, op: IAny
                     if (newParts[partID].voices[voiceIdx]) {
                         newParts[partID].voices[voiceIdx] =
                             newParts[partID].voices[voiceIdx].
-                                map(i => factory.fromSpec(i)) || <any>[];
+                                map(i => {
+                                    const newModel = factory.fromSpec(i);
+                                    if (doc.modelHasType(newModel,
+                                            Type.VisualCursor)) {
+                                        doc._visualCursor = newModel;
+                                    }
+                                    return newModel;
+                                }) || <any>[];
                     } else {
                         newParts[partID].voices[voiceIdx] = [] as any;
                     }

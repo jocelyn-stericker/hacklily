@@ -81,7 +81,8 @@ export default function validate(options$: ILayoutOptions, memo$: ILinesLayoutSt
             options$.fixup(segment, operations);
         } else {
             forEach(operations, operation => {
-                applyOp(options$.measures, options$.modelFactory, operation, memo$);
+                applyOp(options$.measures, options$.modelFactory, operation, memo$,
+                    options$.document);
             });
         }
 

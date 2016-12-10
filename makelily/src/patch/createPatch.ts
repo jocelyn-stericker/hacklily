@@ -131,6 +131,18 @@ export class VoiceBuilder {
         this._idx = idx;
     }
 
+    addVisualCursor(idx: number = this._idx) {
+        this._patches = this._patches.concat(
+            {
+                li: {
+                    _class: "VisualCursor",
+                },
+                p: [idx],
+            }
+        );
+        return this;
+    }
+
     note(noteIDX: number, builder: (build: INoteBuilder) => INoteBuilder, idx: number = this._idx) {
         let model = this._segment[idx] as any;
         invariant(model, "no such model");
@@ -146,6 +158,7 @@ export class VoiceBuilder {
         invariant(!isNaN(idx), "%s must be a number", idx);
         let li = builders.map(builder => buildNote(builder)) as IChord;
         li._class = "Chord";
+        invariant(li[0].noteType.duration, "Invalid note type");
         let p = [idx];
         this._patches = this._patches.concat({li, p});
         return this;
@@ -158,6 +171,7 @@ export class VoiceBuilder {
         let li = buildNote(builder);
         let chord = model as IChord;
         invariant(chord[position - 1] || chord[position + 1] || !chord.length, "Invalid position for note");
+        invariant(model.noteType.duration, "Invalid note type");
         let p = [idx, "notes", position];
         this._patches = this._patches.concat({p, li});
         return this;
@@ -418,9 +432,15 @@ function getMutationInfo(document: IDocument, patches: IAny[]) {
 
         if (patch.p.length === 6) {
             if (patch.li) {
-                let c = count(patch.li);
-                let d = dots(patch.li);
-                let divs = calcDivisionsNoCtx(patch.li, attributes[segID].time, divisions);
+                let c = patch.li._class === "Chord" ?
+                    count(patch.li) :
+                    0;
+                let d = patch.li._class === "Chord" ?
+                    dots(patch.li) :
+                    0;
+                let divs = patch.li._class === "Chord" ?
+                    calcDivisionsNoCtx(patch.li, attributes[segID].time, divisions) :
+                    0;
                 let start: number;
                 let spliceIdx = parseInt(patch.p[5] as string, 10);
                 if (spliceIdx === 0) {
@@ -450,7 +470,9 @@ function getMutationInfo(document: IDocument, patches: IAny[]) {
                 elementInfos[segID].splice(spliceIdx, 0, newInfo);
             }
             if (patch.ld) {
-                let divs = calcDivisionsNoCtx(patch.ld, attributes[segID].time, divisions);
+                let divs = patch.ld._class === "Chord" ?
+                    calcDivisionsNoCtx(patch.ld, attributes[segID].time, divisions) :
+                    0;
                 let spliceIdx = parseInt(patch.p[5] as string, 10);
 
                 elementInfos[segID].splice(spliceIdx, 1);
@@ -539,6 +561,7 @@ function fixMetre(document: IDocument, patches: IAny[]): IAny[] {
                         }, 0);
 
                 const restSpecs: IChord[] = durationSpecs.map(durationSpec => {
+                    invariant(durationSpec[0].noteType.duration, "Invalid note type")
                     let chord = [buildNote(note => note
                         .rest({})
                         .dots(durationSpec[0].dots)
@@ -558,46 +581,52 @@ function fixMetre(document: IDocument, patches: IAny[]): IAny[] {
                 newIndex += restSpecs.length;
             } else if (elInfo.newDivisions > elInfo.previousDivisions) {
                 // We want to remove rests that follow, if possible.
-                let next = voiceInfo[originalIdx + 1];
-                if (next && next.rest && next.newDivisions === next.previousDivisions && !next.touched) {
-                    next.touched = true;
-                    const newEnd = next.start + elInfo.newDivisions - elInfo.previousDivisions;
-                    const durationSpecs = subtract(next.start + next.previousDivisions,
-                            newEnd, {
-                                division$: newEnd,
-                                staff: {
-                                    attributes: {
-                                        time: attributes[key].time,
-                                        divisions: segment.divisions,
-                                    },
-                                    totalDivisions: barDivisions(attributes[key]),
-                                }
-                            }, 0);
+                let nextOffset = findIndex(voiceInfo.slice(originalIdx + 1), (n) => !!n.rest && n.newDivisions);
+                if (nextOffset > -1) {
+                    const nextIdx = originalIdx + 1 + nextOffset;
+                    let next = voiceInfo[nextIdx];
+                    if (next && next.rest && !next.touched) {
+                        next.touched = true;
+                        const newEnd = next.start + elInfo.newDivisions - elInfo.previousDivisions;
+                        const durationSpecs = subtract(next.start + next.previousDivisions,
+                                newEnd, {
+                                    division$: newEnd,
+                                    staff: {
+                                        attributes: {
+                                            time: attributes[key].time,
+                                            divisions: segment.divisions,
+                                        },
+                                        totalDivisions: barDivisions(attributes[key]),
+                                    }
+                                }, 0);
 
-                    const restSpecs: IChord[] = durationSpecs.map(durationSpec => {
-                        let chord = [buildNote(note => note
-                            .rest({})
-                            .dots(durationSpec[0].dots)
-                            .noteType(durationSpec[0].noteType))
-                        ] as IChord;
-                        chord._class = "Chord";
-                        return chord;
-                    });
+                        const restSpecs: IChord[] = durationSpecs.map(durationSpec => {
+                            invariant(durationSpec[0].noteType, "Invalid note type");
+                            let chord = [buildNote(note => note
+                                .rest({})
+                                .dots(durationSpec[0].dots)
+                                .noteType(durationSpec[0].noteType))
+                            ] as IChord;
+                            chord._class = "Chord";
+                            return chord;
+                        });
 
-                    patches = patches.concat({
-                        p: (key.split("++") as (number | string)[]).concat(newIndex + 1),
-                        ld: JSON.parse(JSON.stringify(segment[originalIdx])),
-                    });
+                        patches = patches.concat({
+                            p: (key.split("++") as (number | string)[]).concat(nextIdx),
+                            ld: JSON.parse(JSON.stringify(segment[originalIdx])),
+                        });
 
-                    patches = patches.concat(restSpecs.map((spec, idx) => ({
-                        p: (key.split("++") as (number | string)[]).concat([
-                            newIndex + 1 + idx
-                        ]),
+                        patches = patches.concat(restSpecs.map((spec, idx) => ({
+                            p: (key.split("++") as (number | string)[]).concat([
+                                nextIdx + idx
+                            ]),
 
-                        li: spec
-                    })));
+                            li: spec
+                        })));
 
-                    newIndex = newIndex - 1 + restSpecs.length;
+                        debugger;
+                        newIndex = newIndex - 1 + restSpecs.length;
+                    }
                 }
             }
             newIndex += 1;

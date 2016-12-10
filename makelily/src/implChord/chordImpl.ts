@@ -275,9 +275,6 @@ class ChordModelImpl implements ChordModel.IChordModel, IList<NoteImpl> {
         });
 
         this.wholebar$ = this.divCount === cursor$.staff.totalDivisions || this.divCount === -1;
-        // TODO: overfill
-        // TODO: rhythmic spelling
-        // TODO: the document must end with a marker
 
         invariant(isFinite(this._count) && this._count !== null,
             "%s is not a valid count", this._count);

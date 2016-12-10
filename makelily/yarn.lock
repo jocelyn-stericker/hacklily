@@ -28,22 +28,18 @@
   version "0.0.2"
   resolved "https://registry.yarnpkg.com/@types/opentype/-/opentype-0.0.2.tgz#cd61e66f0851a035bbd75a6c29e00729e7e0b844"
 
-"@types/react-dom@0.14.14":
-  version "0.14.14"
-  resolved "https://registry.yarnpkg.com/@types/react-dom/-/react-dom-0.14.14.tgz#7371f5e7c60709647b5aadaa8865d3cadd9b940b"
+"@types/react-dom@0.14.18":
+  version "0.14.18"
+  resolved "https://registry.yarnpkg.com/@types/react-dom/-/react-dom-0.14.18.tgz#af4fb4092f433667f5f094e762b32c294e0010dc"
   dependencies:
-    "@types/react" "0.14.*"
+    "@types/react" "*"
 
 "@types/react-router@file:./vendor/updated-react-router-types":
   version "2.0.30-x"
 
-"@types/react@0.14.*":
+"@types/react@*", "@types/react@0.14.49":
   version "0.14.49"
   resolved "https://registry.yarnpkg.com/@types/react/-/react-0.14.49.tgz#983b773c91d341488e06d57ba677301b2cd9b846"
-
-"@types/react@0.14.29":
-  version "0.14.29"
-  resolved "https://registry.yarnpkg.com/@types/react/-/react-0.14.29.tgz#78f7f5f0306d397acaf18683660a519427610915"
 
 "@types/webcola@file:./vendor/webcola-types":
   version "1.0.0"
