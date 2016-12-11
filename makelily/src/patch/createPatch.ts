@@ -561,7 +561,7 @@ function fixMetre(document: IDocument, patches: IAny[]): IAny[] {
                         }, 0);
 
                 const restSpecs: IChord[] = durationSpecs.map(durationSpec => {
-                    invariant(durationSpec[0].noteType.duration, "Invalid note type")
+                    invariant(durationSpec[0].noteType.duration, "Invalid note type");
                     let chord = [buildNote(note => note
                         .rest({})
                         .dots(durationSpec[0].dots)
@@ -624,7 +624,6 @@ function fixMetre(document: IDocument, patches: IAny[]): IAny[] {
                             li: spec
                         })));
 
-                        debugger;
                         newIndex = newIndex - 1 + restSpecs.length;
                     }
                 }
