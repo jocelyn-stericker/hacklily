@@ -32,7 +32,6 @@ class SpacerModel implements Export.ISpacerModel {
 
     /*---- I.1 IModel ---------------------------------------------------------------------------*/
 
-    /** @prototype only */
     divCount: number;
 
     /** @prototype only */
@@ -50,6 +49,14 @@ class SpacerModel implements Export.ISpacerModel {
             this._target = target;
             this.divCount = target.divCount;
         }
+    }
+
+    toJSON() {
+        let {_class, divCount} = this;
+        return {
+            _class,
+            divCount,
+        };
     }
 
     validate(cursor$: ICursor): void {

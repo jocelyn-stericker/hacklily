@@ -55,10 +55,6 @@ export function layoutLine$(options: ILayoutOptions, bounds: ILineBounds,
         memo$.shortest$ = line.shortestCount;
         delete memo$.reduced$[key];
         memo$.clean$ = {};
-        measures.forEach(measure => ++measure.version);
-    } else if (!options.preview /* TODO: && widths changes */) {
-        delete memo$.reduced$[key];
-        measures.forEach(measure => ++measure.version);
     }
 
     if (!measures.length) {
@@ -110,6 +106,7 @@ export function layoutLine$(options: ILayoutOptions, bounds: ILineBounds,
         let detachedLayouts: IMeasureLayout[] = map(layouts, detachMeasureLayout);
         memo$.reduced$[key] = reduce(options.postprocessors,
             (layouts, filter) => filter(options, bounds, layouts), detachedLayouts);
+        measures.forEach(measure => ++measure.version);
     }
 
     return memo$.reduced$[key];

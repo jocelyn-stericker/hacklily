@@ -42,6 +42,7 @@ import Attributes from "../implAttributes/attributesModel";
 import {needsWarning, clefsEqual, CLEF_INDENTATION} from "../implAttributes/attributesData";
 
 class BarlineModel implements Export.IBarlineModel {
+    _class = "Barline";
 
     /*---- I.1 IModel ---------------------------------------------------------------------------*/
 
@@ -83,6 +84,15 @@ class BarlineModel implements Export.IBarlineModel {
         forEach<any>(spec, (value, key) => {
             (this as any)[key] = value;
         });
+    }
+
+    toJSON() {
+        let {_class, segno, coda, location, codaAttrib,
+            wavyLine, fermatas, segnoAttrib, divisions,
+            barStyle, ending, repeat, footnote} = this;
+        return {_class, segno, coda, location, codaAttrib,
+            wavyLine, fermatas, segnoAttrib, divisions,
+            barStyle, ending, repeat, footnote};
     }
 
     validate(cursor$: ICursor): void {

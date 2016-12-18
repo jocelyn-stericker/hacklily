@@ -327,6 +327,7 @@ export default function createPatch(isPreview: boolean,
             patches = fixMetre(document, patches);
             patches = addBeams(document, patches);
             patches = fixBarlines(document, patches);
+            patches = fixCursor(document, patches);
         }
     } else {
         let measure = builderOrMeasure as number;
@@ -340,6 +341,7 @@ export default function createPatch(isPreview: boolean,
 
 interface IElementInfo {
     idx: number;
+    oldIdx: number;
     start: number;
     previousDivisions: number;
     newDivisions: number;
@@ -398,6 +400,7 @@ function getMutationInfo(document: IDocument, patches: IAny[]) {
                 if (!document.modelHasType(model, Type.Chord)) {
                     return elementInfo.concat({
                         idx: idx,
+                        oldIdx: idx,
                         start: currDiv,
                         previousDivisions: 0,
                         newDivisions: 0,
@@ -413,6 +416,7 @@ function getMutationInfo(document: IDocument, patches: IAny[]) {
                 let divs = calcDivisionsNoCtx(chord, time, divisions);
                 let info = {
                     idx: idx,
+                    oldIdx: idx,
                     start: currDiv,
                     previousDivisions: divs,
                     newDivisions: divs,
@@ -451,6 +455,7 @@ function getMutationInfo(document: IDocument, patches: IAny[]) {
 
                 let newInfo: IElementInfo = {
                     idx: spliceIdx,
+                    oldIdx: undefined,
                     newCount: c,
                     newDivisions: divs,
                     newDots: d,
@@ -540,9 +545,9 @@ function fixMetre(document: IDocument, patches: IAny[]): IAny[] {
 
     let {segments, attributes, elementInfos} = getMutationInfo(document, patches);
 
+    let newIndex = 0;
     forEach(elementInfos, (voiceInfo, key) => {
         const segment = segments[key];
-        let newIndex = 0;
         voiceInfo.forEach((elInfo, originalIdx) => {
             if (elInfo.newDivisions < elInfo.previousDivisions) {
                 // We want to add rests to fill up any empty space.
@@ -613,7 +618,7 @@ function fixMetre(document: IDocument, patches: IAny[]): IAny[] {
 
                         patches = patches.concat({
                             p: (key.split("++") as (number | string)[]).concat(nextIdx),
-                            ld: JSON.parse(JSON.stringify(segment[originalIdx])),
+                            ld: JSON.parse(JSON.stringify(segment[next.oldIdx])),
                         });
 
                         patches = patches.concat(restSpecs.map((spec, idx) => ({
@@ -661,6 +666,52 @@ function fixBarlines(doc: IDocument, patches: IAny[]): IAny[] {
                 );
                 patches = patches.concat(removeDoubleBarline);
             }
+        });
+    });
+    return patches;
+}
+
+function fixCursor(doc: IDocument, patches: IAny[]): IAny[] {
+    let {segments, attributes, elementInfos} = getMutationInfo(doc, patches);
+    const newCursor = patches.filter(patch => patch.li && patch.li._class === "VisualCursor");
+    if (!newCursor.length) {
+        return patches;
+    }
+    invariant(newCursor.length === 1, "Limit 1 cursor operation per patch");
+    patches = patches.slice();
+    forEach(doc.measures, (measure) => {
+        forEach(measure.parts, (part, partName) => {
+            forEach(part.voices, (voice, voiceIDX) => {
+                if (!voice) {
+                    return;
+                }
+                const segID = [measure.uuid, "parts", partName, "voices", voiceIDX].join("++");
+                const segInfo = elementInfos[segID];
+                if (segInfo) {
+                    let offset = 0;
+                    forEach(segInfo, element => {
+                        if (!isNaN(element.idx) && !isNaN(element.oldIdx) &&
+                                doc.modelHasType(voice[element.oldIdx], Type.VisualCursor)) {
+                            patches.push({
+                                p: [measure.uuid, "parts", partName, "voices", voiceIDX, element.idx + offset],
+                                ld: JSON.parse(JSON.stringify(voice[element.oldIdx])),
+                            });
+                            offset -= 1;
+                        }
+                    });
+                } else {
+                    let offset = 0;
+                    forEach(voice, (el, idx) => {
+                        if (doc.modelHasType(el, Type.VisualCursor)) {
+                            patches.push({
+                                p: [measure.uuid, "parts", partName, "voices", voiceIDX, idx + offset],
+                                ld: JSON.parse(JSON.stringify(el)),
+                            });
+                            offset -= 1;
+                        }
+                    });
+                }
+            });
         });
     });
     return patches;
