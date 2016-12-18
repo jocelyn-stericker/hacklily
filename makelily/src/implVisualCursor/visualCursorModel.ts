@@ -19,6 +19,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import * as invariant from "invariant";
+
 import Type from "../document/types";
 import IModel from "../document/model";
 import ILayout from "../private/layout";
@@ -50,9 +52,6 @@ class VisualCursorModel implements Export.IVisualCursorModel {
     }
 
     validate(cursor$: ICursor): void {
-        if (cursor$.document._visualCursor && cursor$.document._visualCursor !== this) {
-            cursor$.patch(voice => voice.remove(cursor$.idx$));
-        }
         cursor$.document._visualCursor = this;
     }
 

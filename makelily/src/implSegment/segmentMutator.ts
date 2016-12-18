@@ -20,6 +20,7 @@
  */
 
 import * as invariant from "invariant";
+import {isEqual} from "lodash";
 import {IAny, IListInsert, IListDelete} from "musicxml-interfaces/operations";
 
 import ISegment from "../document/segment";
@@ -27,6 +28,7 @@ import OwnerType from "../document/ownerTypes";
 import IDocument from "../document/document";
 
 import IFactory from "../private/factory";
+import {cloneObject} from "../private/util";
 import ILinesLayoutState from "../private/linesLayoutState";
 
 export default function segmentMutator(factory: IFactory, memo$: ILinesLayoutState,
@@ -43,18 +45,27 @@ export default function segmentMutator(factory: IFactory, memo$: ILinesLayoutSta
     if ("li" in op && !("ld" in op)) {
         let liop = op as IListInsert<any>;
         let newModel = factory.fromSpec(liop.li);
-        if (liop.li._class === "VisualCursor") {
-            doc._visualCursor = newModel;
-        }
         segment.splice(op.p[5] as number, 0, newModel);
     } else if ("ld" in op && !("li" in op)) {
-        // STOPSHIP: We're not asserting that this is true, which may
-        // cause problems with collaboration and undoing!
-        // invariant(isEqual(op.ld, cloneObject(segment[op.p[5] as number])), "The removed element must be equal to the current element");
-        let ldop = op as IListDelete<any>;
-
-        if (ldop.ld._class === "VisualCursor") {
-            doc._visualCursor = null;
+        const existingSerializable: any = cloneObject(segment[op.p[5] as number]);
+        if (!isEqual(existingSerializable, op.ld)) {
+            if ("length" in op.ld && "length" in existingSerializable) {
+                // TODO: Make notes reserializable.
+                console.warn("Mismatch in spec of Chord to be deleted. This is expected for undos :(");
+            } else if (op.ld._class === "Attributes" && existingSerializable._class === "Attributes") {
+                // TODO: Make notes reserializable.
+                console.warn("Mismatch in spec of Attributes to be deleted. This is expected for undos :(")
+            } else if (op.ld._class === "Print" && existingSerializable._class === "Print") {
+                // TODO: Make notes reserializable.
+                console.warn("Mismatch in spec of Print to be deleted. This is expected for undos :(")
+            } else {
+                invariant(false,
+                    "The element to be removed must be accurately specified in the operation.\n\n" +
+                    "OPERATION SPEC: " + JSON.stringify(op.ld, null, 2) + "\n\n" +
+                    "ACTUAL SPEC: " + JSON.stringify(existingSerializable, null, 2) + "\n\n" +
+                    "Your patch is broken."
+                );
+            }
         }
         segment.splice(op.p[5] as number, 1);
     } else {

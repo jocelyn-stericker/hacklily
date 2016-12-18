@@ -36,7 +36,7 @@ export default ILinesLayoutState;
 
 export function markDirty(memo$: ILinesLayoutState, model: {key: string}) {
     if (!model.key) {
-        console.warn("Missing key, so cannot mark dirty!");
+        // Never marked clean, so cannot mark dirty!
         return;
     }
     let measure = model.key.split("_")[0].split("SATIE")[1];

@@ -159,7 +159,15 @@ export function applyMeasureOp(measures: IMeasure[], factory: IFactory, op: IAny
             `invalid uuid ${op.ld.uuid} != ${measures[measureIdx].uuid}`);
         oldMeasure = measures[measureIdx];
         measures.splice(measureIdx, 1);
-        measures.forEach(measure => ++measure.version);
+        measures.slice(measureIdx).forEach(measure => {
+            ++measure.version;
+            --measure.idx;
+            if (!isNaN(parseInt(measure.number, 10))) {
+                measure.number = String(parseInt(measure.number, 10) - 1);
+            } else {
+                console.warn("Cannot change bar number for invalid measure number ", measure.number);
+            }
+        });
         memo.clean$ = {};
     }
 
@@ -206,14 +214,7 @@ export function applyMeasureOp(measures: IMeasure[], factory: IFactory, op: IAny
                     if (newParts[partID].voices[voiceIdx]) {
                         newParts[partID].voices[voiceIdx] =
                             newParts[partID].voices[voiceIdx].
-                                map(i => {
-                                    const newModel = factory.fromSpec(i);
-                                    if (doc.modelHasType(newModel,
-                                            Type.VisualCursor)) {
-                                        doc._visualCursor = newModel;
-                                    }
-                                    return newModel;
-                                }) || <any>[];
+                                map(i => factory.fromSpec(i)) || <any>[];
                     } else {
                         newParts[partID].voices[voiceIdx] = [] as any;
                     }
@@ -238,6 +239,15 @@ export function applyMeasureOp(measures: IMeasure[], factory: IFactory, op: IAny
 
         oldMeasure.parts = oldParts;
         measures.splice(measureIdx, 0, newMeasure);
+        measures.slice(measureIdx + 1).forEach(measure => {
+            ++measure.idx;
+            ++measure.version;
+            if (!isNaN(parseInt(measure.number, 10))) {
+                measure.number = String(parseInt(measure.number, 10) + 1);
+            } else {
+                console.warn("Cannot change bar number for invalid measure number ", measure.number);
+            }
+        });
         measures.forEach(measure => ++measure.version);
         memo.clean$ = {};
     }

@@ -103,10 +103,6 @@ export default function validate(options$: ILayoutOptions, memo$: ILinesLayoutSt
         } catch (err) {
             if (err instanceof DivisionOverflowException) {
                 (<DivisionOverflowException>err).resolve$(rootFixup);
-                memo$.clean$ = {};
-                memo$.reduced$ = {};
-                memo$.width$ = {};
-                options$.measures.forEach(measure => measure.version++);
                 shouldTryAgain = true;
             } else {
                 throw err;
