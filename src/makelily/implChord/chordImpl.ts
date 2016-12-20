@@ -43,8 +43,13 @@ import {getWidth as getGlyphWidth} from "../private/smufl";
 import {getChordLyricWidth} from "./lyrics";
 import {getBoundingRects} from "./notation";
 
-const IDEAL_STEM_HEIGHT: number = 35;
-const MIN_STEM_HEIGHT: number = 30;
+const IDEAL_STEM_HEIGHT = 35;
+const MIN_STEM_HEIGHT = 30;
+const BASE_GRACE_WIDTH = 11.4;
+const BASE_STD_WIDTH = 30;
+const GRACE_FLATTEN_FACTOR = 0.1;
+const ACCIDENTAL_WIDTH = 0.73;
+const LOG_STRETCH = 28;
 
 let countToNotehead: { [key: number]: string } = {
     [Count.Maxima]: "noteheadDoubleWhole",
@@ -634,7 +639,7 @@ module ChordModelImpl {
 
             return reduce(this.model, (maxWidth, note) => {
                 return Math.max(maxWidth, note.accidental ? -note.accidental.defaultX : 0);
-            }, 0) * 0.73;
+            }, 0) * ACCIDENTAL_WIDTH;
         }
 
         private _calcTotalWidth(cursor: ICursor, baseModel: ChordModelImpl): number {
@@ -643,12 +648,13 @@ module ChordModelImpl {
             // TODO: Each note's width has a linear component proportional to log of its duration
             // with respect to the shortest length
             let extraWidth = baseModel.divCount ?
-                (Math.log(baseModel.divCount) - Math.log(cursor.line.shortestCount)) * 20 : 0;
-            const grace = baseModel[0].grace; // TODO: What if only some notes are grace?
+                (Math.log(baseModel.divCount) - Math.log(cursor.line.shortestCount)) * LOG_STRETCH : 0;
+            const grace = baseModel[0].grace;
             if (grace) {
-                extraWidth /= 10; // TODO: Put grace notes in own segment
+                // TODO: Put grace notes in own segment
+                extraWidth *= GRACE_FLATTEN_FACTOR;
             }
-            const baseWidth = grace ? 11.4 : 22.8;
+            const baseWidth = grace ? BASE_GRACE_WIDTH : BASE_STD_WIDTH;
             invariant(extraWidth >= 0, "Invalid extraWidth %s. shortest is %s, got %s", extraWidth,
                     cursor.line.shortestCount, baseModel.divCount);
 

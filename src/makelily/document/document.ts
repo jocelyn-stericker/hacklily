@@ -38,7 +38,7 @@ import RenderTarget from "../private/renderTargets";
 import {getPageMargins} from "../private/print";
 
 import validate from "../engine/processors/validate";
-import layout from "../engine/processors/layout";
+import layoutSong from "../engine/processors/layout";
 
 import PageView from "../implPage/pageView";
 
@@ -215,7 +215,7 @@ export class Document implements IDocument {
             };
 
             validate(opts, memo$);
-            const lineLayouts = layout(opts, memo$);
+            const lineLayouts = layoutSong(opts, memo$);
 
             return $PageView({
                 className: pageClassName,
