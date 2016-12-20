@@ -168,7 +168,6 @@ export function applyMeasureOp(measures: IMeasure[], factory: IFactory, op: IAny
                 console.warn("Cannot change bar number for invalid measure number ", measure.number);
             }
         });
-        memo.clean$ = {};
     }
 
     if (op.li !== undefined && op.p.length === 1) {
@@ -249,7 +248,6 @@ export function applyMeasureOp(measures: IMeasure[], factory: IFactory, op: IAny
             }
         });
         measures.forEach(measure => ++measure.version);
-        memo.clean$ = {};
     }
 
     invariant(ok, `Invalid operation type for applyMeasureOp's context: ${JSON.stringify(op)}`);

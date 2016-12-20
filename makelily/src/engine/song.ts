@@ -133,8 +133,7 @@ export default class Song extends Component<IProps, IState> implements ISong {
                     factory: loadedFactory,
                 }, this._preRender$);
             }
-            // TODO: Make this error more generic.
-            invariant(!this.props.patches, "Patch applied to wrong document.");
+            invariant(!this.props.patches, "Expected patches to be empty on document load.");
             if (this.props.onLoaded) {
                 this.props.onLoaded();
             }

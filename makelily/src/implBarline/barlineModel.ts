@@ -30,8 +30,6 @@ import IModel from "../document/model";
 import Type from "../document/types";
 import ExpandPolicy from "../document/expandPolicies";
 
-import {getCurrentMeasureList} from "../engine/measureList";
-
 import {ICursor} from "../private/cursor";
 import IBoundingRect from "../private/boundingRect";
 import ILayout from "../private/layout";
@@ -177,7 +175,7 @@ module BarlineModel {
             if (!cursor$.approximate && cursor$.line.barsOnLine === cursor$.line.barOnLine$ + 1) {
                 // TODO: Figure out a way to get this to work when the attributes on the next
                 // line change
-                let nextMeasure = getCurrentMeasureList()[cursor$.measure.idx + 1];
+                let nextMeasure = cursor$.document.measures[cursor$.measure.idx + 1];
                 let part = nextMeasure && nextMeasure.parts[cursor$.segment.part];
                 let segment = part && part.staves[cursor$.staff.idx];
                 let nextAttributes: IModel;

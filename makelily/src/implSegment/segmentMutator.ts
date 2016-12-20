@@ -21,7 +21,7 @@
 
 import * as invariant from "invariant";
 import {isEqual} from "lodash";
-import {IAny, IListInsert, IListDelete} from "musicxml-interfaces/operations";
+import {IAny, IListInsert} from "musicxml-interfaces/operations";
 
 import ISegment from "../document/segment";
 import OwnerType from "../document/ownerTypes";

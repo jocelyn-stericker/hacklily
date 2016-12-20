@@ -56,7 +56,7 @@ export default class MeasureView extends Component<IProps, void> {
 
     render(): any {
         const layout = this.props.layout;
-        console.log("Rerender", (layout as any).key)
+        console.log("Rerender");
 
         return DOM.g({transform: `translate(${layout.originX})`},
             chain(flatten(layout.elements))

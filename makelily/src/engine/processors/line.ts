@@ -51,11 +51,6 @@ export function layoutLine$(options: ILayoutOptions, bounds: ILineBounds,
         return memo.concat(segments);
     }, []);
     let line = createLineContext(allModels, measures.length, options.line, options.lines);
-    if (memo$.shortest$ !== line.shortestCount && !options.preview) {
-        memo$.shortest$ = line.shortestCount;
-        delete memo$.reduced$[key];
-        memo$.clean$ = {};
-    }
 
     if (!measures.length) {
         return [];
@@ -97,12 +92,13 @@ export function layoutLine$(options: ILayoutOptions, bounds: ILineBounds,
         layout.originY = tops;
         layout.originX = left;
         left = left + layout.width;
+        if (!options.preview) {
+            memo$.linePlacement$[layout.uuid].width = layout.width;
+        }
     });
 
     if (!memo$.reduced$[key]) {
-        if (options.preview) {
-            console.warn("RERENDERING IN PREVIEW!");
-        }
+        invariant(!options.preview, `Cannot render ${key} during preview`);
         let detachedLayouts: IMeasureLayout[] = map(layouts, detachMeasureLayout);
         memo$.reduced$[key] = reduce(options.postprocessors,
             (layouts, filter) => filter(options, bounds, layouts), detachedLayouts);

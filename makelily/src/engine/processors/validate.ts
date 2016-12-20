@@ -36,7 +36,6 @@ import {detachMeasureContext} from "../../private/measureContext";
 import createPatch from "../../patch/createPatch";
 
 import applyOp from "../applyOp";
-import {setCurrentMeasureList} from "../measureList";
 
 import DivisionOverflowException from "./divisionOverflowException";
 import {reduceMeasure} from "./measure";
@@ -115,8 +114,6 @@ function tryValidate(options$: ILayoutOptions, memo$: ILinesLayoutState,
         rootFixupOpts$: {debugFixupOperations: IAny[][], rootFixup: IFixupFn}): void {
     let factory = options$.modelFactory;
     let search = factory.search.bind(factory);
-
-    setCurrentMeasureList(options$.measures);
 
     let lastAttribs: {[part: string]: IAttributesSnapshot[]} = {};
     let lastPrint: Print = options$.print$;
@@ -280,6 +277,4 @@ function tryValidate(options$: ILayoutOptions, memo$: ILinesLayoutState,
             }
         }
     });
-
-    setCurrentMeasureList(null);
 }
