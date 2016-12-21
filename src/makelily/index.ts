@@ -38,6 +38,7 @@ export {IMouseEvent} from "./document/song";
 import {getGlyphCode as eGetGlyphCode} from "./private/smufl";
 import {pageSizes as ePageSizes} from "./private/renderUtil";
 
+import EClef from "./implAttributes/clefView";
 import EKeySignature from "./implAttributes/keySignatureView";
 import ETimeSignature from "./implAttributes/timeSignatureView";
 
@@ -48,6 +49,7 @@ export module Addons {
     export const getGlyphCode = eGetGlyphCode;
     export const pageSizes = ePageSizes;
 
+    export const Clef = EClef;
     export const KeySignature = EKeySignature;
     export const TimeSignature = ETimeSignature;
 }
