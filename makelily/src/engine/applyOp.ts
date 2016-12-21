@@ -63,7 +63,7 @@ function isSerializable(obj: any): boolean {
  *
  * @param op.p [measureUUID, ("part"|"voice")]
  */
-export default function applyOp(measures: IMeasure[], factory: IFactory, op: IAny, memo: ILinesLayoutState,
+export default function applyOp(preview: boolean, measures: IMeasure[], factory: IFactory, op: IAny, memo: ILinesLayoutState,
         document: IDocument) {
     // Operations must be entirely serializable, to be sent over the work. Serializble means it is one of:
     //   - a simple data type (number, string, ...)
@@ -125,7 +125,9 @@ export default function applyOp(measures: IMeasure[], factory: IFactory, op: IAn
 
         if (path.length === 6 && (op.li && !op.ld) || (!op.li && op.ld)) {
             segmentMutator(factory, memo, staff, op, document);
-            memo.clean$[measure.uuid] = null;
+            if (!preview) {
+                memo.clean$[measure.uuid] = null;
+            }
             return;
         }
 
@@ -138,7 +140,7 @@ export default function applyOp(measures: IMeasure[], factory: IFactory, op: IAn
         if (factory.modelHasType(element, Type.Barline)) {
             barlineMutator(memo, element as any, localOp);
         } else if (factory.modelHasType(element, Type.Attributes)) {
-            attributesMutator(memo, element as any, localOp);
+            attributesMutator(preview, memo, element as any, localOp);
         } else {
             invariant(false, "Invalid operation path: No reducer for %s", element);
         }

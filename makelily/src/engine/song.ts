@@ -158,7 +158,7 @@ export default class Song extends Component<IProps, IState> implements ISong {
             throw new Error(NOT_READY_ERROR);
         }
         if (PrivatePatches.verify(operations)) {
-            this._rectify$(operations.content, false);
+            this._rectify$(operations.content, operations.isPreview);
             return this.state.document;
         } else if (!operations) {
             this._rectify$([], false);
@@ -295,13 +295,13 @@ export default class Song extends Component<IProps, IState> implements ISong {
 
         // Undo actions not in common
         forEach(invert(docPatches.slice(initialCommon)), (op) => {
-            applyOp(this.state.document.measures, factory, op, memo, this.state.document);
+            applyOp(preview, this.state.document.measures, factory, op, memo, this.state.document);
             docPatches.pop();
         });
 
         // Perform actions that are expected.
         forEach(newPatches.slice(this._docPatches.length), (op) => {
-            applyOp(this.state.document.measures, factory, op, memo, this.state.document);
+            applyOp(preview, this.state.document.measures, factory, op, memo, this.state.document);
             docPatches.push(op);
         });
 
