@@ -34,6 +34,7 @@ import ILinesLayoutState from "../private/linesLayoutState";
 export default function segmentMutator(factory: IFactory, memo$: ILinesLayoutState,
         segment: ISegment, op: IAny, doc: IDocument) {
     const {part, ownerType} = segment; // p[2]
+    invariant(op.p.length === 6, "Invalid length for segment operation.");
 
     invariant(op.p[1] === "parts", "Malformed path.");
     invariant(op.p[2] === part, "Invalid fixup part.");
