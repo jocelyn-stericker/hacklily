@@ -101,7 +101,7 @@ export default function applyOp(preview: boolean, measures: IMeasure[], factory:
         invariant(Boolean(voice),
             `Invalid operation path: No such voice ${path.slice(0,4).join(", ")}`);
 
-        if (path.length === 6 && (op.li && !op.ld) || (!op.li && op.ld)) {
+        if (path.length === 6 && ((op.li && !op.ld) || (!op.li && op.ld))) {
             segmentMutator(factory, memo, voice, op, document);
             memo.clean$[measure.uuid] = null;
             return;
@@ -123,7 +123,7 @@ export default function applyOp(preview: boolean, measures: IMeasure[], factory:
         invariant(Boolean(staff),
             `Invalid operation path: No such staff ${path.slice(0,4).join(", ")}`);
 
-        if (path.length === 6 && (op.li && !op.ld) || (!op.li && op.ld)) {
+        if (path.length === 6 && ((op.li && !op.ld) || (!op.li && op.ld))) {
             segmentMutator(factory, memo, staff, op, document);
             if (!preview) {
                 memo.clean$[measure.uuid] = null;
