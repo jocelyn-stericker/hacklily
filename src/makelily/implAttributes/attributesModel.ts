@@ -217,14 +217,14 @@ class AttributesModel implements Export.IAttributesModel {
         // Clefs must have a staff number
         this.clefs.forEach(clef => {
             if (clef) {
-                clef.number = clef.number || 1;
+                clef.number = clef.number || 1; // XXX: do not mutate
             }
         });
 
         // Clefs must be indexed by staff
         this.clefs = this.clefs.reduce((clefs, clef) => {
             if (clef) {
-                clefs[clef.number] = clef;
+                clefs[clef.number] = clef; // XXX: do not mutate
             };
             return clefs;
         }, []);
@@ -234,7 +234,7 @@ class AttributesModel implements Export.IAttributesModel {
             this.clefs[staffIdx] = buildClef(clef => clef
                 .number(staffIdx)
                 .sign("G")
-                .line(2));
+                .line(2)); // XXX: do not mutate
         }
 
         // Validate the given clef
@@ -247,7 +247,7 @@ class AttributesModel implements Export.IAttributesModel {
             if (!clef.line) {
                 let {sign} = clef;
                 let standardClef = find(standardClefs, {sign});
-                clef.line = standardClef ? standardClef.line : 2;
+                clef.line = standardClef ? standardClef.line : 2; // XXX: do not mutate
             }
         }
     }
@@ -261,7 +261,7 @@ class AttributesModel implements Export.IAttributesModel {
             this.times[0] = buildTime(time => time
                 .symbol(TimeSymbolType.Common)
                 .beats(["4"])
-                .beatTypes([4]));
+                .beatTypes([4])); // XXX: do not mutate
         }
     }
 
@@ -272,7 +272,7 @@ class AttributesModel implements Export.IAttributesModel {
         if (!this._parent.keySignature && !this.keySignatures[0]) {
             this.keySignatures[0] = buildKey(key => key
                 .fifths(0)
-                .mode("major"));
+                .mode("major")); // XXX: do not mutate
         }
 
         let ks = this.keySignatures[0];
@@ -286,7 +286,7 @@ class AttributesModel implements Export.IAttributesModel {
                     keySteps: null,
                     keyAccidentals: null,
                     keyAlters: null
-                }];
+                }]; // XXX: do not mutate
             }
             if (ks.keyAccidentals && ks.keyAccidentals.length !== ks.keySteps.length) {
                 if (ks.keyAccidentals.length) {
@@ -295,7 +295,7 @@ class AttributesModel implements Export.IAttributesModel {
                         "specified for all steps in a key signature due to a limitation " +
                         "in musicxml-interfaces. Ignoring `key-accidentals`");
                 }
-                ks.keyAccidentals = null;
+                ks.keyAccidentals = null; // XXX: do not mutate
             }
             if (ks.keyOctaves) {
                 // Let's sort them (move to prefilter?)
@@ -303,7 +303,7 @@ class AttributesModel implements Export.IAttributesModel {
                 forEach(ks.keyOctaves, octave => {
                    keyOctaves[octave.number - 1] = octave;
                 });
-                ks.keyOctaves = keyOctaves;
+                ks.keyOctaves = keyOctaves; // XXX: do not mutate
             }
         }
     }
@@ -315,14 +315,14 @@ class AttributesModel implements Export.IAttributesModel {
         // Staff details must have a staff number
         this.staffDetails.forEach(staffDetails => {
             if (staffDetails) {
-                staffDetails.number = staffDetails.number || 1;
+                staffDetails.number = staffDetails.number || 1; // XXX: do not mutate
             }
         });
 
         // Staff details must be indexed by staff
         this.staffDetails = this.staffDetails.reduce((staffDetails, staffDetail) => {
             if (staffDetail) {
-                staffDetails[staffDetail.number] = staffDetail;
+                staffDetails[staffDetail.number] = staffDetail; // XXX: do not mutate
             };
             return staffDetails;
         }, []);
@@ -331,13 +331,13 @@ class AttributesModel implements Export.IAttributesModel {
         if (!this.staffDetails[cursor$.staff.idx]) {
             this.staffDetails[cursor$.staff.idx] = {
                 number: cursor$.staff.idx
-            };
+            }; // XXX: do not mutate
         }
 
         if ((!this._parent.staffDetails || !this._parent.staffDetails[cursor$.staff.idx] ||
                 !this._parent.staffDetails[cursor$.staff.idx].staffLines) &&
                 !this.staffDetails[cursor$.staff.idx].staffLines) {
-            this.staffDetails[cursor$.staff.idx].staffLines = 5;
+            this.staffDetails[cursor$.staff.idx].staffLines = 5; // XXX: do not mutate
         }
     }
 
@@ -356,7 +356,7 @@ class AttributesModel implements Export.IAttributesModel {
                 bottomStaff: 1,
                 topStaff: this.staves,
                 type: PartSymbolType.Brace
-            };
+            }; // XXX: do not mutate
         }
 
         // HACK: Convert part group symbols to part symbols.
@@ -367,13 +367,13 @@ class AttributesModel implements Export.IAttributesModel {
                 bottomStaff: 1,
                 topStaff: 1,
                 type: PartSymbolType.Bracket
-            };
+            }; // XXX: do not mutate
         }
     }
 
     private _validateMeasureStyles(cursor$: ICursor): void {
         if (!this.measureStyles) {
-            this.measureStyles = [];
+            this.measureStyles = []; // XXX: do not mutate
         }
     }
 }

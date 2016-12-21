@@ -59,7 +59,7 @@ export module Patch {
 }
 
 // Expose MusicXML in build (but not in types).
-// The intension is the use adds these things to externals in 'webpack.config.js'.
+// This means you can use MusicXML as an external in webpack.
 // See satie/webapp/webpack.config.js as an example.
 /* tslint:disable */
 module.exports.MusicXML = require("musicxml-interfaces");
