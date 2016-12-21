@@ -37,7 +37,7 @@ export interface IProps {
 
 export default class AccidentalView extends Component<IProps, void> {
     static contextTypes = {
-        originY: PropTypes.number.isRequired
+        originY: PropTypes.number,
     } as any;
 
     context: {
@@ -49,14 +49,17 @@ export default class AccidentalView extends Component<IProps, void> {
         const glyphName = accidentalGlyphs[this.props.spec.accidental];
         invariant(glyphName in bboxes, "Expected a glyph, got %s", glyphName);
 
-        const originY = this.context.originY;
+        const originY = (this.context.originY || 0);
         const shift = spec.parentheses ? 4 : 0;
+
+        const y = originY - (spec.defaultY + (spec.relativeY || 0));
+        invariant(!isNaN(y), "Invalid accidental y-position");
 
         let accidental = $Glyph({
             fill: spec.color,
             glyphName: glyphName,
             x: (this.props.noteDefaultX || 0) + spec.defaultX + (spec.relativeX || 0) + shift,
-            y: originY - (spec.defaultY + (spec.relativeY || 0))
+            y,
         });
 
         if (spec.parentheses || spec.bracket) {

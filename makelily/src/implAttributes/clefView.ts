@@ -32,7 +32,7 @@ const $Glyph = createFactory(Glyph);
  */
 export default class ClefView extends Component<{spec: Clef, key?: string | number}, void> {
     static contextTypes = {
-        originY: PropTypes.number.isRequired
+        originY: PropTypes.number,
     } as any;
 
     context: {
@@ -47,7 +47,7 @@ export default class ClefView extends Component<{spec: Clef, key?: string | numb
         }
 
         let clefX = spec.defaultX + (spec.relativeX || 0);
-        let clefY = this.context.originY - (spec.defaultY + (spec.relativeY || 0) +
+        let clefY = (this.context.originY || 0) - (spec.defaultY + (spec.relativeY || 0) +
             (this.renderedLine() - 3) * 10);
         let clefSign = this.sign();
 

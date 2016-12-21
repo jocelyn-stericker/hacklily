@@ -50,7 +50,7 @@ const flats: { [key: string]: Array<number> } = {
 /**
  * Renders a key signature.
  */
-class KeyView extends Component<{spec: Key; clef: Clef, key?: string | number}, void> {
+class KeyView extends Component<{spec: Key; clef: Clef}, void> {
     render(): any {
         return DOM.g(null,
             map(this.getAccidentals(),
