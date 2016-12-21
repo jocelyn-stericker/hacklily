@@ -48,6 +48,8 @@ class AttributesModel implements Export.IAttributesModel {
 
     /** @prototype only */
     private _divCount = 0;
+    private _layout: AttributesModel.Layout;
+
     get divCount() {
         return this._divCount;
     }
@@ -86,10 +88,6 @@ class AttributesModel implements Export.IAttributesModel {
     /*---- Implementation -----------------------------------------------------------------------*/
 
     validate(cursor$: ICursor): void {
-        if (this._parent && this._parent !== cursor$.staff.attributes) {
-            // STOPSHIP: This will break when a model is inserted in the middle of nowhere.
-            cursor$.staff.attributes = this._parent;
-        }
         this._parent = cursor$.staff.attributes || <IAttributesSnapshot> {};
 
         if (!this._parent.divisions) {
@@ -104,12 +102,13 @@ class AttributesModel implements Export.IAttributesModel {
 
         this._validateMeasureStyles(cursor$);
 
-        this._snapshot = cursor$.staff.attributes = createSnapshot({
+        this._snapshot = createSnapshot({
             before: cursor$.staff.attributes || <IAttributesSnapshot> {},
             current: this,
             staff: cursor$.staff.idx,
             measure: cursor$.measure.idx
         });
+        cursor$.staff.attributes = this._snapshot;
 
         this._setTotalDivisions(cursor$);
     }
@@ -121,7 +120,11 @@ class AttributesModel implements Export.IAttributesModel {
         this._validateMeasureStyles(cursor$);
 
         // mutates cursor$ as required.
-        return new AttributesModel.Layout(this, cursor$);
+        if (!this._layout) {
+            this._layout = new AttributesModel.Layout();
+        }
+        this._layout._refresh(this, cursor$);
+        return this._layout;
     }
 
     constructor({divisions, partSymbol, measureStyles, staffDetails, transposes, staves, instruments,
@@ -377,8 +380,19 @@ class AttributesModel implements Export.IAttributesModel {
 
 module AttributesModel {
     export class Layout implements Export.IAttributesLayout {
-        constructor(origModel: AttributesModel, cursor$: ICursor) {
+        _refresh(origModel: AttributesModel, cursor$: ICursor) {
             invariant(!!origModel, "Layout must be passed a model");
+
+            this.clef = null;
+            this.snapshotClef = null;
+            this.clefSpacing = null;
+            this.time = null;
+            this.tsSpacing = null;
+            this.keySignature = null;
+            this.ksSpacing = null;
+            this.measureNumberVisible = null;
+            this.partSymbol = null;
+            this.staffDetails = null;
 
             let model = Object.create(cursor$.factory.identity(origModel)) as AttributesModel;
             this.model = model;
@@ -629,15 +643,15 @@ module Export {
         staffDetails: StaffDetails;
     }
 
-    export function createWarningLayout$(cursor$: ICursor, nextAttributes: Attributes) {
+    export function createWarningLayout$(cursor$: ICursor, nextAttributes: Attributes): IAttributesLayout {
         let oldAttributes = cursor$.staff.attributes;
         cursor$.staff.attributes = (<any>nextAttributes)._snapshot;
 
-        let warningLayout: IAttributesLayout =
-            new AttributesModel.Layout(
-                nextAttributes as any,
-                cursor$
-            );
+        let warningLayout = new AttributesModel.Layout();
+        warningLayout._refresh(
+            nextAttributes as any,
+            cursor$
+        );
 
         cursor$.staff.attributes = oldAttributes;
         return warningLayout;

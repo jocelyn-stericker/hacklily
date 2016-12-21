@@ -80,18 +80,6 @@ export default class DivisionOverflowException extends Error {
                     let split = getSplit(segment, maxDiv, false);
                     let os = <any> segment.slice(0, split);
 
-                    // Remove double barlines.
-                    // TODO: is this ever not valid?
-                    // TODO: should we ADD a double barline to newParts?
-                    os = os.map((item: any) => {
-                        if (item._class === "Barline") {
-                            item = cloneObject(item);
-                            if (item.barStyle.data === BarStyleType.LightHeavy) {
-                                item.barStyle.data = BarStyleType.Regular;
-                            }
-                        }
-                        return item;
-                    });
                     return os.filter((item: any) => item._class !== "Barline");
                 }),
             },

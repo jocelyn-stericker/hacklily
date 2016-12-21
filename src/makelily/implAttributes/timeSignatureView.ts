@@ -50,7 +50,7 @@ const $TimeSignatureNumber = createFactory(TimeSignatureNumber);
  */
 export default class TimeSignatureView extends Component<{spec: Time, key?: string | number}, void> {
     static contextTypes = {
-        originY: PropTypes.number.isRequired
+        originY: PropTypes.number,
     } as any;
 
     context: {
@@ -67,7 +67,7 @@ export default class TimeSignatureView extends Component<{spec: Time, key?: stri
             return $TimeSignatureNumber({
                     stroke: spec.color,
                     x: spec.defaultX + (spec.relativeX || 0),
-                    y: this.context.originY - (spec.defaultY + (spec.relativeY || 0))
+                    y: (this.context.originY || 0) - (spec.defaultY + (spec.relativeY || 0))
                 },
                 ts.beats[0]
             );
@@ -87,14 +87,14 @@ export default class TimeSignatureView extends Component<{spec: Time, key?: stri
                     fill: spec.color,
                     glyphName: "timeSigCommon",
                     x: spec.defaultX + (spec.relativeX || 0),
-                    y: this.context.originY - (spec.defaultY + (spec.relativeY || 0))
+                    y: (this.context.originY || 0) - (spec.defaultY + (spec.relativeY || 0))
                 });
             } else if (isCut) {
                 return $Glyph({
                     fill: spec.color,
                     glyphName: "timeSigCutCommon",
                     x: spec.defaultX + (spec.relativeX || 0),
-                    y: this.context.originY - (spec.defaultY + (spec.relativeY || 0))
+                    y: (this.context.originY || 0) - (spec.defaultY + (spec.relativeY || 0))
                 });
             }
             // Cannot be represented in common representation. Pass through.
@@ -113,7 +113,7 @@ export default class TimeSignatureView extends Component<{spec: Time, key?: stri
                                 stroke: spec.color,
                                 x: spec.defaultX + (spec.relativeX || 0) +
                                     numOffsets[idx] + pos + jdx * NUMBER_SPACING,
-                                y: this.context.originY -
+                                y: (this.context.originY || 0) -
                                     (spec.defaultY + (spec.relativeY || 0) + 10)
                             },
                             beats
@@ -124,7 +124,7 @@ export default class TimeSignatureView extends Component<{spec: Time, key?: stri
                             key: `num_plus_numerator_${idx}_${jdx}`,
                             x: spec.defaultX + (spec.relativeX || 0) +
                                 numOffsets[idx] + pos + jdx * NUMBER_SPACING + 17,
-                            y: this.context.originY - (spec.defaultY) + (spec.relativeY || 0) - 10
+                            y: (this.context.originY || 0) - (spec.defaultY) + (spec.relativeY || 0) - 10
                         })
                     ]),
                     $TimeSignatureNumber({
@@ -132,7 +132,7 @@ export default class TimeSignatureView extends Component<{spec: Time, key?: stri
                             stroke: spec.color,
                             x: spec.defaultX + (spec.relativeX || 0) +
                                 denOffsets[idx] + pos,
-                            y: this.context.originY - (spec.defaultY + (spec.relativeY || 0) - 10)
+                            y: (this.context.originY || 0) - (spec.defaultY + (spec.relativeY || 0) - 10)
                         },
                         ts.beatType[idx]
                     ),
@@ -143,7 +143,7 @@ export default class TimeSignatureView extends Component<{spec: Time, key?: stri
                         x: spec.defaultX + (spec.relativeX || 0) +
                             numOffsets[idx] + pos +
                             beatsOuter.length * NUMBER_SPACING - 10,
-                        y: this.context.originY - (spec.defaultY) + (spec.relativeY || 0)
+                        y: (this.context.originY || 0) - (spec.defaultY) + (spec.relativeY || 0)
                     })
                 ];
                 pos += beatsOuter.length * NUMBER_SPACING + PLUS_SPACING;
