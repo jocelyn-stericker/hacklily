@@ -171,7 +171,7 @@ export class VoiceBuilder {
         let li = buildNote(builder);
         let chord = model as IChord;
         invariant(chord[position - 1] || chord[position + 1] || !chord.length, "Invalid position for note");
-        invariant(model.noteType.duration, "Invalid note type");
+        invariant(li.noteType.duration, "Invalid note type");
         let p = [idx, "notes", position];
         this._patches = this._patches.concat({p, li});
         return this;

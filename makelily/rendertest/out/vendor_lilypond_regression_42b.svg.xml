@@ -358,7 +358,7 @@
         <voice>3</voice>
         <type>eighth</type>
         <staff>2</staff>
-        <beam number="1" repeater="no" fan="none">begin</beam>
+        <beam number="1">begin</beam>
         <notations print-object="yes">
           <slur type="start" number="1" line-type="solid" dash-length="1" space-length="1" placement="below" color="#000000" />
         </notations>
@@ -373,8 +373,8 @@
         <voice>3</voice>
         <type>16th</type>
         <staff>2</staff>
-        <beam number="1" repeater="no" fan="none">continue</beam>
-        <beam number="2" repeater="no" fan="none">begin</beam>
+        <beam number="1">continue</beam>
+        <beam number="2">begin</beam>
       </note>
       
       <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
@@ -386,8 +386,8 @@
         <voice>3</voice>
         <type>16th</type>
         <staff>2</staff>
-        <beam number="1" repeater="no" fan="none">continue</beam>
-        <beam number="2" repeater="no" fan="none">continue</beam>
+        <beam number="1">continue</beam>
+        <beam number="2">continue</beam>
       </note>
       
       <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
@@ -401,8 +401,8 @@
         <type>16th</type>
         <accidental editorial="no" cautionary="no">sharp</accidental>
         <staff>2</staff>
-        <beam number="1" repeater="no" fan="none">continue</beam>
-        <beam number="2" repeater="no" fan="none">continue</beam>
+        <beam number="1">continue</beam>
+        <beam number="2">continue</beam>
       </note>
       
       <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
@@ -414,8 +414,8 @@
         <voice>3</voice>
         <type>16th</type>
         <staff>2</staff>
-        <beam number="1" repeater="no" fan="none">end</beam>
-        <beam number="2" repeater="no" fan="none">end</beam>
+        <beam number="1">end</beam>
+        <beam number="2">end</beam>
         <notations print-object="yes">
           <slur type="stop" number="1" line-type="solid" dash-length="1" space-length="1" color="#000000" />
         </notations>

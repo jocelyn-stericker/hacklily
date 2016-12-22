@@ -437,7 +437,7 @@
           <div-count>1</div-count>
         </musicxml-interfaces:debug-->
         <direction-type>
-          <dynamics default-x="0" default-y="-60" relative-x="-24.862621692307684" relative-y="0" font-style="normal" font-weight="normal" color="#000000" halign="left" valign="bottom" underline="0" overline="0" line-through="0" enclosure="none">
+          <dynamics default-x="0" default-y="-60" relative-x="-27.418497379120872" relative-y="0" font-style="normal" font-weight="normal" color="#000000" halign="left" valign="bottom" underline="0" overline="0" line-through="0" enclosure="none">
             
           </dynamics>
         </direction-type>
@@ -449,7 +449,7 @@
           <div-count>1</div-count>
         </musicxml-interfaces:debug-->
         <direction-type>
-          <dynamics default-x="0" default-y="-60" relative-x="-8.287540564102557" relative-y="0" font-style="normal" font-weight="normal" color="#000000" halign="left" valign="bottom" underline="0" overline="0" line-through="0" enclosure="none">
+          <dynamics default-x="0" default-y="-60" relative-x="-9.139499126373629" relative-y="0" font-style="normal" font-weight="normal" color="#000000" halign="left" valign="bottom" underline="0" overline="0" line-through="0" enclosure="none">
             
           </dynamics>
         </direction-type>
@@ -461,7 +461,7 @@
           <div-count>1</div-count>
         </musicxml-interfaces:debug-->
         <direction-type>
-          <dynamics default-x="0" default-y="-60" relative-x="8.28754056410257" relative-y="0" font-style="normal" font-weight="normal" color="#000000" halign="left" valign="bottom" underline="0" overline="0" line-through="0" enclosure="none">
+          <dynamics default-x="0" default-y="-60" relative-x="9.139499126373615" relative-y="0" font-style="normal" font-weight="normal" color="#000000" halign="left" valign="bottom" underline="0" overline="0" line-through="0" enclosure="none">
             
           </dynamics>
         </direction-type>
@@ -473,7 +473,7 @@
           <div-count>1</div-count>
         </musicxml-interfaces:debug-->
         <direction-type>
-          <dynamics default-x="0" default-y="-60" relative-x="24.862621692307684" relative-y="0" font-style="normal" font-weight="normal" color="#000000" halign="left" valign="bottom" underline="0" overline="0" line-through="0" enclosure="none">
+          <dynamics default-x="0" default-y="-60" relative-x="27.418497379120865" relative-y="0" font-style="normal" font-weight="normal" color="#000000" halign="left" valign="bottom" underline="0" overline="0" line-through="0" enclosure="none">
             
           </dynamics>
         </direction-type>
@@ -599,7 +599,7 @@
           <div-count>1</div-count>
         </musicxml-interfaces:debug-->
         <direction-type>
-          <dynamics default-x="0" default-y="-60" relative-x="-1.671540564102564" relative-y="0" font-style="normal" font-weight="normal" color="#000000" halign="left" valign="bottom" underline="0" overline="0" line-through="0" enclosure="none">
+          <dynamics default-x="0" default-y="-60" relative-x="-6.358497379120877" relative-y="0" font-style="normal" font-weight="normal" color="#000000" halign="left" valign="bottom" underline="0" overline="0" line-through="0" enclosure="none">
             
           </dynamics>
         </direction-type>
@@ -611,7 +611,7 @@
           <div-count>1</div-count>
         </musicxml-interfaces:debug-->
         <direction-type>
-          <dynamics default-x="0" default-y="-60" relative-x="1.671540564102564" relative-y="0" font-style="normal" font-weight="normal" color="#000000" halign="left" valign="bottom" underline="0" overline="0" line-through="0" enclosure="none">
+          <dynamics default-x="0" default-y="-60" relative-x="-1.3114991263736329" relative-y="0" font-style="normal" font-weight="normal" color="#000000" halign="left" valign="bottom" underline="0" overline="0" line-through="0" enclosure="none">
             
           </dynamics>
         </direction-type>
@@ -623,7 +623,7 @@
           <div-count>1</div-count>
         </musicxml-interfaces:debug-->
         <direction-type>
-          <dynamics default-x="0" default-y="-60" relative-x="-8.28754056410257" relative-y="0" font-style="normal" font-weight="normal" color="#000000" halign="left" valign="bottom" underline="0" overline="0" line-through="0" enclosure="none">
+          <dynamics default-x="0" default-y="-60" relative-x="-5.304500873626381" relative-y="0" font-style="normal" font-weight="normal" color="#000000" halign="left" valign="bottom" underline="0" overline="0" line-through="0" enclosure="none">
             
           </dynamics>
         </direction-type>
@@ -635,7 +635,7 @@
           <div-count>1</div-count>
         </musicxml-interfaces:debug-->
         <direction-type>
-          <dynamics default-x="0" default-y="-60" relative-x="8.287540564102557" relative-y="0" font-style="normal" font-weight="normal" color="#000000" halign="left" valign="bottom" underline="0" overline="0" line-through="0" enclosure="none">
+          <dynamics default-x="0" default-y="-60" relative-x="12.974497379120862" relative-y="0" font-style="normal" font-weight="normal" color="#000000" halign="left" valign="bottom" underline="0" overline="0" line-through="0" enclosure="none">
             
           </dynamics>
         </direction-type>
@@ -761,7 +761,7 @@
           <div-count>1</div-count>
         </musicxml-interfaces:debug-->
         <direction-type>
-          <dynamics default-x="0" default-y="-60" relative-x="-24.210121692307695" relative-y="0" font-style="normal" font-weight="normal" color="#000000" halign="left" valign="bottom" underline="0" overline="0" line-through="0" enclosure="none">
+          <dynamics default-x="0" default-y="-60" relative-x="-27.418497379120872" relative-y="0" font-style="normal" font-weight="normal" color="#000000" halign="left" valign="bottom" underline="0" overline="0" line-through="0" enclosure="none">
             
           </dynamics>
         </direction-type>
@@ -773,7 +773,7 @@
           <div-count>1</div-count>
         </musicxml-interfaces:debug-->
         <direction-type>
-          <dynamics default-x="0" default-y="-60" relative-x="-7.635040564102567" relative-y="0" font-style="normal" font-weight="normal" color="#000000" halign="left" valign="bottom" underline="0" overline="0" line-through="0" enclosure="none">
+          <dynamics default-x="0" default-y="-60" relative-x="-9.139499126373629" relative-y="0" font-style="normal" font-weight="normal" color="#000000" halign="left" valign="bottom" underline="0" overline="0" line-through="0" enclosure="none">
             
           </dynamics>
         </direction-type>
@@ -785,7 +785,7 @@
           <div-count>1</div-count>
         </musicxml-interfaces:debug-->
         <direction-type>
-          <dynamics default-x="0" default-y="-60" relative-x="8.94004056410256" relative-y="0" font-style="normal" font-weight="normal" color="#000000" halign="left" valign="bottom" underline="0" overline="0" line-through="0" enclosure="none">
+          <dynamics default-x="0" default-y="-60" relative-x="9.139499126373615" relative-y="0" font-style="normal" font-weight="normal" color="#000000" halign="left" valign="bottom" underline="0" overline="0" line-through="0" enclosure="none">
             
           </dynamics>
         </direction-type>
@@ -797,7 +797,7 @@
           <div-count>1</div-count>
         </musicxml-interfaces:debug-->
         <direction-type>
-          <dynamics default-x="0" default-y="-60" relative-x="22.905121692307688" relative-y="0" font-style="normal" font-weight="normal" color="#000000" halign="left" valign="bottom" underline="0" overline="0" line-through="0" enclosure="none">
+          <dynamics default-x="0" default-y="-60" relative-x="27.418497379120865" relative-y="0" font-style="normal" font-weight="normal" color="#000000" halign="left" valign="bottom" underline="0" overline="0" line-through="0" enclosure="none">
             
           </dynamics>
         </direction-type>
@@ -923,7 +923,7 @@
           <div-count>1</div-count>
         </musicxml-interfaces:debug-->
         <direction-type>
-          <dynamics default-x="0" default-y="-60" relative-x="-24.862621692307684" relative-y="0" font-style="normal" font-weight="normal" color="#000000" halign="left" valign="bottom" underline="0" overline="0" line-through="0" enclosure="none">
+          <dynamics default-x="0" default-y="-60" relative-x="-27.418497379120872" relative-y="0" font-style="normal" font-weight="normal" color="#000000" halign="left" valign="bottom" underline="0" overline="0" line-through="0" enclosure="none">
             
           </dynamics>
         </direction-type>
@@ -935,7 +935,7 @@
           <div-count>1</div-count>
         </musicxml-interfaces:debug-->
         <direction-type>
-          <dynamics default-x="0" default-y="-60" relative-x="-8.287540564102557" relative-y="0" font-style="normal" font-weight="normal" color="#000000" halign="left" valign="bottom" underline="0" overline="0" line-through="0" enclosure="none">
+          <dynamics default-x="0" default-y="-60" relative-x="-9.139499126373629" relative-y="0" font-style="normal" font-weight="normal" color="#000000" halign="left" valign="bottom" underline="0" overline="0" line-through="0" enclosure="none">
             
           </dynamics>
         </direction-type>
@@ -947,7 +947,7 @@
           <div-count>1</div-count>
         </musicxml-interfaces:debug-->
         <direction-type>
-          <dynamics default-x="0" default-y="-60" relative-x="8.28754056410257" relative-y="0" font-style="normal" font-weight="normal" color="#000000" halign="left" valign="bottom" underline="0" overline="0" line-through="0" enclosure="none">
+          <dynamics default-x="0" default-y="-60" relative-x="9.139499126373615" relative-y="0" font-style="normal" font-weight="normal" color="#000000" halign="left" valign="bottom" underline="0" overline="0" line-through="0" enclosure="none">
             
           </dynamics>
         </direction-type>
@@ -959,7 +959,7 @@
           <div-count>1</div-count>
         </musicxml-interfaces:debug-->
         <direction-type>
-          <dynamics default-x="0" default-y="-60" relative-x="24.862621692307684" relative-y="0" font-style="normal" font-weight="normal" color="#000000" halign="left" valign="bottom" underline="0" overline="0" line-through="0" enclosure="none">
+          <dynamics default-x="0" default-y="-60" relative-x="27.418497379120865" relative-y="0" font-style="normal" font-weight="normal" color="#000000" halign="left" valign="bottom" underline="0" overline="0" line-through="0" enclosure="none">
             
           </dynamics>
         </direction-type>
@@ -1085,7 +1085,7 @@
           <div-count>1</div-count>
         </musicxml-interfaces:debug-->
         <direction-type>
-          <dynamics default-x="0" default-y="-60" relative-x="-25.774621692307676" relative-y="0" font-style="normal" font-weight="normal" color="#000000" halign="left" valign="bottom" underline="0" overline="0" line-through="0" enclosure="none">
+          <dynamics default-x="0" default-y="-60" relative-x="-24.52349737912087" relative-y="0" font-style="normal" font-weight="normal" color="#000000" halign="left" valign="bottom" underline="0" overline="0" line-through="0" enclosure="none">
             
           </dynamics>
         </direction-type>
@@ -1097,7 +1097,7 @@
           <div-count>1</div-count>
         </musicxml-interfaces:debug-->
         <direction-type>
-          <dynamics default-x="0" default-y="-60" relative-x="-8.591540564102559" relative-y="0" font-style="normal" font-weight="normal" color="#000000" halign="left" valign="bottom" underline="0" overline="0" line-through="0" enclosure="none">
+          <dynamics default-x="0" default-y="-60" relative-x="-10.104499126373625" relative-y="0" font-style="normal" font-weight="normal" color="#000000" halign="left" valign="bottom" underline="0" overline="0" line-through="0" enclosure="none">
             
           </dynamics>
         </direction-type>
@@ -1109,7 +1109,7 @@
           <div-count>1</div-count>
         </musicxml-interfaces:debug-->
         <direction-type>
-          <dynamics default-x="0" default-y="-60" relative-x="8.591540564102573" relative-y="0" font-style="normal" font-weight="normal" color="#000000" halign="left" valign="bottom" underline="0" overline="0" line-through="0" enclosure="none">
+          <dynamics default-x="0" default-y="-60" relative-x="8.174499126373632" relative-y="0" font-style="normal" font-weight="normal" color="#000000" halign="left" valign="bottom" underline="0" overline="0" line-through="0" enclosure="none">
             
           </dynamics>
         </direction-type>
@@ -1121,7 +1121,7 @@
           <div-count>1</div-count>
         </musicxml-interfaces:debug-->
         <direction-type>
-          <dynamics default-x="0" default-y="-60" relative-x="25.77462169230769" relative-y="0" font-style="normal" font-weight="normal" color="#000000" halign="left" valign="bottom" underline="0" overline="0" line-through="0" enclosure="none">
+          <dynamics default-x="0" default-y="-60" relative-x="26.453497379120876" relative-y="0" font-style="normal" font-weight="normal" color="#000000" halign="left" valign="bottom" underline="0" overline="0" line-through="0" enclosure="none">
             
           </dynamics>
         </direction-type>
@@ -1247,7 +1247,7 @@
           <div-count>1</div-count>
         </musicxml-interfaces:debug-->
         <direction-type>
-          <dynamics default-x="0" default-y="-60" relative-x="-25.774621692307676" relative-y="0" font-style="normal" font-weight="normal" color="#000000" halign="left" valign="bottom" underline="0" overline="0" line-through="0" enclosure="none">
+          <dynamics default-x="0" default-y="-60" relative-x="-36.41403806046691" relative-y="0" font-style="normal" font-weight="normal" color="#000000" halign="left" valign="bottom" underline="0" overline="0" line-through="0" enclosure="none">
             
           </dynamics>
         </direction-type>
@@ -1259,7 +1259,7 @@
           <div-count>1</div-count>
         </musicxml-interfaces:debug-->
         <direction-type>
-          <dynamics default-x="0" default-y="-60" relative-x="-8.591540564102559" relative-y="0" font-style="normal" font-weight="normal" color="#000000" halign="left" valign="bottom" underline="0" overline="0" line-through="0" enclosure="none">
+          <dynamics default-x="0" default-y="-60" relative-x="-12.138012686822307" relative-y="0" font-style="normal" font-weight="normal" color="#000000" halign="left" valign="bottom" underline="0" overline="0" line-through="0" enclosure="none">
             
           </dynamics>
         </direction-type>
@@ -1271,7 +1271,7 @@
           <div-count>1</div-count>
         </musicxml-interfaces:debug-->
         <direction-type>
-          <dynamics default-x="0" default-y="-60" relative-x="8.591540564102559" relative-y="0" font-style="normal" font-weight="normal" color="#000000" halign="left" valign="bottom" underline="0" overline="0" line-through="0" enclosure="none">
+          <dynamics default-x="0" default-y="-60" relative-x="12.138012686822293" relative-y="0" font-style="normal" font-weight="normal" color="#000000" halign="left" valign="bottom" underline="0" overline="0" line-through="0" enclosure="none">
             
           </dynamics>
         </direction-type>
@@ -1283,7 +1283,7 @@
           <div-count>1</div-count>
         </musicxml-interfaces:debug-->
         <direction-type>
-          <dynamics default-x="0" default-y="-60" relative-x="25.774621692307676" relative-y="0" font-style="normal" font-weight="normal" color="#000000" halign="left" valign="bottom" underline="0" overline="0" line-through="0" enclosure="none">
+          <dynamics default-x="0" default-y="-60" relative-x="36.41403806046691" relative-y="0" font-style="normal" font-weight="normal" color="#000000" halign="left" valign="bottom" underline="0" overline="0" line-through="0" enclosure="none">
             <other-dynamics>abc-ffz</other-dynamics>
           </dynamics>
         </direction-type>
@@ -2194,7 +2194,7 @@
           <words justify="left" default-x="0" default-y="-60" relative-x="0" relative-y="-3.333333666666661" font-family="Times New Roman" font-style="normal" font-size="10.25" font-weight="normal" color="#000000" halign="left" valign="bottom" underline="0" overline="0" line-through="0" rotation="0" letter-spacing="normal" line-height="normal" dir="ltr" enclosure="none"></words>
         </direction-type>
         <direction-type>
-          <dynamics default-x="0" default-y="-60" relative-x="0" relative-y="6.666667333333351" font-style="normal" font-weight="normal" color="#000000" halign="left" valign="bottom" underline="0" overline="0" line-through="0" enclosure="none">
+          <dynamics default-x="0" default-y="-60" relative-x="-9.157512686822301" relative-y="6.666667333333351" font-style="normal" font-weight="normal" color="#000000" halign="left" valign="bottom" underline="0" overline="0" line-through="0" enclosure="none">
             
           </dynamics>
         </direction-type>
@@ -2207,7 +2207,7 @@
           <div-count>1</div-count>
         </musicxml-interfaces:debug-->
         <direction-type>
-          <dynamics default-x="0" default-y="-60" relative-x="0" relative-y="0" font-style="normal" font-weight="normal" color="#000000" halign="left" valign="bottom" underline="0" overline="0" line-through="0" enclosure="none">
+          <dynamics default-x="0" default-y="-60" relative-x="9.157512686822301" relative-y="0" font-style="normal" font-weight="normal" color="#000000" halign="left" valign="bottom" underline="0" overline="0" line-through="0" enclosure="none">
             
           </dynamics>
         </direction-type>
