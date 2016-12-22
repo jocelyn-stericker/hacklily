@@ -203,10 +203,6 @@ class ChordModelImpl implements ChordModel.IChordModel, IList<NoteImpl> {
     set count(n: Count) {
         invariant(!isNaN(n), "Invalid count %s", n);
         this._count = n;
-        this.divCount = null; // Kill optimizer.
-        forEach(this, note => {
-            delete note.duration; // Kill playback data.
-        });
     }
 
     push(...notes: Note[]) {
@@ -260,7 +256,7 @@ class ChordModelImpl implements ChordModel.IChordModel, IList<NoteImpl> {
         this._clef = clef;
 
         forEach(this, (note, idx) => {
-            if (!note.duration && !note.grace && note.duration !== this.divCount) {
+            if (!note.grace && note.duration !== this.divCount) {
                 cursor$.patch(partBuilder => partBuilder
                     .note(idx, note => note
                         .duration(this.divCount),
