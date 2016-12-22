@@ -100,13 +100,11 @@ class ChordModelImpl implements ChordModel.IChordModel, IList<NoteImpl> {
     divisions: number;
 
     get staffIdx(): number {
-        return this[0].staff;
+        return this[0].staff || 1;
     }
 
     set staffIdx(n: number) {
-        if (n !== this[0].staff) {
-            invariant(false, "cannot call set staffIdx on chord model");
-        }
+        // Ignore.
     }
 
     /*---- I.2 IChord ---------------------------------------------------------------------------*/
@@ -260,9 +258,15 @@ class ChordModelImpl implements ChordModel.IChordModel, IList<NoteImpl> {
         const clef = cursor$.staff.attributes.clef;
 
         this._clef = clef;
-        forEach(this, note => {
-            if (!note.duration && !note.grace) {
+
+        forEach(this, (note, idx) => {
+            if (!note.duration && !note.grace && note.duration !== this.divCount) {
                 note.duration = this.divCount;
+                // cursor$.patch(partBuilder => partBuilder
+                //     .note(idx, note => note
+                //         .duration(this.divCount),
+                //     cursor$.idx$)
+                // );
             }
             note.validate$(cursor$);
             note.updateAccidental$(cursor$);
@@ -597,10 +601,10 @@ module ChordModelImpl {
                 isWholeBar ? ExpandPolicy.Centered : ExpandPolicy.After;
 
             forEach(this.model, note => {
-                let staff = note.staff;
+                let staff = note.staff || 1;
 
                 invariant(!!staff,
-                    "Expected the staff to be a non-zero number, but its %s", staff);
+                    "Expected the staff to be a non-zero number, got %s", staff);
                 let paddingTop = cursor$.maxPaddingTop$[staff] || 0;
                 let paddingBottom = cursor$.maxPaddingBottom$[staff] || 0;
                 cursor$.maxPaddingTop$[staff] = Math.max(paddingTop, note.defaultY - 50);

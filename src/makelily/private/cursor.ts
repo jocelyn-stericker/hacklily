@@ -157,7 +157,7 @@ export default class Cursor implements ICursor {
     }
 
     patch(builder: (partBuilder: VoiceBuilder & StaffBuilder) => (VoiceBuilder & StaffBuilder)) {
-        // Creat the patch based on wheter the current context is a staff context or a voice context.
+        // Create the patch based on whether the current context is a staff context or a voice context.
         let patch = createPatch(false, this.document, this.measure.uuid,
              this.segment.part, part => {
                  if (this.segment.ownerType === OwnerType.Staff) {

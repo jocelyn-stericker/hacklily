@@ -96,10 +96,6 @@ class NoteImpl implements Note {
 
         this.cleanNotations();
 
-        if (!this.staff) {
-            this.staff = 1;
-        }
-
         function setIfDefined(property: string) {
             if (note.hasOwnProperty(property) && (<any>note)[property] !== null) {
                 self[property] = <any> (<any>note)[property];
@@ -316,7 +312,21 @@ class NoteImpl implements Note {
         }
         invariant(cursor$.segment.ownerType === OwnerType.Voice,
             "Expected to be in voice's context during validation");
-        this.voice = cursor$.segment.owner;
+
+        if (this.voice !== cursor$.segment.owner) {
+            cursor$.patch(partBuilder => partBuilder
+                .note(this._idx, note => note
+                    .voice(cursor$.segment.owner),
+                cursor$.idx$)
+            );
+        }
+        if (!this.staff) {
+            cursor$.patch(partBuilder => partBuilder
+                .note(this._idx, note => note
+                    .staff(1),
+                cursor$.idx$)
+            );
+        }
     }
 
     /*---- Util -----------------------------------------------------------------------------*/

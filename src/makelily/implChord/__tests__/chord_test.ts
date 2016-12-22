@@ -68,7 +68,7 @@ function getCursor(factory: IFactory, model: IModel): ICursor {
             __fakeDocument: true
         } as any,
         fixup: null,
-        patch: null,
+        patch: () => null,
         advance: null,
 
         segment: segment,
