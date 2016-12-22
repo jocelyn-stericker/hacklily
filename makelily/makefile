@@ -111,6 +111,7 @@ vendor/tslint/bin/tslint.js:
 test: build
 	@make _testOnly
 	@make lint
+	@cd ./webapp; make lint
 
 quicktest: _tsc
 	@make _testOnly
