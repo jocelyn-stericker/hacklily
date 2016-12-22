@@ -261,12 +261,11 @@ class ChordModelImpl implements ChordModel.IChordModel, IList<NoteImpl> {
 
         forEach(this, (note, idx) => {
             if (!note.duration && !note.grace && note.duration !== this.divCount) {
-                note.duration = this.divCount;
-                // cursor$.patch(partBuilder => partBuilder
-                //     .note(idx, note => note
-                //         .duration(this.divCount),
-                //     cursor$.idx$)
-                // );
+                cursor$.patch(partBuilder => partBuilder
+                    .note(idx, note => note
+                        .duration(this.divCount),
+                    cursor$.idx$)
+                );
             }
             note.validate$(cursor$);
             note.updateAccidental$(cursor$);
