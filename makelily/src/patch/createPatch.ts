@@ -19,7 +19,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import {Time, BeamType, Beam, Count, BarStyleType} from "musicxml-interfaces";
+import {Time, BeamType, Beam, Count, BarStyleType, TimeModification} from "musicxml-interfaces";
 import {IAny} from "musicxml-interfaces/operations";
 import {
     buildNote, patchNote, INoteBuilder,
@@ -36,7 +36,7 @@ import IMeasurePart from "../document/measurePart";
 import ISegment from "../document/segment";
 import Type from "../document/types";
 
-import IChord, {count, dots, barDivisions,
+import IChord, {count, dots, barDivisions, timeModification,
     fromModel as chordFromModel, rest, countToIsBeamable, beams} from "../private/chord";
 import IAttributesSnapshot from "../private/attributesSnapshot";
 import {subtract, calcDivisionsNoCtx, _calcDivisions,
@@ -347,6 +347,7 @@ interface IElementInfo {
     newDivisions: number;
     newCount: number;
     newDots: number;
+    newTimeModification: TimeModification;
     time: Time;
     rest: boolean;
     beam: Beam[];
@@ -406,6 +407,7 @@ function getMutationInfo(document: IDocument, patches: IAny[]) {
                         newDivisions: 0,
                         newCount: 0,
                         newDots: 0,
+                        newTimeModification: null,
                         time: time,
                         rest: true,
                         beam: null,
@@ -422,6 +424,7 @@ function getMutationInfo(document: IDocument, patches: IAny[]) {
                     newDivisions: divs,
                     newCount: count(chord),
                     newDots: dots(chord),
+                    newTimeModification: timeModification(chord),
                     time: time,
                     rest: !!rest(chord),
                     beam: beams(chord),
@@ -460,6 +463,7 @@ function getMutationInfo(document: IDocument, patches: IAny[]) {
                     newDivisions: divs,
                     newDots: d,
                     previousDivisions: 0,
+                    newTimeModification: timeModification(patch.li),
                     start: start,
                     time: attributes[segID].time,
                     rest: !!rest(patch.li),
@@ -528,8 +532,7 @@ function getMutationInfo(document: IDocument, patches: IAny[]) {
         } else if (patch.p[8] === "dots" && patch.od) {
             info.newDots = 0;
         }
-        // STOPSHIP: TIME MODIFICATION
-        info.newDivisions = _calcDivisions(info.newCount, info.newDots, null, info.time, divisions);
+        info.newDivisions = _calcDivisions(info.newCount, info.newDots, info.newTimeModification, info.time, divisions);
         info.touched = true;
     });
     return {

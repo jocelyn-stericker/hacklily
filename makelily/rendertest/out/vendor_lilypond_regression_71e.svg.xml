@@ -752,6 +752,7 @@
         <type>eighth</type>
         <stem>none</stem>
         <staff>1</staff>
+        <beam number="1">begin</beam>
         <notations print-object="yes">
           <technical>
             
@@ -769,6 +770,7 @@
         <type>eighth</type>
         <stem>none</stem>
         <staff>1</staff>
+        <beam number="1">end</beam>
         <notations print-object="yes">
           <technical>
             

@@ -133,7 +133,6 @@ export default class Song extends Component<IProps, IState> implements ISong {
                     factory: loadedFactory,
                 }, this._preRender$);
             }
-            console.log("PP:", this.props.patches);
             invariant(!this.props.patches, "Expected patches to be empty on document load.");
             if (this.props.onLoaded) {
                 this.props.onLoaded();

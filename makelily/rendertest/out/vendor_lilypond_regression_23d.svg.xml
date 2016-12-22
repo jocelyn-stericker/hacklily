@@ -144,7 +144,7 @@
           <normal-type>quarter</normal-type>
         </time-modification>
         <staff>1</staff>
-        <beam number="1" repeater="no" fan="none">begin</beam>
+        <beam number="1">begin</beam>
         <notations print-object="yes">
           <tuplet type="start" number="1" bracket="yes" show-number="actual" show-type="none" line-shape="straight">
             <tuplet-actual>
@@ -171,7 +171,7 @@
           <normal-type>quarter</normal-type>
         </time-modification>
         <staff>1</staff>
-        <beam number="1" repeater="no" fan="none">end</beam>
+        <beam number="1">continue</beam>
       </note>
       
       <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
@@ -187,7 +187,7 @@
           <normal-notes>4</normal-notes>
         </time-modification>
         <staff>1</staff>
-        <beam number="1" repeater="no" fan="none">begin</beam>
+        <beam number="1">continue</beam>
         <notations print-object="yes">
           <tuplet type="start" number="2" bracket="yes" show-number="actual" show-type="none" line-shape="straight">
             <tuplet-actual>
@@ -215,7 +215,7 @@
           <normal-notes>4</normal-notes>
         </time-modification>
         <staff>1</staff>
-        <beam number="1" repeater="no" fan="none">continue</beam>
+        <beam number="1">end</beam>
       </note>
       
       <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
@@ -231,7 +231,7 @@
           <normal-notes>4</normal-notes>
         </time-modification>
         <staff>1</staff>
-        <beam number="1" repeater="no" fan="none">continue</beam>
+        <beam number="1">begin</beam>
       </note>
       
       <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
@@ -247,7 +247,7 @@
           <normal-notes>4</normal-notes>
         </time-modification>
         <staff>1</staff>
-        <beam number="1" repeater="no" fan="none">continue</beam>
+        <beam number="1">continue</beam>
       </note>
       
       <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
@@ -263,7 +263,7 @@
           <normal-notes>4</normal-notes>
         </time-modification>
         <staff>1</staff>
-        <beam number="1" repeater="no" fan="none">end</beam>
+        <beam number="1">continue</beam>
         <notations print-object="yes">
           <tuplet type="stop" number="2" bracket="no" show-number="actual" show-type="none" line-shape="straight">
             <tuplet-actual>
@@ -290,7 +290,7 @@
           <normal-type>quarter</normal-type>
         </time-modification>
         <staff>1</staff>
-        <beam number="1" repeater="no" fan="none">begin</beam>
+        <beam number="1">continue</beam>
       </note>
       
       <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
@@ -307,7 +307,7 @@
           <normal-type>quarter</normal-type>
         </time-modification>
         <staff>1</staff>
-        <beam number="1" repeater="no" fan="none">end</beam>
+        <beam number="1">end</beam>
         <notations print-object="yes">
           <tuplet type="stop" number="1" bracket="no" show-number="actual" show-type="none" line-shape="straight">
             <tuplet-actual>

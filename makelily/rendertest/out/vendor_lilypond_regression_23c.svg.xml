@@ -152,6 +152,7 @@
           <normal-notes>2</normal-notes>
         </time-modification>
         <staff>1</staff>
+        <beam number="1">begin</beam>
         <notations print-object="yes">
           <tuplet type="start" number="1" bracket="yes" show-number="actual" show-type="actual" line-shape="straight">
             <tuplet-actual>
@@ -177,6 +178,7 @@
           <normal-notes>2</normal-notes>
         </time-modification>
         <staff>1</staff>
+        <beam number="1">continue</beam>
       </note>
       
       <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
@@ -192,6 +194,7 @@
           <normal-notes>2</normal-notes>
         </time-modification>
         <staff>1</staff>
+        <beam number="1">end</beam>
         <notations print-object="yes">
           <tuplet type="stop" number="1" bracket="no" show-number="actual" show-type="none" line-shape="straight">
             <tuplet-actual>
@@ -347,6 +350,7 @@
           <normal-type>breve</normal-type>
         </time-modification>
         <staff>1</staff>
+        <beam number="1">begin</beam>
         <notations print-object="yes">
           <tuplet type="start" number="1" bracket="yes" show-number="actual" show-type="actual" line-shape="straight">
             <tuplet-actual>
@@ -373,6 +377,7 @@
           <normal-type>breve</normal-type>
         </time-modification>
         <staff>1</staff>
+        <beam number="1">continue</beam>
       </note>
       
       <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
@@ -389,6 +394,7 @@
           <normal-type>breve</normal-type>
         </time-modification>
         <staff>1</staff>
+        <beam number="1">end</beam>
         <notations print-object="yes">
           <tuplet type="stop" number="1" bracket="no" show-number="actual" show-type="none" line-shape="straight">
             <tuplet-actual>
@@ -557,6 +563,7 @@
           <normal-type>breve</normal-type>
         </time-modification>
         <staff>1</staff>
+        <beam number="1">begin</beam>
         <notations print-object="yes">
           <tuplet type="start" number="1" bracket="yes" show-number="both" show-type="actual" line-shape="straight">
             <tuplet-actual>
@@ -591,6 +598,7 @@
           <normal-type>breve</normal-type>
         </time-modification>
         <staff>1</staff>
+        <beam number="1">continue</beam>
       </note>
       
       <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
@@ -607,6 +615,7 @@
           <normal-type>breve</normal-type>
         </time-modification>
         <staff>1</staff>
+        <beam number="1">end</beam>
         <notations print-object="yes">
           <tuplet type="stop" number="1" bracket="no" show-number="actual" show-type="none" line-shape="straight">
             <tuplet-actual>
@@ -778,6 +787,7 @@
           <normal-type>breve</normal-type>
         </time-modification>
         <staff>1</staff>
+        <beam number="1">begin</beam>
         <notations print-object="yes">
           <tuplet type="start" number="1" bracket="yes" show-number="both" show-type="actual" line-shape="straight">
             <tuplet-actual>
@@ -812,6 +822,7 @@
           <normal-type>breve</normal-type>
         </time-modification>
         <staff>1</staff>
+        <beam number="1">continue</beam>
       </note>
       
       <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
@@ -828,6 +839,7 @@
           <normal-type>breve</normal-type>
         </time-modification>
         <staff>1</staff>
+        <beam number="1">end</beam>
         <notations print-object="yes">
           <tuplet type="stop" number="1" bracket="no" show-number="actual" show-type="none" line-shape="straight">
             <tuplet-actual>
@@ -998,6 +1010,7 @@
           <normal-notes>2</normal-notes>
         </time-modification>
         <staff>1</staff>
+        <beam number="1">begin</beam>
         <notations print-object="yes">
           <tuplet type="start" number="1" bracket="yes" show-number="actual" show-type="actual" line-shape="straight">
             <tuplet-actual>
@@ -1023,6 +1036,7 @@
           <normal-notes>2</normal-notes>
         </time-modification>
         <staff>1</staff>
+        <beam number="1">continue</beam>
       </note>
       
       <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
@@ -1038,6 +1052,7 @@
           <normal-notes>2</normal-notes>
         </time-modification>
         <staff>1</staff>
+        <beam number="1">end</beam>
         <notations print-object="yes">
           <tuplet type="stop" number="1" bracket="no" show-number="actual" show-type="none" line-shape="straight">
             <tuplet-actual>
