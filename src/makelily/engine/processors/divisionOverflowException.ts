@@ -19,7 +19,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import {BarStyleType} from "musicxml-interfaces";
 import {buildNote} from "musicxml-interfaces/builders";
 
 import IMeasure from "../../document/measure";

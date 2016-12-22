@@ -33,8 +33,9 @@ import OwnerType from "../document/ownerTypes";
 import {ICursor} from "../private/cursor";
 import {notationObj, accidentalGlyphs, onLedger, InvalidAccidental} from "../private/chord";
 import {bboxes as glyphBBoxes} from "../private/smufl";
+import {cloneObject} from "../private/util";
 
-import ChordModelImpl from "./chordImpl"; // @cyclic
+import ChordModelImpl from "./chordImpl";
 
 /**
  * Represents a note in a ChordImpl.
@@ -468,7 +469,7 @@ class NoteImpl implements Note {
             target = generalTarget;
         }
 
-        let acc = this.accidental;
+        let acc = cloneObject(this.accidental);
 
         if (!acc && (actual || 0) !== (target || 0)) {
             let accType: MxmlAccidental = null;
@@ -528,7 +529,7 @@ class NoteImpl implements Note {
 
             if (acc.editorial && !acc.parentheses || acc.bracket) {
                 // We don't allow an accidental to be editorial but not have parentheses.
-                acc.parentheses = true;
+                acc.parentheses = true; // XXX: do not mutate
             }
 
             if (acc.parentheses) {
@@ -536,8 +537,7 @@ class NoteImpl implements Note {
             }
         }
 
-        if (!isEqual(this.accidental, acc) && cursor.patch) {
-            // cursor.patch is disabled for some testing.
+        if (!isEqual(cloneObject(this.accidental), acc) && cursor.patch) {
             cursor.patch(part => part.note(0, note => note.accidental(acc)));
         }
     }

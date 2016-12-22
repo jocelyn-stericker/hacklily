@@ -19,8 +19,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import * as invariant from "invariant";
-
 import Type from "../document/types";
 import IModel from "../document/model";
 import ILayout from "../private/layout";

@@ -23,11 +23,16 @@ import * as invariant from "invariant";
 import {IAny, IObjectReplace, IObjectDelete, IObjectInsert} from "musicxml-interfaces/operations";
 
 import ILinesLayoutState from "../private/linesLayoutState";
-import {replace, remove, set} from "../private/mutate";
+import {replace, remove, set, mutate} from "../private/mutate";
 
 import NoteImpl from "./noteImpl";
 
 export default function noteMutator(memo$: ILinesLayoutState, note: NoteImpl, op: IAny) {
+    if (op.p.length > 2) {
+        mutate(note, op);
+        return;
+    }
+
     if ("od" in op && "oi" in op) {
         if (op.p.length === 2 && op.p[0] === "noteType" && op.p[1] === "duration") {
             note.noteType = {

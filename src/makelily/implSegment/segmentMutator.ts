@@ -55,10 +55,10 @@ export default function segmentMutator(factory: IFactory, memo$: ILinesLayoutSta
                 console.warn("Mismatch in spec of Chord to be deleted. This is expected for undos :(");
             } else if (op.ld._class === "Attributes" && existingSerializable._class === "Attributes") {
                 // TODO: Make notes reserializable.
-                console.warn("Mismatch in spec of Attributes to be deleted. This is expected for undos :(")
+                console.warn("Mismatch in spec of Attributes to be deleted. This is expected for undos :(");
             } else if (op.ld._class === "Print" && existingSerializable._class === "Print") {
                 // TODO: Make notes reserializable.
-                console.warn("Mismatch in spec of Print to be deleted. This is expected for undos :(")
+                console.warn("Mismatch in spec of Print to be deleted. This is expected for undos :(");
             } else {
                 invariant(false,
                     "The element to be removed must be accurately specified in the operation.\n\n" +
