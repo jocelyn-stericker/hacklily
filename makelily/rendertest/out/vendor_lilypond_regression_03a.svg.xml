@@ -478,7 +478,7 @@
           <step>C</step>
           <octave>5</octave>
         </pitch>
-        <duration>384</duration>
+        <duration>256</duration>
         <voice>1</voice>
         <type>whole</type>
         <staff>1</staff>
@@ -734,7 +734,7 @@
           <step>C</step>
           <octave>5</octave>
         </pitch>
-        <duration>448</duration>
+        <duration>256</duration>
         <voice>1</voice>
         <type>whole</type>
         <staff>1</staff>
