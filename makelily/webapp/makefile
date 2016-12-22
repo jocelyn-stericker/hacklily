@@ -33,7 +33,7 @@ lint:
 build: clean lint
 	bash -c "../node_modules/.bin/tsc"
 	bash -c "cd ./src; \
-	    find -type f -name \"*.css\" -exec install -m 644 -D \"{}\" ../dist/webapp/src/{} \";\" ;"
+	    find . -type f -name \"*.css\" -exec install -m 644 \"{}\" ../dist/webapp/src/{} \";\" ;"
 	bash -c "../node_modules/.bin/webpack -p --config \"webpack.config.prod.js\""
 	bash -c "cp -RLf ./static/* ./dist/satie/"
 	bash -c "cp ../dist/satie-bundled-min.js ./dist/satie/satie.js"

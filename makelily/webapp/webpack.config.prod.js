@@ -6,7 +6,7 @@ var cssimport = require("postcss-import");
 
 module.exports = {
     entry: [
-        "./dist/index.js"
+        "./dist/webapp/src/index.js"
     ],
     output: {
         path: __dirname + "/dist/satie",
@@ -39,6 +39,9 @@ module.exports = {
         }),
         autoprefixer({ browsers: ['last 2 version'] })
     ],
+    node: {
+        fs: "empty"
+    },
     plugins: [
         new webpack.DefinePlugin({
             "process.env": {
