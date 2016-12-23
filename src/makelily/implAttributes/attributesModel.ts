@@ -48,7 +48,7 @@ class AttributesModel implements Export.IAttributesModel {
 
     /** @prototype only */
     private _divCount = 0;
-    private _layout: AttributesModel.Layout;
+    private _layout: AttributesModel.Layout[];
 
     get divCount() {
         return this._divCount;
@@ -121,10 +121,14 @@ class AttributesModel implements Export.IAttributesModel {
 
         // mutates cursor$ as required.
         if (!this._layout) {
-            this._layout = new AttributesModel.Layout();
+            this._layout = [];
         }
-        this._layout._refresh(this, cursor$);
-        return this._layout;
+        if (!this._layout[cursor$.segment.owner]) {
+            this._layout[cursor$.segment.owner] = new AttributesModel.Layout();
+        }
+        let layout = this._layout[cursor$.segment.owner];
+        layout._refresh(this, cursor$);
+        return layout;
     }
 
     constructor({divisions, partSymbol, measureStyles, staffDetails, transposes, staves, instruments,
