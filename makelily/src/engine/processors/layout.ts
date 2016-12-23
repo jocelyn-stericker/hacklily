@@ -89,7 +89,7 @@ export default function layoutSong(options: ILayoutOptions, memo$: ILinesLayoutS
         const placementClean = previousShortest === line.shortestCount;
         if (placementClean || options.preview) {
             if (multipleRest >= 1) {
-                --multipleRest;
+                multipleRest = multipleRest > 0 ? multipleRest - 1 : undefined;
             }
             return linePlacement$[measure.uuid];
         }
