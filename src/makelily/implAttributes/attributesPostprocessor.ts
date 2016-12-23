@@ -19,7 +19,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import {forEach, sortedIndex} from "lodash";
+import {forEach, sortedIndex, some} from "lodash";
+import {Attributes} from "musicxml-interfaces";
 
 import Type from "../document/types";
 
@@ -101,7 +102,23 @@ function attributes(options: ILayoutOptions, bounds: ILineBounds,
                     }
 
                     // Capture the new attributes element.
-                    {
+                    let shouldSplit = false;
+
+                    if (!attributesByPart[partKey]) {
+                        shouldSplit = true;
+                    } else {
+                        let oldAttributes: Attributes = attributesByPart[partKey].model;
+                        let newAttributes: Attributes = element.model;
+                        shouldSplit = some(oldAttributes.staffDetails, (details, detailIndex) => {
+                            if (!details) {
+                                return false;
+                            }
+                            let newDetails = newAttributes.staffDetails[detailIndex];
+                            return details.staffLines !== newDetails.staffLines;
+                        });
+                    }
+
+                    if (shouldSplit) {
                         attributesByPart[partKey] = element;
                         let targets = targetsByPart[partKey] || [];
                         let targetIdx = sortedIndex(targets, element.x$ + measureStartX) - 1;
