@@ -581,6 +581,7 @@ module ChordModelImpl {
             let {measureStyle} = cursor$.staff.attributes;
             if (measureStyle.multipleRest && !measureStyle.multipleRestInitiatedHere) {
                 // This is not displayed because it is part of a multirest.
+                this.x$ = 0;
                 this.expandPolicy = ExpandPolicy.None;
                 return;
             }
