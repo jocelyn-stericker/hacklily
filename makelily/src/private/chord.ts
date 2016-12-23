@@ -231,8 +231,9 @@ export let pitchOffsets: { [key: string]: number } = {
 export function pitchForClef(relativeY: number, clef: Clef): Pitch {
     let line = relativeY / 10 + 3;
     let clefOffset = getClefOffset(clef);
-    let octave = Math.floor((-clefOffset + 3 * 3.5 + line) / 3.5);
-    let stepQuant = Math.round((line + clefOffset - (octave - 5) * 3.5) * 2) / 2;
+    let offset2x = Math.round((line - clefOffset) * 2);
+    let octave = Math.floor(offset2x / 7) + 3;
+    let stepQuant = (Math.round(offset2x + 7*1000) % 7) / 2;
     if (stepQuant === 3.5) {
         octave = octave + 1;
         stepQuant = 0;
