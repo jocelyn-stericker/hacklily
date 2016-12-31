@@ -28,6 +28,7 @@ import Type from "../document/types";
 import IMeasure from "../document/measure";
 import IMeasurePart from "../document/measurePart";
 import IDocument from "../document/document";
+import ISegment, {normalizeDivisionsInPlace} from "../document/segment";
 
 import ILinesLayoutState from "../private/linesLayoutState";
 import IFactory from "../private/factory";
@@ -80,6 +81,20 @@ export default function applyOp(preview: boolean, measures: IMeasure[], factory:
             li: op.li,
         };
         applyMeasureOp(measures, factory, localOp, memo, document);
+        return;
+    } else if (path.length === 1 && path[0] === "divisions") {
+        let segments: ISegment[] = [];
+        measures.forEach(measure => {
+            Object.keys(measure.parts).forEach(partName => {
+                const part = measure.parts[partName];
+                part.staves.concat(part.voices).forEach(segment => {
+                    if (segment) {
+                        segments.push(segment);
+                    }
+                });
+            });
+            normalizeDivisionsInPlace(factory, segments, op.oi);
+        });
         return;
     }
     let measureUUID = parseInt(String(path[0]), 10);

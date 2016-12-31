@@ -32,7 +32,7 @@ import ILayout from "../private/layout";
 import ILayoutOptions from "../private/layoutOptions";
 import ILineBounds from "../private/lineBounds";
 import IList from "../private/list";
-import {notationObj} from "../private/chord";
+import {notationObj} from "../private/chordUtil";
 
 interface IMutableTied {
     number: number;

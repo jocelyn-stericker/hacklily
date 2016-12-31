@@ -31,7 +31,7 @@ import IModel from "../document/model";
 import Type from "../document/types";
 
 import ILayout from "../private/layout";
-import IChord from "../private/chord";
+import IChord from "../private/chordUtil";
 
 import IBeamLayout from "./beamLayout";
 import ChordModelImpl from "./chordImpl"; // @cyclic

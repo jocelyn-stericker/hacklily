@@ -147,6 +147,10 @@ export function reduceMeasure(spec: ILayoutOpts): IMeasureLayout {
             fixup: (operations: IAny[]) => {
                 const localSegment = cursor$.segment;
                 const restartRequired = some(operations, op => {
+                    if (op.p[0] === "divisions") {
+                        return true;
+                    }
+
                     invariant(String(op.p[0]) === String(spec.measure.uuid),
                         `Unexpected fixup for a measure ${op.p[0]} ` +
                             `other than the current ${spec.measure.uuid}`);
@@ -166,6 +170,7 @@ export function reduceMeasure(spec: ILayoutOpts): IMeasureLayout {
                     }
                     invariant(false, `Invalid segment owner type ${localSegment.ownerType}`);
                 });
+                console.log("restart:", restartRequired);
 
                 spec.fixup(localSegment, operations, restartRequired);
             },

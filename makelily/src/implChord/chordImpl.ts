@@ -28,11 +28,12 @@ import Type from "../document/types";
 import ExpandPolicy from "../document/expandPolicies";
 
 import IBoundingRect from "../private/boundingRect";
-import {calcDivisions, getBeamingPattern} from "../private/metre";
+import {getBeamingPattern} from "../private/metre/checkBeaming";
 import IChord, {ledgerLines, notationObj, countToIsBeamable, countToFlag,
     InvalidAccidental, startingLine, averageLine, highestLine, lowestLine,
     heightDeterminingLine, countToHasStem, getNoteheadGlyph,
-    lineForClef} from "../private/chord";
+    divisions as calcDivisions, lineForClef, FractionalDivisionsException}
+    from "../private/chordUtil";
 import IList from "../private/list";
 import {ICursor} from "../private/cursor";
 
@@ -245,7 +246,29 @@ class ChordModelImpl implements ChordModel.IChordModel, IList<NoteImpl> {
         if (!isFinite(this._count)) {
             this._implyCountFromPerformanceData(cursor$);
         }
-        this.divCount = calcDivisions(this, cursor$);
+        try {
+            const divCount = calcDivisions(this, cursor$.staff.attributes);
+            if (divCount !== this.divCount) {
+                cursor$.fixup([
+                    {
+                        p: [cursor$.measure.uuid, "parts", cursor$.segment.part, "voices",
+                            cursor$.segment.owner, cursor$.idx$, "divCount"],
+                        oi: divCount,
+                        od: this.divCount,
+                    },
+                ]);
+            }
+        } catch (err) {
+            if (err instanceof FractionalDivisionsException) {
+                cursor$.fixup([
+                    {
+                        p: ["divisions"],
+                        oi: (err as FractionalDivisionsException).requiredDivisions,
+                        od: cursor$.staff.attributes.divisions,
+                    }
+                ]);
+            }
+        }
 
         invariant(isFinite(this.divCount), "The beat count must be numeric");
         invariant(this.divCount >= 0, "The beat count must be non-negative.");
@@ -465,7 +488,7 @@ class ChordModelImpl implements ChordModel.IChordModel, IList<NoteImpl> {
             //     decide boundries)
             let {time} = cursor$.staff.attributes;
             let beamingPattern = getBeamingPattern(time);
-            let bpDivisions = map(beamingPattern, seg => calcDivisions(seg, cursor$));
+            let bpDivisions = map(beamingPattern, seg => calcDivisions(seg, cursor$.staff.attributes));
             let currDivision = cursor$.division$;
             let prevDivisionStart = 0;
             let i = 0;

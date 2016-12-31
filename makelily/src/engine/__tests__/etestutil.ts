@@ -53,7 +53,7 @@ export let fakeFactory: IFactory = {
     fromSpec: (spec: any): IModel => {
         throw new Error("Not implemented");
     }
-};
+} as any;
 
 export function createFakeStaffSegment(
         divisions1: number, divisions2: number, idx: number): ISegment {

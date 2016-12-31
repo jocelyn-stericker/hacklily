@@ -22,7 +22,7 @@
 import {Note, Lyric, Text, NormalBold} from "musicxml-interfaces";
 import {reduce} from "lodash";
 
-import IChord from "../private/chord";
+import IChord from "../private/chordUtil";
 import {cssSizeToTenths} from "../private/renderUtil";
 import {getTextBB} from "../private/fontManager";
 

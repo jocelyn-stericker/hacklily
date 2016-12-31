@@ -79,6 +79,8 @@ export default function chordMutator(memo$: ILinesLayoutState, chord: ChordImpl,
         } else {
             invariant(false, "Unsupported operation");
         }
+    } else if (op.p[0] === "divCount") {
+        chord.divCount = op.oi;
     } else {
         invariant(false, `Invalid/unimplemented operation path for chord: ${op.p[0]}`);
     }

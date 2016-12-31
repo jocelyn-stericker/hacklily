@@ -26,7 +26,7 @@ import {times, map} from "lodash";
 import AccidentalView from "./accidentalView";
 import {keyWidths} from "./attributesData";
 
-import {lineForClef_} from "../private/chord";
+import {lineForClef_} from "../private/chordUtil";
 
 const $AccidentalView = createFactory(AccidentalView);
 

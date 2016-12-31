@@ -37,7 +37,7 @@ import ILayoutOptions from "../private/layoutOptions";
 import ILineBounds from "../private/lineBounds";
 import IAttributesSnapshot from "../private/attributesSnapshot";
 import IChord, {averageLine, startingLine, linesForClef,
-    heightDeterminingLine} from "../private/chord";
+    heightDeterminingLine} from "../private/chordUtil";
 
 type IDetachedChordModel = ChordModel.IDetachedChordModel;
 

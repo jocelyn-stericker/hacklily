@@ -25,8 +25,9 @@ import {lcm} from "../private/util";
 import IModel from "./model";
 import OwnerType from "./ownerTypes";
 import IFactory from "../private/factory";
+import IDocument from "../document/document";
 import Type from "./types";
-import {fromModel as chordFromModel} from "../private/chord";
+import {fromModel as chordFromModel} from "../private/chordUtil";
 
 interface ISegment extends Array<IModel> {
     owner: number;
@@ -42,15 +43,17 @@ export default ISegment;
  * 
  * Returns the division count.
  */
-export function normalizeDivisionsInPlace(factory: IFactory,
-                                          segments$: ISegment[], factor: number = 0): number {
-    let divisions: number = reduce(segments$, (div1, seg) => {
+export function normalizeDivisionsInPlace(factory: IFactory | IDocument,
+                                          segments$: ISegment[],
+                                          factor: number = 0): number {
+
+    let divisions: number = factor || reduce(segments$, (div1, seg) => {
         if (!div1) {
             return 1;
         }
 
         return lcm(div1, seg.divisions);
-    }, factor);
+    }, 0);
 
     forEach(segments$, segment => {
         if (!segment) {
@@ -66,20 +69,19 @@ export function normalizeDivisionsInPlace(factory: IFactory,
             }
 
             if (factory.modelHasType(model, Type.Chord)) {
-                let chordi = chordFromModel(model);
-                forEach(chordi, note => {
+                forEach(model, note => {
                     if (note.duration) {
                         note.duration *= ratio;
                     }
                 });
             }
-
-            if ("divisions" in model && (model as any).divisions) {
+            if (factory.modelHasType(model, Type.Attributes)) {
                 // This could be an attributes item or a note.
-                const divModel = (model as any) as {divisions: number};
-                ratio = divisions / divModel.divisions;
+                if (model.divisions) {
+                    ratio = divisions / model.divisions;
+                }
                 try {
-                    divModel.divisions = divisions;
+                    model.divisions = divisions;
                 } catch(err) {
                     console.warn("Could not set divisions");
                 }

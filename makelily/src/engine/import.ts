@@ -41,9 +41,8 @@ import IFactory from "../private/factory";
 import ILayoutOptions from "../private/layoutOptions";
 import {MAX_SAFE_INTEGER} from "../private/constants";
 import ILinesLayoutState from "../private/linesLayoutState";
-import IChord, {fromModel as chordFromModel, barDivisionsDI} from "../private/chord";
+import IChord, {fromModel as chordFromModel, barDivisionsDI, divisions as calcDivisions} from "../private/chordUtil";
 import {scoreParts} from "../private/part";
-import {calcDivisionsNoCtx} from "../private/metre";
 import {lcm} from "../private/util";
 import {requireFont, whenReady} from "../private/fontManager";
 
@@ -132,7 +131,7 @@ export function _extractMXMLPartsAndMeasures(input: ScoreTimewise, factory: IFac
     let createModel: typeof factory.create = factory.create.bind(factory);
 
     // TODO/STOPSHIP - sync division count in each measure
-    let divisions = 1; // lilypond-regression 41g.xml does not specify divisions
+    let divisions = 384; // lilypond-regression 41g.xml does not specify divisions
     let gStaves = 0;
     let lastNote: IChord = null;
     let lastAttribs: Attributes = null;
@@ -277,7 +276,10 @@ export function _extractMXMLPartsAndMeasures(input: ScoreTimewise, factory: IFac
                         note = chordFromModel(newNote);
 
                         // Update target division
-                        let divs = calcDivisionsNoCtx([input], target.times[0], divisions);
+                        let divs = calcDivisions([input], {
+                            time: target.times[0],
+                            divisions
+                        });
                         target.divisionPerVoice[voice] += divs;
                         target.division += divs;
                     }
