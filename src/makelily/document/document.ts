@@ -22,13 +22,14 @@
 import {createFactory, ReactElement} from "react";
 import {renderToStaticMarkup} from "react-dom/server";
 
-import {ScoreHeader, Print} from "musicxml-interfaces";
+import {ScoreHeader, Print, Grouping, FiguredBass, Attributes, Sound, Direction,
+        Harmony, Barline} from "musicxml-interfaces";
 import {IAny} from "musicxml-interfaces/operations";
 import {find} from "lodash";
 
-import IMeasure from "./measure";
-import IModel from "./model";
-import Type from "./types";
+import ProxyExports from "../implProxy/proxyModel";
+import SpacerExports from "../implSpacer/spacerModel";
+import VisualCursorExports from "../implVisualCursor/visualCursorModel";
 
 import IFactory from "../private/factory";
 
@@ -36,11 +37,16 @@ import ILayoutOptions from "../private/layoutOptions";
 import ILinesLayoutState, {newLayoutState} from "../private/linesLayoutState";
 import RenderTarget from "../private/renderTargets";
 import {getPageMargins} from "../private/print";
+import IChord from "../private/chordUtil";
 
 import validate from "../engine/processors/validate";
 import layoutSong from "../engine/processors/layout";
 
 import PageView from "../implPage/pageView";
+
+import IMeasure from "./measure";
+import IModel from "./model";
+import Type from "./types";
 
 const $PageView = createFactory(PageView);
 
@@ -76,7 +82,20 @@ interface IDocument {
      *
      * e.g., if (doc.modelHasType(model, Type.Chord)) { (model as MusicXML.Note[])... }
      */
-    modelHasType: (model: IModel, ...modelTypes: Type[]) => boolean;
+    modelHasType(model: IModel, modelType: Type.Chord): model is (IChord & IModel);
+    modelHasType(model: IModel, modelType: Type.Print): model is (Print & IModel);
+    modelHasType(model: IModel, modelType: Type.Grouping): model is (Grouping & IModel);
+    modelHasType(model: IModel, modelType: Type.FiguredBass): model is (FiguredBass & IModel);
+    modelHasType(model: IModel, modelType: Type.Attributes): model is (Attributes & IModel);
+    modelHasType(model: IModel, modelType: Type.Sound): model is (Sound & IModel);
+    modelHasType(model: IModel, modelType: Type.Direction): model is (Direction & IModel);
+    modelHasType(model: IModel, modelType: Type.Harmony): model is (Harmony & IModel);
+    modelHasType(model: IModel, modelType: Type.Proxy): model is ProxyExports.IProxyModel;
+    modelHasType(model: IModel, modelType: Type.Spacer): model is SpacerExports.ISpacerModel;
+    modelHasType(model: IModel, modelType: Type.VisualCursor):
+        model is VisualCursorExports.IVisualCursorModel;
+    modelHasType(model: IModel, modelType: Type.Barline): model is (Barline & IModel);
+    modelHasType(model: IModel, ...modelTypes: Type[]): boolean;
 
     /**
      * Filters models starting at idx for models of the given type.
@@ -115,7 +134,24 @@ export class Document implements IDocument {
     measures: IMeasure[];
     parts: string[];
     _visualCursor: any;
-    modelHasType: (model: IModel, ...modelTypes: Type[]) => boolean;
+    modelHasType(model: IModel, modelType: Type.Chord): model is (IChord & IModel);
+    modelHasType(model: IModel, modelType: Type.Print): model is (Print & IModel);
+    modelHasType(model: IModel, modelType: Type.Grouping): model is (Grouping & IModel);
+    modelHasType(model: IModel, modelType: Type.FiguredBass): model is (FiguredBass & IModel);
+    modelHasType(model: IModel, modelType: Type.Attributes): model is (Attributes & IModel);
+    modelHasType(model: IModel, modelType: Type.Sound): model is (Sound & IModel);
+    modelHasType(model: IModel, modelType: Type.Direction): model is (Direction & IModel);
+    modelHasType(model: IModel, modelType: Type.Harmony): model is (Harmony & IModel);
+    modelHasType(model: IModel, modelType: Type.Proxy): model is ProxyExports.IProxyModel;
+    modelHasType(model: IModel, modelType: Type.Spacer): model is SpacerExports.ISpacerModel;
+    modelHasType(model: IModel, modelType: Type.VisualCursor):
+        model is VisualCursorExports.IVisualCursorModel;
+    modelHasType(model: IModel, modelType: Type.Barline): model is (Barline & IModel);
+    modelHasType(model: IModel, ...modelTypes: Type[]): boolean;
+    modelHasType(model: IModel, ...modelTypes: Type[]): boolean {
+        throw new Error("Not ready");
+    }
+    _modelHasType: (model: IModel, ...modelTypes: Type[]) => boolean;
     search: (models: IModel[], idx: number, ...types: Type[]) => IModel[];
 
     getPrint(startMeasure: number): Print {
@@ -180,8 +216,8 @@ export class Document implements IDocument {
         this.header = header;
         this.measures = measures;
 
-        this.modelHasType = (model: IModel, ...modelTypes: Type[]) =>
-            internalFactory.modelHasType(model, ...modelTypes);
+        this.modelHasType = ((model: IModel, ...modelTypes: Type[]) =>
+            internalFactory.modelHasType(model, ...modelTypes)) as any;
 
         this.search = (models: IModel[], idx: number, ...types: Type[]) =>
             internalFactory.search(models, idx, ...types);

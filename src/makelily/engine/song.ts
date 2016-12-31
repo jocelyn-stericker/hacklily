@@ -33,7 +33,7 @@ import createPatch from "../patch/createPatch";
 
 import RenderTarget from "../private/renderTargets";
 import {newLayoutState} from "../private/linesLayoutState";
-import {pitchForClef} from "../private/chord";
+import {pitchForClef} from "../private/chordUtil";
 import {get as getByPosition} from "../private/views/metadata";
 import IFactory from "../private/factory";
 import ILinesLayoutState from "../private/linesLayoutState";

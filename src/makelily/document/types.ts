@@ -41,8 +41,6 @@ enum Type {
 
     VisualCursor = 398,
     Barline = 399, // Also deals with warning attributes
-
-    Unknown = 1000
 };
 
 // Notes and chords are treated as the same type.

@@ -18,3 +18,18 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
+import {Time} from "musicxml-interfaces";
+import {reduce} from "lodash";
+import * as invariant from "invariant";
+
+/**
+ * @returns a TS string for lookup in the BEAMING_PATTERNS array.
+ */
+export default function getTSString(time: Time) {
+    invariant(!!time, "Expected time to be defined.");
+    return reduce(time.beats, (memo, beats, idx) => {
+        return beats + "/" + time.beatTypes[idx];
+
+    }, "");
+}

@@ -25,7 +25,7 @@ import IMeasureLayout from "../private/measureLayout";
 import ILayoutOptions from "../private/layoutOptions";
 import ILineBounds from "../private/lineBounds";
 import {MAX_SAFE_INTEGER} from "../private/constants";
-import {barDivisions} from "../private/chord";
+import {barDivisions} from "../private/chordUtil";
 import {scoreParts} from "../private/part";
 
 const UNDERFILLED_EXPANSION_WEIGHT = 0.1;

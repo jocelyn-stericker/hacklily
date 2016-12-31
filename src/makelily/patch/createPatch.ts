@@ -27,20 +27,21 @@ import {
     buildBeam, buildAttributes, patchAttributes,
     IAttributesBuilder,
 } from "musicxml-interfaces/builders";
-import {find, forEach, last, some, times, findIndex, findLastIndex} from "lodash";
+import {find, forEach, last, some, times, findIndex, findLastIndex, extend} from "lodash";
 import * as invariant from "invariant";
 
 import IDocument from "../document/document";
 import IMeasure from "../document/measure";
 import IMeasurePart from "../document/measurePart";
-import ISegment from "../document/segment";
+import ISegment, {normalizeDivisionsInPlace} from "../document/segment";
 import Type from "../document/types";
 
-import IChord, {count, dots, barDivisions, timeModification,
-    fromModel as chordFromModel, rest, countToIsBeamable, beams} from "../private/chord";
+import IChord, {count, dots, barDivisions, timeModification, divisions as calcDivisions,
+    fromModel as chordFromModel, rest, countToIsBeamable, beams, FractionalDivisionsException}
+        from "../private/chordUtil";
 import IAttributesSnapshot from "../private/attributesSnapshot";
-import {subtract, calcDivisionsNoCtx, _calcDivisions,
-    getBeamingPattern} from "../private/metre";
+import {getBeamingPattern} from "../private/metre/checkBeaming";
+import {shortenRest} from "../private/metre/modifyRest";
 
 // TODO: Get rid of all P1-hardcoding!
 
@@ -156,7 +157,7 @@ export class VoiceBuilder {
 
     insertChord(builders: ((build: INoteBuilder) => INoteBuilder)[], idx = this._idx) {
         invariant(!isNaN(idx), "%s must be a number", idx);
-        let li = builders.map(builder => buildNote(builder)) as IChord;
+        let li: IChord = builders.map(builder => buildNote(builder));
         li._class = "Chord";
         invariant(li[0].noteType.duration, "Invalid note type");
         let p = [idx];
@@ -299,6 +300,21 @@ export class DocumentBuilder {
     }
 }
 
+function updateDivisions(document: IDocument, requiredDivisions: number) {
+    let segments: ISegment[] = [];
+    document.measures.forEach(measure => {
+        Object.keys(measure.parts).forEach(partName => {
+            const part = measure.parts[partName];
+            part.staves.concat(part.voices).forEach(segment => {
+                if (segment) {
+                    segments.push(segment);
+                }
+            });
+        });
+    });
+    normalizeDivisionsInPlace(document, segments, requiredDivisions);
+}
+
 export default function createPatch(
             isPreview: boolean,
             document: IDocument,
@@ -415,7 +431,7 @@ function getMutationInfo(document: IDocument, patches: IAny[]) {
                     });
                 }
                 let chord = chordFromModel(model);
-                let divs = calcDivisionsNoCtx(chord, time, divisions);
+                let divs = calcDivisions(chord, {time, divisions});
                 let info = {
                     idx: idx,
                     oldIdx: idx,
@@ -446,7 +462,7 @@ function getMutationInfo(document: IDocument, patches: IAny[]) {
                     dots(patch.li) :
                     0;
                 let divs = patch.li._class === "Chord" ?
-                    calcDivisionsNoCtx(patch.li, attributes[segID].time, divisions) :
+                    calcDivisions(patch.li, {time: attributes[segID].time, divisions}) :
                     0;
                 let start: number;
                 let spliceIdx = parseInt(patch.p[5] as string, 10);
@@ -480,7 +496,7 @@ function getMutationInfo(document: IDocument, patches: IAny[]) {
             }
             if (patch.ld) {
                 let divs = patch.ld._class === "Chord" ?
-                    calcDivisionsNoCtx(patch.ld, attributes[segID].time, divisions) :
+                    calcDivisions(patch.ld, {time: attributes[segID].time, divisions}) :
                     0;
                 let spliceIdx = parseInt(patch.p[5] as string, 10);
 
@@ -532,7 +548,17 @@ function getMutationInfo(document: IDocument, patches: IAny[]) {
         } else if (patch.p[8] === "dots" && patch.od) {
             info.newDots = 0;
         }
-        info.newDivisions = _calcDivisions(info.newCount, info.newDots, info.newTimeModification, info.time, divisions);
+        info.newDivisions = calcDivisions(
+            {
+                count: info.newCount,
+                dots: info.newDots,
+                timeModification: info.newTimeModification
+            },
+            {
+                time: info.time,
+                divisions,
+            }
+        );
         info.touched = true;
     });
     return {
@@ -554,39 +580,16 @@ function fixMetre(document: IDocument, patches: IAny[]): IAny[] {
         voiceInfo.forEach((elInfo, originalIdx) => {
             if (elInfo.newDivisions < elInfo.previousDivisions) {
                 // We want to add rests to fill up any empty space.
-                const end = elInfo.start + elInfo.newDivisions;
+                const restSpecs = shortenRest(segment, document, attributes[key].time,
+                    elInfo.start, elInfo.start + elInfo.newDivisions,
+                    elInfo.idx - elInfo.oldIdx);
 
-                const durationSpecs = subtract(elInfo.start + elInfo.previousDivisions,
-                        end, {
-                            division$: end,
-                            staff: {
-                                attributes: {
-                                    time: attributes[key].time,
-                                    divisions: segment.divisions,
-                                },
-                                totalDivisions: barDivisions(attributes[key]),
-                            }
-                        }, 0);
-
-                const restSpecs: IChord[] = durationSpecs.map(durationSpec => {
-                    invariant(durationSpec[0].noteType.duration, "Invalid note type");
-                    let chord = [buildNote(note => note
-                        .rest({})
-                        .dots(durationSpec[0].dots)
-                        .noteType(durationSpec[0].noteType))
-                    ] as IChord;
-                    chord._class = "Chord";
-                    return chord;
-                });
-
-                patches = patches.concat(restSpecs.map((spec, idx) => ({
-                    p: (key.split("++") as (number | string)[]).concat([
-                        newIndex + 1 + idx
-                    ]),
-
-                    li: spec
-                })));
-                newIndex += restSpecs.length;
+                patches = patches.concat(restSpecs.patches.map((spec, idx) => (extend(
+                    {}, spec, {
+                        p: (key.split("++") as (number | string)[]).concat(spec.p),
+                    }
+                ))));
+                newIndex += restSpecs.indexOffset - elInfo.idx - elInfo.oldIdx;
             } else if (elInfo.newDivisions > elInfo.previousDivisions) {
                 // We want to remove rests that follow, if possible.
                 let nextOffset = findIndex(voiceInfo.slice(originalIdx + 1), (n) => !!n.rest && n.newDivisions);
@@ -596,43 +599,22 @@ function fixMetre(document: IDocument, patches: IAny[]): IAny[] {
                     if (next && next.rest && !next.touched) {
                         next.touched = true;
                         const newEnd = next.start + elInfo.newDivisions - elInfo.previousDivisions;
-                        const durationSpecs = subtract(next.start + next.previousDivisions,
-                                newEnd, {
-                                    division$: newEnd,
-                                    staff: {
-                                        attributes: {
-                                            time: attributes[key].time,
-                                            divisions: segment.divisions,
-                                        },
-                                        totalDivisions: barDivisions(attributes[key]),
-                                    }
-                                }, 0);
 
-                        const restSpecs: IChord[] = durationSpecs.map(durationSpec => {
-                            invariant(durationSpec[0].noteType, "Invalid note type");
-                            let chord = [buildNote(note => note
-                                .rest({})
-                                .dots(durationSpec[0].dots)
-                                .noteType(durationSpec[0].noteType))
-                            ] as IChord;
-                            chord._class = "Chord";
-                            return chord;
-                        });
+                        const restSpecs = shortenRest(segment, document, attributes[key].time,
+                            next.start, newEnd,
+                            elInfo.idx - elInfo.oldIdx);
 
                         patches = patches.concat({
                             p: (key.split("++") as (number | string)[]).concat(nextIdx),
                             ld: JSON.parse(JSON.stringify(segment[next.oldIdx])),
                         });
 
-                        patches = patches.concat(restSpecs.map((spec, idx) => ({
-                            p: (key.split("++") as (number | string)[]).concat([
-                                nextIdx + idx
-                            ]),
+                        patches = patches.concat(restSpecs.patches.map((spec, idx) => (extend(
+                            {}, spec, {
+                            p: (key.split("++") as (number | string)[]).concat(spec.p),
+                        }))));
 
-                            li: spec
-                        })));
-
-                        newIndex = newIndex - 1 + restSpecs.length;
+                        newIndex += restSpecs.indexOffset;
                     }
                 }
             }
@@ -813,7 +795,7 @@ function addBeams(document: IDocument, patches: IAny[]): IAny[] {
                     divisionsInCurrentBucket = Infinity;
                     return;
                 }
-                let next = calcDivisionsNoCtx(beamingPattern[bpIDX], time, segment.divisions);
+                let next = calcDivisions(beamingPattern[bpIDX], {time, divisions: segment.divisions});
                 divisionsInCurrentBucket += next;
             }
         }
@@ -824,8 +806,18 @@ function addBeams(document: IDocument, patches: IAny[]): IAny[] {
                 // Skip this non-note.
                 return;
             }
-            let divs = _calcDivisions(elInfo.newCount, elInfo.newDots,
-                                      null, time, segment.divisions);
+            let divs = calcDivisions(
+                {
+                    count: elInfo.newCount,
+                    dots: elInfo.newDots,
+                },
+                {
+                    time,
+                    divisions: segment.divisions,
+                },
+                true
+            );
+
             const isCandidate = countToIsBeamable[elInfo.newCount] &&
                 (!elInfo.rest || elInfo.beam) &&
                 divs <= divisionsInCurrentBucket;

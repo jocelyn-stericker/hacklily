@@ -19,20 +19,16 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/**
- * @file private/ichord.ts Base type for the chord model
- */
-
 import {Note, Count, TimeModification, Tie, Clef, Rest, Time, MxmlAccidental,
     Notehead, NoteheadType, Notations, Articulations, Tied, Pitch, Beam} from "musicxml-interfaces";
-import {some, find, forEach, times, map, reduce, filter, chain} from "lodash";
+import {some, find, map, reduce, filter, chain, times} from "lodash";
 import * as invariant from "invariant";
 
 import IModel from "../document/model";
 
 import IAttributesSnapshot from "./attributesSnapshot";
 import {ICursor} from "./cursor";
-import {cloneObject} from "./util";
+import {lcm} from "./util";
 
 interface IChord {
     [key: number]: Note;
@@ -42,6 +38,12 @@ interface IChord {
 }
 
 export default IChord;
+
+export interface IDurationDescription {
+    count: number;
+    dots?: number;
+    timeModification?: TimeModification;
+}
 
 const EMPTY_FROZEN = Object.freeze({});
 
@@ -66,52 +68,59 @@ export function hasAccidental(chord: IChord, cursor: ICursor) {
     });
 }
 
-export function count(chord: IChord): Count {
-    let target = find(chord, note => note.noteType);
-    if (target) {
-        return target.noteType.duration;
+function _isIDurationDescription(chord: any): chord is IDurationDescription {
+    return !isNaN(chord.count);
+}
+
+function _isIChord(chord: any): chord is IChord {
+    return !isNaN(chord.length);
+}
+
+export function count(chord: IChord): Count;
+export function count(duration: IDurationDescription): Count;
+export function count(chord: IChord | IDurationDescription): Count;
+export function count(chord: IChord | IDurationDescription): Count {
+    if (_isIChord(chord)) {
+        let target = find(chord, note => note.noteType);
+        return target ? target.noteType.duration : NaN;
+    } else if (_isIDurationDescription(chord)) {
+        return chord.count;
+    } else {
+        invariant(false, "count() expected a chord or duration.");
     }
-    return NaN;
 }
 
-export function setCount$(chord$: IChord, count: Count) {
-    forEach(chord$, note$ => {
-        note$.noteType = { duration: count};
-    });
+export function dots(chord: IChord): number;
+export function dots(duration: IDurationDescription): number;
+export function dots(chord: IChord | IDurationDescription): number;
+export function dots(chord: IChord | IDurationDescription): number {
+    if (_isIChord(chord)) {
+        return (find(chord, note => note.dots) || {dots: <any[]> []}).dots.length || 0;
+    } else if (_isIDurationDescription(chord)) {
+        return chord.dots || 0;
+    } else {
+        invariant(false, "dots() expected a chord or duration");
+    }
 }
 
-export function dots(chord: IChord): number {
-    return (find(chord, note => note.dots) || {dots: <any[]> []}).dots.length;
-}
-
-export function setDots$(chord$: IChord, dots: number) {
-    forEach(chord$, note$ => {
-        note$.dots = times(dots, () => { return {}; });
-    });
-}
-
-export function timeModification(chord: IChord): TimeModification {
-    return (find(chord, note => note.timeModification) ||
-            {timeModification: <TimeModification> null})
-        .timeModification;
-}
-
-export function setTimeModification$(chord$: IChord,
-        timeModification: TimeModification) {
-    forEach(chord$, note$ => {
-        note$.timeModification = cloneObject(timeModification);
-    });
+export function timeModification(chord: IChord): TimeModification;
+export function timeModification(duration: IDurationDescription): TimeModification;
+export function timeModification(chord: IChord | IDurationDescription): TimeModification;
+export function timeModification(chord: IChord | IDurationDescription): TimeModification {
+    if (_isIChord(chord)) {
+        return (find(chord, note => note.timeModification) ||
+                {timeModification: <TimeModification> null})
+            .timeModification || null;
+    } else if (_isIDurationDescription(chord)) {
+        return chord.timeModification || null;
+    } else {
+        invariant(false, "timeModification() expected a chord or duration");
+    }
 }
 
 export function ties(chord: IChord): Tie[] {
     let ties = map(chord, note => note.ties && note.ties.length ? note.ties[0] : null);
     return filter(ties, t => !!t).length ? ties : null;
-}
-
-export function setTies$(chord$: IChord, ties: Tie[]) {
-    forEach(chord$, (note$: Note, i: number) => {
-        note$.ties = [ties[i]];
-    });
 }
 
 export function beams(chord: IChord): Beam[] {
@@ -530,4 +539,52 @@ export function tieds(n: Note[]): Tied[] {
         .map(n => notationObj(n).tieds)
         .map(t => t && t.length ? t[0] : null)
         .value();
+}
+
+export class FractionalDivisionsException {
+    requiredDivisions: number;
+    constructor(requiredDevisions: number) {
+        this.requiredDivisions = requiredDevisions;
+    }
+}
+
+export function divisions(chord: IChord | IDurationDescription,
+        attributes: {time: Time, divisions: number},
+        allowFractional?: boolean) {
+
+    if (_isIChord(chord) && some(chord, note => note.grace)) {
+        return 0;
+    }
+    const chordCount = count(chord);
+    const chordDots = dots(chord);
+    const chordTM = timeModification(chord);
+    const attributesTime = attributes.time.senzaMisura === undefined ?
+        attributes.time :
+        {
+            beatTypes: [4],
+            beats: ["1000"],
+        };
+    let attributeDivisions = attributes.divisions;
+
+    invariant(!!attributesTime, "A time signature must be specified.");
+
+    if (chordCount === -1 || chordCount <= 1) {
+        // TODO: What if beatType isn't consistent?
+        return attributeDivisions * reduce(attributesTime.beats, (memo, durr) =>
+            memo + reduce(durr.split("+"), (m, l) => m + parseInt(l, 10), 0), 0);
+    }
+
+    if ((attributeDivisions * 4) % chordCount > 0 && !allowFractional) {
+        const newDivisions = lcm(attributeDivisions * 4, chordCount) / 4;
+        throw new FractionalDivisionsException(newDivisions);
+    }
+
+    const base = (attributeDivisions * 4) / chordCount;
+    const tmFactor = chordTM ? chordTM.normalNotes / chordTM.actualNotes : 1.0;
+    const dotFactor = times(chordDots, d => 1 / Math.pow(2, d + 1))
+        .reduce((m, i) => m + i, 1);
+
+    const total = base * tmFactor * dotFactor;
+    invariant(!isNaN(total), "calcDivisions must return a number. %s is not a number.", total);
+    return total;
 }

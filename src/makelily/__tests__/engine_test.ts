@@ -123,7 +123,8 @@ describe("[engine.ts]", function() {
                         }
                     };
                 },
-                modelHasType: (model: IModel, modelType: Type): boolean => {
+                modelHasType(model: IModel, ...modelTypes: Type[]): boolean {
+                    let modelType = modelTypes[0];
                     if (model.divCount === 0) {
                         return modelType === Type.Attributes;
                     } else if ("length" in model) {
@@ -150,7 +151,7 @@ describe("[engine.ts]", function() {
                 fromSpec: (model: any): IModel => {
                     return createAttributesChordFactory.create(Type[model._class] as any);
                 }
-            };
+            } as any;
 
             let memo$ = newLayoutState(NaN);
             let padding = 20;

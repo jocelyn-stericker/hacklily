@@ -24,7 +24,7 @@ import {createFactory, Component, DOM, PropTypes} from "react";
 import * as invariant from "invariant";
 
 import Glyph from "../private/views/glyph";
-import {accidentalGlyphs} from "../private/chord";
+import {accidentalGlyphs} from "../private/chordUtil";
 import {bboxes} from "../private/smufl";
 
 const $Glyph = createFactory(Glyph);

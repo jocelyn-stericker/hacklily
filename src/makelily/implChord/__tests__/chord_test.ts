@@ -35,7 +35,7 @@ import OwnerType from "../../document/ownerTypes";
 import IFactory from "../../private/factory";
 import IAttributesSnapshot from "../../private/attributesSnapshot";
 import {ICursor} from "../../private/cursor";
-import {fromModel as chordFromModel} from "../../private/chord";
+import {fromModel as chordFromModel} from "../../private/chordUtil";
 
 import Factory from "../../engine/factory";
 

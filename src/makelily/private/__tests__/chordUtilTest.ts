@@ -24,7 +24,7 @@
  */
 
 import {hasAccidental, lineForClef, linesForClef, heightDeterminingLine,
-    startingLine, onLedger, ledgerLines} from "../chord";
+    startingLine, onLedger, ledgerLines} from "../chordUtil";
 
 import {Note, Count} from "musicxml-interfaces";
 import {buildClef, buildNote, INoteBuilder} from "musicxml-interfaces/builders";

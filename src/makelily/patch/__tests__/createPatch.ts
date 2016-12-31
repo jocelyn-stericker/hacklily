@@ -4,7 +4,7 @@ import {find} from "lodash";
 
 import Type from "../../document/types";
 import Song from "../../engine/song";
-import IChord from "../../private/chord";
+import IChord from "../../private/chordUtil";
 import {Patch} from "../../index";
 
 const songTemplate = `<?xml version="1.0" encoding="UTF-8"?>

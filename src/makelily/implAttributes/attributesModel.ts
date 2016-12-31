@@ -34,7 +34,7 @@ import ILayout from "../private/layout";
 import IBoundingRect from "../private/boundingRect";
 import IAttributesSnapshot from "../private/attributesSnapshot";
 import {ICursor} from "../private/cursor";
-import {barDivisions, fromModel as chordFromModel, hasAccidental} from "../private/chord";
+import {barDivisions, fromModel as chordFromModel, hasAccidental} from "../private/chordUtil";
 import {groupsForPart} from "../private/part";
 import {create as createSnapshot} from "../private/attributesSnapshot";
 
@@ -209,6 +209,7 @@ class AttributesModel implements Export.IAttributesModel {
     }
 
     private _setTotalDivisions(cursor$: ICursor): void {
+        console.log("Set total divisions:", this._snapshot);
         cursor$.staff.totalDivisions = barDivisions(this._snapshot);
     }
 
