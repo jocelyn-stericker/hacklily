@@ -117,6 +117,7 @@ export default class Cursor implements ICursor {
     factory: IFactory;
 
     hiddenCounter$: number;
+    preview: boolean;
     fixup: (operations: IAny[]) => void;
 
     constructor(spec: {
@@ -134,6 +135,7 @@ export default class Cursor implements ICursor {
                 segment: ISegment;
                 staff: IStaffContext;
                 voice: IVoiceContext;
+                preview?: boolean;
                 x: number;
             }) {
         this.document = spec.document;
@@ -150,6 +152,7 @@ export default class Cursor implements ICursor {
         this.print$ = spec.print;
         this.segment = spec.segment;
         this.staff = detachStaffContext(spec.staff);
+        this.preview = !!spec.preview;
         this.voice = spec.voice;
         this.x$ = spec.x;
         this.page$ = spec.page;
@@ -158,7 +161,7 @@ export default class Cursor implements ICursor {
 
     patch(builder: (partBuilder: VoiceBuilder & StaffBuilder) => (VoiceBuilder & StaffBuilder)) {
         // Create the patch based on whether the current context is a staff context or a voice context.
-        let patch = createPatch(false, this.document, this.measure.uuid,
+        let patch = createPatch(this.preview, this.document, this.measure.uuid,
              this.segment.part, part => {
                  if (this.segment.ownerType === OwnerType.Staff) {
                      return part.staff(this.segment.owner, builder, this.idx$);

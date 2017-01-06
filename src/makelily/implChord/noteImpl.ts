@@ -278,7 +278,7 @@ class NoteImpl implements Note {
             release, pizzicato, beams, voice, footnote, level,
             relativeY, defaultY, relativeX, fontFamily, fontWeight,
             fontStyle, fontSize, color, printDot, printLyric, printObject,
-            printSpacing, timeOnly, noteType
+            printSpacing, timeOnly, noteType, dots,
         } = this;
 
         return {
@@ -288,7 +288,7 @@ class NoteImpl implements Note {
             release, pizzicato, beams, voice, footnote, level,
             relativeY, defaultY, relativeX, fontFamily, fontWeight,
             fontStyle, fontSize, color, printDot, printLyric, printObject,
-            printSpacing, timeOnly, noteType,
+            printSpacing, timeOnly, noteType, dots,
 
             _class: "Note",
             _fromJSON: true,

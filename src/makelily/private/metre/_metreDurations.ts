@@ -68,7 +68,7 @@ function _makeDuration(spec: ITimeSpec): IChord {
 
 export function makeDuration(divPerQuarter: number, time: Time, divisionsInDuration: number): IChord {
     for (let count = 1; count <= 512; ++count) {
-        for (let dots = 0; dots < 2; ++dots) {
+        for (let dots = 0; dots < 3; ++dots) {
             const spec = {count, dots};
             if (divisions(spec, {time, divisions: divPerQuarter}, true) === divisionsInDuration) {
                 return _makeDuration(spec);

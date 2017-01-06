@@ -27,7 +27,6 @@ import OwnerType from "./ownerTypes";
 import IFactory from "../private/factory";
 import IDocument from "../document/document";
 import Type from "./types";
-import {fromModel as chordFromModel} from "../private/chordUtil";
 
 interface ISegment extends Array<IModel> {
     owner: number;

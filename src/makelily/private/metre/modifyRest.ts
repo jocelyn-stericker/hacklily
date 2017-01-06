@@ -22,49 +22,111 @@
 import {Time} from "musicxml-interfaces";
 import {IAny} from "musicxml-interfaces/operations";
 import * as invariant from "invariant";
-import {times} from "lodash";
+import {times, forEach} from "lodash";
 
-import IModel from "../../document/model";
 import IDocument from "../../document/document";
-import Type from "../../document/types";
+import {ModelMetreMutationSpec} from "../../patch/createPatch";
 
-import {rest} from "../chordUtil";
 import IFactory from "../factory";
-import {cloneObject} from "../util";
+import IAttributesSnapshot from "../attributesSnapshot";
 
 import checkRests from "./_checkRests";
 import getTSString from "./_getTSString";
 import * as D from "./_metreDurations";
+import {barDivisions} from "../chordUtil";
 
 export interface IRestSpec {
     readonly song: string;
-    readonly models: IModel[];
+    readonly models: (ModelMetreMutationSpec | "killed")[];
+    readonly modelsToKill: ModelMetreMutationSpec[][];
 }
 
-export function voiceToRestSpec(segment: IModel[], factory: IFactory | IDocument) {
-    const emptyRestSpec: IRestSpec = {song: "", models: []};
-    return segment.reduce((restSpec: IRestSpec, model: IModel) => {
-        invariant(!isNaN(model.divCount), "model %s must have a div count", model);
-        invariant(model.divCount === parseInt(String(model.divCount), 10), "Expected %s to be an integer", model.divCount);
-        const models = restSpec.models.concat(times(model.divCount, () => model));
-        if (factory.modelHasType(model, Type.Chord) && rest(model)) {
+export function voiceToRestSpec(segment: ModelMetreMutationSpec[], attributes: IAttributesSnapshot, factory: IFactory | IDocument) {
+    const emptyRestSpec: IRestSpec = {song: "", models: [], modelsToKill: []};
+    let divsToSuppress = 0;
+    let killIdx: number;
+    let prevIdx: number;
+    let spec = segment.reduce((restSpec: IRestSpec, model: ModelMetreMutationSpec) => {
+        let divCount = model.newDivisions || 0;
+        let oldDivCount = model.previousDivisions || 0;
+        const restsAtEnd = model.previousDivisions > divCount ?
+            "r" + times(model.previousDivisions - divCount - 1, () => "_").join("") : "";
+        const modelsToKill = restSpec.modelsToKill;
+
+        if (divsToSuppress > 0) {
+            const extraSong = divCount > divsToSuppress
+                ? "r" + times(divCount - divsToSuppress - 1, () => "_").join("")
+                : "";
+
+            divsToSuppress = Math.max(0, divsToSuppress - divCount);
+            let newModelsToKill = modelsToKill.slice();
+            newModelsToKill[killIdx] = newModelsToKill[killIdx] || [];
+            newModelsToKill[killIdx].push(model);
             return {
-                song: restSpec.song + "r" + times(model.divCount - 1, () => "_").join(""),
+                song: restSpec.song + extraSong,
+                models: restSpec.models.concat(times(extraSong.length, () => "killed") as any),
+                modelsToKill: newModelsToKill,
+            };
+        } else if (divCount === 0) {
+            let newModelsToKill = modelsToKill.slice();
+            newModelsToKill[prevIdx] = newModelsToKill[prevIdx] || [];
+            newModelsToKill[prevIdx].push(model);
+            return {
+                song: restSpec.song,
+                models: restSpec.models,
+                modelsToKill: newModelsToKill,
+            };
+        }
+
+        if (divCount) {
+            prevIdx = restSpec.models.length + divCount;
+        }
+
+        const models = restSpec.models.concat(times(divCount, () => model)).concat(
+            restsAtEnd.split("").map(() => null));
+
+        if (divCount > oldDivCount) {
+            killIdx = models.length;
+            divsToSuppress = divCount - oldDivCount;
+        }
+
+        if (model.rest && divCount) {
+            return {
+                song: restSpec.song + "r" + times(divCount - 1, () => "_").join("") + restsAtEnd,
                 models,
+                modelsToKill,
             };
         }
         return {
-            song: restSpec.song + times(model.divCount, () => ".").join(""),
+            song: restSpec.song + times(divCount, () => ".").join("") + restsAtEnd,
             models,
+            modelsToKill,
         };
     }, emptyRestSpec);
+
+    invariant(spec.models.length === spec.song.length, "Invalid spec");
+
+    const totalDivisions = barDivisions(attributes);
+    const restsToAdd = (totalDivisions - (spec.song.length % totalDivisions)) % totalDivisions;
+
+    return {
+        song: restsToAdd
+            ? spec.song.concat("r" + times(restsToAdd - 1 , () => "_").join(""))
+            : spec.song,
+        models: spec.models,
+        modelsToKill: spec.modelsToKill,
+    };
 }
 
 function _cleanupRests(pattern: string, time: Time) {
     // Now, call "checkRests" and apply the 
     const ts = getTSString(time);
     const next = () => checkRests(ts, pattern.length, pattern, {dotsAllowed: true});
+    let operationsRemaining = 15;
     for (let status = next(); status !== "GOOD"; status = next()) {
+        if (!--operationsRemaining) {
+            throw new Error("Rest cleanup timeout");
+        }
         // Apply patches until we're in a good state.
         const cmd = status.split(" ");
         invariant(cmd[0] === "apply", "Unexpected instruction '%s'", status);
@@ -88,97 +150,111 @@ function _cleanupRests(pattern: string, time: Time) {
     return pattern;
 }
 
-export function shortenRest(
-        segment: IModel[],
+export function simplifyRests(
+        segment: (ModelMetreMutationSpec)[],
         factory: IFactory | IDocument,
-        time: Time,
-        start: number,
-        end: number,
-        modelsInserted: number): {patches: IAny[], indexOffset: number} {
+        attributes: IAttributesSnapshot): IAny[] {
 
-    invariant(start === parseInt(String(start), 10), "Expected start %s to be an integer", start);
-    invariant(end === parseInt(String(end), 10), "Expected end %s to be an integer", end);
-
-    const originalSpec = voiceToRestSpec(segment, factory);
-    console.log("SR", start, end, originalSpec);
-
-    // Naively shorten the rest.
-    const naiveRestPattern =
-        originalSpec.song.slice(0, start) + // Before rest shortened
-        times(end - start, () => ".").join("") + // Rest shortened
-        (originalSpec.song[end] === "." ? "." : "r") + // First character after rest
-            originalSpec.song.slice(end + 1); // Other characters after rest
+    const originalSpec = voiceToRestSpec(segment, attributes, factory);
 
     // Correct the rests.
-    const cleanRestPattern = _cleanupRests(naiveRestPattern, time);
+    const totalDivisions = barDivisions(attributes);
+    let cleanRestPattern = "";
+    for (let i = 0; i < originalSpec.song.length; i += totalDivisions) {
+        cleanRestPattern += _cleanupRests(originalSpec.song.slice(i, i + totalDivisions), attributes.time);
+    }
 
     // We now need to make patches to turn originalSpec.song into cleanRestPattern.
     let patches: IAny[] = [];
-    let indexOffset = 0;
+    let currIdx = -1;
+    function killModel(model: ModelMetreMutationSpec) {
+        if (!model.newDivisions) {
+            ++currIdx;
+        } else {
+            invariant(segment.indexOf(model) > -1, "Model must be present in segment");
+            patches.push({
+                ld: model.toSpec(),
+                p: [currIdx + 1],
+            });
+            --currIdx;
+        }
+    }
     for (let i = 0; i < cleanRestPattern.length; ++i) {
         const originalModel = originalSpec.models[i];
-        if (i === start) {
-            indexOffset += modelsInserted;
+        forEach(originalSpec.modelsToKill[i], killModel);
+        if (originalModel && originalModel !== originalSpec.models[i - 1]) {
+            ++currIdx;
         }
+
         if (cleanRestPattern[i] === "r") {
             let cleanRestEnd = i + 1;
             while (cleanRestPattern[cleanRestEnd] === "_") { ++cleanRestEnd; }
 
             const newDuration = D.makeDuration(
-                cleanRestPattern.length / parseInt(time.beats[0], 10) * (4 / time.beatTypes[0]),
-                time,
+                totalDivisions / parseInt(attributes.time.beats[0], 10) * (4 / attributes.time.beatTypes[0]),
+                attributes.time,
                 cleanRestEnd - i
             );
 
-            if (originalSpec.song[i] === "r") {
+            if (originalSpec.song[i] === "r" || originalModel === "killed" || !originalModel) {
                 // Check if the length of the rest needs to be changed
                 let originalRestEnd = i + 1;
                 while (originalSpec.song[originalRestEnd] === "_") { ++originalRestEnd; }
-                if (cleanRestEnd !== originalRestEnd) {
-                    if (!factory.modelHasType(originalModel, Type.Chord) ||!rest(originalModel)) {
+
+                if (!originalModel || originalModel === "killed") {
+                    ++currIdx;
+                    newDuration[0].rest = {};
+                    newDuration._class = "Chord";
+                    patches.push({
+                        li: newDuration,
+                        p: [currIdx],
+                    });
+                } else if (cleanRestEnd !== originalRestEnd) {
+                    if (!originalModel.rest) {
                         throw new Error("Expected rest");
                     }
-                    if (JSON.stringify(originalModel[0].dots) !== JSON.stringify(newDuration[0].dots)) {
+                    if (JSON.stringify(originalModel.newDots) !== JSON.stringify(newDuration[0].dots)) {
                         patches.push({
-                            od: originalModel[0].dots,
+                            od: originalModel.newDots,
                             oi: newDuration[0].dots,
-                            p: [segment.indexOf(originalModel) + indexOffset, 0, "dots"],
+                            p: [currIdx, 0, "dots"],
                         });
                     }
 
-                    if (originalModel[0].noteType.duration !== newDuration[0].noteType.duration) {
+                    if (originalModel.newCount !== newDuration[0].noteType.duration) {
                         patches.push({
-                            od: originalModel[0].noteType.duration,
+                            od: originalModel.newCount,
                             oi: newDuration[0].noteType.duration,
-                            p: [segment.indexOf(originalModel) + indexOffset, 0, "noteType", "duration"],
+                            p: [currIdx, 0, "noteType", "duration"],
                         });
                     }
                 }
             } else {
                 // New rest
-                ++indexOffset;
+                ++currIdx;
                 newDuration[0].rest = {};
                 newDuration._class = "Chord";
                 patches.push({
                     li: newDuration,
-                    p: [segment.indexOf(originalModel) + indexOffset],
+                    p: [currIdx],
                 });
             }
-        } else if (cleanRestPattern[i] === "_") {
+        } else if (cleanRestPattern[i] === "_" || cleanRestPattern[i] === ".") {
             if (originalSpec.song[i] === "r") {
                 const model = originalSpec.models[i];
+                if (model === "killed") {
+                    throw new Error("Not reached");
+                }
+                invariant(segment.indexOf(model) > -1, "Model must be present in segment");
                 patches.push({
-                    ld: cloneObject(model),
-                    p: [segment.indexOf(model) + indexOffset],
+                    ld: model.toSpec(),
+                    p: [currIdx],
                 });
-                --indexOffset;
+                --currIdx;
             }
         }
     }
+    forEach(originalSpec.modelsToKill[originalSpec.models.length], killModel);
 
-    console.log("(modifyRests)", patches);
-    return {
-        patches,
-        indexOffset,
-    };
+    return patches;
 }

@@ -19,14 +19,11 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import {buildNote} from "musicxml-interfaces/builders";
-
 import IMeasure from "../../document/measure";
 import IMeasurePart from "../../document/measurePart";
 import ISegment from "../../document/segment";
 
 import IAttributesSnapshot from "../../private/attributesSnapshot";
-import IChord, {barDivisions, divisions as calcDivisions} from "../../private/chordUtil";
 import {IFixupFn} from "../../private/layoutOptions";
 import {MAX_SAFE_INTEGER} from "../../private/constants";
 import {cloneObject} from "../../private/util";
@@ -106,74 +103,22 @@ export default class DivisionOverflowException extends Error {
     }
 
     resolve$(fixup: IFixupFn) {
-        throw new Error("XXX: Not implemented");
-
-        // const oldDivisions = this.oldParts["P1"].voices[1].reduce((divs, item) =>
-        //           divs + (("length" in item) ?
-        //             calcDivisionsNoCtx(item as any, this.attributes.time, this.attributes.divisions) : 0), 0);
-        // const newDivisions = this.newParts["P1"].voices[1].reduce((divs, item) =>
-        //           divs + (("length" in item) ?
-        //             calcDivisionsNoCtx(item as any, this.attributes.time, this.attributes.divisions) : 0), 0);
-        // const totalDivisions = barDivisions(this.attributes);
-        // const oldDurationSpecs = subtract(totalDivisions, oldDivisions, {
-        //             division$: newDivisions,
-        //             staff: {
-        //                 attributes: this.attributes,
-        //                 totalDivisions: totalDivisions, // hack
-        //             }
-        //         }, 0);
-        // const newDurationSpecs = subtract(totalDivisions, newDivisions, {
-        //             division$: newDivisions,
-        //             staff: {
-        //                 attributes: this.attributes,
-        //                 totalDivisions: totalDivisions, // hack
-        //             }
-        //         }, 0);
-
-        // const oldRestSpecs: IChord[] = oldDurationSpecs.map(durationSpec => {
-        //     let chord = [buildNote(note => note
-        //         .rest({})
-        //         .dots(durationSpec[0].dots)
-        //         .noteType(durationSpec[0].noteType))
-        //     ] as IChord;
-        //     chord._class = "Chord";
-        //     return chord;
-        // });
-
-        // const newRestSpecs: IChord[] = newDurationSpecs.map(durationSpec => {
-        //     let chord = [buildNote(note => note
-        //         .rest({})
-        //         .dots(durationSpec[0].dots)
-        //         .noteType(durationSpec[0].noteType))
-        //     ] as IChord;
-        //     chord._class = "Chord";
-        //     return chord;
-        // });
-
-        // oldRestSpecs.forEach(spec => {
-        //     this.oldParts["P1"].voices[1].push(spec as any);
-        // });
-
-        // newRestSpecs.forEach(spec => {
-        //     this.newParts["P1"].voices[1].push(spec as any);
-        // });
-
-        // fixup(null, cloneObject([
-        //     {
-        //         ld: this.measure,
-        //         li: {
-        //             uuid: this.measure.uuid,
-        //             parts: this.oldParts,
-        //         },
-        //         p: ["measures", this.measure.idx],
-        //     },
-        //     {
-        //         li: {
-        //             uuid: Math.floor(Math.random() * MAX_SAFE_INTEGER),
-        //             parts: this.newParts,
-        //         },
-        //         p: ["measures", this.measure.idx + 1],
-        //     },
-        // ]));
+        fixup(null, cloneObject([
+            {
+                ld: this.measure,
+                li: {
+                    uuid: this.measure.uuid,
+                    parts: this.oldParts,
+                },
+                p: ["measures", this.measure.idx],
+            },
+            {
+                li: {
+                    uuid: Math.floor(Math.random() * MAX_SAFE_INTEGER),
+                    parts: this.newParts,
+                },
+                p: ["measures", this.measure.idx + 1],
+            },
+        ]));
     }
 }

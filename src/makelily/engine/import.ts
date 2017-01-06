@@ -131,7 +131,7 @@ export function _extractMXMLPartsAndMeasures(input: ScoreTimewise, factory: IFac
     let createModel: typeof factory.create = factory.create.bind(factory);
 
     // TODO/STOPSHIP - sync division count in each measure
-    let divisions = 384; // lilypond-regression 41g.xml does not specify divisions
+    let divisions = 768; // XXX: lilypond-regression 41g.xml does not specify divisions
     let gStaves = 0;
     let lastNote: IChord = null;
     let lastAttribs: Attributes = null;
