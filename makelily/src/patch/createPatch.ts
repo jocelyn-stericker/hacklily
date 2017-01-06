@@ -564,6 +564,7 @@ function getMutationInfo(document: IDocument, patches: IAny[]) {
         }
 
         if (patch.p.length === 9 && patch.p[8] === "rest") {
+            info.touched = true;
             if (patch.oi !== undefined) {
                 info.rest = !!patch.oi;
             } else if (patch.od !== undefined) {
@@ -595,7 +596,9 @@ function getMutationInfo(document: IDocument, patches: IAny[]) {
                 divisions,
             }
         );
-        info.touched = true;
+        if (info.newDivisions !== info.previousDivisions) {
+            info.touched = true;
+        }
     });
     return {
         segments,
@@ -618,6 +621,11 @@ function fixMetre(document: IDocument, patches: IAny[]): IAny[] {
     elementInfos = mi.elementInfos;
 
     forEach(elementInfos, (voiceInfo, key) => {
+        const anyChanged = voiceInfo.some(n => n.touched);
+        if (!anyChanged) {
+            return;
+        }
+
         const restSpecs = simplifyRests(voiceInfo, document, attributes[key]);
 
         patches = patches.concat(restSpecs.map((spec, idx) => (extend(

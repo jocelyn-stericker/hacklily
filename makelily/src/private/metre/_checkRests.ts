@@ -29,15 +29,20 @@ export interface IOptions {
     dotsAllowed: boolean;
 }
 
+let _stretchRestRuleMemo: {[key: string]: string} = {};
 function _stretchRestRule(rule: string, quantization: number) {
-    let newRule = "";
-    for (let i = 0; i < rule.length; ++i) {
-        newRule += rule[i];
-        for (let j = 1; j < quantization; ++j) {
-            newRule += rule[i] === "r" ? "_" : rule[i];
+    const key = rule + String(quantization);
+    if (!_stretchRestRuleMemo[key]) {
+        const newRule: string[] = [];
+        for (let i = 0; i < rule.length; ++i) {
+            newRule.push(rule[i]);
+            for (let j = 1; j < quantization; ++j) {
+                newRule.push(rule[i] === "r" ? "_" : rule[i]);
+            }
         }
+        _stretchRestRuleMemo[key] = newRule.join("");
     }
-    return newRule;
+    return _stretchRestRuleMemo[key];
 }
 
 function _getValidSubBeatLengths(quantumPerBeats: number, beatsPerMeasure: number, dotsAllowed: boolean) {
@@ -87,11 +92,13 @@ class RestSolver {
             this._ruleBeats === 4;
     }
 
+    static dotRule = /r__(\.|$)/;
+
     checkRests(divisions: number, song: string, options: IOptions): string {
         const MATCH_CHARS = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
         const quantization = divisions * 4 / this._ruleBeatType;
         let myRestRules = this._restRules
-            .filter(rule => options.dotsAllowed || (rule.search(/r__(\.|$)/) === -1))
+            .filter(rule => options.dotsAllowed || (rule.search(RestSolver.dotRule) === -1))
             .map(rule => _stretchRestRule(rule, quantization));
         song = _stretchRestRule(song, 1 / quantization);
         const len = myRestRules[0].length;
