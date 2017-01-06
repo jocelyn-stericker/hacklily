@@ -143,6 +143,7 @@ export function reduceMeasure(spec: ILayoutOpts): IMeasureLayout {
             _detached: spec._detached,
             factory: spec.factory,
             memo$: spec.memo$,
+            preview: spec.preview,
             print: lastPrint,
             fixup: (operations: IAny[]) => {
                 const localSegment = cursor$.segment;
@@ -170,7 +171,6 @@ export function reduceMeasure(spec: ILayoutOpts): IMeasureLayout {
                     }
                     invariant(false, `Invalid segment owner type ${localSegment.ownerType}`);
                 });
-                console.log("restart:", restartRequired);
 
                 spec.fixup(localSegment, operations, restartRequired);
             },

@@ -209,7 +209,6 @@ class AttributesModel implements Export.IAttributesModel {
     }
 
     private _setTotalDivisions(cursor$: ICursor): void {
-        console.log("Set total divisions:", this._snapshot);
         cursor$.staff.totalDivisions = barDivisions(this._snapshot);
     }
 

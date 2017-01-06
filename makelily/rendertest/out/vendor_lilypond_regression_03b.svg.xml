@@ -98,9 +98,9 @@
       
       <attributes>
         <!--musicxml-interfaces:debug>
-          <div-count>6</div-count>
+          <div-count>2304</div-count>
         </musicxml-interfaces:debug-->
-        <divisions>2</divisions>
+        <divisions>768</divisions>
         <key font-style="normal" font-weight="normal" color="#000000" print-object="yes">
           <fifths>0</fifths>
         </key>
@@ -117,10 +117,10 @@
           <staff-lines>5</staff-lines>
         </staff-details>
       </attributes>
-      <forward><duration>6</duration></forward>
+      <forward><duration>2304</duration></forward>
       
       <!-- spacer -->
-      <forward><duration>2</duration></forward>
+      <forward><duration>768</duration></forward>
       
       <barline>
         <!--musicxml-interfaces:debug>
@@ -130,7 +130,7 @@
       </barline>
       <forward><duration>0</duration></forward>
       
-      <backup><duration>8</duration></backup>
+      <backup><duration>3072</duration></backup>
       <!-- end of staff 1 -->
       <!-- voice 1 -->
       <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
@@ -138,7 +138,7 @@
           <step>C</step>
           <octave>4</octave>
         </pitch>
-        <duration>2</duration>
+        <duration>768</duration>
         <voice>1</voice>
         <type>quarter</type>
         <staff>1</staff>
@@ -149,20 +149,30 @@
           <step>C</step>
           <octave>4</octave>
         </pitch>
-        <duration>2</duration>
+        <duration>768</duration>
         <voice>1</voice>
         <type>quarter</type>
         <staff>1</staff>
       </note>
       
-      <backup><duration>4</duration></backup>
+      <note color="#000000">
+        <rest measure="no">
+          
+        </rest>
+        <duration>1536</duration>
+        <voice>1</voice>
+        <type>half</type>
+        <staff>1</staff>
+      </note>
+      
+      <backup><duration>3072</duration></backup>
       <!-- end of voice 1 -->
       <!-- voice 2 -->
       <note color="#000000" print-object="no">
         <rest measure="no">
           
         </rest>
-        <duration>2</duration>
+        <duration>768</duration>
         <voice>2</voice>
         <type>quarter</type>
         <staff>1</staff>
@@ -173,7 +183,7 @@
           <step>A</step>
           <octave>3</octave>
         </pitch>
-        <duration>2</duration>
+        <duration>768</duration>
         <voice>2</voice>
         <type>quarter</type>
         <staff>1</staff>
@@ -184,13 +194,23 @@
           <step>A</step>
           <octave>3</octave>
         </pitch>
-        <duration>2</duration>
+        <duration>768</duration>
         <voice>2</voice>
         <type>quarter</type>
         <staff>1</staff>
       </note>
       
-      <backup><duration>6</duration></backup>
+      <note color="#000000">
+        <rest measure="no">
+          
+        </rest>
+        <duration>768</duration>
+        <voice>2</voice>
+        <type>quarter</type>
+        <staff>1</staff>
+      </note>
+      
+      <backup><duration>3072</duration></backup>
       <!-- end of voice 2 -->
     </part>
   </measure>

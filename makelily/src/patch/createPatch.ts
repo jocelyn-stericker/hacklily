@@ -27,23 +27,23 @@ import {
     buildBeam, buildAttributes, patchAttributes,
     IAttributesBuilder,
 } from "musicxml-interfaces/builders";
-import {find, forEach, last, some, times, findIndex, findLastIndex, extend} from "lodash";
+import {find, forEach, last, some, times, findIndex, findLastIndex, extend, isInteger} from "lodash";
 import * as invariant from "invariant";
 
 import IDocument from "../document/document";
 import IMeasure from "../document/measure";
 import IMeasurePart from "../document/measurePart";
-import ISegment, {normalizeDivisionsInPlace} from "../document/segment";
+import ISegment from "../document/segment";
 import Type from "../document/types";
+import IModel from "../document/model";
 
-import IChord, {count, dots, barDivisions, timeModification, divisions as calcDivisions,
-    fromModel as chordFromModel, rest, countToIsBeamable, beams, FractionalDivisionsException}
+import IChord, {count, dots, timeModification, divisions as calcDivisions,
+    fromModel as chordFromModel, rest, countToIsBeamable, beams}
         from "../private/chordUtil";
 import IAttributesSnapshot from "../private/attributesSnapshot";
 import {getBeamingPattern} from "../private/metre/checkBeaming";
-import {shortenRest} from "../private/metre/modifyRest";
-
-// TODO: Get rid of all P1-hardcoding!
+import {simplifyRests} from "../private/metre/modifyRest";
+import {cloneObject} from "../private/util";
 
 function _prependPatch(...prefix: any[]) {
     return function __prependPatch(patch: IAny) {
@@ -300,21 +300,6 @@ export class DocumentBuilder {
     }
 }
 
-function updateDivisions(document: IDocument, requiredDivisions: number) {
-    let segments: ISegment[] = [];
-    document.measures.forEach(measure => {
-        Object.keys(measure.parts).forEach(partName => {
-            const part = measure.parts[partName];
-            part.staves.concat(part.voices).forEach(segment => {
-                if (segment) {
-                    segments.push(segment);
-                }
-            });
-        });
-    });
-    normalizeDivisionsInPlace(document, segments, requiredDivisions);
-}
-
 export default function createPatch(
             isPreview: boolean,
             document: IDocument,
@@ -355,7 +340,7 @@ export default function createPatch(isPreview: boolean,
     return patches;
 }
 
-interface IElementInfo {
+export class ModelMetreMutationSpec {
     idx: number;
     oldIdx: number;
     start: number;
@@ -368,20 +353,70 @@ interface IElementInfo {
     rest: boolean;
     beam: Beam[];
     touched: boolean;
+    private _originalModel: IModel;
+    constructor(spec: {
+                idx: number;
+                oldIdx: number;
+                start: number;
+                previousDivisions: number;
+                newDivisions: number;
+                newCount: number;
+                newDots: number;
+                newTimeModification: TimeModification;
+                time: Time;
+                rest: boolean;
+                beam: Beam[];
+                touched: boolean;
+            }, originalModel?: IModel) {
+        extend(this, spec);
+        this._originalModel = originalModel;
+    }
+
+    toSpec(): IModel {
+        if (!this._originalModel) {
+            throw new Error("Only valid for mutations!");
+        }
+        const originalModel = cloneObject(this._originalModel) as any;
+        if (originalModel._class === "Chord" || originalModel.length) {
+            const chordModel: IChord = originalModel;
+            forEach(chordModel, c => {
+                c.noteType.duration = this.newCount;
+                if (rest) {
+                    c.rest = {};
+                    delete c.pitch;
+                } else {
+                    delete c.rest;
+                }
+                if (this.newTimeModification) {
+                    c.timeModification = this.newTimeModification;
+                } else {
+                    delete c.timeModification;
+                }
+                if (this.newDots) {
+                    c.dots = times(this.newDots, () => ({}));
+                } else {
+                    delete c.dots;
+                }
+            });
+            return chordModel as any;
+        } else {
+            return originalModel;
+        }
+    }
 }
 
 interface IMetreInfo {
     segments: {[key: string]: ISegment};
     attributes: {[key: string]: IAttributesSnapshot};
-    elementInfos: {[key: string]: IElementInfo[]};
-    elementInfoByChord: {[key: string]: IElementInfo};
+    elementInfos: {[key: string]: ModelMetreMutationSpec[]};
+    elementInfoByChord: {[key: string]: ModelMetreMutationSpec};
 }
 
 function getMutationInfo(document: IDocument, patches: IAny[]) {
     const segments: {[key: string]: ISegment} = {};
     const attributes: {[key: string]: IAttributesSnapshot} = {};
-    const elementInfos: {[key: string]: IElementInfo[]} = {};
-    const elementInfoByChord: {[key: string]: IElementInfo} = {};
+    const elementInfos: {[key: string]: ModelMetreMutationSpec[]} = {};
+    const elementInfoByChord: {[key: string]: ModelMetreMutationSpec} = {};
 
     patches.forEach(patch => {
         if (patch.p[0] === "measures") {
@@ -415,7 +450,7 @@ function getMutationInfo(document: IDocument, patches: IAny[]) {
 
             elementInfos[segID] = voice.reduce((elementInfo, model, idx) => {
                 if (!document.modelHasType(model, Type.Chord)) {
-                    return elementInfo.concat({
+                    return elementInfo.concat(new ModelMetreMutationSpec({
                         idx: idx,
                         oldIdx: idx,
                         start: currDiv,
@@ -428,11 +463,11 @@ function getMutationInfo(document: IDocument, patches: IAny[]) {
                         rest: true,
                         beam: null,
                         touched: false,
-                    });
+                    }, model));
                 }
                 let chord = chordFromModel(model);
                 let divs = calcDivisions(chord, {time, divisions});
-                let info = {
+                let info = new ModelMetreMutationSpec({
                     idx: idx,
                     oldIdx: idx,
                     start: currDiv,
@@ -445,47 +480,48 @@ function getMutationInfo(document: IDocument, patches: IAny[]) {
                     rest: !!rest(chord),
                     beam: beams(chord),
                     touched: false,
-                };
+                }, model);
                 elementInfoByChord[model.key] = info;
                 currDiv += divs;
                 return elementInfo.concat(info);
-            }, [] as IElementInfo[]);
+            }, [] as ModelMetreMutationSpec[]);
         }
         let divisions = attributes[segID].divisions;
 
         if (patch.p.length === 6) {
             if (patch.li) {
-                let c = patch.li._class === "Chord" ?
-                    count(patch.li) :
-                    0;
-                let d = patch.li._class === "Chord" ?
-                    dots(patch.li) :
-                    0;
-                let divs = patch.li._class === "Chord" ?
+                const isChord = patch.li._class === "Chord";
+                const b = isChord ? beams(patch.li) : null;
+                const c = isChord ? count(patch.li) : 0;
+                const d = isChord ? dots(patch.li) : 0;
+                const tm = isChord ? timeModification(patch.li) : null;
+                const isRest = isChord && !!rest(patch.li);
+                const divs = isChord ?
                     calcDivisions(patch.li, {time: attributes[segID].time, divisions}) :
                     0;
                 let start: number;
-                let spliceIdx = parseInt(patch.p[5] as string, 10);
+                const spliceIdx = parseInt(patch.p[5] as string, 10);
+                invariant(isInteger(spliceIdx) && !isNaN(spliceIdx), "Expected an integer");
                 if (spliceIdx === 0) {
                     start = 0;
                 } else {
                     start = elementInfos[segID][spliceIdx - 1].newDivisions + elementInfos[segID][spliceIdx - 1].start;
                 }
 
-                let newInfo: IElementInfo = {
+                let newInfo = new ModelMetreMutationSpec({
                     idx: spliceIdx,
                     oldIdx: undefined,
                     newCount: c,
                     newDivisions: divs,
                     newDots: d,
                     previousDivisions: 0,
-                    newTimeModification: timeModification(patch.li),
+                    newTimeModification: tm,
                     start: start,
                     time: attributes[segID].time,
-                    rest: !!rest(patch.li),
-                    beam: beams(patch.li),
+                    rest: isRest,
+                    beam: b,
                     touched: true,
-                };
+                });
 
                 for (let i = spliceIdx; i < elementInfos[segID].length; ++i) {
                     elementInfos[segID][i].start += divs;
@@ -572,54 +608,23 @@ function getMutationInfo(document: IDocument, patches: IAny[]) {
 function fixMetre(document: IDocument, patches: IAny[]): IAny[] {
     patches = patches.slice();
 
-    let {segments, attributes, elementInfos} = getMutationInfo(document, patches);
+    let segments: {[key: string]: ISegment};
+    let attributes: {[key: string]: IAttributesSnapshot};
+    let elementInfos: {[key: string]: ModelMetreMutationSpec[]};
 
-    let newIndex = 0;
+    const mi = getMutationInfo(document, patches);
+    segments = mi.segments;
+    attributes = mi.attributes;
+    elementInfos = mi.elementInfos;
+
     forEach(elementInfos, (voiceInfo, key) => {
-        const segment = segments[key];
-        voiceInfo.forEach((elInfo, originalIdx) => {
-            if (elInfo.newDivisions < elInfo.previousDivisions) {
-                // We want to add rests to fill up any empty space.
-                const restSpecs = shortenRest(segment, document, attributes[key].time,
-                    elInfo.start, elInfo.start + elInfo.newDivisions,
-                    elInfo.idx - elInfo.oldIdx);
+        const restSpecs = simplifyRests(voiceInfo, document, attributes[key]);
 
-                patches = patches.concat(restSpecs.patches.map((spec, idx) => (extend(
-                    {}, spec, {
-                        p: (key.split("++") as (number | string)[]).concat(spec.p),
-                    }
-                ))));
-                newIndex += restSpecs.indexOffset - elInfo.idx - elInfo.oldIdx;
-            } else if (elInfo.newDivisions > elInfo.previousDivisions) {
-                // We want to remove rests that follow, if possible.
-                let nextOffset = findIndex(voiceInfo.slice(originalIdx + 1), (n) => !!n.rest && n.newDivisions);
-                if (nextOffset > -1) {
-                    const nextIdx = originalIdx + 1 + nextOffset;
-                    let next = voiceInfo[nextIdx];
-                    if (next && next.rest && !next.touched) {
-                        next.touched = true;
-                        const newEnd = next.start + elInfo.newDivisions - elInfo.previousDivisions;
-
-                        const restSpecs = shortenRest(segment, document, attributes[key].time,
-                            next.start, newEnd,
-                            elInfo.idx - elInfo.oldIdx);
-
-                        patches = patches.concat({
-                            p: (key.split("++") as (number | string)[]).concat(nextIdx),
-                            ld: JSON.parse(JSON.stringify(segment[next.oldIdx])),
-                        });
-
-                        patches = patches.concat(restSpecs.patches.map((spec, idx) => (extend(
-                            {}, spec, {
-                            p: (key.split("++") as (number | string)[]).concat(spec.p),
-                        }))));
-
-                        newIndex += restSpecs.indexOffset;
-                    }
-                }
+        patches = patches.concat(restSpecs.map((spec, idx) => (extend(
+            {}, spec, {
+                p: (key.split("++") as (number | string)[]).concat(spec.p),
             }
-            newIndex += 1;
-        });
+        ))));
     });
 
     return patches;
@@ -723,7 +728,7 @@ function addBeams(document: IDocument, patches: IAny[]): IAny[] {
         const stdBP = getBeamingPattern(time); // TODO: TS changes in bar
         // const cleanBP = getBeamingPattern(time, "clean");
         // const altBP = getBeamingPattern(time, "alt");
-        let prevInfo: IElementInfo;
+        let prevInfo: ModelMetreMutationSpec;
         let beamGroup: number[] = [];
         let beamBeams: number[] = [];
         let inCandidate: boolean[] = [];
