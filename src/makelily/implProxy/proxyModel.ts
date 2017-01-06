@@ -30,6 +30,7 @@ import ILayout from "../private/layout";
 class ProxyModel implements Export.IProxyModel {
     private _target: IModel;
     private _omTarget: IModel;
+    _class = "Proxy";
 
     /*---- I.1 IModel ---------------------------------------------------------------------------*/
 

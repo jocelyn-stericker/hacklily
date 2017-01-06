@@ -276,10 +276,16 @@ export function _extractMXMLPartsAndMeasures(input: ScoreTimewise, factory: IFac
                         note = chordFromModel(newNote);
 
                         // Update target division
-                        let divs = calcDivisions([input], {
-                            time: target.times[0],
-                            divisions
-                        });
+                        let divs: number;
+                        try {
+                            divs = calcDivisions([input], {
+                                time: target.times[0],
+                                divisions
+                            });
+                        } catch(err) {
+                            console.warn("Guessing count from duration");
+                            divs = input.duration;
+                        }
                         target.divisionPerVoice[voice] += divs;
                         target.division += divs;
                     }

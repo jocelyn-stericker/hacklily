@@ -210,8 +210,8 @@ export function applyMeasureOp(measures: IMeasure[], factory: IFactory, op: IAny
                 } else {
                     if (newParts[partID].staves[staffIdx]) {
                         newParts[partID].staves[staffIdx] =
-                            newParts[partID].staves[staffIdx].
-                                map(i => factory.fromSpec(i)) || <any>[];
+                            newParts[partID].staves[staffIdx]
+                                .map(i => factory.fromSpec(i)) || <any>[];
                     } else {
                         newParts[partID].staves[staffIdx] = [] as any;
                     }
@@ -229,8 +229,8 @@ export function applyMeasureOp(measures: IMeasure[], factory: IFactory, op: IAny
                 } else {
                     if (newParts[partID].voices[voiceIdx]) {
                         newParts[partID].voices[voiceIdx] =
-                            newParts[partID].voices[voiceIdx].
-                                map(i => factory.fromSpec(i)) || <any>[];
+                            newParts[partID].voices[voiceIdx]
+                                .map(i => factory.fromSpec(i)) || <any>[];
                     } else {
                         newParts[partID].voices[voiceIdx] = [] as any;
                     }
