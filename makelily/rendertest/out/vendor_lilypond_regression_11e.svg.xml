@@ -140,7 +140,7 @@
         <voice>1</voice>
         <type>eighth</type>
         <staff>1</staff>
-        <beam number="1">begin</beam>
+        <beam number="1" repeater="no" fan="none">begin</beam>
       </note>
       
       <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
@@ -152,7 +152,7 @@
         <voice>1</voice>
         <type>eighth</type>
         <staff>1</staff>
-        <beam number="1">continue</beam>
+        <beam number="1" repeater="no" fan="none">continue</beam>
       </note>
       
       <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
@@ -164,7 +164,7 @@
         <voice>1</voice>
         <type>eighth</type>
         <staff>1</staff>
-        <beam number="1">continue</beam>
+        <beam number="1" repeater="no" fan="none">end</beam>
       </note>
       
       <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
@@ -176,7 +176,7 @@
         <voice>1</voice>
         <type>eighth</type>
         <staff>1</staff>
-        <beam number="1">continue</beam>
+        <beam number="1" repeater="no" fan="none">begin</beam>
       </note>
       
       <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
@@ -188,7 +188,7 @@
         <voice>1</voice>
         <type>eighth</type>
         <staff>1</staff>
-        <beam number="1">end</beam>
+        <beam number="1" repeater="no" fan="none">end</beam>
       </note>
       
       <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">

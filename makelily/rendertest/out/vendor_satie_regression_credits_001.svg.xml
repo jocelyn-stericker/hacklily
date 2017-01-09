@@ -137,7 +137,7 @@
         <!--musicxml-interfaces:debug>
           <div-count>0</div-count>
         </musicxml-interfaces:debug-->
-        <divisions>2</divisions>
+        <divisions>768</divisions>
         <key font-style="normal" font-weight="normal" color="#000000" print-object="yes">
           <fifths>4</fifths>
           <mode>major</mode>
@@ -159,10 +159,10 @@
       
       <sound tempo="120">
         <!--musicxml-interfaces:debug>
-          <div-count>8</div-count>
+          <div-count>3072</div-count>
         </musicxml-interfaces:debug-->
       </sound>
-      <forward><duration>8</duration></forward>
+      <forward><duration>3072</duration></forward>
       
       <barline location="right">
         <!--musicxml-interfaces:debug>
@@ -172,20 +172,20 @@
       </barline>
       <forward><duration>0</duration></forward>
       
-      <backup><duration>8</duration></backup>
+      <backup><duration>3072</duration></backup>
       <!-- end of staff 1 -->
       <!-- voice 1 -->
       <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <rest measure="yes">
           
         </rest>
-        <duration>8</duration>
+        <duration>3072</duration>
         <voice>1</voice>
         <type>whole</type>
         <staff>1</staff>
       </note>
       
-      <backup><duration>8</duration></backup>
+      <backup><duration>3072</duration></backup>
       <!-- end of voice 1 -->
     </part>
   </measure>

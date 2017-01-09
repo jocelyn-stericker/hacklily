@@ -96,9 +96,9 @@
       
       <attributes>
         <!--musicxml-interfaces:debug>
-          <div-count>1920</div-count>
+          <div-count>7680</div-count>
         </musicxml-interfaces:debug-->
-        <divisions>960</divisions>
+        <divisions>3840</divisions>
         <key>
           <fifths>0</fifths>
           <mode>major</mode>
@@ -116,10 +116,10 @@
           <staff-lines>5</staff-lines>
         </staff-details>
       </attributes>
-      <forward><duration>1920</duration></forward>
+      <forward><duration>7680</duration></forward>
       
       <!-- spacer -->
-      <forward><duration>1920</duration></forward>
+      <forward><duration>7680</duration></forward>
       
       <barline>
         <!--musicxml-interfaces:debug>
@@ -129,7 +129,7 @@
       </barline>
       <forward><duration>0</duration></forward>
       
-      <backup><duration>3840</duration></backup>
+      <backup><duration>15360</duration></backup>
       <!-- end of staff 1 -->
       <!-- voice 1 -->
       <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
@@ -138,7 +138,7 @@
           <step>A</step>
           <octave>4</octave>
         </pitch>
-        <duration>960</duration>
+        <duration>3840</duration>
         <voice>1</voice>
         <type>quarter</type>
         <staff>1</staff>
@@ -148,7 +148,7 @@
           <step>F</step>
           <octave>4</octave>
         </pitch>
-        <duration>960</duration>
+        <duration>3840</duration>
         <voice>1</voice>
         <type>quarter</type>
         <staff>1</staff>
@@ -158,13 +158,13 @@
         <rest measure="no">
           
         </rest>
-        <duration>960</duration>
+        <duration>3840</duration>
         <voice>1</voice>
         <type>quarter</type>
         <staff>1</staff>
       </note>
       
-      <backup><duration>1920</duration></backup>
+      <backup><duration>7680</duration></backup>
       <!-- end of voice 1 -->
     </part>
   </measure>

@@ -98,9 +98,9 @@
       
       <attributes>
         <!--musicxml-interfaces:debug>
-          <div-count>6</div-count>
+          <div-count>4608</div-count>
         </musicxml-interfaces:debug-->
-        <divisions>1</divisions>
+        <divisions>768</divisions>
         <key font-style="normal" font-weight="normal" color="#000000" print-object="yes">
           <fifths>0</fifths>
           <mode>major</mode>
@@ -118,7 +118,7 @@
           <staff-lines>5</staff-lines>
         </staff-details>
       </attributes>
-      <forward><duration>6</duration></forward>
+      <forward><duration>4608</duration></forward>
       
       <barline location="right">
         <!--musicxml-interfaces:debug>
@@ -128,7 +128,7 @@
       </barline>
       <forward><duration>0</duration></forward>
       
-      <backup><duration>6</duration></backup>
+      <backup><duration>4608</duration></backup>
       <!-- end of staff 1 -->
       <!-- voice 1 -->
       <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
@@ -136,7 +136,7 @@
           <step>A</step>
           <octave>4</octave>
         </pitch>
-        <duration>1</duration>
+        <duration>768</duration>
         <voice>1</voice>
         <type>quarter</type>
         <notehead font-style="normal" font-weight="normal" parentheses="yes">normal</notehead>
@@ -148,7 +148,7 @@
           <step>A</step>
           <octave>4</octave>
         </pitch>
-        <duration>1</duration>
+        <duration>768</duration>
         <voice>1</voice>
         <type>quarter</type>
         <notehead font-style="normal" font-weight="normal" parentheses="yes">x</notehead>
@@ -161,7 +161,7 @@
           <step>A</step>
           <octave>4</octave>
         </pitch>
-        <duration>1</duration>
+        <duration>768</duration>
         <voice>1</voice>
         <type>quarter</type>
         <staff>1</staff>
@@ -172,7 +172,7 @@
           <step>C</step>
           <octave>5</octave>
         </pitch>
-        <duration>1</duration>
+        <duration>768</duration>
         <voice>1</voice>
         <type>quarter</type>
         <notehead font-style="normal" font-weight="normal" parentheses="yes">normal</notehead>
@@ -183,7 +183,7 @@
           <step>E</step>
           <octave>5</octave>
         </pitch>
-        <duration>1</duration>
+        <duration>768</duration>
         <voice>1</voice>
         <type>quarter</type>
         <staff>1</staff>
@@ -195,7 +195,7 @@
           <step>A</step>
           <octave>4</octave>
         </pitch>
-        <duration>1</duration>
+        <duration>768</duration>
         <voice>1</voice>
         <type>quarter</type>
         <notehead font-style="normal" font-weight="normal" parentheses="yes">normal</notehead>
@@ -207,7 +207,7 @@
           <step>C</step>
           <octave>5</octave>
         </pitch>
-        <duration>1</duration>
+        <duration>768</duration>
         <voice>1</voice>
         <type>quarter</type>
         <notehead font-style="normal" font-weight="normal" parentheses="yes">normal</notehead>
@@ -218,7 +218,7 @@
           <step>E</step>
           <octave>5</octave>
         </pitch>
-        <duration>1</duration>
+        <duration>768</duration>
         <voice>1</voice>
         <type>quarter</type>
         <notehead font-style="normal" font-weight="normal" parentheses="yes">normal</notehead>
@@ -229,7 +229,7 @@
         <rest measure="no">
           
         </rest>
-        <duration>1</duration>
+        <duration>768</duration>
         <voice>1</voice>
         <type>quarter</type>
         <notehead font-style="normal" font-weight="normal" parentheses="yes">normal</notehead>
@@ -241,14 +241,14 @@
           <display-step>E</display-step>
           <display-octave>4</display-octave>
         </rest>
-        <duration>1</duration>
+        <duration>768</duration>
         <voice>1</voice>
         <type>quarter</type>
         <notehead font-style="normal" font-weight="normal" parentheses="yes">normal</notehead>
         <staff>1</staff>
       </note>
       
-      <backup><duration>6</duration></backup>
+      <backup><duration>4608</duration></backup>
       <!-- end of voice 1 -->
     </part>
   </measure>

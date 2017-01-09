@@ -98,7 +98,7 @@
         <!--musicxml-interfaces:debug>
           <div-count>0</div-count>
         </musicxml-interfaces:debug-->
-        <divisions>480</divisions>
+        <divisions>3840</divisions>
         <key font-style="normal" font-weight="normal" color="#000000" print-object="yes">
           <fifths>0</fifths>
           <mode>major</mode>
@@ -133,7 +133,7 @@
       
       <harmony print-object="yes" print-frame="no" font-style="normal" font-weight="normal" color="#000000">
         <!--musicxml-interfaces:debug>
-          <div-count>960</div-count>
+          <div-count>7680</div-count>
         </musicxml-interfaces:debug-->
         <root>
           <root-step font-style="normal" font-weight="normal" color="#000000">F</root-step>
@@ -143,7 +143,7 @@
         minor-sixth</kind>
         <staff>null</staff>
       </harmony>
-      <forward><duration>960</duration></forward>
+      <forward><duration>7680</duration></forward>
       
       <harmony print-object="yes" print-frame="no" font-style="normal" font-weight="normal" color="#000000">
         <!--musicxml-interfaces:debug>
@@ -160,7 +160,7 @@
       
       <harmony print-object="yes" print-frame="no" font-style="normal" font-weight="normal" color="#000000">
         <!--musicxml-interfaces:debug>
-          <div-count>960</div-count>
+          <div-count>7680</div-count>
         </musicxml-interfaces:debug-->
         <root>
           <root-step font-style="normal" font-weight="normal" color="#000000">G</root-step>
@@ -169,7 +169,7 @@
         dominant</kind>
         <staff>null</staff>
       </harmony>
-      <forward><duration>960</duration></forward>
+      <forward><duration>7680</duration></forward>
       
       <barline>
         <!--musicxml-interfaces:debug>
@@ -179,7 +179,7 @@
       </barline>
       <forward><duration>0</duration></forward>
       
-      <backup><duration>1920</duration></backup>
+      <backup><duration>15360</duration></backup>
       <!-- end of staff 1 -->
       <!-- voice 1 -->
       <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
@@ -187,7 +187,7 @@
           <step>A</step>
           <octave>4</octave>
         </pitch>
-        <duration>960</duration>
+        <duration>7680</duration>
         <voice>1</voice>
         <type>half</type>
         <staff>1</staff>
@@ -198,13 +198,13 @@
           <step>G</step>
           <octave>4</octave>
         </pitch>
-        <duration>960</duration>
+        <duration>7680</duration>
         <voice>1</voice>
         <type>half</type>
         <staff>1</staff>
       </note>
       
-      <backup><duration>1920</duration></backup>
+      <backup><duration>15360</duration></backup>
       <!-- end of voice 1 -->
     </part>
   </measure>

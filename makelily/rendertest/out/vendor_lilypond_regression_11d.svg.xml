@@ -96,9 +96,9 @@
       
       <attributes>
         <!--musicxml-interfaces:debug>
-          <div-count>11</div-count>
+          <div-count>7032960</div-count>
         </musicxml-interfaces:debug-->
-        <divisions>2</divisions>
+        <divisions>1278720</divisions>
         <key font-style="normal" font-weight="normal" color="#000000" print-object="yes">
           <fifths>0</fifths>
           <mode>major</mode>
@@ -120,7 +120,7 @@
           <staff-lines>5</staff-lines>
         </staff-details>
       </attributes>
-      <forward><duration>11</duration></forward>
+      <forward><duration>7032960</duration></forward>
       
       <barline>
         <!--musicxml-interfaces:debug>
@@ -130,7 +130,7 @@
       </barline>
       <forward><duration>0</duration></forward>
       
-      <backup><duration>11</duration></backup>
+      <backup><duration>7032960</duration></backup>
       <!-- end of staff 1 -->
       <!-- voice 1 -->
       <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
@@ -138,11 +138,11 @@
           <step>B</step>
           <octave>4</octave>
         </pitch>
-        <duration>1</duration>
+        <duration>639360</duration>
         <voice>1</voice>
         <type>eighth</type>
         <staff>1</staff>
-        <beam number="1">begin</beam>
+        <beam number="1" repeater="no" fan="none">begin</beam>
       </note>
       
       <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
@@ -150,11 +150,11 @@
           <step>B</step>
           <octave>4</octave>
         </pitch>
-        <duration>1</duration>
+        <duration>639360</duration>
         <voice>1</voice>
         <type>eighth</type>
         <staff>1</staff>
-        <beam number="1">continue</beam>
+        <beam number="1" repeater="no" fan="none">continue</beam>
       </note>
       
       <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
@@ -162,11 +162,11 @@
           <step>B</step>
           <octave>4</octave>
         </pitch>
-        <duration>1</duration>
+        <duration>639360</duration>
         <voice>1</voice>
         <type>eighth</type>
         <staff>1</staff>
-        <beam number="1">continue</beam>
+        <beam number="1" repeater="no" fan="none">end</beam>
       </note>
       
       <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
@@ -174,11 +174,11 @@
           <step>B</step>
           <octave>4</octave>
         </pitch>
-        <duration>1</duration>
+        <duration>639360</duration>
         <voice>1</voice>
         <type>eighth</type>
         <staff>1</staff>
-        <beam number="1">continue</beam>
+        <beam number="1" repeater="no" fan="none">begin</beam>
       </note>
       
       <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
@@ -186,11 +186,11 @@
           <step>B</step>
           <octave>4</octave>
         </pitch>
-        <duration>1</duration>
+        <duration>639360</duration>
         <voice>1</voice>
         <type>eighth</type>
         <staff>1</staff>
-        <beam number="1">end</beam>
+        <beam number="1" repeater="no" fan="none">end</beam>
       </note>
       
       <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
@@ -198,7 +198,7 @@
           <step>B</step>
           <octave>4</octave>
         </pitch>
-        <duration>2</duration>
+        <duration>1278720</duration>
         <voice>1</voice>
         <type>quarter</type>
         <staff>1</staff>
@@ -209,7 +209,7 @@
           <step>B</step>
           <octave>4</octave>
         </pitch>
-        <duration>2</duration>
+        <duration>1278720</duration>
         <voice>1</voice>
         <type>quarter</type>
         <staff>1</staff>
@@ -220,13 +220,13 @@
           <step>B</step>
           <octave>4</octave>
         </pitch>
-        <duration>2</duration>
+        <duration>1278720</duration>
         <voice>1</voice>
         <type>quarter</type>
         <staff>1</staff>
       </note>
       
-      <backup><duration>11</duration></backup>
+      <backup><duration>7032960</duration></backup>
       <!-- end of voice 1 -->
     </part>
   </measure>
@@ -264,8 +264,9 @@
       
       <attributes>
         <!--musicxml-interfaces:debug>
-          <div-count>21</div-count>
+          <div-count>3223440</div-count>
         </musicxml-interfaces:debug-->
+        <divisions>1278720</divisions>
         <time symbol="normal" separator="none" font-style="normal" font-weight="normal" color="#000000" halign="left" valign="bottom" print-object="yes">
           <beats>5</beats>
           <beat-type>2</beat-type>
@@ -277,7 +278,10 @@
           <staff-lines>5</staff-lines>
         </staff-details>
       </attributes>
-      <forward><duration>21</duration></forward>
+      <forward><duration>3223440</duration></forward>
+      
+      <!-- spacer -->
+      <forward><duration>10203120</duration></forward>
       
       <barline location="right">
         <!--musicxml-interfaces:debug>
@@ -287,7 +291,7 @@
       </barline>
       <forward><duration>0</duration></forward>
       
-      <backup><duration>21</duration></backup>
+      <backup><duration>13426560</duration></backup>
       <!-- end of staff 1 -->
       <!-- voice 1 -->
       <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
@@ -295,7 +299,7 @@
           <step>A</step>
           <octave>4</octave>
         </pitch>
-        <duration>16</duration>
+        <duration>512</duration>
         <voice>1</voice>
         <type>breve</type>
         <staff>1</staff>
@@ -306,7 +310,7 @@
           <step>A</step>
           <octave>4</octave>
         </pitch>
-        <duration>4</duration>
+        <duration>2557440</duration>
         <voice>1</voice>
         <type>half</type>
         <staff>1</staff>
@@ -317,13 +321,13 @@
           <step>A</step>
           <octave>4</octave>
         </pitch>
-        <duration>1</duration>
+        <duration>639360</duration>
         <voice>1</voice>
         <type>eighth</type>
         <staff>1</staff>
       </note>
       
-      <backup><duration>21</duration></backup>
+      <backup><duration>3197312</duration></backup>
       <!-- end of voice 1 -->
     </part>
   </measure>

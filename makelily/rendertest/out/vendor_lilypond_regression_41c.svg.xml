@@ -371,9 +371,9 @@
       
       <attributes>
         <!--musicxml-interfaces:debug>
-          <div-count>4</div-count>
+          <div-count>3072</div-count>
         </musicxml-interfaces:debug-->
-        <divisions>1</divisions>
+        <divisions>768</divisions>
         <key font-style="normal" font-weight="normal" color="#000000" print-object="yes">
           <fifths>0</fifths>
           <mode>major</mode>
@@ -397,7 +397,7 @@
           <octave-change>1</octave-change>
         </transpose>
       </attributes>
-      <forward><duration>4</duration></forward>
+      <forward><duration>3072</duration></forward>
       
       <barline location="right">
         <!--musicxml-interfaces:debug>
@@ -407,7 +407,7 @@
       </barline>
       <forward><duration>0</duration></forward>
       
-      <backup><duration>4</duration></backup>
+      <backup><duration>3072</duration></backup>
       <!-- end of staff 1 -->
       <!-- voice 1 -->
       <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
@@ -415,7 +415,7 @@
           <step>B</step>
           <octave>4</octave>
         </pitch>
-        <duration>1</duration>
+        <duration>768</duration>
         <voice>1</voice>
         <type>quarter</type>
         <staff>1</staff>
@@ -425,7 +425,7 @@
         <rest measure="no">
           
         </rest>
-        <duration>1</duration>
+        <duration>768</duration>
         <voice>1</voice>
         <type>quarter</type>
         <staff>1</staff>
@@ -435,13 +435,13 @@
         <rest measure="no">
           
         </rest>
-        <duration>2</duration>
+        <duration>1536</duration>
         <voice>1</voice>
         <type>half</type>
         <staff>1</staff>
       </note>
       
-      <backup><duration>4</duration></backup>
+      <backup><duration>3072</duration></backup>
       <!-- end of voice 1 -->
     </part>
     <part id="P2">
@@ -477,9 +477,9 @@
       
       <attributes>
         <!--musicxml-interfaces:debug>
-          <div-count>4</div-count>
+          <div-count>3072</div-count>
         </musicxml-interfaces:debug-->
-        <divisions>1</divisions>
+        <divisions>768</divisions>
         <key font-style="normal" font-weight="normal" color="#000000" print-object="yes">
           <fifths>0</fifths>
           <mode>major</mode>
@@ -498,7 +498,7 @@
           <staff-lines>5</staff-lines>
         </staff-details>
       </attributes>
-      <forward><duration>4</duration></forward>
+      <forward><duration>3072</duration></forward>
       
       <barline location="right">
         <!--musicxml-interfaces:debug>
@@ -508,7 +508,7 @@
       </barline>
       <forward><duration>0</duration></forward>
       
-      <backup><duration>4</duration></backup>
+      <backup><duration>3072</duration></backup>
       <!-- end of staff 1 -->
       <!-- voice 1 -->
       <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
@@ -516,7 +516,7 @@
           <step>F</step>
           <octave>4</octave>
         </pitch>
-        <duration>1</duration>
+        <duration>768</duration>
         <voice>1</voice>
         <type>quarter</type>
         <staff>1</staff>
@@ -526,7 +526,7 @@
         <rest measure="no">
           
         </rest>
-        <duration>1</duration>
+        <duration>768</duration>
         <voice>1</voice>
         <type>quarter</type>
         <staff>1</staff>
@@ -536,13 +536,13 @@
         <rest measure="no">
           
         </rest>
-        <duration>2</duration>
+        <duration>1536</duration>
         <voice>1</voice>
         <type>half</type>
         <staff>1</staff>
       </note>
       
-      <backup><duration>4</duration></backup>
+      <backup><duration>3072</duration></backup>
       <!-- end of voice 1 -->
     </part>
     <part id="P3">
@@ -578,9 +578,9 @@
       
       <attributes>
         <!--musicxml-interfaces:debug>
-          <div-count>4</div-count>
+          <div-count>3072</div-count>
         </musicxml-interfaces:debug-->
-        <divisions>1</divisions>
+        <divisions>768</divisions>
         <key font-style="normal" font-weight="normal" color="#000000" print-object="yes">
           <fifths>0</fifths>
           <mode>major</mode>
@@ -599,7 +599,7 @@
           <staff-lines>5</staff-lines>
         </staff-details>
       </attributes>
-      <forward><duration>4</duration></forward>
+      <forward><duration>3072</duration></forward>
       
       <barline location="right">
         <!--musicxml-interfaces:debug>
@@ -609,7 +609,7 @@
       </barline>
       <forward><duration>0</duration></forward>
       
-      <backup><duration>4</duration></backup>
+      <backup><duration>3072</duration></backup>
       <!-- end of staff 1 -->
       <!-- voice 1 -->
       <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
@@ -617,7 +617,7 @@
           <step>A</step>
           <octave>4</octave>
         </pitch>
-        <duration>1</duration>
+        <duration>768</duration>
         <voice>1</voice>
         <type>quarter</type>
         <staff>1</staff>
@@ -627,7 +627,7 @@
         <rest measure="no">
           
         </rest>
-        <duration>1</duration>
+        <duration>768</duration>
         <voice>1</voice>
         <type>quarter</type>
         <staff>1</staff>
@@ -637,13 +637,13 @@
         <rest measure="no">
           
         </rest>
-        <duration>2</duration>
+        <duration>1536</duration>
         <voice>1</voice>
         <type>half</type>
         <staff>1</staff>
       </note>
       
-      <backup><duration>4</duration></backup>
+      <backup><duration>3072</duration></backup>
       <!-- end of voice 1 -->
     </part>
     <part id="P4">
@@ -679,9 +679,9 @@
       
       <attributes>
         <!--musicxml-interfaces:debug>
-          <div-count>4</div-count>
+          <div-count>3072</div-count>
         </musicxml-interfaces:debug-->
-        <divisions>1</divisions>
+        <divisions>768</divisions>
         <key font-style="normal" font-weight="normal" color="#000000" print-object="yes">
           <fifths>0</fifths>
           <mode>major</mode>
@@ -700,7 +700,7 @@
           <staff-lines>5</staff-lines>
         </staff-details>
       </attributes>
-      <forward><duration>4</duration></forward>
+      <forward><duration>3072</duration></forward>
       
       <barline location="right">
         <!--musicxml-interfaces:debug>
@@ -710,7 +710,7 @@
       </barline>
       <forward><duration>0</duration></forward>
       
-      <backup><duration>4</duration></backup>
+      <backup><duration>3072</duration></backup>
       <!-- end of staff 1 -->
       <!-- voice 1 -->
       <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
@@ -718,7 +718,7 @@
           <step>E</step>
           <octave>5</octave>
         </pitch>
-        <duration>1</duration>
+        <duration>768</duration>
         <voice>1</voice>
         <type>quarter</type>
         <staff>1</staff>
@@ -728,7 +728,7 @@
         <rest measure="no">
           
         </rest>
-        <duration>1</duration>
+        <duration>768</duration>
         <voice>1</voice>
         <type>quarter</type>
         <staff>1</staff>
@@ -738,13 +738,13 @@
         <rest measure="no">
           
         </rest>
-        <duration>2</duration>
+        <duration>1536</duration>
         <voice>1</voice>
         <type>half</type>
         <staff>1</staff>
       </note>
       
-      <backup><duration>4</duration></backup>
+      <backup><duration>3072</duration></backup>
       <!-- end of voice 1 -->
     </part>
     <part id="P5">
@@ -780,9 +780,9 @@
       
       <attributes>
         <!--musicxml-interfaces:debug>
-          <div-count>4</div-count>
+          <div-count>3072</div-count>
         </musicxml-interfaces:debug-->
-        <divisions>1</divisions>
+        <divisions>768</divisions>
         <key font-style="normal" font-weight="normal" color="#000000" print-object="yes">
           <fifths>1</fifths>
           <mode>major</mode>
@@ -805,7 +805,7 @@
           <chromatic>-7</chromatic>
         </transpose>
       </attributes>
-      <forward><duration>4</duration></forward>
+      <forward><duration>3072</duration></forward>
       
       <barline location="right">
         <!--musicxml-interfaces:debug>
@@ -815,7 +815,7 @@
       </barline>
       <forward><duration>0</duration></forward>
       
-      <backup><duration>4</duration></backup>
+      <backup><duration>3072</duration></backup>
       <!-- end of staff 1 -->
       <!-- voice 1 -->
       <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
@@ -823,7 +823,7 @@
           <step>C</step>
           <octave>5</octave>
         </pitch>
-        <duration>1</duration>
+        <duration>768</duration>
         <voice>1</voice>
         <type>quarter</type>
         <staff>1</staff>
@@ -833,7 +833,7 @@
         <rest measure="no">
           
         </rest>
-        <duration>1</duration>
+        <duration>768</duration>
         <voice>1</voice>
         <type>quarter</type>
         <staff>1</staff>
@@ -843,13 +843,13 @@
         <rest measure="no">
           
         </rest>
-        <duration>2</duration>
+        <duration>1536</duration>
         <voice>1</voice>
         <type>half</type>
         <staff>1</staff>
       </note>
       
-      <backup><duration>4</duration></backup>
+      <backup><duration>3072</duration></backup>
       <!-- end of voice 1 -->
     </part>
     <part id="P6">
@@ -885,9 +885,9 @@
       
       <attributes>
         <!--musicxml-interfaces:debug>
-          <div-count>4</div-count>
+          <div-count>3072</div-count>
         </musicxml-interfaces:debug-->
-        <divisions>1</divisions>
+        <divisions>768</divisions>
         <key font-style="normal" font-weight="normal" color="#000000" print-object="yes">
           <fifths>3</fifths>
           <mode>major</mode>
@@ -910,7 +910,7 @@
           <chromatic>3</chromatic>
         </transpose>
       </attributes>
-      <forward><duration>4</duration></forward>
+      <forward><duration>3072</duration></forward>
       
       <barline location="right">
         <!--musicxml-interfaces:debug>
@@ -920,7 +920,7 @@
       </barline>
       <forward><duration>0</duration></forward>
       
-      <backup><duration>4</duration></backup>
+      <backup><duration>3072</duration></backup>
       <!-- end of staff 1 -->
       <!-- voice 1 -->
       <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
@@ -928,7 +928,7 @@
           <step>B</step>
           <octave>4</octave>
         </pitch>
-        <duration>1</duration>
+        <duration>768</duration>
         <voice>1</voice>
         <type>quarter</type>
         <staff>1</staff>
@@ -938,7 +938,7 @@
         <rest measure="no">
           
         </rest>
-        <duration>1</duration>
+        <duration>768</duration>
         <voice>1</voice>
         <type>quarter</type>
         <staff>1</staff>
@@ -948,13 +948,13 @@
         <rest measure="no">
           
         </rest>
-        <duration>2</duration>
+        <duration>1536</duration>
         <voice>1</voice>
         <type>half</type>
         <staff>1</staff>
       </note>
       
-      <backup><duration>4</duration></backup>
+      <backup><duration>3072</duration></backup>
       <!-- end of voice 1 -->
     </part>
     <part id="P7">
@@ -990,9 +990,9 @@
       
       <attributes>
         <!--musicxml-interfaces:debug>
-          <div-count>4</div-count>
+          <div-count>3072</div-count>
         </musicxml-interfaces:debug-->
-        <divisions>1</divisions>
+        <divisions>768</divisions>
         <key font-style="normal" font-weight="normal" color="#000000" print-object="yes">
           <fifths>2</fifths>
           <mode>major</mode>
@@ -1015,7 +1015,7 @@
           <chromatic>-2</chromatic>
         </transpose>
       </attributes>
-      <forward><duration>4</duration></forward>
+      <forward><duration>3072</duration></forward>
       
       <barline location="right">
         <!--musicxml-interfaces:debug>
@@ -1025,7 +1025,7 @@
       </barline>
       <forward><duration>0</duration></forward>
       
-      <backup><duration>4</duration></backup>
+      <backup><duration>3072</duration></backup>
       <!-- end of staff 1 -->
       <!-- voice 1 -->
       <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
@@ -1034,7 +1034,7 @@
           <alter>1</alter>
           <octave>4</octave>
         </pitch>
-        <duration>1</duration>
+        <duration>768</duration>
         <voice>1</voice>
         <type>quarter</type>
         <accidental>sharp</accidental>
@@ -1045,7 +1045,7 @@
         <rest measure="no">
           
         </rest>
-        <duration>1</duration>
+        <duration>768</duration>
         <voice>1</voice>
         <type>quarter</type>
         <staff>1</staff>
@@ -1055,13 +1055,13 @@
         <rest measure="no">
           
         </rest>
-        <duration>2</duration>
+        <duration>1536</duration>
         <voice>1</voice>
         <type>half</type>
         <staff>1</staff>
       </note>
       
-      <backup><duration>4</duration></backup>
+      <backup><duration>3072</duration></backup>
       <!-- end of voice 1 -->
     </part>
     <part id="P8">
@@ -1097,9 +1097,9 @@
       
       <attributes>
         <!--musicxml-interfaces:debug>
-          <div-count>4</div-count>
+          <div-count>3072</div-count>
         </musicxml-interfaces:debug-->
-        <divisions>1</divisions>
+        <divisions>768</divisions>
         <key font-style="normal" font-weight="normal" color="#000000" print-object="yes">
           <fifths>2</fifths>
           <mode>major</mode>
@@ -1122,7 +1122,7 @@
           <chromatic>-2</chromatic>
         </transpose>
       </attributes>
-      <forward><duration>4</duration></forward>
+      <forward><duration>3072</duration></forward>
       
       <barline location="right">
         <!--musicxml-interfaces:debug>
@@ -1132,7 +1132,7 @@
       </barline>
       <forward><duration>0</duration></forward>
       
-      <backup><duration>4</duration></backup>
+      <backup><duration>3072</duration></backup>
       <!-- end of staff 1 -->
       <!-- voice 1 -->
       <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
@@ -1141,7 +1141,7 @@
           <alter>1</alter>
           <octave>5</octave>
         </pitch>
-        <duration>1</duration>
+        <duration>768</duration>
         <voice>1</voice>
         <type>quarter</type>
         <accidental>sharp</accidental>
@@ -1152,7 +1152,7 @@
         <rest measure="no">
           
         </rest>
-        <duration>1</duration>
+        <duration>768</duration>
         <voice>1</voice>
         <type>quarter</type>
         <staff>1</staff>
@@ -1162,13 +1162,13 @@
         <rest measure="no">
           
         </rest>
-        <duration>2</duration>
+        <duration>1536</duration>
         <voice>1</voice>
         <type>half</type>
         <staff>1</staff>
       </note>
       
-      <backup><duration>4</duration></backup>
+      <backup><duration>3072</duration></backup>
       <!-- end of voice 1 -->
     </part>
     <part id="P9">
@@ -1204,9 +1204,9 @@
       
       <attributes>
         <!--musicxml-interfaces:debug>
-          <div-count>4</div-count>
+          <div-count>3072</div-count>
         </musicxml-interfaces:debug-->
-        <divisions>1</divisions>
+        <divisions>768</divisions>
         <key font-style="normal" font-weight="normal" color="#000000" print-object="yes">
           <fifths>2</fifths>
           <mode>major</mode>
@@ -1230,7 +1230,7 @@
           <octave-change>-1</octave-change>
         </transpose>
       </attributes>
-      <forward><duration>4</duration></forward>
+      <forward><duration>3072</duration></forward>
       
       <barline location="right">
         <!--musicxml-interfaces:debug>
@@ -1240,7 +1240,7 @@
       </barline>
       <forward><duration>0</duration></forward>
       
-      <backup><duration>4</duration></backup>
+      <backup><duration>3072</duration></backup>
       <!-- end of staff 1 -->
       <!-- voice 1 -->
       <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
@@ -1248,7 +1248,7 @@
           <step>B</step>
           <octave>4</octave>
         </pitch>
-        <duration>1</duration>
+        <duration>768</duration>
         <voice>1</voice>
         <type>quarter</type>
         <staff>1</staff>
@@ -1258,7 +1258,7 @@
         <rest measure="no">
           
         </rest>
-        <duration>1</duration>
+        <duration>768</duration>
         <voice>1</voice>
         <type>quarter</type>
         <staff>1</staff>
@@ -1268,13 +1268,13 @@
         <rest measure="no">
           
         </rest>
-        <duration>2</duration>
+        <duration>1536</duration>
         <voice>1</voice>
         <type>half</type>
         <staff>1</staff>
       </note>
       
-      <backup><duration>4</duration></backup>
+      <backup><duration>3072</duration></backup>
       <!-- end of voice 1 -->
     </part>
     <part id="P10">
@@ -1310,9 +1310,9 @@
       
       <attributes>
         <!--musicxml-interfaces:debug>
-          <div-count>4</div-count>
+          <div-count>3072</div-count>
         </musicxml-interfaces:debug-->
-        <divisions>1</divisions>
+        <divisions>768</divisions>
         <key font-style="normal" font-weight="normal" color="#000000" print-object="yes">
           <fifths>0</fifths>
           <mode>major</mode>
@@ -1331,7 +1331,7 @@
           <staff-lines>5</staff-lines>
         </staff-details>
       </attributes>
-      <forward><duration>4</duration></forward>
+      <forward><duration>3072</duration></forward>
       
       <barline location="right">
         <!--musicxml-interfaces:debug>
@@ -1341,7 +1341,7 @@
       </barline>
       <forward><duration>0</duration></forward>
       
-      <backup><duration>4</duration></backup>
+      <backup><duration>3072</duration></backup>
       <!-- end of staff 1 -->
       <!-- voice 1 -->
       <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
@@ -1349,7 +1349,7 @@
           <step>D</step>
           <octave>3</octave>
         </pitch>
-        <duration>1</duration>
+        <duration>768</duration>
         <voice>1</voice>
         <type>quarter</type>
         <staff>1</staff>
@@ -1359,7 +1359,7 @@
         <rest measure="no">
           
         </rest>
-        <duration>1</duration>
+        <duration>768</duration>
         <voice>1</voice>
         <type>quarter</type>
         <staff>1</staff>
@@ -1369,13 +1369,13 @@
         <rest measure="no">
           
         </rest>
-        <duration>2</duration>
+        <duration>1536</duration>
         <voice>1</voice>
         <type>half</type>
         <staff>1</staff>
       </note>
       
-      <backup><duration>4</duration></backup>
+      <backup><duration>3072</duration></backup>
       <!-- end of voice 1 -->
     </part>
     <part id="P11">
@@ -1411,9 +1411,9 @@
       
       <attributes>
         <!--musicxml-interfaces:debug>
-          <div-count>4</div-count>
+          <div-count>3072</div-count>
         </musicxml-interfaces:debug-->
-        <divisions>1</divisions>
+        <divisions>768</divisions>
         <key font-style="normal" font-weight="normal" color="#000000" print-object="yes">
           <fifths>0</fifths>
           <mode>major</mode>
@@ -1432,7 +1432,7 @@
           <staff-lines>5</staff-lines>
         </staff-details>
       </attributes>
-      <forward><duration>4</duration></forward>
+      <forward><duration>3072</duration></forward>
       
       <barline location="right">
         <!--musicxml-interfaces:debug>
@@ -1442,7 +1442,7 @@
       </barline>
       <forward><duration>0</duration></forward>
       
-      <backup><duration>4</duration></backup>
+      <backup><duration>3072</duration></backup>
       <!-- end of staff 1 -->
       <!-- voice 1 -->
       <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
@@ -1450,7 +1450,7 @@
           <step>E</step>
           <octave>3</octave>
         </pitch>
-        <duration>1</duration>
+        <duration>768</duration>
         <voice>1</voice>
         <type>quarter</type>
         <staff>1</staff>
@@ -1460,7 +1460,7 @@
         <rest measure="no">
           
         </rest>
-        <duration>1</duration>
+        <duration>768</duration>
         <voice>1</voice>
         <type>quarter</type>
         <staff>1</staff>
@@ -1470,13 +1470,13 @@
         <rest measure="no">
           
         </rest>
-        <duration>2</duration>
+        <duration>1536</duration>
         <voice>1</voice>
         <type>half</type>
         <staff>1</staff>
       </note>
       
-      <backup><duration>4</duration></backup>
+      <backup><duration>3072</duration></backup>
       <!-- end of voice 1 -->
     </part>
     <part id="P12">
@@ -1512,9 +1512,9 @@
       
       <attributes>
         <!--musicxml-interfaces:debug>
-          <div-count>4</div-count>
+          <div-count>3072</div-count>
         </musicxml-interfaces:debug-->
-        <divisions>1</divisions>
+        <divisions>768</divisions>
         <key font-style="normal" font-weight="normal" color="#000000" print-object="yes">
           <fifths>0</fifths>
           <mode>major</mode>
@@ -1538,7 +1538,7 @@
           <octave-change>-1</octave-change>
         </transpose>
       </attributes>
-      <forward><duration>4</duration></forward>
+      <forward><duration>3072</duration></forward>
       
       <barline location="right">
         <!--musicxml-interfaces:debug>
@@ -1548,7 +1548,7 @@
       </barline>
       <forward><duration>0</duration></forward>
       
-      <backup><duration>4</duration></backup>
+      <backup><duration>3072</duration></backup>
       <!-- end of staff 1 -->
       <!-- voice 1 -->
       <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
@@ -1556,7 +1556,7 @@
           <step>B</step>
           <octave>2</octave>
         </pitch>
-        <duration>1</duration>
+        <duration>768</duration>
         <voice>1</voice>
         <type>quarter</type>
         <staff>1</staff>
@@ -1566,7 +1566,7 @@
         <rest measure="no">
           
         </rest>
-        <duration>1</duration>
+        <duration>768</duration>
         <voice>1</voice>
         <type>quarter</type>
         <staff>1</staff>
@@ -1576,13 +1576,13 @@
         <rest measure="no">
           
         </rest>
-        <duration>2</duration>
+        <duration>1536</duration>
         <voice>1</voice>
         <type>half</type>
         <staff>1</staff>
       </note>
       
-      <backup><duration>4</duration></backup>
+      <backup><duration>3072</duration></backup>
       <!-- end of voice 1 -->
     </part>
     <part id="P13">
@@ -1618,9 +1618,9 @@
       
       <attributes>
         <!--musicxml-interfaces:debug>
-          <div-count>4</div-count>
+          <div-count>3072</div-count>
         </musicxml-interfaces:debug-->
-        <divisions>1</divisions>
+        <divisions>768</divisions>
         <key font-style="normal" font-weight="normal" color="#000000" print-object="yes">
           <fifths>1</fifths>
           <mode>major</mode>
@@ -1643,7 +1643,7 @@
           <chromatic>-7</chromatic>
         </transpose>
       </attributes>
-      <forward><duration>4</duration></forward>
+      <forward><duration>3072</duration></forward>
       
       <barline location="right">
         <!--musicxml-interfaces:debug>
@@ -1653,7 +1653,7 @@
       </barline>
       <forward><duration>0</duration></forward>
       
-      <backup><duration>4</duration></backup>
+      <backup><duration>3072</duration></backup>
       <!-- end of staff 1 -->
       <!-- voice 1 -->
       <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
@@ -1661,7 +1661,7 @@
           <step>E</step>
           <octave>5</octave>
         </pitch>
-        <duration>1</duration>
+        <duration>768</duration>
         <voice>1</voice>
         <type>quarter</type>
         <staff>1</staff>
@@ -1671,7 +1671,7 @@
         <rest measure="no">
           
         </rest>
-        <duration>1</duration>
+        <duration>768</duration>
         <voice>1</voice>
         <type>quarter</type>
         <staff>1</staff>
@@ -1681,13 +1681,13 @@
         <rest measure="no">
           
         </rest>
-        <duration>2</duration>
+        <duration>1536</duration>
         <voice>1</voice>
         <type>half</type>
         <staff>1</staff>
       </note>
       
-      <backup><duration>4</duration></backup>
+      <backup><duration>3072</duration></backup>
       <!-- end of voice 1 -->
     </part>
     <part id="P14">
@@ -1723,9 +1723,9 @@
       
       <attributes>
         <!--musicxml-interfaces:debug>
-          <div-count>4</div-count>
+          <div-count>3072</div-count>
         </musicxml-interfaces:debug-->
-        <divisions>1</divisions>
+        <divisions>768</divisions>
         <key font-style="normal" font-weight="normal" color="#000000" print-object="yes">
           <fifths>1</fifths>
           <mode>major</mode>
@@ -1748,7 +1748,7 @@
           <chromatic>-7</chromatic>
         </transpose>
       </attributes>
-      <forward><duration>4</duration></forward>
+      <forward><duration>3072</duration></forward>
       
       <barline location="right">
         <!--musicxml-interfaces:debug>
@@ -1758,7 +1758,7 @@
       </barline>
       <forward><duration>0</duration></forward>
       
-      <backup><duration>4</duration></backup>
+      <backup><duration>3072</duration></backup>
       <!-- end of staff 1 -->
       <!-- voice 1 -->
       <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
@@ -1766,7 +1766,7 @@
           <step>G</step>
           <octave>4</octave>
         </pitch>
-        <duration>1</duration>
+        <duration>768</duration>
         <voice>1</voice>
         <type>quarter</type>
         <staff>1</staff>
@@ -1776,7 +1776,7 @@
         <rest measure="no">
           
         </rest>
-        <duration>1</duration>
+        <duration>768</duration>
         <voice>1</voice>
         <type>quarter</type>
         <staff>1</staff>
@@ -1786,13 +1786,13 @@
         <rest measure="no">
           
         </rest>
-        <duration>2</duration>
+        <duration>1536</duration>
         <voice>1</voice>
         <type>half</type>
         <staff>1</staff>
       </note>
       
-      <backup><duration>4</duration></backup>
+      <backup><duration>3072</duration></backup>
       <!-- end of voice 1 -->
     </part>
     <part id="P15">
@@ -1828,9 +1828,9 @@
       
       <attributes>
         <!--musicxml-interfaces:debug>
-          <div-count>4</div-count>
+          <div-count>3072</div-count>
         </musicxml-interfaces:debug-->
-        <divisions>1</divisions>
+        <divisions>768</divisions>
         <key font-style="normal" font-weight="normal" color="#000000" print-object="yes">
           <fifths>0</fifths>
           <mode>major</mode>
@@ -1849,7 +1849,7 @@
           <staff-lines>5</staff-lines>
         </staff-details>
       </attributes>
-      <forward><duration>4</duration></forward>
+      <forward><duration>3072</duration></forward>
       
       <barline location="right">
         <!--musicxml-interfaces:debug>
@@ -1859,7 +1859,7 @@
       </barline>
       <forward><duration>0</duration></forward>
       
-      <backup><duration>4</duration></backup>
+      <backup><duration>3072</duration></backup>
       <!-- end of staff 1 -->
       <!-- voice 1 -->
       <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
@@ -1867,7 +1867,7 @@
           <step>F</step>
           <octave>4</octave>
         </pitch>
-        <duration>1</duration>
+        <duration>768</duration>
         <voice>1</voice>
         <type>quarter</type>
         <staff>1</staff>
@@ -1877,7 +1877,7 @@
         <rest measure="no">
           
         </rest>
-        <duration>1</duration>
+        <duration>768</duration>
         <voice>1</voice>
         <type>quarter</type>
         <staff>1</staff>
@@ -1887,13 +1887,13 @@
         <rest measure="no">
           
         </rest>
-        <duration>2</duration>
+        <duration>1536</duration>
         <voice>1</voice>
         <type>half</type>
         <staff>1</staff>
       </note>
       
-      <backup><duration>4</duration></backup>
+      <backup><duration>3072</duration></backup>
       <!-- end of voice 1 -->
     </part>
     <part id="P16">
@@ -1929,9 +1929,9 @@
       
       <attributes>
         <!--musicxml-interfaces:debug>
-          <div-count>4</div-count>
+          <div-count>3072</div-count>
         </musicxml-interfaces:debug-->
-        <divisions>1</divisions>
+        <divisions>768</divisions>
         <key font-style="normal" font-weight="normal" color="#000000" print-object="yes">
           <fifths>0</fifths>
           <mode>major</mode>
@@ -1950,7 +1950,7 @@
           <staff-lines>5</staff-lines>
         </staff-details>
       </attributes>
-      <forward><duration>4</duration></forward>
+      <forward><duration>3072</duration></forward>
       
       <barline location="right">
         <!--musicxml-interfaces:debug>
@@ -1960,7 +1960,7 @@
       </barline>
       <forward><duration>0</duration></forward>
       
-      <backup><duration>4</duration></backup>
+      <backup><duration>3072</duration></backup>
       <!-- end of staff 1 -->
       <!-- voice 1 -->
       <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
@@ -1968,7 +1968,7 @@
           <step>A</step>
           <octave>4</octave>
         </pitch>
-        <duration>1</duration>
+        <duration>768</duration>
         <voice>1</voice>
         <type>quarter</type>
         <staff>1</staff>
@@ -1978,7 +1978,7 @@
         <rest measure="no">
           
         </rest>
-        <duration>1</duration>
+        <duration>768</duration>
         <voice>1</voice>
         <type>quarter</type>
         <staff>1</staff>
@@ -1988,13 +1988,13 @@
         <rest measure="no">
           
         </rest>
-        <duration>2</duration>
+        <duration>1536</duration>
         <voice>1</voice>
         <type>half</type>
         <staff>1</staff>
       </note>
       
-      <backup><duration>4</duration></backup>
+      <backup><duration>3072</duration></backup>
       <!-- end of voice 1 -->
     </part>
     <part id="P17">
@@ -2030,9 +2030,9 @@
       
       <attributes>
         <!--musicxml-interfaces:debug>
-          <div-count>4</div-count>
+          <div-count>3072</div-count>
         </musicxml-interfaces:debug-->
-        <divisions>1</divisions>
+        <divisions>768</divisions>
         <key font-style="normal" font-weight="normal" color="#000000" print-object="yes">
           <fifths>0</fifths>
           <mode>major</mode>
@@ -2051,7 +2051,7 @@
           <staff-lines>5</staff-lines>
         </staff-details>
       </attributes>
-      <forward><duration>4</duration></forward>
+      <forward><duration>3072</duration></forward>
       
       <barline location="right">
         <!--musicxml-interfaces:debug>
@@ -2061,7 +2061,7 @@
       </barline>
       <forward><duration>0</duration></forward>
       
-      <backup><duration>4</duration></backup>
+      <backup><duration>3072</duration></backup>
       <!-- end of staff 1 -->
       <!-- voice 1 -->
       <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
@@ -2069,7 +2069,7 @@
           <step>B</step>
           <octave>2</octave>
         </pitch>
-        <duration>1</duration>
+        <duration>768</duration>
         <voice>1</voice>
         <type>quarter</type>
         <staff>1</staff>
@@ -2079,7 +2079,7 @@
         <rest measure="no">
           
         </rest>
-        <duration>1</duration>
+        <duration>768</duration>
         <voice>1</voice>
         <type>quarter</type>
         <staff>1</staff>
@@ -2089,13 +2089,13 @@
         <rest measure="no">
           
         </rest>
-        <duration>2</duration>
+        <duration>1536</duration>
         <voice>1</voice>
         <type>half</type>
         <staff>1</staff>
       </note>
       
-      <backup><duration>4</duration></backup>
+      <backup><duration>3072</duration></backup>
       <!-- end of voice 1 -->
     </part>
     <part id="P18">
@@ -2131,9 +2131,9 @@
       
       <attributes>
         <!--musicxml-interfaces:debug>
-          <div-count>4</div-count>
+          <div-count>3072</div-count>
         </musicxml-interfaces:debug-->
-        <divisions>1</divisions>
+        <divisions>768</divisions>
         <key font-style="normal" font-weight="normal" color="#000000" print-object="yes">
           <fifths>0</fifths>
           <mode>major</mode>
@@ -2152,7 +2152,7 @@
           <staff-lines>5</staff-lines>
         </staff-details>
       </attributes>
-      <forward><duration>4</duration></forward>
+      <forward><duration>3072</duration></forward>
       
       <barline location="right">
         <!--musicxml-interfaces:debug>
@@ -2162,7 +2162,7 @@
       </barline>
       <forward><duration>0</duration></forward>
       
-      <backup><duration>4</duration></backup>
+      <backup><duration>3072</duration></backup>
       <!-- end of staff 1 -->
       <!-- voice 1 -->
       <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
@@ -2170,7 +2170,7 @@
           <step>E</step>
           <octave>3</octave>
         </pitch>
-        <duration>1</duration>
+        <duration>768</duration>
         <voice>1</voice>
         <type>quarter</type>
         <staff>1</staff>
@@ -2180,7 +2180,7 @@
         <rest measure="no">
           
         </rest>
-        <duration>1</duration>
+        <duration>768</duration>
         <voice>1</voice>
         <type>quarter</type>
         <staff>1</staff>
@@ -2190,13 +2190,13 @@
         <rest measure="no">
           
         </rest>
-        <duration>2</duration>
+        <duration>1536</duration>
         <voice>1</voice>
         <type>half</type>
         <staff>1</staff>
       </note>
       
-      <backup><duration>4</duration></backup>
+      <backup><duration>3072</duration></backup>
       <!-- end of voice 1 -->
     </part>
     <part id="P19">
@@ -2232,9 +2232,9 @@
       
       <attributes>
         <!--musicxml-interfaces:debug>
-          <div-count>4</div-count>
+          <div-count>3072</div-count>
         </musicxml-interfaces:debug-->
-        <divisions>1</divisions>
+        <divisions>768</divisions>
         <key font-style="normal" font-weight="normal" color="#000000" print-object="yes">
           <fifths>0</fifths>
           <mode>major</mode>
@@ -2253,7 +2253,7 @@
           <staff-lines>5</staff-lines>
         </staff-details>
       </attributes>
-      <forward><duration>4</duration></forward>
+      <forward><duration>3072</duration></forward>
       
       <barline location="right">
         <!--musicxml-interfaces:debug>
@@ -2263,7 +2263,7 @@
       </barline>
       <forward><duration>0</duration></forward>
       
-      <backup><duration>4</duration></backup>
+      <backup><duration>3072</duration></backup>
       <!-- end of staff 1 -->
       <!-- voice 1 -->
       <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
@@ -2271,7 +2271,7 @@
           <step>E</step>
           <octave>3</octave>
         </pitch>
-        <duration>1</duration>
+        <duration>768</duration>
         <voice>1</voice>
         <type>quarter</type>
         <staff>1</staff>
@@ -2281,7 +2281,7 @@
         <rest measure="no">
           
         </rest>
-        <duration>1</duration>
+        <duration>768</duration>
         <voice>1</voice>
         <type>quarter</type>
         <staff>1</staff>
@@ -2291,13 +2291,13 @@
         <rest measure="no">
           
         </rest>
-        <duration>2</duration>
+        <duration>1536</duration>
         <voice>1</voice>
         <type>half</type>
         <staff>1</staff>
       </note>
       
-      <backup><duration>4</duration></backup>
+      <backup><duration>3072</duration></backup>
       <!-- end of voice 1 -->
     </part>
     <part id="P20">
@@ -2333,9 +2333,9 @@
       
       <attributes>
         <!--musicxml-interfaces:debug>
-          <div-count>4</div-count>
+          <div-count>3072</div-count>
         </musicxml-interfaces:debug-->
-        <divisions>1</divisions>
+        <divisions>768</divisions>
         <key font-style="normal" font-weight="normal" color="#000000" print-object="yes">
           <fifths>0</fifths>
           <mode>major</mode>
@@ -2353,7 +2353,7 @@
           <staff-lines>5</staff-lines>
         </staff-details>
       </attributes>
-      <forward><duration>4</duration></forward>
+      <forward><duration>3072</duration></forward>
       
       <barline location="right">
         <!--musicxml-interfaces:debug>
@@ -2363,7 +2363,7 @@
       </barline>
       <forward><duration>0</duration></forward>
       
-      <backup><duration>4</duration></backup>
+      <backup><duration>3072</duration></backup>
       <!-- end of staff 1 -->
       <!-- voice 1 -->
       <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
@@ -2371,7 +2371,7 @@
           <step>F</step>
           <octave>3</octave>
         </pitch>
-        <duration>1</duration>
+        <duration>768</duration>
         <voice>1</voice>
         <type>quarter</type>
         <staff>1</staff>
@@ -2381,7 +2381,7 @@
         <rest measure="no">
           
         </rest>
-        <duration>1</duration>
+        <duration>768</duration>
         <voice>1</voice>
         <type>quarter</type>
         <staff>1</staff>
@@ -2391,13 +2391,13 @@
         <rest measure="no">
           
         </rest>
-        <duration>2</duration>
+        <duration>1536</duration>
         <voice>1</voice>
         <type>half</type>
         <staff>1</staff>
       </note>
       
-      <backup><duration>4</duration></backup>
+      <backup><duration>3072</duration></backup>
       <!-- end of voice 1 -->
     </part>
     <part id="P21">
@@ -2433,9 +2433,9 @@
       
       <attributes>
         <!--musicxml-interfaces:debug>
-          <div-count>4</div-count>
+          <div-count>3072</div-count>
         </musicxml-interfaces:debug-->
-        <divisions>1</divisions>
+        <divisions>768</divisions>
         <key font-style="normal" font-weight="normal" color="#000000" print-object="yes">
           <fifths>0</fifths>
           <mode>major</mode>
@@ -2454,7 +2454,7 @@
           <staff-lines>5</staff-lines>
         </staff-details>
       </attributes>
-      <forward><duration>4</duration></forward>
+      <forward><duration>3072</duration></forward>
       
       <barline location="right">
         <!--musicxml-interfaces:debug>
@@ -2464,7 +2464,7 @@
       </barline>
       <forward><duration>0</duration></forward>
       
-      <backup><duration>4</duration></backup>
+      <backup><duration>3072</duration></backup>
       <!-- end of staff 1 -->
       <!-- voice 1 -->
       <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
@@ -2472,7 +2472,7 @@
           <display-step>E</display-step>
           <display-octave>5</display-octave>
         </unpitched>
-        <duration>1</duration>
+        <duration>768</duration>
         <instrument id="P21-M76" />
         <voice>1</voice>
         <type>quarter</type>
@@ -2483,7 +2483,7 @@
         <rest measure="no">
           
         </rest>
-        <duration>1</duration>
+        <duration>768</duration>
         <voice>1</voice>
         <type>quarter</type>
         <staff>1</staff>
@@ -2493,13 +2493,13 @@
         <rest measure="no">
           
         </rest>
-        <duration>2</duration>
+        <duration>1536</duration>
         <voice>1</voice>
         <type>half</type>
         <staff>1</staff>
       </note>
       
-      <backup><duration>4</duration></backup>
+      <backup><duration>3072</duration></backup>
       <!-- end of voice 1 -->
     </part>
     <part id="P22">
@@ -2535,9 +2535,9 @@
       
       <attributes>
         <!--musicxml-interfaces:debug>
-          <div-count>4</div-count>
+          <div-count>3072</div-count>
         </musicxml-interfaces:debug-->
-        <divisions>1</divisions>
+        <divisions>768</divisions>
         <key font-style="normal" font-weight="normal" color="#000000" print-object="yes">
           <fifths>0</fifths>
           <mode>major</mode>
@@ -2560,7 +2560,7 @@
           <staff-lines>5</staff-lines>
         </staff-details>
       </attributes>
-      <forward><duration>4</duration></forward>
+      <forward><duration>3072</duration></forward>
       
       <barline location="right">
         <!--musicxml-interfaces:debug>
@@ -2570,7 +2570,7 @@
       </barline>
       <forward><duration>0</duration></forward>
       
-      <backup><duration>4</duration></backup>
+      <backup><duration>3072</duration></backup>
       <!-- end of staff 1 -->
       <!-- staff 2 -->
       <!-- proxy for <print new-system="no" new-page="no" page-number="1">
@@ -2603,9 +2603,9 @@
       
       <!-- proxy for <attributes>
         <!\-\-musicxml-interfaces:debug>
-          <div-count>4</div-count>
+          <div-count>3072</div-count>
         </musicxml-interfaces:debug\-\->
-        <divisions>1</divisions>
+        <divisions>768</divisions>
         <key font-style="normal" font-weight="normal" color="#000000" print-object="yes">
           <fifths>0</fifths>
           <mode>major</mode>
@@ -2628,12 +2628,12 @@
           <staff-lines>5</staff-lines>
         </staff-details>
       </attributes>
-      <forward><duration>4</duration></forward>
+      <forward><duration>3072</duration></forward>
        -->
-      <forward><duration>4</duration></forward>
+      <forward><duration>3072</duration></forward>
       
       <!-- spacer -->
-      <forward><duration>4</duration></forward>
+      <forward><duration>3072</duration></forward>
       
       <barline>
         <!--musicxml-interfaces:debug>
@@ -2643,7 +2643,7 @@
       </barline>
       <forward><duration>0</duration></forward>
       
-      <backup><duration>8</duration></backup>
+      <backup><duration>6144</duration></backup>
       <!-- end of staff 2 -->
       <!-- voice 1 -->
       <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
@@ -2651,7 +2651,7 @@
           <step>D</step>
           <octave>5</octave>
         </pitch>
-        <duration>1</duration>
+        <duration>768</duration>
         <voice>1</voice>
         <type>quarter</type>
         <staff>1</staff>
@@ -2661,7 +2661,7 @@
         <rest measure="no">
           
         </rest>
-        <duration>1</duration>
+        <duration>768</duration>
         <voice>1</voice>
         <type>quarter</type>
         <staff>1</staff>
@@ -2671,13 +2671,13 @@
         <rest measure="no">
           
         </rest>
-        <duration>2</duration>
+        <duration>1536</duration>
         <voice>1</voice>
         <type>half</type>
         <staff>1</staff>
       </note>
       
-      <backup><duration>4</duration></backup>
+      <backup><duration>3072</duration></backup>
       <!-- end of voice 1 -->
       <!-- voice 2 -->
       <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
@@ -2685,7 +2685,7 @@
           <step>A</step>
           <octave>2</octave>
         </pitch>
-        <duration>1</duration>
+        <duration>768</duration>
         <voice>2</voice>
         <type>quarter</type>
         <staff>2</staff>
@@ -2695,7 +2695,7 @@
         <rest measure="no">
           
         </rest>
-        <duration>1</duration>
+        <duration>768</duration>
         <voice>2</voice>
         <type>quarter</type>
         <staff>2</staff>
@@ -2705,13 +2705,13 @@
         <rest measure="no">
           
         </rest>
-        <duration>2</duration>
+        <duration>1536</duration>
         <voice>2</voice>
         <type>half</type>
         <staff>2</staff>
       </note>
       
-      <backup><duration>4</duration></backup>
+      <backup><duration>3072</duration></backup>
       <!-- end of voice 2 -->
     </part>
     <part id="P23">
@@ -2747,9 +2747,9 @@
       
       <attributes>
         <!--musicxml-interfaces:debug>
-          <div-count>4</div-count>
+          <div-count>3072</div-count>
         </musicxml-interfaces:debug-->
-        <divisions>1</divisions>
+        <divisions>768</divisions>
         <key font-style="normal" font-weight="normal" color="#000000" print-object="yes">
           <fifths>0</fifths>
           <mode>major</mode>
@@ -2772,7 +2772,7 @@
           <staff-lines>5</staff-lines>
         </staff-details>
       </attributes>
-      <forward><duration>4</duration></forward>
+      <forward><duration>3072</duration></forward>
       
       <barline location="right">
         <!--musicxml-interfaces:debug>
@@ -2782,7 +2782,7 @@
       </barline>
       <forward><duration>0</duration></forward>
       
-      <backup><duration>4</duration></backup>
+      <backup><duration>3072</duration></backup>
       <!-- end of staff 1 -->
       <!-- staff 2 -->
       <!-- proxy for <print new-system="no" new-page="no" page-number="1">
@@ -2815,9 +2815,9 @@
       
       <!-- proxy for <attributes>
         <!\-\-musicxml-interfaces:debug>
-          <div-count>4</div-count>
+          <div-count>3072</div-count>
         </musicxml-interfaces:debug\-\->
-        <divisions>1</divisions>
+        <divisions>768</divisions>
         <key font-style="normal" font-weight="normal" color="#000000" print-object="yes">
           <fifths>0</fifths>
           <mode>major</mode>
@@ -2840,12 +2840,12 @@
           <staff-lines>5</staff-lines>
         </staff-details>
       </attributes>
-      <forward><duration>4</duration></forward>
+      <forward><duration>3072</duration></forward>
        -->
-      <forward><duration>4</duration></forward>
+      <forward><duration>3072</duration></forward>
       
       <!-- spacer -->
-      <forward><duration>4</duration></forward>
+      <forward><duration>3072</duration></forward>
       
       <barline>
         <!--musicxml-interfaces:debug>
@@ -2855,7 +2855,7 @@
       </barline>
       <forward><duration>0</duration></forward>
       
-      <backup><duration>8</duration></backup>
+      <backup><duration>6144</duration></backup>
       <!-- end of staff 2 -->
       <!-- voice 1 -->
       <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
@@ -2863,7 +2863,7 @@
           <step>G</step>
           <octave>4</octave>
         </pitch>
-        <duration>1</duration>
+        <duration>768</duration>
         <voice>1</voice>
         <type>quarter</type>
         <staff>1</staff>
@@ -2873,7 +2873,7 @@
         <rest measure="no">
           
         </rest>
-        <duration>1</duration>
+        <duration>768</duration>
         <voice>1</voice>
         <type>quarter</type>
         <staff>1</staff>
@@ -2883,13 +2883,13 @@
         <rest measure="no">
           
         </rest>
-        <duration>2</duration>
+        <duration>1536</duration>
         <voice>1</voice>
         <type>half</type>
         <staff>1</staff>
       </note>
       
-      <backup><duration>4</duration></backup>
+      <backup><duration>3072</duration></backup>
       <!-- end of voice 1 -->
       <!-- voice 2 -->
       <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
@@ -2897,7 +2897,7 @@
           <step>E</step>
           <octave>3</octave>
         </pitch>
-        <duration>1</duration>
+        <duration>768</duration>
         <voice>2</voice>
         <type>quarter</type>
         <staff>2</staff>
@@ -2907,7 +2907,7 @@
         <rest measure="no">
           
         </rest>
-        <duration>1</duration>
+        <duration>768</duration>
         <voice>2</voice>
         <type>quarter</type>
         <staff>2</staff>
@@ -2917,13 +2917,13 @@
         <rest measure="no">
           
         </rest>
-        <duration>2</duration>
+        <duration>1536</duration>
         <voice>2</voice>
         <type>half</type>
         <staff>2</staff>
       </note>
       
-      <backup><duration>4</duration></backup>
+      <backup><duration>3072</duration></backup>
       <!-- end of voice 2 -->
     </part>
     <part id="P24">
@@ -2959,9 +2959,9 @@
       
       <attributes>
         <!--musicxml-interfaces:debug>
-          <div-count>4</div-count>
+          <div-count>3072</div-count>
         </musicxml-interfaces:debug-->
-        <divisions>1</divisions>
+        <divisions>768</divisions>
         <key font-style="normal" font-weight="normal" color="#000000" print-object="yes">
           <fifths>0</fifths>
           <mode>major</mode>
@@ -2980,7 +2980,7 @@
           <staff-lines>5</staff-lines>
         </staff-details>
       </attributes>
-      <forward><duration>4</duration></forward>
+      <forward><duration>3072</duration></forward>
       
       <barline location="right">
         <!--musicxml-interfaces:debug>
@@ -2990,7 +2990,7 @@
       </barline>
       <forward><duration>0</duration></forward>
       
-      <backup><duration>4</duration></backup>
+      <backup><duration>3072</duration></backup>
       <!-- end of staff 1 -->
       <!-- voice 1 -->
       <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
@@ -2998,7 +2998,7 @@
           <step>E</step>
           <octave>5</octave>
         </pitch>
-        <duration>1</duration>
+        <duration>768</duration>
         <voice>1</voice>
         <type>quarter</type>
         <staff>1</staff>
@@ -3008,7 +3008,7 @@
         <rest measure="no">
           
         </rest>
-        <duration>1</duration>
+        <duration>768</duration>
         <voice>1</voice>
         <type>quarter</type>
         <staff>1</staff>
@@ -3018,13 +3018,13 @@
         <rest measure="no">
           
         </rest>
-        <duration>2</duration>
+        <duration>1536</duration>
         <voice>1</voice>
         <type>half</type>
         <staff>1</staff>
       </note>
       
-      <backup><duration>4</duration></backup>
+      <backup><duration>3072</duration></backup>
       <!-- end of voice 1 -->
     </part>
     <part id="P25">
@@ -3060,9 +3060,9 @@
       
       <attributes>
         <!--musicxml-interfaces:debug>
-          <div-count>4</div-count>
+          <div-count>3072</div-count>
         </musicxml-interfaces:debug-->
-        <divisions>1</divisions>
+        <divisions>768</divisions>
         <key font-style="normal" font-weight="normal" color="#000000" print-object="yes">
           <fifths>0</fifths>
           <mode>major</mode>
@@ -3081,7 +3081,7 @@
           <staff-lines>5</staff-lines>
         </staff-details>
       </attributes>
-      <forward><duration>4</duration></forward>
+      <forward><duration>3072</duration></forward>
       
       <barline location="right">
         <!--musicxml-interfaces:debug>
@@ -3091,7 +3091,7 @@
       </barline>
       <forward><duration>0</duration></forward>
       
-      <backup><duration>4</duration></backup>
+      <backup><duration>3072</duration></backup>
       <!-- end of staff 1 -->
       <!-- voice 1 -->
       <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
@@ -3099,7 +3099,7 @@
           <step>F</step>
           <octave>4</octave>
         </pitch>
-        <duration>1</duration>
+        <duration>768</duration>
         <voice>1</voice>
         <type>quarter</type>
         <staff>1</staff>
@@ -3109,7 +3109,7 @@
         <rest measure="no">
           
         </rest>
-        <duration>1</duration>
+        <duration>768</duration>
         <voice>1</voice>
         <type>quarter</type>
         <staff>1</staff>
@@ -3119,13 +3119,13 @@
         <rest measure="no">
           
         </rest>
-        <duration>2</duration>
+        <duration>1536</duration>
         <voice>1</voice>
         <type>half</type>
         <staff>1</staff>
       </note>
       
-      <backup><duration>4</duration></backup>
+      <backup><duration>3072</duration></backup>
       <!-- end of voice 1 -->
     </part>
     <part id="P26">
@@ -3161,9 +3161,9 @@
       
       <attributes>
         <!--musicxml-interfaces:debug>
-          <div-count>4</div-count>
+          <div-count>3072</div-count>
         </musicxml-interfaces:debug-->
-        <divisions>1</divisions>
+        <divisions>768</divisions>
         <key font-style="normal" font-weight="normal" color="#000000" print-object="yes">
           <fifths>0</fifths>
           <mode>major</mode>
@@ -3182,7 +3182,7 @@
           <staff-lines>5</staff-lines>
         </staff-details>
       </attributes>
-      <forward><duration>4</duration></forward>
+      <forward><duration>3072</duration></forward>
       
       <barline location="right">
         <!--musicxml-interfaces:debug>
@@ -3192,7 +3192,7 @@
       </barline>
       <forward><duration>0</duration></forward>
       
-      <backup><duration>4</duration></backup>
+      <backup><duration>3072</duration></backup>
       <!-- end of staff 1 -->
       <!-- voice 1 -->
       <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
@@ -3200,7 +3200,7 @@
           <step>C</step>
           <octave>4</octave>
         </pitch>
-        <duration>1</duration>
+        <duration>768</duration>
         <voice>1</voice>
         <type>quarter</type>
         <staff>1</staff>
@@ -3210,7 +3210,7 @@
         <rest measure="no">
           
         </rest>
-        <duration>1</duration>
+        <duration>768</duration>
         <voice>1</voice>
         <type>quarter</type>
         <staff>1</staff>
@@ -3220,13 +3220,13 @@
         <rest measure="no">
           
         </rest>
-        <duration>2</duration>
+        <duration>1536</duration>
         <voice>1</voice>
         <type>half</type>
         <staff>1</staff>
       </note>
       
-      <backup><duration>4</duration></backup>
+      <backup><duration>3072</duration></backup>
       <!-- end of voice 1 -->
     </part>
     <part id="P27">
@@ -3262,9 +3262,9 @@
       
       <attributes>
         <!--musicxml-interfaces:debug>
-          <div-count>4</div-count>
+          <div-count>3072</div-count>
         </musicxml-interfaces:debug-->
-        <divisions>1</divisions>
+        <divisions>768</divisions>
         <key font-style="normal" font-weight="normal" color="#000000" print-object="yes">
           <fifths>0</fifths>
           <mode>major</mode>
@@ -3283,7 +3283,7 @@
           <staff-lines>5</staff-lines>
         </staff-details>
       </attributes>
-      <forward><duration>4</duration></forward>
+      <forward><duration>3072</duration></forward>
       
       <barline location="right">
         <!--musicxml-interfaces:debug>
@@ -3293,7 +3293,7 @@
       </barline>
       <forward><duration>0</duration></forward>
       
-      <backup><duration>4</duration></backup>
+      <backup><duration>3072</duration></backup>
       <!-- end of staff 1 -->
       <!-- voice 1 -->
       <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
@@ -3301,7 +3301,7 @@
           <step>C</step>
           <octave>3</octave>
         </pitch>
-        <duration>1</duration>
+        <duration>768</duration>
         <voice>1</voice>
         <type>quarter</type>
         <staff>1</staff>
@@ -3311,7 +3311,7 @@
         <rest measure="no">
           
         </rest>
-        <duration>1</duration>
+        <duration>768</duration>
         <voice>1</voice>
         <type>quarter</type>
         <staff>1</staff>
@@ -3321,13 +3321,13 @@
         <rest measure="no">
           
         </rest>
-        <duration>2</duration>
+        <duration>1536</duration>
         <voice>1</voice>
         <type>half</type>
         <staff>1</staff>
       </note>
       
-      <backup><duration>4</duration></backup>
+      <backup><duration>3072</duration></backup>
       <!-- end of voice 1 -->
     </part>
     <part id="P28">
@@ -3363,9 +3363,9 @@
       
       <attributes>
         <!--musicxml-interfaces:debug>
-          <div-count>4</div-count>
+          <div-count>3072</div-count>
         </musicxml-interfaces:debug-->
-        <divisions>1</divisions>
+        <divisions>768</divisions>
         <key font-style="normal" font-weight="normal" color="#000000" print-object="yes">
           <fifths>0</fifths>
           <mode>major</mode>
@@ -3389,7 +3389,7 @@
           <octave-change>-1</octave-change>
         </transpose>
       </attributes>
-      <forward><duration>4</duration></forward>
+      <forward><duration>3072</duration></forward>
       
       <barline location="right">
         <!--musicxml-interfaces:debug>
@@ -3399,7 +3399,7 @@
       </barline>
       <forward><duration>0</duration></forward>
       
-      <backup><duration>4</duration></backup>
+      <backup><duration>3072</duration></backup>
       <!-- end of staff 1 -->
       <!-- voice 1 -->
       <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
@@ -3407,7 +3407,7 @@
           <step>C</step>
           <octave>3</octave>
         </pitch>
-        <duration>1</duration>
+        <duration>768</duration>
         <voice>1</voice>
         <type>quarter</type>
         <staff>1</staff>
@@ -3417,7 +3417,7 @@
         <rest measure="no">
           
         </rest>
-        <duration>1</duration>
+        <duration>768</duration>
         <voice>1</voice>
         <type>quarter</type>
         <staff>1</staff>
@@ -3427,13 +3427,13 @@
         <rest measure="no">
           
         </rest>
-        <duration>2</duration>
+        <duration>1536</duration>
         <voice>1</voice>
         <type>half</type>
         <staff>1</staff>
       </note>
       
-      <backup><duration>4</duration></backup>
+      <backup><duration>3072</duration></backup>
       <!-- end of voice 1 -->
     </part>
   </measure>

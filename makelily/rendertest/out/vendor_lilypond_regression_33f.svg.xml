@@ -97,9 +97,9 @@
       
       <attributes>
         <!--musicxml-interfaces:debug>
-          <div-count>1260</div-count>
+          <div-count>16128</div-count>
         </musicxml-interfaces:debug-->
-        <divisions>336</divisions>
+        <divisions>5376</divisions>
         <key font-style="normal" font-weight="normal" color="#000000" print-object="yes">
           <fifths>0</fifths>
           <mode>major</mode>
@@ -122,7 +122,7 @@
           <staff-lines>5</staff-lines>
         </staff-details>
       </attributes>
-      <forward><duration>1260</duration></forward>
+      <forward><duration>16128</duration></forward>
       
       <barline>
         <!--musicxml-interfaces:debug>
@@ -132,7 +132,7 @@
       </barline>
       <forward><duration>0</duration></forward>
       
-      <backup><duration>1260</duration></backup>
+      <backup><duration>16128</duration></backup>
       <!-- end of staff 1 -->
       <!-- staff 2 -->
       <!-- proxy for <print new-system="no" new-page="no" page-number="1">
@@ -165,9 +165,9 @@
       
       <!-- proxy for <attributes>
         <!\-\-musicxml-interfaces:debug>
-          <div-count>1260</div-count>
+          <div-count>16128</div-count>
         </musicxml-interfaces:debug\-\->
-        <divisions>336</divisions>
+        <divisions>5376</divisions>
         <key font-style="normal" font-weight="normal" color="#000000" print-object="yes">
           <fifths>0</fifths>
           <mode>major</mode>
@@ -190,12 +190,12 @@
           <staff-lines>5</staff-lines>
         </staff-details>
       </attributes>
-      <forward><duration>1260</duration></forward>
+      <forward><duration>16128</duration></forward>
        -->
-      <forward><duration>1260</duration></forward>
+      <forward><duration>16128</duration></forward>
       
       <!-- spacer -->
-      <forward><duration>1260</duration></forward>
+      <forward><duration>16128</duration></forward>
       
       <barline>
         <!--musicxml-interfaces:debug>
@@ -205,7 +205,7 @@
       </barline>
       <forward><duration>0</duration></forward>
       
-      <backup><duration>2520</duration></backup>
+      <backup><duration>32256</duration></backup>
       <!-- end of staff 2 -->
       <!-- voice 1 -->
       <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
@@ -213,7 +213,7 @@
           <step>E</step>
           <octave>5</octave>
         </pitch>
-        <duration>336</duration>
+        <duration>5376</duration>
         <voice>1</voice>
         <type>quarter</type>
         <staff>1</staff>
@@ -228,13 +228,13 @@
           <alter>1</alter>
           <octave>5</octave>
         </pitch>
-        <duration>84</duration>
+        <duration>1344</duration>
         <voice>1</voice>
         <type>16th</type>
         <accidental editorial="no" cautionary="no">sharp</accidental>
         <staff>1</staff>
-        <beam number="1">begin</beam>
-        <beam number="2">begin</beam>
+        <beam number="1" repeater="no" fan="none">begin</beam>
+        <beam number="2" repeater="no" fan="none">begin</beam>
       </note>
       
       <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
@@ -242,12 +242,12 @@
           <step>G</step>
           <octave>5</octave>
         </pitch>
-        <duration>84</duration>
+        <duration>1344</duration>
         <voice>1</voice>
         <type>16th</type>
         <staff>1</staff>
-        <beam number="1">end</beam>
-        <beam number="2">end</beam>
+        <beam number="1" repeater="no" fan="none">end</beam>
+        <beam number="2" repeater="no" fan="none">end</beam>
         <notations print-object="yes">
           <slur type="stop" number="1" line-type="solid" dash-length="1" space-length="1" color="#000000" />
           <ornaments>
@@ -272,7 +272,7 @@
           <step>A</step>
           <octave>5</octave>
         </pitch>
-        <duration>504</duration>
+        <duration>8064</duration>
         <voice>1</voice>
         <type>quarter</type>
         <dot />
@@ -288,8 +288,6 @@
         <voice>1</voice>
         <type>16th</type>
         <staff>1</staff>
-        <beam number="1" repeater="no" fan="none">begin</beam>
-        <beam number="2" repeater="no" fan="none">begin</beam>
       </note>
       
       <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
@@ -301,8 +299,6 @@
         <voice>1</voice>
         <type>16th</type>
         <staff>1</staff>
-        <beam number="1" repeater="no" fan="none">end</beam>
-        <beam number="2" repeater="no" fan="none">end</beam>
         <notations print-object="yes">
           <ornaments>
             
@@ -310,7 +306,7 @@
         </notations>
       </note>
       
-      <backup><duration>1008</duration></backup>
+      <backup><duration>16128</duration></backup>
       <!-- end of voice 1 -->
     </part>
   </measure>

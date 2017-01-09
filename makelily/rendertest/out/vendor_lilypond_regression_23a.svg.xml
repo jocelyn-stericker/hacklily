@@ -98,9 +98,9 @@
       
       <attributes>
         <!--musicxml-interfaces:debug>
-          <div-count>1176</div-count>
+          <div-count>75264</div-count>
         </musicxml-interfaces:debug-->
-        <divisions>84</divisions>
+        <divisions>5376</divisions>
         <key font-style="normal" font-weight="normal" color="#000000" print-object="yes">
           <fifths>0</fifths>
           <mode>major</mode>
@@ -118,7 +118,7 @@
           <staff-lines>5</staff-lines>
         </staff-details>
       </attributes>
-      <forward><duration>1176</duration></forward>
+      <forward><duration>75264</duration></forward>
       
       <barline location="right">
         <!--musicxml-interfaces:debug>
@@ -128,7 +128,7 @@
       </barline>
       <forward><duration>0</duration></forward>
       
-      <backup><duration>1176</duration></backup>
+      <backup><duration>75264</duration></backup>
       <!-- end of staff 1 -->
       <!-- voice 1 -->
       <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
@@ -136,7 +136,7 @@
           <step>C</step>
           <octave>4</octave>
         </pitch>
-        <duration>56</duration>
+        <duration>3584</duration>
         <voice>1</voice>
         <type>quarter</type>
         <time-modification>
@@ -161,7 +161,7 @@
           <step>D</step>
           <octave>4</octave>
         </pitch>
-        <duration>56</duration>
+        <duration>3584</duration>
         <voice>1</voice>
         <type>quarter</type>
         <time-modification>
@@ -176,7 +176,7 @@
           <step>E</step>
           <octave>4</octave>
         </pitch>
-        <duration>56</duration>
+        <duration>3584</duration>
         <voice>1</voice>
         <type>quarter</type>
         <time-modification>
@@ -201,7 +201,7 @@
           <step>F</step>
           <octave>4</octave>
         </pitch>
-        <duration>56</duration>
+        <duration>3584</duration>
         <voice>1</voice>
         <type>quarter</type>
         <time-modification>
@@ -226,7 +226,7 @@
           <step>G</step>
           <octave>4</octave>
         </pitch>
-        <duration>56</duration>
+        <duration>3584</duration>
         <voice>1</voice>
         <type>quarter</type>
         <time-modification>
@@ -241,7 +241,7 @@
           <step>A</step>
           <octave>4</octave>
         </pitch>
-        <duration>56</duration>
+        <duration>3584</duration>
         <voice>1</voice>
         <type>quarter</type>
         <time-modification>
@@ -266,7 +266,7 @@
           <step>B</step>
           <octave>4</octave>
         </pitch>
-        <duration>56</duration>
+        <duration>3584</duration>
         <voice>1</voice>
         <type>quarter</type>
         <time-modification>
@@ -291,7 +291,7 @@
           <step>C</step>
           <octave>5</octave>
         </pitch>
-        <duration>56</duration>
+        <duration>3584</duration>
         <voice>1</voice>
         <type>quarter</type>
         <time-modification>
@@ -306,7 +306,7 @@
           <step>D</step>
           <octave>5</octave>
         </pitch>
-        <duration>56</duration>
+        <duration>3584</duration>
         <voice>1</voice>
         <type>quarter</type>
         <time-modification>
@@ -331,7 +331,7 @@
           <step>E</step>
           <octave>5</octave>
         </pitch>
-        <duration>42</duration>
+        <duration>2688</duration>
         <voice>1</voice>
         <type>quarter</type>
         <time-modification>
@@ -356,7 +356,7 @@
           <step>F</step>
           <octave>5</octave>
         </pitch>
-        <duration>42</duration>
+        <duration>2688</duration>
         <voice>1</voice>
         <type>quarter</type>
         <time-modification>
@@ -371,7 +371,7 @@
           <step>G</step>
           <octave>5</octave>
         </pitch>
-        <duration>42</duration>
+        <duration>2688</duration>
         <voice>1</voice>
         <type>quarter</type>
         <time-modification>
@@ -386,7 +386,7 @@
           <step>A</step>
           <octave>5</octave>
         </pitch>
-        <duration>42</duration>
+        <duration>2688</duration>
         <voice>1</voice>
         <type>quarter</type>
         <time-modification>
@@ -411,7 +411,7 @@
           <step>B</step>
           <octave>5</octave>
         </pitch>
-        <duration>21</duration>
+        <duration>1344</duration>
         <voice>1</voice>
         <type>quarter</type>
         <time-modification>
@@ -436,7 +436,7 @@
           <step>C</step>
           <octave>6</octave>
         </pitch>
-        <duration>21</duration>
+        <duration>1344</duration>
         <voice>1</voice>
         <type>quarter</type>
         <time-modification>
@@ -451,7 +451,7 @@
           <step>C</step>
           <octave>6</octave>
         </pitch>
-        <duration>21</duration>
+        <duration>1344</duration>
         <voice>1</voice>
         <type>quarter</type>
         <time-modification>
@@ -466,7 +466,7 @@
           <step>B</step>
           <octave>5</octave>
         </pitch>
-        <duration>21</duration>
+        <duration>1344</duration>
         <voice>1</voice>
         <type>quarter</type>
         <time-modification>
@@ -491,7 +491,7 @@
           <step>A</step>
           <octave>5</octave>
         </pitch>
-        <duration>36</duration>
+        <duration>2304</duration>
         <voice>1</voice>
         <type>quarter</type>
         <time-modification>
@@ -516,7 +516,7 @@
           <step>G</step>
           <octave>5</octave>
         </pitch>
-        <duration>36</duration>
+        <duration>2304</duration>
         <voice>1</voice>
         <type>quarter</type>
         <time-modification>
@@ -531,7 +531,7 @@
           <step>F</step>
           <octave>5</octave>
         </pitch>
-        <duration>36</duration>
+        <duration>2304</duration>
         <voice>1</voice>
         <type>quarter</type>
         <time-modification>
@@ -546,7 +546,7 @@
           <step>E</step>
           <octave>5</octave>
         </pitch>
-        <duration>36</duration>
+        <duration>2304</duration>
         <voice>1</voice>
         <type>quarter</type>
         <time-modification>
@@ -561,7 +561,7 @@
           <step>D</step>
           <octave>5</octave>
         </pitch>
-        <duration>36</duration>
+        <duration>2304</duration>
         <voice>1</voice>
         <type>quarter</type>
         <time-modification>
@@ -576,7 +576,7 @@
           <step>C</step>
           <octave>5</octave>
         </pitch>
-        <duration>36</duration>
+        <duration>2304</duration>
         <voice>1</voice>
         <type>quarter</type>
         <time-modification>
@@ -591,7 +591,7 @@
           <step>B</step>
           <octave>4</octave>
         </pitch>
-        <duration>36</duration>
+        <duration>2304</duration>
         <voice>1</voice>
         <type>quarter</type>
         <time-modification>
@@ -616,7 +616,7 @@
           <step>A</step>
           <octave>4</octave>
         </pitch>
-        <duration>28</duration>
+        <duration>1792</duration>
         <voice>1</voice>
         <type>quarter</type>
         <time-modification>
@@ -641,7 +641,7 @@
           <step>G</step>
           <octave>4</octave>
         </pitch>
-        <duration>28</duration>
+        <duration>1792</duration>
         <voice>1</voice>
         <type>quarter</type>
         <time-modification>
@@ -656,7 +656,7 @@
           <step>F</step>
           <octave>4</octave>
         </pitch>
-        <duration>28</duration>
+        <duration>1792</duration>
         <voice>1</voice>
         <type>quarter</type>
         <time-modification>
@@ -671,7 +671,7 @@
           <step>E</step>
           <octave>4</octave>
         </pitch>
-        <duration>28</duration>
+        <duration>1792</duration>
         <voice>1</voice>
         <type>quarter</type>
         <time-modification>
@@ -686,7 +686,7 @@
           <step>D</step>
           <octave>4</octave>
         </pitch>
-        <duration>28</duration>
+        <duration>1792</duration>
         <voice>1</voice>
         <type>quarter</type>
         <time-modification>
@@ -701,7 +701,7 @@
           <step>C</step>
           <octave>4</octave>
         </pitch>
-        <duration>28</duration>
+        <duration>1792</duration>
         <voice>1</voice>
         <type>quarter</type>
         <time-modification>
@@ -721,7 +721,7 @@
         </notations>
       </note>
       
-      <backup><duration>1176</duration></backup>
+      <backup><duration>75264</duration></backup>
       <!-- end of voice 1 -->
     </part>
   </measure>

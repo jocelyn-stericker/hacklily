@@ -155,17 +155,7 @@
         <staff>1</staff>
       </note>
       
-      <note color="#000000">
-        <rest measure="no">
-          
-        </rest>
-        <duration>1536</duration>
-        <voice>1</voice>
-        <type>half</type>
-        <staff>1</staff>
-      </note>
-      
-      <backup><duration>3072</duration></backup>
+      <backup><duration>1536</duration></backup>
       <!-- end of voice 1 -->
       <!-- voice 2 -->
       <note color="#000000" print-object="no">
@@ -200,17 +190,7 @@
         <staff>1</staff>
       </note>
       
-      <note color="#000000">
-        <rest measure="no">
-          
-        </rest>
-        <duration>768</duration>
-        <voice>2</voice>
-        <type>quarter</type>
-        <staff>1</staff>
-      </note>
-      
-      <backup><duration>3072</duration></backup>
+      <backup><duration>2304</duration></backup>
       <!-- end of voice 2 -->
     </part>
   </measure>

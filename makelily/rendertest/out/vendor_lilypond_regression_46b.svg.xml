@@ -96,9 +96,9 @@
       
       <attributes>
         <!--musicxml-interfaces:debug>
-          <div-count>2</div-count>
+          <div-count>1536</div-count>
         </musicxml-interfaces:debug-->
-        <divisions>1</divisions>
+        <divisions>768</divisions>
         <key>
           <fifths>0</fifths>
           <mode>major</mode>
@@ -116,20 +116,20 @@
           <staff-lines>5</staff-lines>
         </staff-details>
       </attributes>
-      <forward><duration>2</duration></forward>
+      <forward><duration>1536</duration></forward>
       
       <!-- spacer -->
-      <forward><duration>2</duration></forward>
+      <forward><duration>1536</duration></forward>
       
       <barline location="middle">
         <!--musicxml-interfaces:debug>
-          <div-count>2</div-count>
+          <div-count>1536</div-count>
         </musicxml-interfaces:debug-->
         <bar-style color="#000000">dotted</bar-style>
       </barline>
-      <forward><duration>2</duration></forward>
+      <forward><duration>1536</duration></forward>
       
-      <backup><duration>6</duration></backup>
+      <backup><duration>4608</duration></backup>
       <!-- end of staff 1 -->
       <!-- voice 1 -->
       <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
@@ -137,7 +137,7 @@
           <step>C</step>
           <octave>5</octave>
         </pitch>
-        <duration>1</duration>
+        <duration>768</duration>
         <voice>1</voice>
         <type>quarter</type>
         <staff>1</staff>
@@ -148,7 +148,7 @@
           <step>A</step>
           <octave>4</octave>
         </pitch>
-        <duration>1</duration>
+        <duration>768</duration>
         <voice>1</voice>
         <type>quarter</type>
         <staff>1</staff>
@@ -159,7 +159,7 @@
           <step>F</step>
           <octave>4</octave>
         </pitch>
-        <duration>1</duration>
+        <duration>768</duration>
         <voice>1</voice>
         <type>quarter</type>
         <staff>1</staff>
@@ -170,13 +170,13 @@
           <step>C</step>
           <octave>5</octave>
         </pitch>
-        <duration>1</duration>
+        <duration>768</duration>
         <voice>1</voice>
         <type>quarter</type>
         <staff>1</staff>
       </note>
       
-      <backup><duration>4</duration></backup>
+      <backup><duration>3072</duration></backup>
       <!-- end of voice 1 -->
     </part>
   </measure>
