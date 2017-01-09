@@ -45,7 +45,7 @@ export function voiceToRestSpec(segment: ModelMetreMutationSpec[], attributes: I
     const emptyRestSpec: IRestSpec = {song: "", models: [], modelsToKill: []};
     let divsToSuppress = 0;
     let killIdx: number;
-    let prevIdx: number;
+    let prevIdx: number = 0;
     let spec = segment.reduce((restSpec: IRestSpec, model: ModelMetreMutationSpec) => {
         let divCount = model.newDivisions || 0;
         let oldDivCount = model.previousDivisions || 0;
