@@ -286,6 +286,19 @@ class ChordModelImpl implements ChordModel.IChordModel, IList<NoteImpl> {
                     cursor$.idx$)
                 );
             }
+            if (idx > 0 && !note.chord) {
+                cursor$.patch(partBuilder => partBuilder
+                    .note(idx, note => note
+                        .chord({}),
+                    cursor$.idx$)
+                );
+            } else if (idx === 0 && note.chord) {
+                cursor$.patch(partBuilder => partBuilder
+                    .note(idx, note => note
+                        .chord(null),
+                    cursor$.idx$)
+                );
+            }
             note.validate$(cursor$);
             note.updateAccidental$(cursor$);
             if (note.pitch) {
@@ -413,23 +426,20 @@ class ChordModelImpl implements ChordModel.IChordModel, IList<NoteImpl> {
 
     private _getStemHeight(direction: number, clef: Clef): number {
         let heightFromOtherNotes = (highestLine(this, clef) -
-            lowestLine(this, clef)) * 10;
-        let idealStemHeight = IDEAL_STEM_HEIGHT + heightFromOtherNotes;
-        let minStemHeight = MIN_STEM_HEIGHT + heightFromOtherNotes;
-
+            lowestLine(this, clef)) * 10
         let start = heightDeterminingLine(this, direction, clef) * 10;
-        let idealExtreme = start + direction * idealStemHeight;
+        let idealExtreme = start + direction * IDEAL_STEM_HEIGHT;
 
         let result: number;
         if (idealExtreme >= 65) {
-            result = Math.max(minStemHeight, idealStemHeight - (idealExtreme - 65));
+            result = Math.max(MIN_STEM_HEIGHT, IDEAL_STEM_HEIGHT - (idealExtreme - 65));
         } else if (idealExtreme <= -15) {
-            result = Math.max(minStemHeight, idealStemHeight - (-15 - idealExtreme));
+            result = Math.max(MIN_STEM_HEIGHT, IDEAL_STEM_HEIGHT - (-15 - idealExtreme));
         } else {
             result = 35;
         }
 
-        // All stems should in the main voice should touch the center line.
+        // All stems in the main voice should touch the center line.
         if (start > 30 && direction === -1 && start - result > 30) {
             result = start - 30;
         } else if (start < 30 && direction === 1 && start + result < 30) {
@@ -441,9 +451,7 @@ class ChordModelImpl implements ChordModel.IChordModel, IList<NoteImpl> {
             result *= 0.75;
         }
 
-        if (Math.abs(Math.abs(result - start) % 10 - 5) >= 4) {
-            result += 3;
-        }
+        result += heightFromOtherNotes;
 
         return result;
     }

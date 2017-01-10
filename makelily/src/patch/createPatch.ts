@@ -556,6 +556,7 @@ function getMutationInfo(document: IDocument, patches: IAny[]) {
         let info = elementInfoByChord[el.key];
 
         if (patch.p.length === 9 && patch.p[8] === "pitch") {
+            info.touched = true;
             if (patch.oi !== undefined) {
                 info.rest = !patch.oi;
             } else if (patch.od !== undefined) {

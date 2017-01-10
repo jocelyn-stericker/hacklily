@@ -166,7 +166,7 @@ export default class ChordView extends Component<IProps, {}> {
                     color: spec[0].stem.color || "$000000",
                     defaultX: spec[0].defaultX,
                     defaultY: (layout.satieStem.stemStart - 3) * 10 +
-                        layout.satieStem.stemHeight * layout.satieStem.direction,
+                        (layout.satieStem.stemHeight - 7) * layout.satieStem.direction,
                     direction: layout.satieStem.direction,
                     flag: layout.satieFlag
                 },
