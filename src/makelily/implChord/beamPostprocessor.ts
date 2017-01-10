@@ -331,10 +331,8 @@ function layoutBeam$(voice: number, idx: number, beamSet$: BeamSet, isUnbeamedTu
     let minStemHeight = 1000;
     let incrementalIntercept = 0;
     forEach(chords, (chord, idx) => {
-        let currHeightDeterminingLine = heightDeterminingLine(chord, -direction, clef);
+        let currHeightDeterminingLine = heightDeterminingLine(chord, direction, clef);
 
-        // Using -direction means that we'll be finding the closest note to the
-        // beam. This will help us avoid collisions.
         let stemHeight = getStemHeight(direction, idx, currHeightDeterminingLine);
         if (stemHeight < minStemHeight) {
             minStemHeight = stemHeight;
@@ -347,13 +345,16 @@ function layoutBeam$(voice: number, idx: number, beamSet$: BeamSet, isUnbeamedTu
         slope = 0;
     }
 
+    if (slope === 0) {
+        intercept += direction * (10 - (intercept) % 10);
+    }
+
     const layouts = beam.elements as any as ChordModel.IChordLayout[];
     if (isUnbeamedTuplet) {
         let offsetY = direction > 0 ? -13 : -53;
         forEach(layouts, (chordLayout, idx) => {
             let stemStart = startingLine(chordLayout.model, direction, clef);
             let stemHeight = getStemHeight(direction, idx, stemStart);
-
             invariant(chords.length === 1 || isFinite(stemHeight), "stemHeight must be defined for 2+ notes");
             chordLayout.satieStem = {
                 direction,
@@ -379,11 +380,12 @@ function layoutBeam$(voice: number, idx: number, beamSet$: BeamSet, isUnbeamedTu
     } else {
         forEach(layouts, (chordLayout, idx) => {
             let stemStart = startingLine(chordLayout.model, direction, clef);
+            let stemHeight = getStemHeight(direction, idx, stemStart);
 
             chordLayout.satieStem = {
                 direction,
                 stemStart,
-                stemHeight: getStemHeight(direction, idx, stemStart),
+                stemHeight,
                 tremolo: layouts[0].satieStem ? layouts[0].satieStem.tremolo : null,
             };
 

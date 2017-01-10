@@ -107,9 +107,7 @@ class NoteImpl implements Note {
 
     /*---- Note > Core ----------------------------------------------------------------------*/
 
-    get chord(): Chord {
-        return this._idx + 1 !== this._parent.length;
-    }
+    chord: Chord;
 
     get rest(): Rest {
         return (!this.pitch && !this.unpitched) ? {
