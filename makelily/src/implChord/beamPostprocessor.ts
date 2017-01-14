@@ -345,8 +345,8 @@ function layoutBeam$(voice: number, idx: number, beamSet$: BeamSet, isUnbeamedTu
         slope = 0;
     }
 
-    if (slope === 0) {
-        intercept += direction * (10 - (intercept) % 10);
+    if (slope === 0 && intercept >= 0 && intercept <= 50) {
+        intercept += direction * (10 - (intercept % 10));
     }
 
     const layouts = beam.elements as any as ChordModel.IChordLayout[];

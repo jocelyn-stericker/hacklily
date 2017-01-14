@@ -98,7 +98,7 @@ export function layoutLine$(options: ILayoutOptions, bounds: ILineBounds,
     });
 
     if (!memo$.reduced$[key]) {
-        invariant(!options.preview, `Cannot render ${key} during preview`);
+        // invariant(!options.preview, `Cannot render ${key} during preview`);
         let detachedLayouts: IMeasureLayout[] = map(layouts, detachMeasureLayout);
         memo$.reduced$[key] = reduce(options.postprocessors,
             (layouts, filter) => filter(options, bounds, layouts), detachedLayouts);
@@ -124,7 +124,8 @@ function _layoutDirtyMeasures(options: ILayoutOptions, line: ILineContext,
                 part => part.staves));
 
             let segments = filter(voiceSegments$.concat(staffSegments$), s => !!s);
-            line.shortestCount = reduce(segments, reduceToShortestInSegments, Number.MAX_VALUE)/2;
+            let shortestCount = reduce(segments, reduceToShortestInSegments, Number.MAX_VALUE);
+            line.shortestCount = shortestCount;
         }
 
         line.barOnLine$ = measureIdx;

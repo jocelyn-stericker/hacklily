@@ -59,15 +59,7 @@ export default function layoutSong(options: ILayoutOptions, memo$: ILinesLayoutS
     let approximateWidths = map(measures, function layoutMeasure(measure, idx) {
         // Create an array of the IMeasureParts of the previous, current, and next measures
         let neighbourMeasures: IMeasurePart[] = <any> flatten([
-            !!measures[idx - 1] ? values(measures[idx - 1].parts) : <IMeasurePart> {
-                voices: [],
-                staves: []
-            },
             values(measure.parts),
-            !!measures[idx + 1] ? values(measures[idx + 1].parts) : <IMeasurePart> {
-                voices: [],
-                staves: []
-            }
         ]);
 
         // Join all of the above models
@@ -129,7 +121,7 @@ export default function layoutSong(options: ILayoutOptions, memo$: ILinesLayoutS
             width: specifiedWidth$ || approximateLayout.width,
             attributesWidthStart: approximateWidth(attributes[part][1]),
             attributesWidthEnd: approximateWidth(attributes[part][1], AtEnd.Yes),
-            line: null,
+            line: (linePlacement$[measure.uuid] || {line: undefined}).line,
         };
 
         multipleRest = multipleRest > 0 ? multipleRest - 1 : undefined;
@@ -140,7 +132,7 @@ export default function layoutSong(options: ILayoutOptions, memo$: ILinesLayoutS
     // It's currently very naive, and could use some work.
 
     let startingWidth = (boundsGuess.right - boundsGuess.left) / SQUISHINESS;
-    let lineOpts$ = reduce(approximateWidths, fitIntoLines, {
+    let lineOpts$ = reduce(approximateWidths, assignLines, {
         opts: <ILayoutOptions[]>[createEmptyLayout(options, options.print$)],
         thisPrint: options.print$,
         options: options,
@@ -202,7 +194,7 @@ interface IReduceOptsMemo {
 /**
  * Reducer that puts measures into lines.
  */
-function fitIntoLines(memo$: IReduceOptsMemo, linePlacement$: ILinePlacementState, idx: number):
+function assignLines(memo$: IReduceOptsMemo, linePlacement$: ILinePlacementState, idx: number):
         IReduceOptsMemo {
     let options = memo$.options;
     let measures = options.measures;
@@ -213,17 +205,20 @@ function fitIntoLines(memo$: IReduceOptsMemo, linePlacement$: ILinePlacementStat
     }
     invariant(!!memo$.thisPrint, "No print found");
     if (!memo$.options.singleLineMode) {
-        if (linePlacement$.attributesWidthStart > memo$.widthAllocatedForStart) {
-            memo$.remainingWidth -= linePlacement$.attributesWidthStart - memo$.widthAllocatedForStart;
-            memo$.widthAllocatedForStart = linePlacement$.attributesWidthStart;
-        }
-        if (linePlacement$.attributesWidthEnd > memo$.widthAllocatedForEnd) {
-            memo$.remainingWidth -= linePlacement$.attributesWidthEnd - memo$.widthAllocatedForEnd;
-            memo$.widthAllocatedForEnd = linePlacement$.attributesWidthEnd;
-        }
-        if (memo$.remainingWidth > linePlacement$.width) {
+        // if (linePlacement$.attributesWidthStart > memo$.widthAllocatedForStart) {
+        //     memo$.remainingWidth -= linePlacement$.attributesWidthStart - memo$.widthAllocatedForStart;
+        //     memo$.widthAllocatedForStart = linePlacement$.attributesWidthStart;
+        // }
+        // if (linePlacement$.attributesWidthEnd > memo$.widthAllocatedForEnd) {
+        //     memo$.remainingWidth -= linePlacement$.attributesWidthEnd - memo$.widthAllocatedForEnd;
+        //     memo$.widthAllocatedForEnd = linePlacement$.attributesWidthEnd;
+        // }
+        // if (memo$.remainingWidth > linePlacement$.width) {
+        if (idx % 4 < 3) {
             memo$.remainingWidth -= linePlacement$.width;
         } else {
+            console.log("newline", memo$.remainingWidth, memo$.options.preview, memo$.opts.length - 1,
+                idx);
             memo$.opts.push(createEmptyLayout(options, memo$.thisPrint));
             memo$.remainingWidth = memo$.startingWidth - linePlacement$.width -
                 linePlacement$.attributesWidthStart - linePlacement$.attributesWidthEnd;
@@ -241,6 +236,7 @@ function fitIntoLines(memo$: IReduceOptsMemo, linePlacement$: ILinePlacementStat
 }
 
 function layoutExact(lineOpt$: ILayoutOptions, options: ILayoutOptions, memo$: ILinesLayoutState) {
+    console.log("LE", memo$.linePlacement$);
     return layoutLine$(
         lineOpt$,
         calculateLineBounds(lineOpt$.print$, options.page$),

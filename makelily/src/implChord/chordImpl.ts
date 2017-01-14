@@ -32,10 +32,11 @@ import {getBeamingPattern} from "../private/metre/checkBeaming";
 import IChord, {ledgerLines, notationObj, countToIsBeamable, countToFlag,
     InvalidAccidental, startingLine, averageLine, highestLine, lowestLine,
     heightDeterminingLine, countToHasStem, getNoteheadGlyph,
-    divisions as calcDivisions, lineForClef, FractionalDivisionsException}
+    divisions as calcDivisions, FractionalDivisionsException}
     from "../private/chordUtil";
 import IList from "../private/list";
 import {ICursor} from "../private/cursor";
+import {VoiceBuilder} from "../patch/createPatch";
 
 import ChordModel from "./chordModel";
 import IBeamLayout from "./beamLayout";
@@ -133,9 +134,6 @@ class ChordModelImpl implements ChordModel.IChordModel, IList<NoteImpl> {
     key: string;
 
     stem: Stem;
-
-    /** @prototype */
-    dots: number;
 
     private _count: Count;
     private _timeModification: TimeModification;
@@ -383,15 +381,19 @@ class ChordModelImpl implements ChordModel.IChordModel, IList<NoteImpl> {
         // Try dots
         let dotFactor = 1;
         let dots = 0;
-        while (!isPO2(1 / (beats / dotFactor / 4)) && dots < 5) {
+        while (!isPO2(1 / (beats / dotFactor / 4))) {
+            if (dots === 5) {
+                dots = 0;
+                break;
+            }
             ++dots;
             dotFactor += Math.pow(1 / 2, dots);
         }
-        if (dots === 5) {
-            dots = 0;
-        } else if (dots !== 0) {
+        if (dots > 0) {
             this._count = (1 / (beats / dotFactor / 4 / factor));
-            this.dots = dots;
+            cursor$.patch(voiceA => reduce(times(this.length), (voice, idx) =>
+                    voice.note(idx, note => note.dots(times(dots, dot => ({}))), cursor$.idx$),
+                voiceA as VoiceBuilder));
         }
 
         // Try tuplets
@@ -426,7 +428,7 @@ class ChordModelImpl implements ChordModel.IChordModel, IList<NoteImpl> {
 
     private _getStemHeight(direction: number, clef: Clef): number {
         let heightFromOtherNotes = (highestLine(this, clef) -
-            lowestLine(this, clef)) * 10
+            lowestLine(this, clef)) * 10;
         let start = heightDeterminingLine(this, direction, clef) * 10;
         let idealExtreme = start + direction * IDEAL_STEM_HEIGHT;
 
@@ -571,8 +573,6 @@ class ChordModelImpl implements ChordModel.IChordModel, IList<NoteImpl> {
     }
 }
 
-ChordModelImpl.prototype.dots = 0;
-
 module ChordModelImpl {
     export class Layout implements ChordModel.IChordLayout {
         /*---- IChordLayout ------------------------------------------------------*/
@@ -698,7 +698,7 @@ module ChordModelImpl {
             if (baseModel.wholebar$ || baseModel.satieMultipleRest) {
                 return 0;
             }
-            return max(map(baseModel, m => m.dots.length)) * 6;
+            return max(map(baseModel, m => (m.dots || []).length)) * 6;
         }
 
         private _getMinWidthBefore(cursor: ICursor) {
@@ -716,8 +716,6 @@ module ChordModelImpl {
 
         private _detachModelWithContext(cursor: ICursor,
                 baseModel: ChordModelImpl): ChordModel.IDetachedChordModel {
-            let {clef} = cursor.staff.attributes;
-
             let model: ChordModel.IDetachedChordModel =
                 map(baseModel, (note, idx) => {
                     /* Here, we're extending each note to have the correct
@@ -730,15 +728,6 @@ module ChordModelImpl {
                                 return note.defaultX ||
                                     (this as any).overrideX ||
                                     this.x$;
-                            }
-                        },
-                        defaultY: {
-                            get: () => {
-                                if (baseModel[idx].defaultY) {
-                                    return baseModel[idx].defaultY;
-                                }
-                                let line = lineForClef(baseModel[idx], clef);
-                                return (line - 3) * 10;
                             }
                         },
                         stem: {
