@@ -31,7 +31,7 @@ import * as invariant from "invariant";
 import OwnerType from "../document/ownerTypes";
 
 import {ICursor} from "../private/cursor";
-import {notationObj, accidentalGlyphs, onLedger, InvalidAccidental} from "../private/chordUtil";
+import {notationObj, accidentalGlyphs, onLedger, InvalidAccidental, lineForClef} from "../private/chordUtil";
 import {bboxes as glyphBBoxes} from "../private/smufl";
 import {cloneObject} from "../private/util";
 
@@ -69,7 +69,6 @@ class NoteImpl implements Note {
 
         /* Properties owned by parent */
         if (updateParent) {
-            parent.dots = (note.dots || []).length;
             if (note.rest) {
                 this.rest = note.rest; // Assigns parent
             }
@@ -89,7 +88,7 @@ class NoteImpl implements Note {
             "release", "pizzicato", "beams", "voice", "footnote", "level",
             "relativeY", "defaultY", "relativeX", "fontFamily", "fontWeight",
             "fontStyle", "fontSize", "color", "printDot", "printLyric", "printObject",
-            "printSpacing", "timeOnly"
+            "printSpacing", "timeOnly", "dots",
         ];
 
         forEach(properties, setIfDefined);
@@ -129,17 +128,7 @@ class NoteImpl implements Note {
         }
     }
 
-    get dots(): Dot[] {
-        let offset = this.defaultY % 10 === 0 ? 5 : 0;
-        return times(this._parent.dots, () => <Dot> {
-            defaultY: offset
-            // TODO: save/restore dot formatting
-            // TODO: display dot formatting
-        });
-    }
-    set dots(dots: Dot[]) {
-        this._parent.dots = dots.length;
-    }
+    dots: Dot[];
 
     get noteType(): Type {
         return {
@@ -318,6 +307,28 @@ class NoteImpl implements Note {
                 cursor$.idx$)
             );
         }
+        const defaultY = (lineForClef(this, cursor$.staff.attributes.clef) - 3) * 10;
+        if (defaultY !== this.defaultY) {
+            cursor$.patch(voice => voice
+                .note(this._idx, note => note.defaultY(defaultY), cursor$.idx$)
+            );
+        }
+        const dotOffset = this.defaultY % 10 === 0 ? 5 : 0;
+        if (!this.dots) {
+            cursor$.patch(voice => voice
+                .note(this._idx, note => note.dots([]), cursor$.idx$)
+            );
+        }
+        if (this.dots.some(n => n.defaultY !== dotOffset)) {
+            cursor$.patch(voice => voice
+                .note(this._idx,
+                    note =>
+                        reduce(this.dots, (note, _dot, idx) =>
+                            note.dotsAt(idx, dot => dot.defaultY(dotOffset)), note),
+                    cursor$.idx$)
+            );
+        }
+
         if (!this.staff) {
             cursor$.patch(partBuilder => partBuilder
                 .note(this._idx, note => note

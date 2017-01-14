@@ -175,7 +175,7 @@ export function simplifyRests(
             patches.push({
                 ld: model.toSpec(),
                 p: [currIdx + 1],
-            });
+            } as any);
             --currIdx;
         }
     }
@@ -213,11 +213,12 @@ export function simplifyRests(
                     if (!originalModel.rest) {
                         throw new Error("Expected rest");
                     }
-                    if (JSON.stringify(originalModel.newDots) !== JSON.stringify(newDuration[0].dots)) {
+                    const newDots = times(originalModel.newDots, () => ({}));
+                    if (JSON.stringify(newDots) !== JSON.stringify(newDuration[0].dots)) {
                         patches.push({
-                            od: originalModel.newDots,
+                            od: newDots,
                             oi: newDuration[0].dots,
-                            p: [currIdx, 0, "dots"],
+                            p: [currIdx, "notes", 0, "dots"],
                         });
                     }
 
@@ -225,7 +226,7 @@ export function simplifyRests(
                         patches.push({
                             od: originalModel.newCount,
                             oi: newDuration[0].noteType.duration,
-                            p: [currIdx, 0, "noteType", "duration"],
+                            p: [currIdx, "notes", 0, "noteType", "duration"],
                         });
                     }
                 }
@@ -245,11 +246,12 @@ export function simplifyRests(
                 if (model === "killed") {
                     throw new Error("Not reached");
                 }
+                invariant(!!model, "Cannot remove undefined model");
                 invariant(segment.indexOf(model) > -1, "Model must be present in segment");
                 patches.push({
                     ld: model.toSpec(),
                     p: [currIdx],
-                });
+                } as any);
                 --currIdx;
             }
         }

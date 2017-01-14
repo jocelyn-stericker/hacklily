@@ -19,6 +19,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import {IAny} from "musicxml-interfaces/operations";
+
 import IMeasure from "../../document/measure";
 import IMeasurePart from "../../document/measurePart";
 import ISegment from "../../document/segment";
@@ -102,8 +104,8 @@ export default class DivisionOverflowException extends Error {
         this.attributes = attributes;
     }
 
-    resolve$(fixup: IFixupFn) {
-        fixup(null, cloneObject([
+    getOperations(): IAny[] {
+        return cloneObject([
             {
                 ld: this.measure,
                 li: {
@@ -119,6 +121,6 @@ export default class DivisionOverflowException extends Error {
                 },
                 p: ["measures", this.measure.idx + 1],
             },
-        ]));
+        ]);
     }
 }

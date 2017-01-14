@@ -101,7 +101,9 @@ export default function validate(options$: ILayoutOptions, memo$: ILinesLayoutSt
             tryValidate(options$, memo$, rootFixupOpts$);
         } catch (err) {
             if (err instanceof DivisionOverflowException) {
-                (<DivisionOverflowException>err).resolve$(rootFixup);
+                const ops = (<DivisionOverflowException>err).getOperations();
+                rootFixup(null, createPatch(false, options$.document, ops), true);
+
                 shouldTryAgain = true;
             } else {
                 throw err;

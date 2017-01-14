@@ -300,46 +300,6 @@ export class DocumentBuilder {
     }
 }
 
-export default function createPatch(
-            isPreview: boolean,
-            document: IDocument,
-            measure: number,
-            part: string,
-            builder: (partBuilder: PartBuilder) => PartBuilder):
-        IAny[];
-
-export default function createPatch(
-            isPreview: boolean,
-            document: IDocument,
-            builder: (build: DocumentBuilder) => DocumentBuilder):
-        IAny[];
-
-export default function createPatch(isPreview: boolean,
-        document: IDocument,
-        builderOrMeasure: number | ((build: DocumentBuilder) => DocumentBuilder),
-        part?: string,
-        partBuilder?: (partBuilder: PartBuilder) => PartBuilder) {
-    let patches: IAny[];
-    if (typeof builderOrMeasure === "function") {
-        invariant(part === undefined && partBuilder === undefined, "createPatch: invalid usage");
-        let builder = builderOrMeasure as ((build: DocumentBuilder) => DocumentBuilder);
-        patches = builder(new DocumentBuilder(document)).patches;
-        if (!isPreview) {
-            patches = fixMetre(document, patches);
-            patches = addBeams(document, patches);
-            patches = fixBarlines(document, patches);
-            patches = fixCursor(document, patches);
-        }
-    } else {
-        let measure = builderOrMeasure as number;
-        let builder = partBuilder;
-        patches = createPatch(isPreview, document, document => document
-            .measure(measure, measure => measure
-                .part(part, builder)));
-    }
-    return patches;
-}
-
 export class ModelMetreMutationSpec {
     idx: number;
     oldIdx: number;
@@ -381,7 +341,7 @@ export class ModelMetreMutationSpec {
             const chordModel: IChord = originalModel;
             forEach(chordModel, c => {
                 c.noteType.duration = this.newCount;
-                if (rest) {
+                if (this.rest) {
                     c.rest = {};
                     delete c.pitch;
                 } else {
@@ -392,7 +352,7 @@ export class ModelMetreMutationSpec {
                 } else {
                     delete c.timeModification;
                 }
-                if (this.newDots) {
+                if (!isNaN(this.newDots)) {
                     c.dots = times(this.newDots, () => ({}));
                 } else {
                     delete c.dots;
@@ -420,6 +380,7 @@ function getMutationInfo(document: IDocument, patches: IAny[]) {
 
     patches.forEach(patch => {
         if (patch.p[0] === "measures") {
+            // XXX: implement!
             return;
         }
         let measureUUID = parseInt(patch.p[0] as string, 10);
@@ -581,10 +542,12 @@ function getMutationInfo(document: IDocument, patches: IAny[]) {
             }
         }
 
-        if (patch.p[8] === "dots" && patch.oi) {
-            info.newDots = patch.oi.length;
-        } else if (patch.p[8] === "dots" && patch.od) {
-            info.newDots = 0;
+        if (patch.p.length === 9 && patch.p[8] === "dots") {
+            if (patch.oi) {
+                info.newDots = patch.oi.length;
+            } else if (patch.od) {
+                info.newDots = 0;
+            }
         }
         info.newDivisions = calcDivisions(
             {
@@ -597,6 +560,9 @@ function getMutationInfo(document: IDocument, patches: IAny[]) {
                 divisions,
             }
         );
+        if (info.newDivisions === 384 && info.previousDivisions === 576) {
+            debugger;
+        }
         if (info.newDivisions !== info.previousDivisions) {
             info.touched = true;
         }
@@ -608,7 +574,6 @@ function getMutationInfo(document: IDocument, patches: IAny[]) {
         elementInfoByChord
     };
 }
-
 function fixMetre(document: IDocument, patches: IAny[]): IAny[] {
     patches = patches.slice();
 
@@ -862,5 +827,57 @@ function addBeams(document: IDocument, patches: IAny[]): IAny[] {
         });
     });
 
+    return patches;
+}
+
+function cleanupPatches(document: IDocument, patches: IAny[]): IAny[] {
+    patches = fixMetre(document, patches);
+    patches = addBeams(document, patches);
+    patches = fixBarlines(document, patches);
+    patches = fixCursor(document, patches);
+    return patches;
+}
+
+export default function createPatch(
+            isPreview: boolean,
+            document: IDocument,
+            measure: number,
+            part: string,
+            builder: (partBuilder: PartBuilder) => PartBuilder):
+        IAny[];
+
+export default function createPatch(
+            isPreview: boolean,
+            document: IDocument,
+            builder: (build: DocumentBuilder) => DocumentBuilder):
+        IAny[];
+
+export default function createPatch(
+            isPreview: boolean,
+            document: IDocument,
+            operations: IAny[]): IAny[];
+
+export default function createPatch(isPreview: boolean,
+        document: IDocument,
+        builderOrMeasure: number | ((build: DocumentBuilder) => DocumentBuilder) | IAny[],
+        part?: string,
+        partBuilder?: (partBuilder: PartBuilder) => PartBuilder) {
+    let patches: IAny[];
+    if (builderOrMeasure instanceof Array) {
+        patches = cleanupPatches(document, builderOrMeasure);
+    } else if (typeof builderOrMeasure === "function") {
+        invariant(part === undefined && partBuilder === undefined, "createPatch: invalid usage");
+        let builder = builderOrMeasure as ((build: DocumentBuilder) => DocumentBuilder);
+        patches = builder(new DocumentBuilder(document)).patches;
+        if (!isPreview) {
+            patches = cleanupPatches(document, patches);
+        }
+    } else {
+        let measure = builderOrMeasure as any as number;
+        let builder = partBuilder;
+        patches = createPatch(isPreview, document, document => document
+            .measure(measure, measure => measure
+                .part(part, builder)));
+    }
     return patches;
 }
