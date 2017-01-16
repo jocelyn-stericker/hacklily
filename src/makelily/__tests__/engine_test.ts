@@ -28,18 +28,18 @@ import {Print, OddEvenBoth} from "musicxml-interfaces";
 import {map} from "lodash";
 import {expect} from "chai";
 
-import Type from "../document/types";
-import IModel from "../document/model";
+import Type from "../document_types";
+import {IModel} from "../document_model";
 
-import ILayout from "../private/layout";
-import IFactory from "../private/factory";
-import {newLayoutState} from "../private/linesLayoutState";
-import {calculate as calculateLineBounds} from "../private/lineBounds";
-import ILayoutOptions from "../private/layoutOptions";
-import Cursor from "../private/cursor";
+import {ILayout} from "../document_model";
+import {IFactory} from "../private_factory";
+import {newLayoutState} from "../private_linesLayoutState";
+import {calculate as calculateLineBounds} from "../private_lineBounds";
+import {ILayoutOptions} from "../private_layoutOptions";
+import Cursor from "../private_cursor";
 
-import {createFakeStaffSegment, createFakeVoiceSegment} from "../engine/__tests__/etestutil";
-import validate from "../engine/processors/validate";
+import {createFakeStaffSegment, createFakeVoiceSegment} from "./etestutil";
+import validate from "../engine_processors_validate";
 
 describe("[engine.ts]", function() {
     describe("Options.ILineBounds.calculate", function() {

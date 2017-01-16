@@ -1,29 +1,26 @@
 /**
- * @source: https://github.com/jnetterf/satie/
- *
- * @license
- * (C) Josh Netterfield <joshua@nettek.ca> 2015.
- * Part of the Satie music engraver <https://github.com/jnetterf/satie>.
- *
- * This program is free software: you can redistribute it and/or modify
+ * This file is part of Satie music engraver <https://github.com/jnetterf/satie>.
+ * Copyright (C) Joshua Netterfield <joshua.ca> 2015 - present.
+ * 
+ * Satie is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
+ * 
+ * Satie is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Affero General Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU Affero General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * along with Satie.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 import {readFile} from "fs";
 import * as yargs from "yargs";
 
-import Application from "./engine/application";
-import Song from "./engine/song";
+import Application from "./engine_application";
+import SongImpl from "./engine_songImpl";
 
 function readStdin(onEnd: (s: string) => void) {
     let content = "";
@@ -127,7 +124,7 @@ function cannotRead(err: any) {
         case "init":
             read(argv.xml[0],
                 musicXML => {
-                    let song = new Song({
+                    let song = new SongImpl({
                         baseSrc: musicXML,
 
                         onError: cannotRead,
@@ -149,7 +146,7 @@ function cannotRead(err: any) {
         case "render":
             read(argv.xml[0],
                 musicXML => {
-                    let song = new Song({
+                    let song = new SongImpl({
                         baseSrc: musicXML,
 
                         onError: cannotRead,
