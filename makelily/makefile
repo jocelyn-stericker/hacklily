@@ -59,7 +59,6 @@ OK_STRING=$(OK_COLOR)  ...ok!$(NO_COLOR)
 TSC_STRING=$(INFO_COLOR)satie/lib» Building from tsconfig.json...$(NO_COLOR)
 BUNDLE_PROD_STRING=$(INFO_COLOR)satie/lib» Bundling dist/satie-browser-prod.js...$(NO_COLOR)
 WATCH_STRING=$(INFO_COLOR)satie/lib» Watching from tsconfig.json...$(NO_COLOR)
-STAGE_STRING=$(INFO_COLOR)satie/lib» Updating index.d.ts...$(NO_COLOR)
 LINT_STRING=$(INFO_COLOR)satie/lib» Linting src/**.ts...$(NO_COLOR)
 TEST_STRING=$(INFO_COLOR)satie/lib» Testing __test__*.js ...$(NO_COLOR)
 CLEAN_STRING=$(INFO_COLOR)satie/lib» Deleting generated code ...$(NO_COLOR)
@@ -76,7 +75,7 @@ _gentestsuite: clean node_modules
 
 _bundleOnly: lint
 	@printf "$(BUNDLE_PROD_STRING)\n"
-	@bash -c "./node_modules/.bin/webpack --config ./webpack.config.prod.js -p ./dist/index.js ./dist/satie-bundled-min.js"
+	@bash -c "./node_modules/.bin/webpack --config ./webpack.config.prod.js -p ./dist/satie.js ./dist/satie-bundled-min.js"
 
 # ---- Other build modes ----------------------------------------------------------
 
@@ -118,13 +117,13 @@ quicktest: _tsc
 
 _testOnly:
 	@printf "$(TEST_STRING)\n"
-	@bash -c "if [ \"x\$$TEST\" == \"x\" ]; then find ./dist -type f | grep \"__tests__.*js\\$$\" | xargs ./node_modules/mocha/bin/mocha -t 3000; else find ./dist -type f | grep \"__tests__.*js\\$$\" | xargs ./node_modules/mocha/bin/mocha -t 3000 --grep \"\$$TEST\" 2>&1; fi"
+	@NODE_PATH=./dist bash -c "if [ \"x\$$TEST\" == \"x\" ]; then find ./dist -type f | grep \"__tests__.*js\\$$\" | xargs ./node_modules/mocha/bin/mocha -t 3000; else find ./dist -type f | grep \"__tests__.*js\\$$\" | xargs ./node_modules/mocha/bin/mocha -t 3000 --grep \"\$$TEST\" 2>&1; fi"
 
 test_all: test lint
 
 coverage: build
 	@printf "$(COVERAGE_STRING)\n"
-	@bash -c "find ./dist -type f | grep "__tests__.*js\$$" | xargs istanbul cover node_modules/mocha/bin/_mocha -- -R list"
+	@bash -c "find ./dist -type f | grep "__tests__.*js\$$" | NODE_PATH=./dist xargs istanbul cover node_modules/mocha/bin/_mocha -- -R list"
 
 ./webapp/node_modules: webapp/package.json
 	@printf "$(WARN_COLOR)Regenerating satie/webapp/node_modules...$(NO_COLOR)\n";

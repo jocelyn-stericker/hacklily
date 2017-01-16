@@ -1,7 +1,7 @@
 import * as React from "react";
 import {Component} from "react";
 import {Link} from "react-router";
-import {Application, Song} from "../../src/index";
+import {Application, Song} from "satie";
 import {find, defer} from "lodash";
 
 import {prefix} from "./config";

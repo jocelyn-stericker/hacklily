@@ -147,7 +147,7 @@
       <backup><duration>3072</duration></backup>
       <!-- end of staff 1 -->
       <!-- voice 1 -->
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="5" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>E</step>
           <octave>3</octave>
@@ -235,7 +235,7 @@
       <backup><duration>3072</duration></backup>
       <!-- end of staff 1 -->
       <!-- voice 1 -->
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="45" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <unpitched>
           <display-step>E</display-step>
           <display-octave>5</display-octave>
@@ -247,7 +247,7 @@
         <staff>1</staff>
       </note>
       
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="35" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <unpitched>
           <display-step>C</display-step>
           <display-octave>5</display-octave>
@@ -328,7 +328,7 @@
       <backup><duration>3072</duration></backup>
       <!-- end of staff 1 -->
       <!-- voice 1 -->
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="15" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <unpitched>
           <display-step>F</display-step>
           <display-octave>4</display-octave>
@@ -340,7 +340,7 @@
         <staff>1</staff>
       </note>
       
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="15" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <unpitched>
           <display-step>F</display-step>
           <display-octave>4</display-octave>
@@ -413,7 +413,7 @@
       <backup><duration>3072</duration></backup>
       <!-- end of staff 1 -->
       <!-- voice 1 -->
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="5" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>E</step>
           <octave>3</octave>
@@ -431,7 +431,7 @@
         </notations>
       </note>
       
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="-15" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>A</step>
           <octave>2</octave>
@@ -502,7 +502,7 @@
       <backup><duration>3072</duration></backup>
       <!-- end of staff 1 -->
       <!-- voice 1 -->
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="40" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <unpitched>
           <display-step>D</display-step>
           <display-octave>5</display-octave>
@@ -573,7 +573,7 @@
       <backup><duration>3072</duration></backup>
       <!-- end of staff 1 -->
       <!-- voice 1 -->
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="10" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <unpitched>
           <display-step>E</display-step>
           <display-octave>4</display-octave>

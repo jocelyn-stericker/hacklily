@@ -129,8 +129,7 @@
       <backup><duration>15360</duration></backup>
       <!-- end of staff 1 -->
       <!-- voice 1 -->
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
-        <chord />
+      <note default-y="-15" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>F</step>
           <octave>4</octave>
@@ -141,7 +140,7 @@
         <dot />
         <staff>1</staff>
       </note>
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" attack="NaN" release="NaN" pizzicato="no">
+      <note default-y="-5" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" attack="NaN" release="NaN" pizzicato="no">
         <chord />
         <pitch>
           <step>A</step>
@@ -153,7 +152,8 @@
         <dot />
         <staff>1</staff>
       </note>
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" attack="NaN" release="NaN" pizzicato="no">
+      <note default-y="5" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" attack="NaN" release="NaN" pizzicato="no">
+        <chord />
         <pitch>
           <step>C</step>
           <octave>5</octave>
@@ -165,8 +165,7 @@
         <staff>1</staff>
       </note>
       
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
-        <chord />
+      <note default-y="-5" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>A</step>
           <octave>4</octave>
@@ -176,7 +175,8 @@
         <type>eighth</type>
         <staff>1</staff>
       </note>
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" attack="NaN" release="NaN" pizzicato="no">
+      <note default-y="25" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" attack="NaN" release="NaN" pizzicato="no">
+        <chord />
         <pitch>
           <step>G</step>
           <octave>5</octave>
@@ -187,8 +187,7 @@
         <staff>1</staff>
       </note>
       
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
-        <chord />
+      <note default-y="-5" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>A</step>
           <octave>4</octave>
@@ -198,7 +197,7 @@
         <type>quarter</type>
         <staff>1</staff>
       </note>
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" attack="NaN" release="NaN" pizzicato="no">
+      <note default-y="-15" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" attack="NaN" release="NaN" pizzicato="no">
         <chord />
         <pitch>
           <step>F</step>
@@ -209,7 +208,8 @@
         <type>quarter</type>
         <staff>1</staff>
       </note>
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" attack="NaN" release="NaN" pizzicato="no">
+      <note default-y="5" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" attack="NaN" release="NaN" pizzicato="no">
+        <chord />
         <pitch>
           <step>C</step>
           <octave>5</octave>
@@ -220,8 +220,7 @@
         <staff>1</staff>
       </note>
       
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
-        <chord />
+      <note default-y="-5" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>A</step>
           <octave>4</octave>
@@ -231,7 +230,7 @@
         <type>quarter</type>
         <staff>1</staff>
       </note>
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" attack="NaN" release="NaN" pizzicato="no">
+      <note default-y="-15" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" attack="NaN" release="NaN" pizzicato="no">
         <chord />
         <pitch>
           <step>F</step>
@@ -242,7 +241,8 @@
         <type>quarter</type>
         <staff>1</staff>
       </note>
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" attack="NaN" release="NaN" pizzicato="no">
+      <note default-y="5" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" attack="NaN" release="NaN" pizzicato="no">
+        <chord />
         <pitch>
           <step>C</step>
           <octave>5</octave>
@@ -315,8 +315,7 @@
       <backup><duration>15360</duration></backup>
       <!-- end of staff 1 -->
       <!-- voice 1 -->
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
-        <chord />
+      <note default-y="-5" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>A</step>
           <octave>4</octave>
@@ -326,7 +325,7 @@
         <type>quarter</type>
         <staff>1</staff>
       </note>
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" attack="NaN" release="NaN" pizzicato="no">
+      <note default-y="-15" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" attack="NaN" release="NaN" pizzicato="no">
         <chord />
         <pitch>
           <step>F</step>
@@ -337,7 +336,8 @@
         <type>quarter</type>
         <staff>1</staff>
       </note>
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" attack="NaN" release="NaN" pizzicato="no">
+      <note default-y="15" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" attack="NaN" release="NaN" pizzicato="no">
+        <chord />
         <pitch>
           <step>E</step>
           <octave>5</octave>
@@ -348,8 +348,7 @@
         <staff>1</staff>
       </note>
       
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
-        <chord />
+      <note default-y="-5" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>A</step>
           <octave>4</octave>
@@ -359,7 +358,7 @@
         <type>quarter</type>
         <staff>1</staff>
       </note>
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" attack="NaN" release="NaN" pizzicato="no">
+      <note default-y="-15" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" attack="NaN" release="NaN" pizzicato="no">
         <chord />
         <pitch>
           <step>F</step>
@@ -370,7 +369,8 @@
         <type>quarter</type>
         <staff>1</staff>
       </note>
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" attack="NaN" release="NaN" pizzicato="no">
+      <note default-y="20" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" attack="NaN" release="NaN" pizzicato="no">
+        <chord />
         <pitch>
           <step>F</step>
           <octave>5</octave>
@@ -381,8 +381,7 @@
         <staff>1</staff>
       </note>
       
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
-        <chord />
+      <note default-y="-5" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>A</step>
           <octave>4</octave>
@@ -392,7 +391,7 @@
         <type>half</type>
         <staff>1</staff>
       </note>
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" attack="NaN" release="NaN" pizzicato="no">
+      <note default-y="-15" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" attack="NaN" release="NaN" pizzicato="no">
         <chord />
         <pitch>
           <step>F</step>
@@ -403,7 +402,8 @@
         <type>half</type>
         <staff>1</staff>
       </note>
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" attack="NaN" release="NaN" pizzicato="no">
+      <note default-y="10" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" attack="NaN" release="NaN" pizzicato="no">
+        <chord />
         <pitch>
           <step>D</step>
           <octave>5</octave>

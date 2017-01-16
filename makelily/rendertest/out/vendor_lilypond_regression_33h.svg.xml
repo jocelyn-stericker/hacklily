@@ -129,7 +129,7 @@
       <backup><duration>3072</duration></backup>
       <!-- end of staff 1 -->
       <!-- voice 1 -->
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="-10" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>G</step>
           <octave>4</octave>
@@ -146,7 +146,7 @@
         </lyric>
       </note>
       
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="20" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>F</step>
           <octave>5</octave>
@@ -163,7 +163,7 @@
         </lyric>
       </note>
       
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="-10" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>G</step>
           <octave>4</octave>
@@ -180,7 +180,7 @@
         </lyric>
       </note>
       
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="20" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>F</step>
           <octave>5</octave>
@@ -259,7 +259,7 @@
       <backup><duration>3072</duration></backup>
       <!-- end of staff 1 -->
       <!-- voice 1 -->
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="-10" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>G</step>
           <octave>4</octave>
@@ -276,7 +276,7 @@
         </lyric>
       </note>
       
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="20" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>F</step>
           <octave>5</octave>
@@ -290,7 +290,7 @@
         </notations>
       </note>
       
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="-10" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>G</step>
           <octave>4</octave>
@@ -307,7 +307,7 @@
         </lyric>
       </note>
       
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="20" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>F</step>
           <octave>5</octave>
@@ -383,7 +383,7 @@
       <backup><duration>3072</duration></backup>
       <!-- end of staff 1 -->
       <!-- voice 1 -->
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="-10" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>G</step>
           <octave>4</octave>
@@ -400,7 +400,7 @@
         </lyric>
       </note>
       
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="20" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>F</step>
           <octave>5</octave>
@@ -414,7 +414,7 @@
         </notations>
       </note>
       
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="-10" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>G</step>
           <octave>4</octave>
@@ -431,7 +431,7 @@
         </lyric>
       </note>
       
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="20" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>F</step>
           <octave>5</octave>
@@ -510,7 +510,7 @@
       <backup><duration>3072</duration></backup>
       <!-- end of staff 1 -->
       <!-- voice 1 -->
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="-10" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>G</step>
           <octave>4</octave>
@@ -527,7 +527,7 @@
         </lyric>
       </note>
       
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="20" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>F</step>
           <octave>5</octave>
@@ -544,7 +544,7 @@
         </lyric>
       </note>
       
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="-10" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>G</step>
           <octave>4</octave>
@@ -561,7 +561,7 @@
         </lyric>
       </note>
       
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="20" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>F</step>
           <octave>5</octave>
@@ -637,7 +637,7 @@
       <backup><duration>3072</duration></backup>
       <!-- end of staff 1 -->
       <!-- voice 1 -->
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="-10" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>G</step>
           <octave>4</octave>
@@ -654,7 +654,7 @@
         </lyric>
       </note>
       
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="20" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>F</step>
           <octave>5</octave>
@@ -668,7 +668,7 @@
         </notations>
       </note>
       
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="-10" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>G</step>
           <octave>4</octave>
@@ -685,7 +685,7 @@
         </lyric>
       </note>
       
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="20" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>F</step>
           <octave>5</octave>

@@ -135,7 +135,7 @@
           <div-count>3072</div-count>
         </musicxml-interfaces:debug-->
         <direction-type>
-          <dynamics default-x="0" default-y="-60" relative-x="0" relative-y="-1.8800004999999942" font-style="normal" font-weight="normal" color="#000000" halign="left" valign="bottom" underline="0" overline="0" line-through="0" enclosure="none">
+          <dynamics default-x="0" default-y="-60" relative-x="0" relative-y="0" font-style="normal" font-weight="normal" color="#000000" halign="left" valign="bottom" underline="0" overline="0" line-through="0" enclosure="none">
             
           </dynamics>
         </direction-type>
@@ -154,7 +154,7 @@
       <backup><duration>3072</duration></backup>
       <!-- end of staff 1 -->
       <!-- voice 1 -->
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="-15" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>F</step>
           <octave>4</octave>
@@ -165,7 +165,7 @@
         <staff>1</staff>
         <notations print-object="yes">
           <articulations>
-            <accent default-x="1.8999999999999995" default-y="-24" relative-x="0" relative-y="1.8800005000000048" font-style="normal" font-weight="normal" color="#000000" placement="below" />
+            <accent default-x="1.8999999999999995" default-y="-24" relative-x="0" relative-y="0" font-style="normal" font-weight="normal" color="#000000" placement="below" />
           </articulations>
           <fermata type="upright" default-x="0" default-y="59.82" relative-x="0" relative-y="5.337679815758136" font-style="normal" font-weight="normal" color="#000000">normal</fermata>
         </notations>
@@ -242,8 +242,7 @@
       <backup><duration>3072</duration></backup>
       <!-- end of staff 1 -->
       <!-- voice 1 -->
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
-        <chord />
+      <note default-y="-15" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>F</step>
           <octave>4</octave>
@@ -255,7 +254,8 @@
         <accidental>flat</accidental>
         <staff>1</staff>
       </note>
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" attack="NaN" release="NaN" pizzicato="no">
+      <note default-y="-5" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" attack="NaN" release="NaN" pizzicato="no">
+        <chord />
         <pitch>
           <step>A</step>
           <alter>-1</alter>
@@ -268,8 +268,7 @@
         <staff>1</staff>
       </note>
       
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
-        <chord />
+      <note default-y="-15" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>F</step>
           <octave>4</octave>
@@ -279,7 +278,8 @@
         <type>eighth</type>
         <staff>1</staff>
       </note>
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" attack="NaN" release="NaN" pizzicato="no">
+      <note default-y="-5" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" attack="NaN" release="NaN" pizzicato="no">
+        <chord />
         <pitch>
           <step>A</step>
           <alter>-1</alter>
@@ -291,8 +291,7 @@
         <staff>1</staff>
       </note>
       
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
-        <chord />
+      <note default-y="-10" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>G</step>
           <octave>4</octave>
@@ -303,7 +302,8 @@
         <accidental>flat</accidental>
         <staff>1</staff>
       </note>
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" attack="NaN" release="NaN" pizzicato="no">
+      <note default-y="0" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" attack="NaN" release="NaN" pizzicato="no">
+        <chord />
         <pitch>
           <step>B</step>
           <alter>-1</alter>
@@ -315,8 +315,7 @@
         <staff>1</staff>
       </note>
       
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
-        <chord />
+      <note default-y="-10" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>G</step>
           <octave>4</octave>
@@ -326,7 +325,8 @@
         <type>quarter</type>
         <staff>1</staff>
       </note>
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" attack="NaN" release="NaN" pizzicato="no">
+      <note default-y="0" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" attack="NaN" release="NaN" pizzicato="no">
+        <chord />
         <pitch>
           <step>B</step>
           <alter>-1</alter>

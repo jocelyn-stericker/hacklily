@@ -135,7 +135,7 @@
       <backup><duration>1536</duration></backup>
       <!-- end of staff 1 -->
       <!-- voice 1 -->
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="-30" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>C</step>
           <octave>4</octave>
@@ -209,7 +209,7 @@
       <backup><duration>1536</duration></backup>
       <!-- end of staff 1 -->
       <!-- voice 1 -->
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="-30" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>C</step>
           <octave>4</octave>
@@ -283,7 +283,7 @@
       <backup><duration>1536</duration></backup>
       <!-- end of staff 1 -->
       <!-- voice 1 -->
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="-30" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>C</step>
           <octave>4</octave>
@@ -357,7 +357,7 @@
       <backup><duration>1536</duration></backup>
       <!-- end of staff 1 -->
       <!-- voice 1 -->
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="-30" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>C</step>
           <octave>4</octave>
@@ -431,7 +431,7 @@
       <backup><duration>1536</duration></backup>
       <!-- end of staff 1 -->
       <!-- voice 1 -->
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="-30" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>C</step>
           <octave>4</octave>
@@ -505,7 +505,7 @@
       <backup><duration>1536</duration></backup>
       <!-- end of staff 1 -->
       <!-- voice 1 -->
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="-30" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>C</step>
           <octave>4</octave>
@@ -579,7 +579,7 @@
       <backup><duration>1536</duration></backup>
       <!-- end of staff 1 -->
       <!-- voice 1 -->
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="-30" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>C</step>
           <octave>4</octave>
@@ -653,7 +653,7 @@
       <backup><duration>1536</duration></backup>
       <!-- end of staff 1 -->
       <!-- voice 1 -->
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="-30" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>C</step>
           <octave>4</octave>
@@ -727,7 +727,7 @@
       <backup><duration>1536</duration></backup>
       <!-- end of staff 1 -->
       <!-- voice 1 -->
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="-30" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>C</step>
           <octave>4</octave>
@@ -801,7 +801,7 @@
       <backup><duration>1536</duration></backup>
       <!-- end of staff 1 -->
       <!-- voice 1 -->
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="-30" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>C</step>
           <octave>4</octave>
@@ -875,7 +875,7 @@
       <backup><duration>1536</duration></backup>
       <!-- end of staff 1 -->
       <!-- voice 1 -->
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="-30" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>C</step>
           <octave>4</octave>
@@ -949,7 +949,7 @@
       <backup><duration>1536</duration></backup>
       <!-- end of staff 1 -->
       <!-- voice 1 -->
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="-30" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>C</step>
           <octave>4</octave>
@@ -1023,7 +1023,7 @@
       <backup><duration>1536</duration></backup>
       <!-- end of staff 1 -->
       <!-- voice 1 -->
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="-30" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>C</step>
           <octave>4</octave>
@@ -1097,7 +1097,7 @@
       <backup><duration>1536</duration></backup>
       <!-- end of staff 1 -->
       <!-- voice 1 -->
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="-30" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>C</step>
           <octave>4</octave>
@@ -1171,7 +1171,7 @@
       <backup><duration>1536</duration></backup>
       <!-- end of staff 1 -->
       <!-- voice 1 -->
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="-30" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>C</step>
           <octave>4</octave>
@@ -1245,7 +1245,7 @@
       <backup><duration>1536</duration></backup>
       <!-- end of staff 1 -->
       <!-- voice 1 -->
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="-30" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>C</step>
           <octave>4</octave>
@@ -1319,7 +1319,7 @@
       <backup><duration>1536</duration></backup>
       <!-- end of staff 1 -->
       <!-- voice 1 -->
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="-30" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>C</step>
           <octave>4</octave>
@@ -1393,7 +1393,7 @@
       <backup><duration>1536</duration></backup>
       <!-- end of staff 1 -->
       <!-- voice 1 -->
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="-30" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>C</step>
           <octave>4</octave>
@@ -1467,7 +1467,7 @@
       <backup><duration>1536</duration></backup>
       <!-- end of staff 1 -->
       <!-- voice 1 -->
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="-30" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>C</step>
           <octave>4</octave>
@@ -1541,7 +1541,7 @@
       <backup><duration>1536</duration></backup>
       <!-- end of staff 1 -->
       <!-- voice 1 -->
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="-30" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>C</step>
           <octave>4</octave>
@@ -1615,7 +1615,7 @@
       <backup><duration>1536</duration></backup>
       <!-- end of staff 1 -->
       <!-- voice 1 -->
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="-30" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>C</step>
           <octave>4</octave>
@@ -1689,7 +1689,7 @@
       <backup><duration>1536</duration></backup>
       <!-- end of staff 1 -->
       <!-- voice 1 -->
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="-30" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>C</step>
           <octave>4</octave>
@@ -1763,7 +1763,7 @@
       <backup><duration>1536</duration></backup>
       <!-- end of staff 1 -->
       <!-- voice 1 -->
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="-30" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>C</step>
           <octave>4</octave>
@@ -1837,7 +1837,7 @@
       <backup><duration>1536</duration></backup>
       <!-- end of staff 1 -->
       <!-- voice 1 -->
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="-30" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>C</step>
           <octave>4</octave>
@@ -1911,7 +1911,7 @@
       <backup><duration>1536</duration></backup>
       <!-- end of staff 1 -->
       <!-- voice 1 -->
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="-30" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>C</step>
           <octave>4</octave>
@@ -1985,7 +1985,7 @@
       <backup><duration>1536</duration></backup>
       <!-- end of staff 1 -->
       <!-- voice 1 -->
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="-30" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>C</step>
           <octave>4</octave>
@@ -2059,7 +2059,7 @@
       <backup><duration>1536</duration></backup>
       <!-- end of staff 1 -->
       <!-- voice 1 -->
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="-30" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>C</step>
           <octave>4</octave>
@@ -2133,7 +2133,7 @@
       <backup><duration>1536</duration></backup>
       <!-- end of staff 1 -->
       <!-- voice 1 -->
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="-30" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>C</step>
           <octave>4</octave>
@@ -2207,7 +2207,7 @@
       <backup><duration>1536</duration></backup>
       <!-- end of staff 1 -->
       <!-- voice 1 -->
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="-30" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>C</step>
           <octave>4</octave>
@@ -2281,7 +2281,7 @@
       <backup><duration>1536</duration></backup>
       <!-- end of staff 1 -->
       <!-- voice 1 -->
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="-30" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>C</step>
           <octave>4</octave>
@@ -2355,7 +2355,7 @@
       <backup><duration>1536</duration></backup>
       <!-- end of staff 1 -->
       <!-- voice 1 -->
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="-30" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>C</step>
           <octave>4</octave>
@@ -2429,7 +2429,7 @@
       <backup><duration>1536</duration></backup>
       <!-- end of staff 1 -->
       <!-- voice 1 -->
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="-30" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>C</step>
           <octave>4</octave>
@@ -2503,7 +2503,7 @@
       <backup><duration>1536</duration></backup>
       <!-- end of staff 1 -->
       <!-- voice 1 -->
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="-30" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>C</step>
           <octave>4</octave>
@@ -2577,7 +2577,7 @@
       <backup><duration>1536</duration></backup>
       <!-- end of staff 1 -->
       <!-- voice 1 -->
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="-30" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>C</step>
           <octave>4</octave>
@@ -2651,7 +2651,7 @@
       <backup><duration>1536</duration></backup>
       <!-- end of staff 1 -->
       <!-- voice 1 -->
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="-30" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>C</step>
           <octave>4</octave>
@@ -2725,7 +2725,7 @@
       <backup><duration>1536</duration></backup>
       <!-- end of staff 1 -->
       <!-- voice 1 -->
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="-30" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>C</step>
           <octave>4</octave>
@@ -2799,7 +2799,7 @@
       <backup><duration>1536</duration></backup>
       <!-- end of staff 1 -->
       <!-- voice 1 -->
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="-30" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>C</step>
           <octave>4</octave>
@@ -2873,7 +2873,7 @@
       <backup><duration>1536</duration></backup>
       <!-- end of staff 1 -->
       <!-- voice 1 -->
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="-30" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>C</step>
           <octave>4</octave>
@@ -2947,7 +2947,7 @@
       <backup><duration>1536</duration></backup>
       <!-- end of staff 1 -->
       <!-- voice 1 -->
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="-30" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>C</step>
           <octave>4</octave>
@@ -3021,7 +3021,7 @@
       <backup><duration>1536</duration></backup>
       <!-- end of staff 1 -->
       <!-- voice 1 -->
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="-30" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>C</step>
           <octave>4</octave>
@@ -3095,7 +3095,7 @@
       <backup><duration>1536</duration></backup>
       <!-- end of staff 1 -->
       <!-- voice 1 -->
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="-30" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>C</step>
           <octave>4</octave>
@@ -3169,7 +3169,7 @@
       <backup><duration>1536</duration></backup>
       <!-- end of staff 1 -->
       <!-- voice 1 -->
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="-30" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>C</step>
           <octave>4</octave>
@@ -3243,7 +3243,7 @@
       <backup><duration>1536</duration></backup>
       <!-- end of staff 1 -->
       <!-- voice 1 -->
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="-30" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>C</step>
           <octave>4</octave>
@@ -3317,7 +3317,7 @@
       <backup><duration>1536</duration></backup>
       <!-- end of staff 1 -->
       <!-- voice 1 -->
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="-30" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>C</step>
           <octave>4</octave>
@@ -3391,7 +3391,7 @@
       <backup><duration>1536</duration></backup>
       <!-- end of staff 1 -->
       <!-- voice 1 -->
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="-30" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>C</step>
           <octave>4</octave>
@@ -3465,7 +3465,7 @@
       <backup><duration>1536</duration></backup>
       <!-- end of staff 1 -->
       <!-- voice 1 -->
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="-30" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>C</step>
           <octave>4</octave>

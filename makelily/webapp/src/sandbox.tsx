@@ -11,7 +11,7 @@ import Test, {satieApplication} from "./test";
 import {prefix} from "./config";
 const STYLES = require("./tests.css");
 
-import {Application, Song, Patch, Type, IMouseEvent} from "../../src/index";
+import {Application, Song, Patch, Type, IMouseEvent} from "satie";
 
 const MAX_SAFE_INTEGER = 9007199254740991;
 

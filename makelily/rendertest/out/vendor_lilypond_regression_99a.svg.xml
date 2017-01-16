@@ -135,7 +135,7 @@
       <backup><duration>2304</duration></backup>
       <!-- end of staff 1 -->
       <!-- voice 1 -->
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="68" end-dynamics="90" pizzicato="no">
+      <note default-y="50" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="68" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>E</step>
           <octave>6</octave>
@@ -152,7 +152,7 @@
         </notations>
       </note>
       
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="31" end-dynamics="90" pizzicato="no">
+      <note default-y="55" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="31" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>F</step>
           <alter>1</alter>
@@ -168,7 +168,7 @@
         <beam number="3" repeater="no" fan="none">continue</beam>
       </note>
       
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="31" end-dynamics="90" pizzicato="no">
+      <note default-y="55" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="31" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>F</step>
           <alter>1</alter>
@@ -181,7 +181,7 @@
         <beam number="1" repeater="no" fan="none">continue</beam>
       </note>
       
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="31" end-dynamics="90" pizzicato="no">
+      <note default-y="55" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="31" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>F</step>
           <alter>1</alter>
@@ -193,7 +193,7 @@
         <staff>1</staff>
       </note>
       
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="47" end-dynamics="90" pizzicato="no">
+      <note default-y="60" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="47" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>G</step>
           <alter>1</alter>
@@ -209,7 +209,7 @@
         <beam number="3" repeater="no" fan="none">begin</beam>
       </note>
       
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="47" end-dynamics="90" pizzicato="no">
+      <note default-y="70" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="47" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>B</step>
           <octave>6</octave>

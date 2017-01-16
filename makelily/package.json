@@ -55,18 +55,17 @@
     "source-map-loader": "0.1.5",
     "source-map-support": "0.4.0",
     "tslint": "3.14.0",
-    "typescript": "2.1.0-dev.20160802",
+    "typescript": "2.1.5",
     "webpack": "1.13.0",
     "webpack-dev-server": "1.14.1"
   },
-  "main": "./dist/index.js",
+  "main": "./dist/satie.js",
   "files": [
     "COPYING.txt",
     "dist/",
-    "src/",
-    "index.d.ts"
+    "src/"
   ],
-  "typings": "dist/index.d.ts",
+  "typings": "dist/satie.d.ts",
   "browser": {
     "source-map-support": false,
     "fs": false

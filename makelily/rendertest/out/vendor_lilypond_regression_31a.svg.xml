@@ -175,7 +175,7 @@
       <backup><duration>3072</duration></backup>
       <!-- end of staff 1 -->
       <!-- voice 1 -->
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="-30" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>C</step>
           <octave>4</octave>
@@ -189,7 +189,7 @@
         </lyric>
       </note>
       
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="-30" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>C</step>
           <octave>4</octave>
@@ -203,7 +203,7 @@
         </lyric>
       </note>
       
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="-30" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>C</step>
           <octave>4</octave>
@@ -217,7 +217,7 @@
         </lyric>
       </note>
       
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="-30" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>C</step>
           <octave>4</octave>
@@ -330,7 +330,7 @@
       <backup><duration>3072</duration></backup>
       <!-- end of staff 1 -->
       <!-- voice 1 -->
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="-30" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>C</step>
           <octave>4</octave>
@@ -344,7 +344,7 @@
         </lyric>
       </note>
       
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="-30" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>C</step>
           <octave>4</octave>
@@ -358,7 +358,7 @@
         </lyric>
       </note>
       
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="-30" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>C</step>
           <octave>4</octave>
@@ -372,7 +372,7 @@
         </lyric>
       </note>
       
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="-30" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>C</step>
           <octave>4</octave>
@@ -439,7 +439,7 @@
           <div-count>768</div-count>
         </musicxml-interfaces:debug-->
         <direction-type>
-          <dynamics default-x="0" default-y="-60" relative-x="-27.418497379120872" relative-y="0" font-style="normal" font-weight="normal" color="#000000" halign="left" valign="bottom" underline="0" overline="0" line-through="0" enclosure="none">
+          <dynamics default-x="0" default-y="-60" relative-x="0" relative-y="0" font-style="normal" font-weight="normal" color="#000000" halign="left" valign="bottom" underline="0" overline="0" line-through="0" enclosure="none">
             
           </dynamics>
         </direction-type>
@@ -451,7 +451,7 @@
           <div-count>768</div-count>
         </musicxml-interfaces:debug-->
         <direction-type>
-          <dynamics default-x="0" default-y="-60" relative-x="-9.139499126373629" relative-y="0" font-style="normal" font-weight="normal" color="#000000" halign="left" valign="bottom" underline="0" overline="0" line-through="0" enclosure="none">
+          <dynamics default-x="0" default-y="-60" relative-x="0" relative-y="0" font-style="normal" font-weight="normal" color="#000000" halign="left" valign="bottom" underline="0" overline="0" line-through="0" enclosure="none">
             
           </dynamics>
         </direction-type>
@@ -463,7 +463,7 @@
           <div-count>768</div-count>
         </musicxml-interfaces:debug-->
         <direction-type>
-          <dynamics default-x="0" default-y="-60" relative-x="9.139499126373615" relative-y="0" font-style="normal" font-weight="normal" color="#000000" halign="left" valign="bottom" underline="0" overline="0" line-through="0" enclosure="none">
+          <dynamics default-x="0" default-y="-60" relative-x="0" relative-y="0" font-style="normal" font-weight="normal" color="#000000" halign="left" valign="bottom" underline="0" overline="0" line-through="0" enclosure="none">
             
           </dynamics>
         </direction-type>
@@ -475,7 +475,7 @@
           <div-count>768</div-count>
         </musicxml-interfaces:debug-->
         <direction-type>
-          <dynamics default-x="0" default-y="-60" relative-x="27.418497379120865" relative-y="0" font-style="normal" font-weight="normal" color="#000000" halign="left" valign="bottom" underline="0" overline="0" line-through="0" enclosure="none">
+          <dynamics default-x="0" default-y="-60" relative-x="0" relative-y="0" font-style="normal" font-weight="normal" color="#000000" halign="left" valign="bottom" underline="0" overline="0" line-through="0" enclosure="none">
             
           </dynamics>
         </direction-type>
@@ -493,7 +493,7 @@
       <backup><duration>3072</duration></backup>
       <!-- end of staff 1 -->
       <!-- voice 1 -->
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="-30" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>C</step>
           <octave>4</octave>
@@ -507,7 +507,7 @@
         </lyric>
       </note>
       
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="-30" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>C</step>
           <octave>4</octave>
@@ -521,7 +521,7 @@
         </lyric>
       </note>
       
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="-30" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>C</step>
           <octave>4</octave>
@@ -535,7 +535,7 @@
         </lyric>
       </note>
       
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="-30" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>C</step>
           <octave>4</octave>
@@ -602,7 +602,7 @@
           <div-count>768</div-count>
         </musicxml-interfaces:debug-->
         <direction-type>
-          <dynamics default-x="0" default-y="-60" relative-x="-6.358497379120877" relative-y="0" font-style="normal" font-weight="normal" color="#000000" halign="left" valign="bottom" underline="0" overline="0" line-through="0" enclosure="none">
+          <dynamics default-x="0" default-y="-60" relative-x="0" relative-y="0" font-style="normal" font-weight="normal" color="#000000" halign="left" valign="bottom" underline="0" overline="0" line-through="0" enclosure="none">
             
           </dynamics>
         </direction-type>
@@ -614,7 +614,7 @@
           <div-count>768</div-count>
         </musicxml-interfaces:debug-->
         <direction-type>
-          <dynamics default-x="0" default-y="-60" relative-x="-1.3114991263736329" relative-y="0" font-style="normal" font-weight="normal" color="#000000" halign="left" valign="bottom" underline="0" overline="0" line-through="0" enclosure="none">
+          <dynamics default-x="0" default-y="-60" relative-x="0" relative-y="0" font-style="normal" font-weight="normal" color="#000000" halign="left" valign="bottom" underline="0" overline="0" line-through="0" enclosure="none">
             
           </dynamics>
         </direction-type>
@@ -626,7 +626,7 @@
           <div-count>768</div-count>
         </musicxml-interfaces:debug-->
         <direction-type>
-          <dynamics default-x="0" default-y="-60" relative-x="-5.304500873626381" relative-y="0" font-style="normal" font-weight="normal" color="#000000" halign="left" valign="bottom" underline="0" overline="0" line-through="0" enclosure="none">
+          <dynamics default-x="0" default-y="-60" relative-x="0" relative-y="0" font-style="normal" font-weight="normal" color="#000000" halign="left" valign="bottom" underline="0" overline="0" line-through="0" enclosure="none">
             
           </dynamics>
         </direction-type>
@@ -638,7 +638,7 @@
           <div-count>768</div-count>
         </musicxml-interfaces:debug-->
         <direction-type>
-          <dynamics default-x="0" default-y="-60" relative-x="12.974497379120862" relative-y="0" font-style="normal" font-weight="normal" color="#000000" halign="left" valign="bottom" underline="0" overline="0" line-through="0" enclosure="none">
+          <dynamics default-x="0" default-y="-60" relative-x="0" relative-y="0" font-style="normal" font-weight="normal" color="#000000" halign="left" valign="bottom" underline="0" overline="0" line-through="0" enclosure="none">
             
           </dynamics>
         </direction-type>
@@ -656,7 +656,7 @@
       <backup><duration>3072</duration></backup>
       <!-- end of staff 1 -->
       <!-- voice 1 -->
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="-30" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>C</step>
           <octave>4</octave>
@@ -670,7 +670,7 @@
         </lyric>
       </note>
       
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="-30" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>C</step>
           <octave>4</octave>
@@ -684,7 +684,7 @@
         </lyric>
       </note>
       
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="-30" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>C</step>
           <octave>4</octave>
@@ -698,7 +698,7 @@
         </lyric>
       </note>
       
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="-30" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>C</step>
           <octave>4</octave>
@@ -765,7 +765,7 @@
           <div-count>768</div-count>
         </musicxml-interfaces:debug-->
         <direction-type>
-          <dynamics default-x="0" default-y="-60" relative-x="-27.418497379120872" relative-y="0" font-style="normal" font-weight="normal" color="#000000" halign="left" valign="bottom" underline="0" overline="0" line-through="0" enclosure="none">
+          <dynamics default-x="0" default-y="-60" relative-x="0" relative-y="0" font-style="normal" font-weight="normal" color="#000000" halign="left" valign="bottom" underline="0" overline="0" line-through="0" enclosure="none">
             
           </dynamics>
         </direction-type>
@@ -777,7 +777,7 @@
           <div-count>768</div-count>
         </musicxml-interfaces:debug-->
         <direction-type>
-          <dynamics default-x="0" default-y="-60" relative-x="-9.139499126373629" relative-y="0" font-style="normal" font-weight="normal" color="#000000" halign="left" valign="bottom" underline="0" overline="0" line-through="0" enclosure="none">
+          <dynamics default-x="0" default-y="-60" relative-x="0" relative-y="0" font-style="normal" font-weight="normal" color="#000000" halign="left" valign="bottom" underline="0" overline="0" line-through="0" enclosure="none">
             
           </dynamics>
         </direction-type>
@@ -789,7 +789,7 @@
           <div-count>768</div-count>
         </musicxml-interfaces:debug-->
         <direction-type>
-          <dynamics default-x="0" default-y="-60" relative-x="9.139499126373615" relative-y="0" font-style="normal" font-weight="normal" color="#000000" halign="left" valign="bottom" underline="0" overline="0" line-through="0" enclosure="none">
+          <dynamics default-x="0" default-y="-60" relative-x="0" relative-y="0" font-style="normal" font-weight="normal" color="#000000" halign="left" valign="bottom" underline="0" overline="0" line-through="0" enclosure="none">
             
           </dynamics>
         </direction-type>
@@ -801,7 +801,7 @@
           <div-count>768</div-count>
         </musicxml-interfaces:debug-->
         <direction-type>
-          <dynamics default-x="0" default-y="-60" relative-x="27.418497379120865" relative-y="0" font-style="normal" font-weight="normal" color="#000000" halign="left" valign="bottom" underline="0" overline="0" line-through="0" enclosure="none">
+          <dynamics default-x="0" default-y="-60" relative-x="0" relative-y="0" font-style="normal" font-weight="normal" color="#000000" halign="left" valign="bottom" underline="0" overline="0" line-through="0" enclosure="none">
             
           </dynamics>
         </direction-type>
@@ -819,7 +819,7 @@
       <backup><duration>3072</duration></backup>
       <!-- end of staff 1 -->
       <!-- voice 1 -->
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="-30" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>C</step>
           <octave>4</octave>
@@ -833,7 +833,7 @@
         </lyric>
       </note>
       
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="-30" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>C</step>
           <octave>4</octave>
@@ -847,7 +847,7 @@
         </lyric>
       </note>
       
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="-30" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>C</step>
           <octave>4</octave>
@@ -861,7 +861,7 @@
         </lyric>
       </note>
       
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="-30" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>C</step>
           <octave>4</octave>
@@ -928,7 +928,7 @@
           <div-count>768</div-count>
         </musicxml-interfaces:debug-->
         <direction-type>
-          <dynamics default-x="0" default-y="-60" relative-x="-27.418497379120872" relative-y="0" font-style="normal" font-weight="normal" color="#000000" halign="left" valign="bottom" underline="0" overline="0" line-through="0" enclosure="none">
+          <dynamics default-x="0" default-y="-60" relative-x="0" relative-y="0" font-style="normal" font-weight="normal" color="#000000" halign="left" valign="bottom" underline="0" overline="0" line-through="0" enclosure="none">
             
           </dynamics>
         </direction-type>
@@ -940,7 +940,7 @@
           <div-count>768</div-count>
         </musicxml-interfaces:debug-->
         <direction-type>
-          <dynamics default-x="0" default-y="-60" relative-x="-9.139499126373629" relative-y="0" font-style="normal" font-weight="normal" color="#000000" halign="left" valign="bottom" underline="0" overline="0" line-through="0" enclosure="none">
+          <dynamics default-x="0" default-y="-60" relative-x="0" relative-y="0" font-style="normal" font-weight="normal" color="#000000" halign="left" valign="bottom" underline="0" overline="0" line-through="0" enclosure="none">
             
           </dynamics>
         </direction-type>
@@ -952,7 +952,7 @@
           <div-count>768</div-count>
         </musicxml-interfaces:debug-->
         <direction-type>
-          <dynamics default-x="0" default-y="-60" relative-x="9.139499126373615" relative-y="0" font-style="normal" font-weight="normal" color="#000000" halign="left" valign="bottom" underline="0" overline="0" line-through="0" enclosure="none">
+          <dynamics default-x="0" default-y="-60" relative-x="0" relative-y="0" font-style="normal" font-weight="normal" color="#000000" halign="left" valign="bottom" underline="0" overline="0" line-through="0" enclosure="none">
             
           </dynamics>
         </direction-type>
@@ -964,7 +964,7 @@
           <div-count>768</div-count>
         </musicxml-interfaces:debug-->
         <direction-type>
-          <dynamics default-x="0" default-y="-60" relative-x="27.418497379120865" relative-y="0" font-style="normal" font-weight="normal" color="#000000" halign="left" valign="bottom" underline="0" overline="0" line-through="0" enclosure="none">
+          <dynamics default-x="0" default-y="-60" relative-x="0" relative-y="0" font-style="normal" font-weight="normal" color="#000000" halign="left" valign="bottom" underline="0" overline="0" line-through="0" enclosure="none">
             
           </dynamics>
         </direction-type>
@@ -982,7 +982,7 @@
       <backup><duration>3072</duration></backup>
       <!-- end of staff 1 -->
       <!-- voice 1 -->
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="-30" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>C</step>
           <octave>4</octave>
@@ -996,7 +996,7 @@
         </lyric>
       </note>
       
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="-30" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>C</step>
           <octave>4</octave>
@@ -1010,7 +1010,7 @@
         </lyric>
       </note>
       
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="-30" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>C</step>
           <octave>4</octave>
@@ -1024,7 +1024,7 @@
         </lyric>
       </note>
       
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="-30" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>C</step>
           <octave>4</octave>
@@ -1091,7 +1091,7 @@
           <div-count>768</div-count>
         </musicxml-interfaces:debug-->
         <direction-type>
-          <dynamics default-x="0" default-y="-60" relative-x="-24.52349737912087" relative-y="0" font-style="normal" font-weight="normal" color="#000000" halign="left" valign="bottom" underline="0" overline="0" line-through="0" enclosure="none">
+          <dynamics default-x="0" default-y="-60" relative-x="0" relative-y="0" font-style="normal" font-weight="normal" color="#000000" halign="left" valign="bottom" underline="0" overline="0" line-through="0" enclosure="none">
             
           </dynamics>
         </direction-type>
@@ -1103,7 +1103,7 @@
           <div-count>768</div-count>
         </musicxml-interfaces:debug-->
         <direction-type>
-          <dynamics default-x="0" default-y="-60" relative-x="-10.104499126373625" relative-y="0" font-style="normal" font-weight="normal" color="#000000" halign="left" valign="bottom" underline="0" overline="0" line-through="0" enclosure="none">
+          <dynamics default-x="0" default-y="-60" relative-x="0" relative-y="0" font-style="normal" font-weight="normal" color="#000000" halign="left" valign="bottom" underline="0" overline="0" line-through="0" enclosure="none">
             
           </dynamics>
         </direction-type>
@@ -1115,7 +1115,7 @@
           <div-count>768</div-count>
         </musicxml-interfaces:debug-->
         <direction-type>
-          <dynamics default-x="0" default-y="-60" relative-x="8.174499126373632" relative-y="0" font-style="normal" font-weight="normal" color="#000000" halign="left" valign="bottom" underline="0" overline="0" line-through="0" enclosure="none">
+          <dynamics default-x="0" default-y="-60" relative-x="0" relative-y="0" font-style="normal" font-weight="normal" color="#000000" halign="left" valign="bottom" underline="0" overline="0" line-through="0" enclosure="none">
             
           </dynamics>
         </direction-type>
@@ -1127,7 +1127,7 @@
           <div-count>768</div-count>
         </musicxml-interfaces:debug-->
         <direction-type>
-          <dynamics default-x="0" default-y="-60" relative-x="26.453497379120876" relative-y="0" font-style="normal" font-weight="normal" color="#000000" halign="left" valign="bottom" underline="0" overline="0" line-through="0" enclosure="none">
+          <dynamics default-x="0" default-y="-60" relative-x="0" relative-y="0" font-style="normal" font-weight="normal" color="#000000" halign="left" valign="bottom" underline="0" overline="0" line-through="0" enclosure="none">
             
           </dynamics>
         </direction-type>
@@ -1145,7 +1145,7 @@
       <backup><duration>3072</duration></backup>
       <!-- end of staff 1 -->
       <!-- voice 1 -->
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="-30" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>C</step>
           <octave>4</octave>
@@ -1159,7 +1159,7 @@
         </lyric>
       </note>
       
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="-30" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>C</step>
           <octave>4</octave>
@@ -1173,7 +1173,7 @@
         </lyric>
       </note>
       
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="-30" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>C</step>
           <octave>4</octave>
@@ -1187,7 +1187,7 @@
         </lyric>
       </note>
       
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="-30" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>C</step>
           <octave>4</octave>
@@ -1254,7 +1254,7 @@
           <div-count>768</div-count>
         </musicxml-interfaces:debug-->
         <direction-type>
-          <dynamics default-x="0" default-y="-60" relative-x="-36.41403806046691" relative-y="0" font-style="normal" font-weight="normal" color="#000000" halign="left" valign="bottom" underline="0" overline="0" line-through="0" enclosure="none">
+          <dynamics default-x="0" default-y="-60" relative-x="0" relative-y="0" font-style="normal" font-weight="normal" color="#000000" halign="left" valign="bottom" underline="0" overline="0" line-through="0" enclosure="none">
             
           </dynamics>
         </direction-type>
@@ -1266,7 +1266,7 @@
           <div-count>768</div-count>
         </musicxml-interfaces:debug-->
         <direction-type>
-          <dynamics default-x="0" default-y="-60" relative-x="-12.138012686822307" relative-y="0" font-style="normal" font-weight="normal" color="#000000" halign="left" valign="bottom" underline="0" overline="0" line-through="0" enclosure="none">
+          <dynamics default-x="0" default-y="-60" relative-x="0" relative-y="0" font-style="normal" font-weight="normal" color="#000000" halign="left" valign="bottom" underline="0" overline="0" line-through="0" enclosure="none">
             
           </dynamics>
         </direction-type>
@@ -1278,7 +1278,7 @@
           <div-count>768</div-count>
         </musicxml-interfaces:debug-->
         <direction-type>
-          <dynamics default-x="0" default-y="-60" relative-x="12.138012686822293" relative-y="0" font-style="normal" font-weight="normal" color="#000000" halign="left" valign="bottom" underline="0" overline="0" line-through="0" enclosure="none">
+          <dynamics default-x="0" default-y="-60" relative-x="0" relative-y="0" font-style="normal" font-weight="normal" color="#000000" halign="left" valign="bottom" underline="0" overline="0" line-through="0" enclosure="none">
             
           </dynamics>
         </direction-type>
@@ -1290,7 +1290,7 @@
           <div-count>768</div-count>
         </musicxml-interfaces:debug-->
         <direction-type>
-          <dynamics default-x="0" default-y="-60" relative-x="36.41403806046691" relative-y="0" font-style="normal" font-weight="normal" color="#000000" halign="left" valign="bottom" underline="0" overline="0" line-through="0" enclosure="none">
+          <dynamics default-x="0" default-y="-60" relative-x="0" relative-y="0" font-style="normal" font-weight="normal" color="#000000" halign="left" valign="bottom" underline="0" overline="0" line-through="0" enclosure="none">
             <other-dynamics>abc-ffz</other-dynamics>
           </dynamics>
         </direction-type>
@@ -1308,7 +1308,7 @@
       <backup><duration>3072</duration></backup>
       <!-- end of staff 1 -->
       <!-- voice 1 -->
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="-30" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>C</step>
           <octave>4</octave>
@@ -1322,7 +1322,7 @@
         </lyric>
       </note>
       
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="-30" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>C</step>
           <octave>4</octave>
@@ -1336,7 +1336,7 @@
         </lyric>
       </note>
       
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="-30" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>C</step>
           <octave>4</octave>
@@ -1350,7 +1350,7 @@
         </lyric>
       </note>
       
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="-30" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>C</step>
           <octave>4</octave>
@@ -1463,7 +1463,7 @@
       <backup><duration>3072</duration></backup>
       <!-- end of staff 1 -->
       <!-- voice 1 -->
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="-30" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>C</step>
           <octave>4</octave>
@@ -1478,7 +1478,7 @@
         </lyric>
       </note>
       
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="-30" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>C</step>
           <octave>4</octave>
@@ -1493,7 +1493,7 @@
         </lyric>
       </note>
       
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="-30" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>C</step>
           <octave>4</octave>
@@ -1508,7 +1508,7 @@
         </lyric>
       </note>
       
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="-30" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>C</step>
           <octave>4</octave>
@@ -1622,7 +1622,7 @@
       <backup><duration>3072</duration></backup>
       <!-- end of staff 1 -->
       <!-- voice 1 -->
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="-30" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>C</step>
           <octave>4</octave>
@@ -1637,7 +1637,7 @@
         </lyric>
       </note>
       
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="-30" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>C</step>
           <octave>4</octave>
@@ -1652,7 +1652,7 @@
         </lyric>
       </note>
       
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="-30" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>C</step>
           <octave>4</octave>
@@ -1667,7 +1667,7 @@
         </lyric>
       </note>
       
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="-30" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>C</step>
           <octave>4</octave>
@@ -1771,7 +1771,7 @@
       <backup><duration>3072</duration></backup>
       <!-- end of staff 1 -->
       <!-- voice 1 -->
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="-30" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>C</step>
           <octave>4</octave>
@@ -1786,7 +1786,7 @@
         </lyric>
       </note>
       
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="-30" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>C</step>
           <octave>4</octave>
@@ -1801,7 +1801,7 @@
         </lyric>
       </note>
       
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="-30" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>C</step>
           <octave>4</octave>
@@ -1812,7 +1812,7 @@
         <staff>1</staff>
       </note>
       
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="-30" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>C</step>
           <octave>4</octave>
@@ -1958,7 +1958,7 @@
       <backup><duration>3072</duration></backup>
       <!-- end of staff 1 -->
       <!-- voice 1 -->
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="-30" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>C</step>
           <octave>4</octave>
@@ -1972,7 +1972,7 @@
         </lyric>
       </note>
       
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="-30" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>C</step>
           <octave>4</octave>
@@ -1986,7 +1986,7 @@
         </lyric>
       </note>
       
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="-30" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>C</step>
           <octave>4</octave>
@@ -2000,7 +2000,7 @@
         </lyric>
       </note>
       
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="-30" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>C</step>
           <octave>4</octave>
@@ -2110,7 +2110,7 @@
       <backup><duration>3072</duration></backup>
       <!-- end of staff 1 -->
       <!-- voice 1 -->
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="-30" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>C</step>
           <octave>4</octave>
@@ -2124,7 +2124,7 @@
         </lyric>
       </note>
       
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="-30" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>C</step>
           <octave>4</octave>
@@ -2138,7 +2138,7 @@
         </lyric>
       </note>
       
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="0" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <rest measure="no">
           
         </rest>
@@ -2207,7 +2207,7 @@
           <words justify="left" default-x="0" default-y="-60" relative-x="0" relative-y="-3.333333666666661" font-family="Times New Roman" font-style="normal" font-size="10.25" font-weight="normal" color="#000000" halign="left" valign="bottom" underline="0" overline="0" line-through="0" rotation="0" letter-spacing="normal" line-height="normal" dir="ltr" enclosure="none"></words>
         </direction-type>
         <direction-type>
-          <dynamics default-x="0" default-y="-60" relative-x="-9.157512686822301" relative-y="6.666667333333351" font-style="normal" font-weight="normal" color="#000000" halign="left" valign="bottom" underline="0" overline="0" line-through="0" enclosure="none">
+          <dynamics default-x="0" default-y="-60" relative-x="0" relative-y="6.666667333333351" font-style="normal" font-weight="normal" color="#000000" halign="left" valign="bottom" underline="0" overline="0" line-through="0" enclosure="none">
             
           </dynamics>
         </direction-type>
@@ -2220,7 +2220,7 @@
           <div-count>768</div-count>
         </musicxml-interfaces:debug-->
         <direction-type>
-          <dynamics default-x="0" default-y="-60" relative-x="9.157512686822301" relative-y="0" font-style="normal" font-weight="normal" color="#000000" halign="left" valign="bottom" underline="0" overline="0" line-through="0" enclosure="none">
+          <dynamics default-x="0" default-y="-60" relative-x="0" relative-y="0" font-style="normal" font-weight="normal" color="#000000" halign="left" valign="bottom" underline="0" overline="0" line-through="0" enclosure="none">
             
           </dynamics>
         </direction-type>
@@ -2258,7 +2258,7 @@
       <backup><duration>3072</duration></backup>
       <!-- end of staff 1 -->
       <!-- voice 1 -->
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="-30" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>C</step>
           <octave>4</octave>
@@ -2272,7 +2272,7 @@
         </lyric>
       </note>
       
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="-30" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>C</step>
           <octave>4</octave>
@@ -2287,7 +2287,7 @@
         </lyric>
       </note>
       
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="-30" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>C</step>
           <octave>4</octave>
@@ -2302,7 +2302,7 @@
         </lyric>
       </note>
       
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="0" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <rest measure="no">
           
         </rest>
