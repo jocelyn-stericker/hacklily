@@ -267,6 +267,8 @@ class NoteImpl implements Note {
                 )
             );
         }
+
+        this.updateAccidental(cursor);
     }
 
     /*---- Util -----------------------------------------------------------------------------*/
@@ -406,9 +408,9 @@ class NoteImpl implements Note {
 
         // TODO: this is no longer sufficient if multiple voices share a staff.
         let generalTarget = accidentals[pitch.step] || null;
-        let target = accidentals[pitch.step + pitch.octave] || generalTarget;
+        let target = accidentals[pitch.step + pitch.octave];
 
-        if (!target && generalTarget !== InvalidAccidental) {
+        if (isNaN(target) && generalTarget !== InvalidAccidental) {
             target = generalTarget;
         }
 
