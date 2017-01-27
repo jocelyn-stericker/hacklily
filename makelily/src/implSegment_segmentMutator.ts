@@ -46,23 +46,12 @@ export default function segmentMutator(factory: IFactory, segment: ISegment, op:
     } else if ("ld" in op && !("li" in op)) {
         const existingSerializable: any = cloneObject(segment[op.p[5] as number]);
         if (!isEqual(existingSerializable, op.ld)) {
-            if ("length" in op.ld && "length" in existingSerializable) {
-                // TODO: Make notes reserializable.
-                console.warn("Mismatch in spec of Chord to be deleted. This is expected for undos :(");
-            } else if (op.ld._class === "Attributes" && existingSerializable._class === "Attributes") {
-                // TODO: Make notes reserializable.
-                console.warn("Mismatch in spec of Attributes to be deleted. This is expected for undos :(");
-            } else if (op.ld._class === "Print" && existingSerializable._class === "Print") {
-                // TODO: Make notes reserializable.
-                console.warn("Mismatch in spec of Print to be deleted. This is expected for undos :(");
-            } else {
-                invariant(false,
-                    "The element to be removed must be accurately specified in the operation.\n\n" +
-                    "OPERATION SPEC: " + JSON.stringify(op.ld, null, 2) + "\n\n" +
-                    "ACTUAL SPEC: " + JSON.stringify(existingSerializable, null, 2) + "\n\n" +
-                    "Your patch is broken."
-                );
-            }
+            invariant(false,
+                "The element to be removed must be accurately specified in the operation.\n\n" +
+                "OPERATION SPEC: " + JSON.stringify(op.ld, null, 2) + "\n\n" +
+                "ACTUAL SPEC: " + JSON.stringify(existingSerializable, null, 2) + "\n\n" +
+                "Your patch is broken."
+            );
         }
         segment.splice(op.p[5] as number, 1);
     } else {

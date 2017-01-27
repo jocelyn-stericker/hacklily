@@ -75,7 +75,6 @@ interface IStaffContext {
  * Complexity: O(staff-voice pairs)
  */
 export function refreshMeasure(spec: IRefreshMeasureOpts): IMeasureLayout {
-    console.log("Refresh measure", spec.measure.number, RefreshMode[spec.mode]);
     const gMeasure = spec.measure;
     invariant(!!spec.attributes, "Attributes must be defined");
     const gInitialAttribs = cloneObject(spec.attributes);

@@ -21,8 +21,9 @@ import {IAny} from "musicxml-interfaces/operations";
 import {
     buildNote, patchNote, INoteBuilder,
     buildBarline, patchBarline, IBarlineBuilder,
-    buildBeam, buildAttributes, patchAttributes,
-    IAttributesBuilder,
+    buildBeam,
+    buildAttributes, patchAttributes, IAttributesBuilder,
+    buildPrint, patchPrint, IPrintBuilder,
 } from "musicxml-interfaces/builders";
 import {find, forEach, last, some, times, findIndex, findLastIndex, extend, isInteger} from "lodash";
 import * as invariant from "invariant";
@@ -101,6 +102,22 @@ export class StaffBuilder {
 
     insertAttributes(builder: (build: IAttributesBuilder) => IAttributesBuilder) {
         let li = buildAttributes(builder);
+        let p = [this._idx];
+        this._patches = this._patches.concat({li, p});
+        return this;
+    }
+
+    print(builder: (builder: IPrintBuilder) => IPrintBuilder) {
+        let model = this._segment[this._idx] as any;
+        invariant(model, "no such model");
+        invariant(this._document.modelHasType(model, Type.Print), "model is not Print");
+        this._patches = this._patches.concat(
+        patchPrint(model, builder).map(_prependPatch(this._idx)));
+        return this;
+    }
+
+    insertPrint(builder: (build: IPrintBuilder) => IPrintBuilder) {
+        let li = buildPrint(builder);
         let p = [this._idx];
         this._patches = this._patches.concat({li, p});
         return this;

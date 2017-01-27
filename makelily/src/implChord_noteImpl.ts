@@ -16,7 +16,7 @@
  * along with Satie.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import {Note, Chord, Rest, Dot, Type, Count, SymbolSize, TimeModification, Pitch,
+import {Note, Chord, Rest, Dot, Type, TimeModification, Pitch,
     Unpitched, NoteheadText, Accidental, Instrument, Lyric, Notations, Stem, Cue,
     Tie, Play, Grace, Notehead, Beam, NormalBold, NormalItalic, Level, Footnote,
     Articulations, AccidentalMark, Arpeggiate, Dynamics, Fermata, Glissando,
@@ -26,7 +26,7 @@ import {forEach, reduce, map, isEqual} from "lodash";
 import * as invariant from "invariant";
 
 import {IReadOnlyValidationCursor} from "./private_cursor";
-import {notationObj, accidentalGlyphs, onLedger, InvalidAccidental, lineForClef} from "./private_chordUtil";
+import {accidentalGlyphs, onLedger, InvalidAccidental, lineForClef} from "./private_chordUtil";
 import {bboxes as glyphBBoxes} from "./private_smufl";
 import {cloneObject} from "./private_util";
 
@@ -44,9 +44,6 @@ class NoteImpl implements Note {
     _parent: ChordModelImpl;
     _idx: number;
 
-    _restDisplayStep: string;
-    _restDisplayOctave: number;
-
     constructor(parent: ChordModelImpl, idx: number, note: Note,
             updateParent: boolean = true) {
         let self: {[key: string]: any} = this as any;
@@ -58,23 +55,6 @@ class NoteImpl implements Note {
         });
         this._idx = idx;
 
-        if (note.pitch) {
-            note.pitch.step = note.pitch.step.toUpperCase();
-        }
-
-        /* Properties owned by parent */
-        if (updateParent) {
-            if (note.rest) {
-                this.rest = note.rest; // Assigns parent
-            }
-            let count = note.noteType ? note.noteType.duration : parent.count;
-            if (count) {
-                parent.count = count;
-            }
-
-            parent.timeModification = note.timeModification || parent.timeModification;
-        }
-
         /* Properties owned by NoteImpl */
         let properties = [
             "pitch", "unpitched", "noteheadText", "accidental", "instrument",
@@ -83,12 +63,11 @@ class NoteImpl implements Note {
             "release", "pizzicato", "beams", "voice", "footnote", "level",
             "relativeY", "defaultY", "relativeX", "fontFamily", "fontWeight",
             "fontStyle", "fontSize", "color", "printDot", "printLyric", "printObject",
-            "printSpacing", "timeOnly", "dots",
+            "printSpacing", "timeOnly", "dots", "noteType", "timeModificiation",
+            "rest",
         ];
 
         forEach(properties, setIfDefined);
-
-        this.cleanNotations();
 
         function setIfDefined(property: string) {
             if (note.hasOwnProperty(property) && (<any>note)[property] !== null) {
@@ -102,48 +81,11 @@ class NoteImpl implements Note {
     /*---- Note > Core ----------------------------------------------------------------------*/
 
     chord: Chord;
-
-    get rest(): Rest {
-        return (!this.pitch && !this.unpitched) ? {
-            displayOctave: this._restDisplayOctave,
-            displayStep: this._restDisplayStep,
-            measure: this._parent.wholebar
-        } : null;
-    }
-    set rest(rest: Rest) {
-        this._parent.rest = !!rest;
-        if (rest) {
-            this._restDisplayStep = rest.displayStep;
-            this._restDisplayOctave = rest.displayOctave;
-        } else {
-            if (this._restDisplayStep || this._restDisplayOctave) {
-                this._restDisplayStep = undefined;
-                this._restDisplayOctave = undefined;
-            }
-        }
-    }
-
+    rest: Rest;
     dots: Dot[];
 
-    get noteType(): Type {
-        return {
-            duration: this._parent.satieMultipleRest ? Count.Whole : this._parent.count,
-            size: SymbolSize.Full // TODO: grace, cue
-        };
-    }
-
-    set noteType(type: Type) {
-        // TODO: grace, cue
-        this._parent.count = type.duration;
-    }
-
-    get timeModification(): TimeModification {
-        return this._parent.timeModification;
-    }
-
-    set timeModification(tm: TimeModification) {
-        this._parent.timeModification = tm;
-    }
+    noteType: Type;
+    timeModification: TimeModification;
 
     pitch: Pitch;
 
@@ -206,24 +148,7 @@ class NoteImpl implements Note {
 
     /*---- PrintStyle > Color ---------------------------------------------------------------*/
 
-    get color(): string {
-        let hex = this._color.toString(16);
-        return "#" + "000000".substr(0, 6 - hex.length) + hex;
-    }
-    set color(a: string) {
-        switch (true) {
-            case !a:
-                this._color = 0;
-                break;
-            case a[0] === "#":
-                a = a.slice(1);
-                this._color = parseInt(a, 16);
-                break;
-            default:
-                this._color = parseInt(a, 16);
-                break;
-        }
-    }
+    color: string;
 
     /*---- Printout -------------------------------------------------------------------------*/
 
@@ -242,10 +167,6 @@ class NoteImpl implements Note {
 
     timeOnly: string;
 
-    /*---- Private --------------------------------------------------------------------------*/
-
-    private _color: number = 0x000000;
-
     /*---- Implementation -------------------------------------------------------------------*/
 
     toXML() {
@@ -260,7 +181,8 @@ class NoteImpl implements Note {
             release, pizzicato, beams, voice, footnote, level,
             relativeY, defaultY, relativeX, fontFamily, fontWeight,
             fontStyle, fontSize, color, printDot, printLyric, printObject,
-            printSpacing, timeOnly, noteType, dots,
+            printSpacing, timeOnly, dots, noteType, timeModification,
+            rest,
         } = this;
 
         return {
@@ -270,10 +192,10 @@ class NoteImpl implements Note {
             release, pizzicato, beams, voice, footnote, level,
             relativeY, defaultY, relativeX, fontFamily, fontWeight,
             fontStyle, fontSize, color, printDot, printLyric, printObject,
-            printSpacing, timeOnly, noteType, dots,
+            printSpacing, timeOnly, noteType, dots, timeModification,
+            rest,
 
             _class: "Note",
-            _fromJSON: true,
         };
     }
 
@@ -282,15 +204,29 @@ class NoteImpl implements Note {
     }
 
     refresh(cursor: IReadOnlyValidationCursor) {
-        this.cleanNotations();
+        this.cleanNotations(cursor);
+
+        if (this.pitch && this.pitch.step !== this.pitch.step.toUpperCase()) {
+            cursor.patch(voice => voice.note(this._idx,
+                note => note.pitch(
+                    pitch => pitch.step(this.pitch.step.toUpperCase())
+                )
+            ));
+        }
         if (this.grace && this.cue) {
-            delete this.cue;
+            cursor.patch(voice => voice.note(this._idx,
+                note => note.cue(null)
+            ));
         }
         if (this.unpitched && (this.rest || this.pitch)) {
-            delete this.unpitched;
+            cursor.patch(voice => voice.note(this._idx,
+                note => note.unpitched(null)
+            ));
         }
         if (this.pitch && this.rest) {
-            delete this.pitch;
+            cursor.patch(voice => voice.note(this._idx,
+                note => note.pitch(null)
+            ));
         }
         invariant(cursor.segmentInstance.ownerType === "voice",
             "Expected to be in voice's context during validation");
@@ -335,15 +271,6 @@ class NoteImpl implements Note {
 
     /*---- Util -----------------------------------------------------------------------------*/
 
-    ensureNotationsWrittable() {
-        this.notations = this.notations || [{}];
-    }
-
-    ensureArticulationsWrittable() {
-        this.ensureNotationsWrittable();
-        notationObj(this).articulations = notationObj(this).articulations || [{}];
-    }
-
     /**
      * Flattens notations.
      * All of the following are valid and equivalent in MusicXML:
@@ -382,8 +309,8 @@ class NoteImpl implements Note {
      * In practice, different groups of notations could have different editorials and print-object
      * attributes. I'm not willing to put up with that, yet.
      */
-    cleanNotations() {
-        let notations = this.notations;
+    cleanNotations(cursor: IReadOnlyValidationCursor) {
+        let notations = cloneObject(this.notations);
 
         if (notations) {
             let notation: Notations = {
@@ -435,7 +362,9 @@ class NoteImpl implements Note {
                 }
             });
 
-            this.notations = [notation];
+            cursor.patch(voice => voice.note(this._idx,
+                note => note.notations([notation])
+            ));
         }
 
         function combine<T>(key: string): T[] {
