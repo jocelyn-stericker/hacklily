@@ -167,3 +167,21 @@ export function keyWidths(spec: Key) {
         }
     }
 }
+
+export function getNativeKeyAccidentals(spec: Key): {[note: string]: number} {
+    let accidentals: {[note: string]: number} = {};
+    const sharps = "FCGDAEB";
+    const flats = "BEADGCF";
+    if (spec.fifths) {
+        let accCount = Math.min(7, Math.abs(spec.fifths));
+        let sharp = spec.fifths >= 0;
+        (sharp ? sharps : flats).slice(0, accCount).split("").forEach(note => {
+            accidentals[note] = sharp ? 1 : -1;
+        });
+    } else if (spec.keySteps) {
+        for (let i = 0; i < spec.keySteps.length; ++i) {
+            accidentals[spec.keySteps[i]] = parseInt(spec.keyAlters[i], 10);
+        }
+    }
+    return accidentals;
+}

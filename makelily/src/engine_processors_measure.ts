@@ -27,6 +27,8 @@ import {keyBy, filter, map, reduce, values, flatten, forEach, some, last} from "
 
 import {Document, IMeasure, ISegment, IModel, Type, ILayout} from "./document";
 
+import {getNativeKeyAccidentals} from "./implAttributes_attributesData";
+
 import {IAttributesSnapshot} from "./private_attributesSnapshot";
 import {ICombinedLayout, mergeSegmentsInPlace} from "./private_combinedLayout";
 import {ValidationCursor, LayoutCursor} from "./private_cursor";
@@ -182,7 +184,7 @@ export function refreshMeasure(spec: IRefreshMeasureOpts): IMeasureLayout {
             page: 1,
             print: lastPrint,
             segment: voiceSegment,
-            staffAccidentals: {},
+            staffAccidentals: null,
             staffAttributes: null,
             staffIdx: NaN,
 
@@ -230,6 +232,7 @@ export function refreshMeasure(spec: IRefreshMeasureOpts): IMeasureLayout {
             }
             if (vCursor.factory.modelHasType(model, Type.Attributes)) {
                 vCursor.staffAttributes = model._snapshot;
+                vCursor.staffAccidentals = getNativeKeyAccidentals(model._snapshot.keySignature);
             }
             if (vCursor.factory.modelHasType(model, Type.Print)) {
                 vCursor.print = model;
@@ -294,7 +297,7 @@ export function refreshMeasure(spec: IRefreshMeasureOpts): IMeasureLayout {
 
             if (!staffContexts[staffIdx]) {
                 staffContexts[staffIdx] = {
-                    accidentals: {},
+                    accidentals: null,
                     attributes: gInitialAttribs[part][staffIdx],
                     division: 0,
                 };
@@ -318,9 +321,8 @@ export function refreshMeasure(spec: IRefreshMeasureOpts): IMeasureLayout {
                 let nextStaffEl = gStaffMeasure[`${part}_${staffIdx}`]
                     [voiceStaves[staffIdx].length];
 
-                // We can mostly ignore priorities here, since except for one exception,
-                // staff segments are more important than voice segments. The one exception
-                // is barlines:
+                // We can mostly ignore priorities here, since except for barlines,
+                // staff segments are more important than voice segments.
                 let nextIsBarline = spec.factory.modelHasType(nextStaffEl, Type.Barline);
                 if (nextIsBarline && staffContexts[staffIdx].division === vCursor.segmentDivision) {
                     break;
@@ -338,6 +340,9 @@ export function refreshMeasure(spec: IRefreshMeasureOpts): IMeasureLayout {
             model.key = `SATIE${vCursor.measureInstance.uuid}_parts_${vCursor.segmentInstance.part}_voices_${
                 vCursor.segmentInstance.owner}_${vCursor.segmentPosition}`;
             model.staffIdx = vCursor.staffIdx;
+            if (!vCursor.staffAccidentals) {
+                vCursor.staffAccidentals = getNativeKeyAccidentals(vCursor.staffAttributes.keySignature);
+            }
             if (spec.mode === RefreshMode.RefreshModel) {
                 model.refresh(vCursor.const());
             }
@@ -347,12 +352,12 @@ export function refreshMeasure(spec: IRefreshMeasureOpts): IMeasureLayout {
                         return;
                     }
                     const pitch = note.pitch;
-                    if (pitch.alter === 0) {
-                        vCursor.staffAccidentals[pitch.step] = undefined;
-                    }
-                    vCursor.staffAccidentals[pitch.step + pitch.octave] = pitch.alter;
-                    if ((vCursor.staffAccidentals[pitch.step]) !== pitch.alter) {
-                        vCursor.staffAccidentals[pitch.step] = InvalidAccidental;
+                    if ((vCursor.staffAccidentals[pitch.step + pitch.octave] || 0) !== (pitch.alter || 0) ||
+                            (vCursor.staffAccidentals[pitch.step] || 0) !== (pitch.alter || 0)) {
+                        vCursor.staffAccidentals[pitch.step + pitch.octave] = pitch.alter || 0;
+                        if ((vCursor.staffAccidentals[pitch.step] || 0) !== (pitch.alter || 0)) {
+                            vCursor.staffAccidentals[pitch.step] = InvalidAccidental;
+                        }
                     }
                 });
             }
