@@ -18,14 +18,11 @@
 
 import {IAny} from "musicxml-interfaces/operations";
 
-import {ILinesLayoutState} from "./private_linesLayoutState";
-
 import BarlineModel from "./implBarline_barlineModel";
 
 import {mutate} from "./private_mutate";
 
-export default function barlineMutator(memo$: ILinesLayoutState,
-        barline: BarlineModel.IBarlineModel, op: IAny) {
+export default function barlineMutator(barline: BarlineModel.IBarlineModel, op: IAny) {
     // This is a stub.
     mutate(barline, op);
 }

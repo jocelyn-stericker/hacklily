@@ -21,11 +21,8 @@
 
 import * as invariant from "invariant";
 
-import {IModel} from "./document_model";
-import Type from "./document_types";
-
-import {ICursor} from "./private_cursor";
-import {ILayout} from "./document_model";
+import {IModel, Type, ILayout} from "./document";
+import {IReadOnlyValidationCursor, LayoutCursor} from "./private_cursor";
 
 class ProxyModel implements Export.IProxyModel {
     private _target: IModel;
@@ -71,13 +68,17 @@ class ProxyModel implements Export.IProxyModel {
         return this.toXML();
     }
 
-    validate(cursor$: ICursor): void {
+    refresh(cursor: IReadOnlyValidationCursor): void {
         invariant(!!this._target, "A proxy must have a target.");
-        this._omTarget.validate(cursor$);
+        this._omTarget.refresh(cursor);
     }
 
-    getLayout(cursor$: ICursor): Export.IProxyLayout {
-        return this._omTarget.getLayout(cursor$);
+    getLayout(cursor: LayoutCursor): Export.IProxyLayout {
+        return this._omTarget.getLayout(cursor);
+    }
+
+    calcWidth(shortest: number) {
+        return this._target ? this._target.calcWidth(shortest) : 0;
     }
 }
 

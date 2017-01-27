@@ -24,8 +24,7 @@ import Direction from "../implDirection_directionModel";
 
 import {expect} from "chai";
 
-import {IModel} from "../document_model";
-import Type from "../document_types";
+import {IModel, Type} from "../document";
 
 import Factory from "../engine_factory";
 

@@ -24,18 +24,23 @@ export interface ILineBounds {
     left: number;
     right: number;
     systemLayout: SystemLayout;
+    top: number;
 }
 
-export function calculate(print: Print, page: number): ILineBounds {
-    let pageLayout = print.pageLayout;
-    let pageMargins = getPageMargins(pageLayout.pageMargins, page);
-    let systemMargins = print.systemLayout.systemMargins;
-    let startX = systemMargins.leftMargin + pageMargins.leftMargin;
-    let endX = systemMargins.rightMargin + pageLayout.pageWidth - pageMargins.rightMargin;
+export function calculateLineBounds(print: Print, pageNum: number): ILineBounds {
+    const pageLayout = print.pageLayout;
+    const pageMargins = getPageMargins(pageLayout.pageMargins, pageNum);
+    const systemMargins = print.systemLayout.systemMargins;
+    const startX = systemMargins.leftMargin + pageMargins.leftMargin;
+    const endX = systemMargins.rightMargin + pageLayout.pageWidth - pageMargins.rightMargin;
+    const top = print.pageLayout.pageHeight -
+        (print.systemLayout.topSystemDistance +
+            pageMargins.topMargin);
 
     return {
         left: startX,
         right: endX,
-        systemLayout: print.systemLayout
+        systemLayout: print.systemLayout,
+        top,
     };
 }

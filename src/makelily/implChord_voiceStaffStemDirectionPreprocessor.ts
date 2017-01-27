@@ -18,8 +18,7 @@
 
 import {forEach} from "lodash";
 
-import {IModel} from "./document_model";
-import {IMeasure} from "./document_measure";
+import {IModel, IMeasure} from "./document";
 
 export type StaffToVoicesType = {
     [staff: number]: {[voice: number]: IModel[]};

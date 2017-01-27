@@ -25,7 +25,7 @@ import {Note, Chord, Rest, Dot, Type, Count, SymbolSize, TimeModification, Pitch
 import {forEach, reduce, map, isEqual} from "lodash";
 import * as invariant from "invariant";
 
-import {ICursor} from "./private_cursor";
+import {IReadOnlyValidationCursor} from "./private_cursor";
 import {notationObj, accidentalGlyphs, onLedger, InvalidAccidental, lineForClef} from "./private_chordUtil";
 import {bboxes as glyphBBoxes} from "./private_smufl";
 import {cloneObject} from "./private_util";
@@ -107,7 +107,7 @@ class NoteImpl implements Note {
         return (!this.pitch && !this.unpitched) ? {
             displayOctave: this._restDisplayOctave,
             displayStep: this._restDisplayStep,
-            measure: this._parent.wholebar$
+            measure: this._parent.wholebar
         } : null;
     }
     set rest(rest: Rest) {
@@ -281,7 +281,7 @@ class NoteImpl implements Note {
         return this.toXML();
     }
 
-    validate$(cursor$: ICursor) {
+    refresh(cursor: IReadOnlyValidationCursor) {
         this.cleanNotations();
         if (this.grace && this.cue) {
             delete this.cue;
@@ -292,43 +292,43 @@ class NoteImpl implements Note {
         if (this.pitch && this.rest) {
             delete this.pitch;
         }
-        invariant(cursor$.segment.ownerType === "voice",
+        invariant(cursor.segmentInstance.ownerType === "voice",
             "Expected to be in voice's context during validation");
 
-        if (this.voice !== cursor$.segment.owner) {
-            cursor$.patch(partBuilder => partBuilder
+        if (this.voice !== cursor.segmentInstance.owner) {
+            cursor.patch(partBuilder => partBuilder
                 .note(this._idx, note => note
-                    .voice(cursor$.segment.owner),
-                cursor$.idx$)
+                    .voice(cursor.segmentInstance.owner),
+                )
             );
         }
-        const defaultY = (lineForClef(this, cursor$.staff.attributes.clef) - 3) * 10;
+        const defaultY = (lineForClef(this, cursor.staffAttributes.clef) - 3) * 10;
         if (defaultY !== this.defaultY) {
-            cursor$.patch(voice => voice
-                .note(this._idx, note => note.defaultY(defaultY), cursor$.idx$)
+            cursor.patch(voice => voice
+                .note(this._idx, note => note.defaultY(defaultY))
             );
         }
         const dotOffset = this.defaultY % 10 === 0 ? 5 : 0;
         if (!this.dots) {
-            cursor$.patch(voice => voice
-                .note(this._idx, note => note.dots([]), cursor$.idx$)
+            cursor.patch(voice => voice
+                .note(this._idx, note => note.dots([]))
             );
         }
         if (this.dots.some(n => n.defaultY !== dotOffset)) {
-            cursor$.patch(voice => voice
+            cursor.patch(voice => voice
                 .note(this._idx,
                     note =>
                         reduce(this.dots, (note, _dot, idx) =>
                             note.dotsAt(idx, dot => dot.defaultY(dotOffset)), note),
-                    cursor$.idx$)
+                    )
             );
         }
 
         if (!this.staff) {
-            cursor$.patch(partBuilder => partBuilder
+            cursor.patch(partBuilder => partBuilder
                 .note(this._idx, note => note
                     .staff(1),
-                cursor$.idx$)
+                )
             );
         }
     }
@@ -465,13 +465,13 @@ class NoteImpl implements Note {
         }
     }
 
-    updateAccidental$(cursor: ICursor) {
+    updateAccidental(cursor: IReadOnlyValidationCursor) {
         let pitch = this.pitch;
         if (!pitch) {
             return;
         }
         let actual = pitch.alter || 0;
-        let accidentals = cursor.staff.accidentals$;
+        let accidentals = cursor.staffAccidentals;
         invariant(!!accidentals,
             "Accidentals must already have been setup. Is there an Attributes element?");
 
@@ -528,8 +528,8 @@ class NoteImpl implements Note {
             let glyphName = accidentalGlyphs[acc.accidental];
             invariant(glyphName in glyphBBoxes, "Expected a known glyph, got %s", glyphName);
             let width = glyphBBoxes[glyphName][0] * 10;
-            let {clef} = cursor.staff.attributes;
-            // TODO: `let clef = cursor.part.attributes.clefs[cursor.staff.idx]`
+            let {clef} = cursor.staffAttributes;
+            // TODO: `let clef = cursor.part.attributes.clefs[cursor.staffIdx]`
 
             if (onLedger(this, clef)) {
                 acc.defaultX = -4.1;

@@ -28,17 +28,15 @@ import Chord from "../implChord_chordModel";
 import {Note, Count} from "musicxml-interfaces";
 import {expect} from "chai";
 
-import {IModel} from "../document_model";
-import Type from "../document_types";
+import {IModel, Type} from "../document";
 
 import {IFactory} from "../private_factory";
 import {IAttributesSnapshot} from "../private_attributesSnapshot";
-import {ICursor} from "../private_cursor";
-import {fromModel as chordFromModel} from "../private_chordUtil";
+import {ValidationCursor, LayoutCursor} from "../private_cursor";
 
 import Factory from "../engine_factory";
 
-import Attributes from "../implAttributes_attributesModel";
+import AttributesExports from "../implAttributes_attributesModel";
 
 function getAttributes(): IAttributesSnapshot {
     return <any> {
@@ -57,12 +55,13 @@ function getAttributes(): IAttributesSnapshot {
     };
 }
 
-function getCursor(factory: IFactory, model: IModel): ICursor {
+function getCursor(factory: IFactory, model: IModel): ValidationCursor {
     let attributes = getAttributes();
     let segment = <any> [model];
     segment.part = "P1";
     segment.ownerType = "voice";
-    return {
+    let v: ValidationCursor = {
+        const: () => v,
         document: {
             __fakeDocument: true
         } as any,
@@ -70,62 +69,41 @@ function getCursor(factory: IFactory, model: IModel): ICursor {
         patch: () => null,
         advance: null,
 
-        segment: segment,
-        idx$: 0,
-        print$: null,
+        segmentInstance: segment,
+        segmentPosition: 0,
+        print: null,
         header: null,
 
-        staff: {
-            previous: null,
-            attributes: attributes,
-            totalDivisions: 12,
-            accidentals$: {},
-            idx: 0
-        },
-        measure: {
+        staffAttributes: attributes,
+        staffAccidentals: {},
+        staffIdx: 0,
+        measureInstance: {
             idx: 0,
             number: "1",
             implicit: false,
             version: 0,
             nonControlling: false,
-            x: 100,
-            attributes: attributes,
             uuid: 1,
-            parent: null
-        },
-        line: {
-            shortestCount: 1,
-            barOnLine$: 0,
-            barsOnLine: 1,
-            line: 0,
-            lines: 1
-        },
+        } as any,
+        measureIsLast: true,
+        segmentDivision: 0,
 
-        division$: 0,
-        x$: 100,
-        minXBySmallest$: {},
-        maxPaddingTop$: [],
-        maxPaddingBottom$: [],
-
-        page$: NaN,
-
-        approximate: true,
-        detached: false,
-        factory: factory
+        factory: factory,
+        preview: false,
     };
+    return v;
 }
 
 describe("[chord.ts]", function() {
     describe("ChordModel", function() {
-        let factory = new Factory([Attributes, Chord]);
-        let chord: IModel;
+        let factory = new Factory([AttributesExports, Chord]);
         it("can be created from scratch", function() {
-            chord = factory.create(Type.Chord);
+            let chord = factory.create(Type.Chord);
             expect(!!chord).to.be.true;
-            expect((<any>chord).length).to.eq(0);
+            expect(chord.length).to.eq(0);
         });
         it("can be correctly created from a simple spec", function() {
-            chord = factory.fromSpec( <Note> {
+            let chord = factory.fromSpec({
                 _class: "Note",
                 timeModification: {
                     actualNotes: 3,
@@ -140,14 +118,25 @@ describe("[chord.ts]", function() {
                     octave: 4,
                     alter: 1
                 }
-            });
-            let cursor$ = getCursor(factory, chord);
-            chord.validate(cursor$);
+            } as Note);
+            let cursor = getCursor(factory, chord);
+            chord.refresh(cursor);
 
-            cursor$ = getCursor(factory, chord);
-            expect(cursor$.division$).to.eq(0);
-            chord.getLayout(cursor$);
-            expect(cursor$.division$).to.eq(0, "layout must not affect cursor division");
+            cursor = getCursor(factory, chord);
+            expect(cursor.segmentDivision).to.eq(0);
+            const lCursor: LayoutCursor = {...cursor,
+                measureX: 100,
+                lineShortest: 1,
+                lineBarOnLine: 0,
+                lineTotalBarsOnLine: 1,
+                lineIndex: 0,
+                lineCount: 1,
+                segmentX: 100,
+                lineMaxPaddingTopByStaff: [],
+                lineMaxPaddingBottomByStaff: [],
+            };
+            chord.getLayout(lCursor);
+            expect(cursor.segmentDivision).to.eq(0, "layout must not affect cursor division");
             let xml = (<any>chord).inspect();
             expect(xml).to.contain("<step>C</step>");
             expect(xml).to.contain("<alter>1</alter>");
@@ -156,7 +145,7 @@ describe("[chord.ts]", function() {
             expect(xml).to.contain("<duration>600</duration>", "Maintains playback data");
         });
         it("can be a chord generated from specs", function() {
-            chord = factory.fromSpec( <Note> {
+            let chord = factory.fromSpec({
                 _class: "Note",
                 timeModification: {
                     actualNotes: 3,
@@ -171,7 +160,7 @@ describe("[chord.ts]", function() {
                     alter: 1
                 }
             });
-            chordFromModel(chord).push(<Note> {
+            chord.push({
                 _class: "Note",
                 timeModification: {
                     actualNotes: 3,
@@ -184,11 +173,22 @@ describe("[chord.ts]", function() {
                     step: "E",
                     octave: 4
                 }
-            });
-            let cursor$ = getCursor(factory, chord);
-            chord.validate(cursor$);
-            cursor$ = getCursor(factory, chord);
-            chord.getLayout(cursor$);
+            } as Note);
+            let cursor = getCursor(factory, chord);
+            chord.refresh(cursor);
+            cursor = getCursor(factory, chord);
+            const lCursor: LayoutCursor = {...cursor,
+                measureX: 100,
+                lineShortest: 1,
+                lineBarOnLine: 0,
+                lineTotalBarsOnLine: 1,
+                lineIndex: 0,
+                lineCount: 1,
+                segmentX: 100,
+                lineMaxPaddingTopByStaff: [],
+                lineMaxPaddingBottomByStaff: [],
+            };
+            chord.getLayout(lCursor);
             // let chordDuration = chordFromModel(chord)[0].duration;
             // expect(chordDuration).to.eq(2, "Duration wasn't specified so should be set here.");
             // XXX: implement a proper patcher for tests

@@ -21,21 +21,19 @@
 
 import {Barline, Segno, Coda, BarlineLocation, WavyLine, Fermata, BarStyle, Ending, Repeat,
     Footnote, Level, BarStyleType, PartGroup, PartSymbol,
-    serializeBarline} from "musicxml-interfaces";
+    serializeBarline, Attributes} from "musicxml-interfaces";
 import {buildBarStyle} from "musicxml-interfaces/builders";
-import {some, forEach, last} from "lodash";
+import {some, forEach} from "lodash";
 import * as invariant from "invariant";
 
-import {IModel} from "./document_model";
-import Type from "./document_types";
+import {IModel, ILayout, Type} from "./document";
 
-import {ICursor} from "./private_cursor";
+import {IReadOnlyValidationCursor, LayoutCursor} from "./private_cursor";
 import {IBoundingRect} from "./private_boundingRect";
-import {ILayout} from "./document_model";
 import {groupsForPart} from "./private_part";
 import {bravura} from "./private_smufl";
 
-import Attributes from "./implAttributes_attributesModel";
+import AttributesExports from "./implAttributes_attributesModel";
 import {needsWarning, clefsEqual, CLEF_INDENTATION} from "./implAttributes_attributesData";
 
 class BarlineModel implements Export.IBarlineModel {
@@ -72,13 +70,13 @@ class BarlineModel implements Export.IBarlineModel {
 
     defaultX: number;
     defaultY: number;
-    satieAttributes: Attributes.IAttributesLayout;
+    satieAttributes: AttributesExports.IAttributesLayout;
     satieAttribsOffset: number;
 
     /*---- Implementation -----------------------------------------------------------------------*/
 
     constructor(spec: Barline) {
-        forEach<any>(spec, (value, key) => {
+        forEach(spec, (value, key) => {
             (this as any)[key] = value;
         });
     }
@@ -92,9 +90,9 @@ class BarlineModel implements Export.IBarlineModel {
             barStyle, ending, repeat, footnote};
     }
 
-    validate(cursor$: ICursor): void {
+    refresh(cursor: IReadOnlyValidationCursor): void {
         if (!this.barStyle) {
-            cursor$.patch(staff => staff
+            cursor.patch(staff => staff
                 .barline(barline => barline
                     .barStyle(buildBarStyle(barStyle => barStyle
                         .data(BarStyleType.Regular)
@@ -103,26 +101,20 @@ class BarlineModel implements Export.IBarlineModel {
                 )
             );
         }
-        let divsToAdvance = cursor$.staff.totalDivisions - cursor$.division$;
-        if (divsToAdvance > 0) {
-            cursor$.advance(divsToAdvance);
-        }
         if (!isFinite(this.barStyle.data) || this.barStyle.data === null) {
-            let lastBarlineInSegment = !some(cursor$.segment.slice(cursor$.idx$ + 1),
-                    model => cursor$.factory.modelHasType(model, Type.Barline));
-            let isLast = cursor$.measure.uuid === last(cursor$.document.measures).uuid &&
-                    lastBarlineInSegment;
-
-            cursor$.patch(staff => staff
+            let lastBarlineInSegment = !some(cursor.segmentInstance.slice(cursor.segmentPosition + 1),
+                    model => cursor.factory.modelHasType(model, Type.Barline));
+            cursor.patch(staff => staff
                 .barline(barline => barline
                     .barStyle({
-                        data: isLast ? BarStyleType.LightHeavy : BarStyleType.Regular,
+                        data: lastBarlineInSegment && cursor.measureIsLast ?
+                            BarStyleType.LightHeavy : BarStyleType.Regular,
                     })
                 )
             );
         }
         if (!this.barStyle.color) {
-            cursor$.patch(staff => staff
+            cursor.patch(staff => staff
                 .barline(barline => barline
                     .barStyle(barStyle => barStyle
                         .color("black")
@@ -132,9 +124,9 @@ class BarlineModel implements Export.IBarlineModel {
         }
     }
 
-    getLayout(cursor$: ICursor): Export.IBarlineLayout {
-        // mutates cursor$ as required.
-        return new BarlineModel.Layout(this, cursor$);
+    getLayout(cursor: LayoutCursor): Export.IBarlineLayout {
+        // mutates cursor as required.
+        return new BarlineModel.Layout(this, cursor);
     }
 
     toXML(): string {
@@ -144,23 +136,27 @@ class BarlineModel implements Export.IBarlineModel {
     inspect() {
         return this.toXML();
     }
+
+    calcWidth(shortest: number) {
+        return 8; // TODO
+    }
 }
 
 BarlineModel.prototype.divCount = 0;
 
 module BarlineModel {
     export class Layout implements Export.IBarlineLayout {
-        constructor(origModel: BarlineModel, cursor$: ICursor) {
-            this.division = cursor$.division$;
-            this.x$ = cursor$.x$;
-            let {attributes} = cursor$.staff;
+        constructor(origModel: BarlineModel, cursor: LayoutCursor) {
+            this.division = cursor.segmentDivision;
+            this.x = cursor.segmentX;
+            let attributes = cursor.staffAttributes;
             let {measureStyle, partSymbol} = attributes;
             if (measureStyle.multipleRest && measureStyle.multipleRest.count > 1) {
                 // TODO: removing this shows that measures are slightly misplaced
                 return;
             }
 
-            this.partGroups = groupsForPart(cursor$.header.partList, cursor$.segment.part);
+            this.partGroups = groupsForPart(cursor.header.partList, cursor.segmentInstance.part);
             this.partSymbol = partSymbol;
 
             this.model = Object.create(origModel, {
@@ -171,25 +167,25 @@ module BarlineModel {
 
             let clefOffset = 0;
 
-            if (!cursor$.approximate && cursor$.line.barsOnLine === cursor$.line.barOnLine$ + 1) {
+            if (cursor.lineTotalBarsOnLine === cursor.lineBarOnLine + 1) {
                 // TODO: Figure out a way to get this to work when the attributes on the next
                 // line change
-                let nextMeasure = cursor$.document.measures[cursor$.measure.idx + 1];
-                let part = nextMeasure && nextMeasure.parts[cursor$.segment.part];
-                let segment = part && part.staves[cursor$.staff.idx];
-                let nextAttributes: IModel;
+                let nextMeasure = cursor.document.measures[cursor.measureInstance.idx + 1];
+                let part = nextMeasure && nextMeasure.parts[cursor.segmentInstance.part];
+                let segment = part && part.staves[cursor.staffIdx];
+                let nextAttributes: Attributes;
                 if (segment) {
-                    nextAttributes = cursor$.factory.search(segment, 0, Type.Attributes)[0];
+                    let n = cursor.factory.search(segment, 0, Type.Attributes)[0];
+                    if (n) {
+                        nextAttributes = n._snapshot;
+                    }
                 }
-                let addWarning = nextAttributes && needsWarning(
-                    attributes, (<any>nextAttributes)._snapshot, cursor$.staff.idx);
+                let addWarning = nextAttributes && needsWarning(attributes, nextAttributes, cursor.staffIdx);
 
                 if (addWarning) {
-                    let clefsAreEqual = clefsEqual(
-                        attributes, (<any>nextAttributes)._snapshot, cursor$.staff.idx);
+                    const clefsAreEqual = clefsEqual(attributes, nextAttributes, cursor.staffIdx);
                     clefOffset = clefsAreEqual ? 0 : CLEF_INDENTATION;
-                    let warningLayout = Attributes.createWarningLayout$(cursor$, nextAttributes);
-                    this.model.satieAttributes = warningLayout;
+                    this.model.satieAttributes = AttributesExports.createWarningLayout(cursor, attributes, nextAttributes);
                 }
             }
 
@@ -200,11 +196,11 @@ module BarlineModel {
 
             /*---- Geometry ---------------------------------------*/
 
-            const lineWidths = cursor$.header.defaults.appearance.lineWidths;
+            const lineWidths = cursor.header.defaults.appearance.lineWidths;
 
             const barlineSep = bravura.engravingDefaults.barlineSeparation;
 
-            let setLines$ = (lines: string[]) => {
+            let setLines = (lines: string[]) => {
                 let x = 0;
                 this.lineStarts = [];
                 this.lineWidths = [];
@@ -218,40 +214,40 @@ module BarlineModel {
                     x += width;
                 });
                 this.model.satieAttribsOffset = x + 8 + clefOffset;
-                cursor$.x$ += x;
+                cursor.segmentX += x;
             };
 
             switch (this.model.barStyle.data) {
                 case BarStyleType.LightHeavy:
-                    setLines$(["light barline", "heavy barline"]);
+                    setLines(["light barline", "heavy barline"]);
                     break;
                 case BarStyleType.LightLight:
-                    setLines$(["light barline", "light barline"]);
+                    setLines(["light barline", "light barline"]);
                     break;
                 case BarStyleType.HeavyHeavy:
-                    setLines$(["heavy barline", "heavy barline"]);
+                    setLines(["heavy barline", "heavy barline"]);
                     break;
                 case BarStyleType.HeavyLight:
-                    setLines$(["heavy barline", "light barline"]);
+                    setLines(["heavy barline", "light barline"]);
                     break;
                 case BarStyleType.Regular:
                 case BarStyleType.Dashed:
                 case BarStyleType.Dotted:
                 case BarStyleType.Short:
                 case BarStyleType.Tick:
-                    setLines$(["light barline"]);
+                    setLines(["light barline"]);
                     break;
                 case BarStyleType.Heavy:
-                    setLines$(["heavy barline"]);
+                    setLines(["heavy barline"]);
                     break;
                 case BarStyleType.None:
-                    setLines$([]);
+                    setLines([]);
                     break;
                 default:
                     invariant(false, "Not implemented");
             }
 
-            this.renderedWidth = cursor$.x$ - this.x$ + 8;
+            this.renderedWidth = cursor.segmentX - this.x + 8;
         }
 
         /*---- ILayout ------------------------------------------------------*/
@@ -259,7 +255,7 @@ module BarlineModel {
         // Constructed:
 
         model: BarlineModel;
-        x$: number;
+        x: number;
         division: number;
         height: number;
         yOffset: number;
@@ -272,7 +268,7 @@ module BarlineModel {
 
         // Prototype:
 
-        boundingBoxes$: IBoundingRect[];
+        boundingBoxes: IBoundingRect[];
         renderClass: Type;
         expandPolicy: "none";
 
@@ -287,8 +283,8 @@ module BarlineModel {
 
     Layout.prototype.expandPolicy = "none";
     Layout.prototype.renderClass = Type.Barline;
-    Layout.prototype.boundingBoxes$ = [];
-    Object.freeze(Layout.prototype.boundingBoxes$);
+    Layout.prototype.boundingBoxes = [];
+    Object.freeze(Layout.prototype.boundingBoxes);
 };
 
 /**
@@ -303,7 +299,7 @@ module Export {
         divisions: number;
         defaultX: number;
         defaultY: number;
-        satieAttributes: Attributes.IAttributesLayout;
+        satieAttributes: AttributesExports.IAttributesLayout;
         satieAttribsOffset: number;
     }
 

@@ -20,15 +20,12 @@ import * as invariant from "invariant";
 import {isEqual} from "lodash";
 import {IAny, IListInsert} from "musicxml-interfaces/operations";
 
-import {ISegment} from "./document_measure";
-import {IDocument} from "./document_document";
+import {Document, ISegment} from "./document";
 
 import {IFactory} from "./private_factory";
 import {cloneObject} from "./private_util";
-import {ILinesLayoutState} from "./private_linesLayoutState";
 
-export default function segmentMutator(factory: IFactory, memo$: ILinesLayoutState,
-        segment: ISegment, op: IAny, doc: IDocument) {
+export default function segmentMutator(factory: IFactory, segment: ISegment, op: IAny, doc: Document) {
     const {part, ownerType} = segment; // p[2]
     invariant(op.p.length === 6, "Invalid length for segment operation.");
 
@@ -42,6 +39,9 @@ export default function segmentMutator(factory: IFactory, memo$: ILinesLayoutSta
     if ("li" in op && !("ld" in op)) {
         let liop = op as IListInsert<any>;
         let newModel = factory.fromSpec(liop.li);
+        if (liop.li._class === "VisualCursor") {
+            doc._visualCursor = newModel;
+        }
         segment.splice(op.p[5] as number, 0, newModel);
     } else if ("ld" in op && !("li" in op)) {
         const existingSerializable: any = cloneObject(segment[op.p[5] as number]);

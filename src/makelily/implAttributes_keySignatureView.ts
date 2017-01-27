@@ -68,21 +68,21 @@ class KeyView extends Component<{spec: Key; clef: Clef}, void> {
         let clef = this.props.clef;
         let widths = keyWidths(spec);
         let positions: number[] = [];
-        let x$ = 0;
+        let x = 0;
 
         if (spec.fifths) {
             let accCount = Math.min(7, Math.abs(spec.fifths));
             let idxes = times(accCount, i => (i + Math.max(0, Math.abs(spec.fifths) - 7)) % 7);
             for (let i = 0; i < idxes.length; ++i) {
-                positions.push(x$);
-                x$ += widths[idxes[i]];
+                positions.push(x);
+                x += widths[idxes[i]];
             }
             return map(idxes, i => makeAccidentalFromSharps(idxes, i, spec.fifths >= 0));
         }
 
         for (let i = 0; i < widths.length; ++i) {
-            positions.push(x$);
-            x$ += widths[i];
+            positions.push(x);
+            x += widths[i];
         }
 
         if (spec.keySteps) {

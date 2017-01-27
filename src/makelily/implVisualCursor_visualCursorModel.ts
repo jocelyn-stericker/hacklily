@@ -16,10 +16,9 @@
  * along with Satie.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import Type from "./document_types";
-import {IModel, ILayout} from "./document_model";
-import {ICursor} from "./private_cursor";
+import {IModel, ILayout, Type} from "./document";
 
+import {IReadOnlyValidationCursor, LayoutCursor} from "./private_cursor";
 import {IBoundingRect} from "./private_boundingRect";
 
 class VisualCursorModel implements Export.IVisualCursorModel {
@@ -44,12 +43,12 @@ class VisualCursorModel implements Export.IVisualCursorModel {
         // no-op
     }
 
-    validate(cursor$: ICursor): void {
-        cursor$.document._visualCursor = this;
+    refresh(cursor: IReadOnlyValidationCursor): void {
+        // no-op
     }
 
-    getLayout(cursor$: ICursor): Export.IVisualCursorLayout {
-        return new VisualCursorModel.Layout(this, cursor$);
+    getLayout(cursor: LayoutCursor): Export.IVisualCursorLayout {
+        return new VisualCursorModel.Layout(this, cursor);
     }
 
     toXML(): string {
@@ -69,6 +68,10 @@ class VisualCursorModel implements Export.IVisualCursorModel {
     inspect() {
         return this.toXML();
     }
+
+    calcWidth(shortest: number) {
+        return 0;
+    }
 }
 
 VisualCursorModel.prototype.divCount = 0;
@@ -76,10 +79,10 @@ VisualCursorModel.prototype.divisions = 0;
 
 module VisualCursorModel {
     export class Layout implements Export.IVisualCursorLayout {
-        constructor(origModel: VisualCursorModel, cursor$: ICursor) {
+        constructor(origModel: VisualCursorModel, cursor: LayoutCursor) {
             this.model = origModel;
-            this.x$ = cursor$.x$;
-            this.division = cursor$.division$;
+            this.x = cursor.segmentX;
+            this.division = cursor.segmentDivision;
             this.renderedWidth = 0;
         }
 
@@ -88,22 +91,22 @@ module VisualCursorModel {
         // Constructed:
 
         model: VisualCursorModel;
-        x$: number;
+        x: number;
         division: number;
 
         renderedWidth: number;
 
         // Prototype:
 
-        boundingBoxes$: IBoundingRect[];
+        boundingBoxes: IBoundingRect[];
         renderClass: Type;
         expandPolicy: "none";
     }
 
     Layout.prototype.expandPolicy = "none";
     Layout.prototype.renderClass = Type.VisualCursor;
-    Layout.prototype.boundingBoxes$ = [];
-    Object.freeze(Layout.prototype.boundingBoxes$);
+    Layout.prototype.boundingBoxes = [];
+    Object.freeze(Layout.prototype.boundingBoxes);
 };
 
 /**

@@ -19,25 +19,14 @@
 import {IAny} from "musicxml-interfaces/operations";
 import * as invariant from "invariant";
 
-import {ILinesLayoutState, markDirty} from "./private_linesLayoutState";
 import {mutate, parentExists} from "./private_mutate";
 
 import AttributesModel from "./implAttributes_attributesModel";
 
-export default function attributesMutator(preview: boolean, memo$: ILinesLayoutState,
-        attributes: AttributesModel.IAttributesModel, op: IAny) {
+export default function attributesMutator(preview: boolean, attributes: AttributesModel.IAttributesModel, op: IAny) {
     // Check if we are being asked to clone & create.
     invariant(parentExists(attributes, op.p), "Invalid patch -- it's likely to a " +
         "model that only exists in a snapshot. You'll need to explicitly create it.");
-
-    if (!preview) {
-        if (op.p[0] === "times" || op.p[0] === "clefs" || op.p[0] === "keys") {
-            // XXX: Should only mark all affected measures as dirty.
-            memo$.clean$ = {};
-            // memo$.linePlacement$ = {};
-        }
-    }
-    markDirty(memo$, attributes);
 
     // Bye.
     mutate(attributes, op);

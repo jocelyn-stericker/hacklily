@@ -18,8 +18,7 @@
 
 import {IAny} from "musicxml-interfaces/operations";
 
-import {IMeasure, IMeasurePart} from "./document_measure";
-import {ISegment} from "./document_measure";
+import {IMeasure, IMeasurePart, ISegment} from "./document";
 
 import {IAttributesSnapshot} from "./private_attributesSnapshot";
 import {MAX_SAFE_INTEGER} from "./private_util";
@@ -37,7 +36,7 @@ function getSplit(segment: ISegment, maxDiv: number, isVoice: boolean): number {
     return split;
 }
 
-export default class DivisionOverflowException extends Error {
+export default class DivisionOverflowException {
     maxDiv: number;
     oldParts: {
         [id: string]: IMeasurePart;
@@ -47,9 +46,10 @@ export default class DivisionOverflowException extends Error {
     } = {};
     measure: IMeasure;
     attributes: IAttributesSnapshot;
+    message: string;
+    stack: string;
 
     constructor(maxDiv: number, measure: IMeasure, attributes: IAttributesSnapshot) {
-        super();
         this.measure = measure;
         this.message = "DivisionOverflowException: max division should be " +
             `${maxDiv} in measure ${this.measure.idx}`;

@@ -19,9 +19,8 @@
 import {forEach, sortedIndex, some} from "lodash";
 import {Attributes} from "musicxml-interfaces";
 
-import Type from "./document_types";
+import {ILayout, Type} from "./document";
 
-import {ILayout} from "./document_model";
 import {IMeasureLayout} from "./private_measureLayout";
 import {ILayoutOptions} from "./private_layoutOptions";
 import {ILineBounds} from "./private_lineBounds";
@@ -57,14 +56,14 @@ function attributes(options: ILayoutOptions, bounds: ILineBounds,
                         isBarlineByPart[partKey] = [];
                     }
                     let targets = targetsByPart[partKey];
-                    let x = element.x$ + measureStartX;
+                    let x = element.x + measureStartX;
                     let index = sortedIndex(targets, x);
                     let isBarline = element.renderClass === Type.Barline;
                     if (targets[index] === x) {
                         isBarlineByPart[partKey][index] =
                             isBarlineByPart[partKey][index] || isBarline;
                     } else {
-                        targets.splice(index, 0, element.x$ + measureStartX);
+                        targets.splice(index, 0, element.x + measureStartX);
                         isBarlineByPart[partKey].splice(index, 0, isBarline);
                     }
                 }
@@ -86,7 +85,7 @@ function attributes(options: ILayoutOptions, bounds: ILineBounds,
                     // Calculate the width for the staff lines in the previous attributes element.
                     {
                         let targets = targetsByPart[partKey] || [];
-                        let targetIdx = sortedIndex(targets, element.x$ + measureStartX) - 1;
+                        let targetIdx = sortedIndex(targets, element.x + measureStartX) - 1;
                         let targetIsBarline = isBarlineByPart[partKey][targetIdx];
                         if (!targetIsBarline) {
                             targetIdx++;
@@ -118,11 +117,11 @@ function attributes(options: ILayoutOptions, bounds: ILineBounds,
                     if (shouldSplit) {
                         attributesByPart[partKey] = element;
                         let targets = targetsByPart[partKey] || [];
-                        let targetIdx = sortedIndex(targets, element.x$ + measureStartX) - 1;
+                        let targetIdx = sortedIndex(targets, element.x + measureStartX) - 1;
                         let attrTarget = targets[targetIdx] || 0;
                         let target = targets[targetIdx] || 0;
                         originXByPart[partKey] = target;
-                        (<any>element).staffLinesOffsetX = element.x$ + measureStartX -
+                        (<any>element).staffLinesOffsetX = element.x + measureStartX -
                             target - (target - attrTarget);
                     }
                 }

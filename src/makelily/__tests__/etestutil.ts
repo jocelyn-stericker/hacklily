@@ -20,12 +20,10 @@
  * @file part of Satie test suite
  */
 
-import {ISegment} from "../document_measure";
-import {IModel, ILayout} from "../document_model";
-import Type from "../document_types";
+import {ISegment, IModel, ILayout, Type} from "../document";
 
 import {IFactory} from "../private_factory";
-import {ICursor} from "../private_cursor";
+import {ValidationCursor, LayoutCursor} from "../private_cursor";
 
 export let fakeFactory: IFactory = {
     create: (modelType: Type): IModel => {
@@ -56,16 +54,16 @@ export function createFakeStaffSegment(
             divCount: divisions1,
             staffIdx: 1,
 
-            validate: function(cursor$: ICursor) {
+            refresh: function(cursor: ValidationCursor) {
                 // pass
             },
-            getLayout: function(cursor$: ICursor): ILayout {
-                let width = cursor$.detached ? 0 : 10;
-                cursor$.x$ += width;
+            getLayout: function(cursor: LayoutCursor): ILayout {
+                let width = 10;
+                cursor.segmentX += width;
                 return {
-                    boundingBoxes$: [],
-                    division: cursor$.division$,
-                    x$: cursor$.x$ - width,
+                    boundingBoxes: [],
+                    division: cursor.segmentDivision,
+                    x: cursor.segmentX - width,
                     model: this,
                     renderClass: Type.Attributes
                 };
@@ -75,16 +73,16 @@ export function createFakeStaffSegment(
             divCount: divisions2,
             staffIdx: 1,
 
-            validate: function(cursor$: ICursor) {
+            refresh: function(cursor: ValidationCursor) {
                 // pass
             },
-            getLayout: function(cursor$: ICursor): ILayout {
+            getLayout: function(cursor: LayoutCursor): ILayout {
                 let width = 10;
-                cursor$.x$ += width;
+                cursor.segmentX += width;
                 return {
-                    boundingBoxes$: [],
-                    division: cursor$.division$,
-                    x$: cursor$.x$ - width,
+                    boundingBoxes: [],
+                    division: cursor.segmentDivision,
+                    x: cursor.segmentX - width,
                     model: this,
                     renderClass: Type.Attributes
                 };
@@ -116,17 +114,17 @@ export function createFakeVoiceSegment(
                 ties: [{}]
             },
 
-            validate: function(cursor$: ICursor) {
+            refresh: function(cursor: ValidationCursor) {
                 // pass
             },
 
-            getLayout: function(cursor$: ICursor): ILayout {
+            getLayout: function(cursor: LayoutCursor): ILayout {
                 let width = divisions1 * 10;
-                cursor$.x$ += width;
+                cursor.segmentX += width;
                 return {
-                    boundingBoxes$: [],
-                    division: cursor$.division$,
-                    x$: cursor$.x$ - width,
+                    boundingBoxes: [],
+                    division: cursor.segmentDivision,
+                    x: cursor.segmentX - width,
                     expandPolicy: "after",
                     model: this,
                     renderClass: Type.Chord
@@ -148,17 +146,17 @@ export function createFakeVoiceSegment(
                 ties: [{}]
             },
 
-            validate: function(cursor$: ICursor) {
+            refresh: function(cursor: ValidationCursor) {
                 // pass
             },
 
-            getLayout: function(cursor$: ICursor): ILayout {
+            getLayout: function(cursor: LayoutCursor): ILayout {
                 let width = divisions2 * 10;
-                cursor$.x$ += width;
+                cursor.segmentX += width;
                 return {
-                    boundingBoxes$: [],
-                    division: cursor$.division$,
-                    x$: cursor$.x$ - width,
+                    boundingBoxes: [],
+                    division: cursor.segmentDivision,
+                    x: cursor.segmentX - width,
                     expandPolicy: "after",
                     model: this,
                     renderClass: Type.Chord
@@ -176,9 +174,9 @@ export function createFakeVoiceSegment(
 export function createFakeLayout(idx: number, offset: number, max: boolean): ILayout {
     return {
         model: <any> {},
-        x$: idx * 100 + Math.log(1 + offset) / Math.log(2) * 10,
+        x: idx * 100 + Math.log(1 + offset) / Math.log(2) * 10,
         division: idx * 4 + offset,
-        boundingBoxes$: [],
+        boundingBoxes: [],
         renderClass: Type.Attributes
     };
 }

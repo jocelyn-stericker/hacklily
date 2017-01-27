@@ -24,7 +24,7 @@ import * as invariant from "invariant";
 
 import {markPreloaded, setRoot} from "./private_fontManager";
 
-import Attributes from "./implAttributes_attributesModel";
+import AttributesExports from "./implAttributes_attributesModel";
 import AttributesPostprocessor from "./implAttributes_attributesPostprocessor";
 
 import Barline from "./implBarline_barlineModel";
@@ -146,7 +146,7 @@ export interface ISatieOptions {
 export function makeFactory() {
     return new Factory(
         [
-            Attributes,
+            AttributesExports,
             Barline,
             Chord,
             Direction,

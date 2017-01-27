@@ -54,24 +54,14 @@ describe("[lineProcessor.ts]", function() {
             ];
 
             let layouts = map(segments, (seg, idx) => layoutMeasure({
+                attributes: {"P1": []},
                 document: {
                     __fakeDocument: true
                 } as any,
                 preview: false,
                 print: null,
-                memo$: null,
                 fixup: null,
 
-                attributes: {
-                    P1: [<any>{
-                        divisions: 4,
-                        time: {
-                            senzaMisura: null,
-                            beats: ["1"],
-                            beatTypes: [4]
-                        }
-                    }]
-                },
                 measure: {
                     idx: idx,
                     number: String(idx + 1),
@@ -94,7 +84,11 @@ describe("[lineProcessor.ts]", function() {
                     ]
                 },
                 x: 0,
-                line: null,
+                lineBarOnLine: 0,
+                lineCount: 1,
+                lineIndex: 0,
+                lineShortest: 1,
+                lineTotalBarsOnLine: 1,
                 factory: fakeFactory
             }));
 
@@ -121,8 +115,8 @@ describe("[lineProcessor.ts]", function() {
                     fixup: null,
 
                     attributes: {},
-                    line: 0,
-                    lines: 1,
+                    lineCount: 1,
+                    lineIndex: 0,
                     measures: new Array(2),
                     header: <any> {
                         partList: [
@@ -132,8 +126,7 @@ describe("[lineProcessor.ts]", function() {
                             }
                         ]
                     },
-                    page$: 0,
-                    print$: <any> {
+                    print: <any> {
                         pageLayout: {
                             pageHeight: 1000,
                             pageWidth: 1000,
@@ -153,14 +146,15 @@ describe("[lineProcessor.ts]", function() {
                 {
                     left: 12,
                     right: 1000 - 12,
-                    systemLayout: null
+                    systemLayout: null,
+                    top: 0,
                 },
                 detachedLayouts);
 
-            let expectedWidth = justified[0].elements[0][4].x$ -
-                justified[0].elements[0][0].x$ + 10;
-            expect(justified[0].elements[0][0].x$).to.be.closeTo(layouts[0].elements[0][0].x$, 0.05);
-            expect(justified[0].elements[0][2].x$).to.be.closeTo(24.16, 0.1);
+            let expectedWidth = justified[0].elements[0][4].x -
+                justified[0].elements[0][0].x + 10;
+            expect(justified[0].elements[0][0].x).to.be.closeTo(layouts[0].elements[0][0].x, 0.05);
+            expect(justified[0].elements[0][2].x).to.be.closeTo(24.16, 0.1);
             expect(justified[0].width).to.be.closeTo(expectedWidth, 0.01);
             forEach(justified, function(just, idx) {
                 expect(just.width).to.not.equal(layouts[idx].width);

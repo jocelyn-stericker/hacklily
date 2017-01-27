@@ -20,8 +20,8 @@ import * as React from "react";
 import {ScoreHeader, Pitch} from "musicxml-interfaces";
 import {IAny} from "musicxml-interfaces/operations";
 
-import {IDocument} from "./document_document";
-import {PartBuilder, DocumentBuilder} from "./patch_createPatch";
+import {Document} from "./document";
+import {PartBuilder, DocumentBuilder} from "./engine_createPatch";
 
 export type PrivatePatches = {isPatches: boolean};
 
@@ -109,7 +109,7 @@ export interface ISong extends React.Component<IProps, {}> {
      *  - The document's API is not finalized. If you depend on this function call,
      *    expect breakages.
      */
-    getDocument: (patches: {isPatches: boolean}) => IDocument;
+    getDocument: (patches: {isPatches: boolean}) => Document;
     createCanonicalPatch: (...patchSpecs: IPatchSpec[]) => PrivatePatches;
     createPreviewPatch: (...patchSpecs: IPatchSpec[]) => PrivatePatches;
 

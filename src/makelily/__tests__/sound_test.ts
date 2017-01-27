@@ -24,8 +24,7 @@ import Sound from "../implSound_soundModel";
 
 import {expect} from "chai";
 
-import {IModel} from "../document_model";
-import Type from "../document_types";
+import {IModel, Type} from "../document";
 
 import Factory from "../engine_factory";
 

@@ -95,7 +95,7 @@ export default class ChordView extends Component<IProps, {}> {
                                     fontSize: textPt.fontSize || DEFAULT_LYRIC_SIZE,
                                     key: ++lyKey,
                                     textAnchor: "middle",
-                                    x: this.props.layout.x$ + width / 2,
+                                    x: this.props.layout.x + width / 2,
                                     y: this.context.originY + 60
                                 }, textPt.data));
                             break;

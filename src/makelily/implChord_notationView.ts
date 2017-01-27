@@ -137,7 +137,7 @@ export default class NotationView extends Component<IProps, void> {
             }
 
             // This is the correct style only if space permits. See B.B. page 62.
-            let x2: number = originX - this.props.layout.overrideX + tieTo.x$ + offset2;
+            let x2: number = originX - this.props.layout.overrideX + tieTo.x + offset2;
             let x1: number = originX;
             let y2: number = defaultY - (dir === -1 ? -10 : 10);
             let y1: number = defaultY - (dir === -1 ? -10 : 10);

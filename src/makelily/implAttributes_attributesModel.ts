@@ -26,19 +26,18 @@ import {buildClef, buildTime, buildKey} from "musicxml-interfaces/builders";
 import {find, forEach, times} from "lodash";
 import * as invariant from "invariant";
 
-import {IModel} from "./document_model";
-import Type from "./document_types";
+import {IModel, Type, ILayout} from "./document";
 
-import {ILayout} from "./document_model";
 import {IBoundingRect} from "./private_boundingRect";
 import {IAttributesSnapshot} from "./private_attributesSnapshot";
-import {ICursor} from "./private_cursor";
-import {barDivisions, fromModel as chordFromModel, hasAccidental} from "./private_chordUtil";
+import {IReadOnlyValidationCursor, LayoutCursor} from "./private_cursor";
+import {hasAccidental} from "./private_chordUtil";
 import {groupsForPart} from "./private_part";
-import {create as createSnapshot} from "./private_attributesSnapshot";
+import {createAttributesSnapshot as createSnapshot} from "./private_attributesSnapshot";
 
 import {standardClefs} from "./implAttributes_clefData";
-import {CLEF_INDENTATION, clefWidth, keyWidth, timeWidth} from "./implAttributes_attributesData";
+import {CLEF_INDENTATION, clefWidth, keyWidth, timeWidth,
+    clefsEqual, timesEqual, keysEqual} from "./implAttributes_attributesData";
 
 class AttributesModel implements Export.IAttributesModel {
     _class = "Attributes";
@@ -86,47 +85,37 @@ class AttributesModel implements Export.IAttributesModel {
 
     /*---- Implementation -----------------------------------------------------------------------*/
 
-    validate(cursor$: ICursor): void {
-        this._parent = cursor$.staff.attributes || <IAttributesSnapshot> {};
+    refresh(cursor: IReadOnlyValidationCursor): void {
+        this._parent = cursor.staffAttributes;
 
-        if (!this._parent.divisions) {
+        if (!this._parent || !this._parent.divisions) {
             this.divisions = this.divisions || 1;
         }
 
-        this._validateClef$(cursor$);
+        this._validateClef$(cursor);
         this._validateTime$();
         this._validateKey$();
-        this._validateStaves$(cursor$);
-        this._validateStaffDetails$(cursor$);
-
-        this._validateMeasureStyles(cursor$);
+        this._validateStaves$(cursor);
+        this._validateStaffDetails$(cursor);
+        this._validateMeasureStyles(cursor);
 
         this._snapshot = createSnapshot({
-            before: cursor$.staff.attributes || <IAttributesSnapshot> {},
+            before: cursor.staffAttributes || <IAttributesSnapshot> {},
             current: this,
-            staff: cursor$.staff.idx,
-            measure: cursor$.measure.idx
+            staff: cursor.staffIdx,
+            measure: cursor.measureInstance.idx
         });
-        cursor$.staff.attributes = this._snapshot;
-
-        this._setTotalDivisions(cursor$);
     }
 
-    getLayout(cursor$: ICursor): Export.IAttributesLayout {
-        cursor$.staff.attributes = this._snapshot;
-
-        this._setTotalDivisions(cursor$);
-        this._validateMeasureStyles(cursor$);
-
-        // mutates cursor$ as required.
+    getLayout(cursor: LayoutCursor): Export.IAttributesLayout {
         if (!this._layout) {
             this._layout = [];
         }
-        if (!this._layout[cursor$.segment.owner]) {
-            this._layout[cursor$.segment.owner] = new AttributesModel.Layout();
+        if (!this._layout[cursor.segmentInstance.owner]) {
+            this._layout[cursor.segmentInstance.owner] = new AttributesModel.Layout();
         }
-        let layout = this._layout[cursor$.segment.owner];
-        layout._refresh(this, cursor$);
+        let layout = this._layout[cursor.segmentInstance.owner];
+        layout._refresh(this, this._snapshot, this._parent, cursor);
         return layout;
     }
 
@@ -191,28 +180,12 @@ class AttributesModel implements Export.IAttributesModel {
         return this.toXML();
     }
 
-    shouldRenderClef(owner: number, isFirstInLine: boolean) {
-        if (isFirstInLine) {
-            return true;
-        }
-
-        if (!this.clefs) {
-            return false;
-        }
-
-        if (!this.clefs[owner]) {
-            return false;
-        }
-
-        return true;
+    calcWidth() {
+        return 0; // TODO
     }
 
-    private _setTotalDivisions(cursor$: ICursor): void {
-        cursor$.staff.totalDivisions = barDivisions(this._snapshot);
-    }
-
-    private _validateClef$(cursor$: ICursor) {
-        const staffIdx = cursor$.staff.idx;
+    private _validateClef$(cursor: IReadOnlyValidationCursor) {
+        const staffIdx = cursor.staffIdx;
 
         // Clefs must be an array
         this.clefs = this.clefs || [];
@@ -233,7 +206,7 @@ class AttributesModel implements Export.IAttributesModel {
         }, []);
 
         // A clef is mandatory (we haven't implemented clef-less staves yet)
-        if (!this._parent.clef && !this.clefs[staffIdx]) {
+        if ((!this._parent || !this._parent.clef) && !this.clefs[staffIdx]) {
             this.clefs[staffIdx] = buildClef(clef => clef
                 .number(staffIdx)
                 .sign("G")
@@ -260,7 +233,7 @@ class AttributesModel implements Export.IAttributesModel {
         this.times = this.times || [];
 
         // A time signature is mandatory.
-        if (!this._parent.time && !this.times[0]) {
+        if ((!this._parent || !this._parent.time) && !this.times[0]) {
             this.times[0] = buildTime(time => time
                 .symbol(TimeSymbolType.Common)
                 .beats(["4"])
@@ -272,7 +245,7 @@ class AttributesModel implements Export.IAttributesModel {
         // Key signatures must be an array
         this.keySignatures = this.keySignatures || [];
 
-        if (!this._parent.keySignature && !this.keySignatures[0]) {
+        if ((!this._parent || !this._parent.keySignature) && !this.keySignatures[0]) {
             this.keySignatures[0] = buildKey(key => key
                 .fifths(0)
                 .mode("major")); // XXX: do not mutate
@@ -311,7 +284,7 @@ class AttributesModel implements Export.IAttributesModel {
         }
     }
 
-    private _validateStaffDetails$(cursor$: ICursor) {
+    private _validateStaffDetails$(cursor: IReadOnlyValidationCursor) {
         // Staff details must be an array
         this.staffDetails = this.staffDetails || [];
 
@@ -331,30 +304,31 @@ class AttributesModel implements Export.IAttributesModel {
         }, []);
 
         // Staff details are required. Staff lines are required
-        if (!this.staffDetails[cursor$.staff.idx]) {
-            this.staffDetails[cursor$.staff.idx] = {
-                number: cursor$.staff.idx
+        if (!this.staffDetails[cursor.staffIdx]) {
+            this.staffDetails[cursor.staffIdx] = {
+                number: cursor.staffIdx
             }; // XXX: do not mutate
         }
 
-        if ((!this._parent.staffDetails || !this._parent.staffDetails[cursor$.staff.idx] ||
-                !this._parent.staffDetails[cursor$.staff.idx].staffLines) &&
-                !this.staffDetails[cursor$.staff.idx].staffLines) {
-            this.staffDetails[cursor$.staff.idx].staffLines = 5; // XXX: do not mutate
+        if ((!this._parent || !this._parent.staffDetails ||
+                !this._parent.staffDetails[cursor.staffIdx] ||
+                !this._parent.staffDetails[cursor.staffIdx].staffLines) &&
+                !this.staffDetails[cursor.staffIdx].staffLines) {
+            this.staffDetails[cursor.staffIdx].staffLines = 5; // XXX: do not mutate
         }
     }
 
-    private _validateStaves$(cursor$: ICursor) {
+    private _validateStaves$(cursor: IReadOnlyValidationCursor) {
         this.staves = this.staves || 1; // FIXME!
-        let currentPartId = cursor$.segment.part;
-        let currentPart = cursor$.measure.parent.parts[currentPartId];
+        let currentPartId = cursor.segmentInstance.part;
+        let currentPart = cursor.measureInstance.parts[currentPartId];
         times(this.staves, staffMinusOne => {
             let staff = staffMinusOne + 1;
             if (!currentPart.staves[staff]) {
                 throw new Error("A staff is missing. The code to add it is not implemented.");
             }
         });
-        if (this.staves > 1 && !this._parent.partSymbol && !this.partSymbol) {
+        if (this.staves > 1 && (!this._parent || !this._parent.partSymbol) && !this.partSymbol) {
             this.partSymbol = {
                 bottomStaff: 1,
                 topStaff: this.staves,
@@ -364,8 +338,8 @@ class AttributesModel implements Export.IAttributesModel {
 
         // HACK: Convert part group symbols to part symbols.
         // Obviously, this won't fly when we have multiple part groups
-        let groups = groupsForPart(cursor$.header.partList, cursor$.segment.part);
-        if (groups.length && !this._parent.partSymbol && !this.partSymbol) {
+        let groups = groupsForPart(cursor.header.partList, cursor.segmentInstance.part);
+        if (groups.length && (!this._parent || !this._parent.partSymbol) && !this.partSymbol) {
             this.partSymbol = {
                 bottomStaff: 1,
                 topStaff: 1,
@@ -374,7 +348,7 @@ class AttributesModel implements Export.IAttributesModel {
         }
     }
 
-    private _validateMeasureStyles(cursor$: ICursor): void {
+    private _validateMeasureStyles(cursor: IReadOnlyValidationCursor): void {
         if (!this.measureStyles) {
             this.measureStyles = []; // XXX: do not mutate
         }
@@ -383,8 +357,9 @@ class AttributesModel implements Export.IAttributesModel {
 
 module AttributesModel {
     export class Layout implements Export.IAttributesLayout {
-        _refresh(origModel: AttributesModel, cursor$: ICursor) {
-            invariant(!!origModel, "Layout must be passed a model");
+        _refresh(model: IModel, attributes: Attributes, prevAttributes: Attributes, cursor: LayoutCursor) {
+            this.model = model;
+            invariant(!!attributes, "Layout must be passed a model");
 
             this.clef = null;
             this.snapshotClef = null;
@@ -397,33 +372,27 @@ module AttributesModel {
             this.partSymbol = null;
             this.staffDetails = null;
 
-            let model = Object.create(cursor$.factory.identity(origModel)) as AttributesModel;
-            this.model = model;
-            this.x$ = cursor$.x$;
-            this.division = cursor$.division$;
-            this.staffIdx = cursor$.staff.idx;
+            this.x = cursor.segmentX;
+            this.division = cursor.segmentDivision;
+            this.staffIdx = cursor.staffIdx;
 
-            let isFirstInLine = cursor$.line && cursor$.line.barOnLine$ === 0 && !this.division;
-            let next = cursor$.segment[cursor$.idx$ + 1];
-            let nextIsNote = cursor$.factory.modelHasType(next, Type.Chord);
-            let parent = this.model._parent;
+            let isFirstInLine = cursor.lineBarOnLine === 0 && !this.division;
+            let next = cursor.segmentInstance[cursor.segmentPosition + 1];
 
-            let keySignatures = model.keySignatures;
-            let ksVisible = keySignatures && !!keySignatures.length || isFirstInLine;
+            let ksVisible = !keysEqual(attributes, prevAttributes) || isFirstInLine;
 
-            let tsVisible = !!model.times && !!model.times.length; // TODO: || isFirstInPage;
+            let tsVisible = !timesEqual(attributes, prevAttributes);
 
-            let clefVisible = model.shouldRenderClef(cursor$.segment.owner, isFirstInLine);
-            let partSymbolVisible = isFirstInLine && this.model.partSymbol &&
-                this.model.partSymbol.bottomStaff === cursor$.staff.idx;
+            let clefVisible = !clefsEqual(attributes, prevAttributes, cursor.segmentInstance.owner) || isFirstInLine;
+            let partSymbolVisible = isFirstInLine && attributes.partSymbol &&
+                attributes.partSymbol.bottomStaff === cursor.staffIdx;
 
             // Measure number
-            if (!cursor$.measure.implicit && parseInt(cursor$.measure.number, 10) !== 1) {
-                let measureNumbering = cursor$.print$ ?
-                    cursor$.print$.measureNumbering.data : "system";
+            if (!cursor.measureInstance.implicit && parseInt(cursor.measureInstance.number, 10) !== 1) {
+                let measureNumbering = cursor.print ?
+                    cursor.print.measureNumbering.data : "system";
 
-                let firstInMeasure = !parent ||
-                    parent.measure !== parseInt(cursor$.measure.number, 10);
+                let firstInMeasure = cursor.segmentDivision === 0;
 
                 let showNumberBecauseOfSystem = isFirstInLine && measureNumbering === "system";
 
@@ -433,21 +402,21 @@ module AttributesModel {
                 let shouldShowNumber = showNumberBecauseOfSystem || showNumberBecauseOfMeasure;
 
                 if (shouldShowNumber) {
-                    this.measureNumberVisible = cursor$.measure.number;
+                    this.measureNumberVisible = cursor.measureInstance.number;
                 }
             }
 
             /*---- Clef layout ------------------------------------*/
 
-            const chord = nextIsNote ? chordFromModel(next) : null;
+            const nextChord = cursor.factory.modelHasType(next, Type.Chord) ? next : null;
 
-            this.snapshotClef = cursor$.staff.attributes.clef;
+            this.snapshotClef = cursor.staffAttributes.clef;
             if (clefVisible) {
-                let {clef} = cursor$.staff.attributes;
-                this.x$ += CLEF_INDENTATION;
-                cursor$.x$ = this.x$;
+                let clef = attributes.clefs[cursor.staffIdx];
+                this.x += CLEF_INDENTATION;
+                cursor.segmentX = this.x;
 
-                let contextualSpacing$ = 0;
+                let contextualSpacing = 0;
                 this.clef = Object.create(clef, {
                     "defaultX": {
                         get: () => {
@@ -462,23 +431,22 @@ module AttributesModel {
                 this.clef.defaultY = this.clef.defaultY || 0;
                 this.clef.size = isFirstInLine ? SymbolSize.Full : SymbolSize.Cue;
 
-                if (nextIsNote && !ksVisible && !tsVisible) {
-                    if (hasAccidental(chord, cursor$)) {
+                if (nextChord && !ksVisible && !tsVisible) {
+                    if (hasAccidental(nextChord, cursor)) {
                         // TODO: what if there are more than 1 accidental?
-                        contextualSpacing$ = 15;
+                        contextualSpacing = 15;
                     } else {
-                        contextualSpacing$ = 25;
+                        contextualSpacing = 25;
                     }
                 } else {
-                    contextualSpacing$ = 12.5;
+                    contextualSpacing = 12.5;
                 }
 
                 if (!isFirstInLine) {
-                    contextualSpacing$ -= 19.8;
+                    contextualSpacing -= 19.8;
                 }
 
-                this.clefSpacing = clefWidth(model._snapshot, this.staffIdx) +
-                    contextualSpacing$;
+                this.clefSpacing = clefWidth(attributes) + contextualSpacing;
             } else {
                 this.clefSpacing = 0;
             }
@@ -486,8 +454,8 @@ module AttributesModel {
             /*---- KS layout --------------------------------------*/
 
             if (ksVisible) {
-                let {keySignature} = cursor$.staff.attributes;
-                let contextualSpacing$ = 0;
+                let keySignature = attributes.keySignatures[0];
+                let contextualSpacing = 0;
                 this.keySignature = Object.create(keySignature, {
                     defaultX: {
                         get: () => {
@@ -496,18 +464,18 @@ module AttributesModel {
                     }
                 });
                 this.keySignature.defaultY = 0;
-                if (nextIsNote && !tsVisible) {
-                    if (hasAccidental(chord, cursor$)) {
+                if (nextChord && !tsVisible) {
+                    if (hasAccidental(nextChord, cursor)) {
                         // TODO: what if there are more than 1 accidental?
-                        contextualSpacing$ = 25;
+                        contextualSpacing = 25;
                     } else {
-                        contextualSpacing$ = 15;
+                        contextualSpacing = 15;
                     }
                 } else {
-                    contextualSpacing$ = 10;
+                    contextualSpacing = 10;
                 }
 
-                this.ksSpacing = contextualSpacing$ + keyWidth(model._snapshot, 0);
+                this.ksSpacing = contextualSpacing + keyWidth(attributes);
             } else {
                 this.ksSpacing = 0;
             }
@@ -515,8 +483,8 @@ module AttributesModel {
             /*---- TS layout --------------------------------------*/
 
             if (tsVisible) {
-                let {time} = cursor$.staff.attributes;
-                let contextualSpacing$ = 0;
+                let time = attributes.times[0];
+                let contextualSpacing = 0;
                 this.time = Object.create(time, {
                     defaultX: {
                         get: () => {
@@ -525,22 +493,22 @@ module AttributesModel {
                     }
                 });
                 this.time.defaultY = 0;
-                if (nextIsNote) {
-                    if (hasAccidental(chord, cursor$)) {
+                if (nextChord) {
+                    if (hasAccidental(nextChord, cursor)) {
                         // TODO: what if there are more than 1 accidental?
-                        contextualSpacing$ = 25;
+                        contextualSpacing = 25;
                     } else {
-                        contextualSpacing$ = 15;
+                        contextualSpacing = 15;
                     }
                 } else {
-                    contextualSpacing$ = 12.5;
+                    contextualSpacing = 12.5;
                 }
 
-                if (!origModel.times[0].beatTypes) {
-                    contextualSpacing$ = 0;
+                if (!attributes.times[0].beatTypes) {
+                    contextualSpacing = 0;
                 }
 
-                this.tsSpacing = contextualSpacing$ + timeWidth(model._snapshot, 0);
+                this.tsSpacing = contextualSpacing + timeWidth(attributes);
             } else {
                 this.tsSpacing = 0;
             }
@@ -548,7 +516,7 @@ module AttributesModel {
             /*---- Part symbol ------------------------------------*/
 
             if (partSymbolVisible) {
-                let {partSymbol} = cursor$.staff.attributes;
+                let {partSymbol} = cursor.staffAttributes;
                 this.partSymbol = Object.create(partSymbol, {
                     defaultX: {
                         get: () => {
@@ -558,20 +526,20 @@ module AttributesModel {
                 });
             }
 
-            this.staffDetails = cursor$.staff.attributes.staffDetails[this.staffIdx];
+            this.staffDetails = cursor.staffAttributes.staffDetails[this.staffIdx];
 
             /*---- Geometry ---------------------------------------*/
 
-            cursor$.x$ += this.clefSpacing + this.tsSpacing + this.ksSpacing;
-            this.renderedWidth = cursor$.x$ - this.x$ - 8;
+            cursor.segmentX += this.clefSpacing + this.tsSpacing + this.ksSpacing;
+            this.renderedWidth = cursor.segmentX - this.x - 8;
         }
 
         /*---- ILayout ------------------------------------------------------*/
 
         // Constructed:
 
-        model: AttributesModel;
-        x$: number;
+        model: IModel;
+        x: number;
         division: number;
         staffIdx: number;
 
@@ -582,7 +550,7 @@ module AttributesModel {
 
         // Prototype:
 
-        boundingBoxes$: IBoundingRect[];
+        boundingBoxes: IBoundingRect[];
         renderClass: Type;
         expandPolicy: "none";
         renderedWidth: number;
@@ -609,8 +577,8 @@ module AttributesModel {
 
     Layout.prototype.expandPolicy = "none";
     Layout.prototype.renderClass = Type.Attributes;
-    Layout.prototype.boundingBoxes$ = [];
-    Object.freeze(Layout.prototype.boundingBoxes$);
+    Layout.prototype.boundingBoxes = [];
+    Object.freeze(Layout.prototype.boundingBoxes);
 };
 
 /**
@@ -624,8 +592,9 @@ module Export {
     export interface IAttributesModel extends Attributes, IModel {
         divisions: number;
     }
+
     export interface IAttributesLayout extends ILayout {
-        model: IAttributesModel;
+        model: IModel;
 
         clef: Clef;
         snapshotClef: Clef;
@@ -646,17 +615,17 @@ module Export {
         staffDetails: StaffDetails;
     }
 
-    export function createWarningLayout$(cursor$: ICursor, nextAttributes: Attributes): IAttributesLayout {
-        let oldAttributes = cursor$.staff.attributes;
-        cursor$.staff.attributes = (<any>nextAttributes)._snapshot;
-
+    export function createWarningLayout(cursor: LayoutCursor, prevAttributes: Attributes,
+            nextAttributes: Attributes): IAttributesLayout {
         let warningLayout = new AttributesModel.Layout();
+        console.log("Creating warning layout for ", nextAttributes);
         warningLayout._refresh(
-            nextAttributes as any,
-            cursor$
+            null,
+            nextAttributes,
+            prevAttributes,
+            cursor,
         );
 
-        cursor$.staff.attributes = oldAttributes;
         return warningLayout;
     }
 }

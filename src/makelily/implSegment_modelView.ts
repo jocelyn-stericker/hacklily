@@ -18,8 +18,7 @@
 
 import {createFactory, Component, PropTypes} from "react";
 
-import Type from "./document_types";
-import {ILayout} from "./document_model";
+import {ILayout, Type} from "./document";
 import {Targetable} from "./private_views_metadata";
 
 import AttributesView from "./implAttributes_attributesView";

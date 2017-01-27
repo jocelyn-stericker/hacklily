@@ -21,21 +21,18 @@ import * as invariant from "invariant";
 import {Print, BarStyleType} from "musicxml-interfaces";
 import {IAny} from "musicxml-interfaces/operations";
 
-import Type from "./document_types";
-import {ISegment} from "./document_measure";
+import {Type, ISegment} from "./document";
 
 import {IAttributesSnapshot} from "./private_attributesSnapshot";
 import {ILayoutOptions, IFixupFn} from "./private_layoutOptions";
-import {ILinesLayoutState} from "./private_linesLayoutState";
-import {detachMeasureContext} from "./private_measureContext";
 
-import createPatch from "./patch_createPatch";
+import createPatch from "./engine_createPatch";
 
 import applyOp from "./engine_applyOp";
 import {normalizeDivisionsInPlace} from "./engine_divisions";
 
-import DivisionOverflowException from "./engine_processors_divisionOverflowException";
-import {reduceMeasure} from "./engine_processors_measure";
+import DivisionOverflowException from "./engine_divisionOverflowException";
+import {refreshMeasure, RefreshMode} from "./engine_processors_measure";
 
 /**
  * Reducer for a collection of functions, calling each one.
@@ -48,13 +45,18 @@ function call<T>(memo: T, fn: (t: T) => T) {
  * Exception that indicates the measure must be validated again.
  * This can occur when a measure was modified in a position before the cursor.
  */
-class RestartMeasureValidation {}
+class RestartMeasureValidation {
+    stack: string;
+    constructor() {
+        this.stack = new Error().stack;
+    }
+}
 
 /**
  * Validate the measure.
  */
-export default function validate(options$: ILayoutOptions, memo$: ILinesLayoutState): void {
-    options$.measures = <any> reduce(options$.preprocessors, call, options$.measures);
+export default function validate(options: ILayoutOptions): void {
+    options.measures = <any> reduce(options.preprocessors, call, options.measures);
 
     let shouldTryAgain: boolean;
 
@@ -73,12 +75,12 @@ export default function validate(options$: ILayoutOptions, memo$: ILinesLayoutSt
      */
     function rootFixup(segment: ISegment, operations: IAny[], restartRequired: boolean) {
         debugFixupOperations.push(operations);
-        if (options$.fixup) {
-            options$.fixup(segment, operations);
+        if (options.fixup) {
+            options.fixup(segment, operations);
         } else {
             forEach(operations, operation => {
-                applyOp(options$.preview, options$.measures, options$.modelFactory, operation, memo$,
-                    options$.document);
+                applyOp(options.preview, options.measures, options.modelFactory, operation,
+                    options.document);
             });
         }
 
@@ -87,7 +89,7 @@ export default function validate(options$: ILayoutOptions, memo$: ILinesLayoutSt
         }
     }
 
-    let rootFixupOpts$ = {
+    let rootFixupOpts = {
         debugFixupOperations,
         rootFixup,
     };
@@ -95,11 +97,12 @@ export default function validate(options$: ILayoutOptions, memo$: ILinesLayoutSt
     do {
         shouldTryAgain = false;
         try {
-            tryValidate(options$, memo$, rootFixupOpts$);
+            tryValidate(options, rootFixupOpts);
         } catch (err) {
             if (err instanceof DivisionOverflowException) {
                 const ops = (<DivisionOverflowException>err).getOperations();
-                rootFixup(null, createPatch(false, options$.document, ops), true);
+                // The restartRequired flag is false because we restart manually.
+                rootFixup(null, createPatch(false, options.document, ops), false);
 
                 shouldTryAgain = true;
             } else {
@@ -109,13 +112,13 @@ export default function validate(options$: ILayoutOptions, memo$: ILinesLayoutSt
     } while (shouldTryAgain);
 }
 
-function tryValidate(options$: ILayoutOptions, memo$: ILinesLayoutState,
-        rootFixupOpts$: {debugFixupOperations: IAny[][], rootFixup: IFixupFn}): void {
-    let factory = options$.modelFactory;
+function tryValidate(options: ILayoutOptions,
+        rootFixupOpts: {debugFixupOperations: IAny[][], rootFixup: IFixupFn}): void {
+    let factory = options.modelFactory;
     let search = factory.search.bind(factory);
 
     let lastAttribs: {[part: string]: IAttributesSnapshot[]} = {};
-    let lastPrint: Print = options$.print$;
+    let lastPrint: Print = options.print;
 
     function withPart(segments: ISegment[], partID: string): ISegment[] {
         forEach(segments, segment => {
@@ -128,55 +131,47 @@ function tryValidate(options$: ILayoutOptions, memo$: ILinesLayoutState,
 
     // Normalize divisions on a line:
     let allSegments: ISegment[] = [];
-    forEach(options$.measures, function validateMeasure(measure) {
-        let voiceSegments$ = <ISegment[]>
+    forEach(options.measures, function validateMeasure(measure) {
+        let voiceSegments = <ISegment[]>
             flatten(map(toPairs(measure.parts), partx => withPart(partx[1].voices, partx[0])));
 
-        let staffSegments$ = <ISegment[]>
+        let staffSegments = <ISegment[]>
             flatten(map(toPairs(measure.parts), partx => withPart(partx[1].staves, partx[0])));
 
-        allSegments = allSegments.concat(filter(voiceSegments$.concat(staffSegments$), s => !!s));
+        allSegments = allSegments.concat(filter(voiceSegments.concat(staffSegments), s => !!s));
     });
     normalizeDivisionsInPlace(factory, allSegments, 0);
     // TODO: check if a measure hence becomes dirty?
 
-    forEach(options$.measures, function validateMeasure(measure) {
-        rootFixupOpts$.debugFixupOperations = [];
-        if (memo$.clean$[measure.uuid]) {
-            let voiceSegments$ = <ISegment[]>
-                flatten(map(toPairs(measure.parts), partx => withPart(partx[1].voices, partx[0])));
-
-            let staffSegments$ = <ISegment[]>
-                flatten(map(toPairs(measure.parts), partx => withPart(partx[1].staves, partx[0])));
-            let segments: ISegment[] = filter(voiceSegments$.concat(staffSegments$), s => !!s);
-
-            forEach(segments, function(segment, idx) {
-                lastAttribs[segment.part] = memo$.clean$[measure.uuid].attributes[segment.part];
-            });
+    forEach(options.measures, function validateMeasure(measure) {
+        let cleanliness = options.document.cleanlinessTracking.measures[measure.uuid];
+        if (cleanliness && cleanliness.clean) {
+            lastAttribs = cleanliness.clean.attributes;
+            lastPrint = cleanliness.clean.print;
             return;
         }
+
+        rootFixupOpts.debugFixupOperations = [];
 
         let tries = 0;
         // Fixups can require multiple passes.
         for (let tryAgain = true; tryAgain;) {
             if (++tries > 100) {
                 console.warn("-------------- too many fixups: aborting -------------- ");
-                console.warn(rootFixupOpts$.debugFixupOperations);
+                console.warn(rootFixupOpts.debugFixupOperations);
                 throw new Error("Internal Satie Error: fixup loop!");
             }
             tryAgain = false;
             try {
-                let voiceSegments$ = <ISegment[]>
+                let voiceSegments = <ISegment[]>
                     flatten(map(toPairs(measure.parts), partx => withPart(partx[1].voices, partx[0])));
 
-                let staffSegments$ = <ISegment[]>
+                let staffSegments = <ISegment[]>
                     flatten(map(toPairs(measure.parts), partx => withPart(partx[1].staves, partx[0])));
 
-                let measureCtx = detachMeasureContext(measure, 0);
+                let segments = filter(voiceSegments.concat(staffSegments), s => !!s);
 
-                let segments = filter(voiceSegments$.concat(staffSegments$), s => !!s);
-
-                forEach(staffSegments$, function(segment, idx) {
+                forEach(staffSegments, function(segment, idx) {
                     if (!segment) {
                         return;
                     }
@@ -186,7 +181,7 @@ function tryValidate(options$: ILayoutOptions, memo$: ILinesLayoutState,
                     function ensureHeader(type: Type) {
                         if (!search(segment, 0, type).length) {
                             if (segment.owner === 1) {
-                                rootFixupOpts$.rootFixup(segment, [{
+                                rootFixupOpts.rootFixup(segment, [{
 
                                     p: [
                                         String(measure.uuid),
@@ -204,7 +199,7 @@ function tryValidate(options$: ILayoutOptions, memo$: ILinesLayoutState,
                                 }], false);
                             } else {
                                 let proxy = factory.create(Type.Proxy);
-                                let proxiedSegment: ISegment = find(staffSegments$, potentialProxied =>
+                                let proxiedSegment: ISegment = find(staffSegments, potentialProxied =>
                                     potentialProxied &&
                                     potentialProxied.part === segment.part &&
                                     potentialProxied.owner === 1);
@@ -229,46 +224,48 @@ function tryValidate(options$: ILayoutOptions, memo$: ILinesLayoutState,
                     ensureHeader(Type.Attributes);
                     if (!search(segment, segment.length - 1, Type.Barline).length) {
                         // Make sure the barline ends up at the end.
-                        const patches = createPatch(false, options$.document, measure.uuid,
+                        const patches = createPatch(false, options.document, measure.uuid,
                             segment.part,
                             part => part.staff(
                                 segment.owner,
                                 staff => staff
                                     .insertBarline(barline => barline
                                         .barStyle({
-                                            data: measure.uuid === last(options$.document.measures).uuid ?
+                                            data: measure.uuid === last(options.document.measures).uuid ?
                                                 BarStyleType.LightHeavy : BarStyleType.Regular,
                                         })
                                     ),
                                 segment.length
                             )
                         );
-                        rootFixupOpts$.rootFixup(segment, patches, false);
+                        rootFixupOpts.rootFixup(segment, patches, false);
                     }
                 });
 
-                let outcome = reduceMeasure({
-                    document: options$.document,
-                    attributes: lastAttribs,
-                    print: lastPrint,
-                    header: options$.header,
-                    line: null,
-                    measure: measureCtx,
-                    padEnd: false,
-                    segments: segments,
-                    _approximate: true,
-                    _detached: true,
-                    _noAlign: true,
-                    _validateOnly: true, // Just validate, don't make a layout
+                let outcome = refreshMeasure({
+                    noAlign: true,
+                    mode: RefreshMode.RefreshModel,
+                    document: options.document,
                     factory: factory,
-                    preview: options$.preview,
-                    memo$,
-                    fixup: rootFixupOpts$.rootFixup
+                    fixup: rootFixupOpts.rootFixup,
+                    header: options.header,
+                    lineBarOnLine: NaN,
+                    lineCount: NaN,
+                    lineIndex: NaN,
+                    lineShortest: NaN,
+                    lineTotalBarsOnLine: NaN,
+                    measure: measure,
+                    measureX: 0,
+                    preview: options.preview,
+                    print: lastPrint,
+                    segments: segments,
+                    attributes: lastAttribs,
                 });
                 lastAttribs = outcome.attributes;
                 lastPrint = outcome.print;
             } catch (ex) {
                 if (ex instanceof RestartMeasureValidation) {
+                    console.log(ex.stack);
                     tryAgain = true;
                 } else {
                     throw ex;

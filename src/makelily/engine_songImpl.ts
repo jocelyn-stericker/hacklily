@@ -24,15 +24,12 @@ import {Pitch, ScoreHeader} from "musicxml-interfaces";
 import {IAny, invert} from "musicxml-interfaces/operations";
 import * as invariant from "invariant";
 
-import {IDocument, Document} from "./document_document";
-import {ISong, IPatchSpec, specIsDocBuilder, specIsPartBuilder, specIsRaw, IProps, IMouseEvent} from "./document_song";
-import createPatch from "./patch_createPatch";
+import {Document, ISong, IPatchSpec, specIsDocBuilder, specIsPartBuilder, specIsRaw, IProps, IMouseEvent} from "./document";
+import createPatch from "./engine_createPatch";
 
-import {newLayoutState} from "./private_linesLayoutState";
 import {pitchForClef} from "./private_chordUtil";
 import {get as getByPosition} from "./private_views_metadata";
 import {IFactory} from "./private_factory";
-import {ILinesLayoutState} from "./private_linesLayoutState";
 import PatchImpl from "./private_patchImpl";
 
 import {importXML} from "./engine_import";
@@ -46,7 +43,6 @@ const SATIE_ELEMENT_RX = /SATIE([0-9]*)_(\w*)_(\w*)_(\w*)_(\w*)_(\w*)/;
 
 export interface IState {
     document?: Document;
-    memo?: ILinesLayoutState;
     factory?: IFactory;
 }
 
@@ -66,7 +62,6 @@ export interface IState {
 export default class SongImpl extends Component<IProps, IState> implements ISong {
     state: IState = {
         document: null,
-        memo: null,
         factory: null,
     };
 
@@ -103,7 +98,7 @@ export default class SongImpl extends Component<IProps, IState> implements ISong
         if (nextProps.baseSrc !== this.props.baseSrc) {
             this._loadXML(nextProps.baseSrc);
         } else if (nextProps.pageClassName !== this.props.pageClassName) {
-            this._preRender$();
+            this._preRender();
         } else if (nextProps.patches !== this.props.patches) {
             const patches = nextProps.patches;
             if (patches instanceof PatchImpl) {
@@ -133,7 +128,7 @@ export default class SongImpl extends Component<IProps, IState> implements ISong
      *  - This API call will eventually be removed and replaced with higher-level
      *    functions.
      */
-    getDocument = (operations: {isPatches: boolean}): IDocument => {
+    getDocument = (operations: {isPatches: boolean}): Document => {
         if (!this.state.document) {
             throw new Error(NOT_READY_ERROR);
         }
@@ -250,10 +245,8 @@ export default class SongImpl extends Component<IProps, IState> implements ISong
     }
 
     private _rectify$(newPatches: IAny[], preview: boolean) {
-        const document = this.state.document;
         const docPatches = this._docPatches;
         const factory = this.state.factory;
-        const memo = this.state.memo;
 
         const commonVersion = () => {
             const maxPossibleCommonVersion = Math.min(
@@ -272,27 +265,23 @@ export default class SongImpl extends Component<IProps, IState> implements ISong
 
         // Undo actions not in common
         forEach(invert(docPatches.slice(initialCommon)), (op) => {
-            applyOp(preview, this.state.document.measures, factory, op, memo, this.state.document);
+            applyOp(preview, this.state.document.measures, factory, op, this.state.document);
             docPatches.pop();
         });
 
         // Perform actions that are expected.
         forEach(newPatches.slice(this._docPatches.length), (op) => {
-            applyOp(preview, this.state.document.measures, factory, op, memo, this.state.document);
+            applyOp(preview, this.state.document.measures, factory, op, this.state.document);
             docPatches.push(op);
         });
 
         invariant(docPatches.length === newPatches.length,
             "Something went wrong in _rectify. The current state is now invalid.");
-
-        let top = document.getTop(0, 0);
-        invariant(!!memo, "Internal error: trying to rectify a document that hasn't loaded.");
-        memo.y$ = top;
     };
-    private _rectifyAppendCanonical$ = (ops:IAny[]):void => {
+    private _rectifyAppendCanonical = (ops:IAny[]):void => {
         this._rectify$(this._docPatches.concat(ops), false);
     };
-    private _rectifyAppendPreview$ = (ops:IAny[]): void => {
+    private _rectifyAppendPreview = (ops:IAny[]): void => {
         this._rectify$(this._docPatches.concat(ops), true);
     };
     private _update$(patches: IAny[], isPreview: boolean) {
@@ -300,18 +289,17 @@ export default class SongImpl extends Component<IProps, IState> implements ISong
 
         this._page1 = this.state.document.__getPage(
             0,
-            this.state.memo,
             isPreview,
             "svg-web",
             this.props.pageClassName || "",
             this.props.singleLineMode,
-            isPreview ? this._rectifyAppendPreview$ : this._rectifyAppendCanonical$,
-            this._syncSVG$
+            isPreview ? this._rectifyAppendPreview : this._rectifyAppendCanonical,
+            this._syncSVG
         );
         this.forceUpdate();
     }
 
-    private _preRender$: () => void = () => {
+    private _preRender: () => void = () => {
         const patches = this.props.patches as {};
         if (patches instanceof PatchImpl) {
             this._update$(patches.content, patches.isPreview);
@@ -322,7 +310,7 @@ export default class SongImpl extends Component<IProps, IState> implements ISong
         }
     };
 
-    private _syncSVG$ = (svg: SVGSVGElement) => {
+    private _syncSVG = (svg: SVGSVGElement) => {
         this._svg = svg;
         this._pt = svg ? svg.createSVGPoint() : null;
     };
@@ -393,20 +381,17 @@ export default class SongImpl extends Component<IProps, IState> implements ISong
     private _loadXML(xml: string) {
         this.setState({
             document: null,
-            memo: null,
             factory: null,
         });
 
-        const memo = newLayoutState(NaN);
-        importXML(xml, memo, (error, loadedDocument, loadedFactory) => {
+        importXML(xml, (error, loadedDocument, loadedFactory) => {
             if (error) {
                 this.props.onError(error);
             } else {
                 this.setState({
                     document: loadedDocument,
-                    memo,
                     factory: loadedFactory,
-                }, this._preRender$);
+                }, this._preRender);
             }
             invariant(!this.props.patches, "Expected patches to be empty on document load.");
             if (this.props.onLoaded) {

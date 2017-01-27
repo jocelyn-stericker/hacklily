@@ -21,11 +21,11 @@ import {createFactory, Component, DOM, MouseEvent, PropTypes} from "react";
 import {map, filter, forEach, last} from "lodash";
 import * as invariant from "invariant";
 
-import {IModel, generateKey} from "./document_model";
+import {IModel, generateModelKey} from "./document";
 
 import {tenthsToMM} from "./private_renderUtil";
 import {getPageMargins} from "./private_print";
-import {calculate as calculateLineBounds} from "./private_lineBounds";
+import {calculateLineBounds} from "./private_lineBounds";
 import {IMeasureLayout} from "./private_measureLayout";
 
 import MeasureView from "./implMeasure_measureView";
@@ -66,19 +66,18 @@ export default class Page extends Component<IProps, void> {
         /*--- General ---------------------------------------------*/
 
         const print = this.props.print;
-        const page = print.pageNumber;
-        const pageNum = parseInt(page, 10);
-        invariant(!!page, "Page %s isn't a valid page number.", pageNum);
+        const pageNum = parseInt(print.pageNumber, 10);
+        invariant(pageNum >= 1, "Page %s isn't a valid page number.", print.pageNumber);
         const defaults = this.props.scoreHeader.defaults;
         const credits = filter(this.props.scoreHeader.credits, cr =>
-                                (cr.page === parseInt(page, 10)));
+                                (cr.page === pageNum));
         const scale40 = defaults.scaling.millimeters / defaults.scaling.tenths * 40;
         const widthMM = this.props.renderTarget === "svg-export" ?
                                 tenthsToMM(scale40, print.pageLayout.pageWidth) + "mm" : "100%";
         const heightMM = this.props.renderTarget === "svg-export" ?
                                 tenthsToMM(scale40, print.pageLayout.pageHeight) + "mm" : "100%";
 
-        const firstLineBounds = calculateLineBounds(print, 0);
+        const firstLineBounds = calculateLineBounds(print, pageNum);
 
         const pageWidth = this.props.singleLineMode ?
             last(lineLayouts[0]).originX + last(lineLayouts[0]).width +
@@ -93,7 +92,7 @@ export default class Page extends Component<IProps, void> {
         /*--- Credits ---------------------------------------------*/
 
         // Make sure our credits are keyed.
-        forEach<IModel>(credits as any as IModel[], generateKey);
+        forEach<IModel>(credits as any as IModel[], generateModelKey);
 
         /*--- Render ----------------------------------------------*/
 

@@ -29,10 +29,10 @@ import {ILineBounds} from "./private_lineBounds";
  * @returns new end of line
  */
 function pad(options: ILayoutOptions, bounds: ILineBounds,
-        measures$: IMeasureLayout[]): IMeasureLayout[] {
+        measures: IMeasureLayout[]): IMeasureLayout[] {
 
     let measureOffset = 0;
-    forEach(measures$, function(measure, measureIdx) {
+    forEach(measures, function(measure, measureIdx) {
         measure.originX += measureOffset;
 
         let maxIdx = max(map(measure.elements, el => el.length));
@@ -49,25 +49,25 @@ function pad(options: ILayoutOptions, bounds: ILineBounds,
 
                 spaceNeededBefore = Math.max(spaceNeededBefore, spaceNeededBeforeSegment);
                 spaceNeededAfter = Math.max(spaceNeededAfter, spaceNeededAfterSegment);
-                measure.elements[i][j].x$ += offset;
+                measure.elements[i][j].x += offset;
             }
             if (!spaceNeededBefore && !spaceNeededAfter) {
                 // TODO: we should instead have some sort of flag which means
                 // "disregard this element"
                 return;
             }
-            let thisElementStart = measure.elements[0][j].x$ - spaceNeededBefore;
+            let thisElementStart = measure.elements[0][j].x - spaceNeededBefore;
             let extraSpaceGiven = Math.max(0, previousElementEnd - thisElementStart);
 
             if (extraSpaceGiven) {
                 for (let i = 0; i < measure.elements.length; ++i) {
-                    measure.elements[i][j].x$ += extraSpaceGiven;
+                    measure.elements[i][j].x += extraSpaceGiven;
                 }
             }
             offset += extraSpaceGiven;
 
             // Update for next iteration
-            previousElementEnd = measure.elements[0][j].x$ + spaceNeededAfter;
+            previousElementEnd = measure.elements[0][j].x + spaceNeededAfter;
         });
         measure.width += offset;
         measureOffset += offset;
@@ -77,7 +77,7 @@ function pad(options: ILayoutOptions, bounds: ILineBounds,
     // TODO(jnetterf): Modify layout enging to make sure we don't end up overflowing
     //                 (in which case the Justify handler will squish things again) 
 
-    return measures$;
+    return measures;
 }
 
 export default pad;

@@ -2,7 +2,7 @@ import {BarStyleType, Count, MxmlAccidental} from "musicxml-interfaces";
 import {expect} from "chai";
 import {find} from "lodash";
 
-import Type from "../document_types";
+import {Type} from "../document";
 import SongImpl from "../engine_songImpl";
 import {IChord} from "../private_chordUtil";
 import {Patch} from "../satie";
@@ -88,6 +88,7 @@ describe("patches (1)", function() {
                 .insertMeasure(3, measure => measure
                     .part("P1", part => part
                         .voice(1, voice => voice
+                            .at(0)
                             .insertChord([
                                 note => note
                                     .rest({})
@@ -95,7 +96,7 @@ describe("patches (1)", function() {
                                     .noteType(type => type
                                         .duration(Count.Whole)
                                     )
-                            ], 0)
+                            ])
                         )
                     )
               )
@@ -161,6 +162,7 @@ describe("patches (1)", function() {
 
         const patch = Patch.createPatch(false, song.getDocument(null), measureUUID, "P1", part => part
             .voice(1, voice => voice
+                .at(0)
                 .note(0, note => note
                     .pitch(pitch => pitch
                           .step("C")
@@ -174,7 +176,7 @@ describe("patches (1)", function() {
                         .accidental(MxmlAccidental.Sharp)
                     )
                     .color("#cecece")
-                , 0)
+                )
             )
         );
 

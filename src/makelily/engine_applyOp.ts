@@ -21,12 +21,9 @@ import {find, cloneDeep, forEach, isPlainObject, isArray, isUndefined, isNull,
     isBoolean, isNumber, isString} from "lodash";
 import {IAny} from "musicxml-interfaces/operations";
 
-import Type from "./document_types";
-import {IMeasure, IMeasurePart, ISegment} from "./document_measure";
-import {IDocument} from "./document_document";
+import {Document, Type, IMeasure, IMeasurePart, ISegment} from "./document";
 import {normalizeDivisionsInPlace} from "./engine_divisions";
 
-import {ILinesLayoutState} from "./private_linesLayoutState";
 import {IFactory} from "./private_factory";
 import {cloneObject} from "./private_util";
 
@@ -60,8 +57,8 @@ function isSerializable(obj: any): boolean {
  *
  * @param op.p [measureUUID, ("part"|"voice")]
  */
-export default function applyOp(preview: boolean, measures: IMeasure[], factory: IFactory, op: IAny, memo: ILinesLayoutState,
-        document: IDocument) {
+export default function applyOp(preview: boolean, measures: IMeasure[], factory: IFactory, op: IAny,
+        document: Document) {
     // Operations must be entirely serializable, to be sent over the work. Serializble means it is one of:
     //   - a simple data type (number, string, ...)
     //   - a plain object (object with prototype Object), and that the same is true for all children
@@ -76,7 +73,7 @@ export default function applyOp(preview: boolean, measures: IMeasure[], factory:
             ld: op.ld,
             li: op.li,
         };
-        applyMeasureOp(measures, factory, localOp, memo, document);
+        applyMeasureOp(measures, factory, localOp, document);
         return;
     } else if (path.length === 1 && path[0] === "divisions") {
         let segments: ISegment[] = [];
@@ -107,14 +104,26 @@ export default function applyOp(preview: boolean, measures: IMeasure[], factory:
     invariant(path[3] === "voices" || path[3] === "staves",
         `Invalid operation path: ${path[3]} should have been "voices" or "staves`);
 
+    const cleanliness = document.cleanlinessTracking.measures[measureUUID];
+    if (cleanliness) {
+        cleanliness.clean = null;
+    }
+
     if (path[3] === "voices") {
         let voice = part.voices[parseInt(String(path[4]), 10)];
         invariant(Boolean(voice),
             `Invalid operation path: No such voice ${path.slice(0,4).join(", ")}`);
 
         if (path.length === 6 && ((op.li && !op.ld) || (!op.li && op.ld))) {
-            segmentMutator(factory, memo, voice, op, document);
-            memo.clean$[measure.uuid] = null;
+            if (!preview && ((op.li && op.li._class === "Attributes") || (op.ld && op.ld._class === "Attributes"))) {
+                // Mark everything as dirty -- this is overkill, but finding what measures
+                // need to be changed is tough.
+                let ctMeasures = document.cleanlinessTracking.measures;
+                Object.keys(ctMeasures).forEach(measureName => {
+                    ctMeasures[measureName].clean = null;
+                });
+            }
+            segmentMutator(factory, voice, op, document);
             return;
         }
 
@@ -125,7 +134,7 @@ export default function applyOp(preview: boolean, measures: IMeasure[], factory:
         let localOp: IAny = cloneDeep(op);
         localOp.p = path.slice(6);
         if (factory.modelHasType(element, Type.Chord)) {
-            chordMutator(memo, element as any, localOp);
+            chordMutator(element as any, localOp);
         } else {
             invariant(false, "Invalid operation path: No reducer for", element);
         }
@@ -135,10 +144,7 @@ export default function applyOp(preview: boolean, measures: IMeasure[], factory:
             `Invalid operation path: No such staff ${path.slice(0,4).join(", ")}`);
 
         if (path.length === 6 && ((op.li && !op.ld) || (!op.li && op.ld))) {
-            segmentMutator(factory, memo, staff, op, document);
-            if (!preview) {
-                memo.clean$[measure.uuid] = null;
-            }
+            segmentMutator(factory, staff, op, document);
             return;
         }
 
@@ -149,17 +155,25 @@ export default function applyOp(preview: boolean, measures: IMeasure[], factory:
         let localOp: IAny = cloneDeep(op);
         localOp.p = path.slice(6);
         if (factory.modelHasType(element, Type.Barline)) {
-            barlineMutator(memo, element as any, localOp);
+            barlineMutator(element as any, localOp);
         } else if (factory.modelHasType(element, Type.Attributes)) {
-            attributesMutator(preview, memo, element as any, localOp);
+            if (!preview) {
+                // Mark everything as dirty -- this is overkill, but finding what measures
+                // need to be changed is tough.
+                let ctMeasures = document.cleanlinessTracking.measures;
+                Object.keys(ctMeasures).forEach(measureName => {
+                    ctMeasures[measureName].clean = null;
+                });
+            }
+            attributesMutator(preview, element as any, localOp);
         } else {
             invariant(false, "Invalid operation path: No reducer for %s", element);
         }
     }
 }
 
-export function applyMeasureOp(measures: IMeasure[], factory: IFactory, op: IAny, memo: ILinesLayoutState,
-        doc: IDocument) {
+export function applyMeasureOp(measures: IMeasure[], factory: IFactory, op: IAny,
+        doc: Document) {
     let ok = false;
     let oldMeasure: IMeasure;
 

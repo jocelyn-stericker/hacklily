@@ -21,17 +21,17 @@ import {Clef, Count, MultipleRest, Note, NoteheadType, Stem, StemType, Tremolo,
 import {forEach, times, reduce, map, max, some} from "lodash";
 import * as invariant from "invariant";
 
-import Type from "./document_types";
+import {Type} from "./document";
 
 import {IBoundingRect} from "./private_boundingRect";
 import {getBeamingPattern} from "./private_metre_checkBeaming";
 import {IChord, ledgerLines, notationObj, countToIsBeamable, countToFlag,
-    InvalidAccidental, startingLine, averageLine, highestLine, lowestLine,
+    startingLine, averageLine, highestLine, lowestLine,
     heightDeterminingLine, countToHasStem, getNoteheadGlyph,
-    divisions as calcDivisions, FractionalDivisionsException}
-    from "./private_chordUtil";
-import {ICursor} from "./private_cursor";
-import {VoiceBuilder} from "./patch_createPatch";
+    divisions as calcDivisions, FractionalDivisionsException,
+    barDivisions} from "./private_chordUtil";
+import {IReadOnlyValidationCursor, LayoutCursor} from "./private_cursor";
+import {VoiceBuilder} from "./engine_createPatch";
 import {getWidth as getGlyphWidth} from "./private_smufl";
 
 import ChordModel from "./implChord_chordModel";
@@ -91,7 +91,7 @@ let countToRest: { [key: number]: string } = {
 class ChordModelImpl implements ChordModel.IChordModel, ArrayLike<NoteImpl> {
     /*---- I.1 IModel ---------------------------------------------------------------------------*/
 
-    /** set in validate$ */
+    /** set in validate */
     divCount: number;
 
     divisions: number;
@@ -111,7 +111,7 @@ class ChordModelImpl implements ChordModel.IChordModel, ArrayLike<NoteImpl> {
 
     /*---- II. Ext ------------------------------------------------------------------------------*/
 
-    wholebar$: boolean;
+    wholebar: boolean;
 
     satieStem: {
         direction: number;
@@ -235,17 +235,17 @@ class ChordModelImpl implements ChordModel.IChordModel, ArrayLike<NoteImpl> {
     }
 
     _init: boolean = false;
-    validate(cursor$: ICursor): void {
+    refresh(cursor: IReadOnlyValidationCursor): void {
         if (!isFinite(this._count)) {
-            this._implyCountFromPerformanceData(cursor$);
+            this._implyCountFromPerformanceData(cursor);
         }
         try {
-            const divCount = calcDivisions(this, cursor$.staff.attributes);
+            const divCount = calcDivisions(this, cursor.staffAttributes);
             if (divCount !== this.divCount) {
-                cursor$.fixup([
+                cursor.fixup([
                     {
-                        p: [cursor$.measure.uuid, "parts", cursor$.segment.part, "voices",
-                            cursor$.segment.owner, cursor$.idx$, "divCount"],
+                        p: [cursor.measureInstance.uuid, "parts", cursor.segmentInstance.part, "voices",
+                            cursor.segmentInstance.owner, cursor.segmentPosition, "divCount"],
                         oi: divCount,
                         od: this.divCount,
                     },
@@ -253,11 +253,11 @@ class ChordModelImpl implements ChordModel.IChordModel, ArrayLike<NoteImpl> {
             }
         } catch (err) {
             if (err instanceof FractionalDivisionsException) {
-                cursor$.fixup([
+                cursor.fixup([
                     {
                         p: ["divisions"],
                         oi: (err as FractionalDivisionsException).requiredDivisions,
-                        od: cursor$.staff.attributes.divisions,
+                        od: cursor.staffAttributes.divisions,
                     }
                 ]);
             }
@@ -266,56 +266,45 @@ class ChordModelImpl implements ChordModel.IChordModel, ArrayLike<NoteImpl> {
         invariant(isFinite(this.divCount), "The beat count must be numeric");
         invariant(this.divCount >= 0, "The beat count must be non-negative.");
 
-        const direction = this._pickDirection(cursor$);
-        const clef = cursor$.staff.attributes.clef;
+        const direction = this._pickDirection(cursor);
+        const clef = cursor.staffAttributes.clef;
 
         this._clef = clef;
 
         forEach(this, (note, idx) => {
             if (!note.grace && note.duration !== this.divCount) {
-                cursor$.patch(partBuilder => partBuilder
+                cursor.patch(partBuilder => partBuilder
                     .note(idx, note => note
                         .duration(this.divCount),
-                    cursor$.idx$)
+                    )
                 );
             }
             if (idx > 0 && !note.chord) {
-                cursor$.patch(partBuilder => partBuilder
+                cursor.patch(partBuilder => partBuilder
                     .note(idx, note => note
                         .chord({}),
-                    cursor$.idx$)
+                    )
                 );
             } else if (idx === 0 && note.chord) {
-                cursor$.patch(partBuilder => partBuilder
+                cursor.patch(partBuilder => partBuilder
                     .note(idx, note => note
                         .chord(null),
-                    cursor$.idx$)
+                    )
                 );
             }
-            note.validate$(cursor$);
-            note.updateAccidental$(cursor$);
-            if (note.pitch) {
-                // Update the accidental status.
-                const pitch = note.pitch;
-                if (pitch.alter === 0) {
-                    cursor$.staff.accidentals$[pitch.step] = undefined;
-                }
-                cursor$.staff.accidentals$[pitch.step + pitch.octave] = pitch.alter;
-                if ((cursor$.staff.accidentals$[pitch.step]) !== pitch.alter) {
-                    cursor$.staff.accidentals$[pitch.step] = InvalidAccidental;
-                }
-            }
+            note.refresh(cursor);
+            note.updateAccidental(cursor);
         });
 
-        this.wholebar$ = this.divCount === cursor$.staff.totalDivisions || this.divCount === -1;
+        this.wholebar = this.divCount === barDivisions(cursor.staffAttributes) || this.divCount === -1;
 
         invariant(isFinite(this._count) && this._count !== null,
             "%s is not a valid count", this._count);
 
-        this._checkMulitpleRest$(cursor$);
-        this._implyNoteheads$(cursor$);
+        this._checkMulitpleRest(cursor);
+        this._implyNoteheads(cursor);
 
-        if (!cursor$.approximate || !this._init) {
+        if (!this._init) {
             if (countToIsBeamable[this._count]) {
                 this.satieFlag = countToFlag[this._count];
             } else {
@@ -336,12 +325,12 @@ class ChordModelImpl implements ChordModel.IChordModel, ArrayLike<NoteImpl> {
         }
     }
 
-    getLayout(cursor$: ICursor): ChordModel.IChordLayout {
+    getLayout(cursor: LayoutCursor): ChordModel.IChordLayout {
         this._init = true;
         if (!this._layout) {
             this._layout = new ChordModelImpl.Layout();
         }
-        this._layout._refresh(this, cursor$);
+        this._layout._refresh(this, cursor);
         return this._layout;
     }
 
@@ -362,8 +351,42 @@ class ChordModelImpl implements ChordModel.IChordModel, ArrayLike<NoteImpl> {
         return this.toXML();
     }
 
-    private _implyCountFromPerformanceData(cursor$: ICursor) {
-        const {time, divisions} = cursor$.staff.attributes;
+    calcWidth(shortest: number) {
+        let accidentalWidth = this.calcAccidentalWidth();
+
+        // TODO: Each note's width has a linear component proportional to log of its duration
+        // with respect to the shortest length
+        let extraWidth = this.divCount ?
+            (Math.log(this.divCount) - Math.log(shortest)) * LOG_STRETCH : 0;
+        const grace = this[0].grace;
+        if (grace) {
+            // TODO: Put grace notes in own segment
+            extraWidth *= GRACE_FLATTEN_FACTOR;
+        }
+        const baseWidth = grace ? BASE_GRACE_WIDTH : BASE_STD_WIDTH;
+        invariant(extraWidth >= 0, "Invalid extraWidth %s. shortest is %s, got %s", extraWidth,
+                shortest, this.divCount);
+
+        const totalWidth = baseWidth + extraWidth +
+            accidentalWidth + this.calcDotWidth();
+        return totalWidth;
+    }
+
+    calcAccidentalWidth() {
+        return reduce(this, (maxWidth, note) => {
+            return Math.max(maxWidth, note.accidental ? -note.accidental.defaultX : 0);
+        }, 0) * ACCIDENTAL_WIDTH;
+    }
+
+    calcDotWidth(): number {
+        if (this.wholebar || this.satieMultipleRest) {
+            return 0;
+        }
+        return max(map(this, m => (m.dots || []).length)) * 6;
+    }
+
+    private _implyCountFromPerformanceData(cursor: IReadOnlyValidationCursor) {
+        const {time, divisions} = cursor.staffAttributes;
         const ts = {
             beatType: time.beatTypes[0], // FIXME
             beats: reduce(time.beats, (sum, beat) => sum + parseInt(beat, 10), 0)
@@ -386,8 +409,8 @@ class ChordModelImpl implements ChordModel.IChordModel, ArrayLike<NoteImpl> {
         }
         if (dots > 0) {
             this._count = (1 / (beats / dotFactor / 4 / factor));
-            cursor$.patch(voiceA => reduce(times(this.length), (voice, idx) =>
-                    voice.note(idx, note => note.dots(times(dots, dot => ({}))), cursor$.idx$),
+            cursor.patch(voiceA => reduce(times(this.length), (voice, idx) =>
+                    voice.note(idx, note => note.dots(times(dots, dot => ({})))),
                 voiceA as VoiceBuilder));
         }
 
@@ -453,8 +476,8 @@ class ChordModelImpl implements ChordModel.IChordModel, ArrayLike<NoteImpl> {
         return result;
     }
 
-    private _pickDirection(cursor$: ICursor) {
-        const {clef} = cursor$.staff.attributes;
+    private _pickDirection(cursor: IReadOnlyValidationCursor) {
+        const {clef} = cursor.staffAttributes;
         let avgLine = averageLine(this, clef);
         if (avgLine > 3) {
             return -1;
@@ -467,7 +490,7 @@ class ChordModelImpl implements ChordModel.IChordModel, ArrayLike<NoteImpl> {
             // TODO: Handle clef changes correctly
 
             let notes: ChordModelImpl[] =
-                cursor$.segment.filter(el => cursor$.factory.modelHasType(el, Type.Chord)) as any;
+                cursor.segmentInstance.filter(el => cursor.factory.modelHasType(el, Type.Chord)) as any;
             let nIdx = notes.indexOf(this);
 
             // 1. Continue the stem direction of surrounding stems that are in one
@@ -491,10 +514,10 @@ class ChordModelImpl implements ChordModel.IChordModel, ArrayLike<NoteImpl> {
             //    of the notes that are part of the same beat or half-bar.
             //    (Note: we use the more general beaming pattern instead of half-bar to
             //     decide boundries)
-            let {time} = cursor$.staff.attributes;
+            let {time} = cursor.staffAttributes;
             let beamingPattern = getBeamingPattern(time);
-            let bpDivisions = map(beamingPattern, seg => calcDivisions(seg, cursor$.staff.attributes));
-            let currDivision = cursor$.division$;
+            let bpDivisions = map(beamingPattern, seg => calcDivisions(seg, cursor.staffAttributes));
+            let currDivision = cursor.segmentDivision;
             let prevDivisionStart = 0;
             let i = 0;
             for (; i < bpDivisions.length; ++i) {
@@ -524,16 +547,16 @@ class ChordModelImpl implements ChordModel.IChordModel, ArrayLike<NoteImpl> {
         }
     }
 
-    private _checkMulitpleRest$(cursor$: ICursor) {
-        let {measureStyle} = cursor$.staff.attributes;
+    private _checkMulitpleRest(cursor: IReadOnlyValidationCursor) {
+        let {measureStyle} = cursor.staffAttributes;
         let multipleRest = measureStyle && measureStyle.multipleRest;
         if (multipleRest && multipleRest.count > 1) {
             this.satieMultipleRest = measureStyle.multipleRest;
         }
     }
 
-    private _implyNoteheads$(cursor$: ICursor) {
-        let {measureStyle} = cursor$.staff.attributes;
+    private _implyNoteheads(cursor: IReadOnlyValidationCursor) {
+        let {measureStyle} = cursor.staffAttributes;
         if (measureStyle) {
             forEach(this, note => {
                 if (measureStyle.slash) {
@@ -575,7 +598,7 @@ module ChordModelImpl {
         // Constructed:
 
         model: ChordModel.IDetachedChordModel;
-        x$: number;
+        x: number;
         division: number;
         renderedWidth: number;
         notehead: string;
@@ -585,7 +608,7 @@ module ChordModelImpl {
 
         // Prototype:
 
-        boundingBoxes$: IBoundingRect[];
+        boundingBoxes: IBoundingRect[];
         renderClass: Type;
         expandPolicy: "none" | "centered" | "after";
 
@@ -600,24 +623,24 @@ module ChordModelImpl {
 
         /*---- Implementation ----------------------------------------------------*/
 
-        _refresh(baseModel: ChordModelImpl, cursor$: ICursor) {
+        _refresh(baseModel: ChordModelImpl, cursor: LayoutCursor) {
             // ** this function should not modify baseModel **
 
-            this.division = cursor$.division$;
-            let {measureStyle} = cursor$.staff.attributes;
+            this.division = cursor.segmentDivision;
+            let {measureStyle} = cursor.staffAttributes;
             if (measureStyle.multipleRest && !measureStyle.multipleRestInitiatedHere) {
                 // This is not displayed because it is part of a multirest.
-                this.x$ = 0;
+                this.x = 0;
                 this.expandPolicy = "none";
                 return;
             }
 
-            this.model = this._detachModelWithContext(cursor$, baseModel);
+            this.model = this._detachModelWithContext(cursor, baseModel);
             this.satieStem = baseModel.satieStem;
             this.satieFlag = baseModel.satieFlag;
-            this.boundingBoxes$ = this._captureBoundingBoxes();
+            this.boundingBoxes = this._captureBoundingBoxes();
 
-            let isWholeBar = baseModel.wholebar$ || baseModel.count === Count.Whole;
+            let isWholeBar = baseModel.wholebar || baseModel.count === Count.Whole;
 
             this.expandPolicy = baseModel.satieMultipleRest || baseModel.rest &&
                 isWholeBar ? "centered" : "after";
@@ -627,14 +650,14 @@ module ChordModelImpl {
 
                 invariant(!!staff,
                     "Expected the staff to be a non-zero number, got %s", staff);
-                let paddingTop = cursor$.maxPaddingTop$[staff] || 0;
-                let paddingBottom = cursor$.maxPaddingBottom$[staff] || 0;
-                cursor$.maxPaddingTop$[staff] = Math.max(paddingTop, note.defaultY - 50);
-                cursor$.maxPaddingBottom$[staff] = Math.max(paddingBottom, -note.defaultY - 25);
+                let paddingTop = cursor.lineMaxPaddingTopByStaff[staff] || 0;
+                let paddingBottom = cursor.lineMaxPaddingBottomByStaff[staff] || 0;
+                cursor.lineMaxPaddingTopByStaff[staff] = Math.max(paddingTop, note.defaultY - 50);
+                cursor.lineMaxPaddingBottomByStaff[staff] = Math.max(paddingBottom, -note.defaultY - 25);
             });
 
-            let accidentalWidth = this._calcAccidentalWidth();
-            let totalWidth = this._calcTotalWidth(cursor$, baseModel);
+            let accidentalWidth = baseModel.calcAccidentalWidth();
+            let totalWidth = baseModel.calcWidth(cursor.lineShortest);
             invariant(isFinite(totalWidth), "Invalid width %s", totalWidth);
 
             let noteheads = baseModel.noteheadGlyph;
@@ -645,10 +668,10 @@ module ChordModelImpl {
                 forEach(this.model, note => note.dots = []);
             }
 
-            this.x$ = cursor$.x$ + accidentalWidth;
-            this.minSpaceAfter = this._getMinWidthAfter(cursor$);
-            this.minSpaceBefore = this._getMinWidthBefore(cursor$);
-            cursor$.x$ += totalWidth;
+            this.x = cursor.segmentX + accidentalWidth;
+            this.minSpaceAfter = this._getMinWidthAfter(cursor);
+            this.minSpaceBefore = this._getMinWidthBefore(cursor);
+            cursor.segmentX += totalWidth;
         }
 
         private _captureBoundingBoxes(): IBoundingRect[] {
@@ -660,56 +683,20 @@ module ChordModelImpl {
             return bboxes;
         }
 
-        private _calcAccidentalWidth(): number {
-            // We allow accidentals to be slightly squished.
-
-            return reduce(this.model, (maxWidth, note) => {
-                return Math.max(maxWidth, note.accidental ? -note.accidental.defaultX : 0);
-            }, 0) * ACCIDENTAL_WIDTH;
-        }
-
-        private _calcTotalWidth(cursor: ICursor, baseModel: ChordModelImpl): number {
-            let accidentalWidth = this._calcAccidentalWidth();
-
-            // TODO: Each note's width has a linear component proportional to log of its duration
-            // with respect to the shortest length
-            let extraWidth = baseModel.divCount ?
-                (Math.log(baseModel.divCount) - Math.log(cursor.line.shortestCount)) * LOG_STRETCH : 0;
-            const grace = baseModel[0].grace;
-            if (grace) {
-                // TODO: Put grace notes in own segment
-                extraWidth *= GRACE_FLATTEN_FACTOR;
-            }
-            const baseWidth = grace ? BASE_GRACE_WIDTH : BASE_STD_WIDTH;
-            invariant(extraWidth >= 0, "Invalid extraWidth %s. shortest is %s, got %s", extraWidth,
-                    cursor.line.shortestCount, baseModel.divCount);
-
-            const totalWidth = baseWidth + extraWidth +
-                accidentalWidth + this._calcDotWidth(cursor, baseModel);
-            return totalWidth;
-        }
-
-        private _calcDotWidth(cursor: ICursor, baseModel: ChordModelImpl): number {
-            if (baseModel.wholebar$ || baseModel.satieMultipleRest) {
-                return 0;
-            }
-            return max(map(baseModel, m => (m.dots || []).length)) * 6;
-        }
-
-        private _getMinWidthBefore(cursor: ICursor) {
+        private _getMinWidthBefore(cursor: LayoutCursor) {
             return this._getLyricWidth(cursor) / 2;
         }
 
-        private _getMinWidthAfter(cursor: ICursor) {
+        private _getMinWidthAfter(cursor: LayoutCursor) {
             return this._getLyricWidth(cursor) / 2;
         }
 
-        private _getLyricWidth(cursor: ICursor) {
+        private _getLyricWidth(cursor: LayoutCursor) {
             let factor = 40 * 25.4 / 96; // 40 tenths in staff * pixelFactor
             return getChordLyricWidth(this.model, factor);
         }
 
-        private _detachModelWithContext(cursor: ICursor,
+        private _detachModelWithContext(cursor: LayoutCursor,
                 baseModel: ChordModelImpl): ChordModel.IDetachedChordModel {
             let model: ChordModel.IDetachedChordModel =
                 map(baseModel, (note, idx) => {
@@ -722,7 +709,7 @@ module ChordModelImpl {
                             get: () => {
                                 return note.defaultX ||
                                     (this as any).overrideX ||
-                                    this.x$;
+                                    this.x;
                             }
                         },
                         stem: {
@@ -747,7 +734,7 @@ module ChordModelImpl {
 
     Layout.prototype.expandPolicy = "after";
     Layout.prototype.renderClass = Type.Chord;
-    Layout.prototype.boundingBoxes$ = [];
+    Layout.prototype.boundingBoxes = [];
 }
 
 export default ChordModelImpl;

@@ -16,7 +16,7 @@
  * along with Satie.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-let Bravura = {
+let Bravura: any = {
   "fontName": "Bravura",
   "fontVersion": 1.12,
   "engravingDefaults": {

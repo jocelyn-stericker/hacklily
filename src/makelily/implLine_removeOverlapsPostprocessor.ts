@@ -19,8 +19,8 @@
 import {vpsc as VPSC} from "webcola";
 import {forEach} from "lodash";
 
+import {ILayout} from "./document";
 import {IBoundingRect} from "./private_boundingRect";
-import {ILayout} from "./document_model";
 import {IMeasureLayout} from "./private_measureLayout";
 import {ILayoutOptions} from "./private_layoutOptions";
 import {ILineBounds} from "./private_lineBounds";
@@ -55,7 +55,7 @@ function removeOverlaps(options: ILayoutOptions, bounds: ILineBounds,
         let boxes: IVPSCLayoutRect[] = [];
         forEach(measure.elements, function(segment, si) {
             forEach(segment, function(element, j) {
-                forEach(element.boundingBoxes$, box => {
+                forEach(element.boundingBoxes, box => {
                     if (box.left >= box.right) {
                         console.warn("Invalid left >= right (%s >= %s)", box.left, box.right);
                         box.right = box.left + 0.01;

@@ -42,19 +42,19 @@ function logistic(t: number) {
  * @returns new end of line
  */
 function justify(options: ILayoutOptions, bounds: ILineBounds,
-        measures$: IMeasureLayout[]): IMeasureLayout[] {
+        measures: IMeasureLayout[]): IMeasureLayout[] {
 
     if (options.singleLineMode) {
         // Skip: note that in this case, we set the shortestCount in each measure to half what it
         // needs to be to fake justification in each measure.
-        return measures$;
+        return measures;
     }
 
-    const x = bounds.left + reduce(measures$, (sum, measure) => sum + measure.width, 0);
+    const x = bounds.left + reduce(measures, (sum, measure) => sum + measure.width, 0);
 
     // Check for underfilled bars
-    const underfilled = map(measures$, (measure, idx) => {
-        let attr = measures$[idx].attributes;
+    const underfilled = map(measures, (measure, idx) => {
+        let attr = measures[idx].attributes;
         let firstPart = scoreParts(options.header.partList)[0].id;
         let divs = barDivisions(attr[firstPart][1]);
         let maxDivs = measure.maxDivisions;
@@ -62,7 +62,7 @@ function justify(options: ILayoutOptions, bounds: ILineBounds,
     });
 
     let smallest = Number.POSITIVE_INFINITY;
-    forEach(measures$, function(measure, measureIdx) {
+    forEach(measures, function(measure, measureIdx) {
         let maxIdx = max(map(measure.elements, el => el.length));
         times(maxIdx, function(j) {
             for (let i = 0; i < measure.elements.length; ++i) {
@@ -79,10 +79,10 @@ function justify(options: ILayoutOptions, bounds: ILineBounds,
     // guess for a measure width was too liberal. In either case, we're shortening
     // the measure width here, and our partial algorithm doesn't work with negative
     // padding.
-    let partial = x < bounds.right && options.line + 1 === options.lines;
+    let partial = x < bounds.right && options.lineIndex + 1 === options.lineCount;
     let underfilledCount = 0;
 
-    let expandableCount = reduce(measures$, function(memo, measure$, idx) {
+    let expandableCount = reduce(measures, function(memo, measure$, idx) {
         // Precondition: all layouts at a given index have the same "expandable" value.
         return reduce(last(measure$.elements), function(memo, element$) {
             if (underfilled[idx] && element$.expandPolicy !== "none") {
@@ -118,14 +118,14 @@ function justify(options: ILayoutOptions, bounds: ILineBounds,
     let anyExpandable = false;
     let totalExpCount = 0;
     let lineExpansion = 0;
-    forEach(measures$, function(measure, measureIdx) {
+    forEach(measures, function(measure, measureIdx) {
         measure.originX += lineExpansion;
 
         let measureExpansion = 0;
         let maxIdx = max(map(measure.elements, el => el.length));
         times(maxIdx, function(j) {
             for (let i = 0; i < measure.elements.length; ++i) {
-                measure.elements[i][j].x$ += measureExpansion;
+                measure.elements[i][j].x += measureExpansion;
             }
             let expandOne = false;
             let minRatio = MAX_SAFE_INTEGER;
@@ -155,7 +155,7 @@ function justify(options: ILayoutOptions, bounds: ILineBounds,
         lineExpansion += measureExpansion;
     });
 
-    return measures$;
+    return measures;
 }
 
 export default justify;

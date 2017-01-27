@@ -18,7 +18,7 @@
 
 import {createFactory, Component, DOM, PropTypes, ReactElement} from "react";
 
-import Attributes from "./implAttributes_attributesModel";
+import AttributesExports from "./implAttributes_attributesModel";
 import BarNumber from "./implAttributes_barNumberView";
 import Clef from "./implAttributes_clefView";
 import PartSymbol from "./implAttributes_partSymbolView";
@@ -33,7 +33,7 @@ const $TimeSignature = createFactory(TimeSignature);
 const $BarNumber = createFactory(BarNumber);
 const $PartSymbol = createFactory(PartSymbol);
 
-export default class AttributesView extends Component<{layout: Attributes.IAttributesLayout}, {}> {
+export default class AttributesView extends Component<{layout: AttributesExports.IAttributesLayout}, {}> {
     static contextTypes = {
         originY: PropTypes.number.isRequired
     } as any;

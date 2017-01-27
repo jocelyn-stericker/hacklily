@@ -24,12 +24,12 @@ import {times, reduce} from "lodash";
 import {expect} from "chai";
 
 import {ICombinedLayout, mergeSegmentsInPlace} from "../private_combinedLayout";
-import Type from "../document_types";
+import {Type} from "../document";
 
 import {createFakeLayout} from "./etestutil";
 
 describe("[private/combinedLayout.ts]", function() {
-    describe("merge$", function() {
+    describe("merge", function() {
         it("handles multiple segments", function() {
             let layout1 = times(5, idx => createFakeLayout(idx, 0, true));
             let layout2 = times(5, idx => createFakeLayout(idx, idx ? 2 : 0, true));
@@ -89,24 +89,24 @@ describe("[private/combinedLayout.ts]", function() {
             expect(layout2).to.have.length(9);
             expect(layout1.slice(0, 3)).to.be.deep.equal([
                {
-                    boundingBoxes$: [],
+                    boundingBoxes: [],
                     division: 0,
                     renderClass: Type.Attributes,
                     model: {},
-                    x$: 0
+                    x: 0
                },
                {
-                    boundingBoxes$: [],
+                    boundingBoxes: [],
                     division: 4,
                     renderClass: Type.Attributes,
                     model: {},
-                    x$: 100
+                    x: 100
                },
                {
                     division: 6,
                     renderClass: Type.Attributes,
                     model: null,
-                    x$: 100 + 10 * Math.log(3) / Math.log(2)
+                    x: 100 + 10 * Math.log(3) / Math.log(2)
                }
             ]);
         });

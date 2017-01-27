@@ -24,8 +24,7 @@
 
 import {MultipleRest, Tremolo} from "musicxml-interfaces";
 
-import {IModel, ILayout} from "./document_model";
-import Type from "./document_types";
+import {IModel, ILayout, Type} from "./document";
 
 import {IChord} from "./private_chordUtil";
 
