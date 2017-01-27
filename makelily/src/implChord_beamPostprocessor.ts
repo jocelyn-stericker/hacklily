@@ -24,12 +24,11 @@ import {Attributes, Beam, BeamType, StartStop, Tuplet, AboveBelow} from "musicxm
 import {some, chain, forEach, find, map, sortBy, times, first, last} from "lodash";
 import * as invariant from "invariant";
 
-import Type from "./document_types";
+import {ILayout, Type} from "./document";
 
 import ChordModel from "./implChord_chordModel";
 
 import {IMeasureLayout} from "./private_measureLayout";
-import {ILayout} from "./document_model";
 import {ILayoutOptions} from "./private_layoutOptions";
 import {ILineBounds} from "./private_lineBounds";
 import {IAttributesSnapshot} from "./private_attributesSnapshot";
@@ -271,16 +270,16 @@ function beam(options: ILayoutOptions, bounds: ILineBounds,
     return measures;
 }
 
-function terminateBeam$(voice: number, idx: number, beamSet$: BeamSet, isUnbeamedTuplet: boolean) {
+function terminateBeam$(voice: number, idx: number, beamSet: BeamSet, isUnbeamedTuplet: boolean) {
     if (isUnbeamedTuplet || idx === 1) {
-        layoutBeam$(voice, idx, beamSet$, isUnbeamedTuplet);
+        layoutBeam$(voice, idx, beamSet, isUnbeamedTuplet);
     }
 
-    delete beamSet$[voice][idx];
+    delete beamSet[voice][idx];
 }
 
-function layoutBeam$(voice: number, idx: number, beamSet$: BeamSet, isUnbeamedTuplet: boolean) {
-    let beam = beamSet$[voice][idx];
+function layoutBeam$(voice: number, idx: number, beamSet: BeamSet, isUnbeamedTuplet: boolean) {
+    let beam = beamSet[voice][idx];
     let chords: IDetachedChordModel[] = map(beam.elements, eLayout => <any> eLayout.model);
     let firstChord = first(chords);
     let lastChord = last(chords);
@@ -297,7 +296,7 @@ function layoutBeam$(voice: number, idx: number, beamSet$: BeamSet, isUnbeamedTu
     let lines: number[][] = [];
 
     forEach(beam.elements, (layout, idx) => {
-        Xs.push(layout.x$);
+        Xs.push(layout.x);
         lines.push(linesForClef(chords[idx], clef));
     });
 

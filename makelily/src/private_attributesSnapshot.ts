@@ -45,14 +45,14 @@ export interface IAttributesSnapshot extends Attributes {
     directives: Directive[];
 }
 
-export interface ISpec {
+export interface IAttributesSnapshotSpec {
     before: IAttributesSnapshot;
     current: Attributes;
     staff: number;
     measure: number;
 }
 
-export function create({before, current, staff, measure}: ISpec) {
+export function createAttributesSnapshot({before, current, staff, measure}: IAttributesSnapshotSpec) {
     let currentClefs = current.clefs || [];
     let currentTimes = current.times || [];
     let currentTransposes = current.transposes || [];
@@ -82,7 +82,7 @@ export function create({before, current, staff, measure}: ISpec) {
         transposes[i] = currentTransposes[i] || beforeTransposes[i];
     }
     let keySignatures: Key[] = [];
-    let beforeKS = before.transposes || [];
+    let beforeKS = before.keySignatures || [];
     for (let i = 0; i < beforeKS.length || i < currentKS.length; ++i) {
         keySignatures[i] = currentKS[i] || beforeKS[i];
     }

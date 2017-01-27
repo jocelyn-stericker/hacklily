@@ -19,12 +19,11 @@
 import * as invariant from "invariant";
 import {IAny, IObjectReplace, IObjectDelete, IObjectInsert} from "musicxml-interfaces/operations";
 
-import {ILinesLayoutState} from "./private_linesLayoutState";
 import {replace, remove, set, mutate} from "./private_mutate";
 
 import NoteImpl from "./implChord_noteImpl";
 
-export default function noteMutator(memo$: ILinesLayoutState, note: NoteImpl, op: IAny) {
+export default function noteMutator(note: NoteImpl, op: IAny) {
     if (op.p.length > 2) {
         mutate(note, op);
         return;

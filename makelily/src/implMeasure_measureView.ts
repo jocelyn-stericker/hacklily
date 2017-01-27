@@ -20,8 +20,8 @@ import {createFactory, Component, DOM, PropTypes} from "react";
 import {chain, flatten, mapValues, map, forEach} from "lodash";
 import * as invariant from "invariant";
 
+import {ILayout} from "./document";
 import {IMeasureLayout} from "./private_measureLayout";
-import {ILayout} from "./document_model";
 import {MAX_SAFE_INTEGER} from "./private_util";
 
 import ModelView from "./implSegment_modelView";

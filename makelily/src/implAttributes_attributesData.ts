@@ -16,7 +16,7 @@
  * along with Satie.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import {Key} from "musicxml-interfaces";
+import {Attributes, Key} from "musicxml-interfaces";
 import {times, forEach, map, reduce} from "lodash";
 import * as invariant from "invariant";
 
@@ -35,42 +35,34 @@ export const NATURAL_WIDTH = 11;
 /**
  * Returns true if warning Attributes are required at the end of a line, and false otherwise.
  */
-export function needsWarning(end: IAttributesSnapshot, start: IAttributesSnapshot, staff: number) {
+export function needsWarning(end: Attributes, start: Attributes, staff: number) {
     invariant(!!end && !!start,
         "A null end or start was passed to needsWarning. Check your types!!");
     invariant(!("P1" in end || "P1" in start),
         "An object with 'P1' was passed to needsWarning. Check your types!!");
-    return !clefsEqual(end, start, staff) || !timesEqual(end, start, 0) || !keysEqual(end, start, 0);
+    return !clefsEqual(end, start, staff) || !timesEqual(end, start) || !keysEqual(end, start);
 }
 
-export function clefWidth(attributes: IAttributesSnapshot, staff: number) {
+export function clefWidth(attributes: Attributes) {
     return 24;
 }
 
-export function timeWidth(attributes: IAttributesSnapshot, staff: number) {
-    if (staff !== 0) {
-        console.warn("Satie does not support different time signatures concurrently.");
-    }
-
-    if (!attributes.time || !attributes.time.beatTypes) {
+export function timeWidth(attributes: Attributes) {
+    if (!attributes.times[0] || !attributes.times[0].beatTypes) {
         return 0;
     }
-    let beats = attributes.time.beats;
+    let beats = attributes.times[0].beats;
     let numeratorSegments = reduce(beats, (memo, beats) => memo + beats.split("+").length, 0);
     return NUMBER_SPACING * numeratorSegments +
-        (attributes.time.beatTypes.length - 1) * PLUS_SPACING;
+        (attributes.times[0].beatTypes.length - 1) * PLUS_SPACING;
 }
 
-export function keyWidth(attributes: IAttributesSnapshot, staff: number) {
-    if (staff !== 0) {
-        console.warn("Satie does not support different key signature concurrently, yet.");
-    }
-
-    if (!attributes.keySignature) {
+export function keyWidth(attributes: Attributes) {
+    if (!attributes.keySignatures[0]) {
         return 0;
     }
 
-    const keySignature = attributes.keySignature;
+    const keySignature = attributes.keySignatures[0];
 
     if (keySignature.fifths || keySignature.keyAlters) {
         return 2 + reduce(keyWidths(keySignature), (memo, width) => memo + width, 0);
@@ -79,9 +71,9 @@ export function keyWidth(attributes: IAttributesSnapshot, staff: number) {
     }
 }
 
-export function clefsEqual(from: IAttributesSnapshot, to: IAttributesSnapshot, staff: number) {
-    let cA = from && from.clef;
-    let cB = to && to.clef;
+export function clefsEqual(from: Attributes, to: Attributes, staff: number) {
+    let cA = from && from.clefs[staff];
+    let cB = to && to.clefs[staff];
     if (!cA || !cB) {
         return false;
     }
@@ -91,12 +83,9 @@ export function clefsEqual(from: IAttributesSnapshot, to: IAttributesSnapshot, s
         cA.clefOctaveChange === cB.clefOctaveChange;
 }
 
-export function timesEqual(from: IAttributesSnapshot, to: IAttributesSnapshot, staff: number) {
-    if (staff !== 0) {
-        console.warn("Satie does not support different time signatures concurrently.");
-    }
-    let tA = from && from.time;
-    let tB = to && to.time;
+export function timesEqual(from: Attributes, to: Attributes) {
+    let tA = from && from.times[0];
+    let tB = to && to.times[0];
     if (!tA || !tB) {
         return false;
     }
@@ -107,12 +96,9 @@ export function timesEqual(from: IAttributesSnapshot, to: IAttributesSnapshot, s
         tA.symbol === tB.symbol;
 }
 
-export function keysEqual(from: IAttributesSnapshot, to: IAttributesSnapshot, staff: number) {
-    if (staff !== 0) {
-        console.warn("Satie does not support different key signature concurrently, yet.");
-    }
-    let keyA = from && from.keySignature;
-    let keyB = to && to.keySignature;
+export function keysEqual(from: Attributes, to: Attributes) {
+    let keyA = from && from.keySignatures[0];
+    let keyB = to && to.keySignatures[0];
     if (!keyA || !keyB) {
         return false;
     }

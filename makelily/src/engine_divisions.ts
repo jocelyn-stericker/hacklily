@@ -20,21 +20,18 @@ import {reduce, forEach} from "lodash";
 import {lcm} from "./private_util";
 import {IFactory} from "./private_factory";
 
-import {IModel} from "./document_model";
-import {ISegment} from "./document_measure";
-import {IDocument} from "./document_document";
-import Type from "./document_types";
+import {IModel, ISegment, Document, Type} from "./document";
 
 /** 
  * Given a set of segments, scales divisions so that they are compatible.
  * 
  * Returns the division count.
  */
-export function normalizeDivisionsInPlace(factory: IFactory | IDocument,
-                                          segments$: ISegment[],
+export function normalizeDivisionsInPlace(factory: IFactory | Document,
+                                          segments: ISegment[],
                                           factor: number = 0): number {
 
-    let divisions: number = factor || reduce(segments$, (div1, seg) => {
+    let divisions: number = factor || reduce(segments, (div1, seg) => {
         if (!div1) {
             return 1;
         }
@@ -42,7 +39,7 @@ export function normalizeDivisionsInPlace(factory: IFactory | IDocument,
         return lcm(div1, seg.divisions);
     }, 0);
 
-    forEach(segments$, segment => {
+    forEach(segments, segment => {
         if (!segment) {
             return;
         }

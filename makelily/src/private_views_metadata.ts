@@ -20,7 +20,7 @@ import {Component, ComponentLifecycle} from "react";
 import * as invariant from "invariant";
 import {isEqual, sortedIndex, indexOf} from "lodash";
 
-import {ILayout} from "./document_model";
+import {ILayout} from "./document";
 
 export interface IBaseProps {
     layout: ILayout;
@@ -64,8 +64,8 @@ export function Targetable<P extends IBaseProps, S>() {
             let newRecord: IRecord  = {
                 key: props.layout.key,
                 obj: self,
-                x1: originX + props.layout.x$ - 2,
-                x2: originX + props.layout.x$ + props.layout.renderedWidth,
+                x1: originX + props.layout.x - 2,
+                x2: originX + props.layout.x + props.layout.renderedWidth,
                 y1: originY - 60,
                 y2: originY + 60,
                 originY,
@@ -86,8 +86,8 @@ export function Targetable<P extends IBaseProps, S>() {
             self._record = {
                 key: props.layout.key,
                 obj: self,
-                x1: originX + props.layout.x$ - 2,
-                x2: originX + props.layout.x$ + props.layout.renderedWidth,
+                x1: originX + props.layout.x - 2,
+                x2: originX + props.layout.x + props.layout.renderedWidth,
                 y1: originY - 60,
                 y2: originY + 60,
                 originY,

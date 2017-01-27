@@ -19,7 +19,7 @@
 import {Font, parse as parseFont} from "opentype.js";
 import {memoize, forEach} from "lodash";
 
-const IS_BROWSER = !!(<any>process).browser;
+const IS_BROWSER = "browser" in process;
 const NO_PATH_DATA = <Font> {};
 
 /*---- PRIVATE ------------------------------------------------------------------------*/

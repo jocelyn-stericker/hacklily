@@ -18,9 +18,7 @@
 
 import * as invariant from "invariant";
 
-import Type from "./document_types";
-
-import {ILayout} from "./document_model";
+import {Type, ILayout} from "./document";
 
 export interface ICombinedLayout {
     x: number;
@@ -32,7 +30,7 @@ export interface ICombinedLayout {
 
 export function combineLayout(layout: ILayout): ICombinedLayout {
     let detached: ICombinedLayout = {
-        x: layout.x$,
+        x: layout.x,
         division: layout.division,
         renderClass: layout.renderClass
     };
@@ -51,7 +49,7 @@ export function combineLayout(layout: ILayout): ICombinedLayout {
 export function reattachLayout(layout: ICombinedLayout): ILayout {
     let attached: ILayout = {
         model: null,
-        x$: layout.x,
+        x: layout.x,
         division: layout.division,
         renderClass: layout.renderClass
     };
@@ -98,7 +96,7 @@ export function mergeSegmentsInPlace(
             invariant(!!segment2, "Segment2 must be defined");
             segment2.splice(s2_idx, 0, reattachLayout(item1));
         } else if (div2 < div1 || div2 === div1 && pri2 < pri1) {
-            x = item2.x$;
+            x = item2.x;
             segment1.splice(s1_idx, 0, combineLayout(item2));
         } else {
             invariant(!!item1,
@@ -109,7 +107,7 @@ export function mergeSegmentsInPlace(
                 div1, pri1);
             invariant(pri1 === pri2, "invalid priority: %s must equal %s", pri1, pri2);
             invariant(div1 === div2, "invalid division");
-            item1.x = item2.x$ = x = Math.max(item1.x || 0, item2.x$ || 0, x);
+            item1.x = item2.x = x = Math.max(item1.x || 0, item2.x || 0, x);
         }
         ++s1_idx;
         ++s2_idx;

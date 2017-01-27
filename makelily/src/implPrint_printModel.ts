@@ -22,10 +22,9 @@ import {ScoreHeader, MeasureNumbering, PartNameDisplay, MeasureLayout, PartAbbre
 import {forEach, defaultsDeep} from "lodash";
 import * as invariant from "invariant";
 
-import {IModel, ILayout} from "./document_model";
-import Type from "./document_types";
+import {IModel, ILayout, Type} from "./document";
 
-import {ICursor} from "./private_cursor";
+import {IReadOnlyValidationCursor, LayoutCursor} from "./private_cursor";
 import {IBoundingRect} from "./private_boundingRect";
 
 class PrintModel implements Export.IPrintModel {
@@ -72,32 +71,41 @@ class PrintModel implements Export.IPrintModel {
         });
     }
 
-    validate(cursor$: ICursor): void {
-        invariant(!!cursor$.header, "Cursor must have a valid header");
+    refresh(cursor: IReadOnlyValidationCursor): void {
+        invariant(!!cursor.header, "Cursor must have a valid header");
         let spec: Print;
         if (!this._once) {
             // FIXME: should always sync
-            let defaultPrint = extractDefaultPrintFromHeader(cursor$.header);
+            let defaultPrint = extractDefaultPrintFromHeader(cursor.header);
             spec = defaultsDeep<PrintModel, PrintModel>(this, defaultPrint);
         } else {
             spec = this;
         }
         this.sync(spec);
-        this.measureNumbering = this.measureNumbering || {
-            data: "system"
-        };
-        if (!cursor$.print$) {
-            cursor$.print$ = this; // FIXME: inheritance for multiple papers
+        if (!this.measureNumbering) {
+            this.measureNumbering = {
+                data: "system"
+            };
         }
+
         this.pageNumber = "1"; // TODO
+
+        if (!this.systemLayout) {
+            this.systemLayout = {};
+        }
+        const atStart = this.pageNumber === "1" && cursor.measureInstance.idx === 0;
+        if (!this.systemLayout.systemMargins || atStart && !this.systemLayout.systemMargins.leftMargin) {
+            this.systemLayout.systemMargins = {
+                leftMargin: atStart ? 70 : 0,
+                rightMargin: 0,
+            };
+        }
 
         this._once = true;
     }
 
-    getLayout(cursor$: ICursor): Export.IPrintLayout {
-        cursor$.print$ = this; // FIXME: inheritance for multiple papers
-
-        return new PrintModel.Layout(this, cursor$);
+    getLayout(cursor: LayoutCursor): Export.IPrintLayout {
+        return new PrintModel.Layout(this, cursor);
     }
 
     sync(print: Print) {
@@ -151,6 +159,10 @@ class PrintModel implements Export.IPrintModel {
     inspect() {
         return this.toXML();
     }
+
+    calcWidth(shortest: number) {
+        return 0;
+    }
 }
 
 PrintModel.prototype.divCount = 0;
@@ -158,25 +170,11 @@ PrintModel.prototype.divisions = 0;
 
 module PrintModel {
     export class Layout implements Export.IPrintLayout {
-        constructor(origModel: PrintModel, cursor$: ICursor) {
-            let model = Object.create(origModel);
+        constructor(model: PrintModel, cursor: LayoutCursor) {
             this.model = model;
-            model.pageNumber = "" + cursor$.page$;
-            this.x$ = cursor$.x$;
-            this.division = cursor$.division$;
+            this.x = cursor.segmentX;
+            this.division = cursor.segmentDivision;
 
-            if (model.pageNumber === "1" && cursor$.measure.idx === 0) {
-                model.systemLayout = {
-                    systemMargins: {
-                        leftMargin: 70,
-                        rightMargin: 0
-                    }
-                };
-                // Doesn't work because the layout model isn't read.
-            }
-
-            // FIXME/STOPSHIP: get the layout version of print in view.ts
-            origModel.pageNumber = model.pageNumber;
             this.renderedWidth = 0;
         }
 
@@ -185,22 +183,22 @@ module PrintModel {
         // Constructed:
 
         model: PrintModel;
-        x$: number;
+        x: number;
         division: number;
 
         renderedWidth: number;
 
         // Prototype:
 
-        boundingBoxes$: IBoundingRect[];
+        boundingBoxes: IBoundingRect[];
         renderClass: Type;
         expandPolicy: "none";
     }
 
     Layout.prototype.expandPolicy = "none";
     Layout.prototype.renderClass = Type.Print;
-    Layout.prototype.boundingBoxes$ = [];
-    Object.freeze(Layout.prototype.boundingBoxes$);
+    Layout.prototype.boundingBoxes = [];
+    Object.freeze(Layout.prototype.boundingBoxes);
 };
 
 function extractDefaultPrintFromHeader(header: ScoreHeader): Print {

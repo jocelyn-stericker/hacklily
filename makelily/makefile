@@ -128,10 +128,12 @@ coverage: build
 ./webapp/node_modules: webapp/package.json
 	@printf "$(WARN_COLOR)Regenerating satie/webapp/node_modules...$(NO_COLOR)\n";
 	@cd ./webapp; yarn;
+	@touch ./webapp/node_modules
 
 ./node_modules: package.json
 	@printf "$(WARN_COLOR)Regenerating satie/node_modules...$(NO_COLOR)\n";
 	@yarn
+	@touch ./node_modules
 
 clean:
 	@printf "$(CLEAN_STRING)\n"

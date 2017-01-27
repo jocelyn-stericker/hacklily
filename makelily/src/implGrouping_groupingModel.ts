@@ -19,10 +19,9 @@
 import {Feature, StartStopSingle, Grouping, serializeGrouping} from "musicxml-interfaces";
 import {forEach} from "lodash";
 
-import {IModel, ILayout} from "./document_model";
-import Type from "./document_types";
+import {IModel, ILayout, Type} from "./document";
 
-import {ICursor} from "./private_cursor";
+import {IReadOnlyValidationCursor, LayoutCursor} from "./private_cursor";
 import {IBoundingRect} from "./private_boundingRect";
 
 class GroupingModel implements Export.IGroupingModel {
@@ -53,14 +52,14 @@ class GroupingModel implements Export.IGroupingModel {
         });
     }
 
-    validate(cursor$: ICursor): void {
+    refresh(cursor: IReadOnlyValidationCursor): void {
         // todo
     }
 
-    getLayout(cursor$: ICursor): Export.IGroupingLayout {
+    getLayout(cursor: LayoutCursor): Export.IGroupingLayout {
         // todo
 
-        return new GroupingModel.Layout(this, cursor$);
+        return new GroupingModel.Layout(this, cursor);
     }
 
     toXML(): string {
@@ -70,6 +69,10 @@ class GroupingModel implements Export.IGroupingModel {
     inspect() {
         return this.toXML();
     }
+
+    calcWidth(shortest: number) {
+        return 0;
+    }
 }
 
 GroupingModel.prototype.divCount = 0;
@@ -77,10 +80,10 @@ GroupingModel.prototype.divisions = 0;
 
 module GroupingModel {
     export class Layout implements Export.IGroupingLayout {
-        constructor(model: GroupingModel, cursor$: ICursor) {
+        constructor(model: GroupingModel, cursor: LayoutCursor) {
             this.model = model;
-            this.x$ = cursor$.x$;
-            this.division = cursor$.division$;
+            this.x = cursor.segmentX;
+            this.division = cursor.segmentDivision;
         }
 
         /*---- ILayout ------------------------------------------------------*/
@@ -88,20 +91,20 @@ module GroupingModel {
         // Constructed:
 
         model: GroupingModel;
-        x$: number;
+        x: number;
         division: number;
 
         // Prototype:
 
-        boundingBoxes$: IBoundingRect[];
+        boundingBoxes: IBoundingRect[];
         renderClass: Type;
         expandPolicy: "none";
     }
 
     Layout.prototype.expandPolicy = "none";
     Layout.prototype.renderClass = Type.Grouping;
-    Layout.prototype.boundingBoxes$ = [];
-    Object.freeze(Layout.prototype.boundingBoxes$);
+    Layout.prototype.boundingBoxes = [];
+    Object.freeze(Layout.prototype.boundingBoxes);
 };
 
 /**

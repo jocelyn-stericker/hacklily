@@ -20,7 +20,7 @@ import {Print} from "musicxml-interfaces";
 import {map, mapValues} from "lodash";
 
 import {IAttributesSnapshot} from "./private_attributesSnapshot";
-import {ILayout, detach as detachLayout} from "./document_model";
+import {ILayout, detach as detachLayout} from "./document";
 
 export interface IMeasureLayout {
     attributes: {[part: string]: IAttributesSnapshot[]};

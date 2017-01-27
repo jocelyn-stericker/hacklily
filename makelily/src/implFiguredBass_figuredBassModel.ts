@@ -20,10 +20,9 @@ import {FiguredBass, Figure, Footnote, Level, NormalBold, NormalItalic,
     serializeFiguredBass} from "musicxml-interfaces";
 import {forEach} from "lodash";
 
-import {IModel, ILayout} from "./document_model";
-import Type from "./document_types";
+import {IModel, ILayout, Type} from "./document";
 
-import {ICursor} from "./private_cursor";
+import {IReadOnlyValidationCursor, LayoutCursor} from "./private_cursor";
 import {IBoundingRect} from "./private_boundingRect";
 
 class FiguredBassModel implements Export.IFiguredBassModel {
@@ -104,14 +103,14 @@ class FiguredBassModel implements Export.IFiguredBassModel {
         });
     }
 
-    validate(cursor$: ICursor): void {
+    refresh(cursor: IReadOnlyValidationCursor): void {
         // todo
     }
 
-    getLayout(cursor$: ICursor): Export.IFiguredBassLayout {
+    getLayout(cursor: LayoutCursor): Export.IFiguredBassLayout {
         // todo
 
-        return new FiguredBassModel.Layout(this, cursor$);
+        return new FiguredBassModel.Layout(this, cursor);
     }
 
     toXML(): string {
@@ -121,6 +120,10 @@ class FiguredBassModel implements Export.IFiguredBassModel {
     inspect() {
         return this.toXML();
     }
+
+    calcWidth(shortest: number) {
+        return 0;
+    }
 }
 
 FiguredBassModel.prototype.divCount = 0;
@@ -128,10 +131,10 @@ FiguredBassModel.prototype.divisions = 0;
 
 module FiguredBassModel {
     export class Layout implements Export.IFiguredBassLayout {
-        constructor(model: FiguredBassModel, cursor$: ICursor) {
+        constructor(model: FiguredBassModel, cursor: LayoutCursor) {
             this.model = model;
-            this.x$ = cursor$.x$;
-            this.division = cursor$.division$;
+            this.x = cursor.segmentX;
+            this.division = cursor.segmentDivision;
         }
 
         /*---- ILayout ------------------------------------------------------*/
@@ -139,20 +142,20 @@ module FiguredBassModel {
         // Constructed:
 
         model: FiguredBassModel;
-        x$: number;
+        x: number;
         division: number;
 
         // Prototype:
 
-        boundingBoxes$: IBoundingRect[];
+        boundingBoxes: IBoundingRect[];
         renderClass: Type;
         expandPolicy: "none";
     }
 
     Layout.prototype.expandPolicy = "none";
     Layout.prototype.renderClass = Type.FiguredBass;
-    Layout.prototype.boundingBoxes$ = [];
-    Object.freeze(Layout.prototype.boundingBoxes$);
+    Layout.prototype.boundingBoxes = [];
+    Object.freeze(Layout.prototype.boundingBoxes);
 };
 
 /**

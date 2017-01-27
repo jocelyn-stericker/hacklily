@@ -20,12 +20,11 @@ import {Tied, StartStopContinue} from "musicxml-interfaces";
 import {forEach, times, find} from "lodash";
 import * as invariant from "invariant";
 
-import Type from "./document_types";
+import {Type, ILayout} from "./document";
 
 import NoteImpl from "./implChord_noteImpl";
 
 import {IMeasureLayout} from "./private_measureLayout";
-import {ILayout} from "./document_model";
 import {ILayoutOptions} from "./private_layoutOptions";
 import {ILineBounds} from "./private_lineBounds";
 import {notationObj} from "./private_chordUtil";

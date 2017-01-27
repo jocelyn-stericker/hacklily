@@ -21,10 +21,8 @@ import {Note, Count, TimeModification, Tie, Clef, Rest, Time, MxmlAccidental,
 import {some, find, map, reduce, filter, chain, times} from "lodash";
 import * as invariant from "invariant";
 
-import {IModel} from "./document_model";
-
 import {IAttributesSnapshot} from "./private_attributesSnapshot";
-import {ICursor} from "./private_cursor";
+import {ValidationCursor, LayoutCursor} from "./private_cursor";
 import {lcm} from "./private_util";
 
 export interface IChord {
@@ -42,23 +40,15 @@ export interface IDurationDescription {
 
 const EMPTY_FROZEN = Object.freeze({});
 
-export function fromModel(model: IModel) {
-    let chord = <IChord><any>model;
-    invariant(chord.length > 0, "%s is not a chord", model);
-    invariant(!!chord[0].pitch || !!chord[0].rest || !!chord[0].unpitched,
-        "%s does not have a valid first note", model);
-    return chord;
-}
-
-export function hasAccidental(chord: IChord, cursor: ICursor) {
+export function hasAccidental(chord: IChord, cursor: ValidationCursor | LayoutCursor) {
     return some(chord, function(c) {
         if (!c.pitch) {
             return false;
         }
-        let accidental = (cursor.staff.accidentals$[c.pitch.alter] || 0);
+        let accidental = (cursor.staffAccidentals[c.pitch.alter] || 0);
         return ((c.pitch.alter || 0) !== accidental &&
                 (c.pitch.alter || 0) !==
-                    (cursor.staff.accidentals$[c.pitch.alter + c.pitch.octave] || 0) ||
+                    (cursor.staffAccidentals[c.pitch.alter + c.pitch.octave] || 0) ||
             !!c.accidental);
     });
 }

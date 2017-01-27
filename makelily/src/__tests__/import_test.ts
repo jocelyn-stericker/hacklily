@@ -28,7 +28,7 @@ import {expect} from "chai";
 import Factory from "../engine_factory";
 import {_extractMXMLHeader, _extractMXMLPartsAndMeasures} from "../engine_import";
 
-import Attributes from "../implAttributes_attributesModel";
+import AttributesExports from "../implAttributes_attributesModel";
 import Barline from "../implBarline_barlineModel";
 import Chord from "../implChord_chordModel";
 import Direction from "../implDirection_directionModel";
@@ -640,7 +640,7 @@ describe("[musicxml/import.ts]", function() {
     });
     describe("_extractMXMLPartsAndMeasures", function() {
         it("parses a basic single-part song", function() {
-            let factory = new Factory([Attributes, Chord, Print, Sound, Barline]);
+            let factory = new Factory([AttributesExports, Chord, Print, Sound, Barline]);
                 // does not need spacer
 
             let mxmljson = parseScore(helloWorldXML);
@@ -654,7 +654,7 @@ describe("[musicxml/import.ts]", function() {
             expect(partsAndMeasures.measures[0].parts["P1"].voices[1].length).to.eq(1);
         });
         it("parses multi-voice, multi-staff songs with backup", function() {
-            let factory = new Factory([Attributes, Direction, Chord, Print, Sound, Barline, Spacer]);
+            let factory = new Factory([AttributesExports, Direction, Chord, Print, Sound, Barline, Spacer]);
 
             let mxmljson = parseScore(lily43eXML);
             let partsAndMeasures = _extractMXMLPartsAndMeasures(mxmljson, factory);

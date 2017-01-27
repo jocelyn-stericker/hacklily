@@ -42,7 +42,7 @@ export default class VisualCursorView extends Component<IProps, void> {
 
     render(): ReactElement<any> {
         const layout = this.props.layout;
-        const x = layout.x$;
+        const x = layout.x;
 
         const yTop = this.context.systemTop;
         const yBottom = this.context.systemBottom;

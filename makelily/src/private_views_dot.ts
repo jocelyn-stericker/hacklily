@@ -38,8 +38,8 @@ export default class Dot extends Component<IProps, void> {
                 cx: this.props.x,
                 cy: this.props.y,
                 fill: this.props.fill,
-                r: <any>(this.props.radius)}
-            /*DOM.circle*/)
+                r: this.props.radius,
+            }/*DOM.circle*/)
         /*DOM.g*/);
     }
 }

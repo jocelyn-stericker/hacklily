@@ -17,163 +17,24 @@
  */
 
 import {Print} from "musicxml-interfaces";
-import {map, reduce, flatten, values, find, mapValues, union} from "lodash";
+import {map, reduce, find, last} from "lodash";
 import * as invariant from "invariant";
 
-import {IMeasure, IMeasurePart, ISegment} from "./document_measure";
-import Type from "./document_types";
+import {IMeasure, getMeasureSegments, Type, reduceToShortestInSegments} from "./document";
 
 import {ILayoutOptions} from "./private_layoutOptions";
-import {ILinesLayoutState, ILinePlacementState} from "./private_linesLayoutState";
-import {calculate as calculateLineBounds} from "./private_lineBounds";
-import {createLineContext} from "./private_lineContext";
-import {scoreParts} from "./private_part";
+import {calculateLineBounds} from "./private_lineBounds";
 import {IMeasureLayout} from "./private_measureLayout";
 
-import {AtEnd, approximateWidth} from "./implAttributes_attributesData";
+import {layoutLine} from "./engine_processors_line";
 
-import {approximateLayout as calcApproximateLayout} from "./engine_processors_measure";
-import {layoutLine$} from "./engine_processors_line";
+const SQUISHINESS = 0.8;
 
-const SQUISHINESS = 0.75;
-
-export default function layoutSong(options: ILayoutOptions, memo$: ILinesLayoutState):
-        IMeasureLayout[][] {
-    // We lay out measures in two passes.
-    // First, we calculate the approximate width of measures and assign them to lines.
-    // Then, we lay them out properly with a valid line context.
-
-    const measures = options.measures;
-    const linePlacement$ = memo$.linePlacement$;
-    const previousLines = mapValues(linePlacement$, p => p.line);
-
-    invariant(!!options.print$, "Print not defined");
-    let boundsGuess = calculateLineBounds(options.print$, options.page$);
-    let multipleRest: number = undefined;
-
-    let approximateWidths = map(measures, function layoutMeasure(measure, idx) {
-        // Create an array of the IMeasureParts of the previous, current, and next measures
-        let neighbourMeasures: IMeasurePart[] = <any> flatten([
-            values(measure.parts),
-        ]);
-
-        // Join all of the above models
-        const neighbourModels = <ISegment[]> flatten(
-            map(neighbourMeasures, m => m.voices.concat(m.staves))
-        );
-
-        let specifiedWidth$ = measure.width;
-        const numericMeasureWidth = !isNaN(measure.width) && measure.width !== null;
-        if (numericMeasureWidth && (measure.width <= 0 || !isFinite(measure.width))) {
-            console.warn("Bad measure width %s. Ignoring", measure.width);
-            specifiedWidth$ = undefined;
-        }
-
-        const line = createLineContext(neighbourModels, measures.length, 0, 1);
-
-        const placementDefined = linePlacement$[measure.uuid];
-        const previousShortest = placementDefined ? linePlacement$[measure.uuid].shortest : NaN;
-        const placementClean = previousShortest === line.shortestCount;
-        if (placementClean || options.preview) {
-            if (multipleRest >= 1) {
-                multipleRest = multipleRest > 0 ? multipleRest - 1 : undefined;
-            }
-            return linePlacement$[measure.uuid];
-        }
-
-        // calcApproximateLayout kills the state, sadly.
-        let approximateLayout = calcApproximateLayout({
-            document: options.document,
-            attributes: options.attributes,
-            print: options.print$,
-            factory: options.modelFactory,
-            header: options.header,
-            line,
-            measure: measure,
-            x: 0,
-            preview: options.preview,
-            memo$,
-            fixup: options.fixup
-        });
-
-        const part = scoreParts(options.header.partList)[0].id;
-        // TODO: Only render multiple rests if __all__ visible parts have rests
-        const {attributes} = approximateLayout;
-        const {measureStyle} = attributes[part][1];
-        const multipleRestEl = measureStyle && measureStyle.multipleRest;
-        if (multipleRest >= 1) {
-            memo$.multipleRests$[measure.uuid] = multipleRest;
-            approximateLayout.width = 0;
-            specifiedWidth$ = 0;
-        } else if (multipleRestEl) {
-            multipleRest = multipleRestEl.count;
-            memo$.multipleRests$[measure.uuid] = multipleRest;
-        } else {
-            delete memo$.multipleRests$[measure.uuid];
-        }
-        linePlacement$[measure.uuid] = {
-            shortest: line.shortestCount,
-            width: specifiedWidth$ || approximateLayout.width,
-            attributesWidthStart: approximateWidth(attributes[part][1]),
-            attributesWidthEnd: approximateWidth(attributes[part][1], AtEnd.Yes),
-            line: (linePlacement$[measure.uuid] || {line: undefined}).line,
-        };
-
-        multipleRest = multipleRest > 0 ? multipleRest - 1 : undefined;
-        return linePlacement$[measure.uuid];
-    });
-
-    // Here we assign the lines.
-    // It's currently very naive, and could use some work.
-
-    let startingWidth = (boundsGuess.right - boundsGuess.left) / SQUISHINESS;
-    let lineOpts$ = reduce(approximateWidths, assignLines, {
-        opts: <ILayoutOptions[]>[createEmptyLayout(options, options.print$)],
-        thisPrint: options.print$,
-        options: options,
-        remainingWidth: startingWidth,
-        startingWidth: startingWidth,
-        widthAllocatedForStart: 0,
-        widthAllocatedForEnd: 0,
-    }).opts;
-
-    lineOpts$.forEach(line$ => {
-        line$.lines = lineOpts$.length;
-        line$.attributes = {};
-    });
-
-    // If a measure has moved to another line, the entire line is dirty.
-    // Likewise, if a measure was removed from a line, the entire line is dirty.
-    const shouldUpdateLine: {[line: number]: boolean} = {};
-    union(Object.keys(linePlacement$), Object.keys(previousLines)).forEach((measureUUID) => {
-        const lineIsDirty =
-            !linePlacement$[measureUUID] ||
-            isNaN(previousLines[measureUUID]) ||
-            previousLines[measureUUID] !== linePlacement$[measureUUID].line;
-        if (lineIsDirty) {
-            invariant(!options.preview, `Cannot move measure during preview`);
-            if (!isNaN(previousLines[measureUUID])) {
-                shouldUpdateLine[previousLines[measureUUID]] = true;
-            }
-            if (linePlacement$[measureUUID]) {
-                shouldUpdateLine[linePlacement$[measureUUID].line] = true;
-            }
-        }
-    });
-    Object.keys(linePlacement$).forEach(measure => {
-        const line = linePlacement$[measure].line;
-        if (shouldUpdateLine[line]) {
-            delete memo$.clean$[measure];
-            memo$.reduced$ = {}; // XXX: we should only need to remove dirty lines!
-        }
-    });
-
-    // Now we need to assign an exact layout to each line.
-    // layoutLine$ handles the second pass.
-    return map(
-        lineOpts$,
-        lineOpt => layoutExact(lineOpt, options, memo$)
-    );
+export interface ILinePlacementHint {
+    widthByShortest: {[key: number]: number};
+    shortestCount: number;
+    attributesWidthStart: number;
+    attributesWidthEnd: number;
 }
 
 interface IReduceOptsMemo {
@@ -184,81 +45,188 @@ interface IReduceOptsMemo {
     thisPrint: Print;
     widthAllocatedForEnd: number;
     widthAllocatedForStart: number;
+    shortest: number;
 }
 
-/**
- * Reducer that puts measures into lines.
- */
-function assignLines(memo$: IReduceOptsMemo, linePlacement$: ILinePlacementState, idx: number):
-        IReduceOptsMemo {
-    let options = memo$.options;
-    let measures = options.measures;
-
-    memo$.thisPrint = getPrintInMeasure(options, measures[idx]) || memo$.thisPrint;
-    if (!memo$.opts[memo$.opts.length - 1].print$) {
-        memo$.opts[memo$.opts.length - 1].print$ = memo$.thisPrint;
-    }
-    invariant(!!memo$.thisPrint, "No print found");
-    if (!memo$.options.singleLineMode) {
-        // if (linePlacement$.attributesWidthStart > memo$.widthAllocatedForStart) {
-        //     memo$.remainingWidth -= linePlacement$.attributesWidthStart - memo$.widthAllocatedForStart;
-        //     memo$.widthAllocatedForStart = linePlacement$.attributesWidthStart;
-        // }
-        // if (linePlacement$.attributesWidthEnd > memo$.widthAllocatedForEnd) {
-        //     memo$.remainingWidth -= linePlacement$.attributesWidthEnd - memo$.widthAllocatedForEnd;
-        //     memo$.widthAllocatedForEnd = linePlacement$.attributesWidthEnd;
-        // }
-        // if (memo$.remainingWidth > linePlacement$.width) {
-        if (idx % 4 < 3) {
-            memo$.remainingWidth -= linePlacement$.width;
-        } else {
-            memo$.opts.push(createEmptyLayout(options, memo$.thisPrint));
-            memo$.remainingWidth = memo$.startingWidth - linePlacement$.width -
-                linePlacement$.attributesWidthStart - linePlacement$.attributesWidthEnd;
-            memo$.widthAllocatedForStart = linePlacement$.attributesWidthStart;
-            memo$.widthAllocatedForEnd = linePlacement$.attributesWidthEnd;
-        }
-    }
-    memo$.opts[memo$.opts.length - 1].measures.push(measures[idx]);
-
-    const line = memo$.opts.length - 1;
-    memo$.opts[memo$.opts.length - 1].line = line;
-    linePlacement$.line = line;
-
-    return memo$;
-}
-
-function layoutExact(lineOpt$: ILayoutOptions, options: ILayoutOptions, memo$: ILinesLayoutState) {
-    return layoutLine$(
-        lineOpt$,
-        calculateLineBounds(lineOpt$.print$, options.page$),
-        memo$
-    );
-};
-
-function createEmptyLayout(options: ILayoutOptions, print: Print): ILayoutOptions {
-    return {
-        document: options.document,
-        attributes: null,
-        preview: options.preview,
-        measures: [],
-        header: options.header,
-        print$: print,
-        page$: options.page$,
-        modelFactory: options.modelFactory,
-        preprocessors: options.preprocessors,
-        postprocessors: options.postprocessors,
-        fixup: options.fixup,
-        singleLineMode: options.singleLineMode
-    };
-}
-
-function getPrintInMeasure(options: ILayoutOptions, measure: IMeasure): Print {
-    let partWithPrint = find(measure.parts, part => !!part.staves[1] &&
+function findPrint(options: ILayoutOptions, measure: IMeasure): Print {
+    const partWithPrint = find(measure.parts, part => !!part.staves[1] &&
             options.modelFactory.search(part.staves[1], 0, Type.Print).length);
+
     if (partWithPrint) {
         return options.modelFactory.search(partWithPrint.staves[1], 0,
                 Type.Print)[0] as any;
     }
     return null;
+}
+
+/**
+ * Reducer that puts measures into lines.
+ */
+function assignLinesReducer(memo: IReduceOptsMemo, measureInfo: ILinePlacementHint, idx: number, all: ILinePlacementHint[]):
+        IReduceOptsMemo {
+    let options = memo.options;
+    let measures = options.measures;
+
+    memo.thisPrint = findPrint(options, measures[idx]) || memo.thisPrint;
+    if (!last(memo.opts).print) {
+        last(memo.opts).print = memo.thisPrint;
+    }
+    invariant(!!memo.thisPrint, "No print found");
+    if (!memo.options.singleLineMode) {
+        if (measureInfo.attributesWidthStart > memo.widthAllocatedForStart) {
+            memo.remainingWidth -= measureInfo.attributesWidthStart - memo.widthAllocatedForStart;
+            memo.widthAllocatedForStart = measureInfo.attributesWidthStart;
+        }
+        if (measureInfo.attributesWidthEnd > memo.widthAllocatedForEnd) {
+            memo.remainingWidth -= measureInfo.attributesWidthEnd - memo.widthAllocatedForEnd;
+            memo.widthAllocatedForEnd = measureInfo.attributesWidthEnd;
+        }
+        let retroactiveIncrease = 0;
+        if (memo.shortest > measureInfo.shortestCount) {
+            const measuresOnLine = last(memo.opts).measures.length;
+            const measuresInfo = all.slice(idx - measuresOnLine, idx);
+            retroactiveIncrease = measuresInfo.reduce((increase, measure) => {
+                return measure.widthByShortest[measureInfo.shortestCount]  - measure.widthByShortest[memo.shortest];
+            }, 0);
+            memo.shortest = measureInfo.shortestCount;
+        }
+        const measureWidth = measureInfo.widthByShortest[memo.shortest];
+        const totalIncrease = retroactiveIncrease + measureWidth;
+        if (memo.remainingWidth > totalIncrease) {
+            memo.remainingWidth -= totalIncrease;
+        } else {
+            memo.opts.push(createEmptyLayout(options, memo.thisPrint));
+            memo.remainingWidth = memo.startingWidth - measureWidth -
+                measureInfo.attributesWidthStart - measureInfo.attributesWidthEnd;
+            memo.widthAllocatedForStart = measureInfo.attributesWidthStart;
+            memo.widthAllocatedForEnd = measureInfo.attributesWidthEnd;
+        }
+    }
+
+    last(memo.opts).measures.push(measures[idx]);
+
+    return memo;
+}
+
+function createEmptyLayout(options: ILayoutOptions, print: Print): ILayoutOptions {
+    return {
+        ...options,
+        attributes: null,
+        measures: [],
+        print: print,
+    };
+}
+
+export function getApproximateMeasureWidth(measure: IMeasure, shortest: number) {
+    return Object.keys(measure.parts).reduce((pwidth, partName) => {
+        const vwidth = measure.parts[partName].voices.reduce((vwidth, voice) => {
+            if (!voice) {
+                return vwidth;
+            }
+            return voice.reduce((swidth, el) => swidth + el.calcWidth(shortest), vwidth);
+        }, 0);
+        return Math.max(vwidth, pwidth);
+    }, 0);
+}
+
+function getLinePlacementHints(measures: IMeasure[]): ReadonlyArray<ILinePlacementHint> {
+    const shortestByMeasure: ReadonlyArray<number> = measures.map(measure => {
+        const segments = getMeasureSegments(measure);
+        return reduce(segments, reduceToShortestInSegments, Number.MAX_VALUE);
+    });
+
+    const shortestsObj: {readonly [key: number]: boolean} =
+        shortestByMeasure.reduce((shortests, shortest) => {
+            shortests[shortest] = true;
+            return shortests;
+        }, {} as {[key: number]: boolean});
+
+    const shortests = Object.keys(shortestsObj).map(str => parseInt(str, 10));
+
+    return map(measures, function layoutMeasure(measure, idx): ILinePlacementHint {
+        const shortestInMeasure = shortestByMeasure[idx];
+
+        let specifiedWidth = measure.width;
+        const numericMeasureWidth = !isNaN(measure.width) && measure.width !== null;
+        if (numericMeasureWidth && (measure.width <= 0 || !isFinite(measure.width))) {
+            console.warn("Bad measure width %s. Ignoring", measure.width);
+            specifiedWidth = undefined;
+        }
+        let widthByShortest = shortests.reduce((shortests, shortest) => {
+            if (shortest <= shortestInMeasure) {
+                shortests[shortest] = getApproximateMeasureWidth(measure, shortest);
+            }
+            return shortests;
+        }, {} as {[key: number]: number});
+
+        // XXX: multiple rests
+        return {
+            widthByShortest,
+            shortestCount: shortestInMeasure,
+            attributesWidthStart: 150, // XXX
+            attributesWidthEnd: 50, // XXX
+        };
+    });
+
+}
+
+export default function layoutSong(options: ILayoutOptions):
+        IMeasureLayout[][] {
+
+    invariant(!!options.print, "Print not defined");
+    const page = 1; // XXX
+
+    // Estimate the width of each measure, and the space available for each line.
+    const boundsGuess = calculateLineBounds(options.print, page);
+    const lineWidth = (boundsGuess.right - boundsGuess.left) / SQUISHINESS;
+    const linePlacementHints = options.preview ?
+        options.document.cleanlinessTracking.linePlacementHints :
+        getLinePlacementHints(options.measures);
+
+    options.document.cleanlinessTracking.linePlacementHints = linePlacementHints;
+
+    // Assign measures to lines.
+    const layoutOpts = reduce(linePlacementHints, assignLinesReducer, {
+        options: options,
+        opts: <ILayoutOptions[]>[createEmptyLayout(options, options.print)],
+        remainingWidth: lineWidth,
+        shortest: Number.MAX_VALUE,
+        startingWidth: lineWidth,
+        thisPrint: options.print,
+        widthAllocatedForEnd: 0,
+        widthAllocatedForStart: 0,
+    }).opts;
+
+    layoutOpts.forEach((line, idx) => {
+        line.lineIndex = idx;
+        line.lineCount = layoutOpts.length;
+        line.attributes = {};
+    });
+
+    if (!options.preview) {
+        const oldLineCleanliness = options.document.cleanlinessTracking.lines || [];
+        const newLineCleanliness = layoutOpts.map(line => line.measures.map(measure => measure.uuid)) || [];
+        for (let i = 0; i < oldLineCleanliness.length || i < newLineCleanliness.length; ++i) {
+            const oldLine = oldLineCleanliness[i] || [];
+            const newLine = newLineCleanliness[i] || [];
+            const isDirty = !oldLine || !newLine || oldLine.length !== newLine.length || oldLine.some((m, k) => newLine[k] !== m);
+            if (isDirty) {
+                oldLine.concat(newLine).forEach(m => {
+                    options.document.cleanlinessTracking.measures[m] = null;
+                });
+            }
+        }
+        options.document.cleanlinessTracking.lines = newLineCleanliness;
+    }
+
+    // Create the final layout
+    const memo = {
+        y: calculateLineBounds(layoutOpts[0].print, page).top,
+        attributes: {},
+    };
+    return layoutOpts.map(lineOpt => layoutLine(
+        lineOpt,
+        calculateLineBounds(lineOpt.print, page),
+        memo,
+    ));
 }

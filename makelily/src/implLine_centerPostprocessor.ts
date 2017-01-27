@@ -19,7 +19,7 @@
 import {forEach, max, map, times, findIndex, last} from "lodash";
 import * as invariant from "invariant";
 
-import Type from "./document_types";
+import {Type} from "./document";
 
 import {IMeasureLayout} from "./private_measureLayout";
 import {ILayoutOptions} from "./private_layoutOptions";
@@ -31,9 +31,9 @@ import {ILineBounds} from "./private_lineBounds";
  * @returns new end of line
  */
 function center(options: ILayoutOptions, bounds: ILineBounds,
-        measures$: IMeasureLayout[]): IMeasureLayout[] {
+        measures: IMeasureLayout[]): IMeasureLayout[] {
 
-    forEach(measures$, function(measure, measureIdx) {
+    forEach(measures, function(measure, measureIdx) {
         let maxIdx = max(map(measure.elements, el => el.length));
         times(maxIdx, function(j) {
             for (let i = 0; i < measure.elements.length; ++i) {
@@ -49,17 +49,17 @@ function center(options: ILayoutOptions, bounds: ILineBounds,
                         base = measure.elements[0][attribIdx].overrideX +
                             measure.elements[0][attribIdx].renderedWidth;
                         measureSpaceRemaining = last(measure.elements[i]).overrideX - base;
-                    } else if (measures$[measureIdx - 1]) {
+                    } else if (measures[measureIdx - 1]) {
                         measureSpaceRemaining = last(measure.elements[i]).overrideX -
-                            (measures$[measureIdx - 1].width -
-                            last(measures$[measureIdx - 1].elements[0]).overrideX);
+                            (measures[measureIdx - 1].width -
+                            last(measures[measureIdx - 1].elements[0]).overrideX);
                     } else {
                         measureSpaceRemaining = last(measure.elements[i]).overrideX;
                     }
-                    if (measures$[measureIdx + 1] && measures$[measureIdx + 1].width === 0) {
+                    if (measures[measureIdx + 1] && measures[measureIdx + 1].width === 0) {
                         measureSpaceRemaining += 16.6;
                     }
-                    measure.elements[i][j].x$ =
+                    measure.elements[i][j].x =
                         base + measureSpaceRemaining / 2 -
                         intrinsicWidth / 2;
                 }
@@ -67,7 +67,7 @@ function center(options: ILayoutOptions, bounds: ILineBounds,
         });
     });
 
-    return measures$;
+    return measures;
 }
 
 export default center;

@@ -21,10 +21,9 @@ import {Frame, ExplicitImpliedAlternate, Root, Function, Kind, Degree, Inversion
     serializeHarmony} from "musicxml-interfaces";
 import {forEach} from "lodash";
 
-import {IModel, ILayout} from "./document_model";
-import Type from "./document_types";
+import {IModel, ILayout, Type} from "./document";
 
-import {ICursor} from "./private_cursor";
+import {IReadOnlyValidationCursor, LayoutCursor} from "./private_cursor";
 import {IBoundingRect} from "./private_boundingRect";
 
 class HarmonyModel implements Export.IHarmonyModel {
@@ -119,14 +118,14 @@ class HarmonyModel implements Export.IHarmonyModel {
         });
     }
 
-    validate(cursor$: ICursor): void {
+    refresh(cursor: IReadOnlyValidationCursor): void {
         // todo
     }
 
-    getLayout(cursor$: ICursor): Export.IHarmonyLayout {
+    getLayout(cursor: LayoutCursor): Export.IHarmonyLayout {
         // todo
 
-        return new HarmonyModel.Layout(this, cursor$);
+        return new HarmonyModel.Layout(this, cursor);
     }
 
     toXML(): string {
@@ -136,6 +135,10 @@ class HarmonyModel implements Export.IHarmonyModel {
     inspect() {
         return this.toXML();
     }
+
+    calcWidth(shortest: number) {
+        return 0;
+    }
 }
 
 HarmonyModel.prototype.divCount = 0;
@@ -143,10 +146,10 @@ HarmonyModel.prototype.divisions = 0;
 
 module HarmonyModel {
     export class Layout implements Export.IHarmonyLayout {
-        constructor(model: HarmonyModel, cursor$: ICursor) {
+        constructor(model: HarmonyModel, cursor: LayoutCursor) {
             this.model = model;
-            this.x$ = cursor$.x$;
-            this.division = cursor$.division$;
+            this.x = cursor.segmentX;
+            this.division = cursor.segmentDivision;
         }
 
         /*---- ILayout ------------------------------------------------------*/
@@ -154,20 +157,20 @@ module HarmonyModel {
         // Constructed:
 
         model: HarmonyModel;
-        x$: number;
+        x: number;
         division: number;
 
         // Prototype:
 
-        boundingBoxes$: IBoundingRect[];
+        boundingBoxes: IBoundingRect[];
         renderClass: Type;
         expandPolicy: "none";
     }
 
     Layout.prototype.expandPolicy = "none";
     Layout.prototype.renderClass = Type.Harmony;
-    Layout.prototype.boundingBoxes$ = [];
-    Object.freeze(Layout.prototype.boundingBoxes$);
+    Layout.prototype.boundingBoxes = [];
+    Object.freeze(Layout.prototype.boundingBoxes);
 };
 
 /**

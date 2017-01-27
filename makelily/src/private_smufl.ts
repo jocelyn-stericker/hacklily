@@ -23,7 +23,7 @@ import bravura from "./private_smufl_bravura";
 import glyphNames from "./private_smufl_glyphnames";
 
 export {default as bravura} from "./private_smufl_bravura";
-export let bboxes: {[key: string]: any[]; } = <any> keyBy(bravura.glyphBBoxes, 4);
+export let bboxes: {[key: string]: any[]; } = keyBy(bravura.glyphBBoxes, 4) as any;
 bboxes["noteheadNull"] = bboxes["noteheadBlack"];
 
 export let getGlyphCode = memoize(function getGlyphCode(name: string) {
@@ -33,7 +33,7 @@ export let getGlyphCode = memoize(function getGlyphCode(name: string) {
     return glyphNames[name];
 });
 
-const getAnchor = memoize((notehead: string) => (<any>bravura.glyphsWithAnchors)[notehead]);
+const getAnchor = memoize((notehead: string) => bravura.glyphsWithAnchors[notehead]);
 
 /**
  * Calculates where a notation should begin.

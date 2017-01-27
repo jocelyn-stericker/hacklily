@@ -24,7 +24,7 @@ import Factory from "../engine_factory";
 
 import {expect} from "chai";
 
-import Type from "../document_types";
+import {Type} from "../document";
 
 class TestClass1 {
 }

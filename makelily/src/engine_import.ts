@@ -26,17 +26,14 @@ import {buildNote} from "musicxml-interfaces/builders";
 import {map, reduce, some, filter, minBy, times, every, forEach, startsWith, endsWith} from "lodash";
 import * as invariant from "invariant";
 
-import {Document} from "./document_document";
+import {Document} from "./document";
 
-import {IMeasure, IMeasurePart} from "./document_measure";
-import {IModel} from "./document_model";
-import Type from "./document_types";
+import {IMeasure, IMeasurePart, IModel, Type} from "./document";
 
 import {IFactory} from "./private_factory";
 import {ILayoutOptions} from "./private_layoutOptions";
 import {MAX_SAFE_INTEGER} from "./private_util";
-import {ILinesLayoutState} from "./private_linesLayoutState";
-import {IChord, fromModel as chordFromModel, barDivisionsDI, divisions as calcDivisions} from "./private_chordUtil";
+import {IChord, barDivisionsDI, divisions as calcDivisions} from "./private_chordUtil";
 import {scoreParts} from "./private_part";
 import {lcm} from "./private_util";
 import {requireFont, whenReady} from "./private_fontManager";
@@ -47,7 +44,7 @@ import {makeFactory} from "./engine_setup";
 
 /*---- Exports ----------------------------------------------------------------------------------*/
 
-export function stringToDocument(src: string, memo$: any, factory: IFactory) {
+export function stringToDocument(src: string, factory: IFactory) {
     let mxmljson = parseScore(src);
     if ((mxmljson as any).error) {
         throw (mxmljson as any).error;
@@ -58,19 +55,20 @@ export function stringToDocument(src: string, memo$: any, factory: IFactory) {
     }
 
     let contextOptions: ILayoutOptions = {
-        document,
         attributes: null,
-        preview: false,
+        document,
+        fixup: null,
         header: document.header,
+        lineCount: NaN, // YYY
+        lineIndex: NaN, // YYY
         measures: document.measures,
         modelFactory: factory,
-        page$: 0,
         postprocessors: [],
         preprocessors: factory.preprocessors,
-        print$: null,
-        fixup: null
+        preview: false,
+        print: null,
     };
-    validate(contextOptions, memo$);
+    validate(contextOptions);
     ScoreHeader.prototype.overwriteEncoding.call(document.header);
 
     return document;
@@ -128,7 +126,7 @@ export function _extractMXMLPartsAndMeasures(input: ScoreTimewise, factory: IFac
     // TODO/STOPSHIP - sync division count in each measure
     let divisions = 768; // XXX: lilypond-regression 41g.xml does not specify divisions
     let gStaves = 0;
-    let lastNote: IChord = null;
+    let chordBeingBuilt: IChord = null;
     let lastAttribs: Attributes = null;
     let maxVoice = 0;
 
@@ -223,8 +221,8 @@ export function _extractMXMLPartsAndMeasures(input: ScoreTimewise, factory: IFac
 
                     // TODO: is this the case even if voice/staff don't match up?
                     if (!!note.chord) {
-                        lastNote.push(note);
-                        note = lastNote;
+                        invariant(!!chordBeingBuilt, "Cannot add chord to a previous note without a chord");
+                        chordBeingBuilt.push(note);
                     } else {
                         // Notes go in the voice context.
                         let voice = note.voice || 1;
@@ -257,9 +255,8 @@ export function _extractMXMLPartsAndMeasures(input: ScoreTimewise, factory: IFac
                                     )
                                 (divisionsInVoice);
 
-                            let spacerRest = chordFromModel(restModel);
                             let division = target.divisionPerVoice[voice];
-                            spacerRest[0].duration = target.division - division;
+                            restModel[0].duration = target.division - division;
                             target.output.voices[voice].push(restModel);
                             target.divisionPerVoice[voice] = target.division;
                         }
@@ -268,7 +265,7 @@ export function _extractMXMLPartsAndMeasures(input: ScoreTimewise, factory: IFac
                         // last inserted note
                         let newNote = factory.fromSpec(input);
                         target.output.voices[voice].push(newNote);
-                        note = chordFromModel(newNote);
+                        chordBeingBuilt = newNote;
 
                         // Update target division
                         let divs: number;
@@ -285,8 +282,6 @@ export function _extractMXMLPartsAndMeasures(input: ScoreTimewise, factory: IFac
                         target.division += divs;
                     }
 
-                    invariant(!!note, "Must set lastNote to a note...");
-                    lastNote = <any> note;
                     break;
                 case "Attributes":
                 case "Barline":
@@ -479,7 +474,7 @@ function createStaff(staff: number, output: IMeasurePart) {
 /**
  * Parses a MusicXML document and returns a Document.
  */
-export function importXML(src: string, memo: ILinesLayoutState,
+export function importXML(src: string,
         cb: (error: Error, document?: Document, factory?: IFactory) => void) {
     requireFont("Bravura", "root://bravura/otf/Bravura.otf");
     requireFont("Alegreya", "root://alegreya/Alegreya-Regular.ttf");
@@ -490,7 +485,7 @@ export function importXML(src: string, memo: ILinesLayoutState,
         } else {
             try {
                 let factory = makeFactory();
-                cb(null, stringToDocument(src, memo, factory), factory);
+                cb(null, stringToDocument(src, factory), factory);
             } catch (err) {
                 cb(err);
             }

@@ -16,11 +16,10 @@
  * along with Satie.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import {IModel} from "./document_model";
-import Type from "./document_types";
+import {IModel, Type} from "./document";
 
 import {IBoundingRect} from "./private_boundingRect";
-import {ICursor} from "./private_cursor";
+import {IReadOnlyValidationCursor, LayoutCursor} from "./private_cursor";
 import {MAX_SAFE_INTEGER} from "./private_util";
 
 /** 
@@ -39,19 +38,25 @@ export interface IModel {
      * Any changes to the current segment should be done here. For example, notation
      * checking is done here.
      */
-    validate(cursor: ICursor): void;
+    refresh(cursor: IReadOnlyValidationCursor): void;
 
     /** 
      * Life-cycle method. Called to layout the models.
      * At this point, all segments are frozen and must not be changed.
      */
-    getLayout(cursor: ICursor): ILayout;
+    getLayout(cursor: LayoutCursor): ILayout;
+
+    /**
+     * Based on the number of durations in the shortest element on a line, computes the
+     * approximate width of this element.
+     */
+    calcWidth(shortest: number): number;
 };
 
 /**
  * Assigns a random key to an object, usually for React.
  */
-export function generateKey(model: IModel) {
+export function generateModelKey(model: IModel) {
     if (!model.key) {
         model.key = String(Math.floor(Math.random() * MAX_SAFE_INTEGER));
     }
@@ -61,7 +66,7 @@ export interface ILayout {
     model: IModel;
     renderClass: Type;
 
-    x$: number;
+    x: number;
     division: number;
 
     minSpaceBefore?: number;
@@ -85,7 +90,7 @@ export interface ILayout {
      * 
      * Lengths are in MusicXML tenths relative to (this.x, center line of staff),
      */
-    boundingBoxes$?: IBoundingRect[];
+    boundingBoxes?: IBoundingRect[];
 
     expandPolicy?: "none" | "centered" | "after";
 
@@ -100,9 +105,9 @@ export interface ILayout {
 export function detach(layout: ILayout) {
     layout.overrideX = NaN;
     return Object.create(layout, {
-        x$: {
+        x: {
             get: function() {
-                return layout.overrideX || layout.x$;
+                return layout.overrideX || layout.x;
             },
             set: function(x: number) {
                 layout.overrideX = x;

@@ -33,8 +33,7 @@ export interface IProps {
 export default class Bezier extends Component<IProps, void> {
     render(): any {
         return DOM.path({
-            d: <any>
-               ("M" +
+            d: ("M" +
                     this.props.x1 + "," + this.props.y1 +
                 "C" +
                     this.props.x2 + "," + this.props.y2 + " " +

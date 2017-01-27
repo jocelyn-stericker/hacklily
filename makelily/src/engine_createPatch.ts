@@ -27,14 +27,10 @@ import {
 import {find, forEach, last, some, times, findIndex, findLastIndex, extend, isInteger} from "lodash";
 import * as invariant from "invariant";
 
-import {IDocument} from "./document_document";
-import {IMeasure, IMeasurePart, ISegment} from "./document_measure";
-import Type from "./document_types";
-import {IModel} from "./document_model";
+import {Document, IMeasure, IMeasurePart, ISegment, Type, IModel} from "./document";
 
 import {IChord, count, dots, timeModification, divisions as calcDivisions,
-    fromModel as chordFromModel, rest, countToIsBeamable, beams}
-        from "./private_chordUtil";
+    rest, countToIsBeamable, beams} from "./private_chordUtil";
 import {IAttributesSnapshot} from "./private_attributesSnapshot";
 import {getBeamingPattern} from "./private_metre_checkBeaming";
 import {simplifyRests} from "./private_metre_modifyRest";
@@ -55,56 +51,66 @@ function genUUID(): number {
 export class StaffBuilder {
     private _segment: ISegment;
     private _patches: IAny[] = [];
-    private _document: IDocument;
+    private _document: Document;
     private _idx: number;
 
     get patches(): IAny[] {
         return this._patches.slice();
     }
 
-    constructor(segment: ISegment, document: IDocument, idx?: number) {
+    constructor(segment: ISegment, document: Document, idx?: number) {
         this._segment = segment;
         this._document = document;
         this._idx = idx;
     }
 
-    barline(builder: (build: IBarlineBuilder) => IBarlineBuilder, idx = this._idx) {
-        let model = this._segment[idx] as any;
+    at(idx: number) {
+        this._idx = idx;
+        return this;
+    }
+
+    next() {
+        ++this._idx;
+        return this;
+    }
+
+    barline(builder: (build: IBarlineBuilder) => IBarlineBuilder) {
+        let model = this._segment[this._idx] as any;
         invariant(model, "no such model");
         invariant(this._document.modelHasType(model, Type.Barline), "model is not barline");
         this._patches = this._patches.concat(
-            patchBarline(model, builder).map(_prependPatch(idx)));
+            patchBarline(model, builder).map(_prependPatch(this._idx)));
         return this;
     }
 
-    insertBarline(builder: (build: IBarlineBuilder) => IBarlineBuilder, idx = this._idx) {
+    insertBarline(builder: (build: IBarlineBuilder) => IBarlineBuilder) {
         let li = buildBarline(builder);
-        let p = [idx];
+        let p = [this._idx];
         this._patches = this._patches.concat({li, p});
         return this;
     }
 
-    attributes(builder: (builder: IAttributesBuilder) => IAttributesBuilder, idx = this._idx) {
-        let model = this._segment[idx] as any;
+    attributes(builder: (builder: IAttributesBuilder) => IAttributesBuilder) {
+        let model = this._segment[this._idx] as any;
         invariant(model, "no such model");
         invariant(this._document.modelHasType(model, Type.Attributes), "model is not attributes");
         this._patches = this._patches.concat(
-            patchAttributes(model, builder).map(_prependPatch(idx)));
+            patchAttributes(model, builder).map(_prependPatch(this._idx)));
         return this;
     }
 
-    insertAttributes(builder: (build: IAttributesBuilder) => IAttributesBuilder, idx = this._idx) {
+    insertAttributes(builder: (build: IAttributesBuilder) => IAttributesBuilder) {
         let li = buildAttributes(builder);
-        let p = [idx];
+        let p = [this._idx];
         this._patches = this._patches.concat({li, p});
         return this;
     }
 
-    remove(idx: number) {
+    remove() {
         this._patches = this._patches.concat(
             {
-                p: [idx],
-                ld: this._segment[idx]
+                p: [this._idx],
+                ld: this._segment[this._idx]
             }
         );
         return this;
@@ -114,70 +120,80 @@ export class StaffBuilder {
 export class VoiceBuilder {
     private _segment: ISegment;
     private _patches: IAny[] = [];
-    private _document: IDocument;
+    private _document: Document;
     private _idx: number;
 
     get patches(): IAny[] {
         return this._patches.slice();
     }
 
-    constructor(segment: ISegment, document: IDocument, idx?: number) {
+    constructor(segment: ISegment, document: Document, idx?: number) {
         this._segment = segment;
         this._document = document;
         this._idx = idx;
     }
 
-    addVisualCursor(idx: number = this._idx) {
+    at(idx: number) {
+        this._idx = idx;
+        return this;
+    }
+
+    next() {
+        ++this._idx;
+        return this;
+    }
+
+    addVisualCursor() {
         this._patches = this._patches.concat(
             {
                 li: {
                     _class: "VisualCursor",
                 },
-                p: [idx],
+                p: [this._idx],
             }
         );
         return this;
     }
 
-    note(noteIDX: number, builder: (build: INoteBuilder) => INoteBuilder, idx: number = this._idx) {
-        let model = this._segment[idx] as any;
+    note(noteIDX: number, builder: (build: INoteBuilder) => INoteBuilder) {
+        let model = this._segment[this._idx] as any;
         invariant(model, "no such model");
         invariant(this._document.modelHasType(model, Type.Chord), "model is not a chord");
         let note = model[noteIDX];
         invariant(note, "invalid note");
         this._patches = this._patches.concat(
-            patchNote(note, builder).map(_prependPatch(idx, "notes", noteIDX)));
+            patchNote(note, builder).map(_prependPatch(this._idx, "notes", noteIDX)));
         return this;
     }
 
-    insertChord(builders: ((build: INoteBuilder) => INoteBuilder)[], idx = this._idx) {
-        invariant(!isNaN(idx), "%s must be a number", idx);
+    insertChord(builders: ((build: INoteBuilder) => INoteBuilder)[]) {
+        invariant(!isNaN(this._idx), "%s must be a number", this._idx);
         let li: IChord = builders.map(builder => buildNote(builder));
         li._class = "Chord";
         invariant(li[0].noteType.duration, "Invalid note type");
-        let p = [idx];
+        let p = [this._idx];
         this._patches = this._patches.concat({li, p});
         return this;
     }
 
-    insertNote(position: number, builder: (builder: INoteBuilder) => INoteBuilder, idx = this._idx) {
-        let model = this._segment[idx] as any;
+    insertNote(position: number, builder: (builder: INoteBuilder) => INoteBuilder) {
+        let model = this._segment[this._idx] as any;
         invariant(model, "no such model");
         invariant(this._document.modelHasType(model, Type.Chord), "model is not a chord");
         let li = buildNote(builder);
         let chord = model as IChord;
         invariant(chord[position - 1] || chord[position + 1] || !chord.length, "Invalid position for note");
         invariant(li.noteType.duration, "Invalid note type");
-        let p = [idx, "notes", position];
+        let p = [this._idx, "notes", position];
         this._patches = this._patches.concat({p, li});
         return this;
     }
 
-    remove(idx: number) {
+    remove() {
         this._patches = this._patches.concat(
             {
-                p: [idx],
-                ld: this._segment[idx]
+                p: [this._idx],
+                ld: this._segment[this._idx]
             }
         );
         return this;
@@ -187,13 +203,13 @@ export class VoiceBuilder {
 export class PartBuilder {
     private _part: IMeasurePart;
     private _patches: IAny[] = [];
-    private _document: IDocument;
+    private _document: Document;
 
     get patches(): IAny[] {
         return this._patches.slice();
     }
 
-    constructor(part: IMeasurePart, document: IDocument) {
+    constructor(part: IMeasurePart, document: Document) {
         this._part = part;
         this._document = document;
     }
@@ -224,13 +240,13 @@ export class PartBuilder {
 export class MeasureBuilder {
     private _measure: IMeasure;
     private _patches: IAny[] = [];
-    private _document: IDocument;
+    private _document: Document;
 
     get patches(): IAny[] {
         return this._patches.slice();
     }
 
-    constructor(measure: IMeasure, document: IDocument) {
+    constructor(measure: IMeasure, document: Document) {
         this._measure = measure;
         this._document = document;
     }
@@ -248,14 +264,14 @@ export class MeasureBuilder {
 }
 
 export class DocumentBuilder {
-    private _doc: IDocument;
+    private _doc: Document;
     private _patches: IAny[] = [];
 
     get patches(): IAny[] {
         return this._patches.slice();
     }
 
-    constructor(doc: IDocument) {
+    constructor(doc: Document) {
         this._doc = doc;
     }
 
@@ -367,7 +383,7 @@ interface IMetreInfo {
     elementInfoByChord: {[key: string]: ModelMetreMutationSpec};
 }
 
-function getMutationInfo(document: IDocument, patches: IAny[]) {
+function getMutationInfo(document: Document, patches: IAny[]) {
     const segments: {[key: string]: ISegment} = {};
     const attributes: {[key: string]: IAttributesSnapshot} = {};
     const elementInfos: {[key: string]: ModelMetreMutationSpec[]} = {};
@@ -421,20 +437,19 @@ function getMutationInfo(document: IDocument, patches: IAny[]) {
                         touched: false,
                     }, model));
                 }
-                let chord = chordFromModel(model);
-                let divs = calcDivisions(chord, {time, divisions});
+                let divs = calcDivisions(model, {time, divisions});
                 let info = new ModelMetreMutationSpec({
                     idx: idx,
                     oldIdx: idx,
                     start: currDiv,
                     previousDivisions: divs,
                     newDivisions: divs,
-                    newCount: count(chord),
-                    newDots: dots(chord),
-                    newTimeModification: timeModification(chord),
+                    newCount: count(model),
+                    newDots: dots(model),
+                    newTimeModification: timeModification(model),
                     time: time,
-                    rest: !!rest(chord),
-                    beam: beams(chord),
+                    rest: !!rest(model),
+                    beam: beams(model),
                     touched: false,
                 }, model);
                 elementInfoByChord[model.key] = info;
@@ -566,7 +581,7 @@ function getMutationInfo(document: IDocument, patches: IAny[]) {
         elementInfoByChord
     };
 }
-function fixMetre(document: IDocument, patches: IAny[]): IAny[] {
+function fixMetre(document: Document, patches: IAny[]): IAny[] {
     patches = patches.slice();
 
     let segments: {[key: string]: ISegment};
@@ -596,7 +611,7 @@ function fixMetre(document: IDocument, patches: IAny[]): IAny[] {
     return patches;
 }
 
-function fixBarlines(doc: IDocument, patches: IAny[]): IAny[] {
+function fixBarlines(doc: Document, patches: IAny[]): IAny[] {
     const measureCount = doc.measures.length;
     const previouslyLastMeasure = doc.measures[measureCount - 1];
     forEach(previouslyLastMeasure.parts, (part, partName) => {
@@ -627,7 +642,7 @@ function fixBarlines(doc: IDocument, patches: IAny[]): IAny[] {
     return patches;
 }
 
-function fixCursor(doc: IDocument, patches: IAny[]): IAny[] {
+function fixCursor(doc: Document, patches: IAny[]): IAny[] {
     let {segments, attributes, elementInfos} = getMutationInfo(doc, patches);
     const newCursor = patches.filter(patch => patch.li && patch.li._class === "VisualCursor");
     if (!newCursor.length) {
@@ -683,7 +698,7 @@ const COUNT_TO_BEAMS: {[key: number]: number} = {
     [Count._512th]: 7
 };
 
-function addBeams(document: IDocument, patches: IAny[]): IAny[] {
+function addBeams(document: Document, patches: IAny[]): IAny[] {
     patches = patches.slice();
 
     let {segments, elementInfos} = getMutationInfo(document, patches);
@@ -822,7 +837,7 @@ function addBeams(document: IDocument, patches: IAny[]): IAny[] {
     return patches;
 }
 
-function cleanupPatches(document: IDocument, patches: IAny[]): IAny[] {
+function cleanupPatches(document: Document, patches: IAny[]): IAny[] {
     patches = fixMetre(document, patches);
     patches = addBeams(document, patches);
     patches = fixBarlines(document, patches);
@@ -832,7 +847,7 @@ function cleanupPatches(document: IDocument, patches: IAny[]): IAny[] {
 
 export default function createPatch(
             isPreview: boolean,
-            document: IDocument,
+            document: Document,
             measure: number,
             part: string,
             builder: (partBuilder: PartBuilder) => PartBuilder):
@@ -840,17 +855,17 @@ export default function createPatch(
 
 export default function createPatch(
             isPreview: boolean,
-            document: IDocument,
+            document: Document,
             builder: (build: DocumentBuilder) => DocumentBuilder):
         IAny[];
 
 export default function createPatch(
             isPreview: boolean,
-            document: IDocument,
+            document: Document,
             operations: IAny[]): IAny[];
 
 export default function createPatch(isPreview: boolean,
-        document: IDocument,
+        document: Document,
         builderOrMeasure: number | ((build: DocumentBuilder) => DocumentBuilder) | IAny[],
         part?: string,
         partBuilder?: (partBuilder: PartBuilder) => PartBuilder) {

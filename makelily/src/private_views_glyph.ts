@@ -16,7 +16,7 @@
  * along with Satie.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import {Component, DOM, PropTypes, ReactElement} from "react";
+import {Component, DOM, PropTypes} from "react";
 
 import {getGlyphCode} from "./private_smufl";
 import {toPathData} from "./private_fontManager";
@@ -54,10 +54,10 @@ export default class Glyph extends Component<IProps, void> {
         if (this.context.renderTarget === "svg-export") {
             let pathData = toPathData("Bravura",
                 getGlyphCode(this.props.glyphName), px, py, 40 * (this.props.scale || 1));
-            return <ReactElement<any>> DOM.path({d: pathData}, null);
+            return DOM.path({d: pathData}, null);
         }
 
-        let text: ReactElement<any> = DOM.text({
+        let text = DOM.text({
                 className: "mn_",
                 fill: this.props.fill,
                 fillOpacity: this.props.opacity,

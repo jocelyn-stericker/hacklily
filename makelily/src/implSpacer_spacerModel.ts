@@ -19,12 +19,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import {IModel} from "./document_model";
-import Type from "./document_types";
+import {IModel, ILayout, Type} from "./document";
 
-import {ICursor} from "./private_cursor";
+import {IReadOnlyValidationCursor, LayoutCursor} from "./private_cursor";
 import {IBoundingRect} from "./private_boundingRect";
-import {ILayout} from "./document_model";
 
 class SpacerModel implements Export.ISpacerModel {
     _class = "Spacer";
@@ -58,12 +56,12 @@ class SpacerModel implements Export.ISpacerModel {
         };
     }
 
-    validate(cursor$: ICursor): void {
+    refresh(cursor: IReadOnlyValidationCursor): void {
         // Nothing to do
     }
 
-    getLayout(cursor$: ICursor): Export.ISpacerLayout {
-        return new SpacerModel.Layout(this, cursor$);
+    getLayout(cursor: LayoutCursor): Export.ISpacerLayout {
+        return new SpacerModel.Layout(this, cursor);
     }
 
     toXML(): string {
@@ -73,14 +71,18 @@ class SpacerModel implements Export.ISpacerModel {
     inspect() {
         return this.toXML();
     }
+
+    calcWidth(shortest: number) {
+        return 0;
+    }
 }
 
 module SpacerModel {
     export class Layout implements Export.ISpacerLayout {
-        constructor(model: SpacerModel, cursor$: ICursor) {
+        constructor(model: SpacerModel, cursor: LayoutCursor) {
             this.model = model;
-            this.x$ = cursor$.x$;
-            this.division = cursor$.division$;
+            this.x = cursor.segmentX;
+            this.division = cursor.segmentDivision;
             this.renderedWidth = 0;
         }
 
@@ -89,21 +91,21 @@ module SpacerModel {
         // Constructed:
 
         model: SpacerModel;
-        x$: number;
+        x: number;
         division: number;
         renderedWidth: number;
 
         // Prototype:
 
-        boundingBoxes$: IBoundingRect[];
+        boundingBoxes: IBoundingRect[];
         renderClass: Type;
         expandPolicy: "none";
     }
 
     Layout.prototype.expandPolicy = "none";
     Layout.prototype.renderClass = Type.Spacer;
-    Layout.prototype.boundingBoxes$ = [];
-    Object.freeze(Layout.prototype.boundingBoxes$);
+    Layout.prototype.boundingBoxes = [];
+    Object.freeze(Layout.prototype.boundingBoxes);
 }
 
 SpacerModel.prototype.divCount = 0;

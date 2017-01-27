@@ -19,8 +19,7 @@
 import {ScoreHeader, Print} from "musicxml-interfaces";
 import {IAny} from "musicxml-interfaces/operations";
 
-import {IDocument} from "./document_document";
-import {IMeasure, ISegment} from "./document_measure";
+import {Document, IMeasure, ISegment} from "./document";
 
 import {IAttributesSnapshot} from "./private_attributesSnapshot";
 import {IFactory, IPreprocessor, IPostprocessor} from "./private_factory";
@@ -28,19 +27,18 @@ import {IFactory, IPreprocessor, IPostprocessor} from "./private_factory";
 export type IFixupFn = (segment: ISegment, operations: IAny[], restartRequired?: boolean) => void;
 
 export interface ILayoutOptions {
-    document: IDocument;
     attributes: {[part: string]: IAttributesSnapshot[]};
-    preview: boolean;
-    measures: IMeasure[];
-    header: ScoreHeader;
-    print$: Print;
-    page$: number;
-    line?: number;
-    lines?: number;
-    modelFactory: IFactory;
     debug?: boolean;
-    preprocessors: IPreprocessor[];
-    postprocessors: IPostprocessor[];
+    document: Document;
     fixup: IFixupFn;
+    header: ScoreHeader;
+    lineCount: number;
+    lineIndex: number;
+    measures: IMeasure[];
+    modelFactory: IFactory;
+    postprocessors: IPostprocessor[];
+    preprocessors: IPreprocessor[];
+    preview: boolean;
+    print: Print;
     singleLineMode?: boolean;
 }

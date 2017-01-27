@@ -20,5 +20,4 @@ import "./__tests__/print_test";
 import "./__tests__/scoreHeader_test";
 import "./__tests__/smuflTest";
 import "./__tests__/sound_test";
-import "./__tests__/staffContextTest";
 import "./__tests__/util";

@@ -22,14 +22,13 @@ import {Note, serializeNote} from "musicxml-interfaces";
 import {IAny, IObjectReplace, IListInsert, IListDelete,
     IListReplace} from "musicxml-interfaces/operations";
 
-import {ILinesLayoutState, markDirty} from "./private_linesLayoutState";
 import {replace, remove} from "./private_mutate";
 
 import ChordImpl from "./implChord_chordImpl";
 import NoteImpl from "./implChord_noteImpl";
 import noteMutator from "./implChord_noteMutator";
 
-export default function chordMutator(memo$: ILinesLayoutState, chord: ChordImpl, op: IAny) {
+export default function chordMutator(chord: ChordImpl, op: IAny) {
     const path = op.p;
 
     if (op.p[0] === "notes") {
@@ -55,17 +54,15 @@ export default function chordMutator(memo$: ILinesLayoutState, chord: ChordImpl,
             }
 
             chord._init = false;
-            markDirty(memo$, chord);
         } else {
             let note = chord[parseInt(String(op.p[1]), 10)];
             invariant(Boolean(note), `Invalid operation path for chord. No such note ${op.p[1]}`);
 
             let localOp: IAny = cloneDeep(op);
             localOp.p = path.slice(2);
-            noteMutator(memo$, note, localOp);
+            noteMutator(note, localOp);
 
             chord._init = false;
-            markDirty(memo$, chord);
         }
     } else if (op.p[0] === "count") {
         if ("od" in op && "oi" in op) {

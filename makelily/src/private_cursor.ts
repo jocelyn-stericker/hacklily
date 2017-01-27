@@ -20,144 +20,108 @@ import {Print, ScoreHeader} from "musicxml-interfaces";
 import {IAny} from "musicxml-interfaces/operations";
 import * as invariant from "invariant";
 
-import createPatch, {VoiceBuilder, StaffBuilder} from "./patch_createPatch";
+import createPatch, {VoiceBuilder, StaffBuilder} from "./engine_createPatch";
 
-import {IDocument} from "./document_document";
-import {ISegment} from "./document_measure";
-import Type from "./document_types";
+import {Document, ISegment, IMeasure, Type} from "./document";
 
 import {IFactory} from "./private_factory";
-import {ILineContext} from "./private_lineContext";
-import {ILinesLayoutState} from "./private_linesLayoutState";
-import {IMeasureContext} from "./private_measureContext";
-import {IStaffContext, detachStaffContext} from "./private_staffContext";
 import {cloneObject} from "./private_util";
+import {IAttributesSnapshot} from "./private_attributesSnapshot";
 
-export interface ICursor {
-    document: IDocument;
+export interface IReadOnlyValidationCursor {
+    readonly segmentInstance: ISegment;
+    readonly segmentPosition: number;
+    readonly segmentDivision: number;
 
-    segment: ISegment;
-    idx$: number;
+    readonly staffAttributes: IAttributesSnapshot;
+    readonly staffAccidentals: {readonly [key: string]: number};
+    readonly staffIdx: number;
 
-    staff: IStaffContext;
-    measure: IMeasureContext;
-    line: ILineContext;
+    readonly measureInstance: IMeasure;
+    readonly measureIsLast: boolean;
 
-    division$: number;
-    x$: number;
-    print$: Print;
-    header: ScoreHeader;
-    minXBySmallest$?: {[key: number]: number};
-    /**
-     * By staff
-     */
-    maxPaddingTop$: number[];
-    /**
-     * By staff
-     */
-    maxPaddingBottom$: number[];
+    readonly print: Print;
+    readonly header: ScoreHeader;
 
-    /**
-     * Only available in second layout$
-     */
-    page$: number;
+    readonly factory: IFactory;
+    readonly fixup: (operations: IAny[]) => void;
 
-    approximate: boolean;
-    detached: boolean;
-    factory: IFactory;
+    readonly preview: boolean;
 
-    hiddenCounter$?: number;
-    fixup: (operations: IAny[]) => void;
-    patch: (builder: (partBuilder: VoiceBuilder & StaffBuilder) => (VoiceBuilder | StaffBuilder)) => void;
-    advance: (divs: number) => void;
+    patch(builder: (partBuilder: VoiceBuilder & StaffBuilder) => (VoiceBuilder | StaffBuilder)): void;
 }
 
 /**
  * Holds information about the context in which an element is processed.
  * Also contains functions to modify the document when processing an element.
  */
-export default class Cursor implements ICursor {
-    document: IDocument;
+export class ValidationCursor {
+    document: Document;
 
-    segment: ISegment;
-    idx$: number;
+    segmentInstance: ISegment;
+    segmentPosition: number;
+    segmentDivision: number;
 
-    staff: IStaffContext;
-    measure: IMeasureContext;
-    line: ILineContext;
+    staffAttributes: IAttributesSnapshot;
+    staffAccidentals: {[key: string]: number};
+    staffIdx: number;
 
-    division$: number;
-    x$: number;
-    print$: Print;
+    measureInstance: IMeasure;
+    measureIsLast: boolean;
+
+    print: Print;
     header: ScoreHeader;
-    minXBySmallest$: {[key: number]: number};
-    /**
-     * By staff
-     */
-    maxPaddingTop$: number[];
-    /**
-     * By staff
-     */
-    maxPaddingBottom$: number[];
 
-    /**
-     * Only available in second layout$
-     */
-    page$: number;
-
-    approximate: boolean;
-    detached: boolean;
     factory: IFactory;
-
-    hiddenCounter$: number;
-    preview: boolean;
     fixup: (operations: IAny[]) => void;
 
+    preview: boolean;
+
+    const(): IReadOnlyValidationCursor {
+        return this;
+    }
+
     constructor(spec: {
-                document: IDocument;
-                _approximate: boolean;
-                _detached: boolean;
+                document: Document;
                 factory: IFactory;
-                fixup?: (operations: IAny[]) => void;
+                fixup: (operations: IAny[]) => void;
                 header: ScoreHeader,
-                line: ILineContext;
-                measure: IMeasureContext;
-                memo$: ILinesLayoutState;
                 page: number;
                 print: Print;
                 segment: ISegment;
-                staff: IStaffContext;
+                staffAttributes: IAttributesSnapshot;
+                staffAccidentals: {[key: string]: number};
+                staffIdx: number
                 preview?: boolean;
-                x: number;
+                measureInstance: IMeasure;
+                measureIsLast: boolean;
             }) {
         this.document = spec.document;
-        this.approximate = spec._approximate;
-        this.detached = spec._detached;
-        this.division$ = 0;
+        this.segmentDivision = 0;
         this.factory = spec.factory;
         this.header = spec.header;
-        this.idx$ = 0;
-        this.line = spec.line;
-        this.maxPaddingBottom$ = [];
-        this.maxPaddingTop$ = [];
-        this.measure = spec.measure;
-        this.print$ = spec.print;
-        this.segment = spec.segment;
-        this.staff = detachStaffContext(spec.staff);
+        this.segmentPosition = 0;
+        this.print = spec.print;
+        this.segmentInstance = spec.segment;
+        this.staffAttributes = spec.staffAttributes;
+        this.staffAccidentals = spec.staffAccidentals;
+
+        this.measureInstance = spec.measureInstance;
+        this.measureIsLast = spec.measureIsLast;
+
+        this.staffIdx = spec.staffIdx;
         this.preview = !!spec.preview;
-        this.x$ = spec.x;
-        this.page$ = spec.page;
         this.fixup = spec.fixup;
     }
 
-    patch(builder: (partBuilder: VoiceBuilder & StaffBuilder) => (VoiceBuilder & StaffBuilder)) {
+    patch(builder: (partBuilder: VoiceBuilder & StaffBuilder) => (VoiceBuilder | StaffBuilder)) {
         // Create the patch based on whether the current context is a staff context or a voice context.
-        let patch = createPatch(this.preview, this.document, this.measure.uuid,
-             this.segment.part, part => {
-                 if (this.segment.ownerType === "staff") {
-                     return part.staff(this.segment.owner, builder, this.idx$);
-                 } else if (this.segment.ownerType === "voice") {
-                     return part.voice(this.segment.owner, builder, this.idx$);
+        let patch = createPatch(this.preview, this.document, this.measureInstance.uuid,
+             this.segmentInstance.part, part => {
+                 if (this.segmentInstance.ownerType === "staff") {
+                     return part.staff(this.segmentInstance.owner, builder as any, this.segmentPosition);
+                 } else if (this.segmentInstance.ownerType === "voice") {
+                     return part.voice(this.segmentInstance.owner, builder as any, this.segmentPosition);
                  } else {
                      throw new Error("Not reached");
                  }
@@ -170,21 +134,103 @@ export default class Cursor implements ICursor {
     }
 
     advance(divs: number) {
-        invariant(this.segment.ownerType === "staff", "Only valid in staff context");
-        this.division$ += divs;
+        invariant(this.segmentInstance.ownerType === "staff", "Only valid in staff context");
+        this.segmentDivision += divs;
         this.fixup([{
             p: [
-                String(this.measure.uuid),
+                String(this.measureInstance.uuid),
                 "parts",
-                this.segment.part,
+                this.segmentInstance.part,
                 "staves",
-                this.segment.owner,
-                this.idx$
+                this.segmentInstance.owner,
+                this.segmentPosition
             ],
             li: {
                 _class: Type[Type.Spacer],
                 divCount: divs
             }
         }]);
+    }
+}
+
+export class LayoutCursor {
+    private _validationCursor?: ValidationCursor;
+    // ...extends readonly ValidationCursor {
+    get document() {
+        return this._validationCursor.document;
+    }
+
+    get segmentInstance() {
+        return this._validationCursor.segmentInstance;
+    }
+    get segmentPosition() {
+        return this._validationCursor.segmentPosition;
+    }
+    get segmentDivision() {
+        return this._validationCursor.segmentDivision;
+    }
+
+    get staffAttributes(): IAttributesSnapshot {
+        return this._validationCursor.staffAttributes;
+    }
+    get staffAccidentals(): {[key: string]: number} {
+        return this._validationCursor.staffAccidentals;
+    }
+    get staffIdx(): number {
+        return this._validationCursor.staffIdx;
+    }
+
+    get measureInstance(): IMeasure {
+        return this._validationCursor.measureInstance;
+    }
+
+    get print(): Print {
+        return this._validationCursor.print;
+    }
+    get header(): ScoreHeader {
+        return this._validationCursor.header;
+    }
+
+    get factory(): IFactory {
+        return this._validationCursor.factory;
+    }
+
+    get preview(): boolean {
+        return this._validationCursor.preview;
+    }
+    // }
+
+    lineMaxPaddingTopByStaff: number[];
+    lineMaxPaddingBottomByStaff: number[];
+    lineShortest: number;
+    lineBarOnLine: number;
+    lineTotalBarsOnLine: number;
+    lineIndex: number;
+    lineCount: number;
+    measureX: number;
+    segmentX: number;
+
+    constructor(spec: {
+                validationCursor: ValidationCursor;
+                lineShortest: number;
+                lineBarOnLine: number;
+                lineTotalBarsOnLine: number;
+                lineIndex: number;
+                lineCount: number;
+                x: number;
+                measureX: number;
+            }) {
+
+        this._validationCursor = spec.validationCursor;
+
+        this.segmentX = spec.x;
+        this.measureX = spec.measureX;
+        this.lineShortest = spec.lineShortest;
+        this.lineBarOnLine = spec.lineBarOnLine;
+        this.lineTotalBarsOnLine = spec.lineTotalBarsOnLine;
+        this.lineIndex = spec.lineIndex;
+        this.lineCount = spec.lineCount;
+        this.lineMaxPaddingBottomByStaff = [];
+        this.lineMaxPaddingTopByStaff = [];
     }
 }

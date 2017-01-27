@@ -21,8 +21,8 @@ import {IAny} from "musicxml-interfaces/operations";
 import * as invariant from "invariant";
 import {times, forEach} from "lodash";
 
-import {IDocument} from "./document_document";
-import {ModelMetreMutationSpec} from "./patch_createPatch";
+import {Document} from "./document";
+import {ModelMetreMutationSpec} from "./engine_createPatch";
 
 import {IFactory} from "./private_factory";
 import {IAttributesSnapshot} from "./private_attributesSnapshot";
@@ -38,7 +38,7 @@ export interface IRestSpec {
     readonly modelsToKill: ModelMetreMutationSpec[][];
 }
 
-export function voiceToRestSpec(segment: ModelMetreMutationSpec[], attributes: IAttributesSnapshot, factory: IFactory | IDocument) {
+export function voiceToRestSpec(segment: ModelMetreMutationSpec[], attributes: IAttributesSnapshot, factory: IFactory | Document) {
     const emptyRestSpec: IRestSpec = {song: "", models: [], modelsToKill: []};
     let divsToSuppress = 0;
     let killIdx: number;
@@ -149,7 +149,7 @@ function _cleanupRests(pattern: string, time: Time) {
 
 export function simplifyRests(
         segment: (ModelMetreMutationSpec)[],
-        factory: IFactory | IDocument,
+        factory: IFactory | Document,
         attributes: IAttributesSnapshot): IAny[] {
 
     const originalSpec = voiceToRestSpec(segment, attributes, factory);

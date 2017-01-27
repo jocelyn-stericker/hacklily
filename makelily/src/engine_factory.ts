@@ -20,12 +20,11 @@
  */
 
 import {Print, Grouping, FiguredBass, Attributes, Sound, Direction, Harmony,
-        Barline} from "musicxml-interfaces";
+        Barline, Note} from "musicxml-interfaces";
 import * as invariant from "invariant";
 import {forEach, some} from "lodash";
 
-import {IModel} from "./document_model";
-import Type from "./document_types";
+import {IModel, Type} from "./document";
 import ProxyExports from "./implProxy_proxyModel";
 import SpacerExports from "./implSpacer_spacerModel";
 import VisualCursorExports from "./implVisualCursor_visualCursorModel";
@@ -33,6 +32,7 @@ import VisualCursorExports from "./implVisualCursor_visualCursorModel";
 import {IFactory, IPreprocessor, IPostprocessor} from "./private_factory";
 import {cloneObject} from "./private_util";
 import {IChord} from "./private_chordUtil";
+import {IAttributesSnapshot} from "./private_attributesSnapshot";
 
 if (!(process as any).browser) {
     /* tslint:disable */
@@ -59,6 +59,19 @@ class Factory implements IFactory {
         this.postprocessors = post;
     }
 
+    create(modelType: Type.Chord, options?: any): (IChord & IModel);
+    create(modelType: Type.Print, options?: any): (Print & IModel);
+    create(modelType: Type.Grouping, options?: any): (Grouping & IModel);
+    create(modelType: Type.FiguredBass, options?: any): (FiguredBass & IModel);
+    create(modelType: Type.Attributes, options?: any): (Attributes & IModel);
+    create(modelType: Type.Sound, options?: any): (Sound & IModel);
+    create(modelType: Type.Direction, options?: any): (Direction & IModel);
+    create(modelType: Type.Harmony, options?: any): (Harmony & IModel);
+    create(modelType: Type.Proxy, options?: any): ProxyExports.IProxyModel;
+    create(modelType: Type.Spacer, options?: any): SpacerExports.ISpacerModel;
+    create(modelType: Type.VisualCursor, options?: any): VisualCursorExports.IVisualCursorModel;
+    create(modelType: Type.Barline, options?: any): (Barline & IModel);
+    create(modelType: Type, options?: any): IModel;
     create(modelType: Type, options?: any): IModel {
         invariant((<number>modelType) in this._constructors,
             "The type with id=%s does not have a factory.",
@@ -71,7 +84,8 @@ class Factory implements IFactory {
     modelHasType(model: IModel, modelType: Type.Print): model is (Print & IModel);
     modelHasType(model: IModel, modelType: Type.Grouping): model is (Grouping & IModel);
     modelHasType(model: IModel, modelType: Type.FiguredBass): model is (FiguredBass & IModel);
-    modelHasType(model: IModel, modelType: Type.Attributes): model is (Attributes & IModel);
+    modelHasType(model: IModel, modelType: Type.Attributes): model is (Attributes & IModel &
+        {_snapshot: IAttributesSnapshot});
     modelHasType(model: IModel, modelType: Type.Sound): model is (Sound & IModel);
     modelHasType(model: IModel, modelType: Type.Direction): model is (Direction & IModel);
     modelHasType(model: IModel, modelType: Type.Harmony): model is (Harmony & IModel);
@@ -94,6 +108,18 @@ class Factory implements IFactory {
         });
     }
 
+    search(models: IModel[], idx: number, modelType: Type.Chord): (IChord & IModel)[];
+    search(models: IModel[], idx: number, modelType: Type.Print): (Print & IModel)[];
+    search(models: IModel[], idx: number, modelType: Type.Grouping): (Grouping & IModel)[];
+    search(models: IModel[], idx: number, modelType: Type.FiguredBass): (FiguredBass & IModel)[];
+    search(models: IModel[], idx: number, modelType: Type.Attributes): (Attributes & IModel)[];
+    search(models: IModel[], idx: number, modelType: Type.Sound): (Sound & IModel)[];
+    search(models: IModel[], idx: number, modelType: Type.Direction): (Direction & IModel)[];
+    search(models: IModel[], idx: number, modelType: Type.Harmony): (Harmony & IModel)[];
+    search(models: IModel[], idx: number, modelType: Type.Proxy): ProxyExports.IProxyModel[];
+    search(models: IModel[], idx: number, modelType: Type.Spacer): SpacerExports.ISpacerModel[];
+    search(models: IModel[], idx: number, modelType: Type.VisualCursor):
+        VisualCursorExports.IVisualCursorModel[];
     /**
      * Returns all models in models with types `types` at the timestep of the model at models[idx],
      * or an empty array if none exist.
@@ -113,6 +139,20 @@ class Factory implements IFactory {
         return filtered;
     }
 
+    fromSpec<T extends {_class: "Note"}>(spec: T): (IChord & IModel);
+    fromSpec(spec: Note): (IChord & IModel);
+    fromSpec<T extends {_class: "Chord"}>(spec: T): (IChord & IModel);
+    fromSpec<T extends {_class: "Print"}>(spec: T): (Print & IModel);
+    fromSpec<T extends {_class: "Grouping"}>(spec: T): (Grouping & IModel);
+    fromSpec<T extends {_class: "FiguredBass"}>(spec: T): (FiguredBass & IModel);
+    fromSpec<T extends {_class: "Attributes"}>(spec: T): (Attributes & IModel);
+    fromSpec<T extends {_class: "Sound"}>(spec: T): (Sound & IModel);
+    fromSpec<T extends {_class: "Direction"}>(spec: T): (Direction & IModel);
+    fromSpec<T extends {_class: "Harmony"}>(spec: T): (Harmony & IModel);
+    fromSpec<T extends {_class: "Proxy"}>(spec: T): ProxyExports.IProxyModel;
+    fromSpec<T extends {_class: "Spacer"}>(spec: T): SpacerExports.ISpacerModel;
+    fromSpec<T extends {_class: "VisualCursor"}>(spec: T): VisualCursorExports.IVisualCursorModel
+    fromSpec(spec: any): IModel;
     /**
      * Accepts a JSON string, or a plain object, and creates a spec.
      */
@@ -129,7 +169,7 @@ class Factory implements IFactory {
             spec._class = "Chord";
         }
 
-        let sclass: Type = <any> Type[spec._class];
+        let sclass: Type = Type[spec._class] as any;
         invariant(sclass in this._constructors, "\"%s\" must be a known type", spec._class);
 
         return this.create(sclass, spec);

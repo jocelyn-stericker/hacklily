@@ -37,11 +37,11 @@ export default class Line extends Component<IProps, {}> {
         return DOM.line({
             className: this.props.className,
             stroke: this.props.stroke,
-            strokeWidth: <any> (this.props.strokeWidth),
-            x1: <any> (this.props.x1),
-            x2: <any> (this.props.x2),
-            y1: <any> (this.props.y1),
-            y2: <any> (this.props.y2)
+            strokeWidth: this.props.strokeWidth,
+            x1: this.props.x1,
+            x2: this.props.x2,
+            y1: this.props.y1,
+            y2: this.props.y2,
         });
     }
 }

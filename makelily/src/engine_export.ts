@@ -19,9 +19,9 @@
 import {serializeScoreHeader} from "musicxml-interfaces";
 import {forEach, map} from "lodash";
 
-import {IDocument} from "./document_document";
+import {Document} from "./document";
 
-export function exportXML(score: IDocument): string {
+export function exportXML(score: Document): string {
     let out = "";
     out += serializeScoreHeader(score.header) + "\n";
     let recordedSongMeta = false;

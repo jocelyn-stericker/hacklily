@@ -20,15 +20,14 @@
  * @file part of Satie test suite
  */
 
-import {ILayoutOpts, approximateLayout, reduceMeasure, layoutMeasure}
+import {IRefreshMeasureOpts, refreshMeasure, layoutMeasure, RefreshMode}
         from "../engine_processors_measure";
+import {getApproximateMeasureWidth} from "../engine_processors_layout";
 
 import {expect} from "chai";
 
-import Type from "../document_types";
+import {Type} from "../document";
 import {normalizeDivisionsInPlace} from "../engine_divisions";
-
-import {createLineContext} from "../private_lineContext";
 
 import {createFakeVoiceSegment, createFakeStaffSegment, fakeFactory} from "./etestutil";
 
@@ -49,71 +48,65 @@ describe("[engine/measureProcessor.ts]", function() {
             normalizeDivisionsInPlace(fakeFactory, segments);
 
             // test without alignment
-            let opts: ILayoutOpts = {
+            let opts: IRefreshMeasureOpts = {
                 document: {
                     __fakeDocument: true
                 } as any,
                 preview: false,
                 print: null,
-                memo$: null,
                 fixup: null,
 
-                attributes: <any> {},
-                line: createLineContext(segments, 1, 0, 1),
+                lineBarOnLine: 0,
+                lineCount: 1,
+                lineIndex: 0,
+                lineShortest: 1,
+                lineTotalBarsOnLine: 1,
                 header: null,
-                padEnd: false,
                 measure: {
-                    attributes: <any> {},
                     idx: 0,
-                    implicit: false,
-                    nonControlling: false,
-                    number: "1",
-                    version: 0,
                     uuid: 777,
-                    x: 100,
-                    parent: {
-                        idx: 0,
-                        uuid: 777,
-                        number: "1",
-                        parts: {},
-                        version: 0,
-                    }
+                    number: "1",
+                    parts: {},
+                    version: 0,
                 },
+                measureX: 100,
                 segments: segments,
-                _noAlign: true,
-                factory: fakeFactory
+                noAlign: true,
+                factory: fakeFactory,
+                mode: RefreshMode.RefreshLayout,
+                attributes: {"P1": []},
             };
-            let layout = reduceMeasure(opts).elements;
+            let layout = refreshMeasure(opts).elements;
             expect(layout[0].length).to.equal(2);
-            expect(layout[0][0].x$).to.equal(100, "without merging");
+            expect(layout[0][0].x).to.equal(100, "without merging");
             // Occurs after division 1 or 2, so add the end of the measure
-            expect(layout[0][1].x$).to.equal(190, "without merging");
+            expect(layout[0][1].x).to.equal(190, "without merging");
 
             expect(layout[2].length).to.equal(2);
-            expect(layout[2][0].x$).to.equal(110, "without merging"); // + 10 for staff
-            expect(layout[2][1].x$).to.equal(120, "without merging");
+            expect(layout[2][0].x).to.equal(110, "without merging"); // + 10 for staff
+            expect(layout[2][1].x).to.equal(120, "without merging");
 
             expect(layout[1].length).to.equal(2);
-            expect(layout[1][0].x$).to.equal(110, "without merging");
-            expect(layout[1][1].x$).to.equal(130, "without merging");
+            expect(layout[1][0].x).to.equal(110, "without merging");
+            expect(layout[1][1].x).to.equal(130, "without merging");
 
             // Now test 
-            opts._noAlign = false;
-            layout = reduceMeasure(opts).elements;
+            opts.noAlign = false;
+            layout = refreshMeasure(opts).elements;
             layout[1].map(l => delete (<any>l).key);
             expect(layout[1]).to.deep.equal(
                 [
                     {
                         division: 0,
-                        x$: 100,
+                        x: 100,
                         model: null,
                         renderClass: Type.Attributes
                     },
                     {
-                        boundingBoxes$: [],
+                        boundingBoxes: [],
                         division: 0,
                         expandPolicy: "after",
-                        x$: 110,
+                        x: 110,
                         part: "P1",
                         model: segments[1][0],  // from first voice.
                         renderClass: Type.Chord
@@ -121,22 +114,22 @@ describe("[engine/measureProcessor.ts]", function() {
                     {
                         division: 1,
                         expandPolicy: "after",
-                        x$: 120,
+                        x: 120,
                         model: null,
                         renderClass: Type.Chord
                     },
                     {
-                        boundingBoxes$: [],
+                        boundingBoxes: [],
                         expandPolicy: "after",
                         division: 2,
-                        x$: 130,
+                        x: 130,
                         part: "P1",
                         model: segments[1][1],
                         renderClass: Type.Chord
                     },
                     {
                         division: 4,
-                        x$: 190,
+                        x: 190,
                         model: null,
                         renderClass: Type.Attributes
                     },
@@ -163,7 +156,6 @@ describe("[engine/measureProcessor.ts]", function() {
                 } as any,
                 preview: false,
                 print: null,
-                memo$: null,
                 fixup: null,
 
                 header: <any> {
@@ -174,7 +166,6 @@ describe("[engine/measureProcessor.ts]", function() {
                         }
                     ]
                 },
-                attributes: {},
                 measure: {
                     idx: 0,
                     number: "1",
@@ -189,22 +180,21 @@ describe("[engine/measureProcessor.ts]", function() {
                     width: NaN
                 },
                 x: 100,
-                line: {
-                    barOnLine$: 0,
-                    barsOnLine: 0,
-                    shortestCount: 42,
-                    line: 0,
-                    lines: 1
-                },
-                factory: fakeFactory
+                lineBarOnLine: 0,
+                lineTotalBarsOnLine: 0,
+                lineShortest: 42,
+                lineCount: 1,
+                lineIndex: 0,
+                factory: fakeFactory,
+                attributes: {"P1": []},
             });
             // We've tested this exact case in ISegment.layout$, so we can be
             // a bit soft here.
             expect(layout.paddingBottom).to.deep.equal([, 0]);
             expect(layout.paddingTop).to.deep.equal([, 0]);
             expect(layout.elements[0].length).to.equal(5);
-            expect(layout.elements[0][4].x$).to.equal(190);
-            expect(layout.elements[0][0].x$).to.equal(100);
+            expect(layout.elements[0][4].x).to.equal(190);
+            expect(layout.elements[0][0].x).to.equal(100);
             expect(layout.width).to.equal(100);
         });
     });
@@ -221,47 +211,19 @@ describe("[engine/measureProcessor.ts]", function() {
                 createFakeVoiceSegment(1, 7, 2)
             ];
 
-            let width = approximateLayout({
-                document: {
-                    __fakeDocument: true
-                } as any,
-                print: null,
-                preview: false,
-                memo$: null,
-                fixup: null,
-
-                attributes: {},
-                header: <any> {
-                    partList: [
-                        {
-                            _class: "ScorePart",
-                            id: "P1"
-                        }
-                    ]
+            let width = getApproximateMeasureWidth({
+                idx: 0,
+                number: "1",
+                version: 0,
+                parts: {
+                    "P1": {
+                        voices: voiceSegments,
+                        staves: staffSegments
+                    }
                 },
-                measure: {
-                    idx: 0,
-                    number: "1",
-                    version: 0,
-                    parts: {
-                        "P1": {
-                            voices: voiceSegments,
-                            staves: staffSegments
-                        }
-                    },
-                    uuid: 1248,
-                    width: NaN
-                },
-                x: 100,
-                line: {
-                    barOnLine$: 0,
-                    barsOnLine: 0,
-                    shortestCount: 42,
-                    line: 0,
-                    lines: 1
-                },
-                factory: fakeFactory
-            }).width;
+                uuid: 1248,
+                width: NaN
+            }, 42);
             // 100 - 10 for attribute 1. See createFakeStaffSegment
             expect(width).to.equal(90);
         });

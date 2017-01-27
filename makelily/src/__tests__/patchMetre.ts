@@ -1,7 +1,7 @@
 import {Count, Note} from "musicxml-interfaces";
 import {expect} from "chai";
 
-import Type from "../document_types";
+import {Type} from "../document";
 import SongImpl from "../engine_songImpl";
 import {Patch} from "../satie";
 
@@ -71,9 +71,8 @@ function insertNote(song: SongImpl, patches: {isPatches: boolean}, idx: number, 
         .measure(measure1, measure => measure
           .part("P1", part => part
             .voice(1, voice => voice
-              .insertChord([note => note.pitch(p => p.octave(2).step("C")).noteType(t => t.duration(count))],
-                idx
-              )
+              .at(idx)
+              .insertChord([note => note.pitch(p => p.octave(2).step("C")).noteType(t => t.duration(count))])
             )
           )
         )

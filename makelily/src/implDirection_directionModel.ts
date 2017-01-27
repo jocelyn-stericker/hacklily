@@ -20,10 +20,9 @@ import {AboveBelow, DirectionType, Offset, Sound, Footnote, Level, Direction,
     NormalBold, Segno, serializeDirection} from "musicxml-interfaces";
 import {forEach} from "lodash";
 
-import {IModel, ILayout} from "./document_model";
-import Type from "./document_types";
+import {IModel, ILayout, Type} from "./document";
 
-import {ICursor} from "./private_cursor";
+import {IReadOnlyValidationCursor, LayoutCursor} from "./private_cursor";
 import {IBoundingRect} from "./private_boundingRect";
 import {mmToTenths, ptPerMM} from "./private_renderUtil";
 import {getTextBB} from "./private_fontManager";
@@ -71,7 +70,7 @@ class DirectionModel implements Export.IDirectionModel {
         });
     }
 
-    validate(cursor$: ICursor): void {
+    refresh(cursor: IReadOnlyValidationCursor): void {
         forEach(this.directionTypes, type => {
             if (type.dynamics && this.placement === AboveBelow.Unspecified) {
                 this.placement = AboveBelow.Below;
@@ -79,8 +78,8 @@ class DirectionModel implements Export.IDirectionModel {
         });
     }
 
-    getLayout(cursor$: ICursor): Export.IDirectionLayout {
-        return new DirectionModel.Layout(this, cursor$);
+    getLayout(cursor: LayoutCursor): Export.IDirectionLayout {
+        return new DirectionModel.Layout(this, cursor);
     }
 
     toXML(): string {
@@ -90,6 +89,10 @@ class DirectionModel implements Export.IDirectionModel {
     inspect() {
         return this.toXML();
     }
+
+    calcWidth(shortest: number) {
+        return 0;
+    }
 }
 
 DirectionModel.prototype.divCount = 0;
@@ -97,12 +100,12 @@ DirectionModel.prototype.divisions = 0;
 
 module DirectionModel {
     export class Layout implements Export.IDirectionLayout {
-        constructor(model: DirectionModel, cursor$: ICursor) {
+        constructor(model: DirectionModel, cursor: LayoutCursor) {
             model = Object.create(model);
 
             this.model = model;
-            this.x$ = cursor$.x$;
-            this.division = cursor$.division$;
+            this.x = cursor.segmentX;
+            this.division = cursor.segmentDivision;
 
             let defaultY = 0;
             switch (model.placement) {
@@ -118,13 +121,13 @@ module DirectionModel {
                     break;
             }
 
-            this.boundingBoxes$ = [];
+            this.boundingBoxes = [];
 
             forEach(model.directionTypes, (type, idx) => {
                 model.directionTypes[idx] = Object.create(model.directionTypes[idx]);
                 forEach(type.words, (word, idx) => {
                     let origModel = type.words[idx];
-                    let defaults = cursor$.header.defaults;
+                    let defaults = cursor.header.defaults;
                     type.words[idx] = Object.create(origModel);
                     type.words[idx].fontSize = type.words[idx].fontSize || "18";
                     type.words[idx].defaultX = 0;
@@ -147,7 +150,7 @@ module DirectionModel {
                             fontBox.left / ptPerMM) * 1.1;
                     boundingBox.right = mmToTenths(scale40,
                             fontBox.right / ptPerMM) * 1.1;
-                    this.boundingBoxes$.push(boundingBox);
+                    this.boundingBoxes.push(boundingBox);
                 });
                 if (type.dynamics) {
                     let origDynamics = type.dynamics;
@@ -159,7 +162,7 @@ module DirectionModel {
                     boundingBox.right = 30;
                     boundingBox.top = -10;
                     boundingBox.bottom = 30; // TODO
-                    this.boundingBoxes$.push(boundingBox);
+                    this.boundingBoxes.push(boundingBox);
                 }
                 forEach(type.segnos, (origSegno, idx) => {
                     let segno: Segno = Object.create(origSegno);
@@ -172,7 +175,7 @@ module DirectionModel {
                     boundingBox.top = -glyphBoxes["segno"][1] * 10 - 10;
                     boundingBox.left = glyphBoxes["segno"][2] * 10 - 10;
                     boundingBox.bottom = -glyphBoxes["segno"][3] * 10 + 10;
-                    this.boundingBoxes$.push(boundingBox);
+                    this.boundingBoxes.push(boundingBox);
                 });
             });
         }
@@ -182,20 +185,20 @@ module DirectionModel {
         // Constructed:
 
         model: DirectionModel;
-        x$: number;
+        x: number;
         division: number;
 
         // Prototype:
 
-        boundingBoxes$: IBoundingRect[];
+        boundingBoxes: IBoundingRect[];
         renderClass: Type;
         expandPolicy: "none";
     }
 
     Layout.prototype.expandPolicy = "none";
     Layout.prototype.renderClass = Type.Direction;
-    Layout.prototype.boundingBoxes$ = [];
-    Object.freeze(Layout.prototype.boundingBoxes$);
+    Layout.prototype.boundingBoxes = [];
+    Object.freeze(Layout.prototype.boundingBoxes);
 };
 
 function Export(constructors: { [key: number]: any }) {

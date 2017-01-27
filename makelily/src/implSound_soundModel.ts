@@ -23,12 +23,10 @@ import {MidiInstrument, Play, Offset, MidiDevice, Sound,
     serializeSound} from "musicxml-interfaces";
 import {forEach} from "lodash";
 
-import {IModel} from "./document_model";
-import Type from "./document_types";
+import {IModel, ILayout, Type} from "./document";
 
-import {ICursor} from "./private_cursor";
+import {IReadOnlyValidationCursor, LayoutCursor} from "./private_cursor";
 import {IBoundingRect} from "./private_boundingRect";
-import {ILayout} from "./document_model";
 
 class SoundModel implements Export.ISoundModel {
 
@@ -75,13 +73,13 @@ class SoundModel implements Export.ISoundModel {
         });
     }
 
-    validate(cursor$: ICursor): void {
+    refresh(cursor: IReadOnlyValidationCursor): void {
         // todo
     }
 
-    getLayout(cursor$: ICursor): Export.ISoundLayout {
-        // mutates cursor$ as required.
-        return new SoundModel.Layout(this, cursor$);
+    getLayout(cursor: LayoutCursor): Export.ISoundLayout {
+        // mutates cursor as required.
+        return new SoundModel.Layout(this, cursor);
     }
 
     toXML(): string {
@@ -91,20 +89,20 @@ class SoundModel implements Export.ISoundModel {
     inspect() {
         return this.toXML();
     }
+
+    calcWidth(shortest: number) {
+        return 0;
+    }
 }
 
 SoundModel.prototype.divCount = 0;
 
 module SoundModel {
     export class Layout implements Export.ISoundLayout {
-        constructor(model: SoundModel, cursor$: ICursor) {
+        constructor(model: SoundModel, cursor: LayoutCursor) {
             this.model = model;
-            this.x$ = cursor$.x$;
-            this.division = cursor$.division$;
-
-            /*---- Geometry ---------------------------------------*/
-
-            // cursor$.x$ += 0;
+            this.x = cursor.segmentX;
+            this.division = cursor.segmentDivision;
         }
 
         /*---- ILayout ------------------------------------------------------*/
@@ -112,20 +110,20 @@ module SoundModel {
         // Constructed:
 
         model: SoundModel;
-        x$: number;
+        x: number;
         division: number;
 
         // Prototype:
 
-        boundingBoxes$: IBoundingRect[];
+        boundingBoxes: IBoundingRect[];
         renderClass: Type;
         expandPolicy: "none";
     }
 
     Layout.prototype.expandPolicy = "none";
     Layout.prototype.renderClass = Type.Sound;
-    Layout.prototype.boundingBoxes$ = [];
-    Object.freeze(Layout.prototype.boundingBoxes$);
+    Layout.prototype.boundingBoxes = [];
+    Object.freeze(Layout.prototype.boundingBoxes);
 };
 
 /**

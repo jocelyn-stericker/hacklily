@@ -20,20 +20,22 @@
  * @file part of Satie test suite
  */
 
+import {Attributes} from "musicxml-interfaces";
+
 import AttributesModel from "../implAttributes_attributesModel";
 
 import {expect} from "chai";
 
-import {IModel} from "../document_model";
-import Type from "../document_types";
+import {ISegment, IModel, Type} from "../document";
 
-import {ICursor} from "../private_cursor";
+import {ValidationCursor, LayoutCursor} from "../private_cursor";
 
 import Factory from "../engine_factory";
 
-export function makeCursor(factory: Factory, models: IModel[]): ICursor {
-    (<any>models).part = "P1";
-    return {
+export function makeCursor(factory: Factory, models: ISegment): ValidationCursor {
+    models.part = "P1";
+    let v: ValidationCursor = {
+        const: () => v,
         document: {
             __fakeDocument: true
         } as any,
@@ -41,58 +43,43 @@ export function makeCursor(factory: Factory, models: IModel[]): ICursor {
         patch: null,
         advance: null,
 
-        segment: <any> models,
-        idx$: 0,
+        segmentInstance: <any> models,
+        segmentPosition: 0,
 
-        staff: {
-            previous: null,
-            attributes: <any> {
-                divisions: 60,
-                clef: {
-                    sign: "G",
-                    clefOctaveChange: "0",
-                    line: 2
-                },
-                time: {
-                    beats: ["4"],
-                    beatTypes: [4],
-                    senzaMisura: null
-                }
+        staffAttributes: <any> {
+            divisions: 60,
+            clef: {
+                sign: "G",
+                clefOctaveChange: "0",
+                line: 2
             },
-            totalDivisions: 240,
-            accidentals$: {},
-            idx: 0
+            time: {
+                beats: ["4"],
+                beatTypes: [4],
+                senzaMisura: null
+            }
         },
-        measure: {
+        staffAccidentals: {},
+        staffIdx: 0,
+        measureInstance: {
+            uuid: 100,
+            nonControlling: false,
             idx: 0,
             number: "1",
             implicit: false,
-            version: 0,
-            nonControlling: false,
-            x: 100,
-            attributes: null,
-            uuid: 100,
-            parent: <any> {
-                parts: {
-                    "P1": {
-                        staves: [
-                            null,
-                            {
-                                staves: []
-                            }
-                        ]
-                    }
+            parts: {
+                "P1": {
+                    staves: [
+                        null,
+                        {
+                        }
+                    ],
+                    voices: null,
                 }
             }
-        },
-        line: {
-            shortestCount: Number.MAX_VALUE,
-            barOnLine$: 0,
-            barsOnLine: 1,
-            line: 0,
-            lines: 1
-        },
-        print$: null,
+        } as any,
+        measureIsLast: true,
+        print: null,
         header: <any> {
             partList: [
                 {
@@ -102,18 +89,12 @@ export function makeCursor(factory: Factory, models: IModel[]): ICursor {
             ]
         },
 
-        division$: 0,
-        x$: 100,
-        minXBySmallest$: {},
-        maxPaddingTop$: [],
-        maxPaddingBottom$: [],
+        segmentDivision: 0,
 
-        page$: NaN,
-
-        approximate: false,
-        detached: true,
-        factory: factory
+        factory: factory,
+        preview: false,
     };
+    return v;
 }
 
 function FakeChord(constructors: { [key: number]: any }) {
@@ -125,21 +106,34 @@ function FakeChord(constructors: { [key: number]: any }) {
 describe("[attributes.ts]", function() {
     describe("AttributesModel", function() {
         let factory = new Factory([AttributesModel, FakeChord]);
-        let attributes: IModel;
+        let attributes: Attributes & IModel;
+        let segment: ISegment;
         it("can be created", function() {
             attributes = factory.create(Type.Attributes);
             expect(!!attributes).to.be.true;
             // Divisions is usually set by the engine
-            (<any>attributes).divisions = 100;
+            attributes.divisions = 100;
+            segment = [attributes] as any;
 
-            let cursor$ = makeCursor(factory, [attributes]);
-            cursor$.staff.attributes = <any> {};
-            attributes.validate(cursor$);
+            let cursor = makeCursor(factory, segment);
+            cursor.staffAttributes = <any> {};
+            attributes.refresh(cursor);
         });
         it("lays out properly when at start of song", function() {
-            let cursor$ = makeCursor(factory, [attributes]);
-            cursor$.staff.attributes = <any> {};
-            let layout = attributes.getLayout(cursor$) as AttributesModel.IAttributesLayout;
+            let cursor = makeCursor(factory, segment);
+            cursor.staffAttributes = {} as any;
+            const lCursor: LayoutCursor = {...cursor,
+                measureX: 0,
+                lineShortest: Number.MAX_VALUE,
+                lineBarOnLine: 0,
+                lineTotalBarsOnLine: 1,
+                lineIndex: 0,
+                lineCount: 1,
+                segmentX: 100,
+                lineMaxPaddingTopByStaff: [],
+                lineMaxPaddingBottomByStaff: [],
+            };
+            let layout = attributes.getLayout(lCursor) as AttributesModel.IAttributesLayout;
             expect(!!layout.keySignature).to.be.true;
             expect(!!layout.time).to.be.true;
             expect(!!layout.clef).to.be.true;
@@ -147,9 +141,9 @@ describe("[attributes.ts]", function() {
             expect(layout.clefSpacing).to.be.gt(0);
             expect(layout.ksSpacing).to.be.gt(0);
 
-            expect(layout.x$).to.be.lt(cursor$.x$);
+            expect(layout.x).to.be.lt(lCursor.segmentX);
             let expectedChange = layout.clefSpacing + layout.tsSpacing + layout.ksSpacing;
-            expect(cursor$.x$ - layout.x$).to.equal(expectedChange);
+            expect(lCursor.segmentX - layout.x).to.equal(expectedChange);
         });
     });
 });

@@ -19,7 +19,7 @@
 export const VERSION = process.env.SATIE_VERSION || "";
 
 import SongImpl from "./engine_songImpl";
-import {ISongClass} from "./document_song";
+import {ISongClass} from "./document";
 
 /* The web application API */
 export {default as Application} from "./engine_application";
@@ -27,11 +27,7 @@ export {default as Application} from "./engine_application";
 /* Root-scope interfaces: Songs, documents, models */
 export {default as IHandler} from "./engine_application";
 
-export {IDocument} from "./document_document";
-export {IModel} from "./document_model";
-export {default as Type} from "./document_types";
-export {IMeasure} from "./document_measure";
-export {ISong, ISongClass, IMouseEvent} from "./document_song";
+export {Document, IModel, Type, IMeasure, ISong, ISongClass, IMouseEvent} from "./document";
 export const Song: ISongClass = SongImpl;
 
 /* Experimental addons */
@@ -43,7 +39,7 @@ import EKeySignature from "./implAttributes_keySignatureView";
 import ETimeSignature from "./implAttributes_timeSignatureView";
 
 /* Patches */
-import eCreatePatch from "./patch_createPatch";
+import eCreatePatch from "./engine_createPatch";
 
 export module Addons {
     export const getGlyphCode = eGetGlyphCode;
