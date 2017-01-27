@@ -19,7 +19,7 @@
 import {ScoreHeader, MeasureNumbering, PartNameDisplay, MeasureLayout, PartAbbreviationDisplay,
     PageLayout, SystemLayout, StaffLayout, Print, NormalItalic, NormalBold, serializePrint}
     from "musicxml-interfaces";
-import {forEach, defaultsDeep} from "lodash";
+import {forEach} from "lodash";
 import * as invariant from "invariant";
 
 import {IModel, ILayout, Type} from "./document";
@@ -59,9 +59,7 @@ class PrintModel implements Export.IPrintModel {
     staffLayouts: StaffLayout[];
     pageNumber: string;
 
-    /*---- Private ------------------------------------------------------------------------------*/
-
-    private _once: boolean;
+    _snapshot: Print;
 
     /*---- Implementation -----------------------------------------------------------------------*/
 
@@ -73,49 +71,60 @@ class PrintModel implements Export.IPrintModel {
 
     refresh(cursor: IReadOnlyValidationCursor): void {
         invariant(!!cursor.header, "Cursor must have a valid header");
-        let spec: Print;
-        if (!this._once) {
-            // FIXME: should always sync
-            let defaultPrint = extractDefaultPrintFromHeader(cursor.header);
-            spec = defaultsDeep<PrintModel, PrintModel>(this, defaultPrint);
-        } else {
-            spec = this;
-        }
-        this.sync(spec);
         if (!this.measureNumbering) {
-            this.measureNumbering = {
-                data: "system"
-            };
+            cursor.patch(staff => staff.print(print =>
+                print.measureNumbering({
+                    data: "system",
+                })
+            ));
         }
 
-        this.pageNumber = "1"; // TODO
+        if (this.pageNumber !== "1") { // XXX: Make this the actual page number
+            cursor.patch(staff => staff.print(print =>
+                print.pageNumber("1")
+            ));
+        }
 
         if (!this.systemLayout) {
-            this.systemLayout = {};
+            cursor.patch(staff => staff.print(print =>
+                print.systemLayout({})
+            ));
         }
         const atStart = this.pageNumber === "1" && cursor.measureInstance.idx === 0;
         if (!this.systemLayout.systemMargins || atStart && !this.systemLayout.systemMargins.leftMargin) {
-            this.systemLayout.systemMargins = {
-                leftMargin: atStart ? 70 : 0,
-                rightMargin: 0,
-            };
+            cursor.patch(staff => staff.print(print =>
+                print.systemLayout(systemLayout =>
+                    systemLayout.systemMargins({
+                        leftMargin: atStart ? 70 : 0,
+                        rightMargin: 0,
+                    })
+                )
+            ));
         }
 
-        this._once = true;
+        let defaultPrint = extractDefaultPrintFromHeader(cursor.header);
+        this._snapshot = this.getSnapshot(defaultPrint);
     }
 
     getLayout(cursor: LayoutCursor): Export.IPrintLayout {
         return new PrintModel.Layout(this, cursor);
     }
 
-    sync(print: Print) {
-        let keys = Object.keys(Object(print));
-
-        for (let i = 0; i < keys.length; ++i) {
-            if (!(<any>this)[keys[i]]) {
-                (<any>this)[keys[i]] = (<any>print)[keys[i]];
-            }
-        }
+    getSnapshot(parent: Print): Print {
+        return {
+            measureNumbering: this.measureNumbering || parent.measureNumbering,
+            partNameDisplay: this.partNameDisplay || parent.partNameDisplay,
+            newSystem: this.newSystem || parent.newSystem,
+            newPage: this.newPage || parent.newPage,
+            blankPage: this.blankPage || parent.blankPage,
+            measureLayout: this.measureLayout || parent.measureLayout,
+            partAbbreviationDisplay: this.partAbbreviationDisplay || parent.partAbbreviationDisplay,
+            pageLayout: this.pageLayout || parent.pageLayout,
+            systemLayout: this.systemLayout || parent.pageLayout,
+            staffSpacing: this.staffSpacing || parent.staffSpacing,
+            staffLayouts: this.staffLayouts || parent.staffLayouts,
+            pageNumber: this.pageNumber || parent.pageNumber,
+        };
     }
 
     toXML(): string {

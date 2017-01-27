@@ -17,7 +17,7 @@
  */
 
 import {Clef, Count, MultipleRest, Note, NoteheadType, Stem, StemType, Tremolo,
-    Tied, TimeModification, serializeNote} from "musicxml-interfaces";
+    TimeModification, serializeNote} from "musicxml-interfaces";
 import {forEach, times, reduce, map, max, some} from "lodash";
 import * as invariant from "invariant";
 
@@ -130,8 +130,6 @@ class ChordModelImpl implements ChordModel.IChordModel, ArrayLike<NoteImpl> {
 
     stem: Stem;
 
-    private _count: Count;
-    private _timeModification: TimeModification;
     private _layout: ChordModelImpl.Layout;
 
     get satieLedger(): number[] {
@@ -141,62 +139,21 @@ class ChordModelImpl implements ChordModel.IChordModel, ArrayLike<NoteImpl> {
     get rest() {
         return some(this, note => note.rest);
     }
-    set rest(r: boolean) {
-        if (!!r) {
-            times(this.length, idx => {
-                if (idx === 0) {
-                    this[idx].pitch = null;
-                } else {
-                    delete this[idx];
-                }
-            });
-            this.setTieds([null]);
-        } else {
-            invariant(!this.rest, "Instead, set the exact pitch or chord...");
-        }
-    }
 
-    get timeModification() {
-        return this._timeModification;
-    }
-
-    set timeModification(t: TimeModification) {
-        this._timeModification = t;
+    get timeModification(): TimeModification {
+        return this[0].timeModification;
     }
 
     get notes(): NoteImpl[] {
         return times(this.length, i => this[i]);
     }
 
-    set notes(c: NoteImpl[]) {
-        times(this.length, i => delete this[i]);
-
-        forEach(c, (n, i) => {
-            invariant(n instanceof NoteImpl, "Notes must be NoteImpls in Chords");
-            this[i] = n;
-        });
-        this.length = c.length;
-    }
-
-    setTieds(v: Tied[]) {
-        forEach(this.notes, (n, i) => {
-            if (v[i]) {
-                n.ensureNotationsWrittable();
-                notationObj(n).tieds = [v[i]];
-            } else {
-                delete notationObj(n).tieds;
-            }
-        });
-        // TODO: Also update sound (ties)
-    }
-
-    get count() {
-        return this._count;
-    }
-
-    set count(n: Count) {
-        invariant(!isNaN(n), "Invalid count %s", n);
-        this._count = n;
+    get count(): Count {
+        let noteType = this[0].noteType;
+        if (!noteType) {
+            return null;
+        }
+        return noteType.duration;
     }
 
     push(...notes: Note[]) {
@@ -211,7 +168,14 @@ class ChordModelImpl implements ChordModel.IChordModel, ArrayLike<NoteImpl> {
     splice(start: number, deleteCount: number, ...replacements: NoteImpl[]) {
         let notes = this.notes;
         notes.splice(start, deleteCount, ...replacements);
-        this.notes = notes;
+
+        times(this.length, i => delete this[i]);
+
+        forEach(notes, (n, i) => {
+            invariant(n instanceof NoteImpl, "Notes must be NoteImpls in Chords");
+            this[i] = n;
+        });
+        this.length = notes.length;
     }
 
     /*---- Implementation -----------------------------------------------------------------------*/
@@ -236,8 +200,10 @@ class ChordModelImpl implements ChordModel.IChordModel, ArrayLike<NoteImpl> {
 
     _init: boolean = false;
     refresh(cursor: IReadOnlyValidationCursor): void {
-        if (!isFinite(this._count)) {
-            this._implyCountFromPerformanceData(cursor);
+        if (!isFinite(this.count)) {
+            let count = this._implyCountFromPerformanceData(cursor);
+            cursor.patch(voice => reduce(this, (builder, note, idx) => builder
+                .note(idx, j => j.noteType({duration: count})) as any, voice));
         }
         try {
             const divCount = calcDivisions(this, cursor.staffAttributes);
@@ -298,15 +264,20 @@ class ChordModelImpl implements ChordModel.IChordModel, ArrayLike<NoteImpl> {
 
         this.wholebar = this.divCount === barDivisions(cursor.staffAttributes) || this.divCount === -1;
 
-        invariant(isFinite(this._count) && this._count !== null,
-            "%s is not a valid count", this._count);
+        let count = this.count;
+        invariant(isFinite(count) && count !== null,
+            "%s is not a valid count", count);
+        for (let i = 0; i < this.length; ++i) {
+            invariant(this[i].noteType.duration === count, "Inconsistent count (%s != %s)",
+                this[i].noteType.duration, count);
+        }
 
         this._checkMulitpleRest(cursor);
         this._implyNoteheads(cursor);
 
         if (!this._init) {
-            if (countToIsBeamable[this._count]) {
-                this.satieFlag = countToFlag[this._count];
+            if (countToIsBeamable[count]) {
+                this.satieFlag = countToFlag[count];
             } else {
                 this.satieFlag = null;
             }
@@ -386,6 +357,7 @@ class ChordModelImpl implements ChordModel.IChordModel, ArrayLike<NoteImpl> {
     }
 
     private _implyCountFromPerformanceData(cursor: IReadOnlyValidationCursor) {
+        let count: Count;
         const {time, divisions} = cursor.staffAttributes;
         const ts = {
             beatType: time.beatTypes[0], // FIXME
@@ -394,7 +366,7 @@ class ChordModelImpl implements ChordModel.IChordModel, ArrayLike<NoteImpl> {
 
         let factor = ts.beatType / 4;
         let beats = factor * (this[0].duration / divisions);
-        this._count = 4 / (this[0].duration / divisions);
+        count = 4 / (this[0].duration / divisions);
 
         // Try dots
         let dotFactor = 1;
@@ -408,7 +380,7 @@ class ChordModelImpl implements ChordModel.IChordModel, ArrayLike<NoteImpl> {
             dotFactor += Math.pow(1 / 2, dots);
         }
         if (dots > 0) {
-            this._count = (1 / (beats / dotFactor / 4 / factor));
+            count = (1 / (beats / dotFactor / 4 / factor));
             cursor.patch(voiceA => reduce(times(this.length), (voice, idx) =>
                     voice.note(idx, note => note.dots(times(dots, dot => ({})))),
                 voiceA as VoiceBuilder));
@@ -422,10 +394,10 @@ class ChordModelImpl implements ChordModel.IChordModel, ArrayLike<NoteImpl> {
             // Whole bar rests can still exist even when there's no single NOTE duration
             // that spans a bar.
             if (beats === ts.beats && !!this[0].rest) {
-                this._count = Count.Whole;
+                count = Count.Whole;
             } else {
                 let nextPO2 = Math.pow(2, Math.ceil(Math.log(this.count) / Math.log(2)));
-                this._count = nextPO2;
+                count = nextPO2;
                 // TODO: Add 1+ tie.
             }
         }
@@ -442,6 +414,8 @@ class ChordModelImpl implements ChordModel.IChordModel, ArrayLike<NoteImpl> {
             return !!n && !(n & (n - 1));
             /* tslint:enable */
         }
+
+        return count;
     }
 
     private _getStemHeight(direction: number, clef: Clef): number {

@@ -22,8 +22,7 @@
 import {Clef, PartSymbol, MeasureStyle, StaffDetails, Transpose, Directive,
     Time, Key, Footnote, Level, Attributes, KeyOctave, PartSymbolType, SymbolSize,
     TimeSymbolType, serializeAttributes} from "musicxml-interfaces";
-import {buildClef, buildTime, buildKey} from "musicxml-interfaces/builders";
-import {find, forEach, times} from "lodash";
+import {find, forEach, times, isEqual} from "lodash";
 import * as invariant from "invariant";
 
 import {IModel, Type, ILayout} from "./document";
@@ -92,11 +91,11 @@ class AttributesModel implements Export.IAttributesModel {
             this.divisions = this.divisions || 1;
         }
 
-        this._validateClef$(cursor);
-        this._validateTime$();
-        this._validateKey$();
-        this._validateStaves$(cursor);
-        this._validateStaffDetails$(cursor);
+        this._validateClef(cursor);
+        this._validateTime(cursor);
+        this._validateKey(cursor);
+        this._validateStaves(cursor);
+        this._validateStaffDetails(cursor);
         this._validateMeasureStyles(cursor);
 
         this._snapshot = createSnapshot({
@@ -184,71 +183,100 @@ class AttributesModel implements Export.IAttributesModel {
         return 0; // TODO
     }
 
-    private _validateClef$(cursor: IReadOnlyValidationCursor) {
+    private _validateClef(cursor: IReadOnlyValidationCursor) {
         const staffIdx = cursor.staffIdx;
 
         // Clefs must be an array
-        this.clefs = this.clefs || [];
+        if (!(this.clefs instanceof Array)) {
+            cursor.patch(staff => staff.attributes(attributes =>
+                attributes.clefs([])
+            ));
+        }
 
-        // Clefs must have a staff number
-        this.clefs.forEach(clef => {
-            if (clef) {
-                clef.number = clef.number || 1; // XXX: do not mutate
+        // Clefs must have a staff number and be sorted by staff number
+        this.clefs.forEach((clef, clefIdx) => {
+            if (!clef) {
+                return;
+            }
+            if (clef.number !== clefIdx) {
+                cursor.patch(staff => staff.attributes(attributes =>
+                    attributes.clefsAt(clefIdx, clef =>
+                        clef.number(clefIdx)
+                    )
+                ));
             }
         });
 
-        // Clefs must be indexed by staff
-        this.clefs = this.clefs.reduce((clefs, clef) => {
-            if (clef) {
-                clefs[clef.number] = clef; // XXX: do not mutate
-            };
-            return clefs;
-        }, []);
-
         // A clef is mandatory (we haven't implemented clef-less staves yet)
         if ((!this._parent || !this._parent.clef) && !this.clefs[staffIdx]) {
-            this.clefs[staffIdx] = buildClef(clef => clef
-                .number(staffIdx)
-                .sign("G")
-                .line(2)); // XXX: do not mutate
+            cursor.patch(staff => staff.attributes(attributes =>
+                attributes.clefsAt(staffIdx, clef =>
+                    clef
+                        .number(staffIdx)
+                        .sign("G")
+                        .line(2)
+                )
+            ));
         }
 
         // Validate the given clef
         let clef = this.clefs[staffIdx];
         if (clef) {
-            clef.sign = clef.sign.toUpperCase();
-            clef.line = parseInt("" + clef.line, 10);
+            if (clef.sign !== clef.sign.toUpperCase()) {
+                cursor.patch(staff => staff.attributes(attributes =>
+                    attributes.clefsAt(staffIdx, clefb =>
+                        clefb.sign(clef.sign.toUpperCase())
+                    )
+                ));
+            }
+            if (clef.line && clef.line !== parseInt("" + clef.line, 10)) {
+                cursor.patch(staff => staff.attributes(attributes =>
+                    attributes.clefsAt(staffIdx, clefb =>
+                        clefb.line(parseInt("" + clef.line, 10))
+                    )
+                ));
+            }
 
             // Clef lines can be inferred.
             if (!clef.line) {
                 let {sign} = clef;
                 let standardClef = find(standardClefs, {sign});
-                clef.line = standardClef ? standardClef.line : 2; // XXX: do not mutate
+                cursor.patch(staff => staff.attributes(attributes =>
+                    attributes.clefsAt(staffIdx, clefb =>
+                        clefb.line(standardClef ? standardClef.line : 2)
+                    )
+                ));
             }
         }
     }
 
-    private _validateTime$() {
+    private _validateTime(cursor: IReadOnlyValidationCursor) {
         // Times must be an array
         this.times = this.times || [];
 
         // A time signature is mandatory.
         if ((!this._parent || !this._parent.time) && !this.times[0]) {
-            this.times[0] = buildTime(time => time
-                .symbol(TimeSymbolType.Common)
-                .beats(["4"])
-                .beatTypes([4])); // XXX: do not mutate
+            cursor.patch(staff => staff.attributes(attributes =>
+                attributes.timesAt(0, time => time
+                    .symbol(TimeSymbolType.Common)
+                    .beats(["4"])
+                    .beatTypes([4])
+                )
+            ));
         }
     }
 
-    private _validateKey$() {
+    private _validateKey(cursor: IReadOnlyValidationCursor) {
         // Key signatures must be an array
         this.keySignatures = this.keySignatures || [];
 
         if ((!this._parent || !this._parent.keySignature) && !this.keySignatures[0]) {
-            this.keySignatures[0] = buildKey(key => key
-                .fifths(0)
-                .mode("major")); // XXX: do not mutate
+            cursor.patch(staff => staff.attributes(attributes =>
+                attributes.keySignaturesAt(0, key => key
+                    .fifths(0)
+                    .mode("major")
+                )
+            ));
         }
 
         let ks = this.keySignatures[0];
@@ -257,12 +285,14 @@ class AttributesModel implements Export.IAttributesModel {
                 console.warn(
                     "Expected the number of steps to equal the number of alterations. " +
                     "Ignoring key.");
-                this.keySignatures = [{
-                    fifths: 0,
-                    keySteps: null,
-                    keyAccidentals: null,
-                    keyAlters: null
-                }]; // XXX: do not mutate
+                cursor.patch(staff => staff.attributes(attributes =>
+                    attributes.keySignaturesAt(0, key => key
+                        .fifths(0)
+                        .keySteps(null)
+                        .keyAccidentals(null)
+                        .keyAlters(null)
+                    )
+                ));
             }
             if (ks.keyAccidentals && ks.keyAccidentals.length !== ks.keySteps.length) {
                 if (ks.keyAccidentals.length) {
@@ -271,7 +301,11 @@ class AttributesModel implements Export.IAttributesModel {
                         "specified for all steps in a key signature due to a limitation " +
                         "in musicxml-interfaces. Ignoring `key-accidentals`");
                 }
-                ks.keyAccidentals = null; // XXX: do not mutate
+                cursor.patch(staff => staff.attributes(attributes =>
+                    attributes.keySignaturesAt(0, key => key
+                        .keyAccidentals(null)
+                    )
+                ));
             }
             if (ks.keyOctaves) {
                 // Let's sort them (move to prefilter?)
@@ -279,46 +313,71 @@ class AttributesModel implements Export.IAttributesModel {
                 forEach(ks.keyOctaves, octave => {
                    keyOctaves[octave.number - 1] = octave;
                 });
-                ks.keyOctaves = keyOctaves; // XXX: do not mutate
+                if (!isEqual(ks.keyOctaves, keyOctaves)) {
+                    cursor.patch(staff => staff.attributes(attributes =>
+                        attributes.keySignaturesAt(0, key => key
+                            .keyOctaves(keyOctaves)
+                        )
+                    ));
+                }
             }
         }
     }
 
-    private _validateStaffDetails$(cursor: IReadOnlyValidationCursor) {
+    private _validateStaffDetails(cursor: IReadOnlyValidationCursor) {
         // Staff details must be an array
         this.staffDetails = this.staffDetails || [];
 
         // Staff details must have a staff number
-        this.staffDetails.forEach(staffDetails => {
+        let sSoFar = 0;
+        this.staffDetails.forEach((staffDetails, i) => {
             if (staffDetails) {
-                staffDetails.number = staffDetails.number || 1; // XXX: do not mutate
+                ++sSoFar;
+                if (!staffDetails.number) {
+                    cursor.patch(staff => staff.attributes(attributes =>
+                        attributes.staffDetailsAt(i, sd =>
+                            sd.number(sSoFar)
+                        )
+                    ));
+                }
             }
         });
 
         // Staff details must be indexed by staff
-        this.staffDetails = this.staffDetails.reduce((staffDetails, staffDetail) => {
+        const staffDetailsByNumber: StaffDetails[] = this.staffDetails.reduce((staffDetails, staffDetail) => {
             if (staffDetail) {
-                staffDetails[staffDetail.number] = staffDetail; // XXX: do not mutate
+                staffDetails[staffDetail.number] = staffDetail;
             };
             return staffDetails;
         }, []);
+        if (!isEqual(this.staffDetails, staffDetailsByNumber)) {
+            cursor.patch(staff => staff.attributes(attributes =>
+                attributes.staffDetails(staffDetailsByNumber)
+            ));
+        }
 
         // Staff details are required. Staff lines are required
         if (!this.staffDetails[cursor.staffIdx]) {
-            this.staffDetails[cursor.staffIdx] = {
-                number: cursor.staffIdx
-            }; // XXX: do not mutate
+            cursor.patch(staff => staff.attributes(attributes =>
+                attributes.staffDetailsAt(cursor.staffIdx, {
+                    number: cursor.staffIdx,
+                })
+            ));
         }
 
         if ((!this._parent || !this._parent.staffDetails ||
                 !this._parent.staffDetails[cursor.staffIdx] ||
                 !this._parent.staffDetails[cursor.staffIdx].staffLines) &&
                 !this.staffDetails[cursor.staffIdx].staffLines) {
-            this.staffDetails[cursor.staffIdx].staffLines = 5; // XXX: do not mutate
+            cursor.patch(staff => staff.attributes(attributes =>
+                attributes.staffDetailsAt(cursor.staffIdx, {
+                    staffLines: 5,
+                })
+            ));
         }
     }
 
-    private _validateStaves$(cursor: IReadOnlyValidationCursor) {
+    private _validateStaves(cursor: IReadOnlyValidationCursor) {
         this.staves = this.staves || 1; // FIXME!
         let currentPartId = cursor.segmentInstance.part;
         let currentPart = cursor.measureInstance.parts[currentPartId];
@@ -329,28 +388,34 @@ class AttributesModel implements Export.IAttributesModel {
             }
         });
         if (this.staves > 1 && (!this._parent || !this._parent.partSymbol) && !this.partSymbol) {
-            this.partSymbol = {
-                bottomStaff: 1,
-                topStaff: this.staves,
-                type: PartSymbolType.Brace
-            }; // XXX: do not mutate
+            cursor.patch(staff => staff.attributes(attributes =>
+                attributes.partSymbol({
+                    bottomStaff: 1,
+                    topStaff: this.staves,
+                    type: PartSymbolType.Brace,
+                })
+            ));
         }
 
         // HACK: Convert part group symbols to part symbols.
         // Obviously, this won't fly when we have multiple part groups
         let groups = groupsForPart(cursor.header.partList, cursor.segmentInstance.part);
         if (groups.length && (!this._parent || !this._parent.partSymbol) && !this.partSymbol) {
-            this.partSymbol = {
-                bottomStaff: 1,
-                topStaff: 1,
-                type: PartSymbolType.Bracket
-            }; // XXX: do not mutate
+            cursor.patch(staff => staff.attributes(attributes =>
+                attributes.partSymbol({
+                    bottomStaff: 1,
+                    topStaff: 1,
+                    type: PartSymbolType.Bracket
+                })
+            ));
         }
     }
 
     private _validateMeasureStyles(cursor: IReadOnlyValidationCursor): void {
         if (!this.measureStyles) {
-            this.measureStyles = []; // XXX: do not mutate
+            cursor.patch(staff => staff.attributes(attributes =>
+                attributes.measureStyles([])
+            ));
         }
     }
 }

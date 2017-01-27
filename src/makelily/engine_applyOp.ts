@@ -27,9 +27,10 @@ import {normalizeDivisionsInPlace} from "./engine_divisions";
 import {IFactory} from "./private_factory";
 import {cloneObject} from "./private_util";
 
-import barlineMutator from "./implBarline_barlineMutator";
 import attributesMutator from "./implAttributes_attributesMutator";
+import barlineMutator from "./implBarline_barlineMutator";
 import chordMutator from "./implChord_chordMutator";
+import printMutator from "./implPrint_printMutator";
 import segmentMutator from "./implSegment_segmentMutator";
 
 /**
@@ -166,6 +167,8 @@ export default function applyOp(preview: boolean, measures: IMeasure[], factory:
                 });
             }
             attributesMutator(preview, element as any, localOp);
+        } else if (factory.modelHasType(element, Type.Print)) {
+            printMutator(preview, element as any, localOp);
         } else {
             invariant(false, "Invalid operation path: No reducer for %s", element);
         }
