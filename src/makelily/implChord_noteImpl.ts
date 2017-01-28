@@ -483,7 +483,7 @@ class NoteImpl implements Note {
         }
 
         if (!isEqual(cloneObject(this.accidental), acc) && cursor.patch) {
-            cursor.patch(part => part.note(0, note => note.accidental(acc)));
+            cursor.patch(part => part.note(this._idx, note => note.accidental(acc)));
         }
     }
 }

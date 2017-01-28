@@ -22,7 +22,7 @@ export default class PatchImpl {
     isPatches = true;
 
     content: IAny[];
-    isPreview: boolean;
+    isPreview: boolean; // MUTABLE
 
     constructor(content: IAny[], isPreview: boolean) {
         this.content = content.slice();
@@ -38,7 +38,6 @@ export default class PatchImpl {
             Object.freeze(item.oi);
             Object.seal(item);
         });
-        Object.freeze(this);
         Object.seal(this);
     }
 }

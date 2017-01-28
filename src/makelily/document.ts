@@ -102,6 +102,19 @@ export class Document {
         return this._factory.modelHasType(model, ...modelTypes);
     }
 
+    search(models: IModel[], idx: number, modelType: Type.Chord): (IChord & IModel)[];
+    search(models: IModel[], idx: number, modelType: Type.Print): (Print & IModel)[];
+    search(models: IModel[], idx: number, modelType: Type.Grouping): (Grouping & IModel)[];
+    search(models: IModel[], idx: number, modelType: Type.FiguredBass): (FiguredBass & IModel)[];
+    search(models: IModel[], idx: number, modelType: Type.Attributes): (Attributes & IModel)[];
+    search(models: IModel[], idx: number, modelType: Type.Sound): (Sound & IModel)[];
+    search(models: IModel[], idx: number, modelType: Type.Direction): (Direction & IModel)[];
+    search(models: IModel[], idx: number, modelType: Type.Harmony): (Harmony & IModel)[];
+    search(models: IModel[], idx: number, modelType: Type.Proxy): ProxyExports.IProxyModel[];
+    search(models: IModel[], idx: number, modelType: Type.Spacer): SpacerExports.ISpacerModel[];
+    search(models: IModel[], idx: number, modelType: Type.VisualCursor):
+        VisualCursorExports.IVisualCursorModel[];
+    search(models: IModel[], idx: number, ...types: Type[]): IModel[];
     search(models: IModel[], idx: number, ...types: Type[]): IModel[] {
         return this._factory.search(models, idx, ...types);
     }

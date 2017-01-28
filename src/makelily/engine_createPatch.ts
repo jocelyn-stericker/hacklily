@@ -16,13 +16,14 @@
  * along with Satie.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import {Time, BeamType, Beam, Count, BarStyleType, TimeModification} from "musicxml-interfaces";
+import {Time, BeamType, Beam, Count, BarStyleType, TimeModification, Direction} from "musicxml-interfaces";
 import {IAny} from "musicxml-interfaces/operations";
 import {
     buildNote, patchNote, INoteBuilder,
     buildBarline, patchBarline, IBarlineBuilder,
     buildBeam,
     buildAttributes, patchAttributes, IAttributesBuilder,
+    buildDirection, patchDirection, IDirectionBuilder,
     buildPrint, patchPrint, IPrintBuilder,
 } from "musicxml-interfaces/builders";
 import {find, forEach, last, some, times, findIndex, findLastIndex, extend, isInteger} from "lodash";
@@ -49,6 +50,32 @@ function genUUID(): number {
     return Math.floor(Math.random() * MAX_SAFE_INTEGER);
 }
 
+function moreImportant(type: Type, model: IModel, doc: Document) {
+    switch (type) {
+        case Type.Print:
+            return !doc.modelHasType(model, Type.VisualCursor);
+        case Type.Grouping:
+            return !doc.modelHasType(model, Type.Print, Type.VisualCursor);
+        case Type.FiguredBass:
+            return !doc.modelHasType(model, Type.Print, Type.Grouping, Type.VisualCursor);
+        case Type.Attributes:
+            return !doc.modelHasType(model, Type.Print, Type.Grouping, Type.FiguredBass, Type.VisualCursor);
+        case Type.Sound:
+            return !doc.modelHasType(model, Type.Print, Type.Grouping, Type.FiguredBass, Type.Attributes, Type.VisualCursor);
+        case Type.Direction:
+            return !doc.modelHasType(model, Type.Print, Type.Grouping, Type.FiguredBass, Type.Attributes, Type.Sound, Type.VisualCursor);
+        case Type.Harmony:
+            return false;
+        case Type.Proxy:
+            return false;
+        case Type.Spacer:
+            return false;
+        case Type.Chord:
+        case Type.VisualCursor:
+            return true;
+    }
+}
+
 export class StaffBuilder {
     private _segment: ISegment;
     private _patches: IAny[] = [];
@@ -65,17 +92,64 @@ export class StaffBuilder {
         this._idx = idx;
     }
 
-    at(idx: number) {
+    at(idx: number): this {
         this._idx = idx;
         return this;
     }
 
-    next() {
+    next(): this {
         ++this._idx;
         return this;
     }
 
-    barline(builder: (build: IBarlineBuilder) => IBarlineBuilder) {
+    atDiv(div: number, type: Type): this {
+        let currDiv = 0;
+        for (let i = 0; i < this._segment.length; ++i) {
+            if (div < currDiv + this._segment[i].divCount ||
+                    div === currDiv + this._segment[i].divCount &&
+                    moreImportant(type, this._segment[i], this._document)) {
+                let start = currDiv;
+                let end = currDiv + this._segment[i].divCount;
+                if (div === start &&moreImportant(type, this._segment[i], this._document)) {
+                    return this.at(i);
+                } else if (div === end) {
+                    return this.at(i + 1);
+                } else {
+                    let s1 = div - start;
+                    let s2 = end - div;
+                    return this
+                        .at(i)
+                        .setDivCount(s1)
+                        .next()
+                        .insertSpacer(s2)
+                        .at(i + 1);
+                }
+            }
+            currDiv += this._segment[i].divCount;
+        }
+        let diff = div - currDiv;
+        if (diff) {
+            // Note: we should enforce this to not be possible, since the staff segment should
+            // always be full.
+            return this
+                .at(this._segment.length)
+                .insertSpacer(diff)
+                .next();
+        }
+        return this.at(this._segment.length);
+    }
+
+    setDivCount(divCount: number): this {
+        this._patches = this._patches.concat({
+            oi: divCount,
+            od: this._segment[this._idx].divCount,
+            p: [this._idx, "divCount"],
+        });
+
+        return this;
+    }
+
+    barline(builder: (build: IBarlineBuilder) => IBarlineBuilder): this {
         let model = this._segment[this._idx] as any;
         invariant(model, "no such model");
         invariant(this._document.modelHasType(model, Type.Barline), "model is not barline");
@@ -84,14 +158,14 @@ export class StaffBuilder {
         return this;
     }
 
-    insertBarline(builder: (build: IBarlineBuilder) => IBarlineBuilder) {
+    insertBarline(builder: (build: IBarlineBuilder) => IBarlineBuilder): this {
         let li = buildBarline(builder);
         let p = [this._idx];
         this._patches = this._patches.concat({li, p});
         return this;
     }
 
-    attributes(builder: (builder: IAttributesBuilder) => IAttributesBuilder) {
+    attributes(builder: (builder: IAttributesBuilder) => IAttributesBuilder): this {
         let model = this._segment[this._idx] as any;
         invariant(model, "no such model");
         invariant(this._document.modelHasType(model, Type.Attributes), "model is not attributes");
@@ -100,14 +174,38 @@ export class StaffBuilder {
         return this;
     }
 
-    insertAttributes(builder: (build: IAttributesBuilder) => IAttributesBuilder) {
+    insertAttributes(builder: (build: IAttributesBuilder) => IAttributesBuilder): this {
         let li = buildAttributes(builder);
         let p = [this._idx];
         this._patches = this._patches.concat({li, p});
         return this;
     }
 
-    print(builder: (builder: IPrintBuilder) => IPrintBuilder) {
+    direction(builder: (builder: IDirectionBuilder) => IDirectionBuilder): this {
+        let model = this._segment[this._idx] as any;
+        invariant(model, "no such model");
+        invariant(this._document.modelHasType(model, Type.Direction), "model is not direction");
+        this._patches = this._patches.concat(
+            patchDirection(model, builder).map(_prependPatch(this._idx)));
+        return this;
+    }
+
+    insertDirection(builder: Direction | ((build: IDirectionBuilder) => IDirectionBuilder)): this {
+        if (typeof builder === "function") {
+            let li = buildDirection(builder);
+            let p = [this._idx];
+            this._patches = this._patches.concat({li, p});
+            return this;
+        }
+
+        let p = [this._idx];
+        let li = cloneObject(builder);
+        li._class = "Direction";
+        this._patches = this._patches.concat({li, p});
+        return this;
+    }
+
+    print(builder: (builder: IPrintBuilder) => IPrintBuilder): this {
         let model = this._segment[this._idx] as any;
         invariant(model, "no such model");
         invariant(this._document.modelHasType(model, Type.Print), "model is not Print");
@@ -116,14 +214,25 @@ export class StaffBuilder {
         return this;
     }
 
-    insertPrint(builder: (build: IPrintBuilder) => IPrintBuilder) {
+    insertPrint(builder: (build: IPrintBuilder) => IPrintBuilder): this {
         let li = buildPrint(builder);
         let p = [this._idx];
         this._patches = this._patches.concat({li, p});
         return this;
     }
 
-    remove() {
+    insertSpacer(divs: number): this {
+        this._patches = this._patches.concat({
+            li: {
+                _class: "Spacer",
+                divCount: divs,
+            },
+            p: [this._idx],
+        });
+        return this;
+    }
+
+    remove(): this {
         this._patches = this._patches.concat(
             {
                 p: [this._idx],
@@ -150,17 +259,17 @@ export class VoiceBuilder {
         this._idx = idx;
     }
 
-    at(idx: number) {
+    at(idx: number): this {
         this._idx = idx;
         return this;
     }
 
-    next() {
+    next(): this {
         ++this._idx;
         return this;
     }
 
-    addVisualCursor() {
+    addVisualCursor(): this {
         this._patches = this._patches.concat(
             {
                 li: {
@@ -172,7 +281,7 @@ export class VoiceBuilder {
         return this;
     }
 
-    note(noteIDX: number, builder: (build: INoteBuilder) => INoteBuilder) {
+    note(noteIDX: number, builder: (build: INoteBuilder) => INoteBuilder): this {
         let model = this._segment[this._idx] as any;
         invariant(model, "no such model");
         invariant(this._document.modelHasType(model, Type.Chord), "model is not a chord");
@@ -183,7 +292,7 @@ export class VoiceBuilder {
         return this;
     }
 
-    insertChord(builders: ((build: INoteBuilder) => INoteBuilder)[]) {
+    insertChord(builders: ((build: INoteBuilder) => INoteBuilder)[]): this {
         invariant(!isNaN(this._idx), "%s must be a number", this._idx);
         let li: IChord = builders.map(builder => buildNote(builder));
         li._class = "Chord";
@@ -193,7 +302,7 @@ export class VoiceBuilder {
         return this;
     }
 
-    insertNote(position: number, builder: (builder: INoteBuilder) => INoteBuilder) {
+    insertNote(position: number, builder: (builder: INoteBuilder) => INoteBuilder): this {
         let model = this._segment[this._idx] as any;
         invariant(model, "no such model");
         invariant(this._document.modelHasType(model, Type.Chord), "model is not a chord");
@@ -206,7 +315,7 @@ export class VoiceBuilder {
         return this;
     }
 
-    remove() {
+    remove(): this {
         this._patches = this._patches.concat(
             {
                 p: [this._idx],

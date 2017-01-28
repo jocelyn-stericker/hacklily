@@ -16,19 +16,17 @@
  * along with Satie.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import {Dynamics} from "musicxml-interfaces";
+import {Dynamics, Direction} from "musicxml-interfaces";
 import {createFactory, ReactElement, Component, PropTypes} from "react";
 import {filter} from "lodash";
 import * as invariant from "invariant";
 
 import Glyph from "./private_views_glyph";
 
-import DirectionModel from "./implDirection_directionModel";
-
 const $Glyph = createFactory(Glyph);
 
 export interface IProps {
-    layout: DirectionModel.IDirectionLayout;
+    layout: {model: Direction, overrideX?: number};
     key?: string | number;
 }
 
@@ -57,7 +55,7 @@ export default class DynamicsView extends Component<IProps, {}> {
         }
 
         return $Glyph({
-            fill: "black",
+            fill: dynamics.color || "black",
             glyphName: glyphName,
             x: initX,
             y: initY

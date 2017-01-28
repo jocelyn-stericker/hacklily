@@ -262,6 +262,35 @@ class ChordModelImpl implements ChordModel.IChordModel, ArrayLike<NoteImpl> {
             note.updateAccidental(cursor);
         });
 
+        // Check for second intervals:
+        let notesSortedByY = this.notes.sort((a,b) => a.defaultY - b.defaultY);
+        for (let i = 0; i < notesSortedByY.length; ++i) {
+            if (i + 1 < notesSortedByY.length && notesSortedByY[i + 1].defaultY - notesSortedByY[i].defaultY === 5) {
+                if (direction > 0) {
+                    if (notesSortedByY[i].relativeX !== 0 || notesSortedByY[i + 1].relativeX !== 13) {
+                        cursor.patch(voice => voice
+                            .note(notesSortedByY[i]._idx, note => note.relativeX(0))
+                            .note(notesSortedByY[i + 1]._idx, note => note.relativeX(13))
+                        );
+                    }
+                } else {
+                    if (notesSortedByY[i].relativeX !== -13 || notesSortedByY[i + 1].relativeX !== 0) {
+                        cursor.patch(voice => voice
+                            .note(notesSortedByY[i]._idx, note => note.relativeX(-13))
+                            .note(notesSortedByY[i + 1]._idx, note => note.relativeX(0))
+                        );
+                    }
+                }
+                ++i;
+            } else {
+                if (notesSortedByY[i].relativeX !== 0) {
+                    cursor.patch(voice => voice
+                        .note(notesSortedByY[i]._idx, note => note.relativeX(0))
+                    );
+                }
+            }
+        }
+
         this.wholebar = this.divCount === barDivisions(cursor.staffAttributes) || this.divCount === -1;
 
         let count = this.count;
@@ -301,7 +330,7 @@ class ChordModelImpl implements ChordModel.IChordModel, ArrayLike<NoteImpl> {
         if (!this._layout) {
             this._layout = new ChordModelImpl.Layout();
         }
-        this._layout._refresh(this, cursor);
+        this._layout.refresh(this, cursor);
         return this._layout;
     }
 
@@ -597,7 +626,7 @@ module ChordModelImpl {
 
         /*---- Implementation ----------------------------------------------------*/
 
-        _refresh(baseModel: ChordModelImpl, cursor: LayoutCursor) {
+        refresh(baseModel: ChordModelImpl, cursor: LayoutCursor) {
             // ** this function should not modify baseModel **
 
             this.division = cursor.segmentDivision;
@@ -678,12 +707,11 @@ module ChordModelImpl {
                      * default position.  To do so, we use prototypical
                      * inheritance. See Object.create. */
                     return Object.create(note, {
-
                         defaultX: {
                             get: () => {
-                                return note.defaultX ||
-                                    (this as any).overrideX ||
-                                    this.x;
+                                return (note.relativeX || 0) +
+                                    ((this as any).overrideX ||
+                                    this.x);
                             }
                         },
                         stem: {
@@ -696,6 +724,7 @@ module ChordModelImpl {
                     });
                 }) as any;
 
+            model.stemX = () => ((this as any).overrideX || this.x);
             model.staffIdx = baseModel.staffIdx;
             model.divCount = baseModel.divCount;
             model.satieLedger = baseModel.satieLedger;

@@ -20,19 +20,19 @@
  */
 
 import {createFactory, ReactElement, Component, DOM, PropTypes} from "react";
+import {Direction} from "musicxml-interfaces";
 import {map} from "lodash";
 
 import Glyph from "./private_views_glyph";
 import Dynamics from "./implDirection_dynamicsView";
 import Words from "./implDirection_wordsView";
 
-import DirectionModel from "./implDirection_directionModel";
-
 const $Glyph = createFactory(Glyph);
 const $Dynamics = createFactory(Dynamics);
 const $Words = createFactory(Words);
 
-export default class Direction extends Component<{layout: DirectionModel.IDirectionLayout}, {}> {
+export default class DirectionView extends Component<
+        {layout: {model: Direction, overrideX?: number}}, {}> {
     static contextTypes = {
         originY: PropTypes.number.isRequired
     } as any;

@@ -59,7 +59,7 @@ function isSerializable(obj: any): boolean {
  * @param op.p [measureUUID, ("part"|"voice")]
  */
 export default function applyOp(preview: boolean, measures: IMeasure[], factory: IFactory, op: IAny,
-        document: Document) {
+        document: Document, notEligableForPreview: () => void) {
     // Operations must be entirely serializable, to be sent over the work. Serializble means it is one of:
     //   - a simple data type (number, string, ...)
     //   - a plain object (object with prototype Object), and that the same is true for all children
@@ -116,14 +116,7 @@ export default function applyOp(preview: boolean, measures: IMeasure[], factory:
             `Invalid operation path: No such voice ${path.slice(0,4).join(", ")}`);
 
         if (path.length === 6 && ((op.li && !op.ld) || (!op.li && op.ld))) {
-            if (!preview && ((op.li && op.li._class === "Attributes") || (op.ld && op.ld._class === "Attributes"))) {
-                // Mark everything as dirty -- this is overkill, but finding what measures
-                // need to be changed is tough.
-                let ctMeasures = document.cleanlinessTracking.measures;
-                Object.keys(ctMeasures).forEach(measureName => {
-                    ctMeasures[measureName].clean = null;
-                });
-            }
+            notEligableForPreview();
             segmentMutator(factory, voice, op, document);
             return;
         }
@@ -145,6 +138,7 @@ export default function applyOp(preview: boolean, measures: IMeasure[], factory:
             `Invalid operation path: No such staff ${path.slice(0,4).join(", ")}`);
 
         if (path.length === 6 && ((op.li && !op.ld) || (!op.li && op.ld))) {
+            notEligableForPreview();
             segmentMutator(factory, staff, op, document);
             return;
         }
