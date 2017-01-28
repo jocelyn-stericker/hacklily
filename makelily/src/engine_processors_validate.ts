@@ -80,7 +80,7 @@ export default function validate(options: ILayoutOptions): void {
         } else {
             forEach(operations, operation => {
                 applyOp(options.preview, options.measures, options.modelFactory, operation,
-                    options.document);
+                    options.document, () => options.preview = false);
             });
         }
 

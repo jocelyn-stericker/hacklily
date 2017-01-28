@@ -133,10 +133,10 @@ export default class SongImpl extends Component<IProps, IState> implements ISong
             throw new Error(NOT_READY_ERROR);
         }
         if (operations instanceof PatchImpl) {
-            this._rectify$(operations.content, operations.isPreview);
+            this._rectify$(operations.content, operations.isPreview, () => operations.isPreview = false);
             return this.state.document;
         } else if (!operations) {
-            this._rectify$([], false);
+            this._rectify$([], false, () => void 0);
             return this.state.document;
         }
         throw new Error("Invalid operations element");
@@ -175,9 +175,9 @@ export default class SongImpl extends Component<IProps, IState> implements ISong
         let patches: {} = this.props.patches;
         if (patches instanceof PatchImpl) {
             invariant(patches.isPreview === false, "Cannot render an SVG with a previewed patch");
-            this._rectify$(patches.content, patches.isPreview);
+            this._rectify$(patches.content, patches.isPreview, () => { (patches as any).isPreview = false; });
         } else if (!patches) {
-            this._rectify$([], false);
+            this._rectify$([], false, () => void 0);
         } else {
             invariant(false,
                 "Song.props.patches was not created through createPreviewPatch or createCanonicalPatch");
@@ -189,9 +189,9 @@ export default class SongImpl extends Component<IProps, IState> implements ISong
         let patches: {} = this.props.patches;
         if (patches instanceof PatchImpl) {
             invariant(patches.isPreview === false, "Cannot render MusicXML with a previewed patch");
-            this._rectify$(patches.content, patches.isPreview);
+            this._rectify$(patches.content, patches.isPreview, () => (patches as any).preview = false);
         } else if (!patches) {
-            this._rectify$([], false);
+            this._rectify$([], false, () => void 0);
         } else {
             invariant(false,
                 "Song.props.patches was not created through createPreviewPatch or createCanonicalPatch");
@@ -244,7 +244,7 @@ export default class SongImpl extends Component<IProps, IState> implements ISong
         return new PatchImpl(this._docPatches.slice(), isPreview);
     }
 
-    private _rectify$(newPatches: IAny[], preview: boolean) {
+    private _rectify$(newPatches: IAny[], preview: boolean, notEligableForPreview: () => void) {
         const docPatches = this._docPatches;
         const factory = this.state.factory;
 
@@ -265,13 +265,13 @@ export default class SongImpl extends Component<IProps, IState> implements ISong
 
         // Undo actions not in common
         forEach(invert(docPatches.slice(initialCommon)), (op) => {
-            applyOp(preview, this.state.document.measures, factory, op, this.state.document);
+            applyOp(preview, this.state.document.measures, factory, op, this.state.document, notEligableForPreview);
             docPatches.pop();
         });
 
         // Perform actions that are expected.
         forEach(newPatches.slice(this._docPatches.length), (op) => {
-            applyOp(preview, this.state.document.measures, factory, op, this.state.document);
+            applyOp(preview, this.state.document.measures, factory, op, this.state.document, notEligableForPreview);
             docPatches.push(op);
         });
 
@@ -279,13 +279,13 @@ export default class SongImpl extends Component<IProps, IState> implements ISong
             "Something went wrong in _rectify. The current state is now invalid.");
     };
     private _rectifyAppendCanonical = (ops:IAny[]):void => {
-        this._rectify$(this._docPatches.concat(ops), false);
+        this._rectify$(this._docPatches.concat(ops), false, () => void 0);
     };
     private _rectifyAppendPreview = (ops:IAny[]): void => {
-        this._rectify$(this._docPatches.concat(ops), true);
+        this._rectify$(this._docPatches.concat(ops), true, () => void 0);
     };
     private _update$(patches: IAny[], isPreview: boolean) {
-        this._rectify$(patches, isPreview);
+        this._rectify$(patches, isPreview, () => isPreview = false);
 
         this._page1 = this.state.document.__getPage(
             0,

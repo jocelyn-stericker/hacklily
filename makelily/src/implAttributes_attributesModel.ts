@@ -350,7 +350,14 @@ class AttributesModel implements Export.IAttributesModel {
             };
             return staffDetails;
         }, []);
-        if (!isEqual(this.staffDetails, staffDetailsByNumber)) {
+        let needsSorting = this.staffDetails.length !== staffDetailsByNumber.length ||
+            this.staffDetails.some((s, i) => {
+                if (!s && !staffDetailsByNumber[i]) {
+                    return false;
+                }
+                return !isEqual(s, staffDetailsByNumber[i]);
+            });
+        if (needsSorting) {
             cursor.patch(staff => staff.attributes(attributes =>
                 attributes.staffDetails(staffDetailsByNumber)
             ));

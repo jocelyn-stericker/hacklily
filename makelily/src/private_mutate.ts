@@ -60,7 +60,6 @@ export function set(obj: any, op: IObjectInsert<any>) {
 export function insertToList(obj: any, op: IListInsert<any>) {
     let parent = findParent(obj, op.p);
     let key = last(op.p);
-    invariant(key <= parent.length, "Invalid operation");
     invariant(key >= 0, "Invalid operation");
     parent.splice(key, 0, op.li);
 }

@@ -16,7 +16,7 @@
  * along with Satie.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import {NormalItalic, NormalBold, CreditWords, Words} from "musicxml-interfaces";
+import {Direction, NormalItalic, NormalBold, CreditWords, Words} from "musicxml-interfaces";
 import {Component, DOM, PropTypes} from "react";
 import {filter, map, extend} from "lodash";
 import * as invariant from "invariant";
@@ -24,10 +24,8 @@ import * as invariant from "invariant";
 import {cssSizeToTenths} from "./private_renderUtil";
 import {ITextMixin, Prototype as TextMixin} from "./private_views_textMixin";
 
-import DirectionModel from "./implDirection_directionModel";
-
 export interface IProps {
-    layout: DirectionModel.IDirectionLayout;
+    layout: {model: Direction, overrideX?: number};
     key?: string | number;
 }
 

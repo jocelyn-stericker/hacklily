@@ -18,8 +18,9 @@
 
 import {Attributes, StartStop, PartSymbol, Clef, Time, StaffDetails,
     Transpose, Key, Directive, MeasureStyle} from "musicxml-interfaces";
-
 import {clone, forEach} from "lodash";
+
+import {cloneObject} from "./private_util";
 
 /**
  * A snapshot of the current attribute state
@@ -112,6 +113,7 @@ export function createAttributesSnapshot({before, current, staff, measure}: IAtt
 }
 
 function createStaffDetailsSnapshot(newStaffDetails: StaffDetails, staffDetails: StaffDetails) {
+    newStaffDetails = cloneObject(newStaffDetails);
     newStaffDetails.capo = newStaffDetails.capo || staffDetails.capo;
     newStaffDetails.showFrets = newStaffDetails.showFrets || staffDetails.showFrets;
     newStaffDetails.staffLines = newStaffDetails.staffLines || staffDetails.staffLines;

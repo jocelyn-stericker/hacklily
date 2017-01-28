@@ -122,6 +122,7 @@ export default class ChordView extends Component<IProps, {}> {
             });
         }
 
+        const stemX = spec.stemX();
         return DOM.g(null,
             map(spec, (noteSpec: Note, idx: number) => {
                 if (!spec[idx]) {
@@ -131,7 +132,7 @@ export default class ChordView extends Component<IProps, {}> {
                     key: "n" + idx,
                     noteheadGlyph: spec.noteheadGlyph[idx],
                     spec: spec[idx],
-                    defaultX: spec[0].defaultX
+                    defaultX: spec[idx].defaultX
                 });
             }),
             layout.satieStem && $StemView({
@@ -141,7 +142,7 @@ export default class ChordView extends Component<IProps, {}> {
                 notehead: maxNotehead,
                 spec: {
                     color: spec[0].stem.color || "#000000",
-                    defaultX: spec[0].defaultX,
+                    defaultX: stemX,
                     defaultY: (layout.satieStem.stemStart - 3) * 10,
                     type: layout.satieStem.direction === 1 ?  StemType.Up : StemType.Down
                 },
@@ -152,7 +153,7 @@ export default class ChordView extends Component<IProps, {}> {
                 notehead: maxNotehead,
                 spec: {
                     color: "#000000",
-                    defaultX: spec[0].defaultX,
+                    defaultX: stemX,
                     defaultY: (lineNumber - 3) * 10
                 }
             })),
@@ -161,7 +162,7 @@ export default class ChordView extends Component<IProps, {}> {
                 notehead: maxNotehead,
                 spec: {
                     color: spec[0].stem.color || "$000000",
-                    defaultX: spec[0].defaultX,
+                    defaultX: stemX,
                     defaultY: (layout.satieStem.stemStart - 3) * 10 +
                         (layout.satieStem.stemHeight - 7) * layout.satieStem.direction,
                     direction: layout.satieStem.direction,

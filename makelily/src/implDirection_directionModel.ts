@@ -29,6 +29,7 @@ import {getTextBB} from "./private_fontManager";
 import {bboxes as glyphBoxes} from "./private_smufl";
 
 class DirectionModel implements Export.IDirectionModel {
+    _class = "Direction";
 
     /*---- I.1 IModel ---------------------------------------------------------------------------*/
 
@@ -73,7 +74,9 @@ class DirectionModel implements Export.IDirectionModel {
     refresh(cursor: IReadOnlyValidationCursor): void {
         forEach(this.directionTypes, type => {
             if (type.dynamics && this.placement === AboveBelow.Unspecified) {
-                this.placement = AboveBelow.Below;
+                cursor.patch(staff => staff.direction(direction =>
+                    direction.placement(AboveBelow.Below)
+                ));
             }
         });
     }
@@ -84,6 +87,34 @@ class DirectionModel implements Export.IDirectionModel {
 
     toXML(): string {
         return `${serializeDirection(this)}\n<forward><duration>${this.divCount}</duration></forward>\n`;
+    }
+
+    toJSON(): any {
+        const {
+            _class,
+            directionTypes,
+            staff,
+            offset,
+            sound,
+            placement,
+            voice,
+            footnote,
+            level,
+            data,
+        } = this;
+
+        return {
+            _class,
+            directionTypes,
+            staff,
+            offset,
+            sound,
+            placement,
+            voice,
+            footnote,
+            level,
+            data,
+        };
     }
 
     inspect() {
@@ -102,6 +133,9 @@ module DirectionModel {
     export class Layout implements Export.IDirectionLayout {
         constructor(model: DirectionModel, cursor: LayoutCursor) {
             model = Object.create(model);
+            if (model.directionTypes) {
+                model.directionTypes = model.directionTypes.slice();
+            }
 
             this.model = model;
             this.x = cursor.segmentX;
@@ -124,7 +158,7 @@ module DirectionModel {
             this.boundingBoxes = [];
 
             forEach(model.directionTypes, (type, idx) => {
-                model.directionTypes[idx] = Object.create(model.directionTypes[idx]);
+                type = model.directionTypes[idx] = Object.create(model.directionTypes[idx]);
                 forEach(type.words, (word, idx) => {
                     let origModel = type.words[idx];
                     let defaults = cursor.header.defaults;
@@ -178,6 +212,7 @@ module DirectionModel {
                     this.boundingBoxes.push(boundingBox);
                 });
             });
+            this.renderedWidth = 0;
         }
 
         /*---- ILayout ------------------------------------------------------*/
@@ -186,6 +221,7 @@ module DirectionModel {
 
         model: DirectionModel;
         x: number;
+        renderedWidth: number;
         division: number;
 
         // Prototype:

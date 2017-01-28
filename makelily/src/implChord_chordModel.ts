@@ -43,6 +43,7 @@ module ChordModel {
     export interface IChordModel extends IModel, IChord {
     }
     export interface IDetachedChordModel extends IModel, IChord {
+        stemX: () => number;
         satieLedger: number[];
         noteheadGlyph: string[];
         satieMultipleRest: MultipleRest;
