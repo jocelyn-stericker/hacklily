@@ -74,16 +74,9 @@ export default class SongImpl extends Component<IProps, IState> implements ISong
     render(): ReactElement<any> {
         // Note: we rectify/render before this is called. We assume shouldComponentUpdate
         // stops temporary states from being rendered.
-        const style: any = this.props.singleLineMode ? {
-            height: "100%",
-            overflowX: "scroll",
-            overflowY: "hidden",
-        }: {};
-
         return createElement("div", {
                 onMouseMove: this.props.onMouseMove && this._handleMouseMove,
                 onClick: this.props.onMouseClick && this._handleClick,
-                style,
             } as any, this._page1);
     }
 
