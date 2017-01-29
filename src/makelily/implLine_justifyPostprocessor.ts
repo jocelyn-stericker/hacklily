@@ -44,7 +44,7 @@ function logistic(t: number) {
 function justify(options: ILayoutOptions, bounds: ILineBounds,
         measures: IMeasureLayout[]): IMeasureLayout[] {
 
-    if (options.singleLineMode) {
+    if (options.singleLineMode && !options.fixedMeasureWidth) {
         // Skip: note that in this case, we set the shortestCount in each measure to half what it
         // needs to be to fake justification in each measure.
         return measures;
@@ -123,33 +123,56 @@ function justify(options: ILayoutOptions, bounds: ILineBounds,
 
         let measureExpansion = 0;
         let maxIdx = max(map(measure.elements, el => el.length));
-        times(maxIdx, function(j) {
-            for (let i = 0; i < measure.elements.length; ++i) {
-                measure.elements[i][j].x += measureExpansion;
-            }
-            let expandOne = false;
-            let minRatio = MAX_SAFE_INTEGER;
-            for (let i = 0; i < measure.elements.length; ++i) {
-                if (measure.elements[i][j].expandPolicy !== "none") {
-                    anyExpandable = true;
-                    if (!measure.elements[i][j].model || !measure.elements[i][j].model.divCount) {
-                        continue;
+
+        if (options.fixedMeasureWidth) {
+            let expandable = times(maxIdx, function(j) {
+                let expand = false;
+                for (let i = 0; i < measure.elements.length; ++i) {
+                    if (measure.elements[i][j].expandPolicy !== "none") {
+                        expand = true;
                     }
-
-                    let divCount = measure.elements[i][j].model.divCount;
-                    let ratio = (Math.log(divCount) - Math.log(smallest) + 1) *
-                        (underfilled[measureIdx] ? UNDERFILLED_EXPANSION_WEIGHT : 1.0);
-
-                    minRatio = Math.min(minRatio, ratio);
-                    expandOne = true;
                 }
-            }
-            if (expandOne) {
-                // FIXME: We can overshoot, like on Lily 23f. 
-                measureExpansion += avgExpansion * minRatio;
-                totalExpCount += minRatio;
-            }
-        });
+                return expand;
+            });
+            let count = expandable.filter(n => n).length;
+            let expansionPerElement = (options.fixedMeasureWidth - measure.width) / count;
+            times(maxIdx, function(j) {
+                for (let i = 0; i < measure.elements.length; ++i) {
+                    measure.elements[i][j].x += measureExpansion;
+                }
+                if (expandable[j]) {
+                    measureExpansion += expansionPerElement;
+                }
+            });
+        } else {
+            times(maxIdx, function(j) {
+                for (let i = 0; i < measure.elements.length; ++i) {
+                    measure.elements[i][j].x += measureExpansion;
+                }
+                let expandOne = false;
+                let minRatio = MAX_SAFE_INTEGER;
+                for (let i = 0; i < measure.elements.length; ++i) {
+                    if (measure.elements[i][j].expandPolicy !== "none") {
+                        anyExpandable = true;
+                        if (!measure.elements[i][j].model || !measure.elements[i][j].model.divCount) {
+                            continue;
+                        }
+
+                        let divCount = measure.elements[i][j].model.divCount;
+                        let ratio = (Math.log(divCount) - Math.log(smallest) + 1) *
+                            (underfilled[measureIdx] ? UNDERFILLED_EXPANSION_WEIGHT : 1.0);
+
+                        minRatio = Math.min(minRatio, ratio);
+                        expandOne = true;
+                    }
+                }
+                if (expandOne) {
+                    // FIXME: We can overshoot, like on Lily 23f. 
+                    measureExpansion += avgExpansion * minRatio;
+                    totalExpCount += minRatio;
+                }
+            });
+        }
 
         measure.width += measureExpansion;
         lineExpansion += measureExpansion;

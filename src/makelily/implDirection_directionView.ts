@@ -34,7 +34,7 @@ const $Words = createFactory(Words);
 export default class DirectionView extends Component<
         {layout: {model: Direction, overrideX?: number}}, {}> {
     static contextTypes = {
-        originY: PropTypes.number.isRequired
+        originY: PropTypes.number
     } as any;
 
     context: {
@@ -92,7 +92,7 @@ export default class DirectionView extends Component<
                             glyphName: "segno",
                             key: segnoIdx,
                             x: this.props.layout.overrideX + segno.defaultX + (segno.relativeX || 0),
-                            y: this.context.originY - segno.defaultY - (segno.relativeY || 0),
+                            y: (this.context.originY || 0) - segno.defaultY - (segno.relativeY || 0),
                             fill: segno.color
                         })));
                 case !!type.stringMute:

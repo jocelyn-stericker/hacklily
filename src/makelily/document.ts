@@ -156,6 +156,7 @@ export class Document {
      */
     __getPage(startMeasure: number, preview: boolean,
         renderTarget?: "svg-web" | "svg-export", pageClassName?: string, singleLineMode?: boolean,
+        fixedMeasureWidth?: number,
         onOperationsAppended?: (ops: IAny[]) => void,
         ref?: (svg: SVGSVGElement) => void): ReactElement<any> {
 
@@ -175,6 +176,7 @@ export class Document {
             print: print,
             preview,
             singleLineMode,
+            fixedMeasureWidth,
             fixup: onOperationsAppended ? (segment, patch) => {
                 onOperationsAppended(patch);
             } : null,
