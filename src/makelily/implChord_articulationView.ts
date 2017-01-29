@@ -33,7 +33,7 @@ export interface IProps {
 
 export default class Articulation extends Component<IProps, void> {
     static contextTypes = {
-        originY: PropTypes.number.isRequired
+        originY: PropTypes.number,
     } as any;
 
     context: {
@@ -84,7 +84,7 @@ export default class Articulation extends Component<IProps, void> {
                 glyphName: `${name}${direction}`,
                 key: name,
                 x: this.props.defaultX + printStyle.defaultX + (printStyle.relativeX || 0),
-                y: this.context.originY - printStyle.defaultY - (printStyle.relativeY || 0)
+                y: (this.context.originY || 0) - printStyle.defaultY - (printStyle.relativeY || 0)
             }));
         };
 

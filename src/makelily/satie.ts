@@ -39,6 +39,7 @@ import EKeySignature from "./implAttributes_keySignatureView";
 import ETimeSignature from "./implAttributes_timeSignatureView";
 import {getNativeKeyAccidentals} from "./implAttributes_attributesData";
 import EDirection from "./implDirection_directionView";
+import ENotation from "./implChord_notationView";
 
 /* Patches */
 import eCreatePatch from "./engine_createPatch";
@@ -51,6 +52,7 @@ export module Addons {
     export const KeySignature = EKeySignature;
     export const TimeSignature = ETimeSignature;
     export const Direction = EDirection;
+    export const NotationView = ENotation;
     export const getAccidentalsFromKey = getNativeKeyAccidentals;
 }
 

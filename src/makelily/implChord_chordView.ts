@@ -186,7 +186,7 @@ export default class ChordView extends Component<IProps, {}> {
             map(spec, (note, idx) => map(note.notations, (notation, jdx) => $NotationView({
                 key: `N${idx}_${jdx}`,
                 layout: this.props.layout,
-                note: note,
+                defaultY: note.defaultY,
                 spec: notation
             }))),
             lyrics

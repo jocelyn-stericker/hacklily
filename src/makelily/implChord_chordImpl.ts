@@ -681,7 +681,9 @@ module ChordModelImpl {
             let bboxes: IBoundingRect[] = [];
             forEach(this.model, note => {
                 let notations = notationObj(note); // TODO: detach this
-                bboxes = bboxes.concat(getBoundingRects(notations, note, this));
+                let bbn = getBoundingRects(notations, note, this);
+                bboxes = bboxes.concat(bbn.bb);
+                note.notations = [bbn.n];
             });
             return bboxes;
         }
