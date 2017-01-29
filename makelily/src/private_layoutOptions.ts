@@ -41,4 +41,5 @@ export interface ILayoutOptions {
     preview: boolean;
     print: Print;
     singleLineMode?: boolean;
+    fixedMeasureWidth?: number;
 }

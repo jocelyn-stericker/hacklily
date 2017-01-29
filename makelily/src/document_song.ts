@@ -60,6 +60,7 @@ export interface IProps {
 
     pageClassName?: string;
     singleLineMode?: boolean;
+    fixedMeasureWidth?: number;
 
     onError: (err: Error) => void;
     onLoaded?: () => void;

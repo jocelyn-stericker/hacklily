@@ -84,7 +84,8 @@ export default class SongImpl extends Component<IProps, IState> implements ISong
         return nextProps.baseSrc !== this.props.baseSrc ||
             nextProps.patches !== this.props.patches ||
             nextProps.pageClassName !== this.props.pageClassName ||
-            nextProps.singleLineMode !== this.props.singleLineMode;
+            nextProps.singleLineMode !== this.props.singleLineMode ||
+            nextProps.fixedMeasureWidth !== this.props.fixedMeasureWidth;
     }
 
     componentWillReceiveProps(nextProps: IProps) {
@@ -286,6 +287,7 @@ export default class SongImpl extends Component<IProps, IState> implements ISong
             "svg-web",
             this.props.pageClassName || "",
             this.props.singleLineMode,
+            this.props.fixedMeasureWidth,
             isPreview ? this._rectifyAppendPreview : this._rectifyAppendCanonical,
             this._syncSVG
         );
