@@ -16,7 +16,7 @@
  * along with Satie.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import {UprightInverted, Notations, Note} from "musicxml-interfaces";
+import {UprightInverted, Notations, NormalAngledSquare, AboveBelow} from "musicxml-interfaces";
 import {createFactory, Component, DOM, ReactElement, PropTypes} from "react";
 import {forEach} from "lodash";
 import * as invariant from "invariant";
@@ -33,10 +33,9 @@ const $Glyph = createFactory(Glyph);
 const $Articulation = createFactory(Articulation);
 
 export interface IProps {
-    key?: string;
     spec: Notations;
-    layout: Chord.IChordLayout;
-    note: Note;
+    layout?: Chord.IChordLayout;
+    defaultY?: number;
 }
 
 /**
@@ -44,7 +43,7 @@ export interface IProps {
  */
 export default class NotationView extends Component<IProps, void> {
     static contextTypes = {
-        originY: PropTypes.number.isRequired
+        originY: PropTypes.number,
     } as any;
 
     context: {
@@ -53,10 +52,11 @@ export default class NotationView extends Component<IProps, void> {
 
     render() {
         const model = this.props.spec;
-        const notehead = this.props.layout.model.noteheadGlyph[0];
+        const nlayout = this.props.layout;
+        const notehead = nlayout ? nlayout.model.noteheadGlyph[0] : "noteheadBlack";
         const bbox = bboxes[notehead];
         const noteheadCenter = 10 * (bbox[0] - bbox[2]) / 2;
-        const originX = this.props.layout.model[0].defaultX + noteheadCenter;
+        const originX = nlayout ? nlayout.model[0].defaultX + noteheadCenter : 0;
         let children: ReactElement<any>[] = [];
 
         forEach(model.accidentalMarks, accidentalMark => {
@@ -71,7 +71,7 @@ export default class NotationView extends Component<IProps, void> {
             children.push($Articulation({
                 articulation: articulation,
                 key: `art${idx}`,
-                defaultX: this.props.layout.model[0].defaultX,
+                defaultX: nlayout ? nlayout.model[0].defaultX : 0,
             }));
         });
 
@@ -81,12 +81,25 @@ export default class NotationView extends Component<IProps, void> {
 
         forEach(model.fermatas, (fermata, idx) => {
             let direction = (fermata.type === UprightInverted.Inverted) ? "Below" : "Above";
+            let shape;
+            switch (fermata.shape) {
+                case NormalAngledSquare.Angled:
+                    shape = "fermataShort";
+                    break;
+                case NormalAngledSquare.Square:
+                    shape = "fermataLong";
+                    break;
+                case NormalAngledSquare.Normal:
+                default:
+                    shape = "fermata";
+                    break;
+            }
             children.push($Glyph({
                 fill: "black",
-                glyphName: `fermata${direction}`,
+                glyphName: `${shape}${direction}`,
                 key: `fer${idx}`,
                 x: originX + fermata.defaultX + (fermata.relativeX || 0),
-                y: this.context.originY - fermata.defaultY - (fermata.relativeY || 0)
+                y: (this.context.originY || 0) - fermata.defaultY - (fermata.relativeY || 0)
             }));
         });
 
@@ -111,7 +124,113 @@ export default class NotationView extends Component<IProps, void> {
         });
 
         forEach(model.technicals, technical => {
-            // TODO
+            if (technical.tripleTongue) {
+                // TODO
+            }
+            if (technical.toe) {
+                // TODO
+            }
+            if (technical.hole) {
+                // TODO
+            }
+            if (technical.hammerOn) {
+                // TODO
+            }
+            if (technical.upBow) {
+                let t = technical.upBow;
+                children.push($Glyph({
+                    fill: t.color || "black",
+                    glyphName: `stringsUpBow${t.placement === AboveBelow.Below ? "Reversed" : ""}`,
+                    key: "techUpBow",
+                    x: originX + t.defaultX + (t.relativeX || 0),
+                    y: (this.context.originY || 0) - t.defaultY - (t.relativeY || 0),
+                }));
+            }
+            if (technical.downBow) {
+                let t = technical.downBow;
+                children.push($Glyph({
+                    fill: t.color || "black",
+                    glyphName: `stringsDownBow${t.placement === AboveBelow.Below ? "Reversed" : ""}`,
+                    key: "techDownBow",
+                    x: originX + t.defaultX + (t.relativeX || 0),
+                    y: (this.context.originY || 0) - t.defaultY - (t.relativeY || 0),
+                }));
+            }
+            if (technical.fret) {
+                // TODO
+            }
+            if (technical.tap) {
+                // TODO
+            }
+            if (technical.pullOff) {
+                // TODO
+            }
+            if (technical.handbell) {
+                // TODO
+            }
+            if (technical.bend) {
+                // TODO
+            }
+            if (technical.thumbPosition) {
+                // TODO
+            }
+            if (technical.stopped) {
+                let t = technical.stopped;
+                children.push($Glyph({
+                    fill: t.color || "black",
+                    glyphName: "pluckedLeftHandPizzicato",
+                    key: "techStopped",
+                    x: originX + t.defaultX + (t.relativeX || 0),
+                    y: (this.context.originY || 0) - t.defaultY - (t.relativeY || 0),
+                }));
+            }
+            if (technical.pluck) {
+                // TODO
+            }
+            if (technical.doubleTongue) {
+                // TODO
+            }
+            if (technical.string) {
+                // TODO
+            }
+            if (technical.openString) {
+                let t = technical.openString;
+                children.push($Glyph({
+                    fill: t.color || "black",
+                    glyphName: "stringsHarmonic",
+                    key: "techOpenString",
+                    x: originX + t.defaultX + (t.relativeX || 0),
+                    y: (this.context.originY || 0) - t.defaultY - (t.relativeY || 0),
+                }));
+            }
+            if (technical.fingernails) {
+                // TODO
+            }
+            if (technical.arrow) {
+                // TODO
+            }
+            if (technical.harmonic) {
+                // TODO
+            }
+            if (technical.heel) {
+                // TODO
+            }
+            if (technical.otherTechnical) {
+                // TODO
+            }
+            if (technical.snapPizzicato) {
+                let t = technical.snapPizzicato;
+                children.push($Glyph({
+                    fill: t.color || "black",
+                    glyphName: `pluckedSnapPizzicato${t.placement === AboveBelow.Below ? "Below" : "Above"}`,
+                    key: "techSnapPizzicato",
+                    x: originX + t.defaultX + (t.relativeX || 0),
+                    y: (this.context.originY || 0) - t.defaultY - (t.relativeY || 0),
+                }));
+            }
+            if (technical.fingering) {
+                // TODO
+            }
         });
 
         forEach(model.tieds, tied => {
@@ -123,7 +242,7 @@ export default class NotationView extends Component<IProps, void> {
             let bbox2 = bboxes[notehead];
             let noteheadCenter2 = 10 * (bbox2[0] - bbox2[2]) / 2;
             let offset2 = noteheadCenter2 - noteheadCenter - 4;
-            let defaultY = this.context.originY - this.props.note.defaultY;
+            let defaultY = (this.context.originY || 0) - (this.props.defaultY || 0);
 
             let stem1 = this.props.layout.satieStem;
             let stem2 = tieTo.satieStem;

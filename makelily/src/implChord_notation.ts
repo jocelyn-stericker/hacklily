@@ -86,8 +86,13 @@ export interface IGeneralNotation extends PrintStyle, Placement {
 }
 
 export function getBoundingRects(model: Notations, note: Note,
-        chord: ChordModel.IChordLayout): IBoundingRect[] {
+        chord: ChordModel.IChordLayout): {bb: IBoundingRect[], n: Notations} {
     let boxes: IBoundingRect[] = [];
+    let origModel = model;
+    model = Object.create(model);
+    Object.keys(origModel).forEach(m => {
+        (model as any)[m] = Object.create((model as any)[m]);
+    });
 
     forEach(model.accidentalMarks, accidentalMark => {
         // TODO
@@ -98,12 +103,13 @@ export function getBoundingRects(model: Notations, note: Note,
     });
 
     forEach(model.articulations, (articulation, idx) => {
+        articulation = model.articulations[idx] = Object.create(articulation);
         forEach(["accent", "breathMark", "caesura", "detachedLegato", "doit", "falloff", "plop",
                     "scoop", "spiccato", "staccatissimo", "staccato", "stress", "strongAccent",
                     "tenuto", "unstress"], type => {
             // TODO: Could this be done any less efficiently?
-            let thisArticulation: Placement = (<any>model.articulations[idx])[type];
-            if (thisArticulation) {
+            if ((model.articulations[idx] as any)[type]) {
+                let thisArticulation: Placement = Object.create((<any>model.articulations[idx])[type]);
                 let {placement} = thisArticulation;
                 let isBelow = placement === AboveBelow.Below;
                 let glyph = articulationGlyph(articulation, isBelow ? "Below" : "Above");
@@ -137,6 +143,7 @@ export function getBoundingRects(model: Notations, note: Note,
     });
 
     forEach(model.fermatas, (fermata, idx) => {
+        fermata = model.fermatas[idx] = Object.create(fermata);
         if (fermata.type === UprightInverted.Inverted) {
             (<any>fermata).placement = AboveBelow.Below;
         } else {
@@ -154,6 +161,7 @@ export function getBoundingRects(model: Notations, note: Note,
     });
 
     forEach(model.ornaments, (ornament, idx) => {
+        ornament = model.ornaments[idx] = Object.create(ornament);
         if (ornament.tremolo) {
             chord.satieStem.tremolo = ornament.tremolo;
         }
@@ -216,5 +224,8 @@ export function getBoundingRects(model: Notations, note: Note,
         return printStyle;
     }
 
-    return boxes;
+    return {
+        bb: boxes,
+        n: model,
+    };
 }

@@ -42,6 +42,8 @@ export default function noteMutator(note: NoteImpl, op: IAny) {
     } else if ("oi" in op) {
         invariant(!(note as any)[op.p[0]], "Object already set");
         set(note, op as IObjectInsert<any>);
+    } else if ("ld" in op || "li" in op) {
+        mutate(note, op);
     } else {
         invariant(false, "Unknown operation");
     }

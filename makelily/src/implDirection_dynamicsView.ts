@@ -32,7 +32,7 @@ export interface IProps {
 
 export default class DynamicsView extends Component<IProps, {}> {
     static contextTypes = <any> {
-        originY: PropTypes.number.isRequired
+        originY: PropTypes.number
     };
 
     context: {
@@ -47,7 +47,7 @@ export default class DynamicsView extends Component<IProps, {}> {
         let dynamics = dynamicsContainer.dynamics;
 
         let initX = this.props.layout.overrideX + dynamics.defaultX + (dynamics.relativeX || 0);
-        let initY = this.context.originY - dynamics.defaultY - (dynamics.relativeY || 0);
+        let initY = (this.context.originY || 0) - dynamics.defaultY - (dynamics.relativeY || 0);
 
         let glyphName = this.getGlyphName(dynamics);
         if (!glyphName) {
