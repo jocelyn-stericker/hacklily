@@ -29,18 +29,19 @@ export interface ILineBounds {
 
 export function calculateLineBounds(print: Print, pageNum: number): ILineBounds {
     const pageLayout = print.pageLayout;
+    const systemLayout = print.systemLayout;
     const pageMargins = getPageMargins(pageLayout.pageMargins, pageNum);
-    const systemMargins = print.systemLayout.systemMargins;
+    const systemMargins = systemLayout.systemMargins;
     const startX = systemMargins.leftMargin + pageMargins.leftMargin;
     const endX = systemMargins.rightMargin + pageLayout.pageWidth - pageMargins.rightMargin;
-    const top = print.pageLayout.pageHeight -
-        (print.systemLayout.topSystemDistance +
+    const top = pageLayout.pageHeight -
+        (systemLayout.topSystemDistance +
             pageMargins.topMargin);
 
     return {
         left: startX,
         right: endX,
-        systemLayout: print.systemLayout,
+        systemLayout: systemLayout,
         top,
     };
 }

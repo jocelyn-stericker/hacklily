@@ -375,7 +375,8 @@ class AttributesModel implements Export.IAttributesModel {
         if ((!this._parent || !this._parent.staffDetails ||
                 !this._parent.staffDetails[cursor.staffIdx] ||
                 !this._parent.staffDetails[cursor.staffIdx].staffLines) &&
-                !this.staffDetails[cursor.staffIdx].staffLines) {
+                (!this.staffDetails[cursor.staffIdx] ||
+                    !this.staffDetails[cursor.staffIdx].staffLines)) {
             cursor.patch(staff => staff.attributes(attributes =>
                 attributes.staffDetailsAt(cursor.staffIdx, {
                     staffLines: 5,

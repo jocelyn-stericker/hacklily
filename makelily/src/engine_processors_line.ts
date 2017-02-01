@@ -93,7 +93,7 @@ export function layoutLine(options: ILayoutOptions, bounds: ILineBounds, memo: {
     let partOrder = map(scoreParts(options.header.partList), t => t.id);
     let staffIdx = 0;
 
-    let topsInOrder = map(partOrder, partID => {
+     let topsInOrder = map(partOrder, partID => {
         invariant(initialAttributes[partID][1].staves >= 1,
                 "Expected at least 1 staff, but there are %s",
                 initialAttributes[partID][1].staves);
