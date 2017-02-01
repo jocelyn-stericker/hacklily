@@ -151,7 +151,6 @@ export function simplifyRests(
         segment: (ModelMetreMutationSpec)[],
         factory: IFactory | Document,
         attributes: IAttributesSnapshot): IAny[] {
-
     const originalSpec = voiceToRestSpec(segment, attributes, factory);
 
     // Correct the rests.
@@ -200,7 +199,7 @@ export function simplifyRests(
 
                 if (!originalModel || originalModel === "killed") {
                     ++currIdx;
-                    newDuration[0].rest = {};
+                    newDuration[0].rest = newDuration[0].rest || {};
                     newDuration._class = "Chord";
                     patches.push({
                         li: newDuration,
@@ -230,7 +229,7 @@ export function simplifyRests(
             } else {
                 // New rest
                 ++currIdx;
-                newDuration[0].rest = {};
+                newDuration[0].rest = newDuration[0].rest || {};
                 newDuration._class = "Chord";
                 patches.push({
                     li: newDuration,

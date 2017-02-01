@@ -139,6 +139,8 @@ class AttributesModel implements Export.IAttributesModel {
         let j = this.toJSON();
         // Hack: we index staffDetails by 1-index staff, leaving a null at index 0, with MXML doesn't handle.
         j.staffDetails = j.staffDetails.filter(a => !!a);
+        j.clefs = j.clefs.filter(a => !!a);
+        j.keySignatures = j.keySignatures.filter(a => !!a);
         return `${serializeAttributes(j)}\n<forward><duration>${this.divCount}</duration></forward>\n`;
     }
 
