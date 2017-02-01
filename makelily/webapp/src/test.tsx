@@ -1,7 +1,7 @@
 import * as React from "react";
 import {Component} from "react";
 import {Link} from "react-router";
-import {Application, Song} from "satie";
+import {Application, ISong, Song} from "../../src/satie";
 import {find, defer} from "lodash";
 
 import {prefix} from "./config";
@@ -34,7 +34,7 @@ export default class Test extends Component<IProps, IState> {
         src: null,
         loaded: false,
     };
-    _song: Song;
+    _song: ISong;
 
     render() {
         const isSingleLine = this.props.singleLine;
@@ -131,12 +131,11 @@ export default class Test extends Component<IProps, IState> {
 
     private _handleLoaded = () => {
         this.setState({
-            loaded: true
+            loaded: true,
         });
     };
 
-    private _setSongRef = (song: Song) => {
+    private _setSongRef = (song: ISong) => {
         this._song = song;
     };
 }
-

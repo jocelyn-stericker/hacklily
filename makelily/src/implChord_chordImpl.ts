@@ -200,9 +200,9 @@ class ChordModelImpl implements ChordModel.IChordModel, ArrayLike<NoteImpl> {
 
     _init: boolean = false;
     refresh(cursor: IReadOnlyValidationCursor): void {
-        if (!isFinite(this.count)) {
+        if (!this[0].noteType || !this[0].noteType.duration) {
             let count = this._implyCountFromPerformanceData(cursor);
-            cursor.patch(voice => reduce(this, (builder, note, idx) => builder
+            cursor.dangerouslyPatchWithoutValidation(voice => reduce(this, (builder, note, idx) => builder
                 .note(idx, j => j.noteType({duration: count})) as any, voice));
         }
         try {
@@ -419,7 +419,7 @@ class ChordModelImpl implements ChordModel.IChordModel, ArrayLike<NoteImpl> {
         // TODO
 
         // Try ties
-        if (!isPO2(this.count)) {
+        if (!isPO2(count)) {
             // Whole bar rests can still exist even when there's no single NOTE duration
             // that spans a bar.
             if (beats === ts.beats && !!this[0].rest) {

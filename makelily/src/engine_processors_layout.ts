@@ -54,7 +54,7 @@ function findPrint(options: ILayoutOptions, measure: IMeasure): Print {
 
     if (partWithPrint) {
         return options.modelFactory.search(partWithPrint.staves[1], 0,
-                Type.Print)[0] as any;
+                Type.Print)[0]._snapshot as any;
     }
     return null;
 }

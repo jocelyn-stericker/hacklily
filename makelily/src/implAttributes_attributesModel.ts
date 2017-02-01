@@ -136,10 +136,13 @@ class AttributesModel implements Export.IAttributesModel {
     }
 
     toXML(): string {
-        return `${serializeAttributes(this)}\n<forward><duration>${this.divCount}</duration></forward>\n`;
+        let j = this.toJSON();
+        // Hack: we index staffDetails by 1-index staff, leaving a null at index 0, with MXML doesn't handle.
+        j.staffDetails = j.staffDetails.filter(a => !!a);
+        return `${serializeAttributes(j)}\n<forward><duration>${this.divCount}</duration></forward>\n`;
     }
 
-    toJSON(): any {
+    toJSON(): Attributes {
         const {
             _class,
             divisions,
@@ -210,11 +213,13 @@ class AttributesModel implements Export.IAttributesModel {
         // A clef is mandatory (we haven't implemented clef-less staves yet)
         if ((!this._parent || !this._parent.clef) && !this.clefs[staffIdx]) {
             cursor.patch(staff => staff.attributes(attributes =>
-                attributes.clefsAt(staffIdx, clef =>
-                    clef
-                        .number(staffIdx)
-                        .sign("G")
-                        .line(2)
+                attributes
+                    .clefsAt(0, null) // XXX: HACK to fix splice
+                    .clefsAt(staffIdx, clef =>
+                        clef
+                            .number(staffIdx)
+                            .sign("G")
+                            .line(2)
                 )
             ));
         }
@@ -366,9 +371,11 @@ class AttributesModel implements Export.IAttributesModel {
         // Staff details are required. Staff lines are required
         if (!this.staffDetails[cursor.staffIdx]) {
             cursor.patch(staff => staff.attributes(attributes =>
-                attributes.staffDetailsAt(cursor.staffIdx, {
-                    number: cursor.staffIdx,
-                })
+                attributes
+                    .staffDetailsAt(0, null) // XXX: HACK
+                    .staffDetailsAt(cursor.staffIdx, {
+                        number: cursor.staffIdx,
+                    })
             ));
         }
 
@@ -378,9 +385,7 @@ class AttributesModel implements Export.IAttributesModel {
                 (!this.staffDetails[cursor.staffIdx] ||
                     !this.staffDetails[cursor.staffIdx].staffLines)) {
             cursor.patch(staff => staff.attributes(attributes =>
-                attributes.staffDetailsAt(cursor.staffIdx, {
-                    staffLines: 5,
-                })
+                attributes.staffDetailsAt(cursor.staffIdx, l => l.staffLines(5))
             ));
         }
     }

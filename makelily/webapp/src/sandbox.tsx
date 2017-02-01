@@ -11,7 +11,7 @@ import Test, {satieApplication} from "./test";
 import {prefix} from "./config";
 const STYLES = require("./tests.css");
 
-import {Application, Song, Patch, Type, IMouseEvent} from "satie";
+import {Application, ISong, Song, Patch, Type, IMouseEvent} from "../../src/satie";
 
 const MAX_SAFE_INTEGER = 9007199254740991;
 
@@ -109,7 +109,7 @@ class Tests extends Component<{params: {id: string}}, IState> {
             type,
         });
     }
-    private _song: Song;
+    private _song: ISong;
     private _undo() {
         this.setState({
             operations: this.state.oldOperations[this.state.oldOperations.length - 1],
@@ -128,6 +128,7 @@ class Tests extends Component<{params: {id: string}}, IState> {
                     .insertMeasure(measureCount, measure => measure
                         .part("P1", part => part
                             .voice(1, voice => voice
+                                .at(0)
                                 .insertChord([
                                     note => note
                                         .rest({})
@@ -135,7 +136,7 @@ class Tests extends Component<{params: {id: string}}, IState> {
                                         .noteType(type => type
                                             .duration(Count.Whole)
                                         )
-                                ], 0)
+                                ])
                             )
                         )
                 )
@@ -207,7 +208,7 @@ class Tests extends Component<{params: {id: string}}, IState> {
             });
         });
     };
-    private _setSongRef = (song: Song) => {
+    private _setSongRef = (song: ISong) => {
         this._song = song;
         (window as any)["_song"] = song;
     };
@@ -258,6 +259,7 @@ class Tests extends Component<{params: {id: string}}, IState> {
                     this.state.type === "R" && chord.length === 1 && !chord[0].rest) {
                 patch = Patch.createPatch(isPreview, doc, measureUUID, "P1", part => part
                     .voice(1, voice => voice
+                        .at(elIdx)
                         .note(0, note => this.state.type === "R" ?
                             note
                                 .pitch(null)
@@ -276,8 +278,6 @@ class Tests extends Component<{params: {id: string}}, IState> {
                                     .accidental(MxmlAccidental.Sharp)
                                 )
                                 .color(isPreview ? "#cecece" : "#000000"),
-
-                            elIdx
                         )
                     )
                 );
