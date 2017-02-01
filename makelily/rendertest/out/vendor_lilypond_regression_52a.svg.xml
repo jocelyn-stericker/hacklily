@@ -76,24 +76,14 @@
       <direction placement="below"><direction-type><words default-y="-70" relative-x="-5000">SATIE_MEASURE_META = {"uuid":42};</words></direction-type></direction>
       <!-- end of measure metadata (Satie) -->
       <!-- staff 1 -->
-      <print new-system="no" new-page="no" page-number="1">
+      <print page-number="1">
         <!--musicxml-interfaces:debug>
           <div-count>0</div-count>
         </musicxml-interfaces:debug-->
-        <page-layout>
-          <page-height>954</page-height>
-          <page-width>1804</page-width>
-          <page-margins type="both">
-            <left-margin>318</left-margin>
-            <right-margin>212</right-margin>
-            <top-margin>53</top-margin>
-            <bottom-margin>74</bottom-margin>
-          </page-margins>
-        </page-layout>
         <system-layout>
           <system-margins>
-            <left-margin>248</left-margin>
-            <right-margin>206</right-margin>
+            <left-margin>70</left-margin>
+            <right-margin>0</right-margin>
           </system-margins>
           <system-distance>561</system-distance>
           <top-system-distance>436</top-system-distance>
@@ -103,9 +93,6 @@
       <forward><duration>0</duration></forward>
       
       <attributes>
-        <!--musicxml-interfaces:debug>
-          <div-count>3072</div-count>
-        </musicxml-interfaces:debug-->
         <divisions>768</divisions>
         <key font-style="normal" font-weight="normal" color="#000000" print-object="yes">
           <fifths>0</fifths>
@@ -116,7 +103,11 @@
           <beat-type>4</beat-type>
         </time>
         <staves>1</staves>
-        <clef number="1" additional="no" size="full" after-barline="no" font-style="normal" font-weight="normal" color="#000000" print-object="yes">
+        <clef number="1">
+          <sign>G</sign>
+          <line>2</line>
+        </clef>
+        <clef number="2" additional="no" size="full" after-barline="no" font-style="normal" font-weight="normal" color="#000000" print-object="yes">
           <sign>G</sign>
           <line>2</line>
         </clef>
@@ -137,8 +128,8 @@
       <backup><duration>3072</duration></backup>
       <!-- end of staff 1 -->
       <!-- voice 1 -->
-      <note default-y="10" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
-        <rest measure="yes">
+      <note default-y="10" relative-x="0" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+        <rest measure="no">
           
         </rest>
         <duration>3072</duration>
@@ -158,35 +149,22 @@
       <!-- end of measure metadata (Satie) -->
       <!-- staff 1 -->
       <attributes>
-        <!--musicxml-interfaces:debug>
-          <div-count>0</div-count>
-        </musicxml-interfaces:debug-->
         <divisions>768</divisions>
         <staves>1</staves>
         <staff-details number="1">
-          <staff-lines>5</staff-lines>
+          
         </staff-details>
       </attributes>
       <forward><duration>0</duration></forward>
       
-      <print new-system="no" new-page="no" page-number="1">
+      <print page-number="1">
         <!--musicxml-interfaces:debug>
           <div-count>0</div-count>
         </musicxml-interfaces:debug-->
-        <page-layout>
-          <page-height>954</page-height>
-          <page-width>1804</page-width>
-          <page-margins type="both">
-            <left-margin>318</left-margin>
-            <right-margin>212</right-margin>
-            <top-margin>53</top-margin>
-            <bottom-margin>74</bottom-margin>
-          </page-margins>
-        </page-layout>
         <system-layout>
           <system-margins>
-            <left-margin>248</left-margin>
-            <right-margin>206</right-margin>
+            <left-margin>0</left-margin>
+            <right-margin>0</right-margin>
           </system-margins>
           <system-distance>561</system-distance>
           <top-system-distance>436</top-system-distance>
@@ -212,17 +190,17 @@
       <backup><duration>3072</duration></backup>
       <!-- end of staff 1 -->
       <!-- voice 1 -->
-      <note default-y="0" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="10" relative-x="0" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <rest measure="no">
           
         </rest>
-        <duration>3</duration>
+        <duration>3072</duration>
         <voice>1</voice>
-        <type>1024th</type>
+        <type>whole</type>
         <staff>1</staff>
       </note>
       
-      <backup><duration>3</duration></backup>
+      <backup><duration>3072</duration></backup>
       <!-- end of voice 1 -->
     </part>
   </measure>
@@ -233,35 +211,22 @@
       <!-- end of measure metadata (Satie) -->
       <!-- staff 1 -->
       <attributes>
-        <!--musicxml-interfaces:debug>
-          <div-count>0</div-count>
-        </musicxml-interfaces:debug-->
         <divisions>768</divisions>
         <staves>1</staves>
         <staff-details number="1">
-          <staff-lines>5</staff-lines>
+          
         </staff-details>
       </attributes>
       <forward><duration>0</duration></forward>
       
-      <print new-system="no" new-page="yes" page-number="1">
+      <print new-page="yes" page-number="1">
         <!--musicxml-interfaces:debug>
           <div-count>4</div-count>
         </musicxml-interfaces:debug-->
-        <page-layout>
-          <page-height>954</page-height>
-          <page-width>1804</page-width>
-          <page-margins type="both">
-            <left-margin>318</left-margin>
-            <right-margin>212</right-margin>
-            <top-margin>53</top-margin>
-            <bottom-margin>74</bottom-margin>
-          </page-margins>
-        </page-layout>
         <system-layout>
           <system-margins>
-            <left-margin>248</left-margin>
-            <right-margin>206</right-margin>
+            <left-margin>0</left-margin>
+            <right-margin>0</right-margin>
           </system-margins>
           <system-distance>561</system-distance>
           <top-system-distance>436</top-system-distance>
@@ -284,17 +249,17 @@
       <backup><duration>3072</duration></backup>
       <!-- end of staff 1 -->
       <!-- voice 1 -->
-      <note default-y="0" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="10" relative-x="0" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <rest measure="no">
           
         </rest>
-        <duration>3</duration>
+        <duration>3072</duration>
         <voice>1</voice>
-        <type>1024th</type>
+        <type>whole</type>
         <staff>1</staff>
       </note>
       
-      <backup><duration>3</duration></backup>
+      <backup><duration>3072</duration></backup>
       <!-- end of voice 1 -->
     </part>
   </measure>

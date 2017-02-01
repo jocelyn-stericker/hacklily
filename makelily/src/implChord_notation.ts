@@ -91,7 +91,7 @@ export function getBoundingRects(model: Notations, note: Note,
     let origModel = model;
     model = Object.create(model);
     Object.keys(origModel).forEach(m => {
-        (model as any)[m] = Object.create((model as any)[m]);
+        (model as any)[m] = typeof (model as any)[m] === "object" ? Object.create((model as any)[m]) : model;
     });
 
     forEach(model.accidentalMarks, accidentalMark => {

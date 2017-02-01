@@ -479,7 +479,7 @@ export class ModelMetreMutationSpec {
             forEach(chordModel, c => {
                 c.noteType.duration = this.newCount;
                 if (this.rest) {
-                    c.rest = {};
+                    c.rest = c.rest || {};
                     delete c.pitch;
                 } else {
                     delete c.rest;

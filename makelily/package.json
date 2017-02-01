@@ -1,6 +1,6 @@
 {
   "name": "satie",
-  "version": "0.0.13-alpha3",
+  "version": "0.0.13-alpha4",
   "description": "A sheet music renderer for the web",
   "author": "Josh Netterfield",
   "license": "AGPL-3.0",

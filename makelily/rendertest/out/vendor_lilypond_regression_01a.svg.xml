@@ -102,21 +102,15 @@
           <beat-type>4</beat-type>
         </time>
         <staves>1</staves>
-        <clef number="0" additional="no" size="full" after-barline="no" font-style="normal" font-weight="normal" color="#000000" print-object="yes">
-          <sign>G</sign>
-          <line>2</line>
-        </clef>
         <clef number="1">
           <sign>G</sign>
           <line>2</line>
         </clef>
-        <staff-details>
-          <staff-lines>5</staff-lines>
-        </staff-details>
+        <clef number="2" additional="no" size="full" after-barline="no" font-style="normal" font-weight="normal" color="#000000" print-object="yes">
+          <sign>G</sign>
+          <line>2</line>
+        </clef>
         <staff-details number="1">
-          
-        </staff-details>
-        <staff-details number="2">
           <staff-lines>5</staff-lines>
         </staff-details>
       </attributes>
