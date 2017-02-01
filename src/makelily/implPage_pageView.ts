@@ -72,22 +72,23 @@ export default class Page extends Component<IProps, void> {
         const credits = filter(this.props.scoreHeader.credits, cr =>
                                 (cr.page === pageNum));
         const scale40 = defaults.scaling.millimeters / defaults.scaling.tenths * 40;
+        const pageLayout = print.pageLayout;
         const widthMM = this.props.renderTarget === "svg-export" ?
-                                tenthsToMM(scale40, print.pageLayout.pageWidth) + "mm" : "100%";
+                                tenthsToMM(scale40, pageLayout.pageWidth) + "mm" : "100%";
         const heightMM = this.props.renderTarget === "svg-export" ?
-                                tenthsToMM(scale40, print.pageLayout.pageHeight) + "mm" : "100%";
+                                tenthsToMM(scale40, pageLayout.pageHeight) + "mm" : "100%";
 
         const firstLineBounds = calculateLineBounds(print, pageNum);
 
         const pageWidth = this.props.singleLineMode ?
             last(lineLayouts[0]).originX + last(lineLayouts[0]).width +
-                getPageMargins(print.pageLayout.pageMargins, 0).rightMargin :
-            print.pageLayout.pageWidth;
+                getPageMargins(pageLayout.pageMargins, 0).rightMargin :
+            pageLayout.pageWidth;
 
         const pageHeight = this.props.singleLineMode ?
             firstLineBounds.systemLayout.topSystemDistance +
                 firstLineBounds.systemLayout.systemDistance*2 :
-            print.pageLayout.pageHeight;
+            pageLayout.pageHeight;
 
         /*--- Credits ---------------------------------------------*/
 

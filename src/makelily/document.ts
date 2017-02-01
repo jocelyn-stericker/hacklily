@@ -128,7 +128,7 @@ export class Document {
                 this.search(part.staves[1], 0, Type.Print).length);
 
         if (partWithPrint) {
-            return <any> this.search(partWithPrint.staves[1], 0, Type.Print)[0];
+            return <any> this.search(partWithPrint.staves[1], 0, Type.Print)[0]._snapshot;
         }
 
         throw new Error("Part does not contain a Print element at division 0. Is it validated?");

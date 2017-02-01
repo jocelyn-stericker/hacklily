@@ -174,6 +174,7 @@ export default function layoutSong(options: ILayoutOptions):
         IMeasureLayout[][] {
 
     invariant(!!options.print, "Print not defined");
+    invariant(!options.print._snapshot, "Pass a snapshot of Print to layoutSong, not the actual model!");
     const page = 1; // XXX
 
     // Estimate the width of each measure, and the space available for each line.

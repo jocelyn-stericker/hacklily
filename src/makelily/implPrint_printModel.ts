@@ -19,7 +19,7 @@
 import {ScoreHeader, MeasureNumbering, PartNameDisplay, MeasureLayout, PartAbbreviationDisplay,
     PageLayout, SystemLayout, StaffLayout, Print, NormalItalic, NormalBold, serializePrint}
     from "musicxml-interfaces";
-import {forEach} from "lodash";
+import {forEach, defaultsDeep} from "lodash";
 import * as invariant from "invariant";
 
 import {IModel, ILayout, Type} from "./document";
@@ -111,20 +111,20 @@ class PrintModel implements Export.IPrintModel {
     }
 
     getSnapshot(parent: Print): Print {
-        return {
-            measureNumbering: this.measureNumbering || parent.measureNumbering,
-            partNameDisplay: this.partNameDisplay || parent.partNameDisplay,
-            newSystem: this.newSystem || parent.newSystem,
-            newPage: this.newPage || parent.newPage,
-            blankPage: this.blankPage || parent.blankPage,
-            measureLayout: this.measureLayout || parent.measureLayout,
-            partAbbreviationDisplay: this.partAbbreviationDisplay || parent.partAbbreviationDisplay,
-            pageLayout: this.pageLayout || parent.pageLayout,
-            systemLayout: this.systemLayout || parent.pageLayout,
-            staffSpacing: this.staffSpacing || parent.staffSpacing,
-            staffLayouts: this.staffLayouts || parent.staffLayouts,
-            pageNumber: this.pageNumber || parent.pageNumber,
-        };
+        return defaultsDeep({
+            measureNumbering: this.measureNumbering,
+            partNameDisplay: this.partNameDisplay,
+            newSystem: this.newSystem,
+            newPage: this.newPage,
+            blankPage: this.blankPage,
+            measureLayout: this.measureLayout,
+            partAbbreviationDisplay: this.partAbbreviationDisplay,
+            pageLayout: this.pageLayout,
+            systemLayout: this.systemLayout,
+            staffSpacing: this.staffSpacing,
+            staffLayouts: this.staffLayouts,
+            pageNumber: this.pageNumber,
+        } as Print, parent) as any;
     }
 
     toXML(): string {
