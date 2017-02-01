@@ -56,7 +56,7 @@ export default class StemView extends Component<IProps, void> {
         }
         const direction = spec.type === StemType.Up ? 1 : -1; // TODO: StemType.Double
         const lineXOffset = direction * - width / 2;
-        const offset = getFontOffset(notehead, direction);
+        const offset = getFontOffset(notehead, direction) || [0];
         const x = defaultX + (relativeX || (offset[0] * 10 + lineXOffset));
         invariant(isFinite(x), "Invalid x offset %s", x);
 

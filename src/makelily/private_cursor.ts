@@ -48,6 +48,7 @@ export interface IReadOnlyValidationCursor {
 
     readonly preview: boolean;
 
+    dangerouslyPatchWithoutValidation(builder: (partBuilder: VoiceBuilder & StaffBuilder) => (VoiceBuilder | StaffBuilder)): void;
     patch(builder: (partBuilder: VoiceBuilder & StaffBuilder) => (VoiceBuilder | StaffBuilder)): void;
 }
 
@@ -114,7 +115,26 @@ export class ValidationCursor {
         this.fixup = spec.fixup;
     }
 
-    patch(builder: (partBuilder: VoiceBuilder & StaffBuilder) => (VoiceBuilder | StaffBuilder)) {
+    dangerouslyPatchWithoutValidation(builder: (partBuilder: VoiceBuilder & StaffBuilder) => (VoiceBuilder | StaffBuilder)) {
+        // Create the patch based on whether the current context is a staff context or a voice context.
+        let patch = createPatch(true, this.document, this.measureInstance.uuid,
+             this.segmentInstance.part, part => {
+                 if (this.segmentInstance.ownerType === "staff") {
+                     return part.staff(this.segmentInstance.owner, builder as any, this.segmentPosition);
+                 } else if (this.segmentInstance.ownerType === "voice") {
+                     return part.voice(this.segmentInstance.owner, builder as any, this.segmentPosition);
+                 } else {
+                     throw new Error("Not reached");
+                 }
+             }
+        );
+        // All patches must be serializable, so we can:
+        //   - Send them over a network
+        //   - Invert them
+        this.fixup(cloneObject(patch));
+    }
+
+    patch(builder: (partBuilder: VoiceBuilder & StaffBuilder) => (VoiceBuilder | StaffBuilder), dangerous?: boolean) {
         // Create the patch based on whether the current context is a staff context or a voice context.
         let patch = createPatch(this.preview, this.document, this.measureInstance.uuid,
              this.segmentInstance.part, part => {

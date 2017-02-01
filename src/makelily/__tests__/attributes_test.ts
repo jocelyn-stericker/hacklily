@@ -40,6 +40,7 @@ export function makeCursor(factory: Factory, models: ISegment): ValidationCursor
             __fakeDocument: true
         } as any,
         fixup: null,
+        dangerouslyPatchWithoutValidation: null,
         patch: null,
         advance: null,
 

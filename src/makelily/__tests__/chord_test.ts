@@ -66,6 +66,7 @@ function getCursor(factory: IFactory, model: IModel): ValidationCursor {
             __fakeDocument: true
         } as any,
         fixup: null,
+        dangerouslyPatchWithoutValidation: () => null,
         patch: () => null,
         advance: null,
 

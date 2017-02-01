@@ -143,6 +143,7 @@ function tryValidate(options: ILayoutOptions,
     normalizeDivisionsInPlace(factory, allSegments, 0);
     // TODO: check if a measure hence becomes dirty?
 
+    let tries = 0;
     forEach(options.measures, function validateMeasure(measure) {
         let cleanliness = options.document.cleanlinessTracking.measures[measure.uuid];
         if (cleanliness && cleanliness.clean) {
@@ -153,8 +154,7 @@ function tryValidate(options: ILayoutOptions,
 
         rootFixupOpts.debugFixupOperations = [];
 
-        let tries = 0;
-        // Fixups can require multiple passes.
+         // Fixups can require multiple passes.
         for (let tryAgain = true; tryAgain;) {
             if (++tries > 100) {
                 console.warn("-------------- too many fixups: aborting -------------- ");
@@ -265,7 +265,6 @@ function tryValidate(options: ILayoutOptions,
                 lastPrint = outcome.print;
             } catch (ex) {
                 if (ex instanceof RestartMeasureValidation) {
-                    console.log(ex.stack);
                     tryAgain = true;
                 } else {
                     throw ex;

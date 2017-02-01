@@ -16,7 +16,7 @@
  * along with Satie.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import {Time, BeamType, Beam, Count, BarStyleType, TimeModification, Direction} from "musicxml-interfaces";
+import {Time, BeamType, Beam, Count, TimeModification, Direction} from "musicxml-interfaces";
 import {IAny} from "musicxml-interfaces/operations";
 import {
     buildNote, patchNote, INoteBuilder,
@@ -738,33 +738,34 @@ function fixMetre(document: Document, patches: IAny[]): IAny[] {
 }
 
 function fixBarlines(doc: Document, patches: IAny[]): IAny[] {
-    const measureCount = doc.measures.length;
-    const previouslyLastMeasure = doc.measures[measureCount - 1];
-    forEach(previouslyLastMeasure.parts, (part, partName) => {
-        const segment = part.staves[1];
-        const barlineIdx = findLastIndex(segment, el => doc.modelHasType(el, Type.Barline));
+    // XXX: FIXME
+    // const measureCount = doc.measures.length;
+    // const previouslyLastMeasure = doc.measures[measureCount - 1];
+    // forEach(previouslyLastMeasure.parts, (part, partName) => {
+    //     const segment = part.staves[1];
+    //     const barlineIdx = findLastIndex(segment, el => doc.modelHasType(el, Type.Barline));
 
-        patches = patches.slice();
-        patches.forEach(patch => {
-            if (patch.p[0] === "measures" &&
-                    patch.p.length === 2 &&
-                    patch.p[1] === previouslyLastMeasure.idx + 1) {
+    //     patches = patches.slice();
+    //     patches.forEach(patch => {
+    //         if (patch.p[0] === "measures" &&
+    //                 patch.p.length === 2 &&
+    //                 patch.p[1] === previouslyLastMeasure.idx + 1) {
 
-                const removeDoubleBarline = createPatch(false, doc,
-                    previouslyLastMeasure.uuid, partName,
-                    part => part.staff(1, staff => staff
-                        .barline(barline => barline
-                            .barStyle(barStyle => barStyle
-                                .data(BarStyleType.Regular)
-                            )
-                        ),
-                        barlineIdx
-                    )
-                );
-                patches = patches.concat(removeDoubleBarline);
-            }
-        });
-    });
+    //             const removeDoubleBarline = createPatch(false, doc,
+    //                 previouslyLastMeasure.uuid, partName,
+    //                 part => part.staff(1, staff => staff
+    //                     .barline(barline => barline
+    //                         .barStyle(barStyle => barStyle
+    //                             .data(BarStyleType.Regular)
+    //                         )
+    //                     ),
+    //                     barlineIdx
+    //                 )
+    //             );
+    //             patches = patches.concat(removeDoubleBarline);
+    //         }
+    //     });
+    // });
     return patches;
 }
 
