@@ -67,6 +67,7 @@ export function stringToDocument(src: string, factory: IFactory) {
         preprocessors: factory.preprocessors,
         preview: false,
         print: null,
+        singleLineMode: false,
     };
     validate(contextOptions);
     ScoreHeader.prototype.overwriteEncoding.call(document.header);

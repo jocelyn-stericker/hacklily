@@ -28,7 +28,9 @@ import {cloneObject} from "./private_util";
 function expectEqualish(a: any, b: any) {
     a = cloneObject(a);
     b = cloneObject(b);
-    invariant(isEqual(a, b), `Cannot perform operation since ${JSON.stringify(a, null, 2)} != ${JSON.stringify(b, null, 2)}`);
+    if (!isEqual(a, b)) {
+        console.warn(`Invalid operation since ${JSON.stringify(a, null, 2)} != ${JSON.stringify(b, null, 2)}. Doing it anyway.`);
+    }
 }
 
 export function parentExists(obj: any, p: OTPath): boolean {

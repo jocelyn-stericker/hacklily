@@ -52,6 +52,7 @@ export interface IMeasureLayoutOptions {
     lineTotalBarsOnLine: number;
     lineIndex: number;
     lineCount: number;
+    singleLineMode: boolean;
 
     factory: IFactory;
     preview: boolean;
@@ -523,6 +524,7 @@ export interface IRefreshMeasureOpts {
     measure: IMeasure;
     measureX: number;
     segments: ISegment[];
+    singleLineMode: boolean;
 
     attributes: {[part: string]: IAttributesSnapshot[]};
 
@@ -552,6 +554,7 @@ export function layoutMeasure(
             measure,
             factory,
             x,
+            singleLineMode,
             preview,
             fixup,
             lineShortest,
@@ -582,6 +585,7 @@ export function layoutMeasure(
         lineIndex,
         lineCount,
         mode: RefreshMode.RefreshLayout,
+        singleLineMode,
 
         preview,
         fixup,

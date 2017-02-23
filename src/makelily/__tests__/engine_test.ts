@@ -81,7 +81,7 @@ describe("[engine.ts]", function() {
                     ]
                 }
             };
-            expect(calculateLineBounds(spec1, 1)).to.deep.equal({
+            expect(calculateLineBounds(spec1, 1, {millimeters: 10, tenths: 40})).to.deep.equal({
                 left: 11,
                 right: 1000 - 12,
                 systemLayout: {
@@ -91,7 +91,7 @@ describe("[engine.ts]", function() {
                     }
                 }
             });
-            expect(calculateLineBounds(spec1, 2)).to.deep.equal({
+            expect(calculateLineBounds(spec1, 2, {millimeters: 10, tenths: 40})).to.deep.equal({
                 left: 21,
                 right: 1000 - 22,
                 systemLayout: {

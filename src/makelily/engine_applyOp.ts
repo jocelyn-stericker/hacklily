@@ -157,7 +157,9 @@ export default function applyOp(preview: boolean, measures: IMeasure[], factory:
                 // need to be changed is tough.
                 let ctMeasures = document.cleanlinessTracking.measures;
                 Object.keys(ctMeasures).forEach(measureName => {
-                    ctMeasures[measureName].clean = null;
+                    if (ctMeasures[measureName]) {
+                        ctMeasures[measureName].clean = null;
+                    }
                 });
             }
             attributesMutator(preview, element as any, localOp);
@@ -237,7 +239,13 @@ export function applyMeasureOp(measures: IMeasure[], factory: IFactory, op: IAny
                     if (newParts[partID].voices[voiceIdx]) {
                         newParts[partID].voices[voiceIdx] =
                             newParts[partID].voices[voiceIdx]
-                                .map(i => factory.fromSpec(i)) || <any>[];
+                                .map(i => {
+                                    const model = factory.fromSpec(i);
+                                    if (doc.modelHasType(model, Type.VisualCursor)) {
+                                        doc._visualCursor = model;
+                                    }
+                                    return model;
+                                }) || <any>[];
                     } else {
                         newParts[partID].voices[voiceIdx] = [] as any;
                     }

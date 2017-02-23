@@ -17,8 +17,8 @@
  */
 
 import {ScoreHeader, MeasureNumbering, PartNameDisplay, MeasureLayout, PartAbbreviationDisplay,
-    PageLayout, SystemLayout, StaffLayout, Print, NormalItalic, NormalBold, serializePrint}
-    from "musicxml-interfaces";
+    PageLayout, SystemLayout, StaffLayout, Print, NormalItalic, NormalBold, serializePrint,
+    OddEvenBoth} from "musicxml-interfaces";
 import {forEach, defaultsDeep} from "lodash";
 import * as invariant from "invariant";
 
@@ -26,6 +26,7 @@ import {IModel, ILayout, Type} from "./document";
 
 import {IReadOnlyValidationCursor, LayoutCursor} from "./private_cursor";
 import {IBoundingRect} from "./private_boundingRect";
+import {calculateLineBounds} from "./private_lineBounds";
 
 class PrintModel implements Export.IPrintModel {
     _class = "Print";
@@ -103,15 +104,15 @@ class PrintModel implements Export.IPrintModel {
         }
 
         let defaultPrint = extractDefaultPrintFromHeader(cursor.header);
-        this._snapshot = this.getSnapshot(defaultPrint);
+        this._snapshot = this.getSnapshot(defaultPrint, cursor.singleLineMode, cursor.header);
     }
 
     getLayout(cursor: LayoutCursor): Export.IPrintLayout {
         return new PrintModel.Layout(this, cursor);
     }
 
-    getSnapshot(parent: Print): Print {
-        return defaultsDeep({
+    getSnapshot(parent: Print, singleLineMode: boolean, header: ScoreHeader): Print {
+        const print = defaultsDeep({
             measureNumbering: this.measureNumbering,
             partNameDisplay: this.partNameDisplay,
             newSystem: this.newSystem,
@@ -125,6 +126,40 @@ class PrintModel implements Export.IPrintModel {
             staffLayouts: this.staffLayouts,
             pageNumber: this.pageNumber,
         } as Print, parent) as any;
+
+        if (singleLineMode) {
+            const defaults = header.defaults;
+            const scale40 = defaults.scaling.millimeters / defaults.scaling.tenths * 40;
+            const firstLineBounds = calculateLineBounds(print, 0, defaults.scaling);
+            const systems = 1; // FIXME
+
+            return {
+                ...print,
+                systemLayout: {
+                    systemDistance: 20,
+                    systemDividers: print.systemLayout.systemDividers,
+                    systemMargins: {
+                        leftMargin: 0,
+                        rightMargin: 0,
+                    },
+                    topSystemDistance: 0,
+                },
+                pageLayout: {
+                    ...print.pageLayout,
+                    pageHeight: scale40 * 10 * systems +
+                        firstLineBounds.systemLayout.systemDistance * (systems - 1) + 80,
+                    pageMargins: [{
+                        bottomMargin: 40,
+                        leftMargin: 0,
+                        rightMargin: 0,
+                        topMargin: 40,
+                        type: OddEvenBoth.Both,
+                    }]
+                }
+            };
+        }
+
+        return print;
     }
 
     toXML(): string {

@@ -91,8 +91,10 @@ export default class SongImpl extends Component<IProps, IState> implements ISong
     componentWillReceiveProps(nextProps: IProps) {
         if (nextProps.baseSrc !== this.props.baseSrc) {
             this._loadXML(nextProps.baseSrc);
-        } else if (nextProps.pageClassName !== this.props.pageClassName) {
-            this._preRender();
+        } else if (nextProps.pageClassName !== this.props.pageClassName ||
+                nextProps.fixedMeasureWidth !== this.props.fixedMeasureWidth ||
+                nextProps.singleLineMode !== this.props.singleLineMode) {
+            this._preRender(nextProps);
         } else if (nextProps.patches !== this.props.patches) {
             const patches = nextProps.patches;
             if (patches instanceof PatchImpl) {
@@ -278,28 +280,29 @@ export default class SongImpl extends Component<IProps, IState> implements ISong
     private _rectifyAppendPreview = (ops:IAny[]): void => {
         this._rectify$(this._docPatches.concat(ops), true, () => void 0);
     };
-    private _update$(patches: IAny[], isPreview: boolean) {
+    private _update$(patches: IAny[], isPreview: boolean, props: IProps = this.props) {
         this._rectify$(patches, isPreview, () => isPreview = false);
 
         this._page1 = this.state.document.__getPage(
             0,
             isPreview,
             "svg-web",
-            this.props.pageClassName || "",
-            this.props.singleLineMode,
-            this.props.fixedMeasureWidth,
+            props.pageClassName || "",
+            props.singleLineMode,
+            props.fixedMeasureWidth,
             isPreview ? this._rectifyAppendPreview : this._rectifyAppendCanonical,
-            this._syncSVG
+            this._syncSVG,
+            props.onPageHeightChanged,
         );
         this.forceUpdate();
     }
 
-    private _preRender: () => void = () => {
+    private _preRender = (props: IProps = this.props) => {
         const patches = this.props.patches as {};
         if (patches instanceof PatchImpl) {
-            this._update$(patches.content, patches.isPreview);
+            this._update$(patches.content, patches.isPreview, props);
         } else if (!patches) {
-            this._update$([], false);
+            this._update$([], false, props);
         } else {
             invariant(false, "Internal error: preRender called, but the state is invalid.");
         }

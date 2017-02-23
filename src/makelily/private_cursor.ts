@@ -42,6 +42,7 @@ export interface IReadOnlyValidationCursor {
 
     readonly print: Print;
     readonly header: ScoreHeader;
+    readonly singleLineMode: boolean;
 
     readonly factory: IFactory;
     readonly fixup: (operations: IAny[]) => void;
@@ -72,6 +73,7 @@ export class ValidationCursor {
 
     print: Print;
     header: ScoreHeader;
+    singleLineMode: boolean;
 
     factory: IFactory;
     fixup: (operations: IAny[]) => void;
@@ -96,6 +98,7 @@ export class ValidationCursor {
                 preview?: boolean;
                 measureInstance: IMeasure;
                 measureIsLast: boolean;
+                singleLineMode: boolean;
             }) {
         this.document = spec.document;
         this.segmentDivision = 0;
@@ -113,6 +116,7 @@ export class ValidationCursor {
         this.staffIdx = spec.staffIdx;
         this.preview = !!spec.preview;
         this.fixup = spec.fixup;
+        this.singleLineMode = spec.singleLineMode;
     }
 
     dangerouslyPatchWithoutValidation(builder: (partBuilder: VoiceBuilder & StaffBuilder) => (VoiceBuilder | StaffBuilder)) {

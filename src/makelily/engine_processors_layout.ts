@@ -176,9 +176,10 @@ export default function layoutSong(options: ILayoutOptions):
     invariant(!!options.print, "Print not defined");
     invariant(!options.print._snapshot, "Pass a snapshot of Print to layoutSong, not the actual model!");
     const page = 1; // XXX
+    const scaling = options.document.header.defaults.scaling;
 
     // Estimate the width of each measure, and the space available for each line.
-    const boundsGuess = calculateLineBounds(options.print, page);
+    const boundsGuess = calculateLineBounds(options.print, page, scaling);
     const lineWidth = (boundsGuess.right - boundsGuess.left) / SQUISHINESS;
     const linePlacementHints = options.preview ?
         options.document.cleanlinessTracking.linePlacementHints :
@@ -222,12 +223,12 @@ export default function layoutSong(options: ILayoutOptions):
 
     // Create the final layout
     const memo = {
-        y: calculateLineBounds(layoutOpts[0].print, page).top,
+        y: calculateLineBounds(layoutOpts[0].print, page, scaling).top,
         attributes: {},
     };
     return layoutOpts.map(lineOpt => layoutLine(
         lineOpt,
-        calculateLineBounds(lineOpt.print, page),
+        calculateLineBounds(lineOpt.print, page, scaling),
         memo,
     ));
 }
