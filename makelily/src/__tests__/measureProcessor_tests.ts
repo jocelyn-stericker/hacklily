@@ -75,6 +75,7 @@ describe("[engine/measureProcessor.ts]", function() {
                 factory: fakeFactory,
                 mode: RefreshMode.RefreshLayout,
                 attributes: {"P1": []},
+                singleLineMode: false,
             };
             let layout = refreshMeasure(opts).elements;
             expect(layout[0].length).to.equal(2);
@@ -187,6 +188,7 @@ describe("[engine/measureProcessor.ts]", function() {
                 lineIndex: 0,
                 factory: fakeFactory,
                 attributes: {"P1": []},
+                singleLineMode: false,
             });
             // We've tested this exact case in ISegment.layout$, so we can be
             // a bit soft here.

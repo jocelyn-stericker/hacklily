@@ -66,6 +66,7 @@ export interface IProps {
     onLoaded?: () => void;
     onMouseMove?: (event: IMouseEvent) => void;
     onMouseClick?: (event: IMouseEvent) => void;
+    onPageHeightChanged?: (pageHeight: number) => void;
 }
 
 export interface IPatchSpec {

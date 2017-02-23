@@ -40,6 +40,6 @@ export interface ILayoutOptions {
     preprocessors: IPreprocessor[];
     preview: boolean;
     print: Print;
-    singleLineMode?: boolean;
+    singleLineMode: boolean;
     fixedMeasureWidth?: number;
 }

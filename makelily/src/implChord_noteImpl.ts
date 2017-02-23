@@ -70,7 +70,7 @@ class NoteImpl implements Note {
         forEach(properties, setIfDefined);
 
         function setIfDefined(property: string) {
-            if (note.hasOwnProperty(property) && (<any>note)[property] !== null) {
+            if (note.hasOwnProperty(property) && (<any>note)[property] !== undefined) {
                 self[property] = <any> (<any>note)[property];
             }
         }

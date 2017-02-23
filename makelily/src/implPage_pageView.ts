@@ -17,7 +17,7 @@
  */
 
 import {ScoreHeader, Print} from "musicxml-interfaces";
-import {createFactory, Component, DOM, MouseEvent, PropTypes} from "react";
+import {createFactory, Component, DOM, PropTypes} from "react";
 import {map, filter, forEach, last} from "lodash";
 import * as invariant from "invariant";
 
@@ -25,7 +25,6 @@ import {IModel, generateModelKey} from "./document";
 
 import {tenthsToMM} from "./private_renderUtil";
 import {getPageMargins} from "./private_print";
-import {calculateLineBounds} from "./private_lineBounds";
 import {IMeasureLayout} from "./private_measureLayout";
 
 import MeasureView from "./implMeasure_measureView";
@@ -41,12 +40,7 @@ export interface IProps {
     renderTarget: "svg-web" | "svg-export";
     className: string;
     singleLineMode?: boolean;
-
-    onClick?: (evt: MouseEvent<SVGSVGElement>) => void;
-    onMouseDown?: (evt: MouseEvent<SVGSVGElement>) => void;
-    onMouseLeave?: (evt: MouseEvent<SVGSVGElement>) => void;
-    onMouseMove?: (evt: MouseEvent<SVGSVGElement>) => void;
-    onMouseUp?: (evt: MouseEvent<SVGSVGElement>) => void;
+    onPageHeightChanged?: (pageHeight: number) => void;
     svgRef?: (svg: SVGSVGElement) => void;
 }
 
@@ -56,6 +50,8 @@ export default class Page extends Component<IProps, void> {
         renderTarget: PropTypes.oneOf(["svg-web", "svg-export"]).isRequired,
         scale40: PropTypes.number.isRequired
     } as any;
+
+    _pageHeight = NaN;
 
     render(): any {
 
@@ -78,17 +74,19 @@ export default class Page extends Component<IProps, void> {
         const heightMM = this.props.renderTarget === "svg-export" ?
                                 tenthsToMM(scale40, pageLayout.pageHeight) + "mm" : "100%";
 
-        const firstLineBounds = calculateLineBounds(print, pageNum);
-
         const pageWidth = this.props.singleLineMode ?
             last(lineLayouts[0]).originX + last(lineLayouts[0]).width +
                 getPageMargins(pageLayout.pageMargins, 0).rightMargin :
             pageLayout.pageWidth;
 
-        const pageHeight = this.props.singleLineMode ?
-            firstLineBounds.systemLayout.topSystemDistance +
-                firstLineBounds.systemLayout.systemDistance*2 :
-            pageLayout.pageHeight;
+        const pageHeight = pageLayout.pageHeight;
+
+        if (pageHeight !== this._pageHeight && this.props.onPageHeightChanged) {
+            this._pageHeight = pageHeight;
+            setTimeout(() => {
+                this.props.onPageHeightChanged(pageHeight);
+            });
+        }
 
         /*--- Credits ---------------------------------------------*/
 
@@ -107,11 +105,6 @@ export default class Page extends Component<IProps, void> {
                     undefined :
                     print.pageNumber,
                 height: heightMM,
-                onClick: this.props.onClick,
-                onMouseDown: this.props.onMouseDown,
-                onMouseLeave: this.props.onMouseLeave,
-                onMouseMove: this.props.onMouseMove,
-                onMouseUp: this.props.onMouseUp,
                 ref: this._setSVG,
                 viewBox: `0 0 ${pageWidth} ${pageHeight}`,
                 width: widthMM

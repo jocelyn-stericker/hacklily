@@ -61,6 +61,7 @@ function layoutMeasures(options: ILayoutOptions) {
                 preview,
                 print,
                 x: 0, // Final offset set recorded in justify(...).
+                singleLineMode: options.singleLineMode,
             });
         }
 

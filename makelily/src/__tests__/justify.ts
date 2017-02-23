@@ -89,7 +89,8 @@ describe("[lineProcessor.ts]", function() {
                 lineIndex: 0,
                 lineShortest: 1,
                 lineTotalBarsOnLine: 1,
-                factory: fakeFactory
+                factory: fakeFactory,
+                singleLineMode: false,
             }));
 
             let padding = 12;
@@ -141,7 +142,8 @@ describe("[lineProcessor.ts]", function() {
                     },
                     modelFactory: fakeFactory,
                     preprocessors: [],
-                    postprocessors: [Justify]
+                    postprocessors: [Justify],
+                    singleLineMode: false,
                 },
                 {
                     left: 12,

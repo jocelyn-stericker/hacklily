@@ -91,6 +91,7 @@ function getCursor(factory: IFactory, model: IModel): ValidationCursor {
 
         factory: factory,
         preview: false,
+        singleLineMode: false,
     };
     return v;
 }

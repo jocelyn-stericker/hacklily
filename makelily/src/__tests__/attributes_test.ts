@@ -94,6 +94,7 @@ export function makeCursor(factory: Factory, models: ISegment): ValidationCursor
 
         factory: factory,
         preview: false,
+        singleLineMode: false,
     };
     return v;
 }

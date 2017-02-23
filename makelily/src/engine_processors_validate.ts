@@ -260,6 +260,7 @@ function tryValidate(options: ILayoutOptions,
                     print: lastPrint,
                     segments: segments,
                     attributes: lastAttribs,
+                    singleLineMode: options.singleLineMode,
                 });
                 lastAttribs = outcome.attributes;
                 lastPrint = outcome.print;

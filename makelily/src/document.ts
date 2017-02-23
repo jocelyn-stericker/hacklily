@@ -128,7 +128,7 @@ export class Document {
                 this.search(part.staves[1], 0, Type.Print).length);
 
         if (partWithPrint) {
-            return <any> this.search(partWithPrint.staves[1], 0, Type.Print)[0]._snapshot;
+            return this.search(partWithPrint.staves[1], 0, Type.Print)[0]._snapshot;
         }
 
         throw new Error("Part does not contain a Print element at division 0. Is it validated?");
@@ -158,9 +158,8 @@ export class Document {
         renderTarget?: "svg-web" | "svg-export", pageClassName?: string, singleLineMode?: boolean,
         fixedMeasureWidth?: number,
         onOperationsAppended?: (ops: IAny[]) => void,
-        ref?: (svg: SVGSVGElement) => void): ReactElement<any> {
-
-        let print = this.getPrint(startMeasure);
+        ref?: (svg: SVGSVGElement) => void,
+        onPageHeightChanged?: (height: number) => void): ReactElement<any> {
 
         let opts: ILayoutOptions = {
             document: this,
@@ -173,7 +172,7 @@ export class Document {
             modelFactory: this._factory,
             postprocessors: this._factory.postprocessors,
             preprocessors: [],
-            print: print,
+            print: this.getPrint(startMeasure),
             preview,
             singleLineMode,
             fixedMeasureWidth,
@@ -183,16 +182,19 @@ export class Document {
         };
 
         validate(opts);
+        // Print snapshot may have been changed.
+        opts.print = this.getPrint(startMeasure);
         const lineLayouts = layoutSong(opts);
 
         return $PageView({
             className: pageClassName,
             lineLayouts: lineLayouts,
-            print: print,
+            print: opts.print,
             renderTarget: renderTarget,
             scoreHeader: this.header,
             singleLineMode,
             svgRef: ref,
+            onPageHeightChanged: onPageHeightChanged,
         });
     }
 

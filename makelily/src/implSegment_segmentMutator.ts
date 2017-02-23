@@ -45,10 +45,11 @@ export default function segmentMutator(factory: IFactory, segment: ISegment, op:
         segment.splice(op.p[5] as number, 0, newModel);
     } else if ("ld" in op && !("li" in op)) {
         const existingSerializable: any = cloneObject(segment[op.p[5] as number]);
-        if (!isEqual(existingSerializable, op.ld)) {
-            invariant(false,
-                "The element to be removed must be accurately specified in the operation.\n\n" +
-                "OPERATION SPEC: " + JSON.stringify(op.ld, null, 2) + "\n\n" +
+        const ld: any = cloneObject(op.ld);
+        if (!isEqual(existingSerializable, ld)) {
+            console.warn(
+                "The element to be removed should be accurately specified in the operation.\n\n" +
+                "OPERATION SPEC: " + JSON.stringify(ld, null, 2) + "\n\n" +
                 "ACTUAL SPEC: " + JSON.stringify(existingSerializable, null, 2) + "\n\n" +
                 "Your patch is broken."
             );
