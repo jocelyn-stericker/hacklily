@@ -17,7 +17,6 @@
  */
 
 import {IAny} from "musicxml-interfaces/operations";
-import * as invariant from "invariant";
 
 import {mutate, parentExists} from "./private_mutate";
 
@@ -25,8 +24,11 @@ import AttributesModel from "./implAttributes_attributesModel";
 
 export default function attributesMutator(preview: boolean, attributes: AttributesModel.IAttributesModel, op: IAny) {
     // Check if we are being asked to clone & create.
-    invariant(parentExists(attributes, op.p), "Invalid patch -- it's likely to a " +
-        "model that only exists in a snapshot. You'll need to explicitly create it.");
+    if (!parentExists(attributes, op.p)) {
+        console.warn("Invalid patch -- it's likely to a " +
+            "model that only exists in a snapshot. You'll need to explicitly create it.");
+        return;
+    }
 
     // Bye.
     mutate(attributes, op);
