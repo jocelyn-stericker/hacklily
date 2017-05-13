@@ -103,7 +103,7 @@ void HacklilyServer::_handleTextMessageReceived(QString message) {
         }
         _requests.push_back(req);
         _processIfPossible();
-    } else if (requestObj["method"] == "oauth") {
+    } else if (requestObj["method"] == "signIn") {
         QNetworkRequest request;
         request.setUrl(QUrl("https://github.com/login/oauth/access_token"));
         request.setRawHeader("Accept", QByteArray("application/json"));

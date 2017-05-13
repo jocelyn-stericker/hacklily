@@ -30,6 +30,7 @@ import lodashDebounce = require('lodash.debounce');
 
 import { MODE_BOTH, MODE_VIEW, ViewMode } from './Header';
 import Logs from './Logs';
+import RPCClient, { RenderResponse } from './RPCClient';
 import { APP_STYLE } from './styles';
 
 const DEBOUNCE_REFERSH_TIMEOUT: number = 1000;
@@ -38,27 +39,10 @@ const BODY_IFRAME_TEMPLATE: string = `
 <div id="root"></div>
 `;
 
-export interface RPCResponse {
-  jsonrpc: '2.0';
-  result?: {
-    logs: string;
-    err: string;
-    files: string[];
-  };
-  error?: {
-    code: number;
-    message: string;
-    data?: {
-      logs?: string;
-    }
-  };
-  id: string | number;
-}
-
 interface PreviewProps {
   code: string;
   mode: ViewMode;
-  socket: WebSocket;
+  rpc: RPCClient;
   logs: string | null;
   onSelectionChanged(selection: monaco.ISelection | null): void;
   onLogsObtained(logs: string | null): void;
@@ -79,11 +63,10 @@ export default class Preview extends React.PureComponent<PreviewProps, AppState>
 
   private sheetMusicView: HTMLIFrameElement;
   private iframeLoaded: boolean = false;
-  private rpcNotificationID: string | null;
 
   private update: () => void = lodashDebounce(
-    () => {
-      const { code, socket } = this.props;
+    async () => {
+      const { code, rpc } = this.props;
       if (this.state.pendingPreviews) {
         this.setState({
           previewAlreadyDirty: true,
@@ -91,22 +74,58 @@ export default class Preview extends React.PureComponent<PreviewProps, AppState>
         return;
       }
 
-      // tslint:disable-next-line:insecure-random
-      this.rpcNotificationID = Math.random().toString();
-
-      socket.send(JSON.stringify({
-        jsonrpc: '2.0',
-        method: 'render',
-        id: this.rpcNotificationID,
-        params: {
-          src: code,
-          backend: 'svg',
-        },
-      }));
       this.setState({
         pendingPreviews: this.state.pendingPreviews + 1,
       });
-    },
+
+      if (!this.iframeLoaded) {
+        this.handleIFrameLoaded();
+      }
+
+      try {
+        const response: RenderResponse = await rpc.call('render', {
+          src: code,
+          backend: 'svg',
+        });
+
+        const { files, logs } = response.result;
+
+        const root: HTMLElement | null =
+          this.sheetMusicView.contentWindow.document.getElementById('root');
+        if (!root) {
+          throw new Error('Could not get sheet music view root!');
+        }
+
+        // tslint:disable-next-line:no-inner-html
+        root.innerHTML = dompurify.sanitize(files.join(''), {
+          ALLOW_UNKNOWN_PROTOCOLS: true,
+        } as object);
+        const cleanLogs: string = this.cleanLogs(logs);
+        this.props.onLogsObtained(cleanLogs);
+
+        const svgs: SVGSVGElement[] = Array.from(root.getElementsByTagName('svg'));
+        for (const svg of svgs) {
+          svg.removeAttribute('width');
+          svg.removeAttribute('height');
+        }
+        this.setState({
+          pendingPreviews: this.state.pendingPreviews - 1,
+        });
+        if (this.state.previewAlreadyDirty) {
+          this.setState({
+            error: null,
+            previewAlreadyDirty: false,
+          });
+          this.update();
+        }
+        return;
+      } catch (err) {
+        this.setState({
+          pendingPreviews: this.state.pendingPreviews - 1,
+          previewAlreadyDirty: true,
+        });
+      }
+    } ,
     DEBOUNCE_REFERSH_TIMEOUT,
   );
 
@@ -130,20 +149,12 @@ export default class Preview extends React.PureComponent<PreviewProps, AppState>
   }
 
   componentDidMount(): void {
-    this.setSocket(this.props.socket);
-  }
-
-  componentWillUnmount(): void {
-    this.clearSocket(this.props.socket);
+    this.update();
   }
 
   componentDidUpdate(prevProps: PreviewProps): void {
     if (prevProps.code !== this.props.code) {
       this.update();
-    }
-    if (prevProps.socket !== this.props.socket) {
-      this.clearSocket(prevProps.socket);
-      this.setSocket(this.props.socket);
     }
   }
 
@@ -183,65 +194,6 @@ export default class Preview extends React.PureComponent<PreviewProps, AppState>
       });
     }
     this.iframeLoaded = true;
-  }
-
-  private setSocket = (socket: WebSocket): void => {
-    socket.addEventListener('message', this.handleSocketMessage);
-    this.update();
-  }
-
-  private clearSocket = (socket: WebSocket): void => {
-    socket.removeEventListener('message', this.handleSocketMessage);
-  }
-
-  private handleSocketMessage = (e: MessageEvent): void => {
-    if (!this.iframeLoaded) {
-      this.handleIFrameLoaded();
-    }
-    const root: HTMLElement | null =
-      this.sheetMusicView.contentWindow.document.getElementById('root');
-    if (!root) {
-      throw new Error('Could not get sheet music view root!');
-    }
-    const contents: RPCResponse = JSON.parse(e.data.toString());
-    if (contents.id === this.rpcNotificationID && contents.id) {
-      if (contents.result) {
-        // tslint:disable-next-line:no-inner-html
-        root.innerHTML = dompurify.sanitize(contents.result.files.join(''), {
-          ALLOW_UNKNOWN_PROTOCOLS: true,
-        } as object);
-        const logs: string = this.cleanLogs(contents.result.logs);
-        this.props.onLogsObtained(logs);
-
-        const svgs: SVGSVGElement[] = Array.from(root.getElementsByTagName('svg'));
-        for (const svg of svgs) {
-          svg.removeAttribute('width');
-          svg.removeAttribute('height');
-        }
-        this.setState({
-          pendingPreviews: this.state.pendingPreviews - 1,
-        });
-        if (this.state.previewAlreadyDirty) {
-          this.setState({
-            error: null,
-            previewAlreadyDirty: false,
-          });
-          this.update();
-        }
-        this.rpcNotificationID = null;
-      } else if (contents.error) {
-        this.setState({
-          pendingPreviews: this.state.pendingPreviews - 1,
-          previewAlreadyDirty: true,
-          error: contents.error.message,
-        });
-        if (contents.error.data && contents.error.data.logs) {
-          const logs: string = this.cleanLogs(contents.error.data.logs);
-          this.props.onLogsObtained(logs);
-        }
-        return;
-      }
-    }
   }
 
   private cleanLogs(logs: string): string {

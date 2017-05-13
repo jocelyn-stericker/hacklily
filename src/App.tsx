@@ -24,7 +24,6 @@ import React from 'react';
 import About from './About';
 import ConnectToGitHub, {
   Auth,
-  checkAuth,
   checkLogin,
   revokeGitHubAuth,
 } from './ConnectToGitHub';
@@ -34,6 +33,7 @@ import Header, { MODE_BOTH, MODE_VIEW, ViewMode } from './Header';
 import Menu from './Menu';
 import Preview from './Preview';
 import Publish, { publish } from './Publish';
+import RPCClient from './RPCClient';
 import { APP_STYLE } from './styles';
 
 function last<T>(t: T[]): T {
@@ -126,7 +126,8 @@ export default class App extends React.PureComponent<AppProps, AppState> {
     reconnectCooloff: INITIAL_WS_COOLOFF,
   };
 
-  private lilypondServerWS: WebSocket | null = null;
+  private socket: WebSocket | null = null;
+  private rpc: RPCClient | null = null;
 
   render(): JSX.Element {
     const {
@@ -162,12 +163,12 @@ export default class App extends React.PureComponent<AppProps, AppState> {
       />
     );
     const aboutDialog: React.ReactNode = help && <About onHide={this.handleHideHelp} />;
-    const publishDialog: React.ReactNode = publish && auth && code && this.lilypondServerWS && (
+    const publishDialog: React.ReactNode = publish && auth && code && this.rpc && (
       <Publish
         onHide={this.handleHidePublish}
         auth={auth}
         code={code}
-        socket={this.lilypondServerWS}
+        rpc={this.rpc}
       />
     );
     const menuDialog: React.ReactNode = menu && (
@@ -249,8 +250,7 @@ export default class App extends React.PureComponent<AppProps, AppState> {
   }
 
   private isOnline(): boolean {
-    return this.lilypondServerWS !== null &&
-      this.lilypondServerWS.readyState === WebSocket.OPEN;
+    return Boolean(this.rpc);
   }
 
   private preview(): React.ReactNode {
@@ -270,15 +270,15 @@ export default class App extends React.PureComponent<AppProps, AppState> {
           </div>
         </div>
       );
-    } else if (this.lilypondServerWS) {
-      if (online) {
+    } else if (this.socket) {
+      if (online && this.rpc) {
         return (
           <Preview
             code={code}
             mode={mode}
             onLogsObtained={this.handleLogsObtained}
             onSelectionChanged={this.handleSelectionChanged}
-            socket={this.lilypondServerWS}
+            rpc={this.rpc}
             logs={logs}
           />
         );
@@ -382,7 +382,7 @@ export default class App extends React.PureComponent<AppProps, AppState> {
   private handleUpdate = async (): Promise<void> => {
     const code: string | undefined = this.code();
     const { auth, edit } = this.props;
-    if (!auth || !edit || !code || !this.lilypondServerWS) {
+    if (!auth || !edit || !code || !this.rpc) {
       throw new Error('Invariant violation: contract broken');
     }
     const path: string = last(edit.split('/'));
@@ -394,10 +394,10 @@ export default class App extends React.PureComponent<AppProps, AppState> {
     let ok: boolean;
     if (!file) {
       console.warn('This file has been deleted.');
-      ok = await publish(code, auth, path, this.lilypondServerWS,
+      ok = await publish(code, auth, path, this.rpc,
                          undefined, pdfFile ? pdfFile.sha : undefined);
     } else {
-      ok = await publish(code, auth, path, this.lilypondServerWS,
+      ok = await publish(code, auth, path, this.rpc,
                          file.sha, pdfFile ? pdfFile.sha : undefined);
     }
     if (ok) {
@@ -442,17 +442,18 @@ export default class App extends React.PureComponent<AppProps, AppState> {
   private handleSignOut = (): void => {
     const { auth } = this.props;
 
-    if (!this.lilypondServerWS || this.lilypondServerWS.readyState !== WebSocket.OPEN) {
+    if (!this.rpc) {
       alert('Cannot sign out because you are not connected to the server.');
       return;
     }
 
-    delete localStorage.auth;
+    this.props.setAuth(null);
+
     if (!auth) {
       throw new Error('Cannot sign out because we are not signed in.');
     }
     const token: string = auth.accessToken;
-    revokeGitHubAuth(this.lilypondServerWS, token);
+    revokeGitHubAuth(this.rpc, token);
   }
 
   private handleHideLogin = (): void => {
@@ -485,67 +486,58 @@ export default class App extends React.PureComponent<AppProps, AppState> {
       });
       return;
     }
-    this.lilypondServerWS = new WebSocket(BACKEND_WS_URL);
+    this.socket = new WebSocket(BACKEND_WS_URL);
 
-    this.lilypondServerWS.addEventListener('open', this.handleWSOpen);
-    this.lilypondServerWS.addEventListener('message', this.handleWSMessage);
-    this.lilypondServerWS.addEventListener('error', this.handleWSError);
-    this.lilypondServerWS.addEventListener('close', this.handleWSError);
+    this.socket.addEventListener('open', this.handleWSOpen);
+    this.socket.addEventListener('error', this.handleWSError);
+    this.socket.addEventListener('close', this.handleWSError);
     this.forceUpdate();
   }
 
   private disconnectWS(): void {
-    if (this.lilypondServerWS) {
-      this.lilypondServerWS.removeEventListener('open', this.handleWSOpen);
-      this.lilypondServerWS.removeEventListener('message', this.handleWSMessage);
-      this.lilypondServerWS.removeEventListener('error', this.handleWSError);
-      this.lilypondServerWS.removeEventListener('close', this.handleWSError);
-      this.lilypondServerWS.close();
-      this.lilypondServerWS = null;
+    if (this.socket) {
+      this.socket.removeEventListener('open', this.handleWSOpen);
+      this.socket.removeEventListener('error', this.handleWSError);
+      this.socket.removeEventListener('close', this.handleWSError);
+      this.socket.close();
+      this.socket = null;
+      if (this.rpc) {
+        this.rpc.destroy();
+        this.rpc = null;
+      }
     }
   }
 
-  private handleWSOpen = (): void => {
-    if (!this.lilypondServerWS) {
+  private handleWSOpen = async (): Promise<void> => {
+    if (!this.socket) {
       throw new Error('Socket not opened, but handleWSOpen called.');
     }
-    checkLogin(this.lilypondServerWS, this.props.code, this.props.state, localStorage.csrf);
+    this.rpc = new RPCClient(this.socket);
+    if (this.props.code && this.props.state) {
+      try {
+        const auth: Auth = await checkLogin(
+          this.rpc,
+          this.props.code,
+          this.props.state,
+          this.props.csrf,
+        );
+        this.props.setQuery({
+          code: undefined,
+          state: undefined,
+        });
+        this.props.setAuth(auth);
+      } catch (err) {
+        alert(err.message || 'Could not log you in');
+      }
+    }
     this.setState({
       reconnectCooloff: INITIAL_WS_COOLOFF,
     });
     this.forceUpdate();
   }
 
-  private handleWSMessage = (e: MessageEvent): void => {
-    try {
-      const newAuth: Auth | null = checkAuth(e, localStorage.csrf);
-      if (newAuth) {
-        this.props.setQuery({
-          code: undefined,
-          state: undefined,
-        });
-        this.props.setAuth(newAuth);
-      }
-    } catch (err) {
-      alert('Could not log you in.');
-    }
-
-    try {
-      const data: {id: string, error?: object} = JSON.parse(e.data.toString());
-      if (data.id === 'signOut') {
-        if (data.error) {
-          alert('Could not revoke GitHub authorization. ' +
-            'If you would like, you can manually do this from your GitHub settings.');
-        }
-        window.location.href = '/';
-      }
-    } catch (err) {
-      // suppress
-    }
-  }
-
   private handleWSError = (e: ErrorEvent): void => {
-    if (!this.lilypondServerWS) {
+    if (!this.socket) {
       return;
     }
 

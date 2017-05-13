@@ -53,11 +53,12 @@ function getQueryProps(): QueryProps {
   const queryProps: QueryProps = {};
   Object.keys(queryObj).forEach((key: string) => {
     const queryPropIdx: number = (QUERY_PROP_KEYS as string[]).indexOf(key);
-    if (queryPropIdx) {
+    if (queryPropIdx === -1) {
       console.warn(
         `Warning: unknown query property ${key}. ` +
         'Please add it to QUERY_PROP_KEYS in App.tsx.',
       );
+      return;
     }
     // Note: queryPropKey === key, just typed correctly
     const queryPropKey: keyof QueryProps = QUERY_PROP_KEYS[queryPropIdx];

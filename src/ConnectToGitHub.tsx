@@ -22,9 +22,9 @@ import { css } from 'aphrodite';
 import React from 'react';
 import * as ReactModal from 'react-modal';
 
-import preventDefault from './util/preventDefault';
-
+import RPCClient, { SignInResponse } from './RPCClient';
 import { GITHUB_STYLE, MODAL_STYLE } from './styles';
+import preventDefault from './util/preventDefault';
 
 const CLIENT_ID: string | undefined = process.env.REACT_APP_GITHUB_CLIENT_ID;
 const SCOPE: string = 'repo';
@@ -130,69 +130,51 @@ export default class ConnectToGitHub extends React.PureComponent<ConnectToGitHub
   componentWillMount(): void {
     const randomContainer: Uint32Array = new Uint32Array(1);
     crypto.getRandomValues(randomContainer);
-    const csrf: string = localStorage.csrf = randomContainer[0].toString();
+    const csrf: string = randomContainer[0].toString();
 
     this.props.setCSRF(csrf);
   }
 }
 
-export function revokeGitHubAuth(ws: WebSocket, token: string): void {
-  if (!ws || ws.readyState !== WebSocket.OPEN) {
-    throw new Error('Invariant violation: not connected to backend!');
-  }
-  ws.send(JSON.stringify({
-    jsonrpc: '2.0',
-    method: 'signOut',
-    id: 'signOut',
-    params: {
+export async function revokeGitHubAuth(rpc: RPCClient, token: string): Promise<void> {
+  try {
+    await rpc.call('signOut', {
       token,
-    },
-  }));
+    });
+  } catch (err) {
+    alert('Could not revoke GitHub authorization. ' +
+      'If you would like, you can manually do this from your GitHub settings.');
+  } finally {
+    window.location.href = '/';
+  }
 }
 
 export async function checkLogin(
-    ws: WebSocket,
-    code: string | undefined,
-    state: string | undefined,
+    rpc: RPCClient,
+    code: string,
+    state: string,
     csrf: string,
-): Promise<void> {
+): Promise<Auth> {
+  if (csrf !== state) {
+    console.warn('Invalid csrf.');
+    throw new Error('Something went wrong. Could not log you in.');
+  }
+  const response: SignInResponse = await rpc.call('signIn', {
+    oauth: code,
+    state,
+  });
 
-  if (!ws || ws.readyState !== WebSocket.OPEN) {
-    throw new Error('Invariant violation: not connected to backend!');
+  if (
+      !response.result.accessToken ||
+      !response.result.email ||
+      !response.result.name ||
+      !response.result.repo ||
+      !response.result.username
+  ) {
+    throw new Error('Could not log you in.');
   }
-  if (code && state) {
-    if (csrf !== state) {
-      console.warn('Invalid csrf.');
-      alert('Something went wrong. Could not log you in.');
-      return;
-    }
-    ws.send(JSON.stringify({
-      jsonrpc: '2.0',
-      method: 'oauth',
-      id: `oauthExchange_${state}`,
-      params: {
-        oauth: code,
-        state,
-      },
-    }));
-  }
-}
 
-export function checkAuth(e: MessageEvent, csrf: string): Auth | null {
-  const contents: {id: string, result: Auth | {error: object | string}} =
-    JSON.parse(e.data.toString());
-  if (contents.id === `oauthExchange_${csrf}`) {
-    const authOrError: Auth | {error: object | string} = contents.result;
-    if ('error' in authOrError) {
-      throw new Error('Could not log you in.');
-    }
-    const auth: Auth = authOrError as Auth;
-    if (!auth.accessToken || !auth.email || !auth.name || !auth.repo || !auth.username) {
-      throw new Error('Could not log you in.');
-    }
-    return auth;
-  }
-  return null;
+  return response.result;
 }
 
 export function parseAuth(auth: string | undefined): Auth | null {
