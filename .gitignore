@@ -127,3 +127,6 @@ Thumbs.db
 
 # Vim
 *.sw?
+
+# VSCode
+/.vscode/chrome
