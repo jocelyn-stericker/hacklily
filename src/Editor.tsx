@@ -45,7 +45,6 @@ export default class Editor extends React.PureComponent<EditorProps, void> {
       autoClosingBrackets: true,
       selectionHighlight: false,
       wordBasedSuggestions: false,
-      readOnly: !code,
     };
     return (
       <div className={css(APP_STYLE.monaco, mode === MODE_VIEW && APP_STYLE.monacoHidden)}>

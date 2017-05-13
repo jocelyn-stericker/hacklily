@@ -26,11 +26,13 @@ import preventDefault from './util/preventDefault';
 
 import { Auth } from './ConnectToGitHub';
 import { Conflict, File, ls, write } from './gitfs';
+import { RPCResponse } from './Preview';
 import { BUTTON_STYLE, MODAL_STYLE, PUBLISH_STYLE } from './styles';
 
 interface PublishProps {
   code: string;
   auth: Auth;
+  socket: WebSocket;
   onHide(): void;
 }
 
@@ -149,7 +151,7 @@ class Publish extends React.PureComponent<PublishProps, PublishState> {
   }
 
   private handleSave = async (): Promise<void> => {
-    await publish(this.props.code, this.props.auth, this.state.filename);
+    await publish(this.props.code, this.props.auth, this.state.filename, this.props.socket);
   }
 }
 
@@ -157,11 +159,43 @@ export async function publish(
   code: string,
   auth: Auth,
   filename: string,
+  socket: WebSocket,
   sha?: string,
+  pdfSHA?: string,
 ): Promise<boolean> {
+
+  // tslint:disable-next-line:insecure-random
+
+  const pdf: string = await new Promise(
+      (resolve: (pdf: string) => void, reject: (err: {}) => void): void => {
+        // tslint:disable-next-line:insecure-random
+        const id: string = String(Math.random());
+        socket.send(JSON.stringify({
+          jsonrpc: '2.0',
+          method: 'render',
+          id,
+          params: {
+            src: code,
+            backend: 'pdf',
+          },
+        }));
+        socket.addEventListener('message', (ev: MessageEvent) => {
+          const contents: RPCResponse = JSON.parse(ev.data.toString());
+          if (contents.id === id) {
+            if (contents.error || !contents.result || !contents.result.files.length) {
+              reject(contents.error || new Error('Result missing.'));
+              return;
+            }
+            resolve(contents.result.files[0]);
+          }
+        });
+      });
+
   const { accessToken, repo } = auth;
   try {
     await write(accessToken, repo, filename, btoa(code), sha, 'master');
+    await write(accessToken, repo, filename.replace(/\.ly$/, '.pdf'),
+                pdf, pdfSHA, 'master');
   } catch (err) {
     if (err instanceof Conflict) {
       if (sha) {

@@ -162,8 +162,13 @@ export default class App extends React.PureComponent<AppProps, AppState> {
       />
     );
     const aboutDialog: React.ReactNode = help && <About onHide={this.handleHideHelp} />;
-    const publishDialog: React.ReactNode = publish && auth && code && (
-      <Publish onHide={this.handleHidePublish} auth={auth} code={code} />
+    const publishDialog: React.ReactNode = publish && auth && code && this.lilypondServerWS && (
+      <Publish
+        onHide={this.handleHidePublish}
+        auth={auth}
+        code={code}
+        socket={this.lilypondServerWS}
+      />
     );
     const menuDialog: React.ReactNode = menu && (
       <Menu
@@ -216,7 +221,7 @@ export default class App extends React.PureComponent<AppProps, AppState> {
     this.disconnectWS();
   }
 
-  componentDidUpdate(prevProps: AppProps) {
+  componentDidUpdate(prevProps: AppProps): void {
     if (this.props.edit !== prevProps.edit) {
       this.fetchSong();
     }
@@ -377,19 +382,23 @@ export default class App extends React.PureComponent<AppProps, AppState> {
   private handleUpdate = async (): Promise<void> => {
     const code: string | undefined = this.code();
     const { auth, edit } = this.props;
-    if (!auth || !edit || !code) {
+    if (!auth || !edit || !code || !this.lilypondServerWS) {
       throw new Error('Invariant violation: contract broken');
     }
     const path: string = last(edit.split('/'));
     const files: File[] = await ls(auth.accessToken, auth.repo);
     const file: File | undefined = files.find((candidate: File) =>
       candidate.path === path);
+    const pdfFile: File | undefined = files.find((candidate: File) =>
+      candidate.path === path.replace(/\.ly$/, '.pdf'));
     let ok: boolean;
     if (!file) {
       console.warn('This file has been deleted.');
-      ok = await publish(code, auth, path);
+      ok = await publish(code, auth, path, this.lilypondServerWS,
+                         undefined, pdfFile ? pdfFile.sha : undefined);
     } else {
-      ok = await publish(code, auth, path, file.sha);
+      ok = await publish(code, auth, path, this.lilypondServerWS,
+                         file.sha, pdfFile ? pdfFile.sha : undefined);
     }
     if (ok) {
       const cleanSongs: {[key: string]: string} = JSON.parse(JSON.stringify(this.state.cleanSongs));

@@ -38,7 +38,7 @@ const BODY_IFRAME_TEMPLATE: string = `
 <div id="root"></div>
 `;
 
-interface RPCResponse {
+export interface RPCResponse {
   jsonrpc: '2.0';
   result?: {
     logs: string;

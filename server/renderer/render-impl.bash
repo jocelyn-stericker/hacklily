@@ -26,8 +26,10 @@ do
     do
         if [ "hacklily*.$backend" == "$f" ]; then
             echo '""' > "hacklily-null.$backend.json"
-        else
+        elif [ "$backend" == "svg" ]; then
             jq -Rs . $f > $f.json 2>&1
+        else
+            cat $f | base64 | jq -Rs . > $f.json 2>&1
         fi
     done
     jq -Rs . hacklily.err > hacklily.err.json
