@@ -1,0 +1,47 @@
+/**
+ * @license
+ * This file is part of Hacklily, a web-based LilyPond editor.
+ * Copyright (C) 2017 - present Joshua Netterfield <joshua@nettek.ca>
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software Foundation,
+ * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
+ */
+
+import NOTATION_SYMBOLS from './NOTATION_SYMBOLS';
+
+const LILYPOND_COMPLETION_ITEM_PROVIDER: monaco.languages.CompletionItemProvider = {
+  provideCompletionItems(model: monaco.editor.IReadOnlyModel,
+                         position: monaco.Position,
+                         token: monaco.CancellationToken): monaco.languages.CompletionItem[] {
+    const textUntilPosition: string = model.getValueInRange({
+      startLineNumber: 1,
+      startColumn: 1,
+      endLineNumber: position.lineNumber,
+      endColumn: position.column,
+    });
+    if (textUntilPosition[textUntilPosition.length - 2] === '\\') {
+      return NOTATION_SYMBOLS;
+    }
+        // Otherwise, Monaco really wants to give us word-based suggestions,
+        // which are not helpful on note input.
+    return [
+      {
+        label: '',
+        kind: 0 /* text */,
+      },
+    ];
+  },
+};
+
+export default LILYPOND_COMPLETION_ITEM_PROVIDER;

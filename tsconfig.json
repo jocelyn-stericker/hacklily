@@ -1,0 +1,17 @@
+{
+    "compilerOptions": {
+        "allowJs": true,
+        "jsx": "react",
+        "module": "commonjs",
+        "target": "es5",
+        "pretty": true,
+        "allowSyntheticDefaultImports": true,
+        "lib": ["es2015", "dom"],
+        "strict": true,
+        "noUnusedLocals": true,
+        "noFallthroughCasesInSwitch": true
+    },
+    "include": [
+        "src/index.tsx"
+    ]
+}

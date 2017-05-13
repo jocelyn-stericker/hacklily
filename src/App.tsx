@@ -1,0 +1,575 @@
+/**
+ * @license
+ * This file is part of Hacklily, a web-based LilyPond editor.
+ * Copyright (C) 2017 - present Joshua Netterfield <joshua@nettek.ca>
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software Foundation,
+ * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
+ */
+
+import { css } from 'aphrodite';
+import React from 'react';
+
+import About from './About';
+import ConnectToGitHub, {
+  Auth,
+  checkAuth,
+  checkLogin,
+  revokeGitHubAuth,
+} from './ConnectToGitHub';
+import Editor from './Editor';
+import { cat, File, ls } from './gitfs';
+import Header, { MODE_BOTH, MODE_VIEW, ViewMode } from './Header';
+import Menu from './Menu';
+import Preview from './Preview';
+import Publish, { publish } from './Publish';
+import { APP_STYLE } from './styles';
+
+function last<T>(t: T[]): T {
+  return t[t.length - 1];
+}
+
+const INITIAL_WS_COOLOFF: number = 2;
+const BACKEND_WS_URL: string | undefined = process.env.REACT_APP_BACKEND_WS_URL;
+
+// NOTE: When you add a key here, also add it to QUERY_PROP_KEYS below.
+export interface QueryProps {
+  /**
+   * The song being edited, with the following format:
+   *
+   *   `${org}/${repo}/${song}.ly`
+   *
+   * If it is undefined, Hacklily will act as a sandbox.
+   */
+  edit?: string;
+
+  /**
+   * When logging in from GitHub, code is the temporary code that will be exchanged via
+   * the backend for an access token.
+   *
+   * See https://developer.github.com/v3/oauth/
+   */
+  code?: string;
+
+  /**
+   * When logging in from GitHub, this is the CSRF, generated in ConnectToGitHub.
+   *
+   * See https://developer.github.com/v3/oauth/.
+   */
+  state?: string;
+}
+
+export const QUERY_PROP_KEYS: (keyof QueryProps)[] = [
+  'edit',
+  'code',
+  'state',
+];
+
+interface AppProps extends QueryProps {
+  dirtySongs: {[key: string]: string};
+  auth: Auth | null;
+  csrf: string;
+  setQuery<K extends keyof QueryProps>(updates: Pick<QueryProps, K>, replaceState?: boolean): void;
+  editSong(song: string, src: string): void;
+  markSongClean(song: string): void;
+  setAuth(auth: Auth | null): void;
+  setCSRF(csrf: string): void;
+}
+
+interface AppState {
+  cleanSongs: {[key: string]: string};
+  connectToGitHubReason: string | null;
+  defaultSelection: monaco.ISelection | null;
+  error: string | null;
+  help: boolean;
+  menu: boolean;
+  logs: string | null;
+  mode: ViewMode;
+  pendingPreviews: number;
+  previewAlreadyDirty: boolean;
+  publish: boolean;
+  login: boolean;
+  wsError: boolean;
+  reconnectTimeout: number;
+  reconnectCooloff: number;
+}
+
+export default class App extends React.PureComponent<AppProps, AppState> {
+  state: AppState = {
+    cleanSongs: {
+      null: '{ d4 }',
+    },
+    connectToGitHubReason: null,
+    defaultSelection: null,
+    error: null,
+    help: false,
+    menu: false,
+    logs: '',
+    mode: MODE_BOTH,
+    pendingPreviews: 0,
+    previewAlreadyDirty: false,
+    publish: false,
+    login: false,
+    wsError: false,
+    reconnectTimeout: NaN,
+    reconnectCooloff: INITIAL_WS_COOLOFF,
+  };
+
+  private lilypondServerWS: WebSocket | null = null;
+
+  render(): JSX.Element {
+    const {
+      state : {
+        logs,
+        mode,
+        login,
+        connectToGitHubReason,
+        help,
+        menu,
+        defaultSelection,
+        publish,
+      },
+      props: {
+        auth,
+        edit,
+        csrf,
+        setCSRF,
+        dirtySongs,
+      },
+    } = this;
+
+    const online: boolean = this.isOnline();
+    const preview: React.ReactNode = this.preview();
+    const code: string | undefined = this.code();
+
+    const connectToGitHubButton: React.ReactNode = login && (
+      <ConnectToGitHub
+        connectToGitHubReason={connectToGitHubReason}
+        onHide={this.handleHideLogin}
+        csrf={csrf}
+        setCSRF={setCSRF}
+      />
+    );
+    const aboutDialog: React.ReactNode = help && <About onHide={this.handleHideHelp} />;
+    const publishDialog: React.ReactNode = publish && auth && code && (
+      <Publish onHide={this.handleHidePublish} auth={auth} code={code} />
+    );
+    const menuDialog: React.ReactNode = menu && (
+      <Menu
+        auth={auth}
+        onHide={this.handleHideMenu}
+        onShowAbout={this.handleShowHelp}
+        onSignIn={this.handleSignIn}
+        onSignOut={this.handleSignOut}
+        onLoadSong={this.handleLoadSong}
+      />
+    );
+
+    return (
+      <div className={css(APP_STYLE.App)}>
+        <Header
+          mode={mode}
+          online={online}
+          loggedIn={auth !== null}
+          onModeChanged={this.handleModeChanged}
+          onShowMenu={this.handleShowMenu}
+          onShowNew={this.handleShowNew}
+          onShowPublish={this.handleShowPublish}
+          song={edit}
+          isDirty={Boolean(edit ? dirtySongs[edit] : dirtySongs['null'])}
+        />
+        {aboutDialog}
+        {menuDialog}
+        {connectToGitHubButton}
+        {publishDialog}
+        <div className={css(APP_STYLE.content)}>
+          <Editor
+            code={code}
+            mode={mode}
+            onSetCode={this.handleCodeChanged}
+            logs={logs}
+            defaultSelection={defaultSelection}
+          />
+          {preview}
+        </div>
+      </div>
+    );
+  }
+
+  componentWillMount(): void {
+    this.connectToWS();
+    this.fetchSong();
+  }
+
+  componentWillUnmount(): void {
+    this.disconnectWS();
+  }
+
+  componentDidUpdate(prevProps: AppProps) {
+    if (this.props.edit !== prevProps.edit) {
+      this.fetchSong();
+    }
+  }
+
+  private async fetchSong(): Promise<void> {
+    const { auth, edit } = this.props;
+    if (!auth || edit === 'null' || !edit) {
+      return;
+    }
+    const path: string = last(edit.split('/'));
+    const contents: string = await cat(auth.accessToken, auth.repo, path);
+    const cleanSongs: {[key: string]: string} = JSON.parse(JSON.stringify(this.state.cleanSongs));
+    cleanSongs[edit] = contents;
+    this.setState({
+      cleanSongs,
+    });
+  }
+
+  private code(): string | undefined {
+    const { dirtySongs, edit } = this.props;
+    const { cleanSongs } = this.state;
+    const song: string = edit || 'null';
+    return dirtySongs[song] || cleanSongs[song];
+  }
+
+  private isOnline(): boolean {
+    return this.lilypondServerWS !== null &&
+      this.lilypondServerWS.readyState === WebSocket.OPEN;
+  }
+
+  private preview(): React.ReactNode {
+    const { mode, reconnectTimeout, logs, wsError } = this.state;
+
+    const code: string | undefined = this.code();
+
+    const online: boolean = this.isOnline();
+    if (!code) {
+      return (
+        <div
+            className={css(APP_STYLE.sheetMusicView)}
+            style={{ width: mode === MODE_BOTH ? '50%' : (mode === MODE_VIEW ? '100%' : '0') }}
+        >
+          <div className={css(APP_STYLE.sheetMusicError)}>
+            Fetching sheet music&hellip;
+          </div>
+        </div>
+      );
+    } else if (this.lilypondServerWS) {
+      if (online) {
+        return (
+          <Preview
+            code={code}
+            mode={mode}
+            onLogsObtained={this.handleLogsObtained}
+            onSelectionChanged={this.handleSelectionChanged}
+            socket={this.lilypondServerWS}
+            logs={logs}
+          />
+        );
+      } else {
+        return (
+          <span>
+            <div
+                className={css(APP_STYLE.sheetMusicView)}
+                style={{ width: mode === MODE_BOTH ? '50%' : (mode === MODE_VIEW ? '100%' : '0') }}
+            />
+            <div className={css(APP_STYLE.pendingPreviewMask)} />
+          </span>
+        );
+      }
+    } else if (!BACKEND_WS_URL) {
+      return (
+        <div
+            className={css(APP_STYLE.sheetMusicView)}
+            style={{ width: mode === MODE_BOTH ? '50%' : (mode === MODE_VIEW ? '100%' : '0') }}
+        >
+          <div className={css(APP_STYLE.sheetMusicError)}>
+            Could not connect to server because the <code>REACT_APP_BACKEND_WS_URL</code>{' '}
+            environment variable was not set during bundling.
+          </div>
+        </div>
+      );
+    } else if (wsError) {
+      return (
+        <div
+            className={css(APP_STYLE.sheetMusicView)}
+            style={{ width: mode === MODE_BOTH ? '50%' : (mode === MODE_VIEW ? '100%' : '0') }}
+        >
+          <div className={css(APP_STYLE.sheetMusicError)}>
+            <i className="fa fa-exclamation-triangle" aria-hidden={true} />{' '}
+            Could not connect to server.<br />
+            Trying again in {reconnectTimeout}&hellip;
+          </div>
+        </div>
+      );
+    } else {
+      throw new Error('Invalid state.');
+    }
+  }
+
+  private handleModeChanged = (mode: ViewMode): void => {
+    this.setState({
+      mode,
+    });
+  }
+
+  private handleCodeChanged = (newValue: string): void => {
+    const clean: string = this.state.cleanSongs[this.props.edit || 'null'];
+    if (clean === newValue) {
+      this.props.markSongClean(this.props.edit || 'null');
+    } else {
+      this.props.editSong(this.props.edit || 'null', newValue);
+    }
+  }
+
+  private handleShowMenu = (): void => {
+    this.setState({
+      menu: true,
+      help: false,
+    });
+  }
+
+  private handleShowHelp = (): void => {
+    this.setState({
+      help: true,
+      menu: false,
+    });
+  }
+
+  private handleHideHelp = (): void => {
+    this.setState({
+      help: false,
+    });
+  }
+
+  private handleHideMenu = (): void => {
+    this.setState({
+      menu: false,
+    });
+  }
+
+  private handleShowPublish = (): void => {
+    if (!this.props.auth) {
+      this.setState({
+        login: true,
+        connectToGitHubReason: 'Connect to GitHub to share this song',
+      });
+    } else if (this.props.edit) {
+      this.handleUpdate();
+    } else {
+      this.setState({
+        publish: true,
+      });
+    }
+  }
+
+  private handleUpdate = async (): Promise<void> => {
+    const code: string | undefined = this.code();
+    const { auth, edit } = this.props;
+    if (!auth || !edit || !code) {
+      throw new Error('Invariant violation: contract broken');
+    }
+    const path: string = last(edit.split('/'));
+    const files: File[] = await ls(auth.accessToken, auth.repo);
+    const file: File | undefined = files.find((candidate: File) =>
+      candidate.path === path);
+    let ok: boolean;
+    if (!file) {
+      console.warn('This file has been deleted.');
+      ok = await publish(code, auth, path);
+    } else {
+      ok = await publish(code, auth, path, file.sha);
+    }
+    if (ok) {
+      const cleanSongs: {[key: string]: string} = JSON.parse(JSON.stringify(this.state.cleanSongs));
+      cleanSongs[edit] = code;
+      this.setState({
+        cleanSongs,
+      });
+      this.props.markSongClean(edit);
+      alert('Saved.');
+    }
+  }
+
+  private handleHidePublish = (): void => {
+    this.setState({
+      publish: false,
+    });
+  }
+
+  private handleShowNew = (): void => {
+    if (!this.props.auth) {
+      this.setState({
+        login: true,
+        connectToGitHubReason: 'Connect to GitHub to save this song',
+      });
+    } else {
+      this.props.setQuery({
+        edit: undefined,
+      });
+    }
+  }
+
+  private handleSignIn = (): void => {
+    this.setState({
+      login: true,
+      publish: false,
+      menu: false,
+      connectToGitHubReason: null,
+    });
+  }
+
+  private handleSignOut = (): void => {
+    const { auth } = this.props;
+
+    if (!this.lilypondServerWS || this.lilypondServerWS.readyState !== WebSocket.OPEN) {
+      alert('Cannot sign out because you are not connected to the server.');
+      return;
+    }
+
+    delete localStorage.auth;
+    if (!auth) {
+      throw new Error('Cannot sign out because we are not signed in.');
+    }
+    const token: string = auth.accessToken;
+    revokeGitHubAuth(this.lilypondServerWS, token);
+  }
+
+  private handleHideLogin = (): void => {
+    this.setState({
+      login: false,
+      connectToGitHubReason: null,
+    });
+  }
+
+  private handleLogsObtained = (logs: string | null): void => {
+    if (logs !== this.state.logs) {
+      this.setState({
+        logs,
+      });
+    }
+  }
+
+  private handleSelectionChanged = (selection: monaco.ISelection | null): void => {
+    if (selection !== this.state.defaultSelection) {
+      this.setState({
+        defaultSelection: selection,
+      });
+    }
+  }
+
+  private connectToWS(): void {
+    if (!BACKEND_WS_URL) {
+      this.setState({
+        wsError: true,
+      });
+      return;
+    }
+    this.lilypondServerWS = new WebSocket(BACKEND_WS_URL);
+
+    this.lilypondServerWS.addEventListener('open', this.handleWSOpen);
+    this.lilypondServerWS.addEventListener('message', this.handleWSMessage);
+    this.lilypondServerWS.addEventListener('error', this.handleWSError);
+    this.lilypondServerWS.addEventListener('close', this.handleWSError);
+    this.forceUpdate();
+  }
+
+  private disconnectWS(): void {
+    if (this.lilypondServerWS) {
+      this.lilypondServerWS.removeEventListener('open', this.handleWSOpen);
+      this.lilypondServerWS.removeEventListener('message', this.handleWSMessage);
+      this.lilypondServerWS.removeEventListener('error', this.handleWSError);
+      this.lilypondServerWS.removeEventListener('close', this.handleWSError);
+      this.lilypondServerWS.close();
+      this.lilypondServerWS = null;
+    }
+  }
+
+  private handleWSOpen = (): void => {
+    if (!this.lilypondServerWS) {
+      throw new Error('Socket not opened, but handleWSOpen called.');
+    }
+    checkLogin(this.lilypondServerWS, this.props.code, this.props.state, localStorage.csrf);
+    this.setState({
+      reconnectCooloff: INITIAL_WS_COOLOFF,
+    });
+    this.forceUpdate();
+  }
+
+  private handleWSMessage = (e: MessageEvent): void => {
+    try {
+      const newAuth: Auth | null = checkAuth(e, localStorage.csrf);
+      if (newAuth) {
+        this.props.setQuery({
+          code: undefined,
+          state: undefined,
+        });
+        this.props.setAuth(newAuth);
+      }
+    } catch (err) {
+      alert('Could not log you in.');
+    }
+
+    try {
+      const data: {id: string, error?: object} = JSON.parse(e.data.toString());
+      if (data.id === 'signOut') {
+        if (data.error) {
+          alert('Could not revoke GitHub authorization. ' +
+            'If you would like, you can manually do this from your GitHub settings.');
+        }
+        window.location.href = '/';
+      }
+    } catch (err) {
+      // suppress
+    }
+  }
+
+  private handleWSError = (e: ErrorEvent): void => {
+    if (!this.lilypondServerWS) {
+      return;
+    }
+
+    this.disconnectWS();
+    this.setState({
+      wsError: true,
+      reconnectTimeout: this.state.reconnectCooloff,
+      reconnectCooloff: this.state.reconnectCooloff * 2,
+    });
+    setTimeout(this.wsReconnectTick, 1000);
+  }
+
+  private wsReconnectTick = (): void => {
+    const secondsRemaining: number = this.state.reconnectTimeout - 1;
+    if (secondsRemaining > 0) {
+      this.setState({
+        reconnectTimeout: secondsRemaining,
+      });
+      setTimeout(this.wsReconnectTick, 1000);
+    } else {
+      this.setState({
+        reconnectTimeout: NaN,
+      });
+      this.connectToWS();
+    }
+  }
+
+  private handleLoadSong = (edit: string): void => {
+    this.props.setQuery({
+      edit,
+    });
+    this.setState({
+      menu: false,
+    });
+  }
+}
