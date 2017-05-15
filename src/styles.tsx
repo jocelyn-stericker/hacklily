@@ -34,26 +34,10 @@ const previewPendingAnimation = {
   },
 };
 
-const CODE_EDITOR_BG = '#1e1e1e';
-const HEADER_HEIGHT = 50;
 const PREVIEW_WIDTH = '50%';
 const EDITOR_WIDTH = '50%';
 
 export const APP_STYLE = StyleSheet.create({
-  App: {
-    bottom: 0,
-    left: 0,
-    overflow: 'hidden',
-    position: 'absolute',
-    right: 0,
-    top: 0,
-  },
-  content: {
-    backgroundColor: CODE_EDITOR_BG,
-    height: `calc(100% - ${HEADER_HEIGHT}px)`,
-    position: 'absolute',
-    width: '100%',
-  },
   sheetMusicView: {
     backgroundColor: 'white',
     border: '0 none',
@@ -100,9 +84,6 @@ export const APP_STYLE = StyleSheet.create({
   },
   sheetMusicViewView: {
     left: 0,
-  },
-  monaco: {
-    height: '100%',
   },
   monacoHidden: {
     display: 'none',
@@ -261,14 +242,6 @@ export const HEADER_STYLE = StyleSheet.create({
     paddingBottom: 5,
     paddingTop: 5,
     width: 14,
-  },
-  header: {
-    backgroundColor: '#efefef',
-    borderBottom: '1px solid black',
-    display: 'flex',
-    fontFamily: 'Helvetica, Arial, sans-serif',
-    height: HEADER_HEIGHT,
-    width: '100%',
   },
   songs: {
     marginLeft: 16,

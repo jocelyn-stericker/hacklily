@@ -47,7 +47,7 @@ export default class Editor extends React.PureComponent<EditorProps, void> {
       wordBasedSuggestions: false,
     };
     return (
-      <div className={css(APP_STYLE.monaco, mode === MODE_VIEW && APP_STYLE.monacoHidden)}>
+      <div className={`monaco ${css(mode === MODE_VIEW && APP_STYLE.monacoHidden)}`}>
         <ReactMonacoEditor
           editorDidMount={this.handleEditorDidMount}
           editorWillMount={this.handleEditorWillMount}

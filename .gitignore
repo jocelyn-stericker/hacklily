@@ -130,3 +130,6 @@ Thumbs.db
 
 # VSCode
 /.vscode/chrome
+
+# 3rdpartylicenses.txt
+/public/3rdpartylicenses.txt

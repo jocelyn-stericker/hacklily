@@ -183,7 +183,7 @@ export default class App extends React.PureComponent<AppProps, AppState> {
     );
 
     return (
-      <div className={css(APP_STYLE.App)}>
+      <div className="App">
         <Header
           mode={mode}
           online={online}
@@ -199,7 +199,7 @@ export default class App extends React.PureComponent<AppProps, AppState> {
         {menuDialog}
         {connectToGitHubButton}
         {publishDialog}
-        <div className={css(APP_STYLE.content)}>
+        <div className="content">
           <Editor
             code={code}
             mode={mode}

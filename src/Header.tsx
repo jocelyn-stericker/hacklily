@@ -85,7 +85,7 @@ export default class Header extends React.PureComponent<HeaderProps, void> {
     ];
     const communityToolbar: React.ReactNode = this.renderCommunityToolbar();
     return (
-      <div className={css(HEADER_STYLE.header)}>
+      <div className="header">
         <img src={logoSvg} className={css(HEADER_STYLE.logo)} alt="Frog, Hacklily logo" />
         <div className={css(HEADER_STYLE.headerGroupWrapper, HEADER_STYLE.songs)}>
           <a
