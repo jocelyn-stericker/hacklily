@@ -28,7 +28,7 @@ import ConnectToGitHub, {
   revokeGitHubAuth,
 } from './ConnectToGitHub';
 import Editor from './Editor';
-import { cat, File, ls } from './gitfs';
+import { cat } from './gitfs';
 import Header, { MODE_BOTH, MODE_VIEW, ViewMode } from './Header';
 import Menu from './Menu';
 import Preview from './Preview';
@@ -386,20 +386,9 @@ export default class App extends React.PureComponent<AppProps, AppState> {
       throw new Error('Invariant violation: contract broken');
     }
     const path: string = last(edit.split('/'));
-    const files: File[] = await ls(auth.accessToken, auth.repo);
-    const file: File | undefined = files.find((candidate: File) =>
-      candidate.path === path);
-    const pdfFile: File | undefined = files.find((candidate: File) =>
-      candidate.path === path.replace(/\.ly$/, '.pdf'));
-    let ok: boolean;
-    if (!file) {
-      console.warn('This file has been deleted.');
-      ok = await publish(code, auth, path, this.rpc,
-                         undefined, pdfFile ? pdfFile.sha : undefined);
-    } else {
-      ok = await publish(code, auth, path, this.rpc,
-                         file.sha, pdfFile ? pdfFile.sha : undefined);
-    }
+
+    const ok: boolean = await publish(code, auth, path, this.rpc, true);
+
     if (ok) {
       const cleanSongs: {[key: string]: string} = JSON.parse(JSON.stringify(this.state.cleanSongs));
       cleanSongs[edit] = code;

@@ -151,7 +151,7 @@ class Publish extends React.PureComponent<PublishProps, PublishState> {
   }
 
   private handleSave = async (): Promise<void> => {
-    await publish(this.props.code, this.props.auth, this.state.filename, this.props.rpc);
+    await publish(this.props.code, this.props.auth, this.state.filename, this.props.rpc, false);
   }
 }
 
@@ -160,8 +160,7 @@ export async function publish(
   auth: Auth,
   filename: string,
   rpc: RPCClient,
-  sha?: string,
-  pdfSHA?: string,
+  overwrite: boolean,
 ): Promise<boolean> {
 
   // tslint:disable-next-line:insecure-random
@@ -171,14 +170,36 @@ export async function publish(
     src: code,
   })).result.files[0];
 
+  const svg: string = (await rpc.call('render', {
+    backend: 'svg',
+    src: code,
+  })).result.files[0];
+
+  const pdfFilename: string = filename.replace(/\.ly$/, '.pdf');
+  const svgFilename: string = filename.replace(/\.ly$/, '.svg');
+
+  const files: File[] = await ls(auth.accessToken, auth.repo);
+  const file: File | undefined = files.find((candidate: File) =>
+    candidate.path === filename);
+  const pdfFile: File | undefined = files.find((candidate: File) =>
+    candidate.path === pdfFilename);
+  const svgFile: File | undefined = files.find((candidate: File) =>
+    candidate.path === svgFilename);
+
+  if (!overwrite && (file || pdfFile || svgFile)) {
+    alert('That name is already taken.');
+    return false;
+  }
+
   const { accessToken, repo } = auth;
   try {
-    await write(accessToken, repo, filename, btoa(code), sha, 'master');
-    await write(accessToken, repo, filename.replace(/\.ly$/, '.pdf'),
-                pdf, pdfSHA, 'master');
+    await write(accessToken, repo, filename, btoa(code), file ? file.sha : undefined, 'master');
+    await write(accessToken, repo, pdfFilename, pdf, pdfFile ? pdfFile.sha : undefined , 'master');
+    await write(accessToken, repo, svgFilename, btoa(svg), svgFile ? svgFile.sha : undefined ,
+                'master');
   } catch (err) {
     if (err instanceof Conflict) {
-      if (sha) {
+      if (overwrite) {
         alert('The song was modified somewhere else.');
         return false;
       } else {
