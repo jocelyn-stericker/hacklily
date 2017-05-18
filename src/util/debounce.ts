@@ -18,24 +18,28 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
  */
 
-/**
- * Returns an event handler that cancels the event. In particular, it calls
- * preventDefault and stopPropagation.
- *
- * Accepts a callback function that can be called after this is called.
- *
- * Example: Click <a href="#" onClick={preventDefault(this._loadSong)}>here</a>
- *
- * @param cb {() => void} Callback to call after the event is cancelled.
- */
-export default function preventDefault<T>(cb?: ((ev?: React.SyntheticEvent<T>) => void)):
-    (ev: React.SyntheticEvent<T>) => void {
+// lodash.debounce has a blank "default" object defined, so the synthetic importer
+// plugin does not replace default, leading to us importing the empty "default" object
+// if we use the ES6 import syntax.
+// tslint:disable-next-line:no-require-imports
+import lodashDebounce = require('lodash.debounce');
 
-  return (ev: React.SyntheticEvent<T>): void => {
-    ev.preventDefault();
-    ev.stopPropagation();
-    if (cb) {
-      cb(ev);
+export default function debounce(timeout: number):
+    <T>(target: {}, propertyKey: string, descriptor: TypedPropertyDescriptor<() => T>) =>
+    TypedPropertyDescriptor<() => T> {
+  return <T>(
+    target: {},
+    propertyKey: string,
+    descriptor: TypedPropertyDescriptor<() => T>,
+  ): TypedPropertyDescriptor<() => T> => {
+
+    const originalMethod: (() => T) | undefined = descriptor.value;
+    if (originalMethod === undefined) {
+      throw new Error('No function to debounce.');
     }
+
+    descriptor.value = lodashDebounce(originalMethod, timeout);
+
+    return descriptor;
   };
 }

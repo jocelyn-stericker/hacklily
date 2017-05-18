@@ -48,12 +48,12 @@ import React from 'react';
 import { BUTTON_STYLE } from './styles';
 
 export interface ButtonSpec {
-  value: string | number | null;
   content?: React.ReactNode;
   title?: string;
+  value: string | number | null;
 }
 
-interface ButtonGroupProps {
+interface Props {
   allowEmpty?: boolean;
   buttons: ButtonSpec[];
   value: string | number | null;
@@ -79,10 +79,10 @@ interface ButtonGroupProps {
  *
  * Requires stylesheets/perseus-admin-package/editor.less to look nice.
  */
-export default class ButtonGroup extends React.PureComponent<ButtonGroupProps, void> {
-  static defaultProps: Partial<ButtonGroupProps> = {
-    value: null,
+export default class ButtonGroup extends React.PureComponent<Props, void> {
+  static defaultProps: Partial<Props> = {
     allowEmpty: true,
+    value: null,
   };
 
   render(): JSX.Element {
@@ -96,14 +96,14 @@ export default class ButtonGroup extends React.PureComponent<ButtonGroupProps, v
       return (
         <button
           className={buttonGroupClassName}
-          id={'' + i}
-          key={'' + i}
-          onClick={this.toggleSelect.bind(this, button.value)}
-          ref={'button' + i}
+          onClick={this.handleClick}
+          id={String(i)}
+          key={String(i)}
+          data-value={JSON.stringify(button.value)}
           title={button.title}
           type="button"
         >
-          {button.content || '' + button.value}
+          {button.content || String(button.value)}
         </button>
       );
     });
@@ -111,6 +111,7 @@ export default class ButtonGroup extends React.PureComponent<ButtonGroupProps, v
     const outerStyle: object = {
       display: 'inline-block',
     };
+
     return (
       <div style={outerStyle}>
         {buttons}
@@ -118,7 +119,11 @@ export default class ButtonGroup extends React.PureComponent<ButtonGroupProps, v
     );
   }
 
-  private toggleSelect = (newValue: string | number | null): void => {
+  private handleClick = (ev: React.MouseEvent<HTMLButtonElement>): void => {
+    this.toggleSelect(JSON.parse(ev.currentTarget.dataset.value || 'null'));
+  }
+
+  private toggleSelect(newValue: string | number | null): void {
     const value: string | number | null = this.props.value;
 
     if (this.props.allowEmpty) {

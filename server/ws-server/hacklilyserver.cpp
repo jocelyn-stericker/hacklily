@@ -75,7 +75,7 @@ void HacklilyServer::_handleNewConnection() {
 void HacklilyServer::_handleTextMessageReceived(QString message) {
     QWebSocket* socket = qobject_cast<QWebSocket *>(sender());
     QJsonParseError parseError;
-    auto request = QJsonDocument::fromJson(message.toLatin1(), &parseError);
+    auto request = QJsonDocument::fromJson(message.toUtf8(), &parseError);
     if (parseError.error != QJsonParseError::NoError) {
         QJsonObject errorObj;
         errorObj["code"] = ERROR_JSON_PARSE;
@@ -113,7 +113,7 @@ void HacklilyServer::_handleTextMessageReceived(QString message) {
         queryData.addQueryItem("client_secret", _ghSecret);
         queryData.addQueryItem("code", requestObj["params"].toObject()["oauth"].toString());
         QString queryString = queryData.toString();
-        QNetworkReply* reply = _nam->post(request, queryString.toLatin1());
+        QNetworkReply* reply = _nam->post(request, queryString.toUtf8());
         bool ok;
         int socketID = socket->property("socketID").toInt(&ok);
         if (!ok) {
@@ -268,7 +268,7 @@ void HacklilyServer::_handleOAuthReply() {
     }
 
     UserInfo userInfo;
-    userInfo.accessToken = responseResultObj.value("access_token").toString().toLatin1();
+    userInfo.accessToken = responseResultObj.value("access_token").toString().toUtf8();
     if (_userInfo.contains(userInfo.accessToken)) {
         // Timing attack?
         QJsonObject errorObj;
@@ -380,7 +380,7 @@ void HacklilyServer::_handleUserReply() {
     request.setRawHeader("Authorization", "token " + _ghAdminToken);
     QJsonObject requestDataObj;
     requestDataObj["name"] = "hacklily-" + userInfo.username;
-    requestDataObj["homepage"] = "https://" + _ghOrg + ".github.io/" + userInfo.username;
+    requestDataObj["homepage"] = "https://" + _ghOrg + ".github.io/u/" + userInfo.username;
     requestDataObj["has_issues"] = false;
     requestDataObj["has_projects"] = false;
     requestDataObj["has_wiki"] = false;
@@ -560,7 +560,7 @@ void HacklilyServer::_handleRendererOutput() {
         return;
     }
     if (!_renderer->canReadLine()) {
-        qDebug() << "Waiting until I can read a whole line.";
+        // Lets wait until I can read a whole line.
         return;
     }
     auto response = _renderer->readLine();

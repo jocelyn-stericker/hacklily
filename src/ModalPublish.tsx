@@ -22,34 +22,48 @@ import { css } from 'aphrodite';
 import React from 'react';
 import * as ReactModal from 'react-modal';
 
-import preventDefault from './util/preventDefault';
-
-import { Auth } from './ConnectToGitHub';
-import { Conflict, File, ls, write } from './gitfs';
+import { Conflict, File, ls, rm, write } from './gitfs';
+import { Auth } from './ModalLogin';
+import ModalSaving from './ModalSaving';
 import RPCClient from './RPCClient';
 import { BUTTON_STYLE, MODAL_STYLE, PUBLISH_STYLE } from './styles';
 
-interface PublishProps {
-  code: string;
+interface Props {
   auth: Auth;
+  code: string;
   rpc: RPCClient;
   onHide(): void;
+  onPublished(path: string): void;
 }
 
-interface PublishState {
+interface State {
   filename: string;
   files: File[] | null;
+  saving: boolean;
 }
 
-class Publish extends React.PureComponent<PublishProps, PublishState> {
-  state: PublishState = {
+/**
+ * This is the modal you see when you try to save an untitled file.
+ * It asks you for a name.
+ */
+class ModalPublish extends React.PureComponent<Props, State> {
+  state: State = {
     filename: '',
     files: null,
+    saving: false,
   };
+
+  componentDidMount(): void {
+    this.loadExistingSongs();
+  }
 
   render(): JSX.Element {
     const { auth, onHide } = this.props;
-    const { filename, files } = this.state;
+    const { filename, files, saving } = this.state;
+
+    if (saving) {
+      return <ModalSaving />;
+    }
 
     let error: React.ReactNode = null;
     if (!filename.length) {
@@ -79,14 +93,13 @@ class Publish extends React.PureComponent<PublishProps, PublishState> {
         <div>
           <div className={css(MODAL_STYLE.modalHeader)}>
             Save / share song
-            <a
+            <button
               aria-label="Back to song"
-              href="#"
-              onClick={preventDefault(onHide)}
+              onClick={onHide}
               className={css(MODAL_STYLE.closeButton)}
             >
               <i className="fa-close fa" aria-hidden={true} />
-            </a>
+            </button>
           </div>
           <div className={css(MODAL_STYLE.modalBody)}>
             <div className={css(PUBLISH_STYLE.row)}>
@@ -101,7 +114,7 @@ class Publish extends React.PureComponent<PublishProps, PublishState> {
                 className={css(PUBLISH_STYLE.cell, PUBLISH_STYLE.expand, PUBLISH_STYLE.mono)}
                 placeholder="filename"
                 autoFocus={true}
-                onChange={preventDefault(this.handleChange)}
+                onChange={this.handleChange}
               />
               {/* Don't judge me too strongly (ok, judge me a little), but I have no idea */}
               {/* where 7 comes from, and I want to get on with the fun part of making Hacklily. */}
@@ -115,7 +128,7 @@ class Publish extends React.PureComponent<PublishProps, PublishState> {
                 disabled={error !== null}
                 className={css(BUTTON_STYLE.buttonStyle, PUBLISH_STYLE.publishBtn)}
               >
-                <i className="fa fa-share-square-o" aria-hidden={true} />{' '}
+                <i className="fa fa-save" aria-hidden={true} />{' '}
                 Save / share
               </button>
             </div>
@@ -125,8 +138,34 @@ class Publish extends React.PureComponent<PublishProps, PublishState> {
     );
   }
 
-  componentDidMount(): void {
-    this.loadExistingSongs();
+  private handleChange = (ev: React.ChangeEvent<HTMLInputElement>): void => {
+    const filename: string = ev.target.value.replace(/[^a-zA-Z0-9_-]*/g, '');
+    this.setState({
+      filename,
+    });
+  }
+
+  private handleSave = async (): Promise<void> => {
+    let didFail: boolean = false;
+    try {
+      this.setState({
+        saving: true,
+      });
+      const { code, auth, rpc } = this.props;
+      const { filename } = this.state;
+      await publish(code, auth, `${filename}.ly`, rpc, false);
+    } catch (err) {
+      // tslint:disable-next-line:no-console
+      console.log(err);
+      didFail = true;
+    } finally {
+      this.setState({
+        saving: false,
+      });
+      if (!didFail) {
+        this.props.onPublished(`${this.props.auth.repo}/${this.state.filename}.ly`);
+      }
+    }
   }
 
   private loadExistingSongs = async(): Promise<void> => {
@@ -143,16 +182,18 @@ class Publish extends React.PureComponent<PublishProps, PublishState> {
     });
   }
 
-  private handleChange = (ev: React.ChangeEvent<HTMLInputElement>): void => {
-    const filename: string = ev.target.value.replace(/[^a-zA-Z0-9_-]*/g, '');
-    this.setState({
-      filename,
-    });
-  }
+}
 
-  private handleSave = async (): Promise<void> => {
-    await publish(this.props.code, this.props.auth, this.state.filename, this.props.rpc, false);
-  }
+function b64EncodeUnicode(str: string): string {
+  // first we use encodeURIComponent to get percent-encoded UTF-8,
+  // then we convert the percent encodings into raw bytes which
+  // can be fed into btoa.
+  return btoa(
+    encodeURIComponent(str).replace(
+      /%([0-9A-F]{2})/g,
+      (match: string, p1: string) => String.fromCharCode(+(`0x${p1}`)),
+    ),
+  );
 }
 
 export async function publish(
@@ -162,56 +203,95 @@ export async function publish(
   rpc: RPCClient,
   overwrite: boolean,
 ): Promise<boolean> {
-
-  // tslint:disable-next-line:insecure-random
-
   const pdf: string = (await rpc.call('render', {
     backend: 'pdf',
     src: code,
   })).result.files[0];
 
-  const svg: string = (await rpc.call('render', {
-    backend: 'svg',
-    src: code,
-  })).result.files[0];
-
   const pdfFilename: string = filename.replace(/\.ly$/, '.pdf');
-  const svgFilename: string = filename.replace(/\.ly$/, '.svg');
 
   const files: File[] = await ls(auth.accessToken, auth.repo);
   const file: File | undefined = files.find((candidate: File) =>
     candidate.path === filename);
   const pdfFile: File | undefined = files.find((candidate: File) =>
     candidate.path === pdfFilename);
-  const svgFile: File | undefined = files.find((candidate: File) =>
-    candidate.path === svgFilename);
 
-  if (!overwrite && (file || pdfFile || svgFile)) {
+  if (!overwrite && (file || pdfFile)) {
     alert('That name is already taken.');
+
     return false;
   }
 
   const { accessToken, repo } = auth;
   try {
-    await write(accessToken, repo, filename, btoa(code), file ? file.sha : undefined, 'master');
+    // These each result in a commit -- it would be better to write them all at once.
     await write(accessToken, repo, pdfFilename, pdf, pdfFile ? pdfFile.sha : undefined , 'master');
-    await write(accessToken, repo, svgFilename, btoa(svg), svgFile ? svgFile.sha : undefined ,
-                'master');
+    await write(accessToken, repo, filename, b64EncodeUnicode(code),
+                file ? file.sha : undefined, 'master');
   } catch (err) {
+    // tslint:disable-next-line:no-console
+    console.log(err);
     if (err instanceof Conflict) {
       if (overwrite) {
-        alert('The song was modified somewhere else.');
+        alert(
+          'Could not save file. ' +
+          'You may need to wait a minute or so after publishing before publishing again.',
+        );
+
         return false;
       } else {
         alert('This name is already taken.');
+
         return false;
       }
     } else {
       alert('Could not save file.');
+
       return false;
     }
   }
+
   return true;
 }
 
-export default Publish;
+export async function unpublish(
+  auth: Auth,
+  filename: string,
+  rpc: RPCClient,
+): Promise<boolean> {
+
+  const pdfFilename: string = filename.replace(/\.ly$/, '.pdf');
+
+  const files: File[] = await ls(auth.accessToken, auth.repo);
+  const file: File | undefined = files.find((candidate: File) =>
+    candidate.path === filename);
+  const pdfFile: File | undefined = files.find((candidate: File) =>
+    candidate.path === pdfFilename);
+
+  const { accessToken, repo } = auth;
+  try {
+    // These each result in a commit -- it would be better to write them all at once.
+    if (pdfFile) {
+      await rm(accessToken, repo, pdfFilename, pdfFile.sha , 'master');
+    }
+    if (file) {
+      await rm(accessToken, repo, filename, file.sha, 'master');
+    }
+  } catch (err) {
+    // tslint:disable-next-line:no-console
+    console.log(err);
+    if (err instanceof Conflict) {
+      alert('Could not delete file.');
+
+      return false;
+    } else {
+      alert('Could not delete file.');
+
+      return false;
+    }
+  }
+
+  return true;
+}
+
+export default ModalPublish;

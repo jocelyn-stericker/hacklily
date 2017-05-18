@@ -21,8 +21,8 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 
-import App, { QUERY_PROP_KEYS, QueryProps } from './App';
-import { Auth, parseAuth } from './ConnectToGitHub';
+import App, { QUERY_PROP_KEYS, QueryProps, Song } from './App';
+import { Auth, parseAuth } from './ModalLogin';
 import { parseQuery, toQueryString } from './util/queryString';
 
 /**
@@ -58,12 +58,14 @@ function getQueryProps(): QueryProps {
         `Warning: unknown query property ${key}. ` +
         'Please add it to QUERY_PROP_KEYS in App.tsx.',
       );
+
       return;
     }
     // Note: queryPropKey === key, just typed correctly
     const queryPropKey: keyof QueryProps = QUERY_PROP_KEYS[queryPropIdx];
     queryProps[queryPropKey] = queryObj[key];
   });
+
   return queryProps;
 }
 
@@ -93,8 +95,8 @@ function setQuery<K extends keyof QueryProps>(
   render();
 }
 
-function getDirtySongs(): {[key: string]: string} {
-  const songs: {[key: string]: string} = {};
+function getDirtySongs(): {[key: string]: Song} {
+  const songs: {[key: string]: Song} = {};
   for (let i: number = 0; i < localStorage.length; i = i + 1) {
     const key: string | null = localStorage.key(i);
     if (!key) {
@@ -105,9 +107,10 @@ function getDirtySongs(): {[key: string]: string} {
       continue;
     }
     if (key.startsWith('dirtySong::')) {
-      songs[key.split('::')[1]] = value;
+      songs[key.split('::')[1]] = JSON.parse(value);
     }
   }
+
   return songs;
 }
 
@@ -115,8 +118,8 @@ function getAuth(): Auth | null {
   return parseAuth(localStorage.auth);
 }
 
-function editSong(song: string, src: string): void {
-  localStorage[`dirtySong::${song}`] = src;
+function editSong(songID: string, song: Song): void {
+  localStorage[`dirtySong::${songID}`] = JSON.stringify(song);
   render();
 }
 

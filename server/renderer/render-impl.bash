@@ -1,6 +1,7 @@
 #!/bin/bash
 IFS="
 "
+export RUBYOPT="-KU -E utf-8:utf-8"
 cd /tmp
 cat << EOF > /tmp/start.ly
 \\require "lys"

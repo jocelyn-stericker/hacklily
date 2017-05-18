@@ -22,44 +22,57 @@ import { css } from 'aphrodite';
 import React from 'react';
 import * as ReactModal from 'react-modal';
 
-import preventDefault from './util/preventDefault';
-
-import { Auth } from './ConnectToGitHub';
 import { File, ls } from './gitfs';
-import { MENU_STYLE } from './styles';
+import { Auth } from './ModalLogin';
+import { HEADER_STYLE, MENU_STYLE } from './styles';
 
-interface MenuProps {
+interface Props {
   auth: Auth | null;
+  onDeleteSong(song: string): void;
   onHide(): void;
+  onLoadSong(song: string): void;
   onShowAbout(): void;
   onSignIn(): void;
   onSignOut(): void;
-  onLoadSong(song: string): void;
 }
 
-interface MenuState {
-  repoTree: File[] | null;
+interface State {
   repoError: React.ReactNode | null;
+  repoTree: File[] | null;
 }
 
-class Menu extends React.PureComponent<MenuProps, MenuState> {
-  state: MenuState = {
-    repoTree: null,
+/**
+ * Renders the OPENED menu that is visible when clicking the button to the
+ * left of the view mode selector.
+ *
+ * The menu button is rendered by <Header />
+ */
+class Menu extends React.PureComponent<Props, State> {
+  state: State = {
     repoError: null,
+    repoTree: null,
   };
+
+  componentDidMount(): void {
+    this.fetchSongs();
+  }
+
+  componentDidUpdate(prevProps: Props): void {
+    if (prevProps.auth !== this.props.auth) {
+      this.fetchSongs();
+    }
+  }
 
   render(): JSX.Element {
     const { auth, onSignOut, onHide, onShowAbout } = this.props;
 
-    const songs: React.ReactNode = this.renderSongs();
-
     let signOut: React.ReactNode;
     if (auth) {
       signOut = (
-        <a href="#" onClick={preventDefault(onSignOut)} className={css(MENU_STYLE.option)}>
+        <button onClick={onSignOut} className={css(MENU_STYLE.option)}>
           <i className="fa fa-fw fa-sign-out" aria-hidden={true} />{' '}
           Sign out ({auth.name})
-        </a>
+        </button>
       );
     }
 
@@ -67,6 +80,7 @@ class Menu extends React.PureComponent<MenuProps, MenuState> {
     const tutorial: React.ReactNode = (
       <a
           href="http://lilypond.org/doc/v2.18/Documentation/learning/index"
+          rel="noopener noreferrer"
           className={css(MENU_STYLE.option)}
           target="_blank"
       >
@@ -77,10 +91,10 @@ class Menu extends React.PureComponent<MenuProps, MenuState> {
     // tslint:enable:no-http-string because of silly lilypond
 
     const about: React.ReactNode = (
-      <a href="#" onClick={preventDefault(onShowAbout)} className={css(MENU_STYLE.option)}>
+      <button onClick={onShowAbout} className={css(MENU_STYLE.option)}>
         <i className="fa fa-fw fa-info-circle" aria-hidden={true} />{' '}
         About Hacklily
-      </a>
+      </button>
     );
 
     return (
@@ -93,7 +107,7 @@ class Menu extends React.PureComponent<MenuProps, MenuState> {
       >
         <div className={css(MENU_STYLE.menuColumn)}>
           <div className={css(MENU_STYLE.songList, MENU_STYLE.option)}>
-            {songs}
+            {this.renderSongs()}
           </div>
           {signOut}
           {tutorial}
@@ -103,14 +117,41 @@ class Menu extends React.PureComponent<MenuProps, MenuState> {
     );
   }
 
-  componentDidMount(): void {
-    this.fetchSongs();
+  private fetchSongs = async (): Promise<void> => {
+    const { auth } = this.props;
+    if (auth) {
+      try {
+        const repoTree: File[] = await ls(auth.accessToken, auth.repo);
+        this.setState({
+          repoTree,
+        });
+      } catch (err) {
+        this.setState({
+          repoError: 'Could not retreive your songs.',
+        });
+      }
+    } else {
+      this.setState({
+        repoError: null,
+        repoTree: null,
+      });
+    }
   }
 
-  componentDidUpdate(prevProps: MenuProps): void {
-    if (prevProps.auth !== this.props.auth) {
-      this.fetchSongs();
+  private handleSongDeleteClick = (ev: React.MouseEvent<HTMLButtonElement>): void => {
+    const song: string | undefined = ev.currentTarget.dataset.song;
+    if (!song) {
+      throw new Error('No song defined on element.');
     }
+    this.props.onDeleteSong(song);
+  }
+
+  private handleSongLiClick = (ev: React.MouseEvent<HTMLButtonElement>): void => {
+    const song: string | undefined = ev.currentTarget.dataset.song;
+    if (!song) {
+      throw new Error('No song defined on element.');
+    }
+    this.props.onLoadSong(song);
   }
 
   private renderSongs(): React.ReactNode {
@@ -146,13 +187,24 @@ class Menu extends React.PureComponent<MenuProps, MenuState> {
           const eachSong: React.ReactNode[] = lilySongs
             .map((song: File) => (
               <li key={song.path}>
-                <a
-                  href="#"
+                <button
+                  className={css(MENU_STYLE.song)}
                   onClick={this.handleSongLiClick}
                   data-song={`${auth.repo}/${song.path}`}
                 >
+                  <i className="fa fa-file-o fa-fw" aria-hidden={true} />{' '}
                   {song.path}
-                </a>
+                </button>
+                <button
+                  className={css(MENU_STYLE.deleteSong)}
+                  onClick={this.handleSongDeleteClick}
+                  data-song={`${auth.repo}/${song.path}`}
+                >
+                  <i className="fa fa-remove fa-fw" aria-hidden={true} />
+                  <span className={css(HEADER_STYLE.srOnly)}>
+                    Delete this song
+                  </span>
+                </button>
               </li>
             ));
           songs = (
@@ -165,44 +217,14 @@ class Menu extends React.PureComponent<MenuProps, MenuState> {
     } else {
       songs = (
         <div className={css(MENU_STYLE.placeholder)}>
-          <a href="#" onClick={preventDefault(onSignIn)}>
+          <button onClick={onSignIn} className={css(MENU_STYLE.placeholderLink)}>
             Sign in
-          </a>{' '}to see your songs.
+          </button>{' '}to see your songs.
         </div>
       );
     }
+
     return songs;
-  }
-
-  private fetchSongs = async (): Promise<void> => {
-    const { auth } = this.props;
-    if (auth) {
-      try {
-        const repoTree: File[] = await ls(auth.accessToken, auth.repo);
-        this.setState({
-          repoTree,
-        });
-      } catch (err) {
-        this.setState({
-          repoError: 'Could not retreive your songs.',
-        });
-      }
-    } else {
-      this.setState({
-        repoTree: null,
-        repoError: null,
-      });
-    }
-  }
-
-  private handleSongLiClick = (ev: React.MouseEvent<HTMLAnchorElement>): void => {
-    ev.preventDefault();
-    ev.stopPropagation();
-    const song: string | undefined = ev.currentTarget.dataset.song;
-    if (!song) {
-      throw new Error('No song defined on element.');
-    }
-    this.props.onLoadSong(song);
   }
 }
 

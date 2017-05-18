@@ -1,72 +1,127 @@
+/**
+ * @license
+ * This file is part of Hacklily, a web-based LilyPond editor.
+ * Copyright (C) 2017 - present Joshua Netterfield <joshua@nettek.ca>
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software Foundation,
+ * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
+ */
+
+body {
+  margin: 0;
+  padding: 0;
+}
+
+#root {
+  background-color: #1e1e1e;
+}
+
+body.modeView {
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+
+body.modeView #root {
+  height: 100%;
+  white-space: nowrap;
+}
+
 svg {
-    width: 100%;
+  background-color: white;
+}
+
+body.modeView svg + svg {
+  margin-left: 2px;
+}
+
+body.modeView svg {
+  height: 100%;
+}
+
+body.modeBoth svg {
+  width: 100%;
+}
+
+body.modeBoth svg + svg {
+  margin-top: 6px;
 }
 
 @font-face {
-    font-family: "emmentaler-11";
-    src: url("/emmentaler-11.otf") format('opentype');
+  font-family: "emmentaler-11";
+  src: url("/emmentaler-11.otf") format('opentype');
 }
 
 @font-face {
-    font-family: "emmentaler-13";
-    src: url("/emmentaler-13.otf") format('opentype');
+  font-family: "emmentaler-13";
+  src: url("/emmentaler-13.otf") format('opentype');
 }
 
 @font-face {
-    font-family: "emmentaler-14";
-    src: url("/emmentaler-14.otf") format('opentype');
+  font-family: "emmentaler-14";
+  src: url("/emmentaler-14.otf") format('opentype');
 }
 
 @font-face {
-    font-family: "emmentaler-16";
-    src: url("/emmentaler-16.otf") format('opentype');
+  font-family: "emmentaler-16";
+  src: url("/emmentaler-16.otf") format('opentype');
 }
 
 @font-face {
-    font-family: "emmentaler-18";
-    src: url("/emmentaler-18.otf") format('opentype');
+  font-family: "emmentaler-18";
+  src: url("/emmentaler-18.otf") format('opentype');
 }
 
 @font-face {
-    font-family: "emmentaler-20";
-    src: url("/emmentaler-20.otf") format('opentype');
+  font-family: "emmentaler-20";
+  src: url("/emmentaler-20.otf") format('opentype');
 }
 
 @font-face {
-    font-family: "emmentaler-23";
-    src: url("/emmentaler-23.otf") format('opentype');
+  font-family: "emmentaler-23";
+  src: url("/emmentaler-23.otf") format('opentype');
 }
 
 @font-face {
-    font-family: "emmentaler-26";
-    src: url("/emmentaler-26.otf") format('opentype');
+  font-family: "emmentaler-26";
+  src: url("/emmentaler-26.otf") format('opentype');
 }
 
 @font-face {
-    font-family: "emmentaler-brace";
-    src: url("/emmentaler-brace.otf") format('opentype');
+  font-family: "emmentaler-brace";
+  src: url("/emmentaler-brace.otf") format('opentype');
 }
 
 @font-face {
-    font-family: "Century Schoolbook L"
-    src: url("/CenturySchL-Roma.otf") format('opentype');
+  font-family: "Century Schoolbook L";
+  src: url("/CenturySchL-Roma.otf") format('opentype');
 }
 
 @font-face {
-    font-family: "Century Schoolbook L"
-    font-weight: bold;
-    src: url("/CenturySchL-Bold.otf") format('opentype');
+  font-family: "Century Schoolbook L";
+  font-weight: bold;
+  src: url("/CenturySchL-Bold.otf") format('opentype');
 }
 
 @font-face {
-    font-family: "Century Schoolbook L"
-    font-style: italic;
-    src: url("/CenturySchL-Ital.otf") format('opentype');
+  font-family: "Century Schoolbook L";
+  font-style: italic;
+  src: url("/CenturySchL-Ital.otf") format('opentype');
 }
 
 @font-face {
-    font-family: "Century Schoolbook L"
-    font-weight: bold;
-    font-style: italic;
-    src: url("/CenturySchL-BoldItal.otf") format('opentype');
+  font-family: "Century Schoolbook L";
+  font-weight: bold;
+  font-style: italic;
+  src: url("/CenturySchL-BoldItal.otf") format('opentype');
 }

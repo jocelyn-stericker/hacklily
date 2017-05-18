@@ -13,7 +13,8 @@
         "react": "React",
         "reactDom": "ReactDOM",
         "reactModal": "ReactModal",
-        "reactMonacoEditor": "ReactMonacoEditor"
+        "reactMonacoEditor": "ReactMonacoEditor",
+        "dompurify": "DOMPurify"
       }
     ],
     "no-multiline-string": false,
@@ -34,32 +35,28 @@
         "ignore-pattern": "^React$"
       }
     ],
-    // Disable anything that requires type checking / broken w/ latest TS for now
-    "await-promise": false,
-    "no-floating-promises": false,
-    "no-for-in-array": false,
-    "no-unsafe-any": false,
-    "promise-function-async": false,
-    "restrict-plus-operands": false,
-    "strict-boolean-expressions": false,
-    "completed-docs": [
-      false
+    "object-literal-sort-keys": true,
+    "member-ordering": [
+      true,
+      {
+        "order": "instance-sandwich",
+        "alphabetize": true
+      }
     ],
-    "no-unnecessary-qualifier": false,
-    "no-void-expression": false,
-    "react-a11y-anchors": false,
-    "react-a11y-aria-unsupported-elements": false,
-    "react-a11y-event-has-role": false,
-    "react-a11y-image-button-has-alt": false,
-    "react-a11y-img-has-alt": false,
-    "react-a11y-lang": false,
-    "react-a11y-meta": false,
-    "react-a11y-props": false,
-    "react-a11y-proptypes": false,
-    "react-a11y-role": false,
-    "react-a11y-role-has-required-aria-props": false,
-    "react-a11y-role-supports-aria-props": false,
-    "react-a11y-tabindex-no-positive": false,
-    "react-a11y-titles": false
+    "react-unused-props-and-state": [
+      true,
+      {
+        "props-interface-regex": "Props$",
+        "state-interface-regex": "State$"
+      }
+    ],
+    // Because it doesn't play well with aphrodite.
+    "no-unsafe-any": false,
+    // Becasue comments in JSX can be nice
+    "no-single-line-block-comment": false,
+    // Because {someObj && <Yolo obj={someObj} />} is idiomatic in React
+    "strict-boolean-expressions": false,
+    // Becasue it fires for void promises.
+    "no-floating-promises": false
   }
 }

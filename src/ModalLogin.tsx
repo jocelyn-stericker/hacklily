@@ -24,7 +24,6 @@ import * as ReactModal from 'react-modal';
 
 import RPCClient, { SignInResponse } from './RPCClient';
 import { GITHUB_STYLE, MODAL_STYLE } from './styles';
-import preventDefault from './util/preventDefault';
 
 const CLIENT_ID: string | undefined = process.env.REACT_APP_GITHUB_CLIENT_ID;
 const SCOPE: string = 'repo';
@@ -43,14 +42,35 @@ export interface Auth {
   username: string;
 }
 
-interface ConnectToGitHubProps {
-  csrf: string;
+interface Props {
   connectToGitHubReason: string | null;
+  csrf: string;
   onHide(): void;
   setCSRF(csrf: string): void;
 }
 
-export default class ConnectToGitHub extends React.PureComponent<ConnectToGitHubProps, void> {
+/**
+ * Login modal that explains the privacy of Hacklily and redirects the user to
+ * the GitHub OAauth flow.
+ *
+ * Renders when you click login from the menu, or press "New Song" / "Save / share"
+ * while not logged in.
+ *
+ * Sets a new CSRF for the app before rendering. The CSRF is used throughout the
+ * OAuth flow.
+ *
+ * The user is redirected back to the app after the flow. <App /> then calls
+ * checkLogin, below, to set localStorage.
+ */
+export default class ModalLogin extends React.PureComponent<Props, void> {
+  componentWillMount(): void {
+    const randomContainer: Uint32Array = new Uint32Array(1);
+    crypto.getRandomValues(randomContainer);
+    const csrf: string = randomContainer[0].toString();
+
+    this.props.setCSRF(csrf);
+  }
+
   render(): JSX.Element {
     const { csrf, onHide, connectToGitHubReason } = this.props;
 
@@ -76,7 +96,7 @@ export default class ConnectToGitHub extends React.PureComponent<ConnectToGitHub
       <span>
         <strong>
           <i className="fa fa-info-circle" aria-hidden="true" />{' '}
-          {connectToGitHubReason || 'Sign In or Create an Account'}
+          {connectToGitHubReason || 'Sign in or create an account'}
         </strong>
       </span>
     );
@@ -92,14 +112,13 @@ export default class ConnectToGitHub extends React.PureComponent<ConnectToGitHub
         <div>
           <div className={css(MODAL_STYLE.modalHeader)}>
             {explanation}
-            <a
-              href="#"
+            <button
               className={css(MODAL_STYLE.closeButton)}
               aria-label="Back to song"
-              onClick={preventDefault(onHide)}
+              onClick={onHide}
             >
               <i className="fa-close fa" aria-hidden={true} />
-            </a>
+            </button>
           </div>
           <div className={css(MODAL_STYLE.modalBody)}>
             <p className={css(MODAL_STYLE.signInPrivacy)}>
@@ -116,26 +135,24 @@ export default class ConnectToGitHub extends React.PureComponent<ConnectToGitHub
               </a>
             </p>
             <p className={css(MODAL_STYLE.license)}>
-              Only save songs you can and want to share. See the{' '}
+              Only save songs you want to share. See the{' '}
               <a href="privacy-statement.html">
                 privacy statement
-              </a>.
+              </a>.{' '}
+              <a href="dmca.html">
+                DMCA
+              </a>
             </p>
           </div>
         </div>
       </ReactModal>
     );
   }
-
-  componentWillMount(): void {
-    const randomContainer: Uint32Array = new Uint32Array(1);
-    crypto.getRandomValues(randomContainer);
-    const csrf: string = randomContainer[0].toString();
-
-    this.props.setCSRF(csrf);
-  }
 }
 
+/**
+ * It's good practice when logging out to revoke the OAuth token, I guess.
+ */
 export async function revokeGitHubAuth(rpc: RPCClient, token: string): Promise<void> {
   try {
     await rpc.call('signOut', {
@@ -149,6 +166,9 @@ export async function revokeGitHubAuth(rpc: RPCClient, token: string): Promise<v
   }
 }
 
+/**
+ * Called by <App /> to continue the OAuth flow.
+ */
 export async function checkLogin(
     rpc: RPCClient,
     code: string,
@@ -177,6 +197,9 @@ export async function checkLogin(
   return response.result;
 }
 
+/**
+ * Deserializes Auth. Used when parsing localStorage.
+ */
 export function parseAuth(auth: string | undefined): Auth | null {
   if (!auth) {
     return null;
@@ -187,6 +210,7 @@ export function parseAuth(auth: string | undefined): Auth | null {
         parsedAuth.name && parsedAuth.repo && parsedAuth.username) {
       return parsedAuth;
     }
+
     return null;
   } catch (err) {
     return null;

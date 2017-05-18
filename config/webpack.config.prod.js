@@ -82,16 +82,17 @@ module.exports = {
       // The `exclude` list *must* be updated with every change to loader extensions.
       // When adding a new loader, you must add its `test`
       // as a new entry in the `exclude` list in the "url" loader.
-
-      // "url" loader embeds assets smaller than specified size as data URLs to avoid requests.
-      // Otherwise, it acts like the "file" loader.
       {
         test: /\.(ts|tsx)$/,
         enforce: "pre",
         loader: "tslint-loader",
-        options: { /* Loader options go here */ },
+        options: {
+          typeCheck: true,
+        },
         exclude: path.resolve(__dirname, "node_modules"),
       },
+      // "url" loader embeds assets smaller than specified size as data URLs to avoid requests.
+      // Otherwise, it acts like the "file" loader.
       {
         exclude: [
           /\.html$/,

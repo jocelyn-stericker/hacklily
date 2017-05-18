@@ -22,15 +22,16 @@ import { css } from 'aphrodite';
 import React from 'react';
 import * as ReactModal from 'react-modal';
 
-import preventDefault from './util/preventDefault';
-
 import { MODAL_STYLE } from './styles';
 
-interface AboutProps {
+interface Props {
   onHide(): void;
 }
 
-class About extends React.PureComponent<AboutProps, void> {
+/**
+ * The About dialog, accessible through the menu in the header.
+ */
+class ModalAbout extends React.PureComponent<Props, void> {
   render(): JSX.Element {
     return (
       <ReactModal
@@ -43,14 +44,13 @@ class About extends React.PureComponent<AboutProps, void> {
         <div>
           <div className={css(MODAL_STYLE.modalHeader)}>
             About Hacklily
-            <a
+            <button
               aria-label="Back to song"
-              href="#"
-              onClick={preventDefault(this.props.onHide)}
+              onClick={this.props.onHide}
               className={css(MODAL_STYLE.closeButton)}
             >
               <i className="fa-close fa" aria-hidden={true} />
-            </a>
+            </button>
         </div>
         <div className={css(MODAL_STYLE.modalBody)}>
           <div>
@@ -75,7 +75,7 @@ class About extends React.PureComponent<AboutProps, void> {
               This project is open-source.
               Please{' '}
               <a
-                href="https://github.com/jnetterf/hacklily"
+                href="https://github.com/hacklily/hacklily"
                 target="_blank"
                 rel="noopener noreferrer"
               >
@@ -88,25 +88,28 @@ class About extends React.PureComponent<AboutProps, void> {
               {/* index.html contains the jslicense1 rel for scrapers */}
                 See also the{' '}
                 <a href="about-javascript.html">
-                  JavaScript license information
+                  license statements
                   <span className={css(MODAL_STYLE.gpl)}>
                   <img
                     src="gplv3-127x51.png"
                     alt="Licensed under the GNU General Public License version 3"
                   />
                 </span>
-              </a> and{' '}
-              <a href="privacy-statement.html">
-                privacy statement
-              </a>.
-              <br />
-              &copy; Copyright{' '}
-              <a href="https://nettek.ca" target="_blank" rel="noopener noreferrer">
-                Joshua Netterfield
-              </a> 2017 - present.
+                </a>,{' '}
+                <a href="dmca.html">
+                  DMCA info
+                </a>, and{' '}
+                <a href="privacy-statement.html">
+                  privacy statement
+                </a>.
+                <br />
+                &copy; Copyright{' '}
+                <a href="https://nettek.ca" target="_blank" rel="noopener noreferrer">
+                  Joshua Netterfield
+                </a> 2017 - present.
             </p>
             <p>
-              Made in Canada.
+              Assembled in Canada.
             </p>
           </div>
         </div>
@@ -116,4 +119,4 @@ class About extends React.PureComponent<AboutProps, void> {
   }
 }
 
-export default About;
+export default ModalAbout;

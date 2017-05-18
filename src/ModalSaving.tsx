@@ -18,30 +18,34 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
  */
 
-// http://stackoverflow.com/a/8648962
-export function parseQuery(qstr: string): { [key: string]: string } {
-  const query: { [key: string]: string } = {};
-  const a: string[] = (qstr[0] === '?' ? qstr.substr(1) : qstr).split('&');
-  for (const item of a) {
-    if (!item) {
-      continue;
-    }
-    const b: string[] = item.split('=');
-    query[decodeURIComponent(b[0])] = decodeURIComponent(b[1] || '');
-  }
+import { css } from 'aphrodite';
+import React from 'react';
+import * as ReactModal from 'react-modal';
 
-  return query;
+import { MODAL_STYLE } from './styles';
+
+/**
+ * A modal that is rendered while saving a song.
+ * There's no escaping this modal. It's visible until saving completes.
+ */
+class ModalSaving extends React.PureComponent<{}, void> {
+  render(): JSX.Element {
+    return (
+      <ReactModal
+        className={css(MODAL_STYLE.modal)}
+        contentLabel="Saving..."
+        isOpen={true}
+        overlayClassName={css(MODAL_STYLE.overlay)}
+      >
+        <div>
+          <div className={css(MODAL_STYLE.modalHeader)}>
+            Saving, please wait&hellip;{' '}
+            <i className="fa fa-spinner fa-spin" aria-hidden={true} />
+          </div>
+        </div>
+      </ReactModal>
+    );
+  }
 }
 
-// http://stackoverflow.com/a/5505137
-export function toQueryString(obj: {[key: string]: string}): string {
-  const parts: string[] = [];
-  for (const i of Object.keys(obj)) {
-    if (obj[i] !== undefined) {
-      parts.push(`${encodeURIComponent(i)}=${encodeURIComponent(obj[i])}`);
-    }
-  }
-
-  return parts.join('&')
-    .replace(/%2F/g, '/'); // because we can, and it's less ugly.
-}
+export default ModalSaving;

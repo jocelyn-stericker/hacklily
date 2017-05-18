@@ -25,20 +25,21 @@ const LILYPOND_COMPLETION_ITEM_PROVIDER: monaco.languages.CompletionItemProvider
                          position: monaco.Position,
                          token: monaco.CancellationToken): monaco.languages.CompletionItem[] {
     const textUntilPosition: string = model.getValueInRange({
-      startLineNumber: 1,
-      startColumn: 1,
-      endLineNumber: position.lineNumber,
       endColumn: position.column,
+      endLineNumber: position.lineNumber,
+      startColumn: 1,
+      startLineNumber: 1,
     });
     if (textUntilPosition[textUntilPosition.length - 2] === '\\') {
       return NOTATION_SYMBOLS;
     }
-        // Otherwise, Monaco really wants to give us word-based suggestions,
-        // which are not helpful on note input.
+
+    // Otherwise, Monaco really wants to give us word-based suggestions,
+    // which are not helpful on note input.
     return [
       {
+        kind: 0, // text
         label: '',
-        kind: 0 /* text */,
       },
     ];
   },

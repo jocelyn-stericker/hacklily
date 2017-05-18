@@ -21,23 +21,89 @@
 import { css } from 'aphrodite';
 import React from 'react';
 import ReactMonacoEditor from 'react-monaco-editor';
+
 import { MODE_EDIT, MODE_VIEW, ViewMode } from './Header';
-import './lilymonaco.css';
 import LILYPOND_COMPLETION_ITEM_PROVIDER from './monacoConfig/LILYPOND_COMPLETION_ITEM_PROVIDER';
 import LILYPOND_MONARCH_PROVIDER from './monacoConfig/LILYPOND_MONARCH_PROVIDER';
 import { APP_STYLE } from './styles';
 
-interface EditorProps {
+interface Props {
   code: string | undefined;
+  /**
+   * When this changes, the selection changes. Used so that when you click on a
+   * note in the preview, it highlights where the note is defined in the editor.
+   */
   defaultSelection: monaco.ISelection | null;
+
+  /**
+   * Lilypond logs -- used to render errors
+   */
   logs: string | null;
+
+  /**
+   * Whether we're visible, half-screen, or hidden.
+   */
   mode: ViewMode;
+
+  /**
+   * Called when an edit occurs. <Editor /> is a controlled component.
+   */
   onSetCode(newCode: string): void;
 }
 
-export default class Editor extends React.PureComponent<EditorProps, void> {
+/**
+ * Renders the left-hand side of the App UI. This is a small wrapper around monaco.
+ *
+ * It is a controlled component, and parses the passed logs to render errors.
+ */
+export default class Editor extends React.PureComponent<Props, void> {
+  private editor: monaco.editor.ICodeEditor | undefined;
   private oldDecorations: string[] = [];
-  private editor: monaco.editor.ICodeEditor;
+
+  componentDidUpdate(prevProps: Props): void {
+    if (this.editor === undefined) {
+      return;
+    }
+
+    const { mode, logs, defaultSelection } = this.props;
+    if (prevProps.mode !== mode) {
+      this.editor.layout();
+    }
+    if (prevProps.logs !== logs) {
+      const errors: monaco.editor.IModelDeltaDecoration[] = [];
+      const matchErrors: RegExp =
+        /hacklily.ly:([0-9]*):(([0-9]*):([0-9]*))?\s*([ew].*)/g;
+      const oldDecorations: string[] = this.oldDecorations || [];
+      if (logs) {
+        for (let error: RegExpExecArray | null = matchErrors.exec(logs); error;
+            error = matchErrors.exec(logs)) {
+          errors.push({
+            options: {
+              hoverMessage: error[5],
+              inlineClassName: 'lilymonaco-inline-error',
+              linesDecorationsClassName: css(APP_STYLE.errorDecoration),
+            },
+            range: {
+              // we insert a line on the server:
+              endColumn: parseInt(error[4] || String((parseInt(error[2], 10) + 1)), 10),
+              endLineNumber: parseInt(error[1], 10) - 1,
+              startColumn: parseInt(error[3], 10),
+              startLineNumber: parseInt(error[1], 10) - 1,
+            },
+          });
+        }
+        this.oldDecorations = this.editor.deltaDecorations(oldDecorations, errors);
+      }
+    }
+    if (prevProps.defaultSelection !== defaultSelection && defaultSelection !== null) {
+      this.editor.setSelection(defaultSelection);
+      this.editor.focus();
+    }
+  }
+
+  componentWillUnmount(): void {
+    window.removeEventListener('resize', this.handleResize);
+  }
 
   render(): JSX.Element {
     const { code, mode, onSetCode } = this.props;
@@ -46,6 +112,7 @@ export default class Editor extends React.PureComponent<EditorProps, void> {
       selectionHighlight: false,
       wordBasedSuggestions: false,
     };
+
     return (
       <div className={`monaco ${css(mode === MODE_VIEW && APP_STYLE.monacoHidden)}`}>
         <ReactMonacoEditor
@@ -63,48 +130,11 @@ export default class Editor extends React.PureComponent<EditorProps, void> {
     );
   }
 
-  componentDidUpdate(prevProps: EditorProps): void {
-    const { mode, logs, defaultSelection } = this.props;
-    if (prevProps.mode !== mode) {
-      this.editor.layout();
-    }
-    if (prevProps.logs !== logs) {
-      const errors: monaco.editor.IModelDeltaDecoration[] = [];
-      const matchErrors: RegExp =
-        /hacklily.ly:([0-9]*):(([0-9]*):([0-9]*))?\s*([ew].*)/g;
-      if (this.editor) {
-        const oldDecorations: string[] = this.oldDecorations || [];
-        if (logs) {
-          for (let error: RegExpExecArray | null = matchErrors.exec(logs); error;
-              error = matchErrors.exec(logs)) {
-            errors.push({
-              range: {
-                // we insert a line on the server:
-                startLineNumber: parseInt(error[1], 10) - 1,
-                endLineNumber: parseInt(error[1], 10) - 1,
-
-                startColumn: parseInt(error[3], 10),
-                endColumn: parseInt(error[4] || String((parseInt(error[2], 10) + 1)), 10),
-              },
-              options: {
-                linesDecorationsClassName: css(APP_STYLE.errorDecoration),
-                inlineClassName: 'lilymonaco-inline-error',
-                hoverMessage: error[5],
-              },
-            });
-          }
-        }
-        this.oldDecorations = this.editor.deltaDecorations(oldDecorations, errors);
-      }
-    }
-    if (prevProps.defaultSelection !== defaultSelection && defaultSelection !== null) {
-      this.editor.setSelection(defaultSelection);
-      this.editor.focus();
-    }
-  }
-
-  componentWillUnmount(): void {
-    window.removeEventListener('resize', this.handleResize);
+  private handleEditorDidMount = (editor: monaco.editor.ICodeEditor,
+                                  monacoModule: typeof monaco): void => {
+    editor.focus();
+    this.editor = editor;
+    window.addEventListener('resize', this.handleResize, false);
   }
 
   private handleEditorWillMount = (monacoModule: typeof monaco): void => {
@@ -114,14 +144,9 @@ export default class Editor extends React.PureComponent<EditorProps, void> {
             'lilypond', LILYPOND_COMPLETION_ITEM_PROVIDER);
   }
 
-  private handleEditorDidMount = (editor: monaco.editor.ICodeEditor,
-                                  monacoModule: typeof monaco): void => {
-    editor.focus();
-    this.editor = editor;
-    window.addEventListener('resize', this.handleResize, false);
-  }
-
   private handleResize = (): void => {
-    this.editor.layout();
+    if (this.editor) {
+      this.editor.layout();
+    }
   }
 }

@@ -92,7 +92,9 @@ module.exports = {
         test: /\.(ts|tsx)$/,
         enforce: "pre",
         loader: "tslint-loader",
-        options: { /* Loader options go here */ },
+        options: {
+          typeCheck: true,
+        },
         exclude: path.resolve(__dirname, "node_modules"),
       },
       {

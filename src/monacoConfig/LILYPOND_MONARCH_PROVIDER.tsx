@@ -19,7 +19,8 @@
  */
 
 /// <reference types="monaco-editor" />
-// tslint:disable:max-line-length
+// Note: object literal order is meaningful to monarch in tokenizer!
+// tslint:disable:max-line-length object-literal-sort-keys
 
 const LILYPOND_MONARCH_PROVIDER: monaco.languages.IMonarchLanguage = {
   tokenPostfix: '.ly',

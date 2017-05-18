@@ -22,7 +22,6 @@ import { css } from 'aphrodite';
 import React from 'react';
 
 import * as logoSvg from './logo.svg';
-import preventDefault from './util/preventDefault';
 
 import ButtonGroup, { ButtonSpec } from './ButtonGroup';
 import { BUTTON_STYLE, HEADER_STYLE } from './styles';
@@ -32,12 +31,12 @@ export const MODE_VIEW: ViewMode = 'view';
 export const MODE_BOTH: ViewMode = 'both';
 export const MODE_EDIT: ViewMode = 'edit';
 
-interface HeaderProps {
+interface Props {
+  isDirty: boolean;
   loggedIn: boolean;
   mode: ViewMode;
   online: boolean;
   song: string | undefined;
-  isDirty: boolean;
   onModeChanged(mode: ViewMode): void;
   onShowMenu(): void;
   onShowNew(): void;
@@ -48,59 +47,61 @@ function last<T>(t: T[]): T {
   return t[t.length - 1];
 }
 
-export default class Header extends React.PureComponent<HeaderProps, void> {
+/**
+ * Renders the top of the app.
+ */
+export default class Header extends React.PureComponent<Props, void> {
   render(): JSX.Element {
     const { mode, loggedIn, onModeChanged, onShowMenu } = this.props;
     const modeButtons: ButtonSpec[] = [
       {
-        value: MODE_VIEW,
-        title: 'View',
         content: (
           <i
             aria-hidden={true}
             className={`fa fa-eye ${css(HEADER_STYLE.modeItem)}`}
           />
         ),
+        title: 'View',
+        value: MODE_VIEW,
       },
       {
-        value: MODE_BOTH,
-        title: 'Split screen between viewer and editor',
         content: (
           <i
             aria-hidden={true}
             className={`fa fa-columns ${css(HEADER_STYLE.modeItem)}`}
           />
         ),
+        title: 'Split screen between viewer and editor',
+        value: MODE_BOTH,
       },
       {
-        value: MODE_EDIT,
-        title: 'Edit',
         content: (
           <i
             aria-hidden={true}
             className={`fa fa-pencil ${css(HEADER_STYLE.modeItem)}`}
           />
         ),
+        title: 'Edit',
+        value: MODE_EDIT,
       },
     ];
     const communityToolbar: React.ReactNode = this.renderCommunityToolbar();
+
     return (
       <div className="header">
         <img src={logoSvg} className={css(HEADER_STYLE.logo)} alt="Frog, Hacklily logo" />
         <div className={css(HEADER_STYLE.headerGroupWrapper, HEADER_STYLE.songs)}>
-          <a
-            href="#"
+          <button
             title="Menu"
-            onClick={preventDefault(onShowMenu)}
+            className={css(BUTTON_STYLE.buttonStyle, HEADER_STYLE.songsText)}
+            onClick={onShowMenu}
           >
-            <span className={css(BUTTON_STYLE.buttonStyle, HEADER_STYLE.songsText)}>
-              {!loggedIn && <span>Hacklily &mdash; </span>}
-              {this.props.song ? last(this.props.song.split('/')).split('.ly')[0] : 'untitled'}
-              {this.props.isDirty ? '*' : ''}{' '}
-              <span className={css(HEADER_STYLE.srOnly)}>: an online LilyPond editor</span>
-              <i className="fa fa-chevron-down" aria-hidden={true} />
-            </span>
-          </a>
+            {!loggedIn && <span>Hacklily &mdash; </span>}
+            {this.props.song ? last(this.props.song.split('/')).split('.ly')[0] : 'untitled'}
+            {this.props.isDirty ? '*' : ''}{' '}
+            <span className={css(HEADER_STYLE.srOnly)}>: an online LilyPond editor</span>
+            <i className="fa fa-chevron-down" aria-hidden={true} />
+          </button>
         </div>
         <div className={css(HEADER_STYLE.headerGroupWrapper)}>
           <ButtonGroup
@@ -120,42 +121,40 @@ export default class Header extends React.PureComponent<HeaderProps, void> {
     if (song) {
       if (isDirty) {
         saveShare = (
-          <strong>
+          <span>
             <i className="fa fa-save" />{' '}
             Save updates
-          </strong>
+          </span>
         );
       } else {
         saveShare = 'All changes saved.';
       }
     } else {
       saveShare = (
-        <strong>
-          <i className="fa fa-share-square-o" />{' '}
+        <span>
+          <i className="fa fa-save" />{' '}
           Save / share
-        </strong>
+        </span>
       );
     }
     if (online) {
       return (
         <div className={css(HEADER_STYLE.headerGroupWrapper)}>
-          <a
-            href="#"
+          <button
             title="Publish"
             className={css(HEADER_STYLE.newSong)}
-            onClick={preventDefault(onShowNew)}
+            onClick={onShowNew}
           >
             <i className="fa fa-plus" />{' '}
             New song
-          </a>
-          <a
-            href={isDirty || !song ? '#' : undefined}
+          </button>
+          <button
             title="Publish"
-            className={css(HEADER_STYLE.publish)}
-            onClick={preventDefault(onShowPublish)}
+            className={css(HEADER_STYLE.publish, isDirty && HEADER_STYLE.publishActive)}
+            onClick={isDirty || !song ? onShowPublish : undefined}
           >
             {saveShare}
-          </a>
+          </button>
         </div>
       );
     } else {

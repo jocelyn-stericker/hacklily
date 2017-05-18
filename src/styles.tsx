@@ -29,6 +29,7 @@ const previewPendingAnimation = {
   '50%': {
     opacity: 0.15,
   },
+  // tslint:disable-next-line:object-literal-sort-keys
   '100%': {
     opacity: 0.0,
   },
@@ -38,23 +39,26 @@ const PREVIEW_WIDTH = '50%';
 const EDITOR_WIDTH = '50%';
 
 export const APP_STYLE = StyleSheet.create({
-  sheetMusicView: {
-    backgroundColor: 'white',
-    border: '0 none',
+  errorDecoration: {
+    border: '2px solid red',
+    color: 'red',
+    fontStyle: 'oblique',
+    fontWeight: 'bold',
+    textDecoration: 'underline',
+  },
+  errorMask: {
+    backgroundColor: 'black',
     bottom: 0,
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    overflow: 'hidden',
+    color: 'white',
+    left: PREVIEW_WIDTH,
+    padding: 15,
     position: 'absolute',
-    right: '0',
+    right: 0,
+    textAlign: 'center',
     top: 0,
   },
-  sheetMusicError: {
-    textAlign: 'center',
-    color: '#aeaeae',
-    verticalAlign: 'middle',
-    display: 'inline-block',
+  monacoHidden: {
+    display: 'none',
   },
   pendingPreviewMask: {
     animationDuration: '2s',
@@ -68,15 +72,25 @@ export const APP_STYLE = StyleSheet.create({
     right: 0,
     top: 0,
   },
-  errorMask: {
-    color: 'white',
+  previewPendingMaskModeView: {
+    left: 0,
+  },
+  sheetMusicError: {
+    color: '#aeaeae',
+    display: 'inline-block',
     textAlign: 'center',
-    padding: 15,
-    backgroundColor: 'black',
+    verticalAlign: 'middle',
+  },
+  sheetMusicView: {
+    alignItems: 'center',
+    backgroundColor: 'white',
+    border: '0 none',
     bottom: 0,
-    left: PREVIEW_WIDTH,
+    display: 'flex',
+    justifyContent: 'center',
+    overflow: 'hidden',
     position: 'absolute',
-    right: 0,
+    right: '0',
     top: 0,
   },
   sheetMusicViewEdit: {
@@ -85,235 +99,274 @@ export const APP_STYLE = StyleSheet.create({
   sheetMusicViewView: {
     left: 0,
   },
-  monacoHidden: {
-    display: 'none',
-  },
-  errorDecoration: {
-    border: '2px solid red',
-    color: 'red',
-    textDecoration: 'underline',
-    fontWeight: 'bold',
-    fontStyle: 'oblique',
-  },
 });
 
 export const MODAL_STYLE = StyleSheet.create({
-  modal: {
-    color: '#555555',
-    margin: '0 0 0 -250px',
-    padding: '15px 15px 0 15px',
-    position: 'fixed',
-    width: 500,
-    top: 80,
-    left: '50%',
-    backgroundColor: 'white',
-    border: '1px solid rgba(0, 0, 0, 0.3)',
-    borderRadius: 6,
-    zIndex: 1050,
-  },
   big: {
     margin: '0 0 0 -400px',
     width: 800,
   },
-  modalHeader: {
-    borderBottom: '1px solid #ddd',
-    padding: '0 0 9px 0',
-  },
-  modalBody: {
-    margin: 0,
-    maxHeight: 'none',
-    padding: '20px 0 2px 0',
-  },
-  license: {
-    fontSize: 12,
-    marginTop: 20,
-  },
-  signInPrivacy: {
-    marginTop: -10,
-    textAlign: 'center',
+  closeButton: {
+    float: 'right',
+    textDecoration: 'none',
   },
   gpl: {
     bottom: 10,
     position: 'absolute',
     right: 10,
   },
+  license: {
+    fontSize: 12,
+    marginTop: 20,
+  },
+  link: {
+    ':hover': {
+      color: 'black',
+    },
+    color: 'blue',
+    cursor: 'pointer',
+    fontSize: 16,
+    textDecoration: 'underline',
+  },
   login: {
     textAlign: 'center',
   },
-  overlay: {
+  modal: {
+    backgroundColor: 'white',
+    border: '1px solid rgba(0, 0, 0, 0.3)',
+    borderRadius: 6,
+    color: '#555555',
+    left: '50%',
+    margin: '0 0 0 -250px',
+    padding: '15px 15px 0 15px',
     position: 'fixed',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundColor: 'rgba(0, 0, 0, 0.75)',
+    top: 80,
+    width: 500,
+    zIndex: 1050,
   },
-  closeButton: {
-    float: 'right',
-    textDecoration: 'none',
+  modalBody: {
+    margin: 0,
+    maxHeight: 'none',
+    padding: '20px 0 2px 0',
+  },
+  modalHeader: {
+    borderBottom: '1px solid #ddd',
+    padding: '0 0 9px 0',
+  },
+  overlay: {
+    backgroundColor: 'rgba(0, 0, 0, 0.75)',
+    bottom: 0,
+    left: 0,
+    position: 'fixed',
+    right: 0,
+    top: 0,
   },
   shareURL: {
     display: 'block',
-    textAlign: 'center',
     padding: 5,
+    textAlign: 'center',
+  },
+  signInPrivacy: {
+    marginTop: -10,
+    textAlign: 'center',
   },
 });
 
 export const MENU_STYLE = StyleSheet.create({
+  deleteSong: {
+    ':hover': {
+      color: 'red',
+    },
+    color: '#aeaeae',
+    float: 'right',
+  },
+  innerSongList: {
+    listStyle: 'none',
+    marginLeft: 0,
+    marginTop: 0,
+    paddingLeft: 0,
+  },
   menu: {
-    color: '#555555',
-    position: 'fixed',
-    width: 400,
-    top: 48,
-    left: 65,
-    backgroundColor: 'white',
-    border: '1px solid rgba(0, 0, 0, 0.3)',
-    zIndex: 1050,
-    outline: 'none',
-    padding: '14px 7px 4px 7px',
     '::after': {
+      borderBottomColor: 'white',
+      borderLeftColor: 'transparent',
+      borderRightColor: 'transparent',
+      borderStyle: 'solid',
+      borderTopColor: 'transparent',
+      borderWidth: 12,
       bottom: '100%',
-      left: 40,
-      border: 'solid transparent',
       content: '" "',
       height: 0,
-      width: 0,
-      position: 'absolute',
-      pointerEvents: 'none',
-      borderColor: 'transparent',
-      borderBottomColor: 'white',
-      borderWidth: 12,
+      left: 40,
       marginLeft: -30,
+      pointerEvents: 'none',
+      position: 'absolute',
+      width: 0,
     },
+    backgroundColor: 'white',
+    border: '1px solid rgba(0, 0, 0, 0.3)',
     display: 'flex',
     flexDirection: 'row',
     height: 400,
-  },
-  menuOverlay: {
+    left: 65,
+    outline: 'none',
+    padding: '14px 7px 4px 7px',
     position: 'fixed',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundColor: 'rgba(0, 0, 0, 0.35)',
+    top: 48,
+    width: 400,
+    zIndex: 1050,
+
   },
   menuColumn: {
-    flex: 1,
     display: 'flex',
+    flex: 1,
     flexDirection: 'column',
+    overflow: 'auto',
     paddingLeft: 7,
     paddingRight: 7,
+  },
+  menuOverlay: {
+    backgroundColor: 'rgba(0, 0, 0, 0.35)',
+    bottom: 0,
+    left: 0,
+    position: 'fixed',
+    right: 0,
+    top: 0,
+  },
+  option: {
+    ':hover': {
+      color: 'blue',
+    },
+    backgroundColor: '#f6f6f6',
+    border: '1px solid #dedede',
+    color: 'black',
+    fontSize: 16,
+    marginBottom: 10,
+    padding: 10,
+    textAlign: 'left',
+    textDecoration: 'none',
+  },
+  placeholder: {
+    color: 'black',
+    fontSize: 16,
+    left: '50%',
+    position: 'absolute',
+    textAlign: 'center',
+    top: '50%',
+    transform: 'translate(-50%, -50%)',
+    width: '100%',
+  },
+  placeholderLink: {
+    ':hover': {
+      color: 'black',
+    },
+    color: 'blue',
+    fontSize: 16,
+    textDecoration: 'underline',
   },
   section: {
     fontSize: 24,
     fontWeight: 'bold',
     paddingBottom: 7,
   },
+  song: {
+    ':hover': {
+      color: 'blue',
+    },
+    color: 'black',
+    fontSize: 16,
+    marginBottom: 4,
+    textDecoration: 'none',
+  },
   songList: {
     flex: 1,
     position: 'relative',
   },
-  placeholder: {
-    textAlign: 'center',
-    position: 'absolute',
-    left: '50%',
-    top: '50%',
-    transform: 'translate(-50%, -50%)',
-    width: '100%',
-  },
-  option: {
-    backgroundColor: '#f6f6f6',
-    border: '1px solid #dedede',
-    padding: 10,
-    textDecoration: 'none',
-    marginBottom: 10,
-  },
-  innerSongList: {
-    marginLeft: 0,
-    listStyle: 'none',
-    paddingLeft: 0,
-    marginTop: 0,
-  },
 });
 
 export const HEADER_STYLE = StyleSheet.create({
-  modeItem: {
-    fontSize: 14,
-    paddingBottom: 5,
-    paddingTop: 5,
-    width: 14,
-  },
-  songs: {
-    marginLeft: 16,
-    marginRight: 16,
-  },
-  songsText: {
-    color: '#6e6e6e',
-    display: 'inline-block',
-    fontSize: 14,
-    padding: 9,
-  },
   headerGroupWrapper: {
-    marginTop: 'auto',
     marginBottom: 'auto',
+    marginTop: 'auto',
   },
   headerSpacer: {
     flex: 1,
   },
   logo: {
     height: 32,
-    width: 32,
     marginLeft: 16,
     padding: '9px 0',
     transform: 'scale(-1, 1)',
+    width: 32,
   },
-  help: {
-    color: '#aeaeae',
-    textDecoration: 'none',
+  modeItem: {
+    fontSize: 14,
+    paddingBottom: 5,
+    paddingTop: 5,
+    width: 14,
+  },
+  newSong: {
     ':hover': {
       color: 'black',
     },
-    display: 'inline-block',
-    marginLeft: 8,
-    fontSize: 16,
+    color: '#aeaeae',
+    fontSize: 14,
+    marginRight: 32,
+    textDecoration: 'none',
   },
   publish: {
     color: '#aeaeae',
+    cursor: 'unset',
+    fontSize: 14,
     marginRight: 16,
     textDecoration: 'none',
-    ':hover': {
-      color: 'black',
-    },
-    fontSize: 14,
   },
-  newSong: {
-    color: '#aeaeae',
-    marginRight: 32,
-    textDecoration: 'none',
+  publishActive: {
     ':hover': {
       color: 'black',
     },
+    cursor: 'pointer',
+  },
+  songs: {
+    marginLeft: 16,
+    marginRight: 16,
+  },
+  songsText: {
+    ':hover': {
+      backgroundColor: '#ccc',
+    },
+    color: '#6e6e6e',
+    display: 'inline-block',
     fontSize: 14,
+    padding: 9,
   },
   srOnly: {
-    position: 'absolute',
-    width: 1,
+    border: 0,
+    clip: 'rect(0,0,0,0)',
     height: 1,
-    padding: 0,
     margin: -1,
     overflow: 'hidden',
-    clip: 'rect(0,0,0,0)',
-    border: 0,
+    padding: 0,
+    position: 'absolute',
+    width: 1,
   },
 });
 
 export const GITHUB_STYLE = StyleSheet.create({
   btnGithub: {
+    ':active': {
+      backgroundColor: '#101010',
+    },
+    ':hover': {
+      backgroundColor: '#444444',
+    },
+    backgroundColor: '#2a2a2a',
+    backgroundImage: 'url(\'./github.svg\')',
     backgroundPosition: '1em',
     backgroundRepeat: 'no-repeat',
     backgroundSize: '2em',
-    borderRadius: '0.5em',
     border: 'none',
+    borderRadius: '0.5em',
     color: 'white',
     cursor: 'pointer',
     fontSize: '1em',
@@ -322,15 +375,7 @@ export const GITHUB_STYLE = StyleSheet.create({
     padding: '0 2em 0 4em',
     textDecoration: 'none',
     transition: 'all 0.5s',
-    backgroundColor: '#2a2a2a',
-    backgroundImage: 'url(\'./github.svg\')',
     width: 262,
-    ':hover': {
-      backgroundColor: '#444444',
-    },
-    ':active': {
-      backgroundColor: '#101010',
-    },
   },
 });
 
@@ -363,6 +408,22 @@ export const GITHUB_STYLE = StyleSheet.create({
  */
 export const BUTTON_STYLE = StyleSheet.create({
   buttonStyle: {
+    ':first-child': {
+      borderBottomLeftRadius: '3px',
+      borderLeft: '1px solid #ccc',
+      borderTopLeftRadius: '3px',
+    },
+    ':focus': {
+      zIndex: '2',
+    },
+    ':hover': {
+      backgroundColor: '#ccc',
+    },
+    ':last-child': {
+      borderBottomRightRadius: '3px',
+      borderRight: '1px solid #ccc',
+      borderTopRightRadius: '3px',
+    },
     backgroundColor: 'white',
     border: '1px solid #ccc',
     borderLeft: '0',
@@ -370,26 +431,6 @@ export const BUTTON_STYLE = StyleSheet.create({
     margin: '0',
     padding: '5px 10px',
     position: 'relative', // for hover
-
-    ':first-child': {
-      borderLeft: '1px solid #ccc',
-      borderTopLeftRadius: '3px',
-      borderBottomLeftRadius: '3px',
-    },
-
-    ':last-child': {
-      borderRight: '1px solid #ccc',
-      borderTopRightRadius: '3px',
-      borderBottomRightRadius: '3px',
-    },
-
-    ':hover': {
-      backgroundColor: '#ccc',
-    },
-
-    ':focus': {
-      zIndex: '2',
-    },
   },
 
   selectedStyle: {
@@ -399,10 +440,10 @@ export const BUTTON_STYLE = StyleSheet.create({
 
 export const LOGS_STYLE = StyleSheet.create({
   logsButton: {
+    borderLeft: '1px solid #ccc',
+    bottom: 10,
     position: 'absolute',
     right: 20,
-    bottom: 10,
-    borderLeft: '1px solid #ccc',
   },
 });
 
@@ -410,45 +451,45 @@ export const PUBLISH_STYLE = StyleSheet.create({
   // I'm having a hard time both expanding the input (flex works great here)
   // while vertically aligning things (inline-block works here), so I've resorted
   // to an unholy hack. A fix would be very appreciated.
-  row: {
-    display: 'table',
-    fontSize: 14,
-    width: '100%',
-  },
   cell: {
     display: 'table-cell',
-    width: '1px',
-    whiteSpace: 'nowrap',
     fontSize: 14,
+    whiteSpace: 'nowrap',
+    width: '1px',
+  },
+  error: {
+    bottom: 20,
+    color: 'darkviolet',
+    fontFamily: 'sans-serif',
+    fontSize: 14,
+    position: 'absolute',
   },
   expand: {
+    width: '100%',
+  },
+  footer: {
+    display: 'inline-block',
+    marginBottom: 10,
+    marginTop: 15,
     width: '100%',
   },
   mono: {
     fontFamily: 'monospace',
   },
   publishBtn: {
-    textDecoration: 'none',
+    ':disabled': {
+      backgroundColor: '#ccc',
+      cursor: 'not-allowed',
+    },
     color: 'black',
     float: 'right',
-    fontSize: 14,
     fontFamily: 'sans-serif',
-    ':disabled': {
-      cursor: 'not-allowed',
-      backgroundColor: '#ccc',
-    },
+    fontSize: 14,
+    textDecoration: 'none',
   },
-  footer: {
-    marginTop: 15,
-    marginBottom: 10,
-    display: 'inline-block',
+  row: {
+    display: 'table',
+    fontSize: 14,
     width: '100%',
-  },
-  error: {
-    fontSize: 14,
-    position: 'absolute',
-    bottom: 20,
-    fontFamily: 'sans-serif',
-    color: 'darkviolet',
   },
 });

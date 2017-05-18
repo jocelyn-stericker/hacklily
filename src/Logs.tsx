@@ -23,23 +23,28 @@ import React from 'react';
 
 import { BUTTON_STYLE, LOGS_STYLE } from './styles';
 
-interface LogsProps {
+interface Props {
   logs: string | null;
 }
 
-interface LogsState {
+interface State {
   hover: boolean;
 }
 
-export default class Logs extends React.Component<LogsProps, LogsState> {
-  state: LogsState = {
+/**
+ * Renders a logs button, that when hovered, expands to show the output from Lilypond.
+ *
+ * This is visible in the app whenever the preview is visible.
+ */
+export default class Logs extends React.Component<Props, State> {
+  state: State = {
     hover: false,
   };
 
   render(): JSX.Element | null {
     const { logs } = this.props;
     const { hover } = this.state;
-    if (!logs) {
+    if (logs === null) {
       return null;
     }
 

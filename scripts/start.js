@@ -118,10 +118,6 @@ function setupCompiler(host, port, protocol) {
         console.log(message);
         console.log();
       });
-      // Teach some ESLint tricks.
-      console.log('You may use special comments to disable some warnings.');
-      console.log('Use ' + chalk.yellow('// eslint-disable-next-line') + ' to ignore the next line.');
-      console.log('Use ' + chalk.yellow('/* eslint-disable */') + ' to ignore all warnings in a file.');
     }
   });
 }

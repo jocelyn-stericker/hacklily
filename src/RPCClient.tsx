@@ -18,7 +18,7 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
  */
 
-import { Auth } from './ConnectToGitHub';
+import { Auth } from './ModalLogin';
 
 // -------------------------------------------------------------------------
 // JSON-RPC 2.0 definitions
@@ -30,6 +30,19 @@ import { Auth } from './ConnectToGitHub';
  * http://www.jsonrpc.org/specification#request_object
  */
 export class BaseRPCRequest {
+
+  /**
+   * An identifier established by the Client that MUST contain a String, Number, or NULL value
+   * if included. If it is not included it is assumed to be a notification. The value SHOULD
+   * normally not be Null [1] and Numbers SHOULD NOT contain fractional parts [2]
+   *
+   * The Server MUST reply with the same value in the Response object if included. This member
+   * is used to correlate the context between the two objects.
+   *
+   * Note: will be set by RPC if undefined beforehand.
+   */
+  id?: string | number | null;
+
   /**
    * A String specifying the version of the JSON-RPC protocol. MUST be exactly "2.0".
    */
@@ -47,18 +60,6 @@ export class BaseRPCRequest {
    * method. This member MAY be omitted.
    */
   params: {} | undefined;
-
-  /**
-   * An identifier established by the Client that MUST contain a String, Number, or NULL value
-   * if included. If it is not included it is assumed to be a notification. The value SHOULD
-   * normally not be Null [1] and Numbers SHOULD NOT contain fractional parts [2]
-   *
-   * The Server MUST reply with the same value in the Response object if included. This member
-   * is used to correlate the context between the two objects.
-   *
-   * Note: will be set by RPC if undefined beforehand.
-   */
-  id?: string | number | null;
 }
 
 /**
@@ -75,18 +76,18 @@ export interface RPCError {
   code: number;
 
   /**
-   * A String providing a short description of the error.
-   * The message SHOULD be limited to a concise single sentence.
-   */
-  message: string;
-
-  /**
    * A Primitive or Structured value that contains additional information about the error.
    * This may be omitted.
    * The value of this member is defined by the Server (e.g. detailed error information,
    * nested errors etc.).
    */
   data?: {};
+
+  /**
+   * A String providing a short description of the error.
+   * The message SHOULD be limited to a concise single sentence.
+   */
+  message: string;
 }
 
 /**
@@ -96,18 +97,6 @@ export interface RPCError {
  * http://www.jsonrpc.org/specification#response_object
  */
 export interface BaseRPCResponse {
-  /**
-   * A String specifying the version of the JSON-RPC protocol. MUST be exactly "2.0".
-   */
-  jsonrpc: '2.0';
-
-  /**
-   * This member is REQUIRED on success.
-   * This member MUST NOT exist if there was an error invoking the method.
-   * The value of this member is determined by the method invoked on the Server.
-   */
-  result?: {} | string | number | null;
-
   /**
    * This member is REQUIRED on error.
    * This member MUST NOT exist if there was no error triggered during invocation.
@@ -122,6 +111,18 @@ export interface BaseRPCResponse {
    * (e.g. Parse error/Invalid Request), it MUST be Null.
    */
   id: string | number | null;
+
+  /**
+   * A String specifying the version of the JSON-RPC protocol. MUST be exactly "2.0".
+   */
+  jsonrpc: '2.0';
+
+  /**
+   * This member is REQUIRED on success.
+   * This member MUST NOT exist if there was an error invoking the method.
+   * The value of this member is determined by the method invoked on the Server.
+   */
+  result?: {} | string | number | null;
 }
 
 // -------------------------------------------------------------------------
@@ -129,22 +130,22 @@ export interface BaseRPCResponse {
 // -------------------------------------------------------------------------
 
 export interface RenderParams {
-  src: string;
   backend: 'svg' | 'pdf';
+  src: string;
 }
 
 export interface RenderResponse extends BaseRPCResponse {
-  result: {
-    logs: string;
-    err: string;
-    files: string[];
-  };
   error: {
     code: number;
-    message: string;
     data?: {
       logs?: string;
     }
+    message: string;
+  };
+  result: {
+    err: string;
+    files: string[];
+    logs: string;
   };
 }
 
@@ -178,8 +179,8 @@ interface RPCRequestParamsMap {
   [key: string]: {};
 
   render: RenderParams;
-  signOut: SignOutParams;
   signIn: SignInParams;
+  signOut: SignOutParams;
 }
 
 interface RPCResponseMap {
@@ -187,43 +188,29 @@ interface RPCResponseMap {
   [key: string]: BaseRPCResponse;
 
   render: RenderResponse;
-  signOut: BaseRPCResponse;
   signIn: SignInResponse;
+  signOut: BaseRPCResponse;
 }
 
 // -------------------------------------------------------------------------
 // RPCClient Implementation
 // -------------------------------------------------------------------------
 
+/**
+ * This is a wrapper around a WebSocket that calls the Hacklily backend.
+ * It implements a JSONRPC 2.0 session.
+ */
 export default class RPCClient {
-  private socket: WebSocket;
-  private resolvers: {[key: string]: (response: BaseRPCResponse) => void} = {};
   private rejectors: {[key: string]: (response: BaseRPCResponse) => void} = {};
+  private resolvers: {[key: string]: (response: BaseRPCResponse) => void} = {};
+  private socket: WebSocket;
 
   constructor(socket: WebSocket) {
     this.socket = socket;
     this.socket.addEventListener('message', this.handleWSMessage);
   }
 
-  destroy(): void {
-    for (const id of Object.keys(this.resolvers)) {
-      const response: BaseRPCResponse = {
-        jsonrpc: '2.0',
-        error: {
-          code: -32000,
-          message: 'Network error',
-        },
-        id,
-      };
-      this.rejectors[id](response);
-      delete this.resolvers[id];
-      delete this.rejectors[id];
-    }
-    delete this.resolvers;
-    delete this.rejectors;
-    delete this.socket;
-  }
-
+  // tslint:disable-next-line:promise-function-async -- promises resolved outside function
   call<T extends keyof RPCRequestParamsMap & keyof RPCResponseMap>
       (method: T, params: RPCRequestParamsMap[T]): Promise<RPCResponseMap[T]> {
     const id: string = this.genID();
@@ -235,17 +222,19 @@ export default class RPCClient {
     };
 
     if (this.socket.readyState !== WebSocket.OPEN) {
-      return Promise.reject({
-        jsonrpc: '2.0',
+      const rejection: BaseRPCResponse = {
         error: {
           code: -32000,
           message: 'Network error',
         },
+        jsonrpc: '2.0',
         id,
-      } as BaseRPCResponse);
+      };
+
+      return Promise.reject(rejection);
     }
 
-    // tslint:disable-next-line:promise-must-complete -- managed outside
+    // tslint:disable-next-line:promise-must-complete -- managed resolved outside function
     const promise: Promise<BaseRPCResponse> = new Promise<BaseRPCResponse>(
       (
         resolve: (response: BaseRPCResponse) => void,
@@ -257,19 +246,40 @@ export default class RPCClient {
     );
 
     this.socket.send(JSON.stringify(request));
+
     return promise;
+  }
+
+  destroy(): void {
+    for (const id of Object.keys(this.resolvers)) {
+      const response: BaseRPCResponse = {
+        error: {
+          code: -32000,
+          message: 'Network error',
+        },
+        jsonrpc: '2.0',
+        id,
+      };
+      this.rejectors[id](response);
+      delete this.resolvers[id];
+      delete this.rejectors[id];
+    }
+    delete this.resolvers;
+    delete this.rejectors;
+    delete this.socket;
   }
 
   private genID(): string {
     const randomContainer: Uint32Array = new Uint32Array(1);
     crypto.getRandomValues(randomContainer);
+
     return randomContainer[0].toString();
   }
 
   private handleWSMessage = (e: MessageEvent): void => {
     const data: BaseRPCResponse = JSON.parse(e.data.toString());
     if (!data.id) {
-      throw new Error('Got reply with no id: ' + e.data);
+      throw new Error(`Got reply with no id: ${e.data}`);
     }
     if (!(data.id in this.resolvers)) {
       // This is not one of our events.
