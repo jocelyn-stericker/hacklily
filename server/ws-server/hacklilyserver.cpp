@@ -144,6 +144,16 @@ void HacklilyServer::_handleTextMessageReceived(QString message) {
             qDebug() << requestObj["id"] << reply->property("requestID");
         }
         connect(reply, &QNetworkReply::finished, this, &HacklilyServer::_handleOAuthDelete);
+    } else if (requestObj["method"] == "ping") {
+        QJsonObject responseObj;
+        responseObj["jsonrpc"] = "2.0";
+        responseObj["id"] = requestObj["id"];
+        responseObj["result"] = "pong";
+        QJsonDocument response;
+        response.setObject(responseObj);
+        auto responseJSONText = response.toJson(QJsonDocument::Compact);
+        socket->sendTextMessage(responseJSONText);
+        qDebug() << "pong";
     }
 }
 

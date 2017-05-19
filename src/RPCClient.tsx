@@ -20,6 +20,8 @@
 
 import { Auth } from './ModalLogin';
 
+const PING_INTERVAL: number = 2500;
+
 // -------------------------------------------------------------------------
 // JSON-RPC 2.0 definitions
 // -------------------------------------------------------------------------
@@ -178,6 +180,7 @@ interface RPCRequestParamsMap {
   // To type check values
   [key: string]: {};
 
+  ping: {};
   render: RenderParams;
   signIn: SignInParams;
   signOut: SignOutParams;
@@ -187,6 +190,7 @@ interface RPCResponseMap {
   // To type check values
   [key: string]: BaseRPCResponse;
 
+  ping: BaseRPCResponse;
   render: RenderResponse;
   signIn: SignInResponse;
   signOut: BaseRPCResponse;
@@ -204,10 +208,12 @@ export default class RPCClient {
   private rejectors: {[key: string]: (response: BaseRPCResponse) => void} = {};
   private resolvers: {[key: string]: (response: BaseRPCResponse) => void} = {};
   private socket: WebSocket;
+  private pingInterval: NodeJS.Timer;
 
   constructor(socket: WebSocket) {
     this.socket = socket;
     this.socket.addEventListener('message', this.handleWSMessage);
+    this.pingInterval = setInterval(this.ping, PING_INTERVAL);
   }
 
   // tslint:disable-next-line:promise-function-async -- promises resolved outside function
@@ -251,6 +257,7 @@ export default class RPCClient {
   }
 
   destroy(): void {
+    clearInterval(this.pingInterval);
     for (const id of Object.keys(this.resolvers)) {
       const response: BaseRPCResponse = {
         error: {
@@ -295,5 +302,9 @@ export default class RPCClient {
       delete this.rejectors[data.id];
       delete this.resolvers[data.id];
     }
+  }
+
+  private ping = async(): Promise<void> => {
+    await this.call('ping', {});
   }
 }
