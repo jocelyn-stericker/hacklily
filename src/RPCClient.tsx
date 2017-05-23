@@ -205,15 +205,15 @@ interface RPCResponseMap {
  * It implements a JSONRPC 2.0 session.
  */
 export default class RPCClient {
+  private pingInterval: number;
   private rejectors: {[key: string]: (response: BaseRPCResponse) => void} = {};
   private resolvers: {[key: string]: (response: BaseRPCResponse) => void} = {};
   private socket: WebSocket;
-  private pingInterval: NodeJS.Timer;
 
   constructor(socket: WebSocket) {
     this.socket = socket;
     this.socket.addEventListener('message', this.handleWSMessage);
-    this.pingInterval = setInterval(this.ping, PING_INTERVAL);
+    this.pingInterval = window.setInterval(this.ping, PING_INTERVAL);
   }
 
   // tslint:disable-next-line:promise-function-async -- promises resolved outside function

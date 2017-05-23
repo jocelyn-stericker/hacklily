@@ -46,19 +46,25 @@ int main(int argc, char *argv[]) {
         QCoreApplication::translate("main", "Arbitrary tag the renderer docker image should be set to (e.g., hacklily-renderer)"), "tag");
 
     QCommandLineOption clientIDOption("github-client-id",
-        QCoreApplication::translate("main", "ID of GitHub application for this deployment of Hacklily"), "clid");
+        QCoreApplication::translate("main", "ID of GitHub application for this deployment of Hacklily, if running as a coordinator"), "clid");
 
     QCommandLineOption secretOption("github-secret",
-        QCoreApplication::translate("main", "Secret for the GitHub application for this deployment of Hacklily"), "secret");
+        QCoreApplication::translate("main", "Secret for the GitHub application for this deployment of Hacklily, if running as a coordinator"), "secret");
 
     QCommandLineOption adminTokenOption("github-admin-token",
-        QCoreApplication::translate("main", "PAT for an admin of github-org"), "admintoken");
+        QCoreApplication::translate("main", "PAT for an admin of github-org, if running as a coordinator"), "admintoken");
 
     QCommandLineOption orgOption("github-org",
-        QCoreApplication::translate("main", "Organization under which Hacklily songs live."), "org");
+        QCoreApplication::translate("main", "Organization under which Hacklily songs live, if running as a coordinator."), "org");
 
     QCommandLineOption portOption("ws-port",
-        QCoreApplication::translate("main", "Port under which to run the WebSocket server."), "port");
+        QCoreApplication::translate("main", "Port under which to run the WebSocket server, if running as a coordinator."), "port");
+
+    QCommandLineOption coordinatorOption("coordinator",
+        QCoreApplication::translate("main", "Address of the WebSocket to run requests for, if running as a worker."), "port");
+
+    QCommandLineOption jobsOption("jobs",
+        QCoreApplication::translate("main", "How many lilypond jobs to run at once (each job typically requires 1 CPU and 0.9 GB RAM)"), "jobs");
 
     parser.addOption(rendererPathOption);
     parser.addOption(tagOption);
@@ -67,6 +73,8 @@ int main(int argc, char *argv[]) {
     parser.addOption(adminTokenOption);
     parser.addOption(orgOption);
     parser.addOption(portOption);
+    parser.addOption(coordinatorOption);
+    parser.addOption(jobsOption);
     parser.process(app);
     if (!parser.isSet("renderer-path")) {
         qDebug() << "--renderer-path must be set. See --help.\n";
@@ -75,34 +83,27 @@ int main(int argc, char *argv[]) {
 
     QDir rendererPath(parser.value("renderer-path"));
     if (!rendererPath.exists()) {
-        qDebug() << "--renderer-path must point to an existing directory. See --help.\n";
+        qDebug() << "--renderer-path must point to an existing directory.\n";
         parser.showHelp(1);
     }
 
     if (!parser.isSet("renderer-docker-tag")) {
-        qDebug() << "--renderer-docker-tag must be set. See --help.\n";
+        qDebug() << "--renderer-docker-tag must be set.\n";
         parser.showHelp(1);
     }
 
     QString rendererDockerTag = parser.value("renderer-docker-tag");
 
-    if (!parser.isSet("ws-port")) {
-        qDebug() << "--ws-port must be set. See --help.\n";
-        parser.showHelp(1);
+    if (!parser.isSet("jobs")) {
+        qDebug() << "--jobs must be set. See --help.\n";
+        parser.showHelp();
     }
-
-    QString wsPortStr = parser.value("ws-port");
     bool ok;
-    int wsPort = wsPortStr.toInt(&ok);
+    int jobs = parser.value("jobs").toInt(&ok);
     if (!ok) {
-        qDebug() << "--ws-port must be an integer. See --help.\n";
-        parser.showHelp(1);
+        qDebug() << "--jobs must be an integer. See --help.\n";
+        parser.showHelp();
     }
-
-    QString ghClientID = parser.value("github-client-id");
-    QString ghSecret = parser.value("github-secret");
-    QString ghAdminToken = parser.value("github-admin-token");
-    QString ghOrg = parser.value("github-org");
 
     /*
      * Build the renderer docker image
@@ -119,7 +120,28 @@ int main(int argc, char *argv[]) {
         }
     }
 
-    HacklilyServer server(rendererDockerTag, wsPort, ghClientID.toLocal8Bit(), ghSecret.toLocal8Bit(), ghAdminToken.toLocal8Bit(), ghOrg);
+    if (parser.isSet("ws-port")) {
+        QString wsPortStr = parser.value("ws-port");
+        bool ok;
+        int wsPort = wsPortStr.toInt(&ok);
+        if (!ok) {
+            qDebug() << "--ws-port must be an integer. See --help.\n";
+            parser.showHelp(1);
+        }
 
-    return app.exec();
+        QString ghClientID = parser.value("github-client-id");
+        QString ghSecret = parser.value("github-secret");
+        QString ghAdminToken = parser.value("github-admin-token");
+        QString ghOrg = parser.value("github-org");
+        HacklilyServer server(rendererDockerTag, wsPort, ghClientID.toLocal8Bit(), ghSecret.toLocal8Bit(), ghAdminToken.toLocal8Bit(), ghOrg, jobs);
+        return app.exec();
+    } else if (parser.isSet("coordinator")) {
+        QString coordinator = parser.value("coordinator");
+        HacklilyServer server(rendererDockerTag, coordinator, jobs);
+        return app.exec();
+    } else {
+        qDebug() << "--ws-port or --coordinator must be set.\n";
+        parser.showHelp(1);
+    }
+
 }

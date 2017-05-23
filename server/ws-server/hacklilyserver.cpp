@@ -32,6 +32,7 @@ HacklilyServer::HacklilyServer(QString rendererDockerTag,
                                QByteArray ghSecret,
                                QByteArray ghAdminToken,
                                QString ghOrg,
+                               int jobs,
                                QObject *parent) :
     QObject(parent),
     _rendererDockerTag(rendererDockerTag),
@@ -40,19 +41,44 @@ HacklilyServer::HacklilyServer(QString rendererDockerTag,
     _ghSecret(ghSecret),
     _ghAdminToken(ghAdminToken),
     _ghOrg(ghOrg),
-    _server(new QWebSocketServer("hacklily-server", QWebSocketServer::NonSecureMode, this)),
     _lastSocketID(-1),
-    _processingRequest(false),
-    _nam(new QNetworkAccessManager(this))
+    _nam(new QNetworkAccessManager(this)),
+    _maxJobs(jobs),
+    _server(new QWebSocketServer("hacklily-server", QWebSocketServer::NonSecureMode, this)),
+    _coordinator(NULL)
 {
-    _renderer = NULL;
-    _initRenderer();
+    _initRenderers();
 
     if (!_server->listen(QHostAddress::Any, wsPort)) {
         qDebug() << "Failed to bind to port " << wsPort << ". Cannot continue";
         qFatal("Cannot continue");
     }
     connect(_server, &QWebSocketServer::newConnection, this, &HacklilyServer::_handleNewConnection);
+}
+
+HacklilyServer::HacklilyServer(QString rendererDockerTag,
+                               QString coordinator,
+                               int jobs,
+                               QObject *parent) :
+    QObject(parent),
+    _rendererDockerTag(rendererDockerTag),
+    _coordinatorURL(coordinator),
+    _lastSocketID(-1),
+    _nam(new QNetworkAccessManager(this)),
+    _maxJobs(jobs),
+    _server(NULL),
+    _coordinator(new QWebSocket)
+{
+    _initRenderers();
+
+    int socketID = ++_lastSocketID;
+    _sockets.insert(socketID, _coordinator);
+
+    _coordinator->open(QUrl(coordinator));
+    connect(_coordinator, &QWebSocket::textMessageReceived, this, &HacklilyServer::_handleTextMessageReceived);
+    connect(_coordinator, &QWebSocket::binaryMessageReceived, this, &HacklilyServer::_handleBinaryMessageReceived);
+    connect(_coordinator, &QWebSocket::disconnected, this, &HacklilyServer::_handleSocketDisconnected);
+    connect(_coordinator, &QWebSocket::connected, this, &HacklilyServer::_handleCoordinatorConnected);
 }
 
 HacklilyServer::~HacklilyServer() {
@@ -77,6 +103,7 @@ void HacklilyServer::_handleTextMessageReceived(QString message) {
     QJsonParseError parseError;
     auto request = QJsonDocument::fromJson(message.toUtf8(), &parseError);
     if (parseError.error != QJsonParseError::NoError) {
+        qDebug() << "[req] Invalid message.";
         QJsonObject errorObj;
         errorObj["code"] = ERROR_JSON_PARSE;
         errorObj["message"] = "Parse Error: " + parseError.errorString();
@@ -90,7 +117,29 @@ void HacklilyServer::_handleTextMessageReceived(QString message) {
         socket->sendTextMessage(responseJSON);
     }
     auto requestObj = request.object();
-    if (requestObj["method"] == "render") {
+
+    QString id = requestObj["id"].toString();
+    QString method = requestObj["method"].toString();
+    if (method != "ping") {
+        qDebug() << "[req] id=" << id << " method=" << method;
+    }
+
+    if (_busyWorkers.contains(id)) {
+        HacklilyServerRequest req = _remoteProcessingRequests.take(id);
+        QWebSocket *worker = _busyWorkers.take(id);
+        _freeWorkers.push_back(worker);
+        req.sender->sendTextMessage(message);
+        qDebug() << "Relayed message from worker.";
+    } else  if (requestObj["method"] == "ping") {
+        QJsonObject responseObj;
+        responseObj["jsonrpc"] = "2.0";
+        responseObj["id"] = requestObj["id"];
+        responseObj["result"] = "pong";
+        QJsonDocument response;
+        response.setObject(responseObj);
+        auto responseJSONText = response.toJson(QJsonDocument::Compact);
+        socket->sendTextMessage(responseJSONText);
+    } else if (requestObj["method"] == "render") {
         HacklilyServerRequest req = {
             requestObj["params"].toObject()["src"].toString(),
             requestObj["params"].toObject()["backend"].toString(),
@@ -144,16 +193,16 @@ void HacklilyServer::_handleTextMessageReceived(QString message) {
             qDebug() << requestObj["id"] << reply->property("requestID");
         }
         connect(reply, &QNetworkReply::finished, this, &HacklilyServer::_handleOAuthDelete);
-    } else if (requestObj["method"] == "ping") {
-        QJsonObject responseObj;
-        responseObj["jsonrpc"] = "2.0";
-        responseObj["id"] = requestObj["id"];
-        responseObj["result"] = "pong";
-        QJsonDocument response;
-        response.setObject(responseObj);
-        auto responseJSONText = response.toJson(QJsonDocument::Compact);
-        socket->sendTextMessage(responseJSONText);
-        qDebug() << "pong";
+    } else if (requestObj["method"] == "i_haz_computes") {
+        int jobs = requestObj["params"].toObject()["max_jobs"].toInt();
+        if (jobs <= 1) {
+            qDebug() << "you haz no computes...";
+            return;
+        }
+        for (int i = 0; i < jobs; ++i) {
+            _freeWorkers.push_back(socket);
+        }
+        _processIfPossible();
     }
 }
 
@@ -175,37 +224,77 @@ void HacklilyServer::_handleSocketDisconnected() {
     socket->deleteLater();
 }
 
-void HacklilyServer::_initRenderer() {
-    if (_renderer) {
-        _renderer->deleteLater();
+void HacklilyServer::_initRenderers() {
+    for (int i = 0; i < _renderers.size(); ++i) {
+        _localProcessingRequests.remove(i);
     }
-    _renderer = new QProcess(this);
+    while (_renderers.size()) {
+        QProcess* renderer = _renderers.takeFirst();
+        renderer->deleteLater();
+    }
+    for (int i = 0; i < _maxJobs; ++i) {
+        QProcess* renderer = new QProcess(this);
+        _renderers.push_back(renderer);
+        connect(renderer, &QProcess::readyReadStandardOutput, this, &HacklilyServer::_handleRendererOutput);
+        connect(renderer, &QProcess::started, this, &HacklilyServer::_processIfPossible);
 
-    connect(_renderer, &QProcess::readyReadStandardOutput, this, &HacklilyServer::_handleRendererOutput);
-    connect(_renderer, &QProcess::started, this, &HacklilyServer::_processIfPossible);
+        renderer->setProcessChannelMode(QProcess::ForwardedErrorChannel);
+        renderer->start("docker",
+            QStringList() << "run" << "--rm" << "-i" <<  "--net=none" << "-m1g" << "--cpus=1" << _rendererDockerTag);
+    }
 
-    _renderer->setProcessChannelMode(QProcess::ForwardedErrorChannel);
-    _renderer->start("docker",
-        QStringList() << "run" << "--rm" << "-i" <<  "--net=none" << "-m1g" << "--cpus=1" << _rendererDockerTag);
 }
 
 void HacklilyServer::_processIfPossible() {
-    if (_renderer->state() != QProcess::Running || _processingRequest || _requests.length() < 1) {
+    if (_requests.length() < 1) {
+        // Nothing to render.
         return;
     }
-    _processingRequest = true;
-    QJsonObject requestObj;
-    if (_requests[0].backend == "svg") {
-        requestObj["src"] = "#(ly:set-option 'backend '" + _requests[0].backend+ ")\n" + _requests[0].src;
-    } else {
-        requestObj["src"] = "\n" + _requests[0].src;
+
+    // Prefer processing with a renderer.
+    for (int i = 0; i < _renderers.size(); ++i) {
+        if (_renderers[i]->state() != QProcess::Running || _localProcessingRequests.contains(i)) {
+            continue;
+        }
+        qDebug() << "Processing on local renderer " << i;
+        HacklilyServerRequest request = _requests.takeFirst();
+        _localProcessingRequests[i] = request;
+
+        QJsonObject requestObj;
+        if (request.backend == "svg") {
+            requestObj["src"] = "#(ly:set-option 'backend '" + request.backend + ")\n" + request.src;
+        } else {
+            requestObj["src"] = "\n" + request.src;
+        }
+        requestObj["backend"] = request.backend;
+        QJsonDocument requestDoc;
+        requestDoc.setObject(requestObj);
+        auto json = requestDoc.toJson(QJsonDocument::Compact);
+        json += "\n";
+        _renderers[i]->write(json.data());
+        return;
     }
-    requestObj["backend"] = _requests[0].backend;
-    QJsonDocument request;
-    request.setObject(requestObj);
-    auto json = request.toJson(QJsonDocument::Compact);
-    json += "\n";
-    _renderer->write(json.data());
+
+    // Otherwise, use a worker.
+    if (_freeWorkers.size()) {
+        HacklilyServerRequest request = _requests.takeFirst();
+        QWebSocket *worker = _freeWorkers.takeFirst();
+        qDebug() << "Processing on remote worker " << worker->localAddress();
+        _busyWorkers[request.requestID] = worker;
+        _remoteProcessingRequests[request.requestID] = request;
+        QJsonObject paramsObj;
+        paramsObj["backend"] = request.backend;
+        paramsObj["src"] = request.src;
+        QJsonObject requestObj;
+        requestObj["jsonrpc"] = "2.0";
+        requestObj["id"] = request.requestID;
+        requestObj["params"] = paramsObj;
+        requestObj["method"] = "render";
+        QJsonDocument requestDoc;
+        requestDoc.setObject(requestObj);
+        auto json = requestDoc.toJson(QJsonDocument::Compact);
+        worker->sendTextMessage(json);
+    }
 }
 
 void HacklilyServer::_handleOAuthReply() {
@@ -560,23 +649,30 @@ void HacklilyServer::_handleOAuthDelete() {
 }
 
 void HacklilyServer::_handleRendererOutput() {
-    if (!_processingRequest) {
+    QProcess* renderer = qobject_cast<QProcess*>(sender());
+    int rendererID = _renderers.indexOf(renderer);
+    if (rendererID == -1) {
+        qDebug() << "Renderer died. Not continuing.";
+        return;
+    }
+
+    if (!_localProcessingRequests.contains(rendererID)) {
         qDebug() << "Got renderer output when not processing request.";
         // TODO: reset?
         return;
     }
-    if (!_renderer->bytesAvailable()) {
+    if (!renderer->bytesAvailable()) {
         qDebug() << "Got notification that bytes are available, but none are.";
         return;
     }
-    if (!_renderer->canReadLine()) {
+    if (!renderer->canReadLine()) {
         // Lets wait until I can read a whole line.
         return;
     }
-    auto response = _renderer->readLine();
-    auto sender = _requests[0].sender;
-    auto requestID = _requests[0].requestID;
-    _requests.pop_front();
+    auto response = renderer->readLine();
+    HacklilyServerRequest req = _localProcessingRequests[rendererID];
+    auto sender = req.sender;
+    auto requestID = req.requestID;
 
     QJsonParseError parseError;
     auto responseJSON = QJsonDocument::fromJson(response, &parseError);
@@ -607,6 +703,22 @@ void HacklilyServer::_handleRendererOutput() {
     } else {
         qDebug() << "Sender died mid-flight. Ignoring";
     }
-    _processingRequest = false;
+    _localProcessingRequests.remove(rendererID);
     _processIfPossible();
+}
+
+void HacklilyServer::_handleCoordinatorConnected() {
+    QJsonObject paramsObj;
+    paramsObj["max_jobs"] = _maxJobs;
+
+    QJsonObject requestObj;
+    requestObj["jsonrpc"] = "2.0";
+    requestObj["id"] = QJsonValue(QJsonValue::Null);
+    requestObj["method"] = "i_haz_computes";
+    requestObj["params"] = paramsObj;
+
+    QJsonDocument request;
+    request.setObject(requestObj);
+    auto requestJSONText = request.toJson(QJsonDocument::Compact);
+    _coordinator->sendTextMessage(requestJSONText);
 }

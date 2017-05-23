@@ -49,7 +49,7 @@ function render(): void {
  * Gets query props from the URL.
  */
 function getQueryProps(): QueryProps {
-  const queryObj: {[key: string]: string} = parseQuery(window.location.search);
+  const queryObj: { [key: string]: string } = parseQuery(window.location.search);
   const queryProps: QueryProps = {};
   Object.keys(queryObj).forEach((key: string) => {
     const queryPropIdx: number = (QUERY_PROP_KEYS as string[]).indexOf(key);
@@ -75,7 +75,7 @@ function getQueryProps(): QueryProps {
 function setQuery<K extends keyof QueryProps>(
   queryUpdates: Pick<QueryProps, K>,
   replaceState: boolean = false,
-) : void {
+): void {
 
   const query: QueryProps = getQueryProps();
   Object.keys(queryUpdates).forEach((key: keyof QueryProps): void => {
@@ -83,7 +83,7 @@ function setQuery<K extends keyof QueryProps>(
   });
 
   const base: string = location.href.split('?')[0];
-  const queryString: string = toQueryString(query as {[key: string]: string});
+  const queryString: string = toQueryString(query as { [key: string]: string });
 
   const newUrl: string = queryString.length ? `${base}?${queryString}` : base;
 
@@ -95,8 +95,8 @@ function setQuery<K extends keyof QueryProps>(
   render();
 }
 
-function getDirtySongs(): {[key: string]: Song} {
-  const songs: {[key: string]: Song} = {};
+function getDirtySongs(): { [key: string]: Song } {
+  const songs: { [key: string]: Song } = {};
   for (let i: number = 0; i < localStorage.length; i = i + 1) {
     const key: string | null = localStorage.key(i);
     if (!key) {

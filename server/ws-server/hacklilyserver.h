@@ -54,7 +54,22 @@ struct UserInfo {
 class HacklilyServer : public QObject {
     Q_OBJECT
 public:
-    explicit HacklilyServer(QString rendererDockerTag, int wsPort, QByteArray ghClientID, QByteArray ghSecret, QByteArray ghAdminToken, QString ghOrg, QObject *parent = 0);
+    explicit HacklilyServer(
+        QString rendererDockerTag,
+        int wsPort,
+        QByteArray ghClientID,
+        QByteArray ghSecret,
+        QByteArray ghAdminToken,
+        QString ghOrg,
+        int jobs,
+        QObject *parent = 0
+    );
+    explicit HacklilyServer(
+        QString rendererDockerTag,
+        QString coordinator,
+        int jobs,
+        QObject *parent = 0
+    );
     virtual ~HacklilyServer();
 
 signals:
@@ -64,7 +79,7 @@ private slots:
     void _handleTextMessageReceived(QString message);
     void _handleBinaryMessageReceived(QByteArray ba);
     void _handleSocketDisconnected();
-    void _initRenderer();
+    void _initRenderers();
     void _processIfPossible();
     void _handleRendererOutput();
     void _handleRepoCollaboratorsSet();
@@ -78,24 +93,42 @@ private slots:
     // Logout flow
     void _handleOAuthDelete();
 
+    // Worker
+    void _handleCoordinatorConnected();
+
 private:
     // environment
     QString _rendererDockerTag;
+
+    // environment (coordinator)
     int _wsPort;
     QByteArray _ghClientID;
     QByteArray _ghSecret;
     QByteArray _ghAdminToken;
     QString _ghOrg;
+    QList<QWebSocket*> _freeWorkers;
+    QMap<QString, QWebSocket*> _busyWorkers;
 
-    //state
-    QProcess* _renderer;
-    QWebSocketServer* _server;
+    // environment (worker)
+    QString _coordinatorURL;
+
+    // state (all)
+    QList<QProcess*> _renderers;
     QMap<int, QWebSocket *> _sockets; /// by socket id
     QMap<QString, UserInfo> _userInfo; /// by request id
     int _lastSocketID;
     QList<HacklilyServerRequest> _requests;
-    bool _processingRequest;
+    QMap<int, HacklilyServerRequest> _localProcessingRequests;
+    QMap<QString, HacklilyServerRequest> _remoteProcessingRequests;
     QNetworkAccessManager *_nam;
+    int _maxJobs;
+
+    // state (coordinator)
+    QWebSocketServer* _server;
+
+    // state (worker)
+    QWebSocket *_coordinator;
+
 };
 
 #endif // HACKLILYSERVER_H
