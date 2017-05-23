@@ -130,6 +130,7 @@ void HacklilyServer::_handleTextMessageReceived(QString message) {
         _freeWorkers.push_back(worker);
         req.sender->sendTextMessage(message);
         qDebug() << "Relayed message from worker.";
+        _processIfPossible();
     } else  if (requestObj["method"] == "ping") {
         QJsonObject responseObj;
         responseObj["jsonrpc"] = "2.0";
