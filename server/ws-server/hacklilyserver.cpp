@@ -478,7 +478,7 @@ void HacklilyServer::_handleUserReply() {
     request.setRawHeader("Accept", QByteArray("application/json"));
     request.setRawHeader("Authorization", "token " + _ghAdminToken);
     QJsonObject requestDataObj;
-    requestDataObj["name"] = "hacklily-" + userInfo.username;
+    requestDataObj["name"] = "user-" + userInfo.username;
     requestDataObj["homepage"] = "https://" + _ghOrg + ".github.io/u/" + userInfo.username;
     requestDataObj["has_issues"] = false;
     requestDataObj["has_projects"] = false;
@@ -542,7 +542,7 @@ void HacklilyServer::_handleRepoCreation() {
 
     QNetworkRequest request;
     UserInfo userInfo = _userInfo[requestID];
-    request.setUrl(QUrl("https://api.github.com/repos/" + _ghOrg + "/hacklily-" + userInfo.username + "/collaborators/" + userInfo.username));
+    request.setUrl(QUrl("https://api.github.com/repos/" + _ghOrg + "/user-" + userInfo.username + "/collaborators/" + userInfo.username));
     request.setRawHeader("Accept", QByteArray("application/json"));
     request.setRawHeader("Authorization", "token " + _ghAdminToken);
     QNetworkReply* userReply = _nam->put(request, "");
@@ -590,7 +590,7 @@ void HacklilyServer::_sendUserInfo(QString requestID, int socketID) {
     userInfoJSON["email"] = userInfo.email;
     userInfoJSON["username"] = userInfo.username;
     userInfoJSON["name"] = userInfo.name;
-    userInfoJSON["repo"] = _ghOrg + "/hacklily-" + userInfo.username;
+    userInfoJSON["repo"] = _ghOrg + "/user-" + userInfo.username;
 
     QJsonObject responseObj;
     responseObj["jsonrpc"] = "2.0";

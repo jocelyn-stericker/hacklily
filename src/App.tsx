@@ -51,9 +51,9 @@ const BACKEND_WS_URL: string | undefined = process.env.REACT_APP_BACKEND_WS_URL;
 /**
  * Properties derived from URL.
  *
- * e.g., https://hacklily.github.io/?edit=hacklily/hacklily-jnetterf/test.ly =>
+ * e.g., https://hacklily.github.io/?edit=hacklily/user-jnetterf/test.ly =>
  *   {
- *     edit: 'hacklily/hacklily-jnetterf/test.ly',
+ *     edit: 'hacklily/user-jnetterf/test.ly',
  *   }
  *
  * NOTE: When you add a key here, also add it to QUERY_PROP_KEYS below.
