@@ -203,6 +203,7 @@ void HacklilyServer::_handleTextMessageReceived(QString message) {
         for (int i = 0; i < jobs; ++i) {
             _freeWorkers.push_back(socket);
         }
+        connect(socket, &QWebSocket::disconnected, this, &HacklilyServer::_removeWorker);
         _processIfPossible();
     }
 }
@@ -278,8 +279,13 @@ void HacklilyServer::_processIfPossible() {
 
     // Otherwise, use a worker.
     if (_freeWorkers.size()) {
-        HacklilyServerRequest request = _requests.takeFirst();
         QWebSocket *worker = _freeWorkers.takeFirst();
+        if (!worker->isValid()) {
+            qDebug() << "Caught invalid worker!";
+            _processIfPossible();
+            return;
+        }
+        HacklilyServerRequest request = _requests.takeFirst();
         qDebug() << "Processing on remote worker " << worker->localAddress();
         _busyWorkers[request.requestID] = worker;
         _remoteProcessingRequests[request.requestID] = request;
@@ -706,6 +712,38 @@ void HacklilyServer::_handleRendererOutput() {
     }
     _localProcessingRequests.remove(rendererID);
     _processIfPossible();
+}
+
+void HacklilyServer::_removeWorker() {
+    QWebSocket *socket = qobject_cast<QWebSocket*>(sender());
+    _freeWorkers.removeAll(socket);
+    auto it = _busyWorkers.begin();
+    while (it != _busyWorkers.end()) {
+        if (it.value() == socket) {
+            QString requestID = it.key();
+            it = _busyWorkers.erase(it);
+            if (_remoteProcessingRequests.contains(requestID)) {
+                HacklilyServerRequest req = _remoteProcessingRequests.take(requestID);
+                if (!req.sender) {
+                    qDebug() << "request not defined";
+                    continue;
+                }
+                QJsonObject errorObj;
+                errorObj["code"] = ERROR_INTERNAL;
+                errorObj["message"] = "Worker died.";
+                QJsonObject responseObj;
+                responseObj["jsonrpc"] = "2.0";
+                responseObj["id"] = requestID;
+                responseObj["error"] = "Worker died";
+                QJsonDocument response;
+                response.setObject(responseObj);
+                auto responseJSON = response.toJson(QJsonDocument::Compact);
+                req.sender->sendTextMessage(responseJSON);
+            }
+        } else {
+            ++it;
+        }
+    }
 }
 
 void HacklilyServer::_handleCoordinatorConnected() {

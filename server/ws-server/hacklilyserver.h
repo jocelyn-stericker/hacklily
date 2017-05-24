@@ -93,6 +93,8 @@ private slots:
     // Logout flow
     void _handleOAuthDelete();
 
+    void _removeWorker();
+
     // Worker
     void _handleCoordinatorConnected();
 
