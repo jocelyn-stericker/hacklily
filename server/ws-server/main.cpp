@@ -105,11 +105,11 @@ int main(int argc, char *argv[]) {
         parser.showHelp();
     }
 
-    /*
-     * Build the renderer docker image
-     */
-    qDebug() << "Building renderer from " << rendererPath.absolutePath();
-    {
+    if (jobs > 0) {
+        /*
+         * Build the renderer docker image
+         */
+        qDebug() << "Building renderer from " << rendererPath.absolutePath();
         QProcess compileRenderer;
 
         compileRenderer.start("docker",

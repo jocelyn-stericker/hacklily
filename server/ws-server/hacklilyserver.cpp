@@ -277,7 +277,7 @@ void HacklilyServer::_processIfPossible() {
         requestDoc.setObject(requestObj);
         auto json = requestDoc.toJson(QJsonDocument::Compact);
         worker->sendTextMessage(json);
-        return
+        return;
     }
 
     // Otherwise, do it ourselves.
