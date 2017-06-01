@@ -45,7 +45,8 @@ HacklilyServer::HacklilyServer(QString rendererDockerTag,
     _nam(new QNetworkAccessManager(this)),
     _maxJobs(jobs),
     _server(new QWebSocketServer("hacklily-server", QWebSocketServer::NonSecureMode, this)),
-    _coordinator(NULL)
+    _coordinator(NULL),
+    _coordinatorPingTimer(NULL)
 {
     _initRenderers();
 
@@ -67,18 +68,12 @@ HacklilyServer::HacklilyServer(QString rendererDockerTag,
     _nam(new QNetworkAccessManager(this)),
     _maxJobs(jobs),
     _server(NULL),
-    _coordinator(new QWebSocket)
+    _coordinator(NULL),
+    _coordinatorPingTimer(NULL)
 {
     _initRenderers();
 
-    int socketID = ++_lastSocketID;
-    _sockets.insert(socketID, _coordinator);
-
-    _coordinator->open(QUrl(coordinator));
-    connect(_coordinator, &QWebSocket::textMessageReceived, this, &HacklilyServer::_handleTextMessageReceived);
-    connect(_coordinator, &QWebSocket::binaryMessageReceived, this, &HacklilyServer::_handleBinaryMessageReceived);
-    connect(_coordinator, &QWebSocket::disconnected, this, &HacklilyServer::_handleSocketDisconnected);
-    connect(_coordinator, &QWebSocket::connected, this, &HacklilyServer::_handleCoordinatorConnected);
+    _openCoordinator();
 }
 
 HacklilyServer::~HacklilyServer() {
@@ -101,7 +96,8 @@ void HacklilyServer::_handleNewConnection() {
 void HacklilyServer::_handleTextMessageReceived(QString message) {
     QWebSocket* socket = qobject_cast<QWebSocket *>(sender());
     QJsonParseError parseError;
-    auto request = QJsonDocument::fromJson(message.toUtf8(), &parseError);
+    QByteArray utfMsg = message.toUtf8();
+    auto request = QJsonDocument::fromJson(utfMsg, &parseError);
     if (parseError.error != QJsonParseError::NoError) {
         qDebug() << "[req] Invalid message.";
         QJsonObject errorObj;
@@ -748,7 +744,59 @@ void HacklilyServer::_removeWorker() {
     }
 }
 
+void HacklilyServer::_openCoordinator() {
+    qDebug() << "Connecting to coordinator...";
+
+    _coordinator = new QWebSocket(QString(), QWebSocketProtocol::VersionLatest, this);
+    _coordinator->open(QUrl(_coordinatorURL));
+    connect(_coordinator, &QWebSocket::textMessageReceived, this, &HacklilyServer::_handleTextMessageReceived);
+    connect(_coordinator, &QWebSocket::binaryMessageReceived, this, &HacklilyServer::_handleBinaryMessageReceived);
+    connect(_coordinator, &QWebSocket::disconnected, this, &HacklilyServer::_handleCoordinatorDisconnected);
+    connect(_coordinator, static_cast<void(QWebSocket::*)(QAbstractSocket::SocketError)>(&QWebSocket::error), this, &HacklilyServer::_handleCoordinatorError);
+    connect(_coordinator, &QWebSocket::connected, this, &HacklilyServer::_handleCoordinatorConnected);
+}
+
+void HacklilyServer::_handleCoordinatorDisconnected() {
+    if (!_coordinator) {
+        qWarning() << "No coordinator in _handleCoordinatorDisconnectedError";
+        return;
+    }
+    qDebug() << "Coordinator DISCONNECTED...";
+
+    QWebSocket* coordinator = _coordinator;
+    _coordinator = NULL;
+    coordinator->close();
+    coordinator->deleteLater();
+    for (auto it = _sockets.begin(); it != _sockets.end(); ++it) {
+        if (it.value() == coordinator) {
+            _sockets.erase(it);
+            break;
+        }
+    }
+
+    if (_coordinatorPingTimer) {
+        _coordinatorPingTimer->deleteLater();
+        _coordinatorPingTimer = NULL;
+    }
+    QTimer::singleShot(1000, this, &HacklilyServer::_openCoordinator);
+}
+
+void HacklilyServer::_handleCoordinatorError(QAbstractSocket::SocketError err) {
+    qWarning() << "Coordinator WebSocket error" << err;
+    if (!_coordinator) {
+        qWarning() << "No coordinator in _handleCoordinatorError";
+        return;
+    }
+
+    _handleCoordinatorDisconnected();
+}
+
 void HacklilyServer::_handleCoordinatorConnected() {
+    qDebug() << "Connected!";
+
+    int socketID = ++_lastSocketID;
+    _sockets.insert(socketID, _coordinator);
+
     QJsonObject paramsObj;
     paramsObj["max_jobs"] = _maxJobs;
 
@@ -762,4 +810,14 @@ void HacklilyServer::_handleCoordinatorConnected() {
     request.setObject(requestObj);
     auto requestJSONText = request.toJson(QJsonDocument::Compact);
     _coordinator->sendTextMessage(requestJSONText);
+    _coordinatorPingTimer = new QTimer();
+    _coordinatorPingTimer->setInterval(1000);
+    connect(_coordinatorPingTimer, &QTimer::timeout, this, &HacklilyServer::_doCoordinatorPing);
+    _coordinatorPingTimer->start();
+}
+
+void HacklilyServer::_doCoordinatorPing() {
+    if (_coordinator && _coordinator->state() == QAbstractSocket::ConnectedState) {
+        _coordinator->ping();
+    }
 }

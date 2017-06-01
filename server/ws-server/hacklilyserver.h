@@ -26,6 +26,7 @@
 #include <QNetworkAccessManager>
 #include <QList>
 #include <QProcess>
+#include <QTimer>
 
 struct HacklilyServerRequest {
     /**
@@ -96,7 +97,11 @@ private slots:
     void _removeWorker();
 
     // Worker
+    void _openCoordinator();
     void _handleCoordinatorConnected();
+    void _handleCoordinatorError(QAbstractSocket::SocketError err);
+    void _handleCoordinatorDisconnected();
+    void _doCoordinatorPing();
 
 private:
     // environment
@@ -130,6 +135,7 @@ private:
 
     // state (worker)
     QWebSocket *_coordinator;
+    QTimer *_coordinatorPingTimer;
 
 };
 

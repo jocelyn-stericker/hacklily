@@ -116,6 +116,7 @@ int main(int argc, char *argv[]) {
             QStringList() << "build" << rendererPath.absolutePath() << "-t" << rendererDockerTag);
         compileRenderer.waitForFinished(-1);
         if (compileRenderer.exitStatus() != QProcess::NormalExit || compileRenderer.exitCode() != 0) {
+            qWarning() << compileRenderer.errorString();
             qFatal("Failed to build hacklily-renderer docker image.");
         }
     }
