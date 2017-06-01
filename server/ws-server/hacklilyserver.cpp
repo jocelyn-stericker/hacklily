@@ -253,31 +253,7 @@ void HacklilyServer::_processIfPossible() {
         return;
     }
 
-    // Prefer processing with a renderer.
-    for (int i = 0; i < _renderers.size(); ++i) {
-        if (_renderers[i]->state() != QProcess::Running || _localProcessingRequests.contains(i)) {
-            continue;
-        }
-        qDebug() << "Processing on local renderer " << i;
-        HacklilyServerRequest request = _requests.takeFirst();
-        _localProcessingRequests[i] = request;
-
-        QJsonObject requestObj;
-        if (request.backend == "svg") {
-            requestObj["src"] = "#(ly:set-option 'backend '" + request.backend + ")\n" + request.src;
-        } else {
-            requestObj["src"] = "\n" + request.src;
-        }
-        requestObj["backend"] = request.backend;
-        QJsonDocument requestDoc;
-        requestDoc.setObject(requestObj);
-        auto json = requestDoc.toJson(QJsonDocument::Compact);
-        json += "\n";
-        _renderers[i]->write(json.data());
-        return;
-    }
-
-    // Otherwise, use a worker.
+    // Prefer using a worker.
     if (_freeWorkers.size()) {
         QWebSocket *worker = _freeWorkers.takeFirst();
         if (!worker->isValid()) {
@@ -301,7 +277,33 @@ void HacklilyServer::_processIfPossible() {
         requestDoc.setObject(requestObj);
         auto json = requestDoc.toJson(QJsonDocument::Compact);
         worker->sendTextMessage(json);
+        return
     }
+
+    // Otherwise, do it ourselves.
+    for (int i = 0; i < _renderers.size(); ++i) {
+        if (_renderers[i]->state() != QProcess::Running || _localProcessingRequests.contains(i)) {
+            continue;
+        }
+        qDebug() << "Processing on local renderer " << i;
+        HacklilyServerRequest request = _requests.takeFirst();
+        _localProcessingRequests[i] = request;
+
+        QJsonObject requestObj;
+        if (request.backend == "svg") {
+            requestObj["src"] = "#(ly:set-option 'backend '" + request.backend + ")\n" + request.src;
+        } else {
+            requestObj["src"] = "\n" + request.src;
+        }
+        requestObj["backend"] = request.backend;
+        QJsonDocument requestDoc;
+        requestDoc.setObject(requestObj);
+        auto json = requestDoc.toJson(QJsonDocument::Compact);
+        json += "\n";
+        _renderers[i]->write(json.data());
+        return;
+    }
+
 }
 
 void HacklilyServer::_handleOAuthReply() {
