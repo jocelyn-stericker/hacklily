@@ -35,6 +35,10 @@
         width: 100%;
       }
 
+      .App.standalone .content {
+        height: 100%;
+      }
+
       .monaco {
         height: 100%;
       }
@@ -61,6 +65,11 @@
         padding: 0;
       }
     </style>
+    <% if (htmlWebpackPlugin.options.isStandalone) { %>
+    <!-- Qt API for communicating with standalone wrapper. -->
+    <script src="qrc:/qtwebchannel/qwebchannel.js"></script>
+    <% } %>
+
   </head>
   <body>
     <div id="root">

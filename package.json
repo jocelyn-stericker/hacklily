@@ -62,7 +62,8 @@
   },
   "scripts": {
     "start": "node scripts/start.js",
-    "build": "node scripts/build.js",
+    "build": "scripts/build.sh",
+    "build-react-app": "node scripts/build-react-app.js",
     "test": "node scripts/test.js --env=jsdom"
   },
   "jest": {

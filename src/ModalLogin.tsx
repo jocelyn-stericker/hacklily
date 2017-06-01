@@ -216,3 +216,7 @@ export function parseAuth(auth: string | undefined): Auth | null {
     return null;
   }
 }
+
+export function redirectToLogin(csrf: string): void {
+  window.location.href = getOauthRedirect(csrf);
+}

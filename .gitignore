@@ -131,5 +131,7 @@ Thumbs.db
 # VSCode
 /.vscode/chrome
 
-# 3rdpartylicenses.txt
+# Static files not created by webpack that are created in the build process
+# that we want to host, but not store in this repo
+/public/react-app.rcc.gz
 /public/3rdpartylicenses.txt

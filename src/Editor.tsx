@@ -105,6 +105,18 @@ export default class Editor extends React.PureComponent<Props, void> {
     window.removeEventListener('resize', this.handleResize);
   }
 
+  find(): void {
+    if (this.editor) {
+      this.editor.trigger('host', 'actions.find', undefined);
+    }
+  }
+
+  findNext(): void {
+    if (this.editor) {
+      this.editor.trigger('host', 'editor.action.nextMatchFindAction', undefined);
+    }
+  }
+
   render(): JSX.Element {
     const { code, mode, onSetCode } = this.props;
     const monacoOptions: monaco.editor.IEditorOptions = {

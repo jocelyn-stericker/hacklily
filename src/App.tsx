@@ -23,7 +23,7 @@ import React from 'react';
 
 import Editor from './Editor';
 import { cat, FileNotFound } from './gitfs';
-import Header, { MODE_BOTH, MODE_VIEW, ViewMode } from './Header';
+import Header, { MODE_BOTH, MODE_EDIT, MODE_VIEW, ViewMode } from './Header';
 import Menu from './Menu';
 import Modal404 from './Modal404';
 import ModalAbout from './ModalAbout';
@@ -32,6 +32,7 @@ import ModalLocked, { lock, setEditingNotificationHandler } from './ModalLocked'
 import ModalLogin, {
   Auth,
   checkLogin,
+  redirectToLogin,
   revokeGitHubAuth,
 } from './ModalLogin';
 import ModalPublish, { publish, unpublish } from './ModalPublish';
@@ -39,6 +40,7 @@ import ModalSaving from './ModalSaving';
 import ModalUnsavedChangesInterstitial from './ModalUnsavedChangesInterstitial';
 import Preview from './Preview';
 import RPCClient from './RPCClient';
+import StandaloneAppHost from './StandaloneAppHost';
 import { APP_STYLE } from './styles';
 
 function last<T>(t: T[]): T {
@@ -129,6 +131,7 @@ interface Props extends QueryProps {
    * From localStorage, all songs that have changes not pushed to GitHub.
    */
   dirtySongs: {[key: string]: Song};
+  isStandalone: boolean;
 
   /**
    * Mark a song as dirty and store it in localStorage.
@@ -165,6 +168,12 @@ interface State {
   interstitialChanges: {} | null;
 
   /**
+   * In the standalone app, songs that are in the local song
+   * folder.
+   */
+  localFiles: string[] | null;
+
+  /**
    * True if we started editing this song in another tab.
    */
   locked: boolean;
@@ -197,6 +206,7 @@ export default class App extends React.PureComponent<Props, State> {
     defaultSelection: null,
     help: false,
     interstitialChanges: null,
+    localFiles: null,
     locked: false,
     login: false,
     logs: '',
@@ -210,13 +220,18 @@ export default class App extends React.PureComponent<Props, State> {
     wsError: false,
   };
 
+  private editor: Editor | null = null;
   private rpc: RPCClient | null = null;
   private socket: WebSocket | null = null;
+  private standaloneAppHost: StandaloneAppHost | null = null;
 
   componentDidUpdate(prevProps: Props): void {
     if (this.props.edit !== prevProps.edit) {
       this.fetchSong();
       lock(this.props.edit || 'null');
+    }
+    if (this.props.isStandalone && !this.props.auth && this.props.csrf && !this.props.code) {
+      redirectToLogin(this.props.csrf);
     }
   }
 
@@ -226,6 +241,12 @@ export default class App extends React.PureComponent<Props, State> {
     lock(this.props.edit || 'null');
     window.addEventListener('beforeunload', this.handleBeforeUnload);
     setEditingNotificationHandler(this.handleEditingNotification);
+    if (this.props.isStandalone && !this.props.auth && !this.props.csrf) {
+      const randomContainer: Uint32Array = new Uint32Array(1);
+      crypto.getRandomValues(randomContainer);
+      const csrf: string = randomContainer[0].toString();
+      this.props.setCSRF(csrf);
+    }
   }
 
   componentWillUnmount(): void {
@@ -244,6 +265,7 @@ export default class App extends React.PureComponent<Props, State> {
       props: {
         auth,
         edit,
+        isStandalone,
       },
     } = this;
 
@@ -251,22 +273,27 @@ export default class App extends React.PureComponent<Props, State> {
     const preview: React.ReactNode = this.renderPreview();
     const song: Song | undefined = this.song();
 
+    const header: React.ReactNode = !isStandalone && (
+      <Header
+        mode={mode}
+        online={online}
+        loggedIn={auth !== null}
+        onModeChanged={this.handleModeChanged}
+        onShowMenu={this.handleShowMenu}
+        onShowNew={this.handleShowNew}
+        onShowPublish={this.handleShowPublish}
+        song={edit}
+        isDirty={this.isDirty()}
+      />
+    );
+
     return (
-      <div className="App">
-        <Header
-          mode={mode}
-          online={online}
-          loggedIn={auth !== null}
-          onModeChanged={this.handleModeChanged}
-          onShowMenu={this.handleShowMenu}
-          onShowNew={this.handleShowNew}
-          onShowPublish={this.handleShowPublish}
-          song={edit}
-          isDirty={this.isDirty()}
-        />
+      <div className={`App ${isStandalone ? 'standalone' : ''}`}>
+        {header}
         {this.renderModal()}
         <div className="content">
           <Editor
+            ref={this.setEditor}
             code={song ? song.src : undefined}
             mode={mode}
             onSetCode={this.handleCodeChanged}
@@ -275,6 +302,29 @@ export default class App extends React.PureComponent<Props, State> {
           />
           {preview}
         </div>
+        <StandaloneAppHost
+          ref={this.setStandaloneAppHost}
+          auth={auth}
+          showOpenDialog={this.state.menu}
+          showUnsavedChangesDialog={!!this.state.interstitialChanges}
+          onNewSong={this.handleShowNew}
+          onOpen={this.handleOpen}
+          onOpenCancel={this.handleHideMenu}
+          onImport={this.handleImport}
+          onSave={this.handleShowPublish}
+          onFind={this.handleFind}
+          onFindNext={this.handleFindNext}
+          onViewMode={this.handleModeChangedView}
+          onSplitMode={this.handleModeChangedSplit}
+          onCodeMode={this.handleModeChangedEdit}
+          onAboutHacklily={this.handleShowHelp}
+          onExportRequested={this.handleExport}
+          onLocalFilesChanged={this.handleLocalFilesChanged}
+          onShowLilypondDocumentation={this.handleShowLilypondDocumentation}
+          onUnsavedChangesCancel={this.cancelInterstitial}
+          onUnsavedChangesDiscard={this.discardChanges}
+          onUnsavedChangesSave={this.handleShowPublish}
+        />
       </div>
     );
   }
@@ -365,6 +415,11 @@ export default class App extends React.PureComponent<Props, State> {
       return;
     }
 
+    // Don't bug users in the app
+    if (this.props.isStandalone) {
+      return;
+    }
+
     if (this.isDirty()) {
       this.setState({
         interstitialChanges: null,
@@ -432,6 +487,22 @@ export default class App extends React.PureComponent<Props, State> {
     }
   }
 
+  private handleExport = (): void => {
+    throw new Error('Not implemented');
+  }
+
+  private handleFind = (): void => {
+    if (this.editor) {
+      this.editor.find();
+    }
+  }
+
+  private handleFindNext = (): void => {
+    if (this.editor) {
+      this.editor.findNext();
+    }
+  }
+
   private handleHideHelp = (): void => {
     this.setState({
       help: false,
@@ -457,6 +528,10 @@ export default class App extends React.PureComponent<Props, State> {
     });
   }
 
+  private handleImport = (): void => {
+    throw new Error('Not implemented');
+  }
+
   private handleLoadSong = (edit: string): void => {
     this.setQueryOrShowInterstitial({
       edit,
@@ -464,6 +539,14 @@ export default class App extends React.PureComponent<Props, State> {
     this.setState({
       menu: false,
     });
+  }
+
+  private handleLocalFilesChanged = (): void => {
+    if (this.standaloneAppHost) {
+      this.setState({
+        localFiles: this.standaloneAppHost.localFiles,
+      });
+    }
   }
 
   private handleLogsObtained = (logs: string | null): void => {
@@ -477,6 +560,24 @@ export default class App extends React.PureComponent<Props, State> {
   private handleModeChanged = (mode: ViewMode): void => {
     this.setState({
       mode,
+    });
+  }
+
+  private handleModeChangedEdit = (): void => {
+    this.handleModeChanged(MODE_EDIT);
+  }
+
+  private handleModeChangedSplit = (): void => {
+    this.handleModeChanged(MODE_BOTH);
+  }
+
+  private handleModeChangedView = (): void => {
+    this.handleModeChanged(MODE_VIEW);
+  }
+
+  private handleOpen = (): void => {
+    this.setState({
+      menu: true,
     });
   }
 
@@ -532,6 +633,10 @@ export default class App extends React.PureComponent<Props, State> {
       help: true,
       menu: false,
     });
+  }
+
+  private handleShowLilypondDocumentation = (): void => {
+    throw new Error('not implemented');
   }
 
   private handleShowMenu = (): void => {
@@ -663,11 +768,11 @@ export default class App extends React.PureComponent<Props, State> {
           this.props.state,
           this.props.csrf,
         );
+        this.props.setAuth(auth);
         this.props.setQuery({
           code: undefined,
           state: undefined,
         });
-        this.props.setAuth(auth);
       } catch (err) {
         alert(err.message || 'Could not log you in');
       }
@@ -714,6 +819,7 @@ export default class App extends React.PureComponent<Props, State> {
       props: {
         auth,
         csrf,
+        isStandalone,
         setCSRF,
         '404': _404,
       },
@@ -768,7 +874,7 @@ export default class App extends React.PureComponent<Props, State> {
         } else {
           return null;
         }
-      case menu:
+      case menu && !isStandalone:
         return (
           <Menu
             auth={auth}
@@ -780,7 +886,7 @@ export default class App extends React.PureComponent<Props, State> {
             onLoadSong={this.handleLoadSong}
           />
         );
-      case (interstitialChanges !== null):
+      case (interstitialChanges !== null && !isStandalone):
         return (
           <ModalUnsavedChangesInterstitial
             discardChanges={this.discardChanges}
@@ -868,6 +974,10 @@ export default class App extends React.PureComponent<Props, State> {
     }
   }
 
+  private setEditor = (editor: Editor | null): void => {
+    this.editor = editor;
+  }
+
   private setQueryOrShowInterstitial = <K extends keyof QueryProps>(updates: Pick<QueryProps, K>,
   ) : void => {
     if (this.isDirty()) {
@@ -876,6 +986,15 @@ export default class App extends React.PureComponent<Props, State> {
       });
     } else {
       this.props.setQuery(updates);
+    }
+  }
+
+  private setStandaloneAppHost = (standaloneAppHost: StandaloneAppHost): void => {
+    this.standaloneAppHost = standaloneAppHost;
+    if (standaloneAppHost) {
+      this.setState({
+        localFiles: standaloneAppHost.localFiles,
+      });
     }
   }
 

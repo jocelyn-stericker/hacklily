@@ -96,6 +96,7 @@ module.exports = {
       {
         exclude: [
           /\.html$/,
+          /\.html$/,
           /\.(js|jsx|ts|tsx)(\?.*)?$/,
           /\.css$/,
           /\.json$/,
@@ -200,7 +201,8 @@ module.exports = {
         minifyJS: true,
         minifyCSS: true,
         minifyURLs: true
-      }
+      },
+      isStandalone: env.raw['REACT_APP_STANDALONE'] === 'yes',
     }),
     // Makes some environment variables available to the JS code, for example:
     // if (process.env.NODE_ENV === 'production') { ... }. See `./env.js`.

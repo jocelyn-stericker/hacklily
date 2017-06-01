@@ -40,6 +40,7 @@ function render(): void {
       markSongClean={markSongClean}
       setAuth={setAuth}
       setCSRF={setCSRF}
+      isStandalone={process.env.REACT_APP_STANDALONE === 'yes'}
     />,
     document.getElementById('root'),
   );

@@ -153,7 +153,7 @@ export default class Preview extends React.PureComponent<Props, State> {
 
     // tslint:disable:react-iframe-missing-sandbox -- see above
     return (
-      <div>
+      <div style={{ backgroundColor: 'white' }}>
         <iframe
           className={css(APP_STYLE.sheetMusicView)}
           frameBorder="0"

@@ -46,6 +46,9 @@ interface State {
  * left of the view mode selector.
  *
  * The menu button is rendered by <Header />
+ *
+ * NOTE: THIS IS NOT THE MENU IN THE STANDALONE APP. See StandaloneAppHost and
+ * the hacklily-standalone repo.
  */
 class Menu extends React.PureComponent<Props, State> {
   state: State = {
