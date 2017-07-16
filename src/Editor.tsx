@@ -142,6 +142,12 @@ export default class Editor extends React.PureComponent<Props, void> {
     );
   }
 
+  selectAll(): void {
+    if (this.editor) {
+      this.editor.trigger('host', 'editor.action.selectAll', undefined);
+    }
+  }
+
   private handleEditorDidMount = (editor: monaco.editor.ICodeEditor,
                                   monacoModule: typeof monaco): void => {
     editor.focus();

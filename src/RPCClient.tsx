@@ -221,8 +221,8 @@ export default class RPCClient {
       (method: T, params: RPCRequestParamsMap[T]): Promise<RPCResponseMap[T]> {
     const id: string = this.genID();
     const request: BaseRPCRequest = {
-      jsonrpc: '2.0',
       id,
+      jsonrpc: '2.0',
       method,
       params,
     };
@@ -233,8 +233,8 @@ export default class RPCClient {
           code: -32000,
           message: 'Network error',
         },
-        jsonrpc: '2.0',
         id,
+        jsonrpc: '2.0',
       };
 
       return Promise.reject(rejection);
@@ -264,8 +264,8 @@ export default class RPCClient {
           code: -32000,
           message: 'Network error',
         },
-        jsonrpc: '2.0',
         id,
+        jsonrpc: '2.0',
       };
       this.rejectors[id](response);
       delete this.resolvers[id];

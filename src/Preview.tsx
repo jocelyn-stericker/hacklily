@@ -53,6 +53,13 @@ interface Props {
   code: string;
 
   /**
+   * Whether or not to use RPC.
+   *
+   * rpc must be null if and only if isStandalone is set.
+   */
+  isStandalone: boolean;
+
+  /**
    * The logs to render in the Logs button.
    *
    * Although the logs are generated here, it's not stored here to -- that way the parent
@@ -67,8 +74,10 @@ interface Props {
 
   /**
    * Client to use to request the SVG and logs.
+   *
+   * rpc must be null if and only if isStandalone is set.
    */
-  rpc: RPCClient;
+  rpc: RPCClient | null;
 
   /**
    * Called whenever a preview is rendered. The parent should in turn re-render,
@@ -81,6 +90,8 @@ interface Props {
    * so it can focus where the note is defined.
    */
   onSelectionChanged(selection: monaco.ISelection | null): void;
+
+  standaloneRender(src: string, filetype: string): Promise<{content: string[], logs: string}>;
 }
 
 interface State {
@@ -171,7 +182,6 @@ export default class Preview extends React.PureComponent<Props, State> {
 
   @debounce(DEBOUNCE_REFERSH_TIMEOUT)
   private async fetchNewPreview(): Promise<void> {
-    const { code, rpc } = this.props;
     if (this.state.pendingPreviews) {
       this.setState({
         previewAlreadyDirty: true,
@@ -188,13 +198,30 @@ export default class Preview extends React.PureComponent<Props, State> {
       this.handleIFrameLoaded();
     }
 
-    try {
-      const response: RenderResponse = await rpc.call('render', {
-        backend: 'svg',
-        src: code,
-      });
+    const { code, isStandalone, rpc } = this.props;
 
-      const { files, logs: dirtyLogs } = response.result;
+    try {
+      let dirtyLogs: string;
+      let files: string[];
+
+      if (isStandalone) {
+        const reply: {content: string[], logs: string} =
+          await this.props.standaloneRender(code, 'svg');
+        files = reply.content;
+        dirtyLogs = reply.logs;
+      } else {
+        if (!rpc) {
+          throw new Error('If not standalone, rpc must be set!');
+        }
+        const response: RenderResponse = await rpc.call('render', {
+          backend: 'svg',
+          src: code,
+        });
+
+        files = response.result.files;
+        dirtyLogs = response.result.logs;
+      }
+
       const logs: string = cleanLogs(dirtyLogs);
 
       const root: HTMLElement | null =

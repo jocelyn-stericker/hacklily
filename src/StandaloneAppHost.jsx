@@ -58,6 +58,9 @@ class Connection extends React.Component {
 export default class StandaloneAppHost extends React.Component {
   props;
 
+  resolvers = {};
+  rejectors = {};
+
   render() {
     if (this.channel) {
       const {webContentsBridge, localFiles} = this.channel.objects;
@@ -66,19 +69,26 @@ export default class StandaloneAppHost extends React.Component {
           <Connection from={webContentsBridge.onNewSong} to={this.props.onNewSong} />
           <Connection from={webContentsBridge.onOpen} to={this.props.onOpen} />
           <Connection from={webContentsBridge.onImport} to={this.props.onImport} />
+          <Connection from={webContentsBridge.onImportRejected} to={this.props.onImportRejected} />
           <Connection from={webContentsBridge.onSave} to={this.props.onSave} />
           <Connection from={webContentsBridge.onFind} to={this.props.onFind} />
           <Connection from={webContentsBridge.onFindNext} to={this.props.onFindNext} />
           <Connection from={webContentsBridge.onViewMode} to={this.props.onViewMode} />
+          <Connection from={webContentsBridge.onRequestImport} to={this.props.onRequestImport} />
+          <Connection from={webContentsBridge.onSelectAll} to={this.props.onSelectAll} />
           <Connection from={webContentsBridge.onSplitMode} to={this.props.onSplitMode} />
           <Connection from={webContentsBridge.onCodeMode} to={this.props.onCodeMode} />
           <Connection from={webContentsBridge.onAboutHacklily} to={this.props.onAboutHacklily} />
           <Connection from={webContentsBridge.onExportRequested} to={this.props.onExportRequested} />
-          <Connection from={webContentsBridge.onShowLilypondDocumentation} to={this.props.onShowLilypondDocumentation} />
           <Connection from={webContentsBridge.unsavedChangesSave} to={this.props.onUnsavedChangesSave} />
           <Connection from={webContentsBridge.unsavedChangesCancel} to={this.props.onUnsavedChangesCancel} />
           <Connection from={webContentsBridge.unsavedChangesDiscard} to={this.props.onUnsavedChangesDiscard} />
           <Connection from={webContentsBridge.openCancel} to={this.props.onOpenCancel} />
+          <Connection from={webContentsBridge.openFile} to={this.props.onOpenFile} />
+          <Connection from={webContentsBridge.renderCompleted} to={this.handleRenderCompleted} />
+          <Connection from={webContentsBridge.renderError} to={this.handleRenderError} />
+          <Connection from={webContentsBridge.saveAsCancel} to={this.props.onSaveAsCancel} />
+          <Connection from={webContentsBridge.saveAsFile} to={this.props.onSaveAsFile} />
           <Connection from={localFiles.pathChanged} to={this.props.onLocalFilesChanged} />
         </noscript>
       );
@@ -123,6 +133,18 @@ export default class StandaloneAppHost extends React.Component {
           this.fetchSongs();
         }
       }
+      if (newProps.showSaveAs !== this.props.showSaveAs) {
+        webContentsBridge.saveAsVisible = newProps.showSaveAs;
+        if (this.props.showSaveAs) {
+          this.fetchSongs(); // To check against files that already exist.
+        }
+      }
+      if (newProps.showImport !== this.props.showImport) {
+        webContentsBridge.importVisible = newProps.showImport;
+      }
+      if (newProps.showSaving !== this.props.showSaving) {
+        webContentsBridge.savingVisible = newProps.showSaving;
+      }
     }
   }
 
@@ -139,6 +161,58 @@ export default class StandaloneAppHost extends React.Component {
       }
     } else {
       console.error('Could not retreive your songs.');
+    }
+  }
+
+  renderLy = (src, filetype) => {
+    console.log("HI!");
+    console.log(`Rendering ${filetype}`)
+    const id = String(Math.random());
+    if (this.channel) {
+      this.channel.objects.webContentsBridge.render(id, src, filetype)
+      return new Promise((resolve, reject) => {
+        this.resolvers[id] = resolve;
+        this.rejectors[id] = reject;
+      });
+    } else {
+      console.log(`No channel`);
+      return new Promise((resolve, reject) => {
+        reject(new Error("No channel"));
+      })
+    }
+  }
+
+  save = async (src, filename) => {
+    const pdf = await this.renderLy(src, 'pdf');
+    this.channel.objects.webContentsBridge.save(src, filename, pdf.content[0]);
+  }
+
+  /**
+   * @param {string} id
+   * @param {string[]} result
+   * @param {string} log
+   */
+  handleRenderCompleted = (id, contents, logs) => {
+    console.log(`Render completed ${id}`);
+    if (this.resolvers[id]) {
+      console.log("Found resolver");
+      this.resolvers[id]({content: contents, logs});
+      delete this.resolvers[id];
+      delete this.rejectors[id];
+    }
+  }
+  /**
+   * @param {string} id
+   * @param {string} error
+   * @returns void
+   */
+  handleRenderError = (id, error) => {
+    console.log(`Render error ${id}`);
+    if (this.rejectors[id]) {
+      console.warn(error);
+      this.rejectors[id]({error});
+      delete this.resolvers[id];
+      delete this.rejectors[id];
     }
   }
 }

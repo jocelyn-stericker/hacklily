@@ -157,6 +157,7 @@ class ModalPublish extends React.PureComponent<Props, State> {
     } catch (err) {
       // tslint:disable-next-line:no-console
       console.log(err);
+      alert(err.toString());
       didFail = true;
     } finally {
       this.setState({
@@ -217,9 +218,7 @@ export async function publish(
     candidate.path === pdfFilename);
 
   if (!overwrite && (file || pdfFile)) {
-    alert('That name is already taken.');
-
-    return false;
+    throw new Error('That name is already taken.');
   }
 
   const { accessToken, repo } = auth;
@@ -233,21 +232,15 @@ export async function publish(
     console.log(err);
     if (err instanceof Conflict) {
       if (overwrite) {
-        alert(
+        throw new Error(
           'Could not save file. ' +
           'You may need to wait a minute or so after publishing before publishing again.',
         );
-
-        return false;
       } else {
-        alert('This name is already taken.');
-
-        return false;
+        throw new Error('This name is already taken.');
       }
     } else {
-      alert('Could not save file.');
-
-      return false;
+      throw new Error('Could not save file.');
     }
   }
 

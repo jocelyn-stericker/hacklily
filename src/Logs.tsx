@@ -54,7 +54,7 @@ export default class Logs extends React.Component<Props, State> {
           className={css(BUTTON_STYLE.buttonStyle, LOGS_STYLE.logsButton)}
           onMouseLeave={this.handleMouseLeave}
         >
-          <pre>
+          <pre style={{ whiteSpace: 'pre-wrap' }}>
             {logs}
           </pre>
         </div>

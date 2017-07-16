@@ -86,6 +86,11 @@ export interface QueryProps {
   edit?: string;
 
   /**
+   * In standalone mode, whether to show the import dialog.
+   */
+  standaloneImport?: boolean;
+
+  /**
    * When logging in from GitHub, this is the CSRF, generated in ConnectToGitHub.
    *
    * See also 'code'.
@@ -100,6 +105,7 @@ export const QUERY_PROP_KEYS: (keyof QueryProps)[] = [
   'code',
   'edit',
   'state',
+  'standaloneImport',
 ];
 
 export interface Song {
@@ -221,6 +227,7 @@ export default class App extends React.PureComponent<Props, State> {
   };
 
   private editor: Editor | null = null;
+  private preview: Preview | null = null;
   private rpc: RPCClient | null = null;
   private socket: WebSocket | null = null;
   private standaloneAppHost: StandaloneAppHost | null = null;
@@ -306,21 +313,29 @@ export default class App extends React.PureComponent<Props, State> {
           ref={this.setStandaloneAppHost}
           auth={auth}
           showOpenDialog={this.state.menu}
+          showSaveAs={this.state.publish}
           showUnsavedChangesDialog={!!this.state.interstitialChanges}
+          showImport={!!this.props.standaloneImport}
+          showSaving={this.state.saving}
           onNewSong={this.handleShowNew}
           onOpen={this.handleOpen}
+          onOpenFile={this.handleOpenFileStandalone}
           onOpenCancel={this.handleHideMenu}
           onImport={this.handleImport}
+          onImportRejected={this.handleImportRejected}
+          onRequestImport={this.handleImportRequested}
           onSave={this.handleShowPublish}
+          onSaveAsCancel={this.handleHidePublish}
+          onSaveAsFile={this.standalonePublish}
           onFind={this.handleFind}
           onFindNext={this.handleFindNext}
           onViewMode={this.handleModeChangedView}
+          onSelectAll={this.handleSelectAll}
           onSplitMode={this.handleModeChangedSplit}
           onCodeMode={this.handleModeChangedEdit}
           onAboutHacklily={this.handleShowHelp}
           onExportRequested={this.handleExport}
           onLocalFilesChanged={this.handleLocalFilesChanged}
-          onShowLilypondDocumentation={this.handleShowLilypondDocumentation}
           onUnsavedChangesCancel={this.cancelInterstitial}
           onUnsavedChangesDiscard={this.discardChanges}
           onUnsavedChangesSave={this.handleShowPublish}
@@ -526,10 +541,35 @@ export default class App extends React.PureComponent<Props, State> {
     this.setState({
       publish: false,
     });
+    if (this.state.interstitialChanges) {
+      this.cancelInterstitial();
+    }
   }
 
-  private handleImport = (): void => {
-    throw new Error('Not implemented');
+  private handleImport = async (name: string, src: string): Promise<void> => {
+    this.props.setQuery(
+      {
+        edit: undefined,
+      },
+      true,
+    );
+    this.props.editSong('null', {
+      baseSHA: null,
+      src,
+    });
+    this.handleShowPublish();
+  }
+
+  private handleImportRejected = (): void => {
+    this.props.setQuery({
+      standaloneImport: undefined,
+    });
+  }
+
+  private handleImportRequested = (): void => {
+    this.setQueryOrShowInterstitial({
+      standaloneImport: true,
+    });
   }
 
   private handleLoadSong = (edit: string): void => {
@@ -581,6 +621,20 @@ export default class App extends React.PureComponent<Props, State> {
     });
   }
 
+  private handleOpenFileStandalone = (filename: string, source: 'remote' | 'local',
+                                      sha: string, contents: string): void => {
+    const { auth } = this.props;
+    this.handleHideMenu();
+    if (source === 'remote') {
+      if (!auth) {
+        throw new Error('Not signed in. Cannot open remote file.');
+      }
+      this.handleLoadSong(`${auth.repo}/${filename}`);
+    } else {
+      throw new Error('Not implemented');
+    }
+  }
+
   private handlePublished = (edit: string): void => {
     this.props.markSongClean('null');
     if (this.state.interstitialChanges) {
@@ -620,6 +674,12 @@ export default class App extends React.PureComponent<Props, State> {
     });
   }
 
+  private handleSelectAll = (): void => {
+    if (this.editor) {
+      this.editor.selectAll();
+    }
+  }
+
   private handleSelectionChanged = (selection: monaco.ISelection | null): void => {
     if (selection !== this.state.defaultSelection) {
       this.setState({
@@ -633,10 +693,6 @@ export default class App extends React.PureComponent<Props, State> {
       help: true,
       menu: false,
     });
-  }
-
-  private handleShowLilypondDocumentation = (): void => {
-    throw new Error('not implemented');
   }
 
   private handleShowMenu = (): void => {
@@ -714,9 +770,8 @@ export default class App extends React.PureComponent<Props, State> {
       }
       const path: string = last(edit.split('/'));
 
-      const ok: boolean = await publish(song.src, auth, path, this.rpc, true);
-
-      if (ok) {
+      try {
+        await publish(song.src, auth, path, this.rpc, true);
         const cleanSongs: {[key: string]: Song} =
           JSON.parse(JSON.stringify(this.state.cleanSongs));
         cleanSongs[edit] = {
@@ -727,7 +782,10 @@ export default class App extends React.PureComponent<Props, State> {
           cleanSongs,
         });
         this.props.markSongClean(edit);
+      } catch (err) {
+        alert(err.toString());
       }
+
     } finally {
       this.setState({
         saving: false,
@@ -836,7 +894,7 @@ export default class App extends React.PureComponent<Props, State> {
             onHide={this.handleClear404}
           />
         );
-      case saving:
+      case saving && !isStandalone:
         return <ModalSaving />;
       case conflict:
         return (
@@ -861,7 +919,7 @@ export default class App extends React.PureComponent<Props, State> {
           />
         );
       case publish:
-        if (song && auth && this.rpc) {
+        if (song && auth && this.rpc && !isStandalone) {
           return (
             <ModalPublish
               onHide={this.handleHidePublish}
@@ -900,6 +958,7 @@ export default class App extends React.PureComponent<Props, State> {
   }
 
   private renderPreview(): React.ReactNode {
+    const { isStandalone } = this.props;
     const { mode, reconnectTimeout, logs, wsError } = this.state;
 
     const song: Song | undefined = this.song();
@@ -916,15 +975,18 @@ export default class App extends React.PureComponent<Props, State> {
           </div>
         </div>
       );
-    } else if (this.socket) {
-      if (online && this.rpc) {
+    } else if (this.socket || isStandalone) {
+      if (online && this.rpc || isStandalone) {
         return (
           <Preview
             code={song.src}
+            isStandalone={isStandalone}
             mode={mode}
             onLogsObtained={this.handleLogsObtained}
             onSelectionChanged={this.handleSelectionChanged}
-            rpc={this.rpc}
+            ref={this.setPreview}
+            rpc={isStandalone ? null : this.rpc}
+            standaloneRender={this.standaloneRender}
             logs={logs}
           />
         );
@@ -978,6 +1040,10 @@ export default class App extends React.PureComponent<Props, State> {
     this.editor = editor;
   }
 
+  private setPreview = (preview: Preview): void => {
+    this.preview = preview;
+  }
+
   private setQueryOrShowInterstitial = <K extends keyof QueryProps>(updates: Pick<QueryProps, K>,
   ) : void => {
     if (this.isDirty()) {
@@ -1009,6 +1075,66 @@ export default class App extends React.PureComponent<Props, State> {
     }
 
     return song;
+  }
+
+  private standalonePublish = async (path: string, source: 'local' | 'remote'): Promise<void> => {
+    this.setState({
+      publish: false,
+    });
+    try {
+      this.setState({
+        saving: true,
+      });
+      const song: Song | undefined = this.song();
+      const { auth } = this.props;
+      if (!auth || !song || !this.rpc) {
+        throw new Error('Invariant violation: contract broken');
+      }
+
+      try {
+        const fullPath: string = source === 'local' ? `local/${path}` : `${auth.repo}/${path}`;
+        if (source === 'remote') {
+          await publish(song.src, auth, path, this.rpc, false);
+        } else {
+          if (!this.standaloneAppHost) {
+            throw new Error('Expected standaloneAppHost when saving locally...');
+          }
+          await this.standaloneAppHost.save(song.src, path);
+        }
+        this.handlePublished(fullPath);
+      } catch (err) {
+        this.setState(
+          {
+            saving: false,
+          },
+          () => {
+            // We need to disable the saving dialog first, or else we get
+            // a deadlock in Qt on macOS.
+            alert(err.toString());
+          },
+        );
+      }
+    } finally {
+      this.setState({
+        saving: false,
+      });
+      if (this.state.interstitialChanges) {
+        this.props.setQuery(this.state.interstitialChanges);
+        this.setState({
+          interstitialChanges: null,
+        });
+      }
+    }
+  }
+
+  // tslint:disable-next-line:promise-function-async
+  private standaloneRender = (src: string, filetype: string):
+      Promise<{content: string[], logs: string}> => {
+    if (!this.standaloneAppHost) {
+      throw new Error('Function only valid in standalone mode.');
+    }
+
+    return this.standaloneAppHost.renderLy(src, filetype);
   }
 
   private wsReconnectTick = (): void => {
