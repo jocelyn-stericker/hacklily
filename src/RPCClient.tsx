@@ -173,6 +173,26 @@ export interface SignOutParams {
 }
 
 // -------------------------------------------------------------------------
+// "status"
+// -------------------------------------------------------------------------
+
+export interface Status {
+  alive: boolean;
+  backlog: number;
+  busy_worker_count: number;
+  free_worker_count: number;
+  local_worker_count: number;
+  remote_worker_count: number;
+  startup_time: string;
+  total_worker_count: number;
+  uptime_secs: number;
+}
+
+export interface StatusResponse extends BaseRPCResponse {
+  result: Status;
+}
+
+// -------------------------------------------------------------------------
 // Method map
 // -------------------------------------------------------------------------
 
@@ -180,6 +200,7 @@ interface RPCRequestParamsMap {
   // To type check values
   [key: string]: {};
 
+  get_status: {};
   ping: {};
   render: RenderParams;
   signIn: SignInParams;
@@ -190,6 +211,7 @@ interface RPCResponseMap {
   // To type check values
   [key: string]: BaseRPCResponse;
 
+  get_status: StatusResponse;
   ping: BaseRPCResponse;
   render: RenderResponse;
   signIn: SignInResponse;

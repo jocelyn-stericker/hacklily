@@ -129,6 +129,8 @@ private:
     QMap<QString, HacklilyServerRequest> _remoteProcessingRequests;
     QNetworkAccessManager *_nam;
     int _maxJobs;
+    int _totalRenderRequests;
+    QDateTime _startupTime;
 
     // state (coordinator)
     QWebSocketServer* _server;

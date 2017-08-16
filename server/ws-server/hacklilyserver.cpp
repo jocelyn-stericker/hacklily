@@ -44,6 +44,8 @@ HacklilyServer::HacklilyServer(QString rendererDockerTag,
     _lastSocketID(-1),
     _nam(new QNetworkAccessManager(this)),
     _maxJobs(jobs),
+    _totalRenderRequests(0),
+    _startupTime(QDateTime::currentDateTimeUtc()),
     _server(new QWebSocketServer("hacklily-server", QWebSocketServer::NonSecureMode, this)),
     _coordinator(NULL),
     _coordinatorPingTimer(NULL)
@@ -137,6 +139,7 @@ void HacklilyServer::_handleTextMessageReceived(QString message) {
         auto responseJSONText = response.toJson(QJsonDocument::Compact);
         socket->sendTextMessage(responseJSONText);
     } else if (requestObj["method"] == "render") {
+        ++_totalRenderRequests;
         HacklilyServerRequest req = {
             requestObj["params"].toObject()["src"].toString(),
             requestObj["params"].toObject()["backend"].toString(),
@@ -201,6 +204,35 @@ void HacklilyServer::_handleTextMessageReceived(QString message) {
         }
         connect(socket, &QWebSocket::disconnected, this, &HacklilyServer::_removeWorker);
         _processIfPossible();
+    } else if (requestObj["method"] == "get_status") {
+        QJsonObject resultObj;
+        int allCount = _busyWorkers.size() + _freeWorkers.size() + _renderers.size();
+        int busyLocalRendererCount = 0;
+        for (int i = 0; i < _renderers.size(); ++i) {
+            if (_renderers[i]->state() != QProcess::Running || _localProcessingRequests.contains(i)) {
+                ++busyLocalRendererCount;
+            }
+        }
+
+        resultObj["alive"] = allCount > 0;
+        resultObj["total_worker_count"] = allCount;
+        resultObj["local_worker_count"] = _renderers.size();
+        resultObj["remote_worker_count"] = _busyWorkers.size() + _freeWorkers.size();
+        resultObj["busy_worker_count"] = _busyWorkers.size() + busyLocalRendererCount;
+        resultObj["free_worker_count"] = _freeWorkers.size() + (_renderers.size() - busyLocalRendererCount);
+        resultObj["backlog"] = _requests.size();
+        resultObj["startup_time"] = _startupTime.toString(Qt::ISODate);
+        resultObj["uptime_secs"] = _startupTime.secsTo(QDateTime::currentDateTimeUtc());
+
+        QJsonObject responseObj;
+        responseObj["jsonrpc"] = "2.0";
+        responseObj["id"] = requestObj["id"];
+        responseObj["result"] = resultObj;
+
+        QJsonDocument response;
+        response.setObject(responseObj);
+        auto responseJSONText = response.toJson(QJsonDocument::Compact);
+        socket->sendTextMessage(responseJSONText);
     }
 }
 

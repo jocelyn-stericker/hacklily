@@ -13,6 +13,7 @@
         "target": "es5"
     },
     "include": [
-        "src/index.tsx"
+        "src/index.tsx",
+        "src/status/status.index.tsx"
     ]
 }
