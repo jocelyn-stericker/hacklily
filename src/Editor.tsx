@@ -45,6 +45,8 @@ interface Props {
    */
   mode: ViewMode;
 
+  readOnly: boolean;
+
   /**
    * Called when an edit occurs. <Editor /> is a controlled component.
    */
@@ -118,15 +120,27 @@ export default class Editor extends React.PureComponent<Props, void> {
   }
 
   render(): JSX.Element {
-    const { code, mode, onSetCode } = this.props;
+    const { code, mode, onSetCode, readOnly } = this.props;
     const monacoOptions: monaco.editor.IEditorOptions = {
       autoClosingBrackets: true,
+      readOnly,
       selectionHighlight: false,
       wordBasedSuggestions: false,
     };
 
+    let readOnlyNotice: JSX.Element | null = null;
+    if (readOnly) {
+      readOnlyNotice = (
+        <div className={css(APP_STYLE.readOnlyNotification)}>
+          <i className="fa-lock fa" />{' '}
+          read-only &mdash; log in as the owner to edit
+        </div>
+      );
+    }
+
     return (
       <div className={`monaco ${css(mode === MODE_VIEW && APP_STYLE.monacoHidden)}`}>
+        {readOnlyNotice}
         <ReactMonacoEditor
           editorDidMount={this.handleEditorDidMount}
           editorWillMount={this.handleEditorWillMount}

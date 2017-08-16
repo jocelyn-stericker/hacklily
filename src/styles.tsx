@@ -75,6 +75,16 @@ export const APP_STYLE = StyleSheet.create({
   previewPendingMaskModeView: {
     left: 0,
   },
+  readOnlyNotification: {
+    backgroundColor: '#1e1e1e',
+    color: 'white',
+    fontWeight: 'bold',
+    height: 20,
+    left: 0,
+    padding: 10,
+    top: 0,
+    zIndex: 100000,
+  },
   sheetMusicError: {
     color: '#aeaeae',
     display: 'inline-block',

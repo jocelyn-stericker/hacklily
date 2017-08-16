@@ -106,10 +106,7 @@ class ModalAbout extends React.PureComponent<Props, void> {
                 &copy; Copyright{' '}
                 <a href="https://nettek.ca" target="_blank" rel="noopener noreferrer">
                   Joshua Netterfield
-                </a> 2017 - present.
-            </p>
-            <p>
-              Assembled in Canada.
+                </a> 2017 - present. 🇨🇦
             </p>
           </div>
         </div>

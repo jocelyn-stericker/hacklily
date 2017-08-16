@@ -137,7 +137,18 @@ export default class Header extends React.PureComponent<Props, void> {
         </span>
       );
     }
-    if (online) {
+    if (!isDirty && !this.props.song) {
+      return (
+        <div className={css(HEADER_STYLE.headerGroupWrapper)}>
+          <button
+            title="Publish"
+            className={css(HEADER_STYLE.newSong)}
+          >
+            No changes made.
+          </button>
+        </div>
+      );
+    } else if (online) {
       return (
         <div className={css(HEADER_STYLE.headerGroupWrapper)}>
           <button

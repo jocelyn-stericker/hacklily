@@ -49,6 +49,7 @@ function last<T>(t: T[]): T {
 
 const INITIAL_WS_COOLOFF: number = 2;
 const BACKEND_WS_URL: string | undefined = process.env.REACT_APP_BACKEND_WS_URL;
+const PUBLIC_READONLY: string = 'PUBLIC_READONLY';
 
 /**
  * Properties derived from URL.
@@ -195,6 +196,14 @@ interface State {
   wsError: boolean;
 }
 
+const DEFAULT_SONG: string =
+`\\header {
+  title = "Untitled"
+  composer = "Composer"
+}
+
+\\relative d' { d4 }`;
+
 /**
  * Root component of Hacklily. This renders everything on the page.
  *
@@ -205,7 +214,7 @@ export default class App extends React.PureComponent<Props, State> {
     cleanSongs: {
       null: {
         baseSHA: null,
-        src: '{ d4 }',
+        src: DEFAULT_SONG,
       },
     },
     connectToGitHubReason: null,
@@ -306,6 +315,7 @@ export default class App extends React.PureComponent<Props, State> {
             onSetCode={this.handleCodeChanged}
             logs={logs}
             defaultSelection={defaultSelection}
+            readOnly={song ? song.baseSHA === PUBLIC_READONLY : true}
           />
           {preview}
         </div>
@@ -394,7 +404,28 @@ export default class App extends React.PureComponent<Props, State> {
 
   private async fetchSong(): Promise<void> {
     const { auth, edit } = this.props;
-    if (!auth || edit === 'null' || !edit) {
+    if (edit === 'null' || !edit) {
+      return;
+    }
+    if (!auth) {
+      const req: Response = await fetch(
+        `https://raw.githubusercontent.com/hacklily/` +
+        `user-jnetterf/master/beginnings-and-endings.ly`);
+      const content: string = await req.text();
+      const cleanSongs: {[key: string]: Song} = JSON.parse(JSON.stringify(this.state.cleanSongs));
+      if (cleanSongs[edit]) {
+        // We have a better version.
+        return;
+      }
+      cleanSongs[edit] = {
+        baseSHA: PUBLIC_READONLY,
+        src: content,
+      };
+
+      this.setState({
+        cleanSongs,
+      });
+
       return;
     }
     const path: string = last(edit.split('/'));
