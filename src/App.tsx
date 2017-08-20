@@ -67,6 +67,11 @@ export interface QueryProps {
    */
   '404'?: string;
 
+  /*
+   * Truthy if we should show the about page.
+   */
+  about?: string;
+
   /**
    * When logging in from GitHub, code is the temporary code that will be exchanged via
    * the backend for an access token.
@@ -103,6 +108,7 @@ export interface QueryProps {
 
 export const QUERY_PROP_KEYS: (keyof QueryProps)[] = [
   '404',
+  'about',
   'code',
   'edit',
   'state',
@@ -171,7 +177,6 @@ interface State {
   cleanSongs: {[key: string]: Song};
   connectToGitHubReason: string | null;
   defaultSelection: monaco.ISelection | null;
-  help: boolean;
   interstitialChanges: {} | null;
 
   /**
@@ -220,7 +225,6 @@ export default class App extends React.PureComponent<Props, State> {
     },
     connectToGitHubReason: null,
     defaultSelection: null,
-    help: false,
     interstitialChanges: null,
     localFiles: null,
     locked: false,
@@ -559,8 +563,8 @@ export default class App extends React.PureComponent<Props, State> {
   }
 
   private handleHideHelp = (): void => {
-    this.setState({
-      help: false,
+    this.props.setQuery({
+      about: undefined,
     });
   }
 
@@ -730,16 +734,22 @@ export default class App extends React.PureComponent<Props, State> {
 
   private handleShowHelp = (): void => {
     this.setState({
-      help: true,
       menu: false,
+    });
+    this.props.setQuery({
+      about: '1',
     });
   }
 
   private handleShowMenu = (): void => {
     this.setState({
-      help: false,
       menu: true,
     });
+    if (this.props.about) {
+      this.props.setQuery({
+        about: undefined,
+      });
+    }
   }
 
   private handleShowNew = (): void => {
@@ -919,13 +929,13 @@ export default class App extends React.PureComponent<Props, State> {
         locked,
         login,
         connectToGitHubReason,
-        help,
         menu,
         publish,
         interstitialChanges,
         saving,
       },
       props: {
+        about,
         auth,
         csrf,
         isStandalone,
@@ -963,7 +973,7 @@ export default class App extends React.PureComponent<Props, State> {
             setCSRF={setCSRF}
           />
         );
-      case help:
+      case Boolean(about):
         return (
           <ModalAbout
             onHide={this.handleHideHelp}
