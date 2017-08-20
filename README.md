@@ -5,65 +5,6 @@ Hacklily is an online sheet-music editor and publishing tool. [Start writing mus
 It consists of a frontend [Lilypond](http://lilypond.org/) editor using [monaco](https://github.com/microsoft/monaco-editor)
 (the editor that powers vscode) and a backend Lilypond renderer. It can publish songs directly to GitHub.
 
-## License
-
-Out of respect for the Lilypond project that Hacklily relies on, and
-to ensure all forks of Hacklily remain free software, the client is
-licensed under the terms of the GNU GPL version 3 or later (with
-additional permissions as described below), and the server is licensed
-under the terms of the GNU AGPL version 3 or later.
-
-### Client
-
-Everything except for the server (located in `server/`) is licensed as follows:
-
-This program is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
-As additional permission under GNU GPL version 3 section 7, you
-may distribute non-source (e.g., minimized or compacted) forms of
-that code without the copy of the GNU GPL normally required by
-section 4, provided you include this license notice and a URL
-through which recipients can access the Corresponding Source.
-
-As additional permission under GNU GPL version 3 section 7,
-the term "System Libraries" is extended to include the JavaScript
-libraries provided with any browser. If you modify this code, you
-may extend this exception to your version of the code, but you are
-not obligated to do so. If you do not wish to do so, delete this
-exception statement from your version. 
-
-See the full license in LICENSE.txt.
-
-### Server
-
-The server (located in `server/`) is licensed as follows:
-
-This program is free software: you can redistribute it and/or modify
-it under the terms of the GNU Affero General Public License as
-published by the Free Software Foundation, either version 3 of the
-License, or (at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU Affero General Public License for more details.
-
-You should have received a copy of the GNU Affero General Public License
-along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
-See the full license in LICENSE.AGPL.txt.
-
 ## Running locally
 
 ### Dependencies
@@ -90,7 +31,7 @@ Or, if you do not have ssh auth setup with Github:
 git clone https://github.com/hacklily/hacklily.git
 ```
 
-### Running
+### Running (without GitHub integration)
 
 Once you have installed the above dependencies, run
 
@@ -98,7 +39,7 @@ Once you have installed the above dependencies, run
 make serve
 ```
 
-#### Running with access to a repository on GitHub
+### Running (with GitHub integration)
 
 **For most development, the steps in "Running" (above) are sufficient**.
 
@@ -158,10 +99,70 @@ Then, in a browser navigate to [http://localhost:3000](http://localhost:3000).
 
 ## Contributing
 
-Please do! Fork this repo and submit a PR. Your submission must be under the above licenses.
-Add your name in the license header to any file in which you add 15 lines or more.
+Please do! Fork this repo and submit a PR. Your submission must be under the appropriate
+license (GPL for client code, AGPL for server code).
 
 You can reach the maintainer by email at `joshua@nettek.ca`.
+
+## License
+
+Out of respect for the Lilypond project that Hacklily relies on, and
+to ensure all forks of Hacklily remain free software, the client is
+licensed under the terms of the GNU GPL version 3 or later (with
+additional permissions as described below), and the server is licensed
+under the terms of the GNU AGPL version 3 or later.
+
+### Client
+
+Everything except for the server (located in `server/`) is licensed as follows:
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+As additional permission under GNU GPL version 3 section 7, you
+may distribute non-source (e.g., minimized or compacted) forms of
+that code without the copy of the GNU GPL normally required by
+section 4, provided you include this license notice and a URL
+through which recipients can access the Corresponding Source.
+
+As additional permission under GNU GPL version 3 section 7,
+the term "System Libraries" is extended to include the JavaScript
+libraries provided with any browser. If you modify this code, you
+may extend this exception to your version of the code, but you are
+not obligated to do so. If you do not wish to do so, delete this
+exception statement from your version. 
+
+See the full license in LICENSE.txt.
+
+### Server
+
+The server (located in `server/`) is licensed as follows:
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU Affero General Public License as
+published by the Free Software Foundation, either version 3 of the
+License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Affero General Public License for more details.
+
+You should have received a copy of the GNU Affero General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+See the full license in LICENSE.AGPL.txt.
+
 
 ## Deployment
 
