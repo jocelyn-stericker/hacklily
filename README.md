@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/hacklily/hacklily.svg?branch=master)](https://travis-ci.org/hacklily/hacklily)
+
 # Hacklily
 
 Hacklily is an online sheet-music editor and publishing tool. [Start writing music now!](https://hacklily.org)
@@ -13,9 +15,9 @@ You need:
 
 - [Node](https://nodejs.org/en/) -- tested with Node 7, earlier versions may or may not also work
 - [Yarn](https://yarnpkg.com/lang/en/docs/install/)
-- [Qt 5](https://www.qt.io/) -- with qmake in your path (installing directly from Qt's website is encouraged on macOS)
+- [Qt 5](https://www.qt.io/) -- with qmake in your path (installing using the version from Qt's website is recommended on macOS)
 - [Docker](https://www.docker.com/)
-- an OS that is not Windows. It might work on Windows, but you're on your own.
+- an OS that is not Windows (if you make it work, please contribute your fix!)
 
 ### Obtaining
 
@@ -116,6 +118,7 @@ under the terms of the GNU AGPL version 3 or later.
 
 Everything except for the server (located in `server/`) is licensed as follows:
 
+```
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation, either version 3 of the License, or
@@ -141,13 +144,15 @@ libraries provided with any browser. If you modify this code, you
 may extend this exception to your version of the code, but you are
 not obligated to do so. If you do not wish to do so, delete this
 exception statement from your version. 
+```
 
-See the full license in LICENSE.txt.
+A full copy of the GPL version 3 is available in LICENSE.txt.
 
 ### Server
 
 The server (located in `server/`) is licensed as follows:
 
+```
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU Affero General Public License as
 published by the Free Software Foundation, either version 3 of the
@@ -160,11 +165,14 @@ GNU Affero General Public License for more details.
 
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
+```
 
-See the full license in LICENSE.AGPL.txt.
+A full copy of the AGPL version 3 is available in LICENSE.AGPL.txt.
 
 
 ## Deployment
 
+Whenever a commit is pushed to master, Travis will deploy a new version.
+
 `make deploy` updates https://github.com/hacklily/hacklily.github.io. When these files change,
-GitHub starts serving new files to https://www.hacklily.org. This is done by Travis.
+GitHub starts serving new files to https://www.hacklily.org.
