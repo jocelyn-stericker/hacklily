@@ -28,6 +28,7 @@ import { HEADER_STYLE, MENU_STYLE } from './styles';
 
 interface Props {
   auth: Auth | null;
+  windowWidth: number;
   onDeleteSong(song: string): void;
   onHide(): void;
   onLoadSong(song: string): void;
@@ -67,7 +68,7 @@ class Menu extends React.PureComponent<Props, State> {
   }
 
   render(): JSX.Element {
-    const { auth, onSignOut, onHide, onShowAbout } = this.props;
+    const { auth, onSignOut, onHide, onShowAbout, windowWidth } = this.props;
 
     let signOut: React.ReactNode;
     if (auth) {
@@ -76,6 +77,16 @@ class Menu extends React.PureComponent<Props, State> {
           <i className="fa fa-fw fa-sign-out" aria-hidden={true} />{' '}
           Sign out ({auth.name})
         </button>
+      );
+    }
+
+    let warning: React.ReactNode = null;
+    if (windowWidth < 500) {
+      warning = (
+        <div>
+          <i className="fa fa-fw fa-exclamation-triangle" />{' '}
+          Hacklily works best on wider screens.
+        </div>
       );
     }
 
@@ -109,6 +120,7 @@ class Menu extends React.PureComponent<Props, State> {
         overlayClassName={css(MENU_STYLE.menuOverlay)}
       >
         <div className={css(MENU_STYLE.menuColumn)}>
+          {warning}
           <div className={css(MENU_STYLE.songList, MENU_STYLE.option)}>
             {this.renderSongs()}
           </div>

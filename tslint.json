@@ -57,6 +57,8 @@
     // Because {someObj && <Yolo obj={someObj} />} is idiomatic in React
     "strict-boolean-expressions": false,
     // Becasue it fires for void promises.
-    "no-floating-promises": false
+    "no-floating-promises": false,
+    // Because reality should be reflected
+    "no-suspicious-comment": false
   }
 }

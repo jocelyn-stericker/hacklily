@@ -23,7 +23,7 @@ import React from 'react';
 
 import Editor from './Editor';
 import { cat, FileNotFound } from './gitfs';
-import Header, { MODE_BOTH, MODE_EDIT, MODE_VIEW, ViewMode } from './Header';
+import Header, { MIN_BOTH_WIDTH, MODE_BOTH, MODE_EDIT, MODE_VIEW, ViewMode } from './Header';
 import Menu from './Menu';
 import Modal404 from './Modal404';
 import ModalAbout from './ModalAbout';
@@ -193,6 +193,7 @@ interface State {
   reconnectCooloff: number;
   reconnectTimeout: number;
   saving: boolean;
+  windowWidth: number;
   wsError: boolean;
 }
 
@@ -226,12 +227,13 @@ export default class App extends React.PureComponent<Props, State> {
     login: false,
     logs: '',
     menu: false,
-    mode: MODE_BOTH,
+    mode: window.innerWidth >= MIN_BOTH_WIDTH ? MODE_BOTH : MODE_VIEW,
     pendingPreviews: 0,
     publish: false,
     reconnectCooloff: INITIAL_WS_COOLOFF,
     reconnectTimeout: NaN,
     saving: false,
+    windowWidth: window.innerWidth,
     wsError: false,
   };
 
@@ -240,6 +242,10 @@ export default class App extends React.PureComponent<Props, State> {
   private rpc: RPCClient | null = null;
   private socket: WebSocket | null = null;
   private standaloneAppHost: StandaloneAppHost | null = null;
+
+  componentDidMount(): void {
+    window.addEventListener('resize', this.handleWindowResize);
+  }
 
   componentDidUpdate(prevProps: Props): void {
     if (this.props.edit !== prevProps.edit) {
@@ -268,6 +274,7 @@ export default class App extends React.PureComponent<Props, State> {
   componentWillUnmount(): void {
     this.disconnectWS();
     window.removeEventListener('beforeunload', this.handleBeforeUnload);
+    window.addEventListener('resize', this.handleWindowResize);
     setEditingNotificationHandler(null);
   }
 
@@ -277,6 +284,7 @@ export default class App extends React.PureComponent<Props, State> {
         logs,
         mode,
         defaultSelection,
+        windowWidth,
       },
       props: {
         auth,
@@ -300,6 +308,7 @@ export default class App extends React.PureComponent<Props, State> {
         onShowPublish={this.handleShowPublish}
         song={edit}
         isDirty={this.isDirty()}
+        windowWidth={windowWidth}
       />
     );
 
@@ -830,6 +839,17 @@ export default class App extends React.PureComponent<Props, State> {
     }
   }
 
+  private handleWindowResize = (): void => {
+    this.setState({
+      windowWidth: window.innerWidth,
+    });
+    if (this.state.mode === MODE_BOTH && window.innerWidth <= MIN_BOTH_WIDTH) {
+      this.setState({
+        mode: MODE_VIEW,
+      });
+    }
+  }
+
   private handleWSError = (e: ErrorEvent): void => {
     if (!this.socket) {
       return;
@@ -967,6 +987,7 @@ export default class App extends React.PureComponent<Props, State> {
         return (
           <Menu
             auth={auth}
+            windowWidth={this.state.windowWidth}
             onDeleteSong={this.handleDeleteSong}
             onHide={this.handleHideMenu}
             onShowAbout={this.handleShowHelp}

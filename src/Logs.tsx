@@ -49,14 +49,22 @@ export default class Logs extends React.Component<Props, State> {
     }
 
     if (hover) {
+      // The mask is so that on touch devices where onMouseLeave is supported,
+      // if the user taps outside of the logs, the logs go away.
       return (
         <div
-          className={css(BUTTON_STYLE.buttonStyle, LOGS_STYLE.logsButton)}
-          onMouseLeave={this.handleMouseLeave}
+            className={css(LOGS_STYLE.mask)}
+            onClick={this.handleMouseLeave}
+            role="presentation"
         >
-          <pre style={{ whiteSpace: 'pre-wrap' }}>
-            {logs}
-          </pre>
+          <div
+            className={css(BUTTON_STYLE.buttonStyle, LOGS_STYLE.logsButton)}
+            onMouseLeave={this.handleMouseLeave}
+          >
+            <pre style={{ whiteSpace: 'pre-wrap' }}>
+              {logs}
+            </pre>
+          </div>
         </div>
       );
     }
@@ -64,7 +72,9 @@ export default class Logs extends React.Component<Props, State> {
     return (
       <div
         className={css(BUTTON_STYLE.buttonStyle, LOGS_STYLE.logsButton)}
+        onClick={this.handleMouseClick}
         onMouseEnter={this.handleMouseEnter}
+        role="button"
       >
         <i className="fa fa-file-o" aria-hidden={true} />{' '}
         Logs
@@ -72,10 +82,22 @@ export default class Logs extends React.Component<Props, State> {
     );
   }
 
+  private handleMouseClick = (): void => {
+    // For touch browsers.
+    this.handleMouseEnter();
+  }
+
   private handleMouseEnter = (): void => {
-    this.setState({
-      hover: true,
-    });
+    // HACK: in mobile, for some reason if we do this right away,
+    // the mask's click event also goes through.
+    setTimeout(
+      () => {
+        this.setState({
+          hover: true,
+        });
+      },
+      10,
+    );
   }
 
   private handleMouseLeave = (): void => {

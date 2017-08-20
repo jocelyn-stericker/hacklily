@@ -30,6 +30,7 @@ export type ViewMode = 'view' | 'edit' | 'both';
 export const MODE_VIEW: ViewMode = 'view';
 export const MODE_BOTH: ViewMode = 'both';
 export const MODE_EDIT: ViewMode = 'edit';
+export const MIN_BOTH_WIDTH: number = 630;
 
 interface Props {
   isDirty: boolean;
@@ -37,6 +38,7 @@ interface Props {
   mode: ViewMode;
   online: boolean;
   song: string | undefined;
+  windowWidth: number;
   onModeChanged(mode: ViewMode): void;
   onShowMenu(): void;
   onShowNew(): void;
@@ -52,19 +54,20 @@ function last<T>(t: T[]): T {
  */
 export default class Header extends React.PureComponent<Props, void> {
   render(): JSX.Element {
-    const { mode, loggedIn, onModeChanged, onShowMenu } = this.props;
-    const modeButtons: ButtonSpec[] = [
-      {
-        content: (
-          <i
-            aria-hidden={true}
-            className={`fa fa-eye ${css(HEADER_STYLE.modeItem)}`}
-          />
-        ),
-        title: 'View',
-        value: MODE_VIEW,
-      },
-      {
+    const { mode, loggedIn, onModeChanged, onShowMenu, windowWidth } = this.props;
+    const modeButtons: ButtonSpec[] = [];
+    modeButtons.push({
+      content: (
+        <i
+          aria-hidden={true}
+          className={`fa fa-eye ${css(HEADER_STYLE.modeItem)}`}
+        />
+      ),
+      title: 'View',
+      value: MODE_VIEW,
+    });
+    if (windowWidth >= MIN_BOTH_WIDTH) {
+      modeButtons.push({
         content: (
           <i
             aria-hidden={true}
@@ -73,23 +76,23 @@ export default class Header extends React.PureComponent<Props, void> {
         ),
         title: 'Split screen between viewer and editor',
         value: MODE_BOTH,
-      },
-      {
-        content: (
-          <i
-            aria-hidden={true}
-            className={`fa fa-pencil ${css(HEADER_STYLE.modeItem)}`}
-          />
-        ),
-        title: 'Edit',
-        value: MODE_EDIT,
-      },
-    ];
-    const communityToolbar: React.ReactNode = this.renderCommunityToolbar();
+      });
+    }
+    modeButtons.push({
+      content: (
+        <i
+          aria-hidden={true}
+          className={`fa fa-pencil ${css(HEADER_STYLE.modeItem)}`}
+        />
+      ),
+      title: 'Edit',
+      value: MODE_EDIT,
+    });
 
-    return (
-      <div className="header">
-        <img src={logoSvg} className={css(HEADER_STYLE.logo)} alt="Frog, Hacklily logo" />
+    const communityToolbar: React.ReactNode = this.renderCommunityToolbar();
+    let menu: React.ReactNode = null;
+    if (windowWidth >= MIN_BOTH_WIDTH) {
+      menu = (
         <div className={css(HEADER_STYLE.headerGroupWrapper, HEADER_STYLE.songs)}>
           <button
             title="Menu"
@@ -103,6 +106,26 @@ export default class Header extends React.PureComponent<Props, void> {
             <i className="fa fa-chevron-down" aria-hidden={true} />
           </button>
         </div>
+      );
+    } else {
+      menu = (
+        <div className={css(HEADER_STYLE.headerGroupWrapper, HEADER_STYLE.songs)}>
+          <button
+            title="Menu"
+            className={css(BUTTON_STYLE.buttonStyle, HEADER_STYLE.songsText)}
+            onClick={onShowMenu}
+          >
+            <i className="fa-bars fa" />{' '}
+            Menu
+          </button>
+        </div>
+      );
+    }
+
+    return (
+      <div className="header">
+        <img src={logoSvg} className={css(HEADER_STYLE.logo)} alt="Frog, Hacklily logo" />
+        {menu || <span style={{ width: 10 }} />}
         <div className={css(HEADER_STYLE.headerGroupWrapper)}>
           <ButtonGroup
             value={mode}
@@ -116,27 +139,30 @@ export default class Header extends React.PureComponent<Props, void> {
     );
   }
   renderCommunityToolbar(): React.ReactNode {
-    const { online, song, onShowNew, onShowPublish, isDirty } = this.props;
+    const { online, song, onShowNew, onShowPublish, isDirty, windowWidth } = this.props;
+    const micro: boolean = windowWidth <= 500;
+
     let saveShare: React.ReactNode;
     if (song) {
       if (isDirty) {
         saveShare = (
           <span>
             <i className="fa fa-save" />{' '}
-            Save updates
+            {!micro && <span>Save updates</span>}
           </span>
         );
-      } else {
+      } else if (!micro) {
         saveShare = 'All changes saved.';
       }
     } else {
       saveShare = (
         <span>
           <i className="fa fa-save" />{' '}
-          Save / share
+          {!micro && <span>Save / share</span>}
         </span>
       );
     }
+
     if (!isDirty && !this.props.song) {
       return (
         <div className={css(HEADER_STYLE.headerGroupWrapper)}>
@@ -144,7 +170,7 @@ export default class Header extends React.PureComponent<Props, void> {
             title="Publish"
             className={css(HEADER_STYLE.newSong)}
           >
-            No changes made.
+            {!micro && <span>No changes made.</span>}
           </button>
         </div>
       );
@@ -157,7 +183,7 @@ export default class Header extends React.PureComponent<Props, void> {
             onClick={onShowNew}
           >
             <i className="fa fa-plus" />{' '}
-            New song
+            {!micro && <span>New song</span>}
           </button>
           <button
             title="Publish"

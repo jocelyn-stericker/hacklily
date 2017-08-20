@@ -121,6 +121,9 @@ export const MODAL_STYLE = StyleSheet.create({
     textDecoration: 'none',
   },
   gpl: {
+    '@media (max-width: 530px)': {
+      display: 'none',
+    },
     bottom: 10,
     position: 'absolute',
     right: 10,
@@ -142,16 +145,23 @@ export const MODAL_STYLE = StyleSheet.create({
     textAlign: 'center',
   },
   modal: {
+    '@media (max-width: 530px)': {
+      left: 0,
+      margin: 0,
+      position: 'fixed',
+      width: '100%',
+    },
     backgroundColor: 'white',
     border: '1px solid rgba(0, 0, 0, 0.3)',
     borderRadius: 6,
+    boxSizing: 'border-box',
     color: '#555555',
     left: '50%',
-    margin: '0 0 0 -250px',
+    margin: '0 0 0 -265px',
     padding: '15px 15px 0 15px',
     position: 'fixed',
     top: 80,
-    width: 500,
+    width: 530,
     zIndex: 1050,
   },
   modalBody: {
@@ -198,6 +208,9 @@ export const MENU_STYLE = StyleSheet.create({
   },
   menu: {
     '::after': {
+      '@media (max-width: 500px)': {
+        left: 97,
+      },
       borderBottomColor: 'white',
       borderLeftColor: 'transparent',
       borderRightColor: 'transparent',
@@ -212,6 +225,11 @@ export const MENU_STYLE = StyleSheet.create({
       pointerEvents: 'none',
       position: 'absolute',
       width: 0,
+    },
+    '@media (max-width: 500px)': {
+      left: 0,
+      position: 'fixed',
+      width: '100%',
     },
     backgroundColor: 'white',
     border: '1px solid rgba(0, 0, 0, 0.3)',
@@ -228,6 +246,9 @@ export const MENU_STYLE = StyleSheet.create({
 
   },
   menuColumn: {
+    '@media (max-width: 500px)': {
+      marginRight: 14,
+    },
     display: 'flex',
     flex: 1,
     flexDirection: 'column',
@@ -454,6 +475,13 @@ export const LOGS_STYLE = StyleSheet.create({
     bottom: 10,
     position: 'absolute',
     right: 20,
+  },
+  mask: {
+    bottom: 0,
+    left: 0,
+    position: 'fixed',
+    right: 0,
+    top: 0,
   },
 });
 
