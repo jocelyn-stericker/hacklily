@@ -32,8 +32,8 @@ yarn-error.log*
 
 # Qt-es
 
-/.qmake.cache
-/.qmake.stash
+.qmake.cache
+.qmake.stash
 *.pro.user
 *.pro.user.*
 *.qbs.user
