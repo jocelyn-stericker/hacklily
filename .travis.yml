@@ -1,0 +1,8 @@
+language: node_js
+node_js:
+- '8'
+before_install:
+- openssl aes-256-cbc -K $encrypted_ca0d0d91ab26_key -iv $encrypted_ca0d0d91ab26_iv -in secrets.tar.gz.enc -out ~/secrets.tar.gz -d
+- pushd ~; tar -xf ./secrets.tar.gz; popd
+script:
+- pwd; if [ "$TRAVIS_BRANCH" = "master" ]; then make deploy; else make test build-frontend; fi
