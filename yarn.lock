@@ -2721,11 +2721,11 @@ levn@~0.3.0:
     prelude-ls "~1.1.2"
     type-check "~0.3.2"
 
-license-webpack-plugin@0.5.0:
-  version "0.5.0"
-  resolved "https://registry.yarnpkg.com/license-webpack-plugin/-/license-webpack-plugin-0.5.0.tgz#4100d000e29abf4fd5bf75b5b2d2aa78bb100a37"
+license-webpack-plugin@1.0.0:
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/license-webpack-plugin/-/license-webpack-plugin-1.0.0.tgz#9515229075bacce8ec420cadf99a54a5f78cc7df"
   dependencies:
-    object-assign "^4.1.0"
+    ejs "^2.5.7"
 
 load-json-file@^1.0.0:
   version "1.1.0"

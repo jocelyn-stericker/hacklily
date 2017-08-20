@@ -12,8 +12,9 @@ const eslintFormatter = require('react-dev-utils/eslintFormatter');
 const ModuleScopePlugin = require('react-dev-utils/ModuleScopePlugin');
 const getClientEnvironment = require('./env');
 const paths = require('./paths');
-const LicenseWebpackPlugin = require('license-webpack-plugin');
+const {LicenseWebpackPlugin} = require('license-webpack-plugin');
 const FixDefaultImportPlugin = require('webpack-fix-default-import-plugin');
+const fs = require("fs");
 
 // Webpack uses `publicPath` to determine where the app is being served from.
 // In development, we always serve from the root. This makes config easier.
@@ -24,6 +25,25 @@ const publicPath = '/';
 const publicUrl = '';
 // Get environment variables to inject into our app.
 const env = getClientEnvironment(publicUrl);
+
+const commonEntries = [
+  // Include an alternative client for WebpackDevServer. A client's job is to
+  // connect to WebpackDevServer by a socket and get notified about changes.
+  // When you save a file, the client will either apply hot updates (in case
+  // of CSS changes), or refresh the page (in case of JS changes). When you
+  // make a syntax error, this client will display a syntax error overlay.
+  // Note: instead of the default WebpackDevServer client, we use a custom one
+  // to bring better experience for Create React App users. You can replace
+  // the line below with these two lines if you prefer the stock client:
+  // require.resolve('webpack-dev-server/client') + '?/',
+  // require.resolve('webpack/hot/dev-server'),
+  require.resolve('react-dev-utils/webpackHotDevClient'),
+  // We ship a few polyfills by default:
+  require.resolve('./polyfills'),
+  // Errors should be considered fatal in development
+  require.resolve('react-error-overlay'),
+];
+
 
 // This is the development configuration.
 // It is focused on developer experience and fast rebuilds.
@@ -36,28 +56,12 @@ module.exports = {
   // This means they will be the "root" imports that are included in JS bundle.
   // The first two entry points enable "hot" CSS and auto-refreshes for JS.
   entry: {
-    common: [
-      // Include an alternative client for WebpackDevServer. A client's job is to
-      // connect to WebpackDevServer by a socket and get notified about changes.
-      // When you save a file, the client will either apply hot updates (in case
-      // of CSS changes), or refresh the page (in case of JS changes). When you
-      // make a syntax error, this client will display a syntax error overlay.
-      // Note: instead of the default WebpackDevServer client, we use a custom one
-      // to bring better experience for Create React App users. You can replace
-      // the line below with these two lines if you prefer the stock client:
-      // require.resolve('webpack-dev-server/client') + '?/',
-      // require.resolve('webpack/hot/dev-server'),
-      require.resolve('react-dev-utils/webpackHotDevClient'),
-      // We ship a few polyfills by default:
-      require.resolve('./polyfills'),
-      // Errors should be considered fatal in development
-      require.resolve('react-error-overlay'),
-    ],
-
     app: [
+      ...commonEntries,
       paths.appIndexJs,
     ],
     status: [
+      ...commonEntries,
       paths.statusIndexJs,
     ],
   },
@@ -225,6 +229,11 @@ module.exports = {
       filename: "status.html",
       chunks: ['common', 'status'],
     }),
+    new HtmlWebpackPlugin({
+      inject: false,
+      template: paths.aboutJavascriptHtml,
+      filename: "about-javascript.html",
+    }),
     // Makes some environment variables available to the JS code, for example:
     // if (process.env.NODE_ENV === 'development') { ... }. See `./env.js`.
     new webpack.DefinePlugin(env.stringified),
@@ -254,8 +263,12 @@ module.exports = {
     new LicenseWebpackPlugin({
       pattern: /^.*$/,
       addUrl: true,
-      filename: "../public/3rdpartylicenses.txt"
+      filename: "../public/3rdpartylicenses.txt",
+      includePackagesWithoutLicense: true,
     }),
+    new webpack.BannerPlugin(
+      fs.readFileSync('./src/LICENSE_HEADER.txt', 'utf8')
+    ),
     // Allows syntethic default imports in TypeScript(e.g., import React from "react" instead of import * as React from "react")
     new FixDefaultImportPlugin(),
   ],

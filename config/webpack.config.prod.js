@@ -9,9 +9,10 @@ var ManifestPlugin = require('webpack-manifest-plugin');
 var InterpolateHtmlPlugin = require('react-dev-utils/InterpolateHtmlPlugin');
 var paths = require('./paths');
 var getClientEnvironment = require('./env');
-var LicenseWebpackPlugin = require('license-webpack-plugin');
+var {LicenseWebpackPlugin} = require('license-webpack-plugin');
 var FixDefaultImportPlugin = require('webpack-fix-default-import-plugin');
 var path = require("path");
+const fs = require("fs");
 
 
 
@@ -230,6 +231,11 @@ module.exports = {
       filename: "status.html",
       chunks: ['status']
     }),
+    new HtmlWebpackPlugin({
+      inject: false,
+      template: paths.aboutJavascriptHtml,
+      filename: "about-javascript.html",
+    }),
     // Makes some environment variables available to the JS code, for example:
     // if (process.env.NODE_ENV === 'production') { ... }. See `./env.js`.
     // It is absolutely essential that NODE_ENV was set to production here.
@@ -237,8 +243,6 @@ module.exports = {
     new webpack.DefinePlugin(env.stringified),
     // This helps ensure the builds are consistent if source hasn't changed:
     new webpack.optimize.OccurrenceOrderPlugin(),
-    // Try to dedupe duplicated modules, if any:
-    new webpack.optimize.DedupePlugin(),
     new CopyWebpackPlugin([
         {
             from: 'node_modules/monaco-editor/min/vs',
@@ -263,9 +267,12 @@ module.exports = {
       },
       output: {
         comments: false,
-        screw_ie8: true
+        screw_ie8: true,
       }
     }),
+    new webpack.BannerPlugin(
+      fs.readFileSync('./src/LICENSE_HEADER.txt', 'utf8')
+    ),
     // Note: this won't work without ExtractTextPlugin.extract(..) in `loaders`.
     new ExtractTextPlugin(cssFilename),
     // Generate a manifest file which contains a mapping of all asset filenames
@@ -273,7 +280,7 @@ module.exports = {
     // having to parse `index.html`.
     new ManifestPlugin({
       fileName: 'asset-manifest.json'
-    })
+    }),
   ],
   // Some libraries import Node modules but don't use them in the browser.
   // Tell Webpack to provide empty mocks for them so importing them works.

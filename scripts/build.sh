@@ -82,3 +82,12 @@ echo
 
 cd $DIR_ROOT
 yarn build-react-app
+
+# Patch vscode to satisfy librejs
+cat ./src/monacoConfig/LICENSE_HEADER.txt > ./build/vs/loader.js.tmp
+cat ./build/vs/loader.js >> ./build/vs/loader.js.tmp
+mv build/vs/loader.js.tmp ./build/vs/loader.js
+
+cat ./src/monacoConfig/LICENSE_HEADER.txt > ./build/vs/editor/editor.main.js.tmp
+cat ./build/vs/editor/editor.main.js >> ./build/vs/editor/editor.main.js.tmp
+mv ./build/vs/editor/editor.main.js.tmp ./build/vs/editor/editor.main.js

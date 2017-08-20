@@ -72,23 +72,37 @@ class ModalAbout extends React.PureComponent<Props, void> {
               {/*tslint:enable:no-http-string becuase of silly lilypond*/}
             </p>
             <p>
-              This project is open-source.
-              Please{' '}
+              You can view Hacklily's source and contribute code on{' '}
               <a
                 href="https://github.com/hacklily/hacklily"
                 target="_blank"
                 rel="noopener noreferrer"
               >
-                contribute on GitHub
-              </a>!
+                 GitHub
+              </a>.
             </p>
           </div>
           <div className={css(MODAL_STYLE.license)}>
             <p>
-              {/* index.html contains the jslicense1 rel for scrapers */}
-                See also the{' '}
+                This project is <a href="https://www.fsf.org/about/what-is-free-software">
+                free software</a>: you can
+                redistribute it and/or modify it under the terms of the GNU
+                General Public License (GNU GPL) as published by the Free Software
+                Foundation, either version 3 of the License, or (at your option)
+                any later version.  The code is distributed WITHOUT ANY WARRANTY;
+                without even the implied warranty of MERCHANTABILITY or FITNESS
+                FOR A PARTICULAR PURPOSE.  See the GNU GPL for more details.
+            </p>
+            <p>
+              <a href="https://www.gnu.org/licenses/gpl-3.0.html">
+                Read the GNU General Public License version 3.
+              </a>
+            </p>
+            <p>
+              {/* about-javascript.html contains the jslicense1 rel for scrapers */}
+                See {' '}
                 <a href="about-javascript.html">
-                  license statements
+                  additional license statements
                   <span className={css(MODAL_STYLE.gpl)}>
                   <img
                     src="gplv3-127x51.png"

@@ -1,10 +1,21 @@
 # Hacklily
 
-Hacklily is an online sheet-music editor and publishing tool. [Start writing music now!](https://hacklily.github.io)
+Hacklily is an online sheet-music editor and publishing tool. [Start writing music now!](https://hacklily.org)
 
-It consists of a frontend [Lilypond](http://lilypond.org/) editor using [monaco](https://github.com/microsoft/monaco-editor) and a backend Lilypond renderer. It can publish songs directly to Github.
+It consists of a frontend [Lilypond](http://lilypond.org/) editor using [monaco](https://github.com/microsoft/monaco-editor)
+(the editor that powers vscode) and a backend Lilypond renderer. It can publish songs directly to GitHub.
 
 ## License
+
+Out of respect for the Lilypond project that Hacklily relies on, and
+to ensure all forks of Hacklily remain free software, the client is
+licensed under the terms of the GNU GPL version 3 or later (with
+additional permissions as described below), and the server is licensed
+under the terms of the GNU AGPL version 3 or later.
+
+### Client
+
+Everything except for the server (located in `server/`) is licensed as follows:
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -19,6 +30,40 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+As additional permission under GNU GPL version 3 section 7, you
+may distribute non-source (e.g., minimized or compacted) forms of
+that code without the copy of the GNU GPL normally required by
+section 4, provided you include this license notice and a URL
+through which recipients can access the Corresponding Source.
+
+As additional permission under GNU GPL version 3 section 7,
+the term "System Libraries" is extended to include the JavaScript
+libraries provided with any browser. If you modify this code, you
+may extend this exception to your version of the code, but you are
+not obligated to do so. If you do not wish to do so, delete this
+exception statement from your version. 
+
+See the full license in LICENSE.txt.
+
+### Server
+
+The server (located in `server/`) is licensed as follows:
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU Affero General Public License as
+published by the Free Software Foundation, either version 3 of the
+License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Affero General Public License for more details.
+
+You should have received a copy of the GNU Affero General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+See the full license in LICENSE.AGPL.txt.
+
 ## Running locally
 
 ### Dependencies
@@ -27,8 +72,9 @@ You need:
 
 - [Node](https://nodejs.org/en/) -- tested with Node 7, earlier versions may or may not also work
 - [Yarn](https://yarnpkg.com/lang/en/docs/install/)
-- [Qt 5](https://www.qt.io/) -- with qmake in your path
+- [Qt 5](https://www.qt.io/) -- with qmake in your path (installing directly from Qt's website is encouraged on macOS)
 - [Docker](https://www.docker.com/)
+- an OS that is not Windows. It might work on Windows, but you're on your own.
 
 ### Obtaining
 
@@ -46,9 +92,30 @@ git clone https://github.com/hacklily/hacklily.git
 
 ### Running
 
-#### Client
+Once you have installed the above dependencies, run
 
-To run the frontend, run:
+```bash
+make serve
+```
+
+#### Running with access to a repository on GitHub
+
+**For most development, the steps in "Running" (above) are sufficient**.
+
+If you specifically wish to test integration with GitHub, follow the steps in this section.
+
+First, create a GitHub organization by following the steps at https://github.com/organizations/new.
+Select the free plan.
+
+Secondly, create a new app at https://github.com/organizations/<your-new-repo-name>/settings/applications,
+making note of the client ID and secret. This application will be used to allow users to log in.
+
+Next, create a Personal Access Token (PAT) at https://github.com/settings/tokens with access to
+'repo' and 'admin'. This PAT will be used to create repositories for users of Hacklily. Alternatively,
+if you do not wish to hand over access to all your repos, you can create an account that just manages
+your created organization and use that.
+
+To run the frontend, in one shell run:
 
 ```bash
 cd hacklily
@@ -59,14 +126,8 @@ env \
   yarn start
 ```
 
-You can omit `REACT_APP_GITHUB_CLIENT_ID` if you do not want to enable the GitHub integration.
-The port in `REACT_APP_BACKEND_WS_URL` should match the `--ws-port` argument you enter for the
-server in the next step.
-
 At this point, you should be able to navigate to `http://localhost:3000` to see the app, but you
-will get an erro in the preview pane since the server is not running.
-
-#### Server
+will get an error in the preview pane since the server is not running.
 
 In another shell, to run the backend, run:
 
@@ -97,6 +158,12 @@ Then, in a browser navigate to [http://localhost:3000](http://localhost:3000).
 
 ## Contributing
 
-Please do! Fork this repo and submit a PR. Your submission must be under the above license.
+Please do! Fork this repo and submit a PR. Your submission must be under the above licenses.
+Add your name in the license header to any file in which you add 15 lines or more.
 
 You can reach the maintainer by email at `joshua@nettek.ca`.
+
+## Deployment
+
+`make deploy` updates https://github.com/hacklily/hacklily.github.io. When these files change,
+GitHub starts serving new files to https://www.hacklily.org. This is done by Travis.

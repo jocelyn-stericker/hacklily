@@ -1,0 +1,33 @@
+@source: https://github.com/jnetterf/hacklily/archive/master.tar.gz
+
+@licstart  The following is the entire license notice for the 
+ JavaScript code in this page.
+
+Copyright (C) 2017 - present Joshua Netterfield <joshua@nettek.ca>
+
+The JavaScript code in this page is free software: you can
+redistribute it and/or modify it under the terms of the GNU
+General Public License (GNU GPL) as published by the Free Software
+Foundation, either version 3 of the License, or (at your option)
+any later version.  The code is distributed WITHOUT ANY WARRANTY;
+without even the implied warranty of MERCHANTABILITY or FITNESS
+FOR A PARTICULAR PURPOSE.  See the GNU GPL for more details.
+
+As additional permission under GNU GPL version 3 section 7, you
+may distribute non-source (e.g., minimized or compacted) forms of
+that code without the copy of the GNU GPL normally required by
+section 4, provided you include this license notice and a URL
+through which recipients can access the Corresponding Source.
+
+As additional permission under GNU GPL version 3 section 7,
+the term "System Libraries" is extended to include the JavaScript
+libraries provided with any browser. If you modify this code, you
+may extend this exception to your version of the code, but you are
+not obligated to do so. If you do not wish to do so, delete this
+exception statement from your version. 
+
+SEE ADDITIONAL COPYRIGHT NOTICES AT /about-javascript.html.
+
+@licend  The above is the entire license notice
+for the JavaScript code in this file.
+
