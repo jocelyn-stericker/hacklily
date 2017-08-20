@@ -54,7 +54,7 @@ const PUBLIC_READONLY: string = 'PUBLIC_READONLY';
 /**
  * Properties derived from URL.
  *
- * e.g., https://hacklily.github.io/?edit=hacklily/user-jnetterf/test.ly =>
+ * e.g., https://www.hacklily.org/?edit=hacklily/user-jnetterf/test.ly =>
  *   {
  *     edit: 'hacklily/user-jnetterf/test.ly',
  *   }

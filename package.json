@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "license": "GPLv3",
-  "homepage": "https://hacklily.github.io",
+  "homepage": "https://www.hacklily.org",
   "dependencies": {
     "aphrodite": "^1.2.1",
     "lodash.debounce": "4.0.8",

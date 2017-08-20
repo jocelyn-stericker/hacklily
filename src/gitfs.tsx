@@ -109,7 +109,7 @@ export async function write(
       body: JSON.stringify({
         branch: ref,
         content: base64,
-        message: 'Saved via hacklily.github.io',
+        message: `Saved via ${process.env.HOMEPAGE || 'Hacklily'}`,
         sha: sha ? sha : undefined,
       }),
       headers: {
@@ -142,7 +142,7 @@ export async function rm(
     {
       body: JSON.stringify({
         branch: ref,
-        message: 'Deleted via hacklily.github.io',
+        message: `Saved via ${process.env.HOMEPAGE || 'Hacklily'}`,
         sha: sha ? sha : undefined,
       }),
       headers: {

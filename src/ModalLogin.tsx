@@ -124,7 +124,7 @@ export default class ModalLogin extends React.PureComponent<Props, void> {
             <p className={css(MODAL_STYLE.signInPrivacy)}>
               Songs you save will be hosted <strong>publically</strong> at{' '}
               <code className={css(MODAL_STYLE.shareURL)}>
-                https://hacklily.github.io/u/&lt;your-github-username&gt;
+                {process.env.HOMEPAGE}/u/&lt;your-github-username&gt;
               </code>
             </p>
             <p className={css(MODAL_STYLE.login)}>
