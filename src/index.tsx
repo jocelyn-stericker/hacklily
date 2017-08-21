@@ -141,8 +141,10 @@ function setAuth(auth: Auth | null): void {
 function setCSRF(csrf: string | null): void {
   if (!csrf) {
     delete localStorage.csrf;
+    delete localStorage.csrfQueryParams;
   } else {
     localStorage.csrf = csrf;
+    localStorage.csrfQueryParams = JSON.stringify(getQueryProps(), null, 2);
   }
   render();
 }
@@ -154,4 +156,13 @@ window.addEventListener('popstate', (ev: PopStateEvent): void => {
   render();
 });
 
-render();
+// Add back query props during OAuth flow, if needed.
+const queryProps: QueryProps = getQueryProps();
+if (queryProps.state === localStorage.csrf && localStorage.csrf &&
+    localStorage.csrfQueryParams) {
+  // no need to render, because setQuery calls render.
+  const newQuery: QueryProps = JSON.parse(localStorage.csrfQueryParams);
+  setQuery(newQuery);
+} else {
+  render();
+}

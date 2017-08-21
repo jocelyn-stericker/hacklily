@@ -162,7 +162,7 @@ export async function revokeGitHubAuth(rpc: RPCClient, token: string): Promise<v
     alert('Could not revoke GitHub authorization. ' +
       'If you would like, you can manually do this from your GitHub settings.');
   } finally {
-    window.location.href = '/';
+    window.location.reload();
   }
 }
 
