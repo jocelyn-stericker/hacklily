@@ -65,6 +65,11 @@
         cursor: pointer;
         padding: 0;
       }
+
+      .ReactModal__Body--open {
+        min-height: 600px;
+        overflow: scroll;
+      }
     </style>
     <% if (htmlWebpackPlugin.options.isStandalone) { %>
     <!-- Qt API for communicating with standalone wrapper. -->
