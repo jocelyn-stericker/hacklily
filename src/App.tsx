@@ -420,10 +420,24 @@ export default class App extends React.PureComponent<Props, State> {
     if (edit === 'null' || !edit) {
       return;
     }
-    if (!auth) {
+
+    const path: string[] = edit.split('/');
+    const requestedRepo: string = `${path[0]}/${path[1]}`;
+    const requestedFile: string = path.slice(2).join('/');
+
+    // TODO(joshuan): For logged in users, allow them to edit files in any
+    // repo they control.
+
+    if (!auth || auth.repo !== requestedRepo) {
       const req: Response = await fetch(
-        `https://raw.githubusercontent.com/hacklily/` +
-        `user-jnetterf/master/beginnings-and-endings.ly`);
+        `https://raw.githubusercontent.com/${requestedRepo}/` +
+        `master/${requestedFile}`);
+
+      if (req.status >= 400) {
+        alert('Could not fetch the requested song.');
+
+        return;
+      }
       const content: string = await req.text();
       const cleanSongs: {[key: string]: Song} = JSON.parse(JSON.stringify(this.state.cleanSongs));
       if (cleanSongs[edit]) {
@@ -441,9 +455,9 @@ export default class App extends React.PureComponent<Props, State> {
 
       return;
     }
-    const path: string = last(edit.split('/'));
+
     try {
-      const { content, sha } = await cat(auth.accessToken, auth.repo, path);
+      const { content, sha } = await cat(auth.accessToken, auth.repo, requestedFile);
       const cleanSongs: {[key: string]: Song} = JSON.parse(JSON.stringify(this.state.cleanSongs));
       cleanSongs[edit] = {
         baseSHA: sha,
