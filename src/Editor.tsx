@@ -119,7 +119,7 @@ export default class Editor extends React.PureComponent<Props, void> {
     }
   }
 
-  render(): JSX.Element {
+  render(): JSX.Element | null {
     const { code, mode, onSetCode, readOnly } = this.props;
     const monacoOptions: monaco.editor.IEditorOptions = {
       autoClosingBrackets: true,
@@ -136,6 +136,10 @@ export default class Editor extends React.PureComponent<Props, void> {
           read-only &mdash; to edit, log in as the owner or save a copy
         </div>
       );
+    }
+
+    if (code === null || code === undefined) {
+      return null;
     }
 
     // NOTE: we have to key ReactMonacoEditor, because we need to force a reload
