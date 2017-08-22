@@ -333,6 +333,7 @@ export default class App extends React.PureComponent<Props, State> {
         onShowPublish={this.handleShowPublish}
         sandboxIsDirty={sandboxIsDirty}
         song={edit}
+        inSandbox={!this.props.edit}
         isDirty={this.isDirty()}
         windowWidth={windowWidth}
       />
