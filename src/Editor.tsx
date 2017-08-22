@@ -133,15 +133,18 @@ export default class Editor extends React.PureComponent<Props, void> {
       readOnlyNotice = (
         <div className={css(APP_STYLE.readOnlyNotification)}>
           <i className="fa-lock fa" />{' '}
-          read-only &mdash; log in as the owner to edit
+          read-only &mdash; to edit, log in as the owner or save a copy
         </div>
       );
     }
 
+    // NOTE: we have to key ReactMonacoEditor, because we need to force a reload
+    // when that changes.
     return (
       <div className={`monaco ${css(mode === MODE_VIEW && APP_STYLE.monacoHidden)}`}>
         {readOnlyNotice}
         <ReactMonacoEditor
+          key={readOnly ? 'read-only' : 'read-write'}
           editorDidMount={this.handleEditorDidMount}
           editorWillMount={this.handleEditorWillMount}
           height="100%"

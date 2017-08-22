@@ -162,7 +162,7 @@ if (queryProps.state === localStorage.csrf && localStorage.csrf &&
     localStorage.csrfQueryParams) {
   // no need to render, because setQuery calls render.
   const newQuery: QueryProps = JSON.parse(localStorage.csrfQueryParams);
-  setQuery(newQuery);
+  setQuery(newQuery, true);
 } else {
   render();
 }

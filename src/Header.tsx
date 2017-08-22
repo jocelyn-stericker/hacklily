@@ -40,6 +40,7 @@ interface Props {
   song: string | undefined;
   windowWidth: number;
   onModeChanged(mode: ViewMode): void;
+  onShowClone(): void;
   onShowMenu(): void;
   onShowNew(): void;
   onShowPublish(): void;
@@ -139,8 +140,9 @@ export default class Header extends React.PureComponent<Props, void> {
     );
   }
   renderCommunityToolbar(): React.ReactNode {
-    const { online, song, onShowNew, onShowPublish, isDirty, windowWidth } = this.props;
-    const micro: boolean = windowWidth <= 500;
+    const { online, song, onShowClone, onShowNew, onShowPublish, isDirty, windowWidth,
+      } = this.props;
+    const micro: boolean = windowWidth <= 750;
 
     let saveShare: React.ReactNode;
     if (song) {
@@ -177,6 +179,14 @@ export default class Header extends React.PureComponent<Props, void> {
     } else if (online) {
       return (
         <div className={css(HEADER_STYLE.headerGroupWrapper)}>
+          <button
+            title="Save As"
+            className={css(HEADER_STYLE.newSong)}
+            onClick={onShowClone}
+          >
+            <i className="fa fa-clone" />{' '}
+            {!micro && <span>Save As</span>}
+          </button>
           <button
             title="Publish"
             className={css(HEADER_STYLE.newSong)}

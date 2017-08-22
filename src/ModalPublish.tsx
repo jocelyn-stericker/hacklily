@@ -106,7 +106,7 @@ class ModalPublish extends React.PureComponent<Props, State> {
               <span className={css(PUBLISH_STYLE.cell)}>
                 Save to:
                 <code className={css(PUBLISH_STYLE.mono)}>
-                  &nbsp;https://{auth.repo.split('/')[0]}.github.io/u/{auth.username}/
+                  &nbsp;{process.env.HOMEPAGE}/u/{auth.username}/
                 </code>
               </span>
               <input

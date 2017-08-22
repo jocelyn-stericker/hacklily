@@ -92,6 +92,12 @@ export interface QueryProps {
   edit?: string;
 
   /**
+   * If truthy, and we are authenticated, show a dialog to save a
+   * copy of this song.
+   */
+  saveAs?: string;
+
+  /**
    * In standalone mode, whether to show the import dialog.
    */
   standaloneImport?: boolean;
@@ -111,6 +117,7 @@ export const QUERY_PROP_KEYS: (keyof QueryProps)[] = [
   'about',
   'code',
   'edit',
+  'saveAs',
   'state',
   'standaloneImport',
 ];
@@ -259,6 +266,17 @@ export default class App extends React.PureComponent<Props, State> {
     if (this.props.isStandalone && !this.props.auth && this.props.csrf && !this.props.code) {
       redirectToLogin(this.props.csrf);
     }
+
+    if (!this.props.auth && !this.state.login &&
+        !this.props.state && this.props.saveAs) {
+      // We're not in a situation where we can save as, so remove that query.
+      this.props.setQuery(
+        {
+          saveAs: undefined,
+        },
+        true,
+      );
+    }
   }
 
   componentWillMount(): void {
@@ -307,6 +325,7 @@ export default class App extends React.PureComponent<Props, State> {
         online={online}
         loggedIn={auth !== null}
         onModeChanged={this.handleModeChanged}
+        onShowClone={this.handleShowSaveAs}
         onShowMenu={this.handleShowMenu}
         onShowNew={this.handleShowNew}
         onShowPublish={this.handleShowPublish}
@@ -328,7 +347,7 @@ export default class App extends React.PureComponent<Props, State> {
             onSetCode={this.handleCodeChanged}
             logs={logs}
             defaultSelection={defaultSelection}
-            readOnly={song ? song.baseSHA === PUBLIC_READONLY : true}
+            readOnly={song ? song.baseSHA === PUBLIC_READONLY : false}
           />
           {preview}
         </div>
@@ -596,9 +615,15 @@ export default class App extends React.PureComponent<Props, State> {
   }
 
   private handleHidePublish = (): void => {
-    this.setState({
-      publish: false,
-    });
+    if (this.props.saveAs) {
+      this.props.setQuery({
+        saveAs: undefined,
+      });
+    } else {
+      this.setState({
+        publish: false,
+      });
+    }
     if (this.state.interstitialChanges) {
       this.cancelInterstitial();
     }
@@ -703,6 +728,7 @@ export default class App extends React.PureComponent<Props, State> {
     } else {
       this.props.setQuery({
         edit,
+        saveAs: undefined,
       });
     }
 
@@ -746,6 +772,26 @@ export default class App extends React.PureComponent<Props, State> {
     }
   }
 
+  private handleShowSaveAs = (): void => {
+    if (!this.props.auth) {
+      this.setState({
+        connectToGitHubReason: 'Connect to GitHub to save a copy of this song',
+        login: true,
+      });
+      this.props.setQuery(
+        {
+          saveAs: '1',
+        },
+        // HACK: replace because going back in history won't clear the login modal
+        true,
+      );
+    } else {
+      this.props.setQuery({
+        saveAs: '1',
+      });
+    }
+  }
+
   private handleShowHelp = (): void => {
     this.setState({
       menu: false,
@@ -767,7 +813,9 @@ export default class App extends React.PureComponent<Props, State> {
   }
 
   private handleShowNew = (): void => {
-    if (!this.props.auth) {
+    const isClean: boolean = !this.props.dirtySongs[this.props.edit || 'null'];
+
+    if (!this.props.auth && !isClean) {
       this.setState({
         connectToGitHubReason: 'Connect to GitHub to save this song',
         login: true,
@@ -901,11 +949,15 @@ export default class App extends React.PureComponent<Props, State> {
           this.props.state,
           this.props.csrf,
         );
+        // Note: needs to be in this order, or saveAs will disappear.
         this.props.setAuth(auth);
-        this.props.setQuery({
-          code: undefined,
-          state: undefined,
-        });
+        this.props.setQuery(
+          {
+            code: undefined,
+            state: undefined,
+          },
+          true,
+        );
       } catch (err) {
         alert(err.message || 'Could not log you in');
       }
@@ -955,6 +1007,7 @@ export default class App extends React.PureComponent<Props, State> {
         isStandalone,
         setCSRF,
         '404': _404,
+        saveAs,
       },
     } = this;
     const song: Song | undefined = this.song();
@@ -981,6 +1034,7 @@ export default class App extends React.PureComponent<Props, State> {
       case login:
         return (
           <ModalLogin
+            key={location.href/* force new csrf on url change */}
             connectToGitHubReason={connectToGitHubReason}
             onHide={this.handleHideLogin}
             csrf={csrf}
@@ -993,7 +1047,7 @@ export default class App extends React.PureComponent<Props, State> {
             onHide={this.handleHideHelp}
           />
         );
-      case publish:
+      case publish || Boolean(saveAs):
         if (song && auth && this.rpc && !isStandalone) {
           return (
             <ModalPublish
