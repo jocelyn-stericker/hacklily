@@ -37,6 +37,7 @@ interface Props {
   loggedIn: boolean;
   mode: ViewMode;
   online: boolean;
+  sandboxIsDirty: boolean;
   song: string | undefined;
   windowWidth: number;
   onModeChanged(mode: ViewMode): void;
@@ -141,8 +142,10 @@ export default class Header extends React.PureComponent<Props, void> {
   }
   renderCommunityToolbar(): React.ReactNode {
     const { online, song, onShowClone, onShowNew, onShowPublish, isDirty, windowWidth,
-      } = this.props;
+      sandboxIsDirty} = this.props;
     const micro: boolean = windowWidth <= 750;
+
+    const goToSandbox: string = sandboxIsDirty ? 'Back to scratchpad' : 'New song';
 
     let saveShare: React.ReactNode;
     if (song) {
@@ -180,20 +183,20 @@ export default class Header extends React.PureComponent<Props, void> {
       return (
         <div className={css(HEADER_STYLE.headerGroupWrapper)}>
           <button
+            title="Publish"
+            className={css(HEADER_STYLE.newSong)}
+            onClick={onShowNew}
+          >
+            <i className={`fa ${sandboxIsDirty ? 'fa-chevron-left' : 'fa-plus'}`} />{' '}
+            {!micro && <span>{goToSandbox}</span>}
+          </button>
+          <button
             title="Save As"
             className={css(HEADER_STYLE.newSong)}
             onClick={onShowClone}
           >
             <i className="fa fa-clone" />{' '}
             {!micro && <span>Save As</span>}
-          </button>
-          <button
-            title="Publish"
-            className={css(HEADER_STYLE.newSong)}
-            onClick={onShowNew}
-          >
-            <i className="fa fa-plus" />{' '}
-            {!micro && <span>New song</span>}
           </button>
           <button
             title="Publish"

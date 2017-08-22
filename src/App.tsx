@@ -318,6 +318,8 @@ export default class App extends React.PureComponent<Props, State> {
     const online: boolean = this.isOnline();
     const preview: React.ReactNode = this.renderPreview();
     const song: Song | undefined = this.song();
+    const sandboxIsDirty: boolean = Boolean(this.props.edit) &&
+      Boolean(this.props.dirtySongs.null);
 
     const header: React.ReactNode = !isStandalone && (
       <Header
@@ -329,6 +331,7 @@ export default class App extends React.PureComponent<Props, State> {
         onShowMenu={this.handleShowMenu}
         onShowNew={this.handleShowNew}
         onShowPublish={this.handleShowPublish}
+        sandboxIsDirty={sandboxIsDirty}
         song={edit}
         isDirty={this.isDirty()}
         windowWidth={windowWidth}
@@ -771,27 +774,6 @@ export default class App extends React.PureComponent<Props, State> {
       });
     }
   }
-
-  private handleShowSaveAs = (): void => {
-    if (!this.props.auth) {
-      this.setState({
-        connectToGitHubReason: 'Connect to GitHub to save a copy of this song',
-        login: true,
-      });
-      this.props.setQuery(
-        {
-          saveAs: '1',
-        },
-        // HACK: replace because going back in history won't clear the login modal
-        true,
-      );
-    } else {
-      this.props.setQuery({
-        saveAs: '1',
-      });
-    }
-  }
-
   private handleShowHelp = (): void => {
     this.setState({
       menu: false,
@@ -838,6 +820,26 @@ export default class App extends React.PureComponent<Props, State> {
     } else {
       this.setState({
         publish: true,
+      });
+    }
+  }
+
+  private handleShowSaveAs = (): void => {
+    if (!this.props.auth) {
+      this.setState({
+        connectToGitHubReason: 'Connect to GitHub to save a copy of this song',
+        login: true,
+      });
+      this.props.setQuery(
+        {
+          saveAs: '1',
+        },
+        // HACK: replace because going back in history won't clear the login modal
+        true,
+      );
+    } else {
+      this.props.setQuery({
+        saveAs: '1',
       });
     }
   }
