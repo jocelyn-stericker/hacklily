@@ -739,6 +739,12 @@ export default class App extends React.PureComponent<Props, State> {
     this.setState({
       publish: false,
     });
+
+    if (!this.rpc) {
+      throw new Error('Expected rpc to be defined');
+    }
+
+    this.rpc.call('notifySaved', {});
   }
 
   private handleResolveGitHub = (): void => {
@@ -901,6 +907,11 @@ export default class App extends React.PureComponent<Props, State> {
         alert(err.toString());
       }
 
+      if (!this.rpc) {
+        throw new Error('Expected rpc to be defined');
+      }
+
+      await this.rpc.call('notifySaved', {});
     } finally {
       this.setState({
         saving: false,

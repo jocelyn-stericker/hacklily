@@ -23,6 +23,7 @@
 #include <QObject>
 #include <QWebSocketServer>
 #include <QNetworkAccessManager>
+#include <QNetworkReply>
 #include <QList>
 #include <QProcess>
 #include <QTimer>
@@ -61,6 +62,7 @@ public:
         QByteArray ghSecret,
         QByteArray ghAdminToken,
         QString ghOrg,
+        QByteArray travisAdminToken,
         int jobs,
         QObject *parent = 0
     );
@@ -75,25 +77,33 @@ public:
 signals:
 
 private slots:
+    // Common
     void _handleNewConnection();
     void _handleTextMessageReceived(QString message);
     void _handleBinaryMessageReceived(QByteArray ba);
     void _handleSocketDisconnected();
     void _initRenderers();
+    void _initUpdateTimer();
     void _processIfPossible();
     void _handleRendererOutput();
     void _handleRepoCollaboratorsSet();
     void _sendUserInfo(QString requestID, int socketID);
 
-    // Login flow
+    // Coordinator -- login flow
     void _handleOAuthReply();
     void _handleUserReply();
     void _handleRepoCreation();
 
-    // Logout flow
+    // Coordinator -- logout flow
     void _handleOAuthDelete();
 
+    // Coordinator -- workers
     void _removeWorker();
+
+    // Coordinator -- content update
+    void _handleUserContentTimerFired();
+    void _handleUserContentTimerTriggerError(QNetworkReply::NetworkError code);
+    void _handleUserContentTimerTriggerFinished();
 
     // Worker
     void _openCoordinator();
@@ -112,6 +122,7 @@ private:
     QByteArray _ghSecret;
     QByteArray _ghAdminToken;
     QString _ghOrg;
+    QByteArray _travisAdminToken;
     QList<QWebSocket*> _freeWorkers;
     QMap<QString, QWebSocket*> _busyWorkers;
 
@@ -133,6 +144,8 @@ private:
 
     // state (coordinator)
     QWebSocketServer* _server;
+    bool _saveOccuredSinceLastPublish;
+    QTimer *_updateUserContentTimer;
 
     // state (worker)
     QWebSocket *_coordinator;

@@ -10,7 +10,7 @@ help:
 	@echo '             (`make serve` runs this for you)'
 	@echo ' - make serve-qt-bundle (serves a bundle that the desktop app can use)'
 	@echo ' - make run-backend (runs backend without frontend and without GitHub integration)'
-	@echo ' - yarn serve (runs frontend without a backend)'
+	@echo ' - yarn start (runs frontend without a backend)'
 	@echo ' - make test (runs tests once)'
 	@echo ' - make deploy-frontend (deploys to GitHub pages -- runs automatically on Travis)'
 

@@ -31,7 +31,7 @@ do
     if [ $? -eq 137 ]; then
         killall lilypond > /dev/null 2>&1
         echo '{"err": "Failed to render song."}'
-        lilypond /tmp/start.ly >2 &
+        /usr/bin/lilypond /tmp/start.ly >2 &
         sleep 2
         continue
     fi;

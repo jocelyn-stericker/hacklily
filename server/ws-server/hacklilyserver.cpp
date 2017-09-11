@@ -31,6 +31,7 @@ HacklilyServer::HacklilyServer(QString rendererDockerTag,
                                QByteArray ghSecret,
                                QByteArray ghAdminToken,
                                QString ghOrg,
+                               QByteArray travisAdminToken,
                                int jobs,
                                QObject *parent) :
     QObject(parent),
@@ -40,22 +41,33 @@ HacklilyServer::HacklilyServer(QString rendererDockerTag,
     _ghSecret(ghSecret),
     _ghAdminToken(ghAdminToken),
     _ghOrg(ghOrg),
+    _travisAdminToken(travisAdminToken),
     _lastSocketID(-1),
     _nam(new QNetworkAccessManager(this)),
     _maxJobs(jobs),
     _totalRenderRequests(0),
     _startupTime(QDateTime::currentDateTimeUtc()),
     _server(new QWebSocketServer("hacklily-server", QWebSocketServer::NonSecureMode, this)),
+    _saveOccuredSinceLastPublish(false),
+    _updateUserContentTimer(NULL),
     _coordinator(NULL),
     _coordinatorPingTimer(NULL)
 {
     _initRenderers();
+    _initUpdateTimer();
 
     if (!_server->listen(QHostAddress::Any, wsPort)) {
         qDebug() << "Failed to bind to port " << wsPort << ". Cannot continue";
         qFatal("Cannot continue");
     }
     connect(_server, &QWebSocketServer::newConnection, this, &HacklilyServer::_handleNewConnection);
+
+    if (!ghClientID.size()) {
+        qWarning() << "No gh client ID specified. GITHUB INTEGRATION DISABLED";
+    }
+    if (!ghSecret.size()) {
+        qWarning() << "No gh secret specified. GITHUB INTEGRATION DISABLED";
+    }
 }
 
 HacklilyServer::HacklilyServer(QString rendererDockerTag,
@@ -69,6 +81,8 @@ HacklilyServer::HacklilyServer(QString rendererDockerTag,
     _nam(new QNetworkAccessManager(this)),
     _maxJobs(jobs),
     _server(NULL),
+    _saveOccuredSinceLastPublish(false),
+    _updateUserContentTimer(NULL),
     _coordinator(NULL),
     _coordinatorPingTimer(NULL)
 {
@@ -128,11 +142,23 @@ void HacklilyServer::_handleTextMessageReceived(QString message) {
         req.sender->sendTextMessage(message);
         qDebug() << "Relayed message from worker.";
         _processIfPossible();
-    } else  if (requestObj["method"] == "ping") {
+    } else if (requestObj["method"] == "ping") {
         QJsonObject responseObj;
         responseObj["jsonrpc"] = "2.0";
         responseObj["id"] = requestObj["id"];
         responseObj["result"] = "pong";
+        QJsonDocument response;
+        response.setObject(responseObj);
+        auto responseJSONText = response.toJson(QJsonDocument::Compact);
+        socket->sendTextMessage(responseJSONText);
+    } else if (requestObj["method"] == "notifySaved") {
+        qDebug() << "Saved";
+        _saveOccuredSinceLastPublish = true;
+
+        QJsonObject responseObj;
+        responseObj["jsonrpc"] = "2.0";
+        responseObj["id"] = requestObj["id"];
+        responseObj["result"] = "ok";
         QJsonDocument response;
         response.setObject(responseObj);
         auto responseJSONText = response.toJson(QJsonDocument::Compact);
@@ -222,6 +248,7 @@ void HacklilyServer::_handleTextMessageReceived(QString message) {
         resultObj["backlog"] = _requests.size();
         resultObj["startup_time"] = _startupTime.toString(Qt::ISODate);
         resultObj["uptime_secs"] = _startupTime.secsTo(QDateTime::currentDateTimeUtc());
+        resultObj["update_pending"] = _saveOccuredSinceLastPublish;
 
         QJsonObject responseObj;
         responseObj["jsonrpc"] = "2.0";
@@ -271,8 +298,108 @@ void HacklilyServer::_initRenderers() {
         renderer->start("docker",
             QStringList() << "run" << "--rm" << "-i" <<  "--net=none" << "-m1g" << "--cpus=1" << _rendererDockerTag);
     }
-
 }
+
+void HacklilyServer::_initUpdateTimer() {
+    _updateUserContentTimer = new QTimer(this);
+    // Update user content every 6.5 minutes (this meets the travis limit of 10x per hour)
+    _updateUserContentTimer->setInterval((6 * 60 + 30) * 1000);
+    _updateUserContentTimer->setSingleShot(false);
+    connect(_updateUserContentTimer, &QTimer::timeout, this, &HacklilyServer::_handleUserContentTimerFired);
+    _updateUserContentTimer->start();
+}
+
+void HacklilyServer::_handleUserContentTimerFired() {
+    if (!_saveOccuredSinceLastPublish) {
+        qDebug() << "PUBLISH: no update occured since last publish, NOT triggering update.";
+        return;
+    }
+    if (!_travisAdminToken.size()) {
+        qWarning() << "PUBLISH: would trigger update, but there is no admin token specified!";
+        return;
+    }
+
+    qDebug() << "PUBLISH: triggering update";
+
+    QNetworkRequest request;
+    request.setUrl(QUrl("https://api.travis-ci.org/repo/" + _ghOrg + "%2Fu/requests"));
+    request.setRawHeader("Content-Type", QByteArray("application/json"));
+    request.setRawHeader("Accept", QByteArray("application/json"));
+    request.setRawHeader("Travis-API-Version", "3");
+    request.setRawHeader("Authorization", "token " + _travisAdminToken);
+    QNetworkReply* userReply = _nam->post(request, "{\"request\": {\"branch\": \"master\"}}");
+    connect(userReply, SIGNAL(error(QNetworkReply::NetworkError)), this, SLOT(_handleUserContentTimerTriggerError(QNetworkReply::NetworkError)));
+    connect(userReply, &QNetworkReply::finished, this, &HacklilyServer::_handleUserContentTimerTriggerFinished);
+}
+
+void HacklilyServer::_handleUserContentTimerTriggerError(QNetworkReply::NetworkError code) {
+    qWarning() << "PUBLISH: failed to trigger update (error code: " << code << ")";
+}
+
+void HacklilyServer::_handleUserContentTimerTriggerFinished() {
+    QNetworkReply* reply = qobject_cast<QNetworkReply *>(sender());
+
+    QByteArray responseResult = reply->readAll();
+    reply->deleteLater();
+    qDebug() << "PUBLISH: got reply" << responseResult;
+    _saveOccuredSinceLastPublish = false;
+}
+
+static const char *LILYPOND_INCLUDES[] = {
+    "Welcome-to-LilyPond-MacOS.ly",
+    "Welcome_to_LilyPond.ly",
+    "arabic.ly",
+    "articulate.ly",
+    "bagpipe.ly",
+    "catalan.ly",
+    "chord-modifiers-init.ly",
+    "chord-repetition-init.ly",
+    "context-mods-init.ly",
+    "declarations-init.ly",
+    "deutsch.ly",
+    "drumpitch-init.ly",
+    "dynamic-scripts-init.ly",
+    "english.ly",
+    "engraver-init.ly",
+    "espanol.ly",
+    "event-listener.ly",
+    "festival.ly",
+    "generate-documentation.ly",
+    "generate-interface-doc-init.ly",
+    "grace-init.ly",
+    "graphviz-init.ly",
+    "gregorian.ly",
+    "guile-debugger.ly",
+    "init.ly",
+    "italiano.ly",
+    "lilypond-book-preamble.ly",
+    "makam.ly",
+    "midi-init.ly",
+    "music-functions-init.ly",
+    "nederlands.ly",
+    "norsk.ly",
+    "paper-defaults-init.ly",
+    "performer-init.ly",
+    "portugues.ly",
+    "predefined-fretboards-init.ly",
+    "predefined-guitar-fretboards.ly",
+    "predefined-guitar-ninth-fretboards.ly",
+    "predefined-mandolin-fretboards.ly",
+    "predefined-ukulele-fretboards.ly",
+    "property-init.ly",
+    "scale-definitions-init.ly",
+    "scheme-sandbox.ly",
+    "script-init.ly",
+    "spanners-init.ly",
+    "string-tunings-init.ly",
+    "suomi.ly",
+    "svenska.ly",
+    "text-replacements.ly",
+    "titling-init.ly",
+    "toc-init.ly",
+    "vlaams.ly",
+    NULL
+};
 
 void HacklilyServer::_processIfPossible() {
     if (_requests.length() < 1) {
@@ -317,11 +444,23 @@ void HacklilyServer::_processIfPossible() {
         _localProcessingRequests[i] = request;
 
         QJsonObject requestObj;
+        QString modifiedSrc;
         if (request.backend == "svg") {
-            requestObj["src"] = "#(ly:set-option 'backend '" + request.backend + ")\n" + request.src;
+            modifiedSrc += "#(ly:set-option 'backend '" + request.backend + ")\n";
         } else {
-            requestObj["src"] = "\n" + request.src;
+            modifiedSrc += "\n";
         }
+        modifiedSrc += request.src;
+
+        // HACK: lys doesn't handle global includes, so lets handle them ourselves by
+        // outsmarting their regex.
+        for (int i = 0; LILYPOND_INCLUDES[i] != NULL; ++i) {
+            QString origStr = QString() + "\\include \"" + LILYPOND_INCLUDES[i] + "\"";
+            QString newStr = QString() + "\\include  \"" + LILYPOND_INCLUDES[i] + "\"";
+            modifiedSrc.replace(origStr, newStr);
+        }
+
+        requestObj["src"] = modifiedSrc;
         requestObj["backend"] = request.backend;
         QJsonDocument requestDoc;
         requestDoc.setObject(requestObj);
