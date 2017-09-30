@@ -646,6 +646,9 @@ void HacklilyServer::_handleUserReply() {
     userInfo.email = responseResultObj.value("email").toString();
     userInfo.name = responseResultObj.value("name").toString();
     userInfo.username = responseResultObj.value("login").toString();
+    if (!userInfo.name.size()) {
+        userInfo.name = userInfo.username;
+    }
     _userInfo[requestID] = userInfo;
 
     QNetworkRequest request;
