@@ -22,7 +22,7 @@ import { css } from 'aphrodite';
 import React from 'react';
 import * as ReactModal from 'react-modal';
 
-import { Conflict, File, ls, rm, write } from './gitfs';
+import { Conflict, File, FileNotFound, ls, rm, write } from './gitfs';
 import { Auth } from './ModalLogin';
 import ModalSaving from './ModalSaving';
 import RPCClient from './RPCClient';
@@ -39,6 +39,7 @@ interface Props {
 interface State {
   filename: string;
   files: File[] | null;
+  invitationRequired: boolean;
   saving: boolean;
 }
 
@@ -50,6 +51,7 @@ class ModalPublish extends React.PureComponent<Props, State> {
   state: State = {
     filename: '',
     files: null,
+    invitationRequired: false,
     saving: false,
   };
 
@@ -59,7 +61,8 @@ class ModalPublish extends React.PureComponent<Props, State> {
 
   render(): JSX.Element {
     const { auth, onHide } = this.props;
-    const { filename, files, saving } = this.state;
+    const { filename, files, invitationRequired, saving } = this.state;
+    let disabled: boolean = false;
 
     if (saving) {
       return <ModalSaving />;
@@ -67,6 +70,7 @@ class ModalPublish extends React.PureComponent<Props, State> {
 
     let error: React.ReactNode = null;
     if (!filename.length) {
+      disabled = true;
       error = (
         <span className={css(PUBLISH_STYLE.error)}>
           <i className="fa fa-exclamation-triangle" aria-hidden={true} />{' '}
@@ -74,10 +78,24 @@ class ModalPublish extends React.PureComponent<Props, State> {
         </span>
       );
     } else if (files && files.map((file: File) => file.path).indexOf(`${filename}.ly`) !== -1) {
+      disabled = true;
       error = (
         <span className={css(PUBLISH_STYLE.error)}>
           <i className="fa fa-exclamation-triangle" aria-hidden={true} />{' '}
           That filename is taken.
+        </span>
+      );
+    } else if (invitationRequired) {
+      error = (
+        <span className={css(PUBLISH_STYLE.error)}>
+          Permission denied. You may need to{' '}
+          <a
+              href={`https://github.com/${auth.repo}/invitations`}
+              target="_blank"
+              rel="noreferrer noopener"
+          >
+            enable write access
+          </a> then try agin!
         </span>
       );
     }
@@ -125,7 +143,7 @@ class ModalPublish extends React.PureComponent<Props, State> {
               <button
                 href="#"
                 onClick={this.handleSave}
-                disabled={error !== null}
+                disabled={disabled}
                 className={css(BUTTON_STYLE.buttonStyle, PUBLISH_STYLE.publishBtn)}
               >
                 <i className="fa fa-save" aria-hidden={true} />{' '}
@@ -155,6 +173,15 @@ class ModalPublish extends React.PureComponent<Props, State> {
       const { filename } = this.state;
       await publish(code, auth, `${filename}.ly`, rpc, false);
     } catch (err) {
+      if (err instanceof FileNotFound) {
+        didFail = true;
+        this.setState({
+          invitationRequired: true,
+        });
+
+        return;
+      }
+
       // tslint:disable-next-line:no-console
       console.log(err);
       alert(err.toString());
@@ -239,6 +266,10 @@ export async function publish(
       } else {
         throw new Error('This name is already taken.');
       }
+    } else if (err instanceof FileNotFound) {
+      // This is probably actually an authentication issue.
+      // Let the caller deal with daat.
+      throw err;
     } else {
       throw new Error('Could not save file.');
     }

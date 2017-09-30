@@ -125,6 +125,10 @@ export async function write(
     throw new Conflict();
   }
 
+  if (response.status === 404) {
+    throw new FileNotFound();
+  }
+
   if (response.status !== 200 && response.status !== 201) {
     throw new Error(`Status: ${response.statusText}`);
   }

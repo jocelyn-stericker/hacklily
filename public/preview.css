@@ -34,7 +34,7 @@ body.modeView {
 
 body.modeView #root {
   height: 100%;
-  white-space: nowrap;
+  white-space: pre-wrap;
 }
 
 svg {

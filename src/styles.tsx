@@ -499,7 +499,7 @@ export const PUBLISH_STYLE = StyleSheet.create({
   },
   error: {
     bottom: 20,
-    color: 'darkviolet',
+    color: 'red',
     fontFamily: 'sans-serif',
     fontSize: 14,
     position: 'absolute',
