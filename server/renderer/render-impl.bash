@@ -20,7 +20,10 @@ cat << EOF > /tmp/start.ly
 \\require "lys"
 #(lys:start-server)
 EOF
-lilypond /tmp/start.ly 1>&2 &
+until lilypond /tmp/start.ly; do
+    echo "Lilypond crashed... restarting"
+    sleep 0.5
+done 1>&2 &
 sleep 2
 while read -r line
 do
@@ -31,7 +34,6 @@ do
     if [ $? -eq 137 ]; then
         killall lilypond > /dev/null 2>&1
         echo '{"err": "Failed to render song."}'
-        /usr/bin/lilypond /tmp/start.ly >2 &
         sleep 2
         continue
     fi;
