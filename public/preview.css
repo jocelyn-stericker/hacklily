@@ -30,11 +30,12 @@ body {
 body.modeView {
   overflow-x: auto;
   overflow-y: hidden;
+  background-color: #1e1e1e;
 }
 
 body.modeView #root {
   height: 100%;
-  white-space: pre-wrap;
+  white-space: nowrap;
 }
 
 svg {
@@ -48,6 +49,7 @@ body.modeView svg + svg {
 body.modeView svg {
   max-height: 100%;
   max-width: 100vmin;
+  white-space: normal;
 }
 
 body.modeBoth svg {
