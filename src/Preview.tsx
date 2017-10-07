@@ -230,6 +230,12 @@ export default class Preview extends React.PureComponent<Props, State> {
         throw new Error('Could not get sheet music view root!');
       }
 
+      // If we've gotten into an error state, keep the existing height
+      // so that we don't rescroll on update.
+      root.style.minHeight = files.length === 0 || files[0].trim() === '' ?
+        `${root.scrollHeight}px` :
+        null;
+
       // tslint:disable-next-line:no-inner-html no-object-literal-type-assertion -- types are wrong
       root.innerHTML = DOMPurify.sanitize(files.join(''), {
         ALLOW_UNKNOWN_PROTOCOLS: true,
