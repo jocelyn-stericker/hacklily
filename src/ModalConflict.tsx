@@ -32,7 +32,7 @@ interface Props {
 /**
  * This is shown when you load a song that was loaded dirty and has been edited elsewhere.
  */
-export default class ModalConflict extends React.PureComponent<Props, void> {
+export default class ModalConflict extends React.PureComponent<Props> {
   render(): JSX.Element {
     return (
       <ReactModal

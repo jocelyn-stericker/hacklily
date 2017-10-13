@@ -62,7 +62,7 @@ interface Props {
  * The user is redirected back to the app after the flow. <App /> then calls
  * checkLogin, below, to set localStorage.
  */
-export default class ModalLogin extends React.PureComponent<Props, void> {
+export default class ModalLogin extends React.PureComponent<Props> {
   componentWillMount(): void {
     const randomContainer: Uint32Array = new Uint32Array(1);
     crypto.getRandomValues(randomContainer);

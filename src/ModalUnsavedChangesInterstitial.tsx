@@ -44,7 +44,7 @@ interface Props {
  * This modal requests to be closed by calling one of the three callbacks.
  */
 export default class ModalUnsavedChangesInterstitial extends
-    React.PureComponent<Props, void> {
+    React.PureComponent<Props> {
   render(): JSX.Element {
     return (
       <ReactModal

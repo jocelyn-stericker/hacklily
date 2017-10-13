@@ -1,0 +1,4 @@
+# This is debatable.
+# yarn itself recommends yarn.lock not be marked as binary (see https://github.com/yarnpkg/yarn/issues/1776),
+# but I don't like it cluttering git diff, and this is my repo.
+yarn.lock -diff

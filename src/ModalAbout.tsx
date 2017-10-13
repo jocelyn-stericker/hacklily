@@ -31,7 +31,7 @@ interface Props {
 /**
  * The About dialog, accessible through the menu in the header.
  */
-class ModalAbout extends React.PureComponent<Props, void> {
+class ModalAbout extends React.PureComponent<Props> {
   render(): JSX.Element {
     return (
       <ReactModal

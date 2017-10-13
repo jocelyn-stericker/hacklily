@@ -28,7 +28,7 @@ import { MODAL_STYLE } from './styles';
  * A modal that is rendered when this song is being edited in another tab.
  * There's no escaping this modal. You need to reload or close the tab to continue.
  */
-export default class ModalLocked extends React.PureComponent<{}, void> {
+export default class ModalLocked extends React.PureComponent {
   render(): JSX.Element {
     return (
       <ReactModal

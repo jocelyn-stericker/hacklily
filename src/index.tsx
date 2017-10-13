@@ -51,7 +51,7 @@ function render(): void {
  */
 function getQueryProps(): QueryProps {
   const queryObj: { [key: string]: string } = parseQuery(window.location.search);
-  const queryProps: QueryProps = {};
+  const query: QueryProps = {};
   Object.keys(queryObj).forEach((key: string) => {
     const queryPropIdx: number = (QUERY_PROP_KEYS as string[]).indexOf(key);
     if (queryPropIdx === -1) {
@@ -64,23 +64,25 @@ function getQueryProps(): QueryProps {
     }
     // Note: queryPropKey === key, just typed correctly
     const queryPropKey: keyof QueryProps = QUERY_PROP_KEYS[queryPropIdx];
-    queryProps[queryPropKey] = queryObj[key];
+    query[queryPropKey] = queryObj[key];
   });
 
-  return queryProps;
+  return query;
 }
 
 /**
  * Like React's setState, but for the URL query parameters.
  */
-function setQuery<K extends keyof QueryProps>(
-  queryUpdates: Pick<QueryProps, K>,
+function setQuery(
+  queryUpdates: Pick<QueryProps, keyof QueryProps>,
   replaceState: boolean = false,
 ): void {
 
   const query: QueryProps = getQueryProps();
   Object.keys(queryUpdates).forEach((key: keyof QueryProps): void => {
-    query[key] = queryUpdates[key];
+    if (key in queryUpdates) {
+      query[key] = queryUpdates[key];
+    }
   });
 
   const base: string = location.href.split('?')[0];

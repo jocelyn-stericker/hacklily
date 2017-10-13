@@ -34,7 +34,7 @@ interface Props {
  * 404.html (which GitHub pages will render for every unmatched URL) redirects to
  * '/?404=1', which renders <App 404="1" />, which results in this modal being shown.
  */
-export default class Modal404 extends React.PureComponent<Props, void> {
+export default class Modal404 extends React.PureComponent<Props> {
   render(): JSX.Element {
     return (
       <ReactModal

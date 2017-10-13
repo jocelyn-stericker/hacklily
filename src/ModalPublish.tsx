@@ -141,7 +141,6 @@ class ModalPublish extends React.PureComponent<Props, State> {
             <div className={css(PUBLISH_STYLE.footer)}>
               {error}
               <button
-                href="#"
                 onClick={this.handleSave}
                 disabled={disabled}
                 className={css(BUTTON_STYLE.buttonStyle, PUBLISH_STYLE.publishBtn)}
@@ -171,7 +170,7 @@ class ModalPublish extends React.PureComponent<Props, State> {
       });
       const { code, auth, rpc } = this.props;
       const { filename } = this.state;
-      await publish(code, auth, `${filename}.ly`, rpc, false);
+      await doPublish(code, auth, `${filename}.ly`, rpc, false);
     } catch (err) {
       if (err instanceof FileNotFound) {
         didFail = true;
@@ -224,7 +223,7 @@ function b64EncodeUnicode(str: string): string {
   );
 }
 
-export async function publish(
+export async function doPublish(
   code: string,
   auth: Auth,
   filename: string,
@@ -278,7 +277,7 @@ export async function publish(
   return true;
 }
 
-export async function unpublish(
+export async function doUnpublish(
   auth: Auth,
   filename: string,
   rpc: RPCClient,

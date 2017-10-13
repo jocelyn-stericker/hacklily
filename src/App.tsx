@@ -35,7 +35,7 @@ import ModalLogin, {
   redirectToLogin,
   revokeGitHubAuth,
 } from './ModalLogin';
-import ModalPublish, { publish, unpublish } from './ModalPublish';
+import ModalPublish, { doPublish, doUnpublish } from './ModalPublish';
 import ModalSaving from './ModalSaving';
 import ModalUnsavedChangesInterstitial from './ModalUnsavedChangesInterstitial';
 import Preview from './Preview';
@@ -302,18 +302,17 @@ export default class App extends React.PureComponent<Props, State> {
 
   render(): JSX.Element {
     const {
-      state : {
-        logs,
-        mode,
-        defaultSelection,
-        windowWidth,
-      },
-      props: {
-        auth,
-        edit,
-        isStandalone,
-      },
-    } = this;
+      logs,
+      mode,
+      defaultSelection,
+      windowWidth,
+    } = this.state;
+
+    const {
+      auth,
+      edit,
+      isStandalone,
+    } = this.props;
 
     const online: boolean = this.isOnline();
     const preview: React.ReactNode = this.renderPreview();
@@ -553,7 +552,7 @@ export default class App extends React.PureComponent<Props, State> {
       }
       const path: string = last(songID.split('/'));
 
-      const ok: boolean = await unpublish(auth, path, this.rpc);
+      const ok: boolean = await doUnpublish(auth, path, this.rpc);
 
       if (ok) {
         const cleanSongs: {[key: string]: Song} =
@@ -892,7 +891,7 @@ export default class App extends React.PureComponent<Props, State> {
       const path: string = last(edit.split('/'));
 
       try {
-        await publish(song.src, auth, path, this.rpc, true);
+        await doPublish(song.src, auth, path, this.rpc, true);
         const cleanSongs: {[key: string]: Song} =
           JSON.parse(JSON.stringify(this.state.cleanSongs));
         cleanSongs[edit] = {
@@ -1005,25 +1004,25 @@ export default class App extends React.PureComponent<Props, State> {
 
   private renderModal(): React.ReactNode {
     const {
-      state : {
-        locked,
-        login,
-        connectToGitHubReason,
-        menu,
-        publish,
-        interstitialChanges,
-        saving,
-      },
-      props: {
-        about,
-        auth,
-        csrf,
-        isStandalone,
-        setCSRF,
-        '404': _404,
-        saveAs,
-      },
-    } = this;
+      locked,
+      login,
+      connectToGitHubReason,
+      menu,
+      publish,
+      interstitialChanges,
+      saving,
+    } = this.state;
+
+    const {
+      about,
+      auth,
+      csrf,
+      isStandalone,
+      setCSRF,
+      '404': _404,
+      saveAs,
+    } = this.props;
+
     const song: Song | undefined = this.song();
     const conflict: boolean = this.hasConflict();
 
@@ -1238,7 +1237,7 @@ export default class App extends React.PureComponent<Props, State> {
       try {
         const fullPath: string = source === 'local' ? `local/${path}` : `${auth.repo}/${path}`;
         if (source === 'remote') {
-          await publish(song.src, auth, path, this.rpc, false);
+          await doPublish(song.src, auth, path, this.rpc, false);
         } else {
           if (!this.standaloneAppHost) {
             throw new Error('Expected standaloneAppHost when saving locally...');

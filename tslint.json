@@ -50,6 +50,7 @@
         "state-interface-regex": "State$"
       }
     ],
+    "object-shorthand-properties-first": false,
     // Because it doesn't play well with aphrodite.
     "no-unsafe-any": false,
     // Becasue comments in JSX can be nice

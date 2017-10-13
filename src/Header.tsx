@@ -55,7 +55,7 @@ function last<T>(t: T[]): T {
 /**
  * Renders the top of the app.
  */
-export default class Header extends React.PureComponent<Props, void> {
+export default class Header extends React.PureComponent<Props> {
   render(): JSX.Element {
     const { mode, loggedIn, onModeChanged, onShowMenu, windowWidth } = this.props;
     const modeButtons: ButtonSpec[] = [];

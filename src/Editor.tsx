@@ -58,7 +58,7 @@ interface Props {
  *
  * It is a controlled component, and parses the passed logs to render errors.
  */
-export default class Editor extends React.PureComponent<Props, void> {
+export default class Editor extends React.PureComponent<Props> {
   private editor: monaco.editor.ICodeEditor | undefined;
   private oldDecorations: string[] = [];
 
@@ -99,6 +99,7 @@ export default class Editor extends React.PureComponent<Props, void> {
     }
     if (prevProps.defaultSelection !== defaultSelection && defaultSelection !== null) {
       this.editor.setSelection(defaultSelection);
+      this.editor.revealLineInCenter(defaultSelection.selectionStartLineNumber);
       this.editor.focus();
     }
   }
@@ -123,6 +124,9 @@ export default class Editor extends React.PureComponent<Props, void> {
     const { code, mode, onSetCode, readOnly } = this.props;
     const monacoOptions: monaco.editor.IEditorOptions = {
       autoClosingBrackets: true,
+      minimap: {
+        enabled: false,
+      },
       readOnly,
       selectionHighlight: false,
       wordBasedSuggestions: false,

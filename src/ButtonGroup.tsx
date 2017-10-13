@@ -79,7 +79,7 @@ interface Props {
  *
  * Requires stylesheets/perseus-admin-package/editor.less to look nice.
  */
-export default class ButtonGroup extends React.PureComponent<Props, void> {
+export default class ButtonGroup extends React.PureComponent<Props> {
   static defaultProps: Partial<Props> = {
     allowEmpty: true,
     value: null,

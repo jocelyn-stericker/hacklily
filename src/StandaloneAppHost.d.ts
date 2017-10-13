@@ -33,7 +33,7 @@ interface Props {
   onUnsavedChangesDiscard: () => void;
 }
 
-export default class StandaloneAppHost extends React.Component<Props, void> {
+export default class StandaloneAppHost extends React.Component<Props> {
   localFiles: string[] | null;
   renderLy: (src: string, filetype: string) => Promise<{content: string[], logs: string}>;
   save: (src: string, filename: string) => Promise<void>;

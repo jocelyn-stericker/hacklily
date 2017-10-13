@@ -28,7 +28,7 @@ import { MODAL_STYLE } from './styles';
  * A modal that is rendered while saving a song.
  * There's no escaping this modal. It's visible until saving completes.
  */
-class ModalSaving extends React.PureComponent<{}, void> {
+class ModalSaving extends React.PureComponent {
   render(): JSX.Element {
     return (
       <ReactModal
