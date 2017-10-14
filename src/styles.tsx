@@ -345,6 +345,20 @@ export const HEADER_STYLE = StyleSheet.create({
     marginRight: 32,
     textDecoration: 'none',
   },
+  playButton: {
+    ':hover': {
+      backgroundColor: '#ccc',
+    },
+    color: '#6e6e6e',
+    display: 'inline-block',
+    fontSize: 14,
+    height: 36,
+    padding: 9,
+  },
+  playTime: {
+    textAlign: 'left',
+    width: 80,
+  },
   publish: {
     color: '#aeaeae',
     cursor: 'unset',

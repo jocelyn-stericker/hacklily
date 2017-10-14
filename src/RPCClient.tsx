@@ -148,6 +148,7 @@ export interface RenderResponse extends BaseRPCResponse {
     err: string;
     files: string[];
     logs: string;
+    midi?: string;
   };
 }
 

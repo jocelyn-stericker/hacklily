@@ -199,6 +199,7 @@ interface State {
   login: boolean;
   logs: string | null;
   menu: boolean;
+  midi: ArrayBuffer | null;
   mode: ViewMode;
   pendingPreviews: number;
   publish: boolean;
@@ -238,6 +239,7 @@ export default class App extends React.PureComponent<Props, State> {
     login: false,
     logs: '',
     menu: false,
+    midi: null,
     mode: window.innerWidth >= MIN_BOTH_WIDTH ? MODE_BOTH : MODE_VIEW,
     pendingPreviews: 0,
     publish: false,
@@ -304,6 +306,7 @@ export default class App extends React.PureComponent<Props, State> {
     const {
       logs,
       mode,
+      midi,
       defaultSelection,
       windowWidth,
     } = this.state;
@@ -323,6 +326,7 @@ export default class App extends React.PureComponent<Props, State> {
     const header: React.ReactNode = !isStandalone && (
       <Header
         mode={mode}
+        midi={midi}
         online={online}
         loggedIn={auth !== null}
         onModeChanged={this.handleModeChanged}
@@ -679,6 +683,14 @@ export default class App extends React.PureComponent<Props, State> {
     if (logs !== this.state.logs) {
       this.setState({
         logs,
+      });
+    }
+  }
+
+  private handleMidiObtained = (midi: ArrayBuffer | null): void => {
+    if (midi !== this.state.midi) {
+      this.setState({
+        midi,
       });
     }
   }
@@ -1126,6 +1138,7 @@ export default class App extends React.PureComponent<Props, State> {
             isStandalone={isStandalone}
             mode={mode}
             onLogsObtained={this.handleLogsObtained}
+            onMidiObtained={this.handleMidiObtained}
             onSelectionChanged={this.handleSelectionChanged}
             ref={this.setPreview}
             rpc={isStandalone ? null : this.rpc}

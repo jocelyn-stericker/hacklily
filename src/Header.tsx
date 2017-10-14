@@ -19,6 +19,7 @@
  */
 
 import { css } from 'aphrodite';
+import { playerFromMIDIBuffer } from 'hackmidi';
 import React from 'react';
 
 import * as logoSvg from './logo.svg';
@@ -32,10 +33,20 @@ export const MODE_BOTH: ViewMode = 'both';
 export const MODE_EDIT: ViewMode = 'edit';
 export const MIN_BOTH_WIDTH: number = 630;
 
+interface Player {
+  // TODO(joshuan): Export hackmidi types :(
+  addChangeListener(fn: (timeInSeconds: number, isPlaying: boolean) => void): void;
+  pause(): void;
+  play(): void;
+  removeChangeListener(fn: (timeInSeconds: number, isPlaying: boolean) => void): void;
+  seek(time: number): void;
+}
+
 interface Props {
   inSandbox: boolean;
   isDirty: boolean;
   loggedIn: boolean;
+  midi: ArrayBuffer | null;
   mode: ViewMode;
   online: boolean;
   sandboxIsDirty: boolean;
@@ -48,6 +59,12 @@ interface Props {
   onShowPublish(): void;
 }
 
+interface State {
+  player: Player | null;
+  playing: boolean;
+  timeInSeconds: number;
+}
+
 function last<T>(t: T[]): T {
   return t[t.length - 1];
 }
@@ -56,8 +73,15 @@ function last<T>(t: T[]): T {
  * Renders the top of the app.
  */
 export default class Header extends React.PureComponent<Props> {
+  state: State = {
+    player: null,
+    playing: false,
+    timeInSeconds: 0,
+  };
+
   render(): JSX.Element {
     const { mode, loggedIn, onModeChanged, onShowMenu, windowWidth } = this.props;
+    const { playing } = this.state;
     const modeButtons: ButtonSpec[] = [];
     modeButtons.push({
       content: (
@@ -91,6 +115,18 @@ export default class Header extends React.PureComponent<Props> {
       title: 'Edit',
       value: MODE_EDIT,
     });
+
+    const playButton: React.ReactNode = (
+      <div className={css(HEADER_STYLE.headerGroupWrapper, HEADER_STYLE.songs)}>
+        <button
+          title={playing ? 'Pause' : 'Play'}
+          className={css(BUTTON_STYLE.buttonStyle, HEADER_STYLE.playButton)}
+          onClick={playing ? this.handlePause : this.handlePlay}
+        >
+          <i className={playing ? 'fa-pause fa' : 'fa-play fa'} />
+        </button>
+      </div>
+    );
 
     const communityToolbar: React.ReactNode = this.renderCommunityToolbar();
     let menu: React.ReactNode = null;
@@ -136,12 +172,73 @@ export default class Header extends React.PureComponent<Props> {
             onChange={onModeChanged}
           />
         </div>
+        {playButton}
+        {playing && this.renderTime()}
         <div className={css(HEADER_STYLE.headerSpacer)} />
         {communityToolbar}
       </div>
     );
   }
-  renderCommunityToolbar(): React.ReactNode {
+  private handleFastForward = (): void => {
+    if (!this.state.player) {
+      return;
+    }
+    this.state.player.seek(this.state.timeInSeconds + 2);
+  }
+  private handlePause = async (): Promise<void> => {
+    this.setState({
+      playing: false,
+    });
+
+    const { player } = this.state;
+
+    if (player) {
+      player.pause();
+    }
+  }
+
+  private handlePlay = async (): Promise<void> => {
+    if (!this.props.midi) {
+      alert('No MIDI data found. Make sure you have ' +
+        'a \\midi {} and a \\layout {} in your \\score {}.');
+
+      return;
+    }
+
+    let player: Player;
+    if (this.state.player) {
+      player = this.state.player;
+    } else {
+      player = await playerFromMIDIBuffer(
+        this.props.midi,
+        'https://www.hacklily.org/hackmidi/samples/');
+      this.setState({
+        player,
+      });
+      player.addChangeListener(this.handlePlaying);
+    }
+
+    player.play();
+    this.setState({
+      playing: true,
+    });
+  }
+
+  private handlePlaying = (timeInSeconds: number, playing: boolean): void => {
+    this.setState({
+      playing,
+      timeInSeconds,
+    });
+  }
+
+  private handleRewind = (): void => {
+    if (!this.state.player) {
+      return;
+    }
+    this.state.player.seek(Math.max(0, this.state.timeInSeconds - 2));
+  }
+
+  private renderCommunityToolbar(): React.ReactNode {
     const { online, song, onShowClone, onShowNew, onShowPublish, isDirty, windowWidth,
       sandboxIsDirty, inSandbox} = this.props;
     const micro: boolean = windowWidth <= 750;
@@ -223,4 +320,35 @@ export default class Header extends React.PureComponent<Props> {
       );
     }
   }
+
+  private renderTime(): React.ReactNode {
+    const { timeInSeconds } = this.state;
+    const fmtTime: string = String(Math.floor(timeInSeconds * 100) / 100);
+
+    return (
+      <div className={css(HEADER_STYLE.headerGroupWrapper)}>
+        <button
+          title="Rewind"
+          className={css(BUTTON_STYLE.buttonStyle, HEADER_STYLE.playButton)}
+          onClick={this.handleRewind}
+        >
+          <i className="fa-backward fa" />
+        </button>
+        <button
+          className={css(BUTTON_STYLE.buttonStyle, HEADER_STYLE.playButton, HEADER_STYLE.playTime)}
+          disabled={true}
+        >
+          {fmtTime}
+        </button>
+        <button
+          title="Fast-forward"
+          className={css(BUTTON_STYLE.buttonStyle, HEADER_STYLE.playButton)}
+          onClick={this.handleFastForward}
+        >
+          <i className="fa-forward fa" />
+        </button>
+      </div>
+    );
+  }
+
 }

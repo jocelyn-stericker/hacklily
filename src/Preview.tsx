@@ -22,6 +22,7 @@ import { css } from 'aphrodite';
 import DOMPurify from 'dompurify';
 import React from 'react';
 
+import { decodeArrayBuffer } from './base64Binary';
 import { MODE_BOTH, MODE_VIEW, ViewMode } from './Header';
 import Logs from './Logs';
 import RPCClient, { RenderResponse } from './RPCClient';
@@ -84,6 +85,8 @@ interface Props {
    * settings the logs prop on this component and <Editor />.
    */
   onLogsObtained(logs: string | null): void;
+
+  onMidiObtained(midi: ArrayBuffer | null): void;
 
   /**
    * Called whenever a note is clicked. The parent should let the <Editor /> know
@@ -174,7 +177,7 @@ export default class Preview extends React.PureComponent<Props, State> {
         />
         {pendingPreviews > 0 && <div className={previewMaskStyle} />}
         {error && <div className={css(APP_STYLE.errorMask)}>{error}</div>}
-        {mode !== MODE_VIEW && <Logs logs={logs} />}
+        <Logs logs={logs} />
       </div>
     );
     // tslint:enable:react-iframe-missing-sandbox
@@ -202,6 +205,7 @@ export default class Preview extends React.PureComponent<Props, State> {
 
     try {
       let dirtyLogs: string;
+      let midi: string | null;
       let files: string[];
 
       if (isStandalone) {
@@ -209,6 +213,7 @@ export default class Preview extends React.PureComponent<Props, State> {
           await this.props.standaloneRender(code, 'svg');
         files = reply.content;
         dirtyLogs = reply.logs;
+        midi = null;  // TODO(joshuan)
       } else {
         if (!rpc) {
           throw new Error('If not standalone, rpc must be set!');
@@ -220,6 +225,7 @@ export default class Preview extends React.PureComponent<Props, State> {
 
         files = response.result.files;
         dirtyLogs = response.result.logs;
+        midi = response.result.midi || null;
       }
 
       const logs: string = cleanLogs(dirtyLogs);
@@ -242,6 +248,11 @@ export default class Preview extends React.PureComponent<Props, State> {
       } as object);
 
       this.props.onLogsObtained(logs);
+      if (midi) {
+        this.props.onMidiObtained(decodeArrayBuffer(midi.replace(/\s/g, '')));
+      } else {
+        this.props.onMidiObtained(null);
+      }
 
       const svgs: SVGSVGElement[] = Array.from(root.getElementsByTagName('svg'));
       for (const svg of svgs) {

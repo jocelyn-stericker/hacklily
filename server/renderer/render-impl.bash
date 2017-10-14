@@ -21,7 +21,7 @@ cat << EOF > /tmp/start.ly
 #(lys:start-server)
 EOF
 until lilypond /tmp/start.ly; do
-    echo "Lilypond crashed... restarting"
+    echo "Lilypond crashed... restarting" >2
     sleep 0.5
 done 1>&2 &
 sleep 2
@@ -48,8 +48,13 @@ do
             cat $f | base64 | jq -Rs . > $f.json 2>&1
         fi
     done
+    touch hacklily.midi  # Allow blank files
+    cat hacklily.midi | base64 | jq -Rs . > hacklily.midi.json 2>&1
     jq -Rs . hacklily.err > hacklily.err.json
-    jq -src '{files: ., logs: $errors}' hacklily*.$backend.json --argfile errors hacklily.err.json 2> /dev/null
+    jq -src '{files: ., logs: $errors, midi: $midi}' hacklily*.$backend.json \
+	    --argfile errors hacklily.err.json \
+	    --argfile midi hacklily.midi.json \
+	    2> /dev/null
 
     rm hacklily* > /dev/null 2> /dev/null
 done < "${1:-/dev/stdin}"
