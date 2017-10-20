@@ -50,13 +50,8 @@ If you specifically wish to test integration with GitHub, follow the steps in th
 First, create a GitHub organization by following the steps at https://github.com/organizations/new.
 Select the free plan.
 
-Secondly, create a new app at https://github.com/organizations/<your-new-repo-name>/settings/applications,
+Next, create a new app at https://github.com/organizations/<your-new-repo-name>/settings/applications,
 making note of the client ID and secret. This application will be used to allow users to log in.
-
-Next, create a Personal Access Token (PAT) at https://github.com/settings/tokens with access to
-'repo' and 'admin'. This PAT will be used to create repositories for users of Hacklily. Alternatively,
-if you do not wish to hand over access to all your repos, you can create an account that just manages
-your created organization and use that.
 
 To run the frontend, in one shell run:
 
@@ -85,15 +80,10 @@ make
   --renderer-docker-tag hacklily-renderer \
   --github-client-id your_github_api_client_id_here \
   --github-secret your_github_api_secret_here \
-  --github-admin-token your_github_admin_token_here \
-  --github-org hacklily \
   --ws-port 2000
 ```
 
 You can omit the `github-*` arguments if you do not want to enable the GitHub integration.
-
-`github-admin-token` is a token with the `repo` scope for a user that has admin permissions of
-the `github-org` you are developing with.
 
 `ws-port` should match the port of the `REACT_APP_BACKEND_WS_URL` you entered above.
 
