@@ -22,8 +22,8 @@ import { css } from 'aphrodite';
 import React from 'react';
 import * as ReactModal from 'react-modal';
 
+import { Auth } from './auth';
 import { File, ls } from './gitfs';
-import { Auth } from './ModalLogin';
 import { HEADER_STYLE, MENU_STYLE } from './styles';
 
 interface Props {

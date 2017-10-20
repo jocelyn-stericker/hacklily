@@ -18,9 +18,99 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
  */
 
+import { Auth, Repo } from './auth';
+
 export interface File {
   path: string;
   sha: string;
+}
+
+/**
+ * Token that is thrown when we cannot cat a file becasue it does not exist.
+ */
+export class FileNotFound {
+  message: string = 'This file does not exist.';
+}
+
+export async function getRepo(
+  accessToken: string,
+  username: string,
+  repoName: string,
+): Promise<Repo> {
+  const response: Response = await fetch(
+    `https://api.github.com/repos/${username}/${repoName}?cache_bust=${new Date().getTime()}`,
+    {
+      headers: {
+        Accept: 'application/json',
+        Authorization: `token ${accessToken}`,
+      },
+    },
+  );
+
+  if (response.status === 404) {
+    throw new FileNotFound();
+  } else if (response.status >= 400) {
+    throw new Error('Could not get repo');
+  }
+
+  return await response.json();
+}
+
+export async function createRepo(
+  accessToken: string,
+  username: string,
+  repoName: string,
+): Promise<Repo> {
+  const response: Response = await fetch(
+    `https://api.github.com/user/repos?cache_bust=${new Date().getTime()}`,
+    {
+      body: JSON.stringify({
+        auto_init: true,
+        description: `Sheet music by ${username}`,
+        has_issues: false,
+        has_pages: true,
+        has_projects: false,
+        has_wiki: false,
+        homepage: `https://${username}.github.io/sheet-music`,
+        name: repoName,
+      }),
+      headers: {
+        Accept: 'application/json',
+        Authorization: `token ${accessToken}`,
+        'Content-Type': 'application/json',
+      },
+      method: 'POST',
+    },
+  );
+
+  if (response.status >= 400) {
+    throw new Error('Could not create repo');
+  }
+
+  return await response.json();
+}
+
+export async function getOrCreateRepo(auth: Auth): Promise<Repo> {
+  const repoParts: string[] = auth.repo.split('/');
+  if (repoParts.length !== 2) {
+    throw new Error('Could not get repo details.');
+  }
+
+  let repo: Repo;
+  try {
+    repo = await getRepo(auth.accessToken, repoParts[0], repoParts[1]);
+  } catch (err) {
+    if (err instanceof FileNotFound) {
+      if (repoParts[0] !== auth.username) {
+        throw new Error('Invalid repo.');
+      }
+      repo = await createRepo(auth.accessToken, repoParts[0], repoParts[1]);
+    } else {
+      throw err;
+    }
+  }
+
+  return repo;
 }
 
 export async function ls(
@@ -54,13 +144,6 @@ export async function ls(
  */
 export class Conflict {
   message: string = 'Cannot save file because it conflicts with another file.';
-}
-
-/**
- * Token that is thrown when we cannot cat a file becasue it does not exist.
- */
-export class FileNotFound {
-  message: string = 'This file does not exist.';
 }
 
 export async function cat(

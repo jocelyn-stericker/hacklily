@@ -29,9 +29,6 @@ HacklilyServer::HacklilyServer(QString rendererDockerTag,
                                int wsPort,
                                QByteArray ghClientID,
                                QByteArray ghSecret,
-                               QByteArray ghAdminToken,
-                               QString ghOrg,
-                               QByteArray travisAdminToken,
                                int jobs,
                                QObject *parent) :
     QObject(parent),
@@ -39,9 +36,6 @@ HacklilyServer::HacklilyServer(QString rendererDockerTag,
     _wsPort(wsPort),
     _ghClientID(ghClientID),
     _ghSecret(ghSecret),
-    _ghAdminToken(ghAdminToken),
-    _ghOrg(ghOrg),
-    _travisAdminToken(travisAdminToken),
     _lastSocketID(-1),
     _nam(new QNetworkAccessManager(this)),
     _maxJobs(jobs),
@@ -54,7 +48,6 @@ HacklilyServer::HacklilyServer(QString rendererDockerTag,
     _coordinatorPingTimer(NULL)
 {
     _initRenderers();
-    _initUpdateTimer();
 
     if (!_server->listen(QHostAddress::Any, wsPort)) {
         qDebug() << "Failed to bind to port " << wsPort << ". Cannot continue";
@@ -298,51 +291,6 @@ void HacklilyServer::_initRenderers() {
         renderer->start("docker",
             QStringList() << "run" << "--rm" << "-i" <<  "--net=none" << "-m1g" << "--cpus=1" << _rendererDockerTag);
     }
-}
-
-void HacklilyServer::_initUpdateTimer() {
-    _updateUserContentTimer = new QTimer(this);
-    // Update user content every 6.5 minutes (this meets the travis limit of 10x per hour)
-    _updateUserContentTimer->setInterval((6 * 60 + 30) * 1000);
-    _updateUserContentTimer->setSingleShot(false);
-    connect(_updateUserContentTimer, &QTimer::timeout, this, &HacklilyServer::_handleUserContentTimerFired);
-    _updateUserContentTimer->start();
-}
-
-void HacklilyServer::_handleUserContentTimerFired() {
-    if (!_saveOccuredSinceLastPublish) {
-        qDebug() << "PUBLISH: no update occured since last publish, NOT triggering update.";
-        return;
-    }
-    if (!_travisAdminToken.size()) {
-        qWarning() << "PUBLISH: would trigger update, but there is no admin token specified!";
-        return;
-    }
-
-    qDebug() << "PUBLISH: triggering update";
-
-    QNetworkRequest request;
-    request.setUrl(QUrl("https://api.travis-ci.org/repo/" + _ghOrg + "%2Fu/requests"));
-    request.setRawHeader("Content-Type", QByteArray("application/json"));
-    request.setRawHeader("Accept", QByteArray("application/json"));
-    request.setRawHeader("Travis-API-Version", "3");
-    request.setRawHeader("Authorization", "token " + _travisAdminToken);
-    QNetworkReply* userReply = _nam->post(request, "{\"request\": {\"branch\": \"master\"}}");
-    connect(userReply, SIGNAL(error(QNetworkReply::NetworkError)), this, SLOT(_handleUserContentTimerTriggerError(QNetworkReply::NetworkError)));
-    connect(userReply, &QNetworkReply::finished, this, &HacklilyServer::_handleUserContentTimerTriggerFinished);
-}
-
-void HacklilyServer::_handleUserContentTimerTriggerError(QNetworkReply::NetworkError code) {
-    qWarning() << "PUBLISH: failed to trigger update (error code: " << code << ")";
-}
-
-void HacklilyServer::_handleUserContentTimerTriggerFinished() {
-    QNetworkReply* reply = qobject_cast<QNetworkReply *>(sender());
-
-    QByteArray responseResult = reply->readAll();
-    reply->deleteLater();
-    qDebug() << "PUBLISH: got reply" << responseResult;
-    _saveOccuredSinceLastPublish = false;
 }
 
 static const char *LILYPOND_INCLUDES[] = {
@@ -654,108 +602,6 @@ void HacklilyServer::_handleUserReply() {
     }
     _userInfo[requestID] = userInfo;
 
-    QNetworkRequest request;
-    request.setUrl(QUrl("https://api.github.com/orgs/" + _ghOrg + "/repos"));
-    request.setRawHeader("Accept", QByteArray("application/json"));
-    request.setRawHeader("Authorization", "token " + _ghAdminToken);
-    QJsonObject requestDataObj;
-    requestDataObj["name"] = "user-" + userInfo.username;
-    requestDataObj["homepage"] = "https://" + _ghOrg + ".github.io/u/" + userInfo.username;
-    requestDataObj["has_issues"] = false;
-    requestDataObj["has_projects"] = false;
-    requestDataObj["has_wiki"] = false;
-    requestDataObj["auto_init"] = true;
-    QJsonDocument requestDataJSON;
-    requestDataJSON.setObject(requestDataObj);
-    QNetworkReply* userReply = _nam->post(request, requestDataJSON.toJson());
-    userReply->setProperty("socketID", socketID);
-    userReply->setProperty("requestID", requestID);
-    connect(userReply, &QNetworkReply::finished, this, &HacklilyServer::_handleRepoCreation);
-}
-
-void HacklilyServer::_handleRepoCreation() {
-    QNetworkReply* reply = qobject_cast<QNetworkReply *>(sender());
-
-    QByteArray responseResult = reply->readAll();
-    reply->deleteLater();
-
-    bool ok;
-    int socketID = reply->property("socketID").toInt(&ok);
-    if (!ok) {
-        qDebug() << "In oauth reply, missing socketID. Cannot continue with oauth.";
-        return;
-    }
-
-    QString requestID = reply->property("requestID").toString();
-    if (!_sockets.contains(socketID)) {
-        qDebug() << "Lost socket mid-oauth.";
-        return;
-    }
-    QWebSocket* socket = _sockets.value(socketID);
-    if (!socket) {
-        return;
-    }
-
-    QJsonParseError parseError;
-    auto responseResultJSON = QJsonDocument::fromJson(responseResult, &parseError);
-    if (parseError.error != QJsonParseError::NoError) {
-        QJsonObject errorObj;
-        errorObj["code"] = ERROR_GITHUB;
-        errorObj["message"] = "Parse Error: " + parseError.errorString();
-        QJsonObject responseObj;
-        responseObj["jsonrpc"] = "2.0";
-        responseObj["id"] = requestID;
-        responseObj["error"] = errorObj;
-        QJsonDocument response;
-        response.setObject(responseObj);
-        auto responseJSON = response.toJson(QJsonDocument::Compact);
-        socket->sendTextMessage(responseJSON);
-        return;
-    }
-
-    auto responseResultObj = responseResultJSON.object();
-    if (responseResultObj.contains("errors") || responseResultObj.contains("error")) {
-        // That is okay -- likely already exists.
-        qDebug() << "Logged in " << _userInfo[requestID].username;
-        this->_sendUserInfo(requestID, socketID);
-        return;
-    }
-
-    QNetworkRequest request;
-    UserInfo userInfo = _userInfo[requestID];
-    request.setUrl(QUrl("https://api.github.com/repos/" + _ghOrg + "/user-" + userInfo.username + "/collaborators/" + userInfo.username));
-    request.setRawHeader("Accept", QByteArray("application/json"));
-    request.setRawHeader("Authorization", "token " + _ghAdminToken);
-    QNetworkReply* userReply = _nam->put(request, "");
-    userReply->setProperty("socketID", socketID);
-    userReply->setProperty("requestID", requestID);
-    connect(userReply, &QNetworkReply::finished, this, &HacklilyServer::_handleRepoCollaboratorsSet);
-}
-
-void HacklilyServer::_handleRepoCollaboratorsSet() {
-    QNetworkReply* reply = qobject_cast<QNetworkReply *>(sender());
-
-    QByteArray responseResult = reply->readAll();
-    reply->deleteLater();
-
-    bool ok;
-    int socketID = reply->property("socketID").toInt(&ok);
-    if (!ok) {
-        qDebug() << "In oauth reply, missing socketID. Cannot continue with oauth.";
-        return;
-    }
-
-    QString requestID = reply->property("requestID").toString();
-    if (!_sockets.contains(socketID)) {
-        qDebug() << "Lost socket mid-oauth.";
-        return;
-    }
-    QWebSocket* socket = _sockets.value(socketID);
-    if (!socket) {
-        return;
-    }
-
-    qDebug() << "Signed up " << _userInfo[requestID].username;
     this->_sendUserInfo(requestID, socketID);
 }
 
@@ -771,7 +617,7 @@ void HacklilyServer::_sendUserInfo(QString requestID, int socketID) {
     userInfoJSON["email"] = userInfo.email;
     userInfoJSON["username"] = userInfo.username;
     userInfoJSON["name"] = userInfo.name;
-    userInfoJSON["repo"] = _ghOrg + "/user-" + userInfo.username;
+    userInfoJSON["repo"] = userInfo.username + "/sheet-music";
 
     QJsonObject responseObj;
     responseObj["jsonrpc"] = "2.0";

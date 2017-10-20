@@ -18,7 +18,7 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
  */
 
-import { Auth } from './ModalLogin';
+import { Auth } from './auth';
 
 const PING_INTERVAL: number = 2500;
 

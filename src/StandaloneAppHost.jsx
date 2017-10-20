@@ -21,7 +21,7 @@
 import React from 'react';
 
 import { File, ls } from './gitfs';
-import { Auth } from './ModalLogin';
+import { Auth } from './Auth';
 
 class Connection extends React.Component {
     from;

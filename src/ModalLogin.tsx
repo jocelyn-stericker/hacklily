@@ -22,25 +22,8 @@ import { css } from 'aphrodite';
 import React from 'react';
 import * as ReactModal from 'react-modal';
 
-import RPCClient, { SignInResponse } from './RPCClient';
+import { CLIENT_ID, getOauthRedirect } from './auth';
 import { GITHUB_STYLE, MODAL_STYLE } from './styles';
-
-const CLIENT_ID: string | undefined = process.env.REACT_APP_GITHUB_CLIENT_ID;
-const SCOPE: string = 'repo';
-function getOauthRedirect(csrf: string): string {
-  return (
-   'https://github.com/login/oauth/authorize' +
-   `?client_id=${CLIENT_ID}&scope=${SCOPE}&state=${csrf}`
-  );
-}
-
-export interface Auth {
-  accessToken: string;
-  email: string;
-  name: string;
-  repo: string;
-  username: string;
-}
 
 interface Props {
   connectToGitHubReason: string | null;
@@ -122,10 +105,18 @@ export default class ModalLogin extends React.PureComponent<Props> {
           </div>
           <div className={css(MODAL_STYLE.modalBody)}>
             <p className={css(MODAL_STYLE.signInPrivacy)}>
-              Songs you save will be hosted <strong>publically</strong> at{' '}
-              <code className={css(MODAL_STYLE.shareURL)}>
-                {process.env.HOMEPAGE}/u/&lt;your-github-username&gt;
-              </code>
+              Songs you save will be <strong>public</strong> on GitHub and Hacklily.
+            </p>
+            <p className={css(MODAL_STYLE.signInPrivacy)}>
+              If you do not have a{' '}
+              <a
+                href="https://help.github.com/articles/github-glossary/#repository"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+              repo
+              </a>{' '} named <code>sheet-music</code>, Hacklily{' '}
+              will create one.
             </p>
             <p className={css(MODAL_STYLE.login)}>
               <a href={getOauthRedirect(csrf)}>
@@ -136,10 +127,18 @@ export default class ModalLogin extends React.PureComponent<Props> {
             </p>
             <p className={css(MODAL_STYLE.license)}>
               Only save songs you want to share. See the{' '}
-              <a href="privacy-statement.html">
+              <a
+                href="privacy-statement.html"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
                 privacy statement
               </a>.{' '}
-              <a href="dmca.html">
+              <a
+                href="dmca.html"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
                 DMCA
               </a>
             </p>
@@ -148,75 +147,4 @@ export default class ModalLogin extends React.PureComponent<Props> {
       </ReactModal>
     );
   }
-}
-
-/**
- * It's good practice when logging out to revoke the OAuth token, I guess.
- */
-export async function revokeGitHubAuth(rpc: RPCClient, token: string): Promise<void> {
-  try {
-    await rpc.call('signOut', {
-      token,
-    });
-  } catch (err) {
-    alert('Could not revoke GitHub authorization. ' +
-      'If you would like, you can manually do this from your GitHub settings.');
-  } finally {
-    window.location.reload();
-  }
-}
-
-/**
- * Called by <App /> to continue the OAuth flow.
- */
-export async function checkLogin(
-    rpc: RPCClient,
-    code: string,
-    state: string,
-    csrf: string,
-): Promise<Auth> {
-  if (csrf !== state) {
-    console.warn('Invalid csrf.');
-    throw new Error('Something went wrong. Could not log you in.');
-  }
-  const response: SignInResponse = await rpc.call('signIn', {
-    oauth: code,
-    state,
-  });
-
-  if (
-      !response.result.accessToken ||
-      !response.result.email ||
-      !response.result.name ||
-      !response.result.repo ||
-      !response.result.username
-  ) {
-    throw new Error('Could not log you in.');
-  }
-
-  return response.result;
-}
-
-/**
- * Deserializes Auth. Used when parsing localStorage.
- */
-export function parseAuth(auth: string | undefined): Auth | null {
-  if (!auth) {
-    return null;
-  }
-  try {
-    const parsedAuth: Auth = JSON.parse(auth);
-    if (parsedAuth && parsedAuth.accessToken && parsedAuth.email &&
-        parsedAuth.name && parsedAuth.repo && parsedAuth.username) {
-      return parsedAuth;
-    }
-
-    return null;
-  } catch (err) {
-    return null;
-  }
-}
-
-export function redirectToLogin(csrf: string): void {
-  window.location.href = getOauthRedirect(csrf);
 }

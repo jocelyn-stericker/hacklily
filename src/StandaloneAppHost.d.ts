@@ -1,5 +1,6 @@
 import React from 'react'
-import { Auth } from './ModalLogin';
+
+import { Auth } from './auth';
 
 interface Props {
   auth: Auth | null;

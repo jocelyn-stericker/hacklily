@@ -50,15 +50,6 @@ int main(int argc, char *argv[]) {
     QCommandLineOption secretOption("github-secret",
         QCoreApplication::translate("main", "Secret for the GitHub application for this deployment of Hacklily, if running as a coordinator"), "secret");
 
-    QCommandLineOption adminTokenOption("github-admin-token",
-        QCoreApplication::translate("main", "PAT for an admin of github-org, if running as a coordinator"), "admintoken");
-
-    QCommandLineOption orgOption("github-org",
-        QCoreApplication::translate("main", "Organization under which Hacklily songs live, if running as a coordinator."), "org");
-
-    QCommandLineOption travisAdminTokenOption("travis-admin-token",
-        QCoreApplication::translate("main", "Secret for the Travis application for this deployment of Hacklily, if running as a coordinator"), "travistoken");
-
     QCommandLineOption portOption("ws-port",
         QCoreApplication::translate("main", "Port under which to run the WebSocket server, if running as a coordinator."), "port");
 
@@ -72,9 +63,6 @@ int main(int argc, char *argv[]) {
     parser.addOption(tagOption);
     parser.addOption(clientIDOption);
     parser.addOption(secretOption);
-    parser.addOption(adminTokenOption);
-    parser.addOption(orgOption);
-    parser.addOption(travisAdminTokenOption);
     parser.addOption(portOption);
     parser.addOption(coordinatorOption);
     parser.addOption(jobsOption);
@@ -135,17 +123,11 @@ int main(int argc, char *argv[]) {
 
         QString ghClientID = parser.value("github-client-id");
         QString ghSecret = parser.value("github-secret");
-        QString ghAdminToken = parser.value("github-admin-token");
-        QString ghOrg = parser.value("github-org");
-        QString travisAdminToken = parser.value("travis-admin-token");
         HacklilyServer server(
             rendererDockerTag,
             wsPort,
             ghClientID.toLocal8Bit(),
             ghSecret.toLocal8Bit(),
-            ghAdminToken.toLocal8Bit(),
-            ghOrg,
-            travisAdminToken.toLocal8Bit(),
             jobs);
         return app.exec();
     } else if (parser.isSet("coordinator")) {

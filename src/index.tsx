@@ -22,7 +22,7 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 
 import App, { QUERY_PROP_KEYS, QueryProps, Song } from './App';
-import { Auth, parseAuth } from './ModalLogin';
+import { Auth, parseAuth } from './auth';
 import { parseQuery, toQueryString } from './util/queryString';
 
 /**

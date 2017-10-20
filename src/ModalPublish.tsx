@@ -22,8 +22,8 @@ import { css } from 'aphrodite';
 import React from 'react';
 import * as ReactModal from 'react-modal';
 
+import { Auth } from './auth';
 import { Conflict, File, FileNotFound, ls, rm, write } from './gitfs';
-import { Auth } from './ModalLogin';
 import ModalSaving from './ModalSaving';
 import RPCClient from './RPCClient';
 import { BUTTON_STYLE, MODAL_STYLE, PUBLISH_STYLE } from './styles';
@@ -60,6 +60,8 @@ class ModalPublish extends React.PureComponent<Props, State> {
   }
 
   render(): JSX.Element {
+    // tslint:disable max-func-body-length
+    // TODO(joshuan): Split this up
     const { auth, onHide } = this.props;
     const { filename, files, invitationRequired, saving } = this.state;
     let disabled: boolean = false;
@@ -122,9 +124,16 @@ class ModalPublish extends React.PureComponent<Props, State> {
           <div className={css(MODAL_STYLE.modalBody)}>
             <div className={css(PUBLISH_STYLE.row)}>
               <span className={css(PUBLISH_STYLE.cell)}>
-                Save to:
+                Save to:&nbsp;
                 <code className={css(PUBLISH_STYLE.mono)}>
-                  &nbsp;{process.env.HOMEPAGE}/u/{auth.username}/
+                  <a
+                    href={`https://github.com/${auth.repo}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                      {`${auth.repo}`}
+                  </a>
+                  /
                 </code>
               </span>
               <input
@@ -134,6 +143,11 @@ class ModalPublish extends React.PureComponent<Props, State> {
                 autoFocus={true}
                 onChange={this.handleChange}
               />
+              <span className={css(PUBLISH_STYLE.cell)}>
+                <code className={css(PUBLISH_STYLE.mono)}>
+                  &nbsp;.ly
+                </code>
+              </span>
               {/* Don't judge me too strongly (ok, judge me a little), but I have no idea */}
               {/* where 7 comes from, and I want to get on with the fun part of making Hacklily. */}
               <div style={{ width: 7, display: 'table-cell' }} />

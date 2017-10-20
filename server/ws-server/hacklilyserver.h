@@ -60,9 +60,6 @@ public:
         int wsPort,
         QByteArray ghClientID,
         QByteArray ghSecret,
-        QByteArray ghAdminToken,
-        QString ghOrg,
-        QByteArray travisAdminToken,
         int jobs,
         QObject *parent = 0
     );
@@ -83,27 +80,19 @@ private slots:
     void _handleBinaryMessageReceived(QByteArray ba);
     void _handleSocketDisconnected();
     void _initRenderers();
-    void _initUpdateTimer();
     void _processIfPossible();
     void _handleRendererOutput();
-    void _handleRepoCollaboratorsSet();
     void _sendUserInfo(QString requestID, int socketID);
 
     // Coordinator -- login flow
     void _handleOAuthReply();
     void _handleUserReply();
-    void _handleRepoCreation();
 
     // Coordinator -- logout flow
     void _handleOAuthDelete();
 
     // Coordinator -- workers
     void _removeWorker();
-
-    // Coordinator -- content update
-    void _handleUserContentTimerFired();
-    void _handleUserContentTimerTriggerError(QNetworkReply::NetworkError code);
-    void _handleUserContentTimerTriggerFinished();
 
     // Worker
     void _openCoordinator();
@@ -120,9 +109,6 @@ private:
     int _wsPort;
     QByteArray _ghClientID;
     QByteArray _ghSecret;
-    QByteArray _ghAdminToken;
-    QString _ghOrg;
-    QByteArray _travisAdminToken;
     QList<QWebSocket*> _freeWorkers;
     QMap<QString, QWebSocket*> _busyWorkers;
 

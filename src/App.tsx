@@ -21,20 +21,21 @@
 import { css } from 'aphrodite';
 import React from 'react';
 
+import {
+  Auth,
+  checkLogin,
+  redirectToLogin,
+  revokeGitHubAuth,
+} from './auth';
 import Editor from './Editor';
-import { cat, FileNotFound } from './gitfs';
+import { cat, FileNotFound, getOrCreateRepo } from './gitfs';
 import Header, { MIN_BOTH_WIDTH, MODE_BOTH, MODE_EDIT, MODE_VIEW, ViewMode } from './Header';
 import Menu from './Menu';
 import Modal404 from './Modal404';
 import ModalAbout from './ModalAbout';
 import ModalConflict from './ModalConflict';
 import ModalLocked, { lock, setEditingNotificationHandler } from './ModalLocked';
-import ModalLogin, {
-  Auth,
-  checkLogin,
-  redirectToLogin,
-  revokeGitHubAuth,
-} from './ModalLogin';
+import ModalLogin from './ModalLogin';
 import ModalPublish, { doPublish, doUnpublish } from './ModalPublish';
 import ModalSaving from './ModalSaving';
 import ModalUnsavedChangesInterstitial from './ModalUnsavedChangesInterstitial';
@@ -342,22 +343,9 @@ export default class App extends React.PureComponent<Props, State> {
       />
     );
 
-    return (
-      <div className={`App ${isStandalone ? 'standalone' : ''}`}>
-        {header}
-        {this.renderModal()}
-        <div className="content">
-          <Editor
-            ref={this.setEditor}
-            code={song ? song.src : undefined}
-            mode={mode}
-            onSetCode={this.handleCodeChanged}
-            logs={logs}
-            defaultSelection={defaultSelection}
-            readOnly={song ? song.baseSHA === PUBLIC_READONLY : false}
-          />
-          {preview}
-        </div>
+    let standaloneAppHost: JSX.Element | null;
+    if (this.props.isStandalone) {
+      standaloneAppHost = (
         <StandaloneAppHost
           ref={this.setStandaloneAppHost}
           auth={auth}
@@ -389,6 +377,28 @@ export default class App extends React.PureComponent<Props, State> {
           onUnsavedChangesDiscard={this.discardChanges}
           onUnsavedChangesSave={this.handleShowPublish}
         />
+      );
+    } else {
+      standaloneAppHost = null;
+    }
+
+    return (
+      <div className={`App ${isStandalone ? 'standalone' : ''}`}>
+        {header}
+        {this.renderModal()}
+        <div className="content">
+          <Editor
+            ref={this.setEditor}
+            code={song ? song.src : undefined}
+            mode={mode}
+            onSetCode={this.handleCodeChanged}
+            logs={logs}
+            defaultSelection={defaultSelection}
+            readOnly={song ? song.baseSHA === PUBLIC_READONLY : false}
+          />
+          {preview}
+        </div>
+        {standaloneAppHost}
       </div>
     );
   }
@@ -974,6 +984,7 @@ export default class App extends React.PureComponent<Props, State> {
           this.props.state,
           this.props.csrf,
         );
+        auth.repoDetails = await getOrCreateRepo(auth);
         // Note: needs to be in this order, or saveAs will disappear.
         this.props.setAuth(auth);
         this.props.setQuery(
@@ -985,6 +996,21 @@ export default class App extends React.PureComponent<Props, State> {
         );
       } catch (err) {
         alert(err.message || 'Could not log you in');
+        this.props.setQuery(
+          {
+            code: undefined,
+            state: undefined,
+          },
+          true,
+        );
+      }
+    } else if (this.props.auth) {
+      try {
+        const auth: Auth = { ...this.props.auth };
+        auth.repoDetails = await getOrCreateRepo(auth);
+        this.props.setAuth(auth);
+      } catch (err) {
+        alert(err.message || 'Could not get GitHub repo details.');
       }
     }
     this.setState({
