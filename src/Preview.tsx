@@ -139,6 +139,7 @@ export default class Preview extends React.PureComponent<Props, State> {
   };
 
   private iframeLoaded: boolean = false;
+  private previousMIDIData: string | null = null;
   private sheetMusicView: HTMLIFrameElement;
 
   componentDidMount(): void {
@@ -248,11 +249,14 @@ export default class Preview extends React.PureComponent<Props, State> {
       } as object);
 
       this.props.onLogsObtained(logs);
-      if (midi) {
-        this.props.onMidiObtained(decodeArrayBuffer(midi.replace(/\s/g, '')));
-      } else {
-        this.props.onMidiObtained(null);
+      if (midi !== this.previousMIDIData) {
+        if (midi) {
+          this.props.onMidiObtained(decodeArrayBuffer(midi.replace(/\s/g, '')));
+        } else {
+          this.props.onMidiObtained(null);
+        }
       }
+      this.previousMIDIData = midi;
 
       const svgs: SVGSVGElement[] = Array.from(root.getElementsByTagName('svg'));
       for (const svg of svgs) {

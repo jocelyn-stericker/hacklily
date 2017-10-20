@@ -36,6 +36,8 @@ export const MIN_BOTH_WIDTH: number = 630;
 interface Player {
   // TODO(joshuan): Export hackmidi types :(
   addChangeListener(fn: (timeInSeconds: number, isPlaying: boolean) => void): void;
+  destroy(): void;
+  getDuration(): number;
   pause(): void;
   play(): void;
   removeChangeListener(fn: (timeInSeconds: number, isPlaying: boolean) => void): void;
@@ -78,6 +80,21 @@ export default class Header extends React.PureComponent<Props> {
     playing: false,
     timeInSeconds: 0,
   };
+
+  componentWillReceiveProps(props: Props): void {
+    if (props.midi !== this.props.midi && this.state.player) {
+      const player: Player = this.state.player;
+      this.setState(
+        {
+          player: null,
+          playing: false,
+        },
+        () => {
+          player.destroy();
+        },
+      );
+    }
+  }
 
   render(): JSX.Element {
     const { mode, loggedIn, onModeChanged, onShowMenu, windowWidth } = this.props;
@@ -225,10 +242,28 @@ export default class Header extends React.PureComponent<Props> {
   }
 
   private handlePlaying = (timeInSeconds: number, playing: boolean): void => {
+    const wasPlaying: boolean = this.state.playing;
     this.setState({
       playing,
       timeInSeconds,
     });
+
+    const player: Player | null = this.state.player;
+    if (!player) {
+      throw new Error('Expected player to exist.');
+    }
+
+    if (wasPlaying && !playing && timeInSeconds === 0) {
+      // TODO(joshuan): Convince timidity to not cleanup at end. Then, get rid of this.
+      this.setState(
+        {
+          player: null,
+        },
+        () => {
+          player.destroy();
+        },
+      );
+    }
   }
 
   private handleRewind = (): void => {
