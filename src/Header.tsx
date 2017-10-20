@@ -250,7 +250,11 @@ export default class Header extends React.PureComponent<Props> {
 
     const player: Player | null = this.state.player;
     if (!player) {
-      throw new Error('Expected player to exist.');
+      // TODO(joshuan): Fix this!
+      // tslint:disable-next-line no-console
+      console.log('handlePlaying called, but there\'s no song');
+
+      return;
     }
 
     if (wasPlaying && !playing && timeInSeconds === 0) {
@@ -260,7 +264,12 @@ export default class Header extends React.PureComponent<Props> {
           player: null,
         },
         () => {
-          player.destroy();
+          setTimeout(
+            () => {
+              player.destroy();
+            },
+            0,
+          );
         },
       );
     }
