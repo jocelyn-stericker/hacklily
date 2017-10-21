@@ -98,9 +98,9 @@
       
       <attributes>
         <!--musicxml-interfaces:debug>
-          <div-count>1176</div-count>
+          <div-count>75264</div-count>
         </musicxml-interfaces:debug-->
-        <divisions>84</divisions>
+        <divisions>5376</divisions>
         <key font-style="normal" font-weight="normal" color="#000000" print-object="yes">
           <fifths>0</fifths>
           <mode>major</mode>
@@ -118,7 +118,7 @@
           <staff-lines>5</staff-lines>
         </staff-details>
       </attributes>
-      <forward><duration>1176</duration></forward>
+      <forward><duration>75264</duration></forward>
       
       <barline location="right">
         <!--musicxml-interfaces:debug>
@@ -128,15 +128,15 @@
       </barline>
       <forward><duration>0</duration></forward>
       
-      <backup><duration>1176</duration></backup>
+      <backup><duration>75264</duration></backup>
       <!-- end of staff 1 -->
       <!-- voice 1 -->
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="-30" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>C</step>
           <octave>4</octave>
         </pitch>
-        <duration>56</duration>
+        <duration>3584</duration>
         <voice>1</voice>
         <type>quarter</type>
         <time-modification>
@@ -156,12 +156,12 @@
         </notations>
       </note>
       
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="-25" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>D</step>
           <octave>4</octave>
         </pitch>
-        <duration>56</duration>
+        <duration>3584</duration>
         <voice>1</voice>
         <type>quarter</type>
         <time-modification>
@@ -171,12 +171,12 @@
         <staff>1</staff>
       </note>
       
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="-20" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>E</step>
           <octave>4</octave>
         </pitch>
-        <duration>56</duration>
+        <duration>3584</duration>
         <voice>1</voice>
         <type>quarter</type>
         <time-modification>
@@ -196,12 +196,12 @@
         </notations>
       </note>
       
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="-15" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>F</step>
           <octave>4</octave>
         </pitch>
-        <duration>56</duration>
+        <duration>3584</duration>
         <voice>1</voice>
         <type>quarter</type>
         <time-modification>
@@ -221,12 +221,12 @@
         </notations>
       </note>
       
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="-10" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>G</step>
           <octave>4</octave>
         </pitch>
-        <duration>56</duration>
+        <duration>3584</duration>
         <voice>1</voice>
         <type>quarter</type>
         <time-modification>
@@ -236,12 +236,12 @@
         <staff>1</staff>
       </note>
       
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="-5" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>A</step>
           <octave>4</octave>
         </pitch>
-        <duration>56</duration>
+        <duration>3584</duration>
         <voice>1</voice>
         <type>quarter</type>
         <time-modification>
@@ -261,12 +261,12 @@
         </notations>
       </note>
       
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="0" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>B</step>
           <octave>4</octave>
         </pitch>
-        <duration>56</duration>
+        <duration>3584</duration>
         <voice>1</voice>
         <type>quarter</type>
         <time-modification>
@@ -286,12 +286,12 @@
         </notations>
       </note>
       
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="5" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>C</step>
           <octave>5</octave>
         </pitch>
-        <duration>56</duration>
+        <duration>3584</duration>
         <voice>1</voice>
         <type>quarter</type>
         <time-modification>
@@ -301,12 +301,12 @@
         <staff>1</staff>
       </note>
       
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="10" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>D</step>
           <octave>5</octave>
         </pitch>
-        <duration>56</duration>
+        <duration>3584</duration>
         <voice>1</voice>
         <type>quarter</type>
         <time-modification>
@@ -326,12 +326,12 @@
         </notations>
       </note>
       
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="15" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>E</step>
           <octave>5</octave>
         </pitch>
-        <duration>42</duration>
+        <duration>2688</duration>
         <voice>1</voice>
         <type>quarter</type>
         <time-modification>
@@ -351,12 +351,12 @@
         </notations>
       </note>
       
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="20" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>F</step>
           <octave>5</octave>
         </pitch>
-        <duration>42</duration>
+        <duration>2688</duration>
         <voice>1</voice>
         <type>quarter</type>
         <time-modification>
@@ -366,12 +366,12 @@
         <staff>1</staff>
       </note>
       
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="25" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>G</step>
           <octave>5</octave>
         </pitch>
-        <duration>42</duration>
+        <duration>2688</duration>
         <voice>1</voice>
         <type>quarter</type>
         <time-modification>
@@ -381,12 +381,12 @@
         <staff>1</staff>
       </note>
       
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="30" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>A</step>
           <octave>5</octave>
         </pitch>
-        <duration>42</duration>
+        <duration>2688</duration>
         <voice>1</voice>
         <type>quarter</type>
         <time-modification>
@@ -406,12 +406,12 @@
         </notations>
       </note>
       
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="35" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>B</step>
           <octave>5</octave>
         </pitch>
-        <duration>21</duration>
+        <duration>1344</duration>
         <voice>1</voice>
         <type>quarter</type>
         <time-modification>
@@ -431,12 +431,12 @@
         </notations>
       </note>
       
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="40" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>C</step>
           <octave>6</octave>
         </pitch>
-        <duration>21</duration>
+        <duration>1344</duration>
         <voice>1</voice>
         <type>quarter</type>
         <time-modification>
@@ -446,12 +446,12 @@
         <staff>1</staff>
       </note>
       
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="40" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>C</step>
           <octave>6</octave>
         </pitch>
-        <duration>21</duration>
+        <duration>1344</duration>
         <voice>1</voice>
         <type>quarter</type>
         <time-modification>
@@ -461,12 +461,12 @@
         <staff>1</staff>
       </note>
       
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="35" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>B</step>
           <octave>5</octave>
         </pitch>
-        <duration>21</duration>
+        <duration>1344</duration>
         <voice>1</voice>
         <type>quarter</type>
         <time-modification>
@@ -486,12 +486,12 @@
         </notations>
       </note>
       
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="30" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>A</step>
           <octave>5</octave>
         </pitch>
-        <duration>36</duration>
+        <duration>2304</duration>
         <voice>1</voice>
         <type>quarter</type>
         <time-modification>
@@ -511,12 +511,12 @@
         </notations>
       </note>
       
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="25" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>G</step>
           <octave>5</octave>
         </pitch>
-        <duration>36</duration>
+        <duration>2304</duration>
         <voice>1</voice>
         <type>quarter</type>
         <time-modification>
@@ -526,12 +526,12 @@
         <staff>1</staff>
       </note>
       
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="20" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>F</step>
           <octave>5</octave>
         </pitch>
-        <duration>36</duration>
+        <duration>2304</duration>
         <voice>1</voice>
         <type>quarter</type>
         <time-modification>
@@ -541,12 +541,12 @@
         <staff>1</staff>
       </note>
       
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="15" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>E</step>
           <octave>5</octave>
         </pitch>
-        <duration>36</duration>
+        <duration>2304</duration>
         <voice>1</voice>
         <type>quarter</type>
         <time-modification>
@@ -556,12 +556,12 @@
         <staff>1</staff>
       </note>
       
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="10" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>D</step>
           <octave>5</octave>
         </pitch>
-        <duration>36</duration>
+        <duration>2304</duration>
         <voice>1</voice>
         <type>quarter</type>
         <time-modification>
@@ -571,12 +571,12 @@
         <staff>1</staff>
       </note>
       
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="5" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>C</step>
           <octave>5</octave>
         </pitch>
-        <duration>36</duration>
+        <duration>2304</duration>
         <voice>1</voice>
         <type>quarter</type>
         <time-modification>
@@ -586,12 +586,12 @@
         <staff>1</staff>
       </note>
       
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="0" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>B</step>
           <octave>4</octave>
         </pitch>
-        <duration>36</duration>
+        <duration>2304</duration>
         <voice>1</voice>
         <type>quarter</type>
         <time-modification>
@@ -611,12 +611,12 @@
         </notations>
       </note>
       
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="-5" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>A</step>
           <octave>4</octave>
         </pitch>
-        <duration>28</duration>
+        <duration>1792</duration>
         <voice>1</voice>
         <type>quarter</type>
         <time-modification>
@@ -636,12 +636,12 @@
         </notations>
       </note>
       
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="-10" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>G</step>
           <octave>4</octave>
         </pitch>
-        <duration>28</duration>
+        <duration>1792</duration>
         <voice>1</voice>
         <type>quarter</type>
         <time-modification>
@@ -651,12 +651,12 @@
         <staff>1</staff>
       </note>
       
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="-15" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>F</step>
           <octave>4</octave>
         </pitch>
-        <duration>28</duration>
+        <duration>1792</duration>
         <voice>1</voice>
         <type>quarter</type>
         <time-modification>
@@ -666,12 +666,12 @@
         <staff>1</staff>
       </note>
       
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="-20" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>E</step>
           <octave>4</octave>
         </pitch>
-        <duration>28</duration>
+        <duration>1792</duration>
         <voice>1</voice>
         <type>quarter</type>
         <time-modification>
@@ -681,12 +681,12 @@
         <staff>1</staff>
       </note>
       
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="-25" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>D</step>
           <octave>4</octave>
         </pitch>
-        <duration>28</duration>
+        <duration>1792</duration>
         <voice>1</voice>
         <type>quarter</type>
         <time-modification>
@@ -696,12 +696,12 @@
         <staff>1</staff>
       </note>
       
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="-30" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>C</step>
           <octave>4</octave>
         </pitch>
-        <duration>28</duration>
+        <duration>1792</duration>
         <voice>1</voice>
         <type>quarter</type>
         <time-modification>
@@ -721,7 +721,7 @@
         </notations>
       </note>
       
-      <backup><duration>1176</duration></backup>
+      <backup><duration>75264</duration></backup>
       <!-- end of voice 1 -->
     </part>
   </measure>

@@ -28,18 +28,15 @@ import {Print, OddEvenBoth} from "musicxml-interfaces";
 import {map} from "lodash";
 import {expect} from "chai";
 
-import Type from "../document/types";
-import IModel from "../document/model";
+import {IModel, ILayout, Type} from "../document";
 
-import ILayout from "../private/layout";
-import IFactory from "../private/factory";
-import {newLayoutState} from "../private/linesLayoutState";
-import {calculate as calculateLineBounds} from "../private/lineBounds";
-import ILayoutOptions from "../private/layoutOptions";
-import Cursor from "../private/cursor";
+import {IFactory} from "../private_factory";
+import {calculateLineBounds} from "../private_lineBounds";
+import {ILayoutOptions} from "../private_layoutOptions";
+import {ValidationCursor, LayoutCursor} from "../private_cursor";
 
-import {createFakeStaffSegment, createFakeVoiceSegment} from "../engine/__tests__/etestutil";
-import validate from "../engine/processors/validate";
+import {createFakeStaffSegment, createFakeVoiceSegment} from "./etestutil";
+import validate from "../engine_processors_validate";
 
 describe("[engine.ts]", function() {
     describe("Options.ILineBounds.calculate", function() {
@@ -84,7 +81,7 @@ describe("[engine.ts]", function() {
                     ]
                 }
             };
-            expect(calculateLineBounds(spec1, 1)).to.deep.equal({
+            expect(calculateLineBounds(spec1, 1, {millimeters: 10, tenths: 40})).to.deep.equal({
                 left: 11,
                 right: 1000 - 12,
                 systemLayout: {
@@ -94,7 +91,7 @@ describe("[engine.ts]", function() {
                     }
                 }
             });
-            expect(calculateLineBounds(spec1, 2)).to.deep.equal({
+            expect(calculateLineBounds(spec1, 2, {millimeters: 10, tenths: 40})).to.deep.equal({
                 left: 21,
                 right: 1000 - 22,
                 systemLayout: {
@@ -117,13 +114,15 @@ describe("[engine.ts]", function() {
                         divCount: 0,
                         staffIdx: 1,
 
-                        validate: (cursor: Cursor) => { /* pass */ },
-                        getLayout: function(cursor: Cursor): ILayout {
+                        refresh: (cursor: ValidationCursor) => { /* pass */ },
+                        getLayout: function(cursor: LayoutCursor): ILayout {
                             throw "not reached";
-                        }
+                        },
+                        calcWidth: () => 0,
                     };
                 },
-                modelHasType: (model: IModel, modelType: Type): boolean => {
+                modelHasType(model: IModel, ...modelTypes: Type[]): boolean {
+                    let modelType = modelTypes[0];
                     if (model.divCount === 0) {
                         return modelType === Type.Attributes;
                     } else if ("length" in model) {
@@ -150,9 +149,8 @@ describe("[engine.ts]", function() {
                 fromSpec: (model: any): IModel => {
                     return createAttributesChordFactory.create(Type[model._class] as any);
                 }
-            };
+            } as any;
 
-            let memo$ = newLayoutState(NaN);
             let padding = 20;
 
             let segments = [{
@@ -171,6 +169,9 @@ describe("[engine.ts]", function() {
                 } as any,
                 preview: false,
                 fixup: null,
+                lineCount: 0,
+                lineIndex: 0,
+                singleLineMode: false,
 
                 attributes: null,
                 measures: map(segments, function(segment, idx) {
@@ -188,7 +189,7 @@ describe("[engine.ts]", function() {
                     };
                 }),
                 header: null,
-                print$: {
+                print: {
                     measureNumbering: null,
                     blankPage: null,
                     partNameDisplay: null,
@@ -212,14 +213,13 @@ describe("[engine.ts]", function() {
                         }]
                     }
                 },
-                page$: 0,
                 modelFactory: createAttributesChordFactory,
                 preprocessors: [],
                 postprocessors: []
             };
             contextOptions.document.measures = contextOptions.measures;
 
-            validate(contextOptions, memo$);
+            validate(contextOptions);
 
             expect(calledCount).to.equal(2);
         });

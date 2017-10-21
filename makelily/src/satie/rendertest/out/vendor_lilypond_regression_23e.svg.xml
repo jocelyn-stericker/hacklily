@@ -97,9 +97,9 @@
       
       <attributes>
         <!--musicxml-interfaces:debug>
-          <div-count>108</div-count>
+          <div-count>6912</div-count>
         </musicxml-interfaces:debug-->
-        <divisions>36</divisions>
+        <divisions>2304</divisions>
         <key font-style="normal" font-weight="normal" color="#000000" print-object="yes">
           <fifths>0</fifths>
           <mode>major</mode>
@@ -117,7 +117,7 @@
           <staff-lines>5</staff-lines>
         </staff-details>
       </attributes>
-      <forward><duration>108</duration></forward>
+      <forward><duration>6912</duration></forward>
       
       <barline>
         <!--musicxml-interfaces:debug>
@@ -127,15 +127,15 @@
       </barline>
       <forward><duration>0</duration></forward>
       
-      <backup><duration>108</duration></backup>
+      <backup><duration>6912</duration></backup>
       <!-- end of staff 1 -->
       <!-- voice 1 -->
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="-5" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>A</step>
           <octave>4</octave>
         </pitch>
-        <duration>12</duration>
+        <duration>768</duration>
         <voice>1</voice>
         <type>eighth</type>
         <time-modification>
@@ -143,7 +143,7 @@
           <normal-notes>2</normal-notes>
         </time-modification>
         <staff>1</staff>
-        <beam number="1">begin</beam>
+        <beam number="1" repeater="no" fan="none">begin</beam>
         <notations print-object="yes">
           <tuplet type="start" number="1" bracket="no" show-number="actual" show-type="none" line-shape="straight">
             <tuplet-actual>
@@ -159,12 +159,12 @@
         </notations>
       </note>
       
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="-5" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>A</step>
           <octave>4</octave>
         </pitch>
-        <duration>12</duration>
+        <duration>768</duration>
         <voice>1</voice>
         <type>eighth</type>
         <time-modification>
@@ -172,7 +172,7 @@
           <normal-notes>2</normal-notes>
         </time-modification>
         <staff>1</staff>
-        <beam number="1">continue</beam>
+        <beam number="1" repeater="no" fan="none">continue</beam>
         <notations print-object="yes">
           <articulations>
             <staccato default-x="4.460000000000001" default-y="-14" relative-x="0" relative-y="0" font-style="normal" font-weight="normal" color="#000000" placement="below" />
@@ -180,12 +180,12 @@
         </notations>
       </note>
       
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="-5" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>A</step>
           <octave>4</octave>
         </pitch>
-        <duration>12</duration>
+        <duration>768</duration>
         <voice>1</voice>
         <type>eighth</type>
         <time-modification>
@@ -193,7 +193,7 @@
           <normal-notes>2</normal-notes>
         </time-modification>
         <staff>1</staff>
-        <beam number="1">continue</beam>
+        <beam number="1" repeater="no" fan="none">end</beam>
         <notations print-object="yes">
           <tuplet type="stop" number="1" bracket="no" show-number="actual" show-type="none" line-shape="straight">
             <tuplet-actual>
@@ -209,12 +209,12 @@
         </notations>
       </note>
       
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="-5" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>A</step>
           <octave>4</octave>
         </pitch>
-        <duration>12</duration>
+        <duration>768</duration>
         <voice>1</voice>
         <type>eighth</type>
         <time-modification>
@@ -222,7 +222,7 @@
           <normal-notes>2</normal-notes>
         </time-modification>
         <staff>1</staff>
-        <beam number="1">continue</beam>
+        <beam number="1" repeater="no" fan="none">begin</beam>
         <notations print-object="yes">
           <tuplet type="start" number="1" bracket="no" show-number="actual" show-type="none" line-shape="straight">
             <tuplet-actual>
@@ -238,12 +238,12 @@
         </notations>
       </note>
       
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="-5" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>A</step>
           <octave>4</octave>
         </pitch>
-        <duration>12</duration>
+        <duration>768</duration>
         <voice>1</voice>
         <type>eighth</type>
         <time-modification>
@@ -251,7 +251,7 @@
           <normal-notes>2</normal-notes>
         </time-modification>
         <staff>1</staff>
-        <beam number="1">continue</beam>
+        <beam number="1" repeater="no" fan="none">continue</beam>
         <notations print-object="yes">
           <articulations>
             <staccato default-x="4.460000000000001" default-y="-14" relative-x="0" relative-y="0" font-style="normal" font-weight="normal" color="#000000" placement="below" />
@@ -259,12 +259,12 @@
         </notations>
       </note>
       
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="-5" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>A</step>
           <octave>4</octave>
         </pitch>
-        <duration>12</duration>
+        <duration>768</duration>
         <voice>1</voice>
         <type>eighth</type>
         <time-modification>
@@ -272,7 +272,7 @@
           <normal-notes>2</normal-notes>
         </time-modification>
         <staff>1</staff>
-        <beam number="1">end</beam>
+        <beam number="1" repeater="no" fan="none">end</beam>
         <notations print-object="yes">
           <tuplet type="stop" number="1" bracket="no" show-number="actual" show-type="none" line-shape="straight">
             <tuplet-actual>
@@ -288,12 +288,12 @@
         </notations>
       </note>
       
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="-5" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>A</step>
           <octave>4</octave>
         </pitch>
-        <duration>12</duration>
+        <duration>768</duration>
         <voice>1</voice>
         <type>eighth</type>
         <time-modification>
@@ -301,7 +301,7 @@
           <normal-notes>2</normal-notes>
         </time-modification>
         <staff>1</staff>
-        <beam number="1">begin</beam>
+        <beam number="1" repeater="no" fan="none">begin</beam>
         <notations print-object="yes">
           <tuplet type="start" number="1" bracket="no" show-number="actual" show-type="none" line-shape="straight">
             <tuplet-actual>
@@ -317,12 +317,12 @@
         </notations>
       </note>
       
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="-5" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>A</step>
           <octave>4</octave>
         </pitch>
-        <duration>12</duration>
+        <duration>768</duration>
         <voice>1</voice>
         <type>eighth</type>
         <time-modification>
@@ -330,7 +330,7 @@
           <normal-notes>2</normal-notes>
         </time-modification>
         <staff>1</staff>
-        <beam number="1">continue</beam>
+        <beam number="1" repeater="no" fan="none">continue</beam>
         <notations print-object="yes">
           <articulations>
             <staccato default-x="4.460000000000001" default-y="-14" relative-x="0" relative-y="0" font-style="normal" font-weight="normal" color="#000000" placement="below" />
@@ -338,12 +338,12 @@
         </notations>
       </note>
       
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="-5" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>A</step>
           <octave>4</octave>
         </pitch>
-        <duration>12</duration>
+        <duration>768</duration>
         <voice>1</voice>
         <type>eighth</type>
         <time-modification>
@@ -351,7 +351,7 @@
           <normal-notes>2</normal-notes>
         </time-modification>
         <staff>1</staff>
-        <beam number="1">end</beam>
+        <beam number="1" repeater="no" fan="none">end</beam>
         <notations print-object="yes">
           <tuplet type="stop" number="1" bracket="no" show-number="actual" show-type="none" line-shape="straight">
             <tuplet-actual>
@@ -367,7 +367,7 @@
         </notations>
       </note>
       
-      <backup><duration>108</duration></backup>
+      <backup><duration>6912</duration></backup>
       <!-- end of voice 1 -->
     </part>
   </measure>
@@ -381,6 +381,7 @@
         <!--musicxml-interfaces:debug>
           <div-count>0</div-count>
         </musicxml-interfaces:debug-->
+        <divisions>2304</divisions>
         <staves>1</staves>
         <staff-details number="1">
           <staff-lines>5</staff-lines>
@@ -415,7 +416,7 @@
       <forward><duration>0</duration></forward>
       
       <!-- spacer -->
-      <forward><duration>108</duration></forward>
+      <forward><duration>6912</duration></forward>
       
       <barline>
         <!--musicxml-interfaces:debug>
@@ -425,15 +426,15 @@
       </barline>
       <forward><duration>0</duration></forward>
       
-      <backup><duration>108</duration></backup>
+      <backup><duration>6912</duration></backup>
       <!-- end of staff 1 -->
       <!-- voice 1 -->
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="-10" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>G</step>
           <octave>4</octave>
         </pitch>
-        <duration>36</duration>
+        <duration>2304</duration>
         <voice>1</voice>
         <type>quarter</type>
         <dot />
@@ -466,12 +467,12 @@
         </notations>
       </note>
       
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="-10" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>G</step>
           <octave>4</octave>
         </pitch>
-        <duration>36</duration>
+        <duration>2304</duration>
         <voice>1</voice>
         <type>quarter</type>
         <dot />
@@ -504,12 +505,12 @@
         </notations>
       </note>
       
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="-10" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>G</step>
           <octave>4</octave>
         </pitch>
-        <duration>36</duration>
+        <duration>2304</duration>
         <voice>1</voice>
         <type>quarter</type>
         <dot />
@@ -542,7 +543,7 @@
         </notations>
       </note>
       
-      <backup><duration>108</duration></backup>
+      <backup><duration>6912</duration></backup>
       <!-- end of voice 1 -->
     </part>
   </measure>
@@ -556,6 +557,7 @@
         <!--musicxml-interfaces:debug>
           <div-count>0</div-count>
         </musicxml-interfaces:debug-->
+        <divisions>2304</divisions>
         <staves>1</staves>
         <staff-details number="1">
           <staff-lines>5</staff-lines>
@@ -590,7 +592,7 @@
       <forward><duration>0</duration></forward>
       
       <!-- spacer -->
-      <forward><duration>108</duration></forward>
+      <forward><duration>6912</duration></forward>
       
       <barline>
         <!--musicxml-interfaces:debug>
@@ -600,15 +602,15 @@
       </barline>
       <forward><duration>0</duration></forward>
       
-      <backup><duration>108</duration></backup>
+      <backup><duration>6912</duration></backup>
       <!-- end of staff 1 -->
       <!-- voice 1 -->
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="-10" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>G</step>
           <octave>4</octave>
         </pitch>
-        <duration>72</duration>
+        <duration>4608</duration>
         <voice>1</voice>
         <type>half</type>
         <dot />
@@ -641,12 +643,12 @@
         </notations>
       </note>
       
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="-10" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>G</step>
           <octave>4</octave>
         </pitch>
-        <duration>36</duration>
+        <duration>2304</duration>
         <voice>1</voice>
         <type>quarter</type>
         <dot />
@@ -679,7 +681,7 @@
         </notations>
       </note>
       
-      <backup><duration>108</duration></backup>
+      <backup><duration>6912</duration></backup>
       <!-- end of voice 1 -->
     </part>
   </measure>
@@ -693,6 +695,7 @@
         <!--musicxml-interfaces:debug>
           <div-count>0</div-count>
         </musicxml-interfaces:debug-->
+        <divisions>2304</divisions>
         <staves>1</staves>
         <staff-details number="1">
           <staff-lines>5</staff-lines>
@@ -727,11 +730,11 @@
       <forward><duration>0</duration></forward>
       
       <!-- spacer -->
-      <forward><duration>36</duration></forward>
+      <forward><duration>2304</duration></forward>
       
       <direction placement="below">
         <!--musicxml-interfaces:debug>
-          <div-count>72</div-count>
+          <div-count>4608</div-count>
         </musicxml-interfaces:debug-->
         <direction-type>
           <dynamics default-x="0" default-y="-60" relative-x="0" relative-y="0" font-style="normal" font-weight="normal" color="#000000" halign="left" valign="bottom" underline="0" overline="0" line-through="0" enclosure="none">
@@ -739,7 +742,7 @@
           </dynamics>
         </direction-type>
       </direction>
-      <forward><duration>72</duration></forward>
+      <forward><duration>4608</duration></forward>
       
       <barline>
         <!--musicxml-interfaces:debug>
@@ -749,15 +752,15 @@
       </barline>
       <forward><duration>0</duration></forward>
       
-      <backup><duration>108</duration></backup>
+      <backup><duration>6912</duration></backup>
       <!-- end of staff 1 -->
       <!-- voice 1 -->
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="-15" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>F</step>
           <octave>4</octave>
         </pitch>
-        <duration>12</duration>
+        <duration>768</duration>
         <voice>1</voice>
         <type>eighth</type>
         <time-modification>
@@ -765,7 +768,7 @@
           <normal-notes>2</normal-notes>
         </time-modification>
         <staff>1</staff>
-        <beam number="1">begin</beam>
+        <beam number="1" repeater="no" fan="none">begin</beam>
         <notations print-object="yes">
           <tuplet type="start" number="1" bracket="no" show-number="actual" show-type="none" line-shape="straight">
             <tuplet-actual>
@@ -778,12 +781,12 @@
         </notations>
       </note>
       
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="-5" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>A</step>
           <octave>4</octave>
         </pitch>
-        <duration>12</duration>
+        <duration>768</duration>
         <voice>1</voice>
         <type>eighth</type>
         <time-modification>
@@ -791,15 +794,15 @@
           <normal-notes>2</normal-notes>
         </time-modification>
         <staff>1</staff>
-        <beam number="1">continue</beam>
+        <beam number="1" repeater="no" fan="none">continue</beam>
       </note>
       
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="-5" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>A</step>
           <octave>4</octave>
         </pitch>
-        <duration>12</duration>
+        <duration>768</duration>
         <voice>1</voice>
         <type>eighth</type>
         <time-modification>
@@ -807,7 +810,7 @@
           <normal-notes>2</normal-notes>
         </time-modification>
         <staff>1</staff>
-        <beam number="1">end</beam>
+        <beam number="1" repeater="no" fan="none">end</beam>
         <notations print-object="yes">
           <tuplet type="stop" number="1" bracket="no" show-number="actual" show-type="none" line-shape="straight">
             <tuplet-actual>
@@ -820,12 +823,12 @@
         </notations>
       </note>
       
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="-5" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>A</step>
           <octave>4</octave>
         </pitch>
-        <duration>72</duration>
+        <duration>4608</duration>
         <voice>1</voice>
         <type>half</type>
         <dot />
@@ -858,7 +861,7 @@
         </notations>
       </note>
       
-      <backup><duration>108</duration></backup>
+      <backup><duration>6912</duration></backup>
       <!-- end of voice 1 -->
     </part>
   </measure>
@@ -872,6 +875,7 @@
         <!--musicxml-interfaces:debug>
           <div-count>0</div-count>
         </musicxml-interfaces:debug-->
+        <divisions>2304</divisions>
         <staves>1</staves>
         <staff-details number="1">
           <staff-lines>5</staff-lines>
@@ -906,7 +910,7 @@
       <forward><duration>0</duration></forward>
       
       <!-- spacer -->
-      <forward><duration>108</duration></forward>
+      <forward><duration>6912</duration></forward>
       
       <barline location="right">
         <!--musicxml-interfaces:debug>
@@ -916,15 +920,15 @@
       </barline>
       <forward><duration>0</duration></forward>
       
-      <backup><duration>108</duration></backup>
+      <backup><duration>6912</duration></backup>
       <!-- end of staff 1 -->
       <!-- voice 1 -->
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="-10" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>G</step>
           <octave>4</octave>
         </pitch>
-        <duration>72</duration>
+        <duration>4608</duration>
         <voice>1</voice>
         <type>half</type>
         <dot />
@@ -957,12 +961,12 @@
         </notations>
       </note>
       
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="-10" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>G</step>
           <octave>4</octave>
         </pitch>
-        <duration>36</duration>
+        <duration>2304</duration>
         <voice>1</voice>
         <type>quarter</type>
         <dot />
@@ -995,7 +999,7 @@
         </notations>
       </note>
       
-      <backup><duration>108</duration></backup>
+      <backup><duration>6912</duration></backup>
       <!-- end of voice 1 -->
     </part>
   </measure>

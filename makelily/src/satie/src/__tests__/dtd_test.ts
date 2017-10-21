@@ -1,22 +1,19 @@
 /**
- * @source: https://github.com/jnetterf/satie/
- *
- * @license
- * (C) Josh Netterfield <joshua@nettek.ca> 2015.
- * Part of the Satie music engraver <https://github.com/jnetterf/satie>.
- *
- * This program is free software: you can redistribute it and/or modify
+ * This file is part of Satie music engraver <https://github.com/jnetterf/satie>.
+ * Copyright (C) Joshua Netterfield <joshua.ca> 2015 - present.
+ * 
+ * Satie is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
+ * 
+ * Satie is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Affero General Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU Affero General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * along with Satie.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 /**
@@ -27,7 +24,7 @@ import {forEach} from "lodash";
 import * as child_process from "child_process";
 import * as fs from "fs";
 
-import Song from "../engine/song";
+import SongImpl from "../engine_songImpl";
 
 function readFile(file: string, onEnd: (s: string) => void) {
     fs.readFile(file, "utf8", function (err, data) {
@@ -72,7 +69,7 @@ describe("Import/export tests", function() {
            .replace(".xml", ".svg");
        it(file, function(done) {
            readFile(root + "/" + file, function(musicXML) {
-               let song = new Song({
+               let song = new SongImpl({
                    baseSrc: musicXML,
 
                    onError: done,
