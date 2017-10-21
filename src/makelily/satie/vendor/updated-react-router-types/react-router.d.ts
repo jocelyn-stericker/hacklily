@@ -425,11 +425,11 @@ declare module "react-router" {
 
     import Link from "react-router/lib/Link"
 
-    import IndexLink from "react-router/lib/IndexLink"
+    import {IndexLink} from "react-router/lib/IndexLink"
 
-    import IndexRedirect from "react-router/lib/IndexRedirect"
+    import {IndexRedirect} from "react-router/lib/IndexRedirect"
 
-    import IndexRoute from "react-router/lib/IndexRoute"
+    import {IndexRoute} from "react-router/lib/IndexRoute"
 
     import Redirect from "react-router/lib/Redirect"
 

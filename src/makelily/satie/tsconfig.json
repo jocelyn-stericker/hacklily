@@ -9,12 +9,11 @@
         "outDir": "dist",
         "preserveConstEnums": true,
         "removeComments": false,
-        "sourceMap": true,
         "target": "es5",
         "pretty": true
     },
     "files": [
-        "./src/index.ts",
+        "./src/satie.ts",
         "./src/tests.ts",
         "./src/cli.ts"
     ]

@@ -74,23 +74,13 @@
       <direction placement="below"><direction-type><words default-y="-70" relative-x="-5000">SATIE_MEASURE_META = {"uuid":42};</words></direction-type></direction>
       <!-- end of measure metadata (Satie) -->
       <!-- staff 1 -->
-      <print new-system="no" new-page="no" page-number="1">
+      <print page-number="1">
         <!--musicxml-interfaces:debug>
           <div-count>0</div-count>
         </musicxml-interfaces:debug-->
-        <page-layout>
-          <page-height>1719.3846153846152</page-height>
-          <page-width>1328.6153846153845</page-width>
-          <page-margins type="both">
-            <left-margin>93.84615384615385</left-margin>
-            <right-margin>93.84615384615385</right-margin>
-            <top-margin>93.84615384615385</top-margin>
-            <bottom-margin>93.84615384615385</bottom-margin>
-          </page-margins>
-        </page-layout>
         <system-layout>
           <system-margins>
-            <left-margin>0</left-margin>
+            <left-margin>70</left-margin>
             <right-margin>0</right-margin>
           </system-margins>
           <system-distance>131</system-distance>
@@ -101,10 +91,7 @@
       <forward><duration>0</duration></forward>
       
       <attributes>
-        <!--musicxml-interfaces:debug>
-          <div-count>2</div-count>
-        </musicxml-interfaces:debug-->
-        <divisions>1</divisions>
+        <divisions>768</divisions>
         <key font-style="normal" font-weight="normal" color="#000000" print-object="yes">
           <fifths>-11</fifths>
           <mode>major</mode>
@@ -114,7 +101,11 @@
           <beat-type>4</beat-type>
         </time>
         <staves>1</staves>
-        <clef number="1" additional="no" size="full" after-barline="no" font-style="normal" font-weight="normal" color="#000000" print-object="yes">
+        <clef number="1">
+          <sign>G</sign>
+          <line>2</line>
+        </clef>
+        <clef number="2" additional="no" size="full" after-barline="no" font-style="normal" font-weight="normal" color="#000000" print-object="yes">
           <sign>G</sign>
           <line>2</line>
         </clef>
@@ -122,7 +113,7 @@
           <staff-lines>5</staff-lines>
         </staff-details>
       </attributes>
-      <forward><duration>2</duration></forward>
+      <forward><duration>1536</duration></forward>
       
       <barline>
         <!--musicxml-interfaces:debug>
@@ -132,21 +123,22 @@
       </barline>
       <forward><duration>0</duration></forward>
       
-      <backup><duration>2</duration></backup>
+      <backup><duration>1536</duration></backup>
       <!-- end of staff 1 -->
       <!-- voice 1 -->
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="-30" relative-x="0" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>C</step>
           <octave>4</octave>
         </pitch>
-        <duration>2</duration>
+        <duration>1536</duration>
         <voice>1</voice>
         <type>half</type>
+        <accidental>natural</accidental>
         <staff>1</staff>
       </note>
       
-      <backup><duration>2</duration></backup>
+      <backup><duration>1536</duration></backup>
       <!-- end of voice 1 -->
     </part>
   </measure>
@@ -156,20 +148,10 @@
       <direction placement="below"><direction-type><words default-y="-70" relative-x="-5000">SATIE_MEASURE_META = {"uuid":43};</words></direction-type></direction>
       <!-- end of measure metadata (Satie) -->
       <!-- staff 1 -->
-      <print new-system="no" new-page="no" page-number="1">
+      <print page-number="1">
         <!--musicxml-interfaces:debug>
           <div-count>0</div-count>
         </musicxml-interfaces:debug-->
-        <page-layout>
-          <page-height>1719.3846153846152</page-height>
-          <page-width>1328.6153846153845</page-width>
-          <page-margins type="both">
-            <left-margin>93.84615384615385</left-margin>
-            <right-margin>93.84615384615385</right-margin>
-            <top-margin>93.84615384615385</top-margin>
-            <bottom-margin>93.84615384615385</bottom-margin>
-          </page-margins>
-        </page-layout>
         <system-layout>
           <system-margins>
             <left-margin>0</left-margin>
@@ -183,19 +165,17 @@
       <forward><duration>0</duration></forward>
       
       <attributes>
-        <!--musicxml-interfaces:debug>
-          <div-count>2</div-count>
-        </musicxml-interfaces:debug-->
+        <divisions>768</divisions>
         <key font-style="normal" font-weight="normal" color="#000000" print-object="yes">
           <fifths>-11</fifths>
           <mode>minor</mode>
         </key>
         <staves>1</staves>
         <staff-details number="1">
-          <staff-lines>5</staff-lines>
+          
         </staff-details>
       </attributes>
-      <forward><duration>2</duration></forward>
+      <forward><duration>1536</duration></forward>
       
       <barline>
         <!--musicxml-interfaces:debug>
@@ -205,21 +185,22 @@
       </barline>
       <forward><duration>0</duration></forward>
       
-      <backup><duration>2</duration></backup>
+      <backup><duration>1536</duration></backup>
       <!-- end of staff 1 -->
       <!-- voice 1 -->
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="-30" relative-x="0" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>C</step>
           <octave>4</octave>
         </pitch>
-        <duration>2</duration>
+        <duration>1536</duration>
         <voice>1</voice>
         <type>half</type>
+        <accidental>natural</accidental>
         <staff>1</staff>
       </note>
       
-      <backup><duration>2</duration></backup>
+      <backup><duration>1536</duration></backup>
       <!-- end of voice 1 -->
     </part>
   </measure>
@@ -229,20 +210,10 @@
       <direction placement="below"><direction-type><words default-y="-70" relative-x="-5000">SATIE_MEASURE_META = {"uuid":44};</words></direction-type></direction>
       <!-- end of measure metadata (Satie) -->
       <!-- staff 1 -->
-      <print new-system="no" new-page="no" page-number="1">
+      <print page-number="1">
         <!--musicxml-interfaces:debug>
           <div-count>0</div-count>
         </musicxml-interfaces:debug-->
-        <page-layout>
-          <page-height>1719.3846153846152</page-height>
-          <page-width>1328.6153846153845</page-width>
-          <page-margins type="both">
-            <left-margin>93.84615384615385</left-margin>
-            <right-margin>93.84615384615385</right-margin>
-            <top-margin>93.84615384615385</top-margin>
-            <bottom-margin>93.84615384615385</bottom-margin>
-          </page-margins>
-        </page-layout>
         <system-layout>
           <system-margins>
             <left-margin>0</left-margin>
@@ -256,19 +227,17 @@
       <forward><duration>0</duration></forward>
       
       <attributes>
-        <!--musicxml-interfaces:debug>
-          <div-count>2</div-count>
-        </musicxml-interfaces:debug-->
+        <divisions>768</divisions>
         <key font-style="normal" font-weight="normal" color="#000000" print-object="yes">
           <fifths>-10</fifths>
           <mode>major</mode>
         </key>
         <staves>1</staves>
         <staff-details number="1">
-          <staff-lines>5</staff-lines>
+          
         </staff-details>
       </attributes>
-      <forward><duration>2</duration></forward>
+      <forward><duration>1536</duration></forward>
       
       <barline>
         <!--musicxml-interfaces:debug>
@@ -278,21 +247,22 @@
       </barline>
       <forward><duration>0</duration></forward>
       
-      <backup><duration>2</duration></backup>
+      <backup><duration>1536</duration></backup>
       <!-- end of staff 1 -->
       <!-- voice 1 -->
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="-30" relative-x="0" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>C</step>
           <octave>4</octave>
         </pitch>
-        <duration>2</duration>
+        <duration>1536</duration>
         <voice>1</voice>
         <type>half</type>
+        <accidental>natural</accidental>
         <staff>1</staff>
       </note>
       
-      <backup><duration>2</duration></backup>
+      <backup><duration>1536</duration></backup>
       <!-- end of voice 1 -->
     </part>
   </measure>
@@ -302,20 +272,10 @@
       <direction placement="below"><direction-type><words default-y="-70" relative-x="-5000">SATIE_MEASURE_META = {"uuid":45};</words></direction-type></direction>
       <!-- end of measure metadata (Satie) -->
       <!-- staff 1 -->
-      <print new-system="no" new-page="no" page-number="1">
+      <print page-number="1">
         <!--musicxml-interfaces:debug>
           <div-count>0</div-count>
         </musicxml-interfaces:debug-->
-        <page-layout>
-          <page-height>1719.3846153846152</page-height>
-          <page-width>1328.6153846153845</page-width>
-          <page-margins type="both">
-            <left-margin>93.84615384615385</left-margin>
-            <right-margin>93.84615384615385</right-margin>
-            <top-margin>93.84615384615385</top-margin>
-            <bottom-margin>93.84615384615385</bottom-margin>
-          </page-margins>
-        </page-layout>
         <system-layout>
           <system-margins>
             <left-margin>0</left-margin>
@@ -329,19 +289,17 @@
       <forward><duration>0</duration></forward>
       
       <attributes>
-        <!--musicxml-interfaces:debug>
-          <div-count>2</div-count>
-        </musicxml-interfaces:debug-->
+        <divisions>768</divisions>
         <key font-style="normal" font-weight="normal" color="#000000" print-object="yes">
           <fifths>-10</fifths>
           <mode>minor</mode>
         </key>
         <staves>1</staves>
         <staff-details number="1">
-          <staff-lines>5</staff-lines>
+          
         </staff-details>
       </attributes>
-      <forward><duration>2</duration></forward>
+      <forward><duration>1536</duration></forward>
       
       <barline>
         <!--musicxml-interfaces:debug>
@@ -351,21 +309,22 @@
       </barline>
       <forward><duration>0</duration></forward>
       
-      <backup><duration>2</duration></backup>
+      <backup><duration>1536</duration></backup>
       <!-- end of staff 1 -->
       <!-- voice 1 -->
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="-30" relative-x="0" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>C</step>
           <octave>4</octave>
         </pitch>
-        <duration>2</duration>
+        <duration>1536</duration>
         <voice>1</voice>
         <type>half</type>
+        <accidental>natural</accidental>
         <staff>1</staff>
       </note>
       
-      <backup><duration>2</duration></backup>
+      <backup><duration>1536</duration></backup>
       <!-- end of voice 1 -->
     </part>
   </measure>
@@ -375,20 +334,10 @@
       <direction placement="below"><direction-type><words default-y="-70" relative-x="-5000">SATIE_MEASURE_META = {"uuid":46};</words></direction-type></direction>
       <!-- end of measure metadata (Satie) -->
       <!-- staff 1 -->
-      <print new-system="no" new-page="no" page-number="1">
+      <print page-number="1">
         <!--musicxml-interfaces:debug>
           <div-count>0</div-count>
         </musicxml-interfaces:debug-->
-        <page-layout>
-          <page-height>1719.3846153846152</page-height>
-          <page-width>1328.6153846153845</page-width>
-          <page-margins type="both">
-            <left-margin>93.84615384615385</left-margin>
-            <right-margin>93.84615384615385</right-margin>
-            <top-margin>93.84615384615385</top-margin>
-            <bottom-margin>93.84615384615385</bottom-margin>
-          </page-margins>
-        </page-layout>
         <system-layout>
           <system-margins>
             <left-margin>0</left-margin>
@@ -402,19 +351,17 @@
       <forward><duration>0</duration></forward>
       
       <attributes>
-        <!--musicxml-interfaces:debug>
-          <div-count>2</div-count>
-        </musicxml-interfaces:debug-->
+        <divisions>768</divisions>
         <key font-style="normal" font-weight="normal" color="#000000" print-object="yes">
           <fifths>-9</fifths>
           <mode>major</mode>
         </key>
         <staves>1</staves>
         <staff-details number="1">
-          <staff-lines>5</staff-lines>
+          
         </staff-details>
       </attributes>
-      <forward><duration>2</duration></forward>
+      <forward><duration>1536</duration></forward>
       
       <barline>
         <!--musicxml-interfaces:debug>
@@ -424,21 +371,22 @@
       </barline>
       <forward><duration>0</duration></forward>
       
-      <backup><duration>2</duration></backup>
+      <backup><duration>1536</duration></backup>
       <!-- end of staff 1 -->
       <!-- voice 1 -->
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="-30" relative-x="0" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>C</step>
           <octave>4</octave>
         </pitch>
-        <duration>2</duration>
+        <duration>1536</duration>
         <voice>1</voice>
         <type>half</type>
+        <accidental>natural</accidental>
         <staff>1</staff>
       </note>
       
-      <backup><duration>2</duration></backup>
+      <backup><duration>1536</duration></backup>
       <!-- end of voice 1 -->
     </part>
   </measure>
@@ -448,20 +396,10 @@
       <direction placement="below"><direction-type><words default-y="-70" relative-x="-5000">SATIE_MEASURE_META = {"uuid":47};</words></direction-type></direction>
       <!-- end of measure metadata (Satie) -->
       <!-- staff 1 -->
-      <print new-system="no" new-page="no" page-number="1">
+      <print page-number="1">
         <!--musicxml-interfaces:debug>
           <div-count>0</div-count>
         </musicxml-interfaces:debug-->
-        <page-layout>
-          <page-height>1719.3846153846152</page-height>
-          <page-width>1328.6153846153845</page-width>
-          <page-margins type="both">
-            <left-margin>93.84615384615385</left-margin>
-            <right-margin>93.84615384615385</right-margin>
-            <top-margin>93.84615384615385</top-margin>
-            <bottom-margin>93.84615384615385</bottom-margin>
-          </page-margins>
-        </page-layout>
         <system-layout>
           <system-margins>
             <left-margin>0</left-margin>
@@ -475,19 +413,17 @@
       <forward><duration>0</duration></forward>
       
       <attributes>
-        <!--musicxml-interfaces:debug>
-          <div-count>2</div-count>
-        </musicxml-interfaces:debug-->
+        <divisions>768</divisions>
         <key font-style="normal" font-weight="normal" color="#000000" print-object="yes">
           <fifths>-9</fifths>
           <mode>minor</mode>
         </key>
         <staves>1</staves>
         <staff-details number="1">
-          <staff-lines>5</staff-lines>
+          
         </staff-details>
       </attributes>
-      <forward><duration>2</duration></forward>
+      <forward><duration>1536</duration></forward>
       
       <barline>
         <!--musicxml-interfaces:debug>
@@ -497,21 +433,22 @@
       </barline>
       <forward><duration>0</duration></forward>
       
-      <backup><duration>2</duration></backup>
+      <backup><duration>1536</duration></backup>
       <!-- end of staff 1 -->
       <!-- voice 1 -->
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="-30" relative-x="0" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>C</step>
           <octave>4</octave>
         </pitch>
-        <duration>2</duration>
+        <duration>1536</duration>
         <voice>1</voice>
         <type>half</type>
+        <accidental>natural</accidental>
         <staff>1</staff>
       </note>
       
-      <backup><duration>2</duration></backup>
+      <backup><duration>1536</duration></backup>
       <!-- end of voice 1 -->
     </part>
   </measure>
@@ -521,20 +458,10 @@
       <direction placement="below"><direction-type><words default-y="-70" relative-x="-5000">SATIE_MEASURE_META = {"uuid":48};</words></direction-type></direction>
       <!-- end of measure metadata (Satie) -->
       <!-- staff 1 -->
-      <print new-system="no" new-page="no" page-number="1">
+      <print page-number="1">
         <!--musicxml-interfaces:debug>
           <div-count>0</div-count>
         </musicxml-interfaces:debug-->
-        <page-layout>
-          <page-height>1719.3846153846152</page-height>
-          <page-width>1328.6153846153845</page-width>
-          <page-margins type="both">
-            <left-margin>93.84615384615385</left-margin>
-            <right-margin>93.84615384615385</right-margin>
-            <top-margin>93.84615384615385</top-margin>
-            <bottom-margin>93.84615384615385</bottom-margin>
-          </page-margins>
-        </page-layout>
         <system-layout>
           <system-margins>
             <left-margin>0</left-margin>
@@ -548,19 +475,17 @@
       <forward><duration>0</duration></forward>
       
       <attributes>
-        <!--musicxml-interfaces:debug>
-          <div-count>2</div-count>
-        </musicxml-interfaces:debug-->
+        <divisions>768</divisions>
         <key font-style="normal" font-weight="normal" color="#000000" print-object="yes">
           <fifths>-8</fifths>
           <mode>major</mode>
         </key>
         <staves>1</staves>
         <staff-details number="1">
-          <staff-lines>5</staff-lines>
+          
         </staff-details>
       </attributes>
-      <forward><duration>2</duration></forward>
+      <forward><duration>1536</duration></forward>
       
       <barline>
         <!--musicxml-interfaces:debug>
@@ -570,21 +495,22 @@
       </barline>
       <forward><duration>0</duration></forward>
       
-      <backup><duration>2</duration></backup>
+      <backup><duration>1536</duration></backup>
       <!-- end of staff 1 -->
       <!-- voice 1 -->
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="-30" relative-x="0" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>C</step>
           <octave>4</octave>
         </pitch>
-        <duration>2</duration>
+        <duration>1536</duration>
         <voice>1</voice>
         <type>half</type>
+        <accidental>natural</accidental>
         <staff>1</staff>
       </note>
       
-      <backup><duration>2</duration></backup>
+      <backup><duration>1536</duration></backup>
       <!-- end of voice 1 -->
     </part>
   </measure>
@@ -594,20 +520,10 @@
       <direction placement="below"><direction-type><words default-y="-70" relative-x="-5000">SATIE_MEASURE_META = {"uuid":49};</words></direction-type></direction>
       <!-- end of measure metadata (Satie) -->
       <!-- staff 1 -->
-      <print new-system="no" new-page="no" page-number="1">
+      <print page-number="1">
         <!--musicxml-interfaces:debug>
           <div-count>0</div-count>
         </musicxml-interfaces:debug-->
-        <page-layout>
-          <page-height>1719.3846153846152</page-height>
-          <page-width>1328.6153846153845</page-width>
-          <page-margins type="both">
-            <left-margin>93.84615384615385</left-margin>
-            <right-margin>93.84615384615385</right-margin>
-            <top-margin>93.84615384615385</top-margin>
-            <bottom-margin>93.84615384615385</bottom-margin>
-          </page-margins>
-        </page-layout>
         <system-layout>
           <system-margins>
             <left-margin>0</left-margin>
@@ -621,19 +537,17 @@
       <forward><duration>0</duration></forward>
       
       <attributes>
-        <!--musicxml-interfaces:debug>
-          <div-count>2</div-count>
-        </musicxml-interfaces:debug-->
+        <divisions>768</divisions>
         <key font-style="normal" font-weight="normal" color="#000000" print-object="yes">
           <fifths>-8</fifths>
           <mode>minor</mode>
         </key>
         <staves>1</staves>
         <staff-details number="1">
-          <staff-lines>5</staff-lines>
+          
         </staff-details>
       </attributes>
-      <forward><duration>2</duration></forward>
+      <forward><duration>1536</duration></forward>
       
       <barline>
         <!--musicxml-interfaces:debug>
@@ -643,21 +557,22 @@
       </barline>
       <forward><duration>0</duration></forward>
       
-      <backup><duration>2</duration></backup>
+      <backup><duration>1536</duration></backup>
       <!-- end of staff 1 -->
       <!-- voice 1 -->
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="-30" relative-x="0" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>C</step>
           <octave>4</octave>
         </pitch>
-        <duration>2</duration>
+        <duration>1536</duration>
         <voice>1</voice>
         <type>half</type>
+        <accidental>natural</accidental>
         <staff>1</staff>
       </note>
       
-      <backup><duration>2</duration></backup>
+      <backup><duration>1536</duration></backup>
       <!-- end of voice 1 -->
     </part>
   </measure>
@@ -667,20 +582,10 @@
       <direction placement="below"><direction-type><words default-y="-70" relative-x="-5000">SATIE_MEASURE_META = {"uuid":50};</words></direction-type></direction>
       <!-- end of measure metadata (Satie) -->
       <!-- staff 1 -->
-      <print new-system="no" new-page="no" page-number="1">
+      <print page-number="1">
         <!--musicxml-interfaces:debug>
           <div-count>0</div-count>
         </musicxml-interfaces:debug-->
-        <page-layout>
-          <page-height>1719.3846153846152</page-height>
-          <page-width>1328.6153846153845</page-width>
-          <page-margins type="both">
-            <left-margin>93.84615384615385</left-margin>
-            <right-margin>93.84615384615385</right-margin>
-            <top-margin>93.84615384615385</top-margin>
-            <bottom-margin>93.84615384615385</bottom-margin>
-          </page-margins>
-        </page-layout>
         <system-layout>
           <system-margins>
             <left-margin>0</left-margin>
@@ -694,19 +599,17 @@
       <forward><duration>0</duration></forward>
       
       <attributes>
-        <!--musicxml-interfaces:debug>
-          <div-count>2</div-count>
-        </musicxml-interfaces:debug-->
+        <divisions>768</divisions>
         <key font-style="normal" font-weight="normal" color="#000000" print-object="yes">
           <fifths>-7</fifths>
           <mode>major</mode>
         </key>
         <staves>1</staves>
         <staff-details number="1">
-          <staff-lines>5</staff-lines>
+          
         </staff-details>
       </attributes>
-      <forward><duration>2</duration></forward>
+      <forward><duration>1536</duration></forward>
       
       <barline>
         <!--musicxml-interfaces:debug>
@@ -716,21 +619,22 @@
       </barline>
       <forward><duration>0</duration></forward>
       
-      <backup><duration>2</duration></backup>
+      <backup><duration>1536</duration></backup>
       <!-- end of staff 1 -->
       <!-- voice 1 -->
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="-30" relative-x="0" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>C</step>
           <octave>4</octave>
         </pitch>
-        <duration>2</duration>
+        <duration>1536</duration>
         <voice>1</voice>
         <type>half</type>
+        <accidental>natural</accidental>
         <staff>1</staff>
       </note>
       
-      <backup><duration>2</duration></backup>
+      <backup><duration>1536</duration></backup>
       <!-- end of voice 1 -->
     </part>
   </measure>
@@ -740,20 +644,10 @@
       <direction placement="below"><direction-type><words default-y="-70" relative-x="-5000">SATIE_MEASURE_META = {"uuid":51};</words></direction-type></direction>
       <!-- end of measure metadata (Satie) -->
       <!-- staff 1 -->
-      <print new-system="no" new-page="no" page-number="1">
+      <print page-number="1">
         <!--musicxml-interfaces:debug>
           <div-count>0</div-count>
         </musicxml-interfaces:debug-->
-        <page-layout>
-          <page-height>1719.3846153846152</page-height>
-          <page-width>1328.6153846153845</page-width>
-          <page-margins type="both">
-            <left-margin>93.84615384615385</left-margin>
-            <right-margin>93.84615384615385</right-margin>
-            <top-margin>93.84615384615385</top-margin>
-            <bottom-margin>93.84615384615385</bottom-margin>
-          </page-margins>
-        </page-layout>
         <system-layout>
           <system-margins>
             <left-margin>0</left-margin>
@@ -767,19 +661,17 @@
       <forward><duration>0</duration></forward>
       
       <attributes>
-        <!--musicxml-interfaces:debug>
-          <div-count>2</div-count>
-        </musicxml-interfaces:debug-->
+        <divisions>768</divisions>
         <key font-style="normal" font-weight="normal" color="#000000" print-object="yes">
           <fifths>-7</fifths>
           <mode>minor</mode>
         </key>
         <staves>1</staves>
         <staff-details number="1">
-          <staff-lines>5</staff-lines>
+          
         </staff-details>
       </attributes>
-      <forward><duration>2</duration></forward>
+      <forward><duration>1536</duration></forward>
       
       <barline>
         <!--musicxml-interfaces:debug>
@@ -789,21 +681,22 @@
       </barline>
       <forward><duration>0</duration></forward>
       
-      <backup><duration>2</duration></backup>
+      <backup><duration>1536</duration></backup>
       <!-- end of staff 1 -->
       <!-- voice 1 -->
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="-30" relative-x="0" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>C</step>
           <octave>4</octave>
         </pitch>
-        <duration>2</duration>
+        <duration>1536</duration>
         <voice>1</voice>
         <type>half</type>
+        <accidental>natural</accidental>
         <staff>1</staff>
       </note>
       
-      <backup><duration>2</duration></backup>
+      <backup><duration>1536</duration></backup>
       <!-- end of voice 1 -->
     </part>
   </measure>
@@ -813,20 +706,10 @@
       <direction placement="below"><direction-type><words default-y="-70" relative-x="-5000">SATIE_MEASURE_META = {"uuid":52};</words></direction-type></direction>
       <!-- end of measure metadata (Satie) -->
       <!-- staff 1 -->
-      <print new-system="no" new-page="no" page-number="1">
+      <print page-number="1">
         <!--musicxml-interfaces:debug>
           <div-count>0</div-count>
         </musicxml-interfaces:debug-->
-        <page-layout>
-          <page-height>1719.3846153846152</page-height>
-          <page-width>1328.6153846153845</page-width>
-          <page-margins type="both">
-            <left-margin>93.84615384615385</left-margin>
-            <right-margin>93.84615384615385</right-margin>
-            <top-margin>93.84615384615385</top-margin>
-            <bottom-margin>93.84615384615385</bottom-margin>
-          </page-margins>
-        </page-layout>
         <system-layout>
           <system-margins>
             <left-margin>0</left-margin>
@@ -840,19 +723,17 @@
       <forward><duration>0</duration></forward>
       
       <attributes>
-        <!--musicxml-interfaces:debug>
-          <div-count>2</div-count>
-        </musicxml-interfaces:debug-->
+        <divisions>768</divisions>
         <key font-style="normal" font-weight="normal" color="#000000" print-object="yes">
           <fifths>-6</fifths>
           <mode>major</mode>
         </key>
         <staves>1</staves>
         <staff-details number="1">
-          <staff-lines>5</staff-lines>
+          
         </staff-details>
       </attributes>
-      <forward><duration>2</duration></forward>
+      <forward><duration>1536</duration></forward>
       
       <barline>
         <!--musicxml-interfaces:debug>
@@ -862,21 +743,22 @@
       </barline>
       <forward><duration>0</duration></forward>
       
-      <backup><duration>2</duration></backup>
+      <backup><duration>1536</duration></backup>
       <!-- end of staff 1 -->
       <!-- voice 1 -->
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="-30" relative-x="0" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>C</step>
           <octave>4</octave>
         </pitch>
-        <duration>2</duration>
+        <duration>1536</duration>
         <voice>1</voice>
         <type>half</type>
+        <accidental>natural</accidental>
         <staff>1</staff>
       </note>
       
-      <backup><duration>2</duration></backup>
+      <backup><duration>1536</duration></backup>
       <!-- end of voice 1 -->
     </part>
   </measure>
@@ -886,20 +768,10 @@
       <direction placement="below"><direction-type><words default-y="-70" relative-x="-5000">SATIE_MEASURE_META = {"uuid":53};</words></direction-type></direction>
       <!-- end of measure metadata (Satie) -->
       <!-- staff 1 -->
-      <print new-system="no" new-page="no" page-number="1">
+      <print page-number="1">
         <!--musicxml-interfaces:debug>
           <div-count>0</div-count>
         </musicxml-interfaces:debug-->
-        <page-layout>
-          <page-height>1719.3846153846152</page-height>
-          <page-width>1328.6153846153845</page-width>
-          <page-margins type="both">
-            <left-margin>93.84615384615385</left-margin>
-            <right-margin>93.84615384615385</right-margin>
-            <top-margin>93.84615384615385</top-margin>
-            <bottom-margin>93.84615384615385</bottom-margin>
-          </page-margins>
-        </page-layout>
         <system-layout>
           <system-margins>
             <left-margin>0</left-margin>
@@ -913,19 +785,17 @@
       <forward><duration>0</duration></forward>
       
       <attributes>
-        <!--musicxml-interfaces:debug>
-          <div-count>2</div-count>
-        </musicxml-interfaces:debug-->
+        <divisions>768</divisions>
         <key font-style="normal" font-weight="normal" color="#000000" print-object="yes">
           <fifths>-6</fifths>
           <mode>minor</mode>
         </key>
         <staves>1</staves>
         <staff-details number="1">
-          <staff-lines>5</staff-lines>
+          
         </staff-details>
       </attributes>
-      <forward><duration>2</duration></forward>
+      <forward><duration>1536</duration></forward>
       
       <barline>
         <!--musicxml-interfaces:debug>
@@ -935,21 +805,22 @@
       </barline>
       <forward><duration>0</duration></forward>
       
-      <backup><duration>2</duration></backup>
+      <backup><duration>1536</duration></backup>
       <!-- end of staff 1 -->
       <!-- voice 1 -->
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="-30" relative-x="0" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>C</step>
           <octave>4</octave>
         </pitch>
-        <duration>2</duration>
+        <duration>1536</duration>
         <voice>1</voice>
         <type>half</type>
+        <accidental>natural</accidental>
         <staff>1</staff>
       </note>
       
-      <backup><duration>2</duration></backup>
+      <backup><duration>1536</duration></backup>
       <!-- end of voice 1 -->
     </part>
   </measure>
@@ -959,20 +830,10 @@
       <direction placement="below"><direction-type><words default-y="-70" relative-x="-5000">SATIE_MEASURE_META = {"uuid":54};</words></direction-type></direction>
       <!-- end of measure metadata (Satie) -->
       <!-- staff 1 -->
-      <print new-system="no" new-page="no" page-number="1">
+      <print page-number="1">
         <!--musicxml-interfaces:debug>
           <div-count>0</div-count>
         </musicxml-interfaces:debug-->
-        <page-layout>
-          <page-height>1719.3846153846152</page-height>
-          <page-width>1328.6153846153845</page-width>
-          <page-margins type="both">
-            <left-margin>93.84615384615385</left-margin>
-            <right-margin>93.84615384615385</right-margin>
-            <top-margin>93.84615384615385</top-margin>
-            <bottom-margin>93.84615384615385</bottom-margin>
-          </page-margins>
-        </page-layout>
         <system-layout>
           <system-margins>
             <left-margin>0</left-margin>
@@ -986,19 +847,17 @@
       <forward><duration>0</duration></forward>
       
       <attributes>
-        <!--musicxml-interfaces:debug>
-          <div-count>2</div-count>
-        </musicxml-interfaces:debug-->
+        <divisions>768</divisions>
         <key font-style="normal" font-weight="normal" color="#000000" print-object="yes">
           <fifths>-5</fifths>
           <mode>major</mode>
         </key>
         <staves>1</staves>
         <staff-details number="1">
-          <staff-lines>5</staff-lines>
+          
         </staff-details>
       </attributes>
-      <forward><duration>2</duration></forward>
+      <forward><duration>1536</duration></forward>
       
       <barline>
         <!--musicxml-interfaces:debug>
@@ -1008,21 +867,21 @@
       </barline>
       <forward><duration>0</duration></forward>
       
-      <backup><duration>2</duration></backup>
+      <backup><duration>1536</duration></backup>
       <!-- end of staff 1 -->
       <!-- voice 1 -->
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="-30" relative-x="0" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>C</step>
           <octave>4</octave>
         </pitch>
-        <duration>2</duration>
+        <duration>1536</duration>
         <voice>1</voice>
         <type>half</type>
         <staff>1</staff>
       </note>
       
-      <backup><duration>2</duration></backup>
+      <backup><duration>1536</duration></backup>
       <!-- end of voice 1 -->
     </part>
   </measure>
@@ -1032,20 +891,10 @@
       <direction placement="below"><direction-type><words default-y="-70" relative-x="-5000">SATIE_MEASURE_META = {"uuid":55};</words></direction-type></direction>
       <!-- end of measure metadata (Satie) -->
       <!-- staff 1 -->
-      <print new-system="no" new-page="no" page-number="1">
+      <print page-number="1">
         <!--musicxml-interfaces:debug>
           <div-count>0</div-count>
         </musicxml-interfaces:debug-->
-        <page-layout>
-          <page-height>1719.3846153846152</page-height>
-          <page-width>1328.6153846153845</page-width>
-          <page-margins type="both">
-            <left-margin>93.84615384615385</left-margin>
-            <right-margin>93.84615384615385</right-margin>
-            <top-margin>93.84615384615385</top-margin>
-            <bottom-margin>93.84615384615385</bottom-margin>
-          </page-margins>
-        </page-layout>
         <system-layout>
           <system-margins>
             <left-margin>0</left-margin>
@@ -1059,19 +908,17 @@
       <forward><duration>0</duration></forward>
       
       <attributes>
-        <!--musicxml-interfaces:debug>
-          <div-count>2</div-count>
-        </musicxml-interfaces:debug-->
+        <divisions>768</divisions>
         <key font-style="normal" font-weight="normal" color="#000000" print-object="yes">
           <fifths>-5</fifths>
           <mode>minor</mode>
         </key>
         <staves>1</staves>
         <staff-details number="1">
-          <staff-lines>5</staff-lines>
+          
         </staff-details>
       </attributes>
-      <forward><duration>2</duration></forward>
+      <forward><duration>1536</duration></forward>
       
       <barline>
         <!--musicxml-interfaces:debug>
@@ -1081,21 +928,21 @@
       </barline>
       <forward><duration>0</duration></forward>
       
-      <backup><duration>2</duration></backup>
+      <backup><duration>1536</duration></backup>
       <!-- end of staff 1 -->
       <!-- voice 1 -->
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="-30" relative-x="0" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>C</step>
           <octave>4</octave>
         </pitch>
-        <duration>2</duration>
+        <duration>1536</duration>
         <voice>1</voice>
         <type>half</type>
         <staff>1</staff>
       </note>
       
-      <backup><duration>2</duration></backup>
+      <backup><duration>1536</duration></backup>
       <!-- end of voice 1 -->
     </part>
   </measure>
@@ -1105,20 +952,10 @@
       <direction placement="below"><direction-type><words default-y="-70" relative-x="-5000">SATIE_MEASURE_META = {"uuid":56};</words></direction-type></direction>
       <!-- end of measure metadata (Satie) -->
       <!-- staff 1 -->
-      <print new-system="no" new-page="no" page-number="1">
+      <print page-number="1">
         <!--musicxml-interfaces:debug>
           <div-count>0</div-count>
         </musicxml-interfaces:debug-->
-        <page-layout>
-          <page-height>1719.3846153846152</page-height>
-          <page-width>1328.6153846153845</page-width>
-          <page-margins type="both">
-            <left-margin>93.84615384615385</left-margin>
-            <right-margin>93.84615384615385</right-margin>
-            <top-margin>93.84615384615385</top-margin>
-            <bottom-margin>93.84615384615385</bottom-margin>
-          </page-margins>
-        </page-layout>
         <system-layout>
           <system-margins>
             <left-margin>0</left-margin>
@@ -1132,19 +969,17 @@
       <forward><duration>0</duration></forward>
       
       <attributes>
-        <!--musicxml-interfaces:debug>
-          <div-count>2</div-count>
-        </musicxml-interfaces:debug-->
+        <divisions>768</divisions>
         <key font-style="normal" font-weight="normal" color="#000000" print-object="yes">
           <fifths>-4</fifths>
           <mode>major</mode>
         </key>
         <staves>1</staves>
         <staff-details number="1">
-          <staff-lines>5</staff-lines>
+          
         </staff-details>
       </attributes>
-      <forward><duration>2</duration></forward>
+      <forward><duration>1536</duration></forward>
       
       <barline>
         <!--musicxml-interfaces:debug>
@@ -1154,21 +989,21 @@
       </barline>
       <forward><duration>0</duration></forward>
       
-      <backup><duration>2</duration></backup>
+      <backup><duration>1536</duration></backup>
       <!-- end of staff 1 -->
       <!-- voice 1 -->
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="-30" relative-x="0" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>C</step>
           <octave>4</octave>
         </pitch>
-        <duration>2</duration>
+        <duration>1536</duration>
         <voice>1</voice>
         <type>half</type>
         <staff>1</staff>
       </note>
       
-      <backup><duration>2</duration></backup>
+      <backup><duration>1536</duration></backup>
       <!-- end of voice 1 -->
     </part>
   </measure>
@@ -1178,20 +1013,10 @@
       <direction placement="below"><direction-type><words default-y="-70" relative-x="-5000">SATIE_MEASURE_META = {"uuid":57};</words></direction-type></direction>
       <!-- end of measure metadata (Satie) -->
       <!-- staff 1 -->
-      <print new-system="no" new-page="no" page-number="1">
+      <print page-number="1">
         <!--musicxml-interfaces:debug>
           <div-count>0</div-count>
         </musicxml-interfaces:debug-->
-        <page-layout>
-          <page-height>1719.3846153846152</page-height>
-          <page-width>1328.6153846153845</page-width>
-          <page-margins type="both">
-            <left-margin>93.84615384615385</left-margin>
-            <right-margin>93.84615384615385</right-margin>
-            <top-margin>93.84615384615385</top-margin>
-            <bottom-margin>93.84615384615385</bottom-margin>
-          </page-margins>
-        </page-layout>
         <system-layout>
           <system-margins>
             <left-margin>0</left-margin>
@@ -1205,19 +1030,17 @@
       <forward><duration>0</duration></forward>
       
       <attributes>
-        <!--musicxml-interfaces:debug>
-          <div-count>2</div-count>
-        </musicxml-interfaces:debug-->
+        <divisions>768</divisions>
         <key font-style="normal" font-weight="normal" color="#000000" print-object="yes">
           <fifths>-4</fifths>
           <mode>minor</mode>
         </key>
         <staves>1</staves>
         <staff-details number="1">
-          <staff-lines>5</staff-lines>
+          
         </staff-details>
       </attributes>
-      <forward><duration>2</duration></forward>
+      <forward><duration>1536</duration></forward>
       
       <barline>
         <!--musicxml-interfaces:debug>
@@ -1227,21 +1050,21 @@
       </barline>
       <forward><duration>0</duration></forward>
       
-      <backup><duration>2</duration></backup>
+      <backup><duration>1536</duration></backup>
       <!-- end of staff 1 -->
       <!-- voice 1 -->
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="-30" relative-x="0" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>C</step>
           <octave>4</octave>
         </pitch>
-        <duration>2</duration>
+        <duration>1536</duration>
         <voice>1</voice>
         <type>half</type>
         <staff>1</staff>
       </note>
       
-      <backup><duration>2</duration></backup>
+      <backup><duration>1536</duration></backup>
       <!-- end of voice 1 -->
     </part>
   </measure>
@@ -1251,20 +1074,10 @@
       <direction placement="below"><direction-type><words default-y="-70" relative-x="-5000">SATIE_MEASURE_META = {"uuid":58};</words></direction-type></direction>
       <!-- end of measure metadata (Satie) -->
       <!-- staff 1 -->
-      <print new-system="no" new-page="no" page-number="1">
+      <print page-number="1">
         <!--musicxml-interfaces:debug>
           <div-count>0</div-count>
         </musicxml-interfaces:debug-->
-        <page-layout>
-          <page-height>1719.3846153846152</page-height>
-          <page-width>1328.6153846153845</page-width>
-          <page-margins type="both">
-            <left-margin>93.84615384615385</left-margin>
-            <right-margin>93.84615384615385</right-margin>
-            <top-margin>93.84615384615385</top-margin>
-            <bottom-margin>93.84615384615385</bottom-margin>
-          </page-margins>
-        </page-layout>
         <system-layout>
           <system-margins>
             <left-margin>0</left-margin>
@@ -1278,19 +1091,17 @@
       <forward><duration>0</duration></forward>
       
       <attributes>
-        <!--musicxml-interfaces:debug>
-          <div-count>2</div-count>
-        </musicxml-interfaces:debug-->
+        <divisions>768</divisions>
         <key font-style="normal" font-weight="normal" color="#000000" print-object="yes">
           <fifths>-3</fifths>
           <mode>major</mode>
         </key>
         <staves>1</staves>
         <staff-details number="1">
-          <staff-lines>5</staff-lines>
+          
         </staff-details>
       </attributes>
-      <forward><duration>2</duration></forward>
+      <forward><duration>1536</duration></forward>
       
       <barline>
         <!--musicxml-interfaces:debug>
@@ -1300,21 +1111,21 @@
       </barline>
       <forward><duration>0</duration></forward>
       
-      <backup><duration>2</duration></backup>
+      <backup><duration>1536</duration></backup>
       <!-- end of staff 1 -->
       <!-- voice 1 -->
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="-30" relative-x="0" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>C</step>
           <octave>4</octave>
         </pitch>
-        <duration>2</duration>
+        <duration>1536</duration>
         <voice>1</voice>
         <type>half</type>
         <staff>1</staff>
       </note>
       
-      <backup><duration>2</duration></backup>
+      <backup><duration>1536</duration></backup>
       <!-- end of voice 1 -->
     </part>
   </measure>
@@ -1324,20 +1135,10 @@
       <direction placement="below"><direction-type><words default-y="-70" relative-x="-5000">SATIE_MEASURE_META = {"uuid":59};</words></direction-type></direction>
       <!-- end of measure metadata (Satie) -->
       <!-- staff 1 -->
-      <print new-system="no" new-page="no" page-number="1">
+      <print page-number="1">
         <!--musicxml-interfaces:debug>
           <div-count>0</div-count>
         </musicxml-interfaces:debug-->
-        <page-layout>
-          <page-height>1719.3846153846152</page-height>
-          <page-width>1328.6153846153845</page-width>
-          <page-margins type="both">
-            <left-margin>93.84615384615385</left-margin>
-            <right-margin>93.84615384615385</right-margin>
-            <top-margin>93.84615384615385</top-margin>
-            <bottom-margin>93.84615384615385</bottom-margin>
-          </page-margins>
-        </page-layout>
         <system-layout>
           <system-margins>
             <left-margin>0</left-margin>
@@ -1351,19 +1152,17 @@
       <forward><duration>0</duration></forward>
       
       <attributes>
-        <!--musicxml-interfaces:debug>
-          <div-count>2</div-count>
-        </musicxml-interfaces:debug-->
+        <divisions>768</divisions>
         <key font-style="normal" font-weight="normal" color="#000000" print-object="yes">
           <fifths>-3</fifths>
           <mode>minor</mode>
         </key>
         <staves>1</staves>
         <staff-details number="1">
-          <staff-lines>5</staff-lines>
+          
         </staff-details>
       </attributes>
-      <forward><duration>2</duration></forward>
+      <forward><duration>1536</duration></forward>
       
       <barline>
         <!--musicxml-interfaces:debug>
@@ -1373,21 +1172,21 @@
       </barline>
       <forward><duration>0</duration></forward>
       
-      <backup><duration>2</duration></backup>
+      <backup><duration>1536</duration></backup>
       <!-- end of staff 1 -->
       <!-- voice 1 -->
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="-30" relative-x="0" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>C</step>
           <octave>4</octave>
         </pitch>
-        <duration>2</duration>
+        <duration>1536</duration>
         <voice>1</voice>
         <type>half</type>
         <staff>1</staff>
       </note>
       
-      <backup><duration>2</duration></backup>
+      <backup><duration>1536</duration></backup>
       <!-- end of voice 1 -->
     </part>
   </measure>
@@ -1397,20 +1196,10 @@
       <direction placement="below"><direction-type><words default-y="-70" relative-x="-5000">SATIE_MEASURE_META = {"uuid":60};</words></direction-type></direction>
       <!-- end of measure metadata (Satie) -->
       <!-- staff 1 -->
-      <print new-system="no" new-page="no" page-number="1">
+      <print page-number="1">
         <!--musicxml-interfaces:debug>
           <div-count>0</div-count>
         </musicxml-interfaces:debug-->
-        <page-layout>
-          <page-height>1719.3846153846152</page-height>
-          <page-width>1328.6153846153845</page-width>
-          <page-margins type="both">
-            <left-margin>93.84615384615385</left-margin>
-            <right-margin>93.84615384615385</right-margin>
-            <top-margin>93.84615384615385</top-margin>
-            <bottom-margin>93.84615384615385</bottom-margin>
-          </page-margins>
-        </page-layout>
         <system-layout>
           <system-margins>
             <left-margin>0</left-margin>
@@ -1424,19 +1213,17 @@
       <forward><duration>0</duration></forward>
       
       <attributes>
-        <!--musicxml-interfaces:debug>
-          <div-count>2</div-count>
-        </musicxml-interfaces:debug-->
+        <divisions>768</divisions>
         <key font-style="normal" font-weight="normal" color="#000000" print-object="yes">
           <fifths>-2</fifths>
           <mode>major</mode>
         </key>
         <staves>1</staves>
         <staff-details number="1">
-          <staff-lines>5</staff-lines>
+          
         </staff-details>
       </attributes>
-      <forward><duration>2</duration></forward>
+      <forward><duration>1536</duration></forward>
       
       <barline>
         <!--musicxml-interfaces:debug>
@@ -1446,21 +1233,21 @@
       </barline>
       <forward><duration>0</duration></forward>
       
-      <backup><duration>2</duration></backup>
+      <backup><duration>1536</duration></backup>
       <!-- end of staff 1 -->
       <!-- voice 1 -->
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="-30" relative-x="0" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>C</step>
           <octave>4</octave>
         </pitch>
-        <duration>2</duration>
+        <duration>1536</duration>
         <voice>1</voice>
         <type>half</type>
         <staff>1</staff>
       </note>
       
-      <backup><duration>2</duration></backup>
+      <backup><duration>1536</duration></backup>
       <!-- end of voice 1 -->
     </part>
   </measure>
@@ -1470,20 +1257,10 @@
       <direction placement="below"><direction-type><words default-y="-70" relative-x="-5000">SATIE_MEASURE_META = {"uuid":61};</words></direction-type></direction>
       <!-- end of measure metadata (Satie) -->
       <!-- staff 1 -->
-      <print new-system="no" new-page="no" page-number="1">
+      <print page-number="1">
         <!--musicxml-interfaces:debug>
           <div-count>0</div-count>
         </musicxml-interfaces:debug-->
-        <page-layout>
-          <page-height>1719.3846153846152</page-height>
-          <page-width>1328.6153846153845</page-width>
-          <page-margins type="both">
-            <left-margin>93.84615384615385</left-margin>
-            <right-margin>93.84615384615385</right-margin>
-            <top-margin>93.84615384615385</top-margin>
-            <bottom-margin>93.84615384615385</bottom-margin>
-          </page-margins>
-        </page-layout>
         <system-layout>
           <system-margins>
             <left-margin>0</left-margin>
@@ -1497,19 +1274,17 @@
       <forward><duration>0</duration></forward>
       
       <attributes>
-        <!--musicxml-interfaces:debug>
-          <div-count>2</div-count>
-        </musicxml-interfaces:debug-->
+        <divisions>768</divisions>
         <key font-style="normal" font-weight="normal" color="#000000" print-object="yes">
           <fifths>-2</fifths>
           <mode>minor</mode>
         </key>
         <staves>1</staves>
         <staff-details number="1">
-          <staff-lines>5</staff-lines>
+          
         </staff-details>
       </attributes>
-      <forward><duration>2</duration></forward>
+      <forward><duration>1536</duration></forward>
       
       <barline>
         <!--musicxml-interfaces:debug>
@@ -1519,21 +1294,21 @@
       </barline>
       <forward><duration>0</duration></forward>
       
-      <backup><duration>2</duration></backup>
+      <backup><duration>1536</duration></backup>
       <!-- end of staff 1 -->
       <!-- voice 1 -->
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="-30" relative-x="0" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>C</step>
           <octave>4</octave>
         </pitch>
-        <duration>2</duration>
+        <duration>1536</duration>
         <voice>1</voice>
         <type>half</type>
         <staff>1</staff>
       </note>
       
-      <backup><duration>2</duration></backup>
+      <backup><duration>1536</duration></backup>
       <!-- end of voice 1 -->
     </part>
   </measure>
@@ -1543,20 +1318,10 @@
       <direction placement="below"><direction-type><words default-y="-70" relative-x="-5000">SATIE_MEASURE_META = {"uuid":62};</words></direction-type></direction>
       <!-- end of measure metadata (Satie) -->
       <!-- staff 1 -->
-      <print new-system="no" new-page="no" page-number="1">
+      <print page-number="1">
         <!--musicxml-interfaces:debug>
           <div-count>0</div-count>
         </musicxml-interfaces:debug-->
-        <page-layout>
-          <page-height>1719.3846153846152</page-height>
-          <page-width>1328.6153846153845</page-width>
-          <page-margins type="both">
-            <left-margin>93.84615384615385</left-margin>
-            <right-margin>93.84615384615385</right-margin>
-            <top-margin>93.84615384615385</top-margin>
-            <bottom-margin>93.84615384615385</bottom-margin>
-          </page-margins>
-        </page-layout>
         <system-layout>
           <system-margins>
             <left-margin>0</left-margin>
@@ -1570,19 +1335,17 @@
       <forward><duration>0</duration></forward>
       
       <attributes>
-        <!--musicxml-interfaces:debug>
-          <div-count>2</div-count>
-        </musicxml-interfaces:debug-->
+        <divisions>768</divisions>
         <key font-style="normal" font-weight="normal" color="#000000" print-object="yes">
           <fifths>-1</fifths>
           <mode>major</mode>
         </key>
         <staves>1</staves>
         <staff-details number="1">
-          <staff-lines>5</staff-lines>
+          
         </staff-details>
       </attributes>
-      <forward><duration>2</duration></forward>
+      <forward><duration>1536</duration></forward>
       
       <barline>
         <!--musicxml-interfaces:debug>
@@ -1592,21 +1355,21 @@
       </barline>
       <forward><duration>0</duration></forward>
       
-      <backup><duration>2</duration></backup>
+      <backup><duration>1536</duration></backup>
       <!-- end of staff 1 -->
       <!-- voice 1 -->
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="-30" relative-x="0" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>C</step>
           <octave>4</octave>
         </pitch>
-        <duration>2</duration>
+        <duration>1536</duration>
         <voice>1</voice>
         <type>half</type>
         <staff>1</staff>
       </note>
       
-      <backup><duration>2</duration></backup>
+      <backup><duration>1536</duration></backup>
       <!-- end of voice 1 -->
     </part>
   </measure>
@@ -1616,20 +1379,10 @@
       <direction placement="below"><direction-type><words default-y="-70" relative-x="-5000">SATIE_MEASURE_META = {"uuid":63};</words></direction-type></direction>
       <!-- end of measure metadata (Satie) -->
       <!-- staff 1 -->
-      <print new-system="no" new-page="no" page-number="1">
+      <print page-number="1">
         <!--musicxml-interfaces:debug>
           <div-count>0</div-count>
         </musicxml-interfaces:debug-->
-        <page-layout>
-          <page-height>1719.3846153846152</page-height>
-          <page-width>1328.6153846153845</page-width>
-          <page-margins type="both">
-            <left-margin>93.84615384615385</left-margin>
-            <right-margin>93.84615384615385</right-margin>
-            <top-margin>93.84615384615385</top-margin>
-            <bottom-margin>93.84615384615385</bottom-margin>
-          </page-margins>
-        </page-layout>
         <system-layout>
           <system-margins>
             <left-margin>0</left-margin>
@@ -1643,19 +1396,17 @@
       <forward><duration>0</duration></forward>
       
       <attributes>
-        <!--musicxml-interfaces:debug>
-          <div-count>2</div-count>
-        </musicxml-interfaces:debug-->
+        <divisions>768</divisions>
         <key font-style="normal" font-weight="normal" color="#000000" print-object="yes">
           <fifths>-1</fifths>
           <mode>minor</mode>
         </key>
         <staves>1</staves>
         <staff-details number="1">
-          <staff-lines>5</staff-lines>
+          
         </staff-details>
       </attributes>
-      <forward><duration>2</duration></forward>
+      <forward><duration>1536</duration></forward>
       
       <barline>
         <!--musicxml-interfaces:debug>
@@ -1665,21 +1416,21 @@
       </barline>
       <forward><duration>0</duration></forward>
       
-      <backup><duration>2</duration></backup>
+      <backup><duration>1536</duration></backup>
       <!-- end of staff 1 -->
       <!-- voice 1 -->
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="-30" relative-x="0" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>C</step>
           <octave>4</octave>
         </pitch>
-        <duration>2</duration>
+        <duration>1536</duration>
         <voice>1</voice>
         <type>half</type>
         <staff>1</staff>
       </note>
       
-      <backup><duration>2</duration></backup>
+      <backup><duration>1536</duration></backup>
       <!-- end of voice 1 -->
     </part>
   </measure>
@@ -1689,20 +1440,10 @@
       <direction placement="below"><direction-type><words default-y="-70" relative-x="-5000">SATIE_MEASURE_META = {"uuid":64};</words></direction-type></direction>
       <!-- end of measure metadata (Satie) -->
       <!-- staff 1 -->
-      <print new-system="no" new-page="no" page-number="1">
+      <print page-number="1">
         <!--musicxml-interfaces:debug>
           <div-count>0</div-count>
         </musicxml-interfaces:debug-->
-        <page-layout>
-          <page-height>1719.3846153846152</page-height>
-          <page-width>1328.6153846153845</page-width>
-          <page-margins type="both">
-            <left-margin>93.84615384615385</left-margin>
-            <right-margin>93.84615384615385</right-margin>
-            <top-margin>93.84615384615385</top-margin>
-            <bottom-margin>93.84615384615385</bottom-margin>
-          </page-margins>
-        </page-layout>
         <system-layout>
           <system-margins>
             <left-margin>0</left-margin>
@@ -1716,19 +1457,17 @@
       <forward><duration>0</duration></forward>
       
       <attributes>
-        <!--musicxml-interfaces:debug>
-          <div-count>2</div-count>
-        </musicxml-interfaces:debug-->
+        <divisions>768</divisions>
         <key font-style="normal" font-weight="normal" color="#000000" print-object="yes">
           <fifths>0</fifths>
           <mode>major</mode>
         </key>
         <staves>1</staves>
         <staff-details number="1">
-          <staff-lines>5</staff-lines>
+          
         </staff-details>
       </attributes>
-      <forward><duration>2</duration></forward>
+      <forward><duration>1536</duration></forward>
       
       <barline>
         <!--musicxml-interfaces:debug>
@@ -1738,21 +1477,21 @@
       </barline>
       <forward><duration>0</duration></forward>
       
-      <backup><duration>2</duration></backup>
+      <backup><duration>1536</duration></backup>
       <!-- end of staff 1 -->
       <!-- voice 1 -->
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="-30" relative-x="0" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>C</step>
           <octave>4</octave>
         </pitch>
-        <duration>2</duration>
+        <duration>1536</duration>
         <voice>1</voice>
         <type>half</type>
         <staff>1</staff>
       </note>
       
-      <backup><duration>2</duration></backup>
+      <backup><duration>1536</duration></backup>
       <!-- end of voice 1 -->
     </part>
   </measure>
@@ -1762,20 +1501,10 @@
       <direction placement="below"><direction-type><words default-y="-70" relative-x="-5000">SATIE_MEASURE_META = {"uuid":65};</words></direction-type></direction>
       <!-- end of measure metadata (Satie) -->
       <!-- staff 1 -->
-      <print new-system="no" new-page="no" page-number="1">
+      <print page-number="1">
         <!--musicxml-interfaces:debug>
           <div-count>0</div-count>
         </musicxml-interfaces:debug-->
-        <page-layout>
-          <page-height>1719.3846153846152</page-height>
-          <page-width>1328.6153846153845</page-width>
-          <page-margins type="both">
-            <left-margin>93.84615384615385</left-margin>
-            <right-margin>93.84615384615385</right-margin>
-            <top-margin>93.84615384615385</top-margin>
-            <bottom-margin>93.84615384615385</bottom-margin>
-          </page-margins>
-        </page-layout>
         <system-layout>
           <system-margins>
             <left-margin>0</left-margin>
@@ -1789,19 +1518,17 @@
       <forward><duration>0</duration></forward>
       
       <attributes>
-        <!--musicxml-interfaces:debug>
-          <div-count>2</div-count>
-        </musicxml-interfaces:debug-->
+        <divisions>768</divisions>
         <key font-style="normal" font-weight="normal" color="#000000" print-object="yes">
           <fifths>0</fifths>
           <mode>minor</mode>
         </key>
         <staves>1</staves>
         <staff-details number="1">
-          <staff-lines>5</staff-lines>
+          
         </staff-details>
       </attributes>
-      <forward><duration>2</duration></forward>
+      <forward><duration>1536</duration></forward>
       
       <barline>
         <!--musicxml-interfaces:debug>
@@ -1811,21 +1538,21 @@
       </barline>
       <forward><duration>0</duration></forward>
       
-      <backup><duration>2</duration></backup>
+      <backup><duration>1536</duration></backup>
       <!-- end of staff 1 -->
       <!-- voice 1 -->
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="-30" relative-x="0" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>C</step>
           <octave>4</octave>
         </pitch>
-        <duration>2</duration>
+        <duration>1536</duration>
         <voice>1</voice>
         <type>half</type>
         <staff>1</staff>
       </note>
       
-      <backup><duration>2</duration></backup>
+      <backup><duration>1536</duration></backup>
       <!-- end of voice 1 -->
     </part>
   </measure>
@@ -1835,20 +1562,10 @@
       <direction placement="below"><direction-type><words default-y="-70" relative-x="-5000">SATIE_MEASURE_META = {"uuid":66};</words></direction-type></direction>
       <!-- end of measure metadata (Satie) -->
       <!-- staff 1 -->
-      <print new-system="no" new-page="no" page-number="1">
+      <print page-number="1">
         <!--musicxml-interfaces:debug>
           <div-count>0</div-count>
         </musicxml-interfaces:debug-->
-        <page-layout>
-          <page-height>1719.3846153846152</page-height>
-          <page-width>1328.6153846153845</page-width>
-          <page-margins type="both">
-            <left-margin>93.84615384615385</left-margin>
-            <right-margin>93.84615384615385</right-margin>
-            <top-margin>93.84615384615385</top-margin>
-            <bottom-margin>93.84615384615385</bottom-margin>
-          </page-margins>
-        </page-layout>
         <system-layout>
           <system-margins>
             <left-margin>0</left-margin>
@@ -1862,19 +1579,17 @@
       <forward><duration>0</duration></forward>
       
       <attributes>
-        <!--musicxml-interfaces:debug>
-          <div-count>2</div-count>
-        </musicxml-interfaces:debug-->
+        <divisions>768</divisions>
         <key font-style="normal" font-weight="normal" color="#000000" print-object="yes">
           <fifths>1</fifths>
           <mode>major</mode>
         </key>
         <staves>1</staves>
         <staff-details number="1">
-          <staff-lines>5</staff-lines>
+          
         </staff-details>
       </attributes>
-      <forward><duration>2</duration></forward>
+      <forward><duration>1536</duration></forward>
       
       <barline>
         <!--musicxml-interfaces:debug>
@@ -1884,21 +1599,21 @@
       </barline>
       <forward><duration>0</duration></forward>
       
-      <backup><duration>2</duration></backup>
+      <backup><duration>1536</duration></backup>
       <!-- end of staff 1 -->
       <!-- voice 1 -->
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="-30" relative-x="0" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>C</step>
           <octave>4</octave>
         </pitch>
-        <duration>2</duration>
+        <duration>1536</duration>
         <voice>1</voice>
         <type>half</type>
         <staff>1</staff>
       </note>
       
-      <backup><duration>2</duration></backup>
+      <backup><duration>1536</duration></backup>
       <!-- end of voice 1 -->
     </part>
   </measure>
@@ -1908,20 +1623,10 @@
       <direction placement="below"><direction-type><words default-y="-70" relative-x="-5000">SATIE_MEASURE_META = {"uuid":67};</words></direction-type></direction>
       <!-- end of measure metadata (Satie) -->
       <!-- staff 1 -->
-      <print new-system="no" new-page="no" page-number="1">
+      <print page-number="1">
         <!--musicxml-interfaces:debug>
           <div-count>0</div-count>
         </musicxml-interfaces:debug-->
-        <page-layout>
-          <page-height>1719.3846153846152</page-height>
-          <page-width>1328.6153846153845</page-width>
-          <page-margins type="both">
-            <left-margin>93.84615384615385</left-margin>
-            <right-margin>93.84615384615385</right-margin>
-            <top-margin>93.84615384615385</top-margin>
-            <bottom-margin>93.84615384615385</bottom-margin>
-          </page-margins>
-        </page-layout>
         <system-layout>
           <system-margins>
             <left-margin>0</left-margin>
@@ -1935,19 +1640,17 @@
       <forward><duration>0</duration></forward>
       
       <attributes>
-        <!--musicxml-interfaces:debug>
-          <div-count>2</div-count>
-        </musicxml-interfaces:debug-->
+        <divisions>768</divisions>
         <key font-style="normal" font-weight="normal" color="#000000" print-object="yes">
           <fifths>1</fifths>
           <mode>minor</mode>
         </key>
         <staves>1</staves>
         <staff-details number="1">
-          <staff-lines>5</staff-lines>
+          
         </staff-details>
       </attributes>
-      <forward><duration>2</duration></forward>
+      <forward><duration>1536</duration></forward>
       
       <barline>
         <!--musicxml-interfaces:debug>
@@ -1957,21 +1660,21 @@
       </barline>
       <forward><duration>0</duration></forward>
       
-      <backup><duration>2</duration></backup>
+      <backup><duration>1536</duration></backup>
       <!-- end of staff 1 -->
       <!-- voice 1 -->
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="-30" relative-x="0" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>C</step>
           <octave>4</octave>
         </pitch>
-        <duration>2</duration>
+        <duration>1536</duration>
         <voice>1</voice>
         <type>half</type>
         <staff>1</staff>
       </note>
       
-      <backup><duration>2</duration></backup>
+      <backup><duration>1536</duration></backup>
       <!-- end of voice 1 -->
     </part>
   </measure>
@@ -1981,20 +1684,10 @@
       <direction placement="below"><direction-type><words default-y="-70" relative-x="-5000">SATIE_MEASURE_META = {"uuid":68};</words></direction-type></direction>
       <!-- end of measure metadata (Satie) -->
       <!-- staff 1 -->
-      <print new-system="no" new-page="no" page-number="1">
+      <print page-number="1">
         <!--musicxml-interfaces:debug>
           <div-count>0</div-count>
         </musicxml-interfaces:debug-->
-        <page-layout>
-          <page-height>1719.3846153846152</page-height>
-          <page-width>1328.6153846153845</page-width>
-          <page-margins type="both">
-            <left-margin>93.84615384615385</left-margin>
-            <right-margin>93.84615384615385</right-margin>
-            <top-margin>93.84615384615385</top-margin>
-            <bottom-margin>93.84615384615385</bottom-margin>
-          </page-margins>
-        </page-layout>
         <system-layout>
           <system-margins>
             <left-margin>0</left-margin>
@@ -2008,19 +1701,17 @@
       <forward><duration>0</duration></forward>
       
       <attributes>
-        <!--musicxml-interfaces:debug>
-          <div-count>2</div-count>
-        </musicxml-interfaces:debug-->
+        <divisions>768</divisions>
         <key font-style="normal" font-weight="normal" color="#000000" print-object="yes">
           <fifths>2</fifths>
           <mode>major</mode>
         </key>
         <staves>1</staves>
         <staff-details number="1">
-          <staff-lines>5</staff-lines>
+          
         </staff-details>
       </attributes>
-      <forward><duration>2</duration></forward>
+      <forward><duration>1536</duration></forward>
       
       <barline>
         <!--musicxml-interfaces:debug>
@@ -2030,21 +1721,22 @@
       </barline>
       <forward><duration>0</duration></forward>
       
-      <backup><duration>2</duration></backup>
+      <backup><duration>1536</duration></backup>
       <!-- end of staff 1 -->
       <!-- voice 1 -->
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="-30" relative-x="0" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>C</step>
           <octave>4</octave>
         </pitch>
-        <duration>2</duration>
+        <duration>1536</duration>
         <voice>1</voice>
         <type>half</type>
+        <accidental>natural</accidental>
         <staff>1</staff>
       </note>
       
-      <backup><duration>2</duration></backup>
+      <backup><duration>1536</duration></backup>
       <!-- end of voice 1 -->
     </part>
   </measure>
@@ -2054,20 +1746,10 @@
       <direction placement="below"><direction-type><words default-y="-70" relative-x="-5000">SATIE_MEASURE_META = {"uuid":69};</words></direction-type></direction>
       <!-- end of measure metadata (Satie) -->
       <!-- staff 1 -->
-      <print new-system="no" new-page="no" page-number="1">
+      <print page-number="1">
         <!--musicxml-interfaces:debug>
           <div-count>0</div-count>
         </musicxml-interfaces:debug-->
-        <page-layout>
-          <page-height>1719.3846153846152</page-height>
-          <page-width>1328.6153846153845</page-width>
-          <page-margins type="both">
-            <left-margin>93.84615384615385</left-margin>
-            <right-margin>93.84615384615385</right-margin>
-            <top-margin>93.84615384615385</top-margin>
-            <bottom-margin>93.84615384615385</bottom-margin>
-          </page-margins>
-        </page-layout>
         <system-layout>
           <system-margins>
             <left-margin>0</left-margin>
@@ -2081,19 +1763,17 @@
       <forward><duration>0</duration></forward>
       
       <attributes>
-        <!--musicxml-interfaces:debug>
-          <div-count>2</div-count>
-        </musicxml-interfaces:debug-->
+        <divisions>768</divisions>
         <key font-style="normal" font-weight="normal" color="#000000" print-object="yes">
           <fifths>2</fifths>
           <mode>minor</mode>
         </key>
         <staves>1</staves>
         <staff-details number="1">
-          <staff-lines>5</staff-lines>
+          
         </staff-details>
       </attributes>
-      <forward><duration>2</duration></forward>
+      <forward><duration>1536</duration></forward>
       
       <barline>
         <!--musicxml-interfaces:debug>
@@ -2103,21 +1783,22 @@
       </barline>
       <forward><duration>0</duration></forward>
       
-      <backup><duration>2</duration></backup>
+      <backup><duration>1536</duration></backup>
       <!-- end of staff 1 -->
       <!-- voice 1 -->
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="-30" relative-x="0" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>C</step>
           <octave>4</octave>
         </pitch>
-        <duration>2</duration>
+        <duration>1536</duration>
         <voice>1</voice>
         <type>half</type>
+        <accidental>natural</accidental>
         <staff>1</staff>
       </note>
       
-      <backup><duration>2</duration></backup>
+      <backup><duration>1536</duration></backup>
       <!-- end of voice 1 -->
     </part>
   </measure>
@@ -2127,20 +1808,10 @@
       <direction placement="below"><direction-type><words default-y="-70" relative-x="-5000">SATIE_MEASURE_META = {"uuid":70};</words></direction-type></direction>
       <!-- end of measure metadata (Satie) -->
       <!-- staff 1 -->
-      <print new-system="no" new-page="no" page-number="1">
+      <print page-number="1">
         <!--musicxml-interfaces:debug>
           <div-count>0</div-count>
         </musicxml-interfaces:debug-->
-        <page-layout>
-          <page-height>1719.3846153846152</page-height>
-          <page-width>1328.6153846153845</page-width>
-          <page-margins type="both">
-            <left-margin>93.84615384615385</left-margin>
-            <right-margin>93.84615384615385</right-margin>
-            <top-margin>93.84615384615385</top-margin>
-            <bottom-margin>93.84615384615385</bottom-margin>
-          </page-margins>
-        </page-layout>
         <system-layout>
           <system-margins>
             <left-margin>0</left-margin>
@@ -2154,19 +1825,17 @@
       <forward><duration>0</duration></forward>
       
       <attributes>
-        <!--musicxml-interfaces:debug>
-          <div-count>2</div-count>
-        </musicxml-interfaces:debug-->
+        <divisions>768</divisions>
         <key font-style="normal" font-weight="normal" color="#000000" print-object="yes">
           <fifths>3</fifths>
           <mode>major</mode>
         </key>
         <staves>1</staves>
         <staff-details number="1">
-          <staff-lines>5</staff-lines>
+          
         </staff-details>
       </attributes>
-      <forward><duration>2</duration></forward>
+      <forward><duration>1536</duration></forward>
       
       <barline>
         <!--musicxml-interfaces:debug>
@@ -2176,21 +1845,22 @@
       </barline>
       <forward><duration>0</duration></forward>
       
-      <backup><duration>2</duration></backup>
+      <backup><duration>1536</duration></backup>
       <!-- end of staff 1 -->
       <!-- voice 1 -->
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="-30" relative-x="0" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>C</step>
           <octave>4</octave>
         </pitch>
-        <duration>2</duration>
+        <duration>1536</duration>
         <voice>1</voice>
         <type>half</type>
+        <accidental>natural</accidental>
         <staff>1</staff>
       </note>
       
-      <backup><duration>2</duration></backup>
+      <backup><duration>1536</duration></backup>
       <!-- end of voice 1 -->
     </part>
   </measure>
@@ -2200,20 +1870,10 @@
       <direction placement="below"><direction-type><words default-y="-70" relative-x="-5000">SATIE_MEASURE_META = {"uuid":71};</words></direction-type></direction>
       <!-- end of measure metadata (Satie) -->
       <!-- staff 1 -->
-      <print new-system="no" new-page="no" page-number="1">
+      <print page-number="1">
         <!--musicxml-interfaces:debug>
           <div-count>0</div-count>
         </musicxml-interfaces:debug-->
-        <page-layout>
-          <page-height>1719.3846153846152</page-height>
-          <page-width>1328.6153846153845</page-width>
-          <page-margins type="both">
-            <left-margin>93.84615384615385</left-margin>
-            <right-margin>93.84615384615385</right-margin>
-            <top-margin>93.84615384615385</top-margin>
-            <bottom-margin>93.84615384615385</bottom-margin>
-          </page-margins>
-        </page-layout>
         <system-layout>
           <system-margins>
             <left-margin>0</left-margin>
@@ -2227,19 +1887,17 @@
       <forward><duration>0</duration></forward>
       
       <attributes>
-        <!--musicxml-interfaces:debug>
-          <div-count>2</div-count>
-        </musicxml-interfaces:debug-->
+        <divisions>768</divisions>
         <key font-style="normal" font-weight="normal" color="#000000" print-object="yes">
           <fifths>3</fifths>
           <mode>minor</mode>
         </key>
         <staves>1</staves>
         <staff-details number="1">
-          <staff-lines>5</staff-lines>
+          
         </staff-details>
       </attributes>
-      <forward><duration>2</duration></forward>
+      <forward><duration>1536</duration></forward>
       
       <barline>
         <!--musicxml-interfaces:debug>
@@ -2249,21 +1907,22 @@
       </barline>
       <forward><duration>0</duration></forward>
       
-      <backup><duration>2</duration></backup>
+      <backup><duration>1536</duration></backup>
       <!-- end of staff 1 -->
       <!-- voice 1 -->
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="-30" relative-x="0" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>C</step>
           <octave>4</octave>
         </pitch>
-        <duration>2</duration>
+        <duration>1536</duration>
         <voice>1</voice>
         <type>half</type>
+        <accidental>natural</accidental>
         <staff>1</staff>
       </note>
       
-      <backup><duration>2</duration></backup>
+      <backup><duration>1536</duration></backup>
       <!-- end of voice 1 -->
     </part>
   </measure>
@@ -2273,20 +1932,10 @@
       <direction placement="below"><direction-type><words default-y="-70" relative-x="-5000">SATIE_MEASURE_META = {"uuid":72};</words></direction-type></direction>
       <!-- end of measure metadata (Satie) -->
       <!-- staff 1 -->
-      <print new-system="no" new-page="no" page-number="1">
+      <print page-number="1">
         <!--musicxml-interfaces:debug>
           <div-count>0</div-count>
         </musicxml-interfaces:debug-->
-        <page-layout>
-          <page-height>1719.3846153846152</page-height>
-          <page-width>1328.6153846153845</page-width>
-          <page-margins type="both">
-            <left-margin>93.84615384615385</left-margin>
-            <right-margin>93.84615384615385</right-margin>
-            <top-margin>93.84615384615385</top-margin>
-            <bottom-margin>93.84615384615385</bottom-margin>
-          </page-margins>
-        </page-layout>
         <system-layout>
           <system-margins>
             <left-margin>0</left-margin>
@@ -2300,19 +1949,17 @@
       <forward><duration>0</duration></forward>
       
       <attributes>
-        <!--musicxml-interfaces:debug>
-          <div-count>2</div-count>
-        </musicxml-interfaces:debug-->
+        <divisions>768</divisions>
         <key font-style="normal" font-weight="normal" color="#000000" print-object="yes">
           <fifths>4</fifths>
           <mode>major</mode>
         </key>
         <staves>1</staves>
         <staff-details number="1">
-          <staff-lines>5</staff-lines>
+          
         </staff-details>
       </attributes>
-      <forward><duration>2</duration></forward>
+      <forward><duration>1536</duration></forward>
       
       <barline>
         <!--musicxml-interfaces:debug>
@@ -2322,21 +1969,22 @@
       </barline>
       <forward><duration>0</duration></forward>
       
-      <backup><duration>2</duration></backup>
+      <backup><duration>1536</duration></backup>
       <!-- end of staff 1 -->
       <!-- voice 1 -->
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="-30" relative-x="0" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>C</step>
           <octave>4</octave>
         </pitch>
-        <duration>2</duration>
+        <duration>1536</duration>
         <voice>1</voice>
         <type>half</type>
+        <accidental>natural</accidental>
         <staff>1</staff>
       </note>
       
-      <backup><duration>2</duration></backup>
+      <backup><duration>1536</duration></backup>
       <!-- end of voice 1 -->
     </part>
   </measure>
@@ -2346,20 +1994,10 @@
       <direction placement="below"><direction-type><words default-y="-70" relative-x="-5000">SATIE_MEASURE_META = {"uuid":73};</words></direction-type></direction>
       <!-- end of measure metadata (Satie) -->
       <!-- staff 1 -->
-      <print new-system="no" new-page="no" page-number="1">
+      <print page-number="1">
         <!--musicxml-interfaces:debug>
           <div-count>0</div-count>
         </musicxml-interfaces:debug-->
-        <page-layout>
-          <page-height>1719.3846153846152</page-height>
-          <page-width>1328.6153846153845</page-width>
-          <page-margins type="both">
-            <left-margin>93.84615384615385</left-margin>
-            <right-margin>93.84615384615385</right-margin>
-            <top-margin>93.84615384615385</top-margin>
-            <bottom-margin>93.84615384615385</bottom-margin>
-          </page-margins>
-        </page-layout>
         <system-layout>
           <system-margins>
             <left-margin>0</left-margin>
@@ -2373,19 +2011,17 @@
       <forward><duration>0</duration></forward>
       
       <attributes>
-        <!--musicxml-interfaces:debug>
-          <div-count>2</div-count>
-        </musicxml-interfaces:debug-->
+        <divisions>768</divisions>
         <key font-style="normal" font-weight="normal" color="#000000" print-object="yes">
           <fifths>4</fifths>
           <mode>minor</mode>
         </key>
         <staves>1</staves>
         <staff-details number="1">
-          <staff-lines>5</staff-lines>
+          
         </staff-details>
       </attributes>
-      <forward><duration>2</duration></forward>
+      <forward><duration>1536</duration></forward>
       
       <barline>
         <!--musicxml-interfaces:debug>
@@ -2395,21 +2031,22 @@
       </barline>
       <forward><duration>0</duration></forward>
       
-      <backup><duration>2</duration></backup>
+      <backup><duration>1536</duration></backup>
       <!-- end of staff 1 -->
       <!-- voice 1 -->
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="-30" relative-x="0" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>C</step>
           <octave>4</octave>
         </pitch>
-        <duration>2</duration>
+        <duration>1536</duration>
         <voice>1</voice>
         <type>half</type>
+        <accidental>natural</accidental>
         <staff>1</staff>
       </note>
       
-      <backup><duration>2</duration></backup>
+      <backup><duration>1536</duration></backup>
       <!-- end of voice 1 -->
     </part>
   </measure>
@@ -2419,20 +2056,10 @@
       <direction placement="below"><direction-type><words default-y="-70" relative-x="-5000">SATIE_MEASURE_META = {"uuid":74};</words></direction-type></direction>
       <!-- end of measure metadata (Satie) -->
       <!-- staff 1 -->
-      <print new-system="no" new-page="no" page-number="1">
+      <print page-number="1">
         <!--musicxml-interfaces:debug>
           <div-count>0</div-count>
         </musicxml-interfaces:debug-->
-        <page-layout>
-          <page-height>1719.3846153846152</page-height>
-          <page-width>1328.6153846153845</page-width>
-          <page-margins type="both">
-            <left-margin>93.84615384615385</left-margin>
-            <right-margin>93.84615384615385</right-margin>
-            <top-margin>93.84615384615385</top-margin>
-            <bottom-margin>93.84615384615385</bottom-margin>
-          </page-margins>
-        </page-layout>
         <system-layout>
           <system-margins>
             <left-margin>0</left-margin>
@@ -2446,19 +2073,17 @@
       <forward><duration>0</duration></forward>
       
       <attributes>
-        <!--musicxml-interfaces:debug>
-          <div-count>2</div-count>
-        </musicxml-interfaces:debug-->
+        <divisions>768</divisions>
         <key font-style="normal" font-weight="normal" color="#000000" print-object="yes">
           <fifths>5</fifths>
           <mode>major</mode>
         </key>
         <staves>1</staves>
         <staff-details number="1">
-          <staff-lines>5</staff-lines>
+          
         </staff-details>
       </attributes>
-      <forward><duration>2</duration></forward>
+      <forward><duration>1536</duration></forward>
       
       <barline>
         <!--musicxml-interfaces:debug>
@@ -2468,21 +2093,22 @@
       </barline>
       <forward><duration>0</duration></forward>
       
-      <backup><duration>2</duration></backup>
+      <backup><duration>1536</duration></backup>
       <!-- end of staff 1 -->
       <!-- voice 1 -->
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="-30" relative-x="0" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>C</step>
           <octave>4</octave>
         </pitch>
-        <duration>2</duration>
+        <duration>1536</duration>
         <voice>1</voice>
         <type>half</type>
+        <accidental>natural</accidental>
         <staff>1</staff>
       </note>
       
-      <backup><duration>2</duration></backup>
+      <backup><duration>1536</duration></backup>
       <!-- end of voice 1 -->
     </part>
   </measure>
@@ -2492,20 +2118,10 @@
       <direction placement="below"><direction-type><words default-y="-70" relative-x="-5000">SATIE_MEASURE_META = {"uuid":75};</words></direction-type></direction>
       <!-- end of measure metadata (Satie) -->
       <!-- staff 1 -->
-      <print new-system="no" new-page="no" page-number="1">
+      <print page-number="1">
         <!--musicxml-interfaces:debug>
           <div-count>0</div-count>
         </musicxml-interfaces:debug-->
-        <page-layout>
-          <page-height>1719.3846153846152</page-height>
-          <page-width>1328.6153846153845</page-width>
-          <page-margins type="both">
-            <left-margin>93.84615384615385</left-margin>
-            <right-margin>93.84615384615385</right-margin>
-            <top-margin>93.84615384615385</top-margin>
-            <bottom-margin>93.84615384615385</bottom-margin>
-          </page-margins>
-        </page-layout>
         <system-layout>
           <system-margins>
             <left-margin>0</left-margin>
@@ -2519,19 +2135,17 @@
       <forward><duration>0</duration></forward>
       
       <attributes>
-        <!--musicxml-interfaces:debug>
-          <div-count>2</div-count>
-        </musicxml-interfaces:debug-->
+        <divisions>768</divisions>
         <key font-style="normal" font-weight="normal" color="#000000" print-object="yes">
           <fifths>5</fifths>
           <mode>minor</mode>
         </key>
         <staves>1</staves>
         <staff-details number="1">
-          <staff-lines>5</staff-lines>
+          
         </staff-details>
       </attributes>
-      <forward><duration>2</duration></forward>
+      <forward><duration>1536</duration></forward>
       
       <barline>
         <!--musicxml-interfaces:debug>
@@ -2541,21 +2155,22 @@
       </barline>
       <forward><duration>0</duration></forward>
       
-      <backup><duration>2</duration></backup>
+      <backup><duration>1536</duration></backup>
       <!-- end of staff 1 -->
       <!-- voice 1 -->
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="-30" relative-x="0" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>C</step>
           <octave>4</octave>
         </pitch>
-        <duration>2</duration>
+        <duration>1536</duration>
         <voice>1</voice>
         <type>half</type>
+        <accidental>natural</accidental>
         <staff>1</staff>
       </note>
       
-      <backup><duration>2</duration></backup>
+      <backup><duration>1536</duration></backup>
       <!-- end of voice 1 -->
     </part>
   </measure>
@@ -2565,20 +2180,10 @@
       <direction placement="below"><direction-type><words default-y="-70" relative-x="-5000">SATIE_MEASURE_META = {"uuid":76};</words></direction-type></direction>
       <!-- end of measure metadata (Satie) -->
       <!-- staff 1 -->
-      <print new-system="no" new-page="no" page-number="1">
+      <print page-number="1">
         <!--musicxml-interfaces:debug>
           <div-count>0</div-count>
         </musicxml-interfaces:debug-->
-        <page-layout>
-          <page-height>1719.3846153846152</page-height>
-          <page-width>1328.6153846153845</page-width>
-          <page-margins type="both">
-            <left-margin>93.84615384615385</left-margin>
-            <right-margin>93.84615384615385</right-margin>
-            <top-margin>93.84615384615385</top-margin>
-            <bottom-margin>93.84615384615385</bottom-margin>
-          </page-margins>
-        </page-layout>
         <system-layout>
           <system-margins>
             <left-margin>0</left-margin>
@@ -2592,19 +2197,17 @@
       <forward><duration>0</duration></forward>
       
       <attributes>
-        <!--musicxml-interfaces:debug>
-          <div-count>2</div-count>
-        </musicxml-interfaces:debug-->
+        <divisions>768</divisions>
         <key font-style="normal" font-weight="normal" color="#000000" print-object="yes">
           <fifths>6</fifths>
           <mode>major</mode>
         </key>
         <staves>1</staves>
         <staff-details number="1">
-          <staff-lines>5</staff-lines>
+          
         </staff-details>
       </attributes>
-      <forward><duration>2</duration></forward>
+      <forward><duration>1536</duration></forward>
       
       <barline>
         <!--musicxml-interfaces:debug>
@@ -2614,21 +2217,22 @@
       </barline>
       <forward><duration>0</duration></forward>
       
-      <backup><duration>2</duration></backup>
+      <backup><duration>1536</duration></backup>
       <!-- end of staff 1 -->
       <!-- voice 1 -->
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="-30" relative-x="0" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>C</step>
           <octave>4</octave>
         </pitch>
-        <duration>2</duration>
+        <duration>1536</duration>
         <voice>1</voice>
         <type>half</type>
+        <accidental>natural</accidental>
         <staff>1</staff>
       </note>
       
-      <backup><duration>2</duration></backup>
+      <backup><duration>1536</duration></backup>
       <!-- end of voice 1 -->
     </part>
   </measure>
@@ -2638,20 +2242,10 @@
       <direction placement="below"><direction-type><words default-y="-70" relative-x="-5000">SATIE_MEASURE_META = {"uuid":77};</words></direction-type></direction>
       <!-- end of measure metadata (Satie) -->
       <!-- staff 1 -->
-      <print new-system="no" new-page="no" page-number="1">
+      <print page-number="1">
         <!--musicxml-interfaces:debug>
           <div-count>0</div-count>
         </musicxml-interfaces:debug-->
-        <page-layout>
-          <page-height>1719.3846153846152</page-height>
-          <page-width>1328.6153846153845</page-width>
-          <page-margins type="both">
-            <left-margin>93.84615384615385</left-margin>
-            <right-margin>93.84615384615385</right-margin>
-            <top-margin>93.84615384615385</top-margin>
-            <bottom-margin>93.84615384615385</bottom-margin>
-          </page-margins>
-        </page-layout>
         <system-layout>
           <system-margins>
             <left-margin>0</left-margin>
@@ -2665,19 +2259,17 @@
       <forward><duration>0</duration></forward>
       
       <attributes>
-        <!--musicxml-interfaces:debug>
-          <div-count>2</div-count>
-        </musicxml-interfaces:debug-->
+        <divisions>768</divisions>
         <key font-style="normal" font-weight="normal" color="#000000" print-object="yes">
           <fifths>6</fifths>
           <mode>minor</mode>
         </key>
         <staves>1</staves>
         <staff-details number="1">
-          <staff-lines>5</staff-lines>
+          
         </staff-details>
       </attributes>
-      <forward><duration>2</duration></forward>
+      <forward><duration>1536</duration></forward>
       
       <barline>
         <!--musicxml-interfaces:debug>
@@ -2687,21 +2279,22 @@
       </barline>
       <forward><duration>0</duration></forward>
       
-      <backup><duration>2</duration></backup>
+      <backup><duration>1536</duration></backup>
       <!-- end of staff 1 -->
       <!-- voice 1 -->
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="-30" relative-x="0" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>C</step>
           <octave>4</octave>
         </pitch>
-        <duration>2</duration>
+        <duration>1536</duration>
         <voice>1</voice>
         <type>half</type>
+        <accidental>natural</accidental>
         <staff>1</staff>
       </note>
       
-      <backup><duration>2</duration></backup>
+      <backup><duration>1536</duration></backup>
       <!-- end of voice 1 -->
     </part>
   </measure>
@@ -2711,20 +2304,10 @@
       <direction placement="below"><direction-type><words default-y="-70" relative-x="-5000">SATIE_MEASURE_META = {"uuid":78};</words></direction-type></direction>
       <!-- end of measure metadata (Satie) -->
       <!-- staff 1 -->
-      <print new-system="no" new-page="no" page-number="1">
+      <print page-number="1">
         <!--musicxml-interfaces:debug>
           <div-count>0</div-count>
         </musicxml-interfaces:debug-->
-        <page-layout>
-          <page-height>1719.3846153846152</page-height>
-          <page-width>1328.6153846153845</page-width>
-          <page-margins type="both">
-            <left-margin>93.84615384615385</left-margin>
-            <right-margin>93.84615384615385</right-margin>
-            <top-margin>93.84615384615385</top-margin>
-            <bottom-margin>93.84615384615385</bottom-margin>
-          </page-margins>
-        </page-layout>
         <system-layout>
           <system-margins>
             <left-margin>0</left-margin>
@@ -2738,19 +2321,17 @@
       <forward><duration>0</duration></forward>
       
       <attributes>
-        <!--musicxml-interfaces:debug>
-          <div-count>2</div-count>
-        </musicxml-interfaces:debug-->
+        <divisions>768</divisions>
         <key font-style="normal" font-weight="normal" color="#000000" print-object="yes">
           <fifths>7</fifths>
           <mode>major</mode>
         </key>
         <staves>1</staves>
         <staff-details number="1">
-          <staff-lines>5</staff-lines>
+          
         </staff-details>
       </attributes>
-      <forward><duration>2</duration></forward>
+      <forward><duration>1536</duration></forward>
       
       <barline>
         <!--musicxml-interfaces:debug>
@@ -2760,21 +2341,22 @@
       </barline>
       <forward><duration>0</duration></forward>
       
-      <backup><duration>2</duration></backup>
+      <backup><duration>1536</duration></backup>
       <!-- end of staff 1 -->
       <!-- voice 1 -->
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="-30" relative-x="0" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>C</step>
           <octave>4</octave>
         </pitch>
-        <duration>2</duration>
+        <duration>1536</duration>
         <voice>1</voice>
         <type>half</type>
+        <accidental>natural</accidental>
         <staff>1</staff>
       </note>
       
-      <backup><duration>2</duration></backup>
+      <backup><duration>1536</duration></backup>
       <!-- end of voice 1 -->
     </part>
   </measure>
@@ -2784,20 +2366,10 @@
       <direction placement="below"><direction-type><words default-y="-70" relative-x="-5000">SATIE_MEASURE_META = {"uuid":79};</words></direction-type></direction>
       <!-- end of measure metadata (Satie) -->
       <!-- staff 1 -->
-      <print new-system="no" new-page="no" page-number="1">
+      <print page-number="1">
         <!--musicxml-interfaces:debug>
           <div-count>0</div-count>
         </musicxml-interfaces:debug-->
-        <page-layout>
-          <page-height>1719.3846153846152</page-height>
-          <page-width>1328.6153846153845</page-width>
-          <page-margins type="both">
-            <left-margin>93.84615384615385</left-margin>
-            <right-margin>93.84615384615385</right-margin>
-            <top-margin>93.84615384615385</top-margin>
-            <bottom-margin>93.84615384615385</bottom-margin>
-          </page-margins>
-        </page-layout>
         <system-layout>
           <system-margins>
             <left-margin>0</left-margin>
@@ -2811,19 +2383,17 @@
       <forward><duration>0</duration></forward>
       
       <attributes>
-        <!--musicxml-interfaces:debug>
-          <div-count>2</div-count>
-        </musicxml-interfaces:debug-->
+        <divisions>768</divisions>
         <key font-style="normal" font-weight="normal" color="#000000" print-object="yes">
           <fifths>7</fifths>
           <mode>minor</mode>
         </key>
         <staves>1</staves>
         <staff-details number="1">
-          <staff-lines>5</staff-lines>
+          
         </staff-details>
       </attributes>
-      <forward><duration>2</duration></forward>
+      <forward><duration>1536</duration></forward>
       
       <barline>
         <!--musicxml-interfaces:debug>
@@ -2833,21 +2403,22 @@
       </barline>
       <forward><duration>0</duration></forward>
       
-      <backup><duration>2</duration></backup>
+      <backup><duration>1536</duration></backup>
       <!-- end of staff 1 -->
       <!-- voice 1 -->
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="-30" relative-x="0" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>C</step>
           <octave>4</octave>
         </pitch>
-        <duration>2</duration>
+        <duration>1536</duration>
         <voice>1</voice>
         <type>half</type>
+        <accidental>natural</accidental>
         <staff>1</staff>
       </note>
       
-      <backup><duration>2</duration></backup>
+      <backup><duration>1536</duration></backup>
       <!-- end of voice 1 -->
     </part>
   </measure>
@@ -2857,20 +2428,10 @@
       <direction placement="below"><direction-type><words default-y="-70" relative-x="-5000">SATIE_MEASURE_META = {"uuid":80};</words></direction-type></direction>
       <!-- end of measure metadata (Satie) -->
       <!-- staff 1 -->
-      <print new-system="no" new-page="no" page-number="1">
+      <print page-number="1">
         <!--musicxml-interfaces:debug>
           <div-count>0</div-count>
         </musicxml-interfaces:debug-->
-        <page-layout>
-          <page-height>1719.3846153846152</page-height>
-          <page-width>1328.6153846153845</page-width>
-          <page-margins type="both">
-            <left-margin>93.84615384615385</left-margin>
-            <right-margin>93.84615384615385</right-margin>
-            <top-margin>93.84615384615385</top-margin>
-            <bottom-margin>93.84615384615385</bottom-margin>
-          </page-margins>
-        </page-layout>
         <system-layout>
           <system-margins>
             <left-margin>0</left-margin>
@@ -2884,19 +2445,17 @@
       <forward><duration>0</duration></forward>
       
       <attributes>
-        <!--musicxml-interfaces:debug>
-          <div-count>2</div-count>
-        </musicxml-interfaces:debug-->
+        <divisions>768</divisions>
         <key font-style="normal" font-weight="normal" color="#000000" print-object="yes">
           <fifths>8</fifths>
           <mode>major</mode>
         </key>
         <staves>1</staves>
         <staff-details number="1">
-          <staff-lines>5</staff-lines>
+          
         </staff-details>
       </attributes>
-      <forward><duration>2</duration></forward>
+      <forward><duration>1536</duration></forward>
       
       <barline>
         <!--musicxml-interfaces:debug>
@@ -2906,21 +2465,22 @@
       </barline>
       <forward><duration>0</duration></forward>
       
-      <backup><duration>2</duration></backup>
+      <backup><duration>1536</duration></backup>
       <!-- end of staff 1 -->
       <!-- voice 1 -->
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="-30" relative-x="0" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>C</step>
           <octave>4</octave>
         </pitch>
-        <duration>2</duration>
+        <duration>1536</duration>
         <voice>1</voice>
         <type>half</type>
+        <accidental>natural</accidental>
         <staff>1</staff>
       </note>
       
-      <backup><duration>2</duration></backup>
+      <backup><duration>1536</duration></backup>
       <!-- end of voice 1 -->
     </part>
   </measure>
@@ -2930,20 +2490,10 @@
       <direction placement="below"><direction-type><words default-y="-70" relative-x="-5000">SATIE_MEASURE_META = {"uuid":81};</words></direction-type></direction>
       <!-- end of measure metadata (Satie) -->
       <!-- staff 1 -->
-      <print new-system="no" new-page="no" page-number="1">
+      <print page-number="1">
         <!--musicxml-interfaces:debug>
           <div-count>0</div-count>
         </musicxml-interfaces:debug-->
-        <page-layout>
-          <page-height>1719.3846153846152</page-height>
-          <page-width>1328.6153846153845</page-width>
-          <page-margins type="both">
-            <left-margin>93.84615384615385</left-margin>
-            <right-margin>93.84615384615385</right-margin>
-            <top-margin>93.84615384615385</top-margin>
-            <bottom-margin>93.84615384615385</bottom-margin>
-          </page-margins>
-        </page-layout>
         <system-layout>
           <system-margins>
             <left-margin>0</left-margin>
@@ -2957,19 +2507,17 @@
       <forward><duration>0</duration></forward>
       
       <attributes>
-        <!--musicxml-interfaces:debug>
-          <div-count>2</div-count>
-        </musicxml-interfaces:debug-->
+        <divisions>768</divisions>
         <key font-style="normal" font-weight="normal" color="#000000" print-object="yes">
           <fifths>8</fifths>
           <mode>minor</mode>
         </key>
         <staves>1</staves>
         <staff-details number="1">
-          <staff-lines>5</staff-lines>
+          
         </staff-details>
       </attributes>
-      <forward><duration>2</duration></forward>
+      <forward><duration>1536</duration></forward>
       
       <barline>
         <!--musicxml-interfaces:debug>
@@ -2979,21 +2527,22 @@
       </barline>
       <forward><duration>0</duration></forward>
       
-      <backup><duration>2</duration></backup>
+      <backup><duration>1536</duration></backup>
       <!-- end of staff 1 -->
       <!-- voice 1 -->
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="-30" relative-x="0" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>C</step>
           <octave>4</octave>
         </pitch>
-        <duration>2</duration>
+        <duration>1536</duration>
         <voice>1</voice>
         <type>half</type>
+        <accidental>natural</accidental>
         <staff>1</staff>
       </note>
       
-      <backup><duration>2</duration></backup>
+      <backup><duration>1536</duration></backup>
       <!-- end of voice 1 -->
     </part>
   </measure>
@@ -3003,20 +2552,10 @@
       <direction placement="below"><direction-type><words default-y="-70" relative-x="-5000">SATIE_MEASURE_META = {"uuid":82};</words></direction-type></direction>
       <!-- end of measure metadata (Satie) -->
       <!-- staff 1 -->
-      <print new-system="no" new-page="no" page-number="1">
+      <print page-number="1">
         <!--musicxml-interfaces:debug>
           <div-count>0</div-count>
         </musicxml-interfaces:debug-->
-        <page-layout>
-          <page-height>1719.3846153846152</page-height>
-          <page-width>1328.6153846153845</page-width>
-          <page-margins type="both">
-            <left-margin>93.84615384615385</left-margin>
-            <right-margin>93.84615384615385</right-margin>
-            <top-margin>93.84615384615385</top-margin>
-            <bottom-margin>93.84615384615385</bottom-margin>
-          </page-margins>
-        </page-layout>
         <system-layout>
           <system-margins>
             <left-margin>0</left-margin>
@@ -3030,19 +2569,17 @@
       <forward><duration>0</duration></forward>
       
       <attributes>
-        <!--musicxml-interfaces:debug>
-          <div-count>2</div-count>
-        </musicxml-interfaces:debug-->
+        <divisions>768</divisions>
         <key font-style="normal" font-weight="normal" color="#000000" print-object="yes">
           <fifths>9</fifths>
           <mode>major</mode>
         </key>
         <staves>1</staves>
         <staff-details number="1">
-          <staff-lines>5</staff-lines>
+          
         </staff-details>
       </attributes>
-      <forward><duration>2</duration></forward>
+      <forward><duration>1536</duration></forward>
       
       <barline>
         <!--musicxml-interfaces:debug>
@@ -3052,21 +2589,22 @@
       </barline>
       <forward><duration>0</duration></forward>
       
-      <backup><duration>2</duration></backup>
+      <backup><duration>1536</duration></backup>
       <!-- end of staff 1 -->
       <!-- voice 1 -->
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="-30" relative-x="0" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>C</step>
           <octave>4</octave>
         </pitch>
-        <duration>2</duration>
+        <duration>1536</duration>
         <voice>1</voice>
         <type>half</type>
+        <accidental>natural</accidental>
         <staff>1</staff>
       </note>
       
-      <backup><duration>2</duration></backup>
+      <backup><duration>1536</duration></backup>
       <!-- end of voice 1 -->
     </part>
   </measure>
@@ -3076,20 +2614,10 @@
       <direction placement="below"><direction-type><words default-y="-70" relative-x="-5000">SATIE_MEASURE_META = {"uuid":83};</words></direction-type></direction>
       <!-- end of measure metadata (Satie) -->
       <!-- staff 1 -->
-      <print new-system="no" new-page="no" page-number="1">
+      <print page-number="1">
         <!--musicxml-interfaces:debug>
           <div-count>0</div-count>
         </musicxml-interfaces:debug-->
-        <page-layout>
-          <page-height>1719.3846153846152</page-height>
-          <page-width>1328.6153846153845</page-width>
-          <page-margins type="both">
-            <left-margin>93.84615384615385</left-margin>
-            <right-margin>93.84615384615385</right-margin>
-            <top-margin>93.84615384615385</top-margin>
-            <bottom-margin>93.84615384615385</bottom-margin>
-          </page-margins>
-        </page-layout>
         <system-layout>
           <system-margins>
             <left-margin>0</left-margin>
@@ -3103,19 +2631,17 @@
       <forward><duration>0</duration></forward>
       
       <attributes>
-        <!--musicxml-interfaces:debug>
-          <div-count>2</div-count>
-        </musicxml-interfaces:debug-->
+        <divisions>768</divisions>
         <key font-style="normal" font-weight="normal" color="#000000" print-object="yes">
           <fifths>9</fifths>
           <mode>minor</mode>
         </key>
         <staves>1</staves>
         <staff-details number="1">
-          <staff-lines>5</staff-lines>
+          
         </staff-details>
       </attributes>
-      <forward><duration>2</duration></forward>
+      <forward><duration>1536</duration></forward>
       
       <barline>
         <!--musicxml-interfaces:debug>
@@ -3125,21 +2651,22 @@
       </barline>
       <forward><duration>0</duration></forward>
       
-      <backup><duration>2</duration></backup>
+      <backup><duration>1536</duration></backup>
       <!-- end of staff 1 -->
       <!-- voice 1 -->
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="-30" relative-x="0" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>C</step>
           <octave>4</octave>
         </pitch>
-        <duration>2</duration>
+        <duration>1536</duration>
         <voice>1</voice>
         <type>half</type>
+        <accidental>natural</accidental>
         <staff>1</staff>
       </note>
       
-      <backup><duration>2</duration></backup>
+      <backup><duration>1536</duration></backup>
       <!-- end of voice 1 -->
     </part>
   </measure>
@@ -3149,20 +2676,10 @@
       <direction placement="below"><direction-type><words default-y="-70" relative-x="-5000">SATIE_MEASURE_META = {"uuid":84};</words></direction-type></direction>
       <!-- end of measure metadata (Satie) -->
       <!-- staff 1 -->
-      <print new-system="no" new-page="no" page-number="1">
+      <print page-number="1">
         <!--musicxml-interfaces:debug>
           <div-count>0</div-count>
         </musicxml-interfaces:debug-->
-        <page-layout>
-          <page-height>1719.3846153846152</page-height>
-          <page-width>1328.6153846153845</page-width>
-          <page-margins type="both">
-            <left-margin>93.84615384615385</left-margin>
-            <right-margin>93.84615384615385</right-margin>
-            <top-margin>93.84615384615385</top-margin>
-            <bottom-margin>93.84615384615385</bottom-margin>
-          </page-margins>
-        </page-layout>
         <system-layout>
           <system-margins>
             <left-margin>0</left-margin>
@@ -3176,19 +2693,17 @@
       <forward><duration>0</duration></forward>
       
       <attributes>
-        <!--musicxml-interfaces:debug>
-          <div-count>2</div-count>
-        </musicxml-interfaces:debug-->
+        <divisions>768</divisions>
         <key font-style="normal" font-weight="normal" color="#000000" print-object="yes">
           <fifths>10</fifths>
           <mode>major</mode>
         </key>
         <staves>1</staves>
         <staff-details number="1">
-          <staff-lines>5</staff-lines>
+          
         </staff-details>
       </attributes>
-      <forward><duration>2</duration></forward>
+      <forward><duration>1536</duration></forward>
       
       <barline>
         <!--musicxml-interfaces:debug>
@@ -3198,21 +2713,22 @@
       </barline>
       <forward><duration>0</duration></forward>
       
-      <backup><duration>2</duration></backup>
+      <backup><duration>1536</duration></backup>
       <!-- end of staff 1 -->
       <!-- voice 1 -->
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="-30" relative-x="0" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>C</step>
           <octave>4</octave>
         </pitch>
-        <duration>2</duration>
+        <duration>1536</duration>
         <voice>1</voice>
         <type>half</type>
+        <accidental>natural</accidental>
         <staff>1</staff>
       </note>
       
-      <backup><duration>2</duration></backup>
+      <backup><duration>1536</duration></backup>
       <!-- end of voice 1 -->
     </part>
   </measure>
@@ -3222,20 +2738,10 @@
       <direction placement="below"><direction-type><words default-y="-70" relative-x="-5000">SATIE_MEASURE_META = {"uuid":85};</words></direction-type></direction>
       <!-- end of measure metadata (Satie) -->
       <!-- staff 1 -->
-      <print new-system="no" new-page="no" page-number="1">
+      <print page-number="1">
         <!--musicxml-interfaces:debug>
           <div-count>0</div-count>
         </musicxml-interfaces:debug-->
-        <page-layout>
-          <page-height>1719.3846153846152</page-height>
-          <page-width>1328.6153846153845</page-width>
-          <page-margins type="both">
-            <left-margin>93.84615384615385</left-margin>
-            <right-margin>93.84615384615385</right-margin>
-            <top-margin>93.84615384615385</top-margin>
-            <bottom-margin>93.84615384615385</bottom-margin>
-          </page-margins>
-        </page-layout>
         <system-layout>
           <system-margins>
             <left-margin>0</left-margin>
@@ -3249,19 +2755,17 @@
       <forward><duration>0</duration></forward>
       
       <attributes>
-        <!--musicxml-interfaces:debug>
-          <div-count>2</div-count>
-        </musicxml-interfaces:debug-->
+        <divisions>768</divisions>
         <key font-style="normal" font-weight="normal" color="#000000" print-object="yes">
           <fifths>10</fifths>
           <mode>minor</mode>
         </key>
         <staves>1</staves>
         <staff-details number="1">
-          <staff-lines>5</staff-lines>
+          
         </staff-details>
       </attributes>
-      <forward><duration>2</duration></forward>
+      <forward><duration>1536</duration></forward>
       
       <barline>
         <!--musicxml-interfaces:debug>
@@ -3271,21 +2775,22 @@
       </barline>
       <forward><duration>0</duration></forward>
       
-      <backup><duration>2</duration></backup>
+      <backup><duration>1536</duration></backup>
       <!-- end of staff 1 -->
       <!-- voice 1 -->
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="-30" relative-x="0" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>C</step>
           <octave>4</octave>
         </pitch>
-        <duration>2</duration>
+        <duration>1536</duration>
         <voice>1</voice>
         <type>half</type>
+        <accidental>natural</accidental>
         <staff>1</staff>
       </note>
       
-      <backup><duration>2</duration></backup>
+      <backup><duration>1536</duration></backup>
       <!-- end of voice 1 -->
     </part>
   </measure>
@@ -3295,20 +2800,10 @@
       <direction placement="below"><direction-type><words default-y="-70" relative-x="-5000">SATIE_MEASURE_META = {"uuid":86};</words></direction-type></direction>
       <!-- end of measure metadata (Satie) -->
       <!-- staff 1 -->
-      <print new-system="no" new-page="no" page-number="1">
+      <print page-number="1">
         <!--musicxml-interfaces:debug>
           <div-count>0</div-count>
         </musicxml-interfaces:debug-->
-        <page-layout>
-          <page-height>1719.3846153846152</page-height>
-          <page-width>1328.6153846153845</page-width>
-          <page-margins type="both">
-            <left-margin>93.84615384615385</left-margin>
-            <right-margin>93.84615384615385</right-margin>
-            <top-margin>93.84615384615385</top-margin>
-            <bottom-margin>93.84615384615385</bottom-margin>
-          </page-margins>
-        </page-layout>
         <system-layout>
           <system-margins>
             <left-margin>0</left-margin>
@@ -3322,19 +2817,17 @@
       <forward><duration>0</duration></forward>
       
       <attributes>
-        <!--musicxml-interfaces:debug>
-          <div-count>2</div-count>
-        </musicxml-interfaces:debug-->
+        <divisions>768</divisions>
         <key font-style="normal" font-weight="normal" color="#000000" print-object="yes">
           <fifths>11</fifths>
           <mode>major</mode>
         </key>
         <staves>1</staves>
         <staff-details number="1">
-          <staff-lines>5</staff-lines>
+          
         </staff-details>
       </attributes>
-      <forward><duration>2</duration></forward>
+      <forward><duration>1536</duration></forward>
       
       <barline>
         <!--musicxml-interfaces:debug>
@@ -3344,21 +2837,22 @@
       </barline>
       <forward><duration>0</duration></forward>
       
-      <backup><duration>2</duration></backup>
+      <backup><duration>1536</duration></backup>
       <!-- end of staff 1 -->
       <!-- voice 1 -->
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="-30" relative-x="0" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>C</step>
           <octave>4</octave>
         </pitch>
-        <duration>2</duration>
+        <duration>1536</duration>
         <voice>1</voice>
         <type>half</type>
+        <accidental>natural</accidental>
         <staff>1</staff>
       </note>
       
-      <backup><duration>2</duration></backup>
+      <backup><duration>1536</duration></backup>
       <!-- end of voice 1 -->
     </part>
   </measure>
@@ -3368,20 +2862,10 @@
       <direction placement="below"><direction-type><words default-y="-70" relative-x="-5000">SATIE_MEASURE_META = {"uuid":87};</words></direction-type></direction>
       <!-- end of measure metadata (Satie) -->
       <!-- staff 1 -->
-      <print new-system="no" new-page="no" page-number="1">
+      <print page-number="1">
         <!--musicxml-interfaces:debug>
           <div-count>0</div-count>
         </musicxml-interfaces:debug-->
-        <page-layout>
-          <page-height>1719.3846153846152</page-height>
-          <page-width>1328.6153846153845</page-width>
-          <page-margins type="both">
-            <left-margin>93.84615384615385</left-margin>
-            <right-margin>93.84615384615385</right-margin>
-            <top-margin>93.84615384615385</top-margin>
-            <bottom-margin>93.84615384615385</bottom-margin>
-          </page-margins>
-        </page-layout>
         <system-layout>
           <system-margins>
             <left-margin>0</left-margin>
@@ -3395,19 +2879,17 @@
       <forward><duration>0</duration></forward>
       
       <attributes>
-        <!--musicxml-interfaces:debug>
-          <div-count>2</div-count>
-        </musicxml-interfaces:debug-->
+        <divisions>768</divisions>
         <key font-style="normal" font-weight="normal" color="#000000" print-object="yes">
           <fifths>11</fifths>
           <mode>minor</mode>
         </key>
         <staves>1</staves>
         <staff-details number="1">
-          <staff-lines>5</staff-lines>
+          
         </staff-details>
       </attributes>
-      <forward><duration>2</duration></forward>
+      <forward><duration>1536</duration></forward>
       
       <barline location="right">
         <!--musicxml-interfaces:debug>
@@ -3417,21 +2899,22 @@
       </barline>
       <forward><duration>0</duration></forward>
       
-      <backup><duration>2</duration></backup>
+      <backup><duration>1536</duration></backup>
       <!-- end of staff 1 -->
       <!-- voice 1 -->
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="-30" relative-x="0" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>C</step>
           <octave>4</octave>
         </pitch>
-        <duration>2</duration>
+        <duration>1536</duration>
         <voice>1</voice>
         <type>half</type>
+        <accidental>natural</accidental>
         <staff>1</staff>
       </note>
       
-      <backup><duration>2</duration></backup>
+      <backup><duration>1536</duration></backup>
       <!-- end of voice 1 -->
     </part>
   </measure>

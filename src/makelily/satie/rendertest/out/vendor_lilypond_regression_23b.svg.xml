@@ -97,9 +97,9 @@
       
       <attributes>
         <!--musicxml-interfaces:debug>
-          <div-count>2040</div-count>
+          <div-count>65280</div-count>
         </musicxml-interfaces:debug-->
-        <divisions>408</divisions>
+        <divisions>13056</divisions>
         <key font-style="normal" font-weight="normal" color="#000000" print-object="yes">
           <fifths>0</fifths>
           <mode>major</mode>
@@ -117,7 +117,7 @@
           <staff-lines>5</staff-lines>
         </staff-details>
       </attributes>
-      <forward><duration>2040</duration></forward>
+      <forward><duration>65280</duration></forward>
       
       <barline>
         <!--musicxml-interfaces:debug>
@@ -127,15 +127,15 @@
       </barline>
       <forward><duration>0</duration></forward>
       
-      <backup><duration>2040</duration></backup>
+      <backup><duration>65280</duration></backup>
       <!-- end of staff 1 -->
       <!-- voice 1 -->
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="5" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>C</step>
           <octave>5</octave>
         </pitch>
-        <duration>136</duration>
+        <duration>4352</duration>
         <voice>1</voice>
         <type>eighth</type>
         <time-modification>
@@ -143,7 +143,6 @@
           <normal-notes>2</normal-notes>
         </time-modification>
         <staff>1</staff>
-        <beam number="1">begin</beam>
         <notations print-object="yes">
           <tuplet type="start" number="1" bracket="yes" show-number="actual" show-type="none" line-shape="straight">
             <tuplet-actual>
@@ -156,12 +155,12 @@
         </notations>
       </note>
       
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="5" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>C</step>
           <octave>5</octave>
         </pitch>
-        <duration>136</duration>
+        <duration>4352</duration>
         <voice>1</voice>
         <type>eighth</type>
         <time-modification>
@@ -169,15 +168,14 @@
           <normal-notes>2</normal-notes>
         </time-modification>
         <staff>1</staff>
-        <beam number="1">continue</beam>
       </note>
       
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="5" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>C</step>
           <octave>5</octave>
         </pitch>
-        <duration>136</duration>
+        <duration>4352</duration>
         <voice>1</voice>
         <type>eighth</type>
         <time-modification>
@@ -185,7 +183,6 @@
           <normal-notes>2</normal-notes>
         </time-modification>
         <staff>1</staff>
-        <beam number="1">continue</beam>
         <notations print-object="yes">
           <tuplet type="stop" number="1" bracket="no" show-number="actual" show-type="none" line-shape="straight">
             <tuplet-actual>
@@ -198,12 +195,12 @@
         </notations>
       </note>
       
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="5" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>C</step>
           <octave>5</octave>
         </pitch>
-        <duration>136</duration>
+        <duration>4352</duration>
         <voice>1</voice>
         <type>eighth</type>
         <time-modification>
@@ -211,7 +208,6 @@
           <normal-notes>2</normal-notes>
         </time-modification>
         <staff>1</staff>
-        <beam number="1">continue</beam>
         <notations print-object="yes">
           <tuplet type="start" number="1" bracket="yes" show-number="none" show-type="none" line-shape="straight">
             <tuplet-actual>
@@ -224,12 +220,12 @@
         </notations>
       </note>
       
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="5" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>C</step>
           <octave>5</octave>
         </pitch>
-        <duration>136</duration>
+        <duration>4352</duration>
         <voice>1</voice>
         <type>eighth</type>
         <time-modification>
@@ -237,15 +233,14 @@
           <normal-notes>2</normal-notes>
         </time-modification>
         <staff>1</staff>
-        <beam number="1">continue</beam>
       </note>
       
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="5" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>C</step>
           <octave>5</octave>
         </pitch>
-        <duration>136</duration>
+        <duration>4352</duration>
         <voice>1</voice>
         <type>eighth</type>
         <time-modification>
@@ -253,7 +248,6 @@
           <normal-notes>2</normal-notes>
         </time-modification>
         <staff>1</staff>
-        <beam number="1">end</beam>
         <notations print-object="yes">
           <tuplet type="stop" number="1" bracket="no" show-number="actual" show-type="none" line-shape="straight">
             <tuplet-actual>
@@ -266,12 +260,12 @@
         </notations>
       </note>
       
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="5" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>C</step>
           <octave>5</octave>
         </pitch>
-        <duration>136</duration>
+        <duration>4352</duration>
         <voice>1</voice>
         <type>eighth</type>
         <time-modification>
@@ -279,7 +273,6 @@
           <normal-notes>2</normal-notes>
         </time-modification>
         <staff>1</staff>
-        <beam number="1">begin</beam>
         <notations print-object="yes">
           <tuplet type="start" number="1" bracket="yes" show-number="both" show-type="none" line-shape="straight">
             <tuplet-actual>
@@ -292,12 +285,12 @@
         </notations>
       </note>
       
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="5" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>C</step>
           <octave>5</octave>
         </pitch>
-        <duration>136</duration>
+        <duration>4352</duration>
         <voice>1</voice>
         <type>eighth</type>
         <time-modification>
@@ -305,15 +298,14 @@
           <normal-notes>2</normal-notes>
         </time-modification>
         <staff>1</staff>
-        <beam number="1">continue</beam>
       </note>
       
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="5" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>C</step>
           <octave>5</octave>
         </pitch>
-        <duration>136</duration>
+        <duration>4352</duration>
         <voice>1</voice>
         <type>eighth</type>
         <time-modification>
@@ -321,7 +313,6 @@
           <normal-notes>2</normal-notes>
         </time-modification>
         <staff>1</staff>
-        <beam number="1">continue</beam>
         <notations print-object="yes">
           <tuplet type="stop" number="1" bracket="no" show-number="actual" show-type="none" line-shape="straight">
             <tuplet-actual>
@@ -334,12 +325,12 @@
         </notations>
       </note>
       
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="5" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>C</step>
           <octave>5</octave>
         </pitch>
-        <duration>136</duration>
+        <duration>4352</duration>
         <voice>1</voice>
         <type>eighth</type>
         <time-modification>
@@ -347,7 +338,6 @@
           <normal-notes>2</normal-notes>
         </time-modification>
         <staff>1</staff>
-        <beam number="1">end</beam>
         <notations print-object="yes">
           <tuplet type="start" number="1" bracket="yes" show-number="both" show-type="actual" line-shape="straight">
             <tuplet-actual>
@@ -360,12 +350,12 @@
         </notations>
       </note>
       
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="5" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>C</step>
           <octave>5</octave>
         </pitch>
-        <duration>136</duration>
+        <duration>4352</duration>
         <voice>1</voice>
         <type>eighth</type>
         <time-modification>
@@ -373,15 +363,14 @@
           <normal-notes>2</normal-notes>
         </time-modification>
         <staff>1</staff>
-        <beam number="1">begin</beam>
       </note>
       
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="5" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>C</step>
           <octave>5</octave>
         </pitch>
-        <duration>136</duration>
+        <duration>4352</duration>
         <voice>1</voice>
         <type>eighth</type>
         <time-modification>
@@ -389,7 +378,6 @@
           <normal-notes>2</normal-notes>
         </time-modification>
         <staff>1</staff>
-        <beam number="1">continue</beam>
         <notations print-object="yes">
           <tuplet type="stop" number="1" bracket="no" show-number="actual" show-type="none" line-shape="straight">
             <tuplet-actual>
@@ -402,12 +390,12 @@
         </notations>
       </note>
       
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="5" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>C</step>
           <octave>5</octave>
         </pitch>
-        <duration>136</duration>
+        <duration>4352</duration>
         <voice>1</voice>
         <type>eighth</type>
         <time-modification>
@@ -415,7 +403,6 @@
           <normal-notes>2</normal-notes>
         </time-modification>
         <staff>1</staff>
-        <beam number="1">continue</beam>
         <notations print-object="yes">
           <tuplet type="start" number="1" bracket="yes" show-number="both" show-type="both" line-shape="straight">
             <tuplet-actual>
@@ -428,12 +415,12 @@
         </notations>
       </note>
       
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="5" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>C</step>
           <octave>5</octave>
         </pitch>
-        <duration>136</duration>
+        <duration>4352</duration>
         <voice>1</voice>
         <type>eighth</type>
         <time-modification>
@@ -441,15 +428,14 @@
           <normal-notes>2</normal-notes>
         </time-modification>
         <staff>1</staff>
-        <beam number="1">continue</beam>
       </note>
       
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="5" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>C</step>
           <octave>5</octave>
         </pitch>
-        <duration>136</duration>
+        <duration>4352</duration>
         <voice>1</voice>
         <type>eighth</type>
         <time-modification>
@@ -457,7 +443,6 @@
           <normal-notes>2</normal-notes>
         </time-modification>
         <staff>1</staff>
-        <beam number="1">end</beam>
         <notations print-object="yes">
           <tuplet type="stop" number="1" bracket="no" show-number="actual" show-type="none" line-shape="straight">
             <tuplet-actual>
@@ -470,7 +455,7 @@
         </notations>
       </note>
       
-      <backup><duration>2040</duration></backup>
+      <backup><duration>65280</duration></backup>
       <!-- end of voice 1 -->
     </part>
   </measure>
@@ -484,6 +469,7 @@
         <!--musicxml-interfaces:debug>
           <div-count>0</div-count>
         </musicxml-interfaces:debug-->
+        <divisions>13056</divisions>
         <staves>1</staves>
         <staff-details number="1">
           <staff-lines>5</staff-lines>
@@ -518,7 +504,7 @@
       <forward><duration>0</duration></forward>
       
       <!-- spacer -->
-      <forward><duration>2040</duration></forward>
+      <forward><duration>65280</duration></forward>
       
       <barline>
         <!--musicxml-interfaces:debug>
@@ -528,15 +514,15 @@
       </barline>
       <forward><duration>0</duration></forward>
       
-      <backup><duration>2040</duration></backup>
+      <backup><duration>65280</duration></backup>
       <!-- end of staff 1 -->
       <!-- voice 1 -->
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="5" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>C</step>
           <octave>5</octave>
         </pitch>
-        <duration>136</duration>
+        <duration>4352</duration>
         <voice>1</voice>
         <type>eighth</type>
         <time-modification>
@@ -544,7 +530,6 @@
           <normal-notes>2</normal-notes>
         </time-modification>
         <staff>1</staff>
-        <beam number="1">begin</beam>
         <notations print-object="yes">
           <tuplet type="start" number="1" bracket="yes" show-number="actual" show-type="none" line-shape="curved">
             <tuplet-actual>
@@ -557,12 +542,12 @@
         </notations>
       </note>
       
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="5" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>C</step>
           <octave>5</octave>
         </pitch>
-        <duration>136</duration>
+        <duration>4352</duration>
         <voice>1</voice>
         <type>eighth</type>
         <time-modification>
@@ -570,15 +555,14 @@
           <normal-notes>2</normal-notes>
         </time-modification>
         <staff>1</staff>
-        <beam number="1">continue</beam>
       </note>
       
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="5" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>C</step>
           <octave>5</octave>
         </pitch>
-        <duration>136</duration>
+        <duration>4352</duration>
         <voice>1</voice>
         <type>eighth</type>
         <time-modification>
@@ -586,7 +570,6 @@
           <normal-notes>2</normal-notes>
         </time-modification>
         <staff>1</staff>
-        <beam number="1">continue</beam>
         <notations print-object="yes">
           <tuplet type="stop" number="1" bracket="no" show-number="actual" show-type="none" line-shape="straight">
             <tuplet-actual>
@@ -599,12 +582,12 @@
         </notations>
       </note>
       
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="5" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>C</step>
           <octave>5</octave>
         </pitch>
-        <duration>136</duration>
+        <duration>4352</duration>
         <voice>1</voice>
         <type>eighth</type>
         <time-modification>
@@ -612,7 +595,6 @@
           <normal-notes>2</normal-notes>
         </time-modification>
         <staff>1</staff>
-        <beam number="1">continue</beam>
         <notations print-object="yes">
           <tuplet type="start" number="1" bracket="yes" show-number="none" show-type="none" line-shape="curved">
             <tuplet-actual>
@@ -625,12 +607,12 @@
         </notations>
       </note>
       
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="5" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>C</step>
           <octave>5</octave>
         </pitch>
-        <duration>136</duration>
+        <duration>4352</duration>
         <voice>1</voice>
         <type>eighth</type>
         <time-modification>
@@ -638,15 +620,14 @@
           <normal-notes>2</normal-notes>
         </time-modification>
         <staff>1</staff>
-        <beam number="1">continue</beam>
       </note>
       
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="5" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>C</step>
           <octave>5</octave>
         </pitch>
-        <duration>136</duration>
+        <duration>4352</duration>
         <voice>1</voice>
         <type>eighth</type>
         <time-modification>
@@ -654,7 +635,6 @@
           <normal-notes>2</normal-notes>
         </time-modification>
         <staff>1</staff>
-        <beam number="1">end</beam>
         <notations print-object="yes">
           <tuplet type="stop" number="1" bracket="no" show-number="actual" show-type="none" line-shape="straight">
             <tuplet-actual>
@@ -667,12 +647,12 @@
         </notations>
       </note>
       
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="5" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>C</step>
           <octave>5</octave>
         </pitch>
-        <duration>136</duration>
+        <duration>4352</duration>
         <voice>1</voice>
         <type>eighth</type>
         <time-modification>
@@ -680,7 +660,6 @@
           <normal-notes>2</normal-notes>
         </time-modification>
         <staff>1</staff>
-        <beam number="1">begin</beam>
         <notations print-object="yes">
           <tuplet type="start" number="1" bracket="yes" show-number="both" show-type="none" line-shape="curved">
             <tuplet-actual>
@@ -693,12 +672,12 @@
         </notations>
       </note>
       
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="5" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>C</step>
           <octave>5</octave>
         </pitch>
-        <duration>136</duration>
+        <duration>4352</duration>
         <voice>1</voice>
         <type>eighth</type>
         <time-modification>
@@ -706,15 +685,14 @@
           <normal-notes>2</normal-notes>
         </time-modification>
         <staff>1</staff>
-        <beam number="1">continue</beam>
       </note>
       
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="5" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>C</step>
           <octave>5</octave>
         </pitch>
-        <duration>136</duration>
+        <duration>4352</duration>
         <voice>1</voice>
         <type>eighth</type>
         <time-modification>
@@ -722,7 +700,6 @@
           <normal-notes>2</normal-notes>
         </time-modification>
         <staff>1</staff>
-        <beam number="1">continue</beam>
         <notations print-object="yes">
           <tuplet type="stop" number="1" bracket="no" show-number="actual" show-type="none" line-shape="straight">
             <tuplet-actual>
@@ -735,12 +712,12 @@
         </notations>
       </note>
       
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="5" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>C</step>
           <octave>5</octave>
         </pitch>
-        <duration>136</duration>
+        <duration>4352</duration>
         <voice>1</voice>
         <type>eighth</type>
         <time-modification>
@@ -748,7 +725,6 @@
           <normal-notes>2</normal-notes>
         </time-modification>
         <staff>1</staff>
-        <beam number="1">end</beam>
         <notations print-object="yes">
           <tuplet type="start" number="1" bracket="yes" show-number="both" show-type="actual" line-shape="curved">
             <tuplet-actual>
@@ -761,12 +737,12 @@
         </notations>
       </note>
       
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="5" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>C</step>
           <octave>5</octave>
         </pitch>
-        <duration>136</duration>
+        <duration>4352</duration>
         <voice>1</voice>
         <type>eighth</type>
         <time-modification>
@@ -774,15 +750,14 @@
           <normal-notes>2</normal-notes>
         </time-modification>
         <staff>1</staff>
-        <beam number="1">begin</beam>
       </note>
       
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="5" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>C</step>
           <octave>5</octave>
         </pitch>
-        <duration>136</duration>
+        <duration>4352</duration>
         <voice>1</voice>
         <type>eighth</type>
         <time-modification>
@@ -790,7 +765,6 @@
           <normal-notes>2</normal-notes>
         </time-modification>
         <staff>1</staff>
-        <beam number="1">continue</beam>
         <notations print-object="yes">
           <tuplet type="stop" number="1" bracket="no" show-number="actual" show-type="none" line-shape="straight">
             <tuplet-actual>
@@ -803,12 +777,12 @@
         </notations>
       </note>
       
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="5" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>C</step>
           <octave>5</octave>
         </pitch>
-        <duration>136</duration>
+        <duration>4352</duration>
         <voice>1</voice>
         <type>eighth</type>
         <time-modification>
@@ -816,7 +790,6 @@
           <normal-notes>2</normal-notes>
         </time-modification>
         <staff>1</staff>
-        <beam number="1">continue</beam>
         <notations print-object="yes">
           <tuplet type="start" number="1" bracket="yes" show-number="both" show-type="both" line-shape="curved">
             <tuplet-actual>
@@ -829,12 +802,12 @@
         </notations>
       </note>
       
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="5" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>C</step>
           <octave>5</octave>
         </pitch>
-        <duration>136</duration>
+        <duration>4352</duration>
         <voice>1</voice>
         <type>eighth</type>
         <time-modification>
@@ -842,15 +815,14 @@
           <normal-notes>2</normal-notes>
         </time-modification>
         <staff>1</staff>
-        <beam number="1">continue</beam>
       </note>
       
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="5" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>C</step>
           <octave>5</octave>
         </pitch>
-        <duration>136</duration>
+        <duration>4352</duration>
         <voice>1</voice>
         <type>eighth</type>
         <time-modification>
@@ -858,7 +830,6 @@
           <normal-notes>2</normal-notes>
         </time-modification>
         <staff>1</staff>
-        <beam number="1">end</beam>
         <notations print-object="yes">
           <tuplet type="stop" number="1" bracket="no" show-number="actual" show-type="none" line-shape="straight">
             <tuplet-actual>
@@ -871,7 +842,7 @@
         </notations>
       </note>
       
-      <backup><duration>2040</duration></backup>
+      <backup><duration>65280</duration></backup>
       <!-- end of voice 1 -->
     </part>
   </measure>
@@ -885,6 +856,7 @@
         <!--musicxml-interfaces:debug>
           <div-count>0</div-count>
         </musicxml-interfaces:debug-->
+        <divisions>13056</divisions>
         <staves>1</staves>
         <staff-details number="1">
           <staff-lines>5</staff-lines>
@@ -919,7 +891,7 @@
       <forward><duration>0</duration></forward>
       
       <!-- spacer -->
-      <forward><duration>2040</duration></forward>
+      <forward><duration>65280</duration></forward>
       
       <barline>
         <!--musicxml-interfaces:debug>
@@ -929,15 +901,15 @@
       </barline>
       <forward><duration>0</duration></forward>
       
-      <backup><duration>2040</duration></backup>
+      <backup><duration>65280</duration></backup>
       <!-- end of staff 1 -->
       <!-- voice 1 -->
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="5" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>C</step>
           <octave>5</octave>
         </pitch>
-        <duration>136</duration>
+        <duration>4352</duration>
         <voice>1</voice>
         <type>eighth</type>
         <time-modification>
@@ -945,7 +917,6 @@
           <normal-notes>2</normal-notes>
         </time-modification>
         <staff>1</staff>
-        <beam number="1">begin</beam>
         <notations print-object="yes">
           <tuplet type="start" number="1" bracket="no" show-number="actual" show-type="none" line-shape="straight">
             <tuplet-actual>
@@ -958,12 +929,12 @@
         </notations>
       </note>
       
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="5" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>C</step>
           <octave>5</octave>
         </pitch>
-        <duration>136</duration>
+        <duration>4352</duration>
         <voice>1</voice>
         <type>eighth</type>
         <time-modification>
@@ -971,15 +942,14 @@
           <normal-notes>2</normal-notes>
         </time-modification>
         <staff>1</staff>
-        <beam number="1">continue</beam>
       </note>
       
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="5" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>C</step>
           <octave>5</octave>
         </pitch>
-        <duration>136</duration>
+        <duration>4352</duration>
         <voice>1</voice>
         <type>eighth</type>
         <time-modification>
@@ -987,7 +957,6 @@
           <normal-notes>2</normal-notes>
         </time-modification>
         <staff>1</staff>
-        <beam number="1">continue</beam>
         <notations print-object="yes">
           <tuplet type="stop" number="1" bracket="no" show-number="actual" show-type="none" line-shape="straight">
             <tuplet-actual>
@@ -1000,12 +969,12 @@
         </notations>
       </note>
       
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="5" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>C</step>
           <octave>5</octave>
         </pitch>
-        <duration>136</duration>
+        <duration>4352</duration>
         <voice>1</voice>
         <type>eighth</type>
         <time-modification>
@@ -1013,7 +982,6 @@
           <normal-notes>2</normal-notes>
         </time-modification>
         <staff>1</staff>
-        <beam number="1">continue</beam>
         <notations print-object="yes">
           <tuplet type="start" number="1" bracket="no" show-number="none" show-type="none" line-shape="straight">
             <tuplet-actual>
@@ -1026,12 +994,12 @@
         </notations>
       </note>
       
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="5" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>C</step>
           <octave>5</octave>
         </pitch>
-        <duration>136</duration>
+        <duration>4352</duration>
         <voice>1</voice>
         <type>eighth</type>
         <time-modification>
@@ -1039,15 +1007,14 @@
           <normal-notes>2</normal-notes>
         </time-modification>
         <staff>1</staff>
-        <beam number="1">continue</beam>
       </note>
       
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="5" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>C</step>
           <octave>5</octave>
         </pitch>
-        <duration>136</duration>
+        <duration>4352</duration>
         <voice>1</voice>
         <type>eighth</type>
         <time-modification>
@@ -1055,7 +1022,6 @@
           <normal-notes>2</normal-notes>
         </time-modification>
         <staff>1</staff>
-        <beam number="1">end</beam>
         <notations print-object="yes">
           <tuplet type="stop" number="1" bracket="no" show-number="actual" show-type="none" line-shape="straight">
             <tuplet-actual>
@@ -1068,12 +1034,12 @@
         </notations>
       </note>
       
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="5" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>C</step>
           <octave>5</octave>
         </pitch>
-        <duration>136</duration>
+        <duration>4352</duration>
         <voice>1</voice>
         <type>eighth</type>
         <time-modification>
@@ -1081,7 +1047,6 @@
           <normal-notes>2</normal-notes>
         </time-modification>
         <staff>1</staff>
-        <beam number="1">begin</beam>
         <notations print-object="yes">
           <tuplet type="start" number="1" bracket="no" show-number="both" show-type="none" line-shape="straight">
             <tuplet-actual>
@@ -1094,12 +1059,12 @@
         </notations>
       </note>
       
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="5" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>C</step>
           <octave>5</octave>
         </pitch>
-        <duration>136</duration>
+        <duration>4352</duration>
         <voice>1</voice>
         <type>eighth</type>
         <time-modification>
@@ -1107,15 +1072,14 @@
           <normal-notes>2</normal-notes>
         </time-modification>
         <staff>1</staff>
-        <beam number="1">continue</beam>
       </note>
       
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="5" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>C</step>
           <octave>5</octave>
         </pitch>
-        <duration>136</duration>
+        <duration>4352</duration>
         <voice>1</voice>
         <type>eighth</type>
         <time-modification>
@@ -1123,7 +1087,6 @@
           <normal-notes>2</normal-notes>
         </time-modification>
         <staff>1</staff>
-        <beam number="1">continue</beam>
         <notations print-object="yes">
           <tuplet type="stop" number="1" bracket="no" show-number="actual" show-type="none" line-shape="straight">
             <tuplet-actual>
@@ -1136,12 +1099,12 @@
         </notations>
       </note>
       
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="5" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>C</step>
           <octave>5</octave>
         </pitch>
-        <duration>136</duration>
+        <duration>4352</duration>
         <voice>1</voice>
         <type>eighth</type>
         <time-modification>
@@ -1149,7 +1112,6 @@
           <normal-notes>2</normal-notes>
         </time-modification>
         <staff>1</staff>
-        <beam number="1">end</beam>
         <notations print-object="yes">
           <tuplet type="start" number="1" bracket="no" show-number="both" show-type="actual" line-shape="straight">
             <tuplet-actual>
@@ -1162,12 +1124,12 @@
         </notations>
       </note>
       
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="5" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>C</step>
           <octave>5</octave>
         </pitch>
-        <duration>136</duration>
+        <duration>4352</duration>
         <voice>1</voice>
         <type>eighth</type>
         <time-modification>
@@ -1175,15 +1137,14 @@
           <normal-notes>2</normal-notes>
         </time-modification>
         <staff>1</staff>
-        <beam number="1">begin</beam>
       </note>
       
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="5" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>C</step>
           <octave>5</octave>
         </pitch>
-        <duration>136</duration>
+        <duration>4352</duration>
         <voice>1</voice>
         <type>eighth</type>
         <time-modification>
@@ -1191,7 +1152,6 @@
           <normal-notes>2</normal-notes>
         </time-modification>
         <staff>1</staff>
-        <beam number="1">continue</beam>
         <notations print-object="yes">
           <tuplet type="stop" number="1" bracket="no" show-number="actual" show-type="none" line-shape="straight">
             <tuplet-actual>
@@ -1204,12 +1164,12 @@
         </notations>
       </note>
       
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="5" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>C</step>
           <octave>5</octave>
         </pitch>
-        <duration>136</duration>
+        <duration>4352</duration>
         <voice>1</voice>
         <type>eighth</type>
         <time-modification>
@@ -1217,7 +1177,6 @@
           <normal-notes>2</normal-notes>
         </time-modification>
         <staff>1</staff>
-        <beam number="1">continue</beam>
         <notations print-object="yes">
           <tuplet type="start" number="1" bracket="no" show-number="both" show-type="both" line-shape="straight">
             <tuplet-actual>
@@ -1230,12 +1189,12 @@
         </notations>
       </note>
       
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="5" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>C</step>
           <octave>5</octave>
         </pitch>
-        <duration>136</duration>
+        <duration>4352</duration>
         <voice>1</voice>
         <type>eighth</type>
         <time-modification>
@@ -1243,15 +1202,14 @@
           <normal-notes>2</normal-notes>
         </time-modification>
         <staff>1</staff>
-        <beam number="1">continue</beam>
       </note>
       
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="5" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>C</step>
           <octave>5</octave>
         </pitch>
-        <duration>136</duration>
+        <duration>4352</duration>
         <voice>1</voice>
         <type>eighth</type>
         <time-modification>
@@ -1259,7 +1217,6 @@
           <normal-notes>2</normal-notes>
         </time-modification>
         <staff>1</staff>
-        <beam number="1">end</beam>
         <notations print-object="yes">
           <tuplet type="stop" number="1" bracket="no" show-number="actual" show-type="none" line-shape="straight">
             <tuplet-actual>
@@ -1272,7 +1229,7 @@
         </notations>
       </note>
       
-      <backup><duration>2040</duration></backup>
+      <backup><duration>65280</duration></backup>
       <!-- end of voice 1 -->
     </part>
   </measure>
@@ -1286,6 +1243,7 @@
         <!--musicxml-interfaces:debug>
           <div-count>0</div-count>
         </musicxml-interfaces:debug-->
+        <divisions>13056</divisions>
         <staves>1</staves>
         <staff-details number="1">
           <staff-lines>5</staff-lines>
@@ -1320,10 +1278,10 @@
       <forward><duration>0</duration></forward>
       
       <!-- spacer -->
-      <forward><duration>1632</duration></forward>
+      <forward><duration>52224</duration></forward>
       
       <!-- spacer -->
-      <forward><duration>408</duration></forward>
+      <forward><duration>13056</duration></forward>
       
       <barline location="right">
         <!--musicxml-interfaces:debug>
@@ -1333,15 +1291,15 @@
       </barline>
       <forward><duration>0</duration></forward>
       
-      <backup><duration>2040</duration></backup>
+      <backup><duration>65280</duration></backup>
       <!-- end of staff 1 -->
       <!-- voice 1 -->
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="5" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>C</step>
           <octave>5</octave>
         </pitch>
-        <duration>153</duration>
+        <duration>4896</duration>
         <voice>1</voice>
         <type>eighth</type>
         <time-modification>
@@ -1349,7 +1307,6 @@
           <normal-notes>3</normal-notes>
         </time-modification>
         <staff>1</staff>
-        <beam number="1">begin</beam>
         <notations print-object="yes">
           <tuplet type="start" number="1" bracket="no" show-number="both" show-type="none" line-shape="straight" placement="below">
             <tuplet-actual>
@@ -1362,12 +1319,12 @@
         </notations>
       </note>
       
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="5" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>C</step>
           <octave>5</octave>
         </pitch>
-        <duration>153</duration>
+        <duration>4896</duration>
         <voice>1</voice>
         <type>eighth</type>
         <time-modification>
@@ -1375,15 +1332,14 @@
           <normal-notes>3</normal-notes>
         </time-modification>
         <staff>1</staff>
-        <beam number="1">continue</beam>
       </note>
       
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="5" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>C</step>
           <octave>5</octave>
         </pitch>
-        <duration>153</duration>
+        <duration>4896</duration>
         <voice>1</voice>
         <type>eighth</type>
         <time-modification>
@@ -1391,15 +1347,14 @@
           <normal-notes>3</normal-notes>
         </time-modification>
         <staff>1</staff>
-        <beam number="1">continue</beam>
       </note>
       
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="5" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>C</step>
           <octave>5</octave>
         </pitch>
-        <duration>153</duration>
+        <duration>4896</duration>
         <voice>1</voice>
         <type>eighth</type>
         <time-modification>
@@ -1407,7 +1362,6 @@
           <normal-notes>3</normal-notes>
         </time-modification>
         <staff>1</staff>
-        <beam number="1">continue</beam>
         <notations print-object="yes">
           <tuplet type="stop" number="1" bracket="no" show-number="actual" show-type="none" line-shape="straight">
             <tuplet-actual>
@@ -1420,12 +1374,12 @@
         </notations>
       </note>
       
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="5" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>C</step>
           <octave>5</octave>
         </pitch>
-        <duration>36</duration>
+        <duration>1152</duration>
         <voice>1</voice>
         <type>eighth</type>
         <time-modification>
@@ -1433,7 +1387,6 @@
           <normal-notes>3</normal-notes>
         </time-modification>
         <staff>1</staff>
-        <beam number="1">continue</beam>
         <notations print-object="yes">
           <tuplet type="start" number="1" bracket="no" show-number="actual" show-type="none" line-shape="straight" placement="below">
             <tuplet-actual>
@@ -1446,12 +1399,12 @@
         </notations>
       </note>
       
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="5" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>C</step>
           <octave>5</octave>
         </pitch>
-        <duration>36</duration>
+        <duration>1152</duration>
         <voice>1</voice>
         <type>eighth</type>
         <time-modification>
@@ -1459,15 +1412,14 @@
           <normal-notes>3</normal-notes>
         </time-modification>
         <staff>1</staff>
-        <beam number="1">end</beam>
       </note>
       
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="5" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>C</step>
           <octave>5</octave>
         </pitch>
-        <duration>36</duration>
+        <duration>1152</duration>
         <voice>1</voice>
         <type>eighth</type>
         <time-modification>
@@ -1475,15 +1427,14 @@
           <normal-notes>3</normal-notes>
         </time-modification>
         <staff>1</staff>
-        <beam number="1">begin</beam>
       </note>
       
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="5" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>C</step>
           <octave>5</octave>
         </pitch>
-        <duration>36</duration>
+        <duration>1152</duration>
         <voice>1</voice>
         <type>eighth</type>
         <time-modification>
@@ -1491,15 +1442,14 @@
           <normal-notes>3</normal-notes>
         </time-modification>
         <staff>1</staff>
-        <beam number="1">continue</beam>
       </note>
       
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="5" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>C</step>
           <octave>5</octave>
         </pitch>
-        <duration>36</duration>
+        <duration>1152</duration>
         <voice>1</voice>
         <type>eighth</type>
         <time-modification>
@@ -1507,15 +1457,14 @@
           <normal-notes>3</normal-notes>
         </time-modification>
         <staff>1</staff>
-        <beam number="1">continue</beam>
       </note>
       
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="5" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>C</step>
           <octave>5</octave>
         </pitch>
-        <duration>36</duration>
+        <duration>1152</duration>
         <voice>1</voice>
         <type>eighth</type>
         <time-modification>
@@ -1523,15 +1472,14 @@
           <normal-notes>3</normal-notes>
         </time-modification>
         <staff>1</staff>
-        <beam number="1">end</beam>
       </note>
       
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="5" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>C</step>
           <octave>5</octave>
         </pitch>
-        <duration>36</duration>
+        <duration>1152</duration>
         <voice>1</voice>
         <type>eighth</type>
         <time-modification>
@@ -1539,15 +1487,14 @@
           <normal-notes>3</normal-notes>
         </time-modification>
         <staff>1</staff>
-        <beam number="1">begin</beam>
       </note>
       
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="5" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>C</step>
           <octave>5</octave>
         </pitch>
-        <duration>36</duration>
+        <duration>1152</duration>
         <voice>1</voice>
         <type>eighth</type>
         <time-modification>
@@ -1555,15 +1502,14 @@
           <normal-notes>3</normal-notes>
         </time-modification>
         <staff>1</staff>
-        <beam number="1">continue</beam>
       </note>
       
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="5" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>C</step>
           <octave>5</octave>
         </pitch>
-        <duration>36</duration>
+        <duration>1152</duration>
         <voice>1</voice>
         <type>eighth</type>
         <time-modification>
@@ -1571,15 +1517,14 @@
           <normal-notes>3</normal-notes>
         </time-modification>
         <staff>1</staff>
-        <beam number="1">continue</beam>
       </note>
       
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="5" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>C</step>
           <octave>5</octave>
         </pitch>
-        <duration>36</duration>
+        <duration>1152</duration>
         <voice>1</voice>
         <type>eighth</type>
         <time-modification>
@@ -1587,15 +1532,14 @@
           <normal-notes>3</normal-notes>
         </time-modification>
         <staff>1</staff>
-        <beam number="1">continue</beam>
       </note>
       
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="5" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>C</step>
           <octave>5</octave>
         </pitch>
-        <duration>36</duration>
+        <duration>1152</duration>
         <voice>1</voice>
         <type>eighth</type>
         <time-modification>
@@ -1603,15 +1547,14 @@
           <normal-notes>3</normal-notes>
         </time-modification>
         <staff>1</staff>
-        <beam number="1">continue</beam>
       </note>
       
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="5" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>C</step>
           <octave>5</octave>
         </pitch>
-        <duration>36</duration>
+        <duration>1152</duration>
         <voice>1</voice>
         <type>eighth</type>
         <time-modification>
@@ -1619,15 +1562,14 @@
           <normal-notes>3</normal-notes>
         </time-modification>
         <staff>1</staff>
-        <beam number="1">continue</beam>
       </note>
       
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="5" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>C</step>
           <octave>5</octave>
         </pitch>
-        <duration>36</duration>
+        <duration>1152</duration>
         <voice>1</voice>
         <type>eighth</type>
         <time-modification>
@@ -1635,15 +1577,14 @@
           <normal-notes>3</normal-notes>
         </time-modification>
         <staff>1</staff>
-        <beam number="1">continue</beam>
       </note>
       
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="5" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>C</step>
           <octave>5</octave>
         </pitch>
-        <duration>36</duration>
+        <duration>1152</duration>
         <voice>1</voice>
         <type>eighth</type>
         <time-modification>
@@ -1651,15 +1592,14 @@
           <normal-notes>3</normal-notes>
         </time-modification>
         <staff>1</staff>
-        <beam number="1">continue</beam>
       </note>
       
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="5" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>C</step>
           <octave>5</octave>
         </pitch>
-        <duration>36</duration>
+        <duration>1152</duration>
         <voice>1</voice>
         <type>eighth</type>
         <time-modification>
@@ -1667,15 +1607,14 @@
           <normal-notes>3</normal-notes>
         </time-modification>
         <staff>1</staff>
-        <beam number="1">continue</beam>
       </note>
       
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="5" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>C</step>
           <octave>5</octave>
         </pitch>
-        <duration>36</duration>
+        <duration>1152</duration>
         <voice>1</voice>
         <type>eighth</type>
         <time-modification>
@@ -1683,15 +1622,14 @@
           <normal-notes>3</normal-notes>
         </time-modification>
         <staff>1</staff>
-        <beam number="1">continue</beam>
       </note>
       
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="5" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>C</step>
           <octave>5</octave>
         </pitch>
-        <duration>36</duration>
+        <duration>1152</duration>
         <voice>1</voice>
         <type>eighth</type>
         <time-modification>
@@ -1699,7 +1637,6 @@
           <normal-notes>3</normal-notes>
         </time-modification>
         <staff>1</staff>
-        <beam number="1">continue</beam>
         <notations print-object="yes">
           <tuplet type="stop" number="1" bracket="no" show-number="actual" show-type="none" line-shape="straight">
             <tuplet-actual>
@@ -1712,31 +1649,29 @@
         </notations>
       </note>
       
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="5" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>C</step>
           <octave>5</octave>
         </pitch>
-        <duration>204</duration>
+        <duration>6528</duration>
         <voice>1</voice>
         <type>eighth</type>
         <staff>1</staff>
-        <beam number="1">continue</beam>
       </note>
       
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="5" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>C</step>
           <octave>5</octave>
         </pitch>
-        <duration>204</duration>
+        <duration>6528</duration>
         <voice>1</voice>
         <type>eighth</type>
         <staff>1</staff>
-        <beam number="1">end</beam>
       </note>
       
-      <backup><duration>1632</duration></backup>
+      <backup><duration>52224</duration></backup>
       <!-- end of voice 1 -->
     </part>
   </measure>

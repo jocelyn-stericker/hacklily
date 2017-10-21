@@ -68,23 +68,13 @@
       <direction placement="below"><direction-type><words default-y="-70" relative-x="-5000">SATIE_MEASURE_META = {"uuid":42};</words></direction-type></direction>
       <!-- end of measure metadata (Satie) -->
       <!-- staff 1 -->
-      <print new-system="no" new-page="no" page-number="1">
+      <print page-number="1">
         <!--musicxml-interfaces:debug>
           <div-count>0</div-count>
         </musicxml-interfaces:debug-->
-        <page-layout>
-          <page-height>1719.3846153846152</page-height>
-          <page-width>1328.6153846153845</page-width>
-          <page-margins type="both">
-            <left-margin>93.84615384615385</left-margin>
-            <right-margin>93.84615384615385</right-margin>
-            <top-margin>93.84615384615385</top-margin>
-            <bottom-margin>93.84615384615385</bottom-margin>
-          </page-margins>
-        </page-layout>
         <system-layout>
           <system-margins>
-            <left-margin>0</left-margin>
+            <left-margin>70</left-margin>
             <right-margin>0</right-margin>
           </system-margins>
           <system-distance>131</system-distance>
@@ -95,10 +85,7 @@
       <forward><duration>0</duration></forward>
       
       <attributes>
-        <!--musicxml-interfaces:debug>
-          <div-count>16</div-count>
-        </musicxml-interfaces:debug-->
-        <divisions>8</divisions>
+        <divisions>768</divisions>
         <key font-style="normal" font-weight="normal" color="#000000" print-object="yes">
           <fifths>0</fifths>
           <mode>major</mode>
@@ -108,7 +95,11 @@
           <beat-type>4</beat-type>
         </time>
         <staves>1</staves>
-        <clef number="1" additional="no" size="full" after-barline="no" font-style="normal" font-weight="normal" color="#000000" print-object="yes">
+        <clef number="1">
+          <sign>G</sign>
+          <line>2</line>
+        </clef>
+        <clef number="2" additional="no" size="full" after-barline="no" font-style="normal" font-weight="normal" color="#000000" print-object="yes">
           <sign>G</sign>
           <line>2</line>
         </clef>
@@ -116,19 +107,19 @@
           <staff-lines>5</staff-lines>
         </staff-details>
       </attributes>
-      <forward><duration>16</duration></forward>
+      <forward><duration>1536</duration></forward>
       
       <direction placement="below">
         <!--musicxml-interfaces:debug>
-          <div-count>16</div-count>
+          <div-count>1536</div-count>
         </musicxml-interfaces:debug-->
         <direction-type>
-          <dynamics default-x="0" default-y="-60" relative-x="0" relative-y="0" font-style="normal" font-weight="normal" color="#000000" halign="left" valign="bottom" underline="0" overline="0" line-through="0" enclosure="none">
-            
+          <dynamics font-style="normal" font-weight="normal" color="#000000" halign="left" valign="bottom" underline="0" overline="0" line-through="0" enclosure="none">
+            <mf />
           </dynamics>
         </direction-type>
       </direction>
-      <forward><duration>16</duration></forward>
+      <forward><duration>1536</duration></forward>
       
       <barline>
         <!--musicxml-interfaces:debug>
@@ -138,24 +129,24 @@
       </barline>
       <forward><duration>0</duration></forward>
       
-      <backup><duration>32</duration></backup>
+      <backup><duration>3072</duration></backup>
       <!-- end of staff 1 -->
       <!-- voice 1 -->
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="15" relative-x="0" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>E</step>
           <octave>5</octave>
         </pitch>
-        <duration>16</duration>
+        <duration>1536</duration>
         <voice>1</voice>
         <type>half</type>
         <stem>up</stem>
         <staff>1</staff>
         <notations print-object="yes">
           <articulations>
-            <accent default-x="-0.45999999999999996" default-y="6" relative-x="0" relative-y="0" font-style="normal" font-weight="normal" color="#000000" placement="below" />
+            <accent font-style="normal" font-weight="normal" color="#000000" placement="below" />
           </articulations>
-          <fermata type="upright" default-x="0" default-y="59.82" relative-x="0" relative-y="0" font-style="normal" font-weight="normal" color="#000000">normal</fermata>
+          <fermata type="upright" font-style="normal" font-weight="normal" color="#000000">normal</fermata>
         </notations>
         <lyric number="1" justify="left" relative-x="0" relative-y="0" color="#000000" print-object="yes">
           <syllabic>single</syllabic>
@@ -163,12 +154,12 @@
         </lyric>
       </note>
       
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="10" relative-x="0" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>D</step>
           <octave>5</octave>
         </pitch>
-        <duration>8</duration>
+        <duration>768</duration>
         <voice>1</voice>
         <type>quarter</type>
         <stem>up</stem>
@@ -179,12 +170,12 @@
         </lyric>
       </note>
       
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="0" relative-x="0" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>B</step>
           <octave>4</octave>
         </pitch>
-        <duration>8</duration>
+        <duration>768</duration>
         <voice>1</voice>
         <type>quarter</type>
         <stem>up</stem>
@@ -195,24 +186,24 @@
         </lyric>
       </note>
       
-      <backup><duration>32</duration></backup>
+      <backup><duration>3072</duration></backup>
       <!-- end of voice 1 -->
       <!-- voice 2 -->
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="5" relative-x="0" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>C</step>
           <octave>5</octave>
         </pitch>
-        <duration>16</duration>
+        <duration>1536</duration>
         <voice>2</voice>
         <type>half</type>
         <stem>down</stem>
         <staff>1</staff>
         <notations print-object="yes">
           <articulations>
-            <accent default-x="-0.45999999999999996" default-y="31" relative-x="0" relative-y="0" font-style="normal" font-weight="normal" color="#000000" placement="below" />
+            <accent font-style="normal" font-weight="normal" color="#000000" placement="below" />
           </articulations>
-          <fermata type="upright" default-x="0" default-y="59.82" relative-x="0" relative-y="0" font-style="normal" font-weight="normal" color="#000000">normal</fermata>
+          <fermata type="upright" font-style="normal" font-weight="normal" color="#000000">normal</fermata>
         </notations>
         <lyric number="1" justify="left" relative-x="0" relative-y="0" color="#000000" print-object="yes">
           <syllabic>single</syllabic>
@@ -220,12 +211,12 @@
         </lyric>
       </note>
       
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="0" relative-x="0" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>B</step>
           <octave>4</octave>
         </pitch>
-        <duration>8</duration>
+        <duration>768</duration>
         <voice>2</voice>
         <type>quarter</type>
         <stem>down</stem>
@@ -236,12 +227,12 @@
         </lyric>
       </note>
       
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="-10" relative-x="0" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>G</step>
           <octave>4</octave>
         </pitch>
-        <duration>8</duration>
+        <duration>768</duration>
         <voice>2</voice>
         <type>quarter</type>
         <stem>down</stem>
@@ -252,7 +243,7 @@
         </lyric>
       </note>
       
-      <backup><duration>32</duration></backup>
+      <backup><duration>3072</duration></backup>
       <!-- end of voice 2 -->
     </part>
   </measure>
@@ -263,30 +254,18 @@
       <!-- end of measure metadata (Satie) -->
       <!-- staff 1 -->
       <attributes>
-        <!--musicxml-interfaces:debug>
-          <div-count>0</div-count>
-        </musicxml-interfaces:debug-->
+        <divisions>768</divisions>
         <staves>1</staves>
         <staff-details number="1">
-          <staff-lines>5</staff-lines>
+          
         </staff-details>
       </attributes>
       <forward><duration>0</duration></forward>
       
-      <print new-system="no" new-page="no" page-number="1">
+      <print page-number="1">
         <!--musicxml-interfaces:debug>
           <div-count>0</div-count>
         </musicxml-interfaces:debug-->
-        <page-layout>
-          <page-height>1719.3846153846152</page-height>
-          <page-width>1328.6153846153845</page-width>
-          <page-margins type="both">
-            <left-margin>93.84615384615385</left-margin>
-            <right-margin>93.84615384615385</right-margin>
-            <top-margin>93.84615384615385</top-margin>
-            <bottom-margin>93.84615384615385</bottom-margin>
-          </page-margins>
-        </page-layout>
         <system-layout>
           <system-margins>
             <left-margin>0</left-margin>
@@ -300,7 +279,7 @@
       <forward><duration>0</duration></forward>
       
       <!-- spacer -->
-      <forward><duration>32</duration></forward>
+      <forward><duration>6112</duration></forward>
       
       <barline>
         <!--musicxml-interfaces:debug>
@@ -310,26 +289,26 @@
       </barline>
       <forward><duration>0</duration></forward>
       
-      <backup><duration>32</duration></backup>
+      <backup><duration>6112</duration></backup>
       <!-- end of staff 1 -->
       <!-- voice 1 -->
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="30" relative-x="0" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <rest measure="no">
           <display-step>A</display-step>
           <display-octave>5</display-octave>
         </rest>
-        <duration>8</duration>
+        <duration>768</duration>
         <voice>1</voice>
         <type>quarter</type>
         <staff>1</staff>
       </note>
       
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="10" relative-x="0" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>D</step>
           <octave>5</octave>
         </pitch>
-        <duration>8</duration>
+        <duration>768</duration>
         <voice>1</voice>
         <type>quarter</type>
         <stem>up</stem>
@@ -340,12 +319,12 @@
         </lyric>
       </note>
       
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="-35" relative-x="0" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>B</step>
           <octave>3</octave>
         </pitch>
-        <duration>12</duration>
+        <duration>1152</duration>
         <voice>1</voice>
         <type>quarter</type>
         <dot />
@@ -360,12 +339,12 @@
         </lyric>
       </note>
       
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+      <note default-y="5" relative-x="0" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
         <pitch>
           <step>C</step>
           <octave>5</octave>
         </pitch>
-        <duration>4</duration>
+        <duration>384</duration>
         <voice>1</voice>
         <type>eighth</type>
         <stem>up</stem>
@@ -379,76 +358,20 @@
         </lyric>
       </note>
       
-      <backup><duration>32</duration></backup>
+      <backup><duration>3072</duration></backup>
       <!-- end of voice 1 -->
       <!-- voice 2 -->
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
-        <rest measure="no">
-          <display-step>C</display-step>
-          <display-octave>4</display-octave>
+      <note default-y="10" relative-x="0" print-object="no">
+        <rest>
+          
         </rest>
-        <duration>8</duration>
+        <duration>3072</duration>
         <voice>2</voice>
-        <type>quarter</type>
+        <type>whole</type>
         <staff>1</staff>
       </note>
       
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
-        <pitch>
-          <step>B</step>
-          <octave>4</octave>
-        </pitch>
-        <duration>8</duration>
-        <voice>2</voice>
-        <type>quarter</type>
-        <stem>down</stem>
-        <staff>1</staff>
-        <lyric number="1" justify="left" relative-x="0" relative-y="0" color="#000000" print-object="yes">
-          <syllabic>single</syllabic>
-          <text font-style="normal" font-weight="normal" color="#000000" underline="0" overline="0" line-through="0" rotation="0" letter-spacing="normal" dir="ltr">lyrics</text>
-        </lyric>
-      </note>
-      
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
-        <pitch>
-          <step>G</step>
-          <octave>3</octave>
-        </pitch>
-        <duration>12</duration>
-        <voice>2</voice>
-        <type>quarter</type>
-        <dot />
-        <stem>down</stem>
-        <staff>1</staff>
-        <notations print-object="yes">
-          <slur type="start" number="1" line-type="solid" dash-length="1" space-length="1" color="#000000" />
-        </notations>
-        <lyric number="1" justify="left" relative-x="0" relative-y="0" color="#000000" print-object="yes">
-          <syllabic>single</syllabic>
-          <text font-style="normal" font-weight="normal" color="#000000" underline="0" overline="0" line-through="0" rotation="0" letter-spacing="normal" dir="ltr">of</text>
-        </lyric>
-      </note>
-      
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
-        <pitch>
-          <step>A</step>
-          <octave>4</octave>
-        </pitch>
-        <duration>4</duration>
-        <voice>2</voice>
-        <type>eighth</type>
-        <stem>down</stem>
-        <staff>1</staff>
-        <notations print-object="yes">
-          <slur type="stop" number="1" line-type="solid" dash-length="1" space-length="1" color="#000000" />
-        </notations>
-        <lyric number="1" justify="left" relative-x="0" relative-y="0" color="#000000" print-object="yes">
-          <syllabic>single</syllabic>
-          <text font-style="normal" font-weight="normal" color="#000000" underline="0" overline="0" line-through="0" rotation="0" letter-spacing="normal" dir="ltr">Voice1</text>
-        </lyric>
-      </note>
-      
-      <backup><duration>32</duration></backup>
+      <backup><duration>3072</duration></backup>
       <!-- end of voice 2 -->
     </part>
   </measure>
@@ -459,30 +382,137 @@
       <!-- end of measure metadata (Satie) -->
       <!-- staff 1 -->
       <attributes>
-        <!--musicxml-interfaces:debug>
-          <div-count>0</div-count>
-        </musicxml-interfaces:debug-->
+        <divisions>768</divisions>
         <staves>1</staves>
         <staff-details number="1">
-          <staff-lines>5</staff-lines>
+          
         </staff-details>
       </attributes>
       <forward><duration>0</duration></forward>
       
-      <print new-system="no" new-page="no" page-number="1">
+      <print page-number="1">
         <!--musicxml-interfaces:debug>
           <div-count>0</div-count>
         </musicxml-interfaces:debug-->
-        <page-layout>
-          <page-height>1719.3846153846152</page-height>
-          <page-width>1328.6153846153845</page-width>
-          <page-margins type="both">
-            <left-margin>93.84615384615385</left-margin>
-            <right-margin>93.84615384615385</right-margin>
-            <top-margin>93.84615384615385</top-margin>
-            <bottom-margin>93.84615384615385</bottom-margin>
-          </page-margins>
-        </page-layout>
+        <system-layout>
+          <system-margins>
+            <left-margin>0</left-margin>
+            <right-margin>0</right-margin>
+          </system-margins>
+          <system-distance>131</system-distance>
+          <top-system-distance>70</top-system-distance>
+        </system-layout>
+        <measure-numbering relative-x="0" relative-y="0" font-family="Alegreya, serif" font-style="normal" font-size="small" font-weight="normal" color="#000000">system</measure-numbering>
+      </print>
+      <forward><duration>0</duration></forward>
+      
+      <!-- spacer -->
+      <forward><duration>3072</duration></forward>
+      
+      <barline>
+        <!--musicxml-interfaces:debug>
+          <div-count>0</div-count>
+        </musicxml-interfaces:debug-->
+        <bar-style color="black">regular</bar-style>
+      </barline>
+      <forward><duration>0</duration></forward>
+      
+      <backup><duration>3072</duration></backup>
+      <!-- end of staff 1 -->
+      <!-- voice 1 -->
+      
+      <backup><duration>0</duration></backup>
+      <!-- end of voice 1 -->
+      <!-- voice 2 -->
+      <note default-y="-30" relative-x="0" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+        <rest measure="no">
+          <display-step>C</display-step>
+          <display-octave>4</display-octave>
+        </rest>
+        <duration>768</duration>
+        <voice>2</voice>
+        <type>quarter</type>
+        <staff>1</staff>
+      </note>
+      
+      <note default-y="0" relative-x="0" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+        <pitch>
+          <step>B</step>
+          <octave>4</octave>
+        </pitch>
+        <duration>768</duration>
+        <voice>2</voice>
+        <type>quarter</type>
+        <stem>down</stem>
+        <staff>1</staff>
+        <lyric number="1" justify="left" relative-x="0" relative-y="0" color="#000000" print-object="yes">
+          <syllabic>single</syllabic>
+          <text font-style="normal" font-weight="normal" color="#000000" underline="0" overline="0" line-through="0" rotation="0" letter-spacing="normal" dir="ltr">lyrics</text>
+        </lyric>
+      </note>
+      
+      <note default-y="-45" relative-x="0" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+        <pitch>
+          <step>G</step>
+          <octave>3</octave>
+        </pitch>
+        <duration>1152</duration>
+        <voice>2</voice>
+        <type>quarter</type>
+        <dot />
+        <stem>down</stem>
+        <staff>1</staff>
+        <notations print-object="yes">
+          <slur type="start" number="1" line-type="solid" dash-length="1" space-length="1" color="#000000" />
+        </notations>
+        <lyric number="1" justify="left" relative-x="0" relative-y="0" color="#000000" print-object="yes">
+          <syllabic>single</syllabic>
+          <text font-style="normal" font-weight="normal" color="#000000" underline="0" overline="0" line-through="0" rotation="0" letter-spacing="normal" dir="ltr">of</text>
+        </lyric>
+      </note>
+      
+      <note default-y="-5" relative-x="0" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+        <pitch>
+          <step>A</step>
+          <octave>4</octave>
+        </pitch>
+        <duration>384</duration>
+        <voice>2</voice>
+        <type>eighth</type>
+        <stem>down</stem>
+        <staff>1</staff>
+        <notations print-object="yes">
+          <slur type="stop" number="1" line-type="solid" dash-length="1" space-length="1" color="#000000" />
+        </notations>
+        <lyric number="1" justify="left" relative-x="0" relative-y="0" color="#000000" print-object="yes">
+          <syllabic>single</syllabic>
+          <text font-style="normal" font-weight="normal" color="#000000" underline="0" overline="0" line-through="0" rotation="0" letter-spacing="normal" dir="ltr">Voice1</text>
+        </lyric>
+      </note>
+      
+      <backup><duration>3072</duration></backup>
+      <!-- end of voice 2 -->
+    </part>
+  </measure>
+  <measure number="4">
+    <part id="P1">
+      <!-- measure metadata (Satie) -->
+      <direction placement="below"><direction-type><words default-y="-70" relative-x="-5000">SATIE_MEASURE_META = {"uuid":45};</words></direction-type></direction>
+      <!-- end of measure metadata (Satie) -->
+      <!-- staff 1 -->
+      <attributes>
+        <divisions>768</divisions>
+        <staves>1</staves>
+        <staff-details number="1">
+          
+        </staff-details>
+      </attributes>
+      <forward><duration>0</duration></forward>
+      
+      <print page-number="1">
+        <!--musicxml-interfaces:debug>
+          <div-count>0</div-count>
+        </musicxml-interfaces:debug-->
         <system-layout>
           <system-margins>
             <left-margin>0</left-margin>
@@ -498,6 +528,9 @@
       <!-- spacer -->
       <forward><duration>32</duration></forward>
       
+      <!-- spacer -->
+      <forward><duration>3040</duration></forward>
+      
       <barline location="right">
         <!--musicxml-interfaces:debug>
           <div-count>0</div-count>
@@ -506,20 +539,20 @@
       </barline>
       <forward><duration>0</duration></forward>
       
-      <backup><duration>32</duration></backup>
+      <backup><duration>3072</duration></backup>
       <!-- end of staff 1 -->
       <!-- voice 1 -->
-      <note font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
-        <rest measure="yes">
+      <note default-y="10" relative-x="0" font-style="normal" font-weight="normal" color="#000000" print-object="yes" print-spacing="yes" dynamics="90" end-dynamics="90" pizzicato="no">
+        <rest measure="no">
           
         </rest>
-        <duration>32</duration>
+        <duration>3072</duration>
         <voice>1</voice>
         <type>whole</type>
         <staff>1</staff>
       </note>
       
-      <backup><duration>32</duration></backup>
+      <backup><duration>3072</duration></backup>
       <!-- end of voice 1 -->
     </part>
   </measure>
