@@ -13,6 +13,7 @@ const eslintFormatter = require('react-dev-utils/eslintFormatter');
 const ModuleScopePlugin = require('react-dev-utils/ModuleScopePlugin');
 const {LicenseWebpackPlugin} = require('license-webpack-plugin');
 const FixDefaultImportPlugin = require('webpack-fix-default-import-plugin');
+const UglifyJsPlugin = require('uglifyjs-webpack-plugin');
 const paths = require('./paths');
 const fs = require("fs");
 const getClientEnvironment = require('./env');
@@ -307,21 +308,22 @@ module.exports = {
     // Allows syntethic default imports in TypeScript(e.g., import React from "react" instead of import * as React from "react")
     new FixDefaultImportPlugin(),
     // Minify the code.
-    new webpack.optimize.UglifyJsPlugin({
-      exclude: /node_modules\/hackmidi\/lib\/libtimidity.js/i,
-      compress: {
-        warnings: false,
-        // Disabled because of an issue with Uglify breaking seemingly valid code:
-        // https://github.com/facebookincubator/create-react-app/issues/2376
-        // Pending further investigation:
-        // https://github.com/mishoo/UglifyJS2/issues/2011
-        comparisons: false,
-      },
-      output: {
-        comments: false,
-        // Turned on because emoji and regex is not minified properly using default
-        // https://github.com/facebookincubator/create-react-app/issues/2488
-        ascii_only: true,
+    new UglifyJsPlugin({
+      uglifyOptions: {
+        compress: {
+          warnings: false,
+          // Disabled because of an issue with Uglify breaking seemingly valid code:
+          // https://github.com/facebookincubator/create-react-app/issues/2376
+          // Pending further investigation:
+          // https://github.com/mishoo/UglifyJS2/issues/2011
+          comparisons: false,
+        },
+        output: {
+          comments: false,
+          // Turned on because emoji and regex is not minified properly using default
+          // https://github.com/facebookincubator/create-react-app/issues/2488
+          ascii_only: true,
+        },
       },
       sourceMap: shouldUseSourceMap,
     }),
