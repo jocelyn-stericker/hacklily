@@ -43,9 +43,9 @@
   dependencies:
     "@types/react" "*"
 
-"@types/react-monaco-editor@jnetterf/react-monaco-editor-types#958c7d42ea735c57db9a35feba42d695da63d3fb":
+"@types/react-monaco-editor@0.10.0":
   version "0.10.0"
-  resolved "https://codeload.github.com/jnetterf/react-monaco-editor-types/tar.gz/958c7d42ea735c57db9a35feba42d695da63d3fb"
+  resolved "https://registry.yarnpkg.com/@types/react-monaco-editor/-/react-monaco-editor-0.10.0.tgz#6af8b90ef1904b9a82180c786dc22d7d100943c5"
   dependencies:
     "@types/react" "*"
     monaco-editor "^0.10.0"

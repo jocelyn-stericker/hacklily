@@ -200,7 +200,7 @@ export default class Header extends React.PureComponent<Props> {
     if (!this.state.player) {
       return;
     }
-    this.state.player.seek(this.state.timeInSeconds + 2);
+    this.state.player.seek(this.state.timeInSeconds + 4);
   }
   private handlePause = async (): Promise<void> => {
     this.setState({
@@ -279,7 +279,7 @@ export default class Header extends React.PureComponent<Props> {
     if (!this.state.player) {
       return;
     }
-    this.state.player.seek(Math.max(0, this.state.timeInSeconds - 2));
+    this.state.player.seek(Math.max(0, this.state.timeInSeconds - 4));
   }
 
   private renderCommunityToolbar(): React.ReactNode {

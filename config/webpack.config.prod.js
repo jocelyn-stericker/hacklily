@@ -308,6 +308,7 @@ module.exports = {
     new FixDefaultImportPlugin(),
     // Minify the code.
     new webpack.optimize.UglifyJsPlugin({
+      exclude: /node_modules\/hackmidi\/lib\/libtimidity.js/i,
       compress: {
         warnings: false,
         // Disabled because of an issue with Uglify breaking seemingly valid code:
