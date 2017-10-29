@@ -1,17 +1,17 @@
 /**
  * This file is part of Satie music engraver <https://github.com/jnetterf/satie>.
  * Copyright (C) Joshua Netterfield <joshua.ca> 2015 - present.
- * 
+ *
  * Satie is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * Satie is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Affero General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Affero General Public License
  * along with Satie.  If not, see <http://www.gnu.org/licenses/>.
  */
@@ -78,7 +78,7 @@ export function stringToDocument(src: string, factory: IFactory) {
 /**
  * Converts a timewise MXMLJSON score to an uninitialized Satie score.
  * See also Models.importXML.
- * 
+ *
  * @param score produced by github.com/jnetterf/musicxml-interfaces
  * @returns A structure that can be consumed by a score. If an error occurred
  *          error will be set, and all other properties will be null.
@@ -352,8 +352,7 @@ export function _extractMXMLPartsAndMeasures(input: ScoreTimewise, factory: IFac
                     target.division -= backup.duration;
                     break;
                 default:
-                    invariant(false, "Unknown type %s", input._class);
-                    break;
+                    throw new Error("Unknown type " + input._class);
             }
             ++target.idx;
         }

@@ -1,99 +1,75 @@
 {
-    "extends": ["tslint-react"],
-    "rules": {
-        "align": [
-            true,
-            "parameters",
-            "arguments",
-            "statements"
-        ],
-        "ban": false,
-        "class-name": true,
-        "comment-format": [
-            true,
-            "check-space"
-        ],
-        "curly": true,
-        "eofline": false,
-        "forin": true,
-        "indent": [ true, "spaces" ],
-        "interface-name": [true, "never-prefix"],
-        "jsdoc-format": true,
-        "jsx-no-lambda": false,
-        "jsx-no-multiline-js": false,
-        "label-position": true,
-        "max-line-length": [ true, 120 ],
-        "member-ordering": [
-            true,
-            "public-before-private",
-            "static-before-instance",
-            "variables-before-functions"
-        ],
-        "no-any": true,
-        "no-arg": true,
-        "no-bitwise": true,
-        "no-console": [
-            true,
-            "log",
-            "error",
-            "debug",
-            "info",
-            "time",
-            "timeEnd",
-            "trace"
-        ],
-        "no-consecutive-blank-lines": true,
-        "no-construct": true,
-        "no-debugger": true,
-        "no-duplicate-variable": true,
-        "no-empty": true,
-        "no-eval": true,
-        "no-shadowed-variable": true,
-        "no-string-literal": true,
-        "no-switch-case-fall-through": true,
-        "no-trailing-whitespace": false,
-        "no-unused-expression": true,
-        "no-use-before-declare": true,
-        "one-line": [
-            true,
-            "check-catch",
-            "check-else",
-            "check-open-brace",
-            "check-whitespace"
-        ],
-        "quotemark": [true, "single", "jsx-double"],
-        "radix": true,
-        "semicolon": [true, "always"],
-        "switch-default": true,
+  "extends": [
+    "tslint:latest",
+    "tslint-microsoft-contrib",
+    "tslint-react",
+    "tslint-config-airbnb"
+  ],
+  "rules": {
+    "no-relative-imports": false,
+    "import-name": [
+      true,
+      {
+        "react": "React",
+        "reactDom": "ReactDOM",
+        "reactModal": "ReactModal",
+        "reactMonacoEditor": "ReactMonacoEditor",
+        "dompurify": "DOMPurify"
+      }
+    ],
+    "no-multiline-string": false,
+    "interface-name": [
+      true,
+      "never-prefix"
+    ],
+    "no-default-export": false,
+    "member-access": [
+      false
+    ],
+    "react-tsx-curly-spacing": [
+      false
+    ],
+    "no-unused-variable": [
+      true,
+      {
+        "ignore-pattern": "^React$"
+      }
+    ],
+    "object-literal-sort-keys": true,
+    "member-ordering": [
+      true,
+      {
+        "order": "instance-sandwich",
+        "alphabetize": true
+      }
+    ],
+    "react-unused-props-and-state": [
+      true,
+      {
+        "props-interface-regex": "Props$",
+        "state-interface-regex": "State$"
+      }
+    ],
+    "object-shorthand-properties-first": false,
+    // Because it doesn't play well with aphrodite.
+    "no-unsafe-any": false,
+    // Becasue comments in JSX can be nice
+    "no-single-line-block-comment": false,
+    // Because {someObj && <Yolo obj={someObj} />} is idiomatic in React
+    "strict-boolean-expressions": false,
+    // Becasue it fires for void promises.
+    "no-floating-promises": false,
+    // Because reality should be reflected
+    "no-suspicious-comment": false,
 
-        "trailing-comma": [false],
+    // Legacy code
+    "no-any": false,
 
-        "triple-equals": [ true, "allow-null-check" ],
-        "typedef": [
-            true,
-            "parameter",
-            "property-declaration"
-        ],
-        "typedef-whitespace": [
-            true,
-            {
-                "call-signature": "nospace",
-                "index-signature": "nospace",
-                "parameter": "nospace",
-                "property-declaration": "nospace",
-                "variable-declaration": "nospace"
-            }
-        ],
-        "variable-name": [true, "ban-keywords", "check-format", "allow-leading-underscore", "allow-pascal-case"],
-        "whitespace": [
-            true,
-            "check-branch",
-            "check-decl",
-            "check-module",
-            "check-operator",
-            "check-separator",
-            "check-type",
-            "check-typecast"
-        ]
-    }
+    // musicxml-interfaces
+    "no-submodule-imports": false,
+
+    // not actually performance impacting
+    "jsx-no-lambda": false,
+    "react-this-binding-issue": false
+  }
 }

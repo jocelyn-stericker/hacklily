@@ -1,22 +1,22 @@
 /**
  * This file is part of Satie music engraver <https://github.com/jnetterf/satie>.
  * Copyright (C) Joshua Netterfield <joshua.ca> 2015 - present.
- * 
+ *
  * Satie is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * Satie is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Affero General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Affero General Public License
  * along with Satie.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import {vpsc as VPSC} from "webcola";
+import {Variable, Rectangle, Solver, generateYConstraints, generateXConstraints} from "webcola";
 import {forEach} from "lodash";
 
 import {ILayout} from "./document";
@@ -25,7 +25,7 @@ import {IMeasureLayout} from "./private_measureLayout";
 import {ILayoutOptions} from "./private_layoutOptions";
 import {ILineBounds} from "./private_lineBounds";
 
-interface IVPSCLayoutRect extends VPSC.Rectangle {
+interface IVPSCLayoutRect extends Rectangle {
     mxmlBox: IBoundingRect;
     parent: ILayout;
 }
@@ -33,17 +33,17 @@ interface IVPSCLayoutRect extends VPSC.Rectangle {
 function colaRemoveOverlapsSomeFixed(rs: IVPSCLayoutRect[]): void {
     // Prefer y
     let vs = rs.map(function (r) {
-        return new VPSC.Variable(r.cy(), r.mxmlBox.fixed ? Number.POSITIVE_INFINITY : 1);
+        return new Variable(r.cy(), r.mxmlBox.fixed ? Number.POSITIVE_INFINITY : 1);
     });
-    let cs = VPSC.generateYConstraints(rs, vs);
-    let solver = new VPSC.Solver(vs, cs);
+    let cs = generateYConstraints(rs, vs);
+    let solver = new Solver(vs, cs);
     solver.solve();
     vs.forEach((v, i) => rs[i].setYCentre(v.position()));
 
     // Move x if needed
-    vs = rs.map(r => new VPSC.Variable(r.cx(), r.mxmlBox.fixed ? Number.POSITIVE_INFINITY : 1));
-    cs = VPSC.generateXConstraints(rs, vs);
-    solver = new VPSC.Solver(vs, cs);
+    vs = rs.map(r => new Variable(r.cx(), r.mxmlBox.fixed ? Number.POSITIVE_INFINITY : 1));
+    cs = generateXConstraints(rs, vs);
+    solver = new Solver(vs, cs);
     solver.solve();
     vs.forEach((v, i) => rs[i].setXCentre(v.position()));
 }
@@ -70,7 +70,7 @@ function removeOverlaps(options: ILayoutOptions, bounds: ILineBounds,
                             box.top, box.bottom, box.left, box.right);
                         return;
                     }
-                    let rect: IVPSCLayoutRect = <any> new VPSC.Rectangle(
+                    let rect: IVPSCLayoutRect = <any> new Rectangle(
                         element.overrideX + box.defaultX + box.left,
                         element.overrideX + box.defaultX + box.right,
                         box.defaultY + box.top,

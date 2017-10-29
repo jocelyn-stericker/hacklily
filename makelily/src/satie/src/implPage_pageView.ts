@@ -1,23 +1,25 @@
 /**
  * This file is part of Satie music engraver <https://github.com/jnetterf/satie>.
  * Copyright (C) Joshua Netterfield <joshua.ca> 2015 - present.
- * 
+ *
  * Satie is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * Satie is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Affero General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Affero General Public License
  * along with Satie.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 import {ScoreHeader, Print} from "musicxml-interfaces";
-import {createFactory, Component, DOM, PropTypes} from "react";
+import {createFactory, Component} from "react";
+import * as DOM from "react-dom-factories";
+import * as PropTypes from "prop-types";
 import {map, filter, forEach, last} from "lodash";
 import * as invariant from "invariant";
 
@@ -44,7 +46,7 @@ export interface IProps {
     svgRef?: (svg: SVGSVGElement) => void;
 }
 
-export default class Page extends Component<IProps, void> {
+export default class Page extends Component<IProps, {}> {
     static childContextTypes = {
         originY: PropTypes.number.isRequired,
         renderTarget: PropTypes.oneOf(["svg-web", "svg-export"]).isRequired,
@@ -125,8 +127,8 @@ export default class Page extends Component<IProps, void> {
     private _setSVG: (svg: SVGSVGElement) => void = (svg) => {
         if (this.props.svgRef) {
             this.props.svgRef(svg);
-        };
-    };
+        }
+    }
 
     getChildContext() {
         const defaults = this.props.scoreHeader.defaults;

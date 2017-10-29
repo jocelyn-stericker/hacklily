@@ -1,23 +1,24 @@
 /**
  * This file is part of Satie music engraver <https://github.com/jnetterf/satie>.
  * Copyright (C) Joshua Netterfield <joshua.ca> 2015 - present.
- * 
+ *
  * Satie is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * Satie is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Affero General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Affero General Public License
  * along with Satie.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 import {Key, Clef, Accidental, MxmlAccidental} from "musicxml-interfaces";
-import {createFactory, Component, DOM} from "react";
+import {createFactory, Component} from "react";
+import * as DOM from "react-dom-factories";
 import {times, map} from "lodash";
 
 import AccidentalView from "./implAttributes_accidentalView";
@@ -47,7 +48,7 @@ const flats: { [key: string]: Array<number> } = {
 /**
  * Renders a key signature.
  */
-class KeyView extends Component<{spec: Key; clef: Clef}, void> {
+class KeyView extends Component<{spec: Key; clef: Clef}, {}> {
     render(): any {
         return DOM.g(null,
             map(this.getAccidentals(),
@@ -141,6 +142,8 @@ class KeyView extends Component<{spec: Key; clef: Clef}, void> {
             });
         }
 
+        return [];
+
         function makeAccidentalFromSharps(idxes: number[], i: number, sharp: boolean): Accidental {
             let accidental: MxmlAccidental;
             switch (true) {
@@ -172,7 +175,7 @@ class KeyView extends Component<{spec: Key; clef: Clef}, void> {
             };
         }
     }
-};
+}
 
 function standardClef(clef: Clef) {
     switch (true) {
@@ -188,6 +191,6 @@ function standardClef(clef: Clef) {
             console.warn("Invalid clef?");
             return "treble";
     }
-};
+}
 
 export default KeyView;

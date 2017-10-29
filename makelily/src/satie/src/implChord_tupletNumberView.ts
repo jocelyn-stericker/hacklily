@@ -1,17 +1,17 @@
 /**
  * This file is part of Satie music engraver <https://github.com/jnetterf/satie>.
  * Copyright (C) Joshua Netterfield <joshua.ca> 2015 - present.
- * 
+ *
  * Satie is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * Satie is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Affero General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Affero General Public License
  * along with Satie.  If not, see <http://www.gnu.org/licenses/>.
  */
@@ -21,7 +21,8 @@
  */
 
 import {AboveBelow, Tuplet} from "musicxml-interfaces";
-import {createFactory, Component, DOM} from "react";
+import {createFactory, Component} from "react";
+import * as DOM from "react-dom-factories";
 import {last, map, reduce} from "lodash";
 
 import Glyph from "./private_views_glyph";
@@ -37,7 +38,7 @@ export interface IProps {
     y2: number;
 }
 
-export default class TupletNumber extends Component<IProps, void> {
+export default class TupletNumber extends Component<IProps, {}> {
     render(): any {
         let {x1, x2, y1, y2, tuplet} = this.props;
         let {placement} = tuplet;
@@ -83,4 +84,4 @@ export default class TupletNumber extends Component<IProps, void> {
             })
         /* DOM.g */);
     }
-};
+}

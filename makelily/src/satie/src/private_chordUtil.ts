@@ -1,17 +1,17 @@
 /**
  * This file is part of Satie music engraver <https://github.com/jnetterf/satie>.
  * Copyright (C) Joshua Netterfield <joshua.ca> 2015 - present.
- * 
+ *
  * Satie is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * Satie is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Affero General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Affero General Public License
  * along with Satie.  If not, see <http://www.gnu.org/licenses/>.
  */
@@ -71,7 +71,7 @@ export function count(chord: IChord | IDurationDescription): Count {
     } else if (_isIDurationDescription(chord)) {
         return chord.count;
     } else {
-        invariant(false, "count() expected a chord or duration.");
+        throw new Error("count() expected a chord or duration.");
     }
 }
 
@@ -84,7 +84,7 @@ export function dots(chord: IChord | IDurationDescription): number {
     } else if (_isIDurationDescription(chord)) {
         return chord.dots || 0;
     } else {
-        invariant(false, "dots() expected a chord or duration");
+        throw new Error("dots() expected a chord or duration");
     }
 }
 
@@ -99,7 +99,7 @@ export function timeModification(chord: IChord | IDurationDescription): TimeModi
     } else if (_isIDurationDescription(chord)) {
         return chord.timeModification || null;
     } else {
-        invariant(false, "timeModification() expected a chord or duration");
+        throw new Error("timeModification() expected a chord or duration");
     }
 }
 
@@ -177,7 +177,7 @@ export function linesForClef(chord: IChord, clef: Clef): Array<number> {
         throw new Error("Exepected a valid clef");
     }
     return map(chord, (note: Note) => lineForClef(note, clef));
-};
+}
 
 export function lineForClef(note: Note, clef: Clef): number {
     if (!clef) {
@@ -273,7 +273,7 @@ export function ledgerLines(chord: IChord, clef: Clef) {
 }
 
 export function rest(chord: IChord): Rest {
-    return !chord.length || chord[0].rest;
+    return !chord.length || (chord[0].rest as any); // TODO
 }
 
 export let defaultClefLines: { [key: string]: number} = {
@@ -485,7 +485,7 @@ const CUSTOM_NOTEHEADS: {[key: number]: string[]} = {
         "noteheadTriangleRoundDownWhite"]
 };
 
-export function getNoteheadGlyph(notehead: Notehead, stdGlyph: string) {
+export function getNoteheadGlyph(notehead: Notehead, stdGlyph: string): string {
     let type = notehead ? notehead.type : NoteheadType.Normal;
 
     if (type === NoteheadType.Normal) {
@@ -505,8 +505,8 @@ export function getNoteheadGlyph(notehead: Notehead, stdGlyph: string) {
         }
     }
     console.warn(`The custom notehead with ID ${type} cannot replace ` +
-        `${this.props.notehead}, probably because it's not implemented.`);
-    return this.props.notehead;
+        `${notehead}, probably because it's not implemented.`);
+    return stdGlyph;
 }
 
 export function notationObj(n: Note): Notations {

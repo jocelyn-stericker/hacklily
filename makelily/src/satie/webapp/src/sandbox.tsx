@@ -207,11 +207,11 @@ class Tests extends Component<{params: {id: string}}, IState> {
                 error: err,
             });
         });
-    };
+    }
     private _setSongRef = (song: ISong) => {
         this._song = song;
         (window as any)["_song"] = song;
-    };
+    }
     private _mouseMoveHandler = (ev: IMouseEvent) => {
         if (isEqual(this.state.lastPath, ev.path) && isEqual(ev.pitch, this.state.lastPitch)) {
             return;
@@ -219,10 +219,10 @@ class Tests extends Component<{params: {id: string}}, IState> {
         if (!this._handler(ev, true)) {
             this.setState({operations: this.state.canonicalOperations});
         }
-    };
+    }
     private _mouseClickHandler = (ev: IMouseEvent) => {
         this._handler(ev, false);
-    };
+    }
     private _handler(ev: IMouseEvent, isPreview: boolean): boolean {
         const {path, pitch} = ev;
         const oldOperations = this.state.oldOperations.concat([this.state.canonicalOperations]);
@@ -320,7 +320,7 @@ class Tests extends Component<{params: {id: string}}, IState> {
 }
 
 module Tests {
-    export class Header extends Component<{params: {id: string}}, void> {
+    export class Header extends Component<{params: {id: string}}, {}> {
         render() {
             return <span>Satie &ndash; Sandbox</span>;
         }

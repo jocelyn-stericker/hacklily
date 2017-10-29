@@ -1,17 +1,17 @@
 /**
  * This file is part of Satie music engraver <https://github.com/jnetterf/satie>.
  * Copyright (C) Joshua Netterfield <joshua.ca> 2015 - present.
- * 
+ *
  * Satie is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * Satie is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Affero General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Affero General Public License
  * along with Satie.  If not, see <http://www.gnu.org/licenses/>.
  */
@@ -47,10 +47,10 @@ export let Prototype: ITextMixin = {
     getDY: function(words: CreditWords, initY: number, lineNum: number) {
         if (lineNum > 0) {
             return V_SPACING +
-                cssSizeToTenths(this.context.scale40, words.fontSize);
+                cssSizeToTenths((this as any).context.scale40, words.fontSize);
         }
         if (words.defaultY || words.relativeY) {
-            return this.context.originY - (words.defaultY + (words.relativeY || 0)) - initY;
+            return (this as any).context.originY - (words.defaultY + (words.relativeY || 0)) - initY;
         }
         return 0;
     },
@@ -102,5 +102,6 @@ export let Prototype: ITextMixin = {
         if (lineNum > 0) {
             return 10;
         }
+        return undefined;
     }
 };

@@ -1,17 +1,17 @@
 /**
  * This file is part of Satie music engraver <https://github.com/jnetterf/satie>.
  * Copyright (C) Joshua Netterfield <joshua.ca> 2015 - present.
- * 
+ *
  * Satie is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * Satie is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Affero General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Affero General Public License
  * along with Satie.  If not, see <http://www.gnu.org/licenses/>.
  */
@@ -22,33 +22,33 @@ import {TimeModification, Time} from "musicxml-interfaces";
 
 import {IChord, divisions} from "./private_chordUtil";
 
-/** 
+/**
  * Information needed to create a duration using makeDuration().
- * 
+ *
  * See IChord and makeDuration().
  */
 export interface ITimeSpec {
-    /** 
+    /**
      * The base of the note, as encoded by Lilypond.
-     * 
+     *
      * A quarter note is '4', a half note is '8', ...
      */
     count: number;
 
-    /** 
+    /**
      * The number of displayed dots, or null.
      */
     dots?: number;
 
-    /** 
+    /**
      * The time modification (canonical tuplet), or null.
      */
     timeModification?: TimeModification;
 }
 
-/** 
+/**
  * Creates a simple realization of an IChord
- * 
+ *
  * @param spec
  */
 function _makeDuration(spec: ITimeSpec): IChord {

@@ -1,17 +1,17 @@
 /**
  * This file is part of Satie music engraver <https://github.com/jnetterf/satie>.
  * Copyright (C) Joshua Netterfield <joshua.ca> 2015 - present.
- * 
+ *
  * Satie is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * Satie is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Affero General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Affero General Public License
  * along with Satie.  If not, see <http://www.gnu.org/licenses/>.
  */
@@ -25,9 +25,9 @@ import {IMeasureLayout} from "./private_measureLayout";
 import {ILayoutOptions} from "./private_layoutOptions";
 import {ILineBounds} from "./private_lineBounds";
 
-/** 
+/**
  * Sets the width of attributes w.r.t. staff lines.
- * 
+ *
  * @returns a list of measures
  */
 function attributes(options: ILayoutOptions, bounds: ILineBounds,
@@ -103,8 +103,8 @@ function attributes(options: ILayoutOptions, bounds: ILineBounds,
                     if (!attributesByPart[partKey]) {
                         shouldSplit = true;
                     } else {
-                        let oldAttributes: Attributes = attributesByPart[partKey].model;
-                        let newAttributes: Attributes = element.model;
+                        let oldAttributes: Attributes = attributesByPart[partKey].model as any;
+                        let newAttributes: Attributes = element.model as any;
                         shouldSplit = some(oldAttributes.staffDetails, (details, detailIndex) => {
                             if (!details) {
                                 return false;

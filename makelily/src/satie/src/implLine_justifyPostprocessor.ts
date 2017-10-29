@@ -1,17 +1,17 @@
 /**
  * This file is part of Satie music engraver <https://github.com/jnetterf/satie>.
  * Copyright (C) Joshua Netterfield <joshua.ca> 2015 - present.
- * 
+ *
  * Satie is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * Satie is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Affero General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Affero General Public License
  * along with Satie.  If not, see <http://www.gnu.org/licenses/>.
  */
@@ -27,7 +27,7 @@ import {scoreParts} from "./private_part";
 
 const UNDERFILLED_EXPANSION_WEIGHT = 0.1;
 
-/** 
+/**
  * Evaluates S(t), the logistic function. Used to create aesthetic transitions.
  * For example, the upper half of the logistic function is used to compute how much
  * spacing should be on the final line of a song.
@@ -36,9 +36,9 @@ function logistic(t: number) {
     return 1 / (1 + Math.exp(-t));
 }
 
-/** 
+/**
  * Lays out measures within a bar & justifies.
- * 
+ *
  * @returns new end of line
  */
 function justify(options: ILayoutOptions, bounds: ILineBounds,
@@ -167,7 +167,7 @@ function justify(options: ILayoutOptions, bounds: ILineBounds,
                     }
                 }
                 if (expandOne) {
-                    // FIXME: We can overshoot, like on Lily 23f. 
+                    // FIXME: We can overshoot, like on Lily 23f.
                     measureExpansion += avgExpansion * minRatio;
                     totalExpCount += minRatio;
                 }

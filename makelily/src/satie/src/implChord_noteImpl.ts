@@ -1,17 +1,17 @@
 /**
  * This file is part of Satie music engraver <https://github.com/jnetterf/satie>.
  * Copyright (C) Joshua Netterfield <joshua.ca> 2015 - present.
- * 
+ *
  * Satie is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * Satie is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Affero General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Affero General Public License
  * along with Satie.  If not, see <http://www.gnu.org/licenses/>.
  */
@@ -34,7 +34,7 @@ import ChordModelImpl from "./implChord_chordImpl";
 
 /**
  * Represents a note in a ChordImpl.
- * 
+ *
  * Gotchas:
  *  - You need to set a a noteType, not a noteType.duration. Setting noteType.duration
  *    has no effect.
@@ -276,7 +276,7 @@ class NoteImpl implements Note {
     /**
      * Flattens notations.
      * All of the following are valid and equivalent in MusicXML:
-     * 
+     *
      * 1. <notations>
      *      <articulations>
      *        <staccato placement="above"/>
@@ -287,7 +287,7 @@ class NoteImpl implements Note {
      *        <accent placement="above"/>
      *      </articulations>
      *    </notations>
-     * 
+     *
      * 2. <notations>
      *      <articulations>
      *        <staccato placement="above"/>
@@ -296,18 +296,18 @@ class NoteImpl implements Note {
      *        <accent placement="above"/>
      *      </articulations>
      *    </notations>
-     * 
+     *
      * 3. <notations>
      *      <articulations>
      *        <staccato placement="above"/>
      *        <accent placement="above"/>
      *      </articulations>
      *    </notations>
-     * 
+     *
      * This function makes the structure like the third version. So there's only ever 0 or
      * 1 notations and 0 or 1 articulations. This makes the notationObj and articualtionObj
      * function above fast.
-     * 
+     *
      * In practice, different groups of notations could have different editorials and print-object
      * attributes. I'm not willing to put up with that, yet.
      */
@@ -447,7 +447,7 @@ class NoteImpl implements Note {
                     accType = MxmlAccidental.DoubleFlat;
                     break;
                 default:
-                    invariant(false, "Not implemented: unknown accidental for offset %s", actual);
+                    throw new Error("Not implemented: unknown accidental for offset " + actual);
             }
 
             acc = {

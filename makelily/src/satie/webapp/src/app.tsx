@@ -18,7 +18,7 @@ export interface IProps {
     main: any;
 }
 
-export default class App extends Component<IProps, void> {
+export default class App extends Component<IProps, {}> {
     render() {
         let path = this.props.location.pathname;
         let topLink = path !== (prefix + "/") && path !== prefix &&

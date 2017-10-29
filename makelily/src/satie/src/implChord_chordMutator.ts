@@ -1,17 +1,17 @@
 /**
  * This file is part of Satie music engraver <https://github.com/jnetterf/satie>.
  * Copyright (C) Joshua Netterfield <joshua.ca> 2015 - present.
- * 
+ *
  * Satie is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * Satie is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Affero General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Affero General Public License
  * along with Satie.  If not, see <http://www.gnu.org/licenses/>.
  */
@@ -50,7 +50,7 @@ export default function chordMutator(chord: ChordImpl, op: IAny) {
                         "Cannot remove mismatching item from %s.", path.join(" "));
                 chord.splice(idx, 1);
             } else {
-                invariant(false, "Unsupported operation");
+                throw new Error("Unsupported operation");
             }
 
             chord._init = false;
@@ -70,11 +70,11 @@ export default function chordMutator(chord: ChordImpl, op: IAny) {
         } else if ("od" in op) {
             remove(chord, op as IObjectReplace<any>);
         } else {
-            invariant(false, "Unsupported operation");
+            throw new Error("Unsupported operation");
         }
     } else if (op.p[0] === "divCount") {
         chord.divCount = op.oi;
     } else {
-        invariant(false, `Invalid/unimplemented operation path for chord: ${op.p[0]}`);
+        throw new Error(`Invalid/unimplemented operation path for chord: ${op.p[0]}`);
     }
 }

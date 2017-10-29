@@ -354,7 +354,7 @@ class AttributesModel implements Export.IAttributesModel {
         const staffDetailsByNumber: StaffDetails[] = this.staffDetails.reduce((staffDetails, staffDetail) => {
             if (staffDetail) {
                 staffDetails[staffDetail.number] = staffDetail;
-            };
+            }
             return staffDetails;
         }, []);
         let needsSorting = this.staffDetails.length !== staffDetailsByNumber.length ||
@@ -659,7 +659,7 @@ module AttributesModel {
     Layout.prototype.renderClass = Type.Attributes;
     Layout.prototype.boundingBoxes = [];
     Object.freeze(Layout.prototype.boundingBoxes);
-};
+}
 
 /**
  * Registers Attributes in the factory structure passed in.
