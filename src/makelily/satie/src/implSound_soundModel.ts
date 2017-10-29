@@ -124,7 +124,7 @@ module SoundModel {
     Layout.prototype.renderClass = Type.Sound;
     Layout.prototype.boundingBoxes = [];
     Object.freeze(Layout.prototype.boundingBoxes);
-};
+}
 
 /**
  * Registers Sound in the factory structure passed in.

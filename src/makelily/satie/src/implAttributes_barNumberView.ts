@@ -20,7 +20,9 @@
  */
 
 import {Position} from "musicxml-interfaces";
-import {Component, DOM, PropTypes} from "react";
+import {Component} from "react";
+import * as DOM from "react-dom-factories";
+import * as PropTypes from "prop-types";
 
 export interface IProps {
     spec: Position;
@@ -28,7 +30,7 @@ export interface IProps {
     key?: string | number;
 }
 
-export default class BarNumber extends Component<IProps, void> {
+export default class BarNumber extends Component<IProps, {}> {
     static contextTypes = {
         originY: PropTypes.number.isRequired
     } as any;
@@ -46,4 +48,4 @@ export default class BarNumber extends Component<IProps, void> {
             y: this.context.originY - spec.defaultY - (spec.relativeY || 0)
         }, this.props.barNumber);
     }
-};
+}

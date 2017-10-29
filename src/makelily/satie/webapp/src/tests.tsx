@@ -169,7 +169,7 @@ const TESTS = [
     "99a",
     "99b"
 ];
-class Tests extends Component<{params: {id: string}, location: {query: {mode: string}}}, void> {
+class Tests extends Component<{params: {id: string}, location: {query: {mode: string}}}, {}> {
     render() {
         const isSingleLine = this.props.location.query.mode === "singleline";
         const filter = this.props.params ? this.props.params.id : null;
@@ -185,7 +185,8 @@ class Tests extends Component<{params: {id: string}, location: {query: {mode: st
             }
             if (!filter || testName.indexOf(filter) === 0) {
                 memo.acc.push(
-                        <Test singleLine={isSingleLine} showFilterButton={testName !== filter} name={testName}
+                        <Test singleLine={isSingleLine}
+                            showFilterButton={testName !== filter} name={testName}
                     key={testName} filename={"/lilypond-regression/" + testName + ".xml"} />);
             }
             return {
@@ -200,12 +201,12 @@ class Tests extends Component<{params: {id: string}, location: {query: {mode: st
 }
 
 module Tests {
-    export class Header extends Component<{params: {id: string}}, void> {
+    export class Header extends Component<{params: {id: string}}, {}> {
         render() {
             return <span>Satie &ndash; LilyPond Test Suite</span>;
         }
     }
-    export class Description extends Component<{params: {id: string}, location: {query: {mode: string}}}, void> {
+    export class Description extends Component<{params: {id: string}, location: {query: {mode: string}}}, {}> {
         render() {
             let filter = this.props.params ? this.props.params.id : null;
             if (filter) {

@@ -1,17 +1,17 @@
 /**
  * This file is part of Satie music engraver <https://github.com/jnetterf/satie>.
  * Copyright (C) Joshua Netterfield <joshua.ca> 2015 - present.
- * 
+ *
  * Satie is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * Satie is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Affero General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Affero General Public License
  * along with Satie.  If not, see <http://www.gnu.org/licenses/>.
  */
@@ -100,7 +100,7 @@ export let pageSizes = [
 
 export function defaultPageSize() {
     return pageSizes[0];
-};
+}
 
 export let defaultIndent = 15;
 export let defaultMargins = {
@@ -591,7 +591,7 @@ export let lilypondSizes = {
 
 /**
  * Converts a length in mms to tenths of a standard stave height.
- * 
+ *
  * @param scaling40 the standard stave height
  */
 export function mmToTenths(scaling40: number, mm: number) {
@@ -600,7 +600,7 @@ export function mmToTenths(scaling40: number, mm: number) {
 
 /**
  * Converts a 'px' size or a named css size (e.g., "small") to tenths of a standard stave height.
- * 
+ *
  * @param scaling40 the standard stave height
  */
 export function cssSizeToTenths(scaling40: number, css: string) {
@@ -647,7 +647,7 @@ export function cssSizeToTenths(scaling40: number, css: string) {
 
 /**
  * Converts a length in tenths of a stave length to mm.
- * 
+ *
  * @param scaling40 the standard stave height
  */
 export function tenthsToMM(scaling40: number, tenths: number) {

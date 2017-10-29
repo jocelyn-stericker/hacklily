@@ -127,15 +127,15 @@ export default class Test extends Component<IProps, IState> {
             error,
             loaded: false,
         });
-    };
+    }
 
     private _handleLoaded = () => {
         this.setState({
             loaded: true,
         });
-    };
+    }
 
     private _setSongRef = (song: ISong) => {
         this._song = song;
-    };
+    }
 }

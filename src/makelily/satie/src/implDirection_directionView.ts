@@ -19,7 +19,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import {createFactory, ReactElement, Component, DOM, PropTypes} from "react";
+import {createFactory, ReactElement, Component} from "react";
+import * as DOM from "react-dom-factories";
+import * as PropTypes from "prop-types";
 import {Direction} from "musicxml-interfaces";
 import {map} from "lodash";
 
@@ -106,7 +108,7 @@ export default class DirectionView extends Component<
                     });
                 default:
                     throw new Error("Invalid direction in " + type);
-            };
+            }
         }).filter(el => !!el);
 
         switch (children.length) {
@@ -120,4 +122,4 @@ export default class DirectionView extends Component<
                 );
         }
     }
-};
+}

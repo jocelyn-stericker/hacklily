@@ -151,7 +151,7 @@ class Factory implements IFactory {
     fromSpec<T extends {_class: "Harmony"}>(spec: T): (Harmony & IModel);
     fromSpec<T extends {_class: "Proxy"}>(spec: T): ProxyExports.IProxyModel;
     fromSpec<T extends {_class: "Spacer"}>(spec: T): SpacerExports.ISpacerModel;
-    fromSpec<T extends {_class: "VisualCursor"}>(spec: T): VisualCursorExports.IVisualCursorModel
+    fromSpec<T extends {_class: "VisualCursor"}>(spec: T): VisualCursorExports.IVisualCursorModel;
     fromSpec(spec: any): IModel;
     /**
      * Accepts a JSON string, or a plain object, and creates a spec.

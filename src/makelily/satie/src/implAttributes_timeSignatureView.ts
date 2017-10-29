@@ -1,23 +1,25 @@
 /**
  * This file is part of Satie music engraver <https://github.com/jnetterf/satie>.
  * Copyright (C) Joshua Netterfield <joshua.ca> 2015 - present.
- * 
+ *
  * Satie is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * Satie is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Affero General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Affero General Public License
  * along with Satie.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 import {Time, TimeSymbolType} from "musicxml-interfaces";
-import {createFactory, Component, DOM, PropTypes} from "react";
+import {createFactory, Component} from "react";
+import * as DOM from "react-dom-factories";
+import * as PropTypes from "prop-types";
 import {map} from "lodash";
 
 import Glyph from "./private_views_glyph";
@@ -26,7 +28,7 @@ import {NUMBER_SPACING, PLUS_SPACING} from "./implAttributes_attributesData";
 
 const $Glyph = createFactory(Glyph);
 /* private */
-class TimeSignatureNumber extends Component<ITSNumProps, void> {
+class TimeSignatureNumber extends Component<ITSNumProps, {}> {
     render() {
         return DOM.g(null,
             map((String(this.props.children)).split(""), (numberString, i) => $Glyph({
@@ -45,7 +47,7 @@ const $TimeSignatureNumber = createFactory(TimeSignatureNumber);
 /**
  * Renders a simple, compound, or common time signature.
  */
-export default class TimeSignatureView extends Component<{spec: Time, key?: string | number}, void> {
+export default class TimeSignatureView extends Component<{spec: Time, key?: string | number}, {}> {
     static contextTypes = {
         originY: PropTypes.number,
     } as any;
@@ -189,7 +191,7 @@ export default class TimeSignatureView extends Component<{spec: Time, key?: stri
             singleNumber: spec.symbol === TimeSymbolType.SingleNumber
         };
     }
-};
+}
 
 /* private */
 interface ITSNumProps {
@@ -198,4 +200,4 @@ interface ITSNumProps {
     y: number;
     stroke: string;
     children?: string;
-};
+}

@@ -1,17 +1,17 @@
 /**
  * This file is part of Satie music engraver <https://github.com/jnetterf/satie>.
  * Copyright (C) Joshua Netterfield <joshua.ca> 2015 - present.
- * 
+ *
  * Satie is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * Satie is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Affero General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Affero General Public License
  * along with Satie.  If not, see <http://www.gnu.org/licenses/>.
  */
@@ -48,7 +48,7 @@ export interface IMouseEvent {
     /**
      * The rendered react component under the element.
      * If there is no element under the cursor, returns null.
-     * 
+     *
      * Experimental, and will change or be removed without fanfare.
      */
     _private: any;
@@ -102,7 +102,7 @@ export interface ISong extends React.Component<IProps, {}> {
     /**
      * Returns the document represented by the song. The document represents the
      * current state of the song.
-     * 
+     *
      *  - The returned document is constant (i.e., do not modify the document)
      *  - The returned document is NOT immutable (i.e., the document may change
      *    after patches are applied), or the song is re-rendered.

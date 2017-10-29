@@ -1,17 +1,17 @@
 /**
  * This file is part of Satie music engraver <https://github.com/jnetterf/satie>.
  * Copyright (C) Joshua Netterfield <joshua.ca> 2015 - present.
- * 
+ *
  * Satie is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * Satie is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Affero General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Affero General Public License
  * along with Satie.  If not, see <http://www.gnu.org/licenses/>.
  */
@@ -74,6 +74,8 @@ function moreImportant(type: Type, model: IModel, doc: Document) {
         case Type.VisualCursor:
             return true;
     }
+
+    return false;
 }
 
 export class StaffBuilder {
@@ -502,13 +504,6 @@ export class ModelMetreMutationSpec {
     }
 }
 
-interface IMetreInfo {
-    segments: {[key: string]: ISegment};
-    attributes: {[key: string]: IAttributesSnapshot};
-    elementInfos: {[key: string]: ModelMetreMutationSpec[]};
-    elementInfoByChord: {[key: string]: ModelMetreMutationSpec};
-}
-
 function getMutationInfo(document: Document, patches: IAny[]) {
     const segments: {[key: string]: ISegment} = {};
     const attributes: {[key: string]: IAttributesSnapshot} = {};
@@ -674,7 +669,7 @@ function getMutationInfo(document: Document, patches: IAny[]) {
             if (patch.oi) {
                 info.newCount = patch.oi;
             } else {
-                invariant(false, "noteType is required...");
+                throw new Error("noteType is required...");
             }
         }
 
@@ -770,7 +765,7 @@ function fixBarlines(doc: Document, patches: IAny[]): IAny[] {
 }
 
 function fixCursor(doc: Document, patches: IAny[]): IAny[] {
-    let {segments, attributes, elementInfos} = getMutationInfo(doc, patches);
+    let {elementInfos} = getMutationInfo(doc, patches);
     const newCursor = patches.filter(patch => patch.li && patch.li._class === "VisualCursor");
     if (!newCursor.length) {
         return patches;

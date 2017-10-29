@@ -125,7 +125,7 @@ export function init(options: ISatieOptions): void {
 export interface ISatieOptions {
     /**
      * For web browsers only.
-     * 
+     *
      * A list of fonts and variants (in parentheses) that are included on a webpage, that Satie
      * should not automatically load. You can get better performance improvements by putting font
      * loading inside your's HTML file's `<head></head>`
@@ -136,7 +136,7 @@ export interface ISatieOptions {
 
     /**
      * For web browsers only.
-     * 
+     *
      * Specify where all the files Satie needs are.
      * By default, Satie looks inside `http[s]://vendor/`.
      */

@@ -1,17 +1,17 @@
 /**
  * This file is part of Satie music engraver <https://github.com/jnetterf/satie>.
  * Copyright (C) Joshua Netterfield <joshua.ca> 2015 - present.
- * 
+ *
  * Satie is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * Satie is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Affero General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Affero General Public License
  * along with Satie.  If not, see <http://www.gnu.org/licenses/>.
  */
@@ -50,12 +50,12 @@ export interface IState {
  * Represents a song as:
  *  - some MusicXML, as a string
  *  - a series of patches applied on top of the MusicXML.
- * 
+ *
  * The class can be used:
  *  - as a React component, to render to the DOM.
  *  - as a simple class (in this case call song.run() to load or update the document) to
  *    export to MusicXML (toMusicXML()) or SVG (toSVG()).
- * 
+ *
  * Note: toMusicXML and toSVG can also be used when Song is used as a React component
  * (e.g., <Song ... ref={song => console.log(song.toMusicXML())} />)
  */
@@ -113,7 +113,7 @@ export default class SongImpl extends Component<IProps, IState> implements ISong
     /**
      * Returns the document represented by the song. The document represents the
      * current state of the song.
-     * 
+     *
      *  - The returned document is constant (i.e., do not modify the document)
      *  - The returned document is NOT immutable (i.e., the document may change
      *    after patches are applied), or the song is re-rendered.
@@ -136,7 +136,7 @@ export default class SongImpl extends Component<IProps, IState> implements ISong
             return this.state.document;
         }
         throw new Error("Invalid operations element");
-    };
+    }
 
     get header(): ScoreHeader {
         if (this.state && this.state.document) {
@@ -157,7 +157,7 @@ export default class SongImpl extends Component<IProps, IState> implements ISong
      */
     createCanonicalPatch = (...patchSpecs: IPatchSpec[]): {isPatches: boolean} => {
         return this._createPatch(false, patchSpecs);
-    };
+    }
 
     /**
      * Given a set of operations, returns a set of operations that the "preview" prop can
@@ -165,7 +165,7 @@ export default class SongImpl extends Component<IProps, IState> implements ISong
      */
     createPreviewPatch = (...patchSpecs: IPatchSpec[]): {isPatches: boolean} => {
         return this._createPatch(true, patchSpecs);
-    };
+    }
 
     toSVG = (): string => {
         let patches: {} = this.props.patches;
@@ -175,11 +175,11 @@ export default class SongImpl extends Component<IProps, IState> implements ISong
         } else if (!patches) {
             this._rectify$([], false, () => void 0);
         } else {
-            invariant(false,
+            throw new Error(
                 "Song.props.patches was not created through createPreviewPatch or createCanonicalPatch");
         }
         return this.state.document.renderToStaticMarkup(0);
-    };
+    }
 
     toMusicXML = (): string => {
         let patches: {} = this.props.patches;
@@ -189,14 +189,14 @@ export default class SongImpl extends Component<IProps, IState> implements ISong
         } else if (!patches) {
             this._rectify$([], false, () => void 0);
         } else {
-            invariant(false,
+            throw new Error(
                 "Song.props.patches was not created through createPreviewPatch or createCanonicalPatch");
         }
         return exportXML(this.state.document);
-    };
+    }
 
     run() {
-        this.setState = (state: IState, cb: Function) => {
+        this.setState = (state: any, cb: Function) => {
             extend(this.state, state);
             if (cb) {
                 cb();
@@ -273,13 +273,13 @@ export default class SongImpl extends Component<IProps, IState> implements ISong
 
         invariant(docPatches.length === newPatches.length,
             "Something went wrong in _rectify. The current state is now invalid.");
-    };
+    }
     private _rectifyAppendCanonical = (ops:IAny[]):void => {
         this._rectify$(this._docPatches.concat(ops), false, () => void 0);
-    };
+    }
     private _rectifyAppendPreview = (ops:IAny[]): void => {
         this._rectify$(this._docPatches.concat(ops), true, () => void 0);
-    };
+    }
     private _update$(patches: IAny[], isPreview: boolean, props: IProps = this.props) {
         this._rectify$(patches, isPreview, () => isPreview = false);
 
@@ -304,14 +304,14 @@ export default class SongImpl extends Component<IProps, IState> implements ISong
         } else if (!patches) {
             this._update$([], false, props);
         } else {
-            invariant(false, "Internal error: preRender called, but the state is invalid.");
+            throw new Error("Internal error: preRender called, but the state is invalid.");
         }
-    };
+    }
 
     private _syncSVG = (svg: SVGSVGElement) => {
         this._svg = svg;
         this._pt = svg ? svg.createSVGPoint() : null;
-    };
+    }
 
     private _getPos(ev: SyntheticEvent<Node>) {
         if (!this._svg.contains(ev.target as Node)) {
@@ -367,14 +367,14 @@ export default class SongImpl extends Component<IProps, IState> implements ISong
         if (p) {
             this._handleCursorPosition(p, this.props.onMouseMove);
         }
-    };
+    }
 
     private _handleClick = (ev: any) => {
         let p = this._getPos(ev);
         if (p) {
             this._handleCursorPosition(p, this.props.onMouseClick);
         }
-    };
+    }
 
     private _loadXML(xml: string) {
         this.setState({

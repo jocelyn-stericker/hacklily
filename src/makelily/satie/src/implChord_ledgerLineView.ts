@@ -1,23 +1,24 @@
 /**
  * This file is part of Satie music engraver <https://github.com/jnetterf/satie>.
  * Copyright (C) Joshua Netterfield <joshua.ca> 2015 - present.
- * 
+ *
  * Satie is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * Satie is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Affero General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Affero General Public License
  * along with Satie.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 import {PrintStyle} from "musicxml-interfaces";
-import {createFactory, Component, PropTypes} from "react";
+import {createFactory, Component} from "react";
+import * as PropTypes from "prop-types";
 
 import Line from "./private_views_line";
 import {bboxes} from "./private_smufl";
@@ -33,7 +34,7 @@ export interface IProps {
 /**
  * Renders a ledger line at (x, y + line).
  */
-export default class LedgerLine extends Component<IProps, void> {
+export default class LedgerLine extends Component<IProps, {}> {
     static contextTypes = {
         originY: PropTypes.number.isRequired
     } as any;

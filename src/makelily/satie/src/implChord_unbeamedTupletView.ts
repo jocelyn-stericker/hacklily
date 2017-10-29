@@ -28,7 +28,9 @@
 // This keeps spacing consistent, even in beam groups with rests.
 
 import {AboveBelow} from "musicxml-interfaces";
-import {createFactory, Component, DOM, PropTypes} from "react";
+import {createFactory, Component} from "react";
+import * as DOM from "react-dom-factories";
+import * as PropTypes from "prop-types";
 import {first, last} from "lodash";
 
 import {bravura, getFontOffset} from "./private_smufl";
@@ -45,7 +47,7 @@ export interface IProps {
     layout: IBeamLayout;
 }
 
-export default class UnbeamedTuplet extends Component<IProps, void> {
+export default class UnbeamedTuplet extends Component<IProps, {}> {
     static contextTypes = {
         originY: PropTypes.number.isRequired
     } as any;
@@ -155,4 +157,4 @@ export default class UnbeamedTuplet extends Component<IProps, void> {
             this.direction() * getFontOffset("noteheadBlack", this.direction())[1] * 10 -
             (incl || 0) * (bravura.engravingDefaults.tupletBracketThickness * 10);
     }
-};
+}

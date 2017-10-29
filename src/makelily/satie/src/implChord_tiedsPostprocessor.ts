@@ -1,17 +1,17 @@
 /**
  * This file is part of Satie music engraver <https://github.com/jnetterf/satie>.
  * Copyright (C) Joshua Netterfield <joshua.ca> 2015 - present.
- * 
+ *
  * Satie is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * Satie is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Affero General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Affero General Public License
  * along with Satie.  If not, see <http://www.gnu.org/licenses/>.
  */
@@ -38,11 +38,11 @@ interface IMutableTied {
 type TiedSet = {
     [id: number]: IMutableTied;
     [id: string]: IMutableTied; // For Dictionary!
-}
+};
 
-/** 
+/**
  * Lays out measures within a bar & justifies.
- * 
+ *
  * @returns new end of line
  */
 function tied(options: ILayoutOptions, bounds: ILineBounds,
@@ -98,7 +98,7 @@ function tied(options: ILayoutOptions, bounds: ILineBounds,
                 });
             });
         });
-        forEach<IMutableTied>(activeTieds, (tied, idx) => {
+        forEach<IMutableTied>(activeTieds as any, (tied, idx) => {
             console.warn(
                 "Tied %s was not closed before the end of the measure " +
                 "(this will be implemented later!)", idx);

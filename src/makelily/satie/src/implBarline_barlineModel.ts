@@ -24,7 +24,6 @@ import {Barline, Segno, Coda, BarlineLocation, WavyLine, Fermata, BarStyle, Endi
     serializeBarline, Attributes} from "musicxml-interfaces";
 import {buildBarStyle} from "musicxml-interfaces/builders";
 import {some, forEach} from "lodash";
-import * as invariant from "invariant";
 
 import {IModel, ILayout, Type} from "./document";
 
@@ -244,7 +243,7 @@ module BarlineModel {
                     setLines([]);
                     break;
                 default:
-                    invariant(false, "Not implemented");
+                    throw new Error("Not implemented");
             }
 
             this.renderedWidth = cursor.segmentX - this.x + 8;
@@ -285,7 +284,7 @@ module BarlineModel {
     Layout.prototype.renderClass = Type.Barline;
     Layout.prototype.boundingBoxes = [];
     Object.freeze(Layout.prototype.boundingBoxes);
-};
+}
 
 /**
  * Registers Barline in the factory structure passed in.

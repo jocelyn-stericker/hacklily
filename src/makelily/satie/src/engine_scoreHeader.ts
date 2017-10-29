@@ -1,17 +1,17 @@
 /**
  * This file is part of Satie music engraver <https://github.com/jnetterf/satie>.
  * Copyright (C) Joshua Netterfield <joshua.ca> 2015 - present.
- * 
+ *
  * Satie is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * Satie is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Affero General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Affero General Public License
  * along with Satie.  If not, see <http://www.gnu.org/licenses/>.
  */
@@ -29,7 +29,7 @@ import {getPageMargins} from "./private_print";
 import {distances, bravura} from "./private_smufl";
 import {mmToTenths, defaultStaveHeight, defaultPageSize, defaultMargins} from "./private_renderUtil";
 
-/** 
+/**
  * A header is a child of parts, and includes the title and other basic
  * information.
  */
@@ -220,6 +220,7 @@ class ScoreHeaderModel implements ScoreHeader {
 
     constructor(spec: ScoreHeader) {
         if (spec) {
+            debugger;
             defaultsDeep(spec, this);
         }
         for (let key in spec) {
@@ -290,7 +291,7 @@ class ScoreHeaderModel implements ScoreHeader {
                 relations: [],
                 rights: [],
                 source: null
-            };
+            } as Identification;
         this.identification.creators = this.identification.creators || [];
 
         forEach(this.identification.creators, c => {
@@ -315,7 +316,7 @@ class ScoreHeaderModel implements ScoreHeader {
         this.credits = this.credits || [];
         forEach(this.credits, (c, idx) => {
             if (!c.creditWords) {
-                return false;
+                return;
             }
             // Replace a credit...
             let isComposer = c.creditTypes.indexOf(type) !== -1;
@@ -346,7 +347,7 @@ class ScoreHeaderModel implements ScoreHeader {
                 default:
                     defaultX = margins.leftMargin;
                     break;
-            };
+            }
 
             this.credits.push({
                 // ... or add a credit
