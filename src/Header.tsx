@@ -19,7 +19,6 @@
  */
 
 import { css } from 'aphrodite';
-import { playerFromMIDIBuffer } from 'hackmidi';
 import React from 'react';
 
 import * as logoSvg from './logo.svg';
@@ -226,6 +225,8 @@ export default class Header extends React.PureComponent<Props> {
     if (this.state.player) {
       player = this.state.player;
     } else {
+      const { playerFromMIDIBuffer } = await import('hackmidi');
+
       player = await playerFromMIDIBuffer(
         this.props.midi,
         'https://www.hacklily.org/hackmidi/samples/');

@@ -18,11 +18,8 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
  */
 
-// lodash.debounce has a blank "default" object defined, so the synthetic importer
-// plugin does not replace default, leading to us importing the empty "default" object
-// if we use the ES6 import syntax.
-// tslint:disable-next-line:no-require-imports
-import lodashDebounce = require('lodash.debounce');
+// tslint:disable-next-line:match-default-export-name
+import lodashDebounce from 'lodash.debounce';
 
 export default function debounce(timeout: number):
     <T>(target: {}, propertyKey: string, descriptor: TypedPropertyDescriptor<() => T>) =>
