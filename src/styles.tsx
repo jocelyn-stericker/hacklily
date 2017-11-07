@@ -488,7 +488,7 @@ export const LOGS_STYLE = StyleSheet.create({
     borderLeft: '1px solid #ccc',
     bottom: 10,
     maxHeight: '90%',
-    overflow: 'scroll',
+    overflow: 'auto',
     position: 'absolute',
     right: 20,
   },
