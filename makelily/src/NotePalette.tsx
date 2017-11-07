@@ -266,7 +266,10 @@ const articulations: Notations[] = [
   },
 ];
 
-export default class Palette extends React.Component<ButtonGroupProps, {}> {
+/**
+ * Renders a list of tools that can be selected in the note editor.
+ */
+export default class NotePalette extends React.Component<ButtonGroupProps, {}> {
   // tslint:disable-next-line cyclomatic-complexity max-func-body-length
   render(): JSX.Element {
     const { editType } = this.props;

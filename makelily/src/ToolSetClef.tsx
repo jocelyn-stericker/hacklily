@@ -99,6 +99,9 @@ function getInitialState(props: ToolProps): State {
   };
 }
 
+/**
+ * A tool which allows clefs to be inserted.
+ */
 export default class ToolSetClef extends React.Component<ToolProps, State> {
   state: State = getInitialState(this.props);
 

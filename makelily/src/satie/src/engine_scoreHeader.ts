@@ -220,7 +220,6 @@ class ScoreHeaderModel implements ScoreHeader {
 
     constructor(spec: ScoreHeader) {
         if (spec) {
-            debugger;
             defaultsDeep(spec, this);
         }
         for (let key in spec) {
