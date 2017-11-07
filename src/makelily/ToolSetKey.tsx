@@ -98,7 +98,7 @@ function getInitialState(props: ToolProps): State {
     selectedMode = 'minor';
   }
 
-  selectedKey = props.keySig.fifths + 7;
+  selectedKey = parseInt(String(props.keySig.fifths), 10) + 7;
 
   return {
     selectedKey,
@@ -106,6 +106,9 @@ function getInitialState(props: ToolProps): State {
   };
 }
 
+/**
+ * A tool which allows a key to be inserted.
+ */
 export default class ToolSetKey extends React.Component<ToolProps, State> {
   state: State = getInitialState(this.props);
 

@@ -99,6 +99,9 @@ function getInitialState(props: ToolProps): State {
   };
 }
 
+/**
+ * A tool which allows a time signature to be inserted.
+ */
 export default class ToolSetTime extends React.Component<ToolProps, State> {
   state: State = getInitialState(this.props);
 

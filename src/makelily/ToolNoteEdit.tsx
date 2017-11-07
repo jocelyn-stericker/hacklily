@@ -92,7 +92,6 @@ const songTemplate: string = `<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE score-partwise PUBLIC "-//Recordare//DTD MusicXML 3.0 Partwise//EN"
                                 "http://www.musicxml.org/dtds/partwise.dtd">
 <score-partwise>
-  <movement-title>Hacklily Note Entry</movement-title>
   <identification>
     <miscellaneous>
       <miscellaneous-field name="description">
@@ -106,7 +105,7 @@ const songTemplate: string = `<?xml version="1.0" encoding="UTF-8"?>
         <left-margin>0</left-margin>
         <right-margin>0</right-margin>
       </system-margins>
-      <system-distance>0</system-distance>
+      <system-distance>131</system-distance>
       <top-system-distance>0</top-system-distance>
     </system-layout>
   </defaults>
@@ -124,7 +123,7 @@ const songTemplate: string = `<?xml version="1.0" encoding="UTF-8"?>
           <left-margin>0</left-margin>
           <right-margin>0</right-margin>
         </system-margins>
-        <system-distance>0</system-distance>
+        <system-distance>131</system-distance>
         <top-system-distance>0</top-system-distance>
       </system-layout>
       </print>
@@ -268,6 +267,10 @@ interface State {
   undoStack?: IAny[][];
 }
 
+/**
+ * A tool which allows notes to be entered with a mouse or keyboard.
+ * This may also eventually support MIDI keyboards.
+ */
 export default class ToolNoteEdit extends React.Component<ToolProps, State> {
   state: State = {
     accidental: null,
@@ -296,7 +299,7 @@ export default class ToolNoteEdit extends React.Component<ToolProps, State> {
       };
       newBar = (
         <span
-          className={'cx(IndexCSS.tooltip, IndexCSS.tooltipRight, STYLES.newBar)'}
+          className={css(styles.tooltip, styles.tooltipRight, styles.newBar)}
           data-tooltip="New bar"
           style={newbarStyle}
         >
@@ -1349,6 +1352,30 @@ export default class ToolNoteEdit extends React.Component<ToolProps, State> {
 
   private setSongRef = (song: ISong): void => {
     this.song = song;
+    if (song) {
+      const doc: Document = song.getDocument(this.state.canonicalOperations);
+      const patch: IAny[] = Patch.createPatch(
+        false,
+        doc,
+        doc.measures[0].uuid,
+        'P1',
+        (part: PartBuilder): PartBuilder => part
+          .staff(1, (staff: StaffBuilder): StaffBuilder => staff
+            .at(1)
+            .attributes((attributes: IAttributesBuilder): IAttributesBuilder =>
+              attributes
+                .clefs([this.props.clef])
+                .keySignatures([this.props.keySig])
+                .times([this.props.time]),
+            ),
+          )
+          .voice(1, (voice: VoiceBuilder): VoiceBuilder => voice
+            .at(0)
+            .addVisualCursor(),
+          ),
+        );
+      this.applyUndoablePatch(patch);
+    }
   }
 
   private setTimeModification = (timeModification: TimeModification): void => {
@@ -1580,8 +1607,23 @@ export default class ToolNoteEdit extends React.Component<ToolProps, State> {
   //   });
   // }
 
+const tooltipPseudo: React.CSSProperties = {
+  pointerEvents: 'none',
+  position: 'absolute',
+  transform: 'translate3d(0, 0, 0)',
+  zIndex: 100000000,
+};
+
+const tooltipPseudoRight: React.CSSProperties = {
+  bottom: '50%',
+  left: '100%',
+};
+
 // tslint:disable-next-line typedef
 const styles = StyleSheet.create({
+  newBar: {
+    textAlign: 'center',
+  },
   song: {
     width: '100%',
   },
@@ -1589,5 +1631,39 @@ const styles = StyleSheet.create({
     maxHeight: 320,
     overflowX: 'scroll',
     overflowY: 'scroll',
+  },
+  tooltip: {
+    ':after': {
+      ...tooltipPseudo,
+      backgroundColor: 'hsla(0, 0%, 20%, 0.9)',
+      color: '#fff',
+      content: 'attr(data-tooltip)',
+      fontSize: '14px',
+      lineHeight: '1.2',
+      padding: 8,
+      width: 100,
+      zIndex: 1000,
+    },
+    ':before': {
+      ...tooltipPseudo,
+      background: 'transparent',
+      border: '6px solid transparent',
+      content: '',
+      zIndex: 1001,
+    },
+    cursor: 'pointer',
+    position: 'relative',
+  },
+  tooltipRight: {
+    ':after': {
+      ...tooltipPseudoRight,
+    },
+    ':before': {
+      ...tooltipPseudoRight,
+      borderRightColor: 'hsla(0, 0%, 20%, 0.9)',
+      borderTopColor: 'transparent',
+      marginBottom: 0,
+      marginLeft: -12,
+    },
   },
 });

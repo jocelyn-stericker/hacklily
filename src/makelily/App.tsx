@@ -58,6 +58,9 @@ export interface Props extends QueryProps {
 
 type ChgEv = React.ChangeEvent<HTMLInputElement>;
 
+/**
+ * This renders a SPA which demos the makelily modal.
+ */
 export default class App extends React.Component<Props, {}> {
   render(): JSX.Element {
     const { clef, defaultTool, keySig, singleTaskMode, setQuery, time } = this.props;

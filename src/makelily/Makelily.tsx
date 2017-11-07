@@ -80,6 +80,9 @@ interface State {
   toolKey: string;
 }
 
+/**
+ * A modal which provides UIs for inserting lilypond.
+ */
 export default class Makelily extends React.Component<Props, State> {
   state: State = {
     toolKey: this.props.defaultTool || 'clef',
