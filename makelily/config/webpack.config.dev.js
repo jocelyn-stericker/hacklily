@@ -123,6 +123,10 @@ module.exports = {
         test: /\.(ts|tsx)$/,
         loader: require.resolve('tslint-loader'),
         enforce: 'pre',
+        options: {
+          typeCheck: true,
+          formatter: "stylish",
+        },
         include: paths.appSrc,
       },
       {

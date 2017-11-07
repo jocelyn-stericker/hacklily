@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "license": "AGPLv3",
+  "homepage": "https://www.hacklily.org/makelily",
   "dependencies": {
     "aphrodite": "1.2.5",
     "invariant": "2.2.2",
