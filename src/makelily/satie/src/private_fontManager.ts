@@ -16,7 +16,9 @@
  * along with Satie.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import {Font, parse as parseFont} from "opentype.js";
+/// <reference path="./opentypedist.d.ts" />
+
+import {Font, parse as parseFont} from "opentype.js/dist/opentype.js";
 import {memoize, forEach} from "lodash";
 
 const IS_BROWSER = "browser" in process;
