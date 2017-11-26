@@ -147,7 +147,7 @@ file an issue. I want to make it work!
 
 [test_status]: https://magnum.travis-ci.com/jnetterf/satie.svg?token=CyuSS4hk66NJ4i9k2wRq&branch=master
 [test_link]: https://magnum.travis-ci.com/jnetterf/satie
-[musicxml_test_suite]: http://www.lilypond.org/doc/v2.18/input/regression/musicxml/collated-files.html
+[musicxml_test_suite]: http://www.LilyPond.org/doc/v2.18/input/regression/musicxml/collated-files.html
 [agpl]: LICENSE.md
 [musicxml]: http://en.wikipedia.org/wiki/MusicXML
 [svg]: http://en.wikipedia.org/wiki/Scalable_Vector_Graphics

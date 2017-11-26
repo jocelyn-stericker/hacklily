@@ -2,7 +2,7 @@
 
 # Makelily
 
-Makelily is a set of graphical tools which generate Lilypond source.
+Makelily is a set of graphical tools which generate LilyPond source.
 
 It will be a deployed as a modal accessible in [Hacklily](https://github.com/hacklily/hacklily).
 
@@ -48,7 +48,7 @@ You can reach the maintainer by email at `joshua@nettek.ca`.
 
 ## License
 
-Out of respect for the Lilypond project that Hacklily relies on, and
+Out of respect for the LilyPond project that Hacklily relies on, and
 to ensure all forks of Hacklily remain free software, the client is
 licensed under the terms of the GNU GPL version 3 or later (with
 additional permissions as described below), and the server is licensed

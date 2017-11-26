@@ -112,6 +112,7 @@ export default class App extends React.Component<Props, {}> {
           keySig={keySig || ''}
           time={time || ''}
           singleTaskMode={String(singleTaskMode) === 'true'}
+          onHide={(): void => window.location.reload()}
           onInsertLy={this.handleInsertLy}
         />
       </div>

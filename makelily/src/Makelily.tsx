@@ -23,6 +23,7 @@ import React from 'react';
 import { Application, requireFont } from './satie/src/satie';
 
 import { ToolProps } from './tool';
+import ToolError from './ToolError';
 import ToolNoteEdit from './ToolNoteEdit';
 import ToolNotFound from './ToolNotFound';
 import ToolSetClef from './ToolSetClef';
@@ -65,6 +66,11 @@ const modes: InsertMode[] = [
     key: 'notes',
     name: 'Insert Notes',
   },
+  {
+    Component: ToolError,
+    key: 'error',
+    name: null,
+  },
 ];
 
 interface Props {
@@ -73,6 +79,7 @@ interface Props {
   keySig: string;
   singleTaskMode: boolean;
   time: string;
+  onHide(): void;
   onInsertLy(ly: string): void;
 }
 
@@ -81,32 +88,41 @@ interface State {
 }
 
 /**
- * A modal which provides UIs for inserting lilypond.
+ * A modal which provides UIs for inserting LilyPond.
  */
 export default class Makelily extends React.Component<Props, State> {
   state: State = {
     toolKey: this.props.defaultTool || 'clef',
   };
 
-  render(): JSX.Element {
-    const modeElements: JSX.Element[] = modes.map((mode: InsertMode, i: number) => {
-      const className: string = css(
-        styles.modeItem,
-        i + 1 === modes.length && styles.modeItemLast,
-        mode.key === this.state.toolKey && styles.modeItemSelected,
-      );
-
-      return (
-        <li
-          className={className}
-          onClick={(): void => this.setState({ toolKey: mode.key })}
-          role="button"
-          key={mode.key}
-        >
-          {mode.name}
-        </li>
-      );
+  componentDidCatch(error: Error, info: React.ErrorInfo): void {
+    console.warn('Caught error', error, info);
+    this.setState({
+      toolKey: 'error',
     });
+  }
+
+  render(): JSX.Element {
+    const modeElements: JSX.Element[] = modes
+      .filter((mode: InsertMode) => mode.name !== null)
+      .map((mode: InsertMode, i: number) => {
+        const className: string = css(
+          styles.modeItem,
+          i + 1 === modes.length && styles.modeItemLast,
+          mode.key === this.state.toolKey && styles.modeItemSelected,
+        );
+
+        return (
+          <li
+            className={className}
+            onClick={(): void => this.setState({ toolKey: mode.key })}
+            role="button"
+            key={mode.key}
+          >
+            {mode.name}
+          </li>
+        );
+      });
 
     const activeMode: InsertMode = modes
       .find((mode: InsertMode) => mode.key === this.state.toolKey);
@@ -120,7 +136,7 @@ export default class Makelily extends React.Component<Props, State> {
       bar = (
         <div className={css(styles.modeBar)}>
           <h2 className={css(styles.heading)}>
-            Hacklily Tools
+            LilyPond Tools
           </h2>
           <ul className={css(styles.modeList)}>
             {modeElements}
@@ -136,18 +152,27 @@ export default class Makelily extends React.Component<Props, State> {
 
     return (
       <span>
-      <div className={css(styles.modalBg)} />
-      <div className={css(styles.modal)}>
-        {bar}
-        <div className={contentClass}>
-          <Tool
-            clef={parseClef(this.props.clef)}
-            keySig={parseKeySig(this.props.keySig)}
-            time={parseTime(this.props.time)}
-            onInsertLy={this.props.onInsertLy}
-          />
+        <div className={css(styles.modalBg)} />
+        <div className={css(styles.modal)}>
+          {bar}
+          <div className={contentClass}>
+            <Tool
+              clef={parseClef(this.props.clef)}
+              keySig={parseKeySig(this.props.keySig)}
+              time={parseTime(this.props.time)}
+              onInsertLy={this.props.onInsertLy}
+            />
+          </div>
+          {/* tslint:disable-next-line react-a11y-anchors */}
+          <a
+            href="#"
+            onClick={this.props.onHide}
+            role="button"
+            className={css(styles.close)}
+          >
+            {'\u00d7'}
+          </a>
         </div>
-      </div>
       </span>
     );
   }
@@ -157,6 +182,17 @@ const modeBarWidth: number = 180;
 
 // tslint:disable-next-line typedef
 const styles = StyleSheet.create({
+  close: {
+    ':hover': {
+      color: 'black',
+    },
+    color: '#6e6e6e',
+    fontSize: 22,
+    position: 'absolute',
+    right: 15,
+    textDecoration: 'none',
+    top: 22,
+  },
   content: {
     bottom: 0,
     left: modeBarWidth,

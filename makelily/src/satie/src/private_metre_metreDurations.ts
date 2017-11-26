@@ -29,7 +29,7 @@ import {IChord, divisions} from "./private_chordUtil";
  */
 export interface ITimeSpec {
     /**
-     * The base of the note, as encoded by Lilypond.
+     * The base of the note, as encoded by LilyPond.
      *
      * A quarter note is '4', a half note is '8', ...
      */

@@ -450,6 +450,7 @@ export class ModelMetreMutationSpec {
     newTimeModification: TimeModification;
     time: Time;
     rest: boolean;
+    forced: boolean;
     beam: Beam[];
     touched: boolean;
     private _originalModel: IModel;
@@ -464,6 +465,7 @@ export class ModelMetreMutationSpec {
                 newTimeModification: TimeModification;
                 time: Time;
                 rest: boolean;
+                forced: boolean;
                 beam: Beam[];
                 touched: boolean;
             }, originalModel?: IModel) {
@@ -554,11 +556,13 @@ function getMutationInfo(document: Document, patches: IAny[]) {
                         newTimeModification: null,
                         time: time,
                         rest: true,
+                        forced: false,
                         beam: null,
                         touched: false,
                     }, model));
                 }
                 let divs = calcDivisions(model, {time, divisions});
+                const theRest = rest(model);
                 let info = new ModelMetreMutationSpec({
                     idx: idx,
                     oldIdx: idx,
@@ -569,7 +573,8 @@ function getMutationInfo(document: Document, patches: IAny[]) {
                     newDots: dots(model),
                     newTimeModification: timeModification(model),
                     time: time,
-                    rest: !!rest(model),
+                    rest: !!theRest,
+                    forced: theRest && ("_force" in theRest),
                     beam: beams(model),
                     touched: false,
                 }, model);
@@ -587,7 +592,7 @@ function getMutationInfo(document: Document, patches: IAny[]) {
                 const c = isChord ? count(patch.li) : 0;
                 const d = isChord ? dots(patch.li) : 0;
                 const tm = isChord ? timeModification(patch.li) : null;
-                const isRest = isChord && !!rest(patch.li);
+                const theRest = rest(patch.li);
                 const divs = isChord ?
                     calcDivisions(patch.li, {time: attributes[segID].time, divisions}) :
                     0;
@@ -610,7 +615,8 @@ function getMutationInfo(document: Document, patches: IAny[]) {
                     newTimeModification: tm,
                     start: start,
                     time: attributes[segID].time,
-                    rest: isRest,
+                    rest: !!theRest,
+                    forced: theRest && (typeof theRest !== "boolean") && ("_force" in theRest),
                     beam: b,
                     touched: true,
                 });
@@ -659,7 +665,7 @@ function getMutationInfo(document: Document, patches: IAny[]) {
         if (patch.p.length === 9 && patch.p[8] === "rest") {
             info.touched = true;
             if (patch.oi !== undefined) {
-                info.rest = !!patch.oi;
+                info.rest = !!patch.oi && !patch.oi;
             } else if (patch.od !== undefined) {
                 info.rest = false;
             }
@@ -705,12 +711,10 @@ function getMutationInfo(document: Document, patches: IAny[]) {
 function fixMetre(document: Document, patches: IAny[]): IAny[] {
     patches = patches.slice();
 
-    let segments: {[key: string]: ISegment};
     let attributes: {[key: string]: IAttributesSnapshot};
     let elementInfos: {[key: string]: ModelMetreMutationSpec[]};
 
     const mi = getMutationInfo(document, patches);
-    segments = mi.segments;
     attributes = mi.attributes;
     elementInfos = mi.elementInfos;
 
@@ -831,7 +835,6 @@ function addBeams(document: Document, patches: IAny[]): IAny[] {
         const stdBP = getBeamingPattern(time); // TODO: TS changes in bar
         // const cleanBP = getBeamingPattern(time, "clean");
         // const altBP = getBeamingPattern(time, "alt");
-        let prevInfo: ModelMetreMutationSpec;
         let beamGroup: number[] = [];
         let beamBeams: number[] = [];
         let inCandidate: boolean[] = [];
@@ -894,7 +897,6 @@ function addBeams(document: Document, patches: IAny[]): IAny[] {
             divisionsInCurrentBucket -= divs;
             if (divisionsInCurrentBucket <= 0) {
                 applyCandidate();
-                prevInfo = null;
                 beamGroup = [];
                 beamBeams = [];
                 ++bpIDX;
@@ -931,12 +933,10 @@ function addBeams(document: Document, patches: IAny[]): IAny[] {
                 divs <= divisionsInCurrentBucket;
 
             if (isCandidate) {
-                prevInfo = elInfo;
                 beamGroup.push(originalIdx);
                 beamBeams.push(COUNT_TO_BEAMS[elInfo.newCount]);
             } else {
                 applyCandidate();
-                prevInfo = null;
                 beamGroup = [];
                 beamBeams = [];
             }

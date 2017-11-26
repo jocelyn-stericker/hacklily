@@ -114,7 +114,7 @@ export let defaultMargins = {
 export let defaultStaveHeight = rastalToHeight[4];
 
 export let lilypondSizes = {
-    // Sizes that we support loading from Lilypond.
+    // Sizes that we support loading from LilyPond.
     // Did you know there were this many sizes?
     "choral": { // XXX: Common format, but does not exist in lilypond
         width: 178,
