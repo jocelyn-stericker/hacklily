@@ -17,7 +17,7 @@
  */
 
 import {Articulations, Placement, Notations, AboveBelow, UprightInverted,
-    PrintStyle, Note, StemType} from "musicxml-interfaces";
+    PrintStyle, Note, StemType, Technical} from "musicxml-interfaces";
 import {forEach} from "lodash";
 
 import {IBoundingRect} from "./private_boundingRect";
@@ -78,6 +78,96 @@ export function articulationGlyph(model: Articulations, direction: string): stri
         return `articUnstress${direction}`;
     }
     console.warn("Unknown articulation...");
+    return null;
+}
+
+export function technicalGlyph(model: Technical, direction: string): string {
+    if (model.arrow) {
+        return "arrowBlackDownRight";
+    }
+    if (model.bend) {
+        return "brassBend";
+    }
+    if (model.doubleTongue) {
+        return `doubleTongue${direction}`;
+    }
+    if (model.downBow) {
+        if (direction === "Below") {
+            return "stringsDownBowTurned";
+        } else {
+            return "stringsDownBow";
+        }
+    }
+    if (model.fingering) {
+        return `fingering${model.fingering.finger}`;
+    }
+    if (model.fingernails) {
+        return "pluckedWithFingernails";
+    }
+    if (model.fret) {
+        console.warn("fret not implemented");
+        return null;
+    }
+    if (model.hammerOn) {
+        console.warn("hammerOn not implemented");
+        return null;
+    }
+    if (model.handbell) {
+        console.warn("handbell not implemented");
+        return null;
+    }
+    if (model.harmonic) {
+        return "stringsHarmonic";
+    }
+    if (model.heel) {
+        return "stringsDownBow";
+    }
+    if (model.hole) {
+        return "windClosedHole";
+    }
+    if (model.openString) {
+        return "stringsHarmonic";
+    }
+    if (model.pluck) {
+        console.warn("pluck not implemented");
+        return null;
+    }
+    if (model.pullOff) {
+        console.warn("pullOff not implemented");
+        return null;
+    }
+    if (model.snapPizzicato) {
+        return `pluckedSnapPizzicato${direction}`;
+    }
+    if (model.stopped) {
+        return "pluckedLeftHandPizzicato";
+    }
+    if (model.string) {
+        console.warn("string not implemented");
+        return null;
+    }
+    // TODO: stringMute is a direction in musicxml!
+    if (model.tap) {
+        console.warn("tap not implemented");
+        return null;
+    }
+    if (model.thumbPosition) {
+        return "stringsThumbPosition";
+    }
+    if (model.toe) {
+        return "keyboardPedalToe1";
+    }
+    if (model.tripleTongue) {
+        return `tripleTongue${direction}`;
+    }
+    if (model.upBow) {
+        if (direction === "Below") {
+            return "stringsUpBowTurned";
+        } else {
+            return "stringsUpBow";
+        }
+    }
+    console.warn("Unknown technical", model);
     return null;
 }
 
@@ -176,8 +266,44 @@ export function getBoundingRects(model: Notations, note: Note,
         // TODO
     });
 
-    forEach(model.technicals, technical => {
-        // TODO
+    forEach(model.technicals, (technical, idx) => {
+        technical = model.technicals[idx] = Object.create(technical);
+
+        forEach([
+            "arrow", "bend", "doubleTongue", "downBow", "fingering", "fingernails",
+            "fret", "hammerOn", "handbell", "harmonic", "heel", "hole", "openString",
+            "pluck", "pullOff", "snapPizzicato", "stopped", "string", "tap",
+            "thumbPosition", "toe", "tripleTongue", "upBow",
+        ], type => {
+            // TODO: Could this be done any less efficiently?
+            if ((model.technicals[idx] as any)[type]) {
+                let thisTechnical: Placement = Object.create((<any>model.technicals[idx])[type]);
+                let {placement} = thisTechnical;
+                let isBelow = placement === AboveBelow.Below;
+                let glyph = technicalGlyph(technical, isBelow ? "Below" : "Above");
+                if (!glyph) {
+                    console.warn(Object.keys(technical)[0], "not implented in chord/notation.ts");
+                    return;
+                }
+                let y: number;
+                let noteheadGlyph = chord.model.noteheadGlyph[0];
+
+                let center = (getLeft(noteheadGlyph) + getRight(noteheadGlyph)) / 2 -
+                    (getLeft(glyph) + getRight(glyph)) / 2 - 0.5;
+                if (!chord.satieStem || (note.stem.type === StemType.Up) === isBelow) {
+                    y = note.defaultY + (isBelow ? -9 : 9);
+                    if (-note.defaultY % 10 === 0) {
+                        y += isBelow ? -5 : 5;
+                    }
+                } else {
+                    y = note.defaultY + chord.satieStem.stemHeight + (isBelow ? -12 : 12);
+                    if (-note.defaultY % 10 === 0) {
+                        y += isBelow ? -5 : 5;
+                    }
+                }
+                (<any>model.technicals[idx])[type] = push(glyph, thisTechnical, center, y);
+            }
+        });
     });
 
     forEach(model.tieds, tied => {
@@ -190,6 +316,7 @@ export function getBoundingRects(model: Notations, note: Note,
 
     function push(glyphName: string, notation: IGeneralNotation, defaultX = 0,
             defaultY: number = NaN): IGeneralNotation {
+        console.log("PUSH", glyphName);
         let box = bboxes[glyphName];
         if (!box) {
             console.warn("Unknown glyph", glyphName);

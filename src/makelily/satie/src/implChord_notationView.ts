@@ -34,6 +34,8 @@ const $Bezier = createFactory(Bezier);
 const $Glyph = createFactory(Glyph);
 const $Articulation = createFactory(Articulation);
 
+import {technicalGlyph} from "./implChord_notation";
+
 export interface IProps {
     spec: Notations;
     layout?: Chord.IChordLayout;
@@ -125,114 +127,39 @@ export default class NotationView extends Component<IProps, {}> {
             // TODO
         });
 
-        forEach(model.technicals, technical => {
-            if (technical.tripleTongue) {
-                // TODO
-            }
-            if (technical.toe) {
-                // TODO
-            }
-            if (technical.hole) {
-                // TODO
-            }
-            if (technical.hammerOn) {
-                // TODO
-            }
-            if (technical.upBow) {
-                let t = technical.upBow;
-                children.push($Glyph({
-                    fill: t.color || "black",
-                    glyphName: `stringsUpBow${t.placement === AboveBelow.Below ? "Reversed" : ""}`,
-                    key: "techUpBow",
-                    x: originX + t.defaultX + (t.relativeX || 0),
-                    y: (this.context.originY || 0) - t.defaultY - (t.relativeY || 0),
-                }));
-            }
-            if (technical.downBow) {
-                let t = technical.downBow;
-                children.push($Glyph({
-                    fill: t.color || "black",
-                    glyphName: `stringsDownBow${t.placement === AboveBelow.Below ? "Reversed" : ""}`,
-                    key: "techDownBow",
-                    x: originX + t.defaultX + (t.relativeX || 0),
-                    y: (this.context.originY || 0) - t.defaultY - (t.relativeY || 0),
-                }));
-            }
-            if (technical.fret) {
-                // TODO
-            }
-            if (technical.tap) {
-                // TODO
-            }
-            if (technical.pullOff) {
-                // TODO
-            }
-            if (technical.handbell) {
-                // TODO
-            }
-            if (technical.bend) {
-                // TODO
-            }
-            if (technical.thumbPosition) {
-                // TODO
-            }
-            if (technical.stopped) {
-                let t = technical.stopped;
-                children.push($Glyph({
-                    fill: t.color || "black",
-                    glyphName: "pluckedLeftHandPizzicato",
-                    key: "techStopped",
-                    x: originX + t.defaultX + (t.relativeX || 0),
-                    y: (this.context.originY || 0) - t.defaultY - (t.relativeY || 0),
-                }));
-            }
-            if (technical.pluck) {
-                // TODO
-            }
-            if (technical.doubleTongue) {
-                // TODO
-            }
-            if (technical.string) {
-                // TODO
-            }
-            if (technical.openString) {
-                let t = technical.openString;
-                children.push($Glyph({
-                    fill: t.color || "black",
-                    glyphName: "stringsHarmonic",
-                    key: "techOpenString",
-                    x: originX + t.defaultX + (t.relativeX || 0),
-                    y: (this.context.originY || 0) - t.defaultY - (t.relativeY || 0),
-                }));
-            }
-            if (technical.fingernails) {
-                // TODO
-            }
-            if (technical.arrow) {
-                // TODO
-            }
-            if (technical.harmonic) {
-                // TODO
-            }
-            if (technical.heel) {
-                // TODO
-            }
-            if (technical.otherTechnical) {
-                // TODO
-            }
-            if (technical.snapPizzicato) {
-                let t = technical.snapPizzicato;
-                children.push($Glyph({
-                    fill: t.color || "black",
-                    glyphName: `pluckedSnapPizzicato${t.placement === AboveBelow.Below ? "Below" : "Above"}`,
-                    key: "techSnapPizzicato",
-                    x: originX + t.defaultX + (t.relativeX || 0),
-                    y: (this.context.originY || 0) - t.defaultY - (t.relativeY || 0),
-                }));
-            }
-            if (technical.fingering) {
-                // TODO
-            }
+        forEach(model.technicals, (technical, idx) => {
+            const t = technical.arrow ||
+                technical.bend ||
+                technical.doubleTongue ||
+                technical.downBow ||
+                technical.fingering ||
+                technical.fingernails ||
+                technical.fret ||
+                technical.hammerOn ||
+                technical.handbell ||
+                technical.harmonic ||
+                technical.heel ||
+                technical.hole ||
+                technical.openString ||
+                technical.pluck ||
+                technical.pullOff ||
+                technical.snapPizzicato ||
+                technical.stopped ||
+                technical.string ||
+                technical.tap ||
+                technical.thumbPosition ||
+                technical.toe ||
+                technical.tripleTongue ||
+                technical.upBow;
+
+            children.push($Glyph({
+                fill: t.color || "black",
+                glyphName: technicalGlyph(
+                    technical, t.placement === AboveBelow.Below ? "Below" : "Above"),
+                key: `tech${idx}`,
+                x: originX + t.defaultX + (t.relativeX || 0),
+                y: (this.context.originY || 0) - t.defaultY - (t.relativeY || 0),
+            }));
         });
 
         forEach(model.tieds, tied => {

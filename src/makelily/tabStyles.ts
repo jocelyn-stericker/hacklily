@@ -22,6 +22,19 @@ import { StyleSheet } from 'aphrodite';
 
 // tslint:disable-next-line typedef
 const tabStyles = StyleSheet.create({
+  help: {
+    left: 15,
+    opacity: 0,
+    pointerEvents: 'none',
+    position: 'absolute',
+    top: 22,
+    transition: 'opacity 0.5s ease-in-out',
+    zIndex: 1,
+  },
+  helpVisible: {
+    opacity: 1,
+    pointerEvents: 'auto',
+  },
   insert: {
     ':hover': {
       backgroundColor: 'rgb(26, 68, 100)',
@@ -33,15 +46,23 @@ const tabStyles = StyleSheet.create({
     boxShadow: 'transparent 0px 0px 4px 4px',
     color: 'white',
     cursor: 'pointer',
+    fontSize: 12,
     height: 30,
     width: '100%',
   },
   lyPreview: {
     backgroundColor: '#f6f7f7',
     borderRadius: '4px 4px 0 0',
+    height: 80,
     marginBottom: 0,
-    minHeight: 80,
+    overflow: 'scroll',
     padding: 15,
+  },
+  outputOptions: {
+    fontSize: 12,
+    position: 'absolute',
+    right: 10,
+    top: 18,
   },
   paletteSml: {
     fontSize: 22,
@@ -57,6 +78,7 @@ const tabStyles = StyleSheet.create({
       marginTop: 0,
     },
     marginTop: 20,
+    position: 'relative',
   },
   selectableDescription: {
     backgroundColor: 'rgb(0, 42, 74)',
@@ -100,7 +122,8 @@ const tabStyles = StyleSheet.create({
     display: 'flex',
     flexDirection: 'column',
     height: '100%',
-    overflow: 'scroll',
+    overflowX: 'hidden',
+    overflowY: 'scroll',
     padding: '25px 15px 15px 15px',
   },
   toolHeading: {

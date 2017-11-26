@@ -174,7 +174,7 @@ function beam(options: ILayoutOptions, bounds: ILineBounds,
                                 console.warn(
                                     "Beam at level %s in voice %s should have " +
                                     "been closed before being opened again.", idx, voice);
-                                terminateBeam$(voice, idx, activeBeams, false);
+                                terminateBeam(voice, idx, activeBeams, false);
                             }
                             activeBeams[voice][idx] = {
                                 number: idx,
@@ -252,7 +252,7 @@ function beam(options: ILayoutOptions, bounds: ILineBounds,
                     }
                 }).value();
                 forEach(toTerminate, t =>
-                    terminateBeam$(t.voice, t.idx, t.beamSet, t.isUnbeamedTuplet));
+                    terminateBeam(t.voice, t.idx, t.beamSet, t.isUnbeamedTuplet));
             });
         });
         forEach(activeBeams, (beams, voice) => {
@@ -263,22 +263,22 @@ function beam(options: ILayoutOptions, bounds: ILineBounds,
                 console.warn(
                     "Beam in voice %s, level %s was not closed before the " +
                     "end of the measure.", voice, idx);
-                terminateBeam$(parseInt(voice, 10), idx, activeBeams, false);
+                terminateBeam(parseInt(voice, 10), idx, activeBeams, false);
             });
         });
     });
     return measures;
 }
 
-function terminateBeam$(voice: number, idx: number, beamSet: BeamSet, isUnbeamedTuplet: boolean) {
+function terminateBeam(voice: number, idx: number, beamSet: BeamSet, isUnbeamedTuplet: boolean) {
     if (isUnbeamedTuplet || idx === 1) {
-        layoutBeam$(voice, idx, beamSet, isUnbeamedTuplet);
+        layoutBeam(voice, idx, beamSet, isUnbeamedTuplet);
     }
 
     delete beamSet[voice][idx];
 }
 
-function layoutBeam$(voice: number, idx: number, beamSet: BeamSet, isUnbeamedTuplet: boolean) {
+function layoutBeam(voice: number, idx: number, beamSet: BeamSet, isUnbeamedTuplet: boolean) {
     let beam = beamSet[voice][idx];
     let chords: IDetachedChordModel[] = map(beam.elements, eLayout => <any> eLayout.model);
     let firstChord = first(chords);

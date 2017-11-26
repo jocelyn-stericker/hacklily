@@ -33,6 +33,8 @@ interface ButtonGroupProps {
   notation: Notations;
   note: Count;
   timeModification: TimeModification;
+  newMeasure(): void;
+  redo(): void;
   setAccidental(accidental: MxmlAccidental): void;
   setDirection(direction: Direction): void;
   setDots(dots: number): void;
@@ -40,6 +42,7 @@ interface ButtonGroupProps {
   setNotation(notation: Notations): void;
   setNote(count: Count): void;
   setTimeModification(timeModification: TimeModification): void;
+  undo(): void;
 }
 
 const dynamics: Direction[] = [
@@ -61,13 +64,6 @@ const dynamics: Direction[] = [
     directionTypes: [{
       dynamics: {
         p: true,
-      },
-    }],
-  },
-  {
-    directionTypes: [{
-      dynamics: {
-        ppp: true,
       },
     }],
   },
@@ -130,13 +126,6 @@ const dynamics: Direction[] = [
   {
     directionTypes: [{
       dynamics: {
-        sffz: true,
-      },
-    }],
-  },
-  {
-    directionTypes: [{
-      dynamics: {
         sfp: true,
       },
     }],
@@ -144,21 +133,7 @@ const dynamics: Direction[] = [
   {
     directionTypes: [{
       dynamics: {
-        sfpp: true,
-      },
-    }],
-  },
-  {
-    directionTypes: [{
-      dynamics: {
         rfz: true,
-      },
-    }],
-  },
-  {
-    directionTypes: [{
-      dynamics: {
-        rf: true,
       },
     }],
   },
@@ -217,6 +192,14 @@ const articulations: Notations[] = [
   {
     articulations: [
       {
+        staccato: {},
+        tenuto: {},
+      },
+    ],
+  },
+  {
+    articulations: [
+      {
         accent: {},
         staccato: {},
       },
@@ -232,7 +215,13 @@ const articulations: Notations[] = [
   {
     technicals: [
       {
-        openString: {},
+        harmonic: {
+          artificial: false,
+          basePitch: null,
+          natural: true,
+          soundingPitch: null,
+          touchingPitch: null,
+        },
       },
     ],
   },
@@ -270,50 +259,51 @@ const articulations: Notations[] = [
  * Renders a list of tools that can be selected in the note editor.
  */
 export default class NotePalette extends React.Component<ButtonGroupProps, {}> {
-  // tslint:disable-next-line cyclomatic-complexity max-func-body-length
   render(): JSX.Element {
-    const { editType } = this.props;
-
-    const getTypeClass: (forType: string) => string = (forType: string): string =>
-        css(styles.paletteSml,
-            editType === forType ? styles.paletteBtnOn : styles.paletteBtnOff);
+    const cls: string = css(styles.paletteSml, styles.paletteBtnOff, styles.paletteTxt);
 
     return (
       <div className={css(styles.controlWidget)}>
-        <ul className={css(styles.controls)}>
-          {/* tslint:disable-next-line react-a11y-anchors */}
-          <a
-            href="#"
-            onClick={this.setTypeN}
-            className={getTypeClass('N')}
-            role="button"
-          >
-            <span className="mn_">{'\ud834\udd5f'}</span>
-          </a>
-          {/* tslint:disable-next-line react-a11y-anchors */}
-          <a
-            href="#"
-            onClick={this.setTypeR}
-            className={getTypeClass('R')}
-            role="button"
-          >
-            <span className="mn_">{'\ue4e6'}</span>
-          </a>
-          {/* tslint:disable-next-line react-a11y-anchors */}
-          <a
-            href="#"
-            onClick={this.setTypeP}
-            className={getTypeClass('P')}
-            role="button"
-          >
-            <span className="mn_">{'\ue52f'}</span>
-          </a>
-        </ul>
-        {this.renderDynamics()}
-        {this.renderArticulations()}
-        {this.renderDuration()}
-        {this.renderModifiers()}
-        {this.renderAccidentals()}
+        {this.renderSecondRow()}
+        <div className={css(styles.controlRow)}>
+          {this.renderDuration()}
+          {this.renderModifiers()}
+          {this.renderAccidentals()}
+          <div className={css(styles.spring)} />
+          <ul className={css(styles.controls)}>
+            <div className={css(styles.controlSeperator)} />
+            {/* tslint:disable-next-line react-a11y-anchors */}
+            <a
+              href="#"
+              onClick={this.props.undo}
+              className={cls}
+              role="button"
+            >
+              <i className="fa-undo fa" />
+            </a>
+            <div className={css(styles.controlSeperator)} />
+            {/* tslint:disable-next-line react-a11y-anchors */}
+            <a
+              href="#"
+              onClick={this.props.redo}
+              className={cls}
+              role="button"
+            >
+              <i className="fa-undo fa-flip-horizontal fa" />
+            </a>
+            <div className={css(styles.controlSeperator)} />
+            {/* tslint:disable-next-line react-a11y-anchors */}
+            <a
+              href="#"
+              onClick={this.props.newMeasure}
+              className={cls}
+              role="button"
+            >
+              <i className="fa-plus fa" />{' '}
+              Add Bar
+            </a>
+          </ul>
+        </div>
       </div>
     );
   }
@@ -324,16 +314,17 @@ export default class NotePalette extends React.Component<ButtonGroupProps, {}> {
   private renderAccidentals(): JSX.Element {
     const { accidental, editType } = this.props;
 
-    if (editType !== 'N') {
-      return null;
-    }
-
     function classNameForAcc(otherAccidental: MxmlAccidental): string {
       return css(
         styles.paletteSml,
-        accidental === otherAccidental ? styles.paletteBtnOn : styles.paletteBtnOff,
+        accidental === otherAccidental && editType === 'N' ?
+          styles.paletteBtnOn : styles.paletteBtnOff,
       );
     }
+
+    const getTypeClass: (forType: string) => string = (forType: string): string =>
+        css(styles.paletteSml,
+            editType === forType ? styles.paletteBtnOn : styles.paletteBtnOff);
 
     return (
       <span className={css(styles.subsection)}>
@@ -346,7 +337,9 @@ export default class NotePalette extends React.Component<ButtonGroupProps, {}> {
             className={classNameForAcc(MxmlAccidental.Natural)}
             role="button"
           >
-            <span className="mn_">{'\ue261'}</span>
+            <span className={css(styles.bravura)}>
+              <span className="mn_">{'\ue261'}</span>
+            </span>
           </a>
           {/* tslint:disable-next-line react-a11y-anchors */}
           <a
@@ -355,7 +348,9 @@ export default class NotePalette extends React.Component<ButtonGroupProps, {}> {
             className={classNameForAcc(MxmlAccidental.Flat)}
             role="button"
           >
-            <span className="mn_">{'\ue260'}</span>
+            <span className={css(styles.bravura)}>
+              <span className="mn_">{'\ue260'}</span>
+            </span>
           </a>
           {/* tslint:disable-next-line react-a11y-anchors */}
           <a
@@ -364,8 +359,33 @@ export default class NotePalette extends React.Component<ButtonGroupProps, {}> {
             className={classNameForAcc(MxmlAccidental.Sharp)}
             role="button"
           >
-            <span className="mn_">{'\ue262'}</span>
+            <span className={css(styles.bravura)}>
+              <span className="mn_">{'\ue262'}</span>
+            </span>
           </a>
+          {/* tslint:disable-next-line react-a11y-anchors */}
+          <a
+            href="#"
+            onClick={this.props.editType === 'R' ? this.setTypeN : this.setTypeR}
+            className={getTypeClass('R')}
+            role="button"
+          >
+            <span className={css(styles.bravura)}>
+              <span className="mn_">{'\ue4e6'}</span>
+            </span>
+          </a>
+            {/* tslint:disable-next-line react-a11y-anchors */}
+            <a
+              href="#"
+              onClick={this.props.editType === 'P' ? this.setTypeN : this.setTypeP}
+              className={getTypeClass('P')}
+              role="button"
+            >
+              <span className={css(styles.bravura)}>
+                <span className="mn_">{'\ue52f'}</span>
+              </span>
+            </a>
+          <div className={css(styles.controlSeperator)} />
         </ul>
       </span>
     );
@@ -415,19 +435,15 @@ export default class NotePalette extends React.Component<ButtonGroupProps, {}> {
   }
 
   private renderDuration(): JSX.Element {
-    const { editType, note } = this.props;
+    const { note } = this.props;
 
-    if (editType !== 'N' && editType !== 'R') {
-      return null;
-    }
-
-    function classNameForCount(cnt: Count): string {
+    const classNameForCount: (cnt: Count) => string = (cnt: Count): string => {
       return css(
-        note === cnt ?
+        note === cnt && (this.props.editType === 'N' || this.props.editType === 'R') ?
           styles.paletteBtnOn :
           styles.paletteBtnOff,
       );
-    }
+    };
 
     return (
       <span className={css(styles.subsection)}>
@@ -440,7 +456,9 @@ export default class NotePalette extends React.Component<ButtonGroupProps, {}> {
             className={classNameForCount(Count._32nd)}
             role="button"
           >
-             <span className="mn_">{'\ud834\udd62'}</span>
+            <span className={css(styles.bravura)}>
+              <span className="mn_">{'\ud834\udd62'}</span>
+            </span>
           </a>
           {/* tslint:disable-next-line react-a11y-anchors */}
           <a
@@ -449,7 +467,9 @@ export default class NotePalette extends React.Component<ButtonGroupProps, {}> {
             className={classNameForCount(Count._16th)}
             role="button"
           >
-            <span className="mn_">{'\ud834\udd61'}</span>
+            <span className={css(styles.bravura)}>
+              <span className="mn_">{'\ud834\udd61'}</span>
+            </span>
           </a>
           {/* tslint:disable-next-line react-a11y-anchors */}
           <a
@@ -458,7 +478,9 @@ export default class NotePalette extends React.Component<ButtonGroupProps, {}> {
             className={classNameForCount(Count.Eighth)}
             role="button"
           >
-            <span className="mn_">{'\ud834\udd60'}</span>
+            <span className={css(styles.bravura)}>
+              <span className="mn_">{'\ud834\udd60'}</span>
+            </span>
           </a>
         </ul>
         <ul className={css(styles.controls)}>
@@ -469,7 +491,9 @@ export default class NotePalette extends React.Component<ButtonGroupProps, {}> {
             className={classNameForCount(Count.Quarter)}
             role="button"
           >
-            <span className="mn_">{'\ud834\udd5f'}</span>
+            <span className={css(styles.bravura)}>
+              <span className="mn_">{'\ud834\udd5f'}</span>
+            </span>
           </a>
           {/* tslint:disable-next-line react-a11y-anchors */}
           <a
@@ -478,7 +502,9 @@ export default class NotePalette extends React.Component<ButtonGroupProps, {}> {
             className={classNameForCount(Count.Half)}
             role="button"
           >
-            <span className="mn_">{'\ud834\udd5e'}</span>
+            <span className={css(styles.bravura)}>
+              <span className="mn_">{'\ud834\udd5e'}</span>
+            </span>
           </a>
           {/* tslint:disable-next-line react-a11y-anchors */}
           <a
@@ -487,7 +513,9 @@ export default class NotePalette extends React.Component<ButtonGroupProps, {}> {
             className={classNameForCount(Count.Whole)}
             role="button"
           >
-            <span className="mn_">{'\ue0a2'}</span>
+            <span className={css(styles.bravura)}>
+              <span className="mn_">{'\ue0a2'}</span>
+            </span>
           </a>
         </ul>
       </span>
@@ -542,14 +570,10 @@ export default class NotePalette extends React.Component<ButtonGroupProps, {}> {
   }
 
   private renderModifiers(): JSX.Element {
-    const { dots, editType, timeModification } = this.props;
+    const { dots, timeModification } = this.props;
 
     const timeModificationTupletClassName: string = css (
       timeModification ? styles.paletteBtnOn : styles.paletteBtnOff);
-
-    if (editType !== 'N' && editType !== 'R') {
-      return null;
-    }
 
     const dotEl: JSX.Element[] = times(dots || 1, (idx: number): JSX.Element => {
       return (
@@ -573,9 +597,11 @@ export default class NotePalette extends React.Component<ButtonGroupProps, {}> {
             className={dots ? css(styles.paletteBtnOn) : css(styles.paletteBtnOff)}
             role="button"
           >
-            <span className="mn_">
-              {'\ud834\udd5f'}
-              {dotEl}
+            <span className={css(styles.bravura)}>
+              <span className="mn_">
+                {'\ud834\udd5f'}
+                {dotEl}
+              </span>
             </span>
           </a>
           {/* tslint:disable-next-line react-a11y-anchors */}
@@ -585,11 +611,30 @@ export default class NotePalette extends React.Component<ButtonGroupProps, {}> {
             className={timeModificationTupletClassName}
             role="button"
           >
-            <span className="mn_">{'\ue883'}</span>
+            <span className={css(styles.bravura)}>
+              <span className="mn_">{'\ue883'}</span>
+            </span>
           </a>
         </ul>
       </span>
     );
+  }
+
+  private renderSecondRow(): JSX.Element {
+    if (this.props.editType === 'P') {
+      return (
+        <span>
+          <div className={css(styles.controlRow)}>
+            {this.renderDynamics()}
+          </div>
+          <div className={css(styles.controlRow)}>
+            {this.renderArticulations()}
+          </div>
+        </span>
+      );
+    }
+
+    return null;
   }
 
   private setAccidentalF: () => void = () => this.props.setAccidental(MxmlAccidental.Flat);
@@ -614,6 +659,10 @@ export default class NotePalette extends React.Component<ButtonGroupProps, {}> {
 
 // tslint:disable-next-line typedef
 const styles = StyleSheet.create({
+  bravura: {
+    fontSize: 22,
+  },
+
   controlHeading: {
     display: 'block',
     fontSize: 10,
@@ -625,7 +674,18 @@ const styles = StyleSheet.create({
 
   controlWidget: {
     backgroundColor: 'white',
-    boxShadow: '1px 1px 3px rgba(0, 0, 0, 0.5)',
+    borderBottom: '1px solid #bebebe',
+    borderRight: '1px solid #bebebe',
+    bottom: 165,
+    display: 'flex',
+    flexDirection: 'column',
+    left: 15,
+    position: 'absolute',
+    right: 15,
+  },
+
+  controlRow: {
+    borderTop: '1px solid #bebebe',
     display: 'flex',
     flexDirection: 'row',
     minHeight: 40,
@@ -653,8 +713,12 @@ const styles = StyleSheet.create({
     fontSize: 22,
   },
 
+  paletteTxt: {
+    lineHeight: '42px',
+  },
+
   paletteBtnOn: {
-    background: 'rgb(83, 199, 242)',
+    background: 'rgb(0, 42, 74)',
     borderBottom: 'none',
     borderBottomWidth: 0,
     borderRadius: 0,
@@ -662,35 +726,44 @@ const styles = StyleSheet.create({
     color: 'white',
     cursor: 'pointer',
     display: 'block',
-    fontSize: 22,
+    fontSize: 14,
     height: 40,
     lineHeight: '36px',
+    minWidth: 20,
     overflow: 'hidden',
+    paddingLeft: 10,
+    paddingRight: 10,
     textAlign: 'center',
     textDecoration: 'none',
-    width: 40,
   },
 
   paletteBtnOff: {
     [':hover']: {
-      background: 'rgb(248, 248, 248)',
+      background: 'rgb(26, 68, 100)',
+      color: 'white',
     },
 
-    background: 'rgb(238, 238, 238)',
+    background: '#f6f7f7',
     borderBottom: 'none',
     borderBottomWidth: 0,
     borderRadius: 0,
     borderTopWidth: 0,
-    color: 'rgb(97, 97, 97)',
+    color: 'rgb(0, 0, 238)',
     cursor: 'pointer',
     display: 'block',
-    fontSize: 22,
+    fontSize: 14,
     height: 40,
     lineHeight: '36px',
+    minWidth: 20,
     overflow: 'hidden',
+    paddingLeft: 10,
+    paddingRight: 10,
     textAlign: 'center',
     textDecoration: 'none',
-    width: 40,
+  },
+
+  spring: {
+    flex: 1,
   },
 
   subsection: {

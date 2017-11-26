@@ -125,7 +125,7 @@ export function _extractMXMLPartsAndMeasures(input: ScoreTimewise, factory: IFac
     let createModel: typeof factory.create = factory.create.bind(factory);
 
     // TODO/STOPSHIP - sync division count in each measure
-    let divisions = 768; // XXX: lilypond-regression 41g.xml does not specify divisions
+    let divisions = 768; // XXX: LilyPond-regression 41g.xml does not specify divisions
     let gStaves = 0;
     let chordBeingBuilt: IChord = null;
     let lastAttribs: Attributes = null;
@@ -146,13 +146,13 @@ export function _extractMXMLPartsAndMeasures(input: ScoreTimewise, factory: IFac
         };
 
         if (Object.keys(inMeasure.parts).length === 1 && "" in inMeasure.parts) {
-            // See lilypond-regression >> 41g.
+            // See LilyPond-regression >> 41g.
             inMeasure.parts[parts[0]] = inMeasure.parts[""];
             delete inMeasure.parts[""];
         }
         let linkedParts = map(inMeasure.parts, (val, key) => {
             if (!some(parts, part => part === key)) {
-                // See lilypond-regression >> 41h.
+                // See LilyPond-regression >> 41h.
                 return null;
             }
             let output: IMeasurePart = {

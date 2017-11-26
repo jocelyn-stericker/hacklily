@@ -26,6 +26,7 @@ import {normalizeDivisionsInPlace} from "./engine_divisions";
 
 import {IFactory} from "./private_factory";
 import {cloneObject} from "./private_util";
+import {mutate} from "./private_mutate";
 
 import attributesMutator from "./implAttributes_attributesMutator";
 import barlineMutator from "./implBarline_barlineMutator";
@@ -130,7 +131,7 @@ export default function applyOp(preview: boolean, measures: IMeasure[], factory:
         if (factory.modelHasType(element, Type.Chord)) {
             chordMutator(element as any, localOp);
         } else {
-            throw new Error("Invalid operation path: No reducer for " + element);
+            throw new Error("Invalid operation path: No voice reducer for " + element);
         }
     } else if (path[3] === "staves") {
         let staff = part.staves[parseInt(String(path[4]), 10)];
@@ -165,8 +166,10 @@ export default function applyOp(preview: boolean, measures: IMeasure[], factory:
             attributesMutator(preview, element as any, localOp);
         } else if (factory.modelHasType(element, Type.Print)) {
             printMutator(preview, element as any, localOp);
+        } else if (factory.modelHasType(element, Type.Spacer)) {
+            mutate(element as any, localOp);
         } else {
-            throw new Error("Invalid operation path: No reducer for " + element);
+            throw new Error("Invalid operation path: No staff reducer for " + element);
         }
     }
 }

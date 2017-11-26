@@ -25,13 +25,29 @@ import tabStyles from './tabStyles';
 import { ToolProps } from './tool';
 
 /**
- * Placeholder for when a tool with an invalid name is requested.
+ * Placeholder for when an error was caught.
  */
-export default class ToolNotFound extends React.Component<ToolProps, {}> {
+export default class ToolError extends React.Component<ToolProps, {}> {
   render(): JSX.Element {
     return (
       <span className={css(tabStyles.tool)}>
-        Tool not found.
+        <div className={css(tabStyles.section)}>
+          <h3 className={css(tabStyles.toolHeading)}>It's not your fault*!</h3>
+        </div>
+        <div className={css(tabStyles.section)}>
+          The tool you were using crashed, so it has been closed.{' '}
+          Please{' '}
+          <a
+            href="https://github.com/hacklily/makelily/issues/new"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            file an issue
+          </a> so I can try fixing it.
+        </div>
+        <div className={css(tabStyles.section)}>
+          *if you are Joshua, it is probably your fault.
+        </div>
       </span>
     );
   }

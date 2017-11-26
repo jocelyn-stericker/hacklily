@@ -87,7 +87,7 @@ export function voiceToRestSpec(segment: ModelMetreMutationSpec[], attributes: I
             divsToSuppress = divCount - oldDivCount;
         }
 
-        if (model.rest && divCount) {
+        if (model.rest && !model.forced && divCount) {
             return {
                 song: restSpec.song + "r" + times(divCount - 1, () => "_").join("") + restsAtEnd,
                 models,
@@ -116,7 +116,6 @@ export function voiceToRestSpec(segment: ModelMetreMutationSpec[], attributes: I
 }
 
 function _cleanupRests(pattern: string, time: Time) {
-    // Now, call "checkRests" and apply the
     const ts = getTSString(time);
     const next = () => checkRests(ts, pattern.length, pattern, {dotsAllowed: true});
     let operationsRemaining = 15;
@@ -147,11 +146,20 @@ function _cleanupRests(pattern: string, time: Time) {
     return pattern;
 }
 
+const DEBUG_simplifyRests = false;
+
 export function simplifyRests(
         segment: (ModelMetreMutationSpec)[],
         factory: IFactory | Document,
         attributes: IAttributesSnapshot): IAny[] {
+
     const originalSpec = voiceToRestSpec(segment, attributes, factory);
+    if (DEBUG_simplifyRests) {
+        console.log("=== sr ===");
+        console.log(JSON.stringify(segment, null, 2));
+        console.log(originalSpec.modelsToKill);
+        console.log(originalSpec.models);
+    }
 
     // Correct the rests.
     const totalDivisions = barDivisions(attributes);
@@ -163,24 +171,28 @@ export function simplifyRests(
     // We now need to make patches to turn originalSpec.song into cleanRestPattern.
     let patches: IAny[] = [];
     let currIdx = -1;
+    let currIdxOffset = 0;
     function killModel(model: ModelMetreMutationSpec) {
+        currIdx = model.idx + currIdxOffset;
         if (!model.newDivisions) {
-            ++currIdx;
+            // We want to insert new models AFTER this one, but we're not actually removing it,
+            // since this function only removes notes/rests
+            currIdx = model.idx + currIdxOffset + 1;
         } else {
             invariant(segment.indexOf(model) > -1, "Model must be present in segment");
             patches.push({
                 ld: model.toSpec(),
-                p: [currIdx + 1],
+                p: [currIdx],
             } as any);
-            --currIdx;
+            currIdxOffset -= 1;
         }
     }
     for (let i = 0; i < cleanRestPattern.length; ++i) {
         const originalModel = originalSpec.models[i];
-        forEach(originalSpec.modelsToKill[i], killModel);
-        if (originalModel && originalModel !== originalSpec.models[i - 1]) {
-            ++currIdx;
+        if (originalModel && originalModel !== "killed") {
+            currIdx = originalModel.idx + currIdxOffset;
         }
+        forEach(originalSpec.modelsToKill[i], killModel);
 
         if (cleanRestPattern[i] === "r") {
             let cleanRestEnd = i + 1;
@@ -198,13 +210,14 @@ export function simplifyRests(
                 while (originalSpec.song[originalRestEnd] === "_") { ++originalRestEnd; }
 
                 if (!originalModel || originalModel === "killed") {
-                    ++currIdx;
                     newDuration[0].rest = newDuration[0].rest || {};
                     newDuration._class = "Chord";
                     patches.push({
                         li: newDuration,
                         p: [currIdx],
                     });
+                    ++currIdx;
+                    ++currIdxOffset;
                 } else if (cleanRestEnd !== originalRestEnd) {
                     if (!originalModel.rest) {
                         throw new Error("Expected rest");
@@ -228,31 +241,38 @@ export function simplifyRests(
                 }
             } else {
                 // New rest
-                ++currIdx;
                 newDuration[0].rest = newDuration[0].rest || {};
                 newDuration._class = "Chord";
                 patches.push({
                     li: newDuration,
                     p: [currIdx],
                 });
+                ++currIdx;
+                ++currIdxOffset;
             }
         } else if (cleanRestPattern[i] === "_" || cleanRestPattern[i] === ".") {
             if (originalSpec.song[i] === "r") {
                 const model = originalSpec.models[i];
-                if (model === "killed") {
-                    throw new Error("Not reached");
+                if (model) {
+                    if (model === "killed") {
+                        throw new Error("Not reached");
+                    }
+                    invariant(!!model, "Cannot remove undefined model");
+                    invariant(segment.indexOf(model) > -1, "Model must be present in segment");
+                    patches.push({
+                        ld: model.toSpec(),
+                        p: [currIdx],
+                    } as any);
+                    currIdxOffset -= 1;
                 }
-                invariant(!!model, "Cannot remove undefined model");
-                invariant(segment.indexOf(model) > -1, "Model must be present in segment");
-                patches.push({
-                    ld: model.toSpec(),
-                    p: [currIdx],
-                } as any);
-                --currIdx;
             }
         }
     }
     forEach(originalSpec.modelsToKill[originalSpec.models.length], killModel);
+
+    if (DEBUG_simplifyRests) {
+        console.log(JSON.stringify(patches, null, 2));
+    }
 
     return patches;
 }

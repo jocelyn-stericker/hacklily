@@ -33,29 +33,29 @@ import {
 } from 'lodash';
 import {
   AboveBelow,
+  Articulations,
   Attributes,
   BarStyleType,
-  Clef,
   Count,
   Direction,
+  DirectionType,
   Dot,
+  Dynamics,
+  Fermata,
   Key,
   MxmlAccidental,
+  NormalAngledSquare,
   Notations,
   Note,
   Pitch,
-  Print,
-  Time,
+  Technical,
   TimeModification,
 } from 'musicxml-interfaces';
 import {
   IAttributesBuilder,
   IBarlineBuilder,
   IBarStyleBuilder,
-  IClefBuilder,
-  IKeyBuilder,
   INoteBuilder,
-  ITimeBuilder,
   ITypeBuilder,
 } from 'musicxml-interfaces/builders';
 import { IAny } from 'musicxml-interfaces/operations';
@@ -72,7 +72,6 @@ import {
   ISegment,
   ISong,
   MeasureBuilder,
-  PartBuilder,
   Patch,
   Song,
   StaffBuilder,
@@ -80,12 +79,31 @@ import {
   VoiceBuilder,
 } from './satie/src/satie';
 
+import NoteAdditionalHelp from './NoteAdditionalHelp';
 import NotePalette from './NotePalette';
+import { PartBuilder } from './satie/src/engine_createPatch';
 import tabStyles from './tabStyles';
 import { ToolProps } from './tool';
 
 export function toSerializable<T>(obj: T): T {
   return JSON.parse(JSON.stringify(obj)) as any;
+}
+
+function getOctaveDifference(ours: string, theirs: string): number {
+  function mod(a: number, b: number): number {
+    return a - b * Math.floor(a / b);
+  }
+
+  const pitchNames: string = 'CDEFGAB';
+  const ourIndex: number = pitchNames.indexOf(ours.toUpperCase());
+  const theirIndex: number = pitchNames.indexOf(theirs.toUpperCase());
+  const up: boolean = mod(ourIndex - theirIndex, 7) > 3;
+  const octaveChange: boolean = up ? theirIndex < ourIndex : theirIndex > ourIndex;
+  if (octaveChange) {
+    return up ? 1 : -1;
+  }
+
+  return 0;
 }
 
 const songTemplate: string = `<?xml version="1.0" encoding="UTF-8"?>
@@ -124,7 +142,7 @@ const songTemplate: string = `<?xml version="1.0" encoding="UTF-8"?>
           <right-margin>0</right-margin>
         </system-margins>
         <system-distance>131</system-distance>
-        <top-system-distance>0</top-system-distance>
+        <top-system-distance>40</top-system-distance>
       </system-layout>
       </print>
       <attributes>
@@ -149,122 +167,27 @@ const songTemplate: string = `<?xml version="1.0" encoding="UTF-8"?>
         <type>whole</type>
       </note>
     </measure>
-    <measure number="2">
-      <note>
-        <rest measure="yes" />
-        <duration>4</duration>
-        <voice>1</voice>
-        <type>whole</type>
-      </note>
-    </measure>
-    <measure number="3">
-      <note>
-        <rest measure="yes" />
-        <duration>4</duration>
-        <voice>1</voice>
-        <type>whole</type>
-      </note>
-    </measure>
   </part>
 </score-partwise>`;
 
-export type ContextualPopupType = (
-  'new-bar' |
-  'edit-clef-button' |
-  'clef-editor' |
-  'edit-time-button' |
-  'time-editor' |
-  'edit-key-button' |
-  'key-editor'
-);
-
-interface ContextualPopup {
-  popupType: ContextualPopupType;
-  x: number;
-  y: number;
-}
-
-interface ContextualPopupNewBar extends ContextualPopup {
-  afterMeasure: number;
-  popupType: 'new-bar';
-}
-
-function isNewBar(p: ContextualPopup): p is ContextualPopupNewBar {
-  return p && p.popupType === 'new-bar';
-}
-
-interface ContextualPopupEditClefButton extends ContextualPopup {
-  attributesPath: (number | string)[];
-  popupType: 'edit-clef-button';
-}
-
-// function isEditClefButton(p: IContextualPopup): p is IContextualPopupEditClefButton {
-//   return p && p.type === "edit-clef-button";
-// }
-
-// interface IContextualPopupClefEditor extends IContextualPopup {
-//   type: "clef-editor";
-//   attributesPath: (number | string)[];
-// }
-
-// function isClefEditor(p: IContextualPopup): p is IContextualPopupClefEditor {
-//   return p && p.type === "clef-editor";
-// }
-
-interface ContextualPopupEditKeyButton extends ContextualPopup {
-  attributesPath: (number | string)[];
-  clef: Clef;
-  popupType: 'edit-key-button';
-}
-
-// function isEditKeyButton(p: IContextualPopup): p is IContextualPopupEditKeyButton {
-//   return p && p.type === "edit-key-button";
-// }
-
-// interface IContextualPopupKeyEditor extends IContextualPopup {
-//   type: "key-editor";
-//   attributesPath: (number | string)[];
-//   clef: Clef;
-// }
-
-// function isKeyEditor(p: IContextualPopup): p is IContextualPopupKeyEditor {
-//   return p && p.type === "key-editor";
-// }
-
-interface ContextualPopupEditTimeButton extends ContextualPopup {
-  attributesPath: (number | string)[];
-  popupType: 'edit-time-button';
-}
-
-function isEditTimeButton(p: ContextualPopup): p is ContextualPopupEditTimeButton {
-  return p && p.popupType === 'edit-time-button';
-}
-
-interface ContextualPopupTimeEditor extends ContextualPopup {
-  attributesPath: (number | string)[];
-  popupType: 'time-editor';
-}
-
-// function isTimeEditor(p: IContextualPopup): p is IContextualPopupTimeEditor {
-//   return p && p.type === "time-editor";
-// }
-
 interface State {
-  accidental?: MxmlAccidental;
-  canonicalOperations?: any;
-  contextualPopup?: ContextualPopup;
-  direction?: Direction;
-  dots?: number;
-  editType?: 'N' | 'R' | 'P';
-  lastPath?: (number | string)[];
-  lastPitch?: Pitch;
-  notation?: Notations;
-  note?: Count;
-  operations?: any;
-  redoStack?: IAny[][];
-  src?: string;
-  timeModification?: TimeModification;
-  undoStack?: IAny[][];
+  accidental: MxmlAccidental;
+  canonicalOperations: any;
+  direction: Direction;
+  dots: number;
+  editType: 'N' | 'R' | 'P';
+  lastPath: (number | string)[];
+  lastPitch: Pitch;
+  notation: Notations;
+  note: Count;
+  operations: any;
+  redoStack: IAny[][];
+  relativeMode: boolean;
+  showAdditionalHelp: 'keyboard' | 'midi' | 'mouse'| 'relative' | 'whyNotEdit' | null;
+  showHelp: boolean;
+  src: string;
+  timeModification: TimeModification;
+  undoStack: IAny[][];
 }
 
 /**
@@ -274,15 +197,19 @@ interface State {
 export default class ToolNoteEdit extends React.Component<ToolProps, State> {
   state: State = {
     accidental: null,
-    contextualPopup: null,
+    canonicalOperations: null,
     direction: null,
     dots: 0,
     editType: 'N',
     lastPath: null,
     lastPitch: null,
+    notation: null,
     note: Count.Eighth,
     operations: null,
     redoStack: [],
+    relativeMode: true,
+    showAdditionalHelp: null,
+    showHelp: true,
     src: songTemplate,
     timeModification: null,
     undoStack: [null],
@@ -290,46 +217,14 @@ export default class ToolNoteEdit extends React.Component<ToolProps, State> {
 
   private song: ISong;
 
-  render(): JSX.Element {
-    let newBar: JSX.Element | null = null;
-    if (isNewBar(this.state.contextualPopup)) {
-      const newbarStyle: {} = {
-        left: this.state.contextualPopup.x - 10,
-        top: this.state.contextualPopup.y,
-      };
-      newBar = (
-        <span
-          className={css(styles.tooltip, styles.tooltipRight, styles.newBar)}
-          data-tooltip="New bar"
-          style={newbarStyle}
-        >
-          {/* tslint:disable-next-line react-a11y-anchors */}
-          <a href="#" onClick={this.newMeasure} role="button">
-            <i className="fa-plus-circle fa" />
-          </a>
-        </span>
-      );
-    }
+  componentDidMount(): void {
+    (ReactDOM.findDOMNode(this) as any).focus();
+  }
 
-    let editTimeButton: JSX.Element | null = null;
-    if (isEditTimeButton(this.state.contextualPopup)) {
-      const editTimeButtonStyle: {} = {
-        left: this.state.contextualPopup.x - 10,
-        top: this.state.contextualPopup.y,
-      };
-      editTimeButton = (
-        <span
-          /* className={cx(IndexCSS.tooltip, IndexCSS.tooltipRight, STYLES.newBar)} */
-          data-tooltip="Edit time signature"
-          style={editTimeButtonStyle}
-        >
-          {/* tslint:disable-next-line react-a11y-anchors */}
-          <a href="#" onClick={this.editTimeSignature} role="button">
-            <i className="fa-pencil fa" />
-          </a>
-        </span>
-      );
-    }
+  // tslint:disable-next-line:max-func-body-length
+  render(): JSX.Element {
+    const { editType } = this.state;
+    const tallPalette: boolean = editType === 'P';
 
     let song: JSX.Element | null = null;
     if (this.state.src) {
@@ -354,16 +249,78 @@ export default class ToolNoteEdit extends React.Component<ToolProps, State> {
           onKeyDown={this.handleKeyDown}
           role="textbox"
       >
+        <div className={css(tabStyles.help, this.state.showHelp && tabStyles.helpVisible)}>
+          {/*tslint:disable:react-a11y-anchors*/}
+          <i className="fa-info-circle fa" />{' '}
+          Generate markup
+          <sup>
+            <a
+              href="javascript:void(0)"
+              onClick={this.handleShowHelpWhyNotEdit}
+              role="button"
+            >
+              ?
+            </a>
+          </sup>{' '}
+          for notes in your song using a{' '}
+          <a
+            href="javascript:void(0)"
+            onClick={this.handleShowHelpMouse}
+            role="button"
+          >
+            mouse
+          </a>,{' '}
+          <a
+            href="javascript:void(0);"
+            onClick={this.handleShowHelpKeyboard}
+            role="button"
+          >
+            computer keyboard
+          </a>, or{' '}
+          <a
+            href="javascript:void(0);"
+            onClick={this.handleShowHelpMIDI}
+            role="button"
+          >
+            MIDI keyboard
+          </a>.
+        </div>
+
+        {this.renderAdditionalHelp()}
         {this.renderPalette()}
         <div className={css(tabStyles.section)}>
-          <div className={css(styles.songContainer)}>
-            {newBar}
-            {editTimeButton}
+          <div
+            className={css(styles.songContainer, tallPalette && styles.songContainerSmall)}
+            onScroll={this.handleSongScroll}
+          >
             {song}
           </div>
         </div>
         <div className={css(tabStyles.spacer)} />
         <div className={css(tabStyles.section)}>
+          <span className={css(tabStyles.outputOptions)}>
+            <input
+              type="checkbox"
+              checked={this.state.relativeMode}
+              onChange={(): void => this.setState({ relativeMode: !this.state.relativeMode })}
+              aria-checked={false}
+              id="toolnoteedit-relative"
+            />
+            <label
+              htmlFor="toolnoteedit-relative"
+            >
+              <code>\relative</code> mode
+              <sup>
+                <a
+                  href="javascript:void(0)"
+                  onClick={this.handleShowHelpRelative}
+                  role="button"
+                >
+                  ?
+                </a>
+              </sup>{' '}
+            </label>
+          </span>
           <pre className={css(tabStyles.lyPreview)}>
             {this.generateLy()}
           </pre>
@@ -374,6 +331,7 @@ export default class ToolNoteEdit extends React.Component<ToolProps, State> {
         </div>
       </div>
     );
+    // tslint:enable:react-a11y-anchors
   }
 
   private applyPreviewPatch = (patch: IAny[],
@@ -413,25 +371,259 @@ export default class ToolNoteEdit extends React.Component<ToolProps, State> {
     this.setState({ operations: this.state.canonicalOperations });
   }
 
-  private editTimeSignature: () => void = (): void => {
-    const popup: ContextualPopup = this.state.contextualPopup;
-    if (!isEditTimeButton(popup)) {
-      return;
-    }
-    const contextualPopup: ContextualPopupTimeEditor = {
-      attributesPath: popup.attributesPath,
-      popupType: 'time-editor',
-      x: popup.x,
-      y: popup.y,
-    };
-
-    this.setState({
-      contextualPopup,
-    });
-  }
-
+  // tslint:disable-next-line:max-func-body-length
   private generateLy(): string {
-    return 'TODO';
+    if (!this.song) {
+      // still loading...
+      return '';
+    }
+
+    const { relativeMode } = this.state;
+    let prevPitch: Pitch | null = null;
+    let prevDuration: Count | null = null;
+
+    const doc: Document = this.song.getDocument(this.state.canonicalOperations);
+    let ly: string = '';
+    // tslint:disable-next-line:max-func-body-length
+    doc.measures.forEach((measure: IMeasure) => {
+      const part: IMeasurePart = measure.parts.P1;
+      const voice: ISegment = part.voices[1];
+      const staff: ISegment = part.staves[1];
+      let voiceDiv: number = 0;
+      let staffDiv: number = 0;
+      let staffModelIdx: number = 0;
+      // tslint:disable-next-line:cyclomatic-complexity max-func-body-length
+      voice.forEach((model: IModel): void => {
+        if (doc.modelHasType(model, Type.Chord)) {
+          if (model.length < 1) {
+            console.warn('Expected chords to have at least one note');
+
+            return;
+          }
+          const noteForRythm: Note = model[0];
+
+          if (noteForRythm.rest) {
+            ly += 'r';
+          } else {
+            let pitches: string = '';
+            if (model.length > 1) {
+              pitches += '<';
+            }
+            // tslint:disable-next-line:prefer-for-of
+            for (let i: number = 0; i < model.length; i += 1) {
+              const note: Note = model[i];
+              pitches += note.pitch.step.toLowerCase();
+              if (note.pitch.alter === -1) {
+                pitches += 'es';
+              } else if (note.pitch.alter === 1) {
+                pitches += 'is';
+              }
+              const octaveOffset: number = relativeMode ?
+                (prevPitch ?
+                  getOctaveDifference(note.pitch.step, prevPitch.step) +
+                    note.pitch.octave - prevPitch.octave :
+                  0
+                ) :
+                note.pitch.octave - 3;
+              if (octaveOffset > 0) {
+                for (let j: number = 0; j < octaveOffset; j += 1) {
+                  pitches += '\'';
+                }
+              } else if (octaveOffset < 0) {
+                for (let j: number = 0; j < -octaveOffset; j += 1) {
+                  pitches += ',';
+                }
+              }
+              if (i + 1 < model.length) {
+                pitches += ' ';
+              }
+              prevPitch = note.pitch;
+            }
+            if (model.length > 1) {
+              prevPitch = model[0].pitch;  // the first note in a chord affects future chords
+              pitches += '>';
+            }
+
+            ly += pitches;
+          }
+
+          const duration: Count = noteForRythm.noteType.duration;
+          switch (duration) {
+            case prevDuration:
+              break;
+            case Count.Whole:
+              ly += '1';
+              break;
+            case Count.Half:
+              ly += '2';
+              break;
+            case Count.Quarter:
+              ly += '4';
+              break;
+            case Count.Eighth:
+              ly += '8';
+              break;
+            case Count._16th:
+              ly += '16';
+              break;
+            case Count._32nd:
+              ly += '32';
+              break;
+            case Count._64th:
+              ly += '64';
+              break;
+            case Count._128th:
+              ly += '128';
+              break;
+            case Count._256th:
+              ly += '256';
+              break;
+            case Count._512th:
+              ly += '512';
+              break;
+            case Count._1024th:
+              ly += '1024';
+              break;
+            default:
+              ly += 'unknown';
+              break;
+          }
+
+          prevDuration = duration;
+
+          for (const {} of noteForRythm.dots) {
+            ly += '.';
+          }
+
+          // tslint:disable-next-line:prefer-for-of
+          for (let i: number = 0; i < model.length; i += 1) {
+            if (model[i].notations) {
+              model[i].notations.forEach((notations: Notations): void => {
+                if (notations.fermatas) {
+                  notations.fermatas.forEach((fermata: Fermata): void => {
+                    if (fermata.shape === NormalAngledSquare.Angled) {
+                      ly += '\\shortfermata';
+                    } else if (fermata.shape === NormalAngledSquare.Square) {
+                      ly += '\\longfermata';
+                    } else {
+                      ly += '\\fermata';
+                    }
+                  });
+                }
+                if (notations.articulations) {
+                  notations.articulations.forEach((articulations: Articulations): void => {
+                    if (articulations.accent) {
+                      ly += '->';
+                    }
+                    if (articulations.tenuto && articulations.staccato) {
+                      ly += '-_'; // portato
+                    } else {
+                      if (articulations.tenuto) {
+                        ly += '--';
+                      }
+                      if (articulations.staccato) {
+                        ly += '-.';
+                      }
+                    }
+                    if (articulations.staccatissimo) {
+                      ly += '-!';
+                    }
+                    if (articulations.strongAccent) {
+                      ly += '-^';
+                    }
+                  });
+                }
+                if (notations.technicals) {
+                  notations.technicals.forEach((technicals: Technical): void => {
+                    if (technicals.harmonic) {
+                      ly += '\\open';
+                    }
+                    if (technicals.stopped) {
+                      ly += '-+';
+                    }
+                    if (technicals.snapPizzicato) {
+                      ly += '\\snappizzicato';
+                    }
+                    if (technicals.upBow) {
+                      ly += '\\upbow';
+                    }
+                    if (technicals.downBow) {
+                      ly += '\\downbow';
+                    }
+                  });
+                }
+
+              });
+            }
+          }
+
+          ly += ' ';
+        }
+
+        voiceDiv += model.divCount;
+
+        function next(): void {
+          staffDiv += staff[staffModelIdx].divCount;
+          staffModelIdx += 1;
+        }
+
+        for (; staffDiv < voiceDiv && staffModelIdx < staff.length; next()) {
+          const staffModel: IModel = staff[staffModelIdx];
+          if (doc.modelHasType(staffModel, Type.Direction)) {
+            staffModel.directionTypes.forEach((directionType: DirectionType): void => {
+              if (directionType.dynamics) {
+                const d: Dynamics = directionType.dynamics;
+                if (d.ppp) {
+                  ly += '\\ppp ';
+                }
+                if (d.pp) {
+                  ly += '\\pp ';
+                }
+                if (d.p) {
+                  ly += '\\p ';
+                }
+                if (d.mp) {
+                  ly += '\\mp ';
+                }
+                if (d.mf) {
+                  ly += '\\mf ';
+                }
+                if (d.f) {
+                  ly += '\\f ';
+                }
+                if (d.ff) {
+                  ly += '\\ff ';
+                }
+                if (d.fff) {
+                  ly += '\\fff ';
+                }
+                if (d.fp) {
+                  ly += '\\fp ';
+                }
+                if (d.sf) {
+                  ly += '\\sf ';
+                }
+                if (d.sfz) {
+                  ly += '\\sfz ';
+                }
+                if (d.sfp) {
+                  ly += '\\sfp ';
+                }
+                if (d.rfz) {
+                  ly += '\\rfz ';
+                }
+              }
+            });
+          }
+        }
+      });
+
+      if (measure.idx + 1 !== doc.measures.length) {
+        ly += '|\n';
+      }
+    });
+
+    return ly.trim();
   }
 
   private getPitch(apitch: Pitch, doc: Document, measure: IMeasure): Pitch {
@@ -561,13 +753,15 @@ export default class ToolNoteEdit extends React.Component<ToolProps, State> {
     if (ev.keyCode === 8) {
       // backspace -- prevent navigation in FF and others
       ev.preventDefault();
-    } else if (ev.keyCode === 37) {
+    } else if (ev.keyCode === 37) { // left
       this.moveCursor(-1);
-    } else if (ev.keyCode === 38) {
+    } else if (ev.keyCode === 38) { // up
+      this.updateOctave(1);
       ev.preventDefault();
-    } else if (ev.keyCode === 39) {
+    } else if (ev.keyCode === 39) { // right
       this.moveCursor(2);
-    } else if (ev.keyCode === 40) {
+    } else if (ev.keyCode === 40) { // down
+      this.updateOctave(-1);
       ev.preventDefault();
     } else if (ev.keyCode === 90 /* z */ && (ev.metaKey || ev.ctrlKey)) {
       ev.preventDefault();
@@ -581,57 +775,33 @@ export default class ToolNoteEdit extends React.Component<ToolProps, State> {
     return true;
   }
 
+  // tslint:disable-next-line:max-func-body-length cyclomatic-complexity
   private handleKeyPress = (ev: React.KeyboardEvent<HTMLDivElement>): boolean => {
+    const key: string = (ev.key || String.fromCharCode(ev.keyCode)).toUpperCase();
+    if ((key === 'R' || key === 'C' || key === 'V') && (ev.metaKey || ev.ctrlKey)) {
+      // Support certain default browser operations by not preventing default.
+      return true;
+    }
+
     ev.preventDefault();
 
-    const key: string = (ev.key || String.fromCharCode(ev.keyCode)).toUpperCase();
-    if (key === '1') {
-      this.setNote(32);
-
+    if (ev.metaKey || ev.ctrlKey) {
       return false;
     }
-    if (key === '2') {
-      this.setNote(16);
 
+    if (this.handleKeyPressSetAccidental(key)) {
       return false;
     }
-    if (key === '3') {
-      this.setNote(8);
-
+    if (this.handleKeyPressSetDuration(key)) {
       return false;
     }
-    if (key === '4') {
-      this.setNote(4);
-
+    if (this.handleKeyPressSetEditType(key)) {
       return false;
-    }
-    if (key === '5') {
-      this.setNote(2);
-
-      return false;
-    }
-    if (key === '6') {
-      this.setNote(1);
-
-      return false;
-    }
-    if (key === '=') {
-      this.setAccidental(MxmlAccidental.Sharp);
-    }
-    if (key === '-') {
-      this.setAccidental(MxmlAccidental.Flat);
-    }
-    if (key === '0') {
-      this.setAccidental(MxmlAccidental.Natural);
-    }
-    if (key === 'N') {
-      this.setEditType('N');
-    }
-    if (key === 'R') {
-      this.setEditType('R');
     }
     if (key === '.') {
       this.setDots(((this.state.dots || 0) + 1) % 4);
+
+      return false;
     }
 
     if ('ABCDEFG'.indexOf(key) !== -1) {
@@ -639,16 +809,55 @@ export default class ToolNoteEdit extends React.Component<ToolProps, State> {
       if (!doc._visualCursor) {
         return false;
       }
+      if (ev.shiftKey) {
+        this.updateChord(key);
+
+        return false;
+      }
 
       const path: string[] = doc._visualCursor.key.replace('SATIE', '').split('_');
+      const measureNum: number = parseInt(path[0], 10);
       const currMeasure: IMeasure = doc.measures.find((i: IMeasure) =>
         i.uuid === parseInt(path[0], 10));
-      const pitch: Pitch = this.getPitch({ step: key, octave: 4 }, doc, currMeasure);
+
+      // Get the previous pitch
+      // HACK -- this does not support multiple voices, parts, non-linear measures
+      let previousPitch: Pitch;
+      for (let i: number = 0; i <= currMeasure.idx; i += 1) {
+        const measure: IMeasure = doc.measures[i];
+        const voice: ISegment = measure.parts.P1.voices[1];
+
+        for (let j: number = 0; j < voice.length; j += 1) {
+          if (i === currMeasure.idx && j === parseInt(path[5], 10)) {
+            break;
+          }
+
+          const el: IModel = voice[j];
+          if (doc.modelHasType(el, Type.Chord)) {
+            const note: Note = el[0];
+            if (!note.rest) {
+              previousPitch = note.pitch;
+            }
+          }
+        }
+      }
+
+      const pitch: Pitch = this.getPitch(
+        {
+          octave: previousPitch ?
+            previousPitch.octave + getOctaveDifference(previousPitch.step, key) :
+            4,
+          step: key,
+        },
+        doc,
+        currMeasure,
+      );
+
       if (path[3] === 'voices') {
         const patch: IAny[] = Patch.createPatch(
           false,
           doc,
-          parseInt(path[0], 10),
+          measureNum,
           path[2],
           (partBuilder: PartBuilder) => partBuilder
             .voice(parseInt(path[4], 10), (voice: VoiceBuilder) => voice
@@ -656,7 +865,7 @@ export default class ToolNoteEdit extends React.Component<ToolProps, State> {
               .insertChord([(note: INoteBuilder): INoteBuilder => this.state.accidental ?
                 note
                   .pitch(pitch)
-                  .rest(null)
+                  .rest(undefined)
                   .dots(times(this.state.dots, () => ({})))
                   .noteType((noteType: ITypeBuilder) => noteType
                     .duration(this.state.note),
@@ -664,7 +873,7 @@ export default class ToolNoteEdit extends React.Component<ToolProps, State> {
                   .color('#000000') :
                 note
                   .pitch(pitch)
-                  .rest(null)
+                  .rest(undefined)
                   .dots(times(this.state.dots, () => ({})))
                   .noteType((noteType: ITypeBuilder) => noteType
                     .duration(this.state.note),
@@ -681,6 +890,81 @@ export default class ToolNoteEdit extends React.Component<ToolProps, State> {
     }
 
     return true;
+  }
+
+  private handleKeyPressSetAccidental(key: string): boolean {
+    if (key === '=') {
+      this.setAccidental(MxmlAccidental.Sharp);
+
+      return true;
+    }
+    if (key === '-') {
+      this.setAccidental(MxmlAccidental.Flat);
+
+      return true;
+    }
+    if (key === '0') {
+      this.setAccidental(MxmlAccidental.Natural);
+
+      return true;
+    }
+
+    return false;
+  }
+
+  private handleKeyPressSetDuration(key: string): boolean {
+    if (key === '1') {
+      this.setNote(32);
+
+      return true;
+    }
+    if (key === '2') {
+      this.setNote(16);
+
+      return true;
+    }
+    if (key === '3') {
+      this.setNote(8);
+
+      return true;
+    }
+    if (key === '4') {
+      this.setNote(4);
+
+      return true;
+    }
+    if (key === '5') {
+      this.setNote(2);
+
+      return true;
+    }
+    if (key === '6') {
+      this.setNote(1);
+
+      return true;
+    }
+
+    return false;
+  }
+
+  private handleKeyPressSetEditType(key: string): boolean {
+    if (key === 'N') {
+      this.setEditType('N');
+
+      return true;
+    }
+    if (key === 'R') {
+      this.setEditType('R');
+
+      return true;
+    }
+    if (key === 'P') {
+      this.setEditType('P');
+
+      return true;
+    }
+
+    return false;
   }
 
   private handleMouseClick = (ev: IMouseEvent): void => {
@@ -709,190 +993,63 @@ export default class ToolNoteEdit extends React.Component<ToolProps, State> {
 
     const measureUUID: number = parseInt(path[0] as string, 10);
     if (!measure || path[1] !== 'parts' || !measure.parts[path[2]]) {
-      this.setState({
-        contextualPopup: null,
-      });
-
       return false;
     }
     if (this.state.editType === 'P') {
       return this.handleDirectionEvent(doc, measure, measureUUID, ev, isPreview);
     }
 
-    if (path[3] === 'staves') {
-      return this.handleStaffEvent(doc, measure, measureUUID, ev, isPreview);
-    } else if (path[3] === 'voices') {
+    if (path[3] === 'voices') {
       return this.handleVoiceEvent(doc, measure, measureUUID, ev, isPreview);
-    }
-    this.setState({
-      contextualPopup: null,
-    });
+    } // this would be where we handled staff events...
 
     return false;
   }
 
-  // tslint:disable-next-line max-func-body-length
-  private handleStaffEvent(doc: Document, measure: IMeasure, measureUUID: number,
-                           ev: IMouseEvent, isPreview: boolean): boolean {
-    const path: (string | number)[] = ev.path;
-    const part: IMeasurePart = measure.parts[path[2]];
-    const elIdx: number = parseInt(path[5] as string, 10);
-    const staffSegment: ISegment = part.staves[parseInt(path[4] as string, 10)];
-    const operations: any = this.state.canonicalOperations;
-    if (!staffSegment) {
-      return true;
-    }
-    const el: IModel = staffSegment[elIdx];
-    if (!el) {
-      return true;
-    }
+  private handleShowHelpKeyboard = (): void => {
+    this.setState({
+      showAdditionalHelp: 'keyboard',
+    });
+  }
 
-    const print: Print = doc.getPrint(0);
-    const { pageWidth, pageHeight } = print.pageLayout;
-    const songDOM: Element = ReactDOM.findDOMNode(this.song);
-    const pageDOM: Element = songDOM.children[0];
-    const x: number = ev.pos.x * (pageDOM.clientWidth / pageWidth) +
-      (songDOM.clientWidth - pageDOM.clientWidth) / 2;
-    const y: number = (ev.matchedOriginY) * (pageDOM.clientHeight / pageHeight) + 30;
-    if (doc.modelHasType(el, Type.Barline)) {
-      const patch: IAny[] = Patch.createPatch(
-        true,
-        doc,
-        measureUUID,
-        'P1',
-        (partBuilder: PartBuilder) => partBuilder
-          .staff(
-            1,
-            (staff: StaffBuilder) => staff
-              .barline((barline: IBarlineBuilder) => barline
-                .barStyle((barStyle: IBarStyleBuilder) => barStyle
-                  .color('#aeaeae'),
-              ),
-            ),
-            elIdx,
-          ),
-      );
-      const contextualPopup: ContextualPopupNewBar = {
-        afterMeasure: parseInt(String(path[0]), 10),
-        popupType: 'new-bar',
-        x,
-        y,
-      };
+  private handleShowHelpMIDI = (): void => {
+    this.setState({
+      showAdditionalHelp: 'midi',
+    });
+  }
 
+  private handleShowHelpMouse = (): void => {
+    this.setState({
+      showAdditionalHelp: 'mouse',
+    });
+  }
+
+  private handleShowHelpNone = (): void => {
+    this.setState({
+      showAdditionalHelp: null,
+    });
+  }
+
+  private handleShowHelpRelative = (): void => {
+    this.setState({
+      showAdditionalHelp: 'relative',
+    });
+  }
+
+  private handleShowHelpWhyNotEdit = (): void => {
+    this.setState({
+      showAdditionalHelp: 'whyNotEdit',
+    });
+  }
+
+  private handleSongScroll = (ev: React.UIEvent<HTMLDivElement>): void => {
+    const showHelp: boolean = ev.currentTarget.scrollTop === 0;
+
+    if (showHelp !== this.state.showHelp) {
       this.setState({
-        contextualPopup,
-        operations: this.song.createPreviewPatch(operations, { raw: patch }),
+        showHelp,
       });
-
-      return true;
     }
-    if (doc.modelHasType(el, Type.Attributes)) {
-      const xOrigin: number = ev._private.props.originX;
-      const pClef: Clef = ev._private.props.layout.clef;
-      const pKS: Key = ev._private.props.layout.keySignature;
-      const pTime: Time = ev._private.props.layout.time;
-      const xTime: number = pTime ? pTime.defaultX : NaN;
-      const xKS: number = pKS ? pKS.defaultX : xTime;
-      if (pClef && ev.pos.x < xKS + xOrigin) {
-        const patch: IAny[] = Patch.createPatch(
-          true,
-          doc,
-          measureUUID,
-          'P1',
-          (partBuilder: PartBuilder) => partBuilder
-            .staff(
-              1,
-              (staff: StaffBuilder) => staff
-                .attributes((attributes: IAttributesBuilder) => attributes
-                  .clefsAt(1, (clef: IClefBuilder) => clef
-                    .color('#aeaeae'),
-                ),
-              ),
-              elIdx,
-          ),
-        );
-        const contextualPopup: ContextualPopupEditClefButton = {
-          attributesPath: [measureUUID, 'parts', 'P1', 'staves', 1, elIdx],
-          popupType: 'edit-clef-button',
-          x,
-          y,
-        };
-        this.setState({
-          contextualPopup,
-          operations: this.song.createPreviewPatch(operations, { raw: patch }),
-        });
-
-        return true;
-      } else if (pKS && ev.pos.x < xTime + xOrigin) {
-        const patch: IAny[] = Patch.createPatch(
-          true,
-          doc,
-          measureUUID,
-          'P1',
-          (partBuilder: PartBuilder) => partBuilder
-            .staff(
-              1,
-              (staff: StaffBuilder) => staff
-                .attributes((attributes: IAttributesBuilder) => attributes
-                  .keySignaturesAt(0, (ks: IKeyBuilder) => ks
-                    .color('#aeaeae'),
-                ),
-              ),
-              elIdx,
-          ),
-        );
-        const contextualPopup: ContextualPopupEditKeyButton = {
-          attributesPath: [measureUUID, 'parts', 'P1', 'staves', 1, elIdx],
-          clef: (el as Attributes).clefs[1],
-          popupType: 'edit-key-button',
-          x,
-          y,
-        };
-        this.setState({
-          contextualPopup,
-          operations: this.song.createPreviewPatch(operations, { raw: patch }),
-        });
-
-        return true;
-      } else if (pTime) {
-        const patch: IAny[] = Patch.createPatch(
-          true,
-          doc,
-          measureUUID,
-          'P1',
-          (partBuilder: PartBuilder) => partBuilder
-            .staff(
-              1,
-              (staff: StaffBuilder) => staff
-                .attributes((attributes: IAttributesBuilder) => attributes
-                  .timesAt(0, (time: ITimeBuilder) => time
-                    .color('#aeaeae'),
-                ),
-              ),
-              elIdx,
-          ),
-        );
-        const contextualPopup: ContextualPopupEditTimeButton = {
-          attributesPath: [measureUUID, 'parts', 'P1', 'staves', 1, elIdx],
-          popupType: 'edit-time-button',
-          x,
-          y,
-        };
-        this.setState({
-          contextualPopup,
-          operations: this.song.createPreviewPatch(operations, { raw: patch }),
-        });
-
-        return true;
-      }
-      this.setState({
-        contextualPopup: null,
-      });
-
-      return false;
-    }
-
-    return false;
   }
 
   // tslint:disable-next-line cyclomatic-complexity max-func-body-length
@@ -905,10 +1062,6 @@ export default class ToolNoteEdit extends React.Component<ToolProps, State> {
       return false;
     }
     const pitch: Pitch = this.getPitch(ev.pitch, doc, measure);
-
-    this.setState({
-      contextualPopup: null,
-    });
 
     const voiceSegment: ISegment = part.voices[parseInt(path[4] as string, 10)];
     if (!voiceSegment) {
@@ -930,7 +1083,7 @@ export default class ToolNoteEdit extends React.Component<ToolProps, State> {
       c.pitch.step === pitch.step);
 
     if (this.state.editType === 'N' && chord.length === 1 && chord[0].rest ||
-      this.state.editType === 'R' && chord.length === 1 && !chord[0].rest) {
+      this.state.editType === 'R') {
       patch = Patch.createPatch(
         isPreview,
         doc,
@@ -945,7 +1098,8 @@ export default class ToolNoteEdit extends React.Component<ToolProps, State> {
               (note: INoteBuilder) => this.state.editType === 'R' ?
                 note
                   .pitch(null)
-                  .rest({})
+                  /* tslint:disable-next-line no-object-literal-type-assertion */
+                  .rest({ _force: true } as {})
                   .dots(times(this.state.dots, () => ({
                     color: isPreview ? '#cecece' : '#000000',
                   })))
@@ -956,7 +1110,7 @@ export default class ToolNoteEdit extends React.Component<ToolProps, State> {
                 this.state.accidental ?
                   note
                     .pitch(pitch)
-                    .rest(null)
+                    .rest(undefined)
                     .dots(times(this.state.dots, () => ({
                       color: isPreview ? '#cecece' : '#000000',
                     })))
@@ -966,7 +1120,7 @@ export default class ToolNoteEdit extends React.Component<ToolProps, State> {
                     .color(isPreview ? '#cecece' : '#000000') :
                   note
                     .pitch(pitch)
-                    .rest(null)
+                    .rest(undefined)
                     .dots(times(this.state.dots, () => ({
                       color: isPreview ? '#cecece' : '#000000',
                     })))
@@ -1038,7 +1192,7 @@ export default class ToolNoteEdit extends React.Component<ToolProps, State> {
             (voice: VoiceBuilder) => voice
               .insertNote(chord.length, (note: INoteBuilder) => note
                 .pitch(pitch)
-                .rest(null)
+                .rest(undefined)
                 .dots(chord[0].dots.map((dot: Dot) => {
                   const newDot: Dot = toSerializable(dot);
                   newDot.color = isPreview ? '#cecece' : '#000000';
@@ -1177,13 +1331,9 @@ export default class ToolNoteEdit extends React.Component<ToolProps, State> {
   }
 
   private newMeasure: () => void = (): void => {
-    const popup: ContextualPopup = this.state.contextualPopup;
-    if (!isNewBar(popup)) {
-      return;
-    }
     const doc: Document = this.song.getDocument(this.state.canonicalOperations);
     const measureCount: number = doc.measures.length;
-    const measureUUID: number = popup.afterMeasure;
+    const measureUUID: number = doc.measures[doc.measures.length - 1].uuid;
     const measureIdx: number = doc.measures.findIndex(
       (m: IMeasure) => m.uuid === measureUUID);
 
@@ -1258,6 +1408,19 @@ export default class ToolNoteEdit extends React.Component<ToolProps, State> {
     });
   }
 
+  private renderAdditionalHelp(): JSX.Element {
+    if (this.state.showAdditionalHelp === null) {
+      return null;
+    }
+
+    return (
+      <NoteAdditionalHelp
+        kind={this.state.showAdditionalHelp}
+        onHide={this.handleShowHelpNone}
+      />
+    );
+  }
+
   private renderPalette(): JSX.Element {
     return (
       <NotePalette
@@ -1267,6 +1430,7 @@ export default class ToolNoteEdit extends React.Component<ToolProps, State> {
         editType={this.state.editType}
         notation={this.state.notation}
         note={this.state.note}
+        redo={this.redo}
         setAccidental={this.setAccidental}
         setDirection={this.setDirection}
         setTimeModification={this.setTimeModification}
@@ -1275,6 +1439,8 @@ export default class ToolNoteEdit extends React.Component<ToolProps, State> {
         setNotation={this.setNotation}
         setNote={this.setNote}
         timeModification={this.state.timeModification}
+        newMeasure={this.newMeasure}
+        undo={this.undo}
       />
     );
   }
@@ -1307,13 +1473,15 @@ export default class ToolNoteEdit extends React.Component<ToolProps, State> {
   }
 
   private setAccidental: (accidental: MxmlAccidental) => void = (accidental): void => {
-    if (this.state.accidental === accidental) {
+    if (this.state.accidental === accidental && this.state.editType === 'N') {
       this.setState({
         accidental: null,
+        editType: 'N',
       });
     } else {
       this.setState({
         accidental,
+        editType: 'N',
       });
     }
   }
@@ -1328,10 +1496,11 @@ export default class ToolNoteEdit extends React.Component<ToolProps, State> {
   private setDots = (dots: number): void => {
     this.setState({
       dots,
+      editType: this.state.editType === 'R' ? 'R' : 'N',
     });
   }
 
-  private setEditType: (editType: 'N' | 'R') => void = (editType): void => {
+  private setEditType: (editType: 'N' | 'R' | 'P') => void = (editType): void => {
     this.setState({
       editType,
     });
@@ -1346,6 +1515,7 @@ export default class ToolNoteEdit extends React.Component<ToolProps, State> {
 
   private setNote: (note: number) => void = (note): void => {
     this.setState({
+      editType: this.state.editType === 'R' ? 'R' : 'N',
       note,
     });
   }
@@ -1380,6 +1550,7 @@ export default class ToolNoteEdit extends React.Component<ToolProps, State> {
 
   private setTimeModification = (timeModification: TimeModification): void => {
     this.setState({
+      editType: this.state.editType === 'R' ? 'R' : 'N',
       timeModification,
     });
   }
@@ -1392,232 +1563,161 @@ export default class ToolNoteEdit extends React.Component<ToolProps, State> {
       undoStack: this.state.undoStack.slice(0, this.state.undoStack.length - 1),
     });
   }
+
+  private updateChord = (newNote: string): boolean => {
+    const doc: Document = this.song.getDocument(this.state.canonicalOperations);
+    if (!doc._visualCursor) {
+      return false;
+    }
+
+    const path: string[] = doc._visualCursor.key.replace('SATIE', '').split('_');
+    const currMeasure: IMeasure = doc.measures.find((i: IMeasure) =>
+      i.uuid === parseInt(path[0], 10));
+
+    if (path[3] !== 'voices') {
+      return false;
+    }
+
+    // HACK -- this does not support multiple voices, parts, non-linear measures
+    let oldPitch: Pitch;
+    let oldDots: number;
+    let oldMeasureUUID: number;
+    let oldIdx: number;
+    let oldNumberOfNotes: number;
+    let oldDuration: Count;
+
+    for (let i: number = 0; i <= currMeasure.idx; i += 1) {
+      const measure: IMeasure = doc.measures[i];
+      const voice: ISegment = measure.parts.P1.voices[1];
+
+      for (let j: number = 0; j < voice.length; j += 1) {
+        if (i === currMeasure.idx && j === parseInt(path[5], 10)) {
+          break;
+        }
+
+        const el: IModel = voice[j];
+        if (doc.modelHasType(el, Type.Chord)) {
+          const note: Note = el[el.length - 1];
+          if (!note.rest) {
+            oldPitch = note.pitch;
+            oldDuration = note.noteType.duration;
+            oldDots = note.dots.length;
+            oldMeasureUUID = measure.uuid;
+            oldIdx = j;
+            oldNumberOfNotes = el.length;
+          }
+        }
+      }
+    }
+
+    if (oldPitch) {
+      const newPitch: Pitch = this.getPitch(
+        {
+          octave: oldPitch ?
+            oldPitch.octave + getOctaveDifference(oldPitch.step, newNote) :
+            4,
+          step: newNote,
+        },
+        doc,
+        currMeasure,
+      );
+
+      const patch: IAny[] = Patch.createPatch(
+        false,
+        doc,
+        oldMeasureUUID,
+        path[2],
+        (partBuilder: PartBuilder) => partBuilder
+          .voice(1, (oldVoice: VoiceBuilder) => oldVoice
+            .at(oldIdx)
+            .insertNote(oldNumberOfNotes, (noteBuilder: INoteBuilder) => noteBuilder
+              .pitch(newPitch)
+              .rest(undefined)
+              .dots(times(oldDots, () => ({})))
+              .noteType((noteType: ITypeBuilder) => noteType
+                .duration(oldDuration)),
+            ),
+          ),
+      );
+      this.applyUndoablePatch(patch);
+      this.playNote(newPitch);
+
+      return true;
+    }
+
+    return false;
+  }
+
+  private updateOctave = (octave: number): boolean => {
+    const doc: Document = this.song.getDocument(this.state.canonicalOperations);
+    if (!doc._visualCursor) {
+      return false;
+    }
+
+    const path: string[] = doc._visualCursor.key.replace('SATIE', '').split('_');
+    const currMeasure: IMeasure = doc.measures.find((i: IMeasure) =>
+      i.uuid === parseInt(path[0], 10));
+
+    if (path[3] !== 'voices') {
+      return false;
+    }
+
+    // HACK -- this does not support multiple voices, parts, non-linear measures
+    let oldPitch: Pitch;
+    let oldMeasureUUID: number;
+    let oldIdx: number;
+    let oldNoteNumber: number;
+
+    for (let i: number = 0; i <= currMeasure.idx; i += 1) {
+      const measure: IMeasure = doc.measures[i];
+      const voice: ISegment = measure.parts.P1.voices[1];
+
+      for (let j: number = 0; j < voice.length; j += 1) {
+        if (i === currMeasure.idx && j === parseInt(path[5], 10)) {
+          break;
+        }
+
+        const el: IModel = voice[j];
+        if (doc.modelHasType(el, Type.Chord)) {
+          oldNoteNumber = el.length - 1;
+          const note: Note = el[oldNoteNumber];
+          if (!note.rest) {
+            oldPitch = note.pitch;
+            oldMeasureUUID = measure.uuid;
+            oldIdx = j;
+          }
+        }
+      }
+    }
+
+    if (oldPitch) {
+      const updatedPitch: Pitch = {
+        ...oldPitch,
+        octave: oldPitch.octave + octave,
+      };
+
+      const patch: IAny[] = Patch.createPatch(
+        false,
+        doc,
+        oldMeasureUUID,
+        path[2],
+        (partBuilder: PartBuilder) => partBuilder
+          .voice(1, (oldVoice: VoiceBuilder) => oldVoice
+            .at(oldIdx)
+            .note(oldNoteNumber, (oldNote: INoteBuilder) =>
+              oldNote.pitch(updatedPitch),
+            ),
+          ),
+      );
+      this.applyUndoablePatch(patch);
+      this.playNote(updatedPitch);
+
+      return true;
+    }
+
+    return false;
+  }
 }
-
-  // private _handleClosePopup: () => void = () => {
-  //   this.setState({
-  //     contextualPopup: null,
-  //   });
-  // }
-  // private updatePlaybackForDiv(bar: number, div: number): void {
-  //   const doc = this.song.getDocument(this.state.operations);
-  //   const divsPerQ = this.totalDivs / this.beats;
-  //   const qPerBeat = this.qPerBeat;
-  //   const beat = div / divsPerQ / qPerBeat + 1;
-  //   if (bar >= doc.measures.length || bar < 0) {
-  //     return;
-  //   }
-  //   let cursorLoc = this.satieKeyToBeat(doc, doc._visualCursor.key);
-  //   let maxTries = 100;
-  //   while (cursorLoc.measure < bar || cursorLoc.measure === bar && cursorLoc.div < div) {
-  //     this.moveCursor(1);
-  //     cursorLoc = this.satieKeyToBeat(doc, doc._visualCursor.key);
-  //     if (--maxTries <= 0) {
-  //       break;
-  //     }
-  //   }
-  //   while (cursorLoc.measure > bar || cursorLoc.measure === bar && cursorLoc.div > div) {
-  //     this.moveCursor(-1);
-  //     cursorLoc = this.satieKeyToBeat(doc, doc._visualCursor.key);
-  //     if (--maxTries <= 0) {
-  //       break;
-  //     }
-  //   }
-  //   this.setState({
-  //     playbackBeat: beat,
-  //     playbackDiv: div,
-  //     playbackMeasure: bar + 1,
-  //   });
-  // }
-
-// private _editKey: () => void = () => {
-//   const popup = this.state.contextualPopup;
-//   if (!isEditKeyButton(popup)) {
-//     return;
-//   }
-//   this.setState({
-//     contextualPopup: {
-//       x: popup.x,
-//       y: popup.y,
-//       type: "key-editor",
-//       attributesPath: popup.attributesPath,
-//       clef: popup.clef,
-//     } as IContextualPopupKeyEditor,
-//   });
-// }
-// private _editClef: () => void = () => {
-//   const popup = this.state.contextualPopup;
-//   if (!isEditClefButton(popup)) {
-//     return;
-//   }
-//   this.setState({
-//     contextualPopup: {
-//       x: popup.x,
-//       y: popup.y,
-//       type: "clef-editor",
-//       attributesPath: popup.attributesPath,
-//     } as IContextualPopupClefEditor,
-//   });
-// }
-// private _handleTogglePlay: () => Promise<void> = async () => {
-  // console.log("Toggle play");
-  // const playbackPlaying = !this.state.playbackPlaying;
-  // if (playbackPlaying) {
-  //     const doc = this._song.getDocument(this.state.operations);
-  //     this._updateMemos();
-  //     await this._midiPlayback.sendCommand("load",
-  //         {json: sheetToMIDI(doc, this.state.playbackBPM)});
-  //     await this._midiPlayback.sendCommand("goto", {ms:
-  //         ((this.state.playbackMeasure - 1) * this._beats + (this.state.playbackBeat - 1)) *
-  //             60 / this.state.playbackBPM * 1000});
-  //     await this._midiPlayback.sendCommand("play", {});
-  //     this._tickInterval = setInterval(this._onPlaybackTick, 60 /
-  //         this.state.playbackBPM / 2 * 1000);
-  // } else {
-  //     await this._midiPlayback.sendCommand("stop", {});
-  //     clearTimeout(this._tickInterval);
-  // }
-  // return new Promise<void>((resolve) => {
-  //     this.setState({
-  //         playbackPlaying,
-  //     }, resolve);
-  // });
-// }
-
-// private _onPlaybackTick = async () => {
-//   if (!this.state.playbackPlaying) {
-//     return;
-//   }
-
-//   const doc = this._song.getDocument(this.state.operations);
-//   const nextDiv = this.state.playbackDiv + this._totalDivs / this._beats / 2;
-//   const newBar = this.state.playbackMeasure - 1 + Math.floor(nextDiv / this._totalDivs);
-//   const newDiv = nextDiv % this._totalDivs;
-//   if (newBar >= doc.measures.length) {
-//     await this._handleTogglePlay();
-//     this._updatePlaybackForDiv(0, 0);
-//   } else {
-//     this._updatePlaybackForDiv(newBar, newDiv);
-//   }
-// }
-
-// private _getNotePitch(pitch: Pitch) {
-//     const noteIdx = "CCDDEFFGGAAB".indexOf(pitch.step.toUpperCase());
-//     invariant(noteIdx !== -1, "Invalid note %s", noteIdx);
-//     const note = pitch.octave * 12 + noteIdx + (pitch.alter || 0);
-//     return note;
-// }
-
-/* <Palette
-          accidental={this.state.accidental}
-          direction={this.state.direction}
-          dots={this.state.dots}
-          notation={this.state.notation}
-          note={this.state.note}
-          setAccidental={this._setAccidental}
-          setDirection={this._setDirection}
-          setDots={this._setDots}
-          setNotation={this._setNotation}
-          setNote={this._setNote}
-          setTimeModification={this._setTimeModification}
-          setType={this._setType}
-          timeModification={this.state.timeModification}
-          type={this.state.type}
-     }*/
-/* {isClefEditor(this.state.contextualPopup) && <ClefEditor
-            x={this.state.contextualPopup.x}
-            y={this.state.contextualPopup.y}
-            onClose={this._handleClosePopup}
-            attributesPath={this.state.contextualPopup.attributesPath}
-            getDoc={() => this._song.getDocument(this.state.canonicalOperations)}
-            applyUndoablePatch={this._applyUndoablePatch}
-            applyPreviewPatch={this._applyPreviewPatch}
-            clearPreview={this._clearPreview} />}
-          {isEditClefButton(this.state.contextualPopup) && <span
-            className={cx(IndexCSS.tooltip, IndexCSS.tooltipRight, STYLES.newBar)}
-            data-tooltip="Edit clef"
-            style={{
-              left: this.state.contextualPopup.x - 10,
-              top: this.state.contextualPopup.y,
-            }}>
-            <a href="#" onClick={this._editClef}>
-              <i className="fa-pencil fa" />
-            </a>
-          <}*/
-/* {isKeyEditor(this.state.contextualPopup) && <KeyEditor
-            clef={this.state.contextualPopup.clef}
-            x={this.state.contextualPopup.x}
-            y={this.state.contextualPopup.y}
-            onClose={this._handleClosePopup}
-            attributesPath={this.state.contextualPopup.attributesPath}
-            getDoc={() => this._song.getDocument(this.state.canonicalOperations)}
-            applyUndoablePatch={this._applyUndoablePatch}
-            applyPreviewPatch={this._applyPreviewPatch}
-            clearPreview={this._clearPreview} />}
-          {isEditKeyButton(this.state.contextualPopup) && <span
-            className={cx(IndexCSS.tooltip, IndexCSS.tooltipRight, STYLES.newBar)}
-            data-tooltip="Edit key"
-            style={{
-              left: this.state.contextualPopup.x - 10,
-              top: this.state.contextualPopup.y,
-            }}>
-            <a href="#" onClick={this._editKey}>
-              <i className="fa-pencil fa" />
-            </a>
-          </span>}
-          {isTimeEditor(this.state.contextualPopup) && <TimeEditor
-            x={this.state.contextualPopup.x}
-            y={this.state.contextualPopup.y}
-            onClose={this._handleClosePopup}
-            attributesPath={this.state.contextualPopup.attributesPath}
-            getDoc={() => this._song.getDocument(this.state.canonicalOperations)}
-            applyUndoablePatch={this._applyUndoablePatch}
-            applyPreviewPatch={this._applyPreviewPatch}
-            clearPreview={this._clearPre}*/
-
-  // private updateMemos = (): void => {
-  //   const doc = this.song.getDocument(this.state.operations);
-  //   let divs = 1000;
-  //   const measure = doc.measures[this.state.playbackMeasure - 1];
-  //   if (!measure) {
-  //     this.playbackIntervalId = null;
-  //     this.setState({
-  //       playbackPlaying: false,
-  //     });
-  //     return;
-  //   }
-  //   const parts = measure.parts;
-  //   Object.keys(parts).forEach(partName => {
-  //     parts[partName].staves.forEach(staff => {
-  //       if (!staff) {
-  //         return;
-  //       }
-  //       for (let i = 0; i < staff.length; ++i) {
-  //         const model = staff[i];
-  //         if (doc.modelHasType(model, Type.Attributes)) {
-  //           this.beats = parseInt(model._snapshot.times[0].beats[0], 10);
-  //           divs = model.divisions;
-  //           // XXX: not valid for complex cases
-  //           this.qPerBeat = 4 / model._snapshot.times[0].beatTypes[0];
-  //           this.totalDivs = model.divisions *
-  //             parseInt(model._snapshot.times[0].beats[0], 10) * this.qPerBeat;
-  //         }
-  //       }
-  //     });
-  //   });
-  // }
-
-const tooltipPseudo: React.CSSProperties = {
-  pointerEvents: 'none',
-  position: 'absolute',
-  transform: 'translate3d(0, 0, 0)',
-  zIndex: 100000000,
-};
-
-const tooltipPseudoRight: React.CSSProperties = {
-  bottom: '50%',
-  left: '100%',
-};
 
 // tslint:disable-next-line typedef
 const styles = StyleSheet.create({
@@ -1628,42 +1728,14 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   songContainer: {
-    maxHeight: 320,
-    overflowX: 'scroll',
+    marginLeft: -18,
+    marginRight: -18,
+    marginTop: -48,
+    maxHeight: 388,
+    overflowX: 'hidden',
     overflowY: 'scroll',
   },
-  tooltip: {
-    ':after': {
-      ...tooltipPseudo,
-      backgroundColor: 'hsla(0, 0%, 20%, 0.9)',
-      color: '#fff',
-      content: 'attr(data-tooltip)',
-      fontSize: '14px',
-      lineHeight: '1.2',
-      padding: 8,
-      width: 100,
-      zIndex: 1000,
-    },
-    ':before': {
-      ...tooltipPseudo,
-      background: 'transparent',
-      border: '6px solid transparent',
-      content: '',
-      zIndex: 1001,
-    },
-    cursor: 'pointer',
-    position: 'relative',
-  },
-  tooltipRight: {
-    ':after': {
-      ...tooltipPseudoRight,
-    },
-    ':before': {
-      ...tooltipPseudoRight,
-      borderRightColor: 'hsla(0, 0%, 20%, 0.9)',
-      borderTopColor: 'transparent',
-      marginBottom: 0,
-      marginLeft: -12,
-    },
+  songContainerSmall: {
+    maxHeight: 308,
   },
 });
