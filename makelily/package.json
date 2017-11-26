@@ -1,8 +1,9 @@
 {
   "name": "makelily",
   "version": "0.1.0",
-  "private": true,
   "license": "AGPLv3",
+  "description": "Ad-hoc UIs for creating and modifying Lilypond",
+  "main": "lib/index.js",
   "homepage": "https://www.hacklily.org/makelily",
   "dependencies": {
     "aphrodite": "1.2.5",

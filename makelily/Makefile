@@ -24,7 +24,10 @@ start: deps
 	@yarn start
 
 build:
-	@yarn build
+	rm -fr build
+	# If we want a demo site...
+	#@yarn build
+	./node_modules/.bin/tsc
 
 test: deps
 	@env CI=1 yarn test
