@@ -19,7 +19,7 @@
  */
 
 import { css, StyleSheet } from 'aphrodite';
-import React from 'react';
+import React = require('react');
 
 import Makelily from './Makelily';
 

@@ -61,6 +61,8 @@
     "no-floating-promises": false,
     // Because reality should be reflected
     "no-suspicious-comment": false,
+    // We need this for exporting a react library
+    "no-require-imports": false,
 
     // Legacy code
     "no-any": false,

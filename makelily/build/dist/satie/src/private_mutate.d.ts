@@ -1,0 +1,10 @@
+import { IAny, IObjectReplace, IObjectDelete, IObjectInsert, IListReplace, IListDelete, IListInsert, OTPath } from "musicxml-interfaces/operations";
+export declare function parentExists(obj: any, p: OTPath): boolean;
+export declare function findParent(obj: any, p: OTPath): any;
+export declare function set(obj: any, op: IObjectInsert<any>): void;
+export declare function insertToList(obj: any, op: IListInsert<any>): void;
+export declare function replace(obj: any, op: IObjectReplace<any>): void;
+export declare function replaceInList(obj: any, op: IListReplace<any>): void;
+export declare function remove(obj: any, op: IObjectDelete<any>): void;
+export declare function removeFromList(obj: any, op: IListDelete<any>): void;
+export declare function mutate(obj: any, op: IAny): void;

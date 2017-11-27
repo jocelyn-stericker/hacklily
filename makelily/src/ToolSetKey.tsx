@@ -20,7 +20,7 @@
 
 import { css } from 'aphrodite';
 import { Clef, Key } from 'musicxml-interfaces';
-import React from 'react';
+import React = require('react');
 import { Addons as SatieAddons } from './satie/src/satie';
 
 import tabStyles from './tabStyles';
@@ -85,7 +85,7 @@ const stdKeys: { [mode: string]: Key[] } = {
   ),
 };
 
-interface State {
+export interface State {
   selectedKey: number;
   selectedMode: 'major' | 'minor';
 }

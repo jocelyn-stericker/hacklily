@@ -19,9 +19,9 @@
  */
 
 import { css, StyleSheet } from 'aphrodite';
-import React from 'react';
+import React = require('react');
 
-interface Props {
+export interface Props {
   kind: 'keyboard' | 'midi' | 'mouse'| 'relative' | 'whyNotEdit';
   onHide(): void;
 }

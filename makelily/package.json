@@ -1,9 +1,10 @@
 {
   "name": "makelily",
   "version": "0.1.0",
-  "license": "AGPLv3",
+  "license": "AGPL-3.0",
   "description": "Ad-hoc UIs for creating and modifying Lilypond",
-  "main": "lib/index.js",
+  "main": "build/dist/Makelily.js",
+  "types": "build/dist/Makelily.d.ts",
   "homepage": "https://www.hacklily.org/makelily",
   "dependencies": {
     "aphrodite": "1.2.5",
@@ -25,6 +26,21 @@
     "start": "node scripts/start.js",
     "build": "node scripts/build.js",
     "test": "node scripts/test.js --env=jsdom"
+  },
+  "peerDependencies": {
+    "@types/aphrodite": "*",
+    "@types/d3-dispatch": "*",
+    "@types/d3-drag": "*",
+    "@types/d3-timer": "*",
+    "@types/invariant": "*",
+    "@types/jest": "*",
+    "@types/lodash": "*",
+    "@types/node": "*",
+    "@types/opentype.js": "*",
+    "@types/prop-types": "*",
+    "@types/react": "*",
+    "@types/react-dom": "*",
+    "@types/react-dom-factories": "*"
   },
   "devDependencies": {
     "@types/aphrodite": "0.5.6",

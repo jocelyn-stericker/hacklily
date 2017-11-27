@@ -23,7 +23,7 @@ run: start
 start: deps
 	@yarn start
 
-build:
+build: deps
 	rm -fr build
 	# If we want a demo site...
 	#@yarn build

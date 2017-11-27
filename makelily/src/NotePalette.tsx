@@ -25,7 +25,7 @@ import {Count, Direction, MxmlAccidental,
 import * as React from 'react';
 import { Addons as SatieAddons } from './satie/src/satie';
 
-interface ButtonGroupProps {
+export interface Props {
   accidental: MxmlAccidental;
   direction: Direction;
   dots: number;
@@ -258,7 +258,7 @@ const articulations: Notations[] = [
 /**
  * Renders a list of tools that can be selected in the note editor.
  */
-export default class NotePalette extends React.Component<ButtonGroupProps, {}> {
+export default class NotePalette extends React.Component<Props, {}> {
   render(): JSX.Element {
     const cls: string = css(styles.paletteSml, styles.paletteBtnOff, styles.paletteTxt);
 
@@ -307,7 +307,7 @@ export default class NotePalette extends React.Component<ButtonGroupProps, {}> {
       </div>
     );
   }
-  shouldComponentUpdate(nextProps: ButtonGroupProps): boolean {
+  shouldComponentUpdate(nextProps: Props): boolean {
     return !isEqual(nextProps, this.props);
   }
 

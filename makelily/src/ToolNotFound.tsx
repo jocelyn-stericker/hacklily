@@ -19,7 +19,7 @@
  */
 
 import { css } from 'aphrodite';
-import React from 'react';
+import React = require('react');
 
 import tabStyles from './tabStyles';
 import { ToolProps } from './tool';
