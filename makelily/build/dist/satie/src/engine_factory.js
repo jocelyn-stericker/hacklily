@@ -24,11 +24,6 @@ var invariant = require("invariant");
 var lodash_1 = require("lodash");
 var document_1 = require("./document");
 var private_util_1 = require("./private_util");
-if (!process.browser) {
-    /* tslint:disable */
-    require("source-map-support").install();
-    /* tslint:enable */
-}
 var Factory = /** @class */ (function () {
     function Factory(models, pre, post) {
         if (pre === void 0) { pre = []; }
