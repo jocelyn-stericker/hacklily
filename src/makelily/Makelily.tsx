@@ -19,7 +19,7 @@
  */
 
 import { css, StyleSheet } from 'aphrodite';
-import React from 'react';
+import React = require('react');
 import { Application, requireFont } from './satie/src/satie';
 
 import { ToolProps } from './tool';
@@ -73,7 +73,7 @@ const modes: InsertMode[] = [
   },
 ];
 
-interface Props {
+export interface Props {
   clef: string;
   defaultTool: string;
   keySig: string;
@@ -83,7 +83,7 @@ interface Props {
   onInsertLy(ly: string): void;
 }
 
-interface State {
+export interface State {
   toolKey: string;
 }
 

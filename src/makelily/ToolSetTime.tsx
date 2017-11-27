@@ -20,7 +20,7 @@
 
 import { css } from 'aphrodite';
 import { Time, TimeSymbolType } from 'musicxml-interfaces';
-import React from 'react';
+import React = require('react');
 import { Addons as SatieAddons } from './satie/src/satie';
 
 import tabStyles from './tabStyles';
@@ -81,7 +81,7 @@ const stdTime: (Time & LyTime)[] = [
 
 ];
 
-interface State {
+export interface State {
   selectedTime: number;
 }
 

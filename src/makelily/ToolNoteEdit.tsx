@@ -59,8 +59,8 @@ import {
   ITypeBuilder,
 } from 'musicxml-interfaces/builders';
 import { IAny } from 'musicxml-interfaces/operations';
-import React from 'react';
-import ReactDOM from 'react-dom';
+import React = require('react');
+import ReactDOM = require('react-dom');
 import {
   Addons as SatieAddons,
   Document,
@@ -170,7 +170,7 @@ const songTemplate: string = `<?xml version="1.0" encoding="UTF-8"?>
   </part>
 </score-partwise>`;
 
-interface State {
+export interface State {
   accidental: MxmlAccidental;
   canonicalOperations: any;
   direction: Direction;
