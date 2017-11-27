@@ -330,6 +330,9 @@ export const HEADER_STYLE = StyleSheet.create({
     transform: 'scale(-1, 1)',
     width: 32,
   },
+  miniGroup: {
+    marginLeft: 16,
+  },
   modeItem: {
     fontSize: 14,
     paddingBottom: 5,
@@ -374,7 +377,6 @@ export const HEADER_STYLE = StyleSheet.create({
   },
   songs: {
     marginLeft: 16,
-    marginRight: 16,
   },
   songsText: {
     ':hover': {

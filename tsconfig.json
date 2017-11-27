@@ -10,7 +10,8 @@
         "noUnusedLocals": true,
         "pretty": true,
         "strict": true,
-        "target": "es5"
+        "target": "es5",
+        "moduleResolution": "node"
     },
     "include": [
         "src/index.tsx",

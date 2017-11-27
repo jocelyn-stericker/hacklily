@@ -19,6 +19,7 @@
  */
 
 import { css } from 'aphrodite';
+import Makelily from 'makelily'; // note: use for types only
 import React from 'react';
 
 import {
@@ -199,6 +200,9 @@ interface State {
   locked: boolean;
   login: boolean;
   logs: string | null;
+  makelilyClef: string;
+  makelilyKey: string;
+  makelilyTime: string;
   menu: boolean;
   midi: ArrayBuffer | null;
   mode: ViewMode;
@@ -207,6 +211,7 @@ interface State {
   reconnectCooloff: number;
   reconnectTimeout: number;
   saving: boolean;
+  showMakelily: typeof Makelily | null;
   windowWidth: number;
   wsError: boolean;
 }
@@ -239,6 +244,9 @@ export default class App extends React.PureComponent<Props, State> {
     locked: false,
     login: false,
     logs: '',
+    makelilyClef: 'treble',
+    makelilyKey: 'c \\major',
+    makelilyTime: '4/4',
     menu: false,
     midi: null,
     mode: window.innerWidth >= MIN_BOTH_WIDTH ? MODE_BOTH : MODE_VIEW,
@@ -247,12 +255,12 @@ export default class App extends React.PureComponent<Props, State> {
     reconnectCooloff: INITIAL_WS_COOLOFF,
     reconnectTimeout: NaN,
     saving: false,
+    showMakelily: null,
     windowWidth: window.innerWidth,
     wsError: false,
   };
 
   private editor: Editor | null = null;
-  private preview: Preview | null = null;
   private rpc: RPCClient | null = null;
   private socket: WebSocket | null = null;
   private standaloneAppHost: StandaloneAppHost | null = null;
@@ -332,6 +340,7 @@ export default class App extends React.PureComponent<Props, State> {
         loggedIn={auth !== null}
         onModeChanged={this.handleModeChanged}
         onShowClone={this.handleShowSaveAs}
+        onShowMakelily={this.handleShowMakelily}
         onShowMenu={this.handleShowMenu}
         onShowNew={this.handleShowNew}
         onShowPublish={this.handleShowPublish}
@@ -625,6 +634,12 @@ export default class App extends React.PureComponent<Props, State> {
     });
   }
 
+  private handleHideMakelily = (): void => {
+    this.setState({
+      showMakelily: null,
+    });
+  }
+
   private handleHideMenu = (): void => {
     this.setState({
       menu: false,
@@ -669,6 +684,15 @@ export default class App extends React.PureComponent<Props, State> {
   private handleImportRequested = (): void => {
     this.setQueryOrShowInterstitial({
       standaloneImport: true,
+    });
+  }
+
+  private handleInsertLy = (ly: string): void => {
+    if (this.editor) {
+      this.editor.insertText(`\n${ly}\n`);
+    }
+    this.setState({
+      showMakelily: null,
     });
   }
 
@@ -811,6 +835,20 @@ export default class App extends React.PureComponent<Props, State> {
     });
   }
 
+  private handleShowMakelily = async (): Promise<void> => {
+    const editor: Editor | null = this.editor;
+    if (!editor) {
+      return;
+    }
+
+    const makelilyComponent: typeof Makelily = (await import('makelily')).default;
+
+    this.setState({
+      showMakelily: makelilyComponent,
+      ...editor.getMakelilyProperties(),
+    });
+  }
+
   private handleShowMenu = (): void => {
     this.setState({
       menu: true,
@@ -827,7 +865,7 @@ export default class App extends React.PureComponent<Props, State> {
 
     if (!this.props.auth && !isClean) {
       this.setState({
-        connectToGitHubReason: 'Connect to GitHub to save this song',
+        connectToGitHubReason: 'Connect to GitHub to save this song\u2026',
         login: true,
       });
     } else {
@@ -840,7 +878,7 @@ export default class App extends React.PureComponent<Props, State> {
   private handleShowPublish = (): void => {
     if (!this.props.auth) {
       this.setState({
-        connectToGitHubReason: 'Connect to GitHub to share this song',
+        connectToGitHubReason: 'Connect to GitHub to share this song\u2026',
         login: true,
       });
     } else if (this.props.edit) {
@@ -855,7 +893,7 @@ export default class App extends React.PureComponent<Props, State> {
   private handleShowSaveAs = (): void => {
     if (!this.props.auth) {
       this.setState({
-        connectToGitHubReason: 'Connect to GitHub to save a copy of this song',
+        connectToGitHubReason: 'Connect to GitHub to save a copy of this song\u2026',
         login: true,
       });
       this.props.setQuery(
@@ -950,14 +988,20 @@ export default class App extends React.PureComponent<Props, State> {
     this.setState({
       windowWidth: window.innerWidth,
     });
-    if (this.state.mode === MODE_BOTH && window.innerWidth <= MIN_BOTH_WIDTH) {
+    if (this.state.mode === MODE_BOTH && window.innerWidth < MIN_BOTH_WIDTH) {
       this.setState({
         mode: MODE_VIEW,
       });
     }
+    if (this.state.mode !== MODE_BOTH && window.innerWidth >= MIN_BOTH_WIDTH) {
+      this.setState({
+        mode: MODE_BOTH,
+      });
+    }
+
   }
 
-  private handleWSError = (e: ErrorEvent): void => {
+  private handleWSError = (e: Event): void => {
     if (!this.socket) {
       return;
     }
@@ -1040,6 +1084,7 @@ export default class App extends React.PureComponent<Props, State> {
     return Boolean(this.rpc);
   }
 
+  // tslint:disable-next-line:max-func-body-length
   private renderModal(): React.ReactNode {
     const {
       locked,
@@ -1049,6 +1094,7 @@ export default class App extends React.PureComponent<Props, State> {
       publish,
       interstitialChanges,
       saving,
+      showMakelily,
     } = this.state;
 
     const {
@@ -1133,6 +1179,25 @@ export default class App extends React.PureComponent<Props, State> {
             save={this.handleShowPublish}
           />
         );
+      case showMakelily !== null:
+        if (showMakelily === null) {
+          throw new Error('(this will never happen');
+        }
+
+        // tslint:disable-next-line variable-name
+        const MakelilyComponent: typeof Makelily = showMakelily;
+
+        return (
+          <MakelilyComponent
+            clef={this.state.makelilyClef}
+            defaultTool="notes"
+            keySig={this.state.makelilyKey}
+            onHide={this.handleHideMakelily}
+            singleTaskMode={false}
+            onInsertLy={this.handleInsertLy}
+            time={this.state.makelilyTime}
+          />
+        );
       default:
         return null;
     }
@@ -1166,7 +1231,6 @@ export default class App extends React.PureComponent<Props, State> {
             onLogsObtained={this.handleLogsObtained}
             onMidiObtained={this.handleMidiObtained}
             onSelectionChanged={this.handleSelectionChanged}
-            ref={this.setPreview}
             rpc={isStandalone ? null : this.rpc}
             standaloneRender={this.standaloneRender}
             logs={logs}
@@ -1220,10 +1284,6 @@ export default class App extends React.PureComponent<Props, State> {
 
   private setEditor = (editor: Editor | null): void => {
     this.editor = editor;
-  }
-
-  private setPreview = (preview: Preview): void => {
-    this.preview = preview;
   }
 
   private setQueryOrShowInterstitial = <K extends keyof QueryProps>(updates: Pick<QueryProps, K>,

@@ -14,7 +14,8 @@
         "reactDom": "ReactDOM",
         "reactModal": "ReactModal",
         "reactMonacoEditor": "ReactMonacoEditor",
-        "dompurify": "DOMPurify"
+        "dompurify": "DOMPurify",
+        "makelily": "Makelily"
       }
     ],
     "no-multiline-string": false,

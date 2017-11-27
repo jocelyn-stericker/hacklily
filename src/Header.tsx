@@ -55,12 +55,15 @@ interface Props {
   windowWidth: number;
   onModeChanged(mode: ViewMode): void;
   onShowClone(): void;
+  onShowMakelily(): void;
   onShowMenu(): void;
   onShowNew(): void;
   onShowPublish(): void;
 }
 
 interface State {
+  // The interface changes after we've played once.
+  played: boolean;
   player: Player | null;
   playing: boolean;
   timeInSeconds: number;
@@ -75,6 +78,7 @@ function last<T>(t: T[]): T {
  */
 export default class Header extends React.PureComponent<Props> {
   state: State = {
+    played: false,
     player: null,
     playing: false,
     timeInSeconds: 0,
@@ -95,51 +99,65 @@ export default class Header extends React.PureComponent<Props> {
     }
   }
 
+  // tslint:disable-next-line:max-func-body-length
   render(): JSX.Element {
     const { mode, loggedIn, onModeChanged, onShowMenu, windowWidth } = this.props;
-    const { playing } = this.state;
+    const { played, playing } = this.state;
     const modeButtons: ButtonSpec[] = [];
-    modeButtons.push({
-      content: (
-        <i
-          aria-hidden={true}
-          className={`fa fa-eye ${css(HEADER_STYLE.modeItem)}`}
-        />
-      ),
-      title: 'View',
-      value: MODE_VIEW,
-    });
-    if (windowWidth >= MIN_BOTH_WIDTH) {
+    if (windowWidth < MIN_BOTH_WIDTH) {
       modeButtons.push({
         content: (
           <i
             aria-hidden={true}
-            className={`fa fa-columns ${css(HEADER_STYLE.modeItem)}`}
+            className={`fa fa-eye ${css(HEADER_STYLE.modeItem)}`}
           />
         ),
-        title: 'Split screen between viewer and editor',
-        value: MODE_BOTH,
+        title: 'View',
+        value: MODE_VIEW,
+      });
+      modeButtons.push({
+        content: (
+          <i
+            aria-hidden={true}
+            className={`fa fa-pencil ${css(HEADER_STYLE.modeItem)}`}
+          />
+        ),
+        title: 'Edit',
+        value: MODE_EDIT,
       });
     }
-    modeButtons.push({
-      content: (
-        <i
-          aria-hidden={true}
-          className={`fa fa-pencil ${css(HEADER_STYLE.modeItem)}`}
+
+    const viewMode: React.ReactNode = modeButtons.length > 0 && (
+      <div className={css(HEADER_STYLE.headerGroupWrapper, HEADER_STYLE.miniGroup)}>
+        <ButtonGroup
+          value={mode}
+          buttons={modeButtons}
+          onChange={onModeChanged}
         />
-      ),
-      title: 'Edit',
-      value: MODE_EDIT,
-    });
+      </div>
+    );
 
     const playButton: React.ReactNode = (
-      <div className={css(HEADER_STYLE.headerGroupWrapper, HEADER_STYLE.songs)}>
+      <div className={css(HEADER_STYLE.headerGroupWrapper, HEADER_STYLE.miniGroup)}>
         <button
           title={playing ? 'Pause' : 'Play'}
           className={css(BUTTON_STYLE.buttonStyle, HEADER_STYLE.playButton)}
           onClick={playing ? this.handlePause : this.handlePlay}
         >
           <i className={playing ? 'fa-pause fa' : 'fa-play fa'} />
+        </button>
+      </div>
+    );
+
+    const makelilyButton: React.ReactNode = (
+      <div className={css(HEADER_STYLE.headerGroupWrapper, HEADER_STYLE.miniGroup)}>
+        <button
+          title="Lilypond Tools"
+          className={css(BUTTON_STYLE.buttonStyle, HEADER_STYLE.playButton)}
+          onClick={this.props.onShowMakelily}
+        >
+          <i className="fa-briefcase fa" />{' '}
+          Tools
         </button>
       </div>
     );
@@ -181,15 +199,9 @@ export default class Header extends React.PureComponent<Props> {
       <div className="header">
         <img src={logoSvg} className={css(HEADER_STYLE.logo)} alt="Frog, Hacklily logo" />
         {menu || <span style={{ width: 10 }} />}
-        <div className={css(HEADER_STYLE.headerGroupWrapper)}>
-          <ButtonGroup
-            value={mode}
-            buttons={modeButtons}
-            onChange={onModeChanged}
-          />
-        </div>
-        {playButton}
-        {playing && this.renderTime()}
+        {viewMode}
+        {makelilyButton}
+        {played ? this.renderTime() : playButton}
         <div className={css(HEADER_STYLE.headerSpacer)} />
         {communityToolbar}
       </div>
@@ -238,6 +250,7 @@ export default class Header extends React.PureComponent<Props> {
 
     player.play();
     this.setState({
+      played: true,
       playing: true,
     });
   }
@@ -369,15 +382,23 @@ export default class Header extends React.PureComponent<Props> {
   private renderTime(): React.ReactNode {
     const { timeInSeconds } = this.state;
     const fmtTime: string = String(Math.floor(timeInSeconds * 100) / 100);
+    const { playing } = this.state;
 
     return (
-      <div className={css(HEADER_STYLE.headerGroupWrapper)}>
+      <div className={css(HEADER_STYLE.headerGroupWrapper, HEADER_STYLE.miniGroup)}>
         <button
           title="Rewind"
           className={css(BUTTON_STYLE.buttonStyle, HEADER_STYLE.playButton)}
           onClick={this.handleRewind}
         >
           <i className="fa-backward fa" />
+        </button>
+        <button
+          title={playing ? 'Pause' : 'Play'}
+          className={css(BUTTON_STYLE.buttonStyle, HEADER_STYLE.playButton)}
+          onClick={playing ? this.handlePause : this.handlePlay}
+        >
+          <i className={playing ? 'fa-pause fa' : 'fa-play fa'} />
         </button>
         <button
           className={css(BUTTON_STYLE.buttonStyle, HEADER_STYLE.playButton, HEADER_STYLE.playTime)}

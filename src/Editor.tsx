@@ -27,6 +27,12 @@ import LILYPOND_COMPLETION_ITEM_PROVIDER from './monacoConfig/LILYPOND_COMPLETIO
 import LILYPOND_MONARCH_PROVIDER from './monacoConfig/LILYPOND_MONARCH_PROVIDER';
 import { APP_STYLE } from './styles';
 
+export interface MakelilyProps {
+  makelilyClef: string;
+  makelilyKey: string;
+  makelilyTime: string;
+}
+
 interface Props {
   code: string | undefined;
   /**
@@ -118,6 +124,75 @@ export default class Editor extends React.PureComponent<Props> {
     if (this.editor) {
       this.editor.trigger('host', 'editor.action.nextMatchFindAction', undefined);
     }
+  }
+
+  getMakelilyProperties(): MakelilyProps {
+    const timeRegex: RegExp = /\\time.*/g;
+    const clefRegex: RegExp = /\\clef.*/g;
+    const keyRegex: RegExp = /\\key.*/g;
+    const code: string = this.props.code || '';
+    function extractFirst(match: RegExpMatchArray | null): string | null {
+      if (match) {
+        return match[0];
+      }
+
+      return null;
+    }
+    function extractLast(match: RegExpMatchArray | null): string | null {
+      if (match) {
+        return match[match.length - 1];
+      }
+
+      return null;
+    }
+    const meta: MakelilyProps = {
+      makelilyClef: (extractFirst(code.match(clefRegex)) || '\\clef treble')
+        .replace('\\clef ', ''),
+      makelilyKey: (extractFirst(code.match(keyRegex)) || '\\key c \\major')
+        .replace('\\key ', ''),
+      makelilyTime: (extractFirst(code.match(timeRegex)) || '\\time 4/4')
+        .replace('\\time ', ''),
+    };
+
+    if (!this.editor) {
+      return meta;
+    }
+
+    let codeBeforeCursor: string = '';
+    const lines: string[] = code.split('\n');
+    const line: monaco.Position = this.editor.getPosition();
+
+    for (let i: number = 0; i < line.lineNumber - 1; i += 1) {
+      codeBeforeCursor += `${lines[i]}\n`;
+    }
+    codeBeforeCursor += lines[line.lineNumber - 1].slice(0, line.column);
+
+    meta.makelilyClef = (extractLast(codeBeforeCursor.match(clefRegex)) ||
+      meta.makelilyClef).replace('\\clef ', '');
+    meta.makelilyKey = (extractLast(codeBeforeCursor.match(keyRegex)) ||
+      meta.makelilyKey).replace('\\key ', '');
+    meta.makelilyTime = (extractLast(codeBeforeCursor.match(timeRegex)) ||
+      meta.makelilyTime).replace('\\time ', '');
+
+    return meta;
+  }
+
+  insertText(text: string): void {
+    if (!this.editor) {
+      return;
+    }
+
+    const line: monaco.Position = this.editor.getPosition();
+    const range: monaco.Range = new monaco.Range(
+      line.lineNumber, 1, line.lineNumber, 1);
+    const id: {major: 1, minor: 1} = { major: 1, minor: 1 };
+    const op: monaco.editor.IIdentifiedSingleEditOperation = {
+      forceMoveMarkers: true,
+      identifier: id,
+      range,
+      text,
+    };
+    this.editor.executeEdits('hacklily', [op]);
   }
 
   render(): JSX.Element | null {
