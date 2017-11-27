@@ -53,7 +53,7 @@ export async function getRepo(
     throw new Error('Could not get repo');
   }
 
-  return await response.json();
+  return response.json();
 }
 
 export async function createRepo(
@@ -87,7 +87,7 @@ export async function createRepo(
     throw new Error('Could not create repo');
   }
 
-  return await response.json();
+  return response.json();
 }
 
 export async function getOrCreateRepo(auth: Auth): Promise<Repo> {

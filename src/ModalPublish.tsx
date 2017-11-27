@@ -321,11 +321,11 @@ export async function doUnpublish(
       alert('Could not delete file.');
 
       return false;
-    } else {
-      alert('Could not delete file.');
-
-      return false;
     }
+
+    alert('Could not delete file.');
+
+    return false;
   }
 
   return true;

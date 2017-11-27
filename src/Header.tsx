@@ -348,7 +348,9 @@ export default class Header extends React.PureComponent<Props> {
           </button>
         </div>
       );
-    } else if (online) {
+    }
+
+    if (online) {
       return (
         <div className={css(HEADER_STYLE.headerGroupWrapper)}>
           <button
@@ -369,14 +371,14 @@ export default class Header extends React.PureComponent<Props> {
           </button>
         </div>
       );
-    } else {
-      return (
-        <div className={css(HEADER_STYLE.headerGroupWrapper)}>
-          <i className="fa fa-spinner fa-spin" aria-hidden={true} />
-          <div style={{ display: 'inline-block', width: 10 }} />
-        </div>
-      );
     }
+
+    return (
+      <div className={css(HEADER_STYLE.headerGroupWrapper)}>
+        <i className="fa fa-spinner fa-spin" aria-hidden={true} />
+        <div style={{ display: 'inline-block', width: 10 }} />
+      </div>
+    );
   }
 
   private renderTime(): React.ReactNode {

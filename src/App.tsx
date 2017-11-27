@@ -1155,9 +1155,9 @@ export default class App extends React.PureComponent<Props, State> {
               rpc={this.rpc}
             />
           );
-        } else {
-          return null;
         }
+
+        return null;
       case menu && !isStandalone:
         return (
           <Menu
@@ -1221,7 +1221,9 @@ export default class App extends React.PureComponent<Props, State> {
           </div>
         </div>
       );
-    } else if (this.socket || isStandalone) {
+    }
+
+    if (this.socket || isStandalone) {
       if (online && this.rpc || isStandalone) {
         return (
           <Preview
@@ -1236,23 +1238,25 @@ export default class App extends React.PureComponent<Props, State> {
             logs={logs}
           />
         );
-      } else {
-        const previewMaskStyle: string = css(
-          APP_STYLE.pendingPreviewMask,
-          mode === MODE_VIEW && APP_STYLE.previewPendingMaskModeView,
-        );
-
-        return (
-          <span>
-            <div
-                className={css(APP_STYLE.sheetMusicView)}
-                style={{ width: mode === MODE_BOTH ? '50%' : (mode === MODE_VIEW ? '100%' : '0') }}
-            />
-            <div className={previewMaskStyle} />
-          </span>
-        );
       }
-    } else if (!BACKEND_WS_URL) {
+
+      const previewMaskStyle: string = css(
+        APP_STYLE.pendingPreviewMask,
+        mode === MODE_VIEW && APP_STYLE.previewPendingMaskModeView,
+      );
+
+      return (
+        <span>
+          <div
+              className={css(APP_STYLE.sheetMusicView)}
+              style={{ width: mode === MODE_BOTH ? '50%' : (mode === MODE_VIEW ? '100%' : '0') }}
+          />
+          <div className={previewMaskStyle} />
+        </span>
+      );
+    }
+
+    if (!BACKEND_WS_URL) {
       return (
         <div
             className={css(APP_STYLE.sheetMusicView)}
@@ -1264,7 +1268,9 @@ export default class App extends React.PureComponent<Props, State> {
           </div>
         </div>
       );
-    } else if (wsError) {
+    }
+
+    if (wsError) {
       return (
         <div
             className={css(APP_STYLE.sheetMusicView)}
@@ -1277,9 +1283,9 @@ export default class App extends React.PureComponent<Props, State> {
           </div>
         </div>
       );
-    } else {
-      throw new Error('Invalid state.');
     }
+
+    throw new Error('Invalid state.');
   }
 
   private setEditor = (editor: Editor | null): void => {

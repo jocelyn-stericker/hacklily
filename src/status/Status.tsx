@@ -130,7 +130,7 @@ export default class Status extends React.Component<{}, State> {
     });
   }
 
-  private handleWSError = (e: ErrorEvent): void => {
+  private handleWSError = (e: Event): void => {
     if (!this.socket) {
       return;
     }

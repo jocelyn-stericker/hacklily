@@ -79,7 +79,7 @@ function setQuery(
 ): void {
 
   const query: QueryProps = getQueryProps();
-  Object.keys(queryUpdates).forEach((key: keyof QueryProps): void => {
+  (Object.keys(queryUpdates) as (keyof QueryProps)[]).forEach((key: keyof QueryProps): void => {
     if (key in queryUpdates) {
       query[key] = queryUpdates[key];
     }
