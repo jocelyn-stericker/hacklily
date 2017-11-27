@@ -34,12 +34,6 @@ import {cloneObject} from "./private_util";
 import {IChord} from "./private_chordUtil";
 import {IAttributesSnapshot} from "./private_attributesSnapshot";
 
-if (!(process as any).browser) {
-    /* tslint:disable */
-    require("source-map-support").install();
-    /* tslint:enable */
-}
-
 export type ModelInstaller =
     (constructors: {
         [key: number]: any;
