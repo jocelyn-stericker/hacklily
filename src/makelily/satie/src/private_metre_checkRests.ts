@@ -357,6 +357,33 @@ const REST_RULES_4: RestRules = Object.freeze([
     "...*",
 ]);
 
+const REST_RULES_5: RestRules = Object.freeze([
+    "r__..",
+    "r....",
+    ".r...",
+    "..r..",
+    "*....",
+    ".*...",
+    "..*..",
+    "...r_",
+    "...r.",
+    "....r",
+    "...*.",
+    "....*",
+    "..r__",
+    "..r..",
+    "...r.",
+    "....r",
+    "..*..",
+    "...*.",
+    "....*",
+    "r_...",
+    "r....",
+    ".r...",
+    "*....",
+    ".*...",
+]);
+
 const REST_RULES_6: RestRules = Object.freeze([
     "r_____",
     "r__...",   // if dots allowed
@@ -375,6 +402,41 @@ const REST_RULES_6: RestRules = Object.freeze([
     "...*..",
     "....*.",
     ".....*",
+]);
+
+const REST_RULES_7: RestRules = Object.freeze([
+    "r___...",
+    "r_.....",
+    "..r_...",
+    "r......",
+    ".r.....",
+    "..r....",
+    "...r...",
+    "*......",
+    ".*.....",
+    "..* ...",
+    "...*...",
+    "....r__",
+    "....r..",
+    ".....r.",
+    "......r",
+    "....*..",
+    ".....*.",
+    "......*",
+    "...r___",
+    "...r_..",
+    ".....r_",
+    "...r...",
+    "....r..",
+    ".....r.",
+    "......r",
+    "r__....",
+    "r......",
+    ".r.....",
+    "..r....",
+    "*......",
+    ".*.....",
+    "..*....",
 ]);
 
 const REST_RULES_9: RestRules = Object.freeze([
@@ -478,9 +540,17 @@ const TIME_SIGNATURES: {readonly [name: string]: RestSolver} = Object.freeze({
         6, 8,
         REST_RULES_6,
     ),
+    "7/8": new RestSolver(
+        7, 8,
+        REST_RULES_7,
+    ),
     "6/4": new RestSolver(
         6, 4,
         REST_RULES_6,
+    ),
+    "7/4": new RestSolver(
+        7, 4,
+        REST_RULES_7,
     ),
     "12/8": new RestSolver(
         12, 8,
@@ -498,6 +568,15 @@ const TIME_SIGNATURES: {readonly [name: string]: RestSolver} = Object.freeze({
     "9/8": new RestSolver(
         9, 8,
         REST_RULES_9,
+    ),
+
+    "5/4": new RestSolver(
+        5, 4,
+        REST_RULES_5,
+    ),
+    "5/8": new RestSolver(
+        5, 8,
+        REST_RULES_5,
     ),
 });
 
@@ -520,7 +599,7 @@ export default function checkRests(
         options: IOptions): string {
     const ts = TIME_SIGNATURES[timeSignatureName];
     if (!ts) {
-        return `ERR: No such time signature ${timeSignatureName}.`;
+        return "GOOD";
     }
     const numerator = parseInt(timeSignatureName.split("/")[0], 10);
     if (isNaN(numerator)) {

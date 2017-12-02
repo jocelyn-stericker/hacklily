@@ -708,6 +708,7 @@ function getMutationInfo(document: Document, patches: IAny[]) {
         elementInfoByChord
     };
 }
+
 function fixMetre(document: Document, patches: IAny[]): IAny[] {
     patches = patches.slice();
 

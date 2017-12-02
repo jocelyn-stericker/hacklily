@@ -158,7 +158,7 @@ function tryValidate(options: ILayoutOptions,
         for (let tryAgain = true; tryAgain;) {
             if (++tries > 100) {
                 console.warn("-------------- too many fixups: aborting -------------- ");
-                console.warn(rootFixupOpts.debugFixupOperations);
+                console.warn(JSON.stringify(rootFixupOpts.debugFixupOperations, null, 2));
                 throw new Error("Internal Satie Error: fixup loop!");
             }
             tryAgain = false;
