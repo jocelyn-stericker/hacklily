@@ -199,7 +199,7 @@ export function simplifyRests(
             while (cleanRestPattern[cleanRestEnd] === "_") { ++cleanRestEnd; }
 
             const newDuration = D.makeDuration(
-                totalDivisions / parseInt(attributes.time.beats[0], 10) * (4 / attributes.time.beatTypes[0]),
+                attributes.divisions,
                 attributes.time,
                 cleanRestEnd - i
             );

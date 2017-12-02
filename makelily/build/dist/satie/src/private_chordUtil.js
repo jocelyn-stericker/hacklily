@@ -519,9 +519,13 @@ function divisions(chord, attributes, allowFractional) {
     invariant(!!attributesTime, "A time signature must be specified.");
     if (chordCount === -1 || chordCount <= 1) {
         // TODO: What if beatType isn't consistent?
-        return attributeDivisions * lodash_1.reduce(attributesTime.beats, function (memo, durr) {
+        var tsBeats = lodash_1.reduce(attributesTime.beats, function (memo, durr) {
             return memo + lodash_1.reduce(durr.split("+"), function (m, l) { return m + parseInt(l, 10); }, 0);
         }, 0);
+        var tsBeatType = attributesTime.beatTypes.reduce(function (memo, bt) { return memo === bt ? bt : NaN; }, attributesTime.beatTypes[0]);
+        invariant(!isNaN(tsBeatType), "Time signature must be consistent");
+        var total_1 = attributeDivisions * tsBeats * 4 / tsBeatType;
+        return total_1;
     }
     if ((attributeDivisions * 4) % chordCount > 0 && !allowFractional) {
         var newDivisions = private_util_1.lcm(attributeDivisions * 4, chordCount) / 4;

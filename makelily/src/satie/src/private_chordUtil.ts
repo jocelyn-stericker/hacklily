@@ -555,8 +555,14 @@ export function divisions(chord: IChord | IDurationDescription,
 
     if (chordCount === -1 || chordCount <= 1) {
         // TODO: What if beatType isn't consistent?
-        return attributeDivisions * reduce(attributesTime.beats, (memo, durr) =>
+        const tsBeats = reduce(attributesTime.beats, (memo, durr) =>
             memo + reduce(durr.split("+"), (m, l) => m + parseInt(l, 10), 0), 0);
+        const tsBeatType = attributesTime.beatTypes.reduce(
+            (memo, bt) => memo === bt ? bt : NaN,
+            attributesTime.beatTypes[0]);
+        invariant(!isNaN(tsBeatType), "Time signature must be consistent");
+        const total = attributeDivisions * tsBeats * 4 / tsBeatType;
+        return total;
     }
 
     if ((attributeDivisions * 4) % chordCount > 0 && !allowFractional) {

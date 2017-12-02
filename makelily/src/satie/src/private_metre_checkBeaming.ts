@@ -58,8 +58,8 @@ const BEAMING_PATTERNS: {[key: string]: IChord[]} = {
     "6/8": [D._4D, D._4D],
     "3/4": [D._2D],
 
-    "7/8": [D._4, D._8D],
-    "7/8_alt": [D._8D, D._4],
+    "7/8": [D._2, D._4D],
+    "7/8_alt": [D._4D, D._2],
 
     "8/8": [D._4D, D._4D, D._4],
     "8/8_alt": [D._4D, D._4, D._4D],

@@ -318,6 +318,32 @@ var REST_RULES_4 = Object.freeze([
     "..* ",
     "...*",
 ]);
+var REST_RULES_5 = Object.freeze([
+    "r__..",
+    "r....",
+    ".r...",
+    "..r..",
+    "*....",
+    ".*...",
+    "..*..",
+    "...r_",
+    "...r.",
+    "....r",
+    "...*.",
+    "....*",
+    "..r__",
+    "..r..",
+    "...r.",
+    "....r",
+    "..*..",
+    "...*.",
+    "....*",
+    "r_...",
+    "r....",
+    ".r...",
+    "*....",
+    ".*...",
+]);
 var REST_RULES_6 = Object.freeze([
     "r_____",
     "r__...",
@@ -336,6 +362,40 @@ var REST_RULES_6 = Object.freeze([
     "...*..",
     "....*.",
     ".....*",
+]);
+var REST_RULES_7 = Object.freeze([
+    "r___...",
+    "r_.....",
+    "..r_...",
+    "r......",
+    ".r.....",
+    "..r....",
+    "...r...",
+    "*......",
+    ".*.....",
+    "..* ...",
+    "...*...",
+    "....r__",
+    "....r..",
+    ".....r.",
+    "......r",
+    "....*..",
+    ".....*.",
+    "......*",
+    "...r___",
+    "...r_..",
+    ".....r_",
+    "...r...",
+    "....r..",
+    ".....r.",
+    "......r",
+    "r__....",
+    "r......",
+    ".r.....",
+    "..r....",
+    "*......",
+    ".*.....",
+    "..*....",
 ]);
 var REST_RULES_9 = Object.freeze([
     "r________",
@@ -410,11 +470,15 @@ var TIME_SIGNATURES = Object.freeze({
     "1/1": new RestSolver(1, 1, REST_RULES_1),
     "6/16": new RestSolver(6, 16, REST_RULES_6),
     "6/8": new RestSolver(6, 8, REST_RULES_6),
+    "7/8": new RestSolver(7, 8, REST_RULES_7),
     "6/4": new RestSolver(6, 4, REST_RULES_6),
+    "7/4": new RestSolver(7, 4, REST_RULES_7),
     "12/8": new RestSolver(12, 8, REST_RULES_12),
     "3/4": new RestSolver(3, 4, REST_RULES_3),
     "3/8": new RestSolver(3, 8, REST_RULES_3),
     "9/8": new RestSolver(9, 8, REST_RULES_9),
+    "5/4": new RestSolver(5, 4, REST_RULES_5),
+    "5/8": new RestSolver(5, 8, REST_RULES_5),
 });
 /**
  * $timeSignatureName is a string like "4/4" or "6/8".
@@ -431,7 +495,7 @@ var TIME_SIGNATURES = Object.freeze({
 function checkRests(timeSignatureName, barLength, song, options) {
     var ts = TIME_SIGNATURES[timeSignatureName];
     if (!ts) {
-        return "ERR: No such time signature " + timeSignatureName + ".";
+        return "GOOD";
     }
     var numerator = parseInt(timeSignatureName.split("/")[0], 10);
     if (isNaN(numerator)) {

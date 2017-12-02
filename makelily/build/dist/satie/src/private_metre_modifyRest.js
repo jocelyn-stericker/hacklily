@@ -168,7 +168,7 @@ function simplifyRests(segment, factory, attributes) {
             while (cleanRestPattern[cleanRestEnd] === "_") {
                 ++cleanRestEnd;
             }
-            var newDuration = D.makeDuration(totalDivisions / parseInt(attributes.time.beats[0], 10) * (4 / attributes.time.beatTypes[0]), attributes.time, cleanRestEnd - i);
+            var newDuration = D.makeDuration(attributes.divisions, attributes.time, cleanRestEnd - i);
             if (originalSpec.song[i] === "r" || originalModel === "killed" || !originalModel) {
                 // Check if the length of the rest needs to be changed
                 var originalRestEnd = i + 1;

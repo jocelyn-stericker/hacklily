@@ -131,7 +131,7 @@ function tryValidate(options, rootFixupOpts) {
         var _loop_1 = function (tryAgain) {
             if (++tries > 100) {
                 console.warn("-------------- too many fixups: aborting -------------- ");
-                console.warn(rootFixupOpts.debugFixupOperations);
+                console.warn(JSON.stringify(rootFixupOpts.debugFixupOperations, null, 2));
                 throw new Error("Internal Satie Error: fixup loop!");
             }
             tryAgain = false;
