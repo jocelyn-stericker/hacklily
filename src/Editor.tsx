@@ -23,6 +23,8 @@ import React from 'react';
 import ReactMonacoEditor from 'react-monaco-editor';
 
 import { MODE_EDIT, MODE_VIEW, ViewMode } from './Header';
+import CodelensProvider from './monacoConfig/CodelensProvider';
+import Commands from './monacoConfig/Commands';
 import LILYPOND_COMPLETION_ITEM_PROVIDER from './monacoConfig/LILYPOND_COMPLETION_ITEM_PROVIDER';
 import LILYPOND_MONARCH_PROVIDER from './monacoConfig/LILYPOND_MONARCH_PROVIDER';
 import { APP_STYLE } from './styles';
@@ -57,6 +59,7 @@ interface Props {
    * Called when an edit occurs. <Editor /> is a controlled component.
    */
   onSetCode(newCode: string): void;
+  showMakelily(tool?: string, cb?: (ly: string) => void): void;
 }
 
 /**
@@ -65,6 +68,11 @@ interface Props {
  * It is a controlled component, and parses the passed logs to render errors.
  */
 export default class Editor extends React.PureComponent<Props> {
+  private commands: Commands = new Commands((tool: string, cb?: (ly: string) => void):
+    void => {
+
+    this.props.showMakelily(tool, cb);
+  });
   private editor: monaco.editor.ICodeEditor | undefined;
   private oldDecorations: string[] = [];
 
@@ -248,11 +256,12 @@ export default class Editor extends React.PureComponent<Props> {
     }
   }
 
-  private handleEditorDidMount = (editor: monaco.editor.ICodeEditor,
+  private handleEditorDidMount = (editor: monaco.editor.IStandaloneCodeEditor,
                                   monacoModule: typeof monaco): void => {
     editor.focus();
     this.editor = editor;
     window.addEventListener('resize', this.handleResize, false);
+    this.commands.init(editor);
   }
 
   private handleEditorWillMount = (monacoModule: typeof monaco): void => {
@@ -260,6 +269,11 @@ export default class Editor extends React.PureComponent<Props> {
     monacoModule.languages.setMonarchTokensProvider('lilypond', LILYPOND_MONARCH_PROVIDER);
     monacoModule.languages.registerCompletionItemProvider(
             'lilypond', LILYPOND_COMPLETION_ITEM_PROVIDER);
+
+    monacoModule.languages.registerCodeLensProvider(
+      'lilypond',
+      new CodelensProvider(this.commands),
+    );
   }
 
   private handleResize = (): void => {

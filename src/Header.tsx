@@ -154,7 +154,7 @@ export default class Header extends React.PureComponent<Props> {
         <button
           title="Lilypond Tools"
           className={css(BUTTON_STYLE.buttonStyle, HEADER_STYLE.playButton)}
-          onClick={this.props.onShowMakelily}
+          onClick={this.handleShowMakelily}
         >
           <i className="fa-briefcase fa" />{' '}
           Tools
@@ -294,6 +294,10 @@ export default class Header extends React.PureComponent<Props> {
       return;
     }
     this.state.player.seek(Math.max(0, this.state.timeInSeconds - 4));
+  }
+
+  private handleShowMakelily = (): void => {
+    this.props.onShowMakelily();
   }
 
   private renderCommunityToolbar(): React.ReactNode {

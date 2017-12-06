@@ -202,7 +202,9 @@ interface State {
   logs: string | null;
   makelilyClef: string;
   makelilyKey: string;
+  makelilySingleTaskMode: boolean;
   makelilyTime: string;
+  makelilyTool: string;
   menu: boolean;
   midi: ArrayBuffer | null;
   mode: ViewMode;
@@ -214,6 +216,8 @@ interface State {
   showMakelily: typeof Makelily | null;
   windowWidth: number;
   wsError: boolean;
+
+  makelilyInsertCB?(ly: string): void;
 }
 
 const DEFAULT_SONG: string =
@@ -246,7 +250,9 @@ export default class App extends React.PureComponent<Props, State> {
     logs: '',
     makelilyClef: 'treble',
     makelilyKey: 'c \\major',
+    makelilySingleTaskMode: true,
     makelilyTime: '4/4',
+    makelilyTool: 'notes',
     menu: false,
     midi: null,
     mode: window.innerWidth >= MIN_BOTH_WIDTH ? MODE_BOTH : MODE_VIEW,
@@ -404,6 +410,7 @@ export default class App extends React.PureComponent<Props, State> {
             logs={logs}
             defaultSelection={defaultSelection}
             readOnly={song ? song.baseSHA === PUBLIC_READONLY : false}
+            showMakelily={this.handleShowMakelily}
           />
           {preview}
         </div>
@@ -636,6 +643,7 @@ export default class App extends React.PureComponent<Props, State> {
 
   private handleHideMakelily = (): void => {
     this.setState({
+      makelilyInsertCB: undefined,
       showMakelily: null,
     });
   }
@@ -689,9 +697,14 @@ export default class App extends React.PureComponent<Props, State> {
 
   private handleInsertLy = (ly: string): void => {
     if (this.editor) {
-      this.editor.insertText(`\n${ly}\n`);
+      if (this.state.makelilyInsertCB) {
+        this.state.makelilyInsertCB(`${ly}\n`);
+      } else {
+        this.editor.insertText(`\n${ly}\n`);
+      }
     }
     this.setState({
+      makelilyInsertCB: undefined,
       showMakelily: null,
     });
   }
@@ -835,7 +848,9 @@ export default class App extends React.PureComponent<Props, State> {
     });
   }
 
-  private handleShowMakelily = async (): Promise<void> => {
+  private handleShowMakelily = async(
+    tool?: string, cb?: (ly: string) => void): Promise<void> => {
+
     const editor: Editor | null = this.editor;
     if (!editor) {
       return;
@@ -846,6 +861,9 @@ export default class App extends React.PureComponent<Props, State> {
     this.setState({
       showMakelily: makelilyComponent,
       ...editor.getMakelilyProperties(),
+      makelilyInsertCB: cb,
+      makelilySingleTaskMode: !!tool,
+      makelilyTool: tool || this.state.makelilyTool,
     });
   }
 
@@ -1190,10 +1208,10 @@ export default class App extends React.PureComponent<Props, State> {
         return (
           <MakelilyComponent
             clef={this.state.makelilyClef}
-            defaultTool="notes"
+            defaultTool={this.state.makelilyTool}
             keySig={this.state.makelilyKey}
             onHide={this.handleHideMakelily}
-            singleTaskMode={false}
+            singleTaskMode={this.state.makelilySingleTaskMode}
             onInsertLy={this.handleInsertLy}
             time={this.state.makelilyTime}
           />
