@@ -37,13 +37,10 @@ class SpacerModel implements Export.ISpacerModel {
     /** defined externally */
     staffIdx: number;
 
-    private _target: IModel;
-
     /*---- Implementation -----------------------------------------------------------------------*/
 
     constructor(target: IModel) {
         if (target) {
-            this._target = target;
             this.divCount = target.divCount;
         }
     }

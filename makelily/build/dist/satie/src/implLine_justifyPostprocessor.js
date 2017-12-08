@@ -100,8 +100,6 @@ function justify(options, bounds, measures) {
         var exp = bounds.right - x;
         avgExpansion = exp / expandableCount;
     }
-    var anyExpandable = false;
-    var totalExpCount = 0;
     var lineExpansion = 0;
     lodash_1.forEach(measures, function (measure, measureIdx) {
         measure.originX += lineExpansion;
@@ -137,7 +135,6 @@ function justify(options, bounds, measures) {
                 var minRatio = private_util_1.MAX_SAFE_INTEGER;
                 for (var i = 0; i < measure.elements.length; ++i) {
                     if (measure.elements[i][j].expandPolicy !== "none") {
-                        anyExpandable = true;
                         if (!measure.elements[i][j].model || !measure.elements[i][j].model.divCount) {
                             continue;
                         }
@@ -151,7 +148,6 @@ function justify(options, bounds, measures) {
                 if (expandOne) {
                     // FIXME: We can overshoot, like on Lily 23f.
                     measureExpansion += avgExpansion * minRatio;
-                    totalExpCount += minRatio;
                 }
             });
         }

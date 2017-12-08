@@ -76,12 +76,9 @@ var ChordView = /** @class */ (function (_super) {
             .filter(function (l) { return !!l; })
             .map(function (l) {
             var text = [];
-            var currSyllabic = musicxml_interfaces_1.SyllabicType.Single;
             for (var i = 0; i < l.lyricParts.length; ++i) {
                 switch (l.lyricParts[i]._class) {
                     case "Syllabic":
-                        var syllabic = l.lyricParts[i];
-                        currSyllabic = syllabic.data;
                         break;
                     case "Text":
                         var textPt = l.lyricParts[i];

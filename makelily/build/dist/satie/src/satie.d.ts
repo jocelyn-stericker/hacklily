@@ -1,4 +1,3 @@
-/// <reference types="lodash" />
 /**
  * This file is part of Satie music engraver <https://github.com/jnetterf/satie>.
  * Copyright (C) Joshua Netterfield <joshua.ca> 2015 - present.
@@ -22,6 +21,7 @@ export { default as Application } from "./engine_application";
 export { default as IHandler } from "./engine_application";
 export { Document, IModel, Type, IMeasure, IMeasurePart, ISong, ISongClass, IMouseEvent, ISegment } from "./document";
 export declare const Song: ISongClass;
+import { getGlyphCode as eGetGlyphCode } from "./private_smufl";
 import EClef from "./implAttributes_clefView";
 import EKeySignature from "./implAttributes_keySignatureView";
 import ETimeSignature from "./implAttributes_timeSignatureView";
@@ -32,7 +32,7 @@ export { requireFont } from "./private_fontManager";
 import eCreatePatch from "./engine_createPatch";
 export { PartBuilder, StaffBuilder, DocumentBuilder, MeasureBuilder, VoiceBuilder } from "./engine_createPatch";
 export declare module Addons {
-    const getGlyphCode: ((name: string) => string) & _.MemoizedFunction;
+    const getGlyphCode: typeof eGetGlyphCode;
     const pageSizes: {
         name: string;
         lilypondName: string;

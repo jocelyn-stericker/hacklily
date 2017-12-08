@@ -16,7 +16,7 @@
  * along with Satie.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import {Note, Lyric, Syllabic, SyllabicType, Text, StemType} from "musicxml-interfaces";
+import {Note, Lyric, Text, StemType} from "musicxml-interfaces";
 import {createFactory, Component, ReactElement} from "react";
 import * as DOM from "react-dom-factories";
 import * as PropTypes from "prop-types";
@@ -82,12 +82,9 @@ export default class ChordView extends Component<IProps, {}> {
             .filter(l => !!l)
             .map((l: Lyric) => {
                 let text: any[] = [];
-                let currSyllabic = SyllabicType.Single;
                 for (let i = 0; i < l.lyricParts.length; ++i) {
                     switch (l.lyricParts[i]._class) {
                         case "Syllabic":
-                            let syllabic = <Syllabic> l.lyricParts[i];
-                            currSyllabic = syllabic.data;
                             break;
                         case "Text":
                             let textPt = <Text> l.lyricParts[i];

@@ -111,11 +111,9 @@ function getLinePlacementHints(measures) {
     var shortests = Object.keys(shortestsObj).map(function (str) { return parseInt(str, 10); });
     return lodash_1.map(measures, function layoutMeasure(measure, idx) {
         var shortestInMeasure = shortestByMeasure[idx];
-        var specifiedWidth = measure.width;
         var numericMeasureWidth = !isNaN(measure.width) && measure.width !== null;
         if (numericMeasureWidth && (measure.width <= 0 || !isFinite(measure.width))) {
             console.warn("Bad measure width %s. Ignoring", measure.width);
-            specifiedWidth = undefined;
         }
         var widthByShortest = shortests.reduce(function (shortests, shortest) {
             if (shortest <= shortestInMeasure) {

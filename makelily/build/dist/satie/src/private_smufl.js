@@ -24,12 +24,16 @@ var private_smufl_bravura_2 = require("./private_smufl_bravura");
 exports.bravura = private_smufl_bravura_2.default;
 exports.bboxes = lodash_1.keyBy(private_smufl_bravura_1.default.glyphBBoxes, 4);
 exports.bboxes["noteheadNull"] = exports.bboxes["noteheadBlack"];
-exports.getGlyphCode = lodash_1.memoize(function getGlyphCode(name) {
+var _getGlyphCode = lodash_1.memoize(function getGlyphCode(name) {
     if (!(name in private_smufl_glyphnames_1.default)) {
         console.warn(name, " is not a valid glyph");
     }
     return private_smufl_glyphnames_1.default[name];
 });
+function getGlyphCode(name) {
+    return _getGlyphCode(name);
+}
+exports.getGlyphCode = getGlyphCode;
 var getAnchor = lodash_1.memoize(function (notehead) { return private_smufl_bravura_1.default.glyphsWithAnchors[notehead]; });
 /**
  * Calculates where a notation should begin.

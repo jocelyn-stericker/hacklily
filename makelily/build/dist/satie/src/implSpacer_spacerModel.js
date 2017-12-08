@@ -26,7 +26,6 @@ var SpacerModel = /** @class */ (function () {
     function SpacerModel(target) {
         this._class = "Spacer";
         if (target) {
-            this._target = target;
             this.divCount = target.divCount;
         }
     }

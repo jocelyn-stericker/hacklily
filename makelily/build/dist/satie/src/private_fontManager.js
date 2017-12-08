@@ -208,7 +208,7 @@ function getTextBB(name, text, fontSize, style) {
     };
 }
 exports.getTextBB = getTextBB;
-exports.toPathData = lodash_1.memoize(function (name, text, x, y, fontSize, style) {
+var _toPathData = lodash_1.memoize(function (name, text, x, y, fontSize, style) {
     var fullName = getFullName(name, style);
     var font = State.fonts[fullName];
     if (!font) {
@@ -221,6 +221,10 @@ exports.toPathData = lodash_1.memoize(function (name, text, x, y, fontSize, styl
     }
     return font.getPath(text, x, y, fontSize, { kerning: true }).toPathData(3);
 }, resolvePDKey);
+function toPathData(name, text, x, y, fontSize, style) {
+    return _toPathData(name, text, x, y, fontSize, style);
+}
+exports.toPathData = toPathData;
 function resolvePDKey(name, text, x, y, fontSize, style) {
     return name + "_" + text + "_" + x + "_" + y + "_" + fontSize + "_" + (style || "");
 }

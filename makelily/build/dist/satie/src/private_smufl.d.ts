@@ -1,9 +1,8 @@
-/// <reference types="lodash" />
 export { default as bravura } from "./private_smufl_bravura";
 export declare let bboxes: {
     [key: string]: any[];
 };
-export declare let getGlyphCode: ((name: string) => string) & _.MemoizedFunction;
+export declare function getGlyphCode(name: string): string;
 /**
  * Calculates where a notation should begin.
  */

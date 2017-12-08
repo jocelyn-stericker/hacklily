@@ -38,5 +38,5 @@ export default class Glyph extends Component<IProps, {}> {
     context: {
         renderTarget?: "svg-web" | "svg-export";
     };
-    render(): React.ReactSVGElement;
+    render(): JSX.Element;
 }
