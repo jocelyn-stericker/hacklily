@@ -81,6 +81,12 @@ var Makelily = /** @class */ (function (_super) {
         _this.state = {
             toolKey: _this.props.defaultTool || 'clef',
         };
+        _this.handleDocumentKeyDown = function (e) {
+            if (e.keyCode === 27) {
+                e.preventDefault();
+                _this.props.onHide();
+            }
+        };
         return _this;
     }
     Makelily.prototype.componentDidCatch = function (error, info) {
@@ -88,6 +94,12 @@ var Makelily = /** @class */ (function (_super) {
         this.setState({
             toolKey: 'error',
         });
+    };
+    Makelily.prototype.componentDidMount = function () {
+        document.addEventListener('keydown', this.handleDocumentKeyDown);
+    };
+    Makelily.prototype.componentWillUnmount = function () {
+        document.removeEventListener('keydown', this.handleDocumentKeyDown);
     };
     Makelily.prototype.render = function () {
         var _this = this;
@@ -111,7 +123,7 @@ var Makelily = /** @class */ (function (_super) {
         }
         var contentClass = aphrodite_1.css(styles.content, this.props.singleTaskMode && styles.contentNoBar);
         return (React.createElement("span", null,
-            React.createElement("div", { className: aphrodite_1.css(styles.modalBg) }),
+            React.createElement("div", { role: "button", "aria-label": "close", className: aphrodite_1.css(styles.modalBg), onClick: this.props.onHide }),
             React.createElement("div", { className: aphrodite_1.css(styles.modal) },
                 bar,
                 React.createElement("div", { className: contentClass },
@@ -169,6 +181,7 @@ var styles = aphrodite_1.StyleSheet.create({
     modalBg: {
         background: 'black',
         bottom: 0,
+        cursor: 'pointer',
         left: 0,
         opacity: 0.4,
         position: 'fixed',

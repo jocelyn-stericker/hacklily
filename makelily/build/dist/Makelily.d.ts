@@ -20,5 +20,8 @@ export interface State {
 export default class Makelily extends React.Component<Props, State> {
     state: State;
     componentDidCatch(error: Error, info: React.ErrorInfo): void;
+    componentDidMount(): void;
+    componentWillUnmount(): void;
     render(): JSX.Element;
+    private handleDocumentKeyDown;
 }

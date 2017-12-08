@@ -102,6 +102,14 @@ export default class Makelily extends React.Component<Props, State> {
     });
   }
 
+  componentDidMount(): void {
+    document.addEventListener('keydown', this.handleDocumentKeyDown);
+  }
+
+  componentWillUnmount(): void {
+    document.removeEventListener('keydown', this.handleDocumentKeyDown);
+  }
+
   render(): JSX.Element {
     const modeElements: JSX.Element[] = modes
       .filter((mode: InsertMode) => mode.name !== null)
@@ -152,7 +160,12 @@ export default class Makelily extends React.Component<Props, State> {
 
     return (
       <span>
-        <div className={css(styles.modalBg)} />
+        <div
+          role="button"
+          aria-label="close"
+          className={css(styles.modalBg)}
+          onClick={this.props.onHide}
+        />
         <div className={css(styles.modal)}>
           {bar}
           <div className={contentClass}>
@@ -175,6 +188,13 @@ export default class Makelily extends React.Component<Props, State> {
         </div>
       </span>
     );
+  }
+
+  private handleDocumentKeyDown = (e: KeyboardEvent): void => {
+    if (e.keyCode === 27) {
+      e.preventDefault();
+      this.props.onHide();
+    }
   }
 }
 
@@ -227,6 +247,7 @@ const styles = StyleSheet.create({
   modalBg: {
     background: 'black',
     bottom:0,
+    cursor: 'pointer',
     left: 0,
     opacity: 0.4,
     position: 'fixed',
