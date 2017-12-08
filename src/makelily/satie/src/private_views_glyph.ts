@@ -49,7 +49,7 @@ export default class Glyph extends Component<IProps, {}> {
         renderTarget?: "svg-web" | "svg-export",
     };
 
-    render() {
+    render(): JSX.Element {
         let px = this.props.x;
         let py = this.props.y;
 

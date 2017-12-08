@@ -146,11 +146,9 @@ function getLinePlacementHints(measures: IMeasure[]): ReadonlyArray<ILinePlaceme
     return map(measures, function layoutMeasure(measure, idx): ILinePlacementHint {
         const shortestInMeasure = shortestByMeasure[idx];
 
-        let specifiedWidth = measure.width;
         const numericMeasureWidth = !isNaN(measure.width) && measure.width !== null;
         if (numericMeasureWidth && (measure.width <= 0 || !isFinite(measure.width))) {
             console.warn("Bad measure width %s. Ignoring", measure.width);
-            specifiedWidth = undefined;
         }
         let widthByShortest = shortests.reduce((shortests, shortest) => {
             if (shortest <= shortestInMeasure) {

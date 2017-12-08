@@ -25,12 +25,16 @@ export {default as bravura} from "./private_smufl_bravura";
 export let bboxes: {[key: string]: any[]; } = keyBy(bravura.glyphBBoxes, 4) as any;
 bboxes["noteheadNull"] = bboxes["noteheadBlack"];
 
-export let getGlyphCode = memoize(function getGlyphCode(name: string) {
+let _getGlyphCode = memoize(function getGlyphCode(name: string) {
     if (!(name in glyphNames)) {
         console.warn(name, " is not a valid glyph");
     }
     return glyphNames[name];
 });
+
+export function getGlyphCode(name: string) {
+    return _getGlyphCode(name);
+}
 
 const getAnchor = memoize((notehead: string) => bravura.glyphsWithAnchors[notehead]);
 

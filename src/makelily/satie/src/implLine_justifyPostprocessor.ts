@@ -115,8 +115,6 @@ function justify(options: ILayoutOptions, bounds: ILineBounds,
         avgExpansion = exp / expandableCount;
     }
 
-    let anyExpandable = false;
-    let totalExpCount = 0;
     let lineExpansion = 0;
     forEach(measures, function(measure, measureIdx) {
         measure.originX += lineExpansion;
@@ -153,7 +151,6 @@ function justify(options: ILayoutOptions, bounds: ILineBounds,
                 let minRatio = MAX_SAFE_INTEGER;
                 for (let i = 0; i < measure.elements.length; ++i) {
                     if (measure.elements[i][j].expandPolicy !== "none") {
-                        anyExpandable = true;
                         if (!measure.elements[i][j].model || !measure.elements[i][j].model.divCount) {
                             continue;
                         }
@@ -169,7 +166,6 @@ function justify(options: ILayoutOptions, bounds: ILineBounds,
                 if (expandOne) {
                     // FIXME: We can overshoot, like on Lily 23f.
                     measureExpansion += avgExpansion * minRatio;
-                    totalExpCount += minRatio;
                 }
             });
         }

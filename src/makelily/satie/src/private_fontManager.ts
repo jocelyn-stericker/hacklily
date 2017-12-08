@@ -246,7 +246,7 @@ export function getTextBB(name: string, text: string, fontSize: number, style?: 
     };
 }
 
-export let toPathData = memoize(function(name: string, text: string,
+let _toPathData = memoize(function(name: string, text: string,
         x: number, y: number, fontSize: number, style?: string): string {
     let fullName = getFullName(name, style);
     let font = State.fonts[fullName];
@@ -260,6 +260,11 @@ export let toPathData = memoize(function(name: string, text: string,
     }
     return font.getPath(text, x, y, fontSize, {kerning: true}).toPathData(3);
 }, resolvePDKey);
+
+export function toPathData(name: string, text: string,
+        x: number, y: number, fontSize: number, style?: string): string {
+    return _toPathData(name, text, x, y, fontSize, style);
+}
 
 function resolvePDKey(name: string, text: string,
         x: number, y: number, fontSize: number, style?: string) {
