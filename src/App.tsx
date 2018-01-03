@@ -226,7 +226,9 @@ const DEFAULT_SONG: string =
   composer = "Composer"
 }
 
-\\relative d' { d4 }`;
+\\relative c' {
+  c4
+}`;
 
 /**
  * Root component of Hacklily. This renders everything on the page.
