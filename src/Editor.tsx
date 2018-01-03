@@ -29,6 +29,8 @@ import LILYPOND_COMPLETION_ITEM_PROVIDER from './monacoConfig/LILYPOND_COMPLETIO
 import LILYPOND_MONARCH_PROVIDER from './monacoConfig/LILYPOND_MONARCH_PROVIDER';
 import { APP_STYLE } from './styles';
 
+let registeredMonacoComponents: boolean = false;
+
 export interface MakelilyProps {
   makelilyClef: string;
   makelilyKey: string;
@@ -265,6 +267,11 @@ export default class Editor extends React.PureComponent<Props> {
   }
 
   private handleEditorWillMount = (monacoModule: typeof monaco): void => {
+    if (registeredMonacoComponents) {
+      return;
+    }
+    registeredMonacoComponents = true;
+
     monacoModule.languages.register({ id: 'lilypond' });
     monacoModule.languages.setMonarchTokensProvider('lilypond', LILYPOND_MONARCH_PROVIDER);
     monacoModule.languages.registerCompletionItemProvider(
