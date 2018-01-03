@@ -145,6 +145,11 @@ interface Props extends QueryProps {
   auth: Auth | null;
 
   /**
+   * From localStorage, the color scheme.
+   */
+  colourScheme: 'vs-dark' | 'vs';
+
+  /**
    * From localStorage, used as part of the GitHub OAuth flow.
    */
   csrf: string;
@@ -153,6 +158,7 @@ interface Props extends QueryProps {
    * From localStorage, all songs that have changes not pushed to GitHub.
    */
   dirtySongs: {[key: string]: Song};
+
   isStandalone: boolean;
 
   /**
@@ -170,6 +176,11 @@ interface Props extends QueryProps {
    * Logs in or out of GitHub. Updates localStorage.
    */
   setAuth(auth: Auth | null): void;
+
+  /**
+   * Stores the color scheme in localStorage.
+   */
+  setColourScheme(colourScheme: 'vs-dark' | 'vs'): void;
 
   /**
    * Sets the CSRF ("state") as part of the GitHub OAuth flow.
@@ -319,6 +330,7 @@ export default class App extends React.PureComponent<Props, State> {
     setEditingNotificationHandler(null);
   }
 
+  // tslint:disable-next-line:max-func-body-length
   render(): JSX.Element {
     const {
       logs,
@@ -407,6 +419,7 @@ export default class App extends React.PureComponent<Props, State> {
           <Editor
             ref={this.setEditor}
             code={song ? song.src : undefined}
+            colourScheme={this.props.colourScheme}
             mode={mode}
             onSetCode={this.handleCodeChanged}
             logs={logs}
@@ -1182,6 +1195,7 @@ export default class App extends React.PureComponent<Props, State> {
         return (
           <Menu
             auth={auth}
+            colourScheme={this.props.colourScheme}
             windowWidth={this.state.windowWidth}
             onDeleteSong={this.handleDeleteSong}
             onHide={this.handleHideMenu}
@@ -1189,6 +1203,7 @@ export default class App extends React.PureComponent<Props, State> {
             onSignIn={this.handleSignIn}
             onSignOut={this.handleSignOut}
             onLoadSong={this.handleLoadSong}
+            setColourScheme={this.props.setColourScheme}
           />
         );
       case (interstitialChanges !== null && !isStandalone):

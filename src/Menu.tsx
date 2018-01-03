@@ -28,6 +28,7 @@ import { HEADER_STYLE, MENU_STYLE } from './styles';
 
 interface Props {
   auth: Auth | null;
+  colourScheme: 'vs-dark' | 'vs';
   windowWidth: number;
   onDeleteSong(song: string): void;
   onHide(): void;
@@ -35,6 +36,7 @@ interface Props {
   onShowAbout(): void;
   onSignIn(): void;
   onSignOut(): void;
+  setColourScheme(colourScheme: 'vs-dark' | 'vs'): void;
 }
 
 interface State {
@@ -126,6 +128,7 @@ class Menu extends React.PureComponent<Props, State> {
           </div>
           {signOut}
           {tutorial}
+          {this.renderSetColourScheme()}
           {about}
         </div>
       </ReactModal>
@@ -153,6 +156,13 @@ class Menu extends React.PureComponent<Props, State> {
     }
   }
 
+  private handleColourSchemeToggled = (): void => {
+    const newColourScheme: 'vs-dark' | 'vs' = (
+      this.props.colourScheme === 'vs-dark' ? 'vs' : 'vs-dark');
+
+    this.props.setColourScheme(newColourScheme);
+  }
+
   private handleSongDeleteClick = (ev: React.MouseEvent<HTMLButtonElement>): void => {
     const song: string | undefined = ev.currentTarget.dataset.song;
     if (!song) {
@@ -167,6 +177,23 @@ class Menu extends React.PureComponent<Props, State> {
       throw new Error('No song defined on element.');
     }
     this.props.onLoadSong(song);
+  }
+
+  private renderSetColourScheme(): React.ReactNode {
+    const text: string = (
+      this.props.colourScheme === 'vs-dark' ?
+        'Use light colour scheme' :
+        'Use dark colour scheme');
+
+    return (
+      <button
+        onClick={this.handleColourSchemeToggled}
+        className={css(MENU_STYLE.option)}
+      >
+        <i className="fa fa-fw fa-lightbulb-o" aria-hidden={true} />{' '}
+        {text}
+      </button>
+    );
   }
 
   private renderSongs(): React.ReactNode {

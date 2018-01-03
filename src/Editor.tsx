@@ -39,6 +39,9 @@ export interface MakelilyProps {
 
 interface Props {
   code: string | undefined;
+
+  colourScheme: 'vs-dark' | 'vs';
+
   /**
    * When this changes, the selection changes. Used so that when you click on a
    * note in the preview, it highlights where the note is defined in the editor.
@@ -244,7 +247,7 @@ export default class Editor extends React.PureComponent<Props> {
           language="lilypond"
           onChange={onSetCode}
           options={monacoOptions}
-          theme="vs-dark"
+          theme={this.props.colourScheme}
           value={code}
           width={mode === MODE_EDIT ? '100%' : '50%'}
         />

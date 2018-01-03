@@ -35,10 +35,12 @@ function render(): void {
       dirtySongs={getDirtySongs()}
       auth={getAuth()}
       csrf={localStorage.csrf || null}
+      colourScheme={localStorage.colourScheme || 'vs-dark'}
       setQuery={setQuery}
       editSong={editSong}
       markSongClean={markSongClean}
       setAuth={setAuth}
+      setColourScheme={setColourScheme}
       setCSRF={setCSRF}
       isStandalone={process.env.REACT_APP_STANDALONE === 'yes'}
     />,
@@ -138,6 +140,11 @@ function setAuth(auth: Auth | null): void {
     localStorage.auth = JSON.stringify(auth);
   }
   render();
+}
+
+function setColourScheme(colourScheme: 'vs-dark' | 'vs'): void {
+  localStorage.colourScheme = colourScheme;
+  document.location.reload();
 }
 
 function setCSRF(csrf: string | null): void {

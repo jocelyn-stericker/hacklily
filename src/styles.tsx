@@ -245,7 +245,7 @@ export const MENU_STYLE = StyleSheet.create({
     border: '1px solid rgba(0, 0, 0, 0.3)',
     display: 'flex',
     flexDirection: 'row',
-    height: 400,
+    height: 500,
     left: 65,
     outline: 'none',
     padding: '14px 7px 4px 7px',
