@@ -1243,6 +1243,13 @@ export default class App extends React.PureComponent<Props, State> {
 
     if (this.socket || isStandalone) {
       if (online && this.rpc || isStandalone) {
+        let songURL: string | null = null;
+        if (this.props.edit) {
+          const songParts: string[] = this.props.edit.split('/');
+          songURL = `https://github.com/${songParts[0]}/${songParts[1]}/blob/master/${
+            songParts.slice(2).join('/')}`;
+        }
+
         return (
           <Preview
             code={song.src}
@@ -1254,6 +1261,7 @@ export default class App extends React.PureComponent<Props, State> {
             rpc={isStandalone ? null : this.rpc}
             standaloneRender={this.standaloneRender}
             logs={logs}
+            songURL={songURL}
           />
         );
       }

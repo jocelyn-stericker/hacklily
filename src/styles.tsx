@@ -57,6 +57,16 @@ export const APP_STYLE = StyleSheet.create({
     textAlign: 'center',
     top: 0,
   },
+  githubButton: {
+    borderLeft: '1px solid #ccc',
+    bottom: 10,
+    color: 'black',
+    maxHeight: '90%',
+    overflow: 'auto',
+    position: 'absolute',
+    right: 110,
+    textDecoration: 'none',
+  },
   monacoHidden: {
     display: 'none',
   },

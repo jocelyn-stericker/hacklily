@@ -26,7 +26,7 @@ import { decodeArrayBuffer } from './base64Binary';
 import { MODE_BOTH, MODE_VIEW, ViewMode } from './Header';
 import Logs from './Logs';
 import RPCClient, { RenderResponse } from './RPCClient';
-import { APP_STYLE } from './styles';
+import { APP_STYLE, BUTTON_STYLE } from './styles';
 import debounce from './util/debounce';
 
 /**
@@ -79,6 +79,8 @@ interface Props {
    * rpc must be null if and only if isStandalone is set.
    */
   rpc: RPCClient | null;
+
+  songURL: string | null;
 
   /**
    * Called whenever a preview is rendered. The parent should in turn re-render,
@@ -178,6 +180,7 @@ export default class Preview extends React.PureComponent<Props, State> {
         />
         {pendingPreviews > 0 && <div className={previewMaskStyle} />}
         {error && <div className={css(APP_STYLE.errorMask)}>{error}</div>}
+        {this.props.songURL && this.renderPublishedURL(this.props.songURL)}
         <Logs logs={logs} />
       </div>
     );
@@ -337,5 +340,19 @@ export default class Preview extends React.PureComponent<Props, State> {
 
   private handleSetSheetMusicView = (sheetMusicView: HTMLIFrameElement): void => {
     this.sheetMusicView = sheetMusicView;
+  }
+
+  private renderPublishedURL(url: string): JSX.Element {
+    return (
+      <a
+        href={url.replace(/\.ly$/, '.pdf')}
+        target="_blank"
+        rel="noopener noreferrer"
+        className={css(BUTTON_STYLE.buttonStyle, APP_STYLE.githubButton)}
+      >
+        <i className="fa fa-file-pdf-o" />{' '}
+        View PDF
+      </a>
+    );
   }
 }
