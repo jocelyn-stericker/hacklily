@@ -11,13 +11,17 @@ It consists of a frontend [Lilypond](http://lilypond.org/) editor using [monaco]
 
 ### Dependencies
 
+> **Important**: You do not need to install anything to run Hacklily in your browser. Hacklily supports all major browsers. To use it, just go to [https://www.hacklily.org](https://www.hacklily.org). The instructions below are for if you want to contribute to Hacklily or run the Hacklily development server _locally_.
+
 You need:
 
 - [Node](https://nodejs.org/en/) -- tested with Node 7, earlier versions may or may not also work
 - [Yarn](https://yarnpkg.com/lang/en/docs/install/)
 - [Qt 5](https://www.qt.io/) -- with qmake in your path (installing using the version from Qt's website is recommended on macOS)
 - [Docker](https://www.docker.com/)
-- an OS that is not Windows (if you make it work, please contribute your fix!)
+
+Note: I haven't tested this on Windows yet. Theoretically, this should work with something like MSYS, but I have not tried. 
+If you manage to get it working, please make a pull request with instructions on how to do that.
 
 ### Obtaining
 
