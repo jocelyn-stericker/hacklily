@@ -48,6 +48,8 @@ interface Props {
    */
   defaultSelection: monaco.ISelection | null;
 
+  isImmutableSrc: boolean;
+
   /**
    * Lilypond logs -- used to render errors
    */
@@ -222,12 +224,21 @@ export default class Editor extends React.PureComponent<Props> {
 
     let readOnlyNotice: JSX.Element | null = null;
     if (readOnly) {
-      readOnlyNotice = (
-        <div className={css(APP_STYLE.readOnlyNotification)}>
-          <i className="fa-lock fa" />{' '}
-          read-only &mdash; to edit, log in as the owner or save a copy
-        </div>
-      );
+      if (this.props.isImmutableSrc) {
+        readOnlyNotice = (
+          <div className={css(APP_STYLE.readOnlyNotification)}>
+            <i className="fa-info-circle fa" />{' '}
+            to edit, import this song
+          </div>
+        );
+      } else {
+        readOnlyNotice = (
+          <div className={css(APP_STYLE.readOnlyNotification)}>
+            <i className="fa-lock fa" />{' '}
+            read-only &mdash; to edit, log in as the owner or save a copy
+          </div>
+        );
+      }
     }
 
     if (code === null || code === undefined) {

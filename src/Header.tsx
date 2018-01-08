@@ -46,6 +46,7 @@ interface Player {
 interface Props {
   inSandbox: boolean;
   isDirty: boolean;
+  isImmutableSrc: boolean;
   loggedIn: boolean;
   midi: ArrayBuffer | null;
   mode: ViewMode;
@@ -300,9 +301,10 @@ export default class Header extends React.PureComponent<Props> {
     this.props.onShowMakelily();
   }
 
+  // tslint:disable-next-line:cyclomatic-complexity
   private renderCommunityToolbar(): React.ReactNode {
     const { online, song, onShowClone, onShowNew, onShowPublish, isDirty, windowWidth,
-      sandboxIsDirty, inSandbox} = this.props;
+      sandboxIsDirty, inSandbox, isImmutableSrc} = this.props;
     const micro: boolean = windowWidth <= 750;
 
     const goToSandbox: string = sandboxIsDirty ? 'Back to scratchpad' : 'New song';
@@ -315,7 +317,8 @@ export default class Header extends React.PureComponent<Props> {
             onClick={onShowClone}
         >
           <i className="fa fa-clone" />{' '}
-          {!micro && <span>Save As</span>}
+          {!micro && !isImmutableSrc && <span>Save As</span>}
+          {!micro && isImmutableSrc && <span>Import</span>}
         </button>
       );
     }

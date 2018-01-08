@@ -100,6 +100,12 @@ export interface QueryProps {
   saveAs?: string;
 
   /**
+   * When set, open a read-only sandbox with this code.
+   * Takes precedence over "edit".
+   */
+  src?: string;
+
+  /**
    * In standalone mode, whether to show the import dialog.
    */
   standaloneImport?: boolean;
@@ -120,6 +126,7 @@ export const QUERY_PROP_KEYS: (keyof QueryProps)[] = [
   'code',
   'edit',
   'saveAs',
+  'src',
   'state',
   'standaloneImport',
 ];
@@ -349,7 +356,7 @@ export default class App extends React.PureComponent<Props, State> {
     const online: boolean = this.isOnline();
     const preview: React.ReactNode = this.renderPreview();
     const song: Song | undefined = this.song();
-    const sandboxIsDirty: boolean = Boolean(this.props.edit) &&
+    const sandboxIsDirty: boolean = Boolean(this.props.edit || this.props.src) &&
       Boolean(this.props.dirtySongs.null);
 
     const header: React.ReactNode = !isStandalone && (
@@ -365,9 +372,10 @@ export default class App extends React.PureComponent<Props, State> {
         onShowNew={this.handleShowNew}
         onShowPublish={this.handleShowPublish}
         sandboxIsDirty={sandboxIsDirty}
-        song={edit}
-        inSandbox={!this.props.edit}
+        song={this.props.src ? 'untitled-import' : edit}
+        inSandbox={!this.props.edit && !this.props.src}
         isDirty={this.isDirty()}
+        isImmutableSrc={Boolean(this.props.src)}
         windowWidth={windowWidth}
       />
     );
@@ -425,6 +433,7 @@ export default class App extends React.PureComponent<Props, State> {
             logs={logs}
             defaultSelection={defaultSelection}
             readOnly={song ? song.baseSHA === PUBLIC_READONLY : false}
+            isImmutableSrc={Boolean(this.props.src)}
             showMakelily={this.handleShowMakelily}
           />
           {preview}
@@ -538,6 +547,7 @@ export default class App extends React.PureComponent<Props, State> {
       if (err instanceof FileNotFound) {
         this.props.setQuery({
           edit: undefined,
+          src: undefined,
           404: '1',
         });
       }
@@ -610,6 +620,7 @@ export default class App extends React.PureComponent<Props, State> {
         this.props.markSongClean(songID);
         this.props.setQuery({
           edit: undefined,
+          src: undefined,
         });
       }
     } finally {
@@ -688,6 +699,7 @@ export default class App extends React.PureComponent<Props, State> {
     this.props.setQuery(
       {
         edit: undefined,
+        src: undefined,
       },
       true,
     );
@@ -727,6 +739,7 @@ export default class App extends React.PureComponent<Props, State> {
   private handleLoadSong = (edit: string): void => {
     this.setQueryOrShowInterstitial({
       edit,
+      src: undefined,
     });
     this.setState({
       menu: false,
@@ -806,6 +819,7 @@ export default class App extends React.PureComponent<Props, State> {
       this.props.setQuery({
         edit,
         saveAs: undefined,
+        src: undefined,
       });
     }
 
@@ -904,6 +918,7 @@ export default class App extends React.PureComponent<Props, State> {
     } else {
       this.setQueryOrShowInterstitial({
         edit: undefined,
+        src: undefined,
       });
     }
   }
@@ -1108,7 +1123,11 @@ export default class App extends React.PureComponent<Props, State> {
   }
 
   private isDirty(): boolean {
-    const { edit, dirtySongs } = this.props;
+    const { edit, dirtySongs, src } = this.props;
+
+    if (src) {
+      return false;
+    }
 
     return dirtySongs[edit || 'null'] !== undefined;
   }
@@ -1356,7 +1375,15 @@ export default class App extends React.PureComponent<Props, State> {
   }
 
   private song(): Song | undefined {
-    const { dirtySongs, edit } = this.props;
+    const { dirtySongs, edit, src } = this.props;
+
+    if (src) {
+      return {
+        baseSHA: PUBLIC_READONLY,
+        src,
+      };
+    }
+
     const { cleanSongs } = this.state;
     const songName: string = edit || 'null';
 
