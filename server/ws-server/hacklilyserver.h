@@ -116,6 +116,9 @@ private:
     QString _coordinatorURL;
 
     // state (all)
+    int _analytics_renders;
+    int _analytics_saves;
+    int _analytics_sign_in;
     QList<QProcess*> _renderers;
     QMap<int, QWebSocket *> _sockets; /// by socket id
     QMap<QString, UserInfo> _userInfo; /// by request id
@@ -125,13 +128,10 @@ private:
     QMap<QString, HacklilyServerRequest> _remoteProcessingRequests;
     QNetworkAccessManager *_nam;
     int _maxJobs;
-    int _totalRenderRequests;
     QDateTime _startupTime;
 
     // state (coordinator)
     QWebSocketServer* _server;
-    bool _saveOccuredSinceLastPublish;
-    QTimer *_updateUserContentTimer;
 
     // state (worker)
     QWebSocket *_coordinator;

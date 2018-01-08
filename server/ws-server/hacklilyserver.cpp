@@ -36,14 +36,14 @@ HacklilyServer::HacklilyServer(QString rendererDockerTag,
     _wsPort(wsPort),
     _ghClientID(ghClientID),
     _ghSecret(ghSecret),
+    _analytics_renders(0),
+    _analytics_saves(0),
+    _analytics_sign_in(0),
     _lastSocketID(-1),
     _nam(new QNetworkAccessManager(this)),
     _maxJobs(jobs),
-    _totalRenderRequests(0),
     _startupTime(QDateTime::currentDateTimeUtc()),
     _server(new QWebSocketServer("hacklily-server", QWebSocketServer::NonSecureMode, this)),
-    _saveOccuredSinceLastPublish(false),
-    _updateUserContentTimer(NULL),
     _coordinator(NULL),
     _coordinatorPingTimer(NULL)
 {
@@ -70,12 +70,13 @@ HacklilyServer::HacklilyServer(QString rendererDockerTag,
     QObject(parent),
     _rendererDockerTag(rendererDockerTag),
     _coordinatorURL(coordinator),
+    _analytics_renders(0),
+    _analytics_saves(0),
+    _analytics_sign_in(0),
     _lastSocketID(-1),
     _nam(new QNetworkAccessManager(this)),
     _maxJobs(jobs),
     _server(NULL),
-    _saveOccuredSinceLastPublish(false),
-    _updateUserContentTimer(NULL),
     _coordinator(NULL),
     _coordinatorPingTimer(NULL)
 {
@@ -146,7 +147,7 @@ void HacklilyServer::_handleTextMessageReceived(QString message) {
         socket->sendTextMessage(responseJSONText);
     } else if (requestObj["method"] == "notifySaved") {
         qDebug() << "Saved";
-        _saveOccuredSinceLastPublish = true;
+        ++_analytics_saves;
 
         QJsonObject responseObj;
         responseObj["jsonrpc"] = "2.0";
@@ -157,7 +158,7 @@ void HacklilyServer::_handleTextMessageReceived(QString message) {
         auto responseJSONText = response.toJson(QJsonDocument::Compact);
         socket->sendTextMessage(responseJSONText);
     } else if (requestObj["method"] == "render") {
-        ++_totalRenderRequests;
+        ++_analytics_renders;
         HacklilyServerRequest req = {
             requestObj["params"].toObject()["src"].toString(),
             requestObj["params"].toObject()["backend"].toString(),
@@ -168,6 +169,9 @@ void HacklilyServer::_handleTextMessageReceived(QString message) {
             socket->sendTextMessage("{\"error\": \"Invalid request.\", \"errorSlug\": \"invalid_request\"}");
             return;
         }
+        QDebug debug = qDebug();
+        debug.noquote();
+        debug << QString("[render] https://www.hacklily.org/#src=") + QString::fromLatin1(QUrl::toPercentEncoding(req.src));
         _requests.push_back(req);
         _processIfPossible();
     } else if (requestObj["method"] == "signIn") {
@@ -241,7 +245,10 @@ void HacklilyServer::_handleTextMessageReceived(QString message) {
         resultObj["backlog"] = _requests.size();
         resultObj["startup_time"] = _startupTime.toString(Qt::ISODate);
         resultObj["uptime_secs"] = _startupTime.secsTo(QDateTime::currentDateTimeUtc());
-        resultObj["update_pending"] = _saveOccuredSinceLastPublish;
+        resultObj["current_active_users"] = _sockets.size();
+        resultObj["analytics_renders"] = _analytics_renders;
+        resultObj["analytics_saves"] = _analytics_saves;
+        resultObj["analytics_sign_in"] = _analytics_sign_in;
 
         QJsonObject responseObj;
         responseObj["jsonrpc"] = "2.0";
@@ -509,6 +516,7 @@ void HacklilyServer::_handleOAuthReply() {
 
     _userInfo[requestID] = userInfo;
 
+    ++_analytics_sign_in;
     QNetworkRequest request;
     request.setUrl(QUrl("https://api.github.com/user"));
     request.setRawHeader("Accept", QByteArray("application/json"));
