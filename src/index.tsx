@@ -50,9 +50,12 @@ function render(): void {
 
 /**
  * Gets query props from the URL.
+ *
+ * If a hash string is present, it will be used instead of the query.
  */
 function getQueryProps(): QueryProps {
-  const queryObj: { [key: string]: string } = parseQuery(window.location.search);
+  const hash: string = window.location.hash.slice(1);
+  const queryObj: { [key: string]: string } = parseQuery(hash || window.location.search);
   const query: QueryProps = {};
   Object.keys(queryObj).forEach((key: string) => {
     const queryPropIdx: number = (QUERY_PROP_KEYS as string[]).indexOf(key);
@@ -74,6 +77,9 @@ function getQueryProps(): QueryProps {
 
 /**
  * Like React's setState, but for the URL query parameters.
+ *
+ * If the query string is too long, a hash ('#') will be used instead of a query to avoid needing
+ * to pass the long URL to the server.
  */
 function setQuery(
   queryUpdates: Pick<QueryProps, keyof QueryProps>,
@@ -87,10 +93,12 @@ function setQuery(
     }
   });
 
-  const base: string = location.href.split('?')[0];
+  const origConnector: string = window.location.hash.length > 1 ? '#' : '?';
+  const base: string = location.href.split(origConnector)[0];
   const queryString: string = toQueryString(query as { [key: string]: string });
+  const connector: string = base.length + queryString.length + 1 > 1024 ? '#' : '?';
 
-  const newUrl: string = queryString.length ? `${base}?${queryString}` : base;
+  const newUrl: string = queryString.length ? `${base}${connector}${queryString}` : base;
 
   if (replaceState) {
     history.replaceState(null, '', newUrl);
