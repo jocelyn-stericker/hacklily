@@ -2559,9 +2559,9 @@ gzip-size@3.0.0:
   dependencies:
     duplexer "^0.1.1"
 
-hackmidi@0.0.2:
-  version "0.0.2"
-  resolved "https://registry.yarnpkg.com/hackmidi/-/hackmidi-0.0.2.tgz#1cc14491c39b3b13271e50a21be1a2df03b10198"
+hackmidi@0.0.3:
+  version "0.0.3"
+  resolved "https://registry.yarnpkg.com/hackmidi/-/hackmidi-0.0.3.tgz#05ba3d4e12fa1b9a5f3fe2a882936675efb8148c"
 
 handle-thing@^1.2.5:
   version "1.2.5"
@@ -3872,13 +3872,13 @@ makelily@hacklily/makelily#157e7c7:
     opentype.js "0.7.3"
     promise "8.0.1"
     prop-types "15.6.0"
-    react "16.2.0"
-    react-dev-utils "4.2.1"
-    react-dom "16.2.0"
+    react "^16.0.0"
+    react-dev-utils "^4.0.1"
+    react-dom "^16.0.0"
     react-dom-factories "1.0.2"
     webcola "3.3.6"
     whatwg-fetch "2.0.3"
-    yargs "10.0.3"
+    yargs "9.0.1"
 
 map-cache@^0.2.2:
   version "0.2.2"
