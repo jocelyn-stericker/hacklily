@@ -18,17 +18,17 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
  */
 
-import { css } from 'aphrodite';
-import React from 'react';
-import * as ReactModal from 'react-modal';
+import { css } from "aphrodite";
+import React from "react";
+import * as ReactModal from "react-modal";
 
-import { Auth } from './auth';
-import { File, ls } from './gitfs';
-import { HEADER_STYLE, MENU_STYLE } from './styles';
+import { Auth } from "./auth";
+import { File, ls } from "./gitfs";
+import { HEADER_STYLE, MENU_STYLE } from "./styles";
 
 interface Props {
   auth: Auth | null;
-  colourScheme: 'vs-dark' | 'vs';
+  colourScheme: "vs-dark" | "vs";
   windowWidth: number;
   onDeleteSong(song: string): void;
   onHide(): void;
@@ -36,7 +36,7 @@ interface Props {
   onShowAbout(): void;
   onSignIn(): void;
   onSignOut(): void;
-  setColourScheme(colourScheme: 'vs-dark' | 'vs'): void;
+  setColourScheme(colourScheme: "vs-dark" | "vs"): void;
 }
 
 interface State {
@@ -76,8 +76,9 @@ class Menu extends React.PureComponent<Props, State> {
     if (auth) {
       signOut = (
         <button onClick={onSignOut} className={css(MENU_STYLE.option)}>
-          <i className="fa fa-fw fa-sign-out" aria-hidden={true} />{' '}
-          Sign out ({auth.name})
+          <i className="fa fa-fw fa-sign-out" aria-hidden={true} /> Sign out ({
+            auth.name
+          })
         </button>
       );
     }
@@ -86,8 +87,8 @@ class Menu extends React.PureComponent<Props, State> {
     if (windowWidth < 500) {
       warning = (
         <div>
-          <i className="fa fa-fw fa-exclamation-triangle" />{' '}
-          Hacklily works best on wider screens.
+          <i className="fa fa-fw fa-exclamation-triangle" /> Hacklily works best
+          on wider screens.
         </div>
       );
     }
@@ -95,21 +96,21 @@ class Menu extends React.PureComponent<Props, State> {
     // tslint:disable:no-http-string because of silly lilypond
     const tutorial: React.ReactNode = (
       <a
-          href="http://lilypond.org/doc/v2.18/Documentation/learning/index"
-          rel="noopener noreferrer"
-          className={css(MENU_STYLE.option)}
-          target="_blank"
+        href="http://lilypond.org/doc/v2.18/Documentation/learning/index"
+        rel="noopener noreferrer"
+        className={css(MENU_STYLE.option)}
+        target="_blank"
       >
-        <i className="fa fa-fw fa-life-ring" aria-hidden={true} />{' '}
-        Lilypond manual
+        <i className="fa fa-fw fa-life-ring" aria-hidden={true} /> Lilypond
+        manual
       </a>
     );
     // tslint:enable:no-http-string because of silly lilypond
 
     const about: React.ReactNode = (
       <button onClick={onShowAbout} className={css(MENU_STYLE.option)}>
-        <i className="fa fa-fw fa-info-circle" aria-hidden={true} />{' '}
-        About Hacklily
+        <i className="fa fa-fw fa-info-circle" aria-hidden={true} /> About
+        Hacklily
       </button>
     );
 
@@ -145,7 +146,7 @@ class Menu extends React.PureComponent<Props, State> {
         });
       } catch (err) {
         this.setState({
-          repoError: 'Could not retreive your songs.',
+          repoError: "Could not retreive your songs.",
         });
       }
     } else {
@@ -154,44 +155,47 @@ class Menu extends React.PureComponent<Props, State> {
         repoTree: null,
       });
     }
-  }
+  };
 
   private handleColourSchemeToggled = (): void => {
-    const newColourScheme: 'vs-dark' | 'vs' = (
-      this.props.colourScheme === 'vs-dark' ? 'vs' : 'vs-dark');
+    const newColourScheme: "vs-dark" | "vs" =
+      this.props.colourScheme === "vs-dark" ? "vs" : "vs-dark";
 
     this.props.setColourScheme(newColourScheme);
-  }
+  };
 
-  private handleSongDeleteClick = (ev: React.MouseEvent<HTMLButtonElement>): void => {
+  private handleSongDeleteClick = (
+    ev: React.MouseEvent<HTMLButtonElement>,
+  ): void => {
     const song: string | undefined = ev.currentTarget.dataset.song;
     if (!song) {
-      throw new Error('No song defined on element.');
+      throw new Error("No song defined on element.");
     }
     this.props.onDeleteSong(song);
-  }
+  };
 
-  private handleSongLiClick = (ev: React.MouseEvent<HTMLButtonElement>): void => {
+  private handleSongLiClick = (
+    ev: React.MouseEvent<HTMLButtonElement>,
+  ): void => {
     const song: string | undefined = ev.currentTarget.dataset.song;
     if (!song) {
-      throw new Error('No song defined on element.');
+      throw new Error("No song defined on element.");
     }
     this.props.onLoadSong(song);
-  }
+  };
 
   private renderSetColourScheme(): React.ReactNode {
-    const text: string = (
-      this.props.colourScheme === 'vs-dark' ?
-        'Use light colour scheme' :
-        'Use dark colour scheme');
+    const text: string =
+      this.props.colourScheme === "vs-dark"
+        ? "Use light colour scheme"
+        : "Use dark colour scheme";
 
     return (
       <button
         onClick={this.handleColourSchemeToggled}
         className={css(MENU_STYLE.option)}
       >
-        <i className="fa fa-fw fa-lightbulb-o" aria-hidden={true} />{' '}
-        {text}
+        <i className="fa fa-fw fa-lightbulb-o" aria-hidden={true} /> {text}
       </button>
     );
   }
@@ -204,11 +208,7 @@ class Menu extends React.PureComponent<Props, State> {
 
     if (auth) {
       if (repoError) {
-        songs = (
-          <div className={css(MENU_STYLE.placeholder)}>
-            {repoError}
-          </div>
-        );
+        songs = <div className={css(MENU_STYLE.placeholder)}>{repoError}</div>;
       } else if (!repoTree) {
         songs = (
           <div className={css(MENU_STYLE.placeholder)}>
@@ -217,7 +217,7 @@ class Menu extends React.PureComponent<Props, State> {
         );
       } else {
         const lilySongs: File[] = repoTree
-          .filter((song: File) => song.path.endsWith('.ly'))
+          .filter((song: File) => song.path.endsWith(".ly"))
           .sort();
         if (!lilySongs.length) {
           songs = (
@@ -226,42 +226,41 @@ class Menu extends React.PureComponent<Props, State> {
             </div>
           );
         } else {
-          const eachSong: React.ReactNode[] = lilySongs
-            .map((song: File) => (
-              <li key={song.path}>
-                <button
-                  className={css(MENU_STYLE.song)}
-                  onClick={this.handleSongLiClick}
-                  data-song={`${auth.repo}/${song.path}`}
-                >
-                  <i className="fa fa-file-o fa-fw" aria-hidden={true} />{' '}
-                  {song.path}
-                </button>
-                <button
-                  className={css(MENU_STYLE.deleteSong)}
-                  onClick={this.handleSongDeleteClick}
-                  data-song={`${auth.repo}/${song.path}`}
-                >
-                  <i className="fa fa-remove fa-fw" aria-hidden={true} />
-                  <span className={css(HEADER_STYLE.srOnly)}>
-                    Delete this song
-                  </span>
-                </button>
-              </li>
-            ));
-          songs = (
-            <ul className={css(MENU_STYLE.innerSongList)}>
-              {eachSong}
-            </ul>
-          );
+          const eachSong: React.ReactNode[] = lilySongs.map((song: File) => (
+            <li key={song.path}>
+              <button
+                className={css(MENU_STYLE.song)}
+                onClick={this.handleSongLiClick}
+                data-song={`${auth.repo}/${song.path}`}
+              >
+                <i className="fa fa-file-o fa-fw" aria-hidden={true} />{" "}
+                {song.path}
+              </button>
+              <button
+                className={css(MENU_STYLE.deleteSong)}
+                onClick={this.handleSongDeleteClick}
+                data-song={`${auth.repo}/${song.path}`}
+              >
+                <i className="fa fa-remove fa-fw" aria-hidden={true} />
+                <span className={css(HEADER_STYLE.srOnly)}>
+                  Delete this song
+                </span>
+              </button>
+            </li>
+          ));
+          songs = <ul className={css(MENU_STYLE.innerSongList)}>{eachSong}</ul>;
         }
       }
     } else {
       songs = (
         <div className={css(MENU_STYLE.placeholder)}>
-          <button onClick={onSignIn} className={css(MENU_STYLE.placeholderLink)}>
+          <button
+            onClick={onSignIn}
+            className={css(MENU_STYLE.placeholderLink)}
+          >
             Sign in
-          </button>{' '}to see your songs.
+          </button>{" "}
+          to see your songs.
         </div>
       );
     }

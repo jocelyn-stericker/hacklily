@@ -18,7 +18,7 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
  */
 
-import { Auth } from './auth';
+import { Auth } from "./auth";
 
 const PING_INTERVAL: number = 2500;
 
@@ -31,8 +31,7 @@ const PING_INTERVAL: number = 2500;
  *
  * http://www.jsonrpc.org/specification#request_object
  */
-export class BaseRPCRequest {
-
+export interface BaseRPCRequest {
   /**
    * An identifier established by the Client that MUST contain a String, Number, or NULL value
    * if included. If it is not included it is assumed to be a notification. The value SHOULD
@@ -48,7 +47,7 @@ export class BaseRPCRequest {
   /**
    * A String specifying the version of the JSON-RPC protocol. MUST be exactly "2.0".
    */
-  jsonrpc: '2.0';
+  jsonrpc: "2.0";
 
   /**
    * A String containing the name of the method to be invoked. Method names that begin with
@@ -117,7 +116,7 @@ export interface BaseRPCResponse {
   /**
    * A String specifying the version of the JSON-RPC protocol. MUST be exactly "2.0".
    */
-  jsonrpc: '2.0';
+  jsonrpc: "2.0";
 
   /**
    * This member is REQUIRED on success.
@@ -132,7 +131,7 @@ export interface BaseRPCResponse {
 // -------------------------------------------------------------------------
 
 export interface RenderParams {
-  backend: 'svg' | 'pdf';
+  backend: "svg" | "pdf";
   src: string;
 }
 
@@ -141,7 +140,7 @@ export interface RenderResponse extends BaseRPCResponse {
     code: number;
     data?: {
       logs?: string;
-    }
+    };
     message: string;
   };
   result: {
@@ -229,23 +228,29 @@ interface RPCResponseMap {
  */
 export default class RPCClient {
   private pingInterval: number;
-  private rejectors: {[key: string]: (response: BaseRPCResponse) => void} = {};
-  private resolvers: {[key: string]: (response: BaseRPCResponse) => void} = {};
+  private rejectors: {
+    [key: string]: (response: BaseRPCResponse) => void;
+  } = {};
+  private resolvers: {
+    [key: string]: (response: BaseRPCResponse) => void;
+  } = {};
   private socket: WebSocket;
 
   constructor(socket: WebSocket) {
     this.socket = socket;
-    this.socket.addEventListener('message', this.handleWSMessage);
+    this.socket.addEventListener("message", this.handleWSMessage);
     this.pingInterval = window.setInterval(this.ping, PING_INTERVAL);
   }
 
   // tslint:disable-next-line:promise-function-async -- promises resolved outside function
-  call<T extends keyof RPCRequestParamsMap & keyof RPCResponseMap>
-      (method: T, params: RPCRequestParamsMap[T]): Promise<RPCResponseMap[T]> {
+  call<T extends keyof RPCRequestParamsMap & keyof RPCResponseMap>(
+    method: T,
+    params: RPCRequestParamsMap[T],
+  ): Promise<RPCResponseMap[T]> {
     const id: string = this.genID();
     const request: BaseRPCRequest = {
       id,
-      jsonrpc: '2.0',
+      jsonrpc: "2.0",
       method,
       params,
     };
@@ -254,10 +259,10 @@ export default class RPCClient {
       const rejection: BaseRPCResponse = {
         error: {
           code: -32000,
-          message: 'Network error',
+          message: "Network error",
         },
         id,
-        jsonrpc: '2.0',
+        jsonrpc: "2.0",
       };
 
       return Promise.reject(rejection);
@@ -285,10 +290,10 @@ export default class RPCClient {
       const response: BaseRPCResponse = {
         error: {
           code: -32000,
-          message: 'Network error',
+          message: "Network error",
         },
         id,
-        jsonrpc: '2.0',
+        jsonrpc: "2.0",
       };
       this.rejectors[id](response);
       delete this.resolvers[id];
@@ -325,9 +330,9 @@ export default class RPCClient {
       delete this.rejectors[data.id];
       delete this.resolvers[data.id];
     }
-  }
+  };
 
-  private ping = async(): Promise<void> => {
-    await this.call('ping', {});
-  }
+  private ping = async (): Promise<void> => {
+    await this.call("ping", {});
+  };
 }

@@ -18,12 +18,12 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
  */
 
-import { css } from 'aphrodite';
-import React from 'react';
-import * as ReactModal from 'react-modal';
+import { css } from "aphrodite";
+import React from "react";
+import * as ReactModal from "react-modal";
 
-import { CLIENT_ID, getOauthRedirect } from './auth';
-import { GITHUB_STYLE, MODAL_STYLE } from './styles';
+import { CLIENT_ID, getOauthRedirect } from "./auth";
+import { GITHUB_STYLE, MODAL_STYLE } from "./styles";
 
 interface Props {
   connectToGitHubReason: string | null;
@@ -67,9 +67,9 @@ export default class ModalLogin extends React.PureComponent<Props> {
           overlayClassName={css(MODAL_STYLE.overlay)}
         >
           <p>
-            GitHub integration is not enabled in this copy of Hacklily since the{' '}
-            <code>REACT_APP_GITHUB_CLIENT_ID</code> environment variable was not set
-            when bundling the application.
+            GitHub integration is not enabled in this copy of Hacklily since the{" "}
+            <code>REACT_APP_GITHUB_CLIENT_ID</code> environment variable was not
+            set when bundling the application.
           </p>
         </ReactModal>
       );
@@ -78,8 +78,8 @@ export default class ModalLogin extends React.PureComponent<Props> {
     const explanation: React.ReactNode = (
       <span>
         <strong>
-          <i className="fa fa-info-circle" aria-hidden="true" />{' '}
-          {connectToGitHubReason || 'Sign in or create an account'}
+          <i className="fa fa-info-circle" aria-hidden="true" />{" "}
+          {connectToGitHubReason || "Sign in or create an account"}
         </strong>
       </span>
     );
@@ -105,18 +105,19 @@ export default class ModalLogin extends React.PureComponent<Props> {
           </div>
           <div className={css(MODAL_STYLE.modalBody)}>
             <p className={css(MODAL_STYLE.signInPrivacy)}>
-              Songs you save will be <strong>public</strong> on GitHub and Hacklily.
+              Songs you save will be <strong>public</strong> on GitHub and
+              Hacklily.
             </p>
             <p className={css(MODAL_STYLE.signInPrivacy)}>
-              If you do not have a{' '}
+              If you do not have a{" "}
               <a
                 href="https://help.github.com/articles/github-glossary/#repository"
                 target="_blank"
                 rel="noopener noreferrer"
               >
-              repo
-              </a>{' '} named <code>sheet-music</code>, Hacklily{' '}
-              will create one.
+                repo
+              </a>{" "}
+              named <code>sheet-music</code>, Hacklily will create one.
             </p>
             <p className={css(MODAL_STYLE.login)}>
               <a href={getOauthRedirect(csrf)}>
@@ -126,19 +127,15 @@ export default class ModalLogin extends React.PureComponent<Props> {
               </a>
             </p>
             <p className={css(MODAL_STYLE.license)}>
-              Only save songs you want to share. See the{' '}
+              Only save songs you want to share. See the{" "}
               <a
                 href="privacy-statement.html"
                 target="_blank"
                 rel="noopener noreferrer"
               >
                 privacy statement
-              </a>.{' '}
-              <a
-                href="dmca.html"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
+              </a>.{" "}
+              <a href="dmca.html" target="_blank" rel="noopener noreferrer">
                 DMCA
               </a>
             </p>

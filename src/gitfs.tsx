@@ -18,7 +18,7 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
  */
 
-import { Auth, Repo } from './auth';
+import { Auth, Repo } from "./auth";
 
 export interface File {
   path: string;
@@ -29,7 +29,7 @@ export interface File {
  * Token that is thrown when we cannot cat a file becasue it does not exist.
  */
 export class FileNotFound {
-  message: string = 'This file does not exist.';
+  message: string = "This file does not exist.";
 }
 
 export async function getRepo(
@@ -41,7 +41,7 @@ export async function getRepo(
     `https://api.github.com/repos/${username}/${repoName}?cache_bust=${new Date().getTime()}`,
     {
       headers: {
-        Accept: 'application/json',
+        Accept: "application/json",
         Authorization: `token ${accessToken}`,
       },
     },
@@ -50,7 +50,7 @@ export async function getRepo(
   if (response.status === 404) {
     throw new FileNotFound();
   } else if (response.status >= 400) {
-    throw new Error('Could not get repo');
+    throw new Error("Could not get repo");
   }
 
   return response.json();
@@ -75,25 +75,25 @@ export async function createRepo(
         name: repoName,
       }),
       headers: {
-        Accept: 'application/json',
+        Accept: "application/json",
         Authorization: `token ${accessToken}`,
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
       },
-      method: 'POST',
+      method: "POST",
     },
   );
 
   if (response.status >= 400) {
-    throw new Error('Could not create repo');
+    throw new Error("Could not create repo");
   }
 
   return response.json();
 }
 
 export async function getOrCreateRepo(auth: Auth): Promise<Repo> {
-  const repoParts: string[] = auth.repo.split('/');
+  const repoParts: string[] = auth.repo.split("/");
   if (repoParts.length !== 2) {
-    throw new Error('Could not get repo details.');
+    throw new Error("Could not get repo details.");
   }
 
   let repo: Repo;
@@ -102,7 +102,7 @@ export async function getOrCreateRepo(auth: Auth): Promise<Repo> {
   } catch (err) {
     if (err instanceof FileNotFound) {
       if (repoParts[0] !== auth.username) {
-        throw new Error('Invalid repo.');
+        throw new Error("Invalid repo.");
       }
       repo = await createRepo(auth.accessToken, repoParts[0], repoParts[1]);
     } else {
@@ -114,11 +114,10 @@ export async function getOrCreateRepo(auth: Auth): Promise<Repo> {
 }
 
 export async function ls(
-    accessToken: string,
-    repo: string,
-    ref: string = 'master',
-  ): Promise<File[]> {
-
+  accessToken: string,
+  repo: string,
+  ref: string = "master",
+): Promise<File[]> {
   const headers: {} = {
     Authorization: `token ${accessToken}`,
   };
@@ -143,16 +142,15 @@ export async function ls(
  * exists, or was modified between when we got the SHA and when we made the save request.
  */
 export class Conflict {
-  message: string = 'Cannot save file because it conflicts with another file.';
+  message: string = "Cannot save file because it conflicts with another file.";
 }
 
 export async function cat(
-    accessToken: string,
-    repo: string,
-    filename: string,
-    ref: string = 'master',
-): Promise<{content: string, sha: string}> {
-
+  accessToken: string,
+  repo: string,
+  filename: string,
+  ref: string = "master",
+): Promise<{ content: string; sha: string }> {
   const headers: {} = {
     Authorization: `token ${accessToken}`,
   };
@@ -170,7 +168,7 @@ export async function cat(
     throw new FileNotFound();
   }
 
-  const obj: {content: string, sha: string} = await response.json();
+  const obj: { content: string; sha: string } = await response.json();
 
   return {
     content: atob(obj.content),
@@ -179,12 +177,12 @@ export async function cat(
 }
 
 export async function write(
-    accessToken: string,
-    repo: string,
-    filename: string,
-    base64: string,
-    sha?: string,
-    ref: string = 'master',
+  accessToken: string,
+  repo: string,
+  filename: string,
+  base64: string,
+  sha?: string,
+  ref: string = "master",
 ): Promise<void> {
   const response: Response = await fetch(
     `https://api.github.com/repos/${repo}/contents/${filename}`,
@@ -192,15 +190,15 @@ export async function write(
       body: JSON.stringify({
         branch: ref,
         content: base64,
-        message: `Saved via ${process.env.HOMEPAGE || 'Hacklily'}`,
+        message: `Saved via ${process.env.HOMEPAGE || "Hacklily"}`,
         sha: sha ? sha : undefined,
       }),
       headers: {
-        Accept: 'application/json',
+        Accept: "application/json",
         Authorization: `token ${accessToken}`,
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
       },
-      method: 'PUT',
+      method: "PUT",
     },
   );
 
@@ -218,26 +216,26 @@ export async function write(
 }
 
 export async function rm(
-    accessToken: string,
-    repo: string,
-    filename: string,
-    sha: string,
-    ref: string = 'master',
+  accessToken: string,
+  repo: string,
+  filename: string,
+  sha: string,
+  ref: string = "master",
 ): Promise<void> {
   const response: Response = await fetch(
     `https://api.github.com/repos/${repo}/contents/${filename}`,
     {
       body: JSON.stringify({
         branch: ref,
-        message: `Saved via ${process.env.HOMEPAGE || 'Hacklily'}`,
+        message: `Saved via ${process.env.HOMEPAGE || "Hacklily"}`,
         sha: sha ? sha : undefined,
       }),
       headers: {
-        Accept: 'application/json',
+        Accept: "application/json",
         Authorization: `token ${accessToken}`,
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
       },
-      method: 'DELETE',
+      method: "DELETE",
     },
   );
 

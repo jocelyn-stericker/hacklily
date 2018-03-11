@@ -18,11 +18,11 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
  */
 
-import { css } from 'aphrodite';
-import React from 'react';
-import * as ReactModal from 'react-modal';
+import { css } from "aphrodite";
+import React from "react";
+import * as ReactModal from "react-modal";
 
-import { BUTTON_STYLE, MODAL_STYLE } from './styles';
+import { BUTTON_STYLE, MODAL_STYLE } from "./styles";
 
 interface Props {
   cancel(): void;
@@ -43,8 +43,9 @@ interface Props {
  *
  * This modal requests to be closed by calling one of the three callbacks.
  */
-export default class ModalUnsavedChangesInterstitial extends
-    React.PureComponent<Props> {
+export default class ModalUnsavedChangesInterstitial extends React.PureComponent<
+  Props
+> {
   render(): JSX.Element {
     return (
       <ReactModal
@@ -67,9 +68,10 @@ export default class ModalUnsavedChangesInterstitial extends
           </div>
           <div className={css(MODAL_STYLE.modalBody)}>
             <p style={{ marginTop: 0 }}>
-              If you do not save your changes, they will be <strong>permanently lost</strong>!
+              If you do not save your changes, they will be{" "}
+              <strong>permanently lost</strong>!
             </p>
-            <div style={{ display: 'flex', marginBottom: 10 }}>
+            <div style={{ display: "flex", marginBottom: 10 }}>
               <div style={{ flex: 1 }} />
               <div>
                 <button

@@ -1,5 +1,13 @@
 #!/usr/bin/env bash
 
+set -euf -o pipefail
+
+echo "Checking that code is formatted..."
+if ! ./node_modules/.bin/prettier -l './src/**{ts,tsx,js,jsx}'; then
+    echo "The files above are not formatted. Run 'make fmt' or install prettier integration in your editor"
+    exit 1
+fi
+
 ##################################################
 # STEP 1 -- First, build public/react-app.rcc.gz #
 ##################################################
@@ -8,8 +16,6 @@
 #                            that will be served by our static deployment and will be
 #                            downloaded by the standalone desktop app
 #                            NOTE: this file is in .gitignore so we don't track it!
-
-set -euf -o pipefail
 
 if [ -z "${REACT_APP_GITHUB_CLIENT_ID+x}" ]; then
     echo "ERROR: The REACT_APP_GITHUB_CLIENT_ID environment variable is not set." >&2

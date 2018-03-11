@@ -18,11 +18,11 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
  */
 
-import { css } from 'aphrodite';
-import React from 'react';
-import * as ReactModal from 'react-modal';
+import { css } from "aphrodite";
+import React from "react";
+import * as ReactModal from "react-modal";
 
-import { MODAL_STYLE } from './styles';
+import { MODAL_STYLE } from "./styles";
 
 interface Props {
   onHide(): void;
@@ -61,8 +61,11 @@ export default class Modal404 extends React.PureComponent<Props> {
             </p>
             <p>
               Hacklily is a free online sheet-music editor and publishing tool.
-              While you are here, why not{' '}
-              <button onClick={this.props.onHide} className={css(MODAL_STYLE.link)}>
+              While you are here, why not{" "}
+              <button
+                onClick={this.props.onHide}
+                className={css(MODAL_STYLE.link)}
+              >
                 give it a try
               </button>?
             </p>

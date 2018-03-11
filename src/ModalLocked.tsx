@@ -18,11 +18,11 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
  */
 
-import { css } from 'aphrodite';
-import React from 'react';
-import * as ReactModal from 'react-modal';
+import { css } from "aphrodite";
+import React from "react";
+import * as ReactModal from "react-modal";
 
-import { MODAL_STYLE } from './styles';
+import { MODAL_STYLE } from "./styles";
 
 /**
  * A modal that is rendered when this song is being edited in another tab.
@@ -39,8 +39,8 @@ export default class ModalLocked extends React.PureComponent {
       >
         <div>
           <div className={css(MODAL_STYLE.modalHeader)}>
-            This song was opened in another tab. You can only edit in one tab at once.
-            If you have closed the other tab, you may{' '}
+            This song was opened in another tab. You can only edit in one tab at
+            once. If you have closed the other tab, you may{" "}
             <a href={window.location.toString()}>resume editing here</a>.
           </div>
         </div>
@@ -53,25 +53,27 @@ export function lock(songID: string): void {
   // This is a trick to send a notification to other pages editing this document.
   // Other tabs can listen to the 'storage' event and lock when startedEditedNotification is set to
   // a song they are editing.
-  localStorage.setItem('startedEditingNotification', songID);
-  localStorage.removeItem('startedEditingNotification');
+  localStorage.setItem("startedEditingNotification", songID);
+  localStorage.removeItem("startedEditingNotification");
 }
 
 let editingNotificationHandler: null | ((ev: StorageEvent) => void) = null;
 /**
  * Calls handler when another tab starts editing a song.
  */
-export function setEditingNotificationHandler(handler: null | ((songID: string) => void)): void {
+export function setEditingNotificationHandler(
+  handler: null | ((songID: string) => void),
+): void {
   if (editingNotificationHandler) {
-    window.removeEventListener('storage', editingNotificationHandler);
+    window.removeEventListener("storage", editingNotificationHandler);
     editingNotificationHandler = null;
   }
   if (handler) {
     editingNotificationHandler = (ev: StorageEvent): void => {
-      if (ev.key === 'startedEditingNotification' && ev.newValue) {
+      if (ev.key === "startedEditingNotification" && ev.newValue) {
         handler(ev.newValue);
       }
     };
-    window.addEventListener('storage', editingNotificationHandler);
+    window.addEventListener("storage", editingNotificationHandler);
   }
 }

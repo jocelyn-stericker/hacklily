@@ -1,9 +1,10 @@
-.PHONY: help deps-frontend deps-backend deps serve server run start serve-qt-bundle build-backend build-frontend build run-backend test test-watch deploy-frontend deploy
+.PHONY: help deps-frontend deps-backend deps serve server run start serve-qt-bundle build-backend build-frontend build run-backend test test-watch deploy-frontend deploy fmt
 
 help:
 	@echo 'Common options: '
 	@echo ' - make serve (runs frontend and backend without GitHub integration)'
 	@echo ' - make test-watch (runs tests when things change)'
+	@echo ' - make fmt (formats code using prettier -- also try editor integrations)'
 	@echo
 	@echo 'Other options: '
 	@echo ' - make deps (asserts system dependencies are installed, installs npm packages)'
@@ -13,6 +14,9 @@ help:
 	@echo ' - yarn start (runs frontend without a backend)'
 	@echo ' - make test (runs tests once)'
 	@echo ' - make deploy-frontend (deploys to GitHub pages -- runs automatically on Travis)'
+
+fmt: deps
+	@./node_modules/.bin/prettier --write './src/**{ts,tsx,js,jsx}'
 
 deps-frontend:
 	@yarn

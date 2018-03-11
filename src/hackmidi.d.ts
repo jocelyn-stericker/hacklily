@@ -1,1 +1,1 @@
-declare module 'hackmidi';
+declare module "hackmidi";

@@ -18,10 +18,10 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
  */
 
-import RPCClient, { SignInResponse } from './RPCClient';
+import RPCClient, { SignInResponse } from "./RPCClient";
 
 export interface Repo {
-  ['private']: boolean;
+  ["private"]: boolean;
 
   created_at: string;
   description: string;
@@ -48,26 +48,32 @@ export interface Auth {
   username: string;
 }
 
-export const CLIENT_ID: string | undefined = process.env.REACT_APP_GITHUB_CLIENT_ID;
-const SCOPE: string = 'repo';
+export const CLIENT_ID: string | undefined =
+  process.env.REACT_APP_GITHUB_CLIENT_ID;
+const SCOPE: string = "repo";
 export function getOauthRedirect(csrf: string): string {
   return (
-   'https://github.com/login/oauth/authorize' +
-   `?client_id=${CLIENT_ID}&scope=${SCOPE}&state=${csrf}`
+    "https://github.com/login/oauth/authorize" +
+    `?client_id=${CLIENT_ID}&scope=${SCOPE}&state=${csrf}`
   );
 }
 
 /**
  * It's good practice when logging out to revoke the OAuth token, I guess.
  */
-export async function revokeGitHubAuth(rpc: RPCClient, token: string): Promise<void> {
+export async function revokeGitHubAuth(
+  rpc: RPCClient,
+  token: string,
+): Promise<void> {
   try {
-    await rpc.call('signOut', {
+    await rpc.call("signOut", {
       token,
     });
   } catch (err) {
-    alert('Could not revoke GitHub authorization. ' +
-      'If you would like, you can manually do this from your GitHub settings.');
+    alert(
+      "Could not revoke GitHub authorization. " +
+        "If you would like, you can manually do this from your GitHub settings.",
+    );
   } finally {
     window.location.reload();
   }
@@ -77,28 +83,28 @@ export async function revokeGitHubAuth(rpc: RPCClient, token: string): Promise<v
  * Called by <App /> to continue the OAuth flow.
  */
 export async function checkLogin(
-    rpc: RPCClient,
-    code: string,
-    state: string,
-    csrf: string,
+  rpc: RPCClient,
+  code: string,
+  state: string,
+  csrf: string,
 ): Promise<Auth> {
   if (csrf !== state) {
-    console.warn('Invalid csrf.');
-    throw new Error('Something went wrong. Could not log you in.');
+    console.warn("Invalid csrf.");
+    throw new Error("Something went wrong. Could not log you in.");
   }
-  const response: SignInResponse = await rpc.call('signIn', {
+  const response: SignInResponse = await rpc.call("signIn", {
     oauth: code,
     state,
   });
 
   if (
-      !response.result.accessToken ||
-      !response.result.email ||
-      !response.result.name ||
-      !response.result.repo ||
-      !response.result.username
+    !response.result.accessToken ||
+    !response.result.email ||
+    !response.result.name ||
+    !response.result.repo ||
+    !response.result.username
   ) {
-    throw new Error('Could not log you in.');
+    throw new Error("Could not log you in.");
   }
 
   return response.result;
@@ -113,8 +119,14 @@ export function parseAuth(auth: string | undefined): Auth | null {
   }
   try {
     const parsedAuth: Auth = JSON.parse(auth);
-    if (parsedAuth && parsedAuth.accessToken && parsedAuth.email &&
-        parsedAuth.name && parsedAuth.repo && parsedAuth.username) {
+    if (
+      parsedAuth &&
+      parsedAuth.accessToken &&
+      parsedAuth.email &&
+      parsedAuth.name &&
+      parsedAuth.repo &&
+      parsedAuth.username
+    ) {
       return parsedAuth;
     }
 

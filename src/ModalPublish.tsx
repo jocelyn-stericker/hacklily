@@ -18,15 +18,15 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
  */
 
-import { css } from 'aphrodite';
-import React from 'react';
-import * as ReactModal from 'react-modal';
+import { css } from "aphrodite";
+import React from "react";
+import * as ReactModal from "react-modal";
 
-import { Auth } from './auth';
-import { Conflict, File, FileNotFound, ls, rm, write } from './gitfs';
-import ModalSaving from './ModalSaving';
-import RPCClient from './RPCClient';
-import { BUTTON_STYLE, MODAL_STYLE, PUBLISH_STYLE } from './styles';
+import { Auth } from "./auth";
+import { Conflict, File, FileNotFound, ls, rm, write } from "./gitfs";
+import ModalSaving from "./ModalSaving";
+import RPCClient from "./RPCClient";
+import { BUTTON_STYLE, MODAL_STYLE, PUBLISH_STYLE } from "./styles";
 
 interface Props {
   auth: Auth;
@@ -49,7 +49,7 @@ interface State {
  */
 class ModalPublish extends React.PureComponent<Props, State> {
   state: State = {
-    filename: '',
+    filename: "",
     files: null,
     invitationRequired: false,
     saving: false,
@@ -75,29 +75,33 @@ class ModalPublish extends React.PureComponent<Props, State> {
       disabled = true;
       error = (
         <span className={css(PUBLISH_STYLE.error)}>
-          <i className="fa fa-exclamation-triangle" aria-hidden={true} />{' '}
-          Please enter a filename.
+          <i className="fa fa-exclamation-triangle" aria-hidden={true} /> Please
+          enter a filename.
         </span>
       );
-    } else if (files && files.map((file: File) => file.path).indexOf(`${filename}.ly`) !== -1) {
+    } else if (
+      files &&
+      files.map((file: File) => file.path).indexOf(`${filename}.ly`) !== -1
+    ) {
       disabled = true;
       error = (
         <span className={css(PUBLISH_STYLE.error)}>
-          <i className="fa fa-exclamation-triangle" aria-hidden={true} />{' '}
-          That filename is taken.
+          <i className="fa fa-exclamation-triangle" aria-hidden={true} /> That
+          filename is taken.
         </span>
       );
     } else if (invitationRequired) {
       error = (
         <span className={css(PUBLISH_STYLE.error)}>
-          Permission denied. You may need to{' '}
+          Permission denied. You may need to{" "}
           <a
-              href={`https://github.com/${auth.repo}/invitations`}
-              target="_blank"
-              rel="noreferrer noopener"
+            href={`https://github.com/${auth.repo}/invitations`}
+            target="_blank"
+            rel="noreferrer noopener"
           >
             enable write access
-          </a> then try agin!
+          </a>{" "}
+          then try agin!
         </span>
       );
     }
@@ -131,36 +135,40 @@ class ModalPublish extends React.PureComponent<Props, State> {
                     target="_blank"
                     rel="noopener noreferrer"
                   >
-                      {`${auth.repo}`}
+                    {`${auth.repo}`}
                   </a>
                   /
                 </code>
               </span>
               <input
                 value={filename}
-                className={css(PUBLISH_STYLE.cell, PUBLISH_STYLE.expand, PUBLISH_STYLE.mono)}
+                className={css(
+                  PUBLISH_STYLE.cell,
+                  PUBLISH_STYLE.expand,
+                  PUBLISH_STYLE.mono,
+                )}
                 placeholder="filename"
                 autoFocus={true}
                 onChange={this.handleChange}
               />
               <span className={css(PUBLISH_STYLE.cell)}>
-                <code className={css(PUBLISH_STYLE.mono)}>
-                  &nbsp;.ly
-                </code>
+                <code className={css(PUBLISH_STYLE.mono)}>&nbsp;.ly</code>
               </span>
               {/* Don't judge me too strongly (ok, judge me a little), but I have no idea */}
               {/* where 7 comes from, and I want to get on with the fun part of making Hacklily. */}
-              <div style={{ width: 7, display: 'table-cell' }} />
+              <div style={{ width: 7, display: "table-cell" }} />
             </div>
             <div className={css(PUBLISH_STYLE.footer)}>
               {error}
               <button
                 onClick={this.handleSave}
                 disabled={disabled}
-                className={css(BUTTON_STYLE.buttonStyle, PUBLISH_STYLE.publishBtn)}
+                className={css(
+                  BUTTON_STYLE.buttonStyle,
+                  PUBLISH_STYLE.publishBtn,
+                )}
               >
-                <i className="fa fa-save" aria-hidden={true} />{' '}
-                Save / share
+                <i className="fa fa-save" aria-hidden={true} /> Save / share
               </button>
             </div>
           </div>
@@ -170,11 +178,11 @@ class ModalPublish extends React.PureComponent<Props, State> {
   }
 
   private handleChange = (ev: React.ChangeEvent<HTMLInputElement>): void => {
-    const filename: string = ev.target.value.replace(/[^a-zA-Z0-9_-]*/g, '');
+    const filename: string = ev.target.value.replace(/[^a-zA-Z0-9_-]*/g, "");
     this.setState({
       filename,
     });
-  }
+  };
 
   private handleSave = async (): Promise<void> => {
     let didFail: boolean = false;
@@ -204,25 +212,21 @@ class ModalPublish extends React.PureComponent<Props, State> {
         saving: false,
       });
       if (!didFail) {
-        this.props.onPublished(`${this.props.auth.repo}/${this.state.filename}.ly`);
+        this.props.onPublished(
+          `${this.props.auth.repo}/${this.state.filename}.ly`,
+        );
       }
     }
-  }
+  };
 
-  private loadExistingSongs = async(): Promise<void> => {
-    const {
-      auth: {
-        accessToken,
-        repo,
-      },
-    } = this.props;
+  private loadExistingSongs = async (): Promise<void> => {
+    const { auth: { accessToken, repo } } = this.props;
 
     const files: File[] = await ls(accessToken, repo);
     this.setState({
       files,
     });
-  }
-
+  };
 }
 
 function b64EncodeUnicode(str: string): string {
@@ -232,7 +236,7 @@ function b64EncodeUnicode(str: string): string {
   return btoa(
     encodeURIComponent(str).replace(
       /%([0-9A-F]{2})/g,
-      (match: string, p1: string) => String.fromCharCode(+(`0x${p1}`)),
+      (match: string, p1: string) => String.fromCharCode(+`0x${p1}`),
     ),
   );
 }
@@ -244,47 +248,62 @@ export async function doPublish(
   rpc: RPCClient,
   overwrite: boolean,
 ): Promise<boolean> {
-  const pdf: string = (await rpc.call('render', {
-    backend: 'pdf',
+  const pdf: string = (await rpc.call("render", {
+    backend: "pdf",
     src: code,
   })).result.files[0];
 
-  const pdfFilename: string = filename.replace(/\.ly$/, '.pdf');
+  const pdfFilename: string = filename.replace(/\.ly$/, ".pdf");
 
   const files: File[] = await ls(auth.accessToken, auth.repo);
-  const file: File | undefined = files.find((candidate: File) =>
-    candidate.path === filename);
-  const pdfFile: File | undefined = files.find((candidate: File) =>
-    candidate.path === pdfFilename);
+  const file: File | undefined = files.find(
+    (candidate: File) => candidate.path === filename,
+  );
+  const pdfFile: File | undefined = files.find(
+    (candidate: File) => candidate.path === pdfFilename,
+  );
 
   if (!overwrite && (file || pdfFile)) {
-    throw new Error('That name is already taken.');
+    throw new Error("That name is already taken.");
   }
 
   const { accessToken, repo } = auth;
   try {
     // These each result in a commit -- it would be better to write them all at once.
-    await write(accessToken, repo, pdfFilename, pdf, pdfFile ? pdfFile.sha : undefined , 'master');
-    await write(accessToken, repo, filename, b64EncodeUnicode(code),
-                file ? file.sha : undefined, 'master');
+    await write(
+      accessToken,
+      repo,
+      pdfFilename,
+      pdf,
+      pdfFile ? pdfFile.sha : undefined,
+      "master",
+    );
+    await write(
+      accessToken,
+      repo,
+      filename,
+      b64EncodeUnicode(code),
+      file ? file.sha : undefined,
+      "master",
+    );
   } catch (err) {
     // tslint:disable-next-line:no-console
     console.log(err);
     if (err instanceof Conflict) {
       if (overwrite) {
         throw new Error(
-          'Could not save file. ' +
-          'You may need to wait a minute or so after publishing before publishing again.',
+          "Could not save file. " +
+            "You may need to wait a minute or so after publishing before publishing again.",
         );
       } else {
-        throw new Error('This name is already taken.');
+        throw new Error("This name is already taken.");
       }
     } else if (err instanceof FileNotFound) {
       // This is probably actually an authentication issue.
       // Let the caller deal with daat.
       throw err;
     } else {
-      throw new Error('Could not save file.');
+      throw new Error("Could not save file.");
     }
   }
 
@@ -296,34 +315,35 @@ export async function doUnpublish(
   filename: string,
   rpc: RPCClient,
 ): Promise<boolean> {
-
-  const pdfFilename: string = filename.replace(/\.ly$/, '.pdf');
+  const pdfFilename: string = filename.replace(/\.ly$/, ".pdf");
 
   const files: File[] = await ls(auth.accessToken, auth.repo);
-  const file: File | undefined = files.find((candidate: File) =>
-    candidate.path === filename);
-  const pdfFile: File | undefined = files.find((candidate: File) =>
-    candidate.path === pdfFilename);
+  const file: File | undefined = files.find(
+    (candidate: File) => candidate.path === filename,
+  );
+  const pdfFile: File | undefined = files.find(
+    (candidate: File) => candidate.path === pdfFilename,
+  );
 
   const { accessToken, repo } = auth;
   try {
     // These each result in a commit -- it would be better to write them all at once.
     if (pdfFile) {
-      await rm(accessToken, repo, pdfFilename, pdfFile.sha , 'master');
+      await rm(accessToken, repo, pdfFilename, pdfFile.sha, "master");
     }
     if (file) {
-      await rm(accessToken, repo, filename, file.sha, 'master');
+      await rm(accessToken, repo, filename, file.sha, "master");
     }
   } catch (err) {
     // tslint:disable-next-line:no-console
     console.log(err);
     if (err instanceof Conflict) {
-      alert('Could not delete file.');
+      alert("Could not delete file.");
 
       return false;
     }
 
-    alert('Could not delete file.');
+    alert("Could not delete file.");
 
     return false;
   }

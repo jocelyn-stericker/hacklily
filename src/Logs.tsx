@@ -18,10 +18,10 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
  */
 
-import { css } from 'aphrodite';
-import React from 'react';
+import { css } from "aphrodite";
+import React from "react";
 
-import { BUTTON_STYLE, LOGS_STYLE } from './styles';
+import { BUTTON_STYLE, LOGS_STYLE } from "./styles";
 
 interface Props {
   logs: string | null;
@@ -53,17 +53,15 @@ export default class Logs extends React.Component<Props, State> {
       // if the user taps outside of the logs, the logs go away.
       return (
         <div
-            className={css(LOGS_STYLE.mask)}
-            onClick={this.handleMouseLeave}
-            role="presentation"
+          className={css(LOGS_STYLE.mask)}
+          onClick={this.handleMouseLeave}
+          role="presentation"
         >
           <div
             className={css(BUTTON_STYLE.buttonStyle, LOGS_STYLE.logsButton)}
             onMouseLeave={this.handleMouseLeave}
           >
-            <pre style={{ whiteSpace: 'pre-wrap' }}>
-              {logs}
-            </pre>
+            <pre style={{ whiteSpace: "pre-wrap" }}>{logs}</pre>
           </div>
         </div>
       );
@@ -76,8 +74,7 @@ export default class Logs extends React.Component<Props, State> {
         onMouseEnter={this.handleMouseEnter}
         role="button"
       >
-        <i className="fa fa-file-o" aria-hidden={true} />{' '}
-        Logs
+        <i className="fa fa-file-o" aria-hidden={true} /> Logs
       </div>
     );
   }
@@ -85,24 +82,21 @@ export default class Logs extends React.Component<Props, State> {
   private handleMouseClick = (): void => {
     // For touch browsers.
     this.handleMouseEnter();
-  }
+  };
 
   private handleMouseEnter = (): void => {
     // HACK: in mobile, for some reason if we do this right away,
     // the mask's click event also goes through.
-    setTimeout(
-      () => {
-        this.setState({
-          hover: true,
-        });
-      },
-      10,
-    );
-  }
+    setTimeout(() => {
+      this.setState({
+        hover: true,
+      });
+    }, 10);
+  };
 
   private handleMouseLeave = (): void => {
     this.setState({
       hover: false,
     });
-  }
+  };
 }

@@ -18,67 +18,67 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
  */
 
-import { StyleSheet } from 'aphrodite';
+import { StyleSheet } from "aphrodite";
 
 // tslint:disable:typedef
 
 const previewPendingAnimation = {
-  '0%': {
+  "0%": {
     opacity: 0.0,
   },
-  '50%': {
+  "50%": {
     opacity: 0.15,
   },
   // tslint:disable-next-line:object-literal-sort-keys
-  '100%': {
+  "100%": {
     opacity: 0.0,
   },
 };
 
-const PREVIEW_WIDTH = '50%';
-const EDITOR_WIDTH = '50%';
+const PREVIEW_WIDTH = "50%";
+const EDITOR_WIDTH = "50%";
 
 export const APP_STYLE = StyleSheet.create({
   errorDecoration: {
-    border: '2px solid red',
-    color: 'red',
-    fontStyle: 'oblique',
-    fontWeight: 'bold',
-    textDecoration: 'underline',
+    border: "2px solid red",
+    color: "red",
+    fontStyle: "oblique",
+    fontWeight: "bold",
+    textDecoration: "underline",
   },
   errorMask: {
-    backgroundColor: 'black',
+    backgroundColor: "black",
     bottom: 0,
-    color: 'white',
+    color: "white",
     left: PREVIEW_WIDTH,
     padding: 15,
-    position: 'absolute',
+    position: "absolute",
     right: 0,
-    textAlign: 'center',
+    textAlign: "center",
     top: 0,
   },
   githubButton: {
-    borderLeft: '1px solid #ccc',
+    borderLeft: "1px solid #ccc",
     bottom: 10,
-    color: 'black',
-    maxHeight: '90%',
-    overflow: 'auto',
-    position: 'absolute',
+    color: "black",
+    maxHeight: "90%",
+    overflow: "auto",
+    position: "absolute",
     right: 110,
-    textDecoration: 'none',
+    textDecoration: "none",
   },
   monacoHidden: {
-    display: 'none',
+    display: "none",
   },
   pendingPreviewMask: {
-    animationDuration: '2s',
-    animationIterationCount: 'infinite',
+    animationDuration: "2s",
+    animationIterationCount: "infinite",
     animationName: previewPendingAnimation,
-    animationTimingFunction: 'ease-in-out',
-    backgroundColor: 'black',
+    animationTimingFunction: "ease-in-out",
+    backgroundColor: "black",
     bottom: 0,
     left: PREVIEW_WIDTH,
-    position: 'absolute',
+    position: "absolute",
     right: 0,
     top: 0,
   },
@@ -86,9 +86,9 @@ export const APP_STYLE = StyleSheet.create({
     left: 0,
   },
   readOnlyNotification: {
-    backgroundColor: '#1e1e1e',
-    color: 'white',
-    fontWeight: 'bold',
+    backgroundColor: "#1e1e1e",
+    color: "white",
+    fontWeight: "bold",
     height: 20,
     left: 0,
     padding: 10,
@@ -96,21 +96,21 @@ export const APP_STYLE = StyleSheet.create({
     zIndex: 100000,
   },
   sheetMusicError: {
-    color: '#aeaeae',
-    display: 'inline-block',
-    textAlign: 'center',
-    verticalAlign: 'middle',
+    color: "#aeaeae",
+    display: "inline-block",
+    textAlign: "center",
+    verticalAlign: "middle",
   },
   sheetMusicView: {
-    alignItems: 'center',
-    backgroundColor: 'white',
-    border: '0 none',
+    alignItems: "center",
+    backgroundColor: "white",
+    border: "0 none",
     bottom: 0,
-    display: 'flex',
-    justifyContent: 'center',
-    overflow: 'hidden',
-    position: 'absolute',
-    right: '0',
+    display: "flex",
+    justifyContent: "center",
+    overflow: "hidden",
+    position: "absolute",
+    right: "0",
     top: 0,
   },
   sheetMusicViewEdit: {
@@ -123,19 +123,19 @@ export const APP_STYLE = StyleSheet.create({
 
 export const MODAL_STYLE = StyleSheet.create({
   big: {
-    margin: '0 0 0 -400px',
+    margin: "0 0 0 -400px",
     width: 800,
   },
   closeButton: {
-    float: 'right',
-    textDecoration: 'none',
+    float: "right",
+    textDecoration: "none",
   },
   gpl: {
-    '@media (max-width: 530px)': {
-      display: 'none',
+    "@media (max-width: 530px)": {
+      display: "none",
     },
     bottom: 10,
-    position: 'absolute',
+    position: "absolute",
     right: 10,
   },
   license: {
@@ -143,192 +143,191 @@ export const MODAL_STYLE = StyleSheet.create({
     marginTop: 20,
   },
   link: {
-    ':hover': {
-      color: 'black',
+    ":hover": {
+      color: "black",
     },
-    color: 'blue',
-    cursor: 'pointer',
+    color: "blue",
+    cursor: "pointer",
     fontSize: 16,
-    textDecoration: 'underline',
+    textDecoration: "underline",
   },
   login: {
-    textAlign: 'center',
+    textAlign: "center",
   },
   modal: {
-    '@media (max-width: 530px)': {
+    "@media (max-width: 530px)": {
       left: 0,
       margin: 0,
-      position: 'absolute',
-      width: '100%',
+      position: "absolute",
+      width: "100%",
     },
-    backgroundColor: 'white',
-    border: '1px solid rgba(0, 0, 0, 0.3)',
+    backgroundColor: "white",
+    border: "1px solid rgba(0, 0, 0, 0.3)",
     borderRadius: 6,
-    boxSizing: 'border-box',
-    color: '#555555',
-    left: '50%',
-    margin: '0 0 0 -265px',
-    padding: '15px 15px 0 15px',
-    position: 'absolute',
+    boxSizing: "border-box",
+    color: "#555555",
+    left: "50%",
+    margin: "0 0 0 -265px",
+    padding: "15px 15px 0 15px",
+    position: "absolute",
     top: 80,
     width: 530,
     zIndex: 1050,
   },
   modalBody: {
     margin: 0,
-    maxHeight: 'none',
-    padding: '20px 0 2px 0',
+    maxHeight: "none",
+    padding: "20px 0 2px 0",
   },
   modalHeader: {
-    borderBottom: '1px solid #ddd',
-    padding: '0 0 9px 0',
+    borderBottom: "1px solid #ddd",
+    padding: "0 0 9px 0",
   },
   overlay: {
-    backgroundColor: 'rgba(0, 0, 0, 0.75)',
+    backgroundColor: "rgba(0, 0, 0, 0.75)",
     bottom: 0,
     left: 0,
-    position: 'absolute',
+    position: "absolute",
     right: 0,
     top: 0,
   },
   shareURL: {
-    display: 'block',
+    display: "block",
     padding: 5,
-    textAlign: 'center',
+    textAlign: "center",
   },
   signInPrivacy: {
     marginTop: -10,
-    textAlign: 'center',
+    textAlign: "center",
   },
 });
 
 export const MENU_STYLE = StyleSheet.create({
   deleteSong: {
-    ':hover': {
-      color: 'red',
+    ":hover": {
+      color: "red",
     },
-    color: '#aeaeae',
-    float: 'right',
+    color: "#aeaeae",
+    float: "right",
   },
   innerSongList: {
-    listStyle: 'none',
+    listStyle: "none",
     marginLeft: 0,
     marginTop: 0,
     paddingLeft: 0,
   },
   menu: {
-    '::after': {
-      '@media (max-width: 500px)': {
+    "::after": {
+      "@media (max-width: 500px)": {
         left: 97,
       },
-      borderBottomColor: 'white',
-      borderLeftColor: 'transparent',
-      borderRightColor: 'transparent',
-      borderStyle: 'solid',
-      borderTopColor: 'transparent',
+      borderBottomColor: "white",
+      borderLeftColor: "transparent",
+      borderRightColor: "transparent",
+      borderStyle: "solid",
+      borderTopColor: "transparent",
       borderWidth: 12,
-      bottom: '100%',
+      bottom: "100%",
       content: '" "',
       height: 0,
       left: 40,
       marginLeft: -30,
-      pointerEvents: 'none',
-      position: 'absolute',
+      pointerEvents: "none",
+      position: "absolute",
       width: 0,
     },
-    '@media (max-width: 500px)': {
+    "@media (max-width: 500px)": {
       left: 0,
-      position: 'absolute',
-      width: '100%',
+      position: "absolute",
+      width: "100%",
     },
-    backgroundColor: 'white',
-    border: '1px solid rgba(0, 0, 0, 0.3)',
-    display: 'flex',
-    flexDirection: 'row',
+    backgroundColor: "white",
+    border: "1px solid rgba(0, 0, 0, 0.3)",
+    display: "flex",
+    flexDirection: "row",
     height: 500,
     left: 65,
-    outline: 'none',
-    padding: '14px 7px 4px 7px',
-    position: 'absolute',
+    outline: "none",
+    padding: "14px 7px 4px 7px",
+    position: "absolute",
     top: 48,
     width: 400,
     zIndex: 1050,
-
   },
   menuColumn: {
-    '@media (max-width: 500px)': {
+    "@media (max-width: 500px)": {
       marginRight: 14,
     },
-    display: 'flex',
+    display: "flex",
     flex: 1,
-    flexDirection: 'column',
-    overflow: 'auto',
+    flexDirection: "column",
+    overflow: "auto",
     paddingLeft: 7,
     paddingRight: 7,
   },
   menuOverlay: {
-    backgroundColor: 'rgba(0, 0, 0, 0.35)',
+    backgroundColor: "rgba(0, 0, 0, 0.35)",
     bottom: 0,
     left: 0,
-    position: 'absolute',
+    position: "absolute",
     right: 0,
     top: 0,
   },
   option: {
-    ':hover': {
-      color: 'blue',
+    ":hover": {
+      color: "blue",
     },
-    backgroundColor: '#f6f6f6',
-    border: '1px solid #dedede',
-    color: 'black',
+    backgroundColor: "#f6f6f6",
+    border: "1px solid #dedede",
+    color: "black",
     fontSize: 16,
     marginBottom: 10,
     padding: 10,
-    textAlign: 'left',
-    textDecoration: 'none',
+    textAlign: "left",
+    textDecoration: "none",
   },
   placeholder: {
-    color: 'black',
+    color: "black",
     fontSize: 16,
-    left: '50%',
-    position: 'absolute',
-    textAlign: 'center',
-    top: '50%',
-    transform: 'translate(-50%, -50%)',
-    width: '100%',
+    left: "50%",
+    position: "absolute",
+    textAlign: "center",
+    top: "50%",
+    transform: "translate(-50%, -50%)",
+    width: "100%",
   },
   placeholderLink: {
-    ':hover': {
-      color: 'black',
+    ":hover": {
+      color: "black",
     },
-    color: 'blue',
+    color: "blue",
     fontSize: 16,
-    textDecoration: 'underline',
+    textDecoration: "underline",
   },
   section: {
     fontSize: 24,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     paddingBottom: 7,
   },
   song: {
-    ':hover': {
-      color: 'blue',
+    ":hover": {
+      color: "blue",
     },
-    color: 'black',
+    color: "black",
     fontSize: 16,
     marginBottom: 4,
-    textDecoration: 'none',
+    textDecoration: "none",
   },
   songList: {
     flex: 1,
-    position: 'relative',
+    position: "relative",
   },
 });
 
 export const HEADER_STYLE = StyleSheet.create({
   headerGroupWrapper: {
-    marginBottom: 'auto',
-    marginTop: 'auto',
+    marginBottom: "auto",
+    marginTop: "auto",
   },
   headerSpacer: {
     flex: 1,
@@ -336,8 +335,8 @@ export const HEADER_STYLE = StyleSheet.create({
   logo: {
     height: 32,
     marginLeft: 16,
-    padding: '9px 0',
-    transform: 'scale(-1, 1)',
+    padding: "9px 0",
+    transform: "scale(-1, 1)",
     width: 32,
   },
   miniGroup: {
@@ -350,88 +349,88 @@ export const HEADER_STYLE = StyleSheet.create({
     width: 14,
   },
   newSong: {
-    ':hover': {
-      color: 'black',
+    ":hover": {
+      color: "black",
     },
-    color: '#aeaeae',
+    color: "#aeaeae",
     fontSize: 14,
     marginRight: 32,
-    textDecoration: 'none',
+    textDecoration: "none",
   },
   playButton: {
-    ':hover': {
-      backgroundColor: '#ccc',
+    ":hover": {
+      backgroundColor: "#ccc",
     },
-    color: '#6e6e6e',
-    display: 'inline-block',
+    color: "#6e6e6e",
+    display: "inline-block",
     fontSize: 14,
     height: 36,
     padding: 9,
   },
   playTime: {
-    textAlign: 'left',
+    textAlign: "left",
     width: 80,
   },
   publish: {
-    color: '#aeaeae',
-    cursor: 'unset',
+    color: "#aeaeae",
+    cursor: "unset",
     fontSize: 14,
     marginRight: 16,
-    textDecoration: 'none',
+    textDecoration: "none",
   },
   publishActive: {
-    ':hover': {
-      color: 'black',
+    ":hover": {
+      color: "black",
     },
-    cursor: 'pointer',
+    cursor: "pointer",
   },
   songs: {
     marginLeft: 16,
   },
   songsText: {
-    ':hover': {
-      backgroundColor: '#ccc',
+    ":hover": {
+      backgroundColor: "#ccc",
     },
-    color: '#6e6e6e',
-    display: 'inline-block',
+    color: "#6e6e6e",
+    display: "inline-block",
     fontSize: 14,
     padding: 9,
   },
   srOnly: {
     border: 0,
-    clip: 'rect(0,0,0,0)',
+    clip: "rect(0,0,0,0)",
     height: 1,
     margin: -1,
-    overflow: 'hidden',
+    overflow: "hidden",
     padding: 0,
-    position: 'absolute',
+    position: "absolute",
     width: 1,
   },
 });
 
 export const GITHUB_STYLE = StyleSheet.create({
   btnGithub: {
-    ':active': {
-      backgroundColor: '#101010',
+    ":active": {
+      backgroundColor: "#101010",
     },
-    ':hover': {
-      backgroundColor: '#444444',
+    ":hover": {
+      backgroundColor: "#444444",
     },
-    backgroundColor: '#2a2a2a',
-    backgroundImage: 'url(\'./github.svg\')',
-    backgroundPosition: '1em',
-    backgroundRepeat: 'no-repeat',
-    backgroundSize: '2em',
-    border: 'none',
-    borderRadius: '0.5em',
-    color: 'white',
-    cursor: 'pointer',
-    fontSize: '1em',
-    height: '4em',
-    lineHeight: '1em',
-    padding: '0 2em 0 4em',
-    textDecoration: 'none',
-    transition: 'all 0.5s',
+    backgroundColor: "#2a2a2a",
+    backgroundImage: "url('./github.svg')",
+    backgroundPosition: "1em",
+    backgroundRepeat: "no-repeat",
+    backgroundSize: "2em",
+    border: "none",
+    borderRadius: "0.5em",
+    color: "white",
+    cursor: "pointer",
+    fontSize: "1em",
+    height: "4em",
+    lineHeight: "1em",
+    padding: "0 2em 0 4em",
+    textDecoration: "none",
+    transition: "all 0.5s",
     width: 262,
   },
 });
@@ -465,49 +464,49 @@ export const GITHUB_STYLE = StyleSheet.create({
  */
 export const BUTTON_STYLE = StyleSheet.create({
   buttonStyle: {
-    ':first-child': {
-      borderBottomLeftRadius: '3px',
-      borderLeft: '1px solid #ccc',
-      borderTopLeftRadius: '3px',
+    ":first-child": {
+      borderBottomLeftRadius: "3px",
+      borderLeft: "1px solid #ccc",
+      borderTopLeftRadius: "3px",
     },
-    ':focus': {
-      zIndex: '2',
+    ":focus": {
+      zIndex: "2",
     },
-    ':hover': {
-      backgroundColor: '#ccc',
+    ":hover": {
+      backgroundColor: "#ccc",
     },
-    ':last-child': {
-      borderBottomRightRadius: '3px',
-      borderRight: '1px solid #ccc',
-      borderTopRightRadius: '3px',
+    ":last-child": {
+      borderBottomRightRadius: "3px",
+      borderRight: "1px solid #ccc",
+      borderTopRightRadius: "3px",
     },
-    backgroundColor: 'white',
-    border: '1px solid #ccc',
-    borderLeft: '0',
-    cursor: 'pointer',
-    margin: '0',
-    padding: '5px 10px',
-    position: 'relative', // for hover
+    backgroundColor: "white",
+    border: "1px solid #ccc",
+    borderLeft: "0",
+    cursor: "pointer",
+    margin: "0",
+    padding: "5px 10px",
+    position: "relative", // for hover
   },
 
   selectedStyle: {
-    backgroundColor: '#ddd',
+    backgroundColor: "#ddd",
   },
 });
 
 export const LOGS_STYLE = StyleSheet.create({
   logsButton: {
-    borderLeft: '1px solid #ccc',
+    borderLeft: "1px solid #ccc",
     bottom: 10,
-    maxHeight: '90%',
-    overflow: 'auto',
-    position: 'absolute',
+    maxHeight: "90%",
+    overflow: "auto",
+    position: "absolute",
     right: 20,
   },
   mask: {
     bottom: 0,
     left: 0,
-    position: 'fixed',
+    position: "fixed",
     right: 0,
     top: 0,
   },
@@ -518,44 +517,44 @@ export const PUBLISH_STYLE = StyleSheet.create({
   // while vertically aligning things (inline-block works here), so I've resorted
   // to an unholy hack. A fix would be very appreciated.
   cell: {
-    display: 'table-cell',
+    display: "table-cell",
     fontSize: 14,
-    whiteSpace: 'nowrap',
-    width: '1px',
+    whiteSpace: "nowrap",
+    width: "1px",
   },
   error: {
     bottom: 20,
-    color: 'red',
-    fontFamily: 'sans-serif',
+    color: "red",
+    fontFamily: "sans-serif",
     fontSize: 14,
-    position: 'absolute',
+    position: "absolute",
   },
   expand: {
-    width: '100%',
+    width: "100%",
   },
   footer: {
-    display: 'inline-block',
+    display: "inline-block",
     marginBottom: 10,
     marginTop: 15,
-    width: '100%',
+    width: "100%",
   },
   mono: {
-    fontFamily: 'monospace',
+    fontFamily: "monospace",
   },
   publishBtn: {
-    ':disabled': {
-      backgroundColor: '#ccc',
-      cursor: 'not-allowed',
+    ":disabled": {
+      backgroundColor: "#ccc",
+      cursor: "not-allowed",
     },
-    color: 'black',
-    float: 'right',
-    fontFamily: 'sans-serif',
+    color: "black",
+    float: "right",
+    fontFamily: "sans-serif",
     fontSize: 14,
-    textDecoration: 'none',
+    textDecoration: "none",
   },
   row: {
-    display: 'table',
+    display: "table",
     fontSize: 14,
-    width: '100%',
+    width: "100%",
   },
 });

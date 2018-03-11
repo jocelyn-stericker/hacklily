@@ -18,41 +18,41 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
  */
 
-import React from 'react';
+import React from "react";
 
-import { File, ls } from './gitfs';
-import { Auth } from './Auth';
+import { File, ls } from "./gitfs";
+import { Auth } from "./Auth";
 
 class Connection extends React.Component {
-    from;
-    to;
+  from;
+  to;
 
-    render() {
-        if (this.props.to !== this.to || this.props.from !== this.from) {
-            this.disconnect();
-            this.from = this.props.from;
-            this.to = this.props.to;
-            this.connect();
-        }
-
-        return null;
+  render() {
+    if (this.props.to !== this.to || this.props.from !== this.from) {
+      this.disconnect();
+      this.from = this.props.from;
+      this.to = this.props.to;
+      this.connect();
     }
 
-    componentWillUnmount() {
-        this.disconnect();
-    }
+    return null;
+  }
 
-    disconnect() {
-        if (this.from && this.to) {
-            this.from.disconnect(this.to);
-        }
-    }
+  componentWillUnmount() {
+    this.disconnect();
+  }
 
-    connect() {
-        if (this.from && this.to) {
-            this.from.connect(this.to);
-        }
+  disconnect() {
+    if (this.from && this.to) {
+      this.from.disconnect(this.to);
     }
+  }
+
+  connect() {
+    if (this.from && this.to) {
+      this.from.connect(this.to);
+    }
+  }
 }
 
 export default class StandaloneAppHost extends React.Component {
@@ -63,47 +63,109 @@ export default class StandaloneAppHost extends React.Component {
 
   render() {
     if (this.channel) {
-      const {webContentsBridge, localFiles} = this.channel.objects;
+      const { webContentsBridge, localFiles } = this.channel.objects;
       return (
         <noscript>
-          <Connection from={webContentsBridge.onNewSong} to={this.props.onNewSong} />
+          <Connection
+            from={webContentsBridge.onNewSong}
+            to={this.props.onNewSong}
+          />
           <Connection from={webContentsBridge.onOpen} to={this.props.onOpen} />
-          <Connection from={webContentsBridge.onImport} to={this.props.onImport} />
-          <Connection from={webContentsBridge.onImportRejected} to={this.props.onImportRejected} />
+          <Connection
+            from={webContentsBridge.onImport}
+            to={this.props.onImport}
+          />
+          <Connection
+            from={webContentsBridge.onImportRejected}
+            to={this.props.onImportRejected}
+          />
           <Connection from={webContentsBridge.onSave} to={this.props.onSave} />
           <Connection from={webContentsBridge.onFind} to={this.props.onFind} />
-          <Connection from={webContentsBridge.onFindNext} to={this.props.onFindNext} />
-          <Connection from={webContentsBridge.onViewMode} to={this.props.onViewMode} />
-          <Connection from={webContentsBridge.onRequestImport} to={this.props.onRequestImport} />
-          <Connection from={webContentsBridge.onSelectAll} to={this.props.onSelectAll} />
-          <Connection from={webContentsBridge.onSplitMode} to={this.props.onSplitMode} />
-          <Connection from={webContentsBridge.onCodeMode} to={this.props.onCodeMode} />
-          <Connection from={webContentsBridge.onAboutHacklily} to={this.props.onAboutHacklily} />
-          <Connection from={webContentsBridge.onExportRequested} to={this.props.onExportRequested} />
-          <Connection from={webContentsBridge.unsavedChangesSave} to={this.props.onUnsavedChangesSave} />
-          <Connection from={webContentsBridge.unsavedChangesCancel} to={this.props.onUnsavedChangesCancel} />
-          <Connection from={webContentsBridge.unsavedChangesDiscard} to={this.props.onUnsavedChangesDiscard} />
-          <Connection from={webContentsBridge.openCancel} to={this.props.onOpenCancel} />
-          <Connection from={webContentsBridge.openFile} to={this.props.onOpenFile} />
-          <Connection from={webContentsBridge.renderCompleted} to={this.handleRenderCompleted} />
-          <Connection from={webContentsBridge.renderError} to={this.handleRenderError} />
-          <Connection from={webContentsBridge.saveAsCancel} to={this.props.onSaveAsCancel} />
-          <Connection from={webContentsBridge.saveAsFile} to={this.props.onSaveAsFile} />
-          <Connection from={localFiles.pathChanged} to={this.props.onLocalFilesChanged} />
+          <Connection
+            from={webContentsBridge.onFindNext}
+            to={this.props.onFindNext}
+          />
+          <Connection
+            from={webContentsBridge.onViewMode}
+            to={this.props.onViewMode}
+          />
+          <Connection
+            from={webContentsBridge.onRequestImport}
+            to={this.props.onRequestImport}
+          />
+          <Connection
+            from={webContentsBridge.onSelectAll}
+            to={this.props.onSelectAll}
+          />
+          <Connection
+            from={webContentsBridge.onSplitMode}
+            to={this.props.onSplitMode}
+          />
+          <Connection
+            from={webContentsBridge.onCodeMode}
+            to={this.props.onCodeMode}
+          />
+          <Connection
+            from={webContentsBridge.onAboutHacklily}
+            to={this.props.onAboutHacklily}
+          />
+          <Connection
+            from={webContentsBridge.onExportRequested}
+            to={this.props.onExportRequested}
+          />
+          <Connection
+            from={webContentsBridge.unsavedChangesSave}
+            to={this.props.onUnsavedChangesSave}
+          />
+          <Connection
+            from={webContentsBridge.unsavedChangesCancel}
+            to={this.props.onUnsavedChangesCancel}
+          />
+          <Connection
+            from={webContentsBridge.unsavedChangesDiscard}
+            to={this.props.onUnsavedChangesDiscard}
+          />
+          <Connection
+            from={webContentsBridge.openCancel}
+            to={this.props.onOpenCancel}
+          />
+          <Connection
+            from={webContentsBridge.openFile}
+            to={this.props.onOpenFile}
+          />
+          <Connection
+            from={webContentsBridge.renderCompleted}
+            to={this.handleRenderCompleted}
+          />
+          <Connection
+            from={webContentsBridge.renderError}
+            to={this.handleRenderError}
+          />
+          <Connection
+            from={webContentsBridge.saveAsCancel}
+            to={this.props.onSaveAsCancel}
+          />
+          <Connection
+            from={webContentsBridge.saveAsFile}
+            to={this.props.onSaveAsFile}
+          />
+          <Connection
+            from={localFiles.pathChanged}
+            to={this.props.onLocalFilesChanged}
+          />
         </noscript>
       );
     }
 
     return null;
-
   }
 
   componentWillMount() {
-    if (typeof QWebChannel === 'undefined') {
+    if (typeof QWebChannel === "undefined") {
       // We only use this in the standalone app.
       return;
     }
-    new QWebChannel(qt.webChannelTransport, (channel) => {
+    new QWebChannel(qt.webChannelTransport, channel => {
       this.channel = channel;
     });
   }
@@ -123,9 +185,13 @@ export default class StandaloneAppHost extends React.Component {
 
   componentWillReceiveProps(newProps) {
     if (this.channel) {
-      const {webContentsBridge} = this.channel.objects;
-      if (newProps.showUnsavedChangesDialog !== this.props.showUnsavedChangesDialog) {
-        webContentsBridge.unsavedChangesModalVisible = newProps.showUnsavedChangesDialog;
+      const { webContentsBridge } = this.channel.objects;
+      if (
+        newProps.showUnsavedChangesDialog !==
+        this.props.showUnsavedChangesDialog
+      ) {
+        webContentsBridge.unsavedChangesModalVisible =
+          newProps.showUnsavedChangesDialog;
       }
       if (newProps.showOpenDialog !== this.props.showOpenDialog) {
         webContentsBridge.openDialogVisible = newProps.showOpenDialog;
@@ -157,19 +223,19 @@ export default class StandaloneAppHost extends React.Component {
           this.channel.objects.webContentsBridge.remoteFiles = repoTree;
         }
       } catch (err) {
-        console.error('Could not retreive your songs.');
+        console.error("Could not retreive your songs.");
       }
     } else {
-      console.error('Could not retreive your songs.');
+      console.error("Could not retreive your songs.");
     }
-  }
+  };
 
   renderLy = (src, filetype) => {
     console.log("HI!");
-    console.log(`Rendering ${filetype}`)
+    console.log(`Rendering ${filetype}`);
     const id = String(Math.random());
     if (this.channel) {
-      this.channel.objects.webContentsBridge.render(id, src, filetype)
+      this.channel.objects.webContentsBridge.render(id, src, filetype);
       return new Promise((resolve, reject) => {
         this.resolvers[id] = resolve;
         this.rejectors[id] = reject;
@@ -178,14 +244,14 @@ export default class StandaloneAppHost extends React.Component {
       console.log(`No channel`);
       return new Promise((resolve, reject) => {
         reject(new Error("No channel"));
-      })
+      });
     }
-  }
+  };
 
   save = async (src, filename) => {
-    const pdf = await this.renderLy(src, 'pdf');
+    const pdf = await this.renderLy(src, "pdf");
     this.channel.objects.webContentsBridge.save(src, filename, pdf.content[0]);
-  }
+  };
 
   /**
    * @param {string} id
@@ -196,11 +262,11 @@ export default class StandaloneAppHost extends React.Component {
     console.log(`Render completed ${id}`);
     if (this.resolvers[id]) {
       console.log("Found resolver");
-      this.resolvers[id]({content: contents, logs});
+      this.resolvers[id]({ content: contents, logs });
       delete this.resolvers[id];
       delete this.rejectors[id];
     }
-  }
+  };
   /**
    * @param {string} id
    * @param {string} error
@@ -210,9 +276,9 @@ export default class StandaloneAppHost extends React.Component {
     console.log(`Render error ${id}`);
     if (this.rejectors[id]) {
       console.warn(error);
-      this.rejectors[id]({error});
+      this.rejectors[id]({ error });
       delete this.resolvers[id];
       delete this.rejectors[id];
     }
-  }
+  };
 }

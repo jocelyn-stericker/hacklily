@@ -1,66 +1,14 @@
 {
   "extends": [
     "tslint:latest",
-    "tslint-microsoft-contrib",
     "tslint-react",
-    "tslint-config-airbnb"
+    "tslint-eslint-rules",
+    "tslint-config-prettier"
   ],
   "rules": {
-    "no-relative-imports": false,
-    "import-name": [
-      true,
-      {
-        "react": "React",
-        "reactDom": "ReactDOM",
-        "reactModal": "ReactModal",
-        "reactMonacoEditor": "ReactMonacoEditor",
-        "dompurify": "DOMPurify",
-        "makelily": "Makelily"
-      }
-    ],
-    "no-multiline-string": false,
-    "interface-name": [
-      true,
-      "never-prefix"
-    ],
-    "no-default-export": false,
-    "member-access": [
-      false
-    ],
-    "react-tsx-curly-spacing": [
-      false
-    ],
-    "no-unused-variable": [
-      true,
-      {
-        "ignore-pattern": "^React$"
-      }
-    ],
-    "object-literal-sort-keys": true,
-    "member-ordering": [
-      true,
-      {
-        "order": "instance-sandwich",
-        "alphabetize": true
-      }
-    ],
-    "react-unused-props-and-state": [
-      true,
-      {
-        "props-interface-regex": "Props$",
-        "state-interface-regex": "State$"
-      }
-    ],
-    "object-shorthand-properties-first": false,
-    // Because it doesn't play well with aphrodite.
-    "no-unsafe-any": false,
-    // Becasue comments in JSX can be nice
-    "no-single-line-block-comment": false,
-    // Because {someObj && <Yolo obj={someObj} />} is idiomatic in React
-    "strict-boolean-expressions": false,
-    // Becasue it fires for void promises.
-    "no-floating-promises": false,
-    // Because reality should be reflected
-    "no-suspicious-comment": false
+    "interface-name": false,
+    "no-console": false,
+    "max-classes-per-file": false,
+    "member-access": false
   }
 }

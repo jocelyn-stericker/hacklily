@@ -43,9 +43,9 @@
  * SOFTWARE.
  */
 
-import { css } from 'aphrodite';
-import React from 'react';
-import { BUTTON_STYLE } from './styles';
+import { css } from "aphrodite";
+import React from "react";
+import { BUTTON_STYLE } from "./styles";
 
 export interface ButtonSpec {
   content?: React.ReactNode;
@@ -87,47 +87,45 @@ export default class ButtonGroup extends React.PureComponent<Props> {
 
   render(): JSX.Element {
     const value: string | number | null = this.props.value;
-    const buttons: JSX.Element[] = this.props.buttons.map((button: ButtonSpec, i: number) => {
-      const buttonGroupClassName: string = css(
-        BUTTON_STYLE.buttonStyle,
-        button.value === value && BUTTON_STYLE.selectedStyle,
-      );
+    const buttons: JSX.Element[] = this.props.buttons.map(
+      (button: ButtonSpec, i: number) => {
+        const buttonGroupClassName: string = css(
+          BUTTON_STYLE.buttonStyle,
+          button.value === value && BUTTON_STYLE.selectedStyle,
+        );
 
-      return (
-        <button
-          className={buttonGroupClassName}
-          onClick={this.handleClick}
-          id={String(i)}
-          key={String(i)}
-          data-value={JSON.stringify(button.value)}
-          title={button.title}
-          type="button"
-        >
-          {button.content || String(button.value)}
-        </button>
-      );
-    });
+        return (
+          <button
+            className={buttonGroupClassName}
+            onClick={this.handleClick}
+            id={String(i)}
+            key={String(i)}
+            data-value={JSON.stringify(button.value)}
+            title={button.title}
+            type="button"
+          >
+            {button.content || String(button.value)}
+          </button>
+        );
+      },
+    );
 
     const outerStyle: object = {
-      display: 'inline-block',
+      display: "inline-block",
     };
 
-    return (
-      <div style={outerStyle}>
-        {buttons}
-      </div>
-    );
+    return <div style={outerStyle}>{buttons}</div>;
   }
 
   private handleClick = (ev: React.MouseEvent<HTMLButtonElement>): void => {
-    this.toggleSelect(JSON.parse(ev.currentTarget.dataset.value || 'null'));
-  }
+    this.toggleSelect(JSON.parse(ev.currentTarget.dataset.value || "null"));
+  };
 
   private toggleSelect(newValue: string | number | null): void {
     const value: string | number | null = this.props.value;
 
     if (this.props.allowEmpty) {
-            // Select the new button or unselect if it's already selected
+      // Select the new button or unselect if it's already selected
       this.props.onChange(value !== newValue ? newValue : null);
     } else {
       this.props.onChange(newValue);

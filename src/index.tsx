@@ -18,12 +18,12 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
  */
 
-import React from 'react';
-import ReactDOM from 'react-dom';
+import React from "react";
+import ReactDOM from "react-dom";
 
-import App, { QUERY_PROP_KEYS, QueryProps, Song } from './App';
-import { Auth, parseAuth } from './auth';
-import { parseQuery, toQueryString } from './util/queryString';
+import App, { QUERY_PROP_KEYS, QueryProps, Song } from "./App";
+import { Auth, parseAuth } from "./auth";
+import { parseQuery, toQueryString } from "./util/queryString";
 
 /**
  * Renders Hacklily, with props set.
@@ -35,16 +35,16 @@ function render(): void {
       dirtySongs={getDirtySongs()}
       auth={getAuth()}
       csrf={localStorage.csrf || null}
-      colourScheme={localStorage.colourScheme || 'vs-dark'}
+      colourScheme={localStorage.colourScheme || "vs-dark"}
       setQuery={setQuery}
       editSong={editSong}
       markSongClean={markSongClean}
       setAuth={setAuth}
       setColourScheme={setColourScheme}
       setCSRF={setCSRF}
-      isStandalone={process.env.REACT_APP_STANDALONE === 'yes'}
+      isStandalone={process.env.REACT_APP_STANDALONE === "yes"}
     />,
-    document.getElementById('root'),
+    document.getElementById("root"),
   );
 }
 
@@ -55,14 +55,16 @@ function render(): void {
  */
 function getQueryProps(): QueryProps {
   const hash: string = window.location.hash.slice(1);
-  const queryObj: { [key: string]: string } = parseQuery(hash || window.location.search);
+  const queryObj: { [key: string]: string } = parseQuery(
+    hash || window.location.search,
+  );
   const query: QueryProps = {};
   Object.keys(queryObj).forEach((key: string) => {
     const queryPropIdx: number = (QUERY_PROP_KEYS as string[]).indexOf(key);
     if (queryPropIdx === -1) {
       console.warn(
         `Warning: unknown query property ${key}. ` +
-        'Please add it to QUERY_PROP_KEYS in App.tsx.',
+          "Please add it to QUERY_PROP_KEYS in App.tsx.",
       );
 
       return;
@@ -85,25 +87,29 @@ function setQuery(
   queryUpdates: Pick<QueryProps, keyof QueryProps>,
   replaceState: boolean = false,
 ): void {
-
   const query: QueryProps = getQueryProps();
-  (Object.keys(queryUpdates) as (keyof QueryProps)[]).forEach((key: keyof QueryProps): void => {
-    if (key in queryUpdates) {
-      query[key] = queryUpdates[key];
-    }
-  });
+  (Object.keys(queryUpdates) as Array<keyof QueryProps>).forEach(
+    (key: keyof QueryProps): void => {
+      if (key in queryUpdates) {
+        query[key] = queryUpdates[key];
+      }
+    },
+  );
 
-  const origConnector: string = window.location.hash.length > 1 ? '#' : '?';
+  const origConnector: string = window.location.hash.length > 1 ? "#" : "?";
   const base: string = location.href.split(origConnector)[0];
   const queryString: string = toQueryString(query as { [key: string]: string });
-  const connector: string = base.length + queryString.length + 1 > 1024 ? '#' : '?';
+  const connector: string =
+    base.length + queryString.length + 1 > 1024 ? "#" : "?";
 
-  const newUrl: string = queryString.length ? `${base}${connector}${queryString}` : base;
+  const newUrl: string = queryString.length
+    ? `${base}${connector}${queryString}`
+    : base;
 
   if (replaceState) {
-    history.replaceState(null, '', newUrl);
+    history.replaceState(null, "", newUrl);
   } else {
-    history.pushState(null, '', newUrl);
+    history.pushState(null, "", newUrl);
   }
   render();
 }
@@ -119,8 +125,8 @@ function getDirtySongs(): { [key: string]: Song } {
     if (!value) {
       continue;
     }
-    if (key.startsWith('dirtySong::')) {
-      songs[key.split('::')[1]] = JSON.parse(value);
+    if (key.startsWith("dirtySong::")) {
+      songs[key.split("::")[1]] = JSON.parse(value);
     }
   }
 
@@ -150,7 +156,7 @@ function setAuth(auth: Auth | null): void {
   render();
 }
 
-function setColourScheme(colourScheme: 'vs-dark' | 'vs'): void {
+function setColourScheme(colourScheme: "vs-dark" | "vs"): void {
   localStorage.colourScheme = colourScheme;
   document.location.reload();
 }
@@ -169,14 +175,17 @@ function setCSRF(csrf: string | null): void {
 /*
  * Init Hacklily.
  */
-window.addEventListener('popstate', (ev: PopStateEvent): void => {
+window.addEventListener("popstate", (ev: PopStateEvent): void => {
   render();
 });
 
 // Add back query props during OAuth flow, if needed.
 const queryProps: QueryProps = getQueryProps();
-if (queryProps.state === localStorage.csrf && localStorage.csrf &&
-    localStorage.csrfQueryParams) {
+if (
+  queryProps.state === localStorage.csrf &&
+  localStorage.csrf &&
+  localStorage.csrfQueryParams
+) {
   // no need to render, because setQuery calls render.
   const newQuery: QueryProps = JSON.parse(localStorage.csrfQueryParams);
   setQuery(newQuery, true);

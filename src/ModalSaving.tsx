@@ -18,11 +18,11 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
  */
 
-import { css } from 'aphrodite';
-import React from 'react';
-import * as ReactModal from 'react-modal';
+import { css } from "aphrodite";
+import React from "react";
+import * as ReactModal from "react-modal";
 
-import { MODAL_STYLE } from './styles';
+import { MODAL_STYLE } from "./styles";
 
 /**
  * A modal that is rendered while saving a song.
@@ -39,7 +39,7 @@ class ModalSaving extends React.PureComponent {
       >
         <div>
           <div className={css(MODAL_STYLE.modalHeader)}>
-            Saving, please wait&hellip;{' '}
+            Saving, please wait&hellip;{" "}
             <i className="fa fa-spinner fa-spin" aria-hidden={true} />
           </div>
         </div>

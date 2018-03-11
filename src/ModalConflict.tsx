@@ -18,11 +18,11 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
  */
 
-import { css } from 'aphrodite';
-import React from 'react';
-import * as ReactModal from 'react-modal';
+import { css } from "aphrodite";
+import React from "react";
+import * as ReactModal from "react-modal";
 
-import { BUTTON_STYLE, MODAL_STYLE } from './styles';
+import { BUTTON_STYLE, MODAL_STYLE } from "./styles";
 
 interface Props {
   resolveGitHub(): void;
@@ -47,14 +47,15 @@ export default class ModalConflict extends React.PureComponent<Props> {
           </div>
           <div className={css(MODAL_STYLE.modalBody)}>
             <p style={{ marginTop: 0 }}>
-              <strong>This song was edited outside of this browser.</strong>{' '}
-              You can either keep the unsaved version from this browser, or revert
+              <strong>This song was edited outside of this browser.</strong> You
+              can either keep the unsaved version from this browser, or revert
               to the saved version.
             </p>
             <p>
-              <strong>Tip: </strong> Next time, save songs before closing Hacklily.
+              <strong>Tip: </strong> Next time, save songs before closing
+              Hacklily.
             </p>
-            <div style={{ display: 'flex', marginBottom: 10 }}>
+            <div style={{ display: "flex", marginBottom: 10 }}>
               <div style={{ flex: 1 }} />
               <div>
                 <button

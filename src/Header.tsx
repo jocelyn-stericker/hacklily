@@ -18,28 +18,32 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
  */
 
-import { css } from 'aphrodite';
-import React from 'react';
+import { css } from "aphrodite";
+import React from "react";
 
-import * as logoSvg from './logo.svg';
+import * as logoSvg from "./logo.svg";
 
-import ButtonGroup, { ButtonSpec } from './ButtonGroup';
-import { BUTTON_STYLE, HEADER_STYLE } from './styles';
+import ButtonGroup, { ButtonSpec } from "./ButtonGroup";
+import { BUTTON_STYLE, HEADER_STYLE } from "./styles";
 
-export type ViewMode = 'view' | 'edit' | 'both';
-export const MODE_VIEW: ViewMode = 'view';
-export const MODE_BOTH: ViewMode = 'both';
-export const MODE_EDIT: ViewMode = 'edit';
+export type ViewMode = "view" | "edit" | "both";
+export const MODE_VIEW: ViewMode = "view";
+export const MODE_BOTH: ViewMode = "both";
+export const MODE_EDIT: ViewMode = "edit";
 export const MIN_BOTH_WIDTH: number = 630;
 
 interface Player {
   // TODO(joshuan): Export hackmidi types :(
-  addChangeListener(fn: (timeInSeconds: number, isPlaying: boolean) => void): void;
+  addChangeListener(
+    fn: (timeInSeconds: number, isPlaying: boolean) => void,
+  ): void;
   destroy(): void;
   getDuration(): number;
   pause(): void;
   play(): void;
-  removeChangeListener(fn: (timeInSeconds: number, isPlaying: boolean) => void): void;
+  removeChangeListener(
+    fn: (timeInSeconds: number, isPlaying: boolean) => void,
+  ): void;
   seek(time: number): void;
 }
 
@@ -102,7 +106,13 @@ export default class Header extends React.PureComponent<Props> {
 
   // tslint:disable-next-line:max-func-body-length
   render(): JSX.Element {
-    const { mode, loggedIn, onModeChanged, onShowMenu, windowWidth } = this.props;
+    const {
+      mode,
+      loggedIn,
+      onModeChanged,
+      onShowMenu,
+      windowWidth,
+    } = this.props;
     const { played, playing } = this.state;
     const modeButtons: ButtonSpec[] = [];
     if (windowWidth < MIN_BOTH_WIDTH) {
@@ -113,7 +123,7 @@ export default class Header extends React.PureComponent<Props> {
             className={`fa fa-eye ${css(HEADER_STYLE.modeItem)}`}
           />
         ),
-        title: 'View',
+        title: "View",
         value: MODE_VIEW,
       });
       modeButtons.push({
@@ -123,13 +133,15 @@ export default class Header extends React.PureComponent<Props> {
             className={`fa fa-pencil ${css(HEADER_STYLE.modeItem)}`}
           />
         ),
-        title: 'Edit',
+        title: "Edit",
         value: MODE_EDIT,
       });
     }
 
     const viewMode: React.ReactNode = modeButtons.length > 0 && (
-      <div className={css(HEADER_STYLE.headerGroupWrapper, HEADER_STYLE.miniGroup)}>
+      <div
+        className={css(HEADER_STYLE.headerGroupWrapper, HEADER_STYLE.miniGroup)}
+      >
         <ButtonGroup
           value={mode}
           buttons={modeButtons}
@@ -139,26 +151,29 @@ export default class Header extends React.PureComponent<Props> {
     );
 
     const playButton: React.ReactNode = (
-      <div className={css(HEADER_STYLE.headerGroupWrapper, HEADER_STYLE.miniGroup)}>
+      <div
+        className={css(HEADER_STYLE.headerGroupWrapper, HEADER_STYLE.miniGroup)}
+      >
         <button
-          title={playing ? 'Pause' : 'Play'}
+          title={playing ? "Pause" : "Play"}
           className={css(BUTTON_STYLE.buttonStyle, HEADER_STYLE.playButton)}
           onClick={playing ? this.handlePause : this.handlePlay}
         >
-          <i className={playing ? 'fa-pause fa' : 'fa-play fa'} />
+          <i className={playing ? "fa-pause fa" : "fa-play fa"} />
         </button>
       </div>
     );
 
     const makelilyButton: React.ReactNode = (
-      <div className={css(HEADER_STYLE.headerGroupWrapper, HEADER_STYLE.miniGroup)}>
+      <div
+        className={css(HEADER_STYLE.headerGroupWrapper, HEADER_STYLE.miniGroup)}
+      >
         <button
           title="Lilypond Tools"
           className={css(BUTTON_STYLE.buttonStyle, HEADER_STYLE.playButton)}
           onClick={this.handleShowMakelily}
         >
-          <i className="fa-briefcase fa" />{' '}
-          Tools
+          <i className="fa-briefcase fa" /> Tools
         </button>
       </div>
     );
@@ -167,30 +182,37 @@ export default class Header extends React.PureComponent<Props> {
     let menu: React.ReactNode = null;
     if (windowWidth >= MIN_BOTH_WIDTH) {
       menu = (
-        <div className={css(HEADER_STYLE.headerGroupWrapper, HEADER_STYLE.songs)}>
+        <div
+          className={css(HEADER_STYLE.headerGroupWrapper, HEADER_STYLE.songs)}
+        >
           <button
             title="Menu"
             className={css(BUTTON_STYLE.buttonStyle, HEADER_STYLE.songsText)}
             onClick={onShowMenu}
           >
             {!loggedIn && <span>Hacklily &mdash; </span>}
-            {this.props.song ? last(this.props.song.split('/')).split('.ly')[0] : 'untitled'}
-            {this.props.isDirty ? '*' : ''}{' '}
-            <span className={css(HEADER_STYLE.srOnly)}>: an online LilyPond editor</span>
+            {this.props.song
+              ? last(this.props.song.split("/")).split(".ly")[0]
+              : "untitled"}
+            {this.props.isDirty ? "*" : ""}{" "}
+            <span className={css(HEADER_STYLE.srOnly)}>
+              : an online LilyPond editor
+            </span>
             <i className="fa fa-chevron-down" aria-hidden={true} />
           </button>
         </div>
       );
     } else {
       menu = (
-        <div className={css(HEADER_STYLE.headerGroupWrapper, HEADER_STYLE.songs)}>
+        <div
+          className={css(HEADER_STYLE.headerGroupWrapper, HEADER_STYLE.songs)}
+        >
           <button
             title="Menu"
             className={css(BUTTON_STYLE.buttonStyle, HEADER_STYLE.songsText)}
             onClick={onShowMenu}
           >
-            <i className="fa-bars fa" />{' '}
-            Menu
+            <i className="fa-bars fa" /> Menu
           </button>
         </div>
       );
@@ -198,7 +220,11 @@ export default class Header extends React.PureComponent<Props> {
 
     return (
       <div className="header">
-        <img src={logoSvg} className={css(HEADER_STYLE.logo)} alt="Frog, Hacklily logo" />
+        <img
+          src={logoSvg}
+          className={css(HEADER_STYLE.logo)}
+          alt="Frog, Hacklily logo"
+        />
         {menu || <span style={{ width: 10 }} />}
         {viewMode}
         {makelilyButton}
@@ -213,7 +239,7 @@ export default class Header extends React.PureComponent<Props> {
       return;
     }
     this.state.player.seek(this.state.timeInSeconds + 4);
-  }
+  };
   private handlePause = async (): Promise<void> => {
     this.setState({
       playing: false,
@@ -224,12 +250,14 @@ export default class Header extends React.PureComponent<Props> {
     if (player) {
       player.pause();
     }
-  }
+  };
 
   private handlePlay = async (): Promise<void> => {
     if (!this.props.midi) {
-      alert('No MIDI data found. Make sure you have ' +
-        'a \\midi {} and a \\layout {} in your \\score {}.');
+      alert(
+        "No MIDI data found. Make sure you have " +
+          "a \\midi {} and a \\layout {} in your \\score {}.",
+      );
 
       return;
     }
@@ -238,11 +266,12 @@ export default class Header extends React.PureComponent<Props> {
     if (this.state.player) {
       player = this.state.player;
     } else {
-      const { playerFromMIDIBuffer } = await import('hackmidi');
+      const { playerFromMIDIBuffer } = await import("hackmidi");
 
       player = await playerFromMIDIBuffer(
         this.props.midi,
-        'https://www.hacklily.org/hackmidi/samples/');
+        "https://www.hacklily.org/hackmidi/samples/",
+      );
       this.setState({
         player,
       });
@@ -254,7 +283,7 @@ export default class Header extends React.PureComponent<Props> {
       played: true,
       playing: true,
     });
-  }
+  };
 
   private handlePlaying = (timeInSeconds: number, playing: boolean): void => {
     const wasPlaying: boolean = this.state.playing;
@@ -267,7 +296,7 @@ export default class Header extends React.PureComponent<Props> {
     if (!player) {
       // TODO(joshuan): Fix this!
       // tslint:disable-next-line no-console
-      console.log('handlePlaying called, but there\'s no song');
+      console.log("handlePlaying called, but there's no song");
 
       return;
     }
@@ -279,44 +308,53 @@ export default class Header extends React.PureComponent<Props> {
           player: null,
         },
         () => {
-          setTimeout(
-            () => {
-              player.destroy();
-            },
-            0,
-          );
+          setTimeout(() => {
+            player.destroy();
+          }, 0);
         },
       );
     }
-  }
+  };
 
   private handleRewind = (): void => {
     if (!this.state.player) {
       return;
     }
     this.state.player.seek(Math.max(0, this.state.timeInSeconds - 4));
-  }
+  };
 
   private handleShowMakelily = (): void => {
     this.props.onShowMakelily();
-  }
+  };
 
   // tslint:disable-next-line:cyclomatic-complexity
   private renderCommunityToolbar(): React.ReactNode {
-    const { online, song, onShowClone, onShowNew, onShowPublish, isDirty, windowWidth,
-      sandboxIsDirty, inSandbox, isImmutableSrc} = this.props;
+    const {
+      online,
+      song,
+      onShowClone,
+      onShowNew,
+      onShowPublish,
+      isDirty,
+      windowWidth,
+      sandboxIsDirty,
+      inSandbox,
+      isImmutableSrc,
+    } = this.props;
     const micro: boolean = windowWidth <= 750;
 
-    const goToSandbox: string = sandboxIsDirty ? 'Back to scratchpad' : 'New song';
+    const goToSandbox: string = sandboxIsDirty
+      ? "Back to scratchpad"
+      : "New song";
     let saveAsButton: React.ReactNode;
     if (!inSandbox) {
       saveAsButton = (
         <button
-            title="Save As"
-            className={css(HEADER_STYLE.newSong)}
-            onClick={onShowClone}
+          title="Save As"
+          className={css(HEADER_STYLE.newSong)}
+          onClick={onShowClone}
         >
-          <i className="fa fa-clone" />{' '}
+          <i className="fa fa-clone" />{" "}
           {!micro && !isImmutableSrc && <span>Save As</span>}
           {!micro && isImmutableSrc && <span>Import</span>}
         </button>
@@ -328,18 +366,16 @@ export default class Header extends React.PureComponent<Props> {
       if (isDirty) {
         saveShare = (
           <span>
-            <i className="fa fa-save" />{' '}
-            {!micro && <span>Save updates</span>}
+            <i className="fa fa-save" /> {!micro && <span>Save updates</span>}
           </span>
         );
       } else if (!micro) {
-        saveShare = 'All changes saved.';
+        saveShare = "All changes saved.";
       }
     } else {
       saveShare = (
         <span>
-          <i className="fa fa-save" />{' '}
-          {!micro && <span>Save / share</span>}
+          <i className="fa fa-save" /> {!micro && <span>Save / share</span>}
         </span>
       );
     }
@@ -347,10 +383,7 @@ export default class Header extends React.PureComponent<Props> {
     if (!isDirty && !this.props.song) {
       return (
         <div className={css(HEADER_STYLE.headerGroupWrapper)}>
-          <button
-            title="Publish"
-            className={css(HEADER_STYLE.newSong)}
-          >
+          <button title="Publish" className={css(HEADER_STYLE.newSong)}>
             {!micro && <span>No changes made.</span>}
           </button>
         </div>
@@ -365,13 +398,18 @@ export default class Header extends React.PureComponent<Props> {
             className={css(HEADER_STYLE.newSong)}
             onClick={onShowNew}
           >
-            <i className={`fa ${sandboxIsDirty ? 'fa-chevron-left' : 'fa-plus'}`} />{' '}
+            <i
+              className={`fa ${sandboxIsDirty ? "fa-chevron-left" : "fa-plus"}`}
+            />{" "}
             {!micro && <span>{goToSandbox}</span>}
           </button>
           {saveAsButton}
           <button
             title="Publish"
-            className={css(HEADER_STYLE.publish, isDirty && HEADER_STYLE.publishActive)}
+            className={css(
+              HEADER_STYLE.publish,
+              isDirty && HEADER_STYLE.publishActive,
+            )}
             onClick={isDirty || !song ? onShowPublish : undefined}
           >
             {saveShare}
@@ -383,7 +421,7 @@ export default class Header extends React.PureComponent<Props> {
     return (
       <div className={css(HEADER_STYLE.headerGroupWrapper)}>
         <i className="fa fa-spinner fa-spin" aria-hidden={true} />
-        <div style={{ display: 'inline-block', width: 10 }} />
+        <div style={{ display: "inline-block", width: 10 }} />
       </div>
     );
   }
@@ -394,7 +432,9 @@ export default class Header extends React.PureComponent<Props> {
     const { playing } = this.state;
 
     return (
-      <div className={css(HEADER_STYLE.headerGroupWrapper, HEADER_STYLE.miniGroup)}>
+      <div
+        className={css(HEADER_STYLE.headerGroupWrapper, HEADER_STYLE.miniGroup)}
+      >
         <button
           title="Rewind"
           className={css(BUTTON_STYLE.buttonStyle, HEADER_STYLE.playButton)}
@@ -403,14 +443,18 @@ export default class Header extends React.PureComponent<Props> {
           <i className="fa-backward fa" />
         </button>
         <button
-          title={playing ? 'Pause' : 'Play'}
+          title={playing ? "Pause" : "Play"}
           className={css(BUTTON_STYLE.buttonStyle, HEADER_STYLE.playButton)}
           onClick={playing ? this.handlePause : this.handlePlay}
         >
-          <i className={playing ? 'fa-pause fa' : 'fa-play fa'} />
+          <i className={playing ? "fa-pause fa" : "fa-play fa"} />
         </button>
         <button
-          className={css(BUTTON_STYLE.buttonStyle, HEADER_STYLE.playButton, HEADER_STYLE.playTime)}
+          className={css(
+            BUTTON_STYLE.buttonStyle,
+            HEADER_STYLE.playButton,
+            HEADER_STYLE.playTime,
+          )}
           disabled={true}
         >
           {fmtTime}
@@ -425,5 +469,4 @@ export default class Header extends React.PureComponent<Props> {
       </div>
     );
   }
-
 }

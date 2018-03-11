@@ -1,6 +1,6 @@
-import React from 'react'
+import React from "react";
 
-import { Auth } from './auth';
+import { Auth } from "./auth";
 
 interface Props {
   auth: Auth | null;
@@ -26,7 +26,12 @@ interface Props {
   onCodeMode: () => void;
   onAboutHacklily: () => void;
   onOpenCancel: () => void;
-  onOpenFile: (filename: string, source: "remote" | "local", sha: string, contents: string) => void;
+  onOpenFile: (
+    filename: string,
+    source: "remote" | "local",
+    sha: string,
+    contents: string,
+  ) => void;
   onExportRequested: (filename: string) => void;
   onLocalFilesChanged: () => void;
   onUnsavedChangesSave: () => void;
@@ -36,6 +41,9 @@ interface Props {
 
 export default class StandaloneAppHost extends React.Component<Props> {
   localFiles: string[] | null;
-  renderLy: (src: string, filetype: string) => Promise<{content: string[], logs: string}>;
+  renderLy: (
+    src: string,
+    filetype: string,
+  ) => Promise<{ content: string[]; logs: string }>;
   save: (src: string, filename: string) => Promise<void>;
 }
