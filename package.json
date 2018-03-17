@@ -9,7 +9,7 @@
     "dompurify": "1.0.3",
     "hackmidi": "0.0.3",
     "lodash.debounce": "4.0.8",
-    "makelily": "hacklily/makelily#157e7c7",
+    "makelily": "hacklily/makelily#e44736b3791535dcc8ceebc0ed87300c0179bb66",
     "monaco-editor": "0.10.1",
     "react": "16.2.0",
     "react-dom": "16.2.0",
