@@ -1,6 +1,6 @@
 {
   "name": "makelily",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "license": "AGPL-3.0",
   "description": "Ad-hoc UIs for creating and modifying Lilypond",
   "main": "build/dist/Makelily.js",
