@@ -22,7 +22,7 @@ import { css, StyleSheet } from 'aphrodite';
 import React = require('react');
 
 export interface Props {
-  kind: 'keyboard' | 'midi' | 'mouse'| 'relative' | 'whyNotEdit';
+  kind: 'keyboard' | 'midi' | 'mouse' | 'relative' | 'whyNotEdit';
   onHide(): void;
 }
 
@@ -227,8 +227,8 @@ export default class NoteAdditionalHelp extends React.Component<Props, {}> {
       <span>
         <h3>What is relative output?</h3>
         <p>
-          Use <code>\\relative</code> output mode if you are inserting code into a
-          <code>\\relative</code> block, and leave it unchecked if your song uses absolute mode.
+          Use <code>\relative</code> output mode if you are inserting code into a{' '}
+          <code>\relative</code> block, and leave it unchecked if your song uses absolute mode.
         </p>
         <p>
           From the LilyPond manual, absolute octave entry requires specifying the octave for every
@@ -237,7 +237,7 @@ export default class NoteAdditionalHelp extends React.Component<Props, {}> {
         </p>
         <p>
           If this checkbox is not checked, the octave of every note will be explicitly spelled out.
-          {' '}<code>c'</code> will always mean middle C. In relative mode, <code>c'</code>
+          {' '}<code>c'</code> will always mean middle C.
         </p>
         <p>
           When using this mode, after inserting bars of music, you may need to adjust the octave of
