@@ -139,17 +139,17 @@ var NoteAdditionalHelp = /** @class */ (function (_super) {
             React.createElement("h3", null, "What is relative output?"),
             React.createElement("p", null,
                 "Use ",
-                React.createElement("code", null, "\\\\relative"),
+                React.createElement("code", null, "\\relative"),
                 " output mode if you are inserting code into a",
-                React.createElement("code", null, "\\\\relative"),
+                ' ',
+                React.createElement("code", null, "\\relative"),
                 " block, and leave it unchecked if your song uses absolute mode."),
             React.createElement("p", null, "From the LilyPond manual, absolute octave entry requires specifying the octave for every single note. Relative octave entry, in contrast, specifies each octave in relation to the last note: changing one note\u2019s octave will affect all of the following notes."),
             React.createElement("p", null,
                 "If this checkbox is not checked, the octave of every note will be explicitly spelled out.",
                 ' ',
                 React.createElement("code", null, "c'"),
-                " will always mean middle C. In relative mode, ",
-                React.createElement("code", null, "c'")),
+                " will always mean middle C."),
             React.createElement("p", null, "When using this mode, after inserting bars of music, you may need to adjust the octave of the first note.")));
     };
     NoteAdditionalHelp.prototype.renderWhyNotEdit = function () {
