@@ -27,8 +27,17 @@ done 1>&2 &
 sleep 2
 while read -r line
 do
-    echo "$line" | jq -r .src > hacklily.ly 2> /dev/null
     backend=$( echo "$line" | jq -r .backend )
+    if [ "$backend" == "musicxml2ly" ]; then
+        echo "$line" | jq -r .src | musicxml2ly - -o hacklily.musicxml2ly.ly 2> hacklily.err 1>&2
+        jq -Rs . hacklily.err > hacklily.err.json
+        jq -Rsrc '{files: [.], logs: $errors, midi: ""}' hacklily.musicxml2ly.ly \
+    	    --argfile errors hacklily.err.json \
+    	    2> /dev/null
+        continue
+    fi
+
+    echo "$line" | jq -r .src > hacklily.ly 2> /dev/null
 
     timeout -s9 4 lyp compile -s /tmp/hacklily.ly 2> hacklily.err 1>&2
     if [ $? -eq 137 ]; then

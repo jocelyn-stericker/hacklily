@@ -165,7 +165,8 @@ void HacklilyServer::_handleTextMessageReceived(QString message) {
             socket,
             requestObj["id"].toString(),
         };
-        if (!req.src.length() || !req.backend.length() || (req.backend != "svg" && req.backend != "pdf")) {
+        if (!req.src.length() || !req.backend.length() || (req.backend != "svg" && req.backend != "pdf" &&
+				req.backend != "musicxml2ly")) {
             socket->sendTextMessage("{\"error\": \"Invalid request.\", \"errorSlug\": \"invalid_request\"}");
             return;
         }
@@ -402,7 +403,7 @@ void HacklilyServer::_processIfPossible() {
         QString modifiedSrc;
         if (request.backend == "svg") {
             modifiedSrc += "#(ly:set-option 'backend '" + request.backend + ")\n";
-        } else {
+        } else if (request.backend != "musicxml2ly") {
             modifiedSrc += "\n";
         }
         modifiedSrc += request.src;
