@@ -250,8 +250,13 @@ const DEFAULT_SONG: string = `\\header {
   composer = "Composer"
 }
 
-\\relative c' {
-  c4
+\\score {
+  \\relative c' {
+    c4
+  }
+
+  \\layout {}
+  \\midi {}
 }`;
 
 /**
