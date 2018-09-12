@@ -17,7 +17,7 @@
  */
 
 import {reduce, forEach} from "lodash";
-import * as invariant from "invariant";
+import invariant from "invariant";
 
 import * as D from "./private_metre_metreDurations";
 import {IChord} from "./private_chordUtil";

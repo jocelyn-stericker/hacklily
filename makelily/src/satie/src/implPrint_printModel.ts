@@ -20,7 +20,7 @@ import {ScoreHeader, MeasureNumbering, PartNameDisplay, MeasureLayout, PartAbbre
     PageLayout, SystemLayout, StaffLayout, Print, NormalItalic, NormalBold, serializePrint,
     OddEvenBoth} from "musicxml-interfaces";
 import {forEach, defaultsDeep} from "lodash";
-import * as invariant from "invariant";
+import invariant from "invariant";
 
 import {IModel, ILayout, Type} from "./document";
 

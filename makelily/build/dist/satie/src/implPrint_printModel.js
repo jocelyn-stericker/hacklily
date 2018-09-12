@@ -16,18 +16,24 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with Satie.  If not, see <http://www.gnu.org/licenses/>.
  */
-var __assign = (this && this.__assign) || Object.assign || function(t) {
-    for (var s, i = 1, n = arguments.length; i < n; i++) {
-        s = arguments[i];
-        for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
-            t[p] = s[p];
-    }
-    return t;
+var __assign = (this && this.__assign) || function () {
+    __assign = Object.assign || function(t) {
+        for (var s, i = 1, n = arguments.length; i < n; i++) {
+            s = arguments[i];
+            for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
+                t[p] = s[p];
+        }
+        return t;
+    };
+    return __assign.apply(this, arguments);
+};
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 var musicxml_interfaces_1 = require("musicxml-interfaces");
 var lodash_1 = require("lodash");
-var invariant = require("invariant");
+var invariant_1 = __importDefault(require("invariant"));
 var document_1 = require("./document");
 var private_lineBounds_1 = require("./private_lineBounds");
 var PrintModel = /** @class */ (function () {
@@ -40,7 +46,7 @@ var PrintModel = /** @class */ (function () {
         });
     }
     PrintModel.prototype.refresh = function (cursor) {
-        invariant(!!cursor.header, "Cursor must have a valid header");
+        invariant_1.default(!!cursor.header, "Cursor must have a valid header");
         if (!this.measureNumbering) {
             cursor.patch(function (staff) { return staff.print(function (print) {
                 return print.measureNumbering({
@@ -48,7 +54,7 @@ var PrintModel = /** @class */ (function () {
                 });
             }); });
         }
-        if (this.pageNumber !== "1") {
+        if (this.pageNumber !== "1") { // XXX: Make this the actual page number
             cursor.patch(function (staff) { return staff.print(function (print) {
                 return print.pageNumber("1");
             }); });

@@ -16,9 +16,12 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with Satie.  If not, see <http://www.gnu.org/licenses/>.
  */
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.VERSION = process.env.SATIE_VERSION || "";
-var engine_songImpl_1 = require("./engine_songImpl");
+var engine_songImpl_1 = __importDefault(require("./engine_songImpl"));
 /* The web application API */
 var engine_application_1 = require("./engine_application");
 exports.Application = engine_application_1.default;
@@ -32,16 +35,16 @@ exports.Song = engine_songImpl_1.default;
 /* Experimental addons */
 var private_smufl_1 = require("./private_smufl");
 var private_renderUtil_1 = require("./private_renderUtil");
-var implAttributes_clefView_1 = require("./implAttributes_clefView");
-var implAttributes_keySignatureView_1 = require("./implAttributes_keySignatureView");
-var implAttributes_timeSignatureView_1 = require("./implAttributes_timeSignatureView");
+var implAttributes_clefView_1 = __importDefault(require("./implAttributes_clefView"));
+var implAttributes_keySignatureView_1 = __importDefault(require("./implAttributes_keySignatureView"));
+var implAttributes_timeSignatureView_1 = __importDefault(require("./implAttributes_timeSignatureView"));
 var implAttributes_attributesData_1 = require("./implAttributes_attributesData");
-var implDirection_directionView_1 = require("./implDirection_directionView");
-var implChord_notationView_1 = require("./implChord_notationView");
+var implDirection_directionView_1 = __importDefault(require("./implDirection_directionView"));
+var implChord_notationView_1 = __importDefault(require("./implChord_notationView"));
 var private_fontManager_1 = require("./private_fontManager");
 exports.requireFont = private_fontManager_1.requireFont;
 /* Patches */
-var engine_createPatch_1 = require("./engine_createPatch");
+var engine_createPatch_1 = __importDefault(require("./engine_createPatch"));
 var engine_createPatch_2 = require("./engine_createPatch");
 exports.PartBuilder = engine_createPatch_2.PartBuilder;
 exports.StaffBuilder = engine_createPatch_2.StaffBuilder;

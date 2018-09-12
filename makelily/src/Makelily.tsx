@@ -18,26 +18,26 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
  */
 
-import { css, StyleSheet } from 'aphrodite';
-import React = require('react');
-import { Application, requireFont } from './satie/src/satie';
+import { css, StyleSheet } from "aphrodite";
+import React = require("react");
+import { Application, requireFont } from "./satie/src/satie";
 
-import { ToolProps } from './tool';
-import ToolError from './ToolError';
-import ToolNoteEdit from './ToolNoteEdit';
-import ToolNotFound from './ToolNotFound';
-import ToolSetClef from './ToolSetClef';
-import ToolSetKey from './ToolSetKey';
-import ToolSetTime from './ToolSetTime';
+import { ToolProps } from "./tool";
+import ToolError from "./ToolError";
+import ToolNoteEdit from "./ToolNoteEdit";
+import ToolNotFound from "./ToolNotFound";
+import ToolSetClef from "./ToolSetClef";
+import ToolSetKey from "./ToolSetKey";
+import ToolSetTime from "./ToolSetTime";
 
-import { parseClef, parseKeySig, parseTime } from './parseLy';
+import { parseClef, parseKeySig, parseTime } from "./parseLy";
 
 export const satieApplication: Application = new Application({
-  preloadedFonts: ['Alegreya', 'Alegreya (bold)'],
+  preloadedFonts: ["Alegreya", "Alegreya (bold)"],
   satieRoot: `${location.protocol}//${location.host}/vendor/`,
 });
 
-requireFont('Bravura', 'root://bravura/otf/Bravura.otf');
+requireFont("Bravura", "root://bravura/otf/Bravura.otf");
 
 interface InsertMode {
   Component: React.ComponentType<ToolProps>;
@@ -48,27 +48,27 @@ interface InsertMode {
 const modes: InsertMode[] = [
   {
     Component: ToolSetClef,
-    key: 'clef',
-    name: 'Set Clef',
+    key: "clef",
+    name: "Set Clef",
   },
   {
     Component: ToolSetKey,
-    key: 'key',
-    name: 'Set Key Signature',
+    key: "key",
+    name: "Set Key Signature",
   },
   {
     Component: ToolSetTime,
-    key: 'time',
-    name: 'Set Time Signature',
+    key: "time",
+    name: "Set Time Signature",
   },
   {
     Component: ToolNoteEdit,
-    key: 'notes',
-    name: 'Insert Notes',
+    key: "notes",
+    name: "Insert Notes",
   },
   {
     Component: ToolError,
-    key: 'error',
+    key: "error",
     name: null,
   },
 ];
@@ -92,22 +92,22 @@ export interface State {
  */
 export default class Makelily extends React.Component<Props, State> {
   state: State = {
-    toolKey: this.props.defaultTool || 'clef',
+    toolKey: this.props.defaultTool || "clef",
   };
 
   componentDidCatch(error: Error, info: React.ErrorInfo): void {
-    console.warn('Caught error', error, info);
+    console.warn("Caught error", error, info);
     this.setState({
-      toolKey: 'error',
+      toolKey: "error",
     });
   }
 
   componentDidMount(): void {
-    document.addEventListener('keydown', this.handleDocumentKeyDown);
+    document.addEventListener("keydown", this.handleDocumentKeyDown);
   }
 
   componentWillUnmount(): void {
-    document.removeEventListener('keydown', this.handleDocumentKeyDown);
+    document.removeEventListener("keydown", this.handleDocumentKeyDown);
   }
 
   render(): JSX.Element {
@@ -132,23 +132,20 @@ export default class Makelily extends React.Component<Props, State> {
         );
       });
 
-    const activeMode: InsertMode = modes
-      .find((mode: InsertMode) => mode.key === this.state.toolKey);
+    const activeMode: InsertMode = modes.find(
+      (mode: InsertMode) => mode.key === this.state.toolKey,
+    );
     // tslint:disable-next-line variable-name
-    const Tool: React.ComponentType<ToolProps> = activeMode ?
-      activeMode.Component :
-      ToolNotFound;
+    const Tool: React.ComponentType<ToolProps> = activeMode
+      ? activeMode.Component
+      : ToolNotFound;
 
     let bar: JSX.Element | null;
     if (!this.props.singleTaskMode) {
       bar = (
         <div className={css(styles.modeBar)}>
-          <h2 className={css(styles.heading)}>
-            LilyPond Tools
-          </h2>
-          <ul className={css(styles.modeList)}>
-            {modeElements}
-          </ul>
+          <h2 className={css(styles.heading)}>LilyPond Tools</h2>
+          <ul className={css(styles.modeList)}>{modeElements}</ul>
         </div>
       );
     }
@@ -183,7 +180,7 @@ export default class Makelily extends React.Component<Props, State> {
             role="button"
             className={css(styles.close)}
           >
-            {'\u00d7'}
+            {"\u00d7"}
           </a>
         </div>
       </span>
@@ -195,7 +192,7 @@ export default class Makelily extends React.Component<Props, State> {
       e.preventDefault();
       this.props.onHide();
     }
-  }
+  };
 }
 
 const modeBarWidth: number = 180;
@@ -203,20 +200,20 @@ const modeBarWidth: number = 180;
 // tslint:disable-next-line typedef
 const styles = StyleSheet.create({
   close: {
-    ':hover': {
-      color: 'black',
+    ":hover": {
+      color: "black",
     },
-    color: '#6e6e6e',
+    color: "#6e6e6e",
     fontSize: 22,
-    position: 'absolute',
+    position: "absolute",
     right: 15,
-    textDecoration: 'none',
+    textDecoration: "none",
     top: 22,
   },
   content: {
     bottom: 0,
     left: modeBarWidth,
-    position: 'absolute',
+    position: "absolute",
     right: 0,
     top: 0,
   },
@@ -224,7 +221,7 @@ const styles = StyleSheet.create({
     left: 0,
   },
   heading: {
-    cursor: 'default',
+    cursor: "default",
     fontSize: 18,
     marginBottom: 0,
     marginTop: 8,
@@ -233,58 +230,58 @@ const styles = StyleSheet.create({
     paddingTop: 16,
   },
   modal: {
-    background: 'white',
-    border: '1px solid grey',
+    background: "white",
+    border: "1px solid grey",
     borderRadius: 4,
     height: 600,
-    left: 'calc(50% - 1020px / 2)',
-    overflow: 'hidden',
-    position: 'fixed',
-    top: 'calc((50% - 600px / 2) * 2 / 3)',
+    left: "calc(50% - 1020px / 2)",
+    overflow: "hidden",
+    position: "fixed",
+    top: "calc((50% - 600px / 2) * 2 / 3)",
     width: 1020,
     zIndex: 1001,
   },
   modalBg: {
-    background: 'black',
-    bottom:0,
-    cursor: 'pointer',
+    background: "black",
+    bottom: 0,
+    cursor: "pointer",
     left: 0,
     opacity: 0.4,
-    position: 'fixed',
+    position: "fixed",
     right: 0,
     top: 0,
     zIndex: 1000,
   },
   modeBar: {
-    backgroundColor: '#F6F7F7',
+    backgroundColor: "#F6F7F7",
     bottom: 0,
     left: 0,
-    position: 'absolute',
+    position: "absolute",
     top: 0,
     width: modeBarWidth,
   },
   modeItem: {
-    ':hover': {
-      textDecoration: 'underline',
+    ":hover": {
+      textDecoration: "underline",
     },
-    borderTop: '1px solid #D6D8DA',
-    cursor: 'pointer',
+    borderTop: "1px solid #D6D8DA",
+    cursor: "pointer",
     fontSize: 15,
-    padding: '8px 16px',
+    padding: "8px 16px",
   },
   modeItemLast: {
-    borderBottom: '1px solid #D6D8DA',
+    borderBottom: "1px solid #D6D8DA",
   },
   modeItemSelected: {
-    ':hover': {
-      color: 'black',
-      textDecoration: 'none',
+    ":hover": {
+      color: "black",
+      textDecoration: "none",
     },
-    cursor: 'default',
-    fontWeight: 'bold',
+    cursor: "default",
+    fontWeight: "bold",
   },
   modeList: {
-    listStyleType: 'none',
+    listStyleType: "none",
     margin: 0,
     padding: 0,
   },

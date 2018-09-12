@@ -19,55 +19,61 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
  */
 var __extends = (this && this.__extends) || (function () {
-    var extendStatics = Object.setPrototypeOf ||
-        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    }
     return function (d, b) {
         extendStatics(d, b);
         function __() { this.constructor = d; }
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 var aphrodite_1 = require("aphrodite");
 var React = require("react");
 var satie_1 = require("./satie/src/satie");
-var ToolError_1 = require("./ToolError");
-var ToolNoteEdit_1 = require("./ToolNoteEdit");
-var ToolNotFound_1 = require("./ToolNotFound");
-var ToolSetClef_1 = require("./ToolSetClef");
-var ToolSetKey_1 = require("./ToolSetKey");
-var ToolSetTime_1 = require("./ToolSetTime");
+var ToolError_1 = __importDefault(require("./ToolError"));
+var ToolNoteEdit_1 = __importDefault(require("./ToolNoteEdit"));
+var ToolNotFound_1 = __importDefault(require("./ToolNotFound"));
+var ToolSetClef_1 = __importDefault(require("./ToolSetClef"));
+var ToolSetKey_1 = __importDefault(require("./ToolSetKey"));
+var ToolSetTime_1 = __importDefault(require("./ToolSetTime"));
 var parseLy_1 = require("./parseLy");
 exports.satieApplication = new satie_1.Application({
-    preloadedFonts: ['Alegreya', 'Alegreya (bold)'],
+    preloadedFonts: ["Alegreya", "Alegreya (bold)"],
     satieRoot: location.protocol + "//" + location.host + "/vendor/",
 });
-satie_1.requireFont('Bravura', 'root://bravura/otf/Bravura.otf');
+satie_1.requireFont("Bravura", "root://bravura/otf/Bravura.otf");
 var modes = [
     {
         Component: ToolSetClef_1.default,
-        key: 'clef',
-        name: 'Set Clef',
+        key: "clef",
+        name: "Set Clef",
     },
     {
         Component: ToolSetKey_1.default,
-        key: 'key',
-        name: 'Set Key Signature',
+        key: "key",
+        name: "Set Key Signature",
     },
     {
         Component: ToolSetTime_1.default,
-        key: 'time',
-        name: 'Set Time Signature',
+        key: "time",
+        name: "Set Time Signature",
     },
     {
         Component: ToolNoteEdit_1.default,
-        key: 'notes',
-        name: 'Insert Notes',
+        key: "notes",
+        name: "Insert Notes",
     },
     {
         Component: ToolError_1.default,
-        key: 'error',
+        key: "error",
         name: null,
     },
 ];
@@ -79,7 +85,7 @@ var Makelily = /** @class */ (function (_super) {
     function Makelily() {
         var _this = _super !== null && _super.apply(this, arguments) || this;
         _this.state = {
-            toolKey: _this.props.defaultTool || 'clef',
+            toolKey: _this.props.defaultTool || "clef",
         };
         _this.handleDocumentKeyDown = function (e) {
             if (e.keyCode === 27) {
@@ -90,16 +96,16 @@ var Makelily = /** @class */ (function (_super) {
         return _this;
     }
     Makelily.prototype.componentDidCatch = function (error, info) {
-        console.warn('Caught error', error, info);
+        console.warn("Caught error", error, info);
         this.setState({
-            toolKey: 'error',
+            toolKey: "error",
         });
     };
     Makelily.prototype.componentDidMount = function () {
-        document.addEventListener('keydown', this.handleDocumentKeyDown);
+        document.addEventListener("keydown", this.handleDocumentKeyDown);
     };
     Makelily.prototype.componentWillUnmount = function () {
-        document.removeEventListener('keydown', this.handleDocumentKeyDown);
+        document.removeEventListener("keydown", this.handleDocumentKeyDown);
     };
     Makelily.prototype.render = function () {
         var _this = this;
@@ -109,12 +115,11 @@ var Makelily = /** @class */ (function (_super) {
             var className = aphrodite_1.css(styles.modeItem, i + 1 === modes.length && styles.modeItemLast, mode.key === _this.state.toolKey && styles.modeItemSelected);
             return (React.createElement("li", { className: className, onClick: function () { return _this.setState({ toolKey: mode.key }); }, role: "button", key: mode.key }, mode.name));
         });
-        var activeMode = modes
-            .find(function (mode) { return mode.key === _this.state.toolKey; });
+        var activeMode = modes.find(function (mode) { return mode.key === _this.state.toolKey; });
         // tslint:disable-next-line variable-name
-        var Tool = activeMode ?
-            activeMode.Component :
-            ToolNotFound_1.default;
+        var Tool = activeMode
+            ? activeMode.Component
+            : ToolNotFound_1.default;
         var bar;
         if (!this.props.singleTaskMode) {
             bar = (React.createElement("div", { className: aphrodite_1.css(styles.modeBar) },
@@ -128,7 +133,7 @@ var Makelily = /** @class */ (function (_super) {
                 bar,
                 React.createElement("div", { className: contentClass },
                     React.createElement(Tool, { clef: parseLy_1.parseClef(this.props.clef), keySig: parseLy_1.parseKeySig(this.props.keySig), time: parseLy_1.parseTime(this.props.time), onInsertLy: this.props.onInsertLy })),
-                React.createElement("a", { href: "#", onClick: this.props.onHide, role: "button", className: aphrodite_1.css(styles.close) }, '\u00d7'))));
+                React.createElement("a", { href: "#", onClick: this.props.onHide, role: "button", className: aphrodite_1.css(styles.close) }, "\u00d7"))));
     };
     return Makelily;
 }(React.Component));
@@ -137,20 +142,20 @@ var modeBarWidth = 180;
 // tslint:disable-next-line typedef
 var styles = aphrodite_1.StyleSheet.create({
     close: {
-        ':hover': {
-            color: 'black',
+        ":hover": {
+            color: "black",
         },
-        color: '#6e6e6e',
+        color: "#6e6e6e",
         fontSize: 22,
-        position: 'absolute',
+        position: "absolute",
         right: 15,
-        textDecoration: 'none',
+        textDecoration: "none",
         top: 22,
     },
     content: {
         bottom: 0,
         left: modeBarWidth,
-        position: 'absolute',
+        position: "absolute",
         right: 0,
         top: 0,
     },
@@ -158,7 +163,7 @@ var styles = aphrodite_1.StyleSheet.create({
         left: 0,
     },
     heading: {
-        cursor: 'default',
+        cursor: "default",
         fontSize: 18,
         marginBottom: 0,
         marginTop: 8,
@@ -167,58 +172,58 @@ var styles = aphrodite_1.StyleSheet.create({
         paddingTop: 16,
     },
     modal: {
-        background: 'white',
-        border: '1px solid grey',
+        background: "white",
+        border: "1px solid grey",
         borderRadius: 4,
         height: 600,
-        left: 'calc(50% - 1020px / 2)',
-        overflow: 'hidden',
-        position: 'fixed',
-        top: 'calc((50% - 600px / 2) * 2 / 3)',
+        left: "calc(50% - 1020px / 2)",
+        overflow: "hidden",
+        position: "fixed",
+        top: "calc((50% - 600px / 2) * 2 / 3)",
         width: 1020,
         zIndex: 1001,
     },
     modalBg: {
-        background: 'black',
+        background: "black",
         bottom: 0,
-        cursor: 'pointer',
+        cursor: "pointer",
         left: 0,
         opacity: 0.4,
-        position: 'fixed',
+        position: "fixed",
         right: 0,
         top: 0,
         zIndex: 1000,
     },
     modeBar: {
-        backgroundColor: '#F6F7F7',
+        backgroundColor: "#F6F7F7",
         bottom: 0,
         left: 0,
-        position: 'absolute',
+        position: "absolute",
         top: 0,
         width: modeBarWidth,
     },
     modeItem: {
-        ':hover': {
-            textDecoration: 'underline',
+        ":hover": {
+            textDecoration: "underline",
         },
-        borderTop: '1px solid #D6D8DA',
-        cursor: 'pointer',
+        borderTop: "1px solid #D6D8DA",
+        cursor: "pointer",
         fontSize: 15,
-        padding: '8px 16px',
+        padding: "8px 16px",
     },
     modeItemLast: {
-        borderBottom: '1px solid #D6D8DA',
+        borderBottom: "1px solid #D6D8DA",
     },
     modeItemSelected: {
-        ':hover': {
-            color: 'black',
-            textDecoration: 'none',
+        ":hover": {
+            color: "black",
+            textDecoration: "none",
         },
-        cursor: 'default',
-        fontWeight: 'bold',
+        cursor: "default",
+        fontWeight: "bold",
     },
     modeList: {
-        listStyleType: 'none',
+        listStyleType: "none",
         margin: 0,
         padding: 0,
     },

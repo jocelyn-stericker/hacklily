@@ -20,7 +20,7 @@ import {Accidental} from "musicxml-interfaces";
 import {createFactory, Component} from "react";
 import * as DOM from "react-dom-factories";
 import * as PropTypes from "prop-types";
-import * as invariant from "invariant";
+import invariant from "invariant";
 
 import Glyph from "./private_views_glyph";
 import {accidentalGlyphs} from "./private_chordUtil";

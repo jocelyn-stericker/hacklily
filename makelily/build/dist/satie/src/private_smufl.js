@@ -16,10 +16,13 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with Satie.  If not, see <http://www.gnu.org/licenses/>.
  */
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 var lodash_1 = require("lodash");
-var private_smufl_bravura_1 = require("./private_smufl_bravura");
-var private_smufl_glyphnames_1 = require("./private_smufl_glyphnames");
+var private_smufl_bravura_1 = __importDefault(require("./private_smufl_bravura"));
+var private_smufl_glyphnames_1 = __importDefault(require("./private_smufl_glyphnames"));
 var private_smufl_bravura_2 = require("./private_smufl_bravura");
 exports.bravura = private_smufl_bravura_2.default;
 exports.bboxes = lodash_1.keyBy(private_smufl_bravura_1.default.glyphBBoxes, 4);

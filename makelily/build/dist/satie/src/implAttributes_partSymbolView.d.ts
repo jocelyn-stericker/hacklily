@@ -1,4 +1,3 @@
-/// <reference types="react" />
 /**
  * This file is part of Satie music engraver <https://github.com/jnetterf/satie>.
  * Copyright (C) Joshua Netterfield <joshua.ca> 2015 - present.

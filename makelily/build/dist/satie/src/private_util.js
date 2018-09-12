@@ -16,11 +16,14 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with Satie.  If not, see <http://www.gnu.org/licenses/>.
  */
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 /**
  * @file private/util.ts Math and other utilites used privately by the engine.
  */
-var invariant = require("invariant");
+var invariant_1 = __importDefault(require("invariant"));
 /**
  * Finds the positive greatest common factor of two numbers by using Euclid's algorithm.
  */
@@ -38,8 +41,8 @@ exports.gcd = gcd;
  * Calculates modified lcm. This functions handles zero and negatives.
  */
 function lcm(a, b) {
-    invariant(isFinite(a), "%s is not finite", a);
-    invariant(isFinite(b), "%s is not finite", b);
+    invariant_1.default(isFinite(a), "%s is not finite", a);
+    invariant_1.default(isFinite(b), "%s is not finite", b);
     a = Math.abs(a);
     b = Math.abs(b);
     return Math.max(a, b, a * b / gcd(a, b) || 0);

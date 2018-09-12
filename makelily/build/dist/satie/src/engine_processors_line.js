@@ -16,9 +16,12 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with Satie.  If not, see <http://www.gnu.org/licenses/>.
  */
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 var lodash_1 = require("lodash");
-var invariant = require("invariant");
+var invariant_1 = __importDefault(require("invariant"));
 var document_1 = require("./document");
 var private_measureLayout_1 = require("./private_measureLayout");
 var private_part_1 = require("./private_part");
@@ -82,7 +85,7 @@ function layoutLine(options, bounds, memo) {
     var partOrder = lodash_1.map(private_part_1.scoreParts(options.header.partList), function (t) { return t.id; });
     var staffIdx = 0;
     var topsInOrder = lodash_1.map(partOrder, function (partID) {
-        invariant(initialAttributes[partID][1].staves >= 1, "Expected at least 1 staff, but there are %s", initialAttributes[partID][1].staves);
+        invariant_1.default(initialAttributes[partID][1].staves >= 1, "Expected at least 1 staff, but there are %s", initialAttributes[partID][1].staves);
         return [null].concat(lodash_1.times(initialAttributes[partID].length - 1, function () {
             ++staffIdx;
             if (staffIdx > 1) {

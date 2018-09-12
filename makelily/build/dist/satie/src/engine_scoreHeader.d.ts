@@ -40,8 +40,8 @@ declare class ScoreHeaderModel implements ScoreHeader {
     toXML(): string;
     inspect(): string;
     overwriteEncoding(): void;
-    private _getIdentificationOrCredit(type);
-    private _setIdentification(type, val);
-    private _setCredits(type, val, justification, fontSize, top);
+    private _getIdentificationOrCredit;
+    private _setIdentification;
+    private _setCredits;
 }
 export default ScoreHeaderModel;

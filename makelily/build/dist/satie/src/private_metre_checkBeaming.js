@@ -16,11 +16,21 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with Satie.  If not, see <http://www.gnu.org/licenses/>.
  */
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
+    result["default"] = mod;
+    return result;
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 var lodash_1 = require("lodash");
-var invariant = require("invariant");
-var D = require("./private_metre_metreDurations");
-var private_metre_getTSString_1 = require("./private_metre_getTSString");
+var invariant_1 = __importDefault(require("invariant"));
+var D = __importStar(require("./private_metre_metreDurations"));
+var private_metre_getTSString_1 = __importDefault(require("./private_metre_getTSString"));
 // Adapted from Behind Bars (E. Gould) page 155
 var BEAMING_PATTERNS = {
     "1/16": [D._16],
@@ -96,7 +106,7 @@ function getBeamingPattern(time, alt) {
             }
         });
     }
-    invariant(!!pattern, "Unknown beaming pattern");
+    invariant_1.default(!!pattern, "Unknown beaming pattern");
     return pattern;
 }
 exports.getBeamingPattern = getBeamingPattern;

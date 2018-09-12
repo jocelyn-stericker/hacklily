@@ -21,7 +21,7 @@ import {createFactory, Component} from "react";
 import * as DOM from "react-dom-factories";
 import * as PropTypes from "prop-types";
 import {map, filter, forEach, last} from "lodash";
-import * as invariant from "invariant";
+import invariant from "invariant";
 
 import {IModel, generateModelKey} from "./document";
 

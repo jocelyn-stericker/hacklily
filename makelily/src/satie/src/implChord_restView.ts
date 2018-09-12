@@ -21,7 +21,7 @@ import {createFactory, Component} from "react";
 import * as DOM from "react-dom-factories";
 import * as PropTypes from "prop-types";
 import {map} from "lodash";
-import * as invariant from "invariant";
+import invariant from "invariant";
 
 import Dot from "./private_views_dot";
 import Glyph from "./private_views_glyph";

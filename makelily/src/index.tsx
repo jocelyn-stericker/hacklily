@@ -18,27 +18,27 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
  */
 
-import * as React from 'react';
-import * as ReactDOM from 'react-dom';
-import App, { QUERY_PROP_KEYS, QueryProps } from './App';
+import * as React from "react";
+import * as ReactDOM from "react-dom";
+import App, { QUERY_PROP_KEYS, QueryProps } from "./App";
 
 // http://stackoverflow.com/a/8648962
 export function parseQuery(qstr: string): { [key: string]: string } {
   const query: { [key: string]: string } = {};
-  const a: string[] = (qstr[0] === '?' ? qstr.substr(1) : qstr).split('&');
+  const a: string[] = (qstr[0] === "?" ? qstr.substr(1) : qstr).split("&");
   for (const item of a) {
     if (!item) {
       continue;
     }
-    const b: string[] = item.split('=');
-    query[decodeURIComponent(b[0])] = decodeURIComponent(b[1] || '');
+    const b: string[] = item.split("=");
+    query[decodeURIComponent(b[0])] = decodeURIComponent(b[1] || "");
   }
 
   return query;
 }
 
 // http://stackoverflow.com/a/5505137
-export function toQueryString(obj: {[key: string]: string}): string {
+export function toQueryString(obj: { [key: string]: string }): string {
   const parts: string[] = [];
   for (const i of Object.keys(obj)) {
     if (obj[i] !== undefined) {
@@ -46,8 +46,7 @@ export function toQueryString(obj: {[key: string]: string}): string {
     }
   }
 
-  return parts.join('&')
-    .replace(/%2F/g, '/'); // because we can, and it's less ugly.
+  return parts.join("&").replace(/%2F/g, "/"); // because we can, and it's less ugly.
 }
 
 /**
@@ -55,11 +54,8 @@ export function toQueryString(obj: {[key: string]: string}): string {
  */
 function render(): void {
   ReactDOM.render(
-    <App
-      {...getQueryProps()}
-      setQuery={setQuery}
-    />,
-    document.getElementById('root'),
+    <App {...getQueryProps()} setQuery={setQuery} />,
+    document.getElementById("root"),
   );
 }
 
@@ -67,14 +63,16 @@ function render(): void {
  * Gets query props from the URL.
  */
 function getQueryProps(): QueryProps {
-  const queryObj: { [key: string]: string } = parseQuery(window.location.search);
+  const queryObj: { [key: string]: string } = parseQuery(
+    window.location.search,
+  );
   const query: QueryProps = {};
   Object.keys(queryObj).forEach((key: string) => {
     const queryPropIdx: number = (QUERY_PROP_KEYS as string[]).indexOf(key);
     if (queryPropIdx === -1) {
       console.warn(
         `Warning: unknown query property ${key}. ` +
-        'Please add it to QUERY_PROP_KEYS in App.tsx.',
+          "Please add it to QUERY_PROP_KEYS in App.tsx.",
       );
 
       return;
@@ -94,23 +92,24 @@ function setQuery(
   queryUpdates: Pick<QueryProps, keyof QueryProps>,
   replaceState: boolean = false,
 ): void {
-
   const query: QueryProps = getQueryProps();
-  Object.keys(queryUpdates).forEach((key: keyof QueryProps): void => {
-    if (key in queryUpdates) {
-      query[key] = queryUpdates[key];
-    }
-  });
+  Object.keys(queryUpdates).forEach(
+    (key: keyof QueryProps): void => {
+      if (key in queryUpdates) {
+        query[key] = queryUpdates[key];
+      }
+    },
+  );
 
-  const base: string = location.href.split('?')[0];
+  const base: string = location.href.split("?")[0];
   const queryString: string = toQueryString(query as { [key: string]: string });
 
   const newUrl: string = queryString.length ? `${base}?${queryString}` : base;
 
   if (replaceState) {
-    history.replaceState(null, '', newUrl);
+    history.replaceState(null, "", newUrl);
   } else {
-    history.pushState(null, '', newUrl);
+    history.pushState(null, "", newUrl);
   }
   render();
 }
@@ -118,8 +117,11 @@ function setQuery(
 /*
  * Init Hacklily.
  */
-window.addEventListener('popstate', (ev: PopStateEvent): void => {
-  render();
-});
+window.addEventListener(
+  "popstate",
+  (ev: PopStateEvent): void => {
+    render();
+  },
+);
 
 render();

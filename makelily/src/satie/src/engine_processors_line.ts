@@ -17,7 +17,7 @@
  */
 
 import {reduce, map, times, maxBy, zipObject, forEach} from "lodash";
-import * as invariant from "invariant";
+import invariant from "invariant";
 
 import {getMeasureSegments, reduceToShortestInSegments} from "./document";
 

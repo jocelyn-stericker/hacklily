@@ -17,23 +17,36 @@
  * along with Satie.  If not, see <http://www.gnu.org/licenses/>.
  */
 var __extends = (this && this.__extends) || (function () {
-    var extendStatics = Object.setPrototypeOf ||
-        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    }
     return function (d, b) {
         extendStatics(d, b);
         function __() { this.constructor = d; }
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
+    result["default"] = mod;
+    return result;
+};
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 var react_1 = require("react");
-var DOM = require("react-dom-factories");
-var PropTypes = require("prop-types");
+var DOM = __importStar(require("react-dom-factories"));
+var PropTypes = __importStar(require("prop-types"));
 var lodash_1 = require("lodash");
-var invariant = require("invariant");
+var invariant_1 = __importDefault(require("invariant"));
 var private_util_1 = require("./private_util");
-var implSegment_modelView_1 = require("./implSegment_modelView");
+var implSegment_modelView_1 = __importDefault(require("./implSegment_modelView"));
 var $ModelView = react_1.createFactory(implSegment_modelView_1.default);
 var NUMBER_ARRAY = PropTypes.arrayOf(PropTypes.number);
 var MeasureView = /** @class */ (function (_super) {
@@ -90,7 +103,7 @@ var MeasureView = /** @class */ (function (_super) {
         return this.context.originY - y;
     };
     MeasureView.prototype.shouldComponentUpdate = function (nextProps) {
-        invariant(!isNaN(this.props.version), "Invalid non-numeric version " + this.props.version);
+        invariant_1.default(!isNaN(this.props.version), "Invalid non-numeric version " + this.props.version);
         return this.props.version !== nextProps.version ||
             this.props.layout.originX !== nextProps.layout.originX ||
             this.props.layout.width !== nextProps.layout.width;

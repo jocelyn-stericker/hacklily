@@ -22,7 +22,7 @@ import {forEach, isEqual, throttle, find, extend} from "lodash";
 import {createElement, ReactElement} from "react";
 import {Pitch, ScoreHeader} from "musicxml-interfaces";
 import {IAny, invert} from "musicxml-interfaces/operations";
-import * as invariant from "invariant";
+import invariant from "invariant";
 
 import {Document, ISong, IPatchSpec, specIsDocBuilder, specIsPartBuilder, specIsRaw, IProps, IMouseEvent} from "./document";
 import createPatch from "./engine_createPatch";

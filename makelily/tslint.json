@@ -18,17 +18,10 @@
       }
     ],
     "no-multiline-string": false,
-    "interface-name": [
-      true,
-      "never-prefix"
-    ],
+    "interface-name": [true, "never-prefix"],
     "no-default-export": false,
-    "member-access": [
-      false
-    ],
-    "react-tsx-curly-spacing": [
-      false
-    ],
+    "member-access": [false],
+    "react-tsx-curly-spacing": [false],
     "no-unused-variable": [
       true,
       {
@@ -63,6 +56,9 @@
     "no-suspicious-comment": false,
     // We need this for exporting a react library
     "no-require-imports": false,
+    "quotemark": [true, "double", "jsx-double"],
+    "jsx-no-multiline-js": false,
+    "semicolon": false,
 
     // Legacy code
     "no-any": false,

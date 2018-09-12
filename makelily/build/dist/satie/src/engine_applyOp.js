@@ -16,18 +16,21 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with Satie.  If not, see <http://www.gnu.org/licenses/>.
  */
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
-var invariant = require("invariant");
+var invariant_1 = __importDefault(require("invariant"));
 var lodash_1 = require("lodash");
 var document_1 = require("./document");
 var engine_divisions_1 = require("./engine_divisions");
 var private_util_1 = require("./private_util");
 var private_mutate_1 = require("./private_mutate");
-var implAttributes_attributesMutator_1 = require("./implAttributes_attributesMutator");
-var implBarline_barlineMutator_1 = require("./implBarline_barlineMutator");
-var implChord_chordMutator_1 = require("./implChord_chordMutator");
-var implPrint_printMutator_1 = require("./implPrint_printMutator");
-var implSegment_segmentMutator_1 = require("./implSegment_segmentMutator");
+var implAttributes_attributesMutator_1 = __importDefault(require("./implAttributes_attributesMutator"));
+var implBarline_barlineMutator_1 = __importDefault(require("./implBarline_barlineMutator"));
+var implChord_chordMutator_1 = __importDefault(require("./implChord_chordMutator"));
+var implPrint_printMutator_1 = __importDefault(require("./implPrint_printMutator"));
+var implSegment_segmentMutator_1 = __importDefault(require("./implSegment_segmentMutator"));
 /**
  * Checks whether this object is safe to JSON.stringify and JSON.parse.
  * The only difference between the two should be presence of undefined values in Arrays and Objects.
@@ -59,7 +62,7 @@ function applyOp(preview, measures, factory, op, document, notEligableForPreview
     //   - a simple data type (number, string, ...)
     //   - a plain object (object with prototype Object), and that the same is true for all children
     //   - a plain array, and that the same is true for all items
-    invariant(isSerializable(op), "All operations must be serializable.");
+    invariant_1.default(isSerializable(op), "All operations must be serializable.");
     var path = op.p;
     if (path.length === 2 && path[0] === "measures") {
         // Song-wide measure addition/removal
@@ -88,26 +91,26 @@ function applyOp(preview, measures, factory, op, document, notEligableForPreview
     }
     var measureUUID = parseInt(String(path[0]), 10);
     var measure = lodash_1.find(measures, function (measure) { return measure.uuid === measureUUID; });
-    invariant(Boolean(measure), "Invalid operation path: no such measure " + path[0]);
-    invariant(path[1] === "parts", "Invalid operation path: only parts is supported, not " + path[1]);
+    invariant_1.default(Boolean(measure), "Invalid operation path: no such measure " + path[0]);
+    invariant_1.default(path[1] === "parts", "Invalid operation path: only parts is supported, not " + path[1]);
     var part = measure.parts[path[2]];
-    invariant(Boolean(part), "Invalid operation path: no such part " + part);
+    invariant_1.default(Boolean(part), "Invalid operation path: no such part " + part);
     ++measure.version;
-    invariant(path[3] === "voices" || path[3] === "staves", "Invalid operation path: " + path[3] + " should have been \"voices\" or \"staves");
+    invariant_1.default(path[3] === "voices" || path[3] === "staves", "Invalid operation path: " + path[3] + " should have been \"voices\" or \"staves");
     var cleanliness = document.cleanlinessTracking.measures[measureUUID];
     if (cleanliness) {
         cleanliness.clean = null;
     }
     if (path[3] === "voices") {
         var voice = part.voices[parseInt(String(path[4]), 10)];
-        invariant(Boolean(voice), "Invalid operation path: No such voice " + path.slice(0, 4).join(", "));
+        invariant_1.default(Boolean(voice), "Invalid operation path: No such voice " + path.slice(0, 4).join(", "));
         if (path.length === 6 && ((op.li && !op.ld) || (!op.li && op.ld))) {
             notEligableForPreview();
             implSegment_segmentMutator_1.default(factory, voice, op, document);
             return;
         }
         var element = voice[parseInt(String(path[5]), 10)];
-        invariant(Boolean(element), "Invalid operation path: No such element " + path.slice(0, 5).join(", "));
+        invariant_1.default(Boolean(element), "Invalid operation path: No such element " + path.slice(0, 5).join(", "));
         var localOp = lodash_1.cloneDeep(op);
         localOp.p = path.slice(6);
         if (factory.modelHasType(element, document_1.Type.Chord)) {
@@ -119,14 +122,14 @@ function applyOp(preview, measures, factory, op, document, notEligableForPreview
     }
     else if (path[3] === "staves") {
         var staff = part.staves[parseInt(String(path[4]), 10)];
-        invariant(Boolean(staff), "Invalid operation path: No such staff " + path.slice(0, 4).join(", "));
+        invariant_1.default(Boolean(staff), "Invalid operation path: No such staff " + path.slice(0, 4).join(", "));
         if (path.length === 6 && ((op.li && !op.ld) || (!op.li && op.ld))) {
             notEligableForPreview();
             implSegment_segmentMutator_1.default(factory, staff, op, document);
             return;
         }
         var element = staff[parseInt(String(path[5]), 10)];
-        invariant(Boolean(element), "Invalid operation path: No such element " + path.slice(0, 5).join(", "));
+        invariant_1.default(Boolean(element), "Invalid operation path: No such element " + path.slice(0, 5).join(", "));
         var localOp = lodash_1.cloneDeep(op);
         localOp.p = path.slice(6);
         if (factory.modelHasType(element, document_1.Type.Barline)) {
@@ -163,9 +166,9 @@ function applyMeasureOp(measures, factory, op, doc) {
     if (op.ld !== undefined && op.p.length === 1) {
         ok = true;
         var measureIdx = op.p[0];
-        invariant(!isNaN(measureIdx), "Measure index " + measureIdx + " must be");
-        invariant(Boolean(op.ld.uuid), "uuid must be specified");
-        invariant(op.ld.uuid === measures[measureIdx].uuid, "invalid uuid " + op.ld.uuid + " != " + measures[measureIdx].uuid);
+        invariant_1.default(!isNaN(measureIdx), "Measure index " + measureIdx + " must be");
+        invariant_1.default(Boolean(op.ld.uuid), "uuid must be specified");
+        invariant_1.default(op.ld.uuid === measures[measureIdx].uuid, "invalid uuid " + op.ld.uuid + " != " + measures[measureIdx].uuid);
         oldMeasure = measures[measureIdx];
         measures.splice(measureIdx, 1);
         measures.slice(measureIdx).forEach(function (measure) {
@@ -182,8 +185,8 @@ function applyMeasureOp(measures, factory, op, doc) {
     if (op.li !== undefined && op.p.length === 1) {
         ok = true;
         var measureIdx = op.p[0];
-        invariant(!isNaN(measureIdx), "Measure index " + measureIdx + " must be");
-        invariant(Boolean(op.li.uuid), "uuid must be specified");
+        invariant_1.default(!isNaN(measureIdx), "Measure index " + measureIdx + " must be");
+        invariant_1.default(Boolean(op.li.uuid), "uuid must be specified");
         oldMeasure = oldMeasure || measures[measureIdx - 1] || measures[measureIdx + 1]; // note, we don't support empty docs
         var oldParts = oldMeasure.parts;
         var newParts_1 = private_util_1.cloneObject(op.li.parts) || {};
@@ -265,7 +268,7 @@ function applyMeasureOp(measures, factory, op, doc) {
         });
         measures.forEach(function (measure) { return ++measure.version; });
     }
-    invariant(ok, "Invalid operation type for applyMeasureOp's context: " + JSON.stringify(op));
+    invariant_1.default(ok, "Invalid operation type for applyMeasureOp's context: " + JSON.stringify(op));
 }
 exports.applyMeasureOp = applyMeasureOp;
 //# sourceMappingURL=engine_applyOp.js.map

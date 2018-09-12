@@ -16,9 +16,12 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with Satie.  If not, see <http://www.gnu.org/licenses/>.
  */
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 var document_1 = require("./document");
-var implChord_chordImpl_1 = require("./implChord_chordImpl");
+var implChord_chordImpl_1 = __importDefault(require("./implChord_chordImpl"));
 /**
  * Registers Chord in the factory structure passed in.
  */

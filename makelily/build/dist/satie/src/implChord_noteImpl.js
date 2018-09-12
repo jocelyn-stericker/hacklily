@@ -16,10 +16,13 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with Satie.  If not, see <http://www.gnu.org/licenses/>.
  */
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 var musicxml_interfaces_1 = require("musicxml-interfaces");
 var lodash_1 = require("lodash");
-var invariant = require("invariant");
+var invariant_1 = __importDefault(require("invariant"));
 var private_chordUtil_1 = require("./private_chordUtil");
 var private_smufl_1 = require("./private_smufl");
 var private_util_1 = require("./private_util");
@@ -105,7 +108,7 @@ var NoteImpl = /** @class */ (function () {
         if (this.pitch && this.rest) {
             cursor.patch(function (voice) { return voice.note(_this._idx, function (note) { return note.pitch(null); }); });
         }
-        invariant(cursor.segmentInstance.ownerType === "voice", "Expected to be in voice's context during validation");
+        invariant_1.default(cursor.segmentInstance.ownerType === "voice", "Expected to be in voice's context during validation");
         if (this.voice !== cursor.segmentInstance.owner) {
             cursor.patch(function (partBuilder) { return partBuilder
                 .note(_this._idx, function (note) { return note
@@ -261,7 +264,7 @@ var NoteImpl = /** @class */ (function () {
         }
         var actual = pitch.alter || 0;
         var accidentals = cursor.staffAccidentals;
-        invariant(!!accidentals, "Accidentals must already have been setup. Is there an Attributes element?");
+        invariant_1.default(!!accidentals, "Accidentals must already have been setup. Is there an Attributes element?");
         // TODO: this is no longer sufficient if multiple voices share a staff.
         var generalTarget = accidentals[pitch.step] || null;
         var target = accidentals[pitch.step + pitch.octave];
@@ -308,7 +311,7 @@ var NoteImpl = /** @class */ (function () {
         }
         if (acc) {
             var glyphName = private_chordUtil_1.accidentalGlyphs[acc.accidental];
-            invariant(glyphName in private_smufl_1.bboxes, "Expected a known glyph, got %s", glyphName);
+            invariant_1.default(glyphName in private_smufl_1.bboxes, "Expected a known glyph, got %s", glyphName);
             var width = private_smufl_1.bboxes[glyphName][0] * 10;
             var clef = cursor.staffAttributes.clef;
             // TODO: `let clef = cursor.part.attributes.clefs[cursor.staffIdx]`

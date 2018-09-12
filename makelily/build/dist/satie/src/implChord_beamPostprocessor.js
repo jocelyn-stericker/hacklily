@@ -16,13 +16,16 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with Satie.  If not, see <http://www.gnu.org/licenses/>.
  */
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 /**
  * @file Creates beams and tuplets
  */
 var musicxml_interfaces_1 = require("musicxml-interfaces");
 var lodash_1 = require("lodash");
-var invariant = require("invariant");
+var invariant_1 = __importDefault(require("invariant"));
 var document_1 = require("./document");
 var private_chordUtil_1 = require("./private_chordUtil");
 /**
@@ -131,8 +134,8 @@ function beam(options, bounds, measures) {
                 }
                 lodash_1.chain(beams).sortBy("number").forEach(function (beam) {
                     var idx = beam.number;
-                    invariant(!!idx, "A beam's number must be defined in MusicXML.");
-                    invariant(!!voice, "A beam's voice must be defined in MusicXML.");
+                    invariant_1.default(!!idx, "A beam's number must be defined in MusicXML.");
+                    invariant_1.default(!!voice, "A beam's voice must be defined in MusicXML.");
                     activeBeams[voice] = activeBeams[voice] || [];
                     switch (beam.type) {
                         case musicxml_interfaces_1.BeamType.Begin:
@@ -161,9 +164,9 @@ function beam(options, bounds, measures) {
                             }
                         // Passthrough for BackwardHook and ForwardHook, which are single note things
                         case musicxml_interfaces_1.BeamType.End:
-                            invariant(voice in activeBeams, "Cannot end non-existant beam " +
+                            invariant_1.default(voice in activeBeams, "Cannot end non-existant beam " +
                                 "(no beam at all in current voice %s)", voice);
-                            invariant(idx in activeBeams[voice], "Cannot end non-existant " +
+                            invariant_1.default(idx in activeBeams[voice], "Cannot end non-existant " +
                                 "beam (no beam at level %s in voice %s)", idx, voice);
                             activeBeams[voice][idx].elements.push(layout);
                             counts = activeBeams[voice][1].counts;
@@ -199,9 +202,9 @@ function beam(options, bounds, measures) {
                             }
                             break;
                         case musicxml_interfaces_1.BeamType.Continue:
-                            invariant(voice in activeBeams, "Cannot continue non-existant beam (no beam at all " +
+                            invariant_1.default(voice in activeBeams, "Cannot continue non-existant beam (no beam at all " +
                                 "in current voice %s)", voice);
-                            invariant(idx in activeBeams[voice], "Cannot continue non-existant " +
+                            invariant_1.default(idx in activeBeams[voice], "Cannot continue non-existant " +
                                 "beam (no beam at level %s in voice %s)", idx, voice);
                             activeBeams[voice][idx].elements.push(layout);
                             counts = activeBeams[voice][1].counts;
@@ -298,7 +301,7 @@ function layoutBeam(voice, idx, beamSet, isUnbeamedTuplet) {
         lodash_1.forEach(layouts, function (chordLayout, idx) {
             var stemStart = private_chordUtil_1.startingLine(chordLayout.model, direction, clef);
             var stemHeight = getStemHeight(direction, idx, stemStart);
-            invariant(chords.length === 1 || isFinite(stemHeight), "stemHeight must be defined for 2+ notes");
+            invariant_1.default(chords.length === 1 || isFinite(stemHeight), "stemHeight must be defined for 2+ notes");
             chordLayout.satieStem = {
                 direction: direction,
                 stemStart: stemStart,

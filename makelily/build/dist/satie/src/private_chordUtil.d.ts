@@ -94,7 +94,7 @@ export declare let clefOffsets: {
 };
 export declare function getClefOffset(clef: Clef): number;
 export declare function barDivisionsDI(time: Time, divisions: number): number;
-export declare function barDivisions({time, divisions}: IAttributesSnapshot): number;
+export declare function barDivisions({ time, divisions }: IAttributesSnapshot): number;
 export declare let IDEAL_STEM_HEIGHT: number;
 export declare let MIN_STEM_HEIGHT: number;
 export declare let chromaticScale: {

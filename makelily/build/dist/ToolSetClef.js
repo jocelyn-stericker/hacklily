@@ -19,76 +19,84 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
  */
 var __extends = (this && this.__extends) || (function () {
-    var extendStatics = Object.setPrototypeOf ||
-        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    }
     return function (d, b) {
         extendStatics(d, b);
         function __() { this.constructor = d; }
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
-var __assign = (this && this.__assign) || Object.assign || function(t) {
-    for (var s, i = 1, n = arguments.length; i < n; i++) {
-        s = arguments[i];
-        for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
-            t[p] = s[p];
-    }
-    return t;
+var __assign = (this && this.__assign) || function () {
+    __assign = Object.assign || function(t) {
+        for (var s, i = 1, n = arguments.length; i < n; i++) {
+            s = arguments[i];
+            for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
+                t[p] = s[p];
+        }
+        return t;
+    };
+    return __assign.apply(this, arguments);
+};
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 var aphrodite_1 = require("aphrodite");
 var React = require("react");
 var satie_1 = require("./satie/src/satie");
-var tabStyles_1 = require("./tabStyles");
+var tabStyles_1 = __importDefault(require("./tabStyles"));
 var stdClefs = [
     {
-        clefViewbox: '-26 -47 80 114',
-        enName: 'Treble',
+        clefViewbox: "-26 -47 80 114",
+        enName: "Treble",
         line: 2,
-        lyName: 'treble',
-        sign: 'G',
+        lyName: "treble",
+        sign: "G",
     },
     {
-        clefViewbox: '-26 -47 80 114',
-        enName: 'Bass',
+        clefViewbox: "-26 -47 80 114",
+        enName: "Bass",
         line: 4,
-        lyName: 'bass',
-        sign: 'F',
+        lyName: "bass",
+        sign: "F",
     },
     {
-        clefViewbox: '-26 -47 80 114',
-        enName: 'Alto',
+        clefViewbox: "-26 -47 80 114",
+        enName: "Alto",
         line: 3,
-        lyName: 'alto',
-        sign: 'C',
+        lyName: "alto",
+        sign: "C",
     },
     {
-        clefViewbox: '-26 -47 80 114',
-        enName: 'Tenor',
+        clefViewbox: "-26 -47 80 114",
+        enName: "Tenor",
         line: 4,
-        lyName: 'tenor',
-        sign: 'C',
+        lyName: "tenor",
+        sign: "C",
     },
     {
-        clefViewbox: '-32 -47 80 114',
-        enName: 'Guitar Tab',
+        clefViewbox: "-32 -47 80 114",
+        enName: "Guitar Tab",
         line: 5,
-        lyName: 'moderntab',
-        sign: 'TAB',
+        lyName: "moderntab",
+        sign: "TAB",
     },
     {
-        clefViewbox: '-32 -47 80 114',
-        enName: 'Perc.',
+        clefViewbox: "-32 -47 80 114",
+        enName: "Perc.",
         line: 3,
-        lyName: 'percussion',
-        sign: 'percussion',
+        lyName: "percussion",
+        sign: "percussion",
     },
 ];
 function getInitialState(props) {
     var selectedClef = stdClefs.findIndex(function (clef) {
-        return clef.line === props.clef.line &&
-            clef.sign === props.clef.sign;
+        return clef.line === props.clef.line && clef.sign === props.clef.sign;
     });
     if (selectedClef === -1) {
         selectedClef = 0;
@@ -116,7 +124,8 @@ var ToolSetClef = /** @class */ (function (_super) {
     ToolSetClef.prototype.render = function () {
         var _this = this;
         var clefViews = stdClefs.map(function (clef, i) {
-            var clefSpec = __assign({ defaultX: 0, defaultY: 0, relativeY: 0 }, clef, { clefOctaveChange: clef.sign !== 'TAB' && clef.sign !== 'percussion' &&
+            var clefSpec = __assign({ defaultX: 0, defaultY: 0, relativeY: 0 }, clef, { clefOctaveChange: clef.sign !== "TAB" &&
+                    clef.sign !== "percussion" &&
                     "" + _this.state.octave });
             var selected = i === _this.state.selectedClef;
             return (React.createElement("span", { className: aphrodite_1.css(tabStyles_1.default.selectableOption, selected && tabStyles_1.default.selectableSelected), role: "button", onClick: function () { return _this.setState({ selectedClef: i }); }, key: i },
@@ -125,7 +134,7 @@ var ToolSetClef = /** @class */ (function (_super) {
                 React.createElement("span", { className: aphrodite_1.css(tabStyles_1.default.selectableDescription) }, clefSpec.enName)));
         });
         var clefSign = stdClefs[this.state.selectedClef].sign;
-        var canChangeOctave = clefSign !== 'TAB' && clefSign !== 'percussion';
+        var canChangeOctave = clefSign !== "TAB" && clefSign !== "percussion";
         return (React.createElement("div", { className: aphrodite_1.css(tabStyles_1.default.tool) },
             React.createElement("div", { className: aphrodite_1.css(tabStyles_1.default.section) },
                 React.createElement("h3", { className: aphrodite_1.css(tabStyles_1.default.toolHeading) }, "Clef"),
@@ -150,7 +159,9 @@ var ToolSetClef = /** @class */ (function (_super) {
                         React.createElement("input", { id: "set-clef-15vb", type: "radio", checked: this.state.octave === -2, disabled: !canChangeOctave, "aria-checked": this.state.octave === -2, onChange: function () { return _this.setState({ octave: -2 }); } }),
                         React.createElement("label", { htmlFor: "set-clef-15vb" }, "Play two octaves lower than written (15vb)")),
                     React.createElement("div", { style: { marginTop: 12 } },
-                        React.createElement("input", { id: "clef-octave-optional", type: "checkbox", disabled: this.state.octave === 0 || !canChangeOctave, checked: this.state.octaveOptional, "aria-checked": this.state.octaveOptional, onChange: function () { return _this.setState({ octaveOptional: !_this.state.octaveOptional }); } }),
+                        React.createElement("input", { id: "clef-octave-optional", type: "checkbox", disabled: this.state.octave === 0 || !canChangeOctave, checked: this.state.octaveOptional, "aria-checked": this.state.octaveOptional, onChange: function () {
+                                return _this.setState({ octaveOptional: !_this.state.octaveOptional });
+                            } }),
                         React.createElement("label", { htmlFor: "clef-octave-optional" }, "Octave change is optional (in parentheses)")))),
             React.createElement("div", { className: aphrodite_1.css(tabStyles_1.default.spacer) }),
             React.createElement("div", { className: aphrodite_1.css(tabStyles_1.default.section) },
@@ -159,11 +170,13 @@ var ToolSetClef = /** @class */ (function (_super) {
     };
     ToolSetClef.prototype.generateLy = function () {
         var clef = stdClefs[this.state.selectedClef].lyName;
-        if (clef === 'moderntab' || clef === 'percussion' || this.state.octave === 0) {
+        if (clef === "moderntab" ||
+            clef === "percussion" ||
+            this.state.octave === 0) {
             return "\\clef " + clef;
         }
-        var openOctave = this.state.octaveOptional ? '(' : '';
-        var closeOctave = this.state.octaveOptional ? ')' : '';
+        var openOctave = this.state.octaveOptional ? "(" : "";
+        var closeOctave = this.state.octaveOptional ? ")" : "";
         switch (this.state.octave) {
             case -2:
                 return "\\clef \"" + clef + "_" + openOctave + "15" + closeOctave + "\"";
@@ -174,7 +187,7 @@ var ToolSetClef = /** @class */ (function (_super) {
             case 2:
                 return "\\clef \"" + clef + "^" + openOctave + "15" + closeOctave + "\"";
             default:
-                return 'Error: unknown octave';
+                return "Error: unknown octave";
         }
     };
     return ToolSetClef;

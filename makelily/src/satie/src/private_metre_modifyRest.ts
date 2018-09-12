@@ -18,7 +18,7 @@
 
 import {Time} from "musicxml-interfaces";
 import {IAny} from "musicxml-interfaces/operations";
-import * as invariant from "invariant";
+import invariant from "invariant";
 import {times, forEach} from "lodash";
 
 import {Document} from "./document";

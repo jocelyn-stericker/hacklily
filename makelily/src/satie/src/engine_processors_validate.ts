@@ -17,7 +17,7 @@
  */
 
 import {reduce, forEach, flatten, filter, find, map, toPairs, last} from "lodash";
-import * as invariant from "invariant";
+import invariant from "invariant";
 import {Print, BarStyleType} from "musicxml-interfaces";
 import {IAny} from "musicxml-interfaces/operations";
 

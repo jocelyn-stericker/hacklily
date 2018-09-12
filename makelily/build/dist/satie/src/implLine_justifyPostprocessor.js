@@ -86,17 +86,17 @@ function justify(options, bounds, measures) {
         }, memo);
     }, 0);
     var avgExpansion;
-    if (!expandableCount) {
+    if (!expandableCount) { // case 1: nothing to expand
         avgExpansion = 0;
     }
-    else if (partial) {
+    else if (partial) { // case 2: expanding, but not full width
         var expansionRemainingGuess = bounds.right - 3 - x;
         var avgExpansionGuess = expansionRemainingGuess /
             (expandableCount + (1 - UNDERFILLED_EXPANSION_WEIGHT) * underfilledCount);
         var weight = logistic((avgExpansionGuess - bounds.right / 80) / 20) * 2 / 3;
         avgExpansion = (1 - weight) * avgExpansionGuess;
     }
-    else {
+    else { // case 3: expanding or contracting to full width
         var exp = bounds.right - x;
         avgExpansion = exp / expandableCount;
     }

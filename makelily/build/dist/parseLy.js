@@ -21,100 +21,103 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 var builders_1 = require("musicxml-interfaces/builders");
 function parseClef(clefLy) {
-    var sign = 'G';
+    var sign = "G";
     var line = 2;
     var clefOctaveChange;
-    if (clefLy.indexOf('treble') > -1) {
-        sign = 'G';
+    if (clefLy.indexOf("treble") > -1) {
+        sign = "G";
         line = 2;
     }
-    else if (clefLy.indexOf('bass') > -1) {
-        sign = 'F';
+    else if (clefLy.indexOf("bass") > -1) {
+        sign = "F";
         line = 4;
     }
-    else if (clefLy.indexOf('alto') > -1) {
-        sign = 'C';
+    else if (clefLy.indexOf("alto") > -1) {
+        sign = "C";
         line = 3;
     }
-    else if (clefLy.indexOf('tenor') > -1) {
-        sign = 'C';
+    else if (clefLy.indexOf("tenor") > -1) {
+        sign = "C";
         line = 4;
     }
-    else if (clefLy.indexOf('tab') > -1) {
-        sign = 'TAB';
+    else if (clefLy.indexOf("tab") > -1) {
+        sign = "TAB";
         line = 5;
     }
-    else if (clefLy.indexOf('percussion') > -1) {
-        sign = 'percussion';
+    else if (clefLy.indexOf("percussion") > -1) {
+        sign = "percussion";
         line = 3;
     }
     if (clefLy.match(/\^.*8/)) {
-        clefOctaveChange = '1';
+        clefOctaveChange = "1";
     }
     if (clefLy.match(/\^.*15/)) {
-        clefOctaveChange = '2';
+        clefOctaveChange = "2";
     }
     if (clefLy.match(/_.*8/)) {
-        clefOctaveChange = '-1';
+        clefOctaveChange = "-1";
     }
     if (clefLy.match(/_.*15/)) {
-        clefOctaveChange = '-2';
+        clefOctaveChange = "-2";
     }
-    return builders_1.buildClef(function (clef) { return clef
-        .clefOctaveChange(clefOctaveChange)
-        .line(line)
-        .sign(sign); });
+    return builders_1.buildClef(function (clef) {
+        return clef
+            .clefOctaveChange(clefOctaveChange)
+            .line(line)
+            .sign(sign);
+    });
 }
 exports.parseClef = parseClef;
 var roots = [
-    'ces',
-    'ges',
-    'des',
-    'aes',
-    'ees',
-    'bes',
-    'f',
-    'c',
-    'g',
-    'd',
-    'a',
-    'e',
-    'b',
-    'fis',
-    'cis',
-    'gis',
-    'dis',
-    'ais',
+    "ces",
+    "ges",
+    "des",
+    "aes",
+    "ees",
+    "bes",
+    "f",
+    "c",
+    "g",
+    "d",
+    "a",
+    "e",
+    "b",
+    "fis",
+    "cis",
+    "gis",
+    "dis",
+    "ais",
 ];
 function parseKeySig(keyLy) {
-    var root = keyLy.toLowerCase().trim().split(' ')[0];
+    var root = keyLy
+        .toLowerCase()
+        .trim()
+        .split(" ")[0];
     var rootIdx = roots.indexOf(root);
     var fifths = 0;
-    var mode = 'major';
-    if (rootIdx !== -1 && keyLy.indexOf('\\minor') !== -1) {
-        mode = 'minor';
+    var mode = "major";
+    if (rootIdx !== -1 && keyLy.indexOf("\\minor") !== -1) {
+        mode = "minor";
         fifths = rootIdx - 10;
     }
-    else if (rootIdx !== -1 && keyLy.indexOf('\\major') !== -1) {
-        mode = 'major';
+    else if (rootIdx !== -1 && keyLy.indexOf("\\major") !== -1) {
+        mode = "major";
         fifths = rootIdx - 7;
     }
-    return builders_1.buildKey(function (key) { return key
-        .fifths(fifths)
-        .mode(mode); });
+    return builders_1.buildKey(function (key) { return key.fifths(fifths).mode(mode); });
 }
 exports.parseKeySig = parseKeySig;
 function parseTime(timeLy) {
     var beatTypes = [4];
-    var beats = ['4'];
+    var beats = ["4"];
     var match = timeLy.match(/(\d+)\/(\d+)/);
     if (match && match.length > 1 && match[1].length && match[2].length) {
         beats = [match[1]];
         beatTypes = [parseInt(match[2], 10)];
     }
-    return builders_1.buildTime(function (time) { return time
-        .beatTypes(beatTypes)
-        .beats(beats); });
+    return builders_1.buildTime(function (time) {
+        return time.beatTypes(beatTypes).beats(beats);
+    });
 }
 exports.parseTime = parseTime;
 //# sourceMappingURL=parseLy.js.map

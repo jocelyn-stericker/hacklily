@@ -16,17 +16,20 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with Satie.  If not, see <http://www.gnu.org/licenses/>.
  */
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
-var invariant = require("invariant");
+var invariant_1 = __importDefault(require("invariant"));
 var lodash_1 = require("lodash");
 var private_util_1 = require("./private_util");
 function segmentMutator(factory, segment, op, doc) {
     var part = segment.part, ownerType = segment.ownerType; // p[2]
-    invariant(op.p.length === 6, "Invalid length for segment operation.");
-    invariant(op.p[1] === "parts", "Malformed path.");
-    invariant(op.p[2] === part, "Invalid fixup part.");
-    invariant(op.p[3] === "voices" || op.p[3] === "staves", "Only voice and staff fixups are supported.");
-    invariant(op.p[3] === "voices" && ownerType === "voice" ||
+    invariant_1.default(op.p.length === 6, "Invalid length for segment operation.");
+    invariant_1.default(op.p[1] === "parts", "Malformed path.");
+    invariant_1.default(op.p[2] === part, "Invalid fixup part.");
+    invariant_1.default(op.p[3] === "voices" || op.p[3] === "staves", "Only voice and staff fixups are supported.");
+    invariant_1.default(op.p[3] === "voices" && ownerType === "voice" ||
         op.p[3] === "staves" && ownerType === "staff", "Type/path mismatch");
     if ("li" in op && !("ld" in op)) {
         var liop = op;

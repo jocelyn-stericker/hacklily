@@ -19,76 +19,85 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
  */
 var __extends = (this && this.__extends) || (function () {
-    var extendStatics = Object.setPrototypeOf ||
-        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    }
     return function (d, b) {
         extendStatics(d, b);
         function __() { this.constructor = d; }
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
-var __assign = (this && this.__assign) || Object.assign || function(t) {
-    for (var s, i = 1, n = arguments.length; i < n; i++) {
-        s = arguments[i];
-        for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
-            t[p] = s[p];
-    }
-    return t;
+var __assign = (this && this.__assign) || function () {
+    __assign = Object.assign || function(t) {
+        for (var s, i = 1, n = arguments.length; i < n; i++) {
+            s = arguments[i];
+            for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
+                t[p] = s[p];
+        }
+        return t;
+    };
+    return __assign.apply(this, arguments);
+};
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 var aphrodite_1 = require("aphrodite");
 var musicxml_interfaces_1 = require("musicxml-interfaces");
 var React = require("react");
 var satie_1 = require("./satie/src/satie");
-var tabStyles_1 = require("./tabStyles");
+var tabStyles_1 = __importDefault(require("./tabStyles"));
 var stdTime = [
     {
         beatTypes: [4],
-        beats: ['4'],
+        beats: ["4"],
         symbol: musicxml_interfaces_1.TimeSymbolType.Common,
-        tsViewbox: '-32 -45 80 80',
+        tsViewbox: "-32 -45 80 80",
     },
     {
         beatTypes: [2],
-        beats: ['2'],
+        beats: ["2"],
         symbol: musicxml_interfaces_1.TimeSymbolType.Cut,
-        tsViewbox: '-32 -45 80 80',
+        tsViewbox: "-32 -45 80 80",
     },
     {
         beatTypes: [4],
-        beats: ['2'],
-        tsViewbox: '-32 -45 80 80',
+        beats: ["2"],
+        tsViewbox: "-32 -45 80 80",
     },
     {
         beatTypes: [4],
-        beats: ['4'],
-        tsViewbox: '-32 -45 80 80',
+        beats: ["4"],
+        tsViewbox: "-32 -45 80 80",
     },
     {
         beatTypes: [2],
-        beats: ['2'],
-        tsViewbox: '-32 -45 80 80',
+        beats: ["2"],
+        tsViewbox: "-32 -45 80 80",
     },
     {
         beatTypes: [4],
-        beats: ['3'],
-        tsViewbox: '-32 -45 80 80',
+        beats: ["3"],
+        tsViewbox: "-32 -45 80 80",
     },
     {
         beatTypes: [8],
-        beats: ['6'],
-        tsViewbox: '-32 -45 80 80',
+        beats: ["6"],
+        tsViewbox: "-32 -45 80 80",
     },
     {
         beatTypes: [8],
-        beats: ['9'],
-        tsViewbox: '-32 -45 80 80',
+        beats: ["9"],
+        tsViewbox: "-32 -45 80 80",
     },
     {
         beatTypes: [8],
-        beats: ['12'],
-        tsViewbox: '-26 -45 80 80',
+        beats: ["12"],
+        tsViewbox: "-26 -45 80 80",
     },
 ];
 function getInitialState(props) {
@@ -139,7 +148,7 @@ var ToolSetTime = /** @class */ (function (_super) {
     ToolSetTime.prototype.generateLy = function () {
         var time = stdTime[this.state.selectedTime];
         var isNumeric = time.symbol == null;
-        return (isNumeric ? '\\numericTimeSignature' : '\\defaultTimeSignature') + "\n\\time " + time.beats[0] + "/" + time.beatTypes[0];
+        return (isNumeric ? "\\numericTimeSignature" : "\\defaultTimeSignature") + "\n\\time " + time.beats[0] + "/" + time.beatTypes[0];
     };
     return ToolSetTime;
 }(React.Component));

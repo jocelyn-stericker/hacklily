@@ -16,6 +16,9 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with Satie.  If not, see <http://www.gnu.org/licenses/>.
  */
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 /**
  * @file models/musicxml/import.ts tools for converting MXMLJSON to SatieJSON
@@ -23,7 +26,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var musicxml_interfaces_1 = require("musicxml-interfaces");
 var builders_1 = require("musicxml-interfaces/builders");
 var lodash_1 = require("lodash");
-var invariant = require("invariant");
+var invariant_1 = __importDefault(require("invariant"));
 var document_1 = require("./document");
 var document_2 = require("./document");
 var private_util_1 = require("./private_util");
@@ -31,8 +34,8 @@ var private_chordUtil_1 = require("./private_chordUtil");
 var private_part_1 = require("./private_part");
 var private_util_2 = require("./private_util");
 var private_fontManager_1 = require("./private_fontManager");
-var engine_processors_validate_1 = require("./engine_processors_validate");
-var engine_scoreHeader_1 = require("./engine_scoreHeader");
+var engine_processors_validate_1 = __importDefault(require("./engine_processors_validate"));
+var engine_scoreHeader_1 = __importDefault(require("./engine_scoreHeader"));
 var engine_setup_1 = require("./engine_setup");
 /*---- Exports ----------------------------------------------------------------------------------*/
 function stringToDocument(src, factory) {
@@ -138,9 +141,9 @@ function _extractMXMLPartsAndMeasures(input, factory) {
                 staves: [],
                 voices: []
             };
-            invariant(!(key in measure.parts), "Duplicate part ID %s", key);
+            invariant_1.default(!(key in measure.parts), "Duplicate part ID %s", key);
             measure.parts[key] = output;
-            invariant(!!key, "Part ID must be defined");
+            invariant_1.default(!!key, "Part ID must be defined");
             return {
                 division: 0,
                 divisionPerStaff: [],
@@ -186,7 +189,7 @@ function _extractMXMLPartsAndMeasures(input, factory) {
             // target is accessed outside loop in syncStaffDivisions
             target = lodash_1.minBy(linkedParts, function (part) { return part.idx === part.input.length ?
                 private_util_1.MAX_SAFE_INTEGER : part.division; });
-            invariant(!!target, "Target not specified");
+            invariant_1.default(!!target, "Target not specified");
             var input_1 = target.input[target.idx];
             var prevStaff = 1;
             switch (input_1._class) {
@@ -194,7 +197,7 @@ function _extractMXMLPartsAndMeasures(input, factory) {
                     var note = input_1;
                     // TODO: is this the case even if voice/staff don't match up?
                     if (!!note.chord) {
-                        invariant(!!chordBeingBuilt, "Cannot add chord to a previous note without a chord");
+                        invariant_1.default(!!chordBeingBuilt, "Cannot add chord to a previous note without a chord");
                         chordBeingBuilt.push(note);
                     }
                     else {
@@ -212,7 +215,7 @@ function _extractMXMLPartsAndMeasures(input, factory) {
                         }
                         // Check target voice division and add spacing if needed
                         target.divisionPerVoice[voice] = target.divisionPerVoice[voice] || 0;
-                        invariant(target.division >= target.divisionPerVoice[voice], "Ambiguous voice timing: all voices must be monotonic.");
+                        invariant_1.default(target.division >= target.divisionPerVoice[voice], "Ambiguous voice timing: all voices must be monotonic.");
                         if (target.divisionPerVoice[voice] < target.division) {
                             // Add rest
                             var divisionsInVoice = target.divisionPerVoice[voice];
@@ -364,7 +367,7 @@ function _extractMXMLPartsAndMeasures(input, factory) {
             var ratio = localDivisions / divisions || 1;
             var divCount = ratio * (target.division - (target.divisionPerStaff[staff] || 0));
             var segment = target.output.staves[staff];
-            invariant(!!model && !!segment || !model, "Unknown staff %s");
+            invariant_1.default(!!model && !!segment || !model, "Unknown staff %s");
             if (divCount > 0) {
                 if (segment) {
                     if (segment.length) {
@@ -393,14 +396,14 @@ function _extractMXMLPartsAndMeasures(input, factory) {
                         offset += segment[i].divCount;
                         if (offset >= 0) {
                             model.divCount = segment[i].divCount - offset;
-                            invariant(isFinite(model.divCount), "Invalid loaded divCount");
+                            invariant_1.default(isFinite(model.divCount), "Invalid loaded divCount");
                             segment[i].divCount = offset;
                             segment.splice(i + 1, 0, model);
                             spliced = true;
                             break;
                         }
                     }
-                    invariant(spliced, "Could not insert %s", model);
+                    invariant_1.default(spliced, "Could not insert %s", model);
                 }
             }
         }

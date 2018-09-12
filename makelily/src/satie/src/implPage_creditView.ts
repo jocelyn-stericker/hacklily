@@ -21,7 +21,7 @@ import {Component} from "react";
 import * as DOM from "react-dom-factories";
 import * as PropTypes from "prop-types";
 import {map, extend} from "lodash";
-import * as invariant from "invariant";
+import invariant from "invariant";
 
 import {cssSizeToTenths} from "./private_renderUtil";
 import {ITextMixin, Prototype as TextMixin} from "./private_views_textMixin";

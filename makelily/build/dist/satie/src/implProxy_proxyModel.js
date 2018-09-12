@@ -19,8 +19,11 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
-var invariant = require("invariant");
+var invariant_1 = __importDefault(require("invariant"));
 var document_1 = require("./document");
 var ProxyModel = /** @class */ (function () {
     /*---- Validation Implementations -----------------------------------------------------------*/
@@ -66,7 +69,7 @@ var ProxyModel = /** @class */ (function () {
         return this.toXML();
     };
     ProxyModel.prototype.refresh = function (cursor) {
-        invariant(!!this._target, "A proxy must have a target.");
+        invariant_1.default(!!this._target, "A proxy must have a target.");
         this._omTarget.refresh(cursor);
     };
     ProxyModel.prototype.getLayout = function (cursor) {

@@ -16,9 +16,12 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with Satie.  If not, see <http://www.gnu.org/licenses/>.
  */
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 var lodash_1 = require("lodash");
-var invariant = require("invariant");
+var invariant_1 = __importDefault(require("invariant"));
 var document_1 = require("./document");
 /**
  * Centers elements marked as such
@@ -32,7 +35,7 @@ function center(options, bounds, measures) {
             for (var i = 0; i < measure.elements.length; ++i) {
                 if (measure.elements[i][j].expandPolicy === "centered") {
                     var intrinsicWidth = measure.elements[i][j].renderedWidth;
-                    invariant(isFinite(intrinsicWidth), "Intrinsic width must be set on centered items");
+                    invariant_1.default(isFinite(intrinsicWidth), "Intrinsic width must be set on centered items");
                     var measureSpaceRemaining = void 0;
                     var attribIdx = lodash_1.findIndex(measure.elements[0], function (el) { return el.renderClass === document_1.Type.Attributes && el.renderedWidth > 0; });
                     var base = 0;

@@ -16,24 +16,32 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with Satie.  If not, see <http://www.gnu.org/licenses/>.
  */
-var __assign = (this && this.__assign) || Object.assign || function(t) {
-    for (var s, i = 1, n = arguments.length; i < n; i++) {
-        s = arguments[i];
-        for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
-            t[p] = s[p];
-    }
-    return t;
+var __assign = (this && this.__assign) || function () {
+    __assign = Object.assign || function(t) {
+        for (var s, i = 1, n = arguments.length; i < n; i++) {
+            s = arguments[i];
+            for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
+                t[p] = s[p];
+        }
+        return t;
+    };
+    return __assign.apply(this, arguments);
+};
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 var lodash_1 = require("lodash");
-var invariant = require("invariant");
+var invariant_1 = __importDefault(require("invariant"));
 var document_1 = require("./document");
 var private_lineBounds_1 = require("./private_lineBounds");
 var engine_processors_line_1 = require("./engine_processors_line");
 var SQUISHINESS = 0.8;
 function findPrint(options, measure) {
-    var partWithPrint = lodash_1.find(measure.parts, function (part) { return !!part.staves[1] &&
-        options.modelFactory.search(part.staves[1], 0, document_1.Type.Print).length; });
+    var partWithPrint = lodash_1.find(measure.parts, function (part) {
+        return !!part.staves[1] &&
+            options.modelFactory.search(part.staves[1], 0, document_1.Type.Print).length > 0;
+    });
     if (partWithPrint) {
         return options.modelFactory.search(partWithPrint.staves[1], 0, document_1.Type.Print)[0]._snapshot;
     }
@@ -49,14 +57,16 @@ function assignLinesReducer(memo, measureInfo, idx, all) {
     if (!lodash_1.last(memo.opts).print) {
         lodash_1.last(memo.opts).print = memo.thisPrint;
     }
-    invariant(!!memo.thisPrint, "No print found");
+    invariant_1.default(!!memo.thisPrint, "No print found");
     if (!memo.options.singleLineMode) {
         if (measureInfo.attributesWidthStart > memo.widthAllocatedForStart) {
-            memo.remainingWidth -= measureInfo.attributesWidthStart - memo.widthAllocatedForStart;
+            memo.remainingWidth -=
+                measureInfo.attributesWidthStart - memo.widthAllocatedForStart;
             memo.widthAllocatedForStart = measureInfo.attributesWidthStart;
         }
         if (measureInfo.attributesWidthEnd > memo.widthAllocatedForEnd) {
-            memo.remainingWidth -= measureInfo.attributesWidthEnd - memo.widthAllocatedForEnd;
+            memo.remainingWidth -=
+                measureInfo.attributesWidthEnd - memo.widthAllocatedForEnd;
             memo.widthAllocatedForEnd = measureInfo.attributesWidthEnd;
         }
         var retroactiveIncrease = 0;
@@ -64,7 +74,8 @@ function assignLinesReducer(memo, measureInfo, idx, all) {
             var measuresOnLine = lodash_1.last(memo.opts).measures.length;
             var measuresInfo = all.slice(idx - measuresOnLine, idx);
             retroactiveIncrease = measuresInfo.reduce(function (increase, measure) {
-                return measure.widthByShortest[measureInfo.shortestCount] - measure.widthByShortest[memo.shortest];
+                return (measure.widthByShortest[measureInfo.shortestCount] -
+                    measure.widthByShortest[memo.shortest]);
             }, 0);
             memo.shortest = measureInfo.shortestCount;
         }
@@ -75,8 +86,11 @@ function assignLinesReducer(memo, measureInfo, idx, all) {
         }
         else {
             memo.opts.push(createEmptyLayout(options, memo.thisPrint));
-            memo.remainingWidth = memo.startingWidth - measureWidth -
-                measureInfo.attributesWidthStart - measureInfo.attributesWidthEnd;
+            memo.remainingWidth =
+                memo.startingWidth -
+                    measureWidth -
+                    measureInfo.attributesWidthStart -
+                    measureInfo.attributesWidthEnd;
             memo.widthAllocatedForStart = measureInfo.attributesWidthStart;
             memo.widthAllocatedForEnd = measureInfo.attributesWidthEnd;
         }
@@ -112,7 +126,8 @@ function getLinePlacementHints(measures) {
     return lodash_1.map(measures, function layoutMeasure(measure, idx) {
         var shortestInMeasure = shortestByMeasure[idx];
         var numericMeasureWidth = !isNaN(measure.width) && measure.width !== null;
-        if (numericMeasureWidth && (measure.width <= 0 || !isFinite(measure.width))) {
+        if (numericMeasureWidth &&
+            (measure.width <= 0 || !isFinite(measure.width))) {
             console.warn("Bad measure width %s. Ignoring", measure.width);
         }
         var widthByShortest = shortests.reduce(function (shortests, shortest) {
@@ -126,21 +141,21 @@ function getLinePlacementHints(measures) {
             widthByShortest: widthByShortest,
             shortestCount: shortestInMeasure,
             attributesWidthStart: 150,
-            attributesWidthEnd: 50,
+            attributesWidthEnd: 50 // XXX
         };
     });
 }
 function layoutSong(options) {
-    invariant(!!options.print, "Print not defined");
-    invariant(!options.print._snapshot, "Pass a snapshot of Print to layoutSong, not the actual model!");
+    invariant_1.default(!!options.print, "Print not defined");
+    invariant_1.default(!options.print._snapshot, "Pass a snapshot of Print to layoutSong, not the actual model!");
     var page = 1; // XXX
     var scaling = options.document.header.defaults.scaling;
     // Estimate the width of each measure, and the space available for each line.
     var boundsGuess = private_lineBounds_1.calculateLineBounds(options.print, page, scaling);
     var lineWidth = (boundsGuess.right - boundsGuess.left) / SQUISHINESS;
-    var linePlacementHints = options.preview ?
-        options.document.cleanlinessTracking.linePlacementHints :
-        getLinePlacementHints(options.measures);
+    var linePlacementHints = options.preview
+        ? options.document.cleanlinessTracking.linePlacementHints
+        : getLinePlacementHints(options.measures);
     options.document.cleanlinessTracking.linePlacementHints = linePlacementHints;
     // Assign measures to lines.
     var layoutOpts = lodash_1.reduce(linePlacementHints, assignLinesReducer, {
@@ -151,7 +166,7 @@ function layoutSong(options) {
         startingWidth: lineWidth,
         thisPrint: options.print,
         widthAllocatedForEnd: 0,
-        widthAllocatedForStart: 0,
+        widthAllocatedForStart: 0
     }).opts;
     layoutOpts.forEach(function (line, idx) {
         line.lineIndex = idx;
@@ -164,7 +179,10 @@ function layoutSong(options) {
         var _loop_1 = function (i) {
             var oldLine = oldLineCleanliness[i] || [];
             var newLine = newLineCleanliness[i] || [];
-            var isDirty = !oldLine || !newLine || oldLine.length !== newLine.length || oldLine.some(function (m, k) { return newLine[k] !== m; });
+            var isDirty = !oldLine ||
+                !newLine ||
+                oldLine.length !== newLine.length ||
+                oldLine.some(function (m, k) { return newLine[k] !== m; });
             if (isDirty) {
                 oldLine.concat(newLine).forEach(function (m) {
                     options.document.cleanlinessTracking.measures[m] = null;
@@ -179,9 +197,11 @@ function layoutSong(options) {
     // Create the final layout
     var memo = {
         y: private_lineBounds_1.calculateLineBounds(layoutOpts[0].print, page, scaling).top,
-        attributes: {},
+        attributes: {}
     };
-    return layoutOpts.map(function (lineOpt) { return engine_processors_line_1.layoutLine(lineOpt, private_lineBounds_1.calculateLineBounds(lineOpt.print, page, scaling), memo); });
+    return layoutOpts.map(function (lineOpt) {
+        return engine_processors_line_1.layoutLine(lineOpt, private_lineBounds_1.calculateLineBounds(lineOpt.print, page, scaling), memo);
+    });
 }
 exports.default = layoutSong;
 //# sourceMappingURL=engine_processors_layout.js.map

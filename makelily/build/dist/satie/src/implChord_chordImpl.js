@@ -16,15 +16,19 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with Satie.  If not, see <http://www.gnu.org/licenses/>.
  */
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
+var _a, _b;
 var musicxml_interfaces_1 = require("musicxml-interfaces");
 var lodash_1 = require("lodash");
-var invariant = require("invariant");
+var invariant_1 = __importDefault(require("invariant"));
 var document_1 = require("./document");
 var private_metre_checkBeaming_1 = require("./private_metre_checkBeaming");
 var private_chordUtil_1 = require("./private_chordUtil");
 var private_smufl_1 = require("./private_smufl");
-var implChord_noteImpl_1 = require("./implChord_noteImpl");
+var implChord_noteImpl_1 = __importDefault(require("./implChord_noteImpl"));
 var implChord_lyrics_1 = require("./implChord_lyrics");
 var implChord_notation_1 = require("./implChord_notation");
 var IDEAL_STEM_HEIGHT = 35;
@@ -114,6 +118,7 @@ var ChordModelImpl = /** @class */ (function () {
     });
     Object.defineProperty(ChordModelImpl.prototype, "rest", {
         get: function () {
+            // TODO: typing
             return lodash_1.some(this, function (note) { return note.rest; });
         },
         enumerable: true,
@@ -167,7 +172,7 @@ var ChordModelImpl = /** @class */ (function () {
         notes.splice.apply(notes, [start, deleteCount].concat(replacements));
         lodash_1.times(this.length, function (i) { return delete _this[i]; });
         lodash_1.forEach(notes, function (n, i) {
-            invariant(n instanceof implChord_noteImpl_1.default, "Notes must be NoteImpls in Chords");
+            invariant_1.default(n instanceof implChord_noteImpl_1.default, "Notes must be NoteImpls in Chords");
             _this[i] = n;
         });
         this.length = notes.length;
@@ -176,19 +181,29 @@ var ChordModelImpl = /** @class */ (function () {
         var _this = this;
         if (!this[0].noteType || !this[0].noteType.duration) {
             var count_1 = this._implyCountFromPerformanceData(cursor);
-            cursor.dangerouslyPatchWithoutValidation(function (voice) { return lodash_1.reduce(_this, function (builder, note, idx) { return builder
-                .note(idx, function (j) { return j.noteType({ duration: count_1 }); }); }, voice); });
+            cursor.dangerouslyPatchWithoutValidation(function (voice) {
+                return lodash_1.reduce(_this, function (builder, note, idx) {
+                    return builder.note(idx, function (j) { return j.noteType({ duration: count_1 }); });
+                }, voice);
+            });
         }
         try {
             var divCount = private_chordUtil_1.divisions(this, cursor.staffAttributes);
             if (divCount !== this.divCount) {
                 cursor.fixup([
                     {
-                        p: [cursor.measureInstance.uuid, "parts", cursor.segmentInstance.part, "voices",
-                            cursor.segmentInstance.owner, cursor.segmentPosition, "divCount"],
+                        p: [
+                            cursor.measureInstance.uuid,
+                            "parts",
+                            cursor.segmentInstance.part,
+                            "voices",
+                            cursor.segmentInstance.owner,
+                            cursor.segmentPosition,
+                            "divCount"
+                        ],
                         oi: divCount,
-                        od: this.divCount,
-                    },
+                        od: this.divCount
+                    }
                 ]);
             }
         }
@@ -198,31 +213,31 @@ var ChordModelImpl = /** @class */ (function () {
                     {
                         p: ["divisions"],
                         oi: err.requiredDivisions,
-                        od: cursor.staffAttributes.divisions,
+                        od: cursor.staffAttributes.divisions
                     }
                 ]);
             }
         }
-        invariant(isFinite(this.divCount), "The beat count must be numeric");
-        invariant(this.divCount >= 0, "The beat count must be non-negative.");
+        invariant_1.default(isFinite(this.divCount), "The beat count must be numeric");
+        invariant_1.default(this.divCount >= 0, "The beat count must be non-negative.");
         var direction = this._pickDirection(cursor);
         var clef = cursor.staffAttributes.clef;
         this._clef = clef;
         lodash_1.forEach(this, function (note, idx) {
             if (!note.grace && note.duration !== _this.divCount) {
-                cursor.patch(function (partBuilder) { return partBuilder
-                    .note(idx, function (note) { return note
-                    .duration(_this.divCount); }); });
+                cursor.patch(function (partBuilder) {
+                    return partBuilder.note(idx, function (note) { return note.duration(_this.divCount); });
+                });
             }
             if (idx > 0 && !note.chord) {
-                cursor.patch(function (partBuilder) { return partBuilder
-                    .note(idx, function (note) { return note
-                    .chord({}); }); });
+                cursor.patch(function (partBuilder) {
+                    return partBuilder.note(idx, function (note) { return note.chord({}); });
+                });
             }
             else if (idx === 0 && note.chord) {
-                cursor.patch(function (partBuilder) { return partBuilder
-                    .note(idx, function (note) { return note
-                    .chord(null); }); });
+                cursor.patch(function (partBuilder) {
+                    return partBuilder.note(idx, function (note) { return note.chord(null); });
+                });
             }
             note.refresh(cursor);
             note.updateAccidental(cursor);
@@ -230,27 +245,35 @@ var ChordModelImpl = /** @class */ (function () {
         // Check for second intervals:
         var notesSortedByY = this.notes.sort(function (a, b) { return a.defaultY - b.defaultY; });
         var _loop_1 = function (i) {
-            if (i + 1 < notesSortedByY.length && notesSortedByY[i + 1].defaultY - notesSortedByY[i].defaultY === 5) {
+            if (i + 1 < notesSortedByY.length &&
+                notesSortedByY[i + 1].defaultY - notesSortedByY[i].defaultY === 5) {
                 if (direction > 0) {
-                    if (notesSortedByY[i].relativeX !== 0 || notesSortedByY[i + 1].relativeX !== 13) {
-                        cursor.patch(function (voice) { return voice
-                            .note(notesSortedByY[i]._idx, function (note) { return note.relativeX(0); })
-                            .note(notesSortedByY[i + 1]._idx, function (note) { return note.relativeX(13); }); });
+                    if (notesSortedByY[i].relativeX !== 0 ||
+                        notesSortedByY[i + 1].relativeX !== 13) {
+                        cursor.patch(function (voice) {
+                            return voice
+                                .note(notesSortedByY[i]._idx, function (note) { return note.relativeX(0); })
+                                .note(notesSortedByY[i + 1]._idx, function (note) { return note.relativeX(13); });
+                        });
                     }
                 }
                 else {
-                    if (notesSortedByY[i].relativeX !== -13 || notesSortedByY[i + 1].relativeX !== 0) {
-                        cursor.patch(function (voice) { return voice
-                            .note(notesSortedByY[i]._idx, function (note) { return note.relativeX(-13); })
-                            .note(notesSortedByY[i + 1]._idx, function (note) { return note.relativeX(0); }); });
+                    if (notesSortedByY[i].relativeX !== -13 ||
+                        notesSortedByY[i + 1].relativeX !== 0) {
+                        cursor.patch(function (voice) {
+                            return voice
+                                .note(notesSortedByY[i]._idx, function (note) { return note.relativeX(-13); })
+                                .note(notesSortedByY[i + 1]._idx, function (note) { return note.relativeX(0); });
+                        });
                     }
                 }
                 ++i;
             }
             else {
                 if (notesSortedByY[i].relativeX !== 0) {
-                    cursor.patch(function (voice) { return voice
-                        .note(notesSortedByY[i]._idx, function (note) { return note.relativeX(0); }); });
+                    cursor.patch(function (voice) {
+                        return voice.note(notesSortedByY[i]._idx, function (note) { return note.relativeX(0); });
+                    });
                 }
             }
             out_i_1 = i;
@@ -260,11 +283,13 @@ var ChordModelImpl = /** @class */ (function () {
             _loop_1(i);
             i = out_i_1;
         }
-        this.wholebar = this.divCount === private_chordUtil_1.barDivisions(cursor.staffAttributes) || this.divCount === -1;
+        this.wholebar =
+            this.divCount === private_chordUtil_1.barDivisions(cursor.staffAttributes) ||
+                this.divCount === -1;
         var count = this.count;
-        invariant(isFinite(count) && count !== null, "%s is not a valid count", count);
+        invariant_1.default(isFinite(count) && count !== null, "%s is not a valid count", count);
         for (var i = 0; i < this.length; ++i) {
-            invariant(this[i].noteType.duration === count, "Inconsistent count (%s != %s)", this[i].noteType.duration, count);
+            invariant_1.default(this[i].noteType.duration === count, "Inconsistent count (%s != %s)", this[i].noteType.duration, count);
         }
         this._checkMulitpleRest(cursor);
         this._implyNoteheads(cursor);
@@ -315,24 +340,24 @@ var ChordModelImpl = /** @class */ (function () {
         var accidentalWidth = this.calcAccidentalWidth();
         // TODO: Each note's width has a linear component proportional to log of its duration
         // with respect to the shortest length
-        var extraWidth = this.divCount ?
-            (Math.log(this.divCount) - Math.log(shortest)) * LOG_STRETCH : 0;
+        var extraWidth = this.divCount
+            ? (Math.log(this.divCount) - Math.log(shortest)) * LOG_STRETCH
+            : 0;
         var grace = this[0].grace;
         if (grace) {
             // TODO: Put grace notes in own segment
             extraWidth *= GRACE_FLATTEN_FACTOR;
         }
         var baseWidth = grace ? BASE_GRACE_WIDTH : BASE_STD_WIDTH;
-        invariant(extraWidth >= 0, "Invalid extraWidth %s. shortest is %s, got %s", extraWidth, shortest, this.divCount);
-        var totalWidth = baseWidth + extraWidth +
-            accidentalWidth + this.calcDotWidth();
+        invariant_1.default(extraWidth >= 0, "Invalid extraWidth %s. shortest is %s, got %s", extraWidth, shortest, this.divCount);
+        var totalWidth = baseWidth + extraWidth + accidentalWidth + this.calcDotWidth();
         return totalWidth;
     };
     ChordModelImpl.prototype.calcAccidentalWidth = function () {
-        return lodash_1.reduce(this, function (maxWidth, note) {
+        return (lodash_1.reduce(this, function (maxWidth, note) {
             var w = Math.max(maxWidth, note.accidental ? -note.accidental.defaultX : 0);
             return w;
-        }, 0) * ACCIDENTAL_WIDTH;
+        }, 0) * ACCIDENTAL_WIDTH);
     };
     ChordModelImpl.prototype.calcDotWidth = function () {
         if (this.wholebar || this.satieMultipleRest) {
@@ -363,10 +388,12 @@ var ChordModelImpl = /** @class */ (function () {
             dotFactor += Math.pow(1 / 2, dots);
         }
         if (dots > 0) {
-            count = (1 / (beats / dotFactor / 4 / factor));
-            cursor.patch(function (voiceA) { return lodash_1.reduce(lodash_1.times(_this.length), function (voice, idx) {
-                return voice.note(idx, function (note) { return note.dots(lodash_1.times(dots, function (dot) { return ({}); })); });
-            }, voiceA); });
+            count = 1 / (beats / dotFactor / 4 / factor);
+            cursor.patch(function (voiceA) {
+                return lodash_1.reduce(lodash_1.times(_this.length), function (voice, idx) {
+                    return voice.note(idx, function (note) { return note.dots(lodash_1.times(dots, function (dot) { return ({}); })); });
+                }, voiceA);
+            });
         }
         // Try tuplets
         // TODO
@@ -396,8 +423,7 @@ var ChordModelImpl = /** @class */ (function () {
         return count;
     };
     ChordModelImpl.prototype._getStemHeight = function (direction, clef) {
-        var heightFromOtherNotes = (private_chordUtil_1.highestLine(this, clef) -
-            private_chordUtil_1.lowestLine(this, clef)) * 10;
+        var heightFromOtherNotes = (private_chordUtil_1.highestLine(this, clef) - private_chordUtil_1.lowestLine(this, clef)) * 10;
         var start = private_chordUtil_1.heightDeterminingLine(this, direction, clef) * 10;
         var idealExtreme = start + direction * IDEAL_STEM_HEIGHT;
         var result;
@@ -438,7 +464,9 @@ var ChordModelImpl = /** @class */ (function () {
             // TODO: Consider notes outside current bar
             // TODO: Consider notes outside current stave
             // TODO: Handle clef changes correctly
-            var notes = cursor.segmentInstance.filter(function (el) { return cursor.factory.modelHasType(el, document_1.Type.Chord); });
+            var notes = cursor.segmentInstance.filter(function (el) {
+                return cursor.factory.modelHasType(el, document_1.Type.Chord);
+            });
             var nIdx = notes.indexOf(this);
             // 1. Continue the stem direction of surrounding stems that are in one
             //    direction only
@@ -448,8 +476,7 @@ var ChordModelImpl = /** @class */ (function () {
                 // ties in a forward direction.
                 linePrev = notes[nIdx - 1].satieDirection === 1 ? 2.99 : 3.01;
             }
-            var lineNext = nIdx + 1 < notes.length ?
-                private_chordUtil_1.averageLine(notes[nIdx + 1], clef) : 3;
+            var lineNext = nIdx + 1 < notes.length ? private_chordUtil_1.averageLine(notes[nIdx + 1], clef) : 3;
             if (linePrev > 3 && lineNext > 3) {
                 return -1;
             }
@@ -462,7 +489,9 @@ var ChordModelImpl = /** @class */ (function () {
             //     decide boundries)
             var time = cursor.staffAttributes.time;
             var beamingPattern = private_metre_checkBeaming_1.getBeamingPattern(time);
-            var bpDivisions = lodash_1.map(beamingPattern, function (seg) { return private_chordUtil_1.divisions(seg, cursor.staffAttributes); });
+            var bpDivisions = lodash_1.map(beamingPattern, function (seg) {
+                return private_chordUtil_1.divisions(seg, cursor.staffAttributes);
+            });
             var currDivision = cursor.segmentDivision;
             var prevDivisionStart = 0;
             var i = 0;
@@ -545,7 +574,8 @@ var ChordModelImpl = /** @class */ (function () {
             // ** this function should not modify baseModel **
             this.division = cursor.segmentDivision;
             var measureStyle = cursor.staffAttributes.measureStyle;
-            if (measureStyle.multipleRest && !measureStyle.multipleRestInitiatedHere) {
+            if (measureStyle.multipleRest &&
+                !measureStyle.multipleRestInitiatedHere) {
                 // This is not displayed because it is part of a multirest.
                 this.x = 0;
                 this.expandPolicy = "none";
@@ -556,11 +586,13 @@ var ChordModelImpl = /** @class */ (function () {
             this.satieFlag = baseModel.satieFlag;
             this.boundingBoxes = this._captureBoundingBoxes();
             var isWholeBar = baseModel.wholebar || baseModel.count === musicxml_interfaces_1.Count.Whole;
-            this.expandPolicy = baseModel.satieMultipleRest || baseModel.rest &&
-                isWholeBar ? "centered" : "after";
+            this.expandPolicy =
+                baseModel.satieMultipleRest || (baseModel.rest && isWholeBar)
+                    ? "centered"
+                    : "after";
             lodash_1.forEach(this.model, function (note) {
                 var staff = note.staff || 1;
-                invariant(!!staff, "Expected the staff to be a non-zero number, got %s", staff);
+                invariant_1.default(!!staff, "Expected the staff to be a non-zero number, got %s", staff);
                 var paddingTop = cursor.lineMaxPaddingTopByStaff[staff] || 0;
                 var paddingBottom = cursor.lineMaxPaddingBottomByStaff[staff] || 0;
                 cursor.lineMaxPaddingTopByStaff[staff] = Math.max(paddingTop, note.defaultY - 50);
@@ -568,12 +600,12 @@ var ChordModelImpl = /** @class */ (function () {
             });
             var accidentalWidth = baseModel.calcAccidentalWidth();
             var totalWidth = baseModel.calcWidth(cursor.lineShortest);
-            invariant(isFinite(totalWidth), "Invalid width %s", totalWidth);
+            invariant_1.default(isFinite(totalWidth), "Invalid width %s", totalWidth);
             var noteheads = baseModel.noteheadGlyph;
             var widths = lodash_1.map(noteheads, private_smufl_1.getWidth);
             this.renderedWidth = lodash_1.max(widths);
             if (baseModel.satieMultipleRest || baseModel.count === musicxml_interfaces_1.Count.Whole) {
-                lodash_1.forEach(this.model, function (note) { return note.dots = []; });
+                lodash_1.forEach(this.model, function (note) { return (note.dots = []); });
             }
             this.x = cursor.segmentX + accidentalWidth;
             this.minSpaceAfter = this._getMinWidthAfter(cursor);
@@ -598,33 +630,31 @@ var ChordModelImpl = /** @class */ (function () {
             return this._getLyricWidth(cursor) / 2;
         };
         Layout.prototype._getLyricWidth = function (cursor) {
-            var factor = 40 * 25.4 / 96; // 40 tenths in staff * pixelFactor
+            var factor = (40 * 25.4) / 96; // 40 tenths in staff * pixelFactor
             return implChord_lyrics_1.getChordLyricWidth(this.model, factor);
         };
         Layout.prototype._detachModelWithContext = function (cursor, baseModel) {
             var _this = this;
             var model = lodash_1.map(baseModel, function (note, idx) {
                 /* Here, we're extending each note to have the correct
-                 * default position.  To do so, we use prototypical
-                 * inheritance. See Object.create. */
+                           * default position.  To do so, we use prototypical
+                           * inheritance. See Object.create. */
                 return Object.create(note, {
                     defaultX: {
                         get: function () {
-                            return (note.relativeX || 0) +
-                                (_this.overrideX ||
-                                    _this.x);
+                            return ((note.relativeX || 0) + (_this.overrideX || _this.x));
                         }
                     },
                     stem: {
                         get: function () {
-                            return baseModel.stem || {
+                            return (baseModel.stem || {
                                 type: baseModel.satieDirection
-                            };
+                            });
                         }
                     }
                 });
             });
-            model.stemX = function () { return (_this.overrideX || _this.x); };
+            model.stemX = function () { return _this.overrideX || _this.x; };
             model.staffIdx = baseModel.staffIdx;
             model.divCount = baseModel.divCount;
             model.satieLedger = baseModel.satieLedger;
@@ -641,5 +671,4 @@ var ChordModelImpl = /** @class */ (function () {
     Layout.prototype.boundingBoxes = [];
 })(ChordModelImpl || (ChordModelImpl = {}));
 exports.default = ChordModelImpl;
-var _a, _b;
 //# sourceMappingURL=implChord_chordImpl.js.map

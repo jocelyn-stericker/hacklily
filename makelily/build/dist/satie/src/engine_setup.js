@@ -19,31 +19,34 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 var lodash_1 = require("lodash");
-var invariant = require("invariant");
+var invariant_1 = __importDefault(require("invariant"));
 var private_fontManager_1 = require("./private_fontManager");
-var implAttributes_attributesModel_1 = require("./implAttributes_attributesModel");
-var implAttributes_attributesPostprocessor_1 = require("./implAttributes_attributesPostprocessor");
-var implBarline_barlineModel_1 = require("./implBarline_barlineModel");
-var implChord_chordModel_1 = require("./implChord_chordModel");
-var implChord_voiceStaffStemDirectionPreprocessor_1 = require("./implChord_voiceStaffStemDirectionPreprocessor");
-var implChord_beamPostprocessor_1 = require("./implChord_beamPostprocessor");
-var implChord_tiedsPostprocessor_1 = require("./implChord_tiedsPostprocessor");
-var implDirection_directionModel_1 = require("./implDirection_directionModel");
-var implFiguredBass_figuredBassModel_1 = require("./implFiguredBass_figuredBassModel");
-var implGrouping_groupingModel_1 = require("./implGrouping_groupingModel");
-var implHarmony_harmonyModel_1 = require("./implHarmony_harmonyModel");
-var implPrint_printModel_1 = require("./implPrint_printModel");
-var implProxy_proxyModel_1 = require("./implProxy_proxyModel");
-var implSound_soundModel_1 = require("./implSound_soundModel");
-var implSpacer_spacerModel_1 = require("./implSpacer_spacerModel");
-var implVisualCursor_visualCursorModel_1 = require("./implVisualCursor_visualCursorModel");
-var implLine_centerPostprocessor_1 = require("./implLine_centerPostprocessor");
-var implLine_justifyPostprocessor_1 = require("./implLine_justifyPostprocessor");
-var implLine_padPostprocessor_1 = require("./implLine_padPostprocessor");
-var implLine_removeOverlapsPostprocessor_1 = require("./implLine_removeOverlapsPostprocessor");
-var engine_factory_1 = require("./engine_factory");
+var implAttributes_attributesModel_1 = __importDefault(require("./implAttributes_attributesModel"));
+var implAttributes_attributesPostprocessor_1 = __importDefault(require("./implAttributes_attributesPostprocessor"));
+var implBarline_barlineModel_1 = __importDefault(require("./implBarline_barlineModel"));
+var implChord_chordModel_1 = __importDefault(require("./implChord_chordModel"));
+var implChord_voiceStaffStemDirectionPreprocessor_1 = __importDefault(require("./implChord_voiceStaffStemDirectionPreprocessor"));
+var implChord_beamPostprocessor_1 = __importDefault(require("./implChord_beamPostprocessor"));
+var implChord_tiedsPostprocessor_1 = __importDefault(require("./implChord_tiedsPostprocessor"));
+var implDirection_directionModel_1 = __importDefault(require("./implDirection_directionModel"));
+var implFiguredBass_figuredBassModel_1 = __importDefault(require("./implFiguredBass_figuredBassModel"));
+var implGrouping_groupingModel_1 = __importDefault(require("./implGrouping_groupingModel"));
+var implHarmony_harmonyModel_1 = __importDefault(require("./implHarmony_harmonyModel"));
+var implPrint_printModel_1 = __importDefault(require("./implPrint_printModel"));
+var implProxy_proxyModel_1 = __importDefault(require("./implProxy_proxyModel"));
+var implSound_soundModel_1 = __importDefault(require("./implSound_soundModel"));
+var implSpacer_spacerModel_1 = __importDefault(require("./implSpacer_spacerModel"));
+var implVisualCursor_visualCursorModel_1 = __importDefault(require("./implVisualCursor_visualCursorModel"));
+var implLine_centerPostprocessor_1 = __importDefault(require("./implLine_centerPostprocessor"));
+var implLine_justifyPostprocessor_1 = __importDefault(require("./implLine_justifyPostprocessor"));
+var implLine_padPostprocessor_1 = __importDefault(require("./implLine_padPostprocessor"));
+var implLine_removeOverlapsPostprocessor_1 = __importDefault(require("./implLine_removeOverlapsPostprocessor"));
+var engine_factory_1 = __importDefault(require("./engine_factory"));
 var BrowserSetup;
 (function (BrowserSetup) {
     BrowserSetup.cssInjected = false;
@@ -100,7 +103,7 @@ var BrowserSetup;
  * before any Satie component is mounted, and must only be called once.
  */
 function init(options) {
-    invariant(!BrowserSetup.cssInjected, "init must be called before any Satie component is mounted " +
+    invariant_1.default(!BrowserSetup.cssInjected, "init must be called before any Satie component is mounted " +
         "and must only be called once");
     BrowserSetup.injectStyles(options);
 }

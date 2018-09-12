@@ -19,8 +19,11 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
-var invariant = require("invariant");
+var invariant_1 = __importDefault(require("invariant"));
 var lodash_1 = require("lodash");
 var document_1 = require("./document");
 var private_util_1 = require("./private_util");
@@ -37,7 +40,7 @@ var Factory = /** @class */ (function () {
         this.postprocessors = post;
     }
     Factory.prototype.create = function (modelType, options) {
-        invariant(modelType in this._constructors, "The type with id=%s does not have a factory.", modelType);
+        invariant_1.default(modelType in this._constructors, "The type with id=%s does not have a factory.", modelType);
         return new this._constructors[modelType](options);
     };
     Factory.prototype.modelHasType = function (model) {
@@ -47,7 +50,7 @@ var Factory = /** @class */ (function () {
             modelTypes[_i - 1] = arguments[_i];
         }
         return lodash_1.some(modelTypes, function (modelType) {
-            invariant(modelType in _this._constructors, "The type with id=%s does not have a factory.", modelType);
+            invariant_1.default(modelType in _this._constructors, "The type with id=%s does not have a factory.", modelType);
             return model instanceof _this._constructors[modelType] ||
                 _this._constructors[document_1.Type.Proxy] &&
                     model instanceof _this._constructors[document_1.Type.Proxy] &&
@@ -89,11 +92,11 @@ var Factory = /** @class */ (function () {
         }
         if (!("_class" in spec)) {
             // It may be a note.
-            invariant(spec[0] && spec[0]._class === "Note", "Specs must have the _class property set");
+            invariant_1.default(spec[0] && spec[0]._class === "Note", "Specs must have the _class property set");
             spec._class = "Chord";
         }
         var sclass = document_1.Type[spec._class];
-        invariant(sclass in this._constructors, "\"%s\" must be a known type", spec._class);
+        invariant_1.default(sclass in this._constructors, "\"%s\" must be a known type", spec._class);
         return this.create(sclass, spec);
     };
     Factory.prototype.inspect = function () {

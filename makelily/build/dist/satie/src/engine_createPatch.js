@@ -16,11 +16,15 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with Satie.  If not, see <http://www.gnu.org/licenses/>.
  */
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
+var _a;
 var musicxml_interfaces_1 = require("musicxml-interfaces");
 var builders_1 = require("musicxml-interfaces/builders");
 var lodash_1 = require("lodash");
-var invariant = require("invariant");
+var invariant_1 = __importDefault(require("invariant"));
 var document_1 = require("./document");
 var private_chordUtil_1 = require("./private_chordUtil");
 var private_metre_checkBeaming_1 = require("./private_metre_checkBeaming");
@@ -136,8 +140,8 @@ var StaffBuilder = /** @class */ (function () {
     };
     StaffBuilder.prototype.barline = function (builder) {
         var model = this._segment[this._idx];
-        invariant(model, "no such model");
-        invariant(this._document.modelHasType(model, document_1.Type.Barline), "model is not barline");
+        invariant_1.default(model, "no such model");
+        invariant_1.default(this._document.modelHasType(model, document_1.Type.Barline), "model is not barline");
         this._patches = this._patches.concat(builders_1.patchBarline(model, builder).map(_prependPatch(this._idx)));
         return this;
     };
@@ -149,8 +153,8 @@ var StaffBuilder = /** @class */ (function () {
     };
     StaffBuilder.prototype.attributes = function (builder) {
         var model = this._segment[this._idx];
-        invariant(model, "no such model");
-        invariant(this._document.modelHasType(model, document_1.Type.Attributes), "model is not attributes");
+        invariant_1.default(model, "no such model");
+        invariant_1.default(this._document.modelHasType(model, document_1.Type.Attributes), "model is not attributes");
         this._patches = this._patches.concat(builders_1.patchAttributes(model, builder).map(_prependPatch(this._idx)));
         return this;
     };
@@ -162,8 +166,8 @@ var StaffBuilder = /** @class */ (function () {
     };
     StaffBuilder.prototype.direction = function (builder) {
         var model = this._segment[this._idx];
-        invariant(model, "no such model");
-        invariant(this._document.modelHasType(model, document_1.Type.Direction), "model is not direction");
+        invariant_1.default(model, "no such model");
+        invariant_1.default(this._document.modelHasType(model, document_1.Type.Direction), "model is not direction");
         this._patches = this._patches.concat(builders_1.patchDirection(model, builder).map(_prependPatch(this._idx)));
         return this;
     };
@@ -182,8 +186,8 @@ var StaffBuilder = /** @class */ (function () {
     };
     StaffBuilder.prototype.print = function (builder) {
         var model = this._segment[this._idx];
-        invariant(model, "no such model");
-        invariant(this._document.modelHasType(model, document_1.Type.Print), "model is not Print");
+        invariant_1.default(model, "no such model");
+        invariant_1.default(this._document.modelHasType(model, document_1.Type.Print), "model is not Print");
         this._patches = this._patches.concat(builders_1.patchPrint(model, builder).map(_prependPatch(this._idx)));
         return this;
     };
@@ -246,30 +250,30 @@ var VoiceBuilder = /** @class */ (function () {
     };
     VoiceBuilder.prototype.note = function (noteIDX, builder) {
         var model = this._segment[this._idx];
-        invariant(model, "no such model");
-        invariant(this._document.modelHasType(model, document_1.Type.Chord), "model is not a chord");
+        invariant_1.default(model, "no such model");
+        invariant_1.default(this._document.modelHasType(model, document_1.Type.Chord), "model is not a chord");
         var note = model[noteIDX];
-        invariant(note, "invalid note");
+        invariant_1.default(note, "invalid note");
         this._patches = this._patches.concat(builders_1.patchNote(note, builder).map(_prependPatch(this._idx, "notes", noteIDX)));
         return this;
     };
     VoiceBuilder.prototype.insertChord = function (builders) {
-        invariant(!isNaN(this._idx), "%s must be a number", this._idx);
+        invariant_1.default(!isNaN(this._idx), "%s must be a number", this._idx);
         var li = builders.map(function (builder) { return builders_1.buildNote(builder); });
         li._class = "Chord";
-        invariant(li[0].noteType.duration, "Invalid note type");
+        invariant_1.default(li[0].noteType.duration, "Invalid note type");
         var p = [this._idx];
         this._patches = this._patches.concat({ li: li, p: p });
         return this;
     };
     VoiceBuilder.prototype.insertNote = function (position, builder) {
         var model = this._segment[this._idx];
-        invariant(model, "no such model");
-        invariant(this._document.modelHasType(model, document_1.Type.Chord), "model is not a chord");
+        invariant_1.default(model, "no such model");
+        invariant_1.default(this._document.modelHasType(model, document_1.Type.Chord), "model is not a chord");
         var li = builders_1.buildNote(builder);
         var chord = model;
-        invariant(chord[position - 1] || chord[position + 1] || !chord.length, "Invalid position for note");
-        invariant(li.noteType.duration, "Invalid note type");
+        invariant_1.default(chord[position - 1] || chord[position + 1] || !chord.length, "Invalid position for note");
+        invariant_1.default(li.noteType.duration, "Invalid note type");
         var p = [this._idx, "notes", position];
         this._patches = this._patches.concat({ p: p, li: li });
         return this;
@@ -299,7 +303,7 @@ var PartBuilder = /** @class */ (function () {
     });
     PartBuilder.prototype.voice = function (voiceID, builder, idx) {
         var voice = this._part ? this._part.voices[voiceID] : null;
-        invariant(!this._part || Boolean(voice), "invalid voice");
+        invariant_1.default(!this._part || Boolean(voice), "invalid voice");
         this._patches = this._patches.concat(builder(new VoiceBuilder(voice, this._document, idx))
             .patches
             .map(_prependPatch("voices", voiceID)));
@@ -307,7 +311,7 @@ var PartBuilder = /** @class */ (function () {
     };
     PartBuilder.prototype.staff = function (staffID, builder, idx) {
         var staff = this._part ? this._part.staves[staffID] : null;
-        invariant(!this._part || Boolean(staff), "invalid staff");
+        invariant_1.default(!this._part || Boolean(staff), "invalid staff");
         this._patches = this._patches.concat(builder(new StaffBuilder(staff, this._document, idx))
             .patches
             .map(_prependPatch("staves", staffID)));
@@ -331,7 +335,7 @@ var MeasureBuilder = /** @class */ (function () {
     });
     MeasureBuilder.prototype.part = function (partID, builder) {
         var part = this._measure ? this._measure.parts[partID] : null;
-        invariant(!this._measure || Boolean(part), "invalid part id");
+        invariant_1.default(!this._measure || Boolean(part), "invalid part id");
         this._patches = this._patches.concat(builder(new PartBuilder(part, this._document))
             .patches
             .map(_prependPatch("parts", partID)));
@@ -354,7 +358,7 @@ var DocumentBuilder = /** @class */ (function () {
     });
     DocumentBuilder.prototype.measure = function (measureUUID, builder) {
         var measure = lodash_1.find(this._doc.measures, function (it) { return it.uuid === measureUUID; });
-        invariant(Boolean(measure), "invalid measure uuid " + measureUUID);
+        invariant_1.default(Boolean(measure), "invalid measure uuid " + measureUUID);
         this._patches = this._patches.concat(builder(new MeasureBuilder(measure, this._doc))
             .patches
             .map(_prependPatch(measureUUID)));
@@ -447,13 +451,13 @@ function getMutationInfo(document, patches) {
             return;
         }
         var part = measure.parts[patch.p[2]];
-        invariant(part, "part " + patch.p[2] + " should exist in measure " + measureUUID);
+        invariant_1.default(part, "part " + patch.p[2] + " should exist in measure " + measureUUID);
         if (patch.p[3] === "staves") {
             return;
         }
-        invariant(patch.p[3] === "voices", "only voices are supported here");
+        invariant_1.default(patch.p[3] === "voices", "only voices are supported here");
         var voice = part.voices[patch.p[4]];
-        invariant(voice, "expected to find voice " + patch.p[4] + " in part " + patch.p[2] + " in measure " + measureUUID);
+        invariant_1.default(voice, "expected to find voice " + patch.p[4] + " in part " + patch.p[2] + " in measure " + measureUUID);
         var segID = patch.p.slice(0, 5).join("++");
         if (!segments[segID]) {
             segments[segID] = voice;
@@ -515,7 +519,7 @@ function getMutationInfo(document, patches) {
                     0;
                 var start = void 0;
                 var spliceIdx = parseInt(patch.p[5], 10);
-                invariant(lodash_1.isInteger(spliceIdx) && !isNaN(spliceIdx), "Expected an integer");
+                invariant_1.default(lodash_1.isInteger(spliceIdx) && !isNaN(spliceIdx), "Expected an integer");
                 if (spliceIdx === 0) {
                     start = 0;
                 }
@@ -557,7 +561,7 @@ function getMutationInfo(document, patches) {
             return;
         }
         var el = voice[patch.p[5]];
-        invariant(el, "expected to find element $" + patch.p[5] + " in part " + patch.p[2] + " in voice " + patch.p[4] + " in measure " + measureUUID);
+        invariant_1.default(el, "expected to find element $" + patch.p[5] + " in part " + patch.p[2] + " in voice " + patch.p[4] + " in measure " + measureUUID);
         if (!document.modelHasType(el, document_1.Type.Chord) || patch.p[6] !== "notes" || patch.p[7] !== 0) {
             return;
         }
@@ -669,7 +673,7 @@ function fixCursor(doc, patches) {
     if (!newCursor.length) {
         return patches;
     }
-    invariant(newCursor.length === 1, "Limit 1 cursor operation per patch");
+    invariant_1.default(newCursor.length === 1, "Limit 1 cursor operation per patch");
     patches = patches.slice();
     lodash_1.forEach(doc.measures, function (measure) {
         lodash_1.forEach(measure.parts, function (part, partName) {
@@ -849,7 +853,7 @@ function createPatch(isPreview, document, builderOrMeasure, part, partBuilder) {
         patches = cleanupPatches(document, builderOrMeasure);
     }
     else if (typeof builderOrMeasure === "function") {
-        invariant(part === undefined && partBuilder === undefined, "createPatch: invalid usage");
+        invariant_1.default(part === undefined && partBuilder === undefined, "createPatch: invalid usage");
         var builder = builderOrMeasure;
         patches = builder(new DocumentBuilder(document)).patches;
         if (!isPreview) {
@@ -866,5 +870,4 @@ function createPatch(isPreview, document, builderOrMeasure, part, partBuilder) {
     return patches;
 }
 exports.default = createPatch;
-var _a;
 //# sourceMappingURL=engine_createPatch.js.map

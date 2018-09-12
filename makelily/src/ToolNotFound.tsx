@@ -18,21 +18,17 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
  */
 
-import { css } from 'aphrodite';
-import React = require('react');
+import { css } from "aphrodite";
+import React = require("react");
 
-import tabStyles from './tabStyles';
-import { ToolProps } from './tool';
+import tabStyles from "./tabStyles";
+import { ToolProps } from "./tool";
 
 /**
  * Placeholder for when a tool with an invalid name is requested.
  */
-export default class ToolNotFound extends React.Component<ToolProps, {}> {
+export default class ToolNotFound extends React.Component<ToolProps> {
   render(): JSX.Element {
-    return (
-      <span className={css(tabStyles.tool)}>
-        Tool not found.
-      </span>
-    );
+    return <span className={css(tabStyles.tool)}>Tool not found.</span>;
   }
 }

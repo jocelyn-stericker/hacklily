@@ -17,26 +17,39 @@
  * along with Satie.  If not, see <http://www.gnu.org/licenses/>.
  */
 var __extends = (this && this.__extends) || (function () {
-    var extendStatics = Object.setPrototypeOf ||
-        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    }
     return function (d, b) {
         extendStatics(d, b);
         function __() { this.constructor = d; }
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
+    result["default"] = mod;
+    return result;
+};
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 var react_1 = require("react");
-var DOM = require("react-dom-factories");
-var PropTypes = require("prop-types");
+var DOM = __importStar(require("react-dom-factories"));
+var PropTypes = __importStar(require("prop-types"));
 var lodash_1 = require("lodash");
-var invariant = require("invariant");
+var invariant_1 = __importDefault(require("invariant"));
 var document_1 = require("./document");
 var private_renderUtil_1 = require("./private_renderUtil");
 var private_print_1 = require("./private_print");
-var implMeasure_measureView_1 = require("./implMeasure_measureView");
-var implPage_creditView_1 = require("./implPage_creditView");
+var implMeasure_measureView_1 = __importDefault(require("./implMeasure_measureView"));
+var implPage_creditView_1 = __importDefault(require("./implPage_creditView"));
 var $MeasureView = react_1.createFactory(implMeasure_measureView_1.default);
 var $CreditView = react_1.createFactory(implPage_creditView_1.default);
 var Page = /** @class */ (function (_super) {
@@ -58,7 +71,7 @@ var Page = /** @class */ (function (_super) {
         /*--- General ---------------------------------------------*/
         var print = this.props.print;
         var pageNum = parseInt(print.pageNumber, 10);
-        invariant(pageNum >= 1, "Page %s isn't a valid page number.", print.pageNumber);
+        invariant_1.default(pageNum >= 1, "Page %s isn't a valid page number.", print.pageNumber);
         var defaults = this.props.scoreHeader.defaults;
         var credits = lodash_1.filter(this.props.scoreHeader.credits, function (cr) {
             return (cr.page === pageNum);

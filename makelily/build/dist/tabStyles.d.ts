@@ -1,111 +1,38 @@
+/**
+ * @license
+ * This file is part of Makelily.
+ * Copyright (C) 2017 - present Joshua Netterfield <joshua@nettek.ca>
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software Foundation,
+ * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
+ */
 declare const tabStyles: {
-    help: {
-        left: number;
-        opacity: 0;
-        pointerEvents: string;
-        position: "absolute";
-        top: number;
-        transition: string;
-        zIndex: 1;
-    };
-    helpVisible: {
-        opacity: 1;
-        pointerEvents: string;
-    };
-    insert: {
-        ':hover': {
-            backgroundColor: string;
-        };
-        backgroundColor: string;
-        borderColor: string;
-        borderRadius: string;
-        borderWidth: string;
-        boxShadow: string;
-        color: string;
-        cursor: string;
-        fontSize: number;
-        height: number;
-        width: string;
-    };
-    lyPreview: {
-        backgroundColor: string;
-        borderRadius: string;
-        height: number;
-        marginBottom: number;
-        overflow: "scroll";
-        padding: number;
-    };
-    outputOptions: {
-        fontSize: number;
-        position: "absolute";
-        right: number;
-        top: number;
-    };
-    paletteSml: {
-        fontSize: number;
-    };
-    radioGroup: {
-        marginLeft: number;
-    };
-    resetFont: {
-        fontSize: string;
-    };
-    section: {
-        ':first-of-type': {
-            marginTop: number;
-        };
-        marginTop: number;
-        position: "relative";
-    };
-    selectableDescription: {
-        backgroundColor: string;
-        bottom: number;
-        color: string;
-        fontSize: number;
-        height: number;
-        left: number;
-        lineHeight: string;
-        position: "absolute";
-        right: number;
-        textAlign: string;
-    };
-    selectableList: {
-        display: string;
-        flexWrap: "wrap";
-    };
-    selectableOption: {
-        ':hover': {
-            backgroundColor: string;
-        };
-        border: string;
-        borderRadius: number;
-        color: string;
-        cursor: string;
-        display: string;
-        margin: number;
-        overflow: "hidden";
-        position: "relative";
-        width: number;
-    };
-    selectableSelected: {
-        backgroundColor: string;
-        cursor: string;
-    };
-    spacer: {
-        flexGrow: 1;
-    };
-    tool: {
-        boxSizing: string;
-        display: string;
-        flexDirection: "column";
-        height: string;
-        overflowX: "hidden";
-        overflowY: "scroll";
-        padding: string;
-    };
-    toolHeading: {
-        fontSize: number;
-        margin: number;
-    };
+    help: object;
+    helpVisible: object;
+    insert: object;
+    lyPreview: object;
+    outputOptions: object;
+    paletteSml: object;
+    radioGroup: object;
+    resetFont: object;
+    section: object;
+    selectableDescription: object;
+    selectableList: object;
+    selectableOption: object;
+    selectableSelected: object;
+    spacer: object;
+    tool: object;
+    toolHeading: object;
 };
 export default tabStyles;

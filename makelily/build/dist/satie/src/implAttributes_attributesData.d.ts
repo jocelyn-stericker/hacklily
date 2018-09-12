@@ -38,7 +38,7 @@ export declare function keysEqual(from: Attributes, to: Attributes): boolean;
 export declare function approximateWidth(attributes: IAttributesSnapshot, atEnd?: AtEnd): 80 | 150;
 export declare const enum AtEnd {
     No = 0,
-    Yes = 1,
+    Yes = 1
 }
 export declare function keyWidths(spec: Key): number[];
 export declare function getNativeKeyAccidentals(spec: Key): {

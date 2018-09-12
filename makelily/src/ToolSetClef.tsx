@@ -18,13 +18,13 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
  */
 
-import { css } from 'aphrodite';
-import { Clef } from 'musicxml-interfaces';
-import React = require('react');
-import { Addons as SatieAddons } from './satie/src/satie';
+import { css } from "aphrodite";
+import { Clef } from "musicxml-interfaces";
+import React = require("react");
+import { Addons as SatieAddons } from "./satie/src/satie";
 
-import tabStyles from './tabStyles';
-import { ToolProps } from './tool';
+import tabStyles from "./tabStyles";
+import { ToolProps } from "./tool";
 
 interface LyClef {
   clefViewbox: string;
@@ -34,46 +34,46 @@ interface LyClef {
 
 const stdClefs: (Clef & LyClef)[] = [
   {
-    clefViewbox: '-26 -47 80 114',
-    enName: 'Treble',
+    clefViewbox: "-26 -47 80 114",
+    enName: "Treble",
     line: 2,
-    lyName: 'treble',
-    sign: 'G',
+    lyName: "treble",
+    sign: "G",
   },
   {
-    clefViewbox: '-26 -47 80 114',
-    enName: 'Bass',
+    clefViewbox: "-26 -47 80 114",
+    enName: "Bass",
     line: 4,
-    lyName: 'bass',
-    sign: 'F',
+    lyName: "bass",
+    sign: "F",
   },
   {
-    clefViewbox: '-26 -47 80 114',
-    enName: 'Alto',
+    clefViewbox: "-26 -47 80 114",
+    enName: "Alto",
     line: 3,
-    lyName: 'alto',
-    sign: 'C',
+    lyName: "alto",
+    sign: "C",
   },
   {
-    clefViewbox: '-26 -47 80 114',
-    enName: 'Tenor',
+    clefViewbox: "-26 -47 80 114",
+    enName: "Tenor",
     line: 4,
-    lyName: 'tenor',
-    sign: 'C',
+    lyName: "tenor",
+    sign: "C",
   },
   {
-    clefViewbox: '-32 -47 80 114',
-    enName: 'Guitar Tab',
+    clefViewbox: "-32 -47 80 114",
+    enName: "Guitar Tab",
     line: 5,
-    lyName: 'moderntab',
-    sign: 'TAB',
+    lyName: "moderntab",
+    sign: "TAB",
   },
   {
-    clefViewbox: '-32 -47 80 114',
-    enName: 'Perc.',
+    clefViewbox: "-32 -47 80 114",
+    enName: "Perc.",
     line: 3,
-    lyName: 'percussion',
-    sign: 'percussion',
+    lyName: "percussion",
+    sign: "percussion",
   },
 ];
 
@@ -84,9 +84,10 @@ export interface State {
 }
 
 function getInitialState(props: ToolProps): State {
-  let selectedClef: number = stdClefs.findIndex((clef: Clef) =>
-    clef.line === props.clef.line &&
-    clef.sign === props.clef.sign);
+  let selectedClef: number = stdClefs.findIndex(
+    (clef: Clef) =>
+      clef.line === props.clef.line && clef.sign === props.clef.sign,
+  );
 
   if (selectedClef === -1) {
     selectedClef = 0;
@@ -107,47 +108,54 @@ export default class ToolSetClef extends React.Component<ToolProps, State> {
 
   // tslint:disable-next-line max-func-body-length
   render(): JSX.Element {
-    const clefViews: JSX.Element[] = stdClefs.map((clef: Clef & LyClef, i: number) => {
-      const clefSpec: Clef & LyClef = {
-        defaultX: 0,
-        defaultY: 0,
-        relativeY: 0,
-        ...clef,
-        clefOctaveChange: clef.sign !== 'TAB' && clef.sign !== 'percussion' &&
-          `${this.state.octave}`,
-      };
+    const clefViews: JSX.Element[] = stdClefs.map(
+      (clef: Clef & LyClef, i: number) => {
+        const clefSpec: Clef & LyClef = {
+          defaultX: 0,
+          defaultY: 0,
+          relativeY: 0,
+          ...clef,
+          clefOctaveChange:
+            clef.sign !== "TAB" &&
+            clef.sign !== "percussion" &&
+            `${this.state.octave}`,
+        };
 
-      const selected: boolean = i === this.state.selectedClef;
+        const selected: boolean = i === this.state.selectedClef;
 
-      return (
-        <span
-          className={css(tabStyles.selectableOption, selected && tabStyles.selectableSelected)}
-          role="button"
-          onClick={(): void => this.setState({ selectedClef: i })}
-          key={i}
-        >
-          <svg className={css(tabStyles.resetFont)} viewBox={clefSpec.clefViewbox}>
-            <SatieAddons.Clef
-              spec={clefSpec}
-            />
-          </svg>
-          <span className={css(tabStyles.selectableDescription)}>
-            {clefSpec.enName}
+        return (
+          <span
+            className={css(
+              tabStyles.selectableOption,
+              selected && tabStyles.selectableSelected,
+            )}
+            role="button"
+            onClick={(): void => this.setState({ selectedClef: i })}
+            key={i}
+          >
+            <svg
+              className={css(tabStyles.resetFont)}
+              viewBox={clefSpec.clefViewbox}
+            >
+              <SatieAddons.Clef spec={clefSpec} />
+            </svg>
+            <span className={css(tabStyles.selectableDescription)}>
+              {clefSpec.enName}
+            </span>
           </span>
-        </span>
-      );
-    });
+        );
+      },
+    );
 
-    const clefSign: string  = stdClefs[this.state.selectedClef].sign;
-    const canChangeOctave: boolean = clefSign !== 'TAB' && clefSign !== 'percussion';
+    const clefSign: string = stdClefs[this.state.selectedClef].sign;
+    const canChangeOctave: boolean =
+      clefSign !== "TAB" && clefSign !== "percussion";
 
     return (
       <div className={css(tabStyles.tool)}>
         <div className={css(tabStyles.section)}>
           <h3 className={css(tabStyles.toolHeading)}>Clef</h3>
-          <div className={css(tabStyles.selectableList)}>
-            {clefViews}
-          </div>
+          <div className={css(tabStyles.selectableList)}>{clefViews}</div>
         </div>
         <div className={css(tabStyles.section)}>
           <h3 className={css(tabStyles.toolHeading)}>Octave</h3>
@@ -223,7 +231,9 @@ export default class ToolSetClef extends React.Component<ToolProps, State> {
                 disabled={this.state.octave === 0 || !canChangeOctave}
                 checked={this.state.octaveOptional}
                 aria-checked={this.state.octaveOptional}
-                onChange={(): void => this.setState({ octaveOptional: !this.state.octaveOptional })}
+                onChange={(): void =>
+                  this.setState({ octaveOptional: !this.state.octaveOptional })
+                }
               />
               <label htmlFor="clef-octave-optional">
                 Octave change is optional (in parentheses)
@@ -233,11 +243,12 @@ export default class ToolSetClef extends React.Component<ToolProps, State> {
         </div>
         <div className={css(tabStyles.spacer)} />
         <div className={css(tabStyles.section)}>
-          <pre className={css(tabStyles.lyPreview)}>
-            {this.generateLy()}
-          </pre>
+          <pre className={css(tabStyles.lyPreview)}>{this.generateLy()}</pre>
 
-          <button className={css(tabStyles.insert)} onClick={this.handleInsertLyClicked}>
+          <button
+            className={css(tabStyles.insert)}
+            onClick={this.handleInsertLyClicked}
+          >
             Insert this code into Hacklily
           </button>
         </div>
@@ -246,13 +257,17 @@ export default class ToolSetClef extends React.Component<ToolProps, State> {
   }
 
   private generateLy(): string {
-    const clef: string  = stdClefs[this.state.selectedClef].lyName;
-    if (clef === 'moderntab' || clef === 'percussion' || this.state.octave === 0) {
+    const clef: string = stdClefs[this.state.selectedClef].lyName;
+    if (
+      clef === "moderntab" ||
+      clef === "percussion" ||
+      this.state.octave === 0
+    ) {
       return `\\clef ${clef}`;
     }
 
-    const openOctave: string = this.state.octaveOptional ? '(' : '';
-    const closeOctave: string = this.state.octaveOptional ? ')' : '';
+    const openOctave: string = this.state.octaveOptional ? "(" : "";
+    const closeOctave: string = this.state.octaveOptional ? ")" : "";
     switch (this.state.octave) {
       case -2:
         return `\\clef "${clef}_${openOctave}15${closeOctave}"`;
@@ -263,11 +278,11 @@ export default class ToolSetClef extends React.Component<ToolProps, State> {
       case 2:
         return `\\clef "${clef}^${openOctave}15${closeOctave}"`;
       default:
-        return 'Error: unknown octave';
+        return "Error: unknown octave";
     }
   }
 
   private handleInsertLyClicked = (): void => {
     this.props.onInsertLy(this.generateLy());
-  }
+  };
 }

@@ -1,4 +1,3 @@
-/// <reference types="react" />
 /**
  * This file is part of Satie music engraver <https://github.com/jnetterf/satie>.
  * Copyright (C) Joshua Netterfield <joshua.ca> 2015 - present.
@@ -84,16 +83,16 @@ export default class SongImpl extends Component<IProps, IState> implements ISong
     toSVG: () => string;
     toMusicXML: () => string;
     run(): void;
-    private _createPatch(isPreview, patchSpecs);
-    private _rectify$(newPatches, preview, notEligableForPreview);
+    private _createPatch;
+    private _rectify$;
     private _rectifyAppendCanonical;
     private _rectifyAppendPreview;
-    private _update$(patches, isPreview, props?);
+    private _update$;
     private _preRender;
     private _syncSVG;
-    private _getPos(ev);
+    private _getPos;
     private _handleCursorPosition;
     private _handleMouseMove;
     private _handleClick;
-    private _loadXML(xml);
+    private _loadXML;
 }

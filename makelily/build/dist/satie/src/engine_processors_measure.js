@@ -16,19 +16,25 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with Satie.  If not, see <http://www.gnu.org/licenses/>.
  */
-var __assign = (this && this.__assign) || Object.assign || function(t) {
-    for (var s, i = 1, n = arguments.length; i < n; i++) {
-        s = arguments[i];
-        for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
-            t[p] = s[p];
-    }
-    return t;
+var __assign = (this && this.__assign) || function () {
+    __assign = Object.assign || function(t) {
+        for (var s, i = 1, n = arguments.length; i < n; i++) {
+            s = arguments[i];
+            for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
+                t[p] = s[p];
+        }
+        return t;
+    };
+    return __assign.apply(this, arguments);
+};
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 /**
  * @file engine/processors/measure.ts provides functions for validating and laying out measures
  */
-var invariant = require("invariant");
+var invariant_1 = __importDefault(require("invariant"));
 var lodash_1 = require("lodash");
 var document_1 = require("./document");
 var implAttributes_attributesData_1 = require("./implAttributes_attributesData");
@@ -37,7 +43,7 @@ var private_cursor_1 = require("./private_cursor");
 var private_part_1 = require("./private_part");
 var private_util_1 = require("./private_util");
 var private_chordUtil_1 = require("./private_chordUtil");
-var engine_divisionOverflowException_1 = require("./engine_divisionOverflowException");
+var engine_divisionOverflowException_1 = __importDefault(require("./engine_divisionOverflowException"));
 /**
  * Given a bunch of segments and the context (measure, line), returns information needed to lay the
  * models out. Note that the order of the output is arbitrary and may not correspond to the order
@@ -51,7 +57,7 @@ var engine_divisionOverflowException_1 = require("./engine_divisionOverflowExcep
  */
 function refreshMeasure(spec) {
     var gMeasure = spec.measure;
-    invariant(!!spec.attributes, "Attributes must be defined");
+    invariant_1.default(!!spec.attributes, "Attributes must be defined");
     var gInitialAttribs = private_util_1.cloneObject(spec.attributes);
     var gPrint = spec.print;
     var gMaxDivisions = 0;
@@ -68,7 +74,7 @@ function refreshMeasure(spec) {
     // to avoid unnecessary work.
     var cleanliness = spec.document.cleanlinessTracking.measures[spec.measure.uuid];
     var oldLayout = cleanliness.layout;
-    invariant(spec.segments.length >= 1, "_processMeasure expects at least one segment.");
+    invariant_1.default(spec.segments.length >= 1, "_processMeasure expects at least one segment.");
     Object.keys(spec.measure.parts).forEach(function (part) {
         cleanliness.x[part] = cleanliness.x[part] || {};
         spec.measure.parts[part].voices.forEach(function (voice) {
@@ -101,21 +107,21 @@ function refreshMeasure(spec) {
             if (op.p[0] === "divisions") {
                 return true;
             }
-            invariant(String(op.p[0]) === String(spec.measure.uuid), "Unexpected fixup for a measure " + op.p[0] + " " +
+            invariant_1.default(String(op.p[0]) === String(spec.measure.uuid), "Unexpected fixup for a measure " + op.p[0] + " " +
                 ("other than the current " + spec.measure.uuid));
-            invariant(op.p[1] === "parts", "Expected p[1] to be parts");
-            invariant(op.p[2] === localSegment.part, "Expected part " + op.p[2] + " to be " + localSegment.part);
+            invariant_1.default(op.p[1] === "parts", "Expected p[1] to be parts");
+            invariant_1.default(op.p[2] === localSegment.part, "Expected part " + op.p[2] + " to be " + localSegment.part);
             if (localSegment.ownerType === "voice") {
                 if (typeof op.p[4] === "string") {
                     op.p[4] = parseInt(op.p[4], 10);
                 }
-                invariant(op.p[3] === "voices", "We are in a voice, so we can only patch the voice");
-                invariant(op.p[4] === localSegment.owner, "Expected voice owner " + localSegment.owner + ", got " + op.p[4]);
+                invariant_1.default(op.p[3] === "voices", "We are in a voice, so we can only patch the voice");
+                invariant_1.default(op.p[4] === localSegment.owner, "Expected voice owner " + localSegment.owner + ", got " + op.p[4]);
                 return op.p.length === 6 && (op.p[5] <= vCursor.segmentPosition) || op.p[5] < vCursor.segmentPosition;
             }
             else if (localSegment.ownerType === "staff") {
-                invariant(op.p[3] === "staves", "We are in a staff, so we can only patch the staff");
-                invariant(op.p[4] === localSegment.owner, "Expected staff owner " + localSegment.owner + ", got " + op.p[4]);
+                invariant_1.default(op.p[3] === "staves", "We are in a staff, so we can only patch the staff");
+                invariant_1.default(op.p[4] === localSegment.owner, "Expected staff owner " + localSegment.owner + ", got " + op.p[4]);
                 return op.p.length === 6 && (op.p[5] <= vCursor.segmentPosition) || op.p[5] < vCursor.segmentPosition;
             }
             throw new Error("Invalid segment owner type " + localSegment.ownerType);
@@ -179,7 +185,7 @@ function refreshMeasure(spec) {
                 }
                 cleanliness.x[part][voiceSegment.owner].staffX[staffIdx][lCursor.segmentPosition] = lCursor.segmentX;
             }
-            invariant(isFinite(model.divCount), "%s should be a constant division count", model.divCount);
+            invariant_1.default(isFinite(model.divCount), "%s should be a constant division count", model.divCount);
             vCursor.segmentDivision += model.divCount;
             if (vCursor.staffAttributes) {
                 var totalDivisions = private_chordUtil_1.barDivisions(vCursor.staffAttributes);
@@ -187,11 +193,11 @@ function refreshMeasure(spec) {
                     if (!gDivOverflow) {
                         gDivOverflow = new engine_divisionOverflowException_1.default(totalDivisions, spec.measure, vCursor.staffAttributes);
                     }
-                    invariant(totalDivisions === gDivOverflow.maxDiv, "Divisions are not consistent. Found %s but expected %s", totalDivisions, gDivOverflow.maxDiv);
+                    invariant_1.default(totalDivisions === gDivOverflow.maxDiv, "Divisions are not consistent. Found %s but expected %s", totalDivisions, gDivOverflow.maxDiv);
                 }
             }
             else {
-                invariant(vCursor.segmentDivision === 0, "Expected attributes to be set on cursor");
+                invariant_1.default(vCursor.segmentDivision === 0, "Expected attributes to be set on cursor");
             }
             staffContexts[staffIdx].division = vCursor.segmentDivision;
             staffContexts[staffIdx].accidentals = vCursor.staffAccidentals;
@@ -201,7 +207,7 @@ function refreshMeasure(spec) {
             vCursor.segmentInstance = oldSegment;
             vCursor.segmentPosition = oldIdx;
             if (spec.mode === RefreshMode.RefreshLayout) {
-                invariant(!!layout, "%s must be a valid layout", layout);
+                invariant_1.default(!!layout, "%s must be a valid layout", layout);
             }
             voiceStaves[staffIdx].push(layout);
         }
@@ -210,7 +216,7 @@ function refreshMeasure(spec) {
             var model = voiceSegment[i];
             var atEnd = i + 1 === voiceSegment.length;
             var staffIdx = model.staffIdx;
-            invariant(isFinite(model.staffIdx), "%s must be finite", model.staffIdx);
+            invariant_1.default(isFinite(model.staffIdx), "%s must be finite", model.staffIdx);
             if (!lCursor.lineMaxPaddingTopByStaff[model.staffIdx]) {
                 lCursor.lineMaxPaddingTopByStaff[model.staffIdx] = 0;
             }
@@ -247,7 +253,7 @@ function refreshMeasure(spec) {
                 // Process a staff model within a voice context.
                 var catchUp = staffContexts[staffIdx].division < vCursor.segmentDivision;
                 pushStaffSegment(staffIdx, nextStaffEl, catchUp);
-                invariant(isFinite(staffContexts[staffIdx].division), "divisionPerStaff is supposed " +
+                invariant_1.default(isFinite(staffContexts[staffIdx].division), "divisionPerStaff is supposed " +
                     "to be a number, got %s", staffContexts[staffIdx].division);
             }
             // All layout that can be controlled by the model is done here.
@@ -292,8 +298,8 @@ function refreshMeasure(spec) {
                 if (!gDivOverflow) {
                     gDivOverflow = new engine_divisionOverflowException_1.default(totalDivisions, spec.measure, vCursor.staffAttributes);
                 }
-                invariant(totalDivisions === gDivOverflow.maxDiv, "Divisions are not consistent. Found %s but expected %s", totalDivisions, gDivOverflow.maxDiv);
-                invariant(!!voiceSegment.part, "Part must be defined -- is this spec from Engine.validate$?");
+                invariant_1.default(totalDivisions === gDivOverflow.maxDiv, "Divisions are not consistent. Found %s but expected %s", totalDivisions, gDivOverflow.maxDiv);
+                invariant_1.default(!!voiceSegment.part, "Part must be defined -- is this spec from Engine.validate$?");
             }
             if (atEnd) {
                 // Finalize.

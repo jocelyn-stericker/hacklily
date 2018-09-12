@@ -19,25 +19,31 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
  */
 var __extends = (this && this.__extends) || (function () {
-    var extendStatics = Object.setPrototypeOf ||
-        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    }
     return function (d, b) {
         extendStatics(d, b);
         function __() { this.constructor = d; }
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 var aphrodite_1 = require("aphrodite");
 var React = require("react");
-var Makelily_1 = require("./Makelily");
+var Makelily_1 = __importDefault(require("./Makelily"));
 exports.QUERY_PROP_KEYS = [
-    'clef',
-    'defaultTool',
-    'keySig',
-    'singleTaskMode',
-    'time',
+    "clef",
+    "defaultTool",
+    "keySig",
+    "singleTaskMode",
+    "time",
 ];
 /**
  * This renders a SPA which demos the makelily modal.
@@ -54,26 +60,35 @@ var App = /** @class */ (function (_super) {
             React.createElement("div", { className: aphrodite_1.css(styles.mockHeader) }),
             React.createElement("div", { className: aphrodite_1.css(styles.presets) },
                 "Makelily sandbox.",
-                ' \u00a0',
+                " \u00a0",
                 "\\clef",
-                ' ',
-                React.createElement("input", { onChange: function (ev) { return setQuery({ clef: ev.target.value }, true); }, value: clef || '' }),
-                ' ',
+                " ",
+                React.createElement("input", { onChange: function (ev) {
+                        return setQuery({ clef: ev.target.value }, true);
+                    }, value: clef || "" }),
+                " ",
                 "\\key",
-                ' ',
-                React.createElement("input", { onChange: function (ev) { return setQuery({ keySig: ev.target.value }, true); }, value: keySig || '' }),
-                ' ',
+                " ",
+                React.createElement("input", { onChange: function (ev) {
+                        return setQuery({ keySig: ev.target.value }, true);
+                    }, value: keySig || "" }),
+                " ",
                 "\\time",
-                ' ',
-                React.createElement("input", { onChange: function (ev) { return setQuery({ time: ev.target.value }, true); }, value: time || '' }),
-                ' ',
-                React.createElement("input", { id: "single-task-mode", onChange: function (ev) { return setQuery({ singleTaskMode: ev.target.checked }, true); }, type: "checkbox", checked: String(singleTaskMode) === 'true', "aria-checked": singleTaskMode }),
+                " ",
+                React.createElement("input", { onChange: function (ev) {
+                        return setQuery({ time: ev.target.value }, true);
+                    }, value: time || "" }),
+                " ",
+                React.createElement("input", { id: "single-task-mode", onChange: function (ev) {
+                        return setQuery({ singleTaskMode: ev.target.checked }, true);
+                    }, type: "checkbox", checked: String(singleTaskMode) === "true", "aria-checked": singleTaskMode }),
                 React.createElement("label", { htmlFor: "single-task-mode" }, "Single task mode"),
-                ' ',
-                "default tool",
-                ' ',
-                React.createElement("input", { onChange: function (ev) { return setQuery({ defaultTool: ev.target.value }, true); }, value: defaultTool || '' })),
-            React.createElement(Makelily_1.default, { clef: clef || '', defaultTool: defaultTool || '', keySig: keySig || '', time: time || '', singleTaskMode: String(singleTaskMode) === 'true', onHide: function () { return window.location.reload(); }, onInsertLy: this.handleInsertLy })));
+                " default tool",
+                " ",
+                React.createElement("input", { onChange: function (ev) {
+                        return setQuery({ defaultTool: ev.target.value }, true);
+                    }, value: defaultTool || "" })),
+            React.createElement(Makelily_1.default, { clef: clef || "", defaultTool: defaultTool || "", keySig: keySig || "", time: time || "", singleTaskMode: String(singleTaskMode) === "true", onHide: function () { return window.location.reload(); }, onInsertLy: this.handleInsertLy })));
     };
     App.prototype.handleInsertLy = function (ly) {
         // tslint:disable-next-line no-console
@@ -85,30 +100,30 @@ exports.default = App;
 // tslint:disable-next-line typedef
 var styles = aphrodite_1.StyleSheet.create({
     appRoot: {
-        backgroundColor: '#1e1e1e',
-        height: '100%',
-        width: '100%',
+        backgroundColor: "#1e1e1e",
+        height: "100%",
+        width: "100%",
     },
     mockHeader: {
-        backgroundColor: '#efefef',
-        borderBottom: '1px solid #000',
+        backgroundColor: "#efefef",
+        borderBottom: "1px solid #000",
         height: 50,
-        position: 'absolute',
+        position: "absolute",
         top: 0,
-        width: '100%',
+        width: "100%",
     },
     mockPreview: {
-        backgroundColor: 'white',
-        height: '100%',
-        position: 'absolute',
+        backgroundColor: "white",
+        height: "100%",
+        position: "absolute",
         right: 0,
-        width: '50%',
+        width: "50%",
     },
     presets: {
-        color: 'black',
-        fontFamily: 'monospace',
+        color: "black",
+        fontFamily: "monospace",
         left: 20,
-        position: 'absolute',
+        position: "absolute",
         top: 15,
         zIndex: 90000,
     },

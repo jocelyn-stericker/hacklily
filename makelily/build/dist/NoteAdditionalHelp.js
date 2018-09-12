@@ -19,9 +19,12 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
  */
 var __extends = (this && this.__extends) || (function () {
-    var extendStatics = Object.setPrototypeOf ||
-        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    }
     return function (d, b) {
         extendStatics(d, b);
         function __() { this.constructor = d; }
@@ -43,11 +46,11 @@ var NoteAdditionalHelp = /** @class */ (function (_super) {
         var _a = this.props, kind = _a.kind, onHide = _a.onHide;
         return (React.createElement("span", { className: aphrodite_1.css(styles.overlay), onClick: onHide, role: "button" },
             React.createElement("span", { className: aphrodite_1.css(styles.widget) },
-                kind === 'keyboard' && this.renderKeyboard(),
-                kind === 'midi' && this.renderMIDI(),
-                kind === 'mouse' && this.renderMouse(),
-                kind === 'relative' && this.renderRelative(),
-                kind === 'whyNotEdit' && this.renderWhyNotEdit(),
+                kind === "keyboard" && this.renderKeyboard(),
+                kind === "midi" && this.renderMIDI(),
+                kind === "mouse" && this.renderMouse(),
+                kind === "relative" && this.renderRelative(),
+                kind === "whyNotEdit" && this.renderWhyNotEdit(),
                 React.createElement("p", null,
                     React.createElement("a", { href: "javascript:void(0)", role: "button", onClick: onHide }, "Close")))));
     };
@@ -55,7 +58,7 @@ var NoteAdditionalHelp = /** @class */ (function (_super) {
     NoteAdditionalHelp.prototype.renderKeyboard = function () {
         return (React.createElement("span", null,
             React.createElement("h3", null, "What keyboard shortcuts are available?"),
-            React.createElement("table", { style: { borderWidth: 1, borderColor: 'black' } },
+            React.createElement("table", { style: { borderWidth: 1, borderColor: "black" } },
                 React.createElement("tr", null,
                     React.createElement("td", null, "1-7"),
                     React.createElement("td", null,
@@ -116,20 +119,16 @@ var NoteAdditionalHelp = /** @class */ (function (_super) {
             React.createElement("h3", null, "How do I enter sheet music using a mouse?"),
             React.createElement("p", null,
                 React.createElement("strong", null, "To insert notes,"),
-                ' ',
-                "click on the desired duration of music in the toolbar (e.g., quarter note or half note). Then, click on any desired modifiers to that note (e.g., dots, tuplets, or accidentals). Finally, click on the staff where you want the note."),
+                " click on the desired duration of music in the toolbar (e.g., quarter note or half note). Then, click on any desired modifiers to that note (e.g., dots, tuplets, or accidentals). Finally, click on the staff where you want the note."),
             React.createElement("p", null,
                 React.createElement("strong", null, "To insert chords,"),
-                ' ',
-                "pick a note or chord to add a note to, and click above or below it to add that note."),
+                " pick a note or chord to add a note to, and click above or below it to add that note."),
             React.createElement("p", null,
                 React.createElement("strong", null, "To insert rests,"),
-                ' ',
-                "click the rest icon beside the sharp icon on the toolbar, then insert it as you would a note."),
+                " click the rest icon beside the sharp icon on the toolbar, then insert it as you would a note."),
             React.createElement("p", null,
                 React.createElement("strong", null, "To add another bar,"),
-                ' ',
-                "click the \"Add Bar\" option on the toolbar."),
+                " click the \"Add Bar\" option on the toolbar."),
             React.createElement("p", null,
                 React.createElement("strong", null, "Tip:"),
                 " you can undo and redo any changes using the undo and redo buttons, so don't be afraid to explore.")));
@@ -140,14 +139,12 @@ var NoteAdditionalHelp = /** @class */ (function (_super) {
             React.createElement("p", null,
                 "Use ",
                 React.createElement("code", null, "\\relative"),
-                " output mode if you are inserting code into a",
-                ' ',
+                " output mode if you are inserting code into a ",
                 React.createElement("code", null, "\\relative"),
                 " block, and leave it unchecked if your song uses absolute mode."),
             React.createElement("p", null, "From the LilyPond manual, absolute octave entry requires specifying the octave for every single note. Relative octave entry, in contrast, specifies each octave in relation to the last note: changing one note\u2019s octave will affect all of the following notes."),
             React.createElement("p", null,
-                "If this checkbox is not checked, the octave of every note will be explicitly spelled out.",
-                ' ',
+                "If this checkbox is not checked, the octave of every note will be explicitly spelled out. ",
                 React.createElement("code", null, "c'"),
                 " will always mean middle C."),
             React.createElement("p", null, "When using this mode, after inserting bars of music, you may need to adjust the octave of the first note.")));
@@ -165,24 +162,24 @@ exports.default = NoteAdditionalHelp;
 // tslint:disable-next-line typedef
 var styles = aphrodite_1.StyleSheet.create({
     overlay: {
-        background: 'rgba(0, 0, 0, 0.8)',
+        background: "rgba(0, 0, 0, 0.8)",
         bottom: 0,
-        cursor: 'pointer',
+        cursor: "pointer",
         left: 0,
-        position: 'absolute',
+        position: "absolute",
         right: 0,
         top: 0,
         zIndex: 100000,
     },
     widget: {
-        backgroundColor: '#f6f7f7',
-        border: '1px solid black',
+        backgroundColor: "#f6f7f7",
+        border: "1px solid black",
         borderRadius: 4,
-        cursor: 'auto',
+        cursor: "auto",
         left: 15,
         marginBottom: 0,
         padding: 15,
-        position: 'absolute',
+        position: "absolute",
         right: 15,
         top: 50,
     },

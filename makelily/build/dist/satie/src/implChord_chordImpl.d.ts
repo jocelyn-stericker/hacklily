@@ -71,14 +71,14 @@ declare class ChordModelImpl implements ChordModel.IChordModel, ArrayLike<NoteIm
     calcWidth(shortest: number): number;
     calcAccidentalWidth(): number;
     calcDotWidth(): number;
-    private _implyCountFromPerformanceData(cursor);
-    private _getStemHeight(direction, clef);
-    private _pickDirection(cursor);
-    private _checkMulitpleRest(cursor);
-    private _implyNoteheads(cursor);
-    private _hasStem();
+    private _implyCountFromPerformanceData;
+    private _getStemHeight;
+    private _pickDirection;
+    private _checkMulitpleRest;
+    private _implyNoteheads;
+    private _hasStem;
 }
-declare module ChordModelImpl {
+declare namespace ChordModelImpl {
     class Layout implements ChordModel.IChordLayout {
         model: ChordModel.IDetachedChordModel;
         x: number;
@@ -99,11 +99,11 @@ declare module ChordModelImpl {
         };
         satieFlag: string;
         refresh(baseModel: ChordModelImpl, cursor: LayoutCursor): void;
-        private _captureBoundingBoxes();
-        private _getMinWidthBefore(cursor);
-        private _getMinWidthAfter(cursor);
-        private _getLyricWidth(cursor);
-        private _detachModelWithContext(cursor, baseModel);
+        private _captureBoundingBoxes;
+        private _getMinWidthBefore;
+        private _getMinWidthAfter;
+        private _getLyricWidth;
+        private _detachModelWithContext;
     }
 }
 export default ChordModelImpl;

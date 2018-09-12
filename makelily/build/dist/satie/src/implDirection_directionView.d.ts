@@ -1,4 +1,3 @@
-/// <reference types="react" />
 /**
  * @source: https://github.com/jnetterf/satie/
  *

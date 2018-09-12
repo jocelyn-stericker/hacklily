@@ -18,29 +18,39 @@
  * along with this program; if not, write to the Free Software Foundation,
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
  */
-var __assign = (this && this.__assign) || Object.assign || function(t) {
-    for (var s, i = 1, n = arguments.length; i < n; i++) {
-        s = arguments[i];
-        for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
-            t[p] = s[p];
-    }
-    return t;
+var __assign = (this && this.__assign) || function () {
+    __assign = Object.assign || function(t) {
+        for (var s, i = 1, n = arguments.length; i < n; i++) {
+            s = arguments[i];
+            for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
+                t[p] = s[p];
+        }
+        return t;
+    };
+    return __assign.apply(this, arguments);
+};
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
+    result["default"] = mod;
+    return result;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-var React = require("react");
-var ReactDOM = require("react-dom");
-var App_1 = require("./App");
+var React = __importStar(require("react"));
+var ReactDOM = __importStar(require("react-dom"));
+var App_1 = __importStar(require("./App"));
 // http://stackoverflow.com/a/8648962
 function parseQuery(qstr) {
     var query = {};
-    var a = (qstr[0] === '?' ? qstr.substr(1) : qstr).split('&');
+    var a = (qstr[0] === "?" ? qstr.substr(1) : qstr).split("&");
     for (var _i = 0, a_1 = a; _i < a_1.length; _i++) {
         var item = a_1[_i];
         if (!item) {
             continue;
         }
-        var b = item.split('=');
-        query[decodeURIComponent(b[0])] = decodeURIComponent(b[1] || '');
+        var b = item.split("=");
+        query[decodeURIComponent(b[0])] = decodeURIComponent(b[1] || "");
     }
     return query;
 }
@@ -54,15 +64,14 @@ function toQueryString(obj) {
             parts.push(encodeURIComponent(i) + "=" + encodeURIComponent(obj[i]));
         }
     }
-    return parts.join('&')
-        .replace(/%2F/g, '/'); // because we can, and it's less ugly.
+    return parts.join("&").replace(/%2F/g, "/"); // because we can, and it's less ugly.
 }
 exports.toQueryString = toQueryString;
 /**
  * Renders Hacklily, with props set.
  */
 function render() {
-    ReactDOM.render(React.createElement(App_1.default, __assign({}, getQueryProps(), { setQuery: setQuery })), document.getElementById('root'));
+    ReactDOM.render(React.createElement(App_1.default, __assign({}, getQueryProps(), { setQuery: setQuery })), document.getElementById("root"));
 }
 /**
  * Gets query props from the URL.
@@ -74,7 +83,7 @@ function getQueryProps() {
         var queryPropIdx = App_1.QUERY_PROP_KEYS.indexOf(key);
         if (queryPropIdx === -1) {
             console.warn("Warning: unknown query property " + key + ". " +
-                'Please add it to QUERY_PROP_KEYS in App.tsx.');
+                "Please add it to QUERY_PROP_KEYS in App.tsx.");
             return;
         }
         // Note: queryPropKey === key, just typed correctly
@@ -94,21 +103,21 @@ function setQuery(queryUpdates, replaceState) {
             query[key] = queryUpdates[key];
         }
     });
-    var base = location.href.split('?')[0];
+    var base = location.href.split("?")[0];
     var queryString = toQueryString(query);
     var newUrl = queryString.length ? base + "?" + queryString : base;
     if (replaceState) {
-        history.replaceState(null, '', newUrl);
+        history.replaceState(null, "", newUrl);
     }
     else {
-        history.pushState(null, '', newUrl);
+        history.pushState(null, "", newUrl);
     }
     render();
 }
 /*
  * Init Hacklily.
  */
-window.addEventListener('popstate', function (ev) {
+window.addEventListener("popstate", function (ev) {
     render();
 });
 render();

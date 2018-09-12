@@ -17,9 +17,12 @@
  * along with Satie.  If not, see <http://www.gnu.org/licenses/>.
  */
 var __extends = (this && this.__extends) || (function () {
-    var extendStatics = Object.setPrototypeOf ||
-        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    }
     return function (d, b) {
         extendStatics(d, b);
         function __() { this.constructor = d; }
@@ -32,16 +35,26 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
+    result["default"] = mod;
+    return result;
+};
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 var react_1 = require("react");
-var PropTypes = require("prop-types");
+var PropTypes = __importStar(require("prop-types"));
 var document_1 = require("./document");
 var private_views_metadata_1 = require("./private_views_metadata");
-var implAttributes_attributesView_1 = require("./implAttributes_attributesView");
-var implBarline_barlineView_1 = require("./implBarline_barlineView");
-var implChord_chordView_1 = require("./implChord_chordView");
-var implDirection_directionView_1 = require("./implDirection_directionView");
-var implVisualCursor_visualCursorView_1 = require("./implVisualCursor_visualCursorView");
+var implAttributes_attributesView_1 = __importDefault(require("./implAttributes_attributesView"));
+var implBarline_barlineView_1 = __importDefault(require("./implBarline_barlineView"));
+var implChord_chordView_1 = __importDefault(require("./implChord_chordView"));
+var implDirection_directionView_1 = __importDefault(require("./implDirection_directionView"));
+var implVisualCursor_visualCursorView_1 = __importDefault(require("./implVisualCursor_visualCursorView"));
 var $AttributesView = react_1.createFactory(implAttributes_attributesView_1.default);
 var $BarlineView = react_1.createFactory(implBarline_barlineView_1.default);
 var $ChordView = react_1.createFactory(implChord_chordView_1.default);

@@ -16,15 +16,18 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with Satie.  If not, see <http://www.gnu.org/licenses/>.
  */
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 var lodash_1 = require("lodash");
-var invariant = require("invariant");
+var invariant_1 = __importDefault(require("invariant"));
 var musicxml_interfaces_1 = require("musicxml-interfaces");
 var document_1 = require("./document");
-var engine_createPatch_1 = require("./engine_createPatch");
-var engine_applyOp_1 = require("./engine_applyOp");
+var engine_createPatch_1 = __importDefault(require("./engine_createPatch"));
+var engine_applyOp_1 = __importDefault(require("./engine_applyOp"));
 var engine_divisions_1 = require("./engine_divisions");
-var engine_divisionOverflowException_1 = require("./engine_divisionOverflowException");
+var engine_divisionOverflowException_1 = __importDefault(require("./engine_divisionOverflowException"));
 var engine_processors_measure_1 = require("./engine_processors_measure");
 /**
  * Reducer for a collection of functions, calling each one.
@@ -143,7 +146,7 @@ function tryValidate(options, rootFixupOpts) {
                     if (!segment) {
                         return;
                     }
-                    invariant(segment.ownerType === "staff", "Expected staff segment");
+                    invariant_1.default(segment.ownerType === "staff", "Expected staff segment");
                     lastAttribs[segment.part] = lastAttribs[segment.part] || [];
                     function ensureHeader(type) {
                         if (!search(segment, 0, type).length) {
@@ -179,7 +182,7 @@ function tryValidate(options, rootFixupOpts) {
                                         break;
                                     }
                                 }
-                                invariant(tidx !== -1, "Could not find required model.");
+                                invariant_1.default(tidx !== -1, "Could not find required model.");
                                 // Warning: without fixup.
                                 // STOPSHIP: Also add ability to remove/retarget proxy
                                 segment.splice(tidx, 0, proxy);

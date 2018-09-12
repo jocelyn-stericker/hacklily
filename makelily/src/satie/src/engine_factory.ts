@@ -21,7 +21,7 @@
 
 import {Print, Grouping, FiguredBass, Attributes, Sound, Direction, Harmony,
         Barline, Note} from "musicxml-interfaces";
-import * as invariant from "invariant";
+import invariant from "invariant";
 import {forEach, some} from "lodash";
 
 import {IModel, Type} from "./document";

@@ -18,28 +18,28 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
  */
 
-import { css } from 'aphrodite';
-import { Clef, Key } from 'musicxml-interfaces';
-import React = require('react');
-import { Addons as SatieAddons } from './satie/src/satie';
+import { css } from "aphrodite";
+import { Clef, Key } from "musicxml-interfaces";
+import React = require("react");
+import { Addons as SatieAddons } from "./satie/src/satie";
 
-import tabStyles from './tabStyles';
-import { ToolProps } from './tool';
+import tabStyles from "./tabStyles";
+import { ToolProps } from "./tool";
 
-const keyViewbox: string = '-2 -40 80 80';
+const keyViewbox: string = "-2 -40 80 80";
 
 const trebleClef: Clef = {
   line: 2,
-  sign: 'G',
+  sign: "G",
 };
 
-const majors: string = 'cgdaebFCGDAEBfcgda';
-function getEnglish(fifths: number, mode: 'major' | 'minor'): string {
-  const englishMode: string = mode === 'major' ? 'major' : 'minor';
+const majors: string = "cgdaebFCGDAEBfcgda";
+function getEnglish(fifths: number, mode: "major" | "minor"): string {
+  const englishMode: string = mode === "major" ? "major" : "minor";
 
-  const key: string = majors[fifths + 7 + (mode === 'minor' ? 3 : 0)];
+  const key: string = majors[fifths + 7 + (mode === "minor" ? 3 : 0)];
   if (!key) {
-    return 'Unknown';
+    return "Unknown";
   }
   if (key.toLowerCase() === key) {
     if (fifths < 0) {
@@ -53,10 +53,10 @@ function getEnglish(fifths: number, mode: 'major' | 'minor'): string {
   return `${key.toUpperCase()} ${englishMode}`;
 }
 
-function getLy(fifths: number, mode: 'major' | 'minor'): string {
-  const key: string = majors[fifths + 7 + (mode === 'minor' ? 3 : 0)];
+function getLy(fifths: number, mode: "major" | "minor"): string {
+  const key: string = majors[fifths + 7 + (mode === "minor" ? 3 : 0)];
   if (!key) {
-    return 'Unknown';
+    return "Unknown";
   }
   if (key.toLowerCase() === key) {
     if (fifths < 0) {
@@ -71,31 +71,31 @@ function getLy(fifths: number, mode: 'major' | 'minor'): string {
 }
 
 const stdKeys: { [mode: string]: Key[] } = {
-  major: Array(15).fill(null).map(
-    (_: null, i: number) => ({
+  major: Array(15)
+    .fill(null)
+    .map((_: null, i: number) => ({
       fifths: i - 7,
-      mode: 'major',
-    }),
-  ),
-  minor: Array(15).fill(null).map
-    ((_: null, i: number) => ({
+      mode: "major",
+    })),
+  minor: Array(15)
+    .fill(null)
+    .map((_: null, i: number) => ({
       fifths: i - 7,
-      mode: 'minor',
-    }),
-  ),
+      mode: "minor",
+    })),
 };
 
 export interface State {
   selectedKey: number;
-  selectedMode: 'major' | 'minor';
+  selectedMode: "major" | "minor";
 }
 
 function getInitialState(props: ToolProps): State {
   let selectedKey: number = 8;
-  let selectedMode: 'major' | 'minor' = 'major';
+  let selectedMode: "major" | "minor" = "major";
 
-  if (props.keySig.mode === 'minor') {
-    selectedMode = 'minor';
+  if (props.keySig.mode === "minor") {
+    selectedMode = "minor";
   }
 
   selectedKey = parseInt(String(props.keySig.fifths), 10) + 7;
@@ -126,16 +126,16 @@ export default class ToolSetKey extends React.Component<ToolProps, State> {
 
       return (
         <span
-          className={css(tabStyles.selectableOption, selected && tabStyles.selectableSelected)}
+          className={css(
+            tabStyles.selectableOption,
+            selected && tabStyles.selectableSelected,
+          )}
           role="button"
           onClick={(): void => this.setState({ selectedKey: i })}
           key={i}
         >
           <svg className={css(tabStyles.resetFont)} viewBox={keyViewbox}>
-            <SatieAddons.KeySignature
-              clef={trebleClef}
-              spec={keySpec}
-            />
+            <SatieAddons.KeySignature clef={trebleClef} spec={keySpec} />
           </svg>
           <span className={css(tabStyles.selectableDescription)}>
             {getEnglish(key.fifths, this.state.selectedMode)}
@@ -148,9 +148,7 @@ export default class ToolSetKey extends React.Component<ToolProps, State> {
       <div className={css(tabStyles.tool)}>
         <div className={css(tabStyles.section)}>
           <h3 className={css(tabStyles.toolHeading)}>Key Signature</h3>
-          <div className={css(tabStyles.selectableList)}>
-            {ksViews}
-          </div>
+          <div className={css(tabStyles.selectableList)}>{ksViews}</div>
         </div>
         <div className={css(tabStyles.section)}>
           <h3 className={css(tabStyles.toolHeading)}>Mode</h3>
@@ -159,35 +157,32 @@ export default class ToolSetKey extends React.Component<ToolProps, State> {
               <input
                 id="key-mode-major"
                 type="radio"
-                checked={this.state.selectedMode === 'major'}
-                aria-checked={this.state.selectedMode === 'major'}
-                onChange={(): void => this.setState({ selectedMode: 'major' })}
+                checked={this.state.selectedMode === "major"}
+                aria-checked={this.state.selectedMode === "major"}
+                onChange={(): void => this.setState({ selectedMode: "major" })}
               />
-              <label htmlFor="key-mode-major">
-                Major (M)
-              </label>
+              <label htmlFor="key-mode-major">Major (M)</label>
             </div>
             <div>
               <input
                 id="key-mode-minor"
                 type="radio"
-                checked={this.state.selectedMode === 'minor'}
-                aria-checked={this.state.selectedMode === 'minor'}
-                onChange={(): void => this.setState({ selectedMode: 'minor' })}
+                checked={this.state.selectedMode === "minor"}
+                aria-checked={this.state.selectedMode === "minor"}
+                onChange={(): void => this.setState({ selectedMode: "minor" })}
               />
-              <label htmlFor="key-mode-minor">
-                Minor (m)
-              </label>
+              <label htmlFor="key-mode-minor">Minor (m)</label>
             </div>
           </form>
         </div>
         <div className={css(tabStyles.spacer)} />
         <div className={css(tabStyles.section)}>
-          <pre className={css(tabStyles.lyPreview)}>
-            {this.generateLy()}
-          </pre>
+          <pre className={css(tabStyles.lyPreview)}>{this.generateLy()}</pre>
 
-          <button className={css(tabStyles.insert)} onClick={this.handleInsertLyClicked}>
+          <button
+            className={css(tabStyles.insert)}
+            onClick={this.handleInsertLyClicked}
+          >
             Insert this code into Hacklily
           </button>
         </div>
@@ -204,5 +199,5 @@ export default class ToolSetKey extends React.Component<ToolProps, State> {
 
   private handleInsertLyClicked = (): void => {
     this.props.onInsertLy(this.generateLy());
-  }
+  };
 }

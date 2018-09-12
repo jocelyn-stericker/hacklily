@@ -23,7 +23,7 @@ import {Note, Chord, Rest, Dot, Type, TimeModification, Pitch,
     NonArpeggiate, Ornaments, OtherNotation, Slide, Slur, Technical, Tied, Tuplet,
     MxmlAccidental, serializeNote} from "musicxml-interfaces";
 import {forEach, reduce, map, isEqual} from "lodash";
-import * as invariant from "invariant";
+import invariant from "invariant";
 
 import {IReadOnlyValidationCursor} from "./private_cursor";
 import {accidentalGlyphs, onLedger, InvalidAccidental, lineForClef} from "./private_chordUtil";

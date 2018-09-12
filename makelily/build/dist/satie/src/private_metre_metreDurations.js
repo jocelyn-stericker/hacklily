@@ -16,9 +16,12 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with Satie.  If not, see <http://www.gnu.org/licenses/>.
  */
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 var lodash_1 = require("lodash");
-var invariant = require("invariant");
+var invariant_1 = __importDefault(require("invariant"));
 var private_chordUtil_1 = require("./private_chordUtil");
 /**
  * Creates a simple realization of an IChord
@@ -26,7 +29,7 @@ var private_chordUtil_1 = require("./private_chordUtil");
  * @param spec
  */
 function _makeDuration(spec) {
-    invariant(!spec.timeModification, "timeModification is not implemented in makeDuration");
+    invariant_1.default(!spec.timeModification, "timeModification is not implemented in makeDuration");
     return [{
             dots: lodash_1.times(spec.dots || 0, function () { return {}; }),
             noteType: {

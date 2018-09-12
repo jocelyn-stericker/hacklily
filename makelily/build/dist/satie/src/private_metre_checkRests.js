@@ -170,7 +170,7 @@ var RestSolver = /** @class */ (function () {
                         }
                     }
                 }
-                else if (rule[i] === "*" && song[i] === "r" && matches[i] === " ") {
+                else if (rule[i] === "*" && song[i] === "r" && matches[i] === " ") { // Match subbeat!
                     if (this.isSimple()) {
                         var bestSubbeatReplacement = "";
                         subbeatOptions: for (var j = 0; j < validSubBeatLengths.length; ++j) {

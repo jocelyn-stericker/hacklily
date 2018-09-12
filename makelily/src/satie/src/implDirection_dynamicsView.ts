@@ -16,55 +16,64 @@
  * along with Satie.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import {Dynamics, Direction} from "musicxml-interfaces";
-import {createFactory, ReactElement, Component} from "react";
+import { Dynamics, Direction } from "musicxml-interfaces";
+import { createFactory, ReactElement, Component } from "react";
 import * as PropTypes from "prop-types";
-import {filter} from "lodash";
-import * as invariant from "invariant";
+import { filter } from "lodash";
+import invariant from "invariant";
 
 import Glyph from "./private_views_glyph";
 
 const $Glyph = createFactory(Glyph);
 
 export interface IProps {
-    layout: {model: Direction, overrideX?: number};
-    key?: string | number;
+  layout: { model: Direction; overrideX?: number };
+  key?: string | number;
 }
 
 export default class DynamicsView extends Component<IProps, {}> {
-    static contextTypes = <any> {
-        originY: PropTypes.number
-    };
+  static contextTypes = <any>{
+    originY: PropTypes.number
+  };
 
-    context: {
-        originY: number;
-    };
+  context: {
+    originY: number;
+  };
 
-    render(): ReactElement<any> {
-        let layout = this.props.layout;
-        let model = layout.model;
-        let dynamicsContainer = filter(model.directionTypes, dt => dt.dynamics)[0];
-        invariant(!!dynamicsContainer, "No dynamics found!");
-        let dynamics = dynamicsContainer.dynamics;
+  render(): ReactElement<any> {
+    let layout = this.props.layout;
+    let model = layout.model;
+    let dynamicsContainer = filter(model.directionTypes, dt => dt.dynamics)[0];
+    invariant(!!dynamicsContainer, "No dynamics found!");
+    let dynamics =
+      typeof dynamicsContainer !== "number" &&
+      typeof dynamicsContainer !== "function" &&
+      dynamicsContainer.dynamics;
 
-        let initX = this.props.layout.overrideX + dynamics.defaultX + (dynamics.relativeX || 0);
-        let initY = (this.context.originY || 0) - dynamics.defaultY - (dynamics.relativeY || 0);
+    let initX =
+      this.props.layout.overrideX +
+      dynamics.defaultX +
+      (dynamics.relativeX || 0);
+    let initY =
+      (this.context.originY || 0) -
+      dynamics.defaultY -
+      (dynamics.relativeY || 0);
 
-        let glyphName = this.getGlyphName(dynamics);
-        if (!glyphName) {
-            return null;
-        }
-
-        return $Glyph({
-            fill: dynamics.color || "black",
-            glyphName: glyphName,
-            x: initX,
-            y: initY
-        });
+    let glyphName = this.getGlyphName(dynamics);
+    if (!glyphName) {
+      return null;
     }
 
-    getGlyphName(dynamics: Dynamics) {
-        /* Not included in MusicXML:
+    return $Glyph({
+      fill: dynamics.color || "black",
+      glyphName: glyphName,
+      x: initX,
+      y: initY
+    });
+  }
+
+  getGlyphName(dynamics: Dynamics) {
+    /* Not included in MusicXML:
 
           "dynamicMessaDiVoce": "U+E540",
           "dynamicMezzo": "U+E521",
@@ -76,62 +85,62 @@ export default class DynamicsView extends Component<IProps, {}> {
           "dynamicSforzatoPiano": "U+E53A",
           "dynamicZ": "U+E525",
         */
-        switch (true) {
-            case dynamics.f:
-                return "dynamicForte";
-            case dynamics.ff:
-                return "dynamicFF";
-            case dynamics.fff:
-                return "dynamicFFF";
-            case dynamics.ffff:
-                return "dynamicFFFF";
-            case dynamics.fffff:
-                return "dynamicFFFFF";
-            case dynamics.ffffff:
-                return "dynamicFFFFFF";
+    switch (true) {
+      case dynamics.f:
+        return "dynamicForte";
+      case dynamics.ff:
+        return "dynamicFF";
+      case dynamics.fff:
+        return "dynamicFFF";
+      case dynamics.ffff:
+        return "dynamicFFFF";
+      case dynamics.fffff:
+        return "dynamicFFFFF";
+      case dynamics.ffffff:
+        return "dynamicFFFFFF";
 
-            case dynamics.fp:
-                return "dynamicFortePiano";
-            case dynamics.fz:
-                return "dynamicForzando";
+      case dynamics.fp:
+        return "dynamicFortePiano";
+      case dynamics.fz:
+        return "dynamicForzando";
 
-            case dynamics.mf:
-                return "dynamicMF";
-            case dynamics.mp:
-                return "dynamicMP";
+      case dynamics.mf:
+        return "dynamicMF";
+      case dynamics.mp:
+        return "dynamicMP";
 
-            case dynamics.p:
-                return "dynamicPiano";
-            case dynamics.pp:
-                return "dynamicPP";
-            case dynamics.ppp:
-                return "dynamicPPP";
-            case dynamics.pppp:
-                return "dynamicPPPP";
-            case dynamics.ppppp:
-                return "dynamicPPPPP";
-            case dynamics.pppppp:
-                return "dynamicPPPPPP";
+      case dynamics.p:
+        return "dynamicPiano";
+      case dynamics.pp:
+        return "dynamicPP";
+      case dynamics.ppp:
+        return "dynamicPPP";
+      case dynamics.pppp:
+        return "dynamicPPPP";
+      case dynamics.ppppp:
+        return "dynamicPPPPP";
+      case dynamics.pppppp:
+        return "dynamicPPPPPP";
 
-            case dynamics.rf:
-                return "dynamicRinforzando1";
-            case dynamics.rfz:
-                return "dynamicRinforzando2";
+      case dynamics.rf:
+        return "dynamicRinforzando1";
+      case dynamics.rfz:
+        return "dynamicRinforzando2";
 
-            case dynamics.sf:
-                return "dynamicSforzando1";
-            case dynamics.sffz:
-                return "dynamicSforzatoFF";
-            case dynamics.sfp:
-                return "dynamicSforzandoPiano";
-            case dynamics.sfpp:
-                return "dynamicSforzandoPianissimo";
-            case dynamics.sfz:
-                return "dynamicSforzato";
+      case dynamics.sf:
+        return "dynamicSforzando1";
+      case dynamics.sffz:
+        return "dynamicSforzatoFF";
+      case dynamics.sfp:
+        return "dynamicSforzandoPiano";
+      case dynamics.sfpp:
+        return "dynamicSforzandoPianissimo";
+      case dynamics.sfz:
+        return "dynamicSforzato";
 
-            default:
-                console.warn("Found unknown dynamic!");
-                return null;
-        }
+      default:
+        console.warn("Found unknown dynamic!");
+        return null;
     }
+  }
 }

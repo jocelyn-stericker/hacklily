@@ -33,6 +33,6 @@ declare enum Type {
     Chord = 220,
     END_OF_VOICE_ELEMENTS = 299,
     VisualCursor = 398,
-    Barline = 399,
+    Barline = 399
 }
 export default Type;

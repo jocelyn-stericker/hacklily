@@ -16,8 +16,11 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with Satie.  If not, see <http://www.gnu.org/licenses/>.
  */
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
-var invariant = require("invariant");
+var invariant_1 = __importDefault(require("invariant"));
 var lodash_1 = require("lodash");
 var private_util_1 = require("./private_util");
 function expectEqualish(a, b) {
@@ -40,7 +43,7 @@ exports.parentExists = parentExists;
 function findParent(obj, p) {
     for (var i = 0; i < p.length - 1; ++i) {
         obj = obj[p[i]];
-        invariant(obj, "Invalid path: " + p.join(", "));
+        invariant_1.default(obj, "Invalid path: " + p.join(", "));
     }
     return obj;
 }
@@ -56,7 +59,7 @@ exports.set = set;
 function insertToList(obj, op) {
     var parent = findParent(obj, op.p);
     var key = lodash_1.last(op.p);
-    invariant(key >= 0, "Invalid operation");
+    invariant_1.default(key >= 0, "Invalid operation");
     parent.splice(key, 0, op.li);
 }
 exports.insertToList = insertToList;
@@ -91,8 +94,8 @@ exports.remove = remove;
 function removeFromList(obj, op) {
     var parent = findParent(obj, op.p);
     var key = lodash_1.last(op.p);
-    invariant(key < parent.length, "Invalid operation");
-    invariant(key >= 0, "Invalid operation");
+    invariant_1.default(key < parent.length, "Invalid operation");
+    invariant_1.default(key >= 0, "Invalid operation");
     // STOPSHIP: this could cause problems during collaboration/undo
     expectEqualish(parent[key], op.ld);
     parent.splice(key, 1);

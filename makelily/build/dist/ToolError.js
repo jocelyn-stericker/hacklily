@@ -19,19 +19,25 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
  */
 var __extends = (this && this.__extends) || (function () {
-    var extendStatics = Object.setPrototypeOf ||
-        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    }
     return function (d, b) {
         extendStatics(d, b);
         function __() { this.constructor = d; }
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 var aphrodite_1 = require("aphrodite");
 var React = require("react");
-var tabStyles_1 = require("./tabStyles");
+var tabStyles_1 = __importDefault(require("./tabStyles"));
 /**
  * Placeholder for when an error was caught.
  */
@@ -45,12 +51,11 @@ var ToolError = /** @class */ (function (_super) {
             React.createElement("div", { className: aphrodite_1.css(tabStyles_1.default.section) },
                 React.createElement("h3", { className: aphrodite_1.css(tabStyles_1.default.toolHeading) }, "It's not your fault*!")),
             React.createElement("div", { className: aphrodite_1.css(tabStyles_1.default.section) },
-                "The tool you were using crashed, so it has been closed.",
-                ' ',
-                "Please",
-                ' ',
+                "The tool you were using crashed, so it has been closed. Please",
+                " ",
                 React.createElement("a", { href: "https://github.com/hacklily/makelily/issues/new", target: "_blank", rel: "noopener noreferrer" }, "file an issue"),
-                " so I can try fixing it."),
+                " ",
+                "so I can try fixing it."),
             React.createElement("div", { className: aphrodite_1.css(tabStyles_1.default.section) }, "*if you are Joshua, it is probably your fault.")));
     };
     return ToolError;

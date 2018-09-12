@@ -16,9 +16,12 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with Satie.  If not, see <http://www.gnu.org/licenses/>.
  */
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 var lodash_1 = require("lodash");
-var invariant = require("invariant");
+var invariant_1 = __importDefault(require("invariant"));
 exports.NUMBER_SPACING = 28;
 exports.PLUS_SPACING = 12;
 // Gould(6): "A clef is indented into the stave by one stave-space or a little less"
@@ -32,8 +35,8 @@ exports.NATURAL_WIDTH = 11;
  * Returns true if warning Attributes are required at the end of a line, and false otherwise.
  */
 function needsWarning(end, start, staff) {
-    invariant(!!end && !!start, "A null end or start was passed to needsWarning. Check your types!!");
-    invariant(!("P1" in end || "P1" in start), "An object with 'P1' was passed to needsWarning. Check your types!!");
+    invariant_1.default(!!end && !!start, "A null end or start was passed to needsWarning. Check your types!!");
+    invariant_1.default(!("P1" in end || "P1" in start), "An object with 'P1' was passed to needsWarning. Check your types!!");
     return !clefsEqual(end, start, staff) || !timesEqual(end, start) || !keysEqual(end, start);
 }
 exports.needsWarning = needsWarning;

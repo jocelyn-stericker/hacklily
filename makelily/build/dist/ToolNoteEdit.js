@@ -19,34 +19,43 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
  */
 var __extends = (this && this.__extends) || (function () {
-    var extendStatics = Object.setPrototypeOf ||
-        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    }
     return function (d, b) {
         extendStatics(d, b);
         function __() { this.constructor = d; }
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
-var __assign = (this && this.__assign) || Object.assign || function(t) {
-    for (var s, i = 1, n = arguments.length; i < n; i++) {
-        s = arguments[i];
-        for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
-            t[p] = s[p];
-    }
-    return t;
+var __assign = (this && this.__assign) || function () {
+    __assign = Object.assign || function(t) {
+        for (var s, i = 1, n = arguments.length; i < n; i++) {
+            s = arguments[i];
+            for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
+                t[p] = s[p];
+        }
+        return t;
+    };
+    return __assign.apply(this, arguments);
+};
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 var aphrodite_1 = require("aphrodite");
-var invariant = require("invariant");
+var invariant_1 = __importDefault(require("invariant"));
 var lodash_1 = require("lodash");
 var musicxml_interfaces_1 = require("musicxml-interfaces");
 var React = require("react");
 var ReactDOM = require("react-dom");
 var satie_1 = require("./satie/src/satie");
-var NoteAdditionalHelp_1 = require("./NoteAdditionalHelp");
-var NotePalette_1 = require("./NotePalette");
-var tabStyles_1 = require("./tabStyles");
+var NoteAdditionalHelp_1 = __importDefault(require("./NoteAdditionalHelp"));
+var NotePalette_1 = __importDefault(require("./NotePalette"));
+var tabStyles_1 = __importDefault(require("./tabStyles"));
 function toSerializable(obj) {
     return JSON.parse(JSON.stringify(obj));
 }
@@ -55,11 +64,13 @@ function getOctaveDifference(ours, theirs) {
     function mod(a, b) {
         return a - b * Math.floor(a / b);
     }
-    var pitchNames = 'CDEFGAB';
+    var pitchNames = "CDEFGAB";
     var ourIndex = pitchNames.indexOf(ours.toUpperCase());
     var theirIndex = pitchNames.indexOf(theirs.toUpperCase());
     var up = mod(ourIndex - theirIndex, 7) > 3;
-    var octaveChange = up ? theirIndex < ourIndex : theirIndex > ourIndex;
+    var octaveChange = up
+        ? theirIndex < ourIndex
+        : theirIndex > ourIndex;
     if (octaveChange) {
         return up ? 1 : -1;
     }
@@ -79,7 +90,7 @@ var ToolNoteEdit = /** @class */ (function (_super) {
             canonicalOperations: null,
             direction: null,
             dots: 0,
-            editType: 'N',
+            editType: "N",
             lastPath: null,
             lastPitch: null,
             notation: null,
@@ -106,8 +117,12 @@ var ToolNoteEdit = /** @class */ (function (_super) {
         _this.applyUndoablePatch = function (patch, doNotEmit) {
             if (doNotEmit === void 0) { doNotEmit = false; }
             var operations = _this.state.canonicalOperations;
-            var newOperations = _this.song.createCanonicalPatch(operations, { raw: patch });
-            var undoStack = _this.state.undoStack.concat([_this.state.canonicalOperations]);
+            var newOperations = _this.song.createCanonicalPatch(operations, {
+                raw: patch,
+            });
+            var undoStack = _this.state.undoStack.concat([
+                _this.state.canonicalOperations,
+            ]);
             _this.setState({
                 canonicalOperations: newOperations,
                 lastPath: null,
@@ -138,16 +153,20 @@ var ToolNoteEdit = /** @class */ (function (_super) {
                 ev.preventDefault();
             }
             else if (ev.keyCode === 37) {
+                // left
                 _this.moveCursor(-1);
             }
             else if (ev.keyCode === 38) {
+                // up
                 _this.updateOctave(1);
                 ev.preventDefault();
             }
             else if (ev.keyCode === 39) {
+                // right
                 _this.moveCursor(2);
             }
             else if (ev.keyCode === 40) {
+                // down
                 _this.updateOctave(-1);
                 ev.preventDefault();
             }
@@ -165,7 +184,8 @@ var ToolNoteEdit = /** @class */ (function (_super) {
         // tslint:disable-next-line:max-func-body-length cyclomatic-complexity
         _this.handleKeyPress = function (ev) {
             var key = (ev.key || String.fromCharCode(ev.keyCode)).toUpperCase();
-            if ((key === 'R' || key === 'C' || key === 'V') && (ev.metaKey || ev.ctrlKey)) {
+            if ((key === "R" || key === "C" || key === "V") &&
+                (ev.metaKey || ev.ctrlKey)) {
                 // Support certain default browser operations by not preventing default.
                 return true;
             }
@@ -182,11 +202,11 @@ var ToolNoteEdit = /** @class */ (function (_super) {
             if (_this.handleKeyPressSetEditType(key)) {
                 return false;
             }
-            if (key === '.') {
+            if (key === ".") {
                 _this.setDots(((_this.state.dots || 0) + 1) % 4);
                 return false;
             }
-            if ('ABCDEFG'.indexOf(key) !== -1) {
+            if ("ABCDEFG".indexOf(key) !== -1) {
                 var doc = _this.song.getDocument(_this.state.canonicalOperations);
                 if (!doc._visualCursor) {
                     return false;
@@ -195,11 +215,11 @@ var ToolNoteEdit = /** @class */ (function (_super) {
                     _this.updateChord(key);
                     return false;
                 }
-                var path_1 = doc._visualCursor.key.replace('SATIE', '').split('_');
+                var path_1 = doc._visualCursor.key
+                    .replace("SATIE", "")
+                    .split("_");
                 var measureNum = parseInt(path_1[0], 10);
-                var currMeasure = doc.measures.find(function (i) {
-                    return i.uuid === parseInt(path_1[0], 10);
-                });
+                var currMeasure = doc.measures.find(function (i) { return i.uuid === parseInt(path_1[0], 10); });
                 // Get the previous pitch
                 // HACK -- this does not support multiple voices, parts, non-linear measures
                 var previousPitch = void 0;
@@ -220,33 +240,42 @@ var ToolNoteEdit = /** @class */ (function (_super) {
                     }
                 }
                 var pitch_1 = _this.getPitch({
-                    octave: previousPitch ?
-                        previousPitch.octave + getOctaveDifference(previousPitch.step, key) :
-                        4,
+                    octave: previousPitch
+                        ? previousPitch.octave +
+                            getOctaveDifference(previousPitch.step, key)
+                        : 4,
                     step: key,
                 }, doc, currMeasure);
-                if (path_1[3] === 'voices') {
-                    var patch = satie_1.Patch.createPatch(false, doc, measureNum, path_1[2], function (partBuilder) { return partBuilder
-                        .voice(parseInt(path_1[4], 10), function (voice) { return voice
-                        .at(parseInt(path_1[5], 10))
-                        .insertChord([function (note) { return _this.state.accidental ?
-                            note
-                                .pitch(pitch_1)
-                                .rest(undefined)
-                                .dots(lodash_1.times(_this.state.dots, function () { return ({}); }))
-                                .noteType(function (noteType) { return noteType
-                                .duration(_this.state.note); })
-                                .color('#000000') :
-                            note
-                                .pitch(pitch_1)
-                                .rest(undefined)
-                                .dots(lodash_1.times(_this.state.dots, function () { return ({}); }))
-                                .noteType(function (noteType) { return noteType
-                                .duration(_this.state.note); })
-                                .color('#000000'); },
-                    ])
-                        .next()
-                        .addVisualCursor(); }); });
+                if (path_1[3] === "voices") {
+                    var patch = satie_1.Patch.createPatch(false, doc, measureNum, path_1[2], function (partBuilder) {
+                        return partBuilder.voice(parseInt(path_1[4], 10), function (voice) {
+                            return voice
+                                .at(parseInt(path_1[5], 10))
+                                .insertChord([
+                                function (note) {
+                                    return _this.state.accidental
+                                        ? note
+                                            .pitch(pitch_1)
+                                            .rest(undefined)
+                                            .dots(lodash_1.times(_this.state.dots, function () { return ({}); }))
+                                            .noteType(function (noteType) {
+                                            return noteType.duration(_this.state.note);
+                                        })
+                                            .color("#000000")
+                                        : note
+                                            .pitch(pitch_1)
+                                            .rest(undefined)
+                                            .dots(lodash_1.times(_this.state.dots, function () { return ({}); }))
+                                            .noteType(function (noteType) {
+                                            return noteType.duration(_this.state.note);
+                                        })
+                                            .color("#000000");
+                                },
+                            ])
+                                .next()
+                                .addVisualCursor();
+                        });
+                    });
                     _this.applyUndoablePatch(patch);
                     _this.playNote(pitch_1);
                 }
@@ -257,7 +286,8 @@ var ToolNoteEdit = /** @class */ (function (_super) {
             _this.handler(ev, false);
         };
         _this.handleMouseMove = function (ev) {
-            if (lodash_1.isEqual(_this.state.lastPath, ev.path) && lodash_1.isEqual(ev.pitch, _this.state.lastPitch)) {
+            if (lodash_1.isEqual(_this.state.lastPath, ev.path) &&
+                lodash_1.isEqual(ev.pitch, _this.state.lastPitch)) {
                 return;
             }
             if (!_this.handler(ev, true)) {
@@ -266,17 +296,17 @@ var ToolNoteEdit = /** @class */ (function (_super) {
         };
         _this.handleShowHelpKeyboard = function () {
             _this.setState({
-                showAdditionalHelp: 'keyboard',
+                showAdditionalHelp: "keyboard",
             });
         };
         _this.handleShowHelpMIDI = function () {
             _this.setState({
-                showAdditionalHelp: 'midi',
+                showAdditionalHelp: "midi",
             });
         };
         _this.handleShowHelpMouse = function () {
             _this.setState({
-                showAdditionalHelp: 'mouse',
+                showAdditionalHelp: "mouse",
             });
         };
         _this.handleShowHelpNone = function () {
@@ -286,12 +316,12 @@ var ToolNoteEdit = /** @class */ (function (_super) {
         };
         _this.handleShowHelpRelative = function () {
             _this.setState({
-                showAdditionalHelp: 'relative',
+                showAdditionalHelp: "relative",
             });
         };
         _this.handleShowHelpWhyNotEdit = function () {
             _this.setState({
-                showAdditionalHelp: 'whyNotEdit',
+                showAdditionalHelp: "whyNotEdit",
             });
         };
         _this.handleSongScroll = function (ev) {
@@ -307,19 +337,18 @@ var ToolNoteEdit = /** @class */ (function (_super) {
             if (!doc._visualCursor) {
                 return true;
             }
-            var path = doc._visualCursor.key.replace('SATIE', '').split('_');
+            var path = doc._visualCursor.key
+                .replace("SATIE", "")
+                .split("_");
             var measureUUID = parseInt(path[0], 10);
             var part = path[2];
-            if (path[3] !== 'voices') {
+            if (path[3] !== "voices") {
                 return true;
             }
             var voiceNum = parseInt(path[4], 10);
             var elIdx = parseInt(path[5], 10);
-            var currMeasure = doc.measures
-                .find(function (i) { return i.uuid === measureUUID; });
-            var currSegment = currMeasure
-                .parts[part]
-                .voices[voiceNum];
+            var currMeasure = doc.measures.find(function (i) { return i.uuid === measureUUID; });
+            var currSegment = currMeasure.parts[part].voices[voiceNum];
             var targetIndecies = _this.getValidCursorTargetIndecies(doc, currSegment);
             var nextIdx = targetIndecies.reduce(function (memo, idx) {
                 if (direction < 0 && idx < elIdx) {
@@ -338,14 +367,15 @@ var ToolNoteEdit = /** @class */ (function (_super) {
                     _this.moveCursorToEndOfMeasure(part, voiceNum, doc.measures[currMeasure.idx - 1]);
                 }
                 else {
-                    invariant(false, 'Invalid direction');
+                    invariant_1.default(false, "Invalid direction");
                 }
             }
             else {
-                var patch = satie_1.Patch.createPatch(false, doc, measureUUID, part, function (partBuilder) { return partBuilder
-                    .voice(voiceNum, function (voice) { return voice
-                    .at(nextIdx)
-                    .addVisualCursor(); }); });
+                var patch = satie_1.Patch.createPatch(false, doc, measureUUID, part, function (partBuilder) {
+                    return partBuilder.voice(voiceNum, function (voice) {
+                        return voice.at(nextIdx).addVisualCursor();
+                    });
+                });
                 _this.applyUndoablePatch(patch);
             }
             return false;
@@ -355,35 +385,55 @@ var ToolNoteEdit = /** @class */ (function (_super) {
             var measureCount = doc.measures.length;
             var measureUUID = doc.measures[doc.measures.length - 1].uuid;
             var measureIdx = doc.measures.findIndex(function (m) { return m.uuid === measureUUID; });
-            var undoStack = _this.state.undoStack.concat([_this.state.canonicalOperations]);
+            var undoStack = _this.state.undoStack.concat([
+                _this.state.canonicalOperations,
+            ]);
             var barlineIdx = lodash_1.findIndex(doc.measures[measureIdx].parts.P1.staves[1], function (el) { return doc.modelHasType(el, satie_1.Type.Barline); });
             var operations = _this.song.createCanonicalPatch(_this.state.canonicalOperations, {
-                documentBuilder: function (document) { return document
-                    .measure(measureUUID, function (measure) { return measure
-                    .part('P1', function (part) { return part
-                    .staff(1, function (staff) { return staff
-                    .at(barlineIdx)
-                    .barline(function (barline) { return barline
-                    .barStyle(function (style) { return style
-                    .data(musicxml_interfaces_1.BarStyleType.Regular); }); }); }); }); })
-                    .insertMeasure(measureIdx + 1, function (measure) { return measure
-                    .part('P1', function (part) { return part
-                    .voice(1, function (voice) { return voice
-                    .at(0)
-                    .insertChord([
-                    function (note) { return note
-                        .rest({})
-                        .staff(1)
-                        .noteType(function (noteType) { return noteType
-                        .duration(musicxml_interfaces_1.Count.Whole); }); },
-                ]); })
-                    .staff(1, function (staff) { return staff
-                    .at(1)
-                    .insertBarline(function (barline) { return barline
-                    .barStyle(function (style) { return style
-                    .data(measureCount === measureIdx + 1 ?
-                    musicxml_interfaces_1.BarStyleType.LightHeavy :
-                    musicxml_interfaces_1.BarStyleType.Regular); }); }); }); }); }); },
+                documentBuilder: function (document) {
+                    return document
+                        .measure(measureUUID, function (measure) {
+                        return measure.part("P1", function (part) {
+                            return part.staff(1, function (staff) {
+                                return staff
+                                    .at(barlineIdx)
+                                    .barline(function (barline) {
+                                    return barline.barStyle(function (style) {
+                                        return style.data(musicxml_interfaces_1.BarStyleType.Regular);
+                                    });
+                                });
+                            });
+                        });
+                    })
+                        .insertMeasure(measureIdx + 1, function (measure) {
+                        return measure.part("P1", function (part) {
+                            return part
+                                .voice(1, function (voice) {
+                                return voice.at(0).insertChord([
+                                    function (note) {
+                                        return note
+                                            .rest({})
+                                            .staff(1)
+                                            .noteType(function (noteType) {
+                                            return noteType.duration(musicxml_interfaces_1.Count.Whole);
+                                        });
+                                    },
+                                ]);
+                            })
+                                .staff(1, function (staff) {
+                                return staff
+                                    .at(1)
+                                    .insertBarline(function (barline) {
+                                    return barline.barStyle(function (style) {
+                                        return style.data(measureCount === measureIdx + 1
+                                            ? musicxml_interfaces_1.BarStyleType.LightHeavy
+                                            : musicxml_interfaces_1.BarStyleType.Regular);
+                                    });
+                                });
+                            });
+                        });
+                    });
+                },
             });
             _this.setState({
                 canonicalOperations: operations,
@@ -401,16 +451,16 @@ var ToolNoteEdit = /** @class */ (function (_super) {
             });
         };
         _this.setAccidental = function (accidental) {
-            if (_this.state.accidental === accidental && _this.state.editType === 'N') {
+            if (_this.state.accidental === accidental && _this.state.editType === "N") {
                 _this.setState({
                     accidental: null,
-                    editType: 'N',
+                    editType: "N",
                 });
             }
             else {
                 _this.setState({
                     accidental: accidental,
-                    editType: 'N',
+                    editType: "N",
                 });
             }
         };
@@ -423,7 +473,7 @@ var ToolNoteEdit = /** @class */ (function (_super) {
         _this.setDots = function (dots) {
             _this.setState({
                 dots: dots,
-                editType: _this.state.editType === 'R' ? 'R' : 'N',
+                editType: _this.state.editType === "R" ? "R" : "N",
             });
         };
         _this.setEditType = function (editType) {
@@ -439,7 +489,7 @@ var ToolNoteEdit = /** @class */ (function (_super) {
         };
         _this.setNote = function (note) {
             _this.setState({
-                editType: _this.state.editType === 'R' ? 'R' : 'N',
+                editType: _this.state.editType === "R" ? "R" : "N",
                 note: note,
             });
         };
@@ -447,24 +497,26 @@ var ToolNoteEdit = /** @class */ (function (_super) {
             _this.song = song;
             if (song) {
                 var doc = song.getDocument(_this.state.canonicalOperations);
-                var patch = satie_1.Patch.createPatch(false, doc, doc.measures[0].uuid, 'P1', function (part) { return part
-                    .staff(1, function (staff) { return staff
-                    .at(1)
-                    .attributes(function (attributes) {
-                    return attributes
-                        .clefs([_this.props.clef])
-                        .keySignatures([_this.props.keySig])
-                        .times([_this.props.time]);
-                }); })
-                    .voice(1, function (voice) { return voice
-                    .at(0)
-                    .addVisualCursor(); }); });
+                var patch = satie_1.Patch.createPatch(false, doc, doc.measures[0].uuid, "P1", function (part) {
+                    return part
+                        .staff(1, function (staff) {
+                        return staff.at(1).attributes(function (attributes) {
+                            return attributes
+                                .clefs([_this.props.clef])
+                                .keySignatures([_this.props.keySig])
+                                .times([_this.props.time]);
+                        });
+                    })
+                        .voice(1, function (voice) {
+                        return voice.at(0).addVisualCursor();
+                    });
+                });
                 _this.applyUndoablePatch(patch);
             }
         };
         _this.setTimeModification = function (timeModification) {
             _this.setState({
-                editType: _this.state.editType === 'R' ? 'R' : 'N',
+                editType: _this.state.editType === "R" ? "R" : "N",
                 timeModification: timeModification,
             });
         };
@@ -481,11 +533,11 @@ var ToolNoteEdit = /** @class */ (function (_super) {
             if (!doc._visualCursor) {
                 return false;
             }
-            var path = doc._visualCursor.key.replace('SATIE', '').split('_');
-            var currMeasure = doc.measures.find(function (i) {
-                return i.uuid === parseInt(path[0], 10);
-            });
-            if (path[3] !== 'voices') {
+            var path = doc._visualCursor.key
+                .replace("SATIE", "")
+                .split("_");
+            var currMeasure = doc.measures.find(function (i) { return i.uuid === parseInt(path[0], 10); });
+            if (path[3] !== "voices") {
                 return false;
             }
             // HACK -- this does not support multiple voices, parts, non-linear measures
@@ -518,20 +570,26 @@ var ToolNoteEdit = /** @class */ (function (_super) {
             }
             if (oldPitch) {
                 var newPitch_1 = _this.getPitch({
-                    octave: oldPitch ?
-                        oldPitch.octave + getOctaveDifference(oldPitch.step, newNote) :
-                        4,
+                    octave: oldPitch
+                        ? oldPitch.octave + getOctaveDifference(oldPitch.step, newNote)
+                        : 4,
                     step: newNote,
                 }, doc, currMeasure);
-                var patch = satie_1.Patch.createPatch(false, doc, oldMeasureUUID, path[2], function (partBuilder) { return partBuilder
-                    .voice(1, function (oldVoice) { return oldVoice
-                    .at(oldIdx)
-                    .insertNote(oldNumberOfNotes, function (noteBuilder) { return noteBuilder
-                    .pitch(newPitch_1)
-                    .rest(undefined)
-                    .dots(lodash_1.times(oldDots, function () { return ({}); }))
-                    .noteType(function (noteType) { return noteType
-                    .duration(oldDuration); }); }); }); });
+                var patch = satie_1.Patch.createPatch(false, doc, oldMeasureUUID, path[2], function (partBuilder) {
+                    return partBuilder.voice(1, function (oldVoice) {
+                        return oldVoice
+                            .at(oldIdx)
+                            .insertNote(oldNumberOfNotes, function (noteBuilder) {
+                            return noteBuilder
+                                .pitch(newPitch_1)
+                                .rest(undefined)
+                                .dots(lodash_1.times(oldDots, function () { return ({}); }))
+                                .noteType(function (noteType) {
+                                return noteType.duration(oldDuration);
+                            });
+                        });
+                    });
+                });
                 _this.applyUndoablePatch(patch);
                 _this.playNote(newPitch_1);
                 return true;
@@ -543,11 +601,11 @@ var ToolNoteEdit = /** @class */ (function (_super) {
             if (!doc._visualCursor) {
                 return false;
             }
-            var path = doc._visualCursor.key.replace('SATIE', '').split('_');
-            var currMeasure = doc.measures.find(function (i) {
-                return i.uuid === parseInt(path[0], 10);
-            });
-            if (path[3] !== 'voices') {
+            var path = doc._visualCursor.key
+                .replace("SATIE", "")
+                .split("_");
+            var currMeasure = doc.measures.find(function (i) { return i.uuid === parseInt(path[0], 10); });
+            if (path[3] !== "voices") {
                 return false;
             }
             // HACK -- this does not support multiple voices, parts, non-linear measures
@@ -576,12 +634,15 @@ var ToolNoteEdit = /** @class */ (function (_super) {
             }
             if (oldPitch) {
                 var updatedPitch_1 = __assign({}, oldPitch, { octave: oldPitch.octave + octave });
-                var patch = satie_1.Patch.createPatch(false, doc, oldMeasureUUID, path[2], function (partBuilder) { return partBuilder
-                    .voice(1, function (oldVoice) { return oldVoice
-                    .at(oldIdx)
-                    .note(oldNoteNumber, function (oldNote) {
-                    return oldNote.pitch(updatedPitch_1);
-                }); }); });
+                var patch = satie_1.Patch.createPatch(false, doc, oldMeasureUUID, path[2], function (partBuilder) {
+                    return partBuilder.voice(1, function (oldVoice) {
+                        return oldVoice
+                            .at(oldIdx)
+                            .note(oldNoteNumber, function (oldNote) {
+                            return oldNote.pitch(updatedPitch_1);
+                        });
+                    });
+                });
                 _this.applyUndoablePatch(patch);
                 _this.playNote(updatedPitch_1);
                 return true;
@@ -597,7 +658,7 @@ var ToolNoteEdit = /** @class */ (function (_super) {
     ToolNoteEdit.prototype.render = function () {
         var _this = this;
         var editType = this.state.editType;
-        var tallPalette = editType === 'P';
+        var tallPalette = editType === "P";
         var song = null;
         if (this.state.src) {
             song = (React.createElement(satie_1.Song, { baseSrc: this.state.src, onError: this.handleError, patches: this.state.operations, onMouseClick: this.handleMouseClick, onMouseMove: this.handleMouseMove, pageClassName: aphrodite_1.css(styles.song), ref: this.setSongRef }));
@@ -605,19 +666,18 @@ var ToolNoteEdit = /** @class */ (function (_super) {
         return (React.createElement("div", { className: aphrodite_1.css(tabStyles_1.default.tool), tabIndex: 0, onKeyPress: this.handleKeyPress, onKeyDown: this.handleKeyDown, role: "textbox" },
             React.createElement("div", { className: aphrodite_1.css(tabStyles_1.default.help, this.state.showHelp && tabStyles_1.default.helpVisible) },
                 React.createElement("i", { className: "fa-info-circle fa" }),
-                ' ',
-                "Generate markup",
+                " Generate markup",
                 React.createElement("sup", null,
                     React.createElement("a", { href: "javascript:void(0)", onClick: this.handleShowHelpWhyNotEdit, role: "button" }, "?")),
-                ' ',
+                " ",
                 "for notes in your song using a",
-                ' ',
+                " ",
                 React.createElement("a", { href: "javascript:void(0)", onClick: this.handleShowHelpMouse, role: "button" }, "mouse"),
                 ",",
-                ' ',
+                " ",
                 React.createElement("a", { href: "javascript:void(0);", onClick: this.handleShowHelpKeyboard, role: "button" }, "computer keyboard"),
                 ", or",
-                ' ',
+                " ",
                 React.createElement("a", { href: "javascript:void(0);", onClick: this.handleShowHelpMIDI, role: "button" }, "MIDI keyboard"),
                 "."),
             this.renderAdditionalHelp(),
@@ -627,13 +687,15 @@ var ToolNoteEdit = /** @class */ (function (_super) {
             React.createElement("div", { className: aphrodite_1.css(tabStyles_1.default.spacer) }),
             React.createElement("div", { className: aphrodite_1.css(tabStyles_1.default.section) },
                 React.createElement("span", { className: aphrodite_1.css(tabStyles_1.default.outputOptions) },
-                    React.createElement("input", { type: "checkbox", checked: this.state.relativeMode, onChange: function () { return _this.setState({ relativeMode: !_this.state.relativeMode }); }, "aria-checked": false, id: "toolnoteedit-relative" }),
+                    React.createElement("input", { type: "checkbox", checked: this.state.relativeMode, onChange: function () {
+                            return _this.setState({ relativeMode: !_this.state.relativeMode });
+                        }, "aria-checked": false, id: "toolnoteedit-relative" }),
                     React.createElement("label", { htmlFor: "toolnoteedit-relative" },
                         React.createElement("code", null, "\\relative"),
                         " mode",
                         React.createElement("sup", null,
                             React.createElement("a", { href: "javascript:void(0)", onClick: this.handleShowHelpRelative, role: "button" }, "?")),
-                        ' ')),
+                        " ")),
                 React.createElement("pre", { className: aphrodite_1.css(tabStyles_1.default.lyPreview) }, this.generateLy()),
                 React.createElement("button", { className: aphrodite_1.css(tabStyles_1.default.insert), onClick: this.handleInsertLyClicked }, "Insert this code into Hacklily"))));
         // tslint:enable:react-a11y-anchors
@@ -642,13 +704,13 @@ var ToolNoteEdit = /** @class */ (function (_super) {
     ToolNoteEdit.prototype.generateLy = function () {
         if (!this.song) {
             // still loading...
-            return '';
+            return "";
         }
         var relativeMode = this.state.relativeMode;
         var prevPitch = null;
         var prevDuration = null;
         var doc = this.song.getDocument(this.state.canonicalOperations);
-        var ly = '';
+        var ly = "";
         // tslint:disable-next-line:max-func-body-length
         doc.measures.forEach(function (measure) {
             var part = measure.parts.P1;
@@ -661,52 +723,53 @@ var ToolNoteEdit = /** @class */ (function (_super) {
             voice.forEach(function (model) {
                 if (doc.modelHasType(model, satie_1.Type.Chord)) {
                     if (model.length < 1) {
-                        console.warn('Expected chords to have at least one note');
+                        console.warn("Expected chords to have at least one note");
                         return;
                     }
                     var noteForRythm = model[0];
                     if (noteForRythm.rest) {
-                        ly += 'r';
+                        ly += "r";
                     }
                     else {
-                        var pitches = '';
+                        var pitches = "";
                         if (model.length > 1) {
-                            pitches += '<';
+                            pitches += "<";
                         }
                         // tslint:disable-next-line:prefer-for-of
                         for (var i = 0; i < model.length; i += 1) {
                             var note = model[i];
                             pitches += note.pitch.step.toLowerCase();
                             if (note.pitch.alter === -1) {
-                                pitches += 'es';
+                                pitches += "es";
                             }
                             else if (note.pitch.alter === 1) {
-                                pitches += 'is';
+                                pitches += "is";
                             }
-                            var octaveOffset = relativeMode ?
-                                (prevPitch ?
-                                    getOctaveDifference(note.pitch.step, prevPitch.step) +
-                                        note.pitch.octave - prevPitch.octave :
-                                    0) :
-                                note.pitch.octave - 3;
+                            var octaveOffset = relativeMode
+                                ? prevPitch
+                                    ? getOctaveDifference(note.pitch.step, prevPitch.step) +
+                                        note.pitch.octave -
+                                        prevPitch.octave
+                                    : 0
+                                : note.pitch.octave - 3;
                             if (octaveOffset > 0) {
                                 for (var j = 0; j < octaveOffset; j += 1) {
-                                    pitches += '\'';
+                                    pitches += "'";
                                 }
                             }
                             else if (octaveOffset < 0) {
                                 for (var j = 0; j < -octaveOffset; j += 1) {
-                                    pitches += ',';
+                                    pitches += ",";
                                 }
                             }
                             if (i + 1 < model.length) {
-                                pitches += ' ';
+                                pitches += " ";
                             }
                             prevPitch = note.pitch;
                         }
                         if (model.length > 1) {
                             prevPitch = model[0].pitch; // the first note in a chord affects future chords
-                            pitches += '>';
+                            pitches += ">";
                         }
                         ly += pitches;
                     }
@@ -715,46 +778,45 @@ var ToolNoteEdit = /** @class */ (function (_super) {
                         case prevDuration:
                             break;
                         case musicxml_interfaces_1.Count.Whole:
-                            ly += '1';
+                            ly += "1";
                             break;
                         case musicxml_interfaces_1.Count.Half:
-                            ly += '2';
+                            ly += "2";
                             break;
                         case musicxml_interfaces_1.Count.Quarter:
-                            ly += '4';
+                            ly += "4";
                             break;
                         case musicxml_interfaces_1.Count.Eighth:
-                            ly += '8';
+                            ly += "8";
                             break;
                         case musicxml_interfaces_1.Count._16th:
-                            ly += '16';
+                            ly += "16";
                             break;
                         case musicxml_interfaces_1.Count._32nd:
-                            ly += '32';
+                            ly += "32";
                             break;
                         case musicxml_interfaces_1.Count._64th:
-                            ly += '64';
+                            ly += "64";
                             break;
                         case musicxml_interfaces_1.Count._128th:
-                            ly += '128';
+                            ly += "128";
                             break;
                         case musicxml_interfaces_1.Count._256th:
-                            ly += '256';
+                            ly += "256";
                             break;
                         case musicxml_interfaces_1.Count._512th:
-                            ly += '512';
+                            ly += "512";
                             break;
                         case musicxml_interfaces_1.Count._1024th:
-                            ly += '1024';
+                            ly += "1024";
                             break;
                         default:
-                            ly += 'unknown';
-                            break;
+                            ly += "unknown";
                     }
                     prevDuration = duration;
                     for (var _i = 0, _a = noteForRythm.dots; _i < _a.length; _i++) {
                         var _b = _a[_i];
-                        ly += '.';
+                        ly += ".";
                     }
                     // tslint:disable-next-line:prefer-for-of
                     for (var i = 0; i < model.length; i += 1) {
@@ -763,63 +825,63 @@ var ToolNoteEdit = /** @class */ (function (_super) {
                                 if (notations.fermatas) {
                                     notations.fermatas.forEach(function (fermata) {
                                         if (fermata.shape === musicxml_interfaces_1.NormalAngledSquare.Angled) {
-                                            ly += '\\shortfermata';
+                                            ly += "\\shortfermata";
                                         }
                                         else if (fermata.shape === musicxml_interfaces_1.NormalAngledSquare.Square) {
-                                            ly += '\\longfermata';
+                                            ly += "\\longfermata";
                                         }
                                         else {
-                                            ly += '\\fermata';
+                                            ly += "\\fermata";
                                         }
                                     });
                                 }
                                 if (notations.articulations) {
                                     notations.articulations.forEach(function (articulations) {
                                         if (articulations.accent) {
-                                            ly += '->';
+                                            ly += "->";
                                         }
                                         if (articulations.tenuto && articulations.staccato) {
-                                            ly += '-_'; // portato
+                                            ly += "-_"; // portato
                                         }
                                         else {
                                             if (articulations.tenuto) {
-                                                ly += '--';
+                                                ly += "--";
                                             }
                                             if (articulations.staccato) {
-                                                ly += '-.';
+                                                ly += "-.";
                                             }
                                         }
                                         if (articulations.staccatissimo) {
-                                            ly += '-!';
+                                            ly += "-!";
                                         }
                                         if (articulations.strongAccent) {
-                                            ly += '-^';
+                                            ly += "-^";
                                         }
                                     });
                                 }
                                 if (notations.technicals) {
                                     notations.technicals.forEach(function (technicals) {
                                         if (technicals.harmonic) {
-                                            ly += '\\open';
+                                            ly += "\\open";
                                         }
                                         if (technicals.stopped) {
-                                            ly += '-+';
+                                            ly += "-+";
                                         }
                                         if (technicals.snapPizzicato) {
-                                            ly += '\\snappizzicato';
+                                            ly += "\\snappizzicato";
                                         }
                                         if (technicals.upBow) {
-                                            ly += '\\upbow';
+                                            ly += "\\upbow";
                                         }
                                         if (technicals.downBow) {
-                                            ly += '\\downbow';
+                                            ly += "\\downbow";
                                         }
                                     });
                                 }
                             });
                         }
                     }
-                    ly += ' ';
+                    ly += " ";
                 }
                 voiceDiv += model.divCount;
                 function next() {
@@ -833,43 +895,43 @@ var ToolNoteEdit = /** @class */ (function (_super) {
                             if (directionType.dynamics) {
                                 var d = directionType.dynamics;
                                 if (d.ppp) {
-                                    ly += '\\ppp ';
+                                    ly += "\\ppp ";
                                 }
                                 if (d.pp) {
-                                    ly += '\\pp ';
+                                    ly += "\\pp ";
                                 }
                                 if (d.p) {
-                                    ly += '\\p ';
+                                    ly += "\\p ";
                                 }
                                 if (d.mp) {
-                                    ly += '\\mp ';
+                                    ly += "\\mp ";
                                 }
                                 if (d.mf) {
-                                    ly += '\\mf ';
+                                    ly += "\\mf ";
                                 }
                                 if (d.f) {
-                                    ly += '\\f ';
+                                    ly += "\\f ";
                                 }
                                 if (d.ff) {
-                                    ly += '\\ff ';
+                                    ly += "\\ff ";
                                 }
                                 if (d.fff) {
-                                    ly += '\\fff ';
+                                    ly += "\\fff ";
                                 }
                                 if (d.fp) {
-                                    ly += '\\fp ';
+                                    ly += "\\fp ";
                                 }
                                 if (d.sf) {
-                                    ly += '\\sf ';
+                                    ly += "\\sf ";
                                 }
                                 if (d.sfz) {
-                                    ly += '\\sfz ';
+                                    ly += "\\sfz ";
                                 }
                                 if (d.sfp) {
-                                    ly += '\\sfp ';
+                                    ly += "\\sfp ";
                                 }
                                 if (d.rfz) {
-                                    ly += '\\rfz ';
+                                    ly += "\\rfz ";
                                 }
                             }
                         });
@@ -877,7 +939,7 @@ var ToolNoteEdit = /** @class */ (function (_super) {
                 }
             });
             if (measure.idx + 1 !== doc.measures.length) {
-                ly += '|\n';
+                ly += "|\n";
             }
         });
         return ly.trim();
@@ -917,14 +979,14 @@ var ToolNoteEdit = /** @class */ (function (_super) {
         var elIdx = parseInt(path[5], 10);
         var staffSegment = part.staves[1];
         var voiceSegment = part.voices[1];
-        var segment = path[3] === 'staves' ? staffSegment : voiceSegment;
+        var segment = path[3] === "staves" ? staffSegment : voiceSegment;
         if (!staffSegment) {
             return true;
         }
-        var el = path[3] === 'staves' && staffSegment[elIdx] ||
-            path[3] === 'voices' && voiceSegment[elIdx];
+        var el = (path[3] === "staves" && staffSegment[elIdx]) ||
+            (path[3] === "voices" && voiceSegment[elIdx]);
         var div = 0;
-        if (!el || path[3] === 'staves') {
+        if (!el || path[3] === "staves") {
             // XXX: We should also allow placing on top of staff elements
             return false;
         }
@@ -934,13 +996,16 @@ var ToolNoteEdit = /** @class */ (function (_super) {
         if (this.state.direction) {
             var direction_1 = JSON.parse(JSON.stringify(this.state.direction));
             direction_1.placement = musicxml_interfaces_1.AboveBelow.Below;
-            if (direction_1.directionTypes && direction_1.directionTypes[0].dynamics && isPreview) {
-                direction_1.directionTypes[0].dynamics.color = '#aeaeae';
+            if (direction_1.directionTypes &&
+                direction_1.directionTypes[0].dynamics &&
+                isPreview) {
+                direction_1.directionTypes[0].dynamics.color = "#aeaeae";
             }
-            var patch = satie_1.Patch.createPatch(isPreview, doc, measureUUID, 'P1', function (partBuilder) { return partBuilder
-                .staff(1, function (staff) { return staff
-                .atDiv(div, satie_1.Type.Direction)
-                .insertDirection(direction_1); }); });
+            var patch = satie_1.Patch.createPatch(isPreview, doc, measureUUID, "P1", function (partBuilder) {
+                return partBuilder.staff(1, function (staff) {
+                    return staff.atDiv(div, satie_1.Type.Direction).insertDirection(direction_1);
+                });
+            });
             if (patch) {
                 if (isPreview) {
                     this.applyPreviewPatch(patch, path);
@@ -954,17 +1019,16 @@ var ToolNoteEdit = /** @class */ (function (_super) {
         else if (this.state.notation) {
             var notations_1 = JSON.parse(JSON.stringify(this.state.notation));
             if (el && doc.modelHasType(el, satie_1.Type.Chord)) {
-                var patch = satie_1.Patch.createPatch(isPreview, doc, measureUUID, 'P1', function (partBuilder) { return partBuilder
-                    .voice(1, function (voice) { return voice
-                    .at(elIdx)
-                    .note(0, function (note) {
-                    if (el[0].notations) {
-                        return note.notationsSplice(0, 0, notations_1);
-                    }
-                    else {
-                        return note.notations([notations_1]);
-                    }
-                }); }); });
+                var patch = satie_1.Patch.createPatch(isPreview, doc, measureUUID, "P1", function (partBuilder) {
+                    return partBuilder.voice(1, function (voice) {
+                        return voice.at(elIdx).note(0, function (note) {
+                            if (el[0].notations) {
+                                return note.notationsSplice(0, 0, notations_1);
+                            }
+                            return note.notations([notations_1]);
+                        });
+                    });
+                });
                 if (patch) {
                     if (isPreview) {
                         this.applyPreviewPatch(patch, path);
@@ -982,58 +1046,58 @@ var ToolNoteEdit = /** @class */ (function (_super) {
         return false;
     };
     ToolNoteEdit.prototype.handleKeyPressSetAccidental = function (key) {
-        if (key === '=') {
+        if (key === "=") {
             this.setAccidental(musicxml_interfaces_1.MxmlAccidental.Sharp);
             return true;
         }
-        if (key === '-') {
+        if (key === "-") {
             this.setAccidental(musicxml_interfaces_1.MxmlAccidental.Flat);
             return true;
         }
-        if (key === '0') {
+        if (key === "0") {
             this.setAccidental(musicxml_interfaces_1.MxmlAccidental.Natural);
             return true;
         }
         return false;
     };
     ToolNoteEdit.prototype.handleKeyPressSetDuration = function (key) {
-        if (key === '1') {
+        if (key === "1") {
             this.setNote(32);
             return true;
         }
-        if (key === '2') {
+        if (key === "2") {
             this.setNote(16);
             return true;
         }
-        if (key === '3') {
+        if (key === "3") {
             this.setNote(8);
             return true;
         }
-        if (key === '4') {
+        if (key === "4") {
             this.setNote(4);
             return true;
         }
-        if (key === '5') {
+        if (key === "5") {
             this.setNote(2);
             return true;
         }
-        if (key === '6') {
+        if (key === "6") {
             this.setNote(1);
             return true;
         }
         return false;
     };
     ToolNoteEdit.prototype.handleKeyPressSetEditType = function (key) {
-        if (key === 'N') {
-            this.setEditType('N');
+        if (key === "N") {
+            this.setEditType("N");
             return true;
         }
-        if (key === 'R') {
-            this.setEditType('R');
+        if (key === "R") {
+            this.setEditType("R");
             return true;
         }
-        if (key === 'P') {
-            this.setEditType('P');
+        if (key === "P") {
+            this.setEditType("P");
             return true;
         }
         return false;
@@ -1047,13 +1111,13 @@ var ToolNoteEdit = /** @class */ (function (_super) {
         var doc = this.song.getDocument(this.state.canonicalOperations);
         var measure = lodash_1.find(doc.measures, function (fmeasure) { return String(fmeasure.uuid) === path[0]; });
         var measureUUID = parseInt(path[0], 10);
-        if (!measure || path[1] !== 'parts' || !measure.parts[path[2]]) {
+        if (!measure || path[1] !== "parts" || !measure.parts[path[2]]) {
             return false;
         }
-        if (this.state.editType === 'P') {
+        if (this.state.editType === "P") {
             return this.handleDirectionEvent(doc, measure, measureUUID, ev, isPreview);
         }
-        if (path[3] === 'voices') {
+        if (path[3] === "voices") {
             return this.handleVoiceEvent(doc, measure, measureUUID, ev, isPreview);
         } // this would be where we handled staff events...
         return false;
@@ -1082,89 +1146,112 @@ var ToolNoteEdit = /** @class */ (function (_super) {
         }
         var chord = el;
         var patch;
-        var isCurrentNote = chord && lodash_1.some(chord, function (c) {
-            return c.pitch &&
-                c.pitch.octave === pitch.octave &&
-                c.pitch.step === pitch.step;
-        });
-        if (this.state.editType === 'N' && chord.length === 1 && chord[0].rest ||
-            this.state.editType === 'R') {
-            patch = satie_1.Patch.createPatch(isPreview, doc, measureUUID, 'P1', function (partBuilderOrig) {
-                var partBuilder = partBuilderOrig.voice(1, function (voice) { return voice
-                    .note(0, function (note) { return _this.state.editType === 'R' ?
-                    note
-                        .pitch(null)
-                        .rest({ _force: true })
-                        .dots(lodash_1.times(_this.state.dots, function () { return ({
-                        color: isPreview ? '#cecece' : '#000000',
-                    }); }))
-                        .noteType(function (noteType) { return noteType
-                        .duration(_this.state.note); })
-                        .color(isPreview ? '#cecece' : '#000000') :
-                    _this.state.accidental ?
-                        note
-                            .pitch(pitch)
-                            .rest(undefined)
-                            .dots(lodash_1.times(_this.state.dots, function () { return ({
-                            color: isPreview ? '#cecece' : '#000000',
-                        }); }))
-                            .noteType(function (noteType) { return noteType
-                            .duration(_this.state.note); })
-                            .color(isPreview ? '#cecece' : '#000000') :
-                        note
-                            .pitch(pitch)
-                            .rest(undefined)
-                            .dots(lodash_1.times(_this.state.dots, function () { return ({
-                            color: isPreview ? '#cecece' : '#000000',
-                        }); }))
-                            .noteType(function (noteType) { return noteType
-                            .duration(_this.state.note); })
-                            .color(isPreview ? '#cecece' : '#000000'); }); }, elIdx);
+        var isCurrentNote = chord &&
+            lodash_1.some(chord, function (c) {
+                return c.pitch &&
+                    c.pitch.octave === pitch.octave &&
+                    c.pitch.step === pitch.step;
+            });
+        if ((this.state.editType === "N" && chord.length === 1 && chord[0].rest) ||
+            this.state.editType === "R") {
+            patch = satie_1.Patch.createPatch(isPreview, doc, measureUUID, "P1", function (partBuilderOrig) {
+                var partBuilder = partBuilderOrig.voice(1, function (voice) {
+                    return voice.note(0, function (note) {
+                        return _this.state.editType === "R"
+                            ? note
+                                .pitch(null)
+                                /* tslint:disable-next-line no-object-literal-type-assertion */
+                                .rest({ _force: true })
+                                .dots(lodash_1.times(_this.state.dots, function () { return ({
+                                color: isPreview ? "#cecece" : "#000000",
+                            }); }))
+                                .noteType(function (noteType) {
+                                return noteType.duration(_this.state.note);
+                            })
+                                .color(isPreview ? "#cecece" : "#000000")
+                            : _this.state.accidental
+                                ? note
+                                    .pitch(pitch)
+                                    .rest(undefined)
+                                    .dots(lodash_1.times(_this.state.dots, function () { return ({
+                                    color: isPreview ? "#cecece" : "#000000",
+                                }); }))
+                                    .noteType(function (noteType) {
+                                    return noteType.duration(_this.state.note);
+                                })
+                                    .color(isPreview ? "#cecece" : "#000000")
+                                : note
+                                    .pitch(pitch)
+                                    .rest(undefined)
+                                    .dots(lodash_1.times(_this.state.dots, function () { return ({
+                                    color: isPreview ? "#cecece" : "#000000",
+                                }); }))
+                                    .noteType(function (noteType) {
+                                    return noteType.duration(_this.state.note);
+                                })
+                                    .color(isPreview ? "#cecece" : "#000000");
+                    });
+                }, elIdx);
                 if (!isPreview) {
-                    partBuilder = partBuilder
-                        .voice(1, function (voice) { return voice
-                        .at(elIdx + 1)
-                        .addVisualCursor(); });
+                    partBuilder = partBuilder.voice(1, function (voice) {
+                        return voice.at(elIdx + 1).addVisualCursor();
+                    });
                 }
                 return partBuilder;
             });
             if (!isPreview) {
                 // Play the note
-                if (this.state.editType === 'N') {
+                if (this.state.editType === "N") {
                     this.playNote(pitch);
                 }
             }
         }
-        else if (this.state.editType === 'N' && chord.length && !chord[0].rest &&
+        else if (this.state.editType === "N" &&
+            chord.length &&
+            !chord[0].rest &&
             chord[0].noteType.duration !== this.state.note &&
             isCurrentNote) {
-            patch = satie_1.Patch.createPatch(isPreview, doc, measureUUID, 'P1', function (partBuilder) { return partBuilder
-                .voice(1, function (voiceInitial) { return lodash_1.reduce(lodash_1.times(chord.length), function (voice, noteIdx) { return voice
-                .note(noteIdx, function (note) { return note
-                .dots(chord[0].dots.map(function (dot) {
-                var newDot = toSerializable(dot);
-                newDot.color = isPreview ? '#cecece' : '#000000';
-                return newDot;
-            }))
-                .noteType(function (noteType) { return noteType
-                .duration(_this.state.note); })
-                .color(isPreview ? '#cecece' : '#000000'); }); }, voiceInitial); }, elIdx); });
+            patch = satie_1.Patch.createPatch(isPreview, doc, measureUUID, "P1", function (partBuilder) {
+                return partBuilder.voice(1, function (voiceInitial) {
+                    return lodash_1.reduce(lodash_1.times(chord.length), function (voice, noteIdx) {
+                        return voice.note(noteIdx, function (note) {
+                            return note
+                                .dots(chord[0].dots.map(function (dot) {
+                                var newDot = toSerializable(dot);
+                                newDot.color = isPreview ? "#cecece" : "#000000";
+                                return newDot;
+                            }))
+                                .noteType(function (noteType) {
+                                return noteType.duration(_this.state.note);
+                            })
+                                .color(isPreview ? "#cecece" : "#000000");
+                        });
+                    }, voiceInitial);
+                }, elIdx);
+            });
         }
-        else if (this.state.editType === 'N' && chord.length && !chord[0].rest &&
+        else if (this.state.editType === "N" &&
+            chord.length &&
+            !chord[0].rest &&
             !isCurrentNote) {
-            patch = satie_1.Patch.createPatch(isPreview, doc, measureUUID, 'P1', function (partBuilder) { return partBuilder
-                .voice(1, function (voice) { return voice
-                .insertNote(chord.length, function (note) { return note
-                .pitch(pitch)
-                .rest(undefined)
-                .dots(chord[0].dots.map(function (dot) {
-                var newDot = toSerializable(dot);
-                newDot.color = isPreview ? '#cecece' : '#000000';
-                return newDot;
-            }))
-                .noteType(function (noteType) { return noteType
-                .duration(chord[0].noteType.duration); })
-                .color(isPreview ? '#cecece' : '#000000'); }); }, elIdx); });
+            patch = satie_1.Patch.createPatch(isPreview, doc, measureUUID, "P1", function (partBuilder) {
+                return partBuilder.voice(1, function (voice) {
+                    return voice.insertNote(chord.length, function (note) {
+                        return note
+                            .pitch(pitch)
+                            .rest(undefined)
+                            .dots(chord[0].dots.map(function (dot) {
+                            var newDot = toSerializable(dot);
+                            newDot.color = isPreview ? "#cecece" : "#000000";
+                            return newDot;
+                        }))
+                            .noteType(function (noteType) {
+                            return noteType.duration(chord[0].noteType.duration);
+                        })
+                            .color(isPreview ? "#cecece" : "#000000");
+                    });
+                }, elIdx);
+            });
             if (!isPreview) {
                 this.playNote(pitch);
                 lodash_1.forEach(chord, function (note) { return _this.playNote(note.pitch); });
@@ -1182,9 +1269,7 @@ var ToolNoteEdit = /** @class */ (function (_super) {
         return false;
     };
     ToolNoteEdit.prototype.moveCursorToEndOfMeasure = function (part, voiceNum, measure) {
-        this.moveInMeasure(part, voiceNum, measure, function (indecies) {
-            return lodash_1.last(indecies) + 1;
-        });
+        this.moveInMeasure(part, voiceNum, measure, function (indecies) { return lodash_1.last(indecies) + 1; });
     };
     ToolNoteEdit.prototype.moveCursorToStartOfMeasure = function (part, voiceNum, measure) {
         this.moveInMeasure(part, voiceNum, measure, lodash_1.first);
@@ -1196,15 +1281,16 @@ var ToolNoteEdit = /** @class */ (function (_super) {
         var doc = this.song.getDocument(this.state.canonicalOperations);
         var targetIndecies = this.getValidCursorTargetIndecies(doc, measure.parts[part].voices[voiceNum]);
         var nextIdx = pickIdx(targetIndecies);
-        var patch = satie_1.Patch.createPatch(false, doc, measure.uuid, part, function (partBuilder) { return partBuilder
-            .voice(voiceNum, function (voice) { return voice
-            .at(nextIdx)
-            .addVisualCursor(); }); });
+        var patch = satie_1.Patch.createPatch(false, doc, measure.uuid, part, function (partBuilder) {
+            return partBuilder.voice(voiceNum, function (voice) {
+                return voice.at(nextIdx).addVisualCursor();
+            });
+        });
         this.applyUndoablePatch(patch);
     };
     ToolNoteEdit.prototype.playNote = function (pitch) {
         // tslint:disable-next-line no-console
-        console.log('TODO: play', pitch);
+        console.log("TODO: play", pitch);
     };
     ToolNoteEdit.prototype.renderAdditionalHelp = function () {
         if (this.state.showAdditionalHelp === null) {
@@ -1216,19 +1302,16 @@ var ToolNoteEdit = /** @class */ (function (_super) {
         return (React.createElement(NotePalette_1.default, { accidental: this.state.accidental, direction: this.state.direction, dots: this.state.dots, editType: this.state.editType, notation: this.state.notation, note: this.state.note, redo: this.redo, setAccidental: this.setAccidental, setDirection: this.setDirection, setTimeModification: this.setTimeModification, setDots: this.setDots, setEditType: this.setEditType, setNotation: this.setNotation, setNote: this.setNote, timeModification: this.state.timeModification, newMeasure: this.newMeasure, undo: this.undo }));
     };
     ToolNoteEdit.prototype.satieKeyToBeat = function (doc, key) {
-        var path = key.replace('SATIE', '').split('_');
+        var path = key.replace("SATIE", "").split("_");
         var measureUUID = parseInt(path[0], 10);
         var part = path[2];
-        if (path[3] !== 'voices') {
+        if (path[3] !== "voices") {
             return null;
         }
         var voiceNum = parseInt(path[4], 10);
         var elIdx = parseInt(path[5], 10);
-        var measure = doc.measures
-            .find(function (i) { return i.uuid === measureUUID; });
-        var currSegment = measure
-            .parts[part]
-            .voices[voiceNum];
+        var measure = doc.measures.find(function (i) { return i.uuid === measureUUID; });
+        var currSegment = measure.parts[part].voices[voiceNum];
         var div = 0;
         for (var i = 0; i < elIdx && i < currSegment.length; i += 1) {
             div += currSegment[i].divCount;
@@ -1244,18 +1327,18 @@ exports.default = ToolNoteEdit;
 // tslint:disable-next-line typedef
 var styles = aphrodite_1.StyleSheet.create({
     newBar: {
-        textAlign: 'center',
+        textAlign: "center",
     },
     song: {
-        width: '100%',
+        width: "100%",
     },
     songContainer: {
         marginLeft: -18,
         marginRight: -18,
         marginTop: -48,
         maxHeight: 388,
-        overflowX: 'hidden',
-        overflowY: 'scroll',
+        overflowX: "hidden",
+        overflowY: "scroll",
     },
     songContainerSmall: {
         maxHeight: 308,

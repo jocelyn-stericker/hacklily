@@ -17,29 +17,35 @@
  * along with Satie.  If not, see <http://www.gnu.org/licenses/>.
  */
 var __extends = (this && this.__extends) || (function () {
-    var extendStatics = Object.setPrototypeOf ||
-        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    }
     return function (d, b) {
         extendStatics(d, b);
         function __() { this.constructor = d; }
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 var react_1 = require("react");
 var lodash_1 = require("lodash");
 var react_2 = require("react");
 var operations_1 = require("musicxml-interfaces/operations");
-var invariant = require("invariant");
+var invariant_1 = __importDefault(require("invariant"));
 var document_1 = require("./document");
-var engine_createPatch_1 = require("./engine_createPatch");
+var engine_createPatch_1 = __importDefault(require("./engine_createPatch"));
 var private_chordUtil_1 = require("./private_chordUtil");
 var private_views_metadata_1 = require("./private_views_metadata");
-var private_patchImpl_1 = require("./private_patchImpl");
+var private_patchImpl_1 = __importDefault(require("./private_patchImpl"));
 var engine_import_1 = require("./engine_import");
 var engine_export_1 = require("./engine_export");
-var engine_applyOp_1 = require("./engine_applyOp");
+var engine_applyOp_1 = __importDefault(require("./engine_applyOp"));
 var NOT_READY_ERROR = "The document is not yet initialized.";
 var SATIE_ELEMENT_RX = /SATIE([0-9]*)_(\w*)_(\w*)_(\w*)_(\w*)_(\w*)/;
 /**
@@ -117,7 +123,7 @@ var SongImpl = /** @class */ (function (_super) {
         _this.toSVG = function () {
             var patches = _this.props.patches;
             if (patches instanceof private_patchImpl_1.default) {
-                invariant(patches.isPreview === false, "Cannot render an SVG with a previewed patch");
+                invariant_1.default(patches.isPreview === false, "Cannot render an SVG with a previewed patch");
                 _this._rectify$(patches.content, patches.isPreview, function () { patches.isPreview = false; });
             }
             else if (!patches) {
@@ -131,7 +137,7 @@ var SongImpl = /** @class */ (function (_super) {
         _this.toMusicXML = function () {
             var patches = _this.props.patches;
             if (patches instanceof private_patchImpl_1.default) {
-                invariant(patches.isPreview === false, "Cannot render MusicXML with a previewed patch");
+                invariant_1.default(patches.isPreview === false, "Cannot render MusicXML with a previewed patch");
                 _this._rectify$(patches.content, patches.isPreview, function () { return patches.preview = false; });
             }
             else if (!patches) {
@@ -331,7 +337,7 @@ var SongImpl = /** @class */ (function (_super) {
             engine_applyOp_1.default(preview, _this.state.document.measures, factory, op, _this.state.document, notEligableForPreview);
             docPatches.push(op);
         });
-        invariant(docPatches.length === newPatches.length, "Something went wrong in _rectify. The current state is now invalid.");
+        invariant_1.default(docPatches.length === newPatches.length, "Something went wrong in _rectify. The current state is now invalid.");
     };
     SongImpl.prototype._update$ = function (patches, isPreview, props) {
         if (props === void 0) { props = this.props; }
@@ -364,7 +370,7 @@ var SongImpl = /** @class */ (function (_super) {
                     factory: loadedFactory,
                 }, _this._preRender);
             }
-            invariant(!_this.props.patches, "Expected patches to be empty on document load.");
+            invariant_1.default(!_this.props.patches, "Expected patches to be empty on document load.");
             if (_this.props.onLoaded) {
                 _this.props.onLoaded();
             }

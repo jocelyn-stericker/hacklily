@@ -1,3 +1,20 @@
+/**
+ * This file is part of Satie music engraver <https://github.com/jnetterf/satie>.
+ * Copyright (C) Joshua Netterfield <joshua.ca> 2015 - present.
+ *
+ * Satie is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * Satie is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with Satie.  If not, see <http://www.gnu.org/licenses/>.
+ */
 import { IAny } from "musicxml-interfaces/operations";
 import { ScoreHeader, Print } from "musicxml-interfaces";
 import { Document, IMeasure, ISegment } from "./document";
@@ -37,7 +54,7 @@ export interface IMeasureLayoutOptions {
 export declare function refreshMeasure(spec: IRefreshMeasureOpts): IMeasureLayout;
 export declare enum RefreshMode {
     RefreshModel = 0,
-    RefreshLayout = 1,
+    RefreshLayout = 1
 }
 export interface IRefreshMeasureOpts {
     document: Document;
@@ -67,4 +84,4 @@ export interface IRefreshMeasureOpts {
  * @param opts structure with __normalized__ voices and staves
  * @returns an array of staff and voice layouts with an undefined order
  */
-export declare function layoutMeasure({document, header, print, measure, factory, x, singleLineMode, preview, fixup, lineShortest, lineBarOnLine, lineTotalBarsOnLine, lineIndex, lineCount, attributes}: IMeasureLayoutOptions): IMeasureLayout;
+export declare function layoutMeasure({ document, header, print, measure, factory, x, singleLineMode, preview, fixup, lineShortest, lineBarOnLine, lineTotalBarsOnLine, lineIndex, lineCount, attributes, }: IMeasureLayoutOptions): IMeasureLayout;

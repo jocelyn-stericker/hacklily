@@ -16,12 +16,22 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with Satie.  If not, see <http://www.gnu.org/licenses/>.
  */
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
+    result["default"] = mod;
+    return result;
+};
 Object.defineProperty(exports, "__esModule", { value: true });
-var invariant = require("invariant");
+var invariant_1 = __importDefault(require("invariant"));
 var lodash_1 = require("lodash");
-var private_metre_checkRests_1 = require("./private_metre_checkRests");
-var private_metre_getTSString_1 = require("./private_metre_getTSString");
-var D = require("./private_metre_metreDurations");
+var private_metre_checkRests_1 = __importDefault(require("./private_metre_checkRests"));
+var private_metre_getTSString_1 = __importDefault(require("./private_metre_getTSString"));
+var D = __importStar(require("./private_metre_metreDurations"));
 var private_chordUtil_1 = require("./private_chordUtil");
 function voiceToRestSpec(segment, attributes, factory) {
     var emptyRestSpec = { song: "", models: [], modelsToKill: [] };
@@ -79,7 +89,7 @@ function voiceToRestSpec(segment, attributes, factory) {
             modelsToKill: modelsToKill,
         };
     }, emptyRestSpec);
-    invariant(spec.models.length === spec.song.length, "Invalid spec");
+    invariant_1.default(spec.models.length === spec.song.length, "Invalid spec");
     var totalDivisions = private_chordUtil_1.barDivisions(attributes);
     var restsToAdd = (totalDivisions - (spec.song.length % totalDivisions)) % totalDivisions;
     return {
@@ -101,8 +111,8 @@ function _cleanupRests(pattern, time) {
         }
         // Apply patches until we're in a good state.
         var cmd = status_1.split(" ");
-        invariant(cmd[0] === "apply", "Unexpected instruction '%s'", status_1);
-        invariant(parseInt(cmd[1], 10) === pattern.length, "Unexpected length change from %s to %s", cmd[1], pattern.length);
+        invariant_1.default(cmd[0] === "apply", "Unexpected instruction '%s'", status_1);
+        invariant_1.default(parseInt(cmd[1], 10) === pattern.length, "Unexpected length change from %s to %s", cmd[1], pattern.length);
         var patch = cmd[2];
         var nextPattern = "";
         for (var i = 0; i < pattern.length; ++i) {
@@ -149,7 +159,7 @@ function simplifyRests(segment, factory, attributes) {
             currIdx = model.idx + currIdxOffset + 1;
         }
         else {
-            invariant(segment.indexOf(model) > -1, "Model must be present in segment");
+            invariant_1.default(segment.indexOf(model) > -1, "Model must be present in segment");
             patches.push({
                 ld: model.toSpec(),
                 p: [currIdx],
@@ -225,8 +235,8 @@ function simplifyRests(segment, factory, attributes) {
                     if (model === "killed") {
                         throw new Error("Not reached");
                     }
-                    invariant(!!model, "Cannot remove undefined model");
-                    invariant(segment.indexOf(model) > -1, "Model must be present in segment");
+                    invariant_1.default(!!model, "Cannot remove undefined model");
+                    invariant_1.default(segment.indexOf(model) > -1, "Model must be present in segment");
                     patches.push({
                         ld: model.toSpec(),
                         p: [currIdx],

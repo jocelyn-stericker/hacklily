@@ -16,10 +16,13 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with Satie.  If not, see <http://www.gnu.org/licenses/>.
  */
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 var musicxml_interfaces_1 = require("musicxml-interfaces");
 var lodash_1 = require("lodash");
-var invariant = require("invariant");
+var invariant_1 = __importDefault(require("invariant"));
 var document_1 = require("./document");
 var private_chordUtil_1 = require("./private_chordUtil");
 /**
@@ -43,7 +46,7 @@ function tied(options, bounds, measures) {
                 var chord = model;
                 var noteWithTieds = lodash_1.find(chord, function (el) {
                     var notations = private_chordUtil_1.notationObj(el);
-                    return notations && notations.tieds && notations.tieds.length;
+                    return notations && notations.tieds && notations.tieds.length > 0;
                 });
                 if (noteWithTieds && noteWithTieds.grace) {
                     // TODO: grace notes
@@ -55,7 +58,7 @@ function tied(options, bounds, measures) {
                 var notations = private_chordUtil_1.notationObj(noteWithTieds);
                 var tieds = notations.tieds;
                 lodash_1.forEach(tieds, function (tied) {
-                    invariant(isFinite(tied.number) && tied.number !== null, "Tieds must have an ID (tied.number)");
+                    invariant_1.default(isFinite(tied.number) && tied.number !== null, "Tieds must have an ID (tied.number)");
                     var currTied = activeTieds[tied.number];
                     if (currTied) {
                         if (tied.type === musicxml_interfaces_1.StartStopContinue.Start) {
@@ -82,7 +85,8 @@ function tied(options, bounds, measures) {
     return measures;
 }
 function terminateTied$(activeTieds, tied) {
-    activeTieds[tied.number].initial.satieTieTo = activeTieds[tied.number].elements[1];
+    activeTieds[tied.number].initial.satieTieTo =
+        activeTieds[tied.number].elements[1];
     delete activeTieds[tied.number];
 }
 exports.default = tied;

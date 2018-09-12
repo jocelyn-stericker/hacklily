@@ -16,10 +16,14 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with Satie.  If not, see <http://www.gnu.org/licenses/>.
  */
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
+var _a, _b;
 var musicxml_interfaces_1 = require("musicxml-interfaces");
 var lodash_1 = require("lodash");
-var invariant = require("invariant");
+var invariant_1 = __importDefault(require("invariant"));
 var private_util_1 = require("./private_util");
 var EMPTY_FROZEN = Object.freeze({});
 function hasAccidental(chord, cursor) {
@@ -27,10 +31,10 @@ function hasAccidental(chord, cursor) {
         if (!c.pitch) {
             return false;
         }
-        var accidental = (cursor.staffAccidentals[c.pitch.alter] || 0);
-        return ((c.pitch.alter || 0) !== accidental &&
+        var accidental = cursor.staffAccidentals[c.pitch.alter] || 0;
+        return (((c.pitch.alter || 0) !== accidental &&
             (c.pitch.alter || 0) !==
-                (cursor.staffAccidentals[c.pitch.alter + c.pitch.octave] || 0) ||
+                (cursor.staffAccidentals[c.pitch.alter + c.pitch.octave] || 0)) ||
             !!c.accidental);
     });
 }
@@ -43,6 +47,7 @@ function _isIChord(chord) {
 }
 function count(chord) {
     if (_isIChord(chord)) {
+        // TODO: typing
         var target = lodash_1.find(chord, function (note) { return note.noteType; });
         return target ? target.noteType.duration : NaN;
     }
@@ -56,7 +61,10 @@ function count(chord) {
 exports.count = count;
 function dots(chord) {
     if (_isIChord(chord)) {
-        return (lodash_1.find(chord, function (note) { return note.dots; }) || { dots: [] }).dots.length || 0;
+        return (
+        // TODO: typing
+        (lodash_1.find(chord, function (note) { return note.dots; }) || { dots: [] }).dots
+            .length || 0);
     }
     else if (_isIDurationDescription(chord)) {
         return chord.dots || 0;
@@ -68,9 +76,12 @@ function dots(chord) {
 exports.dots = dots;
 function timeModification(chord) {
     if (_isIChord(chord)) {
-        return (lodash_1.find(chord, function (note) { return note.timeModification; }) ||
-            { timeModification: null })
-            .timeModification || null;
+        return (
+        // TODO: typing
+        (lodash_1.find(chord, function (note) { return note.timeModification; }) ||
+            {
+                timeModification: null
+            }).timeModification || null);
     }
     else if (_isIDurationDescription(chord)) {
         return chord.timeModification || null;
@@ -81,7 +92,7 @@ function timeModification(chord) {
 }
 exports.timeModification = timeModification;
 function ties(chord) {
-    var ties = lodash_1.map(chord, function (note) { return note.ties && note.ties.length ? note.ties[0] : null; });
+    var ties = lodash_1.map(chord, function (note) { return (note.ties && note.ties.length ? note.ties[0] : null); });
     return lodash_1.filter(ties, function (t) { return !!t; }).length ? ties : null;
 }
 exports.ties = ties;
@@ -103,9 +114,7 @@ exports.hasFlagOrBeam = hasFlagOrBeam;
  * 3 is the middle line. (SMuFL coordinates are 10x MusicXML coordinates)
  */
 function averageLine(chord, clef) {
-    return lodash_1.reduce(linesForClef(chord, clef), function (memo, line) {
-        return memo + line;
-    }, 0) / chord.length;
+    return (lodash_1.reduce(linesForClef(chord, clef), function (memo, line) { return memo + line; }, 0) / chord.length);
 }
 exports.averageLine = averageLine;
 /**
@@ -113,9 +122,7 @@ exports.averageLine = averageLine;
  * 3 is the middle line. (SMuFL coordinates are 10x MusicXML coordinates)
  */
 function lowestLine(chord, clef) {
-    return lodash_1.reduce(linesForClef(chord, clef), function (memo, line) {
-        return Math.min(memo, line);
-    }, 10000);
+    return lodash_1.reduce(linesForClef(chord, clef), function (memo, line) { return Math.min(memo, line); }, 10000);
 }
 exports.lowestLine = lowestLine;
 /**
@@ -123,9 +130,7 @@ exports.lowestLine = lowestLine;
  * 3 is the middle line. (SMuFL coordinates are 10x MusicXML coordinates)
  */
 function highestLine(chord, clef) {
-    return lodash_1.reduce(linesForClef(chord, clef), function (memo, line) {
-        return Math.max(memo, line);
-    }, -10000);
+    return lodash_1.reduce(linesForClef(chord, clef), function (memo, line) { return Math.max(memo, line); }, -10000);
 }
 exports.highestLine = highestLine;
 /**
@@ -224,7 +229,7 @@ function pitchForClef(relativeY, clef) {
 }
 exports.pitchForClef = pitchForClef;
 function lineForClef_(step, octave, clef) {
-    var octaveNum = (parseInt(octave, 10) || 0);
+    var octaveNum = parseInt(octave, 10) || 0;
     return getClefOffset(clef) + (octaveNum - 3) * 3.5 + exports.pitchOffsets[step];
 }
 exports.lineForClef_ = lineForClef_;
@@ -274,18 +279,23 @@ exports.clefOffsets = {
     NONE: -0.5
 };
 function getClefOffset(clef) {
-    return exports.clefOffsets[clef.sign] + clef.line - exports.defaultClefLines[clef.sign.toUpperCase()]
-        - 3.5 * parseInt(clef.clefOctaveChange || "0", 10);
+    return (exports.clefOffsets[clef.sign] +
+        clef.line -
+        exports.defaultClefLines[clef.sign.toUpperCase()] -
+        3.5 * parseInt(clef.clefOctaveChange || "0", 10));
 }
 exports.getClefOffset = getClefOffset;
 function barDivisionsDI(time, divisions) {
-    invariant(!!divisions, "Expected divisions to be set before calculating bar divisions.");
+    invariant_1.default(!!divisions, "Expected divisions to be set before calculating bar divisions.");
     if (time.senzaMisura != null) {
         return 1000000 * divisions;
     }
-    var quarterNotes = lodash_1.reduce(time.beats, function (memo, timeStr, idx) { return memo +
-        lodash_1.reduce(timeStr.split("+"), function (memo, timeStr) { return memo +
-            parseInt(timeStr, 10) * 4 / time.beatTypes[idx]; }, 0); }, 0);
+    var quarterNotes = lodash_1.reduce(time.beats, function (memo, timeStr, idx) {
+        return memo +
+            lodash_1.reduce(timeStr.split("+"), function (memo, timeStr) {
+                return memo + (parseInt(timeStr, 10) * 4) / time.beatTypes[idx];
+            }, 0);
+    }, 0);
     return quarterNotes * divisions || NaN;
 }
 exports.barDivisionsDI = barDivisionsDI;
@@ -297,7 +307,13 @@ exports.barDivisions = barDivisions;
 exports.IDEAL_STEM_HEIGHT = 35;
 exports.MIN_STEM_HEIGHT = 25;
 exports.chromaticScale = {
-    c: 0, d: 2, e: 4, f: 5, g: 7, a: 9, b: 11
+    c: 0,
+    d: 2,
+    e: 4,
+    f: 5,
+    g: 7,
+    a: 9,
+    b: 11
 }; // c:12
 exports.countToHasStem = {
     0.25: true,
@@ -381,18 +397,42 @@ var CUSTOM_NOTEHEADS = (_b = {},
         "noteheadLargeArrowDownWhole",
         "noteheadLargeArrowDownDoubleWhole"
     ],
-    _b[musicxml_interfaces_1.NoteheadType.ArrowUp] = ["noteheadLargeArrowUpBlack", "noteheadLargeArrowUpHalf",
-        "noteheadLargeArrowUpWhole", "noteheadLargeArrowUpDoubleWhole"],
-    _b[musicxml_interfaces_1.NoteheadType.BackSlashed] = ["noteheadSlashedBlack2", "noteheadSlashedHalf2",
-        "noteheadSlashedWhole2", "noteheadSlashedDoubleWhole2"],
-    _b[musicxml_interfaces_1.NoteheadType.CircleDot] = ["noteheadRoundWhiteWithDot", "noteheadCircledHalf",
-        "noteheadCircledWhole", "noteheadCircledDoubleWhole"],
-    _b[musicxml_interfaces_1.NoteheadType.CircleX] = ["noteheadCircledXLarge", "noteheadCircledXLarge",
-        "noteheadCircledXLarge", "noteheadCircledXLarge"],
-    _b[musicxml_interfaces_1.NoteheadType.Cluster] = ["noteheadNull", "noteheadNull",
-        "noteheadNull", "noteheadNull"],
-    _b[musicxml_interfaces_1.NoteheadType.Cross] = ["noteheadPlusBlack", "noteheadPlusHalf",
-        "noteheadPlusWhole", "noteheadPlusDoubleWhole"],
+    _b[musicxml_interfaces_1.NoteheadType.ArrowUp] = [
+        "noteheadLargeArrowUpBlack",
+        "noteheadLargeArrowUpHalf",
+        "noteheadLargeArrowUpWhole",
+        "noteheadLargeArrowUpDoubleWhole"
+    ],
+    _b[musicxml_interfaces_1.NoteheadType.BackSlashed] = [
+        "noteheadSlashedBlack2",
+        "noteheadSlashedHalf2",
+        "noteheadSlashedWhole2",
+        "noteheadSlashedDoubleWhole2"
+    ],
+    _b[musicxml_interfaces_1.NoteheadType.CircleDot] = [
+        "noteheadRoundWhiteWithDot",
+        "noteheadCircledHalf",
+        "noteheadCircledWhole",
+        "noteheadCircledDoubleWhole"
+    ],
+    _b[musicxml_interfaces_1.NoteheadType.CircleX] = [
+        "noteheadCircledXLarge",
+        "noteheadCircledXLarge",
+        "noteheadCircledXLarge",
+        "noteheadCircledXLarge"
+    ],
+    _b[musicxml_interfaces_1.NoteheadType.Cluster] = [
+        "noteheadNull",
+        "noteheadNull",
+        "noteheadNull",
+        "noteheadNull"
+    ],
+    _b[musicxml_interfaces_1.NoteheadType.Cross] = [
+        "noteheadPlusBlack",
+        "noteheadPlusHalf",
+        "noteheadPlusWhole",
+        "noteheadPlusDoubleWhole"
+    ],
     _b[musicxml_interfaces_1.NoteheadType.InvertedTriangle] = [
         "noteheadTriangleDownBlack",
         "noteheadTriangleDownHalf",
@@ -412,38 +452,90 @@ var CUSTOM_NOTEHEADS = (_b = {},
         "noteheadNull",
         "noteheadNull"
     ],
-    _b[musicxml_interfaces_1.NoteheadType.Slash] = ["noteheadSlashHorizontalEnds", "noteheadSlashWhiteHalf",
-        "noteheadSlashWhiteWhole", "noteheadDoubleWhole"],
-    _b[musicxml_interfaces_1.NoteheadType.Slashed] = ["noteheadSlashedBlack1", "noteheadSlashedHalf1",
-        "noteheadSlashedWhole1", "noteheadSlashedDoubleWhole1"],
-    _b[musicxml_interfaces_1.NoteheadType.X] = ["noteheadXBlack", "noteheadXHalf",
-        "noteheadXWhole", "noteheadXDoubleWhole"],
-    _b[musicxml_interfaces_1.NoteheadType.Do] = ["noteheadTriangleUpBlack", "noteheadTriangleUpHalf",
-        "noteheadTriangleUpWhole", "noteheadTriangleUpDoubleWhole"],
-    _b[musicxml_interfaces_1.NoteheadType.Triangle] = ["noteheadTriangleUpBlack", "noteheadTriangleUpHalf",
-        "noteheadTriangleUpWhole", "noteheadTriangleUpDoubleWhole"],
-    _b[musicxml_interfaces_1.NoteheadType.Re] = ["noteheadMoonBlack", "noteheadMoonWhite",
-        "noteheadMoonWhite", "noteheadMoonWhite"],
-    _b[musicxml_interfaces_1.NoteheadType.Mi] = ["noteheadDiamondBlack", "noteheadDiamondHalf",
-        "noteheadDiamondWhole", "noteheadDiamondDoubleWhole"],
-    _b[musicxml_interfaces_1.NoteheadType.Diamond] = ["noteheadDiamondBlack", "noteheadDiamondHalf",
-        "noteheadDiamondWhole", "noteheadDiamondDoubleWhole"],
-    _b[musicxml_interfaces_1.NoteheadType.Fa] = ["noteheadTriangleUpRightBlack", "noteheadTriangleUpRightWhite",
-        "noteheadTriangleUpRightWhite", "noteheadTriangleUpRightWhite"],
+    _b[musicxml_interfaces_1.NoteheadType.Slash] = [
+        "noteheadSlashHorizontalEnds",
+        "noteheadSlashWhiteHalf",
+        "noteheadSlashWhiteWhole",
+        "noteheadDoubleWhole"
+    ],
+    _b[musicxml_interfaces_1.NoteheadType.Slashed] = [
+        "noteheadSlashedBlack1",
+        "noteheadSlashedHalf1",
+        "noteheadSlashedWhole1",
+        "noteheadSlashedDoubleWhole1"
+    ],
+    _b[musicxml_interfaces_1.NoteheadType.X] = [
+        "noteheadXBlack",
+        "noteheadXHalf",
+        "noteheadXWhole",
+        "noteheadXDoubleWhole"
+    ],
+    _b[musicxml_interfaces_1.NoteheadType.Do] = [
+        "noteheadTriangleUpBlack",
+        "noteheadTriangleUpHalf",
+        "noteheadTriangleUpWhole",
+        "noteheadTriangleUpDoubleWhole"
+    ],
+    _b[musicxml_interfaces_1.NoteheadType.Triangle] = [
+        "noteheadTriangleUpBlack",
+        "noteheadTriangleUpHalf",
+        "noteheadTriangleUpWhole",
+        "noteheadTriangleUpDoubleWhole"
+    ],
+    _b[musicxml_interfaces_1.NoteheadType.Re] = [
+        "noteheadMoonBlack",
+        "noteheadMoonWhite",
+        "noteheadMoonWhite",
+        "noteheadMoonWhite"
+    ],
+    _b[musicxml_interfaces_1.NoteheadType.Mi] = [
+        "noteheadDiamondBlack",
+        "noteheadDiamondHalf",
+        "noteheadDiamondWhole",
+        "noteheadDiamondDoubleWhole"
+    ],
+    _b[musicxml_interfaces_1.NoteheadType.Diamond] = [
+        "noteheadDiamondBlack",
+        "noteheadDiamondHalf",
+        "noteheadDiamondWhole",
+        "noteheadDiamondDoubleWhole"
+    ],
+    _b[musicxml_interfaces_1.NoteheadType.Fa] = [
+        "noteheadTriangleUpRightBlack",
+        "noteheadTriangleUpRightWhite",
+        "noteheadTriangleUpRightWhite",
+        "noteheadTriangleUpRightWhite"
+    ],
     _b[musicxml_interfaces_1.NoteheadType.FaUp] = [
         "noteheadTriangleUpRightBlack",
         "noteheadTriangleUpRightWhite",
         "noteheadTriangleUpRightWhite",
         "noteheadTriangleUpRightWhite"
     ],
-    _b[musicxml_interfaces_1.NoteheadType.So] = ["noteheadBlack", "noteheadHalf",
-        "noteheadWhole", "noteheadDoubleWhole"],
-    _b[musicxml_interfaces_1.NoteheadType.La] = ["noteheadSquareBlack", "noteheadSquareWhite",
-        "noteheadSquareWhite", "noteheadSquareWhite"],
-    _b[musicxml_interfaces_1.NoteheadType.Square] = ["noteheadSquareBlack", "noteheadSquareWhite",
-        "noteheadSquareWhite", "noteheadSquareWhite"],
-    _b[musicxml_interfaces_1.NoteheadType.Rectangle] = ["noteheadSquareBlack", "noteheadSquareWhite",
-        "noteheadSquareWhite", "noteheadSquareWhite"],
+    _b[musicxml_interfaces_1.NoteheadType.So] = [
+        "noteheadBlack",
+        "noteheadHalf",
+        "noteheadWhole",
+        "noteheadDoubleWhole"
+    ],
+    _b[musicxml_interfaces_1.NoteheadType.La] = [
+        "noteheadSquareBlack",
+        "noteheadSquareWhite",
+        "noteheadSquareWhite",
+        "noteheadSquareWhite"
+    ],
+    _b[musicxml_interfaces_1.NoteheadType.Square] = [
+        "noteheadSquareBlack",
+        "noteheadSquareWhite",
+        "noteheadSquareWhite",
+        "noteheadSquareWhite"
+    ],
+    _b[musicxml_interfaces_1.NoteheadType.Rectangle] = [
+        "noteheadSquareBlack",
+        "noteheadSquareWhite",
+        "noteheadSquareWhite",
+        "noteheadSquareWhite"
+    ],
     _b[musicxml_interfaces_1.NoteheadType.Ti] = [
         "noteheadTriangleRoundDownBlack",
         "noteheadTriangleRoundDownWhite",
@@ -479,19 +571,20 @@ function getNoteheadGlyph(notehead, stdGlyph) {
 }
 exports.getNoteheadGlyph = getNoteheadGlyph;
 function notationObj(n) {
-    invariant(!n.notations || n.notations.length === 1, "Deprecated notations format");
+    invariant_1.default(!n.notations || n.notations.length === 1, "Deprecated notations format");
     return n.notations ? n.notations[0] : EMPTY_FROZEN;
 }
 exports.notationObj = notationObj;
 function articulationObj(n) {
-    return notationObj(n).articulations ?
-        notationObj(n).articulations[0] : Object.freeze({});
+    return notationObj(n).articulations
+        ? notationObj(n).articulations[0]
+        : Object.freeze({});
 }
 exports.articulationObj = articulationObj;
 function tieds(n) {
     return lodash_1.chain(n)
         .map(function (n) { return notationObj(n).tieds; })
-        .map(function (t) { return t && t.length ? t[0] : null; })
+        .map(function (t) { return (t && t.length ? t[0] : null); })
         .value();
 }
 exports.tieds = tieds;
@@ -509,22 +602,22 @@ function divisions(chord, attributes, allowFractional) {
     var chordCount = count(chord);
     var chordDots = dots(chord);
     var chordTM = timeModification(chord);
-    var attributesTime = attributes.time.senzaMisura === undefined ?
-        attributes.time :
-        {
+    var attributesTime = attributes.time.senzaMisura === undefined
+        ? attributes.time
+        : {
             beatTypes: [4],
-            beats: ["1000"],
+            beats: ["1000"]
         };
     var attributeDivisions = attributes.divisions;
-    invariant(!!attributesTime, "A time signature must be specified.");
+    invariant_1.default(!!attributesTime, "A time signature must be specified.");
     if (chordCount === -1 || chordCount <= 1) {
         // TODO: What if beatType isn't consistent?
         var tsBeats = lodash_1.reduce(attributesTime.beats, function (memo, durr) {
             return memo + lodash_1.reduce(durr.split("+"), function (m, l) { return m + parseInt(l, 10); }, 0);
         }, 0);
-        var tsBeatType = attributesTime.beatTypes.reduce(function (memo, bt) { return memo === bt ? bt : NaN; }, attributesTime.beatTypes[0]);
-        invariant(!isNaN(tsBeatType), "Time signature must be consistent");
-        var total_1 = attributeDivisions * tsBeats * 4 / tsBeatType;
+        var tsBeatType = attributesTime.beatTypes.reduce(function (memo, bt) { return (memo === bt ? bt : NaN); }, attributesTime.beatTypes[0]);
+        invariant_1.default(!isNaN(tsBeatType), "Time signature must be consistent");
+        var total_1 = (attributeDivisions * tsBeats * 4) / tsBeatType;
         return total_1;
     }
     if ((attributeDivisions * 4) % chordCount > 0 && !allowFractional) {
@@ -533,12 +626,10 @@ function divisions(chord, attributes, allowFractional) {
     }
     var base = (attributeDivisions * 4) / chordCount;
     var tmFactor = chordTM ? chordTM.normalNotes / chordTM.actualNotes : 1.0;
-    var dotFactor = lodash_1.times(chordDots, function (d) { return 1 / Math.pow(2, d + 1); })
-        .reduce(function (m, i) { return m + i; }, 1);
+    var dotFactor = lodash_1.times(chordDots, function (d) { return 1 / Math.pow(2, d + 1); }).reduce(function (m, i) { return m + i; }, 1);
     var total = base * tmFactor * dotFactor;
-    invariant(!isNaN(total), "calcDivisions must return a number. %s is not a number.", total);
+    invariant_1.default(!isNaN(total), "calcDivisions must return a number. %s is not a number.", total);
     return total;
 }
 exports.divisions = divisions;
-var _a, _b;
 //# sourceMappingURL=private_chordUtil.js.map

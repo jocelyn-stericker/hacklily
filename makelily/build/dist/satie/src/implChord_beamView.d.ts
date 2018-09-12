@@ -1,4 +1,3 @@
-/// <reference types="react" />
 /**
  * This file is part of Satie music engraver <https://github.com/jnetterf/satie>.
  * Copyright (C) Joshua Netterfield <joshua.ca> 2015 - present.
@@ -37,15 +36,15 @@ export default class Beam extends Component<IProps, {}> {
      * Offset because the note-head has a non-zero width.
      */
     getLineXOffset(): number;
-    private _withXOffset(x);
-    private _getX1();
-    private _getX2();
-    private _getY1(incl, idx);
-    private _getY2(incl, idx);
-    private _getYVar(incl, idx, percent);
+    private _withXOffset;
+    private _getX1;
+    private _getX2;
+    private _getY1;
+    private _getY2;
+    private _getYVar;
     /**
      * Offset because the note-head has a non-zero height.
      * The note-head is NOT CENTERED at its local origin.
      */
-    private _getYOffset();
+    private _getYOffset;
 }

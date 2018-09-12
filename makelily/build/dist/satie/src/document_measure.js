@@ -16,9 +16,12 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with Satie.  If not, see <http://www.gnu.org/licenses/>.
  */
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 var lodash_1 = require("lodash");
-var invariant = require("invariant");
+var invariant_1 = __importDefault(require("invariant"));
 function getMeasureSegments(measure) {
     var voiceSegments = lodash_1.flatten(lodash_1.map(lodash_1.values(measure.parts), function (part) { return part.voices; }));
     var staffSegments = lodash_1.flatten(lodash_1.map(lodash_1.values(measure.parts), function (part) { return part.staves; }));
@@ -31,7 +34,7 @@ function reduceToShortestInSegments(shortest, segment) {
 exports.reduceToShortestInSegments = reduceToShortestInSegments;
 function reduceToShortestInSegment(shortest, model) {
     if (!(model.divCount >= 0)) {
-        invariant(model.divCount >= 0, "Counts must exceed 0 in", model);
+        invariant_1.default(model.divCount >= 0, "Counts must exceed 0 in", model);
     }
     var divCount = model && model.divCount ? model.divCount : Number.MAX_VALUE;
     return Math.min(shortest, divCount);

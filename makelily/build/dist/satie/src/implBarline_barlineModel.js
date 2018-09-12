@@ -19,6 +19,9 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 var musicxml_interfaces_1 = require("musicxml-interfaces");
 var builders_1 = require("musicxml-interfaces/builders");
@@ -26,7 +29,7 @@ var lodash_1 = require("lodash");
 var document_1 = require("./document");
 var private_part_1 = require("./private_part");
 var private_smufl_1 = require("./private_smufl");
-var implAttributes_attributesModel_1 = require("./implAttributes_attributesModel");
+var implAttributes_attributesModel_1 = __importDefault(require("./implAttributes_attributesModel"));
 var implAttributes_attributesData_1 = require("./implAttributes_attributesData");
 var BarlineModel = /** @class */ (function () {
     /*---- Implementation -----------------------------------------------------------------------*/

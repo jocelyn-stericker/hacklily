@@ -19,10 +19,13 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 var musicxml_interfaces_1 = require("musicxml-interfaces");
 var lodash_1 = require("lodash");
-var invariant = require("invariant");
+var invariant_1 = __importDefault(require("invariant"));
 var document_1 = require("./document");
 var private_chordUtil_1 = require("./private_chordUtil");
 var private_part_1 = require("./private_part");
@@ -55,7 +58,7 @@ var AttributesModel = /** @class */ (function () {
             return this._divCount;
         },
         set: function (count) {
-            invariant(isFinite(count), "Count must be finite.");
+            invariant_1.default(isFinite(count), "Count must be finite.");
             this._divCount = count;
         },
         enumerable: true,
@@ -354,7 +357,7 @@ var AttributesModel = /** @class */ (function () {
         Layout.prototype._refresh = function (model, attributes, prevAttributes, cursor) {
             var _this = this;
             this.model = model;
-            invariant(!!attributes, "Layout must be passed a model");
+            invariant_1.default(!!attributes, "Layout must be passed a model");
             this.clef = null;
             this.snapshotClef = null;
             this.clefSpacing = null;

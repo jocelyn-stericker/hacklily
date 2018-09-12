@@ -16,8 +16,11 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with Satie.  If not, see <http://www.gnu.org/licenses/>.
  */
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
-var invariant = require("invariant");
+var invariant_1 = __importDefault(require("invariant"));
 function combineLayout(layout) {
     var detached = {
         x: layout.x,
@@ -26,7 +29,7 @@ function combineLayout(layout) {
     };
     detached.expandPolicy = layout.expandPolicy;
     if (layout.expandPolicy === "centered") {
-        invariant(!isNaN(layout.renderedWidth), "renderedWidth must be a number for centered objects, but it's %s", layout.renderedWidth);
+        invariant_1.default(!isNaN(layout.renderedWidth), "renderedWidth must be a number for centered objects, but it's %s", layout.renderedWidth);
     }
     if (!isNaN(layout.renderedWidth)) {
         detached.renderedWidth = layout.renderedWidth;
@@ -43,7 +46,7 @@ function reattachLayout(layout) {
     };
     attached.expandPolicy = layout.expandPolicy;
     if (layout.expandPolicy === "centered") {
-        invariant(!isNaN(layout.renderedWidth), "renderedWidth must be a number for centered objects, but it's %s", layout.renderedWidth);
+        invariant_1.default(!isNaN(layout.renderedWidth), "renderedWidth must be a number for centered objects, but it's %s", layout.renderedWidth);
     }
     if (!isNaN(layout.renderedWidth)) {
         attached.renderedWidth = layout.renderedWidth;
@@ -72,7 +75,7 @@ function mergeSegmentsInPlace(segment1, segment2) {
         var pri2 = !!item2 ? item2.renderClass : Number.MAX_VALUE;
         if (div1 < div2 || div1 === div2 && pri1 < pri2) {
             x = item1.x;
-            invariant(!!segment2, "Segment2 must be defined");
+            invariant_1.default(!!segment2, "Segment2 must be defined");
             segment2.splice(s2_idx, 0, reattachLayout(item1));
         }
         else if (div2 < div1 || div2 === div1 && pri2 < pri1) {
@@ -80,10 +83,10 @@ function mergeSegmentsInPlace(segment1, segment2) {
             segment1.splice(s1_idx, 0, combineLayout(item2));
         }
         else {
-            invariant(!!item1, "div2 must be defined and have a valid division (is %s) & renderClass (is %s)", div2, pri2);
-            invariant(!!item2, "div1 must be defined and have a valid division (is %s) & renderClass (is %s)", div1, pri1);
-            invariant(pri1 === pri2, "invalid priority: %s must equal %s", pri1, pri2);
-            invariant(div1 === div2, "invalid division");
+            invariant_1.default(!!item1, "div2 must be defined and have a valid division (is %s) & renderClass (is %s)", div2, pri2);
+            invariant_1.default(!!item2, "div1 must be defined and have a valid division (is %s) & renderClass (is %s)", div1, pri1);
+            invariant_1.default(pri1 === pri2, "invalid priority: %s must equal %s", pri1, pri2);
+            invariant_1.default(div1 === div2, "invalid division");
             item1.x = item2.x = x = Math.max(item1.x || 0, item2.x || 0, x);
         }
         ++s1_idx;

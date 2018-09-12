@@ -17,31 +17,44 @@
  * along with Satie.  If not, see <http://www.gnu.org/licenses/>.
  */
 var __extends = (this && this.__extends) || (function () {
-    var extendStatics = Object.setPrototypeOf ||
-        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    }
     return function (d, b) {
         extendStatics(d, b);
         function __() { this.constructor = d; }
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
+    result["default"] = mod;
+    return result;
+};
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 var musicxml_interfaces_1 = require("musicxml-interfaces");
 var react_1 = require("react");
-var DOM = require("react-dom-factories");
-var PropTypes = require("prop-types");
+var DOM = __importStar(require("react-dom-factories"));
+var PropTypes = __importStar(require("prop-types"));
 var lodash_1 = require("lodash");
 var private_smufl_1 = require("./private_smufl");
-var implChord_beamView_1 = require("./implChord_beamView");
-var implChord_flagView_1 = require("./implChord_flagView");
-var implChord_ledgerLineView_1 = require("./implChord_ledgerLineView");
+var implChord_beamView_1 = __importDefault(require("./implChord_beamView"));
+var implChord_flagView_1 = __importDefault(require("./implChord_flagView"));
+var implChord_ledgerLineView_1 = __importDefault(require("./implChord_ledgerLineView"));
 var implChord_lyrics_1 = require("./implChord_lyrics");
-var implChord_noteView_1 = require("./implChord_noteView");
-var implChord_notationView_1 = require("./implChord_notationView");
-var implChord_restView_1 = require("./implChord_restView");
-var implChord_stemView_1 = require("./implChord_stemView");
-var implChord_unbeamedTupletView_1 = require("./implChord_unbeamedTupletView");
+var implChord_noteView_1 = __importDefault(require("./implChord_noteView"));
+var implChord_notationView_1 = __importDefault(require("./implChord_notationView"));
+var implChord_restView_1 = __importDefault(require("./implChord_restView"));
+var implChord_stemView_1 = __importDefault(require("./implChord_stemView"));
+var implChord_unbeamedTupletView_1 = __importDefault(require("./implChord_unbeamedTupletView"));
 var stemThickness = private_smufl_1.bravura.engravingDefaults.stemThickness * 10;
 var $BeamView = react_1.createFactory(implChord_beamView_1.default);
 var $FlagView = react_1.createFactory(implChord_flagView_1.default);
@@ -72,7 +85,7 @@ var ChordView = /** @class */ (function (_super) {
         var lyrics = lodash_1.chain(spec)
             .map(function (n) { return n.lyrics; })
             .filter(function (l) { return !!l; })
-            .flatten(true)
+            .flattenDeep()
             .filter(function (l) { return !!l; })
             .map(function (l) {
             var text = [];
@@ -124,55 +137,66 @@ var ChordView = /** @class */ (function (_super) {
                 spec: spec[idx],
                 defaultX: spec[idx].defaultX
             });
-        }), layout.satieStem && $StemView({
-            bestHeight: layout.satieStem.stemHeight,
-            tremolo: layout.satieStem.tremolo,
-            key: "s",
-            notehead: maxNotehead,
-            spec: {
-                color: spec[0].stem.color || "#000000",
-                defaultX: stemX,
-                defaultY: (layout.satieStem.stemStart - 3) * 10,
-                type: layout.satieStem.direction === 1 ? musicxml_interfaces_1.StemType.Up : musicxml_interfaces_1.StemType.Down
-            },
-            width: stemThickness
-        }), lodash_1.map(spec.satieLedger, function (lineNumber) { return $LedgerLineView({
-            key: "l" + lineNumber,
-            notehead: maxNotehead,
-            spec: {
-                color: "#000000",
-                defaultX: stemX,
-                defaultY: (lineNumber - 3) * 10
-            }
-        }); }), layout.satieFlag && layout.satieStem && $FlagView({
-            key: "f",
-            notehead: maxNotehead,
-            spec: {
-                color: spec[0].stem.color || "$000000",
-                defaultX: stemX,
-                defaultY: (layout.satieStem.stemStart - 3) * 10 +
-                    (layout.satieStem.stemHeight - 7) * layout.satieStem.direction,
-                direction: layout.satieStem.direction,
-                flag: layout.satieFlag
-            },
-            stemHeight: layout.satieStem.stemHeight,
-            stemWidth: stemThickness
-        }), this.props.layout.satieBeam && $BeamView({
-            key: "b",
-            layout: this.props.layout.satieBeam,
-            stemWidth: stemThickness,
-            stroke: "black"
-        }), spec.satieUnbeamedTuplet && $UnbeamedTupletView({
-            key: "ut",
-            layout: spec.satieUnbeamedTuplet,
-            stemWidth: stemThickness,
-            stroke: "black"
-        }), lodash_1.map(spec, function (note, idx) { return lodash_1.map(note.notations, function (notation, jdx) { return $NotationView({
-            key: "N" + idx + "_" + jdx,
-            layout: _this.props.layout,
-            defaultY: note.defaultY,
-            spec: notation
-        }); }); }), lyrics);
+        }), layout.satieStem &&
+            $StemView({
+                bestHeight: layout.satieStem.stemHeight,
+                tremolo: layout.satieStem.tremolo,
+                key: "s",
+                notehead: maxNotehead,
+                spec: {
+                    color: spec[0].stem.color || "#000000",
+                    defaultX: stemX,
+                    defaultY: (layout.satieStem.stemStart - 3) * 10,
+                    type: layout.satieStem.direction === 1 ? musicxml_interfaces_1.StemType.Up : musicxml_interfaces_1.StemType.Down
+                },
+                width: stemThickness
+            }), lodash_1.map(spec.satieLedger, function (lineNumber) {
+            return $LedgerLineView({
+                key: "l" + lineNumber,
+                notehead: maxNotehead,
+                spec: {
+                    color: "#000000",
+                    defaultX: stemX,
+                    defaultY: (lineNumber - 3) * 10
+                }
+            });
+        }), layout.satieFlag &&
+            layout.satieStem &&
+            $FlagView({
+                key: "f",
+                notehead: maxNotehead,
+                spec: {
+                    color: spec[0].stem.color || "$000000",
+                    defaultX: stemX,
+                    defaultY: (layout.satieStem.stemStart - 3) * 10 +
+                        (layout.satieStem.stemHeight - 7) * layout.satieStem.direction,
+                    direction: layout.satieStem.direction,
+                    flag: layout.satieFlag
+                },
+                stemHeight: layout.satieStem.stemHeight,
+                stemWidth: stemThickness
+            }), this.props.layout.satieBeam &&
+            $BeamView({
+                key: "b",
+                layout: this.props.layout.satieBeam,
+                stemWidth: stemThickness,
+                stroke: "black"
+            }), spec.satieUnbeamedTuplet &&
+            $UnbeamedTupletView({
+                key: "ut",
+                layout: spec.satieUnbeamedTuplet,
+                stemWidth: stemThickness,
+                stroke: "black"
+            }), lodash_1.map(spec, function (note, idx) {
+            return lodash_1.map(note.notations, function (notation, jdx) {
+                return $NotationView({
+                    key: "N" + idx + "_" + jdx,
+                    layout: _this.props.layout,
+                    defaultY: note.defaultY,
+                    spec: notation
+                });
+            });
+        }), lyrics);
     };
     ChordView.contextTypes = {
         originY: PropTypes.number.isRequired

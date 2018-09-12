@@ -16,9 +16,12 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with Satie.  If not, see <http://www.gnu.org/licenses/>.
  */
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
-var invariant = require("invariant");
-var engine_createPatch_1 = require("./engine_createPatch");
+var invariant_1 = __importDefault(require("invariant"));
+var engine_createPatch_1 = __importDefault(require("./engine_createPatch"));
 var document_1 = require("./document");
 var private_util_1 = require("./private_util");
 /**
@@ -85,7 +88,7 @@ var ValidationCursor = /** @class */ (function () {
         this.fixup(private_util_1.cloneObject(patch));
     };
     ValidationCursor.prototype.advance = function (divs) {
-        invariant(this.segmentInstance.ownerType === "staff", "Only valid in staff context");
+        invariant_1.default(this.segmentInstance.ownerType === "staff", "Only valid in staff context");
         this.segmentDivision += divs;
         this.fixup([{
                 p: [

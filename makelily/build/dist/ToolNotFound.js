@@ -19,19 +19,25 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
  */
 var __extends = (this && this.__extends) || (function () {
-    var extendStatics = Object.setPrototypeOf ||
-        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    }
     return function (d, b) {
         extendStatics(d, b);
         function __() { this.constructor = d; }
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 var aphrodite_1 = require("aphrodite");
 var React = require("react");
-var tabStyles_1 = require("./tabStyles");
+var tabStyles_1 = __importDefault(require("./tabStyles"));
 /**
  * Placeholder for when a tool with an invalid name is requested.
  */
@@ -41,7 +47,7 @@ var ToolNotFound = /** @class */ (function (_super) {
         return _super !== null && _super.apply(this, arguments) || this;
     }
     ToolNotFound.prototype.render = function () {
-        return (React.createElement("span", { className: aphrodite_1.css(tabStyles_1.default.tool) }, "Tool not found."));
+        return React.createElement("span", { className: aphrodite_1.css(tabStyles_1.default.tool) }, "Tool not found.");
     };
     return ToolNotFound;
 }(React.Component));

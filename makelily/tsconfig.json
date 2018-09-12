@@ -16,7 +16,9 @@
     "noImplicitAny": true,
     "pretty": true,
     "suppressImplicitAnyIndexErrors": true,
-    "noUnusedLocals": true
+    "noUnusedLocals": true,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true
   },
   "exclude": [
     "node_modules",
@@ -27,7 +29,5 @@
     "jest",
     "src/setupTests.ts"
   ],
-  "include": [
-    "src/index.tsx"
-  ]
+  "include": ["src/index.tsx"]
 }

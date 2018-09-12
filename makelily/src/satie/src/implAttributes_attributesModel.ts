@@ -23,7 +23,7 @@ import {Clef, PartSymbol, MeasureStyle, StaffDetails, Transpose, Directive,
     Time, Key, Footnote, Level, Attributes, KeyOctave, PartSymbolType, SymbolSize,
     TimeSymbolType, serializeAttributes} from "musicxml-interfaces";
 import {find, forEach, times, isEqual} from "lodash";
-import * as invariant from "invariant";
+import invariant from "invariant";
 
 import {IModel, Type, ILayout} from "./document";
 

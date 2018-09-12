@@ -16,8 +16,11 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with Satie.  If not, see <http://www.gnu.org/licenses/>.
  */
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
-var invariant = require("invariant");
+var invariant_1 = __importDefault(require("invariant"));
 var lodash_1 = require("lodash");
 /**
  * A decorator that records the position of a component.
@@ -107,7 +110,7 @@ function clear(record) {
     var weight = weightForRecord(record);
     var firstPossibleIdx = lodash_1.sortedIndex(_weights, weight);
     var idx = lodash_1.indexOf(_sorted, record, firstPossibleIdx);
-    invariant(idx >= 0, record.key + " not currently in array.");
+    invariant_1.default(idx >= 0, record.key + " not currently in array.");
     _sorted.splice(idx, 1);
     _weights.splice(idx, 1);
 }

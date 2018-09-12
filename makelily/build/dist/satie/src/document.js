@@ -16,14 +16,17 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with Satie.  If not, see <http://www.gnu.org/licenses/>.
  */
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 var react_1 = require("react");
 var server_1 = require("react-dom/server");
 var lodash_1 = require("lodash");
-var engine_processors_validate_1 = require("./engine_processors_validate");
-var engine_processors_layout_1 = require("./engine_processors_layout");
-var implPage_pageView_1 = require("./implPage_pageView");
-var document_types_1 = require("./document_types");
+var engine_processors_validate_1 = __importDefault(require("./engine_processors_validate"));
+var engine_processors_layout_1 = __importDefault(require("./engine_processors_layout"));
+var implPage_pageView_1 = __importDefault(require("./implPage_pageView"));
+var document_types_1 = __importDefault(require("./document_types"));
 var $PageView = react_1.createFactory(implPage_pageView_1.default);
 var document_measure_1 = require("./document_measure");
 exports.getMeasureSegments = document_measure_1.getMeasureSegments;
@@ -46,7 +49,7 @@ var Document = /** @class */ (function () {
         this.cleanlinessTracking = {
             measures: {},
             lines: [],
-            linePlacementHints: null,
+            linePlacementHints: null
         };
         if (error) {
             this.error = error;
@@ -61,16 +64,16 @@ var Document = /** @class */ (function () {
         for (var _i = 1; _i < arguments.length; _i++) {
             modelTypes[_i - 1] = arguments[_i];
         }
-        return (_a = this._factory).modelHasType.apply(_a, [model].concat(modelTypes));
         var _a;
+        return (_a = this._factory).modelHasType.apply(_a, [model].concat(modelTypes));
     };
     Document.prototype.search = function (models, idx) {
         var types = [];
         for (var _i = 2; _i < arguments.length; _i++) {
             types[_i - 2] = arguments[_i];
         }
-        return (_a = this._factory).search.apply(_a, [models, idx].concat(types));
         var _a;
+        return (_a = this._factory).search.apply(_a, [models, idx].concat(types));
     };
     Document.prototype.getPrint = function (startMeasure) {
         var _this = this;
@@ -78,8 +81,10 @@ var Document = /** @class */ (function () {
         if (!firstMeasure) {
             throw new Error("No such measure " + startMeasure);
         }
-        var partWithPrint = lodash_1.find(firstMeasure.parts, function (part) { return !!part.staves[1] &&
-            _this.search(part.staves[1], 0, document_types_1.default.Print).length; });
+        var partWithPrint = lodash_1.find(firstMeasure.parts, function (part) {
+            return !!part.staves[1] &&
+                _this.search(part.staves[1], 0, document_types_1.default.Print).length > 0;
+        });
         if (partWithPrint) {
             return this.search(partWithPrint.staves[1], 0, document_types_1.default.Print)[0]._snapshot;
         }
@@ -87,10 +92,10 @@ var Document = /** @class */ (function () {
     };
     Document.prototype.renderToStaticMarkup = function (startMeasure) {
         var core = server_1.renderToStaticMarkup(this.__getPage(startMeasure, false, "svg-export", null, false));
-        return "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?>" + core.replace("<svg", "<svg xmlns=\"http://www.w3.org/2000/svg\"")
+        return "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?>" + core
+            .replace("<svg", "<svg xmlns=\"http://www.w3.org/2000/svg\"")
             .replace(/class="tn_"/g, "font-family='Alegreya'")
-            .replace(/class="mmn_"/g, "font-family='Alegreya' " +
-            "font-style='italic' stroke='#7a7a7a'")
+            .replace(/class="mmn_"/g, "font-family='Alegreya' " + "font-style='italic' stroke='#7a7a7a'")
             .replace(/class="bn_"/g, "font-family='Alegreya' " +
             "font-style='italic' text-anchor='end' stroke='#7a7a7a'")
             .replace(/<noscript><\/noscript>/g, "");
@@ -117,9 +122,11 @@ var Document = /** @class */ (function () {
             preview: preview,
             singleLineMode: singleLineMode,
             fixedMeasureWidth: fixedMeasureWidth,
-            fixup: onOperationsAppended ? function (segment, patch) {
-                onOperationsAppended(patch);
-            } : null,
+            fixup: onOperationsAppended
+                ? function (segment, patch) {
+                    onOperationsAppended(patch);
+                }
+                : null
         };
         engine_processors_validate_1.default(opts);
         // Print snapshot may have been changed.
@@ -133,7 +140,7 @@ var Document = /** @class */ (function () {
             scoreHeader: this.header,
             singleLineMode: singleLineMode,
             svgRef: ref,
-            onPageHeightChanged: onPageHeightChanged,
+            onPageHeightChanged: onPageHeightChanged
         });
     };
     return Document;

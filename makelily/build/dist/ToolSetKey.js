@@ -19,39 +19,48 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
  */
 var __extends = (this && this.__extends) || (function () {
-    var extendStatics = Object.setPrototypeOf ||
-        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    }
     return function (d, b) {
         extendStatics(d, b);
         function __() { this.constructor = d; }
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
-var __assign = (this && this.__assign) || Object.assign || function(t) {
-    for (var s, i = 1, n = arguments.length; i < n; i++) {
-        s = arguments[i];
-        for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
-            t[p] = s[p];
-    }
-    return t;
+var __assign = (this && this.__assign) || function () {
+    __assign = Object.assign || function(t) {
+        for (var s, i = 1, n = arguments.length; i < n; i++) {
+            s = arguments[i];
+            for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
+                t[p] = s[p];
+        }
+        return t;
+    };
+    return __assign.apply(this, arguments);
+};
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 var aphrodite_1 = require("aphrodite");
 var React = require("react");
 var satie_1 = require("./satie/src/satie");
-var tabStyles_1 = require("./tabStyles");
-var keyViewbox = '-2 -40 80 80';
+var tabStyles_1 = __importDefault(require("./tabStyles"));
+var keyViewbox = "-2 -40 80 80";
 var trebleClef = {
     line: 2,
-    sign: 'G',
+    sign: "G",
 };
-var majors = 'cgdaebFCGDAEBfcgda';
+var majors = "cgdaebFCGDAEBfcgda";
 function getEnglish(fifths, mode) {
-    var englishMode = mode === 'major' ? 'major' : 'minor';
-    var key = majors[fifths + 7 + (mode === 'minor' ? 3 : 0)];
+    var englishMode = mode === "major" ? "major" : "minor";
+    var key = majors[fifths + 7 + (mode === "minor" ? 3 : 0)];
     if (!key) {
-        return 'Unknown';
+        return "Unknown";
     }
     if (key.toLowerCase() === key) {
         if (fifths < 0) {
@@ -65,9 +74,9 @@ function getEnglish(fifths, mode) {
     return key.toUpperCase() + " " + englishMode;
 }
 function getLy(fifths, mode) {
-    var key = majors[fifths + 7 + (mode === 'minor' ? 3 : 0)];
+    var key = majors[fifths + 7 + (mode === "minor" ? 3 : 0)];
     if (!key) {
-        return 'Unknown';
+        return "Unknown";
     }
     if (key.toLowerCase() === key) {
         if (fifths < 0) {
@@ -81,20 +90,24 @@ function getLy(fifths, mode) {
     return "\\key " + key.toLowerCase() + " \\" + mode;
 }
 var stdKeys = {
-    major: Array(15).fill(null).map(function (_, i) { return ({
+    major: Array(15)
+        .fill(null)
+        .map(function (_, i) { return ({
         fifths: i - 7,
-        mode: 'major',
+        mode: "major",
     }); }),
-    minor: Array(15).fill(null).map(function (_, i) { return ({
+    minor: Array(15)
+        .fill(null)
+        .map(function (_, i) { return ({
         fifths: i - 7,
-        mode: 'minor',
+        mode: "minor",
     }); }),
 };
 function getInitialState(props) {
     var selectedKey = 8;
-    var selectedMode = 'major';
-    if (props.keySig.mode === 'minor') {
-        selectedMode = 'minor';
+    var selectedMode = "major";
+    if (props.keySig.mode === "minor") {
+        selectedMode = "minor";
     }
     selectedKey = parseInt(String(props.keySig.fifths), 10) + 7;
     return {
@@ -134,10 +147,10 @@ var ToolSetKey = /** @class */ (function (_super) {
                 React.createElement("h3", { className: aphrodite_1.css(tabStyles_1.default.toolHeading) }, "Mode"),
                 React.createElement("form", { className: aphrodite_1.css(tabStyles_1.default.radioGroup) },
                     React.createElement("div", null,
-                        React.createElement("input", { id: "key-mode-major", type: "radio", checked: this.state.selectedMode === 'major', "aria-checked": this.state.selectedMode === 'major', onChange: function () { return _this.setState({ selectedMode: 'major' }); } }),
+                        React.createElement("input", { id: "key-mode-major", type: "radio", checked: this.state.selectedMode === "major", "aria-checked": this.state.selectedMode === "major", onChange: function () { return _this.setState({ selectedMode: "major" }); } }),
                         React.createElement("label", { htmlFor: "key-mode-major" }, "Major (M)")),
                     React.createElement("div", null,
-                        React.createElement("input", { id: "key-mode-minor", type: "radio", checked: this.state.selectedMode === 'minor', "aria-checked": this.state.selectedMode === 'minor', onChange: function () { return _this.setState({ selectedMode: 'minor' }); } }),
+                        React.createElement("input", { id: "key-mode-minor", type: "radio", checked: this.state.selectedMode === "minor", "aria-checked": this.state.selectedMode === "minor", onChange: function () { return _this.setState({ selectedMode: "minor" }); } }),
                         React.createElement("label", { htmlFor: "key-mode-minor" }, "Minor (m)")))),
             React.createElement("div", { className: aphrodite_1.css(tabStyles_1.default.spacer) }),
             React.createElement("div", { className: aphrodite_1.css(tabStyles_1.default.section) },

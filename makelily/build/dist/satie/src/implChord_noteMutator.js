@@ -16,8 +16,11 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with Satie.  If not, see <http://www.gnu.org/licenses/>.
  */
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
-var invariant = require("invariant");
+var invariant_1 = __importDefault(require("invariant"));
 var private_mutate_1 = require("./private_mutate");
 function noteMutator(note, op) {
     if (op.p.length > 2) {
@@ -38,7 +41,7 @@ function noteMutator(note, op) {
         private_mutate_1.remove(note, op);
     }
     else if ("oi" in op) {
-        invariant(!note[op.p[0]], "Object already set");
+        invariant_1.default(!note[op.p[0]], "Object already set");
         private_mutate_1.set(note, op);
     }
     else if ("ld" in op || "li" in op) {
