@@ -18,18 +18,24 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
  */
 
-import { css, StyleSheet } from 'aphrodite';
-import { chunk, isEqual, times } from 'lodash';
-import {Count, Direction, MxmlAccidental,
-    NormalAngledSquare, Notations, TimeModification} from 'musicxml-interfaces';
-import * as React from 'react';
-import { Addons as SatieAddons } from './satie/src/satie';
+import { css, StyleSheet } from "aphrodite";
+import { chunk, isEqual, times } from "lodash";
+import {
+  Count,
+  Direction,
+  MxmlAccidental,
+  NormalAngledSquare,
+  Notations,
+  TimeModification,
+} from "musicxml-interfaces";
+import * as React from "react";
+import { Addons as SatieAddons } from "./satie/src/satie";
 
 export interface Props {
   accidental: MxmlAccidental;
   direction: Direction;
   dots: number;
-  editType: 'N' | 'R' | 'E' | 'P';
+  editType: "N" | "R" | "E" | "P";
   notation: Notations;
   note: Count;
   timeModification: TimeModification;
@@ -38,7 +44,7 @@ export interface Props {
   setAccidental(accidental: MxmlAccidental): void;
   setDirection(direction: Direction): void;
   setDots(dots: number): void;
-  setEditType(editType: 'N' | 'R' | 'E' | 'P'): void;
+  setEditType(editType: "N" | "R" | "E" | "P"): void;
   setNotation(notation: Notations): void;
   setNote(count: Count): void;
   setTimeModification(timeModification: TimeModification): void;
@@ -47,95 +53,121 @@ export interface Props {
 
 const dynamics: Direction[] = [
   {
-    directionTypes: [{
-      dynamics: {
-        ppp: true,
+    directionTypes: [
+      {
+        dynamics: {
+          ppp: true,
+        },
       },
-    }],
+    ],
   },
   {
-    directionTypes: [{
-      dynamics: {
-        pp: true,
+    directionTypes: [
+      {
+        dynamics: {
+          pp: true,
+        },
       },
-    }],
+    ],
   },
   {
-    directionTypes: [{
-      dynamics: {
-        p: true,
+    directionTypes: [
+      {
+        dynamics: {
+          p: true,
+        },
       },
-    }],
+    ],
   },
   {
-    directionTypes: [{
-      dynamics: {
-        mp: true,
+    directionTypes: [
+      {
+        dynamics: {
+          mp: true,
+        },
       },
-    }],
+    ],
   },
   {
-    directionTypes: [{
-      dynamics: {
-        mf: true,
+    directionTypes: [
+      {
+        dynamics: {
+          mf: true,
+        },
       },
-    }],
+    ],
   },
   {
-    directionTypes: [{
-      dynamics: {
-        f: true,
+    directionTypes: [
+      {
+        dynamics: {
+          f: true,
+        },
       },
-    }],
+    ],
   },
   {
-    directionTypes: [{
-      dynamics: {
-        ff: true,
+    directionTypes: [
+      {
+        dynamics: {
+          ff: true,
+        },
       },
-    }],
+    ],
   },
   {
-    directionTypes: [{
-      dynamics: {
-        fff: true,
+    directionTypes: [
+      {
+        dynamics: {
+          fff: true,
+        },
       },
-    }],
+    ],
   },
   {
-    directionTypes: [{
-      dynamics: {
-        fp: true,
+    directionTypes: [
+      {
+        dynamics: {
+          fp: true,
+        },
       },
-    }],
+    ],
   },
   {
-    directionTypes: [{
-      dynamics: {
-        sf: true,
+    directionTypes: [
+      {
+        dynamics: {
+          sf: true,
+        },
       },
-    }],
+    ],
   },
   {
-    directionTypes: [{
-      dynamics: {
-        sfz: true,
+    directionTypes: [
+      {
+        dynamics: {
+          sfz: true,
+        },
       },
-    }],
+    ],
   },
   {
-    directionTypes: [{
-      dynamics: {
-        sfp: true,
+    directionTypes: [
+      {
+        dynamics: {
+          sfp: true,
+        },
       },
-    }],
+    ],
   },
   {
-    directionTypes: [{
-      dynamics: {
-        rfz: true,
+    directionTypes: [
+      {
+        dynamics: {
+          rfz: true,
+        },
       },
-    }],
+    ],
   },
 ];
 
@@ -258,9 +290,13 @@ const articulations: Notations[] = [
 /**
  * Renders a list of tools that can be selected in the note editor.
  */
-export default class NotePalette extends React.Component<Props, {}> {
+export default class NotePalette extends React.Component<Props> {
   render(): JSX.Element {
-    const cls: string = css(styles.paletteSml, styles.paletteBtnOff, styles.paletteTxt);
+    const cls: string = css(
+      styles.paletteSml,
+      styles.paletteBtnOff,
+      styles.paletteTxt,
+    );
 
     return (
       <div className={css(styles.controlWidget)}>
@@ -273,22 +309,12 @@ export default class NotePalette extends React.Component<Props, {}> {
           <ul className={css(styles.controls)}>
             <div className={css(styles.controlSeperator)} />
             {/* tslint:disable-next-line react-a11y-anchors */}
-            <a
-              href="#"
-              onClick={this.props.undo}
-              className={cls}
-              role="button"
-            >
+            <a href="#" onClick={this.props.undo} className={cls} role="button">
               <i className="fa-undo fa" />
             </a>
             <div className={css(styles.controlSeperator)} />
             {/* tslint:disable-next-line react-a11y-anchors */}
-            <a
-              href="#"
-              onClick={this.props.redo}
-              className={cls}
-              role="button"
-            >
+            <a href="#" onClick={this.props.redo} className={cls} role="button">
               <i className="fa-undo fa-flip-horizontal fa" />
             </a>
             <div className={css(styles.controlSeperator)} />
@@ -299,8 +325,7 @@ export default class NotePalette extends React.Component<Props, {}> {
               className={cls}
               role="button"
             >
-              <i className="fa-plus fa" />{' '}
-              Add Bar
+              <i className="fa-plus fa" /> Add Bar
             </a>
           </ul>
         </div>
@@ -317,14 +342,19 @@ export default class NotePalette extends React.Component<Props, {}> {
     function classNameForAcc(otherAccidental: MxmlAccidental): string {
       return css(
         styles.paletteSml,
-        accidental === otherAccidental && editType === 'N' ?
-          styles.paletteBtnOn : styles.paletteBtnOff,
+        accidental === otherAccidental && editType === "N"
+          ? styles.paletteBtnOn
+          : styles.paletteBtnOff,
       );
     }
 
-    const getTypeClass: (forType: string) => string = (forType: string): string =>
-        css(styles.paletteSml,
-            editType === forType ? styles.paletteBtnOn : styles.paletteBtnOff);
+    const getTypeClass: (forType: string) => string = (
+      forType: string,
+    ): string =>
+      css(
+        styles.paletteSml,
+        editType === forType ? styles.paletteBtnOn : styles.paletteBtnOff,
+      );
 
     return (
       <span className={css(styles.subsection)}>
@@ -338,7 +368,7 @@ export default class NotePalette extends React.Component<Props, {}> {
             role="button"
           >
             <span className={css(styles.bravura)}>
-              <span className="mn_">{'\ue261'}</span>
+              <span className="mn_">{"\ue261"}</span>
             </span>
           </a>
           {/* tslint:disable-next-line react-a11y-anchors */}
@@ -349,7 +379,7 @@ export default class NotePalette extends React.Component<Props, {}> {
             role="button"
           >
             <span className={css(styles.bravura)}>
-              <span className="mn_">{'\ue260'}</span>
+              <span className="mn_">{"\ue260"}</span>
             </span>
           </a>
           {/* tslint:disable-next-line react-a11y-anchors */}
@@ -360,31 +390,35 @@ export default class NotePalette extends React.Component<Props, {}> {
             role="button"
           >
             <span className={css(styles.bravura)}>
-              <span className="mn_">{'\ue262'}</span>
+              <span className="mn_">{"\ue262"}</span>
             </span>
           </a>
           {/* tslint:disable-next-line react-a11y-anchors */}
           <a
             href="#"
-            onClick={this.props.editType === 'R' ? this.setTypeN : this.setTypeR}
-            className={getTypeClass('R')}
+            onClick={
+              this.props.editType === "R" ? this.setTypeN : this.setTypeR
+            }
+            className={getTypeClass("R")}
             role="button"
           >
             <span className={css(styles.bravura)}>
-              <span className="mn_">{'\ue4e6'}</span>
+              <span className="mn_">{"\ue4e6"}</span>
             </span>
           </a>
-            {/* tslint:disable-next-line react-a11y-anchors */}
-            <a
-              href="#"
-              onClick={this.props.editType === 'P' ? this.setTypeN : this.setTypeP}
-              className={getTypeClass('P')}
-              role="button"
-            >
-              <span className={css(styles.bravura)}>
-                <span className="mn_">{'\ue52f'}</span>
-              </span>
-            </a>
+          {/* tslint:disable-next-line react-a11y-anchors */}
+          <a
+            href="#"
+            onClick={
+              this.props.editType === "P" ? this.setTypeN : this.setTypeP
+            }
+            className={getTypeClass("P")}
+            role="button"
+          >
+            <span className={css(styles.bravura)}>
+              <span className="mn_">{"\ue52f"}</span>
+            </span>
+          </a>
           <div className={css(styles.controlSeperator)} />
         </ul>
       </span>
@@ -394,16 +428,19 @@ export default class NotePalette extends React.Component<Props, {}> {
   private renderArticulations(): JSX.Element {
     const { editType, notation, setNotation } = this.props;
 
-    if (editType !== 'P') {
+    if (editType !== "P") {
       return null;
     }
 
-    const rows: JSX.Element[] =
-      chunk(articulations, 3).map((row: Notations[], idx: number) => {
+    const rows: JSX.Element[] = chunk(articulations, 3).map(
+      (row: Notations[], idx: number) => {
         const columns: JSX.Element[] = row.map(
           (model: Notations, jdx: number): JSX.Element => {
             const className: string = css(
-              isEqual(notation, model) ? styles.paletteBtnOn : styles.paletteBtnOff);
+              isEqual(notation, model)
+                ? styles.paletteBtnOn
+                : styles.paletteBtnOff,
+            );
 
             return (
               /* tslint:disable-next-line react-a11y-anchors */
@@ -417,14 +454,16 @@ export default class NotePalette extends React.Component<Props, {}> {
                 <SatieAddons.NotationView spec={model} />
               </a>
             );
-          });
+          },
+        );
 
         return (
           <ul className={css(styles.controls)} key={idx}>
             {columns}
           </ul>
         );
-      });
+      },
+    );
 
     return (
       <span className={css(styles.subsection)}>
@@ -439,9 +478,10 @@ export default class NotePalette extends React.Component<Props, {}> {
 
     const classNameForCount: (cnt: Count) => string = (cnt: Count): string => {
       return css(
-        note === cnt && (this.props.editType === 'N' || this.props.editType === 'R') ?
-          styles.paletteBtnOn :
-          styles.paletteBtnOff,
+        note === cnt &&
+        (this.props.editType === "N" || this.props.editType === "R")
+          ? styles.paletteBtnOn
+          : styles.paletteBtnOff,
       );
     };
 
@@ -457,7 +497,7 @@ export default class NotePalette extends React.Component<Props, {}> {
             role="button"
           >
             <span className={css(styles.bravura)}>
-              <span className="mn_">{'\ud834\udd62'}</span>
+              <span className="mn_">{"\ud834\udd62"}</span>
             </span>
           </a>
           {/* tslint:disable-next-line react-a11y-anchors */}
@@ -468,7 +508,7 @@ export default class NotePalette extends React.Component<Props, {}> {
             role="button"
           >
             <span className={css(styles.bravura)}>
-              <span className="mn_">{'\ud834\udd61'}</span>
+              <span className="mn_">{"\ud834\udd61"}</span>
             </span>
           </a>
           {/* tslint:disable-next-line react-a11y-anchors */}
@@ -479,7 +519,7 @@ export default class NotePalette extends React.Component<Props, {}> {
             role="button"
           >
             <span className={css(styles.bravura)}>
-              <span className="mn_">{'\ud834\udd60'}</span>
+              <span className="mn_">{"\ud834\udd60"}</span>
             </span>
           </a>
         </ul>
@@ -492,7 +532,7 @@ export default class NotePalette extends React.Component<Props, {}> {
             role="button"
           >
             <span className={css(styles.bravura)}>
-              <span className="mn_">{'\ud834\udd5f'}</span>
+              <span className="mn_">{"\ud834\udd5f"}</span>
             </span>
           </a>
           {/* tslint:disable-next-line react-a11y-anchors */}
@@ -503,7 +543,7 @@ export default class NotePalette extends React.Component<Props, {}> {
             role="button"
           >
             <span className={css(styles.bravura)}>
-              <span className="mn_">{'\ud834\udd5e'}</span>
+              <span className="mn_">{"\ud834\udd5e"}</span>
             </span>
           </a>
           {/* tslint:disable-next-line react-a11y-anchors */}
@@ -514,7 +554,7 @@ export default class NotePalette extends React.Component<Props, {}> {
             role="button"
           >
             <span className={css(styles.bravura)}>
-              <span className="mn_">{'\ue0a2'}</span>
+              <span className="mn_">{"\ue0a2"}</span>
             </span>
           </a>
         </ul>
@@ -525,17 +565,20 @@ export default class NotePalette extends React.Component<Props, {}> {
   private renderDynamics(): JSX.Element {
     const { direction, editType, setDirection } = this.props;
 
-    if (editType !== 'P') {
+    if (editType !== "P") {
       return null;
     }
 
-    const rows: JSX.Element[] =
-      chunk(dynamics, 3).map((row: Direction[], idx: number) => {
+    const rows: JSX.Element[] = chunk(dynamics, 3).map(
+      (row: Direction[], idx: number) => {
         const columns: JSX.Element[] = row.map(
           (model: Direction, jdx: number): JSX.Element => {
             const className: string = css(
-              isEqual(direction, model) ? styles.paletteBtnOn : styles.paletteBtnOff);
-            const layout: {model: Direction, overrideX?: number} = {
+              isEqual(direction, model)
+                ? styles.paletteBtnOn
+                : styles.paletteBtnOff,
+            );
+            const layout: { model: Direction; overrideX?: number } = {
               model,
               overrideX: 0,
             };
@@ -552,14 +595,16 @@ export default class NotePalette extends React.Component<Props, {}> {
                 <SatieAddons.Direction layout={layout} />
               </a>
             );
-          });
+          },
+        );
 
         return (
           <ul className={css(styles.controls)} key={idx}>
             {columns}
           </ul>
         );
-      });
+      },
+    );
 
     return (
       <span className={css(styles.subsection)}>
@@ -572,19 +617,20 @@ export default class NotePalette extends React.Component<Props, {}> {
   private renderModifiers(): JSX.Element {
     const { dots, timeModification } = this.props;
 
-    const timeModificationTupletClassName: string = css (
-      timeModification ? styles.paletteBtnOn : styles.paletteBtnOff);
+    const timeModificationTupletClassName: string = css(
+      timeModification ? styles.paletteBtnOn : styles.paletteBtnOff,
+    );
 
-    const dotEl: JSX.Element[] = times(dots || 1, (idx: number): JSX.Element => {
-      return (
-        <span
-          style={{ marginLeft: 3, display: 'inline-block' }}
-          key={idx}
-        >
-          {'\ue1e7'}
-        </span>
-      );
-    });
+    const dotEl: JSX.Element[] = times(
+      dots || 1,
+      (idx: number): JSX.Element => {
+        return (
+          <span style={{ marginLeft: 3, display: "inline-block" }} key={idx}>
+            {"\ue1e7"}
+          </span>
+        );
+      },
+    );
 
     return (
       <span className={css(styles.subsection)}>
@@ -594,12 +640,14 @@ export default class NotePalette extends React.Component<Props, {}> {
           <a
             href="#"
             onClick={this.toggleDots}
-            className={dots ? css(styles.paletteBtnOn) : css(styles.paletteBtnOff)}
+            className={
+              dots ? css(styles.paletteBtnOn) : css(styles.paletteBtnOff)
+            }
             role="button"
           >
             <span className={css(styles.bravura)}>
               <span className="mn_">
-                {'\ud834\udd5f'}
+                {"\ud834\udd5f"}
                 {dotEl}
               </span>
             </span>
@@ -612,7 +660,7 @@ export default class NotePalette extends React.Component<Props, {}> {
             role="button"
           >
             <span className={css(styles.bravura)}>
-              <span className="mn_">{'\ue883'}</span>
+              <span className="mn_">{"\ue883"}</span>
             </span>
           </a>
         </ul>
@@ -621,12 +669,10 @@ export default class NotePalette extends React.Component<Props, {}> {
   }
 
   private renderSecondRow(): JSX.Element {
-    if (this.props.editType === 'P') {
+    if (this.props.editType === "P") {
       return (
         <span>
-          <div className={css(styles.controlRow)}>
-            {this.renderDynamics()}
-          </div>
+          <div className={css(styles.controlRow)}>{this.renderDynamics()}</div>
           <div className={css(styles.controlRow)}>
             {this.renderArticulations()}
           </div>
@@ -637,24 +683,28 @@ export default class NotePalette extends React.Component<Props, {}> {
     return null;
   }
 
-  private setAccidentalF: () => void = () => this.props.setAccidental(MxmlAccidental.Flat);
-  private setAccidentalNone: () => void = () => this.props.setAccidental(MxmlAccidental.Natural);
-  private setAccidentalS: () => void = () => this.props.setAccidental(MxmlAccidental.Sharp);
+  private setAccidentalF: () => void = () =>
+    this.props.setAccidental(MxmlAccidental.Flat);
+  private setAccidentalNone: () => void = () =>
+    this.props.setAccidental(MxmlAccidental.Natural);
+  private setAccidentalS: () => void = () =>
+    this.props.setAccidental(MxmlAccidental.Sharp);
   private setNote1: () => void = () => this.props.setNote(Count.Whole);
   private setNote16: () => void = () => this.props.setNote(Count._16th);
   private setNote2: () => void = () => this.props.setNote(Count.Half);
   private setNote32: () => void = () => this.props.setNote(Count._32nd);
   private setNote4: () => void = () => this.props.setNote(Count.Quarter);
   private setNote8: () => void = () => this.props.setNote(Count.Eighth);
-  private setTypeN: () => void = () => this.props.setEditType('N');
-  private setTypeP: () => void = () => this.props.setEditType('P');
-  private setTypeR: () => void = () => this.props.setEditType('R');
-  private toggleDots: () => void = () => this.props.setDots(((this.props.dots || 0) + 1) % 4);
+  private setTypeN: () => void = () => this.props.setEditType("N");
+  private setTypeP: () => void = () => this.props.setEditType("P");
+  private setTypeR: () => void = () => this.props.setEditType("R");
+  private toggleDots: () => void = () =>
+    this.props.setDots(((this.props.dots || 0) + 1) % 4);
   private toggleTuplet: () => void = () => {
     this.props.setTimeModification(
-            this.props.timeModification ? null : { actualNotes: 3, normalNotes: 2 },
-        );
-  }
+      this.props.timeModification ? null : { actualNotes: 3, normalNotes: 2 },
+    );
+  };
 }
 
 // tslint:disable-next-line typedef
@@ -664,43 +714,43 @@ const styles = StyleSheet.create({
   },
 
   controlHeading: {
-    display: 'block',
+    display: "block",
     fontSize: 10,
     height: 10,
     marginBottom: 2,
-    textAlign: 'center',
-    width: '100%',
+    textAlign: "center",
+    width: "100%",
   },
 
   controlWidget: {
-    backgroundColor: 'white',
-    borderBottom: '1px solid #bebebe',
-    borderRight: '1px solid #bebebe',
+    backgroundColor: "white",
+    borderBottom: "1px solid #bebebe",
+    borderRight: "1px solid #bebebe",
     bottom: 165,
-    display: 'flex',
-    flexDirection: 'column',
+    display: "flex",
+    flexDirection: "column",
     left: 15,
-    position: 'absolute',
+    position: "absolute",
     right: 15,
   },
 
   controlRow: {
-    borderTop: '1px solid #bebebe',
-    display: 'flex',
-    flexDirection: 'row',
+    borderTop: "1px solid #bebebe",
+    display: "flex",
+    flexDirection: "row",
     minHeight: 40,
-    overflow: 'auto',
+    overflow: "auto",
   },
 
   controlSeperator: {
-    backgroundColor: '#bebebe',
-    height: '100%',
+    backgroundColor: "#bebebe",
+    height: "100%",
     width: 1,
   },
 
   controls: {
-    display: 'flex',
-    listStyleType: 'none',
+    display: "flex",
+    listStyleType: "none",
     margin: 0,
     paddingLeft: 0,
   },
@@ -714,52 +764,52 @@ const styles = StyleSheet.create({
   },
 
   paletteTxt: {
-    lineHeight: '42px',
+    lineHeight: "42px",
   },
 
   paletteBtnOn: {
-    background: 'rgb(0, 42, 74)',
-    borderBottom: 'none',
+    background: "rgb(0, 42, 74)",
+    borderBottom: "none",
     borderBottomWidth: 0,
     borderRadius: 0,
     borderTopWidth: 0,
-    color: 'white',
-    cursor: 'pointer',
-    display: 'block',
+    color: "white",
+    cursor: "pointer",
+    display: "block",
     fontSize: 14,
     height: 40,
-    lineHeight: '36px',
+    lineHeight: "36px",
     minWidth: 20,
-    overflow: 'hidden',
+    overflow: "hidden",
     paddingLeft: 10,
     paddingRight: 10,
-    textAlign: 'center',
-    textDecoration: 'none',
+    textAlign: "center",
+    textDecoration: "none",
   },
 
   paletteBtnOff: {
-    [':hover']: {
-      background: 'rgb(26, 68, 100)',
-      color: 'white',
+    [":hover"]: {
+      background: "rgb(26, 68, 100)",
+      color: "white",
     },
 
-    background: '#f6f7f7',
-    borderBottom: 'none',
+    background: "#f6f7f7",
+    borderBottom: "none",
     borderBottomWidth: 0,
     borderRadius: 0,
     borderTopWidth: 0,
-    color: 'rgb(0, 0, 238)',
-    cursor: 'pointer',
-    display: 'block',
+    color: "rgb(0, 0, 238)",
+    cursor: "pointer",
+    display: "block",
     fontSize: 14,
     height: 40,
-    lineHeight: '36px',
+    lineHeight: "36px",
     minWidth: 20,
-    overflow: 'hidden',
+    overflow: "hidden",
     paddingLeft: 10,
     paddingRight: 10,
-    textAlign: 'center',
-    textDecoration: 'none',
+    textAlign: "center",
+    textDecoration: "none",
   },
 
   spring: {
@@ -767,6 +817,6 @@ const styles = StyleSheet.create({
   },
 
   subsection: {
-    display: 'flex',
+    display: "flex",
   },
 });

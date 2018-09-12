@@ -20,7 +20,7 @@
  * @file engine/processors/measure.ts provides functions for validating and laying out measures
  */
 
-import * as invariant from "invariant";
+import invariant from "invariant";
 import {IAny} from "musicxml-interfaces/operations";
 import {ScoreHeader, Print} from "musicxml-interfaces";
 import {keyBy, filter, map, reduce, values, flatten, forEach, some, last} from "lodash";

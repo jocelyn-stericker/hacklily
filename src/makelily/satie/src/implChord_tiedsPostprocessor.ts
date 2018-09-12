@@ -16,28 +16,28 @@
  * along with Satie.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import {Tied, StartStopContinue} from "musicxml-interfaces";
-import {forEach, times, find} from "lodash";
-import * as invariant from "invariant";
+import { Tied, StartStopContinue } from "musicxml-interfaces";
+import { forEach, times, find } from "lodash";
+import invariant from "invariant";
 
-import {Type, ILayout} from "./document";
+import { Type, ILayout } from "./document";
 
 import NoteImpl from "./implChord_noteImpl";
 
-import {IMeasureLayout} from "./private_measureLayout";
-import {ILayoutOptions} from "./private_layoutOptions";
-import {ILineBounds} from "./private_lineBounds";
-import {notationObj} from "./private_chordUtil";
+import { IMeasureLayout } from "./private_measureLayout";
+import { ILayoutOptions } from "./private_layoutOptions";
+import { ILineBounds } from "./private_lineBounds";
+import { notationObj } from "./private_chordUtil";
 
 interface IMutableTied {
-    number: number;
-    elements: ILayout[];
-    initial: Tied;
+  number: number;
+  elements: ILayout[];
+  initial: Tied;
 }
 
 type TiedSet = {
-    [id: number]: IMutableTied;
-    [id: string]: IMutableTied; // For Dictionary!
+  [id: number]: IMutableTied;
+  [id: string]: IMutableTied; // For Dictionary!
 };
 
 /**
@@ -45,71 +45,80 @@ type TiedSet = {
  *
  * @returns new end of line
  */
-function tied(options: ILayoutOptions, bounds: ILineBounds,
-        measures: IMeasureLayout[]): IMeasureLayout[] {
-    forEach(measures, measure => {
-        // Note that the `number` property of beams does NOT differentiate between sets of beams,
-        // as it does with e.g., ties. See `note.mod`.
-        let activeTieds: TiedSet = {};
-        // Invariant: measure.elements[i].length == measure.elements[j].length for all valid i, j.
-        times(measure.elements[0].length, i => {
-            forEach(measure.elements, elements => {
-                let layout = elements[i];
-                let model = layout.model;
-                if (!model || layout.renderClass !== Type.Chord) {
-                    return;
-                }
-                let chord: ArrayLike<NoteImpl> = model as any;
-                let noteWithTieds = find(chord, el => {
-                    let notations = notationObj(el);
-                    return notations && notations.tieds && notations.tieds.length;
-                });
-
-                if (noteWithTieds && noteWithTieds.grace) {
-                    // TODO: grace notes
-                    return;
-                }
-                if (!noteWithTieds) {
-                    return;
-                }
-                let notations = notationObj(noteWithTieds);
-                let tieds = notations.tieds;
-                forEach(tieds, tied => {
-                    invariant(isFinite(tied.number) && tied.number !== null,
-                        "Tieds must have an ID (tied.number)");
-                    let currTied = activeTieds[tied.number];
-                    if (currTied) {
-                        if (tied.type === StartStopContinue.Start) {
-                            console.warn(
-                                "Found \"Start\" Tied that continues an existing Tied:",
-                                currTied);
-                        }
-                        currTied.elements.push(layout);
-                        terminateTied$(activeTieds, tied);
-                    }
-
-                    if (tied.type !== StartStopContinue.Stop) {
-                        activeTieds[tied.number] = {
-                            number: tied.number,
-                            elements: [layout],
-                            initial: tied
-                        };
-                    }
-                });
-            });
+function tied(
+  options: ILayoutOptions,
+  bounds: ILineBounds,
+  measures: IMeasureLayout[]
+): IMeasureLayout[] {
+  forEach(measures, measure => {
+    // Note that the `number` property of beams does NOT differentiate between sets of beams,
+    // as it does with e.g., ties. See `note.mod`.
+    let activeTieds: TiedSet = {};
+    // Invariant: measure.elements[i].length == measure.elements[j].length for all valid i, j.
+    times(measure.elements[0].length, i => {
+      forEach(measure.elements, elements => {
+        let layout = elements[i];
+        let model = layout.model;
+        if (!model || layout.renderClass !== Type.Chord) {
+          return;
+        }
+        let chord: ArrayLike<NoteImpl> = model as any;
+        let noteWithTieds = find(chord, el => {
+          let notations = notationObj(el);
+          return notations && notations.tieds && notations.tieds.length > 0;
         });
-        forEach<IMutableTied>(activeTieds as any, (tied, idx) => {
-            console.warn(
-                "Tied %s was not closed before the end of the measure " +
-                "(this will be implemented later!)", idx);
+
+        if (noteWithTieds && noteWithTieds.grace) {
+          // TODO: grace notes
+          return;
+        }
+        if (!noteWithTieds) {
+          return;
+        }
+        let notations = notationObj(noteWithTieds);
+        let tieds = notations.tieds;
+        forEach(tieds, tied => {
+          invariant(
+            isFinite(tied.number) && tied.number !== null,
+            "Tieds must have an ID (tied.number)"
+          );
+          let currTied = activeTieds[tied.number];
+          if (currTied) {
+            if (tied.type === StartStopContinue.Start) {
+              console.warn(
+                "Found \"Start\" Tied that continues an existing Tied:",
+                currTied
+              );
+            }
+            currTied.elements.push(layout);
+            terminateTied$(activeTieds, tied);
+          }
+
+          if (tied.type !== StartStopContinue.Stop) {
+            activeTieds[tied.number] = {
+              number: tied.number,
+              elements: [layout],
+              initial: tied
+            };
+          }
         });
+      });
     });
-    return measures;
+    forEach<IMutableTied>(activeTieds as any, (tied, idx) => {
+      console.warn(
+        "Tied %s was not closed before the end of the measure " +
+          "(this will be implemented later!)",
+        idx
+      );
+    });
+  });
+  return measures;
 }
 
 function terminateTied$(activeTieds: TiedSet, tied: Tied) {
-    (<any>activeTieds[tied.number].initial).satieTieTo = activeTieds[tied.number].elements[1];
-    delete activeTieds[tied.number];
+  (<any>activeTieds[tied.number].initial).satieTieTo =
+    activeTieds[tied.number].elements[1];
+  delete activeTieds[tied.number];
 }
 
 export default tied;

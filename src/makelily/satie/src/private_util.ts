@@ -20,7 +20,7 @@
  * @file private/util.ts Math and other utilites used privately by the engine.
  */
 
-import * as invariant from "invariant";
+import invariant from "invariant";
 
 /**
  * Finds the positive greatest common factor of two numbers by using Euclid's algorithm.

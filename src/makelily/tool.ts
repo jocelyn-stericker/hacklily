@@ -18,7 +18,7 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
  */
 
-import { Clef, Key, Time } from 'musicxml-interfaces';
+import { Clef, Key, Time } from "musicxml-interfaces";
 
 export interface ToolProps {
   clef: Clef;

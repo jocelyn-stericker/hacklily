@@ -18,16 +18,16 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
  */
 
-import { css } from 'aphrodite';
-import React = require('react');
+import { css } from "aphrodite";
+import React = require("react");
 
-import tabStyles from './tabStyles';
-import { ToolProps } from './tool';
+import tabStyles from "./tabStyles";
+import { ToolProps } from "./tool";
 
 /**
  * Placeholder for when an error was caught.
  */
-export default class ToolError extends React.Component<ToolProps, {}> {
+export default class ToolError extends React.Component<ToolProps> {
   render(): JSX.Element {
     return (
       <span className={css(tabStyles.tool)}>
@@ -35,15 +35,15 @@ export default class ToolError extends React.Component<ToolProps, {}> {
           <h3 className={css(tabStyles.toolHeading)}>It's not your fault*!</h3>
         </div>
         <div className={css(tabStyles.section)}>
-          The tool you were using crashed, so it has been closed.{' '}
-          Please{' '}
+          The tool you were using crashed, so it has been closed. Please{" "}
           <a
             href="https://github.com/hacklily/makelily/issues/new"
             target="_blank"
             rel="noopener noreferrer"
           >
             file an issue
-          </a> so I can try fixing it.
+          </a>{" "}
+          so I can try fixing it.
         </div>
         <div className={css(tabStyles.section)}>
           *if you are Joshua, it is probably your fault.

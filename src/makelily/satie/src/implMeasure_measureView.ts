@@ -20,7 +20,7 @@ import {createFactory, Component} from "react";
 import * as DOM from "react-dom-factories";
 import * as PropTypes from "prop-types";
 import {chain, flatten, mapValues, map, forEach} from "lodash";
-import * as invariant from "invariant";
+import invariant from "invariant";
 
 import {ILayout} from "./document";
 import {IMeasureLayout} from "./private_measureLayout";

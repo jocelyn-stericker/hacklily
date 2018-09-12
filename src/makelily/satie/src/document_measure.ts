@@ -17,7 +17,7 @@
  */
 
 import {flatten, map, values, filter} from "lodash";
-import * as invariant from "invariant";
+import invariant from "invariant";
 
 import {IModel} from "./document";
 

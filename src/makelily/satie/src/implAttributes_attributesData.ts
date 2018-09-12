@@ -18,7 +18,7 @@
 
 import {Attributes, Key} from "musicxml-interfaces";
 import {times, forEach, map, reduce} from "lodash";
-import * as invariant from "invariant";
+import invariant from "invariant";
 
 import {IAttributesSnapshot} from "./private_attributesSnapshot";
 

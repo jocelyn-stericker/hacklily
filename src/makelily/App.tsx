@@ -18,10 +18,10 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
  */
 
-import { css, StyleSheet } from 'aphrodite';
-import React = require('react');
+import { css, StyleSheet } from "aphrodite";
+import React = require("react");
 
-import Makelily from './Makelily';
+import Makelily from "./Makelily";
 
 /**
  * Properties derived from URL.
@@ -42,18 +42,21 @@ export interface QueryProps {
 }
 
 export const QUERY_PROP_KEYS: (keyof QueryProps)[] = [
-  'clef',
-  'defaultTool',
-  'keySig',
-  'singleTaskMode',
-  'time',
+  "clef",
+  "defaultTool",
+  "keySig",
+  "singleTaskMode",
+  "time",
 ];
 
 export interface Props extends QueryProps {
   /**
    * Updates a field in the URL query.
    */
-  setQuery<K extends keyof QueryProps>(updates: Pick<QueryProps, K>, replaceState?: boolean): void;
+  setQuery<K extends keyof QueryProps>(
+    updates: Pick<QueryProps, K>,
+    replaceState?: boolean,
+  ): void;
 }
 
 type ChgEv = React.ChangeEvent<HTMLInputElement>;
@@ -61,57 +64,69 @@ type ChgEv = React.ChangeEvent<HTMLInputElement>;
 /**
  * This renders a SPA which demos the makelily modal.
  */
-export default class App extends React.Component<Props, {}> {
+export default class App extends React.Component<Props> {
   render(): JSX.Element {
-    const { clef, defaultTool, keySig, singleTaskMode, setQuery, time } = this.props;
+    const {
+      clef,
+      defaultTool,
+      keySig,
+      singleTaskMode,
+      setQuery,
+      time,
+    } = this.props;
 
     return (
       <div className={css(styles.appRoot)}>
         <div className={css(styles.mockPreview)} />
         <div className={css(styles.mockHeader)} />
         <div className={css(styles.presets)}>
-          Makelily sandbox.{' \u00a0'}
-          \clef{' '}
+          Makelily sandbox.
+          {" \u00a0"}
+          \clef{" "}
           <input
-            onChange={(ev: ChgEv): void => setQuery({ clef: ev.target.value }, true)}
-            value={clef || ''}
-          />
-          {' '}
-          \key{' '}
+            onChange={(ev: ChgEv): void =>
+              setQuery({ clef: ev.target.value }, true)
+            }
+            value={clef || ""}
+          />{" "}
+          \key{" "}
           <input
-            onChange={(ev: ChgEv): void => setQuery({ keySig: ev.target.value }, true)}
-            value={keySig || ''}
-          />
-          {' '}
-          \time{' '}
+            onChange={(ev: ChgEv): void =>
+              setQuery({ keySig: ev.target.value }, true)
+            }
+            value={keySig || ""}
+          />{" "}
+          \time{" "}
           <input
-            onChange={(ev: ChgEv): void => setQuery({ time: ev.target.value }, true)}
-            value={time || ''}
-          />
-          {' '}
+            onChange={(ev: ChgEv): void =>
+              setQuery({ time: ev.target.value }, true)
+            }
+            value={time || ""}
+          />{" "}
           <input
             id="single-task-mode"
-            onChange={(ev: ChgEv): void => setQuery({ singleTaskMode: ev.target.checked }, true)}
+            onChange={(ev: ChgEv): void =>
+              setQuery({ singleTaskMode: ev.target.checked }, true)
+            }
             type="checkbox"
-            checked={String(singleTaskMode) === 'true'}
+            checked={String(singleTaskMode) === "true"}
             aria-checked={singleTaskMode}
           />
-          <label htmlFor="single-task-mode">
-            Single task mode
-          </label>
-          {' '}
-          default tool{' '}
+          <label htmlFor="single-task-mode">Single task mode</label> default
+          tool{" "}
           <input
-            onChange={(ev: ChgEv): void => setQuery({ defaultTool: ev.target.value }, true)}
-            value={defaultTool || ''}
+            onChange={(ev: ChgEv): void =>
+              setQuery({ defaultTool: ev.target.value }, true)
+            }
+            value={defaultTool || ""}
           />
         </div>
         <Makelily
-          clef={clef || ''}
-          defaultTool={defaultTool || ''}
-          keySig={keySig || ''}
-          time={time || ''}
-          singleTaskMode={String(singleTaskMode) === 'true'}
+          clef={clef || ""}
+          defaultTool={defaultTool || ""}
+          keySig={keySig || ""}
+          time={time || ""}
+          singleTaskMode={String(singleTaskMode) === "true"}
           onHide={(): void => window.location.reload()}
           onInsertLy={this.handleInsertLy}
         />
@@ -128,30 +143,30 @@ export default class App extends React.Component<Props, {}> {
 // tslint:disable-next-line typedef
 const styles = StyleSheet.create({
   appRoot: {
-    backgroundColor: '#1e1e1e',
-    height: '100%',
-    width: '100%',
+    backgroundColor: "#1e1e1e",
+    height: "100%",
+    width: "100%",
   },
   mockHeader: {
-    backgroundColor: '#efefef',
-    borderBottom: '1px solid #000',
+    backgroundColor: "#efefef",
+    borderBottom: "1px solid #000",
     height: 50,
-    position: 'absolute',
+    position: "absolute",
     top: 0,
-    width: '100%',
+    width: "100%",
   },
   mockPreview: {
-    backgroundColor: 'white',
-    height: '100%',
-    position: 'absolute',
+    backgroundColor: "white",
+    height: "100%",
+    position: "absolute",
     right: 0,
-    width: '50%',
+    width: "50%",
   },
   presets: {
-    color: 'black',
-    fontFamily: 'monospace',
+    color: "black",
+    fontFamily: "monospace",
     left: 20,
-    position: 'absolute',
+    position: "absolute",
     top: 15,
     zIndex: 90000,
   },

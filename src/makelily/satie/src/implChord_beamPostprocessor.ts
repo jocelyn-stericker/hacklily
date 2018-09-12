@@ -22,7 +22,7 @@
 
 import {Attributes, Beam, BeamType, StartStop, Tuplet, AboveBelow} from "musicxml-interfaces";
 import {some, chain, forEach, find, map, sortBy, times, first, last} from "lodash";
-import * as invariant from "invariant";
+import invariant from "invariant";
 
 import {ILayout, Type} from "./document";
 

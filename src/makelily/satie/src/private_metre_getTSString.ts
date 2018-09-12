@@ -18,7 +18,7 @@
 
 import {Time} from "musicxml-interfaces";
 import {reduce} from "lodash";
-import * as invariant from "invariant";
+import invariant from "invariant";
 
 /**
  * @returns a TS string for lookup in the BEAMING_PATTERNS array.

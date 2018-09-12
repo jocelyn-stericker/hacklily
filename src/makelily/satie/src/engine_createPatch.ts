@@ -27,7 +27,7 @@ import {
     buildPrint, patchPrint, IPrintBuilder,
 } from "musicxml-interfaces/builders";
 import {find, forEach, last, some, times, findIndex, findLastIndex, extend, isInteger} from "lodash";
-import * as invariant from "invariant";
+import invariant from "invariant";
 
 import {Document, IMeasure, IMeasurePart, ISegment, Type, IModel} from "./document";
 

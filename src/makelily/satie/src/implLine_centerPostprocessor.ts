@@ -17,7 +17,7 @@
  */
 
 import {forEach, max, map, times, findIndex, last} from "lodash";
-import * as invariant from "invariant";
+import invariant from "invariant";
 
 import {Type} from "./document";
 

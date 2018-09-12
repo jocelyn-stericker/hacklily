@@ -16,7 +16,7 @@
  * along with Satie.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import * as invariant from "invariant";
+import invariant from "invariant";
 import {find, cloneDeep, forEach, isPlainObject, isArray, isUndefined, isNull,
     isBoolean, isNumber, isString} from "lodash";
 import {IAny} from "musicxml-interfaces/operations";

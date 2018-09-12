@@ -17,7 +17,7 @@
  */
 
 import {Component, ComponentLifecycle} from "react";
-import * as invariant from "invariant";
+import invariant from "invariant";
 import {isEqual, sortedIndex, indexOf} from "lodash";
 
 import {ILayout} from "./document";
