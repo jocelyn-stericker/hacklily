@@ -19,6 +19,7 @@
  */
 
 import { css } from "aphrodite";
+import * as monacoEditor from "monaco-editor";
 import React from "react";
 import ReactMonacoEditor from "react-monaco-editor";
 
@@ -46,7 +47,7 @@ interface Props {
    * When this changes, the selection changes. Used so that when you click on a
    * note in the preview, it highlights where the note is defined in the editor.
    */
-  defaultSelection: monaco.ISelection | null;
+  defaultSelection: monacoEditor.ISelection | null;
 
   isImmutableSrc: boolean;
 
@@ -80,7 +81,7 @@ export default class Editor extends React.PureComponent<Props> {
       this.props.showMakelily(tool, cb);
     },
   );
-  private editor: monaco.editor.ICodeEditor | undefined;
+  private editor: monacoEditor.editor.ICodeEditor | undefined;
   private oldDecorations: string[] = [];
 
   componentDidUpdate(prevProps: Props): void {
@@ -93,7 +94,7 @@ export default class Editor extends React.PureComponent<Props> {
       this.editor.layout();
     }
     if (prevProps.logs !== logs) {
-      const errors: monaco.editor.IModelDeltaDecoration[] = [];
+      const errors: monacoEditor.editor.IModelDeltaDecoration[] = [];
       const matchErrors: RegExp = /hacklily.ly:([0-9]*):(([0-9]*):([0-9]*))?\s*([ew].*)/g;
       const oldDecorations: string[] = this.oldDecorations || [];
       if (logs) {
@@ -104,7 +105,10 @@ export default class Editor extends React.PureComponent<Props> {
         ) {
           errors.push({
             options: {
-              hoverMessage: error[5],
+              hoverMessage: {
+                isTrusted: false,
+                value: error[5],
+              },
               inlineClassName: "lilymonaco-inline-error",
               linesDecorationsClassName: css(APP_STYLE.errorDecoration),
             },
@@ -193,7 +197,7 @@ export default class Editor extends React.PureComponent<Props> {
 
     let codeBeforeCursor: string = "";
     const lines: string[] = code.split("\n");
-    const line: monaco.Position = this.editor.getPosition();
+    const line: monacoEditor.Position = this.editor.getPosition();
 
     for (let i: number = 0; i < line.lineNumber - 1; i += 1) {
       codeBeforeCursor += `${lines[i]}\n`;
@@ -218,17 +222,15 @@ export default class Editor extends React.PureComponent<Props> {
       return;
     }
 
-    const line: monaco.Position = this.editor.getPosition();
-    const range: monaco.Range = new monaco.Range(
+    const line: monacoEditor.Position = this.editor.getPosition();
+    const range: monacoEditor.Range = new monacoEditor.Range(
       line.lineNumber,
       1,
       line.lineNumber,
       1,
     );
-    const id: { major: 1; minor: 1 } = { major: 1, minor: 1 };
-    const op: monaco.editor.IIdentifiedSingleEditOperation = {
+    const op: monacoEditor.editor.IIdentifiedSingleEditOperation = {
       forceMoveMarkers: true,
-      identifier: id,
       range,
       text,
     };
@@ -237,7 +239,7 @@ export default class Editor extends React.PureComponent<Props> {
 
   render(): JSX.Element | null {
     const { code, mode, onSetCode, readOnly } = this.props;
-    const monacoOptions: monaco.editor.IEditorOptions = {
+    const monacoOptions: monacoEditor.editor.IEditorOptions = {
       autoClosingBrackets: true,
       minimap: {
         enabled: false,
@@ -301,8 +303,8 @@ export default class Editor extends React.PureComponent<Props> {
   }
 
   private handleEditorDidMount = (
-    editor: monaco.editor.IStandaloneCodeEditor,
-    monacoModule: typeof monaco,
+    editor: monacoEditor.editor.IStandaloneCodeEditor,
+    monacoModule: typeof monacoEditor,
   ): void => {
     editor.focus();
     this.editor = editor;
@@ -310,7 +312,7 @@ export default class Editor extends React.PureComponent<Props> {
     this.commands.init(editor);
   };
 
-  private handleEditorWillMount = (monacoModule: typeof monaco): void => {
+  private handleEditorWillMount = (monacoModule: typeof monacoEditor): void => {
     if (registeredMonacoComponents) {
       return;
     }

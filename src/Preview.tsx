@@ -20,6 +20,7 @@
 
 import { css } from "aphrodite";
 import DOMPurify from "dompurify";
+import * as monacoEditor from "monaco-editor";
 import React from "react";
 
 import { decodeArrayBuffer } from "./base64Binary";
@@ -94,7 +95,7 @@ interface Props {
    * Called whenever a note is clicked. The parent should let the <Editor /> know
    * so it can focus where the note is defined.
    */
-  onSelectionChanged(selection: monaco.ISelection | null): void;
+  onSelectionChanged(selection: monacoEditor.ISelection | null): void;
 
   standaloneRender(
     src: string,
@@ -242,9 +243,18 @@ export default class Preview extends React.PureComponent<Props, State> {
 
       const logs: string = cleanLogs(dirtyLogs);
 
-      const root: HTMLElement | null = this.sheetMusicView
-        ? this.sheetMusicView.contentWindow.document.getElementById("root")
-        : null;
+      if (!this.sheetMusicView) {
+        throw new Error("Could not get frame's window");
+      }
+
+      if (!this.sheetMusicView.contentWindow) {
+        throw new Error("Could not get frame's window");
+      }
+
+      const root = this.sheetMusicView.contentWindow.document.getElementById(
+        "root",
+      );
+
       if (!root) {
         throw new Error("Could not get sheet music view root!");
       }
@@ -299,7 +309,7 @@ export default class Preview extends React.PureComponent<Props, State> {
   }
 
   private handleIFrameLoaded = (): void => {
-    if (this.sheetMusicView) {
+    if (this.sheetMusicView && this.sheetMusicView.contentWindow) {
       const body: HTMLElement = this.sheetMusicView.contentWindow.document.body;
       // tslint:disable-next-line:no-inner-html
       body.innerHTML = BODY_IFRAME_TEMPLATE;
@@ -335,7 +345,7 @@ export default class Preview extends React.PureComponent<Props, State> {
   };
 
   private handleModeDidChange = (): void => {
-    if (this.sheetMusicView) {
+    if (this.sheetMusicView && this.sheetMusicView.contentWindow) {
       const body: HTMLElement = this.sheetMusicView.contentWindow.document.body;
       body.classList.remove("modeBoth", "modeView", "modeEdit");
       switch (this.props.mode) {

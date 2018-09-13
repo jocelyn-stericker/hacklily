@@ -18,112 +18,114 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
  */
 
-import Commands from './Commands';
+import * as monacoEditor from "monaco-editor";
 
- /**
-  * Provides codelens shortcuts for lilypond.
-  */
-export default class CodelensProvider implements monaco.languages.CodeLensProvider {
+import Commands from "./Commands";
+
+/**
+ * Provides codelens shortcuts for lilypond.
+ */
+export default class CodelensProvider
+  implements monacoEditor.languages.CodeLensProvider {
   commands: Commands;
 
   constructor(commands: Commands) {
     this.commands = commands;
   }
 
-  provideCodeLenses = (model: monaco.editor.IReadOnlyModel, token: monaco.CancellationToken):
-      monaco.languages.ICodeLensSymbol[] => {
-
+  provideCodeLenses = (
+    model: monacoEditor.editor.IReadOnlyModel,
+    token: monacoEditor.CancellationToken,
+  ): monacoEditor.languages.ICodeLensSymbol[] => {
     const lines: string[] = model.getLinesContent();
 
-    type sym = monaco.languages.ICodeLensSymbol;
+    type sym = monacoEditor.languages.ICodeLensSymbol;
 
-    return lines.reduce(
-      (memos: sym[], line: string, i: number): sym[] => {
-        let memo: sym[] = memos;
+    return lines.reduce((memos: sym[], line: string, i: number): sym[] => {
+      let memo: sym[] = memos;
 
-        if (line.indexOf('\\clef') !== -1) {
-          memo = [
-            ...memo,
-            {
-              command: {
-                arguments: [i],
-                id: this.commands.setClef,
-                title: 'Tool: Change Clef',
-              },
-              range: {
-                endColumn: 1,
-                endLineNumber: i + 2,
-                startColumn: 1,
-                startLineNumber: i + 1,
-              },
+      if (line.indexOf("\\clef") !== -1) {
+        memo = [
+          ...memo,
+          {
+            command: {
+              arguments: [i],
+              id: this.commands.setClef,
+              title: "Tool: Change Clef",
             },
-          ];
-        }
-        if (line.indexOf('\\key') !== -1) {
-          memo = [
-            ...memo,
-            {
-              command: {
-                arguments: [i],
-                id: this.commands.setKey,
-                title: 'Tool: Change Key Signature',
-              },
-              range: {
-                endColumn: 1,
-                endLineNumber: i + 2,
-                startColumn: 1,
-                startLineNumber: i + 1,
-              },
+            range: {
+              endColumn: 1,
+              endLineNumber: i + 2,
+              startColumn: 1,
+              startLineNumber: i + 1,
             },
-          ];
-        }
-        if (line.indexOf('\\time') !== -1) {
-          memo = [
-            ...memo,
-            {
-              command: {
-                arguments: [i],
-                id: this.commands.setTime,
-                title: 'Tool: Change Time Signature',
-              },
-              range: {
-                endColumn: 1,
-                endLineNumber: i + 2,
-                startColumn: 1,
-                startLineNumber: i + 1,
-              },
+          },
+        ];
+      }
+      if (line.indexOf("\\key") !== -1) {
+        memo = [
+          ...memo,
+          {
+            command: {
+              arguments: [i],
+              id: this.commands.setKey,
+              title: "Tool: Change Key Signature",
             },
-          ];
-        }
-        if (line.indexOf('\\relative') !== -1) {
-          memo = [
-            ...memo,
-            {
-              command: {
-                arguments: [i],
-                id: this.commands.insertNotes,
-                title: 'Tool: Insert Notes',
-              },
-              range: {
-                endColumn: 1,
-                endLineNumber: i + 2,
-                startColumn: 1,
-                startLineNumber: i + 1,
-              },
+            range: {
+              endColumn: 1,
+              endLineNumber: i + 2,
+              startColumn: 1,
+              startLineNumber: i + 1,
             },
-          ];
-        }
+          },
+        ];
+      }
+      if (line.indexOf("\\time") !== -1) {
+        memo = [
+          ...memo,
+          {
+            command: {
+              arguments: [i],
+              id: this.commands.setTime,
+              title: "Tool: Change Time Signature",
+            },
+            range: {
+              endColumn: 1,
+              endLineNumber: i + 2,
+              startColumn: 1,
+              startLineNumber: i + 1,
+            },
+          },
+        ];
+      }
+      if (line.indexOf("\\relative") !== -1) {
+        memo = [
+          ...memo,
+          {
+            command: {
+              arguments: [i],
+              id: this.commands.insertNotes,
+              title: "Tool: Insert Notes",
+            },
+            range: {
+              endColumn: 1,
+              endLineNumber: i + 2,
+              startColumn: 1,
+              startLineNumber: i + 1,
+            },
+          },
+        ];
+      }
 
-        return memo;
-      },
-      [],
-    );
-  }
+      return memo;
+    }, []);
+  };
 
   resolveCodeLens = (
-        model: monaco.editor.IReadOnlyModel, codeLens: monaco.languages.ICodeLensSymbol,
-        token: monaco.CancellationToken): monaco.languages.ICodeLensSymbol => {
-
+    model: monacoEditor.editor.IReadOnlyModel,
+    codeLens: monacoEditor.languages.ICodeLensSymbol,
+    token: monacoEditor.CancellationToken,
+  ): monacoEditor.languages.ICodeLensSymbol => {
     return codeLens;
-  }
+  };
 }

@@ -248,6 +248,11 @@ export default class RPCClient {
     params: RPCRequestParamsMap[T],
   ): Promise<RPCResponseMap[T]> {
     const id: string = this.genID();
+    if (typeof method !== "string") {
+      throw new Error(
+        `method must be a string, got ${typeof method}, ${method}`,
+      );
+    }
     const request: BaseRPCRequest = {
       id,
       jsonrpc: "2.0",

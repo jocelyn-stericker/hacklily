@@ -38,7 +38,7 @@ const keyStr: string =
 
 /* will return a  Uint8Array type */
 export function decodeArrayBuffer(input: string): ArrayBuffer {
-  const bytes: number = input.length / 4 * 3;
+  const bytes: number = (input.length / 4) * 3;
   const ab: ArrayBuffer = new ArrayBuffer(bytes);
   decode(input, ab);
 
@@ -61,7 +61,7 @@ export function decode(inputStr: string, arrayBuffer: ArrayBuffer): Uint8Array {
   input = removePaddingChars(input);
   input = input.replace(/[^A-Za-z0-9\+\/\=]/g, "");
 
-  const bytes: number = parseInt(String(input.length / 4 * 3), 10);
+  const bytes: number = parseInt(String((input.length / 4) * 3), 10);
 
   const uarray: Uint8Array = arrayBuffer
     ? new Uint8Array(arrayBuffer)

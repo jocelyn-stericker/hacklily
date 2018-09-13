@@ -469,7 +469,8 @@ export const BUTTON_STYLE = StyleSheet.create({
       borderLeft: "1px solid #ccc",
       borderTopLeftRadius: "3px",
     },
-    ":focus": {
+    // TODO: why is :focus not valid?
+    [":focus" as any]: {
       zIndex: "2",
     },
     ":hover": {

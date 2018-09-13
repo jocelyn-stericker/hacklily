@@ -20,7 +20,7 @@
 
 import { css } from "aphrodite";
 import React from "react";
-import * as ReactModal from "react-modal";
+import ReactModal from "react-modal";
 
 import { CLIENT_ID, getOauthRedirect } from "./auth";
 import { GITHUB_STYLE, MODAL_STYLE } from "./styles";
@@ -134,7 +134,8 @@ export default class ModalLogin extends React.PureComponent<Props> {
                 rel="noopener noreferrer"
               >
                 privacy statement
-              </a>.{" "}
+              </a>
+              .{" "}
               <a href="dmca.html" target="_blank" rel="noopener noreferrer">
                 DMCA
               </a>

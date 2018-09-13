@@ -11,7 +11,8 @@
     "pretty": true,
     "strict": true,
     "target": "es5",
-    "moduleResolution": "node"
+    "moduleResolution": "node",
+    "esModuleInterop": true
   },
   "include": [
     "src/index.tsx",

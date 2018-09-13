@@ -20,7 +20,7 @@
 
 import { css } from "aphrodite";
 import React from "react";
-import * as ReactModal from "react-modal";
+import ReactModal from "react-modal";
 
 import { MODAL_STYLE } from "./styles";
 

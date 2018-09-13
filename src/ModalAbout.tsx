@@ -20,7 +20,7 @@
 
 import { css } from "aphrodite";
 import React from "react";
-import * as ReactModal from "react-modal";
+import ReactModal from "react-modal";
 
 import { MODAL_STYLE } from "./styles";
 
@@ -66,15 +66,16 @@ class ModalAbout extends React.PureComponent<Props> {
                   rel="noopener noreferrer"
                 >
                   LilyPond
-                </a>. New to LilyPond? Take a look at the{" "}
+                </a>
+                . New to LilyPond? Take a look at the{" "}
                 <a
                   href="http://lilypond.org/doc/v2.18/Documentation/learning/index"
                   rel="noopener noreferrer"
                   target="_blank"
                 >
                   tutorial
-                </a>!
-                {/*tslint:enable:no-http-string becuase of silly lilypond*/}
+                </a>
+                !{/*tslint:enable:no-http-string becuase of silly lilypond*/}
               </p>
               <p>
                 You can view Hacklily's source and contribute code on{" "}
@@ -84,7 +85,8 @@ class ModalAbout extends React.PureComponent<Props> {
                   rel="noopener noreferrer"
                 >
                   GitHub
-                </a>.
+                </a>
+                .
               </p>
             </div>
             <div className={css(MODAL_STYLE.license)}>
@@ -92,8 +94,9 @@ class ModalAbout extends React.PureComponent<Props> {
                 This project is{" "}
                 <a href="https://www.fsf.org/about/what-is-free-software">
                   free software
-                </a>: you can redistribute it and/or modify it under the terms
-                of the GNU General Public License (GNU GPL) as published by the
+                </a>
+                : you can redistribute it and/or modify it under the terms of
+                the GNU General Public License (GNU GPL) as published by the
                 Free Software Foundation, either version 3 of the License, or
                 (at your option) any later version. The code is distributed
                 WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -116,9 +119,9 @@ class ModalAbout extends React.PureComponent<Props> {
                       alt="Licensed under the GNU General Public License version 3"
                     />
                   </span>
-                </a>, <a href="dmca.html">DMCA info</a>, and{" "}
-                <a href="privacy-statement.html">privacy statement</a>.
-                <br />
+                </a>
+                , <a href="dmca.html">DMCA info</a>, and{" "}
+                <a href="privacy-statement.html">privacy statement</a>.<br />
                 &copy; Copyright{" "}
                 <a
                   href="https://nettek.ca"

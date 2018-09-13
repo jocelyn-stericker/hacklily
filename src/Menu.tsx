@@ -20,7 +20,7 @@
 
 import { css } from "aphrodite";
 import React from "react";
-import * as ReactModal from "react-modal";
+import ReactModal from "react-modal";
 
 import { Auth } from "./auth";
 import { File, ls } from "./gitfs";
@@ -76,9 +76,8 @@ class Menu extends React.PureComponent<Props, State> {
     if (auth) {
       signOut = (
         <button onClick={onSignOut} className={css(MENU_STYLE.option)}>
-          <i className="fa fa-fw fa-sign-out" aria-hidden={true} /> Sign out ({
-            auth.name
-          })
+          <i className="fa fa-fw fa-sign-out" aria-hidden={true} /> Sign out (
+          {auth.name})
         </button>
       );
     }

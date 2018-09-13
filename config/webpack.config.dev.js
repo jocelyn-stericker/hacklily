@@ -4,17 +4,18 @@ const autoprefixer = require("autoprefixer");
 const path = require("path");
 const webpack = require("webpack");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
-const CopyWebpackPlugin = require("copy-webpack-plugin");
 const CaseSensitivePathsPlugin = require("case-sensitive-paths-webpack-plugin");
 const InterpolateHtmlPlugin = require("react-dev-utils/InterpolateHtmlPlugin");
 const WatchMissingNodeModulesPlugin = require("react-dev-utils/WatchMissingNodeModulesPlugin");
 const eslintFormatter = require("react-dev-utils/eslintFormatter");
 const ModuleScopePlugin = require("react-dev-utils/ModuleScopePlugin");
+const getCSSModuleLocalIdent = require("react-dev-utils/getCSSModuleLocalIdent");
 const getClientEnvironment = require("./env");
 const paths = require("./paths");
+const ManifestPlugin = require("webpack-manifest-plugin");
 const { LicenseWebpackPlugin } = require("license-webpack-plugin");
-const FixDefaultImportPlugin = require("webpack-fix-default-import-plugin");
 const fs = require("fs");
+const MonacoWebpackPlugin = require("monaco-editor-webpack-plugin");
 
 // Webpack uses `publicPath` to determine where the app is being served from.
 // In development, we always serve from the root. This makes config easier.
@@ -42,12 +43,51 @@ const commonEntries = [
   require.resolve("react-dev-utils/webpackHotDevClient"),
 ];
 
+// style files regexes
+const cssRegex = /\.css$/;
+const cssModuleRegex = /\.module\.css$/;
+const sassRegex = /\.(scss|sass)$/;
+const sassModuleRegex = /\.module\.(scss|sass)$/;
+
+// common function to get style loaders
+const getStyleLoaders = (cssOptions, preProcessor) => {
+  const loaders = [
+    require.resolve("style-loader"),
+    {
+      loader: require.resolve("css-loader"),
+      options: cssOptions,
+    },
+    {
+      // Options for PostCSS as we reference these options twice
+      // Adds vendor prefixing based on your specified browser support in
+      // package.json
+      loader: require.resolve("postcss-loader"),
+      options: {
+        // Necessary for external CSS imports to work
+        // https://github.com/facebook/create-react-app/issues/2677
+        ident: "postcss",
+        plugins: () => [
+          require("postcss-flexbugs-fixes"),
+          autoprefixer({
+            flexbox: "no-2009",
+          }),
+        ],
+      },
+    },
+  ];
+  if (preProcessor) {
+    loaders.push(require.resolve(preProcessor));
+  }
+  return loaders;
+};
+
 // This is the development configuration.
 // It is focused on developer experience and fast rebuilds.
 // The production configuration is different and lives in a separate file.
 module.exports = {
+  mode: "development",
   // You may want 'eval' instead if you prefer to see the compiled output in DevTools.
-  // See the discussion in https://github.com/facebookincubator/create-react-app/issues/343.
+  // See the discussion in https://github.com/facebook/create-react-app/issues/343
   devtool: "cheap-module-source-map",
   // These are the "entry points" to our application.
   // This means they will be the "root" imports that are included in JS bundle.
@@ -58,8 +98,6 @@ module.exports = {
     status: [...commonEntries, paths.statusIndexJs],
   },
   output: {
-    // Next line is not used in dev but WebpackDevServer crashes without it:
-    path: paths.appBuild,
     // Add /* filename */ comments to generated require()s in the output.
     pathinfo: true,
     // This does not produce a real file. It's just the virtual path that is
@@ -73,20 +111,23 @@ module.exports = {
     // Point sourcemap entries to original disk location (format as URL on Windows)
     devtoolModuleFilenameTemplate: info =>
       path.resolve(info.absoluteResourcePath).replace(/\\/g, "/"),
+    // Monaco hack
+    globalObject: "this",
   },
+  optimization: {},
   resolve: {
     // This allows you to set a fallback for where Webpack should look for modules.
     // We placed these paths second because we want `node_modules` to "win"
     // if there are any conflicts. This matches Node resolution mechanism.
-    // https://github.com/facebookincubator/create-react-app/issues/253
-    modules: ["node_modules", paths.appNodeModules].concat(
+    // https://github.com/facebook/create-react-app/issues/253
+    modules: ["node_modules"].concat(
       // It is guaranteed to exist because we tweak it in `env.js`
       process.env.NODE_PATH.split(path.delimiter).filter(Boolean),
     ),
     // These are the reasonable defaults supported by the Node ecosystem.
     // We also include JSX as a common component filename extension to support
     // some tools, although we do not recommend using it, see:
-    // https://github.com/facebookincubator/create-react-app/issues/290
+    // https://github.com/facebook/create-react-app/issues/290
     // `web` extension prefixes have been added for better support
     // for React Native Web.
     extensions: [
@@ -117,9 +158,8 @@ module.exports = {
   module: {
     strictExportPresence: true,
     rules: [
-      // TODO: Disable require.ensure as it's not a standard language feature.
-      // We are waiting for https://github.com/facebookincubator/create-react-app/issues/2176.
-      // { parser: { requireEnsure: false } },
+      // Disable require.ensure as it's not a standard language feature.
+      { parser: { requireEnsure: false } },
 
       // First, run the linter.
       // It's important to do this before Babel processes the JS.
@@ -160,37 +200,51 @@ module.exports = {
           // "style" loader turns CSS into JS modules that inject <style> tags.
           // In production, we use a plugin to extract that CSS to a file, but
           // in development "style" loader enables hot editing of CSS.
+          // By default we support CSS Modules with the extension .module.css
           {
-            test: /\.css$/,
-            use: [
-              require.resolve("style-loader"),
+            test: cssRegex,
+            exclude: cssModuleRegex,
+            use: getStyleLoaders({
+              importLoaders: 1,
+            }),
+          },
+          // Adds support for CSS Modules (https://github.com/css-modules/css-modules)
+          // using the extension .module.css
+          {
+            test: cssModuleRegex,
+            use: getStyleLoaders({
+              importLoaders: 1,
+              modules: true,
+              getLocalIdent: getCSSModuleLocalIdent,
+            }),
+          },
+          // Opt-in support for SASS (using .scss or .sass extensions).
+          // Chains the sass-loader with the css-loader and the style-loader
+          // to immediately apply all styles to the DOM.
+          // By default we support SASS Modules with the
+          // extensions .module.scss or .module.sass
+          {
+            test: sassRegex,
+            exclude: sassModuleRegex,
+            use: getStyleLoaders({ importLoaders: 2 }, "sass-loader"),
+          },
+          // Adds support for CSS Modules, but using SASS
+          // using the extension .module.scss or .module.sass
+          {
+            test: sassModuleRegex,
+            use: getStyleLoaders(
               {
-                loader: require.resolve("css-loader"),
-                options: {
-                  importLoaders: 1,
-                },
+                importLoaders: 2,
+                modules: true,
+                getLocalIdent: getCSSModuleLocalIdent,
               },
-              {
-                loader: require.resolve("postcss-loader"),
-                options: {
-                  // Necessary for external CSS imports to work
-                  // https://github.com/facebookincubator/create-react-app/issues/2677
-                  ident: "postcss",
-                  plugins: () => [
-                    require("postcss-flexbugs-fixes"),
-                    autoprefixer({
-                      browsers: [
-                        ">1%",
-                        "last 4 versions",
-                        "Firefox ESR",
-                        "not ie < 9", // React doesn't support IE8 anyway
-                      ],
-                      flexbox: "no-2009",
-                    }),
-                  ],
-                },
-              },
-            ],
+              "sass-loader",
+            ),
+          },
+          // The GraphQL loader preprocesses GraphQL queries in .graphql files.
+          {
+            test: /\.(graphql)$/,
+            loader: "graphql-tag/loader",
           },
           // "file" loader makes sure those assets get served by WebpackDevServer.
           // When you `import` an asset, you get its (virtual) filename.
@@ -199,10 +253,10 @@ module.exports = {
           // that fall through the other loaders.
           {
             // Exclude `js` files to keep "css" loader working as it injects
-            // it's runtime that would otherwise processed through "file" loader.
+            // its runtime that would otherwise be processed through "file" loader.
             // Also exclude `html` and `json` extensions so they get processed
             // by webpacks internal loaders.
-            exclude: [/\.js$/, /\.html$/, /\.json$/],
+            exclude: [/\.(js|jsx|mjs)$/, /\.html$/, /\.json$/],
             loader: require.resolve("file-loader"),
             options: {
               name: "static/media/[name].[hash:8].[ext]",
@@ -215,39 +269,37 @@ module.exports = {
     ],
   },
   plugins: [
-    // Makes some environment variables available in index.html.
-    // The public URL is available as %PUBLIC_URL% in index.html, e.g.:
-    // <link rel="shortcut icon" href="%PUBLIC_URL%/favicon.ico">
-    // In development, this will be an empty string.
-    new InterpolateHtmlPlugin(env.raw),
     // Generates an `index.html` file with the <script> injected.
     new HtmlWebpackPlugin({
       inject: true,
       template: paths.appHtml,
       isStandalone: env.raw["REACT_APP_STANDALONE"] === "yes",
-      chunks: ["common", "app"],
+      chunks: ["app"],
     }),
     new HtmlWebpackPlugin({
       inject: true,
       template: paths.musicxml2lyHtml,
       filename: "musicxml2ly.html",
       isStandalone: env.raw["REACT_APP_STANDALONE"] === "yes",
-      chunks: ["common", "musicxml2ly"],
+      chunks: ["musicxml2ly"],
     }),
     new HtmlWebpackPlugin({
       inject: true,
       template: paths.statusHtml,
       isStandalone: env.raw["REACT_APP_STANDALONE"] === "yes",
       filename: "status.html",
-      chunks: ["common", "status"],
+      chunks: ["status"],
     }),
     new HtmlWebpackPlugin({
       inject: false,
       template: paths.aboutJavascriptHtml,
       filename: "about-javascript.html",
     }),
-    // Add module names to factory functions so they appear in browser profiler.
-    new webpack.NamedModulesPlugin(),
+    // Makes some environment variables available in index.html.
+    // The public URL is available as %PUBLIC_URL% in index.html, e.g.:
+    // <link rel="shortcut icon" href="%PUBLIC_URL%/favicon.ico">
+    // In development, this will be an empty string.
+    new InterpolateHtmlPlugin(env.raw),
     // Makes some environment variables available to the JS code, for example:
     // if (process.env.NODE_ENV === 'development') { ... }. See `./env.js`.
     new webpack.DefinePlugin(env.stringified),
@@ -255,12 +307,12 @@ module.exports = {
     new webpack.HotModuleReplacementPlugin(),
     // Watcher doesn't work well if you mistype casing in a path so we use
     // a plugin that prints an error when you attempt to do this.
-    // See https://github.com/facebookincubator/create-react-app/issues/240
+    // See https://github.com/facebook/create-react-app/issues/240
     new CaseSensitivePathsPlugin(),
     // If you require a missing module and then `npm install` it, you still have
     // to restart the development server for Webpack to discover it. This plugin
     // makes the discovery automatic so you don't have to restart.
-    // See https://github.com/facebookincubator/create-react-app/issues/186
+    // See https://github.com/facebook/create-react-app/issues/186
     new WatchMissingNodeModulesPlugin(paths.appNodeModules),
     // Moment.js is an extremely popular library that bundles large locale files
     // by default due to how Webpack interprets its code. This is a practical
@@ -268,24 +320,27 @@ module.exports = {
     // https://github.com/jmblog/how-to-optimize-momentjs-with-webpack
     // You can remove this if you don't use Moment.js:
     new webpack.IgnorePlugin(/^\.\/locale$/, /moment$/),
-    new CopyWebpackPlugin([
-      {
-        from: "node_modules/monaco-editor/min/vs",
-        to: "vs",
-      },
-    ]),
     new LicenseWebpackPlugin({
       pattern: /^.*$/,
       addUrl: true,
-      filename: "../public/3rdpartylicenses.txt",
+      perChunkOutput: false,
+      outputFilename: "3rdpartylicenses.txt",
       includePackagesWithoutLicense: true,
     }),
     new webpack.BannerPlugin(
       fs.readFileSync("./src/LICENSE_HEADER.txt", "utf8"),
     ),
-    // Allows syntethic default imports in TypeScript(e.g., import React from "react" instead of import * as React from "react")
-    new FixDefaultImportPlugin(),
+    // Generate a manifest file which contains a mapping of all asset filenames
+    // to their corresponding output file so that tools can pick it up without
+    // having to parse `index.html`.
+    new ManifestPlugin({
+      fileName: "asset-manifest.json",
+      publicPath: publicPath,
+    }),
+    // Monaco
+    new MonacoWebpackPlugin(),
   ],
+
   // Some libraries import Node modules but don't use them in the browser.
   // Tell Webpack to provide empty mocks for them so importing them works.
   node: {
@@ -295,10 +350,7 @@ module.exports = {
     tls: "empty",
     child_process: "empty",
   },
-  // Turn off performance hints during development because we don't do any
-  // splitting or minification in interest of speed. These warnings become
-  // cumbersome.
-  performance: {
-    hints: false,
-  },
+  // Turn off performance processing because we utilize
+  // our own hints via the FileSizeReporter
+  performance: false,
 };

@@ -18,19 +18,23 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
  */
 
-import NOTATION_SYMBOLS from './NOTATION_SYMBOLS';
+import * as monacoEditor from "monaco-editor";
 
-const LILYPOND_COMPLETION_ITEM_PROVIDER: monaco.languages.CompletionItemProvider = {
-  provideCompletionItems(model: monaco.editor.IReadOnlyModel,
-                         position: monaco.Position,
-                         token: monaco.CancellationToken): monaco.languages.CompletionItem[] {
+import NOTATION_SYMBOLS from "./NOTATION_SYMBOLS";
+
+const LILYPOND_COMPLETION_ITEM_PROVIDER: monacoEditor.languages.CompletionItemProvider = {
+  provideCompletionItems(
+    model: monacoEditor.editor.IReadOnlyModel,
+    position: monacoEditor.Position,
+    token: monacoEditor.CancellationToken,
+  ): monacoEditor.languages.CompletionItem[] {
     const textUntilPosition: string = model.getValueInRange({
       endColumn: position.column,
       endLineNumber: position.lineNumber,
       startColumn: 1,
       startLineNumber: 1,
     });
-    if (textUntilPosition[textUntilPosition.length - 2] === '\\') {
+    if (textUntilPosition[textUntilPosition.length - 2] === "\\") {
       return NOTATION_SYMBOLS;
     }
 
@@ -39,7 +43,7 @@ const LILYPOND_COMPLETION_ITEM_PROVIDER: monaco.languages.CompletionItemProvider
     return [
       {
         kind: 0, // text
-        label: '',
+        label: "",
       },
     ];
   },

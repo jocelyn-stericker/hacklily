@@ -25,6 +25,7 @@
  * Free Documentation License".
  */
 
+import * as monacoEditor from "monaco-editor";
 // tslint:disable
 
 const REGEX_COMMAND_SLASH: RegExp = /^\\/;
@@ -35,7 +36,7 @@ interface ItemSubset {
   documentation: string;
 }
 
-function cleanUp(items: ItemSubset[]): monaco.languages.CompletionItem[] {
+function cleanUp(items: ItemSubset[]): monacoEditor.languages.CompletionItem[] {
   return items.map(({label, detail, documentation}: ItemSubset) => {
     return {
       label,
@@ -47,7 +48,7 @@ function cleanUp(items: ItemSubset[]): monaco.languages.CompletionItem[] {
   });
 }
 
-const NOTATION_SYMBOLS: monaco.languages.CompletionItem[] = cleanUp([
+const NOTATION_SYMBOLS: monacoEditor.languages.CompletionItem[] = cleanUp([
   {
     "label": "!",
     "detail": "Accidentals",

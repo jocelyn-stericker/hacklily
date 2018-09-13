@@ -20,7 +20,7 @@
 
 import { css } from "aphrodite";
 import React from "react";
-import * as ReactModal from "react-modal";
+import ReactModal from "react-modal";
 
 import { MODAL_STYLE } from "./styles";
 
@@ -67,7 +67,8 @@ export default class Modal404 extends React.PureComponent<Props> {
                 className={css(MODAL_STYLE.link)}
               >
                 give it a try
-              </button>?
+              </button>
+              ?
             </p>
           </div>
         </div>

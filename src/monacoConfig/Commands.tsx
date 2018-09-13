@@ -18,14 +18,16 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
  */
 
+import * as monacoEditor from "monaco-editor";
+
 /**
  * These are monaco commands. So far we use them in codelens actions (see codelensProvider)
  */
 export default class Commands {
-  insertNotes: string = '';
-  setClef: string = '';
-  setKey: string = '';
-  setTime: string = '';
+  insertNotes: string = "";
+  setClef: string = "";
+  setKey: string = "";
+  setTime: string = "";
   showMakelily: (tool: string, cb?: (ly: string) => void) => void;
 
   constructor(showMakelily: (tool: string) => void) {
@@ -33,13 +35,13 @@ export default class Commands {
   }
 
   clear(): void {
-    this.insertNotes = '';
-    this.setClef = '';
-    this.setKey = '';
-    this.setTime = '';
+    this.insertNotes = "";
+    this.setClef = "";
+    this.setKey = "";
+    this.setTime = "";
   }
 
-  init(editor: monaco.editor.IStandaloneCodeEditor): void {
+  init(editor: monacoEditor.editor.IStandaloneCodeEditor): void {
     function moveToStartOfNextLine(lineIdx: number): void {
       editor.setPosition({
         column: 1,
@@ -48,60 +50,63 @@ export default class Commands {
     }
 
     function replaceLine(lineIdx: number, ly: string): void {
-      const whitespace: RegExpMatchArray | null =
-        editor.getModel().getLinesContent()[lineIdx].match(/^\s*/);
-      const whitespacePrefix: string = whitespace ? whitespace[0] : '';
+      const whitespace: RegExpMatchArray | null = editor
+        .getModel()
+        .getLinesContent()
+        [lineIdx].match(/^\s*/);
+      const whitespacePrefix: string = whitespace ? whitespace[0] : "";
 
-      const range: monaco.Range = new monaco.Range(
-        lineIdx + 1, 1, lineIdx + 2, 1);
-      const id: {major: 1, minor: 1} = { major: 1, minor: 1 };
-      const op: monaco.editor.IIdentifiedSingleEditOperation = {
+      const range: monacoEditor.Range = new monacoEditor.Range(
+        lineIdx + 1,
+        1,
+        lineIdx + 2,
+        1,
+      );
+      const op: monacoEditor.editor.IIdentifiedSingleEditOperation = {
         forceMoveMarkers: false,
-        identifier: id,
         range,
         text: `${whitespacePrefix}${ly}`,
       };
-      editor.executeEdits('hacklily', [op]);
+      editor.executeEdits("hacklily", [op]);
     }
 
     this.setClef = editor.addCommand(
       0,
       (internal: void, lineIdx: number): void => {
         moveToStartOfNextLine(lineIdx);
-        this.showMakelily('clef', (ly: string) => {
+        this.showMakelily("clef", (ly: string) => {
           replaceLine(lineIdx, ly);
         });
       },
-      '',
+      "",
     );
     this.setKey = editor.addCommand(
       0,
       (internal: void, lineIdx: number): void => {
         moveToStartOfNextLine(lineIdx);
-        this.showMakelily('key', (ly: string) => {
+        this.showMakelily("key", (ly: string) => {
           replaceLine(lineIdx, ly);
         });
       },
-      '',
+      "",
     );
     this.setTime = editor.addCommand(
       0,
       (internal: void, lineIdx: number): void => {
         moveToStartOfNextLine(lineIdx);
-        this.showMakelily('time', (ly: string) => {
+        this.showMakelily("time", (ly: string) => {
           replaceLine(lineIdx, ly);
         });
       },
-      '',
+      "",
     );
     this.insertNotes = editor.addCommand(
       0,
       (internal: void, lineIdx: number): void => {
         moveToStartOfNextLine(lineIdx);
-        this.showMakelily('notes');
+        this.showMakelily("notes");
       },
-      '',
+      "",
     );
   }
-
 }

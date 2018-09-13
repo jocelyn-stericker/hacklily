@@ -20,7 +20,7 @@
 
 import { css } from "aphrodite";
 import React from "react";
-import * as ReactModal from "react-modal";
+import ReactModal from "react-modal";
 
 import { Auth } from "./auth";
 import { Conflict, File, FileNotFound, ls, rm, write } from "./gitfs";
@@ -220,7 +220,9 @@ class ModalPublish extends React.PureComponent<Props, State> {
   };
 
   private loadExistingSongs = async (): Promise<void> => {
-    const { auth: { accessToken, repo } } = this.props;
+    const {
+      auth: { accessToken, repo },
+    } = this.props;
 
     const files: File[] = await ls(accessToken, repo);
     this.setState({

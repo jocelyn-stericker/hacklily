@@ -20,7 +20,7 @@
 
 import { css } from "aphrodite";
 import React from "react";
-import * as ReactModal from "react-modal";
+import ReactModal from "react-modal";
 
 import RPCClient from "../RPCClient";
 import { MODAL_STYLE } from "../styles";
@@ -30,13 +30,7 @@ interface Props {
   onHide(): void;
 }
 
-/**
- * A 404 modal that is rendered when the 404 query is set.
- *
- * 404.html (which GitHub pages will render for every unmatched URL) redirects to
- * '/?404=1', which renders <App 404="1" />, which results in this modal being shown.
- */
-export default class Modal404 extends React.PureComponent<Props> {
+export default class MusicXML2LyModal extends React.PureComponent<Props> {
   render(): JSX.Element {
     return (
       <ReactModal
@@ -73,7 +67,7 @@ export default class Modal404 extends React.PureComponent<Props> {
     }
     const reader = new FileReader();
     reader.onload = () => {
-      this.doLoad(reader.result);
+      this.doLoad(reader.result as any);
       delete reader.onload;
     };
     reader.readAsText(ev.target.files[0]);

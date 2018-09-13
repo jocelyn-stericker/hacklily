@@ -20,6 +20,7 @@
 
 import { css } from "aphrodite";
 import Makelily from "makelily"; // note: use for types only
+import * as monacoEditor from "monaco-editor";
 import React from "react";
 
 import { Auth, checkLogin, redirectToLogin, revokeGitHubAuth } from "./auth";
@@ -210,7 +211,7 @@ interface Props extends QueryProps {
 interface State {
   cleanSongs: { [key: string]: Song };
   connectToGitHubReason: string | null;
-  defaultSelection: monaco.ISelection | null;
+  defaultSelection: monacoEditor.ISelection | null;
   interstitialChanges: {} | null;
 
   /**
@@ -889,7 +890,7 @@ export default class App extends React.PureComponent<Props, State> {
   };
 
   private handleSelectionChanged = (
-    selection: monaco.ISelection | null,
+    selection: monacoEditor.ISelection | null,
   ): void => {
     if (selection !== this.state.defaultSelection) {
       this.setState({
@@ -1378,8 +1379,10 @@ export default class App extends React.PureComponent<Props, State> {
         >
           <div className={css(APP_STYLE.sheetMusicError)}>
             <i className="fa fa-exclamation-triangle" aria-hidden={true} />{" "}
-            Could not connect to server.<br />
-            Trying again in {reconnectTimeout}&hellip;
+            Could not connect to server.
+            <br />
+            Trying again in {reconnectTimeout}
+            &hellip;
           </div>
         </div>
       );
