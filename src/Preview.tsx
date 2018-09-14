@@ -81,7 +81,7 @@ interface Props {
    */
   rpc: RPCClient | null;
 
-  songURL: string | null;
+  onShowDownload(): void;
 
   /**
    * Called whenever a preview is rendered. The parent should in turn re-render,
@@ -187,7 +187,7 @@ export default class Preview extends React.PureComponent<Props, State> {
         />
         {pendingPreviews > 0 && <div className={previewMaskStyle} />}
         {error && <div className={css(APP_STYLE.errorMask)}>{error}</div>}
-        {this.props.songURL && this.renderPublishedURL(this.props.songURL)}
+        {this.renderDownload()}
         <Logs logs={logs} />
       </div>
     );
@@ -368,15 +368,14 @@ export default class Preview extends React.PureComponent<Props, State> {
     this.sheetMusicView = sheetMusicView;
   };
 
-  private renderPublishedURL(url: string): JSX.Element {
+  private renderDownload(): JSX.Element {
     return (
       <a
-        href={url.replace(/\.ly$/, ".pdf")}
-        target="_blank"
-        rel="noopener noreferrer"
-        className={css(BUTTON_STYLE.buttonStyle, APP_STYLE.githubButton)}
+        href="javascript:void(0)"
+        onClick={this.props.onShowDownload}
+        className={css(BUTTON_STYLE.buttonStyle, APP_STYLE.downloadButton)}
       >
-        <i className="fa fa-file-pdf-o" /> View PDF
+        <i className="fa fa-download" /> Export
       </a>
     );
   }

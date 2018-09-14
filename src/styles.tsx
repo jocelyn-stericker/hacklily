@@ -39,6 +39,16 @@ const PREVIEW_WIDTH = "50%";
 const EDITOR_WIDTH = "50%";
 
 export const APP_STYLE = StyleSheet.create({
+  downloadButton: {
+    borderLeft: "1px solid #ccc",
+    bottom: 10,
+    color: "black",
+    maxHeight: "90%",
+    overflow: "auto",
+    position: "absolute",
+    right: 110,
+    textDecoration: "none",
+  },
   errorDecoration: {
     border: "2px solid red",
     color: "red",
@@ -56,16 +66,6 @@ export const APP_STYLE = StyleSheet.create({
     right: 0,
     textAlign: "center",
     top: 0,
-  },
-  githubButton: {
-    borderLeft: "1px solid #ccc",
-    bottom: 10,
-    color: "black",
-    maxHeight: "90%",
-    overflow: "auto",
-    position: "absolute",
-    right: 110,
-    textDecoration: "none",
   },
   monacoHidden: {
     display: "none",
@@ -488,6 +488,15 @@ export const BUTTON_STYLE = StyleSheet.create({
     margin: "0",
     padding: "5px 10px",
     position: "relative", // for hover
+  },
+
+  downloadChoiceButton: {
+    boxSizing: "border-box",
+    color: "black",
+    display: "inline-block",
+    marginBottom: 10,
+    textDecoration: "none",
+    width: "100%",
   },
 
   selectedStyle: {

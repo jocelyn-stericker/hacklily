@@ -24,6 +24,7 @@ import * as monacoEditor from "monaco-editor";
 import React from "react";
 
 import { Auth, checkLogin, redirectToLogin, revokeGitHubAuth } from "./auth";
+import DownloadModal from "./DownloadModal";
 import Editor from "./Editor";
 import { cat, FileNotFound, getOrCreateRepo } from "./gitfs";
 import Header, {
@@ -240,6 +241,7 @@ interface State {
   reconnectTimeout: number;
   saving: boolean;
   showMakelily: typeof Makelily | null;
+  showDownloadModal: boolean | "loading";
   windowWidth: number;
   wsError: boolean;
 
@@ -293,6 +295,7 @@ export default class App extends React.PureComponent<Props, State> {
     reconnectCooloff: INITIAL_WS_COOLOFF,
     reconnectTimeout: NaN,
     saving: false,
+    showDownloadModal: false,
     showMakelily: null,
     windowWidth: window.innerWidth,
     wsError: false,
@@ -575,6 +578,13 @@ export default class App extends React.PureComponent<Props, State> {
     }
   }
 
+  private getSongName = (): string => {
+    const songParts: string[] = this.props.edit
+      ? this.props.edit.split("/")
+      : ["untitled"];
+    return songParts[songParts.length - 1];
+  };
+
   private handleBeforeUnload = (ev: BeforeUnloadEvent): void => {
     // Don't bug users when going to GitHub OAuth
     if (this.state.login) {
@@ -666,6 +676,84 @@ export default class App extends React.PureComponent<Props, State> {
     throw new Error("Not implemented");
   };
 
+  private handleExportMIDI = (): void => {
+    const { midi } = this.state;
+    if (!midi) {
+      alert(
+        "No MIDI data found. Make sure you have " +
+          "a \\midi {} and a \\layout {} in your \\score {}.",
+      );
+      return;
+    }
+
+    const name = this.getSongName();
+    const blob = new Blob([midi], { type: "audio/midi" });
+    const src = URL.createObjectURL(blob);
+
+    this.triggerDownload(`${name}.midi`, src);
+
+    this.setState({
+      showDownloadModal: false,
+    });
+  };
+
+  private handleExportPDF = async (): Promise<void> => {
+    const song = this.song();
+    if (!song) {
+      alert("Could not export PDF.");
+      return;
+    }
+
+    const rpc = this.rpc;
+    if (!rpc) {
+      alert("Could not connect to server");
+      return;
+    }
+
+    this.setState({
+      showDownloadModal: "loading",
+    });
+
+    const name = this.getSongName();
+
+    try {
+      const pdf: string = (await rpc.call("render", {
+        backend: "pdf",
+        src: song.src,
+      })).result.files[0];
+
+      console.log(pdf);
+
+      this.triggerDownload(`${name}.pdf`, "data:text/plain;base64," + pdf);
+    } catch (err) {
+      alert("Could not export PDF.");
+    }
+
+    this.setState({
+      showDownloadModal: false,
+    });
+
+    return;
+  };
+
+  private handleExportLy = (): void => {
+    const song = this.song();
+    if (!song) {
+      alert("Could not export lilypond source.");
+      return;
+    }
+
+    const name = this.getSongName();
+    this.triggerDownload(
+      `${name}.ly`,
+      "data:text/plain;charset=utf-8," + encodeURIComponent(song.src),
+    );
+
+    this.setState({
+      showDownloadModal: false,
+    });
+  };
+
   private handleFind = (): void => {
     if (this.editor) {
       this.editor.find();
@@ -676,6 +764,12 @@ export default class App extends React.PureComponent<Props, State> {
     if (this.editor) {
       this.editor.findNext();
     }
+  };
+
+  private handleHideDownload = (): void => {
+    this.setState({
+      showDownloadModal: false,
+    });
   };
 
   private handleHideHelp = (): void => {
@@ -898,6 +992,13 @@ export default class App extends React.PureComponent<Props, State> {
       });
     }
   };
+
+  private handleShowDownload = (): void => {
+    this.setState({
+      showDownloadModal: true,
+    });
+  };
+
   private handleShowHelp = (): void => {
     this.setState({
       menu: false,
@@ -1180,6 +1281,7 @@ export default class App extends React.PureComponent<Props, State> {
       interstitialChanges,
       saving,
       showMakelily,
+      showDownloadModal,
     } = this.state;
 
     const {
@@ -1277,6 +1379,25 @@ export default class App extends React.PureComponent<Props, State> {
             time={this.state.makelilyTime}
           />
         );
+      case Boolean(showDownloadModal):
+        let songURL: string | null = null;
+        if (this.props.edit) {
+          const songParts: string[] = this.props.edit.split("/");
+          songURL = `https://github.com/${songParts[0]}/${
+            songParts[1]
+          }/blob/master/${songParts.slice(2).join("/")}`;
+        }
+
+        return (
+          <DownloadModal
+            loading={showDownloadModal === "loading"}
+            onHide={this.handleHideDownload}
+            onExportLy={this.handleExportLy}
+            onExportMIDI={this.handleExportMIDI}
+            onExportPDF={this.handleExportPDF}
+            songURL={songURL}
+          />
+        );
       default:
         return null;
     }
@@ -1307,14 +1428,6 @@ export default class App extends React.PureComponent<Props, State> {
 
     if (this.socket || isStandalone) {
       if ((online && this.rpc) || isStandalone) {
-        let songURL: string | null = null;
-        if (this.props.edit) {
-          const songParts: string[] = this.props.edit.split("/");
-          songURL = `https://github.com/${songParts[0]}/${
-            songParts[1]
-          }/blob/master/${songParts.slice(2).join("/")}`;
-        }
-
         return (
           <Preview
             code={song.src}
@@ -1323,10 +1436,10 @@ export default class App extends React.PureComponent<Props, State> {
             onLogsObtained={this.handleLogsObtained}
             onMidiObtained={this.handleMidiObtained}
             onSelectionChanged={this.handleSelectionChanged}
+            onShowDownload={this.handleShowDownload}
             rpc={isStandalone ? null : this.rpc}
             standaloneRender={this.standaloneRender}
             logs={logs}
-            songURL={songURL}
           />
         );
       }
@@ -1505,6 +1618,19 @@ export default class App extends React.PureComponent<Props, State> {
     }
 
     return this.standaloneAppHost.renderLy(src, filetype);
+  };
+
+  private triggerDownload = (filename: string, src: string) => {
+    const element = document.createElement("a");
+    element.setAttribute("href", src);
+    element.setAttribute("download", filename);
+
+    element.style.display = "none";
+    document.body.appendChild(element);
+
+    element.click();
+
+    document.body.removeChild(element);
   };
 
   private wsReconnectTick = (): void => {
