@@ -165,17 +165,6 @@ void HacklilyServer::_handleTextMessageReceived(QString message) {
         ++_analytics_renders;
 
         QString version = requestObj["params"].toObject()["version"].toString("stable");
-        bool versionIsSupported = false;
-        for (int i = 0; i < _rendererVersion.length(); ++i) {
-            if (_rendererVersion[i] == version) {
-                versionIsSupported = true;
-                break;
-            }
-        }
-        if (!versionIsSupported) {
-            socket->sendTextMessage("{\"error\": \"Invalid version.\", \"errorSlug\": \"invalid_version\"}");
-            return;
-        }
 
         HacklilyServerRequest req = {
             requestObj["params"].toObject()["src"].toString(),
@@ -414,6 +403,32 @@ void HacklilyServer::_processIfPossible() {
         requestDoc.setObject(requestObj);
         auto json = requestDoc.toJson(QJsonDocument::Compact);
         worker->sendTextMessage(json);
+        return;
+    }
+
+    bool versionIsSupported = false;
+    for (int i = 0; i < _rendererVersion.length(); ++i) {
+        if (_rendererVersion[i] == _requests[0].version) {
+            versionIsSupported = true;
+            break;
+        }
+    }
+    if (!versionIsSupported) {
+        HacklilyServerRequest request = _requests.takeFirst();
+
+        QJsonObject errorObj;
+        errorObj["code"] = 3;
+        errorObj["message"] = "Invalid version";
+        QJsonObject responseObj;
+        responseObj["jsonrpc"] = "2.0";
+        responseObj["id"] = request.requestID;
+        responseObj["error"] = errorObj;
+        QJsonDocument response;
+        response.setObject(responseObj);
+        auto responseJSONText = response.toJson(QJsonDocument::Compact);
+        request.sender->sendTextMessage(responseJSONText);
+
+        _processIfPossible();
         return;
     }
 
