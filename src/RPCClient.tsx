@@ -133,6 +133,7 @@ export interface BaseRPCResponse {
 export interface RenderParams {
   backend: "svg" | "pdf" | "musicxml2ly";
   src: string;
+  version?: "stable" | "unstable";
 }
 
 export interface RenderResponse extends BaseRPCResponse {

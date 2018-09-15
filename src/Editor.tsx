@@ -49,6 +49,8 @@ interface Props {
    */
   defaultSelection: monacoEditor.ISelection | null;
 
+  hideUnstable219Notification: boolean;
+
   isImmutableSrc: boolean;
 
   /**
@@ -63,10 +65,13 @@ interface Props {
 
   readOnly: boolean;
 
+  rendererVersion: "stable" | "unstable";
+
   /**
    * Called when an edit occurs. <Editor /> is a controlled component.
    */
   onSetCode(newCode: string): void;
+  onHideUnstableNotification(): void;
   showMakelily(tool?: string, cb?: (ly: string) => void): void;
 }
 
@@ -238,7 +243,15 @@ export default class Editor extends React.PureComponent<Props> {
   }
 
   render(): JSX.Element | null {
-    const { code, mode, onSetCode, readOnly } = this.props;
+    const {
+      code,
+      mode,
+      onSetCode,
+      readOnly,
+      rendererVersion,
+      onHideUnstableNotification,
+      hideUnstable219Notification,
+    } = this.props;
     const monacoOptions: monacoEditor.editor.IEditorOptions = {
       autoClosingBrackets: true,
       minimap: {
@@ -249,22 +262,50 @@ export default class Editor extends React.PureComponent<Props> {
       wordBasedSuggestions: false,
     };
 
+    const width = mode === MODE_EDIT ? "100%" : "50%";
+
     let readOnlyNotice: JSX.Element | null = null;
     if (readOnly) {
       if (this.props.isImmutableSrc) {
         readOnlyNotice = (
-          <div className={css(APP_STYLE.readOnlyNotification)}>
-            <i className="fa-info-circle fa" /> to edit, import this song
+          <div
+            className={css(APP_STYLE.urgentEditorNotification)}
+            style={{ width }}
+          >
+            <i className="fa-info-circle fa fa-fw" /> to edit, import this song
           </div>
         );
       } else {
         readOnlyNotice = (
-          <div className={css(APP_STYLE.readOnlyNotification)}>
-            <i className="fa-lock fa" /> read-only &mdash; to edit, log in as
-            the owner or save a copy
+          <div
+            className={css(APP_STYLE.urgentEditorNotification)}
+            style={{ width }}
+          >
+            <i className="fa-lock fa fa-fw" /> read-only &mdash; to edit, log in
+            as the owner or save a copy
           </div>
         );
       }
+    }
+
+    let unstableVersionNotice: JSX.Element | null = null;
+    if (rendererVersion === "unstable" && !hideUnstable219Notification) {
+      unstableVersionNotice = (
+        <div
+          className={css(APP_STYLE.urgentEditorNotification)}
+          style={{ width }}
+        >
+          <i className="fa-bug fa fa-fw" /> This song uses LilyPond 2.19, which
+          is an unstable development version and may change without notice.{" "}
+          <a
+            onClick={onHideUnstableNotification}
+            className={css(APP_STYLE.urgentEditorNotificationClose)}
+            href="javascript:void(0)"
+          >
+            I understand.
+          </a>
+        </div>
+      );
     }
 
     if (code === null || code === undefined) {
@@ -280,6 +321,7 @@ export default class Editor extends React.PureComponent<Props> {
         )}`}
       >
         {readOnlyNotice}
+        {unstableVersionNotice}
         <ReactMonacoEditor
           key={readOnly ? "read-only" : "read-write"}
           editorDidMount={this.handleEditorDidMount}
@@ -290,7 +332,7 @@ export default class Editor extends React.PureComponent<Props> {
           options={monacoOptions}
           theme={this.props.colourScheme}
           value={code}
-          width={mode === MODE_EDIT ? "100%" : "50%"}
+          width={width}
         />
       </div>
     );

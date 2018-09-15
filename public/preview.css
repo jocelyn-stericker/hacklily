@@ -62,69 +62,93 @@ body.modeBoth svg + svg {
 
 @font-face {
   font-family: "emmentaler-11";
-  src: url("/emmentaler-11.otf") format('opentype');
+  src: url("/emmentaler-11.otf") format("opentype");
 }
 
 @font-face {
   font-family: "emmentaler-13";
-  src: url("/emmentaler-13.otf") format('opentype');
+  src: url("/emmentaler-13.otf") format("opentype");
 }
 
 @font-face {
   font-family: "emmentaler-14";
-  src: url("/emmentaler-14.otf") format('opentype');
+  src: url("/emmentaler-14.otf") format("opentype");
 }
 
 @font-face {
   font-family: "emmentaler-16";
-  src: url("/emmentaler-16.otf") format('opentype');
+  src: url("/emmentaler-16.otf") format("opentype");
 }
 
 @font-face {
   font-family: "emmentaler-18";
-  src: url("/emmentaler-18.otf") format('opentype');
+  src: url("/emmentaler-18.otf") format("opentype");
 }
 
 @font-face {
   font-family: "emmentaler-20";
-  src: url("/emmentaler-20.otf") format('opentype');
+  src: url("/emmentaler-20.otf") format("opentype");
 }
 
 @font-face {
   font-family: "emmentaler-23";
-  src: url("/emmentaler-23.otf") format('opentype');
+  src: url("/emmentaler-23.otf") format("opentype");
 }
 
 @font-face {
   font-family: "emmentaler-26";
-  src: url("/emmentaler-26.otf") format('opentype');
+  src: url("/emmentaler-26.otf") format("opentype");
 }
 
 @font-face {
   font-family: "emmentaler-brace";
-  src: url("/emmentaler-brace.otf") format('opentype');
+  src: url("/emmentaler-brace.otf") format("opentype");
 }
 
 @font-face {
   font-family: "Century Schoolbook L";
-  src: url("/CenturySchL-Roma.otf") format('opentype');
-}
-
-@font-face {
-  font-family: "Century Schoolbook L";
-  font-weight: bold;
-  src: url("/CenturySchL-Bold.otf") format('opentype');
-}
-
-@font-face {
-  font-family: "Century Schoolbook L";
-  font-style: italic;
-  src: url("/CenturySchL-Ital.otf") format('opentype');
+  src: url("/CenturySchL-Roma.otf") format("opentype");
 }
 
 @font-face {
   font-family: "Century Schoolbook L";
   font-weight: bold;
+  src: url("/CenturySchL-Bold.otf") format("opentype");
+}
+
+@font-face {
+  font-family: "Century Schoolbook L";
   font-style: italic;
-  src: url("/CenturySchL-BoldItal.otf") format('opentype');
+  src: url("/CenturySchL-Ital.otf") format("opentype");
+}
+
+@font-face {
+  font-family: "Century Schoolbook L";
+  font-weight: bold;
+  font-style: italic;
+  src: url("/CenturySchL-BoldItal.otf") format("opentype");
+}
+
+@font-face {
+  font-family: "LilyPond Serif";
+  src: url("/CenturySchL-Roma.otf") format("opentype");
+}
+
+@font-face {
+  font-family: "LilyPond Serif";
+  font-weight: bold;
+  src: url("/CenturySchL-Bold.otf") format("opentype");
+}
+
+@font-face {
+  font-family: "LilyPond Serif";
+  font-style: italic;
+  src: url("/CenturySchL-Ital.otf") format("opentype");
+}
+
+@font-face {
+  font-family: "LilyPond Serif";
+  font-weight: bold;
+  font-style: italic;
+  src: url("/CenturySchL-BoldItal.otf") format("opentype");
 }

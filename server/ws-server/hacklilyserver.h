@@ -37,6 +37,10 @@ struct HacklilyServerRequest {
      * @brief backend svg | pdf
      */
     QString backend;
+    /**
+     * @brief version stable | unstable
+     */
+    QString version;
     QWebSocket* sender;
     QString requestID;
 };
@@ -57,6 +61,7 @@ class HacklilyServer : public QObject {
 public:
     explicit HacklilyServer(
         QString rendererDockerTag,
+        QString rendererUnstableDockerTag,
         int wsPort,
         QByteArray ghClientID,
         QByteArray ghSecret,
@@ -65,6 +70,7 @@ public:
     );
     explicit HacklilyServer(
         QString rendererDockerTag,
+        QString rendererUnstableDockerTag,
         QString coordinator,
         int jobs,
         QObject *parent = 0
@@ -104,6 +110,7 @@ private slots:
 private:
     // environment
     QString _rendererDockerTag;
+    QString _rendererUnstableDockerTag;
 
     // environment (coordinator)
     int _wsPort;
@@ -120,6 +127,7 @@ private:
     int _analytics_saves;
     int _analytics_sign_in;
     QList<QProcess*> _renderers;
+    QList<QString> _rendererVersion; /// stable or unstable
     QMap<int, QWebSocket *> _sockets; /// by socket id
     QMap<QString, UserInfo> _userInfo; /// by request id
     int _lastSocketID;

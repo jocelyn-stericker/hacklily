@@ -85,16 +85,6 @@ export const APP_STYLE = StyleSheet.create({
   previewPendingMaskModeView: {
     left: 0,
   },
-  readOnlyNotification: {
-    backgroundColor: "#1e1e1e",
-    color: "white",
-    fontWeight: "bold",
-    height: 20,
-    left: 0,
-    padding: 10,
-    top: 0,
-    zIndex: 100000,
-  },
   sheetMusicError: {
     color: "#aeaeae",
     display: "inline-block",
@@ -118,6 +108,18 @@ export const APP_STYLE = StyleSheet.create({
   },
   sheetMusicViewView: {
     left: 0,
+  },
+  urgentEditorNotification: {
+    backgroundColor: "#1e1e1e",
+    color: "white",
+    fontWeight: "bold",
+    left: 0,
+    padding: 10,
+    top: 0,
+    zIndex: 100000,
+  },
+  urgentEditorNotificationClose: {
+    color: "#aeaeae",
   },
 });
 

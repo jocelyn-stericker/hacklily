@@ -172,6 +172,11 @@ interface Props extends QueryProps {
    */
   dirtySongs: { [key: string]: Song };
 
+  /**
+   * True if the warning that is shown when LilyPond 2.19 is used should be shown.
+   */
+  hideUnstable219Notification: boolean;
+
   isStandalone: boolean;
 
   /**
@@ -199,6 +204,11 @@ interface Props extends QueryProps {
    * Sets the CSRF ("state") as part of the GitHub OAuth flow.
    */
   setCSRF(csrf: string): void;
+
+  /**
+   * Sets whether the warning that is shown when LilyPond 2.19 is used should be shown.
+   */
+  setHideUnstable219Notification(hideUnstable219Notification: boolean): void;
 
   /**
    * Updates a field in the URL query.
@@ -239,6 +249,7 @@ interface State {
   publish: boolean;
   reconnectCooloff: number;
   reconnectTimeout: number;
+  rendererVersion: "stable" | "unstable";
   saving: boolean;
   showMakelily: typeof Makelily | null;
   showDownloadModal: boolean | "loading";
@@ -294,6 +305,7 @@ export default class App extends React.PureComponent<Props, State> {
     publish: false,
     reconnectCooloff: INITIAL_WS_COOLOFF,
     reconnectTimeout: NaN,
+    rendererVersion: "stable",
     saving: false,
     showDownloadModal: false,
     showMakelily: null,
@@ -361,11 +373,22 @@ export default class App extends React.PureComponent<Props, State> {
     setEditingNotificationHandler(null);
   }
 
-  // tslint:disable-next-line:max-func-body-length
   render(): JSX.Element {
-    const { logs, mode, midi, defaultSelection, windowWidth } = this.state;
+    const {
+      logs,
+      mode,
+      midi,
+      defaultSelection,
+      rendererVersion,
+      windowWidth,
+    } = this.state;
 
-    const { auth, edit, isStandalone } = this.props;
+    const {
+      auth,
+      edit,
+      isStandalone,
+      hideUnstable219Notification,
+    } = this.props;
 
     const online: boolean = this.isOnline();
     const preview: React.ReactNode = this.renderPreview();
@@ -444,12 +467,15 @@ export default class App extends React.PureComponent<Props, State> {
             code={song ? song.src : undefined}
             colourScheme={this.props.colourScheme}
             mode={mode}
+            hideUnstable219Notification={hideUnstable219Notification}
             onSetCode={this.handleCodeChanged}
+            onHideUnstableNotification={this.handleHideUnstableNotification}
             logs={logs}
             defaultSelection={defaultSelection}
             readOnly={song ? song.baseSHA === PUBLIC_READONLY : false}
             isImmutableSrc={Boolean(this.props.src)}
             showMakelily={this.handleShowMakelily}
+            rendererVersion={rendererVersion}
           />
           {preview}
         </div>
@@ -813,6 +839,10 @@ export default class App extends React.PureComponent<Props, State> {
     }
   };
 
+  private handleHideUnstableNotification = (): void => {
+    this.props.setHideUnstable219Notification(true);
+  };
+
   private handleImport = async (name: string, src: string): Promise<void> => {
     this.props.setQuery(
       {
@@ -872,10 +902,14 @@ export default class App extends React.PureComponent<Props, State> {
     }
   };
 
-  private handleLogsObtained = (logs: string | null): void => {
+  private handleLogsObtained = (
+    logs: string | null,
+    version: "stable" | "unstable",
+  ): void => {
     if (logs !== this.state.logs) {
       this.setState({
         logs,
+        rendererVersion: version,
       });
     }
   };

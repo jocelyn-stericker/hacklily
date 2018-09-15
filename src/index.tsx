@@ -36,12 +36,14 @@ function render(): void {
       auth={getAuth()}
       csrf={localStorage.csrf || null}
       colourScheme={localStorage.colourScheme || "vs-dark"}
+      hideUnstable219Notification={getHideUnstable219Notification()}
       setQuery={setQuery}
       editSong={editSong}
       markSongClean={markSongClean}
       setAuth={setAuth}
       setColourScheme={setColourScheme}
       setCSRF={setCSRF}
+      setHideUnstable219Notification={setHideUnstable219Notification}
       isStandalone={process.env.REACT_APP_STANDALONE === "yes"}
     />,
     document.getElementById("root"),
@@ -137,6 +139,10 @@ function getAuth(): Auth | null {
   return parseAuth(localStorage.auth);
 }
 
+function getHideUnstable219Notification(): boolean {
+  return localStorage.hideUnstable219Notification || false;
+}
+
 function editSong(songID: string, song: Song): void {
   localStorage[`dirtySong::${songID}`] = JSON.stringify(song);
   render();
@@ -159,6 +165,15 @@ function setAuth(auth: Auth | null): void {
 function setColourScheme(colourScheme: "vs-dark" | "vs"): void {
   localStorage.colourScheme = colourScheme;
   document.location.reload();
+}
+
+function setHideUnstable219Notification(hideUnstable219Notification: boolean) {
+  if (hideUnstable219Notification) {
+    localStorage.hideUnstable219Notification = true;
+  } else {
+    delete localStorage.hideUnstable219Notification;
+  }
+  render();
 }
 
 function setCSRF(csrf: string | null): void {

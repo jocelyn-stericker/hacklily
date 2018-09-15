@@ -87,7 +87,7 @@ interface Props {
    * Called whenever a preview is rendered. The parent should in turn re-render,
    * settings the logs prop on this component and <Editor />.
    */
-  onLogsObtained(logs: string | null): void;
+  onLogsObtained(logs: string | null, version: "stable" | "unstable"): void;
 
   onMidiObtained(midi: ArrayBuffer | null): void;
 
@@ -214,6 +214,8 @@ export default class Preview extends React.PureComponent<Props, State> {
 
     const { code, isStandalone, rpc } = this.props;
 
+    let version: "stable" | "unstable" = "stable";
+
     try {
       let dirtyLogs: string;
       let midi: string | null;
@@ -231,9 +233,21 @@ export default class Preview extends React.PureComponent<Props, State> {
         if (!rpc) {
           throw new Error("If not standalone, rpc must be set!");
         }
+
+        // Decide whether to use the stable version or not.
+        const maybeVersion = /\\version\s*"(\d+)\.?(\d+)?\.?(\d+)?/gm.exec(
+          code,
+        );
+        const versionSlices = maybeVersion
+          ? maybeVersion.slice(1).map(v => parseInt(v, 10))
+          : [];
+        const isUnstable = versionSlices[0] === 2 && versionSlices[1] > 18;
+        version = isUnstable ? "unstable" : "stable";
+
         const response: RenderResponse = await rpc.call("render", {
           backend: "svg",
           src: code,
+          version,
         });
 
         files = response.result.files;
@@ -271,7 +285,7 @@ export default class Preview extends React.PureComponent<Props, State> {
         ALLOW_UNKNOWN_PROTOCOLS: true,
       } as object);
 
-      this.props.onLogsObtained(logs);
+      this.props.onLogsObtained(logs, version);
       if (midi !== this.previousMIDIData) {
         if (midi) {
           this.props.onMidiObtained(decodeArrayBuffer(midi.replace(/\s/g, "")));

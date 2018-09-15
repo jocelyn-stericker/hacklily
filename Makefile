@@ -53,7 +53,13 @@ build: build-backend build-frontend
 
 run-backend: build-backend
 	cd ./server/build && \
-	./ws-server --renderer-path ../renderer --renderer-docker-tag hacklily-renderer --jobs 1 --ws-port 2000
+	./ws-server \
+		--renderer-path ../renderer \
+		--renderer-docker-tag hacklily-renderer \
+		--renderer-unstable-path ../renderer-2.19 \
+		--renderer-unstable-docker-tag hacklily-renderer-unstable \
+		--jobs 2 \
+		--ws-port 2000
 
 
 test: deps-frontend

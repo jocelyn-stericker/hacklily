@@ -26,6 +26,7 @@
 #include <QNetworkReply>
 
 HacklilyServer::HacklilyServer(QString rendererDockerTag,
+                               QString rendererUnstableDockerTag,
                                int wsPort,
                                QByteArray ghClientID,
                                QByteArray ghSecret,
@@ -33,6 +34,7 @@ HacklilyServer::HacklilyServer(QString rendererDockerTag,
                                QObject *parent) :
     QObject(parent),
     _rendererDockerTag(rendererDockerTag),
+    _rendererUnstableDockerTag(rendererUnstableDockerTag),
     _wsPort(wsPort),
     _ghClientID(ghClientID),
     _ghSecret(ghSecret),
@@ -64,11 +66,13 @@ HacklilyServer::HacklilyServer(QString rendererDockerTag,
 }
 
 HacklilyServer::HacklilyServer(QString rendererDockerTag,
+                               QString rendererUnstableDockerTag,
                                QString coordinator,
                                int jobs,
                                QObject *parent) :
     QObject(parent),
     _rendererDockerTag(rendererDockerTag),
+    _rendererUnstableDockerTag(rendererUnstableDockerTag),
     _coordinatorURL(coordinator),
     _analytics_renders(0),
     _analytics_saves(0),
@@ -159,9 +163,24 @@ void HacklilyServer::_handleTextMessageReceived(QString message) {
         socket->sendTextMessage(responseJSONText);
     } else if (requestObj["method"] == "render") {
         ++_analytics_renders;
+
+        QString version = requestObj["params"].toObject()["version"].toString("stable");
+        bool versionIsSupported = false;
+        for (int i = 0; i < _rendererVersion.length(); ++i) {
+            if (_rendererVersion[i] == version) {
+                versionIsSupported = true;
+                break;
+            }
+        }
+        if (!versionIsSupported) {
+            socket->sendTextMessage("{\"error\": \"Invalid version.\", \"errorSlug\": \"invalid_version\"}");
+            return;
+        }
+
         HacklilyServerRequest req = {
             requestObj["params"].toObject()["src"].toString(),
             requestObj["params"].toObject()["backend"].toString(),
+            version,
             socket,
             requestObj["id"].toString(),
         };
@@ -296,8 +315,15 @@ void HacklilyServer::_initRenderers() {
         connect(renderer, &QProcess::started, this, &HacklilyServer::_processIfPossible);
 
         renderer->setProcessChannelMode(QProcess::ForwardedErrorChannel);
-        renderer->start("docker",
-            QStringList() << "run" << "--rm" << "-i" <<  "--net=none" << "-m1g" << "--cpus=1" << _rendererDockerTag);
+        if (_rendererUnstableDockerTag != "" && i >= _maxJobs/2) {
+            renderer->start("docker",
+                QStringList() << "run" << "--rm" << "-i" <<  "--net=none" << "-m1g" << "--cpus=1" << _rendererUnstableDockerTag);
+            _rendererVersion.append("unstable");
+        } else {
+            renderer->start("docker",
+                QStringList() << "run" << "--rm" << "-i" <<  "--net=none" << "-m1g" << "--cpus=1" << _rendererDockerTag);
+            _rendererVersion.append("stable");
+        }
     }
 }
 
@@ -378,6 +404,7 @@ void HacklilyServer::_processIfPossible() {
         QJsonObject paramsObj;
         paramsObj["backend"] = request.backend;
         paramsObj["src"] = request.src;
+        paramsObj["version"] = request.version;
         QJsonObject requestObj;
         requestObj["jsonrpc"] = "2.0";
         requestObj["id"] = request.requestID;
@@ -392,7 +419,9 @@ void HacklilyServer::_processIfPossible() {
 
     // Otherwise, do it ourselves.
     for (int i = 0; i < _renderers.size(); ++i) {
-        if (_renderers[i]->state() != QProcess::Running || _localProcessingRequests.contains(i)) {
+        if (_renderers[i]->state() != QProcess::Running ||
+                _localProcessingRequests.contains(i) ||
+                _rendererVersion[i] != _requests[0].version) {
             continue;
         }
         qDebug() << "Processing on local renderer " << i;
