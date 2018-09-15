@@ -13,9 +13,9 @@ const getCSSModuleLocalIdent = require("react-dev-utils/getCSSModuleLocalIdent")
 const getClientEnvironment = require("./env");
 const paths = require("./paths");
 const ManifestPlugin = require("webpack-manifest-plugin");
-const { LicenseWebpackPlugin } = require("license-webpack-plugin");
 const fs = require("fs");
 const MonacoWebpackPlugin = require("monaco-editor-webpack-plugin");
+const ForkTsCheckerWebpackPlugin = require("fork-ts-checker-webpack-plugin");
 
 // Webpack uses `publicPath` to determine where the app is being served from.
 // In development, we always serve from the root. This makes config easier.
@@ -161,18 +161,6 @@ module.exports = {
       // Disable require.ensure as it's not a standard language feature.
       { parser: { requireEnsure: false } },
 
-      // First, run the linter.
-      // It's important to do this before Babel processes the JS.
-      {
-        test: /\.(ts|tsx)$/,
-        enforce: "pre",
-        loader: "tslint-loader",
-        options: {
-          typeCheck: true,
-          formatter: "stylish",
-        },
-        exclude: path.resolve(__dirname, "node_modules"),
-      },
       {
         // "oneOf" will traverse all following loaders until one will
         // match the requirements. When no loader matches it will fall
@@ -193,8 +181,17 @@ module.exports = {
           {
             test: /\.(js|jsx|ts|tsx)$/,
             include: paths.appSrc,
-            loader: "awesome-typescript-loader",
+            use: [
+              {
+                loader: require.resolve("ts-loader"),
+                options: {
+                  // we'll use the fork plugin instead
+                  transpileOnly: true,
+                },
+              },
+            ],
           },
+
           // "postcss" loader applies autoprefixer to our CSS.
           // "css" loader resolves paths in CSS and adds assets as dependencies.
           // "style" loader turns CSS into JS modules that inject <style> tags.
@@ -320,13 +317,19 @@ module.exports = {
     // https://github.com/jmblog/how-to-optimize-momentjs-with-webpack
     // You can remove this if you don't use Moment.js:
     new webpack.IgnorePlugin(/^\.\/locale$/, /moment$/),
-    new LicenseWebpackPlugin({
-      pattern: /^.*$/,
-      addUrl: true,
-      perChunkOutput: false,
-      outputFilename: "3rdpartylicenses.txt",
-      includePackagesWithoutLicense: true,
+    // Perform type checking and linting in a separate process to speed up compilation
+    new ForkTsCheckerWebpackPlugin({
+      async: false,
+      watch: paths.appSrc,
+      tslint: true,
     }),
+    // new LicenseWebpackPlugin({
+    //   pattern: /^.*$/,
+    //   addUrl: true,
+    //   perChunkOutput: false,
+    //   outputFilename: "3rdpartylicenses.txt",
+    //   includePackagesWithoutLicense: true,
+    // }),
     new webpack.BannerPlugin(
       fs.readFileSync("./src/LICENSE_HEADER.txt", "utf8"),
     ),

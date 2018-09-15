@@ -18,9 +18,9 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
  */
 
-import React from 'react';
+import React from "react";
 
-import RPCClient, { Status as ServerStatus } from '../RPCClient';
+import RPCClient, { Status as ServerStatus } from "../RPCClient";
 
 const INITIAL_WS_COOLOFF: number = 1;
 const BACKEND_WS_URL: string | undefined = process.env.REACT_APP_BACKEND_WS_URL;
@@ -61,29 +61,19 @@ export default class Status extends React.Component<{}, State> {
     }
 
     if (!this.socket || this.socket.readyState === WebSocket.CONNECTING) {
-      return (
-        <div>
-          Connecting...
-        </div>
-      );
+      return <div>Connecting...</div>;
     }
 
     const { status } = this.state;
 
     if (!status) {
-      return (
-        <div>
-          No status returned.
-        </div>
-      );
+      return <div>No status returned.</div>;
     }
 
     return (
       <div>
         <h1>Status</h1>
-        <pre>
-          {JSON.stringify(status, null, 2)}
-        </pre>
+        <pre>{JSON.stringify(status, null, 2)}</pre>
       </div>
     );
   }
@@ -98,16 +88,16 @@ export default class Status extends React.Component<{}, State> {
     }
     this.socket = new WebSocket(BACKEND_WS_URL);
 
-    this.socket.addEventListener('open', this.handleWSOpen);
-    this.socket.addEventListener('error', this.handleWSError);
-    this.socket.addEventListener('close', this.handleWSError);
+    this.socket.addEventListener("open", this.handleWSOpen);
+    this.socket.addEventListener("error", this.handleWSError);
+    this.socket.addEventListener("close", this.handleWSError);
   }
 
   private disconnectWS(): void {
     if (this.socket) {
-      this.socket.removeEventListener('open', this.handleWSOpen);
-      this.socket.removeEventListener('error', this.handleWSError);
-      this.socket.removeEventListener('close', this.handleWSError);
+      this.socket.removeEventListener("open", this.handleWSOpen);
+      this.socket.removeEventListener("error", this.handleWSError);
+      this.socket.removeEventListener("close", this.handleWSError);
       this.socket.close();
       this.socket = null;
       if (this.rpc) {
@@ -122,13 +112,13 @@ export default class Status extends React.Component<{}, State> {
       return;
     }
 
-    const status: ServerStatus = (await this.rpc.call('get_status', {})).result;
+    const status: ServerStatus = (await this.rpc.call("get_status", {})).result;
     this.setState({
       reconnectCooloff: INITIAL_WS_COOLOFF,
       status,
       wsError: false,
     });
-  }
+  };
 
   private handleWSError = (e: Event): void => {
     if (!this.socket) {
@@ -145,17 +135,17 @@ export default class Status extends React.Component<{}, State> {
     if (this.statusTimer) {
       clearInterval(this.statusTimer);
     }
-  }
+  };
 
   private handleWSOpen = async (): Promise<void> => {
     if (!this.socket) {
-      throw new Error('Socket not opened, but handleWSOpen called.');
+      throw new Error("Socket not opened, but handleWSOpen called.");
     }
     this.rpc = new RPCClient(this.socket);
 
-    this.statusTimer = setInterval(this.handleGetStatusTimeout, 1000);
+    this.statusTimer = window.setInterval(this.handleGetStatusTimeout, 1000);
     this.handleGetStatusTimeout();
-  }
+  };
 
   private wsReconnectTick = (): void => {
     const secondsRemaining: number = this.state.reconnectTimeout - 1;
@@ -170,5 +160,5 @@ export default class Status extends React.Component<{}, State> {
       });
       this.connectToWS();
     }
-  }
+  };
 }
