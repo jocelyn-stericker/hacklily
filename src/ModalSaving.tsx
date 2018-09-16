@@ -20,26 +20,36 @@
 
 import { css } from "aphrodite";
 import React from "react";
+import { FormattedMessage, InjectedIntl, injectIntl } from "react-intl";
 import ReactModal from "react-modal";
 
 import { MODAL_STYLE } from "./styles";
+
+interface Props {
+  intl: InjectedIntl;
+}
 
 /**
  * A modal that is rendered while saving a song.
  * There's no escaping this modal. It's visible until saving completes.
  */
-class ModalSaving extends React.PureComponent {
+class ModalSaving extends React.PureComponent<Props> {
   render(): JSX.Element {
+    const { intl } = this.props;
+
     return (
       <ReactModal
         className={css(MODAL_STYLE.modal)}
-        contentLabel="Saving..."
+        contentLabel={intl.formatDate("Saving...")}
         isOpen={true}
         overlayClassName={css(MODAL_STYLE.overlay)}
       >
         <div>
           <div className={css(MODAL_STYLE.modalHeader)}>
-            Saving, please wait&hellip;{" "}
+            <FormattedMessage
+              id="ModalSaving.saving"
+              defaultMessage="Saving, please wait&hellip;"
+            />{" "}
             <i className="fa fa-spinner fa-spin" aria-hidden={true} />
           </div>
         </div>
@@ -48,4 +58,4 @@ class ModalSaving extends React.PureComponent {
   }
 }
 
-export default ModalSaving;
+export default injectIntl(ModalSaving);

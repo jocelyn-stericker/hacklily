@@ -12,6 +12,7 @@
     "makelily": "hacklily/makelily#3d2b9bb6d4fde27bdc41eaf667cf0984b939d0a4",
     "monaco-editor": "0.14.3",
     "react-dom": "16.5.1",
+    "react-intl": "2.5.0",
     "react-modal": "3.5.1",
     "react-monaco-editor": "0.18.0",
     "react": "16.5.1"
@@ -32,6 +33,7 @@
     "@types/react-dom": "16.0.7",
     "@types/react-dom-factories": "^1.0.2",
     "@types/react-modal": "3.2.1",
+    "@types/react-intl": "2.3.11",
     "@types/text-encoding": "0.0.33",
     "@types/webpack": "4.4.11",
     "autoprefixer": "9.1.5",

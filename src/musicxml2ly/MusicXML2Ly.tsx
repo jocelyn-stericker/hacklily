@@ -19,6 +19,7 @@
  */
 
 import React from "react";
+import { IntlProvider } from "react-intl";
 
 const INITIAL_WS_COOLOFF: number = 2;
 const BACKEND_WS_URL: string | undefined = process.env.REACT_APP_BACKEND_WS_URL;
@@ -54,13 +55,17 @@ export default class App extends React.PureComponent<{}, State> {
     const header = <div className="header" />;
 
     return (
-      <div className="App">
-        {header}
-        {this.rpc && <MusicXML2LyModal onHide={this.onLeave} rpc={this.rpc} />}
-        <div className="content" style={{ width: "50%" }}>
-          <div className="monaco" />
+      <IntlProvider>
+        <div className="App">
+          {header}
+          {this.rpc && (
+            <MusicXML2LyModal onHide={this.onLeave} rpc={this.rpc} />
+          )}
+          <div className="content" style={{ width: "50%" }}>
+            <div className="monaco" />
+          </div>
         </div>
-      </div>
+      </IntlProvider>
     );
   }
 

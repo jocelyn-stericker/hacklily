@@ -20,6 +20,7 @@
 
 import { css } from "aphrodite";
 import React from "react";
+import { FormattedMessage, InjectedIntl, injectIntl } from "react-intl";
 import ReactModal from "react-modal";
 
 import { Auth } from "./auth";
@@ -29,6 +30,7 @@ import { HEADER_STYLE, MENU_STYLE } from "./styles";
 interface Props {
   auth: Auth | null;
   colourScheme: "vs-dark" | "vs";
+  intl: InjectedIntl;
   windowWidth: number;
   onDeleteSong(song: string): void;
   onHide(): void;
@@ -70,13 +72,21 @@ class Menu extends React.PureComponent<Props, State> {
   }
 
   render(): JSX.Element {
-    const { auth, onSignOut, onHide, onShowAbout, windowWidth } = this.props;
+    const {
+      auth,
+      onSignOut,
+      onHide,
+      onShowAbout,
+      windowWidth,
+      intl,
+    } = this.props;
 
     let signOut: React.ReactNode;
     if (auth) {
       signOut = (
         <button onClick={onSignOut} className={css(MENU_STYLE.option)}>
-          <i className="fa fa-fw fa-sign-out" aria-hidden={true} /> Sign out (
+          <i className="fa fa-fw fa-sign-out" aria-hidden={true} />{" "}
+          <FormattedMessage id="Menu.signOut" defaultMessage="Sign out" /> (
           {auth.name})
         </button>
       );
@@ -86,8 +96,11 @@ class Menu extends React.PureComponent<Props, State> {
     if (windowWidth < 500) {
       warning = (
         <div>
-          <i className="fa fa-fw fa-exclamation-triangle" /> Hacklily works best
-          on wider screens.
+          <i className="fa fa-fw fa-exclamation-triangle" />{" "}
+          <FormattedMessage
+            id="Menu.widerScreens"
+            defaultMessage="Hacklily works best on wider screens."
+          />
         </div>
       );
     }
@@ -100,23 +113,26 @@ class Menu extends React.PureComponent<Props, State> {
         className={css(MENU_STYLE.option)}
         target="_blank"
       >
-        <i className="fa fa-fw fa-life-ring" aria-hidden={true} /> Lilypond
-        manual
+        <i className="fa fa-fw fa-life-ring" aria-hidden={true} />{" "}
+        <FormattedMessage id="Menu.lyManual" defaultMessage="Lilypond manual" />
       </a>
     );
     // tslint:enable:no-http-string because of silly lilypond
 
     const about: React.ReactNode = (
       <button onClick={onShowAbout} className={css(MENU_STYLE.option)}>
-        <i className="fa fa-fw fa-info-circle" aria-hidden={true} /> About
-        Hacklily
+        <i className="fa fa-fw fa-info-circle" aria-hidden={true} />{" "}
+        <FormattedMessage id="Menu.about" defaultMessage="About Hacklily" />
       </button>
     );
 
     return (
       <ReactModal
         className={css(MENU_STYLE.menu)}
-        contentLabel="Menu"
+        contentLabel={intl.formatMessage({
+          id: "Menu.sr",
+          defaultMessage: "Menu",
+        })}
         isOpen={true}
         onRequestClose={onHide}
         overlayClassName={css(MENU_STYLE.menuOverlay)}
@@ -184,10 +200,18 @@ class Menu extends React.PureComponent<Props, State> {
   };
 
   private renderSetColourScheme(): React.ReactNode {
+    const { intl } = this.props;
+
     const text: string =
       this.props.colourScheme === "vs-dark"
-        ? "Use light colour scheme"
-        : "Use dark colour scheme";
+        ? intl.formatMessage({
+            id: "Menu.useLight",
+            defaultMessage: "Use light colour scheme",
+          })
+        : intl.formatMessage({
+            id: "Menu.useDark",
+            defaultMessage: "Use dark colour scheme",
+          });
 
     return (
       <button
@@ -221,7 +245,10 @@ class Menu extends React.PureComponent<Props, State> {
         if (!lilySongs.length) {
           songs = (
             <div className={css(MENU_STYLE.placeholder)}>
-              Save / share a song to see it here.
+              <FormattedMessage
+                id="Menu.songsPlaceholder"
+                defaultMessage="Save / share a song to see it here."
+              />
             </div>
           );
         } else {
@@ -242,7 +269,10 @@ class Menu extends React.PureComponent<Props, State> {
               >
                 <i className="fa fa-remove fa-fw" aria-hidden={true} />
                 <span className={css(HEADER_STYLE.srOnly)}>
-                  Delete this song
+                  <FormattedMessage
+                    id="Menu.deleteSong"
+                    defaultMessage="Delete this song"
+                  />
                 </span>
               </button>
             </li>
@@ -253,13 +283,23 @@ class Menu extends React.PureComponent<Props, State> {
     } else {
       songs = (
         <div className={css(MENU_STYLE.placeholder)}>
-          <button
-            onClick={onSignIn}
-            className={css(MENU_STYLE.placeholderLink)}
-          >
-            Sign in
-          </button>{" "}
-          to see your songs.
+          <FormattedMessage
+            id="Menu.signInToSeeSongs"
+            values={{
+              signIn: (
+                <button
+                  onClick={onSignIn}
+                  className={css(MENU_STYLE.placeholderLink)}
+                >
+                  <FormattedMessage
+                    id="Menu.signInToSeeSongs_signIn"
+                    defaultMessage="Sign in"
+                  />
+                </button>
+              ),
+            }}
+            defaultMessage="{signIn} to see your songs."
+          />
         </div>
       );
     }
@@ -268,4 +308,4 @@ class Menu extends React.PureComponent<Props, State> {
   }
 }
 
-export default Menu;
+export default injectIntl(Menu);

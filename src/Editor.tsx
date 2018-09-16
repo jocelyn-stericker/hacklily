@@ -23,6 +23,7 @@ import * as monacoEditor from "monaco-editor";
 import React from "react";
 import ReactMonacoEditor from "react-monaco-editor";
 
+import { FormattedMessage, InjectedIntl } from "react-intl";
 import { MODE_EDIT, MODE_VIEW, ViewMode } from "./Header";
 import CodelensProvider from "./monacoConfig/CodelensProvider";
 import Commands from "./monacoConfig/Commands";
@@ -50,6 +51,14 @@ interface Props {
   defaultSelection: monacoEditor.ISelection | null;
 
   hideUnstable219Notification: boolean;
+
+  /**
+   * react-intl API.
+   *
+   * This needs to be passed in from the parent. This is because the parent needs a ref to this
+   * and injectIntl does not forward refs.
+   */
+  intl: InjectedIntl;
 
   isImmutableSrc: boolean;
 
@@ -272,7 +281,11 @@ export default class Editor extends React.PureComponent<Props> {
             className={css(APP_STYLE.urgentEditorNotification)}
             style={{ width }}
           >
-            <i className="fa-info-circle fa fa-fw" /> to edit, import this song
+            <i className="fa-info-circle fa fa-fw" />{" "}
+            <FormattedMessage
+              id="Editor.importImmutable"
+              defaultMessage="to edit, import this song"
+            />
           </div>
         );
       } else {
@@ -281,8 +294,12 @@ export default class Editor extends React.PureComponent<Props> {
             className={css(APP_STYLE.urgentEditorNotification)}
             style={{ width }}
           >
-            <i className="fa-lock fa fa-fw" /> read-only &mdash; to edit, log in
-            as the owner or save a copy
+            <i className="fa-lock fa fa-fw" />{" "}
+            <FormattedMessage
+              id="Editor.importOther"
+              defaultMessage="read-only &mdash; to edit, log in
+            as the owner or save a copy"
+            />
           </div>
         );
       }
@@ -295,14 +312,21 @@ export default class Editor extends React.PureComponent<Props> {
           className={css(APP_STYLE.urgentEditorNotification)}
           style={{ width }}
         >
-          <i className="fa-bug fa fa-fw" /> This song uses LilyPond 2.19, which
-          is an unstable development version and may change without notice.{" "}
+          <i className="fa-bug fa fa-fw" />{" "}
+          <FormattedMessage
+            id="Editor.unstable"
+            defaultMessage="This song uses LilyPond 2.19, which
+          is an unstable development version and may change without notice."
+          />{" "}
           <a
             onClick={onHideUnstableNotification}
             className={css(APP_STYLE.urgentEditorNotificationClose)}
             href="javascript:void(0)"
           >
-            I understand.
+            <FormattedMessage
+              id="Editor.understood"
+              defaultMessage="I understand."
+            />
           </a>
         </div>
       );
@@ -372,7 +396,7 @@ export default class Editor extends React.PureComponent<Props> {
 
     monacoModule.languages.registerCodeLensProvider(
       "lilypond",
-      new CodelensProvider(this.commands),
+      new CodelensProvider(this.commands, this.props.intl),
     );
   };
 

@@ -20,28 +20,49 @@
 
 import { css } from "aphrodite";
 import React from "react";
+import { FormattedMessage, InjectedIntl, injectIntl } from "react-intl";
 import ReactModal from "react-modal";
 
 import { MODAL_STYLE } from "./styles";
+
+interface Props {
+  intl: InjectedIntl;
+}
 
 /**
  * A modal that is rendered when this song is being edited in another tab.
  * There's no escaping this modal. You need to reload or close the tab to continue.
  */
-export default class ModalLocked extends React.PureComponent {
+class ModalLocked extends React.PureComponent<Props> {
   render(): JSX.Element {
+    const { intl } = this.props;
+
     return (
       <ReactModal
         className={css(MODAL_STYLE.modal)}
-        contentLabel="Opened in another tab..."
+        contentLabel={intl.formatMessage({
+          id: "ModalLocked.title",
+          defaultMessage: "Opened in another tab...",
+        })}
         isOpen={true}
         overlayClassName={css(MODAL_STYLE.overlay)}
       >
         <div>
           <div className={css(MODAL_STYLE.modalHeader)}>
-            This song was opened in another tab. You can only edit in one tab at
-            once. If you have closed the other tab, you may{" "}
-            <a href={window.location.toString()}>resume editing here</a>.
+            <FormattedMessage
+              id="ModalLocked.description"
+              values={{
+                resumeEditingHere: (
+                  <a href={window.location.toString()}>
+                    <FormattedMessage
+                      id="ModalLocked.description_resumeEditingHere"
+                      defaultMessage="resume editing here"
+                    />
+                  </a>
+                ),
+              }}
+              defaultMessage="This song was opened in another tab. You can only edit in one tab at once. If you have closed the other tab, you may {resumeEditingHere}."
+            />
           </div>
         </div>
       </ReactModal>
@@ -77,3 +98,5 @@ export function setEditingNotificationHandler(
     window.addEventListener("storage", editingNotificationHandler);
   }
 }
+
+export default injectIntl(ModalLocked);

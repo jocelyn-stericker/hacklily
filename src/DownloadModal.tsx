@@ -20,12 +20,14 @@
 
 import { css } from "aphrodite";
 import React from "react";
+import { FormattedMessage, InjectedIntl, injectIntl } from "react-intl";
 import ReactModal from "react-modal";
 
 import { BUTTON_STYLE, MODAL_STYLE } from "./styles";
 
 interface Props {
   loading: boolean;
+  intl: InjectedIntl;
   songURL: string | null;
   onExportLy(): any;
   onExportMIDI(): any;
@@ -46,21 +48,31 @@ class DownloadModal extends React.PureComponent<Props> {
       onExportMIDI,
       onExportPDF,
       songURL,
+      intl: { formatMessage },
     } = this.props;
 
     return (
       <ReactModal
         className={css(MODAL_STYLE.modal)}
-        contentLabel="Download"
+        contentLabel={formatMessage({
+          id: "DownloadModal.title",
+          defaultMessage: "Download or Export",
+        })}
         isOpen={true}
         onRequestClose={onHide}
         overlayClassName={css(MODAL_STYLE.overlay)}
       >
         <div>
           <div className={css(MODAL_STYLE.modalHeader)}>
-            Download or Export
+            <FormattedMessage
+              id="DownloadModal.title"
+              defaultMessage="Download or Export"
+            />
             <button
-              aria-label="Back to song"
+              aria-label={formatMessage({
+                id: "DownloadModal.back",
+                defaultMessage: "Back to song",
+              })}
               onClick={onHide}
               className={css(MODAL_STYLE.closeButton)}
             >
@@ -81,7 +93,11 @@ class DownloadModal extends React.PureComponent<Props> {
                     BUTTON_STYLE.downloadChoiceButton,
                   )}
                 >
-                  <i className="fa fa-download" /> Download LilyPond file
+                  <i className="fa fa-download" />{" "}
+                  <FormattedMessage
+                    id="DownloadModal.ly"
+                    defaultMessage="Download LilyPond file"
+                  />
                 </a>
               </div>
               <div>
@@ -93,7 +109,11 @@ class DownloadModal extends React.PureComponent<Props> {
                     BUTTON_STYLE.downloadChoiceButton,
                   )}
                 >
-                  <i className="fa fa-file-pdf-o" /> Export PDF
+                  <i className="fa fa-file-pdf-o" />{" "}
+                  <FormattedMessage
+                    id="DownloadModal.pdf"
+                    defaultMessage="Export PDF"
+                  />
                 </a>
               </div>
               <div>
@@ -105,7 +125,11 @@ class DownloadModal extends React.PureComponent<Props> {
                     BUTTON_STYLE.downloadChoiceButton,
                   )}
                 >
-                  <i className="fa fa-music" /> Export MIDI
+                  <i className="fa fa-music" />{" "}
+                  <FormattedMessage
+                    id="DownloadModal.midi"
+                    defaultMessage="Export MIDI"
+                  />
                 </a>
               </div>
               {songURL && (
@@ -119,7 +143,11 @@ class DownloadModal extends React.PureComponent<Props> {
                       BUTTON_STYLE.downloadChoiceButton,
                     )}
                   >
-                    <i className="fa fa-github" /> View on GitHub
+                    <i className="fa fa-github" />{" "}
+                    <FormattedMessage
+                      id="DownloadModal.gh"
+                      defaultMessage="View on GitHub"
+                    />
                   </a>
                 </div>
               )}
@@ -131,4 +159,4 @@ class DownloadModal extends React.PureComponent<Props> {
   }
 }
 
-export default DownloadModal;
+export default injectIntl(DownloadModal);

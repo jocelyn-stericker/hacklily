@@ -9,6 +9,7 @@
     "interface-name": false,
     "no-console": false,
     "max-classes-per-file": false,
-    "member-access": false
+    "member-access": false,
+    "object-literal-sort-keys": false
   }
 }
