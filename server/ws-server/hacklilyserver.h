@@ -28,7 +28,8 @@
 #include <QProcess>
 #include <QTimer>
 
-struct HacklilyServerRequest {
+struct HacklilyServerRequest
+{
     /**
      * @brief src Lilypond source
      */
@@ -41,11 +42,12 @@ struct HacklilyServerRequest {
      * @brief version stable | unstable
      */
     QString version;
-    QWebSocket* sender;
+    QWebSocket *sender;
     QString requestID;
 };
 
-struct UserInfo {
+struct UserInfo
+{
     QByteArray accessToken;
     QString name;
     QString username;
@@ -56,9 +58,10 @@ struct UserInfo {
 #define ERROR_INTERNAL 2
 #define ERROR_GITHUB 3
 
-class HacklilyServer : public QObject {
+class HacklilyServer : public QObject
+{
     Q_OBJECT
-public:
+  public:
     explicit HacklilyServer(
         QString rendererDockerTag,
         QString rendererUnstableDockerTag,
@@ -66,20 +69,18 @@ public:
         QByteArray ghClientID,
         QByteArray ghSecret,
         int jobs,
-        QObject *parent = 0
-    );
+        QObject *parent = 0);
     explicit HacklilyServer(
         QString rendererDockerTag,
         QString rendererUnstableDockerTag,
         QString coordinator,
         int jobs,
-        QObject *parent = 0
-    );
+        QObject *parent = 0);
     virtual ~HacklilyServer();
 
-signals:
+  signals:
 
-private slots:
+  private slots:
     // Common
     void _handleNewConnection();
     void _handleTextMessageReceived(QString message);
@@ -107,7 +108,7 @@ private slots:
     void _handleCoordinatorDisconnected();
     void _doCoordinatorPing();
 
-private:
+  private:
     // environment
     QString _rendererDockerTag;
     QString _rendererUnstableDockerTag;
@@ -116,8 +117,8 @@ private:
     int _wsPort;
     QByteArray _ghClientID;
     QByteArray _ghSecret;
-    QList<QWebSocket*> _freeWorkers;
-    QMap<QString, QWebSocket*> _busyWorkers;
+    QList<QWebSocket *> _freeWorkers;
+    QMap<QString, QWebSocket *> _busyWorkers;
 
     // environment (worker)
     QString _coordinatorURL;
@@ -126,9 +127,9 @@ private:
     int _analytics_renders;
     int _analytics_saves;
     int _analytics_sign_in;
-    QList<QProcess*> _renderers;
-    QList<QString> _rendererVersion; /// stable or unstable
-    QMap<int, QWebSocket *> _sockets; /// by socket id
+    QList<QProcess *> _renderers;
+    QList<QString> _rendererVersion;   /// stable or unstable
+    QMap<int, QWebSocket *> _sockets;  /// by socket id
     QMap<QString, UserInfo> _userInfo; /// by request id
     int _lastSocketID;
     QList<HacklilyServerRequest> _requests;
@@ -139,12 +140,11 @@ private:
     QDateTime _startupTime;
 
     // state (coordinator)
-    QWebSocketServer* _server;
+    QWebSocketServer *_server;
 
     // state (worker)
     QWebSocket *_coordinator;
     QTimer *_coordinatorPingTimer;
-
 };
 
 #endif // HACKLILYSERVER_H

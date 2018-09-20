@@ -31,36 +31,38 @@ HacklilyServer::HacklilyServer(QString rendererDockerTag,
                                QByteArray ghClientID,
                                QByteArray ghSecret,
                                int jobs,
-                               QObject *parent) :
-    QObject(parent),
-    _rendererDockerTag(rendererDockerTag),
-    _rendererUnstableDockerTag(rendererUnstableDockerTag),
-    _wsPort(wsPort),
-    _ghClientID(ghClientID),
-    _ghSecret(ghSecret),
-    _analytics_renders(0),
-    _analytics_saves(0),
-    _analytics_sign_in(0),
-    _lastSocketID(-1),
-    _nam(new QNetworkAccessManager(this)),
-    _maxJobs(jobs),
-    _startupTime(QDateTime::currentDateTimeUtc()),
-    _server(new QWebSocketServer("hacklily-server", QWebSocketServer::NonSecureMode, this)),
-    _coordinator(NULL),
-    _coordinatorPingTimer(NULL)
+                               QObject *parent) : QObject(parent),
+                                                  _rendererDockerTag(rendererDockerTag),
+                                                  _rendererUnstableDockerTag(rendererUnstableDockerTag),
+                                                  _wsPort(wsPort),
+                                                  _ghClientID(ghClientID),
+                                                  _ghSecret(ghSecret),
+                                                  _analytics_renders(0),
+                                                  _analytics_saves(0),
+                                                  _analytics_sign_in(0),
+                                                  _lastSocketID(-1),
+                                                  _nam(new QNetworkAccessManager(this)),
+                                                  _maxJobs(jobs),
+                                                  _startupTime(QDateTime::currentDateTimeUtc()),
+                                                  _server(new QWebSocketServer("hacklily-server", QWebSocketServer::NonSecureMode, this)),
+                                                  _coordinator(NULL),
+                                                  _coordinatorPingTimer(NULL)
 {
     _initRenderers();
 
-    if (!_server->listen(QHostAddress::Any, wsPort)) {
+    if (!_server->listen(QHostAddress::Any, wsPort))
+    {
         qDebug() << "Failed to bind to port " << wsPort << ". Cannot continue";
         qFatal("Cannot continue");
     }
     connect(_server, &QWebSocketServer::newConnection, this, &HacklilyServer::_handleNewConnection);
 
-    if (!ghClientID.size()) {
+    if (!ghClientID.size())
+    {
         qWarning() << "No gh client ID specified. GITHUB INTEGRATION DISABLED";
     }
-    if (!ghSecret.size()) {
+    if (!ghSecret.size())
+    {
         qWarning() << "No gh secret specified. GITHUB INTEGRATION DISABLED";
     }
 }
@@ -69,31 +71,33 @@ HacklilyServer::HacklilyServer(QString rendererDockerTag,
                                QString rendererUnstableDockerTag,
                                QString coordinator,
                                int jobs,
-                               QObject *parent) :
-    QObject(parent),
-    _rendererDockerTag(rendererDockerTag),
-    _rendererUnstableDockerTag(rendererUnstableDockerTag),
-    _coordinatorURL(coordinator),
-    _analytics_renders(0),
-    _analytics_saves(0),
-    _analytics_sign_in(0),
-    _lastSocketID(-1),
-    _nam(new QNetworkAccessManager(this)),
-    _maxJobs(jobs),
-    _server(NULL),
-    _coordinator(NULL),
-    _coordinatorPingTimer(NULL)
+                               QObject *parent) : QObject(parent),
+                                                  _rendererDockerTag(rendererDockerTag),
+                                                  _rendererUnstableDockerTag(rendererUnstableDockerTag),
+                                                  _coordinatorURL(coordinator),
+                                                  _analytics_renders(0),
+                                                  _analytics_saves(0),
+                                                  _analytics_sign_in(0),
+                                                  _lastSocketID(-1),
+                                                  _nam(new QNetworkAccessManager(this)),
+                                                  _maxJobs(jobs),
+                                                  _server(NULL),
+                                                  _coordinator(NULL),
+                                                  _coordinatorPingTimer(NULL)
 {
     _initRenderers();
 
     _openCoordinator();
 }
 
-HacklilyServer::~HacklilyServer() {
+HacklilyServer::~HacklilyServer()
+{
 }
 
-void HacklilyServer::_handleNewConnection() {
-    while (_server->hasPendingConnections()) {
+void HacklilyServer::_handleNewConnection()
+{
+    while (_server->hasPendingConnections())
+    {
         auto socket = _server->nextPendingConnection();
         int socketID = ++_lastSocketID;
 
@@ -106,12 +110,14 @@ void HacklilyServer::_handleNewConnection() {
     }
 }
 
-void HacklilyServer::_handleTextMessageReceived(QString message) {
-    QWebSocket* socket = qobject_cast<QWebSocket *>(sender());
+void HacklilyServer::_handleTextMessageReceived(QString message)
+{
+    QWebSocket *socket = qobject_cast<QWebSocket *>(sender());
     QJsonParseError parseError;
     QByteArray utfMsg = message.toUtf8();
     auto request = QJsonDocument::fromJson(utfMsg, &parseError);
-    if (parseError.error != QJsonParseError::NoError) {
+    if (parseError.error != QJsonParseError::NoError)
+    {
         qDebug() << "[req] Invalid message.";
         QJsonObject errorObj;
         errorObj["code"] = ERROR_JSON_PARSE;
@@ -129,18 +135,22 @@ void HacklilyServer::_handleTextMessageReceived(QString message) {
 
     QString id = requestObj["id"].toString();
     QString method = requestObj["method"].toString();
-    if (method != "ping") {
+    if (method != "ping")
+    {
         qDebug() << "[req] id=" << id << " method=" << method;
     }
 
-    if (_busyWorkers.contains(id)) {
+    if (_busyWorkers.contains(id))
+    {
         HacklilyServerRequest req = _remoteProcessingRequests.take(id);
         QWebSocket *worker = _busyWorkers.take(id);
         _freeWorkers.push_back(worker);
         req.sender->sendTextMessage(message);
         qDebug() << "Relayed message from worker.";
         _processIfPossible();
-    } else if (requestObj["method"] == "ping") {
+    }
+    else if (requestObj["method"] == "ping")
+    {
         QJsonObject responseObj;
         responseObj["jsonrpc"] = "2.0";
         responseObj["id"] = requestObj["id"];
@@ -149,7 +159,9 @@ void HacklilyServer::_handleTextMessageReceived(QString message) {
         response.setObject(responseObj);
         auto responseJSONText = response.toJson(QJsonDocument::Compact);
         socket->sendTextMessage(responseJSONText);
-    } else if (requestObj["method"] == "notifySaved") {
+    }
+    else if (requestObj["method"] == "notifySaved")
+    {
         qDebug() << "Saved";
         ++_analytics_saves;
 
@@ -161,7 +173,9 @@ void HacklilyServer::_handleTextMessageReceived(QString message) {
         response.setObject(responseObj);
         auto responseJSONText = response.toJson(QJsonDocument::Compact);
         socket->sendTextMessage(responseJSONText);
-    } else if (requestObj["method"] == "render") {
+    }
+    else if (requestObj["method"] == "render")
+    {
         ++_analytics_renders;
 
         QString version = requestObj["params"].toObject()["version"].toString("stable");
@@ -173,8 +187,8 @@ void HacklilyServer::_handleTextMessageReceived(QString message) {
             socket,
             requestObj["id"].toString(),
         };
-        if (!req.src.length() || !req.backend.length() || (req.backend != "svg" && req.backend != "pdf" &&
-				req.backend != "musicxml2ly")) {
+        if (!req.src.length() || !req.backend.length() || (req.backend != "svg" && req.backend != "pdf" && req.backend != "musicxml2ly"))
+        {
             socket->sendTextMessage("{\"error\": \"Invalid request.\", \"errorSlug\": \"invalid_request\"}");
             return;
         }
@@ -183,7 +197,9 @@ void HacklilyServer::_handleTextMessageReceived(QString message) {
         debug << QString("[render] https://www.hacklily.org/#src=") + QString::fromLatin1(QUrl::toPercentEncoding(req.src));
         _requests.push_back(req);
         _processIfPossible();
-    } else if (requestObj["method"] == "signIn") {
+    }
+    else if (requestObj["method"] == "signIn")
+    {
         QNetworkRequest request;
         request.setUrl(QUrl("https://github.com/login/oauth/access_token"));
         request.setRawHeader("Accept", QByteArray("application/json"));
@@ -193,19 +209,25 @@ void HacklilyServer::_handleTextMessageReceived(QString message) {
         queryData.addQueryItem("client_secret", _ghSecret);
         queryData.addQueryItem("code", requestObj["params"].toObject()["oauth"].toString());
         QString queryString = queryData.toString();
-        QNetworkReply* reply = _nam->post(request, queryString.toUtf8());
+        QNetworkReply *reply = _nam->post(request, queryString.toUtf8());
         bool ok;
         int socketID = socket->property("socketID").toInt(&ok);
-        if (!ok) {
+        if (!ok)
+        {
             qDebug() << "No socketID found. Uh oh.";
-        } else {
+        }
+        else
+        {
             reply->setProperty("socketID", socketID);
             reply->setProperty("requestID", requestObj["id"].toString());
             qDebug() << requestObj["id"] << reply->property("requestID");
         }
         connect(reply, &QNetworkReply::finished, this, &HacklilyServer::_handleOAuthReply);
-    } else if (requestObj["method"] == "signOut") {
-        if (requestObj["params"].toObject()["token"].toString().size() < 1) {
+    }
+    else if (requestObj["method"] == "signOut")
+    {
+        if (requestObj["params"].toObject()["token"].toString().size() < 1)
+        {
             socket->sendTextMessage("{\"error\": \"Invalid request.\", \"errorSlug\": \"invalid_request\"}");
             return;
         }
@@ -213,34 +235,45 @@ void HacklilyServer::_handleTextMessageReceived(QString message) {
         request.setUrl(QUrl("https://api.github.com/applications/" + _ghClientID + "/tokens/" + requestObj["params"].toObject()["token"].toString()));
         request.setRawHeader("Accept", QByteArray("application/json"));
         request.setRawHeader("Authorization", "Basic " + (_ghClientID + ":" + _ghSecret).toBase64());
-        QNetworkReply* reply = _nam->deleteResource(request);
+        QNetworkReply *reply = _nam->deleteResource(request);
         bool ok;
         int socketID = socket->property("socketID").toInt(&ok);
-        if (!ok) {
+        if (!ok)
+        {
             qDebug() << "No socketID found. Uh oh.";
-        } else {
+        }
+        else
+        {
             reply->setProperty("socketID", socketID);
             reply->setProperty("requestID", requestObj["id"].toString());
             qDebug() << requestObj["id"] << reply->property("requestID");
         }
         connect(reply, &QNetworkReply::finished, this, &HacklilyServer::_handleOAuthDelete);
-    } else if (requestObj["method"] == "i_haz_computes") {
+    }
+    else if (requestObj["method"] == "i_haz_computes")
+    {
         int jobs = requestObj["params"].toObject()["max_jobs"].toInt();
-        if (jobs <= 1) {
+        if (jobs <= 1)
+        {
             qDebug() << "you haz no computes...";
             return;
         }
-        for (int i = 0; i < jobs; ++i) {
+        for (int i = 0; i < jobs; ++i)
+        {
             _freeWorkers.push_back(socket);
         }
         connect(socket, &QWebSocket::disconnected, this, &HacklilyServer::_removeWorker);
         _processIfPossible();
-    } else if (requestObj["method"] == "get_status") {
+    }
+    else if (requestObj["method"] == "get_status")
+    {
         QJsonObject resultObj;
         int allCount = _busyWorkers.size() + _freeWorkers.size() + _renderers.size();
         int busyLocalRendererCount = 0;
-        for (int i = 0; i < _renderers.size(); ++i) {
-            if (_renderers[i]->state() != QProcess::Running || _localProcessingRequests.contains(i)) {
+        for (int i = 0; i < _renderers.size(); ++i)
+        {
+            if (_renderers[i]->state() != QProcess::Running || _localProcessingRequests.contains(i))
+            {
                 ++busyLocalRendererCount;
             }
         }
@@ -271,17 +304,20 @@ void HacklilyServer::_handleTextMessageReceived(QString message) {
     }
 }
 
-void HacklilyServer::_handleBinaryMessageReceived(QByteArray) {
-    QWebSocket* socket = qobject_cast<QWebSocket *>(sender());
+void HacklilyServer::_handleBinaryMessageReceived(QByteArray)
+{
+    QWebSocket *socket = qobject_cast<QWebSocket *>(sender());
     qWarning() << "Got binary message. Disconnecting.";
     socket->close(QWebSocketProtocol::CloseCodeDatatypeNotSupported);
 }
 
-void HacklilyServer::_handleSocketDisconnected() {
-    QWebSocket* socket = qobject_cast<QWebSocket *>(sender());
+void HacklilyServer::_handleSocketDisconnected()
+{
+    QWebSocket *socket = qobject_cast<QWebSocket *>(sender());
     bool ok = true;
     int socketID = socket->property("socketID").toInt(&ok);
-    if (!ok) {
+    if (!ok)
+    {
         qDebug() << "Warning: could not get socketID of socket. Memory leak.";
         return;
     }
@@ -289,28 +325,45 @@ void HacklilyServer::_handleSocketDisconnected() {
     socket->deleteLater();
 }
 
-void HacklilyServer::_initRenderers() {
-    for (int i = 0; i < _renderers.size(); ++i) {
+void HacklilyServer::_initRenderers()
+{
+    for (int i = 0; i < _renderers.size(); ++i)
+    {
         _localProcessingRequests.remove(i);
     }
-    while (_renderers.size()) {
-        QProcess* renderer = _renderers.takeFirst();
+    while (_renderers.size())
+    {
+        QProcess *renderer = _renderers.takeFirst();
         renderer->deleteLater();
     }
-    for (int i = 0; i < _maxJobs; ++i) {
-        QProcess* renderer = new QProcess(this);
+    for (int i = 0; i < _maxJobs; ++i)
+    {
+        QProcess *renderer = new QProcess(this);
         _renderers.push_back(renderer);
         connect(renderer, &QProcess::readyReadStandardOutput, this, &HacklilyServer::_handleRendererOutput);
         connect(renderer, &QProcess::started, this, &HacklilyServer::_processIfPossible);
 
         renderer->setProcessChannelMode(QProcess::ForwardedErrorChannel);
-        if (_rendererUnstableDockerTag != "" && i >= _maxJobs/2) {
+        if (_rendererUnstableDockerTag != "" && i >= _maxJobs / 2)
+        {
             renderer->start("docker",
-                QStringList() << "run" << "--rm" << "-i" <<  "--net=none" << "-m1g" << "--cpus=1" << _rendererUnstableDockerTag);
+                            QStringList() << "run"
+                                          << "--rm"
+                                          << "-i"
+                                          << "--net=none"
+                                          << "-m1g"
+                                          << "--cpus=1" << _rendererUnstableDockerTag);
             _rendererVersion.append("unstable");
-        } else {
+        }
+        else
+        {
             renderer->start("docker",
-                QStringList() << "run" << "--rm" << "-i" <<  "--net=none" << "-m1g" << "--cpus=1" << _rendererDockerTag);
+                            QStringList() << "run"
+                                          << "--rm"
+                                          << "-i"
+                                          << "--net=none"
+                                          << "-m1g"
+                                          << "--cpus=1" << _rendererDockerTag);
             _rendererVersion.append("stable");
         }
     }
@@ -369,19 +422,22 @@ static const char *LILYPOND_INCLUDES[] = {
     "titling-init.ly",
     "toc-init.ly",
     "vlaams.ly",
-    NULL
-};
+    NULL};
 
-void HacklilyServer::_processIfPossible() {
-    if (_requests.length() < 1) {
+void HacklilyServer::_processIfPossible()
+{
+    if (_requests.length() < 1)
+    {
         // Nothing to render.
         return;
     }
 
     // Prefer using a worker.
-    if (_freeWorkers.size()) {
+    if (_freeWorkers.size())
+    {
         QWebSocket *worker = _freeWorkers.takeFirst();
-        if (!worker->isValid()) {
+        if (!worker->isValid())
+        {
             qDebug() << "Caught invalid worker!";
             _processIfPossible();
             return;
@@ -407,13 +463,16 @@ void HacklilyServer::_processIfPossible() {
     }
 
     bool versionIsSupported = false;
-    for (int i = 0; i < _rendererVersion.length(); ++i) {
-        if (_rendererVersion[i] == _requests[0].version) {
+    for (int i = 0; i < _rendererVersion.length(); ++i)
+    {
+        if (_rendererVersion[i] == _requests[0].version)
+        {
             versionIsSupported = true;
             break;
         }
     }
-    if (!versionIsSupported) {
+    if (!versionIsSupported)
+    {
         HacklilyServerRequest request = _requests.takeFirst();
 
         QJsonObject errorObj;
@@ -433,10 +492,12 @@ void HacklilyServer::_processIfPossible() {
     }
 
     // Otherwise, do it ourselves.
-    for (int i = 0; i < _renderers.size(); ++i) {
+    for (int i = 0; i < _renderers.size(); ++i)
+    {
         if (_renderers[i]->state() != QProcess::Running ||
-                _localProcessingRequests.contains(i) ||
-                _rendererVersion[i] != _requests[0].version) {
+            _localProcessingRequests.contains(i) ||
+            _rendererVersion[i] != _requests[0].version)
+        {
             continue;
         }
         qDebug() << "Processing on local renderer " << i;
@@ -445,16 +506,20 @@ void HacklilyServer::_processIfPossible() {
 
         QJsonObject requestObj;
         QString modifiedSrc;
-        if (request.backend == "svg") {
+        if (request.backend == "svg")
+        {
             modifiedSrc += "#(ly:set-option 'backend '" + request.backend + ")\n";
-        } else if (request.backend != "musicxml2ly") {
+        }
+        else if (request.backend != "musicxml2ly")
+        {
             modifiedSrc += "\n";
         }
         modifiedSrc += request.src;
 
         // HACK: lys doesn't handle global includes, so lets handle them ourselves by
         // outsmarting their regex.
-        for (int i = 0; LILYPOND_INCLUDES[i] != NULL; ++i) {
+        for (int i = 0; LILYPOND_INCLUDES[i] != NULL; ++i)
+        {
             QString origStr = QString() + "\\include \"" + LILYPOND_INCLUDES[i] + "\"";
             QString newStr = QString() + "\\include  \"" + LILYPOND_INCLUDES[i] + "\"";
             modifiedSrc.replace(origStr, newStr);
@@ -469,35 +534,39 @@ void HacklilyServer::_processIfPossible() {
         _renderers[i]->write(json.data());
         return;
     }
-
 }
 
-void HacklilyServer::_handleOAuthReply() {
-    QNetworkReply* reply = qobject_cast<QNetworkReply *>(sender());
+void HacklilyServer::_handleOAuthReply()
+{
+    QNetworkReply *reply = qobject_cast<QNetworkReply *>(sender());
 
     QByteArray responseResult = reply->readAll();
     reply->deleteLater();
 
     bool ok;
     int socketID = reply->property("socketID").toInt(&ok);
-    if (!ok) {
+    if (!ok)
+    {
         qDebug() << "In oauth reply, missing socketID. Cannot continue with oauth.";
         return;
     }
 
     QString requestID = reply->property("requestID").toString();
-    if (!_sockets.contains(socketID)) {
+    if (!_sockets.contains(socketID))
+    {
         qDebug() << "Lost socket mid-oauth.";
         return;
     }
-    QWebSocket* socket = _sockets.value(socketID);
-    if (!socket) {
+    QWebSocket *socket = _sockets.value(socketID);
+    if (!socket)
+    {
         return;
     }
 
     QJsonParseError parseError;
     auto responseResultJSON = QJsonDocument::fromJson(responseResult, &parseError);
-    if (parseError.error != QJsonParseError::NoError) {
+    if (parseError.error != QJsonParseError::NoError)
+    {
         QJsonObject errorObj;
         errorObj["code"] = ERROR_GITHUB;
         errorObj["message"] = "Parse Error: " + parseError.errorString();
@@ -512,7 +581,8 @@ void HacklilyServer::_handleOAuthReply() {
         return;
     }
     auto responseResultObj = responseResultJSON.object();
-    if (responseResultObj.contains("errors") || responseResultObj.contains("error")) {
+    if (responseResultObj.contains("errors") || responseResultObj.contains("error"))
+    {
         QJsonObject errorObj;
         errorObj["code"] = ERROR_GITHUB;
         errorObj["message"] = "GitHub Authentication Error";
@@ -526,7 +596,8 @@ void HacklilyServer::_handleOAuthReply() {
         socket->sendTextMessage(responseJSON);
         return;
     }
-    if (!responseResultObj.contains("access_token")) {
+    if (!responseResultObj.contains("access_token"))
+    {
         QJsonObject errorObj;
         errorObj["code"] = ERROR_GITHUB;
         errorObj["message"] = "GitHub Authentication Error";
@@ -543,7 +614,8 @@ void HacklilyServer::_handleOAuthReply() {
 
     UserInfo userInfo;
     userInfo.accessToken = responseResultObj.value("access_token").toString().toUtf8();
-    if (_userInfo.contains(userInfo.accessToken)) {
+    if (_userInfo.contains(userInfo.accessToken))
+    {
         // Timing attack?
         QJsonObject errorObj;
         errorObj["code"] = ERROR_INTERNAL;
@@ -566,38 +638,43 @@ void HacklilyServer::_handleOAuthReply() {
     request.setUrl(QUrl("https://api.github.com/user"));
     request.setRawHeader("Accept", QByteArray("application/json"));
     request.setRawHeader("Authorization", "token " + userInfo.accessToken);
-    QNetworkReply* userReply = _nam->get(request);
+    QNetworkReply *userReply = _nam->get(request);
     userReply->setProperty("socketID", socketID);
     userReply->setProperty("requestID", requestID);
     connect(userReply, &QNetworkReply::finished, this, &HacklilyServer::_handleUserReply);
 }
 
-void HacklilyServer::_handleUserReply() {
-    QNetworkReply* reply = qobject_cast<QNetworkReply *>(sender());
+void HacklilyServer::_handleUserReply()
+{
+    QNetworkReply *reply = qobject_cast<QNetworkReply *>(sender());
 
     QByteArray responseResult = reply->readAll();
     reply->deleteLater();
 
     bool ok;
     int socketID = reply->property("socketID").toInt(&ok);
-    if (!ok) {
+    if (!ok)
+    {
         qDebug() << "In oauth reply, missing socketID. Cannot continue with oauth.";
         return;
     }
 
     QString requestID = reply->property("requestID").toString();
-    if (!_sockets.contains(socketID)) {
+    if (!_sockets.contains(socketID))
+    {
         qDebug() << "Lost socket mid-oauth.";
         return;
     }
-    QWebSocket* socket = _sockets.value(socketID);
-    if (!socket) {
+    QWebSocket *socket = _sockets.value(socketID);
+    if (!socket)
+    {
         return;
     }
 
     QJsonParseError parseError;
     auto responseResultJSON = QJsonDocument::fromJson(responseResult, &parseError);
-    if (parseError.error != QJsonParseError::NoError) {
+    if (parseError.error != QJsonParseError::NoError)
+    {
         QJsonObject errorObj;
         errorObj["code"] = ERROR_GITHUB;
         errorObj["message"] = "Parse Error: " + parseError.errorString();
@@ -613,7 +690,8 @@ void HacklilyServer::_handleUserReply() {
     }
 
     auto responseResultObj = responseResultJSON.object();
-    if (responseResultObj.contains("error")) {
+    if (responseResultObj.contains("error"))
+    {
         QJsonObject errorObj;
         errorObj["code"] = ERROR_GITHUB;
         errorObj["message"] = "GitHub Authentication Error";
@@ -628,7 +706,8 @@ void HacklilyServer::_handleUserReply() {
         return;
     }
 
-    if (!responseResultObj.contains("email") || !responseResultObj.contains("login") || !responseResultObj.contains("name")) {
+    if (!responseResultObj.contains("email") || !responseResultObj.contains("login") || !responseResultObj.contains("name"))
+    {
         QJsonObject errorObj;
         errorObj["code"] = ERROR_GITHUB;
         errorObj["message"] = "GitHub Authentication Error";
@@ -647,10 +726,12 @@ void HacklilyServer::_handleUserReply() {
     userInfo.email = responseResultObj.value("email").toString();
     userInfo.name = responseResultObj.value("name").toString();
     userInfo.username = responseResultObj.value("login").toString();
-    if (!userInfo.email.size()) {
+    if (!userInfo.email.size())
+    {
         userInfo.email = "unknown@example.com";
     }
-    if (!userInfo.name.size()) {
+    if (!userInfo.name.size())
+    {
         userInfo.name = userInfo.username;
     }
     _userInfo[requestID] = userInfo;
@@ -658,9 +739,11 @@ void HacklilyServer::_handleUserReply() {
     this->_sendUserInfo(requestID, socketID);
 }
 
-void HacklilyServer::_sendUserInfo(QString requestID, int socketID) {
-    QWebSocket* socket = _sockets.value(socketID);
-    if (!socket) {
+void HacklilyServer::_sendUserInfo(QString requestID, int socketID)
+{
+    QWebSocket *socket = _sockets.value(socketID);
+    if (!socket)
+    {
         return;
     }
 
@@ -682,30 +765,35 @@ void HacklilyServer::_sendUserInfo(QString requestID, int socketID) {
     socket->sendTextMessage(responseJSONText);
 }
 
-void HacklilyServer::_handleOAuthDelete() {
-    QNetworkReply* reply = qobject_cast<QNetworkReply *>(sender());
+void HacklilyServer::_handleOAuthDelete()
+{
+    QNetworkReply *reply = qobject_cast<QNetworkReply *>(sender());
 
     QByteArray responseResult = reply->readAll();
     reply->deleteLater();
 
     bool ok;
     int socketID = reply->property("socketID").toInt(&ok);
-    if (!ok) {
+    if (!ok)
+    {
         qDebug() << "In oauth reply, missing socketID. Cannot continue with oauth.";
         return;
     }
 
     QString requestID = reply->property("requestID").toString();
-    if (!_sockets.contains(socketID)) {
+    if (!_sockets.contains(socketID))
+    {
         qDebug() << "Lost socket mid-oauth.";
         return;
     }
-    QWebSocket* socket = _sockets.value(socketID);
-    if (!socket) {
+    QWebSocket *socket = _sockets.value(socketID);
+    if (!socket)
+    {
         return;
     }
 
-    if (reply->error() != QNetworkReply::NoError) {
+    if (reply->error() != QNetworkReply::NoError)
+    {
         qDebug() << responseResult;
         QJsonObject responseObj;
         responseObj["jsonrpc"] = "2.0";
@@ -728,24 +816,29 @@ void HacklilyServer::_handleOAuthDelete() {
     socket->sendTextMessage(responseJSONText);
 }
 
-void HacklilyServer::_handleRendererOutput() {
-    QProcess* renderer = qobject_cast<QProcess*>(sender());
+void HacklilyServer::_handleRendererOutput()
+{
+    QProcess *renderer = qobject_cast<QProcess *>(sender());
     int rendererID = _renderers.indexOf(renderer);
-    if (rendererID == -1) {
+    if (rendererID == -1)
+    {
         qDebug() << "Renderer died. Not continuing.";
         return;
     }
 
-    if (!_localProcessingRequests.contains(rendererID)) {
+    if (!_localProcessingRequests.contains(rendererID))
+    {
         qDebug() << "Got renderer output when not processing request.";
         // TODO: reset?
         return;
     }
-    if (!renderer->bytesAvailable()) {
+    if (!renderer->bytesAvailable())
+    {
         qDebug() << "Got notification that bytes are available, but none are.";
         return;
     }
-    if (!renderer->canReadLine()) {
+    if (!renderer->canReadLine())
+    {
         // Lets wait until I can read a whole line.
         return;
     }
@@ -756,8 +849,10 @@ void HacklilyServer::_handleRendererOutput() {
 
     QJsonParseError parseError;
     auto responseJSON = QJsonDocument::fromJson(response, &parseError);
-    if (_sockets.values().contains(sender)) {
-        if (parseError.error != QJsonParseError::NoError) {
+    if (_sockets.values().contains(sender))
+    {
+        if (parseError.error != QJsonParseError::NoError)
+        {
             QJsonObject errorObj;
             errorObj["code"] = 2;
             errorObj["message"] = "Internal error: could not parse response from lilypond server";
@@ -769,7 +864,9 @@ void HacklilyServer::_handleRendererOutput() {
             response.setObject(responseObj);
             auto responseJSONText = response.toJson(QJsonDocument::Compact);
             sender->sendTextMessage(responseJSONText);
-        } else {
+        }
+        else
+        {
             qDebug() << "Sending response";
             QJsonObject responseObj;
             responseObj["jsonrpc"] = "2.0";
@@ -780,24 +877,31 @@ void HacklilyServer::_handleRendererOutput() {
             auto responseJSONText = response.toJson(QJsonDocument::Compact);
             sender->sendTextMessage(responseJSONText);
         }
-    } else {
+    }
+    else
+    {
         qDebug() << "Sender died mid-flight. Ignoring";
     }
     _localProcessingRequests.remove(rendererID);
     _processIfPossible();
 }
 
-void HacklilyServer::_removeWorker() {
-    QWebSocket *socket = qobject_cast<QWebSocket*>(sender());
+void HacklilyServer::_removeWorker()
+{
+    QWebSocket *socket = qobject_cast<QWebSocket *>(sender());
     _freeWorkers.removeAll(socket);
     auto it = _busyWorkers.begin();
-    while (it != _busyWorkers.end()) {
-        if (it.value() == socket) {
+    while (it != _busyWorkers.end())
+    {
+        if (it.value() == socket)
+        {
             QString requestID = it.key();
             it = _busyWorkers.erase(it);
-            if (_remoteProcessingRequests.contains(requestID)) {
+            if (_remoteProcessingRequests.contains(requestID))
+            {
                 HacklilyServerRequest req = _remoteProcessingRequests.take(requestID);
-                if (!req.sender) {
+                if (!req.sender)
+                {
                     qDebug() << "request not defined";
                     continue;
                 }
@@ -813,13 +917,16 @@ void HacklilyServer::_removeWorker() {
                 auto responseJSON = response.toJson(QJsonDocument::Compact);
                 req.sender->sendTextMessage(responseJSON);
             }
-        } else {
+        }
+        else
+        {
             ++it;
         }
     }
 }
 
-void HacklilyServer::_openCoordinator() {
+void HacklilyServer::_openCoordinator()
+{
     qDebug() << "Connecting to coordinator...";
 
     _coordinator = new QWebSocket(QString(), QWebSocketProtocol::VersionLatest, this);
@@ -827,38 +934,45 @@ void HacklilyServer::_openCoordinator() {
     connect(_coordinator, &QWebSocket::textMessageReceived, this, &HacklilyServer::_handleTextMessageReceived);
     connect(_coordinator, &QWebSocket::binaryMessageReceived, this, &HacklilyServer::_handleBinaryMessageReceived);
     connect(_coordinator, &QWebSocket::disconnected, this, &HacklilyServer::_handleCoordinatorDisconnected);
-    connect(_coordinator, static_cast<void(QWebSocket::*)(QAbstractSocket::SocketError)>(&QWebSocket::error), this, &HacklilyServer::_handleCoordinatorError);
+    connect(_coordinator, static_cast<void (QWebSocket::*)(QAbstractSocket::SocketError)>(&QWebSocket::error), this, &HacklilyServer::_handleCoordinatorError);
     connect(_coordinator, &QWebSocket::connected, this, &HacklilyServer::_handleCoordinatorConnected);
 }
 
-void HacklilyServer::_handleCoordinatorDisconnected() {
-    if (!_coordinator) {
+void HacklilyServer::_handleCoordinatorDisconnected()
+{
+    if (!_coordinator)
+    {
         qWarning() << "No coordinator in _handleCoordinatorDisconnectedError";
         return;
     }
     qDebug() << "Coordinator DISCONNECTED...";
 
-    QWebSocket* coordinator = _coordinator;
+    QWebSocket *coordinator = _coordinator;
     _coordinator = NULL;
     coordinator->close();
     coordinator->deleteLater();
-    for (auto it = _sockets.begin(); it != _sockets.end(); ++it) {
-        if (it.value() == coordinator) {
+    for (auto it = _sockets.begin(); it != _sockets.end(); ++it)
+    {
+        if (it.value() == coordinator)
+        {
             _sockets.erase(it);
             break;
         }
     }
 
-    if (_coordinatorPingTimer) {
+    if (_coordinatorPingTimer)
+    {
         _coordinatorPingTimer->deleteLater();
         _coordinatorPingTimer = NULL;
     }
     QTimer::singleShot(1000, this, &HacklilyServer::_openCoordinator);
 }
 
-void HacklilyServer::_handleCoordinatorError(QAbstractSocket::SocketError err) {
+void HacklilyServer::_handleCoordinatorError(QAbstractSocket::SocketError err)
+{
     qWarning() << "Coordinator WebSocket error" << err;
-    if (!_coordinator) {
+    if (!_coordinator)
+    {
         qWarning() << "No coordinator in _handleCoordinatorError";
         return;
     }
@@ -866,7 +980,8 @@ void HacklilyServer::_handleCoordinatorError(QAbstractSocket::SocketError err) {
     _handleCoordinatorDisconnected();
 }
 
-void HacklilyServer::_handleCoordinatorConnected() {
+void HacklilyServer::_handleCoordinatorConnected()
+{
     qDebug() << "Connected!";
 
     int socketID = ++_lastSocketID;
@@ -891,8 +1006,10 @@ void HacklilyServer::_handleCoordinatorConnected() {
     _coordinatorPingTimer->start();
 }
 
-void HacklilyServer::_doCoordinatorPing() {
-    if (_coordinator && _coordinator->state() == QAbstractSocket::ConnectedState) {
+void HacklilyServer::_doCoordinatorPing()
+{
+    if (_coordinator && _coordinator->state() == QAbstractSocket::ConnectedState)
+    {
         _coordinator->ping();
     }
 }
