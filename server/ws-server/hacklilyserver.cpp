@@ -352,6 +352,9 @@ void HacklilyServer::_initRenderers()
                                           << "-i"
                                           << "--net=none"
                                           << "-m1g"
+                                          << "--security-opt=no-new-privileges"
+                                          << "--cap-drop"
+                                          << "ALL"
                                           << "--cpus=1" << _rendererUnstableDockerTag);
             _rendererVersion.append("unstable");
         }
@@ -363,6 +366,9 @@ void HacklilyServer::_initRenderers()
                                           << "-i"
                                           << "--net=none"
                                           << "-m1g"
+                                          << "--security-opt=no-new-privileges"
+                                          << "--cap-drop"
+                                          << "ALL"
                                           << "--cpus=1" << _rendererDockerTag);
             _rendererVersion.append("stable");
         }

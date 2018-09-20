@@ -10,4 +10,5 @@ RUN adduser --disabled-password --gecos '' r && \
 RUN apt-get remove -y make cmake pkg-config libssl-dev gcc curl && apt-get autoremove -y && apt-get clean && rm -rf /var/lib/apt/lists/*
 COPY start.bash /usr/local/bin
 COPY render-impl.bash /usr/local/bin
-CMD start.bash
+USER r
+CMD render-impl.bash
