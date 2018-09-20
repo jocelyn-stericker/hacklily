@@ -19,7 +19,6 @@
  */
 
 import * as monacoEditor from "monaco-editor";
-import { InjectedIntl } from "react-intl";
 
 import Commands from "./Commands";
 
@@ -29,11 +28,9 @@ import Commands from "./Commands";
 export default class CodelensProvider
   implements monacoEditor.languages.CodeLensProvider {
   commands: Commands;
-  intl: InjectedIntl;
 
-  constructor(commands: Commands, intl: InjectedIntl) {
+  constructor(commands: Commands) {
     this.commands = commands;
-    this.intl = intl;
   }
 
   provideCodeLenses = (
@@ -41,7 +38,6 @@ export default class CodelensProvider
     token: monacoEditor.CancellationToken,
   ): monacoEditor.languages.ICodeLensSymbol[] => {
     const lines: string[] = model.getLinesContent();
-    const { formatMessage } = this.intl;
 
     type sym = monacoEditor.languages.ICodeLensSymbol;
 
@@ -55,10 +51,7 @@ export default class CodelensProvider
             command: {
               arguments: [i],
               id: this.commands.setClef,
-              title: formatMessage({
-                id: "CodelensProvider.clef",
-                defaultMessage: "Click here to change the clef.",
-              }),
+              title: "Tool: Change Clef",
             },
             range: {
               endColumn: 1,
@@ -76,10 +69,7 @@ export default class CodelensProvider
             command: {
               arguments: [i],
               id: this.commands.setKey,
-              title: formatMessage({
-                id: "CodelensProvider.keySig",
-                defaultMessage: "Click here to change the key signature.",
-              }),
+              title: "Tool: Change Key Signature",
             },
             range: {
               endColumn: 1,
@@ -97,10 +87,7 @@ export default class CodelensProvider
             command: {
               arguments: [i],
               id: this.commands.setTime,
-              title: formatMessage({
-                id: "CodelensProvider.time",
-                defaultMessage: "Click here to change the time signature",
-              }),
+              title: "Tool: Change Time Signature",
             },
             range: {
               endColumn: 1,
@@ -118,11 +105,7 @@ export default class CodelensProvider
             command: {
               arguments: [i],
               id: this.commands.insertNotes,
-              title: formatMessage({
-                id: "CodelensProvider.insertNotes",
-                defaultMessage:
-                  "Click here to insert notes with your mouse / keyboard.",
-              }),
+              title: "Tool: Insert Notes",
             },
             range: {
               endColumn: 1,

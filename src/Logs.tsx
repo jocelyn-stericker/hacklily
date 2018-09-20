@@ -20,7 +20,6 @@
 
 import { css } from "aphrodite";
 import React from "react";
-import { FormattedMessage } from "react-intl";
 
 import { BUTTON_STYLE, LOGS_STYLE } from "./styles";
 
@@ -75,8 +74,7 @@ export default class Logs extends React.Component<Props, State> {
         onMouseEnter={this.handleMouseEnter}
         role="button"
       >
-        <i className="fa fa-file-o" aria-hidden={true} />{" "}
-        <FormattedMessage id="Logs.Logs" defaultMessage="Logs" />
+        <i className="fa fa-file-o" aria-hidden={true} /> Logs
       </div>
     );
   }

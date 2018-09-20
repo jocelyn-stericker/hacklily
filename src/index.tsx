@@ -20,7 +20,6 @@
 
 import React from "react";
 import ReactDOM from "react-dom";
-import { IntlProvider } from "react-intl";
 
 import App, { QUERY_PROP_KEYS, QueryProps, Song } from "./App";
 import { Auth, parseAuth } from "./auth";
@@ -31,25 +30,22 @@ import { parseQuery, toQueryString } from "./util/queryString";
  */
 function render(): void {
   ReactDOM.render(
-    // TODO: translate Hacklily
-    <IntlProvider locale="en">
-      <App
-        {...getQueryProps()}
-        dirtySongs={getDirtySongs()}
-        auth={getAuth()}
-        csrf={localStorage.csrf || null}
-        colourScheme={localStorage.colourScheme || "vs-dark"}
-        hideUnstable219Notification={getHideUnstable219Notification()}
-        setQuery={setQuery}
-        editSong={editSong}
-        markSongClean={markSongClean}
-        setAuth={setAuth}
-        setColourScheme={setColourScheme}
-        setCSRF={setCSRF}
-        setHideUnstable219Notification={setHideUnstable219Notification}
-        isStandalone={process.env.REACT_APP_STANDALONE === "yes"}
-      />
-    </IntlProvider>,
+    <App
+      {...getQueryProps()}
+      dirtySongs={getDirtySongs()}
+      auth={getAuth()}
+      csrf={localStorage.csrf || null}
+      colourScheme={localStorage.colourScheme || "vs-dark"}
+      hideUnstable219Notification={getHideUnstable219Notification()}
+      setQuery={setQuery}
+      editSong={editSong}
+      markSongClean={markSongClean}
+      setAuth={setAuth}
+      setColourScheme={setColourScheme}
+      setCSRF={setCSRF}
+      setHideUnstable219Notification={setHideUnstable219Notification}
+      isStandalone={process.env.REACT_APP_STANDALONE === "yes"}
+    />,
     document.getElementById("root"),
   );
 }

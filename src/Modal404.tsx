@@ -20,13 +20,11 @@
 
 import { css } from "aphrodite";
 import React from "react";
-import { FormattedMessage, InjectedIntl, injectIntl } from "react-intl";
 import ReactModal from "react-modal";
 
 import { MODAL_STYLE } from "./styles";
 
 interface Props {
-  intl: InjectedIntl;
   onHide(): void;
 }
 
@@ -36,34 +34,21 @@ interface Props {
  * 404.html (which GitHub pages will render for every unmatched URL) redirects to
  * '/?404=1', which renders <App 404="1" />, which results in this modal being shown.
  */
-class Modal404 extends React.PureComponent<Props> {
+export default class Modal404 extends React.PureComponent<Props> {
   render(): JSX.Element {
-    const { intl } = this.props;
-
     return (
       <ReactModal
         className={css(MODAL_STYLE.modal)}
-        contentLabel={intl.formatMessage({
-          id: "Modal404.sr",
-          defaultMessage: "Page not found",
-        })}
+        contentLabel="About Hacklily"
         isOpen={true}
         onRequestClose={this.props.onHide}
         overlayClassName={css(MODAL_STYLE.overlay)}
       >
         <div>
           <div className={css(MODAL_STYLE.modalHeader)}>
-            <strong>
-              <FormattedMessage
-                id="Modal404.title"
-                defaultMessage="Page not found (404)"
-              />
-            </strong>
+            <strong>Page not found (404)</strong>
             <button
-              aria-label={intl.formatMessage({
-                id: "Modal404.back",
-                defaultMessage: "Back to song",
-              })}
+              aria-label="Back to song"
               onClick={this.props.onHide}
               className={css(MODAL_STYLE.closeButton)}
             >
@@ -72,30 +57,18 @@ class Modal404 extends React.PureComponent<Props> {
           </div>
           <div className={css(MODAL_STYLE.modalBody)}>
             <p style={{ marginTop: 0 }}>
-              <FormattedMessage
-                id="Modal404.why"
-                defaultMessage="The requested page may have been moved or deleted."
-              />
+              The requested page may have been moved or deleted.
             </p>
             <p>
-              <FormattedMessage
-                id="Modal404.plug"
-                values={{
-                  giveItATry: (
-                    <button
-                      onClick={this.props.onHide}
-                      className={css(MODAL_STYLE.link)}
-                    >
-                      <FormattedMessage
-                        id="Modal404.plug_giveItATry"
-                        defaultMessage="give it a try"
-                      />
-                    </button>
-                  ),
-                }}
-                defaultMessage="Hacklily is a free online sheet-music editor and publishing tool.
-              While you are here, why not {giveItATry}?"
-              />
+              Hacklily is a free online sheet-music editor and publishing tool.
+              While you are here, why not{" "}
+              <button
+                onClick={this.props.onHide}
+                className={css(MODAL_STYLE.link)}
+              >
+                give it a try
+              </button>
+              ?
             </p>
           </div>
         </div>
@@ -103,5 +76,3 @@ class Modal404 extends React.PureComponent<Props> {
     );
   }
 }
-
-export default injectIntl(Modal404);

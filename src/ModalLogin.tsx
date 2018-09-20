@@ -22,19 +22,12 @@ import { css } from "aphrodite";
 import React from "react";
 import ReactModal from "react-modal";
 
-import {
-  FormattedHTMLMessage,
-  FormattedMessage,
-  InjectedIntl,
-  injectIntl,
-} from "react-intl";
 import { CLIENT_ID, getOauthRedirect } from "./auth";
 import { GITHUB_STYLE, MODAL_STYLE } from "./styles";
 
 interface Props {
   connectToGitHubReason: string | null;
   csrf: string;
-  intl: InjectedIntl;
   onHide(): void;
   setCSRF(csrf: string): void;
 }
@@ -52,7 +45,7 @@ interface Props {
  * The user is redirected back to the app after the flow. <App /> then calls
  * checkLogin, below, to set localStorage.
  */
-class ModalLogin extends React.PureComponent<Props> {
+export default class ModalLogin extends React.PureComponent<Props> {
   componentWillMount(): void {
     const randomContainer: Uint32Array = new Uint32Array(1);
     crypto.getRandomValues(randomContainer);
@@ -62,7 +55,7 @@ class ModalLogin extends React.PureComponent<Props> {
   }
 
   render(): JSX.Element {
-    const { csrf, onHide, connectToGitHubReason, intl } = this.props;
+    const { csrf, onHide, connectToGitHubReason } = this.props;
 
     if (!CLIENT_ID) {
       return (
@@ -70,10 +63,7 @@ class ModalLogin extends React.PureComponent<Props> {
           isOpen={true}
           onRequestClose={onHide}
           className={css(MODAL_STYLE.modal)}
-          contentLabel={intl.formatMessage({
-            id: "ModalLogin.title",
-            defaultMessage: "Sign in",
-          })}
+          contentLabel="Sign in"
           overlayClassName={css(MODAL_STYLE.overlay)}
         >
           <p>
@@ -89,11 +79,7 @@ class ModalLogin extends React.PureComponent<Props> {
       <span>
         <strong>
           <i className="fa fa-info-circle" aria-hidden="true" />{" "}
-          {connectToGitHubReason ||
-            intl.formatMessage({
-              id: "ModalLogin.defaultReason",
-              defaultMessage: "Sign in or create an account",
-            })}
+          {connectToGitHubReason || "Sign in or create an account"}
         </strong>
       </span>
     );
@@ -103,10 +89,7 @@ class ModalLogin extends React.PureComponent<Props> {
         isOpen={true}
         onRequestClose={onHide}
         className={css(MODAL_STYLE.modal)}
-        contentLabel={intl.formatMessage({
-          id: "ModalLogin.title",
-          defaultMessage: "Sign in",
-        })}
+        contentLabel="Sign in"
         overlayClassName={css(MODAL_STYLE.overlay)}
       >
         <div>
@@ -114,10 +97,7 @@ class ModalLogin extends React.PureComponent<Props> {
             {explanation}
             <button
               className={css(MODAL_STYLE.closeButton)}
-              aria-label={intl.formatMessage({
-                id: "ModalLogin.back",
-                defaultMessage: "Back to song",
-              })}
+              aria-label="Back to song"
               onClick={onHide}
             >
               <i className="fa-close fa" aria-hidden={true} />
@@ -125,72 +105,40 @@ class ModalLogin extends React.PureComponent<Props> {
           </div>
           <div className={css(MODAL_STYLE.modalBody)}>
             <p className={css(MODAL_STYLE.signInPrivacy)}>
-              <FormattedHTMLMessage
-                id="ModalLogin.songsArePublic"
-                defaultMessage="Songs you save will be <strong>public</strong> on GitHub and Hacklily."
-              />
+              Songs you save will be <strong>public</strong> on GitHub and
+              Hacklily.
             </p>
             <p className={css(MODAL_STYLE.signInPrivacy)}>
-              <FormattedHTMLMessage
-                id="ModalLogin.willCreateRepo"
-                values={{
-                  repo: (
-                    <a
-                      href="https://help.github.com/articles/github-glossary/#repository"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      <FormattedMessage
-                        id="ModalLogin.willCreateRepo_repo"
-                        defaultMessage="repo"
-                      />
-                    </a>
-                  ),
-                }}
-                defaultMessage="If you do not have a {repo} named <code>sheet-music</code>, Hacklily will create one."
-              />
+              If you do not have a{" "}
+              <a
+                href="https://help.github.com/articles/github-glossary/#repository"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                repo
+              </a>{" "}
+              named <code>sheet-music</code>, Hacklily will create one.
             </p>
             <p className={css(MODAL_STYLE.login)}>
               <a href={getOauthRedirect(csrf)}>
                 <button className={css(GITHUB_STYLE.btnGithub)}>
-                  <FormattedMessage
-                    id="ModalLogin.continueWithGitHub"
-                    defaultMessage="Continue with GitHub"
-                  />
+                  Continue with GitHub
                 </button>
               </a>
             </p>
             <p className={css(MODAL_STYLE.license)}>
-              <FormattedMessage
-                id="ModalLogin.licenseInfo"
-                values={{
-                  privacyStatement: (
-                    <a
-                      href="privacy-statement.html"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      <FormattedMessage
-                        id="ModalLogin.licenseInfo_privacy"
-                        defaultMessage="privacy statement"
-                      />
-                    </a>
-                  ),
-                  dmca: (
-                    <a
-                      href="dmca.html"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      <FormattedMessage
-                        id="ModalLogin.licenseInfo_dmca"
-                        defaultMessage="DMCA"
-                      />
-                    </a>
-                  ),
-                }}
-                defaultMessage="Only save songs you want to share. See the {privacyStatement}. {DMCA}"
-              />
+              Only save songs you want to share. See the{" "}
+              <a
+                href="privacy-statement.html"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                privacy statement
+              </a>
+              .{" "}
+              <a href="dmca.html" target="_blank" rel="noopener noreferrer">
+                DMCA
+              </a>
             </p>
           </div>
         </div>
@@ -198,5 +146,3 @@ class ModalLogin extends React.PureComponent<Props> {
     );
   }
 }
-
-export default injectIntl(ModalLogin);

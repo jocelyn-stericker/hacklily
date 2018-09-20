@@ -20,18 +20,11 @@
 
 import { css } from "aphrodite";
 import React from "react";
-import {
-  FormattedHTMLMessage,
-  FormattedMessage,
-  InjectedIntl,
-  injectIntl,
-} from "react-intl";
 import ReactModal from "react-modal";
 
 import { BUTTON_STYLE, MODAL_STYLE } from "./styles";
 
 interface Props {
-  intl: InjectedIntl;
   cancel(): void;
   discardChanges(): void;
   save(): void;
@@ -50,32 +43,23 @@ interface Props {
  *
  * This modal requests to be closed by calling one of the three callbacks.
  */
-class ModalUnsavedChangesInterstitial extends React.PureComponent<Props> {
+export default class ModalUnsavedChangesInterstitial extends React.PureComponent<
+  Props
+> {
   render(): JSX.Element {
-    const { formatMessage } = this.props.intl;
-
     return (
       <ReactModal
         className={css(MODAL_STYLE.modal)}
-        contentLabel={formatMessage({
-          id: "ModalUnsavedChangesInsterstitial.unsavedChanges",
-          defaultMessage: "Unsaved changes",
-        })}
+        contentLabel="Unsaved changes"
         isOpen={true}
         onRequestClose={this.props.cancel}
         overlayClassName={css(MODAL_STYLE.overlay)}
       >
         <div>
           <div className={css(MODAL_STYLE.modalHeader)}>
-            <FormattedMessage
-              id="ModalUnsavedChangesInsterstitial.notSaved"
-              defaultMessage="Your changes have not been saved."
-            />
+            Your changes have not been saved.
             <button
-              aria-label={formatMessage({
-                id: "ModalUnsavedChangesInsterstitial.cancel",
-                defaultMessage: "Cancel",
-              })}
+              aria-label="Cancel"
               onClick={this.props.cancel}
               className={css(MODAL_STYLE.closeButton)}
             >
@@ -84,10 +68,8 @@ class ModalUnsavedChangesInterstitial extends React.PureComponent<Props> {
           </div>
           <div className={css(MODAL_STYLE.modalBody)}>
             <p style={{ marginTop: 0 }}>
-              <FormattedHTMLMessage
-                id="ModalUnsavedChangesInsterstitial.warning"
-                defaultMessage="If you do not save your changes, they will be <strong>permanently lost</strong>!"
-              />
+              If you do not save your changes, they will be{" "}
+              <strong>permanently lost</strong>!
             </p>
             <div style={{ display: "flex", marginBottom: 10 }}>
               <div style={{ flex: 1 }} />
@@ -96,28 +78,19 @@ class ModalUnsavedChangesInterstitial extends React.PureComponent<Props> {
                   onClick={this.props.cancel}
                   className={css(BUTTON_STYLE.buttonStyle)}
                 >
-                  <FormattedMessage
-                    id="ModalUnsavedChangesInsterstitial.cancel"
-                    defaultMessage="Cancel"
-                  />
+                  Cancel
                 </button>
                 <button
                   onClick={this.props.discardChanges}
                   className={css(BUTTON_STYLE.buttonStyle)}
                 >
-                  <FormattedMessage
-                    id="ModalUnsavedChangesInsterstitial.discard"
-                    defaultMessage="Discard changes"
-                  />
+                  Discard changes
                 </button>
                 <button
                   onClick={this.props.save}
                   className={css(BUTTON_STYLE.buttonStyle)}
                 >
-                  <FormattedMessage
-                    id="ModalUnsavedChangesInsterstitial.save"
-                    defaultMessage="Save"
-                  />
+                  Save
                 </button>
               </div>
             </div>
@@ -127,5 +100,3 @@ class ModalUnsavedChangesInterstitial extends React.PureComponent<Props> {
     );
   }
 }
-
-export default injectIntl(ModalUnsavedChangesInterstitial);

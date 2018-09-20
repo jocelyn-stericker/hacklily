@@ -20,7 +20,6 @@
 
 import { css } from "aphrodite";
 import React from "react";
-import { FormattedMessage, InjectedIntl, injectIntl } from "react-intl";
 
 import * as logoSvg from "./logo.svg";
 
@@ -49,7 +48,6 @@ interface Player {
 }
 
 interface Props {
-  intl: InjectedIntl;
   inSandbox: boolean;
   isDirty: boolean;
   isImmutableSrc: boolean;
@@ -83,7 +81,7 @@ function last<T>(t: T[]): T {
 /**
  * Renders the top of the app.
  */
-class Header extends React.PureComponent<Props> {
+export default class Header extends React.PureComponent<Props> {
   state: State = {
     played: false,
     player: null,
@@ -114,7 +112,6 @@ class Header extends React.PureComponent<Props> {
       onModeChanged,
       onShowMenu,
       windowWidth,
-      intl: { formatMessage },
     } = this.props;
     const { played, playing } = this.state;
     const modeButtons: ButtonSpec[] = [];
@@ -158,11 +155,7 @@ class Header extends React.PureComponent<Props> {
         className={css(HEADER_STYLE.headerGroupWrapper, HEADER_STYLE.miniGroup)}
       >
         <button
-          title={
-            playing
-              ? formatMessage({ id: "Header.pause", defaultMessage: "Pause" })
-              : formatMessage({ id: "Header.play", defaultMessage: "Play" })
-          }
+          title={playing ? "Pause" : "Play"}
           className={css(BUTTON_STYLE.buttonStyle, HEADER_STYLE.playButton)}
           onClick={playing ? this.handlePause : this.handlePlay}
         >
@@ -176,12 +169,11 @@ class Header extends React.PureComponent<Props> {
         className={css(HEADER_STYLE.headerGroupWrapper, HEADER_STYLE.miniGroup)}
       >
         <button
-          title={formatMessage({ id: "Header.tools", defaultMessage: "Tools" })}
+          title="Lilypond Tools"
           className={css(BUTTON_STYLE.buttonStyle, HEADER_STYLE.playButton)}
           onClick={this.handleShowMakelily}
         >
-          <i className="fa-briefcase fa" />{" "}
-          <FormattedMessage id="Header.tools" defaultMessage="Tools" />
+          <i className="fa-briefcase fa" /> Tools
         </button>
       </div>
     );
@@ -194,7 +186,7 @@ class Header extends React.PureComponent<Props> {
           className={css(HEADER_STYLE.headerGroupWrapper, HEADER_STYLE.songs)}
         >
           <button
-            title={formatMessage({ id: "Header.menu", defaultMessage: "Menu" })}
+            title="Menu"
             className={css(BUTTON_STYLE.buttonStyle, HEADER_STYLE.songsText)}
             onClick={onShowMenu}
           >
@@ -203,6 +195,9 @@ class Header extends React.PureComponent<Props> {
               ? last(this.props.song.split("/")).split(".ly")[0]
               : "untitled"}
             {this.props.isDirty ? "*" : ""}{" "}
+            <span className={css(HEADER_STYLE.srOnly)}>
+              : an online LilyPond editor
+            </span>
             <i className="fa fa-chevron-down" aria-hidden={true} />
           </button>
         </div>
@@ -213,12 +208,11 @@ class Header extends React.PureComponent<Props> {
           className={css(HEADER_STYLE.headerGroupWrapper, HEADER_STYLE.songs)}
         >
           <button
-            title={formatMessage({ id: "Header.menu", defaultMessage: "Menu" })}
+            title="Menu"
             className={css(BUTTON_STYLE.buttonStyle, HEADER_STYLE.songsText)}
             onClick={onShowMenu}
           >
-            <i className="fa-bars fa" />{" "}
-            <FormattedMessage id="Header.menu" defaultMessage="Menu" />
+            <i className="fa-bars fa" /> Menu
           </button>
         </div>
       );
@@ -226,7 +220,11 @@ class Header extends React.PureComponent<Props> {
 
     return (
       <div className="header">
-        <img src={logoSvg} className={css(HEADER_STYLE.logo)} alt="" />
+        <img
+          src={logoSvg}
+          className={css(HEADER_STYLE.logo)}
+          alt="Frog, Hacklily logo"
+        />
         {menu || <span style={{ width: 10 }} />}
         {viewMode}
         {makelilyButton}
@@ -257,12 +255,8 @@ class Header extends React.PureComponent<Props> {
   private handlePlay = async (): Promise<void> => {
     if (!this.props.midi) {
       alert(
-        this.props.intl.formatMessage({
-          id: "Header.noMIDI",
-          defaultMessage:
-            "No MIDI data found. Make sure you have " +
-            "a \\midi \\{\\} and a \\layout \\{\\} in your \\score \\{\\}.",
-        }),
+        "No MIDI data found. Make sure you have " +
+          "a \\midi {} and a \\layout {} in your \\score {}.",
       );
 
       return;
@@ -346,42 +340,23 @@ class Header extends React.PureComponent<Props> {
       sandboxIsDirty,
       inSandbox,
       isImmutableSrc,
-      intl: { formatMessage },
     } = this.props;
     const micro: boolean = windowWidth <= 750;
 
-    const goToSandbox: React.ReactNode = sandboxIsDirty ? (
-      <FormattedMessage
-        id="Header.backToScratchpad"
-        defaultMessage="Back to scratchpad"
-      />
-    ) : (
-      <FormattedMessage id="Header.newSong" defaultMessage="New song" />
-    );
+    const goToSandbox: string = sandboxIsDirty
+      ? "Back to scratchpad"
+      : "New song";
     let saveAsButton: React.ReactNode;
     if (!inSandbox) {
       saveAsButton = (
         <button
-          title={formatMessage({
-            id: "Header.saveAs",
-            defaultMessage: "Save As",
-          })}
+          title="Save As"
           className={css(HEADER_STYLE.newSong)}
           onClick={onShowClone}
         >
           <i className="fa fa-clone" />{" "}
-          {!micro &&
-            !isImmutableSrc && (
-              <span>
-                <FormattedMessage id="Header.saveAs" defaultMessage="Save As" />
-              </span>
-            )}
-          {!micro &&
-            isImmutableSrc && (
-              <span>
-                <FormattedMessage id="Header.import" defaultMessage="Import" />
-              </span>
-            )}
+          {!micro && !isImmutableSrc && <span>Save As</span>}
+          {!micro && isImmutableSrc && <span>Import</span>}
         </button>
       );
     }
@@ -391,37 +366,16 @@ class Header extends React.PureComponent<Props> {
       if (isDirty) {
         saveShare = (
           <span>
-            <i className="fa fa-save" />{" "}
-            {!micro && (
-              <span>
-                <FormattedMessage
-                  id="Header.saveUpdates"
-                  defaultMessage="Save updates"
-                />
-              </span>
-            )}
+            <i className="fa fa-save" /> {!micro && <span>Save updates</span>}
           </span>
         );
       } else if (!micro) {
-        saveShare = (
-          <FormattedMessage
-            id="Header.allSaved"
-            defaultMessage="All changes saved."
-          />
-        );
+        saveShare = "All changes saved.";
       }
     } else {
       saveShare = (
         <span>
-          <i className="fa fa-save" />{" "}
-          {!micro && (
-            <span>
-              <FormattedMessage
-                id="Header.saveOrShare"
-                defaultMessage="Save / share"
-              />
-            </span>
-          )}
+          <i className="fa fa-save" /> {!micro && <span>Save / share</span>}
         </span>
       );
     }
@@ -430,14 +384,7 @@ class Header extends React.PureComponent<Props> {
       return (
         <div className={css(HEADER_STYLE.headerGroupWrapper)}>
           <button title="Publish" className={css(HEADER_STYLE.newSong)}>
-            {!micro && (
-              <span>
-                <FormattedMessage
-                  id="Header.noChanges"
-                  defaultMessage="No changes made."
-                />
-              </span>
-            )}
+            {!micro && <span>No changes made.</span>}
           </button>
         </div>
       );
@@ -447,10 +394,7 @@ class Header extends React.PureComponent<Props> {
       return (
         <div className={css(HEADER_STYLE.headerGroupWrapper)}>
           <button
-            title={formatMessage({
-              id: "Header.publish",
-              defaultMessage: "Publish",
-            })}
+            title="Publish"
             className={css(HEADER_STYLE.newSong)}
             onClick={onShowNew}
           >
@@ -461,10 +405,7 @@ class Header extends React.PureComponent<Props> {
           </button>
           {saveAsButton}
           <button
-            title={formatMessage({
-              id: "Header.publish",
-              defaultMessage: "Publish",
-            })}
+            title="Publish"
             className={css(
               HEADER_STYLE.publish,
               isDirty && HEADER_STYLE.publishActive,
@@ -487,9 +428,6 @@ class Header extends React.PureComponent<Props> {
 
   private renderTime(): React.ReactNode {
     const { timeInSeconds } = this.state;
-    const {
-      intl: { formatMessage },
-    } = this.props;
     const fmtTime: string = String(Math.floor(timeInSeconds * 100) / 100);
     const { playing } = this.state;
 
@@ -498,21 +436,14 @@ class Header extends React.PureComponent<Props> {
         className={css(HEADER_STYLE.headerGroupWrapper, HEADER_STYLE.miniGroup)}
       >
         <button
-          title={formatMessage({
-            id: "Header.rewind",
-            defaultMessage: "Rewind",
-          })}
+          title="Rewind"
           className={css(BUTTON_STYLE.buttonStyle, HEADER_STYLE.playButton)}
           onClick={this.handleRewind}
         >
           <i className="fa-backward fa" />
         </button>
         <button
-          title={
-            playing
-              ? formatMessage({ id: "Header.pause", defaultMessage: "Pause" })
-              : formatMessage({ id: "Header.play", defaultMessage: "Play" })
-          }
+          title={playing ? "Pause" : "Play"}
           className={css(BUTTON_STYLE.buttonStyle, HEADER_STYLE.playButton)}
           onClick={playing ? this.handlePause : this.handlePlay}
         >
@@ -529,10 +460,7 @@ class Header extends React.PureComponent<Props> {
           {fmtTime}
         </button>
         <button
-          title={formatMessage({
-            id: "Header.ff",
-            defaultMessage: "Fast-forward",
-          })}
+          title="Fast-forward"
           className={css(BUTTON_STYLE.buttonStyle, HEADER_STYLE.playButton)}
           onClick={this.handleFastForward}
         >
@@ -542,5 +470,3 @@ class Header extends React.PureComponent<Props> {
     );
   }
 }
-
-export default injectIntl(Header);

@@ -23,7 +23,6 @@ import Makelily from "makelily"; // note: use for types only
 import * as monacoEditor from "monaco-editor";
 import React from "react";
 
-import { FormattedMessage, InjectedIntl, injectIntl } from "react-intl";
 import { Auth, checkLogin, redirectToLogin, revokeGitHubAuth } from "./auth";
 import DownloadModal from "./DownloadModal";
 import Editor from "./Editor";
@@ -178,9 +177,6 @@ interface Props extends QueryProps {
    */
   hideUnstable219Notification: boolean;
 
-  // Translation methods from react-intl.
-  intl: InjectedIntl;
-
   isStandalone: boolean;
 
   /**
@@ -263,42 +259,31 @@ interface State {
   makelilyInsertCB?(ly: string): void;
 }
 
+const DEFAULT_SONG: string = `\\header {
+  title = "Untitled"
+  composer = "Composer"
+}
+
+\\score {
+  \\relative c' {
+    c4
+  }
+
+  \\layout {}
+  \\midi {}
+}`;
+
 /**
  * Root component of Hacklily. This renders everything on the page.
  *
  * Receives props from the query (URL) as well as localStorage -- see index.tsx for how that works.
  */
-class App extends React.PureComponent<Props, State> {
+export default class App extends React.PureComponent<Props, State> {
   state: State = {
     cleanSongs: {
       null: {
         baseSHA: null,
-        src: this.props.intl.formatMessage({
-          id: "App.defaultSong",
-          description: "The song the user sees when first opening Hacklily.",
-          defaultMessage: `\\\\header \\\{
-    title = "Untitled"
-    composer = "Composer"
-  \\}
-  
-  \\\\score \\{
-    <<
-      \\\\new Staff <<
-        \\\\new Voice \\{
-          \\\\clef treble
-          \\\\key c \\\\major
-          \\\\relative c' \\{
-            c4
-          \\}
-        \\}
-      >>
-    >>
-  
-    \\\\layout \\{\\}
-    \\\\midi \\{\\}
-  \\}
-`,
-        }),
+        src: DEFAULT_SONG,
       },
     },
     connectToGitHubReason: null,
@@ -479,7 +464,6 @@ class App extends React.PureComponent<Props, State> {
         <div className="content">
           <Editor
             ref={this.setEditor}
-            intl={this.props.intl}
             code={song ? song.src : undefined}
             colourScheme={this.props.colourScheme}
             mode={mode}
@@ -568,12 +552,7 @@ class App extends React.PureComponent<Props, State> {
       );
 
       if (req.status >= 400) {
-        alert(
-          this.props.intl.formatMessage({
-            id: "App.couldNotFetchSong",
-            defaultMessage: "Could not fetch the requested song.",
-          }),
-        );
+        alert("Could not fetch the requested song.");
 
         return;
       }
@@ -652,7 +631,6 @@ class App extends React.PureComponent<Props, State> {
       this.setState({
         interstitialChanges: null,
       });
-      // Not translated, since all modern browsers ignore this.
       ev.returnValue = "Changes you made have not been saved.";
     }
   };
@@ -728,12 +706,8 @@ class App extends React.PureComponent<Props, State> {
     const { midi } = this.state;
     if (!midi) {
       alert(
-        this.props.intl.formatMessage({
-          id: "App.noMIDI",
-          defaultMessage:
-            "No MIDI data found. Make sure you have " +
-            "a \\midi \\{\\} and a \\layout \\{\\} in your \\score \\{\\}.",
-        }),
+        "No MIDI data found. Make sure you have " +
+          "a \\midi {} and a \\layout {} in your \\score {}.",
       );
       return;
     }
@@ -752,24 +726,13 @@ class App extends React.PureComponent<Props, State> {
   private handleExportPDF = async (): Promise<void> => {
     const song = this.song();
     if (!song) {
-      alert(
-        this.props.intl.formatMessage({
-          id: "App.noPDF",
-          defaultMessage: "Could not export PDF.",
-        }),
-      );
+      alert("Could not export PDF.");
       return;
     }
 
     const rpc = this.rpc;
     if (!rpc) {
-      alert(
-        this.props.intl.formatMessage({
-          id: "App.noPDFServer",
-          defaultMessage:
-            "Could not export PDF. Check your Internet connection.",
-        }),
-      );
+      alert("Could not connect to server");
       return;
     }
 
@@ -801,12 +764,7 @@ class App extends React.PureComponent<Props, State> {
 
       this.triggerDownload(`${name}.pdf`, "data:text/plain;base64," + pdf);
     } catch (err) {
-      alert(
-        this.props.intl.formatMessage({
-          id: "App.noPDF",
-          defaultMessage: "Could not export PDF.",
-        }),
-      );
+      alert("Could not export PDF.");
     }
 
     this.setState({
@@ -819,12 +777,7 @@ class App extends React.PureComponent<Props, State> {
   private handleExportLy = (): void => {
     const song = this.song();
     if (!song) {
-      alert(
-        this.props.intl.formatMessage({
-          id: "App.noLY",
-          defaultMessage: "Could not export original source.",
-        }),
-      );
+      alert("Could not export lilypond source.");
       return;
     }
 
@@ -1138,10 +1091,7 @@ class App extends React.PureComponent<Props, State> {
 
     if (!this.props.auth && !isClean) {
       this.setState({
-        connectToGitHubReason: this.props.intl.formatMessage({
-          id: "App.loginToSafe",
-          defaultMessage: "Connect to GitHub to save this song\u2026",
-        }),
+        connectToGitHubReason: "Connect to GitHub to save this song\u2026",
         login: true,
       });
     } else {
@@ -1155,10 +1105,7 @@ class App extends React.PureComponent<Props, State> {
   private handleShowPublish = (): void => {
     if (!this.props.auth) {
       this.setState({
-        connectToGitHubReason: this.props.intl.formatMessage({
-          id: "App.loginToShare",
-          defaultMessage: "Connect to GitHub to share this song\u2026",
-        }),
+        connectToGitHubReason: "Connect to GitHub to share this song\u2026",
         login: true,
       });
     } else if (this.props.edit) {
@@ -1173,10 +1120,8 @@ class App extends React.PureComponent<Props, State> {
   private handleShowSaveAs = (): void => {
     if (!this.props.auth) {
       this.setState({
-        connectToGitHubReason: this.props.intl.formatMessage({
-          id: "App.loginToCopy",
-          defaultMessage: "Connect to GitHub to save a copy of this song\u2026",
-        }),
+        connectToGitHubReason:
+          "Connect to GitHub to save a copy of this song\u2026",
         login: true,
       });
       this.props.setQuery(
@@ -1206,13 +1151,7 @@ class App extends React.PureComponent<Props, State> {
     const { auth } = this.props;
 
     if (!this.rpc) {
-      alert(
-        this.props.intl.formatMessage({
-          id: "App.cannotLogOutBecauseServer",
-          defaultMessage:
-            "Cannot sign out because you are not connected to the server.",
-        }),
-      );
+      alert("Cannot sign out because you are not connected to the server.");
 
       return;
     }
@@ -1224,7 +1163,7 @@ class App extends React.PureComponent<Props, State> {
     }
     const token: string = auth.accessToken;
     localStorage.clear();
-    revokeGitHubAuth(this.rpc, token, this.props.intl);
+    revokeGitHubAuth(this.rpc, token);
   };
 
   private handleUpdateGitHub = async (): Promise<void> => {
@@ -1328,13 +1267,7 @@ class App extends React.PureComponent<Props, State> {
           true,
         );
       } catch (err) {
-        alert(
-          err.message ||
-            this.props.intl.formatMessage({
-              id: "App.couldNotLogIn",
-              defaultMessage: "Could not log you in",
-            }),
-        );
+        alert(err.message || "Could not log you in");
         this.props.setQuery(
           {
             code: undefined,
@@ -1349,13 +1282,7 @@ class App extends React.PureComponent<Props, State> {
         auth.repoDetails = await getOrCreateRepo(auth);
         this.props.setAuth(auth);
       } catch (err) {
-        alert(
-          err.message ||
-            this.props.intl.formatMessage({
-              id: "App.couldNotGetRepo",
-              defaultMessage: "Could not get GitHub repo details.",
-            }),
-        );
+        alert(err.message || "Could not get GitHub repo details.");
       }
     }
     this.setState({
@@ -1591,7 +1518,6 @@ class App extends React.PureComponent<Props, State> {
               mode === MODE_BOTH ? "50%" : mode === MODE_VIEW ? "100%" : "0",
           }}
         >
-          {/* Not translating: dev-only */}
           <div className={css(APP_STYLE.sheetMusicError)}>
             Could not connect to server because the{" "}
             <code>REACT_APP_BACKEND_WS_URL</code> environment variable was not
@@ -1612,16 +1538,10 @@ class App extends React.PureComponent<Props, State> {
         >
           <div className={css(APP_STYLE.sheetMusicError)}>
             <i className="fa fa-exclamation-triangle" aria-hidden={true} />{" "}
-            <FormattedMessage
-              id="App.couldNotConnectToServer"
-              defaultMessage="Could not connect to server."
-            />
+            Could not connect to server.
             <br />
-            <FormattedMessage
-              id="App.reconnectTimeout"
-              defaultMessage="Trying again in {reconnectTimeout}&hellip;"
-              values={{ reconnectTimeout }}
-            />
+            Trying again in {reconnectTimeout}
+            &hellip;
           </div>
         </div>
       );
@@ -1774,5 +1694,3 @@ class App extends React.PureComponent<Props, State> {
     }
   };
 }
-
-export default injectIntl(App);

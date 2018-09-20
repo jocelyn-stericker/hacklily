@@ -22,16 +22,9 @@ import { css } from "aphrodite";
 import React from "react";
 import ReactModal from "react-modal";
 
-import {
-  FormattedHTMLMessage,
-  FormattedMessage,
-  InjectedIntl,
-  injectIntl,
-} from "react-intl";
 import { BUTTON_STYLE, MODAL_STYLE } from "./styles";
 
 interface Props {
-  intl: InjectedIntl;
   resolveGitHub(): void;
   resolveLocalStorage(): void;
 }
@@ -39,39 +32,28 @@ interface Props {
 /**
  * This is shown when you load a song that was loaded dirty and has been edited elsewhere.
  */
-class ModalConflict extends React.PureComponent<Props> {
+export default class ModalConflict extends React.PureComponent<Props> {
   render(): JSX.Element {
-    const { intl } = this.props;
-
     return (
       <ReactModal
         className={css(MODAL_STYLE.modal)}
-        contentLabel={intl.formatMessage({
-          id: "ModalConflict.sr",
-          defaultMessage: "Resolve external changes",
-        })}
+        contentLabel="Resolve external changes"
         isOpen={true}
         overlayClassName={css(MODAL_STYLE.overlay)}
       >
         <div>
           <div className={css(MODAL_STYLE.modalHeader)}>
-            <FormattedMessage
-              id="ModalConflict.title"
-              defaultMessage="Keep unsaved changes?"
-            />
+            Keep unsaved changes?
           </div>
           <div className={css(MODAL_STYLE.modalBody)}>
             <p style={{ marginTop: 0 }}>
-              <FormattedHTMLMessage
-                id="ModalConflict.description"
-                defaultMessage="<strong>This song was edited outside of this browser.</strong> You can either keep the unsaved version from this browser, or revert to the saved version."
-              />
+              <strong>This song was edited outside of this browser.</strong> You
+              can either keep the unsaved version from this browser, or revert
+              to the saved version.
             </p>
             <p>
-              <FormattedHTMLMessage
-                id="ModalConflict.tip"
-                defaultMessage="<strong>Tip: </strong> Next time, save songs before closing Hacklily."
-              />
+              <strong>Tip: </strong> Next time, save songs before closing
+              Hacklily.
             </p>
             <div style={{ display: "flex", marginBottom: 10 }}>
               <div style={{ flex: 1 }} />
@@ -80,19 +62,13 @@ class ModalConflict extends React.PureComponent<Props> {
                   onClick={this.props.resolveLocalStorage}
                   className={css(BUTTON_STYLE.buttonStyle)}
                 >
-                  <FormattedMessage
-                    id="ModalConflict.keepUnsaved"
-                    defaultMessage="Keep unsaved version"
-                  />
+                  Keep unsaved version
                 </button>
                 <button
                   onClick={this.props.resolveGitHub}
                   className={css(BUTTON_STYLE.buttonStyle)}
                 >
-                  <FormattedMessage
-                    id="ModalConflict.revertToSaved"
-                    defaultMessage="Revert to saved version"
-                  />
+                  Revert to saved version
                 </button>
               </div>
             </div>
@@ -102,5 +78,3 @@ class ModalConflict extends React.PureComponent<Props> {
     );
   }
 }
-
-export default injectIntl(ModalConflict);

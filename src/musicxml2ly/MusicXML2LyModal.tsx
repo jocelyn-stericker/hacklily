@@ -20,47 +20,31 @@
 
 import { css } from "aphrodite";
 import React from "react";
-import { FormattedMessage, InjectedIntl, injectIntl } from "react-intl";
 import ReactModal from "react-modal";
 
 import RPCClient from "../RPCClient";
 import { MODAL_STYLE } from "../styles";
 
 interface Props {
-  intl: InjectedIntl;
   rpc: RPCClient;
   onHide(): void;
 }
 
-class MusicXML2LyModal extends React.PureComponent<Props> {
+export default class MusicXML2LyModal extends React.PureComponent<Props> {
   render(): JSX.Element {
-    const {
-      intl: { formatMessage },
-    } = this.props;
     return (
       <ReactModal
         className={css(MODAL_STYLE.modal)}
-        contentLabel={formatMessage({
-          id: "MusicXML2LyModal.title",
-          defaultMessage: "Import MusicXML",
-        })}
+        contentLabel="Import MusicXML"
         isOpen={true}
         onRequestClose={this.props.onHide}
         overlayClassName={css(MODAL_STYLE.overlay)}
       >
         <div>
           <div className={css(MODAL_STYLE.modalHeader)}>
-            <strong>
-              <FormattedMessage
-                id="MusicXML2LyModal.title"
-                defaultMessage="Import MusicXML"
-              />
-            </strong>
+            <strong>Import MusicXML</strong>
             <button
-              aria-label={formatMessage({
-                id: "MusicXML2LyModal.back",
-                defaultMessage: "Back to song",
-              })}
+              aria-label="Back to song"
               onClick={this.props.onHide}
               className={css(MODAL_STYLE.closeButton)}
             >
@@ -100,5 +84,3 @@ class MusicXML2LyModal extends React.PureComponent<Props> {
     location.href = `/#src=${encodeURIComponent(file)}`;
   };
 }
-
-export default injectIntl(MusicXML2LyModal);

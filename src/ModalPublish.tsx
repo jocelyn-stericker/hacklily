@@ -20,7 +20,6 @@
 
 import { css } from "aphrodite";
 import React from "react";
-import { FormattedMessage, InjectedIntl, injectIntl } from "react-intl";
 import ReactModal from "react-modal";
 
 import { Auth } from "./auth";
@@ -32,7 +31,6 @@ import { BUTTON_STYLE, MODAL_STYLE, PUBLISH_STYLE } from "./styles";
 interface Props {
   auth: Auth;
   code: string;
-  intl: InjectedIntl;
   rpc: RPCClient;
   onHide(): void;
   onPublished(path: string): void;
@@ -64,7 +62,7 @@ class ModalPublish extends React.PureComponent<Props, State> {
   render(): JSX.Element {
     // tslint:disable max-func-body-length
     // TODO(joshuan): Split this up
-    const { auth, onHide, intl } = this.props;
+    const { auth, onHide } = this.props;
     const { filename, files, invitationRequired, saving } = this.state;
     let disabled: boolean = false;
 
@@ -77,11 +75,8 @@ class ModalPublish extends React.PureComponent<Props, State> {
       disabled = true;
       error = (
         <span className={css(PUBLISH_STYLE.error)}>
-          <i className="fa fa-exclamation-triangle" aria-hidden={true} />{" "}
-          <FormattedMessage
-            id="ModalPublish.enterFilename"
-            defaultMessage="Please enter a filename."
-          />
+          <i className="fa fa-exclamation-triangle" aria-hidden={true} /> Please
+          enter a filename.
         </span>
       );
     } else if (
@@ -91,20 +86,22 @@ class ModalPublish extends React.PureComponent<Props, State> {
       disabled = true;
       error = (
         <span className={css(PUBLISH_STYLE.error)}>
-          <i className="fa fa-exclamation-triangle" aria-hidden={true} />{" "}
-          <FormattedMessage
-            id="ModalPublish.taken"
-            defaultMessage="That filename is taken."
-          />
+          <i className="fa fa-exclamation-triangle" aria-hidden={true} /> That
+          filename is taken.
         </span>
       );
     } else if (invitationRequired) {
       error = (
         <span className={css(PUBLISH_STYLE.error)}>
-          <FormattedMessage
-            id="ModalPublish.permissionDenied"
-            defaultMessage="Permission denied. Try logging out and then back in."
-          />
+          Permission denied. You may need to{" "}
+          <a
+            href={`https://github.com/${auth.repo}/invitations`}
+            target="_blank"
+            rel="noreferrer noopener"
+          >
+            enable write access
+          </a>{" "}
+          then try agin!
         </span>
       );
     }
@@ -112,25 +109,16 @@ class ModalPublish extends React.PureComponent<Props, State> {
     return (
       <ReactModal
         className={css(MODAL_STYLE.modal, MODAL_STYLE.big)}
-        contentLabel={intl.formatMessage({
-          id: "ModalPublish.publish",
-          defaultMessage: "Publish",
-        })}
+        contentLabel="Publish"
         isOpen={true}
         onRequestClose={onHide}
         overlayClassName={css(MODAL_STYLE.overlay)}
       >
         <div>
           <div className={css(MODAL_STYLE.modalHeader)}>
-            <FormattedMessage
-              id="ModalPublish.title"
-              defaultMessage="Save / share song"
-            />
+            Save / share song
             <button
-              aria-label={intl.formatMessage({
-                id: "ModalPublish.back",
-                defaultMessage: "Back to song",
-              })}
+              aria-label="Back to song"
               onClick={onHide}
               className={css(MODAL_STYLE.closeButton)}
             >
@@ -140,11 +128,7 @@ class ModalPublish extends React.PureComponent<Props, State> {
           <div className={css(MODAL_STYLE.modalBody)}>
             <div className={css(PUBLISH_STYLE.row)}>
               <span className={css(PUBLISH_STYLE.cell)}>
-                <FormattedMessage
-                  id="ModalPublish.saveTo"
-                  defaultMessage="Save to:"
-                />
-                &nbsp;
+                Save to:&nbsp;
                 <code className={css(PUBLISH_STYLE.mono)}>
                   <a
                     href={`https://github.com/${auth.repo}`}
@@ -184,11 +168,7 @@ class ModalPublish extends React.PureComponent<Props, State> {
                   PUBLISH_STYLE.publishBtn,
                 )}
               >
-                <i className="fa fa-save" aria-hidden={true} />{" "}
-                <FormattedMessage
-                  id="ModalPublish.action"
-                  defaultMessage="Save / share"
-                />
+                <i className="fa fa-save" aria-hidden={true} /> Save / share
               </button>
             </div>
           </div>
@@ -383,4 +363,4 @@ export async function doUnpublish(
   return true;
 }
 
-export default injectIntl(ModalPublish);
+export default ModalPublish;

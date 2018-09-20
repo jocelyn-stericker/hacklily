@@ -23,7 +23,6 @@ import DOMPurify from "dompurify";
 import * as monacoEditor from "monaco-editor";
 import React from "react";
 
-import { FormattedMessage } from "react-intl";
 import { decodeArrayBuffer } from "./base64Binary";
 import { MODE_BOTH, MODE_VIEW, ViewMode } from "./Header";
 import Logs from "./Logs";
@@ -390,8 +389,7 @@ export default class Preview extends React.PureComponent<Props, State> {
         onClick={this.props.onShowDownload}
         className={css(BUTTON_STYLE.buttonStyle, APP_STYLE.downloadButton)}
       >
-        <i className="fa fa-download" />{" "}
-        <FormattedMessage id="Preview.download" defaultMessage="Export" />
+        <i className="fa fa-download" /> Export
       </a>
     );
   }

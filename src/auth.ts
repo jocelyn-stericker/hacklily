@@ -18,7 +18,6 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
  */
 
-import { InjectedIntl } from "react-intl";
 import RPCClient, { SignInResponse } from "./RPCClient";
 
 export interface Repo {
@@ -65,7 +64,6 @@ export function getOauthRedirect(csrf: string): string {
 export async function revokeGitHubAuth(
   rpc: RPCClient,
   token: string,
-  intl: InjectedIntl,
 ): Promise<void> {
   try {
     await rpc.call("signOut", {
@@ -73,12 +71,8 @@ export async function revokeGitHubAuth(
     });
   } catch (err) {
     alert(
-      intl.formatMessage({
-        id: "auth.couldNotRevoke",
-        defaultMessage:
-          "Could not revoke GitHub authorization. " +
-          "If you would like, you can manually do this from your GitHub settings.",
-      }),
+      "Could not revoke GitHub authorization. " +
+        "If you would like, you can manually do this from your GitHub settings.",
     );
   } finally {
     window.location.reload();
