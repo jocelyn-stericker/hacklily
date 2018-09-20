@@ -270,7 +270,17 @@ export async function doPublish(
   rpc: RPCClient,
   overwrite: boolean,
 ): Promise<boolean> {
+  // Decide whether to use the stable version or not.
+  let version: "unstable" | "stable" = "stable";
+  const maybeVersion = /\\version\s*"(\d+)\.?(\d+)?\.?(\d+)?/gm.exec(code);
+  const versionSlices = maybeVersion
+    ? maybeVersion.slice(1).map(v => parseInt(v, 10))
+    : [];
+  const isUnstable = versionSlices[0] === 2 && versionSlices[1] > 18;
+  version = isUnstable ? "unstable" : "stable";
+
   const pdf: string = (await rpc.call("render", {
+    version,
     backend: "pdf",
     src: code,
   })).result.files[0];

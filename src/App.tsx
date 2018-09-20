@@ -780,7 +780,19 @@ class App extends React.PureComponent<Props, State> {
     const name = this.getSongName();
 
     try {
+      // Decide whether to use the stable version or not.
+      let version: "unstable" | "stable" = "stable";
+      const maybeVersion = /\\version\s*"(\d+)\.?(\d+)?\.?(\d+)?/gm.exec(
+        song.src,
+      );
+      const versionSlices = maybeVersion
+        ? maybeVersion.slice(1).map(v => parseInt(v, 10))
+        : [];
+      const isUnstable = versionSlices[0] === 2 && versionSlices[1] > 18;
+      version = isUnstable ? "unstable" : "stable";
+
       const pdf: string = (await rpc.call("render", {
+        version,
         backend: "pdf",
         src: song.src,
       })).result.files[0];
