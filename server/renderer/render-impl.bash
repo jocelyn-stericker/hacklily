@@ -11,6 +11,7 @@
 #
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
+source ~/.profile
 
 IFS="
 "
@@ -39,7 +40,7 @@ do
 
     echo "$line" | jq -r .src > hacklily.ly 2> /dev/null
 
-    timeout -s9 4 lyp compile -s /tmp/hacklily.ly 2> hacklily.err 1>&2
+    timeout -s14 4 lyp compile -s /tmp/hacklily.ly 2> hacklily.err 1>&2
     if [ $? -eq 137 ]; then
         killall lilypond > /dev/null 2>&1
         echo '{"err": "Failed to render song."}'
