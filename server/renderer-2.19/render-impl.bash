@@ -22,51 +22,48 @@ cat << EOF > /tmp/start.ly
 #(lys:start-server)
 EOF
 
-function repl {
+    
+while read -r line
+do
     until printf "" 2>>/dev/null >>/dev/tcp/localhost/1225; do sleep 0.05; done
-    
-    while read -r line
-    do
-        backend=$( echo "$line" | jq -r .backend )
-        if [ "$backend" == "musicxml2ly" ]; then
-            echo "$line" | jq -r .src | musicxml2ly - -o hacklily.musicxml2ly.ly 2> hacklily.err 1>&2
-            jq -Rs . hacklily.err > hacklily.err.json
-            jq -Rsrc '{files: [.], logs: $errors, midi: ""}' hacklily.musicxml2ly.ly \
-        	    --argfile errors hacklily.err.json \
-        	    2> /dev/null
-            continue
-        fi
-    
-        echo "$line" | jq -r .src > hacklily.ly 2> /dev/null
-    
-        timeout -s15 5 lyp compile -s /tmp/hacklily.ly 2> hacklily.err 1>&2
-        if [ $? -eq 137 ]; then
-            echo '{"err": "Failed to render song."}'
-    	echo 'failed to render' >&2
-            continue
-        fi;
-    
-        for f in hacklily*.$backend
-        do
-            if [ "hacklily*.$backend" == "$f" ]; then
-                echo '""' > "hacklily-null.$backend.json"
-            elif [ "$backend" == "svg" ]; then
-                jq -Rs . $f > $f.json 2>&1
-            else
-                cat $f | base64 | jq -Rs . > $f.json 2>&1
-            fi
-        done
-        touch hacklily.midi  # Allow blank files
-        cat hacklily.midi | base64 | jq -Rs . > hacklily.midi.json 2>&1
+    backend=$( echo "$line" | jq -r .backend )
+    if [ "$backend" == "musicxml2ly" ]; then
+        echo "$line" | jq -r .src | musicxml2ly - -o hacklily.musicxml2ly.ly 2> hacklily.err 1>&2
         jq -Rs . hacklily.err > hacklily.err.json
-        jq -src '{files: ., logs: $errors, midi: $midi}' hacklily*.$backend.json \
+        jq -Rsrc '{files: [.], logs: $errors, midi: ""}' hacklily.musicxml2ly.ly \
     	    --argfile errors hacklily.err.json \
-    	    --argfile midi hacklily.midi.json \
     	    2> /dev/null
-    
-        rm hacklily* > /dev/null 2> /dev/null
-    done < "${1:-/dev/stdin}"
-}
+        continue
+    fi
 
-repl &
-lilypond /tmp/start.ly 1>&2
+    echo "$line" | jq -r .src > hacklily.ly 2> /dev/null
+
+    timeout -s15 5 lyp compile -s /tmp/hacklily.ly 2> hacklily.err 1>&2
+    if [ $? -eq 137 ]; then
+        echo '{"err": "Failed to render song."}'
+	echo 'failed to render' >&2
+        continue
+    fi;
+
+    for f in hacklily*.$backend
+    do
+        if [ "hacklily*.$backend" == "$f" ]; then
+            echo '""' > "hacklily-null.$backend.json"
+        elif [ "$backend" == "svg" ]; then
+            jq -Rs . $f > $f.json 2>&1
+        else
+            cat $f | base64 | jq -Rs . > $f.json 2>&1
+        fi
+    done
+    touch hacklily.midi  # Allow blank files
+    cat hacklily.midi | base64 | jq -Rs . > hacklily.midi.json 2>&1
+    jq -Rs . hacklily.err > hacklily.err.json
+    jq -src '{files: ., logs: $errors, midi: $midi}' hacklily*.$backend.json \
+	    --argfile errors hacklily.err.json \
+	    --argfile midi hacklily.midi.json \
+	    2> /dev/null
+
+    rm hacklily* > /dev/null 2> /dev/null
+done < "${1:-/dev/stdin}" &
+
+bash -c "lilypond /tmp/start.ly 1>&2"
