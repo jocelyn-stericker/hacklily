@@ -315,7 +315,15 @@ export default class Preview extends React.PureComponent<Props, State> {
 
       return;
     } catch (err) {
+      const errMsg =
+        (err &&
+          err.error &&
+          typeof err.error.message === "string" &&
+          err.error.message) ||
+        "unknown error";
+      this.props.onLogsObtained(errMsg, version);
       this.setState({
+        error: errMsg,
         pendingPreviews: this.state.pendingPreviews - 1,
         previewAlreadyDirty: true,
       });

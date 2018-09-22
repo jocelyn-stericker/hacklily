@@ -186,6 +186,8 @@ void HacklilyServer::_handleTextMessageReceived(QString message)
             version,
             socket,
             requestObj["id"].toString(),
+            QTime::currentTime(),
+            QTime(),
         };
         if (!req.src.length() || !req.backend.length() || (req.backend != "svg" && req.backend != "pdf" && req.backend != "musicxml2ly"))
         {
@@ -338,41 +340,53 @@ void HacklilyServer::_initRenderers()
     }
     for (int i = 0; i < _maxJobs; ++i)
     {
-        QProcess *renderer = new QProcess(this);
-        _renderers.push_back(renderer);
-        connect(renderer, &QProcess::readyReadStandardOutput, this, &HacklilyServer::_handleRendererOutput);
-        connect(renderer, &QProcess::started, this, &HacklilyServer::_processIfPossible);
+        bool isUnstable = _rendererUnstableDockerTag != "" && i >= _maxJobs / 2;
 
-        renderer->setProcessChannelMode(QProcess::ForwardedErrorChannel);
-        if (_rendererUnstableDockerTag != "" && i >= _maxJobs / 2)
-        {
-            renderer->start("docker",
-                            QStringList() << "run"
-                                          << "--rm"
-                                          << "-i"
-                                          << "--net=none"
-                                          << "-m1g"
-                                          << "--security-opt=no-new-privileges"
-                                          << "--cap-drop"
-                                          << "ALL"
-                                          << "--cpus=1" << _rendererUnstableDockerTag);
-            _rendererVersion.append("unstable");
-        }
-        else
-        {
-            renderer->start("docker",
-                            QStringList() << "run"
-                                          << "--rm"
-                                          << "-i"
-                                          << "--net=none"
-                                          << "-m1g"
-                                          << "--security-opt=no-new-privileges"
-                                          << "--cap-drop"
-                                          << "ALL"
-                                          << "--cpus=1" << _rendererDockerTag);
-            _rendererVersion.append("stable");
-        }
+        _renderers.push_back(NULL);
+        _rendererVersion.append("unknown");
+        _createRenderer(isUnstable, i);
     }
+    _processIfPossible();
+}
+
+void HacklilyServer::_createRenderer(bool isUnstable, int rendererId) {
+    QProcess* renderer = new QProcess(this);
+    connect(renderer, &QProcess::readyReadStandardOutput, this, &HacklilyServer::_handleRendererOutput);
+    connect(renderer, &QProcess::started, this, &HacklilyServer::_processIfPossible);
+    connect(renderer, static_cast<void(QProcess::*)(int, QProcess::ExitStatus)>(&QProcess::finished),
+                                                                                this, &HacklilyServer::_handleRendererFinished);
+
+    renderer->setProcessChannelMode(QProcess::ForwardedErrorChannel);
+    QString tag = isUnstable ? _rendererUnstableDockerTag : _rendererDockerTag;
+
+    renderer->start("docker",
+                    QStringList() << "run"
+                                  << "--rm"
+                                  << "-i"
+                                  << "--net=none"
+                                  << "-m1g"
+                                  << "--security-opt=no-new-privileges"
+                                  << "--cap-drop"
+                                  << "ALL"
+                                  << "--kernel-memory=40M"
+                                  << "--pids-limit=40"
+                                  << "--cpus=1" << tag);
+
+    _renderers[rendererId] = renderer;
+    _rendererVersion[rendererId] = isUnstable ? "unstable" : "stable";
+
+    _processIfPossible();
+}
+
+void HacklilyServer::_resetRenderer(int rendererID) {
+    qDebug() << "Resetting" << rendererID;
+    QProcess* renderer = _renderers[rendererID];
+    _localProcessingRequests.remove(rendererID);
+    _renderers[rendererID] = NULL;
+    renderer->close();
+    renderer->terminate();
+    QTimer::singleShot(500, renderer, &QProcess::deleteLater);
+    this->_createRenderer(_rendererVersion[rendererID] == "unstable", rendererID);
 }
 
 static const char *LILYPOND_INCLUDES[] = {
@@ -515,39 +529,87 @@ void HacklilyServer::_processIfPossible()
         {
             continue;
         }
-        qDebug() << "Processing on local renderer " << i;
-        HacklilyServerRequest request = _requests.takeFirst();
-        _localProcessingRequests[i] = request;
 
-        QJsonObject requestObj;
-        QString modifiedSrc;
-        if (request.backend == "svg")
-        {
-            modifiedSrc += "#(ly:set-option 'backend '" + request.backend + ")\n";
-        }
-        else if (request.backend != "musicxml2ly")
-        {
-            modifiedSrc += "\n";
-        }
-        modifiedSrc += request.src;
-
-        // HACK: lys doesn't handle global includes, so lets handle them ourselves by
-        // outsmarting their regex.
-        for (int i = 0; LILYPOND_INCLUDES[i] != NULL; ++i)
-        {
-            QString origStr = QString() + "\\include \"" + LILYPOND_INCLUDES[i] + "\"";
-            QString newStr = QString() + "\\include  \"" + LILYPOND_INCLUDES[i] + "\"";
-            modifiedSrc.replace(origStr, newStr);
-        }
-
-        requestObj["src"] = modifiedSrc;
-        requestObj["backend"] = request.backend;
-        QJsonDocument requestDoc;
-        requestDoc.setObject(requestObj);
-        auto json = requestDoc.toJson(QJsonDocument::Compact);
-        json += "\n";
-        _renderers[i]->write(json.data());
+        _doRender(_requests.takeFirst(), i);
         return;
+    }
+}
+
+void HacklilyServer::_doRender(HacklilyServerRequest request, int rendererId) {
+    qDebug() << "Processing on local renderer" << rendererId;
+    request.renderStart = QTime::currentTime();
+    _localProcessingRequests[rendererId] = request;
+
+    QJsonObject requestObj;
+    QString modifiedSrc;
+    if (request.backend == "svg")
+    {
+        modifiedSrc += "#(ly:set-option 'backend '" + request.backend + ")\n";
+    }
+    else if (request.backend != "musicxml2ly")
+    {
+        modifiedSrc += "\n";
+    }
+    modifiedSrc += request.src;
+
+    // HACK: lys doesn't handle global includes, so lets handle them ourselves by
+    // outsmarting their regex.
+    for (int i = 0; LILYPOND_INCLUDES[i] != NULL; ++i)
+    {
+        QString origStr = QString() + "\\include \"" + LILYPOND_INCLUDES[i] + "\"";
+        QString newStr = QString() + "\\include  \"" + LILYPOND_INCLUDES[i] + "\"";
+        modifiedSrc.replace(origStr, newStr);
+    }
+
+    requestObj["src"] = modifiedSrc;
+    requestObj["backend"] = request.backend;
+    QJsonDocument requestDoc;
+    requestDoc.setObject(requestObj);
+    auto json = requestDoc.toJson(QJsonDocument::Compact);
+    json += "\n";
+    _renderers[rendererId]->write(json.data());
+    QTimer::singleShot(6000, this, &HacklilyServer::_checkForHangingRender);
+
+    _processIfPossible();
+}
+
+void HacklilyServer::_checkForHangingRender() {
+    QMapIterator<int, HacklilyServerRequest> i(_localProcessingRequests);
+
+    QTime currentTime = QTime::currentTime();
+    while (i.hasNext()) {
+        i.next();
+        if (i.value().renderStart.msecsTo(currentTime) > 6000) {
+            qDebug() << "Got badly behaved worker" << i.key();
+            int rendererID = i.key();
+
+            if (_localProcessingRequests.contains(rendererID)) {
+                HacklilyServerRequest req = _localProcessingRequests[rendererID];
+                auto sender = req.sender;
+                auto requestID = req.requestID;
+
+                if (_sockets.values().contains(sender))
+                {
+                    QJsonObject errorObj;
+                    errorObj["code"] = 2;
+                    errorObj["message"] = "Internal error: worker crashed";
+                    QJsonObject responseObj;
+                    responseObj["jsonrpc"] = "2.0";
+                    responseObj["id"] = requestID;
+                    responseObj["error"] = errorObj;
+                    QJsonDocument response;
+                    response.setObject(responseObj);
+                    auto responseJSONText = response.toJson(QJsonDocument::Compact);
+                    sender->sendTextMessage(responseJSONText);
+                }
+                else
+                {
+                    qDebug() << "Sender died mid-flight. Ignoring";
+                }
+            }
+
+            _resetRenderer(i.key());
+        }
     }
 }
 
@@ -864,7 +926,13 @@ void HacklilyServer::_handleRendererOutput()
 
     QJsonParseError parseError;
     auto responseJSON = QJsonDocument::fromJson(response, &parseError);
-    if (_sockets.values().contains(sender))
+    if (sender == NULL) {
+        qDebug() << "Warmed-up" << rendererID << "in" << req.received.msecsTo(QTime::currentTime()) << "msec";
+        _localProcessingRequests.remove(rendererID);
+        _processIfPossible();
+        return;
+    }
+    else if (_sockets.values().contains(sender))
     {
         if (parseError.error != QJsonParseError::NoError)
         {
@@ -879,10 +947,12 @@ void HacklilyServer::_handleRendererOutput()
             response.setObject(responseObj);
             auto responseJSONText = response.toJson(QJsonDocument::Compact);
             sender->sendTextMessage(responseJSONText);
+
+            qDebug() << "Failed " << rendererID << "after" << req.renderStart.msecsTo(QTime::currentTime()) << "msec";
         }
         else
         {
-            qDebug() << "Sending response";
+            qDebug() << "Sending response for" << rendererID << "after" << req.renderStart.msecsTo(QTime::currentTime()) << "msec";
             QJsonObject responseObj;
             responseObj["jsonrpc"] = "2.0";
             responseObj["id"] = requestID;
@@ -898,7 +968,50 @@ void HacklilyServer::_handleRendererOutput()
         qDebug() << "Sender died mid-flight. Ignoring";
     }
     _localProcessingRequests.remove(rendererID);
+
+    // _resetRenderer(rendererID);
+
     _processIfPossible();
+}
+
+void HacklilyServer::_handleRendererFinished(int exitCode, QProcess::ExitStatus status)
+{
+    QProcess *renderer = qobject_cast<QProcess *>(sender());
+    int rendererID = _renderers.indexOf(renderer);
+    if (rendererID == -1)
+    {
+        qDebug() << "Got terminated signal from unknown ; exit code" << exitCode << "status" << status;
+        return;
+    }
+
+    qDebug() << "Got terminated signal from" << rendererID << " ; exit code" << exitCode << "status" << status;
+
+    if (_localProcessingRequests.contains(rendererID)) {
+        HacklilyServerRequest req = _localProcessingRequests[rendererID];
+        auto sender = req.sender;
+        auto requestID = req.requestID;
+
+        if (_sockets.values().contains(sender))
+        {
+            QJsonObject errorObj;
+            errorObj["code"] = 2;
+            errorObj["message"] = "Internal error: worker crashed";
+            QJsonObject responseObj;
+            responseObj["jsonrpc"] = "2.0";
+            responseObj["id"] = requestID;
+            responseObj["error"] = errorObj;
+            QJsonDocument response;
+            response.setObject(responseObj);
+            auto responseJSONText = response.toJson(QJsonDocument::Compact);
+            sender->sendTextMessage(responseJSONText);
+        }
+        else
+        {
+            qDebug() << "Sender died mid-flight. Ignoring";
+        }
+    }
+
+    _resetRenderer(rendererID);
 }
 
 void HacklilyServer::_removeWorker()

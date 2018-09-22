@@ -27,6 +27,7 @@
 #include <QList>
 #include <QProcess>
 #include <QTimer>
+#include <QTime>
 
 struct HacklilyServerRequest
 {
@@ -44,6 +45,9 @@ struct HacklilyServerRequest
     QString version;
     QWebSocket *sender;
     QString requestID;
+
+    QTime received;
+    QTime renderStart;
 };
 
 struct UserInfo
@@ -89,6 +93,11 @@ class HacklilyServer : public QObject
     void _initRenderers();
     void _processIfPossible();
     void _handleRendererOutput();
+    void _handleRendererFinished(int exitCode, QProcess::ExitStatus);
+    void _createRenderer(bool isUnstable, int rendererId);
+    void _resetRenderer(int rendererId);
+    void _doRender(HacklilyServerRequest req, int rendererId);
+    void _checkForHangingRender();
     void _sendUserInfo(QString requestID, int socketID);
 
     // Coordinator -- login flow

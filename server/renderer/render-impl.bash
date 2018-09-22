@@ -21,13 +21,11 @@ cat << EOF > /tmp/start.ly
 \\require "lys"
 #(lys:start-server)
 EOF
-until lilypond /tmp/start.ly; do
-    echo "Lilypond crashed... restarting" >2
-    sleep 0.5
-done 1>&2 &
-sleep 2
+
+    
 while read -r line
 do
+    until printf "" 2>>/dev/null >>/dev/tcp/localhost/1225; do sleep 0.05; done
     backend=$( echo "$line" | jq -r .backend )
     if [ "$backend" == "musicxml2ly" ]; then
         echo "$line" | jq -r .src | musicxml2ly - -o hacklily.musicxml2ly.ly 2> hacklily.err 1>&2
@@ -40,11 +38,10 @@ do
 
     echo "$line" | jq -r .src > hacklily.ly 2> /dev/null
 
-    timeout -s14 4 lyp compile -s /tmp/hacklily.ly 2> hacklily.err 1>&2
+    timeout -s15 5 lyp compile -s /tmp/hacklily.ly 2> hacklily.err 1>&2
     if [ $? -eq 137 ]; then
-        killall lilypond > /dev/null 2>&1
         echo '{"err": "Failed to render song."}'
-        sleep 2
+	echo 'failed to render' >&2
         continue
     fi;
 
@@ -67,4 +64,6 @@ do
 	    2> /dev/null
 
     rm hacklily* > /dev/null 2> /dev/null
-done < "${1:-/dev/stdin}"
+done < "${1:-/dev/stdin}" &
+
+bash -c "lilypond /tmp/start.ly 1>&2"
