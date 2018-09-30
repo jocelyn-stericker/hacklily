@@ -369,7 +369,7 @@ void HacklilyServer::_createRenderer(bool isUnstable, int rendererId) {
                                   << "--cap-drop"
                                   << "ALL"
                                   << "--kernel-memory=40M"
-                                  << "--pids-limit=40"
+                                  << "--pids-limit=200"
                                   << "--cpus=1" << tag);
 
     _renderers[rendererId] = renderer;
