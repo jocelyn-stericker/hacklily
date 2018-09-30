@@ -18,17 +18,15 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
  */
 
-import { css } from "aphrodite";
+import Button from "@khanacademy/wonder-blocks-button";
+import Tooltip from "@khanacademy/wonder-blocks-tooltip";
 import React from "react";
 
-import { BUTTON_STYLE, LOGS_STYLE } from "./styles";
+import { LOGS_STYLE } from "./styles";
 
 interface Props {
+  loading: boolean;
   logs: string | null;
-}
-
-interface State {
-  hover: boolean;
 }
 
 /**
@@ -36,67 +34,47 @@ interface State {
  *
  * This is visible in the app whenever the preview is visible.
  */
-export default class Logs extends React.Component<Props, State> {
-  state: State = {
-    hover: false,
-  };
-
+export default class Logs extends React.Component<Props> {
   render(): JSX.Element | null {
-    const { logs } = this.props;
-    const { hover } = this.state;
-    if (logs === null) {
-      return null;
-    }
+    const { logs, loading } = this.props;
 
-    if (hover) {
-      // The mask is so that on touch devices where onMouseLeave is supported,
-      // if the user taps outside of the logs, the logs go away.
-      return (
-        <div
-          className={css(LOGS_STYLE.mask)}
-          onClick={this.handleMouseLeave}
-          role="presentation"
-        >
-          <div
-            className={css(BUTTON_STYLE.buttonStyle, LOGS_STYLE.logsButton)}
-            onMouseLeave={this.handleMouseLeave}
-          >
-            <pre style={{ whiteSpace: "pre-wrap" }}>{logs}</pre>
-          </div>
-        </div>
-      );
+    const error = !logs || logs.includes("error") || logs.includes("warning");
+
+    const btn = (
+      <Button
+        spinner={loading}
+        kind="secondary"
+        color={error ? "destructive" : "default"}
+        style={LOGS_STYLE.logsButton}
+      >
+        <i
+          className={error ? "fa fa-warning fa-fw" : "fa fa-file-o fa-fw"}
+          aria-hidden={true}
+        />
+        &nbsp; Logs
+      </Button>
+    );
+
+    if (loading || !logs) {
+      return btn;
     }
 
     return (
-      <div
-        className={css(BUTTON_STYLE.buttonStyle, LOGS_STYLE.logsButton)}
-        onClick={this.handleMouseClick}
-        onMouseEnter={this.handleMouseEnter}
-        role="button"
+      <Tooltip
+        content={
+          <pre
+            style={{
+              paddingLeft: 16,
+              paddingRight: 16,
+              whiteSpace: "pre-wrap",
+            }}
+          >
+            {logs}
+          </pre>
+        }
       >
-        <i className="fa fa-file-o" aria-hidden={true} /> Logs
-      </div>
+        {btn}
+      </Tooltip>
     );
   }
-
-  private handleMouseClick = (): void => {
-    // For touch browsers.
-    this.handleMouseEnter();
-  };
-
-  private handleMouseEnter = (): void => {
-    // HACK: in mobile, for some reason if we do this right away,
-    // the mask's click event also goes through.
-    setTimeout(() => {
-      this.setState({
-        hover: true,
-      });
-    }, 10);
-  };
-
-  private handleMouseLeave = (): void => {
-    this.setState({
-      hover: false,
-    });
-  };
 }

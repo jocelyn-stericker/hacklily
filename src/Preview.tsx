@@ -18,6 +18,7 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
  */
 
+import Button from "@khanacademy/wonder-blocks-button";
 import { css } from "aphrodite";
 import DOMPurify from "dompurify";
 import * as monacoEditor from "monaco-editor";
@@ -27,7 +28,7 @@ import { decodeArrayBuffer } from "./base64Binary";
 import { MODE_BOTH, MODE_VIEW, ViewMode } from "./Header";
 import Logs from "./Logs";
 import RPCClient, { RenderResponse } from "./RPCClient";
-import { APP_STYLE, BUTTON_STYLE } from "./styles";
+import { APP_STYLE } from "./styles";
 import debounce from "./util/debounce";
 
 /**
@@ -188,7 +189,10 @@ export default class Preview extends React.PureComponent<Props, State> {
         {pendingPreviews > 0 && <div className={previewMaskStyle} />}
         {error && <div className={css(APP_STYLE.errorMask)}>{error}</div>}
         {this.renderDownload()}
-        <Logs logs={logs} />
+        <Logs
+          logs={logs}
+          loading={!logs || logs.length === 0 || pendingPreviews > 0}
+        />
       </div>
     );
     // tslint:enable:react-iframe-missing-sandbox
@@ -392,13 +396,14 @@ export default class Preview extends React.PureComponent<Props, State> {
 
   private renderDownload(): JSX.Element {
     return (
-      <a
-        href="javascript:void(0)"
+      <Button
         onClick={this.props.onShowDownload}
-        className={css(BUTTON_STYLE.buttonStyle, APP_STYLE.downloadButton)}
+        style={APP_STYLE.downloadButton}
+        disabled={!this.props.logs || this.state.pendingPreviews > 0}
       >
-        <i className="fa fa-download" /> Export
-      </a>
+        <i className="fa fa-download" />
+        &nbsp; Export
+      </Button>
     );
   }
 }

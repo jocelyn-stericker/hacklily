@@ -40,14 +40,9 @@ const EDITOR_WIDTH = "50%";
 
 export const APP_STYLE = StyleSheet.create({
   downloadButton: {
-    borderLeft: "1px solid #ccc",
     bottom: 10,
-    color: "black",
-    maxHeight: "90%",
-    overflow: "auto",
     position: "absolute",
-    right: 110,
-    textDecoration: "none",
+    right: 128,
   },
   errorDecoration: {
     border: "2px solid red",
@@ -136,9 +131,9 @@ export const MODAL_STYLE = StyleSheet.create({
     "@media (max-width: 530px)": {
       display: "none",
     },
-    bottom: 10,
     position: "absolute",
-    right: 10,
+    bottom: 0,
+    right: 0,
   },
   license: {
     fontSize: 12,
@@ -508,12 +503,9 @@ export const BUTTON_STYLE = StyleSheet.create({
 
 export const LOGS_STYLE = StyleSheet.create({
   logsButton: {
-    borderLeft: "1px solid #ccc",
-    bottom: 10,
-    maxHeight: "90%",
-    overflow: "auto",
     position: "absolute",
     right: 20,
+    bottom: 10,
   },
   mask: {
     bottom: 0,

@@ -18,15 +18,28 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
  */
 
+import Color from "@khanacademy/wonder-blocks-color";
+import { View } from "@khanacademy/wonder-blocks-core";
+import Link from "@khanacademy/wonder-blocks-link";
+import {
+  OneColumnModal,
+  TwoColumnModal,
+} from "@khanacademy/wonder-blocks-modal";
+import Tooltip from "@khanacademy/wonder-blocks-tooltip";
+import {
+  Body,
+  Footnote,
+  HeadingSmall,
+  Title,
+} from "@khanacademy/wonder-blocks-typography";
 import { css } from "aphrodite";
 import React from "react";
-import ReactModal from "react-modal";
 
 import { CLIENT_ID, getOauthRedirect } from "./auth";
-import { GITHUB_STYLE, MODAL_STYLE } from "./styles";
+import ModalWrapper from "./ModalWrapper";
+import { GITHUB_STYLE } from "./styles";
 
 interface Props {
-  connectToGitHubReason: string | null;
   csrf: string;
   onHide(): void;
   setCSRF(csrf: string): void;
@@ -55,94 +68,97 @@ export default class ModalLogin extends React.PureComponent<Props> {
   }
 
   render(): JSX.Element {
-    const { csrf, onHide, connectToGitHubReason } = this.props;
+    const { csrf, onHide } = this.props;
 
     if (!CLIENT_ID) {
       return (
-        <ReactModal
-          isOpen={true}
-          onRequestClose={onHide}
-          className={css(MODAL_STYLE.modal)}
-          contentLabel="Sign in"
-          overlayClassName={css(MODAL_STYLE.overlay)}
-        >
-          <p>
-            GitHub integration is not enabled in this copy of Hacklily since the{" "}
-            <code>REACT_APP_GITHUB_CLIENT_ID</code> environment variable was not
-            set when bundling the application.
-          </p>
-        </ReactModal>
+        <ModalWrapper onClose={onHide}>
+          <OneColumnModal
+            content={
+              <p>
+                GitHub integration is not enabled in this copy of Hacklily since
+                the <code>REACT_APP_GITHUB_CLIENT_ID</code> environment variable
+                was not set when bundling the application.
+              </p>
+            }
+          />
+        </ModalWrapper>
       );
     }
 
-    const explanation: React.ReactNode = (
-      <span>
-        <strong>
-          <i className="fa fa-info-circle" aria-hidden="true" />{" "}
-          {connectToGitHubReason || "Sign in or create an account"}
-        </strong>
-      </span>
-    );
-
     return (
-      <ReactModal
-        isOpen={true}
-        onRequestClose={onHide}
-        className={css(MODAL_STYLE.modal)}
-        contentLabel="Sign in"
-        overlayClassName={css(MODAL_STYLE.overlay)}
-      >
-        <div>
-          <div className={css(MODAL_STYLE.modalHeader)}>
-            {explanation}
-            <button
-              className={css(MODAL_STYLE.closeButton)}
-              aria-label="Back to song"
-              onClick={onHide}
-            >
-              <i className="fa-close fa" aria-hidden={true} />
-            </button>
-          </div>
-          <div className={css(MODAL_STYLE.modalBody)}>
-            <p className={css(MODAL_STYLE.signInPrivacy)}>
-              Songs you save will be <strong>public</strong> on GitHub and
-              Hacklily.
-            </p>
-            <p className={css(MODAL_STYLE.signInPrivacy)}>
-              If you do not have a{" "}
-              <a
-                href="https://help.github.com/articles/github-glossary/#repository"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                repo
-              </a>{" "}
-              named <code>sheet-music</code>, Hacklily will create one.
-            </p>
-            <p className={css(MODAL_STYLE.login)}>
-              <a href={getOauthRedirect(csrf)}>
-                <button className={css(GITHUB_STYLE.btnGithub)}>
-                  Continue with GitHub
-                </button>
-              </a>
-            </p>
-            <p className={css(MODAL_STYLE.license)}>
-              Only save songs you want to share. See the{" "}
-              <a
-                href="privacy-statement.html"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                privacy statement
-              </a>
-              .{" "}
-              <a href="dmca.html" target="_blank" rel="noopener noreferrer">
-                DMCA
-              </a>
-            </p>
-          </div>
-        </div>
-      </ReactModal>
+      <ModalWrapper onClose={onHide}>
+        <TwoColumnModal
+          fullBleedSidebar={false}
+          sidebar={
+            <View>
+              <Title style={{ marginBottom: 16 }}>
+                The home for beautiful sheet music. 100% free.
+              </Title>
+              <Body style={{ marginBottom: 16 }}>
+                Save songs to your Hacklily library to access them anywhere and
+                share them with others.
+              </Body>
+              <Body style={{ color: Color.white64, marginBottom: 16 }}>
+                Songs you save will be <strong>public</strong> on GitHub and
+                Hacklily. If you do not have a{" "}
+                <Link
+                  light={true}
+                  href="https://help.github.com/articles/github-glossary/#repository"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  repo
+                </Link>{" "}
+                named <code>sheet-music</code>, Hacklily will create one.
+              </Body>
+              <Body style={{ color: Color.white64 }}>
+                Only save songs you want to share. See the{" "}
+                <Link
+                  light={true}
+                  href="privacy-statement.html"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  privacy statement
+                </Link>{" "}
+                and{" "}
+                <Link
+                  light={true}
+                  href="dmca.html"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  DMCA policy
+                </Link>
+                .
+              </Body>
+            </View>
+          }
+          content={
+            <div>
+              <HeadingSmall style={{ marginTop: 16, marginBottom: 16 }}>
+                Sign in now to manage your sheet music library.
+              </HeadingSmall>
+              <View style={{ marginBottom: 16 }}>
+                <Link href={getOauthRedirect(csrf)}>
+                  <button className={css(GITHUB_STYLE.btnGithub)}>
+                    Continue with GitHub
+                  </button>
+                </Link>
+              </View>
+              <Footnote>
+                <Tooltip
+                  placement="bottom"
+                  content="Don't panic — creating a GitHub account is easy! Click 'Continue with GitHub', and then choose 'Create an account'."
+                >
+                  <Link>No GitHub account?</Link>
+                </Tooltip>
+              </Footnote>
+            </div>
+          }
+        />
+      </ModalWrapper>
     );
   }
 }

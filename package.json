@@ -14,7 +14,18 @@
     "react-dom": "16.5.1",
     "react-modal": "3.5.1",
     "react-monaco-editor": "0.18.0",
-    "react": "16.5.1"
+    "react": "16.5.1",
+    "react-router-dom": "4.3.1",
+    "@khanacademy/wonder-blocks-button": "2.2.0",
+    "@khanacademy/wonder-blocks-core": "1.2.2",
+    "@khanacademy/wonder-blocks-color": "1.0.9",
+    "@khanacademy/wonder-blocks-typography": "1.0.9",
+    "@khanacademy/wonder-blocks-modal": "1.1.6",
+    "@khanacademy/wonder-blocks-link": "2.0.4",
+    "@khanacademy/wonder-blocks-tooltip": "1.0.7",
+    "@khanacademy/wonder-blocks-progress-spinner": "1.0.6",
+    "popper.js": "1.14.4",
+    "react-popper": "1.0.2"
   },
   "devDependencies": {
     "@types/d3-drag": "^1.2.1",

@@ -221,7 +221,6 @@ interface Props extends QueryProps {
 
 interface State {
   cleanSongs: { [key: string]: Song };
-  connectToGitHubReason: string | null;
   defaultSelection: monacoEditor.ISelection | null;
   interstitialChanges: {} | null;
 
@@ -286,7 +285,6 @@ export default class App extends React.PureComponent<Props, State> {
         src: DEFAULT_SONG,
       },
     },
-    connectToGitHubReason: null,
     defaultSelection: null,
     interstitialChanges: null,
     localFiles: null,
@@ -818,7 +816,6 @@ export default class App extends React.PureComponent<Props, State> {
 
   private handleHideLogin = (): void => {
     this.setState({
-      connectToGitHubReason: null,
       login: false,
     });
   };
@@ -1091,7 +1088,6 @@ export default class App extends React.PureComponent<Props, State> {
 
     if (!this.props.auth && !isClean) {
       this.setState({
-        connectToGitHubReason: "Connect to GitHub to save this song\u2026",
         login: true,
       });
     } else {
@@ -1105,7 +1101,6 @@ export default class App extends React.PureComponent<Props, State> {
   private handleShowPublish = (): void => {
     if (!this.props.auth) {
       this.setState({
-        connectToGitHubReason: "Connect to GitHub to share this song\u2026",
         login: true,
       });
     } else if (this.props.edit) {
@@ -1120,8 +1115,6 @@ export default class App extends React.PureComponent<Props, State> {
   private handleShowSaveAs = (): void => {
     if (!this.props.auth) {
       this.setState({
-        connectToGitHubReason:
-          "Connect to GitHub to save a copy of this song\u2026",
         login: true,
       });
       this.props.setQuery(
@@ -1140,7 +1133,6 @@ export default class App extends React.PureComponent<Props, State> {
 
   private handleSignIn = (): void => {
     this.setState({
-      connectToGitHubReason: null,
       login: true,
       menu: false,
       publish: false,
@@ -1321,7 +1313,6 @@ export default class App extends React.PureComponent<Props, State> {
     const {
       locked,
       login,
-      connectToGitHubReason,
       menu,
       publish,
       interstitialChanges,
@@ -1361,7 +1352,6 @@ export default class App extends React.PureComponent<Props, State> {
         return (
           <ModalLogin
             key={location.href /* force new csrf on url change */}
-            connectToGitHubReason={connectToGitHubReason}
             onHide={this.handleHideLogin}
             csrf={csrf}
             setCSRF={setCSRF}

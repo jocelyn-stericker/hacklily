@@ -18,6 +18,7 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
  */
 
+import { CircularSpinner } from "@khanacademy/wonder-blocks-progress-spinner";
 import { css } from "aphrodite";
 import React from "react";
 
@@ -420,7 +421,10 @@ export default class Header extends React.PureComponent<Props> {
 
     return (
       <div className={css(HEADER_STYLE.headerGroupWrapper)}>
-        <i className="fa fa-spinner fa-spin" aria-hidden={true} />
+        <CircularSpinner
+          size="xsmall"
+          style={{ display: "inline-block", marginTop: 6 }}
+        />
         <div style={{ display: "inline-block", width: 10 }} />
       </div>
     );

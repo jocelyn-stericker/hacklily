@@ -1,96 +1,100 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="shortcut icon" href="%PUBLIC_URL%/favicon.ico">
-    <link rel="stylesheet" href="%PUBLIC_URL%/font-awesome/css/font-awesome.min.css">
-    <meta name="description" content="Hacklily is an online LilyPond-based sheet-music editor and publishing tool.">
-    <title>Hacklily &mdash; sheet music editor</title>
-    <style type="text/css">
-      /*
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="shortcut icon" href="%PUBLIC_URL%/favicon.ico">
+  <link rel="stylesheet" href="%PUBLIC_URL%/font-awesome/css/font-awesome.min.css">
+  <link href="https://fonts.googleapis.com/css?family=Lato:400,700" rel="stylesheet">
+  <meta name="description" content="Hacklily is an online LilyPond-based sheet-music editor and publishing tool.">
+  <title>Hacklily &mdash; sheet music editor</title>
+  <style type="text/css">
+    /*
         NOTE: only styles needed for the inital render of Hacklily
         should be included here!
 
         Most styles should instead by managed by aphrodite and go in styles.tsx
       */
-      body {
-        margin: 0;
-        padding: 0;
-        font-family: sans-serif;
-      }
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: Lato, sans-serif;
+    }
 
-      .App {
-        bottom: 0;
-        left: 0;
-        overflow: hidden;
-        position: absolute;
-        right: 0;
-        top: 0;
-      }
+    .App {
+      bottom: 0;
+      left: 0;
+      overflow: hidden;
+      position: absolute;
+      right: 0;
+      top: 0;
+    }
 
-      .content {
-        background-color: #1e1e1e;
-        height: calc(100% - 50px);
-        position: absolute;
-        width: 100%;
-      }
+    .content {
+      background-color: #1e1e1e;
+      height: calc(100% - 50px);
+      position: absolute;
+      width: 100%;
+    }
 
-      .App.standalone .content {
-        height: 100%;
-      }
+    .App.standalone .content {
+      height: 100%;
+    }
 
-      .monaco {
-        height: 100%;
-      }
+    .monaco {
+      height: 100%;
+    }
 
-      .header {
-        background-color: #efefef;
-        border-bottom: 1px solid black;
-        display: flex;
-        font-family: Helvetica, Arial, sans-serif;
-        height: 50px;
-        min-width: 321px;
-        width: 100%;
-      }
+    .header {
+      background-color: #efefef;
+      border-bottom: 1px solid black;
+      display: flex;
+      font-family: Lato, sans-serif;
+      height: 50px;
+      min-width: 321px;
+      width: 100%;
+    }
 
-      /* monaco doesn't like aphrodite's mangled names */
-      .lilymonaco-inline-error {
-        background-color: red;
-        color: black !important;
-      }
+    /* monaco doesn't like aphrodite's mangled names */
+    .lilymonaco-inline-error {
+      background-color: red;
+      color: black !important;
+    }
 
-      button {
-        background: none;
-        border: none;
-        cursor: pointer;
-        padding: 0;
-      }
+    button {
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 0;
+    }
 
-      .ReactModal__Body--open {
-        min-height: 600px;
-        overflow: scroll;
-      }
-    </style>
-    <% if (htmlWebpackPlugin.options.isStandalone) { %>
-    <!-- Qt API for communicating with standalone wrapper. -->
-    <script src="qrc:/qtwebchannel/qwebchannel.js"></script>
-    <% } %>
+    .ReactModal__Body--open {
+      min-height: 600px;
+      overflow: scroll;
+    }
+  </style>
+  <% if (htmlWebpackPlugin.options.isStandalone) { %>
+  <!-- Qt API for communicating with standalone wrapper. -->
+  <script src="qrc:/qtwebchannel/qwebchannel.js"></script>
+  <% } %>
 
-  </head>
-  <body>
-    <div id="root">
-      <div class="App" style="z-index: -2;">
-        <div class="header"></div>
-        <div class="content" style="width: 50%;">
-          <div class="monaco"></div>
-        </div>
+</head>
+
+<body>
+  <div id="root">
+    <div class="App" style="z-index: -2;">
+      <div class="header"></div>
+      <div class="content" style="width: 50%;">
+        <div class="monaco"></div>
       </div>
     </div>
-    <div style="position: absolute; bottom: 10px; z-index: -1;">
-      <a href="%PUBLIC_URL%/about-javascript.html" rel="jslicense" style="color: white;">
-        JavaScript license information
-       </a>
-    </div>
-  </body>
+  </div>
+  <div style="position: absolute; bottom: 10px; z-index: -1;">
+    <a href="%PUBLIC_URL%/about-javascript.html" rel="jslicense" style="color: white;">
+      JavaScript license information
+    </a>
+  </div>
+</body>
+
 </html>
