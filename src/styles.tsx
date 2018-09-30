@@ -506,6 +506,7 @@ export const LOGS_STYLE = StyleSheet.create({
     position: "absolute",
     right: 20,
     bottom: 10,
+    backgroundColor: "white",
   },
   mask: {
     bottom: 0,
