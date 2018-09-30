@@ -50,7 +50,7 @@ export interface Auth {
 
 export const CLIENT_ID: string | undefined =
   process.env.REACT_APP_GITHUB_CLIENT_ID;
-const SCOPE: string = "repo";
+const SCOPE: string = "public_repo";
 export function getOauthRedirect(csrf: string): string {
   return (
     "https://github.com/login/oauth/authorize" +
