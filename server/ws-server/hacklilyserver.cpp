@@ -566,6 +566,7 @@ void HacklilyServer::_doRender(HacklilyServerRequest request, int rendererId) {
     QJsonDocument requestDoc;
     requestDoc.setObject(requestObj);
     auto json = requestDoc.toJson(QJsonDocument::Compact);
+    qDebug() << json;
     json += "\n";
     _renderers[rendererId]->write(json.data());
     QTimer::singleShot(6000, this, &HacklilyServer::_checkForHangingRender);

@@ -1,0 +1,27 @@
+[package]
+name = "rs_server"
+version = "0.1.0"
+authors = ["Joshua Netterfield <joshua@nettek.ca>"]
+edition = "2018"
+
+[dependencies]
+clap = "2.32.0"
+env_logger = "0.6.0"
+futures-preview = {version = "0.3.0-alpha.9", features = ["tokio-compat"] }
+libc = "0.2.43"
+log = "0.4.6"
+nix = "0.11.0"
+serde = "1.0.80"
+serde_derive = "1.0.80"
+serde_json = "1.0.33"
+rand = "0.5"
+tokio = {version = "0.1.11",  features = ["async-await-preview"]}
+tokio-channel = "0.1.0"
+tokio-io = "0.1.10"
+tokio-process = "0.2.3"
+tokio-signal = "0.2.6"
+tokio-timer = "0.2.7"
+tokio-tungstenite = "0.6.0"
+url = "1.7.2"
+url_serde = "0.2.0"
+uuid = {version = "0.7.1", features = ["serde", "v4"]}

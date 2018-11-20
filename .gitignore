@@ -134,3 +134,6 @@ Thumbs.db
 # that we want to host, but not store in this repo
 /public/react-app.rcc.gz
 /public/3rdpartylicenses.txt
+
+# Rust
+/server/rs-server/target/
