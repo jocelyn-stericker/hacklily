@@ -20,10 +20,10 @@ use futures::future::FutureExt;
 use futures::select;
 use std::panic::AssertUnwindSafe;
 use std::pin::Unpin;
-use std::time::Duration;
+use std::time::{Duration, Instant};
 use tokio::prelude::*;
 use tokio_channel::mpsc;
-use tokio_timer::sleep;
+use tokio_timer::{sleep, Interval};
 use tokio_tungstenite::tungstenite;
 use tokio_tungstenite::tungstenite::protocol::Message;
 use url::Url;
@@ -71,6 +71,7 @@ struct RenderResponse {
 
 enum Event {
     WsWorkerMethod(WsWorkerMethod),
+    PingNeeded,
     QuitSignal(QuitSignal),
 }
 
@@ -136,6 +137,12 @@ async fn ws_worker_client_impl(
 
             let parent_quit_sink = quit_sink.clone();
 
+            let ping_interval = Interval::new(Instant::now(), Duration::from_millis(500))
+                .map(|_| Event::PingNeeded {})
+                .map_err(|err| {
+                    Error::CommandSourceError("Timer failure: ".to_owned() + &err.to_string())
+                });
+
             let request_stream = stream
                 .filter_map(|req| -> Option<WsWorkerMethod> {
                     match req {
@@ -149,6 +156,7 @@ async fn ws_worker_client_impl(
                 .map_err(|err| Error::CommandSourceError("Failure: ".to_owned() + &err.to_string()))
                 .map(Event::WsWorkerMethod)
                 .select(quit_stream)
+                .select(ping_interval)
                 .take_while(|ev| {
                     future::ok(match ev {
                         Event::QuitSignal(_) => false,
@@ -209,6 +217,19 @@ async fn ws_worker_client_impl(
                                     );
                                 }),
                             ))
+                        }
+                        Event::PingNeeded => {
+                            let mut sink = sink.clone();
+                            tokio::spawn_async(
+                                async move {
+                                    let response = Message::Ping(vec![0x0]);
+                                    trace!("Ping");
+                                    if let Err(err) = await!(sink.send_async(response)) {
+                                        error!("Could not ping: {}", err);
+                                    }
+                                },
+                            );
+                            None
                         }
                         Event::QuitSignal(_) => None,
                     }
