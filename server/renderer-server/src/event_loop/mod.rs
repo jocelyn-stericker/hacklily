@@ -56,6 +56,8 @@ fn init_and_attach_command_source(config: &Config) -> impl Stream<Item = Event, 
                         .map(|_| ())
                         .unwrap_or(());
 
+                        let mut died_on_purpose = false;
+
                         while let Some(request) = await!(request_stream.next()) {
                             let event_sender = event_sender.clone();
                             match request {
@@ -74,15 +76,18 @@ fn init_and_attach_command_source(config: &Config) -> impl Stream<Item = Event, 
                                         .map(|_| ())
                                         .unwrap_or(());
 
+                                    died_on_purpose = true;
                                     break;
                                 }
                             }
                         }
 
-                        // Send a potentially extraneous GracefullyQuit, in case we died.
-                        await!(event_sender.send(Event::GracefullyQuit))
-                            .map(|_| ())
-                            .unwrap_or(());
+                        if !died_on_purpose {
+                            // Send a potentially extraneous GracefullyQuit, in case we died.
+                            await!(event_sender.send(Event::GracefullyQuit))
+                                .map(|_| ())
+                                .unwrap_or(());
+                        }
                     }
                 }
             };
