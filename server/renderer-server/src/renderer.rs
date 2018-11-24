@@ -1,8 +1,27 @@
-use futures::compat::Future01CompatExt;
+/**
+ * @license
+ * This file is part of Hacklily, a web-based LilyPond editor.
+ * Copyright (C) 2018 - present Joshua Netterfield <joshua@nettek.ca>
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
 use futures::future::{FutureExt, FutureObj, TryFutureExt};
 use futures::select;
 use serde_json;
+use std::cmp::Ordering;
 use std::io::BufReader;
+use std::panic::AssertUnwindSafe;
 use std::sync::{Arc, Mutex};
 use std::time::Duration;
 use tokio_io::io::{read_until, write_all};
@@ -19,6 +38,7 @@ pub struct RendererMeta {
     pub version: Version,
     pub image: String,
     pub timeout: u64,
+    pub num_renders: u64,
 }
 
 #[derive(Debug)]
@@ -27,6 +47,27 @@ pub struct ReadyRenderContainer {
     container: ContainerHandle,
     child: Child,
 }
+
+impl Ord for ReadyRenderContainer {
+    // We want to use new containers before old containers.
+    fn cmp(&self, other: &ReadyRenderContainer) -> Ordering {
+        other.meta.num_renders.cmp(&self.meta.num_renders)
+    }
+}
+
+impl PartialOrd for ReadyRenderContainer {
+    fn partial_cmp(&self, other: &ReadyRenderContainer) -> Option<Ordering> {
+        Some(self.cmp(&other))
+    }
+}
+
+impl PartialEq for ReadyRenderContainer {
+    fn eq(&self, other: &ReadyRenderContainer) -> bool {
+        self.meta.num_renders == other.meta.num_renders
+    }
+}
+
+impl Eq for ReadyRenderContainer {}
 
 static LILYPOND_INCLUDES: &'static [&'static str] = &[
     "Welcome-to-LilyPond-MacOS.ly",
@@ -92,6 +133,9 @@ static LILYPOND_INCLUDES: &'static [&'static str] = &[
     "voice-tkit.ly",
 ];
 
+// If this line does not exist in the output, the Hacklily LilyPond REPL is likely dead.
+const CANARY_REPL_LINE: &str = "Processing `/tmp/lyp/wrappers/hacklily.ly'";
+
 /**
  * Actually process the request.
  *
@@ -118,9 +162,9 @@ async fn handle_request_impl(
             // HACK: lys doesn't handle global includes, so lets handle them ourselves by
             // outsmarting their regex.
             for include in LILYPOND_INCLUDES {
-                let to_replace = "\\include \"".to_owned() + &include + &"\"";
+                let to_replace = "\\include \"".to_owned() + &include + "\"";
                 if request.src.contains(&to_replace) {
-                    let replace_with = "\\include  \"".to_owned() + &include + &"\"";
+                    let replace_with = "\\include  \"".to_owned() + &include + "\"";
                     request.src = request.src.replace(&to_replace, &replace_with);
                 }
             }
@@ -157,12 +201,18 @@ async fn handle_request_impl(
                     ))
                 })?;
 
-            String::from_utf8(response_bytes).or_else(|err| {
+            let output = String::from_utf8(response_bytes).or_else(|err| {
                 Err(Error::RenderError(
                     "Internal error: read non-utf8 bytes from container: ".to_owned()
                         + &err.to_string(),
                 ))
-            })?
+            })?;
+
+            if output.contains(CANARY_REPL_LINE) {
+                output
+            } else {
+                return Err(Error::RenderError("Canary died.".to_owned()));
+            }
         }
         None => Err(Error::RenderError(
             "Internal error: child is missing stdout".to_owned(),
@@ -187,14 +237,23 @@ async fn try_handle_request(
     request: Request,
     timeout: Duration,
 ) -> Result<(Child, String), Error> {
-    let mut response = Box::pinned(handle_request_impl(child, request));
-    let mut timeout = sleep(timeout).compat();
+    let mut response = AssertUnwindSafe(Box::pinned(handle_request_impl(child, request)))
+        .catch_unwind()
+        .map(|e| match e {
+            Err(_) => Err(Error::RenderPanic),
+            Ok(o) => o,
+        });
+    let mut timeout = Box::pinned(async { await!(sleep(timeout)) });
 
     select! {
         response => response,
         timeout => Err(Error::RenderError("Timeout: the container is unresponsive".to_owned())),
     }
 }
+
+// An error when we crashed, but we want to try again, because the container has been used
+// many times before, and so the crash could have been from previous renders.
+pub struct DirtyCrashError {}
 
 impl ReadyRenderContainer {
     /**
@@ -211,7 +270,10 @@ impl ReadyRenderContainer {
         self,
         request: Request,
         timeout: Duration,
-    ) -> (RenderContainer, FutureObj<'static, Response>) {
+    ) -> (
+        RenderContainer,
+        FutureObj<'static, Result<Response, DirtyCrashError>>,
+    ) {
         // The actual processing is done in handle_request_impl, which is called by try_handle_request.
         let result = try_handle_request(self.child, request, timeout)
             .map_ok(|res| (Arc::new(Mutex::new(Option::Some(res.0))), res.1))
@@ -221,7 +283,38 @@ impl ReadyRenderContainer {
         // The rest of this function pushes data around and massages the return type to have
         // container-oriented and requester-oriented values.
 
+        let is_fresh_container = self.meta.num_renders == 0;
+
         let result_copy = result.clone().compat();
+        let extract_result = async move {
+            match await!(result_copy) {
+                Ok(result_copy) => match serde_json::from_str::<Response>(&result_copy.1) {
+                    Ok(result_copy) => Ok(Response {
+                        files: result_copy.files,
+                        // HACK: After the first output, lys doubles newlines!
+                        logs: result_copy.logs.replace("\n\n", "\n"),
+                        midi: result_copy.midi,
+                    }),
+                    Err(err) => Ok(Response {
+                        files: vec![],
+                        // TODO: in this case, we should kill the renderer!
+                        logs: "Could not parse response: ".to_owned() + &err.to_string(),
+                        midi: "".to_owned(),
+                    }),
+                },
+                Err(Error::RenderError(_)) if !is_fresh_container => {
+                    warn!("Dirty crash. Will requeue.");
+                    Err(DirtyCrashError {})
+                }
+                Err(err) => Ok(Response {
+                    files: vec![],
+                    logs: "Could not render file: ".to_owned() + &err.to_string(),
+                    midi: "".to_owned(),
+                }),
+            }
+        };
+
+        let result_copy = result.compat();
         let child = async move {
             // If the result resolves to an Err, we'll resolve to that error
             Ok(await!(result_copy)?
@@ -232,26 +325,6 @@ impl ReadyRenderContainer {
                 .expect("This closure is the only consumer of this mutex.")
                 .take()
                 .expect("This closure should only be called once."))
-        };
-
-        let result_copy = result.compat();
-        let extract_result = async move {
-            match await!(result_copy) {
-                Ok(result_copy) => match serde_json::from_str(&result_copy.1) {
-                    Ok(result_copy) => result_copy,
-                    Err(err) => Response {
-                        files: vec![],
-                        // TODO: in this case, we should kill the renderer!
-                        logs: "Could not parse response: ".to_owned() + &err.to_string(),
-                        midi: "".to_owned(),
-                    },
-                },
-                Err(err) => Response {
-                    files: vec![],
-                    logs: "Could not render file: ".to_owned() + &err.to_string(),
-                    midi: "".to_owned(),
-                },
-            }
         };
 
         (
@@ -284,7 +357,7 @@ pub enum RenderContainer {
         ContainerHandle,
         FutureObj<'static, Result<Child, Error>>,
     ),
-    Ready(ReadyRenderContainer),
+    Ready(Box<ReadyRenderContainer>),
     Dead(RendererMeta, Error),
     Stopped(RendererMeta),
 }
@@ -294,7 +367,7 @@ pub enum RenderContainer {
  */
 #[derive(Debug)]
 pub enum TerminalRenderContainer {
-    Ready(ReadyRenderContainer),
+    Ready(Box<ReadyRenderContainer>),
     Dead(RendererMeta, Error),
     Stopped(RendererMeta),
 }
@@ -323,19 +396,25 @@ impl RenderContainer {
     pub async fn next(self) -> RenderContainer {
         match self {
             RenderContainer::Creating(meta, next) => match await!(next) {
-                Ok((container, child)) => RenderContainer::Ready(ReadyRenderContainer {
+                Ok((container, child)) => RenderContainer::Ready(Box::new(ReadyRenderContainer {
                     meta,
                     container,
                     child,
-                }),
+                })),
                 Err(err) => RenderContainer::Dead(meta, err),
             },
             RenderContainer::Busy(meta, mut container, next) => match await!(next) {
-                Ok(child) => RenderContainer::Ready(ReadyRenderContainer {
-                    meta,
+                Ok(child) => RenderContainer::Ready(Box::new(ReadyRenderContainer {
+                    meta: RendererMeta {
+                        id: meta.id,
+                        version: meta.version,
+                        image: meta.image,
+                        timeout: meta.timeout,
+                        num_renders: meta.num_renders + 1,
+                    },
                     container,
                     child,
-                }),
+                })),
                 Err(err) => {
                     if let Err(e) = await!(container.close()) {
                         error!(
@@ -343,7 +422,16 @@ impl RenderContainer {
                             e
                         );
                     }
-                    RenderContainer::Dead(meta, err)
+                    RenderContainer::Dead(
+                        RendererMeta {
+                            id: meta.id,
+                            version: meta.version,
+                            image: meta.image,
+                            timeout: meta.timeout,
+                            num_renders: 0,
+                        },
+                        err,
+                    )
                 }
             },
             RenderContainer::Ready(ready_render_container) => {

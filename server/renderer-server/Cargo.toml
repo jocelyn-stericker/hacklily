@@ -1,10 +1,19 @@
 [package]
-name = "rs_server"
+name = "renderer_server"
 version = "0.1.0"
 authors = ["Joshua Netterfield <joshua@nettek.ca>"]
 edition = "2018"
 
+[lib]
+name = "renderer_lib"
+path = "src/lib.rs"
+
+[[bin]]
+name = "renderer_server"
+path = "src/main.rs"
+
 [dependencies]
+ansi_term = "0.11.0"
 clap = "2.32.0"
 env_logger = "0.6.0"
 futures-preview = {version = "0.3.0-alpha.9", features = ["tokio-compat"] }

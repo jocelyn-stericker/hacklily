@@ -695,9 +695,10 @@ dependencies = [
 ]
 
 [[package]]
-name = "rs_server"
+name = "renderer_server"
 version = "0.1.0"
 dependencies = [
+ "ansi_term 0.11.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "clap 2.32.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "env_logger 0.6.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "futures-preview 0.3.0-alpha.9 (registry+https://github.com/rust-lang/crates.io-index)",

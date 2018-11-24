@@ -1,4 +1,5 @@
 #![feature(await_macro, async_await, futures_api, pin)]
+#![warn(clippy::all)]
 /**
  * @license
  * This file is part of Hacklily, a web-based LilyPond editor.
@@ -22,28 +23,19 @@
 extern crate clap;
 
 #[macro_use]
-extern crate tokio;
-
-#[macro_use]
 extern crate log;
 
-#[macro_use]
-extern crate serde_derive;
-
+use ansi_term::Colour::{Green, Red};
 use clap::{App, Arg, SubCommand};
+use std::env;
+use std::path::Path;
 
-mod container;
-mod error;
-mod event_loop;
-mod renderer;
-mod renderer_manager;
-mod request;
-mod ws_worker_client;
+extern crate renderer_lib;
+
+use renderer_lib::{event_loop, CommandSourceConfig, Config};
 
 fn main() {
-    env_logger::init();
-
-    let mut app = App::new("Hacklily Renderer Server")
+    let matches = App::new("Hacklily Renderer Server")
         .version("0.1")
         .author("Joshua Netterfield <joshua@nettek.ca>")
         .about("Renders LilyPond music efficiently in containers.")
@@ -87,8 +79,15 @@ fn main() {
                 .value_name("MSEC")
                 .takes_value(true),
         )
+        .arg(
+            Arg::with_name("v")
+                .long("verbose")
+                .short("v")
+                .multiple(true)
+                .help("Sets the level of verbosity (-v = warn, -vv = info, -vvv = debug, -vvvv = trace)"),
+        )
         .subcommand(
-            SubCommand::with_name("worker")
+            SubCommand::with_name("ws-worker")
                 .about("Offer computing power to a Hacklily cordinator.")
                 .arg(
                     Arg::with_name("coordinator-address")
@@ -97,11 +96,34 @@ fn main() {
                         .required(true)
                         .validator(is_url),
                 ),
-        );
+        )
+        .subcommand(
+            SubCommand::with_name("batch")
+                .about("Render test cases from a file")
+                .arg(
+                    Arg::with_name("test_path")
+                        .help("Path to a test file")
+                        .index(1)
+                        .required(true)
+                        .validator(file_exists),
+                )
+        )
+        .get_matches();
 
-    let matches = app.clone().get_matches();
+    env_logger::Builder::new()
+        .parse(&env::var("RUST_LOG").unwrap_or_else(|_| {
+            match matches.occurrences_of("v") {
+                0 => "error",
+                1 => "warn",
+                2 => "info",
+                3 => "debug",
+                4 | _ => "trace",
+            }
+            .to_owned()
+        }))
+        .init();
 
-    let config = crate::event_loop::Config {
+    let config = Config {
         stable_docker_tag: matches
             .value_of("stable-docker-tag")
             .expect("Required config option stable-docker-tag not found.")
@@ -120,32 +142,53 @@ fn main() {
             .expect("Required config option render-timeout-msec malformed or not found."),
 
         command_source: match matches.subcommand_name() {
-            Some("worker") => crate::event_loop::CommandSource::Worker {
+            Some("ws-worker") => CommandSourceConfig::Worker {
                 coordinator: url::Url::parse(
                     &matches
-                        .subcommand_matches("worker")
+                        .subcommand_matches("ws-worker")
                         .unwrap()
                         .value_of("coordinator-address")
                         .expect("Missing address (this field was marked as required above)"),
                 )
                 .expect("Invalid coordinator URL (this field was validated above)"),
             },
+            Some("batch") => CommandSourceConfig::Batch {
+                path: Path::new(
+                    &matches
+                        .subcommand_matches("batch")
+                        .unwrap()
+                        .value_of("test_path")
+                        .expect("Missing test_path (this field was marked as required above)"),
+                )
+                .to_owned(),
+            },
             _ => {
-                println!("ERROR: A command is required.");
-                app.print_long_help().unwrap();
+                eprintln!("{}: A subcommand is required.", Red.paint("error"));
+                eprintln!("");
+                eprintln!("{}", matches.usage());
+                eprintln!("");
+                eprintln!("For more information try {}", Green.paint("--help"));
                 ::std::process::exit(1);
             }
         },
     };
 
-    tokio::run_async(crate::event_loop::event_loop(config));
+    tokio::run_async(event_loop(config));
 
     info!("Bye.")
 }
 
 fn is_url(val: String) -> Result<(), String> {
     if let Err(_error) = url::Url::parse(&val) {
-        Err(String::from("this must be a valid URL"))
+        Err(val + " is not a valid URL")
+    } else {
+        Ok(())
+    }
+}
+
+fn file_exists(val: String) -> Result<(), String> {
+    if !Path::new(&val).exists() {
+        Err(val + " does not exist")
     } else {
         Ok(())
     }

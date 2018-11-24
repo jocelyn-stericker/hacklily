@@ -92,10 +92,6 @@ impl ContainerHandle {
             let container_id = String::from_utf8_lossy(&create_output.stdout)
                 .trim()
                 .to_string();
-            info!(
-                "created container with ID {} (image={})",
-                &container_id, &image
-            );
 
             let create_output_stderr = String::from_utf8_lossy(&create_output.stderr)
                 .trim()
@@ -126,6 +122,11 @@ impl ContainerHandle {
 
                 Err(Error::ContainerInitError(err_msg))?;
             }
+
+            info!(
+                "created container with ID {} (image={})",
+                &container_id, &image
+            );
 
             let handle = ContainerHandle {
                 id: container_id,
@@ -209,6 +210,7 @@ impl Drop for ContainerHandle {
                 &self.id
             );
 
+            // NOTE: panics will not be handled in this cleanup.
             tokio::spawn_async(
                 async move {
                     await!(_close_container(container_id))

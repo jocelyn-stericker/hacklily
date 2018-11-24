@@ -136,4 +136,4 @@ Thumbs.db
 /public/3rdpartylicenses.txt
 
 # Rust
-/server/rs-server/target/
+/server/renderer-server/target/

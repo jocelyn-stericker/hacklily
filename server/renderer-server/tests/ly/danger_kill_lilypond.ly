@@ -1,0 +1,1 @@
+#(system "killall lilypond")

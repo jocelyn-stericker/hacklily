@@ -16,18 +16,22 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+use futures::future::FutureExt;
+use futures::select;
+use std::panic::AssertUnwindSafe;
+use std::pin::Unpin;
+use std::time::Duration;
 use tokio::prelude::*;
 use tokio_channel::mpsc;
+use tokio_timer::sleep;
 use tokio_tungstenite::tungstenite;
 use tokio_tungstenite::tungstenite::protocol::Message;
 use url::Url;
 use uuid::Uuid;
 
+use crate::command_source::{QuitSignal, QuitSink, RequestStream, ResponseCallback};
 use crate::error::Error;
 use crate::request::{Backend, Request, Response, Version};
-
-#[derive(Debug)]
-pub struct QuitSignal {}
 
 #[derive(Debug, Serialize, Deserialize)]
 struct IHazComputesParams {
@@ -70,61 +74,55 @@ enum Event {
     QuitSignal(QuitSignal),
 }
 
-//     match prom {
-//         Ok(promise) => {
-//             info!("Got lock!");
-//             if let Err(_sink_err) = await!(promise) {
-//                 error!("Could not send response: SinkError");
-//             }
+async fn send_hello(
+    sink: &mut (impl Sink<SinkItem = Message, SinkError = tungstenite::error::Error> + Unpin),
+    max_jobs: u64,
+) -> Result<(), Error> {
+    let cmd = serde_json::to_string(&WsCoordinatorMethod::IHazComputes {
+        id: Uuid::new_v4(),
+        params: IHazComputesParams { max_jobs },
+    })
+    .or_else(|err| {
+        Err(Error::CommandSourceError(
+            "Could not build hello JSON command: ".to_owned() + &err.to_string(),
+        ))
+    })?;
 
-//             info!("Sent!");
-//         }
-//         Err(_poisoned) => {
-//             error!("Cannot send response: Sink mutex poisoned.");
-//         }
-//     }
-// }
+    let cmd = Message::Text(cmd);
 
-pub async fn ws_worker_client(
+    await!(sink.send_async(cmd)).or_else(|err| {
+        Err(Error::CommandSourceError(
+            "Could not send message to coordinator: ".to_owned() + &err.to_string(),
+        ))
+    })?;
+
+    Ok(())
+}
+
+/// Tries connecting to a coordinator, then returns a stream of events.
+///
+/// This does not time out (use ws_worker_client_impl for the timeout)
+async fn ws_worker_client_impl(
     coordinator: Url,
     max_jobs: u64,
-) -> Result<
-    (
-        impl Stream<Item = (Request, Box<Fn(Response) -> () + Send + 'static>), Error = Error>,
-        impl Sink<SinkItem = QuitSignal, SinkError = tokio_channel::mpsc::SendError<QuitSignal>>,
-    ),
-    Error,
-> {
+) -> Result<(RequestStream, QuitSink), Error> {
     let (quit_sink, quit_stream) = mpsc::channel::<QuitSignal>(50);
     let quit_stream = quit_stream
         .map_err(|_| Error::CommandSourceError("Quit sink dropped.".to_owned()))
-        .map(|quit| Event::QuitSignal(quit));
+        .map(Event::QuitSignal);
+
+    debug!("Connecting to coordinator {}", &coordinator);
 
     match await!(tokio_tungstenite::connect_async(coordinator)) {
         Ok((duplex, _handshake_response)) => {
             let (mut sink, stream) = duplex.split();
+            debug!("Connected to server");
 
-            let cmd = serde_json::to_string(&WsCoordinatorMethod::IHazComputes {
-                id: Uuid::new_v4(),
-                params: IHazComputesParams { max_jobs },
-            })
-            .or_else(|err| {
-                Err(Error::CommandSourceError(
-                    "Could not build hello JSON command: ".to_owned() + &err.to_string(),
-                ))
-            })?;
-
-            let cmd = Message::Text(cmd);
-
-            await!(sink.send_async(cmd)).or_else(|err| {
-                Err(Error::CommandSourceError(
-                    "Could not send message to coordinator: ".to_owned() + &err.to_string(),
-                ))
-            })?;
+            await!(send_hello(&mut sink, max_jobs))?;
 
             // Create a cloneable sink that forwards to the sink.
             let sink = {
-                let (multi_sink, ab_stream) = mpsc::channel::<Message>(1);
+                let (multi_sink, ab_stream) = mpsc::channel::<Message>(50);
                 tokio::spawn(
                     ab_stream
                         .map_err(|()| -> tungstenite::error::Error { unreachable!() })
@@ -136,6 +134,8 @@ pub async fn ws_worker_client(
                 multi_sink
             };
 
+            let parent_quit_sink = quit_sink.clone();
+
             let request_stream = stream
                 .filter_map(|req| -> Option<WsWorkerMethod> {
                     match req {
@@ -146,8 +146,8 @@ pub async fn ws_worker_client(
                         _ => None,
                     }
                 })
-                .map_err(|err| Error::CommandSourceError("Failure".to_owned() + &err.to_string()))
-                .map(|method| Event::WsWorkerMethod(method))
+                .map_err(|err| Error::CommandSourceError("Failure: ".to_owned() + &err.to_string()))
+                .map(Event::WsWorkerMethod)
                 .select(quit_stream)
                 .take_while(|ev| {
                     future::ok(match ev {
@@ -155,25 +155,29 @@ pub async fn ws_worker_client(
                         _ => true,
                     })
                 })
-                .filter_map(
-                    move |req| -> Option<(Request, Box<Fn(Response) -> () + 'static + Send>)> {
-                        match req {
-                            Event::WsWorkerMethod(WsWorkerMethod::Render { id, params }) => {
-                                let sink = sink.clone();
+                .filter_map(move |req| -> Option<(Request, ResponseCallback)> {
+                    match req {
+                        Event::WsWorkerMethod(WsWorkerMethod::Render { id, params }) => {
+                            let sink = sink.clone();
+                            info!("Received request {}", id);
+                            let quit_sink = quit_sink.clone();
 
-                                Some((
-                                    Request {
-                                        id: id.clone(),
-                                        backend: params.backend,
-                                        src: params.src,
-                                        version: params.version,
-                                    },
-                                    Box::new(move |response: Response| -> () {
-                                        let id = id.clone();
-                                        let mut sink = sink.clone();
+                            Some((
+                                Request {
+                                    id: id.clone(),
+                                    backend: params.backend,
+                                    src: params.src,
+                                    version: params.version,
+                                },
+                                Box::new(move |response: Response| {
+                                    let id = id.clone();
+                                    let mut sink = sink.clone();
+                                    let quit_sink = quit_sink.clone();
 
-                                        tokio::spawn_async(
-                                            async move {
+                                    tokio::spawn_async(
+                                        async move {
+                                            let f = async move {
+                                                info!("Sending response {}", id);
                                                 let response = RenderResponse {
                                                     jsonrpc: "2.0".to_owned(),
                                                     id,
@@ -183,7 +187,6 @@ pub async fn ws_worker_client(
                                                 let response = serde_json::to_string(&response)
                                                     .expect("Could not JSONify reply");
 
-                                                info!("Sending response");
                                                 debug!("Response {:?}", response);
 
                                                 let response = Message::Text(response);
@@ -194,17 +197,28 @@ pub async fn ws_worker_client(
                                                         err
                                                     );
                                                 }
-                                            },
-                                        );
-                                    }),
-                                ))
-                            }
-                            Event::QuitSignal(_) => None,
-                        }
-                    },
-                );
+                                            };
 
-            Ok((request_stream, quit_sink))
+                                            if await!(AssertUnwindSafe(f).catch_unwind()).is_err() {
+                                                error!("FATAL: Command source responder panicked.");
+                                                await!(quit_sink.clone().send(QuitSignal {}))
+                                                    .map(|_| ())
+                                                    .unwrap_or(());
+                                            }
+                                        },
+                                    );
+                                }),
+                            ))
+                        }
+                        Event::QuitSignal(_) => None,
+                    }
+                });
+
+            let request_stream: Box<
+                Stream<Item = (Request, ResponseCallback), Error = Error> + Send + 'static,
+            > = Box::new(request_stream);
+
+            Ok((request_stream, parent_quit_sink))
         }
         Err(err) => {
             error!("{}", err);
@@ -212,5 +226,18 @@ pub async fn ws_worker_client(
                 "Could not connect to coordinator.".to_owned(),
             ))
         }
+    }
+}
+
+pub async fn ws_worker_client(
+    coordinator: Url,
+    max_jobs: u64,
+) -> Result<(RequestStream, QuitSink), Error> {
+    let mut client = Box::pinned(ws_worker_client_impl(coordinator, max_jobs));
+    let mut timeout = Box::pinned(async { await!(sleep(Duration::from_millis(2500))) });
+
+    select! {
+        client => client,
+        timeout => Err(Error::CommandSourceError("Timeout: could not connect to coordinator".to_owned())),
     }
 }
