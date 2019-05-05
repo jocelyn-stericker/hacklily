@@ -32,8 +32,8 @@ export interface IProps {
 }
 
 export default class DynamicsView extends Component<IProps, {}> {
-  static contextTypes = <any>{
-    originY: PropTypes.number
+  static contextTypes = {
+    originY: PropTypes.number,
   };
 
   context: {
@@ -68,7 +68,7 @@ export default class DynamicsView extends Component<IProps, {}> {
       fill: dynamics.color || "black",
       glyphName: glyphName,
       x: initX,
-      y: initY
+      y: initY,
     });
   }
 

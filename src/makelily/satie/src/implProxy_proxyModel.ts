@@ -21,81 +21,84 @@
 
 import invariant from "invariant";
 
-import {IModel, Type, ILayout} from "./document";
-import {IReadOnlyValidationCursor, LayoutCursor} from "./private_cursor";
+import { IModel, Type, ILayout } from "./document";
+import { IReadOnlyValidationCursor, LayoutCursor } from "./private_cursor";
 
 class ProxyModel implements Export.IProxyModel {
-    private _target: IModel;
-    private _omTarget: IModel;
-    _class = "Proxy";
+  private _target: IModel;
+  private _omTarget: IModel;
+  _class = "Proxy";
 
-    /*---- I.1 IModel ---------------------------------------------------------------------------*/
+  /*---- I.1 IModel ---------------------------------------------------------------------------*/
 
-    get divCount() {
-        return this._omTarget.divCount;
-    }
+  get divCount() {
+    return this._omTarget.divCount;
+  }
 
-    set divCount(divCount: number) {
-        this._omTarget.divCount = divCount;
-    }
+  set divCount(divCount: number) {
+    this._omTarget.divCount = divCount;
+  }
 
-    get staffIdx() {
-        return this._omTarget.staffIdx;
-    }
+  get staffIdx() {
+    return this._omTarget.staffIdx;
+  }
 
-    set staffIdx(staffIdx: number) {
-        this._omTarget.staffIdx = staffIdx;
-    }
+  set staffIdx(staffIdx: number) {
+    this._omTarget.staffIdx = staffIdx;
+  }
 
-    set target(target: IModel) {
-        this._target = target;
-        this._omTarget = Object.create(this._target);
-        this._omTarget.staffIdx = undefined;
-    }
+  set target(target: IModel) {
+    this._target = target;
+    this._omTarget = Object.create(this._target);
+    this._omTarget.staffIdx = undefined;
+  }
 
-    /*---- Validation Implementations -----------------------------------------------------------*/
+  /*---- Validation Implementations -----------------------------------------------------------*/
 
-    constructor(target: IModel) {
-        this._target = target;
-    }
+  constructor(target: IModel) {
+    this._target = target;
+  }
 
-    toXML(): string {
-        return `<!-- proxy for ${(<any>this._target).toXML().replace(/--/g, "\\-\\-")} -->\n` +
-            `<forward><duration>${this.divCount}</duration></forward>\n`;
-    }
+  toXML(): string {
+    return (
+      `<!-- proxy for ${(<any>this._target)
+        .toXML()
+        .replace(/--/g, "\\-\\-")} -->\n` +
+      `<forward><duration>${this.divCount}</duration></forward>\n`
+    );
+  }
 
-    inspect() {
-        return this.toXML();
-    }
+  inspect() {
+    return this.toXML();
+  }
 
-    refresh(cursor: IReadOnlyValidationCursor): void {
-        invariant(!!this._target, "A proxy must have a target.");
-        this._omTarget.refresh(cursor);
-    }
+  refresh(cursor: IReadOnlyValidationCursor): void {
+    invariant(!!this._target, "A proxy must have a target.");
+    this._omTarget.refresh(cursor);
+  }
 
-    getLayout(cursor: LayoutCursor): Export.IProxyLayout {
-        return this._omTarget.getLayout(cursor);
-    }
+  getLayout(cursor: LayoutCursor): Export.IProxyLayout {
+    return this._omTarget.getLayout(cursor);
+  }
 
-    calcWidth(shortest: number) {
-        return this._target ? this._target.calcWidth(shortest) : 0;
-    }
+  calcWidth(shortest: number) {
+    return this._target ? this._target.calcWidth(shortest) : 0;
+  }
 }
 
 /**
  * Registers Proxy in the factory structure passed in.
  */
 function Export(constructors: { [key: number]: any }) {
-    constructors[Type.Proxy] = ProxyModel;
+  constructors[Type.Proxy] = ProxyModel;
 }
 
-module Export {
-    export interface IProxyModel extends IModel {
-    }
+namespace Export {
+  export interface IProxyModel extends IModel {}
 
-    export interface IProxyLayout extends ILayout {
-        model: IProxyModel;
-    }
+  export interface IProxyLayout extends ILayout {
+    model: IProxyModel;
+  }
 }
 
 export default Export;

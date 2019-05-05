@@ -35,7 +35,7 @@
     ],
     "quotemark": [true, "double", "jsx-double"],
     "radix": true,
-    "semicolon": true,
+    "semicolon": false,
     "object-literal-sort-keys": false,
     "triple-equals": [true, "allow-null-check"],
     "type-literal-delimiter": false,

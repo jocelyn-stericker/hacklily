@@ -19,33 +19,37 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import {Position} from "musicxml-interfaces";
-import {Component} from "react";
-import * as DOM from "react-dom-factories";
+import * as React from "react";
+import { Position } from "musicxml-interfaces";
+import { Component } from "react";
 import * as PropTypes from "prop-types";
 
 export interface IProps {
-    spec: Position;
-    barNumber: string;
-    key?: string | number;
+  spec: Position;
+  barNumber: string;
+  key?: string | number;
 }
 
 export default class BarNumber extends Component<IProps, {}> {
-    static contextTypes = {
-        originY: PropTypes.number.isRequired
-    } as any;
+  static contextTypes = {
+    originY: PropTypes.number.isRequired,
+  } as any;
 
-    context: {
-        originY: number;
-    };
+  context: {
+    originY: number;
+  };
 
-    render(): any {
-        const spec = this.props.spec;
-        return DOM.text({
-            className: "bn_",
-            fontSize: 24,
-            x: spec.defaultX + (spec.relativeX || 0),
-            y: this.context.originY - spec.defaultY - (spec.relativeY || 0)
-        }, this.props.barNumber);
-    }
+  render(): any {
+    const spec = this.props.spec;
+    return (
+      <text
+        className="bn_"
+        fontSize={24}
+        x={spec.defaultX + (spec.relativeX || 0)}
+        y={this.context.originY - spec.defaultY - (spec.relativeY || 0)}
+      >
+        {this.props.barNumber}
+      </text>
+    );
+  }
 }

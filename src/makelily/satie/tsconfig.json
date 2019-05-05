@@ -10,7 +10,9 @@
         "preserveConstEnums": true,
         "removeComments": false,
         "target": "es5",
-        "pretty": true
+        "pretty": true,
+	"esModuleInterop": true,
+	"allowSyntheticDefaultImports": true
     },
     "files": [
         "./src/satie.ts",

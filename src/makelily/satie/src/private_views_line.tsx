@@ -16,31 +16,35 @@
  * along with Satie.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import {Component} from "react";
-import * as DOM from "react-dom-factories";
+import * as React from "react";
+import { Component } from "react";
 
 export interface IProps {
-    key?: number | string;
-    x: number;
-    y: number;
-    radius: number;
-    fill: string;
+  key?: string | number;
+  className?: string;
+  stroke: string;
+  strokeWidth: number;
+  x1: number;
+  x2: number;
+  y1: number;
+  y2: number;
 }
 
 /**
- * Responsible for the rendering of a dot as part of a dotted note.
- * This is not used to render staccatos.
+ * Renders a straight line.
  */
-export default class Dot extends Component<IProps, {}> {
-    render(): any {
-        // See rationale for hidden rect in _glyph.jsx
-        return DOM.g(null,
-            DOM.circle({
-                cx: this.props.x,
-                cy: this.props.y,
-                fill: this.props.fill,
-                r: this.props.radius,
-            }/*DOM.circle*/)
-        /*DOM.g*/);
-    }
+export default class Line extends Component<IProps, {}> {
+  render(): any {
+    return (
+      <line
+        className={this.props.className}
+        stroke={this.props.stroke}
+        strokeWidth={this.props.strokeWidth}
+        x1={this.props.x1}
+        x2={this.props.x2}
+        y1={this.props.y1}
+        y2={this.props.y2}
+      />
+    );
+  }
 }

@@ -48,7 +48,7 @@ type TiedSet = {
 function tied(
   options: ILayoutOptions,
   bounds: ILineBounds,
-  measures: IMeasureLayout[]
+  measures: IMeasureLayout[],
 ): IMeasureLayout[] {
   forEach(measures, measure => {
     // Note that the `number` property of beams does NOT differentiate between sets of beams,
@@ -80,14 +80,14 @@ function tied(
         forEach(tieds, tied => {
           invariant(
             isFinite(tied.number) && tied.number !== null,
-            "Tieds must have an ID (tied.number)"
+            "Tieds must have an ID (tied.number)",
           );
           let currTied = activeTieds[tied.number];
           if (currTied) {
             if (tied.type === StartStopContinue.Start) {
               console.warn(
-                "Found \"Start\" Tied that continues an existing Tied:",
-                currTied
+                'Found "Start" Tied that continues an existing Tied:',
+                currTied,
               );
             }
             currTied.elements.push(layout);
@@ -98,7 +98,7 @@ function tied(
             activeTieds[tied.number] = {
               number: tied.number,
               elements: [layout],
-              initial: tied
+              initial: tied,
             };
           }
         });
@@ -108,7 +108,7 @@ function tied(
       console.warn(
         "Tied %s was not closed before the end of the measure " +
           "(this will be implemented later!)",
-        idx
+        idx,
       );
     });
   });

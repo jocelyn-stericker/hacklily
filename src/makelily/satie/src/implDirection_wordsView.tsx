@@ -16,15 +16,15 @@
  * along with Satie.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import * as React from "react";
 import {
   Direction,
   NormalItalic,
   NormalBold,
   CreditWords,
-  Words
+  Words,
 } from "musicxml-interfaces";
 import { Component } from "react";
-import * as DOM from "react-dom-factories";
 import * as PropTypes from "prop-types";
 import { filter, map, extend } from "lodash";
 import invariant from "invariant";
@@ -41,7 +41,7 @@ export default class WordsView extends Component<IProps, {}>
   implements ITextMixin {
   static contextTypes = {
     originY: PropTypes.number.isRequired,
-    scale40: PropTypes.number.isRequired
+    scale40: PropTypes.number.isRequired,
   } as any;
 
   context: {
@@ -73,44 +73,41 @@ export default class WordsView extends Component<IProps, {}>
       this.context.originY - words[0].defaultY - (words[0].relativeY || 0);
     let scale40 = this.context.scale40;
 
-    return DOM.text(
-      {
-        x: initX,
-        y: initY
-      },
-      map(words, (words, idx) => {
-        let isBold = words.fontWeight === NormalBold.Bold;
-        let isItalic = words.fontStyle === NormalItalic.Italic;
-        let fontSize = cssSizeToTenths(scale40, words.fontSize);
+    return (
+      <text x={initX} y={initY}>
+        {map(words, (words, idx) => {
+          let isBold = words.fontWeight === NormalBold.Bold;
+          let isItalic = words.fontStyle === NormalItalic.Italic;
+          let fontSize = cssSizeToTenths(scale40, words.fontSize);
 
-        return map(words.data.split("\n"), (line, lineNum) =>
-          DOM.tspan(
-            {
-              alignmentBaseline: "hanging",
-              fill: words.color || "black",
-              direction: this.getDirection(words),
-              dx: this.getDX(words, 0, lineNum),
-              dy: this.getDY(words, initY, lineNum),
-              fontStyle: isItalic ? "italic" : "normal",
-              fontWeight: isBold ? "bold" : "normal",
-              fontFamily: words.fontFamily || "Alegreya",
-              fontSize: fontSize,
-              key: idx + "l" + lineNum,
-              letterSpacing:
+          return map(words.data.split("\n"), (line, lineNum) => (
+            <tspan
+              alignmentBaseline="hanging"
+              fill={words.color || "black"}
+              direction={this.getDirection(words)}
+              dx={this.getDX(words, 0, lineNum)}
+              dy={this.getDY(words, initY, lineNum)}
+              fontStyle={isItalic ? "italic" : "normal"}
+              fontWeight={isBold ? "bold" : "normal"}
+              fontFamily={words.fontFamily || "Alegreya"}
+              fontSize={fontSize}
+              key={idx + "l" + lineNum}
+              letterSpacing={
                 words.letterSpacing && words.letterSpacing !== "normal"
                   ? "" +
                     cssSizeToTenths(this.context.scale40, words.letterSpacing)
-                  : "normal",
-              textDecoration: this.getTextDecoration(words),
-              textAnchor: this.getTextAnchor(words),
-              transform: this.getTransform(words),
-              x: this.getX(lineNum)
-            } as any,
-            line
-          )
-        );
-      })
-      /* DOM.text */
+                  : "normal"
+              }
+              textDecoration={this.getTextDecoration(words)}
+              textAnchor={this.getTextAnchor(words)}
+              transform={this.getTransform(words)}
+              x={this.getX(lineNum)}
+            >
+              {line}
+            </tspan>
+          ));
+        })}
+      </text>
     );
   }
 }
