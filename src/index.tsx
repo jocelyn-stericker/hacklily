@@ -62,6 +62,13 @@ function getQueryProps(): QueryProps {
   );
   const query: QueryProps = {};
   Object.keys(queryObj).forEach((key: string) => {
+    if (key === "src" && queryObj[key] === "<url") {
+      // HACK: For some reason, Google brings people to https://www.hacklily.org/?src=%3Curl
+      setTimeout(() => {
+        setQuery({ src: undefined }, true);
+      }, 0);
+      return;
+    }
     const queryPropIdx: number = (QUERY_PROP_KEYS as string[]).indexOf(key);
     if (queryPropIdx === -1) {
       console.warn(
