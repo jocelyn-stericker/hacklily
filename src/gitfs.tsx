@@ -145,6 +145,17 @@ export class Conflict {
   message: string = "Cannot save file because it conflicts with another file.";
 }
 
+// https://stackoverflow.com/questions/30106476/using-javascripts-atob-to-decode-base64-doesnt-properly-decode-utf-8-strings
+function b64DecodeUnicode(str: string) {
+  // Going backwards: from bytestream, to percent-encoding, to original string.
+  return decodeURIComponent(
+    atob(str)
+      .split("")
+      .map(c => "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2))
+      .join(""),
+  );
+}
+
 export async function cat(
   accessToken: string,
   repo: string,
@@ -171,7 +182,7 @@ export async function cat(
   const obj: { content: string; sha: string } = await response.json();
 
   return {
-    content: atob(obj.content),
+    content: b64DecodeUnicode(obj.content),
     sha: obj.sha,
   };
 }
