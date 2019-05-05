@@ -16,8 +16,7 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-use futures::future::{FutureExt, FutureObj, TryFutureExt};
-use futures::select;
+use futures::future::{select, Either, FutureExt, FutureObj, TryFutureExt};
 use serde_json;
 use std::cmp::Ordering;
 use std::io::BufReader;
@@ -237,17 +236,19 @@ async fn try_handle_request(
     request: Request,
     timeout: Duration,
 ) -> Result<(Child, String), Error> {
-    let mut response = AssertUnwindSafe(Box::pinned(handle_request_impl(child, request)))
+    let mut response = AssertUnwindSafe(Box::pin(handle_request_impl(child, request)))
         .catch_unwind()
         .map(|e| match e {
             Err(_) => Err(Error::RenderPanic),
             Ok(o) => o,
         });
-    let mut timeout = Box::pinned(async { await!(sleep(timeout)) });
+    let mut timeout = Box::pin(async move { await!(sleep(timeout)) });
 
-    select! {
-        response => response,
-        timeout => Err(Error::RenderError("Timeout: the container is unresponsive".to_owned())),
+    match await!(select(response, timeout)) {
+        Either::Left((response, _)) => response,
+        Either::Right(_) => Err(Error::RenderError(
+            "Timeout: the container is unresponsive".to_owned(),
+        )),
     }
 }
 

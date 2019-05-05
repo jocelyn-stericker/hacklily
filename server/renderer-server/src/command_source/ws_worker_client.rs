@@ -16,10 +16,8 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-use futures::future::FutureExt;
-use futures::select;
+use futures::future::{select, Either, FutureExt};
 use std::panic::AssertUnwindSafe;
-use std::pin::Unpin;
 use std::time::{Duration, Instant};
 use tokio::prelude::*;
 use tokio_channel::mpsc;
@@ -76,7 +74,15 @@ enum Event {
 }
 
 async fn send_hello(
-    sink: &mut (impl Sink<SinkItem = Message, SinkError = tungstenite::error::Error> + Unpin),
+    //sink: &mut (impl Sink<SinkItem = Message, SinkError = tungstenite::error::Error>),
+    sink: &mut tokio::prelude::stream::SplitSink<
+        tokio_tungstenite::WebSocketStream<
+            tokio_tungstenite::stream::Stream<
+                tokio::net::TcpStream,
+                tokio_tls::TlsStream<tokio::net::TcpStream>,
+            >,
+        >,
+    >,
     max_jobs: u64,
 ) -> Result<(), Error> {
     let cmd = serde_json::to_string(&WsCoordinatorMethod::IHazComputes {
@@ -254,11 +260,13 @@ pub async fn ws_worker_client(
     coordinator: Url,
     max_jobs: u64,
 ) -> Result<(RequestStream, QuitSink), Error> {
-    let mut client = Box::pinned(ws_worker_client_impl(coordinator, max_jobs));
-    let mut timeout = Box::pinned(async { await!(sleep(Duration::from_millis(2500))) });
+    let client = Box::pin(ws_worker_client_impl(coordinator, max_jobs));
+    let timeout = Box::pin(async { await!(sleep(Duration::from_millis(2500))) });
 
-    select! {
-        client => client,
-        timeout => Err(Error::CommandSourceError("Timeout: could not connect to coordinator".to_owned())),
+    match await!(select(client, timeout)) {
+        Either::Left((client, _)) => client,
+        Either::Right((_, _)) => Err(Error::CommandSourceError(
+            "Timeout: could not connect to coordinator".to_owned(),
+        )),
     }
 }

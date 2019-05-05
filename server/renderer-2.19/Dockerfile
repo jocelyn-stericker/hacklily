@@ -17,12 +17,13 @@ RUN adduser --disabled-password --gecos '' r && \
     cd ~r/.lyp && \
     patch -p0 < /tmp/no_lyp_check_update.patch && \
     rm /tmp/no_lyp_check_update.patch && \
-    su r -c "source ~/.profile; lyp install lilypond@2.19.82 lys;" && \
-    rm /home/r/.lyp/lilyponds/2.19.82/etc/relocate/gs.reloc && \
+    su r -c "source ~/.profile; lyp install lilypond@2.19.83 lys;" && \
+    rm /home/r/.lyp/lilyponds/2.19.83/etc/relocate/gs.reloc && \
+    rm /home/r/.lyp/lilyponds/2.19.83/bin/gs && \
     chown r -R /tmp/* && \
     chown nobody -R /home/r/.lyp/*
 RUN apt-get remove -y curl patch && apt-get autoremove -y && apt-get clean && rm -rf /var/lib/apt/lists/*
-RUN su r -c "source ~/.profile; cd; echo '{c4}' | lilypond --verbose -"
+RUN su r -c "source ~/.profile; cd /tmp; echo '{c4}' | lilypond --verbose -"
 COPY render-impl.bash /usr/local/bin
 USER r
 CMD render-impl.bash

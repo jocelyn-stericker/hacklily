@@ -51,11 +51,11 @@ pub fn new(config: &Config) -> FutureCommandSource {
     match &config.command_source {
         CommandSourceConfig::Worker { coordinator } => {
             let worker_count = config.stable_worker_count + config.unstable_worker_count;
-            Box::pinned(ws_worker_client(coordinator.clone(), worker_count))
+            Box::pin(ws_worker_client(coordinator.clone(), worker_count))
         }
-        CommandSourceConfig::Batch { path } => Box::pinned(batch(path.clone())),
+        CommandSourceConfig::Batch { path } => Box::pin(batch(path.clone())),
         CommandSourceConfig::TestRunner { input, output } => {
-            Box::pinned(test_runner(input.clone(), output.clone()))
+            Box::pin(test_runner(input.clone(), output.clone()))
         }
     }
 }
