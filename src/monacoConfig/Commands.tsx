@@ -50,8 +50,11 @@ export default class Commands {
     }
 
     function replaceLine(lineIdx: number, ly: string): void {
-      const whitespace: RegExpMatchArray | null = editor
-        .getModel()
+      const model = editor.getModel();
+      if (!model) {
+        return;
+      }
+      const whitespace: RegExpMatchArray | null = model
         .getLinesContent()
         [lineIdx].match(/^\s*/);
       const whitespacePrefix: string = whitespace ? whitespace[0] : "";
@@ -70,43 +73,47 @@ export default class Commands {
       editor.executeEdits("hacklily", [op]);
     }
 
-    this.setClef = editor.addCommand(
-      0,
-      (internal: void, lineIdx: number): void => {
-        moveToStartOfNextLine(lineIdx);
-        this.showMakelily("clef", (ly: string) => {
-          replaceLine(lineIdx, ly);
-        });
-      },
-      "",
-    );
-    this.setKey = editor.addCommand(
-      0,
-      (internal: void, lineIdx: number): void => {
-        moveToStartOfNextLine(lineIdx);
-        this.showMakelily("key", (ly: string) => {
-          replaceLine(lineIdx, ly);
-        });
-      },
-      "",
-    );
-    this.setTime = editor.addCommand(
-      0,
-      (internal: void, lineIdx: number): void => {
-        moveToStartOfNextLine(lineIdx);
-        this.showMakelily("time", (ly: string) => {
-          replaceLine(lineIdx, ly);
-        });
-      },
-      "",
-    );
-    this.insertNotes = editor.addCommand(
-      0,
-      (internal: void, lineIdx: number): void => {
-        moveToStartOfNextLine(lineIdx);
-        this.showMakelily("notes");
-      },
-      "",
-    );
+    this.setClef =
+      editor.addCommand(
+        Number.MAX_VALUE,
+        (internal: void, lineIdx: number): void => {
+          moveToStartOfNextLine(lineIdx);
+          this.showMakelily("clef", (ly: string) => {
+            replaceLine(lineIdx, ly);
+          });
+        },
+        "",
+      ) || "";
+    this.setKey =
+      editor.addCommand(
+        Number.MAX_VALUE,
+        (internal: void, lineIdx: number): void => {
+          moveToStartOfNextLine(lineIdx);
+          this.showMakelily("key", (ly: string) => {
+            replaceLine(lineIdx, ly);
+          });
+        },
+        "",
+      ) || "";
+    this.setTime =
+      editor.addCommand(
+        Number.MAX_VALUE,
+        (internal: void, lineIdx: number): void => {
+          moveToStartOfNextLine(lineIdx);
+          this.showMakelily("time", (ly: string) => {
+            replaceLine(lineIdx, ly);
+          });
+        },
+        "",
+      ) || "";
+    this.insertNotes =
+      editor.addCommand(
+        Number.MAX_VALUE,
+        (internal: void, lineIdx: number): void => {
+          moveToStartOfNextLine(lineIdx);
+          this.showMakelily("notes");
+        },
+        "",
+      ) || "";
   }
 }

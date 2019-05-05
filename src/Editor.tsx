@@ -202,12 +202,14 @@ export default class Editor extends React.PureComponent<Props> {
 
     let codeBeforeCursor: string = "";
     const lines: string[] = code.split("\n");
-    const line: monacoEditor.Position = this.editor.getPosition();
+    const line: monacoEditor.Position | null = this.editor.getPosition();
 
-    for (let i: number = 0; i < line.lineNumber - 1; i += 1) {
-      codeBeforeCursor += `${lines[i]}\n`;
+    if (line) {
+      for (let i: number = 0; i < line.lineNumber - 1; i += 1) {
+        codeBeforeCursor += `${lines[i]}\n`;
+      }
+      codeBeforeCursor += lines[line.lineNumber - 1].slice(0, line.column);
     }
-    codeBeforeCursor += lines[line.lineNumber - 1].slice(0, line.column);
 
     meta.makelilyClef = (
       extractLast(codeBeforeCursor.match(clefRegex)) || meta.makelilyClef
@@ -227,19 +229,21 @@ export default class Editor extends React.PureComponent<Props> {
       return;
     }
 
-    const line: monacoEditor.Position = this.editor.getPosition();
-    const range: monacoEditor.Range = new monacoEditor.Range(
-      line.lineNumber,
-      1,
-      line.lineNumber,
-      1,
-    );
-    const op: monacoEditor.editor.IIdentifiedSingleEditOperation = {
-      forceMoveMarkers: true,
-      range,
-      text,
-    };
-    this.editor.executeEdits("hacklily", [op]);
+    const line: monacoEditor.Position | null = this.editor.getPosition();
+    if (line) {
+      const range: monacoEditor.Range = new monacoEditor.Range(
+        line.lineNumber,
+        1,
+        line.lineNumber,
+        1,
+      );
+      const op: monacoEditor.editor.IIdentifiedSingleEditOperation = {
+        forceMoveMarkers: true,
+        range,
+        text,
+      };
+      this.editor.executeEdits("hacklily", [op]);
+    }
   }
 
   render(): JSX.Element | null {
@@ -253,7 +257,7 @@ export default class Editor extends React.PureComponent<Props> {
       hideUnstable219Notification,
     } = this.props;
     const monacoOptions: monacoEditor.editor.IEditorOptions = {
-      autoClosingBrackets: true,
+      autoClosingBrackets: "always",
       minimap: {
         enabled: false,
       },

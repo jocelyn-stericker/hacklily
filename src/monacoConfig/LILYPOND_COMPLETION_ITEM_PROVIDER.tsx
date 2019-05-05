@@ -26,8 +26,9 @@ const LILYPOND_COMPLETION_ITEM_PROVIDER: monacoEditor.languages.CompletionItemPr
   provideCompletionItems(
     model: monacoEditor.editor.IReadOnlyModel,
     position: monacoEditor.Position,
+    context: monacoEditor.languages.CompletionContext,
     token: monacoEditor.CancellationToken,
-  ): monacoEditor.languages.CompletionItem[] {
+  ): monacoEditor.languages.CompletionList {
     const textUntilPosition: string = model.getValueInRange({
       endColumn: position.column,
       endLineNumber: position.lineNumber,
@@ -35,17 +36,21 @@ const LILYPOND_COMPLETION_ITEM_PROVIDER: monacoEditor.languages.CompletionItemPr
       startLineNumber: 1,
     });
     if (textUntilPosition[textUntilPosition.length - 2] === "\\") {
-      return NOTATION_SYMBOLS;
+      return { suggestions: NOTATION_SYMBOLS };
     }
 
     // Otherwise, Monaco really wants to give us word-based suggestions,
     // which are not helpful on note input.
-    return [
-      {
-        kind: 0, // text
-        label: "",
-      },
-    ];
+    return {
+      suggestions: [
+        {
+          kind: 0, // text
+          label: "",
+          insertText: "",
+          range: null as any,
+        },
+      ],
+    };
   },
 };
 
