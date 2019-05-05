@@ -393,6 +393,19 @@ module.exports = {
       addUrl: true,
       perChunkOutput: false,
       outputFilename: "3rdpartylicenses.txt",
+      licenseTemplateDir: path.resolve(
+        __dirname,
+        "..",
+        "node_modules",
+        "spdx-license-list",
+      ),
+      licenseTypeOverrides: {
+        indexof: "MIT",
+      },
+      handleMissingLicenseText: (pkg, lic) => {
+        console.warn(pkg, lic);
+        throw new Error("yolo");
+      },
     }),
     new MiniCssExtractPlugin({
       // Options similar to the same options in webpackOptions.output
