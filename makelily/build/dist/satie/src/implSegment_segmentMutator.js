@@ -29,8 +29,8 @@ function segmentMutator(factory, segment, op, doc) {
     invariant_1.default(op.p[1] === "parts", "Malformed path.");
     invariant_1.default(op.p[2] === part, "Invalid fixup part.");
     invariant_1.default(op.p[3] === "voices" || op.p[3] === "staves", "Only voice and staff fixups are supported.");
-    invariant_1.default(op.p[3] === "voices" && ownerType === "voice" ||
-        op.p[3] === "staves" && ownerType === "staff", "Type/path mismatch");
+    invariant_1.default((op.p[3] === "voices" && ownerType === "voice") ||
+        (op.p[3] === "staves" && ownerType === "staff"), "Type/path mismatch");
     if ("li" in op && !("ld" in op)) {
         var liop = op;
         var newModel = factory.fromSpec(liop.li);
@@ -44,8 +44,12 @@ function segmentMutator(factory, segment, op, doc) {
         var ld = private_util_1.cloneObject(op.ld);
         if (!lodash_1.isEqual(existingSerializable, ld)) {
             console.warn("The element to be removed should be accurately specified in the operation.\n\n" +
-                "OPERATION SPEC: " + JSON.stringify(ld, null, 2) + "\n\n" +
-                "ACTUAL SPEC: " + JSON.stringify(existingSerializable, null, 2) + "\n\n" +
+                "OPERATION SPEC: " +
+                JSON.stringify(ld, null, 2) +
+                "\n\n" +
+                "ACTUAL SPEC: " +
+                JSON.stringify(existingSerializable, null, 2) +
+                "\n\n" +
                 "Your patch is broken.");
         }
         segment.splice(op.p[5], 1);

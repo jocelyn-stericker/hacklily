@@ -25,7 +25,7 @@ var __extends = (this && this.__extends) || (function () {
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
             function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
         return extendStatics(d, b);
-    }
+    };
     return function (d, b) {
         extendStatics(d, b);
         function __() { this.constructor = d; }
@@ -40,8 +40,8 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+var React = __importStar(require("react"));
 var react_1 = require("react");
-var DOM = __importStar(require("react-dom-factories"));
 var PropTypes = __importStar(require("prop-types"));
 var BarNumber = /** @class */ (function (_super) {
     __extends(BarNumber, _super);
@@ -50,15 +50,10 @@ var BarNumber = /** @class */ (function (_super) {
     }
     BarNumber.prototype.render = function () {
         var spec = this.props.spec;
-        return DOM.text({
-            className: "bn_",
-            fontSize: 24,
-            x: spec.defaultX + (spec.relativeX || 0),
-            y: this.context.originY - spec.defaultY - (spec.relativeY || 0)
-        }, this.props.barNumber);
+        return (React.createElement("text", { className: "bn_", fontSize: 24, x: spec.defaultX + (spec.relativeX || 0), y: this.context.originY - spec.defaultY - (spec.relativeY || 0) }, this.props.barNumber));
     };
     BarNumber.contextTypes = {
-        originY: PropTypes.number.isRequired
+        originY: PropTypes.number.isRequired,
     };
     return BarNumber;
 }(react_1.Component));

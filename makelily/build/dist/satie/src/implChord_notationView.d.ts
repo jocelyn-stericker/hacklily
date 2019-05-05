@@ -16,7 +16,7 @@
  * along with Satie.  If not, see <http://www.gnu.org/licenses/>.
  */
 import { Notations } from "musicxml-interfaces";
-import { Component, ReactElement } from "react";
+import { Component } from "react";
 import Chord from "./implChord_chordModel";
 export interface IProps {
     spec: Notations;
@@ -31,5 +31,5 @@ export default class NotationView extends Component<IProps, {}> {
     context: {
         originY: number;
     };
-    render(): ReactElement<any>;
+    render(): JSX.Element;
 }

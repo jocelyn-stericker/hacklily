@@ -48,32 +48,34 @@ var PrintModel = /** @class */ (function () {
     PrintModel.prototype.refresh = function (cursor) {
         invariant_1.default(!!cursor.header, "Cursor must have a valid header");
         if (!this.measureNumbering) {
-            cursor.patch(function (staff) { return staff.print(function (print) {
-                return print.measureNumbering({
-                    data: "system",
-                });
-            }); });
-        }
-        if (this.pageNumber !== "1") { // XXX: Make this the actual page number
-            cursor.patch(function (staff) { return staff.print(function (print) {
-                return print.pageNumber("1");
-            }); });
-        }
-        if (!this.systemLayout) {
-            cursor.patch(function (staff) { return staff.print(function (print) {
-                return print.systemLayout({});
-            }); });
-        }
-        var atStart = this.pageNumber === "1" && cursor.measureInstance.idx === 0;
-        if (!this.systemLayout.systemMargins || atStart && !this.systemLayout.systemMargins.leftMargin) {
-            cursor.patch(function (staff) { return staff.print(function (print) {
-                return print.systemLayout(function (systemLayout) {
-                    return systemLayout.systemMargins({
-                        leftMargin: atStart ? 70 : 0,
-                        rightMargin: 0,
+            cursor.patch(function (staff) {
+                return staff.print(function (print) {
+                    return print.measureNumbering({
+                        data: "system",
                     });
                 });
-            }); });
+            });
+        }
+        if (this.pageNumber !== "1") {
+            // XXX: Make this the actual page number
+            cursor.patch(function (staff) { return staff.print(function (print) { return print.pageNumber("1"); }); });
+        }
+        if (!this.systemLayout) {
+            cursor.patch(function (staff) { return staff.print(function (print) { return print.systemLayout({}); }); });
+        }
+        var atStart = this.pageNumber === "1" && cursor.measureInstance.idx === 0;
+        if (!this.systemLayout.systemMargins ||
+            (atStart && !this.systemLayout.systemMargins.leftMargin)) {
+            cursor.patch(function (staff) {
+                return staff.print(function (print) {
+                    return print.systemLayout(function (systemLayout) {
+                        return systemLayout.systemMargins({
+                            leftMargin: atStart ? 70 : 0,
+                            rightMargin: 0,
+                        });
+                    });
+                });
+            });
         }
         var defaultPrint = extractDefaultPrintFromHeader(cursor.header);
         this._snapshot = this.getSnapshot(defaultPrint, cursor.singleLineMode, cursor.header);
@@ -98,7 +100,7 @@ var PrintModel = /** @class */ (function () {
         }, parent);
         if (singleLineMode) {
             var defaults = header.defaults;
-            var scale40 = defaults.scaling.millimeters / defaults.scaling.tenths * 40;
+            var scale40 = (defaults.scaling.millimeters / defaults.scaling.tenths) * 40;
             var firstLineBounds = private_lineBounds_1.calculateLineBounds(print, 0, defaults.scaling);
             var systems = 1; // FIXME
             return __assign({}, print, { systemLayout: {
@@ -110,13 +112,16 @@ var PrintModel = /** @class */ (function () {
                     },
                     topSystemDistance: 0,
                 }, pageLayout: __assign({}, print.pageLayout, { pageHeight: scale40 * 10 * systems +
-                        firstLineBounds.systemLayout.systemDistance * (systems - 1) + 80, pageMargins: [{
+                        firstLineBounds.systemLayout.systemDistance * (systems - 1) +
+                        80, pageMargins: [
+                        {
                             bottomMargin: 40,
                             leftMargin: 0,
                             rightMargin: 0,
                             topMargin: 40,
                             type: musicxml_interfaces_1.OddEvenBoth.Both,
-                        }] }) });
+                        },
+                    ] }) });
         }
         return print;
     };
@@ -181,7 +186,7 @@ function extractDefaultPrintFromHeader(header) {
             fontStyle: musicxml_interfaces_1.NormalItalic.Normal,
             fontWeight: musicxml_interfaces_1.NormalBold.Normal,
             relativeX: 0,
-            relativeY: 0
+            relativeY: 0,
         },
         newPage: false,
         newSystem: false,
@@ -191,7 +196,7 @@ function extractDefaultPrintFromHeader(header) {
         partNameDisplay: null,
         staffLayouts: header.defaults.staffLayouts,
         staffSpacing: null,
-        systemLayout: header.defaults.systemLayout
+        systemLayout: header.defaults.systemLayout,
     };
 }
 /**

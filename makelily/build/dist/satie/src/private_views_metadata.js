@@ -67,34 +67,31 @@ function Targetable() {
         }
         // ---- //
         var originalComponentWillMount = component.prototype.componentWillMount;
-        component.prototype.componentWillMount =
-            function metaComponentWillMountWrapper() {
-                var self = this;
-                updateMeta(self, self.props);
-                if (originalComponentWillMount) {
-                    originalComponentWillMount.call(self);
-                }
-            };
+        component.prototype.componentWillMount = function metaComponentWillMountWrapper() {
+            var self = this;
+            updateMeta(self, self.props);
+            if (originalComponentWillMount) {
+                originalComponentWillMount.call(self);
+            }
+        };
         // ---- //
         var originalComponentWillUnmount = component.prototype.componentWillUnmount;
-        component.prototype.componentWillUnmount =
-            function metaComponentWillUnmountWrapper() {
-                var self = this;
-                clearMeta(self);
-                if (originalComponentWillUnmount) {
-                    originalComponentWillUnmount.call(self);
-                }
-            };
+        component.prototype.componentWillUnmount = function metaComponentWillUnmountWrapper() {
+            var self = this;
+            clearMeta(self);
+            if (originalComponentWillUnmount) {
+                originalComponentWillUnmount.call(self);
+            }
+        };
         // ---- //
         var originalComponentWillReceiveProps = component.prototype.componentWillReceiveProps;
-        component.prototype.componentWillReceiveProps =
-            function metaComponentWillReceiveProps(nextProps) {
-                var self = this;
-                updateMeta(self, nextProps);
-                if (originalComponentWillReceiveProps) {
-                    originalComponentWillReceiveProps.call(self);
-                }
-            };
+        component.prototype.componentWillReceiveProps = function metaComponentWillReceiveProps(nextProps) {
+            var self = this;
+            updateMeta(self, nextProps);
+            if (originalComponentWillReceiveProps) {
+                originalComponentWillReceiveProps.call(self);
+            }
+        };
     };
 }
 exports.Targetable = Targetable;
@@ -120,8 +117,10 @@ function get(lookup) {
     var firstPossibleIdx = lodash_1.sortedIndex(_weights, weight);
     for (var i = firstPossibleIdx; i < _sorted.length; ++i) {
         var record = _sorted[i];
-        if (_sorted[i].x1 <= x && _sorted[i].x2 >= x &&
-            _sorted[i].y1 <= y && _sorted[i].y2 >= y) {
+        if (_sorted[i].x1 <= x &&
+            _sorted[i].x2 >= x &&
+            _sorted[i].y1 <= y &&
+            _sorted[i].y2 >= y) {
             return record;
         }
     }

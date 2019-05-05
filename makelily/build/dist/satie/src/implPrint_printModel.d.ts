@@ -23,7 +23,7 @@ import { IModel, ILayout } from "./document";
 declare function Export(constructors: {
     [key: number]: any;
 }): void;
-declare module Export {
+declare namespace Export {
     interface IPrintModel extends IModel, Print {
     }
     interface IPrintLayout extends ILayout {

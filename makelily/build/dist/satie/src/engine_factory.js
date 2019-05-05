@@ -29,9 +29,9 @@ var document_1 = require("./document");
 var private_util_1 = require("./private_util");
 var Factory = /** @class */ (function () {
     function Factory(models, pre, post) {
+        var _this = this;
         if (pre === void 0) { pre = []; }
         if (post === void 0) { post = []; }
-        var _this = this;
         this._constructors = {};
         lodash_1.forEach(models, function (model) {
             model(_this._constructors);

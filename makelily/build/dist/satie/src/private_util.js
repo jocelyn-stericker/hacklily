@@ -45,7 +45,7 @@ function lcm(a, b) {
     invariant_1.default(isFinite(b), "%s is not finite", b);
     a = Math.abs(a);
     b = Math.abs(b);
-    return Math.max(a, b, a * b / gcd(a, b) || 0);
+    return Math.max(a, b, (a * b) / gcd(a, b) || 0);
 }
 exports.lcm = lcm;
 /**

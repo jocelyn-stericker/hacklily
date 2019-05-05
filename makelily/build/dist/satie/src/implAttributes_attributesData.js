@@ -37,7 +37,9 @@ exports.NATURAL_WIDTH = 11;
 function needsWarning(end, start, staff) {
     invariant_1.default(!!end && !!start, "A null end or start was passed to needsWarning. Check your types!!");
     invariant_1.default(!("P1" in end || "P1" in start), "An object with 'P1' was passed to needsWarning. Check your types!!");
-    return !clefsEqual(end, start, staff) || !timesEqual(end, start) || !keysEqual(end, start);
+    return (!clefsEqual(end, start, staff) ||
+        !timesEqual(end, start) ||
+        !keysEqual(end, start));
 }
 exports.needsWarning = needsWarning;
 function clefWidth(attributes) {
@@ -50,8 +52,8 @@ function timeWidth(attributes) {
     }
     var beats = attributes.times[0].beats;
     var numeratorSegments = lodash_1.reduce(beats, function (memo, beats) { return memo + beats.split("+").length; }, 0);
-    return exports.NUMBER_SPACING * numeratorSegments +
-        (attributes.times[0].beatTypes.length - 1) * exports.PLUS_SPACING;
+    return (exports.NUMBER_SPACING * numeratorSegments +
+        (attributes.times[0].beatTypes.length - 1) * exports.PLUS_SPACING);
 }
 exports.timeWidth = timeWidth;
 function keyWidth(attributes) {
@@ -60,7 +62,7 @@ function keyWidth(attributes) {
     }
     var keySignature = attributes.keySignatures[0];
     if (keySignature.fifths || keySignature.keyAlters) {
-        return 2 + lodash_1.reduce(keyWidths(keySignature), function (memo, width) { return memo + width; }, 0);
+        return (2 + lodash_1.reduce(keyWidths(keySignature), function (memo, width) { return memo + width; }, 0));
     }
     else {
         return -5;
@@ -73,9 +75,9 @@ function clefsEqual(from, to, staff) {
     if (!cA || !cB) {
         return false;
     }
-    return cA.sign === cB.sign &&
+    return (cA.sign === cB.sign &&
         cA.line === cB.line &&
-        cA.clefOctaveChange === cB.clefOctaveChange;
+        cA.clefOctaveChange === cB.clefOctaveChange);
 }
 exports.clefsEqual = clefsEqual;
 function timesEqual(from, to) {
@@ -84,10 +86,10 @@ function timesEqual(from, to) {
     if (!tA || !tB) {
         return false;
     }
-    return JSON.stringify(tA.beats) === JSON.stringify(tB.beats) &&
+    return (JSON.stringify(tA.beats) === JSON.stringify(tB.beats) &&
         JSON.stringify(tA.beatTypes) === JSON.stringify(tB.beatTypes) &&
         !!tA.senzaMisura === !!tB.senzaMisura &&
-        tA.symbol === tB.symbol;
+        tA.symbol === tB.symbol);
 }
 exports.timesEqual = timesEqual;
 function keysEqual(from, to) {
@@ -96,11 +98,12 @@ function keysEqual(from, to) {
     if (!keyA || !keyB) {
         return false;
     }
-    return keyA.fifths === keyB.fifths &&
+    return (keyA.fifths === keyB.fifths &&
         JSON.stringify(keyA.keySteps) === JSON.stringify(keyB.keySteps) &&
-        JSON.stringify(keyA.keyAccidentals) === JSON.stringify(keyB.keyAccidentals) &&
+        JSON.stringify(keyA.keyAccidentals) ===
+            JSON.stringify(keyB.keyAccidentals) &&
         JSON.stringify(keyA.keyAlters) === JSON.stringify(keyB.keyAlters) &&
-        keyA.mode === keyB.mode;
+        keyA.mode === keyB.mode);
 }
 exports.keysEqual = keysEqual;
 function approximateWidth(attributes, atEnd) {
@@ -138,17 +141,17 @@ function keyWidths(spec) {
     }
     var accidentalCount = Math.min(7, Math.abs(spec.fifths));
     var idxes = lodash_1.times(accidentalCount, function (i) { return (i + Math.max(0, Math.abs(spec.fifths) - 7)) % 7; });
-    lodash_1.forEach(idxes, function (i) { return widths[i] = getWidth(i, spec.fifths >= 0); });
+    lodash_1.forEach(idxes, function (i) { return (widths[i] = getWidth(i, spec.fifths >= 0)); });
     return widths;
     function getWidth(i, sharp) {
         switch (true) {
-            case (sharp && 7 + i < spec.fifths):
+            case sharp && 7 + i < spec.fifths:
                 return exports.DOUBLE_SHARP_WIDTH;
-            case (sharp && 7 + i >= spec.fifths):
+            case sharp && 7 + i >= spec.fifths:
                 return exports.SHARP_WIDTH;
-            case (!sharp && (7 + i < -spec.fifths)):
+            case !sharp && 7 + i < -spec.fifths:
                 return exports.DOUBLE_FLAT_WIDTH;
-            case (!sharp && (7 + i >= -spec.fifths)):
+            case !sharp && 7 + i >= -spec.fifths:
                 return exports.FLAT_WIDTH;
             default:
                 throw new Error("Impossible.");
@@ -163,7 +166,10 @@ function getNativeKeyAccidentals(spec) {
     if (spec.fifths) {
         var accCount = Math.min(7, Math.abs(spec.fifths));
         var sharp_1 = spec.fifths >= 0;
-        (sharp_1 ? sharps : flats).slice(0, accCount).split("").forEach(function (note) {
+        (sharp_1 ? sharps : flats)
+            .slice(0, accCount)
+            .split("")
+            .forEach(function (note) {
             accidentals[note] = sharp_1 ? 1 : -1;
         });
     }

@@ -16,43 +16,44 @@
  * along with Satie.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import {Position, Notehead} from "musicxml-interfaces";
-import {createFactory, Component} from "react";
+import * as React from "react";
+import { Position, Notehead } from "musicxml-interfaces";
+import { Component } from "react";
 import * as PropTypes from "prop-types";
 
 import Glyph from "./private_views_glyph";
 
-const $Glyph = createFactory(Glyph);
-
 export interface IProps {
-    key?: string | number;
-    spec: Notehead | Position;
-    notehead: string;
+  key?: string | number;
+  spec: Notehead | Position;
+  notehead: string;
 }
 
 /**
  * Renders a notehead.
  */
 export default class NoteheadView extends Component<IProps, {}> {
-    static contextTypes = {
-        originY: PropTypes.number.isRequired
-    } as any;
+  static contextTypes = {
+    originY: PropTypes.number.isRequired,
+  } as any;
 
-    context: {
-        originY: number;
-    };
+  context: {
+    originY: number;
+  };
 
-    render(): any {
-        let spec = this.props.spec;
-        let pos = <Position> spec;
-        let head = <Notehead> spec;
+  render(): any {
+    let spec = this.props.spec;
+    let pos = spec as Position;
+    let head = spec as Notehead;
 
-        return $Glyph({
-            fill: head.color,
-            glyphName: this.props.notehead,
-            // scale: this.props.grace ? 0.6 : 1.0,
-            x: pos.defaultX + (pos.relativeX || 0),
-            y: this.context.originY - pos.defaultY - (pos.relativeY || 0)
-        });
-    }
+    return (
+      <Glyph
+        fill={head.color}
+        glyphName={this.props.notehead}
+        // scale: this.props.grace ? 0.6 : 1.0,
+        x={pos.defaultX + (pos.relativeX || 0)}
+        y={this.context.originY - pos.defaultY - (pos.relativeY || 0)}
+      />
+    );
+  }
 }

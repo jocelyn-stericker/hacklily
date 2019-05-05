@@ -25,7 +25,7 @@ import { IModel, ILayout } from "./document";
 declare function Export(constructors: {
     [key: number]: any;
 }): void;
-declare module Export {
+declare namespace Export {
     interface IProxyModel extends IModel {
     }
     interface IProxyLayout extends ILayout {

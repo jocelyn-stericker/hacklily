@@ -15,9 +15,6 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with Satie.  If not, see <http://www.gnu.org/licenses/>.
  */
-/**
- * @file Renders a tuplet number, for tuplets in beams and unbeamed tuplets.
- */
 import { Tuplet } from "musicxml-interfaces";
 import { Component } from "react";
 export interface IProps {

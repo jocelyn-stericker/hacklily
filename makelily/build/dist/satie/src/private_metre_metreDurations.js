@@ -30,19 +30,24 @@ var private_chordUtil_1 = require("./private_chordUtil");
  */
 function _makeDuration(spec) {
     invariant_1.default(!spec.timeModification, "timeModification is not implemented in makeDuration");
-    return [{
-            dots: lodash_1.times(spec.dots || 0, function () { return {}; }),
+    return [
+        {
+            dots: lodash_1.times(spec.dots || 0, function () {
+                return {};
+            }),
             noteType: {
-                duration: spec.count
+                duration: spec.count,
             },
             _class: "Note",
-        }];
+        },
+    ];
 }
 function makeDuration(divPerQuarter, time, divisionsInDuration) {
     for (var count = 1; count <= 512; ++count) {
         for (var dots = 0; dots < 3; ++dots) {
             var spec = { count: count, dots: dots };
-            if (private_chordUtil_1.divisions(spec, { time: time, divisions: divPerQuarter }, true) === divisionsInDuration) {
+            if (private_chordUtil_1.divisions(spec, { time: time, divisions: divPerQuarter }, true) ===
+                divisionsInDuration) {
                 return _makeDuration(spec);
             }
         }

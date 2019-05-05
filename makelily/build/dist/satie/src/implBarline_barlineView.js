@@ -22,7 +22,7 @@ var __extends = (this && this.__extends) || (function () {
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
             function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
         return extendStatics(d, b);
-    }
+    };
     return function (d, b) {
         extendStatics(d, b);
         function __() { this.constructor = d; }
@@ -40,15 +40,13 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+var React = __importStar(require("react"));
 var musicxml_interfaces_1 = require("musicxml-interfaces");
 var react_1 = require("react");
-var DOM = __importStar(require("react-dom-factories"));
 var PropTypes = __importStar(require("prop-types"));
 var lodash_1 = require("lodash");
 var private_views_line_1 = __importDefault(require("./private_views_line"));
 var implAttributes_attributesView_1 = __importDefault(require("./implAttributes_attributesView"));
-var $AttributesView = react_1.createFactory(implAttributes_attributesView_1.default);
-var $Line = react_1.createFactory(private_views_line_1.default);
 /**
  * Renders a full-stave-height barline at (x,y).
  * Does not do any interesting calculations.
@@ -70,8 +68,9 @@ var BarlineView = /** @class */ (function (_super) {
         // TODO: render BarStyleType.Tick:
         var yTop;
         var yBottom;
-        if (layout.partSymbol && layout.partSymbol.type !== musicxml_interfaces_1.PartSymbolType.None ||
-            layout.partGroups && lodash_1.some(layout.partGroups, function (group) { return group.groupBarline; })) {
+        if ((layout.partSymbol && layout.partSymbol.type !== musicxml_interfaces_1.PartSymbolType.None) ||
+            (layout.partGroups &&
+                lodash_1.some(layout.partGroups, function (group) { return group.groupBarline; }))) {
             yTop = this.context.systemTop;
             yBottom = this.context.systemBottom;
         }
@@ -80,25 +79,17 @@ var BarlineView = /** @class */ (function (_super) {
             yBottom = y + layout.height - layout.yOffset;
         }
         if (model.satieAttributes) {
-            model.satieAttributes.overrideX = layout.overrideX + model.satieAttribsOffset;
+            model.satieAttributes.overrideX =
+                layout.overrideX + model.satieAttribsOffset;
         }
-        return DOM.g(null, lodash_1.map(layout.lineStarts, function (start, idx) { return $Line({
-            key: idx,
-            stroke: model.barStyle.color,
-            strokeWidth: layout.lineWidths[idx],
-            x1: x + start + layout.lineWidths[idx] / 2,
-            x2: x + start + layout.lineWidths[idx] / 2,
-            y1: yTop,
-            y2: yBottom
-        }); }), model.satieAttributes && $AttributesView({
-            layout: model.satieAttributes
-        })
-        /* DOM.g */ );
+        return (React.createElement("g", null,
+            lodash_1.map(layout.lineStarts, function (start, idx) { return (React.createElement(private_views_line_1.default, { key: idx, stroke: model.barStyle.color, strokeWidth: layout.lineWidths[idx], x1: x + start + layout.lineWidths[idx] / 2, x2: x + start + layout.lineWidths[idx] / 2, y1: yTop, y2: yBottom })); }),
+            model.satieAttributes && (React.createElement(implAttributes_attributesView_1.default, { layout: model.satieAttributes }))));
     };
     BarlineView.contextTypes = {
         originY: PropTypes.number.isRequired,
         systemBottom: PropTypes.number.isRequired,
-        systemTop: PropTypes.number.isRequired
+        systemTop: PropTypes.number.isRequired,
     };
     return BarlineView;
 }(react_1.Component));

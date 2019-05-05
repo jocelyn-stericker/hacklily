@@ -22,7 +22,7 @@ var __extends = (this && this.__extends) || (function () {
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
             function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
         return extendStatics(d, b);
-    }
+    };
     return function (d, b) {
         extendStatics(d, b);
         function __() { this.constructor = d; }
@@ -40,28 +40,27 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+var React = __importStar(require("react"));
 var musicxml_interfaces_1 = require("musicxml-interfaces");
 var react_1 = require("react");
-var DOM = __importStar(require("react-dom-factories"));
 var lodash_1 = require("lodash");
 var implAttributes_accidentalView_1 = __importDefault(require("./implAttributes_accidentalView"));
 var implAttributes_attributesData_1 = require("./implAttributes_attributesData");
 var private_chordUtil_1 = require("./private_chordUtil");
-var $AccidentalView = react_1.createFactory(implAttributes_accidentalView_1.default);
 // TODO: this almost looks like logic -- move.
 var sharps = {
     // "FCGDAEB"
     alto: [4.5, 3, 5, 3.5, 2, 4, 2.5],
     bass: [4, 2.5, 4.5, 3, 1.5, 3.5, 2],
     tenor: [2, 4, 2.5, 4.5, 3, 5, 3.5],
-    treble: [5, 3.5, 5.5, 4, 2.5, 4.5, 3]
+    treble: [5, 3.5, 5.5, 4, 2.5, 4.5, 3],
 };
 var flats = {
     // "BEADGCF"
     alto: [2.5, 4, 2, 3.5, 1.5, 3, 1],
     bass: [2, 3.5, 1.5, 3, 1, 2.5, 0.5],
     tenor: [3.5, 5, 3, 4.5, 2.5, 4, 2],
-    treble: [3, 4.5, 2.5, 4, 2, 3.5, 1.5]
+    treble: [3, 4.5, 2.5, 4, 2, 3.5, 1.5],
 };
 /**
  * Renders a key signature.
@@ -72,12 +71,7 @@ var KeyView = /** @class */ (function (_super) {
         return _super !== null && _super.apply(this, arguments) || this;
     }
     KeyView.prototype.render = function () {
-        return DOM.g(null, lodash_1.map(this.getAccidentals(), function (accidental, idx) { return $AccidentalView({
-            key: idx,
-            spec: accidental
-        }); }
-        /* map */ )
-        /* DOM.g */ );
+        return (React.createElement("g", null, lodash_1.map(this.getAccidentals(), function (accidental, idx) { return (React.createElement(implAttributes_accidentalView_1.default, { key: idx, spec: accidental })); })));
     };
     /**
      * Returns an array representing the position and glyphName of each accidental.
@@ -97,7 +91,9 @@ var KeyView = /** @class */ (function (_super) {
                 positions.push(x);
                 x += widths[idxes_1[i]];
             }
-            return lodash_1.map(idxes_1, function (i) { return makeAccidentalFromSharps(idxes_1, i, spec.fifths >= 0); });
+            return lodash_1.map(idxes_1, function (i) {
+                return makeAccidentalFromSharps(idxes_1, i, spec.fifths >= 0);
+            });
         }
         for (var i = 0; i < widths.length; ++i) {
             positions.push(x);
@@ -153,7 +149,7 @@ var KeyView = /** @class */ (function (_super) {
                     defaultX: spec.defaultX + positions[idx],
                     defaultY: spec.defaultY + (line - 3) * 10,
                     relativeX: spec.relativeX,
-                    relativeY: (spec.relativeY || 0)
+                    relativeY: spec.relativeY || 0,
                 };
             });
         }
@@ -161,16 +157,16 @@ var KeyView = /** @class */ (function (_super) {
         function makeAccidentalFromSharps(idxes, i, sharp) {
             var accidental;
             switch (true) {
-                case (sharp && 7 + idxes[i] < spec.fifths):
+                case sharp && 7 + idxes[i] < spec.fifths:
                     accidental = musicxml_interfaces_1.MxmlAccidental.DoubleSharp;
                     break;
-                case (sharp && 7 + idxes[i] >= spec.fifths):
+                case sharp && 7 + idxes[i] >= spec.fifths:
                     accidental = musicxml_interfaces_1.MxmlAccidental.Sharp;
                     break;
-                case (!sharp && (7 + idxes[i] < -spec.fifths)):
+                case !sharp && 7 + idxes[i] < -spec.fifths:
                     accidental = musicxml_interfaces_1.MxmlAccidental.DoubleFlat;
                     break;
-                case (!sharp && (7 + idxes[i] >= -spec.fifths)):
+                case !sharp && 7 + idxes[i] >= -spec.fifths:
                     accidental = musicxml_interfaces_1.MxmlAccidental.Flat;
                     break;
                 default:
@@ -183,7 +179,7 @@ var KeyView = /** @class */ (function (_super) {
                 defaultX: spec.defaultX + positions[i],
                 defaultY: spec.defaultY + (line - 3) * 10,
                 relativeX: spec.relativeX,
-                relativeY: (spec.relativeY || 0)
+                relativeY: spec.relativeY || 0,
             };
         }
     };
@@ -191,13 +187,13 @@ var KeyView = /** @class */ (function (_super) {
 }(react_1.Component));
 function standardClef(clef) {
     switch (true) {
-        case (clef.sign === "G"):
+        case clef.sign === "G":
             return "treble";
-        case (clef.sign === "F"):
+        case clef.sign === "F":
             return "bass";
-        case (clef.sign === "C" && clef.line === 3):
+        case clef.sign === "C" && clef.line === 3:
             return "alto";
-        case (clef.sign === "C" && clef.line === 4):
+        case clef.sign === "C" && clef.line === 4:
             return "tenor";
         default:
             console.warn("Invalid clef?");

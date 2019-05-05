@@ -38,8 +38,8 @@ export interface IReadOnlyValidationCursor {
     readonly factory: IFactory;
     readonly fixup: (operations: IAny[]) => void;
     readonly preview: boolean;
-    dangerouslyPatchWithoutValidation(builder: (partBuilder: VoiceBuilder & StaffBuilder) => (VoiceBuilder | StaffBuilder)): void;
-    patch(builder: (partBuilder: VoiceBuilder & StaffBuilder) => (VoiceBuilder | StaffBuilder)): void;
+    dangerouslyPatchWithoutValidation(builder: (partBuilder: VoiceBuilder & StaffBuilder) => VoiceBuilder | StaffBuilder): void;
+    patch(builder: (partBuilder: VoiceBuilder & StaffBuilder) => VoiceBuilder | StaffBuilder): void;
 }
 /**
  * Holds information about the context in which an element is processed.
@@ -82,8 +82,8 @@ export declare class ValidationCursor {
         measureIsLast: boolean;
         singleLineMode: boolean;
     });
-    dangerouslyPatchWithoutValidation(builder: (partBuilder: VoiceBuilder & StaffBuilder) => (VoiceBuilder | StaffBuilder)): void;
-    patch(builder: (partBuilder: VoiceBuilder & StaffBuilder) => (VoiceBuilder | StaffBuilder), dangerous?: boolean): void;
+    dangerouslyPatchWithoutValidation(builder: (partBuilder: VoiceBuilder & StaffBuilder) => VoiceBuilder | StaffBuilder): void;
+    patch(builder: (partBuilder: VoiceBuilder & StaffBuilder) => VoiceBuilder | StaffBuilder, dangerous?: boolean): void;
     advance(divs: number): void;
 }
 export declare class LayoutCursor {

@@ -22,7 +22,7 @@ var __extends = (this && this.__extends) || (function () {
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
             function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
         return extendStatics(d, b);
-    }
+    };
     return function (d, b) {
         extendStatics(d, b);
         function __() { this.constructor = d; }
@@ -37,8 +37,8 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+var React = __importStar(require("react"));
 var react_1 = require("react");
-var DOM = __importStar(require("react-dom-factories"));
 var PropTypes = __importStar(require("prop-types"));
 var private_smufl_1 = require("./private_smufl");
 var private_fontManager_1 = require("./private_fontManager");
@@ -56,22 +56,13 @@ var Glyph = /** @class */ (function (_super) {
         var py = this.props.y;
         if (this.context.renderTarget === "svg-export") {
             var pathData = private_fontManager_1.toPathData("Bravura", private_smufl_1.getGlyphCode(this.props.glyphName), px, py, 40 * (this.props.scale || 1));
-            return DOM.path({ d: pathData }, null);
+            return React.createElement("path", { d: pathData });
         }
-        var text = DOM.text({
-            className: "mn_",
-            fill: this.props.fill,
-            fillOpacity: this.props.opacity,
-            fontSize: 40 * (this.props.scale || 1),
-            strokeOpacity: this.props.opacity,
-            transform: this.props.transform,
-            x: px,
-            y: py
-        }, private_smufl_1.getGlyphCode(this.props.glyphName));
+        var text = (React.createElement("text", { className: "mn_", fill: this.props.fill, fillOpacity: this.props.opacity, fontSize: 40 * (this.props.scale || 1), strokeOpacity: this.props.opacity, transform: this.props.transform, x: px, y: py }, private_smufl_1.getGlyphCode(this.props.glyphName)));
         return text;
     };
     Glyph.contextTypes = {
-        renderTarget: PropTypes.oneOf(["svg-web", "svg-export"])
+        renderTarget: PropTypes.oneOf(["svg-web", "svg-export"]),
     };
     return Glyph;
 }(react_1.Component));

@@ -26,7 +26,7 @@ import {
   StemType,
   Tremolo,
   TimeModification,
-  serializeNote
+  serializeNote,
 } from "musicxml-interfaces";
 import { forEach, times, reduce, map, max, some } from "lodash";
 import invariant from "invariant";
@@ -50,7 +50,7 @@ import {
   getNoteheadGlyph,
   divisions as calcDivisions,
   FractionalDivisionsException,
-  barDivisions
+  barDivisions,
 } from "./private_chordUtil";
 import { IReadOnlyValidationCursor, LayoutCursor } from "./private_cursor";
 import { VoiceBuilder } from "./engine_createPatch";
@@ -85,7 +85,7 @@ let countToNotehead: { [key: number]: string } = {
   [Count._128th]: "noteheadBlack",
   [Count._256th]: "noteheadBlack",
   [Count._512th]: "noteheadBlack",
-  [Count._1024th]: "noteheadBlack"
+  [Count._1024th]: "noteheadBlack",
 };
 
 let countToRest: { [key: number]: string } = {
@@ -103,7 +103,7 @@ let countToRest: { [key: number]: string } = {
   [Count._128th]: "rest128th",
   [Count._256th]: "rest256th",
   [Count._512th]: "rest512th",
-  [Count._1024th]: "rest1024th"
+  [Count._1024th]: "rest1024th",
 };
 
 /**
@@ -230,8 +230,8 @@ class ChordModelImpl implements ChordModel.IChordModel, ArrayLike<NoteImpl> {
           this,
           (builder, note, idx) =>
             builder.note(idx, j => j.noteType({ duration: count })) as any,
-          voice
-        )
+          voice,
+        ),
       );
     }
     try {
@@ -246,11 +246,11 @@ class ChordModelImpl implements ChordModel.IChordModel, ArrayLike<NoteImpl> {
               "voices",
               cursor.segmentInstance.owner,
               cursor.segmentPosition,
-              "divCount"
+              "divCount",
             ],
             oi: divCount,
-            od: this.divCount
-          }
+            od: this.divCount,
+          },
         ]);
       }
     } catch (err) {
@@ -259,8 +259,8 @@ class ChordModelImpl implements ChordModel.IChordModel, ArrayLike<NoteImpl> {
           {
             p: ["divisions"],
             oi: (err as FractionalDivisionsException).requiredDivisions,
-            od: cursor.staffAttributes.divisions
-          }
+            od: cursor.staffAttributes.divisions,
+          },
         ]);
       }
     }
@@ -276,16 +276,16 @@ class ChordModelImpl implements ChordModel.IChordModel, ArrayLike<NoteImpl> {
     forEach(this, (note, idx) => {
       if (!note.grace && note.duration !== this.divCount) {
         cursor.patch(partBuilder =>
-          partBuilder.note(idx, note => note.duration(this.divCount))
+          partBuilder.note(idx, note => note.duration(this.divCount)),
         );
       }
       if (idx > 0 && !note.chord) {
         cursor.patch(partBuilder =>
-          partBuilder.note(idx, note => note.chord({}))
+          partBuilder.note(idx, note => note.chord({})),
         );
       } else if (idx === 0 && note.chord) {
         cursor.patch(partBuilder =>
-          partBuilder.note(idx, note => note.chord(null))
+          partBuilder.note(idx, note => note.chord(null)),
         );
       }
       note.refresh(cursor);
@@ -307,7 +307,7 @@ class ChordModelImpl implements ChordModel.IChordModel, ArrayLike<NoteImpl> {
             cursor.patch(voice =>
               voice
                 .note(notesSortedByY[i]._idx, note => note.relativeX(0))
-                .note(notesSortedByY[i + 1]._idx, note => note.relativeX(13))
+                .note(notesSortedByY[i + 1]._idx, note => note.relativeX(13)),
             );
           }
         } else {
@@ -318,7 +318,7 @@ class ChordModelImpl implements ChordModel.IChordModel, ArrayLike<NoteImpl> {
             cursor.patch(voice =>
               voice
                 .note(notesSortedByY[i]._idx, note => note.relativeX(-13))
-                .note(notesSortedByY[i + 1]._idx, note => note.relativeX(0))
+                .note(notesSortedByY[i + 1]._idx, note => note.relativeX(0)),
             );
           }
         }
@@ -326,7 +326,7 @@ class ChordModelImpl implements ChordModel.IChordModel, ArrayLike<NoteImpl> {
       } else {
         if (notesSortedByY[i].relativeX !== 0) {
           cursor.patch(voice =>
-            voice.note(notesSortedByY[i]._idx, note => note.relativeX(0))
+            voice.note(notesSortedByY[i]._idx, note => note.relativeX(0)),
           );
         }
       }
@@ -340,14 +340,14 @@ class ChordModelImpl implements ChordModel.IChordModel, ArrayLike<NoteImpl> {
     invariant(
       isFinite(count) && count !== null,
       "%s is not a valid count",
-      count
+      count,
     );
     for (let i = 0; i < this.length; ++i) {
       invariant(
         this[i].noteType.duration === count,
         "Inconsistent count (%s != %s)",
         this[i].noteType.duration,
-        count
+        count,
       );
     }
 
@@ -365,7 +365,7 @@ class ChordModelImpl implements ChordModel.IChordModel, ArrayLike<NoteImpl> {
         this.satieStem = {
           direction,
           stemHeight: this._getStemHeight(direction, clef),
-          stemStart: startingLine(this, direction, clef)
+          stemStart: startingLine(this, direction, clef),
         };
         this.satieDirection = direction === 1 ? StemType.Up : StemType.Down;
       } else {
@@ -420,7 +420,7 @@ class ChordModelImpl implements ChordModel.IChordModel, ArrayLike<NoteImpl> {
       "Invalid extraWidth %s. shortest is %s, got %s",
       extraWidth,
       shortest,
-      this.divCount
+      this.divCount,
     );
 
     const totalWidth =
@@ -435,11 +435,11 @@ class ChordModelImpl implements ChordModel.IChordModel, ArrayLike<NoteImpl> {
         (maxWidth, note) => {
           const w = Math.max(
             maxWidth,
-            note.accidental ? -note.accidental.defaultX : 0
+            note.accidental ? -note.accidental.defaultX : 0,
           );
           return w;
         },
-        0
+        0,
       ) * ACCIDENTAL_WIDTH
     );
   }
@@ -456,7 +456,7 @@ class ChordModelImpl implements ChordModel.IChordModel, ArrayLike<NoteImpl> {
     const { time, divisions } = cursor.staffAttributes;
     const ts = {
       beatType: time.beatTypes[0], // FIXME
-      beats: reduce(time.beats, (sum, beat) => sum + parseInt(beat, 10), 0)
+      beats: reduce(time.beats, (sum, beat) => sum + parseInt(beat, 10), 0),
     };
 
     let factor = ts.beatType / 4;
@@ -481,8 +481,8 @@ class ChordModelImpl implements ChordModel.IChordModel, ArrayLike<NoteImpl> {
           times(this.length),
           (voice, idx) =>
             voice.note(idx, note => note.dots(times(dots, dot => ({})))),
-          voiceA as VoiceBuilder
-        )
+          voiceA as VoiceBuilder,
+        ),
       );
     }
 
@@ -498,7 +498,7 @@ class ChordModelImpl implements ChordModel.IChordModel, ArrayLike<NoteImpl> {
       } else {
         let nextPO2 = Math.pow(
           2,
-          Math.ceil(Math.log(this.count) / Math.log(2))
+          Math.ceil(Math.log(this.count) / Math.log(2)),
         );
         count = nextPO2;
         // TODO: Add 1+ tie.
@@ -531,12 +531,12 @@ class ChordModelImpl implements ChordModel.IChordModel, ArrayLike<NoteImpl> {
     if (idealExtreme >= 65) {
       result = Math.max(
         MIN_STEM_HEIGHT,
-        IDEAL_STEM_HEIGHT - (idealExtreme - 65)
+        IDEAL_STEM_HEIGHT - (idealExtreme - 65),
       );
     } else if (idealExtreme <= -15) {
       result = Math.max(
         MIN_STEM_HEIGHT,
-        IDEAL_STEM_HEIGHT - (-15 - idealExtreme)
+        IDEAL_STEM_HEIGHT - (-15 - idealExtreme),
       );
     } else {
       result = 35;
@@ -573,7 +573,7 @@ class ChordModelImpl implements ChordModel.IChordModel, ArrayLike<NoteImpl> {
       // TODO: Handle clef changes correctly
 
       let notes: ChordModelImpl[] = cursor.segmentInstance.filter(el =>
-        cursor.factory.modelHasType(el, Type.Chord)
+        cursor.factory.modelHasType(el, Type.Chord),
       ) as any;
       let nIdx = notes.indexOf(this);
 
@@ -601,7 +601,7 @@ class ChordModelImpl implements ChordModel.IChordModel, ArrayLike<NoteImpl> {
       let { time } = cursor.staffAttributes;
       let beamingPattern = getBeamingPattern(time);
       let bpDivisions = map(beamingPattern, seg =>
-        calcDivisions(seg, cursor.staffAttributes)
+        calcDivisions(seg, cursor.staffAttributes),
       );
       let currDivision = cursor.segmentDivision;
       let prevDivisionStart = 0;
@@ -650,7 +650,7 @@ class ChordModelImpl implements ChordModel.IChordModel, ArrayLike<NoteImpl> {
           note.notehead.type = NoteheadType.Slash;
           if (!measureStyle.slash.useStems) {
             note.stem = {
-              type: StemType.None
+              type: StemType.None,
             };
           }
         }
@@ -665,11 +665,11 @@ class ChordModelImpl implements ChordModel.IChordModel, ArrayLike<NoteImpl> {
     } else {
       this.noteheadGlyph = times(
         this.length,
-        () => countToNotehead[this.count]
+        () => countToNotehead[this.count],
       );
     }
     this.noteheadGlyph = this.noteheadGlyph.map((stdGlyph, idx) =>
-      getNoteheadGlyph(this[idx].notehead, stdGlyph)
+      getNoteheadGlyph(this[idx].notehead, stdGlyph),
     );
   }
 
@@ -746,17 +746,17 @@ namespace ChordModelImpl {
         invariant(
           !!staff,
           "Expected the staff to be a non-zero number, got %s",
-          staff
+          staff,
         );
         let paddingTop = cursor.lineMaxPaddingTopByStaff[staff] || 0;
         let paddingBottom = cursor.lineMaxPaddingBottomByStaff[staff] || 0;
         cursor.lineMaxPaddingTopByStaff[staff] = Math.max(
           paddingTop,
-          note.defaultY - 50
+          note.defaultY - 50,
         );
         cursor.lineMaxPaddingBottomByStaff[staff] = Math.max(
           paddingBottom,
-          -note.defaultY - 25
+          -note.defaultY - 25,
         );
       });
 
@@ -804,7 +804,7 @@ namespace ChordModelImpl {
 
     private _detachModelWithContext(
       cursor: LayoutCursor,
-      baseModel: ChordModelImpl
+      baseModel: ChordModelImpl,
     ): ChordModel.IDetachedChordModel {
       let model: ChordModel.IDetachedChordModel = map(
         baseModel,
@@ -818,19 +818,19 @@ namespace ChordModelImpl {
                 return (
                   (note.relativeX || 0) + ((this as any).overrideX || this.x)
                 );
-              }
+              },
             },
             stem: {
               get: () => {
                 return (
                   baseModel.stem || {
-                    type: baseModel.satieDirection
+                    type: baseModel.satieDirection,
                   }
                 );
-              }
-            }
+              },
+            },
           });
-        }
+        },
       ) as any;
 
       model.stemX = () => (this as any).overrideX || this.x;

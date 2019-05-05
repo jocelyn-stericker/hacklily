@@ -40,24 +40,26 @@ function center(options, bounds, measures) {
                     var attribIdx = lodash_1.findIndex(measure.elements[0], function (el) { return el.renderClass === document_1.Type.Attributes && el.renderedWidth > 0; });
                     var base = 0;
                     if (attribIdx !== -1 && attribIdx < j) {
-                        base = measure.elements[0][attribIdx].overrideX +
-                            measure.elements[0][attribIdx].renderedWidth;
+                        base =
+                            measure.elements[0][attribIdx].overrideX +
+                                measure.elements[0][attribIdx].renderedWidth;
                         measureSpaceRemaining = lodash_1.last(measure.elements[i]).overrideX - base;
                     }
                     else if (measures[measureIdx - 1]) {
-                        measureSpaceRemaining = lodash_1.last(measure.elements[i]).overrideX -
-                            (measures[measureIdx - 1].width -
-                                lodash_1.last(measures[measureIdx - 1].elements[0]).overrideX);
+                        measureSpaceRemaining =
+                            lodash_1.last(measure.elements[i]).overrideX -
+                                (measures[measureIdx - 1].width -
+                                    lodash_1.last(measures[measureIdx - 1].elements[0]).overrideX);
                     }
                     else {
                         measureSpaceRemaining = lodash_1.last(measure.elements[i]).overrideX;
                     }
-                    if (measures[measureIdx + 1] && measures[measureIdx + 1].width === 0) {
+                    if (measures[measureIdx + 1] &&
+                        measures[measureIdx + 1].width === 0) {
                         measureSpaceRemaining += 16.6;
                     }
                     measure.elements[i][j].x =
-                        base + measureSpaceRemaining / 2 -
-                            intrinsicWidth / 2;
+                        base + measureSpaceRemaining / 2 - intrinsicWidth / 2;
                 }
             }
         });

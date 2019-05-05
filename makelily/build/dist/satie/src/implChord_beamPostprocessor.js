@@ -113,7 +113,7 @@ function beam(options, bounds, measures) {
                         initial: null,
                         attributes: activeAttributes._snapshot,
                         counts: [1],
-                        tuplet: startTuplet
+                        tuplet: startTuplet,
                     };
                 }
                 else {
@@ -123,16 +123,19 @@ function beam(options, bounds, measures) {
                         }
                     });
                 }
-                if (stopTuplet && activeUnbeamedTuplets[voice] &&
+                if (stopTuplet &&
+                    activeUnbeamedTuplets[voice] &&
                     activeUnbeamedTuplets[voice][stopTuplet.number || 1]) {
                     toTerminate.push({
                         voice: voice,
                         isUnbeamedTuplet: true,
                         idx: stopTuplet.number || 1,
-                        beamSet: activeUnbeamedTuplets
+                        beamSet: activeUnbeamedTuplets,
                     });
                 }
-                lodash_1.chain(beams).sortBy("number").forEach(function (beam) {
+                lodash_1.chain(beams)
+                    .sortBy("number")
+                    .forEach(function (beam) {
                     var idx = beam.number;
                     invariant_1.default(!!idx, "A beam's number must be defined in MusicXML.");
                     invariant_1.default(!!voice, "A beam's voice must be defined in MusicXML.");
@@ -153,7 +156,7 @@ function beam(options, bounds, measures) {
                                 initial: beam,
                                 attributes: activeAttributes._snapshot,
                                 counts: [1],
-                                tuplet: startTuplet
+                                tuplet: startTuplet,
                             };
                             var counts = activeBeams[voice][1].counts;
                             if (idx !== 1) {
@@ -182,7 +185,7 @@ function beam(options, bounds, measures) {
                                 voice: voice,
                                 idx: idx,
                                 isUnbeamedTuplet: false,
-                                beamSet: activeBeams
+                                beamSet: activeBeams,
                             });
                             var groupTuplet = activeBeams[voice][idx].tuplet;
                             if (groupTuplet && !stopTuplet) {
@@ -190,14 +193,15 @@ function beam(options, bounds, measures) {
                                 // beyond the beam. Detach the tuplet from the beam, and create an
                                 // unbeamed tuplet.
                                 activeBeams[voice][idx].tuplet = null;
-                                activeUnbeamedTuplets[voice] = activeUnbeamedTuplets[voice] || [];
+                                activeUnbeamedTuplets[voice] =
+                                    activeUnbeamedTuplets[voice] || [];
                                 activeUnbeamedTuplets[voice][groupTuplet.number || 1] = {
                                     number: groupTuplet.number || 1,
                                     elements: activeBeams[voice][idx].elements.slice(),
                                     initial: null,
                                     attributes: activeBeams[voice][idx].attributes,
                                     counts: activeBeams[voice][idx].counts.slice(),
-                                    tuplet: groupTuplet
+                                    tuplet: groupTuplet,
                                 };
                             }
                             break;
@@ -218,7 +222,8 @@ function beam(options, bounds, measures) {
                         default:
                             throw new Error("Unknown type " + beam.type);
                     }
-                }).value();
+                })
+                    .value();
                 lodash_1.forEach(toTerminate, function (t) {
                     return terminateBeam(t.voice, t.idx, t.beamSet, t.isUnbeamedTuplet);
                 });
@@ -261,7 +266,7 @@ function layoutBeam(voice, idx, beamSet, isUnbeamedTuplet) {
     });
     var line1 = private_chordUtil_1.startingLine(firstChord, direction, clef);
     var line2 = private_chordUtil_1.startingLine(lastChord, direction, clef);
-    var slope = (line2 - line1) / (lodash_1.last(Xs) - lodash_1.first(Xs)) * 10;
+    var slope = ((line2 - line1) / (lodash_1.last(Xs) - lodash_1.first(Xs))) * 10;
     var stemHeight1 = 35;
     // Limit the slope to the range (-50, 50)
     if (slope > 0.5) {
@@ -272,10 +277,10 @@ function layoutBeam(voice, idx, beamSet, isUnbeamedTuplet) {
     }
     var intercept = line1 * 10 + stemHeight1;
     function getStemHeight(direction, idx, line) {
-        return intercept * direction +
+        return (intercept * direction +
             (direction === 1 ? 0 : 69) +
             slope * (Xs[idx] - lodash_1.first(Xs)) * direction -
-            direction * line * 10;
+            direction * line * 10);
     }
     // When the slope causes near-collisions, eliminate the slope.
     var minStemHeight = 1000;
@@ -285,7 +290,8 @@ function layoutBeam(voice, idx, beamSet, isUnbeamedTuplet) {
         var stemHeight = getStemHeight(direction, idx, currHeightDeterminingLine);
         if (stemHeight < minStemHeight) {
             minStemHeight = stemHeight;
-            incrementalIntercept = direction * (30 - minStemHeight) + slope * (Xs[idx] - lodash_1.first(Xs));
+            incrementalIntercept =
+                direction * (30 - minStemHeight) + slope * (Xs[idx] - lodash_1.first(Xs));
         }
     });
     if (minStemHeight < 30) {
@@ -306,7 +312,9 @@ function layoutBeam(voice, idx, beamSet, isUnbeamedTuplet) {
                 direction: direction,
                 stemStart: stemStart,
                 stemHeight: stemHeight,
-                tremolo: lodash_1.first(layouts).satieStem ? lodash_1.first(layouts).satieStem.tremolo : null,
+                tremolo: lodash_1.first(layouts).satieStem
+                    ? lodash_1.first(layouts).satieStem.tremolo
+                    : null,
             };
         });
         var tuplet = Object.create(beam.tuplet);
@@ -319,7 +327,7 @@ function layoutBeam(voice, idx, beamSet, isUnbeamedTuplet) {
             x: Xs,
             y1: firstStem.stemStart * 10 + direction * firstStem.stemHeight + offsetY,
             y2: lastStem.stemStart * 10 + direction * lastStem.stemHeight + offsetY,
-            tuplet: tuplet
+            tuplet: tuplet,
         };
     }
     else {
@@ -343,7 +351,7 @@ function layoutBeam(voice, idx, beamSet, isUnbeamedTuplet) {
             x: Xs,
             y1: firstStem.stemStart * 10 + direction * firstStem.stemHeight - 30,
             y2: lastStem.stemStart * 10 + direction * lastStem.stemHeight - 30,
-            tuplet: beam.tuplet
+            tuplet: beam.tuplet,
         };
     }
 }

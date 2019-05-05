@@ -22,7 +22,7 @@ var __extends = (this && this.__extends) || (function () {
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
             function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
         return extendStatics(d, b);
-    }
+    };
     return function (d, b) {
         extendStatics(d, b);
         function __() { this.constructor = d; }
@@ -40,10 +40,10 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+var React = __importStar(require("react"));
 var react_1 = require("react");
 var PropTypes = __importStar(require("prop-types"));
 var private_views_glyph_1 = __importDefault(require("./private_views_glyph"));
-var $Glyph = react_1.createFactory(private_views_glyph_1.default);
 /**
  * Renders a notehead.
  */
@@ -56,16 +56,12 @@ var NoteheadView = /** @class */ (function (_super) {
         var spec = this.props.spec;
         var pos = spec;
         var head = spec;
-        return $Glyph({
-            fill: head.color,
-            glyphName: this.props.notehead,
+        return (React.createElement(private_views_glyph_1.default, { fill: head.color, glyphName: this.props.notehead, 
             // scale: this.props.grace ? 0.6 : 1.0,
-            x: pos.defaultX + (pos.relativeX || 0),
-            y: this.context.originY - pos.defaultY - (pos.relativeY || 0)
-        });
+            x: pos.defaultX + (pos.relativeX || 0), y: this.context.originY - pos.defaultY - (pos.relativeY || 0) }));
     };
     NoteheadView.contextTypes = {
-        originY: PropTypes.number.isRequired
+        originY: PropTypes.number.isRequired,
     };
     return NoteheadView;
 }(react_1.Component));

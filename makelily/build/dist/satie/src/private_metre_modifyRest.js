@@ -41,8 +41,10 @@ function voiceToRestSpec(segment, attributes, factory) {
     var spec = segment.reduce(function (restSpec, model) {
         var divCount = model.newDivisions || 0;
         var oldDivCount = model.previousDivisions || 0;
-        var restsAtEnd = model.previousDivisions > divCount ?
-            "r" + lodash_1.times(model.previousDivisions - divCount - 1, function () { return "_"; }).join("") : "";
+        var restsAtEnd = model.previousDivisions > divCount
+            ? "r" +
+                lodash_1.times(model.previousDivisions - divCount - 1, function () { return "_"; }).join("")
+            : "";
         var modelsToKill = restSpec.modelsToKill;
         if (divsToSuppress > 0) {
             var extraSong = divCount > divsToSuppress
@@ -71,14 +73,19 @@ function voiceToRestSpec(segment, attributes, factory) {
         if (divCount) {
             prevIdx = restSpec.models.length + divCount;
         }
-        var models = restSpec.models.concat(lodash_1.times(divCount, function () { return model; })).concat(restsAtEnd.split("").map(function () { return null; }));
+        var models = restSpec.models
+            .concat(lodash_1.times(divCount, function () { return model; }))
+            .concat(restsAtEnd.split("").map(function () { return null; }));
         if (divCount > oldDivCount) {
             killIdx = models.length;
             divsToSuppress = divCount - oldDivCount;
         }
         if (model.rest && !model.forced && divCount) {
             return {
-                song: restSpec.song + "r" + lodash_1.times(divCount - 1, function () { return "_"; }).join("") + restsAtEnd,
+                song: restSpec.song +
+                    "r" +
+                    lodash_1.times(divCount - 1, function () { return "_"; }).join("") +
+                    restsAtEnd,
                 models: models,
                 modelsToKill: modelsToKill,
             };
@@ -103,7 +110,9 @@ function voiceToRestSpec(segment, attributes, factory) {
 exports.voiceToRestSpec = voiceToRestSpec;
 function _cleanupRests(pattern, time) {
     var ts = private_metre_getTSString_1.default(time);
-    var next = function () { return private_metre_checkRests_1.default(ts, pattern.length, pattern, { dotsAllowed: true }); };
+    var next = function () {
+        return private_metre_checkRests_1.default(ts, pattern.length, pattern, { dotsAllowed: true });
+    };
     var operationsRemaining = 15;
     for (var status_1 = next(); status_1 !== "GOOD"; status_1 = next()) {
         if (!--operationsRemaining) {
@@ -179,7 +188,9 @@ function simplifyRests(segment, factory, attributes) {
                 ++cleanRestEnd;
             }
             var newDuration = D.makeDuration(attributes.divisions, attributes.time, cleanRestEnd - i);
-            if (originalSpec.song[i] === "r" || originalModel === "killed" || !originalModel) {
+            if (originalSpec.song[i] === "r" ||
+                originalModel === "killed" ||
+                !originalModel) {
                 // Check if the length of the rest needs to be changed
                 var originalRestEnd = i + 1;
                 while (originalSpec.song[originalRestEnd] === "_") {

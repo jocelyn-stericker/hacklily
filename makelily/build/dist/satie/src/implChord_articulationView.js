@@ -22,7 +22,7 @@ var __extends = (this && this.__extends) || (function () {
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
             function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
         return extendStatics(d, b);
-    }
+    };
     return function (d, b) {
         extendStatics(d, b);
         function __() { this.constructor = d; }
@@ -40,12 +40,11 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+var React = __importStar(require("react"));
 var musicxml_interfaces_1 = require("musicxml-interfaces");
 var react_1 = require("react");
-var DOM = __importStar(require("react-dom-factories"));
 var PropTypes = __importStar(require("prop-types"));
 var private_views_glyph_1 = __importDefault(require("./private_views_glyph"));
-var $Glyph = react_1.createFactory(private_views_glyph_1.default);
 var Articulation = /** @class */ (function (_super) {
     __extends(Articulation, _super);
     function Articulation() {
@@ -75,10 +74,10 @@ var Articulation = /** @class */ (function (_super) {
         // "caesuraCurved": "U+E4D4",
         // "caesuraShort": "U+E4D3",
         // "caesuraThick": "U+E4D2",
-        var append = function (type, name, directioned) {
+        var append = function (artType, name, directioned) {
             if (directioned === void 0) { directioned = true; }
-            var printStyle = type;
-            var placement = type;
+            var printStyle = artType;
+            var placement = artType;
             var direction = (function () {
                 if (!directioned) {
                     return "";
@@ -92,14 +91,12 @@ var Articulation = /** @class */ (function (_super) {
                     default:
                         return "Above";
                 }
-            }());
-            children.push($Glyph({
-                fill: "black",
-                glyphName: "" + name + direction,
-                key: name,
-                x: _this.props.defaultX + printStyle.defaultX + (printStyle.relativeX || 0),
-                y: (_this.context.originY || 0) - printStyle.defaultY - (printStyle.relativeY || 0)
-            }));
+            })();
+            children.push(React.createElement(private_views_glyph_1.default, { fill: "black", glyphName: "" + name + direction, key: name, x: _this.props.defaultX +
+                    printStyle.defaultX +
+                    (printStyle.relativeX || 0), y: (_this.context.originY || 0) -
+                    printStyle.defaultY -
+                    (printStyle.relativeY || 0) }));
         };
         if (model.accent) {
             append(model.accent, "articAccent");
@@ -152,7 +149,7 @@ var Articulation = /** @class */ (function (_super) {
             case 1:
                 return children[0];
             default:
-                return DOM.g(null, children);
+                return React.createElement("g", null, children);
         }
     };
     Articulation.contextTypes = {

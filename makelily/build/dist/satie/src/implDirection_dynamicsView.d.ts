@@ -17,6 +17,7 @@
  */
 import { Dynamics, Direction } from "musicxml-interfaces";
 import { ReactElement, Component } from "react";
+import * as PropTypes from "prop-types";
 export interface IProps {
     layout: {
         model: Direction;
@@ -25,7 +26,9 @@ export interface IProps {
     key?: string | number;
 }
 export default class DynamicsView extends Component<IProps, {}> {
-    static contextTypes: any;
+    static contextTypes: {
+        originY: PropTypes.Requireable<number>;
+    };
     context: {
         originY: number;
     };

@@ -22,7 +22,7 @@ var __extends = (this && this.__extends) || (function () {
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
             function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
         return extendStatics(d, b);
-    }
+    };
     return function (d, b) {
         extendStatics(d, b);
         function __() { this.constructor = d; }
@@ -37,8 +37,8 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+var React = __importStar(require("react"));
 var react_1 = require("react");
-var DOM = __importStar(require("react-dom-factories"));
 /**
  * Responsible for the rendering of a dot as part of a dotted note.
  * This is not used to render staccatos.
@@ -50,13 +50,8 @@ var Dot = /** @class */ (function (_super) {
     }
     Dot.prototype.render = function () {
         // See rationale for hidden rect in _glyph.jsx
-        return DOM.g(null, DOM.circle({
-            cx: this.props.x,
-            cy: this.props.y,
-            fill: this.props.fill,
-            r: this.props.radius,
-        } /*DOM.circle*/)
-        /*DOM.g*/ );
+        return (React.createElement("g", null,
+            React.createElement("circle", { cx: this.props.x, cy: this.props.y, fill: this.props.fill, r: this.props.radius })));
     };
     return Dot;
 }(react_1.Component));

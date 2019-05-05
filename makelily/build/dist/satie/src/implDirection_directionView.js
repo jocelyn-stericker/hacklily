@@ -25,7 +25,7 @@ var __extends = (this && this.__extends) || (function () {
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
             function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
         return extendStatics(d, b);
-    }
+    };
     return function (d, b) {
         extendStatics(d, b);
         function __() { this.constructor = d; }
@@ -43,16 +43,13 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+var React = __importStar(require("react"));
 var react_1 = require("react");
-var DOM = __importStar(require("react-dom-factories"));
 var PropTypes = __importStar(require("prop-types"));
 var lodash_1 = require("lodash");
 var private_views_glyph_1 = __importDefault(require("./private_views_glyph"));
 var implDirection_dynamicsView_1 = __importDefault(require("./implDirection_dynamicsView"));
 var implDirection_wordsView_1 = __importDefault(require("./implDirection_wordsView"));
-var $Glyph = react_1.createFactory(private_views_glyph_1.default);
-var $Dynamics = react_1.createFactory(implDirection_dynamicsView_1.default);
-var $Words = react_1.createFactory(implDirection_wordsView_1.default);
 var DirectionView = /** @class */ (function (_super) {
     __extends(DirectionView, _super);
     function DirectionView() {
@@ -76,10 +73,7 @@ var DirectionView = /** @class */ (function (_super) {
                 case !!type.dashes:
                     return null;
                 case !!type.dynamics:
-                    return $Dynamics({
-                        key: "d_" + idx,
-                        layout: _this.props.layout,
-                    });
+                    return React.createElement(implDirection_dynamicsView_1.default, { key: "d_" + idx, layout: _this.props.layout });
                 case !!type.eyeglasses:
                     return null;
                 case !!type.harpPedals:
@@ -105,22 +99,17 @@ var DirectionView = /** @class */ (function (_super) {
                 case !!type.scordatura:
                     return null;
                 case !!type.segnos:
-                    return DOM.g(null, lodash_1.map(type.segnos, function (segno, segnoIdx) { return $Glyph({
-                        glyphName: "segno",
-                        key: segnoIdx,
-                        x: _this.props.layout.overrideX + segno.defaultX + (segno.relativeX || 0),
-                        y: (_this.context.originY || 0) - segno.defaultY - (segno.relativeY || 0),
-                        fill: segno.color
-                    }); }));
+                    return (React.createElement("g", null, lodash_1.map(type.segnos, function (segno, segnoIdx) { return (React.createElement(private_views_glyph_1.default, { glyphName: "segno", key: segnoIdx, x: _this.props.layout.overrideX +
+                            segno.defaultX +
+                            (segno.relativeX || 0), y: (_this.context.originY || 0) -
+                            segno.defaultY -
+                            (segno.relativeY || 0), fill: segno.color })); })));
                 case !!type.stringMute:
                     return null;
                 case !!type.wedge:
                     return null;
                 case !!type.words:
-                    return $Words({
-                        key: "d_" + idx,
-                        layout: _this.props.layout,
-                    });
+                    return React.createElement(implDirection_wordsView_1.default, { key: "d_" + idx, layout: _this.props.layout });
                 default:
                     throw new Error("Invalid direction in " + type);
             }
@@ -131,11 +120,11 @@ var DirectionView = /** @class */ (function (_super) {
             case 1:
                 return children[0];
             default:
-                return DOM.g(null, children);
+                return React.createElement("g", null, children);
         }
     };
     DirectionView.contextTypes = {
-        originY: PropTypes.number
+        originY: PropTypes.number,
     };
     return DirectionView;
 }(react_1.Component));

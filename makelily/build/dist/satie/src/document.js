@@ -60,19 +60,19 @@ var Document = /** @class */ (function () {
         this._factory = internalFactory;
     }
     Document.prototype.modelHasType = function (model) {
+        var _a;
         var modelTypes = [];
         for (var _i = 1; _i < arguments.length; _i++) {
             modelTypes[_i - 1] = arguments[_i];
         }
-        var _a;
         return (_a = this._factory).modelHasType.apply(_a, [model].concat(modelTypes));
     };
     Document.prototype.search = function (models, idx) {
+        var _a;
         var types = [];
         for (var _i = 2; _i < arguments.length; _i++) {
             types[_i - 2] = arguments[_i];
         }
-        var _a;
         return (_a = this._factory).search.apply(_a, [models, idx].concat(types));
     };
     Document.prototype.getPrint = function (startMeasure) {

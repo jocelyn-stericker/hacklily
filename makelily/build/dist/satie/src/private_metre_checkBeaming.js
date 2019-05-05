@@ -79,14 +79,14 @@ var BEAMING_PATTERNS = {
     "4/2": [D._1, D._1],
     "2/1": [D._1, D._1],
     "18/8": [D._4D, D._4D, D._4D, D._4D, D._4D, D._4D],
-    "9/4": [D._2D, D._2D, D._2D]
+    "9/4": [D._2D, D._2D, D._2D],
 };
 function getBeamingPattern(time, alt) {
     var pattern = BEAMING_PATTERNS[private_metre_getTSString_1.default(time) + (alt ? "_" + alt : "")];
     var factors = {
         4: [4, 3, 2, 1],
         8: [12, 8, 4, 3, 2, 1],
-        16: [4, 3, 2, 1]
+        16: [4, 3, 2, 1],
     };
     if (time.senzaMisura != null) {
         return [];

@@ -22,7 +22,7 @@ var __extends = (this && this.__extends) || (function () {
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
             function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
         return extendStatics(d, b);
-    }
+    };
     return function (d, b) {
         extendStatics(d, b);
         function __() { this.constructor = d; }
@@ -40,9 +40,9 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+var React = __importStar(require("react"));
 var musicxml_interfaces_1 = require("musicxml-interfaces");
 var react_1 = require("react");
-var DOM = __importStar(require("react-dom-factories"));
 var PropTypes = __importStar(require("prop-types"));
 var lodash_1 = require("lodash");
 var private_views_dot_1 = __importDefault(require("./private_views_dot"));
@@ -50,10 +50,6 @@ var private_views_glyph_1 = __importDefault(require("./private_views_glyph"));
 var private_smufl_1 = require("./private_smufl");
 var implAttributes_accidentalView_1 = __importDefault(require("./implAttributes_accidentalView"));
 var implChord_noteheadView_1 = __importDefault(require("./implChord_noteheadView"));
-var $AccidentalView = react_1.createFactory(implAttributes_accidentalView_1.default);
-var $Dot = react_1.createFactory(private_views_dot_1.default);
-var $NoteheadView = react_1.createFactory(implChord_noteheadView_1.default);
-var $Glyph = react_1.createFactory(private_views_glyph_1.default);
 var NoteView = /** @class */ (function (_super) {
     __extends(NoteView, _super);
     function NoteView() {
@@ -70,49 +66,32 @@ var NoteView = /** @class */ (function (_super) {
         var right = private_smufl_1.getRight(noteheadGlyph);
         var left = private_smufl_1.getLeft(noteheadGlyph);
         var hasParens = spec.notehead && spec.notehead.parentheses;
-        return DOM.g(null, $NoteheadView({
-            key: "h",
-            notehead: noteheadGlyph,
-            spec: {
-                color: spec.color,
-                defaultX: defaultX,
-                defaultY: 0,
-                type: spec.notehead ? spec.notehead.type : musicxml_interfaces_1.NoteheadType.Normal
-            }
-        }), spec.dots && spec.printDot !== false ? lodash_1.map(spec.dots, function (dot, idx) { return $Dot({
-            fill: dot.color,
-            key: "_1_" + idx,
-            radius: 2.4,
-            x: defaultX + right + 6 + 6 * idx,
-            y: _this.context.originY - _this.props.spec.defaultY -
-                (dot.defaultY + (dot.relativeY || 0))
-        }); }) : null, this.props.spec.accidental ? $AccidentalView({
-            key: "a",
-            spec: this.props.spec.accidental,
-            noteDefaultX: defaultX,
-        }) : null, hasParens && $Glyph({
-            glyphName: "noteheadParenthesisRight",
-            fill: "black",
-            y: this.context.originY - this.props.spec.defaultY,
-            x: defaultX + right + 2
-        }), hasParens && $Glyph({
-            glyphName: "noteheadParenthesisLeft",
-            fill: "black",
-            y: this.context.originY - this.props.spec.defaultY,
-            x: defaultX + left - 5
-        })
-        /* DOM.g */ );
+        return (React.createElement("g", null,
+            React.createElement(implChord_noteheadView_1.default, { key: "h", notehead: noteheadGlyph, spec: {
+                    color: spec.color,
+                    defaultX: defaultX,
+                    defaultY: 0,
+                    type: spec.notehead ? spec.notehead.type : musicxml_interfaces_1.NoteheadType.Normal,
+                } }),
+            spec.dots && spec.printDot !== false
+                ? lodash_1.map(spec.dots, function (dot, idx) { return (React.createElement(private_views_dot_1.default, { fill: dot.color, key: "_1_" + idx, radius: 2.4, x: defaultX + right + 6 + 6 * idx, y: _this.context.originY -
+                        _this.props.spec.defaultY -
+                        (dot.defaultY + (dot.relativeY || 0)) })); })
+                : null,
+            this.props.spec.accidental ? (React.createElement(implAttributes_accidentalView_1.default, { key: "a", spec: this.props.spec.accidental, noteDefaultX: defaultX })) : null,
+            hasParens && (React.createElement(private_views_glyph_1.default, { glyphName: "noteheadParenthesisRight", fill: "black", y: this.context.originY - this.props.spec.defaultY, x: defaultX + right + 2 })),
+            hasParens && (React.createElement(private_views_glyph_1.default, { glyphName: "noteheadParenthesisLeft", fill: "black", y: this.context.originY - this.props.spec.defaultY, x: defaultX + left - 5 }))));
     };
     NoteView.prototype.getChildContext = function () {
         return {
-            originY: this.context.originY - this.props.spec.defaultY
+            originY: this.context.originY - this.props.spec.defaultY,
         };
     };
     NoteView.childContextTypes = {
-        originY: PropTypes.number.isRequired
+        originY: PropTypes.number.isRequired,
     };
     NoteView.contextTypes = {
-        originY: PropTypes.number.isRequired
+        originY: PropTypes.number.isRequired,
     };
     return NoteView;
 }(react_1.Component));

@@ -22,7 +22,7 @@ var __extends = (this && this.__extends) || (function () {
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
             function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
         return extendStatics(d, b);
-    }
+    };
     return function (d, b) {
         extendStatics(d, b);
         function __() { this.constructor = d; }
@@ -37,8 +37,8 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+var React = __importStar(require("react"));
 var react_1 = require("react");
-var DOM = __importStar(require("react-dom-factories"));
 /**
  * Responsible for the rendering a bezier curve, such as a
  * slur or a tie.
@@ -49,21 +49,35 @@ var Bezier = /** @class */ (function (_super) {
         return _super !== null && _super.apply(this, arguments) || this;
     }
     Bezier.prototype.render = function () {
-        return DOM.path({
-            d: ("M" +
-                this.props.x1 + "," + this.props.y1 +
+        return (React.createElement("path", { d: "M" +
+                this.props.x1 +
+                "," +
+                this.props.y1 +
                 "C" +
-                this.props.x2 + "," + this.props.y2 + " " +
-                this.props.x3 + "," + this.props.y3 + " " +
-                this.props.x4 + "," + this.props.y4 + " " +
+                this.props.x2 +
+                "," +
+                this.props.y2 +
+                " " +
+                this.props.x3 +
+                "," +
+                this.props.y3 +
+                " " +
+                this.props.x4 +
+                "," +
+                this.props.y4 +
+                " " +
                 "C" +
-                this.props.x5 + "," + this.props.y5 + " " +
-                this.props.x6 + "," + this.props.y6 + " " +
-                this.props.x1 + "," + this.props.y1),
-            fill: this.props.fill,
-            stroke: this.props.stroke,
-            strokeWidth: this.props.strokeWidth
-        });
+                this.props.x5 +
+                "," +
+                this.props.y5 +
+                " " +
+                this.props.x6 +
+                "," +
+                this.props.y6 +
+                " " +
+                this.props.x1 +
+                "," +
+                this.props.y1, fill: this.props.fill, stroke: this.props.stroke, strokeWidth: this.props.strokeWidth }));
     };
     return Bezier;
 }(react_1.Component));

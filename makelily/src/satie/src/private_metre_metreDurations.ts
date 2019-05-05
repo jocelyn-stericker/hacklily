@@ -16,11 +16,11 @@
  * along with Satie.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import {times} from "lodash";
+import { times } from "lodash";
 import invariant from "invariant";
-import {TimeModification, Time} from "musicxml-interfaces";
+import { TimeModification, Time } from "musicxml-interfaces";
 
-import {IChord, divisions} from "./private_chordUtil";
+import { IChord, divisions } from "./private_chordUtil";
 
 /**
  * Information needed to create a duration using makeDuration().
@@ -28,22 +28,22 @@ import {IChord, divisions} from "./private_chordUtil";
  * See IChord and makeDuration().
  */
 export interface ITimeSpec {
-    /**
-     * The base of the note, as encoded by LilyPond.
-     *
-     * A quarter note is '4', a half note is '8', ...
-     */
-    count: number;
+  /**
+   * The base of the note, as encoded by LilyPond.
+   *
+   * A quarter note is '4', a half note is '8', ...
+   */
+  count: number;
 
-    /**
-     * The number of displayed dots, or null.
-     */
-    dots?: number;
+  /**
+   * The number of displayed dots, or null.
+   */
+  dots?: number;
 
-    /**
-     * The time modification (canonical tuplet), or null.
-     */
-    timeModification?: TimeModification;
+  /**
+   * The time modification (canonical tuplet), or null.
+   */
+  timeModification?: TimeModification;
 }
 
 /**
@@ -52,27 +52,43 @@ export interface ITimeSpec {
  * @param spec
  */
 function _makeDuration(spec: ITimeSpec): IChord {
-    invariant(!spec.timeModification, "timeModification is not implemented in makeDuration");
-    return [{
-        dots: times(spec.dots || 0, () => { return {}; }),
-        noteType: {
-            duration: spec.count
-        },
-        _class: "Note",
-    }];
+  invariant(
+    !spec.timeModification,
+    "timeModification is not implemented in makeDuration",
+  );
+  return [
+    {
+      dots: times(spec.dots || 0, () => {
+        return {};
+      }),
+      noteType: {
+        duration: spec.count,
+      },
+      _class: "Note",
+    },
+  ];
 }
 
-export function makeDuration(divPerQuarter: number, time: Time, divisionsInDuration: number): IChord {
-    for (let count = 1; count <= 512; ++count) {
-        for (let dots = 0; dots < 3; ++dots) {
-            const spec = {count, dots};
-            if (divisions(spec, {time, divisions: divPerQuarter}, true) === divisionsInDuration) {
-                return _makeDuration(spec);
-            }
-        }
+export function makeDuration(
+  divPerQuarter: number,
+  time: Time,
+  divisionsInDuration: number,
+): IChord {
+  for (let count = 1; count <= 512; ++count) {
+    for (let dots = 0; dots < 3; ++dots) {
+      const spec = { count, dots };
+      if (
+        divisions(spec, { time, divisions: divPerQuarter }, true) ===
+        divisionsInDuration
+      ) {
+        return _makeDuration(spec);
+      }
     }
-    throw new Error(`Unknown duration ${divisionsInDuration} at ` +
-        `${divPerQuarter} divs per quarter`);
+  }
+  throw new Error(
+    `Unknown duration ${divisionsInDuration} at ` +
+      `${divPerQuarter} divs per quarter`,
+  );
 }
 
 export const _512 = _makeDuration({ count: 512 });

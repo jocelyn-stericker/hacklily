@@ -16,7 +16,7 @@
  * along with Satie.  If not, see <http://www.gnu.org/licenses/>.
  */
 import { Articulations } from "musicxml-interfaces";
-import { Component, ReactElement } from "react";
+import { Component } from "react";
 export interface IProps {
     articulation: Articulations;
     key?: string | number;
@@ -27,5 +27,5 @@ export default class Articulation extends Component<IProps, {}> {
     context: {
         originY: number;
     };
-    render(): ReactElement<any>;
+    render(): JSX.Element;
 }

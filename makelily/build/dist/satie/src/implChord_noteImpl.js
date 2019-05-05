@@ -41,23 +41,57 @@ var NoteImpl = /** @class */ (function () {
         /* Link to parent */
         Object.defineProperty(this, "_parent", {
             enumerable: false,
-            value: parent
+            value: parent,
         });
         this._idx = idx;
         /* Properties owned by NoteImpl */
         var properties = [
-            "pitch", "unpitched", "noteheadText", "accidental", "instrument",
-            "attack", "endDynamics", "lyrics", "notations", "stem", "cue",
-            "ties", "dynamics", "duration", "play", "staff", "grace", "notehead",
-            "release", "pizzicato", "beams", "voice", "footnote", "level",
-            "relativeY", "defaultY", "relativeX", "fontFamily", "fontWeight",
-            "fontStyle", "fontSize", "color", "printDot", "printLyric", "printObject",
-            "printSpacing", "timeOnly", "dots", "noteType", "timeModificiation",
+            "pitch",
+            "unpitched",
+            "noteheadText",
+            "accidental",
+            "instrument",
+            "attack",
+            "endDynamics",
+            "lyrics",
+            "notations",
+            "stem",
+            "cue",
+            "ties",
+            "dynamics",
+            "duration",
+            "play",
+            "staff",
+            "grace",
+            "notehead",
+            "release",
+            "pizzicato",
+            "beams",
+            "voice",
+            "footnote",
+            "level",
+            "relativeY",
+            "defaultY",
+            "relativeX",
+            "fontFamily",
+            "fontWeight",
+            "fontStyle",
+            "fontSize",
+            "color",
+            "printDot",
+            "printLyric",
+            "printObject",
+            "printSpacing",
+            "timeOnly",
+            "dots",
+            "noteType",
+            "timeModificiation",
             "rest",
         ];
         lodash_1.forEach(properties, setIfDefined);
         function setIfDefined(property) {
-            if (note.hasOwnProperty(property) && note[property] !== undefined) {
+            if (note.hasOwnProperty(property) &&
+                note[property] !== undefined) {
                 self[property] = note[property];
             }
         }
@@ -79,13 +113,46 @@ var NoteImpl = /** @class */ (function () {
     NoteImpl.prototype.toJSON = function () {
         var _a = this, pitch = _a.pitch, unpitched = _a.unpitched, noteheadText = _a.noteheadText, accidental = _a.accidental, instrument = _a.instrument, attack = _a.attack, endDynamics = _a.endDynamics, lyrics = _a.lyrics, notations = _a.notations, stem = _a.stem, cue = _a.cue, ties = _a.ties, dynamics = _a.dynamics, duration = _a.duration, play = _a.play, staff = _a.staff, grace = _a.grace, notehead = _a.notehead, release = _a.release, pizzicato = _a.pizzicato, beams = _a.beams, voice = _a.voice, footnote = _a.footnote, level = _a.level, relativeY = _a.relativeY, defaultY = _a.defaultY, relativeX = _a.relativeX, fontFamily = _a.fontFamily, fontWeight = _a.fontWeight, fontStyle = _a.fontStyle, fontSize = _a.fontSize, color = _a.color, printDot = _a.printDot, printLyric = _a.printLyric, printObject = _a.printObject, printSpacing = _a.printSpacing, timeOnly = _a.timeOnly, dots = _a.dots, noteType = _a.noteType, timeModification = _a.timeModification, rest = _a.rest;
         return {
-            pitch: pitch, unpitched: unpitched, noteheadText: noteheadText, accidental: accidental, instrument: instrument,
-            attack: attack, endDynamics: endDynamics, lyrics: lyrics, notations: notations, stem: stem, cue: cue,
-            ties: ties, dynamics: dynamics, duration: duration, play: play, staff: staff, grace: grace, notehead: notehead,
-            release: release, pizzicato: pizzicato, beams: beams, voice: voice, footnote: footnote, level: level,
-            relativeY: relativeY, defaultY: defaultY, relativeX: relativeX, fontFamily: fontFamily, fontWeight: fontWeight,
-            fontStyle: fontStyle, fontSize: fontSize, color: color, printDot: printDot, printLyric: printLyric, printObject: printObject,
-            printSpacing: printSpacing, timeOnly: timeOnly, noteType: noteType, dots: dots, timeModification: timeModification,
+            pitch: pitch,
+            unpitched: unpitched,
+            noteheadText: noteheadText,
+            accidental: accidental,
+            instrument: instrument,
+            attack: attack,
+            endDynamics: endDynamics,
+            lyrics: lyrics,
+            notations: notations,
+            stem: stem,
+            cue: cue,
+            ties: ties,
+            dynamics: dynamics,
+            duration: duration,
+            play: play,
+            staff: staff,
+            grace: grace,
+            notehead: notehead,
+            release: release,
+            pizzicato: pizzicato,
+            beams: beams,
+            voice: voice,
+            footnote: footnote,
+            level: level,
+            relativeY: relativeY,
+            defaultY: defaultY,
+            relativeX: relativeX,
+            fontFamily: fontFamily,
+            fontWeight: fontWeight,
+            fontStyle: fontStyle,
+            fontSize: fontSize,
+            color: color,
+            printDot: printDot,
+            printLyric: printLyric,
+            printObject: printObject,
+            printSpacing: printSpacing,
+            timeOnly: timeOnly,
+            noteType: noteType,
+            dots: dots,
+            timeModification: timeModification,
             rest: rest,
             _class: "Note",
         };
@@ -97,45 +164,54 @@ var NoteImpl = /** @class */ (function () {
         var _this = this;
         this.cleanNotations(cursor);
         if (this.pitch && this.pitch.step !== this.pitch.step.toUpperCase()) {
-            cursor.patch(function (voice) { return voice.note(_this._idx, function (note) { return note.pitch(function (pitch) { return pitch.step(_this.pitch.step.toUpperCase()); }); }); });
+            cursor.patch(function (voice) {
+                return voice.note(_this._idx, function (note) {
+                    return note.pitch(function (pitch) { return pitch.step(_this.pitch.step.toUpperCase()); });
+                });
+            });
         }
         if (this.grace && this.cue) {
             cursor.patch(function (voice) { return voice.note(_this._idx, function (note) { return note.cue(null); }); });
         }
         if (this.unpitched && (this.rest || this.pitch)) {
-            cursor.patch(function (voice) { return voice.note(_this._idx, function (note) { return note.unpitched(null); }); });
+            cursor.patch(function (voice) {
+                return voice.note(_this._idx, function (note) { return note.unpitched(null); });
+            });
         }
         if (this.pitch && this.rest) {
             cursor.patch(function (voice) { return voice.note(_this._idx, function (note) { return note.pitch(null); }); });
         }
         invariant_1.default(cursor.segmentInstance.ownerType === "voice", "Expected to be in voice's context during validation");
         if (this.voice !== cursor.segmentInstance.owner) {
-            cursor.patch(function (partBuilder) { return partBuilder
-                .note(_this._idx, function (note) { return note
-                .voice(cursor.segmentInstance.owner); }); });
+            cursor.patch(function (partBuilder) {
+                return partBuilder.note(_this._idx, function (note) {
+                    return note.voice(cursor.segmentInstance.owner);
+                });
+            });
         }
         var defaultY = (private_chordUtil_1.lineForClef(this, cursor.staffAttributes.clef) - 3) * 10;
         if (defaultY !== this.defaultY) {
-            cursor.patch(function (voice) { return voice
-                .note(_this._idx, function (note) { return note.defaultY(defaultY); }); });
+            cursor.patch(function (voice) {
+                return voice.note(_this._idx, function (note) { return note.defaultY(defaultY); });
+            });
         }
         var dotOffset = this.defaultY % 10 === 0 ? 5 : 0;
         if (!this.dots) {
-            cursor.patch(function (voice) { return voice
-                .note(_this._idx, function (note) { return note.dots([]); }); });
+            cursor.patch(function (voice) { return voice.note(_this._idx, function (note) { return note.dots([]); }); });
         }
         if (this.dots.some(function (n) { return n.defaultY !== dotOffset; })) {
-            cursor.patch(function (voice) { return voice
-                .note(_this._idx, function (note) {
-                return lodash_1.reduce(_this.dots, function (note, _dot, idx) {
-                    return note.dotsAt(idx, function (dot) { return dot.defaultY(dotOffset); });
-                }, note);
-            }); });
+            cursor.patch(function (voice) {
+                return voice.note(_this._idx, function (note) {
+                    return lodash_1.reduce(_this.dots, function (note, _dot, idx) {
+                        return note.dotsAt(idx, function (dot) { return dot.defaultY(dotOffset); });
+                    }, note);
+                });
+            });
         }
         if (!this.staff) {
-            cursor.patch(function (partBuilder) { return partBuilder
-                .note(_this._idx, function (note) { return note
-                .staff(1); }); });
+            cursor.patch(function (partBuilder) {
+                return partBuilder.note(_this._idx, function (note) { return note.staff(1); });
+            });
         }
         this.updateAccidental(cursor);
     };
@@ -199,7 +275,7 @@ var NoteImpl = /** @class */ (function () {
                 slurs: combine("slurs"),
                 technicals: combine("technicals"),
                 tieds: combine("tieds"),
-                tuplets: combine("tuplets")
+                tuplets: combine("tuplets"),
             };
             lodash_1.forEach(notation_1.tieds, function (tied) {
                 if (!tied.number) {
@@ -215,20 +291,21 @@ var NoteImpl = /** @class */ (function () {
                 }
                 if (!tuplet.tupletActual.tupletNumber) {
                     tuplet.tupletActual.tupletNumber = {
-                        text: String(_this.timeModification.actualNotes)
+                        text: String(_this.timeModification.actualNotes),
                     };
                 }
                 if (!tuplet.tupletNormal.tupletNumber) {
                     tuplet.tupletNormal.tupletNumber = {
-                        text: String(_this.timeModification.normalNotes)
+                        text: String(_this.timeModification.normalNotes),
                     };
                 }
                 if (!tuplet.tupletNormal.tupletDots) {
-                    tuplet.tupletNormal.tupletDots =
-                        lodash_1.map(_this.timeModification.normalDots, function () { return ({}); });
+                    tuplet.tupletNormal.tupletDots = lodash_1.map(_this.timeModification.normalDots, function () { return ({}); });
                 }
             });
-            cursor.patch(function (voice) { return voice.note(_this._idx, function (note) { return note.notations([notation_1]); }); });
+            cursor.patch(function (voice) {
+                return voice.note(_this._idx, function (note) { return note.notations([notation_1]); });
+            });
         }
         function combine(key) {
             return lodash_1.reduce(notations, function (memo, n) {
@@ -251,9 +328,7 @@ var NoteImpl = /** @class */ (function () {
             return [articulations];
         }
         function last(key) {
-            return lodash_1.reduce(notations, function (memo, n) {
-                return n[key] ? n[key] : memo;
-            }, []);
+            return lodash_1.reduce(notations, function (memo, n) { return (n[key] ? n[key] : memo); }, []);
         }
     };
     NoteImpl.prototype.updateAccidental = function (cursor) {
@@ -306,7 +381,7 @@ var NoteImpl = /** @class */ (function () {
                     throw new Error("Not implemented: unknown accidental for offset " + actual);
             }
             acc = {
-                accidental: accType
+                accidental: accType,
             };
         }
         if (acc) {
@@ -323,7 +398,7 @@ var NoteImpl = /** @class */ (function () {
             }
             acc.defaultX -= width;
             acc.defaultY = 0;
-            if (acc.editorial && !acc.parentheses || acc.bracket) {
+            if ((acc.editorial && !acc.parentheses) || acc.bracket) {
                 // We don't allow an accidental to be editorial but not have parentheses.
                 acc.parentheses = true; // XXX: do not mutate
             }

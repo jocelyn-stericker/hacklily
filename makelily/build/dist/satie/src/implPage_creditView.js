@@ -22,7 +22,7 @@ var __extends = (this && this.__extends) || (function () {
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
             function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
         return extendStatics(d, b);
-    }
+    };
     return function (d, b) {
         extendStatics(d, b);
         function __() { this.constructor = d; }
@@ -40,9 +40,9 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+var React = __importStar(require("react"));
 var musicxml_interfaces_1 = require("musicxml-interfaces");
 var react_1 = require("react");
-var DOM = __importStar(require("react-dom-factories"));
 var PropTypes = __importStar(require("prop-types"));
 var lodash_1 = require("lodash");
 var invariant_1 = __importDefault(require("invariant"));
@@ -61,41 +61,23 @@ var CreditView = /** @class */ (function (_super) {
         invariant_1.default(!image, "Not implemented"); // There is either words or image, but not both
         invariant_1.default(!!words, "Unknown component type");
         if (!!words && !words.length) {
-            return DOM.g({});
+            return React.createElement("g", null);
         }
-        var initX = (words[0].defaultX + (words[0].relativeX || 0));
-        var initY = (this.context.originY - (words[0].defaultY + (words[0].relativeY || 0)));
-        return DOM.text({
-            x: initX,
-            y: initY
-        }, lodash_1.map(words, function (words, idx) {
+        var initX = words[0].defaultX + (words[0].relativeX || 0);
+        var initY = this.context.originY - (words[0].defaultY + (words[0].relativeY || 0));
+        return (React.createElement("text", { x: initX, y: initY }, lodash_1.map(words, function (words, idx) {
             var isItalic = words.fontStyle === musicxml_interfaces_1.NormalItalic.Italic;
             var isBold = words.fontWeight === musicxml_interfaces_1.NormalBold.Bold;
             var fontSize = private_renderUtil_1.cssSizeToTenths(scale40, words.fontSize);
-            return lodash_1.map(words.words.split("\n"), function (line, lineNum) { return DOM.tspan({
-                alignmentBaseline: "hanging",
-                fill: words.color || "black",
-                direction: _this.getDirection(words),
-                dx: _this.getDX(words, initX, lineNum),
-                dy: _this.getDY(words, initY, lineNum),
-                fontStyle: isItalic ? "italic" : "normal",
-                fontWeight: isBold ? "bold" : "normal",
-                fontFamily: words.fontFamily || "Alegreya",
-                fontSize: fontSize,
-                key: idx + "l" + lineNum,
-                letterSpacing: words.letterSpacing && words.letterSpacing !== "normal" ?
-                    ("" + private_renderUtil_1.cssSizeToTenths(_this.context.scale40, words.letterSpacing)) : "normal",
-                textDecoration: _this.getTextDecoration(words),
-                textAnchor: _this.getTextAnchor(words),
-                transform: _this.getTransform(words),
-                x: _this.getX(lineNum)
-            }, line); });
-        })
-        /* DOM.text */ );
+            return lodash_1.map(words.words.split("\n"), function (line, lineNum) { return (React.createElement("tspan", { alignmentBaseline: "hanging", fill: words.color || "black", direction: _this.getDirection(words), dx: _this.getDX(words, initX, lineNum), dy: _this.getDY(words, initY, lineNum), fontStyle: isItalic ? "italic" : "normal", fontWeight: isBold ? "bold" : "normal", fontFamily: words.fontFamily || "Alegreya", fontSize: fontSize, key: idx + "l" + lineNum, letterSpacing: words.letterSpacing && words.letterSpacing !== "normal"
+                    ? "" +
+                        private_renderUtil_1.cssSizeToTenths(_this.context.scale40, words.letterSpacing)
+                    : "normal", textDecoration: _this.getTextDecoration(words), textAnchor: _this.getTextAnchor(words), transform: _this.getTransform(words), x: _this.getX(lineNum) }, line)); });
+        })));
     };
     CreditView.contextTypes = {
         originY: PropTypes.number.isRequired,
-        scale40: PropTypes.number.isRequired
+        scale40: PropTypes.number.isRequired,
     };
     return CreditView;
 }(react_1.Component));

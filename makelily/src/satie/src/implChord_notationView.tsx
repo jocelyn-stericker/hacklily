@@ -16,14 +16,14 @@
  * along with Satie.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import * as React from "react";
 import {
   UprightInverted,
   Notations,
   NormalAngledSquare,
-  AboveBelow
+  AboveBelow,
 } from "musicxml-interfaces";
-import { createFactory, Component, ReactElement } from "react";
-import * as DOM from "react-dom-factories";
+import { Component, ReactElement } from "react";
 import * as PropTypes from "prop-types";
 import { forEach } from "lodash";
 import invariant from "invariant";
@@ -34,10 +34,6 @@ import { bboxes } from "./private_smufl";
 
 import Articulation from "./implChord_articulationView";
 import Chord from "./implChord_chordModel";
-
-const $Bezier = createFactory(Bezier);
-const $Glyph = createFactory(Glyph);
-const $Articulation = createFactory(Articulation);
 
 import { technicalGlyph } from "./implChord_notation";
 
@@ -52,7 +48,7 @@ export interface IProps {
  */
 export default class NotationView extends Component<IProps, {}> {
   static contextTypes = {
-    originY: PropTypes.number
+    originY: PropTypes.number,
   } as any;
 
   context: {
@@ -78,11 +74,11 @@ export default class NotationView extends Component<IProps, {}> {
 
     forEach(model.articulations, (articulation, idx) => {
       children.push(
-        $Articulation({
-          articulation: articulation,
-          key: `art${idx}`,
-          defaultX: nlayout ? nlayout.model[0].defaultX : 0
-        })
+        <Articulation
+          articulation={articulation}
+          key={`art${idx}`}
+          defaultX={nlayout ? nlayout.model[0].defaultX : 0}
+        />,
       );
     });
 
@@ -107,16 +103,17 @@ export default class NotationView extends Component<IProps, {}> {
           break;
       }
       children.push(
-        $Glyph({
-          fill: "black",
-          glyphName: `${shape}${direction}`,
-          key: `fer${idx}`,
-          x: originX + fermata.defaultX + (fermata.relativeX || 0),
-          y:
+        <Glyph
+          fill="black"
+          glyphName={`${shape}${direction}`}
+          key={`fer${idx}`}
+          x={originX + fermata.defaultX + (fermata.relativeX || 0)}
+          y={
             (this.context.originY || 0) -
             fermata.defaultY -
             (fermata.relativeY || 0)
-        })
+          }
+        />,
       );
     });
 
@@ -167,31 +164,32 @@ export default class NotationView extends Component<IProps, {}> {
         technical.upBow;
 
       children.push(
-        $Glyph({
-          fill: t.color || "black",
-          glyphName: technicalGlyph(
+        <Glyph
+          fill={t.color || "black"}
+          glyphName={technicalGlyph(
             technical,
             !("placement" in t) || t.placement === AboveBelow.Below
               ? "Below"
-              : "Above"
-          ),
-          key: `tech${idx}`,
-          x:
+              : "Above",
+          )}
+          key={`tech${idx}`}
+          x={
             originX +
             (("defaultX" in t ? t.defaultX : 0) || 0) +
-            (("relativeX" in t ? t.relativeX : 0) || 0),
-          y:
+            (("relativeX" in t ? t.relativeX : 0) || 0)
+          }
+          y={
             (this.context.originY || 0) -
             ("defaultY" in t ? t.defaultY : 0) -
             (("relativeY" in t ? t.relativeY : 0) || 0)
-        })
+          }
+        />,
       );
     });
 
     forEach(model.tieds, tied => {
-      let tieTo: Chord.IChordLayout = (<any>tied).satieTieTo;
-      if (!tieTo) {; }
-      {
+      let tieTo: Chord.IChordLayout = (tied as any).satieTieTo;
+      if (!tieTo) {
         return;
       }
 
@@ -239,25 +237,23 @@ export default class NotationView extends Component<IProps, {}> {
       invariant(!isNaN(absw), "Invalid absw %s", absw);
 
       children.push(
-        $Bezier({
-          fill: "#000000",
-          stroke: "#000000",
-          strokeWidth: 1.2,
-
-          x1: x2,
-          x2: (0.28278198 / 1.23897534) * x1mx2 + x2,
-          x3: (0.9561935 / 1.23897534) * x1mx2 + x2,
-          x4: x1,
-          x5: (0.28278198 / 1.23897534) * x2mx1 + x1,
-          x6: (0.95619358 / 1.23897534) * x2mx1 + x1,
-
-          y1: y2,
-          y2: (dir === -1 ? y1my2 : 0) + absw + y2,
-          y3: (dir === -1 ? y1my2 : 0) + absw + y2,
-          y4: y1,
-          y5: (dir === -1 ? 0 : -y1my2) + absw + relw + y1,
-          y6: (dir === -1 ? 0 : -y1my2) + absw + relw + y1
-        })
+        <Bezier
+          fill="#000000"
+          stroke="#000000"
+          strokeWidth={1.2}
+          x1={x2}
+          x2={(0.28278198 / 1.23897534) * x1mx2 + x2}
+          x3={(0.9561935 / 1.23897534) * x1mx2 + x2}
+          x4={x1}
+          x5={(0.28278198 / 1.23897534) * x2mx1 + x1}
+          x6={(0.95619358 / 1.23897534) * x2mx1 + x1}
+          y1={y2}
+          y2={(dir === -1 ? y1my2 : 0) + absw + y2}
+          y3={(dir === -1 ? y1my2 : 0) + absw + y2}
+          y4={y1}
+          y5={(dir === -1 ? 0 : -y1my2) + absw + relw + y1}
+          y6={(dir === -1 ? 0 : -y1my2) + absw + relw + y1}
+        />,
       );
     });
 
@@ -271,7 +267,7 @@ export default class NotationView extends Component<IProps, {}> {
       case 1:
         return children[0];
       default:
-        return DOM.g(null, children);
+        return <g>{children}</g>;
     }
   }
 }

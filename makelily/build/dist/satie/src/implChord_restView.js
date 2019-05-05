@@ -22,7 +22,7 @@ var __extends = (this && this.__extends) || (function () {
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
             function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
         return extendStatics(d, b);
-    }
+    };
     return function (d, b) {
         extendStatics(d, b);
         function __() { this.constructor = d; }
@@ -40,16 +40,14 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+var React = __importStar(require("react"));
 var react_1 = require("react");
-var DOM = __importStar(require("react-dom-factories"));
 var PropTypes = __importStar(require("prop-types"));
 var lodash_1 = require("lodash");
 var invariant_1 = __importDefault(require("invariant"));
 var private_views_dot_1 = __importDefault(require("./private_views_dot"));
 var private_views_glyph_1 = __importDefault(require("./private_views_glyph"));
 var private_smufl_1 = require("./private_smufl");
-var $Dot = react_1.createFactory(private_views_dot_1.default);
-var $Glyph = react_1.createFactory(private_views_glyph_1.default);
 /**
  * Renders a rest.
  */
@@ -69,32 +67,18 @@ var Rest = /** @class */ (function (_super) {
         var x = spec.defaultX + (spec.relativeX || 0);
         var y = this.context.originY - (spec.defaultY + (spec.relativeY || 0));
         var dotOffset = private_smufl_1.bboxes[notehead][0] * 10 + 6;
-        return DOM.g(null, $Glyph({
-            fill: spec.color,
-            glyphName: notehead,
-            key: "R",
-            x: x,
-            y: y
-        } /* Glyph */), rest.measure && this.props.multipleRest && DOM.text({
-            className: "mmn_",
-            fontWeight: "bold",
-            fontSize: 48,
-            textAnchor: "middle",
-            x: x + private_smufl_1.bboxes[notehead][0] * 10 / 2,
-            y: y - 30
-        }, this.props.multipleRest.count // TODO: useSymbols
-        /* DOM.text */ ), spec.dots && spec.printDot !== false ? lodash_1.map(spec.dots, function (dot, idx) { return $Dot({
-            fill: dot.color,
-            key: idx + "d",
-            radius: 2.4,
-            x: x + dotOffset + 6 * idx,
-            y: y - (dot.defaultY + (dot.relativeY || 0))
-            // y: y + (line - 3)*10 + (((line * 2) % 2) ? 0 : 5)
-        } /* Dot */); }) : null
-        /* DOM.g */ );
+        return (React.createElement("g", null,
+            React.createElement(private_views_glyph_1.default, { fill: spec.color, glyphName: notehead, key: "R", x: x, y: y }),
+            rest.measure &&
+                this.props.multipleRest && (React.createElement("text", { className: "mmn_", fontWeight: "bold", fontSize: 48, textAnchor: "middle", x: x + (private_smufl_1.bboxes[notehead][0] * 10) / 2, y: y - 30 },
+                this.props.multipleRest.count,
+                " /*TODO: useSymbols*/")),
+            spec.dots && spec.printDot !== false
+                ? lodash_1.map(spec.dots, function (dot, idx) { return (React.createElement(private_views_dot_1.default, { fill: dot.color, key: idx + "d", radius: 2.4, x: x + dotOffset + 6 * idx, y: y - (dot.defaultY + (dot.relativeY || 0)) })); })
+                : null));
     };
     Rest.contextTypes = {
-        originY: PropTypes.number.isRequired
+        originY: PropTypes.number.isRequired,
     };
     return Rest;
 }(react_1.Component));

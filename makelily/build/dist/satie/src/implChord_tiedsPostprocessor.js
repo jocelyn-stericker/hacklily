@@ -62,7 +62,7 @@ function tied(options, bounds, measures) {
                     var currTied = activeTieds[tied.number];
                     if (currTied) {
                         if (tied.type === musicxml_interfaces_1.StartStopContinue.Start) {
-                            console.warn("Found \"Start\" Tied that continues an existing Tied:", currTied);
+                            console.warn('Found "Start" Tied that continues an existing Tied:', currTied);
                         }
                         currTied.elements.push(layout);
                         terminateTied$(activeTieds, tied);
@@ -71,7 +71,7 @@ function tied(options, bounds, measures) {
                         activeTieds[tied.number] = {
                             number: tied.number,
                             elements: [layout],
-                            initial: tied
+                            initial: tied,
                         };
                     }
                 });

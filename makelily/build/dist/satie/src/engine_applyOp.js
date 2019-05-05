@@ -38,7 +38,11 @@ var implSegment_segmentMutator_1 = __importDefault(require("./implSegment_segmen
  * In Arrays that previously had undefined values, after serializing, these values will be replaced with null.
  */
 function isSerializable(obj) {
-    if (lodash_1.isUndefined(obj) || lodash_1.isNull(obj) || lodash_1.isBoolean(obj) || lodash_1.isNumber(obj) || lodash_1.isString(obj)) {
+    if (lodash_1.isUndefined(obj) ||
+        lodash_1.isNull(obj) ||
+        lodash_1.isBoolean(obj) ||
+        lodash_1.isNumber(obj) ||
+        lodash_1.isString(obj)) {
         return true;
     }
     else if (lodash_1.isArray(obj)) {
@@ -187,7 +191,8 @@ function applyMeasureOp(measures, factory, op, doc) {
         var measureIdx = op.p[0];
         invariant_1.default(!isNaN(measureIdx), "Measure index " + measureIdx + " must be");
         invariant_1.default(Boolean(op.li.uuid), "uuid must be specified");
-        oldMeasure = oldMeasure || measures[measureIdx - 1] || measures[measureIdx + 1]; // note, we don't support empty docs
+        oldMeasure =
+            oldMeasure || measures[measureIdx - 1] || measures[measureIdx + 1]; // note, we don't support empty docs
         var oldParts = oldMeasure.parts;
         var newParts_1 = private_util_1.cloneObject(op.li.parts) || {};
         lodash_1.forEach(oldParts, function (part, partID) {
@@ -203,8 +208,8 @@ function applyMeasureOp(measures, factory, op, doc) {
                 else {
                     if (newParts_1[partID].staves[staffIdx]) {
                         newParts_1[partID].staves[staffIdx] =
-                            newParts_1[partID].staves[staffIdx]
-                                .map(function (i) { return factory.fromSpec(i); }) || [];
+                            newParts_1[partID].staves[staffIdx].map(function (i) { return factory.fromSpec(i); }) ||
+                                [];
                     }
                     else {
                         newParts_1[partID].staves[staffIdx] = [];
@@ -224,8 +229,7 @@ function applyMeasureOp(measures, factory, op, doc) {
                 else {
                     if (newParts_1[partID].voices[voiceIdx]) {
                         newParts_1[partID].voices[voiceIdx] =
-                            newParts_1[partID].voices[voiceIdx]
-                                .map(function (i) {
+                            newParts_1[partID].voices[voiceIdx].map(function (i) {
                                 var model = factory.fromSpec(i);
                                 if (doc.modelHasType(model, document_1.Type.VisualCursor)) {
                                     doc._visualCursor = model;
@@ -252,7 +256,7 @@ function applyMeasureOp(measures, factory, op, doc) {
             width: NaN,
             nonControlling: false,
             parts: newParts_1,
-            version: 0
+            version: 0,
         };
         oldMeasure.parts = oldParts;
         measures.splice(measureIdx, 0, newMeasure);

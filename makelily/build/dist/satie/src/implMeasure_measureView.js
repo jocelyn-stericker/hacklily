@@ -22,7 +22,7 @@ var __extends = (this && this.__extends) || (function () {
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
             function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
         return extendStatics(d, b);
-    }
+    };
     return function (d, b) {
         extendStatics(d, b);
         function __() { this.constructor = d; }
@@ -40,14 +40,13 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+var React = __importStar(require("react"));
 var react_1 = require("react");
-var DOM = __importStar(require("react-dom-factories"));
 var PropTypes = __importStar(require("prop-types"));
 var lodash_1 = require("lodash");
 var invariant_1 = __importDefault(require("invariant"));
 var private_util_1 = require("./private_util");
 var implSegment_modelView_1 = __importDefault(require("./implSegment_modelView"));
-var $ModelView = react_1.createFactory(implSegment_modelView_1.default);
 var NUMBER_ARRAY = PropTypes.arrayOf(PropTypes.number);
 var MeasureView = /** @class */ (function (_super) {
     __extends(MeasureView, _super);
@@ -57,16 +56,10 @@ var MeasureView = /** @class */ (function (_super) {
     MeasureView.prototype.render = function () {
         var _this = this;
         var layout = this.props.layout;
-        return DOM.g({ transform: "translate(" + layout.originX + ")" }, lodash_1.chain(lodash_1.flatten(layout.elements))
+        return (React.createElement("g", { transform: "translate(" + layout.originX + ")" }, lodash_1.chain(lodash_1.flatten(layout.elements))
             .filter(function (layout) { return !!layout.model; }) // Remove helpers.
-            .map(function (layout) { return $ModelView({
-            key: layout.key,
-            version: _this.props.layout.getVersion(),
-            layout: layout,
-            originX: _this.props.layout.originX,
-        }); })
-            .value()
-        /*DOM.g*/ );
+            .map(function (layout) { return (React.createElement(implSegment_modelView_1.default, { key: layout.key, version: _this.props.layout.getVersion(), layout: layout, originX: _this.props.layout.originX })); })
+            .value()));
         /* TODO: lyric boxes */
         /* TODO: free boxes */
         /* TODO: slurs and ties */
@@ -74,7 +67,9 @@ var MeasureView = /** @class */ (function (_super) {
     MeasureView.prototype.getChildContext = function () {
         var _this = this;
         var layout = this.props.layout;
-        var originYByPartAndStaff = lodash_1.mapValues(layout.originY, function (layouts) { return _this.extractOrigins(layouts); });
+        var originYByPartAndStaff = lodash_1.mapValues(layout.originY, function (layouts) {
+            return _this.extractOrigins(layouts);
+        });
         var bottom = private_util_1.MAX_SAFE_INTEGER;
         var top = 0;
         lodash_1.forEach(layout.originY, function (origins) {
@@ -92,7 +87,7 @@ var MeasureView = /** @class */ (function (_super) {
         return {
             originYByPartAndStaff: originYByPartAndStaff,
             systemBottom: this.context.originY - bottom + 20.5,
-            systemTop: this.context.originY - top - 20.5
+            systemTop: this.context.originY - top - 20.5,
         };
     };
     MeasureView.prototype.extractOrigins = function (layouts) {
@@ -104,17 +99,17 @@ var MeasureView = /** @class */ (function (_super) {
     };
     MeasureView.prototype.shouldComponentUpdate = function (nextProps) {
         invariant_1.default(!isNaN(this.props.version), "Invalid non-numeric version " + this.props.version);
-        return this.props.version !== nextProps.version ||
+        return (this.props.version !== nextProps.version ||
             this.props.layout.originX !== nextProps.layout.originX ||
-            this.props.layout.width !== nextProps.layout.width;
+            this.props.layout.width !== nextProps.layout.width);
     };
     MeasureView.childContextTypes = {
         originYByPartAndStaff: PropTypes.objectOf(NUMBER_ARRAY).isRequired,
         systemBottom: PropTypes.number.isRequired,
-        systemTop: PropTypes.number.isRequired
+        systemTop: PropTypes.number.isRequired,
     };
     MeasureView.contextTypes = {
-        originY: PropTypes.number
+        originY: PropTypes.number,
     };
     return MeasureView;
 }(react_1.Component));

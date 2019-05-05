@@ -62,8 +62,10 @@ var ProxyModel = /** @class */ (function () {
         configurable: true
     });
     ProxyModel.prototype.toXML = function () {
-        return "<!-- proxy for " + this._target.toXML().replace(/--/g, "\\-\\-") + " -->\n" +
-            ("<forward><duration>" + this.divCount + "</duration></forward>\n");
+        return ("<!-- proxy for " + this._target
+            .toXML()
+            .replace(/--/g, "\\-\\-") + " -->\n" +
+            ("<forward><duration>" + this.divCount + "</duration></forward>\n"));
     };
     ProxyModel.prototype.inspect = function () {
         return this.toXML();

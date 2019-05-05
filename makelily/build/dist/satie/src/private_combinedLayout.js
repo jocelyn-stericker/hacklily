@@ -25,7 +25,7 @@ function combineLayout(layout) {
     var detached = {
         x: layout.x,
         division: layout.division,
-        renderClass: layout.renderClass
+        renderClass: layout.renderClass,
     };
     detached.expandPolicy = layout.expandPolicy;
     if (layout.expandPolicy === "centered") {
@@ -42,7 +42,7 @@ function reattachLayout(layout) {
         model: null,
         x: layout.x,
         division: layout.division,
-        renderClass: layout.renderClass
+        renderClass: layout.renderClass,
     };
     attached.expandPolicy = layout.expandPolicy;
     if (layout.expandPolicy === "centered") {
@@ -73,12 +73,12 @@ function mergeSegmentsInPlace(segment1, segment2) {
         var pri1 = !!item1 ? item1.renderClass : Number.MAX_VALUE;
         var div2 = !!item2 ? item2.division : Number.MAX_VALUE;
         var pri2 = !!item2 ? item2.renderClass : Number.MAX_VALUE;
-        if (div1 < div2 || div1 === div2 && pri1 < pri2) {
+        if (div1 < div2 || (div1 === div2 && pri1 < pri2)) {
             x = item1.x;
             invariant_1.default(!!segment2, "Segment2 must be defined");
             segment2.splice(s2_idx, 0, reattachLayout(item1));
         }
-        else if (div2 < div1 || div2 === div1 && pri2 < pri1) {
+        else if (div2 < div1 || (div2 === div1 && pri2 < pri1)) {
             x = item2.x;
             segment1.splice(s1_idx, 0, combineLayout(item2));
         }

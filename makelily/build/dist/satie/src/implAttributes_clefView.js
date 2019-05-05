@@ -22,7 +22,7 @@ var __extends = (this && this.__extends) || (function () {
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
             function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
         return extendStatics(d, b);
-    }
+    };
     return function (d, b) {
         extendStatics(d, b);
         function __() { this.constructor = d; }
@@ -40,13 +40,12 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+var React = __importStar(require("react"));
 var musicxml_interfaces_1 = require("musicxml-interfaces");
 var react_1 = require("react");
-var DOM = __importStar(require("react-dom-factories"));
 var PropTypes = __importStar(require("prop-types"));
 var private_views_glyph_1 = __importDefault(require("./private_views_glyph"));
 var private_smufl_1 = require("./private_smufl");
-var $Glyph = react_1.createFactory(private_views_glyph_1.default);
 /**
  * Responsible for the rendering of a clef.
  */
@@ -61,18 +60,13 @@ var ClefView = /** @class */ (function (_super) {
             return null;
         }
         var clefX = spec.defaultX + (spec.relativeX || 0);
-        var clefY = (this.context.originY || 0) - (spec.defaultY + (spec.relativeY || 0) +
-            (this.renderedLine() - 3) * 10);
+        var clefY = (this.context.originY || 0) -
+            (spec.defaultY + (spec.relativeY || 0) + (this.renderedLine() - 3) * 10);
         var clefSign = this.sign();
         if (!clefSign) {
             return null;
         }
-        var clefGlyph = $Glyph({
-            fill: spec.color,
-            glyphName: clefSign,
-            x: clefX,
-            y: clefY
-        });
+        var clefGlyph = (React.createElement(private_views_glyph_1.default, { fill: spec.color, glyphName: clefSign, x: clefX, y: clefY }));
         var clefOctaveChange = parseInt(spec.clefOctaveChange, 10);
         var clefDecorations = [];
         var clefSignBox = private_smufl_1.bboxes[clefSign];
@@ -89,45 +83,27 @@ var ClefView = /** @class */ (function (_super) {
         right = right * 10 + clefX;
         var decorativeX = (left + right) / 2;
         if (clefOctaveChange === 2) {
-            clefDecorations.push($Glyph({
-                fill: spec.color,
-                glyphName: "clef15",
-                key: "15ma",
-                x: decorativeX - (private_smufl_1.bboxes["clef15"][0] * 10 +
-                    private_smufl_1.bboxes["clef15"][2] * 10) / 2 + topLeftOffset,
-                y: top
-            }));
+            clefDecorations.push(React.createElement(private_views_glyph_1.default, { fill: spec.color, glyphName: "clef15", key: "15ma", x: decorativeX -
+                    (private_smufl_1.bboxes["clef15"][0] * 10 + private_smufl_1.bboxes["clef15"][2] * 10) / 2 +
+                    topLeftOffset, y: top }));
         }
         else if (clefOctaveChange === 1) {
-            clefDecorations.push($Glyph({
-                fill: spec.color,
-                glyphName: "clef8",
-                key: "8va",
-                x: decorativeX - (private_smufl_1.bboxes["clef8"][0] * 10 +
-                    private_smufl_1.bboxes["clef8"][2] * 10) / 2 + topLeftOffset,
-                y: top
-            }));
+            clefDecorations.push(React.createElement(private_views_glyph_1.default, { fill: spec.color, glyphName: "clef8", key: "8va", x: decorativeX -
+                    (private_smufl_1.bboxes["clef8"][0] * 10 + private_smufl_1.bboxes["clef8"][2] * 10) / 2 +
+                    topLeftOffset, y: top }));
         }
         else if (clefOctaveChange === -1) {
-            clefDecorations.push($Glyph({
-                fill: spec.color,
-                glyphName: "clef8",
-                key: "8vb",
-                x: decorativeX - (private_smufl_1.bboxes["clef8"][0] * 10 + private_smufl_1.bboxes["clef8"][2] * 10) / 2,
-                y: bottom + private_smufl_1.bboxes["clef8"][1] * 10
-            }));
+            clefDecorations.push(React.createElement(private_views_glyph_1.default, { fill: spec.color, glyphName: "clef8", key: "8vb", x: decorativeX -
+                    (private_smufl_1.bboxes["clef8"][0] * 10 + private_smufl_1.bboxes["clef8"][2] * 10) / 2, y: bottom + private_smufl_1.bboxes["clef8"][1] * 10 }));
         }
         else if (clefOctaveChange === -2) {
-            clefDecorations.push($Glyph({
-                fill: spec.color,
-                glyphName: "clef15",
-                key: "15mb",
-                x: decorativeX - (private_smufl_1.bboxes["clef15"][0] * 10 + private_smufl_1.bboxes["clef15"][2] * 10) / 2,
-                y: bottom + private_smufl_1.bboxes["clef15"][1] * 10
-            }));
+            clefDecorations.push(React.createElement(private_views_glyph_1.default, { fill: spec.color, glyphName: "clef15", key: "15mb", x: decorativeX -
+                    (private_smufl_1.bboxes["clef15"][0] * 10 + private_smufl_1.bboxes["clef15"][2] * 10) / 2, y: bottom + private_smufl_1.bboxes["clef15"][1] * 10 }));
         }
         if (clefDecorations) {
-            return DOM.g(null, clefGlyph, clefDecorations);
+            return (React.createElement("g", null,
+                clefGlyph,
+                clefDecorations));
         }
         else {
             return clefGlyph;
@@ -145,8 +121,9 @@ var ClefView = /** @class */ (function (_super) {
             return null;
         }
         else {
-            return clef + "Clef" + (this.props.spec.size === musicxml_interfaces_1.SymbolSize.Cue ?
-                "Change" : "");
+            return (clef +
+                "Clef" +
+                (this.props.spec.size === musicxml_interfaces_1.SymbolSize.Cue ? "Change" : ""));
         }
     };
     ClefView.prototype.renderedLine = function () {

@@ -22,7 +22,7 @@ var __extends = (this && this.__extends) || (function () {
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
             function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
         return extendStatics(d, b);
-    }
+    };
     return function (d, b) {
         extendStatics(d, b);
         function __() { this.constructor = d; }
@@ -40,13 +40,12 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+var React = __importStar(require("react"));
 var react_1 = require("react");
-var DOM = __importStar(require("react-dom-factories"));
 var PropTypes = __importStar(require("prop-types"));
 var lodash_1 = require("lodash");
 var private_views_line_1 = __importDefault(require("./private_views_line"));
 var private_smufl_1 = require("./private_smufl");
-var $Line = react_1.createFactory(private_views_line_1.default);
 /**
  * Renders the (usually 5) lines that make up a staff.
  */
@@ -60,20 +59,12 @@ var StaffLines = /** @class */ (function (_super) {
         var middle = this.context.originY - this.props.defaultY;
         var staffDetails = this.props.staffDetails;
         var offset = (staffDetails.staffLines - 1) / 2;
-        return DOM.g(null, lodash_1.times(staffDetails.staffLines, function (i) { return $Line({
-            key: "staff-" + i,
-            stroke: "#6A6A6A",
+        return (React.createElement("g", null, lodash_1.times(staffDetails.staffLines, function (i) { return (React.createElement(private_views_line_1.default, { key: "staff-" + i, stroke: "#6A6A6A", 
             // TODO: Use print
-            strokeWidth: private_smufl_1.bravura.engravingDefaults.staffLineThickness * 10,
-            x1: _this.props.defaultX,
-            x2: _this.props.defaultX + _this.props.width,
-            y1: middle - 10 * (i - offset),
-            y2: middle - 10 * (i - offset)
-        }); })
-        /* DOM.g */ );
+            strokeWidth: private_smufl_1.bravura.engravingDefaults.staffLineThickness * 10, x1: _this.props.defaultX, x2: _this.props.defaultX + _this.props.width, y1: middle - 10 * (i - offset), y2: middle - 10 * (i - offset) })); })));
     };
     StaffLines.contextTypes = {
-        originY: PropTypes.number.isRequired
+        originY: PropTypes.number.isRequired,
     };
     return StaffLines;
 }(react_1.Component));

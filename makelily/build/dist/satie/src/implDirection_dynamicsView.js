@@ -22,7 +22,7 @@ var __extends = (this && this.__extends) || (function () {
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
             function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
         return extendStatics(d, b);
-    }
+    };
     return function (d, b) {
         extendStatics(d, b);
         function __() { this.constructor = d; }
@@ -73,7 +73,7 @@ var DynamicsView = /** @class */ (function (_super) {
             fill: dynamics.color || "black",
             glyphName: glyphName,
             x: initX,
-            y: initY
+            y: initY,
         });
     };
     DynamicsView.prototype.getGlyphName = function (dynamics) {
@@ -142,7 +142,7 @@ var DynamicsView = /** @class */ (function (_super) {
         }
     };
     DynamicsView.contextTypes = {
-        originY: PropTypes.number
+        originY: PropTypes.number,
     };
     return DynamicsView;
 }(react_1.Component));

@@ -22,7 +22,7 @@ var __extends = (this && this.__extends) || (function () {
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
             function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
         return extendStatics(d, b);
-    }
+    };
     return function (d, b) {
         extendStatics(d, b);
         function __() { this.constructor = d; }
@@ -67,7 +67,7 @@ var ModelView = /** @class */ (function (_super) {
         return _super !== null && _super.apply(this, arguments) || this;
     }
     ModelView.prototype.render = function () {
-        var layout = this.props.layout;
+        var layout = this.props.layout; // Sigh...
         switch (layout.renderClass) {
             case document_1.Type.Attributes:
                 return $AttributesView({ layout: layout });
@@ -86,7 +86,7 @@ var ModelView = /** @class */ (function (_super) {
     ModelView.prototype.getChildContext = function () {
         var layout = this.props.layout;
         return {
-            originY: this.context.originYByPartAndStaff[layout.part][layout.model.staffIdx || 1] || 0
+            originY: this.context.originYByPartAndStaff[layout.part][layout.model.staffIdx || 1] || 0,
         };
     };
     ModelView.prototype.shouldComponentUpdate = function (nextProps, nextState) {
@@ -94,7 +94,8 @@ var ModelView = /** @class */ (function (_super) {
             return true;
         }
         if (this.props.layout.renderClass === document_1.Type.Attributes &&
-            this.props.layout.staffWidth !== nextProps.layout.staffWidth) {
+            this.props.layout.staffWidth !==
+                nextProps.layout.staffWidth) {
             return true;
         }
         return false;

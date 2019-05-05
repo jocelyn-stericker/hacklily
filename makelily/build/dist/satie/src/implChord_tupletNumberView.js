@@ -22,7 +22,7 @@ var __extends = (this && this.__extends) || (function () {
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
             function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
         return extendStatics(d, b);
-    }
+    };
     return function (d, b) {
         extendStatics(d, b);
         function __() { this.constructor = d; }
@@ -43,13 +43,12 @@ Object.defineProperty(exports, "__esModule", { value: true });
 /**
  * @file Renders a tuplet number, for tuplets in beams and unbeamed tuplets.
  */
+var React = __importStar(require("react"));
 var musicxml_interfaces_1 = require("musicxml-interfaces");
 var react_1 = require("react");
-var DOM = __importStar(require("react-dom-factories"));
 var lodash_1 = require("lodash");
 var private_views_glyph_1 = __importDefault(require("./private_views_glyph"));
 var private_smufl_1 = require("./private_smufl");
-var $Glyph = react_1.createFactory(private_views_glyph_1.default);
 var TupletNumber = /** @class */ (function (_super) {
     __extends(TupletNumber, _super);
     function TupletNumber() {
@@ -58,7 +57,7 @@ var TupletNumber = /** @class */ (function (_super) {
     TupletNumber.prototype.render = function () {
         var _a = this.props, x1 = _a.x1, x2 = _a.x2, y1 = _a.y1, y2 = _a.y2, tuplet = _a.tuplet;
         var placement = tuplet.placement;
-        var text = (tuplet.tupletActual.tupletNumber.text);
+        var text = tuplet.tupletActual.tupletNumber.text;
         var symbols = lodash_1.map(text, function (char) { return "tuplet" + char; });
         var boxes = lodash_1.map(symbols, function (symbol) { return private_smufl_1.bboxes[symbol]; });
         var widths = lodash_1.map(boxes, function (box) { return (box[0] - box[2]) * 10; });
@@ -69,31 +68,27 @@ var TupletNumber = /** @class */ (function (_super) {
             return memo;
         }, [0]);
         var y = (y1 + y2) / 2 + (placement === musicxml_interfaces_1.AboveBelow.Above ? 7.5 : 9.5);
-        return DOM.g(null, 
-        // Mask
-        // FIXME: We should instead split up the rectangle into
-        // two parts to avoid breaking transparent backgrounds!
-        DOM.polygon({
-            fill: "white",
-            key: "mask",
-            points: ((offset - width / 2 - 6) + "," + (y - boxes[0][1] * 10) + " " +
-                (offset - width / 2 - 6) + "," + (y + boxes[0][3] * 10) + " " +
-                (offset + width / 2 + 6) + "," + (y + boxes[0][3] * 10) + " " +
-                (offset + width / 2 + 6) + "," + (y - boxes[0][1] * 10)),
-            stroke: "white",
-            strokeWidth: 0
-        }), 
-        // Glyphs
-        lodash_1.map(symbols, function (symbol, index) {
-            return $Glyph({
-                key: "glyph" + index,
-                fill: "#000000",
-                glyphName: symbol,
-                x: xs[index] + offset - width / 2,
-                y: y
-            });
-        })
-        /* DOM.g */ );
+        return (React.createElement("g", null,
+            React.createElement("polygon", { fill: "white", key: "mask", points: offset -
+                    width / 2 -
+                    6 +
+                    "," +
+                    (y - boxes[0][1] * 10) +
+                    " " +
+                    (offset - width / 2 - 6) +
+                    "," +
+                    (y + boxes[0][3] * 10) +
+                    " " +
+                    (offset + width / 2 + 6) +
+                    "," +
+                    (y + boxes[0][3] * 10) +
+                    " " +
+                    (offset + width / 2 + 6) +
+                    "," +
+                    (y - boxes[0][1] * 10), stroke: "white", strokeWidth: 0 }),
+            lodash_1.map(symbols, function (sym, index) {
+                return (React.createElement(private_views_glyph_1.default, { key: "glyph" + index, fill: "#000000", glyphName: sym, x: xs[index] + offset - width / 2, y: y }));
+            })));
     };
     return TupletNumber;
 }(react_1.Component));

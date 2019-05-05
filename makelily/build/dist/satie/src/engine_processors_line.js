@@ -34,11 +34,11 @@ function layoutMeasures(options) {
     var measureShortests = measures.map(function (measure) {
         return document_1.getMeasureSegments(measure).reduce(document_1.reduceToShortestInSegments, Number.MAX_VALUE);
     });
-    var lineShortest = measureShortests.reduce(function (shortest, measureShortest) {
-        return Math.min(measureShortest, shortest);
-    }, Number.MAX_VALUE);
+    var lineShortest = measureShortests.reduce(function (shortest, measureShortest) { return Math.min(measureShortest, shortest); }, Number.MAX_VALUE);
     var measureLayouts = lodash_1.map(measures, function (measure, measureIdx) {
-        var shortest = options.singleLineMode ? measureShortests[measureIdx] : lineShortest;
+        var shortest = options.singleLineMode
+            ? measureShortests[measureIdx]
+            : lineShortest;
         var cleanliness = document.cleanlinessTracking.measures[measure.uuid];
         var layout;
         if (cleanliness && cleanliness.clean) {
@@ -91,18 +91,14 @@ function layoutLine(options, bounds, memo) {
             if (staffIdx > 1) {
                 memo.y -= 100;
             }
-            var paddingTop = lodash_1.maxBy(layouts, function (mre) {
-                return mre.paddingTop[staffIdx] || 0;
-            }).paddingTop[staffIdx] || 0;
-            var paddingBottom = lodash_1.maxBy(layouts, function (mre) {
-                return mre.paddingBottom[staffIdx] || 0;
-            }).paddingBottom[staffIdx] || 0;
+            var paddingTop = lodash_1.maxBy(layouts, function (mre) { return mre.paddingTop[staffIdx] || 0; }).paddingTop[staffIdx] || 0;
+            var paddingBottom = lodash_1.maxBy(layouts, function (mre) { return mre.paddingBottom[staffIdx] || 0; }).paddingBottom[staffIdx] || 0;
             var top = memo.y - paddingTop;
             memo.y = top - paddingBottom;
             return top;
         }));
     });
-    var tops = lodash_1.zipObject(partOrder, topsInOrder);
+    var tops = (lodash_1.zipObject(partOrder, topsInOrder));
     memo.y -= bounds.systemLayout.systemDistance;
     memo.attributes = layoutInfo.attributes;
     var left = bounds.left;

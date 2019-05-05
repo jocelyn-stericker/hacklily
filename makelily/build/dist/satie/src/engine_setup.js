@@ -60,12 +60,17 @@ var BrowserSetup;
         style.appendChild(document.createTextNode("")); // WebKit hack
         document.head.appendChild(style);
         lodash_1.forEach(spec.preloadedFonts, function (font) {
-            var baseFont = (/[\w\s]*/.exec(font) || [""])[0].replace(/\s/g, " ").trim();
+            var baseFont = (/[\w\s]*/.exec(font) || [""])[0]
+                .replace(/\s/g, " ")
+                .trim();
             if (!baseFont) {
                 throw new Error("Font " + font + " is not a valid font name.");
             }
             var variant = (/\((\w*)\)/.exec(font) || [])[1] || undefined;
-            if (variant && variant !== "bold" && variant !== "bold italic" && variant !== "italic") {
+            if (variant &&
+                variant !== "bold" &&
+                variant !== "bold italic" &&
+                variant !== "italic") {
                 throw new Error("Valid font variants are bold, bold italic, and italic");
             }
             private_fontManager_1.markPreloaded(baseFont, variant);
@@ -122,9 +127,7 @@ function makeFactory() {
         implSound_soundModel_1.default,
         implSpacer_spacerModel_1.default,
         implVisualCursor_visualCursorModel_1.default,
-    ], [
-        implChord_voiceStaffStemDirectionPreprocessor_1.default,
-    ], [
+    ], [implChord_voiceStaffStemDirectionPreprocessor_1.default], [
         implLine_padPostprocessor_1.default,
         implLine_justifyPostprocessor_1.default,
         implChord_beamPostprocessor_1.default,

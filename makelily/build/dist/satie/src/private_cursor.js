@@ -90,20 +90,22 @@ var ValidationCursor = /** @class */ (function () {
     ValidationCursor.prototype.advance = function (divs) {
         invariant_1.default(this.segmentInstance.ownerType === "staff", "Only valid in staff context");
         this.segmentDivision += divs;
-        this.fixup([{
+        this.fixup([
+            {
                 p: [
                     String(this.measureInstance.uuid),
                     "parts",
                     this.segmentInstance.part,
                     "staves",
                     this.segmentInstance.owner,
-                    this.segmentPosition
+                    this.segmentPosition,
                 ],
                 li: {
                     _class: document_1.Type[document_1.Type.Spacer],
-                    divCount: divs
-                }
-            }]);
+                    divCount: divs,
+                },
+            },
+        ]);
     };
     return ValidationCursor;
 }());

@@ -22,7 +22,7 @@ var __extends = (this && this.__extends) || (function () {
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
             function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
         return extendStatics(d, b);
-    }
+    };
     return function (d, b) {
         extendStatics(d, b);
         function __() { this.constructor = d; }
@@ -40,9 +40,9 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+var React = __importStar(require("react"));
 var musicxml_interfaces_1 = require("musicxml-interfaces");
 var react_1 = require("react");
-var DOM = __importStar(require("react-dom-factories"));
 var PropTypes = __importStar(require("prop-types"));
 var lodash_1 = require("lodash");
 var invariant_1 = __importDefault(require("invariant"));
@@ -50,9 +50,6 @@ var private_views_bezier_1 = __importDefault(require("./private_views_bezier"));
 var private_views_glyph_1 = __importDefault(require("./private_views_glyph"));
 var private_smufl_1 = require("./private_smufl");
 var implChord_articulationView_1 = __importDefault(require("./implChord_articulationView"));
-var $Bezier = react_1.createFactory(private_views_bezier_1.default);
-var $Glyph = react_1.createFactory(private_views_glyph_1.default);
-var $Articulation = react_1.createFactory(implChord_articulationView_1.default);
 var implChord_notation_1 = require("./implChord_notation");
 /**
  * Notations are things that are attached to notes.
@@ -78,11 +75,7 @@ var NotationView = /** @class */ (function (_super) {
             // TODO
         });
         lodash_1.forEach(model.articulations, function (articulation, idx) {
-            children.push($Articulation({
-                articulation: articulation,
-                key: "art" + idx,
-                defaultX: nlayout ? nlayout.model[0].defaultX : 0
-            }));
+            children.push(React.createElement(implChord_articulationView_1.default, { articulation: articulation, key: "art" + idx, defaultX: nlayout ? nlayout.model[0].defaultX : 0 }));
         });
         lodash_1.forEach(model.dynamics, function (dynamic) {
             // TODO
@@ -102,15 +95,9 @@ var NotationView = /** @class */ (function (_super) {
                     shape = "fermata";
                     break;
             }
-            children.push($Glyph({
-                fill: "black",
-                glyphName: "" + shape + direction,
-                key: "fer" + idx,
-                x: originX + fermata.defaultX + (fermata.relativeX || 0),
-                y: (_this.context.originY || 0) -
+            children.push(React.createElement(private_views_glyph_1.default, { fill: "black", glyphName: "" + shape + direction, key: "fer" + idx, x: originX + fermata.defaultX + (fermata.relativeX || 0), y: (_this.context.originY || 0) -
                     fermata.defaultY -
-                    (fermata.relativeY || 0)
-            }));
+                    (fermata.relativeY || 0) }));
         });
         lodash_1.forEach(model.glissandos, function (glissando) {
             // TODO
@@ -151,26 +138,17 @@ var NotationView = /** @class */ (function (_super) {
                 technical.toe ||
                 technical.tripleTongue ||
                 technical.upBow;
-            children.push($Glyph({
-                fill: t.color || "black",
-                glyphName: implChord_notation_1.technicalGlyph(technical, !("placement" in t) || t.placement === musicxml_interfaces_1.AboveBelow.Below
+            children.push(React.createElement(private_views_glyph_1.default, { fill: t.color || "black", glyphName: implChord_notation_1.technicalGlyph(technical, !("placement" in t) || t.placement === musicxml_interfaces_1.AboveBelow.Below
                     ? "Below"
-                    : "Above"),
-                key: "tech" + idx,
-                x: originX +
+                    : "Above"), key: "tech" + idx, x: originX +
                     (("defaultX" in t ? t.defaultX : 0) || 0) +
-                    (("relativeX" in t ? t.relativeX : 0) || 0),
-                y: (_this.context.originY || 0) -
+                    (("relativeX" in t ? t.relativeX : 0) || 0), y: (_this.context.originY || 0) -
                     ("defaultY" in t ? t.defaultY : 0) -
-                    (("relativeY" in t ? t.relativeY : 0) || 0)
-            }));
+                    (("relativeY" in t ? t.relativeY : 0) || 0) }));
         });
         lodash_1.forEach(model.tieds, function (tied) {
             var tieTo = tied.satieTieTo;
             if (!tieTo) {
-                ;
-            }
-            {
                 return;
             }
             var bbox2 = private_smufl_1.bboxes[notehead];
@@ -212,23 +190,7 @@ var NotationView = /** @class */ (function (_super) {
             invariant_1.default(!isNaN(relw), "Invalid relw %s", relw);
             invariant_1.default(!isNaN(y1my2), "Invalid y1my2 %s", y1my2);
             invariant_1.default(!isNaN(absw), "Invalid absw %s", absw);
-            children.push($Bezier({
-                fill: "#000000",
-                stroke: "#000000",
-                strokeWidth: 1.2,
-                x1: x2,
-                x2: (0.28278198 / 1.23897534) * x1mx2 + x2,
-                x3: (0.9561935 / 1.23897534) * x1mx2 + x2,
-                x4: x1,
-                x5: (0.28278198 / 1.23897534) * x2mx1 + x1,
-                x6: (0.95619358 / 1.23897534) * x2mx1 + x1,
-                y1: y2,
-                y2: (dir === -1 ? y1my2 : 0) + absw + y2,
-                y3: (dir === -1 ? y1my2 : 0) + absw + y2,
-                y4: y1,
-                y5: (dir === -1 ? 0 : -y1my2) + absw + relw + y1,
-                y6: (dir === -1 ? 0 : -y1my2) + absw + relw + y1
-            }));
+            children.push(React.createElement(private_views_bezier_1.default, { fill: "#000000", stroke: "#000000", strokeWidth: 1.2, x1: x2, x2: (0.28278198 / 1.23897534) * x1mx2 + x2, x3: (0.9561935 / 1.23897534) * x1mx2 + x2, x4: x1, x5: (0.28278198 / 1.23897534) * x2mx1 + x1, x6: (0.95619358 / 1.23897534) * x2mx1 + x1, y1: y2, y2: (dir === -1 ? y1my2 : 0) + absw + y2, y3: (dir === -1 ? y1my2 : 0) + absw + y2, y4: y1, y5: (dir === -1 ? 0 : -y1my2) + absw + relw + y1, y6: (dir === -1 ? 0 : -y1my2) + absw + relw + y1 }));
         });
         lodash_1.forEach(model.tuplets, function (tuplet) {
             // TODO
@@ -239,11 +201,11 @@ var NotationView = /** @class */ (function (_super) {
             case 1:
                 return children[0];
             default:
-                return DOM.g(null, children);
+                return React.createElement("g", null, children);
         }
     };
     NotationView.contextTypes = {
-        originY: PropTypes.number
+        originY: PropTypes.number,
     };
     return NotationView;
 }(react_1.Component));

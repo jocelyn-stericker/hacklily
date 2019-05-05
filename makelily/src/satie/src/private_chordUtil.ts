@@ -31,7 +31,7 @@ import {
   Articulations,
   Tied,
   Pitch,
-  Beam
+  Beam,
 } from "musicxml-interfaces";
 import { some, find, map, reduce, filter, chain, times } from "lodash";
 import invariant from "invariant";
@@ -57,7 +57,7 @@ const EMPTY_FROZEN = Object.freeze({});
 
 export function hasAccidental(
   chord: IChord,
-  cursor: ValidationCursor | LayoutCursor
+  cursor: ValidationCursor | LayoutCursor,
 ) {
   return some(chord, function(c) {
     if (!c.pitch) {
@@ -115,13 +115,13 @@ export function dots(chord: IChord | IDurationDescription): number {
 
 export function timeModification(chord: IChord): TimeModification;
 export function timeModification(
-  duration: IDurationDescription
+  duration: IDurationDescription,
 ): TimeModification;
 export function timeModification(
-  chord: IChord | IDurationDescription
+  chord: IChord | IDurationDescription,
 ): TimeModification;
 export function timeModification(
-  chord: IChord | IDurationDescription
+  chord: IChord | IDurationDescription,
 ): TimeModification {
   if (_isIChord(chord)) {
     return (
@@ -129,7 +129,7 @@ export function timeModification(
       (
         find(chord, note => note.timeModification) ||
         ({
-          timeModification: <TimeModification>null
+          timeModification: <TimeModification>null,
         } as any)
       ).timeModification || null
     );
@@ -143,7 +143,7 @@ export function timeModification(
 export function ties(chord: IChord): Tie[] {
   let ties = map(
     chord,
-    note => (note.ties && note.ties.length ? note.ties[0] : null)
+    note => (note.ties && note.ties.length ? note.ties[0] : null),
   );
   return filter(ties, t => !!t).length ? ties : null;
 }
@@ -170,7 +170,7 @@ export function averageLine(chord: IChord, clef: Clef): number {
     reduce(
       linesForClef(chord, clef),
       (memo: number, line: number) => memo + line,
-      0
+      0,
     ) / chord.length
   );
 }
@@ -183,7 +183,7 @@ export function lowestLine(chord: IChord, clef: Clef) {
   return reduce(
     linesForClef(chord, clef),
     (memo: number, line: number) => Math.min(memo, line),
-    10000
+    10000,
   );
 }
 
@@ -195,7 +195,7 @@ export function highestLine(chord: IChord, clef: Clef) {
   return reduce(
     linesForClef(chord, clef),
     (memo: number, line: number) => Math.max(memo, line),
-    -10000
+    -10000,
   );
 }
 
@@ -219,7 +219,7 @@ export function startingLine(chord: IChord, direction: number, clef: Clef) {
 export function heightDeterminingLine(
   chord: IChord,
   direction: number,
-  clef: Clef
+  clef: Clef,
 ) {
   if (direction !== -1 && direction !== 1) {
     throw new Error("Direction was not a number");
@@ -252,7 +252,7 @@ export function lineForClef(note: Note, clef: Clef): number {
     return lineForClef_(
       note.unpitched.displayStep,
       note.unpitched.displayOctave,
-      clef
+      clef,
     );
   } else if (!!note.pitch) {
     return lineForClef_(note.pitch.step, note.pitch.octave, clef);
@@ -268,7 +268,7 @@ export let offsetToPitch: { [key: string]: string } = {
   1.5: "F",
   2: "G",
   2.5: "A",
-  3: "B"
+  3: "B",
 };
 
 export let pitchOffsets: { [key: string]: number } = {
@@ -278,7 +278,7 @@ export let pitchOffsets: { [key: string]: number } = {
   F: 1.5,
   G: 2,
   A: 2.5,
-  B: 3
+  B: 3,
 };
 
 export function pitchForClef(relativeY: number, clef: Clef): Pitch {
@@ -295,14 +295,14 @@ export function pitchForClef(relativeY: number, clef: Clef): Pitch {
 
   return {
     octave,
-    step
+    step,
   };
 }
 
 export function lineForClef_(
   step: string,
   octave: string | number,
-  clef: Clef
+  clef: Clef,
 ): number {
   let octaveNum = parseInt(<string>octave, 10) || 0;
   return getClefOffset(clef) + (octaveNum - 3) * 3.5 + pitchOffsets[step];
@@ -343,7 +343,7 @@ export let defaultClefLines: { [key: string]: number } = {
   C: 3,
   PERCUSSION: 3,
   TAB: 5,
-  NONE: 3
+  NONE: 3,
 };
 
 export let clefOffsets: { [key: string]: number } = {
@@ -352,7 +352,7 @@ export let clefOffsets: { [key: string]: number } = {
   C: -0.5,
   PERCUSSION: -0.5,
   TAB: -0.5,
-  NONE: -0.5
+  NONE: -0.5,
 };
 
 export function getClefOffset(clef: Clef) {
@@ -367,7 +367,7 @@ export function getClefOffset(clef: Clef) {
 export function barDivisionsDI(time: Time, divisions: number) {
   invariant(
     !!divisions,
-    "Expected divisions to be set before calculating bar divisions."
+    "Expected divisions to be set before calculating bar divisions.",
   );
 
   if (time.senzaMisura != null) {
@@ -382,9 +382,9 @@ export function barDivisionsDI(time: Time, divisions: number) {
         timeStr.split("+"),
         (memo, timeStr) =>
           memo + (parseInt(timeStr, 10) * 4) / time.beatTypes[idx],
-        0
+        0,
       ),
-    0
+    0,
   );
 
   return quarterNotes * divisions || NaN;
@@ -404,7 +404,7 @@ export let chromaticScale: { [key: string]: number } = {
   f: 5,
   g: 7,
   a: 9,
-  b: 11
+  b: 11,
 }; // c:12
 
 export let countToHasStem: { [key: string]: boolean } = {
@@ -420,7 +420,7 @@ export let countToHasStem: { [key: string]: boolean } = {
   128: true,
   256: true,
   512: true,
-  1024: true
+  1024: true,
 };
 
 export let countToIsBeamable: { [key: string]: boolean } = {
@@ -431,7 +431,7 @@ export let countToIsBeamable: { [key: string]: boolean } = {
   128: true,
   256: true,
   512: true,
-  1024: true
+  1024: true,
 };
 
 export let countToFlag: { [key: string]: string } = {
@@ -442,7 +442,7 @@ export let countToFlag: { [key: string]: string } = {
   128: "flag128th",
   256: "flag256th",
   512: "flag512th",
-  1024: "flag1024th"
+  1024: "flag1024th",
 };
 
 export let accidentalGlyphs: { [key: number]: string } = {
@@ -483,7 +483,7 @@ export let accidentalGlyphs: { [key: number]: string } = {
   [MxmlAccidental.NaturalSharp]: "accidentalNaturalSharp",
   [MxmlAccidental.FlatFlat]: "accidentalDoubleFlat",
   [MxmlAccidental.Natural]: "accidentalNatural",
-  [MxmlAccidental.DoubleFlat]: "accidentalDoubleFlat"
+  [MxmlAccidental.DoubleFlat]: "accidentalDoubleFlat",
 };
 
 export let InvalidAccidental = -999;
@@ -493,161 +493,161 @@ const CUSTOM_NOTEHEADS: { [key: number]: string[] } = {
     "noteheadLargeArrowDownBlack",
     "noteheadLargeArrowDownHalf",
     "noteheadLargeArrowDownWhole",
-    "noteheadLargeArrowDownDoubleWhole"
+    "noteheadLargeArrowDownDoubleWhole",
   ],
   [NoteheadType.ArrowUp]: [
     "noteheadLargeArrowUpBlack",
     "noteheadLargeArrowUpHalf",
     "noteheadLargeArrowUpWhole",
-    "noteheadLargeArrowUpDoubleWhole"
+    "noteheadLargeArrowUpDoubleWhole",
   ],
   [NoteheadType.BackSlashed]: [
     "noteheadSlashedBlack2",
     "noteheadSlashedHalf2",
     "noteheadSlashedWhole2",
-    "noteheadSlashedDoubleWhole2"
+    "noteheadSlashedDoubleWhole2",
   ],
   [NoteheadType.CircleDot]: [
     "noteheadRoundWhiteWithDot",
     "noteheadCircledHalf",
     "noteheadCircledWhole",
-    "noteheadCircledDoubleWhole"
+    "noteheadCircledDoubleWhole",
   ],
   [NoteheadType.CircleX]: [
     "noteheadCircledXLarge",
     "noteheadCircledXLarge",
     "noteheadCircledXLarge",
-    "noteheadCircledXLarge"
+    "noteheadCircledXLarge",
   ],
   [NoteheadType.Cluster]: [
     "noteheadNull",
     "noteheadNull",
     "noteheadNull",
-    "noteheadNull"
+    "noteheadNull",
   ], // TODO
   [NoteheadType.Cross]: [
     "noteheadPlusBlack",
     "noteheadPlusHalf",
     "noteheadPlusWhole",
-    "noteheadPlusDoubleWhole"
+    "noteheadPlusDoubleWhole",
   ],
   [NoteheadType.InvertedTriangle]: [
     "noteheadTriangleDownBlack",
     "noteheadTriangleDownHalf",
     "noteheadTriangleDownWhole",
-    "noteheadTriangleDownDoubleWhole"
+    "noteheadTriangleDownDoubleWhole",
   ],
   [NoteheadType.LeftTriangle]: [
     "noteheadTriangleRightBlack",
     "noteheadTriangleRightHalf",
     "noteheadTriangleRightWhole",
-    "noteheadTriangleRightDoubleWhole"
+    "noteheadTriangleRightDoubleWhole",
   ],
   // Finale has a different idea about what left means
   [NoteheadType.None]: [
     "noteheadNull",
     "noteheadNull",
     "noteheadNull",
-    "noteheadNull"
+    "noteheadNull",
   ],
   [NoteheadType.Slash]: [
     "noteheadSlashHorizontalEnds",
     "noteheadSlashWhiteHalf",
     "noteheadSlashWhiteWhole",
-    "noteheadDoubleWhole"
+    "noteheadDoubleWhole",
   ],
   [NoteheadType.Slashed]: [
     "noteheadSlashedBlack1",
     "noteheadSlashedHalf1",
     "noteheadSlashedWhole1",
-    "noteheadSlashedDoubleWhole1"
+    "noteheadSlashedDoubleWhole1",
   ],
 
   [NoteheadType.X]: [
     "noteheadXBlack",
     "noteheadXHalf",
     "noteheadXWhole",
-    "noteheadXDoubleWhole"
+    "noteheadXDoubleWhole",
   ],
 
   [NoteheadType.Do]: [
     "noteheadTriangleUpBlack",
     "noteheadTriangleUpHalf",
     "noteheadTriangleUpWhole",
-    "noteheadTriangleUpDoubleWhole"
+    "noteheadTriangleUpDoubleWhole",
   ],
   [NoteheadType.Triangle]: [
     "noteheadTriangleUpBlack",
     "noteheadTriangleUpHalf",
     "noteheadTriangleUpWhole",
-    "noteheadTriangleUpDoubleWhole"
+    "noteheadTriangleUpDoubleWhole",
   ],
 
   [NoteheadType.Re]: [
     "noteheadMoonBlack",
     "noteheadMoonWhite",
     "noteheadMoonWhite",
-    "noteheadMoonWhite"
+    "noteheadMoonWhite",
   ],
 
   [NoteheadType.Mi]: [
     "noteheadDiamondBlack",
     "noteheadDiamondHalf",
     "noteheadDiamondWhole",
-    "noteheadDiamondDoubleWhole"
+    "noteheadDiamondDoubleWhole",
   ],
   [NoteheadType.Diamond]: [
     "noteheadDiamondBlack",
     "noteheadDiamondHalf",
     "noteheadDiamondWhole",
-    "noteheadDiamondDoubleWhole"
+    "noteheadDiamondDoubleWhole",
   ],
 
   [NoteheadType.Fa]: [
     "noteheadTriangleUpRightBlack",
     "noteheadTriangleUpRightWhite",
     "noteheadTriangleUpRightWhite",
-    "noteheadTriangleUpRightWhite"
+    "noteheadTriangleUpRightWhite",
   ],
   [NoteheadType.FaUp]: [
     "noteheadTriangleUpRightBlack",
     "noteheadTriangleUpRightWhite",
     "noteheadTriangleUpRightWhite",
-    "noteheadTriangleUpRightWhite"
+    "noteheadTriangleUpRightWhite",
   ],
 
   [NoteheadType.So]: [
     "noteheadBlack",
     "noteheadHalf",
     "noteheadWhole",
-    "noteheadDoubleWhole"
+    "noteheadDoubleWhole",
   ],
 
   [NoteheadType.La]: [
     "noteheadSquareBlack",
     "noteheadSquareWhite",
     "noteheadSquareWhite",
-    "noteheadSquareWhite"
+    "noteheadSquareWhite",
   ],
   [NoteheadType.Square]: [
     "noteheadSquareBlack",
     "noteheadSquareWhite",
     "noteheadSquareWhite",
-    "noteheadSquareWhite"
+    "noteheadSquareWhite",
   ],
   [NoteheadType.Rectangle]: [
     "noteheadSquareBlack",
     "noteheadSquareWhite",
     "noteheadSquareWhite",
-    "noteheadSquareWhite"
+    "noteheadSquareWhite",
   ],
 
   [NoteheadType.Ti]: [
     "noteheadTriangleRoundDownBlack",
     "noteheadTriangleRoundDownWhite",
     "noteheadTriangleRoundDownWhite",
-    "noteheadTriangleRoundDownWhite"
-  ]
+    "noteheadTriangleRoundDownWhite",
+  ],
 };
 
 export function getNoteheadGlyph(notehead: Notehead, stdGlyph: string): string {
@@ -671,7 +671,7 @@ export function getNoteheadGlyph(notehead: Notehead, stdGlyph: string): string {
   }
   console.warn(
     `The custom notehead with ID ${type} cannot replace ` +
-      `${notehead}, probably because it's not implemented.`
+      `${notehead}, probably because it's not implemented.`,
   );
   return stdGlyph;
 }
@@ -679,7 +679,7 @@ export function getNoteheadGlyph(notehead: Notehead, stdGlyph: string): string {
 export function notationObj(n: Note): Notations {
   invariant(
     !n.notations || n.notations.length === 1,
-    "Deprecated notations format"
+    "Deprecated notations format",
   );
   return n.notations ? n.notations[0] : EMPTY_FROZEN;
 }
@@ -707,7 +707,7 @@ export class FractionalDivisionsException {
 export function divisions(
   chord: IChord | IDurationDescription,
   attributes: { time: Time; divisions: number },
-  allowFractional?: boolean
+  allowFractional?: boolean,
 ) {
   if (_isIChord(chord) && some(chord, note => note.grace)) {
     return 0;
@@ -720,7 +720,7 @@ export function divisions(
       ? attributes.time
       : {
           beatTypes: [4],
-          beats: ["1000"]
+          beats: ["1000"],
         };
   let attributeDivisions = attributes.divisions;
 
@@ -732,11 +732,11 @@ export function divisions(
       attributesTime.beats,
       (memo, durr) =>
         memo + reduce(durr.split("+"), (m, l) => m + parseInt(l, 10), 0),
-      0
+      0,
     );
     const tsBeatType = attributesTime.beatTypes.reduce(
       (memo, bt) => (memo === bt ? bt : NaN),
-      attributesTime.beatTypes[0]
+      attributesTime.beatTypes[0],
     );
     invariant(!isNaN(tsBeatType), "Time signature must be consistent");
     const total = (attributeDivisions * tsBeats * 4) / tsBeatType;
@@ -752,14 +752,14 @@ export function divisions(
   const tmFactor = chordTM ? chordTM.normalNotes / chordTM.actualNotes : 1.0;
   const dotFactor = times(chordDots, d => 1 / Math.pow(2, d + 1)).reduce(
     (m, i) => m + i,
-    1
+    1,
   );
 
   const total = base * tmFactor * dotFactor;
   invariant(
     !isNaN(total),
     "calcDivisions must return a number. %s is not a number.",
-    total
+    total,
   );
   return total;
 }

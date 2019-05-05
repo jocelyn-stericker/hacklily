@@ -22,7 +22,7 @@ var __extends = (this && this.__extends) || (function () {
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
             function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
         return extendStatics(d, b);
-    }
+    };
     return function (d, b) {
         extendStatics(d, b);
         function __() { this.constructor = d; }
@@ -37,8 +37,8 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+var React = __importStar(require("react"));
 var react_1 = require("react");
-var DOM = __importStar(require("react-dom-factories"));
 /**
  * Renders a straight line.
  */
@@ -48,15 +48,7 @@ var Line = /** @class */ (function (_super) {
         return _super !== null && _super.apply(this, arguments) || this;
     }
     Line.prototype.render = function () {
-        return DOM.line({
-            className: this.props.className,
-            stroke: this.props.stroke,
-            strokeWidth: this.props.strokeWidth,
-            x1: this.props.x1,
-            x2: this.props.x2,
-            y1: this.props.y1,
-            y2: this.props.y2,
-        });
+        return (React.createElement("line", { className: this.props.className, stroke: this.props.stroke, strokeWidth: this.props.strokeWidth, x1: this.props.x1, x2: this.props.x2, y1: this.props.y1, y2: this.props.y2 }));
     };
     return Line;
 }(react_1.Component));

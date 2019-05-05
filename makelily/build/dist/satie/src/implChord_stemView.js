@@ -22,7 +22,7 @@ var __extends = (this && this.__extends) || (function () {
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
             function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
         return extendStatics(d, b);
-    }
+    };
     return function (d, b) {
         extendStatics(d, b);
         function __() { this.constructor = d; }
@@ -40,16 +40,14 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+var React = __importStar(require("react"));
 var musicxml_interfaces_1 = require("musicxml-interfaces");
 var react_1 = require("react");
-var DOM = __importStar(require("react-dom-factories"));
 var PropTypes = __importStar(require("prop-types"));
 var invariant_1 = __importDefault(require("invariant"));
 var private_views_line_1 = __importDefault(require("./private_views_line"));
 var private_views_glyph_1 = __importDefault(require("./private_views_glyph"));
 var private_smufl_1 = require("./private_smufl");
-var $Line = react_1.createFactory(private_views_line_1.default);
-var $Glyph = react_1.createFactory(private_views_glyph_1.default);
 /**
  * Renders a stem based on a height decided in Note.
  */
@@ -65,39 +63,29 @@ var StemView = /** @class */ (function (_super) {
             return null;
         }
         var direction = spec.type === musicxml_interfaces_1.StemType.Up ? 1 : -1; // TODO: StemType.Double
-        var lineXOffset = direction * -width / 2;
+        var lineXOffset = (direction * -width) / 2;
         var offset = private_smufl_1.getFontOffset(notehead, direction) || [0];
-        var x = defaultX + (relativeX || (offset[0] * 10 + lineXOffset));
+        var x = defaultX + (relativeX || offset[0] * 10 + lineXOffset);
         invariant_1.default(isFinite(x), "Invalid x offset %s", x);
         var dY = this.props.bestHeight * direction;
         var elements = [];
-        elements.push($Line({
-            key: "s",
-            stroke: color,
-            strokeWidth: width,
-            x1: x,
-            x2: x,
-            y1: this.context.originY - defaultY - (relativeY || 0) - offset[1] * 10,
-            y2: this.context.originY - defaultY - (relativeY || 0) - offset[1] * 10 - dY
-        }));
+        elements.push(React.createElement(private_views_line_1.default, { key: "s", stroke: color, strokeWidth: width, x1: x, x2: x, y1: this.context.originY - defaultY - (relativeY || 0) - offset[1] * 10, y2: this.context.originY -
+                defaultY -
+                (relativeY || 0) -
+                offset[1] * 10 -
+                dY }));
         if (tremolo) {
-            elements.push($Glyph({
-                key: "t",
-                glyphName: "tremolo" + (tremolo.data || "1"),
-                x: x,
-                fill: "black",
-                y: this.context.originY - defaultY - (relativeY || 0) - dY * 4 / 5
-            }));
+            elements.push(React.createElement(private_views_glyph_1.default, { key: "t", glyphName: "tremolo" + (tremolo.data || "1"), x: x, fill: "black", y: this.context.originY - defaultY - (relativeY || 0) - (dY * 4) / 5 }));
         }
         if (elements.length === 1) {
             return elements[0];
         }
         else {
-            return DOM.g(null, elements);
+            return React.createElement("g", null, elements);
         }
     };
     StemView.contextTypes = {
-        originY: PropTypes.number.isRequired
+        originY: PropTypes.number.isRequired,
     };
     return StemView;
 }(react_1.Component));

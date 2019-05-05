@@ -199,11 +199,11 @@ var ChordModelImpl = /** @class */ (function () {
                             "voices",
                             cursor.segmentInstance.owner,
                             cursor.segmentPosition,
-                            "divCount"
+                            "divCount",
                         ],
                         oi: divCount,
-                        od: this.divCount
-                    }
+                        od: this.divCount,
+                    },
                 ]);
             }
         }
@@ -213,8 +213,8 @@ var ChordModelImpl = /** @class */ (function () {
                     {
                         p: ["divisions"],
                         oi: err.requiredDivisions,
-                        od: cursor.staffAttributes.divisions
-                    }
+                        od: cursor.staffAttributes.divisions,
+                    },
                 ]);
             }
         }
@@ -304,7 +304,7 @@ var ChordModelImpl = /** @class */ (function () {
                 this.satieStem = {
                     direction: direction,
                     stemHeight: this._getStemHeight(direction, clef),
-                    stemStart: private_chordUtil_1.startingLine(this, direction, clef)
+                    stemStart: private_chordUtil_1.startingLine(this, direction, clef),
                 };
                 this.satieDirection = direction === 1 ? musicxml_interfaces_1.StemType.Up : musicxml_interfaces_1.StemType.Down;
             }
@@ -371,7 +371,7 @@ var ChordModelImpl = /** @class */ (function () {
         var _a = cursor.staffAttributes, time = _a.time, divisions = _a.divisions;
         var ts = {
             beatType: time.beatTypes[0],
-            beats: lodash_1.reduce(time.beats, function (sum, beat) { return sum + parseInt(beat, 10); }, 0)
+            beats: lodash_1.reduce(time.beats, function (sum, beat) { return sum + parseInt(beat, 10); }, 0),
         };
         var factor = ts.beatType / 4;
         var beats = factor * (this[0].duration / divisions);
@@ -536,7 +536,7 @@ var ChordModelImpl = /** @class */ (function () {
                     note.notehead.type = musicxml_interfaces_1.NoteheadType.Slash;
                     if (!measureStyle.slash.useStems) {
                         note.stem = {
-                            type: musicxml_interfaces_1.StemType.None
+                            type: musicxml_interfaces_1.StemType.None,
                         };
                     }
                 }
@@ -643,15 +643,15 @@ var ChordModelImpl = /** @class */ (function () {
                     defaultX: {
                         get: function () {
                             return ((note.relativeX || 0) + (_this.overrideX || _this.x));
-                        }
+                        },
                     },
                     stem: {
                         get: function () {
                             return (baseModel.stem || {
-                                type: baseModel.satieDirection
+                                type: baseModel.satieDirection,
                             });
-                        }
-                    }
+                        },
+                    },
                 });
             });
             model.stemX = function () { return _this.overrideX || _this.x; };

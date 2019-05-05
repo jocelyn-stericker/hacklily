@@ -80,7 +80,7 @@ function timeModification(chord) {
         // TODO: typing
         (lodash_1.find(chord, function (note) { return note.timeModification; }) ||
             {
-                timeModification: null
+                timeModification: null,
             }).timeModification || null);
     }
     else if (_isIDurationDescription(chord)) {
@@ -200,7 +200,7 @@ exports.offsetToPitch = {
     1.5: "F",
     2: "G",
     2.5: "A",
-    3: "B"
+    3: "B",
 };
 exports.pitchOffsets = {
     C: 0,
@@ -209,7 +209,7 @@ exports.pitchOffsets = {
     F: 1.5,
     G: 2,
     A: 2.5,
-    B: 3
+    B: 3,
 };
 function pitchForClef(relativeY, clef) {
     var line = relativeY / 10 + 3;
@@ -224,7 +224,7 @@ function pitchForClef(relativeY, clef) {
     var step = exports.offsetToPitch[stepQuant];
     return {
         octave: octave,
-        step: step
+        step: step,
     };
 }
 exports.pitchForClef = pitchForClef;
@@ -268,7 +268,7 @@ exports.defaultClefLines = {
     C: 3,
     PERCUSSION: 3,
     TAB: 5,
-    NONE: 3
+    NONE: 3,
 };
 exports.clefOffsets = {
     G: -3.5,
@@ -276,7 +276,7 @@ exports.clefOffsets = {
     C: -0.5,
     PERCUSSION: -0.5,
     TAB: -0.5,
-    NONE: -0.5
+    NONE: -0.5,
 };
 function getClefOffset(clef) {
     return (exports.clefOffsets[clef.sign] +
@@ -313,7 +313,7 @@ exports.chromaticScale = {
     f: 5,
     g: 7,
     a: 9,
-    b: 11
+    b: 11,
 }; // c:12
 exports.countToHasStem = {
     0.25: true,
@@ -328,7 +328,7 @@ exports.countToHasStem = {
     128: true,
     256: true,
     512: true,
-    1024: true
+    1024: true,
 };
 exports.countToIsBeamable = {
     8: true,
@@ -338,7 +338,7 @@ exports.countToIsBeamable = {
     128: true,
     256: true,
     512: true,
-    1024: true
+    1024: true,
 };
 exports.countToFlag = {
     8: "flag8th",
@@ -348,7 +348,7 @@ exports.countToFlag = {
     128: "flag128th",
     256: "flag256th",
     512: "flag512th",
-    1024: "flag1024th"
+    1024: "flag1024th",
 };
 exports.accidentalGlyphs = (_a = {},
     _a[musicxml_interfaces_1.MxmlAccidental.NaturalFlat] = "accidentalNaturalSharp",
@@ -395,152 +395,152 @@ var CUSTOM_NOTEHEADS = (_b = {},
         "noteheadLargeArrowDownBlack",
         "noteheadLargeArrowDownHalf",
         "noteheadLargeArrowDownWhole",
-        "noteheadLargeArrowDownDoubleWhole"
+        "noteheadLargeArrowDownDoubleWhole",
     ],
     _b[musicxml_interfaces_1.NoteheadType.ArrowUp] = [
         "noteheadLargeArrowUpBlack",
         "noteheadLargeArrowUpHalf",
         "noteheadLargeArrowUpWhole",
-        "noteheadLargeArrowUpDoubleWhole"
+        "noteheadLargeArrowUpDoubleWhole",
     ],
     _b[musicxml_interfaces_1.NoteheadType.BackSlashed] = [
         "noteheadSlashedBlack2",
         "noteheadSlashedHalf2",
         "noteheadSlashedWhole2",
-        "noteheadSlashedDoubleWhole2"
+        "noteheadSlashedDoubleWhole2",
     ],
     _b[musicxml_interfaces_1.NoteheadType.CircleDot] = [
         "noteheadRoundWhiteWithDot",
         "noteheadCircledHalf",
         "noteheadCircledWhole",
-        "noteheadCircledDoubleWhole"
+        "noteheadCircledDoubleWhole",
     ],
     _b[musicxml_interfaces_1.NoteheadType.CircleX] = [
         "noteheadCircledXLarge",
         "noteheadCircledXLarge",
         "noteheadCircledXLarge",
-        "noteheadCircledXLarge"
+        "noteheadCircledXLarge",
     ],
     _b[musicxml_interfaces_1.NoteheadType.Cluster] = [
         "noteheadNull",
         "noteheadNull",
         "noteheadNull",
-        "noteheadNull"
+        "noteheadNull",
     ],
     _b[musicxml_interfaces_1.NoteheadType.Cross] = [
         "noteheadPlusBlack",
         "noteheadPlusHalf",
         "noteheadPlusWhole",
-        "noteheadPlusDoubleWhole"
+        "noteheadPlusDoubleWhole",
     ],
     _b[musicxml_interfaces_1.NoteheadType.InvertedTriangle] = [
         "noteheadTriangleDownBlack",
         "noteheadTriangleDownHalf",
         "noteheadTriangleDownWhole",
-        "noteheadTriangleDownDoubleWhole"
+        "noteheadTriangleDownDoubleWhole",
     ],
     _b[musicxml_interfaces_1.NoteheadType.LeftTriangle] = [
         "noteheadTriangleRightBlack",
         "noteheadTriangleRightHalf",
         "noteheadTriangleRightWhole",
-        "noteheadTriangleRightDoubleWhole"
+        "noteheadTriangleRightDoubleWhole",
     ],
     // Finale has a different idea about what left means
     _b[musicxml_interfaces_1.NoteheadType.None] = [
         "noteheadNull",
         "noteheadNull",
         "noteheadNull",
-        "noteheadNull"
+        "noteheadNull",
     ],
     _b[musicxml_interfaces_1.NoteheadType.Slash] = [
         "noteheadSlashHorizontalEnds",
         "noteheadSlashWhiteHalf",
         "noteheadSlashWhiteWhole",
-        "noteheadDoubleWhole"
+        "noteheadDoubleWhole",
     ],
     _b[musicxml_interfaces_1.NoteheadType.Slashed] = [
         "noteheadSlashedBlack1",
         "noteheadSlashedHalf1",
         "noteheadSlashedWhole1",
-        "noteheadSlashedDoubleWhole1"
+        "noteheadSlashedDoubleWhole1",
     ],
     _b[musicxml_interfaces_1.NoteheadType.X] = [
         "noteheadXBlack",
         "noteheadXHalf",
         "noteheadXWhole",
-        "noteheadXDoubleWhole"
+        "noteheadXDoubleWhole",
     ],
     _b[musicxml_interfaces_1.NoteheadType.Do] = [
         "noteheadTriangleUpBlack",
         "noteheadTriangleUpHalf",
         "noteheadTriangleUpWhole",
-        "noteheadTriangleUpDoubleWhole"
+        "noteheadTriangleUpDoubleWhole",
     ],
     _b[musicxml_interfaces_1.NoteheadType.Triangle] = [
         "noteheadTriangleUpBlack",
         "noteheadTriangleUpHalf",
         "noteheadTriangleUpWhole",
-        "noteheadTriangleUpDoubleWhole"
+        "noteheadTriangleUpDoubleWhole",
     ],
     _b[musicxml_interfaces_1.NoteheadType.Re] = [
         "noteheadMoonBlack",
         "noteheadMoonWhite",
         "noteheadMoonWhite",
-        "noteheadMoonWhite"
+        "noteheadMoonWhite",
     ],
     _b[musicxml_interfaces_1.NoteheadType.Mi] = [
         "noteheadDiamondBlack",
         "noteheadDiamondHalf",
         "noteheadDiamondWhole",
-        "noteheadDiamondDoubleWhole"
+        "noteheadDiamondDoubleWhole",
     ],
     _b[musicxml_interfaces_1.NoteheadType.Diamond] = [
         "noteheadDiamondBlack",
         "noteheadDiamondHalf",
         "noteheadDiamondWhole",
-        "noteheadDiamondDoubleWhole"
+        "noteheadDiamondDoubleWhole",
     ],
     _b[musicxml_interfaces_1.NoteheadType.Fa] = [
         "noteheadTriangleUpRightBlack",
         "noteheadTriangleUpRightWhite",
         "noteheadTriangleUpRightWhite",
-        "noteheadTriangleUpRightWhite"
+        "noteheadTriangleUpRightWhite",
     ],
     _b[musicxml_interfaces_1.NoteheadType.FaUp] = [
         "noteheadTriangleUpRightBlack",
         "noteheadTriangleUpRightWhite",
         "noteheadTriangleUpRightWhite",
-        "noteheadTriangleUpRightWhite"
+        "noteheadTriangleUpRightWhite",
     ],
     _b[musicxml_interfaces_1.NoteheadType.So] = [
         "noteheadBlack",
         "noteheadHalf",
         "noteheadWhole",
-        "noteheadDoubleWhole"
+        "noteheadDoubleWhole",
     ],
     _b[musicxml_interfaces_1.NoteheadType.La] = [
         "noteheadSquareBlack",
         "noteheadSquareWhite",
         "noteheadSquareWhite",
-        "noteheadSquareWhite"
+        "noteheadSquareWhite",
     ],
     _b[musicxml_interfaces_1.NoteheadType.Square] = [
         "noteheadSquareBlack",
         "noteheadSquareWhite",
         "noteheadSquareWhite",
-        "noteheadSquareWhite"
+        "noteheadSquareWhite",
     ],
     _b[musicxml_interfaces_1.NoteheadType.Rectangle] = [
         "noteheadSquareBlack",
         "noteheadSquareWhite",
         "noteheadSquareWhite",
-        "noteheadSquareWhite"
+        "noteheadSquareWhite",
     ],
     _b[musicxml_interfaces_1.NoteheadType.Ti] = [
         "noteheadTriangleRoundDownBlack",
         "noteheadTriangleRoundDownWhite",
         "noteheadTriangleRoundDownWhite",
-        "noteheadTriangleRoundDownWhite"
+        "noteheadTriangleRoundDownWhite",
     ],
     _b);
 function getNoteheadGlyph(notehead, stdGlyph) {
@@ -606,7 +606,7 @@ function divisions(chord, attributes, allowFractional) {
         ? attributes.time
         : {
             beatTypes: [4],
-            beats: ["1000"]
+            beats: ["1000"],
         };
     var attributeDivisions = attributes.divisions;
     invariant_1.default(!!attributesTime, "A time signature must be specified.");
