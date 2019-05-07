@@ -18,8 +18,8 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
  */
 
-import Button from "@khanacademy/wonder-blocks-button";
-import { css } from "aphrodite";
+import { Button, Menu, MenuItem, Popover } from "@blueprintjs/core";
+import { css, StyleSheet } from "aphrodite";
 import DOMPurify from "dompurify";
 import * as monacoEditor from "monaco-editor";
 import React from "react";
@@ -82,7 +82,10 @@ interface Props {
    */
   rpc: RPCClient | null;
 
-  onShowDownload(): void;
+  songURL: string | null;
+  onExportLy(): any;
+  onExportMIDI(): any;
+  onExportPDF(): any;
 
   /**
    * Called whenever a preview is rendered. The parent should in turn re-render,
@@ -395,15 +398,58 @@ export default class Preview extends React.PureComponent<Props, State> {
   };
 
   private renderDownload(): JSX.Element {
+    const { onExportLy, onExportMIDI, onExportPDF, songURL } = this.props;
+
     return (
-      <Button
-        onClick={this.props.onShowDownload}
-        style={APP_STYLE.downloadButton}
-        disabled={!this.props.logs || this.state.pendingPreviews > 0}
-      >
-        <i className="fa fa-download" />
-        &nbsp; Export
-      </Button>
+      <div className={css(styles.downloadButtonWrapper)}>
+        <Popover
+          interactionKind="hover"
+          disabled={!this.props.logs || this.state.pendingPreviews > 0}
+          content={
+            <Menu>
+              <MenuItem
+                onClick={onExportLy}
+                icon="code"
+                text="Download LilyPond file"
+              />
+              <MenuItem
+                onClick={onExportPDF}
+                icon="document-share"
+                text="Export PDF"
+              />
+              <MenuItem
+                onClick={onExportMIDI}
+                icon="music"
+                text="Export MIDI"
+              />
+              {songURL && (
+                <MenuItem
+                  href={songURL.replace(/\.ly$/, ".pdf")}
+                  icon="git-repo"
+                  text="View on GitHub"
+                />
+              )}
+            </Menu>
+          }
+        >
+          <Button
+            disabled={!this.props.logs || this.state.pendingPreviews > 0}
+            large={true}
+            intent="primary"
+            icon="download"
+          >
+            Export
+          </Button>
+        </Popover>
+      </div>
     );
   }
 }
+
+const styles = StyleSheet.create({
+  downloadButtonWrapper: {
+    bottom: 10,
+    position: "absolute",
+    right: 128,
+  },
+});

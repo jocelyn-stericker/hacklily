@@ -18,15 +18,17 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
  */
 
-import Button from "@khanacademy/wonder-blocks-button";
-import Tooltip from "@khanacademy/wonder-blocks-tooltip";
+import { Button, Drawer, Position, Tooltip } from "@blueprintjs/core";
+import { css, StyleSheet } from "aphrodite";
 import React from "react";
-
-import { LOGS_STYLE } from "./styles";
 
 interface Props {
   loading: boolean;
   logs: string | null;
+}
+
+interface State {
+  showLogDrawer: boolean;
 }
 
 /**
@@ -34,47 +36,103 @@ interface Props {
  *
  * This is visible in the app whenever the preview is visible.
  */
-export default class Logs extends React.Component<Props> {
+export default class Logs extends React.Component<Props, State> {
+  state = {
+    showLogDrawer: false,
+  };
+
   render(): JSX.Element | null {
     const { logs, loading } = this.props;
+    const { showLogDrawer } = this.state;
 
     const error = !logs || logs.includes("error") || logs.includes("warning");
+    const icon = error && !loading ? "warning-sign" : "info-sign";
 
     const btn = (
       <Button
-        spinner={loading}
-        kind="secondary"
-        color={error ? "destructive" : "default"}
-        style={LOGS_STYLE.logsButton}
+        loading={loading}
+        intent={error && !loading ? "warning" : "none"}
+        large={true}
+        onClick={this.handleOpen}
+        icon={icon}
       >
-        <i
-          className={error ? "fa fa-warning fa-fw" : "fa fa-file-o fa-fw"}
-          aria-hidden={true}
-        />
-        &nbsp; Logs
+        Logs
       </Button>
     );
 
-    if (loading || !logs) {
-      return btn;
-    }
-
     return (
-      <Tooltip
-        content={
-          <pre
-            style={{
-              paddingLeft: 16,
-              paddingRight: 16,
-              whiteSpace: "pre-wrap",
-            }}
-          >
-            {logs}
-          </pre>
-        }
-      >
-        {btn}
-      </Tooltip>
+      <div className={css(styles.logsButtonWrapper)}>
+        <Drawer
+          isOpen={showLogDrawer}
+          title="Logs"
+          onClose={this.handleClose}
+          size="45%"
+          icon={icon}
+        >
+          <pre className={css(styles.logDrawer)}>{logs}</pre>
+        </Drawer>
+        <Tooltip
+          disabled={loading}
+          content={<pre className={css(styles.logPreview)}>{logs}</pre>}
+          position={Position.TOP}
+        >
+          {btn}
+        </Tooltip>
+      </div>
     );
   }
+
+  handleClose = () => {
+    this.setState({ showLogDrawer: false });
+  };
+
+  handleOpen = () => {
+    this.setState({ showLogDrawer: true });
+  };
 }
+
+export const styles = StyleSheet.create({
+  logsButtonWrapper: {
+    position: "absolute",
+    right: 20,
+    bottom: 10,
+  },
+  logPreview: {
+    maxHeight: "calc(100vh - 100px)",
+    whiteSpace: "pre-wrap",
+    overflow: "hidden",
+    margin: 0,
+    position: "relative",
+    paddingBottom: 16,
+    ":after": {
+      content: "''",
+      color: "white",
+      position: "absolute",
+      bottom: -16,
+      fontWeight: "bold",
+      width: "100%",
+      height: 40,
+      background:
+        "-webkit-linear-gradient( rgba(57, 75, 89, 0) 0%, rgba(57, 75, 89, 1) 100%)",
+      backgroundImage:
+        "-moz-linear-gradient( rgba(57, 75, 89, 0) 0%, rgba(57, 75, 89, 1) 100%), " +
+        "-o-linear-gradient( rgba(57, 75, 89, 0) 0%, rgba(57, 75, 89, 1) 100%), " +
+        "linear-gradient( rgba(57, 75, 89, 0) 0%, rgba(57, 75, 89, 1) 100%), " +
+        "-ms-linear-gradient( rgba(57, 75, 89, 0) 0%, rgba(57, 75, 89, 1) 100%)",
+    },
+  },
+  logDrawer: {
+    paddingTop: 20,
+    paddingBottom: 20,
+    marginTop: 0,
+    marginBottom: 0,
+    marginRight: 0,
+    marginLeft: 20,
+    overflow: "auto",
+    whiteSpace: "pre-wrap",
+  },
+  logPreviewHint: {
+    marginTop: 0,
+    marginBottom: 8,
+  },
+});

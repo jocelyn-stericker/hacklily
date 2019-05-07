@@ -25,6 +25,8 @@ import App, { QUERY_PROP_KEYS, QueryProps, Song } from "./App";
 import { Auth, parseAuth } from "./auth";
 import { parseQuery, toQueryString } from "./util/queryString";
 
+import "./index.css";
+
 /**
  * Renders Hacklily, with props set.
  */

@@ -18,14 +18,14 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
  */
 
-import { CircularSpinner } from "@khanacademy/wonder-blocks-progress-spinner";
-import { css } from "aphrodite";
+import { Spinner } from "@blueprintjs/core";
+import { css, StyleSheet } from "aphrodite";
 import React from "react";
 
 import * as logoSvg from "./logo.svg";
 
 import ButtonGroup, { ButtonSpec } from "./ButtonGroup";
-import { BUTTON_STYLE, HEADER_STYLE } from "./styles";
+import { BUTTON_STYLE } from "./styles";
 
 export type ViewMode = "view" | "edit" | "both";
 export const MODE_VIEW: ViewMode = "view";
@@ -121,7 +121,7 @@ export default class Header extends React.PureComponent<Props> {
         content: (
           <i
             aria-hidden={true}
-            className={`fa fa-eye ${css(HEADER_STYLE.modeItem)}`}
+            className={`fa fa-eye ${css(styles.modeItem)}`}
           />
         ),
         title: "View",
@@ -131,7 +131,7 @@ export default class Header extends React.PureComponent<Props> {
         content: (
           <i
             aria-hidden={true}
-            className={`fa fa-pencil ${css(HEADER_STYLE.modeItem)}`}
+            className={`fa fa-pencil ${css(styles.modeItem)}`}
           />
         ),
         title: "Edit",
@@ -140,9 +140,7 @@ export default class Header extends React.PureComponent<Props> {
     }
 
     const viewMode: React.ReactNode = modeButtons.length > 0 && (
-      <div
-        className={css(HEADER_STYLE.headerGroupWrapper, HEADER_STYLE.miniGroup)}
-      >
+      <div className={css(styles.headerGroupWrapper, styles.miniGroup)}>
         <ButtonGroup
           value={mode}
           buttons={modeButtons}
@@ -152,12 +150,10 @@ export default class Header extends React.PureComponent<Props> {
     );
 
     const playButton: React.ReactNode = (
-      <div
-        className={css(HEADER_STYLE.headerGroupWrapper, HEADER_STYLE.miniGroup)}
-      >
+      <div className={css(styles.headerGroupWrapper, styles.miniGroup)}>
         <button
           title={playing ? "Pause" : "Play"}
-          className={css(BUTTON_STYLE.buttonStyle, HEADER_STYLE.playButton)}
+          className={css(BUTTON_STYLE.buttonStyle, styles.playButton)}
           onClick={playing ? this.handlePause : this.handlePlay}
         >
           <i className={playing ? "fa-pause fa" : "fa-play fa"} />
@@ -166,12 +162,10 @@ export default class Header extends React.PureComponent<Props> {
     );
 
     const makelilyButton: React.ReactNode = (
-      <div
-        className={css(HEADER_STYLE.headerGroupWrapper, HEADER_STYLE.miniGroup)}
-      >
+      <div className={css(styles.headerGroupWrapper, styles.miniGroup)}>
         <button
           title="Lilypond Tools"
-          className={css(BUTTON_STYLE.buttonStyle, HEADER_STYLE.playButton)}
+          className={css(BUTTON_STYLE.buttonStyle, styles.playButton)}
           onClick={this.handleShowMakelily}
         >
           <i className="fa-briefcase fa" /> Tools
@@ -183,12 +177,10 @@ export default class Header extends React.PureComponent<Props> {
     let menu: React.ReactNode = null;
     if (windowWidth >= MIN_BOTH_WIDTH) {
       menu = (
-        <div
-          className={css(HEADER_STYLE.headerGroupWrapper, HEADER_STYLE.songs)}
-        >
+        <div className={css(styles.headerGroupWrapper, styles.songs)}>
           <button
             title="Menu"
-            className={css(BUTTON_STYLE.buttonStyle, HEADER_STYLE.songsText)}
+            className={css(BUTTON_STYLE.buttonStyle, styles.songsText)}
             onClick={onShowMenu}
           >
             {!loggedIn && <span>Hacklily &mdash; </span>}
@@ -196,7 +188,7 @@ export default class Header extends React.PureComponent<Props> {
               ? last(this.props.song.split("/")).split(".ly")[0]
               : "untitled"}
             {this.props.isDirty ? "*" : ""}{" "}
-            <span className={css(HEADER_STYLE.srOnly)}>
+            <span className={css(styles.srOnly)}>
               : an online LilyPond editor
             </span>
             <i className="fa fa-chevron-down" aria-hidden={true} />
@@ -205,12 +197,10 @@ export default class Header extends React.PureComponent<Props> {
       );
     } else {
       menu = (
-        <div
-          className={css(HEADER_STYLE.headerGroupWrapper, HEADER_STYLE.songs)}
-        >
+        <div className={css(styles.headerGroupWrapper, styles.songs)}>
           <button
             title="Menu"
-            className={css(BUTTON_STYLE.buttonStyle, HEADER_STYLE.songsText)}
+            className={css(BUTTON_STYLE.buttonStyle, styles.songsText)}
             onClick={onShowMenu}
           >
             <i className="fa-bars fa" /> Menu
@@ -223,14 +213,14 @@ export default class Header extends React.PureComponent<Props> {
       <div className="header">
         <img
           src={logoSvg}
-          className={css(HEADER_STYLE.logo)}
+          className={css(styles.logo)}
           alt="Frog, Hacklily logo"
         />
         {menu || <span style={{ width: 10 }} />}
         {viewMode}
         {makelilyButton}
         {played ? this.renderTime() : playButton}
-        <div className={css(HEADER_STYLE.headerSpacer)} />
+        <div className={css(styles.headerSpacer)} />
         {communityToolbar}
       </div>
     );
@@ -352,7 +342,7 @@ export default class Header extends React.PureComponent<Props> {
       saveAsButton = (
         <button
           title="Save As"
-          className={css(HEADER_STYLE.newSong)}
+          className={css(styles.newSong)}
           onClick={onShowClone}
         >
           <i className="fa fa-clone" />{" "}
@@ -383,8 +373,8 @@ export default class Header extends React.PureComponent<Props> {
 
     if (!isDirty && !this.props.song) {
       return (
-        <div className={css(HEADER_STYLE.headerGroupWrapper)}>
-          <button title="Publish" className={css(HEADER_STYLE.newSong)}>
+        <div className={css(styles.headerGroupWrapper)}>
+          <button title="Publish" className={css(styles.newSong)}>
             {!micro && <span>No changes made.</span>}
           </button>
         </div>
@@ -393,10 +383,10 @@ export default class Header extends React.PureComponent<Props> {
 
     if (online) {
       return (
-        <div className={css(HEADER_STYLE.headerGroupWrapper)}>
+        <div className={css(styles.headerGroupWrapper)}>
           <button
             title="Publish"
-            className={css(HEADER_STYLE.newSong)}
+            className={css(styles.newSong)}
             onClick={onShowNew}
           >
             <i
@@ -407,10 +397,7 @@ export default class Header extends React.PureComponent<Props> {
           {saveAsButton}
           <button
             title="Publish"
-            className={css(
-              HEADER_STYLE.publish,
-              isDirty && HEADER_STYLE.publishActive,
-            )}
+            className={css(styles.publish, isDirty && styles.publishActive)}
             onClick={isDirty || !song ? onShowPublish : undefined}
           >
             {saveShare}
@@ -420,12 +407,8 @@ export default class Header extends React.PureComponent<Props> {
     }
 
     return (
-      <div className={css(HEADER_STYLE.headerGroupWrapper)}>
-        <CircularSpinner
-          size="xsmall"
-          style={{ display: "inline-block", marginTop: 6 }}
-        />
-        <div style={{ display: "inline-block", width: 10 }} />
+      <div className={css(styles.headerGroupWrapper)}>
+        <Spinner size={Spinner.SIZE_SMALL} className={css(styles.spinner)} />
       </div>
     );
   }
@@ -436,19 +419,17 @@ export default class Header extends React.PureComponent<Props> {
     const { playing } = this.state;
 
     return (
-      <div
-        className={css(HEADER_STYLE.headerGroupWrapper, HEADER_STYLE.miniGroup)}
-      >
+      <div className={css(styles.headerGroupWrapper, styles.miniGroup)}>
         <button
           title="Rewind"
-          className={css(BUTTON_STYLE.buttonStyle, HEADER_STYLE.playButton)}
+          className={css(BUTTON_STYLE.buttonStyle, styles.playButton)}
           onClick={this.handleRewind}
         >
           <i className="fa-backward fa" />
         </button>
         <button
           title={playing ? "Pause" : "Play"}
-          className={css(BUTTON_STYLE.buttonStyle, HEADER_STYLE.playButton)}
+          className={css(BUTTON_STYLE.buttonStyle, styles.playButton)}
           onClick={playing ? this.handlePause : this.handlePlay}
         >
           <i className={playing ? "fa-pause fa" : "fa-play fa"} />
@@ -456,8 +437,8 @@ export default class Header extends React.PureComponent<Props> {
         <button
           className={css(
             BUTTON_STYLE.buttonStyle,
-            HEADER_STYLE.playButton,
-            HEADER_STYLE.playTime,
+            styles.playButton,
+            styles.playTime,
           )}
           disabled={true}
         >
@@ -465,7 +446,7 @@ export default class Header extends React.PureComponent<Props> {
         </button>
         <button
           title="Fast-forward"
-          className={css(BUTTON_STYLE.buttonStyle, HEADER_STYLE.playButton)}
+          className={css(BUTTON_STYLE.buttonStyle, styles.playButton)}
           onClick={this.handleFastForward}
         >
           <i className="fa-forward fa" />
@@ -474,3 +455,90 @@ export default class Header extends React.PureComponent<Props> {
     );
   }
 }
+
+const styles = StyleSheet.create({
+  headerGroupWrapper: {
+    display: "flex",
+    marginBottom: "auto",
+    marginTop: "auto",
+  },
+  headerSpacer: {
+    flex: 1,
+  },
+  logo: {
+    marginLeft: 16,
+    padding: "9px 0",
+    transform: "scale(-1, 1)",
+    width: 32,
+  },
+  miniGroup: {
+    marginLeft: 16,
+  },
+  modeItem: {
+    fontSize: 14,
+    paddingBottom: 5,
+    paddingTop: 5,
+    width: 14,
+  },
+  newSong: {
+    ":hover": {
+      color: "black",
+    },
+    color: "#aeaeae",
+    fontSize: 14,
+    marginRight: 32,
+    textDecoration: "none",
+  },
+  playButton: {
+    ":hover": {
+      backgroundColor: "#ccc",
+    },
+    color: "#6e6e6e",
+    display: "inline-block",
+    fontSize: 14,
+    height: 36,
+    padding: 9,
+  },
+  playTime: {
+    textAlign: "left",
+    width: 80,
+  },
+  publish: {
+    color: "#aeaeae",
+    cursor: "unset",
+    fontSize: 14,
+    marginRight: 16,
+    textDecoration: "none",
+  },
+  publishActive: {
+    ":hover": {
+      color: "black",
+    },
+    cursor: "pointer",
+  },
+  songs: {
+    marginLeft: 16,
+  },
+  songsText: {
+    ":hover": {
+      backgroundColor: "#ccc",
+    },
+    color: "#6e6e6e",
+    display: "inline-block",
+    fontSize: 14,
+    padding: 9,
+  },
+  srOnly: {
+    border: 0,
+    clip: "rect(0,0,0,0)",
+    height: 1,
+    margin: -1,
+    overflow: "hidden",
+    padding: 0,
+    position: "absolute",
+    width: 1,
+  },
+  spinner: {
+    marginRight: 16,
+  },
+});

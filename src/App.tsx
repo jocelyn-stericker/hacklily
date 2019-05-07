@@ -24,7 +24,6 @@ import * as monacoEditor from "monaco-editor";
 import React from "react";
 
 import { Auth, checkLogin, redirectToLogin, revokeGitHubAuth } from "./auth";
-import DownloadModal from "./DownloadModal";
 import Editor from "./Editor";
 import { cat, FileNotFound, getOrCreateRepo } from "./gitfs";
 import Header, {
@@ -251,7 +250,6 @@ interface State {
   rendererVersion: "stable" | "unstable";
   saving: boolean;
   showMakelily: typeof Makelily | null;
-  showDownloadModal: boolean | "loading";
   windowWidth: number;
   wsError: boolean;
 
@@ -305,7 +303,6 @@ export default class App extends React.PureComponent<Props, State> {
     reconnectTimeout: NaN,
     rendererVersion: "stable",
     saving: false,
-    showDownloadModal: false,
     showMakelily: null,
     windowWidth: window.innerWidth,
     wsError: false,
@@ -715,10 +712,6 @@ export default class App extends React.PureComponent<Props, State> {
     const src = URL.createObjectURL(blob);
 
     this.triggerDownload(`${name}.midi`, src);
-
-    this.setState({
-      showDownloadModal: false,
-    });
   };
 
   private handleExportPDF = async (): Promise<void> => {
@@ -734,9 +727,7 @@ export default class App extends React.PureComponent<Props, State> {
       return;
     }
 
-    this.setState({
-      showDownloadModal: "loading",
-    });
+    // TODO TRIGGER LOADING
 
     const name = this.getSongName();
 
@@ -765,10 +756,6 @@ export default class App extends React.PureComponent<Props, State> {
       alert("Could not export PDF.");
     }
 
-    this.setState({
-      showDownloadModal: false,
-    });
-
     return;
   };
 
@@ -784,10 +771,6 @@ export default class App extends React.PureComponent<Props, State> {
       `${name}.ly`,
       "data:text/plain;charset=utf-8," + encodeURIComponent(song.src),
     );
-
-    this.setState({
-      showDownloadModal: false,
-    });
   };
 
   private handleFind = (): void => {
@@ -800,12 +783,6 @@ export default class App extends React.PureComponent<Props, State> {
     if (this.editor) {
       this.editor.findNext();
     }
-  };
-
-  private handleHideDownload = (): void => {
-    this.setState({
-      showDownloadModal: false,
-    });
   };
 
   private handleHideHelp = (): void => {
@@ -1034,12 +1011,6 @@ export default class App extends React.PureComponent<Props, State> {
         defaultSelection: selection,
       });
     }
-  };
-
-  private handleShowDownload = (): void => {
-    this.setState({
-      showDownloadModal: true,
-    });
   };
 
   private handleShowHelp = (): void => {
@@ -1318,7 +1289,6 @@ export default class App extends React.PureComponent<Props, State> {
       interstitialChanges,
       saving,
       showMakelily,
-      showDownloadModal,
     } = this.state;
 
     const {
@@ -1415,25 +1385,6 @@ export default class App extends React.PureComponent<Props, State> {
             time={this.state.makelilyTime}
           />
         );
-      case Boolean(showDownloadModal):
-        let songURL: string | null = null;
-        if (this.props.edit) {
-          const songParts: string[] = this.props.edit.split("/");
-          songURL = `https://github.com/${songParts[0]}/${
-            songParts[1]
-          }/blob/master/${songParts.slice(2).join("/")}`;
-        }
-
-        return (
-          <DownloadModal
-            loading={showDownloadModal === "loading"}
-            onHide={this.handleHideDownload}
-            onExportLy={this.handleExportLy}
-            onExportMIDI={this.handleExportMIDI}
-            onExportPDF={this.handleExportPDF}
-            songURL={songURL}
-          />
-        );
       default:
         return null;
     }
@@ -1464,6 +1415,14 @@ export default class App extends React.PureComponent<Props, State> {
 
     if (this.socket || isStandalone) {
       if ((online && this.rpc) || isStandalone) {
+        let songURL: string | null = null;
+        if (this.props.edit) {
+          const songParts: string[] = this.props.edit.split("/");
+          songURL = `https://github.com/${songParts[0]}/${
+            songParts[1]
+          }/blob/master/${songParts.slice(2).join("/")}`;
+        }
+
         return (
           <Preview
             code={song.src}
@@ -1472,10 +1431,13 @@ export default class App extends React.PureComponent<Props, State> {
             onLogsObtained={this.handleLogsObtained}
             onMidiObtained={this.handleMidiObtained}
             onSelectionChanged={this.handleSelectionChanged}
-            onShowDownload={this.handleShowDownload}
             rpc={isStandalone ? null : this.rpc}
             standaloneRender={this.standaloneRender}
             logs={logs}
+            onExportLy={this.handleExportLy}
+            onExportMIDI={this.handleExportMIDI}
+            onExportPDF={this.handleExportPDF}
+            songURL={songURL}
           />
         );
       }
