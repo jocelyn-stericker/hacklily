@@ -18,11 +18,8 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
  */
 
-import { css } from "aphrodite";
+import { AnchorButton, Classes, Dialog, Intent } from "@blueprintjs/core";
 import React from "react";
-import ReactModal from "react-modal";
-
-import { MODAL_STYLE } from "./styles";
 
 /**
  * A modal that is rendered when this song is being edited in another tab.
@@ -31,20 +28,31 @@ import { MODAL_STYLE } from "./styles";
 export default class ModalLocked extends React.PureComponent {
   render(): JSX.Element {
     return (
-      <ReactModal
-        className={css(MODAL_STYLE.modal)}
-        contentLabel="Opened in another tab..."
+      <Dialog
+        icon="lock"
+        title="Locked"
         isOpen={true}
-        overlayClassName={css(MODAL_STYLE.overlay)}
+        canOutsideClickClose={false}
+        canEscapeKeyClose={false}
+        isCloseButtonShown={false}
       >
-        <div>
-          <div className={css(MODAL_STYLE.modalHeader)}>
-            This song was opened in another tab. You can only edit in one tab at
-            once. If you have closed the other tab, you may{" "}
-            <a href={window.location.toString()}>resume editing here</a>.
+        <div className={Classes.DIALOG_BODY}>
+          This song was opened in another tab. You can only edit in one tab at
+          once. If you have closed the other tab, you may{" "}
+          <a href={window.location.toString()}>resume editing here</a>.
+        </div>
+        <div className={Classes.DIALOG_FOOTER}>
+          <div className={Classes.DIALOG_FOOTER_ACTIONS}>
+            <AnchorButton
+              href={window.location.toString()}
+              intent={Intent.PRIMARY}
+              icon="refresh"
+            >
+              Reload
+            </AnchorButton>
           </div>
         </div>
-      </ReactModal>
+      </Dialog>
     );
   }
 }

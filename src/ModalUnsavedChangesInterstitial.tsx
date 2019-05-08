@@ -18,11 +18,8 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
  */
 
-import { css } from "aphrodite";
+import { Button, Classes, Dialog, Intent } from "@blueprintjs/core";
 import React from "react";
-import ReactModal from "react-modal";
-
-import { BUTTON_STYLE, MODAL_STYLE } from "./styles";
 
 interface Props {
   cancel(): void;
@@ -48,55 +45,36 @@ export default class ModalUnsavedChangesInterstitial extends React.PureComponent
 > {
   render(): JSX.Element {
     return (
-      <ReactModal
-        className={css(MODAL_STYLE.modal)}
-        contentLabel="Unsaved changes"
-        isOpen={true}
-        onRequestClose={this.props.cancel}
-        overlayClassName={css(MODAL_STYLE.overlay)}
-      >
-        <div>
-          <div className={css(MODAL_STYLE.modalHeader)}>
+      <Dialog title="Unsaved changes" isOpen={true} onClose={this.props.cancel}>
+        <div className={Classes.DIALOG_BODY}>
+          <p className={Classes.TEXT_LARGE}>
             Your changes have not been saved.
-            <button
-              aria-label="Cancel"
-              onClick={this.props.cancel}
-              className={css(MODAL_STYLE.closeButton)}
-            >
-              <i className="fa-close fa" aria-hidden={true} />
-            </button>
-          </div>
-          <div className={css(MODAL_STYLE.modalBody)}>
-            <p style={{ marginTop: 0 }}>
-              If you do not save your changes, they will be{" "}
-              <strong>permanently lost</strong>!
-            </p>
+          </p>
+          <p>
+            If you do not save your changes, they will be{" "}
+            <strong>permanently lost</strong>!
+          </p>
+        </div>
+        <div className={Classes.DIALOG_FOOTER}>
+          <div className={Classes.DIALOG_FOOTER_ACTIONS}>
             <div style={{ display: "flex", marginBottom: 10 }}>
               <div style={{ flex: 1 }} />
               <div>
-                <button
-                  onClick={this.props.cancel}
-                  className={css(BUTTON_STYLE.buttonStyle)}
-                >
-                  Cancel
-                </button>
-                <button
+                <Button onClick={this.props.cancel}>Cancel</Button>
+                <Button
+                  intent={Intent.DANGER}
                   onClick={this.props.discardChanges}
-                  className={css(BUTTON_STYLE.buttonStyle)}
                 >
                   Discard changes
-                </button>
-                <button
-                  onClick={this.props.save}
-                  className={css(BUTTON_STYLE.buttonStyle)}
-                >
+                </Button>
+                <Button intent={Intent.PRIMARY} onClick={this.props.save}>
                   Save
-                </button>
+                </Button>
               </div>
             </div>
           </div>
         </div>
-      </ReactModal>
+      </Dialog>
     );
   }
 }

@@ -18,11 +18,8 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
  */
 
-import { css } from "aphrodite";
+import { Button, Classes, Dialog, Intent } from "@blueprintjs/core";
 import React from "react";
-import ReactModal from "react-modal";
-
-import { MODAL_STYLE } from "./styles";
 
 interface Props {
   onHide(): void;
@@ -37,42 +34,22 @@ interface Props {
 export default class Modal404 extends React.PureComponent<Props> {
   render(): JSX.Element {
     return (
-      <ReactModal
-        className={css(MODAL_STYLE.modal)}
-        contentLabel="About Hacklily"
-        isOpen={true}
-        onRequestClose={this.props.onHide}
-        overlayClassName={css(MODAL_STYLE.overlay)}
-      >
-        <div>
-          <div className={css(MODAL_STYLE.modalHeader)}>
-            <strong>Page not found (404)</strong>
-            <button
-              aria-label="Back to song"
-              onClick={this.props.onHide}
-              className={css(MODAL_STYLE.closeButton)}
-            >
-              <i className="fa-close fa" aria-hidden={true} />
-            </button>
-          </div>
-          <div className={css(MODAL_STYLE.modalBody)}>
-            <p style={{ marginTop: 0 }}>
-              The requested page may have been moved or deleted.
-            </p>
-            <p>
-              Hacklily is a free online sheet-music editor and publishing tool.
-              While you are here, why not{" "}
-              <button
-                onClick={this.props.onHide}
-                className={css(MODAL_STYLE.link)}
-              >
-                give it a try
-              </button>
-              ?
-            </p>
+      <Dialog title="Page not found" isOpen={true} onClose={this.props.onHide}>
+        <div className={Classes.DIALOG_BODY}>
+          <p>The requested page may have been moved or deleted.</p>
+          <p>
+            Hacklily is a free online sheet-music editor and publishing tool.
+            While you are here, why not give it a try?
+          </p>
+        </div>
+        <div className={Classes.DIALOG_FOOTER}>
+          <div className={Classes.DIALOG_FOOTER_ACTIONS}>
+            <Button onClick={this.props.onHide} intent={Intent.PRIMARY}>
+              Continue
+            </Button>
           </div>
         </div>
-      </ReactModal>
+      </Dialog>
     );
   }
 }
