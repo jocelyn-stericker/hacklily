@@ -154,7 +154,7 @@
     lodash "^4.17.11"
     to-fast-properties "^2.0.0"
 
-"@blueprintjs/core@^3.15.1":
+"@blueprintjs/core@3.15.1":
   version "3.15.1"
   resolved "https://registry.yarnpkg.com/@blueprintjs/core/-/core-3.15.1.tgz#9792e9fb7e2e066dd5339fadeaf2f85b1485832a"
   integrity sha512-M8ltbqqlMZuZ6SEuqo/3Fr59ZcUfd8Er7ocbm7EACVfRW7dRhOCd/TKkf2kfICNtCDwznwXk0iAePLXZhUGtQg==
@@ -5502,10 +5502,10 @@ monaco-editor-webpack-plugin@1.7.0:
   dependencies:
     "@types/webpack" "^4.4.19"
 
-monaco-editor@0.16.2, monaco-editor@^0.16.0:
-  version "0.16.2"
-  resolved "https://registry.yarnpkg.com/monaco-editor/-/monaco-editor-0.16.2.tgz#950084ed82eeaef1c8c9d3c1bcab849fe11b2415"
-  integrity sha512-NtGrFzf54jADe7qsWh3lazhS7Kj0XHkJUGBq9fA/Jbwc+sgVcyfsYF6z2AQ7hPqDC+JmdOt/OwFjBnRwqXtx6w==
+monaco-editor@0.15.6, monaco-editor@^0.15.6:
+  version "0.15.6"
+  resolved "https://registry.yarnpkg.com/monaco-editor/-/monaco-editor-0.15.6.tgz#d63b3b06f86f803464f003b252627c3eb4a09483"
+  integrity sha512-JoU9V9k6KqT9R9Tiw1RTU8ohZ+Xnf9DMg6Ktqqw5hILumwmq7xqa/KLXw513uTUsWbhtnHoSJYYR++u3pkyxJg==
 
 move-concurrently@^1.0.1:
   version "1.0.1"
@@ -6725,7 +6725,7 @@ prompts@^2.0.1:
     kleur "^3.0.2"
     sisteransi "^1.0.0"
 
-prop-types@15.7.2, prop-types@^15.5.10, prop-types@^15.6.1, prop-types@^15.6.2, prop-types@^15.7.2:
+prop-types@15.7.2, prop-types@^15.5.10, prop-types@^15.6.1, prop-types@^15.6.2:
   version "15.7.2"
   resolved "https://registry.yarnpkg.com/prop-types/-/prop-types-15.7.2.tgz#52c41e75b8c87e72b9d9360e0206b99dcbffa6c5"
   integrity sha512-8QQikdH7//R2vurIJSutZ1smHYTcLpRWEOlHnzcWHmBYrOGUysKwSsrC89BCiFj3CbrfJ/nXFdJepOVrY1GCHQ==
@@ -6953,14 +6953,14 @@ react-modal@3.8.1:
     react-lifecycles-compat "^3.0.0"
     warning "^3.0.0"
 
-react-monaco-editor@0.25.1:
-  version "0.25.1"
-  resolved "https://registry.yarnpkg.com/react-monaco-editor/-/react-monaco-editor-0.25.1.tgz#29215061da23d0e4ad7bf928d9403288d5be4e92"
-  integrity sha512-VLksQjt8fmeIZoET9fQgmR0sdCCBFaiss92MwW5JvgO3JfrnhHtrLBqrSQRjtbUmef1EmEKi4gZp5Mh0oidvVg==
+react-monaco-editor@0.24.1:
+  version "0.24.1"
+  resolved "https://registry.yarnpkg.com/react-monaco-editor/-/react-monaco-editor-0.24.1.tgz#8338cef7b2bc275c196fa9e3e308e11a1ff7deff"
+  integrity sha512-QVwR0B0JYGzdg8xaqVriH646Su0fOSvE2FaBB/q9ec1NnuPcJGu1YHcwunUKzej3JsUprGJ35jXStnT3QaoPFw==
   dependencies:
     "@types/react" "*"
-    monaco-editor "^0.16.0"
-    prop-types "^15.7.2"
+    monaco-editor "^0.15.6"
+    prop-types "^15.6.2"
 
 react-popper@1.3.3, react-popper@^1.0.0:
   version "1.3.3"
