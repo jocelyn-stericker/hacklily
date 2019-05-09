@@ -57,20 +57,17 @@ export default class ModalUnsavedChangesInterstitial extends React.PureComponent
         </div>
         <div className={Classes.DIALOG_FOOTER}>
           <div className={Classes.DIALOG_FOOTER_ACTIONS}>
-            <div style={{ display: "flex", marginBottom: 10 }}>
-              <div style={{ flex: 1 }} />
-              <div>
-                <Button onClick={this.props.cancel}>Cancel</Button>
-                <Button
-                  intent={Intent.DANGER}
-                  onClick={this.props.discardChanges}
-                >
-                  Discard changes
-                </Button>
-                <Button intent={Intent.PRIMARY} onClick={this.props.save}>
-                  Save
-                </Button>
-              </div>
+            <div>
+              <Button onClick={this.props.cancel}>Cancel</Button>
+              <Button
+                intent={Intent.DANGER}
+                onClick={this.props.discardChanges}
+              >
+                Discard changes
+              </Button>
+              <Button intent={Intent.PRIMARY} onClick={this.props.save}>
+                Save
+              </Button>
             </div>
           </div>
         </div>
