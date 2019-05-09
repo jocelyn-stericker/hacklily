@@ -18,11 +18,8 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
  */
 
-import { css } from "aphrodite";
+import { Button, Classes, Dialog, Intent } from "@blueprintjs/core";
 import React from "react";
-import ReactModal from "react-modal";
-
-import { BUTTON_STYLE, MODAL_STYLE } from "./styles";
 
 interface Props {
   resolveGitHub(): void;
@@ -35,46 +32,32 @@ interface Props {
 export default class ModalConflict extends React.PureComponent<Props> {
   render(): JSX.Element {
     return (
-      <ReactModal
-        className={css(MODAL_STYLE.modal)}
-        contentLabel="Resolve external changes"
-        isOpen={true}
-        overlayClassName={css(MODAL_STYLE.overlay)}
-      >
-        <div>
-          <div className={css(MODAL_STYLE.modalHeader)}>
-            Keep unsaved changes?
-          </div>
-          <div className={css(MODAL_STYLE.modalBody)}>
-            <p style={{ marginTop: 0 }}>
-              <strong>This song was edited outside of this browser.</strong> You
-              can either keep the unsaved version from this browser, or revert
-              to the saved version.
-            </p>
-            <p>
-              <strong>Tip: </strong> Next time, save songs before closing
-              Hacklily.
-            </p>
-            <div style={{ display: "flex", marginBottom: 10 }}>
-              <div style={{ flex: 1 }} />
-              <div>
-                <button
-                  onClick={this.props.resolveLocalStorage}
-                  className={css(BUTTON_STYLE.buttonStyle)}
-                >
-                  Keep unsaved version
-                </button>
-                <button
-                  onClick={this.props.resolveGitHub}
-                  className={css(BUTTON_STYLE.buttonStyle)}
-                >
-                  Revert to saved version
-                </button>
-              </div>
-            </div>
+      <Dialog isOpen={true} title="Keep unsaved changes?" icon="git-merge">
+        <div className={Classes.DIALOG_BODY}>
+          <p style={{ marginTop: 0 }}>
+            <strong>This song was edited outside of this browser.</strong> You
+            can either keep the unsaved version from this browser, or revert to
+            the saved version.
+          </p>
+          <p>
+            <strong>Tip: </strong> Next time, save songs before closing
+            Hacklily.
+          </p>
+        </div>
+        <div className={Classes.DIALOG_FOOTER}>
+          <div className={Classes.DIALOG_FOOTER_ACTIONS}>
+            <Button
+              onClick={this.props.resolveLocalStorage}
+              intent={Intent.WARNING}
+            >
+              Keep unsaved version
+            </Button>
+            <Button onClick={this.props.resolveGitHub} intent={Intent.DANGER}>
+              Revert to saved version
+            </Button>
           </div>
         </div>
-      </ReactModal>
+      </Dialog>
     );
   }
 }

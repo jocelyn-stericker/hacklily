@@ -18,15 +18,23 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
  */
 
-import { css } from "aphrodite";
+import {
+  Button,
+  Classes,
+  Colors,
+  ControlGroup,
+  Dialog,
+  Icon,
+  InputGroup,
+  Intent,
+} from "@blueprintjs/core";
+import { css, StyleSheet } from "aphrodite";
 import React from "react";
-import ReactModal from "react-modal";
 
 import { Auth } from "./auth";
 import { Conflict, File, FileNotFound, ls, rm, write } from "./gitfs";
 import ModalSaving from "./ModalSaving";
 import RPCClient from "./RPCClient";
-import { BUTTON_STYLE, MODAL_STYLE, PUBLISH_STYLE } from "./styles";
 
 interface Props {
   auth: Auth;
@@ -74,9 +82,8 @@ class ModalPublish extends React.PureComponent<Props, State> {
     if (!filename.length) {
       disabled = true;
       error = (
-        <span className={css(PUBLISH_STYLE.error)}>
-          <i className="fa fa-exclamation-triangle" aria-hidden={true} /> Please
-          enter a filename.
+        <span className={css(styles.error)}>
+          <Icon icon="error" /> Please enter a filename.
         </span>
       );
     } else if (
@@ -85,14 +92,13 @@ class ModalPublish extends React.PureComponent<Props, State> {
     ) {
       disabled = true;
       error = (
-        <span className={css(PUBLISH_STYLE.error)}>
-          <i className="fa fa-exclamation-triangle" aria-hidden={true} /> That
-          filename is taken.
+        <span className={css(styles.error)}>
+          <Icon icon="error" /> That filename is taken.
         </span>
       );
     } else if (invitationRequired) {
       error = (
-        <span className={css(PUBLISH_STYLE.error)}>
+        <span className={css(styles.error)}>
           Permission denied. You may need to{" "}
           <a
             href={`https://github.com/${auth.repo}/invitations`}
@@ -107,73 +113,55 @@ class ModalPublish extends React.PureComponent<Props, State> {
     }
 
     return (
-      <ReactModal
-        className={css(MODAL_STYLE.modal, MODAL_STYLE.big)}
-        contentLabel="Publish"
+      <Dialog
+        title="Save / share song"
         isOpen={true}
-        onRequestClose={onHide}
-        overlayClassName={css(MODAL_STYLE.overlay)}
+        onClose={onHide}
+        className={css(styles.modal)}
       >
-        <div>
-          <div className={css(MODAL_STYLE.modalHeader)}>
-            Save / share song
-            <button
-              aria-label="Back to song"
-              onClick={onHide}
-              className={css(MODAL_STYLE.closeButton)}
+        <div className={Classes.DIALOG_BODY}>
+          <ControlGroup>
+            <div className={css(styles.prefix)}>
+              Save to:&nbsp;
+              <code className={Classes.MONOSPACE_TEXT}>
+                <a
+                  href={`https://github.com/${auth.repo}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  {`${auth.repo}`}
+                </a>
+                /
+              </code>
+            </div>
+            <InputGroup
+              value={filename}
+              className={css(styles.input)}
+              placeholder="filename"
+              autoFocus={true}
+              onChange={this.handleChange}
+              rightElement={
+                <div className={css(styles.suffix)}>
+                  <code className={Classes.MONOSPACE_TEXT}>&nbsp;.ly</code>
+                </div>
+              }
+            />
+          </ControlGroup>
+        </div>
+        <div className={Classes.DIALOG_FOOTER}>
+          <div className={Classes.DIALOG_FOOTER_ACTIONS}>
+            {error}
+            <Button
+              onClick={this.handleSave}
+              disabled={disabled}
+              intent={Intent.PRIMARY}
+              icon="floppy-disk"
             >
-              <i className="fa-close fa" aria-hidden={true} />
-            </button>
-          </div>
-          <div className={css(MODAL_STYLE.modalBody)}>
-            <div className={css(PUBLISH_STYLE.row)}>
-              <span className={css(PUBLISH_STYLE.cell)}>
-                Save to:&nbsp;
-                <code className={css(PUBLISH_STYLE.mono)}>
-                  <a
-                    href={`https://github.com/${auth.repo}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    {`${auth.repo}`}
-                  </a>
-                  /
-                </code>
-              </span>
-              <input
-                value={filename}
-                className={css(
-                  PUBLISH_STYLE.cell,
-                  PUBLISH_STYLE.expand,
-                  PUBLISH_STYLE.mono,
-                )}
-                placeholder="filename"
-                autoFocus={true}
-                onChange={this.handleChange}
-              />
-              <span className={css(PUBLISH_STYLE.cell)}>
-                <code className={css(PUBLISH_STYLE.mono)}>&nbsp;.ly</code>
-              </span>
-              {/* Don't judge me too strongly (ok, judge me a little), but I have no idea */}
-              {/* where 7 comes from, and I want to get on with the fun part of making Hacklily. */}
-              <div style={{ width: 7, display: "table-cell" }} />
-            </div>
-            <div className={css(PUBLISH_STYLE.footer)}>
-              {error}
-              <button
-                onClick={this.handleSave}
-                disabled={disabled}
-                className={css(
-                  BUTTON_STYLE.buttonStyle,
-                  PUBLISH_STYLE.publishBtn,
-                )}
-              >
-                <i className="fa fa-save" aria-hidden={true} /> Save / share
-              </button>
-            </div>
+              Save / share
+            </Button>
           </div>
         </div>
-      </ReactModal>
+      </Dialog>
     );
   }
 
@@ -364,3 +352,31 @@ export async function doUnpublish(
 }
 
 export default ModalPublish;
+
+const styles = StyleSheet.create({
+  prefix: {
+    alignSelf: "center",
+    marginRight: 4,
+  },
+  error: {
+    color: Colors.RED1,
+    flex: 1,
+    alignSelf: "center",
+  },
+  mono: {
+    fontFamily: "monospace",
+  },
+  modal: {
+    width: 565,
+  },
+  input: {
+    fontFamily: "monospace",
+    display: "flex",
+    flex: 1,
+  },
+  suffix: {
+    height: 30,
+    lineHeight: "30px",
+    marginRight: 7,
+  },
+});
