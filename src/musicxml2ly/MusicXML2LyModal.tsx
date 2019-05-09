@@ -18,12 +18,10 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
  */
 
-import { css } from "aphrodite";
+import { Classes, Dialog } from "@blueprintjs/core";
 import React from "react";
-import ReactModal from "react-modal";
 
 import RPCClient from "../RPCClient";
-import { MODAL_STYLE } from "../styles";
 
 interface Props {
   rpc: RPCClient;
@@ -33,31 +31,12 @@ interface Props {
 export default class MusicXML2LyModal extends React.PureComponent<Props> {
   render(): JSX.Element {
     return (
-      <ReactModal
-        className={css(MODAL_STYLE.modal)}
-        contentLabel="Import MusicXML"
-        isOpen={true}
-        onRequestClose={this.props.onHide}
-        overlayClassName={css(MODAL_STYLE.overlay)}
-      >
-        <div>
-          <div className={css(MODAL_STYLE.modalHeader)}>
-            <strong>Import MusicXML</strong>
-            <button
-              aria-label="Back to song"
-              onClick={this.props.onHide}
-              className={css(MODAL_STYLE.closeButton)}
-            >
-              <i className="fa-close fa" aria-hidden={true} />
-            </button>
-          </div>
-          <div className={css(MODAL_STYLE.modalBody)}>
-            <p style={{ marginTop: 0 }}>
-              <input type="file" value="" onChange={this.convert} />
-            </p>
-          </div>
+      <Dialog title="Import MusicXML" isOpen={true} onClose={this.props.onHide}>
+        <div className={Classes.DIALOG_BODY}>
+          <p>Select a MusicXML file to import into Hacklily.</p>
+          <input type="file" value="" onChange={this.convert} />
         </div>
-      </ReactModal>
+      </Dialog>
     );
   }
 
