@@ -133,7 +133,8 @@ static LILYPOND_INCLUDES: &'static [&'static str] = &[
 ];
 
 // If this line does not exist in the output, the Hacklily LilyPond REPL is likely dead.
-const CANARY_REPL_LINE: &str = "Processing `/tmp/lyp/wrappers/hacklily.ly'";
+const CANARY_REPL_LINE_RENDER: &str = "Processing `/tmp/lyp/wrappers/hacklily.ly'";
+const CANARY_REPL_LINE_MUSICXML: &str = "Output to `hacklily.musicxml2ly.ly'";
 
 /**
  * Actually process the request.
@@ -207,7 +208,10 @@ async fn handle_request_impl(
                 ))
             })?;
 
-            if output.contains(CANARY_REPL_LINE) {
+            if request.backend == Backend::MusicXml2Ly && output.contains(CANARY_REPL_LINE_MUSICXML)
+                || request.backend != Backend::MusicXml2Ly
+                    && output.contains(CANARY_REPL_LINE_RENDER)
+            {
                 output
             } else {
                 return Err(Error::RenderError("Canary died.".to_owned()));

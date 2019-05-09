@@ -28,7 +28,7 @@ do
     until printf "" 2>>/dev/null >>/dev/tcp/localhost/1225; do sleep 0.05; done
     backend=$( echo "$line" | jq -r .backend )
     if [ "$backend" == "musicxml2ly" ]; then
-        echo "$line" | jq -r .src | musicxml2ly - -o hacklily.musicxml2ly.ly 2> hacklily.err 1>&2
+        echo "$line" | jq -r .src | ~/.lyp/lilyponds/2.18.2/bin/musicxml2ly - -o hacklily.musicxml2ly.ly 2> hacklily.err 1>&2
         jq -Rs . hacklily.err > hacklily.err.json
         jq -Rsrc '{files: [.], logs: $errors, midi: ""}' hacklily.musicxml2ly.ly \
     	    --argfile errors hacklily.err.json \

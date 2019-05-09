@@ -1,5 +1,5 @@
 FROM debian:sid-slim
-RUN apt-get update && apt-get install --no-install-recommends -y ruby curl bzip2 git locales gsfonts ghostscript fonts-dejavu-extra psmisc emacs-intl-fonts xfonts-intl-.* fonts-ipafont-mincho xfonts-bolkhov-75dpi xfonts-cronyx-100dpi xfonts-cronyx-75dpi && \
+RUN apt-get update && apt-get install --no-install-recommends -y ruby curl bzip2 git locales gsfonts ghostscript fonts-dejavu-extra psmisc emacs-intl-fonts xfonts-intl-.* fonts-ipafont-mincho xfonts-bolkhov-75dpi xfonts-cronyx-100dpi xfonts-cronyx-75dpi python && \
     localedef -i en_US -c -f UTF-8 -A /usr/share/locale/locale.alias en_US.UTF-8 && \
     curl -L https://github.com/stedolan/jq/releases/download/jq-1.5/jq-linux64 > /usr/local/bin/jq && \
     chmod +x /usr/local/bin/jq && echo 42 | jq .
