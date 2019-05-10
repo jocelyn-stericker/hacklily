@@ -15,7 +15,6 @@
     "esModuleInterop": true
   },
   "include": [
-    "src/wonder-blocks.d.ts",
     "src/index.tsx",
     "src/status/status.index.tsx",
     "src/musicxml2ly/musicxml2ly.index.tsx",
