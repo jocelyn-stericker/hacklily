@@ -18,13 +18,15 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
  */
 
-import { Spinner } from "@blueprintjs/core";
+import { Popover, Spinner } from "@blueprintjs/core";
 import { css, StyleSheet } from "aphrodite";
 import React from "react";
 
 import * as logoSvg from "./logo.svg";
 
+import { Auth } from "./auth";
 import ButtonGroup, { ButtonSpec } from "./ButtonGroup";
+import Menu from "./Menu";
 import { BUTTON_STYLE } from "./styles";
 
 export type ViewMode = "view" | "edit" | "both";
@@ -49,6 +51,8 @@ interface Player {
 }
 
 interface Props {
+  auth: Auth | null;
+  colourScheme: "vs-dark" | "vs";
   inSandbox: boolean;
   isDirty: boolean;
   isImmutableSrc: boolean;
@@ -62,9 +66,14 @@ interface Props {
   onModeChanged(mode: ViewMode): void;
   onShowClone(): void;
   onShowMakelily(): void;
-  onShowMenu(): void;
   onShowNew(): void;
   onShowPublish(): void;
+  onDeleteSong(song: string): void;
+  onLoadSong(song: string): void;
+  onShowAbout(): void;
+  onSignIn(): void;
+  onSignOut(): void;
+  setColourScheme(colourScheme: "vs-dark" | "vs"): void;
 }
 
 interface State {
@@ -108,13 +117,35 @@ export default class Header extends React.PureComponent<Props> {
   // tslint:disable-next-line:max-func-body-length
   render(): JSX.Element {
     const {
+      auth,
+      colourScheme,
+      onDeleteSong,
+      onSignIn,
+      onSignOut,
+      onLoadSong,
+      onShowAbout,
       mode,
       loggedIn,
       onModeChanged,
-      onShowMenu,
       windowWidth,
+      setColourScheme,
     } = this.props;
     const { played, playing } = this.state;
+
+    const menuContents = (
+      <Menu
+        auth={auth}
+        colourScheme={colourScheme}
+        windowWidth={windowWidth}
+        onDeleteSong={onDeleteSong}
+        onShowAbout={onShowAbout}
+        onSignIn={onSignIn}
+        onSignOut={onSignOut}
+        onLoadSong={onLoadSong}
+        setColourScheme={setColourScheme}
+      />
+    );
+
     const modeButtons: ButtonSpec[] = [];
     if (windowWidth < MIN_BOTH_WIDTH) {
       modeButtons.push({
@@ -178,33 +209,35 @@ export default class Header extends React.PureComponent<Props> {
     if (windowWidth >= MIN_BOTH_WIDTH) {
       menu = (
         <div className={css(styles.headerGroupWrapper, styles.songs)}>
-          <button
-            title="Menu"
-            className={css(BUTTON_STYLE.buttonStyle, styles.songsText)}
-            onClick={onShowMenu}
-          >
-            {!loggedIn && <span>Hacklily &mdash; </span>}
-            {this.props.song
-              ? last(this.props.song.split("/")).split(".ly")[0]
-              : "untitled"}
-            {this.props.isDirty ? "*" : ""}{" "}
-            <span className={css(styles.srOnly)}>
-              : an online LilyPond editor
-            </span>
-            <i className="fa fa-chevron-down" aria-hidden={true} />
-          </button>
+          <Popover content={menuContents}>
+            <button
+              title="Menu"
+              className={css(BUTTON_STYLE.buttonStyle, styles.songsText)}
+            >
+              {!loggedIn && <span>Hacklily &mdash; </span>}
+              {this.props.song
+                ? last(this.props.song.split("/")).split(".ly")[0]
+                : "untitled"}
+              {this.props.isDirty ? "*" : ""}{" "}
+              <span className={css(styles.srOnly)}>
+                : an online LilyPond editor
+              </span>
+              <i className="fa fa-chevron-down" aria-hidden={true} />
+            </button>
+          </Popover>
         </div>
       );
     } else {
       menu = (
         <div className={css(styles.headerGroupWrapper, styles.songs)}>
-          <button
-            title="Menu"
-            className={css(BUTTON_STYLE.buttonStyle, styles.songsText)}
-            onClick={onShowMenu}
-          >
-            <i className="fa-bars fa" /> Menu
-          </button>
+          <Popover content={menuContents}>
+            <button
+              title="Menu"
+              className={css(BUTTON_STYLE.buttonStyle, styles.songsText)}
+            >
+              <i className="fa-bars fa" /> Menu
+            </button>
+          </Popover>
         </div>
       );
     }

@@ -14,7 +14,6 @@
     "monaco-editor": "0.15.6",
     "react": "16.8.6",
     "react-dom": "16.8.6",
-    "react-modal": "3.8.1",
     "react-monaco-editor": "0.24.1",
     "react-router-dom": "5.0.0"
   },
@@ -33,7 +32,6 @@
     "@types/react": "16.8.16",
     "@types/react-dom": "16.8.4",
     "@types/react-dom-factories": "1.0.2",
-    "@types/react-modal": "3.8.2",
     "@types/text-encoding": "0.0.35",
     "@types/webpack": "4.4.30",
     "autoprefixer": "9.5.1",

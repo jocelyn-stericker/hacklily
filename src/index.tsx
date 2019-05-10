@@ -46,7 +46,6 @@ function render(): void {
       setColourScheme={setColourScheme}
       setCSRF={setCSRF}
       setHideUnstable219Notification={setHideUnstable219Notification}
-      isStandalone={process.env.REACT_APP_STANDALONE === "yes"}
     />,
     document.getElementById("root"),
   );

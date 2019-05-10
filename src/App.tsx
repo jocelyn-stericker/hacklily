@@ -23,17 +23,15 @@ import Makelily from "makelily"; // note: use for types only
 import * as monacoEditor from "monaco-editor";
 import React from "react";
 
-import { Auth, checkLogin, redirectToLogin, revokeGitHubAuth } from "./auth";
+import { Auth, checkLogin, revokeGitHubAuth } from "./auth";
 import Editor from "./Editor";
 import { cat, FileNotFound, getOrCreateRepo } from "./gitfs";
 import Header, {
   MIN_BOTH_WIDTH,
   MODE_BOTH,
-  MODE_EDIT,
   MODE_VIEW,
   ViewMode,
 } from "./Header";
-import Menu from "./Menu";
 import Modal404 from "./Modal404";
 import ModalAbout from "./ModalAbout";
 import ModalConflict from "./ModalConflict";
@@ -47,7 +45,6 @@ import ModalSaving from "./ModalSaving";
 import ModalUnsavedChangesInterstitial from "./ModalUnsavedChangesInterstitial";
 import Preview from "./Preview";
 import RPCClient from "./RPCClient";
-import StandaloneAppHost from "./StandaloneAppHost";
 import { APP_STYLE } from "./styles";
 
 function last<T>(t: T[]): T {
@@ -111,11 +108,6 @@ export interface QueryProps {
   src?: string;
 
   /**
-   * In standalone mode, whether to show the import dialog.
-   */
-  standaloneImport?: boolean;
-
-  /**
    * When logging in from GitHub, this is the CSRF, generated in ConnectToGitHub.
    *
    * See also 'code'.
@@ -133,7 +125,6 @@ export const QUERY_PROP_KEYS: Array<keyof QueryProps> = [
   "saveAs",
   "src",
   "state",
-  "standaloneImport",
 ];
 
 export interface Song {
@@ -175,8 +166,6 @@ interface Props extends QueryProps {
    * True if the warning that is shown when LilyPond 2.19 is used should be shown.
    */
   hideUnstable219Notification: boolean;
-
-  isStandalone: boolean;
 
   /**
    * Mark a song as dirty and store it in localStorage.
@@ -224,12 +213,6 @@ interface State {
   interstitialChanges: {} | null;
 
   /**
-   * In the standalone app, songs that are in the local song
-   * folder.
-   */
-  localFiles: string[] | null;
-
-  /**
    * True if we started editing this song in another tab.
    */
   locked: boolean;
@@ -240,7 +223,6 @@ interface State {
   makelilySingleTaskMode: boolean;
   makelilyTime: string;
   makelilyTool: string;
-  menu: boolean;
   midi: ArrayBuffer | null;
   mode: ViewMode;
   pendingPreviews: number;
@@ -285,7 +267,6 @@ export default class App extends React.PureComponent<Props, State> {
     },
     defaultSelection: null,
     interstitialChanges: null,
-    localFiles: null,
     locked: false,
     login: false,
     logs: "",
@@ -294,7 +275,6 @@ export default class App extends React.PureComponent<Props, State> {
     makelilySingleTaskMode: true,
     makelilyTime: "4/4",
     makelilyTool: "notes",
-    menu: false,
     midi: null,
     mode: window.innerWidth >= MIN_BOTH_WIDTH ? MODE_BOTH : MODE_VIEW,
     pendingPreviews: 0,
@@ -311,7 +291,6 @@ export default class App extends React.PureComponent<Props, State> {
   private editor: Editor | null = null;
   private rpc: RPCClient | null = null;
   private socket: WebSocket | null = null;
-  private standaloneAppHost: StandaloneAppHost | null = null;
 
   componentDidMount(): void {
     window.addEventListener("resize", this.handleWindowResize);
@@ -322,15 +301,6 @@ export default class App extends React.PureComponent<Props, State> {
       this.fetchSong();
       lock(this.props.edit || "null");
     }
-    if (
-      this.props.isStandalone &&
-      !this.props.auth &&
-      this.props.csrf &&
-      !this.props.code
-    ) {
-      redirectToLogin(this.props.csrf);
-    }
-
     if (
       !this.props.auth &&
       !this.state.login &&
@@ -353,12 +323,6 @@ export default class App extends React.PureComponent<Props, State> {
     lock(this.props.edit || "null");
     window.addEventListener("beforeunload", this.handleBeforeUnload);
     setEditingNotificationHandler(this.handleEditingNotification);
-    if (this.props.isStandalone && !this.props.auth && !this.props.csrf) {
-      const randomContainer: Uint32Array = new Uint32Array(1);
-      crypto.getRandomValues(randomContainer);
-      const csrf: string = randomContainer[0].toString();
-      this.props.setCSRF(csrf);
-    }
   }
 
   componentWillUnmount(): void {
@@ -381,8 +345,9 @@ export default class App extends React.PureComponent<Props, State> {
     const {
       auth,
       edit,
-      isStandalone,
       hideUnstable219Notification,
+      colourScheme,
+      setColourScheme,
     } = this.props;
 
     const online: boolean = this.isOnline();
@@ -392,8 +357,15 @@ export default class App extends React.PureComponent<Props, State> {
       Boolean(this.props.edit || this.props.src) &&
       Boolean(this.props.dirtySongs.null);
 
-    const header: React.ReactNode = !isStandalone && (
+    const header: React.ReactNode = (
       <Header
+        setColourScheme={setColourScheme}
+        onDeleteSong={this.handleDeleteSong}
+        onLoadSong={this.handleLoadSong}
+        onShowAbout={this.handleShowHelp}
+        onSignIn={this.handleSignIn}
+        onSignOut={this.handleSignOut}
+        auth={auth}
         mode={mode}
         midi={midi}
         online={online}
@@ -401,7 +373,6 @@ export default class App extends React.PureComponent<Props, State> {
         onModeChanged={this.handleModeChanged}
         onShowClone={this.handleShowSaveAs}
         onShowMakelily={this.handleShowMakelily}
-        onShowMenu={this.handleShowMenu}
         onShowNew={this.handleShowNew}
         onShowPublish={this.handleShowPublish}
         sandboxIsDirty={sandboxIsDirty}
@@ -410,50 +381,12 @@ export default class App extends React.PureComponent<Props, State> {
         isDirty={this.isDirty()}
         isImmutableSrc={Boolean(this.props.src)}
         windowWidth={windowWidth}
+        colourScheme={colourScheme}
       />
     );
 
-    let standaloneAppHost: JSX.Element | null;
-    if (this.props.isStandalone) {
-      standaloneAppHost = (
-        <StandaloneAppHost
-          ref={this.setStandaloneAppHost}
-          auth={auth}
-          showOpenDialog={this.state.menu}
-          showSaveAs={this.state.publish}
-          showUnsavedChangesDialog={!!this.state.interstitialChanges}
-          showImport={!!this.props.standaloneImport}
-          showSaving={this.state.saving}
-          onNewSong={this.handleShowNew}
-          onOpen={this.handleOpen}
-          onOpenFile={this.handleOpenFileStandalone}
-          onOpenCancel={this.handleHideMenu}
-          onImport={this.handleImport}
-          onImportRejected={this.handleImportRejected}
-          onRequestImport={this.handleImportRequested}
-          onSave={this.handleShowPublish}
-          onSaveAsCancel={this.handleHidePublish}
-          onSaveAsFile={this.standalonePublish}
-          onFind={this.handleFind}
-          onFindNext={this.handleFindNext}
-          onViewMode={this.handleModeChangedView}
-          onSelectAll={this.handleSelectAll}
-          onSplitMode={this.handleModeChangedSplit}
-          onCodeMode={this.handleModeChangedEdit}
-          onAboutHacklily={this.handleShowHelp}
-          onExportRequested={this.handleExport}
-          onLocalFilesChanged={this.handleLocalFilesChanged}
-          onUnsavedChangesCancel={this.cancelInterstitial}
-          onUnsavedChangesDiscard={this.discardChanges}
-          onUnsavedChangesSave={this.handleShowPublish}
-        />
-      );
-    } else {
-      standaloneAppHost = null;
-    }
-
     return (
-      <div className={`App ${isStandalone ? "standalone" : ""}`}>
+      <div className="App">
         {header}
         {this.renderModal()}
         <div className="content">
@@ -474,7 +407,6 @@ export default class App extends React.PureComponent<Props, State> {
           />
           {preview}
         </div>
-        {standaloneAppHost}
       </div>
     );
   }
@@ -617,11 +549,6 @@ export default class App extends React.PureComponent<Props, State> {
       return;
     }
 
-    // Don't bug users in the app
-    if (this.props.isStandalone) {
-      return;
-    }
-
     if (this.isDirty()) {
       this.setState({
         interstitialChanges: null,
@@ -670,7 +597,6 @@ export default class App extends React.PureComponent<Props, State> {
         delete cleanSongs[songID];
         this.setState({
           cleanSongs,
-          menu: false,
         });
         this.props.markSongClean(songID);
         this.props.setQuery({
@@ -691,10 +617,6 @@ export default class App extends React.PureComponent<Props, State> {
         locked: true,
       });
     }
-  };
-
-  private handleExport = (): void => {
-    throw new Error("Not implemented");
   };
 
   private handleExportMIDI = (): void => {
@@ -773,18 +695,6 @@ export default class App extends React.PureComponent<Props, State> {
     );
   };
 
-  private handleFind = (): void => {
-    if (this.editor) {
-      this.editor.find();
-    }
-  };
-
-  private handleFindNext = (): void => {
-    if (this.editor) {
-      this.editor.findNext();
-    }
-  };
-
   private handleHideHelp = (): void => {
     this.props.setQuery({
       about: undefined,
@@ -801,12 +711,6 @@ export default class App extends React.PureComponent<Props, State> {
     this.setState({
       makelilyInsertCB: undefined,
       showMakelily: null,
-    });
-  };
-
-  private handleHideMenu = (): void => {
-    this.setState({
-      menu: false,
     });
   };
 
@@ -829,33 +733,6 @@ export default class App extends React.PureComponent<Props, State> {
     this.props.setHideUnstable219Notification(true);
   };
 
-  private handleImport = async (name: string, src: string): Promise<void> => {
-    this.props.setQuery(
-      {
-        edit: undefined,
-        src: undefined,
-      },
-      true,
-    );
-    this.props.editSong("null", {
-      baseSHA: null,
-      src,
-    });
-    this.handleShowPublish();
-  };
-
-  private handleImportRejected = (): void => {
-    this.props.setQuery({
-      standaloneImport: undefined,
-    });
-  };
-
-  private handleImportRequested = (): void => {
-    this.setQueryOrShowInterstitial({
-      standaloneImport: true,
-    });
-  };
-
   private handleInsertLy = (ly: string): void => {
     if (this.editor) {
       if (this.state.makelilyInsertCB) {
@@ -875,17 +752,6 @@ export default class App extends React.PureComponent<Props, State> {
       edit,
       src: undefined,
     });
-    this.setState({
-      menu: false,
-    });
-  };
-
-  private handleLocalFilesChanged = (): void => {
-    if (this.standaloneAppHost) {
-      this.setState({
-        localFiles: this.standaloneAppHost.localFiles,
-      });
-    }
   };
 
   private handleLogsObtained = (
@@ -912,42 +778,6 @@ export default class App extends React.PureComponent<Props, State> {
     this.setState({
       mode,
     });
-  };
-
-  private handleModeChangedEdit = (): void => {
-    this.handleModeChanged(MODE_EDIT);
-  };
-
-  private handleModeChangedSplit = (): void => {
-    this.handleModeChanged(MODE_BOTH);
-  };
-
-  private handleModeChangedView = (): void => {
-    this.handleModeChanged(MODE_VIEW);
-  };
-
-  private handleOpen = (): void => {
-    this.setState({
-      menu: true,
-    });
-  };
-
-  private handleOpenFileStandalone = (
-    filename: string,
-    source: "remote" | "local",
-    sha: string,
-    contents: string,
-  ): void => {
-    const { auth } = this.props;
-    this.handleHideMenu();
-    if (source === "remote") {
-      if (!auth) {
-        throw new Error("Not signed in. Cannot open remote file.");
-      }
-      this.handleLoadSong(`${auth.repo}/${filename}`);
-    } else {
-      throw new Error("Not implemented");
-    }
   };
 
   private handlePublished = (edit: string): void => {
@@ -997,12 +827,6 @@ export default class App extends React.PureComponent<Props, State> {
     });
   };
 
-  private handleSelectAll = (): void => {
-    if (this.editor) {
-      this.editor.selectAll();
-    }
-  };
-
   private handleSelectionChanged = (
     selection: monacoEditor.ISelection | null,
   ): void => {
@@ -1014,9 +838,6 @@ export default class App extends React.PureComponent<Props, State> {
   };
 
   private handleShowHelp = (): void => {
-    this.setState({
-      menu: false,
-    });
     this.props.setQuery({
       about: "1",
     });
@@ -1041,17 +862,6 @@ export default class App extends React.PureComponent<Props, State> {
       makelilySingleTaskMode: !!tool,
       makelilyTool: tool || this.state.makelilyTool,
     });
-  };
-
-  private handleShowMenu = (): void => {
-    this.setState({
-      menu: true,
-    });
-    if (this.props.about) {
-      this.props.setQuery({
-        about: undefined,
-      });
-    }
   };
 
   private handleShowNew = (): void => {
@@ -1105,7 +915,6 @@ export default class App extends React.PureComponent<Props, State> {
   private handleSignIn = (): void => {
     this.setState({
       login: true,
-      menu: false,
       publish: false,
     });
   };
@@ -1284,22 +1093,13 @@ export default class App extends React.PureComponent<Props, State> {
     const {
       locked,
       login,
-      menu,
       publish,
       interstitialChanges,
       saving,
       showMakelily,
     } = this.state;
 
-    const {
-      about,
-      auth,
-      csrf,
-      isStandalone,
-      setCSRF,
-      "404": _404,
-      saveAs,
-    } = this.props;
+    const { about, auth, csrf, setCSRF, "404": _404, saveAs } = this.props;
 
     const song: Song | undefined = this.song();
     const conflict: boolean = this.hasConflict();
@@ -1309,7 +1109,7 @@ export default class App extends React.PureComponent<Props, State> {
         return <ModalLocked />;
       case _404 !== undefined:
         return <Modal404 onHide={this.handleClear404} />;
-      case saving && !isStandalone:
+      case saving:
         return <ModalSaving />;
       case conflict:
         return (
@@ -1330,7 +1130,7 @@ export default class App extends React.PureComponent<Props, State> {
       case Boolean(about):
         return <ModalAbout onHide={this.handleHideHelp} />;
       case publish || Boolean(saveAs):
-        if (song && auth && this.rpc && !isStandalone) {
+        if (song && auth && this.rpc) {
           return (
             <ModalPublish
               onHide={this.handleHidePublish}
@@ -1343,22 +1143,7 @@ export default class App extends React.PureComponent<Props, State> {
         }
 
         return null;
-      case menu && !isStandalone:
-        return (
-          <Menu
-            auth={auth}
-            colourScheme={this.props.colourScheme}
-            windowWidth={this.state.windowWidth}
-            onDeleteSong={this.handleDeleteSong}
-            onHide={this.handleHideMenu}
-            onShowAbout={this.handleShowHelp}
-            onSignIn={this.handleSignIn}
-            onSignOut={this.handleSignOut}
-            onLoadSong={this.handleLoadSong}
-            setColourScheme={this.props.setColourScheme}
-          />
-        );
-      case interstitialChanges !== null && !isStandalone:
+      case interstitialChanges !== null:
         return (
           <ModalUnsavedChangesInterstitial
             discardChanges={this.discardChanges}
@@ -1391,7 +1176,6 @@ export default class App extends React.PureComponent<Props, State> {
   }
 
   private renderPreview(): React.ReactNode {
-    const { isStandalone } = this.props;
     const { mode, reconnectTimeout, logs, wsError } = this.state;
 
     const song: Song | undefined = this.song();
@@ -1413,8 +1197,8 @@ export default class App extends React.PureComponent<Props, State> {
       );
     }
 
-    if (this.socket || isStandalone) {
-      if ((online && this.rpc) || isStandalone) {
+    if (this.socket) {
+      if (online && this.rpc) {
         let songURL: string | null = null;
         if (this.props.edit) {
           const songParts: string[] = this.props.edit.split("/");
@@ -1426,13 +1210,11 @@ export default class App extends React.PureComponent<Props, State> {
         return (
           <Preview
             code={song.src}
-            isStandalone={isStandalone}
             mode={mode}
             onLogsObtained={this.handleLogsObtained}
             onMidiObtained={this.handleMidiObtained}
             onSelectionChanged={this.handleSelectionChanged}
-            rpc={isStandalone ? null : this.rpc}
-            standaloneRender={this.standaloneRender}
+            rpc={this.rpc}
             logs={logs}
             onExportLy={this.handleExportLy}
             onExportMIDI={this.handleExportMIDI}
@@ -1518,17 +1300,6 @@ export default class App extends React.PureComponent<Props, State> {
     }
   };
 
-  private setStandaloneAppHost = (
-    standaloneAppHost: StandaloneAppHost,
-  ): void => {
-    this.standaloneAppHost = standaloneAppHost;
-    if (standaloneAppHost) {
-      this.setState({
-        localFiles: standaloneAppHost.localFiles,
-      });
-    }
-  };
-
   private song(): Song | undefined {
     const { dirtySongs, edit, src } = this.props;
 
@@ -1549,74 +1320,6 @@ export default class App extends React.PureComponent<Props, State> {
 
     return song;
   }
-
-  private standalonePublish = async (
-    path: string,
-    source: "local" | "remote",
-  ): Promise<void> => {
-    this.setState({
-      publish: false,
-    });
-    try {
-      this.setState({
-        saving: true,
-      });
-      const song: Song | undefined = this.song();
-      const { auth } = this.props;
-      if (!auth || !song || !this.rpc) {
-        throw new Error("Invariant violation: contract broken");
-      }
-
-      try {
-        const fullPath: string =
-          source === "local" ? `local/${path}` : `${auth.repo}/${path}`;
-        if (source === "remote") {
-          await doPublish(song.src, auth, path, this.rpc, false);
-        } else {
-          if (!this.standaloneAppHost) {
-            throw new Error(
-              "Expected standaloneAppHost when saving locally...",
-            );
-          }
-          await this.standaloneAppHost.save(song.src, path);
-        }
-        this.handlePublished(fullPath);
-      } catch (err) {
-        this.setState(
-          {
-            saving: false,
-          },
-          () => {
-            // We need to disable the saving dialog first, or else we get
-            // a deadlock in Qt on macOS.
-            alert(err.toString());
-          },
-        );
-      }
-    } finally {
-      this.setState({
-        saving: false,
-      });
-      if (this.state.interstitialChanges) {
-        this.props.setQuery(this.state.interstitialChanges);
-        this.setState({
-          interstitialChanges: null,
-        });
-      }
-    }
-  };
-
-  // tslint:disable-next-line:promise-function-async
-  private standaloneRender = (
-    src: string,
-    filetype: string,
-  ): Promise<{ content: string[]; logs: string }> => {
-    if (!this.standaloneAppHost) {
-      throw new Error("Function only valid in standalone mode.");
-    }
-
-    return this.standaloneAppHost.renderLy(src, filetype);
-  };
 
   private triggerDownload = (filename: string, src: string) => {
     const element = document.createElement("a");

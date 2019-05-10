@@ -18,9 +18,9 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
  */
 
+import { Classes, Spinner } from "@blueprintjs/core";
 import { css, StyleSheet } from "aphrodite";
 import React from "react";
-import ReactModal from "react-modal";
 
 import { Auth } from "./auth";
 import { File, ls } from "./gitfs";
@@ -30,7 +30,6 @@ interface Props {
   colourScheme: "vs-dark" | "vs";
   windowWidth: number;
   onDeleteSong(song: string): void;
-  onHide(): void;
   onLoadSong(song: string): void;
   onShowAbout(): void;
   onSignIn(): void;
@@ -48,9 +47,6 @@ interface State {
  * left of the view mode selector.
  *
  * The menu button is rendered by <Header />
- *
- * NOTE: THIS IS NOT THE MENU IN THE STANDALONE APP. See StandaloneAppHost and
- * the hacklily-standalone repo.
  */
 class Menu extends React.PureComponent<Props, State> {
   state: State = {
@@ -69,12 +65,15 @@ class Menu extends React.PureComponent<Props, State> {
   }
 
   render(): JSX.Element {
-    const { auth, onSignOut, onHide, onShowAbout, windowWidth } = this.props;
+    const { auth, onSignOut, onShowAbout, windowWidth } = this.props;
 
     let signOut: React.ReactNode;
     if (auth) {
       signOut = (
-        <button onClick={onSignOut} className={css(styles.option)}>
+        <button
+          onClick={onSignOut}
+          className={css(styles.option) + " " + Classes.POPOVER_DISMISS}
+        >
           <i className="fa fa-fw fa-sign-out" aria-hidden={true} /> Sign out (
           {auth.name})
         </button>
@@ -96,7 +95,7 @@ class Menu extends React.PureComponent<Props, State> {
       <a
         href="http://lilypond.org/doc/v2.18/Documentation/learning/index"
         rel="noopener noreferrer"
-        className={css(styles.option)}
+        className={css(styles.option) + " " + Classes.POPOVER_DISMISS}
         target="_blank"
       >
         <i className="fa fa-fw fa-life-ring" aria-hidden={true} /> Lilypond
@@ -106,31 +105,26 @@ class Menu extends React.PureComponent<Props, State> {
     // tslint:enable:no-http-string because of silly lilypond
 
     const about: React.ReactNode = (
-      <button onClick={onShowAbout} className={css(styles.option)}>
+      <button
+        onClick={onShowAbout}
+        className={css(styles.option) + " " + Classes.POPOVER_DISMISS}
+      >
         <i className="fa fa-fw fa-info-circle" aria-hidden={true} /> About
         Hacklily
       </button>
     );
 
     return (
-      <ReactModal
-        className={css(styles.menu)}
-        contentLabel="Menu"
-        isOpen={true}
-        onRequestClose={onHide}
-        overlayClassName={css(styles.menuOverlay)}
-      >
-        <div className={css(styles.menuColumn)}>
-          {warning}
-          <div className={css(styles.songList, styles.option)}>
-            {this.renderSongs()}
-          </div>
-          {signOut}
-          {tutorial}
-          {this.renderSetColourScheme()}
-          {about}
+      <div className={css(styles.menuColumn)}>
+        {warning}
+        <div className={css(styles.songList, styles.option)}>
+          {this.renderSongs()}
         </div>
-      </ReactModal>
+        {signOut}
+        {tutorial}
+        {this.renderSetColourScheme()}
+        {about}
+      </div>
     );
   }
 
@@ -191,7 +185,7 @@ class Menu extends React.PureComponent<Props, State> {
     return (
       <button
         onClick={this.handleColourSchemeToggled}
-        className={css(styles.option)}
+        className={css(styles.option) + " " + Classes.POPOVER_DISMISS}
       >
         <i className="fa fa-fw fa-lightbulb-o" aria-hidden={true} /> {text}
       </button>
@@ -210,7 +204,7 @@ class Menu extends React.PureComponent<Props, State> {
       } else if (!repoTree) {
         songs = (
           <div className={css(styles.placeholder)}>
-            <i className="fa fa-spinner fa-spin" aria-hidden={true} />
+            <Spinner />
           </div>
         );
       } else {
@@ -227,7 +221,7 @@ class Menu extends React.PureComponent<Props, State> {
           const eachSong: React.ReactNode[] = lilySongs.map((song: File) => (
             <li key={song.path}>
               <button
-                className={css(styles.song)}
+                className={css(styles.song) + " " + Classes.POPOVER_DISMISS}
                 onClick={this.handleSongLiClick}
                 data-song={`${auth.repo}/${song.path}`}
               >
@@ -235,7 +229,9 @@ class Menu extends React.PureComponent<Props, State> {
                 {song.path}
               </button>
               <button
-                className={css(styles.deleteSong)}
+                className={
+                  css(styles.deleteSong) + " " + Classes.POPOVER_DISMISS
+                }
                 onClick={this.handleSongDeleteClick}
                 data-song={`${auth.repo}/${song.path}`}
               >
@@ -250,7 +246,12 @@ class Menu extends React.PureComponent<Props, State> {
     } else {
       songs = (
         <div className={css(styles.placeholder)}>
-          <button onClick={onSignIn} className={css(styles.placeholderLink)}>
+          <button
+            onClick={onSignIn}
+            className={
+              css(styles.placeholderLink) + " " + Classes.POPOVER_DISMISS
+            }
+          >
             Sign in
           </button>{" "}
           to see your songs.
@@ -327,6 +328,9 @@ const styles = StyleSheet.create({
     zIndex: 1050,
   },
   menuColumn: {
+    minWidth: 400,
+    minHeight: 500,
+    paddingTop: 7,
     "@media (max-width: 500px)": {
       marginRight: 14,
     },

@@ -56,13 +56,6 @@ interface Props {
   code: string;
 
   /**
-   * Whether or not to use RPC.
-   *
-   * rpc must be null if and only if isStandalone is set.
-   */
-  isStandalone: boolean;
-
-  /**
    * The logs to render in the Logs button.
    *
    * Although the logs are generated here, it's not stored here to -- that way the parent
@@ -77,10 +70,8 @@ interface Props {
 
   /**
    * Client to use to request the SVG and logs.
-   *
-   * rpc must be null if and only if isStandalone is set.
    */
-  rpc: RPCClient | null;
+  rpc: RPCClient;
 
   songURL: string | null;
   onExportLy(): any;
@@ -100,11 +91,6 @@ interface Props {
    * so it can focus where the note is defined.
    */
   onSelectionChanged(selection: monacoEditor.ISelection | null): void;
-
-  standaloneRender(
-    src: string,
-    filetype: string,
-  ): Promise<{ content: string[]; logs: string }>;
 }
 
 interface State {
@@ -219,7 +205,7 @@ export default class Preview extends React.PureComponent<Props, State> {
       this.handleIFrameLoaded();
     }
 
-    const { code, isStandalone, rpc } = this.props;
+    const { code, rpc } = this.props;
 
     let version: "stable" | "unstable" = "stable";
 
@@ -228,39 +214,27 @@ export default class Preview extends React.PureComponent<Props, State> {
       let midi: string | null;
       let files: string[];
 
-      if (isStandalone) {
-        const reply: {
-          content: string[];
-          logs: string;
-        } = await this.props.standaloneRender(code, "svg");
-        files = reply.content;
-        dirtyLogs = reply.logs;
-        midi = null; // TODO(joshuan)
-      } else {
-        if (!rpc) {
-          throw new Error("If not standalone, rpc must be set!");
-        }
-
-        // Decide whether to use the stable version or not.
-        const maybeVersion = /\\version\s*"(\d+)\.?(\d+)?\.?(\d+)?/gm.exec(
-          code,
-        );
-        const versionSlices = maybeVersion
-          ? maybeVersion.slice(1).map(v => parseInt(v, 10))
-          : [];
-        const isUnstable = versionSlices[0] === 2 && versionSlices[1] > 18;
-        version = isUnstable ? "unstable" : "stable";
-
-        const response: RenderResponse = await rpc.call("render", {
-          backend: "svg",
-          src: code,
-          version,
-        });
-
-        files = response.result.files;
-        dirtyLogs = response.result.logs;
-        midi = response.result.midi || null;
+      if (!rpc) {
+        throw new Error("rpc must be set!");
       }
+
+      // Decide whether to use the stable version or not.
+      const maybeVersion = /\\version\s*"(\d+)\.?(\d+)?\.?(\d+)?/gm.exec(code);
+      const versionSlices = maybeVersion
+        ? maybeVersion.slice(1).map(v => parseInt(v, 10))
+        : [];
+      const isUnstable = versionSlices[0] === 2 && versionSlices[1] > 18;
+      version = isUnstable ? "unstable" : "stable";
+
+      const response: RenderResponse = await rpc.call("render", {
+        backend: "svg",
+        src: code,
+        version,
+      });
+
+      files = response.result.files;
+      dirtyLogs = response.result.logs;
+      midi = response.result.midi || null;
 
       const logs: string = cleanLogs(dirtyLogs);
 
