@@ -114,7 +114,7 @@ class ModalPublish extends React.PureComponent<Props, State> {
 
     return (
       <Dialog
-        title="Save / share song"
+        title="Save song"
         isOpen={true}
         onClose={onHide}
         className={css(styles.modal)}
@@ -157,7 +157,7 @@ class ModalPublish extends React.PureComponent<Props, State> {
               intent={Intent.PRIMARY}
               icon="floppy-disk"
             >
-              Save / share
+              Save
             </Button>
           </div>
         </div>

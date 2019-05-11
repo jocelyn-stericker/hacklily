@@ -18,6 +18,7 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
  */
 
+import { Icon } from "@blueprintjs/core";
 import { css } from "aphrodite";
 import Makelily from "makelily"; // note: use for types only
 import * as monacoEditor from "monaco-editor";
@@ -40,6 +41,7 @@ import ModalLocked, {
   setEditingNotificationHandler,
 } from "./ModalLocked";
 import ModalLogin from "./ModalLogin";
+import ModalOpen from "./ModalOpen";
 import ModalPublish, { doPublish, doUnpublish } from "./ModalPublish";
 import ModalSaving from "./ModalSaving";
 import ModalUnsavedChangesInterstitial from "./ModalUnsavedChangesInterstitial";
@@ -230,6 +232,7 @@ interface State {
   reconnectCooloff: number;
   reconnectTimeout: number;
   rendererVersion: "stable" | "unstable";
+  open: boolean;
   saving: boolean;
   showMakelily: typeof Makelily | null;
   windowWidth: number;
@@ -282,6 +285,7 @@ export default class App extends React.PureComponent<Props, State> {
     reconnectCooloff: INITIAL_WS_COOLOFF,
     reconnectTimeout: NaN,
     rendererVersion: "stable",
+    open: false,
     saving: false,
     showMakelily: null,
     windowWidth: window.innerWidth,
@@ -357,6 +361,14 @@ export default class App extends React.PureComponent<Props, State> {
       Boolean(this.props.edit || this.props.src) &&
       Boolean(this.props.dirtySongs.null);
 
+    let songURL: string | null = null;
+    if (this.props.edit) {
+      const songParts: string[] = this.props.edit.split("/");
+      songURL = `https://github.com/${songParts[0]}/${
+        songParts[1]
+      }/blob/master/${songParts.slice(2).join("/")}`;
+    }
+
     const header: React.ReactNode = (
       <Header
         setColourScheme={setColourScheme}
@@ -374,14 +386,25 @@ export default class App extends React.PureComponent<Props, State> {
         onShowClone={this.handleShowSaveAs}
         onShowMakelily={this.handleShowMakelily}
         onShowNew={this.handleShowNew}
+        onShowOpen={this.handleShowOpen}
         onShowPublish={this.handleShowPublish}
         sandboxIsDirty={sandboxIsDirty}
         song={this.props.src ? "untitled-import" : edit}
         inSandbox={!this.props.edit && !this.props.src}
         isDirty={this.isDirty()}
-        isImmutableSrc={Boolean(this.props.src)}
+        readOnly={
+          Boolean(this.props.src) ||
+          (song ? song.baseSHA === PUBLIC_READONLY : false)
+        }
         windowWidth={windowWidth}
         colourScheme={colourScheme}
+        canExport={Boolean(
+          online && this.rpc && logs && this.state.pendingPreviews === 0,
+        )}
+        onExportLy={this.handleExportLy}
+        onExportMIDI={this.handleExportMIDI}
+        onExportPDF={this.handleExportPDF}
+        songURL={songURL}
       />
     );
 
@@ -701,6 +724,12 @@ export default class App extends React.PureComponent<Props, State> {
     });
   };
 
+  private handleHideOpen = (): void => {
+    this.setState({
+      open: false,
+    });
+  };
+
   private handleHideLogin = (): void => {
     this.setState({
       login: false,
@@ -751,6 +780,9 @@ export default class App extends React.PureComponent<Props, State> {
     this.setQueryOrShowInterstitial({
       edit,
       src: undefined,
+    });
+    this.setState({
+      open: false,
     });
   };
 
@@ -843,6 +875,12 @@ export default class App extends React.PureComponent<Props, State> {
     });
   };
 
+  private handleShowOpen = (): void => {
+    this.setState({
+      open: true,
+    });
+  };
+
   private handleShowMakelily = async (
     tool?: string,
     cb?: (ly: string) => void,
@@ -865,18 +903,10 @@ export default class App extends React.PureComponent<Props, State> {
   };
 
   private handleShowNew = (): void => {
-    const isClean: boolean = !this.props.dirtySongs[this.props.edit || "null"];
-
-    if (!this.props.auth && !isClean) {
-      this.setState({
-        login: true,
-      });
-    } else {
-      this.setQueryOrShowInterstitial({
-        edit: undefined,
-        src: undefined,
-      });
-    }
+    this.setQueryOrShowInterstitial({
+      edit: undefined,
+      src: undefined,
+    });
   };
 
   private handleShowPublish = (): void => {
@@ -1097,6 +1127,7 @@ export default class App extends React.PureComponent<Props, State> {
       interstitialChanges,
       saving,
       showMakelily,
+      open,
     } = this.state;
 
     const { about, auth, csrf, setCSRF, "404": _404, saveAs } = this.props;
@@ -1151,6 +1182,16 @@ export default class App extends React.PureComponent<Props, State> {
             save={this.handleShowPublish}
           />
         );
+      case open:
+        return (
+          <ModalOpen
+            auth={auth}
+            onSignIn={this.handleSignIn}
+            onDeleteSong={this.handleDeleteSong}
+            onLoadSong={this.handleLoadSong}
+            onHide={this.handleHideOpen}
+          />
+        );
       case showMakelily !== null:
         if (showMakelily === null) {
           throw new Error("(this will never happen");
@@ -1199,14 +1240,6 @@ export default class App extends React.PureComponent<Props, State> {
 
     if (this.socket) {
       if (online && this.rpc) {
-        let songURL: string | null = null;
-        if (this.props.edit) {
-          const songParts: string[] = this.props.edit.split("/");
-          songURL = `https://github.com/${songParts[0]}/${
-            songParts[1]
-          }/blob/master/${songParts.slice(2).join("/")}`;
-        }
-
         return (
           <Preview
             code={song.src}
@@ -1216,10 +1249,6 @@ export default class App extends React.PureComponent<Props, State> {
             onSelectionChanged={this.handleSelectionChanged}
             rpc={this.rpc}
             logs={logs}
-            onExportLy={this.handleExportLy}
-            onExportMIDI={this.handleExportMIDI}
-            onExportPDF={this.handleExportPDF}
-            songURL={songURL}
           />
         );
       }
@@ -1271,8 +1300,7 @@ export default class App extends React.PureComponent<Props, State> {
           }}
         >
           <div className={css(APP_STYLE.sheetMusicError)}>
-            <i className="fa fa-exclamation-triangle" aria-hidden={true} />{" "}
-            Could not connect to server.
+            <Icon icon="warning-sign" /> Could not connect to server.
             <br />
             Trying again in {reconnectTimeout}
             &hellip;

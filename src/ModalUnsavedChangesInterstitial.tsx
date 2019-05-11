@@ -62,10 +62,15 @@ export default class ModalUnsavedChangesInterstitial extends React.PureComponent
               <Button
                 intent={Intent.DANGER}
                 onClick={this.props.discardChanges}
+                icon="trash"
               >
                 Discard changes
               </Button>
-              <Button intent={Intent.PRIMARY} onClick={this.props.save}>
+              <Button
+                icon="floppy-disk"
+                intent={Intent.PRIMARY}
+                onClick={this.props.save}
+              >
                 Save
               </Button>
             </div>

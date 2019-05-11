@@ -18,22 +18,33 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
  */
 
-import { Popover, Spinner } from "@blueprintjs/core";
+import {
+  Alignment,
+  Button,
+  ButtonGroup,
+  Classes,
+  Menu,
+  MenuItem,
+  Navbar,
+  NavbarDivider,
+  NavbarGroup,
+  Popover,
+  Tooltip,
+} from "@blueprintjs/core";
 import { css, StyleSheet } from "aphrodite";
 import React from "react";
 
 import * as logoSvg from "./logo.svg";
 
 import { Auth } from "./auth";
-import ButtonGroup, { ButtonSpec } from "./ButtonGroup";
-import Menu from "./Menu";
-import { BUTTON_STYLE } from "./styles";
+import FileMenu from "./FileMenu";
 
 export type ViewMode = "view" | "edit" | "both";
 export const MODE_VIEW: ViewMode = "view";
 export const MODE_BOTH: ViewMode = "both";
 export const MODE_EDIT: ViewMode = "edit";
 export const MIN_BOTH_WIDTH: number = 630;
+export const MIN_REASONABLE_WIDTH: number = 470;
 
 interface Player {
   // TODO(joshuan): Export hackmidi types :(
@@ -52,10 +63,11 @@ interface Player {
 
 interface Props {
   auth: Auth | null;
+  canExport: boolean;
   colourScheme: "vs-dark" | "vs";
   inSandbox: boolean;
   isDirty: boolean;
-  isImmutableSrc: boolean;
+  readOnly: boolean;
   loggedIn: boolean;
   midi: ArrayBuffer | null;
   mode: ViewMode;
@@ -63,10 +75,15 @@ interface Props {
   sandboxIsDirty: boolean;
   song: string | undefined;
   windowWidth: number;
+  songURL: string | null;
   onModeChanged(mode: ViewMode): void;
   onShowClone(): void;
-  onShowMakelily(): void;
+  onShowMakelily(tool: string): void;
   onShowNew(): void;
+  onShowOpen(): void;
+  onExportLy(): any;
+  onExportMIDI(): any;
+  onExportPDF(): any;
   onShowPublish(): void;
   onDeleteSong(song: string): void;
   onLoadSong(song: string): void;
@@ -82,10 +99,6 @@ interface State {
   player: Player | null;
   playing: boolean;
   timeInSeconds: number;
-}
-
-function last<T>(t: T[]): T {
-  return t[t.length - 1];
 }
 
 /**
@@ -118,144 +131,149 @@ export default class Header extends React.PureComponent<Props> {
   render(): JSX.Element {
     const {
       auth,
+      canExport,
       colourScheme,
+      readOnly,
+      inSandbox,
+      mode,
+      midi,
       onDeleteSong,
-      onSignIn,
-      onSignOut,
+      onExportLy,
+      onExportMIDI,
+      onExportPDF,
       onLoadSong,
       onShowAbout,
-      mode,
-      loggedIn,
-      onModeChanged,
-      windowWidth,
+      onShowClone,
+      onShowOpen,
+      onShowNew,
+      onShowPublish,
+      onSignIn,
+      onSignOut,
+      online,
       setColourScheme,
+      songURL,
+      windowWidth,
     } = this.props;
     const { played, playing } = this.state;
 
-    const menuContents = (
-      <Menu
-        auth={auth}
-        colourScheme={colourScheme}
-        windowWidth={windowWidth}
-        onDeleteSong={onDeleteSong}
-        onShowAbout={onShowAbout}
-        onSignIn={onSignIn}
-        onSignOut={onSignOut}
-        onLoadSong={onLoadSong}
-        setColourScheme={setColourScheme}
-      />
-    );
-
-    const modeButtons: ButtonSpec[] = [];
-    if (windowWidth < MIN_BOTH_WIDTH) {
-      modeButtons.push({
-        content: (
-          <i
-            aria-hidden={true}
-            className={`fa fa-eye ${css(styles.modeItem)}`}
-          />
-        ),
-        title: "View",
-        value: MODE_VIEW,
-      });
-      modeButtons.push({
-        content: (
-          <i
-            aria-hidden={true}
-            className={`fa fa-pencil ${css(styles.modeItem)}`}
-          />
-        ),
-        title: "Edit",
-        value: MODE_EDIT,
-      });
-    }
-
-    const viewMode: React.ReactNode = modeButtons.length > 0 && (
-      <div className={css(styles.headerGroupWrapper, styles.miniGroup)}>
-        <ButtonGroup
-          value={mode}
-          buttons={modeButtons}
-          onChange={onModeChanged}
+    const viewMode = windowWidth < MIN_BOTH_WIDTH && (
+      <React.Fragment>
+        <Button
+          onClick={this.handleSetView}
+          active={mode === MODE_VIEW}
+          icon="eye-open"
         />
-      </div>
+        <Button
+          onClick={this.handleSetEdit}
+          active={mode === MODE_EDIT}
+          icon="edit"
+        />
+      </React.Fragment>
     );
 
-    const playButton: React.ReactNode = (
-      <div className={css(styles.headerGroupWrapper, styles.miniGroup)}>
-        <button
-          title={playing ? "Pause" : "Play"}
-          className={css(BUTTON_STYLE.buttonStyle, styles.playButton)}
-          onClick={playing ? this.handlePause : this.handlePlay}
+    let playButton: React.ReactNode = (
+      <Button
+        onClick={playing ? this.handlePause : this.handlePlay}
+        icon={playing ? "pause" : "play"}
+        disabled={!midi}
+      >
+        {playing ? "Pause" : "Play"}
+      </Button>
+    );
+
+    if (!midi) {
+      playButton = (
+        <Tooltip
+          content={
+            "No MIDI data found. Make sure you have " +
+            "a \\midi {} and a \\layout {} in your \\score {}."
+          }
         >
-          <i className={playing ? "fa-pause fa" : "fa-play fa"} />
-        </button>
-      </div>
-    );
-
-    const makelilyButton: React.ReactNode = (
-      <div className={css(styles.headerGroupWrapper, styles.miniGroup)}>
-        <button
-          title="Lilypond Tools"
-          className={css(BUTTON_STYLE.buttonStyle, styles.playButton)}
-          onClick={this.handleShowMakelily}
-        >
-          <i className="fa-briefcase fa" /> Tools
-        </button>
-      </div>
-    );
-
-    const communityToolbar: React.ReactNode = this.renderCommunityToolbar();
-    let menu: React.ReactNode = null;
-    if (windowWidth >= MIN_BOTH_WIDTH) {
-      menu = (
-        <div className={css(styles.headerGroupWrapper, styles.songs)}>
-          <Popover content={menuContents}>
-            <button
-              title="Menu"
-              className={css(BUTTON_STYLE.buttonStyle, styles.songsText)}
-            >
-              {!loggedIn && <span>Hacklily &mdash; </span>}
-              {this.props.song
-                ? last(this.props.song.split("/")).split(".ly")[0]
-                : "untitled"}
-              {this.props.isDirty ? "*" : ""}{" "}
-              <span className={css(styles.srOnly)}>
-                : an online LilyPond editor
-              </span>
-              <i className="fa fa-chevron-down" aria-hidden={true} />
-            </button>
-          </Popover>
-        </div>
-      );
-    } else {
-      menu = (
-        <div className={css(styles.headerGroupWrapper, styles.songs)}>
-          <Popover content={menuContents}>
-            <button
-              title="Menu"
-              className={css(BUTTON_STYLE.buttonStyle, styles.songsText)}
-            >
-              <i className="fa-bars fa" /> Menu
-            </button>
-          </Popover>
-        </div>
+          {playButton}
+        </Tooltip>
       );
     }
 
     return (
-      <div className="header">
-        <img
-          src={logoSvg}
-          className={css(styles.logo)}
-          alt="Frog, Hacklily logo"
-        />
-        {menu || <span style={{ width: 10 }} />}
-        {viewMode}
-        {makelilyButton}
-        {played ? this.renderTime() : playButton}
-        <div className={css(styles.headerSpacer)} />
-        {communityToolbar}
-      </div>
+      <Navbar>
+        <NavbarGroup align={Alignment.LEFT}>
+          {windowWidth >= MIN_REASONABLE_WIDTH && (
+            <img src={logoSvg} className={css(styles.logo)} alt="" />
+          )}
+          {windowWidth >= MIN_BOTH_WIDTH && (
+            <div className={Classes.NAVBAR_HEADING}>Hacklily</div>
+          )}
+          {windowWidth >= MIN_BOTH_WIDTH && <NavbarDivider />}
+          <ButtonGroup>
+            <Popover
+              content={
+                <FileMenu
+                  auth={auth}
+                  canCreateNew={online}
+                  canSave={online && !readOnly}
+                  canSaveAs={online && !inSandbox}
+                  canExport={canExport}
+                  colourScheme={colourScheme}
+                  onDeleteSong={onDeleteSong}
+                  onExportLy={onExportLy}
+                  onExportMIDI={onExportMIDI}
+                  onExportPDF={onExportPDF}
+                  onLoadSong={onLoadSong}
+                  onShowAbout={onShowAbout}
+                  onShowClone={onShowClone}
+                  onShowOpen={onShowOpen}
+                  onShowPublish={onShowPublish}
+                  onShowNew={onShowNew}
+                  onSignIn={onSignIn}
+                  onSignOut={onSignOut}
+                  setColourScheme={setColourScheme}
+                  songURL={songURL}
+                />
+              }
+              autoFocus={false}
+            >
+              <Button icon="document" rightIcon="caret-down">
+                {windowWidth >= MIN_REASONABLE_WIDTH && <span>File</span>}
+              </Button>
+            </Popover>
+            {windowWidth >= MIN_BOTH_WIDTH && (
+              <Popover
+                content={
+                  <Menu>
+                    <MenuItem
+                      icon="blank"
+                      text="Clef&hellip;"
+                      onClick={this.handleShowClef}
+                    />
+                    <MenuItem
+                      icon="blank"
+                      text="Key Signature&hellip;"
+                      onClick={this.handleShowKey}
+                    />
+                    <MenuItem
+                      icon="blank"
+                      text="Time Signature&hellip;"
+                      onClick={this.handleShowTime}
+                    />
+                    <MenuItem
+                      icon="music"
+                      text="Notes&hellip;"
+                      onClick={this.handleShowNotes}
+                    />
+                  </Menu>
+                }
+                autoFocus={false}
+              >
+                <Button icon="draw" rightIcon="caret-down">
+                  Insert
+                </Button>
+              </Popover>
+            )}
+            {viewMode}
+            {played && midi != null ? this.renderTime() : playButton}
+          </ButtonGroup>
+        </NavbarGroup>
+      </Navbar>
     );
   }
   private handleFastForward = (): void => {
@@ -340,6 +358,14 @@ export default class Header extends React.PureComponent<Props> {
     }
   };
 
+  private handleSetView = (): void => {
+    this.props.onModeChanged(MODE_VIEW);
+  };
+
+  private handleSetEdit = (): void => {
+    this.props.onModeChanged(MODE_EDIT);
+  };
+
   private handleRewind = (): void => {
     if (!this.state.player) {
       return;
@@ -347,231 +373,73 @@ export default class Header extends React.PureComponent<Props> {
     this.state.player.seek(Math.max(0, this.state.timeInSeconds - 4));
   };
 
-  private handleShowMakelily = (): void => {
-    this.props.onShowMakelily();
+  private handleShowClef = (): void => {
+    this.props.onShowMakelily("clef");
   };
 
-  // tslint:disable-next-line:cyclomatic-complexity
-  private renderCommunityToolbar(): React.ReactNode {
-    const {
-      online,
-      song,
-      onShowClone,
-      onShowNew,
-      onShowPublish,
-      isDirty,
-      windowWidth,
-      sandboxIsDirty,
-      inSandbox,
-      isImmutableSrc,
-    } = this.props;
-    const micro: boolean = windowWidth <= 750;
+  private handleShowKey = (): void => {
+    this.props.onShowMakelily("key");
+  };
 
-    const goToSandbox: string = sandboxIsDirty
-      ? "Back to scratchpad"
-      : "New song";
-    let saveAsButton: React.ReactNode;
-    if (!inSandbox) {
-      saveAsButton = (
-        <button
-          title="Save As"
-          className={css(styles.newSong)}
-          onClick={onShowClone}
-        >
-          <i className="fa fa-clone" />{" "}
-          {!micro && !isImmutableSrc && <span>Save As</span>}
-          {!micro && isImmutableSrc && <span>Import</span>}
-        </button>
-      );
-    }
+  private handleShowTime = (): void => {
+    this.props.onShowMakelily("time");
+  };
 
-    let saveShare: React.ReactNode;
-    if (song) {
-      if (isDirty) {
-        saveShare = (
-          <span>
-            <i className="fa fa-save" /> {!micro && <span>Save updates</span>}
-          </span>
-        );
-      } else if (!micro) {
-        saveShare = "All changes saved.";
-      }
-    } else {
-      saveShare = (
-        <span>
-          <i className="fa fa-save" /> {!micro && <span>Save / share</span>}
-        </span>
-      );
-    }
-
-    if (!isDirty && !this.props.song) {
-      return (
-        <div className={css(styles.headerGroupWrapper)}>
-          <button title="Publish" className={css(styles.newSong)}>
-            {!micro && <span>No changes made.</span>}
-          </button>
-        </div>
-      );
-    }
-
-    if (online) {
-      return (
-        <div className={css(styles.headerGroupWrapper)}>
-          <button
-            title="Publish"
-            className={css(styles.newSong)}
-            onClick={onShowNew}
-          >
-            <i
-              className={`fa ${sandboxIsDirty ? "fa-chevron-left" : "fa-plus"}`}
-            />{" "}
-            {!micro && <span>{goToSandbox}</span>}
-          </button>
-          {saveAsButton}
-          <button
-            title="Publish"
-            className={css(styles.publish, isDirty && styles.publishActive)}
-            onClick={isDirty || !song ? onShowPublish : undefined}
-          >
-            {saveShare}
-          </button>
-        </div>
-      );
-    }
-
-    return (
-      <div className={css(styles.headerGroupWrapper)}>
-        <Spinner size={Spinner.SIZE_SMALL} className={css(styles.spinner)} />
-      </div>
-    );
-  }
+  private handleShowNotes = (): void => {
+    this.props.onShowMakelily("notes");
+  };
 
   private renderTime(): React.ReactNode {
-    const { timeInSeconds } = this.state;
-    const fmtTime: string = String(Math.floor(timeInSeconds * 100) / 100);
-    const { playing } = this.state;
+    const { playing, timeInSeconds } = this.state;
+    const { windowWidth } = this.props;
+    let fmtTime: string = String(Math.floor(timeInSeconds * 100) / 100);
+    if (fmtTime.split(".")[1] == null) {
+      fmtTime += ".00";
+    }
+    while (fmtTime.split(".")[1].length < 2) {
+      fmtTime += "0";
+    }
 
     return (
-      <div className={css(styles.headerGroupWrapper, styles.miniGroup)}>
-        <button
+      <React.Fragment>
+        <Button
           title="Rewind"
-          className={css(BUTTON_STYLE.buttonStyle, styles.playButton)}
+          icon="fast-backward"
           onClick={this.handleRewind}
-        >
-          <i className="fa-backward fa" />
-        </button>
-        <button
+        />
+        <Button
           title={playing ? "Pause" : "Play"}
-          className={css(BUTTON_STYLE.buttonStyle, styles.playButton)}
           onClick={playing ? this.handlePause : this.handlePlay}
-        >
-          <i className={playing ? "fa-pause fa" : "fa-play fa"} />
-        </button>
-        <button
-          className={css(
-            BUTTON_STYLE.buttonStyle,
-            styles.playButton,
-            styles.playTime,
-          )}
-          disabled={true}
-        >
-          {fmtTime}
-        </button>
-        <button
+          icon={playing ? "pause" : "play"}
+        />
+        {windowWidth >= MIN_REASONABLE_WIDTH && (
+          <Button
+            className={css(styles.playTime) + " " + Classes.MONOSPACE_TEXT}
+            disabled={true}
+          >
+            {fmtTime}
+          </Button>
+        )}
+        <Button
+          icon="fast-forward"
           title="Fast-forward"
-          className={css(BUTTON_STYLE.buttonStyle, styles.playButton)}
           onClick={this.handleFastForward}
-        >
-          <i className="fa-forward fa" />
-        </button>
-      </div>
+        />
+      </React.Fragment>
     );
   }
 }
 
 const styles = StyleSheet.create({
-  headerGroupWrapper: {
-    display: "flex",
-    marginBottom: "auto",
-    marginTop: "auto",
-  },
-  headerSpacer: {
-    flex: 1,
-  },
   logo: {
-    marginLeft: 16,
+    marginRight: 16,
     padding: "9px 0",
     transform: "scale(-1, 1)",
     width: 32,
   },
-  miniGroup: {
-    marginLeft: 16,
-  },
-  modeItem: {
-    fontSize: 14,
-    paddingBottom: 5,
-    paddingTop: 5,
-    width: 14,
-  },
-  newSong: {
-    ":hover": {
-      color: "black",
-    },
-    color: "#aeaeae",
-    fontSize: 14,
-    marginRight: 32,
-    textDecoration: "none",
-  },
-  playButton: {
-    ":hover": {
-      backgroundColor: "#ccc",
-    },
-    color: "#6e6e6e",
-    display: "inline-block",
-    fontSize: 14,
-    height: 36,
-    padding: 9,
-  },
   playTime: {
     textAlign: "left",
     width: 80,
-  },
-  publish: {
-    color: "#aeaeae",
-    cursor: "unset",
-    fontSize: 14,
-    marginRight: 16,
-    textDecoration: "none",
-  },
-  publishActive: {
-    ":hover": {
-      color: "black",
-    },
-    cursor: "pointer",
-  },
-  songs: {
-    marginLeft: 16,
-  },
-  songsText: {
-    ":hover": {
-      backgroundColor: "#ccc",
-    },
-    color: "#6e6e6e",
-    display: "inline-block",
-    fontSize: 14,
-    padding: 9,
-  },
-  srOnly: {
-    border: 0,
-    clip: "rect(0,0,0,0)",
-    height: 1,
-    margin: -1,
-    overflow: "hidden",
-    padding: 0,
-    position: "absolute",
-    width: 1,
-  },
-  spinner: {
-    marginRight: 16,
+    justifyContent: "flex-end",
   },
 });

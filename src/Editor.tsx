@@ -18,6 +18,7 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
  */
 
+import { Icon } from "@blueprintjs/core";
 import { css } from "aphrodite";
 import * as monacoEditor from "monaco-editor";
 import React from "react";
@@ -276,7 +277,8 @@ export default class Editor extends React.PureComponent<Props> {
             className={css(APP_STYLE.urgentEditorNotification)}
             style={{ width }}
           >
-            <i className="fa-info-circle fa fa-fw" /> to edit, import this song
+            <Icon icon="lock" /> to edit, save a copy of this song to your
+            library.
           </div>
         );
       } else {
@@ -285,8 +287,8 @@ export default class Editor extends React.PureComponent<Props> {
             className={css(APP_STYLE.urgentEditorNotification)}
             style={{ width }}
           >
-            <i className="fa-lock fa fa-fw" /> read-only &mdash; to edit, log in
-            as the owner or save a copy
+            <Icon icon="lock" /> read-only &mdash; to edit, log in as the owner
+            or save a copy
           </div>
         );
       }
@@ -299,8 +301,8 @@ export default class Editor extends React.PureComponent<Props> {
           className={css(APP_STYLE.urgentEditorNotification)}
           style={{ width }}
         >
-          <i className="fa-bug fa fa-fw" /> This song uses LilyPond 2.19, which
-          is an unstable development version and may change without notice.{" "}
+          <Icon icon="warning-sign" /> This song uses LilyPond 2.19, which is an
+          unstable development version and may change without notice.{" "}
           <a
             onClick={onHideUnstableNotification}
             className={css(APP_STYLE.urgentEditorNotificationClose)}

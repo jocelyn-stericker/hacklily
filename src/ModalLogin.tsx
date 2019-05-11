@@ -34,7 +34,7 @@ interface Props {
  * Login modal that explains the privacy of Hacklily and redirects the user to
  * the GitHub OAauth flow.
  *
- * Renders when you click login from the menu, or press "New Song" / "Save / share"
+ * Renders when you click login from the menu, or press "New Song" / "Save"
  * while not logged in.
  *
  * Sets a new CSRF for the app before rendering. The CSRF is used throughout the

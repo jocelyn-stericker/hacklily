@@ -18,8 +18,7 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
  */
 
-import { Button, Menu, MenuItem, Popover } from "@blueprintjs/core";
-import { css, StyleSheet } from "aphrodite";
+import { css } from "aphrodite";
 import DOMPurify from "dompurify";
 import * as monacoEditor from "monaco-editor";
 import React from "react";
@@ -72,11 +71,6 @@ interface Props {
    * Client to use to request the SVG and logs.
    */
   rpc: RPCClient;
-
-  songURL: string | null;
-  onExportLy(): any;
-  onExportMIDI(): any;
-  onExportPDF(): any;
 
   /**
    * Called whenever a preview is rendered. The parent should in turn re-render,
@@ -177,7 +171,6 @@ export default class Preview extends React.PureComponent<Props, State> {
         />
         {pendingPreviews > 0 && <div className={previewMaskStyle} />}
         {error && <div className={css(APP_STYLE.errorMask)}>{error}</div>}
-        {this.renderDownload()}
         <Logs
           logs={logs}
           loading={!logs || logs.length === 0 || pendingPreviews > 0}
@@ -370,60 +363,4 @@ export default class Preview extends React.PureComponent<Props, State> {
   ): void => {
     this.sheetMusicView = sheetMusicView;
   };
-
-  private renderDownload(): JSX.Element {
-    const { onExportLy, onExportMIDI, onExportPDF, songURL } = this.props;
-
-    return (
-      <div className={css(styles.downloadButtonWrapper)}>
-        <Popover
-          interactionKind="hover"
-          disabled={!this.props.logs || this.state.pendingPreviews > 0}
-          content={
-            <Menu>
-              <MenuItem
-                onClick={onExportLy}
-                icon="code"
-                text="Download LilyPond file"
-              />
-              <MenuItem
-                onClick={onExportPDF}
-                icon="document-share"
-                text="Export PDF"
-              />
-              <MenuItem
-                onClick={onExportMIDI}
-                icon="music"
-                text="Export MIDI"
-              />
-              {songURL && (
-                <MenuItem
-                  href={songURL.replace(/\.ly$/, ".pdf")}
-                  icon="git-repo"
-                  text="View on GitHub"
-                />
-              )}
-            </Menu>
-          }
-        >
-          <Button
-            disabled={!this.props.logs || this.state.pendingPreviews > 0}
-            large={true}
-            intent="primary"
-            icon="download"
-          >
-            Export
-          </Button>
-        </Popover>
-      </div>
-    );
-  }
 }
-
-const styles = StyleSheet.create({
-  downloadButtonWrapper: {
-    bottom: 10,
-    position: "absolute",
-    right: 128,
-  },
-});
