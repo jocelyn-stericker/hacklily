@@ -3885,7 +3885,6 @@ export interface Fingering extends PrintStyle, Placement {
 
 function xmlToFingering(node: Node) {
     let ret: Fingering = <any> {};
-    let foundFinger = false;
     let foundSubstitution = false;
     let foundFontWeight = false;
     let foundFontStyle = false;
@@ -3955,7 +3954,7 @@ function xmlToFingering(node: Node) {
     let ch3 = node;
     let dataFinger = getNumber(ch3, false);
     ret.finger = dataFinger;
-    if (!foundFinger) {
+    if (isNaN(ret.finger)) {
         ret.finger = -1;
     }
     if (!foundSubstitution) {
