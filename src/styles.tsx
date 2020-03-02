@@ -20,8 +20,6 @@
 
 import { StyleSheet } from "aphrodite";
 
-// tslint:disable:typedef
-
 const previewPendingAnimation = {
   "0%": {
     opacity: 0.0,
@@ -29,7 +27,6 @@ const previewPendingAnimation = {
   "50%": {
     opacity: 0.15,
   },
-  // tslint:disable-next-line:object-literal-sort-keys
   "100%": {
     opacity: 0.0,
   },

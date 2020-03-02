@@ -198,12 +198,9 @@ function setCSRF(csrf: string | null): void {
 /*
  * Init Hacklily.
  */
-window.addEventListener(
-  "popstate",
-  (ev: PopStateEvent): void => {
-    render();
-  },
-);
+window.addEventListener("popstate", (_ev: PopStateEvent): void => {
+  render();
+});
 
 // Add back query props during OAuth flow, if needed.
 const queryProps: QueryProps = getQueryProps();

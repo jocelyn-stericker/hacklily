@@ -35,7 +35,7 @@ export default class CodelensProvider
 
   provideCodeLenses = (
     model: monacoEditor.editor.IReadOnlyModel,
-    token: monacoEditor.CancellationToken,
+    _token: monacoEditor.CancellationToken,
   ): monacoEditor.languages.ICodeLensSymbol[] => {
     const lines: string[] = model.getLinesContent();
 
@@ -122,9 +122,9 @@ export default class CodelensProvider
   };
 
   resolveCodeLens = (
-    model: monacoEditor.editor.IReadOnlyModel,
+    _model: monacoEditor.editor.IReadOnlyModel,
     codeLens: monacoEditor.languages.ICodeLensSymbol,
-    token: monacoEditor.CancellationToken,
+    _token: monacoEditor.CancellationToken,
   ): monacoEditor.languages.ICodeLensSymbol => {
     return codeLens;
   };

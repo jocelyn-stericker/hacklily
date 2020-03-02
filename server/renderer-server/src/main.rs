@@ -1,4 +1,3 @@
-#![feature(await_macro, async_await)]
 #![warn(clippy::all)]
 /**
  * @license
@@ -34,7 +33,8 @@ extern crate renderer_lib;
 
 use renderer_lib::{event_loop, CommandSourceConfig, Config};
 
-fn main() {
+#[tokio::main]
+async fn main() {
     let matches = App::new("Hacklily Renderer Server")
         .version("0.1")
         .author("Joshua Netterfield <joshua@nettek.ca>")
@@ -111,7 +111,7 @@ fn main() {
         .get_matches();
 
     env_logger::Builder::new()
-        .parse(&env::var("RUST_LOG").unwrap_or_else(|_| {
+        .parse_filters(&env::var("RUST_LOG").unwrap_or_else(|_| {
             match matches.occurrences_of("v") {
                 0 => "error",
                 1 => "warn",
@@ -173,7 +173,7 @@ fn main() {
         },
     };
 
-    tokio::run_async(event_loop(config));
+    event_loop(config).await;
 
     info!("Bye.")
 }

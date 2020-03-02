@@ -18,11 +18,11 @@
  */
 use std::future::Future;
 use std::pin::Pin;
-use tokio::prelude::Stream;
-use tokio_channel::mpsc::Sender;
+use tokio::stream::Stream;
+use tokio::sync::mpsc::Sender;
 
 use crate::config::{CommandSourceConfig, Config};
-use crate::error::Error;
+use crate::error::HacklilyError;
 use crate::request::{Request, Response};
 
 mod batch;
@@ -36,16 +36,15 @@ use self::ws_worker_client::ws_worker_client;
 #[derive(Debug)]
 pub struct QuitSignal {}
 
-pub type ResponseCallback = Box<Fn(Response) -> () + Send + 'static>;
+pub type ResponseCallback = Box<dyn Fn(Response) -> () + Send + 'static>;
 pub type QuitSink = Sender<QuitSignal>;
 
-// Spurious.
-#[allow(dead_code)]
-pub type RequestStream =
-    Box<Stream<Item = (Request, ResponseCallback), Error = Error> + Send + 'static>;
+pub type RequestStream = Box<
+    dyn Stream<Item = Result<(Request, ResponseCallback), HacklilyError>> + Send + Unpin + 'static,
+>;
 
 pub type FutureCommandSource =
-    Pin<Box<Future<Output = Result<(RequestStream, QuitSink), Error>> + Send>>;
+    Pin<Box<dyn Future<Output = Result<(RequestStream, QuitSink), HacklilyError>> + Send>>;
 
 pub fn new(config: &Config) -> FutureCommandSource {
     match &config.command_source {

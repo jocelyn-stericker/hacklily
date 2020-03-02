@@ -75,7 +75,6 @@ export default class FileMenu extends React.PureComponent<Props> {
       signOut = <MenuItem onClick={onSignOut} icon="log-out" text="Sign out" />;
     }
 
-    // tslint:disable:no-http-string because of silly lilypond
     const tutorial: React.ReactNode = (
       <MenuItem
         href="http://lilypond.org/doc/v2.18/Documentation/learning/index"
@@ -85,7 +84,6 @@ export default class FileMenu extends React.PureComponent<Props> {
         icon="help"
       />
     );
-    // tslint:enable:no-http-string because of silly lilypond
 
     const about: React.ReactNode = (
       <MenuItem onClick={onShowAbout} text="About Hacklily" icon="info-sign" />

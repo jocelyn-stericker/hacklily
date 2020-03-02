@@ -1,23 +1,11 @@
 {
   "compilerOptions": {
-    "allowJs": true,
-    "allowSyntheticDefaultImports": true,
-    "experimentalDecorators": true,
-    "jsx": "react",
-    "lib": ["es2015", "dom"],
-    "module": "esnext",
-    "noFallthroughCasesInSwitch": true,
-    "noUnusedLocals": true,
-    "pretty": true,
-    "strict": true,
+    "noEmit": true,
     "target": "es5",
-    "moduleResolution": "node",
-    "esModuleInterop": true
-  },
-  "include": [
-    "src/index.tsx",
-    "src/status/status.index.tsx",
-    "src/musicxml2ly/musicxml2ly.index.tsx",
-    "src/hackmidi.d.ts"
-  ]
+    "module": "commonjs",
+    "jsx": "preserve",
+    "strict": true,
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true
+  }
 }

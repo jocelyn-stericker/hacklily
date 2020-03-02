@@ -20,8 +20,7 @@ use futures::future::FutureExt;
 use std::collections::{BinaryHeap, HashMap, VecDeque};
 use std::panic::AssertUnwindSafe;
 use std::time::Duration;
-use tokio::prelude::*;
-use tokio_channel::mpsc;
+use tokio::sync::mpsc;
 
 use crate::command_source::{QuitSignal, QuitSink, ResponseCallback};
 use crate::config::Config;
@@ -50,7 +49,7 @@ pub struct State {
 }
 
 impl State {
-    pub fn new(
+    pub async fn new(
         config: &Config,
         command_sender: mpsc::Sender<Command>,
     ) -> (Self, mpsc::Receiver<Event>) {
@@ -68,27 +67,31 @@ impl State {
         };
 
         for i in 0..config.stable_worker_count {
-            state.create_container(
-                Version::Stable,
-                config.stable_docker_tag.to_owned(),
-                config.render_timeout_msec,
-                i as i8,
-            );
+            state
+                .create_container(
+                    Version::Stable,
+                    config.stable_docker_tag.to_owned(),
+                    config.render_timeout_msec,
+                    i as i8,
+                )
+                .await;
         }
 
         for i in 0..config.unstable_worker_count {
-            state.create_container(
-                Version::Unstable,
-                config.unstable_docker_tag.to_owned(),
-                config.render_timeout_msec,
-                (config.stable_worker_count + i) as i8,
-            );
+            state
+                .create_container(
+                    Version::Unstable,
+                    config.unstable_docker_tag.to_owned(),
+                    config.render_timeout_msec,
+                    (config.stable_worker_count + i) as i8,
+                )
+                .await;
         }
 
         (state, internal_events)
     }
 
-    fn create_container(
+    async fn create_container(
         &mut self,
         version: Version,
         image: String,
@@ -111,13 +114,13 @@ impl State {
         self.renderer_manager_command_sender
             .clone()
             .send(Command::CreateContainer(meta))
-            .wait()
+            .await
             .expect("Could not queue creation of renderer.");
 
         self.total_containers += 1;
     }
 
-    pub fn gracefully_quit(&mut self) {
+    pub async fn gracefully_quit(&mut self) {
         info!("Got quit request");
 
         if !self.stopping {
@@ -131,7 +134,7 @@ impl State {
             self.renderer_manager_command_sender
                 .clone()
                 .send(Command::Shutdown)
-                .wait()
+                .await
                 .expect("Could not sent shutdown event.");
 
             for containers in ready_containers {
@@ -141,14 +144,14 @@ impl State {
                         .send(Command::ReceiveContainer(RenderContainer::Ready(Box::new(
                             container,
                         ))))
-                        .wait()
+                        .await
                         .expect("Could not send container to shut down");
                 }
             }
 
             // Terminate command source
-            if let Some(quit_sink) = self.command_source_quit_sink.take() {
-                if quit_sink.send(QuitSignal {}).wait().is_err() {
+            if let Some(mut quit_sink) = self.command_source_quit_sink.take() {
+                if quit_sink.send(QuitSignal {}).await.is_err() {
                     // It's probably already quitting.
                 }
             }
@@ -157,7 +160,7 @@ impl State {
         }
     }
 
-    pub fn handle_request(&mut self, request: Request, response_cb: ResponseCallback) {
+    pub async fn handle_request(&mut self, request: Request, response_cb: ResponseCallback) {
         if self.stopping {
             warn!("Not registering a new request, because we're shutting down.");
             return;
@@ -168,17 +171,17 @@ impl State {
             .or_insert_with(VecDeque::new)
             .push_back((request, response_cb));
 
-        self.process_if_possible();
+        self.process_if_possible().await;
     }
 
-    pub fn handle_manager_event(&mut self, clean_event: RenderEvent) {
+    pub async fn handle_manager_event(&mut self, clean_event: RenderEvent) {
         match clean_event {
             RenderEvent::ContainerReady(container) => {
                 if self.stopping {
                     self.renderer_manager_command_sender
                         .clone()
                         .send(Command::ReceiveContainer(RenderContainer::Ready(container)))
-                        .wait()
+                        .await
                         .expect("Could not send container to manager.");
                 } else {
                     self.ready_containers
@@ -186,7 +189,7 @@ impl State {
                         .or_insert_with(BinaryHeap::new)
                         .push(*container);
 
-                    self.process_if_possible();
+                    self.process_if_possible().await;
                 }
             }
             RenderEvent::ContainerTerminated => {
@@ -195,12 +198,12 @@ impl State {
             RenderEvent::Fatal => {
                 self.total_containers -= 1;
                 error!("FATAL: renderer sent a fatal event, so something must be very wrong.");
-                self.gracefully_quit();
+                self.gracefully_quit().await;
             }
         }
     }
 
-    pub fn process_if_possible(&mut self) {
+    pub async fn process_if_possible(&mut self) {
         for (version, pending_requests) in self.pending_requests.iter_mut() {
             let ready_containers = self
                 .ready_containers
@@ -226,41 +229,41 @@ impl State {
             self.renderer_manager_command_sender
                 .clone()
                 .send(Command::ReceiveContainer(render_container))
-                .wait()
+                .await
                 .expect("Could not send container to manager.");
 
-            let emergency_command_sender = self.renderer_manager_command_sender.clone();
-            let internal_sink = self.internal_sink.clone();
+            let mut emergency_command_sender = self.renderer_manager_command_sender.clone();
+            let mut internal_sink = self.internal_sink.clone();
 
-            tokio::spawn_async(
-                async move {
-                    let f = async move {
-                        match await!(result) {
-                            Ok(render_result) => {
-                                response_cb(render_result);
-                            }
-                            Err(_) => {
-                                await!(
-                                    internal_sink.send(Event::QueueRequest(request, response_cb))
-                                )
+            tokio::spawn(async move {
+                let f = async move {
+                    match result.await {
+                        Ok(render_result) => {
+                            response_cb(render_result);
+                        }
+                        Err(_) => {
+                            internal_sink
+                                .send(Event::QueueRequest(request, response_cb))
+                                .await
                                 .map(|_| ())
                                 .unwrap_or(());
-                            }
                         }
-                    };
-                    if await!(AssertUnwindSafe(f).catch_unwind()).is_err() {
-                        error!("FATAL: panic in renderer");
-                        await!(emergency_command_sender.send(Command::Abort))
-                            .map(|_| ())
-                            .unwrap_or(());
                     }
-                },
-            );
+                };
+                if AssertUnwindSafe(f).catch_unwind().await.is_err() {
+                    error!("FATAL: panic in renderer");
+                    emergency_command_sender
+                        .send(Command::Abort)
+                        .await
+                        .map(|_| ())
+                        .unwrap_or(());
+                }
+            });
         }
     }
-    pub fn handle_command_source_ready(&mut self, sink: QuitSink) {
+    pub async fn handle_command_source_ready(&mut self, mut sink: QuitSink) {
         if self.stopping {
-            if sink.send(QuitSignal {}).wait().is_err() {
+            if sink.send(QuitSignal {}).await.is_err() {
                 // It's probably already quitting...
             }
         } else {
@@ -277,11 +280,11 @@ impl State {
     ///
     /// Returns the duration we should delay before trying again, or None if we're going
     /// to terminate.
-    pub fn handle_command_source_failed_to_start(&mut self) -> Option<Duration> {
+    pub async fn handle_command_source_failed_to_start(&mut self) -> Option<Duration> {
         if self.command_source_was_created {
             Some(Duration::from_millis(4000))
         } else {
-            self.gracefully_quit();
+            self.gracefully_quit().await;
             None
         }
     }

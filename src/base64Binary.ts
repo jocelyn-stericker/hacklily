@@ -59,7 +59,7 @@ export function decode(inputStr: string, arrayBuffer: ArrayBuffer): Uint8Array {
   let input: string = inputStr;
   input = removePaddingChars(input);
   input = removePaddingChars(input);
-  input = input.replace(/[^A-Za-z0-9\+\/\=]/g, "");
+  input = input.replace(/[^A-Za-z0-9+/=]/g, "");
 
   const bytes: number = parseInt(String((input.length / 4) * 3), 10);
 
@@ -86,11 +86,9 @@ export function decode(inputStr: string, arrayBuffer: ArrayBuffer): Uint8Array {
     enc4 = keyStr.indexOf(input.charAt(j));
     j += 1;
 
-    /* tslint:disable */
     chr1 = (enc1 << 2) | (enc2 >> 4);
     chr2 = ((enc2 & 15) << 4) | (enc3 >> 2);
     chr3 = ((enc3 & 3) << 6) | enc4;
-    /* tslint:enable */
 
     uarray[i] = chr1;
     if (enc3 !== 64) {

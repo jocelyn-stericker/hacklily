@@ -298,6 +298,11 @@ export default class App extends React.PureComponent<Props, State> {
 
   componentDidMount(): void {
     window.addEventListener("resize", this.handleWindowResize);
+    this.connectToWS();
+    this.fetchSong();
+    lock(this.props.edit || "null");
+    window.addEventListener("beforeunload", this.handleBeforeUnload);
+    setEditingNotificationHandler(this.handleEditingNotification);
   }
 
   componentDidUpdate(prevProps: Props): void {
@@ -319,14 +324,6 @@ export default class App extends React.PureComponent<Props, State> {
         true,
       );
     }
-  }
-
-  componentWillMount(): void {
-    this.connectToWS();
-    this.fetchSong();
-    lock(this.props.edit || "null");
-    window.addEventListener("beforeunload", this.handleBeforeUnload);
-    setEditingNotificationHandler(this.handleEditingNotification);
   }
 
   componentWillUnmount(): void {
@@ -688,11 +685,13 @@ export default class App extends React.PureComponent<Props, State> {
       const isUnstable = versionSlices[0] === 2 && versionSlices[1] > 18;
       version = isUnstable ? "unstable" : "stable";
 
-      const pdf: string = (await rpc.call("render", {
-        version,
-        backend: "pdf",
-        src: song.src,
-      })).result.files[0];
+      const pdf: string = (
+        await rpc.call("render", {
+          version,
+          backend: "pdf",
+          src: song.src,
+        })
+      ).result.files[0];
 
       console.log(pdf);
 
@@ -854,7 +853,6 @@ export default class App extends React.PureComponent<Props, State> {
 
     this.props.editSong(this.props.edit, {
       baseSHA: this.state.cleanSongs[this.props.edit].baseSHA,
-      // tslint:disable-next-line:no-non-null-assertion
       src: this.song()!.src,
     });
   };
@@ -1031,7 +1029,7 @@ export default class App extends React.PureComponent<Props, State> {
     }
   };
 
-  private handleWSError = (e: Event): void => {
+  private handleWSError = (_e: Event): void => {
     if (!this.socket) {
       return;
     }
@@ -1118,7 +1116,6 @@ export default class App extends React.PureComponent<Props, State> {
     return Boolean(this.rpc);
   }
 
-  // tslint:disable-next-line:max-func-body-length
   private renderModal(): React.ReactNode {
     const {
       locked,
@@ -1197,20 +1194,21 @@ export default class App extends React.PureComponent<Props, State> {
           throw new Error("(this will never happen");
         }
 
-        // tslint:disable-next-line variable-name
-        const MakelilyComponent: typeof Makelily = showMakelily;
+        {
+          const MakelilyComponent: typeof Makelily = showMakelily;
 
-        return (
-          <MakelilyComponent
-            clef={this.state.makelilyClef}
-            defaultTool={this.state.makelilyTool}
-            keySig={this.state.makelilyKey}
-            onHide={this.handleHideMakelily}
-            singleTaskMode={this.state.makelilySingleTaskMode}
-            onInsertLy={this.handleInsertLy}
-            time={this.state.makelilyTime}
-          />
-        );
+          return (
+            <MakelilyComponent
+              clef={this.state.makelilyClef}
+              defaultTool={this.state.makelilyTool}
+              keySig={this.state.makelilyKey}
+              onHide={this.handleHideMakelily}
+              singleTaskMode={this.state.makelilySingleTaskMode}
+              onInsertLy={this.handleInsertLy}
+              time={this.state.makelilyTime}
+            />
+          );
+        }
       default:
         return null;
     }
@@ -1309,7 +1307,7 @@ export default class App extends React.PureComponent<Props, State> {
       );
     }
 
-    throw new Error("Invalid state.");
+    return null;
   }
 
   private setEditor = (editor: Editor | null): void => {

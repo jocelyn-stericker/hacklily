@@ -112,7 +112,7 @@ export default class Header extends React.PureComponent<Props> {
     timeInSeconds: 0,
   };
 
-  componentWillReceiveProps(props: Props): void {
+  UNSAFE_componentWillReceiveProps(props: Props): void {
     if (props.midi !== this.props.midi && this.state.player) {
       const player: Player = this.state.player;
       this.setState(
@@ -127,7 +127,6 @@ export default class Header extends React.PureComponent<Props> {
     }
   }
 
-  // tslint:disable-next-line:max-func-body-length
   render(): JSX.Element {
     const {
       auth,
@@ -337,7 +336,6 @@ export default class Header extends React.PureComponent<Props> {
     const player: Player | null = this.state.player;
     if (!player) {
       // TODO(joshuan): Fix this!
-      // tslint:disable-next-line no-console
       console.log("handlePlaying called, but there's no song");
 
       return;

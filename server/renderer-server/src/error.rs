@@ -1,42 +1,44 @@
-use std::error;
+use std::error::Error;
 use std::fmt;
 
 #[derive(Debug, Clone)]
-pub enum Error {
+pub enum HacklilyError {
     ContainerInitError(String),
     RenderError(String),
     RenderPanic,
     CommandSourceError(String),
 }
 
-impl fmt::Display for Error {
+impl fmt::Display for HacklilyError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
-            Error::ContainerInitError(reason) => write!(
+            HacklilyError::ContainerInitError(reason) => write!(
                 f,
                 "Something went wrong while creating the render container: {}",
                 reason
             ),
-            Error::RenderError(reason) => write!(f, "Crashed during render: {}", reason),
-            Error::RenderPanic => write!(f, "Render panic"),
-            Error::CommandSourceError(reason) => write!(f, "Command source error: {}", reason),
+            HacklilyError::RenderError(reason) => write!(f, "Crashed during render: {}", reason),
+            HacklilyError::RenderPanic => write!(f, "Render panic"),
+            HacklilyError::CommandSourceError(reason) => {
+                write!(f, "Command source error: {}", reason)
+            }
         }
     }
 }
 
-impl error::Error for Error {
+impl Error for HacklilyError {
     fn description(&self) -> &str {
         match self {
-            Error::ContainerInitError(_reason) => {
+            HacklilyError::ContainerInitError(_reason) => {
                 "Something went wrong while creating the render container."
             }
-            Error::RenderError(_reason) => "Crashed during render",
-            Error::RenderPanic => "Render panic",
-            Error::CommandSourceError(_reason) => "Command source error",
+            HacklilyError::RenderError(_reason) => "Crashed during render",
+            HacklilyError::RenderPanic => "Render panic",
+            HacklilyError::CommandSourceError(_reason) => "Command source error",
         }
     }
 
-    fn cause(&self) -> Option<&error::Error> {
+    fn cause(&self) -> Option<&dyn Error> {
         // Generic error, underlying cause isn't tracked.
         None
     }

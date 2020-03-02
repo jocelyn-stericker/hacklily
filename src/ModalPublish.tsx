@@ -68,7 +68,6 @@ class ModalPublish extends React.PureComponent<Props, State> {
   }
 
   render(): JSX.Element {
-    // tslint:disable max-func-body-length
     // TODO(joshuan): Split this up
     const { auth, onHide } = this.props;
     const { filename, files, invitationRequired, saving } = this.state;
@@ -191,7 +190,6 @@ class ModalPublish extends React.PureComponent<Props, State> {
         return;
       }
 
-      // tslint:disable-next-line:no-console
       console.log(err);
       alert(err.toString());
       didFail = true;
@@ -226,7 +224,7 @@ function b64EncodeUnicode(str: string): string {
   return btoa(
     encodeURIComponent(str).replace(
       /%([0-9A-F]{2})/g,
-      (match: string, p1: string) => String.fromCharCode(+`0x${p1}`),
+      (_match: string, p1: string) => String.fromCharCode(+`0x${p1}`),
     ),
   );
 }
@@ -247,11 +245,13 @@ export async function doPublish(
   const isUnstable = versionSlices[0] === 2 && versionSlices[1] > 18;
   version = isUnstable ? "unstable" : "stable";
 
-  const pdf: string = (await rpc.call("render", {
-    version,
-    backend: "pdf",
-    src: code,
-  })).result.files[0];
+  const pdf: string = (
+    await rpc.call("render", {
+      version,
+      backend: "pdf",
+      src: code,
+    })
+  ).result.files[0];
 
   const pdfFilename: string = filename.replace(/\.ly$/, ".pdf");
 
@@ -287,7 +287,6 @@ export async function doPublish(
       "master",
     );
   } catch (err) {
-    // tslint:disable-next-line:no-console
     console.log(err);
     if (err instanceof Conflict) {
       if (overwrite) {
@@ -313,7 +312,7 @@ export async function doPublish(
 export async function doUnpublish(
   auth: Auth,
   filename: string,
-  rpc: RPCClient,
+  _rpc: RPCClient,
 ): Promise<boolean> {
   const pdfFilename: string = filename.replace(/\.ly$/, ".pdf");
 
@@ -335,7 +334,6 @@ export async function doUnpublish(
       await rm(accessToken, repo, filename, file.sha, "master");
     }
   } catch (err) {
-    // tslint:disable-next-line:no-console
     console.log(err);
     if (err instanceof Conflict) {
       alert("Could not delete file.");

@@ -18,21 +18,23 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
  */
 
-// tslint:disable-next-line:match-default-export-name
-import lodashDebounce from 'lodash.debounce';
+import { debounce as lodashDebounce } from "lodash";
 
-export default function debounce(timeout: number):
-    <T>(target: {}, propertyKey: string, descriptor: TypedPropertyDescriptor<() => T>) =>
-    TypedPropertyDescriptor<() => T> {
+export default function debounce(
+  timeout: number,
+): <T>(
+  target: {},
+  propertyKey: string,
+  descriptor: TypedPropertyDescriptor<() => T>,
+) => TypedPropertyDescriptor<() => T> {
   return <T>(
     target: {},
     propertyKey: string,
     descriptor: TypedPropertyDescriptor<() => T>,
   ): TypedPropertyDescriptor<() => T> => {
-
     const originalMethod: (() => T) | undefined = descriptor.value;
     if (originalMethod === undefined) {
-      throw new Error('No function to debounce.');
+      throw new Error("No function to debounce.");
     }
 
     descriptor.value = lodashDebounce(originalMethod, timeout);

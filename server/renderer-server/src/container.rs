@@ -17,14 +17,14 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 use std::os::unix::process::ExitStatusExt;
-use std::process::{Command, Stdio};
+use std::process::Stdio;
 use std::time::Duration;
 
 use rand::Rng;
-use tokio_process::*;
-use tokio_timer::sleep;
+use tokio::process::{Child, Command};
+use tokio::time::delay_for;
 
-use crate::error::Error;
+use crate::error::HacklilyError;
 
 /**
  * Detach the current process, and do not forward signals.
@@ -61,13 +61,13 @@ fn random_between(min: u64, max: u64) -> u64 {
 
 impl ContainerHandle {
     #[must_use]
-    pub async fn create(image: String) -> Result<(ContainerHandle, Child), Error> {
+    pub async fn create(image: String) -> Result<(ContainerHandle, Child), HacklilyError> {
         let max_tries: u8 = 2;
         for _ in 0..max_tries {
             debug!("creating container with image {}", image);
-            use std::os::unix::process::CommandExt;
 
-            let create_output = await!(Command::new("docker")
+            let mut create = Command::new("docker");
+            let create = create
                 .args(&[
                     "create",
                     "--rm",
@@ -84,10 +84,12 @@ impl ContainerHandle {
                 ])
                 .stdin(Stdio::null())
                 .stdout(Stdio::piped())
-                .stderr(Stdio::piped())
-                .before_exec(do_not_forward_sigs)
-                .output_async())
-            .or_else(|err| Err(Error::ContainerInitError(err.to_string())))?;
+                .stderr(Stdio::piped());
+            let create = unsafe { create.pre_exec(do_not_forward_sigs) };
+            let create_output = create
+                .output()
+                .await
+                .or_else(|err| Err(HacklilyError::ContainerInitError(err.to_string())))?;
 
             let container_id = String::from_utf8_lossy(&create_output.stdout)
                 .trim()
@@ -115,12 +117,12 @@ impl ContainerHandle {
                         // This is a transisent error :(
                         let timeout = Duration::from_millis(random_between(200, 600));
                         error!("Transient error -- retrying in {:?}", timeout);
-                        await!(sleep(timeout)).expect("Could not delay");
+                        delay_for(timeout).await;
                         continue;
                     }
                 }
 
-                Err(Error::ContainerInitError(err_msg))?;
+                Err(HacklilyError::ContainerInitError(err_msg))?;
             }
 
             info!(
@@ -133,30 +135,30 @@ impl ContainerHandle {
                 alive: true,
             };
 
-            await!(handle.start())?;
+            handle.start().await?;
 
             let child = handle.attach()?;
 
             return Ok((handle, child));
         }
 
-        Err(Error::ContainerInitError(
+        Err(HacklilyError::ContainerInitError(
             "Could not create container, even after multiple tries".to_owned(),
         ))?
     }
 
     #[must_use]
-    async fn start(&self) -> Result<(), Error> {
-        use std::os::unix::process::CommandExt;
+    async fn start(&self) -> Result<(), HacklilyError> {
         debug!("starting container with ID {}", &self.id);
 
-        let start_output = await!(Command::new("docker")
+        let mut start = Command::new("docker");
+        let start = start
             .args(&["start", &self.id])
             .stdin(Stdio::null())
             .stdout(Stdio::piped())
-            .stderr(Stdio::piped())
-            .before_exec(do_not_forward_sigs)
-            .output_async());
+            .stderr(Stdio::piped());
+        let start = unsafe { start.pre_exec(do_not_forward_sigs) };
+        let start_output = start.output().await;
 
         match start_output {
             Ok(output) => {
@@ -177,27 +179,28 @@ impl ContainerHandle {
     }
 
     #[must_use]
-    fn attach(&self) -> Result<Child, Error> {
-        use std::os::unix::process::CommandExt;
+    fn attach(&self) -> Result<Child, HacklilyError> {
         debug!("attaching container with ID {}", &self.id);
 
-        let child = Command::new("docker")
+        let mut child = Command::new("docker");
+        let child = child
             .args(&["attach", "--sig-proxy=false", &self.id])
             .stdin(Stdio::piped())
             .stdout(Stdio::piped())
-            .stderr(Stdio::piped())
-            .before_exec(do_not_forward_sigs)
-            .spawn_async()
-            .or_else(|err| Err(Error::ContainerInitError(err.to_string())))?;
+            .stderr(Stdio::piped());
+        let child = unsafe { child.pre_exec(do_not_forward_sigs) };
+        let child = child
+            .spawn()
+            .or_else(|err| Err(HacklilyError::ContainerInitError(err.to_string())))?;
 
         Ok(child)
     }
 
-    pub async fn close(&mut self) -> Result<(), Error> {
+    pub async fn close(&mut self) -> Result<(), HacklilyError> {
         self.alive = false;
 
         info!("closing container with ID {}", &self.id);
-        await!(_close_container(self.id.to_owned()))
+        _close_container(self.id.to_owned()).await
     }
 }
 
@@ -211,25 +214,24 @@ impl Drop for ContainerHandle {
             );
 
             // NOTE: panics will not be handled in this cleanup.
-            tokio::spawn_async(
-                async move {
-                    await!(_close_container(container_id))
-                        .expect("Could not close dropped container.");
-                },
-            );
+            tokio::spawn(async move {
+                _close_container(container_id)
+                    .await
+                    .expect("Could not close dropped container.");
+            });
         }
     }
 }
 
-async fn _close_container(container_id: String) -> Result<(), Error> {
-    use std::os::unix::process::CommandExt;
-    let rm_output = await!(Command::new("docker")
+async fn _close_container(container_id: String) -> Result<(), HacklilyError> {
+    let mut rm = Command::new("docker");
+    let rm = rm
         .args(&["rm", "-f", &container_id])
         .stdin(Stdio::null())
         .stdout(Stdio::piped())
-        .stderr(Stdio::piped())
-        .before_exec(do_not_forward_sigs)
-        .output_async());
+        .stderr(Stdio::piped());
+    let rm = unsafe { rm.pre_exec(do_not_forward_sigs) };
+    let rm_output = rm.output().await;
 
     match rm_output {
         Ok(output) => {

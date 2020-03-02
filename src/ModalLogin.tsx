@@ -44,7 +44,7 @@ interface Props {
  * checkLogin, below, to set localStorage.
  */
 export default class ModalLogin extends React.PureComponent<Props> {
-  componentWillMount(): void {
+  componentDidMount(): void {
     const randomContainer: Uint32Array = new Uint32Array(1);
     crypto.getRandomValues(randomContainer);
     const csrf: string = randomContainer[0].toString();
@@ -77,7 +77,8 @@ export default class ModalLogin extends React.PureComponent<Props> {
         <div className={Classes.DIALOG_BODY}>
           <p className={Classes.TEXT_LARGE + " " + Classes.RUNNING_TEXT}>
             <strong>
-              Hacklily is the home for beautiful sheet music. It's 100% free.
+              Hacklily is the home for beautiful sheet music. It&apos;s 100%
+              free.
             </strong>{" "}
             Sign in now to manage your sheet music library.
           </p>

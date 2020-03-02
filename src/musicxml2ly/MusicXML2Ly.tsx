@@ -43,7 +43,7 @@ export default class App extends React.PureComponent<{}, State> {
   private rpc: RPCClient | null = null;
   private socket: WebSocket | null = null;
 
-  componentWillMount(): void {
+  componentDidMount(): void {
     this.connectToWS();
   }
 
@@ -99,7 +99,7 @@ export default class App extends React.PureComponent<{}, State> {
     }
   }
 
-  private handleWSError = (e: Event): void => {
+  private handleWSError = (_e: Event): void => {
     if (!this.socket) {
       return;
     }

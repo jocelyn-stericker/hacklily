@@ -19,16 +19,15 @@
 use futures::future::{select, Either, FutureExt, FutureObj, TryFutureExt};
 use serde_json;
 use std::cmp::Ordering;
-use std::io::BufReader;
 use std::panic::AssertUnwindSafe;
 use std::sync::{Arc, Mutex};
 use std::time::Duration;
-use tokio_io::io::{read_until, write_all};
-use tokio_process::*;
-use tokio_timer::sleep;
+use tokio::io::{AsyncBufReadExt, AsyncWriteExt, BufReader};
+use tokio::process::{Child, ChildStderr};
+use tokio::time::delay_for;
 
 use crate::container::ContainerHandle;
-use crate::error::Error;
+use crate::error::HacklilyError;
 use crate::request::{Backend, Request, Response, Version};
 
 #[derive(Debug)]
@@ -149,9 +148,9 @@ const CANARY_REPL_LINE_MUSICXML: &str = "Output to `hacklily.musicxml2ly.ly'";
 async fn handle_request_impl(
     mut child: Child,
     mut request: Request,
-) -> Result<(Child, String), Error> {
+) -> Result<(Child, String), HacklilyError> {
     // Write the request to stdin.
-    match child.stdin() {
+    match &mut child.stdin {
         Some(stdin) => {
             if request.backend == Backend::Svg {
                 request.src = "#(ly:set-option 'backend 'svg)\n".to_owned() + &request.src;
@@ -170,39 +169,43 @@ async fn handle_request_impl(
             }
 
             let request_json = serde_json::to_string(&request)
-                .or_else(|err| Err(Error::RenderError(err.to_string())))?;
+                .or_else(|err| Err(HacklilyError::RenderError(err.to_string())))?;
             info!("Received request");
             debug!("Request {}", request_json);
             // TODO: assert no \n
             let request_bytes = (request_json + "\n").into_bytes();
 
-            await!(write_all(stdin, request_bytes)).or_else(|err| {
-                Err(Error::RenderError(
+            stdin.write_all(&request_bytes).await.or_else(|err| {
+                Err(HacklilyError::RenderError(
                     "Internal error: could not write bytes to container: ".to_owned()
                         + &err.to_string(),
                 ))
             })?;
         }
-        None => Err(Error::RenderError(
+        None => Err(HacklilyError::RenderError(
             "Internal error: child is missing stdin".to_owned(),
         ))?,
     }
 
     // Read the result from stdout.
-    let response_line = match child.stdout() {
+    let response_line = match &mut child.stdout {
         Some(stdout) => {
-            let stdout = BufReader::new(stdout);
+            let mut stdout = BufReader::new(stdout);
 
-            let (_reader, response_bytes) =
-                await!(read_until(stdout, b'\n', Vec::new())).or_else(|err| {
-                    Err(Error::RenderError(
+            let mut response_bytes = Vec::new();
+
+            stdout
+                .read_until(b'\n', &mut response_bytes)
+                .await
+                .or_else(|err| {
+                    Err(HacklilyError::RenderError(
                         "Internal error: could not read bytes from container: ".to_owned()
                             + &err.to_string(),
                     ))
                 })?;
 
             let output = String::from_utf8(response_bytes).or_else(|err| {
-                Err(Error::RenderError(
+                Err(HacklilyError::RenderError(
                     "Internal error: read non-utf8 bytes from container: ".to_owned()
                         + &err.to_string(),
                 ))
@@ -214,10 +217,10 @@ async fn handle_request_impl(
             {
                 output
             } else {
-                return Err(Error::RenderError("Canary died.".to_owned()));
+                return Err(HacklilyError::RenderError("Canary died.".to_owned()));
             }
         }
-        None => Err(Error::RenderError(
+        None => Err(HacklilyError::RenderError(
             "Internal error: child is missing stdout".to_owned(),
         ))?,
     };
@@ -239,18 +242,18 @@ async fn try_handle_request(
     child: Child,
     request: Request,
     timeout: Duration,
-) -> Result<(Child, String), Error> {
-    let mut response = AssertUnwindSafe(Box::pin(handle_request_impl(child, request)))
+) -> Result<(Child, String), HacklilyError> {
+    let response = AssertUnwindSafe(Box::pin(handle_request_impl(child, request)))
         .catch_unwind()
         .map(|e| match e {
-            Err(_) => Err(Error::RenderPanic),
+            Err(_) => Err(HacklilyError::RenderPanic),
             Ok(o) => o,
         });
-    let mut timeout = Box::pin(async move { await!(sleep(timeout)) });
+    let timeout = Box::pin(async move { delay_for(timeout).await });
 
-    match await!(select(response, timeout)) {
+    match select(response, timeout).await {
         Either::Left((response, _)) => response,
-        Either::Right(_) => Err(Error::RenderError(
+        Either::Right(_) => Err(HacklilyError::RenderError(
             "Timeout: the container is unresponsive".to_owned(),
         )),
     }
@@ -290,9 +293,9 @@ impl ReadyRenderContainer {
 
         let is_fresh_container = self.meta.num_renders == 0;
 
-        let result_copy = result.clone().compat();
+        let result_copy = result.clone();
         let extract_result = async move {
-            match await!(result_copy) {
+            match result_copy.await {
                 Ok(result_copy) => match serde_json::from_str::<Response>(&result_copy.1) {
                     Ok(result_copy) => Ok(Response {
                         files: result_copy.files,
@@ -307,7 +310,7 @@ impl ReadyRenderContainer {
                         midi: "".to_owned(),
                     }),
                 },
-                Err(Error::RenderError(_)) if !is_fresh_container => {
+                Err(HacklilyError::RenderError(_)) if !is_fresh_container => {
                     warn!("Dirty crash. Will requeue.");
                     Err(DirtyCrashError {})
                 }
@@ -319,10 +322,11 @@ impl ReadyRenderContainer {
             }
         };
 
-        let result_copy = result.compat();
+        let result_copy = result;
         let child = async move {
             // If the result resolves to an Err, we'll resolve to that error
-            Ok(await!(result_copy)?
+            Ok(result_copy
+                .await?
                 // Otherwise, retrieve the child we stored in the map_ok above. We can do this
                 // exactly once.
                 .0
@@ -344,7 +348,7 @@ impl ReadyRenderContainer {
      * stderr isn't used for resolving requests.
      */
     pub fn take_stderr(&mut self) -> Option<ChildStderr> {
-        self.child.stderr().take()
+        self.child.stderr.take()
     }
 }
 
@@ -355,15 +359,15 @@ impl ReadyRenderContainer {
 pub enum RenderContainer {
     Creating(
         RendererMeta,
-        FutureObj<'static, Result<(ContainerHandle, Child), Error>>,
+        FutureObj<'static, Result<(ContainerHandle, Child), HacklilyError>>,
     ),
     Busy(
         RendererMeta,
         ContainerHandle,
-        FutureObj<'static, Result<Child, Error>>,
+        FutureObj<'static, Result<Child, HacklilyError>>,
     ),
     Ready(Box<ReadyRenderContainer>),
-    Dead(RendererMeta, Error),
+    Dead(RendererMeta, HacklilyError),
     Stopped(RendererMeta),
 }
 
@@ -373,7 +377,7 @@ pub enum RenderContainer {
 #[derive(Debug)]
 pub enum TerminalRenderContainer {
     Ready(Box<ReadyRenderContainer>),
-    Dead(RendererMeta, Error),
+    Dead(RendererMeta, HacklilyError),
     Stopped(RendererMeta),
 }
 
@@ -400,7 +404,7 @@ impl RenderContainer {
 
     pub async fn next(self) -> RenderContainer {
         match self {
-            RenderContainer::Creating(meta, next) => match await!(next) {
+            RenderContainer::Creating(meta, next) => match next.await {
                 Ok((container, child)) => RenderContainer::Ready(Box::new(ReadyRenderContainer {
                     meta,
                     container,
@@ -408,7 +412,7 @@ impl RenderContainer {
                 })),
                 Err(err) => RenderContainer::Dead(meta, err),
             },
-            RenderContainer::Busy(meta, mut container, next) => match await!(next) {
+            RenderContainer::Busy(meta, mut container, next) => match next.await {
                 Ok(child) => RenderContainer::Ready(Box::new(ReadyRenderContainer {
                     meta: RendererMeta {
                         id: meta.id,
@@ -421,7 +425,7 @@ impl RenderContainer {
                     child,
                 })),
                 Err(err) => {
-                    if let Err(e) = await!(container.close()) {
+                    if let Err(e) = container.close().await {
                         error!(
                             "Something went wrong -- could not close docker container: {}",
                             e
@@ -450,7 +454,7 @@ impl RenderContainer {
     pub async fn next_terminal(self) -> TerminalRenderContainer {
         let mut renderer = self;
         while !renderer.is_terminal() {
-            renderer = await!(renderer.next());
+            renderer = renderer.next().await;
         }
 
         match renderer {
@@ -464,10 +468,10 @@ impl RenderContainer {
     }
 
     pub async fn terminate(self) -> RenderContainer {
-        match await!(self.next_terminal()) {
+        match self.next_terminal().await {
             TerminalRenderContainer::Ready(render_container) => {
                 let mut x = render_container.container;
-                if let Err(e) = await!(x.close()) {
+                if let Err(e) = x.close().await {
                     error!(
                         "Something went wrong -- could not close docker container: {}",
                         e

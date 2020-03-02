@@ -13,25 +13,20 @@ name = "renderer_server"
 path = "src/main.rs"
 
 [dependencies]
-ansi_term = "0.11.0"
+ansi_term = "0.12"
 clap = "2.33.0"
-env_logger = "0.6.1"
-futures-preview = {version = "0.3.0-alpha.15", features = ["compat"] }
-libc = "0.2.43"
-log = "0.4.6"
-nix = "0.11.0"
-serde = "1.0.80"
-serde_derive = "1.0.80"
-serde_json = "1.0.33"
-rand = "0.6.5"
-tokio = { version = "0.1.19", features = ["async-await-preview"] }
-tokio-channel = "0.1.0"
-tokio-io = "0.1.12"
-tokio-process = "0.2.3"
-tokio-signal = "0.2.7"
-tokio-timer = "0.2.10"
-tokio-tungstenite = "0.6.0"
-tokio-tls = "0.2.1"
-url = "1.7.2"
+env_logger = "0.7.1"
+futures = "0.3.4"
+libc = "0.2.64"
+log = "0.4.8"
+nix = "0.17.0"
+serde = "1.0.104"
+serde_derive = "1.0.104"
+serde_json = "1.0.48"
+rand = "0.7.3"
+tokio = {version = "0.2.13", features = ["stream", "time", "io-util", "process", "fs", "sync", "rt-core", "signal", "rt-threaded", "macros"]}
+tokio-tungstenite = {version = "0.10.1", features = ["tls"]}
+tokio-tls = "0.3.0"
+url = "2.1.1"
 url_serde = "0.2.0"
-uuid = {version = "0.7.1", features = ["serde", "v4"]}
+uuid = {version = "0.8.1", features = ["serde", "v4"]}

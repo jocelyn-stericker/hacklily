@@ -53,7 +53,6 @@ class ModalAbout extends React.PureComponent<Props> {
           </p>
           <p>
             It is powered by{" "}
-            {/*tslint:disable:no-http-string because of silly lilypond*/}
             <a
               href="http://lilypond.org/"
               target="_blank"
@@ -69,10 +68,10 @@ class ModalAbout extends React.PureComponent<Props> {
             >
               tutorial
             </a>
-            !{/*tslint:enable:no-http-string becuase of silly lilypond*/}
+            !
           </p>
           <p>
-            You can view Hacklily's source and contribute code on{" "}
+            You can view Hacklily&apos;s source and contribute code on{" "}
             <a
               href="https://github.com/hacklily/hacklily"
               target="_blank"

@@ -22,13 +22,13 @@ import { css } from "aphrodite";
 import DOMPurify from "dompurify";
 import * as monacoEditor from "monaco-editor";
 import React from "react";
+import { debounce } from "lodash";
 
 import { decodeArrayBuffer } from "./base64Binary";
 import { MODE_BOTH, MODE_VIEW, ViewMode } from "./Header";
 import Logs from "./Logs";
 import RPCClient, { RenderResponse } from "./RPCClient";
 import { APP_STYLE } from "./styles";
-import debounce from "./util/debounce";
 
 /**
  * How long the code must not be edited for a preview to render.
@@ -159,7 +159,6 @@ export default class Preview extends React.PureComponent<Props, State> {
     // WARNING: The iframe is NOT sandboxed so we can write to the iframe and so
     // that we can add a click event (see onSelectionChanged).
 
-    // tslint:disable:react-iframe-missing-sandbox -- see above
     return (
       <div style={{ backgroundColor: "white" }}>
         <iframe
@@ -177,11 +176,9 @@ export default class Preview extends React.PureComponent<Props, State> {
         />
       </div>
     );
-    // tslint:enable:react-iframe-missing-sandbox
   }
 
-  @debounce(DEBOUNCE_REFERSH_TIMEOUT)
-  private async fetchNewPreview(): Promise<void> {
+  private fetchNewPreview = debounce(async () => {
     if (this.state.pendingPreviews) {
       this.setState({
         previewAlreadyDirty: true,
@@ -252,9 +249,8 @@ export default class Preview extends React.PureComponent<Props, State> {
       root.style.minHeight =
         files.length === 0 || files[0].trim() === ""
           ? `${root.scrollHeight}px`
-          : null;
+          : "0";
 
-      // tslint:disable-next-line:no-inner-html no-object-literal-type-assertion -- types are wrong
       root.innerHTML = DOMPurify.sanitize(files.join(""), {
         ALLOW_UNKNOWN_PROTOCOLS: true,
       } as object);
@@ -302,12 +298,11 @@ export default class Preview extends React.PureComponent<Props, State> {
         previewAlreadyDirty: true,
       });
     }
-  }
+  }, DEBOUNCE_REFERSH_TIMEOUT);
 
   private handleIFrameLoaded = (): void => {
     if (this.sheetMusicView && this.sheetMusicView.contentWindow) {
       const body: HTMLElement = this.sheetMusicView.contentWindow.document.body;
-      // tslint:disable-next-line:no-inner-html
       body.innerHTML = BODY_IFRAME_TEMPLATE;
       body.addEventListener("click", (ev: MouseEvent) => {
         ev.preventDefault();

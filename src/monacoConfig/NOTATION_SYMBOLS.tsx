@@ -26,7 +26,6 @@
  */
 
 import * as monacoEditor from "monaco-editor";
-// tslint:disable
 
 const REGEX_COMMAND_SLASH: RegExp = /^\\/;
 

@@ -352,7 +352,7 @@ export default class Editor extends React.PureComponent<Props> {
 
   private handleEditorDidMount = (
     editor: monacoEditor.editor.IStandaloneCodeEditor,
-    monacoModule: typeof monacoEditor,
+    _monacoModule: typeof monacoEditor,
   ): void => {
     editor.focus();
     this.editor = editor;

@@ -243,7 +243,6 @@ export default class RPCClient {
     this.pingInterval = window.setInterval(this.ping, PING_INTERVAL);
   }
 
-  // tslint:disable-next-line:promise-function-async -- promises resolved outside function
   call<T extends keyof RPCRequestParamsMap & keyof RPCResponseMap>(
     method: T,
     params: RPCRequestParamsMap[T],
@@ -274,7 +273,6 @@ export default class RPCClient {
       return Promise.reject(rejection);
     }
 
-    // tslint:disable-next-line:promise-must-complete -- managed resolved outside function
     const promise: Promise<BaseRPCResponse> = new Promise<BaseRPCResponse>(
       (
         resolve: (response: BaseRPCResponse) => void,

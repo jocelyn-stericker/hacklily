@@ -21,7 +21,6 @@
 import * as monacoEditor from "monaco-editor";
 
 // Note: object literal order is meaningful to monarch in tokenizer!
-// tslint:disable:max-line-length object-literal-sort-keys
 
 const LILYPOND_MONARCH_PROVIDER: monacoEditor.languages.IMonarchLanguage = {
   tokenPostfix: ".ly",
@@ -82,7 +81,7 @@ const LILYPOND_MONARCH_PROVIDER: monacoEditor.languages.IMonarchLanguage = {
         },
       },
       {
-        regex: /([-_^](\s*))?(((\\lyrics\s*)({))|((\\lyricmode\s*)({))|((\\addlyrics\s*)({))|((\\lyricsto\s*(\".*\")\s*)({))|(((\\lyricsto)\s*(\S*)\s*)({)))/,
+        regex: /([-_^](\s*))?(((\\lyrics\s*)({))|((\\lyricmode\s*)({))|((\\addlyrics\s*)({))|((\\lyricsto\s*(".*")\s*)({))|(((\\lyricsto)\s*(\S*)\s*)({)))/,
         action: {
           token: "string.d.delim",
           bracket: "@open",

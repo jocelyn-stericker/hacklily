@@ -18,12 +18,9 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
  */
 
-import React from 'react';
-import ReactDOM from 'react-dom';
+import React from "react";
+import ReactDOM from "react-dom";
 
-import Status from './Status';
+import Status from "./Status";
 
-ReactDOM.render(
-  <Status />,
-  document.getElementById('root'),
-);
+ReactDOM.render(<Status />, document.getElementById("root"));

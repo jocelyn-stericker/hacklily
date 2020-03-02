@@ -26,8 +26,8 @@ const LILYPOND_COMPLETION_ITEM_PROVIDER: monacoEditor.languages.CompletionItemPr
   provideCompletionItems(
     model: monacoEditor.editor.IReadOnlyModel,
     position: monacoEditor.Position,
-    context: monacoEditor.languages.CompletionContext,
-    token: monacoEditor.CancellationToken,
+    _context: monacoEditor.languages.CompletionContext,
+    _token: monacoEditor.CancellationToken,
   ): monacoEditor.languages.CompletionList {
     const textUntilPosition: string = model.getValueInRange({
       endColumn: position.column,

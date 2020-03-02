@@ -16,13 +16,14 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+use futures::stream;
 use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
-use tokio::prelude::*;
-use tokio_channel::mpsc;
+use tokio::stream::StreamExt;
+use tokio::sync::mpsc;
 
 use crate::command_source::{QuitSignal, QuitSink, RequestStream, ResponseCallback};
-use crate::error::Error;
+use crate::error::HacklilyError;
 use crate::request::{Request, Response};
 
 enum Event {
@@ -30,18 +31,23 @@ enum Event {
     QuitSignal(QuitSignal),
 }
 
+async fn send_quit(mut quit_sink: mpsc::Sender<QuitSignal>) {
+    quit_sink
+        .send(QuitSignal {})
+        .await
+        .expect("Cannot send quit.");
+}
+
 pub async fn test_runner(
     input: Vec<Request>,
     output: Arc<Mutex<HashMap<String, Response>>>,
-) -> Result<(RequestStream, QuitSink), Error> {
+) -> Result<(RequestStream, QuitSink), HacklilyError> {
     let (quit_sink, quit_stream) = mpsc::channel::<QuitSignal>(50);
-    let quit_stream = quit_stream
-        .map_err(|_| Error::CommandSourceError("Quit sink dropped.".to_owned()))
-        .map(Event::QuitSignal);
+    let quit_stream = quit_stream.map(Event::QuitSignal);
     let parent_quit_sink = quit_sink.clone();
     let input_len = input.len();
 
-    let request_stream = stream::iter_ok(input)
+    let request_stream = stream::iter(input.into_iter())
         .filter_map(move |request| -> Option<(Request, ResponseCallback)> {
             let output = output.clone();
             let id = request.id.clone();
@@ -61,34 +67,22 @@ pub async fn test_runner(
                     };
 
                     if is_done {
-                        tokio::spawn(
-                            quit_sink
-                                .clone()
-                                .send(QuitSignal {})
-                                // It's okay if we're already dead.
-                                .map(|_| ())
-                                .map_err(|_| ()),
-                        );
+                        tokio::spawn(send_quit(quit_sink.clone()));
                     }
                 }),
             ))
         })
-        .map(Event::Request)
-        .select(quit_stream)
-        .take_while(|ev| {
-            future::ok(match ev {
-                Event::QuitSignal(_) => false,
-                _ => true,
-            })
+        .map(Event::Request);
+
+    let request_stream = stream::select(request_stream, quit_stream)
+        .take_while(|ev| match ev {
+            Event::QuitSignal(_) => false,
+            _ => true,
         })
         .filter_map(|req| match req {
-            Event::Request(r) => Some(r),
+            Event::Request(r) => Some(Ok(r)),
             Event::QuitSignal(_) => None,
         });
 
-    let request_stream: Box<
-        Stream<Item = (Request, ResponseCallback), Error = Error> + Send + 'static,
-    > = Box::new(request_stream);
-
-    Ok((request_stream, parent_quit_sink))
+    Ok((Box::new(request_stream), parent_quit_sink))
 }

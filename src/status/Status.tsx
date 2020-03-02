@@ -47,7 +47,7 @@ export default class Status extends React.Component<{}, State> {
   private socket: WebSocket | null = null;
   private statusTimer: number | null = null;
 
-  componentWillMount(): void {
+  componentDidMount(): void {
     this.connectToWS();
   }
 
@@ -120,7 +120,7 @@ export default class Status extends React.Component<{}, State> {
     });
   };
 
-  private handleWSError = (e: Event): void => {
+  private handleWSError = (_e: Event): void => {
     if (!this.socket) {
       return;
     }
