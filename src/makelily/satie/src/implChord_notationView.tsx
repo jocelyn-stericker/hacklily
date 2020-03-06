@@ -33,13 +33,13 @@ import Glyph from "./private_views_glyph";
 import { bboxes } from "./private_smufl";
 
 import Articulation from "./implChord_articulationView";
-import Chord from "./implChord_chordModel";
+import { IChordLayout } from "./implChord_chordModel";
 
 import { technicalGlyph } from "./implChord_notation";
 
 export interface IProps {
   spec: Notations;
-  layout?: Chord.IChordLayout;
+  layout?: IChordLayout;
   defaultY?: number;
 }
 
@@ -64,11 +64,11 @@ export default class NotationView extends Component<IProps, {}> {
     const originX = nlayout ? nlayout.model[0].defaultX + noteheadCenter : 0;
     let children: ReactElement<any>[] = [];
 
-    forEach(model.accidentalMarks, accidentalMark => {
+    forEach(model.accidentalMarks, _accidentalMark => {
       // TODO
     });
 
-    forEach(model.arpeggiates, arpeggiate => {
+    forEach(model.arpeggiates, _arpeggiate => {
       // TODO
     });
 
@@ -82,7 +82,7 @@ export default class NotationView extends Component<IProps, {}> {
       );
     });
 
-    forEach(model.dynamics, dynamic => {
+    forEach(model.dynamics, _dynamic => {
       // TODO
     });
 
@@ -117,23 +117,23 @@ export default class NotationView extends Component<IProps, {}> {
       );
     });
 
-    forEach(model.glissandos, glissando => {
+    forEach(model.glissandos, _glissando => {
       // TODO
     });
 
-    forEach(model.nonArpeggiates, nonArpeggiate => {
+    forEach(model.nonArpeggiates, _nonArpeggiate => {
       // TODO
     });
 
-    forEach(model.ornaments, ornament => {
+    forEach(model.ornaments, _ornament => {
       // TODO
     });
 
-    forEach(model.slides, slide => {
+    forEach(model.slides, _slide => {
       // TODO
     });
 
-    forEach(model.slurs, slur => {
+    forEach(model.slurs, _slur => {
       // TODO
     });
 
@@ -188,7 +188,7 @@ export default class NotationView extends Component<IProps, {}> {
     });
 
     forEach(model.tieds, tied => {
-      let tieTo: Chord.IChordLayout = (tied as any).satieTieTo;
+      let tieTo: IChordLayout = (tied as any).satieTieTo;
       if (!tieTo) {
         return;
       }
@@ -257,7 +257,7 @@ export default class NotationView extends Component<IProps, {}> {
       );
     });
 
-    forEach(model.tuplets, tuplet => {
+    forEach(model.tuplets, _tuplet => {
       // TODO
     });
 

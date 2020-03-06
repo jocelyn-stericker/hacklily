@@ -16,113 +16,93 @@
  * along with Satie.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import {IModel, ILayout, Type} from "./document";
+import { IModel, ILayout, Type } from "./document";
 
-import {IReadOnlyValidationCursor, LayoutCursor} from "./private_cursor";
-import {IBoundingRect} from "./private_boundingRect";
+import { IReadOnlyValidationCursor, LayoutCursor } from "./private_cursor";
+import { IBoundingRect } from "./private_boundingRect";
 
-class VisualCursorModel implements Export.IVisualCursorModel {
-    _class = "VisualCursor";
+class VisualCursorModel implements IVisualCursorModel {
+  _class = "VisualCursor";
 
-    /*---- I.1 IModel ---------------------------------------------------------------------------*/
+  /*---- I.1 IModel ---------------------------------------------------------------------------*/
 
-    /** @prototype only */
-    divCount: number;
+  divCount: number = 0;
+  divisions: number = 0;
 
-    /** @prototype only */
-    divisions: number;
+  staffIdx: number = 1;
 
-    staffIdx: number = 1;
+  static _lastIdx = 1;
+  _myIdx = ++VisualCursorModel._lastIdx;
 
-    static _lastIdx = 1;
-    _myIdx = ++VisualCursorModel._lastIdx;
+  /*---- Implementation -----------------------------------------------------------------------*/
 
-    /*---- Implementation -----------------------------------------------------------------------*/
+  constructor(_spec: VisualCursorModel) {
+    // no-op
+  }
 
-    constructor(spec: VisualCursorModel) {
-        // no-op
+  refresh(_cursor: IReadOnlyValidationCursor): void {
+    // no-op
+  }
+
+  getLayout(cursor: LayoutCursor): IVisualCursorLayout {
+    return new VisualCursorModel.Layout(this, cursor);
+  }
+
+  toXML(): string {
+    return `<!-- visual cursor -->\n`;
+  }
+
+  toJSON(): any {
+    let { _class } = this;
+
+    return {
+      _class,
+    };
+  }
+
+  inspect() {
+    return this.toXML();
+  }
+
+  calcWidth(_shortest: number) {
+    return 0;
+  }
+
+  static Layout = class Layout implements IVisualCursorLayout {
+    constructor(origModel: VisualCursorModel, cursor: LayoutCursor) {
+      this.model = origModel;
+      this.x = cursor.segmentX;
+      this.division = cursor.segmentDivision;
+      this.renderedWidth = 0;
     }
 
-    refresh(cursor: IReadOnlyValidationCursor): void {
-        // no-op
-    }
+    /*---- ILayout ------------------------------------------------------*/
 
-    getLayout(cursor: LayoutCursor): Export.IVisualCursorLayout {
-        return new VisualCursorModel.Layout(this, cursor);
-    }
+    // Constructed:
 
-    toXML(): string {
-        return `<!-- visual cursor -->\n`;
-    }
+    model: VisualCursorModel;
+    x: number;
+    division: number;
 
-    toJSON(): any {
-        let {
-            _class,
-        } = this;
+    renderedWidth: number;
 
-        return {
-            _class,
-        };
-    }
+    // Prototype:
 
-    inspect() {
-        return this.toXML();
-    }
-
-    calcWidth(shortest: number) {
-        return 0;
-    }
-}
-
-VisualCursorModel.prototype.divCount = 0;
-VisualCursorModel.prototype.divisions = 0;
-
-module VisualCursorModel {
-    export class Layout implements Export.IVisualCursorLayout {
-        constructor(origModel: VisualCursorModel, cursor: LayoutCursor) {
-            this.model = origModel;
-            this.x = cursor.segmentX;
-            this.division = cursor.segmentDivision;
-            this.renderedWidth = 0;
-        }
-
-        /*---- ILayout ------------------------------------------------------*/
-
-        // Constructed:
-
-        model: VisualCursorModel;
-        x: number;
-        division: number;
-
-        renderedWidth: number;
-
-        // Prototype:
-
-        boundingBoxes: IBoundingRect[];
-        renderClass: Type;
-        expandPolicy: "none";
-    }
-
-    Layout.prototype.expandPolicy = "none";
-    Layout.prototype.renderClass = Type.VisualCursor;
-    Layout.prototype.boundingBoxes = [];
-    Object.freeze(Layout.prototype.boundingBoxes);
+    boundingBoxes: IBoundingRect[] = [];
+    renderClass: Type = Type.VisualCursor;
+    expandPolicy: "none" = "none";
+  };
 }
 
 /**
  * Registers VisualCursor in the factory structure passed in.
  */
-function Export(constructors: { [key: number]: any }) {
-    constructors[Type.VisualCursor] = VisualCursorModel;
+export default function Export(constructors: { [key: number]: any }) {
+  constructors[Type.VisualCursor] = VisualCursorModel;
 }
 
-module Export {
-    export interface IVisualCursorModel extends IModel {
-    }
+export interface IVisualCursorModel extends IModel {}
 
-    export interface IVisualCursorLayout extends ILayout {
-        renderedWidth: number;
-    }
+export interface IVisualCursorLayout extends ILayout {
+  renderedWidth: number;
 }
-
-export default Export;

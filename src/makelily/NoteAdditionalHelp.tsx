@@ -19,7 +19,7 @@
  */
 
 import { css, StyleSheet } from "aphrodite";
-import React = require("react");
+import React from "react";
 
 export interface Props {
   kind: "keyboard" | "midi" | "mouse" | "relative" | "whyNotEdit";
@@ -43,7 +43,7 @@ export default class NoteAdditionalHelp extends React.Component<Props> {
           {kind === "whyNotEdit" && this.renderWhyNotEdit()}
 
           <p>
-            <a href="javascript:void(0)" role="button" onClick={onHide}>
+            <a href="#" role="button" onClick={onHide}>
               Close
             </a>
           </p>
@@ -52,7 +52,6 @@ export default class NoteAdditionalHelp extends React.Component<Props> {
     );
   }
 
-  // tslint:disable-next-line:max-func-body-length
   private renderKeyboard(): JSX.Element {
     return (
       <span>
@@ -162,12 +161,12 @@ export default class NoteAdditionalHelp extends React.Component<Props> {
           icon on the toolbar, then insert it as you would a note.
         </p>
         <p>
-          <strong>To add another bar,</strong> click the "Add Bar" option on the
-          toolbar.
+          <strong>To add another bar,</strong> click the &quot;Add Bar&quot;
+          option on the toolbar.
         </p>
         <p>
           <strong>Tip:</strong> you can undo and redo any changes using the undo
-          and redo buttons, so don't be afraid to explore.
+          and redo buttons, so don&apos;t be afraid to explore.
         </p>
       </span>
     );
@@ -190,7 +189,8 @@ export default class NoteAdditionalHelp extends React.Component<Props> {
         </p>
         <p>
           If this checkbox is not checked, the octave of every note will be
-          explicitly spelled out. <code>c'</code> will always mean middle C.
+          explicitly spelled out. <code>c&apos;</code> will always mean middle
+          C.
         </p>
         <p>
           When using this mode, after inserting bars of music, you may need to
@@ -216,15 +216,14 @@ export default class NoteAdditionalHelp extends React.Component<Props> {
           markup for other elements of sheet music!
         </p>
         <p>
-          This tool only supports a small subset of LilyPond's features, but
-          hopefully saves some time when transcribing music.
+          This tool only supports a small subset of LilyPond&apos;s features,
+          but hopefully saves some time when transcribing music.
         </p>
       </span>
     );
   }
 }
 
-// tslint:disable-next-line typedef
 const styles = StyleSheet.create({
   overlay: {
     background: "rgba(0, 0, 0, 0.8)",

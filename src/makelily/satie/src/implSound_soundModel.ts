@@ -19,127 +19,119 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import {MidiInstrument, Play, Offset, MidiDevice, Sound,
-    serializeSound} from "musicxml-interfaces";
-import {forEach} from "lodash";
+import {
+  MidiInstrument,
+  Play,
+  Offset,
+  MidiDevice,
+  Sound,
+  serializeSound,
+} from "musicxml-interfaces";
+import { forEach } from "lodash";
 
-import {IModel, ILayout, Type} from "./document";
+import { IModel, ILayout, Type } from "./document";
 
-import {IReadOnlyValidationCursor, LayoutCursor} from "./private_cursor";
-import {IBoundingRect} from "./private_boundingRect";
+import { IReadOnlyValidationCursor, LayoutCursor } from "./private_cursor";
+import { IBoundingRect } from "./private_boundingRect";
 
-class SoundModel implements Export.ISoundModel {
+class SoundModel implements ISoundModel {
+  /*---- I.1 IModel ---------------------------------------------------------------------------*/
 
-    /*---- I.1 IModel ---------------------------------------------------------------------------*/
+  divCount: number = 0;
 
-    /** @prototype only */
-    divCount: number;
+  /** defined externally */
+  staffIdx: number;
 
-    /** defined externally */
-    staffIdx: number;
+  /*---- I.2 Sound -----------------------------------------------------------------------*/
 
-    /*---- I.2 Sound -----------------------------------------------------------------------*/
+  softPedal: string;
+  midiInstruments: MidiInstrument[];
+  pan: string;
+  tocoda: string;
+  decapo: boolean;
+  divisions: number;
+  pizzicato: boolean;
+  coda: string;
+  segno: string;
+  elevation: string;
+  fine: string;
+  damperPedal: string;
+  dynamics: string;
+  plays: Play[];
+  offset: Offset;
+  sostenutoPedal: string;
+  dalsegno: string;
+  midiDevices: MidiDevice[];
+  tempo: string;
+  forwardRepeat: boolean;
 
-    softPedal: string;
-    midiInstruments: MidiInstrument[];
-    pan: string;
-    tocoda: string;
-    decapo: boolean;
-    divisions: number;
-    pizzicato: boolean;
-    coda: string;
-    segno: string;
-    elevation: string;
-    fine: string;
-    damperPedal: string;
-    dynamics: string;
-    plays: Play[];
-    offset: Offset;
-    sostenutoPedal: string;
-    dalsegno: string;
-    midiDevices: MidiDevice[];
-    tempo: string;
-    forwardRepeat: boolean;
+  /*---- I.3 C.TimeOnly -----------------------------------------------------------------------*/
 
-    /*---- I.3 C.TimeOnly -----------------------------------------------------------------------*/
+  timeOnly: string;
 
-    timeOnly: string;
+  /*---- Implementation -----------------------------------------------------------------------*/
 
-    /*---- Implementation -----------------------------------------------------------------------*/
+  constructor(spec: Sound) {
+    forEach<any>(spec, (value, key) => {
+      (this as any)[key] = value;
+    });
+  }
 
-    constructor(spec: Sound) {
-        forEach<any>(spec, (value, key) => {
-            (this as any)[key] = value;
-        });
+  refresh(_cursor: IReadOnlyValidationCursor): void {
+    // todo
+  }
+
+  getLayout(cursor: LayoutCursor): ISoundLayout {
+    // mutates cursor as required.
+    return new SoundModel.Layout(this, cursor);
+  }
+
+  toXML(): string {
+    return `${serializeSound(this)}\n<forward><duration>${
+      this.divCount
+    }</duration></forward>\n`;
+  }
+
+  inspect() {
+    return this.toXML();
+  }
+
+  calcWidth(_shortest: number) {
+    return 0;
+  }
+
+  static Layout = class Layout implements ISoundLayout {
+    constructor(model: SoundModel, cursor: LayoutCursor) {
+      this.model = model;
+      this.x = cursor.segmentX;
+      this.division = cursor.segmentDivision;
     }
 
-    refresh(cursor: IReadOnlyValidationCursor): void {
-        // todo
-    }
+    /*---- ILayout ------------------------------------------------------*/
 
-    getLayout(cursor: LayoutCursor): Export.ISoundLayout {
-        // mutates cursor as required.
-        return new SoundModel.Layout(this, cursor);
-    }
+    // Constructed:
 
-    toXML(): string {
-        return `${serializeSound(this)}\n<forward><duration>${this.divCount}</duration></forward>\n`;
-    }
+    model: SoundModel;
+    x: number;
+    division: number;
 
-    inspect() {
-        return this.toXML();
-    }
+    // Prototype:
 
-    calcWidth(shortest: number) {
-        return 0;
-    }
-}
-
-SoundModel.prototype.divCount = 0;
-
-module SoundModel {
-    export class Layout implements Export.ISoundLayout {
-        constructor(model: SoundModel, cursor: LayoutCursor) {
-            this.model = model;
-            this.x = cursor.segmentX;
-            this.division = cursor.segmentDivision;
-        }
-
-        /*---- ILayout ------------------------------------------------------*/
-
-        // Constructed:
-
-        model: SoundModel;
-        x: number;
-        division: number;
-
-        // Prototype:
-
-        boundingBoxes: IBoundingRect[];
-        renderClass: Type;
-        expandPolicy: "none";
-    }
-
-    Layout.prototype.expandPolicy = "none";
-    Layout.prototype.renderClass = Type.Sound;
-    Layout.prototype.boundingBoxes = [];
-    Object.freeze(Layout.prototype.boundingBoxes);
+    boundingBoxes: IBoundingRect[] = [];
+    renderClass: Type = Type.Sound;
+    expandPolicy: "none" = "none";
+  };
 }
 
 /**
  * Registers Sound in the factory structure passed in.
  */
-function Export(constructors: { [key: number]: any }) {
-    constructors[Type.Sound] = SoundModel;
+export default function Export(constructors: { [key: number]: any }) {
+  constructors[Type.Sound] = SoundModel;
 }
 
-module Export {
-    export interface ISoundModel extends IModel, Sound {
-    }
+export interface ISoundModel extends IModel, Sound {}
 
-    export interface ISoundLayout extends ILayout {
-        model: ISoundModel;
-    }
+export interface ISoundLayout extends ILayout {
+  model: ISoundModel;
 }
-
-export default Export;

@@ -55,7 +55,7 @@ export function needsWarning(
   );
 }
 
-export function clefWidth(attributes: Attributes) {
+export function clefWidth(_attributes: Attributes) {
   return 24;
 }
 
@@ -138,7 +138,7 @@ export function keysEqual(from: Attributes, to: Attributes) {
 }
 
 export function approximateWidth(
-  attributes: IAttributesSnapshot,
+  _attributes: IAttributesSnapshot,
   atEnd = AtEnd.No,
 ) {
   if (atEnd) {
@@ -147,7 +147,7 @@ export function approximateWidth(
   return 150;
 }
 
-export const enum AtEnd {
+export enum AtEnd {
   No = 0,
   Yes = 1,
 }

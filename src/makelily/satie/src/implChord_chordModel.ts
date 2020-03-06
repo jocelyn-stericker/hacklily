@@ -22,46 +22,44 @@
  * number of these notes may be rests.
  */
 
-import {MultipleRest, Tremolo} from "musicxml-interfaces";
+import { MultipleRest, Tremolo } from "musicxml-interfaces";
 
-import {IModel, ILayout, Type} from "./document";
+import { IModel, ILayout, Type } from "./document";
 
-import {IChord} from "./private_chordUtil";
+import { IChord } from "./private_chordUtil";
 
-import {IBeamLayout} from "./implChord_beamLayout";
+import { IBeamLayout } from "./implChord_beamLayout";
 import ChordModelImpl from "./implChord_chordImpl";
 
 /**
  * Registers Chord in the factory structure passed in.
  */
-function ChordModel(constructors: { [key: number]: any; [key: string]: Type }) {
-    constructors["Note"] = Type.Chord;
-    constructors[Type.Chord] = ChordModelImpl;
+export default function ChordModel(constructors: {
+  [key: number]: any;
+  [key: string]: Type;
+}) {
+  constructors["Note"] = Type.Chord;
+  constructors[Type.Chord] = ChordModelImpl;
 }
 
-module ChordModel {
-    export interface IChordModel extends IModel, IChord {
-    }
-    export interface IDetachedChordModel extends IModel, IChord {
-        stemX: () => number;
-        satieLedger: number[];
-        noteheadGlyph: string[];
-        satieMultipleRest: MultipleRest;
-        satieUnbeamedTuplet: IBeamLayout;
-    }
-    export interface IChordLayout extends ILayout {
-        model: IDetachedChordModel;
-        minSpaceBefore: number;
-        minSpaceAfter: number;
-        satieBeam: IBeamLayout;
-        satieStem: {
-            direction: number;
-            stemHeight: number;
-            stemStart: number;
-            tremolo?: Tremolo;
-        };
-        satieFlag: string;
-    }
+export interface IChordModel extends IModel, IChord {}
+export interface IDetachedChordModel extends IModel, IChord {
+  stemX: () => number;
+  satieLedger: number[];
+  noteheadGlyph: string[];
+  satieMultipleRest: MultipleRest;
+  satieUnbeamedTuplet: IBeamLayout;
 }
-
-export default ChordModel;
+export interface IChordLayout extends ILayout {
+  model: IDetachedChordModel;
+  minSpaceBefore: number;
+  minSpaceAfter: number;
+  satieBeam: IBeamLayout;
+  satieStem: {
+    direction: number;
+    stemHeight: number;
+    stemStart: number;
+    tremolo?: Tremolo;
+  };
+  satieFlag: string;
+}

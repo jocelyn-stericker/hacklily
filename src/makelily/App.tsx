@@ -19,7 +19,7 @@
  */
 
 import { css, StyleSheet } from "aphrodite";
-import React = require("react");
+import React from "react";
 
 import Makelily from "./Makelily";
 
@@ -135,12 +135,10 @@ export default class App extends React.Component<Props> {
   }
 
   private handleInsertLy(ly: string): void {
-    // tslint:disable-next-line no-console
     console.log(ly);
   }
 }
 
-// tslint:disable-next-line typedef
 const styles = StyleSheet.create({
   appRoot: {
     backgroundColor: "#1e1e1e",

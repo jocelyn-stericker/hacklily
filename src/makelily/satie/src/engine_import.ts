@@ -20,59 +20,82 @@
  * @file models/musicxml/import.ts tools for converting MXMLJSON to SatieJSON
  */
 
-import {ScoreTimewise, Attributes, Note, Backup, Forward, Time, Direction, parseScore}
-    from "musicxml-interfaces";
-import {buildNote} from "musicxml-interfaces/builders";
-import {map, reduce, some, filter, minBy, times, every, forEach, startsWith, endsWith} from "lodash";
+import {
+  ScoreTimewise,
+  Attributes,
+  Note,
+  Backup,
+  Forward,
+  Time,
+  Direction,
+  parseScore,
+} from "musicxml-interfaces";
+import { buildNote } from "musicxml-interfaces/builders";
+import {
+  map,
+  reduce,
+  some,
+  filter,
+  minBy,
+  times,
+  every,
+  forEach,
+  startsWith,
+  endsWith,
+} from "lodash";
 import invariant from "invariant";
 
-import {Document} from "./document";
+import { Document } from "./document";
 
-import {IMeasure, IMeasurePart, IModel, Type} from "./document";
+import { IMeasure, IMeasurePart, IModel, Type } from "./document";
 
-import {IFactory} from "./private_factory";
-import {ILayoutOptions} from "./private_layoutOptions";
-import {MAX_SAFE_INTEGER} from "./private_util";
-import {IChord, barDivisionsDI, divisions as calcDivisions} from "./private_chordUtil";
-import {scoreParts} from "./private_part";
-import {lcm} from "./private_util";
-import {requireFont, whenReady} from "./private_fontManager";
+import { IFactory } from "./private_factory";
+import { ILayoutOptions } from "./private_layoutOptions";
+import { MAX_SAFE_INTEGER } from "./private_util";
+import {
+  IChord,
+  barDivisionsDI,
+  divisions as calcDivisions,
+} from "./private_chordUtil";
+import { scoreParts } from "./private_part";
+import { lcm } from "./private_util";
+import { requireFont, whenReady } from "./private_fontManager";
 
 import validate from "./engine_processors_validate";
 import ScoreHeader from "./engine_scoreHeader";
-import {makeFactory} from "./engine_setup";
+import { makeFactory } from "./engine_setup";
 
 /*---- Exports ----------------------------------------------------------------------------------*/
 
 export function stringToDocument(src: string, factory: IFactory) {
-    let mxmljson = parseScore(src);
-    if ((mxmljson as any).error) {
-        throw (mxmljson as any).error;
-    }
-    let document = timewiseStructToDocument(mxmljson, factory);
-    if (document.error) {
-        throw document.error;
-    }
+  let mxmljson = parseScore(src);
+  if ((mxmljson as any).error) {
+    throw (mxmljson as any).error;
+  }
+  let document = timewiseStructToDocument(mxmljson, factory);
+  if (document.error) {
+    throw document.error;
+  }
 
-    let contextOptions: ILayoutOptions = {
-        attributes: null,
-        document,
-        fixup: null,
-        header: document.header,
-        lineCount: NaN, // YYY
-        lineIndex: NaN, // YYY
-        measures: document.measures,
-        modelFactory: factory,
-        postprocessors: [],
-        preprocessors: factory.preprocessors,
-        preview: false,
-        print: null,
-        singleLineMode: false,
-    };
-    validate(contextOptions);
-    ScoreHeader.prototype.overwriteEncoding.call(document.header);
+  let contextOptions: ILayoutOptions = {
+    attributes: null,
+    document,
+    fixup: null,
+    header: document.header,
+    lineCount: NaN, // YYY
+    lineIndex: NaN, // YYY
+    measures: document.measures,
+    modelFactory: factory,
+    postprocessors: [],
+    preprocessors: factory.preprocessors,
+    preview: false,
+    print: null,
+    singleLineMode: false,
+  };
+  validate(contextOptions);
+  ScoreHeader.prototype.overwriteEncoding.call(document.header);
 
-    return document;
+  return document;
 }
 
 /**
@@ -83,412 +106,461 @@ export function stringToDocument(src: string, factory: IFactory) {
  * @returns A structure that can be consumed by a score. If an error occurred
  *          error will be set, and all other properties will be null.
  */
-export function timewiseStructToDocument(score: ScoreTimewise, factory: IFactory): Document {
-    try {
-        let header = _extractMXMLHeader(score);
-        let partData = _extractMXMLPartsAndMeasures(score, factory);
-        if (partData.error) {
-            return new Document(null, null, null, null, new Error(partData.error));
-        }
-
-        return new Document(header, partData.measures, partData.parts, factory);
-    } catch (error) {
-        return new Document(null, null, null, null, error);
+export function timewiseStructToDocument(
+  score: ScoreTimewise,
+  factory: IFactory,
+): Document {
+  try {
+    let header = _extractMXMLHeader(score);
+    let partData = _extractMXMLPartsAndMeasures(score, factory);
+    if (partData.error) {
+      return new Document(null, null, null, null, new Error(partData.error));
     }
+
+    return new Document(header, partData.measures, partData.parts, factory);
+  } catch (error) {
+    return new Document(null, null, null, null, error);
+  }
 }
 
 /*---- Private ----------------------------------------------------------------------------------*/
 
 export function _extractMXMLHeader(m: ScoreTimewise): ScoreHeader {
-    let header = new ScoreHeader({
-        credits: m.credits,
-        defaults: m.defaults,
-        identification: m.identification,
-        movementNumber: m.movementNumber,
-        movementTitle: m.movementTitle,
-        partList: m.partList,
-        work: m.work
-    });
+  let header = new ScoreHeader({
+    credits: m.credits,
+    defaults: m.defaults,
+    identification: m.identification,
+    movementNumber: m.movementNumber,
+    movementTitle: m.movementTitle,
+    partList: m.partList,
+    work: m.work,
+  });
 
-    // Add credits to help exporters don't record credits, but do record movementTitle.
-    if ((!header.credits || !header.credits.length) && header.movementTitle) {
-        header.title = header.movementTitle;
-    }
+  // Add credits to help exporters don't record credits, but do record movementTitle.
+  if ((!header.credits || !header.credits.length) && header.movementTitle) {
+    header.title = header.movementTitle;
+  }
 
-    return header;
+  return header;
 }
 
-export function _extractMXMLPartsAndMeasures(input: ScoreTimewise, factory: IFactory):
-        {measures?: IMeasure[]; parts?: string[]; error?: string} {
+export function _extractMXMLPartsAndMeasures(
+  input: ScoreTimewise,
+  factory: IFactory,
+): { measures?: IMeasure[]; parts?: string[]; error?: string } {
+  let parts: string[] = map(scoreParts(input.partList), inPart => inPart.id);
+  let createModel: typeof factory.create = factory.create.bind(factory);
 
-    let parts: string[] = map(scoreParts(input.partList), inPart => inPart.id);
-    let createModel: typeof factory.create = factory.create.bind(factory);
+  // TODO/STOPSHIP - sync division count in each measure
+  let divisions = 768; // XXX: LilyPond-regression 41g.xml does not specify divisions
+  let gStaves = 0;
+  let chordBeingBuilt: IChord = null;
+  let lastAttribs: Attributes = null;
+  let maxVoice = 0;
 
-    // TODO/STOPSHIP - sync division count in each measure
-    let divisions = 768; // XXX: LilyPond-regression 41g.xml does not specify divisions
-    let gStaves = 0;
-    let chordBeingBuilt: IChord = null;
-    let lastAttribs: Attributes = null;
-    let maxVoice = 0;
+  let measures: IMeasure[] = map(input.measures, (inMeasure, measureIdx) => {
+    let measure = {
+      idx: measureIdx,
+      implicit: inMeasure.implicit,
+      nonControlling: inMeasure.nonControlling,
+      number: inMeasure.number,
+      parts: <{ [key: string]: IMeasurePart }>{},
+      uuid: Math.floor(Math.random() * MAX_SAFE_INTEGER),
+      width: inMeasure.width,
+      version: 0,
+    };
 
-    let measures: IMeasure[] = map(input.measures,
-            (inMeasure, measureIdx) => {
+    if (Object.keys(inMeasure.parts).length === 1 && "" in inMeasure.parts) {
+      // See LilyPond-regression >> 41g.
+      inMeasure.parts[parts[0]] = inMeasure.parts[""];
+      delete inMeasure.parts[""];
+    }
+    let linkedParts = map(inMeasure.parts, (val, key) => {
+      if (!some(parts, part => part === key)) {
+        // See LilyPond-regression >> 41h.
+        return null;
+      }
+      let output: IMeasurePart = {
+        staves: [],
+        voices: [],
+      };
+      invariant(!(key in measure.parts), "Duplicate part ID %s", key);
+      measure.parts[key] = output;
+      invariant(!!key, "Part ID must be defined");
 
-        let measure = {
-            idx: measureIdx,
-            implicit: inMeasure.implicit,
-            nonControlling: inMeasure.nonControlling,
-            number: inMeasure.number,
-            parts: <{[key: string]: IMeasurePart}> {},
-            uuid: Math.floor(Math.random() * MAX_SAFE_INTEGER),
-            width: inMeasure.width,
-            version: 0
-        };
-
-        if (Object.keys(inMeasure.parts).length === 1 && "" in inMeasure.parts) {
-            // See LilyPond-regression >> 41g.
-            inMeasure.parts[parts[0]] = inMeasure.parts[""];
-            delete inMeasure.parts[""];
-        }
-        let linkedParts = map(inMeasure.parts, (val, key) => {
-            if (!some(parts, part => part === key)) {
-                // See LilyPond-regression >> 41h.
-                return null;
-            }
-            let output: IMeasurePart = {
-                staves: [],
-                voices: []
-            };
-            invariant(!(key in measure.parts), "Duplicate part ID %s", key);
-            measure.parts[key] = output;
-            invariant(!!key, "Part ID must be defined");
-
-            return {
-                division: 0,
-                divisionPerStaff: <number[]>[],
-                divisionPerVoice: <number[]>[],
-                id: key,
-                idx: 0,
-                input: val,
-                lastNote: <IChord> null,
-                output: output,
-                times: <Time[]> [{
-                    beatTypes: [4],
-                    beats: ["4"]
-                }]
-            };
-        });
-
-        linkedParts = filter(linkedParts, p => !!p);
-
-        let commonDivisions = reduce(linkedParts, (memo, part) => {
-            return reduce(part.input, (memo, input) => {
-                if (input._class === "Attributes" && input.divisions) {
-                    return lcm(memo, input.divisions);
-                }
-                return memo;
-            }, memo);
-        }, divisions);
-
-        // Lets normalize divisions here.
-        forEach(linkedParts, part => {
-            let previousDivisions = divisions;
-            forEach(part.input, input => {
-                if (input.divisions) {
-                    previousDivisions = input.divisions;
-                    input.divisions = commonDivisions;
-                }
-                if (input.count) {
-                    input.count *= commonDivisions / previousDivisions;
-                }
-                if (input.duration) {
-                    input.duration *= commonDivisions / previousDivisions;
-                }
-            });
-        });
-
-        let target = linkedParts[0];
-        // Create base structure
-        while (!done()) {
-            // target is accessed outside loop in syncStaffDivisions
-            target = minBy(linkedParts, part => part.idx === part.input.length ?
-                    MAX_SAFE_INTEGER : part.division);
-            invariant(!!target, "Target not specified");
-            let input = target.input[target.idx];
-            let prevStaff = 1;
-            switch (input._class) {
-                case "Note":
-                    let note: Note = input;
-
-                    // TODO: is this the case even if voice/staff don't match up?
-                    if (!!note.chord) {
-                        invariant(!!chordBeingBuilt, "Cannot add chord to a previous note without a chord");
-                        chordBeingBuilt.push(note);
-                    } else {
-                        // Notes go in the voice context.
-                        let voice = note.voice || 1;
-                        let staff = note.staff || 1;
-                        prevStaff = staff;
-                        if (!(voice in target.output.voices)) {
-                            createVoice(voice, target.output);
-                            maxVoice = Math.max(voice, maxVoice);
-                        }
-                        // Make sure there is a staff segment reserved for the given staff
-                        if (!(staff in target.output.staves)) {
-                            createStaff(staff, target.output);
-                        }
-
-                        // Check target voice division and add spacing if needed
-                        target.divisionPerVoice[voice] = target.divisionPerVoice[voice] || 0;
-                        invariant(target.division >= target.divisionPerVoice[voice],
-                                "Ambiguous voice timing: all voices must be monotonic.");
-                        if (target.divisionPerVoice[voice] < target.division) {
-                            // Add rest
-                            let divisionsInVoice = target.divisionPerVoice[voice];
-                            // This beautiful IIFE is needed because of undefined behaviour for
-                            // block-scoped variables in modules.
-                            let restModel = ((divisionsInVoice: number) =>
-                                    factory.fromSpec(
-                                        buildNote(note => note
-                                            .printObject(false)
-                                        .rest({})
-                                        .duration(target.division - divisionsInVoice)))
-                                    )
-                                (divisionsInVoice);
-
-                            let division = target.divisionPerVoice[voice];
-                            restModel[0].duration = target.division - division;
-                            target.output.voices[voice].push(restModel);
-                            target.divisionPerVoice[voice] = target.division;
-                        }
-
-                        // Add the note to the voice segment and register it as the
-                        // last inserted note
-                        let newNote = factory.fromSpec(input);
-                        target.output.voices[voice].push(newNote);
-                        chordBeingBuilt = newNote;
-
-                        // Update target division
-                        let divs: number;
-                        try {
-                            divs = calcDivisions([input], {
-                                time: target.times[0],
-                                divisions
-                            });
-                        } catch(err) {
-                            console.warn("Guessing count from duration");
-                            divs = input.duration;
-                        }
-                        target.divisionPerVoice[voice] += divs;
-                        target.division += divs;
-                    }
-
-                    break;
-                case "Attributes":
-                case "Barline":
-                case "Direction":
-                case "FiguredBass":
-                case "Grouping":
-                case "Harmony":
-                case "Print":
-                case "Sound":
-                    const staff = input._class === "Harmony" && !input.staff ? prevStaff :
-                        input.staff || 1; // Explodes to all staves at a later point.
-                    prevStaff = staff;
-                    if (!(staff in target.output.staves)) {
-                        target.output.staves[staff] = <any> [];
-                        target.output.staves[staff].owner = staff;
-                        target.output.staves[staff].ownerType = "staff";
-                    }
-                    let newModel = factory.fromSpec(input);
-
-                    // Check if this is metadata:
-                    if (input._class === "Direction") {
-                        let direction = newModel as any as Direction;
-                        let words = direction.directionTypes.length === 1 && direction.directionTypes[0].words;
-                        if (words && words.length === 1) {
-                            let maybeMeta = words[0].data.trim();
-                            if (startsWith(maybeMeta, "SATIE_SONG_META = ") && endsWith(maybeMeta, ";")) {
-                                // let songMeta = JSON.parse(maybeMeta.replace(/^SATIE_SONG_META = /, "").replace(/;$/, ""));
-                                break; // Do not actually import as direction
-                            } else if (startsWith(maybeMeta, "SATIE_MEASURE_META = ") && endsWith(maybeMeta, ";")) {
-                                let measureMeta = JSON.parse(maybeMeta.replace(/^SATIE_MEASURE_META = /, "").replace(/;$/, ""));
-                                measure.uuid = measureMeta.uuid;
-                                break; // Do not actually import as direction
-                            }
-                        }
-                    }
-
-                    syncAppendStaff(staff, newModel, input.divisions || divisions);
-                    if (input._class === "Attributes") {
-                        lastAttribs = <Attributes> input;
-                        divisions = lastAttribs.divisions || divisions;
-                        let oTimes = lastAttribs.times;
-                        if (oTimes && oTimes.length) {
-                            target.times = oTimes;
-                        }
-                        let staves = lastAttribs.staves || 1;
-                        gStaves = staves;
-                        times(staves, staffMinusOne => {
-                            let staff = staffMinusOne + 1;
-                            if (!(staff in target.output.staves)) {
-                                createStaff(staff, target.output);
-                            }
-                        });
-                    }
-                    break;
-                case "Forward":
-                    let forward = <Forward> input;
-                    forEach(target.output.staves, (staff, staffIdx) => {
-                        syncAppendStaff(staffIdx, null, input.divisions || divisions);
-                    });
-                    target.division += forward.duration;
-                    break;
-                case "Backup":
-                    let backup = <Backup> input;
-                    forEach(target.output.staves, (staff, staffIdx) => {
-                        syncAppendStaff(staffIdx, null, input.divisions || divisions);
-                    });
-                    target.division -= backup.duration;
-                    break;
-                default:
-                    throw new Error("Unknown type " + input._class);
-            }
-            ++target.idx;
-        }
-
-        // Finish up
-
-        times(gStaves, staffMinusOne => {
-            let staff = staffMinusOne + 1;
-            if (!(staff in target.output.staves)) {
-                createStaff(staff, target.output);
-                maxVoice++;
-                let voice = createVoice(maxVoice, target.output);
-                let newNote: IChord = <any> factory.create(Type.Chord);
-                newNote.push({
-                    duration: barDivisionsDI(lastAttribs.times[0], lastAttribs.divisions),
-                    rest: {},
-                    staff: staff,
-                    voice: maxVoice
-                });
-                voice.push(<any>newNote);
-            }
-        });
-
-        forEach(linkedParts, part => {
-            // Note: target is 'var'-scoped!
-            target = part;
-
-            // Set divCounts of final elements in staff segments and divisions of all segments
-            forEach(target.output.staves, (staff, staffIdx) => {
-                syncAppendStaff(staffIdx, null, divisions);
-
-                let segment = target.output.staves[staffIdx];
-                if (segment) {
-                    segment.divisions = divisions;
-                }
-            });
-            forEach(target.output.voices, (voice, voiceIdx) => {
-                let segment = target.output.voices[voiceIdx];
-                if (segment) {
-                    segment.divisions = divisions;
-                }
-            });
-        });
-
-        function syncAppendStaff(staff: number, model: IModel, localDivisions: number) {
-            let ratio = localDivisions / divisions || 1;
-            const divCount = ratio * (target.division - (target.divisionPerStaff[staff] || 0));
-            let segment = target.output.staves[staff];
-            invariant(!!model && !!segment || !model, "Unknown staff %s");
-
-            if (divCount > 0) {
-                if (segment) {
-                    if (segment.length) {
-                        let model = segment[segment.length - 1];
-                        model.divCount = model.divCount || 0;
-                        model.divCount += divCount;
-                    } else {
-                        let model = createModel(Type.Spacer, {
-                            divCount,
-                            staff
-                        });
-                        segment.push(model);
-                    }
-                }
-                target.divisionPerStaff[staff] = target.division;
-            }
-
-            if (model) {
-                if (divCount >= 0 || !divCount) {
-                    segment.push(model);
-                } else {
-                    let offset = divCount;
-                    let spliced = false;
-                    for (let i = segment.length - 1; i >= 0; --i) {
-                        offset += segment[i].divCount;
-                        if (offset >= 0) {
-                            model.divCount = segment[i].divCount - offset;
-                            invariant(isFinite(model.divCount), "Invalid loaded divCount");
-                            segment[i].divCount = offset;
-                            segment.splice(i + 1, 0, model);
-                            spliced = true;
-                            break;
-                        }
-                    }
-                    invariant(spliced, "Could not insert %s", model);
-                }
-            }
-        }
-
-        function done() {
-            return every(linkedParts, part => {
-                return part.idx === part.input.length;
-            });
-        }
-
-        return measure;
+      return {
+        division: 0,
+        divisionPerStaff: <number[]>[],
+        divisionPerVoice: <number[]>[],
+        id: key,
+        idx: 0,
+        input: val,
+        lastNote: <IChord>null,
+        output: output,
+        times: <Time[]>[
+          {
+            beatTypes: [4],
+            beats: ["4"],
+          },
+        ],
+      };
     });
 
-    return {
-        measures: measures,
-        parts: parts
-    };
+    linkedParts = filter(linkedParts, p => !!p);
+
+    let commonDivisions = reduce(
+      linkedParts,
+      (memo, part) => {
+        return reduce(
+          part.input,
+          (memo, input) => {
+            if (input._class === "Attributes" && input.divisions) {
+              return lcm(memo, input.divisions);
+            }
+            return memo;
+          },
+          memo,
+        );
+      },
+      divisions,
+    );
+
+    // Lets normalize divisions here.
+    forEach(linkedParts, part => {
+      let previousDivisions = divisions;
+      forEach(part.input, input => {
+        if (input.divisions) {
+          previousDivisions = input.divisions;
+          input.divisions = commonDivisions;
+        }
+        if (input.count) {
+          input.count *= commonDivisions / previousDivisions;
+        }
+        if (input.duration) {
+          input.duration *= commonDivisions / previousDivisions;
+        }
+      });
+    });
+
+    let target = linkedParts[0];
+    // Create base structure
+    while (!done()) {
+      // target is accessed outside loop in syncStaffDivisions
+      target = minBy(linkedParts, part =>
+        part.idx === part.input.length ? MAX_SAFE_INTEGER : part.division,
+      );
+      invariant(!!target, "Target not specified");
+      let input = target.input[target.idx];
+      let prevStaff = 1;
+      switch (input._class) {
+        case "Note":
+          {
+            let note: Note = input;
+
+            // TODO: is this the case even if voice/staff don't match up?
+            if (note.chord) {
+              invariant(
+                !!chordBeingBuilt,
+                "Cannot add chord to a previous note without a chord",
+              );
+              chordBeingBuilt.push(note);
+            } else {
+              // Notes go in the voice context.
+              let voice = note.voice || 1;
+              let staff = note.staff || 1;
+              prevStaff = staff;
+              if (!(voice in target.output.voices)) {
+                createVoice(voice, target.output);
+                maxVoice = Math.max(voice, maxVoice);
+              }
+              // Make sure there is a staff segment reserved for the given staff
+              if (!(staff in target.output.staves)) {
+                createStaff(staff, target.output);
+              }
+
+              // Check target voice division and add spacing if needed
+              target.divisionPerVoice[voice] =
+                target.divisionPerVoice[voice] || 0;
+              invariant(
+                target.division >= target.divisionPerVoice[voice],
+                "Ambiguous voice timing: all voices must be monotonic.",
+              );
+              if (target.divisionPerVoice[voice] < target.division) {
+                // Add rest
+                let divisionsInVoice = target.divisionPerVoice[voice];
+                // This beautiful IIFE is needed because of undefined behaviour for
+                // block-scoped variables in modules.
+                let restModel = ((divisionsInVoice: number) =>
+                  factory.fromSpec(
+                    buildNote(note =>
+                      note
+                        .printObject(false)
+                        .rest({})
+                        .duration(target.division - divisionsInVoice),
+                    ),
+                  ))(divisionsInVoice);
+
+                let division = target.divisionPerVoice[voice];
+                restModel[0].duration = target.division - division;
+                target.output.voices[voice].push(restModel);
+                target.divisionPerVoice[voice] = target.division;
+              }
+
+              // Add the note to the voice segment and register it as the
+              // last inserted note
+              let newNote = factory.fromSpec(input);
+              target.output.voices[voice].push(newNote);
+              chordBeingBuilt = newNote;
+
+              // Update target division
+              let divs: number;
+              try {
+                divs = calcDivisions([input], {
+                  time: target.times[0],
+                  divisions,
+                });
+              } catch (err) {
+                console.warn("Guessing count from duration");
+                divs = input.duration;
+              }
+              target.divisionPerVoice[voice] += divs;
+              target.division += divs;
+            }
+          }
+
+          break;
+        case "Attributes":
+        case "Barline":
+        case "Direction":
+        case "FiguredBass":
+        case "Grouping":
+        case "Harmony":
+        case "Print":
+        case "Sound":
+          {
+            const staff =
+              input._class === "Harmony" && !input.staff
+                ? prevStaff
+                : input.staff || 1; // Explodes to all staves at a later point.
+            prevStaff = staff;
+            if (!(staff in target.output.staves)) {
+              target.output.staves[staff] = <any>[];
+              target.output.staves[staff].owner = staff;
+              target.output.staves[staff].ownerType = "staff";
+            }
+            let newModel = factory.fromSpec(input);
+
+            // Check if this is metadata:
+            if (input._class === "Direction") {
+              let direction = (newModel as any) as Direction;
+              let words =
+                direction.directionTypes.length === 1 &&
+                direction.directionTypes[0].words;
+              if (words && words.length === 1) {
+                let maybeMeta = words[0].data.trim();
+                if (
+                  startsWith(maybeMeta, "SATIE_SONG_META = ") &&
+                  endsWith(maybeMeta, ";")
+                ) {
+                  // let songMeta = JSON.parse(maybeMeta.replace(/^SATIE_SONG_META = /, "").replace(/;$/, ""));
+                  break; // Do not actually import as direction
+                } else if (
+                  startsWith(maybeMeta, "SATIE_MEASURE_META = ") &&
+                  endsWith(maybeMeta, ";")
+                ) {
+                  let measureMeta = JSON.parse(
+                    maybeMeta
+                      .replace(/^SATIE_MEASURE_META = /, "")
+                      .replace(/;$/, ""),
+                  );
+                  measure.uuid = measureMeta.uuid;
+                  break; // Do not actually import as direction
+                }
+              }
+            }
+
+            syncAppendStaff(staff, newModel, input.divisions || divisions);
+            if (input._class === "Attributes") {
+              lastAttribs = <Attributes>input;
+              divisions = lastAttribs.divisions || divisions;
+              let oTimes = lastAttribs.times;
+              if (oTimes && oTimes.length) {
+                target.times = oTimes;
+              }
+              let staves = lastAttribs.staves || 1;
+              gStaves = staves;
+              times(staves, staffMinusOne => {
+                let staff = staffMinusOne + 1;
+                if (!(staff in target.output.staves)) {
+                  createStaff(staff, target.output);
+                }
+              });
+            }
+          }
+          break;
+        case "Forward":
+          {
+            let forward = <Forward>input;
+            forEach(target.output.staves, (_staff, staffIdx) => {
+              syncAppendStaff(staffIdx, null, input.divisions || divisions);
+            });
+            target.division += forward.duration;
+          }
+          break;
+        case "Backup":
+          {
+            let backup = <Backup>input;
+            forEach(target.output.staves, (_staff, staffIdx) => {
+              syncAppendStaff(staffIdx, null, input.divisions || divisions);
+            });
+            target.division -= backup.duration;
+          }
+          break;
+        default:
+          throw new Error("Unknown type " + input._class);
+      }
+      ++target.idx;
+    }
+
+    // Finish up
+
+    times(gStaves, staffMinusOne => {
+      let staff = staffMinusOne + 1;
+      if (!(staff in target.output.staves)) {
+        createStaff(staff, target.output);
+        maxVoice++;
+        let voice = createVoice(maxVoice, target.output);
+        let newNote: IChord = <any>factory.create(Type.Chord);
+        newNote.push({
+          duration: barDivisionsDI(lastAttribs.times[0], lastAttribs.divisions),
+          rest: {},
+          staff: staff,
+          voice: maxVoice,
+        });
+        voice.push(<any>newNote);
+      }
+    });
+
+    forEach(linkedParts, part => {
+      // Note: target is 'var'-scoped!
+      target = part;
+
+      // Set divCounts of final elements in staff segments and divisions of all segments
+      forEach(target.output.staves, (_staff, staffIdx) => {
+        syncAppendStaff(staffIdx, null, divisions);
+
+        let segment = target.output.staves[staffIdx];
+        if (segment) {
+          segment.divisions = divisions;
+        }
+      });
+      forEach(target.output.voices, (_voice, voiceIdx) => {
+        let segment = target.output.voices[voiceIdx];
+        if (segment) {
+          segment.divisions = divisions;
+        }
+      });
+    });
+
+    function syncAppendStaff(
+      staff: number,
+      model: IModel,
+      localDivisions: number,
+    ) {
+      let ratio = localDivisions / divisions || 1;
+      const divCount =
+        ratio * (target.division - (target.divisionPerStaff[staff] || 0));
+      let segment = target.output.staves[staff];
+      invariant((!!model && !!segment) || !model, "Unknown staff %s");
+
+      if (divCount > 0) {
+        if (segment) {
+          if (segment.length) {
+            let model = segment[segment.length - 1];
+            model.divCount = model.divCount || 0;
+            model.divCount += divCount;
+          } else {
+            let model = createModel(Type.Spacer, {
+              divCount,
+              staff,
+            });
+            segment.push(model);
+          }
+        }
+        target.divisionPerStaff[staff] = target.division;
+      }
+
+      if (model) {
+        if (divCount >= 0 || !divCount) {
+          segment.push(model);
+        } else {
+          let offset = divCount;
+          let spliced = false;
+          for (let i = segment.length - 1; i >= 0; --i) {
+            offset += segment[i].divCount;
+            if (offset >= 0) {
+              model.divCount = segment[i].divCount - offset;
+              invariant(isFinite(model.divCount), "Invalid loaded divCount");
+              segment[i].divCount = offset;
+              segment.splice(i + 1, 0, model);
+              spliced = true;
+              break;
+            }
+          }
+          invariant(spliced, "Could not insert %s", model);
+        }
+      }
+    }
+
+    function done() {
+      return every(linkedParts, part => {
+        return part.idx === part.input.length;
+      });
+    }
+
+    return measure;
+  });
+
+  return {
+    measures: measures,
+    parts: parts,
+  };
 }
 
 function createVoice(voice: number, output: IMeasurePart) {
-    output.voices[voice] = <any> [];
-    output.voices[voice].owner = voice;
-    output.voices[voice].ownerType = "voice";
-    return output.voices[voice];
+  output.voices[voice] = <any>[];
+  output.voices[voice].owner = voice;
+  output.voices[voice].ownerType = "voice";
+  return output.voices[voice];
 }
 
 function createStaff(staff: number, output: IMeasurePart) {
-    output.staves[staff] = <any> [];
-    output.staves[staff].owner = staff;
-    output.staves[staff].ownerType = "staff";
-    return output.staves[staff];
+  output.staves[staff] = <any>[];
+  output.staves[staff].owner = staff;
+  output.staves[staff].ownerType = "staff";
+  return output.staves[staff];
 }
 
 /**
  * Parses a MusicXML document and returns a Document.
  */
-export function importXML(src: string,
-        cb: (error: Error, document?: Document, factory?: IFactory) => void) {
-    requireFont("Bravura", "root://bravura/otf/Bravura.otf");
-    requireFont("Alegreya", "root://alegreya/Alegreya-Regular.ttf");
-    requireFont("Alegreya", "root://alegreya/Alegreya-Bold.ttf", "bold");
-    whenReady((err) => {
-        if (err) {
-            cb(err);
-        } else {
-            try {
-                let factory = makeFactory();
-                cb(null, stringToDocument(src, factory), factory);
-            } catch (err) {
-                cb(err);
-            }
-        }
-    });
+export function importXML(
+  src: string,
+  cb: (error: Error, document?: Document, factory?: IFactory) => void,
+) {
+  requireFont("Bravura", "root://bravura/otf/Bravura.otf");
+  requireFont("Alegreya", "root://alegreya/Alegreya-Regular.ttf");
+  requireFont("Alegreya", "root://alegreya/Alegreya-Bold.ttf", "bold");
+  whenReady(err => {
+    if (err) {
+      cb(err);
+    } else {
+      try {
+        let factory = makeFactory();
+        cb(null, stringToDocument(src, factory), factory);
+      } catch (err) {
+        cb(err);
+      }
+    }
+  });
 }

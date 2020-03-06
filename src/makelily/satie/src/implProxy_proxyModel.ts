@@ -24,7 +24,7 @@ import invariant from "invariant";
 import { IModel, Type, ILayout } from "./document";
 import { IReadOnlyValidationCursor, LayoutCursor } from "./private_cursor";
 
-class ProxyModel implements Export.IProxyModel {
+class ProxyModel implements IProxyModel {
   private _target: IModel;
   private _omTarget: IModel;
   _class = "Proxy";
@@ -77,7 +77,7 @@ class ProxyModel implements Export.IProxyModel {
     this._omTarget.refresh(cursor);
   }
 
-  getLayout(cursor: LayoutCursor): Export.IProxyLayout {
+  getLayout(cursor: LayoutCursor): IProxyLayout {
     return this._omTarget.getLayout(cursor);
   }
 
@@ -89,16 +89,12 @@ class ProxyModel implements Export.IProxyModel {
 /**
  * Registers Proxy in the factory structure passed in.
  */
-function Export(constructors: { [key: number]: any }) {
+export default function Export(constructors: { [key: number]: any }) {
   constructors[Type.Proxy] = ProxyModel;
 }
 
-namespace Export {
-  export interface IProxyModel extends IModel {}
+export interface IProxyModel extends IModel {}
 
-  export interface IProxyLayout extends ILayout {
-    model: IProxyModel;
-  }
+export interface IProxyLayout extends ILayout {
+  model: IProxyModel;
 }
-
-export default Export;

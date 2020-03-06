@@ -26,14 +26,14 @@ import Line from "./private_views_line";
 
 import AttributesView from "./implAttributes_attributesView";
 
-import BarlineModel from "./implBarline_barlineModel";
+import { IBarlineLayout } from "./implBarline_barlineModel";
 
 /**
  * Renders a full-stave-height barline at (x,y).
  * Does not do any interesting calculations.
  */
 export default class BarlineView extends Component<
-  { layout: BarlineModel.IBarlineLayout },
+  { layout: IBarlineLayout },
   {}
 > {
   static contextTypes = {

@@ -16,13 +16,13 @@
  * along with Satie.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import {IAny} from "musicxml-interfaces/operations";
+import { IAny } from "musicxml-interfaces/operations";
 
-import BarlineModel from "./implBarline_barlineModel";
+import { IBarlineModel } from "./implBarline_barlineModel";
 
-import {mutate} from "./private_mutate";
+import { mutate } from "./private_mutate";
 
-export default function barlineMutator(barline: BarlineModel.IBarlineModel, op: IAny) {
-    // This is a stub.
-    mutate(barline, op);
+export default function barlineMutator(barline: IBarlineModel, op: IAny) {
+  // This is a stub.
+  mutate(barline, op);
 }

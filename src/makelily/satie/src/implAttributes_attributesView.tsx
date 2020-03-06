@@ -20,7 +20,7 @@ import * as React from "react";
 import { Component, ReactElement } from "react";
 import * as PropTypes from "prop-types";
 
-import AttributesExports from "./implAttributes_attributesModel";
+import { IAttributesLayout } from "./implAttributes_attributesModel";
 import BarNumber from "./implAttributes_barNumberView";
 import Clef from "./implAttributes_clefView";
 import PartSymbol from "./implAttributes_partSymbolView";
@@ -29,7 +29,7 @@ import TimeSignature from "./implAttributes_timeSignatureView";
 import StaffLines from "./implAttributes_staffLinesView";
 
 export default class AttributesView extends Component<
-  { layout: AttributesExports.IAttributesLayout },
+  { layout: IAttributesLayout },
   {}
 > {
   static contextTypes = {
@@ -47,7 +47,7 @@ export default class AttributesView extends Component<
     // Staff lines go first, because they are underneath other attributes
     let staffWidth = (layout as any).staffWidth;
     let staffLinesOffsetX = (layout as any).staffLinesOffsetX;
-    if (!!staffWidth) {
+    if (staffWidth) {
       children.push(
         <StaffLines
           key="staffLines"
@@ -74,7 +74,7 @@ export default class AttributesView extends Component<
     if (layout.time) {
       children.push(<TimeSignature key="ts" spec={layout.time} />);
     }
-    if (!!layout.measureNumberVisible) {
+    if (layout.measureNumberVisible) {
       children.push(
         <BarNumber
           barNumber={layout.measureNumberVisible}
@@ -86,7 +86,7 @@ export default class AttributesView extends Component<
         />,
       );
     }
-    if (!!layout.partSymbol) {
+    if (layout.partSymbol) {
       children.push(<PartSymbol key="partSymbol" spec={layout.partSymbol} />);
     }
 

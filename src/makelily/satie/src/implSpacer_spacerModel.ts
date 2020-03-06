@@ -19,110 +19,93 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import {IModel, ILayout, Type} from "./document";
+import { IModel, ILayout, Type } from "./document";
 
-import {IReadOnlyValidationCursor, LayoutCursor} from "./private_cursor";
-import {IBoundingRect} from "./private_boundingRect";
+import { IReadOnlyValidationCursor, LayoutCursor } from "./private_cursor";
+import { IBoundingRect } from "./private_boundingRect";
 
-class SpacerModel implements Export.ISpacerModel {
-    _class = "Spacer";
+class SpacerModel implements ISpacerModel {
+  _class = "Spacer";
 
-    /*---- I.1 IModel ---------------------------------------------------------------------------*/
+  /*---- I.1 IModel ---------------------------------------------------------------------------*/
 
-    divCount: number;
+  divCount: number;
 
-    /** @prototype only */
-    divisions: number;
+  divisions: number = 0;
 
-    /** defined externally */
-    staffIdx: number;
+  staffIdx: number = 0;
 
-    /*---- Implementation -----------------------------------------------------------------------*/
+  /*---- Implementation -----------------------------------------------------------------------*/
 
-    constructor(target: IModel) {
-        if (target) {
-            this.divCount = target.divCount;
-        }
+  constructor(target: IModel) {
+    if (target) {
+      this.divCount = target.divCount;
+    }
+  }
+
+  toJSON() {
+    let { _class, divCount } = this;
+    return {
+      _class,
+      divCount,
+    };
+  }
+
+  refresh(_cursor: IReadOnlyValidationCursor): void {
+    // Nothing to do
+  }
+
+  getLayout(cursor: LayoutCursor): ISpacerLayout {
+    return new SpacerModel.Layout(this, cursor);
+  }
+
+  toXML(): string {
+    return `<!-- spacer -->\n<forward><duration>${this.divCount}</duration></forward>\n`;
+  }
+
+  inspect() {
+    return this.toXML();
+  }
+
+  calcWidth(_shortest: number) {
+    return 0;
+  }
+
+  static Layout = class Layout implements ISpacerLayout {
+    constructor(model: SpacerModel, cursor: LayoutCursor) {
+      this.model = model;
+      this.x = cursor.segmentX;
+      this.division = cursor.segmentDivision;
+      this.renderedWidth = 0;
     }
 
-    toJSON() {
-        let {_class, divCount} = this;
-        return {
-            _class,
-            divCount,
-        };
-    }
+    /*---- ILayout ------------------------------------------------------*/
 
-    refresh(cursor: IReadOnlyValidationCursor): void {
-        // Nothing to do
-    }
+    // Constructed:
 
-    getLayout(cursor: LayoutCursor): Export.ISpacerLayout {
-        return new SpacerModel.Layout(this, cursor);
-    }
+    model: SpacerModel;
+    x: number;
+    division: number;
+    renderedWidth: number;
 
-    toXML(): string {
-        return `<!-- spacer -->\n<forward><duration>${this.divCount}</duration></forward>\n`;
-    }
+    // Prototype:
 
-    inspect() {
-        return this.toXML();
-    }
-
-    calcWidth(shortest: number) {
-        return 0;
-    }
+    boundingBoxes: IBoundingRect[] = [];
+    renderClass: Type = Type.Spacer;
+    expandPolicy: "none" = "none";
+  };
 }
-
-module SpacerModel {
-    export class Layout implements Export.ISpacerLayout {
-        constructor(model: SpacerModel, cursor: LayoutCursor) {
-            this.model = model;
-            this.x = cursor.segmentX;
-            this.division = cursor.segmentDivision;
-            this.renderedWidth = 0;
-        }
-
-        /*---- ILayout ------------------------------------------------------*/
-
-        // Constructed:
-
-        model: SpacerModel;
-        x: number;
-        division: number;
-        renderedWidth: number;
-
-        // Prototype:
-
-        boundingBoxes: IBoundingRect[];
-        renderClass: Type;
-        expandPolicy: "none";
-    }
-
-    Layout.prototype.expandPolicy = "none";
-    Layout.prototype.renderClass = Type.Spacer;
-    Layout.prototype.boundingBoxes = [];
-    Object.freeze(Layout.prototype.boundingBoxes);
-}
-
-SpacerModel.prototype.divCount = 0;
-SpacerModel.prototype.divisions = 0;
 
 /**
  * Registers Spacer in the factory structure passed in.
  */
-function Export(constructors: { [key: number]: any }) {
-    constructors[Type.Spacer] = SpacerModel;
+export default function Export(constructors: { [key: number]: any }) {
+  constructors[Type.Spacer] = SpacerModel;
 }
 
-module Export {
-    export interface ISpacerModel extends IModel {
-    }
+export interface ISpacerModel extends IModel {}
 
-    export interface ISpacerLayout extends ILayout {
-        model: ISpacerModel;
-        renderedWidth: number;
-    }
+export interface ISpacerLayout extends ILayout {
+  model: ISpacerModel;
+  renderedWidth: number;
 }
-
-export default Export;

@@ -19,7 +19,7 @@
  */
 
 import { css } from "aphrodite";
-import React = require("react");
+import React from "react";
 
 import tabStyles from "./tabStyles";
 import { ToolProps } from "./tool";
@@ -32,7 +32,9 @@ export default class ToolError extends React.Component<ToolProps> {
     return (
       <span className={css(tabStyles.tool)}>
         <div className={css(tabStyles.section)}>
-          <h3 className={css(tabStyles.toolHeading)}>It's not your fault*!</h3>
+          <h3 className={css(tabStyles.toolHeading)}>
+            It&apos;s not your fault*!
+          </h3>
         </div>
         <div className={css(tabStyles.section)}>
           The tool you were using crashed, so it has been closed. Please{" "}
@@ -44,9 +46,6 @@ export default class ToolError extends React.Component<ToolProps> {
             file an issue
           </a>{" "}
           so I can try fixing it.
-        </div>
-        <div className={css(tabStyles.section)}>
-          *if you are Joshua, it is probably your fault.
         </div>
       </span>
     );

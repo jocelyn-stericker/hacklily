@@ -53,62 +53,59 @@ export default class Beam extends Component<IProps, {}> {
 
     return (
       <g>
-        {map(
-          beamCount,
-          (beams: number, idx: number): any => {
-            return times(beams, beam => {
-              let x1: number;
-              let x2: number = this._withXOffset(x[idx]);
-              if (beamCount[idx - 1] <= beam) {
-                if (x[idx + 1] && beamCount[idx + 1] === beams) {
-                  return null;
-                }
-                x1 = this._withXOffset((x[idx - 1] + x[idx] * 3) / 4);
-
-                if (idx === 0) {
-                  return null;
-                }
-              } else if (
-                beamCount[idx + 1] <= beam &&
-                (!x[idx + 1] || beamCount[idx - 1] !== beams)
-              ) {
-                x1 = this._withXOffset(x[idx]);
-                x2 = this._withXOffset((x[idx + 1] + x[idx] * 3) / 4);
-              } else {
-                x1 = this._withXOffset(x[idx - 1]);
-
-                if (idx === 0) {
-                  return null;
-                }
+        {map(beamCount, (beams: number, idx: number): any => {
+          return times(beams, beam => {
+            let x1: number;
+            let x2: number = this._withXOffset(x[idx]);
+            if (beamCount[idx - 1] <= beam) {
+              if (x[idx + 1] && beamCount[idx + 1] === beams) {
+                return null;
               }
-              return (
-                <polygon
-                  fill={this.props.stroke}
-                  key={idx + "_" + beam}
-                  points={
-                    x1 +
-                    "," +
-                    this._getYVar(0, beam, (x1 - xLow) / (xHigh - xLow)) +
-                    " " +
-                    x2 +
-                    "," +
-                    this._getYVar(0, beam, (x2 - xLow) / (xHigh - xLow)) +
-                    " " +
-                    x2 +
-                    "," +
-                    this._getYVar(1, beam, (x2 - xLow) / (xHigh - xLow)) +
-                    " " +
-                    x1 +
-                    "," +
-                    this._getYVar(1, beam, (x1 - xLow) / (xHigh - xLow))
-                  }
-                  stroke={this.props.stroke}
-                  strokeWidth={0}
-                />
-              );
-            });
-          },
-        )}
+              x1 = this._withXOffset((x[idx - 1] + x[idx] * 3) / 4);
+
+              if (idx === 0) {
+                return null;
+              }
+            } else if (
+              beamCount[idx + 1] <= beam &&
+              (!x[idx + 1] || beamCount[idx - 1] !== beams)
+            ) {
+              x1 = this._withXOffset(x[idx]);
+              x2 = this._withXOffset((x[idx + 1] + x[idx] * 3) / 4);
+            } else {
+              x1 = this._withXOffset(x[idx - 1]);
+
+              if (idx === 0) {
+                return null;
+              }
+            }
+            return (
+              <polygon
+                fill={this.props.stroke}
+                key={idx + "_" + beam}
+                points={
+                  x1 +
+                  "," +
+                  this._getYVar(0, beam, (x1 - xLow) / (xHigh - xLow)) +
+                  " " +
+                  x2 +
+                  "," +
+                  this._getYVar(0, beam, (x2 - xLow) / (xHigh - xLow)) +
+                  " " +
+                  x2 +
+                  "," +
+                  this._getYVar(1, beam, (x2 - xLow) / (xHigh - xLow)) +
+                  " " +
+                  x1 +
+                  "," +
+                  this._getYVar(1, beam, (x1 - xLow) / (xHigh - xLow))
+                }
+                stroke={this.props.stroke}
+                strokeWidth={0}
+              />
+            );
+          });
+        })}
         {tuplet && (
           <TupletNumber
             tuplet={tuplet}

@@ -16,176 +16,173 @@
  * along with Satie.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import {Frame, ExplicitImpliedAlternate, Root, Function, Kind, Degree, Inversion, Bass,
-    Footnote, Level, NormalBold, NormalItalic, AboveBelow, Harmony, Offset,
-    serializeHarmony} from "musicxml-interfaces";
-import {forEach} from "lodash";
+import {
+  Frame,
+  ExplicitImpliedAlternate,
+  Root,
+  Function,
+  Kind,
+  Degree,
+  Inversion,
+  Bass,
+  Footnote,
+  Level,
+  NormalBold,
+  NormalItalic,
+  AboveBelow,
+  Harmony,
+  Offset,
+  serializeHarmony,
+} from "musicxml-interfaces";
+import { forEach } from "lodash";
 
-import {IModel, ILayout, Type} from "./document";
+import { IModel, ILayout, Type } from "./document";
 
-import {IReadOnlyValidationCursor, LayoutCursor} from "./private_cursor";
-import {IBoundingRect} from "./private_boundingRect";
+import { IReadOnlyValidationCursor, LayoutCursor } from "./private_cursor";
+import { IBoundingRect } from "./private_boundingRect";
 
-class HarmonyModel implements Export.IHarmonyModel {
+class HarmonyModel implements IHarmonyModel {
+  /*---- I.1 IModel ---------------------------------------------------------------------------*/
 
-    /*---- I.1 IModel ---------------------------------------------------------------------------*/
+  divCount: number = 0;
+  divisions: number = 0;
 
-    /** @prototype only */
-    divCount: number;
+  /** defined externally */
+  staffIdx: number;
 
-    /** @prototype only */
-    divisions: number;
+  /*---- I.2 Harmony --------------------------------------------------------------------------*/
 
-    /** defined externally */
-    staffIdx: number;
+  frame: Frame;
+  printFrame: boolean;
+  staff: number;
+  type: ExplicitImpliedAlternate;
+  offset: Offset;
 
-    /*---- I.2 Harmony --------------------------------------------------------------------------*/
+  /*---- I.2.1 HarmonyChord -------------------------------------------------------------------*/
 
-    frame: Frame;
-    printFrame: boolean;
-    staff: number;
-    type: ExplicitImpliedAlternate;
-    offset: Offset;
+  root: Root;
+  function: Function;
+  kind: Kind;
+  degrees: Degree[];
+  inversion: Inversion;
+  bass: Bass;
 
-    /*---- I.2.1 HarmonyChord -------------------------------------------------------------------*/
+  /*---- I.2.2 Editorial ----------------------------------------------------------------------*/
 
-    root: Root;
-    function: Function;
-    kind: Kind;
-    degrees: Degree[];
-    inversion: Inversion;
-    bass: Bass;
+  footnote: Footnote;
+  level: Level;
 
-    /*---- I.2.2 Editorial ----------------------------------------------------------------------*/
+  /*---- I.2.3 PrintObject --------------------------------------------------------------------*/
 
-    footnote: Footnote;
-    level: Level;
+  printObject: boolean;
 
-    /*---- I.2.3 PrintObject --------------------------------------------------------------------*/
+  /*---- I.2.4 PrintStyle ---------------------------------------------------------------------*/
 
-    printObject: boolean;
+  /*---- PrintStyle > Position ------------------------------------------------------------*/
 
-    /*---- I.2.4 PrintStyle ---------------------------------------------------------------------*/
+  defaultX: number; // ignored for now
+  relativeY: number;
+  defaultY: number;
+  relativeX: number;
 
-    /*---- PrintStyle > Position ------------------------------------------------------------*/
+  /*---- PrintStyle > Font ----------------------------------------------------------------*/
 
-    defaultX: number; // ignored for now
-    relativeY: number;
-    defaultY: number;
-    relativeX: number;
+  fontFamily: string;
+  fontWeight: NormalBold;
+  fontStyle: NormalItalic;
+  fontSize: string;
 
-    /*---- PrintStyle > Font ----------------------------------------------------------------*/
+  /*---- PrintStyle > Color ---------------------------------------------------------------*/
 
-    fontFamily: string;
-    fontWeight: NormalBold;
-    fontStyle: NormalItalic;
-    fontSize: string;
-
-    /*---- PrintStyle > Color ---------------------------------------------------------------*/
-
-    get color(): string {
-        let hex = this._color.toString(16);
-        return "#" + "000000".substr(0, 6 - hex.length) + hex;
+  get color(): string {
+    let hex = this._color.toString(16);
+    return "#" + "000000".substr(0, 6 - hex.length) + hex;
+  }
+  set color(a: string) {
+    switch (true) {
+      case !a:
+        this._color = 0;
+        break;
+      case a[0] === "#":
+        a = a.slice(1);
+        this._color = parseInt(a, 16);
+        break;
+      default:
+        this._color = parseInt(a, 16);
+        break;
     }
-    set color(a: string) {
-        switch (true) {
-            case !a:
-                this._color = 0;
-                break;
-            case a[0] === "#":
-                a = a.slice(1);
-                this._color = parseInt(a, 16);
-                break;
-            default:
-                this._color = parseInt(a, 16);
-                break;
-        }
-    }
+  }
 
-    /*---- I.2.5 Placement ----------------------------------------------------------------------*/
+  /*---- I.2.5 Placement ----------------------------------------------------------------------*/
 
-    placement: AboveBelow;
+  placement: AboveBelow;
 
-    /*---- Private ------------------------------------------------------------------------------*/
+  /*---- Private ------------------------------------------------------------------------------*/
 
-    private _color: number = 0x000000;
+  private _color: number = 0x000000;
 
-    /*---- Implementation -----------------------------------------------------------------------*/
+  /*---- Implementation -----------------------------------------------------------------------*/
 
-    constructor(spec: Harmony) {
-        forEach<any>(spec, (value, key) => {
-            (this as any)[key] = value;
-        });
-    }
+  constructor(spec: Harmony) {
+    forEach<any>(spec, (value, key) => {
+      (this as any)[key] = value;
+    });
+  }
 
-    refresh(cursor: IReadOnlyValidationCursor): void {
-        // todo
-    }
+  refresh(_cursor: IReadOnlyValidationCursor): void {
+    // todo
+  }
 
-    getLayout(cursor: LayoutCursor): Export.IHarmonyLayout {
-        // todo
+  getLayout(cursor: LayoutCursor): IHarmonyLayout {
+    // todo
 
-        return new HarmonyModel.Layout(this, cursor);
-    }
+    return new HarmonyModel.Layout(this, cursor);
+  }
 
-    toXML(): string {
-        return `${serializeHarmony(this)}\n<forward><duration>${this.divCount}</duration></forward>\n`;
-    }
+  toXML(): string {
+    return `${serializeHarmony(this)}\n<forward><duration>${
+      this.divCount
+    }</duration></forward>\n`;
+  }
 
-    inspect() {
-        return this.toXML();
-    }
+  inspect() {
+    return this.toXML();
+  }
 
-    calcWidth(shortest: number) {
-        return 0;
-    }
-}
+  calcWidth(_shortest: number) {
+    return 0;
+  }
 
-HarmonyModel.prototype.divCount = 0;
-HarmonyModel.prototype.divisions = 0;
-
-module HarmonyModel {
-    export class Layout implements Export.IHarmonyLayout {
-        constructor(model: HarmonyModel, cursor: LayoutCursor) {
-            this.model = model;
-            this.x = cursor.segmentX;
-            this.division = cursor.segmentDivision;
-        }
-
-        /*---- ILayout ------------------------------------------------------*/
-
-        // Constructed:
-
-        model: HarmonyModel;
-        x: number;
-        division: number;
-
-        // Prototype:
-
-        boundingBoxes: IBoundingRect[];
-        renderClass: Type;
-        expandPolicy: "none";
+  static Layout = class Layout implements IHarmonyLayout {
+    constructor(model: HarmonyModel, cursor: LayoutCursor) {
+      this.model = model;
+      this.x = cursor.segmentX;
+      this.division = cursor.segmentDivision;
     }
 
-    Layout.prototype.expandPolicy = "none";
-    Layout.prototype.renderClass = Type.Harmony;
-    Layout.prototype.boundingBoxes = [];
-    Object.freeze(Layout.prototype.boundingBoxes);
+    /*---- ILayout ------------------------------------------------------*/
+
+    // Constructed:
+
+    model: HarmonyModel;
+    x: number;
+    division: number;
+
+    // Prototype:
+
+    boundingBoxes: IBoundingRect[] = [];
+    renderClass: Type = Type.Harmony;
+    expandPolicy: "none" = "none";
+  };
 }
 
 /**
  * Registers Harmony in the factory structure passed in.
  */
-function Export(constructors: { [key: number]: any }) {
-    constructors[Type.Harmony] = HarmonyModel;
+export default function Export(constructors: { [key: number]: any }) {
+  constructors[Type.Harmony] = HarmonyModel;
 }
 
-module Export {
-    export interface IHarmonyModel extends IModel, Harmony {
-    }
+export interface IHarmonyModel extends IModel, Harmony {}
 
-    export interface IHarmonyLayout extends ILayout {
-    }
-}
-
-export default Export;
+export interface IHarmonyLayout extends ILayout {}

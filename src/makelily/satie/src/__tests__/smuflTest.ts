@@ -20,22 +20,22 @@
  * @file part of Satie test suite
  */
 
-import {bboxes, bravura, getGlyphCode} from "../private_smufl";
+import { bboxes, bravura, getGlyphCode } from "../private_smufl";
 
-import {expect} from "chai";
+import { expect } from "chai";
 
 describe("[smufl.ts]", function() {
-    describe("bboxes", function() {
-        // TODO: Refactor so SMuFL does not contain Bravura stuff.
+  describe("bboxes", function() {
+    // TODO: Refactor so SMuFL does not contain Bravura stuff.
 
-        it("is simply bravuraMetadata indexed by 4th index (key)", function() {
-            // Note: you may need to change this if the Bravura order changes.
-            expect(bboxes["4stringTabClef"]).to.deep.equal(bravura.glyphBBoxes[0]);
-        });
+    it("is simply bravuraMetadata indexed by 4th index (key)", function() {
+      // Note: you may need to change this if the Bravura order changes.
+      expect(bboxes["4stringTabClef"]).to.deep.equal(bravura.glyphBBoxes[0]);
     });
-    describe("getGlyphCode", function() {
-        it("returns a string with the codepoint", function() {
-            expect(getGlyphCode("flag8thUp")).to.equal("\uE240");
-        });
+  });
+  describe("getGlyphCode", function() {
+    it("returns a string with the codepoint", function() {
+      expect(getGlyphCode("flag8thUp")).to.equal("\uE240");
     });
+  });
 });

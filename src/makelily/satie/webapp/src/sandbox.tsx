@@ -1,33 +1,13 @@
 import * as React from "react";
 import { Component } from "react";
-import { Link } from "react-router";
-import { reduce, defer, find, last, findLastIndex, isEqual } from "lodash";
+import { defer, find, isEqual } from "lodash";
 
-import {
-  Pitch,
-  Note,
-  Count,
-  BeamType,
-  MxmlAccidental,
-  BarStyleType,
-} from "musicxml-interfaces";
-import { buildNote, patchNote } from "musicxml-interfaces/builders";
+import { Pitch, Note, Count, MxmlAccidental } from "musicxml-interfaces";
 import { IAny } from "musicxml-interfaces/operations";
 
-import Test, { satieApplication } from "./test";
-import { prefix } from "./config";
 const STYLES = require("./tests.css");
 
-import {
-  Application,
-  ISong,
-  Song,
-  Patch,
-  Type,
-  IMouseEvent,
-} from "../../src/satie";
-
-const MAX_SAFE_INTEGER = 9007199254740991;
+import { ISong, Song, Patch, Type, IMouseEvent } from "../../src/satie";
 
 interface IState {
   error?: Error;
@@ -197,81 +177,57 @@ class Tests extends Component<{ params: { id: string } }, IState> {
         <p>Use this page to test song editing.</p>
         <ul style={{ display: "flex", listStyleType: "none" }}>
           <li style={{ padding: 10 }}>
-            <a
-              href="javascript:void(0)"
-              onClick={this._setNote.bind(this, Count._32nd)}
-            >
+            <a href="#" onClick={this._setNote.bind(this, Count._32nd)}>
               32
             </a>
           </li>
           <li style={{ padding: 10 }}>
-            <a
-              href="javascript:void(0)"
-              onClick={this._setNote.bind(this, Count._16th)}
-            >
+            <a href="#" onClick={this._setNote.bind(this, Count._16th)}>
               16
             </a>
           </li>
           <li style={{ padding: 10 }}>
-            <a
-              href="javascript:void(0)"
-              onClick={this._setNote.bind(this, Count.Eighth)}
-            >
+            <a href="#" onClick={this._setNote.bind(this, Count.Eighth)}>
               8
             </a>
           </li>
           <li style={{ padding: 10 }}>
-            <a
-              href="javascript:void(0)"
-              onClick={this._setNote.bind(this, Count.Quarter)}
-            >
+            <a href="#" onClick={this._setNote.bind(this, Count.Quarter)}>
               4
             </a>
           </li>
           <li style={{ padding: 10 }}>
-            <a
-              href="javascript:void(0)"
-              onClick={this._setNote.bind(this, Count.Half)}
-            >
+            <a href="#" onClick={this._setNote.bind(this, Count.Half)}>
               2
             </a>
           </li>
           <li style={{ padding: 10 }}>
-            <a
-              href="javascript:void(0)"
-              onClick={this._setNote.bind(this, Count.Whole)}
-            >
+            <a href="#" onClick={this._setNote.bind(this, Count.Whole)}>
               1
             </a>
           </li>
           <li style={{ padding: 10 }}>
-            <a
-              href="javascript:void(0)"
-              onClick={this._setType.bind(this, "N")}
-            >
+            <a href="#" onClick={this._setType.bind(this, "N")}>
               N
             </a>
           </li>
           <li style={{ padding: 10 }}>
-            <a
-              href="javascript:void(0)"
-              onClick={this._setType.bind(this, "R")}
-            >
+            <a href="#" onClick={this._setType.bind(this, "R")}>
               R
             </a>
           </li>
           <li style={{ padding: 10 }}>
-            <a href="javascript:void(0)" onClick={this._undo.bind(this)}>
+            <a href="#" onClick={this._undo.bind(this)}>
               Undo
             </a>
           </li>
           <li style={{ padding: 10 }}>
-            <a href="javascript:void(0)" onClick={this._newMeasure.bind(this)}>
+            <a href="#" onClick={this._newMeasure.bind(this)}>
               +
             </a>
           </li>
           <li style={{ padding: 10 }}>
-            <a href="javascript:void(0)" onClick={this._newCursor.bind(this)}>
+            <a href="#" onClick={this._newCursor.bind(this)}>
               +
             </a>
           </li>
@@ -298,11 +254,11 @@ class Tests extends Component<{ params: { id: string } }, IState> {
         error: err,
       });
     });
-  }
+  };
   private _setSongRef = (song: ISong) => {
     this._song = song;
     (window as any)["_song"] = song;
-  }
+  };
   private _mouseMoveHandler = (ev: IMouseEvent) => {
     if (
       isEqual(this.state.lastPath, ev.path) &&
@@ -313,10 +269,10 @@ class Tests extends Component<{ params: { id: string } }, IState> {
     if (!this._handler(ev, true)) {
       this.setState({ operations: this.state.canonicalOperations });
     }
-  }
+  };
   private _mouseClickHandler = (ev: IMouseEvent) => {
     this._handler(ev, false);
-  }
+  };
   private _handler(ev: IMouseEvent, isPreview: boolean): boolean {
     const { path, pitch } = ev;
     const oldOperations = this.state.oldOperations.concat([
@@ -360,23 +316,21 @@ class Tests extends Component<{ params: { id: string } }, IState> {
       ) {
         patch = Patch.createPatch(isPreview, doc, measureUUID, "P1", part =>
           part.voice(1, voice =>
-            voice.at(elIdx).note(
-              0,
-              note =>
-                this.state.type === "R"
-                  ? note
-                      .pitch(null)
-                      .dots([])
-                      .noteType(noteType => noteType.duration(this.state.note))
-                      .color(isPreview ? "#cecece" : "#000000")
-                  : note
-                      .pitch(pitch)
-                      .dots([])
-                      .noteType(noteType => noteType.duration(this.state.note))
-                      .accidental(accidental =>
-                        accidental.accidental(MxmlAccidental.Sharp),
-                      )
-                      .color(isPreview ? "#cecece" : "#000000"),
+            voice.at(elIdx).note(0, note =>
+              this.state.type === "R"
+                ? note
+                    .pitch(null)
+                    .dots([])
+                    .noteType(noteType => noteType.duration(this.state.note))
+                    .color(isPreview ? "#cecece" : "#000000")
+                : note
+                    .pitch(pitch)
+                    .dots([])
+                    .noteType(noteType => noteType.duration(this.state.note))
+                    .accidental(accidental =>
+                      accidental.accidental(MxmlAccidental.Sharp),
+                    )
+                    .color(isPreview ? "#cecece" : "#000000"),
             ),
           ),
         );

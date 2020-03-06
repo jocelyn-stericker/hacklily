@@ -22,19 +22,19 @@
 
 import Direction from "../implDirection_directionModel";
 
-import {expect} from "chai";
+import { expect } from "chai";
 
-import {IModel, Type} from "../document";
+import { IModel, Type } from "../document";
 
 import Factory from "../engine_factory";
 
 describe("[direction.ts]", function() {
-    describe("DirectionModel", function() {
-        let factory = new Factory([Direction]);
-        let direction: IModel;
-        it("can be created", function() {
-            direction = factory.create(Type.Direction);
-            expect(!!direction).to.be.true;
-        });
+  describe("DirectionModel", function() {
+    let factory = new Factory([Direction]);
+    let direction: IModel;
+    it("can be created", function() {
+      direction = factory.create(Type.Direction);
+      expect(!!direction).to.be.true;
     });
+  });
 });

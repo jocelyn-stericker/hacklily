@@ -22,19 +22,19 @@
 
 import BarlineModel from "../implBarline_barlineModel";
 
-import {expect} from "chai";
+import { expect } from "chai";
 
-import {IModel, Type} from "../document";
+import { IModel, Type } from "../document";
 
 import Factory from "../engine_factory";
 
 describe("[barline.ts]", function() {
-    describe("BarlineModel", function() {
-        let factory = new Factory([BarlineModel]);
-        let barline: IModel;
-        it("can be created", function() {
-            barline = factory.create(Type.Barline);
-            expect(!!barline).to.be.true;
-        });
+  describe("BarlineModel", function() {
+    let factory = new Factory([BarlineModel]);
+    let barline: IModel;
+    it("can be created", function() {
+      barline = factory.create(Type.Barline);
+      expect(!!barline).to.be.true;
     });
+  });
 });

@@ -141,9 +141,8 @@ export function timeModification(
 }
 
 export function ties(chord: IChord): Tie[] {
-  let ties = map(
-    chord,
-    note => (note.ties && note.ties.length ? note.ties[0] : null),
+  let ties = map(chord, note =>
+    note.ties && note.ties.length ? note.ties[0] : null,
   );
   return filter(ties, t => !!t).length ? ties : null;
 }
@@ -240,7 +239,7 @@ export function lineForClef(note: Note, clef: Clef): number {
   }
   if (!note) {
     return 3;
-  } else if (!!note.rest) {
+  } else if (note.rest) {
     if (note.rest.displayStep) {
       return lineForClef_(note.rest.displayStep, note.rest.displayOctave, clef);
     } else if (note.noteType.duration === Count.Whole) {
@@ -248,13 +247,13 @@ export function lineForClef(note: Note, clef: Clef): number {
     } else {
       return 3;
     }
-  } else if (!!note.unpitched) {
+  } else if (note.unpitched) {
     return lineForClef_(
       note.unpitched.displayStep,
       note.unpitched.displayOctave,
       clef,
     );
-  } else if (!!note.pitch) {
+  } else if (note.pitch) {
     return lineForClef_(note.pitch.step, note.pitch.octave, clef);
   } else {
     throw new Error("Invalid note");

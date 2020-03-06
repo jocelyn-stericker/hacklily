@@ -61,19 +61,18 @@ export default class Rest extends Component<IProps, {}> {
     return (
       <g>
         <Glyph fill={spec.color} glyphName={notehead} key="R" x={x} y={y} />
-        {rest.measure &&
-          this.props.multipleRest && (
-            <text
-              className="mmn_"
-              fontWeight="bold"
-              fontSize={48}
-              textAnchor="middle"
-              x={x + (bboxes[notehead][0] * 10) / 2}
-              y={y - 30}
-            >
-              {this.props.multipleRest.count} /*TODO: useSymbols*/
-            </text>
-          )}
+        {rest.measure && this.props.multipleRest && (
+          <text
+            className="mmn_"
+            fontWeight="bold"
+            fontSize={48}
+            textAnchor="middle"
+            x={x + (bboxes[notehead][0] * 10) / 2}
+            y={y - 30}
+          >
+            {this.props.multipleRest.count} /*TODO: useSymbols*/
+          </text>
+        )}
         {spec.dots && spec.printDot !== false
           ? map(spec.dots, (dot, idx) => (
               <Dot

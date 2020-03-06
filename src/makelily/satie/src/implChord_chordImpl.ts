@@ -56,7 +56,11 @@ import { IReadOnlyValidationCursor, LayoutCursor } from "./private_cursor";
 import { VoiceBuilder } from "./engine_createPatch";
 import { getWidth as getGlyphWidth } from "./private_smufl";
 
-import ChordModel from "./implChord_chordModel";
+import {
+  IChordModel,
+  IChordLayout,
+  IDetachedChordModel,
+} from "./implChord_chordModel";
 import { IBeamLayout } from "./implChord_beamLayout";
 import NoteImpl from "./implChord_noteImpl";
 import { getChordLyricWidth } from "./implChord_lyrics";
@@ -106,11 +110,165 @@ let countToRest: { [key: number]: string } = {
   [Count._1024th]: "rest1024th",
 };
 
+export class Layout implements IChordLayout {
+  /*---- IChordLayout ------------------------------------------------------*/
+
+  // Constructed:
+
+  model: IDetachedChordModel;
+  x: number;
+  division: number;
+  renderedWidth: number;
+  notehead: string;
+
+  minSpaceBefore: number;
+  minSpaceAfter: number;
+
+  // Prototype:
+
+  boundingBoxes: IBoundingRect[] = [];
+  renderClass: Type = Type.Chord;
+  expandPolicy: "none" | "centered" | "after" = "after";
+
+  satieBeam: IBeamLayout;
+  satieStem: {
+    direction: number;
+    stemHeight: number;
+    stemStart: number;
+    tremolo?: Tremolo;
+  };
+  satieFlag: string;
+
+  /*---- Implementation ----------------------------------------------------*/
+
+  refresh(baseModel: ChordModelImpl, cursor: LayoutCursor) {
+    // ** this function should not modify baseModel **
+
+    this.division = cursor.segmentDivision;
+    let { measureStyle } = cursor.staffAttributes;
+    if (measureStyle.multipleRest && !measureStyle.multipleRestInitiatedHere) {
+      // This is not displayed because it is part of a multirest.
+      this.x = 0;
+      this.expandPolicy = "none";
+      return;
+    }
+
+    this.model = this._detachModelWithContext(cursor, baseModel);
+    this.satieStem = baseModel.satieStem;
+    this.satieFlag = baseModel.satieFlag;
+    this.boundingBoxes = this._captureBoundingBoxes();
+
+    let isWholeBar = baseModel.wholebar || baseModel.count === Count.Whole;
+
+    this.expandPolicy =
+      baseModel.satieMultipleRest || (baseModel.rest && isWholeBar)
+        ? "centered"
+        : "after";
+
+    forEach(this.model, note => {
+      let staff = note.staff || 1;
+
+      invariant(
+        !!staff,
+        "Expected the staff to be a non-zero number, got %s",
+        staff,
+      );
+      let paddingTop = cursor.lineMaxPaddingTopByStaff[staff] || 0;
+      let paddingBottom = cursor.lineMaxPaddingBottomByStaff[staff] || 0;
+      cursor.lineMaxPaddingTopByStaff[staff] = Math.max(
+        paddingTop,
+        note.defaultY - 50,
+      );
+      cursor.lineMaxPaddingBottomByStaff[staff] = Math.max(
+        paddingBottom,
+        -note.defaultY - 25,
+      );
+    });
+
+    let accidentalWidth = baseModel.calcAccidentalWidth();
+    let totalWidth = baseModel.calcWidth(cursor.lineShortest);
+    invariant(isFinite(totalWidth), "Invalid width %s", totalWidth);
+
+    let noteheads = baseModel.noteheadGlyph;
+    let widths = map(noteheads, getGlyphWidth);
+    this.renderedWidth = max(widths);
+
+    if (baseModel.satieMultipleRest || baseModel.count === Count.Whole) {
+      forEach(this.model, note => (note.dots = []));
+    }
+
+    this.x = cursor.segmentX + accidentalWidth;
+    this.minSpaceAfter = this._getMinWidthAfter(cursor);
+    this.minSpaceBefore = this._getMinWidthBefore(cursor);
+    cursor.segmentX += totalWidth;
+  }
+
+  _captureBoundingBoxes(): IBoundingRect[] {
+    let bboxes: IBoundingRect[] = [];
+    forEach(this.model, note => {
+      let notations = notationObj(note); // TODO: detach this
+      let bbn = getBoundingRects(notations, note, this);
+      bboxes = bboxes.concat(bbn.bb);
+      note.notations = [bbn.n];
+    });
+    return bboxes;
+  }
+
+  _getMinWidthBefore(cursor: LayoutCursor) {
+    return this._getLyricWidth(cursor) / 2;
+  }
+
+  _getMinWidthAfter(cursor: LayoutCursor) {
+    return this._getLyricWidth(cursor) / 2;
+  }
+
+  _getLyricWidth(_cursor: LayoutCursor) {
+    let factor = (40 * 25.4) / 96; // 40 tenths in staff * pixelFactor
+    return getChordLyricWidth(this.model, factor);
+  }
+
+  _detachModelWithContext(
+    _cursor: LayoutCursor,
+    baseModel: ChordModelImpl,
+  ): IDetachedChordModel {
+    let model: IDetachedChordModel = map(baseModel, (note, _idx) => {
+      /* Here, we're extending each note to have the correct
+       * default position.  To do so, we use prototypical
+       * inheritance. See Object.create. */
+      return Object.create(note, {
+        defaultX: {
+          get: () => {
+            return (note.relativeX || 0) + ((this as any).overrideX || this.x);
+          },
+        },
+        stem: {
+          get: () => {
+            return (
+              baseModel.stem || {
+                type: baseModel.satieDirection,
+              }
+            );
+          },
+        },
+      });
+    }) as any;
+
+    model.stemX = () => (this as any).overrideX || this.x;
+    model.staffIdx = baseModel.staffIdx;
+    model.divCount = baseModel.divCount;
+    model.satieLedger = baseModel.satieLedger;
+    model.noteheadGlyph = baseModel.noteheadGlyph;
+    model.satieMultipleRest = baseModel.satieMultipleRest;
+    model.satieUnbeamedTuplet = baseModel.satieUnbeamedTuplet;
+    return model;
+  }
+}
+
 /**
  * A model that represents 1 or more notes in the same voice, starting on the same beat, and each
  * with the same duration. Any number of these notes may be rests.
  */
-class ChordModelImpl implements ChordModel.IChordModel, ArrayLike<NoteImpl> {
+class ChordModelImpl implements IChordModel, ArrayLike<NoteImpl> {
   /*---- I.1 IModel ---------------------------------------------------------------------------*/
 
   /** set in validate */
@@ -122,7 +280,7 @@ class ChordModelImpl implements ChordModel.IChordModel, ArrayLike<NoteImpl> {
     return this[0].staff || 1;
   }
 
-  set staffIdx(n: number) {
+  set staffIdx(_n: number) {
     // Ignore.
   }
 
@@ -152,7 +310,7 @@ class ChordModelImpl implements ChordModel.IChordModel, ArrayLike<NoteImpl> {
 
   stem: Stem;
 
-  private _layout: ChordModelImpl.Layout;
+  private _layout: Layout;
 
   get satieLedger(): number[] {
     return ledgerLines(this, this._clef);
@@ -208,7 +366,7 @@ class ChordModelImpl implements ChordModel.IChordModel, ArrayLike<NoteImpl> {
    * is an array-like element of Notes. In either case, we create a deep copy.
    */
   constructor(spec?: IChord | Note) {
-    if (!!spec) {
+    if (spec) {
       if (spec._class === "Note") {
         this[0] = new NoteImpl(this, 0, spec);
         this.length = 1;
@@ -228,7 +386,7 @@ class ChordModelImpl implements ChordModel.IChordModel, ArrayLike<NoteImpl> {
       cursor.dangerouslyPatchWithoutValidation(voice =>
         reduce(
           this,
-          (builder, note, idx) =>
+          (builder, _note, idx) =>
             builder.note(idx, j => j.noteType({ duration: count })) as any,
           voice,
         ),
@@ -375,7 +533,7 @@ class ChordModelImpl implements ChordModel.IChordModel, ArrayLike<NoteImpl> {
     }
   }
 
-  getLayout(cursor: LayoutCursor): ChordModel.IChordLayout {
+  getLayout(cursor: LayoutCursor): IChordLayout {
     this._init = true;
     if (!this._layout) {
       this._layout = new ChordModelImpl.Layout();
@@ -480,7 +638,7 @@ class ChordModelImpl implements ChordModel.IChordModel, ArrayLike<NoteImpl> {
         reduce(
           times(this.length),
           (voice, idx) =>
-            voice.note(idx, note => note.dots(times(dots, dot => ({})))),
+            voice.note(idx, note => note.dots(times(dots, _dot => ({})))),
           voiceA as VoiceBuilder,
         ),
       );
@@ -679,174 +837,8 @@ class ChordModelImpl implements ChordModel.IChordModel, ArrayLike<NoteImpl> {
     }
     return countToHasStem[this.count];
   }
-}
 
-namespace ChordModelImpl {
-  export class Layout implements ChordModel.IChordLayout {
-    /*---- IChordLayout ------------------------------------------------------*/
-
-    // Constructed:
-
-    model: ChordModel.IDetachedChordModel;
-    x: number;
-    division: number;
-    renderedWidth: number;
-    notehead: string;
-
-    minSpaceBefore: number;
-    minSpaceAfter: number;
-
-    // Prototype:
-
-    boundingBoxes: IBoundingRect[];
-    renderClass: Type;
-    expandPolicy: "none" | "centered" | "after";
-
-    satieBeam: IBeamLayout;
-    satieStem: {
-      direction: number;
-      stemHeight: number;
-      stemStart: number;
-      tremolo?: Tremolo;
-    };
-    satieFlag: string;
-
-    /*---- Implementation ----------------------------------------------------*/
-
-    refresh(baseModel: ChordModelImpl, cursor: LayoutCursor) {
-      // ** this function should not modify baseModel **
-
-      this.division = cursor.segmentDivision;
-      let { measureStyle } = cursor.staffAttributes;
-      if (
-        measureStyle.multipleRest &&
-        !measureStyle.multipleRestInitiatedHere
-      ) {
-        // This is not displayed because it is part of a multirest.
-        this.x = 0;
-        this.expandPolicy = "none";
-        return;
-      }
-
-      this.model = this._detachModelWithContext(cursor, baseModel);
-      this.satieStem = baseModel.satieStem;
-      this.satieFlag = baseModel.satieFlag;
-      this.boundingBoxes = this._captureBoundingBoxes();
-
-      let isWholeBar = baseModel.wholebar || baseModel.count === Count.Whole;
-
-      this.expandPolicy =
-        baseModel.satieMultipleRest || (baseModel.rest && isWholeBar)
-          ? "centered"
-          : "after";
-
-      forEach(this.model, note => {
-        let staff = note.staff || 1;
-
-        invariant(
-          !!staff,
-          "Expected the staff to be a non-zero number, got %s",
-          staff,
-        );
-        let paddingTop = cursor.lineMaxPaddingTopByStaff[staff] || 0;
-        let paddingBottom = cursor.lineMaxPaddingBottomByStaff[staff] || 0;
-        cursor.lineMaxPaddingTopByStaff[staff] = Math.max(
-          paddingTop,
-          note.defaultY - 50,
-        );
-        cursor.lineMaxPaddingBottomByStaff[staff] = Math.max(
-          paddingBottom,
-          -note.defaultY - 25,
-        );
-      });
-
-      let accidentalWidth = baseModel.calcAccidentalWidth();
-      let totalWidth = baseModel.calcWidth(cursor.lineShortest);
-      invariant(isFinite(totalWidth), "Invalid width %s", totalWidth);
-
-      let noteheads = baseModel.noteheadGlyph;
-      let widths = map(noteheads, getGlyphWidth);
-      this.renderedWidth = max(widths);
-
-      if (baseModel.satieMultipleRest || baseModel.count === Count.Whole) {
-        forEach(this.model, note => (note.dots = []));
-      }
-
-      this.x = cursor.segmentX + accidentalWidth;
-      this.minSpaceAfter = this._getMinWidthAfter(cursor);
-      this.minSpaceBefore = this._getMinWidthBefore(cursor);
-      cursor.segmentX += totalWidth;
-    }
-
-    private _captureBoundingBoxes(): IBoundingRect[] {
-      let bboxes: IBoundingRect[] = [];
-      forEach(this.model, note => {
-        let notations = notationObj(note); // TODO: detach this
-        let bbn = getBoundingRects(notations, note, this);
-        bboxes = bboxes.concat(bbn.bb);
-        note.notations = [bbn.n];
-      });
-      return bboxes;
-    }
-
-    private _getMinWidthBefore(cursor: LayoutCursor) {
-      return this._getLyricWidth(cursor) / 2;
-    }
-
-    private _getMinWidthAfter(cursor: LayoutCursor) {
-      return this._getLyricWidth(cursor) / 2;
-    }
-
-    private _getLyricWidth(cursor: LayoutCursor) {
-      let factor = (40 * 25.4) / 96; // 40 tenths in staff * pixelFactor
-      return getChordLyricWidth(this.model, factor);
-    }
-
-    private _detachModelWithContext(
-      cursor: LayoutCursor,
-      baseModel: ChordModelImpl,
-    ): ChordModel.IDetachedChordModel {
-      let model: ChordModel.IDetachedChordModel = map(
-        baseModel,
-        (note, idx) => {
-          /* Here, we're extending each note to have the correct
-                     * default position.  To do so, we use prototypical
-                     * inheritance. See Object.create. */
-          return Object.create(note, {
-            defaultX: {
-              get: () => {
-                return (
-                  (note.relativeX || 0) + ((this as any).overrideX || this.x)
-                );
-              },
-            },
-            stem: {
-              get: () => {
-                return (
-                  baseModel.stem || {
-                    type: baseModel.satieDirection,
-                  }
-                );
-              },
-            },
-          });
-        },
-      ) as any;
-
-      model.stemX = () => (this as any).overrideX || this.x;
-      model.staffIdx = baseModel.staffIdx;
-      model.divCount = baseModel.divCount;
-      model.satieLedger = baseModel.satieLedger;
-      model.noteheadGlyph = baseModel.noteheadGlyph;
-      model.satieMultipleRest = baseModel.satieMultipleRest;
-      model.satieUnbeamedTuplet = baseModel.satieUnbeamedTuplet;
-      return model;
-    }
-  }
-
-  Layout.prototype.expandPolicy = "after";
-  Layout.prototype.renderClass = Type.Chord;
-  Layout.prototype.boundingBoxes = [];
+  static Layout = Layout;
 }
 
 export default ChordModelImpl;

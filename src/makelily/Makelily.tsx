@@ -19,7 +19,7 @@
  */
 
 import { css, StyleSheet } from "aphrodite";
-import React = require("react");
+import React from "react";
 import { Application, requireFont } from "./satie/src/satie";
 
 import { ToolProps } from "./tool";
@@ -135,7 +135,6 @@ export default class Makelily extends React.Component<Props, State> {
     const activeMode: InsertMode = modes.find(
       (mode: InsertMode) => mode.key === this.state.toolKey,
     );
-    // tslint:disable-next-line variable-name
     const Tool: React.ComponentType<ToolProps> = activeMode
       ? activeMode.Component
       : ToolNotFound;
@@ -173,7 +172,6 @@ export default class Makelily extends React.Component<Props, State> {
               onInsertLy={this.props.onInsertLy}
             />
           </div>
-          {/* tslint:disable-next-line react-a11y-anchors */}
           <a
             href="#"
             onClick={this.props.onHide}
@@ -197,7 +195,6 @@ export default class Makelily extends React.Component<Props, State> {
 
 const modeBarWidth: number = 180;
 
-// tslint:disable-next-line typedef
 const styles = StyleSheet.create({
   close: {
     ":hover": {

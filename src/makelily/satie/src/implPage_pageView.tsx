@@ -126,7 +126,7 @@ export default class Page extends Component<IProps, {}> {
         width={widthMM}
       >
         {!this.props.singleLineMode && map(credits, c => <CreditView {...c} />)}
-        {map(lineLayouts, (lineLayout, lineIdx) =>
+        {map(lineLayouts, lineLayout =>
           map(lineLayout, measureLayout => (
             <MeasureView
               key={measureLayout.uuid}

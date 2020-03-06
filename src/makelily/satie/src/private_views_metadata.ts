@@ -107,9 +107,10 @@ export function Targetable<P extends IBaseProps, S>() {
 
     // ---- //
 
-    let originalComponentWillMount = component.prototype.componentWillMount;
+    let originalComponentWillMount =
+      component.prototype.UNSAFE_componentWillMount;
 
-    component.prototype.componentWillMount = function metaComponentWillMountWrapper() {
+    component.prototype.UNSAFE_componentWillMount = function metaComponentWillMountWrapper() {
       let self = this as IMetaComponent<P, S>;
       updateMeta(self, self.props);
 
@@ -134,9 +135,9 @@ export function Targetable<P extends IBaseProps, S>() {
     // ---- //
 
     let originalComponentWillReceiveProps =
-      component.prototype.componentWillReceiveProps;
+      component.prototype.UNSAFE_componentWillReceiveProps;
 
-    component.prototype.componentWillReceiveProps = function metaComponentWillReceiveProps(
+    component.prototype.UNSAFE_componentWillReceiveProps = function metaComponentWillReceiveProps(
       nextProps: P,
     ) {
       let self = this as IMetaComponent<P, S>;

@@ -16,33 +16,38 @@
  * along with Satie.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import {some, filter} from "lodash";
-import {PartList, PartGroup, ScorePart, StartStop} from "musicxml-interfaces";
+import { some, filter } from "lodash";
+import { PartList, PartGroup, ScorePart, StartStop } from "musicxml-interfaces";
 
 export function scoreParts(scoreParts: PartList): ScorePart[] {
-    return <ScorePart[]> filter(scoreParts, scorePart => scorePart._class === "ScorePart");
+  return <ScorePart[]>(
+    filter(scoreParts, scorePart => scorePart._class === "ScorePart")
+  );
 }
 
-export function groupsForPart(scoreParts: PartList, partID: string): PartGroup[] {
-    let groups: PartGroup[] = [];
+export function groupsForPart(
+  scoreParts: PartList,
+  partID: string,
+): PartGroup[] {
+  let groups: PartGroup[] = [];
 
-    some(scoreParts, partOrGroup => {
-        if (partOrGroup._class === "PartGroup") {
-            let group = <PartGroup> partOrGroup;
-            if (group.type === StartStop.Start) {
-                groups.push(group);
-            } else {
-                groups = filter(groups, currGroup => currGroup.number !== group.number);
-            }
-        } else {
-           let part = <ScorePart> partOrGroup;
-           if (part.id === partID) {
-               return true;
-           }
-        }
+  some(scoreParts, partOrGroup => {
+    if (partOrGroup._class === "PartGroup") {
+      let group = <PartGroup>partOrGroup;
+      if (group.type === StartStop.Start) {
+        groups.push(group);
+      } else {
+        groups = filter(groups, currGroup => currGroup.number !== group.number);
+      }
+    } else {
+      let part = <ScorePart>partOrGroup;
+      if (part.id === partID) {
+        return true;
+      }
+    }
 
-        return false;
-    });
+    return false;
+  });
 
-    return groups;
+  return groups;
 }

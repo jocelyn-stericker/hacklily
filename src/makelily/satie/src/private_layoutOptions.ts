@@ -16,30 +16,34 @@
  * along with Satie.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import {ScoreHeader, Print} from "musicxml-interfaces";
-import {IAny} from "musicxml-interfaces/operations";
+import { ScoreHeader, Print } from "musicxml-interfaces";
+import { IAny } from "musicxml-interfaces/operations";
 
-import {Document, IMeasure, ISegment} from "./document";
+import { Document, IMeasure, ISegment } from "./document";
 
-import {IAttributesSnapshot} from "./private_attributesSnapshot";
-import {IFactory, IPreprocessor, IPostprocessor} from "./private_factory";
+import { IAttributesSnapshot } from "./private_attributesSnapshot";
+import { IFactory, IPreprocessor, IPostprocessor } from "./private_factory";
 
-export type IFixupFn = (segment: ISegment, operations: IAny[], restartRequired?: boolean) => void;
+export type IFixupFn = (
+  segment: ISegment,
+  operations: IAny[],
+  restartRequired?: boolean,
+) => void;
 
 export interface ILayoutOptions {
-    attributes: {[part: string]: IAttributesSnapshot[]};
-    debug?: boolean;
-    document: Document;
-    fixup: IFixupFn;
-    header: ScoreHeader;
-    lineCount: number;
-    lineIndex: number;
-    measures: IMeasure[];
-    modelFactory: IFactory;
-    postprocessors: IPostprocessor[];
-    preprocessors: IPreprocessor[];
-    preview: boolean;
-    print: Print;
-    singleLineMode: boolean;
-    fixedMeasureWidth?: number;
+  attributes: { [part: string]: IAttributesSnapshot[] };
+  debug?: boolean;
+  document: Document;
+  fixup: IFixupFn;
+  header: ScoreHeader;
+  lineCount: number;
+  lineIndex: number;
+  measures: IMeasure[];
+  modelFactory: IFactory;
+  postprocessors: IPostprocessor[];
+  preprocessors: IPreprocessor[];
+  preview: boolean;
+  print: Print;
+  singleLineMode: boolean;
+  fixedMeasureWidth?: number;
 }

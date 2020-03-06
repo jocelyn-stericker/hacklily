@@ -12,7 +12,7 @@ class Home extends Component<void> {
         <p>
           Satie is created by <a href="https://nettek.ca">Josh Netterfield</a>{" "}
           and is a component of <a href="https://ripieno.io">Ripieno</a>, a
-          collaborative sheet music editor. Satie isn't ready for production
+          collaborative sheet music editor. Satie isn&pos;t ready for production
           use, yet.
         </p>
         <Test

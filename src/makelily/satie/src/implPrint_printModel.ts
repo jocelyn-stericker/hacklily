@@ -40,16 +40,14 @@ import { IReadOnlyValidationCursor, LayoutCursor } from "./private_cursor";
 import { IBoundingRect } from "./private_boundingRect";
 import { calculateLineBounds } from "./private_lineBounds";
 
-class PrintModel implements Export.IPrintModel {
+class PrintModel implements IPrintModel {
   _class = "Print";
 
   /*---- I.1 IModel ---------------------------------------------------------------------------*/
 
-  /** @prototype only */
-  divCount: number;
+  divCount: number = 0;
 
-  /** @prototype only */
-  divisions: number;
+  divisions: number = 0;
 
   /** defined externally */
   staffIdx: number;
@@ -127,7 +125,7 @@ class PrintModel implements Export.IPrintModel {
     );
   }
 
-  getLayout(cursor: LayoutCursor): Export.IPrintLayout {
+  getLayout(cursor: LayoutCursor): IPrintLayout {
     return new PrintModel.Layout(this, cursor);
   }
 
@@ -238,16 +236,11 @@ class PrintModel implements Export.IPrintModel {
     return this.toXML();
   }
 
-  calcWidth(shortest: number) {
+  calcWidth(_shortest: number) {
     return 0;
   }
-}
 
-PrintModel.prototype.divCount = 0;
-PrintModel.prototype.divisions = 0;
-
-namespace PrintModel {
-  export class Layout implements Export.IPrintLayout {
+  static Layout = class Layout implements IPrintLayout {
     constructor(model: PrintModel, cursor: LayoutCursor) {
       this.model = model;
       this.x = cursor.segmentX;
@@ -268,15 +261,10 @@ namespace PrintModel {
 
     // Prototype:
 
-    boundingBoxes: IBoundingRect[];
-    renderClass: Type;
-    expandPolicy: "none";
-  }
-
-  Layout.prototype.expandPolicy = "none";
-  Layout.prototype.renderClass = Type.Print;
-  Layout.prototype.boundingBoxes = [];
-  Object.freeze(Layout.prototype.boundingBoxes);
+    boundingBoxes: IBoundingRect[] = [];
+    renderClass: Type = Type.Print;
+    expandPolicy: "none" = "none";
+  };
 }
 
 function extractDefaultPrintFromHeader(header: ScoreHeader): Print {
@@ -310,16 +298,12 @@ function extractDefaultPrintFromHeader(header: ScoreHeader): Print {
 /**
  * Registers Print in the factory structure passed in.
  */
-function Export(constructors: { [key: number]: any }) {
+export default function Export(constructors: { [key: number]: any }) {
   constructors[Type.Print] = PrintModel;
 }
 
-namespace Export {
-  export interface IPrintModel extends IModel, Print {}
+export interface IPrintModel extends IModel, Print {}
 
-  export interface IPrintLayout extends ILayout {
-    renderedWidth: number;
-  }
+export interface IPrintLayout extends ILayout {
+  renderedWidth: number;
 }
-
-export default Export;

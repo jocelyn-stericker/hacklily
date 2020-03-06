@@ -16,15 +16,20 @@
  * along with Satie.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import {PageMargins, OddEvenBoth} from "musicxml-interfaces";
+import { PageMargins, OddEvenBoth } from "musicxml-interfaces";
 
-export function getPageMargins(pageMargins: PageMargins[], page: number): PageMargins {
-    for (let i = 0; i < pageMargins.length; ++i) {
-        if (pageMargins[i].type === OddEvenBoth.Both ||
-                pageMargins[i].type === OddEvenBoth.Even && (page % 2 === 0) ||
-                pageMargins[i].type === OddEvenBoth.Odd && (page % 2 === 1)) {
-            return pageMargins[i];
-        }
+export function getPageMargins(
+  pageMargins: PageMargins[],
+  page: number,
+): PageMargins {
+  for (let i = 0; i < pageMargins.length; ++i) {
+    if (
+      pageMargins[i].type === OddEvenBoth.Both ||
+      (pageMargins[i].type === OddEvenBoth.Even && page % 2 === 0) ||
+      (pageMargins[i].type === OddEvenBoth.Odd && page % 2 === 1)
+    ) {
+      return pageMargins[i];
     }
-    throw new Error("Invalid page margins");
+  }
+  throw new Error("Invalid page margins");
 }

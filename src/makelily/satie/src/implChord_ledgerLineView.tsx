@@ -16,46 +16,46 @@
  * along with Satie.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import {PrintStyle} from "musicxml-interfaces";
-import {createFactory, Component} from "react";
+import { PrintStyle } from "musicxml-interfaces";
+import React, { Component } from "react";
 import * as PropTypes from "prop-types";
 
 import Line from "./private_views_line";
-import {bboxes} from "./private_smufl";
-
-const $Line = createFactory(Line);
+import { bboxes } from "./private_smufl";
 
 export interface IProps {
-    key?: string | number;
-    spec: PrintStyle;
-    notehead: string;
+  key?: string | number;
+  spec: PrintStyle;
+  notehead: string;
 }
 
 /**
  * Renders a ledger line at (x, y + line).
  */
 export default class LedgerLine extends Component<IProps, {}> {
-    static contextTypes = {
-        originY: PropTypes.number.isRequired
-    } as any;
+  static contextTypes = {
+    originY: PropTypes.number.isRequired,
+  } as any;
 
-    context: {
-        originY: number;
-    };
+  context: {
+    originY: number;
+  };
 
-    render(): any {
-        const spec = this.props.spec;
-        const west = bboxes[this.props.notehead][3];
-        const east = bboxes[this.props.notehead][0];
-        const xOffset = (east - west) * 10;
-        return $Line({
-            stroke: spec.color,
-            strokeWidth: 2.2,
-                // Ledger lines should be thicker than regular lines.
-            x1: spec.defaultX + (spec.relativeX || 0) - 3.2,
-            x2: spec.defaultX + (spec.relativeX || 0) + xOffset - 0.2,
-            y1: this.context.originY - spec.defaultY - (spec.relativeX || 0),
-            y2: this.context.originY - spec.defaultY - (spec.relativeX || 0)
-        });
-    }
+  render(): any {
+    const spec = this.props.spec;
+    const west = bboxes[this.props.notehead][3];
+    const east = bboxes[this.props.notehead][0];
+    const xOffset = (east - west) * 10;
+    return (
+      <Line
+        stroke={spec.color}
+        strokeWidth={2.2}
+        // Ledger lines should be thicker than regular lines.
+        x1={spec.defaultX + (spec.relativeX || 0) - 3.2}
+        x2={spec.defaultX + (spec.relativeX || 0) + xOffset - 0.2}
+        y1={this.context.originY - spec.defaultY - (spec.relativeX || 0)}
+        y2={this.context.originY - spec.defaultY - (spec.relativeX || 0)}
+      />
+    );
+  }
 }

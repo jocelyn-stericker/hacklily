@@ -22,50 +22,50 @@
  * fixed=false to remove overlaps.
  */
 export interface IBoundingRect {
-    /**
-     * Position relative to parent model as computed by model.
-     */
-    defaultX: number;
+  /**
+   * Position relative to parent model as computed by model.
+   */
+  defaultX: number;
 
-    /**
-     * Position relative to parent model as computed by model.
-     */
-    defaultY: number;
+  /**
+   * Position relative to parent model as computed by model.
+   */
+  defaultY: number;
 
-    /**
-     * If true, relative coordinates cannot be changed by the layout engine
-     */
-    fixed?: boolean;
+  /**
+   * If true, relative coordinates cannot be changed by the layout engine
+   */
+  fixed?: boolean;
 
-    /**
-     * Position relative to ideal position as computed by layout engine.
-     */
-    relativeX?: number;
+  /**
+   * Position relative to ideal position as computed by layout engine.
+   */
+  relativeX?: number;
 
-    /**
-     * Position relative to ideal position as computed by layout engine.
-     */
-    relativeY?: number;
+  /**
+   * Position relative to ideal position as computed by layout engine.
+   */
+  relativeY?: number;
 
-    /**
-     * Visual top of bounding box
-     */
-    top: number;
+  /**
+   * Visual top of bounding box
+   */
+  top: number;
 
-    /**
-     * Visual bottom of bounding box
-     * Invariant: bottom > top
-     */
-    bottom: number;
+  /**
+   * Visual bottom of bounding box
+   * Invariant: bottom > top
+   */
+  bottom: number;
 
-    /**
-     * Visual left of bounding box
-     */
-    left: number;
+  /**
+   * Visual left of bounding box
+   */
+  left: number;
 
-    /**
-     * Visual right of bounding box.
-     * Invariant: right > left
-     */
-    right: number;
+  /**
+   * Visual right of bounding box.
+   * Invariant: right > left
+   */
+  right: number;
 }

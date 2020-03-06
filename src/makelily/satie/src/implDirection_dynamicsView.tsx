@@ -17,14 +17,12 @@
  */
 
 import { Dynamics, Direction } from "musicxml-interfaces";
-import { createFactory, ReactElement, Component } from "react";
+import React, { ReactElement, Component } from "react";
 import * as PropTypes from "prop-types";
 import { filter } from "lodash";
 import invariant from "invariant";
 
 import Glyph from "./private_views_glyph";
-
-const $Glyph = createFactory(Glyph);
 
 export interface IProps {
   layout: { model: Direction; overrideX?: number };
@@ -64,12 +62,14 @@ export default class DynamicsView extends Component<IProps, {}> {
       return null;
     }
 
-    return $Glyph({
-      fill: dynamics.color || "black",
-      glyphName: glyphName,
-      x: initX,
-      y: initY,
-    });
+    return (
+      <Glyph
+        fill={dynamics.color || "black"}
+        glyphName={glyphName}
+        x={initX}
+        y={initY}
+      />
+    );
   }
 
   getGlyphName(dynamics: Dynamics) {

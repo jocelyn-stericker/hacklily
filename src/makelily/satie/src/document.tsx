@@ -16,7 +16,7 @@
  * along with Satie.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { createFactory, ReactElement } from "react";
+import React, { ReactElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 
 import {
@@ -28,14 +28,14 @@ import {
   Sound,
   Direction,
   Harmony,
-  Barline
+  Barline,
 } from "musicxml-interfaces";
 import { IAny } from "musicxml-interfaces/operations";
 import { find } from "lodash";
 
-import ProxyExports from "./implProxy_proxyModel";
-import SpacerExports from "./implSpacer_spacerModel";
-import VisualCursorExports from "./implVisualCursor_visualCursorModel";
+import { IProxyModel } from "./implProxy_proxyModel";
+import { ISpacerModel } from "./implSpacer_spacerModel";
+import { IVisualCursorModel } from "./implVisualCursor_visualCursorModel";
 
 import { IFactory } from "./private_factory";
 
@@ -52,26 +52,9 @@ import { IMeasure } from "./document_measure";
 import { IModel } from "./document_model";
 import Type from "./document_types";
 
-const $PageView = createFactory(PageView);
-
-export {
-  ISegment,
-  IMeasurePart,
-  IMeasure,
-  getMeasureSegments,
-  reduceToShortestInSegments
-} from "./document_measure";
-export { IModel, generateModelKey, ILayout, detach } from "./document_model";
-export {
-  IMouseEvent,
-  IProps,
-  IPatchSpec,
-  specIsRaw,
-  specIsDocBuilder,
-  specIsPartBuilder,
-  ISong,
-  ISongClass
-} from "./document_song";
+export * from "./document_measure";
+export * from "./document_model";
+export * from "./document_song";
 export { default as Type } from "./document_types";
 
 import { IMeasureLayout } from "./private_measureLayout";
@@ -113,40 +96,34 @@ export class Document {
   modelHasType(model: IModel, modelType: Type.Print): model is Print & IModel;
   modelHasType(
     model: IModel,
-    modelType: Type.Grouping
+    modelType: Type.Grouping,
   ): model is Grouping & IModel;
   modelHasType(
     model: IModel,
-    modelType: Type.FiguredBass
+    modelType: Type.FiguredBass,
   ): model is FiguredBass & IModel;
   modelHasType(
     model: IModel,
-    modelType: Type.Attributes
+    modelType: Type.Attributes,
   ): model is Attributes & IModel & { _snapshot: IAttributesSnapshot };
   modelHasType(model: IModel, modelType: Type.Sound): model is Sound & IModel;
   modelHasType(
     model: IModel,
-    modelType: Type.Direction
+    modelType: Type.Direction,
   ): model is Direction & IModel;
   modelHasType(
     model: IModel,
-    modelType: Type.Harmony
+    modelType: Type.Harmony,
   ): model is Harmony & IModel;
+  modelHasType(model: IModel, modelType: Type.Proxy): model is IProxyModel;
+  modelHasType(model: IModel, modelType: Type.Spacer): model is ISpacerModel;
   modelHasType(
     model: IModel,
-    modelType: Type.Proxy
-  ): model is ProxyExports.IProxyModel;
+    modelType: Type.VisualCursor,
+  ): model is IVisualCursorModel;
   modelHasType(
     model: IModel,
-    modelType: Type.Spacer
-  ): model is SpacerExports.ISpacerModel;
-  modelHasType(
-    model: IModel,
-    modelType: Type.VisualCursor
-  ): model is VisualCursorExports.IVisualCursorModel;
-  modelHasType(
-    model: IModel,
-    modelType: Type.Barline
+    modelType: Type.Barline,
   ): model is Barline & IModel;
   modelHasType(model: IModel, ...modelTypes: Type[]): boolean;
   modelHasType(model: IModel, ...modelTypes: Type[]): boolean {
@@ -156,58 +133,50 @@ export class Document {
   search(
     models: IModel[],
     idx: number,
-    modelType: Type.Chord
+    modelType: Type.Chord,
   ): (IChord & IModel)[];
   search(
     models: IModel[],
     idx: number,
-    modelType: Type.Print
+    modelType: Type.Print,
   ): (Print & IModel)[];
   search(
     models: IModel[],
     idx: number,
-    modelType: Type.Grouping
+    modelType: Type.Grouping,
   ): (Grouping & IModel)[];
   search(
     models: IModel[],
     idx: number,
-    modelType: Type.FiguredBass
+    modelType: Type.FiguredBass,
   ): (FiguredBass & IModel)[];
   search(
     models: IModel[],
     idx: number,
-    modelType: Type.Attributes
+    modelType: Type.Attributes,
   ): (Attributes & IModel)[];
   search(
     models: IModel[],
     idx: number,
-    modelType: Type.Sound
+    modelType: Type.Sound,
   ): (Sound & IModel)[];
   search(
     models: IModel[],
     idx: number,
-    modelType: Type.Direction
+    modelType: Type.Direction,
   ): (Direction & IModel)[];
   search(
     models: IModel[],
     idx: number,
-    modelType: Type.Harmony
+    modelType: Type.Harmony,
   ): (Harmony & IModel)[];
+  search(models: IModel[], idx: number, modelType: Type.Proxy): IProxyModel[];
+  search(models: IModel[], idx: number, modelType: Type.Spacer): ISpacerModel[];
   search(
     models: IModel[],
     idx: number,
-    modelType: Type.Proxy
-  ): ProxyExports.IProxyModel[];
-  search(
-    models: IModel[],
-    idx: number,
-    modelType: Type.Spacer
-  ): SpacerExports.ISpacerModel[];
-  search(
-    models: IModel[],
-    idx: number,
-    modelType: Type.VisualCursor
-  ): VisualCursorExports.IVisualCursorModel[];
+    modelType: Type.VisualCursor,
+  ): IVisualCursorModel[];
   search(models: IModel[], idx: number, ...types: Type[]): IModel[];
   search(models: IModel[], idx: number, ...types: Type[]): IModel[] {
     return this._factory.search(models, idx, ...types);
@@ -222,7 +191,7 @@ export class Document {
       firstMeasure.parts,
       part =>
         !!part.staves[1] &&
-        this.search(part.staves[1], 0, Type.Print).length > 0
+        this.search(part.staves[1], 0, Type.Print).length > 0,
     );
 
     if (partWithPrint) {
@@ -230,26 +199,26 @@ export class Document {
     }
 
     throw new Error(
-      "Part does not contain a Print element at division 0. Is it validated?"
+      "Part does not contain a Print element at division 0. Is it validated?",
     );
   }
 
   renderToStaticMarkup(startMeasure: number): string {
     const core = renderToStaticMarkup(
-      this.__getPage(startMeasure, false, "svg-export", null, false)
+      this.__getPage(startMeasure, false, "svg-export", null, false),
     );
 
     return `<?xml version="1.0" encoding="UTF-8" standalone="no"?>${core
-      .replace("<svg", "<svg xmlns=\"http://www.w3.org/2000/svg\"")
+      .replace("<svg", '<svg xmlns="http://www.w3.org/2000/svg"')
       .replace(/class="tn_"/g, "font-family='Alegreya'")
       .replace(
         /class="mmn_"/g,
-        "font-family='Alegreya' " + "font-style='italic' stroke='#7a7a7a'"
+        "font-family='Alegreya' " + "font-style='italic' stroke='#7a7a7a'",
       )
       .replace(
         /class="bn_"/g,
         "font-family='Alegreya' " +
-          "font-style='italic' text-anchor='end' stroke='#7a7a7a'"
+          "font-style='italic' text-anchor='end' stroke='#7a7a7a'",
       )
       .replace(/<noscript><\/noscript>/g, "")}`;
   }
@@ -269,7 +238,7 @@ export class Document {
     fixedMeasureWidth?: number,
     onOperationsAppended?: (ops: IAny[]) => void,
     ref?: (svg: SVGSVGElement) => void,
-    onPageHeightChanged?: (height: number) => void
+    onPageHeightChanged?: (height: number) => void,
   ): ReactElement<any> {
     let opts: ILayoutOptions = {
       document: this,
@@ -287,10 +256,10 @@ export class Document {
       singleLineMode,
       fixedMeasureWidth,
       fixup: onOperationsAppended
-        ? (segment, patch) => {
+        ? (_segment, patch) => {
             onOperationsAppended(patch);
           }
-        : null
+        : null,
     };
 
     validate(opts);
@@ -298,24 +267,26 @@ export class Document {
     opts.print = this.getPrint(startMeasure);
     const lineLayouts = layoutSong(opts);
 
-    return $PageView({
-      className: pageClassName,
-      lineLayouts: lineLayouts,
-      print: opts.print,
-      renderTarget: renderTarget,
-      scoreHeader: this.header,
-      singleLineMode,
-      svgRef: ref,
-      onPageHeightChanged: onPageHeightChanged
-    });
+    return (
+      <PageView
+        className={pageClassName}
+        lineLayouts={lineLayouts}
+        print={opts.print}
+        renderTarget={renderTarget}
+        scoreHeader={this.header}
+        singleLineMode={singleLineMode}
+        svgRef={ref}
+        onPageHeightChanged={onPageHeightChanged}
+      />
+    );
   }
 
   constructor(
     header: ScoreHeader,
     measures: IMeasure[],
-    parts: string[],
+    _parts: string[],
     internalFactory: IFactory,
-    error?: Error
+    error?: Error,
   ) {
     if (error) {
       this.error = error;
@@ -329,6 +300,6 @@ export class Document {
   cleanlinessTracking: ICleanlinessTracking = {
     measures: {},
     lines: [],
-    linePlacementHints: null
+    linePlacementHints: null,
   };
 }

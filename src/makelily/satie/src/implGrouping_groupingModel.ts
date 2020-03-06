@@ -16,110 +16,97 @@
  * along with Satie.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import {Feature, StartStopSingle, Grouping, serializeGrouping} from "musicxml-interfaces";
-import {forEach} from "lodash";
+import {
+  Feature,
+  StartStopSingle,
+  Grouping,
+  serializeGrouping,
+} from "musicxml-interfaces";
+import { forEach } from "lodash";
 
-import {IModel, ILayout, Type} from "./document";
+import { IModel, ILayout, Type } from "./document";
 
-import {IReadOnlyValidationCursor, LayoutCursor} from "./private_cursor";
-import {IBoundingRect} from "./private_boundingRect";
+import { IReadOnlyValidationCursor, LayoutCursor } from "./private_cursor";
+import { IBoundingRect } from "./private_boundingRect";
 
-class GroupingModel implements Export.IGroupingModel {
+class GroupingModel implements IGroupingModel {
+  /*---- I.1 IModel ---------------------------------------------------------------------------*/
 
-    /*---- I.1 IModel ---------------------------------------------------------------------------*/
+  divCount: number = 0;
+  divisions: number = 0;
 
-    /** @prototype only */
-    divCount: number;
+  /** defined externally */
+  staffIdx: number;
 
-    /** @prototype only */
-    divisions: number;
+  /*---- I.2 Grouping -------------------------------------------------------------------------*/
 
-    /** defined externally */
-    staffIdx: number;
+  features: Feature[];
+  number: number;
+  type: StartStopSingle;
+  memberOf: string;
 
-    /*---- I.2 Grouping -------------------------------------------------------------------------*/
+  /*---- Implementation -----------------------------------------------------------------------*/
 
-    features: Feature[];
-    number: number;
-    type: StartStopSingle;
-    memberOf: string;
+  constructor(spec: Grouping) {
+    forEach<any>(spec, (value, key) => {
+      (this as any)[key] = value;
+    });
+  }
 
-    /*---- Implementation -----------------------------------------------------------------------*/
+  refresh(_cursor: IReadOnlyValidationCursor): void {
+    // todo
+  }
 
-    constructor(spec: Grouping) {
-        forEach<any>(spec, (value, key) => {
-            (this as any)[key] = value;
-        });
+  getLayout(cursor: LayoutCursor): IGroupingLayout {
+    // todo
+
+    return new GroupingModel.Layout(this, cursor);
+  }
+
+  toXML(): string {
+    return `${serializeGrouping(this)}\n<forward><duration>${
+      this.divCount
+    }</duration></forward>\n`;
+  }
+
+  inspect() {
+    return this.toXML();
+  }
+
+  calcWidth(_shortest: number) {
+    return 0;
+  }
+
+  static Layout = class Layout implements IGroupingLayout {
+    constructor(model: GroupingModel, cursor: LayoutCursor) {
+      this.model = model;
+      this.x = cursor.segmentX;
+      this.division = cursor.segmentDivision;
     }
 
-    refresh(cursor: IReadOnlyValidationCursor): void {
-        // todo
-    }
+    /*---- ILayout ------------------------------------------------------*/
 
-    getLayout(cursor: LayoutCursor): Export.IGroupingLayout {
-        // todo
+    // Constructed:
 
-        return new GroupingModel.Layout(this, cursor);
-    }
+    model: GroupingModel;
+    x: number;
+    division: number;
 
-    toXML(): string {
-        return `${serializeGrouping(this)}\n<forward><duration>${this.divCount}</duration></forward>\n`;
-    }
+    // Prototype:
 
-    inspect() {
-        return this.toXML();
-    }
-
-    calcWidth(shortest: number) {
-        return 0;
-    }
-}
-
-GroupingModel.prototype.divCount = 0;
-GroupingModel.prototype.divisions = 0;
-
-module GroupingModel {
-    export class Layout implements Export.IGroupingLayout {
-        constructor(model: GroupingModel, cursor: LayoutCursor) {
-            this.model = model;
-            this.x = cursor.segmentX;
-            this.division = cursor.segmentDivision;
-        }
-
-        /*---- ILayout ------------------------------------------------------*/
-
-        // Constructed:
-
-        model: GroupingModel;
-        x: number;
-        division: number;
-
-        // Prototype:
-
-        boundingBoxes: IBoundingRect[];
-        renderClass: Type;
-        expandPolicy: "none";
-    }
-
-    Layout.prototype.expandPolicy = "none";
-    Layout.prototype.renderClass = Type.Grouping;
-    Layout.prototype.boundingBoxes = [];
-    Object.freeze(Layout.prototype.boundingBoxes);
+    boundingBoxes: IBoundingRect[] = [];
+    renderClass: Type = Type.Grouping;
+    expandPolicy: "none" = "none";
+  };
 }
 
 /**
  * Registers Grouping in the factory structure passed in.
  */
-function Export(constructors: { [key: number]: any }) {
-    constructors[Type.Grouping] = GroupingModel;
+export default function Export(constructors: { [key: number]: any }) {
+  constructors[Type.Grouping] = GroupingModel;
 }
 
-module Export {
-    export interface IGroupingModel extends IModel, Grouping {
-    }
+export interface IGroupingModel extends IModel, Grouping {}
 
-    export interface IGroupingLayout extends ILayout {
-    }
-}
-
-export default Export;
+export interface IGroupingLayout extends ILayout {}
