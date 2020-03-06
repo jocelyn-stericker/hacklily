@@ -1,4 +1,3 @@
-"use strict";
 /**
  * This file is part of Satie music engraver <https://github.com/jnetterf/satie>.
  * Copyright (C) Joshua Netterfield <joshua.ca> 2015 - present.
@@ -16,34 +15,30 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with Satie.  If not, see <http://www.gnu.org/licenses/>.
  */
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-var invariant_1 = __importDefault(require("invariant"));
-var lodash_1 = require("lodash");
-var musicxml_interfaces_1 = require("musicxml-interfaces");
-var private_mutate_1 = require("./private_mutate");
-var implChord_noteImpl_1 = __importDefault(require("./implChord_noteImpl"));
-var implChord_noteMutator_1 = __importDefault(require("./implChord_noteMutator"));
-function chordMutator(chord, op) {
+import invariant from "invariant";
+import { cloneDeep } from "lodash";
+import { serializeNote } from "musicxml-interfaces";
+import { replace, remove } from "./private_mutate";
+import NoteImpl from "./implChord_noteImpl";
+import noteMutator from "./implChord_noteMutator";
+export default function chordMutator(chord, op) {
     var path = op.p;
     if (op.p[0] === "notes") {
         if (path.length === 2) {
             var idx = path[1];
-            invariant_1.default(!isNaN(idx), "Expected path index within chord to be a number");
+            invariant(!isNaN(idx), "Expected path index within chord to be a number");
             if ("li" in op && "ld" in op) {
                 var replacement = op;
-                invariant_1.default(musicxml_interfaces_1.serializeNote(replacement.ld) === musicxml_interfaces_1.serializeNote(chord[idx]), "Cannot remove mismatching item from %s.", path.join(" "));
-                chord.splice(idx, 1, new implChord_noteImpl_1.default(chord, idx, replacement.li));
+                invariant(serializeNote(replacement.ld) === serializeNote(chord[idx]), "Cannot remove mismatching item from %s.", path.join(" "));
+                chord.splice(idx, 1, new NoteImpl(chord, idx, replacement.li));
             }
             else if ("li" in op) {
                 var insertion = op;
-                chord.splice(idx, 0, new implChord_noteImpl_1.default(chord, idx, insertion.li));
+                chord.splice(idx, 0, new NoteImpl(chord, idx, insertion.li));
             }
             else if ("ld" in op) {
                 var deletion = op;
-                invariant_1.default(musicxml_interfaces_1.serializeNote(deletion.ld) === musicxml_interfaces_1.serializeNote(chord[idx]), "Cannot remove mismatching item from %s.", path.join(" "));
+                invariant(serializeNote(deletion.ld) === serializeNote(chord[idx]), "Cannot remove mismatching item from %s.", path.join(" "));
                 chord.splice(idx, 1);
             }
             else {
@@ -53,19 +48,19 @@ function chordMutator(chord, op) {
         }
         else {
             var note = chord[parseInt(String(op.p[1]), 10)];
-            invariant_1.default(Boolean(note), "Invalid operation path for chord. No such note " + op.p[1]);
-            var localOp = lodash_1.cloneDeep(op);
+            invariant(Boolean(note), "Invalid operation path for chord. No such note " + op.p[1]);
+            var localOp = cloneDeep(op);
             localOp.p = path.slice(2);
-            implChord_noteMutator_1.default(note, localOp);
+            noteMutator(note, localOp);
             chord._init = false;
         }
     }
     else if (op.p[0] === "count") {
         if ("od" in op && "oi" in op) {
-            private_mutate_1.replace(chord, op);
+            replace(chord, op);
         }
         else if ("od" in op) {
-            private_mutate_1.remove(chord, op);
+            remove(chord, op);
         }
         else {
             throw new Error("Unsupported operation");
@@ -78,5 +73,4 @@ function chordMutator(chord, op) {
         throw new Error("Invalid/unimplemented operation path for chord: " + op.p[0]);
     }
 }
-exports.default = chordMutator;
 //# sourceMappingURL=implChord_chordMutator.js.map

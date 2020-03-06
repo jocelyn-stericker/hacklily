@@ -1,16 +1,14 @@
 {
-    "compilerOptions": {
-        "experimentalDecorators": true,
-        "jsx": "react",
-        "module": "commonjs",
-        "noImplicitAny": true,
-        "outDir": "dist",
-        "pretty": true,
-        "removeComments": false,
-        "sourceMap": true,
-        "target": "es5"
-    },
-    "files": [
-        "./src/index.tsx"
-    ]
+  "compilerOptions": {
+    "experimentalDecorators": true,
+    "jsx": "react",
+    "module": "commonjs",
+    "noImplicitAny": true,
+    "outDir": "dist",
+    "pretty": true,
+    "removeComments": false,
+    "sourceMap": true,
+    "target": "es5"
+  },
+  "files": ["./src/index.tsx"]
 }

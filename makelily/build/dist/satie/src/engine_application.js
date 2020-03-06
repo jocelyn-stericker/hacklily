@@ -1,4 +1,3 @@
-"use strict";
 /**
  * This file is part of Satie music engraver <https://github.com/jnetterf/satie>.
  * Copyright (C) Joshua Netterfield <joshua.ca> 2015 - present.
@@ -16,8 +15,7 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with Satie.  If not, see <http://www.gnu.org/licenses/>.
  */
-Object.defineProperty(exports, "__esModule", { value: true });
-var engine_setup_1 = require("./engine_setup");
+import { init } from "./engine_setup";
 var _didInit = false;
 var Application = /** @class */ (function () {
     function Application(options) {
@@ -25,9 +23,9 @@ var Application = /** @class */ (function () {
             throw new Error("There can only be one Satie Application.");
         }
         _didInit = true;
-        engine_setup_1.init(options);
+        init(options);
     }
     return Application;
 }());
-exports.default = Application;
+export default Application;
 //# sourceMappingURL=engine_application.js.map

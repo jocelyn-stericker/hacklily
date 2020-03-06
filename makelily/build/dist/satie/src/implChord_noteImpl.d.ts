@@ -29,7 +29,7 @@ declare class NoteImpl implements Note {
     _class: string;
     _parent: ChordModelImpl;
     _idx: number;
-    constructor(parent: ChordModelImpl, idx: number, note: Note, updateParent?: boolean);
+    constructor(parent: ChordModelImpl, idx: number, note: Note, _updateParent?: boolean);
     chord: Chord;
     rest: Rest;
     dots: Dot[];
@@ -47,7 +47,8 @@ declare class NoteImpl implements Note {
      * Do not modify notations. Instead use notationObj and articulationObj
      */
     notations: Notations[];
-    stem: Stem;
+    get stem(): Stem;
+    set stem(stem: Stem);
     cue: Cue;
     duration: number;
     /**

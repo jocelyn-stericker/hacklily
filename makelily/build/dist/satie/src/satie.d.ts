@@ -19,7 +19,7 @@ export declare const VERSION: string;
 import { ISongClass } from "./document";
 export { default as Application } from "./engine_application";
 export { default as IHandler } from "./engine_application";
-export { Document, IModel, Type, IMeasure, IMeasurePart, ISong, ISongClass, IMouseEvent, ISegment } from "./document";
+export * from "./document";
 export declare const Song: ISongClass;
 import { getGlyphCode as eGetGlyphCode } from "./private_smufl";
 import EClef from "./implAttributes_clefView";
@@ -30,23 +30,23 @@ import EDirection from "./implDirection_directionView";
 import ENotation from "./implChord_notationView";
 export { requireFont } from "./private_fontManager";
 import eCreatePatch from "./engine_createPatch";
-export { PartBuilder, StaffBuilder, DocumentBuilder, MeasureBuilder, VoiceBuilder } from "./engine_createPatch";
-export declare module Addons {
-    const getGlyphCode: typeof eGetGlyphCode;
-    const pageSizes: {
+export { PartBuilder, StaffBuilder, DocumentBuilder, MeasureBuilder, VoiceBuilder, } from "./engine_createPatch";
+export declare const Addons: {
+    eGetGlyphCode: typeof eGetGlyphCode;
+    ePageSizes: {
         name: string;
         lilypondName: string;
         width: number;
         height: number;
         unit: string;
     }[];
-    const Clef: typeof EClef;
-    const KeySignature: typeof EKeySignature;
-    const TimeSignature: typeof ETimeSignature;
-    const Direction: typeof EDirection;
-    const NotationView: typeof ENotation;
-    const getAccidentalsFromKey: typeof getNativeKeyAccidentals;
-}
-export declare module Patch {
-    const createPatch: typeof eCreatePatch;
-}
+    Clef: typeof EClef;
+    KeySignature: typeof EKeySignature;
+    TimeSignature: typeof ETimeSignature;
+    Direction: typeof EDirection;
+    NotationView: typeof ENotation;
+    getAccidentalsFromKey: typeof getNativeKeyAccidentals;
+};
+export declare const Patch: {
+    createPatch: typeof eCreatePatch;
+};

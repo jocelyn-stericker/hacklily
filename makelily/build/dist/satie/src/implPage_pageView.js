@@ -1,4 +1,3 @@
-"use strict";
 /**
  * This file is part of Satie music engraver <https://github.com/jnetterf/satie>.
  * Copyright (C) Joshua Netterfield <joshua.ca> 2015 - present.
@@ -40,27 +39,16 @@ var __assign = (this && this.__assign) || function () {
     };
     return __assign.apply(this, arguments);
 };
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
-    result["default"] = mod;
-    return result;
-};
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-var React = __importStar(require("react"));
-var react_1 = require("react");
-var PropTypes = __importStar(require("prop-types"));
-var lodash_1 = require("lodash");
-var invariant_1 = __importDefault(require("invariant"));
-var document_1 = require("./document");
-var private_renderUtil_1 = require("./private_renderUtil");
-var private_print_1 = require("./private_print");
-var implMeasure_measureView_1 = __importDefault(require("./implMeasure_measureView"));
-var implPage_creditView_1 = __importDefault(require("./implPage_creditView"));
+import * as React from "react";
+import { Component } from "react";
+import * as PropTypes from "prop-types";
+import { map, filter, forEach, last } from "lodash";
+import invariant from "invariant";
+import { generateModelKey } from "./document";
+import { tenthsToMM } from "./private_renderUtil";
+import { getPageMargins } from "./private_print";
+import MeasureView from "./implMeasure_measureView";
+import CreditView from "./implPage_creditView";
 var Page = /** @class */ (function (_super) {
     __extends(Page, _super);
     function Page() {
@@ -80,21 +68,21 @@ var Page = /** @class */ (function (_super) {
         /*--- General ---------------------------------------------*/
         var print = this.props.print;
         var pageNum = parseInt(print.pageNumber, 10);
-        invariant_1.default(pageNum >= 1, "Page %s isn't a valid page number.", print.pageNumber);
+        invariant(pageNum >= 1, "Page %s isn't a valid page number.", print.pageNumber);
         var defaults = this.props.scoreHeader.defaults;
-        var credits = lodash_1.filter(this.props.scoreHeader.credits, function (cr) { return cr.page === pageNum; });
+        var credits = filter(this.props.scoreHeader.credits, function (cr) { return cr.page === pageNum; });
         var scale40 = (defaults.scaling.millimeters / defaults.scaling.tenths) * 40;
         var pageLayout = print.pageLayout;
         var widthMM = this.props.renderTarget === "svg-export"
-            ? private_renderUtil_1.tenthsToMM(scale40, pageLayout.pageWidth) + "mm"
+            ? tenthsToMM(scale40, pageLayout.pageWidth) + "mm"
             : "100%";
         var heightMM = this.props.renderTarget === "svg-export"
-            ? private_renderUtil_1.tenthsToMM(scale40, pageLayout.pageHeight) + "mm"
+            ? tenthsToMM(scale40, pageLayout.pageHeight) + "mm"
             : "100%";
         var pageWidth = this.props.singleLineMode
-            ? lodash_1.last(lineLayouts[0]).originX +
-                lodash_1.last(lineLayouts[0]).width +
-                private_print_1.getPageMargins(pageLayout.pageMargins, 0).rightMargin
+            ? last(lineLayouts[0]).originX +
+                last(lineLayouts[0]).width +
+                getPageMargins(pageLayout.pageMargins, 0).rightMargin
             : pageLayout.pageWidth;
         var pageHeight = pageLayout.pageHeight;
         if (pageHeight !== this._pageHeight && this.props.onPageHeightChanged) {
@@ -105,7 +93,7 @@ var Page = /** @class */ (function (_super) {
         }
         /*--- Credits ---------------------------------------------*/
         // Make sure our credits are keyed.
-        lodash_1.forEach(credits, document_1.generateModelKey);
+        forEach(credits, generateModelKey);
         /*--- Render ----------------------------------------------*/
         return (React.createElement("svg", { className: this.props.className, style: this.props.renderTarget === "svg-export"
                 ? undefined
@@ -114,9 +102,9 @@ var Page = /** @class */ (function (_super) {
                 }, "data-page": this.props.renderTarget === "svg-export"
                 ? undefined
                 : print.pageNumber, height: heightMM, ref: this._setSVG, viewBox: "0 0 " + pageWidth + " " + pageHeight, width: widthMM },
-            !this.props.singleLineMode && lodash_1.map(credits, function (c) { return React.createElement(implPage_creditView_1.default, __assign({}, c)); }),
-            lodash_1.map(lineLayouts, function (lineLayout, lineIdx) {
-                return lodash_1.map(lineLayout, function (measureLayout) { return (React.createElement(implMeasure_measureView_1.default, { key: measureLayout.uuid, layout: measureLayout, version: measureLayout.getVersion() })); });
+            !this.props.singleLineMode && map(credits, function (c) { return React.createElement(CreditView, __assign({}, c)); }),
+            map(lineLayouts, function (lineLayout) {
+                return map(lineLayout, function (measureLayout) { return (React.createElement(MeasureView, { key: measureLayout.uuid, layout: measureLayout, version: measureLayout.getVersion() })); });
             })));
     };
     Page.prototype.getChildContext = function () {
@@ -135,6 +123,6 @@ var Page = /** @class */ (function (_super) {
         scale40: PropTypes.number.isRequired,
     };
     return Page;
-}(react_1.Component));
-exports.default = Page;
+}(Component));
+export default Page;
 //# sourceMappingURL=implPage_pageView.js.map

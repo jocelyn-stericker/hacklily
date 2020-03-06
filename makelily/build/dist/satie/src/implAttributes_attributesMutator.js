@@ -1,4 +1,3 @@
-"use strict";
 /**
  * This file is part of Satie music engraver <https://github.com/jnetterf/satie>.
  * Copyright (C) Joshua Netterfield <joshua.ca> 2015 - present.
@@ -16,17 +15,15 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with Satie.  If not, see <http://www.gnu.org/licenses/>.
  */
-Object.defineProperty(exports, "__esModule", { value: true });
-var private_mutate_1 = require("./private_mutate");
-function attributesMutator(preview, attributes, op) {
+import { mutate, parentExists } from "./private_mutate";
+export default function attributesMutator(_preview, attributes, op) {
     // Check if we are being asked to clone & create.
-    if (!private_mutate_1.parentExists(attributes, op.p)) {
+    if (!parentExists(attributes, op.p)) {
         console.warn("Invalid patch -- it's likely to a " +
             "model that only exists in a snapshot. You'll need to explicitly create it.");
         return;
     }
     // Bye.
-    private_mutate_1.mutate(attributes, op);
+    mutate(attributes, op);
 }
-exports.default = attributesMutator;
 //# sourceMappingURL=implAttributes_attributesMutator.js.map

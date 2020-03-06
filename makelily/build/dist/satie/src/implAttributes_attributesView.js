@@ -1,4 +1,3 @@
-"use strict";
 /**
  * This file is part of Satie music engraver <https://github.com/jnetterf/satie>.
  * Copyright (C) Joshua Netterfield <joshua.ca> 2015 - present.
@@ -29,26 +28,15 @@ var __extends = (this && this.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
-    result["default"] = mod;
-    return result;
-};
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-var React = __importStar(require("react"));
-var react_1 = require("react");
-var PropTypes = __importStar(require("prop-types"));
-var implAttributes_barNumberView_1 = __importDefault(require("./implAttributes_barNumberView"));
-var implAttributes_clefView_1 = __importDefault(require("./implAttributes_clefView"));
-var implAttributes_partSymbolView_1 = __importDefault(require("./implAttributes_partSymbolView"));
-var implAttributes_keySignatureView_1 = __importDefault(require("./implAttributes_keySignatureView"));
-var implAttributes_timeSignatureView_1 = __importDefault(require("./implAttributes_timeSignatureView"));
-var implAttributes_staffLinesView_1 = __importDefault(require("./implAttributes_staffLinesView"));
+import * as React from "react";
+import { Component } from "react";
+import * as PropTypes from "prop-types";
+import BarNumber from "./implAttributes_barNumberView";
+import Clef from "./implAttributes_clefView";
+import PartSymbol from "./implAttributes_partSymbolView";
+import KeySignature from "./implAttributes_keySignatureView";
+import TimeSignature from "./implAttributes_timeSignatureView";
+import StaffLines from "./implAttributes_staffLinesView";
 var AttributesView = /** @class */ (function (_super) {
     __extends(AttributesView, _super);
     function AttributesView() {
@@ -60,26 +48,26 @@ var AttributesView = /** @class */ (function (_super) {
         // Staff lines go first, because they are underneath other attributes
         var staffWidth = layout.staffWidth;
         var staffLinesOffsetX = layout.staffLinesOffsetX;
-        if (!!staffWidth) {
-            children.push(React.createElement(implAttributes_staffLinesView_1.default, { key: "staffLines", width: staffWidth, defaultX: this.props.layout.overrideX - staffLinesOffsetX, defaultY: 0, staffDetails: layout.staffDetails }));
+        if (staffWidth) {
+            children.push(React.createElement(StaffLines, { key: "staffLines", width: staffWidth, defaultX: this.props.layout.overrideX - staffLinesOffsetX, defaultY: 0, staffDetails: layout.staffDetails }));
         }
         if (layout.clef) {
-            children.push(React.createElement(implAttributes_clefView_1.default, { key: "clef", spec: layout.clef }));
+            children.push(React.createElement(Clef, { key: "clef", spec: layout.clef }));
         }
         if (layout.keySignature) {
-            children.push(React.createElement(implAttributes_keySignatureView_1.default, { clef: layout.snapshotClef, key: "ks", spec: layout.keySignature }));
+            children.push(React.createElement(KeySignature, { clef: layout.snapshotClef, key: "ks", spec: layout.keySignature }));
         }
         if (layout.time) {
-            children.push(React.createElement(implAttributes_timeSignatureView_1.default, { key: "ts", spec: layout.time }));
+            children.push(React.createElement(TimeSignature, { key: "ts", spec: layout.time }));
         }
-        if (!!layout.measureNumberVisible) {
-            children.push(React.createElement(implAttributes_barNumberView_1.default, { barNumber: layout.measureNumberVisible, key: "measure", spec: {
+        if (layout.measureNumberVisible) {
+            children.push(React.createElement(BarNumber, { barNumber: layout.measureNumberVisible, key: "measure", spec: {
                     defaultX: 0,
                     defaultY: 30,
                 } }));
         }
-        if (!!layout.partSymbol) {
-            children.push(React.createElement(implAttributes_partSymbolView_1.default, { key: "partSymbol", spec: layout.partSymbol }));
+        if (layout.partSymbol) {
+            children.push(React.createElement(PartSymbol, { key: "partSymbol", spec: layout.partSymbol }));
         }
         return React.createElement("g", null, children);
     };
@@ -87,6 +75,6 @@ var AttributesView = /** @class */ (function (_super) {
         originY: PropTypes.number.isRequired,
     };
     return AttributesView;
-}(react_1.Component));
-exports.default = AttributesView;
+}(Component));
+export default AttributesView;
 //# sourceMappingURL=implAttributes_attributesView.js.map

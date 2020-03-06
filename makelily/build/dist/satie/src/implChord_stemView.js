@@ -1,4 +1,3 @@
-"use strict";
 /**
  * This file is part of Satie music engraver <https://github.com/jnetterf/satie>.
  * Copyright (C) Joshua Netterfield <joshua.ca> 2015 - present.
@@ -29,25 +28,14 @@ var __extends = (this && this.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
-    result["default"] = mod;
-    return result;
-};
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-var React = __importStar(require("react"));
-var musicxml_interfaces_1 = require("musicxml-interfaces");
-var react_1 = require("react");
-var PropTypes = __importStar(require("prop-types"));
-var invariant_1 = __importDefault(require("invariant"));
-var private_views_line_1 = __importDefault(require("./private_views_line"));
-var private_views_glyph_1 = __importDefault(require("./private_views_glyph"));
-var private_smufl_1 = require("./private_smufl");
+import * as React from "react";
+import { StemType } from "musicxml-interfaces";
+import { Component } from "react";
+import * as PropTypes from "prop-types";
+import invariant from "invariant";
+import Line from "./private_views_line";
+import Glyph from "./private_views_glyph";
+import { getFontOffset } from "./private_smufl";
 /**
  * Renders a stem based on a height decided in Note.
  */
@@ -59,23 +47,23 @@ var StemView = /** @class */ (function (_super) {
     StemView.prototype.render = function () {
         var _a = this.props, spec = _a.spec, notehead = _a.notehead, tremolo = _a.tremolo, width = _a.width;
         var defaultX = spec.defaultX, relativeX = spec.relativeX, defaultY = spec.defaultY, relativeY = spec.relativeY, color = spec.color;
-        if (spec.type === musicxml_interfaces_1.StemType.Double) {
+        if (spec.type === StemType.Double) {
             return null;
         }
-        var direction = spec.type === musicxml_interfaces_1.StemType.Up ? 1 : -1; // TODO: StemType.Double
+        var direction = spec.type === StemType.Up ? 1 : -1; // TODO: StemType.Double
         var lineXOffset = (direction * -width) / 2;
-        var offset = private_smufl_1.getFontOffset(notehead, direction) || [0];
+        var offset = getFontOffset(notehead, direction) || [0];
         var x = defaultX + (relativeX || offset[0] * 10 + lineXOffset);
-        invariant_1.default(isFinite(x), "Invalid x offset %s", x);
+        invariant(isFinite(x), "Invalid x offset %s", x);
         var dY = this.props.bestHeight * direction;
         var elements = [];
-        elements.push(React.createElement(private_views_line_1.default, { key: "s", stroke: color, strokeWidth: width, x1: x, x2: x, y1: this.context.originY - defaultY - (relativeY || 0) - offset[1] * 10, y2: this.context.originY -
+        elements.push(React.createElement(Line, { key: "s", stroke: color, strokeWidth: width, x1: x, x2: x, y1: this.context.originY - defaultY - (relativeY || 0) - offset[1] * 10, y2: this.context.originY -
                 defaultY -
                 (relativeY || 0) -
                 offset[1] * 10 -
                 dY }));
         if (tremolo) {
-            elements.push(React.createElement(private_views_glyph_1.default, { key: "t", glyphName: "tremolo" + (tremolo.data || "1"), x: x, fill: "black", y: this.context.originY - defaultY - (relativeY || 0) - (dY * 4) / 5 }));
+            elements.push(React.createElement(Glyph, { key: "t", glyphName: "tremolo" + (tremolo.data || "1"), x: x, fill: "black", y: this.context.originY - defaultY - (relativeY || 0) - (dY * 4) / 5 }));
         }
         if (elements.length === 1) {
             return elements[0];
@@ -88,6 +76,6 @@ var StemView = /** @class */ (function (_super) {
         originY: PropTypes.number.isRequired,
     };
     return StemView;
-}(react_1.Component));
-exports.default = StemView;
+}(Component));
+export default StemView;
 //# sourceMappingURL=implChord_stemView.js.map

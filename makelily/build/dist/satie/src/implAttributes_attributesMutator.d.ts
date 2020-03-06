@@ -16,5 +16,5 @@
  * along with Satie.  If not, see <http://www.gnu.org/licenses/>.
  */
 import { IAny } from "musicxml-interfaces/operations";
-import AttributesModel from "./implAttributes_attributesModel";
-export default function attributesMutator(preview: boolean, attributes: AttributesModel.IAttributesModel, op: IAny): void;
+import { IAttributesModel } from "./implAttributes_attributesModel";
+export default function attributesMutator(_preview: boolean, attributes: IAttributesModel, op: IAny): void;

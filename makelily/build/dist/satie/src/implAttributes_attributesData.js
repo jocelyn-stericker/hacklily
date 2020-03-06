@@ -1,4 +1,3 @@
-"use strict";
 /**
  * This file is part of Satie music engraver <https://github.com/jnetterf/satie>.
  * Copyright (C) Joshua Netterfield <joshua.ca> 2015 - present.
@@ -16,60 +15,52 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with Satie.  If not, see <http://www.gnu.org/licenses/>.
  */
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-var lodash_1 = require("lodash");
-var invariant_1 = __importDefault(require("invariant"));
-exports.NUMBER_SPACING = 28;
-exports.PLUS_SPACING = 12;
+import { times, forEach, map, reduce } from "lodash";
+import invariant from "invariant";
+export var NUMBER_SPACING = 28;
+export var PLUS_SPACING = 12;
 // Gould(6): "A clef is indented into the stave by one stave-space or a little less"
-exports.CLEF_INDENTATION = 7;
-exports.FLAT_WIDTH = 10;
-exports.DOUBLE_FLAT_WIDTH = 19;
-exports.DOUBLE_SHARP_WIDTH = 13;
-exports.SHARP_WIDTH = 11;
-exports.NATURAL_WIDTH = 11;
+export var CLEF_INDENTATION = 7;
+export var FLAT_WIDTH = 10;
+export var DOUBLE_FLAT_WIDTH = 19;
+export var DOUBLE_SHARP_WIDTH = 13;
+export var SHARP_WIDTH = 11;
+export var NATURAL_WIDTH = 11;
 /**
  * Returns true if warning Attributes are required at the end of a line, and false otherwise.
  */
-function needsWarning(end, start, staff) {
-    invariant_1.default(!!end && !!start, "A null end or start was passed to needsWarning. Check your types!!");
-    invariant_1.default(!("P1" in end || "P1" in start), "An object with 'P1' was passed to needsWarning. Check your types!!");
+export function needsWarning(end, start, staff) {
+    invariant(!!end && !!start, "A null end or start was passed to needsWarning. Check your types!!");
+    invariant(!("P1" in end || "P1" in start), "An object with 'P1' was passed to needsWarning. Check your types!!");
     return (!clefsEqual(end, start, staff) ||
         !timesEqual(end, start) ||
         !keysEqual(end, start));
 }
-exports.needsWarning = needsWarning;
-function clefWidth(attributes) {
+export function clefWidth(_attributes) {
     return 24;
 }
-exports.clefWidth = clefWidth;
-function timeWidth(attributes) {
+export function timeWidth(attributes) {
     if (!attributes.times[0] || !attributes.times[0].beatTypes) {
         return 0;
     }
     var beats = attributes.times[0].beats;
-    var numeratorSegments = lodash_1.reduce(beats, function (memo, beats) { return memo + beats.split("+").length; }, 0);
-    return (exports.NUMBER_SPACING * numeratorSegments +
-        (attributes.times[0].beatTypes.length - 1) * exports.PLUS_SPACING);
+    var numeratorSegments = reduce(beats, function (memo, beats) { return memo + beats.split("+").length; }, 0);
+    return (NUMBER_SPACING * numeratorSegments +
+        (attributes.times[0].beatTypes.length - 1) * PLUS_SPACING);
 }
-exports.timeWidth = timeWidth;
-function keyWidth(attributes) {
+export function keyWidth(attributes) {
     if (!attributes.keySignatures[0]) {
         return 0;
     }
     var keySignature = attributes.keySignatures[0];
     if (keySignature.fifths || keySignature.keyAlters) {
-        return (2 + lodash_1.reduce(keyWidths(keySignature), function (memo, width) { return memo + width; }, 0));
+        return (2 + reduce(keyWidths(keySignature), function (memo, width) { return memo + width; }, 0));
     }
     else {
         return -5;
     }
 }
-exports.keyWidth = keyWidth;
-function clefsEqual(from, to, staff) {
+export function clefsEqual(from, to, staff) {
     var cA = from && from.clefs[staff];
     var cB = to && to.clefs[staff];
     if (!cA || !cB) {
@@ -79,8 +70,7 @@ function clefsEqual(from, to, staff) {
         cA.line === cB.line &&
         cA.clefOctaveChange === cB.clefOctaveChange);
 }
-exports.clefsEqual = clefsEqual;
-function timesEqual(from, to) {
+export function timesEqual(from, to) {
     var tA = from && from.times[0];
     var tB = to && to.times[0];
     if (!tA || !tB) {
@@ -91,8 +81,7 @@ function timesEqual(from, to) {
         !!tA.senzaMisura === !!tB.senzaMisura &&
         tA.symbol === tB.symbol);
 }
-exports.timesEqual = timesEqual;
-function keysEqual(from, to) {
+export function keysEqual(from, to) {
     var keyA = from && from.keySignatures[0];
     var keyB = to && to.keySignatures[0];
     if (!keyA || !keyB) {
@@ -105,61 +94,63 @@ function keysEqual(from, to) {
         JSON.stringify(keyA.keyAlters) === JSON.stringify(keyB.keyAlters) &&
         keyA.mode === keyB.mode);
 }
-exports.keysEqual = keysEqual;
-function approximateWidth(attributes, atEnd) {
-    if (atEnd === void 0) { atEnd = 0 /* No */; }
+export function approximateWidth(_attributes, atEnd) {
+    if (atEnd === void 0) { atEnd = AtEnd.No; }
     if (atEnd) {
         return 80;
     }
     return 150;
 }
-exports.approximateWidth = approximateWidth;
-function keyWidths(spec) {
+export var AtEnd;
+(function (AtEnd) {
+    AtEnd[AtEnd["No"] = 0] = "No";
+    AtEnd[AtEnd["Yes"] = 1] = "Yes";
+})(AtEnd || (AtEnd = {}));
+export function keyWidths(spec) {
     var widths = [];
     if (spec.keyAlters) {
-        return lodash_1.map(spec.keyAlters, function (alter) {
+        return map(spec.keyAlters, function (alter) {
             switch (alter) {
                 case "-2":
                 case "-1.5":
-                    return exports.DOUBLE_FLAT_WIDTH;
+                    return DOUBLE_FLAT_WIDTH;
                 case "-1":
                 case "-0.5":
-                    return exports.FLAT_WIDTH;
+                    return FLAT_WIDTH;
                 case "0":
-                    return exports.NATURAL_WIDTH;
+                    return NATURAL_WIDTH;
                 case "0.5":
                 case "1":
-                    return exports.SHARP_WIDTH;
+                    return SHARP_WIDTH;
                 case "1.5":
                 case "2":
-                    return exports.DOUBLE_SHARP_WIDTH;
+                    return DOUBLE_SHARP_WIDTH;
                 default:
                     console.warn("Unknown accidental ", alter);
-                    return exports.SHARP_WIDTH;
+                    return SHARP_WIDTH;
             }
         });
     }
     var accidentalCount = Math.min(7, Math.abs(spec.fifths));
-    var idxes = lodash_1.times(accidentalCount, function (i) { return (i + Math.max(0, Math.abs(spec.fifths) - 7)) % 7; });
-    lodash_1.forEach(idxes, function (i) { return (widths[i] = getWidth(i, spec.fifths >= 0)); });
+    var idxes = times(accidentalCount, function (i) { return (i + Math.max(0, Math.abs(spec.fifths) - 7)) % 7; });
+    forEach(idxes, function (i) { return (widths[i] = getWidth(i, spec.fifths >= 0)); });
     return widths;
     function getWidth(i, sharp) {
         switch (true) {
             case sharp && 7 + i < spec.fifths:
-                return exports.DOUBLE_SHARP_WIDTH;
+                return DOUBLE_SHARP_WIDTH;
             case sharp && 7 + i >= spec.fifths:
-                return exports.SHARP_WIDTH;
+                return SHARP_WIDTH;
             case !sharp && 7 + i < -spec.fifths:
-                return exports.DOUBLE_FLAT_WIDTH;
+                return DOUBLE_FLAT_WIDTH;
             case !sharp && 7 + i >= -spec.fifths:
-                return exports.FLAT_WIDTH;
+                return FLAT_WIDTH;
             default:
                 throw new Error("Impossible.");
         }
     }
 }
-exports.keyWidths = keyWidths;
-function getNativeKeyAccidentals(spec) {
+export function getNativeKeyAccidentals(spec) {
     var accidentals = {};
     var sharps = "FCGDAEB";
     var flats = "BEADGCF";
@@ -180,5 +171,4 @@ function getNativeKeyAccidentals(spec) {
     }
     return accidentals;
 }
-exports.getNativeKeyAccidentals = getNativeKeyAccidentals;
 //# sourceMappingURL=implAttributes_attributesData.js.map

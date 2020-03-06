@@ -1,4 +1,3 @@
-"use strict";
 /**
  * This file is part of Satie music engraver <https://github.com/jnetterf/satie>.
  * Copyright (C) Joshua Netterfield <joshua.ca> 2015 - present.
@@ -29,28 +28,17 @@ var __extends = (this && this.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
-    result["default"] = mod;
-    return result;
-};
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-var React = __importStar(require("react"));
-var musicxml_interfaces_1 = require("musicxml-interfaces");
-var react_1 = require("react");
-var PropTypes = __importStar(require("prop-types"));
-var lodash_1 = require("lodash");
-var invariant_1 = __importDefault(require("invariant"));
-var private_views_bezier_1 = __importDefault(require("./private_views_bezier"));
-var private_views_glyph_1 = __importDefault(require("./private_views_glyph"));
-var private_smufl_1 = require("./private_smufl");
-var implChord_articulationView_1 = __importDefault(require("./implChord_articulationView"));
-var implChord_notation_1 = require("./implChord_notation");
+import * as React from "react";
+import { UprightInverted, NormalAngledSquare, AboveBelow, } from "musicxml-interfaces";
+import { Component } from "react";
+import * as PropTypes from "prop-types";
+import { forEach } from "lodash";
+import invariant from "invariant";
+import Bezier from "./private_views_bezier";
+import Glyph from "./private_views_glyph";
+import { bboxes } from "./private_smufl";
+import Articulation from "./implChord_articulationView";
+import { technicalGlyph } from "./implChord_notation";
 /**
  * Notations are things that are attached to notes.
  */
@@ -64,57 +52,57 @@ var NotationView = /** @class */ (function (_super) {
         var model = this.props.spec;
         var nlayout = this.props.layout;
         var notehead = nlayout ? nlayout.model.noteheadGlyph[0] : "noteheadBlack";
-        var bbox = private_smufl_1.bboxes[notehead];
+        var bbox = bboxes[notehead];
         var noteheadCenter = (10 * (bbox[0] - bbox[2])) / 2;
         var originX = nlayout ? nlayout.model[0].defaultX + noteheadCenter : 0;
         var children = [];
-        lodash_1.forEach(model.accidentalMarks, function (accidentalMark) {
+        forEach(model.accidentalMarks, function (_accidentalMark) {
             // TODO
         });
-        lodash_1.forEach(model.arpeggiates, function (arpeggiate) {
+        forEach(model.arpeggiates, function (_arpeggiate) {
             // TODO
         });
-        lodash_1.forEach(model.articulations, function (articulation, idx) {
-            children.push(React.createElement(implChord_articulationView_1.default, { articulation: articulation, key: "art" + idx, defaultX: nlayout ? nlayout.model[0].defaultX : 0 }));
+        forEach(model.articulations, function (articulation, idx) {
+            children.push(React.createElement(Articulation, { articulation: articulation, key: "art" + idx, defaultX: nlayout ? nlayout.model[0].defaultX : 0 }));
         });
-        lodash_1.forEach(model.dynamics, function (dynamic) {
+        forEach(model.dynamics, function (_dynamic) {
             // TODO
         });
-        lodash_1.forEach(model.fermatas, function (fermata, idx) {
-            var direction = fermata.type === musicxml_interfaces_1.UprightInverted.Inverted ? "Below" : "Above";
+        forEach(model.fermatas, function (fermata, idx) {
+            var direction = fermata.type === UprightInverted.Inverted ? "Below" : "Above";
             var shape;
             switch (fermata.shape) {
-                case musicxml_interfaces_1.NormalAngledSquare.Angled:
+                case NormalAngledSquare.Angled:
                     shape = "fermataShort";
                     break;
-                case musicxml_interfaces_1.NormalAngledSquare.Square:
+                case NormalAngledSquare.Square:
                     shape = "fermataLong";
                     break;
-                case musicxml_interfaces_1.NormalAngledSquare.Normal:
+                case NormalAngledSquare.Normal:
                 default:
                     shape = "fermata";
                     break;
             }
-            children.push(React.createElement(private_views_glyph_1.default, { fill: "black", glyphName: "" + shape + direction, key: "fer" + idx, x: originX + fermata.defaultX + (fermata.relativeX || 0), y: (_this.context.originY || 0) -
+            children.push(React.createElement(Glyph, { fill: "black", glyphName: "" + shape + direction, key: "fer" + idx, x: originX + fermata.defaultX + (fermata.relativeX || 0), y: (_this.context.originY || 0) -
                     fermata.defaultY -
                     (fermata.relativeY || 0) }));
         });
-        lodash_1.forEach(model.glissandos, function (glissando) {
+        forEach(model.glissandos, function (_glissando) {
             // TODO
         });
-        lodash_1.forEach(model.nonArpeggiates, function (nonArpeggiate) {
+        forEach(model.nonArpeggiates, function (_nonArpeggiate) {
             // TODO
         });
-        lodash_1.forEach(model.ornaments, function (ornament) {
+        forEach(model.ornaments, function (_ornament) {
             // TODO
         });
-        lodash_1.forEach(model.slides, function (slide) {
+        forEach(model.slides, function (_slide) {
             // TODO
         });
-        lodash_1.forEach(model.slurs, function (slur) {
+        forEach(model.slurs, function (_slur) {
             // TODO
         });
-        lodash_1.forEach(model.technicals, function (technical, idx) {
+        forEach(model.technicals, function (technical, idx) {
             var t = technical.arrow ||
                 technical.bend ||
                 technical.doubleTongue ||
@@ -138,7 +126,7 @@ var NotationView = /** @class */ (function (_super) {
                 technical.toe ||
                 technical.tripleTongue ||
                 technical.upBow;
-            children.push(React.createElement(private_views_glyph_1.default, { fill: t.color || "black", glyphName: implChord_notation_1.technicalGlyph(technical, !("placement" in t) || t.placement === musicxml_interfaces_1.AboveBelow.Below
+            children.push(React.createElement(Glyph, { fill: t.color || "black", glyphName: technicalGlyph(technical, !("placement" in t) || t.placement === AboveBelow.Below
                     ? "Below"
                     : "Above"), key: "tech" + idx, x: originX +
                     (("defaultX" in t ? t.defaultX : 0) || 0) +
@@ -146,12 +134,12 @@ var NotationView = /** @class */ (function (_super) {
                     ("defaultY" in t ? t.defaultY : 0) -
                     (("relativeY" in t ? t.relativeY : 0) || 0) }));
         });
-        lodash_1.forEach(model.tieds, function (tied) {
+        forEach(model.tieds, function (tied) {
             var tieTo = tied.satieTieTo;
             if (!tieTo) {
                 return;
             }
-            var bbox2 = private_smufl_1.bboxes[notehead];
+            var bbox2 = bboxes[notehead];
             var noteheadCenter2 = (10 * (bbox2[0] - bbox2[2])) / 2;
             var offset2 = noteheadCenter2 - noteheadCenter - 4;
             var defaultY = (_this.context.originY || 0) - (_this.props.defaultY || 0);
@@ -180,19 +168,19 @@ var NotationView = /** @class */ (function (_super) {
             if ((y1my2 > 0 ? -1 : 1) * dir === 1) {
                 absw = absw * 2;
             }
-            invariant_1.default(!isNaN(x2), "Invalid x2 %s", x2);
-            invariant_1.default(!isNaN(x1), "Invalid x1 %s", x1);
-            invariant_1.default(!isNaN(y2), "Invalid y2 %s", y2);
-            invariant_1.default(!isNaN(y1), "Invalid y1 %s", y1);
-            invariant_1.default(!isNaN(dir), "Invalid dir %s", dir);
-            invariant_1.default(!isNaN(x2mx1), "Invalid x2mx1 %s", x2mx1);
-            invariant_1.default(!isNaN(x1mx2), "Invalid x1mx2 %s", x1mx2);
-            invariant_1.default(!isNaN(relw), "Invalid relw %s", relw);
-            invariant_1.default(!isNaN(y1my2), "Invalid y1my2 %s", y1my2);
-            invariant_1.default(!isNaN(absw), "Invalid absw %s", absw);
-            children.push(React.createElement(private_views_bezier_1.default, { fill: "#000000", stroke: "#000000", strokeWidth: 1.2, x1: x2, x2: (0.28278198 / 1.23897534) * x1mx2 + x2, x3: (0.9561935 / 1.23897534) * x1mx2 + x2, x4: x1, x5: (0.28278198 / 1.23897534) * x2mx1 + x1, x6: (0.95619358 / 1.23897534) * x2mx1 + x1, y1: y2, y2: (dir === -1 ? y1my2 : 0) + absw + y2, y3: (dir === -1 ? y1my2 : 0) + absw + y2, y4: y1, y5: (dir === -1 ? 0 : -y1my2) + absw + relw + y1, y6: (dir === -1 ? 0 : -y1my2) + absw + relw + y1 }));
+            invariant(!isNaN(x2), "Invalid x2 %s", x2);
+            invariant(!isNaN(x1), "Invalid x1 %s", x1);
+            invariant(!isNaN(y2), "Invalid y2 %s", y2);
+            invariant(!isNaN(y1), "Invalid y1 %s", y1);
+            invariant(!isNaN(dir), "Invalid dir %s", dir);
+            invariant(!isNaN(x2mx1), "Invalid x2mx1 %s", x2mx1);
+            invariant(!isNaN(x1mx2), "Invalid x1mx2 %s", x1mx2);
+            invariant(!isNaN(relw), "Invalid relw %s", relw);
+            invariant(!isNaN(y1my2), "Invalid y1my2 %s", y1my2);
+            invariant(!isNaN(absw), "Invalid absw %s", absw);
+            children.push(React.createElement(Bezier, { fill: "#000000", stroke: "#000000", strokeWidth: 1.2, x1: x2, x2: (0.28278198 / 1.23897534) * x1mx2 + x2, x3: (0.9561935 / 1.23897534) * x1mx2 + x2, x4: x1, x5: (0.28278198 / 1.23897534) * x2mx1 + x1, x6: (0.95619358 / 1.23897534) * x2mx1 + x1, y1: y2, y2: (dir === -1 ? y1my2 : 0) + absw + y2, y3: (dir === -1 ? y1my2 : 0) + absw + y2, y4: y1, y5: (dir === -1 ? 0 : -y1my2) + absw + relw + y1, y6: (dir === -1 ? 0 : -y1my2) + absw + relw + y1 }));
         });
-        lodash_1.forEach(model.tuplets, function (tuplet) {
+        forEach(model.tuplets, function (_tuplet) {
             // TODO
         });
         switch (children.length) {
@@ -208,6 +196,6 @@ var NotationView = /** @class */ (function (_super) {
         originY: PropTypes.number,
     };
     return NotationView;
-}(react_1.Component));
-exports.default = NotationView;
+}(Component));
+export default NotationView;
 //# sourceMappingURL=implChord_notationView.js.map

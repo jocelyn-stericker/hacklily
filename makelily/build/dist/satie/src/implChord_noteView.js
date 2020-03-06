@@ -1,4 +1,3 @@
-"use strict";
 /**
  * This file is part of Satie music engraver <https://github.com/jnetterf/satie>.
  * Copyright (C) Joshua Netterfield <joshua.ca> 2015 - present.
@@ -29,27 +28,16 @@ var __extends = (this && this.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
-    result["default"] = mod;
-    return result;
-};
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-var React = __importStar(require("react"));
-var musicxml_interfaces_1 = require("musicxml-interfaces");
-var react_1 = require("react");
-var PropTypes = __importStar(require("prop-types"));
-var lodash_1 = require("lodash");
-var private_views_dot_1 = __importDefault(require("./private_views_dot"));
-var private_views_glyph_1 = __importDefault(require("./private_views_glyph"));
-var private_smufl_1 = require("./private_smufl");
-var implAttributes_accidentalView_1 = __importDefault(require("./implAttributes_accidentalView"));
-var implChord_noteheadView_1 = __importDefault(require("./implChord_noteheadView"));
+import * as React from "react";
+import { NoteheadType } from "musicxml-interfaces";
+import { Component } from "react";
+import * as PropTypes from "prop-types";
+import { map } from "lodash";
+import Dot from "./private_views_dot";
+import Glyph from "./private_views_glyph";
+import { getLeft, getRight } from "./private_smufl";
+import AccidentalView from "./implAttributes_accidentalView";
+import NoteheadView from "./implChord_noteheadView";
 var NoteView = /** @class */ (function (_super) {
     __extends(NoteView, _super);
     function NoteView() {
@@ -63,24 +51,24 @@ var NoteView = /** @class */ (function (_super) {
         }
         var defaultX = this.props.defaultX || spec.defaultX;
         var noteheadGlyph = this.props.noteheadGlyph;
-        var right = private_smufl_1.getRight(noteheadGlyph);
-        var left = private_smufl_1.getLeft(noteheadGlyph);
+        var right = getRight(noteheadGlyph);
+        var left = getLeft(noteheadGlyph);
         var hasParens = spec.notehead && spec.notehead.parentheses;
         return (React.createElement("g", null,
-            React.createElement(implChord_noteheadView_1.default, { key: "h", notehead: noteheadGlyph, spec: {
+            React.createElement(NoteheadView, { key: "h", notehead: noteheadGlyph, spec: {
                     color: spec.color,
                     defaultX: defaultX,
                     defaultY: 0,
-                    type: spec.notehead ? spec.notehead.type : musicxml_interfaces_1.NoteheadType.Normal,
+                    type: spec.notehead ? spec.notehead.type : NoteheadType.Normal,
                 } }),
             spec.dots && spec.printDot !== false
-                ? lodash_1.map(spec.dots, function (dot, idx) { return (React.createElement(private_views_dot_1.default, { fill: dot.color, key: "_1_" + idx, radius: 2.4, x: defaultX + right + 6 + 6 * idx, y: _this.context.originY -
+                ? map(spec.dots, function (dot, idx) { return (React.createElement(Dot, { fill: dot.color, key: "_1_" + idx, radius: 2.4, x: defaultX + right + 6 + 6 * idx, y: _this.context.originY -
                         _this.props.spec.defaultY -
                         (dot.defaultY + (dot.relativeY || 0)) })); })
                 : null,
-            this.props.spec.accidental ? (React.createElement(implAttributes_accidentalView_1.default, { key: "a", spec: this.props.spec.accidental, noteDefaultX: defaultX })) : null,
-            hasParens && (React.createElement(private_views_glyph_1.default, { glyphName: "noteheadParenthesisRight", fill: "black", y: this.context.originY - this.props.spec.defaultY, x: defaultX + right + 2 })),
-            hasParens && (React.createElement(private_views_glyph_1.default, { glyphName: "noteheadParenthesisLeft", fill: "black", y: this.context.originY - this.props.spec.defaultY, x: defaultX + left - 5 }))));
+            this.props.spec.accidental ? (React.createElement(AccidentalView, { key: "a", spec: this.props.spec.accidental, noteDefaultX: defaultX })) : null,
+            hasParens && (React.createElement(Glyph, { glyphName: "noteheadParenthesisRight", fill: "black", y: this.context.originY - this.props.spec.defaultY, x: defaultX + right + 2 })),
+            hasParens && (React.createElement(Glyph, { glyphName: "noteheadParenthesisLeft", fill: "black", y: this.context.originY - this.props.spec.defaultY, x: defaultX + left - 5 }))));
     };
     NoteView.prototype.getChildContext = function () {
         return {
@@ -94,6 +82,6 @@ var NoteView = /** @class */ (function (_super) {
         originY: PropTypes.number.isRequired,
     };
     return NoteView;
-}(react_1.Component));
-exports.default = NoteView;
+}(Component));
+export default NoteView;
 //# sourceMappingURL=implChord_noteView.js.map

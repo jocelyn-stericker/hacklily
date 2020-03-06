@@ -18,9 +18,9 @@
 import { ReactElement } from "react";
 import { ScoreHeader, Print, Grouping, FiguredBass, Attributes, Sound, Direction, Harmony, Barline } from "musicxml-interfaces";
 import { IAny } from "musicxml-interfaces/operations";
-import ProxyExports from "./implProxy_proxyModel";
-import SpacerExports from "./implSpacer_spacerModel";
-import VisualCursorExports from "./implVisualCursor_visualCursorModel";
+import { IProxyModel } from "./implProxy_proxyModel";
+import { ISpacerModel } from "./implSpacer_spacerModel";
+import { IVisualCursorModel } from "./implVisualCursor_visualCursorModel";
 import { IFactory } from "./private_factory";
 import { IAttributesSnapshot } from "./private_attributesSnapshot";
 import { IChord } from "./private_chordUtil";
@@ -28,9 +28,9 @@ import { ILinePlacementHint } from "./engine_processors_layout";
 import { IMeasure } from "./document_measure";
 import { IModel } from "./document_model";
 import Type from "./document_types";
-export { ISegment, IMeasurePart, IMeasure, getMeasureSegments, reduceToShortestInSegments } from "./document_measure";
-export { IModel, generateModelKey, ILayout, detach } from "./document_model";
-export { IMouseEvent, IProps, IPatchSpec, specIsRaw, specIsDocBuilder, specIsPartBuilder, ISong, ISongClass } from "./document_song";
+export * from "./document_measure";
+export * from "./document_model";
+export * from "./document_song";
 export { default as Type } from "./document_types";
 import { IMeasureLayout } from "./private_measureLayout";
 export interface ICleanlinessTracking {
@@ -75,9 +75,9 @@ export declare class Document {
     modelHasType(model: IModel, modelType: Type.Sound): model is Sound & IModel;
     modelHasType(model: IModel, modelType: Type.Direction): model is Direction & IModel;
     modelHasType(model: IModel, modelType: Type.Harmony): model is Harmony & IModel;
-    modelHasType(model: IModel, modelType: Type.Proxy): model is ProxyExports.IProxyModel;
-    modelHasType(model: IModel, modelType: Type.Spacer): model is SpacerExports.ISpacerModel;
-    modelHasType(model: IModel, modelType: Type.VisualCursor): model is VisualCursorExports.IVisualCursorModel;
+    modelHasType(model: IModel, modelType: Type.Proxy): model is IProxyModel;
+    modelHasType(model: IModel, modelType: Type.Spacer): model is ISpacerModel;
+    modelHasType(model: IModel, modelType: Type.VisualCursor): model is IVisualCursorModel;
     modelHasType(model: IModel, modelType: Type.Barline): model is Barline & IModel;
     modelHasType(model: IModel, ...modelTypes: Type[]): boolean;
     search(models: IModel[], idx: number, modelType: Type.Chord): (IChord & IModel)[];
@@ -88,9 +88,9 @@ export declare class Document {
     search(models: IModel[], idx: number, modelType: Type.Sound): (Sound & IModel)[];
     search(models: IModel[], idx: number, modelType: Type.Direction): (Direction & IModel)[];
     search(models: IModel[], idx: number, modelType: Type.Harmony): (Harmony & IModel)[];
-    search(models: IModel[], idx: number, modelType: Type.Proxy): ProxyExports.IProxyModel[];
-    search(models: IModel[], idx: number, modelType: Type.Spacer): SpacerExports.ISpacerModel[];
-    search(models: IModel[], idx: number, modelType: Type.VisualCursor): VisualCursorExports.IVisualCursorModel[];
+    search(models: IModel[], idx: number, modelType: Type.Proxy): IProxyModel[];
+    search(models: IModel[], idx: number, modelType: Type.Spacer): ISpacerModel[];
+    search(models: IModel[], idx: number, modelType: Type.VisualCursor): IVisualCursorModel[];
     search(models: IModel[], idx: number, ...types: Type[]): IModel[];
     getPrint(startMeasure: number): Print;
     renderToStaticMarkup(startMeasure: number): string;
@@ -101,6 +101,6 @@ export declare class Document {
      * Invariant: document must be validated.
      */
     __getPage(startMeasure: number, preview: boolean, renderTarget?: "svg-web" | "svg-export", pageClassName?: string, singleLineMode?: boolean, fixedMeasureWidth?: number, onOperationsAppended?: (ops: IAny[]) => void, ref?: (svg: SVGSVGElement) => void, onPageHeightChanged?: (height: number) => void): ReactElement<any>;
-    constructor(header: ScoreHeader, measures: IMeasure[], parts: string[], internalFactory: IFactory, error?: Error);
+    constructor(header: ScoreHeader, measures: IMeasure[], _parts: string[], internalFactory: IFactory, error?: Error);
     cleanlinessTracking: ICleanlinessTracking;
 }

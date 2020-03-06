@@ -1,4 +1,3 @@
-"use strict";
 /**
  * This file is part of Satie music engraver <https://github.com/jnetterf/satie>.
  * Copyright (C) Joshua Netterfield <joshua.ca> 2015 - present.
@@ -29,23 +28,12 @@ var __extends = (this && this.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
-    result["default"] = mod;
-    return result;
-};
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-var React = __importStar(require("react"));
-var react_1 = require("react");
-var PropTypes = __importStar(require("prop-types"));
-var lodash_1 = require("lodash");
-var private_views_line_1 = __importDefault(require("./private_views_line"));
-var private_smufl_1 = require("./private_smufl");
+import * as React from "react";
+import { Component } from "react";
+import * as PropTypes from "prop-types";
+import { times } from "lodash";
+import Line from "./private_views_line";
+import { bravura } from "./private_smufl";
 /**
  * Renders the (usually 5) lines that make up a staff.
  */
@@ -59,14 +47,14 @@ var StaffLines = /** @class */ (function (_super) {
         var middle = this.context.originY - this.props.defaultY;
         var staffDetails = this.props.staffDetails;
         var offset = (staffDetails.staffLines - 1) / 2;
-        return (React.createElement("g", null, lodash_1.times(staffDetails.staffLines, function (i) { return (React.createElement(private_views_line_1.default, { key: "staff-" + i, stroke: "#6A6A6A", 
+        return (React.createElement("g", null, times(staffDetails.staffLines, function (i) { return (React.createElement(Line, { key: "staff-" + i, stroke: "#6A6A6A", 
             // TODO: Use print
-            strokeWidth: private_smufl_1.bravura.engravingDefaults.staffLineThickness * 10, x1: _this.props.defaultX, x2: _this.props.defaultX + _this.props.width, y1: middle - 10 * (i - offset), y2: middle - 10 * (i - offset) })); })));
+            strokeWidth: bravura.engravingDefaults.staffLineThickness * 10, x1: _this.props.defaultX, x2: _this.props.defaultX + _this.props.width, y1: middle - 10 * (i - offset), y2: middle - 10 * (i - offset) })); })));
     };
     StaffLines.contextTypes = {
         originY: PropTypes.number.isRequired,
     };
     return StaffLines;
-}(react_1.Component));
-exports.default = StaffLines;
+}(Component));
+export default StaffLines;
 //# sourceMappingURL=implAttributes_staffLinesView.js.map

@@ -17,14 +17,11 @@
  */
 import { Direction } from "musicxml-interfaces";
 import { IModel, ILayout } from "./document";
-declare function Export(constructors: {
+export default function Export(constructors: {
     [key: number]: any;
 }): void;
-declare module Export {
-    interface IDirectionModel extends IModel, Direction {
-    }
-    interface IDirectionLayout extends ILayout {
-        model: IDirectionModel;
-    }
+export interface IDirectionModel extends IModel, Direction {
 }
-export default Export;
+export interface IDirectionLayout extends ILayout {
+    model: IDirectionModel;
+}

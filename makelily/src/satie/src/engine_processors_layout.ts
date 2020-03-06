@@ -24,7 +24,7 @@ import {
   IMeasure,
   getMeasureSegments,
   Type,
-  reduceToShortestInSegments
+  reduceToShortestInSegments,
 } from "./document";
 
 import { ILayoutOptions } from "./private_layoutOptions";
@@ -58,14 +58,14 @@ function findPrint(options: ILayoutOptions, measure: IMeasure): Print {
     measure.parts,
     part =>
       !!part.staves[1] &&
-      options.modelFactory.search(part.staves[1], 0, Type.Print).length > 0
+      options.modelFactory.search(part.staves[1], 0, Type.Print).length > 0,
   );
 
   if (partWithPrint) {
     return options.modelFactory.search(
       partWithPrint.staves[1],
       0,
-      Type.Print
+      Type.Print,
     )[0]._snapshot as any;
   }
   return null;
@@ -78,7 +78,7 @@ function assignLinesReducer(
   memo: IReduceOptsMemo,
   measureInfo: ILinePlacementHint,
   idx: number,
-  all: ILinePlacementHint[]
+  all: ILinePlacementHint[],
 ): IReduceOptsMemo {
   let options = memo.options;
   let measures = options.measures;
@@ -134,19 +134,19 @@ function assignLinesReducer(
 
 function createEmptyLayout(
   options: ILayoutOptions,
-  print: Print
+  print: Print,
 ): ILayoutOptions {
   return {
     ...options,
     attributes: null,
     measures: [],
-    print: print
+    print: print,
   };
 }
 
 export function getApproximateMeasureWidth(
   measure: IMeasure,
-  shortest: number
+  shortest: number,
 ) {
   return Object.keys(measure.parts).reduce((pwidth, partName) => {
     const vwidth = measure.parts[partName].voices.reduce((vwidth, voice) => {
@@ -155,7 +155,7 @@ export function getApproximateMeasureWidth(
       }
       return voice.reduce(
         (swidth, el) => swidth + el.calcWidth(shortest),
-        vwidth
+        vwidth,
       );
     }, 0);
     return Math.max(vwidth, pwidth);
@@ -163,7 +163,7 @@ export function getApproximateMeasureWidth(
 }
 
 function getLinePlacementHints(
-  measures: IMeasure[]
+  measures: IMeasure[],
 ): ReadonlyArray<ILinePlacementHint> {
   const shortestByMeasure: ReadonlyArray<number> = measures.map(measure => {
     const segments = getMeasureSegments(measure);
@@ -172,19 +172,16 @@ function getLinePlacementHints(
 
   const shortestsObj: {
     readonly [key: number]: boolean;
-  } = shortestByMeasure.reduce(
-    (shortests, shortest) => {
-      shortests[shortest] = true;
-      return shortests;
-    },
-    {} as { [key: number]: boolean }
-  );
+  } = shortestByMeasure.reduce((shortests, shortest) => {
+    shortests[shortest] = true;
+    return shortests;
+  }, {} as { [key: number]: boolean });
 
   const shortests = Object.keys(shortestsObj).map(str => parseInt(str, 10));
 
   return map(measures, function layoutMeasure(
     measure,
-    idx
+    idx,
   ): ILinePlacementHint {
     const shortestInMeasure = shortestByMeasure[idx];
 
@@ -195,33 +192,30 @@ function getLinePlacementHints(
     ) {
       console.warn("Bad measure width %s. Ignoring", measure.width);
     }
-    let widthByShortest = shortests.reduce(
-      (shortests, shortest) => {
-        if (shortest <= shortestInMeasure) {
-          shortests[shortest] = getApproximateMeasureWidth(measure, shortest);
-        }
-        return shortests;
-      },
-      {} as { [key: number]: number }
-    );
+    let widthByShortest = shortests.reduce((shortests, shortest) => {
+      if (shortest <= shortestInMeasure) {
+        shortests[shortest] = getApproximateMeasureWidth(measure, shortest);
+      }
+      return shortests;
+    }, {} as { [key: number]: number });
 
     // XXX: multiple rests
     return {
       widthByShortest,
       shortestCount: shortestInMeasure,
       attributesWidthStart: 150, // XXX
-      attributesWidthEnd: 50 // XXX
+      attributesWidthEnd: 50, // XXX
     };
   });
 }
 
 export default function layoutSong(
-  options: ILayoutOptions
+  options: ILayoutOptions,
 ): IMeasureLayout[][] {
   invariant(!!options.print, "Print not defined");
   invariant(
     !options.print._snapshot,
-    "Pass a snapshot of Print to layoutSong, not the actual model!"
+    "Pass a snapshot of Print to layoutSong, not the actual model!",
   );
   const page = 1; // XXX
   const scaling = options.document.header.defaults.scaling;
@@ -244,7 +238,7 @@ export default function layoutSong(
     startingWidth: lineWidth,
     thisPrint: options.print,
     widthAllocatedForEnd: 0,
-    widthAllocatedForStart: 0
+    widthAllocatedForStart: 0,
   }).opts;
 
   layoutOpts.forEach((line, idx) => {
@@ -281,9 +275,13 @@ export default function layoutSong(
   // Create the final layout
   const memo = {
     y: calculateLineBounds(layoutOpts[0].print, page, scaling).top,
-    attributes: {}
+    attributes: {},
   };
   return layoutOpts.map(lineOpt =>
-    layoutLine(lineOpt, calculateLineBounds(lineOpt.print, page, scaling), memo)
+    layoutLine(
+      lineOpt,
+      calculateLineBounds(lineOpt.print, page, scaling),
+      memo,
+    ),
   );
 }

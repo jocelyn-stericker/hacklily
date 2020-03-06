@@ -1,4 +1,3 @@
-"use strict";
 /**
  * This file is part of Satie music engraver <https://github.com/jnetterf/satie>.
  * Copyright (C) Joshua Netterfield <joshua.ca> 2015 - present.
@@ -16,11 +15,9 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with Satie.  If not, see <http://www.gnu.org/licenses/>.
  */
-Object.defineProperty(exports, "__esModule", { value: true });
-var private_mutate_1 = require("./private_mutate");
-function barlineMutator(barline, op) {
+import { mutate } from "./private_mutate";
+export default function barlineMutator(barline, op) {
     // This is a stub.
-    private_mutate_1.mutate(barline, op);
+    mutate(barline, op);
 }
-exports.default = barlineMutator;
 //# sourceMappingURL=implBarline_barlineMutator.js.map

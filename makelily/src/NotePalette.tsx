@@ -308,17 +308,14 @@ export default class NotePalette extends React.Component<Props> {
           <div className={css(styles.spring)} />
           <ul className={css(styles.controls)}>
             <div className={css(styles.controlSeperator)} />
-            {/* tslint:disable-next-line react-a11y-anchors */}
             <a href="#" onClick={this.props.undo} className={cls} role="button">
               <i className="fa-undo fa" />
             </a>
             <div className={css(styles.controlSeperator)} />
-            {/* tslint:disable-next-line react-a11y-anchors */}
             <a href="#" onClick={this.props.redo} className={cls} role="button">
               <i className="fa-undo fa-flip-horizontal fa" />
             </a>
             <div className={css(styles.controlSeperator)} />
-            {/* tslint:disable-next-line react-a11y-anchors */}
             <a
               href="#"
               onClick={this.props.newMeasure}
@@ -360,7 +357,6 @@ export default class NotePalette extends React.Component<Props> {
       <span className={css(styles.subsection)}>
         <div className={css(styles.controlSeperator)} />
         <ul className={css(styles.controls)}>
-          {/* tslint:disable-next-line react-a11y-anchors */}
           <a
             href="#"
             onClick={this.setAccidentalNone}
@@ -371,7 +367,6 @@ export default class NotePalette extends React.Component<Props> {
               <span className="mn_">{"\ue261"}</span>
             </span>
           </a>
-          {/* tslint:disable-next-line react-a11y-anchors */}
           <a
             href="#"
             onClick={this.setAccidentalF}
@@ -382,7 +377,6 @@ export default class NotePalette extends React.Component<Props> {
               <span className="mn_">{"\ue260"}</span>
             </span>
           </a>
-          {/* tslint:disable-next-line react-a11y-anchors */}
           <a
             href="#"
             onClick={this.setAccidentalS}
@@ -393,7 +387,6 @@ export default class NotePalette extends React.Component<Props> {
               <span className="mn_">{"\ue262"}</span>
             </span>
           </a>
-          {/* tslint:disable-next-line react-a11y-anchors */}
           <a
             href="#"
             onClick={
@@ -406,7 +399,6 @@ export default class NotePalette extends React.Component<Props> {
               <span className="mn_">{"\ue4e6"}</span>
             </span>
           </a>
-          {/* tslint:disable-next-line react-a11y-anchors */}
           <a
             href="#"
             onClick={
@@ -443,7 +435,6 @@ export default class NotePalette extends React.Component<Props> {
             );
 
             return (
-              /* tslint:disable-next-line react-a11y-anchors */
               <a
                 href="#"
                 onClick={(): void => setNotation(model)}
@@ -479,7 +470,7 @@ export default class NotePalette extends React.Component<Props> {
     const classNameForCount: (cnt: Count) => string = (cnt: Count): string => {
       return css(
         note === cnt &&
-        (this.props.editType === "N" || this.props.editType === "R")
+          (this.props.editType === "N" || this.props.editType === "R")
           ? styles.paletteBtnOn
           : styles.paletteBtnOff,
       );
@@ -489,7 +480,6 @@ export default class NotePalette extends React.Component<Props> {
       <span className={css(styles.subsection)}>
         <div className={css(styles.controlSeperator)} />
         <ul className={css(styles.controls)}>
-          {/* tslint:disable-next-line react-a11y-anchors */}
           <a
             href="#"
             onClick={this.setNote32}
@@ -500,7 +490,6 @@ export default class NotePalette extends React.Component<Props> {
               <span className="mn_">{"\ud834\udd62"}</span>
             </span>
           </a>
-          {/* tslint:disable-next-line react-a11y-anchors */}
           <a
             href="#"
             onClick={this.setNote16}
@@ -511,7 +500,6 @@ export default class NotePalette extends React.Component<Props> {
               <span className="mn_">{"\ud834\udd61"}</span>
             </span>
           </a>
-          {/* tslint:disable-next-line react-a11y-anchors */}
           <a
             href="#"
             onClick={this.setNote8}
@@ -524,7 +512,6 @@ export default class NotePalette extends React.Component<Props> {
           </a>
         </ul>
         <ul className={css(styles.controls)}>
-          {/* tslint:disable-next-line react-a11y-anchors */}
           <a
             href="#"
             onClick={this.setNote4}
@@ -535,7 +522,6 @@ export default class NotePalette extends React.Component<Props> {
               <span className="mn_">{"\ud834\udd5f"}</span>
             </span>
           </a>
-          {/* tslint:disable-next-line react-a11y-anchors */}
           <a
             href="#"
             onClick={this.setNote2}
@@ -546,7 +532,6 @@ export default class NotePalette extends React.Component<Props> {
               <span className="mn_">{"\ud834\udd5e"}</span>
             </span>
           </a>
-          {/* tslint:disable-next-line react-a11y-anchors */}
           <a
             href="#"
             onClick={this.setNote1}
@@ -584,7 +569,6 @@ export default class NotePalette extends React.Component<Props> {
             };
 
             return (
-              /* tslint:disable-next-line react-a11y-anchors */
               <a
                 href="#"
                 onClick={(): void => setDirection(model)}
@@ -636,7 +620,6 @@ export default class NotePalette extends React.Component<Props> {
       <span className={css(styles.subsection)}>
         <div className={css(styles.controlSeperator)} />
         <ul className={css(styles.controls)}>
-          {/* tslint:disable-next-line react-a11y-anchors */}
           <a
             href="#"
             onClick={this.toggleDots}
@@ -652,7 +635,6 @@ export default class NotePalette extends React.Component<Props> {
               </span>
             </span>
           </a>
-          {/* tslint:disable-next-line react-a11y-anchors */}
           <a
             href="#"
             onClick={this.toggleTuplet}
@@ -707,7 +689,6 @@ export default class NotePalette extends React.Component<Props> {
   };
 }
 
-// tslint:disable-next-line typedef
 const styles = StyleSheet.create({
   bravura: {
     fontSize: 22,

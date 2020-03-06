@@ -1,4 +1,3 @@
-"use strict";
 /**
  * This file is part of Satie music engraver <https://github.com/jnetterf/satie>.
  * Copyright (C) Joshua Netterfield <joshua.ca> 2015 - present.
@@ -29,22 +28,10 @@ var __extends = (this && this.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
-    result["default"] = mod;
-    return result;
-};
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-var react_1 = require("react");
-var PropTypes = __importStar(require("prop-types"));
-var private_views_line_1 = __importDefault(require("./private_views_line"));
-var private_smufl_1 = require("./private_smufl");
-var $Line = react_1.createFactory(private_views_line_1.default);
+import React, { Component } from "react";
+import * as PropTypes from "prop-types";
+import Line from "./private_views_line";
+import { bboxes } from "./private_smufl";
 /**
  * Renders a ledger line at (x, y + line).
  */
@@ -55,23 +42,17 @@ var LedgerLine = /** @class */ (function (_super) {
     }
     LedgerLine.prototype.render = function () {
         var spec = this.props.spec;
-        var west = private_smufl_1.bboxes[this.props.notehead][3];
-        var east = private_smufl_1.bboxes[this.props.notehead][0];
+        var west = bboxes[this.props.notehead][3];
+        var east = bboxes[this.props.notehead][0];
         var xOffset = (east - west) * 10;
-        return $Line({
-            stroke: spec.color,
-            strokeWidth: 2.2,
+        return (React.createElement(Line, { stroke: spec.color, strokeWidth: 2.2, 
             // Ledger lines should be thicker than regular lines.
-            x1: spec.defaultX + (spec.relativeX || 0) - 3.2,
-            x2: spec.defaultX + (spec.relativeX || 0) + xOffset - 0.2,
-            y1: this.context.originY - spec.defaultY - (spec.relativeX || 0),
-            y2: this.context.originY - spec.defaultY - (spec.relativeX || 0)
-        });
+            x1: spec.defaultX + (spec.relativeX || 0) - 3.2, x2: spec.defaultX + (spec.relativeX || 0) + xOffset - 0.2, y1: this.context.originY - spec.defaultY - (spec.relativeX || 0), y2: this.context.originY - spec.defaultY - (spec.relativeX || 0) }));
     };
     LedgerLine.contextTypes = {
-        originY: PropTypes.number.isRequired
+        originY: PropTypes.number.isRequired,
     };
     return LedgerLine;
-}(react_1.Component));
-exports.default = LedgerLine;
+}(Component));
+export default LedgerLine;
 //# sourceMappingURL=implChord_ledgerLineView.js.map

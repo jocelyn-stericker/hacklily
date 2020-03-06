@@ -1,4 +1,3 @@
-"use strict";
 /**
  * This file is part of Satie music engraver <https://github.com/jnetterf/satie>.
  * Copyright (C) Joshua Netterfield <joshua.ca> 2015 - present.
@@ -29,25 +28,14 @@ var __extends = (this && this.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
-    result["default"] = mod;
-    return result;
-};
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-var React = __importStar(require("react"));
-var musicxml_interfaces_1 = require("musicxml-interfaces");
-var react_1 = require("react");
-var PropTypes = __importStar(require("prop-types"));
-var lodash_1 = require("lodash");
-var invariant_1 = __importDefault(require("invariant"));
-var private_renderUtil_1 = require("./private_renderUtil");
-var private_views_textMixin_1 = require("./private_views_textMixin");
+import * as React from "react";
+import { NormalItalic, NormalBold, } from "musicxml-interfaces";
+import { Component } from "react";
+import * as PropTypes from "prop-types";
+import { map, extend } from "lodash";
+import invariant from "invariant";
+import { cssSizeToTenths } from "./private_renderUtil";
+import { Prototype as TextMixin } from "./private_views_textMixin";
 var CreditView = /** @class */ (function (_super) {
     __extends(CreditView, _super);
     function CreditView() {
@@ -58,20 +46,20 @@ var CreditView = /** @class */ (function (_super) {
         var image = this.props.creditImage;
         var words = this.props.creditWords;
         var scale40 = this.context.scale40;
-        invariant_1.default(!image, "Not implemented"); // There is either words or image, but not both
-        invariant_1.default(!!words, "Unknown component type");
+        invariant(!image, "Not implemented"); // There is either words or image, but not both
+        invariant(!!words, "Unknown component type");
         if (!!words && !words.length) {
             return React.createElement("g", null);
         }
         var initX = words[0].defaultX + (words[0].relativeX || 0);
         var initY = this.context.originY - (words[0].defaultY + (words[0].relativeY || 0));
-        return (React.createElement("text", { x: initX, y: initY }, lodash_1.map(words, function (words, idx) {
-            var isItalic = words.fontStyle === musicxml_interfaces_1.NormalItalic.Italic;
-            var isBold = words.fontWeight === musicxml_interfaces_1.NormalBold.Bold;
-            var fontSize = private_renderUtil_1.cssSizeToTenths(scale40, words.fontSize);
-            return lodash_1.map(words.words.split("\n"), function (line, lineNum) { return (React.createElement("tspan", { alignmentBaseline: "hanging", fill: words.color || "black", direction: _this.getDirection(words), dx: _this.getDX(words, initX, lineNum), dy: _this.getDY(words, initY, lineNum), fontStyle: isItalic ? "italic" : "normal", fontWeight: isBold ? "bold" : "normal", fontFamily: words.fontFamily || "Alegreya", fontSize: fontSize, key: idx + "l" + lineNum, letterSpacing: words.letterSpacing && words.letterSpacing !== "normal"
+        return (React.createElement("text", { x: initX, y: initY }, map(words, function (words, idx) {
+            var isItalic = words.fontStyle === NormalItalic.Italic;
+            var isBold = words.fontWeight === NormalBold.Bold;
+            var fontSize = cssSizeToTenths(scale40, words.fontSize);
+            return map(words.words.split("\n"), function (line, lineNum) { return (React.createElement("tspan", { alignmentBaseline: "hanging", fill: words.color || "black", direction: _this.getDirection(words), dx: _this.getDX(words, initX, lineNum), dy: _this.getDY(words, initY, lineNum), fontStyle: isItalic ? "italic" : "normal", fontWeight: isBold ? "bold" : "normal", fontFamily: words.fontFamily || "Alegreya", fontSize: fontSize, key: idx + "l" + lineNum, letterSpacing: words.letterSpacing && words.letterSpacing !== "normal"
                     ? "" +
-                        private_renderUtil_1.cssSizeToTenths(_this.context.scale40, words.letterSpacing)
+                        cssSizeToTenths(_this.context.scale40, words.letterSpacing)
                     : "normal", textDecoration: _this.getTextDecoration(words), textAnchor: _this.getTextAnchor(words), transform: _this.getTransform(words), x: _this.getX(lineNum) }, line)); });
         })));
     };
@@ -80,7 +68,7 @@ var CreditView = /** @class */ (function (_super) {
         scale40: PropTypes.number.isRequired,
     };
     return CreditView;
-}(react_1.Component));
-exports.default = CreditView;
-lodash_1.extend(CreditView.prototype, private_views_textMixin_1.Prototype);
+}(Component));
+export default CreditView;
+extend(CreditView.prototype, TextMixin);
 //# sourceMappingURL=implPage_creditView.js.map

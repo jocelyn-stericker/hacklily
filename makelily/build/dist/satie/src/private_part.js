@@ -1,4 +1,3 @@
-"use strict";
 /**
  * This file is part of Satie music engraver <https://github.com/jnetterf/satie>.
  * Copyright (C) Joshua Netterfield <joshua.ca> 2015 - present.
@@ -16,23 +15,21 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with Satie.  If not, see <http://www.gnu.org/licenses/>.
  */
-Object.defineProperty(exports, "__esModule", { value: true });
-var lodash_1 = require("lodash");
-var musicxml_interfaces_1 = require("musicxml-interfaces");
-function scoreParts(scoreParts) {
-    return lodash_1.filter(scoreParts, function (scorePart) { return scorePart._class === "ScorePart"; });
+import { some, filter } from "lodash";
+import { StartStop } from "musicxml-interfaces";
+export function scoreParts(scoreParts) {
+    return (filter(scoreParts, function (scorePart) { return scorePart._class === "ScorePart"; }));
 }
-exports.scoreParts = scoreParts;
-function groupsForPart(scoreParts, partID) {
+export function groupsForPart(scoreParts, partID) {
     var groups = [];
-    lodash_1.some(scoreParts, function (partOrGroup) {
+    some(scoreParts, function (partOrGroup) {
         if (partOrGroup._class === "PartGroup") {
             var group_1 = partOrGroup;
-            if (group_1.type === musicxml_interfaces_1.StartStop.Start) {
+            if (group_1.type === StartStop.Start) {
                 groups.push(group_1);
             }
             else {
-                groups = lodash_1.filter(groups, function (currGroup) { return currGroup.number !== group_1.number; });
+                groups = filter(groups, function (currGroup) { return currGroup.number !== group_1.number; });
             }
         }
         else {
@@ -45,5 +42,4 @@ function groupsForPart(scoreParts, partID) {
     });
     return groups;
 }
-exports.groupsForPart = groupsForPart;
 //# sourceMappingURL=private_part.js.map

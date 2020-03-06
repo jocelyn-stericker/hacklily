@@ -1,4 +1,3 @@
-"use strict";
 /**
  * This file is part of Satie music engraver <https://github.com/jnetterf/satie>.
  * Copyright (C) Joshua Netterfield <joshua.ca> 2015 - present.
@@ -16,15 +15,11 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with Satie.  If not, see <http://www.gnu.org/licenses/>.
  */
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-var invariant_1 = __importDefault(require("invariant"));
-var private_mutate_1 = require("./private_mutate");
-function noteMutator(note, op) {
+import invariant from "invariant";
+import { replace, remove, set, mutate } from "./private_mutate";
+export default function noteMutator(note, op) {
     if (op.p.length > 2) {
-        private_mutate_1.mutate(note, op);
+        mutate(note, op);
         return;
     }
     if ("od" in op && "oi" in op) {
@@ -34,22 +29,21 @@ function noteMutator(note, op) {
             };
         }
         else {
-            private_mutate_1.replace(note, op);
+            replace(note, op);
         }
     }
     else if ("od" in op) {
-        private_mutate_1.remove(note, op);
+        remove(note, op);
     }
     else if ("oi" in op) {
-        invariant_1.default(!note[op.p[0]], "Object already set");
-        private_mutate_1.set(note, op);
+        invariant(!note[op.p[0]], "Object already set");
+        set(note, op);
     }
     else if ("ld" in op || "li" in op) {
-        private_mutate_1.mutate(note, op);
+        mutate(note, op);
     }
     else {
         throw new Error("Unknown operation");
     }
 }
-exports.default = noteMutator;
 //# sourceMappingURL=implChord_noteMutator.js.map

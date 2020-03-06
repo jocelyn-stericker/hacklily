@@ -1,4 +1,3 @@
-"use strict";
 /**
  * This file is part of Satie music engraver <https://github.com/jnetterf/satie>.
  * Copyright (C) Joshua Netterfield <joshua.ca> 2015 - present.
@@ -16,21 +15,17 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with Satie.  If not, see <http://www.gnu.org/licenses/>.
  */
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-var invariant_1 = __importDefault(require("invariant"));
-var lodash_1 = require("lodash");
-var private_util_1 = require("./private_util");
+import invariant from "invariant";
+import { last, isEqual } from "lodash";
+import { cloneObject } from "./private_util";
 function expectEqualish(a, b) {
-    a = private_util_1.cloneObject(a);
-    b = private_util_1.cloneObject(b);
-    if (!lodash_1.isEqual(a, b)) {
+    a = cloneObject(a);
+    b = cloneObject(b);
+    if (!isEqual(a, b)) {
         console.warn("Invalid operation since " + JSON.stringify(a, null, 2) + " != " + JSON.stringify(b, null, 2) + ". Doing it anyway.");
     }
 }
-function parentExists(obj, p) {
+export function parentExists(obj, p) {
     for (var i = 0; i < p.length - 1; ++i) {
         obj = obj[p[i]];
         if (!obj) {
@@ -39,49 +34,43 @@ function parentExists(obj, p) {
     }
     return true;
 }
-exports.parentExists = parentExists;
-function findParent(obj, p) {
+export function findParent(obj, p) {
     for (var i = 0; i < p.length - 1; ++i) {
         obj = obj[p[i]];
-        invariant_1.default(obj, "Invalid path: " + p.join(", "));
+        invariant(obj, "Invalid path: " + p.join(", "));
     }
     return obj;
 }
-exports.findParent = findParent;
-function set(obj, op) {
+export function set(obj, op) {
     var parent = findParent(obj, op.p);
-    var key = lodash_1.last(op.p);
+    var key = last(op.p);
     parent[key] = op.oi;
     // STOPSHIP: this could cause problems during collaboration/undo
     expectEqualish(parent[key], op.oi);
 }
-exports.set = set;
-function insertToList(obj, op) {
+export function insertToList(obj, op) {
     var parent = findParent(obj, op.p);
-    var key = lodash_1.last(op.p);
-    invariant_1.default(key >= 0, "Invalid operation");
+    var key = last(op.p);
+    invariant(key >= 0, "Invalid operation");
     parent.splice(key, 0, op.li);
 }
-exports.insertToList = insertToList;
-function replace(obj, op) {
+export function replace(obj, op) {
     var parent = findParent(obj, op.p);
-    var key = lodash_1.last(op.p);
+    var key = last(op.p);
     // STOPSHIP: this could cause problems during collaboration/undo
     expectEqualish(parent[key], op.od);
     parent[key] = op.oi;
 }
-exports.replace = replace;
-function replaceInList(obj, op) {
+export function replaceInList(obj, op) {
     var parent = findParent(obj, op.p);
-    var key = lodash_1.last(op.p);
+    var key = last(op.p);
     // STOPSHIP: this could cause problems during collaboration/undo
     expectEqualish(parent[key], op.ld);
     parent[key] = op.li;
 }
-exports.replaceInList = replaceInList;
-function remove(obj, op) {
+export function remove(obj, op) {
     var parent = findParent(obj, op.p);
-    var key = lodash_1.last(op.p);
+    var key = last(op.p);
     // STOPSHIP: this could cause problems during collaboration/undo
     expectEqualish(parent[key], op.od);
     // We do not actually delete the object. This:
@@ -90,18 +79,16 @@ function remove(obj, op) {
     //   - supports getters/setters.
     parent[key] = undefined;
 }
-exports.remove = remove;
-function removeFromList(obj, op) {
+export function removeFromList(obj, op) {
     var parent = findParent(obj, op.p);
-    var key = lodash_1.last(op.p);
-    invariant_1.default(key < parent.length, "Invalid operation");
-    invariant_1.default(key >= 0, "Invalid operation");
+    var key = last(op.p);
+    invariant(key < parent.length, "Invalid operation");
+    invariant(key >= 0, "Invalid operation");
     // STOPSHIP: this could cause problems during collaboration/undo
     expectEqualish(parent[key], op.ld);
     parent.splice(key, 1);
 }
-exports.removeFromList = removeFromList;
-function mutate(obj, op) {
+export function mutate(obj, op) {
     if ("od" in op && "oi" in op) {
         replace(obj, op);
     }
@@ -124,5 +111,4 @@ function mutate(obj, op) {
         throw new Error("Unsupported operation");
     }
 }
-exports.mutate = mutate;
 //# sourceMappingURL=private_mutate.js.map

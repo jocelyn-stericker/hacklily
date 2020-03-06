@@ -71,8 +71,6 @@ export default class DirectionView extends Component<
           return null;
         case !!type.otherDirection:
           return null;
-        case !!type.otherDirection:
-          return null;
         case !!type.pedal:
           return null;
         case !!type.percussions:

@@ -1,4 +1,3 @@
-"use strict";
 /**
  * This file is part of Satie music engraver <https://github.com/jnetterf/satie>.
  * Copyright (C) Joshua Netterfield <joshua.ca> 2015 - present.
@@ -16,11 +15,10 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with Satie.  If not, see <http://www.gnu.org/licenses/>.
  */
-Object.defineProperty(exports, "__esModule", { value: true });
-var musicxml_interfaces_1 = require("musicxml-interfaces");
-var lodash_1 = require("lodash");
-var private_util_1 = require("./private_util");
-function createAttributesSnapshot(_a) {
+import { StartStop, } from "musicxml-interfaces";
+import { clone, forEach } from "lodash";
+import { cloneObject } from "./private_util";
+export function createAttributesSnapshot(_a) {
     var before = _a.before, current = _a.current, staff = _a.staff, measure = _a.measure;
     var currentClefs = current.clefs || [];
     var currentTimes = current.times || [];
@@ -30,7 +28,7 @@ function createAttributesSnapshot(_a) {
     var beforeDetails = before.staffDetails || [];
     var currentDetails = current.staffDetails || [];
     for (var i = 0; i < beforeDetails.length || i < currentDetails.length; ++i) {
-        staffDetails[i] = createStaffDetailsSnapshot(currentDetails[i] || {}, lodash_1.clone(beforeDetails[i] || {}));
+        staffDetails[i] = createStaffDetailsSnapshot(currentDetails[i] || {}, clone(beforeDetails[i] || {}));
     }
     var clefs = [];
     var beforeClefs = before.clefs || [];
@@ -72,22 +70,26 @@ function createAttributesSnapshot(_a) {
     };
     return snapshot;
 }
-exports.createAttributesSnapshot = createAttributesSnapshot;
 function createStaffDetailsSnapshot(newStaffDetails, staffDetails) {
-    newStaffDetails = private_util_1.cloneObject(newStaffDetails);
+    newStaffDetails = cloneObject(newStaffDetails);
     newStaffDetails.capo = newStaffDetails.capo || staffDetails.capo;
-    newStaffDetails.showFrets = newStaffDetails.showFrets || staffDetails.showFrets;
-    newStaffDetails.staffLines = newStaffDetails.staffLines || staffDetails.staffLines;
-    newStaffDetails.staffSize = newStaffDetails.staffSize || staffDetails.staffSize;
-    newStaffDetails.staffTunings = newStaffDetails.staffTunings || staffDetails.staffTunings;
-    newStaffDetails.staffType = newStaffDetails.staffType || staffDetails.staffType;
+    newStaffDetails.showFrets =
+        newStaffDetails.showFrets || staffDetails.showFrets;
+    newStaffDetails.staffLines =
+        newStaffDetails.staffLines || staffDetails.staffLines;
+    newStaffDetails.staffSize =
+        newStaffDetails.staffSize || staffDetails.staffSize;
+    newStaffDetails.staffTunings =
+        newStaffDetails.staffTunings || staffDetails.staffTunings;
+    newStaffDetails.staffType =
+        newStaffDetails.staffType || staffDetails.staffType;
     return newStaffDetails;
 }
 function createMeasureStyleSnapshot(current, style) {
     var multipleRestInitiatedHere;
-    lodash_1.forEach(current.measureStyles, function (currentMeasureStyle) {
+    forEach(current.measureStyles, function (currentMeasureStyle) {
         if (currentMeasureStyle.slash) {
-            if (currentMeasureStyle.slash.type === musicxml_interfaces_1.StartStop.Stop) {
+            if (currentMeasureStyle.slash.type === StartStop.Stop) {
                 delete style.slash;
             }
             else {
@@ -95,7 +97,7 @@ function createMeasureStyleSnapshot(current, style) {
             }
         }
         if (currentMeasureStyle.beatRepeat) {
-            if (currentMeasureStyle.beatRepeat.type === musicxml_interfaces_1.StartStop.Stop) {
+            if (currentMeasureStyle.beatRepeat.type === StartStop.Stop) {
                 delete style.beatRepeat;
             }
             else {
@@ -103,7 +105,7 @@ function createMeasureStyleSnapshot(current, style) {
             }
         }
         if (currentMeasureStyle.measureRepeat) {
-            if (currentMeasureStyle.measureRepeat.type === musicxml_interfaces_1.StartStop.Stop) {
+            if (currentMeasureStyle.measureRepeat.type === StartStop.Stop) {
                 delete style.measureRepeat;
             }
             else {
@@ -124,7 +126,7 @@ function createMeasureStyleSnapshot(current, style) {
         if (count - 1) {
             style.multipleRest = {
                 count: count - 1,
-                useSymbols: useSymbols
+                useSymbols: useSymbols,
             };
         }
         else {

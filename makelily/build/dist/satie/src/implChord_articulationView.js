@@ -1,4 +1,3 @@
-"use strict";
 /**
  * This file is part of Satie music engraver <https://github.com/jnetterf/satie>.
  * Copyright (C) Joshua Netterfield <joshua.ca> 2015 - present.
@@ -29,22 +28,11 @@ var __extends = (this && this.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
-    result["default"] = mod;
-    return result;
-};
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-var React = __importStar(require("react"));
-var musicxml_interfaces_1 = require("musicxml-interfaces");
-var react_1 = require("react");
-var PropTypes = __importStar(require("prop-types"));
-var private_views_glyph_1 = __importDefault(require("./private_views_glyph"));
+import * as React from "react";
+import { AboveBelow, } from "musicxml-interfaces";
+import { Component } from "react";
+import * as PropTypes from "prop-types";
+import Glyph from "./private_views_glyph";
 var Articulation = /** @class */ (function (_super) {
     __extends(Articulation, _super);
     function Articulation() {
@@ -83,16 +71,16 @@ var Articulation = /** @class */ (function (_super) {
                     return "";
                 }
                 switch (placement.placement) {
-                    case musicxml_interfaces_1.AboveBelow.Below:
+                    case AboveBelow.Below:
                         return "Below";
-                    case musicxml_interfaces_1.AboveBelow.Above:
-                    case musicxml_interfaces_1.AboveBelow.Unspecified:
+                    case AboveBelow.Above:
+                    case AboveBelow.Unspecified:
                         return "Above";
                     default:
                         return "Above";
                 }
             })();
-            children.push(React.createElement(private_views_glyph_1.default, { fill: "black", glyphName: "" + name + direction, key: name, x: _this.props.defaultX +
+            children.push(React.createElement(Glyph, { fill: "black", glyphName: "" + name + direction, key: name, x: _this.props.defaultX +
                     printStyle.defaultX +
                     (printStyle.relativeX || 0), y: (_this.context.originY || 0) -
                     printStyle.defaultY -
@@ -156,6 +144,6 @@ var Articulation = /** @class */ (function (_super) {
         originY: PropTypes.number,
     };
     return Articulation;
-}(react_1.Component));
-exports.default = Articulation;
+}(Component));
+export default Articulation;
 //# sourceMappingURL=implChord_articulationView.js.map

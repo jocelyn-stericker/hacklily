@@ -1,4 +1,3 @@
-"use strict";
 /**
  * @license
  * This file is part of Makelily.
@@ -31,48 +30,44 @@ var __extends = (this && this.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-var aphrodite_1 = require("aphrodite");
-var React = require("react");
-var satie_1 = require("./satie/src/satie");
-var ToolError_1 = __importDefault(require("./ToolError"));
-var ToolNoteEdit_1 = __importDefault(require("./ToolNoteEdit"));
-var ToolNotFound_1 = __importDefault(require("./ToolNotFound"));
-var ToolSetClef_1 = __importDefault(require("./ToolSetClef"));
-var ToolSetKey_1 = __importDefault(require("./ToolSetKey"));
-var ToolSetTime_1 = __importDefault(require("./ToolSetTime"));
-var parseLy_1 = require("./parseLy");
-exports.satieApplication = new satie_1.Application({
+import { css, StyleSheet } from "aphrodite";
+import React from "react";
+import { Application, requireFont } from "./satie/src/satie";
+import ToolError from "./ToolError";
+import ToolNoteEdit from "./ToolNoteEdit";
+import ToolNotFound from "./ToolNotFound";
+import ToolSetClef from "./ToolSetClef";
+import ToolSetKey from "./ToolSetKey";
+import ToolSetTime from "./ToolSetTime";
+import { parseClef, parseKeySig, parseTime } from "./parseLy";
+export var satieApplication = new Application({
     preloadedFonts: ["Alegreya", "Alegreya (bold)"],
     satieRoot: location.protocol + "//" + location.host + "/vendor/",
 });
-satie_1.requireFont("Bravura", "root://bravura/otf/Bravura.otf");
+requireFont("Bravura", "root://bravura/otf/Bravura.otf");
 var modes = [
     {
-        Component: ToolSetClef_1.default,
+        Component: ToolSetClef,
         key: "clef",
         name: "Set Clef",
     },
     {
-        Component: ToolSetKey_1.default,
+        Component: ToolSetKey,
         key: "key",
         name: "Set Key Signature",
     },
     {
-        Component: ToolSetTime_1.default,
+        Component: ToolSetTime,
         key: "time",
         name: "Set Time Signature",
     },
     {
-        Component: ToolNoteEdit_1.default,
+        Component: ToolNoteEdit,
         key: "notes",
         name: "Insert Notes",
     },
     {
-        Component: ToolError_1.default,
+        Component: ToolError,
         key: "error",
         name: null,
     },
@@ -112,35 +107,33 @@ var Makelily = /** @class */ (function (_super) {
         var modeElements = modes
             .filter(function (mode) { return mode.name !== null; })
             .map(function (mode, i) {
-            var className = aphrodite_1.css(styles.modeItem, i + 1 === modes.length && styles.modeItemLast, mode.key === _this.state.toolKey && styles.modeItemSelected);
+            var className = css(styles.modeItem, i + 1 === modes.length && styles.modeItemLast, mode.key === _this.state.toolKey && styles.modeItemSelected);
             return (React.createElement("li", { className: className, onClick: function () { return _this.setState({ toolKey: mode.key }); }, role: "button", key: mode.key }, mode.name));
         });
         var activeMode = modes.find(function (mode) { return mode.key === _this.state.toolKey; });
-        // tslint:disable-next-line variable-name
         var Tool = activeMode
             ? activeMode.Component
-            : ToolNotFound_1.default;
+            : ToolNotFound;
         var bar;
         if (!this.props.singleTaskMode) {
-            bar = (React.createElement("div", { className: aphrodite_1.css(styles.modeBar) },
-                React.createElement("h2", { className: aphrodite_1.css(styles.heading) }, "LilyPond Tools"),
-                React.createElement("ul", { className: aphrodite_1.css(styles.modeList) }, modeElements)));
+            bar = (React.createElement("div", { className: css(styles.modeBar) },
+                React.createElement("h2", { className: css(styles.heading) }, "LilyPond Tools"),
+                React.createElement("ul", { className: css(styles.modeList) }, modeElements)));
         }
-        var contentClass = aphrodite_1.css(styles.content, this.props.singleTaskMode && styles.contentNoBar);
+        var contentClass = css(styles.content, this.props.singleTaskMode && styles.contentNoBar);
         return (React.createElement("span", null,
-            React.createElement("div", { role: "button", "aria-label": "close", className: aphrodite_1.css(styles.modalBg), onClick: this.props.onHide }),
-            React.createElement("div", { className: aphrodite_1.css(styles.modal) },
+            React.createElement("div", { role: "button", "aria-label": "close", className: css(styles.modalBg), onClick: this.props.onHide }),
+            React.createElement("div", { className: css(styles.modal) },
                 bar,
                 React.createElement("div", { className: contentClass },
-                    React.createElement(Tool, { clef: parseLy_1.parseClef(this.props.clef), keySig: parseLy_1.parseKeySig(this.props.keySig), time: parseLy_1.parseTime(this.props.time), onInsertLy: this.props.onInsertLy })),
-                React.createElement("a", { href: "#", onClick: this.props.onHide, role: "button", className: aphrodite_1.css(styles.close) }, "\u00d7"))));
+                    React.createElement(Tool, { clef: parseClef(this.props.clef), keySig: parseKeySig(this.props.keySig), time: parseTime(this.props.time), onInsertLy: this.props.onInsertLy })),
+                React.createElement("a", { href: "#", onClick: this.props.onHide, role: "button", className: css(styles.close) }, "\u00d7"))));
     };
     return Makelily;
 }(React.Component));
-exports.default = Makelily;
+export default Makelily;
 var modeBarWidth = 180;
-// tslint:disable-next-line typedef
-var styles = aphrodite_1.StyleSheet.create({
+var styles = StyleSheet.create({
     close: {
         ":hover": {
             color: "black",

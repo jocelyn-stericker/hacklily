@@ -83,25 +83,25 @@ export declare class ValidationCursor {
         singleLineMode: boolean;
     });
     dangerouslyPatchWithoutValidation(builder: (partBuilder: VoiceBuilder & StaffBuilder) => VoiceBuilder | StaffBuilder): void;
-    patch(builder: (partBuilder: VoiceBuilder & StaffBuilder) => VoiceBuilder | StaffBuilder, dangerous?: boolean): void;
+    patch(builder: (partBuilder: VoiceBuilder & StaffBuilder) => VoiceBuilder | StaffBuilder, _dangerous?: boolean): void;
     advance(divs: number): void;
 }
 export declare class LayoutCursor {
     private _validationCursor?;
-    readonly document: Document;
-    readonly segmentInstance: ISegment;
-    readonly segmentPosition: number;
-    readonly segmentDivision: number;
-    readonly staffAttributes: IAttributesSnapshot;
-    readonly staffAccidentals: {
+    get document(): Document;
+    get segmentInstance(): ISegment;
+    get segmentPosition(): number;
+    get segmentDivision(): number;
+    get staffAttributes(): IAttributesSnapshot;
+    get staffAccidentals(): {
         [key: string]: number;
     };
-    readonly staffIdx: number;
-    readonly measureInstance: IMeasure;
-    readonly print: Print;
-    readonly header: ScoreHeader;
-    readonly factory: IFactory;
-    readonly preview: boolean;
+    get staffIdx(): number;
+    get measureInstance(): IMeasure;
+    get print(): Print;
+    get header(): ScoreHeader;
+    get factory(): IFactory;
+    get preview(): boolean;
     lineMaxPaddingTopByStaff: number[];
     lineMaxPaddingBottomByStaff: number[];
     lineShortest: number;

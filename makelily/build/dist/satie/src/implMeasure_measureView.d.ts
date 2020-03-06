@@ -15,7 +15,6 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with Satie.  If not, see <http://www.gnu.org/licenses/>.
  */
-/// <reference types="lodash" />
 import { Component } from "react";
 import { IMeasureLayout } from "./private_measureLayout";
 export interface IProps {
@@ -31,7 +30,9 @@ export default class MeasureView extends Component<IProps, {}> {
     };
     render(): any;
     getChildContext(): {
-        originYByPartAndStaff: import("lodash").Dictionary<number[]>;
+        originYByPartAndStaff: {
+            [x: string]: number[];
+        };
         systemBottom: number;
         systemTop: number;
     };

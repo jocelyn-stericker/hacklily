@@ -22,14 +22,11 @@ import { IModel, ILayout } from "./document";
 /**
  * Registers Proxy in the factory structure passed in.
  */
-declare function Export(constructors: {
+export default function Export(constructors: {
     [key: number]: any;
 }): void;
-declare namespace Export {
-    interface IProxyModel extends IModel {
-    }
-    interface IProxyLayout extends ILayout {
-        model: IProxyModel;
-    }
+export interface IProxyModel extends IModel {
 }
-export default Export;
+export interface IProxyLayout extends ILayout {
+    model: IProxyModel;
+}

@@ -43,7 +43,7 @@ import invariant from "invariant";
 
 import { ILayout, Type } from "./document";
 
-import ChordModel from "./implChord_chordModel";
+import { IDetachedChordModel, IChordLayout } from "./implChord_chordModel";
 
 import { IMeasureLayout } from "./private_measureLayout";
 import { ILayoutOptions } from "./private_layoutOptions";
@@ -56,8 +56,6 @@ import {
   linesForClef,
   heightDeterminingLine,
 } from "./private_chordUtil";
-
-type IDetachedChordModel = ChordModel.IDetachedChordModel;
 
 interface IMutableBeam {
   number: number;
@@ -76,8 +74,8 @@ type BeamSet = { [voice: string]: IMutableBeam[] };
  * @returns new end of line
  */
 function beam(
-  options: ILayoutOptions,
-  bounds: ILineBounds,
+  _options: ILayoutOptions,
+  _bounds: ILineBounds,
   measures: IMeasureLayout[],
 ): IMeasureLayout[] {
   forEach(measures, measure => {
@@ -202,7 +200,7 @@ function beam(
             switch (beam.type) {
               case BeamType.Begin:
               case BeamType.BackwardHook:
-              case BeamType.ForwardHook:
+              case BeamType.ForwardHook: {
                 activeBeams[voice] = activeBeams[voice] || [];
                 if (activeBeams[voice][idx]) {
                   console.warn(
@@ -228,78 +226,84 @@ function beam(
                 if (beam.type === BeamType.Begin) {
                   break;
                 }
+              }
               // Passthrough for BackwardHook and ForwardHook, which are single note things
+              // falls through
               case BeamType.End:
-                invariant(
-                  voice in activeBeams,
-                  "Cannot end non-existant beam " +
-                    "(no beam at all in current voice %s)",
-                  voice,
-                );
-                invariant(
-                  idx in activeBeams[voice],
-                  "Cannot end non-existant " +
-                    "beam (no beam at level %s in voice %s)",
-                  idx,
-                  voice,
-                );
-                activeBeams[voice][idx].elements.push(layout);
+                {
+                  invariant(
+                    voice in activeBeams,
+                    "Cannot end non-existant beam " +
+                      "(no beam at all in current voice %s)",
+                    voice,
+                  );
+                  invariant(
+                    idx in activeBeams[voice],
+                    "Cannot end non-existant " +
+                      "beam (no beam at level %s in voice %s)",
+                    idx,
+                    voice,
+                  );
+                  activeBeams[voice][idx].elements.push(layout);
 
-                counts = activeBeams[voice][1].counts;
+                  let counts = activeBeams[voice][1].counts;
 
-                if (beam.type === BeamType.End) {
+                  if (beam.type === BeamType.End) {
+                    if (idx === 1) {
+                      counts.push(1);
+                    } else {
+                      counts[counts.length - 1]++;
+                    }
+                  }
+                  toTerminate.push({
+                    voice: voice,
+                    idx: idx,
+                    isUnbeamedTuplet: false,
+                    beamSet: activeBeams,
+                  });
+
+                  let groupTuplet = activeBeams[voice][idx].tuplet;
+                  if (groupTuplet && !stopTuplet) {
+                    // We optimisticly attached the tuplet to the beam, but it extends
+                    // beyond the beam. Detach the tuplet from the beam, and create an
+                    // unbeamed tuplet.
+                    activeBeams[voice][idx].tuplet = null;
+                    activeUnbeamedTuplets[voice] =
+                      activeUnbeamedTuplets[voice] || [];
+                    activeUnbeamedTuplets[voice][groupTuplet.number || 1] = {
+                      number: groupTuplet.number || 1,
+                      elements: activeBeams[voice][idx].elements.slice(),
+                      initial: null,
+                      attributes: activeBeams[voice][idx].attributes,
+                      counts: activeBeams[voice][idx].counts.slice(),
+                      tuplet: groupTuplet,
+                    };
+                  }
+                }
+                break;
+              case BeamType.Continue:
+                {
+                  invariant(
+                    voice in activeBeams,
+                    "Cannot continue non-existant beam (no beam at all " +
+                      "in current voice %s)",
+                    voice,
+                  );
+                  invariant(
+                    idx in activeBeams[voice],
+                    "Cannot continue non-existant " +
+                      "beam (no beam at level %s in voice %s)",
+                    idx,
+                    voice,
+                  );
+                  activeBeams[voice][idx].elements.push(layout);
+
+                  let counts = activeBeams[voice][1].counts;
                   if (idx === 1) {
                     counts.push(1);
                   } else {
                     counts[counts.length - 1]++;
                   }
-                }
-                toTerminate.push({
-                  voice: voice,
-                  idx: idx,
-                  isUnbeamedTuplet: false,
-                  beamSet: activeBeams,
-                });
-
-                let groupTuplet = activeBeams[voice][idx].tuplet;
-                if (groupTuplet && !stopTuplet) {
-                  // We optimisticly attached the tuplet to the beam, but it extends
-                  // beyond the beam. Detach the tuplet from the beam, and create an
-                  // unbeamed tuplet.
-                  activeBeams[voice][idx].tuplet = null;
-                  activeUnbeamedTuplets[voice] =
-                    activeUnbeamedTuplets[voice] || [];
-                  activeUnbeamedTuplets[voice][groupTuplet.number || 1] = {
-                    number: groupTuplet.number || 1,
-                    elements: activeBeams[voice][idx].elements.slice(),
-                    initial: null,
-                    attributes: activeBeams[voice][idx].attributes,
-                    counts: activeBeams[voice][idx].counts.slice(),
-                    tuplet: groupTuplet,
-                  };
-                }
-                break;
-              case BeamType.Continue:
-                invariant(
-                  voice in activeBeams,
-                  "Cannot continue non-existant beam (no beam at all " +
-                    "in current voice %s)",
-                  voice,
-                );
-                invariant(
-                  idx in activeBeams[voice],
-                  "Cannot continue non-existant " +
-                    "beam (no beam at level %s in voice %s)",
-                  idx,
-                  voice,
-                );
-                activeBeams[voice][idx].elements.push(layout);
-
-                counts = activeBeams[voice][1].counts;
-                if (idx === 1) {
-                  counts.push(1);
-                } else {
-                  counts[counts.length - 1]++;
                 }
                 break;
               default:
@@ -425,7 +429,7 @@ function layoutBeam(
     intercept += direction * (10 - (intercept % 10));
   }
 
-  const layouts = (beam.elements as any) as ChordModel.IChordLayout[];
+  const layouts = (beam.elements as any) as IChordLayout[];
   if (isUnbeamedTuplet) {
     let offsetY = direction > 0 ? -13 : -53;
     forEach(layouts, (chordLayout, idx) => {
@@ -475,7 +479,7 @@ function layoutBeam(
 
     let firstStem = first(layouts).satieStem;
     let lastStem = last(layouts).satieStem;
-    let firstLayout = (first(beam.elements) as any) as ChordModel.IChordLayout;
+    let firstLayout = (first(beam.elements) as any) as IChordLayout;
 
     firstLayout.satieBeam = {
       beamCount: times(Xs.length, idx => beam.counts[idx]),

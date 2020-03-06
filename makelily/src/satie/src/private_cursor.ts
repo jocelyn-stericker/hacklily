@@ -166,7 +166,7 @@ export class ValidationCursor {
     builder: (
       partBuilder: VoiceBuilder & StaffBuilder,
     ) => VoiceBuilder | StaffBuilder,
-    dangerous?: boolean,
+    _dangerous?: boolean,
   ) {
     // Create the patch based on whether the current context is a staff context or a voice context.
     let patch = createPatch(

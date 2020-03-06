@@ -1,4 +1,3 @@
-"use strict";
 /**
  * This file is part of Satie music engraver <https://github.com/jnetterf/satie>.
  * Copyright (C) Joshua Netterfield <joshua.ca> 2015 - present.
@@ -29,23 +28,19 @@ var __extends = (this && this.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-var react_1 = require("react");
-var lodash_1 = require("lodash");
-var react_2 = require("react");
-var operations_1 = require("musicxml-interfaces/operations");
-var invariant_1 = __importDefault(require("invariant"));
-var document_1 = require("./document");
-var engine_createPatch_1 = __importDefault(require("./engine_createPatch"));
-var private_chordUtil_1 = require("./private_chordUtil");
-var private_views_metadata_1 = require("./private_views_metadata");
-var private_patchImpl_1 = __importDefault(require("./private_patchImpl"));
-var engine_import_1 = require("./engine_import");
-var engine_export_1 = require("./engine_export");
-var engine_applyOp_1 = __importDefault(require("./engine_applyOp"));
+import { Component } from "react";
+import { forEach, isEqual, throttle, find, extend } from "lodash";
+import { createElement } from "react";
+import { invert } from "musicxml-interfaces/operations";
+import invariant from "invariant";
+import { specIsDocBuilder, specIsPartBuilder, specIsRaw, } from "./document";
+import createPatch from "./engine_createPatch";
+import { pitchForClef } from "./private_chordUtil";
+import { get as getByPosition } from "./private_views_metadata";
+import PatchImpl from "./private_patchImpl";
+import { importXML } from "./engine_import";
+import { exportXML } from "./engine_export";
+import applyOp from "./engine_applyOp";
 var NOT_READY_ERROR = "The document is not yet initialized.";
 var SATIE_ELEMENT_RX = /SATIE([0-9]*)_(\w*)_(\w*)_(\w*)_(\w*)_(\w*)/;
 /**
@@ -89,8 +84,8 @@ var SongImpl = /** @class */ (function (_super) {
             if (!_this.state.document) {
                 throw new Error(NOT_READY_ERROR);
             }
-            if (operations instanceof private_patchImpl_1.default) {
-                _this._rectify$(operations.content, operations.isPreview, function () { return operations.isPreview = false; });
+            if (operations instanceof PatchImpl) {
+                _this._rectify$(operations.content, operations.isPreview, function () { return (operations.isPreview = false); });
                 return _this.state.document;
             }
             else if (!operations) {
@@ -122,9 +117,11 @@ var SongImpl = /** @class */ (function (_super) {
         };
         _this.toSVG = function () {
             var patches = _this.props.patches;
-            if (patches instanceof private_patchImpl_1.default) {
-                invariant_1.default(patches.isPreview === false, "Cannot render an SVG with a previewed patch");
-                _this._rectify$(patches.content, patches.isPreview, function () { patches.isPreview = false; });
+            if (patches instanceof PatchImpl) {
+                invariant(patches.isPreview === false, "Cannot render an SVG with a previewed patch");
+                _this._rectify$(patches.content, patches.isPreview, function () {
+                    patches.isPreview = false;
+                });
             }
             else if (!patches) {
                 _this._rectify$([], false, function () { return void 0; });
@@ -136,9 +133,9 @@ var SongImpl = /** @class */ (function (_super) {
         };
         _this.toMusicXML = function () {
             var patches = _this.props.patches;
-            if (patches instanceof private_patchImpl_1.default) {
-                invariant_1.default(patches.isPreview === false, "Cannot render MusicXML with a previewed patch");
-                _this._rectify$(patches.content, patches.isPreview, function () { return patches.preview = false; });
+            if (patches instanceof PatchImpl) {
+                invariant(patches.isPreview === false, "Cannot render MusicXML with a previewed patch");
+                _this._rectify$(patches.content, patches.isPreview, function () { return (patches.preview = false); });
             }
             else if (!patches) {
                 _this._rectify$([], false, function () { return void 0; });
@@ -146,7 +143,7 @@ var SongImpl = /** @class */ (function (_super) {
             else {
                 throw new Error("Song.props.patches was not created through createPreviewPatch or createCanonicalPatch");
             }
-            return engine_export_1.exportXML(_this.state.document);
+            return exportXML(_this.state.document);
         };
         _this._rectifyAppendCanonical = function (ops) {
             _this._rectify$(_this._docPatches.concat(ops), false, function () { return void 0; });
@@ -157,7 +154,7 @@ var SongImpl = /** @class */ (function (_super) {
         _this._preRender = function (props) {
             if (props === void 0) { props = _this.props; }
             var patches = _this.props.patches;
-            if (patches instanceof private_patchImpl_1.default) {
+            if (patches instanceof PatchImpl) {
                 _this._update$(patches.content, patches.isPreview, props);
             }
             else if (!patches) {
@@ -171,8 +168,8 @@ var SongImpl = /** @class */ (function (_super) {
             _this._svg = svg;
             _this._pt = svg ? svg.createSVGPoint() : null;
         };
-        _this._handleCursorPosition = lodash_1.throttle(function (p, handler) {
-            var match = private_views_metadata_1.get(p);
+        _this._handleCursorPosition = throttle(function (p, handler) {
+            var match = getByPosition(p);
             var path = match && match.key.match(SATIE_ELEMENT_RX);
             if (!path) {
                 handler({
@@ -185,14 +182,14 @@ var SongImpl = /** @class */ (function (_super) {
                 return;
             }
             path = path.slice(1);
-            var measure = lodash_1.find(_this.state.document.measures, function (measure) { return 1 * measure.uuid === parseInt(path[0], 10); });
+            var measure = find(_this.state.document.measures, function (measure) { return 1 * measure.uuid === parseInt(path[0], 10); });
             var el = measure[path[1]][path[2]][path[3]][path[4]][path[5]];
             if (el) {
                 var originY = match.originY;
                 var clef = el._clef;
                 var pitch = void 0;
                 if (clef && originY) {
-                    pitch = private_chordUtil_1.pitchForClef(originY - p.y, clef);
+                    pitch = pitchForClef(originY - p.y, clef);
                 }
                 handler({
                     path: path,
@@ -220,19 +217,19 @@ var SongImpl = /** @class */ (function (_super) {
     SongImpl.prototype.render = function () {
         // Note: we rectify/render before this is called. We assume shouldComponentUpdate
         // stops temporary states from being rendered.
-        return react_2.createElement("div", {
+        return createElement("div", {
             onMouseMove: this.props.onMouseMove && this._handleMouseMove,
             onClick: this.props.onMouseClick && this._handleClick,
         }, this._page1);
     };
     SongImpl.prototype.shouldComponentUpdate = function (nextProps) {
-        return nextProps.baseSrc !== this.props.baseSrc ||
+        return (nextProps.baseSrc !== this.props.baseSrc ||
             nextProps.patches !== this.props.patches ||
             nextProps.pageClassName !== this.props.pageClassName ||
             nextProps.singleLineMode !== this.props.singleLineMode ||
-            nextProps.fixedMeasureWidth !== this.props.fixedMeasureWidth;
+            nextProps.fixedMeasureWidth !== this.props.fixedMeasureWidth);
     };
-    SongImpl.prototype.componentWillReceiveProps = function (nextProps) {
+    SongImpl.prototype.UNSAFE_componentWillReceiveProps = function (nextProps) {
         if (nextProps.baseSrc !== this.props.baseSrc) {
             this._loadXML(nextProps.baseSrc);
         }
@@ -243,7 +240,7 @@ var SongImpl = /** @class */ (function (_super) {
         }
         else if (nextProps.patches !== this.props.patches) {
             var patches = nextProps.patches;
-            if (patches instanceof private_patchImpl_1.default) {
+            if (patches instanceof PatchImpl) {
                 this._update$(patches.content, patches.isPreview);
             }
             else if (!patches) {
@@ -254,7 +251,7 @@ var SongImpl = /** @class */ (function (_super) {
             }
         }
     };
-    SongImpl.prototype.componentWillMount = function () {
+    SongImpl.prototype.UNSAFE_componentWillMount = function () {
         this._loadXML(this.props.baseSrc);
     };
     Object.defineProperty(SongImpl.prototype, "header", {
@@ -264,7 +261,7 @@ var SongImpl = /** @class */ (function (_super) {
             }
             return null;
         },
-        set: function (header) {
+        set: function (_header) {
             if (this.state) {
                 throw new Error("Cannot set header. Use patches.");
             }
@@ -276,7 +273,7 @@ var SongImpl = /** @class */ (function (_super) {
     SongImpl.prototype.run = function () {
         var _this = this;
         this.setState = function (state, cb) {
-            lodash_1.extend(_this.state, state);
+            extend(_this.state, state);
             if (cb) {
                 cb();
             }
@@ -285,24 +282,24 @@ var SongImpl = /** @class */ (function (_super) {
             // no-op
         };
         if (!this._isRunningWithoutDOM) {
-            this.componentWillMount();
+            this.UNSAFE_componentWillMount();
         }
         this._isRunningWithoutDOM = true;
-        this.componentWillReceiveProps(this.props);
+        this.UNSAFE_componentWillReceiveProps(this.props);
     };
     SongImpl.prototype._createPatch = function (isPreview, patchSpecs) {
         var _this = this;
         var patches = patchSpecs.reduce(function (array, spec) {
-            if (document_1.specIsRaw(spec)) {
+            if (specIsRaw(spec)) {
                 return array.concat(spec.raw);
             }
-            else if (document_1.specIsDocBuilder(spec)) {
-                return array.concat(engine_createPatch_1.default(isPreview, _this.state.document, spec.documentBuilder));
+            else if (specIsDocBuilder(spec)) {
+                return array.concat(createPatch(isPreview, _this.state.document, spec.documentBuilder));
             }
-            else if (document_1.specIsPartBuilder(spec)) {
-                return array.concat(engine_createPatch_1.default(isPreview, _this.state.document, spec.measure, spec.part, spec.partBuilder));
+            else if (specIsPartBuilder(spec)) {
+                return array.concat(createPatch(isPreview, _this.state.document, spec.measure, spec.part, spec.partBuilder));
             }
-            else if (spec instanceof private_patchImpl_1.default) {
+            else if (spec instanceof PatchImpl) {
                 return array.concat(spec.content);
             }
             else if (!spec) {
@@ -311,7 +308,7 @@ var SongImpl = /** @class */ (function (_super) {
             throw new Error("Invalid patch spec.");
         }, []);
         this._update$(patches, isPreview);
-        return new private_patchImpl_1.default(this._docPatches.slice(), isPreview);
+        return new PatchImpl(this._docPatches.slice(), isPreview);
     };
     SongImpl.prototype._rectify$ = function (newPatches, preview, notEligableForPreview) {
         var _this = this;
@@ -320,7 +317,7 @@ var SongImpl = /** @class */ (function (_super) {
         var commonVersion = function () {
             var maxPossibleCommonVersion = Math.min(docPatches.length, newPatches.length);
             for (var i = 0; i < maxPossibleCommonVersion; ++i) {
-                if (!lodash_1.isEqual(docPatches[i], newPatches[i])) {
+                if (!isEqual(docPatches[i], newPatches[i])) {
                     return i;
                 }
             }
@@ -328,20 +325,20 @@ var SongImpl = /** @class */ (function (_super) {
         };
         var initialCommon = commonVersion();
         // Undo actions not in common
-        lodash_1.forEach(operations_1.invert(docPatches.slice(initialCommon)), function (op) {
-            engine_applyOp_1.default(preview, _this.state.document.measures, factory, op, _this.state.document, notEligableForPreview);
+        forEach(invert(docPatches.slice(initialCommon)), function (op) {
+            applyOp(preview, _this.state.document.measures, factory, op, _this.state.document, notEligableForPreview);
             docPatches.pop();
         });
         // Perform actions that are expected.
-        lodash_1.forEach(newPatches.slice(this._docPatches.length), function (op) {
-            engine_applyOp_1.default(preview, _this.state.document.measures, factory, op, _this.state.document, notEligableForPreview);
+        forEach(newPatches.slice(this._docPatches.length), function (op) {
+            applyOp(preview, _this.state.document.measures, factory, op, _this.state.document, notEligableForPreview);
             docPatches.push(op);
         });
-        invariant_1.default(docPatches.length === newPatches.length, "Something went wrong in _rectify. The current state is now invalid.");
+        invariant(docPatches.length === newPatches.length, "Something went wrong in _rectify. The current state is now invalid.");
     };
     SongImpl.prototype._update$ = function (patches, isPreview, props) {
         if (props === void 0) { props = this.props; }
-        this._rectify$(patches, isPreview, function () { return isPreview = false; });
+        this._rectify$(patches, isPreview, function () { return (isPreview = false); });
         this._page1 = this.state.document.__getPage(0, isPreview, "svg-web", props.pageClassName || "", props.singleLineMode, props.fixedMeasureWidth, isPreview ? this._rectifyAppendPreview : this._rectifyAppendCanonical, this._syncSVG, props.onPageHeightChanged);
         this.forceUpdate();
     };
@@ -360,7 +357,7 @@ var SongImpl = /** @class */ (function (_super) {
             document: null,
             factory: null,
         });
-        engine_import_1.importXML(xml, function (error, loadedDocument, loadedFactory) {
+        importXML(xml, function (error, loadedDocument, loadedFactory) {
             if (error) {
                 _this.props.onError(error);
             }
@@ -370,13 +367,13 @@ var SongImpl = /** @class */ (function (_super) {
                     factory: loadedFactory,
                 }, _this._preRender);
             }
-            invariant_1.default(!_this.props.patches, "Expected patches to be empty on document load.");
+            invariant(!_this.props.patches, "Expected patches to be empty on document load.");
             if (_this.props.onLoaded) {
                 _this.props.onLoaded();
             }
         });
     };
     return SongImpl;
-}(react_1.Component));
-exports.default = SongImpl;
+}(Component));
+export default SongImpl;
 //# sourceMappingURL=engine_songImpl.js.map

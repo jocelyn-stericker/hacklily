@@ -1,4 +1,3 @@
-"use strict";
 /**
  * This file is part of Satie music engraver <https://github.com/jnetterf/satie>.
  * Copyright (C) Joshua Netterfield <joshua.ca> 2015 - present.
@@ -16,37 +15,30 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with Satie.  If not, see <http://www.gnu.org/licenses/>.
  */
-Object.defineProperty(exports, "__esModule", { value: true });
-var musicxml_interfaces_1 = require("musicxml-interfaces");
-var lodash_1 = require("lodash");
-var private_renderUtil_1 = require("./private_renderUtil");
-var private_fontManager_1 = require("./private_fontManager");
-exports.DEFAULT_LYRIC_SIZE = "22";
-exports.DEFAULT_FONT = "Alegreya";
-exports.SYLLABIC_SIZE = 20;
-function getChordLyricWidth(chord, scale40) {
-    return lodash_1.reduce(chord, function (maxWidth, note) {
-        return Math.max(maxWidth, getNoteLyricWidth(note, scale40));
-    }, 0);
+import { NormalBold } from "musicxml-interfaces";
+import { reduce } from "lodash";
+import { cssSizeToTenths } from "./private_renderUtil";
+import { getTextBB } from "./private_fontManager";
+export var DEFAULT_LYRIC_SIZE = "22";
+export var DEFAULT_FONT = "Alegreya";
+export var SYLLABIC_SIZE = 20;
+export function getChordLyricWidth(chord, scale40) {
+    return reduce(chord, function (maxWidth, note) { return Math.max(maxWidth, getNoteLyricWidth(note, scale40)); }, 0);
 }
-exports.getChordLyricWidth = getChordLyricWidth;
-function getNoteLyricWidth(note, scale40) {
-    return lodash_1.reduce(note.lyrics, function (maxWidth, lyric) {
-        return Math.max(maxWidth, getLyricWidth(lyric, scale40));
-    }, 0);
+export function getNoteLyricWidth(note, scale40) {
+    return reduce(note.lyrics, function (maxWidth, lyric) { return Math.max(maxWidth, getLyricWidth(lyric, scale40)); }, 0);
 }
-exports.getNoteLyricWidth = getNoteLyricWidth;
-function getLyricWidth(lyric, scale40) {
-    return lodash_1.reduce(lyric.lyricParts, function (partWidth, lyricPart) {
+export function getLyricWidth(lyric, scale40) {
+    return reduce(lyric.lyricParts, function (partWidth, lyricPart) {
         if (lyricPart._class === "Syllabic") {
-            return partWidth + exports.SYLLABIC_SIZE;
+            return partWidth + SYLLABIC_SIZE;
         }
         else if (lyricPart._class === "Text") {
             var text = lyricPart;
-            return partWidth + private_fontManager_1.getTextBB(text.fontFamily || exports.DEFAULT_FONT, text.data, private_renderUtil_1.cssSizeToTenths(scale40, text.fontSize || exports.DEFAULT_LYRIC_SIZE), text.fontWeight === musicxml_interfaces_1.NormalBold.Bold ? "bold" : null).right;
+            return (partWidth +
+                getTextBB(text.fontFamily || DEFAULT_FONT, text.data, cssSizeToTenths(scale40, text.fontSize || DEFAULT_LYRIC_SIZE), text.fontWeight === NormalBold.Bold ? "bold" : null).right);
         }
         return 0;
     }, 0);
 }
-exports.getLyricWidth = getLyricWidth;
 //# sourceMappingURL=implChord_lyrics.js.map

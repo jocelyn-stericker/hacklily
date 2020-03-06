@@ -17,10 +17,10 @@
  */
 import { Notations } from "musicxml-interfaces";
 import { Component } from "react";
-import Chord from "./implChord_chordModel";
+import { IChordLayout } from "./implChord_chordModel";
 export interface IProps {
     spec: Notations;
-    layout?: Chord.IChordLayout;
+    layout?: IChordLayout;
     defaultY?: number;
 }
 /**

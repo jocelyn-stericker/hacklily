@@ -1,4 +1,3 @@
-"use strict";
 /**
  * @source: https://github.com/jnetterf/satie/
  *
@@ -32,17 +31,9 @@ var __extends = (this && this.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
-    result["default"] = mod;
-    return result;
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-var React = __importStar(require("react"));
-var react_1 = require("react");
-var PropTypes = __importStar(require("prop-types"));
+import * as React from "react";
+import { Component } from "react";
+import * as PropTypes from "prop-types";
 var BarNumber = /** @class */ (function (_super) {
     __extends(BarNumber, _super);
     function BarNumber() {
@@ -56,6 +47,6 @@ var BarNumber = /** @class */ (function (_super) {
         originY: PropTypes.number.isRequired,
     };
     return BarNumber;
-}(react_1.Component));
-exports.default = BarNumber;
+}(Component));
+export default BarNumber;
 //# sourceMappingURL=implAttributes_barNumberView.js.map

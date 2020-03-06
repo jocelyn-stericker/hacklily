@@ -1,4 +1,3 @@
-"use strict";
 /**
  * @source: https://github.com/jnetterf/satie/
  *
@@ -19,38 +18,33 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-var lodash_1 = require("lodash");
-var invariant_1 = __importDefault(require("invariant"));
-var private_fontManager_1 = require("./private_fontManager");
-var implAttributes_attributesModel_1 = __importDefault(require("./implAttributes_attributesModel"));
-var implAttributes_attributesPostprocessor_1 = __importDefault(require("./implAttributes_attributesPostprocessor"));
-var implBarline_barlineModel_1 = __importDefault(require("./implBarline_barlineModel"));
-var implChord_chordModel_1 = __importDefault(require("./implChord_chordModel"));
-var implChord_voiceStaffStemDirectionPreprocessor_1 = __importDefault(require("./implChord_voiceStaffStemDirectionPreprocessor"));
-var implChord_beamPostprocessor_1 = __importDefault(require("./implChord_beamPostprocessor"));
-var implChord_tiedsPostprocessor_1 = __importDefault(require("./implChord_tiedsPostprocessor"));
-var implDirection_directionModel_1 = __importDefault(require("./implDirection_directionModel"));
-var implFiguredBass_figuredBassModel_1 = __importDefault(require("./implFiguredBass_figuredBassModel"));
-var implGrouping_groupingModel_1 = __importDefault(require("./implGrouping_groupingModel"));
-var implHarmony_harmonyModel_1 = __importDefault(require("./implHarmony_harmonyModel"));
-var implPrint_printModel_1 = __importDefault(require("./implPrint_printModel"));
-var implProxy_proxyModel_1 = __importDefault(require("./implProxy_proxyModel"));
-var implSound_soundModel_1 = __importDefault(require("./implSound_soundModel"));
-var implSpacer_spacerModel_1 = __importDefault(require("./implSpacer_spacerModel"));
-var implVisualCursor_visualCursorModel_1 = __importDefault(require("./implVisualCursor_visualCursorModel"));
-var implLine_centerPostprocessor_1 = __importDefault(require("./implLine_centerPostprocessor"));
-var implLine_justifyPostprocessor_1 = __importDefault(require("./implLine_justifyPostprocessor"));
-var implLine_padPostprocessor_1 = __importDefault(require("./implLine_padPostprocessor"));
-var implLine_removeOverlapsPostprocessor_1 = __importDefault(require("./implLine_removeOverlapsPostprocessor"));
-var engine_factory_1 = __importDefault(require("./engine_factory"));
-var BrowserSetup;
-(function (BrowserSetup) {
-    BrowserSetup.cssInjected = false;
-    BrowserSetup.injectStyles = lodash_1.once(function injectStyles(spec) {
+import { forEach, once } from "lodash";
+import invariant from "invariant";
+import { markPreloaded, setRoot } from "./private_fontManager";
+import AttributesExports from "./implAttributes_attributesModel";
+import AttributesPostprocessor from "./implAttributes_attributesPostprocessor";
+import Barline from "./implBarline_barlineModel";
+import Chord from "./implChord_chordModel";
+import VoiceStaffStemDirection from "./implChord_voiceStaffStemDirectionPreprocessor";
+import BeamPostprocessor from "./implChord_beamPostprocessor";
+import TiedsPostprocessor from "./implChord_tiedsPostprocessor";
+import Direction from "./implDirection_directionModel";
+import FiguredBass from "./implFiguredBass_figuredBassModel";
+import Grouping from "./implGrouping_groupingModel";
+import Harmony from "./implHarmony_harmonyModel";
+import Print from "./implPrint_printModel";
+import Proxy from "./implProxy_proxyModel";
+import Sound from "./implSound_soundModel";
+import Spacer from "./implSpacer_spacerModel";
+import VisualCursorModel from "./implVisualCursor_visualCursorModel";
+import CenterPostprocessor from "./implLine_centerPostprocessor";
+import JustifyPostprocessor from "./implLine_justifyPostprocessor";
+import PadPostprocessor from "./implLine_padPostprocessor";
+import RemoveOverlapsPostprocessor from "./implLine_removeOverlapsPostprocessor";
+import Factory from "./engine_factory";
+var BrowserSetup = {
+    cssInjected: false,
+    injectStyles: once(function injectStyles(spec) {
         if (spec === void 0) { spec = {}; }
         BrowserSetup.cssInjected = true;
         if (typeof window === "undefined") {
@@ -59,7 +53,7 @@ var BrowserSetup;
         var style = document.createElement("style");
         style.appendChild(document.createTextNode("")); // WebKit hack
         document.head.appendChild(style);
-        lodash_1.forEach(spec.preloadedFonts, function (font) {
+        forEach(spec.preloadedFonts, function (font) {
             var baseFont = (/[\w\s]*/.exec(font) || [""])[0]
                 .replace(/\s/g, " ")
                 .trim();
@@ -73,10 +67,10 @@ var BrowserSetup;
                 variant !== "italic") {
                 throw new Error("Valid font variants are bold, bold italic, and italic");
             }
-            private_fontManager_1.markPreloaded(baseFont, variant);
+            markPreloaded(baseFont, variant);
         });
         if (spec.satieRoot) {
-            private_fontManager_1.setRoot(spec.satieRoot);
+            setRoot(spec.satieRoot);
         }
         style.innerHTML =
             ".mn_ {" +
@@ -101,41 +95,39 @@ var BrowserSetup;
                 "text-anchor: end;" +
                 "fill: #7a7a7a;" +
                 "}";
-    });
-})(BrowserSetup || (BrowserSetup = {}));
+    }),
+};
 /**
  * Optional initialization function. Call this if you don't want the default options. Must be called
  * before any Satie component is mounted, and must only be called once.
  */
-function init(options) {
-    invariant_1.default(!BrowserSetup.cssInjected, "init must be called before any Satie component is mounted " +
+export function init(options) {
+    invariant(!BrowserSetup.cssInjected, "init must be called before any Satie component is mounted " +
         "and must only be called once");
     BrowserSetup.injectStyles(options);
 }
-exports.init = init;
-function makeFactory() {
-    return new engine_factory_1.default([
-        implAttributes_attributesModel_1.default,
-        implBarline_barlineModel_1.default,
-        implChord_chordModel_1.default,
-        implDirection_directionModel_1.default,
-        implFiguredBass_figuredBassModel_1.default,
-        implGrouping_groupingModel_1.default,
-        implHarmony_harmonyModel_1.default,
-        implPrint_printModel_1.default,
-        implProxy_proxyModel_1.default,
-        implSound_soundModel_1.default,
-        implSpacer_spacerModel_1.default,
-        implVisualCursor_visualCursorModel_1.default,
-    ], [implChord_voiceStaffStemDirectionPreprocessor_1.default], [
-        implLine_padPostprocessor_1.default,
-        implLine_justifyPostprocessor_1.default,
-        implChord_beamPostprocessor_1.default,
-        implLine_centerPostprocessor_1.default,
-        implAttributes_attributesPostprocessor_1.default,
-        implChord_tiedsPostprocessor_1.default,
-        implLine_removeOverlapsPostprocessor_1.default,
+export function makeFactory() {
+    return new Factory([
+        AttributesExports,
+        Barline,
+        Chord,
+        Direction,
+        FiguredBass,
+        Grouping,
+        Harmony,
+        Print,
+        Proxy,
+        Sound,
+        Spacer,
+        VisualCursorModel,
+    ], [VoiceStaffStemDirection], [
+        PadPostprocessor,
+        JustifyPostprocessor,
+        BeamPostprocessor,
+        CenterPostprocessor,
+        AttributesPostprocessor,
+        TiedsPostprocessor,
+        RemoveOverlapsPostprocessor,
     ]);
 }
-exports.makeFactory = makeFactory;
 //# sourceMappingURL=engine_setup.js.map

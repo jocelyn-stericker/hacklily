@@ -1,4 +1,3 @@
-"use strict";
 /**
  * @license
  * This file is part of Makelily.
@@ -42,14 +41,10 @@ var __assign = (this && this.__assign) || function () {
     };
     return __assign.apply(this, arguments);
 };
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-var aphrodite_1 = require("aphrodite");
-var React = require("react");
-var satie_1 = require("./satie/src/satie");
-var tabStyles_1 = __importDefault(require("./tabStyles"));
+import { css } from "aphrodite";
+import React from "react";
+import { Addons as SatieAddons } from "./satie/src/satie";
+import tabStyles from "./tabStyles";
 var keyViewbox = "-2 -40 80 80";
 var trebleClef = {
     line: 2,
@@ -128,39 +123,38 @@ var ToolSetKey = /** @class */ (function (_super) {
         };
         return _this;
     }
-    // tslint:disable-next-line max-func-body-length
     ToolSetKey.prototype.render = function () {
         var _this = this;
         var ksViews = stdKeys.major.map(function (key, i) {
             var keySpec = __assign({ defaultX: 0, defaultY: 0, relativeY: 0 }, key);
             var selected = i === _this.state.selectedKey;
-            return (React.createElement("span", { className: aphrodite_1.css(tabStyles_1.default.selectableOption, selected && tabStyles_1.default.selectableSelected), role: "button", onClick: function () { return _this.setState({ selectedKey: i }); }, key: i },
-                React.createElement("svg", { className: aphrodite_1.css(tabStyles_1.default.resetFont), viewBox: keyViewbox },
-                    React.createElement(satie_1.Addons.KeySignature, { clef: trebleClef, spec: keySpec })),
-                React.createElement("span", { className: aphrodite_1.css(tabStyles_1.default.selectableDescription) }, getEnglish(key.fifths, _this.state.selectedMode))));
+            return (React.createElement("span", { className: css(tabStyles.selectableOption, selected && tabStyles.selectableSelected), role: "button", onClick: function () { return _this.setState({ selectedKey: i }); }, key: i },
+                React.createElement("svg", { className: css(tabStyles.resetFont), viewBox: keyViewbox },
+                    React.createElement(SatieAddons.KeySignature, { clef: trebleClef, spec: keySpec })),
+                React.createElement("span", { className: css(tabStyles.selectableDescription) }, getEnglish(key.fifths, _this.state.selectedMode))));
         });
-        return (React.createElement("div", { className: aphrodite_1.css(tabStyles_1.default.tool) },
-            React.createElement("div", { className: aphrodite_1.css(tabStyles_1.default.section) },
-                React.createElement("h3", { className: aphrodite_1.css(tabStyles_1.default.toolHeading) }, "Key Signature"),
-                React.createElement("div", { className: aphrodite_1.css(tabStyles_1.default.selectableList) }, ksViews)),
-            React.createElement("div", { className: aphrodite_1.css(tabStyles_1.default.section) },
-                React.createElement("h3", { className: aphrodite_1.css(tabStyles_1.default.toolHeading) }, "Mode"),
-                React.createElement("form", { className: aphrodite_1.css(tabStyles_1.default.radioGroup) },
+        return (React.createElement("div", { className: css(tabStyles.tool) },
+            React.createElement("div", { className: css(tabStyles.section) },
+                React.createElement("h3", { className: css(tabStyles.toolHeading) }, "Key Signature"),
+                React.createElement("div", { className: css(tabStyles.selectableList) }, ksViews)),
+            React.createElement("div", { className: css(tabStyles.section) },
+                React.createElement("h3", { className: css(tabStyles.toolHeading) }, "Mode"),
+                React.createElement("form", { className: css(tabStyles.radioGroup) },
                     React.createElement("div", null,
                         React.createElement("input", { id: "key-mode-major", type: "radio", checked: this.state.selectedMode === "major", "aria-checked": this.state.selectedMode === "major", onChange: function () { return _this.setState({ selectedMode: "major" }); } }),
                         React.createElement("label", { htmlFor: "key-mode-major" }, "Major (M)")),
                     React.createElement("div", null,
                         React.createElement("input", { id: "key-mode-minor", type: "radio", checked: this.state.selectedMode === "minor", "aria-checked": this.state.selectedMode === "minor", onChange: function () { return _this.setState({ selectedMode: "minor" }); } }),
                         React.createElement("label", { htmlFor: "key-mode-minor" }, "Minor (m)")))),
-            React.createElement("div", { className: aphrodite_1.css(tabStyles_1.default.spacer) }),
-            React.createElement("div", { className: aphrodite_1.css(tabStyles_1.default.section) },
-                React.createElement("pre", { className: aphrodite_1.css(tabStyles_1.default.lyPreview) }, this.generateLy()),
-                React.createElement("button", { className: aphrodite_1.css(tabStyles_1.default.insert), onClick: this.handleInsertLyClicked }, "Insert this code into Hacklily"))));
+            React.createElement("div", { className: css(tabStyles.spacer) }),
+            React.createElement("div", { className: css(tabStyles.section) },
+                React.createElement("pre", { className: css(tabStyles.lyPreview) }, this.generateLy()),
+                React.createElement("button", { className: css(tabStyles.insert), onClick: this.handleInsertLyClicked }, "Insert this code into Hacklily"))));
     };
     ToolSetKey.prototype.generateLy = function () {
         return getLy(stdKeys.major[this.state.selectedKey].fifths, this.state.selectedMode);
     };
     return ToolSetKey;
 }(React.Component));
-exports.default = ToolSetKey;
+export default ToolSetKey;
 //# sourceMappingURL=ToolSetKey.js.map

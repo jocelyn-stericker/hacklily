@@ -1,4 +1,3 @@
-"use strict";
 /**
  * This file is part of Satie music engraver <https://github.com/jnetterf/satie>.
  * Copyright (C) Joshua Netterfield <joshua.ca> 2015 - present.
@@ -16,19 +15,21 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with Satie.  If not, see <http://www.gnu.org/licenses/>.
  */
-Object.defineProperty(exports, "__esModule", { value: true });
-var musicxml_interfaces_1 = require("musicxml-interfaces");
-var lodash_1 = require("lodash");
-var document_1 = require("./document");
+import { serializeGrouping, } from "musicxml-interfaces";
+import { forEach } from "lodash";
+import { Type } from "./document";
 var GroupingModel = /** @class */ (function () {
     /*---- Implementation -----------------------------------------------------------------------*/
     function GroupingModel(spec) {
         var _this = this;
-        lodash_1.forEach(spec, function (value, key) {
+        /*---- I.1 IModel ---------------------------------------------------------------------------*/
+        this.divCount = 0;
+        this.divisions = 0;
+        forEach(spec, function (value, key) {
             _this[key] = value;
         });
     }
-    GroupingModel.prototype.refresh = function (cursor) {
+    GroupingModel.prototype.refresh = function (_cursor) {
         // todo
     };
     GroupingModel.prototype.getLayout = function (cursor) {
@@ -36,38 +37,32 @@ var GroupingModel = /** @class */ (function () {
         return new GroupingModel.Layout(this, cursor);
     };
     GroupingModel.prototype.toXML = function () {
-        return musicxml_interfaces_1.serializeGrouping(this) + "\n<forward><duration>" + this.divCount + "</duration></forward>\n";
+        return serializeGrouping(this) + "\n<forward><duration>" + this.divCount + "</duration></forward>\n";
     };
     GroupingModel.prototype.inspect = function () {
         return this.toXML();
     };
-    GroupingModel.prototype.calcWidth = function (shortest) {
+    GroupingModel.prototype.calcWidth = function (_shortest) {
         return 0;
     };
-    return GroupingModel;
-}());
-GroupingModel.prototype.divCount = 0;
-GroupingModel.prototype.divisions = 0;
-(function (GroupingModel) {
-    var Layout = /** @class */ (function () {
+    GroupingModel.Layout = /** @class */ (function () {
         function Layout(model, cursor) {
+            // Prototype:
+            this.boundingBoxes = [];
+            this.renderClass = Type.Grouping;
+            this.expandPolicy = "none";
             this.model = model;
             this.x = cursor.segmentX;
             this.division = cursor.segmentDivision;
         }
         return Layout;
     }());
-    GroupingModel.Layout = Layout;
-    Layout.prototype.expandPolicy = "none";
-    Layout.prototype.renderClass = document_1.Type.Grouping;
-    Layout.prototype.boundingBoxes = [];
-    Object.freeze(Layout.prototype.boundingBoxes);
-})(GroupingModel || (GroupingModel = {}));
+    return GroupingModel;
+}());
 /**
  * Registers Grouping in the factory structure passed in.
  */
-function Export(constructors) {
-    constructors[document_1.Type.Grouping] = GroupingModel;
+export default function Export(constructors) {
+    constructors[Type.Grouping] = GroupingModel;
 }
-exports.default = Export;
 //# sourceMappingURL=implGrouping_groupingModel.js.map

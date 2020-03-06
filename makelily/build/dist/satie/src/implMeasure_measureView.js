@@ -1,4 +1,3 @@
-"use strict";
 /**
  * This file is part of Satie music engraver <https://github.com/jnetterf/satie>.
  * Copyright (C) Joshua Netterfield <joshua.ca> 2015 - present.
@@ -29,24 +28,13 @@ var __extends = (this && this.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
-    result["default"] = mod;
-    return result;
-};
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-var React = __importStar(require("react"));
-var react_1 = require("react");
-var PropTypes = __importStar(require("prop-types"));
-var lodash_1 = require("lodash");
-var invariant_1 = __importDefault(require("invariant"));
-var private_util_1 = require("./private_util");
-var implSegment_modelView_1 = __importDefault(require("./implSegment_modelView"));
+import * as React from "react";
+import { Component } from "react";
+import * as PropTypes from "prop-types";
+import { chain, flatten, mapValues, map, forEach } from "lodash";
+import invariant from "invariant";
+import { MAX_SAFE_INTEGER } from "./private_util";
+import ModelView from "./implSegment_modelView";
 var NUMBER_ARRAY = PropTypes.arrayOf(PropTypes.number);
 var MeasureView = /** @class */ (function (_super) {
     __extends(MeasureView, _super);
@@ -56,9 +44,9 @@ var MeasureView = /** @class */ (function (_super) {
     MeasureView.prototype.render = function () {
         var _this = this;
         var layout = this.props.layout;
-        return (React.createElement("g", { transform: "translate(" + layout.originX + ")" }, lodash_1.chain(lodash_1.flatten(layout.elements))
+        return (React.createElement("g", { transform: "translate(" + layout.originX + ")" }, chain(flatten(layout.elements))
             .filter(function (layout) { return !!layout.model; }) // Remove helpers.
-            .map(function (layout) { return (React.createElement(implSegment_modelView_1.default, { key: layout.key, version: _this.props.layout.getVersion(), layout: layout, originX: _this.props.layout.originX })); })
+            .map(function (layout) { return (React.createElement(ModelView, { key: layout.key, version: _this.props.layout.getVersion(), layout: layout, originX: _this.props.layout.originX })); })
             .value()));
         /* TODO: lyric boxes */
         /* TODO: free boxes */
@@ -67,13 +55,13 @@ var MeasureView = /** @class */ (function (_super) {
     MeasureView.prototype.getChildContext = function () {
         var _this = this;
         var layout = this.props.layout;
-        var originYByPartAndStaff = lodash_1.mapValues(layout.originY, function (layouts) {
+        var originYByPartAndStaff = mapValues(layout.originY, function (layouts) {
             return _this.extractOrigins(layouts);
         });
-        var bottom = private_util_1.MAX_SAFE_INTEGER;
+        var bottom = MAX_SAFE_INTEGER;
         var top = 0;
-        lodash_1.forEach(layout.originY, function (origins) {
-            lodash_1.forEach(origins, function (origin, staff) {
+        forEach(layout.originY, function (origins) {
+            forEach(origins, function (origin, staff) {
                 if (!staff) {
                     return;
                 }
@@ -92,13 +80,13 @@ var MeasureView = /** @class */ (function (_super) {
     };
     MeasureView.prototype.extractOrigins = function (layouts) {
         var _this = this;
-        return lodash_1.map(layouts, function (layout) { return _this.invert(layout); });
+        return map(layouts, function (layout) { return _this.invert(layout); });
     };
     MeasureView.prototype.invert = function (y) {
         return this.context.originY - y;
     };
     MeasureView.prototype.shouldComponentUpdate = function (nextProps) {
-        invariant_1.default(!isNaN(this.props.version), "Invalid non-numeric version " + this.props.version);
+        invariant(!isNaN(this.props.version), "Invalid non-numeric version " + this.props.version);
         return (this.props.version !== nextProps.version ||
             this.props.layout.originX !== nextProps.layout.originX ||
             this.props.layout.width !== nextProps.layout.width);
@@ -112,6 +100,6 @@ var MeasureView = /** @class */ (function (_super) {
         originY: PropTypes.number,
     };
     return MeasureView;
-}(react_1.Component));
-exports.default = MeasureView;
+}(Component));
+export default MeasureView;
 //# sourceMappingURL=implMeasure_measureView.js.map

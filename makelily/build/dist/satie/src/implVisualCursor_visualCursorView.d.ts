@@ -16,9 +16,9 @@
  * along with Satie.  If not, see <http://www.gnu.org/licenses/>.
  */
 import { Component, ReactElement } from "react";
-import VisualCursorModel from "./implVisualCursor_visualCursorModel";
+import { IVisualCursorLayout } from "./implVisualCursor_visualCursorModel";
 export interface IProps {
-    layout: VisualCursorModel.IVisualCursorLayout;
+    layout: IVisualCursorLayout;
 }
 export default class VisualCursorView extends Component<IProps, {}> {
     static contextTypes: any;

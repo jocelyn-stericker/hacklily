@@ -25,7 +25,7 @@ export interface IProps {
 }
 export interface IState {
 }
-export default class ModelView extends Component<IProps, IState> {
+declare class ModelView extends Component<IProps, IState> {
     static childContextTypes: any;
     static contextTypes: any;
     context: {
@@ -37,5 +37,6 @@ export default class ModelView extends Component<IProps, IState> {
     getChildContext(): {
         originY: number;
     };
-    shouldComponentUpdate(nextProps: IProps, nextState: IState): boolean;
+    shouldComponentUpdate(nextProps: IProps, _nextState: IState): boolean;
 }
+export default ModelView;

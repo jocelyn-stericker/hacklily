@@ -16,9 +16,9 @@
  * along with Satie.  If not, see <http://www.gnu.org/licenses/>.
  */
 import { Component, ReactElement } from "react";
-import AttributesExports from "./implAttributes_attributesModel";
+import { IAttributesLayout } from "./implAttributes_attributesModel";
 export default class AttributesView extends Component<{
-    layout: AttributesExports.IAttributesLayout;
+    layout: IAttributesLayout;
 }, {}> {
     static contextTypes: any;
     context: {

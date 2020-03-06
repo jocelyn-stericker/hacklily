@@ -20,18 +20,45 @@ import { Type } from "./document";
 import { IBoundingRect } from "./private_boundingRect";
 import { IChord } from "./private_chordUtil";
 import { IReadOnlyValidationCursor, LayoutCursor } from "./private_cursor";
-import ChordModel from "./implChord_chordModel";
+import { IChordModel, IChordLayout, IDetachedChordModel } from "./implChord_chordModel";
 import { IBeamLayout } from "./implChord_beamLayout";
 import NoteImpl from "./implChord_noteImpl";
+export declare class Layout implements IChordLayout {
+    model: IDetachedChordModel;
+    x: number;
+    division: number;
+    renderedWidth: number;
+    notehead: string;
+    minSpaceBefore: number;
+    minSpaceAfter: number;
+    boundingBoxes: IBoundingRect[];
+    renderClass: Type;
+    expandPolicy: "none" | "centered" | "after";
+    satieBeam: IBeamLayout;
+    satieStem: {
+        direction: number;
+        stemHeight: number;
+        stemStart: number;
+        tremolo?: Tremolo;
+    };
+    satieFlag: string;
+    refresh(baseModel: ChordModelImpl, cursor: LayoutCursor): void;
+    _captureBoundingBoxes(): IBoundingRect[];
+    _getMinWidthBefore(cursor: LayoutCursor): number;
+    _getMinWidthAfter(cursor: LayoutCursor): number;
+    _getLyricWidth(_cursor: LayoutCursor): number;
+    _detachModelWithContext(_cursor: LayoutCursor, baseModel: ChordModelImpl): IDetachedChordModel;
+}
 /**
  * A model that represents 1 or more notes in the same voice, starting on the same beat, and each
  * with the same duration. Any number of these notes may be rests.
  */
-declare class ChordModelImpl implements ChordModel.IChordModel, ArrayLike<NoteImpl> {
+declare class ChordModelImpl implements IChordModel, ArrayLike<NoteImpl> {
     /** set in validate */
     divCount: number;
     divisions: number;
-    staffIdx: number;
+    get staffIdx(): number;
+    set staffIdx(_n: number);
     [key: number]: NoteImpl;
     length: number;
     wholebar: boolean;
@@ -50,11 +77,11 @@ declare class ChordModelImpl implements ChordModel.IChordModel, ArrayLike<NoteIm
     key: string;
     stem: Stem;
     private _layout;
-    readonly satieLedger: number[];
-    readonly rest: boolean;
-    readonly timeModification: TimeModification;
-    readonly notes: NoteImpl[];
-    readonly count: Count;
+    get satieLedger(): number[];
+    get rest(): boolean;
+    get timeModification(): TimeModification;
+    get notes(): NoteImpl[];
+    get count(): Count;
     push(...notes: Note[]): number;
     splice(start: number, deleteCount: number, ...replacements: NoteImpl[]): void;
     /**
@@ -64,7 +91,7 @@ declare class ChordModelImpl implements ChordModel.IChordModel, ArrayLike<NoteIm
     constructor(spec?: IChord | Note);
     _init: boolean;
     refresh(cursor: IReadOnlyValidationCursor): void;
-    getLayout(cursor: LayoutCursor): ChordModel.IChordLayout;
+    getLayout(cursor: LayoutCursor): IChordLayout;
     toJSON(): any;
     toXML(): string;
     inspect(): string;
@@ -77,33 +104,6 @@ declare class ChordModelImpl implements ChordModel.IChordModel, ArrayLike<NoteIm
     private _checkMulitpleRest;
     private _implyNoteheads;
     private _hasStem;
-}
-declare namespace ChordModelImpl {
-    class Layout implements ChordModel.IChordLayout {
-        model: ChordModel.IDetachedChordModel;
-        x: number;
-        division: number;
-        renderedWidth: number;
-        notehead: string;
-        minSpaceBefore: number;
-        minSpaceAfter: number;
-        boundingBoxes: IBoundingRect[];
-        renderClass: Type;
-        expandPolicy: "none" | "centered" | "after";
-        satieBeam: IBeamLayout;
-        satieStem: {
-            direction: number;
-            stemHeight: number;
-            stemStart: number;
-            tremolo?: Tremolo;
-        };
-        satieFlag: string;
-        refresh(baseModel: ChordModelImpl, cursor: LayoutCursor): void;
-        private _captureBoundingBoxes;
-        private _getMinWidthBefore;
-        private _getMinWidthAfter;
-        private _getLyricWidth;
-        private _detachModelWithContext;
-    }
+    static Layout: typeof Layout;
 }
 export default ChordModelImpl;

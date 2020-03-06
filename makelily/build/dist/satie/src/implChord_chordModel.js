@@ -1,4 +1,3 @@
-"use strict";
 /**
  * This file is part of Satie music engraver <https://github.com/jnetterf/satie>.
  * Copyright (C) Joshua Netterfield <joshua.ca> 2015 - present.
@@ -16,18 +15,13 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with Satie.  If not, see <http://www.gnu.org/licenses/>.
  */
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-var document_1 = require("./document");
-var implChord_chordImpl_1 = __importDefault(require("./implChord_chordImpl"));
+import { Type } from "./document";
+import ChordModelImpl from "./implChord_chordImpl";
 /**
  * Registers Chord in the factory structure passed in.
  */
-function ChordModel(constructors) {
-    constructors["Note"] = document_1.Type.Chord;
-    constructors[document_1.Type.Chord] = implChord_chordImpl_1.default;
+export default function ChordModel(constructors) {
+    constructors["Note"] = Type.Chord;
+    constructors[Type.Chord] = ChordModelImpl;
 }
-exports.default = ChordModel;
 //# sourceMappingURL=implChord_chordModel.js.map

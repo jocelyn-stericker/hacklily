@@ -1,4 +1,3 @@
-"use strict";
 /**
  * This file is part of Satie music engraver <https://github.com/jnetterf/satie>.
  * Copyright (C) Joshua Netterfield <joshua.ca> 2015 - present.
@@ -27,23 +26,19 @@ var __assign = (this && this.__assign) || function () {
     };
     return __assign.apply(this, arguments);
 };
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-var lodash_1 = require("lodash");
-var invariant_1 = __importDefault(require("invariant"));
-var document_1 = require("./document");
-var private_lineBounds_1 = require("./private_lineBounds");
-var engine_processors_line_1 = require("./engine_processors_line");
+import { map, reduce, find, last } from "lodash";
+import invariant from "invariant";
+import { getMeasureSegments, Type, reduceToShortestInSegments, } from "./document";
+import { calculateLineBounds } from "./private_lineBounds";
+import { layoutLine } from "./engine_processors_line";
 var SQUISHINESS = 0.8;
 function findPrint(options, measure) {
-    var partWithPrint = lodash_1.find(measure.parts, function (part) {
+    var partWithPrint = find(measure.parts, function (part) {
         return !!part.staves[1] &&
-            options.modelFactory.search(part.staves[1], 0, document_1.Type.Print).length > 0;
+            options.modelFactory.search(part.staves[1], 0, Type.Print).length > 0;
     });
     if (partWithPrint) {
-        return options.modelFactory.search(partWithPrint.staves[1], 0, document_1.Type.Print)[0]._snapshot;
+        return options.modelFactory.search(partWithPrint.staves[1], 0, Type.Print)[0]._snapshot;
     }
     return null;
 }
@@ -54,10 +49,10 @@ function assignLinesReducer(memo, measureInfo, idx, all) {
     var options = memo.options;
     var measures = options.measures;
     memo.thisPrint = findPrint(options, measures[idx]) || memo.thisPrint;
-    if (!lodash_1.last(memo.opts).print) {
-        lodash_1.last(memo.opts).print = memo.thisPrint;
+    if (!last(memo.opts).print) {
+        last(memo.opts).print = memo.thisPrint;
     }
-    invariant_1.default(!!memo.thisPrint, "No print found");
+    invariant(!!memo.thisPrint, "No print found");
     if (!memo.options.singleLineMode) {
         if (measureInfo.attributesWidthStart > memo.widthAllocatedForStart) {
             memo.remainingWidth -=
@@ -71,7 +66,7 @@ function assignLinesReducer(memo, measureInfo, idx, all) {
         }
         var retroactiveIncrease = 0;
         if (memo.shortest > measureInfo.shortestCount) {
-            var measuresOnLine = lodash_1.last(memo.opts).measures.length;
+            var measuresOnLine = last(memo.opts).measures.length;
             var measuresInfo = all.slice(idx - measuresOnLine, idx);
             retroactiveIncrease = measuresInfo.reduce(function (increase, measure) {
                 return (measure.widthByShortest[measureInfo.shortestCount] -
@@ -95,13 +90,13 @@ function assignLinesReducer(memo, measureInfo, idx, all) {
             memo.widthAllocatedForEnd = measureInfo.attributesWidthEnd;
         }
     }
-    lodash_1.last(memo.opts).measures.push(measures[idx]);
+    last(memo.opts).measures.push(measures[idx]);
     return memo;
 }
 function createEmptyLayout(options, print) {
-    return __assign({}, options, { attributes: null, measures: [], print: print });
+    return __assign(__assign({}, options), { attributes: null, measures: [], print: print });
 }
-function getApproximateMeasureWidth(measure, shortest) {
+export function getApproximateMeasureWidth(measure, shortest) {
     return Object.keys(measure.parts).reduce(function (pwidth, partName) {
         var vwidth = measure.parts[partName].voices.reduce(function (vwidth, voice) {
             if (!voice) {
@@ -112,18 +107,17 @@ function getApproximateMeasureWidth(measure, shortest) {
         return Math.max(vwidth, pwidth);
     }, 0);
 }
-exports.getApproximateMeasureWidth = getApproximateMeasureWidth;
 function getLinePlacementHints(measures) {
     var shortestByMeasure = measures.map(function (measure) {
-        var segments = document_1.getMeasureSegments(measure);
-        return lodash_1.reduce(segments, document_1.reduceToShortestInSegments, Number.MAX_VALUE);
+        var segments = getMeasureSegments(measure);
+        return reduce(segments, reduceToShortestInSegments, Number.MAX_VALUE);
     });
     var shortestsObj = shortestByMeasure.reduce(function (shortests, shortest) {
         shortests[shortest] = true;
         return shortests;
     }, {});
     var shortests = Object.keys(shortestsObj).map(function (str) { return parseInt(str, 10); });
-    return lodash_1.map(measures, function layoutMeasure(measure, idx) {
+    return map(measures, function layoutMeasure(measure, idx) {
         var shortestInMeasure = shortestByMeasure[idx];
         var numericMeasureWidth = !isNaN(measure.width) && measure.width !== null;
         if (numericMeasureWidth &&
@@ -141,24 +135,24 @@ function getLinePlacementHints(measures) {
             widthByShortest: widthByShortest,
             shortestCount: shortestInMeasure,
             attributesWidthStart: 150,
-            attributesWidthEnd: 50 // XXX
+            attributesWidthEnd: 50,
         };
     });
 }
-function layoutSong(options) {
-    invariant_1.default(!!options.print, "Print not defined");
-    invariant_1.default(!options.print._snapshot, "Pass a snapshot of Print to layoutSong, not the actual model!");
+export default function layoutSong(options) {
+    invariant(!!options.print, "Print not defined");
+    invariant(!options.print._snapshot, "Pass a snapshot of Print to layoutSong, not the actual model!");
     var page = 1; // XXX
     var scaling = options.document.header.defaults.scaling;
     // Estimate the width of each measure, and the space available for each line.
-    var boundsGuess = private_lineBounds_1.calculateLineBounds(options.print, page, scaling);
+    var boundsGuess = calculateLineBounds(options.print, page, scaling);
     var lineWidth = (boundsGuess.right - boundsGuess.left) / SQUISHINESS;
     var linePlacementHints = options.preview
         ? options.document.cleanlinessTracking.linePlacementHints
         : getLinePlacementHints(options.measures);
     options.document.cleanlinessTracking.linePlacementHints = linePlacementHints;
     // Assign measures to lines.
-    var layoutOpts = lodash_1.reduce(linePlacementHints, assignLinesReducer, {
+    var layoutOpts = reduce(linePlacementHints, assignLinesReducer, {
         options: options,
         opts: [createEmptyLayout(options, options.print)],
         remainingWidth: lineWidth,
@@ -166,7 +160,7 @@ function layoutSong(options) {
         startingWidth: lineWidth,
         thisPrint: options.print,
         widthAllocatedForEnd: 0,
-        widthAllocatedForStart: 0
+        widthAllocatedForStart: 0,
     }).opts;
     layoutOpts.forEach(function (line, idx) {
         line.lineIndex = idx;
@@ -196,12 +190,11 @@ function layoutSong(options) {
     }
     // Create the final layout
     var memo = {
-        y: private_lineBounds_1.calculateLineBounds(layoutOpts[0].print, page, scaling).top,
-        attributes: {}
+        y: calculateLineBounds(layoutOpts[0].print, page, scaling).top,
+        attributes: {},
     };
     return layoutOpts.map(function (lineOpt) {
-        return engine_processors_line_1.layoutLine(lineOpt, private_lineBounds_1.calculateLineBounds(lineOpt.print, page, scaling), memo);
+        return layoutLine(lineOpt, calculateLineBounds(lineOpt.print, page, scaling), memo);
     });
 }
-exports.default = layoutSong;
 //# sourceMappingURL=engine_processors_layout.js.map

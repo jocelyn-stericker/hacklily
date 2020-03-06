@@ -1,4 +1,3 @@
-"use strict";
 /**
  * @license
  * This file is part of Makelily.
@@ -18,9 +17,8 @@
  * along with this program; if not, write to the Free Software Foundation,
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
  */
-Object.defineProperty(exports, "__esModule", { value: true });
-var builders_1 = require("musicxml-interfaces/builders");
-function parseClef(clefLy) {
+import { buildClef, buildKey, buildTime, } from "musicxml-interfaces/builders";
+export function parseClef(clefLy) {
     var sign = "G";
     var line = 2;
     var clefOctaveChange;
@@ -60,14 +58,13 @@ function parseClef(clefLy) {
     if (clefLy.match(/_.*15/)) {
         clefOctaveChange = "-2";
     }
-    return builders_1.buildClef(function (clef) {
+    return buildClef(function (clef) {
         return clef
             .clefOctaveChange(clefOctaveChange)
             .line(line)
             .sign(sign);
     });
 }
-exports.parseClef = parseClef;
 var roots = [
     "ces",
     "ges",
@@ -88,7 +85,7 @@ var roots = [
     "dis",
     "ais",
 ];
-function parseKeySig(keyLy) {
+export function parseKeySig(keyLy) {
     var root = keyLy
         .toLowerCase()
         .trim()
@@ -104,10 +101,9 @@ function parseKeySig(keyLy) {
         mode = "major";
         fifths = rootIdx - 7;
     }
-    return builders_1.buildKey(function (key) { return key.fifths(fifths).mode(mode); });
+    return buildKey(function (key) { return key.fifths(fifths).mode(mode); });
 }
-exports.parseKeySig = parseKeySig;
-function parseTime(timeLy) {
+export function parseTime(timeLy) {
     var beatTypes = [4];
     var beats = ["4"];
     var match = timeLy.match(/(\d+)\/(\d+)/);
@@ -115,9 +111,8 @@ function parseTime(timeLy) {
         beats = [match[1]];
         beatTypes = [parseInt(match[2], 10)];
     }
-    return builders_1.buildTime(function (time) {
+    return buildTime(function (time) {
         return time.beatTypes(beatTypes).beats(beats);
     });
 }
-exports.parseTime = parseTime;
 //# sourceMappingURL=parseLy.js.map

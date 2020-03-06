@@ -1,4 +1,3 @@
-"use strict";
 /**
  * @license
  * This file is part of Makelily
@@ -42,24 +41,18 @@ var __assign = (this && this.__assign) || function () {
     };
     return __assign.apply(this, arguments);
 };
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-var aphrodite_1 = require("aphrodite");
-var invariant_1 = __importDefault(require("invariant"));
-var lodash_1 = require("lodash");
-var musicxml_interfaces_1 = require("musicxml-interfaces");
-var React = require("react");
-var ReactDOM = require("react-dom");
-var satie_1 = require("./satie/src/satie");
-var NoteAdditionalHelp_1 = __importDefault(require("./NoteAdditionalHelp"));
-var NotePalette_1 = __importDefault(require("./NotePalette"));
-var tabStyles_1 = __importDefault(require("./tabStyles"));
-function toSerializable(obj) {
+import { css, StyleSheet } from "aphrodite";
+import invariant from "invariant";
+import { find, findIndex, first, forEach, isEqual, last, reduce, some, times, } from "lodash";
+import { AboveBelow, BarStyleType, Count, MxmlAccidental, NormalAngledSquare, } from "musicxml-interfaces";
+import React from "react";
+import { Addons as SatieAddons, Patch, Song, Type, } from "./satie/src/satie";
+import NoteAdditionalHelp from "./NoteAdditionalHelp";
+import NotePalette from "./NotePalette";
+import tabStyles from "./tabStyles";
+export function toSerializable(obj) {
     return JSON.parse(JSON.stringify(obj));
 }
-exports.toSerializable = toSerializable;
 function getOctaveDifference(ours, theirs) {
     function mod(a, b) {
         return a - b * Math.floor(a / b);
@@ -94,7 +87,7 @@ var ToolNoteEdit = /** @class */ (function (_super) {
             lastPath: null,
             lastPitch: null,
             notation: null,
-            note: musicxml_interfaces_1.Count.Eighth,
+            note: Count.Eighth,
             operations: null,
             redoStack: [],
             relativeMode: true,
@@ -104,6 +97,7 @@ var ToolNoteEdit = /** @class */ (function (_super) {
             timeModification: null,
             undoStack: [null],
         };
+        _this.domNode = React.createRef();
         _this.applyPreviewPatch = function (patch, path, pitch) {
             if (path === void 0) { path = null; }
             if (pitch === void 0) { pitch = null; }
@@ -114,8 +108,8 @@ var ToolNoteEdit = /** @class */ (function (_super) {
                 operations: _this.song.createPreviewPatch(operations, { raw: patch }),
             });
         };
-        _this.applyUndoablePatch = function (patch, doNotEmit) {
-            if (doNotEmit === void 0) { doNotEmit = false; }
+        _this.applyUndoablePatch = function (patch, _doNotEmit) {
+            if (_doNotEmit === void 0) { _doNotEmit = false; }
             var operations = _this.state.canonicalOperations;
             var newOperations = _this.song.createCanonicalPatch(operations, {
                 raw: patch,
@@ -181,7 +175,6 @@ var ToolNoteEdit = /** @class */ (function (_super) {
             }
             return true;
         };
-        // tslint:disable-next-line:max-func-body-length cyclomatic-complexity
         _this.handleKeyPress = function (ev) {
             var key = (ev.key || String.fromCharCode(ev.keyCode)).toUpperCase();
             if ((key === "R" || key === "C" || key === "V") &&
@@ -231,7 +224,7 @@ var ToolNoteEdit = /** @class */ (function (_super) {
                             break;
                         }
                         var el = voice[j];
-                        if (doc.modelHasType(el, satie_1.Type.Chord)) {
+                        if (doc.modelHasType(el, Type.Chord)) {
                             var note = el[0];
                             if (!note.rest) {
                                 previousPitch = note.pitch;
@@ -247,7 +240,7 @@ var ToolNoteEdit = /** @class */ (function (_super) {
                     step: key,
                 }, doc, currMeasure);
                 if (path_1[3] === "voices") {
-                    var patch = satie_1.Patch.createPatch(false, doc, measureNum, path_1[2], function (partBuilder) {
+                    var patch = Patch.createPatch(false, doc, measureNum, path_1[2], function (partBuilder) {
                         return partBuilder.voice(parseInt(path_1[4], 10), function (voice) {
                             return voice
                                 .at(parseInt(path_1[5], 10))
@@ -257,7 +250,7 @@ var ToolNoteEdit = /** @class */ (function (_super) {
                                         ? note
                                             .pitch(pitch_1)
                                             .rest(undefined)
-                                            .dots(lodash_1.times(_this.state.dots, function () { return ({}); }))
+                                            .dots(times(_this.state.dots, function () { return ({}); }))
                                             .noteType(function (noteType) {
                                             return noteType.duration(_this.state.note);
                                         })
@@ -265,7 +258,7 @@ var ToolNoteEdit = /** @class */ (function (_super) {
                                         : note
                                             .pitch(pitch_1)
                                             .rest(undefined)
-                                            .dots(lodash_1.times(_this.state.dots, function () { return ({}); }))
+                                            .dots(times(_this.state.dots, function () { return ({}); }))
                                             .noteType(function (noteType) {
                                             return noteType.duration(_this.state.note);
                                         })
@@ -286,8 +279,8 @@ var ToolNoteEdit = /** @class */ (function (_super) {
             _this.handler(ev, false);
         };
         _this.handleMouseMove = function (ev) {
-            if (lodash_1.isEqual(_this.state.lastPath, ev.path) &&
-                lodash_1.isEqual(ev.pitch, _this.state.lastPitch)) {
+            if (isEqual(_this.state.lastPath, ev.path) &&
+                isEqual(ev.pitch, _this.state.lastPitch)) {
                 return;
             }
             if (!_this.handler(ev, true)) {
@@ -367,11 +360,11 @@ var ToolNoteEdit = /** @class */ (function (_super) {
                     _this.moveCursorToEndOfMeasure(part, voiceNum, doc.measures[currMeasure.idx - 1]);
                 }
                 else {
-                    invariant_1.default(false, "Invalid direction");
+                    invariant(false, "Invalid direction");
                 }
             }
             else {
-                var patch = satie_1.Patch.createPatch(false, doc, measureUUID, part, function (partBuilder) {
+                var patch = Patch.createPatch(false, doc, measureUUID, part, function (partBuilder) {
                     return partBuilder.voice(voiceNum, function (voice) {
                         return voice.at(nextIdx).addVisualCursor();
                     });
@@ -388,7 +381,7 @@ var ToolNoteEdit = /** @class */ (function (_super) {
             var undoStack = _this.state.undoStack.concat([
                 _this.state.canonicalOperations,
             ]);
-            var barlineIdx = lodash_1.findIndex(doc.measures[measureIdx].parts.P1.staves[1], function (el) { return doc.modelHasType(el, satie_1.Type.Barline); });
+            var barlineIdx = findIndex(doc.measures[measureIdx].parts.P1.staves[1], function (el) { return doc.modelHasType(el, Type.Barline); });
             var operations = _this.song.createCanonicalPatch(_this.state.canonicalOperations, {
                 documentBuilder: function (document) {
                     return document
@@ -399,7 +392,7 @@ var ToolNoteEdit = /** @class */ (function (_super) {
                                     .at(barlineIdx)
                                     .barline(function (barline) {
                                     return barline.barStyle(function (style) {
-                                        return style.data(musicxml_interfaces_1.BarStyleType.Regular);
+                                        return style.data(BarStyleType.Regular);
                                     });
                                 });
                             });
@@ -415,7 +408,7 @@ var ToolNoteEdit = /** @class */ (function (_super) {
                                             .rest({})
                                             .staff(1)
                                             .noteType(function (noteType) {
-                                            return noteType.duration(musicxml_interfaces_1.Count.Whole);
+                                            return noteType.duration(Count.Whole);
                                         });
                                     },
                                 ]);
@@ -426,8 +419,8 @@ var ToolNoteEdit = /** @class */ (function (_super) {
                                     .insertBarline(function (barline) {
                                     return barline.barStyle(function (style) {
                                         return style.data(measureCount === measureIdx + 1
-                                            ? musicxml_interfaces_1.BarStyleType.LightHeavy
-                                            : musicxml_interfaces_1.BarStyleType.Regular);
+                                            ? BarStyleType.LightHeavy
+                                            : BarStyleType.Regular);
                                     });
                                 });
                             });
@@ -497,7 +490,7 @@ var ToolNoteEdit = /** @class */ (function (_super) {
             _this.song = song;
             if (song) {
                 var doc = song.getDocument(_this.state.canonicalOperations);
-                var patch = satie_1.Patch.createPatch(false, doc, doc.measures[0].uuid, "P1", function (part) {
+                var patch = Patch.createPatch(false, doc, doc.measures[0].uuid, "P1", function (part) {
                     return part
                         .staff(1, function (staff) {
                         return staff.at(1).attributes(function (attributes) {
@@ -555,7 +548,7 @@ var ToolNoteEdit = /** @class */ (function (_super) {
                         break;
                     }
                     var el = voice[j];
-                    if (doc.modelHasType(el, satie_1.Type.Chord)) {
+                    if (doc.modelHasType(el, Type.Chord)) {
                         var note = el[el.length - 1];
                         if (!note.rest) {
                             oldPitch = note.pitch;
@@ -575,7 +568,7 @@ var ToolNoteEdit = /** @class */ (function (_super) {
                         : 4,
                     step: newNote,
                 }, doc, currMeasure);
-                var patch = satie_1.Patch.createPatch(false, doc, oldMeasureUUID, path[2], function (partBuilder) {
+                var patch = Patch.createPatch(false, doc, oldMeasureUUID, path[2], function (partBuilder) {
                     return partBuilder.voice(1, function (oldVoice) {
                         return oldVoice
                             .at(oldIdx)
@@ -583,7 +576,7 @@ var ToolNoteEdit = /** @class */ (function (_super) {
                             return noteBuilder
                                 .pitch(newPitch_1)
                                 .rest(undefined)
-                                .dots(lodash_1.times(oldDots, function () { return ({}); }))
+                                .dots(times(oldDots, function () { return ({}); }))
                                 .noteType(function (noteType) {
                                 return noteType.duration(oldDuration);
                             });
@@ -621,7 +614,7 @@ var ToolNoteEdit = /** @class */ (function (_super) {
                         break;
                     }
                     var el = voice[j];
-                    if (doc.modelHasType(el, satie_1.Type.Chord)) {
+                    if (doc.modelHasType(el, Type.Chord)) {
                         oldNoteNumber = el.length - 1;
                         var note = el[oldNoteNumber];
                         if (!note.rest) {
@@ -633,8 +626,8 @@ var ToolNoteEdit = /** @class */ (function (_super) {
                 }
             }
             if (oldPitch) {
-                var updatedPitch_1 = __assign({}, oldPitch, { octave: oldPitch.octave + octave });
-                var patch = satie_1.Patch.createPatch(false, doc, oldMeasureUUID, path[2], function (partBuilder) {
+                var updatedPitch_1 = __assign(__assign({}, oldPitch), { octave: oldPitch.octave + octave });
+                var patch = Patch.createPatch(false, doc, oldMeasureUUID, path[2], function (partBuilder) {
                     return partBuilder.voice(1, function (oldVoice) {
                         return oldVoice
                             .at(oldIdx)
@@ -652,41 +645,42 @@ var ToolNoteEdit = /** @class */ (function (_super) {
         return _this;
     }
     ToolNoteEdit.prototype.componentDidMount = function () {
-        ReactDOM.findDOMNode(this).focus();
+        if (this.domNode.current) {
+            this.domNode.current.focus();
+        }
     };
-    // tslint:disable-next-line:max-func-body-length
     ToolNoteEdit.prototype.render = function () {
         var _this = this;
         var editType = this.state.editType;
         var tallPalette = editType === "P";
         var song = null;
         if (this.state.src) {
-            song = (React.createElement(satie_1.Song, { baseSrc: this.state.src, onError: this.handleError, patches: this.state.operations, onMouseClick: this.handleMouseClick, onMouseMove: this.handleMouseMove, pageClassName: aphrodite_1.css(styles.song), ref: this.setSongRef }));
+            song = (React.createElement(Song, { baseSrc: this.state.src, onError: this.handleError, patches: this.state.operations, onMouseClick: this.handleMouseClick, onMouseMove: this.handleMouseMove, pageClassName: css(styles.song), ref: this.setSongRef }));
         }
-        return (React.createElement("div", { className: aphrodite_1.css(tabStyles_1.default.tool), tabIndex: 0, onKeyPress: this.handleKeyPress, onKeyDown: this.handleKeyDown, role: "textbox" },
-            React.createElement("div", { className: aphrodite_1.css(tabStyles_1.default.help, this.state.showHelp && tabStyles_1.default.helpVisible) },
+        return (React.createElement("div", { ref: this.domNode, className: css(tabStyles.tool), tabIndex: 0, onKeyPress: this.handleKeyPress, onKeyDown: this.handleKeyDown, role: "textbox" },
+            React.createElement("div", { className: css(tabStyles.help, this.state.showHelp && tabStyles.helpVisible) },
                 React.createElement("i", { className: "fa-info-circle fa" }),
                 " Generate markup",
                 React.createElement("sup", null,
-                    React.createElement("a", { href: "javascript:void(0)", onClick: this.handleShowHelpWhyNotEdit, role: "button" }, "?")),
+                    React.createElement("a", { href: "#", onClick: this.handleShowHelpWhyNotEdit, role: "button" }, "?")),
                 " ",
                 "for notes in your song using a",
                 " ",
-                React.createElement("a", { href: "javascript:void(0)", onClick: this.handleShowHelpMouse, role: "button" }, "mouse"),
+                React.createElement("a", { href: "#", onClick: this.handleShowHelpMouse, role: "button" }, "mouse"),
                 ",",
                 " ",
-                React.createElement("a", { href: "javascript:void(0);", onClick: this.handleShowHelpKeyboard, role: "button" }, "computer keyboard"),
+                React.createElement("a", { href: "#;", onClick: this.handleShowHelpKeyboard, role: "button" }, "computer keyboard"),
                 ", or",
                 " ",
-                React.createElement("a", { href: "javascript:void(0);", onClick: this.handleShowHelpMIDI, role: "button" }, "MIDI keyboard"),
+                React.createElement("a", { href: "#;", onClick: this.handleShowHelpMIDI, role: "button" }, "MIDI keyboard"),
                 "."),
             this.renderAdditionalHelp(),
             this.renderPalette(),
-            React.createElement("div", { className: aphrodite_1.css(tabStyles_1.default.section) },
-                React.createElement("div", { className: aphrodite_1.css(styles.songContainer, tallPalette && styles.songContainerSmall), onScroll: this.handleSongScroll }, song)),
-            React.createElement("div", { className: aphrodite_1.css(tabStyles_1.default.spacer) }),
-            React.createElement("div", { className: aphrodite_1.css(tabStyles_1.default.section) },
-                React.createElement("span", { className: aphrodite_1.css(tabStyles_1.default.outputOptions) },
+            React.createElement("div", { className: css(tabStyles.section) },
+                React.createElement("div", { className: css(styles.songContainer, tallPalette && styles.songContainerSmall), onScroll: this.handleSongScroll }, song)),
+            React.createElement("div", { className: css(tabStyles.spacer) }),
+            React.createElement("div", { className: css(tabStyles.section) },
+                React.createElement("span", { className: css(tabStyles.outputOptions) },
                     React.createElement("input", { type: "checkbox", checked: this.state.relativeMode, onChange: function () {
                             return _this.setState({ relativeMode: !_this.state.relativeMode });
                         }, "aria-checked": false, id: "toolnoteedit-relative" }),
@@ -694,13 +688,12 @@ var ToolNoteEdit = /** @class */ (function (_super) {
                         React.createElement("code", null, "\\relative"),
                         " mode",
                         React.createElement("sup", null,
-                            React.createElement("a", { href: "javascript:void(0)", onClick: this.handleShowHelpRelative, role: "button" }, "?")),
+                            React.createElement("a", { href: "#", onClick: this.handleShowHelpRelative, role: "button" }, "?")),
                         " ")),
-                React.createElement("pre", { className: aphrodite_1.css(tabStyles_1.default.lyPreview) }, this.generateLy()),
-                React.createElement("button", { className: aphrodite_1.css(tabStyles_1.default.insert), onClick: this.handleInsertLyClicked }, "Insert this code into Hacklily"))));
+                React.createElement("pre", { className: css(tabStyles.lyPreview) }, this.generateLy()),
+                React.createElement("button", { className: css(tabStyles.insert), onClick: this.handleInsertLyClicked }, "Insert this code into Hacklily"))));
         // tslint:enable:react-a11y-anchors
     };
-    // tslint:disable-next-line:max-func-body-length
     ToolNoteEdit.prototype.generateLy = function () {
         if (!this.song) {
             // still loading...
@@ -711,7 +704,6 @@ var ToolNoteEdit = /** @class */ (function (_super) {
         var prevDuration = null;
         var doc = this.song.getDocument(this.state.canonicalOperations);
         var ly = "";
-        // tslint:disable-next-line:max-func-body-length
         doc.measures.forEach(function (measure) {
             var part = measure.parts.P1;
             var voice = part.voices[1];
@@ -719,9 +711,8 @@ var ToolNoteEdit = /** @class */ (function (_super) {
             var voiceDiv = 0;
             var staffDiv = 0;
             var staffModelIdx = 0;
-            // tslint:disable-next-line:cyclomatic-complexity max-func-body-length
             voice.forEach(function (model) {
-                if (doc.modelHasType(model, satie_1.Type.Chord)) {
+                if (doc.modelHasType(model, Type.Chord)) {
                     if (model.length < 1) {
                         console.warn("Expected chords to have at least one note");
                         return;
@@ -735,7 +726,6 @@ var ToolNoteEdit = /** @class */ (function (_super) {
                         if (model.length > 1) {
                             pitches += "<";
                         }
-                        // tslint:disable-next-line:prefer-for-of
                         for (var i = 0; i < model.length; i += 1) {
                             var note = model[i];
                             pitches += note.pitch.step.toLowerCase();
@@ -777,37 +767,37 @@ var ToolNoteEdit = /** @class */ (function (_super) {
                     switch (duration) {
                         case prevDuration:
                             break;
-                        case musicxml_interfaces_1.Count.Whole:
+                        case Count.Whole:
                             ly += "1";
                             break;
-                        case musicxml_interfaces_1.Count.Half:
+                        case Count.Half:
                             ly += "2";
                             break;
-                        case musicxml_interfaces_1.Count.Quarter:
+                        case Count.Quarter:
                             ly += "4";
                             break;
-                        case musicxml_interfaces_1.Count.Eighth:
+                        case Count.Eighth:
                             ly += "8";
                             break;
-                        case musicxml_interfaces_1.Count._16th:
+                        case Count._16th:
                             ly += "16";
                             break;
-                        case musicxml_interfaces_1.Count._32nd:
+                        case Count._32nd:
                             ly += "32";
                             break;
-                        case musicxml_interfaces_1.Count._64th:
+                        case Count._64th:
                             ly += "64";
                             break;
-                        case musicxml_interfaces_1.Count._128th:
+                        case Count._128th:
                             ly += "128";
                             break;
-                        case musicxml_interfaces_1.Count._256th:
+                        case Count._256th:
                             ly += "256";
                             break;
-                        case musicxml_interfaces_1.Count._512th:
+                        case Count._512th:
                             ly += "512";
                             break;
-                        case musicxml_interfaces_1.Count._1024th:
+                        case Count._1024th:
                             ly += "1024";
                             break;
                         default:
@@ -815,19 +805,18 @@ var ToolNoteEdit = /** @class */ (function (_super) {
                     }
                     prevDuration = duration;
                     for (var _i = 0, _a = noteForRythm.dots; _i < _a.length; _i++) {
-                        var _b = _a[_i];
+                        var _1 = _a[_i];
                         ly += ".";
                     }
-                    // tslint:disable-next-line:prefer-for-of
                     for (var i = 0; i < model.length; i += 1) {
                         if (model[i].notations) {
                             model[i].notations.forEach(function (notations) {
                                 if (notations.fermatas) {
                                     notations.fermatas.forEach(function (fermata) {
-                                        if (fermata.shape === musicxml_interfaces_1.NormalAngledSquare.Angled) {
+                                        if (fermata.shape === NormalAngledSquare.Angled) {
                                             ly += "\\shortfermata";
                                         }
-                                        else if (fermata.shape === musicxml_interfaces_1.NormalAngledSquare.Square) {
+                                        else if (fermata.shape === NormalAngledSquare.Square) {
                                             ly += "\\longfermata";
                                         }
                                         else {
@@ -890,7 +879,7 @@ var ToolNoteEdit = /** @class */ (function (_super) {
                 }
                 for (; staffDiv < voiceDiv && staffModelIdx < staff.length; next()) {
                     var staffModel = staff[staffModelIdx];
-                    if (doc.modelHasType(staffModel, satie_1.Type.Direction)) {
+                    if (doc.modelHasType(staffModel, Type.Direction)) {
                         staffModel.directionTypes.forEach(function (directionType) {
                             if (directionType.dynamics) {
                                 var d = directionType.dynamics;
@@ -950,29 +939,28 @@ var ToolNoteEdit = /** @class */ (function (_super) {
             octave: apitch.octave,
             step: apitch.step,
         };
-        if (this.state.accidental === musicxml_interfaces_1.MxmlAccidental.Sharp) {
+        if (this.state.accidental === MxmlAccidental.Sharp) {
             pitch.alter = 1;
         }
-        else if (this.state.accidental === musicxml_interfaces_1.MxmlAccidental.Flat) {
+        else if (this.state.accidental === MxmlAccidental.Flat) {
             pitch.alter = -1;
         }
-        else if (this.state.accidental === musicxml_interfaces_1.MxmlAccidental.Natural) {
+        else if (this.state.accidental === MxmlAccidental.Natural) {
             pitch.alter = undefined;
         }
         else {
             // Make the alter according to the key signature.
-            var attributes = doc.search(measure.parts.P1.staves[1], 0, satie_1.Type.Attributes)[0];
+            var attributes = doc.search(measure.parts.P1.staves[1], 0, Type.Attributes)[0];
             var ks = attributes._snapshot.keySignatures[0];
-            var accidentals = satie_1.Addons.getAccidentalsFromKey(ks);
+            var accidentals = SatieAddons.getAccidentalsFromKey(ks);
             pitch.alter = accidentals[pitch.step];
         }
         return pitch;
     };
     ToolNoteEdit.prototype.getValidCursorTargetIndecies = function (doc, segment) {
-        var targetElements = doc.search(segment, 0, satie_1.Type.Chord);
+        var targetElements = doc.search(segment, 0, Type.Chord);
         return targetElements.map(function (el) { return segment.indexOf(el); });
     };
-    // tslint:disable-next-line cyclomatic-complexity
     ToolNoteEdit.prototype.handleDirectionEvent = function (doc, measure, measureUUID, ev, isPreview) {
         var path = ev.path;
         var part = measure.parts[path[2]];
@@ -995,15 +983,15 @@ var ToolNoteEdit = /** @class */ (function (_super) {
         }
         if (this.state.direction) {
             var direction_1 = JSON.parse(JSON.stringify(this.state.direction));
-            direction_1.placement = musicxml_interfaces_1.AboveBelow.Below;
+            direction_1.placement = AboveBelow.Below;
             if (direction_1.directionTypes &&
                 direction_1.directionTypes[0].dynamics &&
                 isPreview) {
                 direction_1.directionTypes[0].dynamics.color = "#aeaeae";
             }
-            var patch = satie_1.Patch.createPatch(isPreview, doc, measureUUID, "P1", function (partBuilder) {
+            var patch = Patch.createPatch(isPreview, doc, measureUUID, "P1", function (partBuilder) {
                 return partBuilder.staff(1, function (staff) {
-                    return staff.atDiv(div, satie_1.Type.Direction).insertDirection(direction_1);
+                    return staff.atDiv(div, Type.Direction).insertDirection(direction_1);
                 });
             });
             if (patch) {
@@ -1018,8 +1006,8 @@ var ToolNoteEdit = /** @class */ (function (_super) {
         }
         else if (this.state.notation) {
             var notations_1 = JSON.parse(JSON.stringify(this.state.notation));
-            if (el && doc.modelHasType(el, satie_1.Type.Chord)) {
-                var patch = satie_1.Patch.createPatch(isPreview, doc, measureUUID, "P1", function (partBuilder) {
+            if (el && doc.modelHasType(el, Type.Chord)) {
+                var patch = Patch.createPatch(isPreview, doc, measureUUID, "P1", function (partBuilder) {
                     return partBuilder.voice(1, function (voice) {
                         return voice.at(elIdx).note(0, function (note) {
                             if (el[0].notations) {
@@ -1047,15 +1035,15 @@ var ToolNoteEdit = /** @class */ (function (_super) {
     };
     ToolNoteEdit.prototype.handleKeyPressSetAccidental = function (key) {
         if (key === "=") {
-            this.setAccidental(musicxml_interfaces_1.MxmlAccidental.Sharp);
+            this.setAccidental(MxmlAccidental.Sharp);
             return true;
         }
         if (key === "-") {
-            this.setAccidental(musicxml_interfaces_1.MxmlAccidental.Flat);
+            this.setAccidental(MxmlAccidental.Flat);
             return true;
         }
         if (key === "0") {
-            this.setAccidental(musicxml_interfaces_1.MxmlAccidental.Natural);
+            this.setAccidental(MxmlAccidental.Natural);
             return true;
         }
         return false;
@@ -1109,7 +1097,7 @@ var ToolNoteEdit = /** @class */ (function (_super) {
     ToolNoteEdit.prototype.handler = function (ev, isPreview) {
         var path = ev.path;
         var doc = this.song.getDocument(this.state.canonicalOperations);
-        var measure = lodash_1.find(doc.measures, function (fmeasure) { return String(fmeasure.uuid) === path[0]; });
+        var measure = find(doc.measures, function (fmeasure) { return String(fmeasure.uuid) === path[0]; });
         var measureUUID = parseInt(path[0], 10);
         if (!measure || path[1] !== "parts" || !measure.parts[path[2]]) {
             return false;
@@ -1140,29 +1128,28 @@ var ToolNoteEdit = /** @class */ (function (_super) {
         if (!el) {
             return true;
         }
-        var isChord = doc.modelHasType(el, satie_1.Type.Chord);
+        var isChord = doc.modelHasType(el, Type.Chord);
         if (!isChord) {
             return false;
         }
         var chord = el;
         var patch;
         var isCurrentNote = chord &&
-            lodash_1.some(chord, function (c) {
+            some(chord, function (c) {
                 return c.pitch &&
                     c.pitch.octave === pitch.octave &&
                     c.pitch.step === pitch.step;
             });
         if ((this.state.editType === "N" && chord.length === 1 && chord[0].rest) ||
             this.state.editType === "R") {
-            patch = satie_1.Patch.createPatch(isPreview, doc, measureUUID, "P1", function (partBuilderOrig) {
+            patch = Patch.createPatch(isPreview, doc, measureUUID, "P1", function (partBuilderOrig) {
                 var partBuilder = partBuilderOrig.voice(1, function (voice) {
                     return voice.note(0, function (note) {
                         return _this.state.editType === "R"
                             ? note
                                 .pitch(null)
-                                /* tslint:disable-next-line no-object-literal-type-assertion */
                                 .rest({ _force: true })
-                                .dots(lodash_1.times(_this.state.dots, function () { return ({
+                                .dots(times(_this.state.dots, function () { return ({
                                 color: isPreview ? "#cecece" : "#000000",
                             }); }))
                                 .noteType(function (noteType) {
@@ -1173,7 +1160,7 @@ var ToolNoteEdit = /** @class */ (function (_super) {
                                 ? note
                                     .pitch(pitch)
                                     .rest(undefined)
-                                    .dots(lodash_1.times(_this.state.dots, function () { return ({
+                                    .dots(times(_this.state.dots, function () { return ({
                                     color: isPreview ? "#cecece" : "#000000",
                                 }); }))
                                     .noteType(function (noteType) {
@@ -1183,7 +1170,7 @@ var ToolNoteEdit = /** @class */ (function (_super) {
                                 : note
                                     .pitch(pitch)
                                     .rest(undefined)
-                                    .dots(lodash_1.times(_this.state.dots, function () { return ({
+                                    .dots(times(_this.state.dots, function () { return ({
                                     color: isPreview ? "#cecece" : "#000000",
                                 }); }))
                                     .noteType(function (noteType) {
@@ -1211,9 +1198,9 @@ var ToolNoteEdit = /** @class */ (function (_super) {
             !chord[0].rest &&
             chord[0].noteType.duration !== this.state.note &&
             isCurrentNote) {
-            patch = satie_1.Patch.createPatch(isPreview, doc, measureUUID, "P1", function (partBuilder) {
+            patch = Patch.createPatch(isPreview, doc, measureUUID, "P1", function (partBuilder) {
                 return partBuilder.voice(1, function (voiceInitial) {
-                    return lodash_1.reduce(lodash_1.times(chord.length), function (voice, noteIdx) {
+                    return reduce(times(chord.length), function (voice, noteIdx) {
                         return voice.note(noteIdx, function (note) {
                             return note
                                 .dots(chord[0].dots.map(function (dot) {
@@ -1234,7 +1221,7 @@ var ToolNoteEdit = /** @class */ (function (_super) {
             chord.length &&
             !chord[0].rest &&
             !isCurrentNote) {
-            patch = satie_1.Patch.createPatch(isPreview, doc, measureUUID, "P1", function (partBuilder) {
+            patch = Patch.createPatch(isPreview, doc, measureUUID, "P1", function (partBuilder) {
                 return partBuilder.voice(1, function (voice) {
                     return voice.insertNote(chord.length, function (note) {
                         return note
@@ -1254,7 +1241,7 @@ var ToolNoteEdit = /** @class */ (function (_super) {
             });
             if (!isPreview) {
                 this.playNote(pitch);
-                lodash_1.forEach(chord, function (note) { return _this.playNote(note.pitch); });
+                forEach(chord, function (note) { return _this.playNote(note.pitch); });
             }
         }
         if (patch) {
@@ -1269,10 +1256,10 @@ var ToolNoteEdit = /** @class */ (function (_super) {
         return false;
     };
     ToolNoteEdit.prototype.moveCursorToEndOfMeasure = function (part, voiceNum, measure) {
-        this.moveInMeasure(part, voiceNum, measure, function (indecies) { return lodash_1.last(indecies) + 1; });
+        this.moveInMeasure(part, voiceNum, measure, function (indecies) { return last(indecies) + 1; });
     };
     ToolNoteEdit.prototype.moveCursorToStartOfMeasure = function (part, voiceNum, measure) {
-        this.moveInMeasure(part, voiceNum, measure, lodash_1.first);
+        this.moveInMeasure(part, voiceNum, measure, first);
     };
     ToolNoteEdit.prototype.moveInMeasure = function (part, voiceNum, measure, pickIdx) {
         if (!measure) {
@@ -1281,7 +1268,7 @@ var ToolNoteEdit = /** @class */ (function (_super) {
         var doc = this.song.getDocument(this.state.canonicalOperations);
         var targetIndecies = this.getValidCursorTargetIndecies(doc, measure.parts[part].voices[voiceNum]);
         var nextIdx = pickIdx(targetIndecies);
-        var patch = satie_1.Patch.createPatch(false, doc, measure.uuid, part, function (partBuilder) {
+        var patch = Patch.createPatch(false, doc, measure.uuid, part, function (partBuilder) {
             return partBuilder.voice(voiceNum, function (voice) {
                 return voice.at(nextIdx).addVisualCursor();
             });
@@ -1289,17 +1276,16 @@ var ToolNoteEdit = /** @class */ (function (_super) {
         this.applyUndoablePatch(patch);
     };
     ToolNoteEdit.prototype.playNote = function (pitch) {
-        // tslint:disable-next-line no-console
         console.log("TODO: play", pitch);
     };
     ToolNoteEdit.prototype.renderAdditionalHelp = function () {
         if (this.state.showAdditionalHelp === null) {
             return null;
         }
-        return (React.createElement(NoteAdditionalHelp_1.default, { kind: this.state.showAdditionalHelp, onHide: this.handleShowHelpNone }));
+        return (React.createElement(NoteAdditionalHelp, { kind: this.state.showAdditionalHelp, onHide: this.handleShowHelpNone }));
     };
     ToolNoteEdit.prototype.renderPalette = function () {
-        return (React.createElement(NotePalette_1.default, { accidental: this.state.accidental, direction: this.state.direction, dots: this.state.dots, editType: this.state.editType, notation: this.state.notation, note: this.state.note, redo: this.redo, setAccidental: this.setAccidental, setDirection: this.setDirection, setTimeModification: this.setTimeModification, setDots: this.setDots, setEditType: this.setEditType, setNotation: this.setNotation, setNote: this.setNote, timeModification: this.state.timeModification, newMeasure: this.newMeasure, undo: this.undo }));
+        return (React.createElement(NotePalette, { accidental: this.state.accidental, direction: this.state.direction, dots: this.state.dots, editType: this.state.editType, notation: this.state.notation, note: this.state.note, redo: this.redo, setAccidental: this.setAccidental, setDirection: this.setDirection, setTimeModification: this.setTimeModification, setDots: this.setDots, setEditType: this.setEditType, setNotation: this.setNotation, setNote: this.setNote, timeModification: this.state.timeModification, newMeasure: this.newMeasure, undo: this.undo }));
     };
     ToolNoteEdit.prototype.satieKeyToBeat = function (doc, key) {
         var path = key.replace("SATIE", "").split("_");
@@ -1323,9 +1309,8 @@ var ToolNoteEdit = /** @class */ (function (_super) {
     };
     return ToolNoteEdit;
 }(React.Component));
-exports.default = ToolNoteEdit;
-// tslint:disable-next-line typedef
-var styles = aphrodite_1.StyleSheet.create({
+export default ToolNoteEdit;
+var styles = StyleSheet.create({
     newBar: {
         textAlign: "center",
     },

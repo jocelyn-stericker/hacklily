@@ -1,4 +1,3 @@
-"use strict";
 /**
  * @source: https://github.com/jnetterf/satie/
  *
@@ -19,19 +18,20 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-Object.defineProperty(exports, "__esModule", { value: true });
-var musicxml_interfaces_1 = require("musicxml-interfaces");
-var lodash_1 = require("lodash");
-var document_1 = require("./document");
+import { serializeSound, } from "musicxml-interfaces";
+import { forEach } from "lodash";
+import { Type } from "./document";
 var SoundModel = /** @class */ (function () {
     /*---- Implementation -----------------------------------------------------------------------*/
     function SoundModel(spec) {
         var _this = this;
-        lodash_1.forEach(spec, function (value, key) {
+        /*---- I.1 IModel ---------------------------------------------------------------------------*/
+        this.divCount = 0;
+        forEach(spec, function (value, key) {
             _this[key] = value;
         });
     }
-    SoundModel.prototype.refresh = function (cursor) {
+    SoundModel.prototype.refresh = function (_cursor) {
         // todo
     };
     SoundModel.prototype.getLayout = function (cursor) {
@@ -39,37 +39,32 @@ var SoundModel = /** @class */ (function () {
         return new SoundModel.Layout(this, cursor);
     };
     SoundModel.prototype.toXML = function () {
-        return musicxml_interfaces_1.serializeSound(this) + "\n<forward><duration>" + this.divCount + "</duration></forward>\n";
+        return serializeSound(this) + "\n<forward><duration>" + this.divCount + "</duration></forward>\n";
     };
     SoundModel.prototype.inspect = function () {
         return this.toXML();
     };
-    SoundModel.prototype.calcWidth = function (shortest) {
+    SoundModel.prototype.calcWidth = function (_shortest) {
         return 0;
     };
-    return SoundModel;
-}());
-SoundModel.prototype.divCount = 0;
-(function (SoundModel) {
-    var Layout = /** @class */ (function () {
+    SoundModel.Layout = /** @class */ (function () {
         function Layout(model, cursor) {
+            // Prototype:
+            this.boundingBoxes = [];
+            this.renderClass = Type.Sound;
+            this.expandPolicy = "none";
             this.model = model;
             this.x = cursor.segmentX;
             this.division = cursor.segmentDivision;
         }
         return Layout;
     }());
-    SoundModel.Layout = Layout;
-    Layout.prototype.expandPolicy = "none";
-    Layout.prototype.renderClass = document_1.Type.Sound;
-    Layout.prototype.boundingBoxes = [];
-    Object.freeze(Layout.prototype.boundingBoxes);
-})(SoundModel || (SoundModel = {}));
+    return SoundModel;
+}());
 /**
  * Registers Sound in the factory structure passed in.
  */
-function Export(constructors) {
-    constructors[document_1.Type.Sound] = SoundModel;
+export default function Export(constructors) {
+    constructors[Type.Sound] = SoundModel;
 }
-exports.default = Export;
 //# sourceMappingURL=implSound_soundModel.js.map

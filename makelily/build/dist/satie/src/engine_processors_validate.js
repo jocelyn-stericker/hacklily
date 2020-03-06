@@ -1,4 +1,3 @@
-"use strict";
 /**
  * This file is part of Satie music engraver <https://github.com/jnetterf/satie>.
  * Copyright (C) Joshua Netterfield <joshua.ca> 2015 - present.
@@ -16,19 +15,15 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with Satie.  If not, see <http://www.gnu.org/licenses/>.
  */
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-var lodash_1 = require("lodash");
-var invariant_1 = __importDefault(require("invariant"));
-var musicxml_interfaces_1 = require("musicxml-interfaces");
-var document_1 = require("./document");
-var engine_createPatch_1 = __importDefault(require("./engine_createPatch"));
-var engine_applyOp_1 = __importDefault(require("./engine_applyOp"));
-var engine_divisions_1 = require("./engine_divisions");
-var engine_divisionOverflowException_1 = __importDefault(require("./engine_divisionOverflowException"));
-var engine_processors_measure_1 = require("./engine_processors_measure");
+import { reduce, forEach, flatten, filter, find, map, toPairs, last, } from "lodash";
+import invariant from "invariant";
+import { BarStyleType } from "musicxml-interfaces";
+import { Type } from "./document";
+import createPatch from "./engine_createPatch";
+import applyOp from "./engine_applyOp";
+import { normalizeDivisionsInPlace } from "./engine_divisions";
+import DivisionOverflowException from "./engine_divisionOverflowException";
+import { refreshMeasure, RefreshMode } from "./engine_processors_measure";
 /**
  * Reducer for a collection of functions, calling each one.
  */
@@ -48,8 +43,8 @@ var RestartMeasureValidation = /** @class */ (function () {
 /**
  * Validate the measure.
  */
-function validate(options) {
-    options.measures = lodash_1.reduce(options.preprocessors, call, options.measures);
+export default function validate(options) {
+    options.measures = reduce(options.preprocessors, call, options.measures);
     var shouldTryAgain;
     /**
      * The operations that have been applied while validating.
@@ -69,8 +64,8 @@ function validate(options) {
             options.fixup(segment, operations);
         }
         else {
-            lodash_1.forEach(operations, function (operation) {
-                engine_applyOp_1.default(options.preview, options.measures, options.modelFactory, operation, options.document, function () { return options.preview = false; });
+            forEach(operations, function (operation) {
+                applyOp(options.preview, options.measures, options.modelFactory, operation, options.document, function () { return (options.preview = false); });
             });
         }
         if (restartRequired) {
@@ -87,10 +82,10 @@ function validate(options) {
             tryValidate(options, rootFixupOpts);
         }
         catch (err) {
-            if (err instanceof engine_divisionOverflowException_1.default) {
+            if (err instanceof DivisionOverflowException) {
                 var ops = err.getOperations();
                 // The restartRequired flag is false because we restart manually.
-                rootFixup(null, engine_createPatch_1.default(false, options.document, ops), false);
+                rootFixup(null, createPatch(false, options.document, ops), false);
                 shouldTryAgain = true;
             }
             else {
@@ -99,14 +94,13 @@ function validate(options) {
         }
     } while (shouldTryAgain);
 }
-exports.default = validate;
 function tryValidate(options, rootFixupOpts) {
     var factory = options.modelFactory;
     var search = factory.search.bind(factory);
     var lastAttribs = {};
     var lastPrint = options.print;
     function withPart(segments, partID) {
-        lodash_1.forEach(segments, function (segment) {
+        forEach(segments, function (segment) {
             if (segment) {
                 segment.part = partID;
             }
@@ -115,15 +109,19 @@ function tryValidate(options, rootFixupOpts) {
     }
     // Normalize divisions on a line:
     var allSegments = [];
-    lodash_1.forEach(options.measures, function validateMeasure(measure) {
-        var voiceSegments = lodash_1.flatten(lodash_1.map(lodash_1.toPairs(measure.parts), function (partx) { return withPart(partx[1].voices, partx[0]); }));
-        var staffSegments = lodash_1.flatten(lodash_1.map(lodash_1.toPairs(measure.parts), function (partx) { return withPart(partx[1].staves, partx[0]); }));
-        allSegments = allSegments.concat(lodash_1.filter(voiceSegments.concat(staffSegments), function (s) { return !!s; }));
+    forEach(options.measures, function validateMeasure(measure) {
+        var voiceSegments = (flatten(map(toPairs(measure.parts), function (partx) {
+            return withPart(partx[1].voices, partx[0]);
+        })));
+        var staffSegments = (flatten(map(toPairs(measure.parts), function (partx) {
+            return withPart(partx[1].staves, partx[0]);
+        })));
+        allSegments = allSegments.concat(filter(voiceSegments.concat(staffSegments), function (s) { return !!s; }));
     });
-    engine_divisions_1.normalizeDivisionsInPlace(factory, allSegments, 0);
+    normalizeDivisionsInPlace(factory, allSegments, 0);
     // TODO: check if a measure hence becomes dirty?
     var tries = 0;
-    lodash_1.forEach(options.measures, function validateMeasure(measure) {
+    forEach(options.measures, function validateMeasure(measure) {
         var cleanliness = options.document.cleanlinessTracking.measures[measure.uuid];
         if (cleanliness && cleanliness.clean) {
             lastAttribs = cleanliness.clean.attributes;
@@ -139,35 +137,41 @@ function tryValidate(options, rootFixupOpts) {
             }
             tryAgain = false;
             try {
-                var voiceSegments = lodash_1.flatten(lodash_1.map(lodash_1.toPairs(measure.parts), function (partx) { return withPart(partx[1].voices, partx[0]); }));
-                var staffSegments_1 = lodash_1.flatten(lodash_1.map(lodash_1.toPairs(measure.parts), function (partx) { return withPart(partx[1].staves, partx[0]); }));
-                var segments = lodash_1.filter(voiceSegments.concat(staffSegments_1), function (s) { return !!s; });
-                lodash_1.forEach(staffSegments_1, function (segment, idx) {
+                var voiceSegments = (flatten(map(toPairs(measure.parts), function (partx) {
+                    return withPart(partx[1].voices, partx[0]);
+                })));
+                var staffSegments_1 = (flatten(map(toPairs(measure.parts), function (partx) {
+                    return withPart(partx[1].staves, partx[0]);
+                })));
+                var segments = filter(voiceSegments.concat(staffSegments_1), function (s) { return !!s; });
+                forEach(staffSegments_1, function (segment, idx) {
                     if (!segment) {
                         return;
                     }
-                    invariant_1.default(segment.ownerType === "staff", "Expected staff segment");
+                    invariant(segment.ownerType === "staff", "Expected staff segment");
                     lastAttribs[segment.part] = lastAttribs[segment.part] || [];
                     function ensureHeader(type) {
                         if (!search(segment, 0, type).length) {
                             if (segment.owner === 1) {
-                                rootFixupOpts.rootFixup(segment, [{
+                                rootFixupOpts.rootFixup(segment, [
+                                    {
                                         p: [
                                             String(measure.uuid),
                                             "parts",
                                             segment.part,
                                             "staves",
                                             segment.owner,
-                                            0
+                                            0,
                                         ],
                                         li: {
-                                            _class: document_1.Type[type]
-                                        }
-                                    }], false);
+                                            _class: Type[type],
+                                        },
+                                    },
+                                ], false);
                             }
                             else {
-                                var proxy = factory.create(document_1.Type.Proxy);
-                                var proxiedSegment = lodash_1.find(staffSegments_1, function (potentialProxied) {
+                                var proxy = factory.create(Type.Proxy);
+                                var proxiedSegment = find(staffSegments_1, function (potentialProxied) {
                                     return potentialProxied &&
                                         potentialProxied.part === segment.part &&
                                         potentialProxied.owner === 1;
@@ -182,29 +186,34 @@ function tryValidate(options, rootFixupOpts) {
                                         break;
                                     }
                                 }
-                                invariant_1.default(tidx !== -1, "Could not find required model.");
+                                invariant(tidx !== -1, "Could not find required model.");
                                 // Warning: without fixup.
                                 // STOPSHIP: Also add ability to remove/retarget proxy
                                 segment.splice(tidx, 0, proxy);
                             }
                         }
                     }
-                    ensureHeader(document_1.Type.Print);
-                    ensureHeader(document_1.Type.Attributes);
-                    if (!search(segment, segment.length - 1, document_1.Type.Barline).length) {
+                    ensureHeader(Type.Print);
+                    ensureHeader(Type.Attributes);
+                    if (!search(segment, segment.length - 1, Type.Barline).length) {
                         // Make sure the barline ends up at the end.
-                        var patches = engine_createPatch_1.default(false, options.document, measure.uuid, segment.part, function (part) { return part.staff(segment.owner, function (staff) { return staff
-                            .insertBarline(function (barline) { return barline
-                            .barStyle({
-                            data: measure.uuid === lodash_1.last(options.document.measures).uuid ?
-                                musicxml_interfaces_1.BarStyleType.LightHeavy : musicxml_interfaces_1.BarStyleType.Regular,
-                        }); }); }, segment.length); });
+                        var patches = createPatch(false, options.document, measure.uuid, segment.part, function (part) {
+                            return part.staff(segment.owner, function (staff) {
+                                return staff.insertBarline(function (barline) {
+                                    return barline.barStyle({
+                                        data: measure.uuid === last(options.document.measures).uuid
+                                            ? BarStyleType.LightHeavy
+                                            : BarStyleType.Regular,
+                                    });
+                                });
+                            }, segment.length);
+                        });
                         rootFixupOpts.rootFixup(segment, patches, false);
                     }
                 });
-                var outcome = engine_processors_measure_1.refreshMeasure({
+                var outcome = refreshMeasure({
                     noAlign: true,
-                    mode: engine_processors_measure_1.RefreshMode.RefreshModel,
+                    mode: RefreshMode.RefreshModel,
                     document: options.document,
                     factory: factory,
                     fixup: rootFixupOpts.rootFixup,

@@ -1,4 +1,3 @@
-"use strict";
 /**
  * This file is part of Satie music engraver <https://github.com/jnetterf/satie>.
  * Copyright (C) Joshua Netterfield <joshua.ca> 2015 - present.
@@ -29,37 +28,15 @@ var __extends = (this && this.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
-var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
-    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
-    result["default"] = mod;
-    return result;
-};
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-var react_1 = require("react");
-var PropTypes = __importStar(require("prop-types"));
-var document_1 = require("./document");
-var private_views_metadata_1 = require("./private_views_metadata");
-var implAttributes_attributesView_1 = __importDefault(require("./implAttributes_attributesView"));
-var implBarline_barlineView_1 = __importDefault(require("./implBarline_barlineView"));
-var implChord_chordView_1 = __importDefault(require("./implChord_chordView"));
-var implDirection_directionView_1 = __importDefault(require("./implDirection_directionView"));
-var implVisualCursor_visualCursorView_1 = __importDefault(require("./implVisualCursor_visualCursorView"));
-var $AttributesView = react_1.createFactory(implAttributes_attributesView_1.default);
-var $BarlineView = react_1.createFactory(implBarline_barlineView_1.default);
-var $ChordView = react_1.createFactory(implChord_chordView_1.default);
-var $DirectionView = react_1.createFactory(implDirection_directionView_1.default);
-var $VisualCursorView = react_1.createFactory(implVisualCursor_visualCursorView_1.default);
+import React, { Component } from "react";
+import * as PropTypes from "prop-types";
+import { Type } from "./document";
+import { Targetable } from "./private_views_metadata";
+import AttributesView from "./implAttributes_attributesView";
+import BarlineView from "./implBarline_barlineView";
+import ChordView from "./implChord_chordView";
+import DirectionView from "./implDirection_directionView";
+import VisualCursorView from "./implVisualCursor_visualCursorView";
 var NUMBER_ARRAY = PropTypes.arrayOf(PropTypes.number);
 var ModelView = /** @class */ (function (_super) {
     __extends(ModelView, _super);
@@ -69,16 +46,16 @@ var ModelView = /** @class */ (function (_super) {
     ModelView.prototype.render = function () {
         var layout = this.props.layout; // Sigh...
         switch (layout.renderClass) {
-            case document_1.Type.Attributes:
-                return $AttributesView({ layout: layout });
-            case document_1.Type.Barline:
-                return $BarlineView({ layout: layout });
-            case document_1.Type.Chord:
-                return $ChordView({ layout: layout });
-            case document_1.Type.Direction:
-                return $DirectionView({ layout: layout });
-            case document_1.Type.VisualCursor:
-                return $VisualCursorView({ layout: layout });
+            case Type.Attributes:
+                return React.createElement(AttributesView, { layout: layout });
+            case Type.Barline:
+                return React.createElement(BarlineView, { layout: layout });
+            case Type.Chord:
+                return React.createElement(ChordView, { layout: layout });
+            case Type.Direction:
+                return React.createElement(DirectionView, { layout: layout });
+            case Type.VisualCursor:
+                return React.createElement(VisualCursorView, { layout: layout });
             default:
                 return null;
         }
@@ -89,11 +66,11 @@ var ModelView = /** @class */ (function (_super) {
             originY: this.context.originYByPartAndStaff[layout.part][layout.model.staffIdx || 1] || 0,
         };
     };
-    ModelView.prototype.shouldComponentUpdate = function (nextProps, nextState) {
+    ModelView.prototype.shouldComponentUpdate = function (nextProps, _nextState) {
         if (nextProps.version !== this.props.version) {
             return true;
         }
-        if (this.props.layout.renderClass === document_1.Type.Attributes &&
+        if (this.props.layout.renderClass === Type.Attributes &&
             this.props.layout.staffWidth !==
                 nextProps.layout.staffWidth) {
             return true;
@@ -106,10 +83,8 @@ var ModelView = /** @class */ (function (_super) {
     ModelView.contextTypes = {
         originYByPartAndStaff: PropTypes.objectOf(NUMBER_ARRAY).isRequired,
     };
-    ModelView = __decorate([
-        private_views_metadata_1.Targetable()
-    ], ModelView);
     return ModelView;
-}(react_1.Component));
-exports.default = ModelView;
+}(Component));
+Targetable()(ModelView);
+export default ModelView;
 //# sourceMappingURL=implSegment_modelView.js.map

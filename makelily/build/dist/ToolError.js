@@ -1,4 +1,3 @@
-"use strict";
 /**
  * @license
  * This file is part of Makelily.
@@ -31,13 +30,9 @@ var __extends = (this && this.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-var aphrodite_1 = require("aphrodite");
-var React = require("react");
-var tabStyles_1 = __importDefault(require("./tabStyles"));
+import { css } from "aphrodite";
+import React from "react";
+import tabStyles from "./tabStyles";
 /**
  * Placeholder for when an error was caught.
  */
@@ -47,18 +42,17 @@ var ToolError = /** @class */ (function (_super) {
         return _super !== null && _super.apply(this, arguments) || this;
     }
     ToolError.prototype.render = function () {
-        return (React.createElement("span", { className: aphrodite_1.css(tabStyles_1.default.tool) },
-            React.createElement("div", { className: aphrodite_1.css(tabStyles_1.default.section) },
-                React.createElement("h3", { className: aphrodite_1.css(tabStyles_1.default.toolHeading) }, "It's not your fault*!")),
-            React.createElement("div", { className: aphrodite_1.css(tabStyles_1.default.section) },
+        return (React.createElement("span", { className: css(tabStyles.tool) },
+            React.createElement("div", { className: css(tabStyles.section) },
+                React.createElement("h3", { className: css(tabStyles.toolHeading) }, "It's not your fault*!")),
+            React.createElement("div", { className: css(tabStyles.section) },
                 "The tool you were using crashed, so it has been closed. Please",
                 " ",
                 React.createElement("a", { href: "https://github.com/hacklily/makelily/issues/new", target: "_blank", rel: "noopener noreferrer" }, "file an issue"),
                 " ",
-                "so I can try fixing it."),
-            React.createElement("div", { className: aphrodite_1.css(tabStyles_1.default.section) }, "*if you are Joshua, it is probably your fault.")));
+                "so I can try fixing it.")));
     };
     return ToolError;
 }(React.Component));
-exports.default = ToolError;
+export default ToolError;
 //# sourceMappingURL=ToolError.js.map

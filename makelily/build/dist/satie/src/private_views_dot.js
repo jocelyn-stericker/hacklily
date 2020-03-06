@@ -1,4 +1,3 @@
-"use strict";
 /**
  * This file is part of Satie music engraver <https://github.com/jnetterf/satie>.
  * Copyright (C) Joshua Netterfield <joshua.ca> 2015 - present.
@@ -29,16 +28,8 @@ var __extends = (this && this.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
-    result["default"] = mod;
-    return result;
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-var React = __importStar(require("react"));
-var react_1 = require("react");
+import * as React from "react";
+import { Component } from "react";
 /**
  * Responsible for the rendering of a dot as part of a dotted note.
  * This is not used to render staccatos.
@@ -54,6 +45,6 @@ var Dot = /** @class */ (function (_super) {
             React.createElement("circle", { cx: this.props.x, cy: this.props.y, fill: this.props.fill, r: this.props.radius })));
     };
     return Dot;
-}(react_1.Component));
-exports.default = Dot;
+}(Component));
+export default Dot;
 //# sourceMappingURL=private_views_dot.js.map

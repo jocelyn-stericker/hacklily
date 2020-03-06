@@ -16,62 +16,69 @@
  * along with Satie.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import {reduce, forEach} from "lodash";
-import {lcm} from "./private_util";
-import {IFactory} from "./private_factory";
+import { reduce, forEach } from "lodash";
+import { lcm } from "./private_util";
+import { IFactory } from "./private_factory";
 
-import {IModel, ISegment, Document, Type} from "./document";
+import { IModel, ISegment, Document, Type } from "./document";
 
 /**
  * Given a set of segments, scales divisions so that they are compatible.
  *
  * Returns the division count.
  */
-export function normalizeDivisionsInPlace(factory: IFactory | Document,
-                                          segments: ISegment[],
-                                          factor: number = 0): number {
-
-    let divisions: number = factor || reduce(segments, (div1, seg) => {
+export function normalizeDivisionsInPlace(
+  factory: IFactory | Document,
+  segments: ISegment[],
+  factor: number = 0,
+): number {
+  let divisions: number =
+    factor ||
+    reduce(
+      segments,
+      (div1, seg) => {
         if (!div1) {
-            return 1;
+          return 1;
         }
 
         return lcm(div1, seg.divisions);
-    }, 0);
+      },
+      0,
+    );
 
-    forEach(segments, segment => {
-        if (!segment) {
-            return;
-        }
+  forEach(segments, segment => {
+    if (!segment) {
+      return;
+    }
 
-        let ratio = divisions / segment.divisions;
-        segment.divisions = divisions;
+    let ratio = divisions / segment.divisions;
+    segment.divisions = divisions;
 
-        forEach(segment, (model: IModel) => {
-            if (model.divCount) {
-                model.divCount *= ratio;
-            }
+    forEach(segment, (model: IModel) => {
+      if (model.divCount) {
+        model.divCount *= ratio;
+      }
 
-            if (factory.modelHasType(model, Type.Chord)) {
-                forEach(model, note => {
-                    if (note.duration) {
-                        note.duration *= ratio;
-                    }
-                });
-            }
-            if (factory.modelHasType(model, Type.Attributes)) {
-                // This could be an attributes item or a note.
-                if (model.divisions) {
-                    ratio = divisions / model.divisions;
-                }
-                try {
-                    model.divisions = divisions;
-                } catch(err) {
-                    console.warn("Could not set divisions");
-                }
-            }
+      if (factory.modelHasType(model, Type.Chord)) {
+        forEach(model, note => {
+          if (note.duration) {
+            note.duration *= ratio;
+          }
         });
+      }
+      if (factory.modelHasType(model, Type.Attributes)) {
+        // This could be an attributes item or a note.
+        if (model.divisions) {
+          ratio = divisions / model.divisions;
+        }
+        try {
+          model.divisions = divisions;
+        } catch (err) {
+          console.warn("Could not set divisions");
+        }
+      }
     });
+  });
 
-    return divisions;
+  return divisions;
 }

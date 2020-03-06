@@ -41,7 +41,7 @@ export interface IRestSpec {
 export function voiceToRestSpec(
   segment: ModelMetreMutationSpec[],
   attributes: IAttributesSnapshot,
-  factory: IFactory | Document,
+  _factory: IFactory | Document,
 ) {
   const emptyRestSpec: IRestSpec = { song: "", models: [], modelsToKill: [] };
   let divsToSuppress = 0;
@@ -70,10 +70,9 @@ export function voiceToRestSpec(
         newModelsToKill[killIdx].push(model);
         return {
           song: restSpec.song + extraSong,
-          models: restSpec.models.concat(times(
-            extraSong.length,
-            () => "killed",
-          ) as any),
+          models: restSpec.models.concat(
+            times(extraSong.length, () => "killed") as any,
+          ),
           modelsToKill: newModelsToKill,
         };
       } else if (divCount === 0) {
@@ -174,7 +173,7 @@ function _cleanupRests(pattern: string, time: Time) {
 const DEBUG_simplifyRests = false;
 
 export function simplifyRests(
-  segment: (ModelMetreMutationSpec)[],
+  segment: ModelMetreMutationSpec[],
   factory: IFactory | Document,
   attributes: IAttributesSnapshot,
 ): IAny[] {

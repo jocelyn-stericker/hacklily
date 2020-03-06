@@ -89,7 +89,7 @@ class NoteImpl implements Note {
     parent: ChordModelImpl,
     idx: number,
     note: Note,
-    updateParent: boolean = true,
+    _updateParent: boolean = true,
   ) {
     let self: { [key: string]: any } = this as any;
 
@@ -149,7 +149,7 @@ class NoteImpl implements Note {
 
     function setIfDefined(property: string) {
       if (
-        note.hasOwnProperty(property) &&
+        Object.prototype.hasOwnProperty.call(note, property) &&
         (<any>note)[property] !== undefined
       ) {
         self[property] = <any>(<any>note)[property];
@@ -532,7 +532,7 @@ class NoteImpl implements Note {
       let articulations: Articulations = <any>{};
       for (let i = 0; i < array.length; ++i) {
         for (let akey in array[i]) {
-          if (array[i].hasOwnProperty(akey)) {
+          if (Object.prototype.hasOwnProperty.call(array[i], akey)) {
             (<any>articulations)[akey] = (<any>array[i])[akey];
           }
         }

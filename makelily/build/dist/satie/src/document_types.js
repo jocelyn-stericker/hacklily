@@ -1,4 +1,3 @@
-"use strict";
 /**
  * This file is part of Satie music engraver <https://github.com/jnetterf/satie>.
  * Copyright (C) Joshua Netterfield <joshua.ca> 2015 - present.
@@ -16,7 +15,6 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with Satie.  If not, see <http://www.gnu.org/licenses/>.
  */
-Object.defineProperty(exports, "__esModule", { value: true });
 var Type;
 (function (Type) {
     Type[Type["START_OF_LAYOUT_ELEMENTS"] = 0] = "START_OF_LAYOUT_ELEMENTS";
@@ -40,5 +38,5 @@ var Type;
 })(Type || (Type = {}));
 // Notes and chords are treated as the same type.
 Type["Note"] = Type.Chord;
-exports.default = Type;
+export default Type;
 //# sourceMappingURL=document_types.js.map

@@ -20,28 +20,31 @@
  * @file part of Satie test suite
  */
 
-import {normalizeDivisionsInPlace} from "../engine_divisions";
+import { normalizeDivisionsInPlace } from "../engine_divisions";
 
-import {expect} from "chai";
+import { expect } from "chai";
 
-import {createFakeStaffSegment, createFakeVoiceSegment, fakeFactory} from "./etestutil";
+import {
+  createFakeStaffSegment,
+  createFakeVoiceSegment,
+  fakeFactory,
+} from "./etestutil";
 
 describe("[document/segment.ts]", function() {
-    describe("normalizeDivisionsInPlace", function() {
-        it("correctly modifies all segments", function() {
-            let segments = [
-                createFakeStaffSegment(4, 4, 1),
-                createFakeVoiceSegment(2, 6, 1),
-                createFakeVoiceSegment(4, 12, 2),
-            ];
-            normalizeDivisionsInPlace(fakeFactory, segments);
-            expect(segments[0].divisions).to.equal(16);
-            expect(segments[1].divisions).to.equal(16);
-            expect(segments[2].divisions).to.equal(16);
-            expect(segments[0][1].divCount).to.equal(8);
-            expect(segments[1][0].divCount).to.equal(4);
-            expect(segments[2][1].divCount).to.equal(12);
-
-        });
+  describe("normalizeDivisionsInPlace", function() {
+    it("correctly modifies all segments", function() {
+      let segments = [
+        createFakeStaffSegment(4, 4, 1),
+        createFakeVoiceSegment(2, 6, 1),
+        createFakeVoiceSegment(4, 12, 2),
+      ];
+      normalizeDivisionsInPlace(fakeFactory, segments);
+      expect(segments[0].divisions).to.equal(16);
+      expect(segments[1].divisions).to.equal(16);
+      expect(segments[2].divisions).to.equal(16);
+      expect(segments[0][1].divCount).to.equal(8);
+      expect(segments[1][0].divCount).to.equal(4);
+      expect(segments[2][1].divCount).to.equal(12);
     });
+  });
 });

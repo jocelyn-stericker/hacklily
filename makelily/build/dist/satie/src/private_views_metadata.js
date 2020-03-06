@@ -1,4 +1,3 @@
-"use strict";
 /**
  * This file is part of Satie music engraver <https://github.com/jnetterf/satie>.
  * Copyright (C) Joshua Netterfield <joshua.ca> 2015 - present.
@@ -16,16 +15,12 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with Satie.  If not, see <http://www.gnu.org/licenses/>.
  */
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-var invariant_1 = __importDefault(require("invariant"));
-var lodash_1 = require("lodash");
+import invariant from "invariant";
+import { isEqual, sortedIndex, indexOf } from "lodash";
 /**
  * A decorator that records the position of a component.
  */
-function Targetable() {
+export function Targetable() {
     return function decorator(component) {
         function updateMeta(self, props) {
             var layout = props.layout;
@@ -41,7 +36,7 @@ function Targetable() {
                 originY: originY,
             };
             if (self._record) {
-                if (lodash_1.isEqual(newRecord, self._record)) {
+                if (isEqual(newRecord, self._record)) {
                     return;
                 }
                 clearMeta(self);
@@ -66,8 +61,8 @@ function Targetable() {
             self._record = null;
         }
         // ---- //
-        var originalComponentWillMount = component.prototype.componentWillMount;
-        component.prototype.componentWillMount = function metaComponentWillMountWrapper() {
+        var originalComponentWillMount = component.prototype.UNSAFE_componentWillMount;
+        component.prototype.UNSAFE_componentWillMount = function metaComponentWillMountWrapper() {
             var self = this;
             updateMeta(self, self.props);
             if (originalComponentWillMount) {
@@ -84,8 +79,8 @@ function Targetable() {
             }
         };
         // ---- //
-        var originalComponentWillReceiveProps = component.prototype.componentWillReceiveProps;
-        component.prototype.componentWillReceiveProps = function metaComponentWillReceiveProps(nextProps) {
+        var originalComponentWillReceiveProps = component.prototype.UNSAFE_componentWillReceiveProps;
+        component.prototype.UNSAFE_componentWillReceiveProps = function metaComponentWillReceiveProps(nextProps) {
             var self = this;
             updateMeta(self, nextProps);
             if (originalComponentWillReceiveProps) {
@@ -94,27 +89,26 @@ function Targetable() {
         };
     };
 }
-exports.Targetable = Targetable;
 var _sorted = [];
 var _weights = [];
 function set(record) {
     var weight = weightForRecord(record);
-    var idx = lodash_1.sortedIndex(_weights, weight);
+    var idx = sortedIndex(_weights, weight);
     _sorted.splice(idx, 0, record);
     _weights.splice(idx, 0, weight);
 }
 function clear(record) {
     var weight = weightForRecord(record);
-    var firstPossibleIdx = lodash_1.sortedIndex(_weights, weight);
-    var idx = lodash_1.indexOf(_sorted, record, firstPossibleIdx);
-    invariant_1.default(idx >= 0, record.key + " not currently in array.");
+    var firstPossibleIdx = sortedIndex(_weights, weight);
+    var idx = indexOf(_sorted, record, firstPossibleIdx);
+    invariant(idx >= 0, record.key + " not currently in array.");
     _sorted.splice(idx, 1);
     _weights.splice(idx, 1);
 }
-function get(lookup) {
+export function get(lookup) {
     var x = lookup.x, y = lookup.y;
     var weight = weightForLookup(lookup);
-    var firstPossibleIdx = lodash_1.sortedIndex(_weights, weight);
+    var firstPossibleIdx = sortedIndex(_weights, weight);
     for (var i = firstPossibleIdx; i < _sorted.length; ++i) {
         var record = _sorted[i];
         if (_sorted[i].x1 <= x &&
@@ -126,7 +120,6 @@ function get(lookup) {
     }
     return null;
 }
-exports.get = get;
 function weightForRecord(record) {
     // In the future we should seperate by line.
     return record.x2;

@@ -1,4 +1,3 @@
-"use strict";
 /**
  * This file is part of Satie music engraver <https://github.com/jnetterf/satie>.
  * Copyright (C) Joshua Netterfield <joshua.ca> 2015 - present.
@@ -27,26 +26,25 @@ var __assign = (this && this.__assign) || function () {
     };
     return __assign.apply(this, arguments);
 };
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-var musicxml_interfaces_1 = require("musicxml-interfaces");
-var lodash_1 = require("lodash");
-var invariant_1 = __importDefault(require("invariant"));
-var document_1 = require("./document");
-var private_lineBounds_1 = require("./private_lineBounds");
+import { NormalItalic, NormalBold, serializePrint, OddEvenBoth, } from "musicxml-interfaces";
+import { forEach, defaultsDeep } from "lodash";
+import invariant from "invariant";
+import { Type } from "./document";
+import { calculateLineBounds } from "./private_lineBounds";
 var PrintModel = /** @class */ (function () {
     /*---- Implementation -----------------------------------------------------------------------*/
     function PrintModel(spec) {
         var _this = this;
         this._class = "Print";
-        lodash_1.forEach(spec, function (value, key) {
+        /*---- I.1 IModel ---------------------------------------------------------------------------*/
+        this.divCount = 0;
+        this.divisions = 0;
+        forEach(spec, function (value, key) {
             _this[key] = value;
         });
     }
     PrintModel.prototype.refresh = function (cursor) {
-        invariant_1.default(!!cursor.header, "Cursor must have a valid header");
+        invariant(!!cursor.header, "Cursor must have a valid header");
         if (!this.measureNumbering) {
             cursor.patch(function (staff) {
                 return staff.print(function (print) {
@@ -84,7 +82,7 @@ var PrintModel = /** @class */ (function () {
         return new PrintModel.Layout(this, cursor);
     };
     PrintModel.prototype.getSnapshot = function (parent, singleLineMode, header) {
-        var print = lodash_1.defaultsDeep({
+        var print = defaultsDeep({
             measureNumbering: this.measureNumbering,
             partNameDisplay: this.partNameDisplay,
             newSystem: this.newSystem,
@@ -101,9 +99,9 @@ var PrintModel = /** @class */ (function () {
         if (singleLineMode) {
             var defaults = header.defaults;
             var scale40 = (defaults.scaling.millimeters / defaults.scaling.tenths) * 40;
-            var firstLineBounds = private_lineBounds_1.calculateLineBounds(print, 0, defaults.scaling);
+            var firstLineBounds = calculateLineBounds(print, 0, defaults.scaling);
             var systems = 1; // FIXME
-            return __assign({}, print, { systemLayout: {
+            return __assign(__assign({}, print), { systemLayout: {
                     systemDistance: 20,
                     systemDividers: print.systemLayout.systemDividers,
                     systemMargins: {
@@ -111,7 +109,7 @@ var PrintModel = /** @class */ (function () {
                         rightMargin: 0,
                     },
                     topSystemDistance: 0,
-                }, pageLayout: __assign({}, print.pageLayout, { pageHeight: scale40 * 10 * systems +
+                }, pageLayout: __assign(__assign({}, print.pageLayout), { pageHeight: scale40 * 10 * systems +
                         firstLineBounds.systemLayout.systemDistance * (systems - 1) +
                         80, pageMargins: [
                         {
@@ -119,14 +117,14 @@ var PrintModel = /** @class */ (function () {
                             leftMargin: 0,
                             rightMargin: 0,
                             topMargin: 40,
-                            type: musicxml_interfaces_1.OddEvenBoth.Both,
+                            type: OddEvenBoth.Both,
                         },
                     ] }) });
         }
         return print;
     };
     PrintModel.prototype.toXML = function () {
-        return musicxml_interfaces_1.serializePrint(this) + "\n<forward><duration>" + this.divCount + "</duration></forward>\n";
+        return serializePrint(this) + "\n<forward><duration>" + this.divCount + "</duration></forward>\n";
     };
     PrintModel.prototype.toJSON = function () {
         var _a = this, _class = _a._class, measureNumbering = _a.measureNumbering, partNameDisplay = _a.partNameDisplay, newSystem = _a.newSystem, newPage = _a.newPage, blankPage = _a.blankPage, measureLayout = _a.measureLayout, partAbbreviationDisplay = _a.partAbbreviationDisplay, pageLayout = _a.pageLayout, systemLayout = _a.systemLayout, staffSpacing = _a.staffSpacing, staffLayouts = _a.staffLayouts, pageNumber = _a.pageNumber;
@@ -149,16 +147,15 @@ var PrintModel = /** @class */ (function () {
     PrintModel.prototype.inspect = function () {
         return this.toXML();
     };
-    PrintModel.prototype.calcWidth = function (shortest) {
+    PrintModel.prototype.calcWidth = function (_shortest) {
         return 0;
     };
-    return PrintModel;
-}());
-PrintModel.prototype.divCount = 0;
-PrintModel.prototype.divisions = 0;
-(function (PrintModel) {
-    var Layout = /** @class */ (function () {
+    PrintModel.Layout = /** @class */ (function () {
         function Layout(model, cursor) {
+            // Prototype:
+            this.boundingBoxes = [];
+            this.renderClass = Type.Print;
+            this.expandPolicy = "none";
             this.model = model;
             this.x = cursor.segmentX;
             this.division = cursor.segmentDivision;
@@ -166,12 +163,8 @@ PrintModel.prototype.divisions = 0;
         }
         return Layout;
     }());
-    PrintModel.Layout = Layout;
-    Layout.prototype.expandPolicy = "none";
-    Layout.prototype.renderClass = document_1.Type.Print;
-    Layout.prototype.boundingBoxes = [];
-    Object.freeze(Layout.prototype.boundingBoxes);
-})(PrintModel || (PrintModel = {}));
+    return PrintModel;
+}());
 function extractDefaultPrintFromHeader(header) {
     return {
         blankPage: "",
@@ -183,8 +176,8 @@ function extractDefaultPrintFromHeader(header) {
             defaultY: null,
             fontFamily: "Alegreya, serif",
             fontSize: "small",
-            fontStyle: musicxml_interfaces_1.NormalItalic.Normal,
-            fontWeight: musicxml_interfaces_1.NormalBold.Normal,
+            fontStyle: NormalItalic.Normal,
+            fontWeight: NormalBold.Normal,
             relativeX: 0,
             relativeY: 0,
         },
@@ -202,8 +195,7 @@ function extractDefaultPrintFromHeader(header) {
 /**
  * Registers Print in the factory structure passed in.
  */
-function Export(constructors) {
-    constructors[document_1.Type.Print] = PrintModel;
+export default function Export(constructors) {
+    constructors[Type.Print] = PrintModel;
 }
-exports.default = Export;
 //# sourceMappingURL=implPrint_printModel.js.map

@@ -43,122 +43,122 @@ export declare let defaultMargins: {
 };
 export declare let defaultStaveHeight: number;
 export declare let lilypondSizes: {
-    "choral": {
+    choral: {
         width: number;
         height: number;
         unit: string;
     };
-    "marching": {
+    marching: {
         width: number;
         height: number;
         unit: string;
     };
-    "a10": {
+    a10: {
         width: number;
         height: number;
         unit: string;
     };
-    "a9": {
+    a9: {
         width: number;
         height: number;
         unit: string;
     };
-    "a8": {
+    a8: {
         width: number;
         height: number;
         unit: string;
     };
-    "a7": {
+    a7: {
         width: number;
         height: number;
         unit: string;
     };
-    "a6": {
+    a6: {
         width: number;
         height: number;
         unit: string;
     };
-    "a5": {
+    a5: {
         width: number;
         height: number;
         unit: string;
     };
-    "a4": {
+    a4: {
         width: number;
         height: number;
         unit: string;
     };
-    "a3": {
+    a3: {
         width: number;
         height: number;
         unit: string;
     };
-    "a2": {
+    a2: {
         width: number;
         height: number;
         unit: string;
     };
-    "a1": {
+    a1: {
         width: number;
         height: number;
         unit: string;
     };
-    "a0": {
+    a0: {
         width: number;
         height: number;
         unit: string;
     };
-    "b10": {
+    b10: {
         width: number;
         height: number;
         unit: string;
     };
-    "b9": {
+    b9: {
         width: number;
         height: number;
         unit: string;
     };
-    "b8": {
+    b8: {
         width: number;
         height: number;
         unit: string;
     };
-    "b7": {
+    b7: {
         width: number;
         height: number;
         unit: string;
     };
-    "b6": {
+    b6: {
         width: number;
         height: number;
         unit: string;
     };
-    "b5": {
+    b5: {
         width: number;
         height: number;
         unit: string;
     };
-    "b4": {
+    b4: {
         width: number;
         height: number;
         unit: string;
     };
-    "b3": {
+    b3: {
         width: number;
         height: number;
         unit: string;
     };
-    "b2": {
+    b2: {
         width: number;
         height: number;
         unit: string;
     };
-    "b1": {
+    b1: {
         width: number;
         height: number;
         unit: string;
     };
-    "b0": {
+    b0: {
         width: number;
         height: number;
         unit: string;
@@ -173,57 +173,57 @@ export declare let lilypondSizes: {
         height: number;
         unit: string;
     };
-    "c10": {
+    c10: {
         width: number;
         height: number;
         unit: string;
     };
-    "c9": {
+    c9: {
         width: number;
         height: number;
         unit: string;
     };
-    "c8": {
+    c8: {
         width: number;
         height: number;
         unit: string;
     };
-    "c7": {
+    c7: {
         width: number;
         height: number;
         unit: string;
     };
-    "c6": {
+    c6: {
         width: number;
         height: number;
         unit: string;
     };
-    "c5": {
+    c5: {
         width: number;
         height: number;
         unit: string;
     };
-    "c4": {
+    c4: {
         width: number;
         height: number;
         unit: string;
     };
-    "c3": {
+    c3: {
         width: number;
         height: number;
         unit: string;
     };
-    "c2": {
+    c2: {
         width: number;
         height: number;
         unit: string;
     };
-    "c1": {
+    c1: {
         width: number;
         height: number;
         unit: string;
     };
-    "c0": {
+    c0: {
         width: number;
         height: number;
         unit: string;
@@ -233,22 +233,22 @@ export declare let lilypondSizes: {
         height: number;
         unit: string;
     };
-    "legal": {
+    legal: {
         width: number;
         height: number;
         unit: string;
     };
-    "ledger": {
+    ledger: {
         width: number;
         height: number;
         unit: string;
     };
-    "letter": {
+    letter: {
         width: number;
         height: number;
         unit: string;
     };
-    "tabloid": {
+    tabloid: {
         width: number;
         height: number;
         unit: string;
@@ -338,7 +338,7 @@ export declare let lilypondSizes: {
         height: number;
         unit: string;
     };
-    "statement": {
+    statement: {
         width: number;
         height: number;
         unit: string;
@@ -348,32 +348,32 @@ export declare let lilypondSizes: {
         height: number;
         unit: string;
     };
-    "quarto": {
+    quarto: {
         width: number;
         height: number;
         unit: string;
     };
-    "octavo": {
+    octavo: {
         width: number;
         height: number;
         unit: string;
     };
-    "executive": {
+    executive: {
         width: number;
         height: number;
         unit: string;
     };
-    "monarch": {
+    monarch: {
         width: number;
         height: number;
         unit: string;
     };
-    "foolscap": {
+    foolscap: {
         width: number;
         height: number;
         unit: string;
     };
-    "folio": {
+    folio: {
         width: number;
         height: number;
         unit: string;
@@ -383,12 +383,12 @@ export declare let lilypondSizes: {
         height: number;
         unit: string;
     };
-    "post": {
+    post: {
         width: number;
         height: number;
         unit: string;
     };
-    "crown": {
+    crown: {
         width: number;
         height: number;
         unit: string;
@@ -398,27 +398,27 @@ export declare let lilypondSizes: {
         height: number;
         unit: string;
     };
-    "demy": {
+    demy: {
         width: number;
         height: number;
         unit: string;
     };
-    "medium": {
+    medium: {
         width: number;
         height: number;
         unit: string;
     };
-    "broadsheet": {
+    broadsheet: {
         width: number;
         height: number;
         unit: string;
     };
-    "royal": {
+    royal: {
         width: number;
         height: number;
         unit: string;
     };
-    "elephant": {
+    elephant: {
         width: number;
         height: number;
         unit: string;
@@ -433,82 +433,82 @@ export declare let lilypondSizes: {
         height: number;
         unit: string;
     };
-    "atlas": {
+    atlas: {
         width: number;
         height: number;
         unit: string;
     };
-    "imperial": {
+    imperial: {
         width: number;
         height: number;
         unit: string;
     };
-    "antiquarian": {
+    antiquarian: {
         width: number;
         height: number;
         unit: string;
     };
-    "pa0": {
+    pa0: {
         width: number;
         height: number;
         unit: string;
     };
-    "pa1": {
+    pa1: {
         width: number;
         height: number;
         unit: string;
     };
-    "pa2": {
+    pa2: {
         width: number;
         height: number;
         unit: string;
     };
-    "pa3": {
+    pa3: {
         width: number;
         height: number;
         unit: string;
     };
-    "pa4": {
+    pa4: {
         width: number;
         height: number;
         unit: string;
     };
-    "pa5": {
+    pa5: {
         width: number;
         height: number;
         unit: string;
     };
-    "pa6": {
+    pa6: {
         width: number;
         height: number;
         unit: string;
     };
-    "pa7": {
+    pa7: {
         width: number;
         height: number;
         unit: string;
     };
-    "pa8": {
+    pa8: {
         width: number;
         height: number;
         unit: string;
     };
-    "pa9": {
+    pa9: {
         width: number;
         height: number;
         unit: string;
     };
-    "pa10": {
+    pa10: {
         width: number;
         height: number;
         unit: string;
     };
-    "f4": {
+    f4: {
         width: number;
         height: number;
         unit: string;
     };
-    "a8landscape": {
+    a8landscape: {
         width: number;
         height: number;
         unit: string;

@@ -24,5 +24,5 @@ import { ILineBounds } from "./private_lineBounds";
  *
  * @returns new end of line
  */
-declare function pad(options: ILayoutOptions, bounds: ILineBounds, measures: IMeasureLayout[]): IMeasureLayout[];
+declare function pad(_options: ILayoutOptions, _bounds: ILineBounds, measures: IMeasureLayout[]): IMeasureLayout[];
 export default pad;

@@ -19,7 +19,7 @@
  */
 import { Count, Direction, MxmlAccidental, Notations, Pitch, TimeModification } from "musicxml-interfaces";
 import { IAny } from "musicxml-interfaces/operations";
-import React = require("react");
+import React from "react";
 import { ToolProps } from "./tool";
 export declare function toSerializable<T>(obj: T): T;
 export interface State {
@@ -48,6 +48,7 @@ export interface State {
 export default class ToolNoteEdit extends React.Component<ToolProps, State> {
     state: State;
     private song;
+    domNode: React.RefObject<HTMLDivElement>;
     componentDidMount(): void;
     render(): JSX.Element;
     private applyPreviewPatch;

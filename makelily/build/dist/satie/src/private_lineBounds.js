@@ -1,4 +1,3 @@
-"use strict";
 /**
  * This file is part of Satie music engraver <https://github.com/jnetterf/satie>.
  * Copyright (C) Joshua Netterfield <joshua.ca> 2015 - present.
@@ -16,19 +15,18 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with Satie.  If not, see <http://www.gnu.org/licenses/>.
  */
-Object.defineProperty(exports, "__esModule", { value: true });
-var private_print_1 = require("./private_print");
-function calculateLineBounds(print, pageNum, scaling) {
+import { getPageMargins } from "./private_print";
+export function calculateLineBounds(print, pageNum, scaling) {
     var pageLayout = print.pageLayout;
     var systemLayout = print.systemLayout;
-    var pageMargins = private_print_1.getPageMargins(pageLayout.pageMargins, pageNum);
+    var pageMargins = getPageMargins(pageLayout.pageMargins, pageNum);
     var systemMargins = systemLayout.systemMargins;
     var startX = systemMargins.leftMargin + pageMargins.leftMargin;
     var endX = systemMargins.rightMargin + pageLayout.pageWidth - pageMargins.rightMargin;
-    var scale40 = scaling.millimeters / scaling.tenths * 40; // TODO: 40 should be 10 x (numLines - 1)
-    var top = pageLayout.pageHeight - scale40 * 10 / 2 -
-        (systemLayout.topSystemDistance +
-            pageMargins.topMargin);
+    var scale40 = (scaling.millimeters / scaling.tenths) * 40; // TODO: 40 should be 10 x (numLines - 1)
+    var top = pageLayout.pageHeight -
+        (scale40 * 10) / 2 -
+        (systemLayout.topSystemDistance + pageMargins.topMargin);
     return {
         left: startX,
         right: endX,
@@ -36,5 +34,4 @@ function calculateLineBounds(print, pageNum, scaling) {
         top: top,
     };
 }
-exports.calculateLineBounds = calculateLineBounds;
 //# sourceMappingURL=private_lineBounds.js.map

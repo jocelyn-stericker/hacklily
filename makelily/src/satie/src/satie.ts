@@ -19,46 +19,52 @@
 export const VERSION = process.env.SATIE_VERSION || "";
 
 import SongImpl from "./engine_songImpl";
-import {ISongClass} from "./document";
+import { ISongClass } from "./document";
 
 /* The web application API */
-export {default as Application} from "./engine_application";
+export { default as Application } from "./engine_application";
 
 /* Root-scope interfaces: Songs, documents, models */
-export {default as IHandler} from "./engine_application";
+export { default as IHandler } from "./engine_application";
 
-export {Document, IModel, Type, IMeasure, IMeasurePart, ISong, ISongClass, IMouseEvent, ISegment} from "./document";
+export * from "./document";
 export const Song: ISongClass = SongImpl;
 
 /* Experimental addons */
-import {getGlyphCode as eGetGlyphCode} from "./private_smufl";
-import {pageSizes as ePageSizes} from "./private_renderUtil";
+import { getGlyphCode as eGetGlyphCode } from "./private_smufl";
+import { pageSizes as ePageSizes } from "./private_renderUtil";
 
 import EClef from "./implAttributes_clefView";
 import EKeySignature from "./implAttributes_keySignatureView";
 import ETimeSignature from "./implAttributes_timeSignatureView";
-import {getNativeKeyAccidentals} from "./implAttributes_attributesData";
+import { getNativeKeyAccidentals } from "./implAttributes_attributesData";
 import EDirection from "./implDirection_directionView";
 import ENotation from "./implChord_notationView";
 
-export {requireFont} from "./private_fontManager";
+export { requireFont } from "./private_fontManager";
 
 /* Patches */
 import eCreatePatch from "./engine_createPatch";
-export {PartBuilder, StaffBuilder, DocumentBuilder, MeasureBuilder, VoiceBuilder} from "./engine_createPatch";
+export {
+  PartBuilder,
+  StaffBuilder,
+  DocumentBuilder,
+  MeasureBuilder,
+  VoiceBuilder,
+} from "./engine_createPatch";
 
-export module Addons {
-    export const getGlyphCode = eGetGlyphCode;
-    export const pageSizes = ePageSizes;
+export const Addons = {
+  eGetGlyphCode,
+  ePageSizes,
 
-    export const Clef = EClef;
-    export const KeySignature = EKeySignature;
-    export const TimeSignature = ETimeSignature;
-    export const Direction = EDirection;
-    export const NotationView = ENotation;
-    export const getAccidentalsFromKey = getNativeKeyAccidentals;
-}
+  Clef: EClef,
+  KeySignature: EKeySignature,
+  TimeSignature: ETimeSignature,
+  Direction: EDirection,
+  NotationView: ENotation,
+  getAccidentalsFromKey: getNativeKeyAccidentals,
+};
 
-export module Patch {
-    export const createPatch = eCreatePatch;
-}
+export const Patch = {
+  createPatch: eCreatePatch,
+};

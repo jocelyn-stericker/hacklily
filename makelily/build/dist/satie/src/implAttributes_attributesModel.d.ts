@@ -24,27 +24,24 @@ import { LayoutCursor } from "./private_cursor";
 /**
  * Registers Attributes in the factory structure passed in.
  */
-declare function Export(constructors: {
+export default function Export(constructors: {
     [key: number]: any;
 }): void;
-declare module Export {
-    interface IAttributesModel extends Attributes, IModel {
-        divisions: number;
-    }
-    interface IAttributesLayout extends ILayout {
-        model: IModel;
-        clef: Clef;
-        snapshotClef: Clef;
-        clefSpacing: number;
-        time: Time;
-        tsSpacing: number;
-        keySignature: Key;
-        ksSpacing: number;
-        measureNumberVisible: string;
-        partSymbol: PartSymbol;
-        staffIdx: number;
-        staffDetails: StaffDetails;
-    }
-    function createWarningLayout(cursor: LayoutCursor, prevAttributes: Attributes, nextAttributes: Attributes): IAttributesLayout;
+export interface IAttributesModel extends Attributes, IModel {
+    divisions: number;
 }
-export default Export;
+export interface IAttributesLayout extends ILayout {
+    model: IModel;
+    clef: Clef;
+    snapshotClef: Clef;
+    clefSpacing: number;
+    time: Time;
+    tsSpacing: number;
+    keySignature: Key;
+    ksSpacing: number;
+    measureNumberVisible: string;
+    partSymbol: PartSymbol;
+    staffIdx: number;
+    staffDetails: StaffDetails;
+}
+export declare function createWarningLayout(cursor: LayoutCursor, prevAttributes: Attributes, nextAttributes: Attributes): IAttributesLayout;

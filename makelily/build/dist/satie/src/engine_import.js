@@ -1,4 +1,3 @@
-"use strict";
 /**
  * This file is part of Satie music engraver <https://github.com/jnetterf/satie>.
  * Copyright (C) Joshua Netterfield <joshua.ca> 2015 - present.
@@ -16,30 +15,26 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with Satie.  If not, see <http://www.gnu.org/licenses/>.
  */
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", { value: true });
 /**
  * @file models/musicxml/import.ts tools for converting MXMLJSON to SatieJSON
  */
-var musicxml_interfaces_1 = require("musicxml-interfaces");
-var builders_1 = require("musicxml-interfaces/builders");
-var lodash_1 = require("lodash");
-var invariant_1 = __importDefault(require("invariant"));
-var document_1 = require("./document");
-var document_2 = require("./document");
-var private_util_1 = require("./private_util");
-var private_chordUtil_1 = require("./private_chordUtil");
-var private_part_1 = require("./private_part");
-var private_util_2 = require("./private_util");
-var private_fontManager_1 = require("./private_fontManager");
-var engine_processors_validate_1 = __importDefault(require("./engine_processors_validate"));
-var engine_scoreHeader_1 = __importDefault(require("./engine_scoreHeader"));
-var engine_setup_1 = require("./engine_setup");
+import { parseScore, } from "musicxml-interfaces";
+import { buildNote } from "musicxml-interfaces/builders";
+import { map, reduce, some, filter, minBy, times, every, forEach, startsWith, endsWith, } from "lodash";
+import invariant from "invariant";
+import { Document } from "./document";
+import { Type } from "./document";
+import { MAX_SAFE_INTEGER } from "./private_util";
+import { barDivisionsDI, divisions as calcDivisions, } from "./private_chordUtil";
+import { scoreParts } from "./private_part";
+import { lcm } from "./private_util";
+import { requireFont, whenReady } from "./private_fontManager";
+import validate from "./engine_processors_validate";
+import ScoreHeader from "./engine_scoreHeader";
+import { makeFactory } from "./engine_setup";
 /*---- Exports ----------------------------------------------------------------------------------*/
-function stringToDocument(src, factory) {
-    var mxmljson = musicxml_interfaces_1.parseScore(src);
+export function stringToDocument(src, factory) {
+    var mxmljson = parseScore(src);
     if (mxmljson.error) {
         throw mxmljson.error;
     }
@@ -62,11 +57,10 @@ function stringToDocument(src, factory) {
         print: null,
         singleLineMode: false,
     };
-    engine_processors_validate_1.default(contextOptions);
-    engine_scoreHeader_1.default.prototype.overwriteEncoding.call(document.header);
+    validate(contextOptions);
+    ScoreHeader.prototype.overwriteEncoding.call(document.header);
     return document;
 }
-exports.stringToDocument = stringToDocument;
 /**
  * Converts a timewise MXMLJSON score to an uninitialized Satie score.
  * See also Models.importXML.
@@ -75,30 +69,29 @@ exports.stringToDocument = stringToDocument;
  * @returns A structure that can be consumed by a score. If an error occurred
  *          error will be set, and all other properties will be null.
  */
-function timewiseStructToDocument(score, factory) {
+export function timewiseStructToDocument(score, factory) {
     try {
         var header = _extractMXMLHeader(score);
         var partData = _extractMXMLPartsAndMeasures(score, factory);
         if (partData.error) {
-            return new document_1.Document(null, null, null, null, new Error(partData.error));
+            return new Document(null, null, null, null, new Error(partData.error));
         }
-        return new document_1.Document(header, partData.measures, partData.parts, factory);
+        return new Document(header, partData.measures, partData.parts, factory);
     }
     catch (error) {
-        return new document_1.Document(null, null, null, null, error);
+        return new Document(null, null, null, null, error);
     }
 }
-exports.timewiseStructToDocument = timewiseStructToDocument;
 /*---- Private ----------------------------------------------------------------------------------*/
-function _extractMXMLHeader(m) {
-    var header = new engine_scoreHeader_1.default({
+export function _extractMXMLHeader(m) {
+    var header = new ScoreHeader({
         credits: m.credits,
         defaults: m.defaults,
         identification: m.identification,
         movementNumber: m.movementNumber,
         movementTitle: m.movementTitle,
         partList: m.partList,
-        work: m.work
+        work: m.work,
     });
     // Add credits to help exporters don't record credits, but do record movementTitle.
     if ((!header.credits || !header.credits.length) && header.movementTitle) {
@@ -106,9 +99,8 @@ function _extractMXMLHeader(m) {
     }
     return header;
 }
-exports._extractMXMLHeader = _extractMXMLHeader;
-function _extractMXMLPartsAndMeasures(input, factory) {
-    var parts = lodash_1.map(private_part_1.scoreParts(input.partList), function (inPart) { return inPart.id; });
+export function _extractMXMLPartsAndMeasures(input, factory) {
+    var parts = map(scoreParts(input.partList), function (inPart) { return inPart.id; });
     var createModel = factory.create.bind(factory);
     // TODO/STOPSHIP - sync division count in each measure
     var divisions = 768; // XXX: LilyPond-regression 41g.xml does not specify divisions
@@ -116,34 +108,34 @@ function _extractMXMLPartsAndMeasures(input, factory) {
     var chordBeingBuilt = null;
     var lastAttribs = null;
     var maxVoice = 0;
-    var measures = lodash_1.map(input.measures, function (inMeasure, measureIdx) {
+    var measures = map(input.measures, function (inMeasure, measureIdx) {
         var measure = {
             idx: measureIdx,
             implicit: inMeasure.implicit,
             nonControlling: inMeasure.nonControlling,
             number: inMeasure.number,
             parts: {},
-            uuid: Math.floor(Math.random() * private_util_1.MAX_SAFE_INTEGER),
+            uuid: Math.floor(Math.random() * MAX_SAFE_INTEGER),
             width: inMeasure.width,
-            version: 0
+            version: 0,
         };
         if (Object.keys(inMeasure.parts).length === 1 && "" in inMeasure.parts) {
             // See LilyPond-regression >> 41g.
             inMeasure.parts[parts[0]] = inMeasure.parts[""];
             delete inMeasure.parts[""];
         }
-        var linkedParts = lodash_1.map(inMeasure.parts, function (val, key) {
-            if (!lodash_1.some(parts, function (part) { return part === key; })) {
+        var linkedParts = map(inMeasure.parts, function (val, key) {
+            if (!some(parts, function (part) { return part === key; })) {
                 // See LilyPond-regression >> 41h.
                 return null;
             }
             var output = {
                 staves: [],
-                voices: []
+                voices: [],
             };
-            invariant_1.default(!(key in measure.parts), "Duplicate part ID %s", key);
+            invariant(!(key in measure.parts), "Duplicate part ID %s", key);
             measure.parts[key] = output;
-            invariant_1.default(!!key, "Part ID must be defined");
+            invariant(!!key, "Part ID must be defined");
             return {
                 division: 0,
                 divisionPerStaff: [],
@@ -153,25 +145,27 @@ function _extractMXMLPartsAndMeasures(input, factory) {
                 input: val,
                 lastNote: null,
                 output: output,
-                times: [{
+                times: [
+                    {
                         beatTypes: [4],
-                        beats: ["4"]
-                    }]
+                        beats: ["4"],
+                    },
+                ],
             };
         });
-        linkedParts = lodash_1.filter(linkedParts, function (p) { return !!p; });
-        var commonDivisions = lodash_1.reduce(linkedParts, function (memo, part) {
-            return lodash_1.reduce(part.input, function (memo, input) {
+        linkedParts = filter(linkedParts, function (p) { return !!p; });
+        var commonDivisions = reduce(linkedParts, function (memo, part) {
+            return reduce(part.input, function (memo, input) {
                 if (input._class === "Attributes" && input.divisions) {
-                    return private_util_2.lcm(memo, input.divisions);
+                    return lcm(memo, input.divisions);
                 }
                 return memo;
             }, memo);
         }, divisions);
         // Lets normalize divisions here.
-        lodash_1.forEach(linkedParts, function (part) {
+        forEach(linkedParts, function (part) {
             var previousDivisions = divisions;
-            lodash_1.forEach(part.input, function (input) {
+            forEach(part.input, function (input) {
                 if (input.divisions) {
                     previousDivisions = input.divisions;
                     input.divisions = commonDivisions;
@@ -187,70 +181,76 @@ function _extractMXMLPartsAndMeasures(input, factory) {
         var target = linkedParts[0];
         var _loop_1 = function () {
             // target is accessed outside loop in syncStaffDivisions
-            target = lodash_1.minBy(linkedParts, function (part) { return part.idx === part.input.length ?
-                private_util_1.MAX_SAFE_INTEGER : part.division; });
-            invariant_1.default(!!target, "Target not specified");
+            target = minBy(linkedParts, function (part) {
+                return part.idx === part.input.length ? MAX_SAFE_INTEGER : part.division;
+            });
+            invariant(!!target, "Target not specified");
             var input_1 = target.input[target.idx];
             var prevStaff = 1;
             switch (input_1._class) {
                 case "Note":
-                    var note = input_1;
-                    // TODO: is this the case even if voice/staff don't match up?
-                    if (!!note.chord) {
-                        invariant_1.default(!!chordBeingBuilt, "Cannot add chord to a previous note without a chord");
-                        chordBeingBuilt.push(note);
-                    }
-                    else {
-                        // Notes go in the voice context.
-                        var voice = note.voice || 1;
-                        var staff_1 = note.staff || 1;
-                        prevStaff = staff_1;
-                        if (!(voice in target.output.voices)) {
-                            createVoice(voice, target.output);
-                            maxVoice = Math.max(voice, maxVoice);
+                    {
+                        var note = input_1;
+                        // TODO: is this the case even if voice/staff don't match up?
+                        if (note.chord) {
+                            invariant(!!chordBeingBuilt, "Cannot add chord to a previous note without a chord");
+                            chordBeingBuilt.push(note);
                         }
-                        // Make sure there is a staff segment reserved for the given staff
-                        if (!(staff_1 in target.output.staves)) {
-                            createStaff(staff_1, target.output);
+                        else {
+                            // Notes go in the voice context.
+                            var voice = note.voice || 1;
+                            var staff = note.staff || 1;
+                            prevStaff = staff;
+                            if (!(voice in target.output.voices)) {
+                                createVoice(voice, target.output);
+                                maxVoice = Math.max(voice, maxVoice);
+                            }
+                            // Make sure there is a staff segment reserved for the given staff
+                            if (!(staff in target.output.staves)) {
+                                createStaff(staff, target.output);
+                            }
+                            // Check target voice division and add spacing if needed
+                            target.divisionPerVoice[voice] =
+                                target.divisionPerVoice[voice] || 0;
+                            invariant(target.division >= target.divisionPerVoice[voice], "Ambiguous voice timing: all voices must be monotonic.");
+                            if (target.divisionPerVoice[voice] < target.division) {
+                                // Add rest
+                                var divisionsInVoice = target.divisionPerVoice[voice];
+                                // This beautiful IIFE is needed because of undefined behaviour for
+                                // block-scoped variables in modules.
+                                var restModel = (function (divisionsInVoice) {
+                                    return factory.fromSpec(buildNote(function (note) {
+                                        return note
+                                            .printObject(false)
+                                            .rest({})
+                                            .duration(target.division - divisionsInVoice);
+                                    }));
+                                })(divisionsInVoice);
+                                var division = target.divisionPerVoice[voice];
+                                restModel[0].duration = target.division - division;
+                                target.output.voices[voice].push(restModel);
+                                target.divisionPerVoice[voice] = target.division;
+                            }
+                            // Add the note to the voice segment and register it as the
+                            // last inserted note
+                            var newNote = factory.fromSpec(input_1);
+                            target.output.voices[voice].push(newNote);
+                            chordBeingBuilt = newNote;
+                            // Update target division
+                            var divs = void 0;
+                            try {
+                                divs = calcDivisions([input_1], {
+                                    time: target.times[0],
+                                    divisions: divisions,
+                                });
+                            }
+                            catch (err) {
+                                console.warn("Guessing count from duration");
+                                divs = input_1.duration;
+                            }
+                            target.divisionPerVoice[voice] += divs;
+                            target.division += divs;
                         }
-                        // Check target voice division and add spacing if needed
-                        target.divisionPerVoice[voice] = target.divisionPerVoice[voice] || 0;
-                        invariant_1.default(target.division >= target.divisionPerVoice[voice], "Ambiguous voice timing: all voices must be monotonic.");
-                        if (target.divisionPerVoice[voice] < target.division) {
-                            // Add rest
-                            var divisionsInVoice = target.divisionPerVoice[voice];
-                            // This beautiful IIFE is needed because of undefined behaviour for
-                            // block-scoped variables in modules.
-                            var restModel = (function (divisionsInVoice) {
-                                return factory.fromSpec(builders_1.buildNote(function (note) { return note
-                                    .printObject(false)
-                                    .rest({})
-                                    .duration(target.division - divisionsInVoice); }));
-                            })(divisionsInVoice);
-                            var division = target.divisionPerVoice[voice];
-                            restModel[0].duration = target.division - division;
-                            target.output.voices[voice].push(restModel);
-                            target.divisionPerVoice[voice] = target.division;
-                        }
-                        // Add the note to the voice segment and register it as the
-                        // last inserted note
-                        var newNote = factory.fromSpec(input_1);
-                        target.output.voices[voice].push(newNote);
-                        chordBeingBuilt = newNote;
-                        // Update target division
-                        var divs = void 0;
-                        try {
-                            divs = private_chordUtil_1.divisions([input_1], {
-                                time: target.times[0],
-                                divisions: divisions
-                            });
-                        }
-                        catch (err) {
-                            console.warn("Guessing count from duration");
-                            divs = input_1.duration;
-                        }
-                        target.divisionPerVoice[voice] += divs;
-                        target.division += divs;
                     }
                     break;
                 case "Attributes":
@@ -261,63 +261,75 @@ function _extractMXMLPartsAndMeasures(input, factory) {
                 case "Harmony":
                 case "Print":
                 case "Sound":
-                    var staff = input_1._class === "Harmony" && !input_1.staff ? prevStaff :
-                        input_1.staff || 1; // Explodes to all staves at a later point.
-                    prevStaff = staff;
-                    if (!(staff in target.output.staves)) {
-                        target.output.staves[staff] = [];
-                        target.output.staves[staff].owner = staff;
-                        target.output.staves[staff].ownerType = "staff";
-                    }
-                    var newModel = factory.fromSpec(input_1);
-                    // Check if this is metadata:
-                    if (input_1._class === "Direction") {
-                        var direction = newModel;
-                        var words = direction.directionTypes.length === 1 && direction.directionTypes[0].words;
-                        if (words && words.length === 1) {
-                            var maybeMeta = words[0].data.trim();
-                            if (lodash_1.startsWith(maybeMeta, "SATIE_SONG_META = ") && lodash_1.endsWith(maybeMeta, ";")) {
-                                // let songMeta = JSON.parse(maybeMeta.replace(/^SATIE_SONG_META = /, "").replace(/;$/, ""));
-                                break; // Do not actually import as direction
-                            }
-                            else if (lodash_1.startsWith(maybeMeta, "SATIE_MEASURE_META = ") && lodash_1.endsWith(maybeMeta, ";")) {
-                                var measureMeta = JSON.parse(maybeMeta.replace(/^SATIE_MEASURE_META = /, "").replace(/;$/, ""));
-                                measure.uuid = measureMeta.uuid;
-                                break; // Do not actually import as direction
+                    {
+                        var staff = input_1._class === "Harmony" && !input_1.staff
+                            ? prevStaff
+                            : input_1.staff || 1; // Explodes to all staves at a later point.
+                        prevStaff = staff;
+                        if (!(staff in target.output.staves)) {
+                            target.output.staves[staff] = [];
+                            target.output.staves[staff].owner = staff;
+                            target.output.staves[staff].ownerType = "staff";
+                        }
+                        var newModel = factory.fromSpec(input_1);
+                        // Check if this is metadata:
+                        if (input_1._class === "Direction") {
+                            var direction = newModel;
+                            var words = direction.directionTypes.length === 1 &&
+                                direction.directionTypes[0].words;
+                            if (words && words.length === 1) {
+                                var maybeMeta = words[0].data.trim();
+                                if (startsWith(maybeMeta, "SATIE_SONG_META = ") &&
+                                    endsWith(maybeMeta, ";")) {
+                                    // let songMeta = JSON.parse(maybeMeta.replace(/^SATIE_SONG_META = /, "").replace(/;$/, ""));
+                                    break; // Do not actually import as direction
+                                }
+                                else if (startsWith(maybeMeta, "SATIE_MEASURE_META = ") &&
+                                    endsWith(maybeMeta, ";")) {
+                                    var measureMeta = JSON.parse(maybeMeta
+                                        .replace(/^SATIE_MEASURE_META = /, "")
+                                        .replace(/;$/, ""));
+                                    measure.uuid = measureMeta.uuid;
+                                    break; // Do not actually import as direction
+                                }
                             }
                         }
-                    }
-                    syncAppendStaff(staff, newModel, input_1.divisions || divisions);
-                    if (input_1._class === "Attributes") {
-                        lastAttribs = input_1;
-                        divisions = lastAttribs.divisions || divisions;
-                        var oTimes = lastAttribs.times;
-                        if (oTimes && oTimes.length) {
-                            target.times = oTimes;
-                        }
-                        var staves = lastAttribs.staves || 1;
-                        gStaves = staves;
-                        lodash_1.times(staves, function (staffMinusOne) {
-                            var staff = staffMinusOne + 1;
-                            if (!(staff in target.output.staves)) {
-                                createStaff(staff, target.output);
+                        syncAppendStaff(staff, newModel, input_1.divisions || divisions);
+                        if (input_1._class === "Attributes") {
+                            lastAttribs = input_1;
+                            divisions = lastAttribs.divisions || divisions;
+                            var oTimes = lastAttribs.times;
+                            if (oTimes && oTimes.length) {
+                                target.times = oTimes;
                             }
-                        });
+                            var staves = lastAttribs.staves || 1;
+                            gStaves = staves;
+                            times(staves, function (staffMinusOne) {
+                                var staff = staffMinusOne + 1;
+                                if (!(staff in target.output.staves)) {
+                                    createStaff(staff, target.output);
+                                }
+                            });
+                        }
                     }
                     break;
                 case "Forward":
-                    var forward = input_1;
-                    lodash_1.forEach(target.output.staves, function (staff, staffIdx) {
-                        syncAppendStaff(staffIdx, null, input_1.divisions || divisions);
-                    });
-                    target.division += forward.duration;
+                    {
+                        var forward = input_1;
+                        forEach(target.output.staves, function (_staff, staffIdx) {
+                            syncAppendStaff(staffIdx, null, input_1.divisions || divisions);
+                        });
+                        target.division += forward.duration;
+                    }
                     break;
                 case "Backup":
-                    var backup = input_1;
-                    lodash_1.forEach(target.output.staves, function (staff, staffIdx) {
-                        syncAppendStaff(staffIdx, null, input_1.divisions || divisions);
-                    });
-                    target.division -= backup.duration;
+                    {
+                        var backup = input_1;
+                        forEach(target.output.staves, function (_staff, staffIdx) {
+                            syncAppendStaff(staffIdx, null, input_1.divisions || divisions);
+                        });
+                        target.division -= backup.duration;
+                    }
                     break;
                 default:
                     throw new Error("Unknown type " + input_1._class);
@@ -329,34 +341,34 @@ function _extractMXMLPartsAndMeasures(input, factory) {
             _loop_1();
         }
         // Finish up
-        lodash_1.times(gStaves, function (staffMinusOne) {
+        times(gStaves, function (staffMinusOne) {
             var staff = staffMinusOne + 1;
             if (!(staff in target.output.staves)) {
                 createStaff(staff, target.output);
                 maxVoice++;
                 var voice = createVoice(maxVoice, target.output);
-                var newNote = factory.create(document_2.Type.Chord);
+                var newNote = factory.create(Type.Chord);
                 newNote.push({
-                    duration: private_chordUtil_1.barDivisionsDI(lastAttribs.times[0], lastAttribs.divisions),
+                    duration: barDivisionsDI(lastAttribs.times[0], lastAttribs.divisions),
                     rest: {},
                     staff: staff,
-                    voice: maxVoice
+                    voice: maxVoice,
                 });
                 voice.push(newNote);
             }
         });
-        lodash_1.forEach(linkedParts, function (part) {
+        forEach(linkedParts, function (part) {
             // Note: target is 'var'-scoped!
             target = part;
             // Set divCounts of final elements in staff segments and divisions of all segments
-            lodash_1.forEach(target.output.staves, function (staff, staffIdx) {
+            forEach(target.output.staves, function (_staff, staffIdx) {
                 syncAppendStaff(staffIdx, null, divisions);
                 var segment = target.output.staves[staffIdx];
                 if (segment) {
                     segment.divisions = divisions;
                 }
             });
-            lodash_1.forEach(target.output.voices, function (voice, voiceIdx) {
+            forEach(target.output.voices, function (_voice, voiceIdx) {
                 var segment = target.output.voices[voiceIdx];
                 if (segment) {
                     segment.divisions = divisions;
@@ -367,7 +379,7 @@ function _extractMXMLPartsAndMeasures(input, factory) {
             var ratio = localDivisions / divisions || 1;
             var divCount = ratio * (target.division - (target.divisionPerStaff[staff] || 0));
             var segment = target.output.staves[staff];
-            invariant_1.default(!!model && !!segment || !model, "Unknown staff %s");
+            invariant((!!model && !!segment) || !model, "Unknown staff %s");
             if (divCount > 0) {
                 if (segment) {
                     if (segment.length) {
@@ -376,9 +388,9 @@ function _extractMXMLPartsAndMeasures(input, factory) {
                         model_1.divCount += divCount;
                     }
                     else {
-                        var model_2 = createModel(document_2.Type.Spacer, {
+                        var model_2 = createModel(Type.Spacer, {
                             divCount: divCount,
-                            staff: staff
+                            staff: staff,
                         });
                         segment.push(model_2);
                     }
@@ -396,19 +408,19 @@ function _extractMXMLPartsAndMeasures(input, factory) {
                         offset += segment[i].divCount;
                         if (offset >= 0) {
                             model.divCount = segment[i].divCount - offset;
-                            invariant_1.default(isFinite(model.divCount), "Invalid loaded divCount");
+                            invariant(isFinite(model.divCount), "Invalid loaded divCount");
                             segment[i].divCount = offset;
                             segment.splice(i + 1, 0, model);
                             spliced = true;
                             break;
                         }
                     }
-                    invariant_1.default(spliced, "Could not insert %s", model);
+                    invariant(spliced, "Could not insert %s", model);
                 }
             }
         }
         function done() {
-            return lodash_1.every(linkedParts, function (part) {
+            return every(linkedParts, function (part) {
                 return part.idx === part.input.length;
             });
         }
@@ -416,10 +428,9 @@ function _extractMXMLPartsAndMeasures(input, factory) {
     });
     return {
         measures: measures,
-        parts: parts
+        parts: parts,
     };
 }
-exports._extractMXMLPartsAndMeasures = _extractMXMLPartsAndMeasures;
 function createVoice(voice, output) {
     output.voices[voice] = [];
     output.voices[voice].owner = voice;
@@ -435,17 +446,17 @@ function createStaff(staff, output) {
 /**
  * Parses a MusicXML document and returns a Document.
  */
-function importXML(src, cb) {
-    private_fontManager_1.requireFont("Bravura", "root://bravura/otf/Bravura.otf");
-    private_fontManager_1.requireFont("Alegreya", "root://alegreya/Alegreya-Regular.ttf");
-    private_fontManager_1.requireFont("Alegreya", "root://alegreya/Alegreya-Bold.ttf", "bold");
-    private_fontManager_1.whenReady(function (err) {
+export function importXML(src, cb) {
+    requireFont("Bravura", "root://bravura/otf/Bravura.otf");
+    requireFont("Alegreya", "root://alegreya/Alegreya-Regular.ttf");
+    requireFont("Alegreya", "root://alegreya/Alegreya-Bold.ttf", "bold");
+    whenReady(function (err) {
         if (err) {
             cb(err);
         }
         else {
             try {
-                var factory = engine_setup_1.makeFactory();
+                var factory = makeFactory();
                 cb(null, stringToDocument(src, factory), factory);
             }
             catch (err) {
@@ -454,5 +465,4 @@ function importXML(src, cb) {
         }
     });
 }
-exports.importXML = importXML;
 //# sourceMappingURL=engine_import.js.map

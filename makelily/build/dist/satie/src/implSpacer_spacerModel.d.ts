@@ -22,15 +22,12 @@ import { IModel, ILayout } from "./document";
 /**
  * Registers Spacer in the factory structure passed in.
  */
-declare function Export(constructors: {
+export default function Export(constructors: {
     [key: number]: any;
 }): void;
-declare module Export {
-    interface ISpacerModel extends IModel {
-    }
-    interface ISpacerLayout extends ILayout {
-        model: ISpacerModel;
-        renderedWidth: number;
-    }
+export interface ISpacerModel extends IModel {
 }
-export default Export;
+export interface ISpacerLayout extends ILayout {
+    model: ISpacerModel;
+    renderedWidth: number;
+}

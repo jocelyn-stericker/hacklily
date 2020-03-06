@@ -45,4 +45,4 @@ export interface IAttributesSnapshotSpec {
     staff: number;
     measure: number;
 }
-export declare function createAttributesSnapshot({ before, current, staff, measure }: IAttributesSnapshotSpec): IAttributesSnapshot;
+export declare function createAttributesSnapshot({ before, current, staff, measure, }: IAttributesSnapshotSpec): IAttributesSnapshot;

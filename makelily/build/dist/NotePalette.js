@@ -1,4 +1,3 @@
-"use strict";
 /**
  * @license
  * This file is part of Makelily
@@ -31,20 +30,12 @@ var __extends = (this && this.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
-    result["default"] = mod;
-    return result;
-};
-Object.defineProperty(exports, "__esModule", { value: true });
 var _a;
-var aphrodite_1 = require("aphrodite");
-var lodash_1 = require("lodash");
-var musicxml_interfaces_1 = require("musicxml-interfaces");
-var React = __importStar(require("react"));
-var satie_1 = require("./satie/src/satie");
+import { css, StyleSheet } from "aphrodite";
+import { chunk, isEqual, times } from "lodash";
+import { Count, MxmlAccidental, NormalAngledSquare, } from "musicxml-interfaces";
+import * as React from "react";
+import { Addons as SatieAddons } from "./satie/src/satie";
 var dynamics = [
     {
         directionTypes: [
@@ -168,21 +159,21 @@ var articulations = [
     {
         fermatas: [
             {
-                shape: musicxml_interfaces_1.NormalAngledSquare.Normal,
+                shape: NormalAngledSquare.Normal,
             },
         ],
     },
     {
         fermatas: [
             {
-                shape: musicxml_interfaces_1.NormalAngledSquare.Angled,
+                shape: NormalAngledSquare.Angled,
             },
         ],
     },
     {
         fermatas: [
             {
-                shape: musicxml_interfaces_1.NormalAngledSquare.Square,
+                shape: NormalAngledSquare.Square,
             },
         ],
     },
@@ -287,20 +278,20 @@ var NotePalette = /** @class */ (function (_super) {
     function NotePalette() {
         var _this = _super !== null && _super.apply(this, arguments) || this;
         _this.setAccidentalF = function () {
-            return _this.props.setAccidental(musicxml_interfaces_1.MxmlAccidental.Flat);
+            return _this.props.setAccidental(MxmlAccidental.Flat);
         };
         _this.setAccidentalNone = function () {
-            return _this.props.setAccidental(musicxml_interfaces_1.MxmlAccidental.Natural);
+            return _this.props.setAccidental(MxmlAccidental.Natural);
         };
         _this.setAccidentalS = function () {
-            return _this.props.setAccidental(musicxml_interfaces_1.MxmlAccidental.Sharp);
+            return _this.props.setAccidental(MxmlAccidental.Sharp);
         };
-        _this.setNote1 = function () { return _this.props.setNote(musicxml_interfaces_1.Count.Whole); };
-        _this.setNote16 = function () { return _this.props.setNote(musicxml_interfaces_1.Count._16th); };
-        _this.setNote2 = function () { return _this.props.setNote(musicxml_interfaces_1.Count.Half); };
-        _this.setNote32 = function () { return _this.props.setNote(musicxml_interfaces_1.Count._32nd); };
-        _this.setNote4 = function () { return _this.props.setNote(musicxml_interfaces_1.Count.Quarter); };
-        _this.setNote8 = function () { return _this.props.setNote(musicxml_interfaces_1.Count.Eighth); };
+        _this.setNote1 = function () { return _this.props.setNote(Count.Whole); };
+        _this.setNote16 = function () { return _this.props.setNote(Count._16th); };
+        _this.setNote2 = function () { return _this.props.setNote(Count.Half); };
+        _this.setNote32 = function () { return _this.props.setNote(Count._32nd); };
+        _this.setNote4 = function () { return _this.props.setNote(Count.Quarter); };
+        _this.setNote8 = function () { return _this.props.setNote(Count.Eighth); };
         _this.setTypeN = function () { return _this.props.setEditType("N"); };
         _this.setTypeP = function () { return _this.props.setEditType("P"); };
         _this.setTypeR = function () { return _this.props.setEditType("R"); };
@@ -313,110 +304,108 @@ var NotePalette = /** @class */ (function (_super) {
         return _this;
     }
     NotePalette.prototype.render = function () {
-        var cls = aphrodite_1.css(styles.paletteSml, styles.paletteBtnOff, styles.paletteTxt);
-        return (React.createElement("div", { className: aphrodite_1.css(styles.controlWidget) },
+        var cls = css(styles.paletteSml, styles.paletteBtnOff, styles.paletteTxt);
+        return (React.createElement("div", { className: css(styles.controlWidget) },
             this.renderSecondRow(),
-            React.createElement("div", { className: aphrodite_1.css(styles.controlRow) },
+            React.createElement("div", { className: css(styles.controlRow) },
                 this.renderDuration(),
                 this.renderModifiers(),
                 this.renderAccidentals(),
-                React.createElement("div", { className: aphrodite_1.css(styles.spring) }),
-                React.createElement("ul", { className: aphrodite_1.css(styles.controls) },
-                    React.createElement("div", { className: aphrodite_1.css(styles.controlSeperator) }),
+                React.createElement("div", { className: css(styles.spring) }),
+                React.createElement("ul", { className: css(styles.controls) },
+                    React.createElement("div", { className: css(styles.controlSeperator) }),
                     React.createElement("a", { href: "#", onClick: this.props.undo, className: cls, role: "button" },
                         React.createElement("i", { className: "fa-undo fa" })),
-                    React.createElement("div", { className: aphrodite_1.css(styles.controlSeperator) }),
+                    React.createElement("div", { className: css(styles.controlSeperator) }),
                     React.createElement("a", { href: "#", onClick: this.props.redo, className: cls, role: "button" },
                         React.createElement("i", { className: "fa-undo fa-flip-horizontal fa" })),
-                    React.createElement("div", { className: aphrodite_1.css(styles.controlSeperator) }),
+                    React.createElement("div", { className: css(styles.controlSeperator) }),
                     React.createElement("a", { href: "#", onClick: this.props.newMeasure, className: cls, role: "button" },
                         React.createElement("i", { className: "fa-plus fa" }),
                         " Add Bar")))));
     };
     NotePalette.prototype.shouldComponentUpdate = function (nextProps) {
-        return !lodash_1.isEqual(nextProps, this.props);
+        return !isEqual(nextProps, this.props);
     };
     NotePalette.prototype.renderAccidentals = function () {
         var _a = this.props, accidental = _a.accidental, editType = _a.editType;
         function classNameForAcc(otherAccidental) {
-            return aphrodite_1.css(styles.paletteSml, accidental === otherAccidental && editType === "N"
+            return css(styles.paletteSml, accidental === otherAccidental && editType === "N"
                 ? styles.paletteBtnOn
                 : styles.paletteBtnOff);
         }
         var getTypeClass = function (forType) {
-            return aphrodite_1.css(styles.paletteSml, editType === forType ? styles.paletteBtnOn : styles.paletteBtnOff);
+            return css(styles.paletteSml, editType === forType ? styles.paletteBtnOn : styles.paletteBtnOff);
         };
-        return (React.createElement("span", { className: aphrodite_1.css(styles.subsection) },
-            React.createElement("div", { className: aphrodite_1.css(styles.controlSeperator) }),
-            React.createElement("ul", { className: aphrodite_1.css(styles.controls) },
-                React.createElement("a", { href: "#", onClick: this.setAccidentalNone, className: classNameForAcc(musicxml_interfaces_1.MxmlAccidental.Natural), role: "button" },
-                    React.createElement("span", { className: aphrodite_1.css(styles.bravura) },
+        return (React.createElement("span", { className: css(styles.subsection) },
+            React.createElement("div", { className: css(styles.controlSeperator) }),
+            React.createElement("ul", { className: css(styles.controls) },
+                React.createElement("a", { href: "#", onClick: this.setAccidentalNone, className: classNameForAcc(MxmlAccidental.Natural), role: "button" },
+                    React.createElement("span", { className: css(styles.bravura) },
                         React.createElement("span", { className: "mn_" }, "\ue261"))),
-                React.createElement("a", { href: "#", onClick: this.setAccidentalF, className: classNameForAcc(musicxml_interfaces_1.MxmlAccidental.Flat), role: "button" },
-                    React.createElement("span", { className: aphrodite_1.css(styles.bravura) },
+                React.createElement("a", { href: "#", onClick: this.setAccidentalF, className: classNameForAcc(MxmlAccidental.Flat), role: "button" },
+                    React.createElement("span", { className: css(styles.bravura) },
                         React.createElement("span", { className: "mn_" }, "\ue260"))),
-                React.createElement("a", { href: "#", onClick: this.setAccidentalS, className: classNameForAcc(musicxml_interfaces_1.MxmlAccidental.Sharp), role: "button" },
-                    React.createElement("span", { className: aphrodite_1.css(styles.bravura) },
+                React.createElement("a", { href: "#", onClick: this.setAccidentalS, className: classNameForAcc(MxmlAccidental.Sharp), role: "button" },
+                    React.createElement("span", { className: css(styles.bravura) },
                         React.createElement("span", { className: "mn_" }, "\ue262"))),
                 React.createElement("a", { href: "#", onClick: this.props.editType === "R" ? this.setTypeN : this.setTypeR, className: getTypeClass("R"), role: "button" },
-                    React.createElement("span", { className: aphrodite_1.css(styles.bravura) },
+                    React.createElement("span", { className: css(styles.bravura) },
                         React.createElement("span", { className: "mn_" }, "\ue4e6"))),
                 React.createElement("a", { href: "#", onClick: this.props.editType === "P" ? this.setTypeN : this.setTypeP, className: getTypeClass("P"), role: "button" },
-                    React.createElement("span", { className: aphrodite_1.css(styles.bravura) },
+                    React.createElement("span", { className: css(styles.bravura) },
                         React.createElement("span", { className: "mn_" }, "\ue52f"))),
-                React.createElement("div", { className: aphrodite_1.css(styles.controlSeperator) }))));
+                React.createElement("div", { className: css(styles.controlSeperator) }))));
     };
     NotePalette.prototype.renderArticulations = function () {
         var _a = this.props, editType = _a.editType, notation = _a.notation, setNotation = _a.setNotation;
         if (editType !== "P") {
             return null;
         }
-        var rows = lodash_1.chunk(articulations, 3).map(function (row, idx) {
+        var rows = chunk(articulations, 3).map(function (row, idx) {
             var columns = row.map(function (model, jdx) {
-                var className = aphrodite_1.css(lodash_1.isEqual(notation, model)
+                var className = css(isEqual(notation, model)
                     ? styles.paletteBtnOn
                     : styles.paletteBtnOff);
-                return (
-                /* tslint:disable-next-line react-a11y-anchors */
-                React.createElement("a", { href: "#", onClick: function () { return setNotation(model); }, key: jdx, className: className, role: "button" },
-                    React.createElement(satie_1.Addons.NotationView, { spec: model })));
+                return (React.createElement("a", { href: "#", onClick: function () { return setNotation(model); }, key: jdx, className: className, role: "button" },
+                    React.createElement(SatieAddons.NotationView, { spec: model })));
             });
-            return (React.createElement("ul", { className: aphrodite_1.css(styles.controls), key: idx }, columns));
+            return (React.createElement("ul", { className: css(styles.controls), key: idx }, columns));
         });
-        return (React.createElement("span", { className: aphrodite_1.css(styles.subsection) },
-            React.createElement("div", { className: aphrodite_1.css(styles.controlSeperator) }),
+        return (React.createElement("span", { className: css(styles.subsection) },
+            React.createElement("div", { className: css(styles.controlSeperator) }),
             rows));
     };
     NotePalette.prototype.renderDuration = function () {
         var _this = this;
         var note = this.props.note;
         var classNameForCount = function (cnt) {
-            return aphrodite_1.css(note === cnt &&
+            return css(note === cnt &&
                 (_this.props.editType === "N" || _this.props.editType === "R")
                 ? styles.paletteBtnOn
                 : styles.paletteBtnOff);
         };
-        return (React.createElement("span", { className: aphrodite_1.css(styles.subsection) },
-            React.createElement("div", { className: aphrodite_1.css(styles.controlSeperator) }),
-            React.createElement("ul", { className: aphrodite_1.css(styles.controls) },
-                React.createElement("a", { href: "#", onClick: this.setNote32, className: classNameForCount(musicxml_interfaces_1.Count._32nd), role: "button" },
-                    React.createElement("span", { className: aphrodite_1.css(styles.bravura) },
+        return (React.createElement("span", { className: css(styles.subsection) },
+            React.createElement("div", { className: css(styles.controlSeperator) }),
+            React.createElement("ul", { className: css(styles.controls) },
+                React.createElement("a", { href: "#", onClick: this.setNote32, className: classNameForCount(Count._32nd), role: "button" },
+                    React.createElement("span", { className: css(styles.bravura) },
                         React.createElement("span", { className: "mn_" }, "\ud834\udd62"))),
-                React.createElement("a", { href: "#", onClick: this.setNote16, className: classNameForCount(musicxml_interfaces_1.Count._16th), role: "button" },
-                    React.createElement("span", { className: aphrodite_1.css(styles.bravura) },
+                React.createElement("a", { href: "#", onClick: this.setNote16, className: classNameForCount(Count._16th), role: "button" },
+                    React.createElement("span", { className: css(styles.bravura) },
                         React.createElement("span", { className: "mn_" }, "\ud834\udd61"))),
-                React.createElement("a", { href: "#", onClick: this.setNote8, className: classNameForCount(musicxml_interfaces_1.Count.Eighth), role: "button" },
-                    React.createElement("span", { className: aphrodite_1.css(styles.bravura) },
+                React.createElement("a", { href: "#", onClick: this.setNote8, className: classNameForCount(Count.Eighth), role: "button" },
+                    React.createElement("span", { className: css(styles.bravura) },
                         React.createElement("span", { className: "mn_" }, "\ud834\udd60")))),
-            React.createElement("ul", { className: aphrodite_1.css(styles.controls) },
-                React.createElement("a", { href: "#", onClick: this.setNote4, className: classNameForCount(musicxml_interfaces_1.Count.Quarter), role: "button" },
-                    React.createElement("span", { className: aphrodite_1.css(styles.bravura) },
+            React.createElement("ul", { className: css(styles.controls) },
+                React.createElement("a", { href: "#", onClick: this.setNote4, className: classNameForCount(Count.Quarter), role: "button" },
+                    React.createElement("span", { className: css(styles.bravura) },
                         React.createElement("span", { className: "mn_" }, "\ud834\udd5f"))),
-                React.createElement("a", { href: "#", onClick: this.setNote2, className: classNameForCount(musicxml_interfaces_1.Count.Half), role: "button" },
-                    React.createElement("span", { className: aphrodite_1.css(styles.bravura) },
+                React.createElement("a", { href: "#", onClick: this.setNote2, className: classNameForCount(Count.Half), role: "button" },
+                    React.createElement("span", { className: css(styles.bravura) },
                         React.createElement("span", { className: "mn_" }, "\ud834\udd5e"))),
-                React.createElement("a", { href: "#", onClick: this.setNote1, className: classNameForCount(musicxml_interfaces_1.Count.Whole), role: "button" },
-                    React.createElement("span", { className: aphrodite_1.css(styles.bravura) },
+                React.createElement("a", { href: "#", onClick: this.setNote1, className: classNameForCount(Count.Whole), role: "button" },
+                    React.createElement("span", { className: css(styles.bravura) },
                         React.createElement("span", { className: "mn_" }, "\ue0a2"))))));
     };
     NotePalette.prototype.renderDynamics = function () {
@@ -424,57 +413,54 @@ var NotePalette = /** @class */ (function (_super) {
         if (editType !== "P") {
             return null;
         }
-        var rows = lodash_1.chunk(dynamics, 3).map(function (row, idx) {
+        var rows = chunk(dynamics, 3).map(function (row, idx) {
             var columns = row.map(function (model, jdx) {
-                var className = aphrodite_1.css(lodash_1.isEqual(direction, model)
+                var className = css(isEqual(direction, model)
                     ? styles.paletteBtnOn
                     : styles.paletteBtnOff);
                 var layout = {
                     model: model,
                     overrideX: 0,
                 };
-                return (
-                /* tslint:disable-next-line react-a11y-anchors */
-                React.createElement("a", { href: "#", onClick: function () { return setDirection(model); }, key: jdx, className: className, role: "button" },
-                    React.createElement(satie_1.Addons.Direction, { layout: layout })));
+                return (React.createElement("a", { href: "#", onClick: function () { return setDirection(model); }, key: jdx, className: className, role: "button" },
+                    React.createElement(SatieAddons.Direction, { layout: layout })));
             });
-            return (React.createElement("ul", { className: aphrodite_1.css(styles.controls), key: idx }, columns));
+            return (React.createElement("ul", { className: css(styles.controls), key: idx }, columns));
         });
-        return (React.createElement("span", { className: aphrodite_1.css(styles.subsection) },
-            React.createElement("div", { className: aphrodite_1.css(styles.controlSeperator) }),
+        return (React.createElement("span", { className: css(styles.subsection) },
+            React.createElement("div", { className: css(styles.controlSeperator) }),
             rows));
     };
     NotePalette.prototype.renderModifiers = function () {
         var _a = this.props, dots = _a.dots, timeModification = _a.timeModification;
-        var timeModificationTupletClassName = aphrodite_1.css(timeModification ? styles.paletteBtnOn : styles.paletteBtnOff);
-        var dotEl = lodash_1.times(dots || 1, function (idx) {
+        var timeModificationTupletClassName = css(timeModification ? styles.paletteBtnOn : styles.paletteBtnOff);
+        var dotEl = times(dots || 1, function (idx) {
             return (React.createElement("span", { style: { marginLeft: 3, display: "inline-block" }, key: idx }, "\ue1e7"));
         });
-        return (React.createElement("span", { className: aphrodite_1.css(styles.subsection) },
-            React.createElement("div", { className: aphrodite_1.css(styles.controlSeperator) }),
-            React.createElement("ul", { className: aphrodite_1.css(styles.controls) },
-                React.createElement("a", { href: "#", onClick: this.toggleDots, className: dots ? aphrodite_1.css(styles.paletteBtnOn) : aphrodite_1.css(styles.paletteBtnOff), role: "button" },
-                    React.createElement("span", { className: aphrodite_1.css(styles.bravura) },
+        return (React.createElement("span", { className: css(styles.subsection) },
+            React.createElement("div", { className: css(styles.controlSeperator) }),
+            React.createElement("ul", { className: css(styles.controls) },
+                React.createElement("a", { href: "#", onClick: this.toggleDots, className: dots ? css(styles.paletteBtnOn) : css(styles.paletteBtnOff), role: "button" },
+                    React.createElement("span", { className: css(styles.bravura) },
                         React.createElement("span", { className: "mn_" },
                             "\ud834\udd5f",
                             dotEl))),
                 React.createElement("a", { href: "#", onClick: this.toggleTuplet, className: timeModificationTupletClassName, role: "button" },
-                    React.createElement("span", { className: aphrodite_1.css(styles.bravura) },
+                    React.createElement("span", { className: css(styles.bravura) },
                         React.createElement("span", { className: "mn_" }, "\ue883"))))));
     };
     NotePalette.prototype.renderSecondRow = function () {
         if (this.props.editType === "P") {
             return (React.createElement("span", null,
-                React.createElement("div", { className: aphrodite_1.css(styles.controlRow) }, this.renderDynamics()),
-                React.createElement("div", { className: aphrodite_1.css(styles.controlRow) }, this.renderArticulations())));
+                React.createElement("div", { className: css(styles.controlRow) }, this.renderDynamics()),
+                React.createElement("div", { className: css(styles.controlRow) }, this.renderArticulations())));
         }
         return null;
     };
     return NotePalette;
 }(React.Component));
-exports.default = NotePalette;
-// tslint:disable-next-line typedef
-var styles = aphrodite_1.StyleSheet.create({
+export default NotePalette;
+var styles = StyleSheet.create({
     bravura: {
         fontSize: 22,
     },

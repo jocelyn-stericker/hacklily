@@ -79,6 +79,7 @@ function getQueryProps(): QueryProps {
     }
     // Note: queryPropKey === key, just typed correctly
     const queryPropKey: keyof QueryProps = QUERY_PROP_KEYS[queryPropIdx];
+    // @ts-ignore
     query[queryPropKey] = queryObj[key];
   });
 
@@ -93,13 +94,12 @@ function setQuery(
   replaceState: boolean = false,
 ): void {
   const query: QueryProps = getQueryProps();
-  Object.keys(queryUpdates).forEach(
-    (key: keyof QueryProps): void => {
-      if (key in queryUpdates) {
-        query[key] = queryUpdates[key];
-      }
-    },
-  );
+  Object.keys(queryUpdates).forEach((key: keyof QueryProps): void => {
+    if (key in queryUpdates) {
+      // @ts-ignore
+      query[key] = queryUpdates[key];
+    }
+  });
 
   const base: string = location.href.split("?")[0];
   const queryString: string = toQueryString(query as { [key: string]: string });
@@ -117,11 +117,8 @@ function setQuery(
 /*
  * Init Hacklily.
  */
-window.addEventListener(
-  "popstate",
-  (ev: PopStateEvent): void => {
-    render();
-  },
-);
+window.addEventListener("popstate", (_ev: PopStateEvent): void => {
+  render();
+});
 
 render();

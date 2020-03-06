@@ -20,7 +20,6 @@
 
 import { StyleSheet } from "aphrodite";
 
-// tslint:disable-next-line typedef
 const tabStyles = StyleSheet.create({
   help: {
     left: 15,

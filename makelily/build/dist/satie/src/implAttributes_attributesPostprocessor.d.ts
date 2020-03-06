@@ -23,5 +23,5 @@ import { ILineBounds } from "./private_lineBounds";
  *
  * @returns a list of measures
  */
-declare function attributes(options: ILayoutOptions, bounds: ILineBounds, measures: IMeasureLayout[]): IMeasureLayout[];
+declare function attributes(_options: ILayoutOptions, _bounds: ILineBounds, measures: IMeasureLayout[]): IMeasureLayout[];
 export default attributes;

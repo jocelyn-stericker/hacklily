@@ -1,4 +1,3 @@
-"use strict";
 /**
  * This file is part of Satie music engraver <https://github.com/jnetterf/satie>.
  * Copyright (C) Joshua Netterfield <joshua.ca> 2015 - present.
@@ -16,40 +15,34 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with Satie.  If not, see <http://www.gnu.org/licenses/>.
  */
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
+var __spreadArrays = (this && this.__spreadArrays) || function () {
+    for (var s = 0, i = 0, il = arguments.length; i < il; i++) s += arguments[i].length;
+    for (var r = Array(s), k = 0, i = 0; i < il; i++)
+        for (var a = arguments[i], j = 0, jl = a.length; j < jl; j++, k++)
+            r[k] = a[j];
+    return r;
 };
-Object.defineProperty(exports, "__esModule", { value: true });
-var react_1 = require("react");
-var server_1 = require("react-dom/server");
-var lodash_1 = require("lodash");
-var engine_processors_validate_1 = __importDefault(require("./engine_processors_validate"));
-var engine_processors_layout_1 = __importDefault(require("./engine_processors_layout"));
-var implPage_pageView_1 = __importDefault(require("./implPage_pageView"));
-var document_types_1 = __importDefault(require("./document_types"));
-var $PageView = react_1.createFactory(implPage_pageView_1.default);
-var document_measure_1 = require("./document_measure");
-exports.getMeasureSegments = document_measure_1.getMeasureSegments;
-exports.reduceToShortestInSegments = document_measure_1.reduceToShortestInSegments;
-var document_model_1 = require("./document_model");
-exports.generateModelKey = document_model_1.generateModelKey;
-exports.detach = document_model_1.detach;
-var document_song_1 = require("./document_song");
-exports.specIsRaw = document_song_1.specIsRaw;
-exports.specIsDocBuilder = document_song_1.specIsDocBuilder;
-exports.specIsPartBuilder = document_song_1.specIsPartBuilder;
-var document_types_2 = require("./document_types");
-exports.Type = document_types_2.default;
+import React from "react";
+import { renderToStaticMarkup } from "react-dom/server";
+import { find } from "lodash";
+import validate from "./engine_processors_validate";
+import layoutSong from "./engine_processors_layout";
+import PageView from "./implPage_pageView";
+import Type from "./document_types";
+export * from "./document_measure";
+export * from "./document_model";
+export * from "./document_song";
+export { default as Type } from "./document_types";
 /**
  * Models a document in a certain state. Songs wrap documents to support change tracking.
  * Songs should not be mutated by user code.
  */
 var Document = /** @class */ (function () {
-    function Document(header, measures, parts, internalFactory, error) {
+    function Document(header, measures, _parts, internalFactory, error) {
         this.cleanlinessTracking = {
             measures: {},
             lines: [],
-            linePlacementHints: null
+            linePlacementHints: null,
         };
         if (error) {
             this.error = error;
@@ -65,7 +58,7 @@ var Document = /** @class */ (function () {
         for (var _i = 1; _i < arguments.length; _i++) {
             modelTypes[_i - 1] = arguments[_i];
         }
-        return (_a = this._factory).modelHasType.apply(_a, [model].concat(modelTypes));
+        return (_a = this._factory).modelHasType.apply(_a, __spreadArrays([model], modelTypes));
     };
     Document.prototype.search = function (models, idx) {
         var _a;
@@ -73,7 +66,7 @@ var Document = /** @class */ (function () {
         for (var _i = 2; _i < arguments.length; _i++) {
             types[_i - 2] = arguments[_i];
         }
-        return (_a = this._factory).search.apply(_a, [models, idx].concat(types));
+        return (_a = this._factory).search.apply(_a, __spreadArrays([models, idx], types));
     };
     Document.prototype.getPrint = function (startMeasure) {
         var _this = this;
@@ -81,19 +74,19 @@ var Document = /** @class */ (function () {
         if (!firstMeasure) {
             throw new Error("No such measure " + startMeasure);
         }
-        var partWithPrint = lodash_1.find(firstMeasure.parts, function (part) {
+        var partWithPrint = find(firstMeasure.parts, function (part) {
             return !!part.staves[1] &&
-                _this.search(part.staves[1], 0, document_types_1.default.Print).length > 0;
+                _this.search(part.staves[1], 0, Type.Print).length > 0;
         });
         if (partWithPrint) {
-            return this.search(partWithPrint.staves[1], 0, document_types_1.default.Print)[0]._snapshot;
+            return this.search(partWithPrint.staves[1], 0, Type.Print)[0]._snapshot;
         }
         throw new Error("Part does not contain a Print element at division 0. Is it validated?");
     };
     Document.prototype.renderToStaticMarkup = function (startMeasure) {
-        var core = server_1.renderToStaticMarkup(this.__getPage(startMeasure, false, "svg-export", null, false));
+        var core = renderToStaticMarkup(this.__getPage(startMeasure, false, "svg-export", null, false));
         return "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?>" + core
-            .replace("<svg", "<svg xmlns=\"http://www.w3.org/2000/svg\"")
+            .replace("<svg", '<svg xmlns="http://www.w3.org/2000/svg"')
             .replace(/class="tn_"/g, "font-family='Alegreya'")
             .replace(/class="mmn_"/g, "font-family='Alegreya' " + "font-style='italic' stroke='#7a7a7a'")
             .replace(/class="bn_"/g, "font-family='Alegreya' " +
@@ -123,27 +116,18 @@ var Document = /** @class */ (function () {
             singleLineMode: singleLineMode,
             fixedMeasureWidth: fixedMeasureWidth,
             fixup: onOperationsAppended
-                ? function (segment, patch) {
+                ? function (_segment, patch) {
                     onOperationsAppended(patch);
                 }
-                : null
+                : null,
         };
-        engine_processors_validate_1.default(opts);
+        validate(opts);
         // Print snapshot may have been changed.
         opts.print = this.getPrint(startMeasure);
-        var lineLayouts = engine_processors_layout_1.default(opts);
-        return $PageView({
-            className: pageClassName,
-            lineLayouts: lineLayouts,
-            print: opts.print,
-            renderTarget: renderTarget,
-            scoreHeader: this.header,
-            singleLineMode: singleLineMode,
-            svgRef: ref,
-            onPageHeightChanged: onPageHeightChanged
-        });
+        var lineLayouts = layoutSong(opts);
+        return (React.createElement(PageView, { className: pageClassName, lineLayouts: lineLayouts, print: opts.print, renderTarget: renderTarget, scoreHeader: this.header, singleLineMode: singleLineMode, svgRef: ref, onPageHeightChanged: onPageHeightChanged }));
     };
     return Document;
 }());
-exports.Document = Document;
+export { Document };
 //# sourceMappingURL=document.js.map

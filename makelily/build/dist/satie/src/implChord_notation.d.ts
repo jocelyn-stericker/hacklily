@@ -17,14 +17,14 @@
  */
 import { Articulations, Placement, Notations, PrintStyle, Note, Technical } from "musicxml-interfaces";
 import { IBoundingRect } from "./private_boundingRect";
-import ChordModel from "./implChord_chordModel";
+import { IChordLayout } from "./implChord_chordModel";
 export declare function articulationDirectionMatters(model: Articulations): boolean;
 export declare function articulationGlyph(model: Articulations, direction: string): string;
 export declare function technicalGlyph(model: Technical, direction: string): string;
 export interface IGeneralNotation extends PrintStyle, Placement {
     _snapshot?: IGeneralNotation;
 }
-export declare function getBoundingRects(model: Notations, note: Note, chord: ChordModel.IChordLayout): {
+export declare function getBoundingRects(model: Notations, note: Note, chord: IChordLayout): {
     bb: IBoundingRect[];
     n: Notations;
 };

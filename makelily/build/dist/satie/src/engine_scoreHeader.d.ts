@@ -32,10 +32,14 @@ declare class ScoreHeaderModel implements ScoreHeader {
     movementTitle: string;
     movementNumber: string;
     partList: PartList;
-    composer: string;
-    arranger: string;
-    lyricist: string;
-    title: string;
+    get composer(): string;
+    set composer(composer: string);
+    get arranger(): string;
+    set arranger(arranger: string);
+    get lyricist(): string;
+    set lyricist(lyricist: string);
+    get title(): string;
+    set title(title: string);
     constructor(spec: ScoreHeader);
     toXML(): string;
     inspect(): string;

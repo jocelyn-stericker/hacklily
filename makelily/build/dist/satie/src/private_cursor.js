@@ -1,4 +1,3 @@
-"use strict";
 /**
  * This file is part of Satie music engraver <https://github.com/jnetterf/satie>.
  * Copyright (C) Joshua Netterfield <joshua.ca> 2015 - present.
@@ -16,14 +15,10 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with Satie.  If not, see <http://www.gnu.org/licenses/>.
  */
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-var invariant_1 = __importDefault(require("invariant"));
-var engine_createPatch_1 = __importDefault(require("./engine_createPatch"));
-var document_1 = require("./document");
-var private_util_1 = require("./private_util");
+import invariant from "invariant";
+import createPatch from "./engine_createPatch";
+import { Type } from "./document";
+import { cloneObject } from "./private_util";
 /**
  * Holds information about the context in which an element is processed.
  * Also contains functions to modify the document when processing an element.
@@ -52,7 +47,7 @@ var ValidationCursor = /** @class */ (function () {
     ValidationCursor.prototype.dangerouslyPatchWithoutValidation = function (builder) {
         var _this = this;
         // Create the patch based on whether the current context is a staff context or a voice context.
-        var patch = engine_createPatch_1.default(true, this.document, this.measureInstance.uuid, this.segmentInstance.part, function (part) {
+        var patch = createPatch(true, this.document, this.measureInstance.uuid, this.segmentInstance.part, function (part) {
             if (_this.segmentInstance.ownerType === "staff") {
                 return part.staff(_this.segmentInstance.owner, builder, _this.segmentPosition);
             }
@@ -66,12 +61,12 @@ var ValidationCursor = /** @class */ (function () {
         // All patches must be serializable, so we can:
         //   - Send them over a network
         //   - Invert them
-        this.fixup(private_util_1.cloneObject(patch));
+        this.fixup(cloneObject(patch));
     };
-    ValidationCursor.prototype.patch = function (builder, dangerous) {
+    ValidationCursor.prototype.patch = function (builder, _dangerous) {
         var _this = this;
         // Create the patch based on whether the current context is a staff context or a voice context.
-        var patch = engine_createPatch_1.default(this.preview, this.document, this.measureInstance.uuid, this.segmentInstance.part, function (part) {
+        var patch = createPatch(this.preview, this.document, this.measureInstance.uuid, this.segmentInstance.part, function (part) {
             if (_this.segmentInstance.ownerType === "staff") {
                 return part.staff(_this.segmentInstance.owner, builder, _this.segmentPosition);
             }
@@ -85,10 +80,10 @@ var ValidationCursor = /** @class */ (function () {
         // All patches must be serializable, so we can:
         //   - Send them over a network
         //   - Invert them
-        this.fixup(private_util_1.cloneObject(patch));
+        this.fixup(cloneObject(patch));
     };
     ValidationCursor.prototype.advance = function (divs) {
-        invariant_1.default(this.segmentInstance.ownerType === "staff", "Only valid in staff context");
+        invariant(this.segmentInstance.ownerType === "staff", "Only valid in staff context");
         this.segmentDivision += divs;
         this.fixup([
             {
@@ -101,7 +96,7 @@ var ValidationCursor = /** @class */ (function () {
                     this.segmentPosition,
                 ],
                 li: {
-                    _class: document_1.Type[document_1.Type.Spacer],
+                    _class: Type[Type.Spacer],
                     divCount: divs,
                 },
             },
@@ -109,7 +104,7 @@ var ValidationCursor = /** @class */ (function () {
     };
     return ValidationCursor;
 }());
-exports.ValidationCursor = ValidationCursor;
+export { ValidationCursor };
 var LayoutCursor = /** @class */ (function () {
     function LayoutCursor(spec) {
         this._validationCursor = spec.validationCursor;
@@ -210,5 +205,5 @@ var LayoutCursor = /** @class */ (function () {
     });
     return LayoutCursor;
 }());
-exports.LayoutCursor = LayoutCursor;
+export { LayoutCursor };
 //# sourceMappingURL=private_cursor.js.map

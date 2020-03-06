@@ -1,4 +1,3 @@
-"use strict";
 /**
  * This file is part of Satie music engraver <https://github.com/jnetterf/satie>.
  * Copyright (C) Joshua Netterfield <joshua.ca> 2015 - present.
@@ -16,7 +15,6 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with Satie.  If not, see <http://www.gnu.org/licenses/>.
  */
-Object.defineProperty(exports, "__esModule", { value: true });
 var PatchImpl = /** @class */ (function () {
     function PatchImpl(content, isPreview) {
         this.isPatches = true;
@@ -37,5 +35,5 @@ var PatchImpl = /** @class */ (function () {
     }
     return PatchImpl;
 }());
-exports.default = PatchImpl;
+export default PatchImpl;
 //# sourceMappingURL=private_patchImpl.js.map

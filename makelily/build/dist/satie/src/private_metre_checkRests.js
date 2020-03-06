@@ -1,4 +1,3 @@
-"use strict";
 /**
  * This file is part of Satie music engraver <https://github.com/jnetterf/satie>.
  * Copyright (C) Joshua Netterfield <joshua.ca> 2015 - present.
@@ -16,7 +15,6 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with Satie.  If not, see <http://www.gnu.org/licenses/>.
  */
-Object.defineProperty(exports, "__esModule", { value: true });
 var _stretchRestRuleMemo = {};
 function _stretchRestRule(rule, quantization) {
     var key = rule + String(quantization);
@@ -43,7 +41,7 @@ function _getValidSubBeatLengths(quantumPerBeats, beatsPerMeasure, dotsAllowed) 
         var dottedLength = quantumPerBeats / pow2;
         var dots = 0;
         if (dotsAllowed) {
-            while ((toAdd % 2 === 0) && dots + 1 <= 3) {
+            while (toAdd % 2 === 0 && dots + 1 <= 3) {
                 toAdd /= 2;
                 dottedLength += toAdd;
                 ++dots;
@@ -62,16 +60,16 @@ var RestSolver = /** @class */ (function () {
         this._restRules = restRules;
     }
     RestSolver.prototype.isSimple = function () {
-        return this._ruleBeats === 1 ||
+        return (this._ruleBeats === 1 ||
             this._ruleBeats === 2 ||
             this._ruleBeats === 3 ||
-            this._ruleBeats === 4;
+            this._ruleBeats === 4);
     };
     RestSolver.prototype.checkRests = function (divisions, song, options) {
         var MATCH_CHARS = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-        var quantization = divisions * 4 / this._ruleBeatType;
+        var quantization = (divisions * 4) / this._ruleBeatType;
         var myRestRules = this._restRules
-            .filter(function (rule) { return options.dotsAllowed || (rule.search(RestSolver.dotRule) === -1); })
+            .filter(function (rule) { return options.dotsAllowed || rule.search(RestSolver.dotRule) === -1; })
             .map(function (rule) { return _stretchRestRule(rule, quantization); });
         song = _stretchRestRule(song, 1 / quantization);
         var len = myRestRules[0].length;
@@ -82,33 +80,36 @@ var RestSolver = /** @class */ (function () {
             return "split " + len + " " + myRestRules[0].length;
         }
         else if (song.length < myRestRules[0].length) {
-            return "apply " + len + " " + (song.split("").map(function () { return "."; }).join("") +
-                Array(myRestRules[0].length - song.length + 1).join("r"));
+            return "apply " + len + " " + (song
+                .split("")
+                .map(function () { return "."; })
+                .join("") + Array(myRestRules[0].length - song.length + 1).join("r"));
         }
         else if (song.length !== len) {
             return "ERR: " + song.length + " !== " + this._ruleBeats;
         }
         // Ensure that rests that do not start on beats do not cross beat boundaries.
         for (var i = 0; i < song.length; ++i) {
-            if (song[i] === "r" && (i % quantumPerBeats) > 0) {
+            if (song[i] === "r" && i % quantumPerBeats > 0) {
                 var j = i;
                 while (song[j + 1] === "_") {
                     ++j;
                 }
-                var beats = ((j - i + 1) / quantumPerBeats);
+                var beats = (j - i + 1) / quantumPerBeats;
                 if (beats >= 1) {
                     var startOfNextBeat = i + 1;
                     while (startOfNextBeat % quantumPerBeats !== 0) {
                         ++startOfNextBeat;
                     }
-                    var fillUntil = startOfNextBeat = startOfNextBeat + 1;
+                    var fillUntil = (startOfNextBeat = startOfNextBeat + 1);
                     while (fillUntil % quantumPerBeats !== 0 &&
                         song[fillUntil] &&
                         song[fillUntil] !== ".") {
                         ++fillUntil;
                     }
                     var patch = Array(startOfNextBeat).join(".") +
-                        "r" + Array(fillUntil - startOfNextBeat + 1).join("_") +
+                        "r" +
+                        Array(fillUntil - startOfNextBeat + 1).join("_") +
                         Array(song.length - fillUntil + 1).join(".");
                     return "apply " + len + " " + patch;
                 }
@@ -170,13 +171,16 @@ var RestSolver = /** @class */ (function () {
                         }
                     }
                 }
-                else if (rule[i] === "*" && song[i] === "r" && matches[i] === " ") { // Match subbeat!
+                else if (rule[i] === "*" && song[i] === "r" && matches[i] === " ") {
+                    // Match subbeat!
                     if (this.isSimple()) {
                         var bestSubbeatReplacement = "";
                         subbeatOptions: for (var j = 0; j < validSubBeatLengths.length; ++j) {
                             var subbeatLength = validSubBeatLengths[j];
                             var k = i;
-                            while (rule[k + 1] === "*" && matches[k + 1] === " " && song[k + 1] !== ".") {
+                            while (rule[k + 1] === "*" &&
+                                matches[k + 1] === " " &&
+                                song[k + 1] !== ".") {
                                 ++k;
                             }
                             var matchedLength = k - i + 1;
@@ -193,14 +197,14 @@ var RestSolver = /** @class */ (function () {
                                 var dividesMiddle = false;
                                 for (var divisions_1 = 2; divisions_1 <= 16; divisions_1 *= 2) {
                                     for (var l = 1; l < divisions_1; ++l) {
-                                        var rulePoint = ruleStart + l * ruleSize / divisions_1;
-                                        if (i < rulePoint && (i + subbeatLength) > rulePoint) {
+                                        var rulePoint = ruleStart + (l * ruleSize) / divisions_1;
+                                        if (i < rulePoint && i + subbeatLength > rulePoint) {
                                             dividesMiddle = true;
                                         }
                                         if (i < rulePoint &&
-                                            i > (rulePoint - ruleSize / divisions_1) &&
-                                            (i + subbeatLength) > rulePoint &&
-                                            (i + subbeatLength) < rulePoint + ruleSize / divisions_1) {
+                                            i > rulePoint - ruleSize / divisions_1 &&
+                                            i + subbeatLength > rulePoint &&
+                                            i + subbeatLength < rulePoint + ruleSize / divisions_1) {
                                             continue subbeatOptions;
                                         }
                                     }
@@ -210,9 +214,11 @@ var RestSolver = /** @class */ (function () {
                                 var isOptional = isDotted && (atEnd || dividesMiddle);
                                 for (var l = i + 1; l < i + subbeatLength; ++l) {
                                     if (song[l] === "r") {
-                                        var pattern = bestSubbeatReplacement || (Array(i + 1).join(".") + "r" +
-                                            Array(i + subbeatLength - i).join("_") +
-                                            Array(song.length - (i + subbeatLength) + 1).join("."));
+                                        var pattern = bestSubbeatReplacement ||
+                                            Array(i + 1).join(".") +
+                                                "r" +
+                                                Array(i + subbeatLength - i).join("_") +
+                                                Array(song.length - (i + subbeatLength) + 1).join(".");
                                         if (isOptional) {
                                             bestSubbeatReplacement = pattern;
                                             continue subbeatOptions;
@@ -226,7 +232,8 @@ var RestSolver = /** @class */ (function () {
                                     while (song[l] === "_") {
                                         ++l;
                                     }
-                                    return "apply " + len + " " + (Array((i + subbeatLength) + 1).join(".") + "r" +
+                                    return "apply " + len + " " + (Array(i + subbeatLength + 1).join(".") +
+                                        "r" +
                                         Array(l - (i + subbeatLength)).join("_") +
                                         Array(song.length - l + 1).join("."));
                                 }
@@ -242,7 +249,9 @@ var RestSolver = /** @class */ (function () {
                         subbeatOptions: for (var j = 0; j < validSubBeatLengths.length; ++j) {
                             var subbeatLength = validSubBeatLengths[j];
                             var k = i;
-                            while (rule[k + 1] === "*" && matches[k + 1] === " " && song[k + 1] !== ".") {
+                            while (rule[k + 1] === "*" &&
+                                matches[k + 1] === " " &&
+                                song[k + 1] !== ".") {
                                 ++k;
                             }
                             var matchedLength = k - i + 1;
@@ -253,7 +262,8 @@ var RestSolver = /** @class */ (function () {
                                     while (song[l] === "_") {
                                         ++l;
                                     }
-                                    return "apply " + len + " " + (Array((i + subbeatLength) + 1).join(".") + "r" +
+                                    return "apply " + len + " " + (Array(i + subbeatLength + 1).join(".") +
+                                        "r" +
                                         Array(l - (i + subbeatLength)).join("_") +
                                         Array(song.length - l + 1).join("."));
                                 }
@@ -275,7 +285,8 @@ var RestSolver = /** @class */ (function () {
                 while (song[j + 1] === "_") {
                     ++j;
                 }
-                return "apply " + len + " " + (Array(i + 1).join(".") + "r" +
+                return "apply " + len + " " + (Array(i + 1).join(".") +
+                    "r" +
                     Array(j - i + 1).join("_") +
                     Array(song.length - j).join("."));
             }
@@ -285,17 +296,8 @@ var RestSolver = /** @class */ (function () {
     RestSolver.dotRule = /r__(\.|$)/;
     return RestSolver;
 }());
-var REST_RULES_1 = Object.freeze([
-    "r",
-    "*",
-]);
-var REST_RULES_2 = Object.freeze([
-    "r_",
-    "r.",
-    ".r",
-    "*.",
-    ".*",
-]);
+var REST_RULES_1 = Object.freeze(["r", "*"]);
+var REST_RULES_2 = Object.freeze(["r_", "r.", ".r", "*.", ".*"]);
 var REST_RULES_3 = Object.freeze([
     "r__",
     "r..",
@@ -492,7 +494,7 @@ var TIME_SIGNATURES = Object.freeze({
  *
  * See README.md for examples / tests.
  */
-function checkRests(timeSignatureName, barLength, song, options) {
+export default function checkRests(timeSignatureName, barLength, song, options) {
     var ts = TIME_SIGNATURES[timeSignatureName];
     if (!ts) {
         return "GOOD";
@@ -505,11 +507,10 @@ function checkRests(timeSignatureName, barLength, song, options) {
     if (isNaN(denominator)) {
         return "ERR: No such time signature " + timeSignatureName;
     }
-    var divisions = barLength / numerator / 4 * denominator;
+    var divisions = (barLength / numerator / 4) * denominator;
     if (divisions !== Math.round(divisions)) {
         return "ERR: Invalid bar length " + barLength + ". Divisions per quarter note must be an integer.";
     }
     return ts.checkRests(divisions, song, options);
 }
-exports.default = checkRests;
 //# sourceMappingURL=private_metre_checkRests.js.map

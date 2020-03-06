@@ -1,4 +1,3 @@
-"use strict";
 /**
  * This file is part of Satie music engraver <https://github.com/jnetterf/satie>.
  * Copyright (C) Joshua Netterfield <joshua.ca> 2015 - present.
@@ -29,24 +28,13 @@ var __extends = (this && this.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
-    result["default"] = mod;
-    return result;
-};
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-var React = __importStar(require("react"));
-var musicxml_interfaces_1 = require("musicxml-interfaces");
-var react_1 = require("react");
-var lodash_1 = require("lodash");
-var implAttributes_accidentalView_1 = __importDefault(require("./implAttributes_accidentalView"));
-var implAttributes_attributesData_1 = require("./implAttributes_attributesData");
-var private_chordUtil_1 = require("./private_chordUtil");
+import * as React from "react";
+import { MxmlAccidental } from "musicxml-interfaces";
+import { Component } from "react";
+import { times, map } from "lodash";
+import AccidentalView from "./implAttributes_accidentalView";
+import { keyWidths } from "./implAttributes_attributesData";
+import { lineForClef_ } from "./private_chordUtil";
 // TODO: this almost looks like logic -- move.
 var sharps = {
     // "FCGDAEB"
@@ -71,7 +59,7 @@ var KeyView = /** @class */ (function (_super) {
         return _super !== null && _super.apply(this, arguments) || this;
     }
     KeyView.prototype.render = function () {
-        return (React.createElement("g", null, lodash_1.map(this.getAccidentals(), function (accidental, idx) { return (React.createElement(implAttributes_accidentalView_1.default, { key: idx, spec: accidental })); })));
+        return (React.createElement("g", null, map(this.getAccidentals(), function (accidental, idx) { return (React.createElement(AccidentalView, { key: idx, spec: accidental })); })));
     };
     /**
      * Returns an array representing the position and glyphName of each accidental.
@@ -81,17 +69,17 @@ var KeyView = /** @class */ (function (_super) {
         // TODO: this is expensive -- compute in attributes!
         var spec = this.props.spec;
         var clef = this.props.clef;
-        var widths = implAttributes_attributesData_1.keyWidths(spec);
+        var widths = keyWidths(spec);
         var positions = [];
         var x = 0;
         if (spec.fifths) {
             var accCount = Math.min(7, Math.abs(spec.fifths));
-            var idxes_1 = lodash_1.times(accCount, function (i) { return (i + Math.max(0, Math.abs(spec.fifths) - 7)) % 7; });
+            var idxes_1 = times(accCount, function (i) { return (i + Math.max(0, Math.abs(spec.fifths) - 7)) % 7; });
             for (var i = 0; i < idxes_1.length; ++i) {
                 positions.push(x);
                 x += widths[idxes_1[i]];
             }
-            return lodash_1.map(idxes_1, function (i) {
+            return map(idxes_1, function (i) {
                 return makeAccidentalFromSharps(idxes_1, i, spec.fifths >= 0);
             });
         }
@@ -100,48 +88,48 @@ var KeyView = /** @class */ (function (_super) {
             x += widths[i];
         }
         if (spec.keySteps) {
-            return lodash_1.map(spec.keySteps, function (keyStep, idx) {
+            return map(spec.keySteps, function (keyStep, idx) {
                 var keyAlters = spec.keyAlters[idx];
                 var hasOctave = spec.keyOctaves && spec.keyOctaves[idx];
                 var octave = hasOctave ? spec.keyOctaves[idx].octave : null;
                 if (octave === null) {
-                    while (private_chordUtil_1.lineForClef_(keyStep, octave, _this.props.clef) < 2) {
+                    while (lineForClef_(keyStep, octave, _this.props.clef) < 2) {
                         ++octave;
                     }
                 }
-                var line = private_chordUtil_1.lineForClef_(keyStep, octave, _this.props.clef);
+                var line = lineForClef_(keyStep, octave, _this.props.clef);
                 var accidental = null;
                 switch (keyAlters) {
                     case "-2":
-                        accidental = musicxml_interfaces_1.MxmlAccidental.DoubleFlat;
+                        accidental = MxmlAccidental.DoubleFlat;
                         break;
                     case "-1.5":
-                        accidental = musicxml_interfaces_1.MxmlAccidental.ThreeQuartersFlat;
+                        accidental = MxmlAccidental.ThreeQuartersFlat;
                         break;
                     case "-1":
-                        accidental = musicxml_interfaces_1.MxmlAccidental.Flat;
+                        accidental = MxmlAccidental.Flat;
                         break;
                     case "-0.5":
-                        accidental = musicxml_interfaces_1.MxmlAccidental.QuarterFlat;
+                        accidental = MxmlAccidental.QuarterFlat;
                         break;
                     case "0":
-                        accidental = musicxml_interfaces_1.MxmlAccidental.Natural;
+                        accidental = MxmlAccidental.Natural;
                         break;
                     case "0.5":
-                        accidental = musicxml_interfaces_1.MxmlAccidental.QuarterSharp;
+                        accidental = MxmlAccidental.QuarterSharp;
                         break;
                     case "1":
-                        accidental = musicxml_interfaces_1.MxmlAccidental.Sharp;
+                        accidental = MxmlAccidental.Sharp;
                         break;
                     case "1.5":
-                        accidental = musicxml_interfaces_1.MxmlAccidental.ThreeQuartersSharp;
+                        accidental = MxmlAccidental.ThreeQuartersSharp;
                         break;
                     case "2":
-                        accidental = musicxml_interfaces_1.MxmlAccidental.DoubleSharp;
+                        accidental = MxmlAccidental.DoubleSharp;
                         break;
                     default:
                         console.warn("Unknown accidental ", keyAlters);
-                        accidental = musicxml_interfaces_1.MxmlAccidental.Natural;
+                        accidental = MxmlAccidental.Natural;
                 }
                 return {
                     accidental: accidental,
@@ -158,16 +146,16 @@ var KeyView = /** @class */ (function (_super) {
             var accidental;
             switch (true) {
                 case sharp && 7 + idxes[i] < spec.fifths:
-                    accidental = musicxml_interfaces_1.MxmlAccidental.DoubleSharp;
+                    accidental = MxmlAccidental.DoubleSharp;
                     break;
                 case sharp && 7 + idxes[i] >= spec.fifths:
-                    accidental = musicxml_interfaces_1.MxmlAccidental.Sharp;
+                    accidental = MxmlAccidental.Sharp;
                     break;
                 case !sharp && 7 + idxes[i] < -spec.fifths:
-                    accidental = musicxml_interfaces_1.MxmlAccidental.DoubleFlat;
+                    accidental = MxmlAccidental.DoubleFlat;
                     break;
                 case !sharp && 7 + idxes[i] >= -spec.fifths:
-                    accidental = musicxml_interfaces_1.MxmlAccidental.Flat;
+                    accidental = MxmlAccidental.Flat;
                     break;
                 default:
                     throw new Error("Impossible!");
@@ -184,7 +172,7 @@ var KeyView = /** @class */ (function (_super) {
         }
     };
     return KeyView;
-}(react_1.Component));
+}(Component));
 function standardClef(clef) {
     switch (true) {
         case clef.sign === "G":
@@ -200,5 +188,5 @@ function standardClef(clef) {
             return "treble";
     }
 }
-exports.default = KeyView;
+export default KeyView;
 //# sourceMappingURL=implAttributes_keySignatureView.js.map

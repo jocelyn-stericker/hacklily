@@ -51,13 +51,11 @@ import RemoveOverlapsPostprocessor from "./implLine_removeOverlapsPostprocessor"
 
 import Factory from "./engine_factory";
 
-namespace BrowserSetup {
-  export let cssInjected = false;
+const BrowserSetup = {
+  cssInjected: false,
 
-  export let injectStyles = once(function injectStyles(
-    spec: ISatieOptions = {},
-  ): void {
-    cssInjected = true;
+  injectStyles: once(function injectStyles(spec: ISatieOptions = {}): void {
+    BrowserSetup.cssInjected = true;
     if (typeof window === "undefined") {
       return;
     }
@@ -115,8 +113,8 @@ namespace BrowserSetup {
       "text-anchor: end;" +
       "fill: #7a7a7a;" +
       "}";
-  });
-}
+  }),
+};
 
 /**
  * Optional initialization function. Call this if you don't want the default options. Must be called

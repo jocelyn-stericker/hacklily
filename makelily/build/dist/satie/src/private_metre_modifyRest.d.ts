@@ -25,9 +25,9 @@ export interface IRestSpec {
     readonly models: (ModelMetreMutationSpec | "killed")[];
     readonly modelsToKill: ModelMetreMutationSpec[][];
 }
-export declare function voiceToRestSpec(segment: ModelMetreMutationSpec[], attributes: IAttributesSnapshot, factory: IFactory | Document): {
+export declare function voiceToRestSpec(segment: ModelMetreMutationSpec[], attributes: IAttributesSnapshot, _factory: IFactory | Document): {
     song: string;
     models: (ModelMetreMutationSpec | "killed")[];
     modelsToKill: ModelMetreMutationSpec[][];
 };
-export declare function simplifyRests(segment: (ModelMetreMutationSpec)[], factory: IFactory | Document, attributes: IAttributesSnapshot): IAny[];
+export declare function simplifyRests(segment: ModelMetreMutationSpec[], factory: IFactory | Document, attributes: IAttributesSnapshot): IAny[];

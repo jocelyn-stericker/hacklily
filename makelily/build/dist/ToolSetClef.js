@@ -1,4 +1,3 @@
-"use strict";
 /**
  * @license
  * This file is part of Makelily.
@@ -42,14 +41,10 @@ var __assign = (this && this.__assign) || function () {
     };
     return __assign.apply(this, arguments);
 };
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-var aphrodite_1 = require("aphrodite");
-var React = require("react");
-var satie_1 = require("./satie/src/satie");
-var tabStyles_1 = __importDefault(require("./tabStyles"));
+import { css } from "aphrodite";
+import React from "react";
+import { Addons as SatieAddons } from "./satie/src/satie";
+import tabStyles from "./tabStyles";
 var stdClefs = [
     {
         clefViewbox: "-26 -47 80 114",
@@ -120,28 +115,27 @@ var ToolSetClef = /** @class */ (function (_super) {
         };
         return _this;
     }
-    // tslint:disable-next-line max-func-body-length
     ToolSetClef.prototype.render = function () {
         var _this = this;
         var clefViews = stdClefs.map(function (clef, i) {
-            var clefSpec = __assign({ defaultX: 0, defaultY: 0, relativeY: 0 }, clef, { clefOctaveChange: clef.sign !== "TAB" &&
+            var clefSpec = __assign(__assign({ defaultX: 0, defaultY: 0, relativeY: 0 }, clef), { clefOctaveChange: clef.sign !== "TAB" &&
                     clef.sign !== "percussion" &&
                     "" + _this.state.octave });
             var selected = i === _this.state.selectedClef;
-            return (React.createElement("span", { className: aphrodite_1.css(tabStyles_1.default.selectableOption, selected && tabStyles_1.default.selectableSelected), role: "button", onClick: function () { return _this.setState({ selectedClef: i }); }, key: i },
-                React.createElement("svg", { className: aphrodite_1.css(tabStyles_1.default.resetFont), viewBox: clefSpec.clefViewbox },
-                    React.createElement(satie_1.Addons.Clef, { spec: clefSpec })),
-                React.createElement("span", { className: aphrodite_1.css(tabStyles_1.default.selectableDescription) }, clefSpec.enName)));
+            return (React.createElement("span", { className: css(tabStyles.selectableOption, selected && tabStyles.selectableSelected), role: "button", onClick: function () { return _this.setState({ selectedClef: i }); }, key: i },
+                React.createElement("svg", { className: css(tabStyles.resetFont), viewBox: clefSpec.clefViewbox },
+                    React.createElement(SatieAddons.Clef, { spec: clefSpec })),
+                React.createElement("span", { className: css(tabStyles.selectableDescription) }, clefSpec.enName)));
         });
         var clefSign = stdClefs[this.state.selectedClef].sign;
         var canChangeOctave = clefSign !== "TAB" && clefSign !== "percussion";
-        return (React.createElement("div", { className: aphrodite_1.css(tabStyles_1.default.tool) },
-            React.createElement("div", { className: aphrodite_1.css(tabStyles_1.default.section) },
-                React.createElement("h3", { className: aphrodite_1.css(tabStyles_1.default.toolHeading) }, "Clef"),
-                React.createElement("div", { className: aphrodite_1.css(tabStyles_1.default.selectableList) }, clefViews)),
-            React.createElement("div", { className: aphrodite_1.css(tabStyles_1.default.section) },
-                React.createElement("h3", { className: aphrodite_1.css(tabStyles_1.default.toolHeading) }, "Octave"),
-                React.createElement("form", { className: aphrodite_1.css(tabStyles_1.default.radioGroup) },
+        return (React.createElement("div", { className: css(tabStyles.tool) },
+            React.createElement("div", { className: css(tabStyles.section) },
+                React.createElement("h3", { className: css(tabStyles.toolHeading) }, "Clef"),
+                React.createElement("div", { className: css(tabStyles.selectableList) }, clefViews)),
+            React.createElement("div", { className: css(tabStyles.section) },
+                React.createElement("h3", { className: css(tabStyles.toolHeading) }, "Octave"),
+                React.createElement("form", { className: css(tabStyles.radioGroup) },
                     React.createElement("div", null,
                         React.createElement("input", { id: "set-clef-15va", type: "radio", checked: this.state.octave === 2, "aria-checked": this.state.octave === 2, onChange: function () { return _this.setState({ octave: 2 }); } }),
                         React.createElement("label", { htmlFor: "set-clef-15va" }, "Play two octaves higher than written (15va)")),
@@ -163,10 +157,10 @@ var ToolSetClef = /** @class */ (function (_super) {
                                 return _this.setState({ octaveOptional: !_this.state.octaveOptional });
                             } }),
                         React.createElement("label", { htmlFor: "clef-octave-optional" }, "Octave change is optional (in parentheses)")))),
-            React.createElement("div", { className: aphrodite_1.css(tabStyles_1.default.spacer) }),
-            React.createElement("div", { className: aphrodite_1.css(tabStyles_1.default.section) },
-                React.createElement("pre", { className: aphrodite_1.css(tabStyles_1.default.lyPreview) }, this.generateLy()),
-                React.createElement("button", { className: aphrodite_1.css(tabStyles_1.default.insert), onClick: this.handleInsertLyClicked }, "Insert this code into Hacklily"))));
+            React.createElement("div", { className: css(tabStyles.spacer) }),
+            React.createElement("div", { className: css(tabStyles.section) },
+                React.createElement("pre", { className: css(tabStyles.lyPreview) }, this.generateLy()),
+                React.createElement("button", { className: css(tabStyles.insert), onClick: this.handleInsertLyClicked }, "Insert this code into Hacklily"))));
     };
     ToolSetClef.prototype.generateLy = function () {
         var clef = stdClefs[this.state.selectedClef].lyName;
@@ -192,5 +186,5 @@ var ToolSetClef = /** @class */ (function (_super) {
     };
     return ToolSetClef;
 }(React.Component));
-exports.default = ToolSetClef;
+export default ToolSetClef;
 //# sourceMappingURL=ToolSetClef.js.map

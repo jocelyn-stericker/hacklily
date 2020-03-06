@@ -20,45 +20,45 @@
  * @file part of Satie test suite
  */
 
-import {gcd, lcm} from "../private_util";
+import { gcd, lcm } from "../private_util";
 
-import {expect} from "chai";
+import { expect } from "chai";
 
 describe("[engine/util.ts]", function() {
-    describe("gcd", function() {
-        it("handles powers of 2", function() {
-            expect(gcd(4, 8)).to.eq(4);
-            expect(gcd(8, 16)).to.eq(8);
-        });
-        it("handles zero", function() {
-            expect(gcd(4, 0)).to.eq(4);
-            expect(gcd(0, 0)).to.eq(0);
-        });
-        it("handles negatives", function() {
-            expect(gcd(4, -8)).to.eq(4);
-            expect(gcd(-8, 4)).to.eq(4);
-            expect(gcd(-8, -4)).to.eq(4);
-        });
-        it("handles primes", function() {
-            expect(gcd(7, 101)).to.eq(1);
-        });
+  describe("gcd", function() {
+    it("handles powers of 2", function() {
+      expect(gcd(4, 8)).to.eq(4);
+      expect(gcd(8, 16)).to.eq(8);
     });
-    describe("lcm", function() {
-        it("handles powers of 2", function() {
-            expect(lcm(4, 8)).to.eq(8);
-            expect(lcm(8, 16)).to.eq(16);
-        });
-        it("handles zero", function() {
-            expect(lcm(4, 0)).to.eq(4);
-            expect(lcm(0, 0)).to.eq(0);
-        });
-        it("handles negatives", function() {
-            expect(lcm(4, -8)).to.eq(8);
-            expect(lcm(-8, 4)).to.eq(8);
-            expect(lcm(-8, -4)).to.eq(8);
-        });
-        it("handles primes", function() {
-            expect(lcm(7, 101)).to.eq(707);
-        });
+    it("handles zero", function() {
+      expect(gcd(4, 0)).to.eq(4);
+      expect(gcd(0, 0)).to.eq(0);
     });
+    it("handles negatives", function() {
+      expect(gcd(4, -8)).to.eq(4);
+      expect(gcd(-8, 4)).to.eq(4);
+      expect(gcd(-8, -4)).to.eq(4);
+    });
+    it("handles primes", function() {
+      expect(gcd(7, 101)).to.eq(1);
+    });
+  });
+  describe("lcm", function() {
+    it("handles powers of 2", function() {
+      expect(lcm(4, 8)).to.eq(8);
+      expect(lcm(8, 16)).to.eq(16);
+    });
+    it("handles zero", function() {
+      expect(lcm(4, 0)).to.eq(4);
+      expect(lcm(0, 0)).to.eq(0);
+    });
+    it("handles negatives", function() {
+      expect(lcm(4, -8)).to.eq(8);
+      expect(lcm(-8, 4)).to.eq(8);
+      expect(lcm(-8, -4)).to.eq(8);
+    });
+    it("handles primes", function() {
+      expect(lcm(7, 101)).to.eq(707);
+    });
+  });
 });

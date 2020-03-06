@@ -16,7 +16,7 @@
  * along with Satie.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { createFactory, Component } from "react";
+import React, { Component } from "react";
 import * as PropTypes from "prop-types";
 
 import { ILayout, Type } from "./document";
@@ -27,12 +27,6 @@ import BarlineView from "./implBarline_barlineView";
 import ChordView from "./implChord_chordView";
 import DirectionView from "./implDirection_directionView";
 import VisualCursorView from "./implVisualCursor_visualCursorView";
-
-const $AttributesView = createFactory(AttributesView);
-const $BarlineView = createFactory(BarlineView);
-const $ChordView = createFactory(ChordView);
-const $DirectionView = createFactory(DirectionView);
-const $VisualCursorView = createFactory(VisualCursorView);
 
 const NUMBER_ARRAY = PropTypes.arrayOf(PropTypes.number);
 
@@ -45,8 +39,7 @@ export interface IProps {
 
 export interface IState {}
 
-@Targetable()
-export default class ModelView extends Component<IProps, IState> {
+class ModelView extends Component<IProps, IState> {
   static childContextTypes = {
     originY: PropTypes.number,
   } as any;
@@ -63,15 +56,15 @@ export default class ModelView extends Component<IProps, IState> {
     let layout = this.props.layout as any; // Sigh...
     switch (layout.renderClass) {
       case Type.Attributes:
-        return $AttributesView({ layout });
+        return <AttributesView layout={layout} />;
       case Type.Barline:
-        return $BarlineView({ layout });
+        return <BarlineView layout={layout} />;
       case Type.Chord:
-        return $ChordView({ layout });
+        return <ChordView layout={layout} />;
       case Type.Direction:
-        return $DirectionView({ layout });
+        return <DirectionView layout={layout} />;
       case Type.VisualCursor:
-        return $VisualCursorView({ layout });
+        return <VisualCursorView layout={layout} />;
       default:
         return null;
     }
@@ -87,7 +80,7 @@ export default class ModelView extends Component<IProps, IState> {
     };
   }
 
-  shouldComponentUpdate(nextProps: IProps, nextState: IState) {
+  shouldComponentUpdate(nextProps: IProps, _nextState: IState) {
     if (nextProps.version !== this.props.version) {
       return true;
     }
@@ -103,3 +96,7 @@ export default class ModelView extends Component<IProps, IState> {
     return false;
   }
 }
+
+Targetable()(ModelView);
+
+export default ModelView;

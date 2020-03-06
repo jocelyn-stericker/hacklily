@@ -1,4 +1,3 @@
-"use strict";
 /**
  * This file is part of Satie music engraver <https://github.com/jnetterf/satie>.
  * Copyright (C) Joshua Netterfield <joshua.ca> 2015 - present.
@@ -16,17 +15,13 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with Satie.  If not, see <http://www.gnu.org/licenses/>.
  */
-Object.defineProperty(exports, "__esModule", { value: true });
-function specIsRaw(spec) {
+export function specIsRaw(spec) {
     return spec && "raw" in spec;
 }
-exports.specIsRaw = specIsRaw;
-function specIsDocBuilder(spec) {
+export function specIsDocBuilder(spec) {
     return spec && spec.documentBuilder;
 }
-exports.specIsDocBuilder = specIsDocBuilder;
-function specIsPartBuilder(spec) {
+export function specIsPartBuilder(spec) {
     return spec && spec.partBuilder;
 }
-exports.specIsPartBuilder = specIsPartBuilder;
 //# sourceMappingURL=document_song.js.map

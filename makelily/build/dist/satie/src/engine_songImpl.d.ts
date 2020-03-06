@@ -47,8 +47,8 @@ export default class SongImpl extends Component<IProps, IState> implements ISong
     private _svg;
     render(): ReactElement<any>;
     shouldComponentUpdate(nextProps: IProps): boolean;
-    componentWillReceiveProps(nextProps: IProps): void;
-    componentWillMount(): void;
+    UNSAFE_componentWillReceiveProps(nextProps: IProps): void;
+    UNSAFE_componentWillMount(): void;
     /**
      * Returns the document represented by the song. The document represents the
      * current state of the song.
@@ -66,7 +66,8 @@ export default class SongImpl extends Component<IProps, IState> implements ISong
     getDocument: (operations: {
         isPatches: boolean;
     }) => Document;
-    header: ScoreHeader;
+    get header(): ScoreHeader;
+    set header(_header: ScoreHeader);
     /**
      * Given a set of OT diffs, returns something the "patches" prop can be set to.
      */

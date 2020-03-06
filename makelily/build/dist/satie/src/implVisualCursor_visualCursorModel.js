@@ -1,4 +1,3 @@
-"use strict";
 /**
  * This file is part of Satie music engraver <https://github.com/jnetterf/satie>.
  * Copyright (C) Joshua Netterfield <joshua.ca> 2015 - present.
@@ -16,17 +15,19 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with Satie.  If not, see <http://www.gnu.org/licenses/>.
  */
-Object.defineProperty(exports, "__esModule", { value: true });
-var document_1 = require("./document");
+import { Type } from "./document";
 var VisualCursorModel = /** @class */ (function () {
     /*---- Implementation -----------------------------------------------------------------------*/
-    function VisualCursorModel(spec) {
+    function VisualCursorModel(_spec) {
         this._class = "VisualCursor";
+        /*---- I.1 IModel ---------------------------------------------------------------------------*/
+        this.divCount = 0;
+        this.divisions = 0;
         this.staffIdx = 1;
         this._myIdx = ++VisualCursorModel._lastIdx;
         // no-op
     }
-    VisualCursorModel.prototype.refresh = function (cursor) {
+    VisualCursorModel.prototype.refresh = function (_cursor) {
         // no-op
     };
     VisualCursorModel.prototype.getLayout = function (cursor) {
@@ -44,17 +45,16 @@ var VisualCursorModel = /** @class */ (function () {
     VisualCursorModel.prototype.inspect = function () {
         return this.toXML();
     };
-    VisualCursorModel.prototype.calcWidth = function (shortest) {
+    VisualCursorModel.prototype.calcWidth = function (_shortest) {
         return 0;
     };
     VisualCursorModel._lastIdx = 1;
-    return VisualCursorModel;
-}());
-VisualCursorModel.prototype.divCount = 0;
-VisualCursorModel.prototype.divisions = 0;
-(function (VisualCursorModel) {
-    var Layout = /** @class */ (function () {
+    VisualCursorModel.Layout = /** @class */ (function () {
         function Layout(origModel, cursor) {
+            // Prototype:
+            this.boundingBoxes = [];
+            this.renderClass = Type.VisualCursor;
+            this.expandPolicy = "none";
             this.model = origModel;
             this.x = cursor.segmentX;
             this.division = cursor.segmentDivision;
@@ -62,17 +62,12 @@ VisualCursorModel.prototype.divisions = 0;
         }
         return Layout;
     }());
-    VisualCursorModel.Layout = Layout;
-    Layout.prototype.expandPolicy = "none";
-    Layout.prototype.renderClass = document_1.Type.VisualCursor;
-    Layout.prototype.boundingBoxes = [];
-    Object.freeze(Layout.prototype.boundingBoxes);
-})(VisualCursorModel || (VisualCursorModel = {}));
+    return VisualCursorModel;
+}());
 /**
  * Registers VisualCursor in the factory structure passed in.
  */
-function Export(constructors) {
-    constructors[document_1.Type.VisualCursor] = VisualCursorModel;
+export default function Export(constructors) {
+    constructors[Type.VisualCursor] = VisualCursorModel;
 }
-exports.default = Export;
 //# sourceMappingURL=implVisualCursor_visualCursorModel.js.map

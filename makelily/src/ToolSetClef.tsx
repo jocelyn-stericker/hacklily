@@ -20,7 +20,7 @@
 
 import { css } from "aphrodite";
 import { Clef } from "musicxml-interfaces";
-import React = require("react");
+import React from "react";
 import { Addons as SatieAddons } from "./satie/src/satie";
 
 import tabStyles from "./tabStyles";
@@ -106,7 +106,6 @@ function getInitialState(props: ToolProps): State {
 export default class ToolSetClef extends React.Component<ToolProps, State> {
   state: State = getInitialState(this.props);
 
-  // tslint:disable-next-line max-func-body-length
   render(): JSX.Element {
     const clefViews: JSX.Element[] = stdClefs.map(
       (clef: Clef & LyClef, i: number) => {

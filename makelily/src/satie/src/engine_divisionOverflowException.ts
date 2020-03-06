@@ -16,106 +16,111 @@
  * along with Satie.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import {IAny} from "musicxml-interfaces/operations";
+import { IAny } from "musicxml-interfaces/operations";
 
-import {IMeasure, IMeasurePart, ISegment} from "./document";
+import { IMeasure, IMeasurePart, ISegment } from "./document";
 
-import {IAttributesSnapshot} from "./private_attributesSnapshot";
-import {MAX_SAFE_INTEGER} from "./private_util";
-import {cloneObject} from "./private_util";
+import { IAttributesSnapshot } from "./private_attributesSnapshot";
+import { MAX_SAFE_INTEGER } from "./private_util";
+import { cloneObject } from "./private_util";
 
 function getSplit(segment: ISegment, maxDiv: number, isVoice: boolean): number {
-    let divs = 0;
-    let split = 0;
-    do {
-        divs += (segment[split].divCount || 0);
-        if (divs <= maxDiv || !isVoice) {
-            ++split;
-        }
-    } while (divs <= maxDiv && segment[split]);
-    return split;
+  let divs = 0;
+  let split = 0;
+  do {
+    divs += segment[split].divCount || 0;
+    if (divs <= maxDiv || !isVoice) {
+      ++split;
+    }
+  } while (divs <= maxDiv && segment[split]);
+  return split;
 }
 
 export default class DivisionOverflowException {
-    maxDiv: number;
-    oldParts: {
-        [id: string]: IMeasurePart;
+  maxDiv: number;
+  oldParts: {
+    [id: string]: IMeasurePart;
+  };
+  newParts: {
+    [id: string]: IMeasurePart;
+  } = {};
+  measure: IMeasure;
+  attributes: IAttributesSnapshot;
+  message: string;
+  stack: string;
+
+  constructor(
+    maxDiv: number,
+    measure: IMeasure,
+    attributes: IAttributesSnapshot,
+  ) {
+    this.measure = measure;
+    this.message =
+      "DivisionOverflowException: max division should be " +
+      `${maxDiv} in measure ${this.measure.idx}`;
+    this.stack = new Error().stack;
+    this.maxDiv = maxDiv;
+    this.oldParts = {
+      P1: {
+        voices: measure.parts["P1"].voices.map(segment => {
+          if (!segment) {
+            return null;
+          }
+          let split = getSplit(segment, maxDiv, true);
+          let ov = <any>segment.slice(0, split);
+          return ov;
+        }),
+        staves: measure.parts["P1"].staves.map(segment => {
+          if (!segment) {
+            return null;
+          }
+          let split = getSplit(segment, maxDiv, false);
+          let os = <any>segment.slice(0, split);
+
+          return os.filter((item: any) => item._class !== "Barline");
+        }),
+      },
     };
-    newParts: {
-        [id: string]: IMeasurePart;
-    } = {};
-    measure: IMeasure;
-    attributes: IAttributesSnapshot;
-    message: string;
-    stack: string;
+    this.newParts = {
+      P1: {
+        voices: measure.parts["P1"].voices.map(segment => {
+          if (!segment) {
+            return null;
+          }
+          let split = getSplit(segment, maxDiv, true);
+          let ov = <any>segment.slice(split);
+          return ov;
+        }),
+        staves: measure.parts["P1"].staves.map(segment => {
+          if (!segment) {
+            return null;
+          }
+          let split = getSplit(segment, maxDiv, false);
+          let os = <any>segment.slice(split);
+          return os;
+        }),
+      },
+    };
+    this.attributes = attributes;
+  }
 
-    constructor(maxDiv: number, measure: IMeasure, attributes: IAttributesSnapshot) {
-        this.measure = measure;
-        this.message = "DivisionOverflowException: max division should be " +
-            `${maxDiv} in measure ${this.measure.idx}`;
-        this.stack = (new Error).stack;
-        this.maxDiv = maxDiv;
-        this.oldParts = {
-            "P1": {
-                voices: measure.parts["P1"].voices.map(segment => {
-                    if (!segment) {
-                        return null;
-                    }
-                    let split = getSplit(segment, maxDiv, true);
-                    let ov = <any> segment.slice(0, split);
-                    return ov;
-                }),
-                staves: measure.parts["P1"].staves.map(segment => {
-                    if (!segment) {
-                        return null;
-                    }
-                    let split = getSplit(segment, maxDiv, false);
-                    let os = <any> segment.slice(0, split);
-
-                    return os.filter((item: any) => item._class !== "Barline");
-                }),
-            },
-        };
-        this.newParts = {
-            "P1": {
-                voices: measure.parts["P1"].voices.map(segment => {
-                    if (!segment) {
-                        return null;
-                    }
-                    let split = getSplit(segment, maxDiv, true);
-                    let ov = <any> segment.slice(split);
-                    return ov;
-                }),
-                staves: measure.parts["P1"].staves.map(segment => {
-                    if (!segment) {
-                        return null;
-                    }
-                    let split = getSplit(segment, maxDiv, false);
-                    let os = <any> segment.slice(split);
-                    return os;
-                }),
-            },
-        };
-        this.attributes = attributes;
-    }
-
-    getOperations(): IAny[] {
-        return cloneObject([
-            {
-                ld: this.measure,
-                li: {
-                    uuid: this.measure.uuid,
-                    parts: this.oldParts,
-                },
-                p: ["measures", this.measure.idx],
-            },
-            {
-                li: {
-                    uuid: Math.floor(Math.random() * MAX_SAFE_INTEGER),
-                    parts: this.newParts,
-                },
-                p: ["measures", this.measure.idx + 1],
-            },
-        ]);
-    }
+  getOperations(): IAny[] {
+    return cloneObject([
+      {
+        ld: this.measure,
+        li: {
+          uuid: this.measure.uuid,
+          parts: this.oldParts,
+        },
+        p: ["measures", this.measure.idx],
+      },
+      {
+        li: {
+          uuid: Math.floor(Math.random() * MAX_SAFE_INTEGER),
+          parts: this.newParts,
+        },
+        p: ["measures", this.measure.idx + 1],
+      },
+    ]);
+  }
 }

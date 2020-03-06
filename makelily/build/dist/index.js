@@ -1,4 +1,3 @@
-"use strict";
 /**
  * @license
  * This file is part of Makelily.
@@ -29,19 +28,11 @@ var __assign = (this && this.__assign) || function () {
     };
     return __assign.apply(this, arguments);
 };
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
-    result["default"] = mod;
-    return result;
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-var React = __importStar(require("react"));
-var ReactDOM = __importStar(require("react-dom"));
-var App_1 = __importStar(require("./App"));
+import * as React from "react";
+import * as ReactDOM from "react-dom";
+import App, { QUERY_PROP_KEYS } from "./App";
 // http://stackoverflow.com/a/8648962
-function parseQuery(qstr) {
+export function parseQuery(qstr) {
     var query = {};
     var a = (qstr[0] === "?" ? qstr.substr(1) : qstr).split("&");
     for (var _i = 0, a_1 = a; _i < a_1.length; _i++) {
@@ -54,9 +45,8 @@ function parseQuery(qstr) {
     }
     return query;
 }
-exports.parseQuery = parseQuery;
 // http://stackoverflow.com/a/5505137
-function toQueryString(obj) {
+export function toQueryString(obj) {
     var parts = [];
     for (var _i = 0, _a = Object.keys(obj); _i < _a.length; _i++) {
         var i = _a[_i];
@@ -66,12 +56,11 @@ function toQueryString(obj) {
     }
     return parts.join("&").replace(/%2F/g, "/"); // because we can, and it's less ugly.
 }
-exports.toQueryString = toQueryString;
 /**
  * Renders Hacklily, with props set.
  */
 function render() {
-    ReactDOM.render(React.createElement(App_1.default, __assign({}, getQueryProps(), { setQuery: setQuery })), document.getElementById("root"));
+    ReactDOM.render(React.createElement(App, __assign({}, getQueryProps(), { setQuery: setQuery })), document.getElementById("root"));
 }
 /**
  * Gets query props from the URL.
@@ -80,14 +69,15 @@ function getQueryProps() {
     var queryObj = parseQuery(window.location.search);
     var query = {};
     Object.keys(queryObj).forEach(function (key) {
-        var queryPropIdx = App_1.QUERY_PROP_KEYS.indexOf(key);
+        var queryPropIdx = QUERY_PROP_KEYS.indexOf(key);
         if (queryPropIdx === -1) {
             console.warn("Warning: unknown query property " + key + ". " +
                 "Please add it to QUERY_PROP_KEYS in App.tsx.");
             return;
         }
         // Note: queryPropKey === key, just typed correctly
-        var queryPropKey = App_1.QUERY_PROP_KEYS[queryPropIdx];
+        var queryPropKey = QUERY_PROP_KEYS[queryPropIdx];
+        // @ts-ignore
         query[queryPropKey] = queryObj[key];
     });
     return query;
@@ -100,6 +90,7 @@ function setQuery(queryUpdates, replaceState) {
     var query = getQueryProps();
     Object.keys(queryUpdates).forEach(function (key) {
         if (key in queryUpdates) {
+            // @ts-ignore
             query[key] = queryUpdates[key];
         }
     });
@@ -117,7 +108,7 @@ function setQuery(queryUpdates, replaceState) {
 /*
  * Init Hacklily.
  */
-window.addEventListener("popstate", function (ev) {
+window.addEventListener("popstate", function (_ev) {
     render();
 });
 render();

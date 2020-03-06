@@ -23,14 +23,11 @@ import { IModel, ILayout } from "./document";
 /**
  * Registers Sound in the factory structure passed in.
  */
-declare function Export(constructors: {
+export default function Export(constructors: {
     [key: number]: any;
 }): void;
-declare module Export {
-    interface ISoundModel extends IModel, Sound {
-    }
-    interface ISoundLayout extends ILayout {
-        model: ISoundModel;
-    }
+export interface ISoundModel extends IModel, Sound {
 }
-export default Export;
+export interface ISoundLayout extends ILayout {
+    model: ISoundModel;
+}

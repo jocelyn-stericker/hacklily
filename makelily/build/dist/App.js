@@ -1,4 +1,3 @@
-"use strict";
 /**
  * @license
  * This file is part of Makelily.
@@ -31,14 +30,10 @@ var __extends = (this && this.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-var aphrodite_1 = require("aphrodite");
-var React = require("react");
-var Makelily_1 = __importDefault(require("./Makelily"));
-exports.QUERY_PROP_KEYS = [
+import { css, StyleSheet } from "aphrodite";
+import React from "react";
+import Makelily from "./Makelily";
+export var QUERY_PROP_KEYS = [
     "clef",
     "defaultTool",
     "keySig",
@@ -55,10 +50,10 @@ var App = /** @class */ (function (_super) {
     }
     App.prototype.render = function () {
         var _a = this.props, clef = _a.clef, defaultTool = _a.defaultTool, keySig = _a.keySig, singleTaskMode = _a.singleTaskMode, setQuery = _a.setQuery, time = _a.time;
-        return (React.createElement("div", { className: aphrodite_1.css(styles.appRoot) },
-            React.createElement("div", { className: aphrodite_1.css(styles.mockPreview) }),
-            React.createElement("div", { className: aphrodite_1.css(styles.mockHeader) }),
-            React.createElement("div", { className: aphrodite_1.css(styles.presets) },
+        return (React.createElement("div", { className: css(styles.appRoot) },
+            React.createElement("div", { className: css(styles.mockPreview) }),
+            React.createElement("div", { className: css(styles.mockHeader) }),
+            React.createElement("div", { className: css(styles.presets) },
                 "Makelily sandbox.",
                 " \u00a0",
                 "\\clef",
@@ -88,17 +83,15 @@ var App = /** @class */ (function (_super) {
                 React.createElement("input", { onChange: function (ev) {
                         return setQuery({ defaultTool: ev.target.value }, true);
                     }, value: defaultTool || "" })),
-            React.createElement(Makelily_1.default, { clef: clef || "", defaultTool: defaultTool || "", keySig: keySig || "", time: time || "", singleTaskMode: String(singleTaskMode) === "true", onHide: function () { return window.location.reload(); }, onInsertLy: this.handleInsertLy })));
+            React.createElement(Makelily, { clef: clef || "", defaultTool: defaultTool || "", keySig: keySig || "", time: time || "", singleTaskMode: String(singleTaskMode) === "true", onHide: function () { return window.location.reload(); }, onInsertLy: this.handleInsertLy })));
     };
     App.prototype.handleInsertLy = function (ly) {
-        // tslint:disable-next-line no-console
         console.log(ly);
     };
     return App;
 }(React.Component));
-exports.default = App;
-// tslint:disable-next-line typedef
-var styles = aphrodite_1.StyleSheet.create({
+export default App;
+var styles = StyleSheet.create({
     appRoot: {
         backgroundColor: "#1e1e1e",
         height: "100%",

@@ -1,4 +1,3 @@
-"use strict";
 /**
  * This file is part of Satie music engraver <https://github.com/jnetterf/satie>.
  * Copyright (C) Joshua Netterfield <joshua.ca> 2015 - present.
@@ -16,21 +15,10 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with Satie.  If not, see <http://www.gnu.org/licenses/>.
  */
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
-    result["default"] = mod;
-    return result;
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-var lodash_1 = require("lodash");
-var invariant_1 = __importDefault(require("invariant"));
-var D = __importStar(require("./private_metre_metreDurations"));
-var private_metre_getTSString_1 = __importDefault(require("./private_metre_getTSString"));
+import { reduce, forEach } from "lodash";
+import invariant from "invariant";
+import * as D from "./private_metre_metreDurations";
+import getTSString from "./private_metre_getTSString";
 // Adapted from Behind Bars (E. Gould) page 155
 var BEAMING_PATTERNS = {
     "1/16": [D._16],
@@ -81,8 +69,8 @@ var BEAMING_PATTERNS = {
     "18/8": [D._4D, D._4D, D._4D, D._4D, D._4D, D._4D],
     "9/4": [D._2D, D._2D, D._2D],
 };
-function getBeamingPattern(time, alt) {
-    var pattern = BEAMING_PATTERNS[private_metre_getTSString_1.default(time) + (alt ? "_" + alt : "")];
+export function getBeamingPattern(time, alt) {
+    var pattern = BEAMING_PATTERNS[getTSString(time) + (alt ? "_" + alt : "")];
     var factors = {
         4: [4, 3, 2, 1],
         8: [12, 8, 4, 3, 2, 1],
@@ -95,19 +83,18 @@ function getBeamingPattern(time, alt) {
         // TODO: Partial & Mixed
         pattern = [];
         // TODO: Varying denominators will err for the remainder of this function
-        var beatsToAdd_1 = lodash_1.reduce(time.beats, function (memo, beat) {
-            return memo + lodash_1.reduce(beat.split("+"), function (m, b) { return m + parseInt(b, 10); }, 0);
+        var beatsToAdd_1 = reduce(time.beats, function (memo, beat) {
+            return memo + reduce(beat.split("+"), function (m, b) { return m + parseInt(b, 10); }, 0);
         }, 0);
         var ownFactors = factors[time.beatTypes[0]];
-        lodash_1.forEach(ownFactors, function (factor) {
+        forEach(ownFactors, function (factor) {
             while (beatsToAdd_1 >= factor) {
                 pattern = pattern.concat(BEAMING_PATTERNS[factor + "/" + time.beatTypes[0]]);
                 beatsToAdd_1 -= factor;
             }
         });
     }
-    invariant_1.default(!!pattern, "Unknown beaming pattern");
+    invariant(!!pattern, "Unknown beaming pattern");
     return pattern;
 }
-exports.getBeamingPattern = getBeamingPattern;
 //# sourceMappingURL=private_metre_checkBeaming.js.map

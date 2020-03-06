@@ -1,4 +1,3 @@
-"use strict";
 /**
  * This file is part of Satie music engraver <https://github.com/jnetterf/satie>.
  * Copyright (C) Joshua Netterfield <joshua.ca> 2015 - present.
@@ -16,12 +15,11 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with Satie.  If not, see <http://www.gnu.org/licenses/>.
  */
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.ptPerMM = 2.842;
-exports.mmPerIn = 25.4;
-exports.V_PADDING = 20;
-exports.staveSeperation = 3.24;
-exports.rastalToHeight = [
+export var ptPerMM = 2.842;
+export var mmPerIn = 25.4;
+export var V_PADDING = 20;
+export var staveSeperation = 3.24;
+export var rastalToHeight = [
     /* largest is '0' */
     9.2,
     7.9,
@@ -31,10 +29,9 @@ exports.rastalToHeight = [
     6,
     5.5,
     4.8,
-    3.7 // full score
-    // Tags from Behind Bars by Elaine Gould, pp. 483
+    3.7,
 ];
-exports.pageSizes = [
+export var pageSizes = [
     // Sizes to actually display
     // (For other sizes, Google works well enough :-)
     {
@@ -42,560 +39,560 @@ exports.pageSizes = [
         lilypondName: "letter",
         width: 215.9,
         height: 279.4,
-        unit: "mm"
+        unit: "mm",
     },
     {
         name: "U.S. Legal",
         lilypondName: "legal",
         width: 215.9,
         height: 355.6,
-        unit: "mm"
+        unit: "mm",
     },
     {
         name: "ISO A4",
         lilypondName: "a4",
         width: 210,
         height: 297,
-        unit: "mm"
+        unit: "mm",
     },
     {
         name: "ISO B4",
         lilypondName: "b4",
         width: 250,
         height: 353,
-        unit: "mm"
+        unit: "mm",
     },
     {
         name: "ISO A3",
         lilypondName: "a3",
         width: 297,
         height: 420,
-        unit: "mm"
+        unit: "mm",
     },
     {
         name: "Print",
         lilypondName: "arch a",
         width: 229,
         height: 305,
-        unit: "mm"
+        unit: "mm",
     },
     {
         name: "Choral",
         lilypondName: "choral",
         width: 178,
         height: 254,
-        unit: "mm"
+        unit: "mm",
     },
     {
         name: "Marching Band",
         lilypondName: "marching",
         width: 133,
         height: 170,
-        unit: "mm"
-    }
+        unit: "mm",
+    },
 ];
-function defaultPageSize() {
-    return exports.pageSizes[0];
+export function defaultPageSize() {
+    return pageSizes[0];
 }
-exports.defaultPageSize = defaultPageSize;
-exports.defaultIndent = 15;
-exports.defaultMargins = {
+export var defaultIndent = 15;
+export var defaultMargins = {
     top: 15.25,
     right: 15.25,
     bottom: 15.25,
-    left: 15.25
+    left: 15.25,
 };
 // This means that 4 spaces (i.e., 1 stave) equals 6.3mm.
-exports.defaultStaveHeight = exports.rastalToHeight[4];
-exports.lilypondSizes = {
+export var defaultStaveHeight = rastalToHeight[4];
+export var lilypondSizes = {
     // Sizes that we support loading from LilyPond.
     // Did you know there were this many sizes?
-    "choral": {
+    choral: {
+        // XXX: Common format, but does not exist in lilypond
         width: 178,
         height: 254,
-        unit: "mm"
+        unit: "mm",
     },
-    "marching": {
+    marching: {
+        // XXX: Common format, but does not exist in lilypond
         width: 133,
         height: 170,
-        unit: "mm"
+        unit: "mm",
     },
-    "a10": {
+    a10: {
         width: 26,
         height: 37,
-        unit: "mm"
+        unit: "mm",
     },
-    "a9": {
+    a9: {
         width: 37,
         height: 52,
-        unit: "mm"
+        unit: "mm",
     },
-    "a8": {
+    a8: {
         width: 52,
         height: 74,
-        unit: "mm"
+        unit: "mm",
     },
-    "a7": {
+    a7: {
         width: 74,
         height: 105,
-        unit: "mm"
+        unit: "mm",
     },
-    "a6": {
+    a6: {
         width: 105,
         height: 148,
-        unit: "mm"
+        unit: "mm",
     },
-    "a5": {
+    a5: {
         width: 148,
         height: 210,
-        unit: "mm"
+        unit: "mm",
     },
-    "a4": {
+    a4: {
         width: 210,
         height: 297,
-        unit: "mm"
+        unit: "mm",
     },
-    "a3": {
+    a3: {
         width: 297,
         height: 420,
-        unit: "mm"
+        unit: "mm",
     },
-    "a2": {
+    a2: {
         width: 420,
         height: 594,
-        unit: "mm"
+        unit: "mm",
     },
-    "a1": {
+    a1: {
         width: 594,
         height: 841,
-        unit: "mm"
+        unit: "mm",
     },
-    "a0": {
+    a0: {
         width: 841,
         height: 1189,
-        unit: "mm"
+        unit: "mm",
     },
-    "b10": {
+    b10: {
         width: 31,
         height: 44,
-        unit: "mm"
+        unit: "mm",
     },
-    "b9": {
+    b9: {
         width: 44,
         height: 62,
-        unit: "mm"
+        unit: "mm",
     },
-    "b8": {
+    b8: {
         width: 62,
         height: 88,
-        unit: "mm"
+        unit: "mm",
     },
-    "b7": {
+    b7: {
         width: 88,
         height: 125,
-        unit: "mm"
+        unit: "mm",
     },
-    "b6": {
+    b6: {
         width: 125,
         height: 176,
-        unit: "mm"
+        unit: "mm",
     },
-    "b5": {
+    b5: {
         width: 176,
         height: 250,
-        unit: "mm"
+        unit: "mm",
     },
-    "b4": {
+    b4: {
         width: 250,
         height: 353,
-        unit: "mm"
+        unit: "mm",
     },
-    "b3": {
+    b3: {
         width: 353,
         height: 500,
-        unit: "mm"
+        unit: "mm",
     },
-    "b2": {
+    b2: {
         width: 500,
         height: 707,
-        unit: "mm"
+        unit: "mm",
     },
-    "b1": {
+    b1: {
         width: 707,
         height: 1000,
-        unit: "mm"
+        unit: "mm",
     },
-    "b0": {
+    b0: {
         width: 1000,
         height: 1414,
-        unit: "mm"
+        unit: "mm",
     },
     "4a0": {
         width: 1682,
         height: 2378,
-        unit: "mm"
+        unit: "mm",
     },
     "2a0": {
         width: 1189,
         height: 1682,
-        unit: "mm"
+        unit: "mm",
     },
-    "c10": {
+    c10: {
         width: 28,
         height: 40,
-        unit: "mm"
+        unit: "mm",
     },
-    "c9": {
+    c9: {
         width: 40,
         height: 57,
-        unit: "mm"
+        unit: "mm",
     },
-    "c8": {
+    c8: {
         width: 57,
         height: 81,
-        unit: "mm"
+        unit: "mm",
     },
-    "c7": {
+    c7: {
         width: 81,
         height: 114,
-        unit: "mm"
+        unit: "mm",
     },
-    "c6": {
+    c6: {
         width: 114,
         height: 162,
-        unit: "mm"
+        unit: "mm",
     },
-    "c5": {
+    c5: {
         width: 162,
         height: 229,
-        unit: "mm"
+        unit: "mm",
     },
-    "c4": {
+    c4: {
         width: 229,
         height: 324,
-        unit: "mm"
+        unit: "mm",
     },
-    "c3": {
+    c3: {
         width: 324,
         height: 458,
-        unit: "mm"
+        unit: "mm",
     },
-    "c2": {
+    c2: {
         width: 458,
         height: 648,
-        unit: "mm"
+        unit: "mm",
     },
-    "c1": {
+    c1: {
         width: 648,
         height: 917,
-        unit: "mm"
+        unit: "mm",
     },
-    "c0": {
+    c0: {
         width: 917,
         height: 1297,
-        unit: "mm"
+        unit: "mm",
     },
     "junior-legal": {
         width: 8.0,
         height: 5.0,
-        unit: "in"
+        unit: "in",
     },
-    "legal": {
+    legal: {
         width: 8.5,
         height: 14.0,
-        unit: "in"
+        unit: "in",
     },
-    "ledger": {
+    ledger: {
         width: 17.0,
         height: 11.0,
-        unit: "in"
+        unit: "in",
     },
-    "letter": {
+    letter: {
         width: 8.5,
         height: 11.0,
-        unit: "in"
+        unit: "in",
     },
-    "tabloid": {
+    tabloid: {
         width: 11.0,
         height: 17.0,
-        unit: "in"
+        unit: "in",
     },
     "11x17": {
         width: 11.0,
         height: 17.0,
-        unit: "in"
+        unit: "in",
     },
     "17x11": {
         width: 17.0,
         height: 11.0,
-        unit: "in"
+        unit: "in",
     },
     "government-letter": {
         width: 8,
         height: 10.5,
-        unit: "in"
+        unit: "in",
     },
     "government-legal": {
         width: 8.5,
         height: 13.0,
-        unit: "in"
+        unit: "in",
     },
     "philippine-legal": {
         width: 8.5,
         height: 13.0,
-        unit: "in"
+        unit: "in",
     },
     "ansi a": {
         width: 8.5,
         height: 11.0,
-        unit: "in"
+        unit: "in",
     },
     "ansi b": {
         width: 17.0,
         height: 11.0,
-        unit: "in"
+        unit: "in",
     },
     "ansi c": {
         width: 17.0,
         height: 22.0,
-        unit: "in"
+        unit: "in",
     },
     "ansi d": {
         width: 22.0,
         height: 34.0,
-        unit: "in"
+        unit: "in",
     },
     "ansi e": {
         width: 34.0,
         height: 44.0,
-        unit: "in"
+        unit: "in",
     },
     "engineering f": {
         width: 28.0,
         height: 40.0,
-        unit: "in"
+        unit: "in",
     },
     "arch a": {
         width: 9.0,
         height: 12.0,
-        unit: "in"
+        unit: "in",
     },
     "arch b": {
         width: 12.0,
         height: 18.0,
-        unit: "in"
+        unit: "in",
     },
     "arch c": {
         width: 18.0,
         height: 24.0,
-        unit: "in"
+        unit: "in",
     },
     "arch d": {
         width: 24.0,
         height: 36.0,
-        unit: "in"
+        unit: "in",
     },
     "arch e": {
         width: 36.0,
         height: 48.0,
-        unit: "in"
+        unit: "in",
     },
     "arch e1": {
         width: 30.0,
         height: 42.0,
-        unit: "in"
+        unit: "in",
     },
-    "statement": {
+    statement: {
         width: 5.5,
         height: 8.5,
-        unit: "in"
+        unit: "in",
     },
     "half letter": {
         width: 5.5,
         height: 8.5,
-        unit: "in"
+        unit: "in",
     },
-    "quarto": {
+    quarto: {
         width: 8.0,
         height: 10.0,
-        unit: "in"
+        unit: "in",
     },
-    "octavo": {
+    octavo: {
         width: 6.75,
         height: 10.5,
-        unit: "in"
+        unit: "in",
     },
-    "executive": {
+    executive: {
         width: 7.25,
         height: 10.5,
-        unit: "in"
+        unit: "in",
     },
-    "monarch": {
+    monarch: {
         width: 7.25,
         height: 10.5,
-        unit: "in"
+        unit: "in",
     },
-    "foolscap": {
+    foolscap: {
         width: 8.27,
         height: 13.0,
-        unit: "in"
+        unit: "in",
     },
-    "folio": {
+    folio: {
         width: 8.27,
         height: 13.0,
-        unit: "in"
+        unit: "in",
     },
     "super-b": {
         width: 13.0,
         height: 19.0,
-        unit: "in"
+        unit: "in",
     },
-    "post": {
+    post: {
         width: 15.5,
         height: 19.5,
-        unit: "in"
+        unit: "in",
     },
-    "crown": {
+    crown: {
         width: 15.0,
         height: 20.0,
-        unit: "in"
+        unit: "in",
     },
     "large post": {
         width: 16.5,
         height: 21.0,
-        unit: "in"
+        unit: "in",
     },
-    "demy": {
+    demy: {
         width: 17.5,
         height: 22.5,
-        unit: "in"
+        unit: "in",
     },
-    "medium": {
+    medium: {
         width: 18.0,
         height: 23.0,
-        unit: "in"
+        unit: "in",
     },
-    "broadsheet": {
+    broadsheet: {
         width: 18.0,
         height: 24.0,
-        unit: "in"
+        unit: "in",
     },
-    "royal": {
+    royal: {
         width: 20.0,
         height: 25.0,
-        unit: "in"
+        unit: "in",
     },
-    "elephant": {
+    elephant: {
         width: 23.0,
         height: 28.0,
-        unit: "in"
+        unit: "in",
     },
     "double demy": {
         width: 22.5,
         height: 35.0,
-        unit: "in"
+        unit: "in",
     },
     "quad demy": {
         width: 35.0,
         height: 45.0,
-        unit: "in"
+        unit: "in",
     },
-    "atlas": {
+    atlas: {
         width: 26.0,
         height: 34.0,
-        unit: "in"
+        unit: "in",
     },
-    "imperial": {
+    imperial: {
         width: 22.0,
         height: 30.0,
-        unit: "in"
+        unit: "in",
     },
-    "antiquarian": {
+    antiquarian: {
         width: 31.0,
         height: 53.0,
-        unit: "in"
+        unit: "in",
     },
-    "pa0": {
+    pa0: {
         width: 840,
         height: 1120,
-        unit: "mm"
+        unit: "mm",
     },
-    "pa1": {
+    pa1: {
         width: 560,
         height: 840,
-        unit: "mm"
+        unit: "mm",
     },
-    "pa2": {
+    pa2: {
         width: 420,
         height: 560,
-        unit: "mm"
+        unit: "mm",
     },
-    "pa3": {
+    pa3: {
         width: 280,
         height: 420,
-        unit: "mm"
+        unit: "mm",
     },
-    "pa4": {
+    pa4: {
         width: 210,
         height: 280,
-        unit: "mm"
+        unit: "mm",
     },
-    "pa5": {
+    pa5: {
         width: 140,
         height: 210,
-        unit: "mm"
+        unit: "mm",
     },
-    "pa6": {
+    pa6: {
         width: 105,
         height: 140,
-        unit: "mm"
+        unit: "mm",
     },
-    "pa7": {
+    pa7: {
         width: 70,
         height: 105,
-        unit: "mm"
+        unit: "mm",
     },
-    "pa8": {
+    pa8: {
         width: 52,
         height: 70,
-        unit: "mm"
+        unit: "mm",
     },
-    "pa9": {
+    pa9: {
         width: 35,
         height: 52,
-        unit: "mm"
+        unit: "mm",
     },
-    "pa10": {
+    pa10: {
         width: 26,
         height: 35,
-        unit: "mm"
+        unit: "mm",
     },
-    "f4": {
+    f4: {
         width: 210,
         height: 330,
-        unit: "mm"
+        unit: "mm",
     },
-    "a8landscape": {
+    a8landscape: {
         width: 74,
         height: 52,
-        unit: "mm"
-    }
+        unit: "mm",
+    },
 };
 /**
  * Converts a length in mms to tenths of a standard stave height.
  *
  * @param scaling40 the standard stave height
  */
-function mmToTenths(scaling40, mm) {
-    return mm / scaling40 * 40;
+export function mmToTenths(scaling40, mm) {
+    return (mm / scaling40) * 40;
 }
-exports.mmToTenths = mmToTenths;
 /**
  * Converts a 'px' size or a named css size (e.g., "small") to tenths of a standard stave height.
  *
  * @param scaling40 the standard stave height
  */
-function cssSizeToTenths(scaling40, css) {
+export function cssSizeToTenths(scaling40, css) {
     var px = NaN;
     // The xx-small - xx-large values were found from Chrome computed sizes.
     switch (true) {
@@ -633,16 +630,14 @@ function cssSizeToTenths(scaling40, css) {
     // 1 in = 25.4    mm
     // =================
     // 1 px = 25.4/96 mm
-    return mmToTenths(scaling40, px * exports.mmPerIn / 96);
+    return mmToTenths(scaling40, (px * mmPerIn) / 96);
 }
-exports.cssSizeToTenths = cssSizeToTenths;
 /**
  * Converts a length in tenths of a stave length to mm.
  *
  * @param scaling40 the standard stave height
  */
-function tenthsToMM(scaling40, tenths) {
-    return scaling40 * tenths / 40;
+export function tenthsToMM(scaling40, tenths) {
+    return (scaling40 * tenths) / 40;
 }
-exports.tenthsToMM = tenthsToMM;
 //# sourceMappingURL=private_renderUtil.js.map

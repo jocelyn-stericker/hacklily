@@ -1,4 +1,3 @@
-"use strict";
 /**
  * This file is part of Satie music engraver <https://github.com/jnetterf/satie>.
  * Copyright (C) Joshua Netterfield <joshua.ca> 2015 - present.
@@ -29,21 +28,9 @@ var __extends = (this && this.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
-    result["default"] = mod;
-    return result;
-};
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-var react_1 = require("react");
-var PropTypes = __importStar(require("prop-types"));
-var private_views_line_1 = __importDefault(require("./private_views_line"));
-var $Line = react_1.createFactory(private_views_line_1.default);
+import React, { Component } from "react";
+import * as PropTypes from "prop-types";
+import Line from "./private_views_line";
 var VisualCursorView = /** @class */ (function (_super) {
     __extends(VisualCursorView, _super);
     function VisualCursorView() {
@@ -55,21 +42,14 @@ var VisualCursorView = /** @class */ (function (_super) {
         var yTop = this.context.systemTop;
         var yBottom = this.context.systemBottom;
         var height = yTop - yBottom;
-        return $Line({
-            stroke: "#428bca",
-            strokeWidth: 2,
-            x1: x - 4,
-            x2: x - 4,
-            y1: yTop + height * 0.5,
-            y2: yBottom - height * 0.5
-        });
+        return (React.createElement(Line, { stroke: "#428bca", strokeWidth: 2, x1: x - 4, x2: x - 4, y1: yTop + height * 0.5, y2: yBottom - height * 0.5 }));
     };
     VisualCursorView.contextTypes = {
         originY: PropTypes.number.isRequired,
         systemBottom: PropTypes.number.isRequired,
-        systemTop: PropTypes.number.isRequired
+        systemTop: PropTypes.number.isRequired,
     };
     return VisualCursorView;
-}(react_1.Component));
-exports.default = VisualCursorView;
+}(Component));
+export default VisualCursorView;
 //# sourceMappingURL=implVisualCursor_visualCursorView.js.map

@@ -1,4 +1,3 @@
-"use strict";
 /**
  * This file is part of Satie music engraver <https://github.com/jnetterf/satie>.
  * Copyright (C) Joshua Netterfield <joshua.ca> 2015 - present.
@@ -29,24 +28,13 @@ var __extends = (this && this.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
-    result["default"] = mod;
-    return result;
-};
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-var React = __importStar(require("react"));
-var musicxml_interfaces_1 = require("musicxml-interfaces");
-var react_1 = require("react");
-var PropTypes = __importStar(require("prop-types"));
-var lodash_1 = require("lodash");
-var private_views_line_1 = __importDefault(require("./private_views_line"));
-var implAttributes_attributesView_1 = __importDefault(require("./implAttributes_attributesView"));
+import * as React from "react";
+import { PartSymbolType } from "musicxml-interfaces";
+import { Component } from "react";
+import * as PropTypes from "prop-types";
+import { some, map } from "lodash";
+import Line from "./private_views_line";
+import AttributesView from "./implAttributes_attributesView";
 /**
  * Renders a full-stave-height barline at (x,y).
  * Does not do any interesting calculations.
@@ -68,9 +56,9 @@ var BarlineView = /** @class */ (function (_super) {
         // TODO: render BarStyleType.Tick:
         var yTop;
         var yBottom;
-        if ((layout.partSymbol && layout.partSymbol.type !== musicxml_interfaces_1.PartSymbolType.None) ||
+        if ((layout.partSymbol && layout.partSymbol.type !== PartSymbolType.None) ||
             (layout.partGroups &&
-                lodash_1.some(layout.partGroups, function (group) { return group.groupBarline; }))) {
+                some(layout.partGroups, function (group) { return group.groupBarline; }))) {
             yTop = this.context.systemTop;
             yBottom = this.context.systemBottom;
         }
@@ -83,8 +71,8 @@ var BarlineView = /** @class */ (function (_super) {
                 layout.overrideX + model.satieAttribsOffset;
         }
         return (React.createElement("g", null,
-            lodash_1.map(layout.lineStarts, function (start, idx) { return (React.createElement(private_views_line_1.default, { key: idx, stroke: model.barStyle.color, strokeWidth: layout.lineWidths[idx], x1: x + start + layout.lineWidths[idx] / 2, x2: x + start + layout.lineWidths[idx] / 2, y1: yTop, y2: yBottom })); }),
-            model.satieAttributes && (React.createElement(implAttributes_attributesView_1.default, { layout: model.satieAttributes }))));
+            map(layout.lineStarts, function (start, idx) { return (React.createElement(Line, { key: idx, stroke: model.barStyle.color, strokeWidth: layout.lineWidths[idx], x1: x + start + layout.lineWidths[idx] / 2, x2: x + start + layout.lineWidths[idx] / 2, y1: yTop, y2: yBottom })); }),
+            model.satieAttributes && (React.createElement(AttributesView, { layout: model.satieAttributes }))));
     };
     BarlineView.contextTypes = {
         originY: PropTypes.number.isRequired,
@@ -92,6 +80,6 @@ var BarlineView = /** @class */ (function (_super) {
         systemTop: PropTypes.number.isRequired,
     };
     return BarlineView;
-}(react_1.Component));
-exports.default = BarlineView;
+}(Component));
+export default BarlineView;
 //# sourceMappingURL=implBarline_barlineView.js.map

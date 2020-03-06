@@ -1,4 +1,3 @@
-"use strict";
 /**
  * @source: https://github.com/jnetterf/satie/
  *
@@ -32,30 +31,19 @@ var __extends = (this && this.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
-    result["default"] = mod;
-    return result;
-};
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", { value: true });
 /**
  * @file Renders a tuplet outside of a beam. Unbeamed tuplets are created
  * by the beam postprocessor, since they share many similaraties.
  */
 // Note that we use notehadBlack regardless of the notehead.
 // This keeps spacing consistent, even in beam groups with rests.
-var React = __importStar(require("react"));
-var musicxml_interfaces_1 = require("musicxml-interfaces");
-var react_1 = require("react");
-var PropTypes = __importStar(require("prop-types"));
-var lodash_1 = require("lodash");
-var private_smufl_1 = require("./private_smufl");
-var implChord_tupletNumberView_1 = __importDefault(require("./implChord_tupletNumberView"));
+import * as React from "react";
+import { AboveBelow } from "musicxml-interfaces";
+import { Component } from "react";
+import * as PropTypes from "prop-types";
+import { first, last } from "lodash";
+import { bravura, getFontOffset } from "./private_smufl";
+import TupletNumberView from "./implChord_tupletNumberView";
 var UnbeamedTuplet = /** @class */ (function (_super) {
     __extends(UnbeamedTuplet, _super);
     function UnbeamedTuplet() {
@@ -65,7 +53,7 @@ var UnbeamedTuplet = /** @class */ (function (_super) {
         var _a = this.props, stroke = _a.stroke, layout = _a.layout;
         var tuplet = layout.tuplet, x = layout.x;
         var placement = tuplet.placement;
-        var yOffset = placement === musicxml_interfaces_1.AboveBelow.Above ? 8 : -8;
+        var yOffset = placement === AboveBelow.Above ? 8 : -8;
         var isSingleNote = x.length === 1;
         var x1 = this._getX1();
         var x2 = this._getX2();
@@ -73,10 +61,10 @@ var UnbeamedTuplet = /** @class */ (function (_super) {
         var y2 = this._getY2(1);
         var y1Low = this._getY1(0);
         var y2Low = this._getY2(0);
-        var y1Near = placement === musicxml_interfaces_1.AboveBelow.Below ? y1 : y1Low;
-        var y1Far = placement === musicxml_interfaces_1.AboveBelow.Below ? y1Low : y1;
-        var y2Near = placement === musicxml_interfaces_1.AboveBelow.Below ? y2 : y2Low;
-        var y2Far = placement === musicxml_interfaces_1.AboveBelow.Below ? y2Low : y2;
+        var y1Near = placement === AboveBelow.Below ? y1 : y1Low;
+        var y1Far = placement === AboveBelow.Below ? y1Low : y1;
+        var y2Near = placement === AboveBelow.Below ? y2 : y2Low;
+        var y2Far = placement === AboveBelow.Below ? y2Low : y2;
         return (React.createElement("g", null,
             !isSingleNote && (React.createElement("polygon", { fill: stroke, key: "p1", points: x1 +
                     "," +
@@ -93,9 +81,9 @@ var UnbeamedTuplet = /** @class */ (function (_super) {
                     x1 +
                     "," +
                     y1, stroke: stroke, strokeWidth: 0 })),
-            !isSingleNote && (React.createElement("line", { fill: stroke, key: "p2", stroke: stroke, strokeWidth: private_smufl_1.bravura.engravingDefaults.tupletBracketThickness * 10, x1: x1 + 0.5, x2: x1 + 0.5, y1: y1Near, y2: y1Far + yOffset })),
-            !isSingleNote && (React.createElement("line", { fill: this.props.stroke, key: "p3", stroke: stroke, strokeWidth: private_smufl_1.bravura.engravingDefaults.tupletBracketThickness * 10, x1: x2 - 0.5, x2: x2 - 0.5, y1: y2Near, y2: y2Far + yOffset })),
-            React.createElement(implChord_tupletNumberView_1.default, { tuplet: tuplet, x1: x1, x2: x2, y1: y1, y2: y2 })));
+            !isSingleNote && (React.createElement("line", { fill: stroke, key: "p2", stroke: stroke, strokeWidth: bravura.engravingDefaults.tupletBracketThickness * 10, x1: x1 + 0.5, x2: x1 + 0.5, y1: y1Near, y2: y1Far + yOffset })),
+            !isSingleNote && (React.createElement("line", { fill: this.props.stroke, key: "p3", stroke: stroke, strokeWidth: bravura.engravingDefaults.tupletBracketThickness * 10, x1: x2 - 0.5, x2: x2 - 0.5, y1: y2Near, y2: y2Far + yOffset })),
+            React.createElement(TupletNumberView, { tuplet: tuplet, x1: x1, x2: x2, y1: y1, y2: y2 })));
     };
     /**
      * Offset because the note-head has a non-zero width.
@@ -108,20 +96,20 @@ var UnbeamedTuplet = /** @class */ (function (_super) {
      * -1 if the notes go down.
      */
     UnbeamedTuplet.prototype.direction = function () {
-        return this.props.layout.tuplet.placement === musicxml_interfaces_1.AboveBelow.Above ? 1 : -1;
+        return this.props.layout.tuplet.placement === AboveBelow.Above ? 1 : -1;
     };
     UnbeamedTuplet.prototype._withXOffset = function (x) {
         return (x +
-            private_smufl_1.getFontOffset("noteheadBlack", this.direction())[0] * 10 +
+            getFontOffset("noteheadBlack", this.direction())[0] * 10 +
             this.getLineXOffset());
     };
     UnbeamedTuplet.prototype._getX1 = function () {
         var x = this.props.layout.x;
-        return this._withXOffset(lodash_1.first(x)) - 4;
+        return this._withXOffset(first(x)) - 4;
     };
     UnbeamedTuplet.prototype._getX2 = function () {
         var x = this.props.layout.x;
-        return this._withXOffset(lodash_1.last(x)) + 4;
+        return this._withXOffset(last(x)) + 4;
     };
     UnbeamedTuplet.prototype._getY1 = function (incl) {
         var originY = this.context.originY;
@@ -130,9 +118,9 @@ var UnbeamedTuplet = /** @class */ (function (_super) {
         return (originY -
             y1 -
             this.direction() *
-                private_smufl_1.getFontOffset("noteheadBlack", this.direction())[1] *
+                getFontOffset("noteheadBlack", this.direction())[1] *
                 10 -
-            (incl || 0) * (private_smufl_1.bravura.engravingDefaults.tupletBracketThickness * 10));
+            (incl || 0) * (bravura.engravingDefaults.tupletBracketThickness * 10));
     };
     UnbeamedTuplet.prototype._getY2 = function (incl) {
         var originY = this.context.originY;
@@ -141,14 +129,14 @@ var UnbeamedTuplet = /** @class */ (function (_super) {
         return (originY -
             y2 -
             this.direction() *
-                private_smufl_1.getFontOffset("noteheadBlack", this.direction())[1] *
+                getFontOffset("noteheadBlack", this.direction())[1] *
                 10 -
-            (incl || 0) * (private_smufl_1.bravura.engravingDefaults.tupletBracketThickness * 10));
+            (incl || 0) * (bravura.engravingDefaults.tupletBracketThickness * 10));
     };
     UnbeamedTuplet.contextTypes = {
         originY: PropTypes.number.isRequired,
     };
     return UnbeamedTuplet;
-}(react_1.Component));
-exports.default = UnbeamedTuplet;
+}(Component));
+export default UnbeamedTuplet;
 //# sourceMappingURL=implChord_unbeamedTupletView.js.map

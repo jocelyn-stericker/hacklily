@@ -1,4 +1,3 @@
-"use strict";
 /**
  * This file is part of Satie music engraver <https://github.com/jnetterf/satie>.
  * Copyright (C) Joshua Netterfield <joshua.ca> 2015 - present.
@@ -16,18 +15,16 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with Satie.  If not, see <http://www.gnu.org/licenses/>.
  */
-Object.defineProperty(exports, "__esModule", { value: true });
-var private_util_1 = require("./private_util");
+import { MAX_SAFE_INTEGER } from "./private_util";
 /**
  * Assigns a random key to an object, usually for React.
  */
-function generateModelKey(model) {
+export function generateModelKey(model) {
     if (!model.key) {
-        model.key = String(Math.floor(Math.random() * private_util_1.MAX_SAFE_INTEGER));
+        model.key = String(Math.floor(Math.random() * MAX_SAFE_INTEGER));
     }
 }
-exports.generateModelKey = generateModelKey;
-function detach(layout) {
+export function detach(layout) {
     layout.overrideX = NaN;
     return Object.create(layout, {
         x: {
@@ -36,9 +33,8 @@ function detach(layout) {
             },
             set: function (x) {
                 layout.overrideX = x;
-            }
-        }
+            },
+        },
     });
 }
-exports.detach = detach;
 //# sourceMappingURL=document_model.js.map

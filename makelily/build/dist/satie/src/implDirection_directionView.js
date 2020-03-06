@@ -1,4 +1,3 @@
-"use strict";
 /**
  * @source: https://github.com/jnetterf/satie/
  *
@@ -32,24 +31,13 @@ var __extends = (this && this.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
-    result["default"] = mod;
-    return result;
-};
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-var React = __importStar(require("react"));
-var react_1 = require("react");
-var PropTypes = __importStar(require("prop-types"));
-var lodash_1 = require("lodash");
-var private_views_glyph_1 = __importDefault(require("./private_views_glyph"));
-var implDirection_dynamicsView_1 = __importDefault(require("./implDirection_dynamicsView"));
-var implDirection_wordsView_1 = __importDefault(require("./implDirection_wordsView"));
+import * as React from "react";
+import { Component } from "react";
+import * as PropTypes from "prop-types";
+import { map } from "lodash";
+import Glyph from "./private_views_glyph";
+import Dynamics from "./implDirection_dynamicsView";
+import Words from "./implDirection_wordsView";
 var DirectionView = /** @class */ (function (_super) {
     __extends(DirectionView, _super);
     function DirectionView() {
@@ -58,7 +46,7 @@ var DirectionView = /** @class */ (function (_super) {
     DirectionView.prototype.render = function () {
         var _this = this;
         var model = this.props.layout.model;
-        var children = lodash_1.map(model.directionTypes, function (type, idx) {
+        var children = map(model.directionTypes, function (type, idx) {
             switch (true) {
                 case !!type.accordionRegistration:
                     return null;
@@ -73,7 +61,7 @@ var DirectionView = /** @class */ (function (_super) {
                 case !!type.dashes:
                     return null;
                 case !!type.dynamics:
-                    return React.createElement(implDirection_dynamicsView_1.default, { key: "d_" + idx, layout: _this.props.layout });
+                    return React.createElement(Dynamics, { key: "d_" + idx, layout: _this.props.layout });
                 case !!type.eyeglasses:
                     return null;
                 case !!type.harpPedals:
@@ -83,8 +71,6 @@ var DirectionView = /** @class */ (function (_super) {
                 case !!type.metronome:
                     return null;
                 case !!type.octaveShift:
-                    return null;
-                case !!type.otherDirection:
                     return null;
                 case !!type.otherDirection:
                     return null;
@@ -99,7 +85,7 @@ var DirectionView = /** @class */ (function (_super) {
                 case !!type.scordatura:
                     return null;
                 case !!type.segnos:
-                    return (React.createElement("g", null, lodash_1.map(type.segnos, function (segno, segnoIdx) { return (React.createElement(private_views_glyph_1.default, { glyphName: "segno", key: segnoIdx, x: _this.props.layout.overrideX +
+                    return (React.createElement("g", null, map(type.segnos, function (segno, segnoIdx) { return (React.createElement(Glyph, { glyphName: "segno", key: segnoIdx, x: _this.props.layout.overrideX +
                             segno.defaultX +
                             (segno.relativeX || 0), y: (_this.context.originY || 0) -
                             segno.defaultY -
@@ -109,7 +95,7 @@ var DirectionView = /** @class */ (function (_super) {
                 case !!type.wedge:
                     return null;
                 case !!type.words:
-                    return React.createElement(implDirection_wordsView_1.default, { key: "d_" + idx, layout: _this.props.layout });
+                    return React.createElement(Words, { key: "d_" + idx, layout: _this.props.layout });
                 default:
                     throw new Error("Invalid direction in " + type);
             }
@@ -127,6 +113,6 @@ var DirectionView = /** @class */ (function (_super) {
         originY: PropTypes.number,
     };
     return DirectionView;
-}(react_1.Component));
-exports.default = DirectionView;
+}(Component));
+export default DirectionView;
 //# sourceMappingURL=implDirection_directionView.js.map

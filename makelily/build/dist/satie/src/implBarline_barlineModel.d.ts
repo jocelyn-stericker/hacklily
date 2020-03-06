@@ -20,29 +20,26 @@
  */
 import { Barline, PartGroup, PartSymbol } from "musicxml-interfaces";
 import { IModel, ILayout } from "./document";
-import AttributesExports from "./implAttributes_attributesModel";
+import { IAttributesLayout } from "./implAttributes_attributesModel";
 /**
  * Registers Barline in the factory structure passed in.
  */
-declare function Export(constructors: {
+export default function Export(constructors: {
     [key: number]: any;
 }): void;
-declare module Export {
-    interface IBarlineModel extends IModel, Barline {
-        divisions: number;
-        defaultX: number;
-        defaultY: number;
-        satieAttributes: AttributesExports.IAttributesLayout;
-        satieAttribsOffset: number;
-    }
-    interface IBarlineLayout extends ILayout {
-        model: IBarlineModel;
-        height: number;
-        yOffset: number;
-        lineStarts: number[];
-        lineWidths: number[];
-        partSymbol: PartSymbol;
-        partGroups: PartGroup[];
-    }
+export interface IBarlineModel extends IModel, Barline {
+    divisions: number;
+    defaultX: number;
+    defaultY: number;
+    satieAttributes: IAttributesLayout;
+    satieAttribsOffset: number;
 }
-export default Export;
+export interface IBarlineLayout extends ILayout {
+    model: IBarlineModel;
+    height: number;
+    yOffset: number;
+    lineStarts: number[];
+    lineWidths: number[];
+    partSymbol: PartSymbol;
+    partGroups: PartGroup[];
+}

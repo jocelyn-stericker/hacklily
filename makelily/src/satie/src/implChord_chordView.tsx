@@ -25,7 +25,7 @@ import { map, some, chain, maxBy } from "lodash";
 import { bboxes, bravura, getRight } from "./private_smufl";
 
 import BeamView from "./implChord_beamView";
-import ChordModel from "./implChord_chordModel";
+import { IChordLayout } from "./implChord_chordModel";
 import FlagView from "./implChord_flagView";
 import LedgerLineView from "./implChord_ledgerLineView";
 import { DEFAULT_LYRIC_SIZE, DEFAULT_FONT } from "./implChord_lyrics";
@@ -38,7 +38,7 @@ import UnbeamedTupletView from "./implChord_unbeamedTupletView";
 const stemThickness: number = bravura.engravingDefaults.stemThickness * 10;
 
 export interface IProps {
-  layout: ChordModel.IChordLayout;
+  layout: IChordLayout;
 }
 
 /**
@@ -78,20 +78,22 @@ export default class ChordView extends Component<IProps, {}> {
             case "Syllabic":
               break;
             case "Text":
-              let textPt = l.lyricParts[i] as Text;
-              let width = bboxes[maxNotehead][0] * 10;
-              text.push(
-                <text
-                  fontFamily={textPt.fontFamily || DEFAULT_FONT}
-                  fontSize={textPt.fontSize || DEFAULT_LYRIC_SIZE}
-                  key={++lyKey}
-                  textAnchor={"middle"}
-                  x={this.props.layout.x + width / 2}
-                  y={this.context.originY + 60}
-                >
-                  {textPt.data}
-                </text>,
-              );
+              {
+                let textPt = l.lyricParts[i] as Text;
+                let width = bboxes[maxNotehead][0] * 10;
+                text.push(
+                  <text
+                    fontFamily={textPt.fontFamily || DEFAULT_FONT}
+                    fontSize={textPt.fontSize || DEFAULT_LYRIC_SIZE}
+                    key={++lyKey}
+                    textAnchor={"middle"}
+                    x={this.props.layout.x + width / 2}
+                    y={this.context.originY + 60}
+                  >
+                    {textPt.data}
+                  </text>,
+                );
+              }
               break;
             case "Extend":
               // TODO
@@ -108,7 +110,7 @@ export default class ChordView extends Component<IProps, {}> {
       .flatten()
       .value();
 
-    if (!!spec[0].rest) {
+    if (spec[0].rest) {
       return (
         <RestView
           multipleRest={spec.satieMultipleRest}
@@ -121,7 +123,7 @@ export default class ChordView extends Component<IProps, {}> {
     const stemX = spec.stemX();
     return (
       <g>
-        {map(spec, (noteSpec: Note, idx: number) => {
+        {map(spec, (_noteSpec: Note, idx: number) => {
           if (!spec[idx]) {
             return null;
           }
@@ -161,25 +163,23 @@ export default class ChordView extends Component<IProps, {}> {
             }}
           />
         ))}
-        {layout.satieFlag &&
-          layout.satieStem && (
-            <FlagView
-              key="f"
-              notehead={maxNotehead}
-              spec={{
-                color: spec[0].stem.color || "$000000",
-                defaultX: stemX,
-                defaultY:
-                  (layout.satieStem.stemStart - 3) * 10 +
-                  (layout.satieStem.stemHeight - 7) *
-                    layout.satieStem.direction,
-                direction: layout.satieStem.direction,
-                flag: layout.satieFlag,
-              }}
-              stemHeight={layout.satieStem.stemHeight}
-              stemWidth={stemThickness}
-            />
-          )}
+        {layout.satieFlag && layout.satieStem && (
+          <FlagView
+            key="f"
+            notehead={maxNotehead}
+            spec={{
+              color: spec[0].stem.color || "$000000",
+              defaultX: stemX,
+              defaultY:
+                (layout.satieStem.stemStart - 3) * 10 +
+                (layout.satieStem.stemHeight - 7) * layout.satieStem.direction,
+              direction: layout.satieStem.direction,
+              flag: layout.satieFlag,
+            }}
+            stemHeight={layout.satieStem.stemHeight}
+            stemWidth={stemThickness}
+          />
+        )}
         {this.props.layout.satieBeam && (
           <BeamView
             key="b"

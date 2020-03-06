@@ -1,4 +1,3 @@
-"use strict";
 /**
  * @source: https://github.com/jnetterf/satie/
  *
@@ -19,12 +18,13 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-Object.defineProperty(exports, "__esModule", { value: true });
-var document_1 = require("./document");
+import { Type } from "./document";
 var SpacerModel = /** @class */ (function () {
     /*---- Implementation -----------------------------------------------------------------------*/
     function SpacerModel(target) {
         this._class = "Spacer";
+        this.divisions = 0;
+        this.staffIdx = 0;
         if (target) {
             this.divCount = target.divCount;
         }
@@ -36,7 +36,7 @@ var SpacerModel = /** @class */ (function () {
             divCount: divCount,
         };
     };
-    SpacerModel.prototype.refresh = function (cursor) {
+    SpacerModel.prototype.refresh = function (_cursor) {
         // Nothing to do
     };
     SpacerModel.prototype.getLayout = function (cursor) {
@@ -48,14 +48,15 @@ var SpacerModel = /** @class */ (function () {
     SpacerModel.prototype.inspect = function () {
         return this.toXML();
     };
-    SpacerModel.prototype.calcWidth = function (shortest) {
+    SpacerModel.prototype.calcWidth = function (_shortest) {
         return 0;
     };
-    return SpacerModel;
-}());
-(function (SpacerModel) {
-    var Layout = /** @class */ (function () {
+    SpacerModel.Layout = /** @class */ (function () {
         function Layout(model, cursor) {
+            // Prototype:
+            this.boundingBoxes = [];
+            this.renderClass = Type.Spacer;
+            this.expandPolicy = "none";
             this.model = model;
             this.x = cursor.segmentX;
             this.division = cursor.segmentDivision;
@@ -63,19 +64,12 @@ var SpacerModel = /** @class */ (function () {
         }
         return Layout;
     }());
-    SpacerModel.Layout = Layout;
-    Layout.prototype.expandPolicy = "none";
-    Layout.prototype.renderClass = document_1.Type.Spacer;
-    Layout.prototype.boundingBoxes = [];
-    Object.freeze(Layout.prototype.boundingBoxes);
-})(SpacerModel || (SpacerModel = {}));
-SpacerModel.prototype.divCount = 0;
-SpacerModel.prototype.divisions = 0;
+    return SpacerModel;
+}());
 /**
  * Registers Spacer in the factory structure passed in.
  */
-function Export(constructors) {
-    constructors[document_1.Type.Spacer] = SpacerModel;
+export default function Export(constructors) {
+    constructors[Type.Spacer] = SpacerModel;
 }
-exports.default = Export;
 //# sourceMappingURL=implSpacer_spacerModel.js.map

@@ -1,4 +1,3 @@
-"use strict";
 /**
  * This file is part of Satie music engraver <https://github.com/jnetterf/satie>.
  * Copyright (C) Joshua Netterfield <joshua.ca> 2015 - present.
@@ -16,8 +15,7 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with Satie.  If not, see <http://www.gnu.org/licenses/>.
  */
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.standardClefs = [
+export var standardClefs = [
     {
         // Treble
         line: 2,
@@ -36,8 +34,9 @@ exports.standardClefs = [
         printObject: true,
         relativeX: 0,
         relativeY: 0,
-        size: 1
-    }, {
+        size: 1,
+    },
+    {
         // bass
         line: 4,
         sign: "F",
@@ -55,8 +54,9 @@ exports.standardClefs = [
         printObject: true,
         relativeX: 0,
         relativeY: 0,
-        size: 1
-    }, {
+        size: 1,
+    },
+    {
         // tenor
         line: 3,
         sign: "C",
@@ -74,8 +74,9 @@ exports.standardClefs = [
         printObject: true,
         relativeX: 0,
         relativeY: 0,
-        size: 1
-    }, {
+        size: 1,
+    },
+    {
         // alto
         line: 4,
         sign: "C",
@@ -93,7 +94,7 @@ exports.standardClefs = [
         printObject: true,
         relativeX: 0,
         relativeY: 0,
-        size: 1
+        size: 1,
     },
     {
         line: 3,
@@ -112,7 +113,7 @@ exports.standardClefs = [
         printObject: true,
         relativeX: 0,
         relativeY: 0,
-        size: 1
+        size: 1,
     },
     {
         line: 5,
@@ -131,7 +132,7 @@ exports.standardClefs = [
         printObject: true,
         relativeX: 0,
         relativeY: 0,
-        size: 1
-    }
+        size: 1,
+    },
 ];
 //# sourceMappingURL=implAttributes_clefData.js.map

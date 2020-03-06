@@ -20,13 +20,10 @@ import { IModel, ILayout } from "./document";
 /**
  * Registers Harmony in the factory structure passed in.
  */
-declare function Export(constructors: {
+export default function Export(constructors: {
     [key: number]: any;
 }): void;
-declare module Export {
-    interface IHarmonyModel extends IModel, Harmony {
-    }
-    interface IHarmonyLayout extends ILayout {
-    }
+export interface IHarmonyModel extends IModel, Harmony {
 }
-export default Export;
+export interface IHarmonyLayout extends ILayout {
+}

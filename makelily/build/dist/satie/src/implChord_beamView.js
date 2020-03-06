@@ -1,4 +1,3 @@
-"use strict";
 /**
  * This file is part of Satie music engraver <https://github.com/jnetterf/satie>.
  * Copyright (C) Joshua Netterfield <joshua.ca> 2015 - present.
@@ -29,23 +28,12 @@ var __extends = (this && this.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
-    result["default"] = mod;
-    return result;
-};
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-var React = __importStar(require("react"));
-var react_1 = require("react");
-var PropTypes = __importStar(require("prop-types"));
-var lodash_1 = require("lodash");
-var private_smufl_1 = require("./private_smufl");
-var implChord_tupletNumberView_1 = __importDefault(require("./implChord_tupletNumberView"));
+import * as React from "react";
+import { Component } from "react";
+import * as PropTypes from "prop-types";
+import { times, map } from "lodash";
+import { bravura, getFontOffset } from "./private_smufl";
+import TupletNumber from "./implChord_tupletNumberView";
 /**
  * Renders a beam based on a computed layout.
  */
@@ -61,8 +49,8 @@ var Beam = /** @class */ (function (_super) {
         var layout = this.props.layout;
         var tuplet = layout.tuplet, beamCount = layout.beamCount, x = layout.x, direction = layout.direction;
         return (React.createElement("g", null,
-            lodash_1.map(beamCount, function (beams, idx) {
-                return lodash_1.times(beams, function (beam) {
+            map(beamCount, function (beams, idx) {
+                return times(beams, function (beam) {
                     var x1;
                     var x2 = _this._withXOffset(x[idx]);
                     if (beamCount[idx - 1] <= beam) {
@@ -102,7 +90,7 @@ var Beam = /** @class */ (function (_super) {
                             _this._getYVar(1, beam, (x1 - xLow) / (xHigh - xLow)), stroke: _this.props.stroke, strokeWidth: 0 }));
                 });
             }),
-            tuplet && (React.createElement(implChord_tupletNumberView_1.default, { tuplet: tuplet, x1: xLow, x2: xHigh, y1: this._getYVar(0, -1, 0) - (direction >= 1 ? 8.5 : -1.8), y2: this._getYVar(0, -1, 1) - (direction >= 1 ? 8.5 : -1.8) }))));
+            tuplet && (React.createElement(TupletNumber, { tuplet: tuplet, x1: xLow, x2: xHigh, y1: this._getYVar(0, -1, 0) - (direction >= 1 ? 8.5 : -1.8), y2: this._getYVar(0, -1, 1) - (direction >= 1 ? 8.5 : -1.8) }))));
     };
     /**
      * Offset because the note-head has a non-zero width.
@@ -114,7 +102,7 @@ var Beam = /** @class */ (function (_super) {
         // Note that we use notehadBlack regardless of the notehead.
         // This keeps spacing consistent, even in beam groups with rests.
         return (x +
-            private_smufl_1.getFontOffset("noteheadBlack", this.props.layout.direction)[0] * 10 +
+            getFontOffset("noteheadBlack", this.props.layout.direction)[0] * 10 +
             this.getLineXOffset());
     };
     Beam.prototype._getX1 = function () {
@@ -131,7 +119,7 @@ var Beam = /** @class */ (function (_super) {
             this._getYOffset() +
             this.props.layout.direction * idx * 8.8 -
             // TODO: use print defaults
-            (incl || 0) * (private_smufl_1.bravura.engravingDefaults.beamThickness * 10));
+            (incl || 0) * (bravura.engravingDefaults.beamThickness * 10));
     };
     Beam.prototype._getY2 = function (incl, idx) {
         // Note that we use notehadBlack regardless of the notehead.
@@ -140,7 +128,7 @@ var Beam = /** @class */ (function (_super) {
             this.props.layout.y2 -
             this._getYOffset() +
             this.props.layout.direction * idx * 8.8 -
-            (incl || 0) * (private_smufl_1.bravura.engravingDefaults.beamThickness * 10));
+            (incl || 0) * (bravura.engravingDefaults.beamThickness * 10));
     };
     Beam.prototype._getYVar = function (incl, idx, percent) {
         var y1 = this._getY1(incl, idx);
@@ -158,6 +146,6 @@ var Beam = /** @class */ (function (_super) {
         originY: PropTypes.number.isRequired,
     };
     return Beam;
-}(react_1.Component));
-exports.default = Beam;
+}(Component));
+export default Beam;
 //# sourceMappingURL=implChord_beamView.js.map

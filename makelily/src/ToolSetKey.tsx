@@ -20,7 +20,7 @@
 
 import { css } from "aphrodite";
 import { Clef, Key } from "musicxml-interfaces";
-import React = require("react");
+import React from "react";
 import { Addons as SatieAddons } from "./satie/src/satie";
 
 import tabStyles from "./tabStyles";
@@ -112,7 +112,6 @@ function getInitialState(props: ToolProps): State {
 export default class ToolSetKey extends React.Component<ToolProps, State> {
   state: State = getInitialState(this.props);
 
-  // tslint:disable-next-line max-func-body-length
   render(): JSX.Element {
     const ksViews: JSX.Element[] = stdKeys.major.map((key: Key, i: number) => {
       const keySpec: Key = {

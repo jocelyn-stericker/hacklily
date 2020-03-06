@@ -1,4 +1,3 @@
-"use strict";
 /**
  * This file is part of Satie music engraver <https://github.com/jnetterf/satie>.
  * Copyright (C) Joshua Netterfield <joshua.ca> 2015 - present.
@@ -29,25 +28,14 @@ var __extends = (this && this.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
-    result["default"] = mod;
-    return result;
-};
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-var React = __importStar(require("react"));
-var react_1 = require("react");
-var PropTypes = __importStar(require("prop-types"));
-var lodash_1 = require("lodash");
-var invariant_1 = __importDefault(require("invariant"));
-var private_views_dot_1 = __importDefault(require("./private_views_dot"));
-var private_views_glyph_1 = __importDefault(require("./private_views_glyph"));
-var private_smufl_1 = require("./private_smufl");
+import * as React from "react";
+import { Component } from "react";
+import * as PropTypes from "prop-types";
+import { map } from "lodash";
+import invariant from "invariant";
+import Dot from "./private_views_dot";
+import Glyph from "./private_views_glyph";
+import { bboxes } from "./private_smufl";
 /**
  * Renders a rest.
  */
@@ -62,25 +50,24 @@ var Rest = /** @class */ (function (_super) {
             return null;
         }
         var rest = spec.rest;
-        invariant_1.default(!!spec.rest, "Attempting to render a non-rest with Rest");
+        invariant(!!spec.rest, "Attempting to render a non-rest with Rest");
         var notehead = this.props.notehead;
         var x = spec.defaultX + (spec.relativeX || 0);
         var y = this.context.originY - (spec.defaultY + (spec.relativeY || 0));
-        var dotOffset = private_smufl_1.bboxes[notehead][0] * 10 + 6;
+        var dotOffset = bboxes[notehead][0] * 10 + 6;
         return (React.createElement("g", null,
-            React.createElement(private_views_glyph_1.default, { fill: spec.color, glyphName: notehead, key: "R", x: x, y: y }),
-            rest.measure &&
-                this.props.multipleRest && (React.createElement("text", { className: "mmn_", fontWeight: "bold", fontSize: 48, textAnchor: "middle", x: x + (private_smufl_1.bboxes[notehead][0] * 10) / 2, y: y - 30 },
+            React.createElement(Glyph, { fill: spec.color, glyphName: notehead, key: "R", x: x, y: y }),
+            rest.measure && this.props.multipleRest && (React.createElement("text", { className: "mmn_", fontWeight: "bold", fontSize: 48, textAnchor: "middle", x: x + (bboxes[notehead][0] * 10) / 2, y: y - 30 },
                 this.props.multipleRest.count,
                 " /*TODO: useSymbols*/")),
             spec.dots && spec.printDot !== false
-                ? lodash_1.map(spec.dots, function (dot, idx) { return (React.createElement(private_views_dot_1.default, { fill: dot.color, key: idx + "d", radius: 2.4, x: x + dotOffset + 6 * idx, y: y - (dot.defaultY + (dot.relativeY || 0)) })); })
+                ? map(spec.dots, function (dot, idx) { return (React.createElement(Dot, { fill: dot.color, key: idx + "d", radius: 2.4, x: x + dotOffset + 6 * idx, y: y - (dot.defaultY + (dot.relativeY || 0)) })); })
                 : null));
     };
     Rest.contextTypes = {
         originY: PropTypes.number.isRequired,
     };
     return Rest;
-}(react_1.Component));
-exports.default = Rest;
+}(Component));
+export default Rest;
 //# sourceMappingURL=implChord_restView.js.map

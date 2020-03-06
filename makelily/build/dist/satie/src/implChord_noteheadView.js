@@ -1,4 +1,3 @@
-"use strict";
 /**
  * This file is part of Satie music engraver <https://github.com/jnetterf/satie>.
  * Copyright (C) Joshua Netterfield <joshua.ca> 2015 - present.
@@ -29,21 +28,10 @@ var __extends = (this && this.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
-    result["default"] = mod;
-    return result;
-};
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-var React = __importStar(require("react"));
-var react_1 = require("react");
-var PropTypes = __importStar(require("prop-types"));
-var private_views_glyph_1 = __importDefault(require("./private_views_glyph"));
+import * as React from "react";
+import { Component } from "react";
+import * as PropTypes from "prop-types";
+import Glyph from "./private_views_glyph";
 /**
  * Renders a notehead.
  */
@@ -56,7 +44,7 @@ var NoteheadView = /** @class */ (function (_super) {
         var spec = this.props.spec;
         var pos = spec;
         var head = spec;
-        return (React.createElement(private_views_glyph_1.default, { fill: head.color, glyphName: this.props.notehead, 
+        return (React.createElement(Glyph, { fill: head.color, glyphName: this.props.notehead, 
             // scale: this.props.grace ? 0.6 : 1.0,
             x: pos.defaultX + (pos.relativeX || 0), y: this.context.originY - pos.defaultY - (pos.relativeY || 0) }));
     };
@@ -64,6 +52,6 @@ var NoteheadView = /** @class */ (function (_super) {
         originY: PropTypes.number.isRequired,
     };
     return NoteheadView;
-}(react_1.Component));
-exports.default = NoteheadView;
+}(Component));
+export default NoteheadView;
 //# sourceMappingURL=implChord_noteheadView.js.map

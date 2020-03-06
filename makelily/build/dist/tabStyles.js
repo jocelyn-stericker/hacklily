@@ -1,4 +1,3 @@
-"use strict";
 /**
  * @license
  * This file is part of Makelily.
@@ -18,10 +17,8 @@
  * along with this program; if not, write to the Free Software Foundation,
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
  */
-Object.defineProperty(exports, "__esModule", { value: true });
-var aphrodite_1 = require("aphrodite");
-// tslint:disable-next-line typedef
-var tabStyles = aphrodite_1.StyleSheet.create({
+import { StyleSheet } from "aphrodite";
+var tabStyles = StyleSheet.create({
     help: {
         left: 15,
         opacity: 0,
@@ -131,5 +128,5 @@ var tabStyles = aphrodite_1.StyleSheet.create({
         margin: 0,
     },
 });
-exports.default = tabStyles;
+export default tabStyles;
 //# sourceMappingURL=tabStyles.js.map

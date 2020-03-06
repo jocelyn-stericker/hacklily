@@ -1,4 +1,3 @@
-"use strict";
 /**
  * This file is part of Satie music engraver <https://github.com/jnetterf/satie>.
  * Copyright (C) Joshua Netterfield <joshua.ca> 2015 - present.
@@ -16,16 +15,15 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with Satie.  If not, see <http://www.gnu.org/licenses/>.
  */
-Object.defineProperty(exports, "__esModule", { value: true });
 /**
  * @file engine/scoreHeader.ts holds default header information as well
  * as convienience utilites for score headers.
  */
-var musicxml_interfaces_1 = require("musicxml-interfaces");
-var lodash_1 = require("lodash");
-var private_print_1 = require("./private_print");
-var private_smufl_1 = require("./private_smufl");
-var private_renderUtil_1 = require("./private_renderUtil");
+import { NormalItalic, NormalBold, OddEvenBoth, LeftCenterRight, serializeScoreHeader, } from "musicxml-interfaces";
+import { forEach, some, defaultsDeep } from "lodash";
+import { getPageMargins } from "./private_print";
+import { distances, bravura } from "./private_smufl";
+import { mmToTenths, defaultStaveHeight, defaultPageSize, defaultMargins, } from "./private_renderUtil";
 /**
  * A header is a child of parts, and includes the title and other basic
  * information.
@@ -42,103 +40,105 @@ var ScoreHeaderModel = /** @class */ (function () {
                 encodingDate: null,
                 supports: {},
                 encoders: [],
-                softwares: []
+                softwares: [],
             },
             miscellaneous: null,
             relations: [],
             rights: [],
-            source: null
+            source: null,
         };
         this.defaults = {
             appearance: {
                 distances: {
                     hyphen: {
-                        tenths: 10 * private_smufl_1.distances.hyphen,
-                        type: "hyphen"
+                        tenths: 10 * distances.hyphen,
+                        type: "hyphen",
                     },
                     beam: {
-                        tenths: 10 * private_smufl_1.distances.beam,
-                        type: "beam"
-                    }
+                        tenths: 10 * distances.beam,
+                        type: "beam",
+                    },
                 },
                 lineWidths: {
                     staff: {
-                        "tenths": 10 * private_smufl_1.bravura.engravingDefaults.staffLineThickness,
-                        "type": "staff"
+                        tenths: 10 * bravura.engravingDefaults.staffLineThickness,
+                        type: "staff",
                     },
                     wedge: {
-                        "tenths": 10 * private_smufl_1.bravura.engravingDefaults.hairpinThickness,
-                        "type": "wedge"
+                        tenths: 10 * bravura.engravingDefaults.hairpinThickness,
+                        type: "wedge",
                     },
                     ending: {
-                        "tenths": 10 * private_smufl_1.bravura.engravingDefaults.repeatEndingLineThickness,
-                        "type": "ending"
+                        tenths: 10 * bravura.engravingDefaults.repeatEndingLineThickness,
+                        type: "ending",
                     },
                     "heavy barline": {
-                        "tenths": 10 * private_smufl_1.bravura.engravingDefaults.thickBarlineThickness,
-                        "type": "heavy barline"
+                        tenths: 10 * bravura.engravingDefaults.thickBarlineThickness,
+                        type: "heavy barline",
                     },
                     leger: {
-                        "tenths": 10 * private_smufl_1.bravura.engravingDefaults.legerLineThickness,
-                        "type": "leger"
+                        tenths: 10 * bravura.engravingDefaults.legerLineThickness,
+                        type: "leger",
                     },
                     stem: {
-                        "tenths": 10 * private_smufl_1.bravura.engravingDefaults.stemThickness,
-                        "type": "stem"
+                        tenths: 10 * bravura.engravingDefaults.stemThickness,
+                        type: "stem",
                     },
                     "tuplet bracket": {
-                        "tenths": 10 * private_smufl_1.bravura.engravingDefaults.tupletBracketThickness,
-                        "type": "tuplet bracket"
+                        tenths: 10 * bravura.engravingDefaults.tupletBracketThickness,
+                        type: "tuplet bracket",
                     },
                     beam: {
-                        "tenths": 10 * private_smufl_1.bravura.engravingDefaults.beamThickness,
-                        "type": "beam"
+                        tenths: 10 * bravura.engravingDefaults.beamThickness,
+                        type: "beam",
                     },
                     "light barline": {
-                        "tenths": 10 * private_smufl_1.bravura.engravingDefaults.thinBarlineThickness,
-                        "type": "light barline"
+                        tenths: 10 * bravura.engravingDefaults.thinBarlineThickness,
+                        type: "light barline",
                     },
                     enclosure: {
-                        "tenths": 10 * private_smufl_1.bravura.engravingDefaults.textEnclosureThickness,
-                        "type": "enclosure"
-                    }
+                        tenths: 10 * bravura.engravingDefaults.textEnclosureThickness,
+                        type: "enclosure",
+                    },
                 },
                 noteSizes: {
                     1: {
-                        "type": 1,
-                        "size": 60 // Not sure what 60 refers to. Our grace notes are 1.9 spaces
+                        // Grace
+                        type: 1,
+                        size: 60,
                     },
                     0: {
-                        "type": 0,
-                        "size": 60 // Not sure what 60 refers to. Our cue notes are 1.9 spaces.
-                    }
+                        // Cue
+                        type: 0,
+                        size: 60,
+                    },
                 },
-                otherAppearances: []
+                otherAppearances: [],
             },
             lyricFonts: [],
             lyricLanguages: [],
             musicFont: {
                 fontSize: "20.5",
                 fontFamily: "Bravura, Maestro, engraved",
-                fontStyle: musicxml_interfaces_1.NormalItalic.Normal,
-                fontWeight: musicxml_interfaces_1.NormalBold.Normal
+                fontStyle: NormalItalic.Normal,
+                fontWeight: NormalBold.Normal,
             },
             pageLayout: {
-                pageHeight: private_renderUtil_1.mmToTenths(private_renderUtil_1.defaultStaveHeight, private_renderUtil_1.defaultPageSize().height),
-                pageWidth: private_renderUtil_1.mmToTenths(private_renderUtil_1.defaultStaveHeight, private_renderUtil_1.defaultPageSize().width),
+                pageHeight: mmToTenths(defaultStaveHeight, defaultPageSize().height),
+                pageWidth: mmToTenths(defaultStaveHeight, defaultPageSize().width),
                 pageMargins: [
                     {
-                        bottomMargin: private_renderUtil_1.mmToTenths(private_renderUtil_1.defaultStaveHeight, private_renderUtil_1.defaultMargins.bottom),
-                        leftMargin: private_renderUtil_1.mmToTenths(private_renderUtil_1.defaultStaveHeight, private_renderUtil_1.defaultMargins.left),
-                        rightMargin: private_renderUtil_1.mmToTenths(private_renderUtil_1.defaultStaveHeight, private_renderUtil_1.defaultMargins.right),
-                        topMargin: private_renderUtil_1.mmToTenths(private_renderUtil_1.defaultStaveHeight, private_renderUtil_1.defaultMargins.top),
-                        type: musicxml_interfaces_1.OddEvenBoth.Both
-                    }
-                ]
+                        bottomMargin: mmToTenths(defaultStaveHeight, defaultMargins.bottom),
+                        leftMargin: mmToTenths(defaultStaveHeight, defaultMargins.left),
+                        rightMargin: mmToTenths(defaultStaveHeight, defaultMargins.right),
+                        topMargin: mmToTenths(defaultStaveHeight, defaultMargins.top),
+                        type: OddEvenBoth.Both,
+                    },
+                ],
             },
             scaling: {
-                millimeters: private_renderUtil_1.defaultStaveHeight,
-                tenths: 40
+                millimeters: defaultStaveHeight,
+                tenths: 40,
             },
             staffLayouts: [],
             systemLayout: {
@@ -146,30 +146,32 @@ var ScoreHeaderModel = /** @class */ (function () {
                 systemDividers: null,
                 systemMargins: {
                     leftMargin: 0,
-                    rightMargin: 0
+                    rightMargin: 0,
                 },
-                topSystemDistance: 70
+                topSystemDistance: 70,
             },
             wordFont: {
                 fontSize: "12",
                 fontFamily: "Alegreya, Times New Roman, serif",
-                fontStyle: musicxml_interfaces_1.NormalItalic.Normal,
-                fontWeight: musicxml_interfaces_1.NormalBold.Normal
-            }
+                fontStyle: NormalItalic.Normal,
+                fontWeight: NormalBold.Normal,
+            },
         };
         this.work = {
             opus: null,
             workNumber: "",
-            workTitle: ""
+            workTitle: "",
         };
         this.movementTitle = "";
         this.movementNumber = "";
         this.partList = [];
         if (spec) {
-            lodash_1.defaultsDeep(spec, this);
+            defaultsDeep(spec, this);
         }
         for (var key in spec) {
-            if (spec.hasOwnProperty(key) && typeof key === "string" && !!spec[key]) {
+            if (Object.prototype.hasOwnProperty.call(spec, key) &&
+                typeof key === "string" &&
+                !!spec[key]) {
                 this[key] = spec[key];
             }
         }
@@ -180,7 +182,7 @@ var ScoreHeaderModel = /** @class */ (function () {
         },
         set: function (composer) {
             this._setIdentification("composer", composer);
-            this._setCredits("composer", composer, musicxml_interfaces_1.LeftCenterRight.Right, "12px", 20);
+            this._setCredits("composer", composer, LeftCenterRight.Right, "12px", 20);
         },
         enumerable: true,
         configurable: true
@@ -191,7 +193,7 @@ var ScoreHeaderModel = /** @class */ (function () {
         },
         set: function (arranger) {
             this._setIdentification("arranger", arranger);
-            this._setCredits("arranger", arranger, musicxml_interfaces_1.LeftCenterRight.Right, "12px", 35);
+            this._setCredits("arranger", arranger, LeftCenterRight.Right, "12px", 35);
         },
         enumerable: true,
         configurable: true
@@ -202,7 +204,7 @@ var ScoreHeaderModel = /** @class */ (function () {
         },
         set: function (lyricist) {
             this._setIdentification("lyricist", lyricist);
-            this._setCredits("lyricist", lyricist, musicxml_interfaces_1.LeftCenterRight.Right, "12px", 50);
+            this._setCredits("lyricist", lyricist, LeftCenterRight.Right, "12px", 50);
         },
         enumerable: true,
         configurable: true
@@ -214,39 +216,38 @@ var ScoreHeaderModel = /** @class */ (function () {
         set: function (title) {
             // Set meta-data
             this.movementTitle = title;
-            this._setCredits("title", title, musicxml_interfaces_1.LeftCenterRight.Center, "18px", 10);
+            this._setCredits("title", title, LeftCenterRight.Center, "18px", 10);
         },
         enumerable: true,
         configurable: true
     });
     ScoreHeaderModel.prototype.toXML = function () {
-        return musicxml_interfaces_1.serializeScoreHeader(this);
+        return serializeScoreHeader(this);
     };
     ScoreHeaderModel.prototype.inspect = function () {
         return this.toXML();
     };
     ScoreHeaderModel.prototype.overwriteEncoding = function () {
-        var date = new Date;
-        this.identification = this.identification || (new ScoreHeaderModel(null)).identification;
+        var date = new Date();
+        this.identification =
+            this.identification || new ScoreHeaderModel(null).identification;
         this.identification.encoding = {
             encodingDescriptions: [],
             encodingDate: {
                 month: date.getMonth() + 1,
                 day: date.getDate(),
-                year: date.getFullYear()
+                year: date.getFullYear(),
             },
             supports: {
                 "satie-collaboration": {
                     element: "satie-collaboration",
                     value: null,
                     type: true,
-                    attribute: null
-                }
+                    attribute: null,
+                },
             },
             encoders: [],
-            softwares: [
-                "Songhaus Satie"
-            ]
+            softwares: ["Songhaus Satie"],
         };
     };
     ScoreHeaderModel.prototype._getIdentificationOrCredit = function (type) {
@@ -259,31 +260,34 @@ var ScoreHeaderModel = /** @class */ (function () {
                 return idComposer;
             }
         }
-        return this.credits.filter(function (c) { return c.creditTypes.indexOf(type) !== -1; })
+        return this.credits
+            .filter(function (c) { return c.creditTypes.indexOf(type) !== -1; })
             .map(function (m) { return m.creditWords; })
             .map(function (w) { return w.map(function (w) { return w.words; }).join(", "); })
             .join(", ");
     };
     ScoreHeaderModel.prototype._setIdentification = function (type, val) {
-        this.identification = this.identification || {
-            miscellaneous: [],
-            creators: [],
-            encoding: [],
-            relations: [],
-            rights: [],
-            source: null
-        };
+        this.identification =
+            this.identification ||
+                {
+                    miscellaneous: [],
+                    creators: [],
+                    encoding: [],
+                    relations: [],
+                    rights: [],
+                    source: null,
+                };
         this.identification.creators = this.identification.creators || [];
-        lodash_1.forEach(this.identification.creators, function (c) {
+        forEach(this.identification.creators, function (c) {
             if (c.type === type) {
                 c.creator = val;
             }
         });
-        if (!lodash_1.some(this.identification.creators, function (c) { return c.type === type; })) {
+        if (!some(this.identification.creators, function (c) { return c.type === type; })) {
             // ...or add a val
             this.identification.creators.push({
                 creator: val,
-                type: type
+                type: type,
             });
         }
     };
@@ -292,7 +296,7 @@ var ScoreHeaderModel = /** @class */ (function () {
         var mm = this.defaults.scaling.millimeters;
         var pageLayout = this.defaults.pageLayout;
         this.credits = this.credits || [];
-        lodash_1.forEach(this.credits, function (c, idx) {
+        forEach(this.credits, function (c, idx) {
             if (!c.creditWords) {
                 return;
             }
@@ -308,19 +312,20 @@ var ScoreHeaderModel = /** @class */ (function () {
                 }
             }
         });
-        if (!lodash_1.some(this.credits, function (c) { return Boolean(c.creditWords) && c.creditTypes.indexOf(type) !== -1; })) {
+        if (!some(this.credits, function (c) { return Boolean(c.creditWords) && c.creditTypes.indexOf(type) !== -1; })) {
             var defaultX = NaN;
-            var margins = private_print_1.getPageMargins(this.defaults.pageLayout.pageMargins, 1);
+            var margins = getPageMargins(this.defaults.pageLayout.pageMargins, 1);
             // TODO: Throughout this file, use own instead of default values
             switch (justification) {
-                case musicxml_interfaces_1.LeftCenterRight.Center:
-                    defaultX = (margins.leftMargin - margins.rightMargin +
-                        pageLayout.pageWidth) / 2;
+                case LeftCenterRight.Center:
+                    defaultX =
+                        (margins.leftMargin - margins.rightMargin + pageLayout.pageWidth) /
+                            2;
                     break;
-                case musicxml_interfaces_1.LeftCenterRight.Right:
+                case LeftCenterRight.Right:
                     defaultX = pageLayout.pageWidth - margins.rightMargin;
                     break;
-                case musicxml_interfaces_1.LeftCenterRight.Left:
+                case LeftCenterRight.Left:
                     defaultX = margins.leftMargin;
                     break;
                 default:
@@ -331,18 +336,20 @@ var ScoreHeaderModel = /** @class */ (function () {
                 // ... or add a credit
                 creditImage: null,
                 creditTypes: [type],
-                creditWords: [{
+                creditWords: [
+                    {
                         words: val,
                         defaultX: defaultX,
                         justify: justification,
-                        defaultY: pageLayout.pageHeight - private_renderUtil_1.mmToTenths(mm, top),
-                        fontSize: fontSize
-                    }],
-                page: 1
+                        defaultY: pageLayout.pageHeight - mmToTenths(mm, top),
+                        fontSize: fontSize,
+                    },
+                ],
+                page: 1,
             });
         }
     };
     return ScoreHeaderModel;
 }());
-exports.default = ScoreHeaderModel;
+export default ScoreHeaderModel;
 //# sourceMappingURL=engine_scoreHeader.js.map

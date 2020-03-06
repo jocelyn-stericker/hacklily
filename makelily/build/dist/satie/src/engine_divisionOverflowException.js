@@ -1,4 +1,3 @@
-"use strict";
 /**
  * This file is part of Satie music engraver <https://github.com/jnetterf/satie>.
  * Copyright (C) Joshua Netterfield <joshua.ca> 2015 - present.
@@ -16,14 +15,13 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with Satie.  If not, see <http://www.gnu.org/licenses/>.
  */
-Object.defineProperty(exports, "__esModule", { value: true });
-var private_util_1 = require("./private_util");
-var private_util_2 = require("./private_util");
+import { MAX_SAFE_INTEGER } from "./private_util";
+import { cloneObject } from "./private_util";
 function getSplit(segment, maxDiv, isVoice) {
     var divs = 0;
     var split = 0;
     do {
-        divs += (segment[split].divCount || 0);
+        divs += segment[split].divCount || 0;
         if (divs <= maxDiv || !isVoice) {
             ++split;
         }
@@ -34,12 +32,13 @@ var DivisionOverflowException = /** @class */ (function () {
     function DivisionOverflowException(maxDiv, measure, attributes) {
         this.newParts = {};
         this.measure = measure;
-        this.message = "DivisionOverflowException: max division should be " +
-            (maxDiv + " in measure " + this.measure.idx);
-        this.stack = (new Error).stack;
+        this.message =
+            "DivisionOverflowException: max division should be " +
+                (maxDiv + " in measure " + this.measure.idx);
+        this.stack = new Error().stack;
         this.maxDiv = maxDiv;
         this.oldParts = {
-            "P1": {
+            P1: {
                 voices: measure.parts["P1"].voices.map(function (segment) {
                     if (!segment) {
                         return null;
@@ -59,7 +58,7 @@ var DivisionOverflowException = /** @class */ (function () {
             },
         };
         this.newParts = {
-            "P1": {
+            P1: {
                 voices: measure.parts["P1"].voices.map(function (segment) {
                     if (!segment) {
                         return null;
@@ -81,7 +80,7 @@ var DivisionOverflowException = /** @class */ (function () {
         this.attributes = attributes;
     }
     DivisionOverflowException.prototype.getOperations = function () {
-        return private_util_2.cloneObject([
+        return cloneObject([
             {
                 ld: this.measure,
                 li: {
@@ -92,7 +91,7 @@ var DivisionOverflowException = /** @class */ (function () {
             },
             {
                 li: {
-                    uuid: Math.floor(Math.random() * private_util_1.MAX_SAFE_INTEGER),
+                    uuid: Math.floor(Math.random() * MAX_SAFE_INTEGER),
                     parts: this.newParts,
                 },
                 p: ["measures", this.measure.idx + 1],
@@ -101,5 +100,5 @@ var DivisionOverflowException = /** @class */ (function () {
     };
     return DivisionOverflowException;
 }());
-exports.default = DivisionOverflowException;
+export default DivisionOverflowException;
 //# sourceMappingURL=engine_divisionOverflowException.js.map

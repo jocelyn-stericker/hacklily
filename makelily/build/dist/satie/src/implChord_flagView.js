@@ -1,4 +1,3 @@
-"use strict";
 /**
  * This file is part of Satie music engraver <https://github.com/jnetterf/satie>.
  * Copyright (C) Joshua Netterfield <joshua.ca> 2015 - present.
@@ -29,22 +28,10 @@ var __extends = (this && this.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
-    result["default"] = mod;
-    return result;
-};
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-var react_1 = require("react");
-var PropTypes = __importStar(require("prop-types"));
-var private_views_glyph_1 = __importDefault(require("./private_views_glyph"));
-var private_smufl_1 = require("./private_smufl");
-var $Glyph = react_1.createFactory(private_views_glyph_1.default);
+import React, { Component } from "react";
+import * as PropTypes from "prop-types";
+import Glyph from "./private_views_glyph";
+import { getFontOffset } from "./private_smufl";
 /**
  * Responsible for rendering the "flag" on un-beamed notes shorter than quarter notes.
  */
@@ -58,18 +45,12 @@ var Flag = /** @class */ (function (_super) {
         var context = this.context;
         var xscale = this.props.isGrace ? 0.6 : 1.0;
         var dir = spec.direction;
-        var fontOffsetX = private_smufl_1.getFontOffset(this.glyphName(), dir)[0] * xscale;
-        var noteOffsetX = private_smufl_1.getFontOffset(this.props.notehead, dir)[0] * xscale;
-        var noteOffsetY = private_smufl_1.getFontOffset(this.props.notehead, dir)[1] * 10;
-        return $Glyph({
-            fill: spec.color,
-            glyphName: this.glyphName(),
-            scale: this.props.isGrace ? 0.6 : 1.0,
-            x: spec.defaultX +
+        var fontOffsetX = getFontOffset(this.glyphName(), dir)[0] * xscale;
+        var noteOffsetX = getFontOffset(this.props.notehead, dir)[0] * xscale;
+        var noteOffsetY = getFontOffset(this.props.notehead, dir)[1] * 10;
+        return (React.createElement(Glyph, { fill: spec.color, glyphName: this.glyphName(), scale: this.props.isGrace ? 0.6 : 1.0, x: spec.defaultX +
                 fontOffsetX * 10 +
-                ((dir === 1) ? noteOffsetX * 10 - this.props.stemWidth : 0),
-            y: context.originY - spec.defaultY - noteOffsetY * 4
-        });
+                (dir === 1 ? noteOffsetX * 10 - this.props.stemWidth : 0), y: context.originY - spec.defaultY - noteOffsetY * 4 }));
     };
     Flag.prototype.directionString = function () {
         if (this.props.spec.direction === 1) {
@@ -84,9 +65,9 @@ var Flag = /** @class */ (function (_super) {
         return this.props.spec.flag + this.directionString();
     };
     Flag.contextTypes = {
-        originY: PropTypes.number.isRequired
+        originY: PropTypes.number.isRequired,
     };
     return Flag;
-}(react_1.Component));
-exports.default = Flag;
+}(Component));
+export default Flag;
 //# sourceMappingURL=implChord_flagView.js.map

@@ -1,4 +1,3 @@
-"use strict";
 /**
  * This file is part of Satie music engraver <https://github.com/jnetterf/satie>.
  * Copyright (C) Joshua Netterfield <joshua.ca> 2015 - present.
@@ -16,21 +15,17 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with Satie.  If not, see <http://www.gnu.org/licenses/>.
  */
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-var invariant_1 = __importDefault(require("invariant"));
-var lodash_1 = require("lodash");
-var document_1 = require("./document");
-var engine_divisions_1 = require("./engine_divisions");
-var private_util_1 = require("./private_util");
-var private_mutate_1 = require("./private_mutate");
-var implAttributes_attributesMutator_1 = __importDefault(require("./implAttributes_attributesMutator"));
-var implBarline_barlineMutator_1 = __importDefault(require("./implBarline_barlineMutator"));
-var implChord_chordMutator_1 = __importDefault(require("./implChord_chordMutator"));
-var implPrint_printMutator_1 = __importDefault(require("./implPrint_printMutator"));
-var implSegment_segmentMutator_1 = __importDefault(require("./implSegment_segmentMutator"));
+import invariant from "invariant";
+import { find, cloneDeep, forEach, isPlainObject, isArray, isUndefined, isNull, isBoolean, isNumber, isString, } from "lodash";
+import { Type } from "./document";
+import { normalizeDivisionsInPlace } from "./engine_divisions";
+import { cloneObject } from "./private_util";
+import { mutate } from "./private_mutate";
+import attributesMutator from "./implAttributes_attributesMutator";
+import barlineMutator from "./implBarline_barlineMutator";
+import chordMutator from "./implChord_chordMutator";
+import printMutator from "./implPrint_printMutator";
+import segmentMutator from "./implSegment_segmentMutator";
 /**
  * Checks whether this object is safe to JSON.stringify and JSON.parse.
  * The only difference between the two should be presence of undefined values in Arrays and Objects.
@@ -38,17 +33,17 @@ var implSegment_segmentMutator_1 = __importDefault(require("./implSegment_segmen
  * In Arrays that previously had undefined values, after serializing, these values will be replaced with null.
  */
 function isSerializable(obj) {
-    if (lodash_1.isUndefined(obj) ||
-        lodash_1.isNull(obj) ||
-        lodash_1.isBoolean(obj) ||
-        lodash_1.isNumber(obj) ||
-        lodash_1.isString(obj)) {
+    if (isUndefined(obj) ||
+        isNull(obj) ||
+        isBoolean(obj) ||
+        isNumber(obj) ||
+        isString(obj)) {
         return true;
     }
-    else if (lodash_1.isArray(obj)) {
+    else if (isArray(obj)) {
         return obj.every(isSerializable);
     }
-    else if (lodash_1.isPlainObject(obj)) {
+    else if (isPlainObject(obj)) {
         return Object.keys(obj).every(function (key) { return isSerializable(obj[key]); });
     }
     return false;
@@ -61,12 +56,12 @@ function isSerializable(obj) {
  *
  * @param op.p [measureUUID, ("part"|"voice")]
  */
-function applyOp(preview, measures, factory, op, document, notEligableForPreview) {
+export default function applyOp(preview, measures, factory, op, document, notEligableForPreview) {
     // Operations must be entirely serializable, to be sent over the work. Serializble means it is one of:
     //   - a simple data type (number, string, ...)
     //   - a plain object (object with prototype Object), and that the same is true for all children
     //   - a plain array, and that the same is true for all items
-    invariant_1.default(isSerializable(op), "All operations must be serializable.");
+    invariant(isSerializable(op), "All operations must be serializable.");
     var path = op.p;
     if (path.length === 2 && path[0] === "measures") {
         // Song-wide measure addition/removal
@@ -89,36 +84,36 @@ function applyOp(preview, measures, factory, op, document, notEligableForPreview
                     }
                 });
             });
-            engine_divisions_1.normalizeDivisionsInPlace(factory, segments_1, op.oi);
+            normalizeDivisionsInPlace(factory, segments_1, op.oi);
         });
         return;
     }
     var measureUUID = parseInt(String(path[0]), 10);
-    var measure = lodash_1.find(measures, function (measure) { return measure.uuid === measureUUID; });
-    invariant_1.default(Boolean(measure), "Invalid operation path: no such measure " + path[0]);
-    invariant_1.default(path[1] === "parts", "Invalid operation path: only parts is supported, not " + path[1]);
+    var measure = find(measures, function (measure) { return measure.uuid === measureUUID; });
+    invariant(Boolean(measure), "Invalid operation path: no such measure " + path[0]);
+    invariant(path[1] === "parts", "Invalid operation path: only parts is supported, not " + path[1]);
     var part = measure.parts[path[2]];
-    invariant_1.default(Boolean(part), "Invalid operation path: no such part " + part);
+    invariant(Boolean(part), "Invalid operation path: no such part " + part);
     ++measure.version;
-    invariant_1.default(path[3] === "voices" || path[3] === "staves", "Invalid operation path: " + path[3] + " should have been \"voices\" or \"staves");
+    invariant(path[3] === "voices" || path[3] === "staves", "Invalid operation path: " + path[3] + " should have been \"voices\" or \"staves");
     var cleanliness = document.cleanlinessTracking.measures[measureUUID];
     if (cleanliness) {
         cleanliness.clean = null;
     }
     if (path[3] === "voices") {
         var voice = part.voices[parseInt(String(path[4]), 10)];
-        invariant_1.default(Boolean(voice), "Invalid operation path: No such voice " + path.slice(0, 4).join(", "));
+        invariant(Boolean(voice), "Invalid operation path: No such voice " + path.slice(0, 4).join(", "));
         if (path.length === 6 && ((op.li && !op.ld) || (!op.li && op.ld))) {
             notEligableForPreview();
-            implSegment_segmentMutator_1.default(factory, voice, op, document);
+            segmentMutator(factory, voice, op, document);
             return;
         }
         var element = voice[parseInt(String(path[5]), 10)];
-        invariant_1.default(Boolean(element), "Invalid operation path: No such element " + path.slice(0, 5).join(", "));
-        var localOp = lodash_1.cloneDeep(op);
+        invariant(Boolean(element), "Invalid operation path: No such element " + path.slice(0, 5).join(", "));
+        var localOp = cloneDeep(op);
         localOp.p = path.slice(6);
-        if (factory.modelHasType(element, document_1.Type.Chord)) {
-            implChord_chordMutator_1.default(element, localOp);
+        if (factory.modelHasType(element, Type.Chord)) {
+            chordMutator(element, localOp);
         }
         else {
             throw new Error("Invalid operation path: No voice reducer for " + element);
@@ -126,20 +121,20 @@ function applyOp(preview, measures, factory, op, document, notEligableForPreview
     }
     else if (path[3] === "staves") {
         var staff = part.staves[parseInt(String(path[4]), 10)];
-        invariant_1.default(Boolean(staff), "Invalid operation path: No such staff " + path.slice(0, 4).join(", "));
+        invariant(Boolean(staff), "Invalid operation path: No such staff " + path.slice(0, 4).join(", "));
         if (path.length === 6 && ((op.li && !op.ld) || (!op.li && op.ld))) {
             notEligableForPreview();
-            implSegment_segmentMutator_1.default(factory, staff, op, document);
+            segmentMutator(factory, staff, op, document);
             return;
         }
         var element = staff[parseInt(String(path[5]), 10)];
-        invariant_1.default(Boolean(element), "Invalid operation path: No such element " + path.slice(0, 5).join(", "));
-        var localOp = lodash_1.cloneDeep(op);
+        invariant(Boolean(element), "Invalid operation path: No such element " + path.slice(0, 5).join(", "));
+        var localOp = cloneDeep(op);
         localOp.p = path.slice(6);
-        if (factory.modelHasType(element, document_1.Type.Barline)) {
-            implBarline_barlineMutator_1.default(element, localOp);
+        if (factory.modelHasType(element, Type.Barline)) {
+            barlineMutator(element, localOp);
         }
-        else if (factory.modelHasType(element, document_1.Type.Attributes)) {
+        else if (factory.modelHasType(element, Type.Attributes)) {
             if (!preview) {
                 // Mark everything as dirty -- this is overkill, but finding what measures
                 // need to be changed is tough.
@@ -150,29 +145,28 @@ function applyOp(preview, measures, factory, op, document, notEligableForPreview
                     }
                 });
             }
-            implAttributes_attributesMutator_1.default(preview, element, localOp);
+            attributesMutator(preview, element, localOp);
         }
-        else if (factory.modelHasType(element, document_1.Type.Print)) {
-            implPrint_printMutator_1.default(preview, element, localOp);
+        else if (factory.modelHasType(element, Type.Print)) {
+            printMutator(preview, element, localOp);
         }
-        else if (factory.modelHasType(element, document_1.Type.Spacer)) {
-            private_mutate_1.mutate(element, localOp);
+        else if (factory.modelHasType(element, Type.Spacer)) {
+            mutate(element, localOp);
         }
         else {
             throw new Error("Invalid operation path: No staff reducer for " + element);
         }
     }
 }
-exports.default = applyOp;
-function applyMeasureOp(measures, factory, op, doc) {
+export function applyMeasureOp(measures, factory, op, doc) {
     var ok = false;
     var oldMeasure;
     if (op.ld !== undefined && op.p.length === 1) {
         ok = true;
         var measureIdx = op.p[0];
-        invariant_1.default(!isNaN(measureIdx), "Measure index " + measureIdx + " must be");
-        invariant_1.default(Boolean(op.ld.uuid), "uuid must be specified");
-        invariant_1.default(op.ld.uuid === measures[measureIdx].uuid, "invalid uuid " + op.ld.uuid + " != " + measures[measureIdx].uuid);
+        invariant(!isNaN(measureIdx), "Measure index " + measureIdx + " must be");
+        invariant(Boolean(op.ld.uuid), "uuid must be specified");
+        invariant(op.ld.uuid === measures[measureIdx].uuid, "invalid uuid " + op.ld.uuid + " != " + measures[measureIdx].uuid);
         oldMeasure = measures[measureIdx];
         measures.splice(measureIdx, 1);
         measures.slice(measureIdx).forEach(function (measure) {
@@ -189,18 +183,18 @@ function applyMeasureOp(measures, factory, op, doc) {
     if (op.li !== undefined && op.p.length === 1) {
         ok = true;
         var measureIdx = op.p[0];
-        invariant_1.default(!isNaN(measureIdx), "Measure index " + measureIdx + " must be");
-        invariant_1.default(Boolean(op.li.uuid), "uuid must be specified");
+        invariant(!isNaN(measureIdx), "Measure index " + measureIdx + " must be");
+        invariant(Boolean(op.li.uuid), "uuid must be specified");
         oldMeasure =
             oldMeasure || measures[measureIdx - 1] || measures[measureIdx + 1]; // note, we don't support empty docs
         var oldParts = oldMeasure.parts;
-        var newParts_1 = private_util_1.cloneObject(op.li.parts) || {};
-        lodash_1.forEach(oldParts, function (part, partID) {
+        var newParts_1 = cloneObject(op.li.parts) || {};
+        forEach(oldParts, function (part, partID) {
             newParts_1[partID] = newParts_1[partID] || {
                 voices: [],
                 staves: [],
             };
-            lodash_1.forEach(part.staves, function (staff, staffIdx) {
+            forEach(part.staves, function (staff, staffIdx) {
                 if (!staff) {
                     newParts_1[partID].staves[staffIdx] =
                         newParts_1[partID].staves[staffIdx] || null;
@@ -221,7 +215,7 @@ function applyMeasureOp(measures, factory, op, doc) {
                     nv.ownerType = staff.ownerType;
                 }
             });
-            lodash_1.forEach(part.voices, function (voice, voiceIdx) {
+            forEach(part.voices, function (voice, voiceIdx) {
                 if (!voice) {
                     newParts_1[partID].voices[voiceIdx] =
                         newParts_1[partID].voices[voiceIdx] || null;
@@ -231,7 +225,7 @@ function applyMeasureOp(measures, factory, op, doc) {
                         newParts_1[partID].voices[voiceIdx] =
                             newParts_1[partID].voices[voiceIdx].map(function (i) {
                                 var model = factory.fromSpec(i);
-                                if (doc.modelHasType(model, document_1.Type.VisualCursor)) {
+                                if (doc.modelHasType(model, Type.VisualCursor)) {
                                     doc._visualCursor = model;
                                 }
                                 return model;
@@ -272,7 +266,6 @@ function applyMeasureOp(measures, factory, op, doc) {
         });
         measures.forEach(function (measure) { return ++measure.version; });
     }
-    invariant_1.default(ok, "Invalid operation type for applyMeasureOp's context: " + JSON.stringify(op));
+    invariant(ok, "Invalid operation type for applyMeasureOp's context: " + JSON.stringify(op));
 }
-exports.applyMeasureOp = applyMeasureOp;
 //# sourceMappingURL=engine_applyOp.js.map

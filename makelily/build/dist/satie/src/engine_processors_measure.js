@@ -1,4 +1,3 @@
-"use strict";
 /**
  * This file is part of Satie music engraver <https://github.com/jnetterf/satie>.
  * Copyright (C) Joshua Netterfield <joshua.ca> 2015 - present.
@@ -27,23 +26,19 @@ var __assign = (this && this.__assign) || function () {
     };
     return __assign.apply(this, arguments);
 };
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", { value: true });
 /**
  * @file engine/processors/measure.ts provides functions for validating and laying out measures
  */
-var invariant_1 = __importDefault(require("invariant"));
-var lodash_1 = require("lodash");
-var document_1 = require("./document");
-var implAttributes_attributesData_1 = require("./implAttributes_attributesData");
-var private_combinedLayout_1 = require("./private_combinedLayout");
-var private_cursor_1 = require("./private_cursor");
-var private_part_1 = require("./private_part");
-var private_util_1 = require("./private_util");
-var private_chordUtil_1 = require("./private_chordUtil");
-var engine_divisionOverflowException_1 = __importDefault(require("./engine_divisionOverflowException"));
+import invariant from "invariant";
+import { keyBy, filter, map, reduce, values, flatten, forEach, some, last, } from "lodash";
+import { Type, } from "./document";
+import { getNativeKeyAccidentals } from "./implAttributes_attributesData";
+import { mergeSegmentsInPlace, } from "./private_combinedLayout";
+import { ValidationCursor, LayoutCursor } from "./private_cursor";
+import { scoreParts } from "./private_part";
+import { cloneObject } from "./private_util";
+import { barDivisions, InvalidAccidental } from "./private_chordUtil";
+import DivisionOverflowException from "./engine_divisionOverflowException";
 /**
  * Given a bunch of segments and the context (measure, line), returns information needed to lay the
  * models out. Note that the order of the output is arbitrary and may not correspond to the order
@@ -55,10 +50,10 @@ var engine_divisionOverflowException_1 = __importDefault(require("./engine_divis
  *
  * Complexity: O(staff-voice pairs)
  */
-function refreshMeasure(spec) {
+export function refreshMeasure(spec) {
     var gMeasure = spec.measure;
-    invariant_1.default(!!spec.attributes, "Attributes must be defined");
-    var gInitialAttribs = private_util_1.cloneObject(spec.attributes);
+    invariant(!!spec.attributes, "Attributes must be defined");
+    var gInitialAttribs = cloneObject(spec.attributes);
     var gPrint = spec.print;
     var gMaxDivisions = 0;
     if (!spec.document.cleanlinessTracking.measures[spec.measure.uuid]) {
@@ -74,7 +69,7 @@ function refreshMeasure(spec) {
     // to avoid unnecessary work.
     var cleanliness = spec.document.cleanlinessTracking.measures[spec.measure.uuid];
     var oldLayout = cleanliness.layout;
-    invariant_1.default(spec.segments.length >= 1, "_processMeasure expects at least one segment.");
+    invariant(spec.segments.length >= 1, "_processMeasure expects at least one segment.");
     Object.keys(spec.measure.parts).forEach(function (part) {
         cleanliness.x[part] = cleanliness.x[part] || {};
         spec.measure.parts[part].voices.forEach(function (voice) {
@@ -92,8 +87,8 @@ function refreshMeasure(spec) {
             };
         });
     });
-    var gStaffMeasure = lodash_1.keyBy(lodash_1.filter(spec.segments, function (seg) { return seg.ownerType === "staff"; }), function (seg) { return seg.part + "_" + seg.owner; });
-    var gVoiceMeasure = lodash_1.keyBy(lodash_1.filter(spec.segments, function (seg) { return seg.ownerType === "voice"; }), function (seg) { return seg.part + "_" + seg.owner; });
+    var gStaffMeasure = keyBy(filter(spec.segments, function (seg) { return seg.ownerType === "staff"; }), function (seg) { return seg.part + "_" + seg.owner; });
+    var gVoiceMeasure = keyBy(filter(spec.segments, function (seg) { return seg.ownerType === "voice"; }), function (seg) { return seg.part + "_" + seg.owner; });
     var gStaffLayouts = {};
     var gMaxXInMeasure = spec.measureX;
     var gMaxPaddingTopInMeasure = [];
@@ -103,40 +98,42 @@ function refreshMeasure(spec) {
     var vCursor;
     function fixup(operations) {
         var localSegment = vCursor.segmentInstance;
-        var restartRequired = lodash_1.some(operations, function (op) {
+        var restartRequired = some(operations, function (op) {
             if (op.p[0] === "divisions") {
                 return true;
             }
-            invariant_1.default(String(op.p[0]) === String(spec.measure.uuid), "Unexpected fixup for a measure " + op.p[0] + " " +
+            invariant(String(op.p[0]) === String(spec.measure.uuid), "Unexpected fixup for a measure " + op.p[0] + " " +
                 ("other than the current " + spec.measure.uuid));
-            invariant_1.default(op.p[1] === "parts", "Expected p[1] to be parts");
-            invariant_1.default(op.p[2] === localSegment.part, "Expected part " + op.p[2] + " to be " + localSegment.part);
+            invariant(op.p[1] === "parts", "Expected p[1] to be parts");
+            invariant(op.p[2] === localSegment.part, "Expected part " + op.p[2] + " to be " + localSegment.part);
             if (localSegment.ownerType === "voice") {
                 if (typeof op.p[4] === "string") {
                     op.p[4] = parseInt(op.p[4], 10);
                 }
-                invariant_1.default(op.p[3] === "voices", "We are in a voice, so we can only patch the voice");
-                invariant_1.default(op.p[4] === localSegment.owner, "Expected voice owner " + localSegment.owner + ", got " + op.p[4]);
-                return op.p.length === 6 && (op.p[5] <= vCursor.segmentPosition) || op.p[5] < vCursor.segmentPosition;
+                invariant(op.p[3] === "voices", "We are in a voice, so we can only patch the voice");
+                invariant(op.p[4] === localSegment.owner, "Expected voice owner " + localSegment.owner + ", got " + op.p[4]);
+                return ((op.p.length === 6 && op.p[5] <= vCursor.segmentPosition) ||
+                    op.p[5] < vCursor.segmentPosition);
             }
             else if (localSegment.ownerType === "staff") {
-                invariant_1.default(op.p[3] === "staves", "We are in a staff, so we can only patch the staff");
-                invariant_1.default(op.p[4] === localSegment.owner, "Expected staff owner " + localSegment.owner + ", got " + op.p[4]);
-                return op.p.length === 6 && (op.p[5] <= vCursor.segmentPosition) || op.p[5] < vCursor.segmentPosition;
+                invariant(op.p[3] === "staves", "We are in a staff, so we can only patch the staff");
+                invariant(op.p[4] === localSegment.owner, "Expected staff owner " + localSegment.owner + ", got " + op.p[4]);
+                return ((op.p.length === 6 && op.p[5] <= vCursor.segmentPosition) ||
+                    op.p[5] < vCursor.segmentPosition);
             }
             throw new Error("Invalid segment owner type " + localSegment.ownerType);
         });
         spec.fixup(localSegment, operations, restartRequired);
     }
-    var gVoiceLayouts = lodash_1.map(gVoiceMeasure, function (voiceSegment) {
+    var gVoiceLayouts = map(gVoiceMeasure, function (voiceSegment) {
         var part = voiceSegment.part;
         gInitialAttribs[part] = gInitialAttribs[part] || [];
         var voiceStaves = {};
         var staffContexts = {};
         var xPerStaff = [];
-        var measureIsLast = gMeasure.uuid === lodash_1.last(spec.document.measures).uuid;
-        vCursor = new private_cursor_1.ValidationCursor(__assign({}, spec, { measureInstance: gMeasure, measureIsLast: measureIsLast, page: 1, print: lastPrint, segment: voiceSegment, staffAccidentals: null, staffAttributes: null, staffIdx: NaN, fixup: fixup })); // TODO
-        var lCursor = new private_cursor_1.LayoutCursor(__assign({}, spec, { validationCursor: vCursor, x: spec.measureX })); // TODO
+        var measureIsLast = gMeasure.uuid === last(spec.document.measures).uuid;
+        vCursor = new ValidationCursor(__assign(__assign({}, spec), { measureInstance: gMeasure, measureIsLast: measureIsLast, page: 1, print: lastPrint, segment: voiceSegment, staffAccidentals: null, staffAttributes: null, staffIdx: NaN, fixup: fixup })); // TODO
+        var lCursor = new LayoutCursor(__assign(__assign({}, spec), { validationCursor: vCursor, x: spec.measureX })); // TODO
         /**
          * Processes a staff model within this voice's context.
          */
@@ -159,8 +156,8 @@ function refreshMeasure(spec) {
             var layout;
             model.key = "SATIE" + vCursor.measureInstance.uuid + "_parts_" + vCursor.segmentInstance.part + "_staves_" + vCursor.segmentInstance.owner + "_" + vCursor.segmentPosition;
             model.staffIdx = vCursor.staffIdx;
-            if (vCursor.factory.modelHasType(model, document_1.Type.Barline)) {
-                var totalDivisions = private_chordUtil_1.barDivisions(vCursor.staffAttributes);
+            if (vCursor.factory.modelHasType(model, Type.Barline)) {
+                var totalDivisions = barDivisions(vCursor.staffAttributes);
                 var divsToAdvance = totalDivisions - vCursor.segmentDivision;
                 if (divsToAdvance > 0) {
                     vCursor.advance(divsToAdvance);
@@ -169,11 +166,11 @@ function refreshMeasure(spec) {
             if (spec.mode === RefreshMode.RefreshModel) {
                 model.refresh(vCursor.const());
             }
-            if (vCursor.factory.modelHasType(model, document_1.Type.Attributes)) {
+            if (vCursor.factory.modelHasType(model, Type.Attributes)) {
                 vCursor.staffAttributes = model._snapshot;
-                vCursor.staffAccidentals = implAttributes_attributesData_1.getNativeKeyAccidentals(model._snapshot.keySignature);
+                vCursor.staffAccidentals = getNativeKeyAccidentals(model._snapshot.keySignature);
             }
-            if (vCursor.factory.modelHasType(model, document_1.Type.Print)) {
+            if (vCursor.factory.modelHasType(model, Type.Print)) {
                 vCursor.print = model;
             }
             if (spec.mode === RefreshMode.RefreshLayout) {
@@ -181,23 +178,24 @@ function refreshMeasure(spec) {
                 layout.part = part;
                 layout.key = model.key;
                 if (spec.preview) {
-                    lCursor.segmentX = cleanliness.x[part][voiceSegment.owner].staffX[staffIdx][lCursor.segmentPosition];
+                    lCursor.segmentX =
+                        cleanliness.x[part][voiceSegment.owner].staffX[staffIdx][lCursor.segmentPosition];
                 }
                 cleanliness.x[part][voiceSegment.owner].staffX[staffIdx][lCursor.segmentPosition] = lCursor.segmentX;
             }
-            invariant_1.default(isFinite(model.divCount), "%s should be a constant division count", model.divCount);
+            invariant(isFinite(model.divCount), "%s should be a constant division count", model.divCount);
             vCursor.segmentDivision += model.divCount;
             if (vCursor.staffAttributes) {
-                var totalDivisions = private_chordUtil_1.barDivisions(vCursor.staffAttributes);
+                var totalDivisions = barDivisions(vCursor.staffAttributes);
                 if (vCursor.segmentDivision > totalDivisions && !!gDivOverflow) {
                     if (!gDivOverflow) {
-                        gDivOverflow = new engine_divisionOverflowException_1.default(totalDivisions, spec.measure, vCursor.staffAttributes);
+                        gDivOverflow = new DivisionOverflowException(totalDivisions, spec.measure, vCursor.staffAttributes);
                     }
-                    invariant_1.default(totalDivisions === gDivOverflow.maxDiv, "Divisions are not consistent. Found %s but expected %s", totalDivisions, gDivOverflow.maxDiv);
+                    invariant(totalDivisions === gDivOverflow.maxDiv, "Divisions are not consistent. Found %s but expected %s", totalDivisions, gDivOverflow.maxDiv);
                 }
             }
             else {
-                invariant_1.default(vCursor.segmentDivision === 0, "Expected attributes to be set on cursor");
+                invariant(vCursor.segmentDivision === 0, "Expected attributes to be set on cursor");
             }
             staffContexts[staffIdx].division = vCursor.segmentDivision;
             staffContexts[staffIdx].accidentals = vCursor.staffAccidentals;
@@ -207,7 +205,7 @@ function refreshMeasure(spec) {
             vCursor.segmentInstance = oldSegment;
             vCursor.segmentPosition = oldIdx;
             if (spec.mode === RefreshMode.RefreshLayout) {
-                invariant_1.default(!!layout, "%s must be a valid layout", layout);
+                invariant(!!layout, "%s must be a valid layout", layout);
             }
             voiceStaves[staffIdx].push(layout);
         }
@@ -216,7 +214,7 @@ function refreshMeasure(spec) {
             var model = voiceSegment[i];
             var atEnd = i + 1 === voiceSegment.length;
             var staffIdx = model.staffIdx;
-            invariant_1.default(isFinite(model.staffIdx), "%s must be finite", model.staffIdx);
+            invariant(isFinite(model.staffIdx), "%s must be finite", model.staffIdx);
             if (!lCursor.lineMaxPaddingTopByStaff[model.staffIdx]) {
                 lCursor.lineMaxPaddingTopByStaff[model.staffIdx] = 0;
             }
@@ -234,7 +232,8 @@ function refreshMeasure(spec) {
             // voice staff pairs.
             if (!voiceStaves[staffIdx]) {
                 voiceStaves[staffIdx] = [];
-                gStaffLayouts[part + "_" + staffIdx] = gStaffLayouts[part + "_" + staffIdx] || [];
+                gStaffLayouts[part + "_" + staffIdx] =
+                    gStaffLayouts[part + "_" + staffIdx] || [];
                 gStaffLayouts[part + "_" + staffIdx].push(voiceStaves[staffIdx]);
                 xPerStaff[staffIdx] = 0;
             }
@@ -246,37 +245,39 @@ function refreshMeasure(spec) {
                 var nextStaffEl = gStaffMeasure[part + "_" + staffIdx][voiceStaves[staffIdx].length];
                 // We can mostly ignore priorities here, since except for barlines,
                 // staff segments are more important than voice segments.
-                var nextIsBarline = spec.factory.modelHasType(nextStaffEl, document_1.Type.Barline);
-                if (nextIsBarline && staffContexts[staffIdx].division === vCursor.segmentDivision) {
+                var nextIsBarline = spec.factory.modelHasType(nextStaffEl, Type.Barline);
+                if (nextIsBarline &&
+                    staffContexts[staffIdx].division === vCursor.segmentDivision) {
                     break;
                 }
                 // Process a staff model within a voice context.
                 var catchUp = staffContexts[staffIdx].division < vCursor.segmentDivision;
                 pushStaffSegment(staffIdx, nextStaffEl, catchUp);
-                invariant_1.default(isFinite(staffContexts[staffIdx].division), "divisionPerStaff is supposed " +
-                    "to be a number, got %s", staffContexts[staffIdx].division);
+                invariant(isFinite(staffContexts[staffIdx].division), "divisionPerStaff is supposed " + "to be a number, got %s", staffContexts[staffIdx].division);
             }
             // All layout that can be controlled by the model is done here.
             var layout = void 0;
             model.key = "SATIE" + vCursor.measureInstance.uuid + "_parts_" + vCursor.segmentInstance.part + "_voices_" + vCursor.segmentInstance.owner + "_" + vCursor.segmentPosition;
             model.staffIdx = vCursor.staffIdx;
             if (!vCursor.staffAccidentals) {
-                vCursor.staffAccidentals = implAttributes_attributesData_1.getNativeKeyAccidentals(vCursor.staffAttributes.keySignature);
+                vCursor.staffAccidentals = getNativeKeyAccidentals(vCursor.staffAttributes.keySignature);
             }
             if (spec.mode === RefreshMode.RefreshModel) {
                 model.refresh(vCursor.const());
             }
-            if (vCursor.factory.modelHasType(model, document_1.Type.Chord)) {
-                lodash_1.forEach(model, function (note) {
+            if (vCursor.factory.modelHasType(model, Type.Chord)) {
+                forEach(model, function (note) {
                     if (note.rest) {
                         return;
                     }
                     var pitch = note.pitch;
-                    if ((vCursor.staffAccidentals[pitch.step + pitch.octave] || 0) !== (pitch.alter || 0) ||
+                    if ((vCursor.staffAccidentals[pitch.step + pitch.octave] || 0) !==
+                        (pitch.alter || 0) ||
                         (vCursor.staffAccidentals[pitch.step] || 0) !== (pitch.alter || 0)) {
-                        vCursor.staffAccidentals[pitch.step + pitch.octave] = pitch.alter || 0;
+                        vCursor.staffAccidentals[pitch.step + pitch.octave] =
+                            pitch.alter || 0;
                         if ((vCursor.staffAccidentals[pitch.step] || 0) !== (pitch.alter || 0)) {
-                            vCursor.staffAccidentals[pitch.step] = private_chordUtil_1.InvalidAccidental;
+                            vCursor.staffAccidentals[pitch.step] = InvalidAccidental;
                         }
                     }
                 });
@@ -284,7 +285,8 @@ function refreshMeasure(spec) {
             if (spec.mode === RefreshMode.RefreshLayout) {
                 layout = model.getLayout(lCursor);
                 if (spec.preview) {
-                    lCursor.segmentX = cleanliness.x[part][voiceSegment.owner].voiceX[lCursor.segmentPosition];
+                    lCursor.segmentX =
+                        cleanliness.x[part][voiceSegment.owner].voiceX[lCursor.segmentPosition];
                 }
                 cleanliness.x[part][voiceSegment.owner].voiceX[lCursor.segmentPosition] = lCursor.segmentX;
                 layout.part = part;
@@ -292,18 +294,18 @@ function refreshMeasure(spec) {
             }
             vCursor.segmentDivision += model.divCount;
             gMaxDivisions = Math.max(gMaxDivisions, vCursor.segmentDivision);
-            var totalDivisions = private_chordUtil_1.barDivisions(vCursor.staffAttributes);
+            var totalDivisions = barDivisions(vCursor.staffAttributes);
             if (vCursor.segmentDivision > totalDivisions && !spec.preview) {
                 // Note: unfortunate copy-pasta.
                 if (!gDivOverflow) {
-                    gDivOverflow = new engine_divisionOverflowException_1.default(totalDivisions, spec.measure, vCursor.staffAttributes);
+                    gDivOverflow = new DivisionOverflowException(totalDivisions, spec.measure, vCursor.staffAttributes);
                 }
-                invariant_1.default(totalDivisions === gDivOverflow.maxDiv, "Divisions are not consistent. Found %s but expected %s", totalDivisions, gDivOverflow.maxDiv);
-                invariant_1.default(!!voiceSegment.part, "Part must be defined -- is this spec from Engine.validate$?");
+                invariant(totalDivisions === gDivOverflow.maxDiv, "Divisions are not consistent. Found %s but expected %s", totalDivisions, gDivOverflow.maxDiv);
+                invariant(!!voiceSegment.part, "Part must be defined -- is this spec from Engine.validate$?");
             }
             if (atEnd) {
                 // Finalize.
-                lodash_1.forEach(gStaffMeasure, function (staff, idx) {
+                forEach(gStaffMeasure, function (staff, idx) {
                     var pIdx = idx.lastIndexOf("_");
                     var staffMeasurePart = idx.substr(0, pIdx);
                     if (staffMeasurePart !== part) {
@@ -333,8 +335,8 @@ function refreshMeasure(spec) {
         throw gDivOverflow;
     }
     // Get an ideal voice layout for each voice-staff combination
-    var gStaffLayoutsUnkeyed = lodash_1.values(gStaffLayouts);
-    var gStaffLayoutsCombined = lodash_1.flatten(gStaffLayoutsUnkeyed);
+    var gStaffLayoutsUnkeyed = values(gStaffLayouts);
+    var gStaffLayoutsCombined = flatten(gStaffLayoutsUnkeyed);
     // Create a layout that satisfies the constraints in every single voice.
     // IModel.mergeSegmentsInPlace requires two passes to fully merge the layouts.
     // We do the second pass once we filter unneeded staff segments.
@@ -342,30 +344,34 @@ function refreshMeasure(spec) {
     // We have a staff layout for every single voice-staff combination.
     // They will be merged, so it doesn't matter which one we pick.
     // Pick the first.
-    var gStaffLayoutsUnique = lodash_1.map(gStaffLayoutsUnkeyed, function (layouts) { return layouts[0]; });
+    var gStaffLayoutsUnique = map(gStaffLayoutsUnkeyed, function (layouts) { return layouts[0]; });
     if (!spec.noAlign) {
         // Calculate and finish applying the master layout.
         // Two passes is always sufficient.
-        var masterLayout = lodash_1.reduce(gAllLayouts, private_combinedLayout_1.mergeSegmentsInPlace, []);
+        var masterLayout = reduce(gAllLayouts, mergeSegmentsInPlace, []);
         // Avoid lining up different divisions
-        lodash_1.reduce(masterLayout, function (_a, layout) {
+        reduce(masterLayout, function (_a, layout) {
             var prevDivision = _a.prevDivision, min = _a.min;
             var newMin = layout.x;
-            if (min >= layout.x && layout.division !== prevDivision &&
-                layout.renderClass !== document_1.Type.Spacer &&
-                layout.renderClass !== document_1.Type.Barline) {
+            if (min >= layout.x &&
+                layout.division !== prevDivision &&
+                layout.renderClass !== Type.Spacer &&
+                layout.renderClass !== Type.Barline) {
                 layout.x = min + 20;
             }
             return {
                 prevDivision: layout.division,
-                min: newMin
+                min: newMin,
             };
         }, { prevDivision: -1, min: -10 });
-        lodash_1.reduce(gVoiceLayouts, private_combinedLayout_1.mergeSegmentsInPlace, masterLayout);
+        reduce(gVoiceLayouts, mergeSegmentsInPlace, masterLayout);
         // Merge in the staves
-        lodash_1.reduce(gStaffLayoutsUnique, private_combinedLayout_1.mergeSegmentsInPlace, masterLayout);
+        reduce(gStaffLayoutsUnique, mergeSegmentsInPlace, masterLayout);
     }
-    var gPadding = gMaxXInMeasure === spec.measureX || spec.lineBarOnLine + 1 === spec.lineTotalBarsOnLine ? 0 : 15;
+    var gPadding = gMaxXInMeasure === spec.measureX ||
+        spec.lineBarOnLine + 1 === spec.lineTotalBarsOnLine
+        ? 0
+        : 15;
     var newLayout;
     if (spec.mode === RefreshMode.RefreshLayout && spec.preview) {
         newLayout = {
@@ -402,24 +408,23 @@ function refreshMeasure(spec) {
     }
     return newLayout;
 }
-exports.refreshMeasure = refreshMeasure;
-var RefreshMode;
+export var RefreshMode;
 (function (RefreshMode) {
     RefreshMode[RefreshMode["RefreshModel"] = 0] = "RefreshModel";
     RefreshMode[RefreshMode["RefreshLayout"] = 1] = "RefreshLayout";
-})(RefreshMode = exports.RefreshMode || (exports.RefreshMode = {}));
+})(RefreshMode || (RefreshMode = {}));
 /**
  * Given the context and constraints given, creates a possible layout for items within a measure.
  *
  * @param opts structure with __normalized__ voices and staves
  * @returns an array of staff and voice layouts with an undefined order
  */
-function layoutMeasure(_a) {
+export function layoutMeasure(_a) {
     var document = _a.document, header = _a.header, print = _a.print, measure = _a.measure, factory = _a.factory, x = _a.x, singleLineMode = _a.singleLineMode, preview = _a.preview, fixup = _a.fixup, lineShortest = _a.lineShortest, lineBarOnLine = _a.lineBarOnLine, lineTotalBarsOnLine = _a.lineTotalBarsOnLine, lineIndex = _a.lineIndex, lineCount = _a.lineCount, attributes = _a.attributes;
-    var parts = lodash_1.map(private_part_1.scoreParts(header.partList), function (part) { return part.id; });
-    var staves = lodash_1.flatten(lodash_1.map(parts, function (partId) { return measure.parts[partId].staves; }));
-    var voices = lodash_1.flatten(lodash_1.map(parts, function (partId) { return measure.parts[partId].voices; }));
-    var segments = lodash_1.filter(voices.concat(staves), function (s) { return !!s; });
+    var parts = map(scoreParts(header.partList), function (part) { return part.id; });
+    var staves = flatten(map(parts, function (partId) { return measure.parts[partId].staves; }));
+    var voices = flatten(map(parts, function (partId) { return measure.parts[partId].voices; }));
+    var segments = filter(voices.concat(staves), function (s) { return !!s; });
     var status = refreshMeasure({
         document: document,
         factory: factory,
@@ -441,5 +446,4 @@ function layoutMeasure(_a) {
     });
     return status;
 }
-exports.layoutMeasure = layoutMeasure;
 //# sourceMappingURL=engine_processors_measure.js.map

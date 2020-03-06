@@ -19,14 +19,11 @@ import { IModel, ILayout } from "./document";
 /**
  * Registers VisualCursor in the factory structure passed in.
  */
-declare function Export(constructors: {
+export default function Export(constructors: {
     [key: number]: any;
 }): void;
-declare module Export {
-    interface IVisualCursorModel extends IModel {
-    }
-    interface IVisualCursorLayout extends ILayout {
-        renderedWidth: number;
-    }
+export interface IVisualCursorModel extends IModel {
 }
-export default Export;
+export interface IVisualCursorLayout extends ILayout {
+    renderedWidth: number;
+}

@@ -1,4 +1,3 @@
-"use strict";
 /**
  * This file is part of Satie music engraver <https://github.com/jnetterf/satie>.
  * Copyright (C) Joshua Netterfield <joshua.ca> 2015 - present.
@@ -16,16 +15,12 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with Satie.  If not, see <http://www.gnu.org/licenses/>.
  */
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-var musicxml_interfaces_1 = require("musicxml-interfaces");
-var lodash_1 = require("lodash");
-var invariant_1 = __importDefault(require("invariant"));
-var private_chordUtil_1 = require("./private_chordUtil");
-var private_smufl_1 = require("./private_smufl");
-var private_util_1 = require("./private_util");
+import { MxmlAccidental, serializeNote, } from "musicxml-interfaces";
+import { forEach, reduce, map, isEqual } from "lodash";
+import invariant from "invariant";
+import { accidentalGlyphs, onLedger, InvalidAccidental, lineForClef, } from "./private_chordUtil";
+import { bboxes as glyphBBoxes } from "./private_smufl";
+import { cloneObject } from "./private_util";
 /**
  * Represents a note in a ChordImpl.
  *
@@ -34,8 +29,8 @@ var private_util_1 = require("./private_util");
  *    has no effect.
  */
 var NoteImpl = /** @class */ (function () {
-    function NoteImpl(parent, idx, note, updateParent) {
-        if (updateParent === void 0) { updateParent = true; }
+    function NoteImpl(parent, idx, note, _updateParent) {
+        if (_updateParent === void 0) { _updateParent = true; }
         this._class = "Note";
         var self = this;
         /* Link to parent */
@@ -88,9 +83,9 @@ var NoteImpl = /** @class */ (function () {
             "timeModificiation",
             "rest",
         ];
-        lodash_1.forEach(properties, setIfDefined);
+        forEach(properties, setIfDefined);
         function setIfDefined(property) {
-            if (note.hasOwnProperty(property) &&
+            if (Object.prototype.hasOwnProperty.call(note, property) &&
                 note[property] !== undefined) {
                 self[property] = note[property];
             }
@@ -108,7 +103,7 @@ var NoteImpl = /** @class */ (function () {
     });
     /*---- Implementation -------------------------------------------------------------------*/
     NoteImpl.prototype.toXML = function () {
-        return musicxml_interfaces_1.serializeNote(this);
+        return serializeNote(this);
     };
     NoteImpl.prototype.toJSON = function () {
         var _a = this, pitch = _a.pitch, unpitched = _a.unpitched, noteheadText = _a.noteheadText, accidental = _a.accidental, instrument = _a.instrument, attack = _a.attack, endDynamics = _a.endDynamics, lyrics = _a.lyrics, notations = _a.notations, stem = _a.stem, cue = _a.cue, ties = _a.ties, dynamics = _a.dynamics, duration = _a.duration, play = _a.play, staff = _a.staff, grace = _a.grace, notehead = _a.notehead, release = _a.release, pizzicato = _a.pizzicato, beams = _a.beams, voice = _a.voice, footnote = _a.footnote, level = _a.level, relativeY = _a.relativeY, defaultY = _a.defaultY, relativeX = _a.relativeX, fontFamily = _a.fontFamily, fontWeight = _a.fontWeight, fontStyle = _a.fontStyle, fontSize = _a.fontSize, color = _a.color, printDot = _a.printDot, printLyric = _a.printLyric, printObject = _a.printObject, printSpacing = _a.printSpacing, timeOnly = _a.timeOnly, dots = _a.dots, noteType = _a.noteType, timeModification = _a.timeModification, rest = _a.rest;
@@ -181,7 +176,7 @@ var NoteImpl = /** @class */ (function () {
         if (this.pitch && this.rest) {
             cursor.patch(function (voice) { return voice.note(_this._idx, function (note) { return note.pitch(null); }); });
         }
-        invariant_1.default(cursor.segmentInstance.ownerType === "voice", "Expected to be in voice's context during validation");
+        invariant(cursor.segmentInstance.ownerType === "voice", "Expected to be in voice's context during validation");
         if (this.voice !== cursor.segmentInstance.owner) {
             cursor.patch(function (partBuilder) {
                 return partBuilder.note(_this._idx, function (note) {
@@ -189,7 +184,7 @@ var NoteImpl = /** @class */ (function () {
                 });
             });
         }
-        var defaultY = (private_chordUtil_1.lineForClef(this, cursor.staffAttributes.clef) - 3) * 10;
+        var defaultY = (lineForClef(this, cursor.staffAttributes.clef) - 3) * 10;
         if (defaultY !== this.defaultY) {
             cursor.patch(function (voice) {
                 return voice.note(_this._idx, function (note) { return note.defaultY(defaultY); });
@@ -202,7 +197,7 @@ var NoteImpl = /** @class */ (function () {
         if (this.dots.some(function (n) { return n.defaultY !== dotOffset; })) {
             cursor.patch(function (voice) {
                 return voice.note(_this._idx, function (note) {
-                    return lodash_1.reduce(_this.dots, function (note, _dot, idx) {
+                    return reduce(_this.dots, function (note, _dot, idx) {
                         return note.dotsAt(idx, function (dot) { return dot.defaultY(dotOffset); });
                     }, note);
                 });
@@ -256,7 +251,7 @@ var NoteImpl = /** @class */ (function () {
      */
     NoteImpl.prototype.cleanNotations = function (cursor) {
         var _this = this;
-        var notations = private_util_1.cloneObject(this.notations);
+        var notations = cloneObject(this.notations);
         if (notations) {
             var notation_1 = {
                 accidentalMarks: combine("accidentalMarks"),
@@ -277,12 +272,12 @@ var NoteImpl = /** @class */ (function () {
                 tieds: combine("tieds"),
                 tuplets: combine("tuplets"),
             };
-            lodash_1.forEach(notation_1.tieds, function (tied) {
+            forEach(notation_1.tieds, function (tied) {
                 if (!tied.number) {
                     tied.number = 1;
                 }
             });
-            lodash_1.forEach(notation_1.tuplets, function (tuplet) {
+            forEach(notation_1.tuplets, function (tuplet) {
                 if (!tuplet.tupletActual) {
                     tuplet.tupletActual = {};
                 }
@@ -300,7 +295,7 @@ var NoteImpl = /** @class */ (function () {
                     };
                 }
                 if (!tuplet.tupletNormal.tupletDots) {
-                    tuplet.tupletNormal.tupletDots = lodash_1.map(_this.timeModification.normalDots, function () { return ({}); });
+                    tuplet.tupletNormal.tupletDots = map(_this.timeModification.normalDots, function () { return ({}); });
                 }
             });
             cursor.patch(function (voice) {
@@ -308,7 +303,7 @@ var NoteImpl = /** @class */ (function () {
             });
         }
         function combine(key) {
-            return lodash_1.reduce(notations, function (memo, n) {
+            return reduce(notations, function (memo, n) {
                 return n[key] ? (memo || []).concat(n[key]) : memo;
             }, null);
         }
@@ -320,7 +315,7 @@ var NoteImpl = /** @class */ (function () {
             var articulations = {};
             for (var i = 0; i < array.length; ++i) {
                 for (var akey in array[i]) {
-                    if (array[i].hasOwnProperty(akey)) {
+                    if (Object.prototype.hasOwnProperty.call(array[i], akey)) {
                         articulations[akey] = array[i][akey];
                     }
                 }
@@ -328,7 +323,7 @@ var NoteImpl = /** @class */ (function () {
             return [articulations];
         }
         function last(key) {
-            return lodash_1.reduce(notations, function (memo, n) { return (n[key] ? n[key] : memo); }, []);
+            return reduce(notations, function (memo, n) { return (n[key] ? n[key] : memo); }, []);
         }
     };
     NoteImpl.prototype.updateAccidental = function (cursor) {
@@ -339,43 +334,43 @@ var NoteImpl = /** @class */ (function () {
         }
         var actual = pitch.alter || 0;
         var accidentals = cursor.staffAccidentals;
-        invariant_1.default(!!accidentals, "Accidentals must already have been setup. Is there an Attributes element?");
+        invariant(!!accidentals, "Accidentals must already have been setup. Is there an Attributes element?");
         // TODO: this is no longer sufficient if multiple voices share a staff.
         var generalTarget = accidentals[pitch.step] || null;
         var target = accidentals[pitch.step + pitch.octave];
-        if (isNaN(target) && generalTarget !== private_chordUtil_1.InvalidAccidental) {
+        if (isNaN(target) && generalTarget !== InvalidAccidental) {
             target = generalTarget;
         }
-        var acc = private_util_1.cloneObject(this.accidental);
+        var acc = cloneObject(this.accidental);
         if (!acc && (actual || 0) !== (target || 0)) {
             var accType = null;
             switch (actual) {
                 case 2:
-                    accType = musicxml_interfaces_1.MxmlAccidental.DoubleSharp;
+                    accType = MxmlAccidental.DoubleSharp;
                     break;
                 case 1.5:
-                    accType = musicxml_interfaces_1.MxmlAccidental.ThreeQuartersSharp;
+                    accType = MxmlAccidental.ThreeQuartersSharp;
                     break;
                 case 1:
-                    accType = musicxml_interfaces_1.MxmlAccidental.Sharp;
+                    accType = MxmlAccidental.Sharp;
                     break;
                 case 0.5:
-                    accType = musicxml_interfaces_1.MxmlAccidental.QuarterSharp;
+                    accType = MxmlAccidental.QuarterSharp;
                     break;
                 case 0:
-                    accType = musicxml_interfaces_1.MxmlAccidental.Natural;
+                    accType = MxmlAccidental.Natural;
                     break;
                 case -0.5:
-                    accType = musicxml_interfaces_1.MxmlAccidental.QuarterFlat;
+                    accType = MxmlAccidental.QuarterFlat;
                     break;
                 case -1:
-                    accType = musicxml_interfaces_1.MxmlAccidental.Flat;
+                    accType = MxmlAccidental.Flat;
                     break;
                 case -1.5:
-                    accType = musicxml_interfaces_1.MxmlAccidental.ThreeQuartersFlat;
+                    accType = MxmlAccidental.ThreeQuartersFlat;
                     break;
                 case -2:
-                    accType = musicxml_interfaces_1.MxmlAccidental.DoubleFlat;
+                    accType = MxmlAccidental.DoubleFlat;
                     break;
                 default:
                     throw new Error("Not implemented: unknown accidental for offset " + actual);
@@ -385,12 +380,12 @@ var NoteImpl = /** @class */ (function () {
             };
         }
         if (acc) {
-            var glyphName = private_chordUtil_1.accidentalGlyphs[acc.accidental];
-            invariant_1.default(glyphName in private_smufl_1.bboxes, "Expected a known glyph, got %s", glyphName);
-            var width = private_smufl_1.bboxes[glyphName][0] * 10;
+            var glyphName = accidentalGlyphs[acc.accidental];
+            invariant(glyphName in glyphBBoxes, "Expected a known glyph, got %s", glyphName);
+            var width = glyphBBoxes[glyphName][0] * 10;
             var clef = cursor.staffAttributes.clef;
             // TODO: `let clef = cursor.part.attributes.clefs[cursor.staffIdx]`
-            if (private_chordUtil_1.onLedger(this, clef)) {
+            if (onLedger(this, clef)) {
                 acc.defaultX = -4.1;
             }
             else {
@@ -406,11 +401,11 @@ var NoteImpl = /** @class */ (function () {
                 acc.defaultX -= 10;
             }
         }
-        if (!lodash_1.isEqual(private_util_1.cloneObject(this.accidental), acc) && cursor.patch) {
+        if (!isEqual(cloneObject(this.accidental), acc) && cursor.patch) {
             cursor.patch(function (part) { return part.note(_this._idx, function (note) { return note.accidental(acc); }); });
         }
     };
     return NoteImpl;
 }());
-exports.default = NoteImpl;
+export default NoteImpl;
 //# sourceMappingURL=implChord_noteImpl.js.map

@@ -1,4 +1,3 @@
-"use strict";
 /**
  * This file is part of Satie music engraver <https://github.com/jnetterf/satie>.
  * Copyright (C) Joshua Netterfield <joshua.ca> 2015 - present.
@@ -16,29 +15,29 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with Satie.  If not, see <http://www.gnu.org/licenses/>.
  */
-Object.defineProperty(exports, "__esModule", { value: true });
-var lodash_1 = require("lodash");
-exports.default = voiceStaffStemDirection;
+import { forEach } from "lodash";
+export default voiceStaffStemDirection;
 function voiceStaffStemDirection(measures) {
-    lodash_1.forEach(measures, function (measure) {
-        lodash_1.forEach(measure.parts, function (part) {
+    forEach(measures, function (measure) {
+        forEach(measure.parts, function (part) {
             var staffToVoices = {};
-            lodash_1.forEach(part.voices, function (voice) {
-                lodash_1.forEach(voice, function (model) {
+            forEach(part.voices, function (voice) {
+                forEach(voice, function (model) {
                     if (model.staffIdx) {
                         staffToVoices[model.staffIdx] = staffToVoices[model.staffIdx] || {};
                         var voices = staffToVoices[model.staffIdx];
-                        voices[voice.owner] = staffToVoices[model.staffIdx][voice.owner] || [];
+                        voices[voice.owner] =
+                            staffToVoices[model.staffIdx][voice.owner] || [];
                         voices[voice.owner].push(model);
                     }
                 });
             });
-            lodash_1.forEach(staffToVoices, function (staff) {
+            forEach(staffToVoices, function (staff) {
                 if (Object.keys(staff).length > 1) {
-                    lodash_1.forEach(staff[1], function (els) {
+                    forEach(staff[1], function (els) {
                         els.satieDirection = 1;
                     });
-                    lodash_1.forEach(staff[2], function (els) {
+                    forEach(staff[2], function (els) {
                         els.satieDirection = -1;
                     });
                 }

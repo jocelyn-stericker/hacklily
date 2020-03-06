@@ -1,4 +1,3 @@
-"use strict";
 /**
  * This file is part of Satie music engraver <https://github.com/jnetterf/satie>.
  * Copyright (C) Joshua Netterfield <joshua.ca> 2015 - present.
@@ -16,24 +15,13 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with Satie.  If not, see <http://www.gnu.org/licenses/>.
  */
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
-    result["default"] = mod;
-    return result;
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-var invariant_1 = __importDefault(require("invariant"));
-var lodash_1 = require("lodash");
-var private_metre_checkRests_1 = __importDefault(require("./private_metre_checkRests"));
-var private_metre_getTSString_1 = __importDefault(require("./private_metre_getTSString"));
-var D = __importStar(require("./private_metre_metreDurations"));
-var private_chordUtil_1 = require("./private_chordUtil");
-function voiceToRestSpec(segment, attributes, factory) {
+import invariant from "invariant";
+import { times, forEach } from "lodash";
+import checkRests from "./private_metre_checkRests";
+import getTSString from "./private_metre_getTSString";
+import * as D from "./private_metre_metreDurations";
+import { barDivisions } from "./private_chordUtil";
+export function voiceToRestSpec(segment, attributes, _factory) {
     var emptyRestSpec = { song: "", models: [], modelsToKill: [] };
     var divsToSuppress = 0;
     var killIdx;
@@ -43,12 +31,12 @@ function voiceToRestSpec(segment, attributes, factory) {
         var oldDivCount = model.previousDivisions || 0;
         var restsAtEnd = model.previousDivisions > divCount
             ? "r" +
-                lodash_1.times(model.previousDivisions - divCount - 1, function () { return "_"; }).join("")
+                times(model.previousDivisions - divCount - 1, function () { return "_"; }).join("")
             : "";
         var modelsToKill = restSpec.modelsToKill;
         if (divsToSuppress > 0) {
             var extraSong = divCount > divsToSuppress
-                ? "r" + lodash_1.times(divCount - divsToSuppress - 1, function () { return "_"; }).join("")
+                ? "r" + times(divCount - divsToSuppress - 1, function () { return "_"; }).join("")
                 : "";
             divsToSuppress = Math.max(0, divsToSuppress - divCount);
             var newModelsToKill = modelsToKill.slice();
@@ -56,7 +44,7 @@ function voiceToRestSpec(segment, attributes, factory) {
             newModelsToKill[killIdx].push(model);
             return {
                 song: restSpec.song + extraSong,
-                models: restSpec.models.concat(lodash_1.times(extraSong.length, function () { return "killed"; })),
+                models: restSpec.models.concat(times(extraSong.length, function () { return "killed"; })),
                 modelsToKill: newModelsToKill,
             };
         }
@@ -74,7 +62,7 @@ function voiceToRestSpec(segment, attributes, factory) {
             prevIdx = restSpec.models.length + divCount;
         }
         var models = restSpec.models
-            .concat(lodash_1.times(divCount, function () { return model; }))
+            .concat(times(divCount, function () { return model; }))
             .concat(restsAtEnd.split("").map(function () { return null; }));
         if (divCount > oldDivCount) {
             killIdx = models.length;
@@ -84,34 +72,33 @@ function voiceToRestSpec(segment, attributes, factory) {
             return {
                 song: restSpec.song +
                     "r" +
-                    lodash_1.times(divCount - 1, function () { return "_"; }).join("") +
+                    times(divCount - 1, function () { return "_"; }).join("") +
                     restsAtEnd,
                 models: models,
                 modelsToKill: modelsToKill,
             };
         }
         return {
-            song: restSpec.song + lodash_1.times(divCount, function () { return "."; }).join("") + restsAtEnd,
+            song: restSpec.song + times(divCount, function () { return "."; }).join("") + restsAtEnd,
             models: models,
             modelsToKill: modelsToKill,
         };
     }, emptyRestSpec);
-    invariant_1.default(spec.models.length === spec.song.length, "Invalid spec");
-    var totalDivisions = private_chordUtil_1.barDivisions(attributes);
+    invariant(spec.models.length === spec.song.length, "Invalid spec");
+    var totalDivisions = barDivisions(attributes);
     var restsToAdd = (totalDivisions - (spec.song.length % totalDivisions)) % totalDivisions;
     return {
         song: restsToAdd
-            ? spec.song.concat("r" + lodash_1.times(restsToAdd - 1, function () { return "_"; }).join(""))
+            ? spec.song.concat("r" + times(restsToAdd - 1, function () { return "_"; }).join(""))
             : spec.song,
         models: spec.models,
         modelsToKill: spec.modelsToKill,
     };
 }
-exports.voiceToRestSpec = voiceToRestSpec;
 function _cleanupRests(pattern, time) {
-    var ts = private_metre_getTSString_1.default(time);
+    var ts = getTSString(time);
     var next = function () {
-        return private_metre_checkRests_1.default(ts, pattern.length, pattern, { dotsAllowed: true });
+        return checkRests(ts, pattern.length, pattern, { dotsAllowed: true });
     };
     var operationsRemaining = 15;
     for (var status_1 = next(); status_1 !== "GOOD"; status_1 = next()) {
@@ -120,8 +107,8 @@ function _cleanupRests(pattern, time) {
         }
         // Apply patches until we're in a good state.
         var cmd = status_1.split(" ");
-        invariant_1.default(cmd[0] === "apply", "Unexpected instruction '%s'", status_1);
-        invariant_1.default(parseInt(cmd[1], 10) === pattern.length, "Unexpected length change from %s to %s", cmd[1], pattern.length);
+        invariant(cmd[0] === "apply", "Unexpected instruction '%s'", status_1);
+        invariant(parseInt(cmd[1], 10) === pattern.length, "Unexpected length change from %s to %s", cmd[1], pattern.length);
         var patch = cmd[2];
         var nextPattern = "";
         for (var i = 0; i < pattern.length; ++i) {
@@ -142,7 +129,7 @@ function _cleanupRests(pattern, time) {
     return pattern;
 }
 var DEBUG_simplifyRests = false;
-function simplifyRests(segment, factory, attributes) {
+export function simplifyRests(segment, factory, attributes) {
     var originalSpec = voiceToRestSpec(segment, attributes, factory);
     if (DEBUG_simplifyRests) {
         console.log("=== sr ===");
@@ -151,7 +138,7 @@ function simplifyRests(segment, factory, attributes) {
         console.log(originalSpec.models);
     }
     // Correct the rests.
-    var totalDivisions = private_chordUtil_1.barDivisions(attributes);
+    var totalDivisions = barDivisions(attributes);
     var cleanRestPattern = "";
     for (var i = 0; i < originalSpec.song.length; i += totalDivisions) {
         cleanRestPattern += _cleanupRests(originalSpec.song.slice(i, i + totalDivisions), attributes.time);
@@ -168,7 +155,7 @@ function simplifyRests(segment, factory, attributes) {
             currIdx = model.idx + currIdxOffset + 1;
         }
         else {
-            invariant_1.default(segment.indexOf(model) > -1, "Model must be present in segment");
+            invariant(segment.indexOf(model) > -1, "Model must be present in segment");
             patches.push({
                 ld: model.toSpec(),
                 p: [currIdx],
@@ -181,7 +168,7 @@ function simplifyRests(segment, factory, attributes) {
         if (originalModel && originalModel !== "killed") {
             currIdx = originalModel.idx + currIdxOffset;
         }
-        lodash_1.forEach(originalSpec.modelsToKill[i], killModel);
+        forEach(originalSpec.modelsToKill[i], killModel);
         if (cleanRestPattern[i] === "r") {
             var cleanRestEnd = i + 1;
             while (cleanRestPattern[cleanRestEnd] === "_") {
@@ -210,7 +197,7 @@ function simplifyRests(segment, factory, attributes) {
                     if (!originalModel.rest) {
                         throw new Error("Expected rest");
                     }
-                    var newDots = lodash_1.times(originalModel.newDots, function () { return ({}); });
+                    var newDots = times(originalModel.newDots, function () { return ({}); });
                     if (JSON.stringify(newDots) !== JSON.stringify(newDuration[0].dots)) {
                         patches.push({
                             od: newDots,
@@ -246,8 +233,8 @@ function simplifyRests(segment, factory, attributes) {
                     if (model === "killed") {
                         throw new Error("Not reached");
                     }
-                    invariant_1.default(!!model, "Cannot remove undefined model");
-                    invariant_1.default(segment.indexOf(model) > -1, "Model must be present in segment");
+                    invariant(!!model, "Cannot remove undefined model");
+                    invariant(segment.indexOf(model) > -1, "Model must be present in segment");
                     patches.push({
                         ld: model.toSpec(),
                         p: [currIdx],
@@ -257,11 +244,10 @@ function simplifyRests(segment, factory, attributes) {
             }
         }
     }
-    lodash_1.forEach(originalSpec.modelsToKill[originalSpec.models.length], killModel);
+    forEach(originalSpec.modelsToKill[originalSpec.models.length], killModel);
     if (DEBUG_simplifyRests) {
         console.log(JSON.stringify(patches, null, 2));
     }
     return patches;
 }
-exports.simplifyRests = simplifyRests;
 //# sourceMappingURL=private_metre_modifyRest.js.map

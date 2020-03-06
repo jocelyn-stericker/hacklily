@@ -22,9 +22,9 @@
 
 import ScoreHeader from "../engine_scoreHeader";
 
-import {expect} from "chai";
+import { expect } from "chai";
 
-import {parseScore, LeftCenterRight} from "musicxml-interfaces";
+import { parseScore, LeftCenterRight } from "musicxml-interfaces";
 
 let headerTest = `<?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!DOCTYPE score-partwise PUBLIC "-//Recordare//DTD MusicXML 3.0 Partwise//EN"
@@ -144,95 +144,109 @@ let minimalTest = `<?xml version="1.0" encoding="UTF-8" standalone="no"?>
 `;
 
 describe("[engine/scoreHeader.ts]", function() {
-    // NOTE: Some of the tests in mxmljson_test indirectly test ScoreHeader!
-    it("can correctly modify metadata", function() {
-        let mxmljson = parseScore(headerTest);
-        let scoreHeader = new ScoreHeader(mxmljson);
-        expect(scoreHeader.credits.length).eq(5);
-        expect(scoreHeader.identification.creators.length).eq(3);
+  // NOTE: Some of the tests in mxmljson_test indirectly test ScoreHeader!
+  it("can correctly modify metadata", function() {
+    let mxmljson = parseScore(headerTest);
+    let scoreHeader = new ScoreHeader(mxmljson);
+    expect(scoreHeader.credits.length).eq(5);
+    expect(scoreHeader.identification.creators.length).eq(3);
 
-        // Changing the composer should change the credit words and identification
-        scoreHeader.composer = "New Composer";
-        expect(scoreHeader.credits.length).eq(5);
-        expect(scoreHeader.identification.creators.length).eq(3);
-        expect(scoreHeader.composer).to.eq("New Composer"); // Since get is not directly tied to set
-        expect(scoreHeader.identification.creators[0].creator).to.eq("New Composer");
-        expect(scoreHeader.identification.creators[1].creator).to.not.eq("New Composer");
-        expect(scoreHeader.identification.creators[2].creator).to.not.eq("New Composer");
-        expect(scoreHeader.credits[1].creditWords[0].words).to.eq("New Composer");
+    // Changing the composer should change the credit words and identification
+    scoreHeader.composer = "New Composer";
+    expect(scoreHeader.credits.length).eq(5);
+    expect(scoreHeader.identification.creators.length).eq(3);
+    expect(scoreHeader.composer).to.eq("New Composer"); // Since get is not directly tied to set
+    expect(scoreHeader.identification.creators[0].creator).to.eq(
+      "New Composer",
+    );
+    expect(scoreHeader.identification.creators[1].creator).to.not.eq(
+      "New Composer",
+    );
+    expect(scoreHeader.identification.creators[2].creator).to.not.eq(
+      "New Composer",
+    );
+    expect(scoreHeader.credits[1].creditWords[0].words).to.eq("New Composer");
 
-        // Changing the title should change credit words and movementTitle
-        scoreHeader.title = "New Title";
-        expect(scoreHeader.credits.length).eq(5);
-        expect(scoreHeader.identification.creators.length).eq(3);
-        expect(scoreHeader.title).to.eq("New Title"); // Since get is not directly tied to set
-        expect(scoreHeader.movementTitle).to.eq("New Title");
-        expect(scoreHeader.credits[0].creditWords[0].words).to.eq("New Title");
-    });
-    it("can correctly add metadata", function() {
-        let mxmljson = parseScore(minimalTest);
-        let scoreHeader = new ScoreHeader(mxmljson);
-        expect(scoreHeader.credits.length).eq(0);
-        expect(scoreHeader.identification.creators.length).eq(0);
+    // Changing the title should change credit words and movementTitle
+    scoreHeader.title = "New Title";
+    expect(scoreHeader.credits.length).eq(5);
+    expect(scoreHeader.identification.creators.length).eq(3);
+    expect(scoreHeader.title).to.eq("New Title"); // Since get is not directly tied to set
+    expect(scoreHeader.movementTitle).to.eq("New Title");
+    expect(scoreHeader.credits[0].creditWords[0].words).to.eq("New Title");
+  });
+  it("can correctly add metadata", function() {
+    let mxmljson = parseScore(minimalTest);
+    let scoreHeader = new ScoreHeader(mxmljson);
+    expect(scoreHeader.credits.length).eq(0);
+    expect(scoreHeader.identification.creators.length).eq(0);
 
-        scoreHeader.title = "Orig Title";
-        scoreHeader.composer = "Orig Composer";
-        scoreHeader.arranger = "Orig Arranger";
-        scoreHeader.lyricist = "Orig Lyricist";
+    scoreHeader.title = "Orig Title";
+    scoreHeader.composer = "Orig Composer";
+    scoreHeader.arranger = "Orig Arranger";
+    scoreHeader.lyricist = "Orig Lyricist";
 
-        expect(scoreHeader.credits).to.deep.equal([
-            {
-                creditImage: null,
-                creditTypes: ["title"],
-                creditWords: [{
-                    words: "Orig Title",
+    expect(scoreHeader.credits).to.deep.equal([
+      {
+        creditImage: null,
+        creditTypes: ["title"],
+        creditWords: [
+          {
+            words: "Orig Title",
 
-                    defaultX: 664.3076923076923,
-                    defaultY: 1657.8461538461538,
-                    fontSize: "18px",
-                    justify: LeftCenterRight.Center
-                }],
-                page: 1
-            },
-            {
-                creditImage: null,
-                creditTypes: ["composer"],
-                creditWords: [{
-                    words: "Orig Composer",
+            defaultX: 664.3076923076923,
+            defaultY: 1657.8461538461538,
+            fontSize: "18px",
+            justify: LeftCenterRight.Center,
+          },
+        ],
+        page: 1,
+      },
+      {
+        creditImage: null,
+        creditTypes: ["composer"],
+        creditWords: [
+          {
+            words: "Orig Composer",
 
-                    defaultX: 1234.7692307692307,
-                    defaultY: 1596.3076923076922,
-                    fontSize: "12px",
-                    justify: LeftCenterRight.Right
-                }],
-                page: 1
-            },
-            {
-                creditImage: null,
-                creditTypes: ["arranger"],
-                creditWords: [{
-                    words: "Orig Arranger",
+            defaultX: 1234.7692307692307,
+            defaultY: 1596.3076923076922,
+            fontSize: "12px",
+            justify: LeftCenterRight.Right,
+          },
+        ],
+        page: 1,
+      },
+      {
+        creditImage: null,
+        creditTypes: ["arranger"],
+        creditWords: [
+          {
+            words: "Orig Arranger",
 
-                    defaultX: 1234.7692307692307,
-                    defaultY: 1503.9999999999998,
-                    fontSize: "12px",
-                    justify: LeftCenterRight.Right
-                }],
-                page: 1
-            },
-            {
-                creditImage: null,
-                creditTypes: ["lyricist"],
-                creditWords: [{
-                    words: "Orig Lyricist",
+            defaultX: 1234.7692307692307,
+            defaultY: 1503.9999999999998,
+            fontSize: "12px",
+            justify: LeftCenterRight.Right,
+          },
+        ],
+        page: 1,
+      },
+      {
+        creditImage: null,
+        creditTypes: ["lyricist"],
+        creditWords: [
+          {
+            words: "Orig Lyricist",
 
-                    defaultX: 1234.7692307692307,
-                    defaultY: 1411.6923076923076,
-                    fontSize: "12px",
-                    justify: LeftCenterRight.Right
-                }],
-                page: 1
-            }
-        ]);
-    });
+            defaultX: 1234.7692307692307,
+            defaultY: 1411.6923076923076,
+            fontSize: "12px",
+            justify: LeftCenterRight.Right,
+          },
+        ],
+        page: 1,
+      },
+    ]);
+  });
 });

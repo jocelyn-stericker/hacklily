@@ -1,4 +1,3 @@
-"use strict";
 /**
  * This file is part of Satie music engraver <https://github.com/jnetterf/satie>.
  * Copyright (C) Joshua Netterfield <joshua.ca> 2015 - present.
@@ -29,23 +28,12 @@ var __extends = (this && this.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
-    result["default"] = mod;
-    return result;
-};
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-var React = __importStar(require("react"));
-var musicxml_interfaces_1 = require("musicxml-interfaces");
-var react_1 = require("react");
-var PropTypes = __importStar(require("prop-types"));
-var private_views_glyph_1 = __importDefault(require("./private_views_glyph"));
-var private_smufl_1 = require("./private_smufl");
+import * as React from "react";
+import { SymbolSize } from "musicxml-interfaces";
+import { Component } from "react";
+import * as PropTypes from "prop-types";
+import Glyph from "./private_views_glyph";
+import { bboxes } from "./private_smufl";
 /**
  * Responsible for the rendering of a clef.
  */
@@ -66,10 +54,10 @@ var ClefView = /** @class */ (function (_super) {
         if (!clefSign) {
             return null;
         }
-        var clefGlyph = (React.createElement(private_views_glyph_1.default, { fill: spec.color, glyphName: clefSign, x: clefX, y: clefY }));
+        var clefGlyph = (React.createElement(Glyph, { fill: spec.color, glyphName: clefSign, x: clefX, y: clefY }));
         var clefOctaveChange = parseInt(spec.clefOctaveChange, 10);
         var clefDecorations = [];
-        var clefSignBox = private_smufl_1.bboxes[clefSign];
+        var clefSignBox = bboxes[clefSign];
         var left = clefSignBox[0];
         var top = clefSignBox[1];
         var right = clefSignBox[2];
@@ -83,22 +71,22 @@ var ClefView = /** @class */ (function (_super) {
         right = right * 10 + clefX;
         var decorativeX = (left + right) / 2;
         if (clefOctaveChange === 2) {
-            clefDecorations.push(React.createElement(private_views_glyph_1.default, { fill: spec.color, glyphName: "clef15", key: "15ma", x: decorativeX -
-                    (private_smufl_1.bboxes["clef15"][0] * 10 + private_smufl_1.bboxes["clef15"][2] * 10) / 2 +
+            clefDecorations.push(React.createElement(Glyph, { fill: spec.color, glyphName: "clef15", key: "15ma", x: decorativeX -
+                    (bboxes["clef15"][0] * 10 + bboxes["clef15"][2] * 10) / 2 +
                     topLeftOffset, y: top }));
         }
         else if (clefOctaveChange === 1) {
-            clefDecorations.push(React.createElement(private_views_glyph_1.default, { fill: spec.color, glyphName: "clef8", key: "8va", x: decorativeX -
-                    (private_smufl_1.bboxes["clef8"][0] * 10 + private_smufl_1.bboxes["clef8"][2] * 10) / 2 +
+            clefDecorations.push(React.createElement(Glyph, { fill: spec.color, glyphName: "clef8", key: "8va", x: decorativeX -
+                    (bboxes["clef8"][0] * 10 + bboxes["clef8"][2] * 10) / 2 +
                     topLeftOffset, y: top }));
         }
         else if (clefOctaveChange === -1) {
-            clefDecorations.push(React.createElement(private_views_glyph_1.default, { fill: spec.color, glyphName: "clef8", key: "8vb", x: decorativeX -
-                    (private_smufl_1.bboxes["clef8"][0] * 10 + private_smufl_1.bboxes["clef8"][2] * 10) / 2, y: bottom + private_smufl_1.bboxes["clef8"][1] * 10 }));
+            clefDecorations.push(React.createElement(Glyph, { fill: spec.color, glyphName: "clef8", key: "8vb", x: decorativeX -
+                    (bboxes["clef8"][0] * 10 + bboxes["clef8"][2] * 10) / 2, y: bottom + bboxes["clef8"][1] * 10 }));
         }
         else if (clefOctaveChange === -2) {
-            clefDecorations.push(React.createElement(private_views_glyph_1.default, { fill: spec.color, glyphName: "clef15", key: "15mb", x: decorativeX -
-                    (private_smufl_1.bboxes["clef15"][0] * 10 + private_smufl_1.bboxes["clef15"][2] * 10) / 2, y: bottom + private_smufl_1.bboxes["clef15"][1] * 10 }));
+            clefDecorations.push(React.createElement(Glyph, { fill: spec.color, glyphName: "clef15", key: "15mb", x: decorativeX -
+                    (bboxes["clef15"][0] * 10 + bboxes["clef15"][2] * 10) / 2, y: bottom + bboxes["clef15"][1] * 10 }));
         }
         if (clefDecorations) {
             return (React.createElement("g", null,
@@ -123,7 +111,7 @@ var ClefView = /** @class */ (function (_super) {
         else {
             return (clef +
                 "Clef" +
-                (this.props.spec.size === musicxml_interfaces_1.SymbolSize.Cue ? "Change" : ""));
+                (this.props.spec.size === SymbolSize.Cue ? "Change" : ""));
         }
     };
     ClefView.prototype.renderedLine = function () {
@@ -137,6 +125,6 @@ var ClefView = /** @class */ (function (_super) {
         originY: PropTypes.number,
     };
     return ClefView;
-}(react_1.Component));
-exports.default = ClefView;
+}(Component));
+export default ClefView;
 //# sourceMappingURL=implAttributes_clefView.js.map

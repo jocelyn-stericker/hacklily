@@ -1,4 +1,3 @@
-"use strict";
 /**
  * @license
  * This file is part of Makelily
@@ -31,9 +30,8 @@ var __extends = (this && this.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
-Object.defineProperty(exports, "__esModule", { value: true });
-var aphrodite_1 = require("aphrodite");
-var React = require("react");
+import { css, StyleSheet } from "aphrodite";
+import React from "react";
 /**
  * Renders help links in the note tool.
  */
@@ -44,17 +42,16 @@ var NoteAdditionalHelp = /** @class */ (function (_super) {
     }
     NoteAdditionalHelp.prototype.render = function () {
         var _a = this.props, kind = _a.kind, onHide = _a.onHide;
-        return (React.createElement("span", { className: aphrodite_1.css(styles.overlay), onClick: onHide, role: "button" },
-            React.createElement("span", { className: aphrodite_1.css(styles.widget) },
+        return (React.createElement("span", { className: css(styles.overlay), onClick: onHide, role: "button" },
+            React.createElement("span", { className: css(styles.widget) },
                 kind === "keyboard" && this.renderKeyboard(),
                 kind === "midi" && this.renderMIDI(),
                 kind === "mouse" && this.renderMouse(),
                 kind === "relative" && this.renderRelative(),
                 kind === "whyNotEdit" && this.renderWhyNotEdit(),
                 React.createElement("p", null,
-                    React.createElement("a", { href: "javascript:void(0)", role: "button", onClick: onHide }, "Close")))));
+                    React.createElement("a", { href: "#", role: "button", onClick: onHide }, "Close")))));
     };
-    // tslint:disable-next-line:max-func-body-length
     NoteAdditionalHelp.prototype.renderKeyboard = function () {
         return (React.createElement("span", null,
             React.createElement("h3", null, "What keyboard shortcuts are available?"),
@@ -158,9 +155,8 @@ var NoteAdditionalHelp = /** @class */ (function (_super) {
     };
     return NoteAdditionalHelp;
 }(React.Component));
-exports.default = NoteAdditionalHelp;
-// tslint:disable-next-line typedef
-var styles = aphrodite_1.StyleSheet.create({
+export default NoteAdditionalHelp;
+var styles = StyleSheet.create({
     overlay: {
         background: "rgba(0, 0, 0, 0.8)",
         bottom: 0,

@@ -1,4 +1,3 @@
-"use strict";
 /**
  * This file is part of Satie music engraver <https://github.com/jnetterf/satie>.
  * Copyright (C) Joshua Netterfield <joshua.ca> 2015 - present.
@@ -16,16 +15,18 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with Satie.  If not, see <http://www.gnu.org/licenses/>.
  */
-Object.defineProperty(exports, "__esModule", { value: true });
-var musicxml_interfaces_1 = require("musicxml-interfaces");
-var lodash_1 = require("lodash");
-var document_1 = require("./document");
+import { serializeFiguredBass, } from "musicxml-interfaces";
+import { forEach } from "lodash";
+import { Type } from "./document";
 var FiguredBassModel = /** @class */ (function () {
     /*---- Implementation -----------------------------------------------------------------------*/
     function FiguredBassModel(spec) {
         var _this = this;
+        /*---- I.1 IModel ---------------------------------------------------------------------------*/
+        this.divCount = 0;
+        this.divisions = 0;
         this._color = 0x000000;
-        lodash_1.forEach(spec, function (value, key) {
+        forEach(spec, function (value, key) {
             _this[key] = value;
         });
     }
@@ -52,7 +53,7 @@ var FiguredBassModel = /** @class */ (function () {
         enumerable: true,
         configurable: true
     });
-    FiguredBassModel.prototype.refresh = function (cursor) {
+    FiguredBassModel.prototype.refresh = function (_cursor) {
         // todo
     };
     FiguredBassModel.prototype.getLayout = function (cursor) {
@@ -60,38 +61,32 @@ var FiguredBassModel = /** @class */ (function () {
         return new FiguredBassModel.Layout(this, cursor);
     };
     FiguredBassModel.prototype.toXML = function () {
-        return musicxml_interfaces_1.serializeFiguredBass(this) + "\n<forward><duration>" + this.divCount + "</duration></forward>\n";
+        return serializeFiguredBass(this) + "\n<forward><duration>" + this.divCount + "</duration></forward>\n";
     };
     FiguredBassModel.prototype.inspect = function () {
         return this.toXML();
     };
-    FiguredBassModel.prototype.calcWidth = function (shortest) {
+    FiguredBassModel.prototype.calcWidth = function (_shortest) {
         return 0;
     };
-    return FiguredBassModel;
-}());
-FiguredBassModel.prototype.divCount = 0;
-FiguredBassModel.prototype.divisions = 0;
-(function (FiguredBassModel) {
-    var Layout = /** @class */ (function () {
+    FiguredBassModel.Layout = /** @class */ (function () {
         function Layout(model, cursor) {
+            // Prototype:
+            this.boundingBoxes = [];
+            this.renderClass = Type.FiguredBass;
+            this.expandPolicy = "none";
             this.model = model;
             this.x = cursor.segmentX;
             this.division = cursor.segmentDivision;
         }
         return Layout;
     }());
-    FiguredBassModel.Layout = Layout;
-    Layout.prototype.expandPolicy = "none";
-    Layout.prototype.renderClass = document_1.Type.FiguredBass;
-    Layout.prototype.boundingBoxes = [];
-    Object.freeze(Layout.prototype.boundingBoxes);
-})(FiguredBassModel || (FiguredBassModel = {}));
+    return FiguredBassModel;
+}());
 /**
  * Registers FiguredBass in the factory structure passed in.
  */
-function Export(constructors) {
-    constructors[document_1.Type.FiguredBass] = FiguredBassModel;
+export default function Export(constructors) {
+    constructors[Type.FiguredBass] = FiguredBassModel;
 }
-exports.default = Export;
 //# sourceMappingURL=implFiguredBass_figuredBassModel.js.map

@@ -1,4 +1,3 @@
-"use strict";
 /**
  * @license
  * This file is part of Makelily.
@@ -42,26 +41,22 @@ var __assign = (this && this.__assign) || function () {
     };
     return __assign.apply(this, arguments);
 };
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-var aphrodite_1 = require("aphrodite");
-var musicxml_interfaces_1 = require("musicxml-interfaces");
-var React = require("react");
-var satie_1 = require("./satie/src/satie");
-var tabStyles_1 = __importDefault(require("./tabStyles"));
+import { css } from "aphrodite";
+import { TimeSymbolType } from "musicxml-interfaces";
+import React from "react";
+import { Addons as SatieAddons } from "./satie/src/satie";
+import tabStyles from "./tabStyles";
 var stdTime = [
     {
         beatTypes: [4],
         beats: ["4"],
-        symbol: musicxml_interfaces_1.TimeSymbolType.Common,
+        symbol: TimeSymbolType.Common,
         tsViewbox: "-32 -45 80 80",
     },
     {
         beatTypes: [2],
         beats: ["2"],
-        symbol: musicxml_interfaces_1.TimeSymbolType.Cut,
+        symbol: TimeSymbolType.Cut,
         tsViewbox: "-32 -45 80 80",
     },
     {
@@ -125,25 +120,24 @@ var ToolSetTime = /** @class */ (function (_super) {
         };
         return _this;
     }
-    // tslint:disable-next-line max-func-body-length
     ToolSetTime.prototype.render = function () {
         var _this = this;
         var tsViews = stdTime.map(function (time, i) {
             var timeSpec = __assign({ defaultX: 0, defaultY: 0, relativeY: 0 }, time);
             var selected = i === _this.state.selectedTime;
-            var className = aphrodite_1.css(tabStyles_1.default.selectableOption, selected && tabStyles_1.default.selectableSelected, tabStyles_1.default.paletteSml);
+            var className = css(tabStyles.selectableOption, selected && tabStyles.selectableSelected, tabStyles.paletteSml);
             return (React.createElement("span", { className: className, role: "button", onClick: function () { return _this.setState({ selectedTime: i }); }, key: i },
-                React.createElement("svg", { className: aphrodite_1.css(tabStyles_1.default.resetFont), viewBox: timeSpec.tsViewbox },
-                    React.createElement(satie_1.Addons.TimeSignature, { spec: timeSpec }))));
+                React.createElement("svg", { className: css(tabStyles.resetFont), viewBox: timeSpec.tsViewbox },
+                    React.createElement(SatieAddons.TimeSignature, { spec: timeSpec }))));
         });
-        return (React.createElement("div", { className: aphrodite_1.css(tabStyles_1.default.tool) },
-            React.createElement("div", { className: aphrodite_1.css(tabStyles_1.default.section) },
-                React.createElement("h3", { className: aphrodite_1.css(tabStyles_1.default.toolHeading) }, "Time Signature"),
-                React.createElement("div", { className: aphrodite_1.css(tabStyles_1.default.selectableList) }, tsViews)),
-            React.createElement("div", { className: aphrodite_1.css(tabStyles_1.default.spacer) }),
-            React.createElement("div", { className: aphrodite_1.css(tabStyles_1.default.section) },
-                React.createElement("pre", { className: aphrodite_1.css(tabStyles_1.default.lyPreview) }, this.generateLy()),
-                React.createElement("button", { className: aphrodite_1.css(tabStyles_1.default.insert), onClick: this.handleInsertLyClicked }, "Insert this code into Hacklily"))));
+        return (React.createElement("div", { className: css(tabStyles.tool) },
+            React.createElement("div", { className: css(tabStyles.section) },
+                React.createElement("h3", { className: css(tabStyles.toolHeading) }, "Time Signature"),
+                React.createElement("div", { className: css(tabStyles.selectableList) }, tsViews)),
+            React.createElement("div", { className: css(tabStyles.spacer) }),
+            React.createElement("div", { className: css(tabStyles.section) },
+                React.createElement("pre", { className: css(tabStyles.lyPreview) }, this.generateLy()),
+                React.createElement("button", { className: css(tabStyles.insert), onClick: this.handleInsertLyClicked }, "Insert this code into Hacklily"))));
     };
     ToolSetTime.prototype.generateLy = function () {
         var time = stdTime[this.state.selectedTime];
@@ -152,5 +146,5 @@ var ToolSetTime = /** @class */ (function (_super) {
     };
     return ToolSetTime;
 }(React.Component));
-exports.default = ToolSetTime;
+export default ToolSetTime;
 //# sourceMappingURL=ToolSetTime.js.map

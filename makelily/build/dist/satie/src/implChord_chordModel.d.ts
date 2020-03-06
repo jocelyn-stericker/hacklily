@@ -27,32 +27,29 @@ import { IBeamLayout } from "./implChord_beamLayout";
 /**
  * Registers Chord in the factory structure passed in.
  */
-declare function ChordModel(constructors: {
+export default function ChordModel(constructors: {
     [key: number]: any;
     [key: string]: Type;
 }): void;
-declare module ChordModel {
-    interface IChordModel extends IModel, IChord {
-    }
-    interface IDetachedChordModel extends IModel, IChord {
-        stemX: () => number;
-        satieLedger: number[];
-        noteheadGlyph: string[];
-        satieMultipleRest: MultipleRest;
-        satieUnbeamedTuplet: IBeamLayout;
-    }
-    interface IChordLayout extends ILayout {
-        model: IDetachedChordModel;
-        minSpaceBefore: number;
-        minSpaceAfter: number;
-        satieBeam: IBeamLayout;
-        satieStem: {
-            direction: number;
-            stemHeight: number;
-            stemStart: number;
-            tremolo?: Tremolo;
-        };
-        satieFlag: string;
-    }
+export interface IChordModel extends IModel, IChord {
 }
-export default ChordModel;
+export interface IDetachedChordModel extends IModel, IChord {
+    stemX: () => number;
+    satieLedger: number[];
+    noteheadGlyph: string[];
+    satieMultipleRest: MultipleRest;
+    satieUnbeamedTuplet: IBeamLayout;
+}
+export interface IChordLayout extends ILayout {
+    model: IDetachedChordModel;
+    minSpaceBefore: number;
+    minSpaceAfter: number;
+    satieBeam: IBeamLayout;
+    satieStem: {
+        direction: number;
+        stemHeight: number;
+        stemStart: number;
+        tremolo?: Tremolo;
+    };
+    satieFlag: string;
+}

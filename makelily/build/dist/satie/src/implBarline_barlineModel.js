@@ -1,4 +1,3 @@
-"use strict";
 /**
  * @source: https://github.com/jnetterf/satie/
  *
@@ -19,55 +18,71 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-var musicxml_interfaces_1 = require("musicxml-interfaces");
-var builders_1 = require("musicxml-interfaces/builders");
-var lodash_1 = require("lodash");
-var document_1 = require("./document");
-var private_part_1 = require("./private_part");
-var private_smufl_1 = require("./private_smufl");
-var implAttributes_attributesModel_1 = __importDefault(require("./implAttributes_attributesModel"));
-var implAttributes_attributesData_1 = require("./implAttributes_attributesData");
+import { BarStyleType, serializeBarline, } from "musicxml-interfaces";
+import { buildBarStyle } from "musicxml-interfaces/builders";
+import { some, forEach } from "lodash";
+import { Type } from "./document";
+import { groupsForPart } from "./private_part";
+import { bravura } from "./private_smufl";
+import { createWarningLayout, } from "./implAttributes_attributesModel";
+import { needsWarning, clefsEqual, CLEF_INDENTATION, } from "./implAttributes_attributesData";
 var BarlineModel = /** @class */ (function () {
     /*---- Implementation -----------------------------------------------------------------------*/
     function BarlineModel(spec) {
         var _this = this;
         this._class = "Barline";
-        lodash_1.forEach(spec, function (value, key) {
+        /*---- I.1 IModel ---------------------------------------------------------------------------*/
+        this.divCount = 0;
+        forEach(spec, function (value, key) {
             _this[key] = value;
         });
     }
     BarlineModel.prototype.toJSON = function () {
         var _a = this, _class = _a._class, segno = _a.segno, coda = _a.coda, location = _a.location, codaAttrib = _a.codaAttrib, wavyLine = _a.wavyLine, fermatas = _a.fermatas, segnoAttrib = _a.segnoAttrib, divisions = _a.divisions, barStyle = _a.barStyle, ending = _a.ending, repeat = _a.repeat, footnote = _a.footnote;
-        return { _class: _class, segno: segno, coda: coda, location: location, codaAttrib: codaAttrib,
-            wavyLine: wavyLine, fermatas: fermatas, segnoAttrib: segnoAttrib, divisions: divisions,
-            barStyle: barStyle, ending: ending, repeat: repeat, footnote: footnote };
+        return {
+            _class: _class,
+            segno: segno,
+            coda: coda,
+            location: location,
+            codaAttrib: codaAttrib,
+            wavyLine: wavyLine,
+            fermatas: fermatas,
+            segnoAttrib: segnoAttrib,
+            divisions: divisions,
+            barStyle: barStyle,
+            ending: ending,
+            repeat: repeat,
+            footnote: footnote,
+        };
     };
     BarlineModel.prototype.refresh = function (cursor) {
         if (!this.barStyle) {
-            cursor.patch(function (staff) { return staff
-                .barline(function (barline) { return barline
-                .barStyle(builders_1.buildBarStyle(function (barStyle) { return barStyle
-                .data(musicxml_interfaces_1.BarStyleType.Regular)
-                .color("black"); })); }); });
+            cursor.patch(function (staff) {
+                return staff.barline(function (barline) {
+                    return barline.barStyle(buildBarStyle(function (barStyle) {
+                        return barStyle.data(BarStyleType.Regular).color("black");
+                    }));
+                });
+            });
         }
         if (!isFinite(this.barStyle.data) || this.barStyle.data === null) {
-            var lastBarlineInSegment_1 = !lodash_1.some(cursor.segmentInstance.slice(cursor.segmentPosition + 1), function (model) { return cursor.factory.modelHasType(model, document_1.Type.Barline); });
-            cursor.patch(function (staff) { return staff
-                .barline(function (barline) { return barline
-                .barStyle({
-                data: lastBarlineInSegment_1 && cursor.measureIsLast ?
-                    musicxml_interfaces_1.BarStyleType.LightHeavy : musicxml_interfaces_1.BarStyleType.Regular,
-            }); }); });
+            var lastBarlineInSegment_1 = !some(cursor.segmentInstance.slice(cursor.segmentPosition + 1), function (model) { return cursor.factory.modelHasType(model, Type.Barline); });
+            cursor.patch(function (staff) {
+                return staff.barline(function (barline) {
+                    return barline.barStyle({
+                        data: lastBarlineInSegment_1 && cursor.measureIsLast
+                            ? BarStyleType.LightHeavy
+                            : BarStyleType.Regular,
+                    });
+                });
+            });
         }
         if (!this.barStyle.color) {
-            cursor.patch(function (staff) { return staff
-                .barline(function (barline) { return barline
-                .barStyle(function (barStyle) { return barStyle
-                .color("black"); }); }); });
+            cursor.patch(function (staff) {
+                return staff.barline(function (barline) {
+                    return barline.barStyle(function (barStyle) { return barStyle.color("black"); });
+                });
+            });
         }
     };
     BarlineModel.prototype.getLayout = function (cursor) {
@@ -75,21 +90,21 @@ var BarlineModel = /** @class */ (function () {
         return new BarlineModel.Layout(this, cursor);
     };
     BarlineModel.prototype.toXML = function () {
-        return musicxml_interfaces_1.serializeBarline(this) + "\n<forward><duration>" + this.divCount + "</duration></forward>\n";
+        return serializeBarline(this) + "\n<forward><duration>" + this.divCount + "</duration></forward>\n";
     };
     BarlineModel.prototype.inspect = function () {
         return this.toXML();
     };
-    BarlineModel.prototype.calcWidth = function (shortest) {
+    BarlineModel.prototype.calcWidth = function (_shortest) {
         return 8; // TODO
     };
-    return BarlineModel;
-}());
-BarlineModel.prototype.divCount = 0;
-(function (BarlineModel) {
-    var Layout = /** @class */ (function () {
+    BarlineModel.Layout = /** @class */ (function () {
         function Layout(origModel, cursor) {
             var _this = this;
+            // Prototype:
+            this.boundingBoxes = [];
+            this.renderClass = Type.Barline;
+            this.expandPolicy = "none";
             this.division = cursor.segmentDivision;
             this.x = cursor.segmentX;
             var attributes = cursor.staffAttributes;
@@ -98,12 +113,12 @@ BarlineModel.prototype.divCount = 0;
                 // TODO: removing this shows that measures are slightly misplaced
                 return;
             }
-            this.partGroups = private_part_1.groupsForPart(cursor.header.partList, cursor.segmentInstance.part);
+            this.partGroups = groupsForPart(cursor.header.partList, cursor.segmentInstance.part);
             this.partSymbol = partSymbol;
             this.model = Object.create(origModel, {
                 defaultX: {
-                    get: function () { return _this.overrideX; }
-                }
+                    get: function () { return _this.overrideX; },
+                },
             });
             var clefOffset = 0;
             if (cursor.lineTotalBarsOnLine === cursor.lineBarOnLine + 1) {
@@ -114,16 +129,17 @@ BarlineModel.prototype.divCount = 0;
                 var segment = part && part.staves[cursor.staffIdx];
                 var nextAttributes = void 0;
                 if (segment) {
-                    var n = cursor.factory.search(segment, 0, document_1.Type.Attributes)[0];
+                    var n = cursor.factory.search(segment, 0, Type.Attributes)[0];
                     if (n) {
                         nextAttributes = n._snapshot;
                     }
                 }
-                var addWarning = nextAttributes && implAttributes_attributesData_1.needsWarning(attributes, nextAttributes, cursor.staffIdx);
+                var addWarning = nextAttributes &&
+                    needsWarning(attributes, nextAttributes, cursor.staffIdx);
                 if (addWarning) {
-                    var clefsAreEqual = implAttributes_attributesData_1.clefsEqual(attributes, nextAttributes, cursor.staffIdx);
-                    clefOffset = clefsAreEqual ? 0 : implAttributes_attributesData_1.CLEF_INDENTATION;
-                    this.model.satieAttributes = implAttributes_attributesModel_1.default.createWarningLayout(cursor, attributes, nextAttributes);
+                    var clefsAreEqual = clefsEqual(attributes, nextAttributes, cursor.staffIdx);
+                    clefOffset = clefsAreEqual ? 0 : CLEF_INDENTATION;
+                    this.model.satieAttributes = createWarningLayout(cursor, attributes, nextAttributes);
                 }
             }
             this.model.defaultY = 0;
@@ -131,12 +147,12 @@ BarlineModel.prototype.divCount = 0;
             this.height = 20; // TODO
             /*---- Geometry ---------------------------------------*/
             var lineWidths = cursor.header.defaults.appearance.lineWidths;
-            var barlineSep = private_smufl_1.bravura.engravingDefaults.barlineSeparation;
+            var barlineSep = bravura.engravingDefaults.barlineSeparation;
             var setLines = function (lines) {
                 var x = 0;
                 _this.lineStarts = [];
                 _this.lineWidths = [];
-                lodash_1.forEach(lines, function (line, idx) {
+                forEach(lines, function (line, idx) {
                     if (idx > 0) {
                         x += barlineSep * 10;
                     }
@@ -149,29 +165,29 @@ BarlineModel.prototype.divCount = 0;
                 cursor.segmentX += x;
             };
             switch (this.model.barStyle.data) {
-                case musicxml_interfaces_1.BarStyleType.LightHeavy:
+                case BarStyleType.LightHeavy:
                     setLines(["light barline", "heavy barline"]);
                     break;
-                case musicxml_interfaces_1.BarStyleType.LightLight:
+                case BarStyleType.LightLight:
                     setLines(["light barline", "light barline"]);
                     break;
-                case musicxml_interfaces_1.BarStyleType.HeavyHeavy:
+                case BarStyleType.HeavyHeavy:
                     setLines(["heavy barline", "heavy barline"]);
                     break;
-                case musicxml_interfaces_1.BarStyleType.HeavyLight:
+                case BarStyleType.HeavyLight:
                     setLines(["heavy barline", "light barline"]);
                     break;
-                case musicxml_interfaces_1.BarStyleType.Regular:
-                case musicxml_interfaces_1.BarStyleType.Dashed:
-                case musicxml_interfaces_1.BarStyleType.Dotted:
-                case musicxml_interfaces_1.BarStyleType.Short:
-                case musicxml_interfaces_1.BarStyleType.Tick:
+                case BarStyleType.Regular:
+                case BarStyleType.Dashed:
+                case BarStyleType.Dotted:
+                case BarStyleType.Short:
+                case BarStyleType.Tick:
                     setLines(["light barline"]);
                     break;
-                case musicxml_interfaces_1.BarStyleType.Heavy:
+                case BarStyleType.Heavy:
                     setLines(["heavy barline"]);
                     break;
-                case musicxml_interfaces_1.BarStyleType.None:
+                case BarStyleType.None:
                     setLines([]);
                     break;
                 default:
@@ -181,17 +197,12 @@ BarlineModel.prototype.divCount = 0;
         }
         return Layout;
     }());
-    BarlineModel.Layout = Layout;
-    Layout.prototype.expandPolicy = "none";
-    Layout.prototype.renderClass = document_1.Type.Barline;
-    Layout.prototype.boundingBoxes = [];
-    Object.freeze(Layout.prototype.boundingBoxes);
-})(BarlineModel || (BarlineModel = {}));
+    return BarlineModel;
+}());
 /**
  * Registers Barline in the factory structure passed in.
  */
-function Export(constructors) {
-    constructors[document_1.Type.Barline] = BarlineModel;
+export default function Export(constructors) {
+    constructors[Type.Barline] = BarlineModel;
 }
-exports.default = Export;
 //# sourceMappingURL=implBarline_barlineModel.js.map

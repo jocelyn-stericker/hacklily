@@ -1,4 +1,3 @@
-"use strict";
 /**
  * This file is part of Satie music engraver <https://github.com/jnetterf/satie>.
  * Copyright (C) Joshua Netterfield <joshua.ca> 2015 - present.
@@ -29,23 +28,11 @@ var __extends = (this && this.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
-    result["default"] = mod;
-    return result;
-};
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-var react_1 = require("react");
-var PropTypes = __importStar(require("prop-types"));
-var lodash_1 = require("lodash");
-var invariant_1 = __importDefault(require("invariant"));
-var private_views_glyph_1 = __importDefault(require("./private_views_glyph"));
-var $Glyph = react_1.createFactory(private_views_glyph_1.default);
+import React, { Component } from "react";
+import * as PropTypes from "prop-types";
+import { filter } from "lodash";
+import invariant from "invariant";
+import Glyph from "./private_views_glyph";
 var DynamicsView = /** @class */ (function (_super) {
     __extends(DynamicsView, _super);
     function DynamicsView() {
@@ -54,8 +41,8 @@ var DynamicsView = /** @class */ (function (_super) {
     DynamicsView.prototype.render = function () {
         var layout = this.props.layout;
         var model = layout.model;
-        var dynamicsContainer = lodash_1.filter(model.directionTypes, function (dt) { return dt.dynamics; })[0];
-        invariant_1.default(!!dynamicsContainer, "No dynamics found!");
+        var dynamicsContainer = filter(model.directionTypes, function (dt) { return dt.dynamics; })[0];
+        invariant(!!dynamicsContainer, "No dynamics found!");
         var dynamics = typeof dynamicsContainer !== "number" &&
             typeof dynamicsContainer !== "function" &&
             dynamicsContainer.dynamics;
@@ -69,12 +56,7 @@ var DynamicsView = /** @class */ (function (_super) {
         if (!glyphName) {
             return null;
         }
-        return $Glyph({
-            fill: dynamics.color || "black",
-            glyphName: glyphName,
-            x: initX,
-            y: initY,
-        });
+        return (React.createElement(Glyph, { fill: dynamics.color || "black", glyphName: glyphName, x: initX, y: initY }));
     };
     DynamicsView.prototype.getGlyphName = function (dynamics) {
         /* Not included in MusicXML:
@@ -145,6 +127,6 @@ var DynamicsView = /** @class */ (function (_super) {
         originY: PropTypes.number,
     };
     return DynamicsView;
-}(react_1.Component));
-exports.default = DynamicsView;
+}(Component));
+export default DynamicsView;
 //# sourceMappingURL=implDirection_dynamicsView.js.map

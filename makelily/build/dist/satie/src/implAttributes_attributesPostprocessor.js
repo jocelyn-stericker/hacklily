@@ -1,4 +1,3 @@
-"use strict";
 /**
  * This file is part of Satie music engraver <https://github.com/jnetterf/satie>.
  * Copyright (C) Joshua Netterfield <joshua.ca> 2015 - present.
@@ -16,28 +15,27 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with Satie.  If not, see <http://www.gnu.org/licenses/>.
  */
-Object.defineProperty(exports, "__esModule", { value: true });
-var lodash_1 = require("lodash");
-var document_1 = require("./document");
+import { forEach, sortedIndex, some } from "lodash";
+import { Type } from "./document";
 /**
  * Sets the width of attributes w.r.t. staff lines.
  *
  * @returns a list of measures
  */
-function attributes(options, bounds, measures) {
+function attributes(_options, _bounds, measures) {
     var attributesByPart = {};
     var originXByPart = {};
     var measureStartX = 0;
     var targetsByPart = {};
     var isBarlineByPart = {};
-    lodash_1.forEach(measures, function (measure) {
-        lodash_1.forEach(measure.elements, function (elements) {
-            lodash_1.forEach(elements, function (element, index) {
+    forEach(measures, function (measure) {
+        forEach(measure.elements, function (elements) {
+            forEach(elements, function (element) {
                 if (!element.model) {
                     return;
                 }
-                if (element.renderClass === document_1.Type.Barline ||
-                    element.renderClass === document_1.Type.Chord) {
+                if (element.renderClass === Type.Barline ||
+                    element.renderClass === Type.Chord) {
                     var partKey = element.part + "_" + element.model.staffIdx;
                     if (!element.model.staffIdx) {
                         console.warn("Missing staffIdx", element.model);
@@ -48,15 +46,15 @@ function attributes(options, bounds, measures) {
                     }
                     var targets = targetsByPart[partKey];
                     var x = element.x + measureStartX;
-                    var index_1 = lodash_1.sortedIndex(targets, x);
-                    var isBarline = element.renderClass === document_1.Type.Barline;
-                    if (targets[index_1] === x) {
-                        isBarlineByPart[partKey][index_1] =
-                            isBarlineByPart[partKey][index_1] || isBarline;
+                    var index = sortedIndex(targets, x);
+                    var isBarline = element.renderClass === Type.Barline;
+                    if (targets[index] === x) {
+                        isBarlineByPart[partKey][index] =
+                            isBarlineByPart[partKey][index] || isBarline;
                     }
                     else {
-                        targets.splice(index_1, 0, element.x + measureStartX);
-                        isBarlineByPart[partKey].splice(index_1, 0, isBarline);
+                        targets.splice(index, 0, element.x + measureStartX);
+                        isBarlineByPart[partKey].splice(index, 0, isBarline);
                     }
                 }
             });
@@ -64,26 +62,26 @@ function attributes(options, bounds, measures) {
         measureStartX += measure.width;
     });
     measureStartX = 0;
-    lodash_1.forEach(measures, function (measure) {
-        lodash_1.forEach(measure.elements, function (elements) {
-            lodash_1.forEach(elements, function (element, index) {
+    forEach(measures, function (measure) {
+        forEach(measure.elements, function (elements) {
+            forEach(elements, function (element) {
                 if (!element.model) {
                     return;
                 }
                 var partKey = element.part + "_" + element.model.staffIdx;
-                if (element.renderClass === document_1.Type.Attributes && element.model) {
+                if (element.renderClass === Type.Attributes && element.model) {
                     // Calculate the width for the staff lines in the previous attributes element.
                     {
                         var targets = targetsByPart[partKey] || [];
-                        var targetIdx = lodash_1.sortedIndex(targets, element.x + measureStartX) - 1;
+                        var targetIdx = sortedIndex(targets, element.x + measureStartX) - 1;
                         var targetIsBarline = isBarlineByPart[partKey][targetIdx];
                         if (!targetIsBarline) {
                             targetIdx++;
                         }
                         if (attributesByPart[partKey]) {
                             var target = targets[targetIdx];
-                            attributesByPart[partKey].staffWidth = target -
-                                originXByPart[partKey];
+                            attributesByPart[partKey].staffWidth =
+                                target - originXByPart[partKey];
                         }
                     }
                     // Capture the new attributes element.
@@ -92,9 +90,10 @@ function attributes(options, bounds, measures) {
                         shouldSplit = true;
                     }
                     else {
-                        var oldAttributes = attributesByPart[partKey].model;
+                        var oldAttributes = attributesByPart[partKey]
+                            .model;
                         var newAttributes_1 = element.model;
-                        shouldSplit = lodash_1.some(oldAttributes.staffDetails, function (details, detailIndex) {
+                        shouldSplit = some(oldAttributes.staffDetails, function (details, detailIndex) {
                             if (!details) {
                                 return false;
                             }
@@ -105,22 +104,22 @@ function attributes(options, bounds, measures) {
                     if (shouldSplit) {
                         attributesByPart[partKey] = element;
                         var targets = targetsByPart[partKey] || [];
-                        var targetIdx = lodash_1.sortedIndex(targets, element.x + measureStartX) - 1;
+                        var targetIdx = sortedIndex(targets, element.x + measureStartX) - 1;
                         var attrTarget = targets[targetIdx] || 0;
                         var target = targets[targetIdx] || 0;
                         originXByPart[partKey] = target;
-                        element.staffLinesOffsetX = element.x + measureStartX -
-                            target - (target - attrTarget);
+                        element.staffLinesOffsetX =
+                            element.x + measureStartX - target - (target - attrTarget);
                     }
                 }
             });
         });
         measureStartX += measure.width;
     });
-    lodash_1.forEach(attributesByPart, function (attributes, partKey) {
+    forEach(attributesByPart, function (attributes, partKey) {
         attributes.staffWidth = measureStartX - originXByPart[partKey];
     });
     return measures;
 }
-exports.default = attributes;
+export default attributes;
 //# sourceMappingURL=implAttributes_attributesPostprocessor.js.map

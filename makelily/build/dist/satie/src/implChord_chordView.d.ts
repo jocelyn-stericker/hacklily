@@ -16,9 +16,9 @@
  * along with Satie.  If not, see <http://www.gnu.org/licenses/>.
  */
 import { Component, ReactElement } from "react";
-import ChordModel from "./implChord_chordModel";
+import { IChordLayout } from "./implChord_chordModel";
 export interface IProps {
-    layout: ChordModel.IChordLayout;
+    layout: IChordLayout;
 }
 /**
  * Renders notes and their notations.

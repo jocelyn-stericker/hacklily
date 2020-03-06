@@ -1,13 +1,13 @@
-@import './common.css';
+@import "./common.css";
 
 :local(.tests) {
-    margin-top: 20px;
+  margin-top: 20px;
 }
 
 .page {
-    height: 300px;
+  height: 300px;
 }
 
 .page svg {
-    height: calc(100% - 10px);
+  height: calc(100% - 10px);
 }

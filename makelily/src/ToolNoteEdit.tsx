@@ -59,8 +59,7 @@ import {
   ITypeBuilder,
 } from "musicxml-interfaces/builders";
 import { IAny } from "musicxml-interfaces/operations";
-import React = require("react");
-import ReactDOM = require("react-dom");
+import React from "react";
 import {
   Addons as SatieAddons,
   Document,
@@ -225,11 +224,14 @@ export default class ToolNoteEdit extends React.Component<ToolProps, State> {
 
   private song: ISong;
 
+  domNode: React.RefObject<HTMLDivElement> = React.createRef();
+
   componentDidMount(): void {
-    (ReactDOM.findDOMNode(this) as any).focus();
+    if (this.domNode.current) {
+      this.domNode.current.focus();
+    }
   }
 
-  // tslint:disable-next-line:max-func-body-length
   render(): JSX.Element {
     const { editType } = this.state;
     const tallPalette: boolean = editType === "P";
@@ -251,6 +253,7 @@ export default class ToolNoteEdit extends React.Component<ToolProps, State> {
 
     return (
       <div
+        ref={this.domNode}
         className={css(tabStyles.tool)}
         tabIndex={0}
         onKeyPress={this.handleKeyPress}
@@ -266,36 +269,20 @@ export default class ToolNoteEdit extends React.Component<ToolProps, State> {
           {/*tslint:disable:react-a11y-anchors*/}
           <i className="fa-info-circle fa" /> Generate markup
           <sup>
-            <a
-              href="javascript:void(0)"
-              onClick={this.handleShowHelpWhyNotEdit}
-              role="button"
-            >
+            <a href="#" onClick={this.handleShowHelpWhyNotEdit} role="button">
               ?
             </a>
           </sup>{" "}
           for notes in your song using a{" "}
-          <a
-            href="javascript:void(0)"
-            onClick={this.handleShowHelpMouse}
-            role="button"
-          >
+          <a href="#" onClick={this.handleShowHelpMouse} role="button">
             mouse
           </a>
           ,{" "}
-          <a
-            href="javascript:void(0);"
-            onClick={this.handleShowHelpKeyboard}
-            role="button"
-          >
+          <a href="#;" onClick={this.handleShowHelpKeyboard} role="button">
             computer keyboard
           </a>
           , or{" "}
-          <a
-            href="javascript:void(0);"
-            onClick={this.handleShowHelpMIDI}
-            role="button"
-          >
+          <a href="#;" onClick={this.handleShowHelpMIDI} role="button">
             MIDI keyboard
           </a>
           .
@@ -329,11 +316,7 @@ export default class ToolNoteEdit extends React.Component<ToolProps, State> {
             <label htmlFor="toolnoteedit-relative">
               <code>\relative</code> mode
               <sup>
-                <a
-                  href="javascript:void(0)"
-                  onClick={this.handleShowHelpRelative}
-                  role="button"
-                >
+                <a href="#" onClick={this.handleShowHelpRelative} role="button">
                   ?
                 </a>
               </sup>{" "}
@@ -368,7 +351,7 @@ export default class ToolNoteEdit extends React.Component<ToolProps, State> {
 
   private applyUndoablePatch = (
     patch: IAny[],
-    doNotEmit: boolean = false,
+    _doNotEmit: boolean = false,
   ): void => {
     const operations: any = this.state.canonicalOperations;
     const newOperations: any = this.song.createCanonicalPatch(operations, {
@@ -403,7 +386,6 @@ export default class ToolNoteEdit extends React.Component<ToolProps, State> {
     this.setState({ operations: this.state.canonicalOperations });
   };
 
-  // tslint:disable-next-line:max-func-body-length
   private generateLy(): string {
     if (!this.song) {
       // still loading...
@@ -416,7 +398,6 @@ export default class ToolNoteEdit extends React.Component<ToolProps, State> {
 
     const doc: Document = this.song.getDocument(this.state.canonicalOperations);
     let ly: string = "";
-    // tslint:disable-next-line:max-func-body-length
     doc.measures.forEach((measure: IMeasure) => {
       const part: IMeasurePart = measure.parts.P1;
       const voice: ISegment = part.voices[1];
@@ -424,243 +405,232 @@ export default class ToolNoteEdit extends React.Component<ToolProps, State> {
       let voiceDiv: number = 0;
       let staffDiv: number = 0;
       let staffModelIdx: number = 0;
-      // tslint:disable-next-line:cyclomatic-complexity max-func-body-length
-      voice.forEach(
-        (model: IModel): void => {
-          if (doc.modelHasType(model, Type.Chord)) {
-            if (model.length < 1) {
-              console.warn("Expected chords to have at least one note");
+      voice.forEach((model: IModel): void => {
+        if (doc.modelHasType(model, Type.Chord)) {
+          if (model.length < 1) {
+            console.warn("Expected chords to have at least one note");
 
-              return;
+            return;
+          }
+          const noteForRythm: Note = model[0];
+
+          if (noteForRythm.rest) {
+            ly += "r";
+          } else {
+            let pitches: string = "";
+            if (model.length > 1) {
+              pitches += "<";
             }
-            const noteForRythm: Note = model[0];
-
-            if (noteForRythm.rest) {
-              ly += "r";
-            } else {
-              let pitches: string = "";
-              if (model.length > 1) {
-                pitches += "<";
-              }
-              // tslint:disable-next-line:prefer-for-of
-              for (let i: number = 0; i < model.length; i += 1) {
-                const note: Note = model[i];
-                pitches += note.pitch.step.toLowerCase();
-                if (note.pitch.alter === -1) {
-                  pitches += "es";
-                } else if (note.pitch.alter === 1) {
-                  pitches += "is";
-                }
-                const octaveOffset: number = relativeMode
-                  ? prevPitch
-                    ? getOctaveDifference(note.pitch.step, prevPitch.step) +
-                      note.pitch.octave -
-                      prevPitch.octave
-                    : 0
-                  : note.pitch.octave - 3;
-                if (octaveOffset > 0) {
-                  for (let j: number = 0; j < octaveOffset; j += 1) {
-                    pitches += "'";
-                  }
-                } else if (octaveOffset < 0) {
-                  for (let j: number = 0; j < -octaveOffset; j += 1) {
-                    pitches += ",";
-                  }
-                }
-                if (i + 1 < model.length) {
-                  pitches += " ";
-                }
-                prevPitch = note.pitch;
-              }
-              if (model.length > 1) {
-                prevPitch = model[0].pitch; // the first note in a chord affects future chords
-                pitches += ">";
-              }
-
-              ly += pitches;
-            }
-
-            const duration: Count = noteForRythm.noteType.duration;
-            switch (duration) {
-              case prevDuration:
-                break;
-              case Count.Whole:
-                ly += "1";
-                break;
-              case Count.Half:
-                ly += "2";
-                break;
-              case Count.Quarter:
-                ly += "4";
-                break;
-              case Count.Eighth:
-                ly += "8";
-                break;
-              case Count._16th:
-                ly += "16";
-                break;
-              case Count._32nd:
-                ly += "32";
-                break;
-              case Count._64th:
-                ly += "64";
-                break;
-              case Count._128th:
-                ly += "128";
-                break;
-              case Count._256th:
-                ly += "256";
-                break;
-              case Count._512th:
-                ly += "512";
-                break;
-              case Count._1024th:
-                ly += "1024";
-                break;
-              default:
-                ly += "unknown";
-            }
-
-            prevDuration = duration;
-
-            for (const {} of noteForRythm.dots) {
-              ly += ".";
-            }
-
-            // tslint:disable-next-line:prefer-for-of
             for (let i: number = 0; i < model.length; i += 1) {
-              if (model[i].notations) {
-                model[i].notations.forEach(
-                  (notations: Notations): void => {
-                    if (notations.fermatas) {
-                      notations.fermatas.forEach(
-                        (fermata: Fermata): void => {
-                          if (fermata.shape === NormalAngledSquare.Angled) {
-                            ly += "\\shortfermata";
-                          } else if (
-                            fermata.shape === NormalAngledSquare.Square
-                          ) {
-                            ly += "\\longfermata";
-                          } else {
-                            ly += "\\fermata";
-                          }
-                        },
-                      );
-                    }
-                    if (notations.articulations) {
-                      notations.articulations.forEach(
-                        (articulations: Articulations): void => {
-                          if (articulations.accent) {
-                            ly += "->";
-                          }
-                          if (articulations.tenuto && articulations.staccato) {
-                            ly += "-_"; // portato
-                          } else {
-                            if (articulations.tenuto) {
-                              ly += "--";
-                            }
-                            if (articulations.staccato) {
-                              ly += "-.";
-                            }
-                          }
-                          if (articulations.staccatissimo) {
-                            ly += "-!";
-                          }
-                          if (articulations.strongAccent) {
-                            ly += "-^";
-                          }
-                        },
-                      );
-                    }
-                    if (notations.technicals) {
-                      notations.technicals.forEach(
-                        (technicals: Technical): void => {
-                          if (technicals.harmonic) {
-                            ly += "\\open";
-                          }
-                          if (technicals.stopped) {
-                            ly += "-+";
-                          }
-                          if (technicals.snapPizzicato) {
-                            ly += "\\snappizzicato";
-                          }
-                          if (technicals.upBow) {
-                            ly += "\\upbow";
-                          }
-                          if (technicals.downBow) {
-                            ly += "\\downbow";
-                          }
-                        },
-                      );
-                    }
-                  },
-                );
+              const note: Note = model[i];
+              pitches += note.pitch.step.toLowerCase();
+              if (note.pitch.alter === -1) {
+                pitches += "es";
+              } else if (note.pitch.alter === 1) {
+                pitches += "is";
               }
+              const octaveOffset: number = relativeMode
+                ? prevPitch
+                  ? getOctaveDifference(note.pitch.step, prevPitch.step) +
+                    note.pitch.octave -
+                    prevPitch.octave
+                  : 0
+                : note.pitch.octave - 3;
+              if (octaveOffset > 0) {
+                for (let j: number = 0; j < octaveOffset; j += 1) {
+                  pitches += "'";
+                }
+              } else if (octaveOffset < 0) {
+                for (let j: number = 0; j < -octaveOffset; j += 1) {
+                  pitches += ",";
+                }
+              }
+              if (i + 1 < model.length) {
+                pitches += " ";
+              }
+              prevPitch = note.pitch;
+            }
+            if (model.length > 1) {
+              prevPitch = model[0].pitch; // the first note in a chord affects future chords
+              pitches += ">";
             }
 
-            ly += " ";
+            ly += pitches;
           }
 
-          voiceDiv += model.divCount;
-
-          function next(): void {
-            staffDiv += staff[staffModelIdx].divCount;
-            staffModelIdx += 1;
+          const duration: Count = noteForRythm.noteType.duration;
+          switch (duration) {
+            case prevDuration:
+              break;
+            case Count.Whole:
+              ly += "1";
+              break;
+            case Count.Half:
+              ly += "2";
+              break;
+            case Count.Quarter:
+              ly += "4";
+              break;
+            case Count.Eighth:
+              ly += "8";
+              break;
+            case Count._16th:
+              ly += "16";
+              break;
+            case Count._32nd:
+              ly += "32";
+              break;
+            case Count._64th:
+              ly += "64";
+              break;
+            case Count._128th:
+              ly += "128";
+              break;
+            case Count._256th:
+              ly += "256";
+              break;
+            case Count._512th:
+              ly += "512";
+              break;
+            case Count._1024th:
+              ly += "1024";
+              break;
+            default:
+              ly += "unknown";
           }
 
-          for (; staffDiv < voiceDiv && staffModelIdx < staff.length; next()) {
-            const staffModel: IModel = staff[staffModelIdx];
-            if (doc.modelHasType(staffModel, Type.Direction)) {
-              staffModel.directionTypes.forEach(
-                (directionType: DirectionType): void => {
-                  if (directionType.dynamics) {
-                    const d: Dynamics = directionType.dynamics;
-                    if (d.ppp) {
-                      ly += "\\ppp ";
+          prevDuration = duration;
+
+          for (const _ of noteForRythm.dots) {
+            ly += ".";
+          }
+
+          for (let i: number = 0; i < model.length; i += 1) {
+            if (model[i].notations) {
+              model[i].notations.forEach((notations: Notations): void => {
+                if (notations.fermatas) {
+                  notations.fermatas.forEach((fermata: Fermata): void => {
+                    if (fermata.shape === NormalAngledSquare.Angled) {
+                      ly += "\\shortfermata";
+                    } else if (fermata.shape === NormalAngledSquare.Square) {
+                      ly += "\\longfermata";
+                    } else {
+                      ly += "\\fermata";
                     }
-                    if (d.pp) {
-                      ly += "\\pp ";
-                    }
-                    if (d.p) {
-                      ly += "\\p ";
-                    }
-                    if (d.mp) {
-                      ly += "\\mp ";
-                    }
-                    if (d.mf) {
-                      ly += "\\mf ";
-                    }
-                    if (d.f) {
-                      ly += "\\f ";
-                    }
-                    if (d.ff) {
-                      ly += "\\ff ";
-                    }
-                    if (d.fff) {
-                      ly += "\\fff ";
-                    }
-                    if (d.fp) {
-                      ly += "\\fp ";
-                    }
-                    if (d.sf) {
-                      ly += "\\sf ";
-                    }
-                    if (d.sfz) {
-                      ly += "\\sfz ";
-                    }
-                    if (d.sfp) {
-                      ly += "\\sfp ";
-                    }
-                    if (d.rfz) {
-                      ly += "\\rfz ";
-                    }
+                  });
+                }
+                if (notations.articulations) {
+                  notations.articulations.forEach(
+                    (articulations: Articulations): void => {
+                      if (articulations.accent) {
+                        ly += "->";
+                      }
+                      if (articulations.tenuto && articulations.staccato) {
+                        ly += "-_"; // portato
+                      } else {
+                        if (articulations.tenuto) {
+                          ly += "--";
+                        }
+                        if (articulations.staccato) {
+                          ly += "-.";
+                        }
+                      }
+                      if (articulations.staccatissimo) {
+                        ly += "-!";
+                      }
+                      if (articulations.strongAccent) {
+                        ly += "-^";
+                      }
+                    },
+                  );
+                }
+                if (notations.technicals) {
+                  notations.technicals.forEach(
+                    (technicals: Technical): void => {
+                      if (technicals.harmonic) {
+                        ly += "\\open";
+                      }
+                      if (technicals.stopped) {
+                        ly += "-+";
+                      }
+                      if (technicals.snapPizzicato) {
+                        ly += "\\snappizzicato";
+                      }
+                      if (technicals.upBow) {
+                        ly += "\\upbow";
+                      }
+                      if (technicals.downBow) {
+                        ly += "\\downbow";
+                      }
+                    },
+                  );
+                }
+              });
+            }
+          }
+
+          ly += " ";
+        }
+
+        voiceDiv += model.divCount;
+
+        function next(): void {
+          staffDiv += staff[staffModelIdx].divCount;
+          staffModelIdx += 1;
+        }
+
+        for (; staffDiv < voiceDiv && staffModelIdx < staff.length; next()) {
+          const staffModel: IModel = staff[staffModelIdx];
+          if (doc.modelHasType(staffModel, Type.Direction)) {
+            staffModel.directionTypes.forEach(
+              (directionType: DirectionType): void => {
+                if (directionType.dynamics) {
+                  const d: Dynamics = directionType.dynamics;
+                  if (d.ppp) {
+                    ly += "\\ppp ";
                   }
-                },
-              );
-            }
+                  if (d.pp) {
+                    ly += "\\pp ";
+                  }
+                  if (d.p) {
+                    ly += "\\p ";
+                  }
+                  if (d.mp) {
+                    ly += "\\mp ";
+                  }
+                  if (d.mf) {
+                    ly += "\\mf ";
+                  }
+                  if (d.f) {
+                    ly += "\\f ";
+                  }
+                  if (d.ff) {
+                    ly += "\\ff ";
+                  }
+                  if (d.fff) {
+                    ly += "\\fff ";
+                  }
+                  if (d.fp) {
+                    ly += "\\fp ";
+                  }
+                  if (d.sf) {
+                    ly += "\\sf ";
+                  }
+                  if (d.sfz) {
+                    ly += "\\sfz ";
+                  }
+                  if (d.sfp) {
+                    ly += "\\sfp ";
+                  }
+                  if (d.rfz) {
+                    ly += "\\rfz ";
+                  }
+                }
+              },
+            );
           }
-        },
-      );
+        }
+      });
 
       if (measure.idx + 1 !== doc.measures.length) {
         ly += "|\n";
@@ -708,7 +678,6 @@ export default class ToolNoteEdit extends React.Component<ToolProps, State> {
     return targetElements.map((el: IModel) => segment.indexOf(el));
   }
 
-  // tslint:disable-next-line cyclomatic-complexity
   private handleDirectionEvent(
     doc: Document,
     measure: IMeasure,
@@ -850,7 +819,6 @@ export default class ToolNoteEdit extends React.Component<ToolProps, State> {
     return true;
   };
 
-  // tslint:disable-next-line:max-func-body-length cyclomatic-complexity
   private handleKeyPress = (
     ev: React.KeyboardEvent<HTMLDivElement>,
   ): boolean => {
@@ -1206,48 +1174,45 @@ export default class ToolNoteEdit extends React.Component<ToolProps, State> {
           let partBuilder: PartBuilder = partBuilderOrig.voice(
             1,
             (voice: VoiceBuilder) =>
-              voice.note(
-                0,
-                (note: INoteBuilder) =>
-                  this.state.editType === "R"
-                    ? note
-                        .pitch(null)
-                        /* tslint:disable-next-line no-object-literal-type-assertion */
-                        .rest({ _force: true } as {})
-                        .dots(
-                          times(this.state.dots, () => ({
-                            color: isPreview ? "#cecece" : "#000000",
-                          })),
-                        )
-                        .noteType((noteType: ITypeBuilder) =>
-                          noteType.duration(this.state.note),
-                        )
-                        .color(isPreview ? "#cecece" : "#000000")
-                    : this.state.accidental
-                      ? note
-                          .pitch(pitch)
-                          .rest(undefined)
-                          .dots(
-                            times(this.state.dots, () => ({
-                              color: isPreview ? "#cecece" : "#000000",
-                            })),
-                          )
-                          .noteType((noteType: ITypeBuilder) =>
-                            noteType.duration(this.state.note),
-                          )
-                          .color(isPreview ? "#cecece" : "#000000")
-                      : note
-                          .pitch(pitch)
-                          .rest(undefined)
-                          .dots(
-                            times(this.state.dots, () => ({
-                              color: isPreview ? "#cecece" : "#000000",
-                            })),
-                          )
-                          .noteType((noteType: ITypeBuilder) =>
-                            noteType.duration(this.state.note),
-                          )
-                          .color(isPreview ? "#cecece" : "#000000"),
+              voice.note(0, (note: INoteBuilder) =>
+                this.state.editType === "R"
+                  ? note
+                      .pitch(null)
+                      .rest({ _force: true } as {})
+                      .dots(
+                        times(this.state.dots, () => ({
+                          color: isPreview ? "#cecece" : "#000000",
+                        })),
+                      )
+                      .noteType((noteType: ITypeBuilder) =>
+                        noteType.duration(this.state.note),
+                      )
+                      .color(isPreview ? "#cecece" : "#000000")
+                  : this.state.accidental
+                  ? note
+                      .pitch(pitch)
+                      .rest(undefined)
+                      .dots(
+                        times(this.state.dots, () => ({
+                          color: isPreview ? "#cecece" : "#000000",
+                        })),
+                      )
+                      .noteType((noteType: ITypeBuilder) =>
+                        noteType.duration(this.state.note),
+                      )
+                      .color(isPreview ? "#cecece" : "#000000")
+                  : note
+                      .pitch(pitch)
+                      .rest(undefined)
+                      .dots(
+                        times(this.state.dots, () => ({
+                          color: isPreview ? "#cecece" : "#000000",
+                        })),
+                      )
+                      .noteType((noteType: ITypeBuilder) =>
+                        noteType.duration(this.state.note),
+                      )
+                      .color(isPreview ? "#cecece" : "#000000"),
               ),
 
             elIdx,
@@ -1556,7 +1521,6 @@ export default class ToolNoteEdit extends React.Component<ToolProps, State> {
   };
 
   private playNote(pitch: Pitch): void {
-    // tslint:disable-next-line no-console
     console.log("TODO: play", pitch);
   }
 
@@ -1904,7 +1868,6 @@ export default class ToolNoteEdit extends React.Component<ToolProps, State> {
   };
 }
 
-// tslint:disable-next-line typedef
 const styles = StyleSheet.create({
   newBar: {
     textAlign: "center",

@@ -16,13 +16,13 @@
  * along with Satie.  If not, see <http://www.gnu.org/licenses/>.
  */
 import { Component, ReactElement } from "react";
-import BarlineModel from "./implBarline_barlineModel";
+import { IBarlineLayout } from "./implBarline_barlineModel";
 /**
  * Renders a full-stave-height barline at (x,y).
  * Does not do any interesting calculations.
  */
 export default class BarlineView extends Component<{
-    layout: BarlineModel.IBarlineLayout;
+    layout: IBarlineLayout;
 }, {}> {
     static contextTypes: any;
     context: {

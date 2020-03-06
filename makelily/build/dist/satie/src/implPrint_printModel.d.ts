@@ -20,14 +20,11 @@ import { IModel, ILayout } from "./document";
 /**
  * Registers Print in the factory structure passed in.
  */
-declare function Export(constructors: {
+export default function Export(constructors: {
     [key: number]: any;
 }): void;
-declare namespace Export {
-    interface IPrintModel extends IModel, Print {
-    }
-    interface IPrintLayout extends ILayout {
-        renderedWidth: number;
-    }
+export interface IPrintModel extends IModel, Print {
 }
-export default Export;
+export interface IPrintLayout extends ILayout {
+    renderedWidth: number;
+}

@@ -1,4 +1,3 @@
-"use strict";
 /**
  * This file is part of Satie music engraver <https://github.com/jnetterf/satie>.
  * Copyright (C) Joshua Netterfield <joshua.ca> 2015 - present.
@@ -16,43 +15,39 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with Satie.  If not, see <http://www.gnu.org/licenses/>.
  */
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-var lodash_1 = require("lodash");
-var invariant_1 = __importDefault(require("invariant"));
-var document_1 = require("./document");
+import { forEach, max, map, times, findIndex, last } from "lodash";
+import invariant from "invariant";
+import { Type } from "./document";
 /**
  * Centers elements marked as such
  *
  * @returns new end of line
  */
 function center(options, bounds, measures) {
-    lodash_1.forEach(measures, function (measure, measureIdx) {
-        var maxIdx = lodash_1.max(lodash_1.map(measure.elements, function (el) { return el.length; }));
-        lodash_1.times(maxIdx, function (j) {
+    forEach(measures, function (measure, measureIdx) {
+        var maxIdx = max(map(measure.elements, function (el) { return el.length; }));
+        times(maxIdx, function (j) {
             for (var i = 0; i < measure.elements.length; ++i) {
                 if (measure.elements[i][j].expandPolicy === "centered") {
                     var intrinsicWidth = measure.elements[i][j].renderedWidth;
-                    invariant_1.default(isFinite(intrinsicWidth), "Intrinsic width must be set on centered items");
+                    invariant(isFinite(intrinsicWidth), "Intrinsic width must be set on centered items");
                     var measureSpaceRemaining = void 0;
-                    var attribIdx = lodash_1.findIndex(measure.elements[0], function (el) { return el.renderClass === document_1.Type.Attributes && el.renderedWidth > 0; });
+                    var attribIdx = findIndex(measure.elements[0], function (el) { return el.renderClass === Type.Attributes && el.renderedWidth > 0; });
                     var base = 0;
                     if (attribIdx !== -1 && attribIdx < j) {
                         base =
                             measure.elements[0][attribIdx].overrideX +
                                 measure.elements[0][attribIdx].renderedWidth;
-                        measureSpaceRemaining = lodash_1.last(measure.elements[i]).overrideX - base;
+                        measureSpaceRemaining = last(measure.elements[i]).overrideX - base;
                     }
                     else if (measures[measureIdx - 1]) {
                         measureSpaceRemaining =
-                            lodash_1.last(measure.elements[i]).overrideX -
+                            last(measure.elements[i]).overrideX -
                                 (measures[measureIdx - 1].width -
-                                    lodash_1.last(measures[measureIdx - 1].elements[0]).overrideX);
+                                    last(measures[measureIdx - 1].elements[0]).overrideX);
                     }
                     else {
-                        measureSpaceRemaining = lodash_1.last(measure.elements[i]).overrideX;
+                        measureSpaceRemaining = last(measure.elements[i]).overrideX;
                     }
                     if (measures[measureIdx + 1] &&
                         measures[measureIdx + 1].width === 0) {
@@ -66,5 +61,5 @@ function center(options, bounds, measures) {
     });
     return measures;
 }
-exports.default = center;
+export default center;
 //# sourceMappingURL=implLine_centerPostprocessor.js.map

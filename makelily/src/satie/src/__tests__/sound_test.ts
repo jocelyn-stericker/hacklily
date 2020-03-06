@@ -22,19 +22,19 @@
 
 import Sound from "../implSound_soundModel";
 
-import {expect} from "chai";
+import { expect } from "chai";
 
-import {IModel, Type} from "../document";
+import { IModel, Type } from "../document";
 
 import Factory from "../engine_factory";
 
 describe("[sound.ts]", function() {
-    describe("SoundModel", function() {
-        let factory = new Factory([Sound]);
-        let sound: IModel;
-        it("can be created", function() {
-            sound = factory.create(Type.Sound);
-            expect(!!sound).to.be.true;
-        });
+  describe("SoundModel", function() {
+    let factory = new Factory([Sound]);
+    let sound: IModel;
+    it("can be created", function() {
+      sound = factory.create(Type.Sound);
+      expect(!!sound).to.be.true;
     });
+  });
 });

@@ -1,4 +1,3 @@
-"use strict";
 /**
  * This file is part of Satie music engraver <https://github.com/jnetterf/satie>.
  * Copyright (C) Joshua Netterfield <joshua.ca> 2015 - present.
@@ -29,33 +28,22 @@ var __extends = (this && this.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
-    result["default"] = mod;
-    return result;
-};
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-var React = __importStar(require("react"));
-var musicxml_interfaces_1 = require("musicxml-interfaces");
-var react_1 = require("react");
-var PropTypes = __importStar(require("prop-types"));
-var lodash_1 = require("lodash");
-var private_smufl_1 = require("./private_smufl");
-var implChord_beamView_1 = __importDefault(require("./implChord_beamView"));
-var implChord_flagView_1 = __importDefault(require("./implChord_flagView"));
-var implChord_ledgerLineView_1 = __importDefault(require("./implChord_ledgerLineView"));
-var implChord_lyrics_1 = require("./implChord_lyrics");
-var implChord_noteView_1 = __importDefault(require("./implChord_noteView"));
-var implChord_notationView_1 = __importDefault(require("./implChord_notationView"));
-var implChord_restView_1 = __importDefault(require("./implChord_restView"));
-var implChord_stemView_1 = __importDefault(require("./implChord_stemView"));
-var implChord_unbeamedTupletView_1 = __importDefault(require("./implChord_unbeamedTupletView"));
-var stemThickness = private_smufl_1.bravura.engravingDefaults.stemThickness * 10;
+import * as React from "react";
+import { StemType } from "musicxml-interfaces";
+import { Component } from "react";
+import * as PropTypes from "prop-types";
+import { map, some, chain, maxBy } from "lodash";
+import { bboxes, bravura, getRight } from "./private_smufl";
+import BeamView from "./implChord_beamView";
+import FlagView from "./implChord_flagView";
+import LedgerLineView from "./implChord_ledgerLineView";
+import { DEFAULT_LYRIC_SIZE, DEFAULT_FONT } from "./implChord_lyrics";
+import NoteView from "./implChord_noteView";
+import NotationView from "./implChord_notationView";
+import RestView from "./implChord_restView";
+import StemView from "./implChord_stemView";
+import UnbeamedTupletView from "./implChord_unbeamedTupletView";
+var stemThickness = bravura.engravingDefaults.stemThickness * 10;
 /**
  * Renders notes and their notations.
  */
@@ -68,13 +56,13 @@ var ChordView = /** @class */ (function (_super) {
         var _this = this;
         var layout = this.props.layout;
         var spec = layout.model;
-        var maxNotehead = lodash_1.maxBy(spec.noteheadGlyph, function (glyph) { return private_smufl_1.getRight(glyph); });
-        var anyVisible = lodash_1.some(spec, function (note) { return note.printObject !== false; });
+        var maxNotehead = maxBy(spec.noteheadGlyph, function (glyph) { return getRight(glyph); });
+        var anyVisible = some(spec, function (note) { return note.printObject !== false; });
         if (!anyVisible) {
             return null;
         }
         var lyKey = 0;
-        var lyrics = lodash_1.chain(spec)
+        var lyrics = chain(spec)
             .map(function (n) { return n.lyrics; })
             .filter(function (l) { return !!l; })
             .flattenDeep()
@@ -86,9 +74,11 @@ var ChordView = /** @class */ (function (_super) {
                     case "Syllabic":
                         break;
                     case "Text":
-                        var textPt = l.lyricParts[i];
-                        var width = private_smufl_1.bboxes[maxNotehead][0] * 10;
-                        text.push(React.createElement("text", { fontFamily: textPt.fontFamily || implChord_lyrics_1.DEFAULT_FONT, fontSize: textPt.fontSize || implChord_lyrics_1.DEFAULT_LYRIC_SIZE, key: ++lyKey, textAnchor: "middle", x: _this.props.layout.x + width / 2, y: _this.context.originY + 60 }, textPt.data));
+                        {
+                            var textPt = l.lyricParts[i];
+                            var width = bboxes[maxNotehead][0] * 10;
+                            text.push(React.createElement("text", { fontFamily: textPt.fontFamily || DEFAULT_FONT, fontSize: textPt.fontSize || DEFAULT_LYRIC_SIZE, key: ++lyKey, textAnchor: "middle", x: _this.props.layout.x + width / 2, y: _this.context.originY + 60 }, textPt.data));
+                        }
                         break;
                     case "Extend":
                         // TODO
@@ -104,42 +94,40 @@ var ChordView = /** @class */ (function (_super) {
         })
             .flatten()
             .value();
-        if (!!spec[0].rest) {
-            return (React.createElement(implChord_restView_1.default, { multipleRest: spec.satieMultipleRest, notehead: spec.noteheadGlyph[0], spec: spec[0] }));
+        if (spec[0].rest) {
+            return (React.createElement(RestView, { multipleRest: spec.satieMultipleRest, notehead: spec.noteheadGlyph[0], spec: spec[0] }));
         }
         var stemX = spec.stemX();
         return (React.createElement("g", null,
-            lodash_1.map(spec, function (noteSpec, idx) {
+            map(spec, function (_noteSpec, idx) {
                 if (!spec[idx]) {
                     return null;
                 }
-                return (React.createElement(implChord_noteView_1.default, { key: "n" + idx, noteheadGlyph: spec.noteheadGlyph[idx], spec: spec[idx], defaultX: spec[idx].defaultX }));
+                return (React.createElement(NoteView, { key: "n" + idx, noteheadGlyph: spec.noteheadGlyph[idx], spec: spec[idx], defaultX: spec[idx].defaultX }));
             }),
-            layout.satieStem && (React.createElement(implChord_stemView_1.default, { bestHeight: layout.satieStem.stemHeight, tremolo: layout.satieStem.tremolo, key: "s", notehead: maxNotehead, spec: {
+            layout.satieStem && (React.createElement(StemView, { bestHeight: layout.satieStem.stemHeight, tremolo: layout.satieStem.tremolo, key: "s", notehead: maxNotehead, spec: {
                     color: spec[0].stem.color || "#000000",
                     defaultX: stemX,
                     defaultY: (layout.satieStem.stemStart - 3) * 10,
-                    type: layout.satieStem.direction === 1 ? musicxml_interfaces_1.StemType.Up : musicxml_interfaces_1.StemType.Down,
+                    type: layout.satieStem.direction === 1 ? StemType.Up : StemType.Down,
                 }, width: stemThickness })),
-            lodash_1.map(spec.satieLedger, function (lineNumber) { return (React.createElement(implChord_ledgerLineView_1.default, { key: "l" + lineNumber, notehead: maxNotehead, spec: {
+            map(spec.satieLedger, function (lineNumber) { return (React.createElement(LedgerLineView, { key: "l" + lineNumber, notehead: maxNotehead, spec: {
                     color: "#000000",
                     defaultX: stemX,
                     defaultY: (lineNumber - 3) * 10,
                 } })); }),
-            layout.satieFlag &&
-                layout.satieStem && (React.createElement(implChord_flagView_1.default, { key: "f", notehead: maxNotehead, spec: {
+            layout.satieFlag && layout.satieStem && (React.createElement(FlagView, { key: "f", notehead: maxNotehead, spec: {
                     color: spec[0].stem.color || "$000000",
                     defaultX: stemX,
                     defaultY: (layout.satieStem.stemStart - 3) * 10 +
-                        (layout.satieStem.stemHeight - 7) *
-                            layout.satieStem.direction,
+                        (layout.satieStem.stemHeight - 7) * layout.satieStem.direction,
                     direction: layout.satieStem.direction,
                     flag: layout.satieFlag,
                 }, stemHeight: layout.satieStem.stemHeight, stemWidth: stemThickness })),
-            this.props.layout.satieBeam && (React.createElement(implChord_beamView_1.default, { key: "b", layout: this.props.layout.satieBeam, stemWidth: stemThickness, stroke: "black" })),
-            spec.satieUnbeamedTuplet && (React.createElement(implChord_unbeamedTupletView_1.default, { key: "ut", layout: spec.satieUnbeamedTuplet, stemWidth: stemThickness, stroke: "black" })),
-            lodash_1.map(spec, function (note, idx) {
-                return lodash_1.map(note.notations, function (notation, jdx) { return (React.createElement(implChord_notationView_1.default, { key: "N" + idx + "_" + jdx, layout: _this.props.layout, defaultY: note.defaultY, spec: notation })); });
+            this.props.layout.satieBeam && (React.createElement(BeamView, { key: "b", layout: this.props.layout.satieBeam, stemWidth: stemThickness, stroke: "black" })),
+            spec.satieUnbeamedTuplet && (React.createElement(UnbeamedTupletView, { key: "ut", layout: spec.satieUnbeamedTuplet, stemWidth: stemThickness, stroke: "black" })),
+            map(spec, function (note, idx) {
+                return map(note.notations, function (notation, jdx) { return (React.createElement(NotationView, { key: "N" + idx + "_" + jdx, layout: _this.props.layout, defaultY: note.defaultY, spec: notation })); });
             }),
             lyrics));
     };
@@ -147,6 +135,6 @@ var ChordView = /** @class */ (function (_super) {
         originY: PropTypes.number.isRequired,
     };
     return ChordView;
-}(react_1.Component));
-exports.default = ChordView;
+}(Component));
+export default ChordView;
 //# sourceMappingURL=implChord_chordView.js.map

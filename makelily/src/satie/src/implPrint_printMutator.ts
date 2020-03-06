@@ -16,13 +16,17 @@
  * along with Satie.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import {IAny} from "musicxml-interfaces/operations";
+import { IAny } from "musicxml-interfaces/operations";
 
-import PrintModel from "./implPrint_printModel";
+import { IPrintModel } from "./implPrint_printModel";
 
-import {mutate} from "./private_mutate";
+import { mutate } from "./private_mutate";
 
-export default function printMutator(preview: boolean, print: PrintModel.IPrintModel, op: IAny) {
-    // This is a stub.
-    mutate(print, op);
+export default function printMutator(
+  _preview: boolean,
+  print: IPrintModel,
+  op: IAny,
+) {
+  // This is a stub.
+  mutate(print, op);
 }

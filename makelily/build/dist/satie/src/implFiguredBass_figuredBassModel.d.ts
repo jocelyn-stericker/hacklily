@@ -20,13 +20,10 @@ import { IModel, ILayout } from "./document";
 /**
  * Registers FiguredBass in the factory structure passed in.
  */
-declare function Export(constructors: {
+export default function Export(constructors: {
     [key: number]: any;
 }): void;
-declare module Export {
-    interface IFiguredBassModel extends IModel, FiguredBass {
-    }
-    interface IFiguredBassLayout extends ILayout {
-    }
+export interface IFiguredBassModel extends IModel, FiguredBass {
 }
-export default Export;
+export interface IFiguredBassLayout extends ILayout {
+}

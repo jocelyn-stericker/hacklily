@@ -16,46 +16,46 @@
  * along with Satie.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import {createFactory, Component, ReactElement} from "react";
+import React, { Component, ReactElement } from "react";
 import * as PropTypes from "prop-types";
 
 import Line from "./private_views_line";
-import VisualCursorModel from "./implVisualCursor_visualCursorModel";
-
-const $Line = createFactory(Line);
+import { IVisualCursorLayout } from "./implVisualCursor_visualCursorModel";
 
 export interface IProps {
-    layout: VisualCursorModel.IVisualCursorLayout;
+  layout: IVisualCursorLayout;
 }
 
 export default class VisualCursorView extends Component<IProps, {}> {
-    static contextTypes = {
-        originY: PropTypes.number.isRequired,
-        systemBottom: PropTypes.number.isRequired,
-        systemTop: PropTypes.number.isRequired
-    } as any;
+  static contextTypes = {
+    originY: PropTypes.number.isRequired,
+    systemBottom: PropTypes.number.isRequired,
+    systemTop: PropTypes.number.isRequired,
+  } as any;
 
-    context: {
-        originY: number;
-        systemBottom: number;
-        systemTop: number;
-    };
+  context: {
+    originY: number;
+    systemBottom: number;
+    systemTop: number;
+  };
 
-    render(): ReactElement<any> {
-        const layout = this.props.layout;
-        const x = layout.x;
+  render(): ReactElement<any> {
+    const layout = this.props.layout;
+    const x = layout.x;
 
-        const yTop = this.context.systemTop;
-        const yBottom = this.context.systemBottom;
-        const height = yTop - yBottom;
+    const yTop = this.context.systemTop;
+    const yBottom = this.context.systemBottom;
+    const height = yTop - yBottom;
 
-        return $Line({
-            stroke: "#428bca",
-            strokeWidth: 2,
-            x1: x - 4,
-            x2: x - 4,
-            y1: yTop + height * 0.5,
-            y2: yBottom - height * 0.5
-        });
-    }
+    return (
+      <Line
+        stroke="#428bca"
+        strokeWidth={2}
+        x1={x - 4}
+        x2={x - 4}
+        y1={yTop + height * 0.5}
+        y2={yBottom - height * 0.5}
+      />
+    );
+  }
 }

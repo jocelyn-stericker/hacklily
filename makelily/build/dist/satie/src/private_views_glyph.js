@@ -1,4 +1,3 @@
-"use strict";
 /**
  * This file is part of Satie music engraver <https://github.com/jnetterf/satie>.
  * Copyright (C) Joshua Netterfield <joshua.ca> 2015 - present.
@@ -29,19 +28,11 @@ var __extends = (this && this.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
-    result["default"] = mod;
-    return result;
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-var React = __importStar(require("react"));
-var react_1 = require("react");
-var PropTypes = __importStar(require("prop-types"));
-var private_smufl_1 = require("./private_smufl");
-var private_fontManager_1 = require("./private_fontManager");
+import * as React from "react";
+import { Component } from "react";
+import * as PropTypes from "prop-types";
+import { getGlyphCode } from "./private_smufl";
+import { toPathData } from "./private_fontManager";
 /**
  * Most musical elements are rendered as glyphs. Exceptions include
  * slurs, ties, dots in dotted notes, ledger lines, and stave lines.
@@ -55,16 +46,16 @@ var Glyph = /** @class */ (function (_super) {
         var px = this.props.x;
         var py = this.props.y;
         if (this.context.renderTarget === "svg-export") {
-            var pathData = private_fontManager_1.toPathData("Bravura", private_smufl_1.getGlyphCode(this.props.glyphName), px, py, 40 * (this.props.scale || 1));
+            var pathData = toPathData("Bravura", getGlyphCode(this.props.glyphName), px, py, 40 * (this.props.scale || 1));
             return React.createElement("path", { d: pathData });
         }
-        var text = (React.createElement("text", { className: "mn_", fill: this.props.fill, fillOpacity: this.props.opacity, fontSize: 40 * (this.props.scale || 1), strokeOpacity: this.props.opacity, transform: this.props.transform, x: px, y: py }, private_smufl_1.getGlyphCode(this.props.glyphName)));
+        var text = (React.createElement("text", { className: "mn_", fill: this.props.fill, fillOpacity: this.props.opacity, fontSize: 40 * (this.props.scale || 1), strokeOpacity: this.props.opacity, transform: this.props.transform, x: px, y: py }, getGlyphCode(this.props.glyphName)));
         return text;
     };
     Glyph.contextTypes = {
         renderTarget: PropTypes.oneOf(["svg-web", "svg-export"]),
     };
     return Glyph;
-}(react_1.Component));
-exports.default = Glyph;
+}(Component));
+export default Glyph;
 //# sourceMappingURL=private_views_glyph.js.map

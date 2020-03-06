@@ -20,13 +20,23 @@
  * @file part of Satie test suite
  */
 
-import {DirectionMode, EnclosureShape, NormalItalic, NormalBold, LeftCenterRight,
-    TopMiddleBottomBaseline, parseScore} from "musicxml-interfaces";
-import {forEach, some} from "lodash";
-import {expect} from "chai";
+import {
+  DirectionMode,
+  EnclosureShape,
+  NormalItalic,
+  NormalBold,
+  LeftCenterRight,
+  TopMiddleBottomBaseline,
+  parseScore,
+} from "musicxml-interfaces";
+import { forEach, some } from "lodash";
+import { expect } from "chai";
 
 import Factory from "../engine_factory";
-import {_extractMXMLHeader, _extractMXMLPartsAndMeasures} from "../engine_import";
+import {
+  _extractMXMLHeader,
+  _extractMXMLPartsAndMeasures,
+} from "../engine_import";
 
 import AttributesExports from "../implAttributes_attributesModel";
 import Barline from "../implBarline_barlineModel";
@@ -512,177 +522,212 @@ let lily43eXML = `<?xml version="1.0" encoding="UTF-8"?>
   <!--=========================================================-->
 </score-partwise>`;
 describe("[musicxml/import.ts]", function() {
-    describe("_extractMXMLHeader", function() {
-        it("can parse all header properties", function() {
-            let mxmljson = parseScore(helloWorldXML);
-            let header = _extractMXMLHeader(mxmljson);
+  describe("_extractMXMLHeader", function() {
+    it("can parse all header properties", function() {
+      let mxmljson = parseScore(helloWorldXML);
+      let header = _extractMXMLHeader(mxmljson);
 
-            expect(header).to.be.an.instanceof(ScoreHeader);
+      expect(header).to.be.an.instanceof(ScoreHeader);
 
-            expect(header.credits.length).to.eq(5);
-            expect(header.credits[4].page).to.eq(2);
-            expect(header.credits[0].creditTypes).to.deep.equal(["title"]);
-            expect(header.credits[1].creditWords).to.deep.equal([{
-                color: "#000000",
-                defaultX: 1124,
-                defaultY: 1362,
-                dir: DirectionMode.Ltr,
-                enclosure: EnclosureShape.None,
-                fontFamily: "",
-                fontSize: "12",
-                fontStyle: NormalItalic.Normal,
-                fontWeight: NormalBold.Normal,
-                halign: LeftCenterRight.Right, // Agrees with justify
-                justify: LeftCenterRight.Right,
-                letterSpacing: "normal",
-                lineHeight: "normal",
-                lineThrough: 0,
-                overline: 0,
-                relativeX: null,
-                relativeY: null,
-                rotation: 0,
-                underline: 0,
-                valign: TopMiddleBottomBaseline.Top,
-                words: "Song Composer"
-            }]);
-            // Check that halign still follows justify
-            expect(header.credits[0].creditWords[0].halign).to.eq(LeftCenterRight.Center);
+      expect(header.credits.length).to.eq(5);
+      expect(header.credits[4].page).to.eq(2);
+      expect(header.credits[0].creditTypes).to.deep.equal(["title"]);
+      expect(header.credits[1].creditWords).to.deep.equal([
+        {
+          color: "#000000",
+          defaultX: 1124,
+          defaultY: 1362,
+          dir: DirectionMode.Ltr,
+          enclosure: EnclosureShape.None,
+          fontFamily: "",
+          fontSize: "12",
+          fontStyle: NormalItalic.Normal,
+          fontWeight: NormalBold.Normal,
+          halign: LeftCenterRight.Right, // Agrees with justify
+          justify: LeftCenterRight.Right,
+          letterSpacing: "normal",
+          lineHeight: "normal",
+          lineThrough: 0,
+          overline: 0,
+          relativeX: null,
+          relativeY: null,
+          rotation: 0,
+          underline: 0,
+          valign: TopMiddleBottomBaseline.Top,
+          words: "Song Composer",
+        },
+      ]);
+      // Check that halign still follows justify
+      expect(header.credits[0].creditWords[0].halign).to.eq(
+        LeftCenterRight.Center,
+      );
 
-            expect(header.identification.creators.length).to.eq(3);
-            expect(header.identification.creators[0].type).to.eq("composer");
-            expect(header.identification.creators[0].creator).to.eq("Song Composer");
-            expect(header.identification.creators[1].type).to.eq("lyricist");
-            expect(header.identification.creators[1].creator).to.eq("Song Lyricist");
-            expect(header.identification.creators[2].type).to.eq("arranger");
-            expect(header.identification.creators[2].creator).to.eq("Song Arranger");
-            expect(header.identification.encoding).to.deep.equal({
-                encoders: [],
-                encodingDate: {
-                    day: 10,
-                    month: 3,
-                    year: 2015
-                },
-                encodingDescriptions: [],
-                softwares: [ // TODO: musicxml-interfaces: shouldn't be plural
-                    "Song Software 1",
-                    "Song Software 2"
-                ],
-                supports: {
-                    accidental: {
-                        attribute: "",
-                        element: "accidental",
-                        type: true,
-                        value: ""
-                    },
-                    print_newPage: {
-                        attribute: "new-page",
-                        element: "print",
-                        type: true,
-                        value: "yes"
-                    }
-                }
-            });
+      expect(header.identification.creators.length).to.eq(3);
+      expect(header.identification.creators[0].type).to.eq("composer");
+      expect(header.identification.creators[0].creator).to.eq("Song Composer");
+      expect(header.identification.creators[1].type).to.eq("lyricist");
+      expect(header.identification.creators[1].creator).to.eq("Song Lyricist");
+      expect(header.identification.creators[2].type).to.eq("arranger");
+      expect(header.identification.creators[2].creator).to.eq("Song Arranger");
+      expect(header.identification.encoding).to.deep.equal({
+        encoders: [],
+        encodingDate: {
+          day: 10,
+          month: 3,
+          year: 2015,
+        },
+        encodingDescriptions: [],
+        softwares: [
+          // TODO: musicxml-interfaces: shouldn't be plural
+          "Song Software 1",
+          "Song Software 2",
+        ],
+        supports: {
+          accidental: {
+            attribute: "",
+            element: "accidental",
+            type: true,
+            value: "",
+          },
+          print_newPage: {
+            attribute: "new-page",
+            element: "print",
+            type: true,
+            value: "yes",
+          },
+        },
+      });
 
-            expect(header.movementTitle).to.eq("Song Title");
-            expect(header.partList).to.deep.equal([
-                {
-                    _class: "ScorePart",
-                    groups: [],
-                    id: "P1",
-                    identification: null,
-                    midiDevices: [],
-                    midiInstruments: [{
-                        elevation: null,
-                        id: "P1-I1",
-                        midiBank: 15489,
-                        midiChannel: 1,
-                        midiName: "",
-                        midiProgram: 1,
-                        midiUnpitched: null,
-                        pan: 0,
-                        volume: 80
-                    }],
-                    partAbbreviation: null,
-                    partAbbreviationDisplay: null,
-                    partName: {
-                        color: "#000000",
-                        defaultX: null,
-                        defaultY: null,
-                        fontFamily: "",
-                        fontSize: "",
-                        fontStyle: NormalItalic.Normal,
-                        fontWeight: NormalBold.Normal,
-                        justify: LeftCenterRight.Left,
-                        partName: "MusicXML Part",
-                        printObject: false,
-                        relativeX: null,
-                        relativeY: null
-                    },
-                    partNameDisplay: null,
-                    scoreInstruments: [{
-                        ensemble: "",
-                        id: "P1-I1",
-                        instrumentAbbreviation: "",
-                        instrumentName: "SmartMusic SoftSynth 1",
-                        instrumentSound: "",
-                        solo: null,
-                        virtualInstrument: null
-                    }]
-                }
-            ]);
+      expect(header.movementTitle).to.eq("Song Title");
+      expect(header.partList).to.deep.equal([
+        {
+          _class: "ScorePart",
+          groups: [],
+          id: "P1",
+          identification: null,
+          midiDevices: [],
+          midiInstruments: [
+            {
+              elevation: null,
+              id: "P1-I1",
+              midiBank: 15489,
+              midiChannel: 1,
+              midiName: "",
+              midiProgram: 1,
+              midiUnpitched: null,
+              pan: 0,
+              volume: 80,
+            },
+          ],
+          partAbbreviation: null,
+          partAbbreviationDisplay: null,
+          partName: {
+            color: "#000000",
+            defaultX: null,
+            defaultY: null,
+            fontFamily: "",
+            fontSize: "",
+            fontStyle: NormalItalic.Normal,
+            fontWeight: NormalBold.Normal,
+            justify: LeftCenterRight.Left,
+            partName: "MusicXML Part",
+            printObject: false,
+            relativeX: null,
+            relativeY: null,
+          },
+          partNameDisplay: null,
+          scoreInstruments: [
+            {
+              ensemble: "",
+              id: "P1-I1",
+              instrumentAbbreviation: "",
+              instrumentName: "SmartMusic SoftSynth 1",
+              instrumentSound: "",
+              solo: null,
+              virtualInstrument: null,
+            },
+          ],
+        },
+      ]);
 
-            expect(!("parts" in header), "Check _extractHeader");
+      expect(!("parts" in header), "Check _extractHeader");
 
-            // Extensions
-            expect(header.composer).to.eq("Song Composer");
-            expect(header.title).to.eq("Song Title");
-        });
+      // Extensions
+      expect(header.composer).to.eq("Song Composer");
+      expect(header.title).to.eq("Song Title");
     });
-    describe("_extractMXMLPartsAndMeasures", function() {
-        it("parses a basic single-part song", function() {
-            let factory = new Factory([AttributesExports, Chord, Print, Sound, Barline]);
-                // does not need spacer
+  });
+  describe("_extractMXMLPartsAndMeasures", function() {
+    it("parses a basic single-part song", function() {
+      let factory = new Factory([
+        AttributesExports,
+        Chord,
+        Print,
+        Sound,
+        Barline,
+      ]);
+      // does not need spacer
 
-            let mxmljson = parseScore(helloWorldXML);
-            let partsAndMeasures = _extractMXMLPartsAndMeasures(mxmljson, factory);
-            expect(partsAndMeasures.measures.length).to.eq(1);
-            expect(partsAndMeasures.measures[0].parts["P1"].staves[1].length).to.eq(4);
-            expect(partsAndMeasures.measures[0].parts["P1"].staves[1][0].divCount).to.eq(0);
-            expect(partsAndMeasures.measures[0].parts["P1"].staves[1][1].divCount).to.eq(0);
-            expect(partsAndMeasures.measures[0].parts["P1"].staves[1][2].divCount).to.eq(8);
-            expect(partsAndMeasures.measures[0].parts["P1"].staves[1][3].divCount).to.eq(0);
-            expect(partsAndMeasures.measures[0].parts["P1"].voices[1].length).to.eq(1);
-        });
-        it("parses multi-voice, multi-staff songs with backup", function() {
-            let factory = new Factory([AttributesExports, Direction, Chord, Print, Sound, Barline, Spacer]);
-
-            let mxmljson = parseScore(lily43eXML);
-            let partsAndMeasures = _extractMXMLPartsAndMeasures(mxmljson, factory);
-            expect(partsAndMeasures.measures.length).to.eq(4);
-            expect(partsAndMeasures.parts).to.eql(["P1"]);
-
-            let voices = partsAndMeasures.measures[0].parts["P1"].voices;
-            let staves = partsAndMeasures.measures[0].parts["P1"].staves;
-            expect(!voices[0]).to.eq(true, "voices are 1-indexed");
-            expect(!staves[0]).to.eq(true, "staves are 1-indexed");
-            expect(voices.length).to.eq(3);
-            expect(staves.length).to.eq(3);
-            expect(voices[2].owner).to.eq(2);
-            expect(voices[2].divisions).to.eq(8);
-            expect(voices[1].divisions).to.eq(8);
-            expect(staves[2].divisions).to.eq(8);
-            expect(staves[1].divisions).to.eq(8);
-            expect(staves[1].length).to.eq(3);
-            expect(staves[2].length).to.eq(3);
-            forEach(staves[1], model => {
-                expect(!some(staves[2], m2 => model === m2));
-            });
-            forEach(voices[1], model => {
-                expect(!some(voices[2], m2 => model === m2));
-            });
-        });
+      let mxmljson = parseScore(helloWorldXML);
+      let partsAndMeasures = _extractMXMLPartsAndMeasures(mxmljson, factory);
+      expect(partsAndMeasures.measures.length).to.eq(1);
+      expect(partsAndMeasures.measures[0].parts["P1"].staves[1].length).to.eq(
+        4,
+      );
+      expect(
+        partsAndMeasures.measures[0].parts["P1"].staves[1][0].divCount,
+      ).to.eq(0);
+      expect(
+        partsAndMeasures.measures[0].parts["P1"].staves[1][1].divCount,
+      ).to.eq(0);
+      expect(
+        partsAndMeasures.measures[0].parts["P1"].staves[1][2].divCount,
+      ).to.eq(8);
+      expect(
+        partsAndMeasures.measures[0].parts["P1"].staves[1][3].divCount,
+      ).to.eq(0);
+      expect(partsAndMeasures.measures[0].parts["P1"].voices[1].length).to.eq(
+        1,
+      );
     });
-    describe("toScore", function() {
-        // todo
+    it("parses multi-voice, multi-staff songs with backup", function() {
+      let factory = new Factory([
+        AttributesExports,
+        Direction,
+        Chord,
+        Print,
+        Sound,
+        Barline,
+        Spacer,
+      ]);
+
+      let mxmljson = parseScore(lily43eXML);
+      let partsAndMeasures = _extractMXMLPartsAndMeasures(mxmljson, factory);
+      expect(partsAndMeasures.measures.length).to.eq(4);
+      expect(partsAndMeasures.parts).to.eql(["P1"]);
+
+      let voices = partsAndMeasures.measures[0].parts["P1"].voices;
+      let staves = partsAndMeasures.measures[0].parts["P1"].staves;
+      expect(!voices[0]).to.eq(true, "voices are 1-indexed");
+      expect(!staves[0]).to.eq(true, "staves are 1-indexed");
+      expect(voices.length).to.eq(3);
+      expect(staves.length).to.eq(3);
+      expect(voices[2].owner).to.eq(2);
+      expect(voices[2].divisions).to.eq(8);
+      expect(voices[1].divisions).to.eq(8);
+      expect(staves[2].divisions).to.eq(8);
+      expect(staves[1].divisions).to.eq(8);
+      expect(staves[1].length).to.eq(3);
+      expect(staves[2].length).to.eq(3);
+      forEach(staves[1], model => {
+        expect(!some(staves[2], m2 => model === m2));
+      });
+      forEach(voices[1], model => {
+        expect(!some(voices[2], m2 => model === m2));
+      });
     });
+  });
+  describe("toScore", function() {
+    // todo
+  });
 });

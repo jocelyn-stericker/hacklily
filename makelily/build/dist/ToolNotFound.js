@@ -1,4 +1,3 @@
-"use strict";
 /**
  * @license
  * This file is part of Makelily.
@@ -31,13 +30,9 @@ var __extends = (this && this.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-var aphrodite_1 = require("aphrodite");
-var React = require("react");
-var tabStyles_1 = __importDefault(require("./tabStyles"));
+import { css } from "aphrodite";
+import React from "react";
+import tabStyles from "./tabStyles";
 /**
  * Placeholder for when a tool with an invalid name is requested.
  */
@@ -47,9 +42,9 @@ var ToolNotFound = /** @class */ (function (_super) {
         return _super !== null && _super.apply(this, arguments) || this;
     }
     ToolNotFound.prototype.render = function () {
-        return React.createElement("span", { className: aphrodite_1.css(tabStyles_1.default.tool) }, "Tool not found.");
+        return React.createElement("span", { className: css(tabStyles.tool) }, "Tool not found.");
     };
     return ToolNotFound;
 }(React.Component));
-exports.default = ToolNotFound;
+export default ToolNotFound;
 //# sourceMappingURL=ToolNotFound.js.map

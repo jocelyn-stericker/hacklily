@@ -1,4 +1,3 @@
-"use strict";
 /**
  * This file is part of Satie music engraver <https://github.com/jnetterf/satie>.
  * Copyright (C) Joshua Netterfield <joshua.ca> 2015 - present.
@@ -16,22 +15,21 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with Satie.  If not, see <http://www.gnu.org/licenses/>.
  */
-Object.defineProperty(exports, "__esModule", { value: true });
-var lodash_1 = require("lodash");
+import { forEach, max, map, times } from "lodash";
 /**
  * Respects the minSpaceBefore and minSpaceAfter of elements. minSpaceBefore and minSpaceAfter
  * are used for things like lyrics.
  *
  * @returns new end of line
  */
-function pad(options, bounds, measures) {
+function pad(_options, _bounds, measures) {
     var measureOffset = 0;
-    lodash_1.forEach(measures, function (measure, measureIdx) {
+    forEach(measures, function (measure) {
         measure.originX += measureOffset;
-        var maxIdx = lodash_1.max(lodash_1.map(measure.elements, function (el) { return el.length; }));
+        var maxIdx = max(map(measure.elements, function (el) { return el.length; }));
         var previousElementEnd = -10;
         var offset = 0;
-        lodash_1.times(maxIdx, function (j) {
+        times(maxIdx, function (j) {
             // These refer to the space needed before/after this position in all segments.
             var spaceNeededBefore = 0;
             var spaceNeededAfter = 0;
@@ -66,5 +64,5 @@ function pad(options, bounds, measures) {
     //                 (in which case the Justify handler will squish things again)
     return measures;
 }
-exports.default = pad;
+export default pad;
 //# sourceMappingURL=implLine_padPostprocessor.js.map

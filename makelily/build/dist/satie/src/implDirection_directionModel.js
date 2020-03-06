@@ -1,4 +1,3 @@
-"use strict";
 /**
  * This file is part of Satie music engraver <https://github.com/jnetterf/satie>.
  * Copyright (C) Joshua Netterfield <joshua.ca> 2015 - present.
@@ -16,29 +15,31 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with Satie.  If not, see <http://www.gnu.org/licenses/>.
  */
-Object.defineProperty(exports, "__esModule", { value: true });
-var musicxml_interfaces_1 = require("musicxml-interfaces");
-var lodash_1 = require("lodash");
-var document_1 = require("./document");
-var private_renderUtil_1 = require("./private_renderUtil");
-var private_fontManager_1 = require("./private_fontManager");
-var private_smufl_1 = require("./private_smufl");
+import { AboveBelow, NormalBold, serializeDirection, } from "musicxml-interfaces";
+import { forEach } from "lodash";
+import { Type } from "./document";
+import { mmToTenths, ptPerMM } from "./private_renderUtil";
+import { getTextBB } from "./private_fontManager";
+import { bboxes as glyphBoxes } from "./private_smufl";
 var DirectionModel = /** @class */ (function () {
     /*---- Implementation -----------------------------------------------------------------------*/
     function DirectionModel(spec) {
         var _this = this;
         this._class = "Direction";
-        lodash_1.forEach(spec, function (value, key) {
+        /*---- I.1 IModel ---------------------------------------------------------------------------*/
+        this.divCount = 0;
+        this.divisions = 0;
+        forEach(spec, function (value, key) {
             _this[key] = value;
         });
     }
     DirectionModel.prototype.refresh = function (cursor) {
         var _this = this;
-        lodash_1.forEach(this.directionTypes, function (type) {
-            if (type.dynamics && _this.placement === musicxml_interfaces_1.AboveBelow.Unspecified) {
-                cursor.patch(function (staff) { return staff.direction(function (direction) {
-                    return direction.placement(musicxml_interfaces_1.AboveBelow.Below);
-                }); });
+        forEach(this.directionTypes, function (type) {
+            if (type.dynamics && _this.placement === AboveBelow.Unspecified) {
+                cursor.patch(function (staff) {
+                    return staff.direction(function (direction) { return direction.placement(AboveBelow.Below); });
+                });
             }
         });
     };
@@ -46,7 +47,7 @@ var DirectionModel = /** @class */ (function () {
         return new DirectionModel.Layout(this, cursor);
     };
     DirectionModel.prototype.toXML = function () {
-        return musicxml_interfaces_1.serializeDirection(this) + "\n<forward><duration>" + this.divCount + "</duration></forward>\n";
+        return serializeDirection(this) + "\n<forward><duration>" + this.divCount + "</duration></forward>\n";
     };
     DirectionModel.prototype.toJSON = function () {
         var _a = this, _class = _a._class, directionTypes = _a.directionTypes, staff = _a.staff, offset = _a.offset, sound = _a.sound, placement = _a.placement, voice = _a.voice, footnote = _a.footnote, level = _a.level, data = _a.data;
@@ -66,17 +67,16 @@ var DirectionModel = /** @class */ (function () {
     DirectionModel.prototype.inspect = function () {
         return this.toXML();
     };
-    DirectionModel.prototype.calcWidth = function (shortest) {
+    DirectionModel.prototype.calcWidth = function (_shortest) {
         return 0;
     };
-    return DirectionModel;
-}());
-DirectionModel.prototype.divCount = 0;
-DirectionModel.prototype.divisions = 0;
-(function (DirectionModel) {
-    var Layout = /** @class */ (function () {
+    DirectionModel.Layout = /** @class */ (function () {
         function Layout(model, cursor) {
             var _this = this;
+            // Prototype:
+            this.boundingBoxes = [];
+            this.renderClass = Type.Direction;
+            this.expandPolicy = "none";
             model = Object.create(model);
             if (model.directionTypes) {
                 model.directionTypes = model.directionTypes.slice();
@@ -86,11 +86,11 @@ DirectionModel.prototype.divisions = 0;
             this.division = cursor.segmentDivision;
             var defaultY = 0;
             switch (model.placement) {
-                case musicxml_interfaces_1.AboveBelow.Below:
+                case AboveBelow.Below:
                     defaultY = -60;
                     break;
-                case musicxml_interfaces_1.AboveBelow.Above:
-                case musicxml_interfaces_1.AboveBelow.Unspecified:
+                case AboveBelow.Above:
+                case AboveBelow.Unspecified:
                     defaultY = 60;
                     break;
                 default:
@@ -98,24 +98,27 @@ DirectionModel.prototype.divisions = 0;
                     break;
             }
             this.boundingBoxes = [];
-            lodash_1.forEach(model.directionTypes, function (type, idx) {
+            forEach(model.directionTypes, function (type, idx) {
                 type = model.directionTypes[idx] = Object.create(model.directionTypes[idx]);
-                lodash_1.forEach(type.words, function (word, idx) {
+                forEach(type.words, function (_word, idx) {
                     var origModel = type.words[idx];
                     var defaults = cursor.header.defaults;
                     type.words[idx] = Object.create(origModel);
                     type.words[idx].fontSize = type.words[idx].fontSize || "18";
                     type.words[idx].defaultX = 0;
                     type.words[idx].defaultY = defaultY;
-                    var fontBox = private_fontManager_1.getTextBB(type.words[idx].fontFamily || "Alegreya", type.words[idx].data, parseInt(type.words[idx].fontSize, 10), type.words[idx].fontWeight === musicxml_interfaces_1.NormalBold.Normal ? null : "bold");
-                    var scale40 = defaults.scaling.millimeters / defaults.scaling.tenths * 40;
+                    var fontBox = getTextBB(type.words[idx].fontFamily || "Alegreya", type.words[idx].data, parseInt(type.words[idx].fontSize, 10), type.words[idx].fontWeight === NormalBold.Normal ? null : "bold");
+                    var scale40 = (defaults.scaling.millimeters / defaults.scaling.tenths) * 40;
                     var boundingBox = type.words[idx];
                     // Vertical coordinates are flipped (argh!)
                     // We give 10% padding because elements touching isn't ideal.
-                    boundingBox.top = -private_renderUtil_1.mmToTenths(scale40, fontBox.bottom / private_renderUtil_1.ptPerMM) * 1.1;
-                    boundingBox.bottom = -private_renderUtil_1.mmToTenths(scale40, fontBox.top / private_renderUtil_1.ptPerMM) * 1.1;
-                    boundingBox.left = private_renderUtil_1.mmToTenths(scale40, fontBox.left / private_renderUtil_1.ptPerMM) * 1.1;
-                    boundingBox.right = private_renderUtil_1.mmToTenths(scale40, fontBox.right / private_renderUtil_1.ptPerMM) * 1.1;
+                    boundingBox.top =
+                        -mmToTenths(scale40, fontBox.bottom / ptPerMM) * 1.1;
+                    boundingBox.bottom =
+                        -mmToTenths(scale40, fontBox.top / ptPerMM) * 1.1;
+                    boundingBox.left = mmToTenths(scale40, fontBox.left / ptPerMM) * 1.1;
+                    boundingBox.right =
+                        mmToTenths(scale40, fontBox.right / ptPerMM) * 1.1;
                     _this.boundingBoxes.push(boundingBox);
                 });
                 if (type.dynamics) {
@@ -130,17 +133,17 @@ DirectionModel.prototype.divisions = 0;
                     boundingBox.bottom = 30; // TODO
                     _this.boundingBoxes.push(boundingBox);
                 }
-                lodash_1.forEach(type.segnos, function (origSegno, idx) {
+                forEach(type.segnos, function (origSegno, idx) {
                     var segno = Object.create(origSegno);
                     type.segnos[idx] = segno;
                     segno.defaultX = segno.defaultX || -30;
-                    segno.defaultY = (segno.defaultY || defaultY);
+                    segno.defaultY = segno.defaultY || defaultY;
                     segno.color = segno.color || "black";
                     var boundingBox = segno;
-                    boundingBox.right = private_smufl_1.bboxes["segno"][0] * 10 + 10;
-                    boundingBox.top = -private_smufl_1.bboxes["segno"][1] * 10 - 10;
-                    boundingBox.left = private_smufl_1.bboxes["segno"][2] * 10 - 10;
-                    boundingBox.bottom = -private_smufl_1.bboxes["segno"][3] * 10 + 10;
+                    boundingBox.right = glyphBoxes["segno"][0] * 10 + 10;
+                    boundingBox.top = -glyphBoxes["segno"][1] * 10 - 10;
+                    boundingBox.left = glyphBoxes["segno"][2] * 10 - 10;
+                    boundingBox.bottom = -glyphBoxes["segno"][3] * 10 + 10;
                     _this.boundingBoxes.push(boundingBox);
                 });
             });
@@ -148,14 +151,9 @@ DirectionModel.prototype.divisions = 0;
         }
         return Layout;
     }());
-    DirectionModel.Layout = Layout;
-    Layout.prototype.expandPolicy = "none";
-    Layout.prototype.renderClass = document_1.Type.Direction;
-    Layout.prototype.boundingBoxes = [];
-    Object.freeze(Layout.prototype.boundingBoxes);
-})(DirectionModel || (DirectionModel = {}));
-function Export(constructors) {
-    constructors[document_1.Type.Direction] = DirectionModel;
+    return DirectionModel;
+}());
+export default function Export(constructors) {
+    constructors[Type.Direction] = DirectionModel;
 }
-exports.default = Export;
 //# sourceMappingURL=implDirection_directionModel.js.map

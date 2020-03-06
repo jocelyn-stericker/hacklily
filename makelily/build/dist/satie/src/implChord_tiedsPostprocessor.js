@@ -1,4 +1,3 @@
-"use strict";
 /**
  * This file is part of Satie music engraver <https://github.com/jnetterf/satie>.
  * Copyright (C) Joshua Netterfield <joshua.ca> 2015 - present.
@@ -16,36 +15,32 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with Satie.  If not, see <http://www.gnu.org/licenses/>.
  */
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-var musicxml_interfaces_1 = require("musicxml-interfaces");
-var lodash_1 = require("lodash");
-var invariant_1 = __importDefault(require("invariant"));
-var document_1 = require("./document");
-var private_chordUtil_1 = require("./private_chordUtil");
+import { StartStopContinue } from "musicxml-interfaces";
+import { forEach, times, find } from "lodash";
+import invariant from "invariant";
+import { Type } from "./document";
+import { notationObj } from "./private_chordUtil";
 /**
  * Lays out measures within a bar & justifies.
  *
  * @returns new end of line
  */
 function tied(options, bounds, measures) {
-    lodash_1.forEach(measures, function (measure) {
+    forEach(measures, function (measure) {
         // Note that the `number` property of beams does NOT differentiate between sets of beams,
         // as it does with e.g., ties. See `note.mod`.
         var activeTieds = {};
         // Invariant: measure.elements[i].length == measure.elements[j].length for all valid i, j.
-        lodash_1.times(measure.elements[0].length, function (i) {
-            lodash_1.forEach(measure.elements, function (elements) {
+        times(measure.elements[0].length, function (i) {
+            forEach(measure.elements, function (elements) {
                 var layout = elements[i];
                 var model = layout.model;
-                if (!model || layout.renderClass !== document_1.Type.Chord) {
+                if (!model || layout.renderClass !== Type.Chord) {
                     return;
                 }
                 var chord = model;
-                var noteWithTieds = lodash_1.find(chord, function (el) {
-                    var notations = private_chordUtil_1.notationObj(el);
+                var noteWithTieds = find(chord, function (el) {
+                    var notations = notationObj(el);
                     return notations && notations.tieds && notations.tieds.length > 0;
                 });
                 if (noteWithTieds && noteWithTieds.grace) {
@@ -55,19 +50,19 @@ function tied(options, bounds, measures) {
                 if (!noteWithTieds) {
                     return;
                 }
-                var notations = private_chordUtil_1.notationObj(noteWithTieds);
+                var notations = notationObj(noteWithTieds);
                 var tieds = notations.tieds;
-                lodash_1.forEach(tieds, function (tied) {
-                    invariant_1.default(isFinite(tied.number) && tied.number !== null, "Tieds must have an ID (tied.number)");
+                forEach(tieds, function (tied) {
+                    invariant(isFinite(tied.number) && tied.number !== null, "Tieds must have an ID (tied.number)");
                     var currTied = activeTieds[tied.number];
                     if (currTied) {
-                        if (tied.type === musicxml_interfaces_1.StartStopContinue.Start) {
+                        if (tied.type === StartStopContinue.Start) {
                             console.warn('Found "Start" Tied that continues an existing Tied:', currTied);
                         }
                         currTied.elements.push(layout);
                         terminateTied$(activeTieds, tied);
                     }
-                    if (tied.type !== musicxml_interfaces_1.StartStopContinue.Stop) {
+                    if (tied.type !== StartStopContinue.Stop) {
                         activeTieds[tied.number] = {
                             number: tied.number,
                             elements: [layout],
@@ -77,7 +72,7 @@ function tied(options, bounds, measures) {
                 });
             });
         });
-        lodash_1.forEach(activeTieds, function (tied, idx) {
+        forEach(activeTieds, function (tied, idx) {
             console.warn("Tied %s was not closed before the end of the measure " +
                 "(this will be implemented later!)", idx);
         });
@@ -89,5 +84,5 @@ function terminateTied$(activeTieds, tied) {
         activeTieds[tied.number].elements[1];
     delete activeTieds[tied.number];
 }
-exports.default = tied;
+export default tied;
 //# sourceMappingURL=implChord_tiedsPostprocessor.js.map

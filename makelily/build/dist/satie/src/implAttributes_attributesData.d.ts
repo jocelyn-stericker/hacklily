@@ -29,14 +29,14 @@ export declare const NATURAL_WIDTH = 11;
  * Returns true if warning Attributes are required at the end of a line, and false otherwise.
  */
 export declare function needsWarning(end: Attributes, start: Attributes, staff: number): boolean;
-export declare function clefWidth(attributes: Attributes): number;
+export declare function clefWidth(_attributes: Attributes): number;
 export declare function timeWidth(attributes: Attributes): number;
 export declare function keyWidth(attributes: Attributes): number;
 export declare function clefsEqual(from: Attributes, to: Attributes, staff: number): boolean;
 export declare function timesEqual(from: Attributes, to: Attributes): boolean;
 export declare function keysEqual(from: Attributes, to: Attributes): boolean;
-export declare function approximateWidth(attributes: IAttributesSnapshot, atEnd?: AtEnd): 80 | 150;
-export declare const enum AtEnd {
+export declare function approximateWidth(_attributes: IAttributesSnapshot, atEnd?: AtEnd): 80 | 150;
+export declare enum AtEnd {
     No = 0,
     Yes = 1
 }

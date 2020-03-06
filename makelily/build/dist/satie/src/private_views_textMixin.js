@@ -1,4 +1,3 @@
-"use strict";
 /**
  * This file is part of Satie music engraver <https://github.com/jnetterf/satie>.
  * Copyright (C) Joshua Netterfield <joshua.ca> 2015 - present.
@@ -16,39 +15,40 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with Satie.  If not, see <http://www.gnu.org/licenses/>.
  */
-Object.defineProperty(exports, "__esModule", { value: true });
-var musicxml_interfaces_1 = require("musicxml-interfaces");
-var private_renderUtil_1 = require("./private_renderUtil");
+import { DirectionMode, LeftCenterRight, } from "musicxml-interfaces";
+import { cssSizeToTenths } from "./private_renderUtil";
 var DEF_SPACING = 4;
 var V_SPACING = 4;
-exports.Prototype = {
+export var Prototype = {
     getDX: function (words, initX, lineNum) {
         if (lineNum > 0) {
             return undefined;
         }
         var x = words.defaultX;
         if (!isNaN(x)) {
-            return (x + (words.relativeX || 0)) - initX;
+            return x + (words.relativeX || 0) - initX;
         }
         return DEF_SPACING;
     },
     getDY: function (words, initY, lineNum) {
         if (lineNum > 0) {
-            return V_SPACING +
-                private_renderUtil_1.cssSizeToTenths(this.context.scale40, words.fontSize);
+            return (V_SPACING +
+                cssSizeToTenths(this.context.scale40, words.fontSize));
         }
         if (words.defaultY || words.relativeY) {
-            return this.context.originY - (words.defaultY + (words.relativeY || 0)) - initY;
+            return (this.context.originY -
+                (words.defaultY + (words.relativeY || 0)) -
+                initY);
         }
         return 0;
     },
     getDirection: function (words) {
         switch (words.dir) {
-            case musicxml_interfaces_1.DirectionMode.Lro: // TODO: bidi
-            case musicxml_interfaces_1.DirectionMode.Ltr:
+            case DirectionMode.Lro: // TODO: bidi
+            case DirectionMode.Ltr:
                 return "ltr";
-            case musicxml_interfaces_1.DirectionMode.Rlo: // TODO: bidi
-            case musicxml_interfaces_1.DirectionMode.Rtl:
+            case DirectionMode.Rlo: // TODO: bidi
+            case DirectionMode.Rtl:
                 return "rtl";
             default:
                 return "inherit";
@@ -56,11 +56,11 @@ exports.Prototype = {
     },
     getTextAnchor: function (words) {
         switch (words.halign || words.justify) {
-            case musicxml_interfaces_1.LeftCenterRight.Right:
+            case LeftCenterRight.Right:
                 return "end";
-            case musicxml_interfaces_1.LeftCenterRight.Center:
+            case LeftCenterRight.Center:
                 return "middle";
-            case musicxml_interfaces_1.LeftCenterRight.Left:
+            case LeftCenterRight.Left:
                 return "start";
             default:
                 return "inherit";
@@ -89,6 +89,6 @@ exports.Prototype = {
             return 10;
         }
         return undefined;
-    }
+    },
 };
 //# sourceMappingURL=private_views_textMixin.js.map

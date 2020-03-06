@@ -16,13 +16,13 @@
  * along with Satie.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import {Tuplet} from "musicxml-interfaces";
+import { Tuplet } from "musicxml-interfaces";
 
 export interface IBeamLayout {
-    beamCount: number[];
-    x: number[];
-    y1: number;
-    y2: number;
-    direction: number;
-    tuplet?: Tuplet;
+  beamCount: number[];
+  x: number[];
+  y1: number;
+  y2: number;
+  direction: number;
+  tuplet?: Tuplet;
 }

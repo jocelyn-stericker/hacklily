@@ -1,4 +1,3 @@
-"use strict";
 /**
  * This file is part of Satie music engraver <https://github.com/jnetterf/satie>.
  * Copyright (C) Joshua Netterfield <joshua.ca> 2015 - present.
@@ -16,25 +15,24 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with Satie.  If not, see <http://www.gnu.org/licenses/>.
  */
-Object.defineProperty(exports, "__esModule", { value: true });
 /// <reference path="./opentypedist.d.ts" />
-var opentype_js_1 = require("opentype.js/dist/opentype.js");
-var lodash_1 = require("lodash");
+import { parse as parseFont } from "opentype.js/dist/opentype.js";
+import { memoize, forEach } from "lodash";
 var IS_BROWSER = "browser" in process;
 var NO_PATH_DATA = {};
 /*---- PRIVATE ------------------------------------------------------------------------*/
-var State;
-(function (State) {
-    State.fonts = {};
-    State.cbs = [];
-    State.remaining = 0;
-    State.canvasContext = IS_BROWSER ?
-        document.createElement("canvas").getContext("2d") :
-        null;
-    State.root = IS_BROWSER ?
-        location.protocol + "//" + location.host + "/vendor/" :
-        "./vendor/";
-})(State || (State = {}));
+var State = {
+    fonts: {},
+    cbs: [],
+    remaining: 0,
+    err: null,
+    canvasContext: IS_BROWSER
+        ? (document.createElement("canvas").getContext("2d"))
+        : null,
+    root: IS_BROWSER
+        ? location.protocol + "//" + location.host + "/vendor/"
+        : "./vendor/",
+};
 function getFullName(name, style) {
     name = name.toLowerCase();
     style = style && style.toLowerCase();
@@ -46,7 +44,9 @@ function loadFont(name, url, style, full) {
     url = getNativeURL(url);
     if (!full && IS_BROWSER) {
         var styleSheet = document.createElement("style");
-        styleSheet.appendChild(document.createTextNode("@font-face{\n            font-family: " + name + ";\n            src: url(" + url + ") format('truetype');\n            " + (style && style.toLowerCase() === "bold" ? "font-weight: bold;" : "") + "\n        }"));
+        styleSheet.appendChild(document.createTextNode("@font-face{\n            font-family: " + name + ";\n            src: url(" + url + ") format('truetype');\n            " + (style && style.toLowerCase() === "bold"
+            ? "font-weight: bold;"
+            : "") + "\n        }"));
         document.head.appendChild(styleSheet);
         State.fonts[fullName] = State.fonts[fullName] || NO_PATH_DATA;
         goOn();
@@ -56,20 +56,22 @@ function loadFont(name, url, style, full) {
             if (err) {
                 return goOn(err);
             }
-            var font = opentype_js_1.parse(buffer);
+            var font = parseFont(buffer);
             State.fonts[fullName] = font;
             if (IS_BROWSER) {
                 var styleSheet = document.styleSheets[0];
-                var fontFaceStyle = "@font-face{\n                    font-family: " + name + ";\n                    src: url(data:font/truetype;charset=utf-8;base64," + toBase64(buffer) + ") format('truetype');\n                    " + (style && style.toLowerCase() === "bold" ? "font-weight: bold;" : "") + "\n                }";
+                var fontFaceStyle = "@font-face{\n                    font-family: " + name + ";\n                    src: url(data:font/truetype;charset=utf-8;base64," + toBase64(buffer) + ") format('truetype');\n                    " + (style && style.toLowerCase() === "bold"
+                    ? "font-weight: bold;"
+                    : "") + "\n                }";
                 styleSheet.insertRule(fontFaceStyle, 0);
             }
             goOn();
         });
     }
-    function goOn(err) {
+    function goOn(_err) {
         --State.remaining;
         if (!State.remaining) {
-            lodash_1.forEach(State.cbs, function (cb) { return cb(State.err); });
+            forEach(State.cbs, function (cb) { return cb(State.err); });
             State.cbs = [];
         }
     }
@@ -119,7 +121,7 @@ function toBase64(buffer) {
         base64 += CHARS[bytes[i + 2] & 63];
         /* tslint:enable */
     }
-    if ((len % 3) === 2) {
+    if (len % 3 === 2) {
         base64 = base64.substring(0, base64.length - 1) + "=";
     }
     else if (len % 3 === 1) {
@@ -128,7 +130,7 @@ function toBase64(buffer) {
     return base64;
 }
 /*---- PUBLIC -------------------------------------------------------------------------*/
-function requireFont(name, url, style, full) {
+export function requireFont(name, url, style, full) {
     var fullName = getFullName(name, style);
     if (full && State.fonts[fullName] === NO_PATH_DATA) {
         delete State.fonts[fullName];
@@ -138,24 +140,20 @@ function requireFont(name, url, style, full) {
         loadFont(name, url, style, full);
     }
 }
-exports.requireFont = requireFont;
-function setRoot(root) {
+export function setRoot(root) {
     State.root = root;
 }
-exports.setRoot = setRoot;
-function markPreloaded(name, style) {
+export function markPreloaded(name, style) {
     State.fonts[getFullName(name, style)] = NO_PATH_DATA;
 }
-exports.markPreloaded = markPreloaded;
-function whenReady(cb) {
+export function whenReady(cb) {
     if (!State.remaining) {
         cb();
         return;
     }
     State.cbs.push(cb);
 }
-exports.whenReady = whenReady;
-function getTextBB(name, text, fontSize, style) {
+export function getTextBB(name, text, fontSize, style) {
     var fullName = getFullName(name, style);
     var font = State.fonts[fullName];
     if (State.canvasContext && font === NO_PATH_DATA) {
@@ -167,7 +165,7 @@ function getTextBB(name, text, fontSize, style) {
             bottom: fontSize,
             left: -fontSize / 18,
             right: State.canvasContext.measureText(text).width,
-            top: -4 * fontSize / 18
+            top: (-4 * fontSize) / 18,
         };
     }
     if (font === NO_PATH_DATA) {
@@ -177,7 +175,7 @@ function getTextBB(name, text, fontSize, style) {
             bottom: 1,
             left: 0,
             right: 1,
-            top: 0
+            top: 0,
         };
     }
     if (!font) {
@@ -186,7 +184,7 @@ function getTextBB(name, text, fontSize, style) {
             bottom: 1,
             left: 0,
             right: 1,
-            top: 0
+            top: 0,
         };
     }
     var minX = 10000;
@@ -194,7 +192,7 @@ function getTextBB(name, text, fontSize, style) {
     var maxX = 0;
     var maxY = 0;
     font.forEachGlyph(text, 0, 0, fontSize, { kerning: true }, function (glyph, x, y, fontSize) {
-        var scale = 1 / font.unitsPerEm * fontSize;
+        var scale = (1 / font.unitsPerEm) * fontSize;
         minX = Math.min(x, minX);
         maxX = Math.max(x, maxX);
         minY = Math.min(y + glyph.yMin * scale, minY);
@@ -204,11 +202,10 @@ function getTextBB(name, text, fontSize, style) {
         bottom: maxY,
         left: minX,
         right: maxX,
-        top: minY
+        top: minY,
     };
 }
-exports.getTextBB = getTextBB;
-var _toPathData = lodash_1.memoize(function (name, text, x, y, fontSize, style) {
+var _toPathData = memoize(function (name, text, x, y, fontSize, style) {
     var fullName = getFullName(name, style);
     var font = State.fonts[fullName];
     if (!font) {
@@ -221,11 +218,10 @@ var _toPathData = lodash_1.memoize(function (name, text, x, y, fontSize, style) 
     }
     return font.getPath(text, x, y, fontSize, { kerning: true }).toPathData(3);
 }, resolvePDKey);
-function toPathData(name, text, x, y, fontSize, style) {
+export function toPathData(name, text, x, y, fontSize, style) {
     return _toPathData(name, text, x, y, fontSize, style);
 }
-exports.toPathData = toPathData;
 function resolvePDKey(name, text, x, y, fontSize, style) {
-    return name + "_" + text + "_" + x + "_" + y + "_" + fontSize + "_" + (style || "");
+    return (name + "_" + text + "_" + x + "_" + y + "_" + fontSize + "_" + (style || ""));
 }
 //# sourceMappingURL=private_fontManager.js.map

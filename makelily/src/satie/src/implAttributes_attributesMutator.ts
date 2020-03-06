@@ -16,20 +16,26 @@
  * along with Satie.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import {IAny} from "musicxml-interfaces/operations";
+import { IAny } from "musicxml-interfaces/operations";
 
-import {mutate, parentExists} from "./private_mutate";
+import { mutate, parentExists } from "./private_mutate";
 
-import AttributesModel from "./implAttributes_attributesModel";
+import { IAttributesModel } from "./implAttributes_attributesModel";
 
-export default function attributesMutator(preview: boolean, attributes: AttributesModel.IAttributesModel, op: IAny) {
-    // Check if we are being asked to clone & create.
-    if (!parentExists(attributes, op.p)) {
-        console.warn("Invalid patch -- it's likely to a " +
-            "model that only exists in a snapshot. You'll need to explicitly create it.");
-        return;
-    }
+export default function attributesMutator(
+  _preview: boolean,
+  attributes: IAttributesModel,
+  op: IAny,
+) {
+  // Check if we are being asked to clone & create.
+  if (!parentExists(attributes, op.p)) {
+    console.warn(
+      "Invalid patch -- it's likely to a " +
+        "model that only exists in a snapshot. You'll need to explicitly create it.",
+    );
+    return;
+  }
 
-    // Bye.
-    mutate(attributes, op);
+  // Bye.
+  mutate(attributes, op);
 }

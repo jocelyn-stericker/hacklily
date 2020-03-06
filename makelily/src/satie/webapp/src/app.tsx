@@ -21,12 +21,11 @@ export interface IProps {
 export default class App extends Component<IProps> {
   render() {
     let path = this.props.location.pathname;
-    let topLink = path !== prefix + "/" &&
-      path !== prefix && (
-        <Link className={STYLES.toplink} to={`${prefix}/`}>
-          « Go home
-        </Link>
-      );
+    let topLink = path !== prefix + "/" && path !== prefix && (
+      <Link className={STYLES.toplink} to={`${prefix}/`}>
+        « Go home
+      </Link>
+    );
     return (
       <div>
         <header>

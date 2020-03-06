@@ -3,7 +3,7 @@
     "experimentalDecorators": true,
     "declaration": true,
     "outDir": "build/dist",
-    "module": "commonjs",
+    "module": "es6",
     "target": "es5",
     "lib": ["es6", "dom"],
     "sourceMap": true,
@@ -17,7 +17,6 @@
     "pretty": true,
     "suppressImplicitAnyIndexErrors": true,
     "noUnusedLocals": true,
-    "esModuleInterop": true,
     "allowSyntheticDefaultImports": true
   },
   "exclude": [

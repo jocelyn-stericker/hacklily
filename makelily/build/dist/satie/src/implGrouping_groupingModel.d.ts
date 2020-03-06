@@ -20,13 +20,10 @@ import { IModel, ILayout } from "./document";
 /**
  * Registers Grouping in the factory structure passed in.
  */
-declare function Export(constructors: {
+export default function Export(constructors: {
     [key: number]: any;
 }): void;
-declare module Export {
-    interface IGroupingModel extends IModel, Grouping {
-    }
-    interface IGroupingLayout extends ILayout {
-    }
+export interface IGroupingModel extends IModel, Grouping {
 }
-export default Export;
+export interface IGroupingLayout extends ILayout {
+}

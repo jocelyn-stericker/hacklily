@@ -24,7 +24,7 @@ export declare class StaffBuilder {
     private _patches;
     private _document;
     private _idx;
-    readonly patches: IAny[];
+    get patches(): IAny[];
     constructor(segment: ISegment, document: Document, idx?: number);
     at(idx: number): this;
     next(): this;
@@ -46,7 +46,7 @@ export declare class VoiceBuilder {
     private _patches;
     private _document;
     private _idx;
-    readonly patches: IAny[];
+    get patches(): IAny[];
     constructor(segment: ISegment, document: Document, idx?: number);
     at(idx: number): this;
     next(): this;
@@ -60,7 +60,7 @@ export declare class PartBuilder {
     private _part;
     private _patches;
     private _document;
-    readonly patches: IAny[];
+    get patches(): IAny[];
     constructor(part: IMeasurePart, document: Document);
     voice(voiceID: number, builder: (build: VoiceBuilder) => VoiceBuilder, idx?: number): this;
     staff(staffID: number, builder: (build: StaffBuilder) => StaffBuilder, idx?: number): this;
@@ -69,14 +69,14 @@ export declare class MeasureBuilder {
     private _measure;
     private _patches;
     private _document;
-    readonly patches: IAny[];
+    get patches(): IAny[];
     constructor(measure: IMeasure, document: Document);
     part(partID: string, builder: (build: PartBuilder) => PartBuilder): this;
 }
 export declare class DocumentBuilder {
     private _doc;
     private _patches;
-    readonly patches: IAny[];
+    get patches(): IAny[];
     constructor(doc: Document);
     measure(measureUUID: number, builder: (build: MeasureBuilder) => MeasureBuilder): this;
     insertMeasure(measureIndex: number, builder: (build: MeasureBuilder) => MeasureBuilder, uuid?: number): this;
