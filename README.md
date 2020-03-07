@@ -164,7 +164,4 @@ A full copy of the AGPL version 3 is available in LICENSE.AGPL.txt.
 
 ## Deployment
 
-Whenever a commit is pushed to master, Travis will deploy a new version.
-
-`make deploy` updates https://github.com/hacklily/hacklily.github.io. When these files change,
-GitHub starts serving new files to https://www.hacklily.org.
+Whenever a commit is pushed to master, Netlify will deploy a new version.
