@@ -47,6 +47,8 @@ module.exports = {
   },
   entry: {
     index: "./src/index.tsx",
+    status: "./src/status/status.index.tsx",
+    musicxml2ly: "./src/musicxml2ly/musicxml2ly.index.tsx",
   },
   output: {
     path: dist,
