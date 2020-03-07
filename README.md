@@ -1,5 +1,3 @@
-[![Build Status](https://travis-ci.org/hacklily/hacklily.svg?branch=master)](https://travis-ci.org/hacklily/hacklily)
-
 # Hacklily
 
 Hacklily is an online sheet-music editor and publishing tool. [Start writing music now!](https://hacklily.org)
