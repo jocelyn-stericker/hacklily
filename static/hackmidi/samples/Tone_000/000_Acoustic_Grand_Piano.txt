@@ -1,0 +1,8 @@
+amp=120 pan=center
+
+The very first line of any associated *.txt file will be appended
+to the auto-generated freepats.cfg file by the mkcfg.sh.txt script.
+
+The rest of the file can be used for any purpose whatsoever, like
+misc notes, a history of how the pat was created and/or changes to
+this particular pat.

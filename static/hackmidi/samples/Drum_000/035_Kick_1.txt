@@ -1,0 +1,9 @@
+amp=100
+035_Kick_1. From sound sample by Clingre, Bass Drum, Wikimedia commons, Mar.
+31, 2005, released under the following license: Permission is granted to
+copy, distribute and/or modify this document under the terms of the GNU Free
+Documentation License, Version 1.2 or any later version published by the
+Free Software Foundation; with no Invariant Sections, no Front-Cover Texts,
+and no Back-Cover Texts. See 2006b18-Copr-Gnu-FDL.txt. Shortened and
+converted to patch format for Freepats by walt@w-gregg.juneau.ak.us, Feb.
+2006.

@@ -1,0 +1,8 @@
+amp=100
+Hand clap.  From sound sample CP.wav by Michael Fischer in Roland TR-808
+Rhythm Composer Sound Sample Set 1.0.0, Sep. 8, 1994, as tr808all.zip. These
+are samples of an analog synthesizer he personally recorded and released for
+absolutely free usage.  See 2006b18-Copr-M_Fischer.txt or Michael Fischer,
+Very High Quality TR-808 and TR-909 samples, news:alt.music.synthpop, Sep.
+5, 1994. Shortened and converted to patch format for Freepats by
+walt@w-gregg.juneau.ak.us, Feb. 2006.

@@ -1,0 +1,4 @@
+amp=100
+Muted high conga.  Freepats Maracas converted to wave, modified, and
+converted back to patch for Freepats by walt@w-gregg.juneau.ak.us, Feb.
+2006.

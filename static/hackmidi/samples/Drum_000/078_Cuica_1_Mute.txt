@@ -1,0 +1,10 @@
+amp=100
+High cuica (mute cuica).  From sound sample by Anonymous, Cuica01.ogg or
+Cuica02ogg, Wikimedia commons, May 9, 2005, released under the following
+license: Permission is granted to copy, distribute and/or modify this
+document under the terms of the GNU Free Documentation License, Version 1.2
+or any later version published by the Free Software Foundation; with no
+Invariant Sections, no Front-Cover Texts, and no Back-Cover Texts. See
+2006b18-Copr-Gnu-FDL.txt. Shortened, pitch raised, and envelope modified and
+converted to patch format for Freepats by walt@w-gregg.juneau.ak.us, Feb.
+2006. 
