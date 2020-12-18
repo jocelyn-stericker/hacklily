@@ -10,7 +10,7 @@
   "dependencies": {
     "@blueprintjs/core": "3.24.0",
     "aphrodite": "2.4.0",
-    "dompurify": "2.0.8",
+    "dompurify": "2.0.17",
     "hackmidi": "0.0.3",
     "lodash": "4.17.15",
     "makelily": "github:hacklily/makelily#191885a5f4e2e6a5e51273a8b5db49583ba8754d",
