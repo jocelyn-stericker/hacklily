@@ -200,10 +200,6 @@ export default class Preview extends React.PureComponent<Props, State> {
     let version: "stable" | "unstable" = "stable";
 
     try {
-      let dirtyLogs: string;
-      let midi: string | null;
-      let files: string[];
-
       if (!rpc) {
         throw new Error("rpc must be set!");
       }
@@ -211,7 +207,7 @@ export default class Preview extends React.PureComponent<Props, State> {
       // Decide whether to use the stable version or not.
       const maybeVersion = /\\version\s*"(\d+)\.?(\d+)?\.?(\d+)?/gm.exec(code);
       const versionSlices = maybeVersion
-        ? maybeVersion.slice(1).map(v => parseInt(v, 10))
+        ? maybeVersion.slice(1).map((v) => parseInt(v, 10))
         : [];
       const isUnstable = versionSlices[0] === 2 && versionSlices[1] > 18;
       version = isUnstable ? "unstable" : "stable";
@@ -222,9 +218,9 @@ export default class Preview extends React.PureComponent<Props, State> {
         version,
       });
 
-      files = response.result.files;
-      dirtyLogs = response.result.logs;
-      midi = response.result.midi || null;
+      const files: string[] = response.result.files;
+      const dirtyLogs = response.result.logs;
+      const midi = response.result.midi || null;
 
       const logs: string = cleanLogs(dirtyLogs);
 
@@ -236,9 +232,8 @@ export default class Preview extends React.PureComponent<Props, State> {
         throw new Error("Could not get frame's window");
       }
 
-      const root = this.sheetMusicView.contentWindow.document.getElementById(
-        "root",
-      );
+      const root =
+        this.sheetMusicView.contentWindow.document.getElementById("root");
 
       if (!root) {
         throw new Error("Could not get sheet music view root!");
@@ -317,9 +312,8 @@ export default class Preview extends React.PureComponent<Props, State> {
           }
           const pathAndLocation: string[] = link.split(".ly:");
           if (pathAndLocation.length === 2) {
-            const [line, startColumn, endColumn] = pathAndLocation[1].split(
-              ":",
-            );
+            const [line, startColumn, endColumn] =
+              pathAndLocation[1].split(":");
             this.props.onSelectionChanged({
               // NOTE: we add a line on render:
               positionColumn: parseInt(endColumn, 10) + 1,

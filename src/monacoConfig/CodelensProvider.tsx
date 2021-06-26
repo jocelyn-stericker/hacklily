@@ -26,7 +26,8 @@ import Commands from "./Commands";
  * Provides codelens shortcuts for lilypond.
  */
 export default class CodelensProvider
-  implements monacoEditor.languages.CodeLensProvider {
+  implements monacoEditor.languages.CodeLensProvider
+{
   commands: Commands;
 
   constructor(commands: Commands) {

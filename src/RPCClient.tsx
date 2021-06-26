@@ -229,13 +229,13 @@ interface RPCResponseMap {
  */
 export default class RPCClient {
   private pingInterval: number;
-  private rejectors: {
+  private rejectors?: {
     [key: string]: (response: BaseRPCResponse) => void;
   } = {};
-  private resolvers: {
+  private resolvers?: {
     [key: string]: (response: BaseRPCResponse) => void;
   } = {};
-  private socket: WebSocket;
+  private socket?: WebSocket;
 
   constructor(socket: WebSocket) {
     this.socket = socket;
@@ -253,6 +253,11 @@ export default class RPCClient {
         `method must be a string, got ${typeof method}, ${method}`,
       );
     }
+
+    if (!this.socket || !this.resolvers || !this.rejectors) {
+      throw new Error("Cannot call on destroyed object");
+    }
+
     const request: BaseRPCRequest = {
       id,
       jsonrpc: "2.0",
@@ -278,6 +283,9 @@ export default class RPCClient {
         resolve: (response: BaseRPCResponse) => void,
         reject: (reason: BaseRPCResponse) => void,
       ): void => {
+        if (!this.resolvers || !this.rejectors) {
+          return;
+        }
         this.resolvers[id] = resolve;
         this.rejectors[id] = reject;
       },
@@ -290,6 +298,11 @@ export default class RPCClient {
 
   destroy(): void {
     clearInterval(this.pingInterval);
+
+    if (!this.resolvers || !this.rejectors) {
+      return;
+    }
+
     for (const id of Object.keys(this.resolvers)) {
       const response: BaseRPCResponse = {
         error: {
@@ -316,6 +329,10 @@ export default class RPCClient {
   }
 
   private handleWSMessage = (e: MessageEvent): void => {
+    if (!this.socket || !this.resolvers || !this.rejectors) {
+      throw new Error("Cannot handle ws message when destroyed");
+    }
+
     const data: BaseRPCResponse = JSON.parse(e.data.toString());
     if (!data.id) {
       throw new Error(`Got reply with no id: ${e.data}`);

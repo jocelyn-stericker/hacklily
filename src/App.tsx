@@ -334,14 +334,8 @@ export default class App extends React.PureComponent<Props, State> {
   }
 
   render(): JSX.Element {
-    const {
-      logs,
-      mode,
-      midi,
-      defaultSelection,
-      rendererVersion,
-      windowWidth,
-    } = this.state;
+    const { logs, mode, midi, defaultSelection, rendererVersion, windowWidth } =
+      this.state;
 
     const {
       auth,
@@ -584,9 +578,8 @@ export default class App extends React.PureComponent<Props, State> {
   };
 
   private handleCodeChanged = (newValue: string): void => {
-    const { baseSHA, src: clean } = this.state.cleanSongs[
-      this.props.edit || "null"
-    ];
+    const { baseSHA, src: clean } =
+      this.state.cleanSongs[this.props.edit || "null"];
     if (clean === newValue) {
       this.props.markSongClean(this.props.edit || "null");
     } else {
@@ -680,7 +673,7 @@ export default class App extends React.PureComponent<Props, State> {
         song.src,
       );
       const versionSlices = maybeVersion
-        ? maybeVersion.slice(1).map(v => parseInt(v, 10))
+        ? maybeVersion.slice(1).map((v) => parseInt(v, 10))
         : [];
       const isUnstable = versionSlices[0] === 2 && versionSlices[1] > 18;
       version = isUnstable ? "unstable" : "stable";

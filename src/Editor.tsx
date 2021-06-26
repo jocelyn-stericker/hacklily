@@ -101,7 +101,8 @@ export default class Editor extends React.PureComponent<Props> {
     }
     if (prevProps.logs !== logs) {
       const errors: monacoEditor.editor.IModelDeltaDecoration[] = [];
-      const matchErrors: RegExp = /hacklily.ly:([0-9]*):(([0-9]*):([0-9]*))?\s*([ew].*)/g;
+      const matchErrors: RegExp =
+        /hacklily.ly:([0-9]*):(([0-9]*):([0-9]*))?\s*([ew].*)/g;
       const oldDecorations: string[] = this.oldDecorations || [];
       if (logs) {
         for (

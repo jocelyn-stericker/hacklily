@@ -47,7 +47,7 @@ export default class MusicXML2LyModal extends React.PureComponent<Props> {
     const reader = new FileReader();
     reader.onload = () => {
       this.doLoad(reader.result as any);
-      delete reader.onload;
+      reader.onload = null;
     };
     reader.readAsText(ev.target.files[0]);
   };
