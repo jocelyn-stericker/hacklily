@@ -1,7 +1,7 @@
 /**
  * @license
  * This file is part of Hacklily, a web-based LilyPond editor.
- * Copyright (C) 2017 - present Joshua Netterfield <joshua@nettek.ca>
+ * Copyright (C) 2017 - present Jocelyn Stericker <jocelyn@nettek.ca>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -483,7 +483,7 @@ export default class App extends React.PureComponent<Props, State> {
     const requestedRepo: string = `${path[0]}/${path[1]}`;
     const requestedFile: string = path.slice(2).join("/");
 
-    // TODO(joshuan): For logged in users, allow them to edit files in any
+    // TODO(jocelyn): For logged in users, allow them to edit files in any
     // repo they control.
 
     if (!auth || auth.repo !== requestedRepo) {

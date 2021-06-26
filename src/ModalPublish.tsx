@@ -1,7 +1,7 @@
 /**
  * @license
  * This file is part of Hacklily, a web-based LilyPond editor.
- * Copyright (C) 2017 - present Joshua Netterfield <joshua@nettek.ca>
+ * Copyright (C) 2017 - present Jocelyn Stericker <jocelyn@nettek.ca>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -68,7 +68,7 @@ class ModalPublish extends React.PureComponent<Props, State> {
   }
 
   render(): JSX.Element {
-    // TODO(joshuan): Split this up
+    // TODO(jocelyn): Split this up
     const { auth, onHide } = this.props;
     const { filename, files, invitationRequired, saving } = this.state;
     let disabled: boolean = false;

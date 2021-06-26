@@ -1,7 +1,7 @@
 /**
  * @license
  * This file is part of Hacklily, a web-based LilyPond editor.
- * Copyright (C) 2017 - present Joshua Netterfield <joshua@nettek.ca>
+ * Copyright (C) 2017 - present Jocelyn Stericker <jocelyn@nettek.ca>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -122,7 +122,7 @@ class ModalAbout extends React.PureComponent<Props> {
                 target="_blank"
                 rel="noopener noreferrer"
               >
-                Joshua Netterfield
+                Jocelyn Stericker
               </a>{" "}
               2017 - present. 🇨🇦
             </p>

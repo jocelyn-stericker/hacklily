@@ -1,7 +1,7 @@
 /**
  * @license
  * This file is part of Hacklily, a web-based LilyPond editor.
- * Copyright (C) 2018 - present Joshua Netterfield <joshua@nettek.ca>
+ * Copyright (C) 2018 - present Jocelyn Stericker <jocelyn@nettek.ca>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as

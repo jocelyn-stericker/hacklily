@@ -96,7 +96,7 @@ Then, in a browser navigate to [http://localhost:3000](http://localhost:3000).
 Please do! Fork this repo and submit a PR. Your submission must be under the appropriate
 license (GPL for client code, AGPL for server code).
 
-You can reach the maintainer by email at `joshua@nettek.ca`.
+You can reach the maintainer by email at `jocelyn@nettek.ca`.
 
 ## License
 

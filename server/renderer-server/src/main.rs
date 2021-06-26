@@ -2,7 +2,7 @@
 /**
  * @license
  * This file is part of Hacklily, a web-based LilyPond editor.
- * Copyright (C) 2018 - present Joshua Netterfield <joshua@nettek.ca>
+ * Copyright (C) 2018 - present Jocelyn Stericker <jocelyn@nettek.ca>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -37,7 +37,7 @@ use renderer_lib::{event_loop, CommandSourceConfig, Config};
 async fn main() {
     let matches = App::new("Hacklily Renderer Server")
         .version("0.1")
-        .author("Joshua Netterfield <joshua@nettek.ca>")
+        .author("Jocelyn Stericker <jocelyn@nettek.ca>")
         .about("Renders LilyPond music efficiently in containers.")
         .arg(
             Arg::with_name("stable-docker-tag")
