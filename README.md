@@ -18,7 +18,7 @@ You need:
 - [Qt 5](https://www.qt.io/) -- with qmake in your path (installing using the version from Qt's website is recommended on macOS)
 - [Docker](https://www.docker.com/)
 
-Note: I haven't tested this on Windows yet. Theoretically, this should work with something like MSYS, but I have not tried. 
+Note: I haven't tested this on Windows yet. Theoretically, this should work with something like MSYS, but I have not tried.
 If you manage to get it working, please make a pull request with instructions on how to do that.
 
 ### Obtaining
@@ -26,13 +26,13 @@ If you manage to get it working, please make a pull request with instructions on
 To get hacklily, run:
 
 ```bash
-git clone git@github.com:hacklily/hacklily.git
+git clone git@github.com:emilyskidsister/hacklily.git
 ```
 
 Or, if you do not have ssh auth setup with Github:
 
 ```bash
-git clone https://github.com/hacklily/hacklily.git
+git clone https://github.com/emilyskidsister/hacklily.git
 ```
 
 ### Running (without GitHub integration)
@@ -135,7 +135,7 @@ the term "System Libraries" is extended to include the JavaScript
 libraries provided with any browser. If you modify this code, you
 may extend this exception to your version of the code, but you are
 not obligated to do so. If you do not wish to do so, delete this
-exception statement from your version. 
+exception statement from your version.
 ```
 
 A full copy of the GPL version 3 is available in LICENSE.txt.
@@ -160,7 +160,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ```
 
 A full copy of the AGPL version 3 is available in LICENSE.AGPL.txt.
-
 
 ## Deployment
 
