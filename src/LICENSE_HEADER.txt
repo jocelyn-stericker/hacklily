@@ -1,4 +1,4 @@
-@source: https://github.com/jnetterf/hacklily/archive/master.tar.gz
+@source: https://github.com/emilyskidsister/hacklily/archive/master.tar.gz
 
 @licstart  The following is the entire license notice for the 
  JavaScript code in this page.

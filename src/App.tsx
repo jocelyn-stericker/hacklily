@@ -60,9 +60,9 @@ const PUBLIC_READONLY: string = "PUBLIC_READONLY";
 /**
  * Properties derived from URL.
  *
- * e.g., https://www.hacklily.org/?edit=hacklily/user-jnetterf/test.ly =>
+ * e.g., https://www.hacklily.org/?edit=hacklily/user-emilyskidsister/test.ly =>
  *   {
- *     edit: 'hacklily/user-jnetterf/test.ly',
+ *     edit: 'hacklily/user-emilyskidsister/test.ly',
  *   }
  *
  * NOTE: When you add a key here, also add it to QUERY_PROP_KEYS below.
