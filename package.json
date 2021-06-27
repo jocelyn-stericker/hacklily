@@ -13,7 +13,7 @@
     "dompurify": "^2.2.9",
     "hackmidi": "0.0.3",
     "lodash": "^4.17.21",
-    "makelily": "github:hacklily/makelily#191885a5f4e2e6a5e51273a8b5db49583ba8754d",
+    "makelily": "0.1.6",
     "monaco-editor": "0.15.6",
     "react": "16.13.0",
     "react-dom": "16.13.0",
