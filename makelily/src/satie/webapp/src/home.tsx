@@ -41,7 +41,7 @@ namespace Home {
         <span>
           Satie is designed to help JavaScript developers create interactive
           sheet music applications.{" "}
-          <a href="https://github.com/jnetterf/satie/">
+          <a href="https://github.com/emilyskidsister/satie/">
             Learn more at GitHub »
           </a>
         </span>

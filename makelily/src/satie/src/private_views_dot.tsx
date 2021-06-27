@@ -1,6 +1,6 @@
 /**
- * This file is part of Satie music engraver <https://github.com/jnetterf/satie>.
- * Copyright (C) Joshua Netterfield <joshua.ca> 2015 - present.
+ * This file is part of Satie music engraver <https://github.com/emilyskidsister/satie>.
+ * Copyright (C) Jocelyn Stericker <jocelyn@nettek.ca> 2015 - present.
  *
  * Satie is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as

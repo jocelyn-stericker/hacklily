@@ -1,7 +1,7 @@
 /**
  * @license
  * This file is part of Makelily.
- * Copyright (C) 2017 - present Joshua Netterfield <joshua@nettek.ca>
+ * Copyright (C) 2017 - present Jocelyn Stericker <jocelyn@nettek.ca>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by

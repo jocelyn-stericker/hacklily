@@ -1,9 +1,9 @@
 /**
- * @source: https://github.com/jnetterf/satie/
+ * @source: https://github.com/emilyskidsister/satie/
  *
  * @license
- * (C) Josh Netterfield <joshua@nettek.ca> 2015.
- * Part of the Satie music engraver <https://github.com/jnetterf/satie>.
+ * (C) Jocelyn Stericker <jocelyn@nettek.ca> 2015.
+ * Part of the Satie music engraver <https://github.com/emilyskidsister/satie>.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as

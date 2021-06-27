@@ -44,7 +44,7 @@ make serve
 
 Please do! Fork this repo and submit a PR. Your submission must be under the GPL.
 
-You can reach the maintainer by email at `joshua@nettek.ca`.
+You can reach the maintainer by email at `jocelyn@nettek.ca`.
 
 ## License
 
@@ -83,10 +83,11 @@ the term "System Libraries" is extended to include the JavaScript
 libraries provided with any browser. If you modify this code, you
 may extend this exception to your version of the code, but you are
 not obligated to do so. If you do not wish to do so, delete this
-exception statement from your version. 
+exception statement from your version.
 ```
 
 ## Deployment
 
 Once I get around to it, whenever a commit is pushed to master, Travis will
 deploy a new version to the gh-pages repo and probably also to npm.
+

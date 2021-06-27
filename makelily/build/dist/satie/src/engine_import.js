@@ -1,6 +1,6 @@
 /**
- * This file is part of Satie music engraver <https://github.com/jnetterf/satie>.
- * Copyright (C) Joshua Netterfield <joshua.ca> 2015 - present.
+ * This file is part of Satie music engraver <https://github.com/emilyskidsister/satie>.
+ * Copyright (C) Jocelyn Stericker <jocelyn@nettek.ca> 2015 - present.
  *
  * Satie is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -65,7 +65,7 @@ export function stringToDocument(src, factory) {
  * Converts a timewise MXMLJSON score to an uninitialized Satie score.
  * See also Models.importXML.
  *
- * @param score produced by github.com/jnetterf/musicxml-interfaces
+ * @param score produced by github.com/emilyskidsister/musicxml-interfaces
  * @returns A structure that can be consumed by a score. If an error occurred
  *          error will be set, and all other properties will be null.
  */
