@@ -26,7 +26,7 @@ import React from "react";
 
 import { Auth, checkLogin, revokeGitHubAuth } from "./auth";
 import Editor from "./Editor";
-import { cat, FileNotFound, getOrCreateRepo } from "./gitfs";
+import { cat, FileNotFound, getDefaultBranch, getOrCreateRepo } from "./gitfs";
 import Header, {
   MIN_BOTH_WIDTH,
   MODE_BOTH,
@@ -237,6 +237,7 @@ interface State {
   showMakelily: typeof Makelily | null;
   windowWidth: number;
   wsError: boolean;
+  branch: string | null;
 
   makelilyInsertCB?(ly: string): void;
 }
@@ -290,6 +291,7 @@ export default class App extends React.PureComponent<Props, State> {
     showMakelily: null,
     windowWidth: window.innerWidth,
     wsError: false,
+    branch: null,
   };
 
   private editor: Editor | null = null;
@@ -353,11 +355,11 @@ export default class App extends React.PureComponent<Props, State> {
       Boolean(this.props.dirtySongs.null);
 
     let songURL: string | null = null;
-    if (this.props.edit) {
+    if (this.props.edit && this.state.branch) {
       const songParts: string[] = this.props.edit.split("/");
-      songURL = `https://github.com/${songParts[0]}/${
-        songParts[1]
-      }/blob/master/${songParts.slice(2).join("/")}`;
+      songURL = `https://github.com/${songParts[0]}/${songParts[1]}/blob/${
+        this.state.branch
+      }/${songParts.slice(2).join("/")}`;
     }
 
     const header: React.ReactNode = (
@@ -483,13 +485,17 @@ export default class App extends React.PureComponent<Props, State> {
     const requestedRepo: string = `${path[0]}/${path[1]}`;
     const requestedFile: string = path.slice(2).join("/");
 
+    this.setState({
+      branch: null,
+    });
+
     // TODO(jocelyn): For logged in users, allow them to edit files in any
     // repo they control.
 
     if (!auth || auth.repo !== requestedRepo) {
+      const branch = await getDefaultBranch(null, requestedRepo);
       const req: Response = await fetch(
-        `https://raw.githubusercontent.com/${requestedRepo}/` +
-          `master/${requestedFile}`,
+        `https://raw.githubusercontent.com/${requestedRepo}/${branch}/${requestedFile}`,
       );
 
       if (req.status >= 400) {
@@ -512,12 +518,14 @@ export default class App extends React.PureComponent<Props, State> {
 
       this.setState({
         cleanSongs,
+        branch,
       });
 
       return;
     }
 
     try {
+      const branch = await getDefaultBranch(auth.accessToken, requestedRepo);
       const { content, sha } = await cat(
         auth.accessToken,
         auth.repo,
@@ -533,6 +541,7 @@ export default class App extends React.PureComponent<Props, State> {
 
       this.setState({
         cleanSongs,
+        branch,
       });
     } catch (err) {
       if (err instanceof FileNotFound) {

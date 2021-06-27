@@ -113,11 +113,27 @@ export async function getOrCreateRepo(auth: Auth): Promise<Repo> {
   return repo;
 }
 
-export async function ls(
-  accessToken: string,
+export async function getDefaultBranch(
+  accessToken: string | null,
   repo: string,
-  ref: string = "master",
-): Promise<File[]> {
+) {
+  const headers: {} = accessToken
+    ? {
+        Authorization: `token ${accessToken}`,
+      }
+    : {};
+
+  const response: Response = await fetch(
+    `https://api.github.com/repos/${repo}`,
+    {
+      headers,
+    },
+  );
+
+  return (await response.json()).default_branch ?? "master";
+}
+
+export async function ls(accessToken: string, repo: string): Promise<File[]> {
   const headers: {} = {
     Authorization: `token ${accessToken}`,
   };
@@ -125,7 +141,10 @@ export async function ls(
   // Note: sadly, cache: 'no-store' seems to be broken in Chrome with GH, so we use an
   // ugly cache_bust.
   const response: Response = await fetch(
-    `https://api.github.com/repos/${repo}/contents?ref=${ref}&cache_bust=${new Date().getTime()}`,
+    `https://api.github.com/repos/${repo}/contents?ref=${await getDefaultBranch(
+      accessToken,
+      repo,
+    )}&cache_bust=${new Date().getTime()}`,
     {
       headers,
     },
@@ -160,7 +179,6 @@ export async function cat(
   accessToken: string,
   repo: string,
   filename: string,
-  ref: string = "master",
 ): Promise<{ content: string; sha: string }> {
   const headers: {} = {
     Authorization: `token ${accessToken}`,
@@ -168,8 +186,10 @@ export async function cat(
 
   // Note: we should get more strict with our ref and get rid of the cache_bust
   const response: Response = await fetch(
-    `https://api.github.com/repos/${repo}/contents/${filename}?ref=${ref}` +
-      `&cache_bust=${new Date().getTime()}`,
+    `https://api.github.com/repos/${repo}/contents/${filename}?ref=${await getDefaultBranch(
+      accessToken,
+      repo,
+    )}` + `&cache_bust=${new Date().getTime()}`,
     {
       headers,
     },
@@ -193,13 +213,12 @@ export async function write(
   filename: string,
   base64: string,
   sha?: string,
-  ref: string = "master",
 ): Promise<void> {
   const response: Response = await fetch(
     `https://api.github.com/repos/${repo}/contents/${filename}`,
     {
       body: JSON.stringify({
-        branch: ref,
+        branch: await getDefaultBranch(accessToken, repo),
         content: base64,
         message: `Saved via ${process.env.HOMEPAGE || "Hacklily"}`,
         sha: sha ? sha : undefined,
@@ -231,13 +250,12 @@ export async function rm(
   repo: string,
   filename: string,
   sha: string,
-  ref: string = "master",
 ): Promise<void> {
   const response: Response = await fetch(
     `https://api.github.com/repos/${repo}/contents/${filename}`,
     {
       body: JSON.stringify({
-        branch: ref,
+        branch: await getDefaultBranch(accessToken, repo),
         message: `Saved via ${process.env.HOMEPAGE || "Hacklily"}`,
         sha: sha ? sha : undefined,
       }),

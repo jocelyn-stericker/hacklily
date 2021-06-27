@@ -276,7 +276,6 @@ export async function doPublish(
       pdfFilename,
       pdf,
       pdfFile ? pdfFile.sha : undefined,
-      "master",
     );
     await write(
       accessToken,
@@ -284,7 +283,6 @@ export async function doPublish(
       filename,
       b64EncodeUnicode(code),
       file ? file.sha : undefined,
-      "master",
     );
   } catch (err) {
     console.log(err);
@@ -328,10 +326,10 @@ export async function doUnpublish(
   try {
     // These each result in a commit -- it would be better to write them all at once.
     if (pdfFile) {
-      await rm(accessToken, repo, pdfFilename, pdfFile.sha, "master");
+      await rm(accessToken, repo, pdfFilename, pdfFile.sha);
     }
     if (file) {
-      await rm(accessToken, repo, filename, file.sha, "master");
+      await rm(accessToken, repo, filename, file.sha);
     }
   } catch (err) {
     console.log(err);
