@@ -94,7 +94,6 @@ export default class FileMenu extends React.PureComponent<Props> {
         <MenuItem
           icon="add"
           text="New song"
-          // label="&#8984;N"
           onClick={onShowNew}
           disabled={!canCreateNew}
         />
@@ -102,13 +101,16 @@ export default class FileMenu extends React.PureComponent<Props> {
         <MenuItem
           icon="document-open"
           text="Open&hellip;"
-          // label="&#8984;O"
           onClick={onShowOpen}
+        />
+        <MenuItem
+          icon="import"
+          text="Import MusicXML&hellip;"
+          href="/musicxml2ly.html"
         />
         <MenuItem
           icon="floppy-disk"
           text="Save"
-          // label="&#8984;S"
           disabled={!canSave}
           onClick={onShowPublish}
         />
