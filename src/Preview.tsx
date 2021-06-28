@@ -209,7 +209,7 @@ export default class Preview extends React.PureComponent<Props, State> {
       const versionSlices = maybeVersion
         ? maybeVersion.slice(1).map((v) => parseInt(v, 10))
         : [];
-      const isUnstable = versionSlices[0] === 2 && versionSlices[1] > 18;
+      const isUnstable = versionSlices[0] === 2 && versionSlices[1] > 22;
       version = isUnstable ? "unstable" : "stable";
 
       const response: RenderResponse = await rpc.call("render", {

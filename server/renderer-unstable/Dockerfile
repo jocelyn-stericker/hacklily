@@ -1,5 +1,5 @@
 FROM debian:sid-slim
-RUN apt-get update && apt-get install --no-install-recommends -y ruby curl bzip2 git locales gsfonts ghostscript fonts-dejavu-extra psmisc emacs-intl-fonts xfonts-intl-.* fonts-ipafont-mincho xfonts-bolkhov-75dpi xfonts-cronyx-100dpi xfonts-cronyx-75dpi patch python && \
+RUN apt-get update && apt-get install --no-install-recommends -y ruby curl bzip2 git locales gsfonts ghostscript fonts-dejavu-extra psmisc emacs-intl-fonts xfonts-intl-.* fonts-ipafont-mincho xfonts-bolkhov-75dpi xfonts-cronyx-100dpi xfonts-cronyx-75dpi patch python python3 && \
     localedef -i en_US -c -f UTF-8 -A /usr/share/locale/locale.alias en_US.UTF-8 && \
     curl -L https://github.com/stedolan/jq/releases/download/jq-1.5/jq-linux64 > /usr/local/bin/jq && \
     chmod +x /usr/local/bin/jq && echo 42 | jq .
@@ -17,9 +17,9 @@ RUN adduser --disabled-password --gecos '' r && \
     cd ~r/.lyp && \
     patch -p0 < /tmp/no_lyp_check_update.patch && \
     rm /tmp/no_lyp_check_update.patch && \
-    su r -c "source ~/.profile; lyp install lilypond@2.19.83 lys;" && \
-    rm /home/r/.lyp/lilyponds/2.19.83/etc/relocate/gs.reloc && \
-    rm /home/r/.lyp/lilyponds/2.19.83/bin/gs && \
+    su r -c "source ~/.profile; lyp install lilypond@2.23.2 lys;" && \
+    rm /home/r/.lyp/lilyponds/2.23.2/etc/relocate/gs.reloc && \
+    rm /home/r/.lyp/lilyponds/2.23.2/bin/gs && \
     chown r -R /tmp/* && \
     chown nobody -R /home/r/.lyp/*
 RUN apt-get remove -y curl patch && apt-get autoremove -y && apt-get clean && rm -rf /var/lib/apt/lists/*

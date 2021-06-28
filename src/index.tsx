@@ -38,14 +38,14 @@ function render(): void {
       auth={getAuth()}
       csrf={localStorage.csrf || null}
       colourScheme={localStorage.colourScheme || "vs-dark"}
-      hideUnstable219Notification={getHideUnstable219Notification()}
+      hideUnstableNotification={getHideUnstableNotification()}
       setQuery={setQuery}
       editSong={editSong}
       markSongClean={markSongClean}
       setAuth={setAuth}
       setColourScheme={setColourScheme}
       setCSRF={setCSRF}
-      setHideUnstable219Notification={setHideUnstable219Notification}
+      setHideUnstableNotification={setHideUnstableNotification}
     />,
     document.getElementById("root"),
   );
@@ -147,8 +147,8 @@ function getAuth(): Auth | null {
   return parseAuth(localStorage.auth);
 }
 
-function getHideUnstable219Notification(): boolean {
-  return localStorage.hideUnstable219Notification || false;
+function getHideUnstableNotification(): boolean {
+  return localStorage.hideUnstableNotification || false;
 }
 
 function editSong(songID: string, song: Song): void {
@@ -175,11 +175,11 @@ function setColourScheme(colourScheme: "vs-dark" | "vs"): void {
   document.location.reload();
 }
 
-function setHideUnstable219Notification(hideUnstable219Notification: boolean) {
-  if (hideUnstable219Notification) {
-    localStorage.hideUnstable219Notification = true;
+function setHideUnstableNotification(hideUnstableNotification: boolean) {
+  if (hideUnstableNotification) {
+    localStorage.hideUnstableNotification = true;
   } else {
-    delete localStorage.hideUnstable219Notification;
+    delete localStorage.hideUnstableNotification;
   }
   render();
 }

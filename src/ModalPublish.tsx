@@ -242,7 +242,7 @@ export async function doPublish(
   const versionSlices = maybeVersion
     ? maybeVersion.slice(1).map((v) => parseInt(v, 10))
     : [];
-  const isUnstable = versionSlices[0] === 2 && versionSlices[1] > 18;
+  const isUnstable = versionSlices[0] === 2 && versionSlices[1] > 22;
   version = isUnstable ? "unstable" : "stable";
 
   const pdf: string = (

@@ -50,7 +50,7 @@ interface Props {
    */
   defaultSelection: monacoEditor.ISelection | null;
 
-  hideUnstable219Notification: boolean;
+  hideUnstableNotification: boolean;
 
   isImmutableSrc: boolean;
 
@@ -256,7 +256,7 @@ export default class Editor extends React.PureComponent<Props> {
       readOnly,
       rendererVersion,
       onHideUnstableNotification,
-      hideUnstable219Notification,
+      hideUnstableNotification,
     } = this.props;
     const monacoOptions: monacoEditor.editor.IEditorOptions = {
       autoClosingBrackets: "always",
@@ -296,13 +296,13 @@ export default class Editor extends React.PureComponent<Props> {
     }
 
     let unstableVersionNotice: JSX.Element | null = null;
-    if (rendererVersion === "unstable" && !hideUnstable219Notification) {
+    if (rendererVersion === "unstable" && !hideUnstableNotification) {
       unstableVersionNotice = (
         <div
           className={css(APP_STYLE.urgentEditorNotification)}
           style={{ width }}
         >
-          <Icon icon="warning-sign" /> This song uses LilyPond 2.19, which is an
+          <Icon icon="warning-sign" /> This song uses LilyPond 2.23, which is an
           unstable development version and may change without notice.{" "}
           <a
             onClick={onHideUnstableNotification}

@@ -1,0 +1,12 @@
+--- lib/app/bin/lilypond        2018-09-30 00:11:17.000000000 +0000
++++ lib/app/bin/lilypond_new    2018-09-30 16:04:31.247756000 +0000
+@@ -50,7 +50,8 @@
+   puts `#{$lilypond_path} #{$argv.join(' ')}`
+   puts LYP_LY_HELP unless $argv.first == '-dhelp'
+ else
+-  Lyp::Lilypond.check_update
++  puts "Not checking for updates"
++  # Lyp::Lilypond.check_update
+   begin
+     if $options[:resolve] && $argv.last != '-'
+       resolver = Lyp::DependencyResolver.new($argv.last)

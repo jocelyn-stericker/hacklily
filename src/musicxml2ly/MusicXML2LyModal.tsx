@@ -56,7 +56,7 @@ export default class MusicXML2LyModal extends React.PureComponent<Props> {
     console.log(src);
     const rendered = await this.props.rpc.call("render", {
       backend: "musicxml2ly",
-      version: "unstable",
+      version: "stable",
       src,
     });
     const file = rendered.result.files[0];
