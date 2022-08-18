@@ -1,22 +1,13 @@
 {
   "files": {
-    "main.css": "/hackmidi/static/css/main.828400b0.chunk.css",
-    "main.js": "/hackmidi/static/js/main.e3cbc9a7.chunk.js",
-    "main.js.map": "/hackmidi/static/js/main.e3cbc9a7.chunk.js.map",
-    "runtime-main.js": "/hackmidi/static/js/runtime-main.c8e6061e.js",
-    "runtime-main.js.map": "/hackmidi/static/js/runtime-main.c8e6061e.js.map",
-    "static/js/2.fd27e372.chunk.js": "/hackmidi/static/js/2.fd27e372.chunk.js",
-    "static/js/2.fd27e372.chunk.js.map": "/hackmidi/static/js/2.fd27e372.chunk.js.map",
+    "main.css": "/hackmidi/static/css/main.7fbd665b.css",
+    "main.js": "/hackmidi/static/js/main.923a807c.js",
     "index.html": "/hackmidi/index.html",
-    "precache-manifest.99e652f406ac15c67fc2938a90d5db2d.js": "/hackmidi/precache-manifest.99e652f406ac15c67fc2938a90d5db2d.js",
-    "service-worker.js": "/hackmidi/service-worker.js",
-    "static/css/main.828400b0.chunk.css.map": "/hackmidi/static/css/main.828400b0.chunk.css.map",
-    "static/js/2.fd27e372.chunk.js.LICENSE.txt": "/hackmidi/static/js/2.fd27e372.chunk.js.LICENSE.txt"
+    "main.7fbd665b.css.map": "/hackmidi/static/css/main.7fbd665b.css.map",
+    "main.923a807c.js.map": "/hackmidi/static/js/main.923a807c.js.map"
   },
   "entrypoints": [
-    "static/js/runtime-main.c8e6061e.js",
-    "static/js/2.fd27e372.chunk.js",
-    "static/css/main.828400b0.chunk.css",
-    "static/js/main.e3cbc9a7.chunk.js"
+    "static/css/main.7fbd665b.css",
+    "static/js/main.923a807c.js"
   ]
 }
