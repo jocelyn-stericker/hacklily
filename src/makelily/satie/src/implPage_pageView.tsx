@@ -69,7 +69,7 @@ export default class Page extends Component<IProps, {}> {
     const defaults = this.props.scoreHeader.defaults;
     const credits = filter(
       this.props.scoreHeader.credits,
-      cr => cr.page === pageNum,
+      (cr) => cr.page === pageNum,
     );
     const scale40 =
       (defaults.scaling.millimeters / defaults.scaling.tenths) * 40;
@@ -101,7 +101,7 @@ export default class Page extends Component<IProps, {}> {
     /*--- Credits ---------------------------------------------*/
 
     // Make sure our credits are keyed.
-    forEach<IModel>((credits as any) as IModel[], generateModelKey);
+    forEach<IModel>(credits as any as IModel[], generateModelKey);
 
     /*--- Render ----------------------------------------------*/
 
@@ -125,9 +125,10 @@ export default class Page extends Component<IProps, {}> {
         viewBox={`0 0 ${pageWidth} ${pageHeight}`}
         width={widthMM}
       >
-        {!this.props.singleLineMode && map(credits, c => <CreditView {...c} />)}
-        {map(lineLayouts, lineLayout =>
-          map(lineLayout, measureLayout => (
+        {!this.props.singleLineMode &&
+          map(credits, (c) => <CreditView {...c} />)}
+        {map(lineLayouts, (lineLayout) =>
+          map(lineLayout, (measureLayout) => (
             <MeasureView
               key={measureLayout.uuid}
               layout={measureLayout}
@@ -139,7 +140,7 @@ export default class Page extends Component<IProps, {}> {
     );
   }
 
-  private _setSVG: (svg: SVGSVGElement) => void = svg => {
+  private _setSVG: (svg: SVGSVGElement) => void = (svg) => {
     if (this.props.svgRef) {
       this.props.svgRef(svg);
     }

@@ -66,13 +66,13 @@ export default function chordMutator(chord: ChordImpl, op: IAny) {
 
       chord._init = false;
     } else {
-      let note = chord[parseInt(String(op.p[1]), 10)];
+      const note = chord[parseInt(String(op.p[1]), 10)];
       invariant(
         Boolean(note),
         `Invalid operation path for chord. No such note ${op.p[1]}`,
       );
 
-      let localOp: IAny = cloneDeep(op);
+      const localOp: IAny = cloneDeep(op);
       localOp.p = path.slice(2);
       noteMutator(note, localOp);
 

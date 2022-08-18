@@ -76,13 +76,13 @@ export default class MeasureView extends Component<IProps, {}> {
   }
 
   getChildContext() {
-    let { layout } = this.props;
-    let originYByPartAndStaff = mapValues(layout.originY, layouts =>
+    const { layout } = this.props;
+    const originYByPartAndStaff = mapValues(layout.originY, (layouts) =>
       this.extractOrigins(layouts),
     );
     let bottom = MAX_SAFE_INTEGER;
     let top = 0;
-    forEach(layout.originY, origins => {
+    forEach(layout.originY, (origins) => {
       forEach(origins, (origin, staff) => {
         if (!staff) {
           return;
@@ -103,7 +103,7 @@ export default class MeasureView extends Component<IProps, {}> {
   }
 
   extractOrigins(layouts: number[]) {
-    return map(layouts, layout => this.invert(layout));
+    return map(layouts, (layout) => this.invert(layout));
   }
 
   invert(y: number) {

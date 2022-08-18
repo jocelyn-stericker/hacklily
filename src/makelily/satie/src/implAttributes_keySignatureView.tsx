@@ -62,23 +62,23 @@ class KeyView extends Component<{ spec: Key; clef: Clef }, {}> {
    */
   getAccidentals(): Accidental[] {
     // TODO: this is expensive -- compute in attributes!
-    let spec = this.props.spec;
-    let clef = this.props.clef;
-    let widths = keyWidths(spec);
-    let positions: number[] = [];
+    const spec = this.props.spec;
+    const clef = this.props.clef;
+    const widths = keyWidths(spec);
+    const positions: number[] = [];
     let x = 0;
 
     if (spec.fifths) {
-      let accCount = Math.min(7, Math.abs(spec.fifths));
-      let idxes = times(
+      const accCount = Math.min(7, Math.abs(spec.fifths));
+      const idxes = times(
         accCount,
-        i => (i + Math.max(0, Math.abs(spec.fifths) - 7)) % 7,
+        (i) => (i + Math.max(0, Math.abs(spec.fifths) - 7)) % 7,
       );
       for (let i = 0; i < idxes.length; ++i) {
         positions.push(x);
         x += widths[idxes[i]];
       }
-      return map(idxes, i =>
+      return map(idxes, (i) =>
         makeAccidentalFromSharps(idxes, i, spec.fifths >= 0),
       );
     }
@@ -90,15 +90,15 @@ class KeyView extends Component<{ spec: Key; clef: Clef }, {}> {
 
     if (spec.keySteps) {
       return map(spec.keySteps, (keyStep, idx) => {
-        let keyAlters = spec.keyAlters[idx];
-        let hasOctave = spec.keyOctaves && spec.keyOctaves[idx];
+        const keyAlters = spec.keyAlters[idx];
+        const hasOctave = spec.keyOctaves && spec.keyOctaves[idx];
         let octave = hasOctave ? spec.keyOctaves[idx].octave : null;
         if (octave === null) {
           while (lineForClef_(keyStep, octave, this.props.clef) < 2) {
             ++octave;
           }
         }
-        let line = lineForClef_(keyStep, octave, this.props.clef);
+        const line = lineForClef_(keyStep, octave, this.props.clef);
         let accidental: MxmlAccidental = null;
         switch (keyAlters) {
           case "-2":
@@ -169,7 +169,7 @@ class KeyView extends Component<{ spec: Key; clef: Clef }, {}> {
           throw new Error("Impossible!");
       }
 
-      let line = (sharp ? sharps : flats)[standardClef(clef)][idxes[i]];
+      const line = (sharp ? sharps : flats)[standardClef(clef)][idxes[i]];
 
       return {
         accidental: accidental,

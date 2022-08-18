@@ -58,7 +58,7 @@ export default class PartSymbolView extends Component<IProps, {}> {
     const height = this.context.systemBottom - this.context.systemTop;
     const bottom = this.context.systemBottom;
 
-    let sym = this.getSymbol();
+    const sym = this.getSymbol();
     return (
       <g>
         {sym}

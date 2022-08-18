@@ -27,7 +27,7 @@ import * as fs from "fs";
 import SongImpl from "../engine_songImpl";
 
 function readFile(file: string, onEnd: (s: string) => void) {
-  fs.readFile(file, "utf8", function(err, data) {
+  fs.readFile(file, "utf8", function (err, data) {
     if (err) {
       throw err;
     }
@@ -44,10 +44,10 @@ function mkdirp(path: string) {
   }
 }
 
-describe("Import/export tests", function() {
+describe("Import/export tests", function () {
   const lilyRoot = "vendor/lilypond-regression";
   const lilyFiles = fs.readdirSync(lilyRoot); // needs to be setup before leaving 'describe'
-  forEach(lilyFiles, file => {
+  forEach(lilyFiles, (file) => {
     if (file.match(/[0-9]..\.xml$/)) {
       testFile(lilyRoot, file);
     }
@@ -55,7 +55,7 @@ describe("Import/export tests", function() {
 
   const satieRoot = "vendor/satie-regression";
   const satieFiles = fs.readdirSync(satieRoot); // needs to be setup before leaving 'describe'
-  forEach(satieFiles, file => {
+  forEach(satieFiles, (file) => {
     if (file.match(/\.xml$/)) {
       testFile(satieRoot, file);
     }
@@ -69,9 +69,9 @@ describe("Import/export tests", function() {
       "-",
       "_",
     )}`.replace(".xml", ".svg");
-    it(file, function(done) {
-      readFile(root + "/" + file, function(musicXML) {
-        let song = new SongImpl({
+    it(file, function (done) {
+      readFile(root + "/" + file, function (musicXML) {
+        const song = new SongImpl({
           baseSrc: musicXML,
 
           onError: done,
@@ -93,15 +93,11 @@ describe("Import/export tests", function() {
               fs.writeFile("rendertest/out/" + outname, page1Svg);
 
               if (!process.env.SKIP_DTD_VALIDATION) {
-                let mxmlOut = song.toMusicXML();
-                let stdout: string;
-                let stderr: string;
-                let error: string;
-
-                let env = Object.create(process.env);
+                const mxmlOut = song.toMusicXML();
+                const env = Object.create(process.env);
                 env.XML_CATALOG_FILES = "./vendor/musicxml-dtd/catalog.xml";
                 fs.writeFile("rendertest/out/" + outname + ".xml", mxmlOut);
-                let proc = child_process.spawnSync(
+                const proc = child_process.spawnSync(
                   "xmllint",
                   ["--valid", "--noout", "--nonet", "-"],
                   {
@@ -109,9 +105,9 @@ describe("Import/export tests", function() {
                     env: env,
                   },
                 );
-                stdout = String(proc.stdout);
-                stderr = String(proc.stderr);
-                error = "" + proc.error;
+                const stdout = String(proc.stdout);
+                const stderr = String(proc.stderr);
+                const error = "" + proc.error;
                 if (stdout || stderr) {
                   done(new Error(stderr || stdout || error));
                 } else {

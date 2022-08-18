@@ -37,10 +37,10 @@ import { ValidationCursor, LayoutCursor } from "../private_cursor";
 import { createFakeStaffSegment, createFakeVoiceSegment } from "./etestutil";
 import validate from "../engine_processors_validate";
 
-describe("[engine.ts]", function() {
-  describe("Options.ILineBounds.calculate", function() {
-    it("works", function() {
-      let spec1: Print = {
+describe("[engine.ts]", function () {
+  describe("Options.ILineBounds.calculate", function () {
+    it("works", function () {
+      const spec1: Print = {
         measureNumbering: {
           data: "system",
         },
@@ -106,11 +106,11 @@ describe("[engine.ts]", function() {
       });
     });
   });
-  describe("validate", function() {
-    it("creates attributes and barline if missing", function() {
+  describe("validate", function () {
+    it("creates attributes and barline if missing", function () {
       let calledCount = 0;
 
-      let createAttributesChordFactory: IFactory = {
+      const createAttributesChordFactory: IFactory = {
         create: (_modelType: Type): IModel => {
           ++calledCount;
           return {
@@ -120,14 +120,14 @@ describe("[engine.ts]", function() {
             refresh: (_cursor: ValidationCursor) => {
               /* pass */
             },
-            getLayout: function(_cursor: LayoutCursor): ILayout {
+            getLayout: function (_cursor: LayoutCursor): ILayout {
               throw "not reached";
             },
             calcWidth: () => 0,
           };
         },
         modelHasType(model: IModel, ...modelTypes: Type[]): boolean {
-          let modelType = modelTypes[0];
+          const modelType = modelTypes[0];
           if (model.divCount === 0) {
             return modelType === Type.Attributes;
           } else if ("length" in model) {
@@ -136,7 +136,7 @@ describe("[engine.ts]", function() {
           return modelType === Type.Spacer;
         },
         search: (models: IModel[], idx: number, modelType: Type): IModel[] => {
-          let model = models[idx];
+          const model = models[idx];
           if (model.divCount === 0) {
             if (modelType === Type.Attributes) {
               return [model];
@@ -155,9 +155,9 @@ describe("[engine.ts]", function() {
         },
       } as any;
 
-      let padding = 20;
+      const padding = 20;
 
-      let segments = [
+      const segments = [
         {
           staves: [null, createFakeStaffSegment(4, 4, 1)],
           voices: [
@@ -168,7 +168,7 @@ describe("[engine.ts]", function() {
         },
       ];
 
-      let contextOptions: ILayoutOptions = {
+      const contextOptions: ILayoutOptions = {
         document: {
           modelHasType: createAttributesChordFactory.modelHasType,
           __fakeDocument: true,
@@ -180,7 +180,7 @@ describe("[engine.ts]", function() {
         singleLineMode: false,
 
         attributes: null,
-        measures: map(segments, function(segment, idx) {
+        measures: map(segments, function (segment, idx) {
           return {
             idx: idx,
             uuid: 91015 + idx,

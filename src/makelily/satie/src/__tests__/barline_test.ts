@@ -28,11 +28,11 @@ import { IModel, Type } from "../document";
 
 import Factory from "../engine_factory";
 
-describe("[barline.ts]", function() {
-  describe("BarlineModel", function() {
-    let factory = new Factory([BarlineModel]);
+describe("[barline.ts]", function () {
+  describe("BarlineModel", function () {
+    const factory = new Factory([BarlineModel]);
     let barline: IModel;
-    it("can be created", function() {
+    it("can be created", function () {
       barline = factory.create(Type.Barline);
       expect(!!barline).to.be.true;
     });

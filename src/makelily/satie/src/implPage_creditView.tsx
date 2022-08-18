@@ -32,8 +32,10 @@ import invariant from "invariant";
 import { cssSizeToTenths } from "./private_renderUtil";
 import { ITextMixin, Prototype as TextMixin } from "./private_views_textMixin";
 
-export default class CreditView extends Component<Credit, {}>
-  implements ITextMixin {
+export default class CreditView
+  extends Component<Credit, {}>
+  implements ITextMixin
+{
   static contextTypes = {
     originY: PropTypes.number.isRequired,
     scale40: PropTypes.number.isRequired,
@@ -54,9 +56,9 @@ export default class CreditView extends Component<Credit, {}>
   getDY: (words: CreditWords | Words, initY: number, lineNum: number) => number;
 
   render(): any {
-    let image = this.props.creditImage;
-    let words = this.props.creditWords;
-    let scale40 = this.context.scale40;
+    const image = this.props.creditImage;
+    const words = this.props.creditWords;
+    const scale40 = this.context.scale40;
     invariant(!image, "Not implemented"); // There is either words or image, but not both
     invariant(!!words, "Unknown component type");
 
@@ -70,9 +72,9 @@ export default class CreditView extends Component<Credit, {}>
     return (
       <text x={initX} y={initY}>
         {map(words, (words, idx) => {
-          let isItalic = words.fontStyle === NormalItalic.Italic;
-          let isBold = words.fontWeight === NormalBold.Bold;
-          let fontSize = cssSizeToTenths(scale40, words.fontSize);
+          const isItalic = words.fontStyle === NormalItalic.Italic;
+          const isBold = words.fontWeight === NormalBold.Bold;
+          const fontSize = cssSizeToTenths(scale40, words.fontSize);
           return map(words.words.split("\n"), (line, lineNum) => (
             <tspan
               alignmentBaseline="hanging"

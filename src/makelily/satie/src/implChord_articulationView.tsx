@@ -47,7 +47,7 @@ export default class Articulation extends Component<IProps, {}> {
 
   render() {
     const model = this.props.articulation;
-    let children: ReactElement<any>[] = [];
+    const children: ReactElement<any>[] = [];
     // Articulations not in MusicXML:
     // "articAccentStaccatoAbove": "U+E4B0",
     // "articAccentStaccatoBelow": "U+E4B1",
@@ -69,14 +69,14 @@ export default class Articulation extends Component<IProps, {}> {
     // "caesuraShort": "U+E4D3",
     // "caesuraThick": "U+E4D2",
 
-    let append = (
+    const append = (
       artType: MXMLArticulation,
       name: string,
       directioned = true,
     ) => {
-      let printStyle = artType as PrintStyle;
-      let placement = artType as Placement;
-      let direction = (function() {
+      const printStyle = artType as PrintStyle;
+      const placement = artType as Placement;
+      const direction = (function () {
         if (!directioned) {
           return "";
         }

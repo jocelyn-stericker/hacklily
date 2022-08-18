@@ -69,14 +69,14 @@ export function createAttributesSnapshot({
   staff,
   measure,
 }: IAttributesSnapshotSpec) {
-  let currentClefs = current.clefs || [];
-  let currentTimes = current.times || [];
-  let currentTransposes = current.transposes || [];
-  let currentKS = current.keySignatures || [];
+  const currentClefs = current.clefs || [];
+  const currentTimes = current.times || [];
+  const currentTransposes = current.transposes || [];
+  const currentKS = current.keySignatures || [];
 
-  let staffDetails: StaffDetails[] = [];
-  let beforeDetails = before.staffDetails || [];
-  let currentDetails = current.staffDetails || [];
+  const staffDetails: StaffDetails[] = [];
+  const beforeDetails = before.staffDetails || [];
+  const currentDetails = current.staffDetails || [];
   for (let i = 0; i < beforeDetails.length || i < currentDetails.length; ++i) {
     staffDetails[i] = createStaffDetailsSnapshot(
       currentDetails[i] || {},
@@ -84,18 +84,18 @@ export function createAttributesSnapshot({
     );
   }
 
-  let clefs: Clef[] = [];
-  let beforeClefs = before.clefs || [];
+  const clefs: Clef[] = [];
+  const beforeClefs = before.clefs || [];
   for (let i = 0; i < beforeClefs.length || i < currentClefs.length; ++i) {
     clefs[i] = currentClefs[i] || beforeClefs[i];
   }
-  let times: Time[] = [];
-  let beforeTimes = before.times || [];
+  const times: Time[] = [];
+  const beforeTimes = before.times || [];
   for (let i = 0; i < beforeTimes.length || i < currentTimes.length; ++i) {
     times[i] = currentTimes[i] || beforeTimes[i];
   }
-  let transposes: Transpose[] = [];
-  let beforeTransposes = before.transposes || [];
+  const transposes: Transpose[] = [];
+  const beforeTransposes = before.transposes || [];
   for (
     let i = 0;
     i < beforeTransposes.length || i < currentTransposes.length;
@@ -103,13 +103,13 @@ export function createAttributesSnapshot({
   ) {
     transposes[i] = currentTransposes[i] || beforeTransposes[i];
   }
-  let keySignatures: Key[] = [];
-  let beforeKS = before.keySignatures || [];
+  const keySignatures: Key[] = [];
+  const beforeKS = before.keySignatures || [];
   for (let i = 0; i < beforeKS.length || i < currentKS.length; ++i) {
     keySignatures[i] = currentKS[i] || beforeKS[i];
   }
 
-  let snapshot: IAttributesSnapshot = {
+  const snapshot: IAttributesSnapshot = {
     measure,
     divisions: current.divisions || before.divisions,
     partSymbol: current.partSymbol || before.partSymbol,
@@ -159,7 +159,7 @@ function createMeasureStyleSnapshot(
   style: MeasureStyle & { multipleRestInitiatedHere: boolean },
 ) {
   let multipleRestInitiatedHere: boolean;
-  forEach(current.measureStyles, currentMeasureStyle => {
+  forEach(current.measureStyles, (currentMeasureStyle) => {
     if (currentMeasureStyle.slash) {
       if (currentMeasureStyle.slash.type === StartStop.Stop) {
         delete style.slash;
@@ -196,7 +196,7 @@ function createMeasureStyleSnapshot(
   }
 
   if (style.multipleRest && !multipleRestInitiatedHere) {
-    let { count, useSymbols } = style.multipleRest;
+    const { count, useSymbols } = style.multipleRest;
     if (count - 1) {
       style.multipleRest = {
         count: count - 1,

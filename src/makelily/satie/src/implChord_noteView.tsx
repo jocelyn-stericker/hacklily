@@ -57,11 +57,11 @@ export default class NoteView extends Component<IProps, {}> {
     }
     const defaultX = this.props.defaultX || spec.defaultX;
 
-    let noteheadGlyph = this.props.noteheadGlyph;
-    let right = getRight(noteheadGlyph);
-    let left = getLeft(noteheadGlyph);
+    const noteheadGlyph = this.props.noteheadGlyph;
+    const right = getRight(noteheadGlyph);
+    const left = getLeft(noteheadGlyph);
 
-    let hasParens = spec.notehead && spec.notehead.parentheses;
+    const hasParens = spec.notehead && spec.notehead.parentheses;
 
     return (
       <g>

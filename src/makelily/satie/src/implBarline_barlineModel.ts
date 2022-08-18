@@ -102,7 +102,7 @@ class BarlineModel implements IBarlineModel {
   }
 
   toJSON() {
-    let {
+    const {
       _class,
       segno,
       coda,
@@ -136,10 +136,10 @@ class BarlineModel implements IBarlineModel {
 
   refresh(cursor: IReadOnlyValidationCursor): void {
     if (!this.barStyle) {
-      cursor.patch(staff =>
-        staff.barline(barline =>
+      cursor.patch((staff) =>
+        staff.barline((barline) =>
           barline.barStyle(
-            buildBarStyle(barStyle =>
+            buildBarStyle((barStyle) =>
               barStyle.data(BarStyleType.Regular).color("black"),
             ),
           ),
@@ -147,12 +147,12 @@ class BarlineModel implements IBarlineModel {
       );
     }
     if (!isFinite(this.barStyle.data) || this.barStyle.data === null) {
-      let lastBarlineInSegment = !some(
+      const lastBarlineInSegment = !some(
         cursor.segmentInstance.slice(cursor.segmentPosition + 1),
-        model => cursor.factory.modelHasType(model, Type.Barline),
+        (model) => cursor.factory.modelHasType(model, Type.Barline),
       );
-      cursor.patch(staff =>
-        staff.barline(barline =>
+      cursor.patch((staff) =>
+        staff.barline((barline) =>
           barline.barStyle({
             data:
               lastBarlineInSegment && cursor.measureIsLast
@@ -163,9 +163,9 @@ class BarlineModel implements IBarlineModel {
       );
     }
     if (!this.barStyle.color) {
-      cursor.patch(staff =>
-        staff.barline(barline =>
-          barline.barStyle(barStyle => barStyle.color("black")),
+      cursor.patch((staff) =>
+        staff.barline((barline) =>
+          barline.barStyle((barStyle) => barStyle.color("black")),
         ),
       );
     }
@@ -194,8 +194,8 @@ class BarlineModel implements IBarlineModel {
     constructor(origModel: BarlineModel, cursor: LayoutCursor) {
       this.division = cursor.segmentDivision;
       this.x = cursor.segmentX;
-      let attributes = cursor.staffAttributes;
-      let { measureStyle, partSymbol } = attributes;
+      const attributes = cursor.staffAttributes;
+      const { measureStyle, partSymbol } = attributes;
       if (measureStyle.multipleRest && measureStyle.multipleRest.count > 1) {
         // TODO: removing this shows that measures are slightly misplaced
         return;
@@ -218,19 +218,19 @@ class BarlineModel implements IBarlineModel {
       if (cursor.lineTotalBarsOnLine === cursor.lineBarOnLine + 1) {
         // TODO: Figure out a way to get this to work when the attributes on the next
         // line change
-        let nextMeasure =
+        const nextMeasure =
           cursor.document.measures[cursor.measureInstance.idx + 1];
-        let part =
+        const part =
           nextMeasure && nextMeasure.parts[cursor.segmentInstance.part];
-        let segment = part && part.staves[cursor.staffIdx];
+        const segment = part && part.staves[cursor.staffIdx];
         let nextAttributes: Attributes;
         if (segment) {
-          let n = cursor.factory.search(segment, 0, Type.Attributes)[0];
+          const n = cursor.factory.search(segment, 0, Type.Attributes)[0];
           if (n) {
             nextAttributes = n._snapshot;
           }
         }
-        let addWarning =
+        const addWarning =
           nextAttributes &&
           needsWarning(attributes, nextAttributes, cursor.staffIdx);
 
@@ -260,7 +260,7 @@ class BarlineModel implements IBarlineModel {
 
       const barlineSep = bravura.engravingDefaults.barlineSeparation;
 
-      let setLines = (lines: string[]) => {
+      const setLines = (lines: string[]) => {
         let x = 0;
         this.lineStarts = [];
         this.lineWidths = [];

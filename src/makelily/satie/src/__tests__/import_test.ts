@@ -50,7 +50,7 @@ import ScoreHeader from "../engine_scoreHeader";
 
 /*---- samples ----------------------------------------------------------------------------------*/
 
-let helloWorldXML = `<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+const helloWorldXML = `<?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!DOCTYPE score-partwise PUBLIC "-//Recordare//DTD MusicXML 3.0 Partwise//EN"
     "http://www.musicxml.org/dtds/partwise.dtd">
 <score-partwise version="3.0">
@@ -153,7 +153,7 @@ let helloWorldXML = `<?xml version="1.0" encoding="UTF-8" standalone="no"?>
 </score-partwise>
 `;
 
-let lily43eXML = `<?xml version="1.0" encoding="UTF-8"?>
+const lily43eXML = `<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE score-partwise PUBLIC "-//Recordare//DTD MusicXML 1.0 Partwise//EN"
                                 "http://www.musicxml.org/dtds/partwise.dtd">
 <score-partwise>
@@ -521,11 +521,11 @@ let lily43eXML = `<?xml version="1.0" encoding="UTF-8"?>
   </part>
   <!--=========================================================-->
 </score-partwise>`;
-describe("[musicxml/import.ts]", function() {
-  describe("_extractMXMLHeader", function() {
-    it("can parse all header properties", function() {
-      let mxmljson = parseScore(helloWorldXML);
-      let header = _extractMXMLHeader(mxmljson);
+describe("[musicxml/import.ts]", function () {
+  describe("_extractMXMLHeader", function () {
+    it("can parse all header properties", function () {
+      const mxmljson = parseScore(helloWorldXML);
+      const header = _extractMXMLHeader(mxmljson);
 
       expect(header).to.be.an.instanceof(ScoreHeader);
 
@@ -657,9 +657,9 @@ describe("[musicxml/import.ts]", function() {
       expect(header.title).to.eq("Song Title");
     });
   });
-  describe("_extractMXMLPartsAndMeasures", function() {
-    it("parses a basic single-part song", function() {
-      let factory = new Factory([
+  describe("_extractMXMLPartsAndMeasures", function () {
+    it("parses a basic single-part song", function () {
+      const factory = new Factory([
         AttributesExports,
         Chord,
         Print,
@@ -668,8 +668,8 @@ describe("[musicxml/import.ts]", function() {
       ]);
       // does not need spacer
 
-      let mxmljson = parseScore(helloWorldXML);
-      let partsAndMeasures = _extractMXMLPartsAndMeasures(mxmljson, factory);
+      const mxmljson = parseScore(helloWorldXML);
+      const partsAndMeasures = _extractMXMLPartsAndMeasures(mxmljson, factory);
       expect(partsAndMeasures.measures.length).to.eq(1);
       expect(partsAndMeasures.measures[0].parts["P1"].staves[1].length).to.eq(
         4,
@@ -690,8 +690,8 @@ describe("[musicxml/import.ts]", function() {
         1,
       );
     });
-    it("parses multi-voice, multi-staff songs with backup", function() {
-      let factory = new Factory([
+    it("parses multi-voice, multi-staff songs with backup", function () {
+      const factory = new Factory([
         AttributesExports,
         Direction,
         Chord,
@@ -701,13 +701,13 @@ describe("[musicxml/import.ts]", function() {
         Spacer,
       ]);
 
-      let mxmljson = parseScore(lily43eXML);
-      let partsAndMeasures = _extractMXMLPartsAndMeasures(mxmljson, factory);
+      const mxmljson = parseScore(lily43eXML);
+      const partsAndMeasures = _extractMXMLPartsAndMeasures(mxmljson, factory);
       expect(partsAndMeasures.measures.length).to.eq(4);
       expect(partsAndMeasures.parts).to.eql(["P1"]);
 
-      let voices = partsAndMeasures.measures[0].parts["P1"].voices;
-      let staves = partsAndMeasures.measures[0].parts["P1"].staves;
+      const voices = partsAndMeasures.measures[0].parts["P1"].voices;
+      const staves = partsAndMeasures.measures[0].parts["P1"].staves;
       expect(!voices[0]).to.eq(true, "voices are 1-indexed");
       expect(!staves[0]).to.eq(true, "staves are 1-indexed");
       expect(voices.length).to.eq(3);
@@ -719,15 +719,15 @@ describe("[musicxml/import.ts]", function() {
       expect(staves[1].divisions).to.eq(8);
       expect(staves[1].length).to.eq(3);
       expect(staves[2].length).to.eq(3);
-      forEach(staves[1], model => {
-        expect(!some(staves[2], m2 => model === m2));
+      forEach(staves[1], (model) => {
+        expect(!some(staves[2], (m2) => model === m2));
       });
-      forEach(voices[1], model => {
-        expect(!some(voices[2], m2 => model === m2));
+      forEach(voices[1], (model) => {
+        expect(!some(voices[2], (m2) => model === m2));
       });
     });
   });
-  describe("toScore", function() {
+  describe("toScore", function () {
     // todo
   });
 });

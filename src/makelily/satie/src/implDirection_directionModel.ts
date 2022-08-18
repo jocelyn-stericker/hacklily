@@ -79,10 +79,10 @@ class DirectionModel implements IDirectionModel {
   }
 
   refresh(cursor: IReadOnlyValidationCursor): void {
-    forEach(this.directionTypes, type => {
+    forEach(this.directionTypes, (type) => {
       if (type.dynamics && this.placement === AboveBelow.Unspecified) {
-        cursor.patch(staff =>
-          staff.direction(direction => direction.placement(AboveBelow.Below)),
+        cursor.patch((staff) =>
+          staff.direction((direction) => direction.placement(AboveBelow.Below)),
         );
       }
     });
@@ -166,13 +166,13 @@ class DirectionModel implements IDirectionModel {
           model.directionTypes[idx],
         );
         forEach(type.words, (_word, idx) => {
-          let origModel = type.words[idx];
-          let defaults = cursor.header.defaults;
+          const origModel = type.words[idx];
+          const defaults = cursor.header.defaults;
           type.words[idx] = Object.create(origModel);
           type.words[idx].fontSize = type.words[idx].fontSize || "18";
           type.words[idx].defaultX = 0;
           type.words[idx].defaultY = defaultY;
-          let fontBox = getTextBB(
+          const fontBox = getTextBB(
             type.words[idx].fontFamily || "Alegreya",
             type.words[idx].data,
             parseInt(type.words[idx].fontSize, 10),
@@ -180,7 +180,7 @@ class DirectionModel implements IDirectionModel {
           );
           const scale40 =
             (defaults.scaling.millimeters / defaults.scaling.tenths) * 40;
-          let boundingBox: IBoundingRect = <any>type.words[idx];
+          const boundingBox: IBoundingRect = <any>type.words[idx];
 
           // Vertical coordinates are flipped (argh!)
           // We give 10% padding because elements touching isn't ideal.
@@ -195,11 +195,11 @@ class DirectionModel implements IDirectionModel {
           this.boundingBoxes.push(boundingBox);
         });
         if (type.dynamics) {
-          let origDynamics = type.dynamics;
+          const origDynamics = type.dynamics;
           type.dynamics = Object.create(origDynamics);
           type.dynamics.defaultX = 0;
           type.dynamics.defaultY = defaultY;
-          let boundingBox: IBoundingRect = <any>type.dynamics;
+          const boundingBox: IBoundingRect = <any>type.dynamics;
           boundingBox.left = -10;
           boundingBox.right = 30;
           boundingBox.top = -10;
@@ -207,12 +207,12 @@ class DirectionModel implements IDirectionModel {
           this.boundingBoxes.push(boundingBox);
         }
         forEach(type.segnos, (origSegno, idx) => {
-          let segno: Segno = Object.create(origSegno);
+          const segno: Segno = Object.create(origSegno);
           type.segnos[idx] = segno;
           segno.defaultX = segno.defaultX || -30;
           segno.defaultY = segno.defaultY || defaultY;
           segno.color = segno.color || "black";
-          let boundingBox: IBoundingRect = <any>segno;
+          const boundingBox: IBoundingRect = <any>segno;
           boundingBox.right = glyphBoxes["segno"][0] * 10 + 10;
           boundingBox.top = -glyphBoxes["segno"][1] * 10 - 10;
           boundingBox.left = glyphBoxes["segno"][2] * 10 - 10;

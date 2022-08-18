@@ -46,15 +46,15 @@ export default class Beam extends Component<IProps, {}> {
   };
 
   render(): ReactElement<any> {
-    let xLow = this._getX1();
-    let xHigh = this._getX2();
-    let { layout } = this.props;
-    let { tuplet, beamCount, x, direction } = layout;
+    const xLow = this._getX1();
+    const xHigh = this._getX2();
+    const { layout } = this.props;
+    const { tuplet, beamCount, x, direction } = layout;
 
     return (
       <g>
         {map(beamCount, (beams: number, idx: number): any => {
-          return times(beams, beam => {
+          return times(beams, (beam) => {
             let x1: number;
             let x2: number = this._withXOffset(x[idx]);
             if (beamCount[idx - 1] <= beam) {
@@ -173,8 +173,8 @@ export default class Beam extends Component<IProps, {}> {
   }
 
   private _getYVar(incl: number, idx: number, percent: number) {
-    let y1 = this._getY1(incl, idx);
-    let y2 = this._getY2(incl, idx);
+    const y1 = this._getY1(incl, idx);
+    const y2 = this._getY2(incl, idx);
     return (1 - percent) * y1 + percent * y2;
   }
 

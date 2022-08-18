@@ -97,7 +97,7 @@ const BEAMING_PATTERNS: { [key: string]: IChord[] } = {
 export function getBeamingPattern(time: Time, alt?: string) {
   let pattern: IChord[] =
     BEAMING_PATTERNS[getTSString(time) + (alt ? "_" + alt : "")];
-  let factors: { [key: number]: number[] } = {
+  const factors: { [key: number]: number[] } = {
     4: [4, 3, 2, 1],
     8: [12, 8, 4, 3, 2, 1],
     16: [4, 3, 2, 1],
@@ -116,8 +116,8 @@ export function getBeamingPattern(time: Time, alt?: string) {
       },
       0,
     );
-    let ownFactors = factors[time.beatTypes[0]];
-    forEach(ownFactors, factor => {
+    const ownFactors = factors[time.beatTypes[0]];
+    forEach(ownFactors, (factor) => {
       while (beatsToAdd >= factor) {
         pattern = pattern.concat(
           BEAMING_PATTERNS[factor + "/" + time.beatTypes[0]],

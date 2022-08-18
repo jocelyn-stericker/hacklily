@@ -38,18 +38,18 @@ export interface ITextMixin {
   getDY(words: CreditWords | Words, initY: number, lineNum: number): number;
 }
 
-export let Prototype: ITextMixin = {
-  getDX: function(words: CreditWords, initX: number, lineNum: number) {
+export const Prototype: ITextMixin = {
+  getDX: function (words: CreditWords, initX: number, lineNum: number) {
     if (lineNum > 0) {
       return undefined;
     }
-    let x = words.defaultX;
+    const x = words.defaultX;
     if (!isNaN(x)) {
       return x + (words.relativeX || 0) - initX;
     }
     return DEF_SPACING;
   },
-  getDY: function(words: CreditWords, initY: number, lineNum: number) {
+  getDY: function (words: CreditWords, initY: number, lineNum: number) {
     if (lineNum > 0) {
       return (
         V_SPACING +
@@ -65,7 +65,7 @@ export let Prototype: ITextMixin = {
     }
     return 0;
   },
-  getDirection: function(words: CreditWords | Words) {
+  getDirection: function (words: CreditWords | Words) {
     switch (words.dir) {
       case DirectionMode.Lro: // TODO: bidi
       case DirectionMode.Ltr:
@@ -79,7 +79,7 @@ export let Prototype: ITextMixin = {
         return "inherit";
     }
   },
-  getTextAnchor: function(words: CreditWords | Words) {
+  getTextAnchor: function (words: CreditWords | Words) {
     switch (words.halign || words.justify) {
       case LeftCenterRight.Right:
         return "end";
@@ -91,7 +91,7 @@ export let Prototype: ITextMixin = {
         return "inherit";
     }
   },
-  getTextDecoration: function(words: CreditWords | Words) {
+  getTextDecoration: function (words: CreditWords | Words) {
     if (words.underline) {
       return "underline";
     }
@@ -103,13 +103,13 @@ export let Prototype: ITextMixin = {
     }
     return "none";
   },
-  getTransform: function(words: CreditWords | Words) {
+  getTransform: function (words: CreditWords | Words) {
     if (words.rotation) {
       return `rotate(${words.rotation})`;
     }
     return undefined;
   },
-  getX: function(lineNum: number) {
+  getX: function (lineNum: number) {
     if (lineNum > 0) {
       return 10;
     }

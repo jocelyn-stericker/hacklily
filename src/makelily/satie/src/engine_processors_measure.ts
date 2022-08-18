@@ -115,18 +115,18 @@ export function refreshMeasure(spec: IRefreshMeasureOpts): IMeasureLayout {
   // cleanliness is not the output of this function -- it also has been
   // treated by postprocessors. This function sets "x" and uses the clean-state
   // to avoid unnecessary work.
-  let cleanliness =
+  const cleanliness =
     spec.document.cleanlinessTracking.measures[spec.measure.uuid];
-  let oldLayout = cleanliness.layout;
+  const oldLayout = cleanliness.layout;
 
   invariant(
     spec.segments.length >= 1,
     "_processMeasure expects at least one segment.",
   );
 
-  Object.keys(spec.measure.parts).forEach(part => {
+  Object.keys(spec.measure.parts).forEach((part) => {
     cleanliness.x[part] = cleanliness.x[part] || {};
-    spec.measure.parts[part].voices.forEach(voice => {
+    spec.measure.parts[part].voices.forEach((voice) => {
       if (!voice) {
         return;
       }
@@ -143,13 +143,13 @@ export function refreshMeasure(spec: IRefreshMeasureOpts): IMeasureLayout {
   });
 
   const gStaffMeasure: { [key: string]: ISegment } = keyBy(
-    filter(spec.segments, seg => seg.ownerType === "staff"),
-    seg => `${seg.part}_${seg.owner}`,
+    filter(spec.segments, (seg) => seg.ownerType === "staff"),
+    (seg) => `${seg.part}_${seg.owner}`,
   );
 
   const gVoiceMeasure: { [key: string]: ISegment } = keyBy(
-    filter(spec.segments, seg => seg.ownerType === "voice"),
-    seg => `${seg.part}_${seg.owner}`,
+    filter(spec.segments, (seg) => seg.ownerType === "voice"),
+    (seg) => `${seg.part}_${seg.owner}`,
   );
 
   const gStaffLayouts: { [key: string]: ILayout[][] } = {};
@@ -165,7 +165,7 @@ export function refreshMeasure(spec: IRefreshMeasureOpts): IMeasureLayout {
 
   function fixup(operations: IAny[]) {
     const localSegment = vCursor.segmentInstance;
-    const restartRequired = some(operations, op => {
+    const restartRequired = some(operations, (op) => {
       if (op.p[0] === "divisions") {
         return true;
       }
@@ -216,7 +216,7 @@ export function refreshMeasure(spec: IRefreshMeasureOpts): IMeasureLayout {
     spec.fixup(localSegment, operations, restartRequired);
   }
 
-  const gVoiceLayouts = map(gVoiceMeasure, voiceSegment => {
+  const gVoiceLayouts = map(gVoiceMeasure, (voiceSegment) => {
     const { part } = voiceSegment;
     gInitialAttribs[part] = gInitialAttribs[part] || [];
 
@@ -224,7 +224,7 @@ export function refreshMeasure(spec: IRefreshMeasureOpts): IMeasureLayout {
     const staffContexts: { [key: number]: IStaffContext } = {};
     const xPerStaff: { [key: number]: number } = [];
 
-    let measureIsLast = gMeasure.uuid === last(spec.document.measures).uuid;
+    const measureIsLast = gMeasure.uuid === last(spec.document.measures).uuid;
     vCursor = new ValidationCursor({
       ...spec,
       measureInstance: gMeasure,
@@ -351,7 +351,7 @@ export function refreshMeasure(spec: IRefreshMeasureOpts): IMeasureLayout {
       voiceStaves[staffIdx].push(layout);
     }
 
-    let segmentLayout: ILayout[] = [];
+    const segmentLayout: ILayout[] = [];
     for (let i = 0; i < voiceSegment.length; ++i) {
       const model = voiceSegment[i];
 
@@ -389,12 +389,12 @@ export function refreshMeasure(spec: IRefreshMeasureOpts): IMeasureLayout {
       vCursor.staffIdx = staffIdx;
 
       while (staffContexts[staffIdx].division <= vCursor.segmentDivision) {
-        let nextStaffEl =
+        const nextStaffEl =
           gStaffMeasure[`${part}_${staffIdx}`][voiceStaves[staffIdx].length];
 
         // We can mostly ignore priorities here, since except for barlines,
         // staff segments are more important than voice segments.
-        let nextIsBarline = spec.factory.modelHasType(
+        const nextIsBarline = spec.factory.modelHasType(
           nextStaffEl,
           Type.Barline,
         );
@@ -406,7 +406,7 @@ export function refreshMeasure(spec: IRefreshMeasureOpts): IMeasureLayout {
         }
 
         // Process a staff model within a voice context.
-        let catchUp =
+        const catchUp =
           staffContexts[staffIdx].division < vCursor.segmentDivision;
         pushStaffSegment(staffIdx, nextStaffEl, catchUp);
         invariant(
@@ -429,7 +429,7 @@ export function refreshMeasure(spec: IRefreshMeasureOpts): IMeasureLayout {
         model.refresh(vCursor.const());
       }
       if (vCursor.factory.modelHasType(model, Type.Chord)) {
-        forEach(model, note => {
+        forEach(model, (note) => {
           if (note.rest) {
             return;
           }
@@ -500,7 +500,7 @@ export function refreshMeasure(spec: IRefreshMeasureOpts): IMeasureLayout {
           }
           const nidx = parseInt(idx.substr(pIdx + 1), 10);
 
-          let voiceStaff = voiceStaves[nidx];
+          const voiceStaff = voiceStaves[nidx];
           if (!!staff && !!voiceStaff) {
             while (voiceStaff.length < staff.length) {
               pushStaffSegment(nidx, staff[voiceStaff.length], false);
@@ -545,17 +545,20 @@ export function refreshMeasure(spec: IRefreshMeasureOpts): IMeasureLayout {
   // We have a staff layout for every single voice-staff combination.
   // They will be merged, so it doesn't matter which one we pick.
   // Pick the first.
-  const gStaffLayoutsUnique = map(gStaffLayoutsUnkeyed, layouts => layouts[0]);
+  const gStaffLayoutsUnique = map(
+    gStaffLayoutsUnkeyed,
+    (layouts) => layouts[0],
+  );
 
   if (!spec.noAlign) {
     // Calculate and finish applying the master layout.
     // Two passes is always sufficient.
-    let masterLayout = reduce(gAllLayouts, mergeSegmentsInPlace, []);
+    const masterLayout = reduce(gAllLayouts, mergeSegmentsInPlace, []);
     // Avoid lining up different divisions
     reduce(
       masterLayout,
       ({ prevDivision, min }: ISpreadMemo, layout: ICombinedLayout) => {
-        let newMin = layout.x;
+        const newMin = layout.x;
         if (
           min >= layout.x &&
           layout.division !== prevDivision &&
@@ -682,15 +685,15 @@ export function layoutMeasure({
   lineCount,
   attributes,
 }: IMeasureLayoutOptions): IMeasureLayout {
-  const parts = map(scoreParts(header.partList), part => part.id);
+  const parts = map(scoreParts(header.partList), (part) => part.id);
   const staves = flatten(
-    map(parts, partId => measure.parts[partId].staves),
+    map(parts, (partId) => measure.parts[partId].staves),
   ) as ISegment[];
   const voices = flatten(
-    map(parts, partId => measure.parts[partId].voices),
+    map(parts, (partId) => measure.parts[partId].voices),
   ) as ISegment[];
 
-  const segments = filter(voices.concat(staves), s => !!s);
+  const segments = filter(voices.concat(staves), (s) => !!s);
 
   const status = refreshMeasure({
     document,

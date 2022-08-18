@@ -35,15 +35,15 @@ function attributes(
   _bounds: ILineBounds,
   measures: IMeasureLayout[],
 ): IMeasureLayout[] {
-  let attributesByPart: { [part: string]: ILayout } = {};
-  let originXByPart: { [part: string]: number } = {};
+  const attributesByPart: { [part: string]: ILayout } = {};
+  const originXByPart: { [part: string]: number } = {};
   let measureStartX = 0;
-  let targetsByPart: { [part: string]: number[] } = {};
-  let isBarlineByPart: { [part: string]: boolean[] } = {};
+  const targetsByPart: { [part: string]: number[] } = {};
+  const isBarlineByPart: { [part: string]: boolean[] } = {};
 
-  forEach(measures, measure => {
-    forEach(measure.elements, elements => {
-      forEach(elements, element => {
+  forEach(measures, (measure) => {
+    forEach(measure.elements, (elements) => {
+      forEach(elements, (element) => {
         if (!element.model) {
           return;
         }
@@ -51,7 +51,7 @@ function attributes(
           element.renderClass === Type.Barline ||
           element.renderClass === Type.Chord
         ) {
-          let partKey = element.part + "_" + element.model.staffIdx;
+          const partKey = element.part + "_" + element.model.staffIdx;
           if (!element.model.staffIdx) {
             console.warn("Missing staffIdx", element.model);
           }
@@ -59,10 +59,10 @@ function attributes(
             targetsByPart[partKey] = [];
             isBarlineByPart[partKey] = [];
           }
-          let targets = targetsByPart[partKey];
-          let x = element.x + measureStartX;
-          let index = sortedIndex(targets, x);
-          let isBarline = element.renderClass === Type.Barline;
+          const targets = targetsByPart[partKey];
+          const x = element.x + measureStartX;
+          const index = sortedIndex(targets, x);
+          const isBarline = element.renderClass === Type.Barline;
           if (targets[index] === x) {
             isBarlineByPart[partKey][index] =
               isBarlineByPart[partKey][index] || isBarline;
@@ -78,24 +78,24 @@ function attributes(
 
   measureStartX = 0;
 
-  forEach(measures, measure => {
-    forEach(measure.elements, elements => {
-      forEach(elements, element => {
+  forEach(measures, (measure) => {
+    forEach(measure.elements, (elements) => {
+      forEach(elements, (element) => {
         if (!element.model) {
           return;
         }
-        let partKey = element.part + "_" + element.model.staffIdx;
+        const partKey = element.part + "_" + element.model.staffIdx;
         if (element.renderClass === Type.Attributes && element.model) {
           // Calculate the width for the staff lines in the previous attributes element.
           {
-            let targets = targetsByPart[partKey] || [];
+            const targets = targetsByPart[partKey] || [];
             let targetIdx = sortedIndex(targets, element.x + measureStartX) - 1;
-            let targetIsBarline = isBarlineByPart[partKey][targetIdx];
+            const targetIsBarline = isBarlineByPart[partKey][targetIdx];
             if (!targetIsBarline) {
               targetIdx++;
             }
             if (attributesByPart[partKey]) {
-              let target = targets[targetIdx];
+              const target = targets[targetIdx];
               (<any>attributesByPart[partKey]).staffWidth =
                 target - originXByPart[partKey];
             }
@@ -107,16 +107,16 @@ function attributes(
           if (!attributesByPart[partKey]) {
             shouldSplit = true;
           } else {
-            let oldAttributes: Attributes = attributesByPart[partKey]
+            const oldAttributes: Attributes = attributesByPart[partKey]
               .model as any;
-            let newAttributes: Attributes = element.model as any;
+            const newAttributes: Attributes = element.model as any;
             shouldSplit = some(
               oldAttributes.staffDetails,
               (details, detailIndex) => {
                 if (!details) {
                   return false;
                 }
-                let newDetails = newAttributes.staffDetails[detailIndex];
+                const newDetails = newAttributes.staffDetails[detailIndex];
                 return details.staffLines !== newDetails.staffLines;
               },
             );
@@ -124,10 +124,11 @@ function attributes(
 
           if (shouldSplit) {
             attributesByPart[partKey] = element;
-            let targets = targetsByPart[partKey] || [];
-            let targetIdx = sortedIndex(targets, element.x + measureStartX) - 1;
-            let attrTarget = targets[targetIdx] || 0;
-            let target = targets[targetIdx] || 0;
+            const targets = targetsByPart[partKey] || [];
+            const targetIdx =
+              sortedIndex(targets, element.x + measureStartX) - 1;
+            const attrTarget = targets[targetIdx] || 0;
+            const target = targets[targetIdx] || 0;
             originXByPart[partKey] = target;
             (<any>element).staffLinesOffsetX =
               element.x + measureStartX - target - (target - attrTarget);

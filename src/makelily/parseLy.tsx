@@ -68,10 +68,7 @@ export function parseClef(clefLy: string): Clef {
 
   return buildClef(
     (clef: IClefBuilder): IClefBuilder =>
-      clef
-        .clefOctaveChange(clefOctaveChange)
-        .line(line)
-        .sign(sign),
+      clef.clefOctaveChange(clefOctaveChange).line(line).sign(sign),
   );
 }
 
@@ -97,10 +94,7 @@ const roots: string[] = [
 ];
 
 export function parseKeySig(keyLy: string): Key {
-  const root: string = keyLy
-    .toLowerCase()
-    .trim()
-    .split(" ")[0];
+  const root: string = keyLy.toLowerCase().trim().split(" ")[0];
   const rootIdx: number = roots.indexOf(root);
   let fifths: number = 0;
   let mode: string = "major";

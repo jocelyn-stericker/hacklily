@@ -16,7 +16,8 @@
  * along with Satie.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-export const VERSION = process.env.SATIE_VERSION || "";
+export const VERSION =
+  (typeof process !== "undefined" && process.env.SATIE_VERSION) || "";
 
 import SongImpl from "./engine_songImpl";
 import { ISongClass } from "./document";

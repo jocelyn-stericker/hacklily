@@ -62,20 +62,20 @@ export default class DivisionOverflowException {
     this.maxDiv = maxDiv;
     this.oldParts = {
       P1: {
-        voices: measure.parts["P1"].voices.map(segment => {
+        voices: measure.parts["P1"].voices.map((segment) => {
           if (!segment) {
             return null;
           }
-          let split = getSplit(segment, maxDiv, true);
-          let ov = <any>segment.slice(0, split);
+          const split = getSplit(segment, maxDiv, true);
+          const ov = <any>segment.slice(0, split);
           return ov;
         }),
-        staves: measure.parts["P1"].staves.map(segment => {
+        staves: measure.parts["P1"].staves.map((segment) => {
           if (!segment) {
             return null;
           }
-          let split = getSplit(segment, maxDiv, false);
-          let os = <any>segment.slice(0, split);
+          const split = getSplit(segment, maxDiv, false);
+          const os = <any>segment.slice(0, split);
 
           return os.filter((item: any) => item._class !== "Barline");
         }),
@@ -83,20 +83,20 @@ export default class DivisionOverflowException {
     };
     this.newParts = {
       P1: {
-        voices: measure.parts["P1"].voices.map(segment => {
+        voices: measure.parts["P1"].voices.map((segment) => {
           if (!segment) {
             return null;
           }
-          let split = getSplit(segment, maxDiv, true);
-          let ov = <any>segment.slice(split);
+          const split = getSplit(segment, maxDiv, true);
+          const ov = <any>segment.slice(split);
           return ov;
         }),
-        staves: measure.parts["P1"].staves.map(segment => {
+        staves: measure.parts["P1"].staves.map((segment) => {
           if (!segment) {
             return null;
           }
-          let split = getSplit(segment, maxDiv, false);
-          let os = <any>segment.slice(split);
+          const split = getSplit(segment, maxDiv, false);
+          const os = <any>segment.slice(split);
           return os;
         }),
       },

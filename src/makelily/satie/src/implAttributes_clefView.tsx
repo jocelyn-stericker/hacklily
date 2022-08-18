@@ -46,38 +46,38 @@ export default class ClefView extends Component<
       return null;
     }
 
-    let clefX = spec.defaultX + (spec.relativeX || 0);
-    let clefY =
+    const clefX = spec.defaultX + (spec.relativeX || 0);
+    const clefY =
       (this.context.originY || 0) -
       (spec.defaultY + (spec.relativeY || 0) + (this.renderedLine() - 3) * 10);
-    let clefSign = this.sign();
+    const clefSign = this.sign();
 
     if (!clefSign) {
       return null;
     }
 
-    let clefGlyph = (
+    const clefGlyph = (
       <Glyph fill={spec.color} glyphName={clefSign} x={clefX} y={clefY} />
     );
 
-    let clefOctaveChange = parseInt(spec.clefOctaveChange, 10);
-    let clefDecorations: any[] = [];
+    const clefOctaveChange = parseInt(spec.clefOctaveChange, 10);
+    const clefDecorations: any[] = [];
 
-    let clefSignBox = bboxes[clefSign];
+    const clefSignBox = bboxes[clefSign];
     let left = clefSignBox[0];
     let top = clefSignBox[1];
     let right = clefSignBox[2];
     let bottom = clefSignBox[3]; // The linter doesn't like destructuring yet :(
 
     // We want it to actually touch, not just be outside the bbox
-    let bScalingFactor = spec.sign.toUpperCase() === "F" ? 0.7 : 1;
-    let topLeftOffset = spec.sign.toUpperCase() === "G" ? left * 2 : 0;
+    const bScalingFactor = spec.sign.toUpperCase() === "F" ? 0.7 : 1;
+    const topLeftOffset = spec.sign.toUpperCase() === "G" ? left * 2 : 0;
     top = -top * 10 + clefY;
     bottom = -bottom * 10 * bScalingFactor + clefY;
     left = left * 10 + clefX;
     right = right * 10 + clefX;
 
-    let decorativeX = (left + right) / 2;
+    const decorativeX = (left + right) / 2;
     if (clefOctaveChange === 2) {
       clefDecorations.push(
         <Glyph

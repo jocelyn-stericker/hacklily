@@ -50,11 +50,11 @@ export default class Glyph extends Component<IProps, {}> {
   };
 
   render(): JSX.Element {
-    let px = this.props.x;
-    let py = this.props.y;
+    const px = this.props.x;
+    const py = this.props.y;
 
     if (this.context.renderTarget === "svg-export") {
-      let pathData = toPathData(
+      const pathData = toPathData(
         "Bravura",
         getGlyphCode(this.props.glyphName),
         px,
@@ -64,7 +64,7 @@ export default class Glyph extends Component<IProps, {}> {
       return <path d={pathData} />;
     }
 
-    let text = (
+    const text = (
       <text
         className="mn_"
         fill={this.props.fill}

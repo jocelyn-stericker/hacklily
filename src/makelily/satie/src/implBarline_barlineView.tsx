@@ -67,7 +67,7 @@ export default class BarlineView extends Component<
     if (
       (layout.partSymbol && layout.partSymbol.type !== PartSymbolType.None) ||
       (layout.partGroups &&
-        some(layout.partGroups, group => group.groupBarline))
+        some(layout.partGroups, (group) => group.groupBarline))
     ) {
       yTop = this.context.systemTop;
       yBottom = this.context.systemBottom;

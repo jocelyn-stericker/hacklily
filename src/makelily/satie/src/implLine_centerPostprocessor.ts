@@ -35,20 +35,20 @@ function center(
   bounds: ILineBounds,
   measures: IMeasureLayout[],
 ): IMeasureLayout[] {
-  forEach(measures, function(measure, measureIdx) {
-    let maxIdx = max(map(measure.elements, el => el.length));
-    times(maxIdx, function(j) {
+  forEach(measures, function (measure, measureIdx) {
+    const maxIdx = max(map(measure.elements, (el) => el.length));
+    times(maxIdx, function (j) {
       for (let i = 0; i < measure.elements.length; ++i) {
         if (measure.elements[i][j].expandPolicy === "centered") {
-          let intrinsicWidth = measure.elements[i][j].renderedWidth;
+          const intrinsicWidth = measure.elements[i][j].renderedWidth;
           invariant(
             isFinite(intrinsicWidth),
             "Intrinsic width must be set on centered items",
           );
           let measureSpaceRemaining: number;
-          let attribIdx = findIndex(
+          const attribIdx = findIndex(
             measure.elements[0],
-            el => el.renderClass === Type.Attributes && el.renderedWidth > 0,
+            (el) => el.renderClass === Type.Attributes && el.renderedWidth > 0,
           );
           let base = 0;
           if (attribIdx !== -1 && attribIdx < j) {

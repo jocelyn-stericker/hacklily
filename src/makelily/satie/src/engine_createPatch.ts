@@ -146,17 +146,20 @@ function moreImportant(type: Type, model: IModel, doc: Document) {
   return false;
 }
 
-export class StaffBuilder {
-  private _segment: ISegment;
-  private _patches: IAny[] = [];
-  private _document: Document;
-  private _idx: number;
+export class BaseBuilder {
+  protected _segment: ISegment;
+  protected _patches: IAny[] = [];
+  protected _document: Document;
+  protected _idx: number;
+}
 
+export class StaffBuilder extends BaseBuilder {
   get patches(): IAny[] {
     return this._patches.slice();
   }
 
   constructor(segment: ISegment, document: Document, idx?: number) {
+    super();
     this._segment = segment;
     this._document = document;
     this._idx = idx;
@@ -180,8 +183,8 @@ export class StaffBuilder {
         (div === currDiv + this._segment[i].divCount &&
           moreImportant(type, this._segment[i], this._document))
       ) {
-        let start = currDiv;
-        let end = currDiv + this._segment[i].divCount;
+        const start = currDiv;
+        const end = currDiv + this._segment[i].divCount;
         if (
           div === start &&
           moreImportant(type, this._segment[i], this._document)
@@ -190,8 +193,8 @@ export class StaffBuilder {
         } else if (div === end) {
           return this.at(i + 1);
         } else {
-          let s1 = div - start;
-          let s2 = end - div;
+          const s1 = div - start;
+          const s2 = end - div;
           return this.at(i)
             .setDivCount(s1)
             .next()
@@ -201,13 +204,11 @@ export class StaffBuilder {
       }
       currDiv += this._segment[i].divCount;
     }
-    let diff = div - currDiv;
+    const diff = div - currDiv;
     if (diff) {
       // Note: we should enforce this to not be possible, since the staff segment should
       // always be full.
-      return this.at(this._segment.length)
-        .insertSpacer(diff)
-        .next();
+      return this.at(this._segment.length).insertSpacer(diff).next();
     }
     return this.at(this._segment.length);
   }
@@ -223,7 +224,7 @@ export class StaffBuilder {
   }
 
   barline(builder: (build: IBarlineBuilder) => IBarlineBuilder): this {
-    let model = this._segment[this._idx] as any;
+    const model = this._segment[this._idx] as any;
     invariant(model, "no such model");
     invariant(
       this._document.modelHasType(model, Type.Barline),
@@ -236,8 +237,8 @@ export class StaffBuilder {
   }
 
   insertBarline(builder: (build: IBarlineBuilder) => IBarlineBuilder): this {
-    let li = buildBarline(builder);
-    let p = [this._idx];
+    const li = buildBarline(builder);
+    const p = [this._idx];
     this._patches = this._patches.concat({ li, p });
     return this;
   }
@@ -245,7 +246,7 @@ export class StaffBuilder {
   attributes(
     builder: (builder: IAttributesBuilder) => IAttributesBuilder,
   ): this {
-    let model = this._segment[this._idx] as any;
+    const model = this._segment[this._idx] as any;
     invariant(model, "no such model");
     invariant(
       this._document.modelHasType(model, Type.Attributes),
@@ -260,14 +261,14 @@ export class StaffBuilder {
   insertAttributes(
     builder: (build: IAttributesBuilder) => IAttributesBuilder,
   ): this {
-    let li = buildAttributes(builder);
-    let p = [this._idx];
+    const li = buildAttributes(builder);
+    const p = [this._idx];
     this._patches = this._patches.concat({ li, p });
     return this;
   }
 
   direction(builder: (builder: IDirectionBuilder) => IDirectionBuilder): this {
-    let model = this._segment[this._idx] as any;
+    const model = this._segment[this._idx] as any;
     invariant(model, "no such model");
     invariant(
       this._document.modelHasType(model, Type.Direction),
@@ -283,21 +284,21 @@ export class StaffBuilder {
     builder: Direction | ((build: IDirectionBuilder) => IDirectionBuilder),
   ): this {
     if (typeof builder === "function") {
-      let li = buildDirection(builder);
-      let p = [this._idx];
+      const li = buildDirection(builder);
+      const p = [this._idx];
       this._patches = this._patches.concat({ li, p });
       return this;
     }
 
-    let p = [this._idx];
-    let li = cloneObject(builder);
+    const p = [this._idx];
+    const li = cloneObject(builder);
     li._class = "Direction";
     this._patches = this._patches.concat({ li, p });
     return this;
   }
 
   print(builder: (builder: IPrintBuilder) => IPrintBuilder): this {
-    let model = this._segment[this._idx] as any;
+    const model = this._segment[this._idx] as any;
     invariant(model, "no such model");
     invariant(
       this._document.modelHasType(model, Type.Print),
@@ -310,8 +311,8 @@ export class StaffBuilder {
   }
 
   insertPrint(builder: (build: IPrintBuilder) => IPrintBuilder): this {
-    let li = buildPrint(builder);
-    let p = [this._idx];
+    const li = buildPrint(builder);
+    const p = [this._idx];
     this._patches = this._patches.concat({ li, p });
     return this;
   }
@@ -336,17 +337,14 @@ export class StaffBuilder {
   }
 }
 
-export class VoiceBuilder {
-  private _segment: ISegment;
-  private _patches: IAny[] = [];
-  private _document: Document;
-  private _idx: number;
-
+export class VoiceBuilder extends BaseBuilder {
   get patches(): IAny[] {
     return this._patches.slice();
   }
 
   constructor(segment: ISegment, document: Document, idx?: number) {
+    super();
+
     this._segment = segment;
     this._document = document;
     this._idx = idx;
@@ -373,13 +371,13 @@ export class VoiceBuilder {
   }
 
   note(noteIDX: number, builder: (build: INoteBuilder) => INoteBuilder): this {
-    let model = this._segment[this._idx] as any;
+    const model = this._segment[this._idx] as any;
     invariant(model, "no such model");
     invariant(
       this._document.modelHasType(model, Type.Chord),
       "model is not a chord",
     );
-    let note = model[noteIDX];
+    const note = model[noteIDX];
     invariant(note, "invalid note");
     this._patches = this._patches.concat(
       patchNote(note, builder).map(_prependPatch(this._idx, "notes", noteIDX)),
@@ -389,10 +387,10 @@ export class VoiceBuilder {
 
   insertChord(builders: ((build: INoteBuilder) => INoteBuilder)[]): this {
     invariant(!isNaN(this._idx), "%s must be a number", this._idx);
-    let li: IChord = builders.map(builder => buildNote(builder));
+    const li: IChord = builders.map((builder) => buildNote(builder));
     li._class = "Chord";
     invariant(li[0].noteType.duration, "Invalid note type");
-    let p = [this._idx];
+    const p = [this._idx];
     this._patches = this._patches.concat({ li, p });
     return this;
   }
@@ -401,20 +399,20 @@ export class VoiceBuilder {
     position: number,
     builder: (builder: INoteBuilder) => INoteBuilder,
   ): this {
-    let model = this._segment[this._idx] as any;
+    const model = this._segment[this._idx] as any;
     invariant(model, "no such model");
     invariant(
       this._document.modelHasType(model, Type.Chord),
       "model is not a chord",
     );
-    let li = buildNote(builder);
-    let chord = model as IChord;
+    const li = buildNote(builder);
+    const chord = model as IChord;
     invariant(
       chord[position - 1] || chord[position + 1] || !chord.length,
       "Invalid position for note",
     );
     invariant(li.noteType.duration, "Invalid note type");
-    let p = [this._idx, "notes", position];
+    const p = [this._idx, "notes", position];
     this._patches = this._patches.concat({ p, li });
     return this;
   }
@@ -515,7 +513,7 @@ export class DocumentBuilder {
     measureUUID: number,
     builder: (build: MeasureBuilder) => MeasureBuilder,
   ): this {
-    let measure = find(this._doc.measures, it => it.uuid === measureUUID);
+    const measure = find(this._doc.measures, (it) => it.uuid === measureUUID);
     invariant(Boolean(measure), `invalid measure uuid ${measureUUID}`);
     this._patches = this._patches.concat(
       builder(new MeasureBuilder(measure, this._doc)).patches.map(
@@ -599,7 +597,7 @@ export class ModelMetreMutationSpec {
     const originalModel = cloneObject(this._originalModel) as any;
     if (originalModel._class === "Chord" || originalModel.length) {
       const chordModel: IChord = originalModel;
-      forEach(chordModel, c => {
+      forEach(chordModel, (c) => {
         c.noteType.duration = this.newCount;
         if (this.rest) {
           c.rest = c.rest || {};
@@ -631,13 +629,13 @@ function getMutationInfo(document: Document, patches: IAny[]) {
   const elementInfos: { [key: string]: ModelMetreMutationSpec[] } = {};
   const elementInfoByChord: { [key: string]: ModelMetreMutationSpec } = {};
 
-  patches.forEach(patch => {
+  patches.forEach((patch) => {
     if (patch.p[0] === "measures") {
       // XXX: implement!
       return;
     }
-    let measureUUID = parseInt(patch.p[0] as string, 10);
-    let measure = find(document.measures, doc => doc.uuid === measureUUID);
+    const measureUUID = parseInt(patch.p[0] as string, 10);
+    const measure = find(document.measures, (doc) => doc.uuid === measureUUID);
     if (!measure) {
       // TODO: validate blank measures
       return;
@@ -664,13 +662,11 @@ function getMutationInfo(document: Document, patches: IAny[]) {
     if (!segments[segID]) {
       segments[segID] = voice;
       let currDiv = 0;
-      attributes[segID] = (document.search(
-        part.staves[1],
-        0,
-        Type.Attributes,
-      )[0] as any)._snapshot as IAttributesSnapshot;
-      let time = attributes[segID].time; // TODO: TS changes
-      let divisions = attributes[segID].divisions;
+      attributes[segID] = (
+        document.search(part.staves[1], 0, Type.Attributes)[0] as any
+      )._snapshot as IAttributesSnapshot;
+      const time = attributes[segID].time; // TODO: TS changes
+      const divisions = attributes[segID].divisions;
 
       elementInfos[segID] = voice.reduce((elementInfo, model, idx) => {
         if (!document.modelHasType(model, Type.Chord)) {
@@ -695,9 +691,9 @@ function getMutationInfo(document: Document, patches: IAny[]) {
             ),
           );
         }
-        let divs = calcDivisions(model, { time, divisions });
+        const divs = calcDivisions(model, { time, divisions });
         const theRest = rest(model);
-        let info = new ModelMetreMutationSpec(
+        const info = new ModelMetreMutationSpec(
           {
             idx: idx,
             oldIdx: idx,
@@ -720,7 +716,7 @@ function getMutationInfo(document: Document, patches: IAny[]) {
         return elementInfo.concat(info);
       }, [] as ModelMetreMutationSpec[]);
     }
-    let divisions = attributes[segID].divisions;
+    const divisions = attributes[segID].divisions;
 
     if (patch.p.length === 6) {
       if (patch.li) {
@@ -747,7 +743,7 @@ function getMutationInfo(document: Document, patches: IAny[]) {
             elementInfos[segID][spliceIdx - 1].start;
         }
 
-        let newInfo = new ModelMetreMutationSpec({
+        const newInfo = new ModelMetreMutationSpec({
           idx: spliceIdx,
           oldIdx: undefined,
           newCount: c,
@@ -772,14 +768,14 @@ function getMutationInfo(document: Document, patches: IAny[]) {
         elementInfos[segID].splice(spliceIdx, 0, newInfo);
       }
       if (patch.ld) {
-        let divs =
+        const divs =
           patch.ld._class === "Chord"
             ? calcDivisions(patch.ld, {
                 time: attributes[segID].time,
                 divisions,
               })
             : 0;
-        let spliceIdx = parseInt(patch.p[5] as string, 10);
+        const spliceIdx = parseInt(patch.p[5] as string, 10);
 
         elementInfos[segID].splice(spliceIdx, 1);
 
@@ -805,7 +801,7 @@ function getMutationInfo(document: Document, patches: IAny[]) {
       return;
     }
 
-    let info = elementInfoByChord[el.key];
+    const info = elementInfoByChord[el.key];
 
     if (patch.p.length === 9 && patch.p[8] === "pitch") {
       info.touched = true;
@@ -866,15 +862,12 @@ function getMutationInfo(document: Document, patches: IAny[]) {
 function fixMetre(document: Document, patches: IAny[]): IAny[] {
   patches = patches.slice();
 
-  let attributes: { [key: string]: IAttributesSnapshot };
-  let elementInfos: { [key: string]: ModelMetreMutationSpec[] };
-
   const mi = getMutationInfo(document, patches);
-  attributes = mi.attributes;
-  elementInfos = mi.elementInfos;
+  const attributes = mi.attributes;
+  const elementInfos = mi.elementInfos;
 
   forEach(elementInfos, (voiceInfo, key) => {
-    const anyChanged = voiceInfo.some(n => n.touched);
+    const anyChanged = voiceInfo.some((n) => n.touched);
     if (!anyChanged) {
       return;
     }
@@ -882,7 +875,7 @@ function fixMetre(document: Document, patches: IAny[]): IAny[] {
     const restSpecs = simplifyRests(voiceInfo, document, attributes[key]);
 
     patches = patches.concat(
-      restSpecs.map(spec =>
+      restSpecs.map((spec) =>
         extend({}, spec, {
           p: (key.split("++") as (number | string)[]).concat(spec.p),
         }),
@@ -926,16 +919,16 @@ function fixBarlines(_doc: Document, patches: IAny[]): IAny[] {
 }
 
 function fixCursor(doc: Document, patches: IAny[]): IAny[] {
-  let { elementInfos } = getMutationInfo(doc, patches);
+  const { elementInfos } = getMutationInfo(doc, patches);
   const newCursor = patches.filter(
-    patch => patch.li && patch.li._class === "VisualCursor",
+    (patch) => patch.li && patch.li._class === "VisualCursor",
   );
   if (!newCursor.length) {
     return patches;
   }
   invariant(newCursor.length === 1, "Limit 1 cursor operation per patch");
   patches = patches.slice();
-  forEach(doc.measures, measure => {
+  forEach(doc.measures, (measure) => {
     forEach(measure.parts, (part, partName) => {
       forEach(part.voices, (voice, voiceIDX) => {
         if (!voice) {
@@ -951,7 +944,7 @@ function fixCursor(doc: Document, patches: IAny[]): IAny[] {
         const segInfo = elementInfos[segID];
         if (segInfo) {
           let offset = 0;
-          forEach(segInfo, element => {
+          forEach(segInfo, (element) => {
             if (
               !isNaN(element.idx) &&
               !isNaN(element.oldIdx) &&
@@ -1009,7 +1002,7 @@ const COUNT_TO_BEAMS: { [key: number]: number } = {
 function addBeams(document: Document, patches: IAny[]): IAny[] {
   patches = patches.slice();
 
-  let { segments, elementInfos } = getMutationInfo(document, patches);
+  const { segments, elementInfos } = getMutationInfo(document, patches);
 
   forEach(elementInfos, (voiceInfo, key) => {
     const segment = segments[key];
@@ -1019,14 +1012,14 @@ function addBeams(document: Document, patches: IAny[]): IAny[] {
     // const altBP = getBeamingPattern(time, "alt");
     let beamGroup: number[] = [];
     let beamBeams: number[] = [];
-    let inCandidate: boolean[] = [];
+    const inCandidate: boolean[] = [];
 
-    let beamingPattern: IChord[] = stdBP;
+    const beamingPattern: IChord[] = stdBP;
 
     function applyCandidate() {
       // Remove all rests at the end and beginning.
-      const start = findIndex(beamGroup, i => !voiceInfo[i].rest);
-      const end = findLastIndex(beamGroup, i => !voiceInfo[i].rest);
+      const start = findIndex(beamGroup, (i) => !voiceInfo[i].rest);
+      const end = findLastIndex(beamGroup, (i) => !voiceInfo[i].rest);
       beamBeams = beamBeams.slice(start, end + 1);
       beamGroup = beamGroup.slice(start, end + 1);
 
@@ -1035,8 +1028,8 @@ function addBeams(document: Document, patches: IAny[]): IAny[] {
       }
 
       // Mark elements in the candidate
-      beamGroup.forEach(b => (inCandidate[b] = true));
-      if (!some(beamGroup, i => voiceInfo[i].touched)) {
+      beamGroup.forEach((b) => (inCandidate[b] = true));
+      if (!some(beamGroup, (i) => voiceInfo[i].touched)) {
         // We did not modify this beam group, so don't change it here.
         return;
       }
@@ -1044,7 +1037,7 @@ function addBeams(document: Document, patches: IAny[]): IAny[] {
       patches = patches.concat(
         beamGroup.map((i, j) => {
           let type: BeamType = null;
-          const beams = times(beamBeams[j], beamNumber => {
+          const beams = times(beamBeams[j], (beamNumber) => {
             if (i === beamGroup[0] || beamBeams[j - 1] < beamNumber + 1) {
               if (i === last(beamGroup) || beamBeams[j + 1] < beamNumber + 1) {
                 // HACK HACK HACK -- it's more complex than this
@@ -1061,10 +1054,10 @@ function addBeams(document: Document, patches: IAny[]): IAny[] {
               type = BeamType.Continue;
             }
 
-            return buildBeam(beam => beam.number(beamNumber + 1).type(type));
+            return buildBeam((beam) => beam.number(beamNumber + 1).type(type));
           });
 
-          let miniP: IAny = {
+          const miniP: IAny = {
             p: (key.split("++") as (number | string)[]).concat([
               i,
               "notes",
@@ -1095,7 +1088,7 @@ function addBeams(document: Document, patches: IAny[]): IAny[] {
           divisionsInCurrentBucket = Infinity;
           return;
         }
-        let next = calcDivisions(beamingPattern[bpIDX], {
+        const next = calcDivisions(beamingPattern[bpIDX], {
           time,
           divisions: segment.divisions,
         });
@@ -1109,7 +1102,7 @@ function addBeams(document: Document, patches: IAny[]): IAny[] {
         // Skip this non-note.
         return;
       }
-      let divs = calcDivisions(
+      const divs = calcDivisions(
         {
           count: elInfo.newCount,
           dots: elInfo.newDots,
@@ -1203,7 +1196,7 @@ export default function createPatch(
       part === undefined && partBuilder === undefined,
       "createPatch: invalid usage",
     );
-    let builder = builderOrMeasure as (
+    const builder = builderOrMeasure as (
       build: DocumentBuilder,
     ) => DocumentBuilder;
     patches = builder(new DocumentBuilder(document)).patches;
@@ -1211,10 +1204,10 @@ export default function createPatch(
       patches = cleanupPatches(document, patches);
     }
   } else {
-    let measure = (builderOrMeasure as any) as number;
-    let builder = partBuilder;
-    patches = createPatch(isPreview, document, document =>
-      document.measure(measure, measure => measure.part(part, builder)),
+    const measure = builderOrMeasure as any as number;
+    const builder = partBuilder;
+    patches = createPatch(isPreview, document, (document) =>
+      document.measure(measure, (measure) => measure.part(part, builder)),
     );
   }
   return patches;

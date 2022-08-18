@@ -30,25 +30,25 @@ class TestClass1 {}
 
 class TestClass2 {}
 
-describe("[factory.ts]", function() {
-  describe("Factory", function() {
-    let types = [
-      function(types: { [key: number]: any }) {
+describe("[factory.ts]", function () {
+  describe("Factory", function () {
+    const types = [
+      function (types: { [key: number]: any }) {
         types[Type.Attributes as any] = TestClass1;
       },
-      function(types: { [key: number]: any }) {
+      function (types: { [key: number]: any }) {
         types[Type.Chord as any] = TestClass2;
       },
     ];
 
-    let factory = new Factory(types);
+    const factory = new Factory(types);
 
-    it("can create multiple types", function() {
+    it("can create multiple types", function () {
       expect(factory.create(Type.Attributes)).to.be.an.instanceof(TestClass1);
       expect(factory.create(Type.Chord)).to.be.an.instanceof(TestClass2);
     });
 
-    it("can discern multiple types", function() {
+    it("can discern multiple types", function () {
       expect(
         factory.modelHasType(<any>new TestClass1(), Type.Attributes),
       ).to.equal(true);
@@ -63,14 +63,14 @@ describe("[factory.ts]", function() {
       ).to.equal(false);
     });
 
-    it("throws on creating invalid type", function() {
-      expect(function() {
+    it("throws on creating invalid type", function () {
+      expect(function () {
         factory.create(Type.Print);
       }).to.throw();
     });
 
-    it("throws on discerning invalid type", function() {
-      expect(function() {
+    it("throws on discerning invalid type", function () {
+      expect(function () {
         factory.modelHasType(<any>new TestClass1(), Type.Print);
       }).to.throw();
     });

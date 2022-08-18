@@ -21,7 +21,7 @@
 import { Font, parse as parseFont } from "opentype.js/dist/opentype.js";
 import { memoize, forEach } from "lodash";
 
-const IS_BROWSER = "browser" in process;
+const IS_BROWSER = typeof process === "undefined" || "browser" in process;
 const NO_PATH_DATA = <Font>{};
 
 /*---- PRIVATE ------------------------------------------------------------------------*/
@@ -50,11 +50,11 @@ function getFullName(name: string, style?: string) {
 function loadFont(name: string, url: string, style: string, full?: boolean) {
   ++State.remaining;
 
-  let fullName = getFullName(name, style);
+  const fullName = getFullName(name, style);
   url = getNativeURL(url);
 
   if (!full && IS_BROWSER) {
-    let styleSheet = document.createElement("style");
+    const styleSheet = document.createElement("style");
     styleSheet.appendChild(
       document.createTextNode(`@font-face{
             font-family: ${name};
@@ -75,11 +75,11 @@ function loadFont(name: string, url: string, style: string, full?: boolean) {
       if (err) {
         return goOn(err);
       }
-      let font = parseFont(buffer);
+      const font = parseFont(buffer);
       State.fonts[fullName] = font;
       if (IS_BROWSER) {
-        let styleSheet = <CSSStyleSheet>document.styleSheets[0];
-        let fontFaceStyle = `@font-face{
+        const styleSheet = <CSSStyleSheet>document.styleSheets[0];
+        const fontFaceStyle = `@font-face{
                     font-family: ${name};
                     src: url(data:font/truetype;charset=utf-8;base64,${toBase64(
                       buffer,
@@ -100,7 +100,7 @@ function loadFont(name: string, url: string, style: string, full?: boolean) {
     --State.remaining;
 
     if (!State.remaining) {
-      forEach(State.cbs, cb => cb(State.err));
+      forEach(State.cbs, (cb) => cb(State.err));
       State.cbs = [];
     }
   }
@@ -109,8 +109,8 @@ function loadFont(name: string, url: string, style: string, full?: boolean) {
 /*---- SUPPORT ------------------------------------------------------------------------*/
 
 function toArrayBuffer(buffer: Uint8Array) {
-  let arrayBuffer = new ArrayBuffer(buffer.length);
-  let data = new Uint8Array(arrayBuffer);
+  const arrayBuffer = new ArrayBuffer(buffer.length);
+  const data = new Uint8Array(arrayBuffer);
   for (let i = 0; i < buffer.length; i += 1) {
     data[i] = buffer[i];
   }
@@ -123,7 +123,7 @@ function loadFromFile(
   callback: (err: Error, buffer?: ArrayBuffer) => void,
 ) {
   const fs = require("fs");
-  fs.readFile(path, function(err: Error, buffer: Uint8Array) {
+  fs.readFile(path, function (err: Error, buffer: Uint8Array) {
     if (err) {
       return callback(err);
     }
@@ -136,10 +136,10 @@ function loadFromUrl(
   url: string,
   callback: (err: Error, buffer?: ArrayBuffer) => void,
 ) {
-  let request = new XMLHttpRequest();
+  const request = new XMLHttpRequest();
   request.open("get", url, true);
   request.responseType = "arraybuffer";
-  request.onload = function() {
+  request.onload = function () {
     if (request.status !== 200) {
       return callback(
         new Error(`Font could not be loaded: ${request.statusText}`),
@@ -160,9 +160,9 @@ const CHARS =
   "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 
 function toBase64(buffer: ArrayBuffer) {
-  let bytes = new Uint8Array(buffer);
-  let len = bytes.length,
-    base64 = "";
+  const bytes = new Uint8Array(buffer);
+  const len = bytes.length;
+  let base64 = "";
 
   for (let i = 0; i < len; i += 3) {
     /* tslint:disable */
@@ -190,7 +190,7 @@ export function requireFont(
   style?: string,
   full?: boolean,
 ) {
-  let fullName = getFullName(name, style);
+  const fullName = getFullName(name, style);
   if (full && State.fonts[fullName] === NO_PATH_DATA) {
     delete State.fonts[fullName];
   }
@@ -222,8 +222,8 @@ export function getTextBB(
   fontSize: number,
   style?: string,
 ) {
-  let fullName = getFullName(name, style);
-  let font = State.fonts[fullName];
+  const fullName = getFullName(name, style);
+  const font = State.fonts[fullName];
   if (State.canvasContext && font === NO_PATH_DATA) {
     State.canvasContext.font = `${style || ""} ${fontSize}px ${name}`;
 
@@ -270,7 +270,7 @@ export function getTextBB(
     fontSize,
     { kerning: true },
     (glyph, x, y, fontSize) => {
-      let scale = (1 / font.unitsPerEm) * fontSize;
+      const scale = (1 / font.unitsPerEm) * fontSize;
       minX = Math.min(x, minX);
       maxX = Math.max(x, maxX);
       minY = Math.min(y + (glyph as any).yMin * scale, minY);
@@ -286,7 +286,7 @@ export function getTextBB(
   };
 }
 
-let _toPathData = memoize(function(
+const _toPathData = memoize(function (
   name: string,
   text: string,
   x: number,
@@ -294,8 +294,8 @@ let _toPathData = memoize(function(
   fontSize: number,
   style?: string,
 ): string {
-  let fullName = getFullName(name, style);
-  let font = State.fonts[fullName];
+  const fullName = getFullName(name, style);
+  const font = State.fonts[fullName];
   if (!font) {
     console.warn(`${fullName} is not loaded`);
     return "";

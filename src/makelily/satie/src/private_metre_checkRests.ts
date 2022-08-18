@@ -26,7 +26,7 @@ export interface IOptions {
   dotsAllowed: boolean;
 }
 
-let _stretchRestRuleMemo: { [key: string]: string } = {};
+const _stretchRestRuleMemo: { [key: string]: string } = {};
 function _stretchRestRule(rule: string, quantization: number) {
   const key = rule + String(quantization);
   if (!_stretchRestRuleMemo[key]) {
@@ -47,9 +47,9 @@ function _getValidSubBeatLengths(
   beatsPerMeasure: number,
   dotsAllowed: boolean,
 ) {
-  let validLengths: number[] = [];
+  const validLengths: number[] = [];
   for (let i = 5; i > 0; --i) {
-    let pow2 = Math.pow(2, i);
+    const pow2 = Math.pow(2, i);
     if (quantumPerBeats % pow2 === 0) {
       validLengths.push(quantumPerBeats / pow2);
     }
@@ -97,11 +97,11 @@ class RestSolver {
   checkRests(divisions: number, song: string, options: IOptions): string {
     const MATCH_CHARS = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
     const quantization = (divisions * 4) / this._ruleBeatType;
-    let myRestRules = this._restRules
+    const myRestRules = this._restRules
       .filter(
-        rule => options.dotsAllowed || rule.search(RestSolver.dotRule) === -1,
+        (rule) => options.dotsAllowed || rule.search(RestSolver.dotRule) === -1,
       )
-      .map(rule => _stretchRestRule(rule, quantization));
+      .map((rule) => _stretchRestRule(rule, quantization));
     song = _stretchRestRule(song, 1 / quantization);
     const len = myRestRules[0].length;
     const quantumPerBeats = len / this._ruleBeats;
@@ -118,10 +118,12 @@ class RestSolver {
     if (song.length > len) {
       return `split ${len} ${myRestRules[0].length}`;
     } else if (song.length < myRestRules[0].length) {
-      return `apply ${len} ${song
-        .split("")
-        .map(() => ".")
-        .join("") + Array(myRestRules[0].length - song.length + 1).join("r")}`;
+      return `apply ${len} ${
+        song
+          .split("")
+          .map(() => ".")
+          .join("") + Array(myRestRules[0].length - song.length + 1).join("r")
+      }`;
     } else if (song.length !== len) {
       return `ERR: ${song.length} !== ${this._ruleBeats}`;
     }
@@ -134,7 +136,7 @@ class RestSolver {
           ++j;
         }
 
-        let beats = (j - i + 1) / quantumPerBeats;
+        const beats = (j - i + 1) / quantumPerBeats;
         if (beats >= 1) {
           let startOfNextBeat = i + 1;
           while (startOfNextBeat % quantumPerBeats !== 0) {
@@ -150,7 +152,7 @@ class RestSolver {
             ++fillUntil;
           }
 
-          let patch =
+          const patch =
             Array(startOfNextBeat).join(".") +
             "r" +
             Array(fillUntil - startOfNextBeat + 1).join("_") +
@@ -161,7 +163,7 @@ class RestSolver {
     }
 
     // Apply rules
-    let matches = new Array<string>(song.length + 1).join(" ").split("");
+    const matches = new Array<string>(song.length + 1).join(" ").split("");
     for (let ruleNum = 0; ruleNum < myRestRules.length; ++ruleNum) {
       const rule = myRestRules[ruleNum];
 
@@ -180,10 +182,12 @@ class RestSolver {
                 while (song[k + 1] === "_") {
                   ++k;
                 }
-                return `apply ${len} ${Array(j + 1).join(".") +
+                return `apply ${len} ${
+                  Array(j + 1).join(".") +
                   "r" +
                   Array(k - j + 1).join("_") +
-                  Array(song.length - k).join(".")}`;
+                  Array(song.length - k).join(".")
+                }`;
               }
               break ruleMatch;
             }
@@ -225,7 +229,7 @@ class RestSolver {
               j < validSubBeatLengths.length;
               ++j
             ) {
-              let subbeatLength = validSubBeatLengths[j];
+              const subbeatLength = validSubBeatLengths[j];
               let k = i;
 
               while (
@@ -235,7 +239,7 @@ class RestSolver {
               ) {
                 ++k;
               }
-              let matchedLength = k - i + 1;
+              const matchedLength = k - i + 1;
               if (matchedLength >= subbeatLength) {
                 // When it is preferable to show more clearly how the beat is divided,
                 // divide the rest into half-beats.
@@ -273,7 +277,7 @@ class RestSolver {
 
                 for (let l = i + 1; l < i + subbeatLength; ++l) {
                   if (song[l] === "r") {
-                    let pattern =
+                    const pattern =
                       bestSubbeatReplacement ||
                       Array(i + 1).join(".") +
                         "r" +
@@ -296,12 +300,12 @@ class RestSolver {
                     ++l;
                   }
 
-                  return `apply ${len} ${Array(i + subbeatLength + 1).join(
-                    ".",
-                  ) +
+                  return `apply ${len} ${
+                    Array(i + subbeatLength + 1).join(".") +
                     "r" +
                     Array(l - (i + subbeatLength)).join("_") +
-                    Array(song.length - l + 1).join(".")}`;
+                    Array(song.length - l + 1).join(".")
+                  }`;
                 }
 
                 // Subbeat match.
@@ -318,7 +322,7 @@ class RestSolver {
               j < validSubBeatLengths.length;
               ++j
             ) {
-              let subbeatLength = validSubBeatLengths[j];
+              const subbeatLength = validSubBeatLengths[j];
               let k = i;
               while (
                 rule[k + 1] === "*" &&
@@ -327,7 +331,7 @@ class RestSolver {
               ) {
                 ++k;
               }
-              let matchedLength = k - i + 1;
+              const matchedLength = k - i + 1;
               if (matchedLength >= subbeatLength) {
                 // Make sure the subbeat actually ends where it is supposed to.
                 if (song[i + subbeatLength] === "_") {
@@ -335,12 +339,12 @@ class RestSolver {
                   while (song[l] === "_") {
                     ++l;
                   }
-                  return `apply ${len} ${Array(i + subbeatLength + 1).join(
-                    ".",
-                  ) +
+                  return `apply ${len} ${
+                    Array(i + subbeatLength + 1).join(".") +
                     "r" +
                     Array(l - (i + subbeatLength)).join("_") +
-                    Array(song.length - l + 1).join(".")}`;
+                    Array(song.length - l + 1).join(".")
+                  }`;
                 }
 
                 // Subbeat match.
@@ -363,10 +367,12 @@ class RestSolver {
         while (song[j + 1] === "_") {
           ++j;
         }
-        return `apply ${len} ${Array(i + 1).join(".") +
+        return `apply ${len} ${
+          Array(i + 1).join(".") +
           "r" +
           Array(j - i + 1).join("_") +
-          Array(song.length - j).join(".")}`;
+          Array(song.length - j).join(".")
+        }`;
       }
     }
 

@@ -34,21 +34,22 @@ function pad(
   measures: IMeasureLayout[],
 ): IMeasureLayout[] {
   let measureOffset = 0;
-  forEach(measures, function(measure) {
+  forEach(measures, function (measure) {
     measure.originX += measureOffset;
 
-    let maxIdx = max(map(measure.elements, el => el.length));
+    const maxIdx = max(map(measure.elements, (el) => el.length));
     let previousElementEnd = -10;
     let offset = 0;
-    times(maxIdx, function(j) {
+    times(maxIdx, function (j) {
       // These refer to the space needed before/after this position in all segments.
       let spaceNeededBefore = 0;
       let spaceNeededAfter = 0;
 
       for (let i = 0; i < measure.elements.length; ++i) {
-        let spaceNeededBeforeSegment =
+        const spaceNeededBeforeSegment =
           measure.elements[i][j].minSpaceBefore || 0;
-        let spaceNeededAfterSegment = measure.elements[i][j].minSpaceAfter || 0;
+        const spaceNeededAfterSegment =
+          measure.elements[i][j].minSpaceAfter || 0;
 
         spaceNeededBefore = Math.max(
           spaceNeededBefore,
@@ -62,8 +63,11 @@ function pad(
         // "disregard this element"
         return;
       }
-      let thisElementStart = measure.elements[0][j].x - spaceNeededBefore;
-      let extraSpaceGiven = Math.max(0, previousElementEnd - thisElementStart);
+      const thisElementStart = measure.elements[0][j].x - spaceNeededBefore;
+      const extraSpaceGiven = Math.max(
+        0,
+        previousElementEnd - thisElementStart,
+      );
 
       if (extraSpaceGiven) {
         for (let i = 0; i < measure.elements.length; ++i) {

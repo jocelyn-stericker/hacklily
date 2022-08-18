@@ -74,7 +74,7 @@ export default function validate(options: ILayoutOptions): void {
    * This is for debug output when we get stuck in a loop.
    * This is reset every measure.
    */
-  let debugFixupOperations: IAny[][] = [];
+  const debugFixupOperations: IAny[][] = [];
 
   /**
    * This function applies a patch as part of validation.
@@ -91,7 +91,7 @@ export default function validate(options: ILayoutOptions): void {
     if (options.fixup) {
       options.fixup(segment, operations);
     } else {
-      forEach(operations, operation => {
+      forEach(operations, (operation) => {
         applyOp(
           options.preview,
           options.measures,
@@ -108,7 +108,7 @@ export default function validate(options: ILayoutOptions): void {
     }
   }
 
-  let rootFixupOpts = {
+  const rootFixupOpts = {
     debugFixupOperations,
     rootFixup,
   };
@@ -135,14 +135,14 @@ function tryValidate(
   options: ILayoutOptions,
   rootFixupOpts: { debugFixupOperations: IAny[][]; rootFixup: IFixupFn },
 ): void {
-  let factory = options.modelFactory;
-  let search = factory.search.bind(factory);
+  const factory = options.modelFactory;
+  const search = factory.search.bind(factory);
 
   let lastAttribs: { [part: string]: IAttributesSnapshot[] } = {};
   let lastPrint: Print = options.print;
 
   function withPart(segments: ISegment[], partID: string): ISegment[] {
-    forEach(segments, segment => {
+    forEach(segments, (segment) => {
       if (segment) {
         segment.part = partID;
       }
@@ -153,24 +153,24 @@ function tryValidate(
   // Normalize divisions on a line:
   let allSegments: ISegment[] = [];
   forEach(options.measures, function validateMeasure(measure) {
-    let voiceSegments = <ISegment[]>(
+    const voiceSegments = <ISegment[]>(
       flatten(
-        map(toPairs(measure.parts), partx =>
+        map(toPairs(measure.parts), (partx) =>
           withPart(partx[1].voices, partx[0]),
         ),
       )
     );
 
-    let staffSegments = <ISegment[]>(
+    const staffSegments = <ISegment[]>(
       flatten(
-        map(toPairs(measure.parts), partx =>
+        map(toPairs(measure.parts), (partx) =>
           withPart(partx[1].staves, partx[0]),
         ),
       )
     );
 
     allSegments = allSegments.concat(
-      filter(voiceSegments.concat(staffSegments), s => !!s),
+      filter(voiceSegments.concat(staffSegments), (s) => !!s),
     );
   });
   normalizeDivisionsInPlace(factory, allSegments, 0);
@@ -178,7 +178,7 @@ function tryValidate(
 
   let tries = 0;
   forEach(options.measures, function validateMeasure(measure) {
-    let cleanliness =
+    const cleanliness =
       options.document.cleanlinessTracking.measures[measure.uuid];
     if (cleanliness && cleanliness.clean) {
       lastAttribs = cleanliness.clean.attributes;
@@ -201,25 +201,28 @@ function tryValidate(
       }
       tryAgain = false;
       try {
-        let voiceSegments = <ISegment[]>(
+        const voiceSegments = <ISegment[]>(
           flatten(
-            map(toPairs(measure.parts), partx =>
+            map(toPairs(measure.parts), (partx) =>
               withPart(partx[1].voices, partx[0]),
             ),
           )
         );
 
-        let staffSegments = <ISegment[]>(
+        const staffSegments = <ISegment[]>(
           flatten(
-            map(toPairs(measure.parts), partx =>
+            map(toPairs(measure.parts), (partx) =>
               withPart(partx[1].staves, partx[0]),
             ),
           )
         );
 
-        let segments = filter(voiceSegments.concat(staffSegments), s => !!s);
+        const segments = filter(
+          voiceSegments.concat(staffSegments),
+          (s) => !!s,
+        );
 
-        forEach(staffSegments, function(segment, idx) {
+        forEach(staffSegments, function (segment, idx) {
           if (!segment) {
             return;
           }
@@ -250,15 +253,15 @@ function tryValidate(
                   false,
                 );
               } else {
-                let proxy = factory.create(Type.Proxy);
-                let proxiedSegment: ISegment = find(
+                const proxy = factory.create(Type.Proxy);
+                const proxiedSegment: ISegment = find(
                   staffSegments,
-                  potentialProxied =>
+                  (potentialProxied) =>
                     potentialProxied &&
                     potentialProxied.part === segment.part &&
                     potentialProxied.owner === 1,
                 );
-                let target = search(proxiedSegment, 0, type)[0];
+                const target = search(proxiedSegment, 0, type)[0];
                 (<any>proxy).target = target;
                 (<any>proxy).staffIdx = idx;
                 let tidx = -1;
@@ -284,11 +287,11 @@ function tryValidate(
               options.document,
               measure.uuid,
               segment.part,
-              part =>
+              (part) =>
                 part.staff(
                   segment.owner,
-                  staff =>
-                    staff.insertBarline(barline =>
+                  (staff) =>
+                    staff.insertBarline((barline) =>
                       barline.barStyle({
                         data:
                           measure.uuid === last(options.document.measures).uuid
@@ -303,7 +306,7 @@ function tryValidate(
           }
         });
 
-        let outcome = refreshMeasure({
+        const outcome = refreshMeasure({
           noAlign: true,
           mode: RefreshMode.RefreshModel,
           document: options.document,

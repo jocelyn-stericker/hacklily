@@ -38,9 +38,9 @@ export default class Test extends Component<IProps, IState> {
 
   render() {
     const isSingleLine = this.props.singleLine;
-    let chrome = this.props.chrome !== false;
-    let showFilterButton = chrome && this.props.showFilterButton;
-    let link = showFilterButton ? (
+    const chrome = this.props.chrome !== false;
+    const showFilterButton = chrome && this.props.showFilterButton;
+    const link = showFilterButton ? (
       <Link
         to={`${prefix}/tests/${this.props.name}/?mode=${
           isSingleLine ? "singleline" : "page"
@@ -50,8 +50,10 @@ export default class Test extends Component<IProps, IState> {
       </Link>
     ) : null;
     if (this.state.error) {
-      let errStr = "" + (this.state.error as any).stack.toString();
-      let lines = errStr.split("\n").map((s, idx) => <div key={idx}>{s}</div>);
+      const errStr = "" + (this.state.error as any).stack.toString();
+      const lines = errStr
+        .split("\n")
+        .map((s, idx) => <div key={idx}>{s}</div>);
       return (
         <div className={STYLES.test}>
           <h3>
@@ -62,18 +64,18 @@ export default class Test extends Component<IProps, IState> {
       );
     }
 
-    let misc =
+    const misc =
       chrome && this._song && this._song.header.identification.miscellaneous;
-    let descriptionField =
+    const descriptionField =
       chrome &&
       find(
         misc && misc.miscellaneousFields,
-        field => field.name === "description",
+        (field) => field.name === "description",
       );
-    let description =
+    const description =
       chrome &&
       (descriptionField ? descriptionField.data : <p>No description.</p>);
-    let title = chrome && (
+    const title = chrome && (
       <h3>
         Test {this.state.filename}&nbsp;&nbsp;{link}
       </h3>
@@ -118,12 +120,12 @@ export default class Test extends Component<IProps, IState> {
   }
 
   componentDidUpdate(prevProps: IProps, prevState: IState) {
-    let prefix = process.env.PLAYGROUND_PREFIX || "";
+    const prefix = process.env.PLAYGROUND_PREFIX || "";
     if (
       this.state.filename !== prevState.filename ||
       prevProps.singleLine !== this.props.singleLine
     ) {
-      let request = new XMLHttpRequest();
+      const request = new XMLHttpRequest();
       request.open("GET", prefix + this.state.filename);
       request.onload = () => {
         if (request.status !== 200) {

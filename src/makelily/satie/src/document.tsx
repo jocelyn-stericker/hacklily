@@ -183,13 +183,13 @@ export class Document {
   }
 
   getPrint(startMeasure: number): Print {
-    let firstMeasure = this.measures[startMeasure];
+    const firstMeasure = this.measures[startMeasure];
     if (!firstMeasure) {
       throw new Error("No such measure " + startMeasure);
     }
-    let partWithPrint = find(
+    const partWithPrint = find(
       firstMeasure.parts,
-      part =>
+      (part) =>
         !!part.staves[1] &&
         this.search(part.staves[1], 0, Type.Print).length > 0,
     );
@@ -240,7 +240,7 @@ export class Document {
     ref?: (svg: SVGSVGElement) => void,
     onPageHeightChanged?: (height: number) => void,
   ): ReactElement<any> {
-    let opts: ILayoutOptions = {
+    const opts: ILayoutOptions = {
       document: this,
       attributes: {},
       debug: true,

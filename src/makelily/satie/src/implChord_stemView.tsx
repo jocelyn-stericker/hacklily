@@ -61,7 +61,7 @@ export default class StemView extends Component<IProps, {}> {
 
     const dY = this.props.bestHeight * direction;
 
-    let elements: any[] = [];
+    const elements: any[] = [];
     elements.push(
       <Line
         key="s"

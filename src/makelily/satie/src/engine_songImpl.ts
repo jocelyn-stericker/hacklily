@@ -68,8 +68,10 @@ export interface IState {
  * Note: toMusicXML and toSVG can also be used when Song is used as a React component
  * (e.g., <Song ... ref={song => console.log(song.toMusicXML())} />)
  */
-export default class SongImpl extends Component<IProps, IState>
-  implements ISong {
+export default class SongImpl
+  extends Component<IProps, IState>
+  implements ISong
+{
   state: IState = {
     document: null,
     factory: null,
@@ -194,7 +196,7 @@ export default class SongImpl extends Component<IProps, IState>
   };
 
   toSVG = (): string => {
-    let patches: {} = this.props.patches;
+    const patches: {} = this.props.patches;
     if (patches instanceof PatchImpl) {
       invariant(
         patches.isPreview === false,
@@ -214,7 +216,7 @@ export default class SongImpl extends Component<IProps, IState>
   };
 
   toMusicXML = (): string => {
-    let patches: {} = this.props.patches;
+    const patches: {} = this.props.patches;
     if (patches instanceof PatchImpl) {
       invariant(
         patches.isPreview === false,
@@ -253,7 +255,7 @@ export default class SongImpl extends Component<IProps, IState>
   }
 
   private _createPatch(isPreview: boolean, patchSpecs: IPatchSpec[]) {
-    let patches: IAny[] = patchSpecs.reduce((array, spec) => {
+    const patches: IAny[] = patchSpecs.reduce((array, spec) => {
       if (specIsRaw(spec)) {
         return array.concat(spec.raw);
       } else if (specIsDocBuilder(spec)) {
@@ -308,7 +310,7 @@ export default class SongImpl extends Component<IProps, IState>
     const initialCommon = commonVersion();
 
     // Undo actions not in common
-    forEach(invert(docPatches.slice(initialCommon)), op => {
+    forEach(invert(docPatches.slice(initialCommon)), (op) => {
       applyOp(
         preview,
         this.state.document.measures,
@@ -321,7 +323,7 @@ export default class SongImpl extends Component<IProps, IState>
     });
 
     // Perform actions that are expected.
-    forEach(newPatches.slice(this._docPatches.length), op => {
+    forEach(newPatches.slice(this._docPatches.length), (op) => {
       applyOp(
         preview,
         this.state.document.measures,
@@ -397,7 +399,7 @@ export default class SongImpl extends Component<IProps, IState>
 
   private _handleCursorPosition = throttle(
     (p: { x: number; y: number }, handler: Handler) => {
-      let match = getByPosition(p);
+      const match = getByPosition(p);
 
       let path = match && match.key.match(SATIE_ELEMENT_RX);
       if (!path) {
@@ -412,15 +414,15 @@ export default class SongImpl extends Component<IProps, IState>
       }
 
       path = path.slice(1);
-      let measure: any = find(
+      const measure: any = find(
         this.state.document.measures,
-        measure => 1 * measure.uuid === parseInt(path[0], 10),
+        (measure) => 1 * measure.uuid === parseInt(path[0], 10),
       );
 
-      let el = measure[path[1]][path[2]][path[3]][path[4]][path[5]];
+      const el = measure[path[1]][path[2]][path[3]][path[4]][path[5]];
       if (el) {
-        let originY = match.originY;
-        let clef = el._clef;
+        const originY = match.originY;
+        const clef = el._clef;
         let pitch: Pitch;
         if (clef && originY) {
           pitch = pitchForClef(originY - p.y, clef);
@@ -438,14 +440,14 @@ export default class SongImpl extends Component<IProps, IState>
   );
 
   private _handleMouseMove = (ev: SyntheticEvent<Node>) => {
-    let p = this._getPos(ev);
+    const p = this._getPos(ev);
     if (p) {
       this._handleCursorPosition(p, this.props.onMouseMove);
     }
   };
 
   private _handleClick = (ev: any) => {
-    let p = this._getPos(ev);
+    const p = this._getPos(ev);
     if (p) {
       this._handleCursorPosition(p, this.props.onMouseClick);
     }

@@ -56,7 +56,7 @@ interface IReduceOptsMemo {
 function findPrint(options: ILayoutOptions, measure: IMeasure): Print {
   const partWithPrint = find(
     measure.parts,
-    part =>
+    (part) =>
       !!part.staves[1] &&
       options.modelFactory.search(part.staves[1], 0, Type.Print).length > 0,
   );
@@ -80,8 +80,8 @@ function assignLinesReducer(
   idx: number,
   all: ILinePlacementHint[],
 ): IReduceOptsMemo {
-  let options = memo.options;
-  let measures = options.measures;
+  const options = memo.options;
+  const measures = options.measures;
 
   memo.thisPrint = findPrint(options, measures[idx]) || memo.thisPrint;
   if (!last(memo.opts).print) {
@@ -165,7 +165,7 @@ export function getApproximateMeasureWidth(
 function getLinePlacementHints(
   measures: IMeasure[],
 ): ReadonlyArray<ILinePlacementHint> {
-  const shortestByMeasure: ReadonlyArray<number> = measures.map(measure => {
+  const shortestByMeasure: ReadonlyArray<number> = measures.map((measure) => {
     const segments = getMeasureSegments(measure);
     return reduce(segments, reduceToShortestInSegments, Number.MAX_VALUE);
   });
@@ -177,36 +177,37 @@ function getLinePlacementHints(
     return shortests;
   }, {} as { [key: number]: boolean });
 
-  const shortests = Object.keys(shortestsObj).map(str => parseInt(str, 10));
+  const shortests = Object.keys(shortestsObj).map((str) => parseInt(str, 10));
 
-  return map(measures, function layoutMeasure(
-    measure,
-    idx,
-  ): ILinePlacementHint {
-    const shortestInMeasure = shortestByMeasure[idx];
+  return map(
+    measures,
+    function layoutMeasure(measure, idx): ILinePlacementHint {
+      const shortestInMeasure = shortestByMeasure[idx];
 
-    const numericMeasureWidth = !isNaN(measure.width) && measure.width !== null;
-    if (
-      numericMeasureWidth &&
-      (measure.width <= 0 || !isFinite(measure.width))
-    ) {
-      console.warn("Bad measure width %s. Ignoring", measure.width);
-    }
-    let widthByShortest = shortests.reduce((shortests, shortest) => {
-      if (shortest <= shortestInMeasure) {
-        shortests[shortest] = getApproximateMeasureWidth(measure, shortest);
+      const numericMeasureWidth =
+        !isNaN(measure.width) && measure.width !== null;
+      if (
+        numericMeasureWidth &&
+        (measure.width <= 0 || !isFinite(measure.width))
+      ) {
+        console.warn("Bad measure width %s. Ignoring", measure.width);
       }
-      return shortests;
-    }, {} as { [key: number]: number });
+      const widthByShortest = shortests.reduce((shortests, shortest) => {
+        if (shortest <= shortestInMeasure) {
+          shortests[shortest] = getApproximateMeasureWidth(measure, shortest);
+        }
+        return shortests;
+      }, {} as { [key: number]: number });
 
-    // XXX: multiple rests
-    return {
-      widthByShortest,
-      shortestCount: shortestInMeasure,
-      attributesWidthStart: 150, // XXX
-      attributesWidthEnd: 50, // XXX
-    };
-  });
+      // XXX: multiple rests
+      return {
+        widthByShortest,
+        shortestCount: shortestInMeasure,
+        attributesWidthStart: 150, // XXX
+        attributesWidthEnd: 50, // XXX
+      };
+    },
+  );
 }
 
 export default function layoutSong(
@@ -250,7 +251,8 @@ export default function layoutSong(
   if (!options.preview) {
     const oldLineCleanliness = options.document.cleanlinessTracking.lines || [];
     const newLineCleanliness =
-      layoutOpts.map(line => line.measures.map(measure => measure.uuid)) || [];
+      layoutOpts.map((line) => line.measures.map((measure) => measure.uuid)) ||
+      [];
     for (
       let i = 0;
       i < oldLineCleanliness.length || i < newLineCleanliness.length;
@@ -264,7 +266,7 @@ export default function layoutSong(
         oldLine.length !== newLine.length ||
         oldLine.some((m, k) => newLine[k] !== m);
       if (isDirty) {
-        oldLine.concat(newLine).forEach(m => {
+        oldLine.concat(newLine).forEach((m) => {
           options.document.cleanlinessTracking.measures[m] = null;
         });
       }
@@ -277,7 +279,7 @@ export default function layoutSong(
     y: calculateLineBounds(layoutOpts[0].print, page, scaling).top,
     attributes: {},
   };
-  return layoutOpts.map(lineOpt =>
+  return layoutOpts.map((lineOpt) =>
     layoutLine(
       lineOpt,
       calculateLineBounds(lineOpt.print, page, scaling),

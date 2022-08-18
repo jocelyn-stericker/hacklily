@@ -73,7 +73,7 @@ export default class TimeSignatureView extends Component<
     if (spec.senzaMisura != null) {
       return null;
     }
-    let ts = this._displayTimeSignature();
+    const ts = this._displayTimeSignature();
     if (ts.singleNumber && ts.beats.length === 1 && ts.beats[0].length === 1) {
       return (
         <TimeSignatureNumber
@@ -90,13 +90,13 @@ export default class TimeSignatureView extends Component<
     }
 
     if (ts.commonRepresentation) {
-      let beats = ts.beats;
-      let beatType = ts.beatType;
+      const beats = ts.beats;
+      const beatType = ts.beatType;
 
-      let hasSingleBeat = beats.length === 1 && beats[0].length === 1;
+      const hasSingleBeat = beats.length === 1 && beats[0].length === 1;
 
-      let isCommon = hasSingleBeat && beats[0][0] === 4 && beatType[0] === 4;
-      let isCut = hasSingleBeat && beats[0][0] === 2 && beatType[0] === 2;
+      const isCommon = hasSingleBeat && beats[0][0] === 4 && beatType[0] === 4;
+      const isCut = hasSingleBeat && beats[0][0] === 2 && beatType[0] === 2;
 
       if (isCommon) {
         return (
@@ -126,14 +126,14 @@ export default class TimeSignatureView extends Component<
       // Cannot be represented in common representation. Pass through.
     }
 
-    let numOffsets = this.numOffsets();
-    let denOffsets = this.denOffsets();
+    const numOffsets = this.numOffsets();
+    const denOffsets = this.denOffsets();
 
     let pos = 0;
     return (
       <g>
         {map(ts.beats, (beatsOuter, idx) => {
-          let array = [
+          const array = [
             map(beatsOuter, (beats, jdx) => [
               <TimeSignatureNumber
                 key={`num_${idx}_${jdx}`}
@@ -215,7 +215,7 @@ export default class TimeSignatureView extends Component<
 
   numOffsets() {
     // This is sketchy.
-    let ts = this._displayTimeSignature();
+    const ts = this._displayTimeSignature();
     return map(ts.beats, (beats, idx) => {
       if (beats.length > 1) {
         return 0;
@@ -229,11 +229,11 @@ export default class TimeSignatureView extends Component<
   }
   denOffsets() {
     // This is sketchy.
-    let ts = this._displayTimeSignature();
+    const ts = this._displayTimeSignature();
 
     return map(ts.beatType, (beatType, idx) => {
       let culm = 0;
-      let numToDenOffset = ((ts.beats[idx].length - 1) * NUMBER_SPACING) / 2;
+      const numToDenOffset = ((ts.beats[idx].length - 1) * NUMBER_SPACING) / 2;
       culm += numToDenOffset;
       if (ts.beats[idx][0] >= 10 && beatType < 10) {
         culm += 7;
@@ -247,8 +247,8 @@ export default class TimeSignatureView extends Component<
     const spec = this.props.spec;
     return {
       beatType: spec.beatTypes,
-      beats: map(spec.beats, beats =>
-        beats.split("+").map(n => parseInt(n, 10)),
+      beats: map(spec.beats, (beats) =>
+        beats.split("+").map((n) => parseInt(n, 10)),
       ),
       commonRepresentation:
         spec.symbol === TimeSymbolType.Common ||

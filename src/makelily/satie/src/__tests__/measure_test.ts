@@ -30,10 +30,10 @@ import {
   fakeFactory,
 } from "./etestutil";
 
-describe("[document/segment.ts]", function() {
-  describe("normalizeDivisionsInPlace", function() {
-    it("correctly modifies all segments", function() {
-      let segments = [
+describe("[document/segment.ts]", function () {
+  describe("normalizeDivisionsInPlace", function () {
+    it("correctly modifies all segments", function () {
+      const segments = [
         createFakeStaffSegment(4, 4, 1),
         createFakeVoiceSegment(2, 6, 1),
         createFakeVoiceSegment(4, 12, 2),

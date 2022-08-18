@@ -55,23 +55,23 @@ export default class UnbeamedTuplet extends Component<IProps, {}> {
   };
 
   render(): any {
-    let { stroke, layout } = this.props;
-    let { tuplet, x } = layout;
-    let { placement } = tuplet;
-    let yOffset = placement === AboveBelow.Above ? 8 : -8;
-    let isSingleNote = x.length === 1;
+    const { stroke, layout } = this.props;
+    const { tuplet, x } = layout;
+    const { placement } = tuplet;
+    const yOffset = placement === AboveBelow.Above ? 8 : -8;
+    const isSingleNote = x.length === 1;
 
-    let x1 = this._getX1();
-    let x2 = this._getX2();
-    let y1 = this._getY1(1);
-    let y2 = this._getY2(1);
-    let y1Low = this._getY1(0);
-    let y2Low = this._getY2(0);
+    const x1 = this._getX1();
+    const x2 = this._getX2();
+    const y1 = this._getY1(1);
+    const y2 = this._getY2(1);
+    const y1Low = this._getY1(0);
+    const y2Low = this._getY2(0);
 
-    let y1Near = placement === AboveBelow.Below ? y1 : y1Low;
-    let y1Far = placement === AboveBelow.Below ? y1Low : y1;
-    let y2Near = placement === AboveBelow.Below ? y2 : y2Low;
-    let y2Far = placement === AboveBelow.Below ? y2Low : y2;
+    const y1Near = placement === AboveBelow.Below ? y1 : y1Low;
+    const y1Far = placement === AboveBelow.Below ? y1Low : y1;
+    const y2Near = placement === AboveBelow.Below ? y2 : y2Low;
+    const y2Far = placement === AboveBelow.Below ? y2Low : y2;
 
     return (
       <g>
@@ -153,19 +153,19 @@ export default class UnbeamedTuplet extends Component<IProps, {}> {
   }
 
   private _getX1() {
-    let { x } = this.props.layout;
+    const { x } = this.props.layout;
     return this._withXOffset(first(x)) - 4;
   }
 
   private _getX2() {
-    let { x } = this.props.layout;
+    const { x } = this.props.layout;
     return this._withXOffset(last(x)) + 4;
   }
 
   private _getY1(incl: number) {
-    let { originY } = this.context;
-    let { layout } = this.props;
-    let { y1 } = layout;
+    const { originY } = this.context;
+    const { layout } = this.props;
+    const { y1 } = layout;
     return (
       originY -
       y1 -
@@ -177,9 +177,9 @@ export default class UnbeamedTuplet extends Component<IProps, {}> {
   }
 
   private _getY2(incl: number) {
-    let { originY } = this.context;
-    let { layout } = this.props;
-    let { y2 } = layout;
+    const { originY } = this.context;
+    const { layout } = this.props;
+    const { y2 } = layout;
     return (
       originY -
       y2 -

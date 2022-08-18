@@ -20,8 +20,8 @@ export interface IProps {
 
 export default class App extends Component<IProps> {
   render() {
-    let path = this.props.location.pathname;
-    let topLink = path !== prefix + "/" && path !== prefix && (
+    const path = this.props.location.pathname;
+    const topLink = path !== prefix + "/" && path !== prefix && (
       <Link className={STYLES.toplink} to={`${prefix}/`}>
         « Go home
       </Link>

@@ -107,9 +107,8 @@ class Tests extends Component<{ params: { id: string } }, IState> {
   private _undo() {
     this.setState({
       operations: this.state.oldOperations[this.state.oldOperations.length - 1],
-      canonicalOperations: this.state.oldOperations[
-        this.state.oldOperations.length - 1
-      ],
+      canonicalOperations:
+        this.state.oldOperations[this.state.oldOperations.length - 1],
       oldOperations: this.state.oldOperations.slice(
         0,
         this.state.oldOperations.length - 1,
@@ -120,22 +119,22 @@ class Tests extends Component<{ params: { id: string } }, IState> {
     const doc = this._song.getDocument(this.state.canonicalOperations);
     const measureCount = doc.measures.length;
 
-    let oldOperations = this.state.oldOperations.concat([
+    const oldOperations = this.state.oldOperations.concat([
       this.state.canonicalOperations,
     ]);
-    let operations = this._song.createCanonicalPatch(
+    const operations = this._song.createCanonicalPatch(
       this.state.canonicalOperations,
       {
-        documentBuilder: document =>
-          document.insertMeasure(measureCount, measure =>
-            measure.part("P1", part =>
-              part.voice(1, voice =>
+        documentBuilder: (document) =>
+          document.insertMeasure(measureCount, (measure) =>
+            measure.part("P1", (part) =>
+              part.voice(1, (voice) =>
                 voice.at(0).insertChord([
-                  note =>
+                  (note) =>
                     note
                       .rest({})
                       .staff(1)
-                      .noteType(type => type.duration(Count.Whole)),
+                      .noteType((type) => type.duration(Count.Whole)),
                 ]),
               ),
             ),
@@ -158,10 +157,10 @@ class Tests extends Component<{ params: { id: string } }, IState> {
         },
       },
     ];
-    let oldOperations = this.state.oldOperations.concat([
+    const oldOperations = this.state.oldOperations.concat([
       this.state.operations,
     ]);
-    let operations = this._song.createCanonicalPatch(
+    const operations = this._song.createCanonicalPatch(
       this.state.canonicalOperations,
       { raw: patch },
     );
@@ -282,7 +281,7 @@ class Tests extends Component<{ params: { id: string } }, IState> {
     const doc = this._song.getDocument(operations); // TODO: remove getDocument
     const measure = find(
       doc.measures,
-      fmeasure => String(fmeasure.uuid) === path[0],
+      (fmeasure) => String(fmeasure.uuid) === path[0],
     );
     if (!measure || path[1] !== "parts" || !measure.parts[path[2]]) {
       return false;
@@ -307,27 +306,27 @@ class Tests extends Component<{ params: { id: string } }, IState> {
       if (!isChord) {
         return false;
       }
-      const chord = (el as any) as Note[];
+      const chord = el as any as Note[];
       const measureUUID = parseInt(path[0] as string, 10);
       let patch: IAny[];
       if (
         (this.state.type === "N" && chord.length === 1 && chord[0].rest) ||
         (this.state.type === "R" && chord.length === 1 && !chord[0].rest)
       ) {
-        patch = Patch.createPatch(isPreview, doc, measureUUID, "P1", part =>
-          part.voice(1, voice =>
-            voice.at(elIdx).note(0, note =>
+        patch = Patch.createPatch(isPreview, doc, measureUUID, "P1", (part) =>
+          part.voice(1, (voice) =>
+            voice.at(elIdx).note(0, (note) =>
               this.state.type === "R"
                 ? note
                     .pitch(null)
                     .dots([])
-                    .noteType(noteType => noteType.duration(this.state.note))
+                    .noteType((noteType) => noteType.duration(this.state.note))
                     .color(isPreview ? "#cecece" : "#000000")
                 : note
                     .pitch(pitch)
                     .dots([])
-                    .noteType(noteType => noteType.duration(this.state.note))
-                    .accidental(accidental =>
+                    .noteType((noteType) => noteType.duration(this.state.note))
+                    .accidental((accidental) =>
                       accidental.accidental(MxmlAccidental.Sharp),
                     )
                     .color(isPreview ? "#cecece" : "#000000"),
@@ -340,13 +339,13 @@ class Tests extends Component<{ params: { id: string } }, IState> {
         !chord[0].rest &&
         chord[0].noteType.duration !== this.state.note
       ) {
-        patch = Patch.createPatch(isPreview, doc, measureUUID, "P1", part =>
+        patch = Patch.createPatch(isPreview, doc, measureUUID, "P1", (part) =>
           part.voice(
             1,
-            voice =>
-              voice.note(0, note =>
+            (voice) =>
+              voice.note(0, (note) =>
                 note
-                  .noteType(noteType => noteType.duration(this.state.note))
+                  .noteType((noteType) => noteType.duration(this.state.note))
                   .color(isPreview ? "#cecece" : "#000000"),
               ),
             elIdx,
@@ -364,7 +363,7 @@ class Tests extends Component<{ params: { id: string } }, IState> {
             lastPitch: pitch,
           });
         } else {
-          let newOperations = this._song.createCanonicalPatch(operations, {
+          const newOperations = this._song.createCanonicalPatch(operations, {
             raw: patch,
           });
           this.setState({

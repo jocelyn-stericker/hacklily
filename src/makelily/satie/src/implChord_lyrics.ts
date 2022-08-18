@@ -50,7 +50,7 @@ export function getLyricWidth(lyric: Lyric, scale40: number) {
       if (lyricPart._class === "Syllabic") {
         return partWidth + SYLLABIC_SIZE;
       } else if (lyricPart._class === "Text") {
-        let text = <Text>lyricPart;
+        const text = <Text>lyricPart;
         return (
           partWidth +
           getTextBB(

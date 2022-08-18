@@ -88,17 +88,13 @@ export function specIsRaw(spec: IPatchSpec): spec is { raw: IAny[] } {
   return spec && "raw" in spec;
 }
 
-export function specIsDocBuilder(
-  spec: IPatchSpec,
-): spec is {
+export function specIsDocBuilder(spec: IPatchSpec): spec is {
   documentBuilder: (documentBuilder: DocumentBuilder) => DocumentBuilder;
 } {
   return spec && (spec as any).documentBuilder;
 }
 
-export function specIsPartBuilder(
-  spec: IPatchSpec,
-): spec is {
+export function specIsPartBuilder(spec: IPatchSpec): spec is {
   measure: number;
   part: string;
   partBuilder: (partBuilder: PartBuilder) => PartBuilder;

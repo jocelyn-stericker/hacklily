@@ -46,12 +46,12 @@ export default class StaffLines extends Component<IProps, {}> {
   };
 
   render(): any {
-    let middle = this.context.originY - this.props.defaultY;
-    let staffDetails = this.props.staffDetails;
-    let offset = (staffDetails.staffLines - 1) / 2;
+    const middle = this.context.originY - this.props.defaultY;
+    const staffDetails = this.props.staffDetails;
+    const offset = (staffDetails.staffLines - 1) / 2;
     return (
       <g>
-        {times(staffDetails.staffLines, i => (
+        {times(staffDetails.staffLines, (i) => (
           <Line
             key={"staff-" + i}
             stroke="#6A6A6A"

@@ -43,7 +43,7 @@ export default class DirectionView extends Component<
 
   render(): ReactElement<any> {
     const model = this.props.layout.model;
-    let children = map(model.directionTypes, (type, idx) => {
+    const children = map(model.directionTypes, (type, idx) => {
       switch (true) {
         case !!type.accordionRegistration:
           return null;
@@ -112,7 +112,7 @@ export default class DirectionView extends Component<
         default:
           throw new Error("Invalid direction in " + type);
       }
-    }).filter(el => !!el);
+    }).filter((el) => !!el);
 
     switch (children.length) {
       case 0:

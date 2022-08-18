@@ -59,11 +59,11 @@ export function hasAccidental(
   chord: IChord,
   cursor: ValidationCursor | LayoutCursor,
 ) {
-  return some(chord, function(c) {
+  return some(chord, function (c) {
     if (!c.pitch) {
       return false;
     }
-    let accidental = cursor.staffAccidentals[c.pitch.alter] || 0;
+    const accidental = cursor.staffAccidentals[c.pitch.alter] || 0;
     return (
       ((c.pitch.alter || 0) !== accidental &&
         (c.pitch.alter || 0) !==
@@ -87,7 +87,7 @@ export function count(chord: IChord | IDurationDescription): Count;
 export function count(chord: IChord | IDurationDescription): Count {
   if (_isIChord(chord)) {
     // TODO: typing
-    let target: Note = find(chord, note => note.noteType) as any;
+    const target: Note = find(chord, (note) => note.noteType) as any;
     return target ? target.noteType.duration : NaN;
   } else if (_isIDurationDescription(chord)) {
     return chord.count;
@@ -103,7 +103,7 @@ export function dots(chord: IChord | IDurationDescription): number {
   if (_isIChord(chord)) {
     return (
       // TODO: typing
-      (find(chord, note => note.dots) || ({ dots: <any[]>[] } as any)).dots
+      (find(chord, (note) => note.dots) || ({ dots: <any[]>[] } as any)).dots
         .length || 0
     );
   } else if (_isIDurationDescription(chord)) {
@@ -127,7 +127,7 @@ export function timeModification(
     return (
       // TODO: typing
       (
-        find(chord, note => note.timeModification) ||
+        find(chord, (note) => note.timeModification) ||
         ({
           timeModification: <TimeModification>null,
         } as any)
@@ -141,14 +141,14 @@ export function timeModification(
 }
 
 export function ties(chord: IChord): Tie[] {
-  let ties = map(chord, note =>
+  const ties = map(chord, (note) =>
     note.ties && note.ties.length ? note.ties[0] : null,
   );
-  return filter(ties, t => !!t).length ? ties : null;
+  return filter(ties, (t) => !!t).length ? ties : null;
 }
 
 export function beams(chord: IChord): Beam[] {
-  let target = find(chord, note => !!note.beams);
+  const target = find(chord, (note) => !!note.beams);
   if (target) {
     return target.beams;
   }
@@ -157,7 +157,7 @@ export function beams(chord: IChord): Beam[] {
 
 export function hasFlagOrBeam(chord: IChord): boolean {
   // TODO: check if flag/beam forcefully set to "off"
-  return some(chord, note => note.noteType.duration <= Count.Eighth);
+  return some(chord, (note) => note.noteType.duration <= Count.Eighth);
 }
 
 /**
@@ -260,7 +260,7 @@ export function lineForClef(note: Note, clef: Clef): number {
   }
 }
 
-export let offsetToPitch: { [key: string]: string } = {
+export const offsetToPitch: { [key: string]: string } = {
   0: "C",
   0.5: "D",
   1: "E",
@@ -270,7 +270,7 @@ export let offsetToPitch: { [key: string]: string } = {
   3: "B",
 };
 
-export let pitchOffsets: { [key: string]: number } = {
+export const pitchOffsets: { [key: string]: number } = {
   C: 0,
   D: 0.5,
   E: 1,
@@ -281,16 +281,16 @@ export let pitchOffsets: { [key: string]: number } = {
 };
 
 export function pitchForClef(relativeY: number, clef: Clef): Pitch {
-  let line = relativeY / 10 + 3;
-  let clefOffset = getClefOffset(clef);
-  let offset2x = Math.round((line - clefOffset) * 2);
+  const line = relativeY / 10 + 3;
+  const clefOffset = getClefOffset(clef);
+  const offset2x = Math.round((line - clefOffset) * 2);
   let octave = Math.floor(offset2x / 7) + 3;
   let stepQuant = (Math.round(offset2x + 7 * 1000) % 7) / 2;
   if (stepQuant === 3.5) {
     octave = octave + 1;
     stepQuant = 0;
   }
-  let step = offsetToPitch[stepQuant];
+  const step = offsetToPitch[stepQuant];
 
   return {
     octave,
@@ -303,7 +303,7 @@ export function lineForClef_(
   octave: string | number,
   clef: Clef,
 ): number {
-  let octaveNum = parseInt(<string>octave, 10) || 0;
+  const octaveNum = parseInt(<string>octave, 10) || 0;
   return getClefOffset(clef) + (octaveNum - 3) * 3.5 + pitchOffsets[step];
 }
 
@@ -320,9 +320,9 @@ export function onLedger(note: Note, clef: Clef) {
 }
 
 export function ledgerLines(chord: IChord, clef: Clef) {
-  let low = lowestLine(chord, clef);
-  let high = highestLine(chord, clef);
-  let lines: number[] = [];
+  const low = lowestLine(chord, clef);
+  const high = highestLine(chord, clef);
+  const lines: number[] = [];
   for (let i = 6; i <= high; ++i) {
     lines.push(i);
   }
@@ -336,7 +336,7 @@ export function rest(chord: IChord): Rest {
   return !chord.length || (chord[0].rest as any); // TODO
 }
 
-export let defaultClefLines: { [key: string]: number } = {
+export const defaultClefLines: { [key: string]: number } = {
   G: 2,
   F: 4,
   C: 3,
@@ -345,7 +345,7 @@ export let defaultClefLines: { [key: string]: number } = {
   NONE: 3,
 };
 
-export let clefOffsets: { [key: string]: number } = {
+export const clefOffsets: { [key: string]: number } = {
   G: -3.5,
   F: 2.5,
   C: -0.5,
@@ -393,10 +393,10 @@ export function barDivisions({ time, divisions }: IAttributesSnapshot) {
   return barDivisionsDI(time, divisions);
 }
 
-export let IDEAL_STEM_HEIGHT: number = 35;
-export let MIN_STEM_HEIGHT: number = 25;
+export const IDEAL_STEM_HEIGHT: number = 35;
+export const MIN_STEM_HEIGHT: number = 25;
 
-export let chromaticScale: { [key: string]: number } = {
+export const chromaticScale: { [key: string]: number } = {
   c: 0,
   d: 2,
   e: 4,
@@ -406,7 +406,7 @@ export let chromaticScale: { [key: string]: number } = {
   b: 11,
 }; // c:12
 
-export let countToHasStem: { [key: string]: boolean } = {
+export const countToHasStem: { [key: string]: boolean } = {
   0.25: true,
   0.5: false,
   1: false,
@@ -422,7 +422,7 @@ export let countToHasStem: { [key: string]: boolean } = {
   1024: true,
 };
 
-export let countToIsBeamable: { [key: string]: boolean } = {
+export const countToIsBeamable: { [key: string]: boolean } = {
   8: true,
   16: true,
   32: true,
@@ -433,7 +433,7 @@ export let countToIsBeamable: { [key: string]: boolean } = {
   1024: true,
 };
 
-export let countToFlag: { [key: string]: string } = {
+export const countToFlag: { [key: string]: string } = {
   8: "flag8th",
   16: "flag16th",
   32: "flag32nd",
@@ -444,7 +444,7 @@ export let countToFlag: { [key: string]: string } = {
   1024: "flag1024th",
 };
 
-export let accidentalGlyphs: { [key: number]: string } = {
+export const accidentalGlyphs: { [key: number]: string } = {
   [MxmlAccidental.NaturalFlat]: "accidentalNaturalSharp",
   [MxmlAccidental.SharpUp]: "accidentalThreeQuarterTonesSharpArrowUp",
   [MxmlAccidental.ThreeQuartersFlat]:
@@ -485,7 +485,7 @@ export let accidentalGlyphs: { [key: number]: string } = {
   [MxmlAccidental.DoubleFlat]: "accidentalDoubleFlat",
 };
 
-export let InvalidAccidental = -999;
+export const InvalidAccidental = -999;
 
 const CUSTOM_NOTEHEADS: { [key: number]: string[] } = {
   [NoteheadType.ArrowDown]: [
@@ -650,12 +650,12 @@ const CUSTOM_NOTEHEADS: { [key: number]: string[] } = {
 };
 
 export function getNoteheadGlyph(notehead: Notehead, stdGlyph: string): string {
-  let type = notehead ? notehead.type : NoteheadType.Normal;
+  const type = notehead ? notehead.type : NoteheadType.Normal;
 
   if (type === NoteheadType.Normal) {
     return stdGlyph;
   } else {
-    let noteheads = CUSTOM_NOTEHEADS[type];
+    const noteheads = CUSTOM_NOTEHEADS[type];
     if (noteheads) {
       if (noteheads[0] && stdGlyph === "noteheadBlack") {
         return noteheads[0];
@@ -691,8 +691,8 @@ export function articulationObj(n: Note): Articulations {
 
 export function tieds(n: Note[]): Tied[] {
   return chain(n)
-    .map(n => notationObj(n).tieds)
-    .map(t => (t && t.length ? t[0] : null))
+    .map((n) => notationObj(n).tieds)
+    .map((t) => (t && t.length ? t[0] : null))
     .value();
 }
 
@@ -708,7 +708,7 @@ export function divisions(
   attributes: { time: Time; divisions: number },
   allowFractional?: boolean,
 ) {
-  if (_isIChord(chord) && some(chord, note => note.grace)) {
+  if (_isIChord(chord) && some(chord, (note) => note.grace)) {
     return 0;
   }
   const chordCount = count(chord);
@@ -721,11 +721,11 @@ export function divisions(
           beatTypes: [4],
           beats: ["1000"],
         };
-  let attributeDivisions = attributes.divisions;
+  const attributeDivisions = attributes.divisions;
 
   invariant(!!attributesTime, "A time signature must be specified.");
 
-  if (chordCount === -1 || chordCount <= 1) {
+  if (chordCount >= Count.Breve || chordCount === Count.Whole) {
     // TODO: What if beatType isn't consistent?
     const tsBeats = reduce(
       attributesTime.beats,
@@ -749,7 +749,7 @@ export function divisions(
 
   const base = (attributeDivisions * 4) / chordCount;
   const tmFactor = chordTM ? chordTM.normalNotes / chordTM.actualNotes : 1.0;
-  const dotFactor = times(chordDots, d => 1 / Math.pow(2, d + 1)).reduce(
+  const dotFactor = times(chordDots, (d) => 1 / Math.pow(2, d + 1)).reduce(
     (m, i) => m + i,
     1,
   );

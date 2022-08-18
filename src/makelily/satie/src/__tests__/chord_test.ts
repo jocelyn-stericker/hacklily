@@ -56,11 +56,11 @@ function getAttributes(): IAttributesSnapshot {
 }
 
 function getCursor(factory: IFactory, model: IModel): ValidationCursor {
-  let attributes = getAttributes();
-  let segment = <any>[model];
+  const attributes = getAttributes();
+  const segment = <any>[model];
   segment.part = "P1";
   segment.ownerType = "voice";
-  let v: ValidationCursor = {
+  const v: ValidationCursor = {
     const: () => v,
     document: {
       __fakeDocument: true,
@@ -96,16 +96,16 @@ function getCursor(factory: IFactory, model: IModel): ValidationCursor {
   return v;
 }
 
-describe("[chord.ts]", function() {
-  describe("ChordModel", function() {
-    let factory = new Factory([AttributesExports, Chord]);
-    it("can be created from scratch", function() {
-      let chord = factory.create(Type.Chord);
+describe("[chord.ts]", function () {
+  describe("ChordModel", function () {
+    const factory = new Factory([AttributesExports, Chord]);
+    it("can be created from scratch", function () {
+      const chord = factory.create(Type.Chord);
       expect(!!chord).to.be.true;
       expect(chord.length).to.eq(0);
     });
-    it("can be correctly created from a simple spec", function() {
-      let chord = factory.fromSpec({
+    it("can be correctly created from a simple spec", function () {
+      const chord = factory.fromSpec({
         _class: "Note",
         timeModification: {
           actualNotes: 3,
@@ -143,7 +143,7 @@ describe("[chord.ts]", function() {
         0,
         "layout must not affect cursor division",
       );
-      let xml = (<any>chord).inspect();
+      const xml = (<any>chord).inspect();
       expect(xml).to.contain("<step>C</step>");
       expect(xml).to.contain("<alter>1</alter>");
       expect(xml).to.contain("<octave>4</octave>");
@@ -153,8 +153,8 @@ describe("[chord.ts]", function() {
         "Maintains playback data",
       );
     });
-    it("can be a chord generated from specs", function() {
-      let chord = factory.fromSpec({
+    it("can be a chord generated from specs", function () {
+      const chord = factory.fromSpec({
         _class: "Note",
         timeModification: {
           actualNotes: 3,

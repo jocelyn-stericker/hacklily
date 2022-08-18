@@ -53,7 +53,7 @@ class VisualCursorModel implements IVisualCursorModel {
   }
 
   toJSON(): any {
-    let { _class } = this;
+    const { _class } = this;
 
     return {
       _class,

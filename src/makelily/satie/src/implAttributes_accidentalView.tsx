@@ -42,7 +42,7 @@ export default class AccidentalView extends Component<IProps, {}> {
   };
 
   render(): any {
-    let spec = this.props.spec;
+    const spec = this.props.spec;
     const glyphName = accidentalGlyphs[this.props.spec.accidental];
     invariant(glyphName in bboxes, "Expected a glyph, got %s", glyphName);
 
@@ -52,7 +52,7 @@ export default class AccidentalView extends Component<IProps, {}> {
     const y = originY - (spec.defaultY + (spec.relativeY || 0));
     invariant(!isNaN(y), "Invalid accidental y-position");
 
-    let accidental = (
+    const accidental = (
       <Glyph
         fill={spec.color}
         glyphName={glyphName}
@@ -67,7 +67,7 @@ export default class AccidentalView extends Component<IProps, {}> {
     );
 
     if (spec.parentheses || spec.bracket) {
-      let width = bboxes[glyphName][0] * 10; // TODO: it's actually 2 - 0!
+      const width = bboxes[glyphName][0] * 10; // TODO: it's actually 2 - 0!
       return (
         <g>
           <Glyph

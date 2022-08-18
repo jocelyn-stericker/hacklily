@@ -38,17 +38,17 @@ export interface IProps {
 
 export default class TupletNumber extends Component<IProps, {}> {
   render(): any {
-    let { x1, x2, y1, y2, tuplet } = this.props;
-    let { placement } = tuplet;
+    const { x1, x2, y1, y2, tuplet } = this.props;
+    const { placement } = tuplet;
 
-    let text = tuplet.tupletActual.tupletNumber.text;
-    let symbols = map(text, char => `tuplet${char}`);
-    let boxes = map(symbols, symbol => bboxes[symbol]);
-    let widths = map(boxes, box => (box[0] - box[2]) * 10);
+    const text = tuplet.tupletActual.tupletNumber.text;
+    const symbols = map(text, (char) => `tuplet${char}`);
+    const boxes = map(symbols, (symbol) => bboxes[symbol]);
+    const widths = map(boxes, (box) => (box[0] - box[2]) * 10);
 
-    let width = reduce(widths, (total, width) => total + width, 0);
-    let offset = (x1 + x2) / 2;
-    let xs = reduce(
+    const width = reduce(widths, (total, width) => total + width, 0);
+    const offset = (x1 + x2) / 2;
+    const xs = reduce(
       boxes,
       (memo, box) => {
         memo.push(box[0] * 10 + last(memo));
@@ -56,7 +56,7 @@ export default class TupletNumber extends Component<IProps, {}> {
       },
       [0],
     );
-    let y = (y1 + y2) / 2 + (placement === AboveBelow.Above ? 7.5 : 9.5);
+    const y = (y1 + y2) / 2 + (placement === AboveBelow.Above ? 7.5 : 9.5);
 
     return (
       <g>

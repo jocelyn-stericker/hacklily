@@ -39,25 +39,28 @@ export default class DynamicsView extends Component<IProps, {}> {
   };
 
   render(): ReactElement<any> {
-    let layout = this.props.layout;
-    let model = layout.model;
-    let dynamicsContainer = filter(model.directionTypes, dt => dt.dynamics)[0];
+    const layout = this.props.layout;
+    const model = layout.model;
+    const dynamicsContainer = filter(
+      model.directionTypes,
+      (dt) => dt.dynamics,
+    )[0];
     invariant(!!dynamicsContainer, "No dynamics found!");
-    let dynamics =
+    const dynamics =
       typeof dynamicsContainer !== "number" &&
       typeof dynamicsContainer !== "function" &&
       dynamicsContainer.dynamics;
 
-    let initX =
+    const initX =
       this.props.layout.overrideX +
       dynamics.defaultX +
       (dynamics.relativeX || 0);
-    let initY =
+    const initY =
       (this.context.originY || 0) -
       dynamics.defaultY -
       (dynamics.relativeY || 0);
 
-    let glyphName = this.getGlyphName(dynamics);
+    const glyphName = this.getGlyphName(dynamics);
     if (!glyphName) {
       return null;
     }

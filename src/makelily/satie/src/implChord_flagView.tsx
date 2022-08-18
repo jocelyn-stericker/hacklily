@@ -53,11 +53,11 @@ export default class Flag extends Component<IProps, {}> {
     const spec = this.props.spec;
     const context = this.context;
 
-    let xscale = this.props.isGrace ? 0.6 : 1.0;
-    let dir = spec.direction;
-    let fontOffsetX = getFontOffset(this.glyphName(), dir)[0] * xscale;
-    let noteOffsetX = getFontOffset(this.props.notehead, dir)[0] * xscale;
-    let noteOffsetY = getFontOffset(this.props.notehead, dir)[1] * 10;
+    const xscale = this.props.isGrace ? 0.6 : 1.0;
+    const dir = spec.direction;
+    const fontOffsetX = getFontOffset(this.glyphName(), dir)[0] * xscale;
+    const noteOffsetX = getFontOffset(this.props.notehead, dir)[0] * xscale;
+    const noteOffsetY = getFontOffset(this.props.notehead, dir)[1] * 10;
     return (
       <Glyph
         fill={spec.color}

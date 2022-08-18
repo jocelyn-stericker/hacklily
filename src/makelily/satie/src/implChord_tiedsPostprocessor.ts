@@ -50,21 +50,21 @@ function tied(
   bounds: ILineBounds,
   measures: IMeasureLayout[],
 ): IMeasureLayout[] {
-  forEach(measures, measure => {
+  forEach(measures, (measure) => {
     // Note that the `number` property of beams does NOT differentiate between sets of beams,
     // as it does with e.g., ties. See `note.mod`.
-    let activeTieds: TiedSet = {};
+    const activeTieds: TiedSet = {};
     // Invariant: measure.elements[i].length == measure.elements[j].length for all valid i, j.
-    times(measure.elements[0].length, i => {
-      forEach(measure.elements, elements => {
-        let layout = elements[i];
-        let model = layout.model;
+    times(measure.elements[0].length, (i) => {
+      forEach(measure.elements, (elements) => {
+        const layout = elements[i];
+        const model = layout.model;
         if (!model || layout.renderClass !== Type.Chord) {
           return;
         }
-        let chord: ArrayLike<NoteImpl> = model as any;
-        let noteWithTieds = find(chord, el => {
-          let notations = notationObj(el);
+        const chord: ArrayLike<NoteImpl> = model as any;
+        const noteWithTieds = find(chord, (el) => {
+          const notations = notationObj(el);
           return notations && notations.tieds && notations.tieds.length > 0;
         });
 
@@ -75,14 +75,14 @@ function tied(
         if (!noteWithTieds) {
           return;
         }
-        let notations = notationObj(noteWithTieds);
-        let tieds = notations.tieds;
-        forEach(tieds, tied => {
+        const notations = notationObj(noteWithTieds);
+        const tieds = notations.tieds;
+        forEach(tieds, (tied) => {
           invariant(
             isFinite(tied.number) && tied.number !== null,
             "Tieds must have an ID (tied.number)",
           );
-          let currTied = activeTieds[tied.number];
+          const currTied = activeTieds[tied.number];
           if (currTied) {
             if (tied.type === StartStopContinue.Start) {
               console.warn(

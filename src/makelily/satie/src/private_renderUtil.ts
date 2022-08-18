@@ -16,15 +16,15 @@
  * along with Satie.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-export let ptPerMM = 2.842;
+export const ptPerMM = 2.842;
 
-export let mmPerIn = 25.4;
+export const mmPerIn = 25.4;
 
-export let V_PADDING = 20;
+export const V_PADDING = 20;
 
-export let staveSeperation = 3.24;
+export const staveSeperation = 3.24;
 
-export let rastalToHeight = [
+export const rastalToHeight = [
   /* largest is '0' */
   9.2, // educational
   7.9, // educational
@@ -37,7 +37,7 @@ export let rastalToHeight = [
   3.7, // full score
   // Tags from Behind Bars by Elaine Gould, pp. 483
 ];
-export let pageSizes = [
+export const pageSizes = [
   // Sizes to actually display
   // (For other sizes, Google works well enough :-)
   {
@@ -102,8 +102,8 @@ export function defaultPageSize() {
   return pageSizes[0];
 }
 
-export let defaultIndent = 15;
-export let defaultMargins = {
+export const defaultIndent = 15;
+export const defaultMargins = {
   top: 15.25,
   right: 15.25,
   bottom: 15.25,
@@ -111,9 +111,9 @@ export let defaultMargins = {
 };
 
 // This means that 4 spaces (i.e., 1 stave) equals 6.3mm.
-export let defaultStaveHeight = rastalToHeight[4];
+export const defaultStaveHeight = rastalToHeight[4];
 
-export let lilypondSizes = {
+export const lilypondSizes = {
   // Sizes that we support loading from LilyPond.
   // Did you know there were this many sizes?
   choral: {

@@ -59,13 +59,13 @@ export function Targetable<P extends IBaseProps, S>() {
     function updateMeta(self: IMetaComponent<P, S>, props: P) {
       const layout = props.layout;
 
-      let originX: number = props.originX;
-      let originY =
+      const originX: number = props.originX;
+      const originY =
         self.context.originYByPartAndStaff[layout.part][
           layout.model.staffIdx || 1
         ] || 0;
 
-      let newRecord: IRecord = {
+      const newRecord: IRecord = {
         key: props.layout.key,
         obj: self,
         x1: originX + props.layout.x - 2,
@@ -107,64 +107,66 @@ export function Targetable<P extends IBaseProps, S>() {
 
     // ---- //
 
-    let originalComponentWillMount =
+    const originalComponentWillMount =
       component.prototype.UNSAFE_componentWillMount;
 
-    component.prototype.UNSAFE_componentWillMount = function metaComponentWillMountWrapper() {
-      let self = this as IMetaComponent<P, S>;
-      updateMeta(self, self.props);
+    component.prototype.UNSAFE_componentWillMount =
+      function metaComponentWillMountWrapper() {
+        const self = this as IMetaComponent<P, S>;
+        updateMeta(self, self.props);
 
-      if (originalComponentWillMount) {
-        originalComponentWillMount.call(self);
-      }
-    };
-
-    // ---- //
-
-    let originalComponentWillUnmount = component.prototype.componentWillUnmount;
-
-    component.prototype.componentWillUnmount = function metaComponentWillUnmountWrapper() {
-      let self = this as IMetaComponent<P, S>;
-      clearMeta(self);
-
-      if (originalComponentWillUnmount) {
-        originalComponentWillUnmount.call(self);
-      }
-    };
+        if (originalComponentWillMount) {
+          originalComponentWillMount.call(self);
+        }
+      };
 
     // ---- //
 
-    let originalComponentWillReceiveProps =
+    const originalComponentWillUnmount =
+      component.prototype.componentWillUnmount;
+
+    component.prototype.componentWillUnmount =
+      function metaComponentWillUnmountWrapper() {
+        const self = this as IMetaComponent<P, S>;
+        clearMeta(self);
+
+        if (originalComponentWillUnmount) {
+          originalComponentWillUnmount.call(self);
+        }
+      };
+
+    // ---- //
+
+    const originalComponentWillReceiveProps =
       component.prototype.UNSAFE_componentWillReceiveProps;
 
-    component.prototype.UNSAFE_componentWillReceiveProps = function metaComponentWillReceiveProps(
-      nextProps: P,
-    ) {
-      let self = this as IMetaComponent<P, S>;
+    component.prototype.UNSAFE_componentWillReceiveProps =
+      function metaComponentWillReceiveProps(nextProps: P) {
+        const self = this as IMetaComponent<P, S>;
 
-      updateMeta(self, nextProps);
+        updateMeta(self, nextProps);
 
-      if (originalComponentWillReceiveProps) {
-        originalComponentWillReceiveProps.call(self);
-      }
-    };
+        if (originalComponentWillReceiveProps) {
+          originalComponentWillReceiveProps.call(self);
+        }
+      };
   };
 }
 
-let _sorted: IRecord[] = [];
-let _weights: number[] = [];
+const _sorted: IRecord[] = [];
+const _weights: number[] = [];
 
 function set(record: IRecord) {
-  let weight = weightForRecord(record);
-  let idx = sortedIndex(_weights, weight);
+  const weight = weightForRecord(record);
+  const idx = sortedIndex(_weights, weight);
   _sorted.splice(idx, 0, record);
   _weights.splice(idx, 0, weight);
 }
 
 function clear(record: IRecord) {
-  let weight = weightForRecord(record);
-  let firstPossibleIdx = sortedIndex(_weights, weight);
-  let idx = indexOf(_sorted, record, firstPossibleIdx);
+  const weight = weightForRecord(record);
+  const firstPossibleIdx = sortedIndex(_weights, weight);
+  const idx = indexOf(_sorted, record, firstPossibleIdx);
 
   invariant(idx >= 0, `${record.key} not currently in array.`);
   _sorted.splice(idx, 1);
@@ -172,11 +174,11 @@ function clear(record: IRecord) {
 }
 
 export function get(lookup: ILookup): IRecord {
-  let { x, y } = lookup;
-  let weight = weightForLookup(lookup);
-  let firstPossibleIdx = sortedIndex(_weights, weight);
+  const { x, y } = lookup;
+  const weight = weightForLookup(lookup);
+  const firstPossibleIdx = sortedIndex(_weights, weight);
   for (let i = firstPossibleIdx; i < _sorted.length; ++i) {
-    let record = _sorted[i];
+    const record = _sorted[i];
     if (
       _sorted[i].x1 <= x &&
       _sorted[i].x2 >= x &&

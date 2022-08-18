@@ -83,8 +83,8 @@ class PrintModel implements IPrintModel {
   refresh(cursor: IReadOnlyValidationCursor): void {
     invariant(!!cursor.header, "Cursor must have a valid header");
     if (!this.measureNumbering) {
-      cursor.patch(staff =>
-        staff.print(print =>
+      cursor.patch((staff) =>
+        staff.print((print) =>
           print.measureNumbering({
             data: "system",
           }),
@@ -94,20 +94,20 @@ class PrintModel implements IPrintModel {
 
     if (this.pageNumber !== "1") {
       // XXX: Make this the actual page number
-      cursor.patch(staff => staff.print(print => print.pageNumber("1")));
+      cursor.patch((staff) => staff.print((print) => print.pageNumber("1")));
     }
 
     if (!this.systemLayout) {
-      cursor.patch(staff => staff.print(print => print.systemLayout({})));
+      cursor.patch((staff) => staff.print((print) => print.systemLayout({})));
     }
     const atStart = this.pageNumber === "1" && cursor.measureInstance.idx === 0;
     if (
       !this.systemLayout.systemMargins ||
       (atStart && !this.systemLayout.systemMargins.leftMargin)
     ) {
-      cursor.patch(staff =>
-        staff.print(print =>
-          print.systemLayout(systemLayout =>
+      cursor.patch((staff) =>
+        staff.print((print) =>
+          print.systemLayout((systemLayout) =>
             systemLayout.systemMargins({
               leftMargin: atStart ? 70 : 0,
               rightMargin: 0,
@@ -117,7 +117,7 @@ class PrintModel implements IPrintModel {
       );
     }
 
-    let defaultPrint = extractDefaultPrintFromHeader(cursor.header);
+    const defaultPrint = extractDefaultPrintFromHeader(cursor.header);
     this._snapshot = this.getSnapshot(
       defaultPrint,
       cursor.singleLineMode,
@@ -199,7 +199,7 @@ class PrintModel implements IPrintModel {
   }
 
   toJSON(): any {
-    let {
+    const {
       _class,
       measureNumbering,
       partNameDisplay,

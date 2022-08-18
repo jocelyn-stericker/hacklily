@@ -58,7 +58,7 @@ class Factory implements IFactory {
     pre: IPreprocessor[] = [],
     post: IPostprocessor[] = [],
   ) {
-    forEach(models, model => {
+    forEach(models, (model) => {
       model(this._constructors);
     });
     this.preprocessors = pre;
@@ -123,7 +123,7 @@ class Factory implements IFactory {
   ): model is Barline & IModel;
   modelHasType(model: IModel, ...modelTypes: Type[]): boolean;
   modelHasType(model: IModel, ...modelTypes: Type[]): boolean {
-    return some(modelTypes, modelType => {
+    return some(modelTypes, (modelType) => {
       invariant(
         <number>modelType in this._constructors,
         "The type with id=%s does not have a factory.",
@@ -191,7 +191,7 @@ class Factory implements IFactory {
    * or an empty array if none exist.
    */
   search(models: IModel[], idx: number, ...types: Type[]): IModel[] {
-    let filtered: IModel[] = [];
+    const filtered: IModel[] = [];
     while (idx > 0 && !models[idx - 1].divCount) {
       --idx;
     }
@@ -238,7 +238,7 @@ class Factory implements IFactory {
       spec._class = "Chord";
     }
 
-    let sclass: Type = Type[spec._class] as any;
+    const sclass: Type = Type[spec._class] as any;
     invariant(
       sclass in this._constructors,
       '"%s" must be a known type',

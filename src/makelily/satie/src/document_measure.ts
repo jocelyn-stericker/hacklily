@@ -56,15 +56,15 @@ export interface IMeasure {
 }
 
 export function getMeasureSegments(measure: IMeasure): ISegment[] {
-  let voiceSegments = <ISegment[]>(
-    flatten(map(values<IMeasurePart>(measure.parts), part => part.voices))
+  const voiceSegments = <ISegment[]>(
+    flatten(map(values<IMeasurePart>(measure.parts), (part) => part.voices))
   );
 
-  let staffSegments = <ISegment[]>(
-    flatten(map(values<IMeasurePart>(measure.parts), part => part.staves))
+  const staffSegments = <ISegment[]>(
+    flatten(map(values<IMeasurePart>(measure.parts), (part) => part.staves))
   );
 
-  return filter(voiceSegments.concat(staffSegments), s => !!s);
+  return filter(voiceSegments.concat(staffSegments), (s) => !!s);
 }
 
 export function reduceToShortestInSegments(
@@ -78,6 +78,6 @@ export function reduceToShortestInSegment(shortest: number, model: IModel) {
   if (!(model.divCount >= 0)) {
     invariant(model.divCount >= 0, "Counts must exceed 0 in", model);
   }
-  let divCount = model && model.divCount ? model.divCount : Number.MAX_VALUE;
+  const divCount = model && model.divCount ? model.divCount : Number.MAX_VALUE;
   return Math.min(shortest, divCount);
 }

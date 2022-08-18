@@ -38,7 +38,7 @@ interface IVPSCLayoutRect extends Rectangle {
 
 function colaRemoveOverlapsSomeFixed(rs: IVPSCLayoutRect[]): void {
   // Prefer y
-  let vs = rs.map(function(r) {
+  let vs = rs.map(function (r) {
     return new Variable(r.cy(), r.mxmlBox.fixed ? Number.POSITIVE_INFINITY : 1);
   });
   let cs = generateYConstraints(rs, vs);
@@ -48,7 +48,7 @@ function colaRemoveOverlapsSomeFixed(rs: IVPSCLayoutRect[]): void {
 
   // Move x if needed
   vs = rs.map(
-    r => new Variable(r.cx(), r.mxmlBox.fixed ? Number.POSITIVE_INFINITY : 1),
+    (r) => new Variable(r.cx(), r.mxmlBox.fixed ? Number.POSITIVE_INFINITY : 1),
   );
   cs = generateXConstraints(rs, vs);
   solver = new Solver(vs, cs);
@@ -62,10 +62,10 @@ function removeOverlaps(
   measures: IMeasureLayout[],
 ): IMeasureLayout[] {
   forEach(measures, function centerThings(measure) {
-    let boxes: IVPSCLayoutRect[] = [];
-    forEach(measure.elements, function(segment) {
-      forEach(segment, function(element) {
-        forEach(element.boundingBoxes, box => {
+    const boxes: IVPSCLayoutRect[] = [];
+    forEach(measure.elements, function (segment) {
+      forEach(segment, function (element) {
+        forEach(element.boundingBoxes, (box) => {
           if (box.left >= box.right) {
             console.warn(
               "Invalid left >= right (%s >= %s)",
@@ -97,7 +97,7 @@ function removeOverlaps(
             );
             return;
           }
-          let rect: IVPSCLayoutRect = <any>(
+          const rect: IVPSCLayoutRect = <any>(
             new Rectangle(
               element.overrideX + box.defaultX + box.left,
               element.overrideX + box.defaultX + box.right,
@@ -112,12 +112,12 @@ function removeOverlaps(
       });
     });
     colaRemoveOverlapsSomeFixed(boxes);
-    forEach(boxes, box => {
-      let expectedX =
+    forEach(boxes, (box) => {
+      const expectedX =
         box.parent.overrideX + box.mxmlBox.defaultX + box.mxmlBox.left;
-      let expectedY = box.mxmlBox.defaultY + box.mxmlBox.top;
-      let actualX = box.x;
-      let actualY = box.y;
+      const expectedY = box.mxmlBox.defaultY + box.mxmlBox.top;
+      const actualX = box.x;
+      const actualY = box.y;
       box.mxmlBox.relativeX = actualX - expectedX;
       box.mxmlBox.relativeY = actualY - expectedY;
     });

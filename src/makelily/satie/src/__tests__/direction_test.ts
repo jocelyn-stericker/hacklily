@@ -28,11 +28,11 @@ import { IModel, Type } from "../document";
 
 import Factory from "../engine_factory";
 
-describe("[direction.ts]", function() {
-  describe("DirectionModel", function() {
-    let factory = new Factory([Direction]);
+describe("[direction.ts]", function () {
+  describe("DirectionModel", function () {
+    const factory = new Factory([Direction]);
     let direction: IModel;
-    it("can be created", function() {
+    it("can be created", function () {
       direction = factory.create(Type.Direction);
       expect(!!direction).to.be.true;
     });

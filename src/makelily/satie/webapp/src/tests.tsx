@@ -179,8 +179,8 @@ class Tests extends Component<{
     const cat = reduce(
       TESTS,
       (memo, testName) => {
-        let type = testName.substr(0, 2);
-        let link = filter ? null : (
+        const type = testName.substr(0, 2);
+        const link = filter ? null : (
           <Link
             to={`${prefix}/tests/${type}/?mode=${
               isSingleLine ? "singleline" : "page"
@@ -231,7 +231,7 @@ namespace Tests {
     {}
   > {
     render() {
-      let filter = this.props.params ? this.props.params.id : null;
+      const filter = this.props.params ? this.props.params.id : null;
       if (filter) {
         const isSingleLine = this.props.location.query.mode === "singleline";
         const showMoreLink =
@@ -262,7 +262,7 @@ namespace Tests {
           </span>
         );
       }
-      let lilypond =
+      const lilypond =
         "http://www.lilypond.org/doc/v2.18/input/" +
         "regression/musicxml/collated-files.html";
       return (

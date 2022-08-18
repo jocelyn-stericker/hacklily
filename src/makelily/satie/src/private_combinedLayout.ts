@@ -29,7 +29,7 @@ export interface ICombinedLayout {
 }
 
 export function combineLayout(layout: ILayout): ICombinedLayout {
-  let detached: ICombinedLayout = {
+  const detached: ICombinedLayout = {
     x: layout.x,
     division: layout.division,
     renderClass: layout.renderClass,
@@ -49,7 +49,7 @@ export function combineLayout(layout: ILayout): ICombinedLayout {
 }
 
 export function reattachLayout(layout: ICombinedLayout): ILayout {
-  let attached: ILayout = {
+  const attached: ILayout = {
     model: null,
     x: layout.x,
     division: layout.division,
@@ -87,13 +87,13 @@ export function mergeSegmentsInPlace(
   let x = 0;
 
   while (s1_idx < segment1.length || s2_idx < segment2.length) {
-    let item1 = segment1[s1_idx];
-    let item2 = segment2[s2_idx];
+    const item1 = segment1[s1_idx];
+    const item2 = segment2[s2_idx];
 
-    let div1 = item1 ? item1.division : Number.MAX_VALUE;
-    let pri1 = item1 ? item1.renderClass : Number.MAX_VALUE;
-    let div2 = item2 ? item2.division : Number.MAX_VALUE;
-    let pri2 = item2 ? item2.renderClass : Number.MAX_VALUE;
+    const div1 = item1 ? item1.division : Number.MAX_VALUE;
+    const pri1 = item1 ? item1.renderClass : Number.MAX_VALUE;
+    const div2 = item2 ? item2.division : Number.MAX_VALUE;
+    const pri2 = item2 ? item2.renderClass : Number.MAX_VALUE;
 
     if (div1 < div2 || (div1 === div2 && pri1 < pri2)) {
       x = item1.x;

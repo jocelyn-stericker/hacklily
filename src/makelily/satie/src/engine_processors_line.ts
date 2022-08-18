@@ -34,10 +34,10 @@ import { layoutMeasure } from "./engine_processors_measure";
 
 function layoutMeasures(options: ILayoutOptions) {
   const { modelFactory, header, preview, fixup, document } = options;
-  let measures = options.measures;
+  const measures = options.measures;
   let attributes = options.attributes;
   let print = options.print;
-  const measureShortests = measures.map(measure =>
+  const measureShortests = measures.map((measure) =>
     getMeasureSegments(measure).reduce(
       reduceToShortestInSegments,
       Number.MAX_VALUE,
@@ -48,11 +48,11 @@ function layoutMeasures(options: ILayoutOptions) {
     Number.MAX_VALUE,
   );
 
-  let measureLayouts = map(measures, (measure, measureIdx) => {
+  const measureLayouts = map(measures, (measure, measureIdx) => {
     const shortest = options.singleLineMode
       ? measureShortests[measureIdx]
       : lineShortest;
-    let cleanliness = document.cleanlinessTracking.measures[measure.uuid];
+    const cleanliness = document.cleanlinessTracking.measures[measure.uuid];
     let layout: IMeasureLayout;
     if (cleanliness && cleanliness.clean) {
       layout = options.preview ? cleanliness.layout : cleanliness.clean;
@@ -95,7 +95,7 @@ export function layoutLine(
     attributes: { [part: string]: IAttributesSnapshot[] };
   },
 ): IMeasureLayout[] {
-  let { measures } = options;
+  const { measures } = options;
 
   if (!measures.length) {
     return [];
@@ -107,10 +107,10 @@ export function layoutLine(
 
   const initialAttributes = layouts[0].attributes;
 
-  let partOrder = map(scoreParts(options.header.partList), t => t.id);
+  const partOrder = map(scoreParts(options.header.partList), (t) => t.id);
   let staffIdx = 0;
 
-  let topsInOrder = map(partOrder, partID => {
+  const topsInOrder = map(partOrder, (partID) => {
     invariant(
       initialAttributes[partID][1].staves >= 1,
       "Expected at least 1 staff, but there are %s",
@@ -124,30 +124,29 @@ export function layoutLine(
           memo.y -= 100;
         }
 
-        let paddingTop =
-          maxBy(layouts, mre => mre.paddingTop[staffIdx] || 0).paddingTop[
+        const paddingTop =
+          maxBy(layouts, (mre) => mre.paddingTop[staffIdx] || 0).paddingTop[
             staffIdx
           ] || 0;
 
-        let paddingBottom =
-          maxBy(layouts, mre => mre.paddingBottom[staffIdx] || 0).paddingBottom[
-            staffIdx
-          ] || 0;
+        const paddingBottom =
+          maxBy(layouts, (mre) => mre.paddingBottom[staffIdx] || 0)
+            .paddingBottom[staffIdx] || 0;
 
-        let top = memo.y - paddingTop;
+        const top = memo.y - paddingTop;
         memo.y = top - paddingBottom;
         return top;
       }),
     );
   });
-  let tops: { [part: string]: number[] } = <any>(
+  const tops: { [part: string]: number[] } = <any>(
     zipObject(partOrder, topsInOrder)
   );
   memo.y -= bounds.systemLayout.systemDistance;
   memo.attributes = layoutInfo.attributes;
 
   let left = bounds.left;
-  forEach(layouts, layout => {
+  forEach(layouts, (layout) => {
     layout.originY = tops;
     layout.originX = left;
     left = left + layout.width;
@@ -157,7 +156,7 @@ export function layoutLine(
     return layouts;
   }
 
-  let detachedLayouts: IMeasureLayout[] = map(layouts, detachMeasureLayout);
+  const detachedLayouts: IMeasureLayout[] = map(layouts, detachMeasureLayout);
   const layout = reduce(
     options.postprocessors,
     (layouts, filter) => filter(options, bounds, layouts),

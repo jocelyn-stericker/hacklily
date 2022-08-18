@@ -55,9 +55,9 @@ function getDivisionBreakdown(song: SongImpl, patches: { isPatches: boolean }) {
   expect(doc.measures.length).to.equal(1, "there should only be one measure");
 
   return doc.measures[0].parts["P1"].voices[1]
-    .filter(n => doc.modelHasType(n, Type.Chord))
-    .map(n => n.divCount + (((n as any) as Note[])[0].rest ? "R" : "N"))
-    .filter(n => n);
+    .filter((n) => doc.modelHasType(n, Type.Chord))
+    .map((n) => n.divCount + ((n as any as Note[])[0].rest ? "R" : "N"))
+    .filter((n) => n);
 }
 
 function insertNote(
@@ -68,17 +68,17 @@ function insertNote(
 ) {
   const doc = song.getDocument(patches);
   const measure1 = doc.measures[0].uuid;
-  let patch = Patch.createPatch(false, doc, document =>
-    document.measure(measure1, measure =>
-      measure.part("P1", part =>
-        part.voice(1, voice =>
+  const patch = Patch.createPatch(false, doc, (document) =>
+    document.measure(measure1, (measure) =>
+      measure.part("P1", (part) =>
+        part.voice(1, (voice) =>
           voice
             .at(idx)
             .insertChord([
-              note =>
+              (note) =>
                 note
-                  .pitch(p => p.octave(2).step("C"))
-                  .noteType(t => t.duration(count)),
+                  .pitch((p) => p.octave(2).step("C"))
+                  .noteType((t) => t.duration(count)),
             ]),
         ),
       ),
@@ -87,9 +87,9 @@ function insertNote(
   return song.createCanonicalPatch(patches, { raw: patch });
 }
 
-describe("patch metre", function() {
+describe("patch metre", function () {
   let song: SongImpl;
-  beforeEach(done => {
+  beforeEach((done) => {
     song = new SongImpl({
       baseSrc: songTemplate,
 
@@ -101,12 +101,12 @@ describe("patch metre", function() {
     song.run();
   });
 
-  it("4/4, whole note", function() {
-    let patch = insertNote(song, null, 0, Count.Whole);
+  it("4/4, whole note", function () {
+    const patch = insertNote(song, null, 0, Count.Whole);
     expect(getDivisionBreakdown(song, patch)).to.deep.equal(["4N"]);
   });
 
-  it("4/4, half notes", function() {
+  it("4/4, half notes", function () {
     let patch = insertNote(song, null, 0, Count.Half);
     expect(getDivisionBreakdown(song, patch)).to.deep.equal(["2N", "2R"]);
 
@@ -114,7 +114,7 @@ describe("patch metre", function() {
     expect(getDivisionBreakdown(song, patch)).to.deep.equal(["2N", "2N"]);
   });
 
-  it("4/4, quarter notes", function() {
+  it("4/4, quarter notes", function () {
     let patch = insertNote(song, null, 0, Count.Quarter);
     expect(getDivisionBreakdown(song, patch)).to.deep.equal(["1N", "1R", "2R"]);
 
@@ -138,7 +138,7 @@ describe("patch metre", function() {
     ]);
   });
 
-  it("4/4, eighth notes", function() {
+  it("4/4, eighth notes", function () {
     let patch = insertNote(song, null, 0, Count.Eighth);
     expect(getDivisionBreakdown(song, patch)).to.deep.equal([
       "0.5N",

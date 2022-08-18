@@ -63,8 +63,8 @@ export function timeWidth(attributes: Attributes) {
   if (!attributes.times[0] || !attributes.times[0].beatTypes) {
     return 0;
   }
-  let beats = attributes.times[0].beats;
-  let numeratorSegments = reduce(
+  const beats = attributes.times[0].beats;
+  const numeratorSegments = reduce(
     beats,
     (memo, beats) => memo + beats.split("+").length,
     0,
@@ -92,8 +92,8 @@ export function keyWidth(attributes: Attributes) {
 }
 
 export function clefsEqual(from: Attributes, to: Attributes, staff: number) {
-  let cA = from && from.clefs[staff];
-  let cB = to && to.clefs[staff];
+  const cA = from && from.clefs[staff];
+  const cB = to && to.clefs[staff];
   if (!cA || !cB) {
     return false;
   }
@@ -106,8 +106,8 @@ export function clefsEqual(from: Attributes, to: Attributes, staff: number) {
 }
 
 export function timesEqual(from: Attributes, to: Attributes) {
-  let tA = from && from.times[0];
-  let tB = to && to.times[0];
+  const tA = from && from.times[0];
+  const tB = to && to.times[0];
   if (!tA || !tB) {
     return false;
   }
@@ -121,8 +121,8 @@ export function timesEqual(from: Attributes, to: Attributes) {
 }
 
 export function keysEqual(from: Attributes, to: Attributes) {
-  let keyA = from && from.keySignatures[0];
-  let keyB = to && to.keySignatures[0];
+  const keyA = from && from.keySignatures[0];
+  const keyB = to && to.keySignatures[0];
   if (!keyA || !keyB) {
     return false;
   }
@@ -153,9 +153,9 @@ export enum AtEnd {
 }
 
 export function keyWidths(spec: Key) {
-  let widths: number[] = [];
+  const widths: number[] = [];
   if (spec.keyAlters) {
-    return map(spec.keyAlters, alter => {
+    return map(spec.keyAlters, (alter) => {
       switch (alter) {
         case "-2":
         case "-1.5":
@@ -177,12 +177,12 @@ export function keyWidths(spec: Key) {
       }
     });
   }
-  let accidentalCount = Math.min(7, Math.abs(spec.fifths));
-  let idxes = times(
+  const accidentalCount = Math.min(7, Math.abs(spec.fifths));
+  const idxes = times(
     accidentalCount,
-    i => (i + Math.max(0, Math.abs(spec.fifths) - 7)) % 7,
+    (i) => (i + Math.max(0, Math.abs(spec.fifths) - 7)) % 7,
   );
-  forEach(idxes, i => (widths[i] = getWidth(i, spec.fifths >= 0)));
+  forEach(idxes, (i) => (widths[i] = getWidth(i, spec.fifths >= 0)));
   return widths;
 
   function getWidth(i: number, sharp: boolean): number {
@@ -202,16 +202,16 @@ export function keyWidths(spec: Key) {
 }
 
 export function getNativeKeyAccidentals(spec: Key): { [note: string]: number } {
-  let accidentals: { [note: string]: number } = {};
+  const accidentals: { [note: string]: number } = {};
   const sharps = "FCGDAEB";
   const flats = "BEADGCF";
   if (spec.fifths) {
-    let accCount = Math.min(7, Math.abs(spec.fifths));
-    let sharp = spec.fifths >= 0;
+    const accCount = Math.min(7, Math.abs(spec.fifths));
+    const sharp = spec.fifths >= 0;
     (sharp ? sharps : flats)
       .slice(0, accCount)
       .split("")
-      .forEach(note => {
+      .forEach((note) => {
         accidentals[note] = sharp ? 1 : -1;
       });
   } else if (spec.keySteps) {

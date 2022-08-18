@@ -25,7 +25,7 @@ export function exportXML(score: Document): string {
   let out = "";
   out += serializeScoreHeader(score.header) + "\n";
   let recordedSongMeta = false;
-  forEach(score.measures, measure => {
+  forEach(score.measures, (measure) => {
     // TODO: dehack
     out += `<measure number="${measure.number}">\n`;
     forEach(measure.parts, (part, id) => {
@@ -47,12 +47,12 @@ export function exportXML(score: Document): string {
         if (staff) {
           out += `    <!-- staff ${staffIdx} -->\n`;
           out +=
-            map(staff, model => (<any>model).toXML())
+            map(staff, (model) => (<any>model).toXML())
               .join("\n")
               .split("\n")
-              .map(t => "    " + t)
+              .map((t) => "    " + t)
               .join("\n") + "\n";
-          let divCount = staff.reduce((sum, item) => sum + item.divCount, 0);
+          const divCount = staff.reduce((sum, item) => sum + item.divCount, 0);
           out += `    <backup><duration>${divCount}</duration></backup>\n`;
           out += `    <!-- end of staff ${staffIdx} -->\n`;
         }
@@ -61,12 +61,12 @@ export function exportXML(score: Document): string {
         if (voice) {
           out += `    <!-- voice ${voiceIdx} -->\n`;
           out +=
-            map(voice, model => (<any>model).toXML())
+            map(voice, (model) => (<any>model).toXML())
               .join("\n")
               .split("\n")
-              .map(t => "    " + t)
+              .map((t) => "    " + t)
               .join("\n") + "\n";
-          let divCount = voice.reduce((sum, item) => sum + item.divCount, 0);
+          const divCount = voice.reduce((sum, item) => sum + item.divCount, 0);
           out += `    <backup><duration>${divCount}</duration></backup>\n`;
           out += `    <!-- end of voice ${voiceIdx} -->\n`;
         }
@@ -83,7 +83,7 @@ export function exportXML(score: Document): string {
     "<score-timewise>\n" +
     out
       .split("\n")
-      .map(t => "  " + t)
+      .map((t) => "  " + t)
       .join("\n") +
     "</score-timewise>"
   );

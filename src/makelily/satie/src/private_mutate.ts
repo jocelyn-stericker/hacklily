@@ -64,39 +64,39 @@ export function findParent(obj: any, p: OTPath): any {
 }
 
 export function set(obj: any, op: IObjectInsert<any>) {
-  let parent = findParent(obj, op.p);
-  let key = last(op.p);
+  const parent = findParent(obj, op.p);
+  const key = last(op.p);
   parent[key] = op.oi;
   // STOPSHIP: this could cause problems during collaboration/undo
   expectEqualish(parent[key], op.oi);
 }
 
 export function insertToList(obj: any, op: IListInsert<any>) {
-  let parent = findParent(obj, op.p);
-  let key = last(op.p);
+  const parent = findParent(obj, op.p);
+  const key = last(op.p);
   invariant(key >= 0, "Invalid operation");
   parent.splice(key, 0, op.li);
 }
 
 export function replace(obj: any, op: IObjectReplace<any>) {
-  let parent = findParent(obj, op.p);
-  let key = last(op.p);
+  const parent = findParent(obj, op.p);
+  const key = last(op.p);
   // STOPSHIP: this could cause problems during collaboration/undo
   expectEqualish(parent[key], op.od);
   parent[key] = op.oi;
 }
 
 export function replaceInList(obj: any, op: IListReplace<any>) {
-  let parent = findParent(obj, op.p);
-  let key = last(op.p);
+  const parent = findParent(obj, op.p);
+  const key = last(op.p);
   // STOPSHIP: this could cause problems during collaboration/undo
   expectEqualish(parent[key], op.ld);
   parent[key] = op.li;
 }
 
 export function remove(obj: any, op: IObjectDelete<any>) {
-  let parent = findParent(obj, op.p);
-  let key = last(op.p);
+  const parent = findParent(obj, op.p);
+  const key = last(op.p);
   // STOPSHIP: this could cause problems during collaboration/undo
   expectEqualish(parent[key], op.od);
 
@@ -108,8 +108,8 @@ export function remove(obj: any, op: IObjectDelete<any>) {
 }
 
 export function removeFromList(obj: any, op: IListDelete<any>) {
-  let parent = findParent(obj, op.p);
-  let key = last(op.p);
+  const parent = findParent(obj, op.p);
+  const key = last(op.p);
   invariant(key < parent.length, "Invalid operation");
   invariant(key >= 0, "Invalid operation");
   // STOPSHIP: this could cause problems during collaboration/undo

@@ -7,9 +7,9 @@ import Home from "./home";
 import Tests from "./tests";
 import Sandbox from "./sandbox";
 
-let prefix = process.env.PLAYGROUND_PREFIX || "";
+const prefix = process.env.PLAYGROUND_PREFIX || "";
 
-let rootInstance = render(
+const rootInstance = render(
   <Router history={browserHistory}>
     <Route component={App} path="">
       <Route
@@ -61,7 +61,7 @@ let rootInstance = render(
 
 if ((module as any).hot) {
   require("react-hot-loader/Injection").RootInstanceProvider.injectProvider({
-    getRootInstances: function() {
+    getRootInstances: function () {
       // Help React Hot Loader figure out the root component instances on the page:
       return [rootInstance];
     },

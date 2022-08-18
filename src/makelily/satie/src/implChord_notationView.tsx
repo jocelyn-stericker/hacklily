@@ -62,13 +62,13 @@ export default class NotationView extends Component<IProps, {}> {
     const bbox = bboxes[notehead];
     const noteheadCenter = (10 * (bbox[0] - bbox[2])) / 2;
     const originX = nlayout ? nlayout.model[0].defaultX + noteheadCenter : 0;
-    let children: ReactElement<any>[] = [];
+    const children: ReactElement<any>[] = [];
 
-    forEach(model.accidentalMarks, _accidentalMark => {
+    forEach(model.accidentalMarks, (_accidentalMark) => {
       // TODO
     });
 
-    forEach(model.arpeggiates, _arpeggiate => {
+    forEach(model.arpeggiates, (_arpeggiate) => {
       // TODO
     });
 
@@ -82,12 +82,12 @@ export default class NotationView extends Component<IProps, {}> {
       );
     });
 
-    forEach(model.dynamics, _dynamic => {
+    forEach(model.dynamics, (_dynamic) => {
       // TODO
     });
 
     forEach(model.fermatas, (fermata, idx) => {
-      let direction =
+      const direction =
         fermata.type === UprightInverted.Inverted ? "Below" : "Above";
       let shape;
       switch (fermata.shape) {
@@ -117,23 +117,23 @@ export default class NotationView extends Component<IProps, {}> {
       );
     });
 
-    forEach(model.glissandos, _glissando => {
+    forEach(model.glissandos, (_glissando) => {
       // TODO
     });
 
-    forEach(model.nonArpeggiates, _nonArpeggiate => {
+    forEach(model.nonArpeggiates, (_nonArpeggiate) => {
       // TODO
     });
 
-    forEach(model.ornaments, _ornament => {
+    forEach(model.ornaments, (_ornament) => {
       // TODO
     });
 
-    forEach(model.slides, _slide => {
+    forEach(model.slides, (_slide) => {
       // TODO
     });
 
-    forEach(model.slurs, _slur => {
+    forEach(model.slurs, (_slur) => {
       // TODO
     });
 
@@ -187,19 +187,19 @@ export default class NotationView extends Component<IProps, {}> {
       );
     });
 
-    forEach(model.tieds, tied => {
-      let tieTo: IChordLayout = (tied as any).satieTieTo;
+    forEach(model.tieds, (tied) => {
+      const tieTo: IChordLayout = (tied as any).satieTieTo;
       if (!tieTo) {
         return;
       }
 
-      let bbox2 = bboxes[notehead];
-      let noteheadCenter2 = (10 * (bbox2[0] - bbox2[2])) / 2;
-      let offset2 = noteheadCenter2 - noteheadCenter - 4;
-      let defaultY = (this.context.originY || 0) - (this.props.defaultY || 0);
+      const bbox2 = bboxes[notehead];
+      const noteheadCenter2 = (10 * (bbox2[0] - bbox2[2])) / 2;
+      const offset2 = noteheadCenter2 - noteheadCenter - 4;
+      const defaultY = (this.context.originY || 0) - (this.props.defaultY || 0);
 
-      let stem1 = this.props.layout.satieStem;
-      let stem2 = tieTo.satieStem;
+      const stem1 = this.props.layout.satieStem;
+      const stem2 = tieTo.satieStem;
       let dir = -1;
       if (stem1 && stem2 && stem1.direction === stem2.direction) {
         dir = -stem1.direction;
@@ -210,16 +210,16 @@ export default class NotationView extends Component<IProps, {}> {
       }
 
       // This is the correct style only if space permits. See B.B. page 62.
-      let x2: number =
+      const x2: number =
         originX - this.props.layout.overrideX + tieTo.x + offset2;
-      let x1: number = originX;
-      let y2: number = defaultY - (dir === -1 ? -10 : 10);
-      let y1: number = defaultY - (dir === -1 ? -10 : 10);
+      const x1: number = originX;
+      const y2: number = defaultY - (dir === -1 ? -10 : 10);
+      const y1: number = defaultY - (dir === -1 ? -10 : 10);
 
-      let x2mx1: number = x2 - x1;
-      let x1mx2: number = -x2mx1;
-      let relw: number = 3.2; // How "curved" it is
-      let y1my2: number = y1 - y2;
+      const x2mx1: number = x2 - x1;
+      const x1mx2: number = -x2mx1;
+      const relw: number = 3.2; // How "curved" it is
+      const y1my2: number = y1 - y2;
       let absw: number = (-dir * 8.321228) / Math.max(1, Math.abs(y1my2));
       if ((y1my2 > 0 ? -1 : 1) * dir === 1) {
         absw = absw * 2;
@@ -257,7 +257,7 @@ export default class NotationView extends Component<IProps, {}> {
       );
     });
 
-    forEach(model.tuplets, _tuplet => {
+    forEach(model.tuplets, (_tuplet) => {
       // TODO
     });
 

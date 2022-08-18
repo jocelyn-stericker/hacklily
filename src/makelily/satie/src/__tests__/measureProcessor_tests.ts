@@ -37,10 +37,10 @@ import {
   fakeFactory,
 } from "./etestutil";
 
-describe("[engine/measureProcessor.ts]", function() {
-  describe("reduce", function() {
-    it("can lay out multiple voices", function() {
-      let segments = [
+describe("[engine/measureProcessor.ts]", function () {
+  describe("reduce", function () {
+    it("can lay out multiple voices", function () {
+      const segments = [
         createFakeStaffSegment(4, 4, 1), // 00001111
         createFakeVoiceSegment(2, 6, 1), // 00111111
         createFakeVoiceSegment(1, 7, 2), // 01111111
@@ -54,7 +54,7 @@ describe("[engine/measureProcessor.ts]", function() {
       normalizeDivisionsInPlace(fakeFactory, segments);
 
       // test without alignment
-      let opts: IRefreshMeasureOpts = {
+      const opts: IRefreshMeasureOpts = {
         document: {
           __fakeDocument: true,
         } as any,
@@ -100,7 +100,7 @@ describe("[engine/measureProcessor.ts]", function() {
       // Now test
       opts.noAlign = false;
       layout = refreshMeasure(opts).elements;
-      layout[1].map(l => delete (<any>l).key);
+      layout[1].map((l) => delete (<any>l).key);
       expect(layout[1]).toEqual([
         {
           division: 0,
@@ -142,17 +142,17 @@ describe("[engine/measureProcessor.ts]", function() {
       ]);
     });
   });
-  describe("layoutMeasure", function() {
-    it("lays out a case with multiple voices", function() {
-      let staffSegments = [null, createFakeStaffSegment(4, 4, 1)];
+  describe("layoutMeasure", function () {
+    it("lays out a case with multiple voices", function () {
+      const staffSegments = [null, createFakeStaffSegment(4, 4, 1)];
 
-      let voiceSegments = [
+      const voiceSegments = [
         null,
         createFakeVoiceSegment(2, 6, 1),
         createFakeVoiceSegment(1, 7, 2),
       ];
 
-      let layout = layoutMeasure({
+      const layout = layoutMeasure({
         document: {
           __fakeDocument: true,
         } as any,
@@ -201,17 +201,17 @@ describe("[engine/measureProcessor.ts]", function() {
       expect(layout.width).toEqual(100);
     });
   });
-  describe("approximateWidth", function() {
-    it("approximates mid-line width", function() {
-      let staffSegments = [null, createFakeStaffSegment(4, 4, 1)];
+  describe("approximateWidth", function () {
+    it("approximates mid-line width", function () {
+      const staffSegments = [null, createFakeStaffSegment(4, 4, 1)];
 
-      let voiceSegments = [
+      const voiceSegments = [
         null,
         createFakeVoiceSegment(2, 6, 1),
         createFakeVoiceSegment(1, 7, 2),
       ];
 
-      let width = getApproximateMeasureWidth(
+      const width = getApproximateMeasureWidth(
         {
           idx: 0,
           number: "1",

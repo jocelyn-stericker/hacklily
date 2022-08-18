@@ -44,7 +44,7 @@ class SpacerModel implements ISpacerModel {
   }
 
   toJSON() {
-    let { _class, divCount } = this;
+    const { _class, divCount } = this;
     return {
       _class,
       divCount,

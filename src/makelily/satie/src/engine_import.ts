@@ -68,16 +68,16 @@ import { makeFactory } from "./engine_setup";
 /*---- Exports ----------------------------------------------------------------------------------*/
 
 export function stringToDocument(src: string, factory: IFactory) {
-  let mxmljson = parseScore(src);
+  const mxmljson = parseScore(src);
   if ((mxmljson as any).error) {
     throw (mxmljson as any).error;
   }
-  let document = timewiseStructToDocument(mxmljson, factory);
+  const document = timewiseStructToDocument(mxmljson, factory);
   if (document.error) {
     throw document.error;
   }
 
-  let contextOptions: ILayoutOptions = {
+  const contextOptions: ILayoutOptions = {
     attributes: null,
     document,
     fixup: null,
@@ -111,8 +111,8 @@ export function timewiseStructToDocument(
   factory: IFactory,
 ): Document {
   try {
-    let header = _extractMXMLHeader(score);
-    let partData = _extractMXMLPartsAndMeasures(score, factory);
+    const header = _extractMXMLHeader(score);
+    const partData = _extractMXMLPartsAndMeasures(score, factory);
     if (partData.error) {
       return new Document(null, null, null, null, new Error(partData.error));
     }
@@ -126,7 +126,7 @@ export function timewiseStructToDocument(
 /*---- Private ----------------------------------------------------------------------------------*/
 
 export function _extractMXMLHeader(m: ScoreTimewise): ScoreHeader {
-  let header = new ScoreHeader({
+  const header = new ScoreHeader({
     credits: m.credits,
     defaults: m.defaults,
     identification: m.identification,
@@ -148,8 +148,11 @@ export function _extractMXMLPartsAndMeasures(
   input: ScoreTimewise,
   factory: IFactory,
 ): { measures?: IMeasure[]; parts?: string[]; error?: string } {
-  let parts: string[] = map(scoreParts(input.partList), inPart => inPart.id);
-  let createModel: typeof factory.create = factory.create.bind(factory);
+  const parts: string[] = map(
+    scoreParts(input.partList),
+    (inPart) => inPart.id,
+  );
+  const createModel: typeof factory.create = factory.create.bind(factory);
 
   // TODO/STOPSHIP - sync division count in each measure
   let divisions = 768; // XXX: LilyPond-regression 41g.xml does not specify divisions
@@ -158,8 +161,8 @@ export function _extractMXMLPartsAndMeasures(
   let lastAttribs: Attributes = null;
   let maxVoice = 0;
 
-  let measures: IMeasure[] = map(input.measures, (inMeasure, measureIdx) => {
-    let measure = {
+  const measures: IMeasure[] = map(input.measures, (inMeasure, measureIdx) => {
+    const measure = {
       idx: measureIdx,
       implicit: inMeasure.implicit,
       nonControlling: inMeasure.nonControlling,
@@ -176,11 +179,11 @@ export function _extractMXMLPartsAndMeasures(
       delete inMeasure.parts[""];
     }
     let linkedParts = map(inMeasure.parts, (val, key) => {
-      if (!some(parts, part => part === key)) {
+      if (!some(parts, (part) => part === key)) {
         // See LilyPond-regression >> 41h.
         return null;
       }
-      let output: IMeasurePart = {
+      const output: IMeasurePart = {
         staves: [],
         voices: [],
       };
@@ -206,9 +209,9 @@ export function _extractMXMLPartsAndMeasures(
       };
     });
 
-    linkedParts = filter(linkedParts, p => !!p);
+    linkedParts = filter(linkedParts, (p) => !!p);
 
-    let commonDivisions = reduce(
+    const commonDivisions = reduce(
       linkedParts,
       (memo, part) => {
         return reduce(
@@ -226,9 +229,9 @@ export function _extractMXMLPartsAndMeasures(
     );
 
     // Lets normalize divisions here.
-    forEach(linkedParts, part => {
+    forEach(linkedParts, (part) => {
       let previousDivisions = divisions;
-      forEach(part.input, input => {
+      forEach(part.input, (input) => {
         if (input.divisions) {
           previousDivisions = input.divisions;
           input.divisions = commonDivisions;
@@ -246,16 +249,16 @@ export function _extractMXMLPartsAndMeasures(
     // Create base structure
     while (!done()) {
       // target is accessed outside loop in syncStaffDivisions
-      target = minBy(linkedParts, part =>
+      target = minBy(linkedParts, (part) =>
         part.idx === part.input.length ? MAX_SAFE_INTEGER : part.division,
       );
       invariant(!!target, "Target not specified");
-      let input = target.input[target.idx];
+      const input = target.input[target.idx];
       let prevStaff = 1;
       switch (input._class) {
         case "Note":
           {
-            let note: Note = input;
+            const note: Note = input;
 
             // TODO: is this the case even if voice/staff don't match up?
             if (note.chord) {
@@ -266,8 +269,8 @@ export function _extractMXMLPartsAndMeasures(
               chordBeingBuilt.push(note);
             } else {
               // Notes go in the voice context.
-              let voice = note.voice || 1;
-              let staff = note.staff || 1;
+              const voice = note.voice || 1;
+              const staff = note.staff || 1;
               prevStaff = staff;
               if (!(voice in target.output.voices)) {
                 createVoice(voice, target.output);
@@ -287,12 +290,12 @@ export function _extractMXMLPartsAndMeasures(
               );
               if (target.divisionPerVoice[voice] < target.division) {
                 // Add rest
-                let divisionsInVoice = target.divisionPerVoice[voice];
+                const divisionsInVoice = target.divisionPerVoice[voice];
                 // This beautiful IIFE is needed because of undefined behaviour for
                 // block-scoped variables in modules.
-                let restModel = ((divisionsInVoice: number) =>
+                const restModel = ((divisionsInVoice: number) =>
                   factory.fromSpec(
-                    buildNote(note =>
+                    buildNote((note) =>
                       note
                         .printObject(false)
                         .rest({})
@@ -300,7 +303,7 @@ export function _extractMXMLPartsAndMeasures(
                     ),
                   ))(divisionsInVoice);
 
-                let division = target.divisionPerVoice[voice];
+                const division = target.divisionPerVoice[voice];
                 restModel[0].duration = target.division - division;
                 target.output.voices[voice].push(restModel);
                 target.divisionPerVoice[voice] = target.division;
@@ -308,7 +311,7 @@ export function _extractMXMLPartsAndMeasures(
 
               // Add the note to the voice segment and register it as the
               // last inserted note
-              let newNote = factory.fromSpec(input);
+              const newNote = factory.fromSpec(input);
               target.output.voices[voice].push(newNote);
               chordBeingBuilt = newNote;
 
@@ -348,16 +351,16 @@ export function _extractMXMLPartsAndMeasures(
               target.output.staves[staff].owner = staff;
               target.output.staves[staff].ownerType = "staff";
             }
-            let newModel = factory.fromSpec(input);
+            const newModel = factory.fromSpec(input);
 
             // Check if this is metadata:
             if (input._class === "Direction") {
-              let direction = (newModel as any) as Direction;
-              let words =
+              const direction = newModel as any as Direction;
+              const words =
                 direction.directionTypes.length === 1 &&
                 direction.directionTypes[0].words;
               if (words && words.length === 1) {
-                let maybeMeta = words[0].data.trim();
+                const maybeMeta = words[0].data.trim();
                 if (
                   startsWith(maybeMeta, "SATIE_SONG_META = ") &&
                   endsWith(maybeMeta, ";")
@@ -368,7 +371,7 @@ export function _extractMXMLPartsAndMeasures(
                   startsWith(maybeMeta, "SATIE_MEASURE_META = ") &&
                   endsWith(maybeMeta, ";")
                 ) {
-                  let measureMeta = JSON.parse(
+                  const measureMeta = JSON.parse(
                     maybeMeta
                       .replace(/^SATIE_MEASURE_META = /, "")
                       .replace(/;$/, ""),
@@ -383,14 +386,14 @@ export function _extractMXMLPartsAndMeasures(
             if (input._class === "Attributes") {
               lastAttribs = <Attributes>input;
               divisions = lastAttribs.divisions || divisions;
-              let oTimes = lastAttribs.times;
+              const oTimes = lastAttribs.times;
               if (oTimes && oTimes.length) {
                 target.times = oTimes;
               }
-              let staves = lastAttribs.staves || 1;
+              const staves = lastAttribs.staves || 1;
               gStaves = staves;
-              times(staves, staffMinusOne => {
-                let staff = staffMinusOne + 1;
+              times(staves, (staffMinusOne) => {
+                const staff = staffMinusOne + 1;
                 if (!(staff in target.output.staves)) {
                   createStaff(staff, target.output);
                 }
@@ -400,7 +403,7 @@ export function _extractMXMLPartsAndMeasures(
           break;
         case "Forward":
           {
-            let forward = <Forward>input;
+            const forward = <Forward>input;
             forEach(target.output.staves, (_staff, staffIdx) => {
               syncAppendStaff(staffIdx, null, input.divisions || divisions);
             });
@@ -409,7 +412,7 @@ export function _extractMXMLPartsAndMeasures(
           break;
         case "Backup":
           {
-            let backup = <Backup>input;
+            const backup = <Backup>input;
             forEach(target.output.staves, (_staff, staffIdx) => {
               syncAppendStaff(staffIdx, null, input.divisions || divisions);
             });
@@ -424,13 +427,13 @@ export function _extractMXMLPartsAndMeasures(
 
     // Finish up
 
-    times(gStaves, staffMinusOne => {
-      let staff = staffMinusOne + 1;
+    times(gStaves, (staffMinusOne) => {
+      const staff = staffMinusOne + 1;
       if (!(staff in target.output.staves)) {
         createStaff(staff, target.output);
         maxVoice++;
-        let voice = createVoice(maxVoice, target.output);
-        let newNote: IChord = <any>factory.create(Type.Chord);
+        const voice = createVoice(maxVoice, target.output);
+        const newNote: IChord = <any>factory.create(Type.Chord);
         newNote.push({
           duration: barDivisionsDI(lastAttribs.times[0], lastAttribs.divisions),
           rest: {},
@@ -441,7 +444,7 @@ export function _extractMXMLPartsAndMeasures(
       }
     });
 
-    forEach(linkedParts, part => {
+    forEach(linkedParts, (part) => {
       // Note: target is 'var'-scoped!
       target = part;
 
@@ -449,13 +452,13 @@ export function _extractMXMLPartsAndMeasures(
       forEach(target.output.staves, (_staff, staffIdx) => {
         syncAppendStaff(staffIdx, null, divisions);
 
-        let segment = target.output.staves[staffIdx];
+        const segment = target.output.staves[staffIdx];
         if (segment) {
           segment.divisions = divisions;
         }
       });
       forEach(target.output.voices, (_voice, voiceIdx) => {
-        let segment = target.output.voices[voiceIdx];
+        const segment = target.output.voices[voiceIdx];
         if (segment) {
           segment.divisions = divisions;
         }
@@ -467,20 +470,20 @@ export function _extractMXMLPartsAndMeasures(
       model: IModel,
       localDivisions: number,
     ) {
-      let ratio = localDivisions / divisions || 1;
+      const ratio = localDivisions / divisions || 1;
       const divCount =
         ratio * (target.division - (target.divisionPerStaff[staff] || 0));
-      let segment = target.output.staves[staff];
+      const segment = target.output.staves[staff];
       invariant((!!model && !!segment) || !model, "Unknown staff %s");
 
       if (divCount > 0) {
         if (segment) {
           if (segment.length) {
-            let model = segment[segment.length - 1];
+            const model = segment[segment.length - 1];
             model.divCount = model.divCount || 0;
             model.divCount += divCount;
           } else {
-            let model = createModel(Type.Spacer, {
+            const model = createModel(Type.Spacer, {
               divCount,
               staff,
             });
@@ -513,7 +516,7 @@ export function _extractMXMLPartsAndMeasures(
     }
 
     function done() {
-      return every(linkedParts, part => {
+      return every(linkedParts, (part) => {
         return part.idx === part.input.length;
       });
     }
@@ -551,12 +554,12 @@ export function importXML(
   requireFont("Bravura", "root://bravura/otf/Bravura.otf");
   requireFont("Alegreya", "root://alegreya/Alegreya-Regular.ttf");
   requireFont("Alegreya", "root://alegreya/Alegreya-Bold.ttf", "bold");
-  whenReady(err => {
+  whenReady((err) => {
     if (err) {
       cb(err);
     } else {
       try {
-        let factory = makeFactory();
+        const factory = makeFactory();
         cb(null, stringToDocument(src, factory), factory);
       } catch (err) {
         cb(err);

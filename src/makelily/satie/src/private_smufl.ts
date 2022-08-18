@@ -22,13 +22,13 @@ import bravura from "./private_smufl_bravura";
 import glyphNames from "./private_smufl_glyphnames";
 
 export { default as bravura } from "./private_smufl_bravura";
-export let bboxes: { [key: string]: any[] } = keyBy(
+export const bboxes: { [key: string]: any[] } = keyBy(
   bravura.glyphBBoxes,
   4,
 ) as any;
 bboxes["noteheadNull"] = bboxes["noteheadBlack"];
 
-let _getGlyphCode = memoize(function getGlyphCode(name: string) {
+const _getGlyphCode = memoize(function getGlyphCode(name: string) {
   if (!(name in glyphNames)) {
     console.warn(name, " is not a valid glyph");
   }
@@ -47,7 +47,7 @@ const getAnchor = memoize(
  * Calculates where a notation should begin.
  */
 export function getFontOffset(notehead: string, direction: number) {
-  let anchors = getAnchor(notehead);
+  const anchors = getAnchor(notehead);
 
   switch (true) {
     case !anchors:
@@ -61,7 +61,7 @@ export function getFontOffset(notehead: string, direction: number) {
   }
 }
 
-export let distances = {
+export const distances = {
   beam: 0.88,
   hyphen: 12,
 };

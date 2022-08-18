@@ -95,7 +95,7 @@ class HarmonyModel implements IHarmonyModel {
   /*---- PrintStyle > Color ---------------------------------------------------------------*/
 
   get color(): string {
-    let hex = this._color.toString(16);
+    const hex = this._color.toString(16);
     return "#" + "000000".substr(0, 6 - hex.length) + hex;
   }
   set color(a: string) {

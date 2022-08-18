@@ -1149,7 +1149,7 @@ export default class ToolNoteEdit extends React.Component<ToolProps, State> {
     if (!isChord) {
       return false;
     }
-    const chord: Note[] = (el as any) as Note[];
+    const chord: Note[] = el as any as Note[];
     let patch: IAny[];
     const isCurrentNote: boolean =
       chord &&
@@ -1526,9 +1526,8 @@ export default class ToolNoteEdit extends React.Component<ToolProps, State> {
 
   private redo: () => void = (): void => {
     this.setState({
-      canonicalOperations: this.state.redoStack[
-        this.state.redoStack.length - 1
-      ],
+      canonicalOperations:
+        this.state.redoStack[this.state.redoStack.length - 1],
       operations: this.state.redoStack[this.state.redoStack.length - 1],
       redoStack: this.state.redoStack.slice(0, this.state.redoStack.length - 1),
       undoStack: this.state.undoStack.concat(this.state.operations),
@@ -1617,7 +1616,7 @@ export default class ToolNoteEdit extends React.Component<ToolProps, State> {
     }
   };
 
-  private setDirection: (direction: Direction) => void = direction => {
+  private setDirection: (direction: Direction) => void = (direction) => {
     this.setState({
       direction,
       notation: null,
@@ -1639,7 +1638,7 @@ export default class ToolNoteEdit extends React.Component<ToolProps, State> {
     });
   };
 
-  private setNotation: (notations: Notations) => void = notation => {
+  private setNotation: (notations: Notations) => void = (notation) => {
     this.setState({
       direction: null,
       notation,
@@ -1667,13 +1666,15 @@ export default class ToolNoteEdit extends React.Component<ToolProps, State> {
             .staff(
               1,
               (staff: StaffBuilder): StaffBuilder =>
-                staff.at(1).attributes(
-                  (attributes: IAttributesBuilder): IAttributesBuilder =>
-                    attributes
-                      .clefs([this.props.clef])
-                      .keySignatures([this.props.keySig])
-                      .times([this.props.time]),
-                ),
+                staff
+                  .at(1)
+                  .attributes(
+                    (attributes: IAttributesBuilder): IAttributesBuilder =>
+                      attributes
+                        .clefs([this.props.clef])
+                        .keySignatures([this.props.keySig])
+                        .times([this.props.time]),
+                  ),
             )
             .voice(
               1,
@@ -1694,9 +1695,8 @@ export default class ToolNoteEdit extends React.Component<ToolProps, State> {
 
   private undo: () => void = (): void => {
     this.setState({
-      canonicalOperations: this.state.undoStack[
-        this.state.undoStack.length - 1
-      ],
+      canonicalOperations:
+        this.state.undoStack[this.state.undoStack.length - 1],
       operations: this.state.undoStack[this.state.undoStack.length - 1],
       redoStack: this.state.redoStack.concat(this.state.operations),
       undoStack: this.state.undoStack.slice(0, this.state.undoStack.length - 1),

@@ -78,30 +78,30 @@ function beam(
   _bounds: ILineBounds,
   measures: IMeasureLayout[],
 ): IMeasureLayout[] {
-  forEach(measures, measure => {
+  forEach(measures, (measure) => {
     // Note that the `number` property of beams does NOT differentiate between sets of beams,
     // as it does with e.g., ties. See `note.mod`.
-    let activeBeams: BeamSet = {};
-    let activeUnbeamedTuplets: BeamSet = {};
+    const activeBeams: BeamSet = {};
+    const activeUnbeamedTuplets: BeamSet = {};
     let activeAttributes: Attributes = null;
     // Invariant: measure.elements[i].length == measure.elements[j].length for all valid i, j.
-    times(measure.elements[0].length, i => {
-      forEach(measure.elements, elements => {
-        let layout = elements[i];
-        let model = layout.model;
+    times(measure.elements[0].length, (i) => {
+      forEach(measure.elements, (elements) => {
+        const layout = elements[i];
+        const model = layout.model;
         if (model && layout.renderClass === Type.Attributes) {
           activeAttributes = <any>model;
         }
         if (!model || layout.renderClass !== Type.Chord) {
           return;
         }
-        let chord: IChord = <any>model;
-        let targetNote = find(chord, note => !!note.beams);
+        const chord: IChord = <any>model;
+        let targetNote = find(chord, (note) => !!note.beams);
         let startTuplet: Tuplet;
         let stopTuplet: Tuplet;
-        forEach(chord, note => {
-          forEach(note.notations, notation => {
-            forEach(notation.tuplets, aTuplet => {
+        forEach(chord, (note) => {
+          forEach(note.notations, (notation) => {
+            forEach(notation.tuplets, (aTuplet) => {
               targetNote = targetNote || note;
               if (aTuplet.type === StartStop.Start) {
                 startTuplet = aTuplet;
@@ -116,7 +116,7 @@ function beam(
           return;
         }
         if (!targetNote) {
-          forEach(chord, note => {
+          forEach(chord, (note) => {
             if (!note || note.grace) {
               // TODO: grace notes
               return;
@@ -135,20 +135,21 @@ function beam(
           });
           return;
         }
-        let { beams, voice } = targetNote;
+        let beams = targetNote.beams;
+        const voice = targetNote.voice;
         if (!beams) {
           beams = [];
         }
-        let toTerminate: {
+        const toTerminate: {
           voice: number;
           idx: number;
           isUnbeamedTuplet: boolean;
           beamSet: BeamSet;
         }[] = [];
 
-        let anyInvalid = some(sortBy(beams), (beam, idx) => {
-          let expected = idx + 1;
-          let actual = beam.number;
+        const anyInvalid = some(sortBy(beams), (beam, idx) => {
+          const expected = idx + 1;
+          const actual = beam.number;
           if (expected !== actual) {
             console.warn("Invalid beam number"); // TODO: fix it
             return true;
@@ -170,7 +171,7 @@ function beam(
             tuplet: startTuplet,
           };
         } else {
-          forEach(activeUnbeamedTuplets[voice], unbeamedTuplet => {
+          forEach(activeUnbeamedTuplets[voice], (unbeamedTuplet) => {
             if (unbeamedTuplet) {
               unbeamedTuplet.elements.push(layout);
             }
@@ -192,8 +193,8 @@ function beam(
 
         chain(beams)
           .sortBy("number")
-          .forEach(beam => {
-            let idx = beam.number;
+          .forEach((beam) => {
+            const idx = beam.number;
             invariant(!!idx, "A beam's number must be defined in MusicXML.");
             invariant(!!voice, "A beam's voice must be defined in MusicXML.");
             activeBeams[voice] = activeBeams[voice] || [];
@@ -219,7 +220,7 @@ function beam(
                   counts: [1],
                   tuplet: startTuplet,
                 };
-                let counts = activeBeams[voice][1].counts;
+                const counts = activeBeams[voice][1].counts;
                 if (idx !== 1) {
                   counts[counts.length - 1]++;
                 }
@@ -246,7 +247,7 @@ function beam(
                   );
                   activeBeams[voice][idx].elements.push(layout);
 
-                  let counts = activeBeams[voice][1].counts;
+                  const counts = activeBeams[voice][1].counts;
 
                   if (beam.type === BeamType.End) {
                     if (idx === 1) {
@@ -262,7 +263,7 @@ function beam(
                     beamSet: activeBeams,
                   });
 
-                  let groupTuplet = activeBeams[voice][idx].tuplet;
+                  const groupTuplet = activeBeams[voice][idx].tuplet;
                   if (groupTuplet && !stopTuplet) {
                     // We optimisticly attached the tuplet to the beam, but it extends
                     // beyond the beam. Detach the tuplet from the beam, and create an
@@ -298,7 +299,7 @@ function beam(
                   );
                   activeBeams[voice][idx].elements.push(layout);
 
-                  let counts = activeBeams[voice][1].counts;
+                  const counts = activeBeams[voice][1].counts;
                   if (idx === 1) {
                     counts.push(1);
                   } else {
@@ -311,7 +312,7 @@ function beam(
             }
           })
           .value();
-        forEach(toTerminate, t =>
+        forEach(toTerminate, (t) =>
           terminateBeam(t.voice, t.idx, t.beamSet, t.isUnbeamedTuplet),
         );
       });
@@ -353,35 +354,35 @@ function layoutBeam(
   beamSet: BeamSet,
   isUnbeamedTuplet: boolean,
 ) {
-  let beam = beamSet[voice][idx];
-  let chords: IDetachedChordModel[] = map(
+  const beam = beamSet[voice][idx];
+  const chords: IDetachedChordModel[] = map(
     beam.elements,
-    eLayout => <any>eLayout.model,
+    (eLayout) => <any>eLayout.model,
   );
-  let firstChord = first(chords);
-  let lastChord = last(chords);
-  let { clef } = beam.attributes;
+  const firstChord = first(chords);
+  const lastChord = last(chords);
+  const { clef } = beam.attributes;
 
-  let firstAvgLine = averageLine(firstChord, clef);
-  let lastAvgLine = averageLine(lastChord, clef);
+  const firstAvgLine = averageLine(firstChord, clef);
+  const lastAvgLine = averageLine(lastChord, clef);
 
-  let avgLine = (firstAvgLine + lastAvgLine) / 2;
+  const avgLine = (firstAvgLine + lastAvgLine) / 2;
 
-  let direction = avgLine >= 3 ? -1 : 1; // TODO: StemType should match this!!
+  const direction = avgLine >= 3 ? -1 : 1; // TODO: StemType should match this!!
 
-  let Xs: number[] = [];
-  let lines: number[][] = [];
+  const Xs: number[] = [];
+  const lines: number[][] = [];
 
   forEach(beam.elements, (layout, idx) => {
     Xs.push(layout.x);
     lines.push(linesForClef(chords[idx], clef));
   });
 
-  let line1 = startingLine(firstChord, direction, clef);
-  let line2 = startingLine(lastChord, direction, clef);
+  const line1 = startingLine(firstChord, direction, clef);
+  const line2 = startingLine(lastChord, direction, clef);
 
   let slope = ((line2 - line1) / (last(Xs) - first(Xs))) * 10;
-  let stemHeight1 = 35;
+  const stemHeight1 = 35;
 
   // Limit the slope to the range (-50, 50)
   if (slope > 0.5) {
@@ -406,13 +407,13 @@ function layoutBeam(
   let minStemHeight = 1000;
   let incrementalIntercept = 0;
   forEach(chords, (chord, idx) => {
-    let currHeightDeterminingLine = heightDeterminingLine(
+    const currHeightDeterminingLine = heightDeterminingLine(
       chord,
       direction,
       clef,
     );
 
-    let stemHeight = getStemHeight(direction, idx, currHeightDeterminingLine);
+    const stemHeight = getStemHeight(direction, idx, currHeightDeterminingLine);
     if (stemHeight < minStemHeight) {
       minStemHeight = stemHeight;
       incrementalIntercept =
@@ -429,12 +430,12 @@ function layoutBeam(
     intercept += direction * (10 - (intercept % 10));
   }
 
-  const layouts = (beam.elements as any) as IChordLayout[];
+  const layouts = beam.elements as any as IChordLayout[];
   if (isUnbeamedTuplet) {
-    let offsetY = direction > 0 ? -13 : -53;
+    const offsetY = direction > 0 ? -13 : -53;
     forEach(layouts, (chordLayout, idx) => {
-      let stemStart = startingLine(chordLayout.model, direction, clef);
-      let stemHeight = getStemHeight(direction, idx, stemStart);
+      const stemStart = startingLine(chordLayout.model, direction, clef);
+      const stemHeight = getStemHeight(direction, idx, stemStart);
       invariant(
         chords.length === 1 || isFinite(stemHeight),
         "stemHeight must be defined for 2+ notes",
@@ -448,11 +449,11 @@ function layoutBeam(
           : null,
       };
     });
-    let tuplet: Tuplet = Object.create(beam.tuplet);
+    const tuplet: Tuplet = Object.create(beam.tuplet);
     tuplet.placement = direction > 0 ? AboveBelow.Above : AboveBelow.Below;
 
-    let firstStem = first(layouts).satieStem;
-    let lastStem = last(layouts).satieStem;
+    const firstStem = first(layouts).satieStem;
+    const lastStem = last(layouts).satieStem;
 
     firstChord.satieUnbeamedTuplet = {
       beamCount: null,
@@ -464,8 +465,8 @@ function layoutBeam(
     };
   } else {
     forEach(layouts, (chordLayout, idx) => {
-      let stemStart = startingLine(chordLayout.model, direction, clef);
-      let stemHeight = getStemHeight(direction, idx, stemStart);
+      const stemStart = startingLine(chordLayout.model, direction, clef);
+      const stemHeight = getStemHeight(direction, idx, stemStart);
 
       chordLayout.satieStem = {
         direction,
@@ -477,12 +478,12 @@ function layoutBeam(
       chordLayout.satieFlag = null;
     });
 
-    let firstStem = first(layouts).satieStem;
-    let lastStem = last(layouts).satieStem;
-    let firstLayout = (first(beam.elements) as any) as IChordLayout;
+    const firstStem = first(layouts).satieStem;
+    const lastStem = last(layouts).satieStem;
+    const firstLayout = first(beam.elements) as any as IChordLayout;
 
     firstLayout.satieBeam = {
-      beamCount: times(Xs.length, idx => beam.counts[idx]),
+      beamCount: times(Xs.length, (idx) => beam.counts[idx]),
       direction: direction,
       x: Xs,
       y1: firstStem.stemStart * 10 + direction * firstStem.stemHeight - 30,

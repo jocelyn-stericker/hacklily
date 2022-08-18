@@ -28,11 +28,11 @@ import { IModel, Type } from "../document";
 
 import Factory from "../engine_factory";
 
-describe("[print.ts]", function() {
-  describe("PrintModel", function() {
-    let factory = new Factory([Print]);
+describe("[print.ts]", function () {
+  describe("PrintModel", function () {
+    const factory = new Factory([Print]);
     let print: IModel;
-    it("can be created", function() {
+    it("can be created", function () {
       print = factory.create(Type.Print);
       expect(!!print).to.be.true;
     });

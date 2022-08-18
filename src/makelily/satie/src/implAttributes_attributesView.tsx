@@ -41,12 +41,12 @@ export default class AttributesView extends Component<
   };
 
   render(): ReactElement<any> {
-    let layout = this.props.layout;
-    let children: any[] = [];
+    const layout = this.props.layout;
+    const children: any[] = [];
 
     // Staff lines go first, because they are underneath other attributes
-    let staffWidth = (layout as any).staffWidth;
-    let staffLinesOffsetX = (layout as any).staffLinesOffsetX;
+    const staffWidth = (layout as any).staffWidth;
+    const staffLinesOffsetX = (layout as any).staffLinesOffsetX;
     if (staffWidth) {
       children.push(
         <StaffLines

@@ -28,7 +28,7 @@ export default class PatchImpl {
     this.content = content.slice();
     this.isPreview = isPreview;
     Object.freeze(this.content);
-    this.content.forEach(item => {
+    this.content.forEach((item) => {
       Object.freeze(item);
       Object.freeze(item.p);
       // Note: We don't deep freeze ld, li, od, or oi. Should we?

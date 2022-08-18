@@ -53,7 +53,7 @@ class ModelView extends Component<IProps, IState> {
   };
 
   render(): any {
-    let layout = this.props.layout as any; // Sigh...
+    const layout = this.props.layout as any; // Sigh...
     switch (layout.renderClass) {
       case Type.Attributes:
         return <AttributesView layout={layout} />;

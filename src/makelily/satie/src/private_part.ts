@@ -21,7 +21,7 @@ import { PartList, PartGroup, ScorePart, StartStop } from "musicxml-interfaces";
 
 export function scoreParts(scoreParts: PartList): ScorePart[] {
   return <ScorePart[]>(
-    filter(scoreParts, scorePart => scorePart._class === "ScorePart")
+    filter(scoreParts, (scorePart) => scorePart._class === "ScorePart")
   );
 }
 
@@ -31,16 +31,19 @@ export function groupsForPart(
 ): PartGroup[] {
   let groups: PartGroup[] = [];
 
-  some(scoreParts, partOrGroup => {
+  some(scoreParts, (partOrGroup) => {
     if (partOrGroup._class === "PartGroup") {
-      let group = <PartGroup>partOrGroup;
+      const group = <PartGroup>partOrGroup;
       if (group.type === StartStop.Start) {
         groups.push(group);
       } else {
-        groups = filter(groups, currGroup => currGroup.number !== group.number);
+        groups = filter(
+          groups,
+          (currGroup) => currGroup.number !== group.number,
+        );
       }
     } else {
-      let part = <ScorePart>partOrGroup;
+      const part = <ScorePart>partOrGroup;
       if (part.id === partID) {
         return true;
       }

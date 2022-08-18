@@ -37,8 +37,10 @@ export interface IProps {
   key?: string | number;
 }
 
-export default class WordsView extends Component<IProps, {}>
-  implements ITextMixin {
+export default class WordsView
+  extends Component<IProps, {}>
+  implements ITextMixin
+{
   static contextTypes = {
     originY: PropTypes.number.isRequired,
     scale40: PropTypes.number.isRequired,
@@ -59,26 +61,26 @@ export default class WordsView extends Component<IProps, {}>
   getDY: (words: CreditWords | Words, initY: number, lineNum: number) => number;
 
   render(): any {
-    let layout = this.props.layout;
-    let model = layout.model;
-    let wordsContainer = filter(model.directionTypes, dt => dt.words)[0];
+    const layout = this.props.layout;
+    const model = layout.model;
+    const wordsContainer = filter(model.directionTypes, (dt) => dt.words)[0];
     invariant(!!wordsContainer, "No words found!");
-    let words =
+    const words =
       typeof wordsContainer !== "number" &&
       typeof wordsContainer !== "function" &&
       wordsContainer.words;
 
-    let initX = this.props.layout.overrideX;
-    let initY =
+    const initX = this.props.layout.overrideX;
+    const initY =
       this.context.originY - words[0].defaultY - (words[0].relativeY || 0);
-    let scale40 = this.context.scale40;
+    const scale40 = this.context.scale40;
 
     return (
       <text x={initX} y={initY}>
         {map(words, (words, idx) => {
-          let isBold = words.fontWeight === NormalBold.Bold;
-          let isItalic = words.fontStyle === NormalItalic.Italic;
-          let fontSize = cssSizeToTenths(scale40, words.fontSize);
+          const isBold = words.fontWeight === NormalBold.Bold;
+          const isItalic = words.fontStyle === NormalItalic.Italic;
+          const fontSize = cssSizeToTenths(scale40, words.fontSize);
 
           return map(words.data.split("\n"), (line, lineNum) => (
             <tspan

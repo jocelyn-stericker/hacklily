@@ -54,33 +54,33 @@ export default class ChordView extends Component<IProps, {}> {
   };
 
   render(): ReactElement<any> {
-    let layout = this.props.layout;
-    let spec = layout.model;
+    const layout = this.props.layout;
+    const spec = layout.model;
 
-    let maxNotehead = maxBy(spec.noteheadGlyph, glyph => getRight(glyph));
+    const maxNotehead = maxBy(spec.noteheadGlyph, (glyph) => getRight(glyph));
 
-    let anyVisible = some(spec, note => note.printObject !== false);
+    const anyVisible = some(spec, (note) => note.printObject !== false);
 
     if (!anyVisible) {
       return null;
     }
 
     let lyKey = 0;
-    let lyrics = chain((spec as any) as Note[])
-      .map(n => n.lyrics)
-      .filter(l => !!l)
+    const lyrics = chain(spec as any as Note[])
+      .map((n) => n.lyrics)
+      .filter((l) => !!l)
       .flattenDeep()
-      .filter(l => !!l)
+      .filter((l) => !!l)
       .map((l: Lyric) => {
-        let text: any[] = [];
+        const text: any[] = [];
         for (let i = 0; i < l.lyricParts.length; ++i) {
           switch (l.lyricParts[i]._class) {
             case "Syllabic":
               break;
             case "Text":
               {
-                let textPt = l.lyricParts[i] as Text;
-                let width = bboxes[maxNotehead][0] * 10;
+                const textPt = l.lyricParts[i] as Text;
+                const width = bboxes[maxNotehead][0] * 10;
                 text.push(
                   <text
                     fontFamily={textPt.fontFamily || DEFAULT_FONT}
@@ -152,7 +152,7 @@ export default class ChordView extends Component<IProps, {}> {
             width={stemThickness}
           />
         )}
-        {map(spec.satieLedger, lineNumber => (
+        {map(spec.satieLedger, (lineNumber) => (
           <LedgerLineView
             key={"l" + lineNumber}
             notehead={maxNotehead}

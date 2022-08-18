@@ -60,18 +60,18 @@ const BrowserSetup = {
       return;
     }
 
-    let style = document.createElement("style");
+    const style = document.createElement("style");
     style.appendChild(document.createTextNode("")); // WebKit hack
     document.head.appendChild(style);
 
-    forEach(spec.preloadedFonts, font => {
-      let baseFont = (/[\w\s]*/.exec(font) || [""])[0]
+    forEach(spec.preloadedFonts, (font) => {
+      const baseFont = (/[\w\s]*/.exec(font) || [""])[0]
         .replace(/\s/g, " ")
         .trim();
       if (!baseFont) {
         throw new Error("Font " + font + " is not a valid font name.");
       }
-      let variant = (/\((\w*)\)/.exec(font) || [])[1] || undefined;
+      const variant = (/\((\w*)\)/.exec(font) || [])[1] || undefined;
       if (
         variant &&
         variant !== "bold" &&

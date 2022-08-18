@@ -106,10 +106,10 @@ export function detach(layout: ILayout) {
   layout.overrideX = NaN;
   return Object.create(layout, {
     x: {
-      get: function() {
+      get: function () {
         return layout.overrideX || layout.x;
       },
-      set: function(x: number) {
+      set: function (x: number) {
         layout.overrideX = x;
       },
     },

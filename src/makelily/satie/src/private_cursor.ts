@@ -133,12 +133,12 @@ export class ValidationCursor {
     ) => VoiceBuilder | StaffBuilder,
   ) {
     // Create the patch based on whether the current context is a staff context or a voice context.
-    let patch = createPatch(
+    const patch = createPatch(
       true,
       this.document,
       this.measureInstance.uuid,
       this.segmentInstance.part,
-      part => {
+      (part) => {
         if (this.segmentInstance.ownerType === "staff") {
           return part.staff(
             this.segmentInstance.owner,
@@ -169,12 +169,12 @@ export class ValidationCursor {
     _dangerous?: boolean,
   ) {
     // Create the patch based on whether the current context is a staff context or a voice context.
-    let patch = createPatch(
+    const patch = createPatch(
       this.preview,
       this.document,
       this.measureInstance.uuid,
       this.segmentInstance.part,
-      part => {
+      (part) => {
         if (this.segmentInstance.ownerType === "staff") {
           return part.staff(
             this.segmentInstance.owner,

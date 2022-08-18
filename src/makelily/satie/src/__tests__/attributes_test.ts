@@ -37,7 +37,7 @@ export function makeCursor(
   models: ISegment,
 ): ValidationCursor {
   models.part = "P1";
-  let v: ValidationCursor = {
+  const v: ValidationCursor = {
     const: () => v,
     document: {
       __fakeDocument: true,
@@ -99,29 +99,29 @@ export function makeCursor(
 }
 
 function FakeChord(constructors: { [key: number]: any }) {
-  constructors[Type.Chord] = function() {
+  constructors[Type.Chord] = function () {
     // pass
   };
 }
 
-describe("[attributes.ts]", function() {
-  describe("AttributesModel", function() {
-    let factory = new Factory([AttributesModel, FakeChord]);
+describe("[attributes.ts]", function () {
+  describe("AttributesModel", function () {
+    const factory = new Factory([AttributesModel, FakeChord]);
     let attributes: Attributes & IModel;
     let segment: ISegment;
-    it("can be created", function() {
+    it("can be created", function () {
       attributes = factory.create(Type.Attributes);
       expect(!!attributes).to.be.true;
       // Divisions is usually set by the engine
       attributes.divisions = 100;
       segment = [attributes] as any;
 
-      let cursor = makeCursor(factory, segment);
+      const cursor = makeCursor(factory, segment);
       cursor.staffAttributes = <any>{};
       attributes.refresh(cursor);
     });
-    it("lays out properly when at start of song", function() {
-      let cursor = makeCursor(factory, segment);
+    it("lays out properly when at start of song", function () {
+      const cursor = makeCursor(factory, segment);
       cursor.staffAttributes = {} as any;
       const lCursor: LayoutCursor = {
         ...cursor,
@@ -135,7 +135,7 @@ describe("[attributes.ts]", function() {
         lineMaxPaddingTopByStaff: [],
         lineMaxPaddingBottomByStaff: [],
       };
-      let layout = attributes.getLayout(
+      const layout = attributes.getLayout(
         lCursor,
       ) as AttributesModel.IAttributesLayout;
       expect(!!layout.keySignature).to.be.true;
@@ -146,7 +146,7 @@ describe("[attributes.ts]", function() {
       expect(layout.ksSpacing).to.be.gt(0);
 
       expect(layout.x).to.be.lt(lCursor.segmentX);
-      let expectedChange =
+      const expectedChange =
         layout.clefSpacing + layout.tsSpacing + layout.ksSpacing;
       expect(lCursor.segmentX - layout.x).to.equal(expectedChange);
     });

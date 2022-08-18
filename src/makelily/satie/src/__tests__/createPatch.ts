@@ -68,9 +68,9 @@ const songTemplate = `<?xml version="1.0" encoding="UTF-8"?>
   </part>
 </score-partwise>`;
 
-describe("patches (1)", function() {
+describe("patches (1)", function () {
   let song: SongImpl;
-  beforeEach(done => {
+  beforeEach((done) => {
     song = new SongImpl({
       baseSrc: songTemplate,
 
@@ -82,27 +82,27 @@ describe("patches (1)", function() {
     song.run();
   });
 
-  it("can append a bar, and adjust barlines accordingly, and this can be undone", function(done) {
-    const patch = Patch.createPatch(false, song.getDocument(null), document =>
-      document.insertMeasure(3, measure =>
-        measure.part("P1", part =>
-          part.voice(1, voice =>
+  it("can append a bar, and adjust barlines accordingly, and this can be undone", function (done) {
+    const patch = Patch.createPatch(false, song.getDocument(null), (document) =>
+      document.insertMeasure(3, (measure) =>
+        measure.part("P1", (part) =>
+          part.voice(1, (voice) =>
             voice.at(0).insertChord([
-              note =>
+              (note) =>
                 note
                   .rest({})
                   .staff(1)
-                  .noteType(type => type.duration(Count.Whole)),
+                  .noteType((type) => type.duration(Count.Whole)),
             ]),
           ),
         ),
       ),
     );
-    let thirdMeasureUUID = song.getDocument(null).measures[2].uuid;
+    const thirdMeasureUUID = song.getDocument(null).measures[2].uuid;
 
     // new measure
     expect(patch[0].p).to.deep.equal(["measures", 3]);
-    let newMeasureUUID = patch[0].li.uuid;
+    const newMeasureUUID = patch[0].li.uuid;
     expect(newMeasureUUID).to.be.a("number");
 
     // new note
@@ -152,7 +152,7 @@ describe("patches (1)", function() {
     // Does not change previous patch.
     expect(patch.length).to.equal(3);
 
-    let barStylePatch = find(
+    const barStylePatch = find(
       (expandedPatch as any).content,
       (p: any) => p.li && p.li._class === "Barline",
     );
@@ -171,15 +171,15 @@ describe("patches (1)", function() {
     const newPatch = song.createCanonicalPatch(null);
     expect((newPatch as any).content.length).to.equal(0);
     expect(song.getDocument(newPatch).measures.length).to.equal(3);
-    const barline = song.getDocument(newPatch).measures[2].parts["P1"]
-      .staves[1][3];
+    const barline =
+      song.getDocument(newPatch).measures[2].parts["P1"].staves[1][3];
     expect((barline as any)._class).to.equal("Barline");
     expect((barline as any).barStyle.data === BarStyleType.LightHeavy);
 
     // changed barline
     done();
   });
-  it("can replace a rest with a shorter note", function(done) {
+  it("can replace a rest with a shorter note", function (done) {
     const measureUUID = song.getDocument(null).measures[0].uuid;
 
     const patch = Patch.createPatch(
@@ -187,19 +187,14 @@ describe("patches (1)", function() {
       song.getDocument(null),
       measureUUID,
       "P1",
-      part =>
-        part.voice(1, voice =>
-          voice.at(0).note(0, note =>
+      (part) =>
+        part.voice(1, (voice) =>
+          voice.at(0).note(0, (note) =>
             note
-              .pitch(pitch =>
-                pitch
-                  .step("C")
-                  .octave(5)
-                  .alter(1),
-              )
+              .pitch((pitch) => pitch.step("C").octave(5).alter(1))
               .dots([])
-              .noteType(noteType => noteType.duration(Count.Quarter))
-              .accidental(accidental =>
+              .noteType((noteType) => noteType.duration(Count.Quarter))
+              .accidental((accidental) =>
                 accidental.accidental(MxmlAccidental.Sharp),
               )
               .color("#cecece"),
@@ -212,8 +207,10 @@ describe("patches (1)", function() {
     // Try undoing this, making sure the first note is now a rest.
     const newPatch = song.createCanonicalPatch(null);
     expect(
-      ((song.getDocument(newPatch).measures[0].parts["P1"]
-        .voices[1][0] as any) as IChord)[0].rest,
+      (
+        song.getDocument(newPatch).measures[0].parts["P1"]
+          .voices[1][0] as any as IChord
+      )[0].rest,
     ).to.deep.equal({
       displayOctave: undefined,
       displayStep: undefined,

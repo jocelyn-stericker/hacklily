@@ -25,7 +25,7 @@ import { ISegment, IModel, ILayout, Type } from "../document";
 import { IFactory } from "../private_factory";
 import { ValidationCursor, LayoutCursor } from "../private_cursor";
 
-export let fakeFactory: IFactory = {
+export const fakeFactory: IFactory = {
   create: (_modelType: Type): IModel => {
     expect(false).toEqual("not reached");
     return null;
@@ -53,16 +53,16 @@ export function createFakeStaffSegment(
   divisions2: number,
   idx: number,
 ): ISegment {
-  let a: ISegment = <any>(<IModel[]>[
+  const a: ISegment = <any>(<IModel[]>[
     {
       divCount: divisions1,
       staffIdx: 1,
 
-      refresh: function(_cursor: ValidationCursor) {
+      refresh: function (_cursor: ValidationCursor) {
         // pass
       },
-      getLayout: function(cursor: LayoutCursor): ILayout {
-        let width = 10;
+      getLayout: function (cursor: LayoutCursor): ILayout {
+        const width = 10;
         cursor.segmentX += width;
         return {
           boundingBoxes: [],
@@ -77,11 +77,11 @@ export function createFakeStaffSegment(
       divCount: divisions2,
       staffIdx: 1,
 
-      refresh: function(_cursor: ValidationCursor) {
+      refresh: function (_cursor: ValidationCursor) {
         // pass
       },
-      getLayout: function(cursor: LayoutCursor): ILayout {
-        let width = 10;
+      getLayout: function (cursor: LayoutCursor): ILayout {
+        const width = 10;
         cursor.segmentX += width;
         return {
           boundingBoxes: [],
@@ -105,7 +105,7 @@ export function createFakeVoiceSegment(
   divisions2: number,
   idx: number,
 ): ISegment {
-  let a: ISegment = <any>(<(IModel & { length: number; 0: any })[]>[
+  const a: ISegment = <any>(<(IModel & { length: number; 0: any })[]>[
     {
       divCount: divisions1,
       staffIdx: 1,
@@ -121,12 +121,12 @@ export function createFakeVoiceSegment(
         ties: [{}],
       },
 
-      refresh: function(_cursor: ValidationCursor) {
+      refresh: function (_cursor: ValidationCursor) {
         // pass
       },
 
-      getLayout: function(cursor: LayoutCursor): ILayout {
-        let width = divisions1 * 10;
+      getLayout: function (cursor: LayoutCursor): ILayout {
+        const width = divisions1 * 10;
         cursor.segmentX += width;
         return {
           boundingBoxes: [],
@@ -153,12 +153,12 @@ export function createFakeVoiceSegment(
         ties: [{}],
       },
 
-      refresh: function(_cursor: ValidationCursor) {
+      refresh: function (_cursor: ValidationCursor) {
         // pass
       },
 
-      getLayout: function(cursor: LayoutCursor): ILayout {
-        let width = divisions2 * 10;
+      getLayout: function (cursor: LayoutCursor): ILayout {
+        const width = divisions2 * 10;
         cursor.segmentX += width;
         return {
           boundingBoxes: [],

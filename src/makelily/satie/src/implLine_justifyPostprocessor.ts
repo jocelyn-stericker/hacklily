@@ -57,17 +57,17 @@ function justify(
 
   // Check for underfilled bars
   const underfilled = map(measures, (measure, idx) => {
-    let attr = measures[idx].attributes;
-    let firstPart = scoreParts(options.header.partList)[0].id;
-    let divs = barDivisions(attr[firstPart][1]);
-    let maxDivs = measure.maxDivisions;
+    const attr = measures[idx].attributes;
+    const firstPart = scoreParts(options.header.partList)[0].id;
+    const divs = barDivisions(attr[firstPart][1]);
+    const maxDivs = measure.maxDivisions;
     return maxDivs < divs;
   });
 
   let smallest = Number.POSITIVE_INFINITY;
-  forEach(measures, function(measure) {
-    let maxIdx = max(map(measure.elements, el => el.length));
-    times(maxIdx, function(j) {
+  forEach(measures, function (measure) {
+    const maxIdx = max(map(measure.elements, (el) => el.length));
+    times(maxIdx, function (j) {
       for (let i = 0; i < measure.elements.length; ++i) {
         if (measure.elements[i][j].expandPolicy !== "none") {
           if (
@@ -88,16 +88,17 @@ function justify(
   // guess for a measure width was too liberal. In either case, we're shortening
   // the measure width here, and our partial algorithm doesn't work with negative
   // padding.
-  let partial = x < bounds.right && options.lineIndex + 1 === options.lineCount;
+  const partial =
+    x < bounds.right && options.lineIndex + 1 === options.lineCount;
   let underfilledCount = 0;
 
-  let expandableCount = reduce(
+  const expandableCount = reduce(
     measures,
-    function(memo, measure$, idx) {
+    function (memo, measure$, idx) {
       // Precondition: all layouts at a given index have the same "expandable" value.
       return reduce(
         last(measure$.elements),
-        function(memo, element$) {
+        function (memo, element$) {
           if (underfilled[idx] && element$.expandPolicy !== "none") {
             ++underfilledCount;
           }
@@ -128,28 +129,28 @@ function justify(
     avgExpansion = 0;
   } else if (partial) {
     // case 2: expanding, but not full width
-    let expansionRemainingGuess = bounds.right - 3 - x;
-    let avgExpansionGuess =
+    const expansionRemainingGuess = bounds.right - 3 - x;
+    const avgExpansionGuess =
       expansionRemainingGuess /
       (expandableCount + (1 - UNDERFILLED_EXPANSION_WEIGHT) * underfilledCount);
-    let weight =
+    const weight =
       (logistic((avgExpansionGuess - bounds.right / 80) / 20) * 2) / 3;
     avgExpansion = (1 - weight) * avgExpansionGuess;
   } else {
     // case 3: expanding or contracting to full width
-    let exp = bounds.right - x;
+    const exp = bounds.right - x;
     avgExpansion = exp / expandableCount;
   }
 
   let lineExpansion = 0;
-  forEach(measures, function(measure, measureIdx) {
+  forEach(measures, function (measure, measureIdx) {
     measure.originX += lineExpansion;
 
     let measureExpansion = 0;
-    let maxIdx = max(map(measure.elements, el => el.length));
+    const maxIdx = max(map(measure.elements, (el) => el.length));
 
     if (options.fixedMeasureWidth) {
-      let expandable = times(maxIdx, function(j) {
+      const expandable = times(maxIdx, function (j) {
         let expand = false;
         for (let i = 0; i < measure.elements.length; ++i) {
           if (measure.elements[i][j].expandPolicy !== "none") {
@@ -158,10 +159,10 @@ function justify(
         }
         return expand;
       });
-      let count = expandable.filter(n => n).length;
-      let expansionPerElement =
+      const count = expandable.filter((n) => n).length;
+      const expansionPerElement =
         (options.fixedMeasureWidth - measure.width) / count;
-      times(maxIdx, function(j) {
+      times(maxIdx, function (j) {
         for (let i = 0; i < measure.elements.length; ++i) {
           measure.elements[i][j].x += measureExpansion;
         }
@@ -170,7 +171,7 @@ function justify(
         }
       });
     } else {
-      times(maxIdx, function(j) {
+      times(maxIdx, function (j) {
         for (let i = 0; i < measure.elements.length; ++i) {
           measure.elements[i][j].x += measureExpansion;
         }
@@ -185,8 +186,8 @@ function justify(
               continue;
             }
 
-            let divCount = measure.elements[i][j].model.divCount;
-            let ratio =
+            const divCount = measure.elements[i][j].model.divCount;
+            const ratio =
               (Math.log(divCount) - Math.log(smallest) + 1) *
               (underfilled[measureIdx] ? UNDERFILLED_EXPANSION_WEIGHT : 1.0);
 

@@ -42,9 +42,9 @@ export default class NoteheadView extends Component<IProps, {}> {
   };
 
   render(): any {
-    let spec = this.props.spec;
-    let pos = spec as Position;
-    let head = spec as Notehead;
+    const spec = this.props.spec;
+    const pos = spec as Position;
+    const head = spec as Notehead;
 
     return (
       <Glyph

@@ -26,7 +26,7 @@ import { expect } from "chai";
 
 import { parseScore, LeftCenterRight } from "musicxml-interfaces";
 
-let headerTest = `<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+const headerTest = `<?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!DOCTYPE score-partwise PUBLIC "-//Recordare//DTD MusicXML 3.0 Partwise//EN"
     "http://www.musicxml.org/dtds/partwise.dtd">
 <score-partwise version="3.0">
@@ -127,7 +127,7 @@ let headerTest = `<?xml version="1.0" encoding="UTF-8" standalone="no"?>
 </score-partwise>
 `;
 
-let minimalTest = `<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+const minimalTest = `<?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!DOCTYPE score-partwise PUBLIC "-//Recordare//DTD MusicXML 3.0 Partwise//EN"
     "http://www.musicxml.org/dtds/partwise.dtd">
 <score-partwise version="3.0">
@@ -143,11 +143,11 @@ let minimalTest = `<?xml version="1.0" encoding="UTF-8" standalone="no"?>
 </score-partwise>
 `;
 
-describe("[engine/scoreHeader.ts]", function() {
+describe("[engine/scoreHeader.ts]", function () {
   // NOTE: Some of the tests in mxmljson_test indirectly test ScoreHeader!
-  it("can correctly modify metadata", function() {
-    let mxmljson = parseScore(headerTest);
-    let scoreHeader = new ScoreHeader(mxmljson);
+  it("can correctly modify metadata", function () {
+    const mxmljson = parseScore(headerTest);
+    const scoreHeader = new ScoreHeader(mxmljson);
     expect(scoreHeader.credits.length).eq(5);
     expect(scoreHeader.identification.creators.length).eq(3);
 
@@ -175,9 +175,9 @@ describe("[engine/scoreHeader.ts]", function() {
     expect(scoreHeader.movementTitle).to.eq("New Title");
     expect(scoreHeader.credits[0].creditWords[0].words).to.eq("New Title");
   });
-  it("can correctly add metadata", function() {
-    let mxmljson = parseScore(minimalTest);
-    let scoreHeader = new ScoreHeader(mxmljson);
+  it("can correctly add metadata", function () {
+    const mxmljson = parseScore(minimalTest);
+    const scoreHeader = new ScoreHeader(mxmljson);
     expect(scoreHeader.credits.length).eq(0);
     expect(scoreHeader.identification.creators.length).eq(0);
 

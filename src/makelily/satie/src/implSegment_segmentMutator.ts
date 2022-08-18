@@ -47,8 +47,8 @@ export default function segmentMutator(
   );
 
   if ("li" in op && !("ld" in op)) {
-    let liop = op as IListInsert<any>;
-    let newModel = factory.fromSpec(liop.li);
+    const liop = op as IListInsert<any>;
+    const newModel = factory.fromSpec(liop.li);
     if (liop.li._class === "VisualCursor") {
       doc._visualCursor = newModel;
     }

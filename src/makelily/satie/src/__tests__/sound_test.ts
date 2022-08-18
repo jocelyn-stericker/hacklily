@@ -28,11 +28,11 @@ import { IModel, Type } from "../document";
 
 import Factory from "../engine_factory";
 
-describe("[sound.ts]", function() {
-  describe("SoundModel", function() {
-    let factory = new Factory([Sound]);
+describe("[sound.ts]", function () {
+  describe("SoundModel", function () {
+    const factory = new Factory([Sound]);
     let sound: IModel;
-    it("can be created", function() {
+    it("can be created", function () {
       sound = factory.create(Type.Sound);
       expect(!!sound).to.be.true;
     });

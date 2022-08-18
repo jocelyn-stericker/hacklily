@@ -91,7 +91,7 @@ class NoteImpl implements Note {
     note: Note,
     _updateParent: boolean = true,
   ) {
-    let self: { [key: string]: any } = this as any;
+    const self: { [key: string]: any } = this as any;
 
     /* Link to parent */
     Object.defineProperty(this, "_parent", {
@@ -101,7 +101,7 @@ class NoteImpl implements Note {
     this._idx = idx;
 
     /* Properties owned by NoteImpl */
-    let properties = [
+    const properties = [
       "pitch",
       "unpitched",
       "noteheadText",
@@ -255,7 +255,7 @@ class NoteImpl implements Note {
   }
 
   toJSON() {
-    let {
+    const {
       pitch,
       unpitched,
       noteheadText,
@@ -354,22 +354,24 @@ class NoteImpl implements Note {
     this.cleanNotations(cursor);
 
     if (this.pitch && this.pitch.step !== this.pitch.step.toUpperCase()) {
-      cursor.patch(voice =>
-        voice.note(this._idx, note =>
-          note.pitch(pitch => pitch.step(this.pitch.step.toUpperCase())),
+      cursor.patch((voice) =>
+        voice.note(this._idx, (note) =>
+          note.pitch((pitch) => pitch.step(this.pitch.step.toUpperCase())),
         ),
       );
     }
     if (this.grace && this.cue) {
-      cursor.patch(voice => voice.note(this._idx, note => note.cue(null)));
+      cursor.patch((voice) => voice.note(this._idx, (note) => note.cue(null)));
     }
     if (this.unpitched && (this.rest || this.pitch)) {
-      cursor.patch(voice =>
-        voice.note(this._idx, note => note.unpitched(null)),
+      cursor.patch((voice) =>
+        voice.note(this._idx, (note) => note.unpitched(null)),
       );
     }
     if (this.pitch && this.rest) {
-      cursor.patch(voice => voice.note(this._idx, note => note.pitch(null)));
+      cursor.patch((voice) =>
+        voice.note(this._idx, (note) => note.pitch(null)),
+      );
     }
     invariant(
       cursor.segmentInstance.ownerType === "voice",
@@ -377,29 +379,29 @@ class NoteImpl implements Note {
     );
 
     if (this.voice !== cursor.segmentInstance.owner) {
-      cursor.patch(partBuilder =>
-        partBuilder.note(this._idx, note =>
+      cursor.patch((partBuilder) =>
+        partBuilder.note(this._idx, (note) =>
           note.voice(cursor.segmentInstance.owner),
         ),
       );
     }
     const defaultY = (lineForClef(this, cursor.staffAttributes.clef) - 3) * 10;
     if (defaultY !== this.defaultY) {
-      cursor.patch(voice =>
-        voice.note(this._idx, note => note.defaultY(defaultY)),
+      cursor.patch((voice) =>
+        voice.note(this._idx, (note) => note.defaultY(defaultY)),
       );
     }
     const dotOffset = this.defaultY % 10 === 0 ? 5 : 0;
     if (!this.dots) {
-      cursor.patch(voice => voice.note(this._idx, note => note.dots([])));
+      cursor.patch((voice) => voice.note(this._idx, (note) => note.dots([])));
     }
-    if (this.dots.some(n => n.defaultY !== dotOffset)) {
-      cursor.patch(voice =>
-        voice.note(this._idx, note =>
+    if (this.dots.some((n) => n.defaultY !== dotOffset)) {
+      cursor.patch((voice) =>
+        voice.note(this._idx, (note) =>
           reduce(
             this.dots,
             (note, _dot, idx) =>
-              note.dotsAt(idx, dot => dot.defaultY(dotOffset)),
+              note.dotsAt(idx, (dot) => dot.defaultY(dotOffset)),
             note,
           ),
         ),
@@ -407,8 +409,8 @@ class NoteImpl implements Note {
     }
 
     if (!this.staff) {
-      cursor.patch(partBuilder =>
-        partBuilder.note(this._idx, note => note.staff(1)),
+      cursor.patch((partBuilder) =>
+        partBuilder.note(this._idx, (note) => note.staff(1)),
       );
     }
 
@@ -456,10 +458,10 @@ class NoteImpl implements Note {
    * attributes. I'm not willing to put up with that, yet.
    */
   cleanNotations(cursor: IReadOnlyValidationCursor) {
-    let notations = cloneObject(this.notations);
+    const notations = cloneObject(this.notations);
 
     if (notations) {
-      let notation: Notations = {
+      const notation: Notations = {
         accidentalMarks: combine<AccidentalMark>("accidentalMarks"),
         arpeggiates: combine<Arpeggiate>("arpeggiates"),
         articulations: combineArticulations("articulations"),
@@ -479,13 +481,13 @@ class NoteImpl implements Note {
         tuplets: combine<Tuplet>("tuplets"),
       };
 
-      forEach(notation.tieds, tied => {
+      forEach(notation.tieds, (tied) => {
         if (!tied.number) {
           tied.number = 1;
         }
       });
 
-      forEach(notation.tuplets, tuplet => {
+      forEach(notation.tuplets, (tuplet) => {
         if (!tuplet.tupletActual) {
           tuplet.tupletActual = {};
         }
@@ -510,8 +512,8 @@ class NoteImpl implements Note {
         }
       });
 
-      cursor.patch(voice =>
-        voice.note(this._idx, note => note.notations([notation])),
+      cursor.patch((voice) =>
+        voice.note(this._idx, (note) => note.notations([notation])),
       );
     }
 
@@ -525,13 +527,13 @@ class NoteImpl implements Note {
     }
 
     function combineArticulations(key: string): Articulations[] {
-      let array = combine<Articulations>(key);
+      const array = combine<Articulations>(key);
       if (!array) {
         return null;
       }
-      let articulations: Articulations = <any>{};
+      const articulations: Articulations = <any>{};
       for (let i = 0; i < array.length; ++i) {
-        for (let akey in array[i]) {
+        for (const akey in array[i]) {
           if (Object.prototype.hasOwnProperty.call(array[i], akey)) {
             (<any>articulations)[akey] = (<any>array[i])[akey];
           }
@@ -550,19 +552,19 @@ class NoteImpl implements Note {
   }
 
   updateAccidental(cursor: IReadOnlyValidationCursor) {
-    let pitch = this.pitch;
+    const pitch = this.pitch;
     if (!pitch) {
       return;
     }
-    let actual = pitch.alter || 0;
-    let accidentals = cursor.staffAccidentals;
+    const actual = pitch.alter || 0;
+    const accidentals = cursor.staffAccidentals;
     invariant(
       !!accidentals,
       "Accidentals must already have been setup. Is there an Attributes element?",
     );
 
     // TODO: this is no longer sufficient if multiple voices share a staff.
-    let generalTarget = accidentals[pitch.step] || null;
+    const generalTarget = accidentals[pitch.step] || null;
     let target = accidentals[pitch.step + pitch.octave];
 
     if (isNaN(target) && generalTarget !== InvalidAccidental) {
@@ -613,14 +615,14 @@ class NoteImpl implements Note {
     }
 
     if (acc) {
-      let glyphName = accidentalGlyphs[acc.accidental];
+      const glyphName = accidentalGlyphs[acc.accidental];
       invariant(
         glyphName in glyphBBoxes,
         "Expected a known glyph, got %s",
         glyphName,
       );
-      let width = glyphBBoxes[glyphName][0] * 10;
-      let { clef } = cursor.staffAttributes;
+      const width = glyphBBoxes[glyphName][0] * 10;
+      const { clef } = cursor.staffAttributes;
       // TODO: `let clef = cursor.part.attributes.clefs[cursor.staffIdx]`
 
       if (onLedger(this, clef)) {
@@ -644,7 +646,9 @@ class NoteImpl implements Note {
     }
 
     if (!isEqual(cloneObject(this.accidental), acc) && cursor.patch) {
-      cursor.patch(part => part.note(this._idx, note => note.accidental(acc)));
+      cursor.patch((part) =>
+        part.note(this._idx, (note) => note.accidental(acc)),
+      );
     }
   }
 }

@@ -16,7 +16,7 @@
  * along with Satie.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-let names: { [key: string]: string } = {
+const names: { [key: string]: string } = {
   "4stringTabClef": "\uE06E",
   "6stringTabClef": "\uE06D",
   accSagittal11LargeDiesisDown: "\uE30D",

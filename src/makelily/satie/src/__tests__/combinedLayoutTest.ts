@@ -31,11 +31,13 @@ import { Type } from "../document";
 
 import { createFakeLayout } from "./etestutil";
 
-describe("[private/combinedLayout.ts]", function() {
-  describe("merge", function() {
-    it("handles multiple segments", function() {
-      let layout1 = times(5, idx => createFakeLayout(idx, 0, true));
-      let layout2 = times(5, idx => createFakeLayout(idx, idx ? 2 : 0, true));
+describe("[private/combinedLayout.ts]", function () {
+  describe("merge", function () {
+    it("handles multiple segments", function () {
+      const layout1 = times(5, (idx) => createFakeLayout(idx, 0, true));
+      const layout2 = times(5, (idx) =>
+        createFakeLayout(idx, idx ? 2 : 0, true),
+      );
       let combinedLayout: ICombinedLayout[] = [];
 
       combinedLayout = reduce(

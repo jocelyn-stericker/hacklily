@@ -33,10 +33,10 @@ import {
 import Justify from "../implLine_justifyPostprocessor";
 import { layoutMeasure } from "../engine_processors_measure";
 
-describe("[lineProcessor.ts]", function() {
-  describe("justify", function() {
-    it("partially justifies multiple voices and measures on the final line", function() {
-      let segments = [
+describe("[lineProcessor.ts]", function () {
+  describe("justify", function () {
+    it("partially justifies multiple voices and measures on the final line", function () {
+      const segments = [
         {
           staves: [null, createFakeStaffSegment(4, 4, 1)],
           voices: [
@@ -55,7 +55,7 @@ describe("[lineProcessor.ts]", function() {
         },
       ];
 
-      let layouts = map(segments, (seg, idx) =>
+      const layouts = map(segments, (seg, idx) =>
         layoutMeasure({
           attributes: { P1: [] },
           document: {
@@ -97,9 +97,9 @@ describe("[lineProcessor.ts]", function() {
         }),
       );
 
-      let padding = 12;
-      let detachedLayouts = map(layouts, detach);
-      forEach(detachedLayouts, layout => {
+      const padding = 12;
+      const detachedLayouts = map(layouts, detach);
+      forEach(detachedLayouts, (layout) => {
         layout.attributes = <any>{
           P1: [
             undefined,
@@ -114,7 +114,7 @@ describe("[lineProcessor.ts]", function() {
         };
       });
 
-      let justified = Justify(
+      const justified = Justify(
         {
           document: {
             __fakeDocument: true,
@@ -163,7 +163,7 @@ describe("[lineProcessor.ts]", function() {
         detachedLayouts,
       );
 
-      let expectedWidth =
+      const expectedWidth =
         justified[0].elements[0][4].x - justified[0].elements[0][0].x + 10;
       expect(justified[0].elements[0][0].x).toBeGreaterThan(
         layouts[0].elements[0][0].x - 0.05,
@@ -175,7 +175,7 @@ describe("[lineProcessor.ts]", function() {
       expect(justified[0].elements[0][2].x).toBeLessThan(24.16 + 0.1);
       expect(justified[0].width).toBeGreaterThan(expectedWidth - 0.01);
       expect(justified[0].width).toBeLessThan(expectedWidth + 0.01);
-      forEach(justified, function(just, idx) {
+      forEach(justified, function (just, idx) {
         expect(just.width).not.toEqual(layouts[idx].width);
       });
     });

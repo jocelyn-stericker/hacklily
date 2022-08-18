@@ -32,7 +32,7 @@ export function normalizeDivisionsInPlace(
   segments: ISegment[],
   factor: number = 0,
 ): number {
-  let divisions: number =
+  const divisions: number =
     factor ||
     reduce(
       segments,
@@ -46,7 +46,7 @@ export function normalizeDivisionsInPlace(
       0,
     );
 
-  forEach(segments, segment => {
+  forEach(segments, (segment) => {
     if (!segment) {
       return;
     }
@@ -60,7 +60,7 @@ export function normalizeDivisionsInPlace(
       }
 
       if (factory.modelHasType(model, Type.Chord)) {
-        forEach(model, note => {
+        forEach(model, (note) => {
           if (note.duration) {
             note.duration *= ratio;
           }

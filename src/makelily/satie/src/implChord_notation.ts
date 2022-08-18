@@ -192,21 +192,21 @@ export function getBoundingRects(
   note: Note,
   chord: IChordLayout,
 ): { bb: IBoundingRect[]; n: Notations } {
-  let boxes: IBoundingRect[] = [];
-  let origModel = model;
+  const boxes: IBoundingRect[] = [];
+  const origModel = model;
   model = Object.create(model);
-  Object.keys(origModel).forEach(m => {
+  Object.keys(origModel).forEach((m) => {
     (model as any)[m] =
       typeof (model as any)[m] === "object"
         ? Object.create((model as any)[m])
         : model;
   });
 
-  forEach(model.accidentalMarks, _accidentalMark => {
+  forEach(model.accidentalMarks, (_accidentalMark) => {
     // TODO
   });
 
-  forEach(model.arpeggiates, _arpeggiate => {
+  forEach(model.arpeggiates, (_arpeggiate) => {
     // TODO
   });
 
@@ -230,15 +230,15 @@ export function getBoundingRects(
         "tenuto",
         "unstress",
       ],
-      type => {
+      (type) => {
         // TODO: Could this be done any less efficiently?
         if ((model.articulations[idx] as any)[type]) {
-          let thisArticulation: Placement = Object.create(
+          const thisArticulation: Placement = Object.create(
             (<any>model.articulations[idx])[type],
           );
-          let { placement } = thisArticulation;
-          let isBelow = placement === AboveBelow.Below;
-          let glyph = articulationGlyph(
+          const { placement } = thisArticulation;
+          const isBelow = placement === AboveBelow.Below;
+          const glyph = articulationGlyph(
             articulation,
             isBelow ? "Below" : "Above",
           );
@@ -250,9 +250,9 @@ export function getBoundingRects(
             return;
           }
           let y: number;
-          let noteheadGlyph = chord.model.noteheadGlyph[0];
+          const noteheadGlyph = chord.model.noteheadGlyph[0];
 
-          let center =
+          const center =
             (getLeft(noteheadGlyph) + getRight(noteheadGlyph)) / 2 -
             (getLeft(glyph) + getRight(glyph)) / 2 -
             0.5;
@@ -282,7 +282,7 @@ export function getBoundingRects(
     );
   });
 
-  forEach(model.dynamics, _dynamic => {
+  forEach(model.dynamics, (_dynamic) => {
     // TODO
   });
 
@@ -296,11 +296,11 @@ export function getBoundingRects(
     model.fermatas[idx] = <any>push("fermataAbove", fermata);
   });
 
-  forEach(model.glissandos, _glissando => {
+  forEach(model.glissandos, (_glissando) => {
     // TODO
   });
 
-  forEach(model.nonArpeggiates, _nonArpeggiate => {
+  forEach(model.nonArpeggiates, (_nonArpeggiate) => {
     // TODO
   });
 
@@ -312,11 +312,11 @@ export function getBoundingRects(
     // TODO
   });
 
-  forEach(model.slides, _slide => {
+  forEach(model.slides, (_slide) => {
     // TODO
   });
 
-  forEach(model.slurs, _slur => {
+  forEach(model.slurs, (_slur) => {
     // TODO
   });
 
@@ -349,15 +349,15 @@ export function getBoundingRects(
         "tripleTongue",
         "upBow",
       ],
-      type => {
+      (type) => {
         // TODO: Could this be done any less efficiently?
         if ((model.technicals[idx] as any)[type]) {
-          let thisTechnical: Placement = Object.create(
+          const thisTechnical: Placement = Object.create(
             (<any>model.technicals[idx])[type],
           );
-          let { placement } = thisTechnical;
-          let isBelow = placement === AboveBelow.Below;
-          let glyph = technicalGlyph(technical, isBelow ? "Below" : "Above");
+          const { placement } = thisTechnical;
+          const isBelow = placement === AboveBelow.Below;
+          const glyph = technicalGlyph(technical, isBelow ? "Below" : "Above");
           if (!glyph) {
             console.warn(
               Object.keys(technical)[0],
@@ -366,9 +366,9 @@ export function getBoundingRects(
             return;
           }
           let y: number;
-          let noteheadGlyph = chord.model.noteheadGlyph[0];
+          const noteheadGlyph = chord.model.noteheadGlyph[0];
 
-          let center =
+          const center =
             (getLeft(noteheadGlyph) + getRight(noteheadGlyph)) / 2 -
             (getLeft(glyph) + getRight(glyph)) / 2 -
             0.5;
@@ -398,11 +398,11 @@ export function getBoundingRects(
     );
   });
 
-  forEach(model.tieds, _tied => {
+  forEach(model.tieds, (_tied) => {
     // TODO
   });
 
-  forEach(model.tuplets, _tuplet => {
+  forEach(model.tuplets, (_tuplet) => {
     // TODO
   });
 
@@ -413,7 +413,7 @@ export function getBoundingRects(
     defaultY: number = NaN,
   ): IGeneralNotation {
     console.log("PUSH", glyphName);
-    let box = bboxes[glyphName];
+    const box = bboxes[glyphName];
     if (!box) {
       console.warn("Unknown glyph", glyphName);
       return null;
@@ -432,8 +432,8 @@ export function getBoundingRects(
       }
     }
 
-    let printStyle: PrintStyle | IBoundingRect = Object.create(notation);
-    let boundingRect = printStyle as IBoundingRect;
+    const printStyle: PrintStyle | IBoundingRect = Object.create(notation);
+    const boundingRect = printStyle as IBoundingRect;
 
     boundingRect.top = box[3] * 10;
     boundingRect.bottom = box[1] * 10;

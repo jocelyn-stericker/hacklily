@@ -66,14 +66,8 @@ type ChgEv = React.ChangeEvent<HTMLInputElement>;
  */
 export default class App extends React.Component<Props> {
   render(): JSX.Element {
-    const {
-      clef,
-      defaultTool,
-      keySig,
-      singleTaskMode,
-      setQuery,
-      time,
-    } = this.props;
+    const { clef, defaultTool, keySig, singleTaskMode, setQuery, time } =
+      this.props;
 
     return (
       <div className={css(styles.appRoot)}>

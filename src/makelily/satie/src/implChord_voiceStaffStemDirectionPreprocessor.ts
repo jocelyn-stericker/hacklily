@@ -28,14 +28,14 @@ export type StaffToVoicesType = {
 export default voiceStaffStemDirection;
 
 function voiceStaffStemDirection(measures: IMeasure[]): IMeasure[] {
-  forEach(measures, measure => {
-    forEach(measure.parts, part => {
-      let staffToVoices: StaffToVoicesType = {};
-      forEach(part.voices, voice => {
-        forEach(voice, model => {
+  forEach(measures, (measure) => {
+    forEach(measure.parts, (part) => {
+      const staffToVoices: StaffToVoicesType = {};
+      forEach(part.voices, (voice) => {
+        forEach(voice, (model) => {
           if (model.staffIdx) {
             staffToVoices[model.staffIdx] = staffToVoices[model.staffIdx] || {};
-            let voices = staffToVoices[model.staffIdx];
+            const voices = staffToVoices[model.staffIdx];
             voices[voice.owner] =
               staffToVoices[model.staffIdx][voice.owner] || [];
             voices[voice.owner].push(model);
@@ -44,10 +44,10 @@ function voiceStaffStemDirection(measures: IMeasure[]): IMeasure[] {
       });
       forEach(staffToVoices, (staff: { [voice: number]: IModel[] }) => {
         if (Object.keys(staff).length > 1) {
-          forEach(staff[1], els => {
+          forEach(staff[1], (els) => {
             (<any>els).satieDirection = 1;
           });
-          forEach(staff[2], els => {
+          forEach(staff[2], (els) => {
             (<any>els).satieDirection = -1;
           });
         }

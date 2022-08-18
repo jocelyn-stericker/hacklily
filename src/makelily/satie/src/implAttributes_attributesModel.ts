@@ -85,17 +85,17 @@ class Layout implements IAttributesLayout {
     this.division = cursor.segmentDivision;
     this.staffIdx = cursor.staffIdx;
 
-    let isFirstInLine = cursor.lineBarOnLine === 0 && !this.division;
-    let next = cursor.segmentInstance[cursor.segmentPosition + 1];
+    const isFirstInLine = cursor.lineBarOnLine === 0 && !this.division;
+    const next = cursor.segmentInstance[cursor.segmentPosition + 1];
 
-    let ksVisible = !keysEqual(attributes, prevAttributes) || isFirstInLine;
+    const ksVisible = !keysEqual(attributes, prevAttributes) || isFirstInLine;
 
-    let tsVisible = !timesEqual(attributes, prevAttributes);
+    const tsVisible = !timesEqual(attributes, prevAttributes);
 
-    let clefVisible =
+    const clefVisible =
       !clefsEqual(attributes, prevAttributes, cursor.segmentInstance.owner) ||
       isFirstInLine;
-    let partSymbolVisible =
+    const partSymbolVisible =
       isFirstInLine &&
       attributes.partSymbol &&
       attributes.partSymbol.bottomStaff === cursor.staffIdx;
@@ -105,19 +105,19 @@ class Layout implements IAttributesLayout {
       !cursor.measureInstance.implicit &&
       parseInt(cursor.measureInstance.number, 10) !== 1
     ) {
-      let measureNumbering = cursor.print
+      const measureNumbering = cursor.print
         ? cursor.print.measureNumbering.data
         : "system";
 
-      let firstInMeasure = cursor.segmentDivision === 0;
+      const firstInMeasure = cursor.segmentDivision === 0;
 
-      let showNumberBecauseOfSystem =
+      const showNumberBecauseOfSystem =
         isFirstInLine && measureNumbering === "system";
 
-      let showNumberBecauseOfMeasure =
+      const showNumberBecauseOfMeasure =
         this.division === 0 && measureNumbering === "measure" && firstInMeasure;
 
-      let shouldShowNumber =
+      const shouldShowNumber =
         showNumberBecauseOfSystem || showNumberBecauseOfMeasure;
 
       if (shouldShowNumber) {
@@ -133,7 +133,7 @@ class Layout implements IAttributesLayout {
 
     this.snapshotClef = cursor.staffAttributes.clef;
     if (clefVisible) {
-      let clef = attributes.clefs[cursor.staffIdx];
+      const clef = attributes.clefs[cursor.staffIdx];
       this.x += CLEF_INDENTATION;
       cursor.segmentX = this.x;
 
@@ -175,7 +175,7 @@ class Layout implements IAttributesLayout {
     /*---- KS layout --------------------------------------*/
 
     if (ksVisible) {
-      let keySignature = attributes.keySignatures[0];
+      const keySignature = attributes.keySignatures[0];
       let contextualSpacing = 0;
       this.keySignature = Object.create(keySignature, {
         defaultX: {
@@ -204,7 +204,7 @@ class Layout implements IAttributesLayout {
     /*---- TS layout --------------------------------------*/
 
     if (tsVisible) {
-      let time = attributes.times[0];
+      const time = attributes.times[0];
       let contextualSpacing = 0;
       this.time = Object.create(time, {
         defaultX: {
@@ -237,7 +237,7 @@ class Layout implements IAttributesLayout {
     /*---- Part symbol ------------------------------------*/
 
     if (partSymbolVisible) {
-      let { partSymbol } = cursor.staffAttributes;
+      const { partSymbol } = cursor.staffAttributes;
       this.partSymbol = Object.create(partSymbol, {
         defaultX: {
           get: () => {
@@ -371,7 +371,7 @@ class AttributesModel implements IAttributesModel {
     if (!this._layout[cursor.segmentInstance.owner]) {
       this._layout[cursor.segmentInstance.owner] = new AttributesModel.Layout();
     }
-    let layout = this._layout[cursor.segmentInstance.owner];
+    const layout = this._layout[cursor.segmentInstance.owner];
     layout._refresh(this, this._snapshot, this._parent, cursor);
     return layout;
   }
@@ -409,11 +409,11 @@ class AttributesModel implements IAttributesModel {
   }
 
   toXML(): string {
-    let j = this.toJSON();
+    const j = this.toJSON();
     // Hack: we index staffDetails by 1-index staff, leaving a null at index 0, with MXML doesn't handle.
-    j.staffDetails = j.staffDetails.filter(a => !!a);
-    j.clefs = j.clefs.filter(a => !!a);
-    j.keySignatures = j.keySignatures.filter(a => !!a);
+    j.staffDetails = j.staffDetails.filter((a) => !!a);
+    j.clefs = j.clefs.filter((a) => !!a);
+    j.keySignatures = j.keySignatures.filter((a) => !!a);
     return `${serializeAttributes(j)}\n<forward><duration>${
       this.divCount
     }</duration></forward>\n`;
@@ -468,8 +468,8 @@ class AttributesModel implements IAttributesModel {
 
     // Clefs must be an array
     if (!(this.clefs instanceof Array)) {
-      cursor.patch(staff =>
-        staff.attributes(attributes => attributes.clefs([])),
+      cursor.patch((staff) =>
+        staff.attributes((attributes) => attributes.clefs([])),
       );
     }
 
@@ -479,9 +479,9 @@ class AttributesModel implements IAttributesModel {
         return;
       }
       if (clef.number !== clefIdx) {
-        cursor.patch(staff =>
-          staff.attributes(attributes =>
-            attributes.clefsAt(clefIdx, clef => clef.number(clefIdx)),
+        cursor.patch((staff) =>
+          staff.attributes((attributes) =>
+            attributes.clefsAt(clefIdx, (clef) => clef.number(clefIdx)),
           ),
         );
       }
@@ -489,36 +489,33 @@ class AttributesModel implements IAttributesModel {
 
     // A clef is mandatory (we haven't implemented clef-less staves yet)
     if ((!this._parent || !this._parent.clef) && !this.clefs[staffIdx]) {
-      cursor.patch(staff =>
-        staff.attributes(attributes =>
+      cursor.patch((staff) =>
+        staff.attributes((attributes) =>
           attributes
             .clefsAt(0, null) // XXX: HACK to fix splice
-            .clefsAt(staffIdx, clef =>
-              clef
-                .number(staffIdx)
-                .sign("G")
-                .line(2),
+            .clefsAt(staffIdx, (clef) =>
+              clef.number(staffIdx).sign("G").line(2),
             ),
         ),
       );
     }
 
     // Validate the given clef
-    let clef = this.clefs[staffIdx];
+    const clef = this.clefs[staffIdx];
     if (clef) {
       if (clef.sign !== clef.sign.toUpperCase()) {
-        cursor.patch(staff =>
-          staff.attributes(attributes =>
-            attributes.clefsAt(staffIdx, clefb =>
+        cursor.patch((staff) =>
+          staff.attributes((attributes) =>
+            attributes.clefsAt(staffIdx, (clefb) =>
               clefb.sign(clef.sign.toUpperCase()),
             ),
           ),
         );
       }
       if (clef.line && clef.line !== parseInt("" + clef.line, 10)) {
-        cursor.patch(staff =>
-          staff.attributes(attributes =>
-            attributes.clefsAt(staffIdx, clefb =>
+        cursor.patch((staff) =>
+          staff.attributes((attributes) =>
+            attributes.clefsAt(staffIdx, (clefb) =>
               clefb.line(parseInt("" + clef.line, 10)),
             ),
           ),
@@ -527,11 +524,11 @@ class AttributesModel implements IAttributesModel {
 
       // Clef lines can be inferred.
       if (!clef.line) {
-        let { sign } = clef;
-        let standardClef = find(standardClefs, { sign });
-        cursor.patch(staff =>
-          staff.attributes(attributes =>
-            attributes.clefsAt(staffIdx, clefb =>
+        const { sign } = clef;
+        const standardClef = find(standardClefs, { sign });
+        cursor.patch((staff) =>
+          staff.attributes((attributes) =>
+            attributes.clefsAt(staffIdx, (clefb) =>
               clefb.line(standardClef ? standardClef.line : 2),
             ),
           ),
@@ -546,13 +543,10 @@ class AttributesModel implements IAttributesModel {
 
     // A time signature is mandatory.
     if ((!this._parent || !this._parent.time) && !this.times[0]) {
-      cursor.patch(staff =>
-        staff.attributes(attributes =>
-          attributes.timesAt(0, time =>
-            time
-              .symbol(TimeSymbolType.Common)
-              .beats(["4"])
-              .beatTypes([4]),
+      cursor.patch((staff) =>
+        staff.attributes((attributes) =>
+          attributes.timesAt(0, (time) =>
+            time.symbol(TimeSymbolType.Common).beats(["4"]).beatTypes([4]),
           ),
         ),
       );
@@ -567,28 +561,24 @@ class AttributesModel implements IAttributesModel {
       (!this._parent || !this._parent.keySignature) &&
       !this.keySignatures[0]
     ) {
-      cursor.patch(staff =>
-        staff.attributes(attributes =>
-          attributes.keySignaturesAt(0, key => key.fifths(0).mode("major")),
+      cursor.patch((staff) =>
+        staff.attributes((attributes) =>
+          attributes.keySignaturesAt(0, (key) => key.fifths(0).mode("major")),
         ),
       );
     }
 
-    let ks = this.keySignatures[0];
+    const ks = this.keySignatures[0];
     if (ks && (ks.keySteps || ks.keyAlters || ks.keyOctaves)) {
       if (ks.keySteps.length !== ks.keyAlters.length) {
         console.warn(
           "Expected the number of steps to equal the number of alterations. " +
             "Ignoring key.",
         );
-        cursor.patch(staff =>
-          staff.attributes(attributes =>
-            attributes.keySignaturesAt(0, key =>
-              key
-                .fifths(0)
-                .keySteps(null)
-                .keyAccidentals(null)
-                .keyAlters(null),
+        cursor.patch((staff) =>
+          staff.attributes((attributes) =>
+            attributes.keySignaturesAt(0, (key) =>
+              key.fifths(0).keySteps(null).keyAccidentals(null).keyAlters(null),
             ),
           ),
         );
@@ -604,22 +594,24 @@ class AttributesModel implements IAttributesModel {
               "in musicxml-interfaces. Ignoring `key-accidentals`",
           );
         }
-        cursor.patch(staff =>
-          staff.attributes(attributes =>
-            attributes.keySignaturesAt(0, key => key.keyAccidentals(null)),
+        cursor.patch((staff) =>
+          staff.attributes((attributes) =>
+            attributes.keySignaturesAt(0, (key) => key.keyAccidentals(null)),
           ),
         );
       }
       if (ks.keyOctaves) {
         // Let's sort them (move to prefilter?)
-        let keyOctaves: KeyOctave[] = [];
-        forEach(ks.keyOctaves, octave => {
+        const keyOctaves: KeyOctave[] = [];
+        forEach(ks.keyOctaves, (octave) => {
           keyOctaves[octave.number - 1] = octave;
         });
         if (!isEqual(ks.keyOctaves, keyOctaves)) {
-          cursor.patch(staff =>
-            staff.attributes(attributes =>
-              attributes.keySignaturesAt(0, key => key.keyOctaves(keyOctaves)),
+          cursor.patch((staff) =>
+            staff.attributes((attributes) =>
+              attributes.keySignaturesAt(0, (key) =>
+                key.keyOctaves(keyOctaves),
+              ),
             ),
           );
         }
@@ -637,9 +629,9 @@ class AttributesModel implements IAttributesModel {
       if (staffDetails) {
         ++sSoFar;
         if (!staffDetails.number) {
-          cursor.patch(staff =>
-            staff.attributes(attributes =>
-              attributes.staffDetailsAt(i, sd => sd.number(sSoFar)),
+          cursor.patch((staff) =>
+            staff.attributes((attributes) =>
+              attributes.staffDetailsAt(i, (sd) => sd.number(sSoFar)),
             ),
           );
         }
@@ -656,7 +648,7 @@ class AttributesModel implements IAttributesModel {
       },
       [],
     );
-    let needsSorting =
+    const needsSorting =
       this.staffDetails.length !== staffDetailsByNumber.length ||
       this.staffDetails.some((s, i) => {
         if (!s && !staffDetailsByNumber[i]) {
@@ -665,8 +657,8 @@ class AttributesModel implements IAttributesModel {
         return !isEqual(s, staffDetailsByNumber[i]);
       });
     if (needsSorting) {
-      cursor.patch(staff =>
-        staff.attributes(attributes =>
+      cursor.patch((staff) =>
+        staff.attributes((attributes) =>
           attributes.staffDetails(staffDetailsByNumber),
         ),
       );
@@ -674,8 +666,8 @@ class AttributesModel implements IAttributesModel {
 
     // Staff details are required. Staff lines are required
     if (!this.staffDetails[cursor.staffIdx]) {
-      cursor.patch(staff =>
-        staff.attributes(attributes =>
+      cursor.patch((staff) =>
+        staff.attributes((attributes) =>
           attributes
             .staffDetailsAt(0, null) // XXX: HACK
             .staffDetailsAt(cursor.staffIdx, {
@@ -693,9 +685,9 @@ class AttributesModel implements IAttributesModel {
       (!this.staffDetails[cursor.staffIdx] ||
         !this.staffDetails[cursor.staffIdx].staffLines)
     ) {
-      cursor.patch(staff =>
-        staff.attributes(attributes =>
-          attributes.staffDetailsAt(cursor.staffIdx, l => l.staffLines(5)),
+      cursor.patch((staff) =>
+        staff.attributes((attributes) =>
+          attributes.staffDetailsAt(cursor.staffIdx, (l) => l.staffLines(5)),
         ),
       );
     }
@@ -703,10 +695,10 @@ class AttributesModel implements IAttributesModel {
 
   private _validateStaves(cursor: IReadOnlyValidationCursor) {
     this.staves = this.staves || 1; // FIXME!
-    let currentPartId = cursor.segmentInstance.part;
-    let currentPart = cursor.measureInstance.parts[currentPartId];
-    times(this.staves, staffMinusOne => {
-      let staff = staffMinusOne + 1;
+    const currentPartId = cursor.segmentInstance.part;
+    const currentPart = cursor.measureInstance.parts[currentPartId];
+    times(this.staves, (staffMinusOne) => {
+      const staff = staffMinusOne + 1;
       if (!currentPart.staves[staff]) {
         throw new Error(
           "A staff is missing. The code to add it is not implemented.",
@@ -718,8 +710,8 @@ class AttributesModel implements IAttributesModel {
       (!this._parent || !this._parent.partSymbol) &&
       !this.partSymbol
     ) {
-      cursor.patch(staff =>
-        staff.attributes(attributes =>
+      cursor.patch((staff) =>
+        staff.attributes((attributes) =>
           attributes.partSymbol({
             bottomStaff: 1,
             topStaff: this.staves,
@@ -731,7 +723,7 @@ class AttributesModel implements IAttributesModel {
 
     // HACK: Convert part group symbols to part symbols.
     // Obviously, this won't fly when we have multiple part groups
-    let groups = groupsForPart(
+    const groups = groupsForPart(
       cursor.header.partList,
       cursor.segmentInstance.part,
     );
@@ -740,8 +732,8 @@ class AttributesModel implements IAttributesModel {
       (!this._parent || !this._parent.partSymbol) &&
       !this.partSymbol
     ) {
-      cursor.patch(staff =>
-        staff.attributes(attributes =>
+      cursor.patch((staff) =>
+        staff.attributes((attributes) =>
           attributes.partSymbol({
             bottomStaff: 1,
             topStaff: 1,
@@ -754,8 +746,8 @@ class AttributesModel implements IAttributesModel {
 
   private _validateMeasureStyles(cursor: IReadOnlyValidationCursor): void {
     if (!this.measureStyles) {
-      cursor.patch(staff =>
-        staff.attributes(attributes => attributes.measureStyles([])),
+      cursor.patch((staff) =>
+        staff.attributes((attributes) => attributes.measureStyles([])),
       );
     }
   }
@@ -801,7 +793,7 @@ export function createWarningLayout(
   prevAttributes: Attributes,
   nextAttributes: Attributes,
 ): IAttributesLayout {
-  let warningLayout = new AttributesModel.Layout();
+  const warningLayout = new AttributesModel.Layout();
   console.log("Creating warning layout for ", nextAttributes);
   warningLayout._refresh(null, nextAttributes, prevAttributes, cursor);
 

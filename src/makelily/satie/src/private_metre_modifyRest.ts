@@ -47,10 +47,10 @@ export function voiceToRestSpec(
   let divsToSuppress = 0;
   let killIdx: number;
   let prevIdx: number = 0;
-  let spec = segment.reduce(
+  const spec = segment.reduce(
     (restSpec: IRestSpec, model: ModelMetreMutationSpec) => {
-      let divCount = model.newDivisions || 0;
-      let oldDivCount = model.previousDivisions || 0;
+      const divCount = model.newDivisions || 0;
+      const oldDivCount = model.previousDivisions || 0;
       const restsAtEnd =
         model.previousDivisions > divCount
           ? "r" +
@@ -65,7 +65,7 @@ export function voiceToRestSpec(
             : "";
 
         divsToSuppress = Math.max(0, divsToSuppress - divCount);
-        let newModelsToKill = modelsToKill.slice();
+        const newModelsToKill = modelsToKill.slice();
         newModelsToKill[killIdx] = newModelsToKill[killIdx] || [];
         newModelsToKill[killIdx].push(model);
         return {
@@ -76,7 +76,7 @@ export function voiceToRestSpec(
           modelsToKill: newModelsToKill,
         };
       } else if (divCount === 0) {
-        let newModelsToKill = modelsToKill.slice();
+        const newModelsToKill = modelsToKill.slice();
         newModelsToKill[prevIdx] = newModelsToKill[prevIdx] || [];
         newModelsToKill[prevIdx].push(model);
         return {
@@ -196,7 +196,7 @@ export function simplifyRests(
   }
 
   // We now need to make patches to turn originalSpec.song into cleanRestPattern.
-  let patches: IAny[] = [];
+  const patches: IAny[] = [];
   let currIdx = -1;
   let currIdxOffset = 0;
   function killModel(model: ModelMetreMutationSpec) {

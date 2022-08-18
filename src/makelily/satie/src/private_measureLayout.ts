@@ -50,14 +50,14 @@ export interface IMeasureLayout {
 }
 
 export function detach(layout: IMeasureLayout) {
-  let clone: IMeasureLayout = {
+  const clone: IMeasureLayout = {
     attributes: layout.attributes,
     print: layout.print,
-    elements: map(layout.elements, v => map(v, detachLayout)),
+    elements: map(layout.elements, (v) => map(v, detachLayout)),
     width: layout.width,
     maxDivisions: layout.maxDivisions,
     originX: layout.originX,
-    originY: mapValues(layout.originY, origins => origins.slice()),
+    originY: mapValues(layout.originY, (origins) => origins.slice()),
     paddingTop: layout.paddingTop.slice(),
     paddingBottom: layout.paddingBottom.slice(),
     getVersion: layout.getVersion,

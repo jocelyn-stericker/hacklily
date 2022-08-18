@@ -70,7 +70,7 @@ export default class Rest extends Component<IProps, {}> {
             x={x + (bboxes[notehead][0] * 10) / 2}
             y={y - 30}
           >
-            {this.props.multipleRest.count} /*TODO: useSymbols*/
+            {this.props.multipleRest.count /*TODO: useSymbols*/}
           </text>
         )}
         {spec.dots && spec.printDot !== false

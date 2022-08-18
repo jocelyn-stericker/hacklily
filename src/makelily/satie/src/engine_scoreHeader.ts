@@ -234,7 +234,7 @@ class ScoreHeaderModel implements ScoreHeader {
     if (spec) {
       defaultsDeep(spec, this);
     }
-    for (let key in spec) {
+    for (const key in spec) {
       if (
         Object.prototype.hasOwnProperty.call(spec, key) &&
         typeof key === "string" &&
@@ -254,7 +254,7 @@ class ScoreHeaderModel implements ScoreHeader {
   }
 
   overwriteEncoding() {
-    let date = new Date();
+    const date = new Date();
 
     this.identification =
       this.identification || new ScoreHeaderModel(null).identification;
@@ -281,9 +281,9 @@ class ScoreHeaderModel implements ScoreHeader {
 
   private _getIdentificationOrCredit(type: string) {
     if (this.identification && (this.identification.creators || []).length) {
-      let idComposer = this.identification.creators
-        .filter(c => c.type === type)
-        .map(c => c.creator)
+      const idComposer = this.identification.creators
+        .filter((c) => c.type === type)
+        .map((c) => c.creator)
         .join(", ");
 
       if (idComposer) {
@@ -292,9 +292,9 @@ class ScoreHeaderModel implements ScoreHeader {
     }
 
     return this.credits
-      .filter(c => c.creditTypes.indexOf(type) !== -1)
-      .map(m => m.creditWords)
-      .map(w => w.map(w => w.words).join(", "))
+      .filter((c) => c.creditTypes.indexOf(type) !== -1)
+      .map((m) => m.creditWords)
+      .map((w) => w.map((w) => w.words).join(", "))
       .join(", ");
   }
 
@@ -311,12 +311,12 @@ class ScoreHeaderModel implements ScoreHeader {
       } as Identification);
     this.identification.creators = this.identification.creators || [];
 
-    forEach(this.identification.creators, c => {
+    forEach(this.identification.creators, (c) => {
       if (c.type === type) {
         c.creator = val;
       }
     });
-    if (!some(this.identification.creators, c => c.type === type)) {
+    if (!some(this.identification.creators, (c) => c.type === type)) {
       // ...or add a val
       this.identification.creators.push({
         creator: val,
@@ -341,7 +341,7 @@ class ScoreHeaderModel implements ScoreHeader {
         return;
       }
       // Replace a credit...
-      let isComposer = c.creditTypes.indexOf(type) !== -1;
+      const isComposer = c.creditTypes.indexOf(type) !== -1;
       if (isComposer) {
         if (!c.creditWords.length) {
           delete this.credits[idx];
@@ -354,11 +354,11 @@ class ScoreHeaderModel implements ScoreHeader {
     if (
       !some(
         this.credits,
-        c => Boolean(c.creditWords) && c.creditTypes.indexOf(type) !== -1,
+        (c) => Boolean(c.creditWords) && c.creditTypes.indexOf(type) !== -1,
       )
     ) {
       let defaultX = NaN;
-      let margins = getPageMargins(this.defaults.pageLayout.pageMargins, 1);
+      const margins = getPageMargins(this.defaults.pageLayout.pageMargins, 1);
       // TODO: Throughout this file, use own instead of default values
       switch (justification) {
         case LeftCenterRight.Center:

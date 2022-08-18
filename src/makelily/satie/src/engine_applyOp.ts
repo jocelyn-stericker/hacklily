@@ -62,7 +62,7 @@ function isSerializable(obj: any): boolean {
   } else if (isArray(obj)) {
     return (obj as Array<any>).every(isSerializable);
   } else if (isPlainObject(obj)) {
-    return Object.keys(obj).every(key => isSerializable(obj[key]));
+    return Object.keys(obj).every((key) => isSerializable(obj[key]));
   }
   return false;
 }
@@ -89,7 +89,7 @@ export default function applyOp(
   //   - a plain array, and that the same is true for all items
   invariant(isSerializable(op), "All operations must be serializable.");
 
-  let path = op.p;
+  const path = op.p;
   if (path.length === 2 && path[0] === "measures") {
     // Song-wide measure addition/removal
     const localOp = {
@@ -100,11 +100,11 @@ export default function applyOp(
     applyMeasureOp(measures, factory, localOp, document);
     return;
   } else if (path.length === 1 && path[0] === "divisions") {
-    let segments: ISegment[] = [];
-    measures.forEach(measure => {
-      Object.keys(measure.parts).forEach(partName => {
+    const segments: ISegment[] = [];
+    measures.forEach((measure) => {
+      Object.keys(measure.parts).forEach((partName) => {
         const part = measure.parts[partName];
-        part.staves.concat(part.voices).forEach(segment => {
+        part.staves.concat(part.voices).forEach((segment) => {
           if (segment) {
             segments.push(segment);
           }
@@ -114,8 +114,8 @@ export default function applyOp(
     });
     return;
   }
-  let measureUUID = parseInt(String(path[0]), 10);
-  let measure = find(measures, measure => measure.uuid === measureUUID);
+  const measureUUID = parseInt(String(path[0]), 10);
+  const measure = find(measures, (measure) => measure.uuid === measureUUID);
   invariant(
     Boolean(measure),
     `Invalid operation path: no such measure ${path[0]}`,
@@ -126,7 +126,7 @@ export default function applyOp(
     `Invalid operation path: only parts is supported, not ${path[1]}`,
   );
 
-  let part = measure.parts[path[2]];
+  const part = measure.parts[path[2]];
   invariant(Boolean(part), `Invalid operation path: no such part ${part}`);
   ++measure.version;
 
@@ -141,7 +141,7 @@ export default function applyOp(
   }
 
   if (path[3] === "voices") {
-    let voice = part.voices[parseInt(String(path[4]), 10)];
+    const voice = part.voices[parseInt(String(path[4]), 10)];
     invariant(
       Boolean(voice),
       `Invalid operation path: No such voice ${path.slice(0, 4).join(", ")}`,
@@ -153,13 +153,13 @@ export default function applyOp(
       return;
     }
 
-    let element = voice[parseInt(String(path[5]), 10)];
+    const element = voice[parseInt(String(path[5]), 10)];
     invariant(
       Boolean(element),
       `Invalid operation path: No such element ${path.slice(0, 5).join(", ")}`,
     );
 
-    let localOp: IAny = cloneDeep(op);
+    const localOp: IAny = cloneDeep(op);
     localOp.p = path.slice(6);
     if (factory.modelHasType(element, Type.Chord)) {
       chordMutator(element as any, localOp);
@@ -169,7 +169,7 @@ export default function applyOp(
       );
     }
   } else if (path[3] === "staves") {
-    let staff = part.staves[parseInt(String(path[4]), 10)];
+    const staff = part.staves[parseInt(String(path[4]), 10)];
     invariant(
       Boolean(staff),
       `Invalid operation path: No such staff ${path.slice(0, 4).join(", ")}`,
@@ -181,13 +181,13 @@ export default function applyOp(
       return;
     }
 
-    let element = staff[parseInt(String(path[5]), 10)];
+    const element = staff[parseInt(String(path[5]), 10)];
     invariant(
       Boolean(element),
       `Invalid operation path: No such element ${path.slice(0, 5).join(", ")}`,
     );
 
-    let localOp: IAny = cloneDeep(op);
+    const localOp: IAny = cloneDeep(op);
     localOp.p = path.slice(6);
     if (factory.modelHasType(element, Type.Barline)) {
       barlineMutator(element as any, localOp);
@@ -195,8 +195,8 @@ export default function applyOp(
       if (!preview) {
         // Mark everything as dirty -- this is overkill, but finding what measures
         // need to be changed is tough.
-        let ctMeasures = document.cleanlinessTracking.measures;
-        Object.keys(ctMeasures).forEach(measureName => {
+        const ctMeasures = document.cleanlinessTracking.measures;
+        Object.keys(ctMeasures).forEach((measureName) => {
           if (ctMeasures[measureName]) {
             ctMeasures[measureName].clean = null;
           }
@@ -235,7 +235,7 @@ export function applyMeasureOp(
     );
     oldMeasure = measures[measureIdx];
     measures.splice(measureIdx, 1);
-    measures.slice(measureIdx).forEach(measure => {
+    measures.slice(measureIdx).forEach((measure) => {
       ++measure.version;
       --measure.idx;
       if (!isNaN(parseInt(measure.number, 10))) {
@@ -273,12 +273,13 @@ export function applyMeasureOp(
         } else {
           if (newParts[partID].staves[staffIdx]) {
             newParts[partID].staves[staffIdx] =
-              newParts[partID].staves[staffIdx].map(i => factory.fromSpec(i)) ||
-              <any>[];
+              newParts[partID].staves[staffIdx].map((i) =>
+                factory.fromSpec(i),
+              ) || <any>[];
           } else {
             newParts[partID].staves[staffIdx] = [] as any;
           }
-          let nv = newParts[partID].staves[staffIdx];
+          const nv = newParts[partID].staves[staffIdx];
           nv.divisions = staff.divisions;
           nv.part = staff.part;
           nv.owner = staff.owner;
@@ -292,7 +293,7 @@ export function applyMeasureOp(
         } else {
           if (newParts[partID].voices[voiceIdx]) {
             newParts[partID].voices[voiceIdx] =
-              newParts[partID].voices[voiceIdx].map(i => {
+              newParts[partID].voices[voiceIdx].map((i) => {
                 const model = factory.fromSpec(i);
                 if (doc.modelHasType(model, Type.VisualCursor)) {
                   doc._visualCursor = model;
@@ -302,7 +303,7 @@ export function applyMeasureOp(
           } else {
             newParts[partID].voices[voiceIdx] = [] as any;
           }
-          let nv = newParts[partID].voices[voiceIdx];
+          const nv = newParts[partID].voices[voiceIdx];
           nv.divisions = voice.divisions;
           nv.part = voice.part;
           nv.owner = voice.owner;
@@ -310,7 +311,7 @@ export function applyMeasureOp(
         }
       });
     });
-    let newMeasure = {
+    const newMeasure = {
       idx: measureIdx,
       uuid: op.li.uuid,
       number: "" + (measureIdx + 1),
@@ -323,7 +324,7 @@ export function applyMeasureOp(
 
     oldMeasure.parts = oldParts;
     measures.splice(measureIdx, 0, newMeasure);
-    measures.slice(measureIdx + 1).forEach(measure => {
+    measures.slice(measureIdx + 1).forEach((measure) => {
       ++measure.idx;
       ++measure.version;
       if (!isNaN(parseInt(measure.number, 10))) {
@@ -335,7 +336,7 @@ export function applyMeasureOp(
         );
       }
     });
-    measures.forEach(measure => ++measure.version);
+    measures.forEach((measure) => ++measure.version);
   }
 
   invariant(

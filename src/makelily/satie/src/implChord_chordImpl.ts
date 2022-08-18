@@ -74,7 +74,7 @@ const GRACE_FLATTEN_FACTOR = 0.1;
 const ACCIDENTAL_WIDTH = 0.73;
 const LOG_STRETCH = 28;
 
-let countToNotehead: { [key: number]: string } = {
+const countToNotehead: { [key: number]: string } = {
   [Count.Maxima]: "noteheadDoubleWhole",
   [Count.Long]: "noteheadDoubleWhole",
   [Count.Breve]: "noteheadDoubleWhole",
@@ -92,7 +92,7 @@ let countToNotehead: { [key: number]: string } = {
   [Count._1024th]: "noteheadBlack",
 };
 
-let countToRest: { [key: number]: string } = {
+const countToRest: { [key: number]: string } = {
   [Count.Maxima]: "restLonga",
   [Count.Long]: "restLonga",
   [Count.Breve]: "restDoubleWhole",
@@ -145,7 +145,7 @@ export class Layout implements IChordLayout {
     // ** this function should not modify baseModel **
 
     this.division = cursor.segmentDivision;
-    let { measureStyle } = cursor.staffAttributes;
+    const { measureStyle } = cursor.staffAttributes;
     if (measureStyle.multipleRest && !measureStyle.multipleRestInitiatedHere) {
       // This is not displayed because it is part of a multirest.
       this.x = 0;
@@ -158,23 +158,23 @@ export class Layout implements IChordLayout {
     this.satieFlag = baseModel.satieFlag;
     this.boundingBoxes = this._captureBoundingBoxes();
 
-    let isWholeBar = baseModel.wholebar || baseModel.count === Count.Whole;
+    const isWholeBar = baseModel.wholebar || baseModel.count === Count.Whole;
 
     this.expandPolicy =
       baseModel.satieMultipleRest || (baseModel.rest && isWholeBar)
         ? "centered"
         : "after";
 
-    forEach(this.model, note => {
-      let staff = note.staff || 1;
+    forEach(this.model, (note) => {
+      const staff = note.staff || 1;
 
       invariant(
         !!staff,
         "Expected the staff to be a non-zero number, got %s",
         staff,
       );
-      let paddingTop = cursor.lineMaxPaddingTopByStaff[staff] || 0;
-      let paddingBottom = cursor.lineMaxPaddingBottomByStaff[staff] || 0;
+      const paddingTop = cursor.lineMaxPaddingTopByStaff[staff] || 0;
+      const paddingBottom = cursor.lineMaxPaddingBottomByStaff[staff] || 0;
       cursor.lineMaxPaddingTopByStaff[staff] = Math.max(
         paddingTop,
         note.defaultY - 50,
@@ -185,16 +185,16 @@ export class Layout implements IChordLayout {
       );
     });
 
-    let accidentalWidth = baseModel.calcAccidentalWidth();
-    let totalWidth = baseModel.calcWidth(cursor.lineShortest);
+    const accidentalWidth = baseModel.calcAccidentalWidth();
+    const totalWidth = baseModel.calcWidth(cursor.lineShortest);
     invariant(isFinite(totalWidth), "Invalid width %s", totalWidth);
 
-    let noteheads = baseModel.noteheadGlyph;
-    let widths = map(noteheads, getGlyphWidth);
+    const noteheads = baseModel.noteheadGlyph;
+    const widths = map(noteheads, getGlyphWidth);
     this.renderedWidth = max(widths);
 
     if (baseModel.satieMultipleRest || baseModel.count === Count.Whole) {
-      forEach(this.model, note => (note.dots = []));
+      forEach(this.model, (note) => (note.dots = []));
     }
 
     this.x = cursor.segmentX + accidentalWidth;
@@ -205,9 +205,9 @@ export class Layout implements IChordLayout {
 
   _captureBoundingBoxes(): IBoundingRect[] {
     let bboxes: IBoundingRect[] = [];
-    forEach(this.model, note => {
-      let notations = notationObj(note); // TODO: detach this
-      let bbn = getBoundingRects(notations, note, this);
+    forEach(this.model, (note) => {
+      const notations = notationObj(note); // TODO: detach this
+      const bbn = getBoundingRects(notations, note, this);
       bboxes = bboxes.concat(bbn.bb);
       note.notations = [bbn.n];
     });
@@ -223,7 +223,7 @@ export class Layout implements IChordLayout {
   }
 
   _getLyricWidth(_cursor: LayoutCursor) {
-    let factor = (40 * 25.4) / 96; // 40 tenths in staff * pixelFactor
+    const factor = (40 * 25.4) / 96; // 40 tenths in staff * pixelFactor
     return getChordLyricWidth(this.model, factor);
   }
 
@@ -231,7 +231,7 @@ export class Layout implements IChordLayout {
     _cursor: LayoutCursor,
     baseModel: ChordModelImpl,
   ): IDetachedChordModel {
-    let model: IDetachedChordModel = map(baseModel, (note, _idx) => {
+    const model: IDetachedChordModel = map(baseModel, (note, _idx) => {
       /* Here, we're extending each note to have the correct
        * default position.  To do so, we use prototypical
        * inheritance. See Object.create. */
@@ -318,7 +318,7 @@ class ChordModelImpl implements IChordModel, ArrayLike<NoteImpl> {
 
   get rest() {
     // TODO: typing
-    return some(this, note => (note as any).rest);
+    return some(this, (note) => (note as any).rest);
   }
 
   get timeModification(): TimeModification {
@@ -326,11 +326,11 @@ class ChordModelImpl implements IChordModel, ArrayLike<NoteImpl> {
   }
 
   get notes(): NoteImpl[] {
-    return times(this.length, i => this[i]);
+    return times(this.length, (i) => this[i]);
   }
 
   get count(): Count {
-    let noteType = this[0].noteType;
+    const noteType = this[0].noteType;
     if (!noteType) {
       return null;
     }
@@ -338,7 +338,7 @@ class ChordModelImpl implements IChordModel, ArrayLike<NoteImpl> {
   }
 
   push(...notes: Note[]) {
-    forEach(notes, note => {
+    forEach(notes, (note) => {
       this[this.length] = new NoteImpl(this, this.length, note);
       ++this.length;
     });
@@ -347,10 +347,10 @@ class ChordModelImpl implements IChordModel, ArrayLike<NoteImpl> {
   }
 
   splice(start: number, deleteCount: number, ...replacements: NoteImpl[]) {
-    let notes = this.notes;
+    const notes = this.notes;
     notes.splice(start, deleteCount, ...replacements);
 
-    times(this.length, i => delete this[i]);
+    times(this.length, (i) => delete this[i]);
 
     forEach(notes, (n, i) => {
       invariant(n instanceof NoteImpl, "Notes must be NoteImpls in Chords");
@@ -382,12 +382,12 @@ class ChordModelImpl implements IChordModel, ArrayLike<NoteImpl> {
   _init: boolean = false;
   refresh(cursor: IReadOnlyValidationCursor): void {
     if (!this[0].noteType || !this[0].noteType.duration) {
-      let count = this._implyCountFromPerformanceData(cursor);
-      cursor.dangerouslyPatchWithoutValidation(voice =>
+      const count = this._implyCountFromPerformanceData(cursor);
+      cursor.dangerouslyPatchWithoutValidation((voice) =>
         reduce(
           this,
           (builder, _note, idx) =>
-            builder.note(idx, j => j.noteType({ duration: count })) as any,
+            builder.note(idx, (j) => j.noteType({ duration: count })) as any,
           voice,
         ),
       );
@@ -433,17 +433,17 @@ class ChordModelImpl implements IChordModel, ArrayLike<NoteImpl> {
 
     forEach(this, (note, idx) => {
       if (!note.grace && note.duration !== this.divCount) {
-        cursor.patch(partBuilder =>
-          partBuilder.note(idx, note => note.duration(this.divCount)),
+        cursor.patch((partBuilder) =>
+          partBuilder.note(idx, (note) => note.duration(this.divCount)),
         );
       }
       if (idx > 0 && !note.chord) {
-        cursor.patch(partBuilder =>
-          partBuilder.note(idx, note => note.chord({})),
+        cursor.patch((partBuilder) =>
+          partBuilder.note(idx, (note) => note.chord({})),
         );
       } else if (idx === 0 && note.chord) {
-        cursor.patch(partBuilder =>
-          partBuilder.note(idx, note => note.chord(null)),
+        cursor.patch((partBuilder) =>
+          partBuilder.note(idx, (note) => note.chord(null)),
         );
       }
       note.refresh(cursor);
@@ -451,7 +451,7 @@ class ChordModelImpl implements IChordModel, ArrayLike<NoteImpl> {
     });
 
     // Check for second intervals:
-    let notesSortedByY = this.notes.sort((a, b) => a.defaultY - b.defaultY);
+    const notesSortedByY = this.notes.sort((a, b) => a.defaultY - b.defaultY);
     for (let i = 0; i < notesSortedByY.length; ++i) {
       if (
         i + 1 < notesSortedByY.length &&
@@ -462,10 +462,10 @@ class ChordModelImpl implements IChordModel, ArrayLike<NoteImpl> {
             notesSortedByY[i].relativeX !== 0 ||
             notesSortedByY[i + 1].relativeX !== 13
           ) {
-            cursor.patch(voice =>
+            cursor.patch((voice) =>
               voice
-                .note(notesSortedByY[i]._idx, note => note.relativeX(0))
-                .note(notesSortedByY[i + 1]._idx, note => note.relativeX(13)),
+                .note(notesSortedByY[i]._idx, (note) => note.relativeX(0))
+                .note(notesSortedByY[i + 1]._idx, (note) => note.relativeX(13)),
             );
           }
         } else {
@@ -473,18 +473,18 @@ class ChordModelImpl implements IChordModel, ArrayLike<NoteImpl> {
             notesSortedByY[i].relativeX !== -13 ||
             notesSortedByY[i + 1].relativeX !== 0
           ) {
-            cursor.patch(voice =>
+            cursor.patch((voice) =>
               voice
-                .note(notesSortedByY[i]._idx, note => note.relativeX(-13))
-                .note(notesSortedByY[i + 1]._idx, note => note.relativeX(0)),
+                .note(notesSortedByY[i]._idx, (note) => note.relativeX(-13))
+                .note(notesSortedByY[i + 1]._idx, (note) => note.relativeX(0)),
             );
           }
         }
         ++i;
       } else {
         if (notesSortedByY[i].relativeX !== 0) {
-          cursor.patch(voice =>
-            voice.note(notesSortedByY[i]._idx, note => note.relativeX(0)),
+          cursor.patch((voice) =>
+            voice.note(notesSortedByY[i]._idx, (note) => note.relativeX(0)),
           );
         }
       }
@@ -494,7 +494,7 @@ class ChordModelImpl implements IChordModel, ArrayLike<NoteImpl> {
       this.divCount === barDivisions(cursor.staffAttributes) ||
       this.divCount === -1;
 
-    let count = this.count;
+    const count = this.count;
     invariant(
       isFinite(count) && count !== null,
       "%s is not a valid count",
@@ -543,7 +543,7 @@ class ChordModelImpl implements IChordModel, ArrayLike<NoteImpl> {
   }
 
   toJSON() {
-    let data: any = map(this, note => note);
+    const data: any = map(this, (note) => note);
     return data;
   }
 
@@ -560,7 +560,7 @@ class ChordModelImpl implements IChordModel, ArrayLike<NoteImpl> {
   }
 
   calcWidth(shortest: number) {
-    let accidentalWidth = this.calcAccidentalWidth();
+    const accidentalWidth = this.calcAccidentalWidth();
 
     // TODO: Each note's width has a linear component proportional to log of its duration
     // with respect to the shortest length
@@ -606,7 +606,7 @@ class ChordModelImpl implements IChordModel, ArrayLike<NoteImpl> {
     if (this.wholebar || this.satieMultipleRest) {
       return 0;
     }
-    return max(map(this, m => (m.dots || []).length)) * 6;
+    return max(map(this, (m) => (m.dots || []).length)) * 6;
   }
 
   private _implyCountFromPerformanceData(cursor: IReadOnlyValidationCursor) {
@@ -617,8 +617,8 @@ class ChordModelImpl implements IChordModel, ArrayLike<NoteImpl> {
       beats: reduce(time.beats, (sum, beat) => sum + parseInt(beat, 10), 0),
     };
 
-    let factor = ts.beatType / 4;
-    let beats = factor * (this[0].duration / divisions);
+    const factor = ts.beatType / 4;
+    const beats = factor * (this[0].duration / divisions);
     count = 4 / (this[0].duration / divisions);
 
     // Try dots
@@ -634,11 +634,11 @@ class ChordModelImpl implements IChordModel, ArrayLike<NoteImpl> {
     }
     if (dots > 0) {
       count = 1 / (beats / dotFactor / 4 / factor);
-      cursor.patch(voiceA =>
+      cursor.patch((voiceA) =>
         reduce(
           times(this.length),
           (voice, idx) =>
-            voice.note(idx, note => note.dots(times(dots, _dot => ({})))),
+            voice.note(idx, (note) => note.dots(times(dots, (_dot) => ({})))),
           voiceA as VoiceBuilder,
         ),
       );
@@ -654,7 +654,7 @@ class ChordModelImpl implements IChordModel, ArrayLike<NoteImpl> {
       if (beats === ts.beats && !!this[0].rest) {
         count = Count.Whole;
       } else {
-        let nextPO2 = Math.pow(
+        const nextPO2 = Math.pow(
           2,
           Math.ceil(Math.log(this.count) / Math.log(2)),
         );
@@ -680,10 +680,10 @@ class ChordModelImpl implements IChordModel, ArrayLike<NoteImpl> {
   }
 
   private _getStemHeight(direction: number, clef: Clef): number {
-    let heightFromOtherNotes =
+    const heightFromOtherNotes =
       (highestLine(this, clef) - lowestLine(this, clef)) * 10;
-    let start = heightDeterminingLine(this, direction, clef) * 10;
-    let idealExtreme = start + direction * IDEAL_STEM_HEIGHT;
+    const start = heightDeterminingLine(this, direction, clef) * 10;
+    const idealExtreme = start + direction * IDEAL_STEM_HEIGHT;
 
     let result: number;
     if (idealExtreme >= 65) {
@@ -719,7 +719,7 @@ class ChordModelImpl implements IChordModel, ArrayLike<NoteImpl> {
 
   private _pickDirection(cursor: IReadOnlyValidationCursor) {
     const { clef } = cursor.staffAttributes;
-    let avgLine = averageLine(this, clef);
+    const avgLine = averageLine(this, clef);
     if (avgLine > 3) {
       return -1;
     } else if (avgLine < 3) {
@@ -730,10 +730,10 @@ class ChordModelImpl implements IChordModel, ArrayLike<NoteImpl> {
       // TODO: Consider notes outside current stave
       // TODO: Handle clef changes correctly
 
-      let notes: ChordModelImpl[] = cursor.segmentInstance.filter(el =>
+      const notes: ChordModelImpl[] = cursor.segmentInstance.filter((el) =>
         cursor.factory.modelHasType(el, Type.Chord),
       ) as any;
-      let nIdx = notes.indexOf(this);
+      const nIdx = notes.indexOf(this);
 
       // 1. Continue the stem direction of surrounding stems that are in one
       //    direction only
@@ -743,7 +743,7 @@ class ChordModelImpl implements IChordModel, ArrayLike<NoteImpl> {
         // ties in a forward direction.
         linePrev = notes[nIdx - 1].satieDirection === 1 ? 2.99 : 3.01;
       }
-      let lineNext =
+      const lineNext =
         nIdx + 1 < notes.length ? averageLine(notes[nIdx + 1], clef) : 3;
       if (linePrev > 3 && lineNext > 3) {
         return -1;
@@ -756,12 +756,12 @@ class ChordModelImpl implements IChordModel, ArrayLike<NoteImpl> {
       //    of the notes that are part of the same beat or half-bar.
       //    (Note: we use the more general beaming pattern instead of half-bar to
       //     decide boundries)
-      let { time } = cursor.staffAttributes;
-      let beamingPattern = getBeamingPattern(time);
-      let bpDivisions = map(beamingPattern, seg =>
+      const { time } = cursor.staffAttributes;
+      const beamingPattern = getBeamingPattern(time);
+      const bpDivisions = map(beamingPattern, (seg) =>
         calcDivisions(seg, cursor.staffAttributes),
       );
-      let currDivision = cursor.segmentDivision;
+      const currDivision = cursor.segmentDivision;
       let prevDivisionStart = 0;
       let i = 0;
       for (; i < bpDivisions.length; ++i) {
@@ -770,12 +770,12 @@ class ChordModelImpl implements IChordModel, ArrayLike<NoteImpl> {
         }
         prevDivisionStart += bpDivisions[i];
       }
-      let nextDivisionStart = prevDivisionStart + bpDivisions[i] || NaN;
-      let prevExists = prevDivisionStart < currDivision;
-      let nextExists = nextDivisionStart > currDivision + this.divCount;
+      const nextDivisionStart = prevDivisionStart + bpDivisions[i] || NaN;
+      const prevExists = prevDivisionStart < currDivision;
+      const nextExists = nextDivisionStart > currDivision + this.divCount;
 
-      let considerPrev = prevExists ? notes[nIdx - 1] : null;
-      let considerNext = nextExists ? notes[nIdx + 1] : null;
+      const considerPrev = prevExists ? notes[nIdx - 1] : null;
+      const considerNext = nextExists ? notes[nIdx + 1] : null;
       if (considerPrev && !considerNext && linePrev !== 3) {
         return linePrev > 3 ? -1 : 1;
       } else if (considerNext && !considerPrev && lineNext !== 3) {
@@ -792,17 +792,17 @@ class ChordModelImpl implements IChordModel, ArrayLike<NoteImpl> {
   }
 
   private _checkMulitpleRest(cursor: IReadOnlyValidationCursor) {
-    let { measureStyle } = cursor.staffAttributes;
-    let multipleRest = measureStyle && measureStyle.multipleRest;
+    const { measureStyle } = cursor.staffAttributes;
+    const multipleRest = measureStyle && measureStyle.multipleRest;
     if (multipleRest && multipleRest.count > 1) {
       this.satieMultipleRest = measureStyle.multipleRest;
     }
   }
 
   private _implyNoteheads(cursor: IReadOnlyValidationCursor) {
-    let { measureStyle } = cursor.staffAttributes;
+    const { measureStyle } = cursor.staffAttributes;
     if (measureStyle) {
-      forEach(this, note => {
+      forEach(this, (note) => {
         if (measureStyle.slash) {
           note.notehead = note.notehead || { type: null };
           note.notehead.type = NoteheadType.Slash;
