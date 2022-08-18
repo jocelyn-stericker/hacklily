@@ -6589,14 +6589,14 @@ export interface IStaffLayoutBuilder {
   build?: () => StaffLayout;
   patch: () => IAny[];
   staffDistance: (staffDistance: number) => IStaffLayoutBuilder;
-  num: (num: number) => IStaffLayoutBuilder;
+  number: (number: number) => IStaffLayoutBuilder;
 }
 
 class StaffLayoutBuilder implements IStaffLayoutBuilder {
   build: () => StaffLayout;
   patch: () => IAny[];
   staffDistance: (staffDistance: number) => IStaffLayoutBuilder;
-  num: (num: number) => IStaffLayoutBuilder;
+  number: (number: number) => IStaffLayoutBuilder;
   constructor(original?: StaffLayout) {
     let updates: StaffLayout = {} as any;
     let childBuilders: {[key: string]: any} = {};
@@ -6618,10 +6618,10 @@ class StaffLayoutBuilder implements IStaffLayoutBuilder {
     
     function checkInvariants() {
       console.assert(
-          (original && !modifiedKeys["num"]) ||
-          childBuilders["num"] !== undefined ||
-          updates.num !== undefined,
-        "num is a required field");
+          (original && !modifiedKeys["number"]) ||
+          childBuilders["number"] !== undefined ||
+          updates.number !== undefined,
+        "number is a required field");
     }
 
     if (!original) {
@@ -6643,10 +6643,10 @@ class StaffLayoutBuilder implements IStaffLayoutBuilder {
         return this;
     }
 
-    this.num = (spec: number): IStaffLayoutBuilder => {
-        updates["num"] = spec;
-        delete childBuilders["num;"];
-        modifiedKeys["num"] = true;
+    this.number = (spec: number): IStaffLayoutBuilder => {
+        updates["number"] = spec;
+        delete childBuilders["number;"];
+        modifiedKeys["number"] = true;
         return this;
     }
   }
@@ -8588,6 +8588,7 @@ export interface ITimeBuilder {
   beats: (beats: string[]) => ITimeBuilder;
   beatTypes: (beatTypes: number[]) => ITimeBuilder;
   senzaMisura: (senzaMisura: string) => ITimeBuilder;
+  number: (number: number) => ITimeBuilder;
   printObject: (printObject: boolean) => ITimeBuilder;
   defaultX: (defaultX: number) => ITimeBuilder;
   relativeY: (relativeY: number) => ITimeBuilder;
@@ -8611,6 +8612,7 @@ class TimeBuilder implements ITimeBuilder {
   beats: (beats: string[]) => ITimeBuilder;
   beatTypes: (beatTypes: number[]) => ITimeBuilder;
   senzaMisura: (senzaMisura: string) => ITimeBuilder;
+  number: (number: number) => ITimeBuilder;
   printObject: (printObject: boolean) => ITimeBuilder;
   defaultX: (defaultX: number) => ITimeBuilder;
   relativeY: (relativeY: number) => ITimeBuilder;
@@ -8701,6 +8703,13 @@ class TimeBuilder implements ITimeBuilder {
         updates["senzaMisura"] = spec;
         delete childBuilders["senzaMisura;"];
         modifiedKeys["senzaMisura"] = true;
+        return this;
+    }
+
+    this.number = (spec: number): ITimeBuilder => {
+        updates["number"] = spec;
+        delete childBuilders["number;"];
+        modifiedKeys["number"] = true;
         return this;
     }
 
@@ -15935,7 +15944,7 @@ export interface IGlissandoBuilder {
   patch: () => IAny[];
   text: (text: string) => IGlissandoBuilder;
   type: (type: StartStop) => IGlissandoBuilder;
-  normal: (normal: number) => IGlissandoBuilder;
+  number: (number: number) => IGlissandoBuilder;
   defaultX: (defaultX: number) => IGlissandoBuilder;
   relativeY: (relativeY: number) => IGlissandoBuilder;
   defaultY: (defaultY: number) => IGlissandoBuilder;
@@ -15955,7 +15964,7 @@ class GlissandoBuilder implements IGlissandoBuilder {
   patch: () => IAny[];
   text: (text: string) => IGlissandoBuilder;
   type: (type: StartStop) => IGlissandoBuilder;
-  normal: (normal: number) => IGlissandoBuilder;
+  number: (number: number) => IGlissandoBuilder;
   defaultX: (defaultX: number) => IGlissandoBuilder;
   relativeY: (relativeY: number) => IGlissandoBuilder;
   defaultY: (defaultY: number) => IGlissandoBuilder;
@@ -16021,10 +16030,10 @@ class GlissandoBuilder implements IGlissandoBuilder {
         return this;
     }
 
-    this.normal = (spec: number): IGlissandoBuilder => {
-        updates["normal"] = spec;
-        delete childBuilders["normal;"];
-        modifiedKeys["normal"] = true;
+    this.number = (spec: number): IGlissandoBuilder => {
+        updates["number"] = spec;
+        delete childBuilders["number;"];
+        modifiedKeys["number"] = true;
         return this;
     }
 
@@ -16121,7 +16130,7 @@ export interface ISlideBuilder {
   patch: () => IAny[];
   text: (text: string) => ISlideBuilder;
   type: (type: StartStop) => ISlideBuilder;
-  normal: (normal: number) => ISlideBuilder;
+  number: (number: number) => ISlideBuilder;
   defaultX: (defaultX: number) => ISlideBuilder;
   relativeY: (relativeY: number) => ISlideBuilder;
   defaultY: (defaultY: number) => ISlideBuilder;
@@ -16145,7 +16154,7 @@ class SlideBuilder implements ISlideBuilder {
   patch: () => IAny[];
   text: (text: string) => ISlideBuilder;
   type: (type: StartStop) => ISlideBuilder;
-  normal: (normal: number) => ISlideBuilder;
+  number: (number: number) => ISlideBuilder;
   defaultX: (defaultX: number) => ISlideBuilder;
   relativeY: (relativeY: number) => ISlideBuilder;
   defaultY: (defaultY: number) => ISlideBuilder;
@@ -16215,10 +16224,10 @@ class SlideBuilder implements ISlideBuilder {
         return this;
     }
 
-    this.normal = (spec: number): ISlideBuilder => {
-        updates["normal"] = spec;
-        delete childBuilders["normal;"];
-        modifiedKeys["normal"] = true;
+    this.number = (spec: number): ISlideBuilder => {
+        updates["number"] = spec;
+        delete childBuilders["number;"];
+        modifiedKeys["number"] = true;
         return this;
     }
 
@@ -16343,6 +16352,7 @@ export interface IOtherNotationBuilder {
   patch: () => IAny[];
   type: (type: StartStopSingle) => IOtherNotationBuilder;
   data: (data: string) => IOtherNotationBuilder;
+  number: (number: number) => IOtherNotationBuilder;
   defaultX: (defaultX: number) => IOtherNotationBuilder;
   relativeY: (relativeY: number) => IOtherNotationBuilder;
   defaultY: (defaultY: number) => IOtherNotationBuilder;
@@ -16361,6 +16371,7 @@ class OtherNotationBuilder implements IOtherNotationBuilder {
   patch: () => IAny[];
   type: (type: StartStopSingle) => IOtherNotationBuilder;
   data: (data: string) => IOtherNotationBuilder;
+  number: (number: number) => IOtherNotationBuilder;
   defaultX: (defaultX: number) => IOtherNotationBuilder;
   relativeY: (relativeY: number) => IOtherNotationBuilder;
   defaultY: (defaultY: number) => IOtherNotationBuilder;
@@ -16422,6 +16433,13 @@ class OtherNotationBuilder implements IOtherNotationBuilder {
         updates["data"] = spec;
         delete childBuilders["data;"];
         modifiedKeys["data"] = true;
+        return this;
+    }
+
+    this.number = (spec: number): IOtherNotationBuilder => {
+        updates["number"] = spec;
+        delete childBuilders["number;"];
+        modifiedKeys["number"] = true;
         return this;
     }
 
