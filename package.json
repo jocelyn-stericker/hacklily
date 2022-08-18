@@ -63,8 +63,8 @@
   "scripts": {
     "test": "eslint ./src --ext tsx,ts,js,jsx && tsc --noEmit",
     "build": "rimraf dist pkg && env REACT_APP_GITHUB_CLIENT_ID=10a6656f66c8392b4d35 REACT_APP_BACKEND_WS_URL=wss://hacklily-render.nettek.ca/rpc webpack && npm test",
-    "start:remote-backend": "rimraf dist pkg && env REACT_APP_GITHUB_CLIENT_ID=10a6656f66c8392b4d35 REACT_APP_BACKEND_WS_URL=wss://hacklily-render.nettek.ca/rpc webpack-dev-server --open --mode development",
-    "start": "rimraf dist pkg && env REACT_APP_GITHUB_CLIENT_ID=10a6656f66c8392b4d35 REACT_APP_BACKEND_WS_URL=wss://hacklily-render.nettek.ca/rpc webpack-dev-server --open --mode development"
+    "start": "rimraf dist pkg && env REACT_APP_GITHUB_CLIENT_ID=5a1e4e51dea710198f18 REACT_APP_BACKEND_WS_URL=ws://localhost:2000 webpack-dev-server --open -d",
+    "start:remote-backend": "rimraf dist pkg && env REACT_APP_GITHUB_CLIENT_ID=10a6656f66c8392b4d35 REACT_APP_BACKEND_WS_URL=wss://hacklily-render.nettek.ca/rpc webpack-dev-server --open --mode development"
   },
   "overrides": {
     "react": "^18.2.0"
