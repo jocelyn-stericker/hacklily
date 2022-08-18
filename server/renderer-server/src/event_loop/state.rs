@@ -17,6 +17,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 use futures::future::FutureExt;
+use log::{debug, error, info, warn};
 use std::collections::{BinaryHeap, HashMap, VecDeque};
 use std::panic::AssertUnwindSafe;
 use std::time::Duration;
@@ -30,7 +31,7 @@ use crate::request::{Request, Version};
 
 pub enum Event {
     QueueRequest(Request, ResponseCallback),
-    ManagerEvent(Box<RenderEvent>),
+    Manager(Box<RenderEvent>),
     CommandSourceReady(QuitSink),
     CommandSourceFailedToStart,
     CommandSourceDead,
@@ -128,7 +129,7 @@ impl State {
 
             self.stopping = true;
 
-            let ready_containers = std::mem::replace(&mut self.ready_containers, HashMap::new());
+            let ready_containers = std::mem::take(&mut self.ready_containers);
 
             // Create in-flight requests for our own cleanup!
             self.renderer_manager_command_sender
@@ -150,7 +151,7 @@ impl State {
             }
 
             // Terminate command source
-            if let Some(mut quit_sink) = self.command_source_quit_sink.take() {
+            if let Some(quit_sink) = self.command_source_quit_sink.take() {
                 if quit_sink.send(QuitSignal {}).await.is_err() {
                     // It's probably already quitting.
                 }
@@ -232,8 +233,8 @@ impl State {
                 .await
                 .expect("Could not send container to manager.");
 
-            let mut emergency_command_sender = self.renderer_manager_command_sender.clone();
-            let mut internal_sink = self.internal_sink.clone();
+            let emergency_command_sender = self.renderer_manager_command_sender.clone();
+            let internal_sink = self.internal_sink.clone();
 
             tokio::spawn(async move {
                 let f = async move {
@@ -261,7 +262,7 @@ impl State {
             });
         }
     }
-    pub async fn handle_command_source_ready(&mut self, mut sink: QuitSink) {
+    pub async fn handle_command_source_ready(&mut self, sink: QuitSink) {
         if self.stopping {
             if sink.send(QuitSignal {}).await.is_err() {
                 // It's probably already quitting...

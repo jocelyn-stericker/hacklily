@@ -16,13 +16,14 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+use log::{debug, error, info, warn};
 use std::os::unix::process::ExitStatusExt;
 use std::process::Stdio;
 use std::time::Duration;
 
 use rand::Rng;
 use tokio::process::{Child, Command};
-use tokio::time::delay_for;
+use tokio::time::sleep;
 
 use crate::error::HacklilyError;
 
@@ -60,7 +61,6 @@ fn random_between(min: u64, max: u64) -> u64 {
 }
 
 impl ContainerHandle {
-    #[must_use]
     pub async fn create(image: String) -> Result<(ContainerHandle, Child), HacklilyError> {
         let max_tries: u8 = 2;
         for _ in 0..max_tries {
@@ -89,7 +89,7 @@ impl ContainerHandle {
             let create_output = create
                 .output()
                 .await
-                .or_else(|err| Err(HacklilyError::ContainerInitError(err.to_string())))?;
+                .map_err(|err| HacklilyError::ContainerInitError(err.to_string()))?;
 
             let container_id = String::from_utf8_lossy(&create_output.stdout)
                 .trim()
@@ -98,11 +98,11 @@ impl ContainerHandle {
             let create_output_stderr = String::from_utf8_lossy(&create_output.stderr)
                 .trim()
                 .to_string();
-            if create_output_stderr != "" {
+            if !create_output_stderr.is_empty() {
                 warn!("docker create stderr: {}", &create_output_stderr);
             }
 
-            if !create_output.status.success() || container_id == "" {
+            if !create_output.status.success() || container_id.is_empty() {
                 let mut err_msg = "Could not create docker container: ".to_owned();
                 err_msg.push_str(&create_output_stderr);
 
@@ -117,12 +117,12 @@ impl ContainerHandle {
                         // This is a transisent error :(
                         let timeout = Duration::from_millis(random_between(200, 600));
                         error!("Transient error -- retrying in {:?}", timeout);
-                        delay_for(timeout).await;
+                        sleep(timeout).await;
                         continue;
                     }
                 }
 
-                Err(HacklilyError::ContainerInitError(err_msg))?;
+                return Err(HacklilyError::ContainerInitError(err_msg));
             }
 
             info!(
@@ -144,10 +144,9 @@ impl ContainerHandle {
 
         Err(HacklilyError::ContainerInitError(
             "Could not create container, even after multiple tries".to_owned(),
-        ))?
+        ))
     }
 
-    #[must_use]
     async fn start(&self) -> Result<(), HacklilyError> {
         debug!("starting container with ID {}", &self.id);
 
@@ -163,7 +162,7 @@ impl ContainerHandle {
         match start_output {
             Ok(output) => {
                 let stop_output_err = String::from_utf8_lossy(&output.stderr).trim().to_string();
-                if stop_output_err != "" {
+                if !stop_output_err.is_empty() {
                     warn!(
                         "starting container with ID {}: {}",
                         &self.id, stop_output_err
@@ -178,7 +177,7 @@ impl ContainerHandle {
         Ok(())
     }
 
-    #[must_use]
+    #[must_use = "Need to handle errors"]
     fn attach(&self) -> Result<Child, HacklilyError> {
         debug!("attaching container with ID {}", &self.id);
 
@@ -191,7 +190,7 @@ impl ContainerHandle {
         let child = unsafe { child.pre_exec(do_not_forward_sigs) };
         let child = child
             .spawn()
-            .or_else(|err| Err(HacklilyError::ContainerInitError(err.to_string())))?;
+            .map_err(|err| HacklilyError::ContainerInitError(err.to_string()))?;
 
         Ok(child)
     }
@@ -236,7 +235,7 @@ async fn _close_container(container_id: String) -> Result<(), HacklilyError> {
     match rm_output {
         Ok(output) => {
             let stop_output_err = String::from_utf8_lossy(&output.stderr).trim().to_string();
-            if stop_output_err != "" {
+            if !stop_output_err.is_empty() {
                 warn!(
                     "removed container with ID {}: {}",
                     &container_id, stop_output_err

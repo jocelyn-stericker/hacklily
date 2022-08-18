@@ -19,12 +19,15 @@
 use futures::future;
 use futures::stream;
 use futures::stream::TryStreamExt;
+use log::error;
+use serde::{Deserialize, Serialize};
 use std::path::PathBuf;
 use std::sync::{Arc, Mutex};
 use tokio::fs::File;
 use tokio::io::{AsyncBufReadExt, BufReader};
-use tokio::stream::StreamExt;
 use tokio::sync::mpsc;
+use tokio_stream::wrappers::{LinesStream, ReceiverStream};
+use tokio_stream::StreamExt;
 
 use crate::command_source::{QuitSignal, QuitSink, RequestStream, ResponseCallback};
 use crate::error::HacklilyError;
@@ -42,7 +45,7 @@ struct TestResponse {
     result: Response,
 }
 
-async fn send_quit(mut quit_sink: mpsc::Sender<QuitSignal>) {
+async fn send_quit(quit_sink: mpsc::Sender<QuitSignal>) {
     quit_sink
         .send(QuitSignal {})
         .await
@@ -53,11 +56,11 @@ pub async fn batch(path: PathBuf) -> Result<(RequestStream, QuitSink), HacklilyE
     match File::open(path).await {
         Ok(file) => {
             let (quit_sink, quit_stream) = mpsc::channel::<QuitSignal>(50);
-            let quit_stream = quit_stream.map(|x| Ok(Event::QuitSignal(x)));
+            let quit_stream = ReceiverStream::new(quit_stream).map(|x| Ok(Event::QuitSignal(x)));
             let parent_quit_sink = quit_sink.clone();
 
             let reader = BufReader::new(file);
-            let requests_remaining = Arc::new(Mutex::new(1 as u32));
+            let requests_remaining = Arc::new(Mutex::new(1_u32));
             let requests_remaining_2 = requests_remaining.clone();
             let done_event = stream::once(future::lazy(move |_| {
                 let mut remaining = requests_remaining_2.lock().unwrap();
@@ -70,8 +73,7 @@ pub async fn batch(path: PathBuf) -> Result<(RequestStream, QuitSink), HacklilyE
                 })
             }));
 
-            let request_stream = reader
-                .lines()
+            let request_stream = LinesStream::new(reader.lines())
                 .try_filter_map(move |line| {
                     future::ok(if line.starts_with("//") || line.is_empty() {
                         None
@@ -111,7 +113,7 @@ pub async fn batch(path: PathBuf) -> Result<(RequestStream, QuitSink), HacklilyE
                         }
                     })
                 })
-                .map_ok(move |x| Event::Request(x))
+                .map_ok(Event::Request)
                 .map_err(|e| {
                     HacklilyError::CommandSourceError(
                         "Cannot read file: ".to_owned() + &e.to_string(),
@@ -120,10 +122,7 @@ pub async fn batch(path: PathBuf) -> Result<(RequestStream, QuitSink), HacklilyE
                 .chain(done_event);
 
             let request_stream = stream::select(request_stream, quit_stream)
-                .take_while(|ev| match ev {
-                    Ok(Event::QuitSignal(_)) => false,
-                    _ => true,
-                })
+                .take_while(|ev| !matches!(ev, Ok(Event::QuitSignal(_))))
                 .try_filter_map(|req| {
                     future::ok(match req {
                         Event::Request(r) => Some(r),

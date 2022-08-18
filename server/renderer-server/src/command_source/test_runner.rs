@@ -19,8 +19,9 @@
 use futures::stream;
 use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
-use tokio::stream::StreamExt;
 use tokio::sync::mpsc;
+use tokio_stream::wrappers::ReceiverStream;
+use tokio_stream::StreamExt;
 
 use crate::command_source::{QuitSignal, QuitSink, RequestStream, ResponseCallback};
 use crate::error::HacklilyError;
@@ -31,7 +32,7 @@ enum Event {
     QuitSignal(QuitSignal),
 }
 
-async fn send_quit(mut quit_sink: mpsc::Sender<QuitSignal>) {
+async fn send_quit(quit_sink: mpsc::Sender<QuitSignal>) {
     quit_sink
         .send(QuitSignal {})
         .await
@@ -43,7 +44,7 @@ pub async fn test_runner(
     output: Arc<Mutex<HashMap<String, Response>>>,
 ) -> Result<(RequestStream, QuitSink), HacklilyError> {
     let (quit_sink, quit_stream) = mpsc::channel::<QuitSignal>(50);
-    let quit_stream = quit_stream.map(Event::QuitSignal);
+    let quit_stream = ReceiverStream::new(quit_stream).map(Event::QuitSignal);
     let parent_quit_sink = quit_sink.clone();
     let input_len = input.len();
 
@@ -75,10 +76,7 @@ pub async fn test_runner(
         .map(Event::Request);
 
     let request_stream = stream::select(request_stream, quit_stream)
-        .take_while(|ev| match ev {
-            Event::QuitSignal(_) => false,
-            _ => true,
-        })
+        .take_while(|ev| !matches!(ev, Event::QuitSignal(_)))
         .filter_map(|req| match req {
             Event::Request(r) => Some(Ok(r)),
             Event::QuitSignal(_) => None,

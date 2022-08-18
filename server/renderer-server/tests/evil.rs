@@ -32,7 +32,7 @@ fn evil() {
             src: src.to_owned(),
             version,
         }
-    };
+    }
 
     let mut tests = Vec::new();
     for iteration in 0..NUM_ITERATIONS {

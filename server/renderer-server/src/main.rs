@@ -17,15 +17,9 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-
-#[macro_use]
-extern crate clap;
-
-#[macro_use]
-extern crate log;
-
 use ansi_term::Colour::{Green, Red};
-use clap::{App, Arg, SubCommand};
+use clap::{value_t, App, Arg, ArgAction, SubCommand};
+use log::info;
 use std::env;
 use std::path::Path;
 
@@ -35,7 +29,7 @@ use renderer_lib::{event_loop, CommandSourceConfig, Config};
 
 #[tokio::main]
 async fn main() {
-    let matches = App::new("Hacklily Renderer Server")
+    let mut app = App::new("Hacklily Renderer Server")
         .version("0.1")
         .author("Jocelyn Stericker <jocelyn@nettek.ca>")
         .about("Renders LilyPond music efficiently in containers.")
@@ -82,8 +76,8 @@ async fn main() {
         .arg(
             Arg::with_name("v")
                 .long("verbose")
-                .short("v")
-                .multiple(true)
+                .short('v')
+                .action(ArgAction::Count)
                 .help("Sets the level of verbosity (-v = warn, -vv = info, -vvv = debug, -vvvv = trace)"),
         )
         .subcommand(
@@ -107,8 +101,9 @@ async fn main() {
                         .required(true)
                         .validator(file_exists),
                 )
-        )
-        .get_matches();
+        );
+    let usage = app.render_usage();
+    let matches = app.get_matches();
 
     env_logger::Builder::new()
         .parse_filters(&env::var("RUST_LOG").unwrap_or_else(|_| {
@@ -117,7 +112,7 @@ async fn main() {
                 1 => "warn",
                 2 => "info",
                 3 => "debug",
-                4 | _ => "trace",
+                _ => "trace",
             }
             .to_owned()
         }))
@@ -144,7 +139,7 @@ async fn main() {
         command_source: match matches.subcommand_name() {
             Some("ws-worker") => CommandSourceConfig::Worker {
                 coordinator: url::Url::parse(
-                    &matches
+                    matches
                         .subcommand_matches("ws-worker")
                         .unwrap()
                         .value_of("coordinator-address")
@@ -164,9 +159,9 @@ async fn main() {
             },
             _ => {
                 eprintln!("{}: A subcommand is required.", Red.paint("error"));
-                eprintln!("");
-                eprintln!("{}", matches.usage());
-                eprintln!("");
+                eprintln!();
+                eprintln!("{}", usage);
+                eprintln!();
                 eprintln!("For more information try {}", Green.paint("--help"));
                 ::std::process::exit(1);
             }
@@ -178,17 +173,17 @@ async fn main() {
     info!("Bye.")
 }
 
-fn is_url(val: String) -> Result<(), String> {
-    if let Err(_error) = url::Url::parse(&val) {
-        Err(val + " is not a valid URL")
+fn is_url(val: &str) -> Result<(), String> {
+    if let Err(_error) = url::Url::parse(val) {
+        Err(format!("{} is not a valid URL", val))
     } else {
         Ok(())
     }
 }
 
-fn file_exists(val: String) -> Result<(), String> {
+fn file_exists(val: &str) -> Result<(), String> {
     if !Path::new(&val).exists() {
-        Err(val + " does not exist")
+        Err(format!("{} does not exist", val))
     } else {
         Ok(())
     }

@@ -16,7 +16,7 @@ fn sleep() {
             src: include_str!("ly/sleep.ly").to_owned(),
             version,
         }
-    };
+    }
     fn get_simple_request(id: &str, version: Version) -> Request {
         Request {
             id: id.to_owned(),
@@ -24,7 +24,7 @@ fn sleep() {
             src: include_str!("ly/simple.ly").to_owned(),
             version,
         }
-    };
+    }
 
     let simple_stable_response = Response {
         files: vec![include_str!("ly/simple.ly.2_18_2.svg").to_owned()],
@@ -63,7 +63,7 @@ fn sleep() {
             get_simple_request("simple1", Version::Unstable),
             get_simple_request("simple1s", Version::Stable),
         ]),
-        cloned_hashmap!{
+        cloned_hashmap! {
             "sleep1" => sleep_unstable_response,
             "sleep2" => sleep_unstable_response,
             "sleep3" => sleep_unstable_response,

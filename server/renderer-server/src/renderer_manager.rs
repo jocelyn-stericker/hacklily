@@ -5,10 +5,12 @@
  * During shutdown, this will terminate RenderContainers.
  */
 use futures::future::FutureExt;
+use log::{error, info};
 use std::panic::AssertUnwindSafe;
 use tokio::io::{AsyncBufReadExt, BufReader};
-use tokio::stream::StreamExt;
 use tokio::sync::mpsc::{channel, Receiver, Sender};
+use tokio_stream::wrappers::{LinesStream, ReceiverStream};
+use tokio_stream::StreamExt;
 
 use crate::error::HacklilyError;
 use crate::renderer::{
@@ -39,7 +41,7 @@ pub struct RendererManager {
 fn steal_lines(ready_container: &mut ReadyRenderContainer) {
     if let Some(stderr) = ready_container.take_stderr() {
         let id = ready_container.meta.id;
-        let mut stderr_lines = BufReader::new(stderr).lines();
+        let mut stderr_lines = LinesStream::new(BufReader::new(stderr).lines());
 
         // NOTE: panics are ignored here.
         tokio::spawn(async move {
@@ -52,7 +54,7 @@ fn steal_lines(ready_container: &mut ReadyRenderContainer) {
 
 async fn emit_recycled_or_new_ready_container(
     source_container: RenderContainer,
-    mut event_stream: Sender<Event>,
+    event_stream: Sender<Event>,
 ) {
     match source_container.next_terminal().await {
         TerminalRenderContainer::Ready(clean) => {
@@ -68,7 +70,6 @@ async fn emit_recycled_or_new_ready_container(
                 .send(Event::Fatal)
                 .await
                 .expect("Renderer dropped.");
-            return;
         }
 
         TerminalRenderContainer::Dead(meta, _) | TerminalRenderContainer::Stopped(meta) => {
@@ -91,17 +92,18 @@ async fn emit_recycled_or_new_ready_container(
     }
 }
 
-async fn manager_event_loop(mut command_receiver: Receiver<Command>, event_sender: Sender<Event>) {
+async fn manager_event_loop(command_receiver: Receiver<Command>, event_sender: Sender<Event>) {
     let mut closed = false;
 
+    let mut command_receiver = ReceiverStream::new(command_receiver);
     while let Some(command) = command_receiver.next().await {
         match command {
             Command::CreateContainer(meta) => {
-                let mut event_sender = event_sender.clone();
+                let event_sender = event_sender.clone();
                 let new_container = RenderContainer::new(meta);
 
                 tokio::spawn(async move {
-                    let mut emergency_event_sender = event_sender.clone();
+                    let emergency_event_sender = event_sender.clone();
 
                     let f = async move {
                         if let TerminalRenderContainer::Ready(mut clean) =
@@ -131,11 +133,11 @@ async fn manager_event_loop(mut command_receiver: Receiver<Command>, event_sende
                 });
             }
             Command::ReceiveContainer(command) => {
-                let mut event_sender = event_sender.clone();
+                let event_sender = event_sender.clone();
                 let was_closed_when_queued = closed;
 
                 tokio::spawn(async move {
-                    let mut emergency_event_sender = event_sender.clone();
+                    let emergency_event_sender = event_sender.clone();
 
                     let f = async move {
                         if was_closed_when_queued {
@@ -177,7 +179,7 @@ impl RendererManager {
         let (event_sender, event_receiver) = channel(50);
 
         tokio::spawn(async move {
-            let mut emergency_event_sender = event_sender.clone();
+            let emergency_event_sender = event_sender.clone();
             let f = async move {
                 manager_event_loop(command_receiver, event_sender).await;
             };

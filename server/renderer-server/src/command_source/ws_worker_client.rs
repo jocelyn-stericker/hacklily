@@ -19,10 +19,13 @@
 use futures::future::{self, Either, FutureExt};
 use futures::sink::SinkExt;
 use futures::stream::{self, StreamExt, TryStreamExt};
+use log::{debug, error, info, trace, warn};
+use serde::{Deserialize, Serialize};
 use std::panic::AssertUnwindSafe;
 use std::time::Duration;
 use tokio::sync::mpsc;
-use tokio::time::delay_for;
+use tokio::time::sleep;
+use tokio_stream::wrappers::{IntervalStream, ReceiverStream};
 use tokio_tungstenite::tungstenite::protocol::Message;
 use url::Url;
 use uuid::Uuid;
@@ -81,7 +84,7 @@ async fn ws_worker_client_impl(
     max_jobs: u64,
 ) -> Result<(RequestStream, QuitSink), HacklilyError> {
     let (quit_sink, quit_stream) = mpsc::channel::<QuitSignal>(50);
-    let quit_stream = quit_stream.map(|x| Ok(Event::QuitSignal(x)));
+    let quit_stream = ReceiverStream::new(quit_stream).map(|x| Ok(Event::QuitSignal(x)));
 
     debug!("Connecting to coordinator {}", &coordinator);
 
@@ -94,24 +97,29 @@ async fn ws_worker_client_impl(
                 id: Uuid::new_v4(),
                 params: IHazComputesParams { max_jobs },
             })
-            .or_else(|err| {
-                Err(HacklilyError::CommandSourceError(
+            .map_err(|err| {
+                HacklilyError::CommandSourceError(
                     "Could not build hello JSON command: ".to_owned() + &err.to_string(),
-                ))
+                )
             })?;
 
             let cmd = Message::Text(cmd);
 
-            sink.send(cmd).await.or_else(|err| {
-                Err(HacklilyError::CommandSourceError(
+            sink.send(cmd).await.map_err(|err| {
+                HacklilyError::CommandSourceError(
                     "Could not send message to coordinator: ".to_owned() + &err.to_string(),
-                ))
+                )
             })?;
 
             // Create a cloneable sink that forwards to the sink.
             let sink = {
                 let (multi_sink, ab_stream) = mpsc::channel::<Message>(50);
-                tokio::spawn(ab_stream.map(|x| Ok(x)).forward(sink).map(|_| ()));
+                tokio::spawn(
+                    ReceiverStream::new(ab_stream)
+                        .map(Ok)
+                        .forward(sink)
+                        .map(|_| ()),
+                );
 
                 multi_sink
             };
@@ -119,7 +127,8 @@ async fn ws_worker_client_impl(
             let parent_quit_sink = quit_sink.clone();
 
             let ping_interval =
-                tokio::time::interval(Duration::from_millis(500)).map(|_| Ok(Event::PingNeeded {}));
+                IntervalStream::new(tokio::time::interval(Duration::from_millis(500)))
+                    .map(|_| Ok(Event::PingNeeded {}));
 
             let request_stream = stream
                 .try_filter_map(|req| {
@@ -138,12 +147,7 @@ async fn ws_worker_client_impl(
 
             let request_stream = stream::select(request_stream, quit_stream);
             let request_stream = stream::select(request_stream, ping_interval)
-                .take_while(|ev| {
-                    future::ready(match ev {
-                        Ok(Event::QuitSignal(_)) => false,
-                        _ => true,
-                    })
-                })
+                .take_while(|ev| future::ready(!matches!(ev, Ok(Event::QuitSignal(_)))))
                 .try_filter_map(move |req| {
                     future::ok(match req {
                         Event::WsWorkerMethod(WsWorkerMethod::Render { id, params }) => {
@@ -154,7 +158,7 @@ async fn ws_worker_client_impl(
                             let id_copy = id.clone();
                             let cb: ResponseCallback = Box::new(move |response: Response| {
                                 let id = id_copy.clone();
-                                let mut sink = sink.clone();
+                                let sink = sink.clone();
                                 let quit_sink = quit_sink.clone();
 
                                 tokio::spawn(async move {
@@ -191,7 +195,7 @@ async fn ws_worker_client_impl(
 
                             Some((
                                 Request {
-                                    id: id.clone(),
+                                    id,
                                     backend: params.backend,
                                     src: params.src,
                                     version: params.version,
@@ -200,7 +204,7 @@ async fn ws_worker_client_impl(
                             ))
                         }
                         Event::PingNeeded => {
-                            let mut sink = sink.clone();
+                            let sink = sink.clone();
                             tokio::spawn(async move {
                                 let response = Message::Ping(vec![0x0]);
                                 trace!("Ping");
@@ -232,7 +236,7 @@ pub async fn ws_worker_client(
     max_jobs: u64,
 ) -> Result<(RequestStream, QuitSink), HacklilyError> {
     let client = Box::pin(ws_worker_client_impl(coordinator, max_jobs));
-    let timeout = Box::pin(async { delay_for(Duration::from_millis(2500)).await });
+    let timeout = Box::pin(async { sleep(Duration::from_millis(2500)).await });
 
     match future::select(client, timeout).await {
         Either::Left((client, _)) => client,

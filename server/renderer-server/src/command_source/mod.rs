@@ -18,8 +18,8 @@
  */
 use std::future::Future;
 use std::pin::Pin;
-use tokio::stream::Stream;
 use tokio::sync::mpsc::Sender;
+use tokio_stream::Stream;
 
 use crate::config::{CommandSourceConfig, Config};
 use crate::error::HacklilyError;
@@ -36,7 +36,7 @@ use self::ws_worker_client::ws_worker_client;
 #[derive(Debug)]
 pub struct QuitSignal {}
 
-pub type ResponseCallback = Box<dyn Fn(Response) -> () + Send + 'static>;
+pub type ResponseCallback = Box<dyn Fn(Response) + Send + 'static>;
 pub type QuitSink = Sender<QuitSignal>;
 
 pub type RequestStream = Box<

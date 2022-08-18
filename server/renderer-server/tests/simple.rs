@@ -16,7 +16,7 @@ fn simple() {
             src: include_str!("ly/simple.ly").to_owned(),
             version,
         }
-    };
+    }
 
     let stable_response = Response {
         files: vec![include_str!("ly/simple.ly.2_18_2.svg").to_owned()],
@@ -43,7 +43,7 @@ fn simple() {
             get_request("simple9", Version::Unstable),
             get_request("simple10", Version::Stable),
         ]),
-        cloned_hashmap!{
+        cloned_hashmap! {
             "simple1" => unstable_response,
             "simple2" => stable_response,
             "simple3" => unstable_response,

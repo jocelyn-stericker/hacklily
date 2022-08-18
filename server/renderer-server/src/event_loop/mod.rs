@@ -18,11 +18,13 @@
  */
 use futures::future::FutureExt;
 use futures::stream::{self, StreamExt};
+use log::{error, info};
 use std::panic::AssertUnwindSafe;
 use std::time::Duration;
-use tokio::stream::Stream;
 use tokio::sync::mpsc;
-use tokio::time::delay_for;
+use tokio::time::sleep;
+use tokio_stream::wrappers::ReceiverStream;
+use tokio_stream::Stream;
 
 use crate::command_source;
 use crate::config::Config;
@@ -32,12 +34,12 @@ mod state;
 use self::state::{Event, State};
 
 fn init_and_attach_command_source(config: &Config) -> impl Stream<Item = Event> {
-    let (mut event_sender, event_receiver) = mpsc::channel::<Event>(50);
+    let (event_sender, event_receiver) = mpsc::channel::<Event>(50);
 
-    let make_worker_client = command_source::new(&config);
+    let make_worker_client = command_source::new(config);
 
     tokio::spawn(async move {
-        let mut emergency_event_sender = event_sender.clone();
+        let emergency_event_sender = event_sender.clone();
 
         let f = async move {
             match make_worker_client.await {
@@ -62,7 +64,7 @@ fn init_and_attach_command_source(config: &Config) -> impl Stream<Item = Event> 
                     let mut died_on_purpose = false;
 
                     while let Some(request) = request_stream.next().await {
-                        let mut event_sender = event_sender.clone();
+                        let event_sender = event_sender.clone();
                         match request {
                             Ok((request, response_cb)) => {
                                 event_sender
@@ -111,12 +113,12 @@ fn init_and_attach_command_source(config: &Config) -> impl Stream<Item = Event> 
         }
     });
 
-    event_receiver
+    ReceiverStream::new(event_receiver)
 }
 
 pub async fn forward(
     mut stream: impl Stream<Item = Event> + Unpin,
-    mut command_source_sink: mpsc::Sender<Event>,
+    command_source_sink: mpsc::Sender<Event>,
 ) {
     while let Some(msg) = stream.next().await {
         if let Err(_x) = command_source_sink.send(msg).await {
@@ -130,7 +132,7 @@ async fn spin_up_new_source(
     source: impl Stream<Item = Event> + Send + Unpin + 'static,
     delay: Duration,
 ) {
-    tokio::spawn(delay_for(delay).then(move |_| forward(source, command_source_sink)));
+    tokio::spawn(sleep(delay).then(move |_| forward(source, command_source_sink)));
 }
 
 pub async fn event_loop(config: Config) {
@@ -141,10 +143,9 @@ pub async fn event_loop(config: Config) {
         .map(|_| Event::GracefullyQuit)
         .into_stream();
 
-    let manager_events = manager
-        .event_receiver
+    let manager_events = ReceiverStream::new(manager.event_receiver)
         .map(Box::new)
-        .map(Event::ManagerEvent);
+        .map(Event::Manager);
 
     let (command_source_sink, command_source_events) = mpsc::channel::<Event>(50);
     // We may attach another stream in the future if this dies, so we forward it to
@@ -158,9 +159,9 @@ pub async fn event_loop(config: Config) {
     )
     .await;
 
-    let events = stream::select(command_source_events, ctrl_c);
+    let events = stream::select(ReceiverStream::new(command_source_events), ctrl_c);
     let events = stream::select(events, manager_events);
-    let mut events = stream::select(events, internal_events);
+    let mut events = stream::select(events, ReceiverStream::new(internal_events));
 
     while let Some(event) = events.next().await {
         match event {
@@ -169,7 +170,7 @@ pub async fn event_loop(config: Config) {
                 info!("Queueing request");
                 state.handle_request(request, response_cb).await;
             }
-            Event::ManagerEvent(clean_event) => {
+            Event::Manager(clean_event) => {
                 state.handle_manager_event(*clean_event).await;
             }
             Event::GracefullyQuit => {

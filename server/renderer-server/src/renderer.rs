@@ -17,14 +17,15 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 use futures::future::{select, Either, FutureExt, FutureObj, TryFutureExt};
-use serde_json;
+
+use log::{debug, error, info, warn};
 use std::cmp::Ordering;
 use std::panic::AssertUnwindSafe;
 use std::sync::{Arc, Mutex};
 use std::time::Duration;
 use tokio::io::{AsyncBufReadExt, AsyncWriteExt, BufReader};
 use tokio::process::{Child, ChildStderr};
-use tokio::time::delay_for;
+use tokio::time::sleep;
 
 use crate::container::ContainerHandle;
 use crate::error::HacklilyError;
@@ -55,7 +56,7 @@ impl Ord for ReadyRenderContainer {
 
 impl PartialOrd for ReadyRenderContainer {
     fn partial_cmp(&self, other: &ReadyRenderContainer) -> Option<Ordering> {
-        Some(self.cmp(&other))
+        Some(self.cmp(other))
     }
 }
 
@@ -67,7 +68,7 @@ impl PartialEq for ReadyRenderContainer {
 
 impl Eq for ReadyRenderContainer {}
 
-static LILYPOND_INCLUDES: &'static [&'static str] = &[
+static LILYPOND_INCLUDES: &[&str] = &[
     "Welcome-to-LilyPond-MacOS.ly",
     "Welcome_to_LilyPond.ly",
     "arabic.ly",
@@ -161,30 +162,32 @@ async fn handle_request_impl(
             // HACK: lys doesn't handle global includes, so lets handle them ourselves by
             // outsmarting their regex.
             for include in LILYPOND_INCLUDES {
-                let to_replace = "\\include \"".to_owned() + &include + "\"";
+                let to_replace = "\\include \"".to_owned() + include + "\"";
                 if request.src.contains(&to_replace) {
-                    let replace_with = "\\include  \"".to_owned() + &include + "\"";
+                    let replace_with = "\\include  \"".to_owned() + include + "\"";
                     request.src = request.src.replace(&to_replace, &replace_with);
                 }
             }
 
             let request_json = serde_json::to_string(&request)
-                .or_else(|err| Err(HacklilyError::RenderError(err.to_string())))?;
+                .map_err(|err| HacklilyError::RenderError(err.to_string()))?;
             info!("Received request");
             debug!("Request {}", request_json);
             // TODO: assert no \n
             let request_bytes = (request_json + "\n").into_bytes();
 
-            stdin.write_all(&request_bytes).await.or_else(|err| {
-                Err(HacklilyError::RenderError(
+            stdin.write_all(&request_bytes).await.map_err(|err| {
+                HacklilyError::RenderError(
                     "Internal error: could not write bytes to container: ".to_owned()
                         + &err.to_string(),
-                ))
+                )
             })?;
         }
-        None => Err(HacklilyError::RenderError(
-            "Internal error: child is missing stdin".to_owned(),
-        ))?,
+        None => {
+            return Err(HacklilyError::RenderError(
+                "Internal error: child is missing stdin".to_owned(),
+            ))
+        }
     }
 
     // Read the result from stdout.
@@ -197,18 +200,18 @@ async fn handle_request_impl(
             stdout
                 .read_until(b'\n', &mut response_bytes)
                 .await
-                .or_else(|err| {
-                    Err(HacklilyError::RenderError(
+                .map_err(|err| {
+                    HacklilyError::RenderError(
                         "Internal error: could not read bytes from container: ".to_owned()
                             + &err.to_string(),
-                    ))
+                    )
                 })?;
 
-            let output = String::from_utf8(response_bytes).or_else(|err| {
-                Err(HacklilyError::RenderError(
+            let output = String::from_utf8(response_bytes).map_err(|err| {
+                HacklilyError::RenderError(
                     "Internal error: read non-utf8 bytes from container: ".to_owned()
                         + &err.to_string(),
-                ))
+                )
             })?;
 
             if request.backend == Backend::MusicXml2Ly && output.contains(CANARY_REPL_LINE_MUSICXML)
@@ -220,9 +223,11 @@ async fn handle_request_impl(
                 return Err(HacklilyError::RenderError("Canary died.".to_owned()));
             }
         }
-        None => Err(HacklilyError::RenderError(
-            "Internal error: child is missing stdout".to_owned(),
-        ))?,
+        None => {
+            return Err(HacklilyError::RenderError(
+                "Internal error: child is missing stdout".to_owned(),
+            ))
+        }
     };
 
     Ok((child, response_line))
@@ -249,7 +254,7 @@ async fn try_handle_request(
             Err(_) => Err(HacklilyError::RenderPanic),
             Ok(o) => o,
         });
-    let timeout = Box::pin(async move { delay_for(timeout).await });
+    let timeout = Box::pin(async move { sleep(timeout).await });
 
     match select(response, timeout).await {
         Either::Left((response, _)) => response,

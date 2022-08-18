@@ -17,14 +17,6 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-extern crate tokio;
-
-#[macro_use]
-extern crate log;
-
-#[macro_use]
-extern crate serde_derive;
-
 mod command_source;
 mod config;
 mod container;

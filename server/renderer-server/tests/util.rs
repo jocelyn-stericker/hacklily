@@ -29,7 +29,11 @@ pub fn run_test(requests: Vec<Request>) -> HashMap<String, Response> {
             output: output.clone(),
         },
     };
-    tokio::run(event_loop(config));
+    tokio::runtime::Builder::new_multi_thread()
+        .enable_all()
+        .build()
+        .unwrap()
+        .block_on(event_loop(config));
 
     let responses = output.lock().expect("Test runner panicked.");
     responses.clone()
