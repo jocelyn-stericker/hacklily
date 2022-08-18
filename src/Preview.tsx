@@ -279,7 +279,7 @@ export default class Preview extends React.PureComponent<Props, State> {
       }
 
       return;
-    } catch (err) {
+    } catch (err: any) {
       const errMsg =
         (err &&
           err.error &&

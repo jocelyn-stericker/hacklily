@@ -265,7 +265,6 @@ export default class Editor extends React.PureComponent<Props> {
       },
       readOnly,
       selectionHighlight: false,
-      wordBasedSuggestions: false,
     };
 
     const width = mode === MODE_EDIT ? "100%" : "50%";
@@ -359,6 +358,9 @@ export default class Editor extends React.PureComponent<Props> {
     this.editor = editor;
     window.addEventListener("resize", this.handleResize, false);
     this.commands.init(editor);
+    editor.updateOptions({
+      wordBasedSuggestions: false,
+    });
   };
 
   private handleEditorWillMount = (monacoModule: typeof monacoEditor): void => {

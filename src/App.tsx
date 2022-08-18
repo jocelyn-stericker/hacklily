@@ -994,7 +994,7 @@ export default class App extends React.PureComponent<Props, State> {
         });
         this.props.markSongClean(edit);
       } catch (err) {
-        alert(err.toString());
+        alert(String(err));
       }
 
       if (!this.rpc) {
@@ -1068,7 +1068,7 @@ export default class App extends React.PureComponent<Props, State> {
           },
           true,
         );
-      } catch (err) {
+      } catch (err: any) {
         alert(err.message || "Could not log you in");
         this.props.setQuery(
           {
@@ -1083,7 +1083,7 @@ export default class App extends React.PureComponent<Props, State> {
         const auth: Auth = { ...this.props.auth };
         auth.repoDetails = await getOrCreateRepo(auth);
         this.props.setAuth(auth);
-      } catch (err) {
+      } catch (err: any) {
         alert(err.message || "Could not get GitHub repo details.");
       }
     }

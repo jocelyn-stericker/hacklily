@@ -191,7 +191,7 @@ class ModalPublish extends React.PureComponent<Props, State> {
       }
 
       console.log(err);
-      alert(err.toString());
+      alert(String(err));
       didFail = true;
     } finally {
       this.setState({

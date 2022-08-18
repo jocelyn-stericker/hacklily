@@ -9,6 +9,12 @@ module.exports = {
   mode: "production",
   resolve: {
     extensions: [".ts", ".tsx", ".js", ".jsx"],
+    fallback: {
+      fs: false,
+      buffer: false,
+      http: false,
+      path: false,
+    },
   },
   module: {
     rules: [
@@ -55,20 +61,14 @@ module.exports = {
     filename: "[name].js",
   },
   devServer: {
-    contentBase: dist,
+    static: dist,
   },
   plugins: [
-    new CopyPlugin([path.resolve(__dirname, "static")]),
+    new CopyPlugin({ patterns: [path.resolve(__dirname, "static")] }),
     new MonacoWebpackPlugin(),
     new webpack.EnvironmentPlugin([
       "REACT_APP_GITHUB_CLIENT_ID",
       "REACT_APP_BACKEND_WS_URL",
     ]),
-  ].filter(a => !!a),
-
-  node: {
-    fs: "empty",
-    buffer: "empty",
-    http: "empty",
-  },
+  ].filter((a) => !!a),
 };
