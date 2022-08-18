@@ -19,7 +19,7 @@
  */
 
 import React from "react";
-import ReactDOM from "react-dom";
+import { createRoot } from "react-dom/client";
 
 import App, { QUERY_PROP_KEYS, QueryProps, Song } from "./App";
 import { Auth, parseAuth } from "./auth";
@@ -31,7 +31,8 @@ import "./index.css";
  * Renders Hacklily, with props set.
  */
 function render(): void {
-  ReactDOM.render(
+  const root = createRoot(document.getElementById("root")!);
+  root.render(
     <App
       {...getQueryProps()}
       dirtySongs={getDirtySongs()}
@@ -47,7 +48,6 @@ function render(): void {
       setCSRF={setCSRF}
       setHideUnstableNotification={setHideUnstableNotification}
     />,
-    document.getElementById("root"),
   );
 }
 
