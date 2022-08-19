@@ -19,8 +19,8 @@
  */
 
 import React from "react";
-import { createRoot } from "react-dom/client";
+import ReactDOM from "react-dom";
 
 import Status from "./Status";
 
-createRoot(document.getElementById("root")!).render(<Status />);
+ReactDOM.render(<Status />, document.getElementById("root"));

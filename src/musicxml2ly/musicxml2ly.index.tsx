@@ -19,8 +19,8 @@
  */
 
 import React from "react";
-import { createRoot } from "react-dom/client";
+import ReactDOM from "react-dom";
 
 import MusicXML2Ly from "./MusicXML2Ly";
 
-createRoot(document.getElementById("root")!).render(<MusicXML2Ly />);
+ReactDOM.render(<MusicXML2Ly />, document.getElementById("root"));
