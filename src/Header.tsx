@@ -311,7 +311,7 @@ export default class Header extends React.PureComponent<Props> {
 
       player = await playerFromMIDIBuffer(
         this.props.midi,
-        "https://www.hacklily.org/hackmidi/samples/",
+        "/hackmidi/samples/",
       );
       this.setState({
         player,
