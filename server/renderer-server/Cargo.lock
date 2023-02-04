@@ -713,7 +713,7 @@ dependencies = [
  "serde",
  "serde_derive",
  "serde_json",
- "tokio 1.20.1",
+ "tokio 1.20.4",
  "tokio-stream",
  "tokio-tls",
  "tokio-tungstenite",
@@ -988,9 +988,9 @@ dependencies = [
 
 [[package]]
 name = "tokio"
-version = "1.20.1"
+version = "1.20.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7a8325f63a7d4774dd041e363b2409ed1c5cbbd0f867795e661df066b2b0a581"
+checksum = "eb78f30e4b41e98ca4cce5acb51168a033839a7af9e42b380355808e14e98ee0"
 dependencies = [
  "autocfg",
  "bytes 1.2.1",
@@ -998,7 +998,6 @@ dependencies = [
  "memchr",
  "mio",
  "num_cpus",
- "once_cell",
  "pin-project-lite 0.2.9",
  "signal-hook-registry",
  "socket2",
@@ -1024,7 +1023,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c43ee83903113e03984cb9e5cebe6c04a5116269e900e3ddba8f068a62adda59"
 dependencies = [
  "rustls",
- "tokio 1.20.1",
+ "tokio 1.20.4",
  "webpki",
 ]
 
@@ -1036,7 +1035,7 @@ checksum = "df54d54117d6fdc4e4fea40fe1e4e566b3505700e148a6827e59b34b0d2600d9"
 dependencies = [
  "futures-core",
  "pin-project-lite 0.2.9",
- "tokio 1.20.1",
+ "tokio 1.20.4",
 ]
 
 [[package]]
@@ -1059,7 +1058,7 @@ dependencies = [
  "log",
  "rustls",
  "rustls-native-certs",
- "tokio 1.20.1",
+ "tokio 1.20.4",
  "tokio-rustls",
  "tungstenite",
  "webpki",
