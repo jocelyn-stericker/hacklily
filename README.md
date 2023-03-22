@@ -40,7 +40,29 @@ git clone https://github.com/emilyskidsister/hacklily.git
 Once you have installed the above dependencies, run
 
 ```bash
-make serve
+yarn install
+yarn build
+yarn start
+```
+
+Or if using npm:
+
+```bash
+npm install
+npm run build
+npm start
+```
+
+In either case, to use the remote backend (instead of building your own local version), instead of running the `start` command, use:
+
+```bash
+yarn start:remote-backend
+```
+
+or:
+
+```bash
+npm run start:remote-backend
 ```
 
 ### Running (with GitHub integration)
