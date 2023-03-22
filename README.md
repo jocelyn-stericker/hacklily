@@ -37,7 +37,7 @@ git clone https://github.com/emilyskidsister/hacklily.git
 
 ### Running (without GitHub integration)
 
-Once you have installed the above dependencies, run
+Once you have installed the above dependencies, run:
 
 ```bash
 yarn install
