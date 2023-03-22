@@ -17,9 +17,9 @@ RUN adduser --disabled-password --gecos '' r && \
     cd ~r/.lyp && \
     patch -p0 < /tmp/no_lyp_check_update.patch && \
     rm /tmp/no_lyp_check_update.patch && \
-    su r -c "source ~/.profile; lyp install lilypond@2.24.1 lys;" && \
-    rm /home/r/.lyp/lilyponds/2.24.1/etc/relocate/gs.reloc && \
-    rm /home/r/.lyp/lilyponds/2.24.1/bin/gs && \
+    su r -c "source ~/.profile; lyp install lilypond@2.23.6 lys;" && \
+    rm /home/r/.lyp/lilyponds/2.23.6/etc/relocate/gs.reloc && \
+    rm /home/r/.lyp/lilyponds/2.23.6/bin/gs && \
     chown r -R /tmp/* && \
     chown nobody -R /home/r/.lyp/*
 RUN apt-get remove -y curl patch && apt-get autoremove -y && apt-get clean && rm -rf /var/lib/apt/lists/*
