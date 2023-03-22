@@ -37,10 +37,32 @@ git clone https://github.com/emilyskidsister/hacklily.git
 
 ### Running (without GitHub integration)
 
-Once you have installed the above dependencies, run
+Once you have installed the above dependencies, run:
 
 ```bash
-make serve
+yarn install
+yarn build
+yarn start
+```
+
+Or if using npm:
+
+```bash
+npm install
+npm run build
+npm start
+```
+
+To use the remote backend (rather than building your own local renderer), **in place of the `start` command**, use:
+
+```bash
+yarn start:remote-backend
+```
+
+or:
+
+```bash
+npm run start:remote-backend
 ```
 
 ### Running (with GitHub integration)
@@ -52,7 +74,7 @@ If you specifically wish to test integration with GitHub, follow the steps in th
 First, create a GitHub organization by following the steps at https://github.com/organizations/new.
 Select the free plan.
 
-Next, create a new app at https://github.com/organizations/<your-new-repo-name>/settings/applications,
+Next, create a new app at https://github.com/organizations/your-new-repo-name/settings/applications,
 making note of the client ID and secret. This application will be used to allow users to log in.
 
 To run the frontend, in one shell run:

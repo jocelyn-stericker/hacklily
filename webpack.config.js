@@ -66,6 +66,9 @@ module.exports = {
   plugins: [
     new CopyPlugin({ patterns: [path.resolve(__dirname, "static")] }),
     new MonacoWebpackPlugin(),
+    new webpack.DefinePlugin({
+      'process.env': JSON.stringify(process.env)
+    }),
     new webpack.EnvironmentPlugin([
       "REACT_APP_GITHUB_CLIENT_ID",
       "REACT_APP_BACKEND_WS_URL",
