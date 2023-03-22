@@ -74,7 +74,7 @@ If you specifically wish to test integration with GitHub, follow the steps in th
 First, create a GitHub organization by following the steps at https://github.com/organizations/new.
 Select the free plan.
 
-Next, create a new app at https://github.com/organizations/<your-new-repo-name>/settings/applications,
+Next, create a new app at https://github.com/organizations/your-new-repo-name/settings/applications,
 making note of the client ID and secret. This application will be used to allow users to log in.
 
 To run the frontend, in one shell run:
