@@ -53,7 +53,7 @@ npm run build
 npm start
 ```
 
-In either case, to use the remote backend (instead of building your own local version), instead of running the `start` command, use:
+To use the remote backend (rather than building your own local renderer), **in place of the `start` command**, use:
 
 ```bash
 yarn start:remote-backend
