@@ -1,0 +1,49 @@
+import { TanStackDevtools } from '@tanstack/react-devtools'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { ReactQueryDevtoolsPanel } from '@tanstack/react-query-devtools'
+import { HeadContent, Scripts, createRootRoute } from '@tanstack/react-router'
+
+import appCss from '../styles.css?url'
+
+const queryClient = new QueryClient()
+
+export const Route = createRootRoute({
+  head: () => ({
+    meta: [
+      { charSet: 'utf-8' },
+      { name: 'viewport', content: 'width=device-width, initial-scale=1' },
+      { title: 'Braat' },
+    ],
+    links: [{ rel: 'stylesheet', href: appCss }],
+  }),
+  shellComponent: RootDocument,
+})
+
+function RootDocument({ children }: { children: React.ReactNode }) {
+  return (
+    <html lang="en" suppressHydrationWarning>
+      <head>
+        <HeadContent />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="theme-color" content="#e7f3ec" />
+        <meta
+          name="viewport"
+          content="viewport-fit=cover, user-scalable=no, width=device-width, initial-scale=1, maximum-scale=1"
+        />
+      </head>
+      <body className="font-sans antialiased wrap-anywhere selection:bg-[rgba(79,184,178,0.24)]">
+        <QueryClientProvider client={queryClient}>
+          {children}
+          {import.meta.env.DEV && (
+            <TanStackDevtools
+              plugins={[
+                { name: 'TanStack Query', render: <ReactQueryDevtoolsPanel /> },
+              ]}
+            />
+          )}
+        </QueryClientProvider>
+        <Scripts />
+      </body>
+    </html>
+  )
+}

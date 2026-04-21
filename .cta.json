@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "projectName": "braat",
+  "mode": "file-router",
+  "typescript": true,
+  "tailwind": true,
+  "packageManager": "npm",
+  "addOns": true,
+  "framework": "react",
+  "chosenAddOns": ["eslint"]
+}

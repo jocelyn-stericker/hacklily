@@ -1,0 +1,791 @@
+import { useEffect, useImperativeHandle, useRef, useState } from 'react'
+import type { RefObject } from 'react'
+
+import type { AnalysisMessage } from '#/lib/analysis'
+import { TILE_WIDTH } from '#/lib/tileConfig'
+
+import { SPECTRO_COLOURMAP } from './colourmap'
+import { InCanvas, usePlotPad, usePlotSize, useTimeToX, useHzToY } from './Plot'
+
+const FPS_WINDOW_MS = 1000
+
+// Assumes little-endian byte order (all browser-targeted CPUs). Each entry is
+// the RGBA pixel packed as a Uint32: low byte = R, high byte = A.
+const SPECTRO_COLOURMAP_U32 = (() => {
+  const u32 = new Uint32Array(256)
+  for (let i = 0; i < 256; i++) {
+    const r = SPECTRO_COLOURMAP[i * 3]!
+    const g = SPECTRO_COLOURMAP[i * 3 + 1]!
+    const b = SPECTRO_COLOURMAP[i * 3 + 2]!
+    u32[i] = ((255 << 24) | (b << 16) | (g << 8) | r) >>> 0
+  }
+  return u32
+})()
+
+const LN10_10 = 10 / Math.log(10)
+
+export interface SpectrogramHandle {
+  /** Call after appending frames [from, analysis.length) to the stored analysis. */
+  append: (from: number) => void
+  /** Call after mutating frames [from, to) of the stored analysis in-place. */
+  patch: (from: number, to: number) => void
+}
+
+interface ColorsState {
+  // Transposed: data[b * capacity + f] — sequential reads during row-major render.
+  data: Uint32Array
+  capacity: number
+  numFrames: number
+  numBins: number
+  firstBinHz: number
+  freqStepHz: number
+  timeStepSec: number
+  dbMin: number
+  dbRange: number
+  analysis: AnalysisMessage[]
+}
+
+interface Tile {
+  canvas: OffscreenCanvas
+  ctx: OffscreenCanvasRenderingContext2D
+  startFrame: number
+}
+
+interface OffscreenState {
+  tiles: Tile[]
+  binForY: Int32Array
+  canvasHeight: number
+}
+
+interface FormantOffscreenState {
+  tiles: Tile[]
+  canvasHeight: number
+}
+
+interface DisplayBufState {
+  buf: OffscreenCanvas
+  ctx: OffscreenCanvasRenderingContext2D
+  width: number
+  height: number
+  // Actual frame index at display pixel 0 (updated to account for integer rounding,
+  // keeping rounding error bounded to ±0.5px across frames).
+  lastSrcX0: number
+  lastDxPerFrame: number
+  lastTilesGen: number
+}
+
+const FORMANT_TRACKS = [
+  { key: 'f0' as const, color: '#f7c948' },
+  { key: 'f1' as const, color: '#4ecdc4' },
+  { key: 'f2' as const, color: '#f78fb3' },
+]
+
+function nextPow2(n: number): number {
+  let p = 1
+  while (p < n) p *= 2
+  return p
+}
+
+function buildBinForY(
+  numBins: number,
+  firstBinHz: number,
+  freqStepHz: number,
+  freqToY: (hz: number) => number,
+  canvasHeight: number,
+): Int32Array {
+  const freqToYArr = new Int32Array(numBins + 1)
+  let fHz = firstBinHz - freqStepHz / 2
+  for (let i = 0; i <= numBins; i++) {
+    freqToYArr[i] = Math.round(freqToY(fHz))
+    fHz += freqStepHz
+  }
+  const binForY = new Int32Array(canvasHeight).fill(-1)
+  for (let b = 0; b < numBins; b++) {
+    const yFrom = Math.max(0, freqToYArr[b + 1]!)
+    const yTo = Math.min(canvasHeight - 1, freqToYArr[b]!)
+    for (let y = yFrom; y <= yTo; y++) binForY[y] = b
+  }
+  return binForY
+}
+
+function computeColorsRange(
+  state: ColorsState,
+  from: number,
+  to: number,
+): void {
+  const { data, capacity, numBins, dbMin, dbRange, analysis } = state
+  for (let f = from; f < to; f++) {
+    const spectrum = analysis[f]!.spectrum
+    for (let b = 0; b < numBins; b++) {
+      const raw = spectrum[b]!
+      const db = LN10_10 * Math.log(raw)
+      const norm = Math.max(0, Math.min(1, (db - dbMin) / dbRange))
+      data[b * capacity + f] = SPECTRO_COLOURMAP_U32[Math.round(norm * 255)]!
+    }
+  }
+}
+
+function ensureColorsCapacity(state: ColorsState, needed: number): void {
+  if (state.capacity >= needed) return
+  const newCap = nextPow2(needed)
+  const newData = new Uint32Array(state.numBins * newCap)
+  for (let b = 0; b < state.numBins; b++) {
+    newData.set(
+      state.data.subarray(
+        b * state.capacity,
+        b * state.capacity + state.numFrames,
+      ),
+      b * newCap,
+    )
+  }
+  state.data = newData
+  state.capacity = newCap
+}
+
+function ensureTiles(
+  off: { tiles: Tile[]; canvasHeight: number },
+  needed: number,
+): void {
+  const numTiles = Math.ceil(needed / TILE_WIDTH)
+  while (off.tiles.length < numTiles) {
+    const startFrame = off.tiles.length * TILE_WIDTH
+    const canvas = new OffscreenCanvas(TILE_WIDTH, off.canvasHeight)
+    const ctx = canvas.getContext('2d')!
+    off.tiles.push({ canvas, ctx, startFrame })
+  }
+}
+
+function paintColumnsToOffscreen(
+  off: OffscreenState,
+  colors: ColorsState,
+  from: number,
+  to: number,
+): void {
+  if (to <= from) return
+  const { tiles, binForY, canvasHeight } = off
+  const { data, capacity } = colors
+  const firstTile = Math.floor(from / TILE_WIDTH)
+  const lastTile = Math.floor((to - 1) / TILE_WIDTH)
+  for (let t = firstTile; t <= lastTile && t < tiles.length; t++) {
+    const tile = tiles[t]!
+    const absFrom = Math.max(from, tile.startFrame)
+    const absTo = Math.min(to, tile.startFrame + TILE_WIDTH)
+    const numCols = absTo - absFrom
+    const localFrom = absFrom - tile.startFrame
+    const imgData = tile.ctx.createImageData(numCols, canvasHeight)
+    const u32 = new Uint32Array(imgData.data.buffer)
+    u32.fill(0xff000000)
+    for (let y = 0; y < canvasHeight; y++) {
+      const b = binForY[y] ?? -1
+      if (b < 0) continue
+      u32.set(
+        data.subarray(b * capacity + absFrom, b * capacity + absTo),
+        y * numCols,
+      )
+    }
+    tile.ctx.putImageData(imgData, localFrom, 0)
+  }
+}
+
+// Full repaint of formant tiles from fromTile onward. Used on initial build,
+// freqToY/canvasHeight changes, and patch (where existing frames may change).
+function paintFormantTiles(
+  off: FormantOffscreenState,
+  analysis: AnalysisMessage[],
+  fromTile: number,
+  freqToY: (hz: number) => number,
+  dpr: number,
+): void {
+  for (let t = fromTile; t < off.tiles.length; t++) {
+    const tile = off.tiles[t]!
+    tile.ctx.clearRect(0, 0, TILE_WIDTH, off.canvasHeight)
+    const frameEnd = Math.min(analysis.length, tile.startFrame + TILE_WIDTH)
+    for (const { key, color } of FORMANT_TRACKS) {
+      tile.ctx.strokeStyle = color
+      tile.ctx.lineWidth = 1.5 * dpr
+      tile.ctx.beginPath()
+      let penDown = false
+      // Cross-tile continuity: if the frame before this tile was voiced, start
+      // one pixel before the tile edge so the stroke joins cleanly to the prev tile.
+      const prevF = tile.startFrame - 1
+      if (prevF >= 0) {
+        const prevSample = analysis[prevF]
+        if (prevSample?.voiced && prevSample[key] !== null) {
+          tile.ctx.moveTo(-1, freqToY(prevSample[key]))
+          penDown = true
+        }
+      }
+      for (let f = tile.startFrame; f < frameEnd; f++) {
+        const sample = analysis[f]!
+        if (!sample.voiced || sample[key] === null) {
+          penDown = false
+          continue
+        }
+        const y = freqToY(sample[key])
+        const localX = f - tile.startFrame
+        if (!penDown) tile.ctx.moveTo(localX, y)
+        else tile.ctx.lineTo(localX, y)
+        penDown = true
+      }
+      tile.ctx.stroke()
+    }
+  }
+}
+
+// Additive paint of new frames [from, to) onto existing tile content.
+// Does NOT clear tiles, so cost is O(to - from), not O(tile frames). Used by append.
+function appendFormantTiles(
+  off: FormantOffscreenState,
+  analysis: AnalysisMessage[],
+  from: number,
+  to: number,
+  freqToY: (hz: number) => number,
+  dpr: number,
+): void {
+  if (to <= from) return
+  const firstTile = Math.floor(from / TILE_WIDTH)
+  const lastTile = Math.floor((to - 1) / TILE_WIDTH)
+  for (let t = firstTile; t <= lastTile && t < off.tiles.length; t++) {
+    const tile = off.tiles[t]!
+    const absFrom = Math.max(from, tile.startFrame)
+    const absTo = Math.min(to, tile.startFrame + TILE_WIDTH)
+    for (const { key, color } of FORMANT_TRACKS) {
+      tile.ctx.strokeStyle = color
+      tile.ctx.lineWidth = 1.5 * dpr
+      tile.ctx.beginPath()
+      let penDown = false
+      // Connect from the frame before absFrom, which may be in a prior tile.
+      // prevF - tile.startFrame evaluates to -1 at a tile boundary, which
+      // places the moveTo just off-canvas so the stroke joins at the edge.
+      const prevF = absFrom - 1
+      if (prevF >= 0) {
+        const prevSample = analysis[prevF]
+        if (prevSample?.voiced && prevSample[key] !== null) {
+          tile.ctx.moveTo(prevF - tile.startFrame, freqToY(prevSample[key]))
+          penDown = true
+        }
+      }
+      for (let f = absFrom; f < absTo; f++) {
+        const sample = analysis[f]!
+        if (!sample.voiced || sample[key] === null) {
+          penDown = false
+          continue
+        }
+        const y = freqToY(sample[key])
+        const localX = f - tile.startFrame
+        if (!penDown) tile.ctx.moveTo(localX, y)
+        else tile.ctx.lineTo(localX, y)
+        penDown = true
+      }
+      tile.ctx.stroke()
+    }
+  }
+}
+
+function blitTiles(
+  ctx: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D,
+  tiles: Tile[],
+  canvasHeight: number,
+  srcX0: number,
+  srcW: number,
+  dxPerFrame: number,
+  displayHeight: number,
+): void {
+  for (const tile of tiles) {
+    const tileSrcX = srcX0 - tile.startFrame
+    const clippedSrcX = Math.max(0, tileSrcX)
+    const clippedSrcW = Math.min(TILE_WIDTH, tileSrcX + srcW) - clippedSrcX
+    if (clippedSrcW <= 0) continue
+    const destX = (clippedSrcX - tileSrcX) * dxPerFrame
+    const destW = clippedSrcW * dxPerFrame
+    ctx.drawImage(
+      tile.canvas,
+      clippedSrcX,
+      0,
+      clippedSrcW,
+      canvasHeight,
+      destX,
+      0,
+      destW,
+      displayHeight,
+    )
+  }
+}
+
+// Paint frames [from, to) into the display buffer without a full repaint.
+// Used by append so newly arrived frames appear immediately even if the view is stationary.
+function updateDisplayBufForFrames(
+  db: DisplayBufState | null,
+  off: OffscreenState,
+  formantOff: FormantOffscreenState | null,
+  from: number,
+  to: number,
+): void {
+  if (!db || isNaN(db.lastSrcX0) || isNaN(db.lastDxPerFrame)) return
+  const { lastSrcX0, lastDxPerFrame, width, height } = db
+  const x1 = Math.max(
+    0,
+    Math.floor((from - lastSrcX0) * lastDxPerFrame - lastDxPerFrame),
+  )
+  const x2 = Math.min(
+    width,
+    Math.ceil((to - lastSrcX0) * lastDxPerFrame + lastDxPerFrame),
+  )
+  if (x1 >= x2) return
+  const stripSrcX0 = lastSrcX0 + x1 / lastDxPerFrame
+  const stripSrcW = (x2 - x1) / lastDxPerFrame
+  db.ctx.fillStyle = '#000000'
+  db.ctx.fillRect(x1, 0, x2 - x1, height)
+  db.ctx.save()
+  db.ctx.translate(x1, 0)
+  blitTiles(
+    db.ctx,
+    off.tiles,
+    off.canvasHeight,
+    stripSrcX0,
+    stripSrcW,
+    lastDxPerFrame,
+    height,
+  )
+  if (formantOff)
+    blitTiles(
+      db.ctx,
+      formantOff.tiles,
+      formantOff.canvasHeight,
+      stripSrcX0,
+      stripSrcW,
+      lastDxPerFrame,
+      height,
+    )
+  db.ctx.restore()
+}
+
+function draw(
+  mainCtx: CanvasRenderingContext2D,
+  displayBufRef: { current: DisplayBufState | null },
+  tilesGen: number,
+  width: number,
+  height: number,
+  off: OffscreenState | null,
+  formantOff: FormantOffscreenState | null,
+  timeToX: (timeSec: number) => number,
+  timeStepSec: number,
+): void {
+  if (!off || timeStepSec <= 0) {
+    mainCtx.fillStyle = '#000000'
+    mainCtx.fillRect(0, 0, width, height)
+    return
+  }
+
+  // Offscreen x = frame_index; timeToX is linear so one timeStepSec = dxPerFrame px.
+  // srcX0 is the (possibly fractional) frame index at the left display edge.
+  const dxPerFrame = timeToX(timeStepSec) - timeToX(0)
+  if (dxPerFrame <= 0) {
+    mainCtx.fillStyle = '#000000'
+    mainCtx.fillRect(0, 0, width, height)
+    return
+  }
+  const srcX0 = -timeToX(0) / dxPerFrame
+  const srcW = width / dxPerFrame
+
+  // Ensure display buffer matches current canvas dimensions.
+  let db = displayBufRef.current
+  if (!db || db.width !== width || db.height !== height) {
+    const buf = new OffscreenCanvas(width, height)
+    const ctx = buf.getContext('2d')!
+    db = {
+      buf,
+      ctx,
+      width,
+      height,
+      lastSrcX0: NaN,
+      lastDxPerFrame: NaN,
+      lastTilesGen: -1,
+    }
+    displayBufRef.current = db
+  }
+
+  const sameTiles = db.lastTilesGen === tilesGen
+  const sameDx =
+    !isNaN(db.lastDxPerFrame) && Math.abs(db.lastDxPerFrame - dxPerFrame) < 1e-6
+  const pixelShift =
+    sameTiles && sameDx && !isNaN(db.lastSrcX0)
+      ? Math.round((db.lastSrcX0 - srcX0) * dxPerFrame)
+      : NaN
+  const canIncremental = !isNaN(pixelShift) && Math.abs(pixelShift) < width
+
+  if (!canIncremental) {
+    // Full repaint: composit spectrogram + formant layers into the display buffer.
+    db.ctx.fillStyle = '#000000'
+    db.ctx.fillRect(0, 0, width, height)
+    blitTiles(
+      db.ctx,
+      off.tiles,
+      off.canvasHeight,
+      srcX0,
+      srcW,
+      dxPerFrame,
+      height,
+    )
+    if (formantOff)
+      blitTiles(
+        db.ctx,
+        formantOff.tiles,
+        formantOff.canvasHeight,
+        srcX0,
+        srcW,
+        dxPerFrame,
+        height,
+      )
+    db.lastSrcX0 = srcX0
+    db.lastDxPerFrame = dxPerFrame
+    db.lastTilesGen = tilesGen
+  } else if (pixelShift !== 0) {
+    // Incremental scroll: shift existing content and paint only the newly revealed strip.
+    // The self-copy is spec-required to snapshot before writing (no aliasing).
+    db.ctx.drawImage(db.buf, pixelShift, 0)
+    // Track actual buffer position so rounding error stays bounded to ±0.5px per frame.
+    db.lastSrcX0 -= pixelShift / dxPerFrame
+
+    const stripX = pixelShift < 0 ? width + pixelShift : 0
+    const stripW = Math.abs(pixelShift)
+    const stripSrcX0 = srcX0 + stripX / dxPerFrame
+    const stripSrcW = stripW / dxPerFrame
+
+    db.ctx.fillStyle = '#000000'
+    db.ctx.fillRect(stripX, 0, stripW, height)
+    // Translate so blitTiles can use its normal destX = (frame - srcX0)*dxPerFrame logic,
+    // which places frame stripSrcX0 at pixel 0 — and our translate shifts that to stripX.
+    db.ctx.save()
+    db.ctx.translate(stripX, 0)
+    blitTiles(
+      db.ctx,
+      off.tiles,
+      off.canvasHeight,
+      stripSrcX0,
+      stripSrcW,
+      dxPerFrame,
+      height,
+    )
+    if (formantOff)
+      blitTiles(
+        db.ctx,
+        formantOff.tiles,
+        formantOff.canvasHeight,
+        stripSrcX0,
+        stripSrcW,
+        dxPerFrame,
+        height,
+      )
+    db.ctx.restore()
+  }
+  // pixelShift === 0: view unchanged, re-blit existing displayBuf as-is.
+
+  mainCtx.drawImage(db.buf, 0, 0)
+}
+
+export function Spectrogram({
+  analysis,
+  dbMin,
+  dbRange,
+  ref,
+  debug = false,
+}: {
+  analysis: Array<AnalysisMessage>
+  dbMin: number
+  dbRange: number
+  ref: RefObject<SpectrogramHandle | null>
+  debug?: boolean
+}) {
+  const [canvas, setCanvas] = useState<HTMLCanvasElement | null>(null)
+  const plotPad = usePlotPad()
+  const { width, height, dpr } = usePlotSize()
+  const timeToX = useTimeToX(InCanvas.Yes)
+  const freqToY = useHzToY(InCanvas.Yes)
+  const canvasWidth = (width - plotPad.left - plotPad.right) * dpr
+  const canvasHeight = (height - plotPad.top - plotPad.bottom) * dpr
+
+  const colorsRef = useRef<ColorsState | null>(null)
+  const offRef = useRef<OffscreenState | null>(null)
+  const formantOffRef = useRef<FormantOffscreenState | null>(null)
+  const displayBufRef = useRef<DisplayBufState | null>(null)
+  const tilesGenRef = useRef(0)
+
+  // For actually rendering the offscreen buffer(s) to the screen
+  const animationFrame = useRef<number | null>(null)
+  const triggerDraw = useRef(() => {})
+
+  const fpsFrameTimesRef = useRef<number[]>([])
+  const [fps, setFps] = useState(0)
+
+  useEffect(() => {
+    if (debug) {
+      const id = setInterval(() => {
+        const now = performance.now()
+        const times = fpsFrameTimesRef.current
+        while (times.length > 0 && now - times[0]! > FPS_WINDOW_MS)
+          times.shift()
+        setFps(times.length)
+      }, 500)
+      return () => clearInterval(id)
+    }
+  }, [debug])
+
+  // Fully recompute colors when analysis changes
+  useEffect(() => {
+    if (analysis.length === 0) {
+      colorsRef.current = null
+      offRef.current = null
+      formantOffRef.current = null
+      return
+    }
+    const numFrames = analysis.length
+    const numBins = analysis[0]!.spectrum.length
+    const { firstBinHz, freqStepHz, timeStepSec } = analysis[0]!
+    const capacity = nextPow2(numFrames)
+    const colors: ColorsState = {
+      data: new Uint32Array(numBins * capacity),
+      capacity,
+      numFrames,
+      numBins,
+      firstBinHz,
+      freqStepHz,
+      timeStepSec,
+      dbMin,
+      dbRange,
+      analysis,
+    }
+    computeColorsRange(colors, 0, numFrames)
+    colorsRef.current = colors
+  }, [analysis, dbMin, dbRange])
+
+  // ---- FALLS THROUGH TO NEXT EFFECT ----
+
+  // When freq scale, canvas height, or dpr changes, rebuild tile canvases.
+  useEffect(() => {
+    const colors = colorsRef.current
+    if (!colors || colors.numFrames === 0 || canvasHeight <= 0) return
+
+    const binForY = buildBinForY(
+      colors.numBins,
+      colors.firstBinHz,
+      colors.freqStepHz,
+      freqToY,
+      canvasHeight,
+    )
+    const off: OffscreenState = { tiles: [], binForY, canvasHeight }
+    ensureTiles(off, colors.numFrames)
+    offRef.current = off
+    paintColumnsToOffscreen(off, colors, 0, colors.numFrames)
+
+    const formantOff: FormantOffscreenState = { tiles: [], canvasHeight }
+    ensureTiles(formantOff, colors.numFrames)
+    formantOffRef.current = formantOff
+    paintFormantTiles(formantOff, analysis, 0, freqToY, dpr)
+
+    tilesGenRef.current += 1
+
+    // Note: this must include everything in the previous effect
+  }, [analysis, dbMin, dbRange, canvasHeight, freqToY, dpr])
+
+  // ---- FALLS THROUGH TO NEXT EFFECT ----
+
+  useEffect(() => {
+    if (!canvas) return
+
+    // Hoist getContext so it isn't re-called on every animation frame.
+    const ctx = canvas.getContext('2d')!
+
+    triggerDraw.current = () => {
+      if (animationFrame.current) {
+        cancelAnimationFrame(animationFrame.current)
+      }
+
+      animationFrame.current = requestAnimationFrame(() => {
+        // Resize the canvas element if needed (resets its drawing state).
+        if (canvas.width !== canvasWidth) canvas.width = canvasWidth
+        if (canvas.height !== canvasHeight) canvas.height = canvasHeight
+        draw(
+          ctx,
+          displayBufRef,
+          tilesGenRef.current,
+          canvasWidth,
+          canvasHeight,
+          offRef.current,
+          formantOffRef.current,
+          timeToX,
+          colorsRef.current?.timeStepSec ?? 0,
+        )
+        if (debug) {
+          fpsFrameTimesRef.current.push(performance.now())
+        }
+      })
+    }
+
+    triggerDraw.current()
+
+    // Note: this must include everything in the previous effect
+  }, [
+    analysis,
+    dbMin,
+    dbRange,
+    canvasHeight,
+    freqToY,
+    dpr,
+    canvas,
+    canvasWidth,
+    timeToX,
+    debug,
+  ])
+
+  useImperativeHandle(
+    ref,
+    () => ({
+      append(from) {
+        if (!colorsRef.current) {
+          const numFrames = analysis.length
+          const numBins = analysis[0]!.spectrum.length
+          const { firstBinHz, freqStepHz, timeStepSec } = analysis[0]!
+          const capacity = nextPow2(numFrames)
+          const colors: ColorsState = {
+            data: new Uint32Array(numBins * capacity),
+            capacity,
+            numFrames,
+            numBins,
+            firstBinHz,
+            freqStepHz,
+            timeStepSec,
+            dbMin,
+            dbRange,
+            analysis,
+          }
+          computeColorsRange(colors, 0, numFrames)
+          colorsRef.current = colors
+        }
+        const colors = colorsRef.current
+        const to = colors.analysis.length
+        if (from >= to) return
+
+        ensureColorsCapacity(colors, to)
+        computeColorsRange(colors, from, to)
+        colors.numFrames = to
+
+        if (!offRef.current && canvasHeight > 0) {
+          const binForY = buildBinForY(
+            colors.numBins,
+            colors.firstBinHz,
+            colors.freqStepHz,
+            freqToY,
+            canvasHeight,
+          )
+          const off: OffscreenState = { tiles: [], binForY, canvasHeight }
+          ensureTiles(off, to)
+          offRef.current = off
+          paintColumnsToOffscreen(off, colors, 0, to)
+
+          const formantOff: FormantOffscreenState = { tiles: [], canvasHeight }
+          ensureTiles(formantOff, to)
+          formantOffRef.current = formantOff
+          paintFormantTiles(formantOff, analysis, 0, freqToY, dpr)
+          tilesGenRef.current += 1
+        } else if (offRef.current) {
+          ensureTiles(offRef.current, to)
+          paintColumnsToOffscreen(offRef.current, colors, from, to)
+
+          if (!formantOffRef.current) {
+            const formantOff: FormantOffscreenState = {
+              tiles: [],
+              canvasHeight,
+            }
+            ensureTiles(formantOff, to)
+            formantOffRef.current = formantOff
+            paintFormantTiles(formantOff, analysis, 0, freqToY, dpr)
+            // formantOff newly created: [0, from) formant was never in the display
+            // buffer, so a full repaint is needed to show historical formant lines.
+            tilesGenRef.current += 1
+          } else {
+            ensureTiles(formantOffRef.current, to)
+            appendFormantTiles(
+              formantOffRef.current,
+              analysis,
+              from,
+              to,
+              freqToY,
+              dpr,
+            )
+            // Paint only the new frame region into the display buffer so new data
+            // appears immediately even if the view is stationary (no scroll delta).
+            updateDisplayBufForFrames(
+              displayBufRef.current,
+              offRef.current,
+              formantOffRef.current,
+              from,
+              to,
+            )
+          }
+        }
+
+        triggerDraw.current()
+      },
+
+      patch(from, to) {
+        const colors = colorsRef.current
+        const off = offRef.current
+        const formantOff = formantOffRef.current
+        if (!colors || !off) return
+        computeColorsRange(colors, from, to)
+        paintColumnsToOffscreen(off, colors, from, to)
+
+        if (formantOff) {
+          paintFormantTiles(
+            formantOff,
+            analysis,
+            Math.floor(from / TILE_WIDTH),
+            freqToY,
+            dpr,
+          )
+        }
+
+        tilesGenRef.current += 1
+        triggerDraw.current()
+      },
+    }),
+    [canvasHeight, analysis, freqToY, dbMin, dbRange, dpr],
+  )
+
+  return (
+    <>
+      <canvas
+        ref={setCanvas}
+        style={{
+          left: plotPad.left,
+          right: plotPad.right,
+          top: plotPad.top,
+          bottom: plotPad.bottom,
+          width: width - plotPad.left - plotPad.right,
+          height: height - plotPad.top - plotPad.bottom,
+        }}
+        className="absolute"
+      />
+      {debug ? (
+        <div
+          className="absolute"
+          style={{
+            left: plotPad.left + 6,
+            top: plotPad.top + 6,
+            color: 'white',
+            fontSize: 11,
+            fontFamily: 'monospace',
+            background: 'rgba(0,0,0,0.55)',
+            padding: '1px 5px',
+            borderRadius: 3,
+            pointerEvents: 'none',
+            userSelect: 'none',
+          }}
+        >
+          {fps} fps
+        </div>
+      ) : null}
+    </>
+  )
+}
