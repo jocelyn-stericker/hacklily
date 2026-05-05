@@ -72,11 +72,11 @@ export function WelcomeModal({
             </a>{' '}
             &mdash; source code on{' '}
             <a
-              href="https://github.com/jocelyn-stericker/braat"
+              href="https://codeberg.org/jocelyn-stericker/braat"
               target="_blank"
               rel="noopener noreferrer"
             >
-              GitHub
+              Codeberg
             </a>
             .
           </span>
