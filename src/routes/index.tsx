@@ -2,7 +2,7 @@ import { createFileRoute } from '@tanstack/react-router'
 import { FolderOpen, MicVocal, Pause, Play, SkipBack } from 'lucide-react'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
-import braatPng from '#/../public/braat.png'
+import braatPng from '#/braat.png'
 import { AudioPlayback } from '#/components/AudioPlayback'
 import { AudioRecorder } from '#/components/AudioRecorder'
 import { Plot, useTimeToX, usePlotPad, InCanvas } from '#/components/Plot'
@@ -276,6 +276,23 @@ function App() {
     analysisRef.current = analysis
   })
 
+  const audioBufferRef = useRef<AudioBuffer | null>(null)
+  useEffect(() => {
+    audioBufferRef.current = audioBuffer
+  }, [audioBuffer])
+
+  const handleNewBuffer = useCallback((newBuffer: AudioBuffer) => {
+    const prev = audioBufferRef.current
+    const combined =
+      prev && prev.length > 0 ? concatAudioBuffers(prev, newBuffer) : newBuffer
+    audioBufferRef.current = combined
+    setAudioBuffer(combined)
+    setTimelineState((prevTimeline) => ({
+      ...prevTimeline,
+      trackDurationSec: combined.duration,
+    }))
+  }, [])
+
   // returns total track time
   const handleAppend = useCallback((data: AnalysisMessage) => {
     analysisRef.current.push(data)
@@ -461,13 +478,7 @@ function App() {
         {status.value === 'recording' ? (
           <AudioRecorder
             onAppend={handleAppend}
-            onNewBuffer={(newBuffer) =>
-              setAudioBuffer((prev) =>
-                prev && prev.length > 0
-                  ? concatAudioBuffers(prev, newBuffer)
-                  : newBuffer,
-              )
-            }
+            onNewBuffer={handleNewBuffer}
             onTimelineStateChanged={setTimelineState}
             onError={(error) => setStatus({ value: 'error', error })}
           />

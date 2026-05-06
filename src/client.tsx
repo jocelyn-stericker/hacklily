@@ -3,7 +3,7 @@ import { StartClient } from '@tanstack/react-start/client'
 import { StrictMode } from 'react'
 import { hydrateRoot } from 'react-dom/client'
 
-const ENABLE_STRICT_MODE = true
+const ENABLE_STRICT_MODE = false
 
 hydrateRoot(
   document,

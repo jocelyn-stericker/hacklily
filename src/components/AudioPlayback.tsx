@@ -47,6 +47,7 @@ export function AudioPlayback({
       stop()
 
       context.current = new AudioContext({ sampleRate: 44100 })
+      console.log('SR4', context.current.sampleRate)
       const thisSource = context.current.createBufferSource()
       source.current = thisSource
       source.current.buffer = newAudioBuffer
@@ -71,7 +72,10 @@ export function AudioPlayback({
           return
         }
 
-        const timeSec = context.current.currentTime + startTimeSec
+        const timeSec = Math.min(
+          context.current.currentTime + startTimeSec,
+          newAudioBuffer.duration,
+        )
         mostRecentTimeCb.current((oldTimelineState) => {
           mostRecentTime.current = timeSec
           const windowSec =

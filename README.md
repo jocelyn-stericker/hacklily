@@ -1,4 +1,4 @@
-# ![Braat](public/braat.png)
+# ![Braat](src/braat.png)
 
 This adapts the spectrogram and formant tracking algorithms from
 [Praat](https://www.fon.hum.uva.nl/praat/) for the web with the goal of making

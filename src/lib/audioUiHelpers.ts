@@ -55,6 +55,7 @@ export async function importAudioFile(
   const arrayBuffer = await file.arrayBuffer()
 
   const ctx = new AudioContext({ sampleRate: 44100 })
+  console.log('SR3', ctx.sampleRate)
   const newAudioBuffer = await ctx.decodeAudioData(arrayBuffer)
   onAudioBuffer(newAudioBuffer)
   await ctx.close()

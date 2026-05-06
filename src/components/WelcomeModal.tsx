@@ -1,6 +1,6 @@
 import { FolderOpen, MicVocal } from 'lucide-react'
 
-import braatPng from '#/../public/braat.png'
+import braatPng from '#/braat.png'
 import { Button } from '#/components/ui/button'
 import {
   Dialog,

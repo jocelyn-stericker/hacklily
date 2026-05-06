@@ -33,9 +33,8 @@ const FORMANT_RATE = 11000 // 2 × 5500 Hz
 // Pitch: run batch PitchProcessor.analyze() every PITCH_INTERVAL quanta.
 //
 // Performance notes (at 44.1 kHz, PITCH_BUF_SIZE=4096, PITCH_INTERVAL=16):
-//   - Pitch analysis runs every 16 × 128 = 2048 samples ≈ 46 ms.
+//   - Pitch analysis runs every 16 × 128 = 2048 samples
 //   - Each call to analyze() runs a full Viterbi pass over ~9 frames.
-//   - Measured cost: roughly 2–15 ms in Firefox
 //
 // If audio glitches appear (dropouts, stuttering):
 //   1. Reduce PITCH_BUF_SIZE (fewer Viterbi frames per call, less accurate).
@@ -74,6 +73,7 @@ class VoiceProcessor extends AudioWorkletProcessor {
 
   private _quantumCount = 0
   private _started = false
+  private _lastCurrentTime: number | null = null
 
   constructor() {
     super()
@@ -116,13 +116,39 @@ class VoiceProcessor extends AudioWorkletProcessor {
     inputs: Float32Array[][],
     _outputs: Float32Array[][],
   ): boolean {
+    const start = Date.now()
     const inp = inputs[0]?.[0]
     if (!inp || !inp[0]) return true
 
     if (!this._started) {
       this._started = true
+      this._lastCurrentTime = currentTime
       this.port.postMessage({ type: 'start' as const, currentTime })
     }
+
+    // Emit unvoiced frames for any skipped quanta
+    const quantumDurationSec = QUANTUM / sampleRate
+    if (this._lastCurrentTime !== null) {
+      const timeDelta = currentTime - this._lastCurrentTime
+      if (timeDelta > quantumDurationSec * 1.5) {
+        const extraTime = timeDelta - quantumDurationSec
+        const skippedQuanta = Math.round(extraTime / quantumDurationSec)
+
+        const sp = this._spec.params
+        for (let i = 0; i < skippedQuanta; i++) {
+          const msg: AnalysisMessage = {
+            voiced: false,
+            spectrum: new Float32Array(this._specBuf.length),
+            rms: 0,
+            firstBinHz: sp.f1Hz,
+            freqStepHz: sp.actualFreqStepHz,
+            timeStepSec: sp.actualTimeStepSec,
+          }
+          this.port.postMessage(msg)
+        }
+      }
+    }
+    this._lastCurrentTime = currentTime
 
     // 1. Pre-emphasise into scratch buffer (inp is a read-only view of the
     //    shared audio-engine buffer — do not write to it).
@@ -193,6 +219,12 @@ class VoiceProcessor extends AudioWorkletProcessor {
 
       this.port.postMessage(msg)
     }
+
+    this.port.postMessage({
+      time: Date.now() - start,
+      inp: inp.length,
+      sampleRate,
+    })
 
     return true
   }

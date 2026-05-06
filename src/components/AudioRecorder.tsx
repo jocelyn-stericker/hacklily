@@ -56,7 +56,7 @@ export function AudioRecorder({
       const recordingChunks: Blob[] = []
       let workletStartTime: number | null = null
       let recorderStartTime: number | null = null
-      let analysisTimeSec = 0
+      let analysisSampleCount = 0
 
       try {
         stream = await navigator.mediaDevices.getUserMedia({
@@ -65,6 +65,8 @@ export function AudioRecorder({
         })
 
         context = new AudioContext({ sampleRate: 44100 })
+        console.log('SR', context.sampleRate)
+        const sampleRate = context.sampleRate
         await context.audioWorklet.addModule(audioWorkletUrl)
 
         sourceNode = context.createMediaStreamSource(stream)
@@ -72,13 +74,22 @@ export function AudioRecorder({
         workletNode.port.onmessage = ({
           data,
         }: MessageEvent<
-          { type: 'start'; currentTime: number } | AnalysisMessage
+          | { type: 'start'; currentTime: number }
+          | AnalysisMessage
+          | { time: number }
         >) => {
           if ('type' in data) {
             workletStartTime = data.currentTime
             return
           }
-          analysisTimeSec += data.timeStepSec
+          if ('time' in data) {
+            if (data.time > 10) {
+              console.log(`Exceeded budget: ${data.time}ms`)
+            }
+            console.log(data.inp)
+            return
+          }
+          analysisSampleCount += data.timeStepSec * sampleRate
           pendingCursorSecRef.current = onAppend(data)
           if (cursorRafRef.current === null) {
             cursorRafRef.current = requestAnimationFrame(() => {
@@ -113,61 +124,59 @@ export function AudioRecorder({
           }
         }
 
-        sourceNode.connect(workletNode)
+        const recorderNode = new MediaStreamAudioDestinationNode(context, {})
 
-        recorder = new MediaRecorder(stream)
+        recorder = new MediaRecorder(recorderNode.stream, {})
+        sourceNode.connect(workletNode)
+        sourceNode.connect(recorderNode)
+        recorder.onstart = (e) => {
+          if (!context) {
+            return
+          }
+          // lol this is apparently what we have to work with?
+          const differenceBetweenClocks =
+            performance.now() / 1000 - context.currentTime
+          recorderStartTime = e.timeStamp / 1000 - differenceBetweenClocks
+          console.log('start!', recorderStartTime, workletStartTime)
+        }
+        recorder.start()
+
         recorder.ondataavailable = (e) => {
           if (e.data.size > 0) recordingChunks.push(e.data)
         }
         recorder.onstop = async () => {
+          console.log(recorderStartTime, workletStartTime)
           const blob = new Blob(recordingChunks, { type: recorder!.mimeType })
           const arrayBuffer = await blob.arrayBuffer()
-          const ctx = new AudioContext({ sampleRate: 44100 })
-          const decodedBuffer = await ctx.decodeAudioData(arrayBuffer)
-
-          const offsetSec =
-            workletStartTime !== null && recorderStartTime !== null
-              ? Math.max(0, recorderStartTime - workletStartTime)
-              : 0
-          const offsetSamples = Math.round(offsetSec * 44100)
-
-          const analysisSamples = Math.round(analysisTimeSec * 44100)
-
-          const targetSamples = Math.min(
-            analysisSamples,
-            decodedBuffer.length + offsetSamples,
-          )
-          if (targetSamples > 0) {
-            let newBuffer = decodedBuffer
-
-            if (
-              offsetSamples > 0 ||
-              decodedBuffer.length + offsetSamples > targetSamples
-            ) {
-              newBuffer = ctx.createBuffer(
-                decodedBuffer.numberOfChannels,
-                targetSamples,
-                44100,
-              )
-              for (let c = 0; c < decodedBuffer.numberOfChannels; c++) {
-                const src = decodedBuffer.getChannelData(c)
-                const dst = newBuffer.getChannelData(c)
-                const copyLen = Math.min(
-                  src.length,
-                  targetSamples - offsetSamples,
-                )
-                if (copyLen > 0)
-                  dst.set(src.subarray(0, copyLen), offsetSamples)
-              }
+          const ctx = new AudioContext({ sampleRate })
+          console.log('SR2', ctx.sampleRate, context!.sampleRate)
+          let decodedBuffer = await ctx.decodeAudioData(arrayBuffer)
+          if (
+            recorderStartTime &&
+            workletStartTime &&
+            recorderStartTime < workletStartTime
+          ) {
+            const framesToSkip = Math.round(
+              (workletStartTime - recorderStartTime) * sampleRate,
+            )
+            const trimmedBuffer = ctx.createBuffer(
+              decodedBuffer.numberOfChannels,
+              Math.max(0, decodedBuffer.length - framesToSkip),
+              sampleRate,
+            )
+            for (let ch = 0; ch < decodedBuffer.numberOfChannels; ch++) {
+              const sourceData = decodedBuffer.getChannelData(ch)
+              const targetData = trimmedBuffer.getChannelData(ch)
+              targetData.set(sourceData.slice(framesToSkip))
             }
-
-            onNewBufferRef.current(newBuffer)
+            console.log('skipped', framesToSkip)
+            decodedBuffer = trimmedBuffer
           }
-
+          console.log('Decoded duration is', decodedBuffer.duration)
+          console.log('Analysis duration is', analysisSampleCount / sampleRate)
+          onNewBufferRef.current(decodedBuffer)
           await ctx.close()
         }
-        recorderStartTime = context.currentTime
-        recorder.start()
       } catch (err) {
         if (!shouldTeardown) {
           onErrorRef.current((err as Error).message)
