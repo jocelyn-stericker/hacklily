@@ -2,14 +2,7 @@ import { useEffect, useRef } from 'react'
 
 import type { TimelineState } from '#/components/Plot'
 import type { AnalysisMessage } from '#/lib/analysis'
-import { createScriptProcessorAnalyzer } from '#/lib/scriptProcessor'
 import audioWorkletUrl from '#/lib/worklet?worker&url'
-
-// Enable the legacy ScriptProcessorNode path with ?scriptProcessor in the URL.
-// Intended for WebKit browsers that do not support AudioWorklet.
-const USE_SCRIPT_PROCESSOR = new URLSearchParams(window.location.search).has(
-  'scriptProcessor',
-)
 
 export function AudioRecorder({
   onAppend,
@@ -58,52 +51,12 @@ export function AudioRecorder({
       let context: AudioContext | null = null
       let sourceNode: MediaStreamAudioSourceNode | null = null
       let workletNode: AudioWorkletNode | null = null
-      let scriptNode: ScriptProcessorNode | null = null
       let recorder: MediaRecorder | null = null
       let stream: MediaStream
       const recordingChunks: Blob[] = []
-      let analysisStartTime: number | null = null
+      let workletStartTime: number | null = null
       let recorderStartTime: number | null = null
       let analysisTimeSec = 0
-
-      function handleAnalysisMessage(
-        data: { type: 'start'; currentTime: number } | AnalysisMessage,
-      ) {
-        if ('type' in data) {
-          analysisStartTime = data.currentTime
-          return
-        }
-        analysisTimeSec += data.timeStepSec
-        pendingCursorSecRef.current = onAppend(data)
-        if (cursorRafRef.current === null) {
-          cursorRafRef.current = requestAnimationFrame(() => {
-            cursorRafRef.current = null
-            const cursorSec = pendingCursorSecRef.current!
-            onTimelineStateChangedRef.current((old) => {
-              const windowSec = old.viewportRightSec - old.viewportLeftSec
-              const trackDurationSec = Math.max(old.trackDurationSec, cursorSec)
-              if (
-                old.viewportLeftSec + windowSec * 0.9 < cursorSec ||
-                cursorSec < old.viewportLeftSec
-              ) {
-                const newViewportLeftSec = Math.max(
-                  0,
-                  cursorSec - windowSec * 0.1,
-                )
-                return {
-                  ...old,
-                  trackDurationSec,
-                  viewportLeftSec: newViewportLeftSec,
-                  viewportRightSec: newViewportLeftSec + windowSec,
-                  cursorSec,
-                }
-              } else {
-                return { ...old, trackDurationSec, cursorSec }
-              }
-            })
-          })
-        }
-      }
 
       try {
         stream = await navigator.mediaDevices.getUserMedia({
@@ -112,29 +65,55 @@ export function AudioRecorder({
         })
 
         context = new AudioContext({ sampleRate: 44100 })
-        sourceNode = context.createMediaStreamSource(stream)
+        await context.audioWorklet.addModule(audioWorkletUrl)
 
-        if (USE_SCRIPT_PROCESSOR) {
-          scriptNode = createScriptProcessorAnalyzer(
-            context,
-            handleAnalysisMessage,
-          )
-          sourceNode.connect(scriptNode)
-          // ScriptProcessorNode must be connected to destination to fire
-          // onaudioprocess in WebKit. Output is silenced inside the callback.
-          scriptNode.connect(context.destination)
-        } else {
-          await context.audioWorklet.addModule(audioWorkletUrl)
-          workletNode = new AudioWorkletNode(context, 'voice-processor')
-          workletNode.port.onmessage = ({
-            data,
-          }: MessageEvent<
-            { type: 'start'; currentTime: number } | AnalysisMessage
-          >) => {
-            handleAnalysisMessage(data)
+        sourceNode = context.createMediaStreamSource(stream)
+        workletNode = new AudioWorkletNode(context, 'voice-processor')
+        workletNode.port.onmessage = ({
+          data,
+        }: MessageEvent<
+          { type: 'start'; currentTime: number } | AnalysisMessage
+        >) => {
+          if ('type' in data) {
+            workletStartTime = data.currentTime
+            return
           }
-          sourceNode.connect(workletNode)
+          analysisTimeSec += data.timeStepSec
+          pendingCursorSecRef.current = onAppend(data)
+          if (cursorRafRef.current === null) {
+            cursorRafRef.current = requestAnimationFrame(() => {
+              cursorRafRef.current = null
+              const cursorSec = pendingCursorSecRef.current!
+              onTimelineStateChangedRef.current((old) => {
+                const windowSec = old.viewportRightSec - old.viewportLeftSec
+                const trackDurationSec = Math.max(
+                  old.trackDurationSec,
+                  cursorSec,
+                )
+                if (
+                  old.viewportLeftSec + windowSec * 0.9 < cursorSec ||
+                  cursorSec < old.viewportLeftSec
+                ) {
+                  const newViewportLeftSec = Math.max(
+                    0,
+                    cursorSec - windowSec * 0.1,
+                  )
+                  return {
+                    ...old,
+                    trackDurationSec,
+                    viewportLeftSec: newViewportLeftSec,
+                    viewportRightSec: newViewportLeftSec + windowSec,
+                    cursorSec,
+                  }
+                } else {
+                  return { ...old, trackDurationSec, cursorSec }
+                }
+              })
+            })
+          }
         }
+
+        sourceNode.connect(workletNode)
 
         recorder = new MediaRecorder(stream)
         recorder.ondataavailable = (e) => {
@@ -147,8 +126,8 @@ export function AudioRecorder({
           const decodedBuffer = await ctx.decodeAudioData(arrayBuffer)
 
           const offsetSec =
-            analysisStartTime !== null && recorderStartTime !== null
-              ? Math.max(0, recorderStartTime - analysisStartTime)
+            workletStartTime !== null && recorderStartTime !== null
+              ? Math.max(0, recorderStartTime - workletStartTime)
               : 0
           const offsetSamples = Math.round(offsetSec * 44100)
 
@@ -211,7 +190,6 @@ export function AudioRecorder({
         }
         sourceNode?.disconnect()
         workletNode?.disconnect()
-        scriptNode?.disconnect()
         context?.close()
         stream.getTracks().forEach((t) => t.stop())
       }
