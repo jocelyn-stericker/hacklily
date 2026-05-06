@@ -16,6 +16,6 @@ jobs:
       - name: Deploy website
         uses: actions/git-pages@v2
         with:
-          site: https://jocelyn-stercker.codeberg.page/braat
+          site: https://jocelyn-stericker.codeberg.page/braat
           source: ./dist/client
           token: ${{ forge.token }}
