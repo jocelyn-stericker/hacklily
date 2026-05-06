@@ -2,6 +2,7 @@ import { createFileRoute } from '@tanstack/react-router'
 import { FolderOpen, MicVocal, Pause, Play, SkipBack } from 'lucide-react'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
+import braatPng from '#/../public/braat.png'
 import { AudioPlayback } from '#/components/AudioPlayback'
 import { AudioRecorder } from '#/components/AudioRecorder'
 import { Plot, useTimeToX, usePlotPad, InCanvas } from '#/components/Plot'
@@ -335,7 +336,7 @@ function App() {
       <main className="min-h-screen flex flex-col">
         <header className="flex align-center justify-end gap-1 p-2 flex-wrap">
           <h1 className="text-lg font-bold bg-[#8ace00] mr-2">
-            <img src="/braat.png" className="h-10" />
+            <img src={braatPng} className="h-10" />
           </h1>
           <div className="grow" />
           <Button

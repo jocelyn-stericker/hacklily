@@ -4,6 +4,7 @@ import { routeTree } from './routeTree.gen'
 
 export function getRouter() {
   const router = createTanStackRouter({
+    basepath: '/braat/',
     routeTree,
     scrollRestoration: true,
     defaultPreload: 'intent',

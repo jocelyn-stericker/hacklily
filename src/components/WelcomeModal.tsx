@@ -1,5 +1,6 @@
 import { FolderOpen, MicVocal } from 'lucide-react'
 
+import braatPng from '#/../public/braat.png'
 import { Button } from '#/components/ui/button'
 import {
   Dialog,
@@ -27,7 +28,7 @@ export function WelcomeModal({
           <DialogTitle className="sr-only">Welcome to Braat</DialogTitle>
         </DialogHeader>
         <div className="flex flex-col items-center gap-4 py-2">
-          <img src="/braat.png" className="h-12 bg-[#8ace00]" alt="Braat" />
+          <img src={braatPng} className="h-12 bg-[#8ace00]" alt="Braat" />
           <div className="flex flex-col gap-2 w-full">
             <Button
               variant="default"

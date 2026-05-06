@@ -6,6 +6,7 @@ import { copy } from 'copy-paste'
 import { defineConfig } from 'vite'
 
 const config = defineConfig({
+  base: '/braat/',
   resolve: { tsconfigPaths: true },
   server: {
     allowedHosts: ['lily.local'],

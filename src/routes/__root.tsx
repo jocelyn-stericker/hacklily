@@ -26,6 +26,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
         <HeadContent />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="theme-color" content="#e7f3ec" />
+        <link rel="shortcut icon" href="favicon.ico" />
         <meta
           name="viewport"
           content="viewport-fit=cover, user-scalable=no, width=device-width, initial-scale=1, maximum-scale=1"
