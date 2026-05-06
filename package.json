@@ -11,7 +11,7 @@
     "preview": "vite preview",
     "test": "vitest run",
     "lint": "eslint && tsc --noEmit && prettier --check .",
-    "check": "prettier --write . && eslint --fix && npm run typecheck"
+    "check": "prettier --write . && eslint --fix && tsc --noEmit"
   },
   "dependencies": {
     "@base-ui/react": "^1.4.0",
