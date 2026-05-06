@@ -131,6 +131,8 @@ export function Waveform({
   const offRef = useRef<OffscreenState | null>(null)
   const animationFrame = useRef<number | null>(null)
   const triggerDraw = useRef(() => {})
+  const fromRef = useRef<number | null>(null)
+  const drawFrame = useRef<number | null>(null)
 
   useEffect(() => {
     if (analysis.length === 0) {
@@ -166,26 +168,45 @@ export function Waveform({
     triggerDraw.current()
 
     // Note: this must include everything in the previous effect
+    return () => {
+      if (animationFrame.current) cancelAnimationFrame(animationFrame.current)
+      if (drawFrame.current !== null) cancelAnimationFrame(drawFrame.current)
+      drawFrame.current = null
+      animationFrame.current = null
+    }
   }, [analysis, canvasHeight, ampToY, canvas, canvasWidth, timeToX])
 
   useImperativeHandle(
     ref,
     () => ({
       append(from) {
-        const to = analysis.length
-        if (from >= to) return
+        fromRef.current = Math.min(from, fromRef.current ?? Infinity)
+        if (drawFrame.current !== null) return
+        drawFrame.current = requestAnimationFrame(() => {
+          drawFrame.current = null
+          const effectiveFrom = fromRef.current!
+          fromRef.current = null
+          const to = analysis.length
+          if (effectiveFrom >= to) return
 
-        if (!offRef.current && canvasHeight > 0) {
-          const off: OffscreenState = { tiles: [], canvasHeight }
-          ensureTiles(off, to)
-          offRef.current = off
-          paintColumnsToOffscreen(off, analysis, 0, to, ampToY)
-        } else if (offRef.current) {
-          ensureTiles(offRef.current, to)
-          paintColumnsToOffscreen(offRef.current, analysis, from, to, ampToY)
-        }
+          if (!offRef.current && canvasHeight > 0) {
+            const off: OffscreenState = { tiles: [], canvasHeight }
+            ensureTiles(off, to)
+            offRef.current = off
+            paintColumnsToOffscreen(off, analysis, 0, to, ampToY)
+          } else if (offRef.current) {
+            ensureTiles(offRef.current, to)
+            paintColumnsToOffscreen(
+              offRef.current,
+              analysis,
+              effectiveFrom,
+              to,
+              ampToY,
+            )
+          }
 
-        triggerDraw.current()
+          triggerDraw.current()
+        })
       },
 
       patch(from, to) {
