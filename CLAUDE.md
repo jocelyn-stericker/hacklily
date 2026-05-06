@@ -21,6 +21,7 @@ npm run test           # Run tests with Vitest
 ## Architecture Overview
 
 ### Tech Stack
+
 - **UI Framework**: TanStack Start (React 19 with file-based routing under `src/routes/`)
 - **Styling**: Tailwind CSS v4 (via `@tailwindcss/vite` plugin)
 - **Components**: shadcn/ui (installed to `src/components/ui/`)
@@ -29,26 +30,31 @@ npm run test           # Run tests with Vitest
 ### Layers
 
 **1. UI & Routing**
+
 - `src/router.tsx` - TanStack Router configuration
 - `src/routes/__root.tsx` - Root layout
 - `src/routes/index.tsx` - Main application page
 
 **2. Audio I/O**
+
 - `AudioRecorder.tsx` - Records microphone input with real-time analysis
 - `AudioPlayback.tsx` - Plays back audio with timeline synchronization
 
 **3. Visualization**
+
 - `Plot.tsx` - Generic plot container
 - `VirtualScrollArea.tsx` - Handles scrolling, zooming, and event handling
 - `Waveform.tsx`, `Spectrogram.tsx`, `VowelChart.tsx` - Domain-specific visualizations
 - `colourmap.ts` - RGB color palette lookup for spectrogram
 
 **4. Audio Analysis (Workers)**
+
 - `src/lib/worklet.ts` - AudioWorklet processor for low-latency real-time analysis of microphone input
 - `src/lib/importWorker.ts` - Web Worker for file import processing with frame-by-frame analysis
 - `src/lib/analysis.ts` - Core worker spawning and `AnalysisMessage` type definition (includes pitch, formants, RMS per frame)
 
 **5. DSP Algorithms**
+
 - `spectrogram.ts` - STFT computation
 - `pitch.ts` - F0 detection via autocorrelation (Praat algorithm)
 - `formant.ts` - Formant extraction using LPC
@@ -76,6 +82,7 @@ npm run test           # Run tests with Vitest
 ## Type Definition
 
 The `AnalysisMessage` type (in `src/lib/analysis.ts`) defines the frame data communicated from workers to UI:
+
 - `pitch` - Fundamental frequency (F0)
 - `formants` - Array of formant frequencies
 - `rms` - RMS energy
@@ -84,6 +91,7 @@ The `AnalysisMessage` type (in `src/lib/analysis.ts`) defines the frame data com
 ## Adding UI Components
 
 To add new shadcn/ui components:
+
 ```bash
 npx shadcn@latest add <component-name>
 ```
@@ -93,6 +101,7 @@ Components are installed to `src/components/ui/` and can be imported directly.
 ## Testing
 
 Tests run with Vitest. Test files should be colocated with implementation files or grouped in a `test/` directory. Run tests with:
+
 ```bash
 npm run test
 ```
