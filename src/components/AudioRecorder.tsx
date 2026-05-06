@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react'
 
 import type { TimelineState } from '#/components/Plot'
 import type { AnalysisMessage } from '#/lib/analysis'
+import audioWorkletUrl from '#/lib/worklet?worker&url'
 
 export function AudioRecorder({
   onAppend,
@@ -64,9 +65,7 @@ export function AudioRecorder({
         })
 
         context = new AudioContext({ sampleRate: 44100 })
-        await context.audioWorklet.addModule(
-          new URL('../lib/worklet.ts', import.meta.url),
-        )
+        await context.audioWorklet.addModule(audioWorkletUrl)
 
         sourceNode = context.createMediaStreamSource(stream)
         workletNode = new AudioWorkletNode(context, 'voice-processor')

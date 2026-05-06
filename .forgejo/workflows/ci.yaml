@@ -1,9 +1,21 @@
-on: [push]
+on:
+  push:
+    branches:
+      - main
 jobs:
   test:
     runs-on: codeberg-tiny
     steps:
       - uses: actions/checkout@v5
-      - run: |
+      - name: Test and build
+        run: |
           npm install
           npm run lint
+          npm run test
+          npm run build
+      - name: Deploy website
+        uses: actions/git-pages@v2
+        with:
+          site: https://jocelyn-stercker.codeberg.page/braat
+          source: ./dist/client
+          token: ${{ forge.token }}

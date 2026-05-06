@@ -23,7 +23,15 @@ const config = defineConfig({
       },
     }),
     tailwindcss(),
-    tanstackStart(),
+    tanstackStart({
+      spa: {
+        enabled: true,
+        prerender: {
+          enabled: true,
+          outputPath: 'index.html',
+        },
+      },
+    }),
     viteReact(),
   ],
 })
