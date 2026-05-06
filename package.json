@@ -10,9 +10,7 @@
     "build": "vite build",
     "preview": "vite preview",
     "test": "vitest run",
-    "lint": "eslint && tsc --noEmit",
-    "format": "prettier --check .",
-    "typecheck": "tsc --noEmit",
+    "lint": "eslint && tsc --noEmit && prettier --check .",
     "check": "prettier --write . && eslint --fix && npm run typecheck"
   },
   "dependencies": {

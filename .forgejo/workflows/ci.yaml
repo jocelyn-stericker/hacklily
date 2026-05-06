@@ -1,0 +1,9 @@
+on: [push]
+jobs:
+  test:
+    runs-on: codeberg-tiny
+    steps:
+      - uses: actions/checkout@v5
+      - run: |
+          npm install
+          npm run lint

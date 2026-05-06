@@ -18,7 +18,7 @@ npm install
 npm run dev
 ```
 
-To run lints and tests:
+To run lints, code formatting, and tests, fixing any autofixable issues:
 
 ```
 npm run check && npm run test

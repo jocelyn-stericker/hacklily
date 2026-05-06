@@ -12,7 +12,6 @@ npm run build          # Build for production
 # Code Quality
 npm run check          # Format with Prettier, fix with ESLint, and typecheck
 npm run lint           # Run ESLint and TypeScript type checking
-npm run format         # Check formatting with Prettier
 
 # Testing
 npm run test           # Run tests with Vitest
