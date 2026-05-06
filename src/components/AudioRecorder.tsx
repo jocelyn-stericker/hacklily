@@ -6,9 +6,12 @@ import { createScriptProcessorAnalyzer } from '#/lib/scriptProcessor'
 import audioWorkletUrl from '#/lib/worklet?worker&url'
 
 // Enable the legacy ScriptProcessorNode path with ?scriptProcessor in the URL.
-// Intended for WebKit browsers that do not support AudioWorklet.
 const USE_SCRIPT_PROCESSOR = new URLSearchParams(window.location.search).has(
   'scriptProcessor',
+)
+
+const NO_MEDIA_RECORDER = new URLSearchParams(window.location.search).has(
+  'noMediaRecorder',
 )
 
 export function AudioRecorder({
@@ -136,59 +139,61 @@ export function AudioRecorder({
           sourceNode.connect(workletNode)
         }
 
-        recorder = new MediaRecorder(stream)
-        recorder.ondataavailable = (e) => {
-          if (e.data.size > 0) recordingChunks.push(e.data)
-        }
-        recorder.onstop = async () => {
-          const blob = new Blob(recordingChunks, { type: recorder!.mimeType })
-          const arrayBuffer = await blob.arrayBuffer()
-          const ctx = new AudioContext({ sampleRate: 44100 })
-          const decodedBuffer = await ctx.decodeAudioData(arrayBuffer)
+        if (!NO_MEDIA_RECORDER) {
+          recorder = new MediaRecorder(stream)
+          recorder.ondataavailable = (e) => {
+            if (e.data.size > 0) recordingChunks.push(e.data)
+          }
+          recorder.onstop = async () => {
+            const blob = new Blob(recordingChunks, { type: recorder!.mimeType })
+            const arrayBuffer = await blob.arrayBuffer()
+            const ctx = new AudioContext({ sampleRate: 44100 })
+            const decodedBuffer = await ctx.decodeAudioData(arrayBuffer)
 
-          const offsetSec =
-            analysisStartTime !== null && recorderStartTime !== null
-              ? Math.max(0, recorderStartTime - analysisStartTime)
-              : 0
-          const offsetSamples = Math.round(offsetSec * 44100)
+            const offsetSec =
+              analysisStartTime !== null && recorderStartTime !== null
+                ? Math.max(0, recorderStartTime - analysisStartTime)
+                : 0
+            const offsetSamples = Math.round(offsetSec * 44100)
 
-          const analysisSamples = Math.round(analysisTimeSec * 44100)
+            const analysisSamples = Math.round(analysisTimeSec * 44100)
 
-          const targetSamples = Math.min(
-            analysisSamples,
-            decodedBuffer.length + offsetSamples,
-          )
-          if (targetSamples > 0) {
-            let newBuffer = decodedBuffer
+            const targetSamples = Math.min(
+              analysisSamples,
+              decodedBuffer.length + offsetSamples,
+            )
+            if (targetSamples > 0) {
+              let newBuffer = decodedBuffer
 
-            if (
-              offsetSamples > 0 ||
-              decodedBuffer.length + offsetSamples > targetSamples
-            ) {
-              newBuffer = ctx.createBuffer(
-                decodedBuffer.numberOfChannels,
-                targetSamples,
-                44100,
-              )
-              for (let c = 0; c < decodedBuffer.numberOfChannels; c++) {
-                const src = decodedBuffer.getChannelData(c)
-                const dst = newBuffer.getChannelData(c)
-                const copyLen = Math.min(
-                  src.length,
-                  targetSamples - offsetSamples,
+              if (
+                offsetSamples > 0 ||
+                decodedBuffer.length + offsetSamples > targetSamples
+              ) {
+                newBuffer = ctx.createBuffer(
+                  decodedBuffer.numberOfChannels,
+                  targetSamples,
+                  44100,
                 )
-                if (copyLen > 0)
-                  dst.set(src.subarray(0, copyLen), offsetSamples)
+                for (let c = 0; c < decodedBuffer.numberOfChannels; c++) {
+                  const src = decodedBuffer.getChannelData(c)
+                  const dst = newBuffer.getChannelData(c)
+                  const copyLen = Math.min(
+                    src.length,
+                    targetSamples - offsetSamples,
+                  )
+                  if (copyLen > 0)
+                    dst.set(src.subarray(0, copyLen), offsetSamples)
+                }
               }
+
+              onNewBufferRef.current(newBuffer)
             }
 
-            onNewBufferRef.current(newBuffer)
+            await ctx.close()
           }
-
-          await ctx.close()
+          recorderStartTime = context.currentTime
+          recorder.start()
         }
-        recorderStartTime = context.currentTime
-        recorder.start()
       } catch (err) {
         if (!shouldTeardown) {
           onErrorRef.current((err as Error).message)
