@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react'
 
 import type { TimelineState } from '#/components/Plot'
 import type { AnalysisMessage } from '#/lib/analysis'
+import wasmUrl from '#/lib/wasm/braat_dsp_bg.wasm?url'
 import audioWorkletUrl from '#/lib/worklet?worker&url'
 
 export function AudioRecorder({
@@ -71,6 +72,13 @@ export function AudioRecorder({
 
         sourceNode = context.createMediaStreamSource(stream)
         workletNode = new AudioWorkletNode(context, 'voice-processor')
+
+        // Load WASM bytes and transfer to the worklet for hot-path processing.
+        void fetch(wasmUrl)
+          .then((r) => r.arrayBuffer())
+          .then((bytes) => {
+            workletNode!.port.postMessage({ type: 'init-wasm', bytes }, [bytes])
+          })
         workletNode.port.onmessage = ({
           data,
         }: MessageEvent<
@@ -84,7 +92,7 @@ export function AudioRecorder({
           }
           if ('time' in data) {
             if (data.time > 10) {
-              console.log(`Exceeded budget: ${data.time}ms`)
+              console.log(`Exceeded time budget: ${data.time}ms`)
             }
             return
           }

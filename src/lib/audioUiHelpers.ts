@@ -17,6 +17,8 @@
 
 import type { AnalysisMessage } from './analysis'
 
+const wasmUrl = new URL('./wasm/braat_dsp_bg.wasm', import.meta.url)
+
 const LN10_10 = 10 / Math.log(10)
 
 export function computeDbBounds(
@@ -75,7 +77,8 @@ export async function importAudioFile(
   }
   console.timeEnd('import: decode')
 
-  audioImporter.postMessage({ mono, fileSampleRate })
+  const wasmBytes = await fetch(wasmUrl).then((r) => r.arrayBuffer())
+  audioImporter.postMessage({ mono, fileSampleRate, wasmBytes })
   audioImporter.onmessage = ({
     data,
   }: MessageEvent<{ ok: AnalysisMessage[] } | { error: string }>) => {

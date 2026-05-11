@@ -15,6 +15,7 @@ To run locally, on port 3000:
 
 ```
 npm install
+npm run build:wasm  # compile Rust DSP to WASM (one-time; re-run after changing crates/)
 npm run dev
 ```
 
@@ -33,17 +34,13 @@ For the UI:
 - **Tailwind v4** — configured via `@tailwindcss/vite` plugin (no config file); styles in `src/styles.css`
 - **lucide-react** — icons throughout; event type icons chosen by heuristics in `src/lib/event-icon-heuristics.ts`
 
-DSP code (in src/lib) should be ported to TypeScript from reputable sources,
-with clear attribution. Each algorithm should have a wrapper for stream
-processing and a wrapper for batch processing. Stream wrappers avoid allocating
-arrays during processing to the extent possible.
+Performance-sensitive DSP (pitch, formants) lives in `crates/braat-dsp/`, a
+Rust crate compiled to WASM via wasm-bindgen. Simpler signal processing
+(STFT, windowing, resampling) stays in TypeScript. Algorithms are adapted from
+reputable sources (primarily Praat) with clear attribution.
 
 Realtime DSP lives in an audio worklet, and the UI & DSP code communicate
-via message passing.
-
-All code should run in browser. Avoid WebAssembly if there is a reasonable
-alternative. For DSP, prefer vendoring third-party code directly rather than
-importing it.
+via message passing. All code runs in the browser.
 
 Prioritize snappiness of the key features over other goals. If some data takes
 longer to process, that should not stop spectrogram, waveform, and formant data
@@ -92,12 +89,16 @@ cut features or make them optional.
 - **src/lib/worklet-globals.d.ts** — TypeScript types for AudioWorklet global scope (sampleRate, currentFrame, etc.).
 - **src/lib/audioUiHelpers.ts** — Helpers for importing audio files, concatenating buffers, and computing dB scaling bounds.
 
+### Rust DSP Crate
+
+- **crates/braat-dsp/src/pitch.rs** — Fundamental frequency (F0) detection via autocorrelation with global Viterbi smoothing (adapted from Praat).
+- **crates/braat-dsp/src/formant.rs** — Formant frequency extraction using LPC analysis (adapted from Praat).
+- **crates/braat-dsp/src/burg_lpc.rs** — Burg's method for LPC coefficient computation.
+- **crates/braat-dsp/src/lib.rs** — WASM bindings: `WasmBatchPitchAnalyzer`, `WasmFormantProcessor`, `WasmPitchProcessor`.
+
 ### Libraries - Signal Processing
 
 - **src/lib/spectrogram.ts** — Short-time Fourier transform (STFT) computation for frequency-domain analysis.
-- **src/lib/pitch.ts** — Fundamental frequency (F0) detection via autocorrelation algorithm (adapted from Praat).
-- **src/lib/formant.ts** — Formant frequency extraction using linear predictive coding (LPC) analysis.
-- **src/lib/burgLpc.ts** — Burg's method for LPC coefficient computation from audio frames.
 - **src/lib/preEmphasis.ts** — High-pass pre-emphasis filter to boost high frequencies before analysis.
 - **src/lib/fft.ts** — Fast Fourier transform (radix-2) implementation for spectral analysis.
 - **src/lib/resample.ts** — Audio resampling using linear interpolation for pitch-invariant analysis.

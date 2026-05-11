@@ -5,16 +5,24 @@
 ## Common Commands
 
 ```bash
+# One-time WASM toolchain setup (Rust required)
+rustup target add wasm32-unknown-unknown
+cargo install wasm-bindgen-cli   # version must match wasm-bindgen in Cargo.toml
+
+# Build Rust DSP → WASM (required before dev/build; re-run after changing crates/)
+npm run build:wasm
+
 # Development
-npm run dev              # Run dev server on port 3000
-npm run build          # Build for production
+npm run dev              # Run dev server on port 3000 (build:wasm must have run first)
+npm run build          # Build for production (runs build:wasm automatically)
 
 # Code Quality
 npm run check          # Format with Prettier, fix with ESLint, and typecheck
 npm run lint           # Run ESLint and TypeScript type checking
 
 # Testing
-npm run test           # Run tests with Vitest
+npm run test           # Run Vitest (JS) + cargo test (Rust DSP)
+cargo test --manifest-path crates/braat-dsp/Cargo.toml  # Rust tests only
 ```
 
 ## Architecture Overview
@@ -54,10 +62,8 @@ npm run test           # Run tests with Vitest
 
 **5. DSP Algorithms**
 
+- `crates/braat-dsp/` - Rust crate compiled to WASM; contains pitch (F0) and formant analysis
 - `spectrogram.ts` - STFT computation
-- `pitch.ts` - F0 detection via autocorrelation (Praat algorithm)
-- `formant.ts` - Formant extraction using LPC
-- `burgLpc.ts` - Burg's method for LPC coefficients
 - `preEmphasis.ts` - High-pass pre-emphasis filter
 - `fft.ts` - Radix-2 FFT
 - `resample.ts` - Linear interpolation resampling
@@ -70,7 +76,7 @@ npm run test           # Run tests with Vitest
 
 2. **Audio Worklet for Low-Latency**: Realtime DSP runs in an AudioWorklet; UI and DSP communicate via message passing (not direct function calls).
 
-3. **Vendored DSP Code**: Algorithms are ported to TypeScript from reputable sources (primarily Praat) with clear attribution. Avoid WebAssembly when reasonable TypeScript alternatives exist.
+3. **DSP in Rust/WASM**: Performance-sensitive algorithms (pitch, formants) live in `crates/braat-dsp/` and are compiled to WASM. Simpler signal processing (STFT, windowing, resampling) stays in TypeScript. Algorithms are adapted from reputable sources (primarily Praat) with clear attribution.
 
 4. **Stream & Batch Processing**: Each algorithm should provide:
    - A stream wrapper (avoids array allocations during processing when possible)
@@ -99,11 +105,9 @@ Components are installed to `src/components/ui/` and can be imported directly.
 
 ## Testing
 
-Tests run with Vitest. Test files should be colocated with implementation files or grouped in a `test/` directory. Run tests with:
+JavaScript tests run with Vitest. Rust DSP tests live in `crates/braat-dsp/src/` alongside the implementation. `npm run test` runs both.
 
-```bash
-npm run test
-```
+Test files should be colocated with implementation files or grouped in a `test/` directory.
 
 ## License
 
