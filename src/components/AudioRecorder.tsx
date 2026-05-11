@@ -86,7 +86,6 @@ export function AudioRecorder({
             if (data.time > 10) {
               console.log(`Exceeded budget: ${data.time}ms`)
             }
-            console.log(data.inp)
             return
           }
           analysisSampleCount += data.timeStepSec * sampleRate

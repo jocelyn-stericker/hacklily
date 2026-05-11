@@ -85,7 +85,7 @@ export function VirtualScrollArea({
             setMode('programmatic')
           }, 100)
 
-          onZoom(p, ev.deltaY)
+          onZoom(p, ev.deltaY / 25)
         }
       }
       root.addEventListener('wheel', handleWheel, { passive: false })
