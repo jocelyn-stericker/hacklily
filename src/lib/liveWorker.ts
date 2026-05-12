@@ -90,37 +90,12 @@ function setup({ audioPort, sampleRate }: InitMessage) {
   let latestF2: number | null = null
   let latestF3: number | null = null
   let latestPitchHz = 0
-  let lastCurrentTime: number | null = null
   let quantumCount = 0
 
-  const quantumDurationSec = QUANTUM / sampleRate
-
   audioPort.onmessage = ({
-    data: { audio, currentTime },
-  }: MessageEvent<{ audio: Float32Array; currentTime: number }>) => {
+    data: { audio },
+  }: MessageEvent<{ audio: Float32Array }>) => {
     pcmChunks.push(audio)
-
-    // Emit silent frames for any skipped quanta
-    if (lastCurrentTime !== null) {
-      const timeDelta = currentTime - lastCurrentTime
-      if (timeDelta > quantumDurationSec * 1.5) {
-        const skippedQuanta = Math.round(
-          (timeDelta - quantumDurationSec) / quantumDurationSec,
-        )
-        const sp = spec.params
-        for (let i = 0; i < skippedQuanta; i++) {
-          self.postMessage({
-            voiced: false,
-            spectrum: new Float32Array(specBuf.length),
-            rms: 0,
-            firstBinHz: sp.f1Hz,
-            freqStepHz: sp.actualFreqStepHz,
-            timeStepSec: sp.actualTimeStepSec,
-          } satisfies AnalysisMessage)
-        }
-      }
-    }
-    lastCurrentTime = currentTime
 
     const inp = audio
 

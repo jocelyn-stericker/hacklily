@@ -109,26 +109,25 @@ function App() {
         setDbBounds({ min: DB_MIN_DEFAULT, max: DB_MAX_DEFAULT })
         setStatus({ value: 'analyzing' })
         try {
-          await importAudioFile(
-            file,
-            (newAudioBuffer) => {
-              setAudioBuffer(newAudioBuffer)
-              setTimelineState({
-                cursorSec: 0,
-                hoverSec: 0,
-                trackDurationSec: newAudioBuffer.duration,
-                viewportLeftSec: 0,
-                viewportRightSec: 10,
-              })
-            },
-            (newAnalysis, bounds) => {
-              if (bounds) setDbBounds(bounds)
-              lastScannedRef.current = newAnalysis.length
-              setAnalysis(newAnalysis)
-              setStatus({ value: 'inactive' })
-            },
-            (error) => setStatus({ value: 'error', error }),
-          )
+          const {
+            analysis: newAnalysis,
+            dbBounds: bounds,
+            buffer: newAudioBuffer,
+          } = await importAudioFile(file)
+
+          if (bounds) setDbBounds(bounds)
+          lastScannedRef.current = newAnalysis.length
+
+          setAudioBuffer(newAudioBuffer)
+          setTimelineState({
+            cursorSec: 0,
+            hoverSec: 0,
+            trackDurationSec: newAudioBuffer.duration,
+            viewportLeftSec: 0,
+            viewportRightSec: 10,
+          })
+          setAnalysis(newAnalysis)
+          setStatus({ value: 'inactive' })
         } catch (err) {
           console.log(err)
           setStatus({ value: 'error', error: String(err) })
@@ -440,7 +439,7 @@ function App() {
         <Plot
           timelineState={waveformTimelineState}
           xAxisVisible={false}
-          yAxisVisible={true}
+          yAxisVisible={false}
           yAxis={{
             type: 'amplitude',
             ampMaxNorm: ampMaxNorm || 1,

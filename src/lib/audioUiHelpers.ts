@@ -39,15 +39,11 @@ export function computeDbBounds(
   return { min: Math.max(minDb, -120), max: maxDb }
 }
 
-export async function importAudioFile(
-  file: File,
-  onAudioBuffer: (buffer: AudioBuffer) => void,
-  onSuccess: (
-    analysis: AnalysisMessage[],
-    dbBounds: { min: number; max: number } | null,
-  ) => void,
-  onError: (error: string) => void,
-): Promise<void> {
+export async function importAudioFile(file: File): Promise<{
+  analysis: AnalysisMessage[]
+  dbBounds: { min: number; max: number } | null
+  buffer: AudioBuffer
+}> {
   const audioImporter = new Worker(
     new URL('./importWorker.ts', import.meta.url),
   )
@@ -55,9 +51,7 @@ export async function importAudioFile(
   const arrayBuffer = await file.arrayBuffer()
 
   const ctx = new AudioContext({ sampleRate: 44100 })
-  console.log('SR3', ctx.sampleRate)
   const newAudioBuffer = await ctx.decodeAudioData(arrayBuffer)
-  onAudioBuffer(newAudioBuffer)
   await ctx.close()
 
   const {
@@ -76,16 +70,36 @@ export async function importAudioFile(
   console.timeEnd('import: decode')
 
   audioImporter.postMessage({ mono, fileSampleRate })
-  audioImporter.onmessage = ({
-    data,
-  }: MessageEvent<{ ok: AnalysisMessage[] } | { error: string }>) => {
-    audioImporter.terminate()
-    if ('ok' in data) {
-      onSuccess(data.ok, computeDbBounds(data.ok))
-    } else {
-      onError(data.error)
+  return new Promise((resolve, reject) => {
+    audioImporter.onmessage = ({
+      data,
+    }: MessageEvent<{ ok: AnalysisMessage[] } | { error: string }>) => {
+      audioImporter.terminate()
+      if ('ok' in data) {
+        const analysisDuration = data.ok.reduce(
+          (memo, sample) => memo + sample.timeStepSec,
+          0,
+        )
+        const analysisSamples = Math.round(analysisDuration * 44100)
+
+        // Fit it to the analysis samples, keep it mono
+        const shortenedMono = new AudioBuffer({
+          length: analysisSamples,
+          numberOfChannels: 1,
+          sampleRate: 44100,
+        })
+        shortenedMono.copyToChannel(mono, 0)
+
+        resolve({
+          analysis: data.ok,
+          dbBounds: computeDbBounds(data.ok),
+          buffer: shortenedMono,
+        })
+      } else {
+        reject(data.error)
+      }
     }
-  }
+  })
 }
 
 export function concatAudioBuffers(

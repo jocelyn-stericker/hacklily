@@ -47,13 +47,13 @@ export function AudioPlayback({
       stop()
 
       context.current = new AudioContext({ sampleRate: 44100 })
-      console.log('SR4', context.current.sampleRate)
       const thisSource = context.current.createBufferSource()
       source.current = thisSource
       source.current.buffer = newAudioBuffer
       source.current.connect(context.current.destination)
       thisSource.onended = () => {
         if (source.current === thisSource) {
+          animate()
           stop()
           onStop()
         }

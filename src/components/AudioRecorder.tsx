@@ -84,9 +84,15 @@ export function AudioRecorder({
 
         liveWorker.onmessage = ({ data }: MessageEvent) => {
           if (data.type === 'pcm') {
+            const analysisDuration = accumulatedAnalysisRef.current.reduce(
+              (memo, sample) => memo + sample.timeStepSec,
+              0,
+            )
+            const analysisSamples = Math.round(analysisDuration * sampleRate)
+
             const pcm = data.pcm as Float32Array<ArrayBuffer>
             const buffer = new AudioBuffer({
-              length: pcm.length,
+              length: analysisSamples,
               numberOfChannels: 1,
               sampleRate,
             })
