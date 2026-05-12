@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react'
 
 import type { TimelineState } from '#/components/Plot'
 import type { AnalysisMessage } from '#/lib/analysis'
+import LiveWorker from '#/lib/liveWorker?worker'
 import wasmUrl from '#/lib/wasm/braat_dsp_bg.wasm?url'
 import audioWorkletUrl from '#/lib/worklet?worker&url'
 
@@ -52,6 +53,7 @@ export function AudioRecorder({
       let context: AudioContext | null = null
       let sourceNode: MediaStreamAudioSourceNode | null = null
       let workletNode: AudioWorkletNode | null = null
+      let liveWorker: Worker | null = null
       let recorder: MediaRecorder | null = null
       let stream: MediaStream
       const recordingChunks: Blob[] = []
@@ -73,29 +75,31 @@ export function AudioRecorder({
         sourceNode = context.createMediaStreamSource(stream)
         workletNode = new AudioWorkletNode(context, 'voice-processor')
 
-        // Load WASM bytes and transfer to the worklet for hot-path processing.
-        void fetch(wasmUrl)
-          .then((r) => r.arrayBuffer())
-          .then((bytes) => {
-            workletNode!.port.postMessage({ type: 'init-wasm', bytes }, [bytes])
-          })
+        // Worklet only forwards raw audio; it posts 'start' for recorder sync.
         workletNode.port.onmessage = ({
           data,
-        }: MessageEvent<
-          | { type: 'start'; currentTime: number }
-          | AnalysisMessage
-          | { time: number }
-        >) => {
-          if ('type' in data) {
-            workletStartTime = data.currentTime
-            return
-          }
-          if ('time' in data) {
-            if (data.time > 10) {
-              console.log(`Exceeded time budget: ${data.time}ms`)
-            }
-            return
-          }
+        }: MessageEvent<{ type: 'start'; currentTime: number }>) => {
+          workletStartTime = data.currentTime
+        }
+
+        // Wire a MessageChannel between the worklet (sender) and liveWorker (receiver).
+        liveWorker = new LiveWorker()
+        const mc = new MessageChannel()
+        workletNode.port.postMessage({ type: 'init', workerPort: mc.port2 }, [
+          mc.port2,
+        ])
+
+        // Load WASM bytes and initialize the live worker.
+        void fetch(wasmUrl)
+          .then((r) => r.arrayBuffer())
+          .then((wasmBytes) => {
+            liveWorker!.postMessage(
+              { type: 'init', audioPort: mc.port1, wasmBytes, sampleRate },
+              [mc.port1, wasmBytes],
+            )
+          })
+
+        liveWorker.onmessage = ({ data }: MessageEvent<AnalysisMessage>) => {
           analysisSampleCount += data.timeStepSec * sampleRate
           pendingCursorSecRef.current = onAppend(data)
           if (cursorRafRef.current === null) {
@@ -206,6 +210,7 @@ export function AudioRecorder({
         }
         sourceNode?.disconnect()
         workletNode?.disconnect()
+        liveWorker?.terminate()
         context?.close()
         stream.getTracks().forEach((t) => t.stop())
       }
