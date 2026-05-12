@@ -20,12 +20,7 @@ export default [
     },
   },
   {
-    ignores: [
-      'eslint.config.js',
-      'prettier.config.js',
-      'src/lib/wasm/*.js',
-      'src/lib/wasm/*.d.ts',
-    ],
+    ignores: ['eslint.config.js', 'prettier.config.js'],
   },
   reactHooks.configs.flat['recommended-latest'],
 ]

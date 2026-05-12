@@ -7,10 +7,9 @@
   },
   "scripts": {
     "dev": "vite dev --port 3000",
-    "build:wasm": "cargo build --manifest-path crates/braat-dsp/Cargo.toml --target wasm32-unknown-unknown --release && wasm-bindgen --target web --out-dir src/lib/wasm crates/braat-dsp/target/wasm32-unknown-unknown/release/braat_dsp.wasm",
-    "build": "npm run build:wasm && rm -fr dist && vite build",
+    "build": "rm -fr dist; vite build",
     "preview": "vite preview",
-    "test": "vitest run && cargo test --manifest-path crates/braat-dsp/Cargo.toml",
+    "test": "vitest run",
     "lint": "eslint && tsc --noEmit && prettier --check .",
     "check": "prettier --write . && eslint --fix && tsc --noEmit"
   },

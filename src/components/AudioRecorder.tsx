@@ -4,7 +4,6 @@ import type { TimelineState } from '#/components/Plot'
 import type { AnalysisMessage } from '#/lib/analysis'
 import ImportWorker from '#/lib/importWorker?worker'
 import LiveWorker from '#/lib/liveWorker?worker'
-import wasmUrl from '#/lib/wasm/braat_dsp_bg.wasm?url'
 import audioWorkletUrl from '#/lib/worklet?worker&url'
 
 export function AudioRecorder({
@@ -79,15 +78,10 @@ export function AudioRecorder({
           mc.port2,
         ])
 
-        // Load WASM bytes and initialize the live worker.
-        void fetch(wasmUrl)
-          .then((r) => r.arrayBuffer())
-          .then((wasmBytes) => {
-            liveWorker!.postMessage(
-              { type: 'init', audioPort: mc.port1, wasmBytes, sampleRate },
-              [mc.port1, wasmBytes],
-            )
-          })
+        liveWorker.postMessage(
+          { type: 'init', audioPort: mc.port1, sampleRate },
+          [mc.port1],
+        )
 
         liveWorker.onmessage = ({ data }: MessageEvent<AnalysisMessage>) => {
           pendingCursorSecRef.current = onAppend(data)
@@ -158,10 +152,8 @@ export function AudioRecorder({
 
           // Re-analyze the recorded audio with the batch analyzer
           const worker = new ImportWorker()
-          const wasmBytes = await fetch(wasmUrl).then((r) => r.arrayBuffer())
-          worker.postMessage({ mono, fileSampleRate: sampleRate, wasmBytes }, [
+          worker.postMessage({ mono, fileSampleRate: sampleRate }, [
             mono.buffer,
-            wasmBytes,
           ])
           worker.onmessage = ({
             data,
