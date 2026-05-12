@@ -2,7 +2,6 @@ import { useEffect, useRef } from 'react'
 
 import type { TimelineState } from '#/components/Plot'
 import type { AnalysisMessage } from '#/lib/analysis'
-import ImportWorker from '#/lib/importWorker?worker'
 import LiveWorker from '#/lib/liveWorker?worker'
 import audioWorkletUrl from '#/lib/worklet?worker&url'
 
@@ -22,6 +21,7 @@ export function AudioRecorder({
   const onTimelineStateChangedRef = useRef(onTimelineStateChanged)
   const onResetRef = useRef(onReset)
   const onErrorRef = useRef(onError)
+  const accumulatedAnalysisRef = useRef<AnalysisMessage[]>([])
 
   useEffect(() => {
     onTimelineStateChangedRef.current = onTimelineStateChanged
@@ -38,6 +38,7 @@ export function AudioRecorder({
     // until setup completes so all resources are properly released.
     let shouldTeardown = false
     let teardown: (() => void) | null = null
+    accumulatedAnalysisRef.current = []
 
     spinup()
 
@@ -54,9 +55,7 @@ export function AudioRecorder({
       let sourceNode: MediaStreamAudioSourceNode | null = null
       let workletNode: AudioWorkletNode | null = null
       let liveWorker: Worker | null = null
-      let recorder: MediaRecorder | null = null
       let stream: MediaStream
-      const recordingChunks: Blob[] = []
 
       try {
         stream = await navigator.mediaDevices.getUserMedia({
@@ -83,8 +82,24 @@ export function AudioRecorder({
           [mc.port1],
         )
 
-        liveWorker.onmessage = ({ data }: MessageEvent<AnalysisMessage>) => {
-          pendingCursorSecRef.current = onAppend(data)
+        liveWorker.onmessage = ({ data }: MessageEvent) => {
+          if (data.type === 'pcm') {
+            const pcm = data.pcm as Float32Array<ArrayBuffer>
+            const buffer = new AudioBuffer({
+              length: pcm.length,
+              numberOfChannels: 1,
+              sampleRate,
+            })
+            if (pcm.length > 0) buffer.copyToChannel(pcm, 0)
+            onResetRef.current(accumulatedAnalysisRef.current, buffer)
+            liveWorker!.terminate()
+            liveWorker = null
+            return
+          }
+
+          const msg = data as AnalysisMessage
+          accumulatedAnalysisRef.current.push(msg)
+          pendingCursorSecRef.current = onAppend(msg)
           if (cursorRafRef.current === null) {
             cursorRafRef.current = requestAnimationFrame(() => {
               cursorRafRef.current = null
@@ -118,56 +133,7 @@ export function AudioRecorder({
           }
         }
 
-        const recorderNode = new MediaStreamAudioDestinationNode(context, {})
-        recorder = new MediaRecorder(recorderNode.stream, {})
         sourceNode.connect(workletNode)
-        sourceNode.connect(recorderNode)
-
-        recorder.ondataavailable = (e) => {
-          if (e.data.size > 0) recordingChunks.push(e.data)
-        }
-
-        recorder.onstop = async () => {
-          const blob = new Blob(recordingChunks, { type: recorder!.mimeType })
-          const arrayBuffer = await blob.arrayBuffer()
-          const ctx = new AudioContext({ sampleRate })
-          let decodedBuffer: AudioBuffer
-          try {
-            decodedBuffer = await ctx.decodeAudioData(arrayBuffer)
-          } catch (err) {
-            onErrorRef.current((err as Error).message)
-            await ctx.close()
-            return
-          }
-          await ctx.close()
-
-          // Mix to mono for analysis
-          const { length, numberOfChannels } = decodedBuffer
-          const mono = new Float32Array(length)
-          for (let c = 0; c < numberOfChannels; c++) {
-            const ch = decodedBuffer.getChannelData(c)
-            for (let i = 0; i < length; i++)
-              mono[i]! += ch[i]! / numberOfChannels
-          }
-
-          // Re-analyze the recorded audio with the batch analyzer
-          const worker = new ImportWorker()
-          worker.postMessage({ mono, fileSampleRate: sampleRate }, [
-            mono.buffer,
-          ])
-          worker.onmessage = ({
-            data,
-          }: MessageEvent<{ ok: AnalysisMessage[] } | { error: string }>) => {
-            worker.terminate()
-            if ('ok' in data) {
-              onResetRef.current(data.ok, decodedBuffer)
-            } else {
-              onErrorRef.current(data.error)
-            }
-          }
-        }
-
-        recorder.start()
       } catch (err) {
         if (!shouldTeardown) {
           onErrorRef.current((err as Error).message)
@@ -189,14 +155,14 @@ export function AudioRecorder({
           cancelAnimationFrame(cursorRafRef.current)
           cursorRafRef.current = null
         }
-        if (recorder && recorder.state !== 'inactive') {
-          recorder.stop()
-        }
+        // Send flush before disconnecting so any in-flight audio quanta
+        // are processed before the flush message arrives at the worker.
+        liveWorker?.postMessage({ type: 'flush' })
         sourceNode?.disconnect()
         workletNode?.disconnect()
-        liveWorker?.terminate()
         context?.close()
         stream.getTracks().forEach((t) => t.stop())
+        // liveWorker is terminated inside onmessage after the PCM response arrives.
       }
     }
   }, [onAppend])

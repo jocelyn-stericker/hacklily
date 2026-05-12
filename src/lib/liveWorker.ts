@@ -40,6 +40,19 @@ self.onmessage = ({ data }: MessageEvent<InitMessage>) => {
 }
 
 function setup({ audioPort, sampleRate }: InitMessage) {
+  const pcmChunks: Float32Array[] = []
+
+  self.onmessage = (_: MessageEvent<{ type: 'flush' }>) => {
+    const totalLength = pcmChunks.reduce((s, c) => s + c.length, 0)
+    const length = Math.max(1, totalLength)
+    const pcm = new Float32Array(length)
+    let offset = 0
+    for (const chunk of pcmChunks) {
+      pcm.set(chunk, offset)
+      offset += chunk.length
+    }
+    ;(self as unknown as Worker).postMessage({ type: 'pcm', pcm }, [pcm.buffer])
+  }
   const spec = new SpectrogramStreamProcessor(
     {
       effectiveWindowLengthSec: 0.005,
@@ -85,6 +98,8 @@ function setup({ audioPort, sampleRate }: InitMessage) {
   audioPort.onmessage = ({
     data: { audio, currentTime },
   }: MessageEvent<{ audio: Float32Array; currentTime: number }>) => {
+    pcmChunks.push(audio)
+
     // Emit silent frames for any skipped quanta
     if (lastCurrentTime !== null) {
       const timeDelta = currentTime - lastCurrentTime

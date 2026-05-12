@@ -244,11 +244,7 @@ function App() {
   }, [analysis])
 
   const handlePause = useCallback(() => {
-    setStatus((prev) =>
-      prev.value === 'recording'
-        ? { value: 'analyzing' }
-        : { value: 'inactive' },
-    )
+    setStatus({ value: 'inactive' })
   }, [])
 
   const handleBackToStart = useCallback(() => {
