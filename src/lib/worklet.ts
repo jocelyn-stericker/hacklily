@@ -19,7 +19,6 @@ declare const currentTime: number
 
 class VoiceProcessor extends AudioWorkletProcessor {
   private _workerPort: MessagePort | null = null
-  private _started = false
 
   constructor() {
     super()
@@ -36,11 +35,6 @@ class VoiceProcessor extends AudioWorkletProcessor {
   ): boolean {
     const inp = inputs[0]?.[0]
     if (!inp || !inp[0]) return true
-
-    if (!this._started) {
-      this._started = true
-      this.port.postMessage({ type: 'start' as const, currentTime })
-    }
 
     if (this._workerPort) {
       const copy = inp.slice()

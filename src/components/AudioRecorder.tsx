@@ -2,33 +2,34 @@ import { useEffect, useRef } from 'react'
 
 import type { TimelineState } from '#/components/Plot'
 import type { AnalysisMessage } from '#/lib/analysis'
+import ImportWorker from '#/lib/importWorker?worker'
 import LiveWorker from '#/lib/liveWorker?worker'
 import wasmUrl from '#/lib/wasm/braat_dsp_bg.wasm?url'
 import audioWorkletUrl from '#/lib/worklet?worker&url'
 
 export function AudioRecorder({
   onAppend,
-  onNewBuffer,
+  onReset,
   onTimelineStateChanged,
   onError,
 }: {
   onAppend: (analysis: AnalysisMessage) => number
-  onNewBuffer: (buffer: AudioBuffer) => void
+  onReset: (analysis: AnalysisMessage[], buffer: AudioBuffer) => void
   onTimelineStateChanged: React.Dispatch<React.SetStateAction<TimelineState>>
   onError: (error: string) => void
 }) {
   const pendingCursorSecRef = useRef<number | null>(null)
   const cursorRafRef = useRef<number | null>(null)
   const onTimelineStateChangedRef = useRef(onTimelineStateChanged)
-  const onNewBufferRef = useRef(onNewBuffer)
+  const onResetRef = useRef(onReset)
   const onErrorRef = useRef(onError)
 
   useEffect(() => {
     onTimelineStateChangedRef.current = onTimelineStateChanged
   }, [onTimelineStateChanged])
   useEffect(() => {
-    onNewBufferRef.current = onNewBuffer
-  }, [onNewBuffer])
+    onResetRef.current = onReset
+  }, [onReset])
   useEffect(() => {
     onErrorRef.current = onError
   }, [onError])
@@ -57,9 +58,6 @@ export function AudioRecorder({
       let recorder: MediaRecorder | null = null
       let stream: MediaStream
       const recordingChunks: Blob[] = []
-      let workletStartTime: number | null = null
-      let recorderStartTime: number | null = null
-      let analysisSampleCount = 0
 
       try {
         stream = await navigator.mediaDevices.getUserMedia({
@@ -68,19 +66,11 @@ export function AudioRecorder({
         })
 
         context = new AudioContext({ sampleRate: 44100 })
-        console.log('SR', context.sampleRate)
         const sampleRate = context.sampleRate
         await context.audioWorklet.addModule(audioWorkletUrl)
 
         sourceNode = context.createMediaStreamSource(stream)
         workletNode = new AudioWorkletNode(context, 'voice-processor')
-
-        // Worklet only forwards raw audio; it posts 'start' for recorder sync.
-        workletNode.port.onmessage = ({
-          data,
-        }: MessageEvent<{ type: 'start'; currentTime: number }>) => {
-          workletStartTime = data.currentTime
-        }
 
         // Wire a MessageChannel between the worklet (sender) and liveWorker (receiver).
         liveWorker = new LiveWorker()
@@ -100,7 +90,6 @@ export function AudioRecorder({
           })
 
         liveWorker.onmessage = ({ data }: MessageEvent<AnalysisMessage>) => {
-          analysisSampleCount += data.timeStepSec * sampleRate
           pendingCursorSecRef.current = onAppend(data)
           if (cursorRafRef.current === null) {
             cursorRafRef.current = requestAnimationFrame(() => {
@@ -136,58 +125,57 @@ export function AudioRecorder({
         }
 
         const recorderNode = new MediaStreamAudioDestinationNode(context, {})
-
         recorder = new MediaRecorder(recorderNode.stream, {})
         sourceNode.connect(workletNode)
         sourceNode.connect(recorderNode)
-        recorder.onstart = (e) => {
-          if (!context) {
-            return
-          }
-          // lol this is apparently what we have to work with?
-          const differenceBetweenClocks =
-            performance.now() / 1000 - context.currentTime
-          recorderStartTime = e.timeStamp / 1000 - differenceBetweenClocks
-          console.log('start!', recorderStartTime, workletStartTime)
-        }
-        recorder.start()
 
         recorder.ondataavailable = (e) => {
           if (e.data.size > 0) recordingChunks.push(e.data)
         }
+
         recorder.onstop = async () => {
-          console.log(recorderStartTime, workletStartTime)
           const blob = new Blob(recordingChunks, { type: recorder!.mimeType })
           const arrayBuffer = await blob.arrayBuffer()
           const ctx = new AudioContext({ sampleRate })
-          console.log('SR2', ctx.sampleRate, context!.sampleRate)
-          let decodedBuffer = await ctx.decodeAudioData(arrayBuffer)
-          if (
-            recorderStartTime &&
-            workletStartTime &&
-            recorderStartTime < workletStartTime
-          ) {
-            const framesToSkip = Math.round(
-              (workletStartTime - recorderStartTime) * sampleRate,
-            )
-            const trimmedBuffer = ctx.createBuffer(
-              decodedBuffer.numberOfChannels,
-              Math.max(0, decodedBuffer.length - framesToSkip),
-              sampleRate,
-            )
-            for (let ch = 0; ch < decodedBuffer.numberOfChannels; ch++) {
-              const sourceData = decodedBuffer.getChannelData(ch)
-              const targetData = trimmedBuffer.getChannelData(ch)
-              targetData.set(sourceData.slice(framesToSkip))
-            }
-            console.log('skipped', framesToSkip)
-            decodedBuffer = trimmedBuffer
+          let decodedBuffer: AudioBuffer
+          try {
+            decodedBuffer = await ctx.decodeAudioData(arrayBuffer)
+          } catch (err) {
+            onErrorRef.current((err as Error).message)
+            await ctx.close()
+            return
           }
-          console.log('Decoded duration is', decodedBuffer.duration)
-          console.log('Analysis duration is', analysisSampleCount / sampleRate)
-          onNewBufferRef.current(decodedBuffer)
           await ctx.close()
+
+          // Mix to mono for analysis
+          const { length, numberOfChannels } = decodedBuffer
+          const mono = new Float32Array(length)
+          for (let c = 0; c < numberOfChannels; c++) {
+            const ch = decodedBuffer.getChannelData(c)
+            for (let i = 0; i < length; i++)
+              mono[i]! += ch[i]! / numberOfChannels
+          }
+
+          // Re-analyze the recorded audio with the batch analyzer
+          const worker = new ImportWorker()
+          const wasmBytes = await fetch(wasmUrl).then((r) => r.arrayBuffer())
+          worker.postMessage({ mono, fileSampleRate: sampleRate, wasmBytes }, [
+            mono.buffer,
+            wasmBytes,
+          ])
+          worker.onmessage = ({
+            data,
+          }: MessageEvent<{ ok: AnalysisMessage[] } | { error: string }>) => {
+            worker.terminate()
+            if ('ok' in data) {
+              onResetRef.current(data.ok, decodedBuffer)
+            } else {
+              onErrorRef.current(data.error)
+            }
+          }
         }
+
+        recorder.start()
       } catch (err) {
         if (!shouldTeardown) {
           onErrorRef.current((err as Error).message)
@@ -205,6 +193,10 @@ export function AudioRecorder({
       }
 
       function doTeardown() {
+        if (cursorRafRef.current !== null) {
+          cancelAnimationFrame(cursorRafRef.current)
+          cursorRafRef.current = null
+        }
         if (recorder && recorder.state !== 'inactive') {
           recorder.stop()
         }

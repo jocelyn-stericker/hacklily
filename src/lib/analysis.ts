@@ -103,14 +103,21 @@ export async function analyzeBuffer(
   try {
     // Feed raw audio to pitch analyzer in chunks; run global Viterbi when done.
     const pitchChunkCap = pitchAnalyzer.chunk_cap()
+    let chunkView = new Float32Array(
+      memory.buffer,
+      pitchAnalyzer.chunk_ptr(),
+      pitchChunkCap,
+    )
     let pOffset = 0
     while (pOffset < input.length) {
       const n = Math.min(pitchChunkCap, input.length - pOffset)
-      const chunkView = new Float32Array(
-        memory.buffer,
-        pitchAnalyzer.chunk_ptr(),
-        pitchChunkCap,
-      )
+      if (chunkView.buffer !== memory.buffer) {
+        chunkView = new Float32Array(
+          memory.buffer,
+          pitchAnalyzer.chunk_ptr(),
+          pitchChunkCap,
+        )
+      }
       chunkView.set(input.subarray(pOffset, pOffset + n))
       pitchAnalyzer.append(n)
       pOffset += n
@@ -145,15 +152,21 @@ export async function analyzeBuffer(
       }
     }
 
+    let stagingView = new Float32Array(
+      memory.buffer,
+      formantProc.staging_ptr(),
+      stagingCap,
+    )
     let fOffset = 0
     while (fOffset < formantSamples.length) {
       const n = Math.min(stagingCap, formantSamples.length - fOffset)
-      // Recreate view each iteration: memory may grow between calls.
-      const stagingView = new Float32Array(
-        memory.buffer,
-        formantProc.staging_ptr(),
-        stagingCap,
-      )
+      if (stagingView.buffer !== memory.buffer) {
+        stagingView = new Float32Array(
+          memory.buffer,
+          formantProc.staging_ptr(),
+          stagingCap,
+        )
+      }
       stagingView.set(formantSamples.subarray(fOffset, fOffset + n))
       formantProc.feed(n)
       drainFormant()

@@ -82,6 +82,7 @@ export async function importAudioFile(
   audioImporter.onmessage = ({
     data,
   }: MessageEvent<{ ok: AnalysisMessage[] } | { error: string }>) => {
+    audioImporter.terminate()
     if ('ok' in data) {
       onSuccess(data.ok, computeDbBounds(data.ok))
     } else {

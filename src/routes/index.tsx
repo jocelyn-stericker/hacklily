@@ -130,6 +130,7 @@ function App() {
             (error) => setStatus({ value: 'error', error }),
           )
         } catch (err) {
+          console.log(err)
           setStatus({ value: 'error', error: String(err) })
         }
       }
@@ -235,12 +236,19 @@ function App() {
     setStatus({ value: 'playing' })
   }, [])
 
+  const recordingStartIndexRef = useRef(0)
+
   const handleStart = useCallback(() => {
+    recordingStartIndexRef.current = analysis.length
     setStatus({ value: 'recording' })
-  }, [])
+  }, [analysis])
 
   const handlePause = useCallback(() => {
-    setStatus({ value: 'inactive' })
+    setStatus((prev) =>
+      prev.value === 'recording'
+        ? { value: 'analyzing' }
+        : { value: 'inactive' },
+    )
   }, [])
 
   const handleBackToStart = useCallback(() => {
@@ -281,17 +289,29 @@ function App() {
     audioBufferRef.current = audioBuffer
   }, [audioBuffer])
 
-  const handleNewBuffer = useCallback((newBuffer: AudioBuffer) => {
-    const prev = audioBufferRef.current
-    const combined =
-      prev && prev.length > 0 ? concatAudioBuffers(prev, newBuffer) : newBuffer
-    audioBufferRef.current = combined
-    setAudioBuffer(combined)
-    setTimelineState((prevTimeline) => ({
-      ...prevTimeline,
-      trackDurationSec: combined.duration,
-    }))
-  }, [])
+  const handleReset = useCallback(
+    (newAnalysis: AnalysisMessage[], newBuffer: AudioBuffer) => {
+      const startIndex = recordingStartIndexRef.current
+      const full = [...analysisRef.current.slice(0, startIndex), ...newAnalysis]
+      lastScannedRef.current = startIndex
+      setAnalysis(full)
+
+      const prev = audioBufferRef.current
+      const combined =
+        prev && prev.length > 0 && startIndex > 0
+          ? concatAudioBuffers(prev, newBuffer)
+          : newBuffer
+      audioBufferRef.current = combined
+      setAudioBuffer(combined)
+      setTimelineState((prevTimeline) => ({
+        ...prevTimeline,
+        trackDurationSec: combined.duration,
+        cursorSec: combined.duration,
+      }))
+      setStatus({ value: 'inactive' })
+    },
+    [],
+  )
 
   // returns total track time
   const handleAppend = useCallback((data: AnalysisMessage) => {
@@ -331,7 +351,7 @@ function App() {
       <Dialog open={status.value === 'analyzing'}>
         <DialogContent showCloseButton={false}>
           <DialogHeader>
-            <DialogTitle>Importing track…</DialogTitle>
+            <DialogTitle>Analyzing audio…</DialogTitle>
             <DialogDescription>This may take a moment.</DialogDescription>
           </DialogHeader>
         </DialogContent>
@@ -478,9 +498,12 @@ function App() {
         {status.value === 'recording' ? (
           <AudioRecorder
             onAppend={handleAppend}
-            onNewBuffer={handleNewBuffer}
+            onReset={handleReset}
             onTimelineStateChanged={setTimelineState}
-            onError={(error) => setStatus({ value: 'error', error })}
+            onError={(error) => {
+              console.log(error)
+              setStatus({ value: 'error', error })
+            }}
           />
         ) : null}
         {status.value === 'playing' && audioBuffer ? (
