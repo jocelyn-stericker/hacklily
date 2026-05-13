@@ -5,7 +5,7 @@ onmessage = async ({
   try {
     const { analyzeBuffer } = await import('#/lib/analysis')
     console.time('import: analyzeBuffer')
-    const messages = analyzeBuffer(mono, fileSampleRate)
+    const messages = await analyzeBuffer(mono, fileSampleRate)
     console.timeEnd('import: analyzeBuffer')
     postMessage({ ok: messages })
   } catch (err) {

@@ -78,6 +78,7 @@ describe('AudioRecorder', () => {
       timeStepSec: 0.02,
       freqStepHz: 20,
       firstBinHz: 0,
+      speechProbability: 0,
       ...overrides,
     }
   }

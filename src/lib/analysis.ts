@@ -20,6 +20,7 @@ import { PitchProcessor } from './pitch'
 import { preEmphasis } from './preEmphasis'
 import { resample } from './resample'
 import { SpectrogramProcessor } from './spectrogram'
+import { VadStreamProcessor } from './vad'
 
 export type AnalysisCommon = {
   spectrum: Float32Array
@@ -28,6 +29,8 @@ export type AnalysisCommon = {
   freqStepHz: number
   // Center of first bin
   firstBinHz: number
+  // Silero VAD v5 speech probability (0 = silence, 1 = speech)
+  speechProbability: number
 }
 
 export type VoicedAnalysisMessage = AnalysisCommon & {
@@ -61,10 +64,10 @@ function defaultOpts(): Opts {
   }
 }
 
-export function analyzeBuffer(
+export async function analyzeBuffer(
   input: Float32Array,
   sampleRate: number,
-): AnalysisMessage[] {
+): Promise<AnalysisMessage[]> {
   const results: AnalysisMessage[] = []
   console.log(
     `analyzeBuffer ${input.length} samples (${(input.length / sampleRate).toFixed(2)} s)`,
@@ -128,6 +131,29 @@ export function analyzeBuffer(
   )
   const pitchResult = pitchProc.analyze(specAudio)
 
+  // VAD: resample to 16 kHz and process 512-sample chunks sequentially
+  console.log('Running VAD...')
+  const vad16k = resample(input, sampleRate, 16000, 50)
+  const vad = new VadStreamProcessor()
+  const vadChunkDurSec = 512 / 16000
+  const numVadChunks = Math.ceil(vad16k.length / 512)
+  const vadProbs = new Float32Array(Math.max(1, numVadChunks))
+  const vadChunk = new Float32Array(512)
+  for (let i = 0; i < numVadChunks; i++) {
+    const start = i * 512
+    const end = Math.min(start + 512, vad16k.length)
+    vadChunk.fill(0)
+    vadChunk.set(vad16k.subarray(start, end))
+    await vad.feed(vadChunk)
+    vadProbs[i] = vad.speechProbability
+  }
+  console.log(`VAD: ${numVadChunks} chunks processed`)
+
+  const positiveSpeechThreshold = 0.3
+  const negativeSpeechThreshold = 0.25
+  const redemptionMs = 1400
+  let speaking = false
+  let redemptionTimeRemaining = 0
   for (let x = 0; x < specResult.numFrames; x += 1) {
     const t0 = x * specResult.timeStepSec
     const t1 = (x + 1) * specResult.timeStepSec
@@ -153,10 +179,26 @@ export function analyzeBuffer(
     )
     const pitchFrame = pitchResult.frames[pitchIdx]!
 
+    // nearest VAD chunk (32 ms granularity)
+    const vadIdx = Math.min(
+      vadProbs.length - 1,
+      Math.floor((t0 + t1) / 2 / vadChunkDurSec),
+    )
+    const speechProbability = vadProbs[vadIdx]!
+    if (vad.speechProbability >= positiveSpeechThreshold) {
+      speaking = true
+      redemptionTimeRemaining = redemptionMs
+    } else if (vad.speechProbability < negativeSpeechThreshold) {
+      redemptionTimeRemaining -= x * specResult.timeStepSec * 1000
+      if (redemptionTimeRemaining <= 0) {
+        speaking = false
+      }
+    }
+
     // final results
     if (pitchFrame.frequencyHz > 0) {
       results.push({
-        voiced: true,
+        voiced: speaking,
         f0: pitchFrame.frequencyHz,
         f1: formantFrame.formants[0]?.frequencyHz ?? 0,
         f2: formantFrame.formants[1]?.frequencyHz ?? 0,
@@ -166,6 +208,7 @@ export function analyzeBuffer(
         firstBinHz: specResult.f1Hz,
         freqStepHz: specResult.freqStepHz,
         timeStepSec: specResult.timeStepSec,
+        speechProbability,
       } satisfies AnalysisMessage)
     } else {
       results.push({
@@ -175,6 +218,7 @@ export function analyzeBuffer(
         firstBinHz: specResult.f1Hz,
         freqStepHz: specResult.freqStepHz,
         timeStepSec: specResult.timeStepSec,
+        speechProbability,
       } satisfies AnalysisMessage)
     }
   }

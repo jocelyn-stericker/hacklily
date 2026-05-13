@@ -18,8 +18,8 @@ const config = defineConfig({
       },
       editor: {
         name: 'neovim command',
-        open: async (path, lineNumber, columnNumber) => {
-          copy(`e ${path}|call cursor(${lineNumber}, ${columnNumber})`)
+        open: async (filePath, lineNumber, columnNumber) => {
+          copy(`e ${filePath}|call cursor(${lineNumber}, ${columnNumber})`)
         },
       },
     }),

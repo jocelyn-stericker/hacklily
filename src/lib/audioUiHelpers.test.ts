@@ -15,6 +15,7 @@ describe('computeDbBounds', () => {
           timeStepSec: 0.02,
           freqStepHz: 20,
           firstBinHz: 0,
+          speechProbability: 0,
         },
       ]
 
@@ -34,6 +35,7 @@ describe('computeDbBounds', () => {
           timeStepSec: 0.02,
           freqStepHz: 20,
           firstBinHz: 0,
+          speechProbability: 0,
         },
       ]
 
@@ -58,6 +60,7 @@ describe('computeDbBounds', () => {
           timeStepSec: 0.02,
           freqStepHz: 20,
           firstBinHz: 0,
+          speechProbability: 0,
         },
       ]
 
@@ -75,6 +78,7 @@ describe('computeDbBounds', () => {
           timeStepSec: 0.02,
           freqStepHz: 20,
           firstBinHz: 0,
+          speechProbability: 0,
         },
       ]
 
@@ -94,6 +98,7 @@ describe('computeDbBounds', () => {
           timeStepSec: 0.02,
           freqStepHz: 20,
           firstBinHz: 0,
+          speechProbability: 0,
         },
       ]
 
@@ -111,6 +116,7 @@ describe('computeDbBounds', () => {
           timeStepSec: 0.02,
           freqStepHz: 20,
           firstBinHz: 0,
+          speechProbability: 0,
         },
       ]
 
@@ -132,6 +138,7 @@ describe('computeDbBounds', () => {
           timeStepSec: 0.02,
           freqStepHz: 20,
           firstBinHz: 0,
+          speechProbability: 0,
         },
         {
           voiced: false,
@@ -140,6 +147,7 @@ describe('computeDbBounds', () => {
           timeStepSec: 0.02,
           freqStepHz: 20,
           firstBinHz: 0,
+          speechProbability: 0,
         },
         {
           voiced: false,
@@ -148,6 +156,7 @@ describe('computeDbBounds', () => {
           timeStepSec: 0.02,
           freqStepHz: 20,
           firstBinHz: 0,
+          speechProbability: 0,
         },
       ]
 
@@ -165,6 +174,7 @@ describe('computeDbBounds', () => {
           timeStepSec: 0.02,
           freqStepHz: 20,
           firstBinHz: 0,
+          speechProbability: 0,
         },
       ]
 
@@ -180,6 +190,7 @@ describe('computeDbBounds', () => {
         timeStepSec: 0.02,
         freqStepHz: 20,
         firstBinHz: 0,
+        speechProbability: 0,
       }))
 
       const result = computeDbBounds(frames)
@@ -198,6 +209,7 @@ describe('computeDbBounds', () => {
         timeStepSec: 0.02,
         freqStepHz: 20,
         firstBinHz: 0,
+        speechProbability: 0,
         f0: 200,
         f1: 700,
         f2: 1200,
@@ -210,6 +222,7 @@ describe('computeDbBounds', () => {
         timeStepSec: 0.02,
         freqStepHz: 20,
         firstBinHz: 0,
+        speechProbability: 0,
       }
 
       const voicedResult = computeDbBounds([voicedFrame])
@@ -231,6 +244,7 @@ describe('computeDbBounds', () => {
           timeStepSec: 0.02,
           freqStepHz: 20,
           firstBinHz: 0,
+          speechProbability: 0,
         },
       ]
 
@@ -249,6 +263,7 @@ describe('computeDbBounds', () => {
           timeStepSec: 0.02,
           freqStepHz: 20,
           firstBinHz: 0,
+          speechProbability: 0,
         },
       ]
 

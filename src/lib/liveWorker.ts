@@ -21,9 +21,11 @@ import type { FormantFrame } from './formant'
 import { PitchProcessor } from './pitch'
 import { ResamplerStreamProcessor } from './resample'
 import { SpectrogramStreamProcessor } from './spectrogram'
+import { VadStreamProcessor } from './vad'
 
 const QUANTUM = 128
 const FORMANT_RATE = 11000
+const VAD_RATE = 16000
 
 // Run pitch analysis every PITCH_INTERVAL quanta (~93 ms at 44.1 kHz with BUF=4096).
 const PITCH_INTERVAL = 16
@@ -86,13 +88,30 @@ function setup({ audioPort, sampleRate }: InitMessage) {
   let preEmphPrev = 0
   const preEmphBuf = new Float32Array(QUANTUM)
 
+  // VAD chain: resample to VAD_RATE, accumulate into VadStreamProcessor.
+  // Inference is async; a serialised promise queue keeps LSTM state consistent
+  // without blocking the audio handler. speechProbability is always from the
+  // most recently completed inference (~32 ms behind real-time).
+  const vadResampler = new ResamplerStreamProcessor(sampleRate, VAD_RATE, 50)
+  const vadDrainBuf = new Float32Array(256)
+  const vad = new VadStreamProcessor()
+  const positiveSpeechThreshold = 0.3
+  const negativeSpeechThreshold = 0.25
+  const redemptionMs = 100
+
+  let latestPitchHz = 0
   let latestF1: number | null = null
   let latestF2: number | null = null
   let latestF3: number | null = null
-  let latestPitchHz = 0
+  let latestValidPitchHz = 0
+  let latestValidF1: number | null = null
+  let latestValidF2: number | null = null
+  let latestValidF3: number | null = null
+  let speaking = false
+  let redemptionTimeRemaining = 0
   let quantumCount = 0
 
-  audioPort.onmessage = ({
+  audioPort.onmessage = async ({
     data: { audio },
   }: MessageEvent<{ audio: Float32Array }>) => {
     pcmChunks.push(audio)
@@ -120,6 +139,18 @@ function setup({ audioPort, sampleRate }: InitMessage) {
       latestF1 = ff.formantCount > 0 ? ff.formants[0]!.frequencyHz : null
       latestF2 = ff.formantCount > 1 ? ff.formants[1]!.frequencyHz : null
       latestF3 = ff.formantCount > 2 ? ff.formants[2]!.frequencyHz : null
+      if (
+        latestF1 &&
+        latestF1 >= 200 &&
+        latestF1 <= 1100 &&
+        latestF2 &&
+        latestF2 >= 650 &&
+        latestF2 <= 3500
+      ) {
+        latestValidF1 = latestF1
+        latestValidF2 = latestF2
+        latestValidF3 = latestF3 ?? latestValidF3
+      }
     }
 
     // 5. Maintain rolling pitch window; run batch analysis every PITCH_INTERVAL quanta
@@ -130,29 +161,52 @@ function setup({ audioPort, sampleRate }: InitMessage) {
       if (pr.frames.length > 0) {
         // Last frame = most recent audio, benefits most from Viterbi look-back
         latestPitchHz = pr.frames[pr.frames.length - 1]!.frequencyHz
+        latestValidPitchHz =
+          latestPitchHz > 0 ? latestPitchHz : latestValidPitchHz
       }
     }
 
-    // 6. Emit one AnalysisMessage per ready spectrogram frame
+    // 6. VAD inference
+    // NOTE: we do this async, which results in an offset.
+    const audioForVad = inp.slice()
+    vadResampler.feed(audioForVad)
+    const n = vadResampler.drain(vadDrainBuf)
+    if (n > 0) {
+      vad.feed(vadDrainBuf.subarray(0, n)).then(() => {
+        if (vad.speechProbability >= positiveSpeechThreshold) {
+          speaking = true
+          redemptionTimeRemaining = redemptionMs
+        } else if (vad.speechProbability < negativeSpeechThreshold) {
+          redemptionTimeRemaining -= (n / VAD_RATE) * 1000
+          if (redemptionTimeRemaining <= 0) {
+            speaking = false
+          }
+        }
+      })
+    }
+
+    // 7. Emit one AnalysisMessage per ready spectrogram frame
     const sp = spec.params
     let rms = 0
     for (const sample of inp) rms += sample * sample
     rms = Math.sqrt(rms / inp.length)
 
     while (spec.readFrame(specBuf)) {
+      const speechProbability = vad.speechProbability
       self.postMessage(
-        latestPitchHz > 0
+        latestPitchHz > 0 || speaking
           ? ({
-              voiced: true,
-              f0: latestPitchHz,
-              f1: latestF1,
-              f2: latestF2,
-              f3: latestF3,
+              voiced: speaking,
+              f0: latestValidPitchHz,
+              f1: latestValidF1,
+              f2: latestValidF2,
+              f3: latestValidF3,
               spectrum: specBuf.slice(),
               rms,
               firstBinHz: sp.f1Hz,
               freqStepHz: sp.actualFreqStepHz,
               timeStepSec: sp.actualTimeStepSec,
+              speechProbability,
             } satisfies AnalysisMessage)
           : ({
               voiced: false,
@@ -161,6 +215,7 @@ function setup({ audioPort, sampleRate }: InitMessage) {
               firstBinHz: sp.f1Hz,
               freqStepHz: sp.actualFreqStepHz,
               timeStepSec: sp.actualTimeStepSec,
+              speechProbability,
             } satisfies AnalysisMessage),
       )
     }

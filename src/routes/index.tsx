@@ -80,6 +80,11 @@ function App() {
   const [analysis, setAnalysis] = useState<AnalysisMessage[]>([])
   const [audioBuffer, setAudioBuffer] = useState<AudioBuffer | null>(null)
 
+  useEffect(() => {
+    // For debugging!
+    ;(window as any).analysis = analysis
+  }, [analysis])
+
   const [status, setStatus] = useState<
     | { value: 'inactive' }
     | { value: 'recording' }
