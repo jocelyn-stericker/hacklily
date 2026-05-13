@@ -84,15 +84,16 @@ cut features or make them optional.
 - **src/lib/utils.ts** — General utility functions for conditional classes and UI helpers.
 - **src/lib/nextPow2.ts** — Rounds integers up to the next power of 2 for FFT buffer sizing.
 
-### Libraries - Audio Analysis
+### lib - Audio Analysis
 
 - **src/lib/analysis.ts** — Core audio analysis worker spawning; defines AnalysisMessage type for frame data with pitch, formants, and RMS.
 - **src/lib/importWorker.ts** — Web worker to process audio file imports with frame-by-frame analysis and streaming progress updates.
-- **src/lib/worklet.ts** — AudioWorklet processor for low-latency real-time microphone input analysis.
+- **src/lib/AudioRingWriter.ts** - AudioWorklet processor which writes microphone PCM data to a ring buffer
+- **src/lib/liveWorker.ts** - analysis of audio input
 - **src/lib/worklet-globals.d.ts** — TypeScript types for AudioWorklet global scope (sampleRate, currentFrame, etc.).
 - **src/lib/audioUiHelpers.ts** — Helpers for importing audio files, concatenating buffers, and computing dB scaling bounds.
 
-### Libraries - Signal Processing
+### lib - Signal Processing
 
 - **src/lib/spectrogram.ts** — Short-time Fourier transform (STFT) computation for frequency-domain analysis.
 - **src/lib/pitch.ts** — Fundamental frequency (F0) detection via autocorrelation algorithm (adapted from Praat).

@@ -310,7 +310,7 @@ describe('AudioRecorder', () => {
     })
   })
 
-  it('creates AudioWorkletNode with voice-processor', async () => {
+  it('creates AudioWorkletNode with audio-ring-writer', async () => {
     const onAppend = vi.fn(() => 0)
     const onReset = vi.fn()
     const onTimelineStateChanged = vi.fn()
@@ -328,7 +328,7 @@ describe('AudioRecorder', () => {
     await waitFor(() => {
       expect((global.AudioWorkletNode as any).lastCall).toEqual([
         mockAudioContext,
-        'voice-processor',
+        'audio-ring-writer',
       ])
     })
   })
@@ -353,7 +353,7 @@ describe('AudioRecorder', () => {
     })
   })
 
-  it('initializes worklet and worker with MessageChannel ports', async () => {
+  it('initializes worklet and worker with SharedArrayBuffer', async () => {
     const onAppend = vi.fn(() => 0)
     const onReset = vi.fn()
     const onTimelineStateChanged = vi.fn()
@@ -369,19 +369,16 @@ describe('AudioRecorder', () => {
     )
 
     await waitFor(() => {
-      expect(mockWorkletNode.port.postMessage).toHaveBeenCalledWith(
-        { type: 'init', workerPort: mockMessageChannel.port2 },
-        [mockMessageChannel.port2],
-      )
+      const workletCall = mockWorkletNode.port.postMessage.mock.calls[0]?.[0]
+      expect(workletCall?.type).toBe('init')
+      expect(workletCall?.sab).toBeInstanceOf(SharedArrayBuffer)
+      expect(workletCall?.bufSamples).toBe(4096)
 
-      expect(getMockWorker().postMessage).toHaveBeenCalledWith(
-        {
-          type: 'init',
-          audioPort: mockMessageChannel.port1,
-          sampleRate: 44100,
-        },
-        [mockMessageChannel.port1],
-      )
+      const workerCall = getMockWorker().postMessage.mock.calls[0]?.[0]
+      expect(workerCall?.type).toBe('init')
+      expect(workerCall?.sab).toBeInstanceOf(SharedArrayBuffer)
+      expect(workerCall?.sampleRate).toBe(44100)
+      expect(workerCall?.bufSamples).toBe(4096)
     })
   })
 

@@ -2,8 +2,13 @@ import { useEffect, useRef } from 'react'
 
 import type { TimelineState } from '#/components/Plot'
 import type { AnalysisMessage } from '#/lib/analysis'
+import audioWorkletUrl from '#/lib/AudioRingWriter?worker&url'
+import type { AudioRingWriterNode } from '#/lib/AudioRingWriter'
 import LiveWorker from '#/lib/liveWorker?worker'
-import audioWorkletUrl from '#/lib/worklet?worker&url'
+import type { LiveWorker as LiveWorkerT } from '#/lib/liveWorker'
+
+// Must be a pow of 2 due to bit masking hack for efficient circular buffer
+const SAB_BUF_SAMPLES = 4096
 
 export function AudioRecorder({
   onAppend,
@@ -53,8 +58,8 @@ export function AudioRecorder({
     async function spinup() {
       let context: AudioContext | null = null
       let sourceNode: MediaStreamAudioSourceNode | null = null
-      let workletNode: AudioWorkletNode | null = null
-      let liveWorker: Worker | null = null
+      let workletNode: AudioRingWriterNode | null = null
+      let liveWorker: LiveWorkerT | null = null
       let stream: MediaStream
 
       try {
@@ -68,13 +73,23 @@ export function AudioRecorder({
         await context.audioWorklet.addModule(audioWorkletUrl)
 
         sourceNode = context.createMediaStreamSource(stream)
-        workletNode = new AudioWorkletNode(context, 'voice-processor')
+        workletNode = new AudioWorkletNode(context, 'audio-ring-writer')
 
-        // Wire a MessageChannel between the worklet (sender) and liveWorker (receiver).
-        liveWorker = new LiveWorker()
-        const sab = new SharedArrayBuffer(8 + 4096 * 4)
-        workletNode.port.postMessage({ type: 'init', sab })
-        liveWorker.postMessage({ type: 'init', sab, sampleRate })
+        // The worklet is realtime. It just writes audio data to a shared audio buffer.
+        // The live worker consumes it.
+        liveWorker = new LiveWorker() as LiveWorkerT
+        const sab = new SharedArrayBuffer(8 + SAB_BUF_SAMPLES * 4)
+        workletNode.port.postMessage({
+          type: 'init',
+          sab,
+          bufSamples: SAB_BUF_SAMPLES,
+        })
+        liveWorker.postMessage({
+          type: 'init',
+          sab,
+          sampleRate,
+          bufSamples: SAB_BUF_SAMPLES,
+        })
 
         liveWorker.onmessage = ({ data }: MessageEvent) => {
           if (data.type === 'pcm') {

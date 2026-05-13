@@ -14,6 +14,7 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+/// <reference lib="webworker" />
 
 import type { AnalysisMessage } from './analysis'
 import { FormantStreamProcessor } from './formant'
@@ -28,26 +29,42 @@ const FORMANT_RATE = 11000
 const VAD_RATE = 16000
 
 // Run pitch analysis every PITCH_INTERVAL quanta (~93 ms at 44.1 kHz with BUF=4096).
+// TODO: make dynamic based on buf and sampleRate
 const PITCH_INTERVAL = 16
 const PITCH_BUF_SIZE = 4096
-
-const SAB_BUF_SAMPLES = 4096
-const SAB_BUF_MASK = SAB_BUF_SAMPLES - 1
 
 interface InitMessage {
   type: 'init'
   sab: SharedArrayBuffer
   sampleRate: number
+  bufSamples: number
 }
 
-self.onmessage = ({ data }: MessageEvent<InitMessage>) => {
+interface FlushMessage {
+  type: 'flush'
+}
+
+export type LiveWorkerMessage = InitMessage | FlushMessage | null
+
+export type LiveWorker = Omit<Worker, 'postMessage'> & {
+  postMessage: (msg: LiveWorkerMessage) => null
+}
+
+self.onmessage = ({ data }: MessageEvent<LiveWorkerMessage>) => {
+  // Right now we're expecting 'init'. Too early for 'flush'.
+  if (data?.type !== 'init') {
+    throw new Error('invalid message')
+  }
+
   setup(data)
 }
 
-function setup({ sab, sampleRate }: InitMessage) {
+function setup({ sab, sampleRate, bufSamples }: InitMessage) {
+  const bufMask = bufSamples - 1
+
   const pcmChunks: Float32Array[] = []
   const ctrl = new Int32Array(sab, 0, 2)
-  const sabData = new Float32Array(sab, 8, SAB_BUF_SAMPLES)
+  const sabData = new Float32Array(sab, 8, bufSamples)
 
   let running = true
   let resolveFlush!: () => void
@@ -57,7 +74,7 @@ function setup({ sab, sampleRate }: InitMessage) {
 
   self.onmessage = async (_: MessageEvent<{ type: 'flush' }>) => {
     running = false
-    Atomics.notify(ctrl, 0, 1)
+    Atomics.notify(ctrl, 0)
     await flushReady
     const totalLength = pcmChunks.reduce((s, c) => s + c.length, 0)
     const length = Math.max(1, totalLength)
@@ -67,8 +84,9 @@ function setup({ sab, sampleRate }: InitMessage) {
       pcm.set(chunk, offset)
       offset += chunk.length
     }
-    ;(self as unknown as Worker).postMessage({ type: 'pcm', pcm }, [pcm.buffer])
+    postMessage({ type: 'pcm', pcm }, [pcm.buffer])
   }
+
   const spec = new SpectrogramStreamProcessor(
     {
       effectiveWindowLengthSec: 0.005,
@@ -125,7 +143,7 @@ function setup({ sab, sampleRate }: InitMessage) {
   let redemptionTimeRemaining = 0
   let quantumCount = 0
 
-  function processQuantum(inp: Float32Array) {
+  async function processQuantum(inp: Float32Array) {
     pcmChunks.push(inp)
 
     // 1. Pre-emphasise into scratch buffer
@@ -178,21 +196,21 @@ function setup({ sab, sampleRate }: InitMessage) {
 
     // 6. VAD inference
     // NOTE: we do this async, which results in an offset.
+    // TODO: move to another worker
     const audioForVad = inp.slice()
     vadResampler.feed(audioForVad)
     const n = vadResampler.drain(vadDrainBuf)
     if (n > 0) {
-      vad.feed(vadDrainBuf.subarray(0, n)).then(() => {
-        if (vad.speechProbability >= positiveSpeechThreshold) {
-          speaking = true
-          redemptionTimeRemaining = redemptionMs
-        } else if (vad.speechProbability < negativeSpeechThreshold) {
-          redemptionTimeRemaining -= (n / VAD_RATE) * 1000
-          if (redemptionTimeRemaining <= 0) {
-            speaking = false
-          }
+      await vad.feed(vadDrainBuf.subarray(0, n))
+      if (vad.speechProbability >= positiveSpeechThreshold) {
+        speaking = true
+        redemptionTimeRemaining = redemptionMs
+      } else if (vad.speechProbability < negativeSpeechThreshold) {
+        redemptionTimeRemaining -= (n / VAD_RATE) * 1000
+        if (redemptionTimeRemaining <= 0) {
+          speaking = false
         }
-      })
+      }
     }
 
     // 7. Emit one AnalysisMessage per ready spectrogram frame
@@ -203,7 +221,7 @@ function setup({ sab, sampleRate }: InitMessage) {
 
     while (spec.readFrame(specBuf)) {
       const speechProbability = vad.speechProbability
-      self.postMessage(
+      postMessage(
         latestPitchHz > 0 || speaking
           ? ({
               voiced: speaking,
@@ -246,10 +264,10 @@ function setup({ sab, sampleRate }: InitMessage) {
       while (wp - rp >= QUANTUM) {
         const audio = new Float32Array(QUANTUM)
         for (let i = 0; i < QUANTUM; i++) {
-          audio[i] = sabData[(rp + i) & SAB_BUF_MASK]!
+          audio[i] = sabData[(rp + i) & bufMask]!
         }
         rp += QUANTUM
-        processQuantum(audio)
+        await processQuantum(audio)
         wp = Atomics.load(ctrl, 0)
       }
     }

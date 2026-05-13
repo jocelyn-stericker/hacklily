@@ -48,7 +48,8 @@ npm run test           # Run tests with Vitest
 
 **4. Audio Analysis (Workers)**
 
-- `src/lib/worklet.ts` - AudioWorklet processor for low-latency real-time analysis of microphone input
+- `src/lib/AudioRingWriter.ts` - AudioWorklet processor which writes microphone PCM data to a ring buffer
+- `src/lib/liveWorker.ts` - analysis of audio input
 - `src/lib/importWorker.ts` - Web Worker for file import processing with frame-by-frame analysis
 - `src/lib/analysis.ts` - Core worker spawning and `AnalysisMessage` type definition (includes pitch, formants, RMS per frame)
 
