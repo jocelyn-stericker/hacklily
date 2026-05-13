@@ -72,15 +72,9 @@ export function AudioRecorder({
 
         // Wire a MessageChannel between the worklet (sender) and liveWorker (receiver).
         liveWorker = new LiveWorker()
-        const mc = new MessageChannel()
-        workletNode.port.postMessage({ type: 'init', workerPort: mc.port2 }, [
-          mc.port2,
-        ])
-
-        liveWorker.postMessage(
-          { type: 'init', audioPort: mc.port1, sampleRate },
-          [mc.port1],
-        )
+        const sab = new SharedArrayBuffer(8 + 4096 * 4)
+        workletNode.port.postMessage({ type: 'init', sab })
+        liveWorker.postMessage({ type: 'init', sab, sampleRate })
 
         liveWorker.onmessage = ({ data }: MessageEvent) => {
           if (data.type === 'pcm') {

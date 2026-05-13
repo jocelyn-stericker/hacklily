@@ -31,9 +31,12 @@ const VAD_RATE = 16000
 const PITCH_INTERVAL = 16
 const PITCH_BUF_SIZE = 4096
 
+const SAB_BUF_SAMPLES = 4096
+const SAB_BUF_MASK = SAB_BUF_SAMPLES - 1
+
 interface InitMessage {
   type: 'init'
-  audioPort: MessagePort
+  sab: SharedArrayBuffer
   sampleRate: number
 }
 
@@ -41,10 +44,21 @@ self.onmessage = ({ data }: MessageEvent<InitMessage>) => {
   setup(data)
 }
 
-function setup({ audioPort, sampleRate }: InitMessage) {
+function setup({ sab, sampleRate }: InitMessage) {
   const pcmChunks: Float32Array[] = []
+  const ctrl = new Int32Array(sab, 0, 2)
+  const sabData = new Float32Array(sab, 8, SAB_BUF_SAMPLES)
 
-  self.onmessage = (_: MessageEvent<{ type: 'flush' }>) => {
+  let running = true
+  let resolveFlush!: () => void
+  const flushReady = new Promise<void>((r) => {
+    resolveFlush = r
+  })
+
+  self.onmessage = async (_: MessageEvent<{ type: 'flush' }>) => {
+    running = false
+    Atomics.notify(ctrl, 0, 1)
+    await flushReady
     const totalLength = pcmChunks.reduce((s, c) => s + c.length, 0)
     const length = Math.max(1, totalLength)
     const pcm = new Float32Array(length)
@@ -111,12 +125,8 @@ function setup({ audioPort, sampleRate }: InitMessage) {
   let redemptionTimeRemaining = 0
   let quantumCount = 0
 
-  audioPort.onmessage = async ({
-    data: { audio },
-  }: MessageEvent<{ audio: Float32Array }>) => {
-    pcmChunks.push(audio)
-
-    const inp = audio
+  function processQuantum(inp: Float32Array) {
+    pcmChunks.push(inp)
 
     // 1. Pre-emphasise into scratch buffer
     const alpha = preEmphFactor
@@ -220,4 +230,31 @@ function setup({ audioPort, sampleRate }: InitMessage) {
       )
     }
   }
+
+  async function readLoop() {
+    let rp = 0
+    while (true) {
+      let wp = Atomics.load(ctrl, 0)
+
+      if (wp - rp < QUANTUM) {
+        if (!running) break
+        const r = Atomics.waitAsync(ctrl, 0, wp)
+        if (r.async) await r.value
+        wp = Atomics.load(ctrl, 0)
+      }
+
+      while (wp - rp >= QUANTUM) {
+        const audio = new Float32Array(QUANTUM)
+        for (let i = 0; i < QUANTUM; i++) {
+          audio[i] = sabData[(rp + i) & SAB_BUF_MASK]!
+        }
+        rp += QUANTUM
+        processQuantum(audio)
+        wp = Atomics.load(ctrl, 0)
+      }
+    }
+    resolveFlush()
+  }
+
+  readLoop()
 }

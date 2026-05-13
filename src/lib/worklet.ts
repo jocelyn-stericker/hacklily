@@ -15,16 +15,20 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-declare const currentTime: number
+const SAB_BUF_SAMPLES = 4096
+const SAB_BUF_MASK = SAB_BUF_SAMPLES - 1
 
 class VoiceProcessor extends AudioWorkletProcessor {
-  private _workerPort: MessagePort | null = null
+  private _ctrl: Int32Array | null = null
+  private _data: Float32Array | null = null
 
   constructor() {
     super()
     this.port.onmessage = (e: MessageEvent) => {
       if (e.data?.type === 'init') {
-        this._workerPort = e.data.workerPort as MessagePort
+        const sab = e.data.sab as SharedArrayBuffer
+        this._ctrl = new Int32Array(sab, 0, 2)
+        this._data = new Float32Array(sab, 8, SAB_BUF_SAMPLES)
       }
     }
   }
@@ -36,10 +40,16 @@ class VoiceProcessor extends AudioWorkletProcessor {
     const inp = inputs[0]?.[0]
     if (!inp || !inp[0]) return true
 
-    if (this._workerPort) {
-      const copy = inp.slice()
-      this._workerPort.postMessage({ audio: copy, currentTime }, [copy.buffer])
+    const ctrl = this._ctrl
+    const data = this._data
+    if (!ctrl || !data) return true
+
+    const wp = Atomics.load(ctrl, 0)
+    for (let i = 0; i < inp.length; i++) {
+      data[(wp + i) & SAB_BUF_MASK] = inp[i]!
     }
+    Atomics.store(ctrl, 0, wp + inp.length)
+    Atomics.notify(ctrl, 0, 1)
 
     return true
   }

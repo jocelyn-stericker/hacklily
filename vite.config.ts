@@ -10,6 +10,17 @@ const config = defineConfig({
   resolve: { tsconfigPaths: true },
   server: {
     allowedHosts: ['lily.local'],
+    // SharedArrayBuffer requires cross-origin isolation. Production headers set in public/_headers
+    headers: {
+      'Cross-Origin-Opener-Policy': 'same-origin',
+      'Cross-Origin-Embedder-Policy': 'require-corp',
+    },
+  },
+  preview: {
+    headers: {
+      'Cross-Origin-Opener-Policy': 'same-origin',
+      'Cross-Origin-Embedder-Policy': 'require-corp',
+    },
   },
   plugins: [
     devtools({
