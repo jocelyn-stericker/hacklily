@@ -74,8 +74,8 @@ export function AudioRecorder({
         sourceNode = context.createMediaStreamSource(stream)
         workletNode = new AudioWorkletNode(context, 'audio-ring-writer')
 
-        // The worklet is realtime. It just writes audio data to a shared audio buffer.
-        // The live worker consumes it.
+        // The worklet is realtime. It writes audio data to a shared audio buffer with a
+        // strict time budget. The live worker consumes and processes it.
         liveWorker = new LiveWorker()
         const sab = new SharedArrayBuffer(8 + SAB_BUF_SAMPLES * 4)
         workletNode.port.postMessage({
@@ -90,15 +90,15 @@ export function AudioRecorder({
           bufSamples: SAB_BUF_SAMPLES,
         })
 
-        liveWorker.onmessage = ({ data }: MessageEvent) => {
-          if (data.type === 'pcm') {
+        liveWorker.onmessage = ({ data }) => {
+          if ('type' in data) {
             const analysisDuration = accumulatedAnalysisRef.current.reduce(
               (memo, sample) => memo + sample.timeStepSec,
               0,
             )
             const analysisSamples = Math.round(analysisDuration * sampleRate)
 
-            const pcm = data.pcm as Float32Array<ArrayBuffer>
+            const pcm = data.pcm
             const buffer = new AudioBuffer({
               length: analysisSamples,
               numberOfChannels: 1,
@@ -111,9 +111,8 @@ export function AudioRecorder({
             return
           }
 
-          const msg = data as AnalysisMessage
-          accumulatedAnalysisRef.current.push(msg)
-          pendingCursorSecRef.current = onAppend(msg)
+          accumulatedAnalysisRef.current.push(data)
+          pendingCursorSecRef.current = onAppend(data)
           if (cursorRafRef.current === null) {
             cursorRafRef.current = requestAnimationFrame(() => {
               cursorRafRef.current = null

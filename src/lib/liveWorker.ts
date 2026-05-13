@@ -45,13 +45,21 @@ interface FlushMessage {
   type: 'flush'
 }
 
-export type LiveWorkerMessage = InitMessage | FlushMessage | null
+export type LiveWorkerInMessage = InitMessage | FlushMessage | null
 
-export type LiveWorker = Omit<Worker, 'postMessage'> & {
-  postMessage: (msg: LiveWorkerMessage) => null
+interface PcmMessage {
+  type: 'pcm'
+  pcm: Float32Array<ArrayBuffer>
 }
 
-self.onmessage = ({ data }: MessageEvent<LiveWorkerMessage>) => {
+export type LiveWorkerOutMessage = AnalysisMessage | PcmMessage
+
+export type LiveWorker = Omit<Worker, 'postMessage' | 'onmessage'> & {
+  postMessage: (msg: LiveWorkerInMessage) => null
+  onmessage: ((ev: MessageEvent<LiveWorkerOutMessage>) => any) | null
+}
+
+self.onmessage = ({ data }: MessageEvent<LiveWorkerInMessage>) => {
   // Right now we're expecting 'init'. After init, onmessage is replaced to
   // accept 'flush'.
   if (data?.type !== 'init') {
