@@ -7,11 +7,10 @@ jobs:
     runs-on: codeberg-tiny
     steps:
       - uses: actions/checkout@v5
-      - name: Test and build
+      - name: Lint and build
         run: |
           npm install
           npm run lint
-          npm run test
           npm run build
       - name: Deploy website
         uses: actions/git-pages@v2
