@@ -5,7 +5,6 @@ import type { AnalysisMessage } from '#/lib/analysis'
 import audioWorkletUrl from '#/lib/AudioRingWriter?worker&url'
 import type { AudioRingWriterNode } from '#/lib/AudioRingWriter'
 import LiveWorker from '#/lib/liveWorker?worker'
-import type { LiveWorker as LiveWorkerT } from '#/lib/liveWorker'
 
 // Must be a pow of 2 due to bit masking hack for efficient circular buffer
 const SAB_BUF_SAMPLES = 4096
@@ -59,7 +58,7 @@ export function AudioRecorder({
       let context: AudioContext | null = null
       let sourceNode: MediaStreamAudioSourceNode | null = null
       let workletNode: AudioRingWriterNode | null = null
-      let liveWorker: LiveWorkerT | null = null
+      let liveWorker: InstanceType<typeof LiveWorker> | null = null
       let stream: MediaStream
 
       try {
@@ -77,7 +76,7 @@ export function AudioRecorder({
 
         // The worklet is realtime. It just writes audio data to a shared audio buffer.
         // The live worker consumes it.
-        liveWorker = new LiveWorker() as LiveWorkerT
+        liveWorker = new LiveWorker()
         const sab = new SharedArrayBuffer(8 + SAB_BUF_SAMPLES * 4)
         workletNode.port.postMessage({
           type: 'init',
