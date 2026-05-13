@@ -1,12 +1,5 @@
-/* eslint-disable react-hooks/immutability */
-import {
-  useCallback,
-  useEffect,
-  useImperativeHandle,
-  useRef,
-  useState,
-} from 'react'
-import type { Ref } from 'react'
+import { useEffect, useImperativeHandle, useState } from 'react'
+import type { RefObject } from 'react'
 
 import type { AnalysisMessage, VoicedAnalysisMessage } from '#/lib/analysis'
 import { hzToBark } from '#/lib/bark'
@@ -89,221 +82,265 @@ function useCanvasSize(canvas: HTMLCanvasElement | null) {
   return { width: clientWidth, height: clientHeight, dpr }
 }
 
-function useDrawVowelChart(canvas: HTMLCanvasElement | null) {
-  const { width, height, dpr } = useCanvasSize(canvas)
+function drawVowelChart(
+  canvas: HTMLCanvasElement,
+  width: number,
+  height: number,
+  dpr: number,
+  history: AnalysisMessage[],
+): void {
+  if (width === 0 || height === 0) return
 
-  return useCallback(
-    (history: AnalysisMessage[]) => {
-      if (!canvas || width === 0 || height === 0) return
+  const w = Math.round(width * dpr)
+  const h = Math.round(height * dpr)
+  canvas.width = w
+  canvas.height = h
 
-      const w = Math.round(width * dpr)
-      const h = Math.round(height * dpr)
-      canvas.width = w
-      canvas.height = h
+  const ctx = canvas.getContext('2d')!
 
-      const ctx = canvas.getContext('2d')!
+  // Background
+  ctx.fillStyle = '#0e0e14'
+  ctx.fillRect(0, 0, w, h)
 
-      // Background
-      ctx.fillStyle = '#0e0e14'
-      ctx.fillRect(0, 0, w, h)
+  const plotX = PAD_L * dpr
+  const plotY = PAD_T * dpr
+  const plotW = w - (PAD_L + PAD_R) * dpr
+  const plotH = h - (PAD_T + PAD_B) * dpr
 
-      const plotX = PAD_L * dpr
-      const plotY = PAD_T * dpr
-      const plotW = w - (PAD_L + PAD_R) * dpr
-      const plotH = h - (PAD_T + PAD_B) * dpr
+  // Plot area background
+  ctx.fillStyle = '#121218'
+  ctx.fillRect(plotX, plotY, plotW, plotH)
 
-      // Plot area background
-      ctx.fillStyle = '#121218'
-      ctx.fillRect(plotX, plotY, plotW, plotH)
+  // Grid lines
+  ctx.lineWidth = dpr
+  for (const f1 of F1_TICKS) {
+    const y = f1ToY(f1, h, dpr)
+    if (y < plotY || y > plotY + plotH) continue
+    ctx.strokeStyle = 'rgba(255,255,255,0.05)'
+    ctx.beginPath()
+    ctx.moveTo(plotX, y)
+    ctx.lineTo(plotX + plotW, y)
+    ctx.stroke()
+  }
+  for (const f2 of F2_TICKS) {
+    const x = f2ToX(f2, w, dpr)
+    if (x < plotX || x > plotX + plotW) continue
+    ctx.strokeStyle = 'rgba(255,255,255,0.05)'
+    ctx.beginPath()
+    ctx.moveTo(x, plotY)
+    ctx.lineTo(x, plotY + plotH)
+    ctx.stroke()
+  }
 
-      // Grid lines
-      ctx.lineWidth = dpr
-      for (const f1 of F1_TICKS) {
-        const y = f1ToY(f1, h, dpr)
-        if (y < plotY || y > plotY + plotH) continue
-        ctx.strokeStyle = 'rgba(255,255,255,0.05)'
-        ctx.beginPath()
-        ctx.moveTo(plotX, y)
-        ctx.lineTo(plotX + plotW, y)
-        ctx.stroke()
-      }
-      for (const f2 of F2_TICKS) {
-        const x = f2ToX(f2, w, dpr)
-        if (x < plotX || x > plotX + plotW) continue
-        ctx.strokeStyle = 'rgba(255,255,255,0.05)'
-        ctx.beginPath()
-        ctx.moveTo(x, plotY)
-        ctx.lineTo(x, plotY + plotH)
-        ctx.stroke()
-      }
+  // Vowel reference points
+  ctx.font = `${11 * dpr}px Georgia, "Times New Roman", serif`
+  ctx.textAlign = 'center'
+  ctx.textBaseline = 'middle'
+  for (const v of VOWELS) {
+    const x = f2ToX(v.f2, w, dpr)
+    const y = f1ToY(v.f1, h, dpr)
+    if (x < plotX || x > plotX + plotW || y < plotY || y > plotY + plotH)
+      continue
 
-      // Vowel reference points
-      ctx.font = `${11 * dpr}px Georgia, "Times New Roman", serif`
-      ctx.textAlign = 'center'
-      ctx.textBaseline = 'middle'
-      for (const v of VOWELS) {
-        const x = f2ToX(v.f2, w, dpr)
-        const y = f1ToY(v.f1, h, dpr)
-        if (x < plotX || x > plotX + plotW || y < plotY || y > plotY + plotH)
-          continue
+    ctx.beginPath()
+    ctx.arc(x, y, 11 * dpr, 0, Math.PI * 2)
+    ctx.strokeStyle = 'rgba(180,180,210,0.22)'
+    ctx.lineWidth = dpr
+    ctx.stroke()
 
-        ctx.beginPath()
-        ctx.arc(x, y, 11 * dpr, 0, Math.PI * 2)
-        ctx.strokeStyle = 'rgba(180,180,210,0.22)'
-        ctx.lineWidth = dpr
-        ctx.stroke()
+    ctx.fillStyle = 'rgba(200,200,230,0.55)'
+    ctx.fillText(v.label, x, y)
+  }
 
-        ctx.fillStyle = 'rgba(200,200,230,0.55)'
-        ctx.fillText(v.label, x, y)
-      }
-
-      // Trail of recent voiced frames
-      const voiced = history.filter(
-        (s): s is VoicedAnalysisMessage =>
-          s.voiced && s.f1 !== null && s.f2 !== null,
-      )
-      const trail = voiced.slice(-TRAIL_LEN)
-
-      if (trail.length > 1) {
-        ctx.lineWidth = 1.5 * dpr
-        for (let i = 1; i < trail.length; i++) {
-          const alpha = (i / trail.length) * 0.5
-          const s = trail[i]!
-          const sp = trail[i - 1]!
-          ctx.strokeStyle = `rgba(247,143,179,${alpha})`
-          ctx.beginPath()
-          ctx.moveTo(f2ToX(sp.f2!, w, dpr), f1ToY(sp.f1!, h, dpr))
-          ctx.lineTo(f2ToX(s.f2!, w, dpr), f1ToY(s.f1!, h, dpr))
-          ctx.stroke()
-        }
-      }
-
-      // Current position dot
-      if (trail.length > 0) {
-        const s = trail[trail.length - 1]!
-        const x = f2ToX(s.f2!, w, dpr)
-        const y = f1ToY(s.f1!, h, dpr)
-
-        const glow = ctx.createRadialGradient(x, y, 0, x, y, 14 * dpr)
-        glow.addColorStop(0, 'rgba(247,143,179,0.35)')
-        glow.addColorStop(1, 'rgba(247,143,179,0)')
-        ctx.beginPath()
-        ctx.arc(x, y, 14 * dpr, 0, Math.PI * 2)
-        ctx.fillStyle = glow
-        ctx.fill()
-
-        ctx.beginPath()
-        ctx.arc(x, y, 5 * dpr, 0, Math.PI * 2)
-        ctx.fillStyle = '#f78fb3'
-        ctx.fill()
-      }
-
-      // F1 axis tick marks + labels (left)
-      ctx.font = `${9 * dpr}px monospace`
-      ctx.fillStyle = '#555566'
-      ctx.textAlign = 'right'
-      ctx.textBaseline = 'middle'
-      for (const f1 of F1_TICKS) {
-        const y = f1ToY(f1, h, dpr)
-        if (y < plotY || y > plotY + plotH) continue
-        ctx.strokeStyle = '#333344'
-        ctx.lineWidth = dpr
-        ctx.beginPath()
-        ctx.moveTo(plotX - 4 * dpr, y)
-        ctx.lineTo(plotX, y)
-        ctx.stroke()
-        ctx.fillText(String(f1), plotX - 6 * dpr, y)
-      }
-
-      // F2 axis tick marks + labels (bottom)
-      ctx.textAlign = 'center'
-      ctx.textBaseline = 'top'
-      for (const f2 of F2_TICKS) {
-        const x = f2ToX(f2, w, dpr)
-        if (x < plotX || x > plotX + plotW) continue
-        ctx.strokeStyle = '#333344'
-        ctx.lineWidth = dpr
-        ctx.beginPath()
-        ctx.moveTo(x, plotY + plotH)
-        ctx.lineTo(x, plotY + plotH + 4 * dpr)
-        ctx.stroke()
-        ctx.fillStyle = '#555566'
-        const label = f2 >= 1000 ? `${f2 / 1000}k` : String(f2)
-        ctx.fillText(label, x, plotY + plotH + 6 * dpr)
-      }
-
-      // Axis border
-      ctx.strokeStyle = '#2a2a3a'
-      ctx.lineWidth = dpr
-      ctx.beginPath()
-      ctx.moveTo(plotX, plotY)
-      ctx.lineTo(plotX, plotY + plotH)
-      ctx.lineTo(plotX + plotW, plotY + plotH)
-      ctx.stroke()
-
-      // Axis title: "F1 (Hz)" top-left inside plot
-      ctx.font = `${9 * dpr}px monospace`
-      ctx.fillStyle = '#666677'
-      ctx.textAlign = 'left'
-      ctx.textBaseline = 'top'
-      ctx.fillText('F1 (Hz) ↓', plotX + 4 * dpr, plotY + 3 * dpr)
-
-      // Axis title: "← F2 (Hz)" bottom-right
-      ctx.textAlign = 'right'
-      ctx.textBaseline = 'alphabetic'
-      ctx.fillText('← F2 (Hz)', plotX + plotW, h - 2 * dpr)
-
-      // Legend box (top-right corner)
-      const lgX = plotX + plotW - 4 * dpr
-      const lgY = plotY + 4 * dpr
-      const lgLineH = 14 * dpr
-      ctx.font = `${9 * dpr}px monospace`
-      ctx.textAlign = 'right'
-      ctx.textBaseline = 'middle'
-
-      // Reference vowel entry
-      ctx.strokeStyle = 'rgba(180,180,210,0.22)'
-      ctx.lineWidth = dpr
-      ctx.beginPath()
-      ctx.arc(lgX - 28 * dpr, lgY + lgLineH * 0, 5 * dpr, 0, Math.PI * 2)
-      ctx.stroke()
-      ctx.fillStyle = 'rgba(200,200,230,0.55)'
-      ctx.fillText('NA Eng vowels', lgX - 10 * dpr, lgY + lgLineH * 0)
-
-      // Current F1/F2 entry
-      ctx.beginPath()
-      ctx.arc(lgX - 28 * dpr, lgY + lgLineH * 1, 4 * dpr, 0, Math.PI * 2)
-      ctx.fillStyle = '#f78fb3'
-      ctx.fill()
-      ctx.fillStyle = '#f78fb3'
-      ctx.fillText('Current F1/F2', lgX - 10 * dpr, lgY + lgLineH * 1)
-    },
-    [canvas, width, height, dpr],
+  // Trail of recent voiced frames
+  const voiced = history.filter(
+    (s): s is VoicedAnalysisMessage =>
+      s.voiced && s.f1 !== null && s.f2 !== null,
   )
+  const trail = voiced.slice(-TRAIL_LEN)
+
+  if (trail.length > 1) {
+    ctx.lineWidth = 1.5 * dpr
+    for (let i = 1; i < trail.length; i++) {
+      const alpha = (i / trail.length) * 0.5
+      const s = trail[i]!
+      const sp = trail[i - 1]!
+      ctx.strokeStyle = `rgba(247,143,179,${alpha})`
+      ctx.beginPath()
+      ctx.moveTo(f2ToX(sp.f2!, w, dpr), f1ToY(sp.f1!, h, dpr))
+      ctx.lineTo(f2ToX(s.f2!, w, dpr), f1ToY(s.f1!, h, dpr))
+      ctx.stroke()
+    }
+  }
+
+  // Current position dot
+  if (trail.length > 0) {
+    const s = trail[trail.length - 1]!
+    const x = f2ToX(s.f2!, w, dpr)
+    const y = f1ToY(s.f1!, h, dpr)
+
+    const glow = ctx.createRadialGradient(x, y, 0, x, y, 14 * dpr)
+    glow.addColorStop(0, 'rgba(247,143,179,0.35)')
+    glow.addColorStop(1, 'rgba(247,143,179,0)')
+    ctx.beginPath()
+    ctx.arc(x, y, 14 * dpr, 0, Math.PI * 2)
+    ctx.fillStyle = glow
+    ctx.fill()
+
+    ctx.beginPath()
+    ctx.arc(x, y, 5 * dpr, 0, Math.PI * 2)
+    ctx.fillStyle = '#f78fb3'
+    ctx.fill()
+  }
+
+  // F1 axis tick marks + labels (left)
+  ctx.font = `${9 * dpr}px monospace`
+  ctx.fillStyle = '#555566'
+  ctx.textAlign = 'right'
+  ctx.textBaseline = 'middle'
+  for (const f1 of F1_TICKS) {
+    const y = f1ToY(f1, h, dpr)
+    if (y < plotY || y > plotY + plotH) continue
+    ctx.strokeStyle = '#333344'
+    ctx.lineWidth = dpr
+    ctx.beginPath()
+    ctx.moveTo(plotX - 4 * dpr, y)
+    ctx.lineTo(plotX, y)
+    ctx.stroke()
+    ctx.fillText(String(f1), plotX - 6 * dpr, y)
+  }
+
+  // F2 axis tick marks + labels (bottom)
+  ctx.textAlign = 'center'
+  ctx.textBaseline = 'top'
+  for (const f2 of F2_TICKS) {
+    const x = f2ToX(f2, w, dpr)
+    if (x < plotX || x > plotX + plotW) continue
+    ctx.strokeStyle = '#333344'
+    ctx.lineWidth = dpr
+    ctx.beginPath()
+    ctx.moveTo(x, plotY + plotH)
+    ctx.lineTo(x, plotY + plotH + 4 * dpr)
+    ctx.stroke()
+    ctx.fillStyle = '#555566'
+    const label = f2 >= 1000 ? `${f2 / 1000}k` : String(f2)
+    ctx.fillText(label, x, plotY + plotH + 6 * dpr)
+  }
+
+  // Axis border
+  ctx.strokeStyle = '#2a2a3a'
+  ctx.lineWidth = dpr
+  ctx.beginPath()
+  ctx.moveTo(plotX, plotY)
+  ctx.lineTo(plotX, plotY + plotH)
+  ctx.lineTo(plotX + plotW, plotY + plotH)
+  ctx.stroke()
+
+  // Axis title: "F1 (Hz)" top-left inside plot
+  ctx.font = `${9 * dpr}px monospace`
+  ctx.fillStyle = '#666677'
+  ctx.textAlign = 'left'
+  ctx.textBaseline = 'top'
+  ctx.fillText('F1 (Hz) ↓', plotX + 4 * dpr, plotY + 3 * dpr)
+
+  // Axis title: "← F2 (Hz)" bottom-right
+  ctx.textAlign = 'right'
+  ctx.textBaseline = 'alphabetic'
+  ctx.fillText('← F2 (Hz)', plotX + plotW, h - 2 * dpr)
+
+  // Legend box (top-right corner)
+  const lgX = plotX + plotW - 4 * dpr
+  const lgY = plotY + 4 * dpr
+  const lgLineH = 14 * dpr
+  ctx.font = `${9 * dpr}px monospace`
+  ctx.textAlign = 'right'
+  ctx.textBaseline = 'middle'
+
+  // Reference vowel entry
+  ctx.strokeStyle = 'rgba(180,180,210,0.22)'
+  ctx.lineWidth = dpr
+  ctx.beginPath()
+  ctx.arc(lgX - 28 * dpr, lgY + lgLineH * 0, 5 * dpr, 0, Math.PI * 2)
+  ctx.stroke()
+  ctx.fillStyle = 'rgba(200,200,230,0.55)'
+  ctx.fillText('NA Eng vowels', lgX - 10 * dpr, lgY + lgLineH * 0)
+
+  // Current F1/F2 entry
+  ctx.beginPath()
+  ctx.arc(lgX - 28 * dpr, lgY + lgLineH * 1, 4 * dpr, 0, Math.PI * 2)
+  ctx.fillStyle = '#f78fb3'
+  ctx.fill()
+  ctx.fillStyle = '#f78fb3'
+  ctx.fillText('Current F1/F2', lgX - 10 * dpr, lgY + lgLineH * 1)
+}
+
+export interface VowelChartHandle {
+  append: (from: number) => void
+  patch: (from: number, to: number) => void
+}
+
+function framesUpToCursor(
+  analysis: AnalysisMessage[],
+  cursorSec: number,
+): AnalysisMessage[] {
+  let elapsed = 0
+  const result: AnalysisMessage[] = []
+  for (const frame of analysis) {
+    result.push(frame)
+    elapsed += frame.timeStepSec
+    if (elapsed >= cursorSec) break
+  }
+  return result
 }
 
 export function VowelChart({
+  analysis,
+  cursorSec,
   ref,
 }: {
-  ref: Ref<{ setHistory: (history: AnalysisMessage[]) => void }>
+  analysis: AnalysisMessage[]
+  cursorSec: number
+  ref: RefObject<VowelChartHandle | null>
 }) {
   const [canvas, setCanvas] = useState<HTMLCanvasElement | null>(null)
-  const draw = useDrawVowelChart(canvas)
-  const latestHistory = useRef<AnalysisMessage[]>([])
+  const { width, height, dpr } = useCanvasSize(canvas)
 
   useEffect(() => {
-    draw(latestHistory.current)
-  }, [draw])
+    if (!canvas) return
+    drawVowelChart(
+      canvas,
+      width,
+      height,
+      dpr,
+      framesUpToCursor(analysis, cursorSec),
+    )
+  }, [canvas, width, height, dpr, analysis, cursorSec])
 
   useImperativeHandle(
     ref,
     () => ({
-      setHistory: (history) => {
-        latestHistory.current = history
-        draw(history)
+      append(_from) {
+        if (!canvas) return
+        drawVowelChart(
+          canvas,
+          width,
+          height,
+          dpr,
+          framesUpToCursor(analysis, cursorSec),
+        )
+      },
+      patch(_from, _to) {
+        if (!canvas) return
+        drawVowelChart(
+          canvas,
+          width,
+          height,
+          dpr,
+          framesUpToCursor(analysis, cursorSec),
+        )
       },
     }),
-    [draw],
+    [canvas, width, height, dpr, analysis, cursorSec],
   )
 
   return <canvas ref={(el) => setCanvas(el)} className="w-full h-96 mt-4" />

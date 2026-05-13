@@ -18,6 +18,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from '#/components/ui/dialog'
+import { VowelChart } from '#/components/VowelChart'
+import type { VowelChartHandle } from '#/components/VowelChart'
 import { Waveform } from '#/components/Waveform'
 import type { WaveformHandle } from '#/components/Waveform'
 import { WelcomeModal } from '#/components/WelcomeModal'
@@ -74,6 +76,7 @@ function App() {
   const fileInputRef = useRef<HTMLInputElement>(null)
   const waveformRef = useRef<WaveformHandle>(null)
   const spectrogramRef = useRef<SpectrogramHandle>(null)
+  const vowelChartRef = useRef<VowelChartHandle>(null)
   const [analysis, setAnalysis] = useState<AnalysisMessage[]>([])
   const [audioBuffer, setAudioBuffer] = useState<AudioBuffer | null>(null)
 
@@ -313,6 +316,7 @@ function App() {
     analysisRef.current.push(data)
     waveformRef.current?.append(analysisRef.current.length - 1)
     spectrogramRef.current?.append(analysisRef.current.length - 1)
+    vowelChartRef.current?.append(analysisRef.current.length - 1)
     return analysisRef.current.length * data.timeStepSec
   }, [])
 
@@ -460,36 +464,45 @@ function App() {
             rightSec={timelineState.viewportRightSec}
           />
         </Plot>
-        <Plot
-          timelineState={timelineState}
-          xAxisVisible={true}
-          yAxisVisible={true}
-          yAxis={{
-            type: 'freq',
-            fMinHz: 50,
-            fMaxHz: 5500,
-            hover: hoverFrame?.voiced
-              ? { f0: hoverFrame.f0, f1: hoverFrame.f1, f2: hoverFrame.f2 }
-              : null,
-          }}
-          onScroll={handlePlotScroll}
-          onZoom={handlePlotZoom}
-          onClick={handlePlotClick}
-          onHover={handlePlotHover}
-          virtualWidthSec={
-            Math.floor(timelineState.trackDurationSec / 30 + 1) * 30 +
-            (timelineState.viewportRightSec - timelineState.viewportLeftSec)
-          }
-          className="grow"
-        >
-          <Spectrogram
-            analysis={analysis}
-            dbMin={dbBounds.min}
-            dbRange={dbBounds.max - dbBounds.min}
-            ref={spectrogramRef}
-            debug={false}
-          />
-        </Plot>
+        <div className="flex gap-4 grow">
+          <Plot
+            timelineState={timelineState}
+            xAxisVisible={true}
+            yAxisVisible={true}
+            yAxis={{
+              type: 'freq',
+              fMinHz: 50,
+              fMaxHz: 5500,
+              hover: hoverFrame?.voiced
+                ? { f0: hoverFrame.f0, f1: hoverFrame.f1, f2: hoverFrame.f2 }
+                : null,
+            }}
+            onScroll={handlePlotScroll}
+            onZoom={handlePlotZoom}
+            onClick={handlePlotClick}
+            onHover={handlePlotHover}
+            virtualWidthSec={
+              Math.floor(timelineState.trackDurationSec / 30 + 1) * 30 +
+              (timelineState.viewportRightSec - timelineState.viewportLeftSec)
+            }
+            className="flex-1"
+          >
+            <Spectrogram
+              analysis={analysis}
+              dbMin={dbBounds.min}
+              dbRange={dbBounds.max - dbBounds.min}
+              ref={spectrogramRef}
+              debug={false}
+            />
+          </Plot>
+          <div className="w-80 flex flex-col border-l border-l-gray-500">
+            <VowelChart
+              analysis={analysis}
+              cursorSec={timelineState.cursorSec}
+              ref={vowelChartRef}
+            />
+          </div>
+        </div>
         {status.value === 'recording' ? (
           <AudioRecorder
             onAppend={handleAppend}
