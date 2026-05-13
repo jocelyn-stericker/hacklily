@@ -167,8 +167,8 @@ function drawVowelChart(
       const sp = trail[i - 1]!
       ctx.strokeStyle = `rgba(247,143,179,${alpha})`
       ctx.beginPath()
-      ctx.moveTo(f2ToX(sp.f2!, w, dpr), f1ToY(sp.f1!, h, dpr))
-      ctx.lineTo(f2ToX(s.f2!, w, dpr), f1ToY(s.f1!, h, dpr))
+      ctx.moveTo(f2ToX(sp.f2, w, dpr), f1ToY(sp.f1, h, dpr))
+      ctx.lineTo(f2ToX(s.f2, w, dpr), f1ToY(s.f1, h, dpr))
       ctx.stroke()
     }
   }
@@ -176,8 +176,8 @@ function drawVowelChart(
   // Current position dot
   if (trail.length > 0) {
     const s = trail[trail.length - 1]!
-    const x = f2ToX(s.f2!, w, dpr)
-    const y = f1ToY(s.f1!, h, dpr)
+    const x = f2ToX(s.f2, w, dpr)
+    const y = f1ToY(s.f1, h, dpr)
 
     const glow = ctx.createRadialGradient(x, y, 0, x, y, 14 * dpr)
     glow.addColorStop(0, 'rgba(247,143,179,0.35)')

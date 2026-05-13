@@ -2,7 +2,7 @@ import { render, waitFor } from '@testing-library/react'
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 
 import type { TimelineState } from '#/components/Plot'
-import type { AnalysisMessage } from '#/lib/analysis'
+import type { AppendFrameMessage } from '#/lib/liveWorker'
 
 import { AudioRecorder } from './AudioRecorder'
 
@@ -62,12 +62,15 @@ describe('AudioRecorder', () => {
     return getMockWorker()
   }
 
-  const createMockAnalysisMessage = (
-    overrides?: Partial<AnalysisMessage>,
-  ): AnalysisMessage => {
+  let mockFrameIndex = 0
+  const createMockFrameMessage = (
+    overrides?: Partial<AppendFrameMessage>,
+  ): AppendFrameMessage => {
     const spectrum = new Float32Array(257)
     spectrum.fill(0.1)
     return {
+      type: 'frame',
+      frameIndex: mockFrameIndex++,
       voiced: true,
       f0: 100,
       f1: 500,
@@ -85,6 +88,7 @@ describe('AudioRecorder', () => {
 
   beforeEach(() => {
     mockWorkerInstances = []
+    mockFrameIndex = 0
 
     // Mock MediaStreamTrack
     mockMediaStreamTrack = {
@@ -397,13 +401,19 @@ describe('AudioRecorder', () => {
       />,
     )
 
-    const msg = createMockAnalysisMessage()
+    const msg = createMockFrameMessage()
 
     await waitForMockWorker()
 
     getMockWorker().onmessage({ data: msg })
 
-    expect(onAppend).toHaveBeenCalledWith(msg)
+    expect(onAppend).toHaveBeenCalledWith(
+      expect.objectContaining({
+        spectrum: msg.spectrum,
+        rms: msg.rms,
+        voiced: msg.voiced,
+      }),
+    )
   })
 
   it('accumulates analysis messages', async () => {
@@ -423,8 +433,8 @@ describe('AudioRecorder', () => {
 
     await waitForMockWorker()
 
-    const msg1 = createMockAnalysisMessage()
-    const msg2 = createMockAnalysisMessage({ timeStepSec: 0.02 })
+    const msg1 = createMockFrameMessage()
+    const msg2 = createMockFrameMessage({ timeStepSec: 0.02 })
 
     getMockWorker().onmessage({ data: msg1 })
     getMockWorker().onmessage({ data: msg2 })
@@ -449,7 +459,7 @@ describe('AudioRecorder', () => {
 
     await waitForMockWorker()
 
-    const msg = createMockAnalysisMessage({ timeStepSec: 0.01 })
+    const msg = createMockFrameMessage({ timeStepSec: 0.01 })
     const pcm = new Float32Array([0.1, 0.2, 0.3])
 
     getMockWorker().onmessage({ data: msg })
@@ -459,7 +469,11 @@ describe('AudioRecorder', () => {
       expect(onReset).toHaveBeenCalled()
       const [analysis, buffer] = onReset.mock.calls[0]!
       expect(analysis).toHaveLength(1)
-      expect(analysis[0]).toEqual(msg)
+      expect(analysis[0]).toMatchObject({
+        spectrum: msg.spectrum,
+        rms: msg.rms,
+        voiced: msg.voiced,
+      })
       expect(buffer).toBeInstanceOf(AudioBuffer)
       expect(buffer.sampleRate).toBe(44100)
       expect(buffer.numberOfChannels).toBe(1)
@@ -521,7 +535,7 @@ describe('AudioRecorder', () => {
       fn(initialState)
     })
 
-    const msg = createMockAnalysisMessage()
+    const msg = createMockFrameMessage()
     getMockWorker().onmessage({ data: msg })
 
     // Let RAF execute
@@ -561,7 +575,7 @@ describe('AudioRecorder', () => {
 
     await waitForMockWorker()
 
-    const msg = createMockAnalysisMessage()
+    const msg = createMockFrameMessage()
     getMockWorker().onmessage({ data: msg })
 
     await waitFor(() => {
@@ -671,7 +685,7 @@ describe('AudioRecorder', () => {
 
     await waitForMockWorker()
 
-    const msg = createMockAnalysisMessage()
+    const msg = createMockFrameMessage()
     getMockWorker().onmessage({ data: msg })
 
     unmount()
@@ -767,10 +781,12 @@ describe('AudioRecorder', () => {
       { timeout: 100 },
     )
 
-    const msg = createMockAnalysisMessage()
+    const msg = createMockFrameMessage()
     getMockWorker().onmessage({ data: msg })
 
-    expect(onAppend2).toHaveBeenCalledWith(msg)
+    expect(onAppend2).toHaveBeenCalledWith(
+      expect.objectContaining({ spectrum: msg.spectrum, rms: msg.rms }),
+    )
     expect(onAppend1).not.toHaveBeenCalled()
   })
 
@@ -791,8 +807,8 @@ describe('AudioRecorder', () => {
 
     await waitForMockWorker()
 
-    const msg1 = createMockAnalysisMessage({ timeStepSec: 0.02 })
-    const msg2 = createMockAnalysisMessage({ timeStepSec: 0.02 })
+    const msg1 = createMockFrameMessage({ timeStepSec: 0.02 })
+    const msg2 = createMockFrameMessage({ timeStepSec: 0.02 })
     const pcm = new Float32Array([0.1, 0.2])
 
     getMockWorker().onmessage({ data: msg1 })
@@ -826,7 +842,7 @@ describe('AudioRecorder', () => {
     await waitForMockWorker()
 
     // Send an analysis message first to allocate buffer space
-    const msg = createMockAnalysisMessage({ timeStepSec: 0.01 })
+    const msg = createMockFrameMessage({ timeStepSec: 0.01 })
     getMockWorker().onmessage({ data: msg })
 
     const pcm = new Float32Array([0.1, 0.2, 0.3, 0.4])

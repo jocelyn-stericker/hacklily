@@ -11,11 +11,13 @@ const SAB_BUF_SAMPLES = 4096
 
 export function AudioRecorder({
   onAppend,
+  onPatch,
   onReset,
   onTimelineStateChanged,
   onError,
 }: {
   onAppend: (analysis: AnalysisMessage) => number
+  onPatch?: (frameIndex: number) => void
   onReset: (analysis: AnalysisMessage[], buffer: AudioBuffer) => void
   onTimelineStateChanged: React.Dispatch<React.SetStateAction<TimelineState>>
   onError: (error: string) => void
@@ -25,6 +27,7 @@ export function AudioRecorder({
   const onTimelineStateChangedRef = useRef(onTimelineStateChanged)
   const onResetRef = useRef(onReset)
   const onErrorRef = useRef(onError)
+  const onPatchRef = useRef(onPatch)
   const accumulatedAnalysisRef = useRef<AnalysisMessage[]>([])
 
   useEffect(() => {
@@ -36,6 +39,9 @@ export function AudioRecorder({
   useEffect(() => {
     onErrorRef.current = onError
   }, [onError])
+  useEffect(() => {
+    onPatchRef.current = onPatch
+  }, [onPatch])
 
   useEffect(() => {
     // If cleanup runs before setup finishes, this defers the teardown
@@ -91,7 +97,7 @@ export function AudioRecorder({
         })
 
         liveWorker.onmessage = ({ data }) => {
-          if ('type' in data) {
+          if (data.type === 'pcm') {
             const analysisDuration = accumulatedAnalysisRef.current.reduce(
               (memo, sample) => memo + sample.timeStepSec,
               0,
@@ -111,38 +117,69 @@ export function AudioRecorder({
             return
           }
 
-          accumulatedAnalysisRef.current.push(data)
-          pendingCursorSecRef.current = onAppend(data)
-          if (cursorRafRef.current === null) {
-            cursorRafRef.current = requestAnimationFrame(() => {
-              cursorRafRef.current = null
-              const cursorSec = pendingCursorSecRef.current!
-              onTimelineStateChangedRef.current((old) => {
-                const windowSec = old.viewportRightSec - old.viewportLeftSec
-                const trackDurationSec = Math.max(
-                  old.trackDurationSec,
-                  cursorSec,
-                )
-                if (
-                  old.viewportLeftSec + windowSec * 0.9 < cursorSec ||
-                  cursorSec < old.viewportLeftSec
-                ) {
-                  const newViewportLeftSec = Math.max(
-                    0,
-                    cursorSec - windowSec * 0.1,
-                  )
-                  return {
-                    ...old,
-                    trackDurationSec,
-                    viewportLeftSec: newViewportLeftSec,
-                    viewportRightSec: newViewportLeftSec + windowSec,
+          if (data.type === 'frame') {
+            const frame: AnalysisMessage = {
+              spectrum: data.spectrum,
+              rms: data.rms,
+              timeStepSec: data.timeStepSec,
+              freqStepHz: data.freqStepHz,
+              firstBinHz: data.firstBinHz,
+              speechProbability: data.speechProbability ?? 0,
+              voiced: data.voiced ?? false,
+              f0: data.f0 ?? 0,
+              f1: data.f1 ?? null,
+              f2: data.f2 ?? null,
+              f3: data.f3 ?? null,
+            }
+            accumulatedAnalysisRef.current.push(frame)
+            pendingCursorSecRef.current = onAppend(frame)
+            if (cursorRafRef.current === null) {
+              cursorRafRef.current = requestAnimationFrame(() => {
+                cursorRafRef.current = null
+                const cursorSec = pendingCursorSecRef.current!
+                onTimelineStateChangedRef.current((old) => {
+                  const windowSec = old.viewportRightSec - old.viewportLeftSec
+                  const trackDurationSec = Math.max(
+                    old.trackDurationSec,
                     cursorSec,
+                  )
+                  if (
+                    old.viewportLeftSec + windowSec * 0.9 < cursorSec ||
+                    cursorSec < old.viewportLeftSec
+                  ) {
+                    const newViewportLeftSec = Math.max(
+                      0,
+                      cursorSec - windowSec * 0.1,
+                    )
+                    return {
+                      ...old,
+                      trackDurationSec,
+                      viewportLeftSec: newViewportLeftSec,
+                      viewportRightSec: newViewportLeftSec + windowSec,
+                      cursorSec,
+                    }
+                  } else {
+                    return { ...old, trackDurationSec, cursorSec }
                   }
-                } else {
-                  return { ...old, trackDurationSec, cursorSec }
-                }
+                })
               })
-            })
+            }
+            return
+          }
+
+          // data.type === 'patch'
+          {
+            const frame = accumulatedAnalysisRef.current[data.frameIndex]
+            if (frame) {
+              if (data.voiced !== undefined) frame.voiced = data.voiced
+              if (data.f0 !== undefined) frame.f0 = data.f0
+              if (data.f1 !== undefined) frame.f1 = data.f1
+              if (data.f2 !== undefined) frame.f2 = data.f2
+              if (data.f3 !== undefined) frame.f3 = data.f3
+              if (data.speechProbability !== undefined)
+                frame.speechProbability = data.speechProbability
+              onPatchRef.current?.(data.frameIndex)
+            }
           }
         }
 

@@ -52,7 +52,35 @@ interface PcmMessage {
   pcm: Float32Array<ArrayBuffer>
 }
 
-export type LiveWorkerOutMessage = AnalysisMessage | PcmMessage
+type AnalysisCore = Pick<
+  AnalysisMessage,
+  'spectrum' | 'rms' | 'timeStepSec' | 'freqStepHz' | 'firstBinHz'
+>
+type AnalysisPatch = Partial<
+  Pick<
+    AnalysisMessage,
+    'voiced' | 'f0' | 'f1' | 'f2' | 'f3' | 'speechProbability'
+  >
+>
+
+// Emitted once per spectrogram frame. spectrum/rms/timing are always present;
+// voiced/pitch/formant/vad fields are optional and may arrive later via PatchFrameMessage.
+export type AppendFrameMessage = {
+  type: 'frame'
+  frameIndex: number
+} & AnalysisCore &
+  AnalysisPatch
+
+// Overwrites specific fields of a previously emitted frame.
+export type PatchFrameMessage = {
+  type: 'patch'
+  frameIndex: number
+} & AnalysisPatch
+
+export type LiveWorkerOutMessage =
+  | AppendFrameMessage
+  | PatchFrameMessage
+  | PcmMessage
 
 export type LiveWorker = Omit<Worker, 'postMessage' | 'onmessage'> & {
   postMessage: (msg: LiveWorkerInMessage) => null
@@ -137,6 +165,7 @@ async function runAnalysis(
   let speaking = false
   let redemptionTimeRemaining = 0
   let quantumCount = 0
+  let frameIndex = 0
 
   for await (const inp of reader) {
     pcmChunks.push(inp)
@@ -208,39 +237,29 @@ async function runAnalysis(
       }
     }
 
-    // 7. Emit one AnalysisMessage per ready spectrogram frame
+    // 7. Emit one AppendFrameMessage per ready spectrogram frame
     const sp = spec.params
     let rms = 0
     for (const sample of inp) rms += sample * sample
     rms = Math.sqrt(rms / inp.length)
 
     while (spec.readFrame(specBuf)) {
-      const speechProbability = vad.speechProbability
-      postMessage(
-        latestPitchHz > 0 || speaking
-          ? ({
-              voiced: speaking,
-              f0: latestValidPitchHz,
-              f1: latestValidF1,
-              f2: latestValidF2,
-              f3: latestValidF3,
-              spectrum: specBuf.slice(),
-              rms,
-              firstBinHz: sp.f1Hz,
-              freqStepHz: sp.actualFreqStepHz,
-              timeStepSec: sp.actualTimeStepSec,
-              speechProbability,
-            } satisfies AnalysisMessage)
-          : ({
-              voiced: false,
-              spectrum: specBuf.slice(),
-              rms,
-              firstBinHz: sp.f1Hz,
-              freqStepHz: sp.actualFreqStepHz,
-              timeStepSec: sp.actualTimeStepSec,
-              speechProbability,
-            } satisfies AnalysisMessage),
-      )
+      const voiced = latestPitchHz > 0 ? speaking : false
+      postMessage({
+        type: 'frame',
+        frameIndex: frameIndex++,
+        spectrum: specBuf.slice(),
+        rms,
+        firstBinHz: sp.f1Hz,
+        freqStepHz: sp.actualFreqStepHz,
+        timeStepSec: sp.actualTimeStepSec,
+        voiced,
+        f0: latestValidPitchHz,
+        f1: voiced ? latestValidF1 : null,
+        f2: voiced ? latestValidF2 : null,
+        f3: voiced ? latestValidF3 : null,
+        speechProbability: vad.speechProbability,
+      } satisfies AppendFrameMessage)
     }
   }
 

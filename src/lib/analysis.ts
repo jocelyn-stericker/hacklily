@@ -22,7 +22,7 @@ import { resample } from './resample'
 import { SpectrogramProcessor } from './spectrogram'
 import { VadStreamProcessor } from './vad'
 
-export type AnalysisCommon = {
+export type AnalysisMessage = {
   spectrum: Float32Array
   rms: number
   timeStepSec: number
@@ -31,18 +31,19 @@ export type AnalysisCommon = {
   firstBinHz: number
   // Silero VAD v5 speech probability (0 = silence, 1 = speech)
   speechProbability: number
-}
-
-export type VoicedAnalysisMessage = AnalysisCommon & {
-  voiced: true
-  f0: number
-  f1: number | null
+  voiced: boolean
+  f0: number // 0 when unvoiced
+  f1: number | null // null when unvoiced or formant not detected
   f2: number | null
   f3: number | null
 }
 
-export type UnvoicedAnalysisMessage = AnalysisCommon & { voiced: false }
-export type AnalysisMessage = VoicedAnalysisMessage | UnvoicedAnalysisMessage
+// Frames confirmed voiced with both F1 and F2 present. Used as a type predicate in VowelChart.
+export type VoicedAnalysisMessage = AnalysisMessage & {
+  voiced: true
+  f1: number
+  f2: number
+}
 
 interface Opts {
   maxFreqHz: number
@@ -196,31 +197,20 @@ export async function analyzeBuffer(
     }
 
     // final results
-    if (pitchFrame.frequencyHz > 0) {
-      results.push({
-        voiced: speaking,
-        f0: pitchFrame.frequencyHz,
-        f1: formantFrame.formants[0]?.frequencyHz ?? 0,
-        f2: formantFrame.formants[1]?.frequencyHz ?? 0,
-        f3: formantFrame.formants[2]?.frequencyHz ?? 0,
-        spectrum: specResult.data[x]!,
-        rms,
-        firstBinHz: specResult.f1Hz,
-        freqStepHz: specResult.freqStepHz,
-        timeStepSec: specResult.timeStepSec,
-        speechProbability,
-      } satisfies AnalysisMessage)
-    } else {
-      results.push({
-        voiced: false,
-        spectrum: specResult.data[x]!,
-        rms,
-        firstBinHz: specResult.f1Hz,
-        freqStepHz: specResult.freqStepHz,
-        timeStepSec: specResult.timeStepSec,
-        speechProbability,
-      } satisfies AnalysisMessage)
-    }
+    const voiced = pitchFrame.frequencyHz > 0
+    results.push({
+      voiced: voiced && speaking,
+      f0: pitchFrame.frequencyHz,
+      f1: voiced ? (formantFrame.formants[0]?.frequencyHz ?? null) : null,
+      f2: voiced ? (formantFrame.formants[1]?.frequencyHz ?? null) : null,
+      f3: voiced ? (formantFrame.formants[2]?.frequencyHz ?? null) : null,
+      spectrum: specResult.data[x]!,
+      rms,
+      firstBinHz: specResult.f1Hz,
+      freqStepHz: specResult.freqStepHz,
+      timeStepSec: specResult.timeStepSec,
+      speechProbability,
+    } satisfies AnalysisMessage)
   }
 
   return results

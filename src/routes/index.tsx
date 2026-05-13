@@ -325,6 +325,13 @@ function App() {
     return analysisRef.current.length * data.timeStepSec
   }, [])
 
+  const handlePatch = useCallback((frameIndex: number) => {
+    const absIndex = recordingStartIndexRef.current + frameIndex
+    waveformRef.current?.patch(absIndex, absIndex + 1)
+    spectrogramRef.current?.patch(absIndex, absIndex + 1)
+    vowelChartRef.current?.patch(absIndex, absIndex + 1)
+  }, [])
+
   // Poll every 2s to expand db range with newly arrived frames
   useEffect(() => {
     const timer = setInterval(() => {
@@ -511,6 +518,7 @@ function App() {
         {status.value === 'recording' ? (
           <AudioRecorder
             onAppend={handleAppend}
+            onPatch={handlePatch}
             onReset={handleReset}
             onTimelineStateChanged={setTimelineState}
             onError={(error) => {

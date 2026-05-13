@@ -10,6 +10,10 @@ describe('computeDbBounds', () => {
       const frames: AnalysisMessage[] = [
         {
           voiced: false,
+          f0: 0,
+          f1: null,
+          f2: null,
+          f3: null,
           spectrum,
           rms: 0,
           timeStepSec: 0.02,
@@ -30,6 +34,10 @@ describe('computeDbBounds', () => {
       const frames: AnalysisMessage[] = [
         {
           voiced: false,
+          f0: 0,
+          f1: null,
+          f2: null,
+          f3: null,
           spectrum,
           rms: 0,
           timeStepSec: 0.02,
@@ -55,6 +63,10 @@ describe('computeDbBounds', () => {
       const frames: AnalysisMessage[] = [
         {
           voiced: false,
+          f0: 0,
+          f1: null,
+          f2: null,
+          f3: null,
           spectrum,
           rms: 0,
           timeStepSec: 0.02,
@@ -73,6 +85,10 @@ describe('computeDbBounds', () => {
       const frames: AnalysisMessage[] = [
         {
           voiced: false,
+          f0: 0,
+          f1: null,
+          f2: null,
+          f3: null,
           spectrum,
           rms: 0,
           timeStepSec: 0.02,
@@ -93,6 +109,10 @@ describe('computeDbBounds', () => {
       const frames: AnalysisMessage[] = [
         {
           voiced: false,
+          f0: 0,
+          f1: null,
+          f2: null,
+          f3: null,
           spectrum,
           rms: 0,
           timeStepSec: 0.02,
@@ -111,6 +131,10 @@ describe('computeDbBounds', () => {
       const frames: AnalysisMessage[] = [
         {
           voiced: false,
+          f0: 0,
+          f1: null,
+          f2: null,
+          f3: null,
           spectrum,
           rms: 0,
           timeStepSec: 0.02,
@@ -133,6 +157,10 @@ describe('computeDbBounds', () => {
       const frames: AnalysisMessage[] = [
         {
           voiced: false,
+          f0: 0,
+          f1: null,
+          f2: null,
+          f3: null,
           spectrum: spectrum1,
           rms: 0,
           timeStepSec: 0.02,
@@ -142,6 +170,10 @@ describe('computeDbBounds', () => {
         },
         {
           voiced: false,
+          f0: 0,
+          f1: null,
+          f2: null,
+          f3: null,
           spectrum: spectrum2,
           rms: 0,
           timeStepSec: 0.02,
@@ -151,6 +183,10 @@ describe('computeDbBounds', () => {
         },
         {
           voiced: false,
+          f0: 0,
+          f1: null,
+          f2: null,
+          f3: null,
           spectrum: spectrum3,
           rms: 0,
           timeStepSec: 0.02,
@@ -169,6 +205,10 @@ describe('computeDbBounds', () => {
       const frames: AnalysisMessage[] = [
         {
           voiced: false,
+          f0: 0,
+          f1: null,
+          f2: null,
+          f3: null,
           spectrum,
           rms: 0,
           timeStepSec: 0.02,
@@ -184,7 +224,11 @@ describe('computeDbBounds', () => {
 
     it('processes multiple frames with varying spectrum values', () => {
       const frames: AnalysisMessage[] = Array.from({ length: 10 }, (_, i) => ({
-        voiced: false as const,
+        voiced: false,
+        f0: 0,
+        f1: null,
+        f2: null,
+        f3: null,
         spectrum: new Float32Array([10 ** (i / 10)]),
         rms: 0,
         timeStepSec: 0.02,
@@ -217,6 +261,10 @@ describe('computeDbBounds', () => {
       }
       const unvoicedFrame: AnalysisMessage = {
         voiced: false,
+        f0: 0,
+        f1: null,
+        f2: null,
+        f3: null,
         spectrum,
         rms: 0.3,
         timeStepSec: 0.02,
@@ -239,6 +287,10 @@ describe('computeDbBounds', () => {
       const frames: AnalysisMessage[] = [
         {
           voiced: false,
+          f0: 0,
+          f1: null,
+          f2: null,
+          f3: null,
           spectrum,
           rms: 0,
           timeStepSec: 0.02,
@@ -258,6 +310,10 @@ describe('computeDbBounds', () => {
       const frames: AnalysisMessage[] = [
         {
           voiced: false,
+          f0: 0,
+          f1: null,
+          f2: null,
+          f3: null,
           spectrum,
           rms: 0,
           timeStepSec: 0.02,
