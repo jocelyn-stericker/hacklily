@@ -20,3 +20,7 @@ export function nextPow2(n: number): number {
   while (p < n) p <<= 1
   return p
 }
+
+export function isPowerOfTwo(n: number): boolean {
+  return n > 0 && (n & (n - 1)) === 0
+}

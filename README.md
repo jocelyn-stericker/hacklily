@@ -82,7 +82,7 @@ cut features or make them optional.
 
 - **src/components/ui/** — Components from shadcn/ui.
 - **src/lib/utils.ts** — General utility functions for conditional classes and UI helpers.
-- **src/lib/nextPow2.ts** — Rounds integers up to the next power of 2 for FFT buffer sizing.
+- **src/lib/mathUtils.ts** —
 
 ### lib - Audio Analysis
 

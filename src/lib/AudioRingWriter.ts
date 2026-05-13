@@ -15,6 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import { isPowerOfTwo } from './mathUtils'
+
 export interface InitMessage {
   type: 'init'
   sab: SharedArrayBuffer
@@ -39,7 +41,7 @@ export type AudioRingWriterNode = Omit<AudioWorkletNode, 'port'> & {
  *
  * Then, send it a SharedArrayBuffer to write to.
  */
-class AudioRingWriter extends AudioWorkletProcessor {
+export class AudioRingWriter extends AudioWorkletProcessor {
   private _ctrl: Int32Array | null = null
   private _data: Float32Array | null = null
   private _bufSamples: number | null = null
@@ -48,8 +50,14 @@ class AudioRingWriter extends AudioWorkletProcessor {
   constructor() {
     super()
     this.port.onmessage = ({ data }: MessageEvent<AudioWorkletMessage>) => {
-      if (data?.type !== 'init') {
+      if (data?.type !== 'init' || !data.bufSamples) {
         throw new Error('invalid message')
+      }
+
+      if (!isPowerOfTwo(data.bufSamples)) {
+        throw new Error(
+          `bufSamples must be a power of 2, got ${data.bufSamples}`,
+        )
       }
 
       this._bufSamples = data.bufSamples

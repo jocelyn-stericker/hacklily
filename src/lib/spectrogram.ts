@@ -17,7 +17,7 @@
  */
 
 import { complexFFTForward, FftTables } from './fft'
-import { nextPow2 } from './nextPow2'
+import { nextPow2 } from './mathUtils'
 import { buildWindow } from './window'
 import type { WindowShape } from './window'
 

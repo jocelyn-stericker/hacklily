@@ -2,6 +2,7 @@ import { useEffect, useImperativeHandle, useRef, useState } from 'react'
 import type { RefObject } from 'react'
 
 import type { AnalysisMessage } from '#/lib/analysis'
+import { nextPow2 } from '#/lib/mathUtils'
 import { TILE_WIDTH } from '#/lib/tileConfig'
 
 import { SPECTRO_COLOURMAP } from './colourmap'
@@ -79,12 +80,6 @@ const FORMANT_TRACKS = [
   { key: 'f1' as const, color: '#4ecdc4' },
   { key: 'f2' as const, color: '#f78fb3' },
 ]
-
-function nextPow2(n: number): number {
-  let p = 1
-  while (p < n) p *= 2
-  return p
-}
 
 function buildBinForY(
   numBins: number,

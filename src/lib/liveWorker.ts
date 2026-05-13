@@ -17,6 +17,7 @@
 /// <reference lib="webworker" />
 
 import type { AnalysisMessage } from './analysis'
+import { AudioRingReader } from './AudioRingReader'
 import { FormantStreamProcessor } from './formant'
 import type { FormantFrame } from './formant'
 import { PitchProcessor } from './pitch'
@@ -51,41 +52,27 @@ export type LiveWorker = Omit<Worker, 'postMessage'> & {
 }
 
 self.onmessage = ({ data }: MessageEvent<LiveWorkerMessage>) => {
-  // Right now we're expecting 'init'. Too early for 'flush'.
+  // Right now we're expecting 'init'. After init, onmessage is replaced to
+  // accept 'flush'.
   if (data?.type !== 'init') {
     throw new Error('invalid message')
   }
 
-  setup(data)
-}
+  const reader = new AudioRingReader(data.sab, data.bufSamples, QUANTUM)
+  const analysisDone = runAnalysis(reader, data.sampleRate)
 
-function setup({ sab, sampleRate, bufSamples }: InitMessage) {
-  const bufMask = bufSamples - 1
-
-  const pcmChunks: Float32Array[] = []
-  const ctrl = new Int32Array(sab, 0, 2)
-  const sabData = new Float32Array(sab, 8, bufSamples)
-
-  let running = true
-  let resolveFlush!: () => void
-  const flushReady = new Promise<void>((r) => {
-    resolveFlush = r
-  })
-
-  self.onmessage = async (_: MessageEvent<{ type: 'flush' }>) => {
-    running = false
-    Atomics.notify(ctrl, 0)
-    await flushReady
-    const totalLength = pcmChunks.reduce((s, c) => s + c.length, 0)
-    const length = Math.max(1, totalLength)
-    const pcm = new Float32Array(length)
-    let offset = 0
-    for (const chunk of pcmChunks) {
-      pcm.set(chunk, offset)
-      offset += chunk.length
-    }
+  self.onmessage = async (_: MessageEvent<FlushMessage>) => {
+    reader.stop()
+    const pcm = await analysisDone
     postMessage({ type: 'pcm', pcm }, [pcm.buffer])
   }
+}
+
+async function runAnalysis(
+  reader: AudioRingReader,
+  sampleRate: number,
+): Promise<Float32Array> {
+  const pcmChunks: Float32Array[] = []
 
   const spec = new SpectrogramStreamProcessor(
     {
@@ -143,7 +130,7 @@ function setup({ sab, sampleRate, bufSamples }: InitMessage) {
   let redemptionTimeRemaining = 0
   let quantumCount = 0
 
-  async function processQuantum(inp: Float32Array) {
+  for await (const inp of reader) {
     pcmChunks.push(inp)
 
     // 1. Pre-emphasise into scratch buffer
@@ -249,30 +236,12 @@ function setup({ sab, sampleRate, bufSamples }: InitMessage) {
     }
   }
 
-  async function readLoop() {
-    let rp = 0
-    while (true) {
-      let wp = Atomics.load(ctrl, 0)
-
-      if (wp - rp < QUANTUM) {
-        if (!running) break
-        const r = Atomics.waitAsync(ctrl, 0, wp)
-        if (r.async) await r.value
-        wp = Atomics.load(ctrl, 0)
-      }
-
-      while (wp - rp >= QUANTUM) {
-        const audio = new Float32Array(QUANTUM)
-        for (let i = 0; i < QUANTUM; i++) {
-          audio[i] = sabData[(rp + i) & bufMask]!
-        }
-        rp += QUANTUM
-        await processQuantum(audio)
-        wp = Atomics.load(ctrl, 0)
-      }
-    }
-    resolveFlush()
+  const totalLength = pcmChunks.reduce((s, c) => s + c.length, 0)
+  const pcm = new Float32Array(Math.max(1, totalLength))
+  let offset = 0
+  for (const chunk of pcmChunks) {
+    pcm.set(chunk, offset)
+    offset += chunk.length
   }
-
-  readLoop()
+  return pcm
 }

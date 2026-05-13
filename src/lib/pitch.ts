@@ -18,7 +18,7 @@
  */
 
 import { complexFFTForward, complexFFTInverse, FftTables } from './fft'
-import { nextPow2 } from './nextPow2'
+import { nextPow2 } from './mathUtils'
 import { interpolateSinc } from './resample'
 
 /**

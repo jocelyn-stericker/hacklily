@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 
-import { nextPow2 } from './nextPow2'
+import { nextPow2 } from './mathUtils'
 
 describe('nextPow2', () => {
   it('should return power of 2 for powers of 2', () => {

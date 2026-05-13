@@ -17,7 +17,7 @@
  */
 
 import { burgLpc, findLpcRoots, fixIntoUnitCircle } from './burgLpc'
-import { nextPow2 } from './nextPow2'
+import { nextPow2 } from './mathUtils'
 import { preEmphasis } from './preEmphasis'
 import { buildFormantGaussianWindow } from './window'
 
