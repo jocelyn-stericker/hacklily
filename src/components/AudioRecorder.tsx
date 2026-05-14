@@ -1,6 +1,5 @@
 import { useEffect, useRef } from 'react'
 
-import type { TimelineState } from '#/components/Plot'
 import type {
   AnalysisChunk,
   AnalysisFrame,
@@ -18,32 +17,24 @@ export function AudioRecorder({
   onAppend,
   onChunkStart,
   onPatch,
-  onReset,
-  onTimelineStateChanged,
+  onRecordingComplete,
   onError,
 }: {
-  onAppend: (frame: AnalysisFrame) => number
+  onAppend: (frame: AnalysisFrame) => void
   onChunkStart?: (params: AnalysisParams) => void
   onPatch?: (frameIndex: number) => void
-  onReset: (chunks: AnalysisChunk[], buffer: AudioBuffer) => void
-  onTimelineStateChanged: React.Dispatch<React.SetStateAction<TimelineState>>
+  onRecordingComplete: (buffer: AudioBuffer) => void
   onError: (error: string) => void
 }) {
-  const pendingCursorSecRef = useRef<number | null>(null)
-  const cursorRafRef = useRef<number | null>(null)
-  const onTimelineStateChangedRef = useRef(onTimelineStateChanged)
-  const onResetRef = useRef(onReset)
+  const onRecordingCompleteRef = useRef(onRecordingComplete)
   const onErrorRef = useRef(onError)
   const onPatchRef = useRef(onPatch)
   const onChunkStartRef = useRef(onChunkStart)
   const accumulatedChunksRef = useRef<AnalysisChunk[]>([])
 
   useEffect(() => {
-    onTimelineStateChangedRef.current = onTimelineStateChanged
-  }, [onTimelineStateChanged])
-  useEffect(() => {
-    onResetRef.current = onReset
-  }, [onReset])
+    onRecordingCompleteRef.current = onRecordingComplete
+  }, [onRecordingComplete])
   useEffect(() => {
     onErrorRef.current = onError
   }, [onError])
@@ -122,7 +113,7 @@ export function AudioRecorder({
               sampleRate,
             })
             if (pcm.length > 0) buffer.copyToChannel(pcm, 0)
-            onResetRef.current(accumulatedChunksRef.current, buffer)
+            onRecordingCompleteRef.current(buffer)
             liveWorker!.terminate()
             liveWorker = null
             return
@@ -156,38 +147,7 @@ export function AudioRecorder({
                 accumulatedChunksRef.current.length - 1
               ]
             currentChunk?.frames.push(frame)
-            pendingCursorSecRef.current = onAppend(frame)
-            if (cursorRafRef.current === null) {
-              cursorRafRef.current = requestAnimationFrame(() => {
-                cursorRafRef.current = null
-                const cursorSec = pendingCursorSecRef.current!
-                onTimelineStateChangedRef.current((old) => {
-                  const windowSec = old.viewportRightSec - old.viewportLeftSec
-                  const trackDurationSec = Math.max(
-                    old.trackDurationSec,
-                    cursorSec,
-                  )
-                  if (
-                    old.viewportLeftSec + windowSec * 0.9 < cursorSec ||
-                    cursorSec < old.viewportLeftSec
-                  ) {
-                    const newViewportLeftSec = Math.max(
-                      0,
-                      cursorSec - windowSec * 0.1,
-                    )
-                    return {
-                      ...old,
-                      trackDurationSec,
-                      viewportLeftSec: newViewportLeftSec,
-                      viewportRightSec: newViewportLeftSec + windowSec,
-                      cursorSec,
-                    }
-                  } else {
-                    return { ...old, trackDurationSec, cursorSec }
-                  }
-                })
-              })
-            }
+            onAppend(frame)
             return
           }
 
@@ -229,10 +189,6 @@ export function AudioRecorder({
       }
 
       function doTeardown() {
-        if (cursorRafRef.current !== null) {
-          cancelAnimationFrame(cursorRafRef.current)
-          cursorRafRef.current = null
-        }
         // Send flush before disconnecting so any in-flight audio quanta
         // are processed before the flush message arrives at the worker.
         liveWorker?.postMessage({ type: 'flush' })

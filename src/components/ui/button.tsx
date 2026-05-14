@@ -51,6 +51,9 @@ function Button({
     <ButtonPrimitive
       data-slot="button"
       className={cn(buttonVariants({ variant, size, className }))}
+      // @ts-expect-error prevent restoring "disabled" state on Firefox refresh
+      // https://bugzilla.mozilla.org/show_bug.cgi?id=1847798
+      autoComplete="off"
       {...props}
     />
   )

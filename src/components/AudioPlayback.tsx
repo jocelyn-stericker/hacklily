@@ -1,28 +1,18 @@
 import { useCallback, useEffect, useRef } from 'react'
 
-import type { TimelineState } from './Plot'
-
 export function AudioPlayback({
   audioBuffer,
-  timelineState,
+  cursorSec,
   onStop,
-  onTimelineStateChanged,
+  onPlaybackPositionChanged,
 }: {
   audioBuffer: AudioBuffer
-  timelineState: TimelineState
+  cursorSec: number
   onStop: () => void
-  onTimelineStateChanged: (state: React.SetStateAction<TimelineState>) => void
+  onPlaybackPositionChanged: (timeSec: number) => void
 }) {
   const mostRecentTime = useRef<number | null>(null)
   const animFrameIdRef = useRef<number | null>(null)
-  const mostRecentTimeCb = useRef<
-    (state: React.SetStateAction<TimelineState>) => void
-  >(onTimelineStateChanged)
-
-  // only applied going forward
-  useEffect(() => {
-    mostRecentTimeCb.current = onTimelineStateChanged
-  }, [onTimelineStateChanged])
 
   const source = useRef<AudioBufferSourceNode | null>(null)
   const context = useRef<AudioContext | null>(null)
@@ -59,14 +49,14 @@ export function AudioPlayback({
         }
       }
 
-      const cursorSec =
+      const newCursorSec =
         requestedCursorSec - 0.01 <= newAudioBuffer.duration
           ? requestedCursorSec
           : 0
 
-      mostRecentTime.current = cursorSec
-      const startTimeSec = cursorSec
-      source.current.start(0, cursorSec)
+      mostRecentTime.current = newCursorSec
+      const startTimeSec = newCursorSec
+      source.current.start(0, newCursorSec)
       const animate = () => {
         if (mostRecentTime.current === null || context.current === null) {
           return
@@ -76,27 +66,8 @@ export function AudioPlayback({
           context.current.currentTime + startTimeSec,
           newAudioBuffer.duration,
         )
-        mostRecentTimeCb.current((oldTimelineState) => {
-          mostRecentTime.current = timeSec
-          const windowSec =
-            oldTimelineState.viewportRightSec - oldTimelineState.viewportLeftSec
-
-          if (
-            oldTimelineState.viewportLeftSec + windowSec * 0.9 < timeSec ||
-            timeSec < oldTimelineState.viewportLeftSec
-          ) {
-            const newViewportLeftSec = Math.max(0, timeSec - windowSec * 0.1)
-            return {
-              ...oldTimelineState,
-              viewportLeftSec: newViewportLeftSec,
-              viewportRightSec: newViewportLeftSec + windowSec,
-              cursorSec: timeSec,
-            }
-          } else {
-            return { ...oldTimelineState, cursorSec: timeSec }
-          }
-        })
-
+        mostRecentTime.current = timeSec
+        onPlaybackPositionChanged(timeSec)
         animFrameIdRef.current = requestAnimationFrame(animate)
       }
       if (animFrameIdRef.current !== null) {
@@ -104,14 +75,14 @@ export function AudioPlayback({
       }
       animFrameIdRef.current = requestAnimationFrame(animate)
     },
-    [stop, onStop],
+    [stop, onStop, onPlaybackPositionChanged],
   )
 
   useEffect(() => {
-    if (timelineState.cursorSec !== mostRecentTime.current) {
-      play(audioBuffer, timelineState.cursorSec)
+    if (cursorSec !== mostRecentTime.current) {
+      play(audioBuffer, cursorSec)
     }
-  }, [audioBuffer, play, timelineState.cursorSec])
+  }, [audioBuffer, play, cursorSec])
 
   useEffect(() => {
     return () => {

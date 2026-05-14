@@ -1,7 +1,6 @@
 import { render, waitFor } from '@testing-library/react'
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 
-import type { TimelineState } from '#/components/Plot'
 import type { AppendFrameMessage, ParamsMessage } from '#/lib/liveWorker'
 
 import { AudioRecorder } from './AudioRecorder'
@@ -239,16 +238,14 @@ describe('AudioRecorder', () => {
   })
 
   it('renders null', () => {
-    const onAppend = vi.fn(() => 0)
-    const onReset = vi.fn()
-    const onTimelineStateChanged = vi.fn()
+    const onAppend = vi.fn()
+    const onRecordingComplete = vi.fn()
     const onError = vi.fn()
 
     const { container } = render(
       <AudioRecorder
         onAppend={onAppend}
-        onReset={onReset}
-        onTimelineStateChanged={onTimelineStateChanged}
+        onRecordingComplete={onRecordingComplete}
         onError={onError}
       />,
     )
@@ -257,16 +254,14 @@ describe('AudioRecorder', () => {
   })
 
   it('calls getUserMedia with audio=true and video=false', async () => {
-    const onAppend = vi.fn(() => 0)
-    const onReset = vi.fn()
-    const onTimelineStateChanged = vi.fn()
+    const onAppend = vi.fn()
+    const onRecordingComplete = vi.fn()
     const onError = vi.fn()
 
     render(
       <AudioRecorder
         onAppend={onAppend}
-        onReset={onReset}
-        onTimelineStateChanged={onTimelineStateChanged}
+        onRecordingComplete={onRecordingComplete}
         onError={onError}
       />,
     )
@@ -280,16 +275,14 @@ describe('AudioRecorder', () => {
   })
 
   it('creates AudioContext with 44100 sample rate', async () => {
-    const onAppend = vi.fn(() => 0)
-    const onReset = vi.fn()
-    const onTimelineStateChanged = vi.fn()
+    const onAppend = vi.fn()
+    const onRecordingComplete = vi.fn()
     const onError = vi.fn()
 
     render(
       <AudioRecorder
         onAppend={onAppend}
-        onReset={onReset}
-        onTimelineStateChanged={onTimelineStateChanged}
+        onRecordingComplete={onRecordingComplete}
         onError={onError}
       />,
     )
@@ -302,16 +295,14 @@ describe('AudioRecorder', () => {
   })
 
   it('loads audioWorklet module', async () => {
-    const onAppend = vi.fn(() => 0)
-    const onReset = vi.fn()
-    const onTimelineStateChanged = vi.fn()
+    const onAppend = vi.fn()
+    const onRecordingComplete = vi.fn()
     const onError = vi.fn()
 
     render(
       <AudioRecorder
         onAppend={onAppend}
-        onReset={onReset}
-        onTimelineStateChanged={onTimelineStateChanged}
+        onRecordingComplete={onRecordingComplete}
         onError={onError}
       />,
     )
@@ -322,16 +313,14 @@ describe('AudioRecorder', () => {
   })
 
   it('creates AudioWorkletNode with audio-ring-writer', async () => {
-    const onAppend = vi.fn(() => 0)
-    const onReset = vi.fn()
-    const onTimelineStateChanged = vi.fn()
+    const onAppend = vi.fn()
+    const onRecordingComplete = vi.fn()
     const onError = vi.fn()
 
     render(
       <AudioRecorder
         onAppend={onAppend}
-        onReset={onReset}
-        onTimelineStateChanged={onTimelineStateChanged}
+        onRecordingComplete={onRecordingComplete}
         onError={onError}
       />,
     )
@@ -345,16 +334,14 @@ describe('AudioRecorder', () => {
   })
 
   it('connects source node to worklet node', async () => {
-    const onAppend = vi.fn(() => 0)
-    const onReset = vi.fn()
-    const onTimelineStateChanged = vi.fn()
+    const onAppend = vi.fn()
+    const onRecordingComplete = vi.fn()
     const onError = vi.fn()
 
     render(
       <AudioRecorder
         onAppend={onAppend}
-        onReset={onReset}
-        onTimelineStateChanged={onTimelineStateChanged}
+        onRecordingComplete={onRecordingComplete}
         onError={onError}
       />,
     )
@@ -365,16 +352,14 @@ describe('AudioRecorder', () => {
   })
 
   it('initializes worklet and worker with SharedArrayBuffer', async () => {
-    const onAppend = vi.fn(() => 0)
-    const onReset = vi.fn()
-    const onTimelineStateChanged = vi.fn()
+    const onAppend = vi.fn()
+    const onRecordingComplete = vi.fn()
     const onError = vi.fn()
 
     render(
       <AudioRecorder
         onAppend={onAppend}
-        onReset={onReset}
-        onTimelineStateChanged={onTimelineStateChanged}
+        onRecordingComplete={onRecordingComplete}
         onError={onError}
       />,
     )
@@ -394,16 +379,14 @@ describe('AudioRecorder', () => {
   })
 
   it('calls onAppend when receiving analysis message', async () => {
-    const onAppend = vi.fn(() => 10)
-    const onReset = vi.fn()
-    const onTimelineStateChanged = vi.fn()
+    const onAppend = vi.fn()
+    const onRecordingComplete = vi.fn()
     const onError = vi.fn()
 
     render(
       <AudioRecorder
         onAppend={onAppend}
-        onReset={onReset}
-        onTimelineStateChanged={onTimelineStateChanged}
+        onRecordingComplete={onRecordingComplete}
         onError={onError}
       />,
     )
@@ -424,16 +407,14 @@ describe('AudioRecorder', () => {
   })
 
   it('accumulates analysis messages', async () => {
-    const onAppend = vi.fn(() => 0)
-    const onReset = vi.fn()
-    const onTimelineStateChanged = vi.fn()
+    const onAppend = vi.fn()
+    const onRecordingComplete = vi.fn()
     const onError = vi.fn()
 
     render(
       <AudioRecorder
         onAppend={onAppend}
-        onReset={onReset}
-        onTimelineStateChanged={onTimelineStateChanged}
+        onRecordingComplete={onRecordingComplete}
         onError={onError}
       />,
     )
@@ -447,17 +428,15 @@ describe('AudioRecorder', () => {
     expect(onAppend).toHaveBeenCalledTimes(2)
   })
 
-  it('calls onReset with accumulated analysis chunks and audio buffer on pcm message', async () => {
-    const onAppend = vi.fn(() => 0)
-    const onReset = vi.fn()
-    const onTimelineStateChanged = vi.fn()
+  it('calls onRecordingComplete with audio buffer on pcm message', async () => {
+    const onAppend = vi.fn()
+    const onRecordingComplete = vi.fn()
     const onError = vi.fn()
 
     render(
       <AudioRecorder
         onAppend={onAppend}
-        onReset={onReset}
-        onTimelineStateChanged={onTimelineStateChanged}
+        onRecordingComplete={onRecordingComplete}
         onError={onError}
       />,
     )
@@ -473,16 +452,8 @@ describe('AudioRecorder', () => {
     getMockWorker().onmessage({ data: { type: 'pcm', pcm } })
 
     await waitFor(() => {
-      expect(onReset).toHaveBeenCalled()
-      const [chunks, buffer] = onReset.mock.calls[0]!
-      expect(chunks).toHaveLength(1)
-      expect(chunks[0].timeStepSamples).toBe(441)
-      expect(chunks[0].frames).toHaveLength(1)
-      expect(chunks[0].frames[0]).toMatchObject({
-        spectrum: msg.spectrum,
-        rms: msg.rms,
-        voiced: msg.voiced,
-      })
+      expect(onRecordingComplete).toHaveBeenCalled()
+      const [buffer] = onRecordingComplete.mock.calls[0]!
       expect(buffer).toBeInstanceOf(AudioBuffer)
       expect(buffer.sampleRate).toBe(44100)
       expect(buffer.numberOfChannels).toBe(1)
@@ -490,16 +461,14 @@ describe('AudioRecorder', () => {
   })
 
   it('terminates worker after pcm message', async () => {
-    const onAppend = vi.fn(() => 0)
-    const onReset = vi.fn()
-    const onTimelineStateChanged = vi.fn()
+    const onAppend = vi.fn()
+    const onRecordingComplete = vi.fn()
     const onError = vi.fn()
 
     render(
       <AudioRecorder
         onAppend={onAppend}
-        onReset={onReset}
-        onTimelineStateChanged={onTimelineStateChanged}
+        onRecordingComplete={onRecordingComplete}
         onError={onError}
       />,
     )
@@ -514,103 +483,18 @@ describe('AudioRecorder', () => {
     })
   })
 
-  it('updates timeline state when cursor advances', async () => {
-    const onAppend = vi.fn(() => 5)
-    const onReset = vi.fn()
-    const onTimelineStateChanged = vi.fn()
-    const onError = vi.fn()
-
-    const initialState: TimelineState = {
-      viewportLeftSec: 0,
-      viewportRightSec: 10,
-      cursorSec: 0,
-      hoverSec: null,
-      trackDurationSec: 0,
-    }
-
-    render(
-      <AudioRecorder
-        onAppend={onAppend}
-        onReset={onReset}
-        onTimelineStateChanged={onTimelineStateChanged}
-        onError={onError}
-      />,
-    )
-
-    await waitForMockWorker()
-
-    // Start with timeline state callback
-    onTimelineStateChanged.mockImplementation((fn) => {
-      fn(initialState)
-    })
-
-    getMockWorker().onmessage({ data: createMockParamsMessage() })
-    getMockWorker().onmessage({ data: createMockFrameMessage() })
-
-    // Let RAF execute
-    await waitFor(() => {
-      expect(onTimelineStateChanged).toHaveBeenCalled()
-    })
-  })
-
-  it('scrolls viewport when cursor is near the right edge', async () => {
-    const onAppend = vi.fn(() => 9)
-    const onReset = vi.fn()
-    const onTimelineStateChanged = vi.fn()
-    const onError = vi.fn()
-
-    const initialState: TimelineState = {
-      viewportLeftSec: 0,
-      viewportRightSec: 10,
-      cursorSec: 0,
-      hoverSec: null,
-      trackDurationSec: 0,
-    }
-
-    let currentState = initialState
-
-    onTimelineStateChanged.mockImplementation((fn) => {
-      currentState = fn(currentState)
-    })
-
-    render(
-      <AudioRecorder
-        onAppend={onAppend}
-        onReset={onReset}
-        onTimelineStateChanged={onTimelineStateChanged}
-        onError={onError}
-      />,
-    )
-
-    await waitForMockWorker()
-
-    getMockWorker().onmessage({ data: createMockParamsMessage() })
-    getMockWorker().onmessage({ data: createMockFrameMessage() })
-
-    await waitFor(() => {
-      expect(onTimelineStateChanged).toHaveBeenCalled()
-    })
-
-    // Cursor at 9 should trigger scroll since viewport is [0, 10]
-    // Threshold is 90% from left, so 0 + 10 * 0.9 = 9
-    const updatedState = currentState
-    expect(updatedState.cursorSec).toBe(9)
-  })
-
   it('calls onError when getUserMedia fails', async () => {
     const error = new Error('Camera permission denied')
     mockGetUserMedia.mockRejectedValueOnce(error)
 
-    const onAppend = vi.fn(() => 0)
-    const onReset = vi.fn()
-    const onTimelineStateChanged = vi.fn()
+    const onAppend = vi.fn()
+    const onRecordingComplete = vi.fn()
     const onError = vi.fn()
 
     render(
       <AudioRecorder
         onAppend={onAppend}
-        onReset={onReset}
-        onTimelineStateChanged={onTimelineStateChanged}
+        onRecordingComplete={onRecordingComplete}
         onError={onError}
       />,
     )
@@ -621,16 +505,14 @@ describe('AudioRecorder', () => {
   })
 
   it('cleans up resources on unmount', async () => {
-    const onAppend = vi.fn(() => 0)
-    const onReset = vi.fn()
-    const onTimelineStateChanged = vi.fn()
+    const onAppend = vi.fn()
+    const onRecordingComplete = vi.fn()
     const onError = vi.fn()
 
     const { unmount } = render(
       <AudioRecorder
         onAppend={onAppend}
-        onReset={onReset}
-        onTimelineStateChanged={onTimelineStateChanged}
+        onRecordingComplete={onRecordingComplete}
         onError={onError}
       />,
     )
@@ -650,16 +532,14 @@ describe('AudioRecorder', () => {
   })
 
   it('sends flush message before cleanup', async () => {
-    const onAppend = vi.fn(() => 0)
-    const onReset = vi.fn()
-    const onTimelineStateChanged = vi.fn()
+    const onAppend = vi.fn()
+    const onRecordingComplete = vi.fn()
     const onError = vi.fn()
 
     const { unmount } = render(
       <AudioRecorder
         onAppend={onAppend}
-        onReset={onReset}
-        onTimelineStateChanged={onTimelineStateChanged}
+        onRecordingComplete={onRecordingComplete}
         onError={onError}
       />,
     )
@@ -677,37 +557,9 @@ describe('AudioRecorder', () => {
     })
   })
 
-  it('cancels RAF on cleanup', async () => {
-    const onAppend = vi.fn(() => 5)
-    const onReset = vi.fn()
-    const onTimelineStateChanged = vi.fn()
-    const onError = vi.fn()
-
-    const { unmount } = render(
-      <AudioRecorder
-        onAppend={onAppend}
-        onReset={onReset}
-        onTimelineStateChanged={onTimelineStateChanged}
-        onError={onError}
-      />,
-    )
-
-    await waitForMockWorker()
-
-    getMockWorker().onmessage({ data: createMockParamsMessage() })
-    getMockWorker().onmessage({ data: createMockFrameMessage() })
-
-    unmount()
-
-    await waitFor(() => {
-      expect(global.cancelAnimationFrame).toHaveBeenCalled()
-    })
-  })
-
   it('defers teardown if cleanup runs before setup finishes', async () => {
-    const onAppend = vi.fn(() => 0)
-    const onReset = vi.fn()
-    const onTimelineStateChanged = vi.fn()
+    const onAppend = vi.fn()
+    const onRecordingComplete = vi.fn()
     const onError = vi.fn()
 
     // Create a promise that won't resolve immediately
@@ -732,8 +584,7 @@ describe('AudioRecorder', () => {
     const { unmount } = render(
       <AudioRecorder
         onAppend={onAppend}
-        onReset={onReset}
-        onTimelineStateChanged={onTimelineStateChanged}
+        onRecordingComplete={onRecordingComplete}
         onError={onError}
       />,
     )
@@ -751,32 +602,28 @@ describe('AudioRecorder', () => {
   })
 
   it('updates callback refs when props change', async () => {
-    const onAppend1 = vi.fn(() => 0)
-    const onReset1 = vi.fn()
-    const onTimelineStateChanged1 = vi.fn()
+    const onAppend1 = vi.fn()
+    const onRecordingComplete1 = vi.fn()
     const onError1 = vi.fn()
 
     const { rerender } = render(
       <AudioRecorder
         onAppend={onAppend1}
-        onReset={onReset1}
-        onTimelineStateChanged={onTimelineStateChanged1}
+        onRecordingComplete={onRecordingComplete1}
         onError={onError1}
       />,
     )
 
     await waitForMockWorker()
 
-    const onAppend2 = vi.fn(() => 0)
-    const onReset2 = vi.fn()
-    const onTimelineStateChanged2 = vi.fn()
+    const onAppend2 = vi.fn()
+    const onRecordingComplete2 = vi.fn()
     const onError2 = vi.fn()
 
     rerender(
       <AudioRecorder
         onAppend={onAppend2}
-        onReset={onReset2}
-        onTimelineStateChanged={onTimelineStateChanged2}
+        onRecordingComplete={onRecordingComplete2}
         onError={onError2}
       />,
     )
@@ -801,16 +648,14 @@ describe('AudioRecorder', () => {
   })
 
   it('calculates audio buffer length from accumulated analysis duration', async () => {
-    const onAppend = vi.fn(() => 0)
-    const onReset = vi.fn()
-    const onTimelineStateChanged = vi.fn()
+    const onAppend = vi.fn()
+    const onRecordingComplete = vi.fn()
     const onError = vi.fn()
 
     render(
       <AudioRecorder
         onAppend={onAppend}
-        onReset={onReset}
-        onTimelineStateChanged={onTimelineStateChanged}
+        onRecordingComplete={onRecordingComplete}
         onError={onError}
       />,
     )
@@ -828,8 +673,8 @@ describe('AudioRecorder', () => {
     })
 
     await waitFor(() => {
-      expect(onReset).toHaveBeenCalled()
-      const [, buffer] = onReset.mock.calls[0]!
+      expect(onRecordingComplete).toHaveBeenCalled()
+      const [buffer] = onRecordingComplete.mock.calls[0]!
       // Duration = 0.02 + 0.02 = 0.04 sec
       // Length = 0.04 * 44100 = 1764 samples
       expect(buffer.length).toBe(Math.round(0.04 * 44100))
@@ -837,16 +682,14 @@ describe('AudioRecorder', () => {
   })
 
   it('copies pcm data to audio buffer channel', async () => {
-    const onAppend = vi.fn(() => 0)
-    const onReset = vi.fn()
-    const onTimelineStateChanged = vi.fn()
+    const onAppend = vi.fn()
+    const onRecordingComplete = vi.fn()
     const onError = vi.fn()
 
     render(
       <AudioRecorder
         onAppend={onAppend}
-        onReset={onReset}
-        onTimelineStateChanged={onTimelineStateChanged}
+        onRecordingComplete={onRecordingComplete}
         onError={onError}
       />,
     )
@@ -863,8 +706,8 @@ describe('AudioRecorder', () => {
     getMockWorker().onmessage({ data: { type: 'pcm', pcm } })
 
     await waitFor(() => {
-      expect(onReset).toHaveBeenCalled()
-      const [, buffer] = onReset.mock.calls[0]!
+      expect(onRecordingComplete).toHaveBeenCalled()
+      const [buffer] = onRecordingComplete.mock.calls[0]!
       const data = buffer.getChannelData(0)
       expect(data[0]).toBeCloseTo(0.1, 5)
       expect(data[1]).toBeCloseTo(0.2, 5)
@@ -874,16 +717,14 @@ describe('AudioRecorder', () => {
   })
 
   it('handles empty pcm data', async () => {
-    const onAppend = vi.fn(() => 0)
-    const onReset = vi.fn()
-    const onTimelineStateChanged = vi.fn()
+    const onAppend = vi.fn()
+    const onRecordingComplete = vi.fn()
     const onError = vi.fn()
 
     render(
       <AudioRecorder
         onAppend={onAppend}
-        onReset={onReset}
-        onTimelineStateChanged={onTimelineStateChanged}
+        onRecordingComplete={onRecordingComplete}
         onError={onError}
       />,
     )
@@ -894,8 +735,8 @@ describe('AudioRecorder', () => {
     getMockWorker().onmessage({ data: { type: 'pcm', pcm } })
 
     await waitFor(() => {
-      expect(onReset).toHaveBeenCalled()
-      const [, buffer] = onReset.mock.calls[0]!
+      expect(onRecordingComplete).toHaveBeenCalled()
+      const [buffer] = onRecordingComplete.mock.calls[0]!
       expect(buffer).toBeInstanceOf(AudioBuffer)
     })
   })

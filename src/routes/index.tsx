@@ -1,12 +1,28 @@
+/* Braat
+ * Copyright (C) 2026 Jocelyn Stericker <jocelyn@nettek.ca>
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 import { createFileRoute } from '@tanstack/react-router'
 import { FolderOpen, MicVocal, Pause, Play, SkipBack } from 'lucide-react'
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 
 import braatPng from '#/braat.png'
 import { AudioPlayback } from '#/components/AudioPlayback'
 import { AudioRecorder } from '#/components/AudioRecorder'
-import { Plot, useTimeToX, usePlotPad, InCanvas } from '#/components/Plot'
-import type { TimelineState } from '#/components/Plot'
+import { Plot } from '#/components/Plot'
 import { Spectrogram } from '#/components/Spectrogram'
 import type { SpectrogramHandle } from '#/components/Spectrogram'
 import { Button } from '#/components/ui/button'
@@ -18,6 +34,9 @@ import {
   DialogHeader,
   DialogTitle,
 } from '#/components/ui/dialog'
+import { usePreemptibleCallback } from '#/components/usePreemptibleCallback'
+import { useTimelineState } from '#/components/useTimelineState'
+import { ViewportShade } from '#/components/ViewportShade'
 import { VowelChart } from '#/components/VowelChart'
 import type { VowelChartHandle } from '#/components/VowelChart'
 import { Waveform } from '#/components/Waveform'
@@ -43,43 +62,6 @@ export const Route = createFileRoute('/')({
   }),
 })
 
-function ViewportShade({
-  leftSec,
-  rightSec,
-}: {
-  leftSec: number
-  rightSec: number
-}) {
-  const toX = useTimeToX(InCanvas.No)
-  const plotPad = usePlotPad()
-  const x1 = toX(leftSec)
-  const x2 = toX(rightSec)
-  return (
-    <div
-      className="absolute overflow-hidden pointer-events-none"
-      style={{
-        left: plotPad.left,
-        right: 0,
-        top: plotPad.top,
-        bottom: plotPad.bottom,
-      }}
-    >
-      <div
-        style={{
-          position: 'absolute',
-          left: x1 - plotPad.left,
-          width: Math.max(0, x2 - x1),
-          top: 0,
-          bottom: 0,
-          background: 'rgba(255,255,255,0.08)',
-          borderLeft: '1px solid rgba(255,255,255,0.25)',
-          borderRight: '1px solid rgba(255,255,255,0.25)',
-        }}
-      />
-    </div>
-  )
-}
-
 const DB_MIN_DEFAULT = -93
 const DB_MAX_DEFAULT = -23
 
@@ -90,37 +72,25 @@ function App() {
   const vowelChartRef = useRef<VowelChartHandle>(null)
   const [analysis, setAnalysis] = useState<AnalysisChunk[]>([])
   const [audioBuffer, setAudioBuffer] = useState<AudioBuffer | null>(null)
-
-  useEffect(() => {
-    // For debugging!
-    ;(window as any).analysis = analysis
-  }, [analysis])
-
-  const [status, setStatus] = useState<
-    | { value: 'inactive' }
-    | { value: 'recording' }
-    | { value: 'analyzing' }
-    | { value: 'playing' }
-    | { value: 'error'; error: string }
-  >({ value: 'inactive' })
-
-  // Feature check.
-  useEffect(() => {
-    if (!self.crossOriginIsolated) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setStatus({
-        value: 'error',
-        error:
-          'This page was loaded without cross origin isolation, which Braat requires for live analysis. Either the server is not sending the correct headers, or your browser does not support this feature. Live analysis will not work.',
-      })
-    } else if (typeof SharedArrayBuffer === 'undefined') {
-      setStatus({
-        value: 'error',
-        error:
-          'Cross origin isolation is enabled, but SharedArrayBuffer is not available in this browser. Live analysis will not work.',
-      })
-    }
-  }, [])
+  const {
+    status,
+    timelineState,
+    waveformTimelineState,
+    handleAnalyze,
+    handlePlotScroll,
+    handlePlotClick,
+    handlePlotHover,
+    handlePlotZoom,
+    handlePlay,
+    handleStart: startRecording,
+    handlePause,
+    handleBackToStart,
+    handleAcknowledgeError,
+    handleRecordingComplete: handleAudioBufferAppended,
+    handlePlaybackPositionChanged,
+    handleError,
+    hoverFrame,
+  } = useTimelineState(analysis)
 
   const lastScannedRef = useRef(0)
   const [dbBounds, setDbBounds] = useState({
@@ -129,13 +99,6 @@ function App() {
   })
 
   const handleOpenClicked = useCallback(() => fileInputRef.current?.click(), [])
-  const [timelineState, setTimelineState] = useState<TimelineState>({
-    viewportLeftSec: 0,
-    viewportRightSec: 10,
-    cursorSec: 0,
-    hoverSec: null,
-    trackDurationSec: 0,
-  })
 
   const handleFileSelected = useCallback(
     async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -144,8 +107,7 @@ function App() {
         setAnalysis([])
         lastScannedRef.current = 0
         setDbBounds({ min: DB_MIN_DEFAULT, max: DB_MAX_DEFAULT })
-        setStatus({ value: 'analyzing' })
-        try {
+        handleAnalyze(async () => {
           const {
             analysis: newAnalysis,
             dbBounds: bounds,
@@ -156,156 +118,17 @@ function App() {
           lastScannedRef.current = totalFrames(newAnalysis)
 
           setAudioBuffer(newAudioBuffer)
-          setTimelineState({
-            cursorSec: 0,
-            hoverSec: 0,
-            trackDurationSec: newAudioBuffer.duration,
-            viewportLeftSec: 0,
-            viewportRightSec: 10,
-          })
           setAnalysis(newAnalysis)
-          setStatus({ value: 'inactive' })
-        } catch (err) {
-          console.log(err)
-          setStatus({ value: 'error', error: String(err) })
-        }
+          return { trackDurationSec: newAudioBuffer.duration }
+        })
       }
       e.target.value = ''
     },
-    [],
+    [handleAnalyze],
   )
-
-  const hoverFrame = useMemo(() => {
-    const hoverSec = timelineState.hoverSec ?? timelineState.cursorSec
-    let timeSec = 0
-    for (const chunk of analysis) {
-      const stepSec = chunk.timeStepSamples / chunk.sampleRate
-      for (const frame of chunk.frames) {
-        timeSec += stepSec
-        if (timeSec > hoverSec) return frame
-      }
-    }
-  }, [analysis, timelineState.cursorSec, timelineState.hoverSec])
-
-  const handlePlotScroll = useCallback(
-    (tSec: number) =>
-      setTimelineState((timeline) => {
-        const viewportWidth =
-          timeline.viewportRightSec - timeline.viewportLeftSec
-        const viewportLeftSec = Math.min(
-          Math.max(0, tSec),
-          Math.floor(timeline.trackDurationSec / 30 + 1) * 30,
-        )
-        return {
-          ...timeline,
-          viewportLeftSec,
-          viewportRightSec: viewportLeftSec + viewportWidth,
-        }
-      }),
-    [],
-  )
-  const handlePlotClick = useCallback(
-    (tSec: number) =>
-      setTimelineState((timeline) => {
-        const { viewportLeftSec, viewportRightSec } = timeline
-        if (tSec < viewportLeftSec || tSec > viewportRightSec) {
-          const viewportWidth = viewportRightSec - viewportLeftSec
-          const maxLeft = Math.floor(timeline.trackDurationSec / 30 + 1) * 30
-          const newLeft = Math.max(
-            0,
-            Math.min(tSec - viewportWidth / 2, maxLeft),
-          )
-          return {
-            ...timeline,
-            cursorSec: tSec,
-            viewportLeftSec: newLeft,
-            viewportRightSec: newLeft + viewportWidth,
-          }
-        }
-        return {
-          ...timeline,
-          cursorSec: tSec,
-        }
-      }),
-    [],
-  )
-  const handlePlotHover = useCallback(
-    (tSec: number | null) =>
-      setTimelineState((timeline) => {
-        return {
-          ...timeline,
-          hoverSec: tSec,
-        }
-      }),
-    [],
-  )
-  const handlePlotZoom = useCallback((p: number, z: number) => {
-    setTimelineState((timeline) => {
-      const viewportLeftSec = Math.min(
-        Math.max(0, timeline.viewportLeftSec - p * (z / 10)),
-        Math.floor(timeline.trackDurationSec / 30 + 1) * 30,
-      )
-      const viewportRightSec = Math.min(
-        Math.max(timeline.viewportRightSec + (1 - p) * (z / 10)),
-        Math.floor(timeline.trackDurationSec / 30 + 1) * 30,
-      )
-
-      if (viewportRightSec - viewportLeftSec < 0.5) {
-        return timeline
-      }
-
-      return {
-        ...timeline,
-        viewportLeftSec: viewportLeftSec,
-        viewportRightSec: viewportRightSec,
-      }
-    })
-  }, [])
-
-  const handlePlay = useCallback(() => {
-    setTimelineState((prev) => {
-      if (prev.cursorSec + 0.1 >= prev.trackDurationSec) {
-        return { ...prev, cursorSec: 0 }
-      }
-      return prev
-    })
-    setStatus({ value: 'playing' })
-  }, [])
 
   const recordingStartIndexRef = useRef(0)
-
-  const handleStart = useCallback(() => {
-    recordingStartIndexRef.current = totalFrames(analysis)
-    recordingStartChunkIndexRef.current = analysis.length
-    setStatus({ value: 'recording' })
-  }, [analysis])
-
-  const handlePause = useCallback(() => {
-    setStatus({ value: 'inactive' })
-  }, [])
-
-  const handleBackToStart = useCallback(() => {
-    setTimelineState((prev) => {
-      const width = prev.viewportRightSec - prev.viewportLeftSec
-      return {
-        ...prev,
-        cursorSec: 0,
-        viewportLeftSec: 0,
-        viewportRightSec: width,
-      }
-    })
-  }, [])
-
-  const waveformTimelineState = useMemo(
-    (): TimelineState => ({
-      ...timelineState,
-      viewportLeftSec: 0,
-      viewportRightSec:
-        Math.floor(timelineState.trackDurationSec / 30 + 1) * 30 +
-        (timelineState.viewportRightSec - timelineState.viewportLeftSec),
-    }),
-    [timelineState],
-  )
+  const recordingDurationSecRef = useRef(0)
 
   const ampMaxNorm = analysis.reduce(
     (memo, chunk) => chunk.frames.reduce((m, f) => Math.max(m, f.rms), memo),
@@ -316,57 +139,58 @@ function App() {
   useEffect(() => {
     analysisRef.current = analysis
   })
-  const recordingStartChunkIndexRef = useRef(0)
+
+  const handleStart = useCallback(() => {
+    recordingStartIndexRef.current = totalFrames(analysisRef.current)
+    recordingDurationSecRef.current = analysisRef.current.reduce(
+      (t, c) => t + (c.frames.length * c.timeStepSamples) / c.sampleRate,
+      0,
+    )
+    startRecording()
+  }, [startRecording])
 
   const audioBufferRef = useRef<AudioBuffer | null>(null)
   useEffect(() => {
     audioBufferRef.current = audioBuffer
   }, [audioBuffer])
 
-  const handleReset = useCallback(
-    (newChunks: AnalysisChunk[], newBuffer: AudioBuffer) => {
-      const startChunkIndex = recordingStartChunkIndexRef.current
-      const full = [
-        ...analysisRef.current.slice(0, startChunkIndex),
-        ...newChunks,
-      ]
+  const handleRecordingComplete = useCallback(
+    (newBuffer: AudioBuffer) => {
       lastScannedRef.current = recordingStartIndexRef.current
-      setAnalysis(full)
 
       const prev = audioBufferRef.current
       const combined =
-        prev && prev.length > 0 && startChunkIndex > 0
+        prev && prev.length > 0
           ? concatAudioBuffers(prev, newBuffer)
           : newBuffer
       audioBufferRef.current = combined
       setAudioBuffer(combined)
-      setTimelineState((prevTimeline) => ({
-        ...prevTimeline,
-        trackDurationSec: combined.duration,
-        cursorSec: combined.duration,
-      }))
-      setStatus({ value: 'inactive' })
+      handleAudioBufferAppended({ trackDurationSec: combined.duration })
     },
-    [],
+    [handleAudioBufferAppended],
   )
 
   const handleChunkStart = useCallback((params: AnalysisParams) => {
     analysisRef.current.push({ ...params, frames: [] })
   }, [])
 
-  // returns total track time
-  const handleAppend = useCallback((frame: AnalysisFrame) => {
-    const lastChunk = analysisRef.current[analysisRef.current.length - 1]!
-    lastChunk.frames.push(frame)
-    const globalIndex = totalFrames(analysisRef.current) - 1
-    waveformRef.current?.append(globalIndex)
-    spectrogramRef.current?.append(globalIndex)
-    vowelChartRef.current?.append(globalIndex)
-    return analysisRef.current.reduce(
-      (t, c) => t + (c.frames.length * c.timeStepSamples) / c.sampleRate,
-      0,
-    )
-  }, [])
+  const schedulePlaybackPositionChanged = usePreemptibleCallback(
+    handlePlaybackPositionChanged,
+  )
+  const handleAppend = useCallback(
+    (frame: AnalysisFrame) => {
+      const lastChunk = analysisRef.current[analysisRef.current.length - 1]!
+      lastChunk.frames.push(frame)
+      const globalIndex = totalFrames(analysisRef.current) - 1
+      waveformRef.current?.append(globalIndex)
+      spectrogramRef.current?.append(globalIndex)
+      vowelChartRef.current?.append(globalIndex)
+      recordingDurationSecRef.current +=
+        lastChunk.timeStepSamples / lastChunk.sampleRate
+      schedulePlaybackPositionChanged(recordingDurationSecRef.current)
+    },
+    [schedulePlaybackPositionChanged],
+  )
 
   const handlePatch = useCallback((frameIndex: number) => {
     const absIndex = recordingStartIndexRef.current + frameIndex
@@ -393,6 +217,10 @@ function App() {
     return () => clearInterval(timer)
   }, [])
 
+  const virtualWidthSec =
+    Math.floor(timelineState.trackDurationSec / 30 + 1) * 30 +
+    (timelineState.viewportRightSec - timelineState.viewportLeftSec)
+
   const showWelcome = analysis.length === 0 && status.value === 'inactive'
 
   return (
@@ -412,7 +240,7 @@ function App() {
       </Dialog>
       <Dialog
         open={status.value === 'error'}
-        onOpenChange={() => setStatus({ value: 'inactive' })}
+        onOpenChange={handleAcknowledgeError}
       >
         <DialogContent>
           <DialogHeader>
@@ -463,9 +291,6 @@ function App() {
             disabled={
               status.value === 'recording' || status.value === 'analyzing'
             }
-            // @ts-expect-error prevent restoring "disabled" state on Firefox refresh
-            // https://bugzilla.mozilla.org/show_bug.cgi?id=1847798
-            autoComplete="off"
             title="Analyze audio from microphone"
             onClick={handleStart}
           >
@@ -487,9 +312,6 @@ function App() {
               title="Play back audio track"
               onClick={handlePlay}
               disabled={!audioBuffer || audioBuffer.length === 0}
-              // @ts-expect-error prevent restoring "disabled" state on Firefox refresh
-              // https://bugzilla.mozilla.org/show_bug.cgi?id=1847798
-              autoComplete="off"
             >
               <Play className="size-6" />
             </Button>
@@ -508,10 +330,7 @@ function App() {
           onClick={handlePlotClick}
           onHover={handlePlotHover}
           className="h-32 border-b border-b-gray-500"
-          virtualWidthSec={
-            Math.floor(timelineState.trackDurationSec / 30 + 1) * 30 +
-            (timelineState.viewportRightSec - timelineState.viewportLeftSec)
-          }
+          virtualWidthSec={virtualWidthSec}
         >
           <Waveform analysis={analysis} ref={waveformRef} />
           <ViewportShade
@@ -563,20 +382,16 @@ function App() {
             onChunkStart={handleChunkStart}
             onAppend={handleAppend}
             onPatch={handlePatch}
-            onReset={handleReset}
-            onTimelineStateChanged={setTimelineState}
-            onError={(error) => {
-              console.log(error)
-              setStatus({ value: 'error', error })
-            }}
+            onRecordingComplete={handleRecordingComplete}
+            onError={handleError}
           />
         ) : null}
         {status.value === 'playing' && audioBuffer ? (
           <AudioPlayback
             audioBuffer={audioBuffer}
-            timelineState={timelineState}
+            cursorSec={timelineState.cursorSec}
             onStop={handlePause}
-            onTimelineStateChanged={setTimelineState}
+            onPlaybackPositionChanged={handlePlaybackPositionChanged}
           />
         ) : null}
       </main>

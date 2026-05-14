@@ -10,19 +10,12 @@ import {
 import { hzToBark } from '#/lib/bark'
 import { cn } from '#/lib/utils'
 
+import type { TimelineState } from './useTimelineState'
 import { VirtualScrollArea } from './VirtualScrollArea'
 
 export const PLOT_PAD_B = 44
 export const PLOT_PAD_L = 72
 export const PLOT_PAD_T = 0
-
-export interface TimelineState {
-  viewportLeftSec: number
-  viewportRightSec: number
-  cursorSec: number
-  hoverSec: number | null
-  trackDurationSec: number
-}
 
 export interface YAxisFreq {
   type: 'freq'
