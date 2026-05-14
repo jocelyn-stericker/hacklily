@@ -46,66 +46,6 @@ export function computeDbBounds(
   return { min: Math.max(minDb, -120), max: maxDb }
 }
 
-export async function importAudioFile(file: File): Promise<{
-  analysis: AnalysisChunk[]
-  dbBounds: { min: number; max: number } | null
-  buffer: AudioBuffer
-}> {
-  const audioImporter = new Worker(
-    new URL('./importWorker.ts', import.meta.url),
-  )
-  console.time('import: decode')
-  const arrayBuffer = await file.arrayBuffer()
-
-  const ctx = new AudioContext({ sampleRate: 44100 })
-  const newAudioBuffer = await ctx.decodeAudioData(arrayBuffer)
-  await ctx.close()
-
-  const {
-    numberOfChannels,
-    length,
-    sampleRate: fileSampleRate,
-  } = newAudioBuffer
-
-  const mono = new Float32Array(length)
-  for (let c = 0; c < numberOfChannels; c++) {
-    const ch = newAudioBuffer.getChannelData(c)
-    for (let i = 0; i < length; i++) {
-      mono[i]! += ch[i]! / numberOfChannels
-    }
-  }
-  console.timeEnd('import: decode')
-
-  audioImporter.postMessage({ mono, fileSampleRate })
-  return new Promise((resolve, reject) => {
-    audioImporter.onmessage = ({
-      data,
-    }: MessageEvent<{ ok: AnalysisChunk } | { error: string }>) => {
-      audioImporter.terminate()
-      if ('ok' in data) {
-        const analysisSamples = data.ok.timeStepSamples * data.ok.frames.length
-
-        // Fit it to the analysis samples, keep it mono
-        const shortenedMono = new AudioBuffer({
-          length: analysisSamples,
-          numberOfChannels: 1,
-          sampleRate: 44100,
-        })
-        shortenedMono.copyToChannel(mono, 0)
-
-        const chunks: AnalysisChunk[] = [data.ok]
-        resolve({
-          analysis: chunks,
-          dbBounds: computeDbBounds(chunks),
-          buffer: shortenedMono,
-        })
-      } else {
-        reject(data.error)
-      }
-    }
-  })
-}
-
 export function concatAudioBuffers(
   a: AudioBuffer,
   b: AudioBuffer,

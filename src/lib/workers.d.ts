@@ -21,3 +21,10 @@ declare module '#/lib/liveWorker?worker' {
   const LiveWorkerConstructor: new () => LiveWorker
   export default LiveWorkerConstructor
 }
+
+declare module '#/lib/importWorker?worker' {
+  import type { ImportWorker } from '#/lib/importWorker'
+
+  const ImportWorkerConstructor: new () => ImportWorker
+  export default ImportWorkerConstructor
+}

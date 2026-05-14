@@ -34,6 +34,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '#/components/ui/dialog'
+import { useAudioImport } from '#/components/useAudioImport'
 import { usePreemptibleCallback } from '#/components/usePreemptibleCallback'
 import { useTimelineState } from '#/components/useTimelineState'
 import { ViewportShade } from '#/components/ViewportShade'
@@ -48,11 +49,7 @@ import type {
   AnalysisParams,
 } from '#/lib/analysis'
 import { totalFrames } from '#/lib/analysis'
-import {
-  computeDbBounds,
-  concatAudioBuffers,
-  importAudioFile,
-} from '#/lib/audioUiHelpers'
+import { computeDbBounds, concatAudioBuffers } from '#/lib/audioUiHelpers'
 
 export const Route = createFileRoute('/')({
   component: App,
@@ -66,7 +63,6 @@ const DB_MIN_DEFAULT = -93
 const DB_MAX_DEFAULT = -23
 
 function App() {
-  const fileInputRef = useRef<HTMLInputElement>(null)
   const waveformRef = useRef<WaveformHandle>(null)
   const spectrogramRef = useRef<SpectrogramHandle>(null)
   const vowelChartRef = useRef<VowelChartHandle>(null)
@@ -98,34 +94,24 @@ function App() {
     max: DB_MAX_DEFAULT,
   })
 
-  const handleOpenClicked = useCallback(() => fileInputRef.current?.click(), [])
-
-  const handleFileSelected = useCallback(
-    async (e: React.ChangeEvent<HTMLInputElement>) => {
-      const file = e.target.files?.[0]
-      if (file) {
-        setAnalysis([])
-        lastScannedRef.current = 0
-        setDbBounds({ min: DB_MIN_DEFAULT, max: DB_MAX_DEFAULT })
-        handleAnalyze(async () => {
-          const {
-            analysis: newAnalysis,
-            dbBounds: bounds,
-            buffer: newAudioBuffer,
-          } = await importAudioFile(file)
-
-          if (bounds) setDbBounds(bounds)
-          lastScannedRef.current = totalFrames(newAnalysis)
-
-          setAudioBuffer(newAudioBuffer)
-          setAnalysis(newAnalysis)
-          return { trackDurationSec: newAudioBuffer.duration }
-        })
-      }
-      e.target.value = ''
+  const { openFilePicker } = useAudioImport({
+    handleAnalyze,
+    onStart: () => {
+      setAnalysis([])
+      lastScannedRef.current = 0
+      setDbBounds({ min: DB_MIN_DEFAULT, max: DB_MAX_DEFAULT })
     },
-    [handleAnalyze],
-  )
+    onImported: ({
+      analysis: newAnalysis,
+      dbBounds: bounds,
+      audioBuffer: newAudioBuffer,
+    }) => {
+      if (bounds) setDbBounds(bounds)
+      lastScannedRef.current = totalFrames(newAnalysis)
+      setAudioBuffer(newAudioBuffer)
+      setAnalysis(newAnalysis)
+    },
+  })
 
   const recordingStartIndexRef = useRef(0)
   const recordingDurationSecRef = useRef(0)
@@ -228,7 +214,7 @@ function App() {
       <WelcomeModal
         open={showWelcome}
         onStartRecording={handleStart}
-        onOpenFile={handleOpenClicked}
+        onOpenFile={openFilePicker}
       />
       <Dialog open={status.value === 'analyzing'}>
         <DialogContent showCloseButton={false}>
@@ -262,17 +248,10 @@ function App() {
             variant="default"
             className="h-10 w-10 cursor-pointer"
             title="Open an audio file"
-            onClick={handleOpenClicked}
+            onClick={openFilePicker}
           >
             <FolderOpen className="size-6" />
           </Button>
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept=".wav,.mp3,audio/wav,audio/mpeg"
-            className="hidden"
-            onChange={handleFileSelected}
-          />
           <Button
             variant="default"
             className="h-10 w-10 cursor-pointer"
