@@ -21,7 +21,7 @@ export function AudioPlayback({
     if (source.current && context.current) {
       try {
         source.current.stop()
-        context.current.close()
+        void context.current.close()
       } catch (err) {
         console.log(err)
         // already stopped!

@@ -52,7 +52,7 @@ export function AudioRecorder({
     let teardown: (() => void) | null = null
     accumulatedChunksRef.current = []
 
-    spinup()
+    void spinup()
 
     return () => {
       if (teardown) {
@@ -194,7 +194,7 @@ export function AudioRecorder({
         liveWorker?.postMessage({ type: 'flush' })
         sourceNode?.disconnect()
         workletNode?.disconnect()
-        context?.close()
+        void context?.close()
         stream.getTracks().forEach((t) => t.stop())
         // liveWorker is terminated inside onmessage after the PCM response arrives.
       }

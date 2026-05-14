@@ -10,8 +10,8 @@
     "build": "rm -fr dist; vite build",
     "preview": "vite preview",
     "test": "vitest run",
-    "lint": "eslint && tsc --noEmit && oxfmt --check .",
-    "check": "oxfmt . && eslint --fix && tsc --noEmit"
+    "lint": "oxlint && oxfmt --check .",
+    "check": "oxfmt . && oxlint --fix"
   },
   "dependencies": {
     "@base-ui/react": "^1.4.0",
@@ -35,7 +35,6 @@
   },
   "devDependencies": {
     "@tanstack/devtools-vite": "latest",
-    "@tanstack/eslint-config": "latest",
     "@tanstack/react-query-devtools": "^5.99.0",
     "@testing-library/dom": "^10.4.1",
     "@testing-library/react": "^16.3.0",
@@ -48,7 +47,8 @@
     "eslint-plugin-react-hooks": "^7.1.1",
     "jsdom": "^28.1.0",
     "oxfmt": "^0.49.0",
-    "typescript": "^6.0.2",
+    "oxlint": "^1.64.0",
+    "oxlint-tsgolint": "^0.22.1",
     "vite": "^8.0.0",
     "vitest": "^4.1.5"
   },

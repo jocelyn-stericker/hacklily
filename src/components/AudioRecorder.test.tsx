@@ -227,7 +227,7 @@ describe('AudioRecorder', () => {
 
     // Mock requestAnimationFrame and cancelAnimationFrame
     global.requestAnimationFrame = vi.fn((cb) => {
-      setTimeout(cb, 0)
+      setTimeout(() => cb(), 0)
       return 1
     })
     global.cancelAnimationFrame = vi.fn()

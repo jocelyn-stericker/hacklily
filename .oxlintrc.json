@@ -1,0 +1,136 @@
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "plugins": ["import", "typescript", "react"],
+  "categories": {
+    "correctness": "error"
+  },
+  "env": {
+    "builtin": true
+  },
+  "options": {
+    "typeAware": true,
+    "typeCheck": true
+  },
+  "ignorePatterns": [
+    "**/dist/**",
+    "**/coverage/**",
+    "**/build/**",
+    "**/vite.config.*.timestamp-*.*"
+  ],
+  "jsPlugins": [
+    { "name": "react-hooks-js", "specifier": "eslint-plugin-react-hooks" }
+  ],
+  "rules": {
+    "react/rules-of-hooks": "error",
+    "react/exhaustive-deps": "warn"
+  },
+  "overrides": [
+    {
+      "files": ["**/*.{js,ts,tsx}"],
+      "env": {
+        "es2020": true,
+        "browser": true
+      },
+      "rules": {
+        "for-direction": "error",
+        "no-async-promise-executor": "error",
+        "no-case-declarations": "error",
+        "no-class-assign": "error",
+        "no-compare-neg-zero": "error",
+        "no-cond-assign": "error",
+        "no-constant-binary-expression": "error",
+        "no-constant-condition": "error",
+        "no-control-regex": "error",
+        "no-debugger": "error",
+        "no-delete-var": "error",
+        "no-dupe-else-if": "error",
+        "no-duplicate-case": "error",
+        "no-empty-character-class": "error",
+        "no-empty-pattern": "error",
+        "no-empty-static-block": "error",
+        "no-ex-assign": "error",
+        "no-extra-boolean-cast": "error",
+        "no-fallthrough": "error",
+        "no-global-assign": "error",
+        "no-invalid-regexp": "error",
+        "no-irregular-whitespace": "error",
+        "no-loss-of-precision": "error",
+        "no-misleading-character-class": "error",
+        "no-nonoctal-decimal-escape": "error",
+        "no-regex-spaces": "error",
+        "no-self-assign": "error",
+        "no-shadow": "warn",
+        "no-shadow-restricted-names": "error",
+        "no-sparse-arrays": "error",
+        "no-unsafe-finally": "error",
+        "no-unsafe-optional-chaining": "error",
+        "no-unused-labels": "error",
+        "no-unused-private-class-members": "error",
+        "no-useless-backreference": "error",
+        "no-useless-catch": "error",
+        "no-useless-escape": "error",
+        "no-var": "error",
+        "no-with": "error",
+        "prefer-const": "error",
+        "require-yield": "error",
+        "use-isnan": "error",
+        "valid-typeof": "error",
+        "import/consistent-type-specifier-style": ["error", "prefer-top-level"],
+        "import/first": "error",
+        "import/no-commonjs": "error",
+        "import/no-duplicates": "error",
+        "import/default": "off",
+        "typescript/ban-ts-comment": [
+          "error",
+          {
+            "ts-expect-error": false,
+            "ts-ignore": "allow-with-description"
+          }
+        ],
+        "typescript/consistent-type-imports": [
+          "error",
+          {
+            "prefer": "type-imports"
+          }
+        ],
+        "typescript/no-duplicate-enum-values": "error",
+        "typescript/no-extra-non-null-assertion": "error",
+        "typescript/no-inferrable-types": [
+          "error",
+          {
+            "ignoreParameters": true
+          }
+        ],
+        "typescript/no-misused-new": "error",
+        "typescript/no-namespace": "error",
+        "typescript/no-non-null-asserted-optional-chain": "error",
+        "typescript/no-unsafe-function-type": "error",
+        "typescript/no-wrapper-object-types": "error",
+        "typescript/prefer-as-const": "error",
+        "typescript/prefer-for-of": "warn",
+        "typescript/triple-slash-reference": "error",
+        "typescript/no-for-in-array": "error",
+        "typescript/no-unnecessary-type-assertion": "error",
+        "typescript/no-unnecessary-condition": [
+          "error",
+          { "allowConstantLoopConditions": "only-allowed-literals" }
+        ],
+        "react-hooks-js/static-components": "error",
+        "react-hooks-js/use-memo": "error",
+        "react-hooks-js/void-use-memo": "error",
+        "react-hooks-js/preserve-manual-memoization": "error",
+        "react-hooks-js/incompatible-library": "error",
+        "react-hooks-js/immutability": "error",
+        "react-hooks-js/globals": "error",
+        "react-hooks-js/refs": "error",
+        "react-hooks-js/set-state-in-effect": "error",
+        "react-hooks-js/error-boundaries": "error",
+        "react-hooks-js/purity": "error",
+        "react-hooks-js/set-state-in-render": "error",
+        "react-hooks-js/unsupported-syntax": "error",
+        "react-hooks-js/config": "error",
+        "react-hooks-js/gating": "error"
+      }
+    }
+  ]
+}
