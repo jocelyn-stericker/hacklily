@@ -35,7 +35,13 @@ import {
   importAudioFile,
 } from '#/lib/audioUiHelpers'
 
-export const Route = createFileRoute('/')({ component: App })
+export const Route = createFileRoute('/')({
+  component: App,
+  headers: () => ({
+    'Cross-Origin-Opener-Policy': 'same-origin',
+    'Cross-Origin-Embedder-Policy': 'require-corp',
+  }),
+})
 
 function ViewportShade({
   leftSec,
@@ -97,6 +103,24 @@ function App() {
     | { value: 'playing' }
     | { value: 'error'; error: string }
   >({ value: 'inactive' })
+
+  // Feature check.
+  useEffect(() => {
+    if (!self.crossOriginIsolated) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setStatus({
+        value: 'error',
+        error:
+          'This page was loaded without cross origin isolation, which Braat requires for live analysis. Either the server is not sending the correct headers, or your browser does not support this feature. Live analysis will not work.',
+      })
+    } else if (typeof SharedArrayBuffer === 'undefined') {
+      setStatus({
+        value: 'error',
+        error:
+          'Cross origin isolation is enabled, but SharedArrayBuffer is not available in this browser. Live analysis will not work.',
+      })
+    }
+  }, [])
 
   const lastScannedRef = useRef(0)
   const [dbBounds, setDbBounds] = useState({
