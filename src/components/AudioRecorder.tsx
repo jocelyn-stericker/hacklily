@@ -7,7 +7,8 @@ import type { AudioRingWriterNode } from '#/lib/AudioRingWriter'
 import LiveWorker from '#/lib/liveWorker?worker'
 
 // Must be a pow of 2 due to bit masking hack for efficient circular buffer
-const SAB_BUF_SAMPLES = 4096
+// About 0.75sec at 44100 Hz.
+const SAB_BUF_SAMPLES = 32768
 
 export function AudioRecorder({
   onAppend,
