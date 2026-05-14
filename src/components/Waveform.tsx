@@ -1,7 +1,8 @@
 import { useEffect, useImperativeHandle, useRef, useState } from 'react'
 import type { RefObject } from 'react'
 
-import type { AnalysisFrame } from '#/lib/analysis'
+import type { AnalysisChunk } from '#/lib/analysis'
+import { getFrame, totalFrames } from '#/lib/analysis'
 import { TILE_WIDTH } from '#/lib/tileConfig'
 
 import {
@@ -42,7 +43,7 @@ function ensureTiles(off: OffscreenState, needed: number): void {
 
 function paintColumnsToOffscreen(
   off: OffscreenState,
-  analysis: AnalysisFrame[],
+  analysis: AnalysisChunk[],
   from: number,
   to: number,
   ampToY: (amp: number) => number,
@@ -59,7 +60,7 @@ function paintColumnsToOffscreen(
     const { ctx } = tile
     ctx.clearRect(localFrom, 0, absTo - absFrom, canvasHeight)
     for (let f = absFrom; f < absTo; f++) {
-      const sample = analysis[f]!
+      const sample = getFrame(analysis, f)!
       const y0 = ampToY(sample.rms)
       const y1 = ampToY(-sample.rms)
       ctx.fillStyle = sample.voiced
@@ -117,7 +118,7 @@ export function Waveform({
   analysis,
   ref,
 }: {
-  analysis: AnalysisFrame[]
+  analysis: AnalysisChunk[]
   ref: RefObject<WaveformHandle | null>
 }) {
   const [canvas, setCanvas] = useState<HTMLCanvasElement | null>(null)
@@ -139,10 +140,11 @@ export function Waveform({
       offRef.current = null
       return
     }
+    const numFrames = totalFrames(analysis)
     const off: OffscreenState = { tiles: [], canvasHeight }
-    ensureTiles(off, analysis.length)
+    ensureTiles(off, numFrames)
     offRef.current = off
-    paintColumnsToOffscreen(off, analysis, 0, analysis.length, ampToY)
+    paintColumnsToOffscreen(off, analysis, 0, numFrames, ampToY)
     // Note: this must include everything in the previous effect (none here)
   }, [analysis, canvasHeight, ampToY])
 
@@ -162,7 +164,7 @@ export function Waveform({
           timeToX,
           analysis[0]
             ? analysis[0].timeStepSamples / analysis[0].sampleRate
-            : 0,
+            : 0, // assumes uniform params across chunks
         )
       })
     }
@@ -188,7 +190,7 @@ export function Waveform({
           drawFrame.current = null
           const effectiveFrom = fromRef.current!
           fromRef.current = null
-          const to = analysis.length
+          const to = totalFrames(analysis)
           if (effectiveFrom >= to) return
 
           if (!offRef.current && canvasHeight > 0) {

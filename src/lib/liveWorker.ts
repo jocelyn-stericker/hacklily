@@ -16,7 +16,7 @@
  */
 /// <reference lib="webworker" />
 
-import type { AnalysisFrame } from './analysis'
+import type { AnalysisFrame, AnalysisParams } from './analysis'
 import { AudioRingReader } from './AudioRingReader'
 import { FormantStreamProcessor } from './formant'
 import type { FormantFrame } from './formant'
@@ -52,15 +52,10 @@ interface PcmMessage {
   pcm: Float32Array<ArrayBuffer>
 }
 
-type AnalysisCore = Pick<
-  AnalysisFrame,
-  | 'spectrum'
-  | 'rms'
-  | 'timeStepSamples'
-  | 'sampleRate'
-  | 'freqStepHz'
-  | 'firstBinHz'
->
+// Emitted once per session (or whenever params change) before the first frame.
+export type ParamsMessage = { type: 'params' } & AnalysisParams
+
+type AnalysisCore = Pick<AnalysisFrame, 'spectrum' | 'rms'>
 type AnalysisPatch = Partial<
   Pick<
     AnalysisFrame,
@@ -68,8 +63,9 @@ type AnalysisPatch = Partial<
   >
 >
 
-// Emitted once per spectrogram frame. spectrum/rms/timing are always present;
+// Emitted once per spectrogram frame. spectrum/rms are always present;
 // voiced/pitch/formant/vad fields are optional and may arrive later via PatchFrameMessage.
+// frameIndex is session-local (resets to 0 each recording session).
 export type AppendFrameMessage = {
   type: 'frame'
   frameIndex: number
@@ -77,12 +73,14 @@ export type AppendFrameMessage = {
   AnalysisPatch
 
 // Overwrites specific fields of a previously emitted frame.
+// frameIndex is session-local, matching the index in the preceding ParamsMessage's chunk.
 export type PatchFrameMessage = {
   type: 'patch'
   frameIndex: number
 } & AnalysisPatch
 
 export type LiveWorkerOutMessage =
+  | ParamsMessage
   | AppendFrameMessage
   | PatchFrameMessage
   | PcmMessage
@@ -125,7 +123,15 @@ async function runAnalysis(
     },
     sampleRate,
   )
-  const specBuf = new Float32Array(spec.params.numFreqs)
+  const sp = spec.params
+  postMessage({
+    type: 'params',
+    firstBinHz: sp.f1Hz,
+    freqStepHz: sp.actualFreqStepHz,
+    timeStepSamples: Math.round(sp.actualTimeStepSec * sampleRate),
+    sampleRate,
+  } satisfies ParamsMessage)
+  const specBuf = new Float32Array(sp.numFreqs)
 
   const resampler = new ResamplerStreamProcessor(sampleRate, FORMANT_RATE, 50)
   const formant = new FormantStreamProcessor(
@@ -243,7 +249,6 @@ async function runAnalysis(
     }
 
     // 7. Emit one AppendFrameMessage per ready spectrogram frame
-    const sp = spec.params
     let rms = 0
     for (const sample of inp) rms += sample * sample
     rms = Math.sqrt(rms / inp.length)
@@ -255,10 +260,6 @@ async function runAnalysis(
         frameIndex: frameIndex++,
         spectrum: specBuf.slice(),
         rms,
-        firstBinHz: sp.f1Hz,
-        freqStepHz: sp.actualFreqStepHz,
-        timeStepSamples: Math.round(sp.actualTimeStepSec * sampleRate),
-        sampleRate,
         voiced,
         f0: latestValidPitchHz,
         f1: voiced ? latestValidF1 : null,

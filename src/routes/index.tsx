@@ -23,7 +23,12 @@ import type { VowelChartHandle } from '#/components/VowelChart'
 import { Waveform } from '#/components/Waveform'
 import type { WaveformHandle } from '#/components/Waveform'
 import { WelcomeModal } from '#/components/WelcomeModal'
-import type { AnalysisFrame } from '#/lib/analysis'
+import type {
+  AnalysisChunk,
+  AnalysisFrame,
+  AnalysisParams,
+} from '#/lib/analysis'
+import { totalFrames } from '#/lib/analysis'
 import {
   computeDbBounds,
   concatAudioBuffers,
@@ -77,7 +82,7 @@ function App() {
   const waveformRef = useRef<WaveformHandle>(null)
   const spectrogramRef = useRef<SpectrogramHandle>(null)
   const vowelChartRef = useRef<VowelChartHandle>(null)
-  const [analysis, setAnalysis] = useState<AnalysisFrame[]>([])
+  const [analysis, setAnalysis] = useState<AnalysisChunk[]>([])
   const [audioBuffer, setAudioBuffer] = useState<AudioBuffer | null>(null)
 
   useEffect(() => {
@@ -124,7 +129,7 @@ function App() {
           } = await importAudioFile(file)
 
           if (bounds) setDbBounds(bounds)
-          lastScannedRef.current = newAnalysis.length
+          lastScannedRef.current = totalFrames(newAnalysis)
 
           setAudioBuffer(newAudioBuffer)
           setTimelineState({
@@ -148,12 +153,12 @@ function App() {
 
   const hoverFrame = useMemo(() => {
     const hoverSec = timelineState.hoverSec ?? timelineState.cursorSec
-
     let timeSec = 0
-    for (const frame of analysis) {
-      timeSec += frame.timeStepSamples / frame.sampleRate
-      if (timeSec > hoverSec) {
-        return frame
+    for (const chunk of analysis) {
+      const stepSec = chunk.timeStepSamples / chunk.sampleRate
+      for (const frame of chunk.frames) {
+        timeSec += stepSec
+        if (timeSec > hoverSec) return frame
       }
     }
   }, [analysis, timelineState.cursorSec, timelineState.hoverSec])
@@ -246,7 +251,8 @@ function App() {
   const recordingStartIndexRef = useRef(0)
 
   const handleStart = useCallback(() => {
-    recordingStartIndexRef.current = analysis.length
+    recordingStartIndexRef.current = totalFrames(analysis)
+    recordingStartChunkIndexRef.current = analysis.length
     setStatus({ value: 'recording' })
   }, [analysis])
 
@@ -278,7 +284,7 @@ function App() {
   )
 
   const ampMaxNorm = analysis.reduce(
-    (memo, frame) => Math.max(memo, frame.rms),
+    (memo, chunk) => chunk.frames.reduce((m, f) => Math.max(m, f.rms), memo),
     0,
   )
 
@@ -286,6 +292,7 @@ function App() {
   useEffect(() => {
     analysisRef.current = analysis
   })
+  const recordingStartChunkIndexRef = useRef(0)
 
   const audioBufferRef = useRef<AudioBuffer | null>(null)
   useEffect(() => {
@@ -293,15 +300,18 @@ function App() {
   }, [audioBuffer])
 
   const handleReset = useCallback(
-    (newAnalysis: AnalysisFrame[], newBuffer: AudioBuffer) => {
-      const startIndex = recordingStartIndexRef.current
-      const full = [...analysisRef.current.slice(0, startIndex), ...newAnalysis]
-      lastScannedRef.current = startIndex
+    (newChunks: AnalysisChunk[], newBuffer: AudioBuffer) => {
+      const startChunkIndex = recordingStartChunkIndexRef.current
+      const full = [
+        ...analysisRef.current.slice(0, startChunkIndex),
+        ...newChunks,
+      ]
+      lastScannedRef.current = recordingStartIndexRef.current
       setAnalysis(full)
 
       const prev = audioBufferRef.current
       const combined =
-        prev && prev.length > 0 && startIndex > 0
+        prev && prev.length > 0 && startChunkIndex > 0
           ? concatAudioBuffers(prev, newBuffer)
           : newBuffer
       audioBufferRef.current = combined
@@ -316,13 +326,22 @@ function App() {
     [],
   )
 
+  const handleChunkStart = useCallback((params: AnalysisParams) => {
+    analysisRef.current.push({ ...params, frames: [] })
+  }, [])
+
   // returns total track time
-  const handleAppend = useCallback((data: AnalysisFrame) => {
-    analysisRef.current.push(data)
-    waveformRef.current?.append(analysisRef.current.length - 1)
-    spectrogramRef.current?.append(analysisRef.current.length - 1)
-    vowelChartRef.current?.append(analysisRef.current.length - 1)
-    return (analysisRef.current.length * data.timeStepSamples) / data.sampleRate
+  const handleAppend = useCallback((frame: AnalysisFrame) => {
+    const lastChunk = analysisRef.current[analysisRef.current.length - 1]!
+    lastChunk.frames.push(frame)
+    const globalIndex = totalFrames(analysisRef.current) - 1
+    waveformRef.current?.append(globalIndex)
+    spectrogramRef.current?.append(globalIndex)
+    vowelChartRef.current?.append(globalIndex)
+    return analysisRef.current.reduce(
+      (t, c) => t + (c.frames.length * c.timeStepSamples) / c.sampleRate,
+      0,
+    )
   }, [])
 
   const handlePatch = useCallback((frameIndex: number) => {
@@ -337,7 +356,7 @@ function App() {
     const timer = setInterval(() => {
       const data = analysisRef.current
       const from = lastScannedRef.current
-      const to = data.length
+      const to = totalFrames(data)
       if (from >= to) return
       const newBounds = computeDbBounds(data, from, to)
       lastScannedRef.current = to
@@ -517,6 +536,7 @@ function App() {
         </div>
         {status.value === 'recording' ? (
           <AudioRecorder
+            onChunkStart={handleChunkStart}
             onAppend={handleAppend}
             onPatch={handlePatch}
             onReset={handleReset}

@@ -22,14 +22,19 @@ import { resample } from './resample'
 import { SpectrogramProcessor } from './spectrogram'
 import { VadStreamProcessor } from './vad'
 
-export type AnalysisFrame = {
-  spectrum: Float32Array
-  rms: number
+// Parameters shared by all frames within a chunk. Constant across one recording
+// or import session; a new AnalysisChunk is created if these ever change.
+export type AnalysisParams = {
   timeStepSamples: number
   sampleRate: number
   freqStepHz: number
-  // Center of first bin
+  // Center of first frequency bin
   firstBinHz: number
+}
+
+export type AnalysisFrame = {
+  spectrum: Float32Array
+  rms: number
   // Silero VAD v5 speech probability (0 = silence, 1 = speech)
   speechProbability: number
   voiced: boolean
@@ -39,11 +44,29 @@ export type AnalysisFrame = {
   f3: number | null
 }
 
+export type AnalysisChunk = AnalysisParams & { frames: AnalysisFrame[] }
+
 // Frames confirmed voiced with both F1 and F2 present. Used as a type predicate in VowelChart.
 export type VoicedAnalysisFrame = AnalysisFrame & {
   voiced: true
   f1: number
   f2: number
+}
+
+export function totalFrames(chunks: AnalysisChunk[]): number {
+  return chunks.reduce((sum, c) => sum + c.frames.length, 0)
+}
+
+export function getFrame(
+  chunks: AnalysisChunk[],
+  index: number,
+): AnalysisFrame | undefined {
+  let remaining = index
+  for (const chunk of chunks) {
+    if (remaining < chunk.frames.length) return chunk.frames[remaining]
+    remaining -= chunk.frames.length
+  }
+  return undefined
 }
 
 interface Opts {
@@ -69,7 +92,7 @@ function defaultOpts(): Opts {
 export async function analyzeBuffer(
   input: Float32Array,
   sampleRate: number,
-): Promise<AnalysisFrame[]> {
+): Promise<AnalysisChunk> {
   const results: AnalysisFrame[] = []
   console.log(
     `analyzeBuffer ${input.length} samples (${(input.length / sampleRate).toFixed(2)} s)`,
@@ -207,13 +230,15 @@ export async function analyzeBuffer(
       f3: voiced ? (formantFrame.formants[2]?.frequencyHz ?? null) : null,
       spectrum: specResult.data[x]!,
       rms,
-      firstBinHz: specResult.f1Hz,
-      freqStepHz: specResult.freqStepHz,
-      timeStepSamples: Math.round(specResult.timeStepSec * sampleRate),
-      sampleRate,
       speechProbability,
     } satisfies AnalysisFrame)
   }
 
-  return results
+  return {
+    timeStepSamples: Math.round(specResult.timeStepSec * sampleRate),
+    sampleRate,
+    freqStepHz: specResult.freqStepHz,
+    firstBinHz: specResult.f1Hz,
+    frames: results,
+  }
 }

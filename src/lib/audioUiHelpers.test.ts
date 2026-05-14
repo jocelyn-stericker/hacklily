@@ -1,55 +1,51 @@
 import { describe, it, expect, beforeEach } from 'vitest'
 
-import type { AnalysisFrame } from './analysis'
+import type { AnalysisChunk, AnalysisFrame } from './analysis'
 import { computeDbBounds, concatAudioBuffers } from './audioUiHelpers'
+
+const DEFAULT_PARAMS = {
+  timeStepSamples: 882,
+  sampleRate: 44100,
+  freqStepHz: 20,
+  firstBinHz: 0,
+}
+
+function makeChunk(frames: AnalysisFrame[]): AnalysisChunk {
+  return { ...DEFAULT_PARAMS, frames }
+}
+
+function makeFrame(
+  spectrum: Float32Array,
+  overrides: Partial<AnalysisFrame> = {},
+): AnalysisFrame {
+  return {
+    voiced: false,
+    f0: 0,
+    f1: null,
+    f2: null,
+    f3: null,
+    rms: 0,
+    speechProbability: 0,
+    spectrum,
+    ...overrides,
+  }
+}
 
 describe('computeDbBounds', () => {
   describe('basic dB conversion', () => {
     it('converts spectrum values to dB correctly', () => {
-      const spectrum = new Float32Array([1.0])
-      const frames: AnalysisFrame[] = [
-        {
-          voiced: false,
-          f0: 0,
-          f1: null,
-          f2: null,
-          f3: null,
-          spectrum,
-          rms: 0,
-          timeStepSamples: 882,
-          sampleRate: 44100,
-          freqStepHz: 20,
-          firstBinHz: 0,
-          speechProbability: 0,
-        },
-      ]
-
-      const result = computeDbBounds(frames)
+      const result = computeDbBounds([
+        makeChunk([makeFrame(new Float32Array([1.0]))]),
+      ])
       expect(result).not.toBeNull()
       expect(result?.min).toBeCloseTo(0, 2)
       expect(result?.max).toBeCloseTo(0, 2)
     })
 
     it('converts power values using correct formula', () => {
-      const spectrum = new Float32Array([100.0])
-      const frames: AnalysisFrame[] = [
-        {
-          voiced: false,
-          f0: 0,
-          f1: null,
-          f2: null,
-          f3: null,
-          spectrum,
-          rms: 0,
-          timeStepSamples: 882,
-          sampleRate: 44100,
-          freqStepHz: 20,
-          firstBinHz: 0,
-          speechProbability: 0,
-        },
-      ]
-
-      const result = computeDbBounds(frames)
+      const result = computeDbBounds([
+        makeChunk([makeFrame(new Float32Array([100.0]))]),
+      ])
       expect(result?.max).toBeCloseTo(20, 1)
     })
   })
@@ -61,194 +57,61 @@ describe('computeDbBounds', () => {
     })
 
     it('returns null when all spectrum values are zero or negative', () => {
-      const spectrum = new Float32Array([0, -1, -100])
-      const frames: AnalysisFrame[] = [
-        {
-          voiced: false,
-          f0: 0,
-          f1: null,
-          f2: null,
-          f3: null,
-          spectrum,
-          rms: 0,
-          timeStepSamples: 882,
-          sampleRate: 44100,
-          freqStepHz: 20,
-          firstBinHz: 0,
-          speechProbability: 0,
-        },
-      ]
-
-      const result = computeDbBounds(frames)
+      const result = computeDbBounds([
+        makeChunk([makeFrame(new Float32Array([0, -1, -100]))]),
+      ])
       expect(result).toBeNull()
     })
 
     it('ignores zero and negative values in spectrum', () => {
-      const spectrum = new Float32Array([1.0, 0, -5, 10.0, -0.5])
-      const frames: AnalysisFrame[] = [
-        {
-          voiced: false,
-          f0: 0,
-          f1: null,
-          f2: null,
-          f3: null,
-          spectrum,
-          rms: 0,
-          timeStepSamples: 882,
-          sampleRate: 44100,
-          freqStepHz: 20,
-          firstBinHz: 0,
-          speechProbability: 0,
-        },
-      ]
-
-      const result = computeDbBounds(frames)
+      const result = computeDbBounds([
+        makeChunk([makeFrame(new Float32Array([1.0, 0, -5, 10.0, -0.5]))]),
+      ])
       expect(result).not.toBeNull()
       expect(result?.min).toBeCloseTo(0, 2)
       expect(result?.max).toBeCloseTo(10, 1)
     })
 
     it('caps minimum dB at -120', () => {
-      const spectrum = new Float32Array([1e-15])
-      const frames: AnalysisFrame[] = [
-        {
-          voiced: false,
-          f0: 0,
-          f1: null,
-          f2: null,
-          f3: null,
-          spectrum,
-          rms: 0,
-          timeStepSamples: 882,
-          sampleRate: 44100,
-          freqStepHz: 20,
-          firstBinHz: 0,
-          speechProbability: 0,
-        },
-      ]
-
-      const result = computeDbBounds(frames)
+      const result = computeDbBounds([
+        makeChunk([makeFrame(new Float32Array([1e-15]))]),
+      ])
       expect(result?.min).toBeCloseTo(-120, 1)
     })
 
     it('handles single frame with no valid spectrum values', () => {
-      const spectrum = new Float32Array([0, 0, 0])
-      const frames: AnalysisFrame[] = [
-        {
-          voiced: false,
-          f0: 0,
-          f1: null,
-          f2: null,
-          f3: null,
-          spectrum,
-          rms: 0,
-          timeStepSamples: 882,
-          sampleRate: 44100,
-          freqStepHz: 20,
-          firstBinHz: 0,
-          speechProbability: 0,
-        },
-      ]
-
-      const result = computeDbBounds(frames)
+      const result = computeDbBounds([
+        makeChunk([makeFrame(new Float32Array([0, 0, 0]))]),
+      ])
       expect(result).toBeNull()
     })
   })
 
   describe('range specification', () => {
     it('respects from and to range parameters', () => {
-      const spectrum1 = new Float32Array([1.0])
-      const spectrum2 = new Float32Array([100.0])
-      const spectrum3 = new Float32Array([1000.0])
-      const frames: AnalysisFrame[] = [
-        {
-          voiced: false,
-          f0: 0,
-          f1: null,
-          f2: null,
-          f3: null,
-          spectrum: spectrum1,
-          rms: 0,
-          timeStepSamples: 882,
-          sampleRate: 44100,
-          freqStepHz: 20,
-          firstBinHz: 0,
-          speechProbability: 0,
-        },
-        {
-          voiced: false,
-          f0: 0,
-          f1: null,
-          f2: null,
-          f3: null,
-          spectrum: spectrum2,
-          rms: 0,
-          timeStepSamples: 882,
-          sampleRate: 44100,
-          freqStepHz: 20,
-          firstBinHz: 0,
-          speechProbability: 0,
-        },
-        {
-          voiced: false,
-          f0: 0,
-          f1: null,
-          f2: null,
-          f3: null,
-          spectrum: spectrum3,
-          rms: 0,
-          timeStepSamples: 882,
-          sampleRate: 44100,
-          freqStepHz: 20,
-          firstBinHz: 0,
-          speechProbability: 0,
-        },
-      ]
-
-      const result = computeDbBounds(frames, 1, 2)
+      const chunk = makeChunk([
+        makeFrame(new Float32Array([1.0])),
+        makeFrame(new Float32Array([100.0])),
+        makeFrame(new Float32Array([1000.0])),
+      ])
+      const result = computeDbBounds([chunk], 1, 2)
       expect(result?.max).toBeCloseTo(20, 1)
     })
 
     it('handles from=to (empty range)', () => {
-      const spectrum = new Float32Array([100.0])
-      const frames: AnalysisFrame[] = [
-        {
-          voiced: false,
-          f0: 0,
-          f1: null,
-          f2: null,
-          f3: null,
-          spectrum,
-          rms: 0,
-          timeStepSamples: 882,
-          sampleRate: 44100,
-          freqStepHz: 20,
-          firstBinHz: 0,
-          speechProbability: 0,
-        },
-      ]
-
-      const result = computeDbBounds(frames, 0, 0)
+      const result = computeDbBounds(
+        [makeChunk([makeFrame(new Float32Array([100.0]))])],
+        0,
+        0,
+      )
       expect(result).toBeNull()
     })
 
     it('processes multiple frames with varying spectrum values', () => {
-      const frames: AnalysisFrame[] = Array.from({ length: 10 }, (_, i) => ({
-        voiced: false,
-        f0: 0,
-        f1: null,
-        f2: null,
-        f3: null,
-        spectrum: new Float32Array([10 ** (i / 10)]),
-        rms: 0,
-        timeStepSamples: 882,
-        sampleRate: 44100,
-        freqStepHz: 20,
-        firstBinHz: 0,
-        speechProbability: 0,
-      }))
-
-      const result = computeDbBounds(frames)
+      const frames = Array.from({ length: 10 }, (_, i) =>
+        makeFrame(new Float32Array([10 ** (i / 10)])),
+      )
+      const result = computeDbBounds([makeChunk(frames)])
       expect(result).not.toBeNull()
       expect(result!.max).toBeGreaterThan(result!.min)
     })
@@ -257,37 +120,18 @@ describe('computeDbBounds', () => {
   describe('voiced and unvoiced frames', () => {
     it('processes both voiced and unvoiced frames equally', () => {
       const spectrum = new Float32Array([50.0])
-      const voicedFrame: AnalysisFrame = {
+      const voicedFrame = makeFrame(spectrum, {
         voiced: true,
-        spectrum,
         rms: 0.5,
-        timeStepSamples: 882,
-        sampleRate: 44100,
-        freqStepHz: 20,
-        firstBinHz: 0,
-        speechProbability: 0,
         f0: 200,
         f1: 700,
         f2: 1200,
         f3: 2500,
-      }
-      const unvoicedFrame: AnalysisFrame = {
-        voiced: false,
-        f0: 0,
-        f1: null,
-        f2: null,
-        f3: null,
-        spectrum,
-        rms: 0.3,
-        timeStepSamples: 882,
-        sampleRate: 44100,
-        freqStepHz: 20,
-        firstBinHz: 0,
-        speechProbability: 0,
-      }
+      })
+      const unvoicedFrame = makeFrame(spectrum, { rms: 0.3 })
 
-      const voicedResult = computeDbBounds([voicedFrame])
-      const unvoicedResult = computeDbBounds([unvoicedFrame])
+      const voicedResult = computeDbBounds([makeChunk([voicedFrame])])
+      const unvoicedResult = computeDbBounds([makeChunk([unvoicedFrame])])
 
       expect(voicedResult?.max).toBeCloseTo(unvoicedResult?.max ?? 0, 2)
       expect(voicedResult?.min).toBeCloseTo(unvoicedResult?.min ?? 0, 2)
@@ -296,49 +140,17 @@ describe('computeDbBounds', () => {
 
   describe('numerical edge cases', () => {
     it('handles very large spectrum values', () => {
-      const spectrum = new Float32Array([1e10])
-      const frames: AnalysisFrame[] = [
-        {
-          voiced: false,
-          f0: 0,
-          f1: null,
-          f2: null,
-          f3: null,
-          spectrum,
-          rms: 0,
-          timeStepSamples: 882,
-          sampleRate: 44100,
-          freqStepHz: 20,
-          firstBinHz: 0,
-          speechProbability: 0,
-        },
-      ]
-
-      const result = computeDbBounds(frames)
+      const result = computeDbBounds([
+        makeChunk([makeFrame(new Float32Array([1e10]))]),
+      ])
       expect(result).not.toBeNull()
       expect(isFinite(result?.max ?? 0)).toBe(true)
     })
 
     it('handles mixed positive and negative values (ignoring negatives)', () => {
-      const spectrum = new Float32Array([0.1, -10, 10, -100, 100])
-      const frames: AnalysisFrame[] = [
-        {
-          voiced: false,
-          f0: 0,
-          f1: null,
-          f2: null,
-          f3: null,
-          spectrum,
-          rms: 0,
-          timeStepSamples: 882,
-          sampleRate: 44100,
-          freqStepHz: 20,
-          firstBinHz: 0,
-          speechProbability: 0,
-        },
-      ]
-
-      const result = computeDbBounds(frames)
+      const result = computeDbBounds([
+        makeChunk([makeFrame(new Float32Array([0.1, -10, 10, -100, 100]))]),
+      ])
       expect(result?.max).toBeCloseTo(20, 1)
       expect(result?.min).toBeCloseTo(-10, 1)
     })

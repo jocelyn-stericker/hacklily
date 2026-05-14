@@ -1,7 +1,8 @@
 import { useEffect, useImperativeHandle, useRef, useState } from 'react'
 import type { RefObject } from 'react'
 
-import type { AnalysisFrame } from '#/lib/analysis'
+import type { AnalysisChunk } from '#/lib/analysis'
+import { getFrame, totalFrames } from '#/lib/analysis'
 import { nextPow2 } from '#/lib/mathUtils'
 import { TILE_WIDTH } from '#/lib/tileConfig'
 
@@ -44,7 +45,7 @@ interface ColorsState {
   sampleRate: number
   dbMin: number
   dbRange: number
-  analysis: AnalysisFrame[]
+  analysis: AnalysisChunk[]
 }
 
 interface Tile {
@@ -111,7 +112,7 @@ function computeColorsRange(
 ): void {
   const { data, capacity, numBins, dbMin, dbRange, analysis } = state
   for (let f = from; f < to; f++) {
-    const spectrum = analysis[f]!.spectrum
+    const spectrum = getFrame(analysis, f)!.spectrum
     for (let b = 0; b < numBins; b++) {
       const raw = spectrum[b]!
       const db = LN10_10 * Math.log(raw)
@@ -185,17 +186,19 @@ function paintColumnsToOffscreen(
 
 // Full repaint of formant tiles from fromTile onward. Used on initial build,
 // freqToY/canvasHeight changes, and patch (where existing frames may change).
+// Assumes uniform params across chunks (uses chunks[0] for timeStepSec).
 function paintFormantTiles(
   off: FormantOffscreenState,
-  analysis: AnalysisFrame[],
+  analysis: AnalysisChunk[],
   fromTile: number,
   freqToY: (hz: number) => number,
   dpr: number,
 ): void {
+  const numFrames = totalFrames(analysis)
   for (let t = fromTile; t < off.tiles.length; t++) {
     const tile = off.tiles[t]!
     tile.ctx.clearRect(0, 0, TILE_WIDTH, off.canvasHeight)
-    const frameEnd = Math.min(analysis.length, tile.startFrame + TILE_WIDTH)
+    const frameEnd = Math.min(numFrames, tile.startFrame + TILE_WIDTH)
     for (const { key, color } of FORMANT_TRACKS) {
       tile.ctx.strokeStyle = color
       tile.ctx.lineWidth = 1.5 * dpr
@@ -205,14 +208,14 @@ function paintFormantTiles(
       // one pixel before the tile edge so the stroke joins cleanly to the prev tile.
       const prevF = tile.startFrame - 1
       if (prevF >= 0) {
-        const prevSample = analysis[prevF]
+        const prevSample = getFrame(analysis, prevF)
         if (prevSample?.voiced && prevSample[key] !== null) {
           tile.ctx.moveTo(-1, freqToY(prevSample[key]))
           penDown = true
         }
       }
       for (let f = tile.startFrame; f < frameEnd; f++) {
-        const sample = analysis[f]!
+        const sample = getFrame(analysis, f)!
         if (!sample.voiced || sample[key] === null) {
           penDown = false
           continue
@@ -232,7 +235,7 @@ function paintFormantTiles(
 // Does NOT clear tiles, so cost is O(to - from), not O(tile frames). Used by append.
 function appendFormantTiles(
   off: FormantOffscreenState,
-  analysis: AnalysisFrame[],
+  analysis: AnalysisChunk[],
   from: number,
   to: number,
   freqToY: (hz: number) => number,
@@ -255,14 +258,14 @@ function appendFormantTiles(
       // places the moveTo just off-canvas so the stroke joins at the edge.
       const prevF = absFrom - 1
       if (prevF >= 0) {
-        const prevSample = analysis[prevF]
+        const prevSample = getFrame(analysis, prevF)
         if (prevSample?.voiced && prevSample[key] !== null) {
           tile.ctx.moveTo(prevF - tile.startFrame, freqToY(prevSample[key]))
           penDown = true
         }
       }
       for (let f = absFrom; f < absTo; f++) {
-        const sample = analysis[f]!
+        const sample = getFrame(analysis, f)!
         if (!sample.voiced || sample[key] === null) {
           penDown = false
           continue
@@ -487,7 +490,7 @@ export function Spectrogram({
   ref,
   debug = false,
 }: {
-  analysis: Array<AnalysisFrame>
+  analysis: AnalysisChunk[]
   dbMin: number
   dbRange: number
   ref: RefObject<SpectrogramHandle | null>
@@ -535,8 +538,8 @@ export function Spectrogram({
       formantOffRef.current = null
       return
     }
-    const numFrames = analysis.length
-    const numBins = analysis[0]!.spectrum.length
+    const numFrames = totalFrames(analysis)
+    const numBins = analysis[0]!.frames[0]!.spectrum.length
     const { firstBinHz, freqStepHz, timeStepSamples, sampleRate } = analysis[0]!
     const capacity = nextPow2(numFrames)
     const colors: ColorsState = {
@@ -658,8 +661,8 @@ export function Spectrogram({
           const effectiveFrom = fromRef.current!
           fromRef.current = null
           if (!colorsRef.current) {
-            const numFrames = analysis.length
-            const numBins = analysis[0]!.spectrum.length
+            const numFrames = totalFrames(analysis)
+            const numBins = analysis[0]!.frames[0]!.spectrum.length
             const { firstBinHz, freqStepHz, timeStepSamples, sampleRate } =
               analysis[0]!
             const capacity = nextPow2(numFrames)
@@ -680,7 +683,7 @@ export function Spectrogram({
             colorsRef.current = colors
           }
           const colors = colorsRef.current
-          const to = colors.analysis.length
+          const to = totalFrames(colors.analysis)
           if (effectiveFrom >= to) return
           ensureColorsCapacity(colors, to)
           computeColorsRange(colors, effectiveFrom, to)

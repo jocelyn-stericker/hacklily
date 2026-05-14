@@ -1,7 +1,11 @@
 import { useEffect, useRef } from 'react'
 
 import type { TimelineState } from '#/components/Plot'
-import type { AnalysisFrame } from '#/lib/analysis'
+import type {
+  AnalysisChunk,
+  AnalysisFrame,
+  AnalysisParams,
+} from '#/lib/analysis'
 import audioWorkletUrl from '#/lib/AudioRingWriter?worker&url'
 import type { AudioRingWriterNode } from '#/lib/AudioRingWriter'
 import LiveWorker from '#/lib/liveWorker?worker'
@@ -12,14 +16,16 @@ const SAB_BUF_SAMPLES = 32768
 
 export function AudioRecorder({
   onAppend,
+  onChunkStart,
   onPatch,
   onReset,
   onTimelineStateChanged,
   onError,
 }: {
-  onAppend: (analysis: AnalysisFrame) => number
+  onAppend: (frame: AnalysisFrame) => number
+  onChunkStart?: (params: AnalysisParams) => void
   onPatch?: (frameIndex: number) => void
-  onReset: (analysis: AnalysisFrame[], buffer: AudioBuffer) => void
+  onReset: (chunks: AnalysisChunk[], buffer: AudioBuffer) => void
   onTimelineStateChanged: React.Dispatch<React.SetStateAction<TimelineState>>
   onError: (error: string) => void
 }) {
@@ -29,7 +35,8 @@ export function AudioRecorder({
   const onResetRef = useRef(onReset)
   const onErrorRef = useRef(onError)
   const onPatchRef = useRef(onPatch)
-  const accumulatedAnalysisRef = useRef<AnalysisFrame[]>([])
+  const onChunkStartRef = useRef(onChunkStart)
+  const accumulatedChunksRef = useRef<AnalysisChunk[]>([])
 
   useEffect(() => {
     onTimelineStateChangedRef.current = onTimelineStateChanged
@@ -43,13 +50,16 @@ export function AudioRecorder({
   useEffect(() => {
     onPatchRef.current = onPatch
   }, [onPatch])
+  useEffect(() => {
+    onChunkStartRef.current = onChunkStart
+  }, [onChunkStart])
 
   useEffect(() => {
     // If cleanup runs before setup finishes, this defers the teardown
     // until setup completes so all resources are properly released.
     let shouldTeardown = false
     let teardown: (() => void) | null = null
-    accumulatedAnalysisRef.current = []
+    accumulatedChunksRef.current = []
 
     spinup()
 
@@ -99,8 +109,9 @@ export function AudioRecorder({
 
         liveWorker.onmessage = ({ data }) => {
           if (data.type === 'pcm') {
-            const analysisSamples = accumulatedAnalysisRef.current.reduce(
-              (memo, sample) => memo + sample.timeStepSamples,
+            const analysisSamples = accumulatedChunksRef.current.reduce(
+              (memo, chunk) =>
+                memo + chunk.timeStepSamples * chunk.frames.length,
               0,
             )
 
@@ -111,9 +122,21 @@ export function AudioRecorder({
               sampleRate,
             })
             if (pcm.length > 0) buffer.copyToChannel(pcm, 0)
-            onResetRef.current(accumulatedAnalysisRef.current, buffer)
+            onResetRef.current(accumulatedChunksRef.current, buffer)
             liveWorker!.terminate()
             liveWorker = null
+            return
+          }
+
+          if (data.type === 'params') {
+            const params: AnalysisParams = {
+              timeStepSamples: data.timeStepSamples,
+              sampleRate: data.sampleRate,
+              freqStepHz: data.freqStepHz,
+              firstBinHz: data.firstBinHz,
+            }
+            accumulatedChunksRef.current.push({ ...params, frames: [] })
+            onChunkStartRef.current?.(params)
             return
           }
 
@@ -121,10 +144,6 @@ export function AudioRecorder({
             const frame: AnalysisFrame = {
               spectrum: data.spectrum,
               rms: data.rms,
-              timeStepSamples: data.timeStepSamples,
-              sampleRate: data.sampleRate,
-              freqStepHz: data.freqStepHz,
-              firstBinHz: data.firstBinHz,
               speechProbability: data.speechProbability ?? 0,
               voiced: data.voiced ?? false,
               f0: data.f0 ?? 0,
@@ -132,7 +151,11 @@ export function AudioRecorder({
               f2: data.f2 ?? null,
               f3: data.f3 ?? null,
             }
-            accumulatedAnalysisRef.current.push(frame)
+            const currentChunk =
+              accumulatedChunksRef.current[
+                accumulatedChunksRef.current.length - 1
+              ]
+            currentChunk?.frames.push(frame)
             pendingCursorSecRef.current = onAppend(frame)
             if (cursorRafRef.current === null) {
               cursorRafRef.current = requestAnimationFrame(() => {
@@ -170,7 +193,11 @@ export function AudioRecorder({
 
           // data.type === 'patch'
           {
-            const frame = accumulatedAnalysisRef.current[data.frameIndex]
+            const currentChunk =
+              accumulatedChunksRef.current[
+                accumulatedChunksRef.current.length - 1
+              ]
+            const frame = currentChunk?.frames[data.frameIndex]
             if (frame) {
               if (data.voiced !== undefined) frame.voiced = data.voiced
               if (data.f0 !== undefined) frame.f0 = data.f0

@@ -15,24 +15,31 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import type { AnalysisFrame } from './analysis'
+import type { AnalysisChunk } from './analysis'
 
 const LN10_10 = 10 / Math.log(10)
 
 export function computeDbBounds(
-  frames: AnalysisFrame[],
+  chunks: AnalysisChunk[],
   from = 0,
-  to = frames.length,
+  to = Infinity,
 ): { min: number; max: number } | null {
   let minDb = Infinity
   let maxDb = -Infinity
-  for (let i = from; i < to; i++) {
-    for (const raw of frames[i]!.spectrum) {
-      if (raw > 0) {
-        const db = LN10_10 * Math.log(raw)
-        if (db < minDb) minDb = db
-        if (db > maxDb) maxDb = db
+  let idx = 0
+  outer: for (const chunk of chunks) {
+    for (const frame of chunk.frames) {
+      if (idx >= to) break outer
+      if (idx >= from) {
+        for (const raw of frame.spectrum) {
+          if (raw > 0) {
+            const db = LN10_10 * Math.log(raw)
+            if (db < minDb) minDb = db
+            if (db > maxDb) maxDb = db
+          }
+        }
       }
+      idx++
     }
   }
   if (!isFinite(minDb)) return null
@@ -40,7 +47,7 @@ export function computeDbBounds(
 }
 
 export async function importAudioFile(file: File): Promise<{
-  analysis: AnalysisFrame[]
+  analysis: AnalysisChunk[]
   dbBounds: { min: number; max: number } | null
   buffer: AudioBuffer
 }> {
@@ -73,13 +80,10 @@ export async function importAudioFile(file: File): Promise<{
   return new Promise((resolve, reject) => {
     audioImporter.onmessage = ({
       data,
-    }: MessageEvent<{ ok: AnalysisFrame[] } | { error: string }>) => {
+    }: MessageEvent<{ ok: AnalysisChunk } | { error: string }>) => {
       audioImporter.terminate()
       if ('ok' in data) {
-        const analysisSamples = data.ok.reduce(
-          (memo, sample) => memo + sample.timeStepSamples,
-          0,
-        )
+        const analysisSamples = data.ok.timeStepSamples * data.ok.frames.length
 
         // Fit it to the analysis samples, keep it mono
         const shortenedMono = new AudioBuffer({
@@ -89,9 +93,10 @@ export async function importAudioFile(file: File): Promise<{
         })
         shortenedMono.copyToChannel(mono, 0)
 
+        const chunks: AnalysisChunk[] = [data.ok]
         resolve({
-          analysis: data.ok,
-          dbBounds: computeDbBounds(data.ok),
+          analysis: chunks,
+          dbBounds: computeDbBounds(chunks),
           buffer: shortenedMono,
         })
       } else {
