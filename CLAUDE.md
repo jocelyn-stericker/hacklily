@@ -10,7 +10,7 @@ npm run dev              # Run dev server on port 3000
 npm run build          # Build for production
 
 # Code Quality
-npm run check          # Format with Prettier, fix with ESLint, and typecheck
+npm run check          # Format with oxfmt, fix with ESLint, and typecheck
 npm run lint           # Run ESLint and TypeScript type checking
 
 # Testing
