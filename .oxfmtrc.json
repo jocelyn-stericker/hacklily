@@ -6,5 +6,10 @@
   "printWidth": 80,
   "sortImports": true,
   "sortPackageJson": false,
-  "ignorePatterns": ["package-lock.json", "pnpm-lock.yaml", "yarn.lock"]
+  "ignorePatterns": [
+    "package-lock.json",
+    "pnpm-lock.yaml",
+    "yarn.lock",
+    "src/routeTree.gen.ts"
+  ]
 }
