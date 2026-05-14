@@ -35,13 +35,11 @@ function RootDocument({ children }: { children: React.ReactNode }) {
       <body className="font-sans antialiased wrap-anywhere selection:bg-[rgba(79,184,178,0.24)]">
         <QueryClientProvider client={queryClient}>
           {children}
-          {import.meta.env.DEV && (
-            <TanStackDevtools
-              plugins={[
-                { name: 'TanStack Query', render: <ReactQueryDevtoolsPanel /> },
-              ]}
-            />
-          )}
+          <TanStackDevtools
+            plugins={[
+              { name: 'TanStack Query', render: <ReactQueryDevtoolsPanel /> },
+            ]}
+          />
         </QueryClientProvider>
         <Scripts />
       </body>
