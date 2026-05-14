@@ -12,9 +12,15 @@ jobs:
           npm install
           npm run lint
           npm run build
-      - name: Deploy website
+      - name: Deploy website (grebedoc)
         uses: actions/git-pages@v2
         with:
           site: https://jocelyn-stericker.grebedoc.dev/braat
+          source: ./dist/client
+          token: ${{ forge.token }}
+      - name: Deploy website (codeberg)
+        uses: actions/git-pages@v2
+        with:
+          site: https://jocelyn-stericker.codeberg.page/braat
           source: ./dist/client
           token: ${{ forge.token }}
