@@ -5,8 +5,6 @@
 @import 'shadcn/tailwind.css';
 @import '@fontsource-variable/geist';
 
-@plugin "@tailwindcss/typography";
-
 @theme {
   --font-sans: 'Manrope', ui-sans-serif, system-ui, sans-serif;
 }
