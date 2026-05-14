@@ -28,14 +28,15 @@ export interface TimelineState {
   trackDurationSec: number
 }
 
+export type Status =
+  | { value: 'inactive' }
+  | { value: 'recording' }
+  | { value: 'analyzing' }
+  | { value: 'playing' }
+  | { value: 'error'; error: string }
+
 export function useTimelineState(analysis: AnalysisChunk[]) {
-  const [status, setStatus] = useState<
-    | { value: 'inactive' }
-    | { value: 'recording' }
-    | { value: 'analyzing' }
-    | { value: 'playing' }
-    | { value: 'error'; error: string }
-  >(() => {
+  const [status, setStatus] = useState<Status>(() => {
     const missingFeatures = featureCheck()
     return missingFeatures
       ? { value: 'error', error: missingFeatures }

@@ -16,24 +16,15 @@
  */
 
 import { createFileRoute } from '@tanstack/react-router'
-import { FolderOpen, MicVocal, Pause, Play, SkipBack } from 'lucide-react'
 import { useCallback, useEffect, useRef, useState } from 'react'
 
-import braatPng from '#/braat.png'
 import { AudioPlayback } from '#/components/AudioPlayback'
 import { AudioRecorder } from '#/components/AudioRecorder'
+import { Dialogs } from '#/components/Dialogs'
 import { Plot } from '#/components/Plot'
 import { Spectrogram } from '#/components/Spectrogram'
 import type { SpectrogramHandle } from '#/components/Spectrogram'
-import { Button } from '#/components/ui/button'
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '#/components/ui/dialog'
+import { Toolbar } from '#/components/Toolbar'
 import { useAudioImport } from '#/components/useAudioImport'
 import { usePreemptibleCallback } from '#/components/usePreemptibleCallback'
 import { useTimelineState } from '#/components/useTimelineState'
@@ -42,7 +33,6 @@ import { VowelChart } from '#/components/VowelChart'
 import type { VowelChartHandle } from '#/components/VowelChart'
 import { Waveform } from '#/components/Waveform'
 import type { WaveformHandle } from '#/components/Waveform'
-import { WelcomeModal } from '#/components/WelcomeModal'
 import type {
   AnalysisChunk,
   AnalysisFrame,
@@ -207,95 +197,26 @@ function App() {
     Math.floor(timelineState.trackDurationSec / 30 + 1) * 30 +
     (timelineState.viewportRightSec - timelineState.viewportLeftSec)
 
-  const showWelcome = analysis.length === 0 && status.value === 'inactive'
-
   return (
     <>
-      <WelcomeModal
-        open={showWelcome}
-        onStartRecording={handleStart}
-        onOpenFile={openFilePicker}
+      <Dialogs
+        analysis={analysis}
+        status={status}
+        onAcknowledgeError={handleAcknowledgeError}
+        onStartRecording={startRecording}
+        openFilePicker={openFilePicker}
       />
-      <Dialog open={status.value === 'analyzing'}>
-        <DialogContent showCloseButton={false}>
-          <DialogHeader>
-            <DialogTitle>Analyzing audio…</DialogTitle>
-            <DialogDescription>This may take a moment.</DialogDescription>
-          </DialogHeader>
-        </DialogContent>
-      </Dialog>
-      <Dialog
-        open={status.value === 'error'}
-        onOpenChange={handleAcknowledgeError}
-      >
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Something went wrong</DialogTitle>
-            <DialogDescription>
-              {status.value === 'error' ? status.error : null}
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter showCloseButton />
-        </DialogContent>
-      </Dialog>
       <main className="min-h-screen flex flex-col">
-        <header className="flex align-center justify-end gap-1 p-2 flex-wrap">
-          <h1 className="text-lg font-bold bg-[#8ace00] mr-2">
-            <img src={braatPng} className="h-10" />
-          </h1>
-          <div className="grow" />
-          <Button
-            variant="default"
-            className="h-10 w-10 cursor-pointer"
-            title="Open an audio file"
-            onClick={openFilePicker}
-          >
-            <FolderOpen className="size-6" />
-          </Button>
-          <Button
-            variant="default"
-            className="h-10 w-10 cursor-pointer"
-            title="Back to start"
-            disabled={
-              timelineState.cursorSec === 0 &&
-              timelineState.viewportLeftSec === 0
-            }
-            onClick={handleBackToStart}
-          >
-            <SkipBack className="size-6" />
-          </Button>
-          <Button
-            variant="default"
-            className="h-10 w-10 cursor-pointer"
-            disabled={
-              status.value === 'recording' || status.value === 'analyzing'
-            }
-            title="Analyze audio from microphone"
-            onClick={handleStart}
-          >
-            <MicVocal className="size-6" />
-          </Button>
-          {status.value === 'playing' || status.value === 'recording' ? (
-            <Button
-              variant="default"
-              className="h-10 w-10 cursor-pointer"
-              title="Pause audio track"
-              onClick={handlePause}
-            >
-              <Pause className="size-6" />
-            </Button>
-          ) : (
-            <Button
-              variant="default"
-              className="h-10 w-10 cursor-pointer"
-              title="Play back audio track"
-              onClick={handlePlay}
-              disabled={!audioBuffer || audioBuffer.length === 0}
-            >
-              <Play className="size-6" />
-            </Button>
-          )}
-        </header>
+        <Toolbar
+          openFilePicker={openFilePicker}
+          timelineState={timelineState}
+          status={status}
+          onBackToStart={handleBackToStart}
+          onStart={handleStart}
+          onPause={handlePause}
+          onPlay={handlePlay}
+          playDisabled={!audioBuffer || audioBuffer.length === 0}
+        />
         <Plot
           timelineState={waveformTimelineState}
           xAxisVisible={false}
