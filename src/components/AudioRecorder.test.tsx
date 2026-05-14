@@ -78,7 +78,8 @@ describe('AudioRecorder', () => {
       f3: 2500,
       spectrum,
       rms: 0.5,
-      timeStepSec: 0.02,
+      timeStepSamples: 882,
+      sampleRate: 44100,
       freqStepHz: 20,
       firstBinHz: 0,
       speechProbability: 0,
@@ -434,7 +435,10 @@ describe('AudioRecorder', () => {
     await waitForMockWorker()
 
     const msg1 = createMockFrameMessage()
-    const msg2 = createMockFrameMessage({ timeStepSec: 0.02 })
+    const msg2 = createMockFrameMessage({
+      timeStepSamples: 882,
+      sampleRate: 44100,
+    })
 
     getMockWorker().onmessage({ data: msg1 })
     getMockWorker().onmessage({ data: msg2 })
@@ -459,7 +463,10 @@ describe('AudioRecorder', () => {
 
     await waitForMockWorker()
 
-    const msg = createMockFrameMessage({ timeStepSec: 0.01 })
+    const msg = createMockFrameMessage({
+      timeStepSamples: 441,
+      sampleRate: 44100,
+    })
     const pcm = new Float32Array([0.1, 0.2, 0.3])
 
     getMockWorker().onmessage({ data: msg })
@@ -807,8 +814,14 @@ describe('AudioRecorder', () => {
 
     await waitForMockWorker()
 
-    const msg1 = createMockFrameMessage({ timeStepSec: 0.02 })
-    const msg2 = createMockFrameMessage({ timeStepSec: 0.02 })
+    const msg1 = createMockFrameMessage({
+      timeStepSamples: 882,
+      sampleRate: 44100,
+    })
+    const msg2 = createMockFrameMessage({
+      timeStepSamples: 882,
+      sampleRate: 44100,
+    })
     const pcm = new Float32Array([0.1, 0.2])
 
     getMockWorker().onmessage({ data: msg1 })
@@ -842,7 +855,10 @@ describe('AudioRecorder', () => {
     await waitForMockWorker()
 
     // Send an analysis message first to allocate buffer space
-    const msg = createMockFrameMessage({ timeStepSec: 0.01 })
+    const msg = createMockFrameMessage({
+      timeStepSamples: 441,
+      sampleRate: 44100,
+    })
     getMockWorker().onmessage({ data: msg })
 
     const pcm = new Float32Array([0.1, 0.2, 0.3, 0.4])

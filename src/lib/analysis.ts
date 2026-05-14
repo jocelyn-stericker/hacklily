@@ -22,10 +22,11 @@ import { resample } from './resample'
 import { SpectrogramProcessor } from './spectrogram'
 import { VadStreamProcessor } from './vad'
 
-export type AnalysisMessage = {
+export type AnalysisFrame = {
   spectrum: Float32Array
   rms: number
-  timeStepSec: number
+  timeStepSamples: number
+  sampleRate: number
   freqStepHz: number
   // Center of first bin
   firstBinHz: number
@@ -39,7 +40,7 @@ export type AnalysisMessage = {
 }
 
 // Frames confirmed voiced with both F1 and F2 present. Used as a type predicate in VowelChart.
-export type VoicedAnalysisMessage = AnalysisMessage & {
+export type VoicedAnalysisFrame = AnalysisFrame & {
   voiced: true
   f1: number
   f2: number
@@ -68,8 +69,8 @@ function defaultOpts(): Opts {
 export async function analyzeBuffer(
   input: Float32Array,
   sampleRate: number,
-): Promise<AnalysisMessage[]> {
-  const results: AnalysisMessage[] = []
+): Promise<AnalysisFrame[]> {
+  const results: AnalysisFrame[] = []
   console.log(
     `analyzeBuffer ${input.length} samples (${(input.length / sampleRate).toFixed(2)} s)`,
   )
@@ -208,9 +209,10 @@ export async function analyzeBuffer(
       rms,
       firstBinHz: specResult.f1Hz,
       freqStepHz: specResult.freqStepHz,
-      timeStepSec: specResult.timeStepSec,
+      timeStepSamples: Math.round(specResult.timeStepSec * sampleRate),
+      sampleRate,
       speechProbability,
-    } satisfies AnalysisMessage)
+    } satisfies AnalysisFrame)
   }
 
   return results

@@ -1,7 +1,7 @@
 import { useEffect, useImperativeHandle, useState } from 'react'
 import type { RefObject } from 'react'
 
-import type { AnalysisMessage, VoicedAnalysisMessage } from '#/lib/analysis'
+import type { AnalysisFrame, VoicedAnalysisFrame } from '#/lib/analysis'
 import { hzToBark } from '#/lib/bark'
 
 // F1/F2 ranges for North American English vowels (Hz), per Hillenbrand et al. 1995.
@@ -87,7 +87,7 @@ function drawVowelChart(
   width: number,
   height: number,
   dpr: number,
-  history: AnalysisMessage[],
+  history: AnalysisFrame[],
 ): void {
   if (width === 0 || height === 0) return
 
@@ -154,8 +154,7 @@ function drawVowelChart(
 
   // Trail of recent voiced frames
   const voiced = history.filter(
-    (s): s is VoicedAnalysisMessage =>
-      s.voiced && s.f1 !== null && s.f2 !== null,
+    (s): s is VoicedAnalysisFrame => s.voiced && s.f1 !== null && s.f2 !== null,
   )
   const trail = voiced.slice(-TRAIL_LEN)
 
@@ -280,14 +279,14 @@ export interface VowelChartHandle {
 }
 
 function framesUpToCursor(
-  analysis: AnalysisMessage[],
+  analysis: AnalysisFrame[],
   cursorSec: number,
-): AnalysisMessage[] {
+): AnalysisFrame[] {
   let elapsed = 0
-  const result: AnalysisMessage[] = []
+  const result: AnalysisFrame[] = []
   for (const frame of analysis) {
     result.push(frame)
-    elapsed += frame.timeStepSec
+    elapsed += frame.timeStepSamples / frame.sampleRate
     if (elapsed >= cursorSec) break
   }
   return result
@@ -298,7 +297,7 @@ export function VowelChart({
   cursorSec,
   ref,
 }: {
-  analysis: AnalysisMessage[]
+  analysis: AnalysisFrame[]
   cursorSec: number
   ref: RefObject<VowelChartHandle | null>
 }) {

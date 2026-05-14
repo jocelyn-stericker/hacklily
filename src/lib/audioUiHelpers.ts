@@ -15,12 +15,12 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import type { AnalysisMessage } from './analysis'
+import type { AnalysisFrame } from './analysis'
 
 const LN10_10 = 10 / Math.log(10)
 
 export function computeDbBounds(
-  frames: AnalysisMessage[],
+  frames: AnalysisFrame[],
   from = 0,
   to = frames.length,
 ): { min: number; max: number } | null {
@@ -40,7 +40,7 @@ export function computeDbBounds(
 }
 
 export async function importAudioFile(file: File): Promise<{
-  analysis: AnalysisMessage[]
+  analysis: AnalysisFrame[]
   dbBounds: { min: number; max: number } | null
   buffer: AudioBuffer
 }> {
@@ -73,14 +73,13 @@ export async function importAudioFile(file: File): Promise<{
   return new Promise((resolve, reject) => {
     audioImporter.onmessage = ({
       data,
-    }: MessageEvent<{ ok: AnalysisMessage[] } | { error: string }>) => {
+    }: MessageEvent<{ ok: AnalysisFrame[] } | { error: string }>) => {
       audioImporter.terminate()
       if ('ok' in data) {
-        const analysisDuration = data.ok.reduce(
-          (memo, sample) => memo + sample.timeStepSec,
+        const analysisSamples = data.ok.reduce(
+          (memo, sample) => memo + sample.timeStepSamples,
           0,
         )
-        const analysisSamples = Math.round(analysisDuration * 44100)
 
         // Fit it to the analysis samples, keep it mono
         const shortenedMono = new AudioBuffer({

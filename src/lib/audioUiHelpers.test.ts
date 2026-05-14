@@ -1,13 +1,13 @@
 import { describe, it, expect, beforeEach } from 'vitest'
 
-import type { AnalysisMessage } from './analysis'
+import type { AnalysisFrame } from './analysis'
 import { computeDbBounds, concatAudioBuffers } from './audioUiHelpers'
 
 describe('computeDbBounds', () => {
   describe('basic dB conversion', () => {
     it('converts spectrum values to dB correctly', () => {
       const spectrum = new Float32Array([1.0])
-      const frames: AnalysisMessage[] = [
+      const frames: AnalysisFrame[] = [
         {
           voiced: false,
           f0: 0,
@@ -16,7 +16,8 @@ describe('computeDbBounds', () => {
           f3: null,
           spectrum,
           rms: 0,
-          timeStepSec: 0.02,
+          timeStepSamples: 882,
+          sampleRate: 44100,
           freqStepHz: 20,
           firstBinHz: 0,
           speechProbability: 0,
@@ -31,7 +32,7 @@ describe('computeDbBounds', () => {
 
     it('converts power values using correct formula', () => {
       const spectrum = new Float32Array([100.0])
-      const frames: AnalysisMessage[] = [
+      const frames: AnalysisFrame[] = [
         {
           voiced: false,
           f0: 0,
@@ -40,7 +41,8 @@ describe('computeDbBounds', () => {
           f3: null,
           spectrum,
           rms: 0,
-          timeStepSec: 0.02,
+          timeStepSamples: 882,
+          sampleRate: 44100,
           freqStepHz: 20,
           firstBinHz: 0,
           speechProbability: 0,
@@ -60,7 +62,7 @@ describe('computeDbBounds', () => {
 
     it('returns null when all spectrum values are zero or negative', () => {
       const spectrum = new Float32Array([0, -1, -100])
-      const frames: AnalysisMessage[] = [
+      const frames: AnalysisFrame[] = [
         {
           voiced: false,
           f0: 0,
@@ -69,7 +71,8 @@ describe('computeDbBounds', () => {
           f3: null,
           spectrum,
           rms: 0,
-          timeStepSec: 0.02,
+          timeStepSamples: 882,
+          sampleRate: 44100,
           freqStepHz: 20,
           firstBinHz: 0,
           speechProbability: 0,
@@ -82,7 +85,7 @@ describe('computeDbBounds', () => {
 
     it('ignores zero and negative values in spectrum', () => {
       const spectrum = new Float32Array([1.0, 0, -5, 10.0, -0.5])
-      const frames: AnalysisMessage[] = [
+      const frames: AnalysisFrame[] = [
         {
           voiced: false,
           f0: 0,
@@ -91,7 +94,8 @@ describe('computeDbBounds', () => {
           f3: null,
           spectrum,
           rms: 0,
-          timeStepSec: 0.02,
+          timeStepSamples: 882,
+          sampleRate: 44100,
           freqStepHz: 20,
           firstBinHz: 0,
           speechProbability: 0,
@@ -106,7 +110,7 @@ describe('computeDbBounds', () => {
 
     it('caps minimum dB at -120', () => {
       const spectrum = new Float32Array([1e-15])
-      const frames: AnalysisMessage[] = [
+      const frames: AnalysisFrame[] = [
         {
           voiced: false,
           f0: 0,
@@ -115,7 +119,8 @@ describe('computeDbBounds', () => {
           f3: null,
           spectrum,
           rms: 0,
-          timeStepSec: 0.02,
+          timeStepSamples: 882,
+          sampleRate: 44100,
           freqStepHz: 20,
           firstBinHz: 0,
           speechProbability: 0,
@@ -128,7 +133,7 @@ describe('computeDbBounds', () => {
 
     it('handles single frame with no valid spectrum values', () => {
       const spectrum = new Float32Array([0, 0, 0])
-      const frames: AnalysisMessage[] = [
+      const frames: AnalysisFrame[] = [
         {
           voiced: false,
           f0: 0,
@@ -137,7 +142,8 @@ describe('computeDbBounds', () => {
           f3: null,
           spectrum,
           rms: 0,
-          timeStepSec: 0.02,
+          timeStepSamples: 882,
+          sampleRate: 44100,
           freqStepHz: 20,
           firstBinHz: 0,
           speechProbability: 0,
@@ -154,7 +160,7 @@ describe('computeDbBounds', () => {
       const spectrum1 = new Float32Array([1.0])
       const spectrum2 = new Float32Array([100.0])
       const spectrum3 = new Float32Array([1000.0])
-      const frames: AnalysisMessage[] = [
+      const frames: AnalysisFrame[] = [
         {
           voiced: false,
           f0: 0,
@@ -163,7 +169,8 @@ describe('computeDbBounds', () => {
           f3: null,
           spectrum: spectrum1,
           rms: 0,
-          timeStepSec: 0.02,
+          timeStepSamples: 882,
+          sampleRate: 44100,
           freqStepHz: 20,
           firstBinHz: 0,
           speechProbability: 0,
@@ -176,7 +183,8 @@ describe('computeDbBounds', () => {
           f3: null,
           spectrum: spectrum2,
           rms: 0,
-          timeStepSec: 0.02,
+          timeStepSamples: 882,
+          sampleRate: 44100,
           freqStepHz: 20,
           firstBinHz: 0,
           speechProbability: 0,
@@ -189,7 +197,8 @@ describe('computeDbBounds', () => {
           f3: null,
           spectrum: spectrum3,
           rms: 0,
-          timeStepSec: 0.02,
+          timeStepSamples: 882,
+          sampleRate: 44100,
           freqStepHz: 20,
           firstBinHz: 0,
           speechProbability: 0,
@@ -202,7 +211,7 @@ describe('computeDbBounds', () => {
 
     it('handles from=to (empty range)', () => {
       const spectrum = new Float32Array([100.0])
-      const frames: AnalysisMessage[] = [
+      const frames: AnalysisFrame[] = [
         {
           voiced: false,
           f0: 0,
@@ -211,7 +220,8 @@ describe('computeDbBounds', () => {
           f3: null,
           spectrum,
           rms: 0,
-          timeStepSec: 0.02,
+          timeStepSamples: 882,
+          sampleRate: 44100,
           freqStepHz: 20,
           firstBinHz: 0,
           speechProbability: 0,
@@ -223,7 +233,7 @@ describe('computeDbBounds', () => {
     })
 
     it('processes multiple frames with varying spectrum values', () => {
-      const frames: AnalysisMessage[] = Array.from({ length: 10 }, (_, i) => ({
+      const frames: AnalysisFrame[] = Array.from({ length: 10 }, (_, i) => ({
         voiced: false,
         f0: 0,
         f1: null,
@@ -231,7 +241,8 @@ describe('computeDbBounds', () => {
         f3: null,
         spectrum: new Float32Array([10 ** (i / 10)]),
         rms: 0,
-        timeStepSec: 0.02,
+        timeStepSamples: 882,
+        sampleRate: 44100,
         freqStepHz: 20,
         firstBinHz: 0,
         speechProbability: 0,
@@ -246,11 +257,12 @@ describe('computeDbBounds', () => {
   describe('voiced and unvoiced frames', () => {
     it('processes both voiced and unvoiced frames equally', () => {
       const spectrum = new Float32Array([50.0])
-      const voicedFrame: AnalysisMessage = {
+      const voicedFrame: AnalysisFrame = {
         voiced: true,
         spectrum,
         rms: 0.5,
-        timeStepSec: 0.02,
+        timeStepSamples: 882,
+        sampleRate: 44100,
         freqStepHz: 20,
         firstBinHz: 0,
         speechProbability: 0,
@@ -259,7 +271,7 @@ describe('computeDbBounds', () => {
         f2: 1200,
         f3: 2500,
       }
-      const unvoicedFrame: AnalysisMessage = {
+      const unvoicedFrame: AnalysisFrame = {
         voiced: false,
         f0: 0,
         f1: null,
@@ -267,7 +279,8 @@ describe('computeDbBounds', () => {
         f3: null,
         spectrum,
         rms: 0.3,
-        timeStepSec: 0.02,
+        timeStepSamples: 882,
+        sampleRate: 44100,
         freqStepHz: 20,
         firstBinHz: 0,
         speechProbability: 0,
@@ -284,7 +297,7 @@ describe('computeDbBounds', () => {
   describe('numerical edge cases', () => {
     it('handles very large spectrum values', () => {
       const spectrum = new Float32Array([1e10])
-      const frames: AnalysisMessage[] = [
+      const frames: AnalysisFrame[] = [
         {
           voiced: false,
           f0: 0,
@@ -293,7 +306,8 @@ describe('computeDbBounds', () => {
           f3: null,
           spectrum,
           rms: 0,
-          timeStepSec: 0.02,
+          timeStepSamples: 882,
+          sampleRate: 44100,
           freqStepHz: 20,
           firstBinHz: 0,
           speechProbability: 0,
@@ -307,7 +321,7 @@ describe('computeDbBounds', () => {
 
     it('handles mixed positive and negative values (ignoring negatives)', () => {
       const spectrum = new Float32Array([0.1, -10, 10, -100, 100])
-      const frames: AnalysisMessage[] = [
+      const frames: AnalysisFrame[] = [
         {
           voiced: false,
           f0: 0,
@@ -316,7 +330,8 @@ describe('computeDbBounds', () => {
           f3: null,
           spectrum,
           rms: 0,
-          timeStepSec: 0.02,
+          timeStepSamples: 882,
+          sampleRate: 44100,
           freqStepHz: 20,
           firstBinHz: 0,
           speechProbability: 0,

@@ -51,7 +51,7 @@ npm run test           # Run tests with Vitest
 - `src/lib/AudioRingWriter.ts` - AudioWorklet processor which writes microphone PCM data to a ring buffer
 - `src/lib/liveWorker.ts` - analysis of audio input
 - `src/lib/importWorker.ts` - Web Worker for file import processing with frame-by-frame analysis
-- `src/lib/analysis.ts` - Core worker spawning and `AnalysisMessage` type definition (includes pitch, formants, RMS per frame)
+- `src/lib/analysis.ts` - Core worker spawning and `AnalysisFrame` type definition (includes pitch, formants, RMS per frame)
 
 **5. DSP Algorithms**
 
@@ -81,7 +81,7 @@ npm run test           # Run tests with Vitest
 
 ## Type Definition
 
-The `AnalysisMessage` type (in `src/lib/analysis.ts`) defines the frame data communicated from workers to UI:
+The `AnalysisFrame` type (in `src/lib/analysis.ts`) defines the frame data communicated from workers to UI:
 
 - `pitch` - Fundamental frequency (F0)
 - `formants` - Array of formant frequencies

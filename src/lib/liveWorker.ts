@@ -16,7 +16,7 @@
  */
 /// <reference lib="webworker" />
 
-import type { AnalysisMessage } from './analysis'
+import type { AnalysisFrame } from './analysis'
 import { AudioRingReader } from './AudioRingReader'
 import { FormantStreamProcessor } from './formant'
 import type { FormantFrame } from './formant'
@@ -53,12 +53,17 @@ interface PcmMessage {
 }
 
 type AnalysisCore = Pick<
-  AnalysisMessage,
-  'spectrum' | 'rms' | 'timeStepSec' | 'freqStepHz' | 'firstBinHz'
+  AnalysisFrame,
+  | 'spectrum'
+  | 'rms'
+  | 'timeStepSamples'
+  | 'sampleRate'
+  | 'freqStepHz'
+  | 'firstBinHz'
 >
 type AnalysisPatch = Partial<
   Pick<
-    AnalysisMessage,
+    AnalysisFrame,
     'voiced' | 'f0' | 'f1' | 'f2' | 'f3' | 'speechProbability'
   >
 >
@@ -252,7 +257,8 @@ async function runAnalysis(
         rms,
         firstBinHz: sp.f1Hz,
         freqStepHz: sp.actualFreqStepHz,
-        timeStepSec: sp.actualTimeStepSec,
+        timeStepSamples: Math.round(sp.actualTimeStepSec * sampleRate),
+        sampleRate,
         voiced,
         f0: latestValidPitchHz,
         f1: voiced ? latestValidF1 : null,

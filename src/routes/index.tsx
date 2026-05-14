@@ -23,7 +23,7 @@ import type { VowelChartHandle } from '#/components/VowelChart'
 import { Waveform } from '#/components/Waveform'
 import type { WaveformHandle } from '#/components/Waveform'
 import { WelcomeModal } from '#/components/WelcomeModal'
-import type { AnalysisMessage } from '#/lib/analysis'
+import type { AnalysisFrame } from '#/lib/analysis'
 import {
   computeDbBounds,
   concatAudioBuffers,
@@ -77,7 +77,7 @@ function App() {
   const waveformRef = useRef<WaveformHandle>(null)
   const spectrogramRef = useRef<SpectrogramHandle>(null)
   const vowelChartRef = useRef<VowelChartHandle>(null)
-  const [analysis, setAnalysis] = useState<AnalysisMessage[]>([])
+  const [analysis, setAnalysis] = useState<AnalysisFrame[]>([])
   const [audioBuffer, setAudioBuffer] = useState<AudioBuffer | null>(null)
 
   useEffect(() => {
@@ -151,7 +151,7 @@ function App() {
 
     let timeSec = 0
     for (const frame of analysis) {
-      timeSec += frame.timeStepSec
+      timeSec += frame.timeStepSamples / frame.sampleRate
       if (timeSec > hoverSec) {
         return frame
       }
@@ -293,7 +293,7 @@ function App() {
   }, [audioBuffer])
 
   const handleReset = useCallback(
-    (newAnalysis: AnalysisMessage[], newBuffer: AudioBuffer) => {
+    (newAnalysis: AnalysisFrame[], newBuffer: AudioBuffer) => {
       const startIndex = recordingStartIndexRef.current
       const full = [...analysisRef.current.slice(0, startIndex), ...newAnalysis]
       lastScannedRef.current = startIndex
@@ -317,12 +317,12 @@ function App() {
   )
 
   // returns total track time
-  const handleAppend = useCallback((data: AnalysisMessage) => {
+  const handleAppend = useCallback((data: AnalysisFrame) => {
     analysisRef.current.push(data)
     waveformRef.current?.append(analysisRef.current.length - 1)
     spectrogramRef.current?.append(analysisRef.current.length - 1)
     vowelChartRef.current?.append(analysisRef.current.length - 1)
-    return analysisRef.current.length * data.timeStepSec
+    return (analysisRef.current.length * data.timeStepSamples) / data.sampleRate
   }, [])
 
   const handlePatch = useCallback((frameIndex: number) => {

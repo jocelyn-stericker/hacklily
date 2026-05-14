@@ -1,7 +1,7 @@
 import { useEffect, useImperativeHandle, useRef, useState } from 'react'
 import type { RefObject } from 'react'
 
-import type { AnalysisMessage } from '#/lib/analysis'
+import type { AnalysisFrame } from '#/lib/analysis'
 import { TILE_WIDTH } from '#/lib/tileConfig'
 
 import {
@@ -42,7 +42,7 @@ function ensureTiles(off: OffscreenState, needed: number): void {
 
 function paintColumnsToOffscreen(
   off: OffscreenState,
-  analysis: AnalysisMessage[],
+  analysis: AnalysisFrame[],
   from: number,
   to: number,
   ampToY: (amp: number) => number,
@@ -117,7 +117,7 @@ export function Waveform({
   analysis,
   ref,
 }: {
-  analysis: AnalysisMessage[]
+  analysis: AnalysisFrame[]
   ref: RefObject<WaveformHandle | null>
 }) {
   const [canvas, setCanvas] = useState<HTMLCanvasElement | null>(null)
@@ -160,7 +160,9 @@ export function Waveform({
           canvasHeight,
           offRef.current,
           timeToX,
-          analysis[0]?.timeStepSec ?? 0,
+          analysis[0]
+            ? analysis[0].timeStepSamples / analysis[0].sampleRate
+            : 0,
         )
       })
     }

@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react'
 
 import type { TimelineState } from '#/components/Plot'
-import type { AnalysisMessage } from '#/lib/analysis'
+import type { AnalysisFrame } from '#/lib/analysis'
 import audioWorkletUrl from '#/lib/AudioRingWriter?worker&url'
 import type { AudioRingWriterNode } from '#/lib/AudioRingWriter'
 import LiveWorker from '#/lib/liveWorker?worker'
@@ -16,9 +16,9 @@ export function AudioRecorder({
   onTimelineStateChanged,
   onError,
 }: {
-  onAppend: (analysis: AnalysisMessage) => number
+  onAppend: (analysis: AnalysisFrame) => number
   onPatch?: (frameIndex: number) => void
-  onReset: (analysis: AnalysisMessage[], buffer: AudioBuffer) => void
+  onReset: (analysis: AnalysisFrame[], buffer: AudioBuffer) => void
   onTimelineStateChanged: React.Dispatch<React.SetStateAction<TimelineState>>
   onError: (error: string) => void
 }) {
@@ -28,7 +28,7 @@ export function AudioRecorder({
   const onResetRef = useRef(onReset)
   const onErrorRef = useRef(onError)
   const onPatchRef = useRef(onPatch)
-  const accumulatedAnalysisRef = useRef<AnalysisMessage[]>([])
+  const accumulatedAnalysisRef = useRef<AnalysisFrame[]>([])
 
   useEffect(() => {
     onTimelineStateChangedRef.current = onTimelineStateChanged
@@ -98,11 +98,10 @@ export function AudioRecorder({
 
         liveWorker.onmessage = ({ data }) => {
           if (data.type === 'pcm') {
-            const analysisDuration = accumulatedAnalysisRef.current.reduce(
-              (memo, sample) => memo + sample.timeStepSec,
+            const analysisSamples = accumulatedAnalysisRef.current.reduce(
+              (memo, sample) => memo + sample.timeStepSamples,
               0,
             )
-            const analysisSamples = Math.round(analysisDuration * sampleRate)
 
             const pcm = data.pcm
             const buffer = new AudioBuffer({
@@ -118,10 +117,11 @@ export function AudioRecorder({
           }
 
           if (data.type === 'frame') {
-            const frame: AnalysisMessage = {
+            const frame: AnalysisFrame = {
               spectrum: data.spectrum,
               rms: data.rms,
-              timeStepSec: data.timeStepSec,
+              timeStepSamples: data.timeStepSamples,
+              sampleRate: data.sampleRate,
               freqStepHz: data.freqStepHz,
               firstBinHz: data.firstBinHz,
               speechProbability: data.speechProbability ?? 0,

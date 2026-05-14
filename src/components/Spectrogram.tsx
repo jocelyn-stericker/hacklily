@@ -1,7 +1,7 @@
 import { useEffect, useImperativeHandle, useRef, useState } from 'react'
 import type { RefObject } from 'react'
 
-import type { AnalysisMessage } from '#/lib/analysis'
+import type { AnalysisFrame } from '#/lib/analysis'
 import { nextPow2 } from '#/lib/mathUtils'
 import { TILE_WIDTH } from '#/lib/tileConfig'
 
@@ -40,10 +40,11 @@ interface ColorsState {
   numBins: number
   firstBinHz: number
   freqStepHz: number
-  timeStepSec: number
+  timeStepSamples: number
+  sampleRate: number
   dbMin: number
   dbRange: number
-  analysis: AnalysisMessage[]
+  analysis: AnalysisFrame[]
 }
 
 interface Tile {
@@ -186,7 +187,7 @@ function paintColumnsToOffscreen(
 // freqToY/canvasHeight changes, and patch (where existing frames may change).
 function paintFormantTiles(
   off: FormantOffscreenState,
-  analysis: AnalysisMessage[],
+  analysis: AnalysisFrame[],
   fromTile: number,
   freqToY: (hz: number) => number,
   dpr: number,
@@ -231,7 +232,7 @@ function paintFormantTiles(
 // Does NOT clear tiles, so cost is O(to - from), not O(tile frames). Used by append.
 function appendFormantTiles(
   off: FormantOffscreenState,
-  analysis: AnalysisMessage[],
+  analysis: AnalysisFrame[],
   from: number,
   to: number,
   freqToY: (hz: number) => number,
@@ -486,7 +487,7 @@ export function Spectrogram({
   ref,
   debug = false,
 }: {
-  analysis: Array<AnalysisMessage>
+  analysis: Array<AnalysisFrame>
   dbMin: number
   dbRange: number
   ref: RefObject<SpectrogramHandle | null>
@@ -536,7 +537,7 @@ export function Spectrogram({
     }
     const numFrames = analysis.length
     const numBins = analysis[0]!.spectrum.length
-    const { firstBinHz, freqStepHz, timeStepSec } = analysis[0]!
+    const { firstBinHz, freqStepHz, timeStepSamples, sampleRate } = analysis[0]!
     const capacity = nextPow2(numFrames)
     const colors: ColorsState = {
       data: new Uint32Array(numBins * capacity),
@@ -545,7 +546,8 @@ export function Spectrogram({
       numBins,
       firstBinHz,
       freqStepHz,
-      timeStepSec,
+      timeStepSamples,
+      sampleRate,
       dbMin,
       dbRange,
       analysis,
@@ -612,7 +614,9 @@ export function Spectrogram({
           offRef.current,
           formantOffRef.current,
           timeToX,
-          colorsRef.current?.timeStepSec ?? 0,
+          colorsRef.current
+            ? colorsRef.current.timeStepSamples / colorsRef.current.sampleRate
+            : 0,
         )
         if (debug) {
           fpsFrameTimesRef.current.push(performance.now())
@@ -656,7 +660,8 @@ export function Spectrogram({
           if (!colorsRef.current) {
             const numFrames = analysis.length
             const numBins = analysis[0]!.spectrum.length
-            const { firstBinHz, freqStepHz, timeStepSec } = analysis[0]!
+            const { firstBinHz, freqStepHz, timeStepSamples, sampleRate } =
+              analysis[0]!
             const capacity = nextPow2(numFrames)
             const colors: ColorsState = {
               data: new Uint32Array(numBins * capacity),
@@ -665,7 +670,8 @@ export function Spectrogram({
               numBins,
               firstBinHz,
               freqStepHz,
-              timeStepSec,
+              timeStepSamples,
+              sampleRate,
               dbMin,
               dbRange,
               analysis,
