@@ -2,7 +2,7 @@
 import { render, waitFor } from '@testing-library/react'
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 
-import type { AppendFrameMessage, ParamsMessage } from '#/lib/liveWorker'
+import type { AppendFrameMessage, ParamsMessage } from '#/lib/workerMessages'
 
 import { useMicCapture } from './useMicCapture'
 

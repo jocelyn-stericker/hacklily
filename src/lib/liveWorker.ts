@@ -16,7 +16,6 @@
  */
 /// <reference lib="webworker" />
 
-import type { AnalysisFrame, AnalysisParams } from './analysis'
 import { AudioRingReader } from './AudioRingReader'
 import { FormantStreamProcessor } from './formant'
 import type { FormantFrame } from './formant'
@@ -24,6 +23,14 @@ import { PitchProcessor } from './pitch'
 import { ResamplerStreamProcessor } from './resample'
 import { SpectrogramStreamProcessor } from './spectrogram'
 import { VadStreamProcessor } from './vad'
+import type {
+  AppendFrameMessage,
+  FlushMessage,
+  ParamsMessage,
+  PatchFrameMessage,
+  PcmMessage,
+  SpectrogramInitMessage,
+} from './workerMessages'
 
 const QUANTUM = 128
 const FORMANT_RATE = 11000
@@ -34,56 +41,7 @@ const VAD_RATE = 16000
 const PITCH_INTERVAL = 16
 const PITCH_BUF_SIZE = 4096
 
-interface InitMessage {
-  type: 'init'
-  sab: SharedArrayBuffer
-  sampleRate: number
-  bufSamples: number
-}
-
-interface FlushMessage {
-  type: 'flush'
-}
-
-export type LiveWorkerInMessage = InitMessage | FlushMessage | null
-
-interface PcmMessage {
-  type: 'pcm'
-  pcm: Float32Array<ArrayBuffer>
-}
-
-// Emitted once per session (or whenever params change) before the first frame.
-export type ParamsMessage = { type: 'params' } & AnalysisParams
-
-type AnalysisCore = Pick<AnalysisFrame, 'spectrum' | 'rms'>
-type AnalysisPatch = Partial<
-  Pick<
-    AnalysisFrame,
-    | 'pitchDetected'
-    | 'speechDetected'
-    | 'f0'
-    | 'f1'
-    | 'f2'
-    | 'f3'
-    | 'speechProbability'
-  >
->
-
-// Emitted once per spectrogram frame. spectrum/rms are always present;
-// voiced/pitch/formant/vad fields are optional and may arrive later via PatchFrameMessage.
-// frameIndex is session-local (resets to 0 each recording session).
-export type AppendFrameMessage = {
-  type: 'frame'
-  frameIndex: number
-} & AnalysisCore &
-  AnalysisPatch
-
-// Overwrites specific fields of a previously emitted frame.
-// frameIndex is session-local, matching the index in the preceding ParamsMessage's chunk.
-export type PatchFrameMessage = {
-  type: 'patch'
-  frameIndex: number
-} & AnalysisPatch
+export type LiveWorkerInMessage = SpectrogramInitMessage | FlushMessage | null
 
 export type LiveWorkerOutMessage =
   | ParamsMessage
