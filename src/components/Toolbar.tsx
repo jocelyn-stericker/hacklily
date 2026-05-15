@@ -16,12 +16,14 @@
  */
 
 import {
+  Download,
   FilePlus,
   FolderOpen,
   Menu,
   MicVocal,
   Pause,
   Play,
+  Settings2,
   SkipBack,
 } from 'lucide-react'
 
@@ -46,6 +48,9 @@ export function Toolbar({
   onPause,
   onPlay,
   playDisabled,
+  onExportAudio,
+  exportAudioDisabled,
+  onOpenAudioSettings,
 }: {
   openFilePicker: () => void
   onNew: () => void
@@ -56,6 +61,9 @@ export function Toolbar({
   onPause: () => void
   onPlay: () => void
   playDisabled: boolean
+  onExportAudio: () => void
+  exportAudioDisabled: boolean
+  onOpenAudioSettings: () => void
 }) {
   return (
     <header className="flex align-center justify-end gap-1 p-2 flex-wrap">
@@ -119,6 +127,17 @@ export function Toolbar({
           <DropdownMenuItem onClick={openFilePicker}>
             <FolderOpen className="size-4" />
             Open audio file
+          </DropdownMenuItem>
+          <DropdownMenuItem
+            onClick={onExportAudio}
+            disabled={exportAudioDisabled}
+          >
+            <Download className="size-4" />
+            Export mono audio
+          </DropdownMenuItem>
+          <DropdownMenuItem onClick={onOpenAudioSettings}>
+            <Settings2 className="size-4" />
+            Audio settings
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>

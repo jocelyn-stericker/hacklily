@@ -34,6 +34,7 @@ export type Status =
   | { value: 'analyzing' }
   | { value: 'playing' }
   | { value: 'error'; error: string }
+  | { value: 'editAudioSettings' }
 
 export function useTimelineState(analysis: AnalysisChunk[]) {
   const [status, setStatus] = useState<Status>(() => {
@@ -177,7 +178,11 @@ export function useTimelineState(analysis: AnalysisChunk[]) {
   }, [])
 
   const handlePause = useCallback(() => {
-    setStatus({ value: 'inactive' })
+    setStatus((oldStatus) =>
+      oldStatus.value === 'recording' || oldStatus.value === 'playing'
+        ? { value: 'inactive' }
+        : oldStatus,
+    )
   }, [])
 
   const handleBackToStart = useCallback(() => {
@@ -203,7 +208,9 @@ export function useTimelineState(analysis: AnalysisChunk[]) {
         trackDurationSec,
         cursorSec: trackDurationSec,
       }))
-      setStatus({ value: 'inactive' })
+      setStatus((oldStatus) =>
+        oldStatus.value === 'recording' ? { value: 'inactive' } : oldStatus,
+      )
     },
     [],
   )
@@ -242,6 +249,12 @@ export function useTimelineState(analysis: AnalysisChunk[]) {
     setStatus({
       value: 'error',
       error: error instanceof Error ? error.message : String(error),
+    })
+  }, [])
+
+  const handleOpenAudioSettings = useCallback((open: boolean = true) => {
+    setStatus({
+      value: open ? 'editAudioSettings' : 'inactive',
     })
   }, [])
 
@@ -286,6 +299,7 @@ export function useTimelineState(analysis: AnalysisChunk[]) {
     handleRecordingComplete,
     handleError,
     handlePlaybackPositionChanged,
+    handleOpenAudioSettings,
     hoverFrame,
   }
 }

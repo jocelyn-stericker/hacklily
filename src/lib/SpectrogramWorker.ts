@@ -53,8 +53,13 @@ export type SpectrogramWorker = Omit<Worker, 'postMessage' | 'onmessage'> & {
 self.onmessage = ({ data }: MessageEvent<SpectrogramWorkerInMessage>) => {
   // Right now we're expecting 'init'. After init, onmessage is replaced to
   // accept 'flush'.
+  if (data?.type === 'flush') {
+    const pcm = new Float32Array(0)
+    postMessage({ type: 'pcm', pcm }, [pcm.buffer])
+    return
+  }
   if (data?.type !== 'init') {
-    throw new Error('invalid message')
+    return
   }
 
   const reader = new AudioRingReader(data.sab, data.bufSamples, QUANTUM)
@@ -65,7 +70,10 @@ self.onmessage = ({ data }: MessageEvent<SpectrogramWorkerInMessage>) => {
   }
   const analysisDone = runAnalysis(reader, data.sampleRate)
 
-  self.onmessage = async (_: MessageEvent<FlushMessage>) => {
+  self.onmessage = async (event: MessageEvent<SpectrogramWorkerInMessage>) => {
+    if (event.data && event.data.type !== 'flush') {
+      return
+    }
     reader.stop()
     const pcm = await analysisDone
     postMessage({ type: 'pcm', pcm }, [pcm.buffer])
@@ -141,5 +149,3 @@ async function runAnalysis(
   }
   return pcm
 }
-
-console.log('a2', Date.now())

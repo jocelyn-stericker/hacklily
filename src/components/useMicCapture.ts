@@ -1,3 +1,4 @@
+import { useLiveQuery } from '@tanstack/react-db'
 /* Braat
  * Copyright (C) 2026 Jocelyn Stericker <jocelyn@nettek.ca>
  *
@@ -17,7 +18,11 @@
 import { useEffect, useLayoutEffect, useRef } from 'react'
 
 import type { AnalysisFrame, AnalysisParams } from '#/lib/analysis'
-import { MicCapturePipeline } from '#/lib/MicCapturePipeline'
+import {
+  MicCapturePipeline,
+  preInitPersistentStream,
+} from '#/lib/MicCapturePipeline'
+import { settingsCollection, DEFAULT_SETTINGS } from '#/lib/settings'
 
 export function useMicCapture({
   enabled,
@@ -34,6 +39,22 @@ export function useMicCapture({
   onRecordingComplete: (buffer: AudioBuffer) => void
   onError: (error: string) => void
 }) {
+  const { data: settingsRows } = useLiveQuery(settingsCollection)
+  const audioSettings = settingsRows[0] ?? DEFAULT_SETTINGS
+
+  // Pre-open the mic when persistentMic is enabled so the connection is warm.
+  const { inputDeviceId, sampleRate, persistentMic, browserPreprocessing } =
+    audioSettings
+  useEffect(() => {
+    void preInitPersistentStream({
+      id: 'audioSettings',
+      inputDeviceId,
+      sampleRate,
+      persistentMic,
+      browserPreprocessing,
+    })
+  }, [inputDeviceId, sampleRate, persistentMic, browserPreprocessing])
+
   const onAppendRef = useRef(onAppend)
   const onChunkStartRef = useRef(onChunkStart)
   const onPatchRef = useRef(onPatch)
@@ -51,7 +72,16 @@ export function useMicCapture({
   useEffect(() => {
     if (!enabled) return
     const ctrl = new AbortController()
-    const pipeline = new MicCapturePipeline({ signal: ctrl.signal })
+    const pipeline = new MicCapturePipeline({
+      signal: ctrl.signal,
+      settings: {
+        id: 'audioSettings',
+        inputDeviceId,
+        sampleRate,
+        persistentMic,
+        browserPreprocessing,
+      },
+    })
     pipeline.addEventListener(
       'append',
       (e) => onAppendRef.current(e.detail.frame),
@@ -80,5 +110,5 @@ export function useMicCapture({
       { signal: pipeline.destroyed },
     )
     return () => ctrl.abort()
-  }, [enabled])
+  }, [enabled, inputDeviceId, sampleRate, persistentMic, browserPreprocessing])
 }

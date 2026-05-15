@@ -15,6 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import { toast } from 'sonner'
+
 import type {
   AnalysisChunk,
   AnalysisFrame,
@@ -24,6 +26,13 @@ import audioWorkletUrl from '#/lib/AudioRingWriter?worker&url'
 import type { AudioRingWriterNode } from '#/lib/AudioRingWriter'
 import SpectrogramWorker from '#/lib/SpectrogramWorker?worker'
 
+import type { AudioSettingsRow } from './settings'
+import {
+  buildAudioConstraints,
+  DEFAULT_SETTINGS,
+  preferredSampleRate,
+  updateSettings,
+} from './settings'
 import type { SpectrogramWorkerOutMessage } from './SpectrogramWorker'
 import { TypedEventTarget } from './TypedEventTarget'
 
@@ -39,6 +48,104 @@ type MicCaptureOutEvents = {
   error: CustomEvent<{ error: string }>
 }
 
+// Cached persistent stream — key tracks the settings it was opened with so we
+// can invalidate it when settings change.
+let STREAM: MediaStream | null = null
+let STREAM_KEY: string | null = null
+
+function streamKey(settings: AudioSettingsRow): string {
+  return JSON.stringify({
+    deviceId: settings.inputDeviceId,
+    sampleRate: settings.sampleRate,
+    preprocessing: settings.browserPreprocessing,
+  })
+}
+
+const LOG = '[MicCapturePipeline]'
+
+async function fixSettingsConstraint(settings: AudioSettingsRow, error: any) {
+  if (error?.constraint === 'deviceId' && settings.inputDeviceId !== null) {
+    console.log(LOG, 'preInit: overconstrainted on deviceId')
+    await updateSettings({
+      inputDeviceId: null,
+    })
+    toast('Selected mic unavailable, using default')
+    return true
+  } else if (
+    error?.constraint === 'sampleRate' &&
+    settings.sampleRate !== 'auto'
+  ) {
+    console.log(LOG, 'preInit: overconstrainted on sampleRate')
+    await updateSettings({
+      sampleRate: 'auto',
+    })
+    toast('Selected sample rate unavailable, using default')
+    return true
+  }
+
+  return false
+}
+
+/**
+ * Pre-open the mic stream if persistentMic is enabled.
+ */
+export async function preInitPersistentStream(
+  settings: AudioSettingsRow,
+): Promise<void> {
+  if (!settings.persistentMic) {
+    if (STREAM) {
+      console.log(LOG, 'persistentMic disabled — releasing cached stream')
+      STREAM.getTracks().forEach((t) => t.stop())
+      STREAM = null
+      STREAM_KEY = null
+    }
+    return
+  }
+  const key = streamKey(settings)
+  if (STREAM && STREAM_KEY === key) {
+    console.log(
+      LOG,
+      'preInit: persistent stream already open with matching settings',
+    )
+    return
+  }
+
+  if (STREAM) {
+    console.log(LOG, 'preInit: releasing stale persistent stream')
+    STREAM.getTracks().forEach((t) => t.stop())
+    STREAM = null
+    STREAM_KEY = null
+  }
+
+  const constraints = buildAudioConstraints(settings)
+  console.log(
+    LOG,
+    'preInit: opening persistent stream with constraints:',
+    constraints,
+  )
+  try {
+    STREAM = await navigator.mediaDevices.getUserMedia({
+      video: false,
+      audio: constraints,
+    })
+    STREAM_KEY = key
+    const trackSettings = STREAM.getTracks()[0]?.getSettings()
+    console.log(
+      LOG,
+      'preInit: persistent stream opened; track settings:',
+      trackSettings,
+    )
+  } catch (err) {
+    if (
+      (err as any)?.constraint === 'deviceId' &&
+      settings.inputDeviceId !== null
+    ) {
+      await fixSettingsConstraint(settings, err)
+    }
+    console.warn(LOG, 'preInit: failed to open persistent stream:', err)
+  }
+}
+
 export class MicCapturePipeline extends TypedEventTarget<MicCaptureOutEvents> {
   #accumulatedChunks: AnalysisChunk[] = []
 
@@ -51,13 +158,21 @@ export class MicCapturePipeline extends TypedEventTarget<MicCaptureOutEvents> {
   #resolveInitComplete = () => {}
   #started: Promise<void>
   #destroyed: AbortController = new AbortController()
+  #settings: AudioSettingsRow
 
   get destroyed(): AbortSignal {
     return this.#destroyed.signal
   }
 
-  constructor({ signal }: { signal: AbortSignal }) {
+  constructor({
+    signal,
+    settings = DEFAULT_SETTINGS,
+  }: {
+    signal: AbortSignal
+    settings?: AudioSettingsRow
+  }) {
     super()
+    this.#settings = settings
     this.#started = new Promise<void>((resolve) => {
       this.#resolveInitComplete = resolve
     })
@@ -66,23 +181,81 @@ export class MicCapturePipeline extends TypedEventTarget<MicCaptureOutEvents> {
   }
 
   async #start() {
+    const settings = this.#settings
     try {
-      this.#spectrogramWorker = new SpectrogramWorker()
-      this.#context = new AudioContext({ sampleRate: 44100 })
-      this.#sampleRate = this.#context.sampleRate
-      const workletAdded = this.#context.audioWorklet.addModule(audioWorkletUrl)
+      const key = streamKey(settings)
 
-      this.#stream = await navigator.mediaDevices.getUserMedia({
-        audio: true,
-        video: false,
+      console.log(LOG, 'start: settings:', {
+        inputDeviceId: settings.inputDeviceId ?? '(default)',
+        sampleRate: settings.sampleRate,
+        browserPreprocessing: settings.browserPreprocessing,
+        persistentMic: settings.persistentMic,
       })
-      await workletAdded
 
-      this.#sourceNode = this.#context.createMediaStreamSource(this.#stream)
+      this.#spectrogramWorker = new SpectrogramWorker()
+
+      const preferredRate = preferredSampleRate(settings)
+      console.log(
+        LOG,
+        'start: creating AudioContext with sampleRate:',
+        preferredRate ?? '(browser default)',
+      )
+      this.#context = new AudioContext({
+        sampleRate: preferredRate,
+      })
+      console.log(
+        LOG,
+        'start: AudioContext actual sampleRate:',
+        this.#context.sampleRate,
+      )
+
+      const constraints = buildAudioConstraints(settings)
+      console.log(LOG, 'start: requested audio constraints:', constraints)
+
+      // Reuse the persistent stream only if it matches current settings and is active.
+      if (
+        settings.persistentMic &&
+        STREAM &&
+        STREAM_KEY === key &&
+        STREAM.active
+      ) {
+        console.log(LOG, 'start: reusing cached persistent stream')
+        this.#stream = STREAM
+      } else {
+        console.log(LOG, 'start: calling getUserMedia')
+        this.#stream = await navigator.mediaDevices.getUserMedia({
+          audio: constraints,
+          video: false,
+        })
+        if (settings.persistentMic) {
+          STREAM?.getTracks().forEach((track) => track.stop())
+
+          console.log(LOG, 'start: caching stream as persistent')
+          STREAM = this.#stream
+          STREAM_KEY = key
+        }
+      }
+
+      const track = this.#stream.getTracks()[0]
+      track?.addEventListener(
+        'ended',
+        async () => {
+          toast('Microphone disconnected')
+          await this.#stop()
+        },
+        { signal: this.destroyed },
+      )
+      console.log(LOG, 'start: received track settings:', track?.getSettings())
+      console.log(LOG, 'start: track label:', track?.label)
+
+      this.#sampleRate = this.#context.sampleRate
+      await this.#context.audioWorklet.addModule(audioWorkletUrl)
       this.#workletNode = new AudioWorkletNode(
         this.#context,
         'audio-ring-writer',
       )
+
+      this.#sourceNode = this.#context.createMediaStreamSource(this.#stream)
 
       // The worklet is realtime. It writes audio data to a shared audio buffer with a
       // strict time budget. The live worker consumes and processes it.
@@ -114,7 +287,16 @@ export class MicCapturePipeline extends TypedEventTarget<MicCaptureOutEvents> {
         { signal: this.destroyed },
       )
       this.#sourceNode.connect(this.#workletNode)
+      // To hear loopback
+      // this.#sourceNode.connect(this.#context.destination)
     } catch (err) {
+      const settingsChanged = await fixSettingsConstraint(settings, err)
+      if (settingsChanged) {
+        // The pipeline will be re-triggered.
+        return
+      }
+      console.log(err)
+
       this.emit('error', {
         error: err instanceof Error ? err.message : String(err),
       })
@@ -142,19 +324,21 @@ export class MicCapturePipeline extends TypedEventTarget<MicCaptureOutEvents> {
           0,
         )
 
-        const buffer = this.#sampleRate
-          ? new AudioBuffer({
-              length: analysisSamples,
-              numberOfChannels: 1,
-              sampleRate: this.#sampleRate,
-            })
-          : new AudioBuffer({
-              length: 0,
-              numberOfChannels: 1,
-              sampleRate: 44100,
-            })
-        if (data.pcm.length > 0) buffer.copyToChannel(data.pcm, 0)
-        this.emit('recordingComplete', { buffer })
+        if (analysisSamples > 0) {
+          const buffer = this.#sampleRate
+            ? new AudioBuffer({
+                length: analysisSamples,
+                numberOfChannels: 1,
+                sampleRate: this.#sampleRate,
+              })
+            : new AudioBuffer({
+                length: 0,
+                numberOfChannels: 1,
+                sampleRate: 44100,
+              })
+          if (data.pcm.length > 0) buffer.copyToChannel(data.pcm, 0)
+          this.emit('recordingComplete', { buffer })
+        }
         this.#spectrogramWorker!.terminate()
         this.#spectrogramWorker = null
         this.#destroyed.abort()
@@ -214,7 +398,13 @@ export class MicCapturePipeline extends TypedEventTarget<MicCaptureOutEvents> {
   }
 
   #stop = async () => {
+    console.log(LOG, 'stop: waiting for start to complete')
     await this.#started
+    console.log(
+      LOG,
+      'stop: tearing down; persistentMic:',
+      this.#settings.persistentMic,
+    )
 
     // Send flush before disconnecting so any in-flight audio quanta
     // are processed before the flush message arrives at the worker.
@@ -227,7 +417,13 @@ export class MicCapturePipeline extends TypedEventTarget<MicCaptureOutEvents> {
     this.#sourceNode?.disconnect()
     this.#workletNode?.disconnect()
     await this.#context?.close()
-    this.#stream?.getTracks().forEach((t) => t.stop())
+    if (!this.#settings.persistentMic) {
+      this.#stream?.getTracks().forEach((t) => t.stop())
+      if (STREAM === this.#stream) {
+        STREAM = null
+        STREAM_KEY = null
+      }
+    }
     // spectrogramWorker is terminated inside onmessage after the PCM response arrives.
   }
 }

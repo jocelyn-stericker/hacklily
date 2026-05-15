@@ -14,8 +14,22 @@ function TestRecorder(props: MicCaptureProps) {
 
 let mockWorkerInstances: any[] = []
 
+vi.mock('@tanstack/react-db', () => ({
+  useLiveQuery: vi.fn(() => ({
+    data: [
+      {
+        id: 'audioSettings',
+        inputDeviceId: null,
+        sampleRate: 'prefer44100',
+        persistentMic: false,
+        browserPreprocessing: 'default',
+      },
+    ],
+  })),
+}))
+
 // Mock the worker module
-vi.mock('#/lib/spectrogramWorker?worker', () => {
+vi.mock('#/lib/SpectrogramWorker?worker', () => {
   class MockWorker {
     postMessage = vi.fn()
     terminate = vi.fn()
@@ -124,6 +138,8 @@ describe('AudioRecorder', () => {
     // Mock MediaStreamTrack
     mockMediaStreamTrack = {
       stop: vi.fn(),
+      getSettings: vi.fn(() => ({})),
+      addEventListener: vi.fn(),
     }
 
     // Mock MediaStream
@@ -279,7 +295,7 @@ describe('AudioRecorder', () => {
     expect(container.firstChild).toBeNull()
   })
 
-  it('calls getUserMedia with audio=true and video=false', async () => {
+  it('calls getUserMedia with audio constraints and video=false', async () => {
     const onAppend = vi.fn()
     const onRecordingComplete = vi.fn()
     const onError = vi.fn()
@@ -294,10 +310,9 @@ describe('AudioRecorder', () => {
     )
 
     await waitFor(() => {
-      expect(mockGetUserMedia).toHaveBeenCalledWith({
-        audio: true,
-        video: false,
-      })
+      expect(mockGetUserMedia).toHaveBeenCalledWith(
+        expect.objectContaining({ video: false }),
+      )
     })
   })
 
@@ -762,7 +777,7 @@ describe('AudioRecorder', () => {
     })
   })
 
-  it('handles empty pcm data', async () => {
+  it('terminates worker on pcm with no accumulated frames', async () => {
     const onAppend = vi.fn()
     const onRecordingComplete = vi.fn()
     const onError = vi.fn()
@@ -782,9 +797,8 @@ describe('AudioRecorder', () => {
     getMockWorker().dispatchMessage({ type: 'pcm', pcm })
 
     await waitFor(() => {
-      expect(onRecordingComplete).toHaveBeenCalled()
-      const [buffer] = onRecordingComplete.mock.calls[0]!
-      expect(buffer).toBeInstanceOf(AudioBuffer)
+      expect(getMockWorker().terminate).toHaveBeenCalled()
+      expect(onRecordingComplete).not.toHaveBeenCalled()
     })
   })
 })

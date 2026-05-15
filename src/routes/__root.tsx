@@ -1,11 +1,9 @@
 import { TanStackDevtools } from '@tanstack/react-devtools'
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { ReactQueryDevtoolsPanel } from '@tanstack/react-query-devtools'
 import { HeadContent, Scripts, createRootRoute } from '@tanstack/react-router'
 
-import appCss from '../styles.css?url'
+import { Toaster } from '#/components/ui/sonner'
 
-const queryClient = new QueryClient()
+import appCss from '../styles.css?url'
 
 export const Route = createRootRoute({
   head: () => ({
@@ -33,14 +31,9 @@ function RootDocument({ children }: { children: React.ReactNode }) {
         />
       </head>
       <body className="font-sans antialiased wrap-anywhere selection:bg-[rgba(79,184,178,0.24)]">
-        <QueryClientProvider client={queryClient}>
-          {children}
-          <TanStackDevtools
-            plugins={[
-              { name: 'TanStack Query', render: <ReactQueryDevtoolsPanel /> },
-            ]}
-          />
-        </QueryClientProvider>
+        {children}
+        <Toaster invert={true} />
+        <TanStackDevtools plugins={[]} />
         <Scripts />
       </body>
     </html>

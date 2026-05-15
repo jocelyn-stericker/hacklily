@@ -18,6 +18,7 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { useCallback, useEffect, useRef, useState } from 'react'
 
+import { AudioSettingsModal } from '#/components/AudioSettingsModal'
 import { Dialogs } from '#/components/Dialogs'
 import { Plot } from '#/components/Plot'
 import { Spectrogram } from '#/components/Spectrogram'
@@ -40,6 +41,7 @@ import type {
 } from '#/lib/analysis'
 import { totalFrames } from '#/lib/analysis'
 import { computeDbBounds, concatAudioBuffers } from '#/lib/audioUiHelpers'
+import { exportWav } from '#/lib/exportWav.ts'
 
 export const Route = createFileRoute('/')({
   component: App,
@@ -57,6 +59,7 @@ function App() {
   const spectrogramRef = useRef<SpectrogramHandle>(null)
   const vowelChartRef = useRef<VowelChartHandle>(null)
   const [analysis, setAnalysis] = useState<AnalysisChunk[]>([])
+
   const [audioBuffer, setAudioBuffer] = useState<AudioBuffer | null>(null)
   const {
     status,
@@ -76,6 +79,7 @@ function App() {
     handleRecordingComplete: handleAudioBufferAppended,
     handlePlaybackPositionChanged,
     handleError,
+    handleOpenAudioSettings,
     hoverFrame,
   } = useTimelineState(analysis)
 
@@ -140,6 +144,22 @@ function App() {
   useEffect(() => {
     audioBufferRef.current = audioBuffer
   }, [audioBuffer])
+
+  const [isExporting, setIsExporting] = useState(false)
+
+  const handleExportAudio = useCallback(() => {
+    // TODO: support compressed formats
+    const buf = audioBufferRef.current
+    if (!buf || buf.length === 0) return
+    setIsExporting(true)
+    try {
+      exportWav(buf)
+    } catch (err) {
+      handleError(err)
+    } finally {
+      setIsExporting(false)
+    }
+  }, [handleError])
 
   const handleRecordingComplete = useCallback(
     (newBuffer: AudioBuffer) => {
@@ -234,6 +254,10 @@ function App() {
         onStartRecording={startRecording}
         openFilePicker={openFilePicker}
       />
+      <AudioSettingsModal
+        open={status.value === 'editAudioSettings'}
+        onOpenChange={handleOpenAudioSettings}
+      />
       <main className="min-h-screen flex flex-col">
         <Toolbar
           openFilePicker={openFilePicker}
@@ -245,6 +269,11 @@ function App() {
           onPause={handlePause}
           onPlay={handlePlay}
           playDisabled={!audioBuffer || audioBuffer.length === 0}
+          onExportAudio={handleExportAudio}
+          exportAudioDisabled={
+            !audioBuffer || audioBuffer.length === 0 || isExporting
+          }
+          onOpenAudioSettings={handleOpenAudioSettings}
         />
         <Plot
           timelineState={waveformTimelineState}
