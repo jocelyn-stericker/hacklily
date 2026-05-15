@@ -276,9 +276,10 @@ function App() {
               type: 'freq',
               fMinHz: 50,
               fMaxHz: 5500,
-              hover: hoverFrame?.voiced
-                ? { f0: hoverFrame.f0, f1: hoverFrame.f1, f2: hoverFrame.f2 }
-                : null,
+              hover:
+                hoverFrame?.pitchDetected && hoverFrame.speechDetected
+                  ? { f0: hoverFrame.f0, f1: hoverFrame.f1, f2: hoverFrame.f2 }
+                  : null,
             }}
             onScroll={handlePlotScroll}
             onZoom={handlePlotZoom}

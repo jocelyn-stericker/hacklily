@@ -59,7 +59,13 @@ type AnalysisCore = Pick<AnalysisFrame, 'spectrum' | 'rms'>
 type AnalysisPatch = Partial<
   Pick<
     AnalysisFrame,
-    'voiced' | 'f0' | 'f1' | 'f2' | 'f3' | 'speechProbability'
+    | 'pitchDetected'
+    | 'speechDetected'
+    | 'f0'
+    | 'f1'
+    | 'f2'
+    | 'f3'
+    | 'speechProbability'
   >
 >
 
@@ -259,17 +265,18 @@ async function runAnalysis(
     rms = Math.sqrt(rms / inp.length)
 
     while (spec.readFrame(specBuf)) {
-      const voiced = latestPitchHz > 0 ? speaking : false
+      const pitchDetected = latestPitchHz > 0
       postMessage({
         type: 'frame',
         frameIndex: frameIndex++,
         spectrum: specBuf.slice(),
         rms,
-        voiced,
+        pitchDetected,
+        speechDetected: speaking,
         f0: latestValidPitchHz,
-        f1: voiced ? latestValidF1 : null,
-        f2: voiced ? latestValidF2 : null,
-        f3: voiced ? latestValidF3 : null,
+        f1: pitchDetected ? latestValidF1 : null,
+        f2: pitchDetected ? latestValidF2 : null,
+        f3: pitchDetected ? latestValidF3 : null,
         speechProbability: vad.speechProbability,
       } satisfies AppendFrameMessage)
     }

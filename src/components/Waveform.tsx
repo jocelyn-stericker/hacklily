@@ -63,7 +63,7 @@ function paintColumnsToOffscreen(
       const sample = getFrame(analysis, f)!
       const y0 = ampToY(sample.rms)
       const y1 = ampToY(-sample.rms)
-      ctx.fillStyle = sample.voiced
+      ctx.fillStyle = sample.speechDetected
         ? 'rgba(78,205,196,0.82)'
         : 'rgba(100,100,140,0.55)'
       ctx.fillRect(f - tile.startFrame, y0, 1, y1 - y0)

@@ -209,14 +209,21 @@ function paintFormantTiles(
       const prevF = tile.startFrame - 1
       if (prevF >= 0) {
         const prevSample = getFrame(analysis, prevF)
-        if (prevSample?.voiced && prevSample[key] !== null) {
+        if (
+          prevSample?.pitchDetected &&
+          prevSample.speechDetected &&
+          prevSample[key] !== null
+        ) {
           tile.ctx.moveTo(-1, freqToY(prevSample[key]))
           penDown = true
         }
       }
       for (let f = tile.startFrame; f < frameEnd; f++) {
         const sample = getFrame(analysis, f)!
-        if (!sample.voiced || sample[key] === null) {
+        if (
+          !(sample.pitchDetected && sample.speechDetected) ||
+          sample[key] === null
+        ) {
           penDown = false
           continue
         }
@@ -259,14 +266,21 @@ function appendFormantTiles(
       const prevF = absFrom - 1
       if (prevF >= 0) {
         const prevSample = getFrame(analysis, prevF)
-        if (prevSample?.voiced && prevSample[key] !== null) {
+        if (
+          prevSample?.pitchDetected &&
+          prevSample.speechDetected &&
+          prevSample[key] !== null
+        ) {
           tile.ctx.moveTo(prevF - tile.startFrame, freqToY(prevSample[key]))
           penDown = true
         }
       }
       for (let f = absFrom; f < absTo; f++) {
         const sample = getFrame(analysis, f)!
-        if (!sample.voiced || sample[key] === null) {
+        if (
+          !(sample.pitchDetected && sample.speechDetected) ||
+          sample[key] === null
+        ) {
           penDown = false
           continue
         }

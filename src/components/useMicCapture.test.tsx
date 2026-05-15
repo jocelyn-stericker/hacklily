@@ -104,7 +104,8 @@ describe('AudioRecorder', () => {
     return {
       type: 'frame',
       frameIndex: mockFrameIndex++,
-      voiced: true,
+      pitchDetected: true,
+      speechDetected: true,
       f0: 100,
       f1: 500,
       f2: 1500,
@@ -433,7 +434,8 @@ describe('AudioRecorder', () => {
       expect.objectContaining({
         spectrum: msg.spectrum,
         rms: msg.rms,
-        voiced: msg.voiced,
+        pitchDetected: msg.pitchDetected,
+        speechDetected: msg.speechDetected,
       }),
     )
   })

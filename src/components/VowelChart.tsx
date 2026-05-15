@@ -158,7 +158,8 @@ function drawVowelChart(
 
   // Trail of recent voiced frames
   const voiced = history.filter(
-    (s): s is VoicedAnalysisFrame => s.voiced && s.f1 !== null && s.f2 !== null,
+    (s): s is VoicedAnalysisFrame =>
+      s.pitchDetected && s.speechDetected && s.f1 !== null && s.f2 !== null,
   )
   const trail = voiced.slice(-TRAIL_LEN)
 

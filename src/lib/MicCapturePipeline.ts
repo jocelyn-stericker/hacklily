@@ -173,7 +173,8 @@ export class MicCapturePipeline extends TypedEventTarget<MicCaptureOutEvents> {
           spectrum: data.spectrum,
           rms: data.rms,
           speechProbability: data.speechProbability ?? 0,
-          voiced: data.voiced ?? false,
+          pitchDetected: data.pitchDetected ?? false,
+          speechDetected: data.speechDetected ?? false,
           f0: data.f0 ?? 0,
           f1: data.f1 ?? null,
           f2: data.f2 ?? null,
@@ -191,7 +192,10 @@ export class MicCapturePipeline extends TypedEventTarget<MicCaptureOutEvents> {
           this.#accumulatedChunks[this.#accumulatedChunks.length - 1]
         const frame = currentChunk?.frames[data.frameIndex]
         if (frame) {
-          if (data.voiced !== undefined) frame.voiced = data.voiced
+          if (data.pitchDetected !== undefined)
+            frame.pitchDetected = data.pitchDetected
+          if (data.speechDetected !== undefined)
+            frame.speechDetected = data.speechDetected
           if (data.f0 !== undefined) frame.f0 = data.f0
           if (data.f1 !== undefined) frame.f1 = data.f1
           if (data.f2 !== undefined) frame.f2 = data.f2

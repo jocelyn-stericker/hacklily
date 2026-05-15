@@ -19,7 +19,8 @@ function makeFrame(
   overrides: Partial<AnalysisFrame> = {},
 ): AnalysisFrame {
   return {
-    voiced: false,
+    pitchDetected: false,
+    speechDetected: false,
     f0: 0,
     f1: null,
     f2: null,
@@ -121,7 +122,8 @@ describe('computeDbBounds', () => {
     it('processes both voiced and unvoiced frames equally', () => {
       const spectrum = new Float32Array([50.0])
       const voicedFrame = makeFrame(spectrum, {
-        voiced: true,
+        pitchDetected: true,
+        speechDetected: true,
         rms: 0.5,
         f0: 200,
         f1: 700,

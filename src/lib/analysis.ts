@@ -37,18 +37,22 @@ export type AnalysisFrame = {
   rms: number
   // Silero VAD v5 speech probability (0 = silence, 1 = speech)
   speechProbability: number
-  voiced: boolean
+  // True when pitch analysis detected a voiced frame (f0 > 0)
+  pitchDetected: boolean
+  // True when VAD determined we are in a voiced speech segment (with hysteresis)
+  speechDetected: boolean
   f0: number // 0 when unvoiced
-  f1: number | null // null when unvoiced or formant not detected
+  f1: number | null // null when pitch undetected or formant not detected
   f2: number | null
   f3: number | null
 }
 
 export type AnalysisChunk = AnalysisParams & { frames: AnalysisFrame[] }
 
-// Frames confirmed voiced with both F1 and F2 present. Used as a type predicate in VowelChart.
+// Frames confirmed voiced by both pitch and VAD, with F1 and F2 present. Used as a type predicate in VowelChart.
 export type VoicedAnalysisFrame = AnalysisFrame & {
-  voiced: true
+  pitchDetected: true
+  speechDetected: true
   f1: number
   f2: number
 }
@@ -221,13 +225,20 @@ export async function analyzeBuffer(
     }
 
     // final results
-    const voiced = pitchFrame.frequencyHz > 0
+    const pitchDetected = pitchFrame.frequencyHz > 0
     results.push({
-      voiced: voiced && speaking,
+      pitchDetected,
+      speechDetected: speaking,
       f0: pitchFrame.frequencyHz,
-      f1: voiced ? (formantFrame.formants[0]?.frequencyHz ?? null) : null,
-      f2: voiced ? (formantFrame.formants[1]?.frequencyHz ?? null) : null,
-      f3: voiced ? (formantFrame.formants[2]?.frequencyHz ?? null) : null,
+      f1: pitchDetected
+        ? (formantFrame.formants[0]?.frequencyHz ?? null)
+        : null,
+      f2: pitchDetected
+        ? (formantFrame.formants[1]?.frequencyHz ?? null)
+        : null,
+      f3: pitchDetected
+        ? (formantFrame.formants[2]?.frequencyHz ?? null)
+        : null,
       spectrum: specResult.data[x]!,
       rms,
       speechProbability,
