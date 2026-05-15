@@ -63,6 +63,7 @@ function App() {
     timelineState,
     waveformTimelineState,
     handleAnalyze,
+    handleNew: resetTimeline,
     handlePlotScroll,
     handlePlotClick,
     handlePlotHover,
@@ -105,6 +106,16 @@ function App() {
 
   const recordingStartIndexRef = useRef(0)
   const recordingDurationSecRef = useRef(0)
+
+  const handleNew = useCallback(() => {
+    resetTimeline()
+    setAnalysis([])
+    setAudioBuffer(null)
+    setDbBounds({ min: DB_MIN_DEFAULT, max: DB_MAX_DEFAULT })
+    lastScannedRef.current = 0
+    recordingStartIndexRef.current = 0
+    recordingDurationSecRef.current = 0
+  }, [resetTimeline])
 
   const ampMaxNorm = analysis.reduce(
     (memo, chunk) => chunk.frames.reduce((m, f) => Math.max(m, f.rms), memo),
@@ -226,6 +237,7 @@ function App() {
       <main className="min-h-screen flex flex-col">
         <Toolbar
           openFilePicker={openFilePicker}
+          onNew={handleNew}
           timelineState={timelineState}
           status={status}
           onBackToStart={handleBackToStart}

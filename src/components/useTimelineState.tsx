@@ -151,6 +151,17 @@ export function useTimelineState(analysis: AnalysisChunk[]) {
     })
   }, [])
 
+  const handleNew = useCallback(() => {
+    setStatus({ value: 'inactive' })
+    setTimelineState({
+      viewportLeftSec: 0,
+      viewportRightSec: 10,
+      cursorSec: 0,
+      hoverSec: null,
+      trackDurationSec: 0,
+    })
+  }, [])
+
   const handlePlay = useCallback(() => {
     setTimelineState((prev) => {
       if (prev.cursorSec + 0.1 >= prev.trackDurationSec) {
@@ -262,6 +273,7 @@ export function useTimelineState(analysis: AnalysisChunk[]) {
     timelineState,
     waveformTimelineState,
     handleAnalyze,
+    handleNew,
     handlePlotScroll,
     handlePlotClick,
     handlePlotHover,

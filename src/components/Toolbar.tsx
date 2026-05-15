@@ -15,15 +15,30 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { FolderOpen, MicVocal, Pause, Play, SkipBack } from 'lucide-react'
+import {
+  FilePlus,
+  FolderOpen,
+  Menu,
+  MicVocal,
+  Pause,
+  Play,
+  SkipBack,
+} from 'lucide-react'
 
 import braatPng from '#/braat.png'
 import { Button } from '#/components/ui/button'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '#/components/ui/dropdown-menu'
 
 import type { TimelineState, Status } from './useTimelineState'
 
 export function Toolbar({
   openFilePicker,
+  onNew,
   timelineState,
   status,
   onBackToStart,
@@ -33,6 +48,7 @@ export function Toolbar({
   playDisabled,
 }: {
   openFilePicker: () => void
+  onNew: () => void
   timelineState: TimelineState
   status: Status
   onBackToStart: () => void
@@ -47,14 +63,6 @@ export function Toolbar({
         <img src={braatPng} className="h-10" />
       </h1>
       <div className="grow" />
-      <Button
-        variant="default"
-        className="h-10 w-10 cursor-pointer"
-        title="Open an audio file"
-        onClick={openFilePicker}
-      >
-        <FolderOpen className="size-6" />
-      </Button>
       <Button
         variant="default"
         className="h-10 w-10 cursor-pointer"
@@ -95,6 +103,25 @@ export function Toolbar({
           <Play className="size-6" />
         </Button>
       )}
+      <div className="w-px bg-border mx-1 self-stretch" />
+      <DropdownMenu>
+        <DropdownMenuTrigger
+          className="inline-flex items-center justify-center h-10 w-10 cursor-pointer rounded-md text-foreground hover:bg-muted"
+          title="Application menu"
+        >
+          <Menu className="size-6" />
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end" className="min-w-44">
+          <DropdownMenuItem onClick={onNew}>
+            <FilePlus className="size-4" />
+            New
+          </DropdownMenuItem>
+          <DropdownMenuItem onClick={openFilePicker}>
+            <FolderOpen className="size-4" />
+            Open audio file
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
     </header>
   )
 }
