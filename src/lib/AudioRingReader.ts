@@ -33,6 +33,9 @@ export class AudioRingReader {
   private readonly _quantum: number
   private _stopped = false
 
+  /** Called when the writer has lapped the reader. `dropped` is the number of overwritten samples. */
+  onOverrun?: (dropped: number) => void
+
   constructor(sab: SharedArrayBuffer, bufSamples: number, quantum: number) {
     if (!isPowerOfTwo(bufSamples)) {
       throw new Error(`bufSamples must be a power of 2, got ${bufSamples}`)
@@ -57,9 +60,18 @@ export class AudioRingReader {
       _ctrl: ctrl,
       _data: data,
     } = this
+    const bufSize = bufMask + 1
 
     while (true) {
       let wp = Atomics.load(ctrl, 0)
+
+      if (wp - rp > bufSize) {
+        const dropped = wp - rp - bufSize
+        this.onOverrun?.(dropped)
+        // For us, it's more important that timing stays consistent, than that we
+        // have valid data.
+        // rp = wp - bufSize
+      }
 
       if (wp - rp < quantum) {
         if (this._stopped) break
@@ -76,6 +88,13 @@ export class AudioRingReader {
         rp += quantum
         yield audio
         wp = Atomics.load(ctrl, 0)
+        if (wp - rp > bufSize) {
+          const dropped = wp - rp - bufSize
+          this.onOverrun?.(dropped)
+          // For us, it's more important that timing stays consistent, than that we
+          // have valid data.
+          // rp = wp - bufSize
+        }
       }
     }
   }

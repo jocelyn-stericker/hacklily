@@ -22,9 +22,9 @@ import type {
 } from '#/lib/analysis'
 import audioWorkletUrl from '#/lib/AudioRingWriter?worker&url'
 import type { AudioRingWriterNode } from '#/lib/AudioRingWriter'
-import LiveWorker from '#/lib/liveWorker?worker'
+import SpectrogramWorker from '#/lib/SpectrogramWorker?worker'
 
-import type { LiveWorkerOutMessage } from './liveWorker'
+import type { SpectrogramWorkerOutMessage } from './SpectrogramWorker'
 import { TypedEventTarget } from './TypedEventTarget'
 
 // Must be a pow of 2 due to bit masking hack for efficient circular buffer
@@ -45,7 +45,7 @@ export class MicCapturePipeline extends TypedEventTarget<MicCaptureOutEvents> {
   #context: AudioContext | null = null
   #sourceNode: MediaStreamAudioSourceNode | null = null
   #workletNode: AudioRingWriterNode | null = null
-  #liveWorker: InstanceType<typeof LiveWorker> | null = null
+  #spectrogramWorker: InstanceType<typeof SpectrogramWorker> | null = null
   #stream: MediaStream | null = null
   #sampleRate: number | null = null
   #resolveInitComplete = () => {}
@@ -67,14 +67,16 @@ export class MicCapturePipeline extends TypedEventTarget<MicCaptureOutEvents> {
 
   async #start() {
     try {
+      this.#spectrogramWorker = new SpectrogramWorker()
+      this.#context = new AudioContext({ sampleRate: 44100 })
+      this.#sampleRate = this.#context.sampleRate
+      const workletAdded = this.#context.audioWorklet.addModule(audioWorkletUrl)
+
       this.#stream = await navigator.mediaDevices.getUserMedia({
         audio: true,
         video: false,
       })
-
-      this.#context = new AudioContext({ sampleRate: 44100 })
-      this.#sampleRate = this.#context.sampleRate
-      await this.#context.audioWorklet.addModule(audioWorkletUrl)
+      await workletAdded
 
       this.#sourceNode = this.#context.createMediaStreamSource(this.#stream)
       this.#workletNode = new AudioWorkletNode(
@@ -84,28 +86,31 @@ export class MicCapturePipeline extends TypedEventTarget<MicCaptureOutEvents> {
 
       // The worklet is realtime. It writes audio data to a shared audio buffer with a
       // strict time budget. The live worker consumes and processes it.
-      this.#liveWorker = new LiveWorker()
       const sab = new SharedArrayBuffer(8 + SAB_BUF_SAMPLES * 4)
       this.#workletNode.port.postMessage({
         type: 'init',
         sab,
         bufSamples: SAB_BUF_SAMPLES,
       })
-      this.#liveWorker.postMessage({
+      this.#spectrogramWorker.postMessage({
         type: 'init',
         sab,
         sampleRate: this.#sampleRate,
         bufSamples: SAB_BUF_SAMPLES,
       })
 
-      this.#liveWorker.addEventListener('error', this.#handleLiveWorkerError, {
-        signal: this.destroyed,
-        once: true,
-      })
+      this.#spectrogramWorker.addEventListener(
+        'error',
+        this.#handleSpectrogramWorkerError,
+        {
+          signal: this.destroyed,
+          once: true,
+        },
+      )
 
-      this.#liveWorker.addEventListener(
+      this.#spectrogramWorker.addEventListener(
         'message',
-        this.#handleLiveWorkerOutMessage,
+        this.#handleSpectrogramWorkerOutMessage,
         { signal: this.destroyed },
       )
       this.#sourceNode.connect(this.#workletNode)
@@ -119,17 +124,17 @@ export class MicCapturePipeline extends TypedEventTarget<MicCaptureOutEvents> {
     this.#resolveInitComplete()
   }
 
-  #handleLiveWorkerError = ({ error }: ErrorEvent) => {
+  #handleSpectrogramWorkerError = ({ error }: ErrorEvent) => {
     this.emit('error', {
       error: error instanceof Error ? error.message : String(error),
     })
-    this.#liveWorker?.terminate()
-    this.#liveWorker = null
+    this.#spectrogramWorker?.terminate()
+    this.#spectrogramWorker = null
   }
 
-  #handleLiveWorkerOutMessage = ({
+  #handleSpectrogramWorkerOutMessage = ({
     data,
-  }: MessageEvent<LiveWorkerOutMessage>) => {
+  }: MessageEvent<SpectrogramWorkerOutMessage>) => {
     switch (data.type) {
       case 'pcm': {
         const analysisSamples = this.#accumulatedChunks.reduce(
@@ -150,8 +155,8 @@ export class MicCapturePipeline extends TypedEventTarget<MicCaptureOutEvents> {
             })
         if (data.pcm.length > 0) buffer.copyToChannel(data.pcm, 0)
         this.emit('recordingComplete', { buffer })
-        this.#liveWorker!.terminate()
-        this.#liveWorker = null
+        this.#spectrogramWorker!.terminate()
+        this.#spectrogramWorker = null
         this.#destroyed.abort()
         return
       }
@@ -213,8 +218,8 @@ export class MicCapturePipeline extends TypedEventTarget<MicCaptureOutEvents> {
 
     // Send flush before disconnecting so any in-flight audio quanta
     // are processed before the flush message arrives at the worker.
-    if (this.#liveWorker) {
-      this.#liveWorker.postMessage({ type: 'flush' })
+    if (this.#spectrogramWorker) {
+      this.#spectrogramWorker.postMessage({ type: 'flush' })
     } else {
       // We'll miss cleanup from inside the 'pcm' event, so emit '#destroyed' here.
       this.#destroyed.abort()
@@ -223,6 +228,6 @@ export class MicCapturePipeline extends TypedEventTarget<MicCaptureOutEvents> {
     this.#workletNode?.disconnect()
     await this.#context?.close()
     this.#stream?.getTracks().forEach((t) => t.stop())
-    // liveWorker is terminated inside onmessage after the PCM response arrives.
+    // spectrogramWorker is terminated inside onmessage after the PCM response arrives.
   }
 }

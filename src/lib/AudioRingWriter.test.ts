@@ -100,6 +100,31 @@ describe('AudioRingWriter', () => {
       expect(Atomics.load(ctrl, 0)).toBe(4)
     })
 
+    it('writes quantum starting with 0.0 (zero-crossing / silence)', () => {
+      // Regression: !inp[0] is falsy when inp[0] === 0.0, which was incorrectly
+      // skipping these quanta, causing gaps in the recording and spectrogram.
+      const inputSamples = new Float32Array([0.0, 0.1, -0.1, 0.2])
+      const inputs = [[inputSamples]] as any
+
+      const result = worklet.process(inputs, [])
+
+      expect(result).toBe(true)
+      expect(data[0]).toBeCloseTo(0.0, 5)
+      expect(data[1]).toBeCloseTo(0.1, 5)
+      expect(data[2]).toBeCloseTo(-0.1, 5)
+      expect(data[3]).toBeCloseTo(0.2, 5)
+      expect(Atomics.load(ctrl, 0)).toBe(4)
+    })
+
+    it('writes all-zero quantum (silence)', () => {
+      const inputSamples = new Float32Array(128)
+      const inputs = [[inputSamples]] as any
+
+      worklet.process(inputs, [])
+
+      expect(Atomics.load(ctrl, 0)).toBe(128)
+    })
+
     it('updates write position atomically', () => {
       const inputSamples = new Float32Array([1, 2, 3])
       const inputs = [[inputSamples]] as any

@@ -49,7 +49,7 @@ npm run test           # Run tests with Vitest
 **4. Audio Analysis (Workers)**
 
 - `src/lib/AudioRingWriter.ts` - AudioWorklet processor which writes microphone PCM data to a ring buffer
-- `src/lib/liveWorker.ts` - analysis of audio input
+- `src/lib/SpectrogramWorker.ts` - Worker which reads from ring buffer. Generates spectrogram and stores PCM data
 - `src/lib/importWorker.ts` - Web Worker for file import processing with frame-by-frame analysis
 - `src/lib/analysis.ts` - Core worker spawning and `AnalysisFrame` type definition (includes pitch, formants, RMS per frame)
 

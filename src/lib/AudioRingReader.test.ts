@@ -133,26 +133,55 @@ describe('AudioRingReader', () => {
   })
 
   it('handles circular buffer wrap-around', async () => {
+    // Drain a full ring's worth of data so rp catches up to bufSamples, putting
+    // the physical write head back at position 0.  This is the realistic way to
+    // reach a wrap-around: both counters advance together, never diverging by
+    // more than bufSamples.
     const reader = new AudioRingReader(sab, bufSamples, quantum)
     const bufMask = bufSamples - 1
 
-    Atomics.store(ctrl, 0, bufSamples - 32)
+    const fill = new Float32Array(bufSamples)
+    writeSamplesToRing(ctrl, data, bufMask, fill)
+    const iter = reader[Symbol.asyncIterator]()
+    for (let q = 0; q < bufSamples / quantum; q++) await iter.next()
+    // rp = wp = bufSamples; physical write head is back at index 0.
 
-    const samples1 = new Float32Array(96)
-    for (let i = 0; i < 96; i++) {
-      samples1[i] = i
-    }
-    writeSamplesToRing(ctrl, data, bufMask, samples1)
+    // Write one quantum with known values — lands at physical positions 0..quantum-1.
+    const samples = new Float32Array(quantum)
+    for (let i = 0; i < quantum; i++) samples[i] = i + 1
+    writeSamplesToRing(ctrl, data, bufMask, samples)
 
-    const iterator = reader[Symbol.asyncIterator]()
-    const first = await iterator.next()
-
-    if (!first.done) {
-      expect(first.value).toHaveLength(quantum)
+    const result = await iter.next()
+    expect(result.done).toBe(false)
+    if (!result.done) {
+      expect(result.value).toHaveLength(quantum)
       for (let i = 0; i < quantum; i++) {
-        expect(first.value[i]).toBe(i + 32)
+        expect(result.value[i]).toBe(i + 1)
       }
     }
+
+    reader.stop()
+  })
+
+  it('detects and recovers from ring buffer overrun', async () => {
+    const reader = new AudioRingReader(sab, bufSamples, quantum)
+    const bufMask = bufSamples - 1
+
+    const overruns: number[] = []
+    reader.onOverrun = (dropped) => overruns.push(dropped)
+
+    // Write bufSamples + quantum samples with rp still at 0: the writer has
+    // lapped the reader by exactly one quantum.
+    const samples = new Float32Array(bufSamples + quantum)
+    for (let i = 0; i < samples.length; i++) samples[i] = i
+    writeSamplesToRing(ctrl, data, bufMask, samples)
+
+    const iter = reader[Symbol.asyncIterator]()
+    await iter.next()
+
+    // Overrun must have been reported.
+    expect(overruns.length).toBeGreaterThan(0)
+    expect(overruns[0]).toBeGreaterThan(0)
 
     reader.stop()
   })

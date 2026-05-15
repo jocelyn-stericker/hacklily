@@ -15,7 +15,7 @@ function TestRecorder(props: MicCaptureProps) {
 let mockWorkerInstances: any[] = []
 
 // Mock the worker module
-vi.mock('#/lib/liveWorker?worker', () => {
+vi.mock('#/lib/spectrogramWorker?worker', () => {
   class MockWorker {
     postMessage = vi.fn()
     terminate = vi.fn()

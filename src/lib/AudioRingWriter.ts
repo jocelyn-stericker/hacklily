@@ -76,7 +76,7 @@ export class AudioRingWriter extends AudioWorkletProcessor {
     _outputs: Float32Array[][],
   ): boolean {
     const inp = inputs[0]?.[0]
-    if (!inp || !inp[0]) return true
+    if (!inp?.length) return true
 
     const ctrl = this._ctrl
     const data = this._data

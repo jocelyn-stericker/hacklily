@@ -15,11 +15,11 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-declare module '#/lib/liveWorker?worker' {
-  import type { LiveWorker } from '#/lib/liveWorker'
+declare module '#/lib/SpectrogramWorker?worker' {
+  import type { SpectrogramWorker } from '#/lib/SpectrogramWorker'
 
-  const LiveWorkerConstructor: new () => LiveWorker
-  export default LiveWorkerConstructor
+  const SpectrogramWorkerConstructor: new () => SpectrogramWorker
+  export default SpectrogramWorkerConstructor
 }
 
 declare module '#/lib/importWorker?worker' {
