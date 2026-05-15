@@ -9,9 +9,14 @@ jobs:
       - uses: actions/checkout@v5
       - name: Install deps
         run: npm ci
-      - name: Lint and build
+      - name: Lint
         run: |
           npm run lint
+      - name: Test
+        run: |
+          npm run test
+      - name: Build
+        run: |
           npm run build
       - name: Deploy website (grebedoc)
         uses: actions/git-pages@v2
