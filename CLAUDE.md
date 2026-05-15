@@ -11,7 +11,7 @@ npm run build          # Build for production
 
 # Code Quality
 npm run check          # Format with oxfmt, fix with ESLint, and typecheck
-npm run lint           # Run ESLint and TypeScript type checking
+npm run lint           # Run ESLint (oxlint) and TypeScript type checking (tsgo via oxlint)
 
 # Testing
 npm run test           # Run tests with Vitest
@@ -36,8 +36,8 @@ npm run test           # Run tests with Vitest
 
 **2. Audio I/O**
 
-- `AudioRecorder.tsx` - Records microphone input with real-time analysis
-- `AudioPlayback.tsx` - Plays back audio with timeline synchronization
+- `MicCapturePipeline.ts` / `useMicCapture.ts` - Microphone capture with real-time analysis
+- `AudioPlaybackPipeline.ts` / `useAudioPlayback.ts` - Audio playback with timeline synchronization
 
 **3. Visualization**
 

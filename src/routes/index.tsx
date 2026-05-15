@@ -18,13 +18,13 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { useCallback, useEffect, useRef, useState } from 'react'
 
-import { AudioPlayback } from '#/components/AudioPlayback'
 import { Dialogs } from '#/components/Dialogs'
 import { Plot } from '#/components/Plot'
 import { Spectrogram } from '#/components/Spectrogram'
 import type { SpectrogramHandle } from '#/components/Spectrogram'
 import { Toolbar } from '#/components/Toolbar'
 import { useAudioImport } from '#/components/useAudioImport'
+import { useAudioPlayback } from '#/components/useAudioPlayback'
 import { useMicCapture } from '#/components/useMicCapture'
 import { usePreemptibleCallback } from '#/components/usePreemptibleCallback'
 import { useTimelineState } from '#/components/useTimelineState'
@@ -202,6 +202,14 @@ function App() {
     onError: handleError,
   })
 
+  useAudioPlayback({
+    enabled: status.value === 'playing',
+    audioBuffer,
+    cursorSec: timelineState.cursorSec,
+    onStop: handlePause,
+    onPlaybackPositionChanged: handlePlaybackPositionChanged,
+  })
+
   const virtualWidthSec =
     Math.floor(timelineState.trackDurationSec / 30 + 1) * 30 +
     (timelineState.viewportRightSec - timelineState.viewportLeftSec)
@@ -286,14 +294,6 @@ function App() {
             />
           </div>
         </div>
-        {status.value === 'playing' && audioBuffer ? (
-          <AudioPlayback
-            audioBuffer={audioBuffer}
-            cursorSec={timelineState.cursorSec}
-            onStop={handlePause}
-            onPlaybackPositionChanged={handlePlaybackPositionChanged}
-          />
-        ) : null}
       </main>
     </>
   )
