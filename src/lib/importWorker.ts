@@ -27,7 +27,7 @@ onmessage = async ({
     postMessage({ ok: messages })
   } catch (err) {
     postMessage({
-      error: String(err),
+      error: err instanceof Error ? err.message : String(err),
     })
   }
 }

@@ -66,7 +66,10 @@ export function useTimelineState(analysis: AnalysisChunk[]) {
         setStatus({ value: 'inactive' })
       } catch (err) {
         console.log(err)
-        setStatus({ value: 'error', error: String(err) })
+        setStatus({
+          value: 'error',
+          error: err instanceof Error ? err.message : String(err),
+        })
       }
     },
     [],
@@ -225,7 +228,10 @@ export function useTimelineState(analysis: AnalysisChunk[]) {
 
   const handleError = useCallback((error: unknown) => {
     console.log(error)
-    setStatus({ value: 'error', error: String(error) })
+    setStatus({
+      value: 'error',
+      error: error instanceof Error ? error.message : String(error),
+    })
   }, [])
 
   const waveformTimelineState = useMemo(

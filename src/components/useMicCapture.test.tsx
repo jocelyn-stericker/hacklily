@@ -3,7 +3,13 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 
 import type { AppendFrameMessage, ParamsMessage } from '#/lib/liveWorker'
 
-import { AudioRecorder } from './AudioRecorder'
+import { useMicCapture } from './useMicCapture'
+
+type MicCaptureProps = Parameters<typeof useMicCapture>[0]
+function TestRecorder(props: MicCaptureProps) {
+  useMicCapture(props)
+  return null
+}
 
 let mockWorkerInstances: any[] = []
 
@@ -12,14 +18,31 @@ vi.mock('#/lib/liveWorker?worker', () => {
   class MockWorker {
     postMessage = vi.fn()
     terminate = vi.fn()
-    private workerMessageHandler: ((event: MessageEvent) => void) | null = null
+    private messageListeners: ((event: MessageEvent) => void)[] = []
 
-    set onmessage(fn: ((event: MessageEvent) => void) | null) {
-      this.workerMessageHandler = fn
+    addEventListener(
+      type: string,
+      listener: (event: any) => void,
+      options?: AddEventListenerOptions,
+    ) {
+      if (type !== 'message') return
+      this.messageListeners.push(listener)
+      options?.signal?.addEventListener('abort', () =>
+        this.removeEventListener(type, listener),
+      )
     }
 
-    get onmessage() {
-      return this.workerMessageHandler
+    removeEventListener(type: string, listener: (event: any) => void) {
+      if (type !== 'message') return
+      const idx = this.messageListeners.indexOf(listener)
+      if (idx !== -1) this.messageListeners.splice(idx, 1)
+    }
+
+    dispatchMessage(data: any) {
+      const event = new MessageEvent('message', { data })
+      for (const listener of [...this.messageListeners]) {
+        listener(event)
+      }
     }
   }
 
@@ -243,7 +266,8 @@ describe('AudioRecorder', () => {
     const onError = vi.fn()
 
     const { container } = render(
-      <AudioRecorder
+      <TestRecorder
+        enabled={true}
         onAppend={onAppend}
         onRecordingComplete={onRecordingComplete}
         onError={onError}
@@ -259,7 +283,8 @@ describe('AudioRecorder', () => {
     const onError = vi.fn()
 
     render(
-      <AudioRecorder
+      <TestRecorder
+        enabled={true}
         onAppend={onAppend}
         onRecordingComplete={onRecordingComplete}
         onError={onError}
@@ -280,7 +305,8 @@ describe('AudioRecorder', () => {
     const onError = vi.fn()
 
     render(
-      <AudioRecorder
+      <TestRecorder
+        enabled={true}
         onAppend={onAppend}
         onRecordingComplete={onRecordingComplete}
         onError={onError}
@@ -300,7 +326,8 @@ describe('AudioRecorder', () => {
     const onError = vi.fn()
 
     render(
-      <AudioRecorder
+      <TestRecorder
+        enabled={true}
         onAppend={onAppend}
         onRecordingComplete={onRecordingComplete}
         onError={onError}
@@ -318,7 +345,8 @@ describe('AudioRecorder', () => {
     const onError = vi.fn()
 
     render(
-      <AudioRecorder
+      <TestRecorder
+        enabled={true}
         onAppend={onAppend}
         onRecordingComplete={onRecordingComplete}
         onError={onError}
@@ -339,7 +367,8 @@ describe('AudioRecorder', () => {
     const onError = vi.fn()
 
     render(
-      <AudioRecorder
+      <TestRecorder
+        enabled={true}
         onAppend={onAppend}
         onRecordingComplete={onRecordingComplete}
         onError={onError}
@@ -357,7 +386,8 @@ describe('AudioRecorder', () => {
     const onError = vi.fn()
 
     render(
-      <AudioRecorder
+      <TestRecorder
+        enabled={true}
         onAppend={onAppend}
         onRecordingComplete={onRecordingComplete}
         onError={onError}
@@ -384,7 +414,8 @@ describe('AudioRecorder', () => {
     const onError = vi.fn()
 
     render(
-      <AudioRecorder
+      <TestRecorder
+        enabled={true}
         onAppend={onAppend}
         onRecordingComplete={onRecordingComplete}
         onError={onError}
@@ -393,9 +424,9 @@ describe('AudioRecorder', () => {
 
     await waitForMockWorker()
 
-    getMockWorker().onmessage({ data: createMockParamsMessage() })
+    getMockWorker().dispatchMessage(createMockParamsMessage())
     const msg = createMockFrameMessage()
-    getMockWorker().onmessage({ data: msg })
+    getMockWorker().dispatchMessage(msg)
 
     expect(onAppend).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -412,7 +443,8 @@ describe('AudioRecorder', () => {
     const onError = vi.fn()
 
     render(
-      <AudioRecorder
+      <TestRecorder
+        enabled={true}
         onAppend={onAppend}
         onRecordingComplete={onRecordingComplete}
         onError={onError}
@@ -421,9 +453,9 @@ describe('AudioRecorder', () => {
 
     await waitForMockWorker()
 
-    getMockWorker().onmessage({ data: createMockParamsMessage() })
-    getMockWorker().onmessage({ data: createMockFrameMessage() })
-    getMockWorker().onmessage({ data: createMockFrameMessage() })
+    getMockWorker().dispatchMessage(createMockParamsMessage())
+    getMockWorker().dispatchMessage(createMockFrameMessage())
+    getMockWorker().dispatchMessage(createMockFrameMessage())
 
     expect(onAppend).toHaveBeenCalledTimes(2)
   })
@@ -434,7 +466,8 @@ describe('AudioRecorder', () => {
     const onError = vi.fn()
 
     render(
-      <AudioRecorder
+      <TestRecorder
+        enabled={true}
         onAppend={onAppend}
         onRecordingComplete={onRecordingComplete}
         onError={onError}
@@ -447,9 +480,9 @@ describe('AudioRecorder', () => {
     const msg = createMockFrameMessage()
     const pcm = new Float32Array([0.1, 0.2, 0.3])
 
-    getMockWorker().onmessage({ data: params })
-    getMockWorker().onmessage({ data: msg })
-    getMockWorker().onmessage({ data: { type: 'pcm', pcm } })
+    getMockWorker().dispatchMessage(params)
+    getMockWorker().dispatchMessage(msg)
+    getMockWorker().dispatchMessage({ type: 'pcm', pcm })
 
     await waitFor(() => {
       expect(onRecordingComplete).toHaveBeenCalled()
@@ -466,7 +499,8 @@ describe('AudioRecorder', () => {
     const onError = vi.fn()
 
     render(
-      <AudioRecorder
+      <TestRecorder
+        enabled={true}
         onAppend={onAppend}
         onRecordingComplete={onRecordingComplete}
         onError={onError}
@@ -476,7 +510,7 @@ describe('AudioRecorder', () => {
     await waitForMockWorker()
 
     const pcm = new Float32Array([0.1, 0.2, 0.3])
-    getMockWorker().onmessage({ data: { type: 'pcm', pcm } })
+    getMockWorker().dispatchMessage({ type: 'pcm', pcm })
 
     await waitFor(() => {
       expect(getMockWorker().terminate).toHaveBeenCalled()
@@ -492,7 +526,8 @@ describe('AudioRecorder', () => {
     const onError = vi.fn()
 
     render(
-      <AudioRecorder
+      <TestRecorder
+        enabled={true}
         onAppend={onAppend}
         onRecordingComplete={onRecordingComplete}
         onError={onError}
@@ -510,7 +545,8 @@ describe('AudioRecorder', () => {
     const onError = vi.fn()
 
     const { unmount } = render(
-      <AudioRecorder
+      <TestRecorder
+        enabled={true}
         onAppend={onAppend}
         onRecordingComplete={onRecordingComplete}
         onError={onError}
@@ -537,7 +573,8 @@ describe('AudioRecorder', () => {
     const onError = vi.fn()
 
     const { unmount } = render(
-      <AudioRecorder
+      <TestRecorder
+        enabled={true}
         onAppend={onAppend}
         onRecordingComplete={onRecordingComplete}
         onError={onError}
@@ -582,7 +619,8 @@ describe('AudioRecorder', () => {
     })
 
     const { unmount } = render(
-      <AudioRecorder
+      <TestRecorder
+        enabled={true}
         onAppend={onAppend}
         onRecordingComplete={onRecordingComplete}
         onError={onError}
@@ -607,7 +645,8 @@ describe('AudioRecorder', () => {
     const onError1 = vi.fn()
 
     const { rerender } = render(
-      <AudioRecorder
+      <TestRecorder
+        enabled={true}
         onAppend={onAppend1}
         onRecordingComplete={onRecordingComplete1}
         onError={onError1}
@@ -621,7 +660,8 @@ describe('AudioRecorder', () => {
     const onError2 = vi.fn()
 
     rerender(
-      <AudioRecorder
+      <TestRecorder
+        enabled={true}
         onAppend={onAppend2}
         onRecordingComplete={onRecordingComplete2}
         onError={onError2}
@@ -637,9 +677,9 @@ describe('AudioRecorder', () => {
       { timeout: 100 },
     )
 
-    getMockWorker().onmessage({ data: createMockParamsMessage() })
+    getMockWorker().dispatchMessage(createMockParamsMessage())
     const msg = createMockFrameMessage()
-    getMockWorker().onmessage({ data: msg })
+    getMockWorker().dispatchMessage(msg)
 
     expect(onAppend2).toHaveBeenCalledWith(
       expect.objectContaining({ spectrum: msg.spectrum, rms: msg.rms }),
@@ -653,7 +693,8 @@ describe('AudioRecorder', () => {
     const onError = vi.fn()
 
     render(
-      <AudioRecorder
+      <TestRecorder
+        enabled={true}
         onAppend={onAppend}
         onRecordingComplete={onRecordingComplete}
         onError={onError}
@@ -663,13 +704,14 @@ describe('AudioRecorder', () => {
     await waitForMockWorker()
 
     // timeStepSamples=882 → 882/44100 ≈ 0.02 sec per frame, 2 frames = 0.04 sec = 1764 samples
-    getMockWorker().onmessage({
-      data: createMockParamsMessage({ timeStepSamples: 882 }),
-    })
-    getMockWorker().onmessage({ data: createMockFrameMessage() })
-    getMockWorker().onmessage({ data: createMockFrameMessage() })
-    getMockWorker().onmessage({
-      data: { type: 'pcm', pcm: new Float32Array([0.1, 0.2]) },
+    getMockWorker().dispatchMessage(
+      createMockParamsMessage({ timeStepSamples: 882 }),
+    )
+    getMockWorker().dispatchMessage(createMockFrameMessage())
+    getMockWorker().dispatchMessage(createMockFrameMessage())
+    getMockWorker().dispatchMessage({
+      type: 'pcm',
+      pcm: new Float32Array([0.1, 0.2]),
     })
 
     await waitFor(() => {
@@ -687,7 +729,8 @@ describe('AudioRecorder', () => {
     const onError = vi.fn()
 
     render(
-      <AudioRecorder
+      <TestRecorder
+        enabled={true}
         onAppend={onAppend}
         onRecordingComplete={onRecordingComplete}
         onError={onError}
@@ -697,13 +740,13 @@ describe('AudioRecorder', () => {
     await waitForMockWorker()
 
     // Send a params + frame message first to allocate buffer space
-    getMockWorker().onmessage({
-      data: createMockParamsMessage({ timeStepSamples: 441 }),
-    })
-    getMockWorker().onmessage({ data: createMockFrameMessage() })
+    getMockWorker().dispatchMessage(
+      createMockParamsMessage({ timeStepSamples: 441 }),
+    )
+    getMockWorker().dispatchMessage(createMockFrameMessage())
 
     const pcm = new Float32Array([0.1, 0.2, 0.3, 0.4])
-    getMockWorker().onmessage({ data: { type: 'pcm', pcm } })
+    getMockWorker().dispatchMessage({ type: 'pcm', pcm })
 
     await waitFor(() => {
       expect(onRecordingComplete).toHaveBeenCalled()
@@ -722,7 +765,8 @@ describe('AudioRecorder', () => {
     const onError = vi.fn()
 
     render(
-      <AudioRecorder
+      <TestRecorder
+        enabled={true}
         onAppend={onAppend}
         onRecordingComplete={onRecordingComplete}
         onError={onError}
@@ -732,7 +776,7 @@ describe('AudioRecorder', () => {
     await waitForMockWorker()
 
     const pcm = new Float32Array([])
-    getMockWorker().onmessage({ data: { type: 'pcm', pcm } })
+    getMockWorker().dispatchMessage({ type: 'pcm', pcm })
 
     await waitFor(() => {
       expect(onRecordingComplete).toHaveBeenCalled()

@@ -88,6 +88,11 @@ export type LiveWorkerOutMessage =
 export type LiveWorker = Omit<Worker, 'postMessage' | 'onmessage'> & {
   postMessage: (msg: LiveWorkerInMessage) => null
   onmessage: ((ev: MessageEvent<LiveWorkerOutMessage>) => any) | null
+  addEventListener: (
+    type: 'message',
+    listener: (ev: MessageEvent<LiveWorkerOutMessage>) => void,
+    options?: boolean | AddEventListenerOptions,
+  ) => void
 }
 
 self.onmessage = ({ data }: MessageEvent<LiveWorkerInMessage>) => {

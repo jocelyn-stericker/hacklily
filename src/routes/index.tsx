@@ -19,13 +19,13 @@ import { createFileRoute } from '@tanstack/react-router'
 import { useCallback, useEffect, useRef, useState } from 'react'
 
 import { AudioPlayback } from '#/components/AudioPlayback'
-import { AudioRecorder } from '#/components/AudioRecorder'
 import { Dialogs } from '#/components/Dialogs'
 import { Plot } from '#/components/Plot'
 import { Spectrogram } from '#/components/Spectrogram'
 import type { SpectrogramHandle } from '#/components/Spectrogram'
 import { Toolbar } from '#/components/Toolbar'
 import { useAudioImport } from '#/components/useAudioImport'
+import { useMicCapture } from '#/components/useMicCapture'
 import { usePreemptibleCallback } from '#/components/usePreemptibleCallback'
 import { useTimelineState } from '#/components/useTimelineState'
 import { ViewportShade } from '#/components/ViewportShade'
@@ -193,6 +193,15 @@ function App() {
     return () => clearInterval(timer)
   }, [])
 
+  useMicCapture({
+    enabled: status.value === 'recording',
+    onChunkStart: handleChunkStart,
+    onAppend: handleAppend,
+    onPatch: handlePatch,
+    onRecordingComplete: handleRecordingComplete,
+    onError: handleError,
+  })
+
   const virtualWidthSec =
     Math.floor(timelineState.trackDurationSec / 30 + 1) * 30 +
     (timelineState.viewportRightSec - timelineState.viewportLeftSec)
@@ -277,15 +286,6 @@ function App() {
             />
           </div>
         </div>
-        {status.value === 'recording' ? (
-          <AudioRecorder
-            onChunkStart={handleChunkStart}
-            onAppend={handleAppend}
-            onPatch={handlePatch}
-            onRecordingComplete={handleRecordingComplete}
-            onError={handleError}
-          />
-        ) : null}
         {status.value === 'playing' && audioBuffer ? (
           <AudioPlayback
             audioBuffer={audioBuffer}
