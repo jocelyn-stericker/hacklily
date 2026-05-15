@@ -9,9 +9,12 @@ jobs:
       - uses: actions/checkout@v5
       - name: Install deps
         run: npm ci
-      - name: Lint & Test
+      - name: Lint
         run: |
-          npm run lint & pid1=$!; npm run test & pid2=$!; wait $pid1; s1=$?; wait $pid2; s2=$?; [ $s1 -eq 0 ] && [ $s2 -eq 0 ]
+          npm run lint
+      - name: Test
+        run: |
+          npm run test
       - name: Build
         run: |
           npm run build
