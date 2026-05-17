@@ -49,6 +49,7 @@ export const Route = createFileRoute('/')({
 
 const DB_MIN_DEFAULT = -93
 const DB_MAX_DEFAULT = -23
+const SHOW_VOWEL_CHART = localStorage.SHOW_VOWEL_CHART === 'true'
 
 function App() {
   const waveformRef = useRef<WaveformHandle>(null)
@@ -324,13 +325,15 @@ function App() {
               debug={false}
             />
           </Plot>
-          <div className="w-80 flex flex-col border-l border-l-gray-500">
-            <VowelChart
-              analysis={analysis}
-              cursorSec={timelineState.cursorSec}
-              ref={vowelChartRef}
-            />
-          </div>
+          {SHOW_VOWEL_CHART ? (
+            <div className="w-80 flex flex-col border-l border-l-gray-500">
+              <VowelChart
+                analysis={analysis}
+                cursorSec={timelineState.cursorSec}
+                ref={vowelChartRef}
+              />
+            </div>
+          ) : null}
         </div>
       </main>
     </>
