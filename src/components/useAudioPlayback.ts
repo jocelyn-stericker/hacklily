@@ -46,6 +46,14 @@ export function useAudioPlayback({
     onPlaybackPositionChangedRef.current = onPlaybackPositionChanged
   })
 
+  useEffect(() => {
+    if ('audioSession' in navigator) {
+      // This makes it so that even when the ringer is set to silent on iOS, we still get playback!
+      // @ts-expect-error this is not standard
+      navigator.audioSession.type = 'play-and-record'
+    }
+  }, [])
+
   const { data: settingsRows } = useLiveQuery(settingsCollection)
   const audioSettings = settingsRows[0] ?? DEFAULT_SETTINGS
   const preferredRate = preferredSampleRate(audioSettings)
