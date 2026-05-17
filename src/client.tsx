@@ -1,17 +1,22 @@
 /* eslint-disable @typescript-eslint/no-unnecessary-condition */
-import { StartClient } from '@tanstack/react-start/client'
+import { RouterProvider } from '@tanstack/react-router'
 import { StrictMode } from 'react'
-import { hydrateRoot } from 'react-dom/client'
+import { createRoot } from 'react-dom/client'
+
+import { getRouter } from './router'
+
+import './styles.css'
 
 const ENABLE_STRICT_MODE = false
 
-hydrateRoot(
-  document,
+const router = getRouter()
+
+createRoot(document.getElementById('root')!).render(
   ENABLE_STRICT_MODE ? (
     <StrictMode>
-      <StartClient />
+      <RouterProvider router={router} />
     </StrictMode>
   ) : (
-    <StartClient />
+    <RouterProvider router={router} />
   ),
 )

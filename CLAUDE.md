@@ -21,7 +21,7 @@ npm run test           # Run tests with Vitest
 
 ### Tech Stack
 
-- **UI Framework**: TanStack Start (React 19 with file-based routing under `src/routes/`)
+- **UI Framework**: TanStack Router (React 19 SPA with file-based routing under `src/routes/`)
 - **Styling**: Tailwind CSS v4 (via `@tailwindcss/vite` plugin)
 - **Components**: shadcn/ui (installed to `src/components/ui/`)
 - **Icons**: lucide-react

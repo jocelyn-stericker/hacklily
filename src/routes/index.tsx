@@ -45,10 +45,6 @@ import { exportWav } from '#/lib/exportWav.ts'
 
 export const Route = createFileRoute('/')({
   component: App,
-  headers: () => ({
-    'Cross-Origin-Opener-Policy': 'same-origin',
-    'Cross-Origin-Embedder-Policy': 'require-corp',
-  }),
 })
 
 const DB_MIN_DEFAULT = -93

@@ -20,7 +20,6 @@
     "@tanstack/react-db": "^0.1.83",
     "@tanstack/react-devtools": "latest",
     "@tanstack/react-router": "latest",
-    "@tanstack/react-start": "^1.167.64",
     "@tanstack/router-plugin": "^1.132.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",

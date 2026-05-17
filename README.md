@@ -28,7 +28,7 @@ npm run check && npm run test
 
 For the UI:
 
-- **TanStack Start** — full-stack React, file-based routing under `src/routes/`
+- **TanStack Router** — React SPA, file-based routing under `src/routes/`
 - **shadcn/ui** — components in `src/components/ui/`, add more with `npx shadcn@latest add <name>`
 - **Tailwind v4** — configured via `@tailwindcss/vite` plugin (no config file); styles in `src/styles.css`
 - **lucide-react** — icons throughout; event type icons chosen by heuristics in `src/lib/event-icon-heuristics.ts`
@@ -54,14 +54,14 @@ cut features or make them optional.
 
 ### Source Code - Root
 
-- **src/client.tsx** — Vite/TanStack client entry point with React DOM hydration.
+- **src/client.tsx** — Vite/TanStack client entry point with React DOM rendering.
 - **src/router.tsx** — TanStack Router root configuration and layout definition.
 - **src/routeTree.gen.ts** — Auto-generated route tree from file-based routing.
 - **src/styles.css** — Global styles with Tailwind CSS directives and custom theme variables.
 
 ### Source Code - Routes
 
-- **src/routes/\_\_root.tsx** — Root layout component wrapping all pages with HTML structure and metadata.
+- **src/routes/\_\_root.tsx** — Root layout component wrapping all pages with global UI (toaster, devtools).
 - **src/routes/index.tsx** — Main application page with audio import, microphone recording, playback controls, and visualization.
 
 ### Components - Audio Playback
