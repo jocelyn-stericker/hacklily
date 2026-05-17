@@ -603,6 +603,8 @@ export function Spectrogram({
   }, [analysis, dbMin, dbRange, canvasHeight, freqToY, dpr])
 
   const fromRef = useRef<number | null>(null)
+  // Infinity = "to totalFrames" (append pending); explicit number = max patch to
+  const pendingToRef = useRef<number>(0)
   const drawFrame = useRef<number | null>(null)
 
   // ---- FALLS THROUGH TO NEXT EFFECT ----
@@ -663,128 +665,137 @@ export function Spectrogram({
     debug,
   ])
 
-  useImperativeHandle(
-    ref,
-    () => ({
+  useImperativeHandle(ref, () => {
+    function handleFrame() {
+      drawFrame.current = null
+      const effectiveFrom = fromRef.current!
+      const pendingTo = pendingToRef.current // Infinity = append, number = patch to
+      fromRef.current = null
+      pendingToRef.current = 0
+
+      if (!colorsRef.current) {
+        if (pendingTo !== Infinity) return // patch with no analysis → bail
+        const numFrames = totalFrames(analysis)
+        const numBins = analysis[0]!.frames[0]!.spectrum.length
+        const { firstBinHz, freqStepHz, timeStepSamples, sampleRate } =
+          analysis[0]!
+        const capacity = nextPow2(numFrames)
+        const colors: ColorsState = {
+          data: new Uint32Array(numBins * capacity),
+          capacity,
+          numFrames,
+          numBins,
+          firstBinHz,
+          freqStepHz,
+          timeStepSamples,
+          sampleRate,
+          dbMin,
+          dbRange,
+          analysis,
+        }
+        computeColorsRange(colors, 0, numFrames)
+        colorsRef.current = colors
+      }
+
+      const colors = colorsRef.current
+      const prevNumFrames = colors.numFrames
+      const effectiveTo =
+        pendingTo === Infinity ? totalFrames(colors.analysis) : pendingTo
+      if (effectiveFrom >= effectiveTo) return
+
+      const isExtending = effectiveTo > prevNumFrames
+      if (isExtending) ensureColorsCapacity(colors, effectiveTo)
+      computeColorsRange(colors, effectiveFrom, effectiveTo)
+      if (isExtending) colors.numFrames = effectiveTo
+
+      if (!offRef.current && canvasHeight > 0) {
+        const binForY = buildBinForY(
+          colors.numBins,
+          colors.firstBinHz,
+          colors.freqStepHz,
+          freqToY,
+          canvasHeight,
+        )
+        const off: OffscreenState = { tiles: [], binForY, canvasHeight }
+        ensureTiles(off, effectiveTo)
+        offRef.current = off
+        paintColumnsToOffscreen(off, colors, 0, effectiveTo)
+        const formantOff: FormantOffscreenState = { tiles: [], canvasHeight }
+        ensureTiles(formantOff, effectiveTo)
+        formantOffRef.current = formantOff
+        paintFormantTiles(formantOff, analysis, 0, freqToY, dpr)
+        tilesGenRef.current += 1
+      } else if (offRef.current) {
+        if (isExtending) ensureTiles(offRef.current, effectiveTo)
+        paintColumnsToOffscreen(
+          offRef.current,
+          colors,
+          effectiveFrom,
+          effectiveTo,
+        )
+
+        if (!formantOffRef.current) {
+          const formantOff: FormantOffscreenState = { tiles: [], canvasHeight }
+          ensureTiles(formantOff, effectiveTo)
+          formantOffRef.current = formantOff
+          paintFormantTiles(formantOff, analysis, 0, freqToY, dpr)
+          // formantOff newly created: [0, effectiveFrom) was never painted,
+          // so a full repaint is needed to show historical formant lines.
+          tilesGenRef.current += 1
+        } else {
+          if (isExtending) ensureTiles(formantOffRef.current, effectiveTo)
+
+          if (isExtending && effectiveFrom >= prevNumFrames) {
+            // Pure append: additive paint, then update display buffer for new region.
+            appendFormantTiles(
+              formantOffRef.current,
+              analysis,
+              effectiveFrom,
+              effectiveTo,
+              freqToY,
+              dpr,
+            )
+            updateDisplayBufForFrames(
+              displayBufRef.current,
+              offRef.current,
+              formantOffRef.current,
+              effectiveFrom,
+              effectiveTo,
+            )
+          } else {
+            // Patch or mixed (patch + append): repaint tiles from first affected frame.
+            paintFormantTiles(
+              formantOffRef.current,
+              analysis,
+              Math.floor(effectiveFrom / TILE_WIDTH),
+              freqToY,
+              dpr,
+            )
+            tilesGenRef.current += 1
+          }
+        }
+      }
+
+      triggerDraw.current()
+    }
+
+    return {
       append(from) {
         fromRef.current = Math.min(from, fromRef.current ?? Infinity)
+        pendingToRef.current = Infinity // sentinel: resolve to totalFrames at execution
         if (drawFrame.current !== null) return
-
-        drawFrame.current = requestAnimationFrame(() => {
-          drawFrame.current = null
-          const effectiveFrom = fromRef.current!
-          fromRef.current = null
-          if (!colorsRef.current) {
-            const numFrames = totalFrames(analysis)
-            const numBins = analysis[0]!.frames[0]!.spectrum.length
-            const { firstBinHz, freqStepHz, timeStepSamples, sampleRate } =
-              analysis[0]!
-            const capacity = nextPow2(numFrames)
-            const colors: ColorsState = {
-              data: new Uint32Array(numBins * capacity),
-              capacity,
-              numFrames,
-              numBins,
-              firstBinHz,
-              freqStepHz,
-              timeStepSamples,
-              sampleRate,
-              dbMin,
-              dbRange,
-              analysis,
-            }
-            computeColorsRange(colors, 0, numFrames)
-            colorsRef.current = colors
-          }
-          const colors = colorsRef.current
-          const to = totalFrames(colors.analysis)
-          if (effectiveFrom >= to) return
-          ensureColorsCapacity(colors, to)
-          computeColorsRange(colors, effectiveFrom, to)
-          colors.numFrames = to
-          if (!offRef.current && canvasHeight > 0) {
-            const binForY = buildBinForY(
-              colors.numBins,
-              colors.firstBinHz,
-              colors.freqStepHz,
-              freqToY,
-              canvasHeight,
-            )
-            const off: OffscreenState = { tiles: [], binForY, canvasHeight }
-            ensureTiles(off, to)
-            offRef.current = off
-            paintColumnsToOffscreen(off, colors, 0, to)
-            const formantOff: FormantOffscreenState = {
-              tiles: [],
-              canvasHeight,
-            }
-            ensureTiles(formantOff, to)
-            formantOffRef.current = formantOff
-            paintFormantTiles(formantOff, analysis, 0, freqToY, dpr)
-            tilesGenRef.current += 1
-          } else if (offRef.current) {
-            ensureTiles(offRef.current, to)
-            paintColumnsToOffscreen(offRef.current, colors, effectiveFrom, to)
-            if (!formantOffRef.current) {
-              const formantOff: FormantOffscreenState = {
-                tiles: [],
-                canvasHeight,
-              }
-              ensureTiles(formantOff, to)
-              formantOffRef.current = formantOff
-              paintFormantTiles(formantOff, analysis, 0, freqToY, dpr)
-              // formantOff newly created: [0, effectiveFrom) was never painted,
-              // so a full repaint is needed to show historical formant lines.
-              tilesGenRef.current += 1
-            } else {
-              ensureTiles(formantOffRef.current, to)
-              appendFormantTiles(
-                formantOffRef.current,
-                analysis,
-                effectiveFrom,
-                to,
-                freqToY,
-                dpr,
-              )
-              // Paint only the new frame region into the display buffer so new data
-              // appears immediately even if the view is stationary (no scroll delta).
-              updateDisplayBufForFrames(
-                displayBufRef.current,
-                offRef.current,
-                formantOffRef.current,
-                effectiveFrom,
-                to,
-              )
-            }
-          }
-          triggerDraw.current()
-        })
+        drawFrame.current = requestAnimationFrame(handleFrame)
       },
 
       patch(from, to) {
-        const colors = colorsRef.current
-        const off = offRef.current
-        const formantOff = formantOffRef.current
-        if (!colors || !off) return
-        computeColorsRange(colors, from, to)
-        paintColumnsToOffscreen(off, colors, from, to)
-
-        if (formantOff) {
-          paintFormantTiles(
-            formantOff,
-            analysis,
-            Math.floor(from / TILE_WIDTH),
-            freqToY,
-            dpr,
-          )
-        }
-
-        tilesGenRef.current += 1
-        triggerDraw.current()
+        fromRef.current = Math.min(from, fromRef.current ?? Infinity)
+        // Math.max(to, Infinity) = Infinity, so a pending append keeps priority
+        pendingToRef.current = Math.max(to, pendingToRef.current)
+        if (drawFrame.current !== null) return
+        drawFrame.current = requestAnimationFrame(handleFrame)
       },
-    }),
-    [canvasHeight, analysis, freqToY, dbMin, dbRange, dpr],
-  )
+    }
+  }, [canvasHeight, analysis, freqToY, dbMin, dbRange, dpr])
 
   return (
     <>
