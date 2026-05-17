@@ -9,7 +9,7 @@
       "#/*": ["./src/*"]
     },
     "lib": ["ES2024", "DOM", "DOM.Iterable"],
-    "types": ["vite/client"],
+    "types": ["vite/client", "vite-plugin-pwa/client"],
 
     /* Bundler mode */
     "moduleResolution": "bundler",
