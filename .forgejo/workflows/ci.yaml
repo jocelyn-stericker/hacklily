@@ -3,8 +3,8 @@ on:
     branches:
       - main
 jobs:
-  test:
-    runs-on: codeberg-tiny
+  deploy:
+    runs-on: codeberg-small
     steps:
       - uses: actions/checkout@v5
       - name: Install deps
