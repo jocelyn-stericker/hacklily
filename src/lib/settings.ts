@@ -70,7 +70,6 @@ export async function updateSettings(
   })
   await tx.isPersisted.promise
 }
-window.settingsCollection = settingsCollection
 
 /** Build MediaStreamConstraints from settings */
 export function buildAudioConstraints(
