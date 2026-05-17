@@ -38,17 +38,23 @@ export class AudioPlaybackPipeline extends TypedEventTarget<AudioPlaybackOutEven
     audioBuffer,
     startAtSec,
     signal,
+    sampleRate,
   }: {
     audioBuffer: AudioBuffer
     startAtSec: number
     signal: AbortSignal
+    sampleRate?: number
   }) {
     super()
     signal.addEventListener('abort', this.#stop)
-    this.#play(audioBuffer, startAtSec)
+    this.#play(audioBuffer, startAtSec, sampleRate)
   }
 
-  #play(audioBuffer: AudioBuffer, requestedStartAtSec: number) {
+  #play(
+    audioBuffer: AudioBuffer,
+    requestedStartAtSec: number,
+    sampleRate?: number,
+  ) {
     this.#duration = audioBuffer.duration
     const startAtSec =
       requestedStartAtSec - 0.01 <= audioBuffer.duration
@@ -56,7 +62,7 @@ export class AudioPlaybackPipeline extends TypedEventTarget<AudioPlaybackOutEven
         : 0
     this.#startTimeSec = startAtSec
 
-    this.#context = new AudioContext({ sampleRate: 44100 })
+    this.#context = new AudioContext({ sampleRate })
     const thisSource = this.#context.createBufferSource()
     thisSource.buffer = audioBuffer
     thisSource.connect(this.#context.destination)

@@ -1,4 +1,3 @@
-import { useLiveQuery } from '@tanstack/react-db'
 /* Braat
  * Copyright (C) 2026 Jocelyn Stericker <jocelyn@nettek.ca>
  *
@@ -15,6 +14,7 @@ import { useLiveQuery } from '@tanstack/react-db'
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+import { useLiveQuery } from '@tanstack/react-db'
 import { useEffect, useLayoutEffect, useRef } from 'react'
 
 import type { AnalysisFrame, AnalysisParams } from '#/lib/analysis'

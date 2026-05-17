@@ -15,9 +15,15 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import { useLiveQuery } from '@tanstack/react-db'
 import { useEffect, useLayoutEffect, useRef } from 'react'
 
 import { AudioPlaybackPipeline } from '#/lib/AudioPlaybackPipeline'
+import {
+  settingsCollection,
+  DEFAULT_SETTINGS,
+  preferredSampleRate,
+} from '#/lib/settings'
 
 export function useAudioPlayback({
   enabled,
@@ -39,6 +45,10 @@ export function useAudioPlayback({
     onStopRef.current = onStop
     onPlaybackPositionChangedRef.current = onPlaybackPositionChanged
   })
+
+  const { data: settingsRows } = useLiveQuery(settingsCollection)
+  const audioSettings = settingsRows[0] ?? DEFAULT_SETTINGS
+  const preferredRate = preferredSampleRate(audioSettings)
 
   const playbackRef = useRef<{
     ctrl: AbortController
@@ -66,6 +76,7 @@ export function useAudioPlayback({
       audioBuffer,
       startAtSec: cursorSec,
       signal: ctrl.signal,
+      sampleRate: preferredRate,
     })
 
     const listenerOpts = { signal: pipeline.stopSignal }
@@ -91,7 +102,7 @@ export function useAudioPlayback({
       },
       listenerOpts,
     )
-  }, [enabled, audioBuffer, cursorSec])
+  }, [enabled, audioBuffer, preferredRate, cursorSec])
 
   // Unmount cleanup — the main effect intentionally has no cleanup return
   // so the pipeline survives across cursorSec feedback-loop re-runs.
