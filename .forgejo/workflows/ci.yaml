@@ -18,15 +18,9 @@ jobs:
       - name: Build
         run: |
           npm run build
-      - name: Deploy website (grebedoc)
+      - name: Deploy website
         uses: actions/git-pages@v2
         with:
           site: https://jocelyn-stericker.grebedoc.dev/braat
-          source: ./dist
-          token: ${{ forge.token }}
-      - name: Deploy website (codeberg)
-        uses: actions/git-pages@v2
-        with:
-          site: https://jocelyn-stericker.codeberg.page/braat
           source: ./dist
           token: ${{ forge.token }}
