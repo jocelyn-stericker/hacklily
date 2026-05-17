@@ -13,6 +13,7 @@ function TestRecorder(props: MicCaptureProps) {
 }
 
 let mockWorkerInstances: any[] = []
+let mockFormantWorkerInstances: any[] = []
 
 vi.mock('@tanstack/react-db', () => ({
   useLiveQuery: vi.fn(() => ({
@@ -27,6 +28,49 @@ vi.mock('@tanstack/react-db', () => ({
     ],
   })),
 }))
+
+vi.mock('#/lib/FormantWorker?worker', () => {
+  class MockFormantWorker {
+    postMessage = vi.fn()
+    terminate = vi.fn()
+    private messageListeners: ((event: MessageEvent) => void)[] = []
+
+    addEventListener(
+      type: string,
+      listener: (event: any) => void,
+      options?: AddEventListenerOptions,
+    ) {
+      if (type !== 'message') return
+      this.messageListeners.push(listener)
+      options?.signal?.addEventListener('abort', () =>
+        this.removeEventListener(type, listener),
+      )
+    }
+
+    removeEventListener(type: string, listener: (event: any) => void) {
+      if (type !== 'message') return
+      const idx = this.messageListeners.indexOf(listener)
+      if (idx !== -1) this.messageListeners.splice(idx, 1)
+    }
+
+    dispatchMessage(data: any) {
+      const event = new MessageEvent('message', { data })
+      for (const listener of [...this.messageListeners]) {
+        listener(event)
+      }
+    }
+  }
+
+  return {
+    default: class {
+      constructor() {
+        const worker = new MockFormantWorker()
+        mockFormantWorkerInstances.push(worker)
+        return worker
+      }
+    },
+  }
+})
 
 // Mock the worker module
 vi.mock('#/lib/SpectrogramWorker?worker', () => {
@@ -87,6 +131,13 @@ describe('AudioRecorder', () => {
     return mockWorkerInstances[mockWorkerInstances.length - 1]
   }
 
+  const getMockFormantWorker = () => {
+    if (mockFormantWorkerInstances.length === 0) {
+      throw new Error('No mock formant worker instances created')
+    }
+    return mockFormantWorkerInstances[mockFormantWorkerInstances.length - 1]
+  }
+
   const waitForMockWorker = async () => {
     await waitFor(
       () => {
@@ -133,6 +184,7 @@ describe('AudioRecorder', () => {
 
   beforeEach(() => {
     mockWorkerInstances = []
+    mockFormantWorkerInstances = []
     mockFrameIndex = 0
 
     // Mock MediaStreamTrack
@@ -392,6 +444,9 @@ describe('AudioRecorder', () => {
       />,
     )
 
+    await waitForMockWorker()
+    getMockWorker().dispatchMessage(createMockParamsMessage())
+
     await waitFor(() => {
       expect(mockSourceNode.connect).toHaveBeenCalledWith(mockWorkletNode)
     })
@@ -478,7 +533,7 @@ describe('AudioRecorder', () => {
     expect(onAppend).toHaveBeenCalledTimes(2)
   })
 
-  it('calls onRecordingComplete with audio buffer on pcm message', async () => {
+  it('calls onRecordingComplete with audio buffer on ended message', async () => {
     const onAppend = vi.fn()
     const onRecordingComplete = vi.fn()
     const onError = vi.fn()
@@ -500,7 +555,7 @@ describe('AudioRecorder', () => {
 
     getMockWorker().dispatchMessage(params)
     getMockWorker().dispatchMessage(msg)
-    getMockWorker().dispatchMessage({ type: 'pcm', pcm })
+    getMockWorker().dispatchMessage({ type: 'ended', pcm })
 
     await waitFor(() => {
       expect(onRecordingComplete).toHaveBeenCalled()
@@ -511,7 +566,7 @@ describe('AudioRecorder', () => {
     })
   })
 
-  it('terminates worker after pcm message', async () => {
+  it('terminates all workers after ended message', async () => {
     const onAppend = vi.fn()
     const onRecordingComplete = vi.fn()
     const onError = vi.fn()
@@ -528,10 +583,11 @@ describe('AudioRecorder', () => {
     await waitForMockWorker()
 
     const pcm = new Float32Array([0.1, 0.2, 0.3])
-    getMockWorker().dispatchMessage({ type: 'pcm', pcm })
+    getMockWorker().dispatchMessage({ type: 'ended', pcm })
 
     await waitFor(() => {
       expect(getMockWorker().terminate).toHaveBeenCalled()
+      expect(getMockFormantWorker().terminate).toHaveBeenCalled()
     })
   })
 
@@ -571,6 +627,8 @@ describe('AudioRecorder', () => {
       />,
     )
 
+    await waitForMockWorker()
+    getMockWorker().dispatchMessage(createMockParamsMessage())
     await waitFor(() => {
       expect(mockSourceNode.connect).toHaveBeenCalled()
     })
@@ -585,7 +643,7 @@ describe('AudioRecorder', () => {
     })
   })
 
-  it('sends flush message before cleanup', async () => {
+  it('closes audio context before signalling workers (no flush message sent)', async () => {
     const onAppend = vi.fn()
     const onRecordingComplete = vi.fn()
     const onError = vi.fn()
@@ -599,6 +657,8 @@ describe('AudioRecorder', () => {
       />,
     )
 
+    await waitForMockWorker()
+    getMockWorker().dispatchMessage(createMockParamsMessage())
     await waitFor(() => {
       expect(mockSourceNode.connect).toHaveBeenCalled()
     })
@@ -606,9 +666,9 @@ describe('AudioRecorder', () => {
     unmount()
 
     await waitFor(() => {
-      expect(getMockWorker().postMessage).toHaveBeenCalledWith({
-        type: 'flush',
-      })
+      expect(mockAudioContext.close).toHaveBeenCalled()
+      const allCalls = getMockWorker().postMessage.mock.calls
+      expect(allCalls.every((c: any[]) => c[0]?.type !== 'flush')).toBe(true)
     })
   })
 
@@ -728,7 +788,7 @@ describe('AudioRecorder', () => {
     getMockWorker().dispatchMessage(createMockFrameMessage())
     getMockWorker().dispatchMessage(createMockFrameMessage())
     getMockWorker().dispatchMessage({
-      type: 'pcm',
+      type: 'ended',
       pcm: new Float32Array([0.1, 0.2]),
     })
 
@@ -764,7 +824,7 @@ describe('AudioRecorder', () => {
     getMockWorker().dispatchMessage(createMockFrameMessage())
 
     const pcm = new Float32Array([0.1, 0.2, 0.3, 0.4])
-    getMockWorker().dispatchMessage({ type: 'pcm', pcm })
+    getMockWorker().dispatchMessage({ type: 'ended', pcm })
 
     await waitFor(() => {
       expect(onRecordingComplete).toHaveBeenCalled()
@@ -777,7 +837,44 @@ describe('AudioRecorder', () => {
     })
   })
 
-  it('terminates worker on pcm with no accumulated frames', async () => {
+  it('defers teardown until all initialized workers send ended', async () => {
+    const onAppend = vi.fn()
+    const onRecordingComplete = vi.fn()
+    const onError = vi.fn()
+
+    render(
+      <TestRecorder
+        enabled={true}
+        onAppend={onAppend}
+        onRecordingComplete={onRecordingComplete}
+        onError={onError}
+      />,
+    )
+
+    await waitForMockWorker()
+    getMockWorker().dispatchMessage(createMockParamsMessage())
+    getMockWorker().dispatchMessage(createMockFrameMessage())
+    const pcm = new Float32Array([0.1])
+    getMockWorker().dispatchMessage({ type: 'ended', pcm })
+
+    // recordingComplete fires immediately — before formant 'ended'
+    await waitFor(() => {
+      expect(onRecordingComplete).toHaveBeenCalled()
+    })
+
+    // teardown (terminate) must not have fired yet — formant is still pending
+    expect(getMockWorker().terminate).toHaveBeenCalled() // spectrogram terminates itself
+    expect(getMockFormantWorker().terminate).not.toHaveBeenCalled()
+
+    // formant finishes
+    getMockFormantWorker().dispatchMessage({ type: 'ended' })
+
+    await waitFor(() => {
+      expect(getMockFormantWorker().terminate).toHaveBeenCalled()
+    })
+  })
+
+  it('terminates all workers on ended with no accumulated frames', async () => {
     const onAppend = vi.fn()
     const onRecordingComplete = vi.fn()
     const onError = vi.fn()
@@ -794,10 +891,11 @@ describe('AudioRecorder', () => {
     await waitForMockWorker()
 
     const pcm = new Float32Array([])
-    getMockWorker().dispatchMessage({ type: 'pcm', pcm })
+    getMockWorker().dispatchMessage({ type: 'ended', pcm })
 
     await waitFor(() => {
       expect(getMockWorker().terminate).toHaveBeenCalled()
+      expect(getMockFormantWorker().terminate).toHaveBeenCalled()
       expect(onRecordingComplete).not.toHaveBeenCalled()
     })
   })

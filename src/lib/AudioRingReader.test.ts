@@ -101,8 +101,6 @@ describe('AudioRingReader', () => {
       expect(result.value[2]).toBe(3)
       expect(result.value[3]).toBe(4)
     }
-
-    reader.stop()
   })
 
   it('reads multiple quanta sequentially', async () => {
@@ -128,8 +126,6 @@ describe('AudioRingReader', () => {
       expect(second.value[0]).toBe(100)
       expect(second.value[quantum - 1]).toBe(100 + quantum - 1)
     }
-
-    reader.stop()
   })
 
   it('handles circular buffer wrap-around', async () => {
@@ -159,8 +155,6 @@ describe('AudioRingReader', () => {
         expect(result.value[i]).toBe(i + 1)
       }
     }
-
-    reader.stop()
   })
 
   it('detects and recovers from ring buffer overrun', async () => {
@@ -182,11 +176,9 @@ describe('AudioRingReader', () => {
     // Overrun must have been reported.
     expect(overruns.length).toBeGreaterThan(0)
     expect(overruns[0]).toBeGreaterThan(0)
-
-    reader.stop()
   })
 
-  it('stops iteration when stop() is called', async () => {
+  it('stops iteration when stop sentinel is set', async () => {
     const reader = new AudioRingReader(sab, bufSamples, quantum)
     const samples = new Float32Array(quantum)
     for (let i = 0; i < quantum; i++) {
@@ -199,7 +191,8 @@ describe('AudioRingReader', () => {
     const first = await iterator.next()
     expect(first.done).toBe(false)
 
-    reader.stop()
+    Atomics.store(ctrl, 1, 1)
+    Atomics.notify(ctrl, 0)
     const second = await iterator.next()
     expect(second.done).toBe(true)
   })
@@ -223,8 +216,6 @@ describe('AudioRingReader', () => {
     if (!result.done) {
       expect(result.value[0]).toBe(99)
     }
-
-    reader.stop()
   })
 
   it('preserves data across multiple quantum reads', async () => {
@@ -251,18 +242,17 @@ describe('AudioRingReader', () => {
       expect(q3.value[0]).toBe(2 * quantum)
       expect(q3.value[quantum - 1]).toBe(3 * quantum - 1)
     }
-
-    reader.stop()
   })
 
-  it('handles stop during wait', async () => {
+  it('handles stop sentinel during wait', async () => {
     const reader = new AudioRingReader(sab, bufSamples, quantum)
 
     const iterator = reader[Symbol.asyncIterator]()
     const promise = iterator.next()
 
     await new Promise((resolve) => setTimeout(resolve, 10))
-    reader.stop()
+    Atomics.store(ctrl, 1, 1)
+    Atomics.notify(ctrl, 0)
 
     const result = await promise
     expect(result.done).toBe(true)
@@ -287,8 +277,6 @@ describe('AudioRingReader', () => {
       expect(q1.value).not.toBe(q2.value)
       expect(q1Copy[0]).toBe(0)
     }
-
-    reader.stop()
   })
 
   it('reads correct data when quantum does not align with write position', async () => {
@@ -309,7 +297,5 @@ describe('AudioRingReader', () => {
       expect(first.value[4]).toBe(14)
       expect(first.value[5]).toBe(5)
     }
-
-    reader.stop()
   })
 })

@@ -34,10 +34,6 @@ export type VadInitMessage = SpectrogramInitMessage & {
   timeStepSamples: number
 }
 
-export interface FlushMessage {
-  type: 'flush'
-}
-
 // Emitted once per session (or whenever params change) before the first frame.
 export type ParamsMessage = { type: 'params' } & AnalysisParams
 
@@ -72,7 +68,11 @@ export type PatchFrameMessage = {
   frameIndex: number
 } & AnalysisPatch
 
-export interface PcmMessage {
-  type: 'pcm'
+export interface SpectrogramEndedMessage {
+  type: 'ended'
   pcm: Float32Array<ArrayBuffer>
+}
+
+export interface EndedMessage {
+  type: 'ended'
 }

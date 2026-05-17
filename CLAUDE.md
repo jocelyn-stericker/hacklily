@@ -17,55 +17,14 @@ npm run lint           # Run ESLint (oxlint) and TypeScript type checking (tsgo 
 npm run test           # Run tests with Vitest
 ```
 
-## Architecture Overview
-
-### Tech Stack
+## Tech Stack
 
 - **UI Framework**: TanStack Router (React 19 SPA with file-based routing under `src/routes/`)
 - **Styling**: Tailwind CSS v4 (via `@tailwindcss/vite` plugin)
 - **Components**: shadcn/ui (installed to `src/components/ui/`)
 - **Icons**: lucide-react
 
-### Layers
-
-**1. UI & Routing**
-
-- `src/router.tsx` - TanStack Router configuration
-- `src/routes/__root.tsx` - Root layout
-- `src/routes/index.tsx` - Main application page
-
-**2. Audio I/O**
-
-- `MicCapturePipeline.ts` / `useMicCapture.ts` - Microphone capture with real-time analysis
-- `AudioPlaybackPipeline.ts` / `useAudioPlayback.ts` - Audio playback with timeline synchronization
-
-**3. Visualization**
-
-- `Plot.tsx` - Generic plot container
-- `VirtualScrollArea.tsx` - Handles scrolling, zooming, and event handling
-- `Waveform.tsx`, `Spectrogram.tsx`, `VowelChart.tsx` - Domain-specific visualizations
-- `colourmap.ts` - RGB color palette lookup for spectrogram
-
-**4. Audio Analysis (Workers)**
-
-- `src/lib/AudioRingWriter.ts` - AudioWorklet processor which writes microphone PCM data to a ring buffer
-- `src/lib/SpectrogramWorker.ts` - Worker which reads from ring buffer. Generates spectrogram and stores PCM data
-- `src/lib/importWorker.ts` - Web Worker for file import processing with frame-by-frame analysis
-- `src/lib/analysis.ts` - Core worker spawning and `AnalysisFrame` type definition (includes pitch, formants, RMS per frame)
-
-**5. DSP Algorithms**
-
-- `spectrogram.ts` - STFT computation
-- `pitch.ts` - F0 detection via autocorrelation (Praat algorithm)
-- `formant.ts` - Formant extraction using LPC
-- `burgLpc.ts` - Burg's method for LPC coefficients
-- `preEmphasis.ts` - High-pass pre-emphasis filter
-- `fft.ts` - Radix-2 FFT
-- `resample.ts` - Linear interpolation resampling
-- `window.ts` - Windowing functions (Hann, Hamming)
-- `bark.ts` - Bark frequency scale conversion
-
-### Key Architectural Decisions
+## Key Architectural Decisions
 
 1. **Real-time Priority**: Spectrogram, waveform, and formant data must remain responsive. Slower computations should not block visualization. If necessary, defer or make features optional rather than blocking the UI.
 
@@ -79,14 +38,32 @@ npm run test           # Run tests with Vitest
 
 5. **Browser-Only**: All processing runs in the browser. The server only builds and serves static assets.
 
-## Type Definition
+## Audio Pipeline
 
-The `AnalysisFrame` type (in `src/lib/analysis.ts`) defines the frame data communicated from workers to UI:
+`MicCapturePipeline` orchestrates the live recording path:
 
-- `pitch` - Fundamental frequency (F0)
-- `formants` - Array of formant frequencies
-- `rms` - RMS energy
-- Timestamp and frame index for synchronization
+- An **AudioWorklet** (`AudioRingWriter`) writes PCM into a SAB ring buffer with minimal latency.
+- Two parallel **Web Workers** both read from the same SAB:
+  - **SpectrogramWorker** — generates spectrogram frames, accumulates PCM for playback, and sends a `params` message that also triggers `FormantWorker` initialization.
+  - **FormantWorker** — runs pitch (F0) and formant (F1–F3) analysis, patching earlier frames via `patch` messages.
+
+**Stop protocol**: the SAB sentinel (`ctrl[1] = 1`) is written *after* `AudioContext.close()` resolves, guaranteeing all worklet writes have landed before workers exit their read loops.
+
+### Adding a new worker
+
+Follow this pattern in `MicCapturePipeline`:
+
+1. Allocate the worker (before `getUserMedia`)
+2. On successful SAB init: `this.#worker.postMessage({ type: 'init', ... })` then `this.#pendingWorkers++`
+3. Register a `'message'` listener with an `'ended'` case: null-guard → terminate → null → `this.#onWorkerDone()`
+4. Register an `'error'` listener (with `{ once: true }`): same pattern
+5. The null guard (`if (!this.#worker) return`) prevents double-decrement if both `'ended'` and `'error'` fire
+
+`#onWorkerDone()` calls `#teardown()` only when `#pendingWorkers` reaches zero, so teardown waits for all workers.
+
+## Visualization
+
+`VirtualScrollArea` is the primary interaction surface — it handles scroll, zoom, and all pointer events. Domain visualizations (`Waveform`, `Spectrogram`, `VowelChart`) render inside it.
 
 ## Adding UI Components
 

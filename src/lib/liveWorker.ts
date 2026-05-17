@@ -25,10 +25,9 @@ import { SpectrogramStreamProcessor } from './spectrogram'
 import { VadStreamProcessor } from './vad'
 import type {
   AppendFrameMessage,
-  FlushMessage,
   ParamsMessage,
   PatchFrameMessage,
-  PcmMessage,
+  SpectrogramEndedMessage,
   SpectrogramInitMessage,
 } from './workerMessages'
 
@@ -41,13 +40,13 @@ const VAD_RATE = 16000
 const PITCH_INTERVAL = 16
 const PITCH_BUF_SIZE = 4096
 
-export type LiveWorkerInMessage = SpectrogramInitMessage | FlushMessage | null
+export type LiveWorkerInMessage = SpectrogramInitMessage | null
 
 export type LiveWorkerOutMessage =
   | ParamsMessage
   | AppendFrameMessage
   | PatchFrameMessage
-  | PcmMessage
+  | SpectrogramEndedMessage
 
 export type LiveWorker = Omit<Worker, 'postMessage' | 'onmessage'> & {
   postMessage: (msg: LiveWorkerInMessage) => null
@@ -60,20 +59,15 @@ export type LiveWorker = Omit<Worker, 'postMessage' | 'onmessage'> & {
 }
 
 self.onmessage = ({ data }: MessageEvent<LiveWorkerInMessage>) => {
-  // Right now we're expecting 'init'. After init, onmessage is replaced to
-  // accept 'flush'.
   if (data?.type !== 'init') {
     throw new Error('invalid message')
   }
 
   const reader = new AudioRingReader(data.sab, data.bufSamples, QUANTUM)
-  const analysisDone = runAnalysis(reader, data.sampleRate)
-
-  self.onmessage = async (_: MessageEvent<FlushMessage>) => {
-    reader.stop()
-    const pcm = await analysisDone
-    postMessage({ type: 'pcm', pcm }, [pcm.buffer])
-  }
+  void (async () => {
+    const pcm = await runAnalysis(reader, data.sampleRate)
+    postMessage({ type: 'ended', pcm }, [pcm.buffer])
+  })()
 }
 
 async function runAnalysis(

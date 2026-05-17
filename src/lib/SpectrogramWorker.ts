@@ -20,25 +20,28 @@ import { AudioRingReader } from './AudioRingReader'
 import { SpectrogramStreamProcessor } from './spectrogram'
 import type {
   AppendFrameMessage,
-  FlushMessage,
   ParamsMessage,
   PatchFrameMessage,
-  PcmMessage,
+  SpectrogramEndedMessage,
   SpectrogramInitMessage,
 } from './workerMessages'
 
+const LOG = '[SpectrogramWorker]'
+
+declare function postMessage(
+  message: SpectrogramWorkerOutMessage,
+  transfer?: Transferable[],
+): void
+
 const QUANTUM = 128
 
-export type SpectrogramWorkerInMessage =
-  | SpectrogramInitMessage
-  | FlushMessage
-  | null
+export type SpectrogramWorkerInMessage = SpectrogramInitMessage | null
 
 export type SpectrogramWorkerOutMessage =
   | ParamsMessage
   | AppendFrameMessage
   | PatchFrameMessage
-  | PcmMessage
+  | SpectrogramEndedMessage
 
 export type SpectrogramWorker = Omit<Worker, 'postMessage' | 'onmessage'> & {
   postMessage: (msg: SpectrogramWorkerInMessage) => null
@@ -50,40 +53,25 @@ export type SpectrogramWorker = Omit<Worker, 'postMessage' | 'onmessage'> & {
   ) => void
 }
 
-self.onmessage = ({ data }: MessageEvent<SpectrogramWorkerInMessage>) => {
-  // Right now we're expecting 'init'. After init, onmessage is replaced to
-  // accept 'flush'.
-  if (data?.type === 'flush') {
-    const pcm = new Float32Array(0)
-    postMessage({ type: 'pcm', pcm }, [pcm.buffer])
-    return
-  }
+self.onmessage = async ({ data }: MessageEvent<SpectrogramWorkerInMessage>) => {
   if (data?.type !== 'init') {
     return
   }
 
   const reader = new AudioRingReader(data.sab, data.bufSamples, QUANTUM)
   reader.onOverrun = (dropped) => {
-    console.warn(
-      `[SpectrogramWorker] ring buffer overrun: ${dropped} samples lost`,
-    )
+    console.warn(LOG, `ring buffer overrun: ${dropped} samples lost`)
   }
-  const analysisDone = runAnalysis(reader, data.sampleRate)
 
-  self.onmessage = async (event: MessageEvent<SpectrogramWorkerInMessage>) => {
-    if (event.data && event.data.type !== 'flush') {
-      return
-    }
-    reader.stop()
-    const pcm = await analysisDone
-    postMessage({ type: 'pcm', pcm }, [pcm.buffer])
-  }
+  const pcm = await runAnalysis(reader, data.sampleRate)
+  postMessage({ type: 'ended', pcm }, [pcm.buffer])
+  console.log(LOG, 'complete')
 }
 
 async function runAnalysis(
   reader: AudioRingReader,
   sampleRate: number,
-): Promise<Float32Array> {
+): Promise<Float32Array<ArrayBuffer>> {
   const pcmChunks: Float32Array[] = []
 
   const spec = new SpectrogramStreamProcessor(
@@ -149,3 +137,10 @@ async function runAnalysis(
   }
   return pcm
 }
+
+self.addEventListener('unhandledrejection', function (event) {
+  // the event object has two special properties:
+  // event.promise - the promise that generated the error
+  // event.reason  - the unhandled error object
+  throw event.reason
+})

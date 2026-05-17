@@ -22,6 +22,13 @@ declare module '#/lib/SpectrogramWorker?worker' {
   export default SpectrogramWorkerConstructor
 }
 
+declare module '#/lib/FormantWorker?worker' {
+  import type { FormantWorker } from '#/lib/FormantWorker'
+
+  const FormantWorkerConstructor: new () => FormantWorker
+  export default FormantWorkerConstructor
+}
+
 declare module '#/lib/importWorker?worker' {
   import type { ImportWorker } from '#/lib/importWorker'
 

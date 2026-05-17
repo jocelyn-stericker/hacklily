@@ -87,9 +87,10 @@ cut features or make them optional.
 ### lib - Audio Analysis
 
 - **src/lib/analysis.ts** — Core audio analysis worker spawning; defines AnalysisFrame type for frame data with pitch, formants, and RMS.
+- **src/lib/AudioRingWriter.ts** — AudioWorklet processor which writes microphone PCM data to a ring buffer.
+- **src/lib/SpectrogramWorker.ts** — Worker which reads from ring buffer. Generates spectrogram frames and stores PCM data for playback.
+- **src/lib/FormantWorker.ts** — Worker which reads from ring buffer in parallel with SpectrogramWorker. Runs pitch (F0) and formant (F1–F3) analysis and patches earlier frames with results.
 - **src/lib/importWorker.ts** — Web worker to process audio file imports with frame-by-frame analysis and streaming progress updates.
-- **src/lib/AudioRingWriter.ts** - AudioWorklet processor which writes microphone PCM data to a ring buffer
-- **src/lib/importWorker.ts** - Web Worker for file import processing with frame-by-frame analysis
 - **src/lib/worklet-globals.d.ts** — TypeScript types for AudioWorklet global scope (sampleRate, currentFrame, etc.).
 - **src/lib/audioUiHelpers.ts** — Helpers for importing audio files, concatenating buffers, and computing dB scaling bounds.
 

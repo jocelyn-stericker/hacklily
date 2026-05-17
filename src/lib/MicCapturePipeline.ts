@@ -24,8 +24,10 @@ import type {
 } from '#/lib/analysis'
 import audioWorkletUrl from '#/lib/AudioRingWriter?worker&url'
 import type { AudioRingWriterNode } from '#/lib/AudioRingWriter'
+import FormantWorker from '#/lib/FormantWorker?worker'
 import SpectrogramWorker from '#/lib/SpectrogramWorker?worker'
 
+import type { FormantWorkerOutMessage } from './FormantWorker'
 import type { AudioSettingsRow } from './settings'
 import {
   buildAudioConstraints,
@@ -35,6 +37,7 @@ import {
 } from './settings'
 import type { SpectrogramWorkerOutMessage } from './SpectrogramWorker'
 import { TypedEventTarget } from './TypedEventTarget'
+import type { AppendFrameMessage, PatchFrameMessage } from './workerMessages'
 
 // Must be a pow of 2 due to bit masking hack for efficient circular buffer
 // About 0.75sec at 44100 Hz.
@@ -148,17 +151,22 @@ export async function preInitPersistentStream(
 
 export class MicCapturePipeline extends TypedEventTarget<MicCaptureOutEvents> {
   #accumulatedChunks: AnalysisChunk[] = []
+  // Patches that arrived before their frame; keyed by session-local frameIndex.
+  #pendingPatches = new Map<number, PatchFrameMessage>()
 
   #context: AudioContext | null = null
   #sourceNode: MediaStreamAudioSourceNode | null = null
   #workletNode: AudioRingWriterNode | null = null
   #spectrogramWorker: InstanceType<typeof SpectrogramWorker> | null = null
+  #formantWorker: InstanceType<typeof FormantWorker> | null = null
   #stream: MediaStream | null = null
   #sampleRate: number | null = null
   #resolveInitComplete = () => {}
   #started: Promise<void>
   #destroyed: AbortController = new AbortController()
   #settings: AudioSettingsRow
+  #sab: SharedArrayBuffer | null = null
+  #pendingWorkers = 0
 
   get destroyed(): AbortSignal {
     return this.#destroyed.signal
@@ -193,6 +201,7 @@ export class MicCapturePipeline extends TypedEventTarget<MicCaptureOutEvents> {
       })
 
       this.#spectrogramWorker = new SpectrogramWorker()
+      this.#formantWorker = new FormantWorker()
 
       const preferredRate = preferredSampleRate(settings)
       console.log(
@@ -259,18 +268,19 @@ export class MicCapturePipeline extends TypedEventTarget<MicCaptureOutEvents> {
 
       // The worklet is realtime. It writes audio data to a shared audio buffer with a
       // strict time budget. The live worker consumes and processes it.
-      const sab = new SharedArrayBuffer(8 + SAB_BUF_SAMPLES * 4)
+      this.#sab = new SharedArrayBuffer(8 + SAB_BUF_SAMPLES * 4)
       this.#workletNode.port.postMessage({
         type: 'init',
-        sab,
+        sab: this.#sab,
         bufSamples: SAB_BUF_SAMPLES,
       })
       this.#spectrogramWorker.postMessage({
         type: 'init',
-        sab,
+        sab: this.#sab,
         sampleRate: this.#sampleRate,
         bufSamples: SAB_BUF_SAMPLES,
       })
+      this.#pendingWorkers++
 
       this.#spectrogramWorker.addEventListener(
         'error',
@@ -286,16 +296,12 @@ export class MicCapturePipeline extends TypedEventTarget<MicCaptureOutEvents> {
         this.#handleSpectrogramWorkerOutMessage,
         { signal: this.destroyed },
       )
-      this.#sourceNode.connect(this.#workletNode)
-      // To hear loopback
-      // this.#sourceNode.connect(this.#context.destination)
     } catch (err) {
       const settingsChanged = await fixSettingsConstraint(settings, err)
       if (settingsChanged) {
         // The pipeline will be re-triggered.
         return
       }
-      console.log(err)
 
       this.emit('error', {
         error: err instanceof Error ? err.message : String(err),
@@ -306,19 +312,46 @@ export class MicCapturePipeline extends TypedEventTarget<MicCaptureOutEvents> {
     this.#resolveInitComplete()
   }
 
+  #teardown() {
+    this.#spectrogramWorker?.terminate()
+    this.#spectrogramWorker = null
+    this.#formantWorker?.terminate()
+    this.#formantWorker = null
+    this.#destroyed.abort()
+  }
+
+  #onWorkerDone() {
+    if (--this.#pendingWorkers === 0) {
+      this.#teardown()
+    }
+  }
+
   #handleSpectrogramWorkerError = ({ error }: ErrorEvent) => {
+    if (!this.#spectrogramWorker) return
     this.emit('error', {
       error: error instanceof Error ? error.message : String(error),
     })
-    this.#spectrogramWorker?.terminate()
+    this.#spectrogramWorker.terminate()
     this.#spectrogramWorker = null
+    this.#onWorkerDone()
+  }
+
+  #handleFormantWorkerError = ({ error }: ErrorEvent) => {
+    if (!this.#formantWorker) return
+    this.emit('error', {
+      error: error instanceof Error ? error.message : String(error),
+    })
+    this.#formantWorker.terminate()
+    this.#formantWorker = null
+    this.#onWorkerDone()
   }
 
   #handleSpectrogramWorkerOutMessage = ({
     data,
   }: MessageEvent<SpectrogramWorkerOutMessage>) => {
     switch (data.type) {
-      case 'pcm': {
+      case 'ended': {
+        if (!this.#spectrogramWorker) return
         const analysisSamples = this.#accumulatedChunks.reduce(
           (memo, chunk) => memo + chunk.timeStepSamples * chunk.frames.length,
           0,
@@ -339,9 +372,9 @@ export class MicCapturePipeline extends TypedEventTarget<MicCaptureOutEvents> {
           if (data.pcm.length > 0) buffer.copyToChannel(data.pcm, 0)
           this.emit('recordingComplete', { buffer })
         }
-        this.#spectrogramWorker!.terminate()
+        this.#spectrogramWorker.terminate()
         this.#spectrogramWorker = null
-        this.#destroyed.abort()
+        this.#onWorkerDone()
         return
       }
 
@@ -353,47 +386,117 @@ export class MicCapturePipeline extends TypedEventTarget<MicCaptureOutEvents> {
           firstBinHz: data.firstBinHz,
         }
         this.#accumulatedChunks.push({ ...params, frames: [] })
+        this.#pendingPatches.clear()
+
+        if (this.#formantWorker && this.#sab) {
+          this.#formantWorker.postMessage({
+            type: 'init',
+            sab: this.#sab,
+            sampleRate: data.sampleRate,
+            bufSamples: SAB_BUF_SAMPLES,
+            timeStepSamples: data.timeStepSamples,
+          })
+          this.#pendingWorkers++
+
+          this.#formantWorker.addEventListener(
+            'error',
+            this.#handleFormantWorkerError,
+            {
+              signal: this.destroyed,
+              once: true,
+            },
+          )
+
+          this.#formantWorker.addEventListener(
+            'message',
+            this.#handleFormantWorkerOutMessage,
+            { signal: this.destroyed },
+          )
+        }
+
+        if (this.#workletNode) {
+          this.#sourceNode?.connect(this.#workletNode)
+        }
+        // To hear loopback
+        // this.#sourceNode.connect(this.#context.destination)
+
         this.emit('chunkStart', { params })
         return
       }
 
-      case 'frame': {
-        const frame: AnalysisFrame = {
-          spectrum: data.spectrum,
-          rms: data.rms,
-          speechProbability: data.speechProbability ?? 0,
-          pitchDetected: data.pitchDetected ?? false,
-          speechDetected: data.speechDetected ?? false,
-          f0: data.f0 ?? 0,
-          f1: data.f1 ?? null,
-          f2: data.f2 ?? null,
-          f3: data.f3 ?? null,
-        }
-        const currentChunk =
-          this.#accumulatedChunks[this.#accumulatedChunks.length - 1]
-        currentChunk?.frames.push(frame)
-        this.emit('append', { frame })
+      case 'frame':
+        this.#handleAppend(data)
         return
-      }
 
+      case 'patch':
+        this.#handlePatch(data)
+    }
+  }
+
+  #handleFormantWorkerOutMessage = ({
+    data,
+  }: MessageEvent<FormantWorkerOutMessage>) => {
+    switch (data.type) {
       case 'patch': {
-        const currentChunk =
-          this.#accumulatedChunks[this.#accumulatedChunks.length - 1]
-        const frame = currentChunk?.frames[data.frameIndex]
-        if (frame) {
-          if (data.pitchDetected !== undefined)
-            frame.pitchDetected = data.pitchDetected
-          if (data.speechDetected !== undefined)
-            frame.speechDetected = data.speechDetected
-          if (data.f0 !== undefined) frame.f0 = data.f0
-          if (data.f1 !== undefined) frame.f1 = data.f1
-          if (data.f2 !== undefined) frame.f2 = data.f2
-          if (data.f3 !== undefined) frame.f3 = data.f3
-          if (data.speechProbability !== undefined)
-            frame.speechProbability = data.speechProbability
-          this.emit('patch', { frameIndex: data.frameIndex })
-        }
+        this.#handlePatch(data)
+        break
       }
+      case 'ended': {
+        if (!this.#formantWorker) break
+        this.#formantWorker.terminate()
+        this.#formantWorker = null
+        this.#onWorkerDone()
+        break
+      }
+    }
+  }
+
+  #handleAppend = (data: AppendFrameMessage) => {
+    const frame: AnalysisFrame = {
+      spectrum: data.spectrum,
+      rms: data.rms,
+      speechProbability: data.speechProbability ?? 0,
+      pitchDetected: data.pitchDetected ?? false,
+      speechDetected: data.speechDetected ?? false,
+      f0: data.f0 ?? 0,
+      f1: data.f1 ?? null,
+      f2: data.f2 ?? null,
+      f3: data.f3 ?? null,
+    }
+    const currentChunk =
+      this.#accumulatedChunks[this.#accumulatedChunks.length - 1]
+    currentChunk?.frames.push(frame)
+    this.emit('append', { frame })
+    const pending = this.#pendingPatches.get(data.frameIndex)
+    if (pending) {
+      this.#pendingPatches.delete(data.frameIndex)
+      this.#handlePatch(pending)
+    }
+  }
+
+  #handlePatch = (data: PatchFrameMessage) => {
+    const currentChunk =
+      this.#accumulatedChunks[this.#accumulatedChunks.length - 1]
+    const frame = currentChunk?.frames[data.frameIndex]
+    if (frame) {
+      if (data.pitchDetected !== undefined)
+        frame.pitchDetected = data.pitchDetected
+      if (data.speechDetected !== undefined)
+        frame.speechDetected = data.speechDetected
+      if (data.f0 !== undefined) frame.f0 = data.f0
+      if (data.f1 !== undefined) frame.f1 = data.f1
+      if (data.f2 !== undefined) frame.f2 = data.f2
+      if (data.f3 !== undefined) frame.f3 = data.f3
+      if (data.speechProbability !== undefined)
+        frame.speechProbability = data.speechProbability
+      frame.speechDetected = true
+      this.emit('patch', { frameIndex: data.frameIndex })
+    } else {
+      const existing = this.#pendingPatches.get(data.frameIndex)
+      this.#pendingPatches.set(
+        data.frameIndex,
+        existing ? { ...existing, ...data } : data,
+      )
     }
   }
 
@@ -406,17 +509,20 @@ export class MicCapturePipeline extends TypedEventTarget<MicCaptureOutEvents> {
       this.#settings.persistentMic,
     )
 
-    // Send flush before disconnecting so any in-flight audio quanta
-    // are processed before the flush message arrives at the worker.
-    if (this.#spectrogramWorker) {
-      this.#spectrogramWorker.postMessage({ type: 'flush' })
-    } else {
-      // We'll miss cleanup from inside the 'pcm' event, so emit '#destroyed' here.
-      this.#destroyed.abort()
-    }
     this.#sourceNode?.disconnect()
     this.#workletNode?.disconnect()
     await this.#context?.close()
+    // Write the stop sentinel after the audio context is fully closed so all
+    // worklet writes are guaranteed to have landed before workers see it.
+    if (this.#sab) {
+      const ctrl = new Int32Array(this.#sab, 0, 2)
+      Atomics.store(ctrl, 1, 1)
+      Atomics.notify(ctrl, 0)
+    } else {
+      // Workers were never started (e.g. getUserMedia failed); terminate any
+      // workers that were allocated before the failure and abort listeners.
+      this.#teardown()
+    }
     if (!this.#settings.persistentMic) {
       this.#stream?.getTracks().forEach((t) => t.stop())
       if (STREAM === this.#stream) {
@@ -424,6 +530,5 @@ export class MicCapturePipeline extends TypedEventTarget<MicCaptureOutEvents> {
         STREAM_KEY = null
       }
     }
-    // spectrogramWorker is terminated inside onmessage after the PCM response arrives.
   }
 }

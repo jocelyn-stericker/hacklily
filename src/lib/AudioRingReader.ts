@@ -31,7 +31,6 @@ export class AudioRingReader {
   private readonly _data: Float32Array
   private readonly _bufMask: number
   private readonly _quantum: number
-  private _stopped = false
 
   /** Called when the writer has lapped the reader. `dropped` is the number of overwritten samples. */
   onOverrun?: (dropped: number) => void
@@ -44,12 +43,6 @@ export class AudioRingReader {
     this._data = new Float32Array(sab, 8, bufSamples)
     this._bufMask = bufSamples - 1
     this._quantum = quantum
-  }
-
-  /** Signal the iterator to stop after draining any remaining complete quanta. */
-  stop(): void {
-    this._stopped = true
-    Atomics.notify(this._ctrl, 0)
   }
 
   async *[Symbol.asyncIterator]() {
@@ -74,7 +67,9 @@ export class AudioRingReader {
       }
 
       if (wp - rp < quantum) {
-        if (this._stopped) break
+        // ctrl[1] is the stop sentinel, written by MicCapturePipeline after
+        // context.close() so all worklet writes are guaranteed to have landed.
+        if (Atomics.load(ctrl, 1) !== 0) break
         const r = Atomics.waitAsync(ctrl, 0, wp)
         if (r.async) await r.value
         wp = Atomics.load(ctrl, 0)
