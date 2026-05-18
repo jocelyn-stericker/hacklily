@@ -47,7 +47,7 @@ npm run test           # Run tests with Vitest
   - **SpectrogramWorker** — generates spectrogram frames, accumulates PCM for playback, and sends a `params` message that also triggers `FormantWorker` initialization.
   - **FormantWorker** — runs pitch (F0) and formant (F1–F3) analysis, patching earlier frames via `patch` messages.
 
-**Stop protocol**: the SAB sentinel (`ctrl[1] = 1`) is written *after* `AudioContext.close()` resolves, guaranteeing all worklet writes have landed before workers exit their read loops.
+**Stop protocol**: the SAB sentinel (`ctrl[1] = 1`) is written _after_ `AudioContext.close()` resolves, guaranteeing all worklet writes have landed before workers exit their read loops.
 
 ### Adding a new worker
 

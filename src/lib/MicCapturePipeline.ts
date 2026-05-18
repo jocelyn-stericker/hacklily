@@ -26,6 +26,7 @@ import audioWorkletUrl from '#/lib/AudioRingWriter?worker&url'
 import type { AudioRingWriterNode } from '#/lib/AudioRingWriter'
 import FormantWorker from '#/lib/FormantWorker?worker'
 import SpectrogramWorker from '#/lib/SpectrogramWorker?worker'
+import VADWorker from '#/lib/VADWorker?worker'
 
 import type { FormantWorkerOutMessage } from './FormantWorker'
 import type { AudioSettingsRow } from './settings'
@@ -37,6 +38,7 @@ import {
 } from './settings'
 import type { SpectrogramWorkerOutMessage } from './SpectrogramWorker'
 import { TypedEventTarget } from './TypedEventTarget'
+import type { VadWorkerOutMessage } from './VADWorker'
 import type { AppendFrameMessage, PatchFrameMessage } from './workerMessages'
 
 // Must be a pow of 2 due to bit masking hack for efficient circular buffer
@@ -159,6 +161,7 @@ export class MicCapturePipeline extends TypedEventTarget<MicCaptureOutEvents> {
   #workletNode: AudioRingWriterNode | null = null
   #spectrogramWorker: InstanceType<typeof SpectrogramWorker> | null = null
   #formantWorker: InstanceType<typeof FormantWorker> | null = null
+  #vadWorker: InstanceType<typeof VADWorker> | null = null
   #stream: MediaStream | null = null
   #sampleRate: number | null = null
   #resolveInitComplete = () => {}
@@ -202,6 +205,7 @@ export class MicCapturePipeline extends TypedEventTarget<MicCaptureOutEvents> {
 
       this.#spectrogramWorker = new SpectrogramWorker()
       this.#formantWorker = new FormantWorker()
+      this.#vadWorker = new VADWorker()
 
       const preferredRate = preferredSampleRate(settings)
       console.log(
@@ -317,6 +321,8 @@ export class MicCapturePipeline extends TypedEventTarget<MicCaptureOutEvents> {
     this.#spectrogramWorker = null
     this.#formantWorker?.terminate()
     this.#formantWorker = null
+    this.#vadWorker?.terminate()
+    this.#vadWorker = null
     this.#destroyed.abort()
   }
 
@@ -343,6 +349,16 @@ export class MicCapturePipeline extends TypedEventTarget<MicCaptureOutEvents> {
     })
     this.#formantWorker.terminate()
     this.#formantWorker = null
+    this.#onWorkerDone()
+  }
+
+  #handleVadWorkerError = ({ error }: ErrorEvent) => {
+    if (!this.#vadWorker) return
+    this.emit('error', {
+      error: error instanceof Error ? error.message : String(error),
+    })
+    this.#vadWorker.terminate()
+    this.#vadWorker = null
     this.#onWorkerDone()
   }
 
@@ -414,6 +430,32 @@ export class MicCapturePipeline extends TypedEventTarget<MicCaptureOutEvents> {
           )
         }
 
+        if (this.#vadWorker && this.#sab) {
+          this.#vadWorker.postMessage({
+            type: 'init',
+            sab: this.#sab,
+            sampleRate: data.sampleRate,
+            bufSamples: SAB_BUF_SAMPLES,
+            timeStepSamples: data.timeStepSamples,
+          })
+          this.#pendingWorkers++
+
+          this.#vadWorker.addEventListener(
+            'error',
+            this.#handleVadWorkerError,
+            {
+              signal: this.destroyed,
+              once: true,
+            },
+          )
+
+          this.#vadWorker.addEventListener(
+            'message',
+            this.#handleVadWorkerOutMessage,
+            { signal: this.destroyed },
+          )
+        }
+
         if (this.#workletNode) {
           this.#sourceNode?.connect(this.#workletNode)
         }
@@ -445,6 +487,24 @@ export class MicCapturePipeline extends TypedEventTarget<MicCaptureOutEvents> {
         if (!this.#formantWorker) break
         this.#formantWorker.terminate()
         this.#formantWorker = null
+        this.#onWorkerDone()
+        break
+      }
+    }
+  }
+
+  #handleVadWorkerOutMessage = ({
+    data,
+  }: MessageEvent<VadWorkerOutMessage>) => {
+    switch (data.type) {
+      case 'patch': {
+        this.#handlePatch(data)
+        break
+      }
+      case 'ended': {
+        if (!this.#vadWorker) break
+        this.#vadWorker.terminate()
+        this.#vadWorker = null
         this.#onWorkerDone()
         break
       }
@@ -489,7 +549,6 @@ export class MicCapturePipeline extends TypedEventTarget<MicCaptureOutEvents> {
       if (data.f3 !== undefined) frame.f3 = data.f3
       if (data.speechProbability !== undefined)
         frame.speechProbability = data.speechProbability
-      frame.speechDetected = true
       this.emit('patch', { frameIndex: data.frameIndex })
     } else {
       const existing = this.#pendingPatches.get(data.frameIndex)

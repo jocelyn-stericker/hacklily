@@ -29,6 +29,13 @@ declare module '#/lib/FormantWorker?worker' {
   export default FormantWorkerConstructor
 }
 
+declare module '#/lib/VADWorker?worker' {
+  import type { VadWorker } from '#/lib/VADWorker'
+
+  const VadWorkerConstructor: new () => VadWorker
+  export default VadWorkerConstructor
+}
+
 declare module '#/lib/importWorker?worker' {
   import type { ImportWorker } from '#/lib/importWorker'
 

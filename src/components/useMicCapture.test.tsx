@@ -14,6 +14,7 @@ function TestRecorder(props: MicCaptureProps) {
 
 let mockWorkerInstances: any[] = []
 let mockFormantWorkerInstances: any[] = []
+let mockVadWorkerInstances: any[] = []
 
 vi.mock('@tanstack/react-db', () => ({
   useLiveQuery: vi.fn(() => ({
@@ -66,6 +67,49 @@ vi.mock('#/lib/FormantWorker?worker', () => {
       constructor() {
         const worker = new MockFormantWorker()
         mockFormantWorkerInstances.push(worker)
+        return worker
+      }
+    },
+  }
+})
+
+vi.mock('#/lib/VADWorker?worker', () => {
+  class MockVadWorker {
+    postMessage = vi.fn()
+    terminate = vi.fn()
+    private messageListeners: ((event: MessageEvent) => void)[] = []
+
+    addEventListener(
+      type: string,
+      listener: (event: any) => void,
+      options?: AddEventListenerOptions,
+    ) {
+      if (type !== 'message') return
+      this.messageListeners.push(listener)
+      options?.signal?.addEventListener('abort', () =>
+        this.removeEventListener(type, listener),
+      )
+    }
+
+    removeEventListener(type: string, listener: (event: any) => void) {
+      if (type !== 'message') return
+      const idx = this.messageListeners.indexOf(listener)
+      if (idx !== -1) this.messageListeners.splice(idx, 1)
+    }
+
+    dispatchMessage(data: any) {
+      const event = new MessageEvent('message', { data })
+      for (const listener of [...this.messageListeners]) {
+        listener(event)
+      }
+    }
+  }
+
+  return {
+    default: class {
+      constructor() {
+        const worker = new MockVadWorker()
+        mockVadWorkerInstances.push(worker)
         return worker
       }
     },
@@ -138,6 +182,13 @@ describe('AudioRecorder', () => {
     return mockFormantWorkerInstances[mockFormantWorkerInstances.length - 1]
   }
 
+  const getMockVadWorker = () => {
+    if (mockVadWorkerInstances.length === 0) {
+      throw new Error('No mock VAD worker instances created')
+    }
+    return mockVadWorkerInstances[mockVadWorkerInstances.length - 1]
+  }
+
   const waitForMockWorker = async () => {
     await waitFor(
       () => {
@@ -185,6 +236,7 @@ describe('AudioRecorder', () => {
   beforeEach(() => {
     mockWorkerInstances = []
     mockFormantWorkerInstances = []
+    mockVadWorkerInstances = []
     mockFrameIndex = 0
 
     // Mock MediaStreamTrack
@@ -588,6 +640,7 @@ describe('AudioRecorder', () => {
     await waitFor(() => {
       expect(getMockWorker().terminate).toHaveBeenCalled()
       expect(getMockFormantWorker().terminate).toHaveBeenCalled()
+      expect(getMockVadWorker().terminate).toHaveBeenCalled()
     })
   })
 
@@ -857,20 +910,27 @@ describe('AudioRecorder', () => {
     const pcm = new Float32Array([0.1])
     getMockWorker().dispatchMessage({ type: 'ended', pcm })
 
-    // recordingComplete fires immediately — before formant 'ended'
+    // recordingComplete fires immediately — before formant/vad 'ended'
     await waitFor(() => {
       expect(onRecordingComplete).toHaveBeenCalled()
     })
 
-    // teardown (terminate) must not have fired yet — formant is still pending
+    // teardown (terminate) must not have fired yet — formant and vad are still pending
     expect(getMockWorker().terminate).toHaveBeenCalled() // spectrogram terminates itself
     expect(getMockFormantWorker().terminate).not.toHaveBeenCalled()
+    expect(getMockVadWorker().terminate).not.toHaveBeenCalled()
 
-    // formant finishes
+    // formant finishes — teardown still blocked by vad
     getMockFormantWorker().dispatchMessage({ type: 'ended' })
-
     await waitFor(() => {
       expect(getMockFormantWorker().terminate).toHaveBeenCalled()
+    })
+    expect(getMockVadWorker().terminate).not.toHaveBeenCalled()
+
+    // vad finishes — teardown fires
+    getMockVadWorker().dispatchMessage({ type: 'ended' })
+    await waitFor(() => {
+      expect(getMockVadWorker().terminate).toHaveBeenCalled()
     })
   })
 
@@ -896,6 +956,7 @@ describe('AudioRecorder', () => {
     await waitFor(() => {
       expect(getMockWorker().terminate).toHaveBeenCalled()
       expect(getMockFormantWorker().terminate).toHaveBeenCalled()
+      expect(getMockVadWorker().terminate).toHaveBeenCalled()
       expect(onRecordingComplete).not.toHaveBeenCalled()
     })
   })
