@@ -1,3 +1,5 @@
+// Plots F1/F2 formant pairs on a vowel chart for vowel space visualization.
+
 import { useEffect, useImperativeHandle, useState } from 'react'
 import type { RefObject } from 'react'
 

@@ -1,3 +1,5 @@
+// Renders frequency spectrogram with color-mapped intensity and formant markers.
+
 import { useEffect, useImperativeHandle, useRef, useState } from 'react'
 import type { RefObject } from 'react'
 

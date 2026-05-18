@@ -1,110 +1,50 @@
 # ![Braat](src/braat.png)
 
-This adapts the spectrogram and formant tracking algorithms from
-[Praat](https://www.fon.hum.uva.nl/praat/) for the web with the goal of making
-it more accessible for voice training.
+## What is Braat?
 
-This was developed with extensive use of Claude Code.
+Braat shows you, in real time, the pitch and resonance of your voice as you speak. It's a practice aid aimed at **voice training** — including trans voice training, where pitch (F0) and vowel resonance (F1, F2) are commonly used reference points. It may also be useful for singing practice, accent work, or just exploring how your voice works.
 
-## Developing
+[**Open Braat →**](https://jocelyn-stericker.grebedoc.dev/braat/)
 
-Audio processing all happens in browser, the server is just for building &
-serving static assets.
+![Braat screenshot showing a spectrogram with pitch and formant tracks](screenshot.png)
 
-To run locally, on port 3000:
+## Why Braat?
 
-```
-npm install
-npm run dev
-```
+Braat's signal-processing algorithms are adapted from [Praat](https://www.fon.hum.uva.nl/praat/), a widely used tool in phonetics research. Praat is primarily oriented toward offline analysis; Braat takes its algorithms and runs them on a live microphone in the browser, with no install and no upload.
 
-To run lints, code formatting, and tests, fixing any autofixable issues:
+## Features
 
-```
-npm run check && npm run test
-```
+- **Live spectrogram** — your voice's frequency content as you speak
+- **Pitch (F0) tracking** — Praat's filtered autocorrelation method
+- **Formant (F1–F3) tracking** — Burg's method LPC, plotted on a vowel chart
+- **Voice activity detection** — Silero VAD picks out voiced segments
+- **File import** — drop in a recording and analyze it offline
+- **Private** — audio stays in your browser; nothing is uploaded
+- **Offline** — once loaded, works without a network connection
 
-## Stack and design
+## Browser support
 
-For the UI:
+Braat uses AudioWorklet, Web Workers, and SharedArrayBuffer, which need a recent browser (Chrome, Firefox, or Safari).
 
-- **TanStack Router** — React SPA, file-based routing under `src/routes/`
-- **shadcn/ui** — components in `src/components/ui/`, add more with `npx shadcn@latest add <name>`
-- **Tailwind v4** — configured via `@tailwindcss/vite` plugin (no config file); styles in `src/styles.css`
-- **lucide-react** — icons throughout; event type icons chosen by heuristics in `src/lib/event-icon-heuristics.ts`
+## Status
 
-DSP code (in src/lib) should be ported to TypeScript from reputable sources,
-with clear attribution. Each algorithm should have a wrapper for stream
-processing and a wrapper for batch processing. Stream wrappers avoid allocating
-arrays during processing to the extent possible.
+Braat is **alpha and in active development**. Core features work, but expect changes to the UI and algorithms. A usage guide is planned but not yet written.
 
-Realtime DSP lives in an audio worklet, and the UI & DSP code communicate
-via message passing.
+## How it works
 
-All code should run in browser. Avoid WebAssembly if there is a reasonable
-alternative. For DSP, prefer vendoring third-party code directly rather than
-importing it.
+All audio processing happens in the browser. An AudioWorklet captures microphone PCM into a SharedArrayBuffer ring, and three Web Workers read from it in parallel:
 
-Prioritize snappiness of the key features over other goals. If some data takes
-longer to process, that should not stop spectrogram, waveform, and formant data
-from being clearly visible. If this means cutting features, we should probably
-cut features or make them optional.
+- a spectrogram worker (FFT-based, with a Bark-scaled colormap),
+- a formant worker running pitch (filtered autocorrelation) and formant (Burg LPC) analysis,
+- and a VAD worker running Silero v5 via ONNX Runtime Web.
 
-## File Overview
+See [CLAUDE.md](CLAUDE.md) for the architectural overview. DSP code ported from Praat is attributed in each source file's copyright header.
 
-### Source Code - Root
+## Contributing
 
-- **src/client.tsx** — Vite/TanStack client entry point with React DOM rendering.
-- **src/router.tsx** — TanStack Router root configuration and layout definition.
-- **src/routeTree.gen.ts** — Auto-generated route tree from file-based routing.
-- **src/styles.css** — Global styles with Tailwind CSS directives and custom theme variables.
+Source and issue tracker: <https://codeberg.org/jocelyn-stericker/braat>
 
-### Source Code - Routes
-
-- **src/routes/\_\_root.tsx** — Root layout component wrapping all pages with global UI (toaster, devtools).
-- **src/routes/index.tsx** — Main application page with audio import, microphone recording, playback controls, and visualization.
-
-### Components - Audio Playback
-
-- **src/components/AudioRecorder.tsx** — Records microphone input, performs real-time audio analysis, and appends frames to visualization.
-- **src/components/AudioPlayback.tsx** — Plays back audio buffers with timeline synchronization and progress tracking.
-
-### Components - Visualization
-
-- **src/components/Plot.tsx** — Generic plot container
-- **src/components/VirtualScrollArea.tsx** — Handles scrolling, zooming, and click/hover event handling.
-- **src/components/colourmap.ts** — RGB color palette lookup table for spectrogram visualization.
-- **src/components/Waveform.tsx** — Renders waveform visualization from analysis frames with configurable amplitude scaling.
-- **src/components/Spectrogram.tsx** — Renders frequency spectrogram with color-mapped intensity and formant markers.
-- **src/components/VowelChart.tsx** — Plots F1/F2 formant pairs on a vowel chart for vowel space visualization.
-
-### Components - UI & Utilities
-
-- **src/components/ui/** — Components from shadcn/ui.
-- **src/lib/utils.ts** — General utility functions for conditional classes and UI helpers.
-- **src/lib/mathUtils.ts** —
-
-### lib - Audio Analysis
-
-- **src/lib/analysis.ts** — Core audio analysis worker spawning; defines AnalysisFrame type for frame data with pitch, formants, and RMS.
-- **src/lib/AudioRingWriter.ts** — AudioWorklet processor which writes microphone PCM data to a ring buffer.
-- **src/lib/SpectrogramWorker.ts** — Worker which reads from ring buffer. Generates spectrogram frames and stores PCM data for playback.
-- **src/lib/FormantWorker.ts** — Worker which reads from ring buffer in parallel with SpectrogramWorker. Runs pitch (F0) and formant (F1–F3) analysis and patches earlier frames with results.
-- **src/lib/importWorker.ts** — Web worker to process audio file imports with frame-by-frame analysis and streaming progress updates.
-- **src/lib/worklet-globals.d.ts** — TypeScript types for AudioWorklet global scope (sampleRate, currentFrame, etc.).
-- **src/lib/audioUiHelpers.ts** — Helpers for importing audio files, concatenating buffers, and computing dB scaling bounds.
-
-### lib - Signal Processing
-
-- **src/lib/spectrogram.ts** — Short-time Fourier transform (STFT) computation for frequency-domain analysis.
-- **src/lib/pitch.ts** — Fundamental frequency (F0) detection via autocorrelation algorithm (adapted from Praat).
-- **src/lib/formant.ts** — Formant frequency extraction using linear predictive coding (LPC) analysis.
-- **src/lib/burgLpc.ts** — Burg's method for LPC coefficient computation from audio frames.
-- **src/lib/preEmphasis.ts** — High-pass pre-emphasis filter to boost high frequencies before analysis.
-- **src/lib/fft.ts** — Fast Fourier transform (radix-2) implementation for spectral analysis.
-- **src/lib/resample.ts** — Audio resampling using linear interpolation for pitch-invariant analysis.
-- **src/lib/window.ts** — Windowing functions (Hann, Hamming) for spectral analysis frame tapers.
-- **src/lib/bark.ts** — Bark frequency scale conversion (Hz ↔ Bark) for perceptual frequency mapping.
+Contributions — code, bug reports, or feedback from using it — are welcome.
 
 ## License
 

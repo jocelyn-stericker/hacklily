@@ -1,3 +1,5 @@
+// Generic plot container.
+
 import {
   createContext,
   useCallback,

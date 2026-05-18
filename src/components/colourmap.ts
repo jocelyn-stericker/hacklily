@@ -1,3 +1,5 @@
+// RGB color palette lookup table for spectrogram visualization.
+
 // Viridis colormap (256 colors × 3 bytes RGB): https://www.kennethmoreland.com/color-advice/
 // Each triplet [R, G, B] represents one palette entry (0–255 per channel).
 export const SPECTRO_COLOURMAP = [

@@ -1,3 +1,5 @@
+// Renders waveform visualization from analysis frames with configurable amplitude scaling.
+
 import { useEffect, useImperativeHandle, useRef, useState } from 'react'
 import type { RefObject } from 'react'
 

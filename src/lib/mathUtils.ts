@@ -15,6 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+// Utility functions for mathematical operations.
+
 export function nextPow2(n: number): number {
   let p = 1
   while (p < n) p <<= 1

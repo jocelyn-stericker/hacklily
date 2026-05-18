@@ -51,8 +51,9 @@ export function WelcomeModal({
         </div>
         <DialogDescription className="text-center text-xs space-y-2">
           <span className="block">
-            Braat is a real-time spectrogram and formant tracker for voice
-            training, based on algorithms stolen from{' '}
+            Braat shows you the pitch and resonance of your voice in real time
+            &mdash; a practice aid for voice training, including trans voice
+            training. Algorithms are adapted from{' '}
             <a
               href="https://www.fon.hum.uva.nl/praat/"
               target="_blank"
@@ -71,7 +72,7 @@ export function WelcomeModal({
             >
               GNU AGPL v3 or (at your option) any later version
             </a>{' '}
-            &mdash; source code on{' '}
+            &mdash; source code &amp; feedback on{' '}
             <a
               href="https://codeberg.org/jocelyn-stericker/braat"
               target="_blank"

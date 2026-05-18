@@ -1,3 +1,5 @@
+// TanStack Router root configuration and layout definition.
+
 import {
   createRouter as createTanStackRouter,
   useLocation,

@@ -1,3 +1,5 @@
+// Handles scrolling, zooming, and click/hover event handling.
+
 import {
   useCallback,
   useEffect,

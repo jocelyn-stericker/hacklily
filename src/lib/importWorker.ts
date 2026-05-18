@@ -1,3 +1,5 @@
+// Web worker to process audio file imports with frame-by-frame analysis and streaming progress updates.
+
 import type { AnalysisChunk } from '#/lib/analysis'
 
 export type ImportWorker = Omit<Worker, 'postMessage' | 'onmessage'> & {

@@ -36,6 +36,11 @@ export type Status =
   | { value: 'error'; error: string }
   | { value: 'editAudioSettings' }
 
+/**
+ * Manages timeline state including viewport, cursor position, and playback status.
+ * Provides handlers for user interactions (scroll, click, zoom, play/pause) and
+ * responds to recording/playback events.
+ */
 export function useTimelineState(analysis: AnalysisChunk[]) {
   const [status, setStatus] = useState<Status>(() => {
     const missingFeatures = featureCheck()

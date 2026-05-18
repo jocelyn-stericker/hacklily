@@ -1,3 +1,5 @@
+// Vite/TanStack client entry point with React DOM rendering.
+
 /* eslint-disable @typescript-eslint/no-unnecessary-condition */
 import { RouterProvider } from '@tanstack/react-router'
 import { StrictMode } from 'react'

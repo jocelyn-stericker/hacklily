@@ -15,6 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+// TypeScript types for AudioWorklet global scope (sampleRate, currentFrame, etc.).
+
 declare interface AudioParamDescriptor {
   name: string
   automationRate?: AutomationRate

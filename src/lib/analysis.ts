@@ -15,6 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+// Core audio analysis worker spawning; defines AnalysisFrame type for frame data with pitch, formants, and RMS.
+
 import { FormantProcessor } from './formant'
 import { PitchProcessor } from './pitch'
 import { preEmphasis } from './preEmphasis'

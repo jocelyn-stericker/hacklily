@@ -15,6 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+// AudioWorklet processor which writes microphone PCM data to a ring buffer.
+
 import { isPowerOfTwo } from './mathUtils'
 
 export interface InitMessage {
