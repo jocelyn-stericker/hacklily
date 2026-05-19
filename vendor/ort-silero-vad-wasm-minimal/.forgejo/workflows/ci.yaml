@@ -48,7 +48,7 @@ jobs:
               --minimal_build
       - name: Publish to Codeberg npm registry
         env:
-          CODEBERG_TOKEN: ${{ forge.token }}
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: |
           mkdir -p dist
           cp onnxruntime/build/Linux/MinSizeRel/ort-wasm-simd-threaded.wasm dist/
@@ -58,5 +58,5 @@ jobs:
           cd dist
           npm version "0.0.${{ github.run_number }}" --no-git-tag-version
           npm config set @jocelyn-stericker:registry https://codeberg.org/api/packages/jocelyn-stericker/npm/
-          npm config set //codeberg.org/api/packages/jocelyn-stericker/npm/:_authToken "${CODEBERG_TOKEN}"
+          npm config set -- '//codeberg.org/api/packages/jocelyn-stericker/npm/:_authToken' "${NPM_TOKEN}"
           npm publish
