@@ -4,7 +4,7 @@ on:
       - main
 jobs:
   deploy:
-    runs-on: codeberg-small
+    runs-on: faith
     steps:
       - uses: actions/checkout@v5
       - name: Install deps
