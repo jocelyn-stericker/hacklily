@@ -77,7 +77,6 @@ impl ContainerHandle {
                     "--security-opt=no-new-privileges",
                     "--cap-drop",
                     "ALL",
-                    "--kernel-memory=40M",
                     "--pids-limit=200",
                     "--cpus=1",
                     &image,

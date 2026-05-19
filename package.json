@@ -10,7 +10,7 @@
   "dependencies": {
     "@blueprintjs/core": "^4.8.0",
     "aphrodite": "2.4.0",
-    "dompurify": "^2.3.10",
+    "dompurify": "^3.4.5",
     "hackmidi": "0.0.4",
     "lodash": "^4.17.21",
     "makelily": "0.1.7",
@@ -31,7 +31,6 @@
     "@types/d3-dispatch": "^3.0.1",
     "@types/d3-drag": "^3.0.1",
     "@types/d3-timer": "^3.0.0",
-    "@types/dompurify": "^2.3.3",
     "@types/invariant": "^2.2.35",
     "@types/jest": "^28.1.7",
     "@types/lodash": "^4.14.183",

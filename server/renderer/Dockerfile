@@ -5,8 +5,7 @@ RUN echo \
   && printf "Package: libgs10\nPin: origin snapshot.debian.org\nPin-Priority: 990\n\n" >> /etc/apt/preferences.d/snapshot \
   && printf "Package: libgs10-common\nPin: origin snapshot.debian.org\nPin-Priority: 990\n\n" >> /etc/apt/preferences.d/snapshot \
   &&  apt-get -o Acquire::Check-Valid-Until=false update
-RUN apt-get -o Acquire::Check-Valid-Until=false install --no-install-recommends -y ruby curl bzip2 git locales gsfonts ghostscript fonts-dejavu-extra psmisc emacs-intl-fonts xfonts-intl-.* fonts-ipafont-mincho xfonts-bolkhov-75dpi xfonts-cronyx-100dpi xfonts-cronyx-75dpi patch python3 adduser && \
-    localedef -i en_US -c -f UTF-8 -A /usr/share/locale/locale.alias en_US.UTF-8 && \
+RUN apt-get -o Acquire::Check-Valid-Until=false install --no-install-recommends -y ruby curl bzip2 git locales-all gsfonts ghostscript fonts-dejavu-extra psmisc emacs-intl-fonts fonts-noto fonts-ipafont-mincho xfonts-bolkhov-75dpi xfonts-cronyx-100dpi xfonts-cronyx-75dpi patch python3 adduser && \
     curl -L https://github.com/stedolan/jq/releases/download/jq-1.5/jq-linux64 > /usr/local/bin/jq && \
     chmod +x /usr/local/bin/jq && echo 42 | jq .
 ENV LANG en_US.UTF-8
