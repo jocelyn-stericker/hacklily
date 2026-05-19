@@ -26,7 +26,8 @@ jobs:
             gdb \
             python3-pip \
             python3-flatbuffers \
-            nodejs
+            nodejs \
+            npm
           rm -rf /var/lib/apt/lists/*
       - name: Build
         working-directory: onnxruntime
@@ -45,3 +46,17 @@ jobs:
               --compile_no_warning_as_error \
               --parallel \
               --minimal_build
+      - name: Publish to Codeberg npm registry
+        env:
+          CODEBERG_TOKEN: ${{ forge.token }}
+        run: |
+          mkdir -p dist
+          cp onnxruntime/build/Linux/MinSizeRel/ort-wasm-simd-threaded.wasm dist/
+          cp onnxruntime/build/Linux/MinSizeRel/ort-wasm-simd-threaded.mjs dist/
+          cp silero_vad_v5.ort dist/
+          cp package.json dist/
+          cd dist
+          npm version "0.0.${{ github.run_number }}" --no-git-tag-version
+          npm config set @jocelyn-stericker:registry https://codeberg.org/api/packages/jocelyn-stericker/npm/
+          npm config set //codeberg.org/api/packages/jocelyn-stericker/npm/:_authToken "${CODEBERG_TOKEN}"
+          npm publish
