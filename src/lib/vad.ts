@@ -19,11 +19,10 @@
 // Silero VAD v5 inference via onnxruntime-web.
 // Model interface from https://github.com/ricky0123/vad
 
-import ortMjsUrl from 'onnxruntime-web/ort-wasm-simd-threaded.mjs?url'
-import ortWasmUrl from 'onnxruntime-web/ort-wasm-simd-threaded.wasm?url'
+import ortMjsUrl from '@jocelyn-stericker/ort-silero-vad-wasm-minimal/ort-wasm-simd-threaded.mjs?url'
+import ortWasmUrl from '@jocelyn-stericker/ort-silero-vad-wasm-minimal/ort-wasm-simd-threaded.wasm?url'
+import vadModelUrl from '@jocelyn-stericker/ort-silero-vad-wasm-minimal/silero_vad_v5.ort?url'
 import * as ort from 'onnxruntime-web/wasm'
-
-import vadModelUrl from './silero_vad_v5.onnx?url'
 
 const VAD_SAMPLE_RATE = 16000
 const VAD_CHUNK = 512 // 32 ms at 16 kHz

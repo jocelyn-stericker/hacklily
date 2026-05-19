@@ -83,6 +83,12 @@ Tests run with Vitest. Test files should be colocated with implementation files 
 npm run test
 ```
 
+## CI/CD
+
+CI runs on Forgejo (Codeberg) via `.forgejo/workflows/ci.yaml`, using `codeberg-small` runners. The workflow lints, tests, builds, and deploys to Codeberg Pages on every push to `main`.
+
+Forgejo supports GitHub Actions syntax, but compatibility with third-party marketplace actions is not guaranteed — prefer runner-agnostic shell steps where possible.
+
 ## License
 
 GNU Affero General Public License v3 (with code derived from Praat having additional copyright notices per the README).

@@ -8,7 +8,10 @@ import { VitePWA } from 'vite-plugin-pwa'
 
 const config = defineConfig({
   base: '/braat/',
-  resolve: { tsconfigPaths: true },
+  resolve: {
+    tsconfigPaths: true,
+    conditions: ['onnxruntime-web-use-extern-wasm'],
+  },
   server: {
     allowedHosts: ['lily.local'],
     // SharedArrayBuffer requires cross-origin isolation. Production headers set in public/_headers
@@ -43,20 +46,8 @@ const config = defineConfig({
       injectRegister: null,
       strategies: 'generateSW',
       workbox: {
-        // WASM and ONNX model files exceed Workbox's 2 MB precache limit.
-        // Cache them at runtime on first use instead.
-        globPatterns: ['**/*.{js,css,html,png,ico}'],
-        globIgnores: ['**/*.wasm', '**/*.onnx'],
-        runtimeCaching: [
-          {
-            urlPattern: /\.(wasm|onnx)$/,
-            handler: 'CacheFirst',
-            options: {
-              cacheName: 'braat-binary-models',
-              expiration: { maxEntries: 10 },
-            },
-          },
-        ],
+        globPatterns: ['**/*.{js,css,html,png,ico,mjs,wasm,ort}'],
+        maximumFileSizeToCacheInBytes: 4000000,
       },
       manifest: {
         name: 'Braat',

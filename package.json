@@ -15,6 +15,7 @@
   },
   "dependencies": {
     "@base-ui/react": "^1.4.0",
+    "@jocelyn-stericker/ort-silero-vad-wasm-minimal": "0.0.18",
     "@tailwindcss/vite": "^4.1.18",
     "@tanstack/db": "^0.6.5",
     "@tanstack/react-db": "^0.1.83",
