@@ -193,29 +193,45 @@ function paintColumnsToOffscreen(
   }
 }
 
-// Full repaint of formant tiles from fromTile onward. Used on initial build,
-// freqToY/canvasHeight changes, and patch (where existing frames may change).
-// Assumes uniform params across chunks (uses chunks[0] for timeStepSec).
+// Repaint formant tiles from fromTile onward.
+// fromFrame: first frame to repaint — pixels before it are left intact so we
+//   can skip redrawing historical frames that haven't changed.
+// toFrame: exclusive upper bound — frames at or after this index are not
+//   touched, letting the caller handle them via appendFormantTiles.
 function paintFormantTiles(
   off: FormantOffscreenState,
   analysis: AnalysisChunk[],
   fromTile: number,
   freqToY: (hz: number) => number,
   dpr: number,
+  fromFrame = 0,
+  toFrame = Infinity,
 ): void {
-  const numFrames = totalFrames(analysis)
+  const numFrames = Math.min(totalFrames(analysis), toFrame)
   for (let t = fromTile; t < off.tiles.length; t++) {
     const tile = off.tiles[t]!
-    tile.ctx.clearRect(0, 0, TILE_WIDTH, off.canvasHeight)
     const frameEnd = Math.min(numFrames, tile.startFrame + TILE_WIDTH)
+    if (frameEnd <= tile.startFrame) break
+    // For the first tile, skip frames before fromFrame and preserve their
+    // pixels. For subsequent tiles, repaint from the tile edge as usual.
+    const tileFromFrame = Math.max(tile.startFrame, fromFrame)
+    const clearX = tileFromFrame - tile.startFrame
+    tile.ctx.clearRect(
+      clearX,
+      0,
+      frameEnd - tile.startFrame - clearX,
+      off.canvasHeight,
+    )
     for (const { key, color } of FORMANT_TRACKS) {
       tile.ctx.strokeStyle = color
       tile.ctx.lineWidth = 1.5 * dpr
       tile.ctx.beginPath()
       let penDown = false
-      // Cross-tile continuity: if the frame before this tile was voiced, start
-      // one pixel before the tile edge so the stroke joins cleanly to the prev tile.
-      const prevF = tile.startFrame - 1
+      // Connect from the frame before tileFromFrame (moveTo only — doesn't draw,
+      // just anchors the pen so the first lineTo produces a joined segment).
+      // For the first tile this lands in the preserved region; for later tiles
+      // prevF - tile.startFrame = -1 gives the same cross-tile join as before.
+      const prevF = tileFromFrame - 1
       if (prevF >= 0) {
         const prevSample = getFrame(analysis, prevF)
         if (
@@ -223,11 +239,11 @@ function paintFormantTiles(
           prevSample.speechDetected &&
           prevSample[key] !== null
         ) {
-          tile.ctx.moveTo(-1, freqToY(prevSample[key]))
+          tile.ctx.moveTo(prevF - tile.startFrame, freqToY(prevSample[key]))
           penDown = true
         }
       }
-      for (let f = tile.startFrame; f < frameEnd; f++) {
+      for (let f = tileFromFrame; f < frameEnd; f++) {
         const sample = getFrame(analysis, f)!
         if (
           !(sample.pitchDetected && sample.speechDetected) ||
@@ -773,14 +789,27 @@ export function Spectrogram({
               effectiveTo,
             )
           } else {
-            // Patch or mixed (patch + append): repaint tiles from first affected frame.
+            // Patch or mixed: repaint only the affected range, then append any
+            // new frames separately so we skip redrawing unchanged history.
             paintFormantTiles(
               formantOffRef.current,
               analysis,
               Math.floor(effectiveFrom / TILE_WIDTH),
               freqToY,
               dpr,
+              effectiveFrom,
+              isExtending ? prevNumFrames : undefined,
             )
+            if (isExtending) {
+              appendFormantTiles(
+                formantOffRef.current,
+                analysis,
+                prevNumFrames,
+                effectiveTo,
+                freqToY,
+                dpr,
+              )
+            }
             tilesGenRef.current += 1
           }
         }
