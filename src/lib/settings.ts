@@ -15,17 +15,12 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import {
-  createCollection,
-  createTransaction,
-  localStorageCollectionOptions,
-} from '@tanstack/db'
+import { useSyncExternalStore } from 'react'
 
 export type SampleRatePref = 'auto' | 'prefer48000' | 'prefer44100'
 export type BrowserPreprocessing = 'default' | 'minimal'
 
 export type AudioSettingsRow = {
-  id: 'audioSettings'
   inputDeviceId: string | null
   sampleRate: SampleRatePref
   persistentMic: boolean
@@ -33,42 +28,57 @@ export type AudioSettingsRow = {
 }
 
 export const DEFAULT_SETTINGS: AudioSettingsRow = {
-  id: 'audioSettings',
   inputDeviceId: null,
   sampleRate: 'auto',
   persistentMic: false,
   browserPreprocessing: 'default',
 }
 
-export const settingsCollection = createCollection(
-  localStorageCollectionOptions<AudioSettingsRow, AudioSettingsRow['id']>({
-    storageKey: 'braat:settings',
-    getKey: (row) => row.id,
-  }),
-)
+const STORAGE_KEY = 'braat:settings'
+const listeners = new Set<() => void>()
+let cache: AudioSettingsRow | null = null
+
+function readFromStorage(): AudioSettingsRow {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY)
+    if (raw) return { ...DEFAULT_SETTINGS, ...JSON.parse(raw) }
+  } catch {}
+  return { ...DEFAULT_SETTINGS }
+}
+
+function getSnapshot(): AudioSettingsRow {
+  cache ??= readFromStorage()
+  return cache
+}
+
+function invalidate(): void {
+  cache = readFromStorage()
+  for (const fn of listeners) fn()
+}
+
+if (typeof window !== 'undefined') {
+  window.addEventListener('storage', (e) => {
+    if (e.key === STORAGE_KEY) invalidate()
+  })
+}
+
+function subscribe(callback: () => void): () => void {
+  listeners.add(callback)
+  return () => {
+    listeners.delete(callback)
+  }
+}
+
+export function useSettings(): AudioSettingsRow {
+  return useSyncExternalStore(subscribe, getSnapshot, () => DEFAULT_SETTINGS)
+}
 
 export async function updateSettings(
-  patch: Partial<Omit<AudioSettingsRow, 'id'>>,
+  patch: Partial<AudioSettingsRow>,
 ): Promise<void> {
-  const current = settingsCollection.get('audioSettings') ?? {
-    ...DEFAULT_SETTINGS,
-  }
-  const updated: AudioSettingsRow = { ...current, ...patch }
-  const tx = createTransaction({
-    mutationFn: async ({ transaction }) => {
-      settingsCollection.utils.acceptMutations(transaction)
-    },
-  })
-  tx.mutate(() => {
-    if (settingsCollection.get('audioSettings')) {
-      settingsCollection.update('audioSettings', (draft) => {
-        Object.assign(draft, patch)
-      })
-    } else {
-      settingsCollection.insert(updated)
-    }
-  })
-  await tx.isPersisted.promise
+  const updated: AudioSettingsRow = { ...getSnapshot(), ...patch }
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(updated))
+  invalidate()
 }
 
 /** Build MediaStreamConstraints from settings */

@@ -17,8 +17,6 @@
     "@base-ui/react": "^1.4.0",
     "@jocelyn-stericker/ort-silero-vad-wasm-minimal": "0.0.19",
     "@tailwindcss/vite": "^4.1.18",
-    "@tanstack/db": "^0.6.5",
-    "@tanstack/react-db": "^0.1.83",
     "@tanstack/react-devtools": "latest",
     "@tanstack/react-router": "latest",
     "@tanstack/router-plugin": "^1.132.0",

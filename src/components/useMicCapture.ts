@@ -14,7 +14,6 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-import { useLiveQuery } from '@tanstack/react-db'
 import { useEffect, useLayoutEffect, useRef } from 'react'
 
 import type { AnalysisFrame, AnalysisParams } from '#/lib/AnalysisFrame'
@@ -22,7 +21,7 @@ import {
   MicCapturePipeline,
   preInitPersistentStream,
 } from '#/lib/MicCapturePipeline'
-import { settingsCollection, DEFAULT_SETTINGS } from '#/lib/settings'
+import { useSettings } from '#/lib/settings'
 
 export function useMicCapture({
   enabled,
@@ -39,15 +38,13 @@ export function useMicCapture({
   onRecordingComplete: (buffer: AudioBuffer) => void
   onError: (error: string) => void
 }) {
-  const { data: settingsRows } = useLiveQuery(settingsCollection)
-  const audioSettings = settingsRows[0] ?? DEFAULT_SETTINGS
+  const audioSettings = useSettings()
 
   // Pre-open the mic when persistentMic is enabled so the connection is warm.
   const { inputDeviceId, sampleRate, persistentMic, browserPreprocessing } =
     audioSettings
   useEffect(() => {
     void preInitPersistentStream({
-      id: 'audioSettings',
       inputDeviceId,
       sampleRate,
       persistentMic,
@@ -75,7 +72,6 @@ export function useMicCapture({
     const pipeline = new MicCapturePipeline({
       signal: ctrl.signal,
       settings: {
-        id: 'audioSettings',
         inputDeviceId,
         sampleRate,
         persistentMic,

@@ -2,6 +2,7 @@
 import { render, waitFor } from '@testing-library/react'
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 
+import type * as SettingsModule from '#/lib/settings'
 import type { AppendFrameMessage, ParamsMessage } from '#/lib/workerMessages'
 
 import { useMicCapture } from './useMicCapture'
@@ -16,19 +17,18 @@ let mockWorkerInstances: any[] = []
 let mockFormantWorkerInstances: any[] = []
 let mockVadWorkerInstances: any[] = []
 
-vi.mock('@tanstack/react-db', () => ({
-  useLiveQuery: vi.fn(() => ({
-    data: [
-      {
-        id: 'audioSettings',
-        inputDeviceId: null,
-        sampleRate: 'prefer44100',
-        persistentMic: false,
-        browserPreprocessing: 'default',
-      },
-    ],
-  })),
-}))
+vi.mock('#/lib/settings', async (importOriginal) => {
+  const actual = await importOriginal<typeof SettingsModule>()
+  return {
+    ...actual,
+    useSettings: vi.fn(() => ({
+      inputDeviceId: null,
+      sampleRate: 'prefer44100',
+      persistentMic: false,
+      browserPreprocessing: 'default',
+    })),
+  }
+})
 
 vi.mock('#/lib/FormantWorker?worker', () => {
   class MockFormantWorker {

@@ -15,7 +15,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { useLiveQuery } from '@tanstack/react-db'
 import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
 
@@ -33,11 +32,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '#/components/ui/select'
-import {
-  settingsCollection,
-  DEFAULT_SETTINGS,
-  updateSettings,
-} from '#/lib/settings'
+import { useSettings, updateSettings } from '#/lib/settings'
 import type {
   AudioSettingsRow,
   BrowserPreprocessing,
@@ -62,8 +57,7 @@ export function AudioSettingsModal({
   open: boolean
   onOpenChange: (open: boolean) => void
 }) {
-  const { data: rows } = useLiveQuery(settingsCollection)
-  const settings: AudioSettingsRow = rows[0] ?? DEFAULT_SETTINGS
+  const settings: AudioSettingsRow = useSettings()
 
   const [devices, setDevices] = useState<MediaDeviceInfo[]>([])
   const linux = isDesktopLinux()

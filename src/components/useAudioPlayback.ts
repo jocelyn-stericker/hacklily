@@ -15,15 +15,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { useLiveQuery } from '@tanstack/react-db'
 import { useEffect, useLayoutEffect, useRef } from 'react'
 
 import { AudioPlaybackPipeline } from '#/lib/AudioPlaybackPipeline'
-import {
-  settingsCollection,
-  DEFAULT_SETTINGS,
-  preferredSampleRate,
-} from '#/lib/settings'
+import { useSettings, preferredSampleRate } from '#/lib/settings'
 
 export function useAudioPlayback({
   enabled,
@@ -54,8 +49,7 @@ export function useAudioPlayback({
     }
   }, [])
 
-  const { data: settingsRows } = useLiveQuery(settingsCollection)
-  const audioSettings = settingsRows[0] ?? DEFAULT_SETTINGS
+  const audioSettings = useSettings()
   const preferredRate = preferredSampleRate(audioSettings)
 
   const playbackRef = useRef<{
