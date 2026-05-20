@@ -54,6 +54,8 @@ interface Tile {
   canvas: OffscreenCanvas
   ctx: OffscreenCanvasRenderingContext2D
   startFrame: number
+  imgData: ImageData
+  u32: Uint32Array
 }
 
 interface OffscreenState {
@@ -150,7 +152,10 @@ function ensureTiles(
     const startFrame = off.tiles.length * TILE_WIDTH
     const canvas = new OffscreenCanvas(TILE_WIDTH, off.canvasHeight)
     const ctx = canvas.getContext('2d')!
-    off.tiles.push({ canvas, ctx, startFrame })
+    const imgData = ctx.createImageData(TILE_WIDTH, off.canvasHeight)
+    const u32 = new Uint32Array(imgData.data.buffer)
+    u32.fill(0xff000000)
+    off.tiles.push({ canvas, ctx, startFrame, imgData, u32 })
   }
 }
 
@@ -171,18 +176,20 @@ function paintColumnsToOffscreen(
     const absTo = Math.min(to, tile.startFrame + TILE_WIDTH)
     const numCols = absTo - absFrom
     const localFrom = absFrom - tile.startFrame
-    const imgData = tile.ctx.createImageData(numCols, canvasHeight)
-    const u32 = new Uint32Array(imgData.data.buffer)
-    u32.fill(0xff000000)
+    const { imgData, u32 } = tile
     for (let y = 0; y < canvasHeight; y++) {
       const b = binForY[y] ?? -1
-      if (b < 0) continue
-      u32.set(
-        data.subarray(b * capacity + absFrom, b * capacity + absTo),
-        y * numCols,
-      )
+      const dst = y * TILE_WIDTH + localFrom
+      if (b < 0) {
+        u32.fill(0xff000000, dst, dst + numCols)
+      } else {
+        u32.set(
+          data.subarray(b * capacity + absFrom, b * capacity + absTo),
+          dst,
+        )
+      }
     }
-    tile.ctx.putImageData(imgData, localFrom, 0)
+    tile.ctx.putImageData(imgData, 0, 0, localFrom, 0, numCols, canvasHeight)
   }
 }
 
@@ -408,6 +415,7 @@ function draw(
   if (!db || db.width !== width || db.height !== height) {
     const buf = new OffscreenCanvas(width, height)
     const ctx = buf.getContext('2d')!
+    ctx.imageSmoothingEnabled = false
     db = {
       buf,
       ctx,
