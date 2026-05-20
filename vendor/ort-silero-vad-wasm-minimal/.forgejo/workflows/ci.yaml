@@ -40,7 +40,7 @@ jobs:
               --disable_wasm_exception_catching \
               --enable_wasm_simd \
               --enable_wasm_threads \
-              --include_ops_by_config ../silero_vad_v5.required_operators.config \
+              --include_ops_by_config ../silero_vad_v6_16k_op15.required_operators.config \
               --enable_reduced_operator_type_support \
               --target onnxruntime_webassembly \
               --compile_no_warning_as_error \
@@ -53,7 +53,7 @@ jobs:
           mkdir -p dist
           cp onnxruntime/build/Linux/MinSizeRel/ort-wasm-simd-threaded.wasm dist/
           cp onnxruntime/build/Linux/MinSizeRel/ort-wasm-simd-threaded.mjs dist/
-          cp silero_vad_v5.ort dist/
+          cp silero_vad_v6_16k_op15.ort dist/
           cp package.json dist/
           cd dist
           npm version "0.0.${{ github.run_number }}" --no-git-tag-version

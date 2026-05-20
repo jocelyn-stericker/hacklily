@@ -32,7 +32,7 @@ import * as ort from 'onnxruntime-web/wasm' // NOT from this module!
 
 import ortMjsUrl from '@jocelyn-stericker/ort-silero-vad-wasm-minimal/ort-wasm-simd-threaded.mjs?url'
 import ortWasmUrl from '@jocelyn-stericker/ort-silero-vad-wasm-minimal/ort-wasm-simd-threaded.wasm?url'
-import vadModelUrl from '@jocelyn-stericker/ort-silero-vad-wasm-minimal/silero_vad_v5.ort?url'
+import vadModelUrl from '@jocelyn-stericker/ort-silero-vad-wasm-minimal/silero_vad_v6_16k_op15.ort?url'
 
 ort.env.wasm.wasmPaths = { wasm: ortWasmUrl, mjs: ortMjsUrl }
 ort.InferenceSession.create(vadModelUrl).then((sess) => { ... }
