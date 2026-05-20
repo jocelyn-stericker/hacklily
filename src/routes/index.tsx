@@ -40,8 +40,8 @@ import type {
   AnalysisChunk,
   AnalysisFrame,
   AnalysisParams,
-} from '#/lib/analysis'
-import { totalFrames } from '#/lib/analysis'
+} from '#/lib/AnalysisFrame'
+import { totalFrames } from '#/lib/AnalysisFrame'
 import { computeDbBounds, concatAudioBuffers } from '#/lib/audioUiHelpers'
 import { exportWav } from '#/lib/exportWav.ts'
 

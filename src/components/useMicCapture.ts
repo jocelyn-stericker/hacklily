@@ -17,7 +17,7 @@
 import { useLiveQuery } from '@tanstack/react-db'
 import { useEffect, useLayoutEffect, useRef } from 'react'
 
-import type { AnalysisFrame, AnalysisParams } from '#/lib/analysis'
+import type { AnalysisFrame, AnalysisParams } from '#/lib/AnalysisFrame'
 import {
   MicCapturePipeline,
   preInitPersistentStream,

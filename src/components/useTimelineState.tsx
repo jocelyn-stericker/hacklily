@@ -17,7 +17,7 @@
 
 import { useCallback, useMemo, useState } from 'react'
 
-import type { AnalysisChunk } from '#/lib/analysis'
+import type { AnalysisChunk } from '#/lib/AnalysisFrame'
 import { featureCheck } from '#/lib/featureCheck'
 
 export interface TimelineState {

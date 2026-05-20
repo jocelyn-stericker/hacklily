@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest'
 
-import type { AnalysisChunk, AnalysisFrame } from './analysis'
+import type { AnalysisChunk, AnalysisFrame } from './AnalysisFrame'
 import { computeDbBounds, concatAudioBuffers } from './audioUiHelpers'
 
 const DEFAULT_PARAMS = {

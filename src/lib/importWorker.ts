@@ -1,6 +1,6 @@
 // Web worker to process audio file imports with frame-by-frame analysis and streaming progress updates.
 
-import type { AnalysisChunk } from '#/lib/analysis'
+import type { AnalysisChunk } from '#/lib/AnalysisFrame'
 
 export type ImportWorker = Omit<Worker, 'postMessage' | 'onmessage'> & {
   postMessage: (msg: ImportWorkerInMessage) => null
@@ -22,7 +22,7 @@ onmessage = async ({
   data: { mono, fileSampleRate },
 }: MessageEvent<ImportWorkerInMessage>) => {
   try {
-    const { analyzeBuffer } = await import('#/lib/analysis')
+    const { analyzeBuffer } = await import('#/lib/AnalysisFrame')
     console.time('import: analyzeBuffer')
     const messages = await analyzeBuffer(mono, fileSampleRate)
     console.timeEnd('import: analyzeBuffer')

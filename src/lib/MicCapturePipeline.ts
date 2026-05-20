@@ -21,7 +21,7 @@ import type {
   AnalysisChunk,
   AnalysisFrame,
   AnalysisParams,
-} from '#/lib/analysis'
+} from '#/lib/AnalysisFrame'
 import audioWorkletUrl from '#/lib/AudioRingWriter?worker&url'
 import type { AudioRingWriterNode } from '#/lib/AudioRingWriter'
 import FormantWorker from '#/lib/FormantWorker?worker'

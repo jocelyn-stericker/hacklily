@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import type { AnalysisFrame, AnalysisParams } from './analysis'
+import type { AnalysisFrame, AnalysisParams } from './AnalysisFrame'
 
 export interface SpectrogramInitMessage {
   type: 'init'

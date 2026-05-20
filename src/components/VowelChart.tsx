@@ -7,7 +7,7 @@ import type {
   AnalysisChunk,
   AnalysisFrame,
   VoicedAnalysisFrame,
-} from '#/lib/analysis'
+} from '#/lib/AnalysisFrame'
 import { hzToBark } from '#/lib/bark'
 
 // F1/F2 ranges for North American English vowels (Hz), per Hillenbrand et al. 1995.

@@ -17,7 +17,7 @@
 
 // Helpers for importing audio files, concatenating buffers, and computing dB scaling bounds.
 
-import type { AnalysisChunk } from './analysis'
+import type { AnalysisChunk } from './AnalysisFrame'
 
 const LN10_10 = 10 / Math.log(10)
 

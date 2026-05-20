@@ -17,7 +17,7 @@
 
 import { useCallback, useEffect, useRef } from 'react'
 
-import type { AnalysisChunk } from '#/lib/analysis'
+import type { AnalysisChunk } from '#/lib/AnalysisFrame'
 import { computeDbBounds } from '#/lib/audioUiHelpers'
 import ImportWorker from '#/lib/importWorker?worker'
 

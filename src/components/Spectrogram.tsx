@@ -3,8 +3,8 @@
 import { useEffect, useImperativeHandle, useRef, useState } from 'react'
 import type { RefObject } from 'react'
 
-import type { AnalysisChunk } from '#/lib/analysis'
-import { getFrame, totalFrames } from '#/lib/analysis'
+import type { AnalysisChunk } from '#/lib/AnalysisFrame'
+import { getFrame, totalFrames } from '#/lib/AnalysisFrame'
 import { nextPow2 } from '#/lib/mathUtils'
 import { TILE_WIDTH } from '#/lib/tileConfig'
 

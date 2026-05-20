@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import type { AnalysisChunk } from '#/lib/analysis.ts'
+import type { AnalysisChunk } from '#/lib/AnalysisFrame'
 
 import {
   Dialog,
