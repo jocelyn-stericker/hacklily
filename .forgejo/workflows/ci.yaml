@@ -21,6 +21,6 @@ jobs:
       - name: Deploy website
         uses: actions/git-pages@v2
         with:
-          site: https://jocelyn-stericker.grebedoc.dev/braat
+          site: http://braat.app
           source: ./dist
-          token: ${{ forge.token }}
+          password: ${{ secrets.GREBEDOC_PASSWORD }}

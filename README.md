@@ -4,7 +4,7 @@
 
 Braat shows you, in real time, the pitch and resonance of your voice as you speak. It's a practice aid aimed at **voice training** — including trans voice training, where pitch (F0) and vowel resonance (F1, F2) are commonly used reference points. It may also be useful for singing practice, accent work, or just exploring how your voice works.
 
-[**Open Braat →**](https://jocelyn-stericker.grebedoc.dev/braat/)
+[**Open Braat →**](https://braat.app)
 
 ![Braat screenshot showing a spectrogram with pitch and formant tracks](screenshot.png)
 

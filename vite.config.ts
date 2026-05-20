@@ -7,7 +7,7 @@ import { defineConfig } from 'vite'
 import { VitePWA } from 'vite-plugin-pwa'
 
 const config = defineConfig({
-  base: '/braat/',
+  base: '/',
   resolve: {
     tsconfigPaths: true,
     conditions: ['onnxruntime-web-use-extern-wasm'],
