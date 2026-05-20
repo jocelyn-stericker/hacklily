@@ -486,7 +486,7 @@ function YAxisStrip({ gridHzOrAmp }: { gridHzOrAmp: number[] }) {
       style={{ width: plotPad.left }}
     >
       {/* Dark background strip */}
-      <div className="absolute inset-0 bg-[#0e0e14]" />
+      <div className="absolute inset-0 bg-white dark:bg-[#0e0e14]" />
 
       {/* Right-edge vertical border */}
       <div
@@ -509,23 +509,23 @@ function YAxisStrip({ gridHzOrAmp }: { gridHzOrAmp: number[] }) {
         <>
           {yAxis.hover.f0 ? (
             <YAxisTickAndLabel
-              labelClassName="text-[#f7c948] bg-black"
-              tickClassName="bg-[#f7c948] w-3 h-3 rounded-full"
+              labelClassName="text-black dark:text-white bg-white dark:bg-black"
+              tickClassName="bg-black dark:bg-white w-3 h-3 rounded-full"
               hzOrAmp={yAxis.hover.f0}
             />
           ) : null}
           {yAxis.hover.f1 ? (
             <YAxisTickAndLabel
               hzOrAmp={yAxis.hover.f1}
-              labelClassName="text-[#4ecdc4] bg-black"
-              tickClassName="bg-[#4ecdc4] w-3 h-3 rounded-full"
+              labelClassName="text-[#00e5ff] bg-white dark:bg-black"
+              tickClassName="bg-[#00e5ff] w-3 h-3 rounded-full"
             />
           ) : null}
           {yAxis.hover.f2 ? (
             <YAxisTickAndLabel
               hzOrAmp={yAxis.hover.f2}
-              labelClassName="text-[#f78fb3] bg-black"
-              tickClassName="bg-[#f78fb3] w-3 h-3 rounded-full"
+              labelClassName="text-[#00e5ff] bg-white dark:bg-black"
+              tickClassName="bg-[#00e5ff] w-3 h-3 rounded-full"
             />
           ) : null}
         </>
@@ -551,8 +551,10 @@ function XAxisTickAndLabel({ guide }: { guide: TimeGuide }) {
         className={cn(
           'absolute top-2.5 font-mono text-lg leading-none -translate-x-1/2 text-nowrap',
           guide.type === 'step' && 'text-[#555566]',
-          guide.type === 'cursor' && 'text-[#8ace00] bg-black',
-          guide.type === 'hover' && 'text-white bg-black',
+          guide.type === 'cursor' &&
+            'text-white dark:text-black bg-black dark:bg-white',
+          guide.type === 'hover' &&
+            'dark:text-[#00000099] dark:bg-[#ffffff99] text-[#ffffff99] bg-black',
         )}
       >
         {formatTime(guide.t)}
@@ -562,7 +564,7 @@ function XAxisTickAndLabel({ guide }: { guide: TimeGuide }) {
         className={cn(
           'absolute right-0 left-0 w-px h-2',
           guide.type === 'step' && 'bg-[#333344]',
-          guide.type === 'cursor' && 'bg-[#8ace00] w-0.5',
+          guide.type === 'cursor' && 'bg-black w-0.5',
         )}
       />
     </div>
@@ -579,7 +581,7 @@ function XAxisStrip({ grid }: { grid: TimeGuide[] }) {
     >
       {/* Dark background strip */}
       <div
-        className="absolute inset-0 bg-[#0e0e14] overflow-hidden"
+        className="absolute inset-0 bg-white dark:bg-[#0e0e14] overflow-hidden"
         style={{ left: plotPad.left }}
       >
         {grid
@@ -740,7 +742,7 @@ export function Plot({
   return (
     <div
       className={cn(
-        'w-full relative bg-black  border border-(--bg-base)',
+        'w-full relative bg-white dark:bg-black  border border-(--bg-base)',
         className,
       )}
       ref={setRoot}
@@ -760,7 +762,7 @@ export function Plot({
         {yAxisVisible ? <YAxisStrip gridHzOrAmp={gridHzOrAmp} /> : null}
         <HorizGridLines gridHzOrAmp={gridHzOrAmp} />
         {xAxisVisible ? <XAxisStrip grid={xGrid} /> : null}
-        <CursorLine className="bg-[#8ace00] w-0.5" tSec={cursorSec} />
+        <CursorLine className="bg-black dark:bg-white w-0.5" tSec={cursorSec} />
         {hoverSec != null ? (
           <CursorLine className="bg-[#555566] w-px" tSec={hoverSec} />
         ) : null}

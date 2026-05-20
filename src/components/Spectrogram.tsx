@@ -8,23 +8,38 @@ import { getFrame, totalFrames } from '#/lib/AnalysisFrame'
 import { nextPow2 } from '#/lib/mathUtils'
 import { TILE_WIDTH } from '#/lib/tileConfig'
 
-import { SPECTRO_COLOURMAP } from './colourmap'
+import { INFERNO_COLOURMAP, PLASMA_INV_COLOURMAP } from './colourmap'
 import { InCanvas, usePlotPad, usePlotSize, useTimeToX, useHzToY } from './Plot'
+import { useColourScheme } from './useColourScheme'
 
 const FPS_WINDOW_MS = 1000
 
-// Assumes little-endian byte order (all browser-targeted CPUs). Each entry is
-// the RGBA pixel packed as a Uint32: low byte = R, high byte = A.
-const SPECTRO_COLOURMAP_U32 = (() => {
-  const u32 = new Uint32Array(256)
+interface Theme {
+  // Assumes little-endian byte order (all browser-targeted CPUs). Each entry is
+  // the RGBA pixel packed as a Uint32: low byte = R, high byte = A.
+  colourmap: Uint32Array
+  bgU32: number
+  bgStyle: string
+}
+
+function buildTheme(isDark: boolean): Theme {
+  const colourmap = new Uint32Array(256)
+  const map = isDark ? INFERNO_COLOURMAP : PLASMA_INV_COLOURMAP
   for (let i = 0; i < 256; i++) {
-    const r = SPECTRO_COLOURMAP[i * 3]!
-    const g = SPECTRO_COLOURMAP[i * 3 + 1]!
-    const b = SPECTRO_COLOURMAP[i * 3 + 2]!
-    u32[i] = ((255 << 24) | (b << 16) | (g << 8) | r) >>> 0
+    const r = map[i * 3]!
+    const g = map[i * 3 + 1]!
+    const b = map[i * 3 + 2]!
+    colourmap[i] = ((255 << 24) | (b << 16) | (g << 8) | r) >>> 0
   }
-  return u32
-})()
+  return {
+    colourmap,
+    bgU32: (isDark ? 0xff000000 : 0xff21f9f0) >>> 0,
+    bgStyle: isDark ? '#000000' : '#ffffff',
+  }
+}
+
+const DARK_THEME = buildTheme(true)
+const LIGHT_THEME = buildTheme(false)
 
 const LN10_10 = 10 / Math.log(10)
 
@@ -82,10 +97,16 @@ interface DisplayBufState {
 }
 
 const FORMANT_TRACKS = [
-  { key: 'f0' as const, color: '#f7c948' },
-  { key: 'f1' as const, color: '#4ecdc4' },
-  { key: 'f2' as const, color: '#f78fb3' },
+  { key: 'f0' as const, color: '#ffffff' },
+  { key: 'f1' as const, color: '#00e5ff' },
+  { key: 'f2' as const, color: '#00e5ff' },
 ]
+
+// Soft glow behind each formant line for contrast against both light and dark
+// spectrogram regions. shadowBlur is a gaussian spread in device pixels.
+const FORMANT_SHADOW_COLOUR = 'rgba(0,0,0,0.8)'
+const FORMANT_SHADOW_BLUR = 5
+const FORMANT_LINE_WIDTH = 1.5
 
 function buildBinForY(
   numBins: number,
@@ -113,6 +134,7 @@ function computeColorsRange(
   state: ColorsState,
   from: number,
   to: number,
+  theme: Theme,
 ): void {
   const { data, capacity, numBins, dbMin, dbRange, analysis } = state
   for (let f = from; f < to; f++) {
@@ -121,7 +143,7 @@ function computeColorsRange(
       const raw = spectrum[b]!
       const db = LN10_10 * Math.log(raw)
       const norm = Math.max(0, Math.min(1, (db - dbMin) / dbRange))
-      data[b * capacity + f] = SPECTRO_COLOURMAP_U32[Math.round(norm * 255)]!
+      data[b * capacity + f] = theme.colourmap[Math.round(norm * 255)]!
     }
   }
 }
@@ -146,6 +168,7 @@ function ensureColorsCapacity(state: ColorsState, needed: number): void {
 function ensureTiles(
   off: { tiles: Tile[]; canvasHeight: number },
   needed: number,
+  theme: Theme,
 ): void {
   const numTiles = Math.ceil(needed / TILE_WIDTH)
   while (off.tiles.length < numTiles) {
@@ -154,7 +177,7 @@ function ensureTiles(
     const ctx = canvas.getContext('2d')!
     const imgData = ctx.createImageData(TILE_WIDTH, off.canvasHeight)
     const u32 = new Uint32Array(imgData.data.buffer)
-    u32.fill(0xff000000)
+    u32.fill(theme.bgU32)
     off.tiles.push({ canvas, ctx, startFrame, imgData, u32 })
   }
 }
@@ -164,6 +187,7 @@ function paintColumnsToOffscreen(
   colors: ColorsState,
   from: number,
   to: number,
+  theme: Theme,
 ): void {
   if (to <= from) return
   const { tiles, binForY, canvasHeight } = off
@@ -181,7 +205,7 @@ function paintColumnsToOffscreen(
       const b = binForY[y] ?? -1
       const dst = y * TILE_WIDTH + localFrom
       if (b < 0) {
-        u32.fill(0xff000000, dst, dst + numCols)
+        u32.fill(theme.bgU32, dst, dst + numCols)
       } else {
         u32.set(
           data.subarray(b * capacity + absFrom, b * capacity + absTo),
@@ -223,8 +247,6 @@ function paintFormantTiles(
       off.canvasHeight,
     )
     for (const { key, color } of FORMANT_TRACKS) {
-      tile.ctx.strokeStyle = color
-      tile.ctx.lineWidth = 1.5 * dpr
       tile.ctx.beginPath()
       let penDown = false
       // Connect from the frame before tileFromFrame (moveTo only — doesn't draw,
@@ -258,7 +280,14 @@ function paintFormantTiles(
         else tile.ctx.lineTo(localX, y)
         penDown = true
       }
+      tile.ctx.lineJoin = 'round'
+      tile.ctx.lineCap = 'round'
+      tile.ctx.shadowColor = FORMANT_SHADOW_COLOUR
+      tile.ctx.shadowBlur = FORMANT_SHADOW_BLUR * dpr
+      tile.ctx.strokeStyle = color
+      tile.ctx.lineWidth = FORMANT_LINE_WIDTH * dpr
       tile.ctx.stroke()
+      tile.ctx.shadowBlur = 0
     }
   }
 }
@@ -281,8 +310,6 @@ function appendFormantTiles(
     const absFrom = Math.max(from, tile.startFrame)
     const absTo = Math.min(to, tile.startFrame + TILE_WIDTH)
     for (const { key, color } of FORMANT_TRACKS) {
-      tile.ctx.strokeStyle = color
-      tile.ctx.lineWidth = 1.5 * dpr
       tile.ctx.beginPath()
       let penDown = false
       // Connect from the frame before absFrom, which may be in a prior tile.
@@ -315,7 +342,14 @@ function appendFormantTiles(
         else tile.ctx.lineTo(localX, y)
         penDown = true
       }
+      tile.ctx.lineJoin = 'round'
+      tile.ctx.lineCap = 'round'
+      tile.ctx.shadowColor = FORMANT_SHADOW_COLOUR
+      tile.ctx.shadowBlur = FORMANT_SHADOW_BLUR * dpr
+      tile.ctx.strokeStyle = color
+      tile.ctx.lineWidth = FORMANT_LINE_WIDTH * dpr
       tile.ctx.stroke()
+      tile.ctx.shadowBlur = 0
     }
   }
 }
@@ -358,6 +392,7 @@ function updateDisplayBufForFrames(
   formantOff: FormantOffscreenState | null,
   from: number,
   to: number,
+  theme: Theme,
 ): void {
   if (!db || isNaN(db.lastSrcX0) || isNaN(db.lastDxPerFrame)) return
   const { lastSrcX0, lastDxPerFrame, width, height } = db
@@ -372,7 +407,7 @@ function updateDisplayBufForFrames(
   if (x1 >= x2) return
   const stripSrcX0 = lastSrcX0 + x1 / lastDxPerFrame
   const stripSrcW = (x2 - x1) / lastDxPerFrame
-  db.ctx.fillStyle = '#000000'
+  db.ctx.fillStyle = theme.bgStyle
   db.ctx.fillRect(x1, 0, x2 - x1, height)
   db.ctx.save()
   db.ctx.translate(x1, 0)
@@ -408,9 +443,10 @@ function draw(
   formantOff: FormantOffscreenState | null,
   timeToX: (timeSec: number) => number,
   timeStepSec: number,
+  theme: Theme,
 ): void {
   if (!off || timeStepSec <= 0) {
-    mainCtx.fillStyle = '#000000'
+    mainCtx.fillStyle = theme.bgStyle
     mainCtx.fillRect(0, 0, width, height)
     return
   }
@@ -419,7 +455,7 @@ function draw(
   // srcX0 is the (possibly fractional) frame index at the left display edge.
   const dxPerFrame = timeToX(timeStepSec) - timeToX(0)
   if (dxPerFrame <= 0) {
-    mainCtx.fillStyle = '#000000'
+    mainCtx.fillStyle = theme.bgStyle
     mainCtx.fillRect(0, 0, width, height)
     return
   }
@@ -455,7 +491,7 @@ function draw(
 
   if (!canIncremental) {
     // Full repaint: composit spectrogram + formant layers into the display buffer.
-    db.ctx.fillStyle = '#000000'
+    db.ctx.fillStyle = theme.bgStyle
     db.ctx.fillRect(0, 0, width, height)
     blitTiles(
       db.ctx,
@@ -491,7 +527,7 @@ function draw(
     const stripSrcX0 = srcX0 + stripX / dxPerFrame
     const stripSrcW = stripW / dxPerFrame
 
-    db.ctx.fillStyle = '#000000'
+    db.ctx.fillStyle = theme.bgStyle
     db.ctx.fillRect(stripX, 0, stripW, height)
     // Translate so blitTiles can use its normal destX = (frame - srcX0)*dxPerFrame logic,
     // which places frame stripSrcX0 at pixel 0 — and our translate shifts that to stripX.
@@ -544,6 +580,9 @@ export function Spectrogram({
   const canvasWidth = (width - plotPad.left - plotPad.right) * dpr
   const canvasHeight = (height - plotPad.top - plotPad.bottom) * dpr
 
+  const scheme = useColourScheme()
+  const theme = scheme === 'dark' ? DARK_THEME : LIGHT_THEME
+
   const colorsRef = useRef<ColorsState | null>(null)
   const offRef = useRef<OffscreenState | null>(null)
   const formantOffRef = useRef<FormantOffscreenState | null>(null)
@@ -595,9 +634,9 @@ export function Spectrogram({
       dbRange,
       analysis,
     }
-    computeColorsRange(colors, 0, numFrames)
+    computeColorsRange(colors, 0, numFrames, theme)
     colorsRef.current = colors
-  }, [analysis, dbMin, dbRange])
+  }, [analysis, dbMin, dbRange, theme])
 
   // ---- FALLS THROUGH TO NEXT EFFECT ----
 
@@ -614,19 +653,19 @@ export function Spectrogram({
       canvasHeight,
     )
     const off: OffscreenState = { tiles: [], binForY, canvasHeight }
-    ensureTiles(off, colors.numFrames)
+    ensureTiles(off, colors.numFrames, theme)
     offRef.current = off
-    paintColumnsToOffscreen(off, colors, 0, colors.numFrames)
+    paintColumnsToOffscreen(off, colors, 0, colors.numFrames, theme)
 
     const formantOff: FormantOffscreenState = { tiles: [], canvasHeight }
-    ensureTiles(formantOff, colors.numFrames)
+    ensureTiles(formantOff, colors.numFrames, theme)
     formantOffRef.current = formantOff
     paintFormantTiles(formantOff, analysis, 0, freqToY, dpr)
 
     tilesGenRef.current += 1
 
     // Note: this must include everything in the previous effect
-  }, [analysis, dbMin, dbRange, canvasHeight, freqToY, dpr])
+  }, [analysis, dbMin, dbRange, canvasHeight, freqToY, dpr, theme])
 
   const fromRef = useRef<number | null>(null)
   // Infinity = "to totalFrames" (append pending); explicit number = max patch to
@@ -662,6 +701,7 @@ export function Spectrogram({
           colorsRef.current
             ? colorsRef.current.timeStepSamples / colorsRef.current.sampleRate
             : 0,
+          theme,
         )
         if (debug) {
           fpsFrameTimesRef.current.push(performance.now())
@@ -689,6 +729,7 @@ export function Spectrogram({
     canvasWidth,
     timeToX,
     debug,
+    theme,
   ])
 
   useImperativeHandle(ref, () => {
@@ -719,7 +760,7 @@ export function Spectrogram({
           dbRange,
           analysis,
         }
-        computeColorsRange(colors, 0, numFrames)
+        computeColorsRange(colors, 0, numFrames, theme)
         colorsRef.current = colors
       }
 
@@ -731,7 +772,7 @@ export function Spectrogram({
 
       const isExtending = effectiveTo > prevNumFrames
       if (isExtending) ensureColorsCapacity(colors, effectiveTo)
-      computeColorsRange(colors, effectiveFrom, effectiveTo)
+      computeColorsRange(colors, effectiveFrom, effectiveTo, theme)
       if (isExtending) colors.numFrames = effectiveTo
 
       if (!offRef.current && canvasHeight > 0) {
@@ -743,33 +784,35 @@ export function Spectrogram({
           canvasHeight,
         )
         const off: OffscreenState = { tiles: [], binForY, canvasHeight }
-        ensureTiles(off, effectiveTo)
+        ensureTiles(off, effectiveTo, theme)
         offRef.current = off
-        paintColumnsToOffscreen(off, colors, 0, effectiveTo)
+        paintColumnsToOffscreen(off, colors, 0, effectiveTo, theme)
         const formantOff: FormantOffscreenState = { tiles: [], canvasHeight }
-        ensureTiles(formantOff, effectiveTo)
+        ensureTiles(formantOff, effectiveTo, theme)
         formantOffRef.current = formantOff
         paintFormantTiles(formantOff, analysis, 0, freqToY, dpr)
         tilesGenRef.current += 1
       } else if (offRef.current) {
-        if (isExtending) ensureTiles(offRef.current, effectiveTo)
+        if (isExtending) ensureTiles(offRef.current, effectiveTo, theme)
         paintColumnsToOffscreen(
           offRef.current,
           colors,
           effectiveFrom,
           effectiveTo,
+          theme,
         )
 
         if (!formantOffRef.current) {
           const formantOff: FormantOffscreenState = { tiles: [], canvasHeight }
-          ensureTiles(formantOff, effectiveTo)
+          ensureTiles(formantOff, effectiveTo, theme)
           formantOffRef.current = formantOff
           paintFormantTiles(formantOff, analysis, 0, freqToY, dpr)
           // formantOff newly created: [0, effectiveFrom) was never painted,
           // so a full repaint is needed to show historical formant lines.
           tilesGenRef.current += 1
         } else {
-          if (isExtending) ensureTiles(formantOffRef.current, effectiveTo)
+          if (isExtending)
+            ensureTiles(formantOffRef.current, effectiveTo, theme)
 
           if (isExtending && effectiveFrom >= prevNumFrames) {
             // Pure append: additive paint, then update display buffer for new region.
@@ -787,6 +830,7 @@ export function Spectrogram({
               formantOffRef.current,
               effectiveFrom,
               effectiveTo,
+              theme,
             )
           } else {
             // Patch or mixed: repaint only the affected range, then append any
@@ -834,7 +878,7 @@ export function Spectrogram({
         drawFrame.current = requestAnimationFrame(handleFrame)
       },
     }
-  }, [canvasHeight, analysis, freqToY, dbMin, dbRange, dpr])
+  }, [canvasHeight, analysis, freqToY, dbMin, dbRange, dpr, theme])
 
   return (
     <>
