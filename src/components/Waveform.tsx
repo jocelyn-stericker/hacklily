@@ -26,11 +26,14 @@ interface Tile {
   canvas: OffscreenCanvas
   ctx: OffscreenCanvasRenderingContext2D
   startFrame: number
+  imgData: ImageData
+  u32: Uint32Array
 }
 
 interface OffscreenState {
   tiles: Tile[]
   canvasHeight: number
+  numFrames: number
 }
 
 function ensureTiles(off: OffscreenState, needed: number): void {
@@ -39,9 +42,17 @@ function ensureTiles(off: OffscreenState, needed: number): void {
     const startFrame = off.tiles.length * TILE_WIDTH
     const canvas = new OffscreenCanvas(TILE_WIDTH, off.canvasHeight)
     const ctx = canvas.getContext('2d')!
-    off.tiles.push({ canvas, ctx, startFrame })
+    ctx.imageSmoothingEnabled = false
+    const imgData = ctx.createImageData(TILE_WIDTH, off.canvasHeight)
+    const u32 = new Uint32Array(imgData.data.buffer)
+    off.tiles.push({ canvas, ctx, startFrame, imgData, u32 })
   }
 }
+
+// Assumes little-endian byte order (all browser-targeted CPUs). Each value is
+// the RGBA pixel packed as a Uint32: low byte = R, high byte = A.
+const SPEECH_U32 = ((209 << 24) | (196 << 16) | (205 << 8) | 78) >>> 0 // rgba(78,205,196,0.82)
+const SILENCE_U32 = ((140 << 24) | (140 << 16) | (100 << 8) | 100) >>> 0 // rgba(100,100,140,0.55)
 
 function paintColumnsToOffscreen(
   off: OffscreenState,
@@ -58,18 +69,26 @@ function paintColumnsToOffscreen(
     const tile = tiles[t]!
     const absFrom = Math.max(from, tile.startFrame)
     const absTo = Math.min(to, tile.startFrame + TILE_WIDTH)
+    const numCols = absTo - absFrom
     const localFrom = absFrom - tile.startFrame
-    const { ctx } = tile
-    ctx.clearRect(localFrom, 0, absTo - absFrom, canvasHeight)
+    const { imgData, u32 } = tile
     for (let f = absFrom; f < absTo; f++) {
+      const localX = f - tile.startFrame
       const sample = getFrame(analysis, f)!
-      const y0 = ampToY(sample.rms)
-      const y1 = ampToY(-sample.rms)
-      ctx.fillStyle = sample.speechDetected
-        ? 'rgba(78,205,196,0.82)'
-        : 'rgba(100,100,140,0.55)'
-      ctx.fillRect(f - tile.startFrame, y0, 1, y1 - y0)
+      const y0 = Math.max(
+        0,
+        Math.min(canvasHeight, Math.round(ampToY(-sample.rms))),
+      )
+      const y1 = Math.max(
+        0,
+        Math.min(canvasHeight, Math.round(ampToY(sample.rms))),
+      )
+      const color = sample.speechDetected ? SPEECH_U32 : SILENCE_U32
+      for (let y = 0; y < canvasHeight; y++) {
+        u32[y * TILE_WIDTH + localX] = y >= y0 && y < y1 ? color : 0
+      }
     }
+    tile.ctx.putImageData(imgData, 0, 0, localFrom, 0, numCols, canvasHeight)
   }
 }
 
@@ -135,6 +154,8 @@ export function Waveform({
   const animationFrame = useRef<number | null>(null)
   const triggerDraw = useRef(() => {})
   const fromRef = useRef<number | null>(null)
+  const pendingToRef = useRef<number>(0)
+  const patchToRef = useRef<number>(0)
   const drawFrame = useRef<number | null>(null)
 
   useEffect(() => {
@@ -143,7 +164,7 @@ export function Waveform({
       return
     }
     const numFrames = totalFrames(analysis)
-    const off: OffscreenState = { tiles: [], canvasHeight }
+    const off: OffscreenState = { tiles: [], canvasHeight, numFrames }
     ensureTiles(off, numFrames)
     offRef.current = off
     paintColumnsToOffscreen(off, analysis, 0, numFrames, ampToY)
@@ -182,48 +203,68 @@ export function Waveform({
     }
   }, [analysis, canvasHeight, ampToY, canvas, canvasWidth, timeToX])
 
-  useImperativeHandle(
-    ref,
-    () => ({
-      append(from) {
-        fromRef.current = Math.min(from, fromRef.current ?? Infinity)
-        if (drawFrame.current !== null) return
-        drawFrame.current = requestAnimationFrame(() => {
-          drawFrame.current = null
-          const effectiveFrom = fromRef.current!
-          fromRef.current = null
-          const to = totalFrames(analysis)
-          if (effectiveFrom >= to) return
+  useImperativeHandle(ref, () => {
+    function handleFrame() {
+      drawFrame.current = null
+      const effectiveFrom = fromRef.current!
+      const pendingTo = pendingToRef.current
+      const patchTo = patchToRef.current
+      fromRef.current = null
+      pendingToRef.current = 0
+      patchToRef.current = 0
 
-          if (!offRef.current && canvasHeight > 0) {
-            const off: OffscreenState = { tiles: [], canvasHeight }
-            ensureTiles(off, to)
-            offRef.current = off
-            paintColumnsToOffscreen(off, analysis, 0, to, ampToY)
-          } else if (offRef.current) {
-            ensureTiles(offRef.current, to)
+      if (!offRef.current && canvasHeight > 0) {
+        if (pendingTo !== Infinity) return
+        const to = totalFrames(analysis)
+        const off: OffscreenState = { tiles: [], canvasHeight, numFrames: to }
+        ensureTiles(off, to)
+        offRef.current = off
+        paintColumnsToOffscreen(off, analysis, 0, to, ampToY)
+      } else if (offRef.current) {
+        const off = offRef.current
+        if (pendingTo === Infinity) {
+          const prevNumFrames = off.numFrames
+          const to = totalFrames(analysis)
+          ensureTiles(off, to)
+          // Paint patched range [effectiveFrom, patchTo) and new frames [prevNumFrames, to)
+          // separately to skip the unchanged gap [patchTo, prevNumFrames).
+          paintColumnsToOffscreen(off, analysis, effectiveFrom, patchTo, ampToY)
+          paintColumnsToOffscreen(off, analysis, prevNumFrames, to, ampToY)
+          off.numFrames = to
+        } else {
+          if (effectiveFrom < pendingTo) {
             paintColumnsToOffscreen(
-              offRef.current,
+              off,
               analysis,
               effectiveFrom,
-              to,
+              pendingTo,
               ampToY,
             )
           }
+        }
+      }
 
-          triggerDraw.current()
-        })
+      triggerDraw.current()
+    }
+
+    return {
+      append(from) {
+        fromRef.current = Math.min(from, fromRef.current ?? Infinity)
+        pendingToRef.current = Infinity
+        if (drawFrame.current !== null) return
+        drawFrame.current = requestAnimationFrame(handleFrame)
       },
 
       patch(from, to) {
-        const off = offRef.current
-        if (!off) return
-        paintColumnsToOffscreen(off, analysis, from, to, ampToY)
-        triggerDraw.current()
+        fromRef.current = Math.min(from, fromRef.current ?? Infinity)
+        // Math.max(to, Infinity) = Infinity, so a pending append keeps priority
+        pendingToRef.current = Math.max(to, pendingToRef.current)
+        patchToRef.current = Math.max(to, patchToRef.current)
+        if (drawFrame.current !== null) return
+        drawFrame.current = requestAnimationFrame(handleFrame)
       },
-    }),
-    [canvasHeight, analysis, ampToY],
-  )
+    }
+  }, [canvasHeight, analysis, ampToY])
 
   return (
     <canvas
