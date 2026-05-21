@@ -202,6 +202,28 @@ export function useTimelineState(analysis: AnalysisChunk[]) {
     })
   }, [])
 
+  const handleJump = useCallback((deltaSec: number) => {
+    setTimelineState((timeline) => {
+      const tSec = Math.max(
+        0,
+        Math.min(timeline.cursorSec + deltaSec, timeline.trackDurationSec),
+      )
+      const { viewportLeftSec, viewportRightSec } = timeline
+      if (tSec < viewportLeftSec || tSec > viewportRightSec) {
+        const viewportWidth = viewportRightSec - viewportLeftSec
+        const maxLeft = Math.floor(timeline.trackDurationSec / 30 + 1) * 30
+        const newLeft = Math.max(0, Math.min(tSec - viewportWidth / 2, maxLeft))
+        return {
+          ...timeline,
+          cursorSec: tSec,
+          viewportLeftSec: newLeft,
+          viewportRightSec: newLeft + viewportWidth,
+        }
+      }
+      return { ...timeline, cursorSec: tSec }
+    })
+  }, [])
+
   const handleAcknowledgeError = useCallback(() => {
     setStatus({ value: 'inactive' })
   }, [])
@@ -300,6 +322,7 @@ export function useTimelineState(analysis: AnalysisChunk[]) {
     handleStart,
     handlePause,
     handleBackToStart,
+    handleJump,
     handleAcknowledgeError,
     handleRecordingComplete,
     handleError,

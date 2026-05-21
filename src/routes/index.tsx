@@ -19,6 +19,7 @@
 
 import { createFileRoute } from '@tanstack/react-router'
 import { useCallback, useEffect, useRef, useState } from 'react'
+import { useHotkeys } from 'react-hotkeys-hook'
 
 import { AudioSettingsModal } from '#/components/AudioSettingsModal'
 import { Dialogs } from '#/components/Dialogs'
@@ -74,6 +75,7 @@ function App() {
     handleStart: startRecording,
     handlePause,
     handleBackToStart,
+    handleJump,
     handleAcknowledgeError,
     handleRecordingComplete: handleAudioBufferAppended,
     handlePlaybackPositionChanged,
@@ -240,6 +242,81 @@ function App() {
     onPlaybackPositionChanged: handlePlaybackPositionChanged,
   })
 
+  const playDisabled = !audioBuffer || audioBuffer.length === 0
+  const exportAudioDisabled =
+    !audioBuffer || audioBuffer.length === 0 || isExporting
+
+  useHotkeys(
+    'space',
+    (e) => {
+      e.preventDefault()
+      if (status.value === 'playing' || status.value === 'recording') {
+        handlePause()
+      } else if (!playDisabled) {
+        handlePlay()
+      }
+    },
+    [status, playDisabled, handlePause, handlePlay],
+  )
+  useHotkeys('shift+arrowleft', handleBackToStart, [handleBackToStart])
+  useHotkeys(
+    'shift+arrowright',
+    (e) => {
+      e.preventDefault()
+      handleJump(Infinity)
+    },
+    [handleJump],
+  )
+  useHotkeys(
+    'arrowleft',
+    (e) => {
+      e.preventDefault()
+      handleJump(-0.5)
+    },
+    [handleJump],
+  )
+  useHotkeys(
+    'arrowright',
+    (e) => {
+      e.preventDefault()
+      handleJump(0.5)
+    },
+    [handleJump],
+  )
+  useHotkeys(
+    'r',
+    () => {
+      if (status.value !== 'recording' && status.value !== 'analyzing') {
+        handleStart()
+      }
+    },
+    [status, handleStart],
+  )
+  useHotkeys(
+    'mod+o',
+    (e) => {
+      e.preventDefault()
+      openFilePicker()
+    },
+    [openFilePicker],
+  )
+  useHotkeys(
+    'mod+e',
+    (e) => {
+      e.preventDefault()
+      if (!exportAudioDisabled) handleExportAudio()
+    },
+    [exportAudioDisabled, handleExportAudio],
+  )
+  useHotkeys(
+    'mod+comma',
+    (e) => {
+      e.preventDefault()
+      handleOpenAudioSettings()
+    },
+    [handleOpenAudioSettings],
+  )
+
   const virtualWidthSec =
     Math.floor(timelineState.trackDurationSec / 30 + 1) * 30 +
     (timelineState.viewportRightSec - timelineState.viewportLeftSec)
@@ -267,11 +344,9 @@ function App() {
           onStart={handleStart}
           onPause={handlePause}
           onPlay={handlePlay}
-          playDisabled={!audioBuffer || audioBuffer.length === 0}
+          playDisabled={playDisabled}
           onExportAudio={handleExportAudio}
-          exportAudioDisabled={
-            !audioBuffer || audioBuffer.length === 0 || isExporting
-          }
+          exportAudioDisabled={exportAudioDisabled}
           onOpenAudioSettings={handleOpenAudioSettings}
         />
         <Plot

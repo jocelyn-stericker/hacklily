@@ -33,10 +33,13 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuShortcut,
   DropdownMenuTrigger,
 } from '#/components/ui/dropdown-menu'
 
 import type { TimelineState, Status } from './useTimelineState'
+
+const MOD = navigator.platform.startsWith('Mac') ? '⌘' : 'Ctrl+'
 
 export function Toolbar({
   openFilePicker,
@@ -74,7 +77,7 @@ export function Toolbar({
       <Button
         variant="default"
         className="h-10 w-10 cursor-pointer"
-        title="Back to start"
+        title="Back to start (Shift+←)"
         disabled={
           timelineState.cursorSec === 0 && timelineState.viewportLeftSec === 0
         }
@@ -86,7 +89,7 @@ export function Toolbar({
         variant="default"
         className="h-10 w-10 cursor-pointer"
         disabled={status.value === 'recording' || status.value === 'analyzing'}
-        title="Analyze audio from microphone"
+        title="Record from microphone (R)"
         onClick={onStart}
       >
         <MicVocal className="size-6" />
@@ -95,7 +98,7 @@ export function Toolbar({
         <Button
           variant="default"
           className="h-10 w-10 cursor-pointer"
-          title="Pause audio track"
+          title="Pause (Space)"
           onClick={onPause}
         >
           <Pause className="size-6" />
@@ -104,7 +107,7 @@ export function Toolbar({
         <Button
           variant="default"
           className="h-10 w-10 cursor-pointer"
-          title="Play back audio track"
+          title="Play (Space)"
           onClick={onPlay}
           disabled={playDisabled}
         >
@@ -119,7 +122,7 @@ export function Toolbar({
         >
           <Menu className="size-6" />
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" className="min-w-44">
+        <DropdownMenuContent align="end" className="min-w-56">
           <DropdownMenuItem onClick={onNew}>
             <FilePlus className="size-4" />
             New
@@ -127,6 +130,7 @@ export function Toolbar({
           <DropdownMenuItem onClick={openFilePicker}>
             <FolderOpen className="size-4" />
             Open audio file
+            <DropdownMenuShortcut>{MOD}O</DropdownMenuShortcut>
           </DropdownMenuItem>
           <DropdownMenuItem
             onClick={onExportAudio}
@@ -134,10 +138,12 @@ export function Toolbar({
           >
             <Download className="size-4" />
             Export mono audio
+            <DropdownMenuShortcut>{MOD}E</DropdownMenuShortcut>
           </DropdownMenuItem>
           <DropdownMenuItem onClick={onOpenAudioSettings}>
             <Settings2 className="size-4" />
             Audio settings
+            <DropdownMenuShortcut>{MOD},</DropdownMenuShortcut>
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
