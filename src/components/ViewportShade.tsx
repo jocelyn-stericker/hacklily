@@ -39,15 +39,11 @@ export function ViewportShade({
       }}
     >
       <div
+        className="dark:bg-white/8 bg-black/8 absolute border-x border-x-black/25 dark:border-x-white/25 top-0 bottom-0"
         style={{
           position: 'absolute',
           left: x1 - plotPad.left,
           width: Math.max(0, x2 - x1),
-          top: 0,
-          bottom: 0,
-          background: 'rgba(255,255,255,0.08)',
-          borderLeft: '1px solid rgba(255,255,255,0.25)',
-          borderRight: '1px solid rgba(255,255,255,0.25)',
         }}
       />
     </div>
