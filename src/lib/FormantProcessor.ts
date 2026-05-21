@@ -19,7 +19,7 @@
 import { burgLpc, findLpcRoots, fixIntoUnitCircle } from './burgLpc'
 import { nextPow2 } from './mathUtils'
 import { preEmphasis } from './preEmphasis'
-import { buildFormantGaussianWindow } from './window'
+import { buildFormantGaussianWindow } from './windowFn'
 
 /**
  * Formant analysis configuration for Burg's method.

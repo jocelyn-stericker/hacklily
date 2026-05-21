@@ -68,11 +68,10 @@ export type PatchFrameMessage = {
   frameIndex: number
 } & AnalysisPatch
 
-export interface SpectrogramEndedMessage {
+export interface WorkerEndedMessage {
   type: 'ended'
-  pcm: Float32Array<ArrayBuffer>
 }
 
-export interface EndedMessage {
-  type: 'ended'
+export interface SpectrogramEndedMessage extends WorkerEndedMessage {
+  pcm: Float32Array<ArrayBuffer>
 }

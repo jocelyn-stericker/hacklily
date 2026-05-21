@@ -17,24 +17,24 @@
 /// <reference lib="webworker" />
 
 import { AudioRingReader } from './AudioRingReader'
-import { ResamplerStreamProcessor } from './resample'
-import { VadStreamProcessor } from './vad'
+import { ResamplerStreamProcessor } from './ResampleProcessor'
+import { VadStreamProcessor } from './VadProcessor'
 import type {
-  EndedMessage,
+  WorkerEndedMessage,
   PatchFrameMessage,
   VadInitMessage,
 } from './workerMessages'
 
 const QUANTUM = 128
 const VAD_RATE = 16000
-const LOG = '[VADWorker]'
+const LOG = '[VadWorker]'
 const PREROLL_MS = 50
 const POSITIVE_THRESHOLD = 0.3
 const NEGATIVE_THRESHOLD = 0.25
 
 export type VadWorkerInMessage = VadInitMessage | null
 
-export type VadWorkerOutMessage = PatchFrameMessage | EndedMessage
+export type VadWorkerOutMessage = PatchFrameMessage | WorkerEndedMessage
 
 export type VadWorker = Omit<Worker, 'postMessage' | 'onmessage'> & {
   postMessage: (msg: VadWorkerInMessage) => null

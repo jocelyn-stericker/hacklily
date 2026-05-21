@@ -17,7 +17,7 @@
 /// <reference lib="webworker" />
 
 import { AudioRingReader } from './AudioRingReader'
-import { SpectrogramStreamProcessor } from './spectrogram'
+import { SpectrogramStreamProcessor } from './SpectrogramProcessor'
 import type {
   AppendFrameMessage,
   ParamsMessage,

@@ -15,6 +15,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+// Ambient declarations for Vite's ?worker import syntax and the AudioWorklet
+// global scope, which TypeScript has no built-in lib for.
+
 declare module '#/lib/SpectrogramWorker?worker' {
   import type { SpectrogramWorker } from '#/lib/SpectrogramWorker'
 
@@ -29,16 +32,40 @@ declare module '#/lib/FormantWorker?worker' {
   export default FormantWorkerConstructor
 }
 
-declare module '#/lib/VADWorker?worker' {
-  import type { VadWorker } from '#/lib/VADWorker'
+declare module '#/lib/VadWorker?worker' {
+  import type { VadWorker } from '#/lib/VadWorker'
 
   const VadWorkerConstructor: new () => VadWorker
   export default VadWorkerConstructor
 }
 
-declare module '#/lib/importWorker?worker' {
-  import type { ImportWorker } from '#/lib/importWorker'
+declare module '#/lib/ImportWorker?worker' {
+  import type { ImportWorker } from '#/lib/ImportWorker'
 
   const ImportWorkerConstructor: new () => ImportWorker
   export default ImportWorkerConstructor
 }
+
+declare interface AudioParamDescriptor {
+  name: string
+  automationRate?: AutomationRate
+  defaultValue?: number
+  maxValue?: number
+  minValue?: number
+}
+
+declare abstract class AudioWorkletProcessor {
+  readonly port: MessagePort
+  abstract process(
+    inputs: Float32Array[][],
+    outputs: Float32Array[][],
+    parameters: Record<string, Float32Array>,
+  ): boolean
+}
+
+declare function registerProcessor(
+  name: string,
+  processorCtor: new (
+    options?: AudioWorkletNodeOptions,
+  ) => AudioWorkletProcessor,
+): void

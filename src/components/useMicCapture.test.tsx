@@ -73,7 +73,7 @@ vi.mock('#/lib/FormantWorker?worker', () => {
   }
 })
 
-vi.mock('#/lib/VADWorker?worker', () => {
+vi.mock('#/lib/VadWorker?worker', () => {
   class MockVadWorker {
     postMessage = vi.fn()
     terminate = vi.fn()

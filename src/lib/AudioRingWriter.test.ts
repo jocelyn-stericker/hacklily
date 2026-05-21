@@ -17,7 +17,7 @@
 
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 
-import type { InitMessage } from './AudioRingWriter'
+import type { AudioRingWriterInitMessage } from './AudioRingWriter'
 import { AudioRingWriter } from './AudioRingWriter.ts'
 
 vi.hoisted(() => {
@@ -61,8 +61,10 @@ describe('AudioRingWriter', () => {
 
   describe('initialization', () => {
     it('accepts an init message via port.onmessage', () => {
-      const msg: InitMessage = { type: 'init', sab, bufSamples }
-      worklet.port.onmessage?.({ data: msg } as MessageEvent<InitMessage>)
+      const msg: AudioRingWriterInitMessage = { type: 'init', sab, bufSamples }
+      worklet.port.onmessage?.({
+        data: msg,
+      } as MessageEvent<AudioRingWriterInitMessage>)
 
       expect(Atomics.load(ctrl, 0)).toBe(0)
     })
@@ -82,8 +84,10 @@ describe('AudioRingWriter', () => {
 
   describe('process() writes audio to ring buffer', () => {
     beforeEach(() => {
-      const msg: InitMessage = { type: 'init', sab, bufSamples }
-      worklet.port.onmessage?.({ data: msg } as MessageEvent<InitMessage>)
+      const msg: AudioRingWriterInitMessage = { type: 'init', sab, bufSamples }
+      worklet.port.onmessage?.({
+        data: msg,
+      } as MessageEvent<AudioRingWriterInitMessage>)
     })
 
     it('writes input samples to the SAB', () => {
@@ -199,8 +203,10 @@ describe('AudioRingWriter', () => {
 
   describe('process() edge cases', () => {
     beforeEach(() => {
-      const msg: InitMessage = { type: 'init', sab, bufSamples }
-      worklet.port.onmessage?.({ data: msg } as MessageEvent<InitMessage>)
+      const msg: AudioRingWriterInitMessage = { type: 'init', sab, bufSamples }
+      worklet.port.onmessage?.({
+        data: msg,
+      } as MessageEvent<AudioRingWriterInitMessage>)
     })
 
     it('returns true to keep processor running', () => {
@@ -255,14 +261,16 @@ describe('AudioRingWriter', () => {
 
   describe('message protocol', () => {
     it('accepts InitMessage with all required fields', () => {
-      const msg: InitMessage = {
+      const msg: AudioRingWriterInitMessage = {
         type: 'init',
         sab: new SharedArrayBuffer(1024),
         bufSamples: 128,
       }
 
       expect(() => {
-        worklet.port.onmessage?.({ data: msg } as MessageEvent<InitMessage>)
+        worklet.port.onmessage?.({
+          data: msg,
+        } as MessageEvent<AudioRingWriterInitMessage>)
       }).not.toThrow()
     })
 
@@ -277,7 +285,7 @@ describe('AudioRingWriter', () => {
         const size = 2 ** pow
         const testSab = new SharedArrayBuffer(8 + size * 4)
         const testWorklet = new AudioRingWriter()
-        const msg: InitMessage = {
+        const msg: AudioRingWriterInitMessage = {
           type: 'init',
           sab: testSab,
           bufSamples: size,
@@ -286,7 +294,7 @@ describe('AudioRingWriter', () => {
         expect(() => {
           testWorklet.port.onmessage?.({
             data: msg,
-          } as MessageEvent<InitMessage>)
+          } as MessageEvent<AudioRingWriterInitMessage>)
         }).not.toThrow()
       }
     })
@@ -294,14 +302,16 @@ describe('AudioRingWriter', () => {
     it('throws when bufSamples is not a power of 2', () => {
       const testSab = new SharedArrayBuffer(1024)
       const testWorklet = new AudioRingWriter()
-      const msg: InitMessage = {
+      const msg: AudioRingWriterInitMessage = {
         type: 'init',
         sab: testSab,
         bufSamples: 255,
       }
 
       expect(() => {
-        testWorklet.port.onmessage?.({ data: msg } as MessageEvent<InitMessage>)
+        testWorklet.port.onmessage?.({
+          data: msg,
+        } as MessageEvent<AudioRingWriterInitMessage>)
       }).toThrow('bufSamples must be a power of 2, got 255')
     })
 
@@ -311,7 +321,7 @@ describe('AudioRingWriter', () => {
       for (const size of nonPowerOfTwoSizes) {
         const testSab = new SharedArrayBuffer(8 + size * 4)
         const testWorklet = new AudioRingWriter()
-        const msg: InitMessage = {
+        const msg: AudioRingWriterInitMessage = {
           type: 'init',
           sab: testSab,
           bufSamples: size,
@@ -320,7 +330,7 @@ describe('AudioRingWriter', () => {
         expect(() => {
           testWorklet.port.onmessage?.({
             data: msg,
-          } as MessageEvent<InitMessage>)
+          } as MessageEvent<AudioRingWriterInitMessage>)
         }).toThrow(`bufSamples must be a power of 2, got ${size}`)
       }
     })

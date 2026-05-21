@@ -26,7 +26,7 @@ import audioWorkletUrl from '#/lib/AudioRingWriter?worker&url'
 import type { AudioRingWriterNode } from '#/lib/AudioRingWriter'
 import FormantWorker from '#/lib/FormantWorker?worker'
 import SpectrogramWorker from '#/lib/SpectrogramWorker?worker'
-import VADWorker from '#/lib/VADWorker?worker'
+import VadWorker from '#/lib/VadWorker?worker'
 
 import type { FormantWorkerOutMessage } from './FormantWorker'
 import type { AudioSettingsRow } from './settings'
@@ -38,7 +38,7 @@ import {
 } from './settings'
 import type { SpectrogramWorkerOutMessage } from './SpectrogramWorker'
 import { TypedEventTarget } from './TypedEventTarget'
-import type { VadWorkerOutMessage } from './VADWorker'
+import type { VadWorkerOutMessage } from './VadWorker'
 import type { AppendFrameMessage, PatchFrameMessage } from './workerMessages'
 
 // Must be a pow of 2 due to bit masking hack for efficient circular buffer
@@ -161,7 +161,7 @@ export class MicCapturePipeline extends TypedEventTarget<MicCaptureOutEvents> {
   #workletNode: AudioRingWriterNode | null = null
   #spectrogramWorker: InstanceType<typeof SpectrogramWorker> | null = null
   #formantWorker: InstanceType<typeof FormantWorker> | null = null
-  #vadWorker: InstanceType<typeof VADWorker> | null = null
+  #vadWorker: InstanceType<typeof VadWorker> | null = null
   #stream: MediaStream | null = null
   #sampleRate: number | null = null
   #resolveInitComplete = () => {}
@@ -205,7 +205,7 @@ export class MicCapturePipeline extends TypedEventTarget<MicCaptureOutEvents> {
 
       this.#spectrogramWorker = new SpectrogramWorker()
       this.#formantWorker = new FormantWorker()
-      this.#vadWorker = new VADWorker()
+      this.#vadWorker = new VadWorker()
 
       const preferredRate = preferredSampleRate(settings)
       console.log(

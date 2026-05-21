@@ -18,12 +18,12 @@
 // Core audio analysis worker spawning; defines AnalysisFrame type for frame data with pitch, formants, and RMS.
 
 import type { AnalysisFrame, AnalysisChunk } from './AnalysisFrame'
-import { FormantProcessor } from './formant'
-import { PitchProcessor } from './pitch'
+import { FormantProcessor } from './FormantProcessor'
+import { PitchProcessor } from './PitchProcessor'
 import { preEmphasis } from './preEmphasis'
-import { resample } from './resample'
-import { SpectrogramProcessor } from './spectrogram'
-import { VadStreamProcessor } from './vad'
+import { resample } from './ResampleProcessor'
+import { SpectrogramProcessor } from './SpectrogramProcessor'
+import { VadStreamProcessor } from './VadProcessor'
 
 interface Opts {
   maxFreqHz: number

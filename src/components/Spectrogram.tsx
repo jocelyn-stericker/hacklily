@@ -6,13 +6,16 @@ import type { RefObject } from 'react'
 import type { AnalysisChunk } from '#/lib/AnalysisFrame'
 import { getFrame, totalFrames } from '#/lib/AnalysisFrame'
 import { nextPow2 } from '#/lib/mathUtils'
-import { TILE_WIDTH } from '#/lib/tileConfig'
 
 import { INFERNO_COLOURMAP, WYOR_COLOURMAP } from './colourmap'
 import { InCanvas, usePlotPad, usePlotSize, useTimeToX, useHzToY } from './Plot'
 import { useColourScheme } from './useColourScheme'
 
 const FPS_WINDOW_MS = 1000
+
+// GPU canvas tiles: staying under browser width limits while streaming real-time spectral data.
+// Each tile holds up to TILE_WIDTH frames before overflow to the next tile.
+export const TILE_WIDTH = 8192
 
 interface Theme {
   // Assumes little-endian byte order (all browser-targeted CPUs). Each entry is

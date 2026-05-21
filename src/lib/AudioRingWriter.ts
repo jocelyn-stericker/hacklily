@@ -19,16 +19,16 @@
 
 import { isPowerOfTwo } from './mathUtils'
 
-export interface InitMessage {
+export interface AudioRingWriterInitMessage {
   type: 'init'
   sab: SharedArrayBuffer
   bufSamples: number
 }
 
-export type AudioWorkletMessage = InitMessage | null
+export type AudioRingWriterMessage = AudioRingWriterInitMessage | null
 
 export type AudioRingWriterNode = Omit<AudioWorkletNode, 'port'> & {
-  port: { postMessage: (msg: AudioWorkletMessage) => void }
+  port: { postMessage: (msg: AudioRingWriterMessage) => void }
 }
 
 /**
@@ -51,7 +51,7 @@ export class AudioRingWriter extends AudioWorkletProcessor {
 
   constructor() {
     super()
-    this.port.onmessage = ({ data }: MessageEvent<AudioWorkletMessage>) => {
+    this.port.onmessage = ({ data }: MessageEvent<AudioRingWriterMessage>) => {
       if (data?.type !== 'init' || !data.bufSamples) {
         throw new Error('invalid message')
       }

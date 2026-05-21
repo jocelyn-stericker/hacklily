@@ -17,12 +17,12 @@
 /// <reference lib="webworker" />
 
 import { AudioRingReader } from './AudioRingReader'
-import { FormantStreamProcessor } from './formant'
-import type { FormantFrame } from './formant'
-import { PitchProcessor } from './pitch'
-import { ResamplerStreamProcessor } from './resample'
+import { FormantStreamProcessor } from './FormantProcessor'
+import type { FormantFrame } from './FormantProcessor'
+import { PitchProcessor } from './PitchProcessor'
+import { ResamplerStreamProcessor } from './ResampleProcessor'
 import type {
-  EndedMessage,
+  WorkerEndedMessage,
   ParamsMessage,
   PatchFrameMessage,
   FormantInitMessage,
@@ -47,7 +47,7 @@ export type FormantWorkerInMessage = FormantInitMessage | null
 export type FormantWorkerOutMessage =
   | ParamsMessage
   | PatchFrameMessage
-  | EndedMessage
+  | WorkerEndedMessage
 
 export type FormantWorker = Omit<Worker, 'postMessage' | 'onmessage'> & {
   postMessage: (msg: FormantWorkerInMessage) => null

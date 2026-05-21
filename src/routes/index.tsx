@@ -41,8 +41,8 @@ import type {
   AnalysisFrame,
   AnalysisParams,
 } from '#/lib/AnalysisFrame'
-import { totalFrames } from '#/lib/AnalysisFrame'
-import { computeDbBounds, concatAudioBuffers } from '#/lib/audioUiHelpers'
+import { totalFrames, computeDbBounds } from '#/lib/AnalysisFrame'
+import { concatAudioBuffers } from '#/lib/concatAudioBuffers'
 import { exportWav } from '#/lib/exportWav.ts'
 
 export const Route = createFileRoute('/')({

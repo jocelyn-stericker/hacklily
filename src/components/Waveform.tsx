@@ -5,7 +5,6 @@ import type { RefObject } from 'react'
 
 import type { AnalysisChunk } from '#/lib/AnalysisFrame'
 import { getFrame, totalFrames } from '#/lib/AnalysisFrame'
-import { TILE_WIDTH } from '#/lib/tileConfig'
 
 import {
   useAmpToY,
@@ -14,6 +13,10 @@ import {
   usePlotSize,
   useTimeToX,
 } from './Plot'
+
+// GPU canvas tiles: staying under browser width limits while streaming real-time spectral data.
+// Each tile holds up to TILE_WIDTH frames before overflow to the next tile.
+export const TILE_WIDTH = 8192
 
 export interface WaveformHandle {
   /** Call after appending frames [from, analysis.length) to the stored analysis. */

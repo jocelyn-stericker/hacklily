@@ -18,7 +18,7 @@
 import { useCallback, useMemo, useState } from 'react'
 
 import type { AnalysisChunk } from '#/lib/AnalysisFrame'
-import { featureCheck } from '#/lib/featureCheck'
+import { checkFeatures } from '#/lib/checkFeatures'
 
 export interface TimelineState {
   viewportLeftSec: number
@@ -43,7 +43,7 @@ export type Status =
  */
 export function useTimelineState(analysis: AnalysisChunk[]) {
   const [status, setStatus] = useState<Status>(() => {
-    const missingFeatures = featureCheck()
+    const missingFeatures = checkFeatures()
     return missingFeatures
       ? { value: 'error', error: missingFeatures }
       : { value: 'inactive' }

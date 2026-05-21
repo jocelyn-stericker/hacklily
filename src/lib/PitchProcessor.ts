@@ -19,7 +19,7 @@
 
 import { complexFFTForward, complexFFTInverse, FftTables } from './fft'
 import { nextPow2 } from './mathUtils'
-import { interpolateSinc } from './resample'
+import { interpolateSinc } from './ResampleProcessor'
 
 /**
  * Configuration for Praat's "Sound: To Pitch (filtered autocorrelation)..." algorithm.

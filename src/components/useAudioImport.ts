@@ -18,8 +18,8 @@
 import { useCallback, useEffect, useRef } from 'react'
 
 import type { AnalysisChunk } from '#/lib/AnalysisFrame'
-import { computeDbBounds } from '#/lib/audioUiHelpers'
-import ImportWorker from '#/lib/importWorker?worker'
+import { computeDbBounds } from '#/lib/AnalysisFrame'
+import ImportWorker from '#/lib/ImportWorker?worker'
 
 async function importAudioFile(file: File): Promise<{
   analysis: AnalysisChunk[]

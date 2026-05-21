@@ -15,32 +15,32 @@ import { cn } from '#/lib/utils'
 import type { TimelineState } from './useTimelineState'
 import { VirtualScrollArea } from './VirtualScrollArea'
 
-export const PLOT_PAD_B = 44
-export const PLOT_PAD_L = 72
-export const PLOT_PAD_T = 0
+const PLOT_PAD_B = 44
+const PLOT_PAD_L = 72
+const PLOT_PAD_T = 0
 
-export interface YAxisFreq {
+interface YAxisFreq {
   type: 'freq'
   fMinHz: number
   fMaxHz: number
   hover: { f0: number; f1: number | null; f2: number | null } | null
 }
 
-export interface YAxisAmplitude {
+interface YAxisAmplitude {
   type: 'amplitude'
   ampMaxNorm: number
 }
 
-export type YAxis = YAxisFreq | YAxisAmplitude
+type YAxis = YAxisFreq | YAxisAmplitude
 
-export interface Padding {
+interface Padding {
   left: number
   right: 0
   top: number
   bottom: number
 }
 
-export interface Props {
+interface Props {
   onScroll: (t: number) => void
   onZoom: (xPercentage: number, amount: number) => void
   onClick: (t: number) => void
@@ -104,7 +104,7 @@ const CANDIDATE_GRID_HZ = [
   1200, 1500, 2000, 2500, 3000, 4000, 5000, 7000, 10000, 12000, 15000, 20000,
 ]
 
-export function generateGridHz({
+function generateGridHz({
   fMinHz,
   fMaxHz,
   height,
@@ -174,7 +174,7 @@ interface TimeGuide {
   type: 'cursor' | 'hover' | 'step'
 }
 
-export function generateGridSec({
+function generateGridSec({
   tMinSec,
   tMaxSec,
   cursorSec,
@@ -228,7 +228,7 @@ export function generateGridSec({
   return result
 }
 
-export function ampToY({
+function ampToY({
   ampNorm,
   height,
   dpr = 1,
@@ -250,7 +250,7 @@ export function ampToY({
   )
 }
 
-export function hzToY({
+function hzToY({
   freqHz,
   height,
   dpr = 1,
@@ -277,7 +277,7 @@ export function hzToY({
   )
 }
 
-export function timeToX({
+function timeToX({
   timeSec,
   width,
   dpr = 1,
@@ -353,18 +353,6 @@ export function useTimeToX(inCanvas: InCanvas): (timeSec: number) => number {
         plotPad: inCanvas ? NO_PADDING : plotPad,
         dpr: inCanvas ? dpr : 1,
       }),
-    [width, tMinSec, tMaxSec, plotPad, dpr, inCanvas],
-  )
-}
-
-export function useXToTime(inCanvas: InCanvas): (x: number) => number {
-  const { width, tMinSec, tMaxSec, plotPad, dpr } = usePlot()
-  return useCallback(
-    (x: number) => {
-      const secPerPx =
-        (tMaxSec - tMinSec) / (inCanvas ? width * dpr : width - plotPad.left)
-      return tMinSec + (x - (inCanvas ? plotPad.left : 0)) * secPerPx
-    },
     [width, tMinSec, tMaxSec, plotPad, dpr, inCanvas],
   )
 }
@@ -608,7 +596,7 @@ function XAxisStrip({ grid }: { grid: TimeGuide[] }) {
   )
 }
 
-export function HorizGridLines({ gridHzOrAmp }: { gridHzOrAmp: number[] }) {
+function HorizGridLines({ gridHzOrAmp }: { gridHzOrAmp: number[] }) {
   const { plotPad } = usePlot()
   const toY = useToY(InCanvas.No)
 

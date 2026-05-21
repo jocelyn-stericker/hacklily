@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-export function featureCheck() {
+export function checkFeatures() {
   if (!self.crossOriginIsolated) {
     return 'This page was loaded without cross origin isolation, which Braat requires for live analysis. Either the server is not sending the correct headers, or your browser does not support this feature. Live analysis will not work.'
   } else if (typeof SharedArrayBuffer === 'undefined') {

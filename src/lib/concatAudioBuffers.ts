@@ -15,39 +15,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-// Helpers for importing audio files, concatenating buffers, and computing dB scaling bounds.
-
-import type { AnalysisChunk } from './AnalysisFrame'
-
-const LN10_10 = 10 / Math.log(10)
-
-export function computeDbBounds(
-  chunks: AnalysisChunk[],
-  from = 0,
-  to = Infinity,
-): { min: number; max: number } | null {
-  let minDb = Infinity
-  let maxDb = -Infinity
-  let idx = 0
-  outer: for (const chunk of chunks) {
-    for (const frame of chunk.frames) {
-      if (idx >= to) break outer
-      if (idx >= from) {
-        for (const raw of frame.spectrum) {
-          if (raw > 0) {
-            const db = LN10_10 * Math.log(raw)
-            if (db < minDb) minDb = db
-            if (db > maxDb) maxDb = db
-          }
-        }
-      }
-      idx++
-    }
-  }
-  if (!isFinite(minDb)) return null
-  return { min: Math.max(minDb, -120), max: maxDb }
-}
-
 export function concatAudioBuffers(
   a: AudioBuffer,
   b: AudioBuffer,
@@ -60,6 +27,7 @@ export function concatAudioBuffers(
     length,
     sampleRate,
   )
+  console.log(offlineCtx)
   const result = offlineCtx.createBuffer(numberOfChannels, length, sampleRate)
   for (let c = 0; c < numberOfChannels; c++) {
     const out = result.getChannelData(c)
