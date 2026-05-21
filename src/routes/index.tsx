@@ -49,8 +49,8 @@ export const Route = createFileRoute('/')({
   component: App,
 })
 
-const DB_MIN_DEFAULT = -93
-const DB_MAX_DEFAULT = -23
+const DB_MIN_DEFAULT = -120
+const DB_MAX_DEFAULT = -16
 const SHOW_VOWEL_CHART = localStorage.SHOW_VOWEL_CHART === 'true'
 
 function App() {

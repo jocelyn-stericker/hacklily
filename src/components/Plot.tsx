@@ -617,7 +617,7 @@ export function HorizGridLines({ gridHzOrAmp }: { gridHzOrAmp: number[] }) {
       {gridHzOrAmp.map((hzOrAmp) => (
         <div
           key={hzOrAmp}
-          className="absolute left-0 right-0 h-px bg-white/[0.2]"
+          className="absolute left-0 right-0 h-px bg-black/[0.2] dark:bg-white/[0.2]"
           style={{ top: toY(hzOrAmp) }}
         />
       ))}

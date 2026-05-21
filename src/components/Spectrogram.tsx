@@ -8,7 +8,7 @@ import { getFrame, totalFrames } from '#/lib/AnalysisFrame'
 import { nextPow2 } from '#/lib/mathUtils'
 import { TILE_WIDTH } from '#/lib/tileConfig'
 
-import { INFERNO_COLOURMAP, PLASMA_INV_COLOURMAP } from './colourmap'
+import { INFERNO_COLOURMAP, WYOR_COLOURMAP } from './colourmap'
 import { InCanvas, usePlotPad, usePlotSize, useTimeToX, useHzToY } from './Plot'
 import { useColourScheme } from './useColourScheme'
 
@@ -24,7 +24,7 @@ interface Theme {
 
 function buildTheme(isDark: boolean): Theme {
   const colourmap = new Uint32Array(256)
-  const map = isDark ? INFERNO_COLOURMAP : PLASMA_INV_COLOURMAP
+  const map = isDark ? INFERNO_COLOURMAP : WYOR_COLOURMAP
   for (let i = 0; i < 256; i++) {
     const r = map[i * 3]!
     const g = map[i * 3 + 1]!
