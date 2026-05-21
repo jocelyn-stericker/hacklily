@@ -72,6 +72,7 @@ export interface WorkerEndedMessage {
   type: 'ended'
 }
 
-export interface SpectrogramEndedMessage extends WorkerEndedMessage {
+export interface AudioReadyMessage {
+  type: 'audioReady'
   pcm: Float32Array<ArrayBuffer>
 }

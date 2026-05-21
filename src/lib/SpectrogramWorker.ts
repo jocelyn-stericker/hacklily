@@ -22,7 +22,8 @@ import type {
   AppendFrameMessage,
   ParamsMessage,
   PatchFrameMessage,
-  SpectrogramEndedMessage,
+  WorkerEndedMessage,
+  AudioReadyMessage,
   SpectrogramInitMessage,
 } from './workerMessages'
 
@@ -41,7 +42,8 @@ export type SpectrogramWorkerOutMessage =
   | ParamsMessage
   | AppendFrameMessage
   | PatchFrameMessage
-  | SpectrogramEndedMessage
+  | WorkerEndedMessage
+  | AudioReadyMessage
 
 export type SpectrogramWorker = Omit<Worker, 'postMessage' | 'onmessage'> & {
   postMessage: (msg: SpectrogramWorkerInMessage) => null
@@ -63,17 +65,12 @@ self.onmessage = async ({ data }: MessageEvent<SpectrogramWorkerInMessage>) => {
     console.warn(LOG, `ring buffer overrun: ${dropped} samples lost`)
   }
 
-  const pcm = await runAnalysis(reader, data.sampleRate)
-  postMessage({ type: 'ended', pcm }, [pcm.buffer])
+  await runAnalysis(reader, data.sampleRate)
+  postMessage({ type: 'ended' })
   console.log(LOG, 'complete')
 }
 
-async function runAnalysis(
-  reader: AudioRingReader,
-  sampleRate: number,
-): Promise<Float32Array<ArrayBuffer>> {
-  const pcmChunks: Float32Array[] = []
-
+async function runAnalysis(reader: AudioRingReader, sampleRate: number) {
   const spec = new SpectrogramStreamProcessor(
     {
       effectiveWindowLengthSec: 0.005,
@@ -99,9 +96,23 @@ async function runAnalysis(
   const preEmphBuf = new Float32Array(QUANTUM)
 
   let frameIndex = 0
+  // ~10sec PCM buffer
+  let pcmData = new Float32Array(
+    Math.round((sampleRate * 10) / QUANTUM) * QUANTUM,
+  )
+  let pcmDataIndex = 0
 
   for await (const inp of reader) {
-    pcmChunks.push(inp)
+    console.assert(inp.length === QUANTUM)
+    pcmData.set(inp, pcmDataIndex)
+    pcmDataIndex += inp.length
+    if (pcmDataIndex === pcmData.length) {
+      postMessage({ type: 'audioReady', pcm: pcmData }, [pcmData.buffer])
+      pcmData = new Float32Array(
+        Math.round((sampleRate * 10) / QUANTUM) * QUANTUM,
+      )
+      pcmDataIndex = 0
+    }
 
     // Pre-emphasise into scratch buffer
     const alpha = preEmphFactor
@@ -128,14 +139,15 @@ async function runAnalysis(
     }
   }
 
-  const totalLength = pcmChunks.reduce((s, c) => s + c.length, 0)
-  const pcm = new Float32Array(Math.max(1, totalLength))
-  let offset = 0
-  for (const chunk of pcmChunks) {
-    pcm.set(chunk, offset)
-    offset += chunk.length
+  if (pcmDataIndex > 0) {
+    postMessage(
+      {
+        type: 'audioReady',
+        pcm: pcmData.subarray(0, pcmDataIndex),
+      },
+      [pcmData.buffer],
+    )
   }
-  return pcm
 }
 
 self.addEventListener('unhandledrejection', function (event) {

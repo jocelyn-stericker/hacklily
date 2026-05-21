@@ -841,8 +841,11 @@ describe('AudioRecorder', () => {
     getMockWorker().dispatchMessage(createMockFrameMessage())
     getMockWorker().dispatchMessage(createMockFrameMessage())
     getMockWorker().dispatchMessage({
-      type: 'ended',
+      type: 'audioReady',
       pcm: new Float32Array([0.1, 0.2]),
+    })
+    getMockWorker().dispatchMessage({
+      type: 'ended',
     })
 
     await waitFor(() => {
@@ -877,7 +880,8 @@ describe('AudioRecorder', () => {
     getMockWorker().dispatchMessage(createMockFrameMessage())
 
     const pcm = new Float32Array([0.1, 0.2, 0.3, 0.4])
-    getMockWorker().dispatchMessage({ type: 'ended', pcm })
+    getMockWorker().dispatchMessage({ type: 'audioReady', pcm })
+    getMockWorker().dispatchMessage({ type: 'ended' })
 
     await waitFor(() => {
       expect(onRecordingComplete).toHaveBeenCalled()

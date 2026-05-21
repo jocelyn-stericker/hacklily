@@ -76,10 +76,20 @@ export class AudioRingReader {
       }
 
       while (wp - rp >= quantum) {
-        const audio = new Float32Array(quantum)
-        for (let i = 0; i < quantum; i++) {
-          audio[i] = data[(rp + i) & bufMask]!
+        let audio: Float32Array
+        if ((rp & bufMask) + quantum <= bufSize) {
+          audio = new Float32Array(
+            data.buffer,
+            data.byteOffset + (rp & bufMask) * 4,
+            quantum,
+          )
+        } else {
+          audio = new Float32Array(quantum)
+          for (let i = 0; i < quantum; i++) {
+            audio[i] = data[(rp + i) & bufMask]!
+          }
         }
+
         rp += quantum
         yield audio
         wp = Atomics.load(ctrl, 0)

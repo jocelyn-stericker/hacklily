@@ -153,6 +153,7 @@ export async function preInitPersistentStream(
 
 export class MicCapturePipeline extends TypedEventTarget<MicCaptureOutEvents> {
   #accumulatedChunks: AnalysisChunk[] = []
+  #accumulatedPcm: Float32Array<ArrayBuffer>[] = []
   // Patches that arrived before their frame; keyed by session-local frameIndex.
   #pendingPatches = new Map<number, PatchFrameMessage>()
 
@@ -366,6 +367,10 @@ export class MicCapturePipeline extends TypedEventTarget<MicCaptureOutEvents> {
     data,
   }: MessageEvent<SpectrogramWorkerOutMessage>) => {
     switch (data.type) {
+      case 'audioReady': {
+        this.#accumulatedPcm.push(data.pcm)
+        return
+      }
       case 'ended': {
         if (!this.#spectrogramWorker) return
         const analysisSamples = this.#accumulatedChunks.reduce(
@@ -374,6 +379,20 @@ export class MicCapturePipeline extends TypedEventTarget<MicCaptureOutEvents> {
         )
 
         if (analysisSamples > 0) {
+          console.assert(
+            analysisSamples <=
+              this.#accumulatedPcm.reduce(
+                (memo, chunk) => memo + chunk.length,
+                0,
+              ),
+            LOG,
+            'fewer audio samples than analysis samples',
+            analysisSamples,
+            this.#accumulatedPcm.reduce(
+              (memo, chunk) => memo + chunk.length,
+              0,
+            ),
+          )
           const buffer = this.#sampleRate
             ? new AudioBuffer({
                 length: analysisSamples,
@@ -385,7 +404,19 @@ export class MicCapturePipeline extends TypedEventTarget<MicCaptureOutEvents> {
                 numberOfChannels: 1,
                 sampleRate: 44100,
               })
-          if (data.pcm.length > 0) buffer.copyToChannel(data.pcm, 0)
+          let offset = 0
+          for (const chunk of this.#accumulatedPcm) {
+            if (offset + chunk.length <= analysisSamples) {
+              buffer.copyToChannel(chunk, 0, offset)
+            } else {
+              buffer.copyToChannel(
+                chunk.subarray(0, Math.max(0, analysisSamples - offset)),
+                0,
+                offset,
+              )
+            }
+            offset += chunk.length
+          }
           this.emit('recordingComplete', { buffer })
         }
         this.#spectrogramWorker.terminate()
