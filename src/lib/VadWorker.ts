@@ -86,22 +86,17 @@ async function runAnalysis(
   let frameIndex = 0
   const pending: PendingFrame[] = []
 
-  for await (const inp of reader) {
-    vadResampler.feed(inp)
-    const n = vadResampler.drain(vadDrainBuf)
-    if (n > 0) {
-      await vad.feed(vadDrainBuf.subarray(0, n))
-      if (vad.speechProbability >= POSITIVE_THRESHOLD) {
-        speaking = true
-      } else if (vad.speechProbability < NEGATIVE_THRESHOLD) {
-        speaking = false
-      }
-    }
+  // Frames accumulated since the last resampler drain; attached to the next
+  // VAD chunk so patches are emitted only after the corresponding inference.
+  let accumulatedFrames: number[] = []
 
-    samplesPending += inp.length
-    while (samplesPending > timeStepSamples) {
-      const speechProb = vad.speechProbability
+  // Sequential chain of VAD inference calls.  Growing it never blocks the
+  // ring-reader loop, so the SAB can't overrun even if the model is
+  // downloading and the first vad.feed() stalls for several seconds.
+  let vadChain: Promise<void> = Promise.resolve()
 
+  function emitFrames(frames: number[], speechProb: number) {
+    for (const fi of frames) {
       if (speaking) {
         // Retroactively emit all held frames as voiced (pre-roll)
         for (const pf of pending) {
@@ -116,13 +111,13 @@ async function runAnalysis(
 
         postMessage({
           type: 'patch',
-          frameIndex,
+          frameIndex: fi,
           speechDetected: true,
           speechProbability: speechProb,
         } satisfies PatchFrameMessage)
       } else {
         // Hold this frame: it may fall within the pre-roll of upcoming voicing
-        pending.push({ frameIndex, speechProbability: speechProb })
+        pending.push({ frameIndex: fi, speechProbability: speechProb })
 
         // Flush the oldest frame once the window exceeds PREROLL_MS
         while (pending.length > prerollFrames) {
@@ -135,11 +130,52 @@ async function runAnalysis(
           } satisfies PatchFrameMessage)
         }
       }
+    }
+  }
 
+  function enqueueVadChunk(buf: Float32Array, frames: number[]) {
+    vadChain = vadChain.then(() =>
+      vad.feed(buf).then(
+        () => {
+          if (vad.speechProbability >= POSITIVE_THRESHOLD) speaking = true
+          else if (vad.speechProbability < NEGATIVE_THRESHOLD) speaking = false
+          emitFrames(frames, vad.speechProbability)
+        },
+        () => {
+          emitFrames(frames, 0)
+        },
+      ),
+    )
+  }
+
+  for await (const inp of reader) {
+    vadResampler.feed(inp)
+    const n = vadResampler.drain(vadDrainBuf)
+
+    samplesPending += inp.length
+    while (samplesPending > timeStepSamples) {
+      accumulatedFrames.push(frameIndex)
       frameIndex++
       samplesPending -= timeStepSamples
     }
+
+    if (n > 0) {
+      enqueueVadChunk(vadDrainBuf.slice(0, n), accumulatedFrames)
+      accumulatedFrames = []
+    }
   }
+
+  // Any frames not yet assigned to a VAD chunk (resampler lag at end of
+  // stream) get emitted using the last known speaking state.
+  if (accumulatedFrames.length > 0) {
+    const frames = accumulatedFrames
+    vadChain = vadChain.then(() => {
+      emitFrames(frames, vad.speechProbability)
+    })
+  }
+
+  // Wait for all queued inference to finish before flushing.
+  await vadChain.catch(() => {})
 
   // Flush any remaining held frames as unvoiced
   for (const pf of pending) {
