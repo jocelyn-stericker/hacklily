@@ -186,8 +186,9 @@
 
 html,
 body,
-#app {
-  min-height: 100%;
+#root {
+  height: 100dvh;
+  overflow: hidden;
 }
 
 body {
@@ -209,7 +210,6 @@ body {
       var(--foam) 44%,
       var(--bg-base) 100%
     );
-  overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }

@@ -334,7 +334,7 @@ function App() {
         open={status.value === 'editAudioSettings'}
         onOpenChange={handleOpenAudioSettings}
       />
-      <main className="min-h-screen flex flex-col">
+      <main className="h-dvh flex flex-col overflow-hidden">
         <Toolbar
           openFilePicker={openFilePicker}
           onNew={handleNew}
