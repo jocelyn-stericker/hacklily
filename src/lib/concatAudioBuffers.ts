@@ -15,24 +15,36 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import { resample } from './ResampleProcessor'
+
 export function concatAudioBuffers(
   a: AudioBuffer,
   b: AudioBuffer,
 ): AudioBuffer {
-  const sampleRate = a.sampleRate
+  const sampleRate = Math.max(a.sampleRate, b.sampleRate)
   const numberOfChannels = Math.max(a.numberOfChannels, b.numberOfChannels)
-  const length = a.length + b.length
-  const offlineCtx = new OfflineAudioContext(
-    numberOfChannels,
-    length,
-    sampleRate,
-  )
-  console.log(offlineCtx)
-  const result = offlineCtx.createBuffer(numberOfChannels, length, sampleRate)
-  for (let c = 0; c < numberOfChannels; c++) {
-    const out = result.getChannelData(c)
-    if (c < a.numberOfChannels) out.set(a.getChannelData(c), 0)
-    if (c < b.numberOfChannels) out.set(b.getChannelData(c), a.length)
+
+  const aLen = Math.round((a.length * sampleRate) / a.sampleRate)
+  const length = aLen + Math.round((b.length * sampleRate) / b.sampleRate)
+
+  const result = new AudioBuffer({ numberOfChannels, length, sampleRate })
+  const parts: [AudioBuffer, number][] = [
+    [a, 0],
+    [b, aLen],
+  ]
+  for (let channel = 0; channel < numberOfChannels; channel += 1) {
+    const out = result.getChannelData(channel)
+    for (const [buf, offset] of parts) {
+      if (channel < buf.numberOfChannels) {
+        const data = buf.getChannelData(channel)
+        out.set(
+          buf.sampleRate === sampleRate
+            ? data
+            : resample(data, buf.sampleRate, sampleRate),
+          offset,
+        )
+      }
+    }
   }
   return result
 }

@@ -81,7 +81,7 @@ export function resample(
   fromRate: number,
   toRate: number,
   precision = 50,
-): Float32Array {
+): Float32Array<ArrayBuffer> {
   const upfactor = toRate / fromRate
   if (Math.abs(upfactor - 1.0) < 1e-6) return samples.slice()
   const n = samples.length

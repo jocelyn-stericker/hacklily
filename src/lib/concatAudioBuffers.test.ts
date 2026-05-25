@@ -30,6 +30,10 @@ vi.hoisted(() => {
     'OfflineAudioContext',
     require('standardized-audio-context-mock').AudioContext,
   )
+  vi.stubGlobal(
+    'AudioBuffer',
+    require('standardized-audio-context-mock').AudioBuffer,
+  )
 })
 
 describe('concatAudioBuffers', () => {
