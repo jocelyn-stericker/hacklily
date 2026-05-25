@@ -99,6 +99,10 @@ function formatTime(sec: number) {
   return `${Math.round(sec * 100) / 100}s`
 }
 
+function formatTimeFixed(sec: number) {
+  return `${sec.toFixed(2)}s`
+}
+
 const CANDIDATE_GRID_HZ = [
   20, 30, 40, 50, 60, 80, 100, 120, 150, 200, 250, 300, 400, 500, 700, 1000,
   1200, 1500, 2000, 2500, 3000, 4000, 5000, 7000, 10000, 12000, 15000, 20000,
@@ -545,7 +549,7 @@ function XAxisTickAndLabel({ guide }: { guide: TimeGuide }) {
             'dark:text-[#00000099] dark:bg-[#ffffff99] text-[#ffffff99] bg-black',
         )}
       >
-        {formatTime(guide.t)}
+        {guide.type === 'step' ? formatTime(guide.t) : formatTimeFixed(guide.t)}
       </span>
       {/* Tick mark */}
       <div
