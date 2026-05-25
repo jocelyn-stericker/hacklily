@@ -432,7 +432,7 @@ export class MicCapturePipeline extends TypedEventTarget<MicCaptureOutEvents> {
           freqStepHz: data.freqStepHz,
           firstBinHz: data.firstBinHz,
         }
-        this.#accumulatedChunks.push({ ...params, frames: [] })
+        this.#accumulatedChunks.push({ ...params, startTimeSec: 0, frames: [] })
         this.#pendingPatches.clear()
 
         if (this.#formantWorker && this.#sab) {

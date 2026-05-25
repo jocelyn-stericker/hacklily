@@ -42,7 +42,11 @@ export type AnalysisFrame = {
   f3: number | null
 }
 
-export type AnalysisChunk = AnalysisParams & { frames: AnalysisFrame[] }
+export type AnalysisChunk = AnalysisParams & {
+  frames: AnalysisFrame[]
+  // Time in seconds of the first frame of this chunk, relative to the start of the session.
+  startTimeSec: number
+}
 
 // Frames confirmed voiced by both pitch and VAD, with F1 and F2 present. Used as a type predicate in VowelChart.
 export type VoicedAnalysisFrame = AnalysisFrame & {
@@ -66,6 +70,30 @@ export function getFrame(
     remaining -= chunk.frames.length
   }
   return undefined
+}
+
+// Returns the start time (in seconds) of the frame at globalIndex.
+// Uses strict < so a boundary index (= offset of the next chunk) falls
+// through to the start of the next chunk rather than the end of the prev.
+export function frameTimeSec(
+  chunks: AnalysisChunk[],
+  globalIndex: number,
+): number {
+  let offset = 0
+  for (const chunk of chunks) {
+    const timeStepSec = chunk.timeStepSamples / chunk.sampleRate
+    const chunkEnd = offset + chunk.frames.length
+    if (globalIndex < chunkEnd) {
+      return chunk.startTimeSec + (globalIndex - offset) * timeStepSec
+    }
+    offset = chunkEnd
+  }
+  const last = chunks[chunks.length - 1]
+  if (!last) return 0
+  return (
+    last.startTimeSec +
+    last.frames.length * (last.timeStepSamples / last.sampleRate)
+  )
 }
 
 export function computeDbBounds(

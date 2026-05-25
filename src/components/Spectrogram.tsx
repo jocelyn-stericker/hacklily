@@ -3,8 +3,8 @@
 import { useEffect, useImperativeHandle, useRef, useState } from 'react'
 import type { RefObject } from 'react'
 
-import type { AnalysisChunk } from '#/lib/AnalysisFrame'
-import { getFrame, totalFrames } from '#/lib/AnalysisFrame'
+import type { AnalysisChunk, AnalysisFrame } from '#/lib/AnalysisFrame'
+import { frameTimeSec, totalFrames } from '#/lib/AnalysisFrame'
 import { nextPow2 } from '#/lib/mathUtils'
 
 import { INFERNO_COLOURMAP, WYOR_COLOURMAP } from './colourmap'
@@ -53,19 +53,15 @@ export interface SpectrogramHandle {
   patch: (from: number, to: number) => void
 }
 
-interface ColorsState {
-  // Transposed: data[b * capacity + f] — sequential reads during row-major render.
+// Per-chunk color data. Transposed layout: data[b * capacity + f] for sequential reads.
+interface ChunkColorsState {
+  chunk: AnalysisChunk
   data: Uint32Array
   capacity: number
   numFrames: number
   numBins: number
-  firstBinHz: number
-  freqStepHz: number
-  timeStepSamples: number
-  sampleRate: number
   dbMin: number
   dbRange: number
-  analysis: AnalysisChunk[]
 }
 
 interface Tile {
@@ -92,10 +88,10 @@ interface DisplayBufState {
   ctx: OffscreenCanvasRenderingContext2D
   width: number
   height: number
-  // Actual frame index at display pixel 0 (updated to account for integer rounding,
+  // Time in seconds at display pixel 0 (updated to account for integer rounding,
   // keeping rounding error bounded to ±0.5px across frames).
-  lastSrcX0: number
-  lastDxPerFrame: number
+  lastSrcTimeSec: number
+  lastDxPerSec: number
   lastTilesGen: number
 }
 
@@ -134,14 +130,14 @@ function buildBinForY(
 }
 
 function computeColorsRange(
-  state: ColorsState,
+  state: ChunkColorsState,
   from: number,
   to: number,
   theme: Theme,
 ): void {
-  const { data, capacity, numBins, dbMin, dbRange, analysis } = state
+  const { data, capacity, numBins, dbMin, dbRange, chunk } = state
   for (let f = from; f < to; f++) {
-    const spectrum = getFrame(analysis, f)!.spectrum
+    const spectrum = chunk.frames[f]!.spectrum
     for (let b = 0; b < numBins; b++) {
       const raw = spectrum[b]!
       const db = LN10_10 * Math.log(raw)
@@ -151,7 +147,7 @@ function computeColorsRange(
   }
 }
 
-function ensureColorsCapacity(state: ColorsState, needed: number): void {
+function ensureColorsCapacity(state: ChunkColorsState, needed: number): void {
   if (state.capacity >= needed) return
   const newCap = nextPow2(needed)
   const newData = new Uint32Array(state.numBins * newCap)
@@ -187,7 +183,7 @@ function ensureTiles(
 
 function paintColumnsToOffscreen(
   off: OffscreenState,
-  colors: ColorsState,
+  colors: ChunkColorsState,
   from: number,
   to: number,
   theme: Theme,
@@ -225,16 +221,17 @@ function paintColumnsToOffscreen(
 //   can skip redrawing historical frames that haven't changed.
 // toFrame: exclusive upper bound — frames at or after this index are not
 //   touched, letting the caller handle them via appendFormantTiles.
+// frames: the chunk-local frames array.
 function paintFormantTiles(
   off: FormantOffscreenState,
-  analysis: AnalysisChunk[],
+  frames: AnalysisFrame[],
   fromTile: number,
   freqToY: (hz: number) => number,
   dpr: number,
   fromFrame = 0,
   toFrame = Infinity,
 ): void {
-  const numFrames = Math.min(totalFrames(analysis), toFrame)
+  const numFrames = Math.min(frames.length, toFrame)
   for (let t = fromTile; t < off.tiles.length; t++) {
     const tile = off.tiles[t]!
     const frameEnd = Math.min(numFrames, tile.startFrame + TILE_WIDTH)
@@ -258,7 +255,7 @@ function paintFormantTiles(
       // prevF - tile.startFrame = -1 gives the same cross-tile join as before.
       const prevF = tileFromFrame - 1
       if (prevF >= 0) {
-        const prevSample = getFrame(analysis, prevF)
+        const prevSample = frames[prevF]
         if (
           prevSample?.pitchDetected &&
           prevSample.speechDetected &&
@@ -269,7 +266,7 @@ function paintFormantTiles(
         }
       }
       for (let f = tileFromFrame; f < frameEnd; f++) {
-        const sample = getFrame(analysis, f)!
+        const sample = frames[f]!
         if (
           !(sample.pitchDetected && sample.speechDetected) ||
           sample[key] === null
@@ -297,9 +294,10 @@ function paintFormantTiles(
 
 // Additive paint of new frames [from, to) onto existing tile content.
 // Does NOT clear tiles, so cost is O(to - from), not O(tile frames). Used by append.
+// frames: the chunk-local frames array.
 function appendFormantTiles(
   off: FormantOffscreenState,
-  analysis: AnalysisChunk[],
+  frames: AnalysisFrame[],
   from: number,
   to: number,
   freqToY: (hz: number) => number,
@@ -320,7 +318,7 @@ function appendFormantTiles(
       // places the moveTo just off-canvas so the stroke joins at the edge.
       const prevF = absFrom - 1
       if (prevF >= 0) {
-        const prevSample = getFrame(analysis, prevF)
+        const prevSample = frames[prevF]
         if (
           prevSample?.pitchDetected &&
           prevSample.speechDetected &&
@@ -331,7 +329,7 @@ function appendFormantTiles(
         }
       }
       for (let f = absFrom; f < absTo; f++) {
-        const sample = getFrame(analysis, f)!
+        const sample = frames[f]!
         if (
           !(sample.pitchDetected && sample.speechDetected) ||
           sample[key] === null
@@ -355,6 +353,33 @@ function appendFormantTiles(
       tile.ctx.shadowBlur = 0
     }
   }
+}
+
+// Maps a global frame range [globalFrom, globalTo) to per-chunk local ranges.
+function globalRangeToChunkRanges(
+  analysis: AnalysisChunk[],
+  globalFrom: number,
+  globalTo: number,
+): Array<{ chunkIdx: number; localFrom: number; localTo: number }> {
+  const result: Array<{
+    chunkIdx: number
+    localFrom: number
+    localTo: number
+  }> = []
+  let offset = 0
+  for (let i = 0; i < analysis.length; i++) {
+    const chunk = analysis[i]!
+    const chunkEnd = offset + chunk.frames.length
+    if (globalFrom < chunkEnd && globalTo > offset) {
+      const localFrom = Math.max(0, globalFrom - offset)
+      const localTo = Math.min(chunk.frames.length, globalTo - offset)
+      if (localFrom < localTo) {
+        result.push({ chunkIdx: i, localFrom, localTo })
+      }
+    }
+    offset = chunkEnd
+  }
+  return result
 }
 
 function blitTiles(
@@ -387,52 +412,92 @@ function blitTiles(
   }
 }
 
-// Paint frames [from, to) into the display buffer without a full repaint.
+// Blit all per-chunk spectrogram and formant tiles into ctx.
+// srcTimeSec: time at display pixel 0.
+// srcWidthSec: time span of the display.
+function blitChunks(
+  ctx: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D,
+  offs: (OffscreenState | null)[],
+  formantOffs: (FormantOffscreenState | null)[],
+  analysis: AnalysisChunk[],
+  srcTimeSec: number,
+  srcWidthSec: number,
+  dxPerSec: number,
+  displayHeight: number,
+): void {
+  for (let i = 0; i < offs.length; i++) {
+    const off = offs[i]
+    const chunk = analysis[i]
+    if (!off || !chunk) continue
+    const timeStepSec = chunk.timeStepSamples / chunk.sampleRate
+    const dxPerFrame = dxPerSec * timeStepSec
+    if (dxPerFrame <= 0) continue
+    // chunkSrcX0: the (possibly fractional) chunk-local frame index at display pixel 0.
+    const chunkSrcX0 = (srcTimeSec - chunk.startTimeSec) / timeStepSec
+    const chunkSrcW = srcWidthSec / timeStepSec
+    blitTiles(
+      ctx,
+      off.tiles,
+      off.canvasHeight,
+      chunkSrcX0,
+      chunkSrcW,
+      dxPerFrame,
+      displayHeight,
+    )
+    const formantOff = formantOffs[i]
+    if (formantOff) {
+      blitTiles(
+        ctx,
+        formantOff.tiles,
+        formantOff.canvasHeight,
+        chunkSrcX0,
+        chunkSrcW,
+        dxPerFrame,
+        displayHeight,
+      )
+    }
+  }
+}
+
+// Paint frames in [fromTimeSec, toTimeSec) into the display buffer without a full repaint.
 // Used by append so newly arrived frames appear immediately even if the view is stationary.
+// fromTimeSec should be frameTimeSec(analysis, effectiveFrom - 1) to include the moveTo anchor.
 function updateDisplayBufForFrames(
   db: DisplayBufState | null,
-  off: OffscreenState,
-  formantOff: FormantOffscreenState | null,
-  from: number,
-  to: number,
+  offs: (OffscreenState | null)[],
+  formantOffs: (FormantOffscreenState | null)[],
+  analysis: AnalysisChunk[],
+  fromTimeSec: number,
+  toTimeSec: number,
   theme: Theme,
 ): void {
-  if (!db || isNaN(db.lastSrcX0) || isNaN(db.lastDxPerFrame)) return
-  const { lastSrcX0, lastDxPerFrame, width, height } = db
+  if (!db || isNaN(db.lastSrcTimeSec) || isNaN(db.lastDxPerSec)) return
+  const { lastSrcTimeSec, lastDxPerSec, width, height } = db
   const x1 = Math.max(
     0,
-    Math.floor((from - lastSrcX0) * lastDxPerFrame - lastDxPerFrame),
+    Math.floor((fromTimeSec - lastSrcTimeSec) * lastDxPerSec) - 1,
   )
   const x2 = Math.min(
     width,
-    Math.ceil((to - lastSrcX0) * lastDxPerFrame + lastDxPerFrame),
+    Math.ceil((toTimeSec - lastSrcTimeSec) * lastDxPerSec) + 1,
   )
   if (x1 >= x2) return
-  const stripSrcX0 = lastSrcX0 + x1 / lastDxPerFrame
-  const stripSrcW = (x2 - x1) / lastDxPerFrame
+  const stripSrcTimeSec = lastSrcTimeSec + x1 / lastDxPerSec
+  const stripWidthSec = (x2 - x1) / lastDxPerSec
   db.ctx.fillStyle = theme.bgStyle
   db.ctx.fillRect(x1, 0, x2 - x1, height)
   db.ctx.save()
   db.ctx.translate(x1, 0)
-  blitTiles(
+  blitChunks(
     db.ctx,
-    off.tiles,
-    off.canvasHeight,
-    stripSrcX0,
-    stripSrcW,
-    lastDxPerFrame,
+    offs,
+    formantOffs,
+    analysis,
+    stripSrcTimeSec,
+    stripWidthSec,
+    lastDxPerSec,
     height,
   )
-  if (formantOff)
-    blitTiles(
-      db.ctx,
-      formantOff.tiles,
-      formantOff.canvasHeight,
-      stripSrcX0,
-      stripSrcW,
-      lastDxPerFrame,
-      height,
-    )
   db.ctx.restore()
 }
 
@@ -442,28 +507,27 @@ function draw(
   tilesGen: number,
   width: number,
   height: number,
-  off: OffscreenState | null,
-  formantOff: FormantOffscreenState | null,
+  offs: (OffscreenState | null)[],
+  formantOffs: (FormantOffscreenState | null)[],
+  analysis: AnalysisChunk[],
   timeToX: (timeSec: number) => number,
-  timeStepSec: number,
   theme: Theme,
 ): void {
-  if (!off || timeStepSec <= 0) {
+  if (offs.length === 0) {
     mainCtx.fillStyle = theme.bgStyle
     mainCtx.fillRect(0, 0, width, height)
     return
   }
 
-  // Offscreen x = frame_index; timeToX is linear so one timeStepSec = dxPerFrame px.
-  // srcX0 is the (possibly fractional) frame index at the left display edge.
-  const dxPerFrame = timeToX(timeStepSec) - timeToX(0)
-  if (dxPerFrame <= 0) {
+  // timeToX is linear so dxPerSec is uniform across all chunks.
+  const dxPerSec = timeToX(1) - timeToX(0)
+  if (dxPerSec <= 0) {
     mainCtx.fillStyle = theme.bgStyle
     mainCtx.fillRect(0, 0, width, height)
     return
   }
-  const srcX0 = -timeToX(0) / dxPerFrame
-  const srcW = width / dxPerFrame
+  const srcTimeSec = -timeToX(0) / dxPerSec
+  const srcWidthSec = width / dxPerSec
 
   // Ensure display buffer matches current canvas dimensions.
   let db = displayBufRef.current
@@ -476,8 +540,8 @@ function draw(
       ctx,
       width,
       height,
-      lastSrcX0: NaN,
-      lastDxPerFrame: NaN,
+      lastSrcTimeSec: NaN,
+      lastDxPerSec: NaN,
       lastTilesGen: -1,
     }
     displayBufRef.current = db
@@ -485,76 +549,58 @@ function draw(
 
   const sameTiles = db.lastTilesGen === tilesGen
   const sameDx =
-    !isNaN(db.lastDxPerFrame) && Math.abs(db.lastDxPerFrame - dxPerFrame) < 1e-6
+    !isNaN(db.lastDxPerSec) && Math.abs(db.lastDxPerSec - dxPerSec) < 1e-6
   const pixelShift =
-    sameTiles && sameDx && !isNaN(db.lastSrcX0)
-      ? Math.round((db.lastSrcX0 - srcX0) * dxPerFrame)
+    sameTiles && sameDx && !isNaN(db.lastSrcTimeSec)
+      ? Math.round((db.lastSrcTimeSec - srcTimeSec) * dxPerSec)
       : NaN
   const canIncremental = !isNaN(pixelShift) && Math.abs(pixelShift) < width
 
   if (!canIncremental) {
-    // Full repaint: composit spectrogram + formant layers into the display buffer.
+    // Full repaint: composite all chunk layers into the display buffer.
     db.ctx.fillStyle = theme.bgStyle
     db.ctx.fillRect(0, 0, width, height)
-    blitTiles(
+    blitChunks(
       db.ctx,
-      off.tiles,
-      off.canvasHeight,
-      srcX0,
-      srcW,
-      dxPerFrame,
+      offs,
+      formantOffs,
+      analysis,
+      srcTimeSec,
+      srcWidthSec,
+      dxPerSec,
       height,
     )
-    if (formantOff)
-      blitTiles(
-        db.ctx,
-        formantOff.tiles,
-        formantOff.canvasHeight,
-        srcX0,
-        srcW,
-        dxPerFrame,
-        height,
-      )
-    db.lastSrcX0 = srcX0
-    db.lastDxPerFrame = dxPerFrame
+    db.lastSrcTimeSec = srcTimeSec
+    db.lastDxPerSec = dxPerSec
     db.lastTilesGen = tilesGen
   } else if (pixelShift !== 0) {
     // Incremental scroll: shift existing content and paint only the newly revealed strip.
     // The self-copy is spec-required to snapshot before writing (no aliasing).
     db.ctx.drawImage(db.buf, pixelShift, 0)
     // Track actual buffer position so rounding error stays bounded to ±0.5px per frame.
-    db.lastSrcX0 -= pixelShift / dxPerFrame
+    db.lastSrcTimeSec -= pixelShift / dxPerSec
 
     const stripX = pixelShift < 0 ? width + pixelShift : 0
     const stripW = Math.abs(pixelShift)
-    const stripSrcX0 = srcX0 + stripX / dxPerFrame
-    const stripSrcW = stripW / dxPerFrame
+    const stripSrcTimeSec = srcTimeSec + stripX / dxPerSec
+    const stripWidthSec = stripW / dxPerSec
 
     db.ctx.fillStyle = theme.bgStyle
     db.ctx.fillRect(stripX, 0, stripW, height)
-    // Translate so blitTiles can use its normal destX = (frame - srcX0)*dxPerFrame logic,
-    // which places frame stripSrcX0 at pixel 0 — and our translate shifts that to stripX.
+    // Translate so blitChunks can use its normal coord logic
+    // (place time stripSrcTimeSec at pixel 0) and our translate shifts that to stripX.
     db.ctx.save()
     db.ctx.translate(stripX, 0)
-    blitTiles(
+    blitChunks(
       db.ctx,
-      off.tiles,
-      off.canvasHeight,
-      stripSrcX0,
-      stripSrcW,
-      dxPerFrame,
+      offs,
+      formantOffs,
+      analysis,
+      stripSrcTimeSec,
+      stripWidthSec,
+      dxPerSec,
       height,
     )
-    if (formantOff)
-      blitTiles(
-        db.ctx,
-        formantOff.tiles,
-        formantOff.canvasHeight,
-        stripSrcX0,
-        stripSrcW,
-        dxPerFrame,
-        height,
-      )
     db.ctx.restore()
   }
   // pixelShift === 0: view unchanged, re-blit existing displayBuf as-is.
@@ -586,9 +632,9 @@ export function Spectrogram({
   const scheme = useColourScheme()
   const theme = scheme === 'dark' ? DARK_THEME : LIGHT_THEME
 
-  const colorsRef = useRef<ColorsState | null>(null)
-  const offRef = useRef<OffscreenState | null>(null)
-  const formantOffRef = useRef<FormantOffscreenState | null>(null)
+  const allColorsRef = useRef<ChunkColorsState[]>([])
+  const allOffRef = useRef<(OffscreenState | null)[]>([])
+  const allFormantOffRef = useRef<(FormantOffscreenState | null)[]>([])
   const displayBufRef = useRef<DisplayBufState | null>(null)
   const tilesGenRef = useRef(0)
 
@@ -612,59 +658,67 @@ export function Spectrogram({
     }
   }, [debug])
 
-  // Fully recompute colors when analysis changes
+  // Fully recompute colors for all chunks when analysis reference changes (import).
   useEffect(() => {
     if (analysis.length === 0) {
-      colorsRef.current = null
-      offRef.current = null
-      formantOffRef.current = null
+      allColorsRef.current = []
+      allOffRef.current = []
+      allFormantOffRef.current = []
       return
     }
-    const numFrames = totalFrames(analysis)
-    const numBins = analysis[0]!.frames[0]!.spectrum.length
-    const { firstBinHz, freqStepHz, timeStepSamples, sampleRate } = analysis[0]!
-    const capacity = nextPow2(numFrames)
-    const colors: ColorsState = {
-      data: new Uint32Array(numBins * capacity),
-      capacity,
-      numFrames,
-      numBins,
-      firstBinHz,
-      freqStepHz,
-      timeStepSamples,
-      sampleRate,
-      dbMin,
-      dbRange,
-      analysis,
+    const newColors: ChunkColorsState[] = []
+    for (const chunk of analysis) {
+      const numFrames = chunk.frames.length
+      const numBins = chunk.frames[0]!.spectrum.length
+      const capacity = nextPow2(numFrames)
+      const colors: ChunkColorsState = {
+        chunk,
+        data: new Uint32Array(numBins * capacity),
+        capacity,
+        numFrames,
+        numBins,
+        dbMin,
+        dbRange,
+      }
+      computeColorsRange(colors, 0, numFrames, theme)
+      newColors.push(colors)
     }
-    computeColorsRange(colors, 0, numFrames, theme)
-    colorsRef.current = colors
+    allColorsRef.current = newColors
   }, [analysis, dbMin, dbRange, theme])
 
   // ---- FALLS THROUGH TO NEXT EFFECT ----
 
   // When freq scale, canvas height, or dpr changes, rebuild tile canvases.
   useEffect(() => {
-    const colors = colorsRef.current
-    if (!colors || colors.numFrames === 0 || canvasHeight <= 0) return
+    const allColors = allColorsRef.current
+    if (allColors.length === 0 || canvasHeight <= 0) return
 
-    const binForY = buildBinForY(
-      colors.numBins,
-      colors.firstBinHz,
-      colors.freqStepHz,
-      freqToY,
-      canvasHeight,
-    )
-    const off: OffscreenState = { tiles: [], binForY, canvasHeight }
-    ensureTiles(off, colors.numFrames, theme)
-    offRef.current = off
-    paintColumnsToOffscreen(off, colors, 0, colors.numFrames, theme)
+    const newOff: (OffscreenState | null)[] = []
+    const newFormantOff: (FormantOffscreenState | null)[] = []
 
-    const formantOff: FormantOffscreenState = { tiles: [], canvasHeight }
-    ensureTiles(formantOff, colors.numFrames, theme)
-    formantOffRef.current = formantOff
-    paintFormantTiles(formantOff, analysis, 0, freqToY, dpr)
+    for (const colors of allColors) {
+      const { chunk } = colors
 
+      const binForY = buildBinForY(
+        colors.numBins,
+        chunk.firstBinHz,
+        chunk.freqStepHz,
+        freqToY,
+        canvasHeight,
+      )
+      const off: OffscreenState = { tiles: [], binForY, canvasHeight }
+      ensureTiles(off, colors.numFrames, theme)
+      newOff.push(off)
+      paintColumnsToOffscreen(off, colors, 0, colors.numFrames, theme)
+
+      const formantOff: FormantOffscreenState = { tiles: [], canvasHeight }
+      ensureTiles(formantOff, colors.numFrames, theme)
+      newFormantOff.push(formantOff)
+      paintFormantTiles(formantOff, chunk.frames, 0, freqToY, dpr)
+    }
+
+    allOffRef.current = newOff
+    allFormantOffRef.current = newFormantOff
     tilesGenRef.current += 1
 
     // Note: this must include everything in the previous effect
@@ -698,12 +752,10 @@ export function Spectrogram({
           tilesGenRef.current,
           canvasWidth,
           canvasHeight,
-          offRef.current,
-          formantOffRef.current,
+          allOffRef.current,
+          allFormantOffRef.current,
+          analysis,
           timeToX,
-          colorsRef.current
-            ? colorsRef.current.timeStepSamples / colorsRef.current.sampleRate
-            : 0,
           theme,
         )
         if (debug) {
@@ -743,125 +795,145 @@ export function Spectrogram({
       fromRef.current = null
       pendingToRef.current = 0
 
-      if (!colorsRef.current) {
-        if (pendingTo !== Infinity) return // patch with no analysis → bail
-        const numFrames = totalFrames(analysis)
-        const numBins = analysis[0]!.frames[0]!.spectrum.length
-        const { firstBinHz, freqStepHz, timeStepSamples, sampleRate } =
-          analysis[0]!
-        const capacity = nextPow2(numFrames)
-        const colors: ColorsState = {
+      const allColors = allColorsRef.current
+      const allOff = allOffRef.current
+      const allFormantOff = allFormantOffRef.current
+
+      // Lazily grow per-chunk state for any new chunks that have received frames.
+      while (allColors.length < analysis.length) {
+        const i = allColors.length
+        const chunk = analysis[i]!
+        if (!chunk.frames[0]) break // no frames yet, can't determine numBins
+        const numBins = chunk.frames[0].spectrum.length
+        const capacity = nextPow2(Math.max(1, chunk.frames.length))
+        const colors: ChunkColorsState = {
+          chunk,
           data: new Uint32Array(numBins * capacity),
           capacity,
-          numFrames,
+          numFrames: 0,
           numBins,
-          firstBinHz,
-          freqStepHz,
-          timeStepSamples,
-          sampleRate,
           dbMin,
           dbRange,
-          analysis,
         }
-        computeColorsRange(colors, 0, numFrames, theme)
-        colorsRef.current = colors
+        allColors.push(colors)
+        allOff.push(null)
+        allFormantOff.push(null)
       }
 
-      const colors = colorsRef.current
-      const prevNumFrames = colors.numFrames
-      const effectiveTo =
-        pendingTo === Infinity ? totalFrames(colors.analysis) : pendingTo
-      if (effectiveFrom >= effectiveTo) return
+      if (allColors.length === 0) return
 
-      const isExtending = effectiveTo > prevNumFrames
-      if (isExtending) ensureColorsCapacity(colors, effectiveTo)
-      computeColorsRange(colors, effectiveFrom, effectiveTo, theme)
-      if (isExtending) colors.numFrames = effectiveTo
+      const globalTotal =
+        pendingTo === Infinity ? totalFrames(analysis) : pendingTo
+      const ranges = globalRangeToChunkRanges(
+        analysis,
+        effectiveFrom,
+        globalTotal,
+      )
+      if (ranges.length === 0) return
 
-      if (!offRef.current && canvasHeight > 0) {
-        const binForY = buildBinForY(
-          colors.numBins,
-          colors.firstBinHz,
-          colors.freqStepHz,
-          freqToY,
-          canvasHeight,
-        )
-        const off: OffscreenState = { tiles: [], binForY, canvasHeight }
-        ensureTiles(off, effectiveTo, theme)
-        offRef.current = off
-        paintColumnsToOffscreen(off, colors, 0, effectiveTo, theme)
-        const formantOff: FormantOffscreenState = { tiles: [], canvasHeight }
-        ensureTiles(formantOff, effectiveTo, theme)
-        formantOffRef.current = formantOff
-        paintFormantTiles(formantOff, analysis, 0, freqToY, dpr)
-        tilesGenRef.current += 1
-      } else if (offRef.current) {
-        if (isExtending) ensureTiles(offRef.current, effectiveTo, theme)
-        paintColumnsToOffscreen(
-          offRef.current,
-          colors,
-          effectiveFrom,
-          effectiveTo,
-          theme,
-        )
+      let needFullRedraw = false
 
-        if (!formantOffRef.current) {
-          const formantOff: FormantOffscreenState = { tiles: [], canvasHeight }
-          ensureTiles(formantOff, effectiveTo, theme)
-          formantOffRef.current = formantOff
-          paintFormantTiles(formantOff, analysis, 0, freqToY, dpr)
-          // formantOff newly created: [0, effectiveFrom) was never painted,
-          // so a full repaint is needed to show historical formant lines.
-          tilesGenRef.current += 1
-        } else {
-          if (isExtending)
-            ensureTiles(formantOffRef.current, effectiveTo, theme)
+      for (const { chunkIdx, localFrom, localTo } of ranges) {
+        const colors = allColors[chunkIdx]
+        if (!colors) continue
+        const chunk = analysis[chunkIdx]!
 
-          if (isExtending && effectiveFrom >= prevNumFrames) {
-            // Pure append: additive paint, then update display buffer for new region.
-            appendFormantTiles(
-              formantOffRef.current,
-              analysis,
-              effectiveFrom,
-              effectiveTo,
-              freqToY,
-              dpr,
-            )
-            updateDisplayBufForFrames(
-              displayBufRef.current,
-              offRef.current,
-              formantOffRef.current,
-              effectiveFrom,
-              effectiveTo,
-              theme,
-            )
+        const prevNumFrames = colors.numFrames
+        const isExtending = localTo > prevNumFrames
+
+        if (isExtending) ensureColorsCapacity(colors, localTo)
+        computeColorsRange(colors, localFrom, localTo, theme)
+        if (isExtending) colors.numFrames = localTo
+
+        let off = allOff[chunkIdx] ?? null
+        let formantOff = allFormantOff[chunkIdx] ?? null
+
+        if (!off && canvasHeight > 0) {
+          // First time this chunk has tiles — create from scratch.
+          const binForY = buildBinForY(
+            colors.numBins,
+            chunk.firstBinHz,
+            chunk.freqStepHz,
+            freqToY,
+            canvasHeight,
+          )
+          off = { tiles: [], binForY, canvasHeight }
+          ensureTiles(off, localTo, theme)
+          allOff[chunkIdx] = off
+          paintColumnsToOffscreen(off, colors, 0, localTo, theme)
+
+          formantOff = { tiles: [], canvasHeight }
+          ensureTiles(formantOff, localTo, theme)
+          allFormantOff[chunkIdx] = formantOff
+          paintFormantTiles(formantOff, chunk.frames, 0, freqToY, dpr)
+          needFullRedraw = true
+        } else if (off) {
+          if (isExtending) ensureTiles(off, localTo, theme)
+          paintColumnsToOffscreen(off, colors, localFrom, localTo, theme)
+
+          if (!formantOff) {
+            formantOff = { tiles: [], canvasHeight }
+            ensureTiles(formantOff, localTo, theme)
+            allFormantOff[chunkIdx] = formantOff
+            paintFormantTiles(formantOff, chunk.frames, 0, freqToY, dpr)
+            // formantOff newly created: full repaint needed to show historical lines.
+            needFullRedraw = true
           } else {
-            // Patch or mixed: repaint only the affected range, then append any
-            // new frames separately so we skip redrawing unchanged history.
-            paintFormantTiles(
-              formantOffRef.current,
-              analysis,
-              Math.floor(effectiveFrom / TILE_WIDTH),
-              freqToY,
-              dpr,
-              effectiveFrom,
-              isExtending ? prevNumFrames : undefined,
-            )
-            if (isExtending) {
+            if (isExtending) ensureTiles(formantOff, localTo, theme)
+
+            if (isExtending && localFrom >= prevNumFrames) {
+              // Pure append: additive paint, then update display buffer for new region.
               appendFormantTiles(
-                formantOffRef.current,
-                analysis,
-                prevNumFrames,
-                effectiveTo,
+                formantOff,
+                chunk.frames,
+                localFrom,
+                localTo,
                 freqToY,
                 dpr,
               )
+              // fromTimeSec goes one frame back so the moveTo anchor is included in the strip.
+              const fromTimeSec = frameTimeSec(analysis, effectiveFrom - 1)
+              const toTimeSec =
+                chunk.startTimeSec +
+                localTo * (chunk.timeStepSamples / chunk.sampleRate)
+              updateDisplayBufForFrames(
+                displayBufRef.current,
+                allOff,
+                allFormantOff,
+                analysis,
+                fromTimeSec,
+                toTimeSec,
+                theme,
+              )
+            } else {
+              // Patch or mixed: repaint only the affected range, then append any
+              // new frames separately so we skip redrawing unchanged history.
+              paintFormantTiles(
+                formantOff,
+                chunk.frames,
+                Math.floor(localFrom / TILE_WIDTH),
+                freqToY,
+                dpr,
+                localFrom,
+                isExtending ? prevNumFrames : undefined,
+              )
+              if (isExtending) {
+                appendFormantTiles(
+                  formantOff,
+                  chunk.frames,
+                  prevNumFrames,
+                  localTo,
+                  freqToY,
+                  dpr,
+                )
+              }
+              needFullRedraw = true
             }
-            tilesGenRef.current += 1
           }
         }
       }
 
+      if (needFullRedraw) tilesGenRef.current += 1
       triggerDraw.current()
     }
 

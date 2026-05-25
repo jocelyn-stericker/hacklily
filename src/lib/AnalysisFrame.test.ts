@@ -18,7 +18,7 @@
 import { describe, it, expect } from 'vitest'
 
 import type { AnalysisChunk, AnalysisFrame } from './AnalysisFrame'
-import { computeDbBounds } from './AnalysisFrame'
+import { computeDbBounds, frameTimeSec } from './AnalysisFrame'
 
 const DEFAULT_PARAMS = {
   timeStepSamples: 882,
@@ -27,8 +27,8 @@ const DEFAULT_PARAMS = {
   firstBinHz: 0,
 }
 
-function makeChunk(frames: AnalysisFrame[]): AnalysisChunk {
-  return { ...DEFAULT_PARAMS, frames }
+function makeChunk(frames: AnalysisFrame[], startTimeSec = 0): AnalysisChunk {
+  return { ...DEFAULT_PARAMS, frames, startTimeSec }
 }
 
 function makeFrame(
@@ -173,5 +173,44 @@ describe('computeDbBounds', () => {
       expect(result?.max).toBeCloseTo(20, 1)
       expect(result?.min).toBeCloseTo(-10, 1)
     })
+  })
+})
+
+// timeStepSec = 882 / 44100 = 0.02s per frame
+const STEP = DEFAULT_PARAMS.timeStepSamples / DEFAULT_PARAMS.sampleRate
+
+describe('frameTimeSec', () => {
+  const empty = makeFrame(new Float32Array(1))
+
+  it('returns 0 for empty chunks array', () => {
+    expect(frameTimeSec([], 0)).toBe(0)
+  })
+
+  it('returns correct time for first frame of single chunk', () => {
+    const chunk = makeChunk([empty, empty, empty], 0)
+    expect(frameTimeSec([chunk], 0)).toBeCloseTo(0)
+  })
+
+  it('returns correct time for a mid-chunk frame', () => {
+    const chunk = makeChunk([empty, empty, empty], 5)
+    expect(frameTimeSec([chunk], 2)).toBeCloseTo(5 + 2 * STEP)
+  })
+
+  it('returns end-of-chunk time when index equals chunk length (boundary falls to next chunk)', () => {
+    const chunk0 = makeChunk([empty, empty], 0)
+    const chunk1 = makeChunk([empty, empty], 2 * STEP)
+    // globalIndex 2 == end of chunk0 == start of chunk1
+    expect(frameTimeSec([chunk0, chunk1], 2)).toBeCloseTo(2 * STEP)
+  })
+
+  it('correctly indexes into second chunk', () => {
+    const chunk0 = makeChunk([empty, empty], 0)
+    const chunk1 = makeChunk([empty, empty], 2 * STEP)
+    expect(frameTimeSec([chunk0, chunk1], 3)).toBeCloseTo(2 * STEP + 1 * STEP)
+  })
+
+  it('returns total duration when index is past all frames', () => {
+    const chunk = makeChunk([empty, empty], 0)
+    expect(frameTimeSec([chunk], 10)).toBeCloseTo(2 * STEP)
   })
 })

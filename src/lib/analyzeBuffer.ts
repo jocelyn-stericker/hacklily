@@ -202,6 +202,7 @@ export async function analyzeBuffer(
     sampleRate,
     freqStepHz: specResult.freqStepHz,
     firstBinHz: specResult.f1Hz,
+    startTimeSec: 0,
     frames: results,
   }
 }

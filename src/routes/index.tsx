@@ -179,7 +179,11 @@ function App() {
   )
 
   const handleChunkStart = useCallback((params: AnalysisParams) => {
-    analysisRef.current.push({ ...params, frames: [] })
+    const startTimeSec = analysisRef.current.reduce(
+      (sum, c) => sum + c.frames.length * (c.timeStepSamples / c.sampleRate),
+      0,
+    )
+    analysisRef.current.push({ ...params, startTimeSec, frames: [] })
   }, [])
 
   const schedulePlaybackPositionChanged = usePreemptibleCallback(
