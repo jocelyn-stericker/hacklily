@@ -120,13 +120,23 @@ describe('AudioRingWriter', () => {
       expect(Atomics.load(ctrl, 0)).toBe(4)
     })
 
-    it('writes all-zero quantum (silence)', () => {
+    it('skips all-zero quanta until first non-zero sample', () => {
       const inputSamples = new Float32Array(128)
       const inputs = [[inputSamples]] as any
 
       worklet.process(inputs, [])
 
-      expect(Atomics.load(ctrl, 0)).toBe(128)
+      expect(Atomics.load(ctrl, 0)).toBe(0)
+    })
+
+    it('writes all-zero quantum (silence) after activation', () => {
+      worklet.process([[new Float32Array([0.5])]] as any, [])
+      expect(Atomics.load(ctrl, 0)).toBe(1)
+
+      const inputSamples = new Float32Array(128)
+      worklet.process([[inputSamples]] as any, [])
+
+      expect(Atomics.load(ctrl, 0)).toBe(129)
     })
 
     it('updates write position atomically', () => {

@@ -48,6 +48,7 @@ export class AudioRingWriter extends AudioWorkletProcessor {
   private _data: Float32Array | null = null
   private _bufSamples: number | null = null
   private _bufMask = 0
+  private _activated = false
 
   constructor() {
     super()
@@ -83,6 +84,11 @@ export class AudioRingWriter extends AudioWorkletProcessor {
     const ctrl = this._ctrl
     const data = this._data
     if (!ctrl || !data) return true
+
+    if (!this._activated) {
+      if (!inp.some((s) => s !== 0)) return true
+      this._activated = true
+    }
 
     const wp = Atomics.load(ctrl, 0)
     for (let i = 0; i < inp.length; i++) {
