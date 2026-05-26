@@ -34,6 +34,7 @@ const Toaster = ({ ...props }: ToasterProps) => {
       toastOptions={{
         classNames: {
           toast: 'cn-toast',
+          closeButton: '!bg-white dark:!bg-black dark:!text-white',
         },
       }}
       {...props}

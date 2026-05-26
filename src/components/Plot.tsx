@@ -751,7 +751,7 @@ export function Plot({
   return (
     <div
       className={cn(
-        'w-full relative bg-white dark:bg-black  border border-(--bg-base)',
+        'w-full relative bg-white dark:bg-black border border-(--bg-base)',
         className,
       )}
       ref={setRoot}
