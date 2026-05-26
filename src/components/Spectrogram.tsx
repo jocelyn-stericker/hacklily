@@ -22,7 +22,6 @@ import type { RefObject } from 'react'
 
 import type { AnalysisChunk, AnalysisFrame } from '#/lib/AnalysisFrame'
 import { frameTimeSec, totalFrames } from '#/lib/AnalysisFrame'
-import { nextPow2 } from '#/lib/mathUtils'
 
 import { INFERNO_COLOURMAP, WYOR_COLOURMAP } from './colourmap'
 import { InCanvas, usePlotPad, usePlotSize, useTimeToX, useHzToY } from './Plot'
@@ -70,11 +69,16 @@ export interface SpectrogramHandle {
   patch: (from: number, to: number) => void
 }
 
-// Per-chunk color data. Transposed layout: data[b * capacity + f] for sequential reads.
+// Per-tile color data. Transposed layout: data[b * TILE_WIDTH + localF].
+interface ColorTile {
+  data: Uint32Array // numBins * TILE_WIDTH
+}
+
+// Per-chunk color data split into fixed-size tiles matching the canvas tile structure.
+// Eliminates capacity doubling: each new tile is a fresh TILE_WIDTH-column allocation.
 interface ChunkColorsState {
   chunk: AnalysisChunk
-  data: Uint32Array
-  capacity: number
+  colorTiles: ColorTile[]
   numFrames: number
   numBins: number
   dbMin: number
@@ -110,6 +114,8 @@ interface DisplayBufState {
   lastSrcTimeSec: number
   lastDxPerSec: number
   lastTilesGen: number
+  // True when updateDisplayBufForFrames has written to buf since the last blit.
+  dirty: boolean
 }
 
 const FORMANT_TRACKS = [
@@ -152,33 +158,27 @@ function computeColorsRange(
   to: number,
   theme: Theme,
 ): void {
-  const { data, capacity, numBins, dbMin, dbRange, chunk } = state
+  const { colorTiles, numBins, dbMin, dbRange, chunk } = state
   for (let f = from; f < to; f++) {
     const spectrum = chunk.frames[f]!.spectrum
+    const tileIdx = Math.floor(f / TILE_WIDTH)
+    const localF = f - tileIdx * TILE_WIDTH
+    const tileData = colorTiles[tileIdx]!.data
     for (let b = 0; b < numBins; b++) {
       const raw = spectrum[b]!
       const db = LN10_10 * Math.log(raw)
       const norm = Math.max(0, Math.min(1, (db - dbMin) / dbRange))
-      data[b * capacity + f] = theme.colourmap[Math.round(norm * 255)]!
+      tileData[b * TILE_WIDTH + localF] =
+        theme.colourmap[Math.round(norm * 255)]!
     }
   }
 }
 
-function ensureColorsCapacity(state: ChunkColorsState, needed: number): void {
-  if (state.capacity >= needed) return
-  const newCap = nextPow2(needed)
-  const newData = new Uint32Array(state.numBins * newCap)
-  for (let b = 0; b < state.numBins; b++) {
-    newData.set(
-      state.data.subarray(
-        b * state.capacity,
-        b * state.capacity + state.numFrames,
-      ),
-      b * newCap,
-    )
+function ensureColorTiles(state: ChunkColorsState, needed: number): void {
+  const numTiles = Math.ceil(needed / TILE_WIDTH)
+  while (state.colorTiles.length < numTiles) {
+    state.colorTiles.push({ data: new Uint32Array(state.numBins * TILE_WIDTH) })
   }
-  state.data = newData
-  state.capacity = newCap
 }
 
 function ensureTiles(
@@ -207,15 +207,17 @@ function paintColumnsToOffscreen(
 ): void {
   if (to <= from) return
   const { tiles, binForY, canvasHeight } = off
-  const { data, capacity } = colors
+  const { colorTiles } = colors
   const firstTile = Math.floor(from / TILE_WIDTH)
   const lastTile = Math.floor((to - 1) / TILE_WIDTH)
   for (let t = firstTile; t <= lastTile && t < tiles.length; t++) {
     const tile = tiles[t]!
+    const colorTile = colorTiles[t]!
     const absFrom = Math.max(from, tile.startFrame)
     const absTo = Math.min(to, tile.startFrame + TILE_WIDTH)
     const numCols = absTo - absFrom
     const localFrom = absFrom - tile.startFrame
+    const localTo = localFrom + numCols
     const { imgData, u32 } = tile
     for (let y = 0; y < canvasHeight; y++) {
       const b = binForY[y] ?? -1
@@ -224,7 +226,10 @@ function paintColumnsToOffscreen(
         u32.fill(theme.bgU32, dst, dst + numCols)
       } else {
         u32.set(
-          data.subarray(b * capacity + absFrom, b * capacity + absTo),
+          colorTile.data.subarray(
+            b * TILE_WIDTH + localFrom,
+            b * TILE_WIDTH + localTo,
+          ),
           dst,
         )
       }
@@ -499,6 +504,7 @@ function updateDisplayBufForFrames(
     Math.ceil((toTimeSec - lastSrcTimeSec) * lastDxPerSec) + 1,
   )
   if (x1 >= x2) return
+  db.dirty = true
   const stripSrcTimeSec = lastSrcTimeSec + x1 / lastDxPerSec
   const stripWidthSec = (x2 - x1) / lastDxPerSec
   db.ctx.fillStyle = theme.bgStyle
@@ -560,6 +566,7 @@ function draw(
       lastSrcTimeSec: NaN,
       lastDxPerSec: NaN,
       lastTilesGen: -1,
+      dirty: false,
     }
     displayBufRef.current = db
   }
@@ -620,9 +627,11 @@ function draw(
     )
     db.ctx.restore()
   }
-  // pixelShift === 0: view unchanged, re-blit existing displayBuf as-is.
-
-  mainCtx.drawImage(db.buf, 0, 0)
+  // pixelShift === 0: skip the blit unless updateDisplayBufForFrames wrote new content.
+  if (!canIncremental || pixelShift !== 0 || db.dirty) {
+    mainCtx.drawImage(db.buf, 0, 0)
+    db.dirty = false
+  }
 }
 
 export function Spectrogram({
@@ -687,16 +696,15 @@ export function Spectrogram({
     for (const chunk of analysis) {
       const numFrames = chunk.frames.length
       const numBins = chunk.frames[0]!.spectrum.length
-      const capacity = nextPow2(numFrames)
       const colors: ChunkColorsState = {
         chunk,
-        data: new Uint32Array(numBins * capacity),
-        capacity,
+        colorTiles: [],
         numFrames,
         numBins,
         dbMin,
         dbRange,
       }
+      ensureColorTiles(colors, numFrames)
       computeColorsRange(colors, 0, numFrames, theme)
       newColors.push(colors)
     }
@@ -822,11 +830,9 @@ export function Spectrogram({
         const chunk = analysis[i]!
         if (!chunk.frames[0]) break // no frames yet, can't determine numBins
         const numBins = chunk.frames[0].spectrum.length
-        const capacity = nextPow2(Math.max(1, chunk.frames.length))
         const colors: ChunkColorsState = {
           chunk,
-          data: new Uint32Array(numBins * capacity),
-          capacity,
+          colorTiles: [],
           numFrames: 0,
           numBins,
           dbMin,
@@ -858,7 +864,7 @@ export function Spectrogram({
         const prevNumFrames = colors.numFrames
         const isExtending = localTo > prevNumFrames
 
-        if (isExtending) ensureColorsCapacity(colors, localTo)
+        if (isExtending) ensureColorTiles(colors, localTo)
         computeColorsRange(colors, localFrom, localTo, theme)
         if (isExtending) colors.numFrames = localTo
 
