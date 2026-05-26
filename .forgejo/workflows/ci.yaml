@@ -21,7 +21,7 @@ jobs:
       - name: Deploy website
         uses: actions/git-pages@v2
         with:
-          site: http://braat.app
+          site: https://braat.app
           source: ./dist
           server: ipv6.braat.app
           password: ${{ secrets.GREBEDOC_PASSWORD }}
