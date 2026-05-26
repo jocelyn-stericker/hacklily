@@ -27,6 +27,15 @@ import { Plot } from '#/components/Plot'
 import { Spectrogram } from '#/components/Spectrogram'
 import type { SpectrogramHandle } from '#/components/Spectrogram'
 import { Toolbar } from '#/components/Toolbar'
+import { Button } from '#/components/ui/button'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '#/components/ui/dialog'
 import { useAudioImport } from '#/components/useAudioImport'
 import { useAudioPlayback } from '#/components/useAudioPlayback'
 import { useMicCapture } from '#/components/useMicCapture'
@@ -107,7 +116,9 @@ function App() {
   const recordingStartIndexRef = useRef(0)
   const recordingDurationSecRef = useRef(0)
 
-  const handleNew = useCallback(() => {
+  const [confirmingNew, setConfirmingNew] = useState(false)
+
+  const doNew = useCallback(() => {
     resetTimeline()
     setAnalysis([])
     setAudioBuffer(null)
@@ -115,6 +126,24 @@ function App() {
     recordingStartIndexRef.current = 0
     recordingDurationSecRef.current = 0
   }, [resetTimeline])
+
+  const hasData =
+    (audioBuffer?.length ?? 0) > 0 ||
+    analysis.length > 0 ||
+    status.value === 'recording'
+
+  const handleNew = useCallback(() => {
+    if (hasData) {
+      setConfirmingNew(true)
+      return
+    }
+    doNew()
+  }, [hasData, doNew])
+
+  const handleConfirmNew = useCallback(() => {
+    setConfirmingNew(false)
+    doNew()
+  }, [doNew])
 
   const ampMaxNorm = analysis.reduce(
     (memo, chunk) => chunk.frames.reduce((m, f) => Math.max(m, f.rms), memo),
@@ -227,11 +256,6 @@ function App() {
     !audioBuffer || audioBuffer.length === 0 || isExporting
 
   useEffect(() => {
-    const hasData =
-      (audioBuffer?.length ?? 0) > 0 ||
-      analysis.length > 0 ||
-      status.value === 'recording'
-
     if (!hasData) {
       return
     }
@@ -244,7 +268,7 @@ function App() {
     return () => {
       window.removeEventListener('beforeunload', handleBeforeUnload)
     }
-  }, [audioBuffer?.length, analysis.length, status.value])
+  }, [hasData])
 
   useHotkeys(
     'space',
@@ -344,6 +368,27 @@ function App() {
         open={status.value === 'editAudioSettings'}
         onOpenChange={handleOpenAudioSettings}
       />
+      <Dialog
+        open={confirmingNew}
+        onOpenChange={(open) => setConfirmingNew(open)}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Discard unsaved changes?</DialogTitle>
+            <DialogDescription>
+              Your current recording will be lost.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setConfirmingNew(false)}>
+              Cancel
+            </Button>
+            <Button variant="destructive" onClick={handleConfirmNew}>
+              Discard
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
       <main className="h-dvh flex flex-col overflow-hidden">
         <Toolbar
           openFilePicker={openFilePicker}
