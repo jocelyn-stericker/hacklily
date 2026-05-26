@@ -199,9 +199,7 @@ export class PitchProcessor {
       attenuationAtTop: 0.1,
       // Increased
       silenceThreshold: 0.05,
-      // Praat's default is 0.45, this is raised because we mainly
-      // care about vowels and would like less noise.
-      voicingThreshold: 0.6,
+      voicingThreshold: 0.45,
       octaveCost: 0.01,
       octaveJumpCost: 0.35,
       voicedUnvoicedCost: 0.14,
