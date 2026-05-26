@@ -33,6 +33,11 @@ const FPS_WINDOW_MS = 1000
 // Each tile holds up to TILE_WIDTH frames before overflow to the next tile.
 export const TILE_WIDTH = 8192
 
+// Width of the shared scratch ImageData used by paintColumnsToOffscreen.
+// Narrower than TILE_WIDTH so a single allocation serves all tiles without
+// holding a full tile's worth of pixel data in memory.
+const SCRATCH_WIDTH = 256
+
 interface Theme {
   // Assumes little-endian byte order (all browser-targeted CPUs). Each entry is
   // the RGBA pixel packed as a Uint32: low byte = R, high byte = A.
@@ -89,14 +94,17 @@ interface Tile {
   canvas: OffscreenCanvas
   ctx: OffscreenCanvasRenderingContext2D
   startFrame: number
-  imgData: ImageData
-  u32: Uint32Array
 }
 
 interface OffscreenState {
   tiles: Tile[]
   binForY: Int32Array
   canvasHeight: number
+  // Shared scratch buffer for paintColumnsToOffscreen — written then immediately
+  // pushed via putImageData, never read back. One per OffscreenState so it
+  // survives across calls without reallocating.
+  scratchData: ImageData
+  scratchU32: Uint32Array
 }
 
 interface FormantOffscreenState {
@@ -184,17 +192,13 @@ function ensureColorTiles(state: ChunkColorsState, needed: number): void {
 function ensureTiles(
   off: { tiles: Tile[]; canvasHeight: number },
   needed: number,
-  theme: Theme,
 ): void {
   const numTiles = Math.ceil(needed / TILE_WIDTH)
   while (off.tiles.length < numTiles) {
     const startFrame = off.tiles.length * TILE_WIDTH
     const canvas = new OffscreenCanvas(TILE_WIDTH, off.canvasHeight)
     const ctx = canvas.getContext('2d')!
-    const imgData = ctx.createImageData(TILE_WIDTH, off.canvasHeight)
-    const u32 = new Uint32Array(imgData.data.buffer)
-    u32.fill(theme.bgU32)
-    off.tiles.push({ canvas, ctx, startFrame, imgData, u32 })
+    off.tiles.push({ canvas, ctx, startFrame })
   }
 }
 
@@ -206,35 +210,47 @@ function paintColumnsToOffscreen(
   theme: Theme,
 ): void {
   if (to <= from) return
-  const { tiles, binForY, canvasHeight } = off
+  const { tiles, binForY, canvasHeight, scratchData, scratchU32 } = off
   const { colorTiles } = colors
   const firstTile = Math.floor(from / TILE_WIDTH)
   const lastTile = Math.floor((to - 1) / TILE_WIDTH)
   for (let t = firstTile; t <= lastTile && t < tiles.length; t++) {
     const tile = tiles[t]!
     const colorTile = colorTiles[t]!
-    const absFrom = Math.max(from, tile.startFrame)
-    const absTo = Math.min(to, tile.startFrame + TILE_WIDTH)
-    const numCols = absTo - absFrom
-    const localFrom = absFrom - tile.startFrame
-    const localTo = localFrom + numCols
-    const { imgData, u32 } = tile
-    for (let y = 0; y < canvasHeight; y++) {
-      const b = binForY[y] ?? -1
-      const dst = y * TILE_WIDTH + localFrom
-      if (b < 0) {
-        u32.fill(theme.bgU32, dst, dst + numCols)
-      } else {
-        u32.set(
-          colorTile.data.subarray(
-            b * TILE_WIDTH + localFrom,
-            b * TILE_WIDTH + localTo,
-          ),
-          dst,
-        )
+    const localFrom = Math.max(from, tile.startFrame) - tile.startFrame
+    const localTo = Math.min(to, tile.startFrame + TILE_WIDTH) - tile.startFrame
+    for (
+      let batchStart = localFrom;
+      batchStart < localTo;
+      batchStart += SCRATCH_WIDTH
+    ) {
+      const batchEnd = Math.min(localTo, batchStart + SCRATCH_WIDTH)
+      const numBatchCols = batchEnd - batchStart
+      for (let y = 0; y < canvasHeight; y++) {
+        const b = binForY[y] ?? -1
+        const dstBase = y * SCRATCH_WIDTH
+        if (b < 0) {
+          scratchU32.fill(theme.bgU32, dstBase, dstBase + numBatchCols)
+        } else {
+          scratchU32.set(
+            colorTile.data.subarray(
+              b * TILE_WIDTH + batchStart,
+              b * TILE_WIDTH + batchEnd,
+            ),
+            dstBase,
+          )
+        }
       }
+      tile.ctx.putImageData(
+        scratchData,
+        batchStart,
+        0,
+        0,
+        0,
+        numBatchCols,
+        canvasHeight,
+      )
     }
-    tile.ctx.putImageData(imgData, 0, 0, localFrom, 0, numCols, canvasHeight)
   }
 }
 
@@ -731,13 +747,20 @@ export function Spectrogram({
         freqToY,
         canvasHeight,
       )
-      const off: OffscreenState = { tiles: [], binForY, canvasHeight }
-      ensureTiles(off, colors.numFrames, theme)
+      const scratchData = new ImageData(SCRATCH_WIDTH, canvasHeight)
+      const off: OffscreenState = {
+        tiles: [],
+        binForY,
+        canvasHeight,
+        scratchData,
+        scratchU32: new Uint32Array(scratchData.data.buffer),
+      }
+      ensureTiles(off, colors.numFrames)
       newOff.push(off)
       paintColumnsToOffscreen(off, colors, 0, colors.numFrames, theme)
 
       const formantOff: FormantOffscreenState = { tiles: [], canvasHeight }
-      ensureTiles(formantOff, colors.numFrames, theme)
+      ensureTiles(formantOff, colors.numFrames)
       newFormantOff.push(formantOff)
       paintFormantTiles(formantOff, chunk.frames, 0, freqToY, dpr)
     }
@@ -880,29 +903,36 @@ export function Spectrogram({
             freqToY,
             canvasHeight,
           )
-          off = { tiles: [], binForY, canvasHeight }
-          ensureTiles(off, localTo, theme)
+          const scratchData = new ImageData(SCRATCH_WIDTH, canvasHeight)
+          off = {
+            tiles: [],
+            binForY,
+            canvasHeight,
+            scratchData,
+            scratchU32: new Uint32Array(scratchData.data.buffer),
+          }
+          ensureTiles(off, localTo)
           allOff[chunkIdx] = off
           paintColumnsToOffscreen(off, colors, 0, localTo, theme)
 
           formantOff = { tiles: [], canvasHeight }
-          ensureTiles(formantOff, localTo, theme)
+          ensureTiles(formantOff, localTo)
           allFormantOff[chunkIdx] = formantOff
           paintFormantTiles(formantOff, chunk.frames, 0, freqToY, dpr)
           needFullRedraw = true
         } else if (off) {
-          if (isExtending) ensureTiles(off, localTo, theme)
+          if (isExtending) ensureTiles(off, localTo)
           paintColumnsToOffscreen(off, colors, localFrom, localTo, theme)
 
           if (!formantOff) {
             formantOff = { tiles: [], canvasHeight }
-            ensureTiles(formantOff, localTo, theme)
+            ensureTiles(formantOff, localTo)
             allFormantOff[chunkIdx] = formantOff
             paintFormantTiles(formantOff, chunk.frames, 0, freqToY, dpr)
             // formantOff newly created: full repaint needed to show historical lines.
             needFullRedraw = true
           } else {
-            if (isExtending) ensureTiles(formantOff, localTo, theme)
+            if (isExtending) ensureTiles(formantOff, localTo)
 
             if (isExtending && localFrom >= prevNumFrames) {
               // Pure append: additive paint, then update display buffer for new region.
