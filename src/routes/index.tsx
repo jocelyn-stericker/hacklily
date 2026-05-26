@@ -416,7 +416,7 @@ function App() {
           onZoom={() => {}}
           onClick={isRecording ? noOpClick : handlePlotClick}
           onHover={handlePlotHover}
-          className="h-32 border-b border-b-gray-500"
+          className="h-32 max-h-[15dvh] border-b border-b-gray-500"
           virtualWidthSec={virtualWidthSec}
           hideScrollBar={isRecording}
         >
