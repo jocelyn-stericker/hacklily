@@ -18,7 +18,7 @@
 import { describe, it, expect } from 'vitest'
 
 import type { AnalysisChunk, AnalysisFrame } from './AnalysisFrame'
-import { computeDbBounds, frameTimeSec } from './AnalysisFrame'
+import { computeDbMax, frameTimeSec } from './AnalysisFrame'
 
 const DEFAULT_PARAMS = {
   timeStepSamples: 882,
@@ -49,56 +49,45 @@ function makeFrame(
   }
 }
 
-describe('computeDbBounds', () => {
+describe('computeDbMax', () => {
   describe('basic dB conversion', () => {
     it('converts spectrum values to dB correctly', () => {
-      const result = computeDbBounds([
+      const result = computeDbMax([
         makeChunk([makeFrame(new Float32Array([1.0]))]),
       ])
-      expect(result).not.toBeNull()
-      expect(result?.min).toBeCloseTo(0, 2)
-      expect(result?.max).toBeCloseTo(0, 2)
+      expect(result).toBeCloseTo(0, 2)
     })
 
     it('converts power values using correct formula', () => {
-      const result = computeDbBounds([
+      const result = computeDbMax([
         makeChunk([makeFrame(new Float32Array([100.0]))]),
       ])
-      expect(result?.max).toBeCloseTo(20, 1)
+      expect(result).toBeCloseTo(20, 1)
     })
   })
 
   describe('edge cases', () => {
     it('returns null for empty frames array', () => {
-      const result = computeDbBounds([])
+      const result = computeDbMax([])
       expect(result).toBeNull()
     })
 
     it('returns null when all spectrum values are zero or negative', () => {
-      const result = computeDbBounds([
+      const result = computeDbMax([
         makeChunk([makeFrame(new Float32Array([0, -1, -100]))]),
       ])
       expect(result).toBeNull()
     })
 
     it('ignores zero and negative values in spectrum', () => {
-      const result = computeDbBounds([
+      const result = computeDbMax([
         makeChunk([makeFrame(new Float32Array([1.0, 0, -5, 10.0, -0.5]))]),
       ])
-      expect(result).not.toBeNull()
-      expect(result?.min).toBeCloseTo(0, 2)
-      expect(result?.max).toBeCloseTo(10, 1)
-    })
-
-    it('caps minimum dB at -120', () => {
-      const result = computeDbBounds([
-        makeChunk([makeFrame(new Float32Array([1e-15]))]),
-      ])
-      expect(result?.min).toBeCloseTo(-120, 1)
+      expect(result).toBeCloseTo(10, 1)
     })
 
     it('handles single frame with no valid spectrum values', () => {
-      const result = computeDbBounds([
+      const result = computeDbMax([
         makeChunk([makeFrame(new Float32Array([0, 0, 0]))]),
       ])
       expect(result).toBeNull()
@@ -112,12 +101,12 @@ describe('computeDbBounds', () => {
         makeFrame(new Float32Array([100.0])),
         makeFrame(new Float32Array([1000.0])),
       ])
-      const result = computeDbBounds([chunk], 1, 2)
-      expect(result?.max).toBeCloseTo(20, 1)
+      const result = computeDbMax([chunk], 1, 2)
+      expect(result).toBeCloseTo(20, 1)
     })
 
     it('handles from=to (empty range)', () => {
-      const result = computeDbBounds(
+      const result = computeDbMax(
         [makeChunk([makeFrame(new Float32Array([100.0]))])],
         0,
         0,
@@ -129,9 +118,9 @@ describe('computeDbBounds', () => {
       const frames = Array.from({ length: 10 }, (_, i) =>
         makeFrame(new Float32Array([10 ** (i / 10)])),
       )
-      const result = computeDbBounds([makeChunk(frames)])
+      const result = computeDbMax([makeChunk(frames)])
       expect(result).not.toBeNull()
-      expect(result!.max).toBeGreaterThan(result!.min)
+      expect(isFinite(result!)).toBe(true)
     })
   })
 
@@ -149,29 +138,27 @@ describe('computeDbBounds', () => {
       })
       const unvoicedFrame = makeFrame(spectrum, { rms: 0.3 })
 
-      const voicedResult = computeDbBounds([makeChunk([voicedFrame])])
-      const unvoicedResult = computeDbBounds([makeChunk([unvoicedFrame])])
+      const voicedResult = computeDbMax([makeChunk([voicedFrame])])
+      const unvoicedResult = computeDbMax([makeChunk([unvoicedFrame])])
 
-      expect(voicedResult?.max).toBeCloseTo(unvoicedResult?.max ?? 0, 2)
-      expect(voicedResult?.min).toBeCloseTo(unvoicedResult?.min ?? 0, 2)
+      expect(voicedResult).toBeCloseTo(unvoicedResult ?? 0, 2)
     })
   })
 
   describe('numerical edge cases', () => {
     it('handles very large spectrum values', () => {
-      const result = computeDbBounds([
+      const result = computeDbMax([
         makeChunk([makeFrame(new Float32Array([1e10]))]),
       ])
       expect(result).not.toBeNull()
-      expect(isFinite(result?.max ?? 0)).toBe(true)
+      expect(isFinite(result!)).toBe(true)
     })
 
     it('handles mixed positive and negative values (ignoring negatives)', () => {
-      const result = computeDbBounds([
+      const result = computeDbMax([
         makeChunk([makeFrame(new Float32Array([0.1, -10, 10, -100, 100]))]),
       ])
-      expect(result?.max).toBeCloseTo(20, 1)
-      expect(result?.min).toBeCloseTo(-10, 1)
+      expect(result).toBeCloseTo(20, 1)
     })
   })
 })

@@ -96,12 +96,22 @@ export function frameTimeSec(
   )
 }
 
-export function computeDbBounds(
+export function frameDbMax(frame: AnalysisFrame): number | null {
+  let max = -Infinity
+  for (const raw of frame.spectrum) {
+    if (raw > 0) {
+      const db = LN10_10 * Math.log(raw)
+      if (db > max) max = db
+    }
+  }
+  return isFinite(max) ? max : null
+}
+
+export function computeDbMax(
   chunks: AnalysisChunk[],
   from = 0,
   to = Infinity,
-): { min: number; max: number } | null {
-  let minDb = Infinity
+): number | null {
   let maxDb = -Infinity
   let idx = 0
   outer: for (const chunk of chunks) {
@@ -111,7 +121,6 @@ export function computeDbBounds(
         for (const raw of frame.spectrum) {
           if (raw > 0) {
             const db = LN10_10 * Math.log(raw)
-            if (db < minDb) minDb = db
             if (db > maxDb) maxDb = db
           }
         }
@@ -119,6 +128,5 @@ export function computeDbBounds(
       idx++
     }
   }
-  if (!isFinite(minDb)) return null
-  return { min: Math.max(minDb, -120), max: maxDb }
+  return isFinite(maxDb) ? maxDb : null
 }

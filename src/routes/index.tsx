@@ -42,7 +42,7 @@ import type {
   AnalysisFrame,
   AnalysisParams,
 } from '#/lib/AnalysisFrame'
-import { totalFrames, computeDbBounds } from '#/lib/AnalysisFrame'
+import { totalFrames, frameDbMax } from '#/lib/AnalysisFrame'
 import { concatAudioBuffers } from '#/lib/concatAudioBuffers'
 import { exportWav } from '#/lib/exportWav.ts'
 
@@ -50,8 +50,8 @@ export const Route = createFileRoute('/')({
   component: App,
 })
 
-const DB_MIN_DEFAULT = -120
 const DB_MAX_DEFAULT = -16
+const DB_DYNAMIC_RANGE = 70 // dB, matches Praat's default dynamic range
 const SHOW_VOWEL_CHART = localStorage.SHOW_VOWEL_CHART === 'true'
 
 function App() {
@@ -84,26 +84,20 @@ function App() {
     hoverFrame,
   } = useTimelineState(analysis)
 
-  const lastScannedRef = useRef(0)
-  const [dbBounds, setDbBounds] = useState({
-    min: DB_MIN_DEFAULT,
-    max: DB_MAX_DEFAULT,
-  })
+  const [dbMax, setDbMax] = useState(DB_MAX_DEFAULT)
 
   const { openFilePicker } = useAudioImport({
     handleAnalyze,
     onStart: () => {
       setAnalysis([])
-      lastScannedRef.current = 0
-      setDbBounds({ min: DB_MIN_DEFAULT, max: DB_MAX_DEFAULT })
+      setDbMax(DB_MAX_DEFAULT)
     },
     onImported: ({
       analysis: newAnalysis,
-      dbBounds: bounds,
+      dbMax: importedDbMax,
       audioBuffer: newAudioBuffer,
     }) => {
-      if (bounds) setDbBounds(bounds)
-      lastScannedRef.current = totalFrames(newAnalysis)
+      if (importedDbMax !== null) setDbMax(importedDbMax)
       setAudioBuffer(newAudioBuffer)
       setAnalysis(newAnalysis)
     },
@@ -116,8 +110,7 @@ function App() {
     resetTimeline()
     setAnalysis([])
     setAudioBuffer(null)
-    setDbBounds({ min: DB_MIN_DEFAULT, max: DB_MAX_DEFAULT })
-    lastScannedRef.current = 0
+    setDbMax(DB_MAX_DEFAULT)
     recordingStartIndexRef.current = 0
     recordingDurationSecRef.current = 0
   }, [resetTimeline])
@@ -164,8 +157,6 @@ function App() {
 
   const handleRecordingComplete = useCallback(
     (newBuffer: AudioBuffer) => {
-      lastScannedRef.current = recordingStartIndexRef.current
-
       const prev = audioBufferRef.current
       const combined =
         prev && prev.length > 0
@@ -200,6 +191,8 @@ function App() {
       recordingDurationSecRef.current +=
         lastChunk.timeStepSamples / lastChunk.sampleRate
       schedulePlaybackPositionChanged(recordingDurationSecRef.current)
+      const fm = frameDbMax(frame)
+      if (fm !== null) setDbMax((prev) => Math.max(prev, fm))
     },
     [schedulePlaybackPositionChanged],
   )
@@ -209,24 +202,6 @@ function App() {
     waveformRef.current?.patch(absIndex, absIndex + 1)
     spectrogramRef.current?.patch(absIndex, absIndex + 1)
     vowelChartRef.current?.patch(absIndex, absIndex + 1)
-  }, [])
-
-  // Poll every 2s to expand db range with newly arrived frames
-  useEffect(() => {
-    const timer = setInterval(() => {
-      const data = analysisRef.current
-      const from = lastScannedRef.current
-      const to = totalFrames(data)
-      if (from >= to) return
-      const newBounds = computeDbBounds(data, from, to)
-      lastScannedRef.current = to
-      if (!newBounds) return
-      setDbBounds((prev) => ({
-        min: Math.min(prev.min, newBounds.min),
-        max: Math.max(prev.max, newBounds.max),
-      }))
-    }, 2000)
-    return () => clearInterval(timer)
   }, [])
 
   useMicCapture({
@@ -400,8 +375,8 @@ function App() {
           >
             <Spectrogram
               analysis={analysis}
-              dbMin={dbBounds.min}
-              dbRange={dbBounds.max - dbBounds.min}
+              dbMin={dbMax - DB_DYNAMIC_RANGE}
+              dbRange={DB_DYNAMIC_RANGE}
               ref={spectrogramRef}
               debug={false}
             />
