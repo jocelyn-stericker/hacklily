@@ -166,10 +166,10 @@ export async function analyzeBuffer(
       Math.floor((t0 + t1) / 2 / vadChunkDurSec),
     )
     const speechProbability = vadProbs[vadIdx]!
-    if (vad.speechProbability >= positiveSpeechThreshold) {
+    if (speechProbability >= positiveSpeechThreshold) {
       speaking = true
       redemptionTimeRemaining = redemptionMs
-    } else if (vad.speechProbability < negativeSpeechThreshold) {
+    } else if (speechProbability < negativeSpeechThreshold) {
       redemptionTimeRemaining -= x * specResult.timeStepSec * 1000
       if (redemptionTimeRemaining <= 0) {
         speaking = false

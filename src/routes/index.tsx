@@ -97,7 +97,8 @@ function App() {
       dbMax: importedDbMax,
       audioBuffer: newAudioBuffer,
     }) => {
-      if (importedDbMax !== null) setDbMax(importedDbMax)
+      if (importedDbMax !== null)
+        setDbMax(Math.max(importedDbMax, DB_MAX_DEFAULT))
       setAudioBuffer(newAudioBuffer)
       setAnalysis(newAnalysis)
     },
