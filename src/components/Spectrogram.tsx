@@ -285,46 +285,24 @@ function paintFormantTiles(
       off.canvasHeight,
     )
     for (const { key, color } of FORMANT_TRACKS) {
+      const r = FORMANT_LINE_WIDTH * dpr
       tile.ctx.beginPath()
-      let penDown = false
-      // Connect from the frame before tileFromFrame (moveTo only — doesn't draw,
-      // just anchors the pen so the first lineTo produces a joined segment).
-      // For the first tile this lands in the preserved region; for later tiles
-      // prevF - tile.startFrame = -1 gives the same cross-tile join as before.
-      const prevF = tileFromFrame - 1
-      if (prevF >= 0) {
-        const prevSample = frames[prevF]
-        if (
-          prevSample?.pitchDetected &&
-          prevSample.speechDetected &&
-          prevSample[key] !== null
-        ) {
-          tile.ctx.moveTo(prevF - tile.startFrame, freqToY(prevSample[key]))
-          penDown = true
-        }
-      }
       for (let f = tileFromFrame; f < frameEnd; f++) {
         const sample = frames[f]!
         if (
           !(sample.pitchDetected && sample.speechDetected) ||
           sample[key] === null
-        ) {
-          penDown = false
+        )
           continue
-        }
+        const x = f - tile.startFrame + 0.5
         const y = freqToY(sample[key])
-        const localX = f - tile.startFrame
-        if (!penDown) tile.ctx.moveTo(localX, y)
-        else tile.ctx.lineTo(localX, y)
-        penDown = true
+        tile.ctx.moveTo(x + r, y)
+        tile.ctx.arc(x, y, r, 0, Math.PI * 2)
       }
-      tile.ctx.lineJoin = 'round'
-      tile.ctx.lineCap = 'round'
       tile.ctx.shadowColor = FORMANT_SHADOW_COLOUR
       tile.ctx.shadowBlur = FORMANT_SHADOW_BLUR * dpr
-      tile.ctx.strokeStyle = color
-      tile.ctx.lineWidth = FORMANT_LINE_WIDTH * dpr
-      tile.ctx.stroke()
+      tile.ctx.fillStyle = color
+      tile.ctx.fill()
       tile.ctx.shadowBlur = 0
     }
   }
@@ -349,45 +327,24 @@ function appendFormantTiles(
     const absFrom = Math.max(from, tile.startFrame)
     const absTo = Math.min(to, tile.startFrame + TILE_WIDTH)
     for (const { key, color } of FORMANT_TRACKS) {
+      const r = FORMANT_LINE_WIDTH * dpr
       tile.ctx.beginPath()
-      let penDown = false
-      // Connect from the frame before absFrom, which may be in a prior tile.
-      // prevF - tile.startFrame evaluates to -1 at a tile boundary, which
-      // places the moveTo just off-canvas so the stroke joins at the edge.
-      const prevF = absFrom - 1
-      if (prevF >= 0) {
-        const prevSample = frames[prevF]
-        if (
-          prevSample?.pitchDetected &&
-          prevSample.speechDetected &&
-          prevSample[key] !== null
-        ) {
-          tile.ctx.moveTo(prevF - tile.startFrame, freqToY(prevSample[key]))
-          penDown = true
-        }
-      }
       for (let f = absFrom; f < absTo; f++) {
         const sample = frames[f]!
         if (
           !(sample.pitchDetected && sample.speechDetected) ||
           sample[key] === null
-        ) {
-          penDown = false
+        )
           continue
-        }
+        const x = f - tile.startFrame + 0.5
         const y = freqToY(sample[key])
-        const localX = f - tile.startFrame
-        if (!penDown) tile.ctx.moveTo(localX, y)
-        else tile.ctx.lineTo(localX, y)
-        penDown = true
+        tile.ctx.moveTo(x + r, y)
+        tile.ctx.arc(x, y, r, 0, Math.PI * 2)
       }
-      tile.ctx.lineJoin = 'round'
-      tile.ctx.lineCap = 'round'
       tile.ctx.shadowColor = FORMANT_SHADOW_COLOUR
       tile.ctx.shadowBlur = FORMANT_SHADOW_BLUR * dpr
-      tile.ctx.strokeStyle = color
-      tile.ctx.lineWidth = FORMANT_LINE_WIDTH * dpr
-      tile.ctx.stroke()
+      tile.ctx.fillStyle = color
+      tile.ctx.fill()
       tile.ctx.shadowBlur = 0
     }
   }
