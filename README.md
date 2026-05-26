@@ -6,7 +6,7 @@ Braat shows you, in real time, the pitch and resonance of your voice as you spea
 
 [**Open Braat →**](https://braat.app)
 
-![Braat screenshot showing a spectrogram with pitch and formant tracks](screenshot.png)
+![Braat screenshot showing a spectrogram with pitch and formant tracks](public/screenshot.png)
 
 ## Why Braat?
 
