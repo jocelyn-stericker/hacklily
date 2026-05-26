@@ -38,6 +38,7 @@ export interface Props extends Omit<
   onClick: (x: number) => void
   onHover: (x: number | null) => void
   debug?: boolean
+  hideScrollBar?: boolean
 }
 
 export function VirtualScrollArea({
@@ -48,6 +49,7 @@ export function VirtualScrollArea({
   onClick,
   onHover,
   debug = false,
+  hideScrollBar = false,
   ...rest
 }: Props) {
   const [root, setRoot] = useState<HTMLDivElement | null>(null)
@@ -325,9 +327,12 @@ export function VirtualScrollArea({
     <div
       {...rest}
       className={cn(
-        mouseDown
-          ? 'cursor-grabbing overflow-x-hidden'
-          : 'cursor-pointer overflow-x-scroll',
+        hideScrollBar
+          ? 'cursor-default'
+          : mouseDown
+            ? 'cursor-grabbing'
+            : 'cursor-pointer',
+        hideScrollBar || mouseDown ? 'overflow-x-hidden' : 'overflow-x-scroll',
         'touch-pan-x overscroll-none absolute',
         rest.className,
       )}

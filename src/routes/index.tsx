@@ -258,7 +258,9 @@ function App() {
     },
     [status, playDisabled, handlePause, handlePlay],
   )
-  useHotkeys('shift+arrowleft', handleBackToStart, [handleBackToStart])
+  useHotkeys('shift+arrowleft', handleBackToStart, [handleBackToStart], {
+    enabled: status.value !== 'recording' && status.value !== 'analyzing',
+  })
   useHotkeys(
     'shift+arrowright',
     (e) => {
@@ -266,6 +268,7 @@ function App() {
       handleJump(Infinity)
     },
     [handleJump],
+    { enabled: status.value !== 'recording' && status.value !== 'analyzing' },
   )
   useHotkeys(
     'arrowleft',
@@ -274,6 +277,7 @@ function App() {
       handleJump(-0.5)
     },
     [handleJump],
+    { enabled: status.value !== 'recording' && status.value !== 'analyzing' },
   )
   useHotkeys(
     'arrowright',
@@ -282,6 +286,7 @@ function App() {
       handleJump(0.5)
     },
     [handleJump],
+    { enabled: status.value !== 'recording' && status.value !== 'analyzing' },
   )
   useHotkeys(
     'r',
@@ -321,6 +326,11 @@ function App() {
     Math.floor(timelineState.trackDurationSec / 30 + 1) * 30 +
     (timelineState.viewportRightSec - timelineState.viewportLeftSec)
 
+  const isRecording =
+    status.value === 'recording' || status.value === 'analyzing'
+  const noOpScroll = () => {}
+  const noOpClick = () => {}
+
   return (
     <>
       <Dialogs
@@ -357,12 +367,13 @@ function App() {
             type: 'amplitude',
             ampMaxNorm: ampMaxNorm || 1,
           }}
-          onScroll={() => {}}
+          onScroll={noOpScroll}
           onZoom={() => {}}
-          onClick={handlePlotClick}
+          onClick={isRecording ? noOpClick : handlePlotClick}
           onHover={handlePlotHover}
           className="h-32 border-b border-b-gray-500"
           virtualWidthSec={virtualWidthSec}
+          hideScrollBar={isRecording}
         >
           <Waveform analysis={analysis} ref={waveformRef} />
           <ViewportShade
@@ -384,15 +395,16 @@ function App() {
                   ? { f0: hoverFrame.f0, f1: hoverFrame.f1, f2: hoverFrame.f2 }
                   : null,
             }}
-            onScroll={handlePlotScroll}
+            onScroll={isRecording ? noOpScroll : handlePlotScroll}
             onZoom={handlePlotZoom}
-            onClick={handlePlotClick}
+            onClick={isRecording ? noOpClick : handlePlotClick}
             onHover={handlePlotHover}
             virtualWidthSec={
               Math.floor(timelineState.trackDurationSec / 30 + 1) * 30 +
               (timelineState.viewportRightSec - timelineState.viewportLeftSec)
             }
             className="flex-1"
+            hideScrollBar={isRecording}
           >
             <Spectrogram
               analysis={analysis}

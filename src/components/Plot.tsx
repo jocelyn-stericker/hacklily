@@ -70,6 +70,7 @@ interface Props {
   className?: string
   children: React.ReactNode
   virtualWidthSec: number
+  hideScrollBar?: boolean
 }
 
 function useTargetSize(element: HTMLElement | null) {
@@ -679,6 +680,7 @@ export function Plot({
   children,
   virtualWidthSec,
   debug = false,
+  hideScrollBar = false,
 }: Props) {
   const [root, setRoot] = useState<HTMLDivElement | null>(null)
   const { width, height, dpr } = useTargetSize(root)
@@ -789,6 +791,7 @@ export function Plot({
           onClick={handleClick}
           onHover={handleHover}
           debug={debug}
+          hideScrollBar={hideScrollBar}
         />
         {debug ? (
           <div className="absolute text-white">

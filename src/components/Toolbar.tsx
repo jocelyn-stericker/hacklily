@@ -79,7 +79,10 @@ export function Toolbar({
         className="h-10 w-10 cursor-pointer"
         title="Back to start (Shift+←)"
         disabled={
-          timelineState.cursorSec === 0 && timelineState.viewportLeftSec === 0
+          (timelineState.cursorSec === 0 &&
+            timelineState.viewportLeftSec === 0) ||
+          status.value === 'recording' ||
+          status.value === 'analyzing'
         }
         onClick={onBackToStart}
       >
