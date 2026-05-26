@@ -110,7 +110,7 @@ export async function analyzeBuffer(
     },
     sampleRate,
   )
-  const pitchResult = pitchProc.analyze(specAudio)
+  const pitchResult = pitchProc.analyze(input)
 
   // VAD: resample to 16 kHz and process 512-sample chunks sequentially
   console.log('Running VAD...')
@@ -130,14 +130,64 @@ export async function analyzeBuffer(
   }
   console.log(`VAD: ${numVadChunks} chunks processed`)
 
-  const positiveSpeechThreshold = 0.3
-  const negativeSpeechThreshold = 0.25
-  const redemptionMs = 1400
+  const POSITIVE_THRESHOLD = 0.3
+  const NEGATIVE_THRESHOLD = 0.25
+  const PREROLL_FRAMES = Math.ceil(0.05 / specResult.timeStepSec)
+
+  // Step 1: per-frame VAD probability and raw hysteresis speaking state
+  const frameSpeechProb = new Float32Array(specResult.numFrames)
+  const rawSpeaking = new Uint8Array(specResult.numFrames)
   let speaking = false
-  let redemptionTimeRemaining = 0
+  for (let x = 0; x < specResult.numFrames; x++) {
+    const tMid = (x + 0.5) * specResult.timeStepSec
+    const vadIdx = Math.min(
+      vadProbs.length - 1,
+      Math.floor(tMid / vadChunkDurSec),
+    )
+    const prob = vadProbs[vadIdx]!
+    frameSpeechProb[x] = prob
+    if (prob >= POSITIVE_THRESHOLD) speaking = true
+    else if (prob < NEGATIVE_THRESHOLD) speaking = false
+    rawSpeaking[x] = speaking ? 1 : 0
+  }
+
+  // Step 2: apply pre-roll — retroactively mark PREROLL_FRAMES before each voiced onset
+  const speechDetectedArr = new Uint8Array(specResult.numFrames)
+  let aheadSpeaking = 0
+  for (let x = specResult.numFrames - 1; x >= 0; x--) {
+    if (rawSpeaking[x]) aheadSpeaking = PREROLL_FRAMES + 1
+    speechDetectedArr[x] = aheadSpeaking > 0 ? 1 : 0
+    aheadSpeaking = Math.max(0, aheadSpeaking - 1)
+  }
+
+  // Step 3: build per-frame formant state with validity filter and last-valid holdover,
+  // matching FormantWorker's F1/F2 range checks (F1 ∈ [200,1100] Hz, F2 ∈ [650,3500] Hz)
+  let formantPtr = 0
+  let latestValidF1: number | null = null
+  let latestValidF2: number | null = null
+  let latestValidF3: number | null = null
+
   for (let x = 0; x < specResult.numFrames; x += 1) {
     const t0 = x * specResult.timeStepSec
     const t1 = (x + 1) * specResult.timeStepSec
+    const tMid = (t0 + t1) / 2
+
+    // Advance formant pointer: include all frames whose time is at or before tMid
+    while (
+      formantPtr < formantResult.frames.length &&
+      formantResult.frames[formantPtr]!.timeSec <= tMid
+    ) {
+      const ff = formantResult.frames[formantPtr]!
+      const f1 = ff.formantCount > 0 ? ff.formants[0]!.frequencyHz : null
+      const f2 = ff.formantCount > 1 ? ff.formants[1]!.frequencyHz : null
+      const f3 = ff.formantCount > 2 ? ff.formants[2]!.frequencyHz : null
+      if (f1 && f1 >= 200 && f1 <= 1100 && f2 && f2 >= 650 && f2 <= 3500) {
+        latestValidF1 = f1
+        latestValidF2 = f2
+        latestValidF3 = f3 ?? latestValidF3
+      }
+      formantPtr++
+    }
 
     // simplified waveform
     let sumSq = 0
@@ -146,54 +196,25 @@ export async function analyzeBuffer(
     for (let i = frameStart; i <= frameEnd; i++) sumSq += input[i]! * input[i]!
     const rms = Math.sqrt(sumSq / (frameEnd - frameStart + 1))
 
-    // nearest formant result
-    const formantIdx = Math.min(
-      formantResult.frames.length - 1,
-      Math.round((t0 + t1) / 2 / formantResult.timeStepSec),
-    )
-    const formantFrame = formantResult.frames[formantIdx]!
-
     // nearest pitch result
     const pitchIdx = Math.min(
       pitchResult.frames.length - 1,
-      Math.round((t0 + t1) / 2 / pitchResult.timeStepSec),
+      Math.round(tMid / pitchResult.timeStepSec),
     )
     const pitchFrame = pitchResult.frames[pitchIdx]!
-
-    // nearest VAD chunk (32 ms granularity)
-    const vadIdx = Math.min(
-      vadProbs.length - 1,
-      Math.floor((t0 + t1) / 2 / vadChunkDurSec),
-    )
-    const speechProbability = vadProbs[vadIdx]!
-    if (speechProbability >= positiveSpeechThreshold) {
-      speaking = true
-      redemptionTimeRemaining = redemptionMs
-    } else if (speechProbability < negativeSpeechThreshold) {
-      redemptionTimeRemaining -= x * specResult.timeStepSec * 1000
-      if (redemptionTimeRemaining <= 0) {
-        speaking = false
-      }
-    }
 
     // final results
     const pitchDetected = pitchFrame.frequencyHz > 0
     results.push({
       pitchDetected,
-      speechDetected: speaking,
+      speechDetected: speechDetectedArr[x] === 1,
       f0: pitchFrame.frequencyHz,
-      f1: pitchDetected
-        ? (formantFrame.formants[0]?.frequencyHz ?? null)
-        : null,
-      f2: pitchDetected
-        ? (formantFrame.formants[1]?.frequencyHz ?? null)
-        : null,
-      f3: pitchDetected
-        ? (formantFrame.formants[2]?.frequencyHz ?? null)
-        : null,
+      f1: pitchDetected ? latestValidF1 : null,
+      f2: pitchDetected ? latestValidF2 : null,
+      f3: pitchDetected ? latestValidF3 : null,
       spectrum: specResult.data[x]!,
       rms,
-      speechProbability,
+      speechProbability: frameSpeechProb[x]!,
     } satisfies AnalysisFrame)
   }
 

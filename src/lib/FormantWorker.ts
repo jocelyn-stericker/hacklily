@@ -37,10 +37,11 @@ const QUANTUM = 128
 const FORMANT_RATE = 11000
 const LOG = '[FormantWorker]'
 
-// Run pitch analysis every PITCH_INTERVAL quanta (~93 ms at 44.1 kHz with BUF=4096).
-// TODO: make dynamic based on buf and sampleRate
+// Run pitch every PITCH_INTERVAL quanta and emit patches for frames that
+// have at least PITCH_EMIT_SECS of future audio as Viterbi context.
 const PITCH_INTERVAL = 16
-const PITCH_BUF_SIZE = 4096
+const PITCH_EMIT_SECS = 0.1
+const PITCH_BUF_SECS = PITCH_EMIT_SECS * 2
 
 export type FormantWorkerInMessage = FormantInitMessage | null
 
@@ -74,6 +75,19 @@ self.onmessage = async ({ data }: MessageEvent<FormantWorkerInMessage>) => {
   console.log(LOG, 'complete')
 }
 
+interface FrameFormant {
+  f1: number | null
+  f2: number | null
+  f3: number | null
+}
+
+interface PendingFormant {
+  timeSec: number
+  f1: number | null
+  f2: number | null
+  f3: number | null
+}
+
 async function runAnalysis(
   reader: AudioRingReader,
   sampleRate: number,
@@ -94,88 +108,118 @@ async function runAnalysis(
   const drainBuf = new Float32Array(256)
 
   const pitch = new PitchProcessor({ timeStepSec: 0 }, sampleRate)
-  const pitchBuf = new Float32Array(PITCH_BUF_SIZE)
+  const pitchBufSamples = Math.round(sampleRate * PITCH_BUF_SECS)
+  const pitchEmitSamples = Math.round(sampleRate * PITCH_EMIT_SECS)
+  // Rolling buffer; newest QUANTUM samples are appended to the end each iteration.
+  // Starts as zeros — silence at the beginning is harmless for pitch detection.
+  const pitchBuf = new Float32Array(pitchBufSamples)
 
   let quantumCount = 0
+  let totalSamples = 0
   let samplesPending = 0
+  let lastEmittedFrame = 0
 
-  let latestPitchHz = 0
-  let latestF1: number | null = null
-  let latestF2: number | null = null
-  let latestF3: number | null = null
-  let latestValidPitchHz = 0
   let latestValidF1: number | null = null
   let latestValidF2: number | null = null
   let latestValidF3: number | null = null
 
-  let lastRecordedFrameIndex = 0
-  let frameIndex = 0
+  // Per-frame formant state, recorded as frames are counted out
+  const frameFormants: FrameFormant[] = []
+  const pendingFormants: PendingFormant[] = []
+  let formantPtr = 0
+
+  // Run pitch analysis on the current buffer and emit patches for all spec
+  // frames whose midpoint has at least pitchEmitSamples of future context.
+  // Pass finalFlush=true to emit all remaining frames regardless of context.
+  function emitPitchPatches(finalFlush: boolean): void {
+    const pr = pitch.analyze(pitchBuf)
+    // Absolute sample of the pitch buffer's first sample
+    const bufStartSample = totalSamples - pitchBufSamples
+    const safeSampleLimit = finalFlush
+      ? totalSamples
+      : totalSamples - pitchEmitSamples
+    const safeFrame = Math.min(
+      frameFormants.length,
+      Math.max(0, Math.floor(safeSampleLimit / timeStepSamples)),
+    )
+
+    for (let fi = lastEmittedFrame; fi < safeFrame; fi++) {
+      // Time of this spec frame's midpoint relative to the start of the pitch buffer
+      const relTimeSec =
+        ((fi + 0.5) * timeStepSamples - bufStartSample) / sampleRate
+      let f0 = 0
+      if (pr.frames.length > 0 && relTimeSec >= 0) {
+        const pitchIdx = Math.min(
+          pr.frames.length - 1,
+          Math.max(0, Math.round(relTimeSec / pr.timeStepSec)),
+        )
+        f0 = pr.frames[pitchIdx]?.frequencyHz ?? 0
+      }
+      const pitchDetected = f0 > 0
+      const { f1, f2, f3 } = frameFormants[fi]!
+      postMessage({
+        type: 'patch',
+        frameIndex: fi,
+        pitchDetected,
+        f0,
+        f1: pitchDetected ? f1 : null,
+        f2: pitchDetected ? f2 : null,
+        f3: pitchDetected ? f3 : null,
+      } satisfies PatchFrameMessage)
+    }
+    lastEmittedFrame = safeFrame
+  }
 
   for await (const inp of reader) {
+    // Maintain rolling pitch buffer: shift left by QUANTUM, append new samples
+    pitchBuf.copyWithin(0, QUANTUM)
+    pitchBuf.set(inp, pitchBufSamples - QUANTUM)
+    totalSamples += inp.length
+
     // Feed raw audio through resampler → formant chain
     resampler.feed(inp)
     const nDrain = resampler.drain(drainBuf)
     if (nDrain > 0) formant.feed(drainBuf.subarray(0, nDrain))
 
-    // Drain formant queue, keeping the latest frame's F1–F3
+    // Buffer formant frames for explicit time-alignment below
     let ff: FormantFrame | null
     while ((ff = formant.readFrame()) !== null) {
-      latestF1 = ff.formantCount > 0 ? ff.formants[0]!.frequencyHz : null
-      latestF2 = ff.formantCount > 1 ? ff.formants[1]!.frequencyHz : null
-      latestF3 = ff.formantCount > 2 ? ff.formants[2]!.frequencyHz : null
-      if (
-        latestF1 &&
-        latestF1 >= 200 &&
-        latestF1 <= 1100 &&
-        latestF2 &&
-        latestF2 >= 650 &&
-        latestF2 <= 3500
-      ) {
-        latestValidF1 = latestF1
-        latestValidF2 = latestF2
-        latestValidF3 = latestF3 ?? latestValidF3
-      }
-    }
-
-    // Maintain rolling pitch window; run batch analysis every PITCH_INTERVAL quanta
-    pitchBuf.copyWithin(0, QUANTUM)
-    pitchBuf.set(inp, PITCH_BUF_SIZE - QUANTUM)
-    if (++quantumCount % PITCH_INTERVAL === 0) {
-      const pr = pitch.analyze(pitchBuf)
-      if (pr.frames.length > 0) {
-        // Last frame = most recent audio, benefits most from Viterbi look-back
-        latestPitchHz = pr.frames[pr.frames.length - 1]!.frequencyHz
-        latestValidPitchHz =
-          latestPitchHz > 0 ? latestPitchHz : latestValidPitchHz
-      }
+      const f1 = ff.formantCount > 0 ? ff.formants[0]!.frequencyHz : null
+      const f2 = ff.formantCount > 1 ? ff.formants[1]!.frequencyHz : null
+      const f3 = ff.formantCount > 2 ? ff.formants[2]!.frequencyHz : null
+      pendingFormants.push({ timeSec: ff.timeSec, f1, f2, f3 })
     }
 
     samplesPending += inp.length
     while (samplesPending > timeStepSamples) {
-      // Patch the relevant frame(s)
-      // TODO: the formant and pitch have different lags, so really the formants
-      // should also have a calculated frame index. They're within 10ms though,
-      // which is good enough for me.
-      const pitchDetected = latestPitchHz > 0
-      const actualFrameIdx = Math.round(
-        frameIndex - (QUANTUM * PITCH_INTERVAL) / timeStepSamples,
-      )
-      while (lastRecordedFrameIndex < actualFrameIdx) {
-        postMessage({
-          type: 'patch',
-          frameIndex: lastRecordedFrameIndex++,
-          pitchDetected,
-          f0: latestValidPitchHz,
-          f1: pitchDetected ? latestValidF1 : null,
-          f2: pitchDetected ? latestValidF2 : null,
-          f3: pitchDetected ? latestValidF3 : null,
-        } satisfies PatchFrameMessage)
+      const fi = frameFormants.length
+      const tMid = ((fi + 0.5) * timeStepSamples) / sampleRate
+      while (formantPtr < pendingFormants.length) {
+        const pf = pendingFormants[formantPtr]!
+        if (pf.timeSec > tMid) break
+        const { f1, f2, f3 } = pf
+        if (f1 && f1 >= 200 && f1 <= 1100 && f2 && f2 >= 650 && f2 <= 3500) {
+          latestValidF1 = f1
+          latestValidF2 = f2
+          latestValidF3 = f3 ?? latestValidF3
+        }
+        formantPtr++
       }
-
+      frameFormants.push({
+        f1: latestValidF1,
+        f2: latestValidF2,
+        f3: latestValidF3,
+      })
       samplesPending -= timeStepSamples
-      frameIndex += 1
+    }
+
+    if (++quantumCount % PITCH_INTERVAL === 0) {
+      emitPitchPatches(false)
     }
   }
+
+  // Flush all remaining frames using the full buffer as final context
+  emitPitchPatches(true)
 }
 
 self.addEventListener('unhandledrejection', function (event) {
