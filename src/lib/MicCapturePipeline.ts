@@ -42,8 +42,8 @@ import type { VadWorkerOutMessage } from './VadWorker'
 import type { AppendFrameMessage, PatchFrameMessage } from './workerMessages'
 
 // Must be a pow of 2 due to bit masking hack for efficient circular buffer
-// About 0.75sec at 44100 Hz.
-const SAB_BUF_SAMPLES = 32768
+// About 0.2sec at 44100 Hz.
+const SAB_BUF_SAMPLES = 8192
 
 type MicCaptureOutEvents = {
   append: CustomEvent<{ frame: AnalysisFrame }>
@@ -216,6 +216,7 @@ export class MicCapturePipeline extends TypedEventTarget<MicCaptureOutEvents> {
       )
       this.#context = new AudioContext({
         sampleRate: preferredRate,
+        latencyHint: 'interactive',
       })
       console.log(
         LOG,

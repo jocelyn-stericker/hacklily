@@ -62,7 +62,7 @@ export class AudioPlaybackPipeline extends TypedEventTarget<AudioPlaybackOutEven
         : 0
     this.#startTimeSec = startAtSec
 
-    this.#context = new AudioContext({ sampleRate })
+    this.#context = new AudioContext({ sampleRate, latencyHint: 'interactive' })
     const thisSource = this.#context.createBufferSource()
     thisSource.buffer = audioBuffer
     thisSource.connect(this.#context.destination)
