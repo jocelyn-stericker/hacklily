@@ -437,6 +437,7 @@ describe('AudioRecorder', () => {
     await waitFor(() => {
       expect((global.AudioContext as any).lastCall).toEqual({
         sampleRate: 44100,
+        latencyHint: 'interactive',
       })
     })
   })
@@ -522,13 +523,13 @@ describe('AudioRecorder', () => {
       const workletCall = mockWorkletNode.port.postMessage.mock.calls[0]?.[0]
       expect(workletCall?.type).toBe('init')
       expect(workletCall?.sab).toBeInstanceOf(SharedArrayBuffer)
-      expect(workletCall?.bufSamples).toBe(32768)
+      expect(workletCall?.bufSamples).toBe(8192)
 
       const workerCall = getMockWorker().postMessage.mock.calls[0]?.[0]
       expect(workerCall?.type).toBe('init')
       expect(workerCall?.sab).toBeInstanceOf(SharedArrayBuffer)
       expect(workerCall?.sampleRate).toBe(44100)
-      expect(workerCall?.bufSamples).toBe(32768)
+      expect(workerCall?.bufSamples).toBe(8192)
     })
   })
 
