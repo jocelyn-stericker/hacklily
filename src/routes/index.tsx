@@ -226,6 +226,26 @@ function App() {
   const exportAudioDisabled =
     !audioBuffer || audioBuffer.length === 0 || isExporting
 
+  useEffect(() => {
+    const hasData =
+      (audioBuffer?.length ?? 0) > 0 ||
+      analysis.length > 0 ||
+      status.value === 'recording'
+
+    if (!hasData) {
+      return
+    }
+
+    const handleBeforeUnload = (event: BeforeUnloadEvent) => {
+      event.preventDefault()
+    }
+
+    window.addEventListener('beforeunload', handleBeforeUnload)
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload)
+    }
+  }, [audioBuffer?.length, analysis.length, status.value])
+
   useHotkeys(
     'space',
     (e) => {
