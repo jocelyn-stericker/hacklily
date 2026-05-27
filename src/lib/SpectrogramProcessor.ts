@@ -173,7 +173,48 @@ function resolveSpectrogramParams(
   }
 }
 
-// Inner spectrogram frame analysis (shared by batch and stream processors)
+// Bins spectrum (Praat: spectrum.part(lo, hi-1) summed then scaled)
+function binSpectrum(
+  spectrum: Float32Array,
+  binWidthSamples: number,
+  numFreqs: number,
+  oneByBinWidth: number,
+  outRow: Float32Array,
+): void {
+  for (let iband = 0; iband < numFreqs; iband++) {
+    const lo = iband * binWidthSamples
+    let power = 0
+    for (let j = lo; j < lo + binWidthSamples; j++) power += spectrum[j]!
+    outRow[iband] = power * oneByBinWidth
+  }
+}
+
+// Given fftRe already loaded with windowed samples (zero-padded to nFFT),
+// runs FFT, computes mono power spectrum, and bins into outRow.
+// Used by the streaming path (which fuses ring-read + windowing into fftRe
+// directly) and by the single-channel batch path.
+function applyFftAndBin(
+  fftRe: Float32Array,
+  fftIm: Float32Array,
+  halfNFFT: number,
+  fftTables: FftTables,
+  spectrum: Float32Array,
+  binWidthSamples: number,
+  numFreqs: number,
+  oneByBinWidth: number,
+  outRow: Float32Array,
+): void {
+  fftIm.fill(0)
+  complexFFTForward(fftRe, fftIm, fftTables)
+  spectrum[0] = fftRe[0]! * fftRe[0]! // DC
+  for (let i = 1; i < halfNFFT; i++)
+    spectrum[i] = fftRe[i]! * fftRe[i]! + fftIm[i]! * fftIm[i]!
+  spectrum[halfNFFT] = fftRe[halfNFFT]! * fftRe[halfNFFT]! // Nyquist
+  binSpectrum(spectrum, binWidthSamples, numFreqs, oneByBinWidth, outRow)
+}
+
+// Multi-channel batch frame analysis. Single-channel delegates to applyFftAndBin;
+// multi-channel accumulates power across channels then averages before binning.
 function analyzeSpectrogramFrame(
   chans: readonly Float32Array[],
   startSample: number,
@@ -188,11 +229,30 @@ function analyzeSpectrogramFrame(
   fftRe: Float32Array,
   fftIm: Float32Array,
   spectrum: Float32Array,
-  outRow: Float32Array, // length ≥ numFreqs, receives PSD values for this frame
+  outRow: Float32Array,
 ): void {
   const nChans = chans.length
-  spectrum.fill(0)
 
+  if (nChans === 1) {
+    const chan = chans[0]!
+    for (let j = 0; j < nsampWindow; j++)
+      fftRe[j] = chan[startSample + j]! * window[j]!
+    for (let j = nsampWindow; j < nFFT; j++) fftRe[j] = 0
+    applyFftAndBin(
+      fftRe,
+      fftIm,
+      halfNFFT,
+      fftTables,
+      spectrum,
+      binWidthSamples,
+      numFreqs,
+      oneByBinWidth,
+      outRow,
+    )
+    return
+  }
+
+  spectrum.fill(0)
   for (let ch = 0; ch < nChans; ch++) {
     const chan = chans[ch]!
     for (let j = 0; j < nsampWindow; j++)
@@ -200,24 +260,13 @@ function analyzeSpectrogramFrame(
     for (let j = nsampWindow; j < nFFT; j++) fftRe[j] = 0
     fftIm.fill(0)
     complexFFTForward(fftRe, fftIm, fftTables)
-
-    // Accumulate power: spectrum[i] = |FFT[i]|²
     spectrum[0]! += fftRe[0]! * fftRe[0]! // DC
     for (let i = 1; i < halfNFFT; i++)
       spectrum[i]! += fftRe[i]! * fftRe[i]! + fftIm[i]! * fftIm[i]!
     spectrum[halfNFFT]! += fftRe[halfNFFT]! * fftRe[halfNFFT]! // Nyquist
   }
-
-  if (nChans > 1) for (let i = 0; i <= halfNFFT; i++) spectrum[i]! /= nChans
-
-  // Bin into output frequency bands (Praat: spectrum.part(lo, hi-1) summed then scaled)
-  for (let iband = 0; iband < numFreqs; iband++) {
-    const lo = iband * binWidthSamples
-    const hi = lo + binWidthSamples
-    let power = 0
-    for (let j = lo; j < hi; j++) power += spectrum[j]!
-    outRow[iband] = power * oneByBinWidth
-  }
+  for (let i = 0; i <= halfNFFT; i++) spectrum[i]! /= nChans
+  binSpectrum(spectrum, binWidthSamples, numFreqs, oneByBinWidth, outRow)
 }
 
 /**
@@ -423,7 +472,6 @@ export class SpectrogramStreamProcessor {
     this._processReady()
   }
 
-  // TODO: use analyzeSpectrogramFrame!
   private _processReady(): void {
     const p = this.params
     while (true) {
@@ -431,30 +479,24 @@ export class SpectrogramStreamProcessor {
       if (start < 0 || start + p.nsampWindow > this.totalFed) break
       if (this.qTail - this.qHead >= this.QUEUE) break // queue full
 
-      // Copy windowed samples from ring buffer into fftRe
+      // Fuse ring-read + windowing into fftRe in one pass (no intermediate buffer).
       const { ring, ringMask, window: win } = this
-      for (let j = 0; j < p.nsampWindow; j++) {
+      for (let j = 0; j < p.nsampWindow; j++)
         this.fftRe[j] = ring[(start + j) & ringMask]! * win[j]!
-      }
       for (let j = p.nsampWindow; j < p.nFFT; j++) this.fftRe[j] = 0
-      this.fftIm.fill(0)
-      complexFFTForward(this.fftRe, this.fftIm, this.fftTables)
 
-      const sp = this.spectrum
-      sp[0] = this.fftRe[0]! * this.fftRe[0]!
-      for (let i = 1; i < p.halfNFFT; i++)
-        sp[i] = this.fftRe[i]! ** 2 + this.fftIm[i]! ** 2
-      sp[p.halfNFFT] = this.fftRe[p.halfNFFT]! ** 2
-
-      const base = (this.qTail % this.QUEUE) * p.numFreqs
-      const obbw = this.oneByBinWidth
-      const bw = p.binWidthSamples
-      for (let iband = 0; iband < p.numFreqs; iband++) {
-        let power = 0
-        const lo = iband * bw
-        for (let j = lo; j < lo + bw; j++) power += sp[j]!
-        this.queue[base + iband] = power * obbw
-      }
+      const outBase = (this.qTail % this.QUEUE) * p.numFreqs
+      applyFftAndBin(
+        this.fftRe,
+        this.fftIm,
+        p.halfNFFT,
+        this.fftTables,
+        this.spectrum,
+        p.binWidthSamples,
+        p.numFreqs,
+        this.oneByBinWidth,
+        this.queue.subarray(outBase, outBase + p.numFreqs),
+      )
       this.qTail++
       this.nextFrameCenter += this.timeStepSamples
     }

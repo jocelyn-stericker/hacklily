@@ -40,7 +40,7 @@ const LOG = '[FormantWorker]'
 // Run pitch every PITCH_INTERVAL quanta and emit patches for frames that
 // have at least PITCH_EMIT_SECS of future audio as Viterbi context.
 const PITCH_INTERVAL = 16
-const PITCH_EMIT_SECS = 0.1
+const PITCH_EMIT_SECS = 0.05
 const PITCH_BUF_SECS = PITCH_EMIT_SECS * 2
 
 export type FormantWorkerInMessage = FormantInitMessage | null

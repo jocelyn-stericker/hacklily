@@ -459,7 +459,6 @@ function App() {
               debug={false}
             />
             <SpeechStrip analysis={analysis} ref={speechStripRef} />
-            {/* bottom-[44px]/left-[72px] mirror PLOT_PAD_B/PLOT_PAD_L in Plot.tsx */}
             {status.value !== 'recording' && (
               <div
                 className={cn(

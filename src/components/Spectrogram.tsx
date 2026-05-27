@@ -31,7 +31,7 @@ const FPS_WINDOW_MS = 1000
 
 // GPU canvas tiles: staying under browser width limits while streaming real-time spectral data.
 // Each tile holds up to TILE_WIDTH frames before overflow to the next tile.
-export const TILE_WIDTH = 8192
+export const TILE_WIDTH = 4096
 
 // Width of the shared scratch ImageData used by paintColumnsToOffscreen.
 // Narrower than TILE_WIDTH so a single allocation serves all tiles without
@@ -192,12 +192,18 @@ function ensureColorTiles(state: ChunkColorsState, needed: number): void {
 function ensureTiles(
   off: { tiles: Tile[]; canvasHeight: number },
   needed: number,
+  alpha = true,
+  bgStyle?: string,
 ): void {
   const numTiles = Math.ceil(needed / TILE_WIDTH)
   while (off.tiles.length < numTiles) {
     const startFrame = off.tiles.length * TILE_WIDTH
     const canvas = new OffscreenCanvas(TILE_WIDTH, off.canvasHeight)
-    const ctx = canvas.getContext('2d')!
+    const ctx = canvas.getContext('2d', { alpha })!
+    if (bgStyle) {
+      ctx.fillStyle = bgStyle
+      ctx.fillRect(0, 0, TILE_WIDTH, off.canvasHeight)
+    }
     off.tiles.push({ canvas, ctx, startFrame })
   }
 }
@@ -529,7 +535,7 @@ function draw(
   let db = displayBufRef.current
   if (!db || db.width !== width || db.height !== height) {
     const buf = new OffscreenCanvas(width, height)
-    const ctx = buf.getContext('2d')!
+    const ctx = buf.getContext('2d', { alpha: false })!
     ctx.imageSmoothingEnabled = false
     db = {
       buf,
@@ -712,7 +718,7 @@ export function Spectrogram({
         scratchData,
         scratchU32: new Uint32Array(scratchData.data.buffer),
       }
-      ensureTiles(off, colors.numFrames)
+      ensureTiles(off, colors.numFrames, false, theme.bgStyle)
       newOff.push(off)
       paintColumnsToOffscreen(off, colors, 0, colors.numFrames, theme)
 
@@ -740,7 +746,8 @@ export function Spectrogram({
     if (!canvas) return
 
     // Hoist getContext so it isn't re-called on every animation frame.
-    const ctx = canvas.getContext('2d')!
+    const ctx = canvas.getContext('2d', { alpha: false })!
+    ctx.imageSmoothingEnabled = false
 
     triggerDraw.current = () => {
       if (animationFrame.current) {
@@ -868,7 +875,7 @@ export function Spectrogram({
             scratchData,
             scratchU32: new Uint32Array(scratchData.data.buffer),
           }
-          ensureTiles(off, localTo)
+          ensureTiles(off, localTo, false, theme.bgStyle)
           allOff[chunkIdx] = off
           paintColumnsToOffscreen(off, colors, 0, localTo, theme)
 
@@ -878,7 +885,7 @@ export function Spectrogram({
           paintFormantTiles(formantOff, chunk.frames, 0, freqToY, dpr)
           needFullRedraw = true
         } else if (off) {
-          if (isExtending) ensureTiles(off, localTo)
+          if (isExtending) ensureTiles(off, localTo, false, theme.bgStyle)
           paintColumnsToOffscreen(off, colors, localFrom, localTo, theme)
 
           if (!formantOff) {

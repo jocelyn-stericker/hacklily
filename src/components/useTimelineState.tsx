@@ -71,7 +71,7 @@ export function useTimelineState(analysis: AnalysisChunk[]) {
         })
         setStatus({ value: 'inactive' })
       } catch (err) {
-        console.log(err)
+        console.error(err)
         setStatus({
           value: 'error',
           error: err instanceof Error ? err.message : String(err),
