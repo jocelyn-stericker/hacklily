@@ -333,7 +333,7 @@ export function VirtualScrollArea({
             ? 'cursor-grabbing'
             : 'cursor-pointer',
         hideScrollBar ? 'overflow-x-hidden' : 'overflow-x-scroll',
-        'touch-pan-x overscroll-none absolute scrollbar-thin scrollbar-thumb-black scrollbar-track-transparent',
+        'touch-pan-x overscroll-none absolute scrollbar-thin scrollbar-thumb-black dark:scrollbar-thumb-white scrollbar-track-transparent',
         rest.className,
       )}
       ref={setRoot}
