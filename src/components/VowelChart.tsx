@@ -26,6 +26,9 @@ import type {
   VoicedAnalysisFrame,
 } from '#/lib/AnalysisFrame'
 import { hzToBark } from '#/lib/bark'
+import { HILLENBRAND } from '#/lib/hillenbrand'
+
+import { useColourScheme } from './useColourScheme'
 
 // F1/F2 ranges for North American English vowels (Hz), per Hillenbrand et al. 1995.
 // These define the vowel plot boundaries; Bark scale is used for perceptually-uniform spacing.
@@ -38,44 +41,89 @@ const BARK_F1_MAX = hzToBark(F1_MAX)
 const BARK_F2_MIN = hzToBark(F2_MIN)
 const BARK_F2_MAX = hzToBark(F2_MAX)
 
-// CSS-pixel padding
-const PAD_L = 38
-const PAD_B = 32
-const PAD_T = 10
-const PAD_R = 10
+const PAD = 6 // uniform CSS-pixel padding on all sides
 
 const TRAIL_LEN = 80
 
-// North American English vowels – Hillenbrand et al. 1995, M+F average
-const VOWELS: Array<{ label: string; word: string; f1: number; f2: number }> = [
-  { label: 'i', word: 'heed', f1: 390, f2: 2540 },
-  { label: 'ɪ', word: 'hid', f1: 455, f2: 2200 },
-  { label: 'eɪ', word: 'hayed', f1: 506, f2: 2310 },
-  { label: 'ɛ', word: 'head', f1: 656, f2: 1929 },
-  { label: 'æ', word: 'had', f1: 629, f2: 2151 },
-  { label: 'ɑ', word: 'hod', f1: 852, f2: 1442 },
-  { label: 'ɔ', word: 'hawed', f1: 717, f2: 1067 },
-  { label: 'oʊ', word: 'hoed', f1: 526, f2: 973 },
-  { label: 'ʊ', word: 'hood', f1: 494, f2: 1174 },
-  { label: 'u', word: "who'd", f1: 419, f2: 1051 },
-  { label: 'ʌ', word: 'hud', f1: 688, f2: 1313 },
-  { label: 'ɝ', word: 'heard', f1: 499, f2: 1484 },
-]
+const VOWELS: Array<{ label: string; f1: number; f2: number }> = Object.values(
+  HILLENBRAND,
+)
+  .filter((measures) => measures.group === 'a')
+  .map(({ ipa, f1, f2 }) => ({ label: ipa, f1, f2 }))
 
-const F1_TICKS = [200, 300, 400, 500, 600, 700, 800, 900, 1000]
-const F2_TICKS = [700, 1000, 1500, 2000, 2500, 3000]
+function getVowel(vowelLabel: string) {
+  return VOWELS.find((vowel) => vowel.label === vowelLabel)
+}
+
+interface VowelChartTheme {
+  bg: string
+  bg100: string
+  guideLine: string
+  vowelCircle: string
+  vowelText: string
+  trailRgb: string
+  dot: string
+  label: string
+}
+
+const DARK_THEME: VowelChartTheme = {
+  bg: 'rgba(14,14,20,0.88)',
+  bg100: 'rgba(14,14,20,1.0)',
+  guideLine: 'rgba(200,200,220,0.15)',
+  vowelCircle: 'rgba(180,180,210,0.25)',
+  vowelText: 'rgba(200,200,230,0.65)',
+  trailRgb: '00,229,255',
+  dot: '#00e5ff',
+  label: 'rgba(100,100,120,0.8)',
+}
+
+const LIGHT_THEME: VowelChartTheme = {
+  bg: 'rgba(248,248,255,0.92)',
+  bg100: 'rgba(248,248,255,1.0)',
+  guideLine: 'rgba(60,60,100,0.12)',
+  vowelCircle: 'rgba(60,60,130,0.22)',
+  vowelText: 'rgba(40,40,110,0.75)',
+  trailRgb: '00,229,255',
+  dot: '#00e5ff',
+  label: 'rgba(110,110,135,0.9)',
+}
+
+function strokeArrow(
+  ctx: CanvasRenderingContext2D,
+  x1: number,
+  y1: number,
+  x2: number,
+  y2: number,
+  headSize: number,
+): void {
+  const angle = Math.atan2(y2 - y1, x2 - x1)
+  const spread = Math.PI / 5
+  ctx.beginPath()
+  ctx.moveTo(x1, y1)
+  ctx.lineTo(x2, y2)
+  ctx.lineTo(
+    x2 - headSize * Math.cos(angle - spread),
+    y2 - headSize * Math.sin(angle - spread),
+  )
+  ctx.moveTo(x2, y2)
+  ctx.lineTo(
+    x2 - headSize * Math.cos(angle + spread),
+    y2 - headSize * Math.sin(angle + spread),
+  )
+  ctx.stroke()
+}
 
 function f1ToY(f1: number, h: number, dpr: number): number {
-  const plotH = h - (PAD_T + PAD_B) * dpr
+  const pad = PAD * dpr
   const frac = (hzToBark(f1) - BARK_F1_MIN) / (BARK_F1_MAX - BARK_F1_MIN)
-  return PAD_T * dpr + frac * plotH
+  return pad + frac * (h - 2 * pad)
 }
 
 // High F2 → left (front vowels), low F2 → right (back vowels)
 function f2ToX(f2: number, w: number, dpr: number): number {
-  const plotW = w - (PAD_L + PAD_R) * dpr
+  const pad = PAD * dpr
   const frac = 1 - (hzToBark(f2) - BARK_F2_MIN) / (BARK_F2_MAX - BARK_F2_MIN)
-  return PAD_L * dpr + frac * plotW
+  return pad + frac * (w - 2 * pad)
 }
 
 function useCanvasSize(canvas: HTMLCanvasElement | null) {
@@ -111,6 +159,7 @@ function drawVowelChart(
   height: number,
   dpr: number,
   history: AnalysisFrame[],
+  theme: VowelChartTheme,
 ): void {
   if (width === 0 || height === 0) return
 
@@ -120,42 +169,50 @@ function drawVowelChart(
   canvas.height = h
 
   const ctx = canvas.getContext('2d')!
+  const pad = PAD * dpr
+  const plotX = pad
+  const plotY = pad
+  const plotW = w - 2 * pad
+  const plotH = h - 2 * pad
 
-  // Background
-  ctx.fillStyle = '#0e0e14'
+  ctx.fillStyle = theme.bg
   ctx.fillRect(0, 0, w, h)
 
-  const plotX = PAD_L * dpr
-  const plotY = PAD_T * dpr
-  const plotW = w - (PAD_L + PAD_R) * dpr
-  const plotH = h - (PAD_T + PAD_B) * dpr
-
-  // Plot area background
-  ctx.fillStyle = '#121218'
-  ctx.fillRect(plotX, plotY, plotW, plotH)
-
-  // Grid lines
+  // Guide lines approximating an academic vowel chart
+  // conntect e,^, eI, ou
+  const vow_i = getVowel('i')!
+  const vow_ɑ = getVowel('ɑ')!
+  const vow_u = getVowel('u')!
+  const vow_eɪ = getVowel('eɪ')!
+  const vow_oʊ = getVowel('oʊ')!
+  const vow_ɛ = getVowel('ɛ')!
+  const vow_ʌ = getVowel('ʌ')!
+  ctx.strokeStyle = theme.guideLine
   ctx.lineWidth = dpr
-  for (const f1 of F1_TICKS) {
-    const y = f1ToY(f1, h, dpr)
-    if (y < plotY || y > plotY + plotH) continue
-    ctx.strokeStyle = 'rgba(255,255,255,0.05)'
-    ctx.beginPath()
-    ctx.moveTo(plotX, y)
-    ctx.lineTo(plotX + plotW, y)
-    ctx.stroke()
-  }
-  for (const f2 of F2_TICKS) {
-    const x = f2ToX(f2, w, dpr)
-    if (x < plotX || x > plotX + plotW) continue
-    ctx.strokeStyle = 'rgba(255,255,255,0.05)'
-    ctx.beginPath()
-    ctx.moveTo(x, plotY)
-    ctx.lineTo(x, plotY + plotH)
-    ctx.stroke()
-  }
+  ctx.beginPath()
+  ctx.moveTo(f2ToX(vow_i.f2, w, dpr), f1ToY(vow_i.f1, h, dpr))
+  ctx.lineTo(f2ToX(vow_ɑ.f2, w, dpr), f1ToY(vow_ɑ.f1, h, dpr))
+  ctx.stroke()
 
-  // Vowel reference points
+  ctx.beginPath()
+  ctx.moveTo(f2ToX(vow_i.f2, w, dpr), f1ToY(vow_i.f1, h, dpr))
+  ctx.lineTo(f2ToX(vow_u.f2, w, dpr), f1ToY(vow_u.f1, h, dpr))
+  ctx.stroke()
+
+  ctx.beginPath()
+  ctx.moveTo(f2ToX(vow_u.f2, w, dpr), f1ToY(vow_u.f1, h, dpr))
+  ctx.lineTo(f2ToX(vow_ɑ.f2, w, dpr), f1ToY(vow_ɑ.f1, h, dpr))
+  ctx.stroke()
+  ctx.beginPath()
+  ctx.moveTo(f2ToX(vow_ɛ.f2, w, dpr), f1ToY(vow_ɛ.f1, h, dpr))
+  ctx.lineTo(f2ToX(vow_ʌ.f2, w, dpr), f1ToY(vow_ʌ.f1, h, dpr))
+  ctx.stroke()
+  ctx.beginPath()
+  ctx.moveTo(f2ToX(vow_eɪ.f2, w, dpr), f1ToY(vow_eɪ.f1, h, dpr))
+  ctx.lineTo(f2ToX(vow_oʊ.f2, w, dpr), f1ToY(vow_oʊ.f1, h, dpr))
+  ctx.stroke()
+
+  // Vowel reference markers
   ctx.font = `${11 * dpr}px Georgia, "Times New Roman", serif`
   ctx.textAlign = 'center'
   ctx.textBaseline = 'middle'
@@ -167,11 +224,13 @@ function drawVowelChart(
 
     ctx.beginPath()
     ctx.arc(x, y, 11 * dpr, 0, Math.PI * 2)
-    ctx.strokeStyle = 'rgba(180,180,210,0.22)'
+    ctx.strokeStyle = theme.vowelCircle
+    ctx.fillStyle = theme.bg100
     ctx.lineWidth = dpr
     ctx.stroke()
+    ctx.fill()
 
-    ctx.fillStyle = 'rgba(200,200,230,0.55)'
+    ctx.fillStyle = theme.vowelText
     ctx.fillText(v.label, x, y)
   }
 
@@ -188,7 +247,7 @@ function drawVowelChart(
       const alpha = (i / trail.length) * 0.5
       const s = trail[i]!
       const sp = trail[i - 1]!
-      ctx.strokeStyle = `rgba(247,143,179,${alpha})`
+      ctx.strokeStyle = `rgba(${theme.trailRgb},${alpha})`
       ctx.beginPath()
       ctx.moveTo(f2ToX(sp.f2, w, dpr), f1ToY(sp.f1, h, dpr))
       ctx.lineTo(f2ToX(s.f2, w, dpr), f1ToY(s.f1, h, dpr))
@@ -196,15 +255,15 @@ function drawVowelChart(
     }
   }
 
-  // Current position dot
+  // Current position dot with glow
   if (trail.length > 0) {
     const s = trail[trail.length - 1]!
     const x = f2ToX(s.f2, w, dpr)
     const y = f1ToY(s.f1, h, dpr)
 
     const glow = ctx.createRadialGradient(x, y, 0, x, y, 14 * dpr)
-    glow.addColorStop(0, 'rgba(247,143,179,0.35)')
-    glow.addColorStop(1, 'rgba(247,143,179,0)')
+    glow.addColorStop(0, `rgba(${theme.trailRgb},0.35)`)
+    glow.addColorStop(1, `rgba(${theme.trailRgb},0)`)
     ctx.beginPath()
     ctx.arc(x, y, 14 * dpr, 0, Math.PI * 2)
     ctx.fillStyle = glow
@@ -212,89 +271,47 @@ function drawVowelChart(
 
     ctx.beginPath()
     ctx.arc(x, y, 5 * dpr, 0, Math.PI * 2)
-    ctx.fillStyle = '#f78fb3'
+    ctx.fillStyle = theme.dot
     ctx.fill()
   }
 
-  // F1 axis tick marks + labels (left)
-  ctx.font = `${9 * dpr}px monospace`
-  ctx.fillStyle = '#555566'
-  ctx.textAlign = 'right'
-  ctx.textBaseline = 'middle'
-  for (const f1 of F1_TICKS) {
-    const y = f1ToY(f1, h, dpr)
-    if (y < plotY || y > plotY + plotH) continue
-    ctx.strokeStyle = '#333344'
-    ctx.lineWidth = dpr
-    ctx.beginPath()
-    ctx.moveTo(plotX - 4 * dpr, y)
-    ctx.lineTo(plotX, y)
-    ctx.stroke()
-    ctx.fillText(String(f1), plotX - 6 * dpr, y)
-  }
+  // Axis labels with long canvas-drawn arrows showing direction
+  ctx.font = `${8 * dpr}px monospace`
+  ctx.fillStyle = theme.label
+  ctx.strokeStyle = theme.label
+  ctx.lineWidth = dpr
+  ctx.lineCap = 'round'
 
-  // F2 axis tick marks + labels (bottom)
+  // "F1" label at top-left, long downward arrow below it
+  const f1ArrowX = plotX + 10 * dpr
   ctx.textAlign = 'center'
   ctx.textBaseline = 'top'
-  for (const f2 of F2_TICKS) {
-    const x = f2ToX(f2, w, dpr)
-    if (x < plotX || x > plotX + plotW) continue
-    ctx.strokeStyle = '#333344'
-    ctx.lineWidth = dpr
-    ctx.beginPath()
-    ctx.moveTo(x, plotY + plotH)
-    ctx.lineTo(x, plotY + plotH + 4 * dpr)
-    ctx.stroke()
-    ctx.fillStyle = '#555566'
-    const label = f2 >= 1000 ? `${f2 / 1000}k` : String(f2)
-    ctx.fillText(label, x, plotY + plotH + 6 * dpr)
-  }
+  ctx.fillText('F1', f1ArrowX, plotY + 3 * dpr)
+  strokeArrow(
+    ctx,
+    f1ArrowX,
+    plotY + 15 * dpr,
+    f1ArrowX,
+    plotY + plotH * 0.86,
+    4 * dpr,
+  )
 
-  // Axis border
-  ctx.strokeStyle = '#2a2a3a'
-  ctx.lineWidth = dpr
-  ctx.beginPath()
-  ctx.moveTo(plotX, plotY)
-  ctx.lineTo(plotX, plotY + plotH)
-  ctx.lineTo(plotX + plotW, plotY + plotH)
-  ctx.stroke()
-
-  // Axis title: "F1 (Hz)" top-left inside plot
-  ctx.font = `${9 * dpr}px monospace`
-  ctx.fillStyle = '#666677'
-  ctx.textAlign = 'left'
-  ctx.textBaseline = 'top'
-  ctx.fillText('F1 (Hz) ↓', plotX + 4 * dpr, plotY + 3 * dpr)
-
-  // Axis title: "← F2 (Hz)" bottom-right
-  ctx.textAlign = 'right'
-  ctx.textBaseline = 'alphabetic'
-  ctx.fillText('← F2 (Hz)', plotX + plotW, h - 2 * dpr)
-
-  // Legend box (top-right corner)
-  const lgX = plotX + plotW - 4 * dpr
-  const lgY = plotY + 4 * dpr
-  const lgLineH = 14 * dpr
-  ctx.font = `${9 * dpr}px monospace`
+  // "F2" label at bottom-right, long leftward arrow to its left
+  const f2LabelY = plotY + plotH - 10 * dpr
   ctx.textAlign = 'right'
   ctx.textBaseline = 'middle'
+  ctx.fillText('F2', plotX + plotW - 4 * dpr, f2LabelY)
+  const f2W = ctx.measureText('F2').width
+  strokeArrow(
+    ctx,
+    plotX + plotW - 4 * dpr - f2W - 6 * dpr,
+    f2LabelY,
+    plotX + 20 * dpr,
+    f2LabelY,
+    4 * dpr,
+  )
 
-  // Reference vowel entry
-  ctx.strokeStyle = 'rgba(180,180,210,0.22)'
-  ctx.lineWidth = dpr
-  ctx.beginPath()
-  ctx.arc(lgX - 28 * dpr, lgY + lgLineH * 0, 5 * dpr, 0, Math.PI * 2)
-  ctx.stroke()
-  ctx.fillStyle = 'rgba(200,200,230,0.55)'
-  ctx.fillText('NA Eng vowels', lgX - 10 * dpr, lgY + lgLineH * 0)
-
-  // Current F1/F2 entry
-  ctx.beginPath()
-  ctx.arc(lgX - 28 * dpr, lgY + lgLineH * 1, 4 * dpr, 0, Math.PI * 2)
-  ctx.fillStyle = '#f78fb3'
-  ctx.fill()
-  ctx.fillStyle = '#f78fb3'
-  ctx.fillText('Current F1/F2', lgX - 10 * dpr, lgY + lgLineH * 1)
+  ctx.lineCap = 'butt'
 }
 
 export interface VowelChartHandle {
@@ -330,6 +347,8 @@ export function VowelChart({
 }) {
   const [canvas, setCanvas] = useState<HTMLCanvasElement | null>(null)
   const { width, height, dpr } = useCanvasSize(canvas)
+  const scheme = useColourScheme()
+  const theme = scheme === 'dark' ? DARK_THEME : LIGHT_THEME
 
   useEffect(() => {
     if (!canvas) return
@@ -339,8 +358,9 @@ export function VowelChart({
       height,
       dpr,
       framesUpToCursor(analysis, cursorSec),
+      theme,
     )
-  }, [canvas, width, height, dpr, analysis, cursorSec])
+  }, [canvas, width, height, dpr, analysis, cursorSec, theme])
 
   useImperativeHandle(
     ref,
@@ -353,6 +373,7 @@ export function VowelChart({
           height,
           dpr,
           framesUpToCursor(analysis, cursorSec),
+          theme,
         )
       },
       patch(_from, _to) {
@@ -363,11 +384,12 @@ export function VowelChart({
           height,
           dpr,
           framesUpToCursor(analysis, cursorSec),
+          theme,
         )
       },
     }),
-    [canvas, width, height, dpr, analysis, cursorSec],
+    [canvas, width, height, dpr, analysis, cursorSec, theme],
   )
 
-  return <canvas ref={(el) => setCanvas(el)} className="w-full h-96 mt-4" />
+  return <canvas ref={(el) => setCanvas(el)} className="w-full h-full" />
 }

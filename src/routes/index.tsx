@@ -61,7 +61,6 @@ export const Route = createFileRoute('/')({
 
 const DB_MAX_DEFAULT = -16
 const DB_DYNAMIC_RANGE = 70 // dB, matches Praat's default dynamic range
-const SHOW_VOWEL_CHART = localStorage.SHOW_VOWEL_CHART === 'true'
 
 function App() {
   const waveformRef = useRef<WaveformHandle>(null)
@@ -352,8 +351,7 @@ function App() {
 
   const isRecording =
     status.value === 'recording' || status.value === 'analyzing'
-  const noOpScroll = () => {}
-  const noOpClick = () => {}
+  const noOp = useCallback(() => {}, [])
 
   return (
     <>
@@ -412,9 +410,9 @@ function App() {
             type: 'amplitude',
             ampMaxNorm: ampMaxNorm || 1,
           }}
-          onScroll={noOpScroll}
+          onScroll={noOp}
           onZoom={() => {}}
-          onClick={isRecording ? noOpClick : handlePlotClick}
+          onClick={isRecording ? noOp : handlePlotClick}
           onHover={handlePlotHover}
           className="h-32 max-h-[15dvh] border-b border-b-gray-500"
           virtualWidthSec={virtualWidthSec}
@@ -440,9 +438,9 @@ function App() {
                   ? { f0: hoverFrame.f0, f1: hoverFrame.f1, f2: hoverFrame.f2 }
                   : null,
             }}
-            onScroll={isRecording ? noOpScroll : handlePlotScroll}
+            onScroll={isRecording ? noOp : handlePlotScroll}
             onZoom={handlePlotZoom}
-            onClick={isRecording ? noOpClick : handlePlotClick}
+            onClick={isRecording ? noOp : handlePlotClick}
             onHover={handlePlotHover}
             virtualWidthSec={
               Math.floor(timelineState.trackDurationSec / 30 + 1) * 30 +
@@ -458,16 +456,17 @@ function App() {
               ref={spectrogramRef}
               debug={false}
             />
+            {/* bottom-[44px]/left-[72px] mirror PLOT_PAD_B/PLOT_PAD_L in Plot.tsx */}
+            {hoverFrame?.speechDetected ? (
+              <div className="absolute z-10 pointer-events-none border border-[#ccccdd] dark:border-[#2a2a3a] right-0 h-40 bottom-auto top-0 left-auto md:right-0 md:w-60 md:h-48">
+                <VowelChart
+                  analysis={analysis}
+                  cursorSec={timelineState.hoverSec ?? timelineState.cursorSec}
+                  ref={vowelChartRef}
+                />
+              </div>
+            ) : null}
           </Plot>
-          {SHOW_VOWEL_CHART ? (
-            <div className="w-80 flex flex-col border-l border-l-gray-500">
-              <VowelChart
-                analysis={analysis}
-                cursorSec={timelineState.cursorSec}
-                ref={vowelChartRef}
-              />
-            </div>
-          ) : null}
         </div>
       </main>
     </>
