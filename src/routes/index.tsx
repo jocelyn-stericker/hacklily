@@ -56,6 +56,7 @@ import type {
 import { totalFrames, frameDbMax } from '#/lib/AnalysisFrame'
 import { concatAudioBuffers } from '#/lib/concatAudioBuffers'
 import { exportWav } from '#/lib/exportWav.ts'
+import { cn } from '#/lib/utils'
 
 export const Route = createFileRoute('/')({
   component: App,
@@ -464,15 +465,20 @@ function App() {
             />
             <SpeechStrip analysis={analysis} ref={speechStripRef} />
             {/* bottom-[44px]/left-[72px] mirror PLOT_PAD_B/PLOT_PAD_L in Plot.tsx */}
-            {hoverFrame?.speechDetected ? (
-              <div className="absolute z-10 pointer-events-none border border-[#ccccdd] dark:border-[#2a2a3a] right-0 h-40 bottom-auto top-0 left-auto md:right-0 md:w-60 md:h-48">
+            {status.value !== 'recording' && (
+              <div
+                className={cn(
+                  'absolute z-10 pointer-events-none border border-[#ccccdd] dark:border-[#2a2a3a] right-0 h-40 bottom-auto top-0 left-auto md:right-0 md:w-60 md:h-48',
+                  !hoverFrame?.speechDetected && 'hidden',
+                )}
+              >
                 <VowelChart
                   analysis={analysis}
                   cursorSec={timelineState.hoverSec ?? timelineState.cursorSec}
                   ref={vowelChartRef}
                 />
               </div>
-            ) : null}
+            )}
           </Plot>
         </div>
       </main>
