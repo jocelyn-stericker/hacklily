@@ -71,6 +71,7 @@ interface Props {
   children: React.ReactNode
   virtualWidthSec: number
   hideScrollBar?: boolean
+  speechStripHeight?: number
 }
 
 function useTargetSize(element: HTMLElement | null) {
@@ -330,6 +331,7 @@ interface PlotContextValue {
   cursorSec: number
   hoverSec: number | null
   yAxis: YAxis
+  speechStripHeight: number
 }
 
 const PlotCtx = createContext<PlotContextValue | null>(null)
@@ -344,6 +346,10 @@ function usePlot(): PlotContextValue {
 
 export function usePlotPad(): Padding {
   return usePlot().plotPad
+}
+
+export function useSpeechStripHeight(): number {
+  return usePlot().speechStripHeight
 }
 
 export function usePlotSize() {
@@ -488,7 +494,7 @@ function YAxisTickAndLabel({
 }
 
 function YAxisStrip({ gridHzOrAmp }: { gridHzOrAmp: number[] }) {
-  const { plotPad, yAxis } = usePlot()
+  const { plotPad, yAxis, speechStripHeight } = usePlot()
 
   return (
     <div
@@ -498,10 +504,14 @@ function YAxisStrip({ gridHzOrAmp }: { gridHzOrAmp: number[] }) {
       {/* Dark background strip */}
       <div className="absolute inset-0 bg-white dark:bg-[#0e0e14]" />
 
-      {/* Right-edge vertical border */}
+      {/* Right-edge vertical border — extends through SpeechStrip to meet x-axis */}
       <div
         className="absolute right-0 bg-[#2a2a3a]"
-        style={{ top: plotPad.top, bottom: plotPad.bottom, width: 1 }}
+        style={{
+          top: plotPad.top - speechStripHeight,
+          bottom: plotPad.bottom,
+          width: 1,
+        }}
       />
 
       {/* Grid lines + ticks */}
@@ -583,11 +593,12 @@ function XAxisTickAndLabel({ guide }: { guide: TimeGuide }) {
 
 function XAxisStrip({ grid }: { grid: TimeGuide[] }) {
   const { plotPad } = usePlot()
+  const axisHeight = plotPad.bottom
 
   return (
     <div
       className="absolute inset-y-0 bottom-0 select-none w-full top-auto"
-      style={{ height: plotPad.bottom }}
+      style={{ height: axisHeight }}
     >
       {/* Dark background strip */}
       <div
@@ -612,7 +623,7 @@ function XAxisStrip({ grid }: { grid: TimeGuide[] }) {
       {/* Top-edge horizontal border */}
       <div
         className="absolute right-0 bg-[#2a2a3a]"
-        style={{ bottom: plotPad.bottom, left: plotPad.left, height: 1 }}
+        style={{ top: 0, left: plotPad.left, height: 1 }}
       />
     </div>
   )
@@ -628,7 +639,9 @@ function HorizGridLines({ gridHzOrAmp }: { gridHzOrAmp: number[] }) {
         <div
           key={hzOrAmp}
           className="absolute left-0 right-0 h-px bg-black/[0.2] dark:bg-white/[0.2]"
-          style={{ top: toY(hzOrAmp) }}
+          style={{
+            top: toY(hzOrAmp),
+          }}
         />
       ))}
     </div>
@@ -681,18 +694,19 @@ export function Plot({
   virtualWidthSec,
   debug = false,
   hideScrollBar = false,
+  speechStripHeight = 0,
 }: Props) {
   const [root, setRoot] = useState<HTMLDivElement | null>(null)
   const { width, height, dpr } = useTargetSize(root)
 
   const plotPad = useMemo(
     (): Padding => ({
-      top: xAxisVisible ? PLOT_PAD_T : 0,
+      top: (xAxisVisible ? PLOT_PAD_T : 0) + speechStripHeight,
       bottom: xAxisVisible ? PLOT_PAD_B : 0,
       left: yAxisVisible ? PLOT_PAD_L : 0,
       right: 0,
     }),
-    [yAxisVisible, xAxisVisible],
+    [yAxisVisible, xAxisVisible, speechStripHeight],
   )
 
   const ctxValue = useMemo<PlotContextValue>(
@@ -706,8 +720,20 @@ export function Plot({
       cursorSec,
       hoverSec,
       yAxis,
+      speechStripHeight,
     }),
-    [plotPad, height, width, tMinSec, tMaxSec, dpr, cursorSec, hoverSec, yAxis],
+    [
+      plotPad,
+      height,
+      width,
+      tMinSec,
+      tMaxSec,
+      dpr,
+      cursorSec,
+      hoverSec,
+      yAxis,
+      speechStripHeight,
+    ],
   )
 
   const gridHzOrAmp =

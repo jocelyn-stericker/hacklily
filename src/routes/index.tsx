@@ -26,6 +26,8 @@ import { Dialogs } from '#/components/Dialogs'
 import { Plot } from '#/components/Plot'
 import { Spectrogram } from '#/components/Spectrogram'
 import type { SpectrogramHandle } from '#/components/Spectrogram'
+import { SpeechStrip } from '#/components/SpeechStrip'
+import type { SpeechStripHandle } from '#/components/SpeechStrip'
 import { Toolbar } from '#/components/Toolbar'
 import { Button } from '#/components/ui/button'
 import {
@@ -66,6 +68,7 @@ function App() {
   const waveformRef = useRef<WaveformHandle>(null)
   const spectrogramRef = useRef<SpectrogramHandle>(null)
   const vowelChartRef = useRef<VowelChartHandle>(null)
+  const speechStripRef = useRef<SpeechStripHandle>(null)
   const [analysis, setAnalysis] = useState<AnalysisChunk[]>([])
 
   const [audioBuffer, setAudioBuffer] = useState<AudioBuffer | null>(null)
@@ -217,6 +220,7 @@ function App() {
       waveformRef.current?.append(globalIndex)
       spectrogramRef.current?.append(globalIndex)
       vowelChartRef.current?.append(globalIndex)
+      speechStripRef.current?.append(globalIndex)
       recordingDurationSecRef.current +=
         lastChunk.timeStepSamples / lastChunk.sampleRate
       schedulePlaybackPositionChanged(recordingDurationSecRef.current)
@@ -231,6 +235,7 @@ function App() {
     waveformRef.current?.patch(absIndex, absIndex + 1)
     spectrogramRef.current?.patch(absIndex, absIndex + 1)
     vowelChartRef.current?.patch(absIndex, absIndex + 1)
+    speechStripRef.current?.patch(absIndex, absIndex + 1)
   }, [])
 
   useMicCapture({
@@ -448,6 +453,7 @@ function App() {
             }
             className="flex-1"
             hideScrollBar={isRecording}
+            speechStripHeight={20}
           >
             <Spectrogram
               analysis={analysis}
@@ -456,6 +462,7 @@ function App() {
               ref={spectrogramRef}
               debug={false}
             />
+            <SpeechStrip analysis={analysis} ref={speechStripRef} />
             {/* bottom-[44px]/left-[72px] mirror PLOT_PAD_B/PLOT_PAD_L in Plot.tsx */}
             {hoverFrame?.speechDetected ? (
               <div className="absolute z-10 pointer-events-none border border-[#ccccdd] dark:border-[#2a2a3a] right-0 h-40 bottom-auto top-0 left-auto md:right-0 md:w-60 md:h-48">
