@@ -17,7 +17,6 @@
 
 // Root layout component wrapping all pages with global UI (toaster, devtools).
 
-import { TanStackDevtools } from '@tanstack/react-devtools'
 import { Outlet, createRootRoute } from '@tanstack/react-router'
 import { useEffect, useRef } from 'react'
 import { toast } from 'sonner'
@@ -53,7 +52,6 @@ function RootDocument() {
     <>
       <Outlet />
       <Toaster invert={true} />
-      <TanStackDevtools plugins={[]} />
     </>
   )
 }

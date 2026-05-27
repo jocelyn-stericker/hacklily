@@ -104,7 +104,7 @@ export function SpeechStrip({
         }
 
         ctx.strokeStyle = 'red'
-        ctx.lineWidth = 1
+        ctx.lineWidth = 5
         for (let i = 1; i < analysis.length; i++) {
           const x = Math.round(timeToX(analysis[i]!.startTimeSec)) - 0.5
           if (x >= 0 && x <= canvasWidth) {

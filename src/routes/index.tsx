@@ -15,8 +15,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-// Main application page with audio import, microphone recording, playback controls, and visualization.
-
 import { createFileRoute } from '@tanstack/react-router'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useHotkeys } from 'react-hotkeys-hook'
@@ -55,7 +53,7 @@ import type {
 } from '#/lib/AnalysisFrame'
 import { totalFrames, frameDbMax } from '#/lib/AnalysisFrame'
 import { concatAudioBuffers } from '#/lib/concatAudioBuffers'
-import { exportWav } from '#/lib/exportWav.ts'
+import { exportWav } from '#/lib/exportWav'
 import { cn } from '#/lib/utils'
 
 export const Route = createFileRoute('/')({
@@ -417,7 +415,7 @@ function App() {
             ampMaxNorm: ampMaxNorm || 1,
           }}
           onScroll={noOp}
-          onZoom={() => {}}
+          onZoom={noOp}
           onClick={isRecording ? noOp : handlePlotClick}
           onHover={handlePlotHover}
           className="h-32 max-h-[15dvh] border-b border-b-gray-500"
@@ -448,10 +446,7 @@ function App() {
             onZoom={handlePlotZoom}
             onClick={isRecording ? noOp : handlePlotClick}
             onHover={handlePlotHover}
-            virtualWidthSec={
-              Math.floor(timelineState.trackDurationSec / 30 + 1) * 30 +
-              (timelineState.viewportRightSec - timelineState.viewportLeftSec)
-            }
+            virtualWidthSec={virtualWidthSec}
             className="flex-1"
             hideScrollBar={isRecording}
             speechStripHeight={20}

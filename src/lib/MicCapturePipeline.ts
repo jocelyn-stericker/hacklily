@@ -151,8 +151,18 @@ export async function preInitPersistentStream(
   }
 }
 
+/**
+ * `MicCapturePipeline` orchestrates the live recording path:
+ *
+ * - An **AudioWorklet** (`AudioRingWriter`) writes PCM into a SAB ring buffer with minimal latency.
+ * - Two parallel **Web Workers** both read from the same SAB:
+ *   - **SpectrogramWorker** — generates spectrogram frames, accumulates PCM for playback, and sends a `params` message that also triggers `FormantWorker` initialization.
+ *   - **FormantWorker** — runs pitch (F0) and formant (F1–F3) analysis, patching earlier frames via `patch` messages.
+ *
+ * **Stop protocol**: the SAB sentinel (`ctrl[1] = 1`) is written _after_ `AudioContext.close()` resolves, guaranteeing all worklet writes have landed before workers exit their read loops.
+ */
 export class MicCapturePipeline extends TypedEventTarget<MicCaptureOutEvents> {
-  #accumulatedChunks: AnalysisChunk[] = []
+  #analysis: AnalysisChunk | null = null
   #accumulatedPcm: Float32Array<ArrayBuffer>[] = []
   // Patches that arrived before their frame; keyed by session-local frameIndex.
   #pendingPatches = new Map<number, PatchFrameMessage>()
@@ -374,10 +384,9 @@ export class MicCapturePipeline extends TypedEventTarget<MicCaptureOutEvents> {
       }
       case 'ended': {
         if (!this.#spectrogramWorker) return
-        const analysisSamples = this.#accumulatedChunks.reduce(
-          (memo, chunk) => memo + chunk.timeStepSamples * chunk.frames.length,
-          0,
-        )
+        const analysisSamples =
+          (this.#analysis?.timeStepSamples ?? 0) *
+          (this.#analysis?.frames.length ?? 0)
 
         if (analysisSamples > 0) {
           console.assert(
@@ -433,7 +442,7 @@ export class MicCapturePipeline extends TypedEventTarget<MicCaptureOutEvents> {
           freqStepHz: data.freqStepHz,
           firstBinHz: data.firstBinHz,
         }
-        this.#accumulatedChunks.push({ ...params, startTimeSec: 0, frames: [] })
+        this.#analysis = { ...params, startTimeSec: 0, frames: [] }
         this.#pendingPatches.clear()
 
         if (this.#formantWorker && this.#sab) {
@@ -555,9 +564,7 @@ export class MicCapturePipeline extends TypedEventTarget<MicCaptureOutEvents> {
       f2: data.f2 ?? null,
       f3: data.f3 ?? null,
     }
-    const currentChunk =
-      this.#accumulatedChunks[this.#accumulatedChunks.length - 1]
-    currentChunk?.frames.push(frame)
+    this.#analysis?.frames.push(frame)!
     this.emit('append', { frame })
     const pending = this.#pendingPatches.get(data.frameIndex)
     if (pending) {
@@ -567,9 +574,7 @@ export class MicCapturePipeline extends TypedEventTarget<MicCaptureOutEvents> {
   }
 
   #handlePatch = (data: PatchFrameMessage) => {
-    const currentChunk =
-      this.#accumulatedChunks[this.#accumulatedChunks.length - 1]
-    const frame = currentChunk?.frames[data.frameIndex]
+    const frame = this.#analysis?.frames[data.frameIndex]
     if (frame) {
       if (data.pitchDetected !== undefined)
         frame.pitchDetected = data.pitchDetected

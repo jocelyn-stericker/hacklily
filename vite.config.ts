@@ -1,8 +1,6 @@
 import tailwindcss from '@tailwindcss/vite'
-import { devtools } from '@tanstack/devtools-vite'
 import { tanstackRouter } from '@tanstack/router-plugin/vite'
 import viteReact from '@vitejs/plugin-react'
-import { copy } from 'copy-paste'
 import { defineConfig } from 'vite'
 import { VitePWA } from 'vite-plugin-pwa'
 
@@ -27,17 +25,6 @@ const config = defineConfig({
     },
   },
   plugins: [
-    devtools({
-      consolePiping: {
-        enabled: false,
-      },
-      editor: {
-        name: 'neovim command',
-        open: async (filePath, lineNumber, columnNumber) => {
-          copy(`e ${filePath}|call cursor(${lineNumber}, ${columnNumber})`)
-        },
-      },
-    }),
     tailwindcss(),
     tanstackRouter({ target: 'react', autoCodeSplitting: true }),
     viteReact(),

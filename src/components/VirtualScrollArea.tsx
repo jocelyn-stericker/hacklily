@@ -15,8 +15,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-// Handles scrolling, zooming, and click/hover event handling.
-
 import {
   useCallback,
   useEffect,
@@ -41,6 +39,11 @@ export interface Props extends Omit<
   hideScrollBar?: boolean
 }
 
+/**
+ * VirtualScrollArea` is the primary interaction surface — it handles scroll, zoom,
+ * and all pointer events. Domain visualizations (`Waveform`, `Spectrogram`,
+ * `VowelChart`) render inside it.
+ */
 export function VirtualScrollArea({
   scrollX,
   onZoom,

@@ -18,7 +18,7 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 
 import type { AudioRingWriterInitMessage } from './AudioRingWriter'
-import { AudioRingWriter } from './AudioRingWriter.ts'
+import { AudioRingWriter } from './AudioRingWriter'
 
 vi.hoisted(() => {
   /**
