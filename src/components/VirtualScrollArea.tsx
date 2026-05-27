@@ -278,7 +278,7 @@ export function VirtualScrollArea({
 
   const handleMouseDown = useCallback(
     (ev: React.MouseEvent<HTMLElement>) => {
-      if (!root) {
+      if (!root || ev.nativeEvent.offsetY >= ev.currentTarget.clientHeight) {
         return
       }
       const boundingRect = root.getBoundingClientRect()
@@ -332,8 +332,8 @@ export function VirtualScrollArea({
           : mouseDown
             ? 'cursor-grabbing'
             : 'cursor-pointer',
-        hideScrollBar || mouseDown ? 'overflow-x-hidden' : 'overflow-x-scroll',
-        'touch-pan-x overscroll-none absolute',
+        hideScrollBar ? 'overflow-x-hidden' : 'overflow-x-scroll',
+        'touch-pan-x overscroll-none absolute scrollbar-thin scrollbar-thumb-black scrollbar-track-transparent',
         rest.className,
       )}
       ref={setRoot}
