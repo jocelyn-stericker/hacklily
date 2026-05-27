@@ -18,7 +18,13 @@
 import { describe, it, expect } from 'vitest'
 
 import type { AnalysisChunk, AnalysisFrame } from './AnalysisFrame'
-import { computeDbMax, frameTimeSec } from './AnalysisFrame'
+import {
+  computeDbMax,
+  frameTimeSec,
+  totalFrames,
+  getFrame,
+  frameDbMax,
+} from './AnalysisFrame'
 
 const DEFAULT_PARAMS = {
   timeStepSamples: 882,
@@ -199,5 +205,104 @@ describe('frameTimeSec', () => {
   it('returns total duration when index is past all frames', () => {
     const chunk = makeChunk([empty, empty], 0)
     expect(frameTimeSec([chunk], 10)).toBeCloseTo(2 * STEP)
+  })
+})
+
+describe('totalFrames', () => {
+  const emptyFrame = makeFrame(new Float32Array(1))
+
+  it('returns 0 for empty chunks array', () => {
+    expect(totalFrames([])).toBe(0)
+  })
+
+  it('returns frame count for single chunk', () => {
+    const chunk = makeChunk([emptyFrame, emptyFrame, emptyFrame])
+    expect(totalFrames([chunk])).toBe(3)
+  })
+
+  it('sums frames across multiple chunks', () => {
+    const chunk1 = makeChunk([emptyFrame, emptyFrame])
+    const chunk2 = makeChunk([emptyFrame, emptyFrame, emptyFrame])
+    const chunk3 = makeChunk([emptyFrame])
+    expect(totalFrames([chunk1, chunk2, chunk3])).toBe(6)
+  })
+})
+
+describe('getFrame', () => {
+  const f1 = makeFrame(new Float32Array([1]))
+  const f2 = makeFrame(new Float32Array([2]))
+  const f3 = makeFrame(new Float32Array([3]))
+  const f4 = makeFrame(new Float32Array([4]))
+  const f5 = makeFrame(new Float32Array([5]))
+
+  it('returns undefined for empty chunks', () => {
+    expect(getFrame([], 0)).toBeUndefined()
+  })
+
+  it('returns first frame from first chunk', () => {
+    const chunk = makeChunk([f1, f2, f3])
+    const frame = getFrame([chunk], 0)
+    expect(frame?.spectrum[0]).toBe(1)
+  })
+
+  it('returns frame within single chunk', () => {
+    const chunk = makeChunk([f1, f2, f3])
+    const frame = getFrame([chunk], 2)
+    expect(frame?.spectrum[0]).toBe(3)
+  })
+
+  it('returns undefined for index past all frames', () => {
+    const chunk = makeChunk([f1, f2])
+    expect(getFrame([chunk], 10)).toBeUndefined()
+  })
+
+  it('spans multiple chunks correctly', () => {
+    const chunk1 = makeChunk([f1, f2])
+    const chunk2 = makeChunk([f3, f4, f5])
+    expect(getFrame([chunk1, chunk2], 0)?.spectrum[0]).toBe(1)
+    expect(getFrame([chunk1, chunk2], 1)?.spectrum[0]).toBe(2)
+    expect(getFrame([chunk1, chunk2], 2)?.spectrum[0]).toBe(3)
+    expect(getFrame([chunk1, chunk2], 4)?.spectrum[0]).toBe(5)
+  })
+
+  it('returns undefined when index exceeds all frames across chunks', () => {
+    const chunk1 = makeChunk([f1, f2])
+    const chunk2 = makeChunk([f3])
+    expect(getFrame([chunk1, chunk2], 5)).toBeUndefined()
+  })
+})
+
+describe('frameDbMax', () => {
+  it('returns null for frame with no positive spectrum values', () => {
+    const frame = makeFrame(new Float32Array([0, -1, -100]))
+    expect(frameDbMax(frame)).toBeNull()
+  })
+
+  it('converts single value to dB correctly', () => {
+    const frame = makeFrame(new Float32Array([1.0]))
+    expect(frameDbMax(frame)).toBeCloseTo(0, 2)
+  })
+
+  it('finds maximum dB value among positive spectrum values', () => {
+    const frame = makeFrame(new Float32Array([1.0, 10.0, 100.0, 5.0]))
+    expect(frameDbMax(frame)).toBeCloseTo(10 * Math.log10(100.0), 1)
+  })
+
+  it('ignores zero and negative values', () => {
+    const frame = makeFrame(new Float32Array([0.1, 0, -5, 10.0, -100, 1.0]))
+    expect(frameDbMax(frame)).toBeCloseTo(10 * Math.log10(10.0), 1)
+  })
+
+  it('handles very small positive values', () => {
+    const frame = makeFrame(new Float32Array([0.00001]))
+    expect(frameDbMax(frame)).toBeLessThan(0)
+  })
+
+  it('handles very large values', () => {
+    const frame = makeFrame(new Float32Array([1e10]))
+    const result = frameDbMax(frame)
+    expect(result).not.toBeNull()
+    expect(isFinite(result!)).toBe(true)
+    expect(result).toBeGreaterThan(50)
   })
 })

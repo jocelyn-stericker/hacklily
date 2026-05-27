@@ -57,7 +57,7 @@ export class AudioPlaybackPipeline extends TypedEventTarget<AudioPlaybackOutEven
   ) {
     this.#duration = audioBuffer.duration
     const startAtSec =
-      requestedStartAtSec - 0.01 <= audioBuffer.duration
+      requestedStartAtSec <= audioBuffer.duration - 0.05
         ? requestedStartAtSec
         : 0
     this.#startTimeSec = startAtSec

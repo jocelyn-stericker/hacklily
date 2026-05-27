@@ -43,7 +43,7 @@ enum WavFormat {
 }
 
 // see https://github.com/Experience-Monks/audiobuffer-to-wav/blob/master/index.js
-function audioBufferToWav(
+export function audioBufferToWav(
   buffer: AudioBuffer,
   opt: { float32?: boolean } = {},
 ): ArrayBuffer {

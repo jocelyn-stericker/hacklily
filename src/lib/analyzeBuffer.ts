@@ -201,14 +201,14 @@ export async function analyzeBuffer(
       pitchResult.frames.length - 1,
       Math.round(tMid / pitchResult.timeStepSec),
     )
-    const pitchFrame = pitchResult.frames[pitchIdx]!
+    const pitchFrame = pitchResult.frames[pitchIdx]
 
     // final results
-    const pitchDetected = pitchFrame.frequencyHz > 0
+    const pitchDetected = pitchFrame ? pitchFrame.frequencyHz > 0 : false
     results.push({
       pitchDetected,
       speechDetected: speechDetectedArr[x] === 1,
-      f0: pitchFrame.frequencyHz,
+      f0: pitchFrame?.frequencyHz ?? 0,
       f1: pitchDetected ? latestValidF1 : null,
       f2: pitchDetected ? latestValidF2 : null,
       f3: pitchDetected ? latestValidF3 : null,

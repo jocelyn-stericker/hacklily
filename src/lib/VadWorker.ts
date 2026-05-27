@@ -66,7 +66,7 @@ interface PendingFrame {
   speechProbability: number
 }
 
-async function runAnalysis(
+export async function runAnalysis(
   reader: AudioRingReader,
   sampleRate: number,
   timeStepSamples: number,

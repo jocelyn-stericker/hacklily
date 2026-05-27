@@ -70,7 +70,7 @@ self.onmessage = async ({ data }: MessageEvent<SpectrogramWorkerInMessage>) => {
   console.log(LOG, 'complete')
 }
 
-async function runAnalysis(reader: AudioRingReader, sampleRate: number) {
+export async function runAnalysis(reader: AudioRingReader, sampleRate: number) {
   const spec = new SpectrogramStreamProcessor(
     {
       effectiveWindowLengthSec: 0.005,

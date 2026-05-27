@@ -66,7 +66,9 @@ describe('AudioRingWriter', () => {
         data: msg,
       } as MessageEvent<AudioRingWriterInitMessage>)
 
-      expect(Atomics.load(ctrl, 0)).toBe(0)
+      // Verify init connected the SAB: process() should write through to it
+      worklet.process([[new Float32Array([0.5, 0.5, 0.5, 0.5])]], [])
+      expect(Atomics.load(ctrl, 0)).toBe(4)
     })
 
     it('rejects null messages', () => {

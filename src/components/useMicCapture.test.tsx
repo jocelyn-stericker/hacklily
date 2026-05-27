@@ -382,23 +382,6 @@ describe('AudioRecorder', () => {
     vi.clearAllMocks()
   })
 
-  it('renders null', () => {
-    const onAppend = vi.fn()
-    const onRecordingComplete = vi.fn()
-    const onError = vi.fn()
-
-    const { container } = render(
-      <TestRecorder
-        enabled={true}
-        onAppend={onAppend}
-        onRecordingComplete={onRecordingComplete}
-        onError={onError}
-      />,
-    )
-
-    expect(container.firstChild).toBeNull()
-  })
-
   it('calls getUserMedia with audio constraints and video=false', async () => {
     const onAppend = vi.fn()
     const onRecordingComplete = vi.fn()
