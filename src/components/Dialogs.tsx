@@ -29,19 +29,19 @@ import type { Status } from './useTimelineState'
 import { WelcomeModal } from './WelcomeModal'
 
 export function Dialogs({
-  analysis,
+  analysisMut,
   status,
   onAcknowledgeError,
   onStartRecording,
   openFilePicker,
 }: {
-  analysis: AnalysisChunk[]
+  analysisMut: AnalysisChunk[]
   status: Status
   onAcknowledgeError: () => void
   onStartRecording: () => void
   openFilePicker: () => void
 }) {
-  const showWelcome = analysis.length === 0 && status.value === 'inactive'
+  const showWelcome = analysisMut.length === 0 && status.value === 'inactive'
 
   return (
     <>

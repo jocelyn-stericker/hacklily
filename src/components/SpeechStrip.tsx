@@ -37,10 +37,10 @@ export interface SpeechStripHandle {
 }
 
 export function SpeechStrip({
-  analysis,
+  analysisMut,
   ref,
 }: {
-  analysis: AnalysisChunk[]
+  analysisMut: AnalysisChunk[]
   ref: RefObject<SpeechStripHandle | null>
 }) {
   const [canvas, setCanvas] = useState<HTMLCanvasElement | null>(null)
@@ -77,7 +77,7 @@ export function SpeechStrip({
         ctx.font = `${Math.round(canvasHeight * 0.65)}px monospace`
         ctx.textBaseline = 'middle'
 
-        for (const chunk of analysis) {
+        for (const chunk of analysisMut) {
           const timeStepSec = chunk.timeStepSamples / chunk.sampleRate
           let segStart = -1
 
@@ -110,8 +110,8 @@ export function SpeechStrip({
 
         ctx.strokeStyle = 'red'
         ctx.lineWidth = 5
-        for (let i = 1; i < analysis.length; i++) {
-          const x = Math.round(timeToX(analysis[i]!.startTimeSec)) - 0.5
+        for (let i = 1; i < analysisMut.length; i++) {
+          const x = Math.round(timeToX(analysisMut[i]!.startTimeSec)) - 0.5
           if (x >= 0 && x <= canvasWidth) {
             ctx.beginPath()
             ctx.moveTo(x, 0)
@@ -129,7 +129,7 @@ export function SpeechStrip({
       animFrameRef.current = null
       triggerDraw.current = () => {}
     }
-  }, [analysis, canvasWidth, canvasHeight, timeToX, canvas, dpr, bgColor])
+  }, [analysisMut, canvasWidth, canvasHeight, timeToX, canvas, dpr, bgColor])
 
   useImperativeHandle(
     ref,

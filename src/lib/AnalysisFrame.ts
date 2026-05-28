@@ -56,6 +56,34 @@ export type VoicedAnalysisFrame = AnalysisFrame & {
   f2: number
 }
 
+export function splitChunkAt(
+  chunks: AnalysisChunk[],
+  globalIndex: number,
+): boolean {
+  let offset = 0
+  for (let i = 0; i < chunks.length; i++) {
+    const chunk = chunks[i]!
+    const chunkEnd = offset + chunk.frames.length
+    if (globalIndex < chunkEnd) {
+      const localIndex = globalIndex - offset
+      if (localIndex === 0) return false
+      const timeStepSec = chunk.timeStepSamples / chunk.sampleRate
+      const newChunk: AnalysisChunk = {
+        timeStepSamples: chunk.timeStepSamples,
+        sampleRate: chunk.sampleRate,
+        freqStepHz: chunk.freqStepHz,
+        firstBinHz: chunk.firstBinHz,
+        startTimeSec: chunk.startTimeSec + localIndex * timeStepSec,
+        frames: chunk.frames.splice(localIndex),
+      }
+      chunks.splice(i + 1, 0, newChunk)
+      return true
+    }
+    offset = chunkEnd
+  }
+  return false
+}
+
 export function totalFrames(chunks: AnalysisChunk[]): number {
   return chunks.reduce((sum, c) => sum + c.frames.length, 0)
 }

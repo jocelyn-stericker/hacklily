@@ -51,7 +51,7 @@ import type {
   AnalysisFrame,
   AnalysisParams,
 } from '#/lib/AnalysisFrame'
-import { totalFrames } from '#/lib/AnalysisFrame'
+import { getFrame, splitChunkAt, totalFrames } from '#/lib/AnalysisFrame'
 import { concatAudioBuffers } from '#/lib/concatAudioBuffers'
 import { exportWav } from '#/lib/exportWav'
 import { cn } from '#/lib/utils'
@@ -67,7 +67,7 @@ function App() {
   const spectrogramRef = useRef<SpectrogramHandle>(null)
   const vowelChartRef = useRef<VowelChartHandle>(null)
   const speechStripRef = useRef<SpeechStripHandle>(null)
-  const [analysis, setAnalysis] = useState<AnalysisChunk[]>([])
+  const [analysisMut, replaceAnalysis] = useState<AnalysisChunk[]>([])
 
   const [audioBuffer, setAudioBuffer] = useState<AudioBuffer | null>(null)
   const {
@@ -91,16 +91,16 @@ function App() {
     handleError,
     handleOpenAudioSettings,
     hoverFrame,
-  } = useTimelineState(analysis)
+  } = useTimelineState(analysisMut)
 
   const { openFilePicker } = useAudioImport({
     handleAnalyze,
     onStart: () => {
-      setAnalysis([])
+      replaceAnalysis([])
     },
     onImported: ({ analysis: newAnalysis, audioBuffer: newAudioBuffer }) => {
       setAudioBuffer(newAudioBuffer)
-      setAnalysis(newAnalysis)
+      replaceAnalysis(newAnalysis)
     },
   })
 
@@ -111,7 +111,7 @@ function App() {
 
   const doNew = useCallback(() => {
     resetTimeline()
-    setAnalysis([])
+    replaceAnalysis([])
     setAudioBuffer(null)
     recordingStartIndexRef.current = 0
     recordingDurationSecRef.current = 0
@@ -119,7 +119,7 @@ function App() {
 
   const hasData =
     (audioBuffer?.length ?? 0) > 0 ||
-    analysis.length > 0 ||
+    analysisMut.length > 0 ||
     status.value === 'recording'
 
   const handleNew = useCallback(() => {
@@ -135,19 +135,19 @@ function App() {
     doNew()
   }, [doNew])
 
-  const ampMaxNorm = analysis.reduce(
+  const ampMaxNorm = analysisMut.reduce(
     (memo, chunk) => chunk.frames.reduce((m, f) => Math.max(m, f.rms), memo),
     0,
   )
 
-  const analysisRef = useRef(analysis)
+  const analysisMutRef = useRef(analysisMut)
   useEffect(() => {
-    analysisRef.current = analysis
+    analysisMutRef.current = analysisMut
   })
 
   const handleStart = useCallback(() => {
-    recordingStartIndexRef.current = totalFrames(analysisRef.current)
-    recordingDurationSecRef.current = analysisRef.current.reduce(
+    recordingStartIndexRef.current = totalFrames(analysisMutRef.current)
+    recordingDurationSecRef.current = analysisMutRef.current.reduce(
       (t, c) => t + (c.frames.length * c.timeStepSamples) / c.sampleRate,
       0,
     )
@@ -190,11 +190,11 @@ function App() {
   )
 
   const handleChunkStart = useCallback((params: AnalysisParams) => {
-    const startTimeSec = analysisRef.current.reduce(
+    const startTimeSec = analysisMutRef.current.reduce(
       (sum, c) => sum + c.frames.length * (c.timeStepSamples / c.sampleRate),
       0,
     )
-    analysisRef.current.push({ ...params, startTimeSec, frames: [] })
+    analysisMutRef.current.push({ ...params, startTimeSec, frames: [] })
   }, [])
 
   const schedulePlaybackPositionChanged = usePreemptibleCallback(
@@ -202,9 +202,10 @@ function App() {
   )
   const handleAppend = useCallback(
     (frame: AnalysisFrame) => {
-      const lastChunk = analysisRef.current[analysisRef.current.length - 1]!
+      const lastChunk =
+        analysisMutRef.current[analysisMutRef.current.length - 1]!
       lastChunk.frames.push(frame)
-      const globalIndex = totalFrames(analysisRef.current) - 1
+      const globalIndex = totalFrames(analysisMutRef.current) - 1
       waveformRef.current?.append(globalIndex)
       spectrogramRef.current?.append(globalIndex)
       vowelChartRef.current?.append(globalIndex)
@@ -218,6 +219,19 @@ function App() {
 
   const handlePatch = useCallback((frameIndex: number) => {
     const absIndex = recordingStartIndexRef.current + frameIndex
+
+    if (absIndex > 0) {
+      const frame = getFrame(analysisMutRef.current, absIndex)
+      const prevFrame = getFrame(analysisMutRef.current, absIndex - 1)
+      if (
+        frame &&
+        prevFrame &&
+        frame.speechDetected !== prevFrame.speechDetected
+      ) {
+        splitChunkAt(analysisMutRef.current, absIndex)
+      }
+    }
+
     waveformRef.current?.patch(absIndex, absIndex + 1)
     spectrogramRef.current?.patch(absIndex, absIndex + 1)
     vowelChartRef.current?.patch(absIndex, absIndex + 1)
@@ -347,7 +361,7 @@ function App() {
   return (
     <>
       <Dialogs
-        analysis={analysis}
+        analysisMut={analysisMut}
         status={status}
         onAcknowledgeError={handleAcknowledgeError}
         onStartRecording={startRecording}
@@ -409,7 +423,7 @@ function App() {
           virtualWidthSec={virtualWidthSec}
           hideScrollBar={isRecording}
         >
-          <Waveform analysis={analysis} ref={waveformRef} />
+          <Waveform analysisMut={analysisMut} ref={waveformRef} />
           <ViewportShade
             leftSec={timelineState.viewportLeftSec}
             rightSec={timelineState.viewportRightSec}
@@ -439,12 +453,12 @@ function App() {
             speechStripHeight={20}
           >
             <Spectrogram
-              analysis={analysis}
+              analysisMut={analysisMut}
               dbRange={DB_DYNAMIC_RANGE}
               ref={spectrogramRef}
               debug={false}
             />
-            <SpeechStrip analysis={analysis} ref={speechStripRef} />
+            <SpeechStrip analysisMut={analysisMut} ref={speechStripRef} />
             {status.value !== 'recording' && (
               <div
                 className={cn(
@@ -453,7 +467,7 @@ function App() {
                 )}
               >
                 <VowelChart
-                  analysis={analysis}
+                  analysisMut={analysisMut}
                   cursorSec={timelineState.hoverSec ?? timelineState.cursorSec}
                   ref={vowelChartRef}
                 />

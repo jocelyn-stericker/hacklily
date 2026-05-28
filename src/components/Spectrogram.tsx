@@ -31,7 +31,7 @@ const FPS_WINDOW_MS = 1000
 
 // GPU canvas tiles: staying under browser width limits while streaming real-time spectral data.
 // Each tile holds up to TILE_WIDTH frames before overflow to the next tile.
-export const TILE_WIDTH = 4096
+export const TILE_WIDTH = 256
 
 // Width of the shared scratch ImageData used by paintColumnsToOffscreen.
 // Narrower than TILE_WIDTH so a single allocation serves all tiles without
@@ -623,12 +623,12 @@ function draw(
 }
 
 export function Spectrogram({
-  analysis,
+  analysisMut,
   dbRange,
   ref,
   debug = false,
 }: {
-  analysis: AnalysisChunk[]
+  analysisMut: AnalysisChunk[]
   dbRange: number
   ref: RefObject<SpectrogramHandle | null>
   debug?: boolean
@@ -672,14 +672,14 @@ export function Spectrogram({
 
   // Fully recompute colors for all chunks when analysis reference changes (import).
   useEffect(() => {
-    if (analysis.length === 0) {
+    if (analysisMut.length === 0) {
       allColorsRef.current = []
       allOffRef.current = []
       allFormantOffRef.current = []
       return
     }
     const newColors: ChunkColorsState[] = []
-    for (const chunk of analysis) {
+    for (const chunk of analysisMut) {
       const numFrames = chunk.frames.length
       const numBins = chunk.frames[0]!.spectrum.length
       const maxDb = chunkDbMax(chunk)
@@ -695,7 +695,7 @@ export function Spectrogram({
       newColors.push(colors)
     }
     allColorsRef.current = newColors
-  }, [analysis, dbRange, theme])
+  }, [analysisMut, dbRange, theme])
 
   // ---- FALLS THROUGH TO NEXT EFFECT ----
 
@@ -740,7 +740,7 @@ export function Spectrogram({
     tilesGenRef.current += 1
 
     // Note: this must include everything in the previous effect
-  }, [analysis, dbRange, canvasHeight, freqToY, dpr, theme])
+  }, [analysisMut, dbRange, canvasHeight, freqToY, dpr, theme])
 
   const fromRef = useRef<number | null>(null)
   // Infinity = "to totalFrames" (append pending); explicit number = max patch to
@@ -773,7 +773,7 @@ export function Spectrogram({
           canvasHeight,
           allOffRef.current,
           allFormantOffRef.current,
-          analysis,
+          analysisMut,
           timeToX,
           theme,
         )
@@ -793,7 +793,7 @@ export function Spectrogram({
     }
     // Note: this must include everything in the previous effect
   }, [
-    analysis,
+    analysisMut,
     dbRange,
     canvasHeight,
     freqToY,
@@ -817,10 +817,28 @@ export function Spectrogram({
       const allOff = allOffRef.current
       const allFormantOff = allFormantOffRef.current
 
+      let needFullRedraw = false
+
+      for (let i = 0; i < allColors.length && i < analysisMut.length; i++) {
+        const colors = allColors[i]!
+        const chunk = analysisMut[i]!
+        if (colors.numFrames > chunk.frames.length) {
+          const tileCount = Math.ceil(chunk.frames.length / TILE_WIDTH)
+          colors.numFrames = chunk.frames.length
+          colors.colorTiles.length = tileCount
+          colors.dbMax = chunkDbMax(chunk)
+          const off = allOff[i]
+          if (off) off.tiles.length = tileCount
+          const formantOff = allFormantOff[i]
+          if (formantOff) formantOff.tiles.length = tileCount
+          needFullRedraw = true
+        }
+      }
+
       // Lazily grow per-chunk state for any new chunks that have received frames.
-      while (allColors.length < analysis.length) {
+      while (allColors.length < analysisMut.length) {
         const i = allColors.length
-        const chunk = analysis[i]!
+        const chunk = analysisMut[i]!
         if (!chunk.frames[0]) break // no frames yet, can't determine numBins
         const numBins = chunk.frames[0].spectrum.length
         const colors: ChunkColorsState = {
@@ -838,20 +856,24 @@ export function Spectrogram({
       if (allColors.length === 0) return
 
       const globalTotal =
-        pendingTo === Infinity ? totalFrames(analysis) : pendingTo
+        pendingTo === Infinity ? totalFrames(analysisMut) : pendingTo
       const ranges = globalRangeToChunkRanges(
-        analysis,
+        analysisMut,
         effectiveFrom,
         globalTotal,
       )
-      if (ranges.length === 0) return
-
-      let needFullRedraw = false
+      if (ranges.length === 0) {
+        if (needFullRedraw) {
+          tilesGenRef.current += 1
+          triggerDraw.current()
+        }
+        return
+      }
 
       for (const { chunkIdx, localFrom, localTo } of ranges) {
         const colors = allColors[chunkIdx]
         if (!colors) continue
-        const chunk = analysis[chunkIdx]!
+        const chunk = analysisMut[chunkIdx]!
 
         const prevNumFrames = colors.numFrames
         const isExtending = localTo > prevNumFrames
@@ -948,7 +970,7 @@ export function Spectrogram({
                 dpr,
               )
               // fromTimeSec goes one frame back so the moveTo anchor is included in the strip.
-              const fromTimeSec = frameTimeSec(analysis, effectiveFrom - 1)
+              const fromTimeSec = frameTimeSec(analysisMut, effectiveFrom - 1)
               const toTimeSec =
                 chunk.startTimeSec +
                 localTo * (chunk.timeStepSamples / chunk.sampleRate)
@@ -956,7 +978,7 @@ export function Spectrogram({
                 displayBufRef.current,
                 allOff,
                 allFormantOff,
-                analysis,
+                analysisMut,
                 fromTimeSec,
                 toTimeSec,
                 theme,
@@ -1009,7 +1031,7 @@ export function Spectrogram({
         drawFrame.current = requestAnimationFrame(handleFrame)
       },
     }
-  }, [canvasHeight, analysis, freqToY, dbRange, dpr, theme])
+  }, [canvasHeight, analysisMut, freqToY, dbRange, dpr, theme])
 
   return (
     <>

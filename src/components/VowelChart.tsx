@@ -337,11 +337,11 @@ function framesUpToCursor(
 }
 
 export function VowelChart({
-  analysis,
+  analysisMut,
   cursorSec,
   ref,
 }: {
-  analysis: AnalysisChunk[]
+  analysisMut: AnalysisChunk[]
   cursorSec: number
   ref: RefObject<VowelChartHandle | null>
 }) {
@@ -357,10 +357,10 @@ export function VowelChart({
       width,
       height,
       dpr,
-      framesUpToCursor(analysis, cursorSec),
+      framesUpToCursor(analysisMut, cursorSec),
       theme,
     )
-  }, [canvas, width, height, dpr, analysis, cursorSec, theme])
+  }, [canvas, width, height, dpr, analysisMut, cursorSec, theme])
 
   useImperativeHandle(
     ref,
@@ -372,7 +372,7 @@ export function VowelChart({
           width,
           height,
           dpr,
-          framesUpToCursor(analysis, cursorSec),
+          framesUpToCursor(analysisMut, cursorSec),
           theme,
         )
       },
@@ -383,12 +383,12 @@ export function VowelChart({
           width,
           height,
           dpr,
-          framesUpToCursor(analysis, cursorSec),
+          framesUpToCursor(analysisMut, cursorSec),
           theme,
         )
       },
     }),
-    [canvas, width, height, dpr, analysis, cursorSec, theme],
+    [canvas, width, height, dpr, analysisMut, cursorSec, theme],
   )
 
   return <canvas ref={(el) => setCanvas(el)} className="w-full h-full" />

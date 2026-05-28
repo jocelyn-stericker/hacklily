@@ -170,10 +170,10 @@ function draw(
 }
 
 export function Waveform({
-  analysis,
+  analysisMut,
   ref,
 }: {
-  analysis: AnalysisChunk[]
+  analysisMut: AnalysisChunk[]
   ref: RefObject<WaveformHandle | null>
 }) {
   const [canvas, setCanvas] = useState<HTMLCanvasElement | null>(null)
@@ -196,17 +196,17 @@ export function Waveform({
   const bgColor = scheme === 'dark' ? '#000000' : '#ffffff'
 
   useEffect(() => {
-    if (analysis.length === 0) {
+    if (analysisMut.length === 0) {
       offRef.current = null
       return
     }
-    const numFrames = totalFrames(analysis)
+    const numFrames = totalFrames(analysisMut)
     const off: OffscreenState = { tiles: [], canvasHeight, numFrames }
     ensureTiles(off, numFrames, bgColor)
     offRef.current = off
-    paintColumnsToOffscreen(off, analysis, 0, numFrames, ampToY, bgColor)
+    paintColumnsToOffscreen(off, analysisMut, 0, numFrames, ampToY, bgColor)
     // Note: this must include everything in the previous effect (none here)
-  }, [analysis, canvasHeight, ampToY, bgColor])
+  }, [analysisMut, canvasHeight, ampToY, bgColor])
 
   // ---- FALLS THROUGH TO NEXT EFFECT ----
 
@@ -222,8 +222,8 @@ export function Waveform({
           canvasHeight,
           offRef.current,
           timeToX,
-          analysis[0]
-            ? analysis[0].timeStepSamples / analysis[0].sampleRate
+          analysisMut[0]
+            ? analysisMut[0].timeStepSamples / analysisMut[0].sampleRate
             : 0, // assumes uniform params across chunks
           bgColor,
         )
@@ -239,7 +239,7 @@ export function Waveform({
       drawFrame.current = null
       animationFrame.current = null
     }
-  }, [analysis, canvasHeight, ampToY, canvas, canvasWidth, timeToX, bgColor])
+  }, [analysisMut, canvasHeight, ampToY, canvas, canvasWidth, timeToX, bgColor])
 
   useImperativeHandle(ref, () => {
     function handleFrame() {
@@ -253,22 +253,22 @@ export function Waveform({
 
       if (!offRef.current && canvasHeight > 0) {
         if (pendingTo !== Infinity) return
-        const to = totalFrames(analysis)
+        const to = totalFrames(analysisMut)
         const off: OffscreenState = { tiles: [], canvasHeight, numFrames: to }
         ensureTiles(off, to, bgColor)
         offRef.current = off
-        paintColumnsToOffscreen(off, analysis, 0, to, ampToY, bgColor)
+        paintColumnsToOffscreen(off, analysisMut, 0, to, ampToY, bgColor)
       } else if (offRef.current) {
         const off = offRef.current
         if (pendingTo === Infinity) {
           const prevNumFrames = off.numFrames
-          const to = totalFrames(analysis)
+          const to = totalFrames(analysisMut)
           ensureTiles(off, to, bgColor)
           // Paint patched range [effectiveFrom, patchTo) and new frames [prevNumFrames, to)
           // separately to skip the unchanged gap [patchTo, prevNumFrames).
           paintColumnsToOffscreen(
             off,
-            analysis,
+            analysisMut,
             effectiveFrom,
             patchTo,
             ampToY,
@@ -276,7 +276,7 @@ export function Waveform({
           )
           paintColumnsToOffscreen(
             off,
-            analysis,
+            analysisMut,
             prevNumFrames,
             to,
             ampToY,
@@ -287,7 +287,7 @@ export function Waveform({
           if (effectiveFrom < pendingTo) {
             paintColumnsToOffscreen(
               off,
-              analysis,
+              analysisMut,
               effectiveFrom,
               pendingTo,
               ampToY,
@@ -317,7 +317,7 @@ export function Waveform({
         drawFrame.current = requestAnimationFrame(handleFrame)
       },
     }
-  }, [canvasHeight, analysis, ampToY, bgColor])
+  }, [canvasHeight, analysisMut, ampToY, bgColor])
 
   return (
     <canvas
