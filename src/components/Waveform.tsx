@@ -30,10 +30,11 @@ import {
   usePlotSize,
   useTimeToX,
 } from './Plot'
+import { useColourScheme } from './useColourScheme'
 
 // GPU canvas tiles: staying under browser width limits while streaming real-time spectral data.
 // Each tile holds up to TILE_WIDTH frames before overflow to the next tile.
-export const TILE_WIDTH = 8192
+export const TILE_WIDTH = 4096
 
 export interface WaveformHandle {
   /** Call after appending frames [from, analysis.length) to the stored analysis. */
@@ -56,13 +57,21 @@ interface OffscreenState {
   numFrames: number
 }
 
-function ensureTiles(off: OffscreenState, needed: number): void {
+function ensureTiles(
+  off: OffscreenState,
+  needed: number,
+  bgStyle: string,
+): void {
   const numTiles = Math.ceil(needed / TILE_WIDTH)
   while (off.tiles.length < numTiles) {
     const startFrame = off.tiles.length * TILE_WIDTH
     const canvas = new OffscreenCanvas(TILE_WIDTH, off.canvasHeight)
-    const ctx = canvas.getContext('2d')!
+    const ctx = canvas.getContext('2d', { alpha: false })!
     ctx.imageSmoothingEnabled = false
+    if (bgStyle) {
+      ctx.fillStyle = bgStyle
+      ctx.fillRect(0, 0, TILE_WIDTH, off.canvasHeight)
+    }
     const imgData = ctx.createImageData(TILE_WIDTH, off.canvasHeight)
     const u32 = new Uint32Array(imgData.data.buffer)
     off.tiles.push({ canvas, ctx, startFrame, imgData, u32 })
@@ -71,8 +80,8 @@ function ensureTiles(off: OffscreenState, needed: number): void {
 
 // Assumes little-endian byte order (all browser-targeted CPUs). Each value is
 // the RGBA pixel packed as a Uint32: low byte = R, high byte = A.
-const SPEECH_U32 = ((209 << 24) | (196 << 16) | (205 << 8) | 78) >>> 0 // rgba(78,205,196,0.82)
-const SILENCE_U32 = ((140 << 24) | (140 << 16) | (100 << 8) | 100) >>> 0 // rgba(100,100,140,0.55)
+const SPEECH_U32 = ((255 << 24) | (196 << 16) | (205 << 8) | 78) >>> 0 // rgba(78,205,196,1.0)
+const SILENCE_U32 = ((255 << 24) | (140 << 16) | (100 << 8) | 100) >>> 0 // rgba(100,100,140,1.0)
 
 function paintColumnsToOffscreen(
   off: OffscreenState,
@@ -80,7 +89,9 @@ function paintColumnsToOffscreen(
   from: number,
   to: number,
   ampToY: (amp: number) => number,
+  bgColor: string,
 ): void {
+  const bgU32 = parseInt(bgColor.replace('#', '').padEnd(8, 'ff'), 16)
   if (to <= from) return
   const { tiles, canvasHeight } = off
   const firstTile = Math.floor(from / TILE_WIDTH)
@@ -105,7 +116,7 @@ function paintColumnsToOffscreen(
       )
       const color = sample.speechDetected ? SPEECH_U32 : SILENCE_U32
       for (let y = 0; y < canvasHeight; y++) {
-        u32[y * TILE_WIDTH + localX] = y >= y0 && y < y1 ? color : 0
+        u32[y * TILE_WIDTH + localX] = y >= y0 && y < y1 ? color : bgU32
       }
     }
     tile.ctx.putImageData(imgData, 0, 0, localFrom, 0, numCols, canvasHeight)
@@ -119,11 +130,14 @@ function draw(
   off: OffscreenState | null,
   timeToX: (timeSec: number) => number,
   timeStepSec: number,
+  bgStyle: string,
 ): void {
   if (canvas.width !== width) canvas.width = width
   if (canvas.height !== height) canvas.height = height
-  const ctx = canvas.getContext('2d')!
-  ctx.clearRect(0, 0, width, height)
+  const ctx = canvas.getContext('2d', { alpha: false })!
+  ctx.imageSmoothingEnabled = false
+  ctx.fillStyle = bgStyle
+  ctx.fillRect(0, 0, width, height)
 
   if (!off || timeStepSec <= 0) return
 
@@ -178,6 +192,9 @@ export function Waveform({
   const patchToRef = useRef<number>(0)
   const drawFrame = useRef<number | null>(null)
 
+  const scheme = useColourScheme()
+  const bgColor = scheme === 'dark' ? '#000000' : '#ffffff'
+
   useEffect(() => {
     if (analysis.length === 0) {
       offRef.current = null
@@ -185,11 +202,11 @@ export function Waveform({
     }
     const numFrames = totalFrames(analysis)
     const off: OffscreenState = { tiles: [], canvasHeight, numFrames }
-    ensureTiles(off, numFrames)
+    ensureTiles(off, numFrames, bgColor)
     offRef.current = off
-    paintColumnsToOffscreen(off, analysis, 0, numFrames, ampToY)
+    paintColumnsToOffscreen(off, analysis, 0, numFrames, ampToY, bgColor)
     // Note: this must include everything in the previous effect (none here)
-  }, [analysis, canvasHeight, ampToY])
+  }, [analysis, canvasHeight, ampToY, bgColor])
 
   // ---- FALLS THROUGH TO NEXT EFFECT ----
 
@@ -208,6 +225,7 @@ export function Waveform({
           analysis[0]
             ? analysis[0].timeStepSamples / analysis[0].sampleRate
             : 0, // assumes uniform params across chunks
+          bgColor,
         )
       })
     }
@@ -221,7 +239,7 @@ export function Waveform({
       drawFrame.current = null
       animationFrame.current = null
     }
-  }, [analysis, canvasHeight, ampToY, canvas, canvasWidth, timeToX])
+  }, [analysis, canvasHeight, ampToY, canvas, canvasWidth, timeToX, bgColor])
 
   useImperativeHandle(ref, () => {
     function handleFrame() {
@@ -237,19 +255,33 @@ export function Waveform({
         if (pendingTo !== Infinity) return
         const to = totalFrames(analysis)
         const off: OffscreenState = { tiles: [], canvasHeight, numFrames: to }
-        ensureTiles(off, to)
+        ensureTiles(off, to, bgColor)
         offRef.current = off
-        paintColumnsToOffscreen(off, analysis, 0, to, ampToY)
+        paintColumnsToOffscreen(off, analysis, 0, to, ampToY, bgColor)
       } else if (offRef.current) {
         const off = offRef.current
         if (pendingTo === Infinity) {
           const prevNumFrames = off.numFrames
           const to = totalFrames(analysis)
-          ensureTiles(off, to)
+          ensureTiles(off, to, bgColor)
           // Paint patched range [effectiveFrom, patchTo) and new frames [prevNumFrames, to)
           // separately to skip the unchanged gap [patchTo, prevNumFrames).
-          paintColumnsToOffscreen(off, analysis, effectiveFrom, patchTo, ampToY)
-          paintColumnsToOffscreen(off, analysis, prevNumFrames, to, ampToY)
+          paintColumnsToOffscreen(
+            off,
+            analysis,
+            effectiveFrom,
+            patchTo,
+            ampToY,
+            bgColor,
+          )
+          paintColumnsToOffscreen(
+            off,
+            analysis,
+            prevNumFrames,
+            to,
+            ampToY,
+            bgColor,
+          )
           off.numFrames = to
         } else {
           if (effectiveFrom < pendingTo) {
@@ -259,6 +291,7 @@ export function Waveform({
               effectiveFrom,
               pendingTo,
               ampToY,
+              bgColor,
             )
           }
         }
@@ -284,7 +317,7 @@ export function Waveform({
         drawFrame.current = requestAnimationFrame(handleFrame)
       },
     }
-  }, [canvasHeight, analysis, ampToY])
+  }, [canvasHeight, analysis, ampToY, bgColor])
 
   return (
     <canvas

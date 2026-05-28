@@ -27,8 +27,9 @@ import {
   useSpeechStripHeight,
   useTimeToX,
 } from './Plot'
+import { useColourScheme } from './useColourScheme'
 
-const VOICED_FILL = 'rgba(78,205,196,0.82)'
+const VOICED_FILL = 'rgba(78,205,196,1.0)'
 
 export interface SpeechStripHandle {
   append: (from: number) => void
@@ -54,9 +55,12 @@ export function SpeechStrip({
   const animFrameRef = useRef<number | null>(null)
   const triggerDraw = useRef(() => {})
 
+  const scheme = useColourScheme()
+  const bgColor = scheme === 'dark' ? '#000000' : '#ffffff'
+
   useEffect(() => {
     if (!canvas || canvasWidth <= 0 || canvasHeight <= 0) return
-    const ctx = canvas.getContext('2d')!
+    const ctx = canvas.getContext('2d', { alpha: false })!
 
     triggerDraw.current = () => {
       if (animFrameRef.current) return
@@ -64,7 +68,8 @@ export function SpeechStrip({
         animFrameRef.current = null
         if (canvas.width !== canvasWidth) canvas.width = canvasWidth
         if (canvas.height !== canvasHeight) canvas.height = canvasHeight
-        ctx.clearRect(0, 0, canvasWidth, canvasHeight)
+        ctx.fillStyle = bgColor
+        ctx.fillRect(0, 0, canvasWidth, canvasHeight)
 
         const dxPerSec = timeToX(1) - timeToX(0)
         if (dxPerSec <= 0) return
@@ -124,7 +129,7 @@ export function SpeechStrip({
       animFrameRef.current = null
       triggerDraw.current = () => {}
     }
-  }, [analysis, canvasWidth, canvasHeight, timeToX, canvas, dpr])
+  }, [analysis, canvasWidth, canvasHeight, timeToX, canvas, dpr, bgColor])
 
   useImperativeHandle(
     ref,

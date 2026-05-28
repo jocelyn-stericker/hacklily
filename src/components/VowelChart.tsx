@@ -168,7 +168,7 @@ function drawVowelChart(
   canvas.width = w
   canvas.height = h
 
-  const ctx = canvas.getContext('2d')!
+  const ctx = canvas.getContext('2d', { alpha: false })!
   const pad = PAD * dpr
   const plotX = pad
   const plotY = pad
