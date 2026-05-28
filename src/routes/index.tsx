@@ -19,7 +19,6 @@ import { createFileRoute } from '@tanstack/react-router'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useHotkeys } from 'react-hotkeys-hook'
 
-import { AudioSettingsModal } from '#/components/AudioSettingsModal'
 import { Dialogs } from '#/components/Dialogs'
 import { Plot } from '#/components/Plot'
 import { Spectrogram } from '#/components/Spectrogram'
@@ -27,15 +26,6 @@ import type { SpectrogramHandle } from '#/components/Spectrogram'
 import { SpeechStrip } from '#/components/SpeechStrip'
 import type { SpeechStripHandle } from '#/components/SpeechStrip'
 import { Toolbar } from '#/components/Toolbar'
-import { Button } from '#/components/ui/button'
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '#/components/ui/dialog'
 import { useAudioImport } from '#/components/useAudioImport'
 import { useAudioPlayback } from '#/components/useAudioPlayback'
 import { useMicCapture } from '#/components/useMicCapture'
@@ -105,7 +95,9 @@ function App() {
   const recordingStartIndexRef = useRef(0)
   const recordingDurationSecRef = useRef(0)
 
-  const [confirmingNew, setConfirmingNew] = useState(false)
+  const [confirmingAction, setConfirmingAction] = useState<
+    'new' | 'open' | null
+  >(null)
 
   const doNew = useCallback(() => {
     resetTimeline()
@@ -122,16 +114,33 @@ function App() {
 
   const handleNew = useCallback(() => {
     if (hasData) {
-      setConfirmingNew(true)
+      setConfirmingAction('new')
       return
     }
     doNew()
   }, [hasData, doNew])
 
+  const handleCancelNew = useCallback(() => {
+    setConfirmingAction(null)
+  }, [])
+
   const handleConfirmNew = useCallback(() => {
-    setConfirmingNew(false)
-    doNew()
-  }, [doNew])
+    const action = confirmingAction
+    if (action === 'new') {
+      doNew()
+    } else if (action === 'open') {
+      openFilePicker()
+    }
+    setConfirmingAction(null)
+  }, [confirmingAction, doNew, openFilePicker])
+
+  const handleOpen = useCallback(() => {
+    if (hasData) {
+      setConfirmingAction('open')
+      return
+    }
+    openFilePicker()
+  }, [hasData, openFilePicker])
 
   const ampMaxNorm = analysisMut.reduce(
     (memo, chunk) => chunk.frames.reduce((m, f) => Math.max(m, f.rms), memo),
@@ -327,9 +336,9 @@ function App() {
     'mod+o',
     (e) => {
       e.preventDefault()
-      openFilePicker()
+      handleOpen()
     },
-    [openFilePicker],
+    [handleOpen],
   )
   useHotkeys(
     'mod+e',
@@ -364,35 +373,15 @@ function App() {
         onAcknowledgeError={handleAcknowledgeError}
         onStartRecording={startRecording}
         openFilePicker={openFilePicker}
+        confirmingNew={confirmingAction !== null}
+        onCancelNew={handleCancelNew}
+        onConfirmNew={handleConfirmNew}
+        showAudioSettings={status.value === 'editAudioSettings'}
+        onCloseAudioSettings={handleOpenAudioSettings}
       />
-      <AudioSettingsModal
-        open={status.value === 'editAudioSettings'}
-        onOpenChange={handleOpenAudioSettings}
-      />
-      <Dialog
-        open={confirmingNew}
-        onOpenChange={(open) => setConfirmingNew(open)}
-      >
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Discard unsaved changes?</DialogTitle>
-            <DialogDescription>
-              Your current recording will be lost.
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setConfirmingNew(false)}>
-              Cancel
-            </Button>
-            <Button variant="destructive" onClick={handleConfirmNew}>
-              Discard
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
       <main className="h-dvh flex flex-col overflow-hidden">
         <Toolbar
-          openFilePicker={openFilePicker}
+          openFilePicker={handleOpen}
           onNew={handleNew}
           timelineState={timelineState}
           status={status}

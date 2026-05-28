@@ -15,8 +15,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import { AudioSettingsModal } from '#/components/AudioSettingsModal'
 import type { AnalysisChunk } from '#/lib/AnalysisFrame'
 
+import { Button } from './ui/button'
 import {
   Dialog,
   DialogContent,
@@ -34,12 +36,22 @@ export function Dialogs({
   onAcknowledgeError,
   onStartRecording,
   openFilePicker,
+  confirmingNew,
+  onCancelNew,
+  onConfirmNew,
+  showAudioSettings,
+  onCloseAudioSettings,
 }: {
   analysisMut: AnalysisChunk[]
   status: Status
   onAcknowledgeError: () => void
   onStartRecording: () => void
   openFilePicker: () => void
+  confirmingNew: boolean
+  onCancelNew: () => void
+  onConfirmNew: () => void
+  showAudioSettings: boolean
+  onCloseAudioSettings: () => void
 }) {
   const showWelcome = analysisMut.length === 0 && status.value === 'inactive'
 
@@ -69,6 +81,31 @@ export function Dialogs({
           <DialogFooter showCloseButton />
         </DialogContent>
       </Dialog>
+      <Dialog
+        open={confirmingNew}
+        onOpenChange={(open) => !open && onCancelNew()}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Discard unsaved changes?</DialogTitle>
+            <DialogDescription>
+              Your current recording will be lost.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={onCancelNew}>
+              Cancel
+            </Button>
+            <Button variant="destructive" onClick={onConfirmNew}>
+              Discard
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      <AudioSettingsModal
+        open={showAudioSettings}
+        onOpenChange={onCloseAudioSettings}
+      />
     </>
   )
 }
