@@ -21,7 +21,7 @@ import { useEffect, useImperativeHandle, useRef, useState } from 'react'
 import type { RefObject } from 'react'
 
 import type { AnalysisChunk, AnalysisFrame } from '#/lib/AnalysisFrame'
-import { frameDbMax, frameTimeSec, totalFrames } from '#/lib/AnalysisFrame'
+import { frameDbMax, totalFrames } from '#/lib/AnalysisFrame'
 
 import { INFERNO_COLOURMAP, WYOR_COLOURMAP } from './colourmap'
 import { InCanvas, usePlotPad, usePlotSize, useTimeToX, useHzToY } from './Plot'
@@ -969,11 +969,15 @@ export function Spectrogram({
                 freqToY,
                 dpr,
               )
-              // fromTimeSec goes one frame back so the moveTo anchor is included in the strip.
-              const fromTimeSec = frameTimeSec(analysisMut, effectiveFrom - 1)
-              const toTimeSec =
-                chunk.startTimeSec +
-                localTo * (chunk.timeStepSamples / chunk.sampleRate)
+              const timeStepSec = chunk.timeStepSamples / chunk.sampleRate
+              // When fullChunkRecolor, spectrogram tiles were repainted from 0,
+              // so update display buffer from chunk start to show new colors.
+              const updateFromLocal = fullChunkRecolor
+                ? 0
+                : Math.max(0, localFrom - 1)
+              const fromTimeSec =
+                chunk.startTimeSec + updateFromLocal * timeStepSec
+              const toTimeSec = chunk.startTimeSec + localTo * timeStepSec
               updateDisplayBufForFrames(
                 displayBufRef.current,
                 allOff,
@@ -1005,7 +1009,22 @@ export function Spectrogram({
                   dpr,
                 )
               }
-              needFullRedraw = true
+              const timeStepSec = chunk.timeStepSamples / chunk.sampleRate
+              const updateFromLocal = fullChunkRecolor
+                ? 0
+                : Math.max(0, localFrom - 1)
+              const fromTimeSec =
+                chunk.startTimeSec + updateFromLocal * timeStepSec
+              const toTimeSec = chunk.startTimeSec + localTo * timeStepSec
+              updateDisplayBufForFrames(
+                displayBufRef.current,
+                allOff,
+                allFormantOff,
+                analysisMut,
+                fromTimeSec,
+                toTimeSec,
+                theme,
+              )
             }
           }
         }
