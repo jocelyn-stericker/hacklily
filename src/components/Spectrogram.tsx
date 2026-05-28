@@ -21,7 +21,7 @@ import { useEffect, useImperativeHandle, useRef, useState } from 'react'
 import type { RefObject } from 'react'
 
 import type { AnalysisChunk, AnalysisFrame } from '#/lib/AnalysisFrame'
-import { frameTimeSec, totalFrames } from '#/lib/AnalysisFrame'
+import { frameDbMax, frameTimeSec, totalFrames } from '#/lib/AnalysisFrame'
 
 import { INFERNO_COLOURMAP, WYOR_COLOURMAP } from './colourmap'
 import { InCanvas, usePlotPad, usePlotSize, useTimeToX, useHzToY } from './Plot'
@@ -66,6 +66,15 @@ const DARK_THEME = buildTheme(true)
 const LIGHT_THEME = buildTheme(false)
 
 const LN10_10 = 10 / Math.log(10)
+const DB_MAX_DEFAULT = -16
+
+function chunkDbMax(chunk: AnalysisChunk): number {
+  let max = DB_MAX_DEFAULT
+  for (const frame of chunk.frames) {
+    max = Math.max(frameDbMax(frame) ?? max, max)
+  }
+  return max
+}
 
 export interface SpectrogramHandle {
   /** Call after appending frames [from, analysis.length) to the stored analysis. */
@@ -86,8 +95,7 @@ interface ChunkColorsState {
   colorTiles: ColorTile[]
   numFrames: number
   numBins: number
-  dbMin: number
-  dbRange: number
+  dbMax: number
 }
 
 interface Tile {
@@ -165,8 +173,9 @@ function computeColorsRange(
   from: number,
   to: number,
   theme: Theme,
+  dbRange: number,
 ): void {
-  const { colorTiles, numBins, dbMin, dbRange, chunk } = state
+  const { colorTiles, numBins, dbMax, chunk } = state
   for (let f = from; f < to; f++) {
     const spectrum = chunk.frames[f]!.spectrum
     const tileIdx = Math.floor(f / TILE_WIDTH)
@@ -175,7 +184,7 @@ function computeColorsRange(
     for (let b = 0; b < numBins; b++) {
       const raw = spectrum[b]!
       const db = LN10_10 * Math.log(raw)
-      const norm = Math.max(0, Math.min(1, (db - dbMin) / dbRange))
+      const norm = Math.max(0, Math.min(1, (db - (dbMax - dbRange)) / dbRange))
       tileData[b * TILE_WIDTH + localF] =
         theme.colourmap[Math.round(norm * 255)]!
     }
@@ -615,13 +624,11 @@ function draw(
 
 export function Spectrogram({
   analysis,
-  dbMin,
   dbRange,
   ref,
   debug = false,
 }: {
   analysis: AnalysisChunk[]
-  dbMin: number
   dbRange: number
   ref: RefObject<SpectrogramHandle | null>
   debug?: boolean
@@ -675,20 +682,20 @@ export function Spectrogram({
     for (const chunk of analysis) {
       const numFrames = chunk.frames.length
       const numBins = chunk.frames[0]!.spectrum.length
+      const maxDb = chunkDbMax(chunk)
       const colors: ChunkColorsState = {
         chunk,
         colorTiles: [],
         numFrames,
         numBins,
-        dbMin,
-        dbRange,
+        dbMax: maxDb,
       }
       ensureColorTiles(colors, numFrames)
-      computeColorsRange(colors, 0, numFrames, theme)
+      computeColorsRange(colors, 0, numFrames, theme, dbRange)
       newColors.push(colors)
     }
     allColorsRef.current = newColors
-  }, [analysis, dbMin, dbRange, theme])
+  }, [analysis, dbRange, theme])
 
   // ---- FALLS THROUGH TO NEXT EFFECT ----
 
@@ -733,7 +740,7 @@ export function Spectrogram({
     tilesGenRef.current += 1
 
     // Note: this must include everything in the previous effect
-  }, [analysis, dbMin, dbRange, canvasHeight, freqToY, dpr, theme])
+  }, [analysis, dbRange, canvasHeight, freqToY, dpr, theme])
 
   const fromRef = useRef<number | null>(null)
   // Infinity = "to totalFrames" (append pending); explicit number = max patch to
@@ -787,7 +794,6 @@ export function Spectrogram({
     // Note: this must include everything in the previous effect
   }, [
     analysis,
-    dbMin,
     dbRange,
     canvasHeight,
     freqToY,
@@ -822,8 +828,7 @@ export function Spectrogram({
           colorTiles: [],
           numFrames: 0,
           numBins,
-          dbMin,
-          dbRange,
+          dbMax: DB_MAX_DEFAULT,
         }
         allColors.push(colors)
         allOff.push(null)
@@ -851,8 +856,35 @@ export function Spectrogram({
         const prevNumFrames = colors.numFrames
         const isExtending = localTo > prevNumFrames
 
+        // Scan newly appended frames for a new peak (monotonic — old frames
+        // already contributed to dbMax). Also scan any patched existing frames.
+        let fullChunkRecolor = false
+        if (isExtending) {
+          for (let f = prevNumFrames; f < localTo; f++) {
+            const frameMax = frameDbMax(chunk.frames[f]!)
+            if (frameMax !== null && frameMax > colors.dbMax) {
+              colors.dbMax = frameMax
+              fullChunkRecolor = true
+            }
+          }
+        }
+        for (let f = localFrom; f < Math.min(localTo, prevNumFrames); f++) {
+          const frameMax = frameDbMax(chunk.frames[f]!)
+          if (frameMax !== null && frameMax > colors.dbMax) {
+            colors.dbMax = frameMax
+            fullChunkRecolor = true
+          }
+        }
+
         if (isExtending) ensureColorTiles(colors, localTo)
-        computeColorsRange(colors, localFrom, localTo, theme)
+
+        computeColorsRange(
+          colors,
+          fullChunkRecolor ? 0 : localFrom,
+          localTo,
+          theme,
+          dbRange,
+        )
         if (isExtending) colors.numFrames = localTo
 
         let off = allOff[chunkIdx] ?? null
@@ -886,7 +918,14 @@ export function Spectrogram({
           needFullRedraw = true
         } else if (off) {
           if (isExtending) ensureTiles(off, localTo, false, theme.bgStyle)
-          paintColumnsToOffscreen(off, colors, localFrom, localTo, theme)
+          paintColumnsToOffscreen(
+            off,
+            colors,
+            fullChunkRecolor ? 0 : localFrom,
+            localTo,
+            theme,
+          )
+          if (fullChunkRecolor) needFullRedraw = true
 
           if (!formantOff) {
             formantOff = { tiles: [], canvasHeight }
@@ -970,7 +1009,7 @@ export function Spectrogram({
         drawFrame.current = requestAnimationFrame(handleFrame)
       },
     }
-  }, [canvasHeight, analysis, freqToY, dbMin, dbRange, dpr, theme])
+  }, [canvasHeight, analysis, freqToY, dbRange, dpr, theme])
 
   return (
     <>

@@ -18,12 +18,10 @@
 import { useCallback, useEffect, useRef } from 'react'
 
 import type { AnalysisChunk } from '#/lib/AnalysisFrame'
-import { computeDbMax } from '#/lib/AnalysisFrame'
 import ImportWorker from '#/lib/ImportWorker?worker'
 
 async function importAudioFile(file: File): Promise<{
   analysis: AnalysisChunk[]
-  dbMax: number | null
   buffer: AudioBuffer
 }> {
   const audioImporter = new ImportWorker()
@@ -67,7 +65,6 @@ async function importAudioFile(file: File): Promise<{
         const chunks: AnalysisChunk[] = [data.ok]
         resolve({
           analysis: chunks,
-          dbMax: computeDbMax(chunks),
           buffer: shortenedMono,
         })
       } else {
@@ -79,7 +76,6 @@ async function importAudioFile(file: File): Promise<{
 
 interface FileImportResult {
   analysis: AnalysisChunk[]
-  dbMax: number | null
   audioBuffer: AudioBuffer
 }
 
@@ -110,12 +106,8 @@ export function useAudioImport({
       if (!file) return
       onStartRef.current?.()
       handleAnalyze(async () => {
-        const {
-          analysis,
-          dbMax,
-          buffer: audioBuffer,
-        } = await importAudioFile(file)
-        onImportedRef.current({ analysis, dbMax, audioBuffer })
+        const { analysis, buffer: audioBuffer } = await importAudioFile(file)
+        onImportedRef.current({ analysis, audioBuffer })
         return { trackDurationSec: audioBuffer.duration }
       })
     }

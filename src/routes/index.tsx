@@ -51,7 +51,7 @@ import type {
   AnalysisFrame,
   AnalysisParams,
 } from '#/lib/AnalysisFrame'
-import { totalFrames, frameDbMax } from '#/lib/AnalysisFrame'
+import { totalFrames } from '#/lib/AnalysisFrame'
 import { concatAudioBuffers } from '#/lib/concatAudioBuffers'
 import { exportWav } from '#/lib/exportWav'
 import { cn } from '#/lib/utils'
@@ -60,7 +60,6 @@ export const Route = createFileRoute('/')({
   component: App,
 })
 
-const DB_MAX_DEFAULT = -16
 const DB_DYNAMIC_RANGE = 70 // dB, matches Praat's default dynamic range
 
 function App() {
@@ -94,21 +93,12 @@ function App() {
     hoverFrame,
   } = useTimelineState(analysis)
 
-  const [dbMax, setDbMax] = useState(DB_MAX_DEFAULT)
-
   const { openFilePicker } = useAudioImport({
     handleAnalyze,
     onStart: () => {
       setAnalysis([])
-      setDbMax(DB_MAX_DEFAULT)
     },
-    onImported: ({
-      analysis: newAnalysis,
-      dbMax: importedDbMax,
-      audioBuffer: newAudioBuffer,
-    }) => {
-      if (importedDbMax !== null)
-        setDbMax(Math.max(importedDbMax, DB_MAX_DEFAULT))
+    onImported: ({ analysis: newAnalysis, audioBuffer: newAudioBuffer }) => {
       setAudioBuffer(newAudioBuffer)
       setAnalysis(newAnalysis)
     },
@@ -123,7 +113,6 @@ function App() {
     resetTimeline()
     setAnalysis([])
     setAudioBuffer(null)
-    setDbMax(DB_MAX_DEFAULT)
     recordingStartIndexRef.current = 0
     recordingDurationSecRef.current = 0
   }, [resetTimeline])
@@ -223,8 +212,6 @@ function App() {
       recordingDurationSecRef.current +=
         lastChunk.timeStepSamples / lastChunk.sampleRate
       schedulePlaybackPositionChanged(recordingDurationSecRef.current)
-      const fm = frameDbMax(frame)
-      if (fm !== null) setDbMax((prev) => Math.max(prev, fm))
     },
     [schedulePlaybackPositionChanged],
   )
@@ -453,7 +440,6 @@ function App() {
           >
             <Spectrogram
               analysis={analysis}
-              dbMin={dbMax - DB_DYNAMIC_RANGE}
               dbRange={DB_DYNAMIC_RANGE}
               ref={spectrogramRef}
               debug={false}
