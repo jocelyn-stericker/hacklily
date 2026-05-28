@@ -60,8 +60,6 @@ export const Route = createFileRoute('/')({
   component: App,
 })
 
-const DB_DYNAMIC_RANGE = 70 // dB, matches Praat's default dynamic range
-
 function App() {
   const waveformRef = useRef<WaveformHandle>(null)
   const spectrogramRef = useRef<SpectrogramHandle>(null)
@@ -454,7 +452,6 @@ function App() {
           >
             <Spectrogram
               analysisMut={analysisMut}
-              dbRange={DB_DYNAMIC_RANGE}
               ref={spectrogramRef}
               debug={false}
             />

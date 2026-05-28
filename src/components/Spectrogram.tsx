@@ -624,12 +624,12 @@ function draw(
 
 export function Spectrogram({
   analysisMut,
-  dbRange,
+  dbRange = 70,
   ref,
   debug = false,
 }: {
   analysisMut: AnalysisChunk[]
-  dbRange: number
+  dbRange?: number
   ref: RefObject<SpectrogramHandle | null>
   debug?: boolean
 }) {
