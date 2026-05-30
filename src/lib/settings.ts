@@ -20,25 +20,43 @@ import { useSyncExternalStore } from 'react'
 export type SampleRatePref = 'auto' | 'prefer48000' | 'prefer44100'
 export type BrowserPreprocessing = 'default' | 'minimal'
 
-export type AudioSettingsRow = {
+// Which speech-to-text engines Braat is allowed to use. A posture rather than a
+// specific engine, so there is always a working fallback:
+//   disabled      - do not transcribe
+//   bundled       - always the bundled on-device JS model (Moonshine).
+//   browser       - the browser's own on-device engine. Audio never leaves
+//                   the browser.
+//   cloud         - like browser, but may fall back to the browser/OS
+//                   remote service, which can send audio off-device.
+export type TranscriptionMode = 'disabled' | 'bundled' | 'browser' | 'cloud'
+
+export type SettingsRow = {
   inputDeviceId: string | null
   sampleRate: SampleRatePref
   persistentMic: boolean
   browserPreprocessing: BrowserPreprocessing
+  transcriptionMode: TranscriptionMode
 }
 
-export const DEFAULT_SETTINGS: AudioSettingsRow = {
+/** The subset of settings the audio capture path reads. */
+export type AudioCaptureSettings = Pick<
+  SettingsRow,
+  'inputDeviceId' | 'sampleRate' | 'persistentMic' | 'browserPreprocessing'
+>
+
+export const DEFAULT_SETTINGS: SettingsRow = {
   inputDeviceId: null,
   sampleRate: 'auto',
   persistentMic: false,
   browserPreprocessing: 'default',
+  transcriptionMode: 'disabled',
 }
 
 const STORAGE_KEY = 'braat:settings'
 const listeners = new Set<() => void>()
-let cache: AudioSettingsRow | null = null
+let cache: SettingsRow | null = null
 
-function readFromStorage(): AudioSettingsRow {
+function readFromStorage(): SettingsRow {
   try {
     const raw = localStorage.getItem(STORAGE_KEY)
     if (raw) return { ...DEFAULT_SETTINGS, ...JSON.parse(raw) }
@@ -46,7 +64,7 @@ function readFromStorage(): AudioSettingsRow {
   return { ...DEFAULT_SETTINGS }
 }
 
-function getSnapshot(): AudioSettingsRow {
+function getSnapshot(): SettingsRow {
   cache ??= readFromStorage()
   return cache
 }
@@ -69,21 +87,21 @@ function subscribe(callback: () => void): () => void {
   }
 }
 
-export function useSettings(): AudioSettingsRow {
+export function useSettings(): SettingsRow {
   return useSyncExternalStore(subscribe, getSnapshot, () => DEFAULT_SETTINGS)
 }
 
 export async function updateSettings(
-  patch: Partial<AudioSettingsRow>,
+  patch: Partial<SettingsRow>,
 ): Promise<void> {
-  const updated: AudioSettingsRow = { ...getSnapshot(), ...patch }
+  const updated: SettingsRow = { ...getSnapshot(), ...patch }
   localStorage.setItem(STORAGE_KEY, JSON.stringify(updated))
   invalidate()
 }
 
 /** Build MediaStreamConstraints from settings */
 export function buildAudioConstraints(
-  settings: AudioSettingsRow,
+  settings: AudioCaptureSettings,
 ): MediaTrackConstraints {
   const minimal = settings.browserPreprocessing === 'minimal'
   const constraints: MediaTrackConstraints = {
@@ -104,7 +122,7 @@ export function buildAudioConstraints(
 
 /** Preferred AudioContext sampleRate from settings (undefined = let browser decide) */
 export function preferredSampleRate(
-  settings: AudioSettingsRow,
+  settings: AudioCaptureSettings,
 ): number | undefined {
   if (settings.sampleRate === 'prefer48000') return 48000
   if (settings.sampleRate === 'prefer44100') return 44100

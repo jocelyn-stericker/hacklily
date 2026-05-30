@@ -34,7 +34,7 @@ import {
 } from '#/components/ui/select'
 import { useSettings, updateSettings } from '#/lib/settings'
 import type {
-  AudioSettingsRow,
+  SettingsRow,
   BrowserPreprocessing,
   SampleRatePref,
 } from '#/lib/settings'
@@ -57,7 +57,7 @@ export function AudioSettingsModal({
   open: boolean
   onOpenChange: (open: boolean) => void
 }) {
-  const settings: AudioSettingsRow = useSettings()
+  const settings: SettingsRow = useSettings()
 
   const [devices, setDevices] = useState<MediaDeviceInfo[]>([])
   const linux = isDesktopLinux()

@@ -634,7 +634,10 @@ function HorizGridLines({ gridHzOrAmp }: { gridHzOrAmp: number[] }) {
   const toY = useToY(InCanvas.No)
 
   return (
-    <div className="absolute inset-0" style={{ left: plotPad.left }}>
+    <div
+      className="absolute inset-0 pointer-events-none"
+      style={{ left: plotPad.left }}
+    >
       {gridHzOrAmp.map((hzOrAmp) => (
         <div
           key={hzOrAmp}

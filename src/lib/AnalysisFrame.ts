@@ -15,6 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import type { TranscriptionState } from '#/lib/transcription'
+
 const LN10_10 = 10 / Math.log(10)
 
 // Parameters shared by all frames within a chunk. Constant across one recording
@@ -49,6 +51,8 @@ export type AnalysisChunk = AnalysisParams & {
   // True if any frame in the chunk is voiced (speech detected). Chunks are split
   // at voicing boundaries, so in practice every frame in a chunk shares this value.
   voiced: boolean
+  // ASR transcription status/result for this chunk, if requested.
+  transcription?: TranscriptionState
 }
 
 // True if any frame is voiced. Used to set AnalysisChunk.voiced at construction

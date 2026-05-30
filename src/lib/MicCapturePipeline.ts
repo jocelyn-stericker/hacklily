@@ -29,7 +29,7 @@ import SpectrogramWorker from '#/lib/SpectrogramWorker?worker'
 import VadWorker from '#/lib/VadWorker?worker'
 
 import type { FormantWorkerOutMessage } from './FormantWorker'
-import type { AudioSettingsRow } from './settings'
+import type { AudioCaptureSettings } from './settings'
 import {
   buildAudioConstraints,
   DEFAULT_SETTINGS,
@@ -58,7 +58,7 @@ type MicCaptureOutEvents = {
 let STREAM: MediaStream | null = null
 let STREAM_KEY: string | null = null
 
-function streamKey(settings: AudioSettingsRow): string {
+function streamKey(settings: AudioCaptureSettings): string {
   return JSON.stringify({
     deviceId: settings.inputDeviceId,
     sampleRate: settings.sampleRate,
@@ -68,7 +68,10 @@ function streamKey(settings: AudioSettingsRow): string {
 
 const LOG = '[MicCapturePipeline]'
 
-async function fixSettingsConstraint(settings: AudioSettingsRow, error: any) {
+async function fixSettingsConstraint(
+  settings: AudioCaptureSettings,
+  error: any,
+) {
   if (error?.constraint === 'deviceId' && settings.inputDeviceId !== null) {
     console.log(LOG, 'preInit: overconstrainted on deviceId')
     await updateSettings({
@@ -95,7 +98,7 @@ async function fixSettingsConstraint(settings: AudioSettingsRow, error: any) {
  * Pre-open the mic stream if persistentMic is enabled.
  */
 export async function preInitPersistentStream(
-  settings: AudioSettingsRow,
+  settings: AudioCaptureSettings,
 ): Promise<void> {
   if (!settings.persistentMic) {
     if (STREAM) {
@@ -178,7 +181,7 @@ export class MicCapturePipeline extends TypedEventTarget<MicCaptureOutEvents> {
   #resolveInitComplete = () => {}
   #started: Promise<void>
   #destroyed: AbortController = new AbortController()
-  #settings: AudioSettingsRow
+  #settings: AudioCaptureSettings
   #sab: SharedArrayBuffer | null = null
   #pendingWorkers = 0
 
@@ -191,7 +194,7 @@ export class MicCapturePipeline extends TypedEventTarget<MicCaptureOutEvents> {
     settings = DEFAULT_SETTINGS,
   }: {
     signal: AbortSignal
-    settings?: AudioSettingsRow
+    settings?: AudioCaptureSettings
   }) {
     super()
     this.#settings = settings

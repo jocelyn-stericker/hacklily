@@ -46,6 +46,13 @@ declare module '#/lib/ImportWorker?worker' {
   export default ImportWorkerConstructor
 }
 
+declare module '#/lib/MoonshineWorker?worker' {
+  import type { MoonshineWorker } from '#/lib/MoonshineWorker'
+
+  const MoonshineWorkerConstructor: new () => MoonshineWorker
+  export default MoonshineWorkerConstructor
+}
+
 declare interface AudioParamDescriptor {
   name: string
   automationRate?: AutomationRate

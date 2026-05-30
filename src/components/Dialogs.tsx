@@ -16,6 +16,7 @@
  */
 
 import { AudioSettingsModal } from '#/components/AudioSettingsModal'
+import { TranscriptionSettingsModal } from '#/components/TranscriptionSettingsModal'
 import type { AnalysisChunk } from '#/lib/AnalysisFrame'
 
 import { Button } from './ui/button'
@@ -41,6 +42,8 @@ export function Dialogs({
   onConfirmNew,
   showAudioSettings,
   onCloseAudioSettings,
+  showTranscriptionSettings,
+  onCloseTranscriptionSettings,
 }: {
   analysisMut: AnalysisChunk[]
   status: Status
@@ -52,6 +55,8 @@ export function Dialogs({
   onConfirmNew: () => void
   showAudioSettings: boolean
   onCloseAudioSettings: () => void
+  showTranscriptionSettings: boolean
+  onCloseTranscriptionSettings: (open: boolean) => void
 }) {
   const showWelcome = analysisMut.length === 0 && status.value === 'inactive'
 
@@ -105,6 +110,10 @@ export function Dialogs({
       <AudioSettingsModal
         open={showAudioSettings}
         onOpenChange={onCloseAudioSettings}
+      />
+      <TranscriptionSettingsModal
+        open={showTranscriptionSettings}
+        onOpenChange={onCloseTranscriptionSettings}
       />
     </>
   )

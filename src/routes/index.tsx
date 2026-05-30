@@ -44,6 +44,8 @@ import type {
 import { getFrame, splitChunkAt, totalFrames } from '#/lib/AnalysisFrame'
 import { concatAudioBuffers } from '#/lib/concatAudioBuffers'
 import { exportWav } from '#/lib/exportWav'
+import { useSettings } from '#/lib/settings'
+import { chunkPcmFromBuffer, transcribeChunks } from '#/lib/transcription'
 import { cn } from '#/lib/utils'
 
 export const Route = createFileRoute('/')({
@@ -56,6 +58,11 @@ function App() {
   const vowelChartRef = useRef<VowelChartHandle>(null)
   const speechStripRef = useRef<SpeechStripHandle>(null)
   const [analysisMut, replaceAnalysis] = useState<AnalysisChunk[]>([])
+
+  const [showTranscriptionSettings, setShowTranscriptionSettings] =
+    useState(false)
+
+  const settings = useSettings()
 
   const [audioBuffer, setAudioBuffer] = useState<AudioBuffer | null>(null)
   const {
@@ -242,6 +249,7 @@ function App() {
         frame.speechDetected !== prevFrame.speechDetected
       ) {
         splitChunkAt(analysisMutRef.current, absIndex)
+        speechStripRef.current?.refreshTranscriptions()
       }
     }
 
@@ -249,6 +257,12 @@ function App() {
     spectrogramRef.current?.patch(absIndex, absIndex + 1)
     vowelChartRef.current?.patch(absIndex, absIndex + 1)
     speechStripRef.current?.patch(absIndex, absIndex + 1)
+  }, [])
+
+  const handleTranscribe = useCallback(() => {
+    // We automatically transcribe things if transcription is enabled. Before it's enabled,
+    // we show a button to enable transcription, and that's what this handles.
+    setShowTranscriptionSettings(true)
   }, [])
 
   useMicCapture({
@@ -371,6 +385,25 @@ function App() {
     status.value === 'recording' || status.value === 'analyzing'
   const noOp = useCallback(() => {}, [])
 
+  // Kick off (stubbed) transcription for completed voiced chunks whenever the
+  // analysis, transcription settings, or audio buffer change and we're not
+  // mid-recording. Depending on `audioBuffer` matters: a chunk's PCM only
+  // becomes available once the recording buffer has been appended, which can
+  // land a render after recording stops — re-running here lets chunks that
+  // were skipped for lack of audio get picked up. This covers file imports,
+  // the end of a recording, and the user enabling transcription after the
+  // fact. Results mutate chunks in place, so we tell the SpeechStrip
+  // imperatively to re-render its overlay as they arrive.
+  useEffect(() => {
+    if (isRecording || !audioBuffer) return
+    transcribeChunks(
+      analysisMut,
+      settings,
+      (chunk) => chunkPcmFromBuffer(chunk, audioBuffer),
+      () => speechStripRef.current?.refreshTranscriptions(),
+    )
+  }, [analysisMut, settings, isRecording, audioBuffer])
+
   return (
     <>
       <Dialogs
@@ -384,6 +417,8 @@ function App() {
         onConfirmNew={handleConfirmNew}
         showAudioSettings={status.value === 'editAudioSettings'}
         onCloseAudioSettings={handleOpenAudioSettings}
+        showTranscriptionSettings={showTranscriptionSettings}
+        onCloseTranscriptionSettings={setShowTranscriptionSettings}
       />
       <main className="h-dvh flex flex-col overflow-hidden">
         <Toolbar
@@ -399,6 +434,7 @@ function App() {
           onExportAudio={handleExportAudio}
           exportAudioDisabled={exportAudioDisabled}
           onOpenAudioSettings={handleOpenAudioSettings}
+          onOpenTranscriptionSettings={() => setShowTranscriptionSettings(true)}
         />
         <Plot
           timelineState={waveformTimelineState}
@@ -450,7 +486,11 @@ function App() {
               ref={spectrogramRef}
               debug={false}
             />
-            <SpeechStrip analysisMut={analysisMut} ref={speechStripRef} />
+            <SpeechStrip
+              analysisMut={analysisMut}
+              onTranscribe={handleTranscribe}
+              ref={speechStripRef}
+            />
             {status.value !== 'recording' && (
               <div
                 className={cn(

@@ -16,6 +16,7 @@
  */
 
 import {
+  Captions,
   Download,
   FilePlus,
   FolderOpen,
@@ -54,6 +55,7 @@ export function Toolbar({
   onExportAudio,
   exportAudioDisabled,
   onOpenAudioSettings,
+  onOpenTranscriptionSettings,
 }: {
   openFilePicker: () => void
   onNew: () => void
@@ -67,6 +69,7 @@ export function Toolbar({
   onExportAudio: () => void
   exportAudioDisabled: boolean
   onOpenAudioSettings: () => void
+  onOpenTranscriptionSettings: () => void
 }) {
   return (
     <header className="flex align-center justify-end gap-1 p-2 flex-wrap">
@@ -147,6 +150,10 @@ export function Toolbar({
             <Settings2 className="size-4" />
             Audio settings
             <DropdownMenuShortcut>{MOD},</DropdownMenuShortcut>
+          </DropdownMenuItem>
+          <DropdownMenuItem onClick={onOpenTranscriptionSettings}>
+            <Captions className="size-4" />
+            Transcription settings
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>

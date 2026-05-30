@@ -24,7 +24,7 @@ import {
   preferredSampleRate,
   updateSettings,
 } from './settings'
-import type { AudioSettingsRow } from './settings'
+import type { SettingsRow } from './settings'
 
 // Simple in-memory localStorage mock for testing
 class LocalStorageMock {
@@ -67,11 +67,12 @@ describe('settings', () => {
 
   describe('buildAudioConstraints', () => {
     it('returns default constraints with browser preprocessing enabled', () => {
-      const settings: AudioSettingsRow = {
+      const settings: SettingsRow = {
         inputDeviceId: null,
         sampleRate: 'auto',
         persistentMic: false,
         browserPreprocessing: 'default',
+        transcriptionMode: 'browser',
       }
       const constraints = buildAudioConstraints(settings)
       expect(constraints.echoCancellation).toBeUndefined()
@@ -82,11 +83,12 @@ describe('settings', () => {
     })
 
     it('disables preprocessing when set to minimal', () => {
-      const settings: AudioSettingsRow = {
+      const settings: SettingsRow = {
         inputDeviceId: null,
         sampleRate: 'auto',
         persistentMic: false,
         browserPreprocessing: 'minimal',
+        transcriptionMode: 'browser',
       }
       const constraints = buildAudioConstraints(settings)
       expect(constraints.echoCancellation).toBe(false)
@@ -96,33 +98,36 @@ describe('settings', () => {
 
     it('includes device ID when specified', () => {
       const deviceId = 'device-123'
-      const settings: AudioSettingsRow = {
+      const settings: SettingsRow = {
         inputDeviceId: deviceId,
         sampleRate: 'auto',
         persistentMic: false,
         browserPreprocessing: 'default',
+        transcriptionMode: 'browser',
       }
       const constraints = buildAudioConstraints(settings)
       expect(constraints.deviceId).toEqual({ exact: deviceId })
     })
 
     it('sets prefer48000 sample rate constraint', () => {
-      const settings: AudioSettingsRow = {
+      const settings: SettingsRow = {
         inputDeviceId: null,
         sampleRate: 'prefer48000',
         persistentMic: false,
         browserPreprocessing: 'default',
+        transcriptionMode: 'browser',
       }
       const constraints = buildAudioConstraints(settings)
       expect(constraints.sampleRate).toEqual({ ideal: 48000 })
     })
 
     it('sets prefer44100 sample rate constraint', () => {
-      const settings: AudioSettingsRow = {
+      const settings: SettingsRow = {
         inputDeviceId: null,
         sampleRate: 'prefer44100',
         persistentMic: false,
         browserPreprocessing: 'default',
+        transcriptionMode: 'browser',
       }
       const constraints = buildAudioConstraints(settings)
       expect(constraints.sampleRate).toEqual({ ideal: 44100 })
@@ -130,11 +135,12 @@ describe('settings', () => {
 
     it('combines all constraint options', () => {
       const deviceId = 'device-456'
-      const settings: AudioSettingsRow = {
+      const settings: SettingsRow = {
         inputDeviceId: deviceId,
         sampleRate: 'prefer48000',
         persistentMic: true,
         browserPreprocessing: 'minimal',
+        transcriptionMode: 'browser',
       }
       const constraints = buildAudioConstraints(settings)
       expect(constraints.echoCancellation).toBe(false)
@@ -147,31 +153,34 @@ describe('settings', () => {
 
   describe('preferredSampleRate', () => {
     it('returns undefined for auto sample rate', () => {
-      const settings: AudioSettingsRow = {
+      const settings: SettingsRow = {
         inputDeviceId: null,
         sampleRate: 'auto',
         persistentMic: false,
         browserPreprocessing: 'default',
+        transcriptionMode: 'browser',
       }
       expect(preferredSampleRate(settings)).toBeUndefined()
     })
 
     it('returns 48000 for prefer48000', () => {
-      const settings: AudioSettingsRow = {
+      const settings: SettingsRow = {
         inputDeviceId: null,
         sampleRate: 'prefer48000',
         persistentMic: false,
         browserPreprocessing: 'default',
+        transcriptionMode: 'browser',
       }
       expect(preferredSampleRate(settings)).toBe(48000)
     })
 
     it('returns 44100 for prefer44100', () => {
-      const settings: AudioSettingsRow = {
+      const settings: SettingsRow = {
         inputDeviceId: null,
         sampleRate: 'prefer44100',
         persistentMic: false,
         browserPreprocessing: 'default',
+        transcriptionMode: 'browser',
       }
       expect(preferredSampleRate(settings)).toBe(44100)
     })
@@ -187,11 +196,12 @@ describe('settings', () => {
     })
 
     it('preserves other settings when updating', async () => {
-      const initial: AudioSettingsRow = {
+      const initial: SettingsRow = {
         inputDeviceId: 'device-789',
         sampleRate: 'prefer48000',
         persistentMic: true,
         browserPreprocessing: 'minimal',
+        transcriptionMode: 'browser',
       }
       localStorage.setItem('braat:settings', JSON.stringify(initial))
 
