@@ -46,6 +46,15 @@ export type AnalysisChunk = AnalysisParams & {
   frames: AnalysisFrame[]
   // Time in seconds of the first frame of this chunk, relative to the start of the session.
   startTimeSec: number
+  // True if any frame in the chunk is voiced (speech detected). Chunks are split
+  // at voicing boundaries, so in practice every frame in a chunk shares this value.
+  voiced: boolean
+}
+
+// True if any frame is voiced. Used to set AnalysisChunk.voiced at construction
+// and to recompute it after a chunk is split.
+export function framesVoiced(frames: AnalysisFrame[]): boolean {
+  return frames.some((f) => f.speechDetected)
 }
 
 // Frames confirmed voiced by both pitch and VAD, with F1 and F2 present. Used as a type predicate in VowelChart.
@@ -68,14 +77,17 @@ export function splitChunkAt(
       const localIndex = globalIndex - offset
       if (localIndex === 0) return false
       const timeStepSec = chunk.timeStepSamples / chunk.sampleRate
+      const newFrames = chunk.frames.splice(localIndex)
       const newChunk: AnalysisChunk = {
         timeStepSamples: chunk.timeStepSamples,
         sampleRate: chunk.sampleRate,
         freqStepHz: chunk.freqStepHz,
         firstBinHz: chunk.firstBinHz,
         startTimeSec: chunk.startTimeSec + localIndex * timeStepSec,
-        frames: chunk.frames.splice(localIndex),
+        frames: newFrames,
+        voiced: framesVoiced(newFrames),
       }
+      chunk.voiced = framesVoiced(chunk.frames)
       chunks.splice(i + 1, 0, newChunk)
       return true
     }

@@ -201,7 +201,12 @@ function App() {
       (sum, c) => sum + c.frames.length * (c.timeStepSamples / c.sampleRate),
       0,
     )
-    analysisMutRef.current.push({ ...params, startTimeSec, frames: [] })
+    analysisMutRef.current.push({
+      ...params,
+      startTimeSec,
+      frames: [],
+      voiced: false,
+    })
   }, [])
 
   const schedulePlaybackPositionChanged = usePreemptibleCallback(
@@ -212,6 +217,7 @@ function App() {
       const lastChunk =
         analysisMutRef.current[analysisMutRef.current.length - 1]!
       lastChunk.frames.push(frame)
+      lastChunk.voiced ||= frame.speechDetected
       const globalIndex = totalFrames(analysisMutRef.current) - 1
       waveformRef.current?.append(globalIndex)
       spectrogramRef.current?.append(globalIndex)

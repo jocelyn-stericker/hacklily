@@ -18,6 +18,7 @@
 // Core audio analysis worker spawning; defines AnalysisFrame type for frame data with pitch, formants, and RMS.
 
 import type { AnalysisFrame, AnalysisChunk } from './AnalysisFrame'
+import { framesVoiced } from './AnalysisFrame'
 import { FormantProcessor } from './FormantProcessor'
 import { PitchProcessor } from './PitchProcessor'
 import { preEmphasis } from './preEmphasis'
@@ -225,5 +226,6 @@ export async function analyzeBuffer(
     firstBinHz: specResult.f1Hz,
     startTimeSec: 0,
     frames: results,
+    voiced: framesVoiced(results),
   }
 }

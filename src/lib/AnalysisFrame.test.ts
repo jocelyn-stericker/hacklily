@@ -21,6 +21,7 @@ import type { AnalysisChunk, AnalysisFrame } from './AnalysisFrame'
 import {
   computeDbMax,
   frameTimeSec,
+  framesVoiced,
   totalFrames,
   getFrame,
   frameDbMax,
@@ -34,7 +35,12 @@ const DEFAULT_PARAMS = {
 }
 
 function makeChunk(frames: AnalysisFrame[], startTimeSec = 0): AnalysisChunk {
-  return { ...DEFAULT_PARAMS, frames, startTimeSec }
+  return {
+    ...DEFAULT_PARAMS,
+    frames,
+    startTimeSec,
+    voiced: framesVoiced(frames),
+  }
 }
 
 function makeFrame(

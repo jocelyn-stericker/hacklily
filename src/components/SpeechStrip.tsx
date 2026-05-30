@@ -78,33 +78,24 @@ export function SpeechStrip({
         ctx.textBaseline = 'middle'
 
         for (const chunk of analysisMut) {
+          if (!chunk.voiced) continue
           const timeStepSec = chunk.timeStepSamples / chunk.sampleRate
-          let segStart = -1
-
-          for (let f = 0; f <= chunk.frames.length; f++) {
-            const voiced = chunk.frames[f]?.speechDetected ?? false
-            if (voiced && segStart < 0) {
-              segStart = f
-            } else if (!voiced && segStart >= 0) {
-              const startSec = chunk.startTimeSec + segStart * timeStepSec
-              const endSec = chunk.startTimeSec + f * timeStepSec
-              const x1 = timeToX(startSec)
-              const x2 = timeToX(endSec)
-              const cx1 = Math.max(0, x1)
-              const cx2 = Math.min(canvasWidth, x2)
-              if (cx2 > cx1) {
-                ctx.fillStyle = VOICED_FILL
-                ctx.fillRect(cx1, 0, cx2 - cx1, canvasHeight)
-                ctx.save()
-                ctx.beginPath()
-                ctx.rect(cx1, 0, cx2 - cx1, canvasHeight)
-                ctx.clip()
-                ctx.fillStyle = 'rgba(0,0,0,0.55)'
-                ctx.fillText('<speech>', x1 + 2 * dpr, canvasHeight / 2)
-                ctx.restore()
-              }
-              segStart = -1
-            }
+          const startSec = chunk.startTimeSec
+          const endSec = chunk.startTimeSec + chunk.frames.length * timeStepSec
+          const x1 = timeToX(startSec)
+          const x2 = timeToX(endSec)
+          const cx1 = Math.max(0, x1)
+          const cx2 = Math.min(canvasWidth, x2)
+          if (cx2 > cx1) {
+            ctx.fillStyle = VOICED_FILL
+            ctx.fillRect(cx1, 0, cx2 - cx1, canvasHeight)
+            ctx.save()
+            ctx.beginPath()
+            ctx.rect(cx1, 0, cx2 - cx1, canvasHeight)
+            ctx.clip()
+            ctx.fillStyle = 'rgba(0,0,0,0.55)'
+            ctx.fillText('<speech>', x1 + 2 * dpr, canvasHeight / 2)
+            ctx.restore()
           }
         }
 

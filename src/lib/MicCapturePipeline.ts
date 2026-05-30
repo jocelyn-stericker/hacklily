@@ -442,7 +442,12 @@ export class MicCapturePipeline extends TypedEventTarget<MicCaptureOutEvents> {
           freqStepHz: data.freqStepHz,
           firstBinHz: data.firstBinHz,
         }
-        this.#analysis = { ...params, startTimeSec: 0, frames: [] }
+        this.#analysis = {
+          ...params,
+          startTimeSec: 0,
+          frames: [],
+          voiced: false,
+        }
         this.#pendingPatches.clear()
 
         if (this.#formantWorker && this.#sab) {
