@@ -18,6 +18,7 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useHotkeys } from 'react-hotkeys-hook'
+import { toast } from 'sonner'
 
 import { Dialogs } from '#/components/Dialogs'
 import { Plot } from '#/components/Plot'
@@ -44,8 +45,9 @@ import type {
 import { getFrame, splitChunkAt, totalFrames } from '#/lib/AnalysisFrame'
 import { concatAudioBuffers } from '#/lib/concatAudioBuffers'
 import { exportWav } from '#/lib/exportWav'
-import { useSettings } from '#/lib/settings'
+import { updateSettings, useSettings } from '#/lib/settings'
 import { chunkPcmFromBuffer, transcribeChunks } from '#/lib/transcription'
+import { consumeBundledCrashFlag } from '#/lib/transcription-bundled'
 import { cn } from '#/lib/utils'
 
 export const Route = createFileRoute('/')({
@@ -158,6 +160,19 @@ function App() {
   useEffect(() => {
     analysisMutRef.current = analysisMut
   })
+
+  // If the previous session was killed while the bundled model was running (most
+  // likely an out-of-memory tab crash on a low-memory device), don't silently
+  // reload straight back into the same crash: turn transcription off and tell
+  // the user why so they can pick a lighter engine. Runs once on mount.
+  useEffect(() => {
+    if (!consumeBundledCrashFlag()) return
+    void updateSettings({ transcriptionMode: 'disabled' })
+    toast('Transcription was turned off', {
+      description:
+        'Bundled transcription may have crashed last time, which can happen on lower-memory devices.',
+    })
+  }, [])
 
   const handleStart = useCallback(() => {
     recordingStartIndexRef.current = totalFrames(analysisMutRef.current)

@@ -200,7 +200,7 @@ export function TranscriptionSettingsModal({
               selected={draft === 'bundled'}
               onSelect={() => setDraft('bundled')}
               title="Bundled model"
-              description="Braat’s bundled Moonshine model. Works in every browser; about 70 MB on first use, then offline."
+              description="Braat’s bundled Moonshine model; may be unstable on mobile devices. 70 MB model download on first use, then offline."
             />
           </section>
 

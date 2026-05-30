@@ -115,6 +115,17 @@ export async function transcribeChunk(
  * the recording buffer) is left untouched rather than started and failed, so a
  * later call — once the PCM has arrived — will pick it up.
  */
+// Bundled, browser, and cloud transcription all process one chunk at a time
+// (the worker, and the Web Speech API, are each single-session). Running the
+// scan sequentially — slicing a chunk's PCM only when it's that chunk's turn,
+// and awaiting it before the next — keeps just one chunk of audio resident at a
+// time instead of materialising every voiced chunk's samples up front. The
+// scans are serialised through a single chain so an effect that re-fires mid-run
+// (e.g. on each new analysis frame) queues behind the current pass rather than
+// racing it; by the time a queued pass runs, chunks already claimed below are
+// skipped.
+let chunksChain: Promise<void> = Promise.resolve()
+
 export function transcribeChunks(
   chunks: AnalysisChunk[],
   settings: SettingsRow,
@@ -122,10 +133,28 @@ export function transcribeChunks(
   onUpdate?: () => void,
 ): void {
   if (settings.transcriptionMode === 'disabled') return
+  // Keep `chunksChain` always-resolving so a thrown pass (e.g. getPcm failing)
+  // can't wedge the chain and silently stop all later transcription.
+  chunksChain = chunksChain.then(() =>
+    transcribeChunksSequential(chunks, settings, getPcm, onUpdate).catch(
+      () => {},
+    ),
+  )
+}
+
+async function transcribeChunksSequential(
+  chunks: AnalysisChunk[],
+  settings: SettingsRow,
+  getPcm: ChunkPcmProvider,
+  onUpdate?: () => void,
+): Promise<void> {
   for (const chunk of chunks) {
     if (!chunk.voiced || chunk.transcription) continue
     const pcm = getPcm(chunk)
     if (!pcm) continue
-    void transcribeChunk(chunk, settings, pcm, onUpdate)
+    // transcribeChunk claims the chunk synchronously (sets `pending` before its
+    // first await) and swallows its own errors, so awaiting here never throws
+    // and a queued pass won't re-pick a chunk this one has started.
+    await transcribeChunk(chunk, settings, pcm, onUpdate)
   }
 }

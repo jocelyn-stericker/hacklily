@@ -20,17 +20,25 @@
 // transformers.js, which bundles its own onnxruntime-web and handles the mel
 // front-end and detokenizer. The worker just feeds it 16 kHz mono PCM; the
 // model weights and ort wasm download from the Hugging Face hub on first use.
-import { pipeline } from '@huggingface/transformers'
+import { env, pipeline } from '@huggingface/transformers'
 import type { AutomaticSpeechRecognitionPipeline } from '@huggingface/transformers'
 
 import { resample } from './ResampleProcessor'
+
+// Run onnxruntime-web single-threaded. The default thread pool gives each
+// worker thread its own stack and bookkeeping, and the threaded WASM build is
+// less memory-stable on iOS Safari (which kills the tab at a fairly low memory
+// ceiling). One thread keeps the peak footprint down at a modest cost to
+// inference speed — the same trade-off the VAD worker already makes. SIMD stays
+// on. Set before the pipeline (and thus the ORT session) is created.
+if (env.backends.onnx.wasm) env.backends.onnx.wasm.numThreads = 1
 
 // Moonshine is trained on 16 kHz mono audio.
 const MOONSHINE_SAMPLE_RATE = 16_000
 const MODEL = 'onnx-community/moonshine-base-ONNX'
 // transformers.js has no literal "quantized" dtype; "q8" is the value that maps
 // to the *_quantized.onnx weights (see DEFAULT_DTYPE_SUFFIX_MAPPING).
-const DTYPE = 'q8'
+const DTYPE = 'q8' as const
 // Hard ceiling on generated tokens: the decoder can't attend past
 // `max_position_embeddings` (from the model's config.json), so requesting more
 // than this can't help. It only clamps pathological cases — for any real chunk
@@ -43,6 +51,7 @@ const DECODER_MAX_TOKENS = 512
 // just a safety net against a decoder that never stops.
 const TOKENS_PER_SECOND = 6.5
 const MIN_NEW_TOKENS = 16
+const LOG = '[MoonshineWorker]'
 
 export type MoonshineWorkerInMessage = {
   type: 'transcribe'
@@ -76,19 +85,31 @@ declare function postMessage(message: MoonshineWorkerOutMessage): void
 let pipelinePromise: Promise<AutomaticSpeechRecognitionPipeline> | null = null
 
 function getPipeline(): Promise<AutomaticSpeechRecognitionPipeline> {
-  pipelinePromise ??= pipeline('automatic-speech-recognition', MODEL, {
+  pipelinePromise ??= loadPipeline().catch((err: unknown) => {
+    pipelinePromise = null
+    throw err
+  })
+  return pipelinePromise
+}
+
+function loadPipeline(): Promise<AutomaticSpeechRecognitionPipeline> {
+  const options = {
     dtype: DTYPE,
     // onnxruntime-web's "extended" (Level 2) graph optimizer crashes trying to
     // fuse the quantized decoder's tied embed_tokens DequantizeLinear+MatMul
     // into MatMulNBits ("Missing required scale ... weight_merged_0_scale").
     // Capping at "basic" skips that pass, so ort-web runs the same valid
     // DQ+MatMul graph that ort-node does.
-    session_options: { graphOptimizationLevel: 'basic' },
-  }).catch((err: unknown) => {
-    pipelinePromise = null
-    throw err
+    session_options: { graphOptimizationLevel: 'basic' as const },
+  }
+  console.log(LOG, 'loading pipeline', {
+    model: MODEL,
+    options,
+    wasmThreads: env.backends.onnx.wasm?.numThreads,
+    wasmProxy: env.backends.onnx.wasm?.proxy,
+    webgpuAvailable: typeof navigator !== 'undefined' && 'gpu' in navigator,
   })
-  return pipelinePromise
+  return pipeline('automatic-speech-recognition', MODEL, options)
 }
 
 // Peak-normalize a chunk's PCM in place. These small models recognize quiet
@@ -114,6 +135,8 @@ function prepareAudio(pcm: Float32Array, sampleRate: number): Float32Array {
 
 async function transcribe(data: MoonshineWorkerInMessage): Promise<void> {
   try {
+    console.log(LOG, `Transcribing ${data.pcm.length / data.sampleRate}s`)
+    console.time(LOG + 'transcribe')
     const transcriber = await getPipeline()
     const audio = prepareAudio(data.pcm, data.sampleRate)
     const seconds = audio.length / MOONSHINE_SAMPLE_RATE
@@ -132,6 +155,8 @@ async function transcribe(data: MoonshineWorkerInMessage): Promise<void> {
       id: data.id,
       error: err instanceof Error ? err.message : String(err),
     })
+  } finally {
+    console.timeEnd(LOG + 'transcribe')
   }
 }
 

@@ -109,9 +109,9 @@ function getAudioContext(): AudioContext {
   return sharedAudioContext
 }
 
-// Browsers generally allow only one active SpeechRecognition session at a time,
-// and transcribeChunks fires every chunk at once. Serialize recognition so the
-// chunks queue up behind one another instead of clobbering each other.
+// Browsers generally allow only one active SpeechRecognition session at a time.
+// transcribeChunks already feeds chunks one at a time, but serialize recognition
+// here too so any other caller can't start an overlapping session.
 let recognitionChain: Promise<unknown> = Promise.resolve()
 
 export function enqueueRecognition<T>(task: () => Promise<T>): Promise<T> {
