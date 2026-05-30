@@ -119,18 +119,6 @@ export function SpeechStrip({
             ctx.fillRect(cx1, 0, cx2 - cx1, canvasHeight)
           }
         }
-
-        ctx.strokeStyle = 'red'
-        ctx.lineWidth = 5
-        for (let i = 1; i < analysisMut.length; i++) {
-          const x = Math.round(timeToX(analysisMut[i]!.startTimeSec)) - 0.5
-          if (x >= 0 && x <= canvasWidth) {
-            ctx.beginPath()
-            ctx.moveTo(x, 0)
-            ctx.lineTo(x, canvasHeight)
-            ctx.stroke()
-          }
-        }
       })
     }
 

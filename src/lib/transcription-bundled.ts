@@ -22,6 +22,8 @@
 // memory-constrained devices, the worker (and the model weights it holds) is
 // torn down after a spell of inactivity and rebuilt on the next request — the
 // weights come straight from the browser cache, so the rebuild is download-free.
+import { useSyncExternalStore } from 'react'
+
 import MoonshineWorkerCtor from '#/lib/MoonshineWorker?worker'
 import type {
   MoonshineWorker,
@@ -34,6 +36,98 @@ const pendingTranscriptions = new Map<
   number,
   { resolve: (text: string) => void; reject: (error: Error) => void }
 >()
+
+// Download state for the bundled Moonshine model. `failed` is reached only via
+// a worker-level error during load — per-chunk inference errors don't touch
+// this state.
+//
+// transformers.js fires the same `progress_total` events whether files come
+// from the network or the browser cache, so reacting to the first event would
+// flash a "downloading" modal during every warm load. We hold the first burst
+// of events in a pending state and only promote to `downloading` after
+// `SHOW_AFTER_MS`; a cache read finishes well before then and the modal stays
+// hidden.
+export type MoonshineDownloadState =
+  | { status: 'idle' }
+  | { status: 'downloading'; loaded: number; total: number }
+  | { status: 'failed'; error: string }
+
+const SHOW_AFTER_MS = 750
+
+let downloadState: MoonshineDownloadState = { status: 'idle' }
+const downloadListeners = new Set<() => void>()
+const IDLE_DOWNLOAD_STATE: MoonshineDownloadState = { status: 'idle' }
+
+let pendingShowTimer: ReturnType<typeof setTimeout> | null = null
+let pendingLoaded = 0
+let pendingTotal = 0
+
+function setDownloadState(next: MoonshineDownloadState): void {
+  downloadState = next
+  for (const fn of downloadListeners) fn()
+}
+
+function subscribeDownload(fn: () => void): () => void {
+  downloadListeners.add(fn)
+  return () => {
+    downloadListeners.delete(fn)
+  }
+}
+
+function cancelPendingShow(): void {
+  if (pendingShowTimer === null) return
+  clearTimeout(pendingShowTimer)
+  pendingShowTimer = null
+}
+
+function noteDownloadProgress(loaded: number, total: number): void {
+  if (downloadState.status === 'downloading') {
+    setDownloadState({ status: 'downloading', loaded, total })
+    return
+  }
+  if (downloadState.status === 'failed') return
+  // Idle: stash the latest values and arm the visibility timer on first event.
+  pendingLoaded = loaded
+  pendingTotal = total
+  if (pendingShowTimer !== null) return
+  pendingShowTimer = setTimeout(() => {
+    pendingShowTimer = null
+    setDownloadState({
+      status: 'downloading',
+      loaded: pendingLoaded,
+      total: pendingTotal,
+    })
+  }, SHOW_AFTER_MS)
+}
+
+function noteDownloadReady(): void {
+  cancelPendingShow()
+  if (downloadState.status === 'downloading') {
+    setDownloadState(IDLE_DOWNLOAD_STATE)
+  }
+}
+
+function noteDownloadFailed(error: string): void {
+  // Only surface the failed modal if a download was already visible or pending —
+  // a fresh-load failure during the deferred window still warrants a modal.
+  const wasShowing =
+    downloadState.status === 'downloading' || pendingShowTimer !== null
+  cancelPendingShow()
+  if (wasShowing) setDownloadState({ status: 'failed', error })
+}
+
+export function useMoonshineDownloadState(): MoonshineDownloadState {
+  return useSyncExternalStore(
+    subscribeDownload,
+    () => downloadState,
+    () => IDLE_DOWNLOAD_STATE,
+  )
+}
+
+/** Dismiss a `failed` state. No-op while downloading or idle. */
+export function dismissMoonshineDownloadState(): void {
+  if (downloadState.status === 'failed') setDownloadState(IDLE_DOWNLOAD_STATE)
+}
 
 // Once the model has been idle this long, terminate the worker to release its
 // weights. Long enough that back-to-back chunks (and a user transcribing one
@@ -120,6 +214,14 @@ function getMoonshineWorker(): MoonshineWorker {
   worker.addEventListener(
     'message',
     ({ data }: MessageEvent<MoonshineWorkerOutMessage>) => {
+      if (data.type === 'download-progress') {
+        noteDownloadProgress(data.loaded, data.total)
+        return
+      }
+      if (data.type === 'download-ready') {
+        noteDownloadReady()
+        return
+      }
       const pending = pendingTranscriptions.get(data.id)
       if (!pending) return
       pendingTranscriptions.delete(data.id)
@@ -144,6 +246,10 @@ function getMoonshineWorker(): MoonshineWorker {
     for (const pending of pendingTranscriptions.values()) pending.reject(error)
     pendingTranscriptions.clear()
     clearBundledActive()
+    // If a download was in flight (visible or still in its deferred window) when
+    // the worker died, surface the failure in the download modal so the user
+    // sees something more actionable than the chunk-level error indicator.
+    noteDownloadFailed(error.message)
   })
 
   moonshineWorker = worker

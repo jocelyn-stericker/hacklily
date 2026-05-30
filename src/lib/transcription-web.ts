@@ -28,6 +28,7 @@
 
 /** Recognition language. Matches the default used by the feature probes. */
 const TRANSCRIPTION_LANG = 'en-US'
+const LOG = '[transcription-web]'
 
 interface SpeechRecognitionAlternativeLike {
   transcript: string
@@ -138,106 +139,130 @@ export async function recognizePcm(
   sampleRate: number,
   processLocally: boolean,
 ): Promise<string> {
-  if (pcm.length === 0) return ''
+  console.time(LOG + ' recognizePcm')
+  try {
+    if (pcm.length === 0) return ''
 
-  const Ctor = getSpeechRecognitionConstructor()
-  if (!Ctor) {
-    throw new Error('Speech recognition is not available in this browser.')
-  }
-
-  const audioContext = getAudioContext()
-  if (audioContext.state === 'suspended') {
-    await audioContext.resume()
-  }
-
-  const buffer = audioContext.createBuffer(1, pcm.length, sampleRate)
-  buffer.getChannelData(0).set(pcm)
-  const source = audioContext.createBufferSource()
-  source.buffer = buffer
-  const destination = audioContext.createMediaStreamDestination()
-  source.connect(destination)
-  const track = destination.stream.getAudioTracks()[0]
-  if (!track) {
-    throw new Error('Could not create an audio track for recognition.')
-  }
-
-  const recognition = new Ctor()
-  recognition.lang = TRANSCRIPTION_LANG
-  recognition.processLocally = processLocally
-  recognition.continuous = true
-  recognition.interimResults = false
-  recognition.maxAlternatives = 1
-
-  return await new Promise<string>((resolve, reject) => {
-    const finals: string[] = []
-    let settled = false
-
-    const cleanup = () => {
-      clearTimeout(watchdog)
-      recognition.onresult = null
-      recognition.onerror = null
-      recognition.onend = null
-      source.onended = null
-      source.disconnect()
-      try {
-        source.stop()
-      } catch {}
+    const Ctor = getSpeechRecognitionConstructor()
+    if (!Ctor) {
+      throw new Error('Speech recognition is not available in this browser.')
     }
 
-    recognition.onresult = (event) => {
-      for (let i = event.resultIndex; i < event.results.length; i++) {
-        const result = event.results[i]
-        if (result?.isFinal && result[0]) {
-          finals.push(result[0].transcript)
+    const audioContext = getAudioContext()
+    if (audioContext.state === 'suspended') {
+      await audioContext.resume()
+    }
+
+    // Pad the buffer with trailing silence so recognition has time to drain the
+    // tail of the utterance before `source.onended` fires and we stop. Without
+    // this, Chrome cuts off the last syllables — the AudioBufferSource ends
+    // before the recognition pipeline has caught up with the audio it received,
+    // and Chrome's endpointer never sees an end-of-speech silence to promote the
+    // current interim to a final.
+    const trailingSilenceSamples = Math.round(0.3 * sampleRate)
+    const buffer = audioContext.createBuffer(
+      1,
+      pcm.length + trailingSilenceSamples,
+      sampleRate,
+    )
+    buffer.getChannelData(0).set(pcm)
+    const source = audioContext.createBufferSource()
+    source.buffer = buffer
+    const destination = audioContext.createMediaStreamDestination()
+    source.connect(destination)
+    const track = destination.stream.getAudioTracks()[0]
+    if (!track) {
+      throw new Error('Could not create an audio track for recognition.')
+    }
+
+    const recognition = new Ctor()
+    recognition.lang = TRANSCRIPTION_LANG
+    recognition.processLocally = processLocally
+    recognition.continuous = true
+    recognition.interimResults = false
+    recognition.maxAlternatives = 1
+
+    return await new Promise<string>((resolve, reject) => {
+      // Latest transcript per result index (interim or final). `onresult` fires
+      // repeatedly as recognition refines each utterance; overwriting by index
+      // collapses duplicates and lets a late `isFinal` simply replace its interim.
+      const transcripts: string[] = []
+      let settled = false
+
+      const cleanup = () => {
+        clearTimeout(watchdog)
+        recognition.onresult = null
+        recognition.onerror = null
+        recognition.onend = null
+        source.onended = null
+        source.disconnect()
+        try {
+          source.stop()
+        } catch {}
+      }
+
+      const joinTranscripts = () =>
+        transcripts.filter(Boolean).join(' ').replace(/\s+/g, ' ').trim()
+
+      recognition.onresult = (event) => {
+        for (let i = event.resultIndex; i < event.results.length; i++) {
+          const result = event.results[i]
+          if (result?.[0]) {
+            transcripts[i] = result[0].transcript
+          }
         }
       }
-    }
 
-    recognition.onerror = (event) => {
-      if (event.error === 'no-speech' || event.error === 'aborted') return
-      if (settled) return
-      settled = true
-      cleanup()
-      reject(new Error(recognitionErrorMessage(event.error)))
-    }
-
-    recognition.onend = () => {
-      if (settled) return
-      settled = true
-      cleanup()
-      resolve(finals.join(' ').trim())
-    }
-
-    source.onended = () => {
-      try {
-        recognition.stop()
-      } catch {}
-    }
-
-    const durationMs = (pcm.length / sampleRate) * 1000
-    const watchdog = setTimeout(() => {
-      try {
-        recognition.abort()
-      } catch {}
-      if (!settled) {
+      recognition.onerror = (event) => {
+        if (event.error === 'no-speech' || event.error === 'aborted') return
+        if (settled) return
         settled = true
         cleanup()
-        resolve(finals.join(' ').trim())
+        reject(new Error(recognitionErrorMessage(event.error)))
       }
-    }, durationMs + 10_000)
 
-    try {
-      recognition.start(track)
-    } catch (err) {
-      settled = true
-      cleanup()
-      reject(
-        err instanceof Error
-          ? err
-          : new Error('Failed to start speech recognition.'),
-      )
-      return
-    }
-    source.start()
-  })
+      recognition.onend = () => {
+        if (settled) return
+        settled = true
+        cleanup()
+        resolve(joinTranscripts())
+      }
+
+      source.onended = () => {
+        try {
+          recognition.stop()
+        } catch {}
+      }
+
+      const durationMs = (buffer.length / sampleRate) * 1000
+      const watchdog = setTimeout(() => {
+        try {
+          recognition.abort()
+        } catch {}
+        if (!settled) {
+          settled = true
+          cleanup()
+          resolve(joinTranscripts())
+        }
+      }, durationMs + 10_000)
+
+      try {
+        recognition.start(track)
+      } catch (err) {
+        settled = true
+        cleanup()
+        reject(
+          err instanceof Error
+            ? err
+            : new Error('Failed to start speech recognition.'),
+        )
+        return
+      }
+      source.start()
+    })
+  } finally {
+    // Note that this can't be faster than realtime due to the fact that the API supports a media stream.
+    // We work with what we can get.
+    console.timeEnd(LOG + ' recognizePcm')
+  }
 }

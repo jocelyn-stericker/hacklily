@@ -16,6 +16,7 @@
  */
 
 import type { AnalysisChunk } from '#/lib/AnalysisFrame'
+import { ensureBrowserEngineInstalled } from '#/lib/installBrowserEngine'
 import type { SettingsRow } from '#/lib/settings'
 import { transcribeBundled } from '#/lib/transcription-bundled'
 import { enqueueRecognition, recognizePcm } from '#/lib/transcription-web'
@@ -83,13 +84,17 @@ export async function transcribeChunk(
     let text: string
     switch (settings.transcriptionMode) {
       case 'browser':
+        // The browser may need to download its on-device model on first use.
+        // Block recognition until it's ready so the UI can surface a progress
+        // modal instead of letting the chunk hang silently.
+        await ensureBrowserEngineInstalled()
+        text = await enqueueRecognition(() =>
+          recognizePcm(pcm, chunk.sampleRate, true),
+        )
+        break
       case 'cloud':
         text = await enqueueRecognition(() =>
-          recognizePcm(
-            pcm,
-            chunk.sampleRate,
-            settings.transcriptionMode === 'browser',
-          ),
+          recognizePcm(pcm, chunk.sampleRate, false),
         )
         break
       case 'bundled':

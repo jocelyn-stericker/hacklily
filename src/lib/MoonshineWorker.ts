@@ -21,17 +21,22 @@
 // front-end and detokenizer. The worker just feeds it 16 kHz mono PCM; the
 // model weights and ort wasm download from the Hugging Face hub on first use.
 import { env, pipeline } from '@huggingface/transformers'
-import type { AutomaticSpeechRecognitionPipeline } from '@huggingface/transformers'
+import type {
+  AutomaticSpeechRecognitionPipeline,
+  ProgressInfo,
+  PretrainedModelOptions,
+} from '@huggingface/transformers'
 
 import { resample } from './ResampleProcessor'
 
-// Run onnxruntime-web single-threaded. The default thread pool gives each
-// worker thread its own stack and bookkeeping, and the threaded WASM build is
-// less memory-stable on iOS Safari (which kills the tab at a fairly low memory
-// ceiling). One thread keeps the peak footprint down at a modest cost to
-// inference speed — the same trade-off the VAD worker already makes. SIMD stays
-// on. Set before the pipeline (and thus the ORT session) is created.
-if (env.backends.onnx.wasm) env.backends.onnx.wasm.numThreads = 1
+// Run onnxruntime-web single-threaded. Still adequete performance, much less memory use.
+env.backends.onnx.wasm!.numThreads = 1
+env.backends.onnx.wasm!.wasmPaths = {
+  // We override this because the asyncify version does not play well with Safari iOS
+  // TODO: use optimized ort files with a custom build of onnxruntime, like we do for VAD.
+  mjs: 'https://cdn.jsdelivr.net/npm/onnxruntime-web@1.26.0-dev.20260416-b7804b056c/dist/ort-wasm-simd-threaded.mjs',
+  wasm: 'https://cdn.jsdelivr.net/npm/onnxruntime-web@1.26.0-dev.20260416-b7804b056c/dist/ort-wasm-simd-threaded.wasm',
+}
 
 // Moonshine is trained on 16 kHz mono audio.
 const MOONSHINE_SAMPLE_RATE = 16_000
@@ -44,11 +49,9 @@ const DTYPE = 'q8' as const
 // than this can't help. It only clamps pathological cases — for any real chunk
 // the duration-scaled budget below is far smaller and the model stops on EOS.
 const DECODER_MAX_TOKENS = 512
-// Moonshine's authors size their decode budget at ~6.5 tokens per second of
-// audio; that's a generous upper bound for real speech. The floor keeps very
-// short chunks from being starved (one word plus EOS needs more than a token or
-// two). The model normally emits EOS well before either bound; the budget is
-// just a safety net against a decoder that never stops.
+// The model normally emits EOS well before either bound; the budget is
+// just a safety net against a decoder that never stops. We need to set this because
+// transformers.js normal bound is too low.
 const TOKENS_PER_SECOND = 6.5
 const MIN_NEW_TOKENS = 16
 const LOG = '[MoonshineWorker]'
@@ -63,6 +66,8 @@ export type MoonshineWorkerInMessage = {
 export type MoonshineWorkerOutMessage =
   | { type: 'result'; id: number; text: string }
   | { type: 'error'; id: number; error: string }
+  | { type: 'download-progress'; loaded: number; total: number }
+  | { type: 'download-ready' }
 
 export type MoonshineWorker = Omit<Worker, 'postMessage' | 'onmessage'> & {
   postMessage: (
@@ -101,7 +106,23 @@ function loadPipeline(): Promise<AutomaticSpeechRecognitionPipeline> {
     // Capping at "basic" skips that pass, so ort-web runs the same valid
     // DQ+MatMul graph that ort-node does.
     session_options: { graphOptimizationLevel: 'basic' as const },
-  }
+    // Forward aggregate download progress to the main thread so the UI can show
+    // a modal during the one-time model download. transformers.js fires the
+    // same progress events whether files are coming from the network or the
+    // browser cache, so the consumer is responsible for suppressing the modal
+    // on fast cache reads (see MoonshineDownloadModal).
+    progress_callback: (info: ProgressInfo) => {
+      if (info.status === 'progress_total') {
+        postMessage({
+          type: 'download-progress',
+          loaded: info.loaded,
+          total: info.total,
+        })
+      } else if (info.status === 'ready') {
+        postMessage({ type: 'download-ready' })
+      }
+    },
+  } satisfies PretrainedModelOptions
   console.log(LOG, 'loading pipeline', {
     model: MODEL,
     options,
@@ -136,7 +157,7 @@ function prepareAudio(pcm: Float32Array, sampleRate: number): Float32Array {
 async function transcribe(data: MoonshineWorkerInMessage): Promise<void> {
   try {
     console.log(LOG, `Transcribing ${data.pcm.length / data.sampleRate}s`)
-    console.time(LOG + 'transcribe')
+    console.time(LOG + ' transcribe')
     const transcriber = await getPipeline()
     const audio = prepareAudio(data.pcm, data.sampleRate)
     const seconds = audio.length / MOONSHINE_SAMPLE_RATE
@@ -150,13 +171,14 @@ async function transcribe(data: MoonshineWorkerInMessage): Promise<void> {
     ).trim()
     postMessage({ type: 'result', id: data.id, text })
   } catch (err) {
+    console.error(LOG, 'transcription failed', err)
     postMessage({
       type: 'error',
       id: data.id,
       error: err instanceof Error ? err.message : String(err),
     })
   } finally {
-    console.timeEnd(LOG + 'transcribe')
+    console.timeEnd(LOG + ' transcribe')
   }
 }
 
