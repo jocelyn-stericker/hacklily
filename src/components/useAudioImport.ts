@@ -18,6 +18,7 @@
 import { useCallback, useEffect, useRef } from 'react'
 
 import type { AnalysisChunk } from '#/lib/AnalysisFrame'
+import { totalFrames } from '#/lib/AnalysisFrame'
 import ImportWorker from '#/lib/ImportWorker?worker'
 
 async function importAudioFile(file: File): Promise<{
@@ -52,7 +53,9 @@ async function importAudioFile(file: File): Promise<{
     audioImporter.onmessage = ({ data }) => {
       audioImporter.terminate()
       if ('ok' in data) {
-        const analysisSamples = data.ok.timeStepSamples * data.ok.frames.length
+        const chunks: AnalysisChunk[] = data.ok
+        const timeStepSamples = chunks[0]?.timeStepSamples ?? 0
+        const analysisSamples = timeStepSamples * totalFrames(chunks)
 
         // Fit it to the analysis samples, keep it mono
         const shortenedMono = new AudioBuffer({
@@ -62,7 +65,6 @@ async function importAudioFile(file: File): Promise<{
         })
         shortenedMono.copyToChannel(mono, 0)
 
-        const chunks: AnalysisChunk[] = [data.ok]
         resolve({
           analysis: chunks,
           buffer: shortenedMono,

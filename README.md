@@ -36,7 +36,7 @@ All audio processing happens in the browser. An AudioWorklet captures microphone
 
 - a spectrogram worker (FFT-based, with a Bark-scaled colormap),
 - a formant worker running pitch (filtered autocorrelation) and formant (Burg LPC) analysis,
-- and a VAD worker running Silero v5 via ONNX Runtime Web.
+- and a VAD worker running Silero v6 via ONNX Runtime Web.
 
 See [CLAUDE.md](CLAUDE.md) for the architectural overview. DSP code ported from Praat is attributed in each source file's copyright header.
 

@@ -32,11 +32,11 @@ export type AnalysisParams = {
 export type AnalysisFrame = {
   spectrum: Float32Array
   rms: number
-  // Silero VAD v5 speech probability (0 = silence, 1 = speech)
+  // Silero VAD speech probability (0 = silence, 1 = speech)
   speechProbability: number
   // True when pitch analysis detected a voiced frame (f0 > 0)
   pitchDetected: boolean
-  // True when VAD determined we are in a voiced speech segment (with hysteresis)
+  // True when VAD determined we are in a voiced speech segment (includes pre-roll and post-roll)
   speechDetected: boolean
   f0: number // 0 when unvoiced
   f1: number | null // null when pitch undetected or formant not detected
@@ -48,9 +48,17 @@ export type AnalysisChunk = AnalysisParams & {
   frames: AnalysisFrame[]
   // Time in seconds of the first frame of this chunk, relative to the start of the session.
   startTimeSec: number
-  // True if any frame in the chunk is voiced (speech detected). Chunks are split
-  // at voicing boundaries, so in practice every frame in a chunk shares this value.
+  // The chunk's single speech-detected value. Chunks are split at voicing
+  // boundaries, so every frame in a chunk shares this value (invariant), and
+  // `voiced` is that value — equivalently `framesVoiced(frames)`. Maintained in
+  // batch by `framesToChunks` (offline) and incrementally by `reconcileVoicingAt`
+  // (realtime patches).
   voiced: boolean
+  // True for the first chunk of a recording session. Recordings are independent
+  // — they may use different sample rates / analysis params, and the spectrogram
+  // dB-normalizes within a chunk — so a chunk must never span a recording
+  // boundary. `mergeChunkAt` refuses to merge such a chunk into its predecessor.
+  recordingStart?: boolean
   // ASR transcription status/result for this chunk, if requested.
   transcription?: TranscriptionState
 }
@@ -102,6 +110,116 @@ export function splitChunkAt(
 
 export function totalFrames(chunks: AnalysisChunk[]): number {
   return chunks.reduce((sum, c) => sum + c.frames.length, 0)
+}
+
+// Split a flat, time-ordered frame list into chunks at every speechDetected
+// transition. Each resulting chunk holds frames of a single speechDetected
+// value with `voiced` set to match, satisfying the AnalysisChunk invariants by
+// construction. Used by offline analysis; the realtime path keeps the same
+// invariants incrementally via reconcileVoicingAt.
+export function framesToChunks(
+  frames: AnalysisFrame[],
+  params: AnalysisParams,
+  startTimeSec: number,
+): AnalysisChunk[] {
+  const timeStepSec = params.timeStepSamples / params.sampleRate
+  const chunks: AnalysisChunk[] = []
+  let start = 0
+  while (start < frames.length) {
+    const voiced = frames[start]!.speechDetected
+    let end = start + 1
+    while (end < frames.length && frames[end]!.speechDetected === voiced) end++
+    chunks.push({
+      ...params,
+      startTimeSec: startTimeSec + start * timeStepSec,
+      frames: frames.slice(start, end),
+      voiced,
+    })
+    start = end
+  }
+  return chunks
+}
+
+// The chunk holding the frame at globalIndex, or undefined if out of range.
+function chunkContaining(
+  chunks: AnalysisChunk[],
+  globalIndex: number,
+): AnalysisChunk | undefined {
+  if (globalIndex < 0) return undefined
+  let offset = 0
+  for (const chunk of chunks) {
+    offset += chunk.frames.length
+    if (globalIndex < offset) return chunk
+  }
+  return undefined
+}
+
+// Merge the chunk that begins exactly at globalIndex into the preceding chunk,
+// keeping `voiced` in sync. No-op (returns false) if no chunk starts there, it
+// is the first chunk, it begins a recording session, or the two chunks' time
+// base differs — in those cases the boundary is meaningful and must be kept.
+// Frames keep their order, so the merged chunk stays time-contiguous under the
+// preceding chunk's clock.
+export function mergeChunkAt(
+  chunks: AnalysisChunk[],
+  globalIndex: number,
+): boolean {
+  if (globalIndex <= 0) return false
+  let offset = 0
+  for (let i = 0; i < chunks.length; i++) {
+    if (offset === globalIndex) {
+      const prev = chunks[i - 1]
+      const cur = chunks[i]!
+      if (
+        !prev ||
+        cur.recordingStart ||
+        prev.timeStepSamples !== cur.timeStepSamples ||
+        prev.sampleRate !== cur.sampleRate
+      ) {
+        return false
+      }
+      for (const frame of cur.frames) prev.frames.push(frame)
+      prev.voiced = framesVoiced(prev.frames)
+      chunks.splice(i, 1)
+      return true
+    }
+    offset += chunks[i]!.frames.length
+    if (offset > globalIndex) return false
+  }
+  return false
+}
+
+// Re-establish the AnalysisChunk invariants after the frame at globalIndex
+// changed its speechDetected value (e.g. a VAD patch): every chunk holds frames
+// of a single speechDetected value, and chunk.voiced equals that value. Only the
+// boundaries immediately before and after the changed frame can be affected, so
+// this isolates that frame and then coalesces it with like-voiced neighbours —
+// an O(local) fix rather than re-splitting the whole timeline. Returns true if
+// the frame's chunk actually changed voicing (so callers can refresh dependent
+// state such as transcription); false for a no-op re-confirmation.
+export function reconcileVoicingAt(
+  chunks: AnalysisChunk[],
+  globalIndex: number,
+): boolean {
+  const chunk = chunkContaining(chunks, globalIndex)
+  const frame = getFrame(chunks, globalIndex)
+  if (!chunk || !frame) return false
+
+  const voiced = frame.speechDetected
+  // Coming in, the chunk was uniform (invariant held), so its `voiced` flag
+  // still reflects the frame's previous value. If it already matches, the patch
+  // didn't flip this frame and the layout is unchanged.
+  if (chunk.voiced === voiced) return false
+
+  // Isolate the changed frame so no chunk is left holding mixed values, then
+  // merge it back into either neighbour that shares its voicing.
+  splitChunkAt(chunks, globalIndex)
+  splitChunkAt(chunks, globalIndex + 1)
+  if (getFrame(chunks, globalIndex - 1)?.speechDetected === voiced)
+    mergeChunkAt(chunks, globalIndex)
+  if (getFrame(chunks, globalIndex + 1)?.speechDetected === voiced)
+    mergeChunkAt(chunks, globalIndex + 1)
+  return true
 }
 
 export function getFrame(

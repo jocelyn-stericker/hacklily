@@ -21,7 +21,10 @@ import type { AnalysisChunk, AnalysisFrame } from './AnalysisFrame'
 import {
   computeDbMax,
   frameTimeSec,
+  framesToChunks,
   framesVoiced,
+  mergeChunkAt,
+  reconcileVoicingAt,
   totalFrames,
   getFrame,
   frameDbMax,
@@ -310,5 +313,181 @@ describe('frameDbMax', () => {
     expect(result).not.toBeNull()
     expect(isFinite(result!)).toBe(true)
     expect(result).toBeGreaterThan(50)
+  })
+})
+
+// Build an invariant-correct chunk list from a voicing pattern.
+function voicePattern(values: boolean[]): AnalysisChunk[] {
+  const frames = values.map((v) =>
+    makeFrame(new Float32Array([1]), { speechDetected: v }),
+  )
+  return framesToChunks(frames, DEFAULT_PARAMS, 0)
+}
+
+// Flatten the per-frame speechDetected stream across chunks.
+function voicing(chunks: AnalysisChunk[]): boolean[] {
+  return chunks.flatMap((c) => c.frames.map((f) => f.speechDetected))
+}
+
+// Assert both chunk invariants hold and that the list is fully coalesced
+// (adjacent chunks always differ in voicing — no redundant fragmentation).
+function expectInvariants(chunks: AnalysisChunk[]): void {
+  for (const chunk of chunks) {
+    expect(chunk.frames.length).toBeGreaterThan(0)
+    for (const frame of chunk.frames) {
+      expect(frame.speechDetected).toBe(chunk.voiced)
+    }
+    expect(framesVoiced(chunk.frames)).toBe(chunk.voiced)
+  }
+  for (let i = 1; i < chunks.length; i++) {
+    expect(chunks[i]!.voiced).not.toBe(chunks[i - 1]!.voiced)
+  }
+}
+
+// Set the frame at globalIndex's voicing and reconcile, as a VAD patch would.
+function flip(
+  chunks: AnalysisChunk[],
+  globalIndex: number,
+  value: boolean,
+): boolean {
+  getFrame(chunks, globalIndex)!.speechDetected = value
+  return reconcileVoicingAt(chunks, globalIndex)
+}
+
+describe('framesToChunks', () => {
+  it('returns no chunks for an empty frame list', () => {
+    expect(framesToChunks([], DEFAULT_PARAMS, 0)).toEqual([])
+  })
+
+  it('groups a uniform stream into a single chunk', () => {
+    const chunks = voicePattern([false, false, false])
+    expect(chunks).toHaveLength(1)
+    expect(chunks[0]!.voiced).toBe(false)
+    expect(chunks[0]!.frames).toHaveLength(3)
+    expect(chunks[0]!.startTimeSec).toBe(0)
+    expectInvariants(chunks)
+  })
+
+  it('splits at every voicing transition with aligned start times', () => {
+    const chunks = voicePattern([false, false, true, true, true, false])
+    expect(chunks.map((c) => c.voiced)).toEqual([false, true, false])
+    expect(chunks.map((c) => c.frames.length)).toEqual([2, 3, 1])
+    expect(chunks.map((c) => c.startTimeSec)).toEqual([0, 2 * STEP, 5 * STEP])
+    expectInvariants(chunks)
+  })
+})
+
+describe('reconcileVoicingAt', () => {
+  it('is a no-op (returns false) when the frame did not change voicing', () => {
+    const chunks = voicePattern([true, true, true])
+    expect(flip(chunks, 1, true)).toBe(false)
+    expect(chunks).toHaveLength(1)
+    expectInvariants(chunks)
+  })
+
+  it('isolates a frame flipped inside a uniform chunk', () => {
+    const chunks = voicePattern([false, false, false, false, false])
+    expect(flip(chunks, 2, true)).toBe(true)
+    expect(voicing(chunks)).toEqual([false, false, true, false, false])
+    expect(chunks.map((c) => c.frames.length)).toEqual([2, 1, 2])
+    expectInvariants(chunks)
+  })
+
+  it('merges back to one chunk when the flip is undone', () => {
+    const chunks = voicePattern([false, false, false, false, false])
+    flip(chunks, 2, true)
+    expect(flip(chunks, 2, false)).toBe(true)
+    expect(chunks).toHaveLength(1)
+    expect(voicing(chunks)).toEqual([false, false, false, false, false])
+    expectInvariants(chunks)
+  })
+
+  it('coalesces a redemption-style tail reverted frame by frame', () => {
+    // Whole stream optimistically voiced, then the trailing half reverts to
+    // silence one frame at a time (increasing index), as the gate emits it.
+    const chunks = voicePattern(Array(8).fill(true))
+    for (let i = 4; i < 8; i++) flip(chunks, i, false)
+    expect(chunks.map((c) => c.voiced)).toEqual([true, false])
+    expect(chunks.map((c) => c.frames.length)).toEqual([4, 4])
+    expectInvariants(chunks)
+  })
+
+  it('coalesces an onset run marked voiced frame by frame', () => {
+    const chunks = voicePattern(Array(8).fill(false))
+    for (let i = 2; i < 6; i++) flip(chunks, i, true)
+    expect(chunks.map((c) => c.voiced)).toEqual([false, true, false])
+    expect(chunks.map((c) => c.frames.length)).toEqual([2, 4, 2])
+    expectInvariants(chunks)
+  })
+})
+
+describe('mergeChunkAt', () => {
+  it('merges the chunk starting at globalIndex into the previous one', () => {
+    const a = makeChunk([makeFrame(new Float32Array([1]))], 0)
+    const b = makeChunk([makeFrame(new Float32Array([2]))], STEP)
+    const chunks = [a, b]
+    expect(mergeChunkAt(chunks, 1)).toBe(true)
+    expect(chunks).toHaveLength(1)
+    expect(chunks[0]!.frames).toHaveLength(2)
+    expect(chunks[0]!.startTimeSec).toBe(0)
+  })
+
+  it('is a no-op when no chunk starts at globalIndex', () => {
+    const chunks = [makeChunk([makeFrame(new Float32Array([1]))])]
+    expect(mergeChunkAt(chunks, 1)).toBe(false)
+    expect(chunks).toHaveLength(1)
+  })
+
+  it('refuses to merge across a differing time base', () => {
+    const a = makeChunk([makeFrame(new Float32Array([1]))], 0)
+    const b: AnalysisChunk = {
+      ...DEFAULT_PARAMS,
+      timeStepSamples: DEFAULT_PARAMS.timeStepSamples * 2,
+      frames: [makeFrame(new Float32Array([2]))],
+      startTimeSec: STEP,
+      voiced: false,
+    }
+    const chunks = [a, b]
+    expect(mergeChunkAt(chunks, 1)).toBe(false)
+    expect(chunks).toHaveLength(2)
+  })
+
+  it('refuses to merge a chunk that starts a recording', () => {
+    const a = makeChunk([makeFrame(new Float32Array([1]))], 0)
+    const b = makeChunk([makeFrame(new Float32Array([2]))], STEP)
+    b.recordingStart = true
+    const chunks = [a, b]
+    expect(mergeChunkAt(chunks, 1)).toBe(false)
+    expect(chunks).toHaveLength(2)
+  })
+})
+
+describe('reconcileVoicingAt across recording boundaries', () => {
+  const voiced = (v: boolean) =>
+    makeFrame(new Float32Array([1]), { speechDetected: v })
+
+  it('never merges a flipped boundary frame into the previous recording', () => {
+    // Recording A: two silent frames. Recording B: two voiced frames, marked as
+    // a new recording (own sample rate / dB normalization).
+    const a = makeChunk([voiced(false), voiced(false)], 0)
+    const b = makeChunk([voiced(true), voiced(true)], 2 * STEP)
+    b.recordingStart = true
+    const chunks = [a, b]
+
+    // B's first frame reverts to silence — it now matches A's last frame, but
+    // the recording boundary must keep them in separate chunks.
+    expect(flip(chunks, 2, false)).toBe(true)
+    expect(voicing(chunks)).toEqual([false, false, false, true])
+    expect(chunks).toHaveLength(3)
+
+    // Each chunk is still internally uniform, and the boundary chunk is intact.
+    for (const chunk of chunks) {
+      for (const frame of chunk.frames) {
+        expect(frame.speechDetected).toBe(chunk.voiced)
+      }
+    }
+    const boundary = chunks.find((c) => c.recordingStart)!
+    expect(boundary.frames).toHaveLength(1)
+    expect(boundary.voiced).toBe(false)
   })
 })

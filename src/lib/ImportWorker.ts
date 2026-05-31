@@ -30,7 +30,7 @@ export type ImportWorkerInMessage = {
   fileSampleRate: number
 }
 
-export type ImportOkMessage = { ok: AnalysisChunk }
+export type ImportOkMessage = { ok: AnalysisChunk[] }
 export type ImportErrorMessage = { error: string }
 
 export type ImportWorkerOutMessage = ImportOkMessage | ImportErrorMessage

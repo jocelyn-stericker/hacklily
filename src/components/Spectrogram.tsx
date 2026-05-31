@@ -808,7 +808,7 @@ export function Spectrogram({
   useImperativeHandle(ref, () => {
     function handleFrame() {
       drawFrame.current = null
-      const effectiveFrom = fromRef.current!
+      let effectiveFrom = fromRef.current!
       const pendingTo = pendingToRef.current // Infinity = append, number = patch to
       fromRef.current = null
       pendingToRef.current = 0
@@ -818,6 +818,39 @@ export function Spectrogram({
       const allFormantOff = allFormantOffRef.current
 
       let needFullRedraw = false
+
+      // Resync per-chunk caches if the chunk array was structurally changed:
+      // reconcileVoicingAt may merge chunks (removing one and growing its
+      // predecessor) or reorder them, not just append or shrink the last one.
+      // Find the first index whose cached chunk no longer matches analysisMut by
+      // identity, drop that diverged tail, and widen the repaint to the
+      // predecessor's start (a merge grows it) so the lazy-grow + range paint
+      // below rebuild everything affected in one pass.
+      let structuralResync = false
+      {
+        let firstDiverged = allColors.length
+        let predecessorStart = 0
+        let acc = 0
+        for (let i = 0; i < allColors.length; i++) {
+          if (
+            i >= analysisMut.length ||
+            allColors[i]!.chunk !== analysisMut[i]
+          ) {
+            firstDiverged = i
+            break
+          }
+          predecessorStart = acc
+          acc += analysisMut[i]!.frames.length
+        }
+        if (firstDiverged < allColors.length) {
+          allColors.length = firstDiverged
+          allOff.length = firstDiverged
+          allFormantOff.length = firstDiverged
+          effectiveFrom = Math.min(effectiveFrom, predecessorStart)
+          needFullRedraw = true
+          structuralResync = true
+        }
+      }
 
       for (let i = 0; i < allColors.length && i < analysisMut.length; i++) {
         const colors = allColors[i]!
@@ -855,8 +888,12 @@ export function Spectrogram({
 
       if (allColors.length === 0) return
 
+      // After a structural resync the rebuilt tail can extend past the patched
+      // range, so repaint through the end of the (re-chunked) timeline.
       const globalTotal =
-        pendingTo === Infinity ? totalFrames(analysisMut) : pendingTo
+        pendingTo === Infinity || structuralResync
+          ? totalFrames(analysisMut)
+          : pendingTo
       const ranges = globalRangeToChunkRanges(
         analysisMut,
         effectiveFrom,

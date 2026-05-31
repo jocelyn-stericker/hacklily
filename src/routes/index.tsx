@@ -42,7 +42,7 @@ import type {
   AnalysisFrame,
   AnalysisParams,
 } from '#/lib/AnalysisFrame'
-import { getFrame, splitChunkAt, totalFrames } from '#/lib/AnalysisFrame'
+import { reconcileVoicingAt, totalFrames } from '#/lib/AnalysisFrame'
 import { concatAudioBuffers } from '#/lib/concatAudioBuffers'
 import { exportWav } from '#/lib/exportWav'
 import { updateSettings, useSettings } from '#/lib/settings'
@@ -228,6 +228,7 @@ function App() {
       startTimeSec,
       frames: [],
       voiced: false,
+      recordingStart: true,
     })
   }, [])
 
@@ -255,17 +256,12 @@ function App() {
   const handlePatch = useCallback((frameIndex: number) => {
     const absIndex = recordingStartIndexRef.current + frameIndex
 
-    if (absIndex > 0) {
-      const frame = getFrame(analysisMutRef.current, absIndex)
-      const prevFrame = getFrame(analysisMutRef.current, absIndex - 1)
-      if (
-        frame &&
-        prevFrame &&
-        frame.speechDetected !== prevFrame.speechDetected
-      ) {
-        splitChunkAt(analysisMutRef.current, absIndex)
-        speechStripRef.current?.refreshTranscriptions()
-      }
+    // Re-chunk around the patched frame so each chunk stays uniformly
+    // voiced/unvoiced (a VAD patch may flip this frame — onset, redemption
+    // revert, or min-speech discard). Only re-transcribe if the voicing
+    // actually changed.
+    if (reconcileVoicingAt(analysisMutRef.current, absIndex)) {
+      speechStripRef.current?.refreshTranscriptions()
     }
 
     waveformRef.current?.patch(absIndex, absIndex + 1)

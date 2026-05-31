@@ -18,13 +18,13 @@
 // Core audio analysis worker spawning; defines AnalysisFrame type for frame data with pitch, formants, and RMS.
 
 import type { AnalysisFrame, AnalysisChunk } from './AnalysisFrame'
-import { framesVoiced } from './AnalysisFrame'
+import { framesToChunks } from './AnalysisFrame'
 import { FormantProcessor } from './FormantProcessor'
 import { PitchProcessor } from './PitchProcessor'
 import { preEmphasis } from './preEmphasis'
 import { resample } from './ResampleProcessor'
 import { SpectrogramProcessor } from './SpectrogramProcessor'
-import { VadStreamProcessor } from './VadProcessor'
+import { SpeechGate, VadStreamProcessor } from './VadProcessor'
 
 interface Opts {
   maxFreqHz: number
@@ -49,7 +49,7 @@ function defaultOpts(): Opts {
 export async function analyzeBuffer(
   input: Float32Array,
   sampleRate: number,
-): Promise<AnalysisChunk> {
+): Promise<AnalysisChunk[]> {
   const results: AnalysisFrame[] = []
   console.log(
     `analyzeBuffer ${input.length} samples (${(input.length / sampleRate).toFixed(2)} s)`,
@@ -131,37 +131,29 @@ export async function analyzeBuffer(
   }
   console.log(`VAD: ${numVadChunks} chunks processed`)
 
-  const POSITIVE_THRESHOLD = 0.3
-  const NEGATIVE_THRESHOLD = 0.25
-  const PREROLL_FRAMES = Math.ceil(0.05 / specResult.timeStepSec)
-
-  // Step 1: per-frame VAD probability and raw hysteresis speaking state
+  // Per-frame VAD probability, taken from the VAD chunk covering each frame.
   const frameSpeechProb = new Float32Array(specResult.numFrames)
-  const rawSpeaking = new Uint8Array(specResult.numFrames)
-  let speaking = false
   for (let x = 0; x < specResult.numFrames; x++) {
     const tMid = (x + 0.5) * specResult.timeStepSec
     const vadIdx = Math.min(
       vadProbs.length - 1,
       Math.floor(tMid / vadChunkDurSec),
     )
-    const prob = vadProbs[vadIdx]!
-    frameSpeechProb[x] = prob
-    if (prob >= POSITIVE_THRESHOLD) speaking = true
-    else if (prob < NEGATIVE_THRESHOLD) speaking = false
-    rawSpeaking[x] = speaking ? 1 : 0
+    frameSpeechProb[x] = vadProbs[vadIdx]!
   }
 
-  // Step 2: apply pre-roll — retroactively mark PREROLL_FRAMES before each voiced onset
+  // Gate those probabilities into per-frame speech decisions: hysteresis,
+  // pre-roll, redemption, and the minimum-duration filter, identical to the
+  // realtime VAD worker. The gate revises frames in place via its callback.
   const speechDetectedArr = new Uint8Array(specResult.numFrames)
-  let aheadSpeaking = 0
-  for (let x = specResult.numFrames - 1; x >= 0; x--) {
-    if (rawSpeaking[x]) aheadSpeaking = PREROLL_FRAMES + 1
-    speechDetectedArr[x] = aheadSpeaking > 0 ? 1 : 0
-    aheadSpeaking = Math.max(0, aheadSpeaking - 1)
-  }
+  const gate = new SpeechGate(1 / specResult.timeStepSec, (d) => {
+    speechDetectedArr[d.frameIndex] = d.speechDetected ? 1 : 0
+  })
+  for (let x = 0; x < specResult.numFrames; x++)
+    gate.push(x, frameSpeechProb[x]!)
+  gate.end()
 
-  // Step 3: build per-frame formant state with validity filter and last-valid holdover,
+  // Build per-frame formant state with validity filter and last-valid holdover,
   // matching FormantWorker's F1/F2 range checks (F1 ∈ [200,1100] Hz, F2 ∈ [650,3500] Hz)
   let formantPtr = 0
   let latestValidF1: number | null = null
@@ -219,13 +211,17 @@ export async function analyzeBuffer(
     } satisfies AnalysisFrame)
   }
 
-  return {
-    timeStepSamples: Math.round(specResult.timeStepSec * sampleRate),
-    sampleRate,
-    freqStepHz: specResult.freqStepHz,
-    firstBinHz: specResult.f1Hz,
-    startTimeSec: 0,
-    frames: results,
-    voiced: framesVoiced(results),
-  }
+  // Split into chunks at voicing boundaries so each chunk is uniformly
+  // voiced/unvoiced with `voiced` set to match — identical invariants to the
+  // realtime path, which maintains them incrementally as VAD patches arrive.
+  return framesToChunks(
+    results,
+    {
+      timeStepSamples: Math.round(specResult.timeStepSec * sampleRate),
+      sampleRate,
+      freqStepHz: specResult.freqStepHz,
+      firstBinHz: specResult.f1Hz,
+    },
+    0,
+  )
 }

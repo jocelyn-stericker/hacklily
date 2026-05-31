@@ -30,6 +30,7 @@ const mockVadState = vi.hoisted(() => ({
   probsByChunk: [] as number[],
   defaultProb: 0,
   shouldFail: false,
+  durationSec: 0.5,
 }))
 
 vi.mock('./AudioRingReader', () => {
@@ -43,8 +44,9 @@ vi.mock('./AudioRingReader', () => {
     onOverrun?: (dropped: number) => void
 
     async *[Symbol.asyncIterator]() {
-      // Generate audio chunks: 0.5 seconds
-      const totalChunks = Math.ceil((0.5 * SAMPLE_RATE) / QUANTUM)
+      const totalChunks = Math.ceil(
+        (mockVadState.durationSec * SAMPLE_RATE) / QUANTUM,
+      )
       for (let i = 0; i < totalChunks; i++) {
         yield new Float32Array(QUANTUM)
       }
@@ -88,7 +90,7 @@ vi.mock('./ResampleProcessor', () => {
   return { ResamplerStreamProcessor }
 })
 
-vi.mock('./VadProcessor', () => {
+vi.mock('./VadProcessor', async (importOriginal) => {
   class VadStreamProcessor {
     speechProbability = 0
     private chunkIdx = 0
@@ -103,7 +105,8 @@ vi.mock('./VadProcessor', () => {
     }
   }
 
-  return { VadStreamProcessor }
+  // Keep the real SpeechGate (pure logic); only the ONNX-backed processor is mocked.
+  return { ...(await importOriginal<object>()), VadStreamProcessor }
 })
 
 async function testRunAnalysis(
@@ -134,11 +137,23 @@ async function testRunAnalysis(
   return capturedMessages
 }
 
+// Collapse the patch stream to the final speechDetected value per frame.
+// Frames may be patched more than once (e.g. an optimistic speech patch later
+// reverted to silence); the last patch for a frame is its final value.
+function finalSpeechByFrame(messages: any[]): boolean[] {
+  const result: boolean[] = []
+  for (const msg of messages) {
+    if (msg.type === 'patch') result[msg.frameIndex] = msg.speechDetected
+  }
+  return result
+}
+
 describe('VadWorker', () => {
   beforeEach(() => {
     mockVadState.probsByChunk = []
     mockVadState.defaultProb = 0
     mockVadState.shouldFail = false
+    mockVadState.durationSec = 0.5
   })
 
   describe('output structure', () => {
@@ -200,69 +215,43 @@ describe('VadWorker', () => {
     })
   })
 
-  describe('speech detection thresholds', () => {
-    it('speechDetected=true when probability >= POSITIVE_THRESHOLD (0.3)', async () => {
-      const out = await testRunAnalysis([], 0.3)
-
-      const patchMsgs = out.filter((m) => m.type === 'patch')
-      // First chunk may take time to process, but should eventually see speech
-      const speechCount = patchMsgs.filter((m) => m.speechDetected).length
-      expect(speechCount).toBeGreaterThan(0)
+  // End-to-end gating through the worker. The precise hysteresis / pre-roll /
+  // redemption / min-speech rules are unit-tested in VadProcessor.test.ts; these
+  // confirm the gate is wired in and its final decisions reach the patch stream.
+  describe('speech gating (final state)', () => {
+    it('detects sustained speech', async () => {
+      mockVadState.durationSec = 1
+      const final = finalSpeechByFrame(await testRunAnalysis([], 0.5))
+      expect(final.length).toBeGreaterThan(0)
+      expect(final.every((s) => s)).toBe(true)
     })
 
-    it('speechDetected=false when probability < NEGATIVE_THRESHOLD (0.25)', async () => {
-      const out = await testRunAnalysis([], 0.1)
-
-      const patchMsgs = out.filter((m) => m.type === 'patch')
-      for (const msg of patchMsgs) {
-        expect(msg.speechDetected).toBe(false)
-      }
+    it('reports firmly silent audio as not speech', async () => {
+      const final = finalSpeechByFrame(await testRunAnalysis([], 0.1))
+      expect(final.length).toBeGreaterThan(0)
+      expect(final.every((s) => !s)).toBe(true)
     })
 
-    it('speechDetected stays true between NEGATIVE (0.25) and POSITIVE (0.3) thresholds', async () => {
-      const probs = Array(10).fill(0.5).concat(Array(10).fill(0.27))
-      const out = await testRunAnalysis(probs, 0)
-
-      const patchMsgs = out.filter((m) => m.type === 'patch')
-      // After initial silence, voice activates and hysteresis keeps it active despite prob=0.27
-      const voiceActivated = patchMsgs.some((m) => m.speechDetected)
-      expect(voiceActivated).toBe(true)
-    })
-  })
-
-  describe('preroll behavior', () => {
-    it('marks frames before speech onset as speechDetected if within preroll window', async () => {
-      // Setup: first 20 chunks silent (prob=0), then speech activates (prob=0.5)
-      const probs = Array(20).fill(0).concat(Array(10).fill(0.5))
-      const out = await testRunAnalysis(probs, 0)
-
-      const patchMsgs = out.filter((m) => m.type === 'patch')
-      // Find first frame marked as speechDetected
-      let firstSpeechIdx = -1
-      for (let i = 0; i < patchMsgs.length; i++) {
-        if (patchMsgs[i]?.speechDetected) {
-          firstSpeechIdx = i
-          break
-        }
-      }
-
-      // The preroll should start some frames before the actual speech onset
-      expect(firstSpeechIdx).toBeGreaterThan(0)
-      // We can't pin the exact frame, but it should be within reasonable range
-      expect(firstSpeechIdx).toBeLessThan(500)
+    it('discards speech shorter than MIN_SPEECH_MS', async () => {
+      // A brief burst of speech (a few chunks) then silence to the end.
+      const final = finalSpeechByFrame(
+        await testRunAnalysis(Array(5).fill(0.5), 0),
+      )
+      expect(final.length).toBeGreaterThan(0)
+      expect(final.every((s) => !s)).toBe(true)
     })
 
-    it('frames far before speech onset remain speechDetected=false', async () => {
-      // Ensure first several chunks are very quiet (well below thresholds)
-      const probs = Array(50).fill(0.05).concat(Array(10).fill(0.5))
-      const out = await testRunAnalysis(probs, 0)
-
-      const patchMsgs = out.filter((m) => m.type === 'patch')
-      // Early frames (before any preroll window) should remain unvoiced
-      const earlyFrames = patchMsgs.slice(0, 50)
-      const unvoicedCount = earlyFrames.filter((m) => !m.speechDetected).length
-      // Most of the early frames should be unvoiced
-      expect(unvoicedCount).toBeGreaterThan(earlyFrames.length * 0.7)
+    it('localizes a long speech segment within a longer recording', async () => {
+      mockVadState.durationSec = 2
+      // Speak long enough to clear MIN_SPEECH_MS, then fall silent for the rest.
+      const final = finalSpeechByFrame(
+        await testRunAnalysis(Array(250).fill(0.5), 0),
+      )
+      expect(final[10]).toBe(true) // inside the speech segment
+      expect(final[final.length - 1]).toBe(false) // deep in the trailing silence
+      const speechFrames = final.filter((s) => s).length
+      expect(speechFrames).toBeGreaterThan(200) // kept (≥ MIN_SPEECH_MS)
+      expect(speechFrames).toBeLessThan(final.length) // but not the whole recording
     })
   })
 
@@ -345,46 +334,38 @@ describe('VadWorker', () => {
     })
   })
 
-  describe('complex speech patterns', () => {
-    it('handles alternating speech/silence pattern', async () => {
-      const probs = Array(10)
-        .fill(0.5)
-        .concat(Array(10).fill(0.1))
-        .concat(Array(10).fill(0.5))
-      const out = await testRunAnalysis(probs, 0)
-
-      const patchMsgs = out.filter((m) => m.type === 'patch')
-      const speechDetectedChanges = []
-      for (let i = 1; i < patchMsgs.length; i++) {
-        if (patchMsgs[i]?.speechDetected !== patchMsgs[i - 1]?.speechDetected) {
-          speechDetectedChanges.push(i)
-        }
+  describe('redemption (final state)', () => {
+    const countRisingEdges = (final: boolean[]): number => {
+      let edges = 0
+      let prev = false
+      for (const cur of final) {
+        if (cur && !prev) edges++
+        prev = cur
       }
+      return edges
+    }
 
-      // Should see at least one transition (silence to speech or vice versa)
-      expect(speechDetectedChanges.length).toBeGreaterThan(0)
+    it('bridges a short gap between two speech segments', async () => {
+      mockVadState.durationSec = 2
+      // speech · short gap (< REDEMPTION_MS) · speech, then silence.
+      const probs = [
+        ...Array(200).fill(0.5),
+        ...Array(50).fill(0),
+        ...Array(200).fill(0.5),
+      ]
+      const final = finalSpeechByFrame(await testRunAnalysis(probs, 0))
+      // The bridged gap leaves a single contiguous speech run.
+      expect(countRisingEdges(final)).toBe(1)
     })
 
-    it('applies hysteresis correctly across multiple transitions', async () => {
-      // Pattern: high → between-threshold → low (should trigger hysteresis)
-      const probs = Array(10)
-        .fill(0.5)
-        .concat(Array(15).fill(0.27))
-        .concat(Array(10).fill(0.1))
-      const out = await testRunAnalysis(probs, 0)
-
-      const patchMsgs = out.filter((m) => m.type === 'patch')
-
-      // Find transition point where speech was detected but prob dropped
-      let hysteresisFrames = 0
-      for (const msg of patchMsgs) {
-        if (0.25 <= msg.speechProbability && msg.speechProbability <= 0.3) {
-          if (msg.speechDetected) hysteresisFrames++
-        }
-      }
-
-      // Hysteresis should keep some between-threshold frames as detected
-      expect(hysteresisFrames).toBeGreaterThan(0)
+    it('reverts the speech tail once the recording ends without resuming', async () => {
+      mockVadState.durationSec = 2
+      // Long speech (kept), then silence longer than REDEMPTION_MS.
+      const final = finalSpeechByFrame(
+        await testRunAnalysis(Array(250).fill(0.5), 0),
+      )
+      // Trailing frames, optimistically held during redemption, end up silent.
+      expect(final[final.length - 1]).toBe(false)
     })
   })
 })

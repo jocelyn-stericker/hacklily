@@ -17,7 +17,15 @@
 
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 
+import type { AnalysisChunk, AnalysisFrame } from './AnalysisFrame'
+import { framesVoiced } from './AnalysisFrame'
 import { analyzeBuffer } from './analyzeBuffer'
+
+// analyzeBuffer returns chunks split at voicing boundaries; most per-frame
+// assertions only care about the flat frame stream.
+function allFrames(chunks: AnalysisChunk[]): AnalysisFrame[] {
+  return chunks.flatMap((c) => c.frames)
+}
 
 // Controllable mock: each feed() call consumes the next entry in probsByChunk,
 // falling back to defaultProb when the array is exhausted.
@@ -26,7 +34,7 @@ const mockVadState = vi.hoisted(() => ({
   defaultProb: 0,
 }))
 
-vi.mock('./VadProcessor', () => {
+vi.mock('./VadProcessor', async (importOriginal) => {
   class VadStreamProcessor {
     speechProbability = 0
     private idx = 0
@@ -43,7 +51,8 @@ vi.mock('./VadProcessor', () => {
     }
   }
 
-  return { VadStreamProcessor }
+  // Keep the real SpeechGate (pure logic); only the ONNX-backed processor is mocked.
+  return { ...(await importOriginal<object>()), VadStreamProcessor }
 })
 
 function generateSinusoid(
@@ -78,18 +87,20 @@ describe('analyzeBuffer', () => {
   })
 
   describe('output structure', () => {
-    it('returns an AnalysisChunk with expected metadata', async () => {
+    it('returns chunks with expected metadata', async () => {
       const result = await analyzeBuffer(
         generateSilence(0.5, SAMPLE_RATE),
         SAMPLE_RATE,
       )
 
-      expect(result.sampleRate).toBe(SAMPLE_RATE)
-      expect(result.startTimeSec).toBe(0)
-      expect(result.timeStepSamples).toBeGreaterThan(0)
-      expect(result.freqStepHz).toBeGreaterThan(0)
-      expect(Array.isArray(result.frames)).toBe(true)
-      expect(result.frames.length).toBeGreaterThan(0)
+      // Pure silence is uniformly unvoiced → a single chunk.
+      expect(result.length).toBe(1)
+      const chunk = result[0]!
+      expect(chunk.sampleRate).toBe(SAMPLE_RATE)
+      expect(chunk.startTimeSec).toBe(0)
+      expect(chunk.timeStepSamples).toBeGreaterThan(0)
+      expect(chunk.freqStepHz).toBeGreaterThan(0)
+      expect(chunk.frames.length).toBeGreaterThan(0)
     })
 
     it('produces approximately one frame per TIME_STEP_SEC', async () => {
@@ -100,8 +111,8 @@ describe('analyzeBuffer', () => {
       )
 
       const expectedFrames = durationSec / TIME_STEP_SEC
-      expect(result.frames.length).toBeGreaterThan(expectedFrames * 0.8)
-      expect(result.frames.length).toBeLessThan(expectedFrames * 1.2)
+      expect(allFrames(result).length).toBeGreaterThan(expectedFrames * 0.8)
+      expect(allFrames(result).length).toBeLessThan(expectedFrames * 1.2)
     })
 
     it('longer input produces more frames than shorter input', async () => {
@@ -114,7 +125,7 @@ describe('analyzeBuffer', () => {
         SAMPLE_RATE,
       )
 
-      expect(long.frames.length).toBeGreaterThan(short.frames.length)
+      expect(allFrames(long).length).toBeGreaterThan(allFrames(short).length)
     })
 
     it('each frame has a non-empty spectrum Float32Array', async () => {
@@ -123,7 +134,7 @@ describe('analyzeBuffer', () => {
         SAMPLE_RATE,
       )
 
-      for (const frame of result.frames) {
+      for (const frame of allFrames(result)) {
         expect(frame.spectrum).toBeInstanceOf(Float32Array)
         expect(frame.spectrum.length).toBeGreaterThan(0)
       }
@@ -135,9 +146,47 @@ describe('analyzeBuffer', () => {
         SAMPLE_RATE,
       )
 
-      expect(result.timeStepSamples).toBe(
+      expect(result[0]!.timeStepSamples).toBe(
         Math.round(TIME_STEP_SEC * SAMPLE_RATE),
       )
+    })
+  })
+
+  describe('chunk invariants', () => {
+    // Speech bracketed by silence forces multiple chunks, exercising the split.
+    async function mixedResult() {
+      for (let i = 0; i < 10; i++) mockVadState.probsByChunk.push(0)
+      for (let i = 0; i < 10; i++) mockVadState.probsByChunk.push(0.9)
+      mockVadState.defaultProb = 0
+      return analyzeBuffer(generateSilence(1.5, SAMPLE_RATE), SAMPLE_RATE)
+    }
+
+    it('splits speech and silence into separate chunks', async () => {
+      const result = await mixedResult()
+      expect(result.length).toBeGreaterThan(1)
+      expect(result.some((c) => c.voiced)).toBe(true)
+      expect(result.some((c) => !c.voiced)).toBe(true)
+    })
+
+    it('every frame in a chunk shares its speechDetected, matching voiced', async () => {
+      const result = await mixedResult()
+      for (const chunk of result) {
+        expect(chunk.frames.length).toBeGreaterThan(0)
+        for (const frame of chunk.frames) {
+          expect(frame.speechDetected).toBe(chunk.voiced)
+        }
+        expect(framesVoiced(chunk.frames)).toBe(chunk.voiced)
+      }
+    })
+
+    it('chunk startTimeSec is contiguous and frame-aligned', async () => {
+      const result = await mixedResult()
+      const step = result[0]!.timeStepSamples / result[0]!.sampleRate
+      let expectedStart = 0
+      for (const chunk of result) {
+        expect(chunk.startTimeSec).toBeCloseTo(expectedStart)
+        expectedStart += chunk.frames.length * step
+      }
     })
   })
 
@@ -148,7 +197,7 @@ describe('analyzeBuffer', () => {
         SAMPLE_RATE,
       )
 
-      for (const frame of result.frames) {
+      for (const frame of allFrames(result)) {
         expect(frame.rms).toBeCloseTo(0, 10)
       }
     })
@@ -159,7 +208,7 @@ describe('analyzeBuffer', () => {
         SAMPLE_RATE,
       )
 
-      for (const frame of result.frames) {
+      for (const frame of allFrames(result)) {
         expect(frame.pitchDetected).toBe(false)
         expect(frame.f0).toBe(0)
       }
@@ -171,7 +220,7 @@ describe('analyzeBuffer', () => {
         SAMPLE_RATE,
       )
 
-      for (const frame of result.frames) {
+      for (const frame of allFrames(result)) {
         expect(frame.f1).toBeNull()
         expect(frame.f2).toBeNull()
         expect(frame.f3).toBeNull()
@@ -187,7 +236,7 @@ describe('analyzeBuffer', () => {
         SAMPLE_RATE,
       )
 
-      for (const frame of result.frames) {
+      for (const frame of allFrames(result)) {
         expect(frame.speechDetected).toBe(false)
         expect(frame.speechProbability).toBeCloseTo(0)
       }
@@ -200,9 +249,11 @@ describe('analyzeBuffer', () => {
         SAMPLE_RATE,
       )
 
-      const speechCount = result.frames.filter((f) => f.speechDetected).length
+      const speechCount = allFrames(result).filter(
+        (f) => f.speechDetected,
+      ).length
       // All frames with prob=0.5 (onset on first chunk) → speaking = true for all
-      expect(speechCount).toBe(result.frames.length)
+      expect(speechCount).toBe(allFrames(result).length)
     })
 
     it('speechProbability reflects the VAD output for each frame', async () => {
@@ -212,7 +263,7 @@ describe('analyzeBuffer', () => {
         SAMPLE_RATE,
       )
 
-      for (const frame of result.frames) {
+      for (const frame of allFrames(result)) {
         expect(frame.speechProbability).toBeCloseTo(0.42, 2)
       }
     })
@@ -233,7 +284,7 @@ describe('analyzeBuffer', () => {
       const regionEnd = Math.floor((27 * VAD_CHUNK_DUR_SEC) / TIME_STEP_SEC)
 
       for (let x = regionStart; x < regionEnd; x++) {
-        expect(result.frames[x]?.speechDetected).toBe(true)
+        expect(allFrames(result)[x]?.speechDetected).toBe(true)
       }
     })
 
@@ -252,7 +303,7 @@ describe('analyzeBuffer', () => {
       const silentEnd = Math.floor((25 * VAD_CHUNK_DUR_SEC) / TIME_STEP_SEC)
 
       for (let x = silentStart; x < silentEnd; x++) {
-        expect(result.frames[x]?.speechDetected).toBe(false)
+        expect(allFrames(result)[x]?.speechDetected).toBe(false)
       }
     })
   })
@@ -276,11 +327,11 @@ describe('analyzeBuffer', () => {
       // Frames in the preroll window should be speechDetected
       const prerollStart = onsetFrame - PREROLL_FRAMES // 295
       for (let x = prerollStart; x < onsetFrame; x++) {
-        expect(result.frames[x]?.speechDetected).toBe(true)
+        expect(allFrames(result)[x]?.speechDetected).toBe(true)
       }
 
       // Frame just before the preroll window should NOT be speechDetected
-      expect(result.frames[prerollStart - 1]?.speechDetected).toBe(false)
+      expect(allFrames(result)[prerollStart - 1]?.speechDetected).toBe(false)
     })
 
     it('frames well before the preroll window remain speechDetected=false', async () => {
@@ -295,7 +346,7 @@ describe('analyzeBuffer', () => {
       )
 
       for (let x = 0; x < 270; x++) {
-        expect(result.frames[x]?.speechDetected).toBe(false)
+        expect(allFrames(result)[x]?.speechDetected).toBe(false)
       }
     })
   })
@@ -307,7 +358,7 @@ describe('analyzeBuffer', () => {
         SAMPLE_RATE,
       )
 
-      for (const frame of result.frames) {
+      for (const frame of allFrames(result)) {
         if (!frame.pitchDetected) {
           expect(frame.f1).toBeNull()
           expect(frame.f2).toBeNull()
@@ -322,7 +373,7 @@ describe('analyzeBuffer', () => {
       const input = generateSinusoid(150, 0.5, SAMPLE_RATE)
       const result = await analyzeBuffer(input, SAMPLE_RATE)
 
-      const voicedFrames = result.frames.filter((f) => f.pitchDetected)
+      const voicedFrames = allFrames(result).filter((f) => f.pitchDetected)
       expect(voicedFrames.length).toBeGreaterThan(0)
     })
 
@@ -330,7 +381,7 @@ describe('analyzeBuffer', () => {
       const input = generateSinusoid(150, 0.5, SAMPLE_RATE)
       const result = await analyzeBuffer(input, SAMPLE_RATE)
 
-      const voicedFrames = result.frames.filter((f) => f.pitchDetected)
+      const voicedFrames = allFrames(result).filter((f) => f.pitchDetected)
       expect(voicedFrames.length).toBeGreaterThan(0)
 
       const avgF0 =
@@ -343,7 +394,7 @@ describe('analyzeBuffer', () => {
       const input = generateSinusoid(150, 0.5, SAMPLE_RATE)
       const result = await analyzeBuffer(input, SAMPLE_RATE)
 
-      const maxRms = Math.max(...result.frames.map((f) => f.rms))
+      const maxRms = Math.max(...allFrames(result).map((f) => f.rms))
       expect(maxRms).toBeGreaterThan(0)
     })
   })

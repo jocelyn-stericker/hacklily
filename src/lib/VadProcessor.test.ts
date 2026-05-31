@@ -17,6 +17,8 @@
 
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 
+import type { SpeechGate as SpeechGateType } from './VadProcessor'
+
 const mockState = vi.hoisted(() => ({
   sessionRunCalls: [] as Array<{ feeds: Record<string, unknown> }>,
 }))
@@ -61,11 +63,13 @@ vi.mock('onnxruntime-web/wasm', () => ({
 }))
 
 let VadStreamProcessor: any
+let SpeechGate: typeof SpeechGateType
 beforeEach(async () => {
   vi.resetModules()
   mockState.sessionRunCalls = []
   const module = await import('./VadProcessor')
   VadStreamProcessor = module.VadStreamProcessor
+  SpeechGate = module.SpeechGate
 })
 
 afterEach(() => {
@@ -399,6 +403,136 @@ describe('VadStreamProcessor', () => {
       expect(processor.speechProbability).toBeCloseTo(0.3, 5)
 
       MockSession.prototype.run = originalRun
+    })
+  })
+})
+
+describe('SpeechGate', () => {
+  // 100 frames/sec → 10 ms per frame, so the constants land on round counts:
+  // pre-roll = 5, post-roll = 5, redemption = 100, min-speech = 40 frames.
+  const FPS = 100
+  const PREROLL = 5
+  const POSTROLL = 5
+  const REDEMPTION = 100
+  const MIN_SPEECH = 40
+
+  // Pushes a probability per frame and returns the final speechDetected value
+  // for each frame, applying later corrections (last decision wins) like both
+  // real consumers do.
+  function gate(probs: number[]): boolean[] {
+    const out: boolean[] = new Array(probs.length).fill(false)
+    const g = new SpeechGate(FPS, (d) => {
+      out[d.frameIndex] = d.speechDetected
+    })
+    probs.forEach((p, i) => g.push(i, p))
+    g.end()
+    return out
+  }
+
+  const fill = (n: number, value: number): number[] => new Array(n).fill(value)
+  const SPEECH = 0.9
+  const SILENCE = 0
+
+  it('reports silence as not speech', () => {
+    expect(gate(fill(50, SILENCE)).every((s) => !s)).toBe(true)
+  })
+
+  it('reports sustained speech as speech', () => {
+    expect(gate(fill(60, SPEECH)).every((s) => s)).toBe(true)
+  })
+
+  describe('hysteresis', () => {
+    it('stays speaking while probability sits between the thresholds', () => {
+      // Onset on the loud run, then a long quiet-but-not-silent tail (0.27).
+      const out = gate([...fill(50, 0.5), ...fill(30, 0.27)])
+      expect(out.every((s) => s)).toBe(true)
+    })
+
+    it('never starts speaking when probability stays below POSITIVE', () => {
+      expect(gate(fill(50, 0.27)).every((s) => !s)).toBe(true)
+    })
+  })
+
+  describe('pre-roll', () => {
+    it('retroactively marks the frames just before an onset as speech', () => {
+      const out = gate([...fill(20, SILENCE), ...fill(60, SPEECH)])
+      // The PREROLL frames before the onset at index 20 are claimed...
+      for (let i = 20 - PREROLL; i < 20; i++) expect(out[i]).toBe(true)
+      // ...but the frame just before that window stays silent.
+      expect(out[20 - PREROLL - 1]).toBe(false)
+      expect(out[0]).toBe(false)
+    })
+  })
+
+  describe('minimum speech duration', () => {
+    it('keeps a segment that reaches MIN_SPEECH frames', () => {
+      const speech = MIN_SPEECH + 5
+      const out = gate([...fill(speech, SPEECH), ...fill(60, SILENCE)])
+      expect(out[MIN_SPEECH]).toBe(true)
+      // The kept speech plus its post-roll release tail.
+      expect(out.filter((s) => s).length).toBe(speech + POSTROLL)
+    })
+
+    it('discards a segment shorter than MIN_SPEECH frames', () => {
+      // Speech plus its pre-roll and post-roll still falls short of the minimum.
+      const out = gate([
+        ...fill(10, SILENCE),
+        ...fill(MIN_SPEECH - PREROLL - POSTROLL - 1, SPEECH),
+        ...fill(60, SILENCE),
+      ])
+      expect(out.every((s) => !s)).toBe(true)
+    })
+
+    it('counts pre-roll toward the segment duration', () => {
+      // Speech alone is below MIN_SPEECH, but pre-roll pushes it over. Speech
+      // runs to the end of the stream, so there is no post-roll here.
+      const speech = MIN_SPEECH - PREROLL + 1
+      const out = gate([...fill(20, SILENCE), ...fill(speech, SPEECH)])
+      expect(out.filter((s) => s).length).toBe(speech + PREROLL)
+    })
+  })
+
+  describe('redemption', () => {
+    it('bridges a gap shorter than the redemption window', () => {
+      const out = gate([
+        ...fill(30, SPEECH),
+        ...fill(REDEMPTION - 10, SILENCE), // gap within the window
+        ...fill(30, SPEECH),
+      ])
+      // The whole span, gap included, is one continuous speech segment.
+      expect(out.every((s) => s)).toBe(true)
+    })
+
+    it('keeps a post-roll release tail then reverts the rest of the window', () => {
+      const out = gate([...fill(50, SPEECH), ...fill(200, SILENCE)])
+      // The kept speech segment...
+      expect(out[49]).toBe(true)
+      // ...followed by the post-roll release pad...
+      expect(out[50 + POSTROLL - 1]).toBe(true)
+      // ...then the optimistic redemption frames, reverted once it expired...
+      expect(out[50 + POSTROLL]).toBe(false)
+      expect(out[50 + REDEMPTION - 1]).toBe(false)
+      // ...and the trailing silence beyond the window.
+      expect(out[50 + REDEMPTION + 20]).toBe(false)
+      expect(out.filter((s) => s).length).toBe(50 + POSTROLL)
+    })
+
+    it('reverts an unfinished redemption tail at end of stream', () => {
+      // Stream ends mid-window, before redemption could expire on its own.
+      const out = gate([...fill(50, SPEECH), ...fill(REDEMPTION - 20, SILENCE)])
+      expect(out[49]).toBe(true)
+      expect(out[50 + POSTROLL - 1]).toBe(true) // release pad still kept
+      expect(out[50 + POSTROLL]).toBe(false)
+      expect(out.filter((s) => s).length).toBe(50 + POSTROLL)
+    })
+
+    it('discards a short segment even after its redemption tail', () => {
+      // Even with the post-roll pad, the segment stays below MIN_SPEECH.
+      const out = gate([
+        ...fill(MIN_SPEECH - POSTROLL - 1, SPEECH),
+        ...fill(200, SILENCE),
+      ])
+      expect(out.every((s) => !s)).toBe(true)
     })
   })
 })
