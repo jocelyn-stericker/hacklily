@@ -361,7 +361,7 @@ describe('VadWorker', () => {
       // speech · short gap (< REDEMPTION_MS) · speech, then silence.
       const probs = [
         ...Array(200).fill(0.5),
-        ...Array(50).fill(0),
+        ...Array(5).fill(0),
         ...Array(200).fill(0.5),
       ]
       const final = finalSpeechByFrame(await testRunAnalysis(probs, 0))

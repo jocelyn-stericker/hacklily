@@ -409,11 +409,11 @@ describe('VadStreamProcessor', () => {
 
 describe('SpeechGate', () => {
   // 100 frames/sec → 10 ms per frame, so the constants land on round counts:
-  // pre-roll = 5, post-roll = 5, redemption = 100, min-speech = 40 frames.
+  // pre-roll = 5, post-roll = 5, redemption = 8, min-speech = 40 frames.
   const FPS = 100
   const PREROLL = 5
   const POSTROLL = 5
-  const REDEMPTION = 100
+  const REDEMPTION = 8
   const MIN_SPEECH = 40
 
   // Pushes a probability per frame and returns the final speechDetected value
@@ -496,7 +496,7 @@ describe('SpeechGate', () => {
     it('bridges a gap shorter than the redemption window', () => {
       const out = gate([
         ...fill(30, SPEECH),
-        ...fill(REDEMPTION - 10, SILENCE), // gap within the window
+        ...fill(REDEMPTION - 2, SILENCE), // gap within the window
         ...fill(30, SPEECH),
       ])
       // The whole span, gap included, is one continuous speech segment.
@@ -519,7 +519,7 @@ describe('SpeechGate', () => {
 
     it('reverts an unfinished redemption tail at end of stream', () => {
       // Stream ends mid-window, before redemption could expire on its own.
-      const out = gate([...fill(50, SPEECH), ...fill(REDEMPTION - 20, SILENCE)])
+      const out = gate([...fill(50, SPEECH), ...fill(REDEMPTION - 2, SILENCE)])
       expect(out[49]).toBe(true)
       expect(out[50 + POSTROLL - 1]).toBe(true) // release pad still kept
       expect(out[50 + POSTROLL]).toBe(false)

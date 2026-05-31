@@ -131,7 +131,7 @@ export const POSTROLL_MS = 50
 // After speech stops, frames keep being reported as speech for this long. If
 // speech resumes within the window the gap is bridged; otherwise — or when the
 // stream ends — the held frames revert to silence, save for the POSTROLL_MS pad.
-export const REDEMPTION_MS = 1000
+export const REDEMPTION_MS = 80
 
 // Speech segments shorter than this, measured end to end (including pre-roll,
 // post-roll, and any bridged gaps), are discarded as spurious and reverted to
