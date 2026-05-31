@@ -137,13 +137,24 @@ async function testRunAnalysis(
   return capturedMessages
 }
 
+// Flatten the batched patch stream into individual per-frame decisions, in
+// emission order. The worker now posts one `{ type: 'patch', frames }` message
+// per gate push/end, each covering a contiguous run flipped to a single value.
+function patchFrames(messages: any[]): any[] {
+  const frames: any[] = []
+  for (const msg of messages) {
+    if (msg.type === 'patch') frames.push(...msg.frames)
+  }
+  return frames
+}
+
 // Collapse the patch stream to the final speechDetected value per frame.
 // Frames may be patched more than once (e.g. an optimistic speech patch later
 // reverted to silence); the last patch for a frame is its final value.
 function finalSpeechByFrame(messages: any[]): boolean[] {
   const result: boolean[] = []
-  for (const msg of messages) {
-    if (msg.type === 'patch') result[msg.frameIndex] = msg.speechDetected
+  for (const decision of patchFrames(messages)) {
+    result[decision.frameIndex] = decision.speechDetected
   }
   return result
 }
@@ -160,7 +171,7 @@ describe('VadWorker', () => {
     it('sends patch messages with frameIndex, speechDetected, and speechProbability', async () => {
       const out = await testRunAnalysis([], 0)
 
-      const patchMsgs = out.filter((m) => m.type === 'patch')
+      const patchMsgs = patchFrames(out)
       expect(patchMsgs.length).toBeGreaterThan(0)
 
       for (const msg of patchMsgs) {
@@ -176,7 +187,7 @@ describe('VadWorker', () => {
     it('sends frames with sequential frameIndex', async () => {
       const out = await testRunAnalysis([], 0)
 
-      const patchMsgs = out.filter((m) => m.type === 'patch')
+      const patchMsgs = patchFrames(out)
       const indices = patchMsgs.map((m) => m.frameIndex)
 
       for (let i = 0; i < indices.length; i++) {
@@ -187,7 +198,7 @@ describe('VadWorker', () => {
     it('number of frames approximately matches audio duration / timeStepSec', async () => {
       const out = await testRunAnalysis([], 0)
 
-      const patchMsgs = out.filter((m) => m.type === 'patch')
+      const patchMsgs = patchFrames(out)
       // 0.5 seconds of audio at 2ms timeStep = ~250 frames
       const expectedFrames = (0.5 * SAMPLE_RATE) / TIME_STEP_SAMPLES
       expect(patchMsgs.length).toBeGreaterThan(expectedFrames * 0.8)
@@ -199,7 +210,7 @@ describe('VadWorker', () => {
     it('speechDetected is false for all frames when VAD probability is 0', async () => {
       const out = await testRunAnalysis([], 0)
 
-      const patchMsgs = out.filter((m) => m.type === 'patch')
+      const patchMsgs = patchFrames(out)
       for (const msg of patchMsgs) {
         expect(msg.speechDetected).toBe(false)
       }
@@ -208,7 +219,7 @@ describe('VadWorker', () => {
     it('speechProbability is 0 for all frames', async () => {
       const out = await testRunAnalysis([], 0)
 
-      const patchMsgs = out.filter((m) => m.type === 'patch')
+      const patchMsgs = patchFrames(out)
       for (const msg of patchMsgs) {
         expect(msg.speechProbability).toBeCloseTo(0, 5)
       }
@@ -259,7 +270,7 @@ describe('VadWorker', () => {
     it('flushes remaining pending frames as unvoiced at stream end', async () => {
       const out = await testRunAnalysis([], 0)
 
-      const patchMsgs = out.filter((m) => m.type === 'patch')
+      const patchMsgs = patchFrames(out)
       // All frames should have been flushed
       expect(patchMsgs.length).toBeGreaterThan(0)
 
@@ -297,7 +308,7 @@ describe('VadWorker', () => {
       expect(lastMsg?.type).toBe('ended')
 
       // Failed chunks should use speechProbability=0
-      const patchMsgs = capturedMessages.filter((m) => m.type === 'patch')
+      const patchMsgs = patchFrames(capturedMessages)
       const afterFailure = patchMsgs.slice(patchMsgs.length - 10)
       for (const msg of afterFailure) {
         expect(msg.speechProbability).toBe(0)
@@ -309,7 +320,7 @@ describe('VadWorker', () => {
     it('speechProbability reflects VAD output value for each frame', async () => {
       const out = await testRunAnalysis([], 0.42)
 
-      const patchMsgs = out.filter((m) => m.type === 'patch')
+      const patchMsgs = patchFrames(out)
       for (const msg of patchMsgs) {
         expect(msg.speechProbability).toBeCloseTo(0.42, 2)
       }
@@ -322,7 +333,7 @@ describe('VadWorker', () => {
         .concat(Array(10).fill(0.1))
       const out = await testRunAnalysis(probs, 0)
 
-      const patchMsgs = out.filter((m) => m.type === 'patch')
+      const patchMsgs = patchFrames(out)
       expect(patchMsgs.length).toBeGreaterThan(0)
 
       // Check that at least some frames have updated probabilities

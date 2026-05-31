@@ -16,6 +16,7 @@
  */
 
 import type { AnalysisFrame, AnalysisParams } from './AnalysisFrame'
+import type { SpeechDecision } from './VadProcessor'
 
 export interface SpectrogramInitMessage {
   type: 'init'
@@ -67,6 +68,14 @@ export type PatchFrameMessage = {
   type: 'patch'
   frameIndex: number
 } & AnalysisPatch
+
+// Batched patch covering a contiguous run of frames revised together — emitted
+// by the VAD worker once per gate push/end, where the gate only ever flips a
+// contiguous run to a single value. `frames` carries one decision per frame.
+export type PatchFramesMessage = {
+  type: 'patch'
+  frames: SpeechDecision[]
+}
 
 export interface WorkerEndedMessage {
   type: 'ended'

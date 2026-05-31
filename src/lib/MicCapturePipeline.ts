@@ -39,7 +39,12 @@ import {
 import type { SpectrogramWorkerOutMessage } from './SpectrogramWorker'
 import { TypedEventTarget } from './TypedEventTarget'
 import type { VadWorkerOutMessage } from './VadWorker'
-import type { AppendFrameMessage, PatchFrameMessage } from './workerMessages'
+import type {
+  AnalysisPatch,
+  AppendFrameMessage,
+  PatchFrameMessage,
+  PatchFramesMessage,
+} from './workerMessages'
 
 // Must be a pow of 2 due to bit masking hack for efficient circular buffer
 // About 0.2sec at 44100 Hz.
@@ -48,7 +53,7 @@ const SAB_BUF_SAMPLES = 8192
 type MicCaptureOutEvents = {
   append: CustomEvent<{ frame: AnalysisFrame }>
   chunkStart: CustomEvent<{ params: AnalysisParams }>
-  patch: CustomEvent<{ frameIndex: number }>
+  patch: CustomEvent<{ from: number; to: number }>
   recordingComplete: CustomEvent<{ buffer: AudioBuffer }>
   error: CustomEvent<{ error: string }>
 }
@@ -547,7 +552,7 @@ export class MicCapturePipeline extends TypedEventTarget<MicCaptureOutEvents> {
   }: MessageEvent<VadWorkerOutMessage>) => {
     switch (data.type) {
       case 'patch': {
-        this.#handlePatch(data)
+        this.#handlePatchFrames(data)
         break
       }
       case 'ended': {
@@ -581,27 +586,59 @@ export class MicCapturePipeline extends TypedEventTarget<MicCaptureOutEvents> {
     }
   }
 
+  #applyPatchFields(frame: AnalysisFrame, data: AnalysisPatch) {
+    if (data.pitchDetected !== undefined)
+      frame.pitchDetected = data.pitchDetected
+    if (data.speechDetected !== undefined)
+      frame.speechDetected = data.speechDetected
+    if (data.f0 !== undefined) frame.f0 = data.f0
+    if (data.f1 !== undefined) frame.f1 = data.f1
+    if (data.f2 !== undefined) frame.f2 = data.f2
+    if (data.f3 !== undefined) frame.f3 = data.f3
+    if (data.speechProbability !== undefined)
+      frame.speechProbability = data.speechProbability
+  }
+
+  #pendPatch(data: PatchFrameMessage) {
+    const existing = this.#pendingPatches.get(data.frameIndex)
+    this.#pendingPatches.set(
+      data.frameIndex,
+      existing ? { ...existing, ...data } : data,
+    )
+  }
+
   #handlePatch = (data: PatchFrameMessage) => {
     const frame = this.#analysis?.frames[data.frameIndex]
     if (frame) {
-      if (data.pitchDetected !== undefined)
-        frame.pitchDetected = data.pitchDetected
-      if (data.speechDetected !== undefined)
-        frame.speechDetected = data.speechDetected
-      if (data.f0 !== undefined) frame.f0 = data.f0
-      if (data.f1 !== undefined) frame.f1 = data.f1
-      if (data.f2 !== undefined) frame.f2 = data.f2
-      if (data.f3 !== undefined) frame.f3 = data.f3
-      if (data.speechProbability !== undefined)
-        frame.speechProbability = data.speechProbability
-      this.emit('patch', { frameIndex: data.frameIndex })
+      this.#applyPatchFields(frame, data)
+      this.emit('patch', {
+        from: data.frameIndex,
+        to: data.frameIndex + 1,
+      })
     } else {
-      const existing = this.#pendingPatches.get(data.frameIndex)
-      this.#pendingPatches.set(
-        data.frameIndex,
-        existing ? { ...existing, ...data } : data,
-      )
+      this.#pendPatch(data)
     }
+  }
+
+  // VAD emits one batch per gate push/end covering a contiguous run of frames
+  // flipped to a single value. Apply every frame first, then emit a single
+  // patch event spanning [from, to) so the route reconciles and repaints once.
+  #handlePatchFrames = (data: PatchFramesMessage) => {
+    let from = Infinity
+    let to = -Infinity
+    for (const decision of data.frames) {
+      const frame = this.#analysis?.frames[decision.frameIndex]
+      if (frame) {
+        this.#applyPatchFields(frame, decision)
+        if (decision.frameIndex < from) from = decision.frameIndex
+        if (decision.frameIndex + 1 > to) to = decision.frameIndex + 1
+      } else {
+        // Frame not appended yet (VAD normally lags the spectrogram, so this is
+        // rare): stash it to be applied — and patched individually — on append.
+        this.#pendPatch({ type: 'patch', ...decision })
+      }
+    }
+    if (to > from) this.emit('patch', { from, to })
   }
 
   #stop = async () => {

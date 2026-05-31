@@ -18,10 +18,11 @@
 
 import { AudioRingReader } from './AudioRingReader'
 import { ResamplerStreamProcessor } from './ResampleProcessor'
+import type { SpeechDecision } from './VadProcessor'
 import { SpeechGate, VadStreamProcessor } from './VadProcessor'
 import type {
   WorkerEndedMessage,
-  PatchFrameMessage,
+  PatchFramesMessage,
   VadInitMessage,
 } from './workerMessages'
 
@@ -31,7 +32,7 @@ const LOG = '[VadWorker]'
 
 export type VadWorkerInMessage = VadInitMessage | null
 
-export type VadWorkerOutMessage = PatchFrameMessage | WorkerEndedMessage
+export type VadWorkerOutMessage = PatchFramesMessage | WorkerEndedMessage
 
 export type VadWorker = Omit<Worker, 'postMessage' | 'onmessage'> & {
   postMessage: (msg: VadWorkerInMessage) => null
@@ -67,12 +68,24 @@ export async function runAnalysis(
   const vadDrainBuf = new Float32Array(256)
   const vad = new VadStreamProcessor()
 
-  // Gate per-frame probabilities into speech decisions and forward each as a
-  // frame patch. The gate may revise earlier frames (redemption / min-speech),
-  // which simply arrive as later patches for those frame indices.
+  // Gate per-frame probabilities into speech decisions. A single gate push (or
+  // gate.end) only ever flips a contiguous run of frames to a single value, so
+  // we buffer the decisions it emits and forward them as one batched patch.
+  // The gate may revise earlier frames (redemption / min-speech); those simply
+  // arrive in a later batch covering the affected run.
+  const pendingDecisions: SpeechDecision[] = []
   const gate = new SpeechGate(sampleRate / timeStepSamples, (decision) => {
-    postMessage({ type: 'patch', ...decision } satisfies PatchFrameMessage)
+    pendingDecisions.push(decision)
   })
+
+  function flushDecisions() {
+    if (pendingDecisions.length === 0) return
+    postMessage({
+      type: 'patch',
+      frames: pendingDecisions.slice(),
+    } satisfies PatchFramesMessage)
+    pendingDecisions.length = 0
+  }
 
   let samplesPending = 0
   let frameIndex = 0
@@ -87,7 +100,10 @@ export async function runAnalysis(
   let vadChain: Promise<void> = Promise.resolve()
 
   function gateFrames(frames: number[], speechProbability: number) {
-    for (const fi of frames) gate.push(fi, speechProbability)
+    for (const fi of frames) {
+      gate.push(fi, speechProbability)
+      flushDecisions()
+    }
   }
 
   function enqueueVadChunk(buf: Float32Array, frames: number[]) {
@@ -126,6 +142,7 @@ export async function runAnalysis(
   // Wait for all queued inference to finish, then close out any open segment.
   await vadChain.catch(() => {})
   gate.end()
+  flushDecisions()
 }
 
 self.addEventListener('unhandledrejection', function (event) {

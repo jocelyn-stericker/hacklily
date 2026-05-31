@@ -253,21 +253,26 @@ function App() {
     [schedulePlaybackPositionChanged],
   )
 
-  const handlePatch = useCallback((frameIndex: number) => {
-    const absIndex = recordingStartIndexRef.current + frameIndex
+  const handlePatch = useCallback((from: number, to: number) => {
+    const absFrom = recordingStartIndexRef.current + from
+    const absTo = recordingStartIndexRef.current + to
 
-    // Re-chunk around the patched frame so each chunk stays uniformly
-    // voiced/unvoiced (a VAD patch may flip this frame — onset, redemption
-    // revert, or min-speech discard). Only re-transcribe if the voicing
-    // actually changed.
-    if (reconcileVoicingAt(analysisMutRef.current, absIndex)) {
+    // Re-chunk around each patched frame so every chunk stays uniformly
+    // voiced/unvoiced (a VAD patch may flip frames — onset, redemption revert,
+    // or min-speech discard). Only re-transcribe if some voicing actually
+    // changed.
+    let voicingChanged = false
+    for (let abs = absFrom; abs < absTo; abs++) {
+      if (reconcileVoicingAt(analysisMutRef.current, abs)) voicingChanged = true
+    }
+    if (voicingChanged) {
       speechStripRef.current?.refreshTranscriptions()
     }
 
-    waveformRef.current?.patch(absIndex, absIndex + 1)
-    spectrogramRef.current?.patch(absIndex, absIndex + 1)
-    vowelChartRef.current?.patch(absIndex, absIndex + 1)
-    speechStripRef.current?.patch(absIndex, absIndex + 1)
+    waveformRef.current?.patch(absFrom, absTo)
+    spectrogramRef.current?.patch(absFrom, absTo)
+    vowelChartRef.current?.patch(absFrom, absTo)
+    speechStripRef.current?.patch(absFrom, absTo)
   }, [])
 
   const handleTranscribe = useCallback(() => {

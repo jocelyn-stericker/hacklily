@@ -34,7 +34,7 @@ export function useMicCapture({
   enabled: boolean
   onAppend: (frame: AnalysisFrame) => void
   onChunkStart?: (params: AnalysisParams) => void
-  onPatch?: (frameIndex: number) => void
+  onPatch?: (from: number, to: number) => void
   onRecordingComplete: (buffer: AudioBuffer) => void
   onError: (error: string) => void
 }) {
@@ -90,7 +90,7 @@ export function useMicCapture({
     )
     pipeline.addEventListener(
       'patch',
-      (e) => onPatchRef.current?.(e.detail.frameIndex),
+      (e) => onPatchRef.current?.(e.detail.from, e.detail.to),
       { signal: pipeline.destroyed },
     )
     pipeline.addEventListener(
