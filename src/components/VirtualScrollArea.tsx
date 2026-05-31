@@ -200,7 +200,7 @@ export function VirtualScrollArea({
         (pointers[0].currentX + pointers[1].currentX) / 2 / boundingRect.width
 
       if (prevZoomDistance.current != null) {
-        onZoom(p, (distance - prevZoomDistance.current) * 3.5)
+        onZoom(p, distance - prevZoomDistance.current)
       }
       prevZoomDistance.current = distance
 
