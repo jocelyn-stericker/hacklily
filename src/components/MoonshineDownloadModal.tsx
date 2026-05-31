@@ -20,6 +20,7 @@ import { Loader2 } from 'lucide-react'
 import { Button } from '#/components/ui/button'
 import {
   Dialog,
+  DialogBody,
   DialogContent,
   DialogDescription,
   DialogFooter,
@@ -82,25 +83,29 @@ export function MoonshineDownloadModal() {
           <DialogFooter>
             <Button onClick={dismissMoonshineDownloadState}>Dismiss</Button>
           </DialogFooter>
-        ) : percent === null ? (
-          <div className="flex justify-center py-4">
-            <Loader2 className="size-8 animate-spin text-muted-foreground" />
-          </div>
         ) : (
-          <div className="space-y-2 py-2">
-            <div className="h-2 w-full overflow-hidden rounded-full bg-muted">
-              <div
-                className="h-full bg-primary transition-[width] duration-150"
-                style={{ width: `${percent}%` }}
-              />
-            </div>
-            <div className="flex justify-between text-sm text-muted-foreground tabular-nums">
-              <span>
-                {formatMB(loaded)} / {formatMB(total)}
-              </span>
-              <span>{Math.round(percent)}%</span>
-            </div>
-          </div>
+          <DialogBody>
+            {percent === null ? (
+              <div className="flex justify-center py-4">
+                <Loader2 className="size-8 animate-spin text-muted-foreground" />
+              </div>
+            ) : (
+              <div className="space-y-2 py-2">
+                <div className="h-2 w-full overflow-hidden rounded-full bg-muted">
+                  <div
+                    className="h-full bg-primary transition-[width] duration-150"
+                    style={{ width: `${percent}%` }}
+                  />
+                </div>
+                <div className="flex justify-between text-sm text-muted-foreground tabular-nums">
+                  <span>
+                    {formatMB(loaded)} / {formatMB(total)}
+                  </span>
+                  <span>{Math.round(percent)}%</span>
+                </div>
+              </div>
+            )}
+          </DialogBody>
         )}
       </DialogContent>
     </Dialog>

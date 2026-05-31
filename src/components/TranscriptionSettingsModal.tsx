@@ -24,6 +24,7 @@ import { Badge } from '#/components/ui/badge'
 import { Button } from '#/components/ui/button'
 import {
   Dialog,
+  DialogBody,
   DialogClose,
   DialogContent,
   DialogDescription,
@@ -158,77 +159,79 @@ export function TranscriptionSettingsModal({
           </DialogDescription>
         </DialogHeader>
 
-        <div
-          role="radiogroup"
-          aria-label="Transcription method"
-          className="flex flex-col gap-5 py-1"
-        >
-          {/* Turn transcription off entirely. */}
-          <section className="flex flex-col gap-3">
-            <ModeCard
-              selected={draft === 'disabled'}
-              onSelect={() => setDraft('disabled')}
-              title="Don’t transcribe"
-            />
-          </section>
+        <DialogBody>
+          <div
+            role="radiogroup"
+            aria-label="Transcription method"
+            className="flex flex-col gap-5 py-1"
+          >
+            {/* Turn transcription off entirely. */}
+            <section className="flex flex-col gap-3">
+              <ModeCard
+                selected={draft === 'disabled'}
+                onSelect={() => setDraft('disabled')}
+                title="Don’t transcribe"
+              />
+            </section>
 
-          {/* Engines that run locally — audio stays in this browser. */}
-          <section className="flex flex-col gap-3 border-t border-border/60 pt-5">
-            <header className="flex flex-col gap-0.5">
-              <h3 className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">
-                On your device
-              </h3>
-              <p className="text-xs text-muted-foreground">
-                Private — your audio never leaves this browser.
-              </p>
-            </header>
+            {/* Engines that run locally — audio stays in this browser. */}
+            <section className="flex flex-col gap-3 border-t border-border/60 pt-5">
+              <header className="flex flex-col gap-0.5">
+                <h3 className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">
+                  On your device
+                </h3>
+                <p className="text-xs text-muted-foreground">
+                  Private — your audio never leaves this browser.
+                </p>
+              </header>
 
-            <ModeCard
-              selected={draft === 'browser' && browserEngineAvailable}
-              disabled={!browserEngineAvailable}
-              onSelect={() => setDraft('browser')}
-              title="Browser engine"
-              badge={browserEngineBadge(local)}
-              description={
-                'Uses your browser’s own on-device speech recognition' +
-                (local === 'available'
-                  ? '; large download on first use, then offline.'
-                  : '.')
-              }
-            />
-            <ModeCard
-              selected={draft === 'bundled'}
-              onSelect={() => setDraft('bundled')}
-              title="Bundled model"
-              description="Braat’s bundled Moonshine model; may be unstable on mobile devices. 70 MB model download on first use, then offline."
-            />
-          </section>
+              <ModeCard
+                selected={draft === 'browser' && browserEngineAvailable}
+                disabled={!browserEngineAvailable}
+                onSelect={() => setDraft('browser')}
+                title="Browser engine"
+                badge={browserEngineBadge(local)}
+                description={
+                  'Uses your browser’s own on-device speech recognition' +
+                  (local === 'available'
+                    ? '; large download on first use, then offline.'
+                    : '.')
+                }
+              />
+              <ModeCard
+                selected={draft === 'bundled'}
+                onSelect={() => setDraft('bundled')}
+                title="Bundled model"
+                description="Braat’s bundled Moonshine model. 70 MB model download on first use, then offline."
+              />
+            </section>
 
-          {/* Remote (cloud) transcription — opt-in. */}
-          <section className="flex flex-col gap-3 border-t border-border/60 pt-5">
-            <header className="flex flex-col gap-0.5">
-              <h3 className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">
-                Off your device
-              </h3>
-              <p className="text-xs text-muted-foreground">
-                Sent to a remote service — only if you allow it.
-              </p>
-            </header>
+            {/* Remote (cloud) transcription — opt-in. */}
+            <section className="flex flex-col gap-3 border-t border-border/60 pt-5">
+              <header className="flex flex-col gap-0.5">
+                <h3 className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">
+                  Off your device
+                </h3>
+                <p className="text-xs text-muted-foreground">
+                  Sent to a remote service — only if you allow it.
+                </p>
+              </header>
 
-            <ModeCard
-              selected={draft === 'cloud' && cloudAvailable}
-              disabled={!cloudAvailable}
-              onSelect={() => setDraft('cloud')}
-              title="Allow cloud transcription"
-              badge={
-                cloudAvailable ? null : (
-                  <Badge variant="outline">Unavailable</Badge>
-                )
-              }
-              description="May use your browser or operating system’s remote service, subject to that vendor’s privacy policy."
-            />
-          </section>
-        </div>
+              <ModeCard
+                selected={draft === 'cloud' && cloudAvailable}
+                disabled={!cloudAvailable}
+                onSelect={() => setDraft('cloud')}
+                title="Cloud transcription"
+                badge={
+                  cloudAvailable ? null : (
+                    <Badge variant="outline">Unavailable</Badge>
+                  )
+                }
+                description="Uses your browser's speech recognition. May use your browser or operating system's remote service, subject to that vendor's privacy policy."
+              />
+            </section>
+          </div>
+        </DialogBody>
 
         <DialogFooter>
           <DialogClose render={<Button variant="outline" />}>

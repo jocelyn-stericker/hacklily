@@ -20,6 +20,7 @@ import { Loader2 } from 'lucide-react'
 import { Button } from '#/components/ui/button'
 import {
   Dialog,
+  DialogBody,
   DialogContent,
   DialogDescription,
   DialogFooter,
@@ -66,9 +67,11 @@ export function BrowserEngineInstallModal() {
             <Button onClick={dismissBrowserEngineInstallState}>Dismiss</Button>
           </DialogFooter>
         ) : (
-          <div className="flex justify-center py-4">
-            <Loader2 className="size-8 animate-spin text-muted-foreground" />
-          </div>
+          <DialogBody>
+            <div className="flex justify-center py-4">
+              <Loader2 className="size-8 animate-spin text-muted-foreground" />
+            </div>
+          </DialogBody>
         )}
       </DialogContent>
     </Dialog>
