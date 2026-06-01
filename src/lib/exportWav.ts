@@ -16,13 +16,16 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import { resample } from './ResampleProcessor'
+import type { SabRope } from './SabRope'
+
 /**
- * Trigger download of a wav containing the audio buffer.
+ * Trigger download of a wav containing the ropes laid end-to-end.
  *
  * Must be done in response to a click or other event.
  */
-export function exportWav(buf: AudioBuffer) {
-  const wavBuf = audioBufferToWav(buf)
+export function exportWav(ropes: SabRope[]) {
+  const wavBuf = ropesToWav(ropes)
 
   const ts = new Date()
     .toISOString()
@@ -42,26 +45,41 @@ enum WavFormat {
   Float32 = 3,
 }
 
-// see https://github.com/Experience-Monks/audiobuffer-to-wav/blob/master/index.js
-export function audioBufferToWav(
-  buffer: AudioBuffer,
-  opt: { float32?: boolean } = {},
-): ArrayBuffer {
-  const numChannels = buffer.numberOfChannels
-  const sampleRate = buffer.sampleRate
-  const format = opt.float32 ? WavFormat.Float32 : WavFormat.RawPcm
-  const bitDepth = format === WavFormat.Float32 ? 32 : 16
+/**
+ * Encode mono PCM from one or more {@link SabRope}s laid end-to-end as a 16-bit
+ * WAV. Ropes may carry different sample rates (e.g. recordings appended under
+ * changed device settings); each is resampled to the highest rate present and
+ * concatenated, matching how the playback worklet treats the same ropes.
+ */
+export function ropesToWav(ropes: SabRope[]): ArrayBuffer {
+  const sampleRate =
+    ropes.reduce((max, rope) => Math.max(max, rope.sampleRate), 0) || 44100
 
-  let result
-  if (numChannels === 2) {
-    result = interleave(buffer.getChannelData(0), buffer.getChannelData(1))
-  } else {
-    result = buffer.getChannelData(0)
+  const parts: Float32Array[] = []
+  let total = 0
+  for (const rope of ropes) {
+    const pcm = new Float32Array(rope.length)
+    rope.read(pcm, 0, 0, rope.length)
+    const part =
+      rope.sampleRate === sampleRate
+        ? pcm
+        : resample(pcm, rope.sampleRate, sampleRate)
+    parts.push(part)
+    total += part.length
   }
 
-  return encodeWAV(result, format, sampleRate, numChannels, bitDepth)
+  const merged = new Float32Array(total)
+  let offset = 0
+  for (const part of parts) {
+    merged.set(part, offset)
+    offset += part.length
+  }
+
+  return encodeWAV(merged, WavFormat.RawPcm, sampleRate, 1, 16)
 }
 
+// WAV encoder adapted from
+// https://github.com/Experience-Monks/audiobuffer-to-wav/blob/master/index.js
 function encodeWAV(
   samples: Float32Array,
   format: WavFormat,
@@ -109,20 +127,6 @@ function encodeWAV(
   }
 
   return buffer
-}
-
-function interleave(inputL: Float32Array, inputR: Float32Array) {
-  const result = new Float32Array(inputL.length + inputR.length)
-
-  let index = 0
-  let inputIndex = 0
-
-  while (inputIndex < inputL.length) {
-    result[index++] = inputL[inputIndex]!
-    result[index++] = inputR[inputIndex]!
-    inputIndex++
-  }
-  return result
 }
 
 function writeFloat32(output: DataView, offset: number, input: Float32Array) {

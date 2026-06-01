@@ -16,6 +16,7 @@
  */
 
 import type { AnalysisFrame, AnalysisParams } from './AnalysisFrame'
+import type { SabRopeShare } from './SabRope'
 import type { SpeechDecision } from './VadProcessor'
 
 export interface SpectrogramInitMessage {
@@ -36,7 +37,10 @@ export type VadInitMessage = SpectrogramInitMessage & {
 }
 
 // Emitted once per session (or whenever params change) before the first frame.
-export type ParamsMessage = { type: 'params' } & AnalysisParams
+export type ParamsMessage = {
+  type: 'params'
+  rope: SabRopeShare
+} & AnalysisParams
 
 type AnalysisCore = Pick<AnalysisFrame, 'spectrum' | 'rms'>
 
@@ -79,9 +83,4 @@ export type PatchFramesMessage = {
 
 export interface WorkerEndedMessage {
   type: 'ended'
-}
-
-export interface AudioReadyMessage {
-  type: 'audioReady'
-  pcm: Float32Array<ArrayBuffer>
 }

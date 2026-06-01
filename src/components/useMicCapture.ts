@@ -21,6 +21,7 @@ import {
   MicCapturePipeline,
   preInitPersistentStream,
 } from '#/lib/MicCapturePipeline'
+import type { SabRopeGrow, SabRopeShare } from '#/lib/SabRope'
 import { useSettings } from '#/lib/settings'
 
 export function useMicCapture({
@@ -30,13 +31,17 @@ export function useMicCapture({
   onPatch,
   onRecordingComplete,
   onError,
+  onSabRopeGrow,
+  onSabRopeShare,
 }: {
   enabled: boolean
   onAppend: (frame: AnalysisFrame) => void
   onChunkStart?: (params: AnalysisParams) => void
   onPatch?: (from: number, to: number) => void
-  onRecordingComplete: (buffer: AudioBuffer) => void
+  onRecordingComplete: () => void
   onError: (error: string) => void
+  onSabRopeGrow: (grow: SabRopeGrow) => void
+  onSabRopeShare: (sabRope: SabRopeShare) => void
 }) {
   const audioSettings = useSettings()
 
@@ -57,6 +62,8 @@ export function useMicCapture({
   const onPatchRef = useRef(onPatch)
   const onRecordingCompleteRef = useRef(onRecordingComplete)
   const onErrorRef = useRef(onError)
+  const onSabRopeGrowRef = useRef(onSabRopeGrow)
+  const onSabRopeShareRef = useRef(onSabRopeShare)
 
   useLayoutEffect(() => {
     onAppendRef.current = onAppend
@@ -64,6 +71,8 @@ export function useMicCapture({
     onPatchRef.current = onPatch
     onRecordingCompleteRef.current = onRecordingComplete
     onErrorRef.current = onError
+    onSabRopeGrowRef.current = onSabRopeGrow
+    onSabRopeShareRef.current = onSabRopeShare
   })
 
   useEffect(() => {
@@ -95,14 +104,24 @@ export function useMicCapture({
     )
     pipeline.addEventListener(
       'recordingComplete',
-      (e) => {
-        onRecordingCompleteRef.current(e.detail.buffer)
+      () => {
+        onRecordingCompleteRef.current()
       },
       { signal: pipeline.destroyed },
     )
     pipeline.addEventListener(
       'error',
       (e) => onErrorRef.current(e.detail.error),
+      { signal: pipeline.destroyed },
+    )
+    pipeline.addEventListener(
+      'sabRopeShare',
+      (e) => onSabRopeShareRef.current(e.detail),
+      { signal: pipeline.destroyed },
+    )
+    pipeline.addEventListener(
+      'sabRopeGrow',
+      (e) => onSabRopeGrowRef.current(e.detail),
       { signal: pipeline.destroyed },
     )
     return () => ctrl.abort()

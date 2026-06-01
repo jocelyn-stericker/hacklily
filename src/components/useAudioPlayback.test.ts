@@ -86,20 +86,14 @@ vi.mock('#/lib/AudioPlaybackPipeline', () => {
 })
 
 describe('useAudioPlayback', () => {
-  let mockAudioBuffer: any
+  let mockRopes: any[]
 
   beforeEach(() => {
     mockPipelineInstances = []
 
-    // Create a mock AudioBuffer
-    const MockAudioBuffer = class {
-      duration = 5
-      sampleRate = 44100
-      length = 220500
-      numberOfChannels = 1
-    }
-    global.AudioBuffer = MockAudioBuffer as any
-    mockAudioBuffer = new MockAudioBuffer()
+    // A SabRope stand-in — the mocked pipeline ignores the data, so we only
+    // need enough shape for `ropes.length` checks in the hook.
+    mockRopes = [{ length: 220500, sampleRate: 44100, shareRope: vi.fn() }]
 
     // Mock navigator.audioSession if needed
     if (!('audioSession' in navigator)) {
@@ -121,7 +115,7 @@ describe('useAudioPlayback', () => {
     renderHook(() =>
       useAudioPlayback({
         enabled: false,
-        audioBuffer: null,
+        ropes: [],
         cursorSec: 0,
         onStop,
         onPlaybackPositionChanged,
@@ -132,14 +126,14 @@ describe('useAudioPlayback', () => {
     expect(true).toBe(true)
   })
 
-  it('creates pipeline when enabled with audioBuffer', () => {
+  it('creates pipeline when enabled with ropes', () => {
     const onStop = vi.fn()
     const onPlaybackPositionChanged = vi.fn()
 
     renderHook(() =>
       useAudioPlayback({
         enabled: true,
-        audioBuffer: mockAudioBuffer,
+        ropes: mockRopes,
         cursorSec: 0,
         onStop,
         onPlaybackPositionChanged,
@@ -156,7 +150,7 @@ describe('useAudioPlayback', () => {
     renderHook(() =>
       useAudioPlayback({
         enabled: true,
-        audioBuffer: mockAudioBuffer,
+        ropes: mockRopes,
         cursorSec: 2.5,
         onStop,
         onPlaybackPositionChanged,
@@ -174,7 +168,7 @@ describe('useAudioPlayback', () => {
     renderHook(() =>
       useAudioPlayback({
         enabled: false,
-        audioBuffer: mockAudioBuffer,
+        ropes: mockRopes,
         cursorSec: 0,
         onStop,
         onPlaybackPositionChanged,
@@ -184,14 +178,14 @@ describe('useAudioPlayback', () => {
     expect(mockPipelineInstances.length).toBe(0)
   })
 
-  it('does not create pipeline without audioBuffer', () => {
+  it('does not create pipeline without ropes', () => {
     const onStop = vi.fn()
     const onPlaybackPositionChanged = vi.fn()
 
     renderHook(() =>
       useAudioPlayback({
         enabled: true,
-        audioBuffer: null,
+        ropes: [],
         cursorSec: 0,
         onStop,
         onPlaybackPositionChanged,
@@ -208,7 +202,7 @@ describe('useAudioPlayback', () => {
     renderHook(() =>
       useAudioPlayback({
         enabled: true,
-        audioBuffer: mockAudioBuffer,
+        ropes: mockRopes,
         cursorSec: 0,
         onStop,
         onPlaybackPositionChanged,
@@ -228,7 +222,7 @@ describe('useAudioPlayback', () => {
     renderHook(() =>
       useAudioPlayback({
         enabled: true,
-        audioBuffer: mockAudioBuffer,
+        ropes: mockRopes,
         cursorSec: 0,
         onStop,
         onPlaybackPositionChanged,
@@ -249,7 +243,7 @@ describe('useAudioPlayback', () => {
       ({ enabled }) =>
         useAudioPlayback({
           enabled,
-          audioBuffer: mockAudioBuffer,
+          ropes: mockRopes,
           cursorSec: 0,
           onStop,
           onPlaybackPositionChanged,
@@ -272,7 +266,7 @@ describe('useAudioPlayback', () => {
       ({ cursorSec }) =>
         useAudioPlayback({
           enabled: true,
-          audioBuffer: mockAudioBuffer,
+          ropes: mockRopes,
           cursorSec,
           onStop,
           onPlaybackPositionChanged,
@@ -290,6 +284,125 @@ describe('useAudioPlayback', () => {
     expect(mockPipelineInstances.length).toBe(1)
   })
 
+  it('does not recreate the pipeline when position reports outrun the cursor re-render', () => {
+    const onStop = vi.fn()
+    const onPlaybackPositionChanged = vi.fn()
+
+    const { rerender } = renderHook(
+      ({ cursorSec }) =>
+        useAudioPlayback({
+          enabled: true,
+          ropes: mockRopes,
+          cursorSec,
+          onStop,
+          onPlaybackPositionChanged,
+        }),
+      { initialProps: { cursorSec: 0 } },
+    )
+
+    const pipeline = mockPipelineInstances[0]
+
+    // The worklet reports a new position every animation frame. The parent
+    // turns those into cursor updates, but its re-render always trails the live
+    // playhead — so by the time the cursor catches up to one reported value, the
+    // pipeline has already emitted the next one(s).
+    pipeline.dispatchEvent('positionChanged', { timeSec: 1.0 })
+    pipeline.dispatchEvent('positionChanged', { timeSec: 1.0166 })
+
+    // Parent commits the first reported position; the pipeline meanwhile sits at
+    // 1.0166. The playhead only moved forward and nothing else changed, so the
+    // graph must keep playing — not be torn down and recreated (an audible gap).
+    rerender({ cursorSec: 1.0 })
+
+    expect(mockPipelineInstances.length).toBe(1)
+  })
+
+  it('recreates the pipeline on a backward seek during playback', () => {
+    const onStop = vi.fn()
+    const onPlaybackPositionChanged = vi.fn()
+
+    const { rerender } = renderHook(
+      ({ cursorSec }) =>
+        useAudioPlayback({
+          enabled: true,
+          ropes: mockRopes,
+          cursorSec,
+          onStop,
+          onPlaybackPositionChanged,
+        }),
+      { initialProps: { cursorSec: 0 } },
+    )
+
+    // Play forward to ~2s, cursor catches up.
+    mockPipelineInstances[0].dispatchEvent('positionChanged', { timeSec: 2.0 })
+    rerender({ cursorSec: 2.0 })
+    expect(mockPipelineInstances.length).toBe(1)
+
+    // User scrubs back to 0.5 — behind the playhead, a real seek.
+    rerender({ cursorSec: 0.5 })
+    expect(mockPipelineInstances.length).toBe(2)
+  })
+
+  it('recreates the pipeline on a forward seek past the playhead', () => {
+    const onStop = vi.fn()
+    const onPlaybackPositionChanged = vi.fn()
+
+    const { rerender } = renderHook(
+      ({ cursorSec }) =>
+        useAudioPlayback({
+          enabled: true,
+          ropes: mockRopes,
+          cursorSec,
+          onStop,
+          onPlaybackPositionChanged,
+        }),
+      { initialProps: { cursorSec: 0 } },
+    )
+
+    mockPipelineInstances[0].dispatchEvent('positionChanged', { timeSec: 1.0 })
+    rerender({ cursorSec: 1.0 })
+    expect(mockPipelineInstances.length).toBe(1)
+
+    // User scrubs forward to 5s — ahead of anything played, a real seek.
+    rerender({ cursorSec: 5.0 })
+    expect(mockPipelineInstances.length).toBe(2)
+  })
+
+  it('does not recreate the pipeline across a steady run of trailing cursor updates', () => {
+    const onStop = vi.fn()
+    const onPlaybackPositionChanged = vi.fn()
+
+    const { rerender } = renderHook(
+      ({ cursorSec }) =>
+        useAudioPlayback({
+          enabled: true,
+          ropes: mockRopes,
+          cursorSec,
+          onStop,
+          onPlaybackPositionChanged,
+        }),
+      { initialProps: { cursorSec: 0 } },
+    )
+
+    const pipeline = mockPipelineInstances[0]
+
+    // Simulate ~60fps playback where each commit lands one frame behind the
+    // pipeline: the pipeline has already reported frame N+1 by the time the
+    // parent re-renders with frame N's time. This is the steady state of
+    // playback, so the single pipeline must survive the whole run.
+    let reported = 0
+    for (let frame = 1; frame <= 10; frame++) {
+      const prev = reported
+      reported = frame * (1 / 60)
+      // Pipeline advances a frame ahead of the cursor that's about to commit.
+      pipeline.dispatchEvent('positionChanged', { timeSec: reported })
+      // Parent commits the previously-reported (trailing) position.
+      rerender({ cursorSec: prev })
+    }
+
+    expect(mockPipelineInstances.length).toBe(1)
+  })
+
   it('creates new pipeline when cursor changes significantly', () => {
     const onStop = vi.fn()
     const onPlaybackPositionChanged = vi.fn()
@@ -298,7 +411,7 @@ describe('useAudioPlayback', () => {
       ({ cursorSec }) =>
         useAudioPlayback({
           enabled: true,
-          audioBuffer: mockAudioBuffer,
+          ropes: mockRopes,
           cursorSec,
           onStop,
           onPlaybackPositionChanged,
@@ -321,7 +434,7 @@ describe('useAudioPlayback', () => {
     const { unmount } = renderHook(() =>
       useAudioPlayback({
         enabled: true,
-        audioBuffer: mockAudioBuffer,
+        ropes: mockRopes,
         cursorSec: 0,
         onStop,
         onPlaybackPositionChanged,
@@ -341,7 +454,7 @@ describe('useAudioPlayback', () => {
       ({ onStop, onPlaybackPositionChanged }) =>
         useAudioPlayback({
           enabled: true,
-          audioBuffer: mockAudioBuffer,
+          ropes: mockRopes,
           cursorSec: 0,
           onStop,
           onPlaybackPositionChanged,
@@ -373,28 +486,28 @@ describe('useAudioPlayback', () => {
     expect(onPlaybackPositionChanged2).toHaveBeenCalledWith(1.0)
   })
 
-  it('handles audioBuffer change', () => {
+  it('handles ropes change', () => {
     const onStop = vi.fn()
     const onPlaybackPositionChanged = vi.fn()
 
-    const buffer2 = { ...mockAudioBuffer, duration: 10 }
+    const ropes2 = [{ length: 441000, sampleRate: 44100, shareRope: vi.fn() }]
 
     const { rerender } = renderHook(
-      ({ audioBuffer }) =>
+      ({ ropes }) =>
         useAudioPlayback({
           enabled: true,
-          audioBuffer,
+          ropes,
           cursorSec: 0,
           onStop,
           onPlaybackPositionChanged,
         }),
-      { initialProps: { audioBuffer: mockAudioBuffer } },
+      { initialProps: { ropes: mockRopes } },
     )
 
     const pipeline1 = mockPipelineInstances[0]
     expect(pipeline1).toBeDefined()
 
-    rerender({ audioBuffer: buffer2 })
+    rerender({ ropes: ropes2 })
 
     const pipeline2 = mockPipelineInstances[mockPipelineInstances.length - 1]
     expect(pipeline2).toBeDefined()
@@ -408,7 +521,7 @@ describe('useAudioPlayback', () => {
       ({ cursorSec }) =>
         useAudioPlayback({
           enabled: true,
-          audioBuffer: mockAudioBuffer,
+          ropes: mockRopes,
           cursorSec,
           onStop,
           onPlaybackPositionChanged,

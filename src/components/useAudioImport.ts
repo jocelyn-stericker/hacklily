@@ -20,10 +20,11 @@ import { useCallback, useEffect, useRef } from 'react'
 import type { AnalysisChunk } from '#/lib/AnalysisFrame'
 import { totalFrames } from '#/lib/AnalysisFrame'
 import ImportWorker from '#/lib/ImportWorker?worker'
+import { SabRope } from '#/lib/SabRope'
 
 async function importAudioFile(file: File): Promise<{
   analysis: AnalysisChunk[]
-  buffer: AudioBuffer
+  ropes: SabRope[]
 }> {
   const audioImporter = new ImportWorker()
   console.time('import: decode')
@@ -57,18 +58,13 @@ async function importAudioFile(file: File): Promise<{
         const timeStepSamples = chunks[0]?.timeStepSamples ?? 0
         const analysisSamples = timeStepSamples * totalFrames(chunks)
 
-        // Fit it to the analysis samples, keep it mono
-        const shortenedMono = new AudioBuffer({
-          length: analysisSamples,
-          numberOfChannels: 1,
-          sampleRate: 44100,
-        })
-        shortenedMono.copyToChannel(mono, 0)
+        // Mirror the mono PCM, trimmed to the analysed length, into a SabRope —
+        // the single audio representation for playback, export, and
+        // transcription. One rope covers the whole clip.
+        const rope = new SabRope(fileSampleRate)
+        rope.append(mono.subarray(0, analysisSamples))
 
-        resolve({
-          analysis: chunks,
-          buffer: shortenedMono,
-        })
+        resolve({ analysis: chunks, ropes: [rope] })
       } else {
         reject(data.error)
       }
@@ -78,7 +74,7 @@ async function importAudioFile(file: File): Promise<{
 
 interface FileImportResult {
   analysis: AnalysisChunk[]
-  audioBuffer: AudioBuffer
+  ropes: SabRope[]
 }
 
 interface UseAudioImportOptions {
@@ -108,9 +104,13 @@ export function useAudioImport({
       if (!file) return
       onStartRef.current?.()
       handleAnalyze(async () => {
-        const { analysis, buffer: audioBuffer } = await importAudioFile(file)
-        onImportedRef.current({ analysis, audioBuffer })
-        return { trackDurationSec: audioBuffer.duration }
+        const { analysis, ropes } = await importAudioFile(file)
+        onImportedRef.current({ analysis, ropes })
+        const trackDurationSec = ropes.reduce(
+          (sum, rope) => sum + rope.length / rope.sampleRate,
+          0,
+        )
+        return { trackDurationSec }
       })
     }
     input.click()

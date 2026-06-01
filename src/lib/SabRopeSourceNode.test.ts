@@ -359,7 +359,7 @@ describe('AudioRopeSourceNode', () => {
       expect(before[6]).toBe(0) // stalls at the boundary
 
       // Producer ships the new segment buffers; consumer holds 1 buffer.
-      send(node, { type: 'growLastRope', grow: producer.shareGrowth(1) })
+      send(node, { type: 'growLastRope', grow: producer.shareGrowth(1)! })
 
       const after = quantum(node)[0]!
       expect(after[0]).toBe(SEG) // boundary sample now visible

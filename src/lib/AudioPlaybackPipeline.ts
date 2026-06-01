@@ -15,6 +15,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import audioWorkletUrl from '#/lib/SabRopeSourceNode?worker&url'
+
+import type { SabRope } from './SabRope'
+import type { AudioRopeSourceNodeNode } from './SabRopeSourceNode'
 import { TypedEventTarget } from './TypedEventTarget'
 
 type AudioPlaybackOutEvents = {
@@ -22,11 +26,21 @@ type AudioPlaybackOutEvents = {
   positionChanged: CustomEvent<{ timeSec: number }>
 }
 
+/**
+ * Plays one or more {@link SabRope}s laid end-to-end through the
+ * {@link AudioRopeSourceNode} worklet. The worklet handles the seek and any
+ * per-rope resampling; this wrapper owns the {@link AudioContext}, tracks the
+ * playback position off `context.currentTime`, and emits `stop` once the
+ * concatenated timeline runs out (the worklet itself never signals an end).
+ */
 export class AudioPlaybackPipeline extends TypedEventTarget<AudioPlaybackOutEvents> {
   #context: AudioContext | null = null
-  #source: AudioBufferSourceNode | null = null
+  #node: AudioRopeSourceNodeNode | null = null
   #animFrameId: number | null = null
   #startTimeSec = 0
+  // `context.currentTime` when playback began; `addModule` adds a variable
+  // delay, so we measure elapsed time from here rather than from context start.
+  #baseTimeSec = 0
   #duration = 0
   #stopCtrl = new AbortController()
 
@@ -35,58 +49,74 @@ export class AudioPlaybackPipeline extends TypedEventTarget<AudioPlaybackOutEven
   }
 
   constructor({
-    audioBuffer,
+    ropes,
     startAtSec,
     signal,
     sampleRate,
   }: {
-    audioBuffer: AudioBuffer
+    ropes: Array<SabRope>
     startAtSec: number
     signal: AbortSignal
     sampleRate?: number
   }) {
     super()
     signal.addEventListener('abort', this.#stop)
-    this.#play(audioBuffer, startAtSec, sampleRate)
+    void this.#play(ropes, startAtSec, sampleRate)
   }
 
-  #play(
-    audioBuffer: AudioBuffer,
+  async #play(
+    ropes: Array<SabRope>,
     requestedStartAtSec: number,
     sampleRate?: number,
   ) {
-    this.#duration = audioBuffer.duration
+    this.#duration = ropes.reduce(
+      (sum, rope) => sum + rope.length / rope.sampleRate,
+      0,
+    )
     const startAtSec =
-      requestedStartAtSec <= audioBuffer.duration - 0.05
-        ? requestedStartAtSec
-        : 0
+      requestedStartAtSec <= this.#duration - 0.05 ? requestedStartAtSec : 0
     this.#startTimeSec = startAtSec
 
-    this.#context = new AudioContext({ sampleRate, latencyHint: 'interactive' })
-    const thisSource = this.#context.createBufferSource()
-    thisSource.buffer = audioBuffer
-    thisSource.connect(this.#context.destination)
-    this.#source = thisSource
+    const context = new AudioContext({ sampleRate, latencyHint: 'playback' })
+    this.#context = context
 
-    thisSource.onended = () => {
-      if (this.#source === thisSource) {
-        this.#animate()
-        this.emit('stop')
-        this.#stop()
-      }
+    await context.audioWorklet.addModule(audioWorkletUrl)
+    // Aborted while the module was loading — release the context and bail.
+    if (this.#stopCtrl.signal.aborted) {
+      void context.close().catch(() => {})
+      this.#context = null
+      return
     }
 
-    thisSource.start(0, startAtSec)
+    const node: AudioRopeSourceNodeNode = new AudioWorkletNode(
+      context,
+      'sab-rope-source-node',
+    )
+    this.#node = node
+    node.connect(context.destination)
+    node.port.postMessage({
+      type: 'setBuffer',
+      ropes: ropes.map((rope) => rope.shareRope()),
+    })
+    node.port.postMessage({ type: 'start', timeSec: startAtSec })
+
+    this.#baseTimeSec = context.currentTime
     this.#animFrameId = requestAnimationFrame(this.#animate)
   }
 
   #animate = () => {
-    if (this.#context === null) return
+    const context = this.#context
+    if (context === null) return
     const timeSec = Math.min(
-      this.#context.currentTime + this.#startTimeSec,
+      this.#startTimeSec + (context.currentTime - this.#baseTimeSec),
       this.#duration,
     )
     this.emit('positionChanged', { timeSec })
+    if (timeSec >= this.#duration) {
+      this.emit('stop')
+      this.#stop()
+      return
+    }
     this.#animFrameId = requestAnimationFrame(this.#animate)
   }
 
@@ -95,14 +125,16 @@ export class AudioPlaybackPipeline extends TypedEventTarget<AudioPlaybackOutEven
       cancelAnimationFrame(this.#animFrameId)
       this.#animFrameId = null
     }
-    if (this.#source && this.#context) {
+    if (this.#node && this.#context) {
       try {
-        this.#source.stop()
-        void this.#context.close()
+        this.#node.port.postMessage(null)
+        this.#node.disconnect()
       } catch {
         // already stopped
       }
-      this.#source = null
+      // close() is async; swallow its rejection rather than floating it.
+      void this.#context.close().catch(() => {})
+      this.#node = null
       this.#context = null
     }
     this.#stopCtrl.abort()

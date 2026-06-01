@@ -18,17 +18,18 @@
 import { useEffect, useLayoutEffect, useRef } from 'react'
 
 import { AudioPlaybackPipeline } from '#/lib/AudioPlaybackPipeline'
+import type { SabRope } from '#/lib/SabRope'
 import { useSettings, preferredSampleRate } from '#/lib/settings'
 
 export function useAudioPlayback({
   enabled,
-  audioBuffer,
+  ropes,
   cursorSec,
   onStop,
   onPlaybackPositionChanged,
 }: {
   enabled: boolean
-  audioBuffer: AudioBuffer | null
+  ropes: Array<SabRope>
   cursorSec: number
   onStop: () => void
   onPlaybackPositionChanged: (timeSec: number) => void
@@ -54,28 +55,58 @@ export function useAudioPlayback({
 
   const playbackRef = useRef<{
     ctrl: AbortController
-    mostRecentTimeSec: number
+    // Furthest-forward cursor we've accepted as the display catching up to the
+    // playhead. Echoes are monotonic, so a cursor behind this is a backward seek.
+    lastEchoed: number
+    // Highest position the pipeline has reported — its authoritative playhead.
+    // Updated synchronously each frame, so it's always at or ahead of the
+    // cursor value a (necessarily lagging) re-render is committing.
+    reportedHighWater: number
   } | null>(null)
 
   useEffect(() => {
-    if (!enabled || !audioBuffer) {
+    if (!enabled || ropes.length === 0) {
       playbackRef.current?.ctrl.abort()
       playbackRef.current = null
       return
     }
 
-    // Skip if cursorSec matches our last-reported position (feedback loop prevention)
-    if (cursorSec === playbackRef.current?.mostRecentTimeSec) {
+    // Distinguish a real seek from the cursor display merely catching up to the
+    // live playhead. The pipeline owns position while playing: it only moves
+    // forward, from startAtSec up to reportedHighWater. So a cursor that lands
+    // forward of our last echo and at-or-behind the high-water mark is the
+    // display falling behind — not a seek — and must not tear down the graph.
+    // A cursor behind lastEchoed (scrub back) or ahead of the high-water mark
+    // (scrub forward past what's played) is a genuine seek and rebuilds.
+    //
+    // TODO: this infers seek-vs-echo because cursorSec has two writers (the
+    // playhead and the user) with no source tag — same root issue as the scroll
+    // area. The proper fix is to make the playhead display-only and route user
+    // seeks through their own signal in useTimelineState, so the effect restarts
+    // only on a real seek and nothing has to be inferred. Until then this
+    // envelope check has a ~1-frame blind spot (a seek landing between lastEchoed
+    // and the live playhead reads as an echo).
+    const playback = playbackRef.current
+    if (
+      playback &&
+      cursorSec >= playback.lastEchoed &&
+      cursorSec <= playback.reportedHighWater
+    ) {
+      playback.lastEchoed = cursorSec
       return
     }
 
     playbackRef.current?.ctrl.abort()
 
     const ctrl = new AbortController()
-    playbackRef.current = { ctrl, mostRecentTimeSec: cursorSec }
+    playbackRef.current = {
+      ctrl,
+      lastEchoed: cursorSec,
+      reportedHighWater: cursorSec,
+    }
 
     const pipeline = new AudioPlaybackPipeline({
-      audioBuffer,
+      ropes,
       startAtSec: cursorSec,
       signal: ctrl.signal,
       sampleRate: preferredRate,
@@ -87,7 +118,10 @@ export function useAudioPlayback({
       'positionChanged',
       (e) => {
         if (playbackRef.current?.ctrl === ctrl) {
-          playbackRef.current.mostRecentTimeSec = e.detail.timeSec
+          playbackRef.current.reportedHighWater = Math.max(
+            playbackRef.current.reportedHighWater,
+            e.detail.timeSec,
+          )
         }
         onPlaybackPositionChangedRef.current(e.detail.timeSec)
       },
@@ -104,7 +138,7 @@ export function useAudioPlayback({
       },
       listenerOpts,
     )
-  }, [enabled, audioBuffer, preferredRate, cursorSec])
+  }, [enabled, ropes, preferredRate, cursorSec])
 
   // Unmount cleanup — the main effect intentionally has no cleanup return
   // so the pipeline survives across cursorSec feedback-loop re-runs.

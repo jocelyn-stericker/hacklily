@@ -43,10 +43,11 @@ import type {
   AnalysisParams,
 } from '#/lib/AnalysisFrame'
 import { reconcileVoicingAt, totalFrames } from '#/lib/AnalysisFrame'
-import { concatAudioBuffers } from '#/lib/concatAudioBuffers'
 import { exportWav } from '#/lib/exportWav'
+import { SabRope } from '#/lib/SabRope'
+import type { SabRopeGrow, SabRopeShare } from '#/lib/SabRope'
 import { updateSettings, useSettings } from '#/lib/settings'
-import { chunkPcmFromBuffer, transcribeChunks } from '#/lib/transcription'
+import { chunkPcmFromRopes, transcribeChunks } from '#/lib/transcription'
 import { consumeBundledCrashFlag } from '#/lib/transcription-bundled'
 import { cn } from '#/lib/utils'
 
@@ -66,7 +67,7 @@ function App() {
 
   const settings = useSettings()
 
-  const [audioBuffer, setAudioBuffer] = useState<AudioBuffer | null>(null)
+  const [ropes, setRopes] = useState<Array<SabRope>>([])
   const {
     status,
     timelineState,
@@ -95,8 +96,8 @@ function App() {
     onStart: () => {
       replaceAnalysis([])
     },
-    onImported: ({ analysis: newAnalysis, audioBuffer: newAudioBuffer }) => {
-      setAudioBuffer(newAudioBuffer)
+    onImported: ({ analysis: newAnalysis, ropes: newRopes }) => {
+      setRopes(newRopes)
       replaceAnalysis(newAnalysis)
     },
   })
@@ -111,13 +112,13 @@ function App() {
   const doNew = useCallback(() => {
     resetTimeline()
     replaceAnalysis([])
-    setAudioBuffer(null)
+    setRopes([])
     recordingStartIndexRef.current = 0
     recordingDurationSecRef.current = 0
   }, [resetTimeline])
 
   const hasData =
-    (audioBuffer?.length ?? 0) > 0 ||
+    ropes.some((rope) => rope.length > 0) ||
     analysisMut.length > 0 ||
     status.value === 'recording'
 
@@ -183,20 +184,20 @@ function App() {
     startRecording()
   }, [startRecording])
 
-  const audioBufferRef = useRef<AudioBuffer | null>(null)
+  const ropesRef = useRef<SabRope[]>(ropes)
   useEffect(() => {
-    audioBufferRef.current = audioBuffer
-  }, [audioBuffer])
+    ropesRef.current = ropes
+  }, [ropes])
 
   const [isExporting, setIsExporting] = useState(false)
 
   const handleExportAudio = useCallback(() => {
     // TODO: support compressed formats
-    const buf = audioBufferRef.current
-    if (!buf || buf.length === 0) return
+    const currentRopes = ropesRef.current
+    if (!currentRopes.some((rope) => rope.length > 0)) return
     setIsExporting(true)
     try {
-      exportWav(buf)
+      exportWav(currentRopes)
     } catch (err) {
       handleError(err)
     } finally {
@@ -204,19 +205,13 @@ function App() {
     }
   }, [handleError])
 
-  const handleRecordingComplete = useCallback(
-    (newBuffer: AudioBuffer) => {
-      const prev = audioBufferRef.current
-      const combined =
-        prev && prev.length > 0
-          ? concatAudioBuffers(prev, newBuffer)
-          : newBuffer
-      audioBufferRef.current = combined
-      setAudioBuffer(combined)
-      handleAudioBufferAppended({ trackDurationSec: combined.duration })
-    },
-    [handleAudioBufferAppended],
-  )
+  const handleRecordingComplete = useCallback(() => {
+    // The PCM is already in the ropes; just settle the timeline to the duration
+    // accumulated from the analysed frames.
+    handleAudioBufferAppended({
+      trackDurationSec: recordingDurationSecRef.current,
+    })
+  }, [handleAudioBufferAppended])
 
   const handleChunkStart = useCallback((params: AnalysisParams) => {
     const startTimeSec = analysisMutRef.current.reduce(
@@ -251,6 +246,18 @@ function App() {
       schedulePlaybackPositionChanged(recordingDurationSecRef.current)
     },
     [schedulePlaybackPositionChanged],
+  )
+  const handleSabRopeGrow = useCallback(
+    (ev: SabRopeGrow) => {
+      ropes[ropes.length - 1]!.grow(ev)
+    },
+    [ropes],
+  )
+  const handleSabRopeShare = useCallback(
+    (ev: SabRopeShare) => {
+      ropes.push(new SabRope(ev))
+    },
+    [ropes],
   )
 
   const handlePatch = useCallback((from: number, to: number) => {
@@ -288,19 +295,20 @@ function App() {
     onPatch: handlePatch,
     onRecordingComplete: handleRecordingComplete,
     onError: handleError,
+    onSabRopeGrow: handleSabRopeGrow,
+    onSabRopeShare: handleSabRopeShare,
   })
 
   useAudioPlayback({
     enabled: status.value === 'playing',
-    audioBuffer,
+    ropes,
     cursorSec: timelineState.cursorSec,
     onStop: handlePause,
     onPlaybackPositionChanged: handlePlaybackPositionChanged,
   })
 
-  const playDisabled = !audioBuffer || audioBuffer.length === 0
-  const exportAudioDisabled =
-    !audioBuffer || audioBuffer.length === 0 || isExporting
+  const playDisabled = !ropes.some((rope) => rope.length > 0)
+  const exportAudioDisabled = playDisabled || isExporting
 
   useEffect(() => {
     if (!hasData) {
@@ -404,14 +412,14 @@ function App() {
   // Transcribe. Results mutate chunks in place, so we tell the SpeechStrip
   // imperatively to re-render its overlay as they arrive.
   useEffect(() => {
-    if (isRecording || !audioBuffer) return
+    if (isRecording || ropes.length === 0) return
     transcribeChunks(
       analysisMut,
       settings,
-      (chunk) => chunkPcmFromBuffer(chunk, audioBuffer),
+      (chunk) => chunkPcmFromRopes(chunk, analysisMut, ropes),
       () => speechStripRef.current?.refreshTranscriptions(),
     )
-  }, [analysisMut, settings, isRecording, audioBuffer])
+  }, [analysisMut, settings, isRecording, ropes])
 
   return (
     <>

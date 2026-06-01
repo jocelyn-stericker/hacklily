@@ -17,13 +17,14 @@
 /// <reference lib="webworker" />
 
 import { AudioRingReader } from './AudioRingReader'
+import { SabRope } from './SabRope'
+import type { SabRopeGrow } from './SabRope'
 import { SpectrogramStreamProcessor } from './SpectrogramProcessor'
 import type {
   AppendFrameMessage,
   ParamsMessage,
   PatchFrameMessage,
   WorkerEndedMessage,
-  AudioReadyMessage,
   SpectrogramInitMessage,
 } from './workerMessages'
 
@@ -43,7 +44,7 @@ export type SpectrogramWorkerOutMessage =
   | AppendFrameMessage
   | PatchFrameMessage
   | WorkerEndedMessage
-  | AudioReadyMessage
+  | SabRopeGrow
 
 export type SpectrogramWorker = Omit<Worker, 'postMessage' | 'onmessage'> & {
   postMessage: (msg: SpectrogramWorkerInMessage) => null
@@ -81,6 +82,10 @@ export async function runAnalysis(reader: AudioRingReader, sampleRate: number) {
     },
     sampleRate,
   )
+
+  const rope = new SabRope(sampleRate)
+  const share = rope.shareRope()
+
   const sp = spec.params
   postMessage({
     type: 'params',
@@ -88,6 +93,7 @@ export async function runAnalysis(reader: AudioRingReader, sampleRate: number) {
     freqStepHz: sp.actualFreqStepHz,
     timeStepSamples: Math.round(sp.actualTimeStepSec * sampleRate),
     sampleRate,
+    rope: share,
   } satisfies ParamsMessage)
   const specBuf = new Float32Array(sp.numFreqs)
 
@@ -96,22 +102,15 @@ export async function runAnalysis(reader: AudioRingReader, sampleRate: number) {
   const preEmphBuf = new Float32Array(QUANTUM)
 
   let frameIndex = 0
-  // ~10sec PCM buffer
-  let pcmData = new Float32Array(
-    Math.round((sampleRate * 10) / QUANTUM) * QUANTUM,
-  )
-  let pcmDataIndex = 0
+  let bufferLength = share.buffers.length
 
   for await (const inp of reader) {
     console.assert(inp.length === QUANTUM)
-    pcmData.set(inp, pcmDataIndex)
-    pcmDataIndex += inp.length
-    if (pcmDataIndex === pcmData.length) {
-      postMessage({ type: 'audioReady', pcm: pcmData }, [pcmData.buffer])
-      pcmData = new Float32Array(
-        Math.round((sampleRate * 10) / QUANTUM) * QUANTUM,
-      )
-      pcmDataIndex = 0
+    rope.append(inp)
+    const grow = rope.shareGrowth(bufferLength)
+    if (grow) {
+      bufferLength += grow.buffers.length
+      postMessage(grow)
     }
 
     // Pre-emphasise into scratch buffer
@@ -137,16 +136,6 @@ export async function runAnalysis(reader: AudioRingReader, sampleRate: number) {
         rms,
       } satisfies AppendFrameMessage)
     }
-  }
-
-  if (pcmDataIndex > 0) {
-    postMessage(
-      {
-        type: 'audioReady',
-        pcm: pcmData.subarray(0, pcmDataIndex),
-      },
-      [pcmData.buffer],
-    )
   }
 }
 

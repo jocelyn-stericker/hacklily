@@ -19,22 +19,14 @@
 
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 
-import { exportWav, audioBufferToWav } from './exportWav'
+import { exportWav, ropesToWav } from './exportWav'
+import { SabRope } from './SabRope'
 
-vi.hoisted(() => {
-  vi.stubGlobal(
-    'AudioContext',
-    require('standardized-audio-context-mock').AudioContext,
-  )
-  vi.stubGlobal(
-    'OfflineAudioContext',
-    require('standardized-audio-context-mock').AudioContext,
-  )
-  vi.stubGlobal(
-    'AudioBuffer',
-    require('standardized-audio-context-mock').AudioBuffer,
-  )
-})
+function makeRope(lengthSamples = 44100, sampleRate = 44100): SabRope {
+  const rope = new SabRope(sampleRate)
+  rope.append(new Float32Array(lengthSamples))
+  return rope
+}
 
 function readWavHeader(buffer: ArrayBuffer) {
   const view = new DataView(buffer)
@@ -76,12 +68,9 @@ function readWavHeader(buffer: ArrayBuffer) {
 }
 
 describe('exportWav', () => {
-  let audioContext: AudioContext
-
   beforeEach(() => {
     vi.useFakeTimers()
     vi.setSystemTime(new Date('2026-01-15T14:30:45.123Z'))
-    audioContext = new AudioContext()
   })
 
   afterEach(() => {
@@ -98,9 +87,7 @@ describe('exportWav', () => {
       download: '',
     } as unknown as HTMLAnchorElement)
 
-    const buffer = audioContext.createBuffer(1, 44100, 44100)
-
-    exportWav(buffer)
+    exportWav([makeRope()])
 
     expect(clickSpy).toHaveBeenCalled()
   })
@@ -119,8 +106,7 @@ describe('exportWav', () => {
       return document.createElement.bind(document)(tag)
     })
 
-    const buffer = audioContext.createBuffer(1, 44100, 44100)
-    exportWav(buffer)
+    exportWav([makeRope()])
 
     expect(anchorElement.download).toMatch(
       /^braat-\d{4}-\d{2}-\d{2}_\d{2}-\d{2}-\d{2}\.wav$/,
@@ -131,8 +117,7 @@ describe('exportWav', () => {
   it('revokes object URL after download', () => {
     const revokeObjectURLSpy = vi.spyOn(URL, 'revokeObjectURL')
 
-    const buffer = audioContext.createBuffer(1, 44100, 44100)
-    exportWav(buffer)
+    exportWav([makeRope()])
 
     vi.runAllTimers()
 
@@ -140,7 +125,6 @@ describe('exportWav', () => {
   })
 
   it('creates and downloads a WAV file without error', () => {
-    const buffer = audioContext.createBuffer(1, 44100, 44100)
     const anchorElement = {
       click: vi.fn(),
       href: '',
@@ -152,243 +136,39 @@ describe('exportWav', () => {
     )
 
     // Should complete without error
-    exportWav(buffer)
+    exportWav([makeRope()])
 
     // Verify the anchor was clicked
     expect(anchorElement.click).toHaveBeenCalled()
   })
 })
 
-describe('audioBufferToWav', () => {
-  let audioContext: AudioContext
-
-  beforeEach(() => {
-    audioContext = new AudioContext()
-  })
-
-  it('encodes mono audio as 16-bit PCM WAV', () => {
-    const buffer = audioContext.createBuffer(1, 44100, 44100)
-    const channel = buffer.getChannelData(0)
-    for (let i = 0; i < channel.length; i++) {
-      channel[i] = Math.sin((2 * Math.PI * i * 440) / 44100) * 0.5
-    }
-
-    const wav = audioBufferToWav(buffer)
-
-    expect(wav).toBeInstanceOf(ArrayBuffer)
+describe('ropesToWav', () => {
+  it('concatenates same-rate ropes end-to-end', () => {
+    const wav = ropesToWav([makeRope(100), makeRope(100)])
     const header = readWavHeader(wav)
+
+    expect(header.sampleRate).toBe(44100)
     expect(header.channels).toBe(1)
-    expect(header.sampleRate).toBe(44100)
     expect(header.bitDepth).toBe(16)
-    expect(header.format).toBe(1) // PCM
+    expect(header.dataSize).toBe(200 * 2) // 200 samples, 16-bit
   })
 
-  it('encodes stereo audio as interleaved 16-bit PCM WAV', () => {
-    const buffer = audioContext.createBuffer(2, 44100, 44100)
-
-    for (let ch = 0; ch < 2; ch++) {
-      const channel = buffer.getChannelData(ch)
-      for (let i = 0; i < channel.length; i++) {
-        channel[i] =
-          Math.sin((2 * Math.PI * i * (440 + ch * 100)) / 44100) * 0.5
-      }
-    }
-
-    const wav = audioBufferToWav(buffer)
-
+  it('resamples ropes to the highest rate present before concatenating', () => {
+    const wav = ropesToWav([makeRope(50, 22050), makeRope(50, 44100)])
     const header = readWavHeader(wav)
-    expect(header.channels).toBe(2)
+
     expect(header.sampleRate).toBe(44100)
-    expect(header.bitDepth).toBe(16)
-    expect(header.blockAlign).toBe(4)
+    // The 22.05k rope is upsampled to 44.1k (~100 samples), so the total
+    // exceeds the 100 raw samples that were appended.
+    expect(header.dataSize / 2).toBeGreaterThan(100)
   })
 
-  it('encodes audio as 32-bit float when float32 option is true', () => {
-    const buffer = audioContext.createBuffer(1, 44100, 44100)
-    const channel = buffer.getChannelData(0)
-    for (let i = 0; i < 100; i++) {
-      channel[i] = 0.5
-    }
-
-    const wav = audioBufferToWav(buffer, { float32: true })
-
-    const header = readWavHeader(wav)
-    expect(header.bitDepth).toBe(32)
-    expect(header.format).toBe(3) // FLOAT32
-  })
-
-  it('has correct WAV header structure', () => {
-    const buffer = audioContext.createBuffer(1, 100, 48000)
-    const channel = buffer.getChannelData(0)
-    for (let i = 0; i < channel.length; i++) {
-      channel[i] = 0.1
-    }
-
-    const wav = audioBufferToWav(buffer)
+  it('produces a header-only WAV for no ropes', () => {
+    const wav = ropesToWav([])
     const header = readWavHeader(wav)
 
-    expect(header.riff).toBe('RIFF')
-    expect(header.wave).toBe('WAVE')
-    expect(header.fmt).toBe('fmt ')
-    expect(header.data).toBe('data')
-    expect(header.fmtChunkSize).toBe(16)
-  })
-
-  it('calculates correct byte rate (sample rate × block align)', () => {
-    const buffer = audioContext.createBuffer(2, 100, 48000)
-
-    const wav = audioBufferToWav(buffer)
-    const header = readWavHeader(wav)
-
-    const expectedByteRate = 48000 * 4 // 48000 Hz * 2 channels * 2 bytes per sample
-    expect(header.byteRate).toBe(expectedByteRate)
-  })
-
-  it('encodes correct data size in header', () => {
-    const buffer = audioContext.createBuffer(1, 1000, 44100)
-
-    const wav = audioBufferToWav(buffer)
-    const header = readWavHeader(wav)
-
-    const expectedDataSize = 1000 * 2 // 1000 samples * 2 bytes per sample (16-bit)
-    expect(header.dataSize).toBe(expectedDataSize)
-  })
-
-  it('encodes correct file size in RIFF header', () => {
-    const buffer = audioContext.createBuffer(1, 1000, 44100)
-
-    const wav = audioBufferToWav(buffer)
-    const header = readWavHeader(wav)
-
-    // RIFF size = 36 + dataSize (excludes the 8-byte RIFF header itself)
-    const expectedChunkSize = 36 + header.dataSize
-    expect(header.chunkSize).toBe(expectedChunkSize)
-  })
-
-  it('handles different sample rates', () => {
-    const sampleRates = [8000, 16000, 44100, 48000, 96000]
-
-    for (const sr of sampleRates) {
-      const buffer = audioContext.createBuffer(1, 100, sr)
-
-      const wav = audioBufferToWav(buffer)
-      const header = readWavHeader(wav)
-
-      expect(header.sampleRate).toBe(sr)
-    }
-  })
-
-  it('clamps sample values to [-1, 1] during 16-bit conversion', () => {
-    const buffer = audioContext.createBuffer(1, 4, 44100)
-    const channel = buffer.getChannelData(0)
-
-    channel[0] = 2.0 // Over range
-    channel[1] = -2.0 // Under range
-    channel[2] = 0.5 // Normal
-    channel[3] = -0.5 // Normal
-
-    const wav = audioBufferToWav(buffer)
-    const view = new DataView(wav)
-
-    // Skip to data section (44 bytes)
-    const sample0 = view.getInt16(44, true)
-    const sample1 = view.getInt16(46, true)
-
-    // Over/under range should be clamped to max/min 16-bit signed int
-    expect(sample0).toBe(0x7fff) // Max positive
-    expect(sample1).toBe(-0x8000) // Max negative
-  })
-
-  it('correctly converts float samples to 16-bit PCM', () => {
-    const buffer = audioContext.createBuffer(1, 2, 44100)
-    const channel = buffer.getChannelData(0)
-
-    channel[0] = 0.5
-    channel[1] = -0.5
-
-    const wav = audioBufferToWav(buffer)
-    const view = new DataView(wav)
-
-    const sample0 = view.getInt16(44, true)
-    const sample1 = view.getInt16(46, true)
-
-    // 0.5 -> 0.5 * 0x7fff = 16383
-    expect(sample0).toBe(16383)
-    // -0.5 -> -0.5 * 0x8000 = -16384
-    expect(sample1).toBe(-16384)
-  })
-
-  it('handles zero samples correctly', () => {
-    const buffer = audioContext.createBuffer(1, 1, 44100)
-    const channel = buffer.getChannelData(0)
-    channel[0] = 0.0
-
-    const wav = audioBufferToWav(buffer)
-    const view = new DataView(wav)
-
-    const sample = view.getInt16(44, true)
-    expect(sample).toBe(0)
-  })
-
-  it('preserves stereo channel separation in interleaved format', () => {
-    const buffer = audioContext.createBuffer(2, 4, 44100)
-
-    const left = buffer.getChannelData(0)
-    const right = buffer.getChannelData(1)
-
-    left[0] = 0.5
-    left[1] = 0.25
-    right[0] = -0.5
-    right[1] = -0.25
-
-    const wav = audioBufferToWav(buffer)
-    const view = new DataView(wav)
-
-    // Interleaved: L0, R0, L1, R1, ...
-    const l0 = view.getInt16(44, true)
-    const r0 = view.getInt16(46, true)
-    const l1 = view.getInt16(48, true)
-    const r1 = view.getInt16(50, true)
-
-    expect(l0).toBeCloseTo(16383, 1)
-    expect(r0).toBeCloseTo(-16384, 1)
-    expect(l1).toBeCloseTo(8191, 1)
-    expect(r1).toBeCloseTo(-8192, 1)
-  })
-
-  it('encodes 32-bit float samples correctly', () => {
-    const buffer = audioContext.createBuffer(1, 2, 44100)
-    const channel = buffer.getChannelData(0)
-
-    channel[0] = 0.5
-    channel[1] = -0.5
-
-    const wav = audioBufferToWav(buffer, { float32: true })
-    const view = new DataView(wav)
-
-    const sample0 = view.getFloat32(44, true)
-    const sample1 = view.getFloat32(48, true)
-
-    expect(sample0).toBeCloseTo(0.5, 5)
-    expect(sample1).toBeCloseTo(-0.5, 5)
-  })
-
-  it('handles empty buffer', () => {
-    const buffer = audioContext.createBuffer(1, 0, 44100)
-
-    const wav = audioBufferToWav(buffer)
-
-    expect(wav).toBeInstanceOf(ArrayBuffer)
-    expect(wav.byteLength).toBe(44) // Just the header
-  })
-
-  it('handles single sample', () => {
-    const buffer = audioContext.createBuffer(1, 1, 44100)
-    const channel = buffer.getChannelData(0)
-    channel[0] = 0.1
-
-    const wav = audioBufferToWav(buffer)
-
-    expect(wav.byteLength).toBe(44 + 2) // Header + 1 sample (16-bit)
+    expect(wav.byteLength).toBe(44)
+    expect(header.sampleRate).toBe(44100)
   })
 })

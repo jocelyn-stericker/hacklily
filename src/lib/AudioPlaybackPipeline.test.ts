@@ -19,80 +19,91 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 
 import { AudioPlaybackPipeline } from './AudioPlaybackPipeline'
+import type { SabRope } from './SabRope'
 
 const mockAudioAPI = vi.hoisted(() => {
-  const mockSourceNode = {
-    buffer: null as AudioBuffer | null,
-    onended: null as (() => void) | null,
-    connect: vi.fn(function (this: any) {
-      return this
-    }),
-    start: vi.fn(),
-    stop: vi.fn(),
+  const workletNode = {
+    connect: vi.fn(),
+    disconnect: vi.fn(),
+    port: { postMessage: vi.fn() },
   }
-
-  const mockContext = {
+  const context = {
     currentTime: 0,
     destination: {},
-    sampleRate: 44100,
-    createBufferSource: vi.fn(() => mockSourceNode),
+    audioWorklet: { addModule: vi.fn(async () => {}) },
     close: vi.fn(async () => {}),
   }
-
-  return {
-    mockSourceNode,
-    mockContext,
-  }
+  return { workletNode, context }
 })
 
 class MockAudioContext {
-  currentTime = mockAudioAPI.mockContext.currentTime
-  destination = mockAudioAPI.mockContext.destination
-  sampleRate = mockAudioAPI.mockContext.sampleRate
+  destination = mockAudioAPI.context.destination
+  audioWorklet = mockAudioAPI.context.audioWorklet
+  sampleRate = 44100
   static called = false
   static lastOptions: any = null
 
-  constructor(_options?: { sampleRate?: number; latencyHint?: string }) {
+  constructor(options?: { sampleRate?: number; latencyHint?: string }) {
     MockAudioContext.called = true
-    MockAudioContext.lastOptions = _options
-    if (_options?.sampleRate) {
-      this.sampleRate = _options.sampleRate
+    MockAudioContext.lastOptions = options
+    if (options?.sampleRate) {
+      this.sampleRate = options.sampleRate
     }
   }
 
-  createBufferSource() {
-    mockAudioAPI.mockContext.createBufferSource()
-    return mockAudioAPI.mockSourceNode
+  get currentTime() {
+    return mockAudioAPI.context.currentTime
   }
 
   async close() {
-    return mockAudioAPI.mockContext.close()
+    return mockAudioAPI.context.close()
+  }
+}
+
+class MockAudioWorkletNode {
+  port = mockAudioAPI.workletNode.port
+  connect = mockAudioAPI.workletNode.connect
+  disconnect = mockAudioAPI.workletNode.disconnect
+  static count = 0
+  static lastName: string | null = null
+
+  constructor(_context: unknown, name: string) {
+    MockAudioWorkletNode.count++
+    MockAudioWorkletNode.lastName = name
   }
 }
 
 vi.stubGlobal('AudioContext', MockAudioContext as any)
+vi.stubGlobal('AudioWorkletNode', MockAudioWorkletNode as any)
 
 let animFrameId = 1
 vi.stubGlobal(
   'requestAnimationFrame',
   vi.fn((cb: FrameRequestCallback) => {
-    setTimeout(cb, 0)
+    setTimeout(() => cb(performance.now()), 0)
     return animFrameId++
   }),
 )
-
 vi.stubGlobal('cancelAnimationFrame', vi.fn())
 
-function createMockAudioBuffer(duration = 1, sampleRate = 44100): AudioBuffer {
+// Lets the async #play (which awaits addModule) run to completion.
+const flush = () => new Promise<void>((resolve) => setTimeout(resolve, 0))
+
+function makeRope(lengthSamples: number, sampleRate = 44100): SabRope {
   return {
-    duration,
-    length: duration * sampleRate,
-    numberOfChannels: 1,
+    length: lengthSamples,
     sampleRate,
-    copyFromChannel: vi.fn(),
-    copyToChannel: vi.fn(),
-    getChannelData: vi.fn(() => new Float32Array(duration * sampleRate)),
-  } as unknown as AudioBuffer
+    shareRope: vi.fn(() => ({
+      type: 'sab-rope',
+      sampleRate,
+      buffers: [],
+      lengthPtr: new SharedArrayBuffer(4),
+    })),
+  } as unknown as SabRope
+}
+
+function lastMessages() {
+  return mockAudioAPI.workletNode.port.postMessage.mock.calls.map((c) => c[0])
 }
 
 describe('AudioPlaybackPipeline', () => {
@@ -101,10 +112,15 @@ describe('AudioPlaybackPipeline', () => {
   beforeEach(() => {
     abortController = new AbortController()
     vi.clearAllMocks()
-    mockAudioAPI.mockContext.currentTime = 0
-    mockAudioAPI.mockSourceNode.onended = null
+    mockAudioAPI.context.currentTime = 0
+    mockAudioAPI.context.audioWorklet.addModule.mockImplementation(
+      async () => {},
+    )
+    mockAudioAPI.context.close.mockImplementation(async () => {})
     MockAudioContext.called = false
     MockAudioContext.lastOptions = null
+    MockAudioWorkletNode.count = 0
+    MockAudioWorkletNode.lastName = null
   })
 
   afterEach(() => {
@@ -112,111 +128,94 @@ describe('AudioPlaybackPipeline', () => {
   })
 
   describe('initialization', () => {
-    it('creates an AudioContext with interactive latency hint', () => {
-      const buffer = createMockAudioBuffer(1)
+    it('creates an AudioContext with interactive latency hint', async () => {
       new AudioPlaybackPipeline({
-        audioBuffer: buffer,
+        ropes: [makeRope(44100)],
         startAtSec: 0,
         signal: abortController.signal,
       })
+      await flush()
 
       expect(MockAudioContext.called).toBe(true)
       expect(MockAudioContext.lastOptions).toEqual({
         sampleRate: undefined,
-        latencyHint: 'interactive',
+        latencyHint: 'playback',
       })
     })
 
-    it('creates an AudioContext with specified sampleRate', () => {
-      const buffer = createMockAudioBuffer(1, 48000)
+    it('creates an AudioContext with specified sampleRate', async () => {
       new AudioPlaybackPipeline({
-        audioBuffer: buffer,
+        ropes: [makeRope(48000, 48000)],
         startAtSec: 0,
         signal: abortController.signal,
         sampleRate: 48000,
       })
+      await flush()
 
-      expect(MockAudioContext.called).toBe(true)
       expect(MockAudioContext.lastOptions).toEqual({
         sampleRate: 48000,
-        latencyHint: 'interactive',
+        latencyHint: 'playback',
       })
     })
 
-    it('creates a buffer source and connects to destination', () => {
-      const buffer = createMockAudioBuffer(1)
+    it('loads the worklet module and creates the rope source node', async () => {
       new AudioPlaybackPipeline({
-        audioBuffer: buffer,
+        ropes: [makeRope(44100)],
         startAtSec: 0,
         signal: abortController.signal,
       })
+      await flush()
 
-      expect(mockAudioAPI.mockContext.createBufferSource).toHaveBeenCalled()
-      expect(mockAudioAPI.mockSourceNode.connect).toHaveBeenCalledWith(
-        mockAudioAPI.mockContext.destination,
+      expect(mockAudioAPI.context.audioWorklet.addModule).toHaveBeenCalled()
+      expect(MockAudioWorkletNode.count).toBe(1)
+      expect(MockAudioWorkletNode.lastName).toBe('sab-rope-source-node')
+      expect(mockAudioAPI.workletNode.connect).toHaveBeenCalledWith(
+        mockAudioAPI.context.destination,
       )
-      expect(mockAudioAPI.mockSourceNode.buffer).toBe(buffer)
     })
 
-    it('starts playback at specified position', () => {
-      const buffer = createMockAudioBuffer(2)
+    it('posts setBuffer with rope shares then start', async () => {
       new AudioPlaybackPipeline({
-        audioBuffer: buffer,
+        ropes: [makeRope(44100), makeRope(22050)],
         startAtSec: 0.5,
         signal: abortController.signal,
       })
+      await flush()
 
-      expect(mockAudioAPI.mockSourceNode.start).toHaveBeenCalledWith(0, 0.5)
+      const messages = lastMessages()
+      expect(messages[0]).toMatchObject({ type: 'setBuffer' })
+      // Each rope was shared (mapped through shareRope) into the message.
+      expect(messages[0].ropes).toHaveLength(2)
+      expect(messages[1]).toEqual({ type: 'start', timeSec: 0.5 })
     })
 
-    it('starts at beginning when startAtSec is exactly at buffer duration', () => {
-      const buffer = createMockAudioBuffer(1)
+    it('clamps startAtSec to 0 when at or past the end of the timeline', async () => {
+      // One 1s rope: a start within 0.05s of the end rewinds to 0.
       new AudioPlaybackPipeline({
-        audioBuffer: buffer,
+        ropes: [makeRope(44100)],
         startAtSec: 1.0,
         signal: abortController.signal,
       })
+      await flush()
 
-      expect(mockAudioAPI.mockSourceNode.start).toHaveBeenCalledWith(0, 0)
+      expect(lastMessages()[1]).toEqual({ type: 'start', timeSec: 0 })
     })
 
-    it('clamps to 0 when startAtSec is more than 0.01s beyond buffer duration', () => {
-      const buffer = createMockAudioBuffer(1)
+    it('sums rope durations across differing sample rates', async () => {
+      // 1s @44.1k + 1s @22.05k = 2s total; 1.5s is mid-timeline, not clamped.
       new AudioPlaybackPipeline({
-        audioBuffer: buffer,
-        startAtSec: 1.015,
+        ropes: [makeRope(44100, 44100), makeRope(22050, 22050)],
+        startAtSec: 1.5,
         signal: abortController.signal,
       })
+      await flush()
 
-      expect(mockAudioAPI.mockSourceNode.start).toHaveBeenCalledWith(0, 0)
+      expect(lastMessages()[1]).toEqual({ type: 'start', timeSec: 1.5 })
     })
 
-    it('starts at beginning when close to end', () => {
-      const buffer = createMockAudioBuffer(1)
-      new AudioPlaybackPipeline({
-        audioBuffer: buffer,
-        startAtSec: 0.99,
-        signal: abortController.signal,
-      })
-
-      expect(mockAudioAPI.mockSourceNode.start).toHaveBeenCalledWith(0, 0)
-    })
-
-    it('requests animation frame for position tracking', () => {
-      const buffer = createMockAudioBuffer(1)
-      new AudioPlaybackPipeline({
-        audioBuffer: buffer,
-        startAtSec: 0,
-        signal: abortController.signal,
-      })
-
-      expect(requestAnimationFrame).toHaveBeenCalled()
-    })
-
-    it('returns stopSignal that can be used to stop playback', () => {
-      const buffer = createMockAudioBuffer(1)
+    it('returns a stopSignal that is not yet aborted', () => {
       const pipeline = new AudioPlaybackPipeline({
-        audioBuffer: buffer,
+        ropes: [makeRope(44100)],
         startAtSec: 0,
         signal: abortController.signal,
       })
@@ -226,415 +225,163 @@ describe('AudioPlaybackPipeline', () => {
     })
   })
 
-  describe('event emission', () => {
-    it('emits positionChanged events with timeSec', () => {
-      return new Promise<void>((resolve) => {
-        const buffer = createMockAudioBuffer(1)
-        const pipeline = new AudioPlaybackPipeline({
-          audioBuffer: buffer,
-          startAtSec: 0,
-          signal: abortController.signal,
-        })
-
-        let emitCount = 0
-        pipeline.addEventListener('positionChanged', (event) => {
-          const customEvent = event as CustomEvent<{ timeSec: number }>
-          expect(customEvent.detail).toHaveProperty('timeSec')
-          expect(typeof customEvent.detail.timeSec).toBe('number')
-          emitCount++
-
-          if (emitCount >= 2) {
-            resolve()
-          }
-        })
+  describe('position tracking', () => {
+    it('emits positionChanged offset by startAtSec', async () => {
+      const pipeline = new AudioPlaybackPipeline({
+        ropes: [makeRope(88200)], // 2s
+        startAtSec: 0.5,
+        signal: abortController.signal,
       })
-    })
 
-    it('emits stop event when playback ends', () => {
-      return new Promise<void>((resolve) => {
-        const buffer = createMockAudioBuffer(1)
-        const pipeline = new AudioPlaybackPipeline({
-          audioBuffer: buffer,
-          startAtSec: 0,
-          signal: abortController.signal,
-        })
-
-        let stopEmitted = false
-        pipeline.addEventListener('stop', () => {
-          stopEmitted = true
-        })
-
-        setTimeout(() => {
-          mockAudioAPI.mockSourceNode.onended?.()
-
-          expect(stopEmitted).toBe(true)
-          resolve()
-        }, 10)
-      })
-    })
-
-    it('timeSec respects startAtSec offset', () => {
-      return new Promise<void>((resolve) => {
-        const buffer = createMockAudioBuffer(2)
-        const startAtSec = 0.5
-        const pipeline = new AudioPlaybackPipeline({
-          audioBuffer: buffer,
-          startAtSec,
-          signal: abortController.signal,
-        })
-
+      const seen = await new Promise<number>((resolve) => {
         pipeline.addEventListener('positionChanged', (e) => {
-          const event = e as CustomEvent<{ timeSec: number }>
-          expect(event.detail.timeSec).toBeGreaterThanOrEqual(startAtSec)
-          resolve()
+          resolve((e as CustomEvent<{ timeSec: number }>).detail.timeSec)
         })
       })
+
+      expect(seen).toBeGreaterThanOrEqual(0.5)
     })
 
-    it('timeSec does not exceed buffer duration', () => {
-      return new Promise<void>((resolve) => {
-        const duration = 1
-        const buffer = createMockAudioBuffer(duration)
-        const pipeline = new AudioPlaybackPipeline({
-          audioBuffer: buffer,
-          startAtSec: 0,
-          signal: abortController.signal,
-        })
+    it('does not report a position beyond the total duration', async () => {
+      const pipeline = new AudioPlaybackPipeline({
+        ropes: [makeRope(44100)], // 1s
+        startAtSec: 0,
+        signal: abortController.signal,
+      })
+      await flush()
+      mockAudioAPI.context.currentTime = 100
 
-        pipeline.addEventListener('positionChanged', (event) => {
-          const customEvent = event as CustomEvent<{ timeSec: number }>
-          expect(customEvent.detail.timeSec).toBeLessThanOrEqual(duration)
-          resolve()
+      const seen = await new Promise<number>((resolve) => {
+        pipeline.addEventListener('positionChanged', (e) => {
+          resolve((e as CustomEvent<{ timeSec: number }>).detail.timeSec)
         })
       })
-    })
 
-    it('stops emitting positionChanged after stop event', () => {
-      return new Promise<void>((resolve) => {
-        const buffer = createMockAudioBuffer(1)
-        const pipeline = new AudioPlaybackPipeline({
-          audioBuffer: buffer,
-          startAtSec: 0,
-          signal: abortController.signal,
-        })
-
-        let positionEventCount = 0
-        let stopEventCount = 0
-
-        pipeline.addEventListener('positionChanged', () => {
-          positionEventCount++
-        })
-
-        pipeline.addEventListener('stop', () => {
-          stopEventCount++
-        })
-
-        setTimeout(() => {
-          mockAudioAPI.mockSourceNode.onended?.()
-
-          setTimeout(() => {
-            expect(stopEventCount).toBe(1)
-            const countBeforeStop = positionEventCount
-            const countAfterStop = positionEventCount
-
-            expect(countBeforeStop).toBe(countAfterStop)
-            resolve()
-          }, 20)
-        }, 10)
-      })
+      expect(seen).toBeLessThanOrEqual(1)
     })
   })
 
-  describe('abort signal handling', () => {
-    it('stops playback when abort signal is fired', () => {
-      const buffer = createMockAudioBuffer(1)
-      new AudioPlaybackPipeline({
-        audioBuffer: buffer,
-        startAtSec: 0,
-        signal: abortController.signal,
-      })
-
-      abortController.abort()
-
-      expect(mockAudioAPI.mockSourceNode.stop).toHaveBeenCalled()
-      expect(mockAudioAPI.mockContext.close).toHaveBeenCalled()
-    })
-
-    it('marks stopSignal as aborted after abort', () => {
-      const buffer = createMockAudioBuffer(1)
+  describe('end of playback', () => {
+    it('emits stop and tears down when the timeline runs out', async () => {
       const pipeline = new AudioPlaybackPipeline({
-        audioBuffer: buffer,
+        ropes: [makeRope(44100)], // 1s
         startAtSec: 0,
         signal: abortController.signal,
       })
+      await flush()
 
-      expect(pipeline.stopSignal.aborted).toBe(false)
-      abortController.abort()
+      const stopped = new Promise<void>((resolve) => {
+        pipeline.addEventListener('stop', () => resolve())
+      })
+      // Push currentTime past the duration so the next frame ends playback.
+      mockAudioAPI.context.currentTime = 2
+      await stopped
 
+      expect(
+        mockAudioAPI.workletNode.port.postMessage,
+      ).toHaveBeenLastCalledWith(null)
+      expect(mockAudioAPI.workletNode.disconnect).toHaveBeenCalled()
+      expect(mockAudioAPI.context.close).toHaveBeenCalled()
       expect(pipeline.stopSignal.aborted).toBe(true)
     })
 
-    it('cancels animation frames on abort', () => {
-      const buffer = createMockAudioBuffer(1)
-      new AudioPlaybackPipeline({
-        audioBuffer: buffer,
+    it('emits stop only once', async () => {
+      const pipeline = new AudioPlaybackPipeline({
+        ropes: [makeRope(44100)],
         startAtSec: 0,
         signal: abortController.signal,
       })
+      await flush()
+
+      let stopCount = 0
+      pipeline.addEventListener('stop', () => stopCount++)
+      mockAudioAPI.context.currentTime = 2
+      await flush()
+      await flush()
+
+      expect(stopCount).toBe(1)
+    })
+  })
+
+  describe('abort handling', () => {
+    it('pauses the node and closes the context on abort', async () => {
+      const pipeline = new AudioPlaybackPipeline({
+        ropes: [makeRope(44100)],
+        startAtSec: 0,
+        signal: abortController.signal,
+      })
+      await flush()
 
       abortController.abort()
 
+      expect(
+        mockAudioAPI.workletNode.port.postMessage,
+      ).toHaveBeenLastCalledWith(null)
+      expect(mockAudioAPI.workletNode.disconnect).toHaveBeenCalled()
+      expect(mockAudioAPI.context.close).toHaveBeenCalled()
+      expect(pipeline.stopSignal.aborted).toBe(true)
       expect(cancelAnimationFrame).toHaveBeenCalled()
     })
 
-    it('clears source and context references on abort', () => {
-      const buffer = createMockAudioBuffer(1)
-      new AudioPlaybackPipeline({
-        audioBuffer: buffer,
+    it('bails out without creating a node when aborted during module load', async () => {
+      let resolveAddModule = () => {}
+      mockAudioAPI.context.audioWorklet.addModule.mockImplementation(
+        () =>
+          new Promise<void>((resolve) => {
+            resolveAddModule = resolve
+          }),
+      )
+
+      const pipeline = new AudioPlaybackPipeline({
+        ropes: [makeRope(44100)],
         startAtSec: 0,
         signal: abortController.signal,
       })
 
       abortController.abort()
+      resolveAddModule()
+      await flush()
 
-      expect(mockAudioAPI.mockSourceNode.stop).toHaveBeenCalled()
-      expect(mockAudioAPI.mockContext.close).toHaveBeenCalled()
-    })
-  })
-
-  describe('cleanup and resource management', () => {
-    it('stops source and closes context when playback ends naturally', () => {
-      return new Promise<void>((resolve) => {
-        const buffer = createMockAudioBuffer(1)
-        new AudioPlaybackPipeline({
-          audioBuffer: buffer,
-          startAtSec: 0,
-          signal: abortController.signal,
-        })
-
-        setTimeout(() => {
-          mockAudioAPI.mockSourceNode.onended?.()
-
-          expect(mockAudioAPI.mockSourceNode.stop).toHaveBeenCalled()
-          expect(mockAudioAPI.mockContext.close).toHaveBeenCalled()
-          resolve()
-        }, 10)
-      })
+      expect(MockAudioWorkletNode.count).toBe(0)
+      expect(mockAudioAPI.context.close).toHaveBeenCalled()
+      expect(pipeline.stopSignal.aborted).toBe(true)
     })
 
-    it('ignores onended event from stale source', () => {
-      return new Promise<void>((resolve) => {
-        const buffer = createMockAudioBuffer(1)
-        new AudioPlaybackPipeline({
-          audioBuffer: buffer,
-          startAtSec: 0,
-          signal: abortController.signal,
-        })
-
-        const oldSource = mockAudioAPI.mockSourceNode
-
-        abortController.abort()
-        vi.clearAllMocks()
-
-        setTimeout(() => {
-          oldSource.onended?.()
-
-          expect(mockAudioAPI.mockSourceNode.stop).not.toHaveBeenCalled()
-          resolve()
-        }, 10)
-      })
-    })
-
-    it('does not throw when stopping an already-stopped source', () => {
-      const buffer = createMockAudioBuffer(1)
-      new AudioPlaybackPipeline({
-        audioBuffer: buffer,
+    it('does not throw when the context close rejects', async () => {
+      const pipeline = new AudioPlaybackPipeline({
+        ropes: [makeRope(44100)],
         startAtSec: 0,
         signal: abortController.signal,
       })
+      await flush()
+      mockAudioAPI.context.close.mockRejectedValue(new Error('already closed'))
 
-      mockAudioAPI.mockSourceNode.stop.mockImplementation(() => {
-        throw new Error('already stopped')
-      })
-
-      expect(() => {
-        abortController.abort()
-      }).not.toThrow()
-    })
-
-    it('handles context.close() errors gracefully', () => {
-      const buffer = createMockAudioBuffer(1)
-      new AudioPlaybackPipeline({
-        audioBuffer: buffer,
-        startAtSec: 0,
-        signal: abortController.signal,
-      })
-
-      mockAudioAPI.mockContext.close.mockRejectedValue(
-        new Error('context already closed'),
-      )
-
-      expect(() => {
-        abortController.abort()
-      }).not.toThrow()
-    })
-
-    it('only emits stop event once on natural end', () => {
-      return new Promise<void>((resolve) => {
-        const buffer = createMockAudioBuffer(1)
-        const pipeline = new AudioPlaybackPipeline({
-          audioBuffer: buffer,
-          startAtSec: 0,
-          signal: abortController.signal,
-        })
-
-        let stopCount = 0
-        pipeline.addEventListener('stop', () => {
-          stopCount++
-        })
-
-        setTimeout(() => {
-          mockAudioAPI.mockSourceNode.onended?.()
-          mockAudioAPI.mockSourceNode.onended?.()
-
-          setTimeout(() => {
-            expect(stopCount).toBe(1)
-            resolve()
-          }, 10)
-        }, 10)
-      })
-    })
-  })
-
-  describe('animation frame loop', () => {
-    it('emits positionChanged continuously while playing', () => {
-      return new Promise<void>((resolve) => {
-        const buffer = createMockAudioBuffer(2)
-        const pipeline = new AudioPlaybackPipeline({
-          audioBuffer: buffer,
-          startAtSec: 0,
-          signal: abortController.signal,
-        })
-
-        const positions: number[] = []
-        pipeline.addEventListener('positionChanged', (event) => {
-          const customEvent = event as CustomEvent<{ timeSec: number }>
-          positions.push(customEvent.detail.timeSec)
-
-          if (positions.length >= 3) {
-            abortController.abort()
-            expect(positions.length).toBeGreaterThanOrEqual(3)
-            resolve()
-          }
-        })
-      })
-    })
-
-    it('advances position over time', () => {
-      return new Promise<void>((resolve) => {
-        const buffer = createMockAudioBuffer(2)
-        const pipeline = new AudioPlaybackPipeline({
-          audioBuffer: buffer,
-          startAtSec: 0,
-          signal: abortController.signal,
-        })
-
-        let positionCount = 0
-
-        pipeline.addEventListener('positionChanged', () => {
-          positionCount++
-
-          if (positionCount > 1) {
-            mockAudioAPI.mockContext.currentTime += 0.01
-          }
-
-          if (positionCount >= 3) {
-            abortController.abort()
-            resolve()
-          }
-        })
-      })
+      expect(() => abortController.abort()).not.toThrow()
+      expect(pipeline.stopSignal.aborted).toBe(true)
     })
   })
 
   describe('multiple instances', () => {
-    it('can create multiple independent pipelines', () => {
-      const buffer1 = createMockAudioBuffer(1)
-      const buffer2 = createMockAudioBuffer(1)
-
+    it('can create independent pipelines', async () => {
       const ac1 = new AbortController()
       const ac2 = new AbortController()
 
       const p1 = new AudioPlaybackPipeline({
-        audioBuffer: buffer1,
+        ropes: [makeRope(44100)],
         startAtSec: 0,
         signal: ac1.signal,
       })
-
       const p2 = new AudioPlaybackPipeline({
-        audioBuffer: buffer2,
+        ropes: [makeRope(44100)],
         startAtSec: 0,
         signal: ac2.signal,
       })
-
-      expect(p1.stopSignal.aborted).toBe(false)
-      expect(p2.stopSignal.aborted).toBe(false)
+      await flush()
 
       ac1.abort()
-
       expect(p1.stopSignal.aborted).toBe(true)
       expect(p2.stopSignal.aborted).toBe(false)
-
       ac2.abort()
-    })
-  })
-
-  describe('edge cases', () => {
-    it('handles negative startAtSec by treating as 0', () => {
-      const buffer = createMockAudioBuffer(1)
-      new AudioPlaybackPipeline({
-        audioBuffer: buffer,
-        startAtSec: -0.5,
-        signal: abortController.signal,
-      })
-
-      expect(mockAudioAPI.mockSourceNode.start).toHaveBeenCalledWith(0, -0.5)
-    })
-
-    it('handles zero-duration buffer', () => {
-      const buffer = createMockAudioBuffer(0)
-      new AudioPlaybackPipeline({
-        audioBuffer: buffer,
-        startAtSec: 0,
-        signal: abortController.signal,
-      })
-
-      expect(mockAudioAPI.mockSourceNode.start).toHaveBeenCalled()
-    })
-
-    it('handles very large buffers', () => {
-      const buffer = createMockAudioBuffer(3600)
-      new AudioPlaybackPipeline({
-        audioBuffer: buffer,
-        startAtSec: 1800,
-        signal: abortController.signal,
-      })
-
-      expect(mockAudioAPI.mockSourceNode.start).toHaveBeenCalledWith(0, 1800)
-    })
-
-    it('handles fractional startAtSec values', () => {
-      const buffer = createMockAudioBuffer(1)
-      new AudioPlaybackPipeline({
-        audioBuffer: buffer,
-        startAtSec: 0.123456,
-        signal: abortController.signal,
-      })
-
-      expect(mockAudioAPI.mockSourceNode.start).toHaveBeenCalledWith(
-        0,
-        0.123456,
-      )
     })
   })
 })

@@ -227,7 +227,7 @@ describe('SabRope', () => {
       const consumer = new SabRope(producer.shareRope()) // 1 buffer
       producer.append(ramp(0, 2 * SEG + 10))
 
-      consumer.grow(producer.shareGrowth(1))
+      consumer.grow(producer.shareGrowth(1)!)
       expect(consumer.length).toBe(2 * SEG + 10)
       expectRamp(readAll(consumer), 0)
     })
@@ -235,7 +235,7 @@ describe('SabRope', () => {
     it('reports the buffer count the consumer must already hold', () => {
       const producer = new SabRope(48000)
       producer.append(ramp(0, 2 * SEG)) // producer now holds 3 buffers
-      const g = producer.shareGrowth(1)
+      const g = producer.shareGrowth(1)!
       expect(g.oldBufferCount).toBe(1) // the count *before* the new buffers
       expect(g.buffers.length).toBe(2)
     })
@@ -244,7 +244,7 @@ describe('SabRope', () => {
       const producer = new SabRope(48000)
       const consumer = new SabRope(producer.shareRope())
       producer.append(ramp(0, 2 * SEG))
-      const g = producer.shareGrowth(1)
+      const g = producer.shareGrowth(1)!
 
       consumer.grow(g) // first application is fine
       expect(() => consumer.grow(g)).toThrow() // re-applying must not double-add
@@ -255,11 +255,11 @@ describe('SabRope', () => {
       const consumer = new SabRope(producer.shareRope()) // 1 buffer
 
       producer.append(ramp(0, SEG + 5)) // into seg 1
-      consumer.grow(producer.shareGrowth(consumer.shareRope().buffers.length))
+      consumer.grow(producer.shareGrowth(consumer.shareRope().buffers.length)!)
       expectRamp(readAll(consumer), 0)
 
       producer.append(ramp(SEG + 5, SEG)) // into seg 2
-      consumer.grow(producer.shareGrowth(consumer.shareRope().buffers.length))
+      consumer.grow(producer.shareGrowth(consumer.shareRope().buffers.length)!)
       expect(consumer.length).toBe(2 * SEG + 5)
       expectRamp(readAll(consumer), 0)
     })

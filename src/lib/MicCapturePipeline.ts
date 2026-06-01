@@ -29,6 +29,7 @@ import SpectrogramWorker from '#/lib/SpectrogramWorker?worker'
 import VadWorker from '#/lib/VadWorker?worker'
 
 import type { FormantWorkerOutMessage } from './FormantWorker'
+import type { SabRopeGrow, SabRopeShare } from './SabRope'
 import type { AudioCaptureSettings } from './settings'
 import {
   buildAudioConstraints,
@@ -54,8 +55,10 @@ type MicCaptureOutEvents = {
   append: CustomEvent<{ frame: AnalysisFrame }>
   chunkStart: CustomEvent<{ params: AnalysisParams }>
   patch: CustomEvent<{ from: number; to: number }>
-  recordingComplete: CustomEvent<{ buffer: AudioBuffer }>
+  recordingComplete: Event
   error: CustomEvent<{ error: string }>
+  sabRopeShare: CustomEvent<SabRopeShare>
+  sabRopeGrow: CustomEvent<SabRopeGrow>
 }
 
 // Cached persistent stream — key tracks the settings it was opened with so we
@@ -171,7 +174,6 @@ export async function preInitPersistentStream(
  */
 export class MicCapturePipeline extends TypedEventTarget<MicCaptureOutEvents> {
   #analysis: AnalysisChunk | null = null
-  #accumulatedPcm: Float32Array<ArrayBuffer>[] = []
   // Patches that arrived before their frame; keyed by session-local frameIndex.
   #pendingPatches = new Map<number, PatchFrameMessage>()
 
@@ -386,56 +388,13 @@ export class MicCapturePipeline extends TypedEventTarget<MicCaptureOutEvents> {
     data,
   }: MessageEvent<SpectrogramWorkerOutMessage>) => {
     switch (data.type) {
-      case 'audioReady': {
-        this.#accumulatedPcm.push(data.pcm)
-        return
-      }
       case 'ended': {
         if (!this.#spectrogramWorker) return
-        const analysisSamples =
-          (this.#analysis?.timeStepSamples ?? 0) *
-          (this.#analysis?.frames.length ?? 0)
-
-        if (analysisSamples > 0) {
-          console.assert(
-            analysisSamples <=
-              this.#accumulatedPcm.reduce(
-                (memo, chunk) => memo + chunk.length,
-                0,
-              ),
-            LOG,
-            'fewer audio samples than analysis samples',
-            analysisSamples,
-            this.#accumulatedPcm.reduce(
-              (memo, chunk) => memo + chunk.length,
-              0,
-            ),
-          )
-          const buffer = this.#sampleRate
-            ? new AudioBuffer({
-                length: analysisSamples,
-                numberOfChannels: 1,
-                sampleRate: this.#sampleRate,
-              })
-            : new AudioBuffer({
-                length: 0,
-                numberOfChannels: 1,
-                sampleRate: 44100,
-              })
-          let offset = 0
-          for (const chunk of this.#accumulatedPcm) {
-            if (offset + chunk.length <= analysisSamples) {
-              buffer.copyToChannel(chunk, 0, offset)
-            } else {
-              buffer.copyToChannel(
-                chunk.subarray(0, Math.max(0, analysisSamples - offset)),
-                0,
-                offset,
-              )
-            }
-            offset += chunk.length
-          }
-          this.emit('recordingComplete', { buffer })
+        // The session's PCM lives in its SabRope (published via sabRopeShare /
+        // sabRopeGrow); recordingComplete just signals that the session finished
+        // so the timeline can settle. Skip it when no frames were produced.
+        if ((this.#analysis?.frames.length ?? 0) > 0) {
+          this.emit('recordingComplete')
         }
         this.#spectrogramWorker.terminate()
         this.#spectrogramWorker = null
@@ -517,6 +476,7 @@ export class MicCapturePipeline extends TypedEventTarget<MicCaptureOutEvents> {
         // this.#sourceNode.connect(this.#context.destination)
 
         this.emit('chunkStart', { params })
+        this.emit('sabRopeShare', data.rope)
         return
       }
 
@@ -526,6 +486,11 @@ export class MicCapturePipeline extends TypedEventTarget<MicCaptureOutEvents> {
 
       case 'patch':
         this.#handlePatch(data)
+        return
+
+      case 'sab-rope-grow':
+        this.emit('sabRopeGrow', data)
+        return
     }
   }
 

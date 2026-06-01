@@ -199,61 +199,6 @@ describe('SpectrogramWorker', () => {
       expect(out.length).toBeGreaterThan(0)
       expect(out[out.length - 1]?.type).toBe('ended')
     })
-
-    it('sends audioReady messages with pcm data', async () => {
-      const audio = generateSilence(0.5, SAMPLE_RATE)
-      const chunks = chunkAudio(audio, QUANTUM)
-
-      const out = await testRunAnalysis(chunks, SAMPLE_RATE)
-
-      const audioMessages = out.filter((m) => m.type === 'audioReady')
-      expect(audioMessages.length).toBeGreaterThan(0)
-
-      for (const msg of audioMessages) {
-        expect(msg).toHaveProperty('pcm')
-        expect(msg.pcm).toBeInstanceOf(Float32Array)
-        expect(msg.pcm.length).toBeGreaterThan(0)
-      }
-    })
-  })
-
-  describe('audio accumulation', () => {
-    it('accumulates PCM data across chunks', async () => {
-      const audio = generateSilence(0.3, SAMPLE_RATE)
-      const chunks = chunkAudio(audio, QUANTUM)
-
-      const out = await testRunAnalysis(chunks, SAMPLE_RATE)
-
-      const audioMessages = out.filter((m) => m.type === 'audioReady')
-      let totalPcmSamples = 0
-      for (const msg of audioMessages) {
-        totalPcmSamples += msg.pcm.length
-      }
-
-      // Should have collected roughly all the input audio
-      expect(totalPcmSamples).toBeGreaterThan(audio.length * 0.9)
-      expect(totalPcmSamples).toBeLessThanOrEqual(audio.length)
-    })
-
-    it('sends remaining PCM data on completion', async () => {
-      const audio = generateSilence(0.2, SAMPLE_RATE)
-      const chunks = chunkAudio(audio, QUANTUM)
-
-      const out = await testRunAnalysis(chunks, SAMPLE_RATE)
-
-      // There should be at least one audioReady message
-      const audioMessages = out.filter((m) => m.type === 'audioReady')
-      expect(audioMessages.length).toBeGreaterThan(0)
-
-      // The last audioReady should come before the ended message
-      const lastAudioIdx = out.findIndex(
-        (m, i) =>
-          m.type === 'audioReady' &&
-          out.slice(i + 1).every((x) => x.type !== 'audioReady'),
-      )
-      const endedIdx = out.findIndex((m) => m.type === 'ended')
-      expect(lastAudioIdx).toBeLessThan(endedIdx)
-    })
   })
 
   describe('RMS calculation', () => {

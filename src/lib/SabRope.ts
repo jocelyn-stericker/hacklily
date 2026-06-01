@@ -199,7 +199,11 @@ export class SabRope {
   /**
    * Grow a cloned SabRope with this result.
    */
-  shareGrowth(currentBufferCount: number): SabRopeGrow {
+  shareGrowth(currentBufferCount: number): SabRopeGrow | null {
+    if (this.#buffers.length === currentBufferCount) {
+      return null
+    }
+
     const buffers: Array<SharedArrayBuffer> = []
     for (let i = currentBufferCount; i < this.#buffers.length; i += 1) {
       buffers.push(this.#buffers[i]!)
