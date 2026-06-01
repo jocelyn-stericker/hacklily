@@ -50,22 +50,26 @@ export class AudioPlaybackPipeline extends TypedEventTarget<AudioPlaybackOutEven
 
   constructor({
     ropes,
+    gains,
     startAtSec,
     signal,
     sampleRate,
   }: {
     ropes: Array<SabRope>
+    /** Loudness-normalization gain per rope, aligned to `ropes`. */
+    gains: Array<number>
     startAtSec: number
     signal: AbortSignal
     sampleRate?: number
   }) {
     super()
     signal.addEventListener('abort', this.#stop)
-    void this.#play(ropes, startAtSec, sampleRate)
+    void this.#play(ropes, gains, startAtSec, sampleRate)
   }
 
   async #play(
     ropes: Array<SabRope>,
+    gains: Array<number>,
     requestedStartAtSec: number,
     sampleRate?: number,
   ) {
@@ -97,6 +101,7 @@ export class AudioPlaybackPipeline extends TypedEventTarget<AudioPlaybackOutEven
     node.port.postMessage({
       type: 'setBuffer',
       ropes: ropes.map((rope) => rope.shareRope()),
+      gains,
     })
     node.port.postMessage({ type: 'start', timeSec: startAtSec })
 

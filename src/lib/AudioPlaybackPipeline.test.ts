@@ -131,6 +131,7 @@ describe('AudioPlaybackPipeline', () => {
     it('creates an AudioContext with interactive latency hint', async () => {
       new AudioPlaybackPipeline({
         ropes: [makeRope(44100)],
+        gains: [],
         startAtSec: 0,
         signal: abortController.signal,
       })
@@ -146,6 +147,7 @@ describe('AudioPlaybackPipeline', () => {
     it('creates an AudioContext with specified sampleRate', async () => {
       new AudioPlaybackPipeline({
         ropes: [makeRope(48000, 48000)],
+        gains: [],
         startAtSec: 0,
         signal: abortController.signal,
         sampleRate: 48000,
@@ -161,6 +163,7 @@ describe('AudioPlaybackPipeline', () => {
     it('loads the worklet module and creates the rope source node', async () => {
       new AudioPlaybackPipeline({
         ropes: [makeRope(44100)],
+        gains: [],
         startAtSec: 0,
         signal: abortController.signal,
       })
@@ -177,6 +180,7 @@ describe('AudioPlaybackPipeline', () => {
     it('posts setBuffer with rope shares then start', async () => {
       new AudioPlaybackPipeline({
         ropes: [makeRope(44100), makeRope(22050)],
+        gains: [],
         startAtSec: 0.5,
         signal: abortController.signal,
       })
@@ -193,6 +197,7 @@ describe('AudioPlaybackPipeline', () => {
       // One 1s rope: a start within 0.05s of the end rewinds to 0.
       new AudioPlaybackPipeline({
         ropes: [makeRope(44100)],
+        gains: [],
         startAtSec: 1.0,
         signal: abortController.signal,
       })
@@ -205,6 +210,7 @@ describe('AudioPlaybackPipeline', () => {
       // 1s @44.1k + 1s @22.05k = 2s total; 1.5s is mid-timeline, not clamped.
       new AudioPlaybackPipeline({
         ropes: [makeRope(44100, 44100), makeRope(22050, 22050)],
+        gains: [],
         startAtSec: 1.5,
         signal: abortController.signal,
       })
@@ -216,6 +222,7 @@ describe('AudioPlaybackPipeline', () => {
     it('returns a stopSignal that is not yet aborted', () => {
       const pipeline = new AudioPlaybackPipeline({
         ropes: [makeRope(44100)],
+        gains: [],
         startAtSec: 0,
         signal: abortController.signal,
       })
@@ -229,6 +236,7 @@ describe('AudioPlaybackPipeline', () => {
     it('emits positionChanged offset by startAtSec', async () => {
       const pipeline = new AudioPlaybackPipeline({
         ropes: [makeRope(88200)], // 2s
+        gains: [],
         startAtSec: 0.5,
         signal: abortController.signal,
       })
@@ -245,6 +253,7 @@ describe('AudioPlaybackPipeline', () => {
     it('does not report a position beyond the total duration', async () => {
       const pipeline = new AudioPlaybackPipeline({
         ropes: [makeRope(44100)], // 1s
+        gains: [],
         startAtSec: 0,
         signal: abortController.signal,
       })
@@ -265,6 +274,7 @@ describe('AudioPlaybackPipeline', () => {
     it('emits stop and tears down when the timeline runs out', async () => {
       const pipeline = new AudioPlaybackPipeline({
         ropes: [makeRope(44100)], // 1s
+        gains: [],
         startAtSec: 0,
         signal: abortController.signal,
       })
@@ -288,6 +298,7 @@ describe('AudioPlaybackPipeline', () => {
     it('emits stop only once', async () => {
       const pipeline = new AudioPlaybackPipeline({
         ropes: [makeRope(44100)],
+        gains: [],
         startAtSec: 0,
         signal: abortController.signal,
       })
@@ -307,6 +318,7 @@ describe('AudioPlaybackPipeline', () => {
     it('pauses the node and closes the context on abort', async () => {
       const pipeline = new AudioPlaybackPipeline({
         ropes: [makeRope(44100)],
+        gains: [],
         startAtSec: 0,
         signal: abortController.signal,
       })
@@ -334,6 +346,7 @@ describe('AudioPlaybackPipeline', () => {
 
       const pipeline = new AudioPlaybackPipeline({
         ropes: [makeRope(44100)],
+        gains: [],
         startAtSec: 0,
         signal: abortController.signal,
       })
@@ -350,6 +363,7 @@ describe('AudioPlaybackPipeline', () => {
     it('does not throw when the context close rejects', async () => {
       const pipeline = new AudioPlaybackPipeline({
         ropes: [makeRope(44100)],
+        gains: [],
         startAtSec: 0,
         signal: abortController.signal,
       })
@@ -368,11 +382,13 @@ describe('AudioPlaybackPipeline', () => {
 
       const p1 = new AudioPlaybackPipeline({
         ropes: [makeRope(44100)],
+        gains: [],
         startAtSec: 0,
         signal: ac1.signal,
       })
       const p2 = new AudioPlaybackPipeline({
         ropes: [makeRope(44100)],
+        gains: [],
         startAtSec: 0,
         signal: ac2.signal,
       })

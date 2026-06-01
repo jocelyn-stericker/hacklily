@@ -22,6 +22,8 @@ import type { SabRopeGrow, SabRopeShare } from './SabRope'
 export interface RopeInitMessage {
   type: 'setBuffer'
   ropes: Array<SabRopeShare>
+  /** One loudness-normalization gain per rope, aligned to `ropes`. */
+  gains: Array<number>
 }
 
 export interface RopeGrowLastMessage {
@@ -79,6 +81,8 @@ const FEED_CHUNK = 128
 export class AudioRopeSourceNode extends AudioWorkletProcessor {
   /** Ropes laid end-to-end; the last one may still be growing. */
   #ropes: Array<SabRope> = []
+  /** Loudness-normalization gain per rope, parallel to {@link #ropes}. */
+  #gains: Array<number> = []
   #playing = false
 
   /** Index of the rope currently being played; -1 when not started. */
@@ -107,6 +111,7 @@ export class AudioRopeSourceNode extends AudioWorkletProcessor {
       switch (data.type) {
         case 'setBuffer': {
           this.#ropes = data.ropes.map((share) => new SabRope(share))
+          this.#gains = data.gains
           this.#playing = false
           this.#curRope = -1
           this.#resampler = null
@@ -201,6 +206,7 @@ export class AudioRopeSourceNode extends AudioWorkletProcessor {
         if (avail > 0) {
           const n = Math.min(frames - produced, avail)
           rope.read(ch0, this.#inputCursor, produced, n)
+          this.#applyGain(ch0, produced, produced + n)
           this.#inputCursor += n
           produced += n
           continue
@@ -217,7 +223,9 @@ export class AudioRopeSourceNode extends AudioWorkletProcessor {
             this.#scratch.subarray(0, want),
           )
         } else {
-          produced += this.#resampler.drain(ch0.subarray(produced))
+          const got = this.#resampler.drain(ch0.subarray(produced))
+          this.#applyGain(ch0, produced, produced + got)
+          produced += got
         }
         continue
       }
@@ -256,6 +264,18 @@ export class AudioRopeSourceNode extends AudioWorkletProcessor {
     if (this.#curRope >= this.#ropes.length - 1) return false
     this.#startRope(this.#curRope + 1, 0)
     return true
+  }
+
+  /**
+   * Scale `buf[start, end)` by the current rope's loudness gain. The region was
+   * just produced from `#ropes[#curRope]` (before any join), so the gain is
+   * keyed on `#curRope` and stays correct across seeks. A linear gain commutes
+   * with resampling, so applying it after the resampler is equivalent.
+   */
+  #applyGain(buf: Float32Array, start: number, end: number) {
+    const gain = this.#gains[this.#curRope] ?? 1
+    if (gain === 1) return
+    for (let i = start; i < end; i += 1) buf[i]! *= gain
   }
 }
 

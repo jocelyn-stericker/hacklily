@@ -22,10 +22,13 @@ import type { SabRope } from './SabRope'
 /**
  * Trigger download of a wav containing the ropes laid end-to-end.
  *
+ * `gains` is one loudness-normalization gain per rope (see
+ * {@link RopeGainCache}); pass all-1 to export the raw signal.
+ *
  * Must be done in response to a click or other event.
  */
-export function exportWav(ropes: SabRope[]) {
-  const wavBuf = ropesToWav(ropes)
+export function exportWav(ropes: SabRope[], gains: number[]) {
+  const wavBuf = ropesToWav(ropes, gains)
 
   const ts = new Date()
     .toISOString()
@@ -50,16 +53,25 @@ enum WavFormat {
  * WAV. Ropes may carry different sample rates (e.g. recordings appended under
  * changed device settings); each is resampled to the highest rate present and
  * concatenated, matching how the playback worklet treats the same ropes.
+ *
+ * `gains[i]` scales rope `i` for loudness normalization, applied before
+ * resampling (gain is linear, so it commutes). Matches the playback worklet so
+ * the exported file sounds like what was played.
  */
-export function ropesToWav(ropes: SabRope[]): ArrayBuffer {
+export function ropesToWav(ropes: SabRope[], gains: number[]): ArrayBuffer {
   const sampleRate =
     ropes.reduce((max, rope) => Math.max(max, rope.sampleRate), 0) || 44100
 
   const parts: Float32Array[] = []
   let total = 0
-  for (const rope of ropes) {
+  for (let i = 0; i < ropes.length; i += 1) {
+    const rope = ropes[i]!
+    const gain = gains[i] ?? 1
     const pcm = new Float32Array(rope.length)
     rope.read(pcm, 0, 0, rope.length)
+    if (gain !== 1) {
+      for (let j = 0; j < pcm.length; j += 1) pcm[j] = pcm[j]! * gain
+    }
     const part =
       rope.sampleRate === sampleRate
         ? pcm

@@ -108,7 +108,23 @@ function rms(buf: Float32Array, from: number, to: number): number {
 }
 
 function setBuffer(node: AudioRopeSourceNode, ...ropes: SabRope[]): void {
-  send(node, { type: 'setBuffer', ropes: ropes.map((r) => r.shareRope()) })
+  send(node, {
+    type: 'setBuffer',
+    ropes: ropes.map((r) => r.shareRope()),
+    gains: ropes.map(() => 1),
+  })
+}
+
+function setBufferWithGains(
+  node: AudioRopeSourceNode,
+  ropes: SabRope[],
+  gains: number[],
+): void {
+  send(node, {
+    type: 'setBuffer',
+    ropes: ropes.map((r) => r.shareRope()),
+    gains,
+  })
 }
 
 // ---------------------------------------------------------------------------
@@ -253,6 +269,35 @@ describe('AudioRopeSourceNode', () => {
       setBuffer(node, empty, b)
       send(node, { type: 'start', timeSec: 0 })
       expect(collect(node, 4)[0]).toBe(7)
+    })
+  })
+
+  describe('per-rope loudness gain', () => {
+    it('scales passthrough output by the rope gain', () => {
+      const node = makeNode(48000)
+      const producer = new SabRope(48000)
+      producer.append(ramp(300))
+      setBufferWithGains(node, [producer], [0.5])
+      send(node, { type: 'start', timeSec: 0 })
+
+      const out = collect(node, 300)
+      for (let i = 0; i < 300; i++) expect(out[i]).toBe(i * 0.5)
+    })
+
+    it('applies each rope its own gain across a boundary', () => {
+      const node = makeNode(48000)
+      const a = new SabRope(48000)
+      a.append(ramp(200, 100))
+      const b = new SabRope(48000)
+      b.append(ramp(200, 1000))
+      setBufferWithGains(node, [a, b], [0.5, 2])
+      send(node, { type: 'start', timeSec: 0 })
+
+      const out = collect(node, 400)
+      expect(out[0]).toBe(100 * 0.5)
+      expect(out[199]).toBe(299 * 0.5)
+      expect(out[200]).toBe(1000 * 2)
+      expect(out[399]).toBe(1199 * 2)
     })
   })
 

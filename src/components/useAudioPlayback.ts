@@ -18,18 +18,21 @@
 import { useEffect, useLayoutEffect, useRef } from 'react'
 
 import { AudioPlaybackPipeline } from '#/lib/AudioPlaybackPipeline'
+import type { RopeGainCache } from '#/lib/ropeLoudness'
 import type { SabRope } from '#/lib/SabRope'
 import { useSettings, preferredSampleRate } from '#/lib/settings'
 
 export function useAudioPlayback({
   enabled,
   ropes,
+  gainCache,
   cursorSec,
   onStop,
   onPlaybackPositionChanged,
 }: {
   enabled: boolean
   ropes: Array<SabRope>
+  gainCache: RopeGainCache
   cursorSec: number
   onStop: () => void
   onPlaybackPositionChanged: (timeSec: number) => void
@@ -107,6 +110,9 @@ export function useAudioPlayback({
 
     const pipeline = new AudioPlaybackPipeline({
       ropes,
+      // Measured once per play (recording never overlaps playback, so the
+      // last rope isn't growing here); cached for reuse across seeks.
+      gains: gainCache.gainsFor(ropes),
       startAtSec: cursorSec,
       signal: ctrl.signal,
       sampleRate: preferredRate,
@@ -138,7 +144,7 @@ export function useAudioPlayback({
       },
       listenerOpts,
     )
-  }, [enabled, ropes, preferredRate, cursorSec])
+  }, [enabled, ropes, gainCache, preferredRate, cursorSec])
 
   // Unmount cleanup — the main effect intentionally has no cleanup return
   // so the pipeline survives across cursorSec feedback-loop re-runs.

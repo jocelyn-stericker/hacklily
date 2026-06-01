@@ -87,7 +87,7 @@ describe('exportWav', () => {
       download: '',
     } as unknown as HTMLAnchorElement)
 
-    exportWav([makeRope()])
+    exportWav([makeRope()], [1])
 
     expect(clickSpy).toHaveBeenCalled()
   })
@@ -106,7 +106,7 @@ describe('exportWav', () => {
       return document.createElement.bind(document)(tag)
     })
 
-    exportWav([makeRope()])
+    exportWav([makeRope()], [1])
 
     expect(anchorElement.download).toMatch(
       /^braat-\d{4}-\d{2}-\d{2}_\d{2}-\d{2}-\d{2}\.wav$/,
@@ -117,7 +117,7 @@ describe('exportWav', () => {
   it('revokes object URL after download', () => {
     const revokeObjectURLSpy = vi.spyOn(URL, 'revokeObjectURL')
 
-    exportWav([makeRope()])
+    exportWav([makeRope()], [1])
 
     vi.runAllTimers()
 
@@ -136,7 +136,7 @@ describe('exportWav', () => {
     )
 
     // Should complete without error
-    exportWav([makeRope()])
+    exportWav([makeRope()], [1])
 
     // Verify the anchor was clicked
     expect(anchorElement.click).toHaveBeenCalled()
@@ -145,7 +145,7 @@ describe('exportWav', () => {
 
 describe('ropesToWav', () => {
   it('concatenates same-rate ropes end-to-end', () => {
-    const wav = ropesToWav([makeRope(100), makeRope(100)])
+    const wav = ropesToWav([makeRope(100), makeRope(100)], [1, 1])
     const header = readWavHeader(wav)
 
     expect(header.sampleRate).toBe(44100)
@@ -155,7 +155,7 @@ describe('ropesToWav', () => {
   })
 
   it('resamples ropes to the highest rate present before concatenating', () => {
-    const wav = ropesToWav([makeRope(50, 22050), makeRope(50, 44100)])
+    const wav = ropesToWav([makeRope(50, 22050), makeRope(50, 44100)], [1, 1])
     const header = readWavHeader(wav)
 
     expect(header.sampleRate).toBe(44100)
@@ -165,10 +165,25 @@ describe('ropesToWav', () => {
   })
 
   it('produces a header-only WAV for no ropes', () => {
-    const wav = ropesToWav([])
+    const wav = ropesToWav([], [])
     const header = readWavHeader(wav)
 
     expect(wav.byteLength).toBe(44)
     expect(header.sampleRate).toBe(44100)
+  })
+
+  it('applies the per-rope gain to the encoded samples', () => {
+    const makeFilled = () => {
+      const rope = new SabRope(44100)
+      rope.append(new Float32Array(100).fill(0.4))
+      return rope
+    }
+
+    const full = new DataView(ropesToWav([makeFilled()], [1]))
+    const halved = new DataView(ropesToWav([makeFilled()], [0.5]))
+    // Halving the gain halves the encoded sample value.
+    expect(halved.getInt16(44, true)).toBe(
+      Math.round(full.getInt16(44, true) / 2),
+    )
   })
 })

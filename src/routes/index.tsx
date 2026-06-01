@@ -44,6 +44,7 @@ import type {
 } from '#/lib/AnalysisFrame'
 import { reconcileVoicingAt, totalFrames } from '#/lib/AnalysisFrame'
 import { exportWav } from '#/lib/exportWav'
+import { RopeGainCache } from '#/lib/ropeLoudness'
 import { SabRope } from '#/lib/SabRope'
 import type { SabRopeGrow, SabRopeShare } from '#/lib/SabRope'
 import { updateSettings, useSettings } from '#/lib/settings'
@@ -189,6 +190,10 @@ function App() {
     ropesRef.current = ropes
   }, [ropes])
 
+  // Per-recording loudness-normalization gains, shared between playback and
+  // export so the exported file sounds like what was played.
+  const [gainCache] = useState(() => new RopeGainCache())
+
   const [isExporting, setIsExporting] = useState(false)
 
   const handleExportAudio = useCallback(() => {
@@ -197,13 +202,13 @@ function App() {
     if (!currentRopes.some((rope) => rope.length > 0)) return
     setIsExporting(true)
     try {
-      exportWav(currentRopes)
+      exportWav(currentRopes, gainCache.gainsFor(currentRopes))
     } catch (err) {
       handleError(err)
     } finally {
       setIsExporting(false)
     }
-  }, [handleError])
+  }, [handleError, gainCache])
 
   const handleRecordingComplete = useCallback(() => {
     // The PCM is already in the ropes; just settle the timeline to the duration
@@ -302,6 +307,7 @@ function App() {
   useAudioPlayback({
     enabled: status.value === 'playing',
     ropes,
+    gainCache,
     cursorSec: timelineState.cursorSec,
     onStop: handlePause,
     onPlaybackPositionChanged: handlePlaybackPositionChanged,

@@ -85,6 +85,9 @@ vi.mock('#/lib/AudioPlaybackPipeline', () => {
   }
 })
 
+// The mocked pipeline ignores gains, so a stub that returns no gains is enough.
+const mockGainCache = { gainsFor: () => [] } as any
+
 describe('useAudioPlayback', () => {
   let mockRopes: any[]
 
@@ -116,6 +119,7 @@ describe('useAudioPlayback', () => {
       useAudioPlayback({
         enabled: false,
         ropes: [],
+        gainCache: mockGainCache,
         cursorSec: 0,
         onStop,
         onPlaybackPositionChanged,
@@ -134,6 +138,7 @@ describe('useAudioPlayback', () => {
       useAudioPlayback({
         enabled: true,
         ropes: mockRopes,
+        gainCache: mockGainCache,
         cursorSec: 0,
         onStop,
         onPlaybackPositionChanged,
@@ -151,6 +156,7 @@ describe('useAudioPlayback', () => {
       useAudioPlayback({
         enabled: true,
         ropes: mockRopes,
+        gainCache: mockGainCache,
         cursorSec: 2.5,
         onStop,
         onPlaybackPositionChanged,
@@ -169,6 +175,7 @@ describe('useAudioPlayback', () => {
       useAudioPlayback({
         enabled: false,
         ropes: mockRopes,
+        gainCache: mockGainCache,
         cursorSec: 0,
         onStop,
         onPlaybackPositionChanged,
@@ -186,6 +193,7 @@ describe('useAudioPlayback', () => {
       useAudioPlayback({
         enabled: true,
         ropes: [],
+        gainCache: mockGainCache,
         cursorSec: 0,
         onStop,
         onPlaybackPositionChanged,
@@ -203,6 +211,7 @@ describe('useAudioPlayback', () => {
       useAudioPlayback({
         enabled: true,
         ropes: mockRopes,
+        gainCache: mockGainCache,
         cursorSec: 0,
         onStop,
         onPlaybackPositionChanged,
@@ -223,6 +232,7 @@ describe('useAudioPlayback', () => {
       useAudioPlayback({
         enabled: true,
         ropes: mockRopes,
+        gainCache: mockGainCache,
         cursorSec: 0,
         onStop,
         onPlaybackPositionChanged,
@@ -244,6 +254,7 @@ describe('useAudioPlayback', () => {
         useAudioPlayback({
           enabled,
           ropes: mockRopes,
+          gainCache: mockGainCache,
           cursorSec: 0,
           onStop,
           onPlaybackPositionChanged,
@@ -267,6 +278,7 @@ describe('useAudioPlayback', () => {
         useAudioPlayback({
           enabled: true,
           ropes: mockRopes,
+          gainCache: mockGainCache,
           cursorSec,
           onStop,
           onPlaybackPositionChanged,
@@ -293,6 +305,7 @@ describe('useAudioPlayback', () => {
         useAudioPlayback({
           enabled: true,
           ropes: mockRopes,
+          gainCache: mockGainCache,
           cursorSec,
           onStop,
           onPlaybackPositionChanged,
@@ -326,6 +339,7 @@ describe('useAudioPlayback', () => {
         useAudioPlayback({
           enabled: true,
           ropes: mockRopes,
+          gainCache: mockGainCache,
           cursorSec,
           onStop,
           onPlaybackPositionChanged,
@@ -352,6 +366,7 @@ describe('useAudioPlayback', () => {
         useAudioPlayback({
           enabled: true,
           ropes: mockRopes,
+          gainCache: mockGainCache,
           cursorSec,
           onStop,
           onPlaybackPositionChanged,
@@ -377,6 +392,7 @@ describe('useAudioPlayback', () => {
         useAudioPlayback({
           enabled: true,
           ropes: mockRopes,
+          gainCache: mockGainCache,
           cursorSec,
           onStop,
           onPlaybackPositionChanged,
@@ -412,6 +428,7 @@ describe('useAudioPlayback', () => {
         useAudioPlayback({
           enabled: true,
           ropes: mockRopes,
+          gainCache: mockGainCache,
           cursorSec,
           onStop,
           onPlaybackPositionChanged,
@@ -435,6 +452,7 @@ describe('useAudioPlayback', () => {
       useAudioPlayback({
         enabled: true,
         ropes: mockRopes,
+        gainCache: mockGainCache,
         cursorSec: 0,
         onStop,
         onPlaybackPositionChanged,
@@ -455,6 +473,7 @@ describe('useAudioPlayback', () => {
         useAudioPlayback({
           enabled: true,
           ropes: mockRopes,
+          gainCache: mockGainCache,
           cursorSec: 0,
           onStop,
           onPlaybackPositionChanged,
@@ -497,6 +516,7 @@ describe('useAudioPlayback', () => {
         useAudioPlayback({
           enabled: true,
           ropes,
+          gainCache: mockGainCache,
           cursorSec: 0,
           onStop,
           onPlaybackPositionChanged,
@@ -522,6 +542,7 @@ describe('useAudioPlayback', () => {
         useAudioPlayback({
           enabled: true,
           ropes: mockRopes,
+          gainCache: mockGainCache,
           cursorSec,
           onStop,
           onPlaybackPositionChanged,
