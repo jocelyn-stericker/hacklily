@@ -20,7 +20,7 @@ npm run test           # Run tests with Vitest
 
 - **UI Framework**: TanStack Router (React 19 SPA with file-based routing under `src/routes/`)
 - **Styling**: Tailwind CSS v4 (via `@tailwindcss/vite` plugin)
-- **Components**: shadcn/ui (installed to `src/components/ui/`)
+- **Components**: shadcn/ui — its Base UI registry variant (built on [Base UI](https://base-ui.com/), `@base-ui/react`, rather than Radix), configured via `components.json` (`"style": "base-nova"`). Components are vendored into `src/components/ui/` with minor local changes on top.
 - **Icons**: lucide-react
 
 ## Key Architectural Decisions
@@ -39,13 +39,13 @@ npm run test           # Run tests with Vitest
 
 ## Adding UI Components
 
-To add new shadcn/ui components:
+To add new shadcn/ui components (pulled from the Base UI registry configured in `components.json`):
 
 ```bash
 npx shadcn@latest add <component-name>
 ```
 
-Components are installed to `src/components/ui/` and can be imported directly.
+Components are vendored into `src/components/ui/` and can be imported directly. We carry minor local changes on top of the generated code, so review diffs before re-adding or updating a component.
 
 ## CI/CD
 
