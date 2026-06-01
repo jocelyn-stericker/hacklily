@@ -401,14 +401,7 @@ function App() {
     status.value === 'recording' || status.value === 'analyzing'
   const noOp = useCallback(() => {}, [])
 
-  // Kick off (stubbed) transcription for completed voiced chunks whenever the
-  // analysis, transcription settings, or audio buffer change and we're not
-  // mid-recording. Depending on `audioBuffer` matters: a chunk's PCM only
-  // becomes available once the recording buffer has been appended, which can
-  // land a render after recording stops — re-running here lets chunks that
-  // were skipped for lack of audio get picked up. This covers file imports,
-  // the end of a recording, and the user enabling transcription after the
-  // fact. Results mutate chunks in place, so we tell the SpeechStrip
+  // Transcribe. Results mutate chunks in place, so we tell the SpeechStrip
   // imperatively to re-render its overlay as they arrive.
   useEffect(() => {
     if (isRecording || !audioBuffer) return

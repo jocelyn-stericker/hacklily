@@ -15,8 +15,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-// AudioWorklet processor which writes microphone PCM data to a ring buffer.
-
 import { isPowerOfTwo } from './mathUtils'
 
 export interface AudioRingWriterInitMessage {
@@ -36,7 +34,7 @@ export type AudioRingWriterNode = Omit<AudioWorkletNode, 'port'> & {
  *
  * Load it:
  * ```
- * import audioWorkletUrl from '#/lib/worklet?worker&url'
+ * import audioWorkletUrl from '#/lib/AudioRingWriter?worker&url'
  * await context.audioWorklet.addModule(audioWorkletUrl)
  * workletNode = new AudioWorkletNode(context, 'audio-ring-writer')
  * ```

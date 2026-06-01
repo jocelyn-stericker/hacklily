@@ -76,3 +76,8 @@ declare function registerProcessor(
     options?: AudioWorkletNodeOptions,
   ) => AudioWorkletProcessor,
 ): void
+
+// Globals available inside the AudioWorkletGlobalScope.
+declare const sampleRate: number
+declare const currentTime: number
+declare const currentFrame: number

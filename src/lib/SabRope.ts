@@ -24,14 +24,14 @@ console.assert(isPowerOfTwo(SEG_SAMPLES))
 const SEG_SAMPLES_MASK = SEG_SAMPLES - 1
 const SEG_SAMPLES_SHIFT = Math.log2(SEG_SAMPLES)
 
-type SabRopeGrow = {
+export type SabRopeGrow = {
   type: 'sab-rope-grow'
   /** Number of buffers consumer must have before appending `buffers`. */
   oldBufferCount: number
   buffers: Array<SharedArrayBuffer>
 }
 
-type SabRopeShare = {
+export type SabRopeShare = {
   type: 'sab-rope'
   sampleRate: number
   buffers: Array<SharedArrayBuffer>

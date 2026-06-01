@@ -204,6 +204,16 @@ export class ResamplerStreamProcessor {
     this.cosWinStep = Math.cos(this.winStep)
   }
 
+  /**
+   * Kernel half-width, in input samples, used on each side of an interpolation
+   * point. Also the warm-up: the number of input samples that must be fed
+   * before (and after) a position for its output to be free of edge taper.
+   * Equals `ceil(precision / min(1, toRate/fromRate))`.
+   */
+  get warmupInputSamples(): number {
+    return this.kernelHalf
+  }
+
   /** Feed a block of new input samples. May enqueue zero or more output samples. */
   feed(samples: Float32Array): void {
     const { ring, ringMask } = this
