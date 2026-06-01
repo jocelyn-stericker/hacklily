@@ -26,51 +26,13 @@
 //
 // These shapes aren't all in the DOM lib yet, so we declare what we use.
 
+/// <reference types="@types/dom-speech-recognition" />
+
 /** Recognition language. Matches the default used by the feature probes. */
 const TRANSCRIPTION_LANG = 'en-US'
 const LOG = '[transcription-web]'
 
-interface SpeechRecognitionAlternativeLike {
-  transcript: string
-  confidence: number
-}
-
-interface SpeechRecognitionResultLike {
-  isFinal: boolean
-  length: number
-  [index: number]: SpeechRecognitionAlternativeLike
-}
-
-interface SpeechRecognitionResultListLike {
-  length: number
-  [index: number]: SpeechRecognitionResultLike
-}
-
-interface SpeechRecognitionEventLike {
-  resultIndex: number
-  results: SpeechRecognitionResultListLike
-}
-
-interface SpeechRecognitionErrorEventLike {
-  error: string
-  message?: string
-}
-
-interface SpeechRecognitionLike {
-  lang: string
-  continuous: boolean
-  interimResults: boolean
-  maxAlternatives: number
-  processLocally?: boolean
-  start(audioTrack?: MediaStreamTrack): void
-  stop(): void
-  abort(): void
-  onresult: ((event: SpeechRecognitionEventLike) => void) | null
-  onerror: ((event: SpeechRecognitionErrorEventLike) => void) | null
-  onend: (() => void) | null
-}
-
-type SpeechRecognitionConstructor = new () => SpeechRecognitionLike
+type SpeechRecognitionConstructor = new () => SpeechRecognition
 
 function getSpeechRecognitionConstructor():
   | SpeechRecognitionConstructor
@@ -82,7 +44,7 @@ function getSpeechRecognitionConstructor():
   return w.SpeechRecognition ?? w.webkitSpeechRecognition
 }
 
-function recognitionErrorMessage(error: string): string {
+function recognitionErrorMessage(error: SpeechRecognitionErrorCode): string {
   switch (error) {
     case 'language-not-supported':
       return 'The selected language is not available for transcription.'
