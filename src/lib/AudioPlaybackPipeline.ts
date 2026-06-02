@@ -18,7 +18,7 @@
 import audioWorkletUrl from '#/lib/SabRopeSourceNode?worker&url'
 
 import type { SabRope } from './SabRope'
-import type { AudioRopeSourceNodeNode } from './SabRopeSourceNode'
+import type { SabRopeSourceNode } from './SabRopeSourceNode'
 import { TypedEventTarget } from './TypedEventTarget'
 
 const LOG = '[AudioPlaybackPipeline]'
@@ -31,14 +31,14 @@ type AudioPlaybackOutEvents = {
 
 /**
  * Plays one or more `SabRope`s laid end-to-end through the
- * `AudioRopeSourceNode` worklet. The worklet handles the seek and any
+ * `SabRopeSourceNode` worklet. The worklet handles the seek and any
  * per-rope resampling; this wrapper owns the `AudioContext`, tracks the
  * playback position off `context.currentTime`, and emits `stop` once the
  * concatenated timeline runs out (the worklet itself never signals an end).
  */
 export class AudioPlaybackPipeline extends TypedEventTarget<AudioPlaybackOutEvents> {
   #context: AudioContext | null = null
-  #node: AudioRopeSourceNodeNode | null = null
+  #node: SabRopeSourceNode | null = null
   #animFrameId: number | null = null
   #startTimeSec = 0
   // `context.currentTime` when playback began; `addModule` adds a variable
@@ -102,7 +102,7 @@ export class AudioPlaybackPipeline extends TypedEventTarget<AudioPlaybackOutEven
       return
     }
 
-    const node: AudioRopeSourceNodeNode = new AudioWorkletNode(
+    const node: SabRopeSourceNode = new AudioWorkletNode(
       context,
       'sab-rope-source-node',
     )

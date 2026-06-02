@@ -18,6 +18,7 @@
 import { ResamplerStreamProcessor } from './ResampleProcessor'
 import { SabRope } from './SabRope'
 import type { SabRopeGrow, SabRopeShare } from './SabRope'
+import { assertUnreachable } from './utils'
 
 export interface RopeInitMessage {
   type: 'setBuffer'
@@ -36,14 +37,36 @@ export interface RopeStartMessage {
   timeSec: number
 }
 
-export type AudioRopeSourceNodeMessage =
+// Stop playing once the cursor gets to this time
+export interface RopeEndMessage {
+  type: 'end'
+  timeSec: number
+}
+
+export interface RopeEndEvent {
+  type: 'end'
+}
+
+export type SabRopeSourceNodeMessage =
   | RopeInitMessage
   | RopeGrowLastMessage
   | RopeStartMessage
+  | RopeEndMessage
   | null
 
-export type AudioRopeSourceNodeNode = Omit<AudioWorkletNode, 'port'> & {
-  port: { postMessage: (msg: AudioRopeSourceNodeMessage) => void }
+export type SabRopeSourceNode = Omit<AudioWorkletNode, 'port'> & {
+  port: {
+    postMessage: (msg: SabRopeSourceNodeMessage) => void
+    onmessage:
+      | ((this: MessagePort, msg: MessageEvent<RopeEndEvent>) => void)
+      | null
+  }
+}
+
+type Cursor = {
+  rope: number
+  /** Next source sample within rope to feed/read */
+  frame: number
 }
 
 /** Source samples fed per `feed()` call. Bounds the over-feed of the resampler
@@ -78,17 +101,15 @@ const FEED_CHUNK = 128
  * workletNode = new AudioWorkletNode(context, 'sab-rope-source-node')
  * ```
  */
-export class AudioRopeSourceNode extends AudioWorkletProcessor {
+export class SabRopeSourceNodeProcessor extends AudioWorkletProcessor {
   /** Ropes laid end-to-end; the last one may still be growing. */
   #ropes: Array<SabRope> = []
   /** Loudness-normalization gain per rope, parallel to ropes. */
   #gains: Array<number> = []
   #playing = false
 
-  /** Index of the rope currently being played; -1 when not started. */
-  #curRope = -1
-  /** Next source sample (within `#ropes[#curRope]`) to feed/read. */
-  #inputCursor = 0
+  /** Null when not started */
+  #cursor: Cursor | null = null
   /** Resampler for the current rope, or null when it plays through unresampled. */
   #resampler: ResamplerStreamProcessor | null = null
   /** Output samples still to discard for seek priming. */
@@ -97,11 +118,13 @@ export class AudioRopeSourceNode extends AudioWorkletProcessor {
   /** Scratch for feeding the resampler and for draining discarded warm-up. */
   #scratch = new Float32Array(FEED_CHUNK)
 
+  #end: { rope: number; frame: number } | null = null
+
   constructor() {
     super()
     this.port.onmessage = ({
       data,
-    }: MessageEvent<AudioRopeSourceNodeMessage>) => {
+    }: MessageEvent<SabRopeSourceNodeMessage>) => {
       if (data === null) {
         // Pause; keep ropes and position so a later `start` can resume.
         this.#playing = false
@@ -113,8 +136,8 @@ export class AudioRopeSourceNode extends AudioWorkletProcessor {
           this.#ropes = data.ropes.map((share) => new SabRope(share))
           this.#gains = data.gains
           this.#playing = false
-          this.#curRope = -1
-          this.#resampler = null
+          this.#cursor = null
+          this.#end = null
           break
         }
         case 'growLastRope': {
@@ -123,49 +146,69 @@ export class AudioRopeSourceNode extends AudioWorkletProcessor {
         }
         case 'start': {
           this.#seek(data.timeSec)
+          this.#end = null
           break
         }
+        case 'end': {
+          this.#scheduleEnd(data.timeSec)
+          break
+        }
+        default:
+          assertUnreachable(data)
       }
     }
   }
 
-  /** Seek to `time` seconds on the concatenated timeline and begin playing. */
-  #seek(time: number) {
+  #timeSecToCursor(time: number): Cursor | null {
     let cumulative = 0
     for (let r = 0; r < this.#ropes.length; r += 1) {
       const rope = this.#ropes[r]!
       const dur = rope.length / rope.sampleRate
-      // Land on this rope if `time` falls within it, or on the last rope for
-      // anything at/past the end (so live playback can start at the write head).
       if (time < cumulative + dur || r === this.#ropes.length - 1) {
         const localSrc = Math.min(
           Math.max(0, (time - cumulative) * rope.sampleRate),
           rope.length,
         )
-        this.#startRope(r, localSrc)
-        this.#playing = true
-        return
+        return { rope: r, frame: localSrc }
       }
       cumulative += dur
     }
-    // No ropes to play.
-    this.#playing = false
-    this.#curRope = -1
-    this.#resampler = null
+
+    return null
+  }
+
+  /** Seek to `time` seconds on the concatenated timeline and begin playing. */
+  #seek(time: number) {
+    const cursor = this.#timeSecToCursor(time)
+    if (cursor) {
+      this.#startRope(cursor)
+      this.#playing = true
+    } else {
+      // No ropes to play.
+      this.#playing = false
+      this.#cursor = null
+      this.#resampler = null
+    }
+  }
+
+  #scheduleEnd(time: number) {
+    this.#end = this.#timeSecToCursor(time)
   }
 
   /**
    * Begin playing `#ropes[r]` from source sample `localSrc`. Sets up either a
    * primed resampler (rate mismatch) or a direct passthrough (rate match).
    */
-  #startRope(r: number, localSrc: number) {
-    const rope = this.#ropes[r]!
-    this.#curRope = r
+  #startRope(cursor: Cursor) {
+    const rope = this.#ropes[cursor.rope]!
+    this.#cursor = {
+      rope: cursor.rope,
+      frame: Math.min(Math.round(cursor.frame), rope.length),
+    }
     this.#dropOutput = 0
 
     if (rope.sampleRate === sampleRate) {
       this.#resampler = null
-      this.#inputCursor = Math.min(Math.round(localSrc), rope.length)
       return
     }
 
@@ -175,11 +218,11 @@ export class AudioRopeSourceNode extends AudioWorkletProcessor {
     // both sides of the target, then drop the warm-up output.
     const start = Math.max(
       0,
-      Math.floor(localSrc) - resampler.warmupInputSamples,
+      Math.floor(cursor.frame) - resampler.warmupInputSamples,
     )
-    this.#inputCursor = start
+    this.#cursor.frame = start
     this.#dropOutput = Math.round(
-      ((localSrc - start) * sampleRate) / rope.sampleRate,
+      ((cursor.frame - start) * sampleRate) / rope.sampleRate,
     )
   }
 
@@ -190,24 +233,24 @@ export class AudioRopeSourceNode extends AudioWorkletProcessor {
     const out = outputs[0]
     const ch0 = out?.[0]
     // Outputs arrive zeroed, so a silent quantum just returns.
-    if (!ch0 || !this.#playing || this.#curRope < 0) {
+    if (!ch0 || !this.#playing || !this.#cursor) {
       return true
     }
 
     const frames = ch0.length
     let produced = 0
     while (produced < frames) {
-      const rope = this.#ropes[this.#curRope]
+      const rope = this.#ropes[this.#cursor.rope]
       if (!rope) break
 
       if (this.#resampler === null) {
         // Passthrough: copy source samples straight into the output.
-        const avail = rope.length - this.#inputCursor
+        const avail = rope.length - this.#cursor.frame
         if (avail > 0) {
           const n = Math.min(frames - produced, avail)
-          rope.read(ch0, this.#inputCursor, produced, n)
+          rope.read(ch0, this.#cursor.frame, produced, n)
           this.#applyGain(ch0, produced, produced + n)
-          this.#inputCursor += n
+          this.#cursor.frame += n
           produced += n
           continue
         }
@@ -229,17 +272,29 @@ export class AudioRopeSourceNode extends AudioWorkletProcessor {
         }
         continue
       }
-      if (this.#inputCursor < rope.length) {
+      if (this.#cursor.frame < rope.length) {
         const chunk = Math.min(
-          rope.length - this.#inputCursor,
+          rope.length - this.#cursor.frame,
           this.#scratch.length,
         )
-        rope.read(this.#scratch, this.#inputCursor, 0, chunk)
+        rope.read(this.#scratch, this.#cursor.frame, 0, chunk)
         this.#resampler.feed(this.#scratch.subarray(0, chunk))
-        this.#inputCursor += chunk
+        this.#cursor.frame += chunk
         continue
       }
       if (!this.#advanceRope()) break
+    }
+
+    if (this.#end) {
+      if (
+        this.#cursor.rope > this.#end.rope ||
+        (this.#cursor.rope === this.#end.rope &&
+          this.#cursor.frame >=
+            this.#end.frame + (this.#resampler?.warmupInputSamples ?? 0))
+      ) {
+        this.#playing = false
+        this.port.postMessage({ type: 'end' } satisfies RopeEndEvent)
+      }
     }
 
     // Mono source: mirror into any remaining output channels.
@@ -261,8 +316,9 @@ export class AudioRopeSourceNode extends AudioWorkletProcessor {
    * continuous resampler can't span ropes of different rates anyway.
    */
   #advanceRope(): boolean {
-    if (this.#curRope >= this.#ropes.length - 1) return false
-    this.#startRope(this.#curRope + 1, 0)
+    if (!this.#cursor || this.#cursor.rope >= this.#ropes.length - 1)
+      return false
+    this.#startRope({ rope: this.#cursor.rope + 1, frame: 0 })
     return true
   }
 
@@ -273,10 +329,13 @@ export class AudioRopeSourceNode extends AudioWorkletProcessor {
    * with resampling, so applying it after the resampler is equivalent.
    */
   #applyGain(buf: Float32Array, start: number, end: number) {
-    const gain = this.#gains[this.#curRope] ?? 1
+    if (!this.#cursor) {
+      return
+    }
+    const gain = this.#gains[this.#cursor.rope] ?? 1
     if (gain === 1) return
     for (let i = start; i < end; i += 1) buf[i]! *= gain
   }
 }
 
-registerProcessor('sab-rope-source-node', AudioRopeSourceNode)
+registerProcessor('sab-rope-source-node', SabRopeSourceNodeProcessor)

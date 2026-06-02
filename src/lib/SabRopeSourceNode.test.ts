@@ -18,8 +18,8 @@
 import { describe, it, expect, vi } from 'vitest'
 
 import { SabRope } from './SabRope'
-import type { AudioRopeSourceNodeMessage } from './SabRopeSourceNode'
-import { AudioRopeSourceNode } from './SabRopeSourceNode'
+import type { SabRopeSourceNodeMessage } from './SabRopeSourceNode'
+import { SabRopeSourceNodeProcessor } from './SabRopeSourceNode'
 
 vi.hoisted(() => {
   vi.stubGlobal(
@@ -28,8 +28,12 @@ vi.hoisted(() => {
       process(): boolean {
         throw new Error('unimplemented')
       }
-      port: { onmessage?: ((event: MessageEvent<any>) => void) | null } = {
+      port: {
+        onmessage?: ((event: MessageEvent<any>) => void) | null
+        postMessage: (msg: SabRopeSourceNodeMessage) => void
+      } = {
         onmessage: null,
+        postMessage: vi.fn(),
       }
     },
   )
@@ -41,14 +45,14 @@ vi.hoisted(() => {
 // ---------------------------------------------------------------------------
 
 /** Construct a node with the worklet's `sampleRate` global stubbed. */
-function makeNode(outRate: number): AudioRopeSourceNode {
+function makeNode(outRate: number): SabRopeSourceNodeProcessor {
   vi.stubGlobal('sampleRate', outRate)
-  return new AudioRopeSourceNode()
+  return new SabRopeSourceNodeProcessor()
 }
 
 function send(
-  node: AudioRopeSourceNode,
-  msg: AudioRopeSourceNodeMessage,
+  node: SabRopeSourceNodeProcessor,
+  msg: SabRopeSourceNodeMessage,
 ): void {
   ;(
     node as unknown as { port: { onmessage: (e: MessageEvent) => void } }
@@ -57,7 +61,7 @@ function send(
 
 /** Run one render quantum, returning the first output channel. */
 function quantum(
-  node: AudioRopeSourceNode,
+  node: SabRopeSourceNodeProcessor,
   frames = 128,
   channels = 1,
 ): Float32Array[] {
@@ -69,7 +73,7 @@ function quantum(
 
 /** Pull `n` output samples across as many quanta as needed. */
 function collect(
-  node: AudioRopeSourceNode,
+  node: SabRopeSourceNodeProcessor,
   n: number,
   frames = 128,
 ): Float32Array {
@@ -107,7 +111,10 @@ function rms(buf: Float32Array, from: number, to: number): number {
   return Math.sqrt(e / (to - from))
 }
 
-function setBuffer(node: AudioRopeSourceNode, ...ropes: SabRope[]): void {
+function setBuffer(
+  node: SabRopeSourceNodeProcessor,
+  ...ropes: SabRope[]
+): void {
   send(node, {
     type: 'setBuffer',
     ropes: ropes.map((r) => r.shareRope()),
@@ -116,7 +123,7 @@ function setBuffer(node: AudioRopeSourceNode, ...ropes: SabRope[]): void {
 }
 
 function setBufferWithGains(
-  node: AudioRopeSourceNode,
+  node: SabRopeSourceNodeProcessor,
   ropes: SabRope[],
   gains: number[],
 ): void {
@@ -129,7 +136,7 @@ function setBufferWithGains(
 
 // ---------------------------------------------------------------------------
 
-describe('AudioRopeSourceNode', () => {
+describe('SabRopeSourceNode', () => {
   describe('lifecycle & message protocol', () => {
     it('is silent before any setBuffer/start', () => {
       const node = makeNode(48000)
@@ -410,6 +417,123 @@ describe('AudioRopeSourceNode', () => {
       expect(after[0]).toBe(SEG) // boundary sample now visible
       expect(after[9]).toBe(SEG + 9)
       expect(after[10]).toBe(0)
+    })
+  })
+
+  describe('scheduled end', () => {
+    it('stops playback once the cursor reaches the scheduled end', () => {
+      const node = makeNode(48000)
+      const producer = new SabRope(48000)
+      producer.append(ramp(500))
+      setBuffer(node, producer)
+      send(node, { type: 'start', timeSec: 0 })
+      send(node, { type: 'end', timeSec: 200 / 48000 })
+
+      // 100-frame quanta land a block boundary exactly on frame 200.
+      const out = collect(node, 400, 100)
+      for (let i = 0; i < 200; i++) expect(out[i]).toBe(i)
+      for (let i = 200; i < 400; i++) expect(out[i]).toBe(0) // silent past end
+    })
+
+    it('stops on a later rope at the scheduled end', () => {
+      const node = makeNode(48000)
+      const a = new SabRope(48000)
+      a.append(ramp(200))
+      const b = new SabRope(48000)
+      b.append(ramp(200, 1000))
+      setBuffer(node, a, b)
+      send(node, { type: 'start', timeSec: 0 })
+      // 250 samples in = 50 frames into rope b.
+      send(node, { type: 'end', timeSec: 250 / 48000 })
+
+      const out = collect(node, 400, 50)
+      expect(out[0]).toBe(0)
+      expect(out[199]).toBe(199) // tail of rope a
+      expect(out[200]).toBe(1000) // head of rope b
+      expect(out[249]).toBe(1049) // last frame before the end (frame 50, exclusive)
+      expect(out[250]).toBe(0) // stopped
+      expect(out[399]).toBe(0)
+    })
+
+    it('plays to the natural end when the end time is past the timeline', () => {
+      const node = makeNode(48000)
+      const producer = new SabRope(48000)
+      producer.append(ramp(100))
+      setBuffer(node, producer)
+      send(node, { type: 'start', timeSec: 0 })
+      send(node, { type: 'end', timeSec: 10 }) // far past the 100-sample timeline
+
+      const out = collect(node, 200, 100)
+      for (let i = 0; i < 100; i++) expect(out[i]).toBe(i)
+      for (let i = 100; i < 200; i++) expect(out[i]).toBe(0)
+    })
+
+    it('also stops on a resampled rope', () => {
+      const node = makeNode(48000)
+      const producer = new SabRope(24000) // 2x upsample
+      producer.append(ramp(2000, 1)) // values 1..2000 (all non-zero)
+      setBuffer(node, producer)
+      send(node, { type: 'start', timeSec: 0 })
+      // End ~halfway through the source → ~2000 output samples.
+      send(node, { type: 'end', timeSec: 1000 / 24000 })
+
+      const out = collect(node, 3000, 128)
+      // out[j] ≈ source[j / 2] = j / 2 + 1 in steady state.
+      expect(Math.abs(out[1000]! - 501)).toBeLessThan(1)
+      // Stopped well before the rope's natural end (4000 output samples).
+      expect(out[2900]).toBe(0)
+      expect(out[2999]).toBe(0)
+    })
+
+    it('cuts at the render-quantum boundary, overshooting the exact end frame', () => {
+      // The end is checked once per quantum, after the whole block is filled,
+      // so playback runs to the end of the block containing the end frame
+      // rather than stopping exactly on it. Documents current granularity.
+      const node = makeNode(48000)
+      const producer = new SabRope(48000)
+      producer.append(ramp(500))
+      setBuffer(node, producer)
+      send(node, { type: 'start', timeSec: 0 })
+      send(node, { type: 'end', timeSec: 100 / 48000 })
+
+      const [ch] = quantum(node, 128)
+      // Exact-cut would zero everything from frame 100; instead the block runs on.
+      expect(ch![100]).toBe(100)
+      expect(ch![127]).toBe(127)
+      // The next quantum is silent (it stopped at the block boundary).
+      expect(Array.from(quantum(node, 128)[0]!)).toEqual(
+        Array.from(new Float32Array(128)),
+      )
+    })
+
+    it('does not clip a resampled rope short of the scheduled end', () => {
+      const node = makeNode(48000)
+      const producer = new SabRope(24000) // 2x upsample
+      producer.append(ramp(2000, 1)) // values 1..2000 (all non-zero)
+      setBuffer(node, producer)
+      send(node, { type: 'start', timeSec: 0 })
+      send(node, { type: 'end', timeSec: 1000 / 24000 })
+
+      const out = collect(node, 3000, 128)
+      // out[j] ≈ source[j / 2]; frame 950 sits safely before the end.
+      expect(Math.abs(out[1900]! - 950)).toBeLessThan(5)
+    })
+
+    it('clears a stale end when a new buffer is set', () => {
+      const node = makeNode(48000)
+      const first = new SabRope(48000)
+      first.append(ramp(500))
+      setBuffer(node, first)
+      send(node, { type: 'end', timeSec: 50 / 48000 }) // arm end at frame 50
+
+      // A new recording replaces the buffer; the old end should not apply.
+      const second = new SabRope(48000)
+      second.append(ramp(500, 1000))
+      setBuffer(node, second)
+      send(node, { type: 'start', timeSec: 0 })
+
+      const out = collect(node, 300, 100)
+      expect(out[200]).toBe(1200) // desired: plays past the stale end frame
     })
   })
 })
