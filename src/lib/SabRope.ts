@@ -82,6 +82,10 @@ export class SabRope {
   #ctrlPtr: SharedArrayBuffer
   #ctrlView: Int32Array
 
+  /** Observers notified when this copy applies a `grow()` / `seal()`. */
+  #growListeners = new Set<(grow: SabRopeGrow) => void>()
+  #sealListeners = new Set<() => void>()
+
   constructor(sampleRate: number)
   constructor(state: SabRopeShare)
   constructor(init: number | SabRopeShare) {
@@ -199,6 +203,8 @@ export class SabRope {
       this.#buffers.length = needed
       this.#buffersView.length = needed
     }
+
+    for (const cb of this.#sealListeners) cb()
   }
 
   read(dest: Float32Array, readFrom: number, writeTo: number, count: number) {
@@ -247,6 +253,32 @@ export class SabRope {
     for (const buffer of grow.buffers) {
       this.#buffers.push(buffer)
       this.#buffersView.push(new Float32Array(buffer))
+    }
+    for (const cb of this.#growListeners) cb(grow)
+  }
+
+  /**
+   * Observe segment buffers arriving on this copy. `cb` fires with each
+   * `SabRopeGrow` this copy applies, after the buffers are in place. Lets a
+   * second consumer be kept in lockstep: snapshot with `shareRope()` and forward
+   * each subsequent grow to it. Because a grow's `oldBufferCount` equals this
+   * copy's pre-grow buffer count — and the snapshot starts the other consumer at
+   * that same count — the forwarded grows line up without re-keying. Snapshot
+   * and subscribe with no `await` between them so no grow slips through unseen.
+   * Returns an unsubscribe fn.
+   */
+  onGrow(cb: (grow: SabRopeGrow) => void): () => void {
+    this.#growListeners.add(cb)
+    return () => {
+      this.#growListeners.delete(cb)
+    }
+  }
+
+  /** Observe this copy being sealed (see {@link onGrow}). Returns an unsubscribe fn. */
+  onSeal(cb: () => void): () => void {
+    this.#sealListeners.add(cb)
+    return () => {
+      this.#sealListeners.delete(cb)
     }
   }
 

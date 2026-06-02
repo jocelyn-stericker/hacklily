@@ -34,30 +34,80 @@ export type TranscriptionState =
   | { status: 'error'; error: string }
 
 /**
- * Supplies the mono PCM samples spanning a chunk, or `null` if the audio for
- * the chunk is unavailable. Returned samples cover the chunk's time range at
- * its `sampleRate`. The caller owns sourcing the audio (e.g. from the recorded
- * `SabRope`s); transcription only consumes the samples.
+ * A span of recorded audio handed to transcription: a region of a (possibly
+ * still-growing) `SabRope`, identified by the time it starts, plus a promise
+ * that resolves with the time it ends once the recording of that span is
+ * complete.
+ *
+ * Times are seconds into the rope (`sample / rope.sampleRate`). Holding the end
+ * behind a promise lets a chunk be queued the moment it starts, before the tail
+ * of its audio has been recorded; the consumer reads the rope up to `endTime`
+ * once it settles. For a finished recording (or an import) the end is already
+ * known, so the promise resolves immediately.
  */
-export type ChunkPcmProvider = (chunk: AnalysisChunk) => Float32Array | null
+export type AudioSpan = {
+  rope: SabRope
+  /** Seconds into `rope` where the span begins. */
+  startTime: number
+  /** Seconds into `rope` just past the span's last sample, known once the recording of the span finishes. */
+  endTime: Promise<number>
+  /**
+   * Abandons the transcription of this span — e.g. a provisionally-voiced buffer
+   * turned out too short to be speech. Orthogonal to `endTime`: it can fire
+   * before the span ends, mid-recognition, or for reasons unrelated to the span
+   * (teardown, a superseding re-scan). A cancelled chunk is left untranscribed.
+   */
+  signal: AbortSignal
+}
+
+// A span over already-recorded audio (a finished recording or an import) has
+// nothing to cancel, so it carries this never-aborting signal. Live spans built
+// by the recording lifecycle supply their own.
+const NEVER_ABORT = new AbortController().signal
 
 /**
- * Slice the mono PCM spanning `chunk` out of the `SabRope` that holds its
- * recording session, or `null` if that audio isn't available. `chunks` is the
- * full analysis timeline — needed to locate which session `chunk` belongs to
- * and its frame offset within it — and `ropes` are the per-session PCM buffers
- * in `recordingStart` order: rope N holds session N.
+ * Supplies the recorded audio spanning a chunk, or `null` if the audio for the
+ * chunk is unavailable yet. The caller owns sourcing the audio (e.g. from the
+ * recorded `SabRope`s); transcription only consumes it.
+ */
+export type ChunkAudioProvider = (chunk: AnalysisChunk) => AudioSpan | null
+
+/**
+ * Materialise an `AudioSpan` into a contiguous mono PCM buffer: await its end,
+ * then slice `[startTime, endTime)` out of the rope at the rope's sample rate.
+ * Clamps to the samples actually present, so a span whose tail hasn't landed
+ * yet yields a shorter buffer rather than reading past the rope.
+ */
+export async function readAudioSpan(audio: AudioSpan): Promise<Float32Array> {
+  const endTime = await audio.endTime
+  const { rope } = audio
+  const start = Math.round(audio.startTime * rope.sampleRate)
+  const end = Math.min(Math.round(endTime * rope.sampleRate), rope.length)
+  const count = Math.max(0, end - start)
+  const out = new Float32Array(count)
+  if (count > 0) rope.read(out, start, 0, count)
+  return out
+}
+
+/**
+ * Locate the recorded audio spanning `chunk` within the `SabRope` that holds
+ * its recording session, or `null` if that audio isn't available. `chunks` is
+ * the full analysis timeline — needed to locate which session `chunk` belongs
+ * to and its frame offset within it — and `ropes` are the per-session PCM
+ * buffers in `recordingStart` order: rope N holds session N.
  *
  * Returns `null` when the rope hasn't grown to cover the chunk yet, so a
  * still-growing session transcribes each chunk as its PCM lands and a later
  * pass retries whatever wasn't ready. Suitable for building a
- * `ChunkPcmProvider` bound to the recording's ropes.
+ * `ChunkAudioProvider` bound to the recording's ropes. The returned span's
+ * `endTime` resolves immediately to the audio recorded so far, clamped to the
+ * rope's length.
  */
-export function chunkPcmFromRopes(
+export function chunkAudioFromRopes(
   chunk: AnalysisChunk,
   chunks: AnalysisChunk[],
   ropes: SabRope[],
-): Float32Array | null {
+): AudioSpan | null {
   // Walk the timeline to find which rope holds `chunk` and its sample offset
   // within that rope. Recording sessions are delimited by `recordingStart`, so
   // the rope index advances at each marker and the in-session frame offset
@@ -91,9 +141,13 @@ export function chunkPcmFromRopes(
   const end = Math.min(offset + length, rope.length)
   if (offset < 0 || offset >= end) return null
 
-  const out = new Float32Array(end - offset)
-  rope.read(out, offset, 0, end - offset)
-  return out
+  return {
+    rope,
+    startTime: offset / rope.sampleRate,
+    // The recording up to here is already on the rope, so the end is known now.
+    endTime: Promise.resolve(end / rope.sampleRate),
+    signal: NEVER_ABORT,
+  }
 }
 
 /**
@@ -102,7 +156,8 @@ export function chunkPcmFromRopes(
  * status change so callers can re-render (the analysis array is mutated in
  * place and does not otherwise trigger React updates).
  *
- * `pcm` is the chunk's mono audio, spanning its time range at `sampleRate`.
+ * `audio` is the chunk's recorded audio span, materialised to PCM by each
+ * backend as needed.
  *
  * The "browser" and "cloud" modes run the Web Speech API on the chunk's audio
  * (on-device vs. allowing the user agent's remote service, respectively). The
@@ -111,7 +166,7 @@ export function chunkPcmFromRopes(
 export async function transcribeChunk(
   chunk: AnalysisChunk,
   settings: SettingsRow,
-  pcm: Float32Array,
+  audio: AudioSpan,
   onUpdate?: () => void,
 ): Promise<void> {
   if (settings.transcriptionMode === 'disabled') return
@@ -128,17 +183,25 @@ export async function transcribeChunk(
         // Block recognition until it's ready so the UI can surface a progress
         // modal instead of letting the chunk hang silently.
         await ensureWebEngineInstalled()
-        text = await transcribeWeb(pcm, chunk.sampleRate, true)
+        text = await transcribeWeb(audio, true)
         break
       case 'cloud':
-        text = await transcribeWeb(pcm, chunk.sampleRate, false)
+        text = await transcribeWeb(audio, false)
         break
       case 'bundled':
-        text = await transcribeBundled(pcm, chunk.sampleRate)
+        text = await transcribeBundled(audio)
         break
     }
     chunk.transcription = { status: 'done', text }
   } catch (err) {
+    if (audio.signal.aborted) {
+      // Cancelled, not failed (e.g. the buffer was too short to be speech).
+      // Leave the chunk untranscribed rather than surfacing an error; whatever
+      // cancelled it owns excluding it from a later pass (e.g. clearing `voiced`).
+      chunk.transcription = undefined
+      onUpdate?.()
+      return
+    }
     chunk.transcription = {
       status: 'error',
       error: err instanceof Error ? err.message : 'Transcription failed',
@@ -170,14 +233,14 @@ let chunksChain: Promise<void> = Promise.resolve()
 export function transcribeChunks(
   chunks: AnalysisChunk[],
   settings: SettingsRow,
-  getPcm: ChunkPcmProvider,
+  getAudio: ChunkAudioProvider,
   onUpdate?: () => void,
 ): void {
   if (settings.transcriptionMode === 'disabled') return
-  // Keep `chunksChain` always-resolving so a thrown pass (e.g. getPcm failing)
+  // Keep `chunksChain` always-resolving so a thrown pass (e.g. getAudio failing)
   // can't wedge the chain and silently stop all later transcription.
   chunksChain = chunksChain.then(() =>
-    transcribeChunksSequential(chunks, settings, getPcm, onUpdate).catch(
+    transcribeChunksSequential(chunks, settings, getAudio, onUpdate).catch(
       (err) => {
         console.warn(LOG, 'sequential pass failed:', err)
       },
@@ -188,16 +251,16 @@ export function transcribeChunks(
 async function transcribeChunksSequential(
   chunks: AnalysisChunk[],
   settings: SettingsRow,
-  getPcm: ChunkPcmProvider,
+  getAudio: ChunkAudioProvider,
   onUpdate?: () => void,
 ): Promise<void> {
   for (const chunk of chunks) {
     if (!chunk.voiced || chunk.transcription) continue
-    const pcm = getPcm(chunk)
-    if (!pcm) continue
+    const audio = getAudio(chunk)
+    if (!audio) continue
     // transcribeChunk claims the chunk synchronously (sets `pending` before its
     // first await) and swallows its own errors, so awaiting here never throws
     // and a queued pass won't re-pick a chunk this one has started.
-    await transcribeChunk(chunk, settings, pcm, onUpdate)
+    await transcribeChunk(chunk, settings, audio, onUpdate)
   }
 }

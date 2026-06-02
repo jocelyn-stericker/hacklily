@@ -32,6 +32,10 @@ export interface RopeGrowLastMessage {
   grow: SabRopeGrow
 }
 
+export interface RopeSealLastMessage {
+  type: 'sealLastRope'
+}
+
 export interface RopeStartMessage {
   type: 'start'
   timeSec: number
@@ -73,6 +77,7 @@ export type SabRopeSourceNodeOutEvent = RopeStartedEvent | RopeEndEvent
 export type SabRopeSourceNodeMessage =
   | RopeInitMessage
   | RopeGrowLastMessage
+  | RopeSealLastMessage
   | RopeStartMessage
   | RopeEndMessage
   | null
@@ -176,6 +181,13 @@ export class SabRopeSourceNodeProcessor extends AudioWorkletProcessor {
         }
         case 'growLastRope': {
           this.#ropes[this.#ropes.length - 1]?.grow(data.grow)
+          break
+        }
+        case 'sealLastRope': {
+          // Ordered after the last `growLastRope`, so every real buffer is in
+          // place before the spare is trimmed. The shared `sealed` flag is
+          // already visible; this just frees this copy's spare.
+          this.#ropes[this.#ropes.length - 1]?.seal()
           break
         }
         case 'start': {

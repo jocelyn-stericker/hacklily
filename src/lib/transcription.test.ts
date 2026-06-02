@@ -19,7 +19,7 @@ import { describe, it, expect } from 'vitest'
 
 import type { AnalysisChunk } from './AnalysisFrame'
 import { SabRope } from './SabRope'
-import { chunkPcmFromRopes } from './transcription'
+import { chunkAudioFromRopes, readAudioSpan } from './transcription'
 
 // Only `frames.length`, `timeStepSamples`, `sampleRate`, and `recordingStart`
 // matter to chunkPcmFromRopes, so keep the chunks minimal.
@@ -51,27 +51,29 @@ function rampRope(length: number, sampleRate = 100): SabRope {
   return rope
 }
 
-describe('chunkPcmFromRopes', () => {
-  it('slices consecutive chunks from a single (import-style) rope', () => {
+describe('chunkAudioFromRopes', () => {
+  it('spans consecutive chunks from a single (import-style) rope', async () => {
     // No recordingStart markers — one rope holds the whole timeline.
     const c0 = chunk({ frames: 5 }) // offset 0, length 50
     const c1 = chunk({ frames: 3 }) // offset 50, length 30
     const chunks = [c0, c1]
     const ropes = [rampRope(100)]
 
-    const pcm0 = chunkPcmFromRopes(c0, chunks, ropes)
-    expect(pcm0).not.toBeNull()
-    expect(pcm0!.length).toBe(50)
-    expect(pcm0![0]).toBe(0)
-    expect(pcm0![49]).toBe(49)
+    const span0 = chunkAudioFromRopes(c0, chunks, ropes)
+    expect(span0).not.toBeNull()
+    const pcm0 = await readAudioSpan(span0!)
+    expect(pcm0.length).toBe(50)
+    expect(pcm0[0]).toBe(0)
+    expect(pcm0[49]).toBe(49)
 
-    const pcm1 = chunkPcmFromRopes(c1, chunks, ropes)
-    expect(pcm1!.length).toBe(30)
-    expect(pcm1![0]).toBe(50)
-    expect(pcm1![29]).toBe(79)
+    const span1 = chunkAudioFromRopes(c1, chunks, ropes)
+    const pcm1 = await readAudioSpan(span1!)
+    expect(pcm1.length).toBe(30)
+    expect(pcm1[0]).toBe(50)
+    expect(pcm1[29]).toBe(79)
   })
 
-  it('maps each recording session to its own rope, resetting the offset', () => {
+  it('maps each recording session to its own rope, resetting the offset', async () => {
     // Session 0: a recordingStart chunk plus a like-session sub-chunk.
     const s0a = chunk({ frames: 4, recordingStart: true }) // rope0, offset 0
     const s0b = chunk({ frames: 3 }) // rope0, offset 40
@@ -80,17 +82,17 @@ describe('chunkPcmFromRopes', () => {
     const chunks = [s0a, s0b, s1]
     const ropes = [rampRope(70), rampRope(20)]
 
-    const a = chunkPcmFromRopes(s0a, chunks, ropes)
-    expect(a![0]).toBe(0)
-    expect(a!.length).toBe(40)
+    const a = await readAudioSpan(chunkAudioFromRopes(s0a, chunks, ropes)!)
+    expect(a[0]).toBe(0)
+    expect(a.length).toBe(40)
 
-    const b = chunkPcmFromRopes(s0b, chunks, ropes)
-    expect(b![0]).toBe(40)
-    expect(b!.length).toBe(30)
+    const b = await readAudioSpan(chunkAudioFromRopes(s0b, chunks, ropes)!)
+    expect(b[0]).toBe(40)
+    expect(b.length).toBe(30)
 
-    const c = chunkPcmFromRopes(s1, chunks, ropes)
-    expect(c![0]).toBe(0) // reads from rope1, not past rope0
-    expect(c!.length).toBe(20)
+    const c = await readAudioSpan(chunkAudioFromRopes(s1, chunks, ropes)!)
+    expect(c[0]).toBe(0) // reads from rope1, not past rope0
+    expect(c.length).toBe(20)
   })
 
   it('returns null until the rope has grown to cover the chunk', () => {
@@ -103,32 +105,32 @@ describe('chunkPcmFromRopes', () => {
     rope.append(new Float32Array(50))
     const ropes = [rope]
 
-    expect(chunkPcmFromRopes(c0, chunks, ropes)).not.toBeNull()
-    expect(chunkPcmFromRopes(c1, chunks, ropes)).toBeNull()
+    expect(chunkAudioFromRopes(c0, chunks, ropes)).not.toBeNull()
+    expect(chunkAudioFromRopes(c1, chunks, ropes)).toBeNull()
 
     // Once it grows, the previously-unavailable chunk resolves.
     rope.append(new Float32Array(50))
-    expect(chunkPcmFromRopes(c1, chunks, ropes)).not.toBeNull()
+    expect(chunkAudioFromRopes(c1, chunks, ropes)).not.toBeNull()
   })
 
-  it('clamps to the samples available when a chunk is partially covered', () => {
+  it('clamps to the samples available when a chunk is partially covered', async () => {
     const c0 = chunk({ frames: 5 }) // wants [0, 50)
     const rope = new SabRope(100)
     rope.append(new Float32Array(30)) // only 30 of the 50 samples are present
-    const pcm = chunkPcmFromRopes(c0, [c0], [rope])
-    expect(pcm!.length).toBe(30)
+    const pcm = await readAudioSpan(chunkAudioFromRopes(c0, [c0], [rope])!)
+    expect(pcm.length).toBe(30)
   })
 
   it('returns null when the chunk is not in the timeline', () => {
     const c0 = chunk({ frames: 5 })
     const stray = chunk({ frames: 5 })
-    expect(chunkPcmFromRopes(stray, [c0], [rampRope(100)])).toBeNull()
+    expect(chunkAudioFromRopes(stray, [c0], [rampRope(100)])).toBeNull()
   })
 
   it('returns null when the chunk’s rope is missing', () => {
     const s0 = chunk({ frames: 4, recordingStart: true })
     const s1 = chunk({ frames: 2, recordingStart: true })
     // Only rope 0 exists; session 1's rope hasn't been shared yet.
-    expect(chunkPcmFromRopes(s1, [s0, s1], [rampRope(40)])).toBeNull()
+    expect(chunkAudioFromRopes(s1, [s0, s1], [rampRope(40)])).toBeNull()
   })
 })

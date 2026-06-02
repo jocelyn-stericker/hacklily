@@ -49,7 +49,7 @@ import { SabRope } from '#/lib/SabRope'
 import type { SabRopeGrow, SabRopeShare } from '#/lib/SabRope'
 import { updateSettings, useSettings } from '#/lib/settings'
 import { consumeBundledCrashFlag } from '#/lib/transcribeBundled'
-import { chunkPcmFromRopes, transcribeChunks } from '#/lib/transcription'
+import { chunkAudioFromRopes, transcribeChunks } from '#/lib/transcription'
 import { cn } from '#/lib/utils'
 
 export const Route = createFileRoute('/')({
@@ -431,7 +431,7 @@ function App() {
     transcribeChunks(
       analysisMut,
       settings,
-      (chunk) => chunkPcmFromRopes(chunk, analysisMut, ropes),
+      (chunk) => chunkAudioFromRopes(chunk, analysisMut, ropes),
       () => speechStripRef.current?.refreshTranscriptions(),
     )
   }, [analysisMut, settings, isRecording, ropes])

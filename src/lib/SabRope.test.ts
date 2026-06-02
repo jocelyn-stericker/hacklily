@@ -379,4 +379,60 @@ describe('SabRope', () => {
       expectRamp(readAll(consumer), 0)
     })
   })
+
+  describe('observers', () => {
+    it('forwards a grow to a lockstep copy via onGrow', () => {
+      const producer = new SabRope(48000)
+      const consumer = new SabRope(producer.shareRope()) // 1 buffer
+      // A second copy snapshotted from the consumer, kept in step by forwarding.
+      const mirror = new SabRope(consumer.shareRope())
+      const unsub = consumer.onGrow((grow) => mirror.grow(grow))
+
+      producer.append(ramp(0, 2 * SEG + 10))
+      // The consumer applying the grow fires onGrow, which the mirror replays.
+      consumer.grow(producer.shareGrowth(1)!)
+
+      expect(mirror.length).toBe(2 * SEG + 10)
+      expectRamp(readAll(mirror), 0)
+
+      // After unsubscribing the mirror no longer receives forwarded grows, so it
+      // stalls at the buffers it holds while the consumer keeps growing. Append
+      // far past the mirror's spare so the gap is visible (a small append would
+      // land in the already-held spare and show up via the shared length atomic).
+      unsub()
+      producer.append(ramp(2 * SEG + 10, 4 * SEG))
+      consumer.grow(producer.shareGrowth(consumer.shareRope().buffers.length)!)
+
+      expect(consumer.length).toBe(6 * SEG + 10)
+      expect(mirror.length).toBe(4 * SEG) // clamped to the 4 buffers it held
+    })
+
+    it('fires onSeal when the copy is sealed', () => {
+      const r = new SabRope(48000)
+      r.append(ramp(0, 10))
+      let sealCount = 0
+      const unsub = r.onSeal(() => {
+        sealCount += 1
+      })
+
+      r.seal()
+      expect(sealCount).toBe(1)
+
+      unsub()
+      r.seal() // idempotent re-seal no longer notifies
+      expect(sealCount).toBe(1)
+    })
+
+    it('delivers grows to multiple observers', () => {
+      const producer = new SabRope(48000)
+      const consumer = new SabRope(producer.shareRope())
+      const seen: number[] = []
+      consumer.onGrow((grow) => seen.push(grow.buffers.length))
+      consumer.onGrow((grow) => seen.push(grow.buffers.length))
+
+      producer.append(ramp(0, 2 * SEG))
+      consumer.grow(producer.shareGrowth(1)!)
+      expect(seen).toEqual([2, 2])
+    })
+  })
 })

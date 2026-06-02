@@ -28,8 +28,17 @@
 
 /// <reference types="@types/dom-speech-recognition" />
 
+import audioWorkletUrl from '#/lib/SabRopeSourceNode?worker&url'
+
+import type { SabRopeSourceNode } from './SabRopeSourceNode'
+import type { AudioSpan } from './transcription'
+
 /** Recognition language. Matches the default used by the feature probes. */
 const TRANSCRIPTION_LANG = 'en-US'
+// Silence let through after the span's audio so the endpointer can promote the
+// last interim to a final. The node keeps emitting zeros once it stops, so this
+// is just how long we wait past the reported end before stopping recognition.
+const TRAILING_SILENCE_SEC = 0.3
 const LOG = '[transcribeWeb]'
 
 type SpeechRecognitionConstructor = new () => SpeechRecognition
@@ -72,17 +81,26 @@ function getAudioContext(): AudioContext {
   return sharedAudioContext
 }
 
+// The SabRopeSourceNode worklet module is added to the shared context once and
+// reused across recognition calls. Cached against the singleton context, which
+// lives for the page's lifetime.
+let workletModulePromise: Promise<void> | null = null
+
+function ensureWorkletModule(context: AudioContext): Promise<void> {
+  workletModulePromise ??= context.audioWorklet.addModule(audioWorkletUrl)
+  return workletModulePromise
+}
+
 // Browsers generally allow only one active SpeechRecognition session at a time.
 // transcribeChunks already feeds chunks one at a time, but serialize recognition
 // here too so any other caller can't start an overlapping session.
 let recognitionChain: Promise<unknown> = Promise.resolve()
 
 export function transcribeWeb(
-  pcm: Float32Array,
-  sampleRate: number,
+  audio: AudioSpan,
   processLocally: boolean,
 ): Promise<string> {
-  const task = () => recognizePcm(pcm, sampleRate, processLocally)
+  const task = () => recognizePcm(audio, processLocally)
 
   const run = recognitionChain.then(task, task)
   recognitionChain = run.then(
@@ -93,23 +111,28 @@ export function transcribeWeb(
 }
 
 /**
- * Recognize a single mono PCM buffer with the Web Speech API and resolve with
- * the joined final transcript (possibly empty if nothing was recognized).
+ * Recognize a single recorded audio span with the Web Speech API and resolve
+ * with the joined final transcript (possibly empty if nothing was recognized).
  *
- * The PCM is played in real time through a shared AudioContext into a
- * MediaStream, whose live audio track is handed to `recognition.start()`.
- * `processLocally` forces on-device recognition (the "browser" posture);
- * leaving it false lets the user agent fall back to its remote service
- * (the "cloud" posture).
+ * The span's audio is played in real time by a `SabRopeSourceNode` — reading
+ * straight from the (possibly still-growing) rope — into a MediaStream, whose
+ * live audio track is handed to `recognition.start()`. `processLocally` forces
+ * on-device recognition (the "browser" posture); leaving it false lets the user
+ * agent fall back to its remote service (the "cloud" posture).
+ *
+ * Playback starts as soon as the audio that has landed so far, rather than
+ * waiting for `endTime`: we snapshot the rope, forward every subsequent grow
+ * (and the seal) to the node so it keeps reading as the recording grows, and
+ * post the stop boundary once `endTime` resolves. With a finished recording the
+ * end is known up front, so that boundary lands immediately.
  */
 export async function recognizePcm(
-  pcm: Float32Array,
-  sampleRate: number,
+  audio: AudioSpan,
   processLocally: boolean,
 ): Promise<string> {
   console.time(LOG + ' recognizePcm')
   try {
-    if (pcm.length === 0) return ''
+    audio.signal.throwIfAborted()
 
     const Ctor = getSpeechRecognitionConstructor()
     if (!Ctor) {
@@ -120,26 +143,21 @@ export async function recognizePcm(
     if (audioContext.state === 'suspended') {
       await audioContext.resume()
     }
+    await ensureWorkletModule(audioContext)
 
-    // Pad the buffer with trailing silence so recognition has time to drain the
-    // tail of the utterance before `source.onended` fires and we stop. Without
-    // this, Chrome cuts off the last syllables — the AudioBufferSource ends
-    // before the recognition pipeline has caught up with the audio it received,
-    // and Chrome's endpointer never sees an end-of-speech silence to promote the
-    // current interim to a final.
-    const trailingSilenceSamples = Math.round(0.3 * sampleRate)
-    const buffer = audioContext.createBuffer(
-      1,
-      pcm.length + trailingSilenceSamples,
-      sampleRate,
+    // The node plays the rope from `startTime` into a MediaStream; the resampler
+    // matches the rope's rate to the context's. It keeps emitting silence after
+    // it stops, which gives the endpointer its end-of-speech silence — see
+    // `TRAILING_SILENCE_SEC`.
+    const node: SabRopeSourceNode = new AudioWorkletNode(
+      audioContext,
+      'sab-rope-source-node',
     )
-    buffer.getChannelData(0).set(pcm)
-    const source = audioContext.createBufferSource()
-    source.buffer = buffer
     const destination = audioContext.createMediaStreamDestination()
-    source.connect(destination)
+    node.connect(destination)
     const track = destination.stream.getAudioTracks()[0]
     if (!track) {
+      node.disconnect()
       throw new Error('Could not create an audio track for recognition.')
     }
 
@@ -156,19 +174,42 @@ export async function recognizePcm(
       // collapses duplicates and lets a late `isFinal` simply replace its interim.
       const transcripts: string[] = []
       let settled = false
+      // Armed when the node reports the playout end; stops recognition once the
+      // trailing silence has flowed through.
+      let stopTimer: ReturnType<typeof setTimeout> | null = null
+      // Armed once `endTime` resolves (we don't know the span length before
+      // then); backstops a recognition that never fires `onend`.
+      let watchdog: ReturnType<typeof setTimeout> | null = null
+      // Forward future growth/seal of the rope to the node; torn down on cleanup.
+      let unsubGrow: (() => void) | null = null
+      let unsubSeal: (() => void) | null = null
 
       const cleanup = () => {
-        clearTimeout(watchdog)
+        if (watchdog !== null) clearTimeout(watchdog)
+        if (stopTimer !== null) clearTimeout(stopTimer)
+        unsubGrow?.()
+        unsubSeal?.()
+        audio.signal.removeEventListener('abort', onAbort)
         recognition.onresult = null
         recognition.onerror = null
         recognition.onend = null
-        source.onended = null
-        source.disconnect()
+        node.port.onmessage = null
         try {
-          source.stop()
+          node.port.postMessage(null)
         } catch (err) {
-          console.warn(LOG, 'source.stop failed during cleanup:', err)
+          console.warn(LOG, 'node stop failed during cleanup:', err)
         }
+        node.disconnect()
+      }
+
+      // Cancellation (e.g. the buffer was too short to be speech): tear the graph
+      // down and reject so `transcribeChunk` leaves the chunk untranscribed. Can
+      // fire any time — before playback, mid-recognition, or while draining.
+      const onAbort = () => {
+        if (settled) return
+        settled = true
+        cleanup()
+        reject(audio.signal.reason)
       }
 
       const joinTranscripts = () =>
@@ -198,27 +239,33 @@ export async function recognizePcm(
         resolve(joinTranscripts())
       }
 
-      source.onended = () => {
-        try {
-          recognition.stop()
-        } catch (err) {
-          console.warn(LOG, 'recognition.stop failed on ended:', err)
-        }
+      // The node renders ahead of the audible clock and reports the context time
+      // its final sample plays out. Wait until that time plus the trailing
+      // silence has actually elapsed before stopping recognition, so the last
+      // syllables aren't clipped.
+      node.port.onmessage = ({ data }) => {
+        if (data.type !== 'end') return
+        const delayMs = Math.max(
+          0,
+          (data.contextTime + TRAILING_SILENCE_SEC - audioContext.currentTime) *
+            1000,
+        )
+        stopTimer = setTimeout(() => {
+          try {
+            recognition.stop()
+          } catch (err) {
+            console.warn(LOG, 'recognition.stop failed on end:', err)
+          }
+        }, delayMs)
       }
 
-      const durationMs = (buffer.length / sampleRate) * 1000
-      const watchdog = setTimeout(() => {
-        try {
-          recognition.abort()
-        } catch (err) {
-          console.warn(LOG, 'recognition.abort failed in watchdog:', err)
-        }
-        if (!settled) {
-          settled = true
-          cleanup()
-          resolve(joinTranscripts())
-        }
-      }, durationMs + 10_000)
+      // Listeners added after an abort never fire, so handle an abort that landed
+      // during the awaits above explicitly.
+      audio.signal.addEventListener('abort', onAbort)
+      if (audio.signal.aborted) {
+        onAbort()
+        return
+      }
 
       try {
         recognition.start(track)
@@ -232,7 +279,73 @@ export async function recognizePcm(
         )
         return
       }
-      source.start()
+
+      // Snapshot and subscribe with no `await` between them, so the node starts
+      // at the rope's current buffer count and every later grow lines up (its
+      // `oldBufferCount` matches). Recognition is already listening, so playback
+      // is captured from the first sample.
+      const share = audio.rope.shareRope()
+      unsubGrow = audio.rope.onGrow((grow) => {
+        try {
+          node.port.postMessage({ type: 'growLastRope', grow })
+        } catch (err) {
+          console.warn(LOG, 'forward grow failed:', err)
+        }
+      })
+      unsubSeal = audio.rope.onSeal(() => {
+        try {
+          node.port.postMessage({ type: 'sealLastRope' })
+        } catch (err) {
+          console.warn(LOG, 'forward seal failed:', err)
+        }
+      })
+      node.port.postMessage({
+        type: 'setBuffer',
+        ropes: [share],
+        gains: [1],
+      })
+      node.port.postMessage({ type: 'start', timeSec: audio.startTime })
+
+      // Stop the node at the span boundary once the recording of the span is
+      // complete. `end` bounds playback even when the rope extends past it (one
+      // rope can hold several chunks). With a finished recording this resolves
+      // right away.
+      audio.endTime.then(
+        (endTime) => {
+          if (settled) return
+          watchdog = setTimeout(
+            () => {
+              try {
+                recognition.abort()
+              } catch (err) {
+                console.warn(LOG, 'recognition.abort failed in watchdog:', err)
+              }
+              if (!settled) {
+                settled = true
+                cleanup()
+                resolve(joinTranscripts())
+              }
+            },
+            (endTime - audio.startTime + TRAILING_SILENCE_SEC) * 1000 + 10_000,
+          )
+          node.port.postMessage({ type: 'end', timeSec: endTime })
+        },
+        (err) => {
+          // The span's recording was abandoned before its end was known. Stop
+          // recognition and resolve with whatever has been recognized so far.
+          if (settled) return
+          console.warn(LOG, 'endTime rejected:', err)
+          try {
+            recognition.stop()
+          } catch (stopErr) {
+            console.warn(
+              LOG,
+              'recognition.stop failed on endTime reject:',
+              stopErr,
+            )
+          }
+        },
+      )
     })
   } finally {
     // Note that this can't be faster than realtime due to the fact that the API supports a media stream.

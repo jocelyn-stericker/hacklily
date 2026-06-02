@@ -29,6 +29,8 @@ import type {
   MoonshineWorker,
   MoonshineWorkerOutMessage,
 } from '#/lib/MoonshineWorker'
+import { readAudioSpan } from '#/lib/transcription'
+import type { AudioSpan } from '#/lib/transcription'
 
 const LOG = '[transcribeBundled]'
 
@@ -264,17 +266,40 @@ function getMoonshineWorker(): MoonshineWorker {
   return worker
 }
 
-/** Transcribe one chunk's PCM with the bundled Moonshine worker. */
-export function transcribeBundled(
-  pcm: Float32Array,
-  sampleRate: number,
-): Promise<string> {
+/** Transcribe one recorded audio span with the bundled Moonshine worker. */
+export async function transcribeBundled(audio: AudioSpan): Promise<string> {
+  audio.signal.throwIfAborted()
+  const pcm = await readAudioSpan(audio)
+  audio.signal.throwIfAborted()
+  const sampleRate = audio.rope.sampleRate
   cancelIdleTeardown()
   markBundledActive()
   const worker = getMoonshineWorker()
   const id = nextTranscribeId++
   return new Promise<string>((resolve, reject) => {
-    pendingTranscriptions.set(id, { resolve, reject })
+    const detach = () => {
+      audio.signal.removeEventListener('abort', onAbort)
+    }
+    // Inference isn't cancelable mid-run, so on abort we just stop waiting: drop
+    // the pending entry (its eventual result is ignored) and reject. The worker
+    // finishes in the background and goes idle.
+    const onAbort = () => {
+      if (!pendingTranscriptions.delete(id)) return
+      detach()
+      onTranscriptionSettled()
+      reject(audio.signal.reason)
+    }
+    pendingTranscriptions.set(id, {
+      resolve: (text) => {
+        detach()
+        resolve(text)
+      },
+      reject: (err) => {
+        detach()
+        reject(err)
+      },
+    })
+    audio.signal.addEventListener('abort', onAbort)
     // Transfer the PCM rather than cloning it: the worker treats its copy as
     // owned, and the caller doesn't touch `pcm` again, so handing over the
     // buffer avoids keeping a second copy of the audio resident on this thread.
