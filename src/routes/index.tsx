@@ -337,6 +337,8 @@ function App() {
   // whose voiced segment has ended (next chunk is unvoiced), create spans for
   // newly-voiced chunks, and kick off transcription.
   const applyReconciliation = useCallback(() => {
+    if (settingsRef.current.transcriptionMode === 'disabled') return
+
     const chunks = analysisMutRef.current
     const liveSpans = liveSpansRef.current
     const currentRopes = ropesRef.current
