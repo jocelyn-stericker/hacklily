@@ -49,7 +49,18 @@ import { SabRope } from '#/lib/SabRope'
 import type { SabRopeGrow, SabRopeShare } from '#/lib/SabRope'
 import { updateSettings, useSettings } from '#/lib/settings'
 import { consumeBundledCrashFlag } from '#/lib/transcribeBundled'
-import { chunkAudioFromRopes, transcribeChunks } from '#/lib/transcription'
+import {
+  chunkAudioFromRopes,
+  computeSealResolutions,
+  locateChunkRope,
+  reconcileLiveSpans,
+  transcribeChunks,
+} from '#/lib/transcription'
+import type {
+  AudioSpan,
+  ChunkAudioProvider,
+  LiveSpanEntry,
+} from '#/lib/transcription'
 import { cn } from '#/lib/utils'
 
 export const Route = createFileRoute('/')({
@@ -192,6 +203,42 @@ function App() {
     ropesRef.current = ropes
   }, [ropes])
 
+  const settingsRef = useRef(settings)
+  useEffect(() => {
+    settingsRef.current = settings
+  }, [settings])
+
+  // Live transcription spans: deferred endTime + abort for each voiced chunk
+  // being transcribed during recording. Cleared when the rope is sealed.
+  const liveSpansRef = useRef<Map<AnalysisChunk, LiveSpanEntry>>(new Map())
+  const [liveChunks, setLiveChunks] = useState<Set<AnalysisChunk>>(new Set())
+
+  const getAudio: ChunkAudioProvider = useCallback(
+    (chunk: AnalysisChunk): AudioSpan | null => {
+      const live = liveSpansRef.current.get(chunk)
+      if (live) {
+        const loc = locateChunkRope(
+          chunk,
+          analysisMutRef.current,
+          ropesRef.current,
+        )
+        if (!loc) return null
+        return {
+          rope: loc.rope,
+          startTime: loc.startSample / loc.rope.sampleRate,
+          endTime: live.endTimePromise,
+          signal: live.abortController.signal,
+        }
+      }
+      return chunkAudioFromRopes(
+        chunk,
+        analysisMutRef.current,
+        ropesRef.current,
+      )
+    },
+    [],
+  )
+
   // Per-recording loudness-normalization gains, shared between playback and
   // export so the exported file sounds like what was played.
   const [gainCache] = useState(() => new RopeGainCache())
@@ -270,29 +317,82 @@ function App() {
     // Seal our copy too, releasing its spare buffer. The shared flag is already
     // set by the producer; this just drops the local reference.
     ropes[ropes.length - 1]!.seal()
+
+    // Recording audio is complete. Resolve all pending live span endTimes so
+    // in-flight transcriptions can finish, then clear the map.
+    const resolutions = computeSealResolutions(
+      analysisMutRef.current,
+      liveSpansRef.current,
+      ropesRef.current,
+    )
+    for (const { span, endTime } of resolutions) {
+      span.resolveEndTime(endTime)
+    }
+    liveSpansRef.current.clear()
+    setLiveChunks(new Set())
   }, [ropes])
 
-  const handlePatch = useCallback((from: number, to: number) => {
-    const absFrom = recordingStartIndexRef.current + from
-    const absTo = recordingStartIndexRef.current + to
+  // Reconcile live transcription spans after voicing changes during recording:
+  // abort spans for chunks that are no longer voiced, resolve endTime for spans
+  // whose voiced segment has ended (next chunk is unvoiced), create spans for
+  // newly-voiced chunks, and kick off transcription.
+  const applyReconciliation = useCallback(() => {
+    const chunks = analysisMutRef.current
+    const liveSpans = liveSpansRef.current
+    const currentRopes = ropesRef.current
 
-    // Re-chunk around each patched frame so every chunk stays uniformly
-    // voiced/unvoiced (a VAD patch may flip frames — onset, redemption revert,
-    // or min-speech discard). Only re-transcribe if some voicing actually
-    // changed.
-    let voicingChanged = false
-    for (let abs = absFrom; abs < absTo; abs++) {
-      if (reconcileVoicingAt(analysisMutRef.current, abs)) voicingChanged = true
+    const result = reconcileLiveSpans(chunks, liveSpans, currentRopes)
+
+    for (const chunk of result.abort) {
+      liveSpans.get(chunk)?.abortController.abort()
+      liveSpans.delete(chunk)
     }
-    if (voicingChanged) {
-      speechStripRef.current?.refreshTranscriptions()
+    for (const { chunk, span, endTime } of result.resolve) {
+      span.resolveEndTime(endTime)
+      liveSpans.delete(chunk)
+    }
+    for (const chunk of result.create) {
+      let resolveEndTime!: (endTime: number) => void
+      const endTimePromise = new Promise<number>((resolve) => {
+        resolveEndTime = resolve
+      })
+      const abortController = new AbortController()
+      liveSpans.set(chunk, { abortController, endTimePromise, resolveEndTime })
     }
 
-    waveformRef.current?.patch(absFrom, absTo)
-    spectrogramRef.current?.patch(absFrom, absTo)
-    vowelChartRef.current?.patch(absFrom, absTo)
-    speechStripRef.current?.patch(absFrom, absTo)
-  }, [])
+    setLiveChunks(new Set(liveSpans.keys()))
+
+    transcribeChunks(chunks, settingsRef.current, getAudio, () =>
+      speechStripRef.current?.refreshTranscriptions(),
+    )
+  }, [getAudio])
+
+  const handlePatch = useCallback(
+    (from: number, to: number) => {
+      const absFrom = recordingStartIndexRef.current + from
+      const absTo = recordingStartIndexRef.current + to
+
+      // Re-chunk around each patched frame so every chunk stays uniformly
+      // voiced/unvoiced (a VAD patch may flip frames — onset, redemption revert,
+      // or min-speech discard). Only re-transcribe if some voicing actually
+      // changed.
+      let voicingChanged = false
+      for (let abs = absFrom; abs < absTo; abs++) {
+        if (reconcileVoicingAt(analysisMutRef.current, abs))
+          voicingChanged = true
+      }
+      if (voicingChanged) {
+        applyReconciliation()
+        speechStripRef.current?.refreshTranscriptions()
+      }
+
+      waveformRef.current?.patch(absFrom, absTo)
+      spectrogramRef.current?.patch(absFrom, absTo)
+      vowelChartRef.current?.patch(absFrom, absTo)
+      speechStripRef.current?.patch(absFrom, absTo)
+    },
+    [applyReconciliation],
+  )
 
   const handleTranscribe = useCallback(() => {
     // We automatically transcribe things if transcription is enabled. Before it's enabled,
@@ -425,16 +525,15 @@ function App() {
   const noOp = useCallback(() => {}, [])
 
   // Transcribe. Results mutate chunks in place, so we tell the SpeechStrip
-  // imperatively to re-render its overlay as they arrive.
+  // imperatively to re-render its overlay as they arrive. During recording,
+  // transcription is kicked off from reconcileLiveSpans; this effect handles
+  // the post-recording pass (imports, re-scans, settings changes).
   useEffect(() => {
     if (isRecording || ropes.length === 0) return
-    transcribeChunks(
-      analysisMut,
-      settings,
-      (chunk) => chunkAudioFromRopes(chunk, analysisMut, ropes),
-      () => speechStripRef.current?.refreshTranscriptions(),
+    transcribeChunks(analysisMut, settings, getAudio, () =>
+      speechStripRef.current?.refreshTranscriptions(),
     )
-  }, [analysisMut, settings, isRecording, ropes])
+  }, [analysisMut, settings, isRecording, ropes, getAudio])
 
   return (
     <>
@@ -521,6 +620,7 @@ function App() {
             <SpeechStrip
               analysisMut={analysisMut}
               onTranscribe={handleTranscribe}
+              liveChunks={liveChunks}
               ref={speechStripRef}
             />
             {status.value !== 'recording' && (

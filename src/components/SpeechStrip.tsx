@@ -53,10 +53,12 @@ export interface SpeechStripHandle {
 export function SpeechStrip({
   analysisMut,
   onTranscribe,
+  liveChunks,
   ref,
 }: {
   analysisMut: AnalysisChunk[]
   onTranscribe?: (chunkIndex: number) => void
+  liveChunks?: Set<AnalysisChunk>
   ref: RefObject<SpeechStripHandle | null>
 }) {
   const [canvas, setCanvas] = useState<HTMLCanvasElement | null>(null)
@@ -170,6 +172,7 @@ export function SpeechStrip({
         stripTop={stripTop}
         transcriptionDisabled={transcriptionDisabled}
         onTranscribe={onTranscribe}
+        liveChunks={liveChunks}
       />
     </>
   )
@@ -181,12 +184,14 @@ function SpeechStripDOMOverlay({
   stripWidth,
   stripTop,
   transcriptionDisabled,
+  liveChunks,
 }: {
   analysisMut: AnalysisChunk[]
   onTranscribe?: (chunkIndex: number) => void
   stripWidth: number
   stripTop: number
   transcriptionDisabled: boolean
+  liveChunks?: Set<AnalysisChunk>
 }) {
   const plotPad = usePlotPad()
   const speechStripHeight = useSpeechStripHeight()
@@ -214,6 +219,7 @@ function SpeechStripDOMOverlay({
         // With transcription disabled, the only affordance is a button that
         // opens the transcription settings.
         if (transcriptionDisabled) {
+          if (liveChunks?.has(chunk)) return null
           return (
             <TranscribeButton
               key={index}
@@ -233,6 +239,7 @@ function SpeechStripDOMOverlay({
             left={left}
             width={right - left}
             height={speechStripHeight}
+            isLive={liveChunks?.has(chunk) ?? false}
           />
         )
       })}
@@ -247,17 +254,20 @@ function ChunkTranscription({
   left,
   width,
   height,
+  isLive,
 }: {
   chunk: AnalysisChunk
   left: number
   width: number
   height: number
+  isLive: boolean
 }) {
   const t = chunk.transcription
 
   let inner: ReactNode = null
   let title: string | undefined
   if (t?.status === 'pending') {
+    if (isLive) return null
     inner = <Loader2 className="size-3 shrink-0 animate-spin" />
   } else if (t?.status === 'done') {
     inner = <span className="truncate">{t.text}</span>

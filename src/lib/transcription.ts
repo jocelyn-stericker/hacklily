@@ -90,24 +90,16 @@ export async function readAudioSpan(audio: AudioSpan): Promise<Float32Array> {
 }
 
 /**
- * Locate the recorded audio spanning `chunk` within the `SabRope` that holds
- * its recording session, or `null` if that audio isn't available. `chunks` is
- * the full analysis timeline — needed to locate which session `chunk` belongs
- * to and its frame offset within it — and `ropes` are the per-session PCM
- * buffers in `recordingStart` order: rope N holds session N.
- *
- * Returns `null` when the rope hasn't grown to cover the chunk yet, so a
- * still-growing session transcribes each chunk as its PCM lands and a later
- * pass retries whatever wasn't ready. Suitable for building a
- * `ChunkAudioProvider` bound to the recording's ropes. The returned span's
- * `endTime` resolves immediately to the audio recorded so far, clamped to the
- * rope's length.
+ * Locate the rope and sample offset for `chunk` within the recording timeline.
+ * `chunks` is the full analysis timeline; `ropes` are the per-session PCM
+ * buffers in `recordingStart` order (rope N holds session N). Returns `null` if
+ * the chunk isn't found or its rope isn't available yet.
  */
-export function chunkAudioFromRopes(
+export function locateChunkRope(
   chunk: AnalysisChunk,
   chunks: AnalysisChunk[],
   ropes: SabRope[],
-): AudioSpan | null {
+): { rope: SabRope; startSample: number } | null {
   // Walk the timeline to find which rope holds `chunk` and its sample offset
   // within that rope. Recording sessions are delimited by `recordingStart`, so
   // the rope index advances at each marker and the in-session frame offset
@@ -130,24 +122,149 @@ export function chunkAudioFromRopes(
     sessionFrameOffset += c.frames.length
   }
   if (!found) return null
-
   const rope = ropes[ropeIndex]
   if (!rope) return null
+  return { rope, startSample: sessionFrameOffset * chunk.timeStepSamples }
+}
 
+/**
+ * Locate the recorded audio spanning `chunk` within the `SabRope` that holds
+ * its recording session, or `null` if that audio isn't available. `chunks` is
+ * the full analysis timeline — needed to locate which session `chunk` belongs
+ * to and its frame offset within it — and `ropes` are the per-session PCM
+ * buffers in `recordingStart` order: rope N holds session N.
+ *
+ * Returns `null` when the rope hasn't grown to cover the chunk yet, so a
+ * still-growing session transcribes each chunk as its PCM lands and a later
+ * pass retries whatever wasn't ready. Suitable for building a
+ * `ChunkAudioProvider` bound to the recording's ropes. The returned span's
+ * `endTime` resolves immediately to the audio recorded so far, clamped to the
+ * rope's length.
+ */
+export function chunkAudioFromRopes(
+  chunk: AnalysisChunk,
+  chunks: AnalysisChunk[],
+  ropes: SabRope[],
+): AudioSpan | null {
+  const loc = locateChunkRope(chunk, chunks, ropes)
+  if (!loc) return null
+  const { rope, startSample } = loc
   // A chunk's `sampleRate` matches its rope's, so frame counts convert directly
   // to rope samples.
-  const offset = sessionFrameOffset * chunk.timeStepSamples
   const length = chunk.frames.length * chunk.timeStepSamples
-  const end = Math.min(offset + length, rope.length)
-  if (offset < 0 || offset >= end) return null
+  const end = Math.min(startSample + length, rope.length)
+  if (startSample < 0 || startSample >= end) return null
 
   return {
     rope,
-    startTime: offset / rope.sampleRate,
+    startTime: startSample / rope.sampleRate,
     // The recording up to here is already on the rope, so the end is known now.
     endTime: Promise.resolve(end / rope.sampleRate),
     signal: NEVER_ABORT,
   }
+}
+
+/**
+ * A live transcription span entry: a deferred `endTime` and an `AbortController`
+ * for a voiced chunk being transcribed during recording. The component maintains
+ * a `Map<AnalysisChunk, LiveSpanEntry>` and reconciles it on each voicing patch.
+ */
+export type LiveSpanEntry = {
+  abortController: AbortController
+  endTimePromise: Promise<number>
+  resolveEndTime: (endTime: number) => void
+}
+
+/**
+ * Result of reconciling live transcription spans against the current chunk
+ * timeline. The caller applies the side effects: aborting controllers, resolving
+ * endTimes, and creating new entries for `create` chunks.
+ */
+export type ReconcileResult = {
+  abort: Set<AnalysisChunk>
+  resolve: { chunk: AnalysisChunk; span: LiveSpanEntry; endTime: number }[]
+  create: AnalysisChunk[]
+}
+
+/**
+ * Compute which live spans to abort, which to resolve, and which new chunks
+ * need spans, given the current chunk timeline and existing live spans. Pure —
+ * does not mutate `liveSpans` or abort controllers.
+ *
+ * - `abort`: chunks no longer voiced or no longer in the array (split/merged
+ *   away by `reconcileVoicingAt`).
+ * - `resolve`: spans whose voiced segment is complete — the chunk is still
+ *   voiced but its successor is unvoiced (VAD confirmed speech end).
+ * - `create`: newly-voiced chunks without a span or transcription (only while
+ *   the last rope is not sealed).
+ */
+export function reconcileLiveSpans(
+  chunks: AnalysisChunk[],
+  liveSpans: Map<AnalysisChunk, LiveSpanEntry>,
+  ropes: SabRope[],
+): ReconcileResult {
+  const abort = new Set<AnalysisChunk>()
+  const resolve: ReconcileResult['resolve'] = []
+  const create: AnalysisChunk[] = []
+
+  for (const [chunk] of liveSpans) {
+    if (!chunk.voiced || !chunks.includes(chunk)) {
+      abort.add(chunk)
+    }
+  }
+
+  for (const [chunk, span] of liveSpans) {
+    if (abort.has(chunk)) continue
+    const idx = chunks.indexOf(chunk)
+    const next = chunks[idx + 1]
+    if (next && !next.voiced) {
+      const loc = locateChunkRope(chunk, chunks, ropes)
+      if (loc) {
+        const endSample =
+          loc.startSample + chunk.frames.length * chunk.timeStepSamples
+        resolve.push({
+          chunk,
+          span,
+          endTime: endSample / loc.rope.sampleRate,
+        })
+      }
+    }
+  }
+
+  const lastRope = ropes[ropes.length - 1]
+  if (lastRope && !lastRope.sealed) {
+    for (const chunk of chunks) {
+      if (chunk.voiced && !chunk.transcription && !liveSpans.has(chunk)) {
+        create.push(chunk)
+      }
+    }
+  }
+
+  return { abort, resolve, create }
+}
+
+/**
+ * Compute endTime resolutions for all pending live spans when the recording rope
+ * is sealed. Each span's endTime is clamped to the rope's actual length. Pure —
+ * the caller applies the resolutions.
+ */
+export function computeSealResolutions(
+  chunks: AnalysisChunk[],
+  liveSpans: Map<AnalysisChunk, LiveSpanEntry>,
+  ropes: SabRope[],
+): { span: LiveSpanEntry; endTime: number }[] {
+  const resolutions: { span: LiveSpanEntry; endTime: number }[] = []
+  for (const [chunk, span] of liveSpans) {
+    const loc = locateChunkRope(chunk, chunks, ropes)
+    if (loc) {
+      const endSample = Math.min(
+        loc.startSample + chunk.frames.length * chunk.timeStepSamples,
+        loc.rope.length,
+      )
+      resolutions.push({ span, endTime: endSample / loc.rope.sampleRate })
+    }
+  }
+  return resolutions
 }
 
 /**
