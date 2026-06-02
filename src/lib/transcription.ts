@@ -16,11 +16,11 @@
  */
 
 import type { AnalysisChunk } from '#/lib/AnalysisFrame'
-import { ensureBrowserEngineInstalled } from '#/lib/installBrowserEngine'
 import type { SabRope } from '#/lib/SabRope'
 import type { SettingsRow } from '#/lib/settings'
 import { transcribeBundled } from '#/lib/transcribeBundled'
 import { transcribeWeb } from '#/lib/transcribeWeb'
+import { ensureWebEngineInstalled } from '#/lib/transcribeWebInstall'
 
 const LOG = '[Transcription]'
 
@@ -127,7 +127,7 @@ export async function transcribeChunk(
         // The browser may need to download its on-device model on first use.
         // Block recognition until it's ready so the UI can surface a progress
         // modal instead of letting the chunk hang silently.
-        await ensureBrowserEngineInstalled()
+        await ensureWebEngineInstalled()
         text = await transcribeWeb(pcm, chunk.sampleRate, true)
         break
       case 'cloud':

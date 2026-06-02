@@ -28,16 +28,16 @@ import {
   DialogTitle,
 } from '#/components/ui/dialog'
 import {
-  dismissBrowserEngineInstallState,
-  useBrowserEngineInstallState,
-} from '#/lib/installBrowserEngine'
+  dismissWebEngineInstallState,
+  useWebEngineInstallState,
+} from '#/lib/transcribeWebInstall'
 
 // The Web Speech API doesn't expose install progress, so the running state is
 // an indeterminate spinner. A failed install keeps the modal open with a
 // dismiss action so the user has a chance to read the error before the chunk's
 // own error indicator (a small triangle in the speech strip) is all that's left.
 export function BrowserEngineInstallModal() {
-  const state = useBrowserEngineInstallState()
+  const state = useWebEngineInstallState()
   if (state.status === 'idle') return null
 
   const isFailed = state.status === 'failed'
@@ -46,7 +46,7 @@ export function BrowserEngineInstallModal() {
     <Dialog
       open
       onOpenChange={(open) => {
-        if (!open && isFailed) dismissBrowserEngineInstallState()
+        if (!open && isFailed) dismissWebEngineInstallState()
       }}
     >
       <DialogContent showCloseButton={false}>
@@ -64,7 +64,7 @@ export function BrowserEngineInstallModal() {
         </DialogHeader>
         {isFailed ? (
           <DialogFooter>
-            <Button onClick={dismissBrowserEngineInstallState}>Dismiss</Button>
+            <Button onClick={dismissWebEngineInstallState}>Dismiss</Button>
           </DialogFooter>
         ) : (
           <DialogBody>

@@ -23,33 +23,16 @@
 
 import { useSyncExternalStore } from 'react'
 
-interface OnDeviceSpeechRecognitionCtor {
-  available?: (options: {
-    langs: string[]
-    processLocally?: boolean
-  }) => Promise<'available' | 'downloadable' | 'downloading' | 'unavailable'>
-  install?: (options: {
-    langs: string[]
-    processLocally?: boolean
-  }) => Promise<boolean>
-}
-
-function getSpeechRecognitionCtor(): OnDeviceSpeechRecognitionCtor | undefined {
-  return (
-    self as unknown as { SpeechRecognition?: OnDeviceSpeechRecognitionCtor }
-  ).SpeechRecognition
-}
-
-export type BrowserEngineInstallState =
+export type BrowserWebInstallState =
   | { status: 'idle' }
   | { status: 'installing'; lang: string }
   | { status: 'failed'; lang: string; error: string }
 
-let state: BrowserEngineInstallState = { status: 'idle' }
+let state: BrowserWebInstallState = { status: 'idle' }
 const listeners = new Set<() => void>()
-const IDLE_STATE: BrowserEngineInstallState = { status: 'idle' }
+const IDLE_STATE: BrowserWebInstallState = { status: 'idle' }
 
-function setState(next: BrowserEngineInstallState): void {
+function setState(next: BrowserWebInstallState): void {
   state = next
   for (const fn of listeners) fn()
 }
@@ -61,7 +44,7 @@ function subscribe(fn: () => void): () => void {
   }
 }
 
-export function useBrowserEngineInstallState(): BrowserEngineInstallState {
+export function useWebEngineInstallState(): BrowserWebInstallState {
   return useSyncExternalStore(
     subscribe,
     () => state,
@@ -70,7 +53,7 @@ export function useBrowserEngineInstallState(): BrowserEngineInstallState {
 }
 
 /** Dismiss a `failed` state. No-op while installing or idle. */
-export function dismissBrowserEngineInstallState(): void {
+export function dismissWebEngineInstallState(): void {
   if (state.status === 'failed') setState(IDLE_STATE)
 }
 
@@ -87,7 +70,7 @@ const installPromises = new Map<string, Promise<void>>()
  * Browsers that don't expose the `install()` API are treated as ready — the
  * legacy path is for `start()` to trigger any required download itself.
  */
-export function ensureBrowserEngineInstalled(lang = 'en-US'): Promise<void> {
+export function ensureWebEngineInstalled(lang = 'en-US'): Promise<void> {
   const existing = installPromises.get(lang)
   if (existing) return existing
   const promise = doInstall(lang)
@@ -101,8 +84,10 @@ export function ensureBrowserEngineInstalled(lang = 'en-US'): Promise<void> {
 }
 
 async function doInstall(lang: string): Promise<void> {
-  const Ctor = getSpeechRecognitionCtor()
-  if (!Ctor?.available || !Ctor.install) {
+  if (
+    !('available' in SpeechRecognition) ||
+    !('install' in SpeechRecognition)
+  ) {
     // No probe + install API: nothing actionable here. Let recognition.start()
     // sort out any lazy download itself.
     return
@@ -110,7 +95,10 @@ async function doInstall(lang: string): Promise<void> {
 
   let status: 'available' | 'downloadable' | 'downloading' | 'unavailable'
   try {
-    status = await Ctor.available({ langs: [lang], processLocally: true })
+    status = await SpeechRecognition.available({
+      langs: [lang],
+      processLocally: true,
+    })
   } catch {
     // The probe is best-effort; if it throws, fall back to letting start()
     // handle download (or fail with a normal recognition error).
@@ -127,7 +115,10 @@ async function doInstall(lang: string): Promise<void> {
   // 'downloadable' or 'downloading' — kick off (or attach to) the install.
   setState({ status: 'installing', lang })
   try {
-    const ok = await Ctor.install({ langs: [lang], processLocally: true })
+    const ok = await SpeechRecognition.install({
+      langs: [lang],
+      processLocally: true,
+    })
     if (!ok) {
       throw new Error(
         'The on-device speech recognition model could not be installed.',
