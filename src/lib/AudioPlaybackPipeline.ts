@@ -20,6 +20,7 @@ import audioWorkletUrl from '#/lib/SabRopeSourceNode?worker&url'
 import type { SabRope } from './SabRope'
 import type { SabRopeSourceNode } from './SabRopeSourceNode'
 import { TypedEventTarget } from './TypedEventTarget'
+import { assertUnreachable } from './utils'
 
 const LOG = '[AudioPlaybackPipeline]'
 
@@ -32,19 +33,30 @@ type AudioPlaybackOutEvents = {
 /**
  * Plays one or more `SabRope`s laid end-to-end through the
  * `SabRopeSourceNode` worklet. The worklet handles the seek and any
- * per-rope resampling; this wrapper owns the `AudioContext`, tracks the
- * playback position off `context.currentTime`, and emits `stop` once the
- * concatenated timeline runs out (the worklet itself never signals an end).
+ * per-rope resampling; this wrapper owns the `AudioContext` and tracks the
+ * playback position off `context.currentTime`.
+ *
+ * Stopping is driven by the worklet: it posts a `RopeEndEvent` when it reaches
+ * the end of the final (sealed) rope, carrying the context time its last sample
+ * plays out. We stop once `context.currentTime` reaches that. Playback only
+ * ever runs on finished recordings, so the final rope is always sealed and the
+ * end always arrives.
  */
 export class AudioPlaybackPipeline extends TypedEventTarget<AudioPlaybackOutEvents> {
   #context: AudioContext | null = null
   #node: SabRopeSourceNode | null = null
   #animFrameId: number | null = null
   #startTimeSec = 0
-  // `context.currentTime` when playback began; `addModule` adds a variable
-  // delay, so we measure elapsed time from here rather than from context start.
-  #baseTimeSec = 0
+  // `context.currentTime` at which the worklet's first kept sample plays out,
+  // from its `RopeStartedEvent`. Null until that lands (module load + resampler
+  // warm-up take a variable, unpredictable moment); position holds at
+  // `#startTimeSec` until then, then tracks `currentTime` exactly off this.
+  #anchorContextTime: number | null = null
   #duration = 0
+  // `context.currentTime` at which the worklet's final sample plays out, from
+  // its `RopeEndEvent`. Null until the worklet reports the end; we stop once
+  // `currentTime` reaches it.
+  #stopAtContextTime: number | null = null
   #stopCtrl = new AbortController()
 
   get stopSignal(): AbortSignal {
@@ -108,6 +120,20 @@ export class AudioPlaybackPipeline extends TypedEventTarget<AudioPlaybackOutEven
     )
     this.#node = node
     node.connect(context.destination)
+    // Listen before starting so an immediate `started`/`end` (e.g. a seek
+    // already at the tail) isn't missed.
+    node.port.onmessage = ({ data }) => {
+      switch (data.type) {
+        case 'started':
+          this.#anchorContextTime = data.contextTime
+          break
+        case 'end':
+          this.#stopAtContextTime = data.contextTime
+          break
+        default:
+          assertUnreachable(data)
+      }
+    }
     node.port.postMessage({
       type: 'setBuffer',
       ropes: ropes.map((rope) => rope.shareRope()),
@@ -115,19 +141,25 @@ export class AudioPlaybackPipeline extends TypedEventTarget<AudioPlaybackOutEven
     })
     node.port.postMessage({ type: 'start', timeSec: startAtSec })
 
-    this.#baseTimeSec = context.currentTime
     this.#animFrameId = requestAnimationFrame(this.#animate)
   }
 
   #animate = () => {
     const context = this.#context
     if (context === null) return
-    const timeSec = Math.min(
-      this.#startTimeSec + (context.currentTime - this.#baseTimeSec),
-      this.#duration,
-    )
+    // Until the worklet anchors the clock, hold at the seek target; after, track
+    // the context clock exactly (playback is 1:1 real time).
+    const elapsed =
+      this.#anchorContextTime === null
+        ? 0
+        : Math.max(0, context.currentTime - this.#anchorContextTime)
+    const timeSec = Math.min(this.#startTimeSec + elapsed, this.#duration)
     this.emit('positionChanged', { timeSec })
-    if (timeSec >= this.#duration) {
+    // Stop once the worklet's final sample has actually played out.
+    if (
+      this.#stopAtContextTime !== null &&
+      context.currentTime >= this.#stopAtContextTime
+    ) {
       this.emit('stop')
       this.#stop()
       return

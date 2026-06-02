@@ -18,7 +18,7 @@
 
 import { AudioRingReader } from './AudioRingReader'
 import { SabRope } from './SabRope'
-import type { SabRopeGrow } from './SabRope'
+import type { SabRopeGrow, SabRopeSeal } from './SabRope'
 import { SpectrogramStreamProcessor } from './SpectrogramProcessor'
 import type {
   AppendFrameMessage,
@@ -45,6 +45,7 @@ export type SpectrogramWorkerOutMessage =
   | PatchFrameMessage
   | WorkerEndedMessage
   | SabRopeGrow
+  | SabRopeSeal
 
 export type SpectrogramWorker = Omit<Worker, 'postMessage' | 'onmessage'> & {
   postMessage: (msg: SpectrogramWorkerInMessage) => null
@@ -137,6 +138,12 @@ export async function runAnalysis(reader: AudioRingReader, sampleRate: number) {
       } satisfies AppendFrameMessage)
     }
   }
+
+  // The recording is done growing: seal locally (dropping our spare buffer) and
+  // tell consumers to drop theirs. Ordered after the last `shareGrowth`, so the
+  // consumer holds every real buffer before it trims.
+  rope.seal()
+  postMessage({ type: 'sab-rope-seal' } satisfies SabRopeSeal)
 }
 
 self.addEventListener('unhandledrejection', function (event) {

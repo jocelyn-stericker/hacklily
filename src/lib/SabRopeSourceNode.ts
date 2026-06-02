@@ -43,9 +43,32 @@ export interface RopeEndMessage {
   timeSec: number
 }
 
+/**
+ * Posted once per `start`, the instant the worklet writes its first kept
+ * (post-warmup) output sample. Anchors the playback clock: `contextTime` is when
+ * that sample plays out, and it corresponds to the seek target the consumer
+ * requested. Lets the consumer track position as `startAtSec + (currentTime -
+ * contextTime)` — exact, since playback is 1:1 real time — instead of guessing
+ * when audio actually began.
+ */
+export interface RopeStartedEvent {
+  type: 'started'
+  contextTime: number
+}
+
 export interface RopeEndEvent {
   type: 'end'
+  /**
+   * Context time at which the last rendered sample plays out. The worklet
+   * renders ahead of the audible clock, so a consumer should wait until
+   * `context.currentTime` reaches this before tearing the graph down — stopping
+   * on receipt would clip the buffered tail.
+   */
+  contextTime: number
 }
+
+/** Messages the worklet posts back to the main thread. */
+export type SabRopeSourceNodeOutEvent = RopeStartedEvent | RopeEndEvent
 
 export type SabRopeSourceNodeMessage =
   | RopeInitMessage
@@ -58,7 +81,10 @@ export type SabRopeSourceNode = Omit<AudioWorkletNode, 'port'> & {
   port: {
     postMessage: (msg: SabRopeSourceNodeMessage) => void
     onmessage:
-      | ((this: MessagePort, msg: MessageEvent<RopeEndEvent>) => void)
+      | ((
+          this: MessagePort,
+          msg: MessageEvent<SabRopeSourceNodeOutEvent>,
+        ) => void)
       | null
   }
 }
@@ -94,6 +120,11 @@ const FEED_CHUNK = 128
  * the segment buffers the shared `length` already points at), `start` to seek
  * and begin playback, and `null` to pause.
  *
+ * Reaching the end of a still-growing final rope just stalls (silence) until
+ * more data lands. Once that rope is `seal()`ed, reaching its end is a true
+ * end: playback stops and the worklet posts a `RopeEndEvent`. An explicit
+ * `end` message stops at a chosen time instead.
+ *
  * Load it:
  * ```
  * import audioWorkletUrl from '#/lib/SabRopeSourceNode?worker&url'
@@ -119,6 +150,9 @@ export class SabRopeSourceNodeProcessor extends AudioWorkletProcessor {
   #scratch = new Float32Array(FEED_CHUNK)
 
   #end: { rope: number; frame: number } | null = null
+
+  /** Set on `start`; cleared once the first kept sample posts a `RopeStartedEvent`. */
+  #announceStart = false
 
   constructor() {
     super()
@@ -183,12 +217,29 @@ export class SabRopeSourceNodeProcessor extends AudioWorkletProcessor {
     if (cursor) {
       this.#startRope(cursor)
       this.#playing = true
+      // Anchor the clock on the first sample we actually emit (rope joins reuse
+      // `#startRope` but must not re-anchor, so the flag lives here).
+      this.#announceStart = true
     } else {
       // No ropes to play.
       this.#playing = false
       this.#cursor = null
       this.#resampler = null
+      this.#announceStart = false
     }
+  }
+
+  /**
+   * Post the playback-clock anchor for the first kept output sample of this
+   * `start`, written at `offset` frames into the current quantum. Fires once.
+   */
+  #maybeAnnounceStart(offset: number) {
+    if (!this.#announceStart) return
+    this.#announceStart = false
+    this.port.postMessage({
+      type: 'started',
+      contextTime: currentTime + offset / sampleRate,
+    } satisfies RopeStartedEvent)
   }
 
   #scheduleEnd(time: number) {
@@ -239,6 +290,9 @@ export class SabRopeSourceNodeProcessor extends AudioWorkletProcessor {
 
     const frames = ch0.length
     let produced = 0
+    // Set when the current rope runs dry and `#advanceRope` finds nothing to
+    // move to — i.e. we're parked at the end of the final rope.
+    let exhausted = false
     while (produced < frames) {
       const rope = this.#ropes[this.#cursor.rope]
       if (!rope) break
@@ -250,12 +304,14 @@ export class SabRopeSourceNodeProcessor extends AudioWorkletProcessor {
           const n = Math.min(frames - produced, avail)
           rope.read(ch0, this.#cursor.frame, produced, n)
           this.#applyGain(ch0, produced, produced + n)
+          this.#maybeAnnounceStart(produced)
           this.#cursor.frame += n
           produced += n
           continue
         }
-        if (!this.#advanceRope()) break
-        continue
+        if (this.#advanceRope()) continue
+        exhausted = true
+        break
       }
 
       // Resampling: drain ready output, else feed more, else advance.
@@ -268,6 +324,7 @@ export class SabRopeSourceNodeProcessor extends AudioWorkletProcessor {
         } else {
           const got = this.#resampler.drain(ch0.subarray(produced))
           this.#applyGain(ch0, produced, produced + got)
+          if (got > 0) this.#maybeAnnounceStart(produced)
           produced += got
         }
         continue
@@ -282,19 +339,33 @@ export class SabRopeSourceNodeProcessor extends AudioWorkletProcessor {
         this.#cursor.frame += chunk
         continue
       }
-      if (!this.#advanceRope()) break
+      if (this.#advanceRope()) continue
+      exhausted = true
+      break
     }
 
-    if (this.#end) {
-      if (
-        this.#cursor.rope > this.#end.rope ||
-        (this.#cursor.rope === this.#end.rope &&
+    // Stop and signal `end` when either a scheduled end time has passed, or the
+    // final rope is exhausted and sealed (no more data is ever coming). A
+    // growing final rope that runs dry just stalls — silence now, resume once
+    // the producer appends more.
+    const end = this.#end
+    const reachedScheduledEnd =
+      end !== null &&
+      (this.#cursor.rope > end.rope ||
+        (this.#cursor.rope === end.rope &&
           this.#cursor.frame >=
-            this.#end.frame + (this.#resampler?.warmupInputSamples ?? 0))
-      ) {
-        this.#playing = false
-        this.port.postMessage({ type: 'end' } satisfies RopeEndEvent)
-      }
+            end.frame + (this.#resampler?.warmupInputSamples ?? 0)))
+    const reachedSealedEnd =
+      exhausted && (this.#ropes[this.#cursor.rope]?.sealed ?? false)
+
+    if (reachedScheduledEnd || reachedSealedEnd) {
+      this.#playing = false
+      // `currentTime` is this quantum's first frame; the last sample we wrote
+      // this quantum plays out `produced` frames later.
+      this.port.postMessage({
+        type: 'end',
+        contextTime: currentTime + produced / sampleRate,
+      } satisfies RopeEndEvent)
     }
 
     // Mono source: mirror into any remaining output channels.
@@ -306,8 +377,9 @@ export class SabRopeSourceNodeProcessor extends AudioWorkletProcessor {
   }
 
   /**
-   * Move to the next rope, or report that none remains. The last rope is the
-   * live one, so its exhaustion means "wait for more data", not "advance".
+   * Move to the next rope, or report that none remains (the caller then either
+   * stalls for more data or, if the final rope is sealed, ends). The last rope
+   * is the live one, so it has no successor to advance to.
    *
    * The next rope gets a fresh resampler (mandatory — rates may differ), so a
    * resampled rope's leading/trailing ~`kernelHalf` samples taper against its

@@ -266,6 +266,11 @@ function App() {
     },
     [ropes],
   )
+  const handleSabRopeSeal = useCallback(() => {
+    // Seal our copy too, releasing its spare buffer. The shared flag is already
+    // set by the producer; this just drops the local reference.
+    ropes[ropes.length - 1]!.seal()
+  }, [ropes])
 
   const handlePatch = useCallback((from: number, to: number) => {
     const absFrom = recordingStartIndexRef.current + from
@@ -304,6 +309,7 @@ function App() {
     onError: handleError,
     onSabRopeGrow: handleSabRopeGrow,
     onSabRopeShare: handleSabRopeShare,
+    onSabRopeSeal: handleSabRopeSeal,
   })
 
   useAudioPlayback({

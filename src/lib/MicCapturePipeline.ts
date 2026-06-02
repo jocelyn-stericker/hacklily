@@ -29,7 +29,7 @@ import SpectrogramWorker from '#/lib/SpectrogramWorker?worker'
 import VadWorker from '#/lib/VadWorker?worker'
 
 import type { FormantWorkerOutMessage } from './FormantWorker'
-import type { SabRopeGrow, SabRopeShare } from './SabRope'
+import type { SabRopeGrow, SabRopeSeal, SabRopeShare } from './SabRope'
 import type { AudioCaptureSettings } from './settings'
 import {
   buildAudioConstraints,
@@ -59,6 +59,7 @@ type MicCaptureOutEvents = {
   error: CustomEvent<{ error: string }>
   sabRopeShare: CustomEvent<SabRopeShare>
   sabRopeGrow: CustomEvent<SabRopeGrow>
+  sabRopeSeal: CustomEvent<SabRopeSeal>
 }
 
 // Cached persistent stream — key tracks the settings it was opened with so we
@@ -488,6 +489,10 @@ export class MicCapturePipeline extends TypedEventTarget<MicCaptureOutEvents> {
 
       case 'sab-rope-grow':
         this.emit('sabRopeGrow', data)
+        return
+
+      case 'sab-rope-seal':
+        this.emit('sabRopeSeal', data)
         return
     }
   }

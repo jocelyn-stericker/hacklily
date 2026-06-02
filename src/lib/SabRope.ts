@@ -24,6 +24,12 @@ console.assert(isPowerOfTwo(SEG_SAMPLES))
 const SEG_SAMPLES_MASK = SEG_SAMPLES - 1
 const SEG_SAMPLES_SHIFT = Math.log2(SEG_SAMPLES)
 
+// Slots in the shared control block (an Int32Array). `length` is the sample
+// count; `sealed` flips to 1 once the rope is finalized and no longer grows.
+const CTRL_LENGTH = 0
+const CTRL_SEALED = 1
+const CTRL_SLOTS = 2
+
 export type SabRopeGrow = {
   type: 'sab-rope-grow'
   /** Number of buffers consumer must have before appending `buffers`. */
@@ -31,11 +37,23 @@ export type SabRopeGrow = {
   buffers: Array<SharedArrayBuffer>
 }
 
+/**
+ * Tells a consumer the rope has been sealed so it can drop its own spare
+ * buffer. Carries no data: the `sealed` flag and final length already live in
+ * the shared control block, so a consumer that holds this rope sees them the
+ * instant the producer sets them. This message exists only to trigger the
+ * local `seal()` that releases the now-useless spare `SharedArrayBuffer`
+ * reference in that copy. Ships over the same channel as `SabRopeGrow`.
+ */
+export type SabRopeSeal = {
+  type: 'sab-rope-seal'
+}
+
 export type SabRopeShare = {
   type: 'sab-rope'
   sampleRate: number
   buffers: Array<SharedArrayBuffer>
-  lengthPtr: SharedArrayBuffer
+  ctrlPtr: SharedArrayBuffer
 }
 
 /**
@@ -49,6 +67,11 @@ export type SabRopeShare = {
  * CONTRACT: post `shareGrowth` after every `append`. The one spare buffer per
  * append gives the host ~1 segment (~1.5s @ 44.1kHz) to deliver it; miss that
  * and consumers silently stall at the boundary.
+ *
+ * Once a recording is done growing, `seal()` it: that drops the spare buffer
+ * and forbids further appends. Sealing sets a shared flag (visible to every
+ * copy at once) but the spare reference is per-copy, so each consumer must run
+ * its own `seal()` — driven by the `SabRopeSeal` message — to actually free it.
  */
 export class SabRope {
   #sampleRate: number
@@ -56,8 +79,8 @@ export class SabRope {
   #buffers: Array<SharedArrayBuffer>
   #buffersView: Array<Float32Array<SharedArrayBuffer>>
 
-  #lengthPtr: SharedArrayBuffer
-  #lengthView: Int32Array
+  #ctrlPtr: SharedArrayBuffer
+  #ctrlView: Int32Array
 
   constructor(sampleRate: number)
   constructor(state: SabRopeShare)
@@ -69,8 +92,10 @@ export class SabRope {
       )
       this.#buffers = [sab]
       this.#buffersView = [new Float32Array(sab)]
-      this.#lengthPtr = new SharedArrayBuffer(Int32Array.BYTES_PER_ELEMENT * 1)
-      this.#lengthView = new Int32Array(this.#lengthPtr)
+      this.#ctrlPtr = new SharedArrayBuffer(
+        Int32Array.BYTES_PER_ELEMENT * CTRL_SLOTS,
+      )
+      this.#ctrlView = new Int32Array(this.#ctrlPtr)
     } else {
       // oxlint-disable-next-line typescript/no-unnecessary-condition
       console.assert(init.type === 'sab-rope')
@@ -78,13 +103,18 @@ export class SabRope {
       this.#sampleRate = init.sampleRate
       this.#buffers = init.buffers
       this.#buffersView = init.buffers.map((sab) => new Float32Array(sab))
-      this.#lengthPtr = init.lengthPtr
-      this.#lengthView = new Int32Array(this.#lengthPtr)
+      this.#ctrlPtr = init.ctrlPtr
+      this.#ctrlView = new Int32Array(this.#ctrlPtr)
     }
   }
 
   get sampleRate() {
     return this.#sampleRate
+  }
+
+  /** True once `seal()` has run on any copy; no further appends are allowed. */
+  get sealed() {
+    return Atomics.load(this.#ctrlView, CTRL_SEALED) === 1
   }
 
   #segmentFor(i: number) {
@@ -99,12 +129,15 @@ export class SabRope {
   get length() {
     // Clamped to how much can be read.
     return Math.min(
-      Atomics.load(this.#lengthView, 0),
+      Atomics.load(this.#ctrlView, CTRL_LENGTH),
       this.#buffersView.length * SEG_SAMPLES,
     )
   }
 
   append(data: Float32Array) {
+    if (this.sealed) {
+      throw new Error('cannot append to a sealed rope')
+    }
     if (data.length === 0) {
       return
     }
@@ -131,8 +164,41 @@ export class SabRope {
       length += toAdd
       i += toAdd
     }
-    Atomics.store(this.#lengthView, 0, length)
-    Atomics.notify(this.#lengthView, 0)
+    Atomics.store(this.#ctrlView, CTRL_LENGTH, length)
+    Atomics.notify(this.#ctrlView, CTRL_LENGTH)
+  }
+
+  /**
+   * Finalize the rope: optionally append `data` one last time, mark it sealed,
+   * and drop the spare buffer that `append` keeps for lead time. After this,
+   * `append` throws.
+   *
+   * The `sealed` flag and length live in the shared control block, so every
+   * copy observes the seal immediately; but each copy holds its own reference
+   * to the spare `SharedArrayBuffer`. So this method is idempotent and runs on
+   * each copy: the producer seals (optionally with the final `data`) and ships
+   * a `SabRopeSeal`; each consumer runs `seal()` (no data) to release its spare
+   * and let the buffer be collected everywhere.
+   */
+  seal(data?: Float32Array) {
+    if (data && data.length > 0) {
+      // Append before flagging — `append` rejects a sealed rope.
+      this.append(data)
+    }
+
+    Atomics.store(this.#ctrlView, CTRL_SEALED, 1)
+    Atomics.notify(this.#ctrlView, CTRL_LENGTH)
+
+    // Keep only the buffers `length` spans; drop the trailing spare. Guarded by
+    // `>` so a consumer still missing a tail buffer (fewer than `needed`) keeps
+    // what it has and never grows here.
+    const needed = Math.ceil(
+      Atomics.load(this.#ctrlView, CTRL_LENGTH) / SEG_SAMPLES,
+    )
+    if (this.#buffers.length > needed) {
+      this.#buffers.length = needed
+      this.#buffersView.length = needed
+    }
   }
 
   read(dest: Float32Array, readFrom: number, writeTo: number, count: number) {
@@ -192,7 +258,7 @@ export class SabRope {
       type: 'sab-rope',
       sampleRate: this.#sampleRate,
       buffers: this.#buffers.slice(),
-      lengthPtr: this.#lengthPtr,
+      ctrlPtr: this.#ctrlPtr,
     }
   }
 

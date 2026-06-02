@@ -287,4 +287,96 @@ describe('SabRope', () => {
       expectRamp(readAll(c2), 0)
     })
   })
+
+  describe('seal', () => {
+    it('reports sealed and drops the spare buffer', () => {
+      const r = new SabRope(48000)
+      r.append(ramp(0, 100))
+      expect(r.sealed).toBe(false)
+      expect(r.shareRope().buffers.length).toBe(2) // seg 0 + spare
+
+      r.seal()
+      expect(r.sealed).toBe(true)
+      expect(r.shareRope().buffers.length).toBe(1) // spare gone
+      expect(r.length).toBe(100)
+      expectRamp(readAll(r), 0)
+    })
+
+    it('keeps every segment the data spans, dropping only the spare', () => {
+      const r = new SabRope(48000)
+      r.append(ramp(0, SEG + 5)) // segs 0,1 + spare
+      expect(r.shareRope().buffers.length).toBe(3)
+
+      r.seal()
+      expect(r.shareRope().buffers.length).toBe(2) // segs 0,1
+      expect(r.length).toBe(SEG + 5)
+      expectRamp(readAll(r), 0)
+    })
+
+    it('appends the optional data before sealing', () => {
+      const r = new SabRope(48000)
+      r.seal(ramp(0, 50))
+      expect(r.sealed).toBe(true)
+      expect(r.length).toBe(50)
+      expect(r.shareRope().buffers.length).toBe(1) // no spare
+      expectRamp(readAll(r), 0)
+    })
+
+    it('seals an empty rope down to zero buffers', () => {
+      const r = new SabRope(48000)
+      r.seal()
+      expect(r.sealed).toBe(true)
+      expect(r.length).toBe(0)
+      expect(r.shareRope().buffers.length).toBe(0)
+    })
+
+    it('rejects appends once sealed', () => {
+      const r = new SabRope(48000)
+      r.append(ramp(0, 10))
+      r.seal()
+      expect(() => r.append(ramp(10, 5))).toThrow()
+      // seal(data) routes through append, so it fails the same way.
+      expect(() => r.seal(ramp(10, 5))).toThrow()
+    })
+
+    it('is idempotent when re-sealed without data', () => {
+      const r = new SabRope(48000)
+      r.append(ramp(0, 10))
+      r.seal()
+      expect(() => r.seal()).not.toThrow()
+      expect(r.length).toBe(10)
+      expect(r.shareRope().buffers.length).toBe(1)
+    })
+  })
+
+  describe('seal across copies', () => {
+    it('shows the sealed flag to consumers at once, but each drops its own spare', () => {
+      const producer = new SabRope(48000)
+      producer.append(ramp(0, 100))
+      const consumer = new SabRope(producer.shareRope())
+      expect(consumer.sealed).toBe(false)
+      expect(consumer.shareRope().buffers.length).toBe(2) // holds the spare
+
+      producer.seal()
+      // The flag lives in the shared control block, so it's visible before the
+      // consumer runs its own seal...
+      expect(consumer.sealed).toBe(true)
+      // ...but the spare is a per-copy reference, still held here.
+      expect(consumer.shareRope().buffers.length).toBe(2)
+
+      consumer.seal()
+      expect(consumer.shareRope().buffers.length).toBe(1)
+      expect(consumer.length).toBe(100)
+      expectRamp(readAll(consumer), 0)
+    })
+
+    it('is born sealed when constructed from a sealed share', () => {
+      const producer = new SabRope(48000)
+      producer.seal(ramp(0, 100))
+      const consumer = new SabRope(producer.shareRope())
+      expect(consumer.sealed).toBe(true)
+      expect(() => consumer.append(ramp(100, 5))).toThrow()
+      expectRamp(readAll(consumer), 0)
+    })
+  })
 })

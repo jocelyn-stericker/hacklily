@@ -8,8 +8,13 @@ import type { AppendFrameMessage, ParamsMessage } from '#/lib/workerMessages'
 import { useMicCapture } from './useMicCapture'
 
 type MicCaptureProps = Parameters<typeof useMicCapture>[0]
-function TestRecorder(props: MicCaptureProps) {
-  useMicCapture(props)
+// `onSabRopeSeal` is irrelevant to these tests; default it so each case can
+// omit it.
+function TestRecorder(
+  props: Omit<MicCaptureProps, 'onSabRopeSeal'> &
+    Partial<Pick<MicCaptureProps, 'onSabRopeSeal'>>,
+) {
+  useMicCapture({ onSabRopeSeal: () => {}, ...props })
   return null
 }
 
@@ -209,7 +214,7 @@ describe('AudioRecorder', () => {
     rope: {
       type: 'sab-rope',
       buffers: [],
-      lengthPtr: new SharedArrayBuffer(4),
+      ctrlPtr: new SharedArrayBuffer(8),
       sampleRate: 44100,
     },
     timeStepSamples: 882,

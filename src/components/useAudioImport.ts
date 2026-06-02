@@ -60,9 +60,10 @@ async function importAudioFile(file: File): Promise<{
 
         // Mirror the mono PCM, trimmed to the analysed length, into a SabRope —
         // the single audio representation for playback, export, and
-        // transcription. One rope covers the whole clip.
+        // transcription. One rope covers the whole clip; it never grows, so
+        // seal it in one shot (no spare buffer, appends forbidden).
         const rope = new SabRope(fileSampleRate)
-        rope.append(mono.subarray(0, analysisSamples))
+        rope.seal(mono.subarray(0, analysisSamples))
 
         resolve({ analysis: chunks, ropes: [rope] })
       } else {

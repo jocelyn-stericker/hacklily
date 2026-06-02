@@ -97,13 +97,22 @@ function makeRope(lengthSamples: number, sampleRate = 44100): SabRope {
       type: 'sab-rope',
       sampleRate,
       buffers: [],
-      lengthPtr: new SharedArrayBuffer(4),
+      ctrlPtr: new SharedArrayBuffer(8),
     })),
   } as unknown as SabRope
 }
 
 function lastMessages() {
   return mockAudioAPI.workletNode.port.postMessage.mock.calls.map((c) => c[0])
+}
+
+/** Simulate the worklet posting a message back to the main thread. */
+function workletPost(msg: unknown) {
+  ;(
+    mockAudioAPI.workletNode.port as unknown as {
+      onmessage?: (e: MessageEvent) => void
+    }
+  ).onmessage?.({ data: msg } as MessageEvent)
 }
 
 describe('AudioPlaybackPipeline', () => {
@@ -233,13 +242,16 @@ describe('AudioPlaybackPipeline', () => {
   })
 
   describe('position tracking', () => {
-    it('emits positionChanged offset by startAtSec', async () => {
+    it('holds at startAtSec until the worklet anchors the clock', async () => {
       const pipeline = new AudioPlaybackPipeline({
         ropes: [makeRope(88200)], // 2s
         gains: [],
         startAtSec: 0.5,
         signal: abortController.signal,
       })
+      await flush()
+      // No `started` yet; even with the clock advanced, position stays put.
+      mockAudioAPI.context.currentTime = 0.3
 
       const seen = await new Promise<number>((resolve) => {
         pipeline.addEventListener('positionChanged', (e) => {
@@ -247,7 +259,29 @@ describe('AudioPlaybackPipeline', () => {
         })
       })
 
-      expect(seen).toBeGreaterThanOrEqual(0.5)
+      expect(seen).toBe(0.5)
+    })
+
+    it('tracks elapsed context time from the worklet anchor', async () => {
+      const pipeline = new AudioPlaybackPipeline({
+        ropes: [makeRope(88200)], // 2s
+        gains: [],
+        startAtSec: 0.5,
+        signal: abortController.signal,
+      })
+      await flush()
+      // Worklet's first sample plays out at context time 0.1; 0.4s later the
+      // position should be startAtSec + 0.4.
+      workletPost({ type: 'started', contextTime: 0.1 })
+      mockAudioAPI.context.currentTime = 0.5
+
+      const seen = await new Promise<number>((resolve) => {
+        pipeline.addEventListener('positionChanged', (e) => {
+          resolve((e as CustomEvent<{ timeSec: number }>).detail.timeSec)
+        })
+      })
+
+      expect(seen).toBeCloseTo(0.9, 5)
     })
 
     it('does not report a position beyond the total duration', async () => {
@@ -258,6 +292,7 @@ describe('AudioPlaybackPipeline', () => {
         signal: abortController.signal,
       })
       await flush()
+      workletPost({ type: 'started', contextTime: 0 })
       mockAudioAPI.context.currentTime = 100
 
       const seen = await new Promise<number>((resolve) => {
@@ -271,7 +306,10 @@ describe('AudioPlaybackPipeline', () => {
   })
 
   describe('end of playback', () => {
-    it('emits stop and tears down when the timeline runs out', async () => {
+    const workletEnd = (contextTime: number) =>
+      workletPost({ type: 'end', contextTime })
+
+    it('emits stop and tears down once the worklet end plays out', async () => {
       const pipeline = new AudioPlaybackPipeline({
         ropes: [makeRope(44100)], // 1s
         gains: [],
@@ -283,8 +321,9 @@ describe('AudioPlaybackPipeline', () => {
       const stopped = new Promise<void>((resolve) => {
         pipeline.addEventListener('stop', () => resolve())
       })
-      // Push currentTime past the duration so the next frame ends playback.
-      mockAudioAPI.context.currentTime = 2
+      // Worklet signals end at context time 1; advance the clock to it.
+      workletEnd(1)
+      mockAudioAPI.context.currentTime = 1
       await stopped
 
       expect(
@@ -293,6 +332,26 @@ describe('AudioPlaybackPipeline', () => {
       expect(mockAudioAPI.workletNode.disconnect).toHaveBeenCalled()
       expect(mockAudioAPI.context.close).toHaveBeenCalled()
       expect(pipeline.stopSignal.aborted).toBe(true)
+    })
+
+    it('does not stop before the end has played out', async () => {
+      const pipeline = new AudioPlaybackPipeline({
+        ropes: [makeRope(44100)],
+        gains: [],
+        startAtSec: 0,
+        signal: abortController.signal,
+      })
+      await flush()
+
+      let stopCount = 0
+      pipeline.addEventListener('stop', () => stopCount++)
+      // End reported, but the playout time is still in the future.
+      workletEnd(5)
+      mockAudioAPI.context.currentTime = 2
+      await flush()
+      await flush()
+
+      expect(stopCount).toBe(0)
     })
 
     it('emits stop only once', async () => {
@@ -306,6 +365,7 @@ describe('AudioPlaybackPipeline', () => {
 
       let stopCount = 0
       pipeline.addEventListener('stop', () => stopCount++)
+      workletEnd(1)
       mockAudioAPI.context.currentTime = 2
       await flush()
       await flush()

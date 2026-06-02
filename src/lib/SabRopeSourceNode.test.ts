@@ -44,9 +44,12 @@ vi.hoisted(() => {
 // Helpers
 // ---------------------------------------------------------------------------
 
-/** Construct a node with the worklet's `sampleRate` global stubbed. */
+/** Construct a node with the worklet's `sampleRate`/`currentTime` globals
+ * stubbed. `currentTime` only feeds the end event's playout timestamp, which
+ * these tests don't assert on, so a constant is fine. */
 function makeNode(outRate: number): SabRopeSourceNodeProcessor {
   vi.stubGlobal('sampleRate', outRate)
+  vi.stubGlobal('currentTime', 0)
   return new SabRopeSourceNodeProcessor()
 }
 
@@ -132,6 +135,16 @@ function setBufferWithGains(
     ropes: ropes.map((r) => r.shareRope()),
     gains,
   })
+}
+
+/** Messages of a given `type` the worklet has posted back to the main thread. */
+function postedOfType(node: SabRopeSourceNodeProcessor, type: string): any[] {
+  const post = (
+    node as unknown as { port: { postMessage: ReturnType<typeof vi.fn> } }
+  ).port.postMessage
+  return post.mock.calls
+    .map(([msg]) => msg)
+    .filter((m) => (m as { type?: string } | null)?.type === type)
 }
 
 // ---------------------------------------------------------------------------
@@ -534,6 +547,126 @@ describe('SabRopeSourceNode', () => {
 
       const out = collect(node, 300, 100)
       expect(out[200]).toBe(1200) // desired: plays past the stale end frame
+    })
+  })
+
+  describe('sealed end', () => {
+    const endEvents = (node: SabRopeSourceNodeProcessor) =>
+      postedOfType(node, 'end')
+
+    it('emits end when the final rope is sealed and runs out', () => {
+      const node = makeNode(48000)
+      const producer = new SabRope(48000)
+      producer.seal(ramp(200))
+      setBuffer(node, producer)
+      send(node, { type: 'start', timeSec: 0 })
+
+      const out = collect(node, 400, 100)
+      for (let i = 0; i < 200; i++) expect(out[i]).toBe(i)
+      for (let i = 200; i < 400; i++) expect(out[i]).toBe(0) // silent past the end
+      expect(endEvents(node)).toHaveLength(1)
+    })
+
+    it('stalls (no end) at the end of a still-growing final rope', () => {
+      const node = makeNode(48000)
+      const producer = new SabRope(48000)
+      producer.append(ramp(200)) // not sealed: more may come
+      setBuffer(node, producer)
+      send(node, { type: 'start', timeSec: 0 })
+
+      const out = collect(node, 400, 100)
+      for (let i = 0; i < 200; i++) expect(out[i]).toBe(i)
+      for (let i = 200; i < 400; i++) expect(out[i]).toBe(0) // silent, but only waiting
+      expect(endEvents(node)).toHaveLength(0)
+    })
+
+    it('ends only on the final rope, not at a join into a sealed later rope', () => {
+      const node = makeNode(48000)
+      const a = new SabRope(48000)
+      a.seal(ramp(200))
+      const b = new SabRope(48000)
+      b.seal(ramp(200, 1000))
+      setBuffer(node, a, b)
+      send(node, { type: 'start', timeSec: 0 })
+
+      const out = collect(node, 500, 100)
+      expect(out[199]).toBe(199) // tail of rope a
+      expect(out[200]).toBe(1000) // head of rope b — played through the join
+      expect(out[399]).toBe(1199) // tail of rope b
+      expect(out[400]).toBe(0) // silent past the end
+      expect(endEvents(node)).toHaveLength(1)
+    })
+
+    it('emits end after a sealed resampled rope drains', () => {
+      const node = makeNode(48000)
+      const producer = new SabRope(24000) // 2x upsample
+      producer.seal(ramp(200, 1)) // values 1..200
+      setBuffer(node, producer)
+      send(node, { type: 'start', timeSec: 0 })
+
+      // ~400 output samples; pull well past that so the source fully drains.
+      const out = collect(node, 700, 128)
+      expect(out[699]).toBe(0) // silent past the end
+      expect(endEvents(node)).toHaveLength(1)
+    })
+  })
+
+  describe('start anchor', () => {
+    const startedEvents = (node: SabRopeSourceNodeProcessor) =>
+      postedOfType(node, 'started')
+
+    it('anchors the clock at the first kept sample (passthrough)', () => {
+      const node = makeNode(48000)
+      vi.stubGlobal('currentTime', 10) // quantum-start context time
+      const producer = new SabRope(48000)
+      producer.append(ramp(200))
+      setBuffer(node, producer)
+      send(node, { type: 'start', timeSec: 0 })
+
+      quantum(node, 128)
+      const started = startedEvents(node)
+      expect(started).toHaveLength(1)
+      // First sample written at offset 0, so it plays out at currentTime.
+      expect(started[0].contextTime).toBe(10)
+    })
+
+    it('anchors only once across the whole playback', () => {
+      const node = makeNode(48000)
+      const producer = new SabRope(48000)
+      producer.append(ramp(500))
+      setBuffer(node, producer)
+      send(node, { type: 'start', timeSec: 0 })
+
+      collect(node, 400, 100)
+      expect(startedEvents(node)).toHaveLength(1)
+    })
+
+    it('does not anchor until the resampler warm-up is discarded', () => {
+      const node = makeNode(48000)
+      const producer = new SabRope(24000) // 2x upsample → primed with warm-up
+      producer.append(ramp(2000, 1))
+      setBuffer(node, producer)
+      send(node, { type: 'start', timeSec: 0 })
+
+      collect(node, 1000, 128)
+      // Still exactly one anchor, fired once a real (post-warm-up) sample landed.
+      expect(startedEvents(node)).toHaveLength(1)
+    })
+
+    it('re-anchors on a fresh start after a pause', () => {
+      const node = makeNode(48000)
+      const producer = new SabRope(48000)
+      producer.append(ramp(500))
+      setBuffer(node, producer)
+
+      send(node, { type: 'start', timeSec: 0 })
+      collect(node, 100, 100)
+      expect(startedEvents(node)).toHaveLength(1)
+
+      send(node, null) // pause
+      send(node, { type: 'start', timeSec: 200 / 48000 }) // seek + restart
+      collect(node, 100, 100)
+      expect(startedEvents(node)).toHaveLength(2)
     })
   })
 })
