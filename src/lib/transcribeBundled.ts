@@ -268,13 +268,13 @@ function getMoonshineWorker(): MoonshineWorker {
 
 /** Transcribe one recorded audio span with the bundled Moonshine worker. */
 export async function transcribeBundled(audio: AudioSpan): Promise<string> {
+  const worker = getMoonshineWorker()
   audio.signal.throwIfAborted()
   const pcm = await readAudioSpan(audio)
   audio.signal.throwIfAborted()
   const sampleRate = audio.rope.sampleRate
   cancelIdleTeardown()
   markBundledActive()
-  const worker = getMoonshineWorker()
   const id = nextTranscribeId++
   return new Promise<string>((resolve, reject) => {
     const detach = () => {

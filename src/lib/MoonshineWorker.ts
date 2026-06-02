@@ -189,3 +189,6 @@ let queue: Promise<void> = Promise.resolve()
 self.onmessage = ({ data }: MessageEvent<MoonshineWorkerInMessage>) => {
   queue = queue.then(() => transcribe(data))
 }
+
+// Preload
+void getPipeline()
