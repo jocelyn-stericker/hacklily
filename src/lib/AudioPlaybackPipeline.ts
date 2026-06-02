@@ -27,9 +27,9 @@ type AudioPlaybackOutEvents = {
 }
 
 /**
- * Plays one or more {@link SabRope}s laid end-to-end through the
- * {@link AudioRopeSourceNode} worklet. The worklet handles the seek and any
- * per-rope resampling; this wrapper owns the {@link AudioContext}, tracks the
+ * Plays one or more `SabRope`s laid end-to-end through the
+ * `AudioRopeSourceNode` worklet. The worklet handles the seek and any
+ * per-rope resampling; this wrapper owns the `AudioContext`, tracks the
  * playback position off `context.currentTime`, and emits `stop` once the
  * concatenated timeline runs out (the worklet itself never signals an end).
  */

@@ -48,8 +48,8 @@ import { RopeGainCache } from '#/lib/ropeLoudness'
 import { SabRope } from '#/lib/SabRope'
 import type { SabRopeGrow, SabRopeShare } from '#/lib/SabRope'
 import { updateSettings, useSettings } from '#/lib/settings'
+import { consumeBundledCrashFlag } from '#/lib/transcribeBundled'
 import { chunkPcmFromRopes, transcribeChunks } from '#/lib/transcription'
-import { consumeBundledCrashFlag } from '#/lib/transcription-bundled'
 import { cn } from '#/lib/utils'
 
 export const Route = createFileRoute('/')({
@@ -170,9 +170,11 @@ function App() {
   useEffect(() => {
     if (!consumeBundledCrashFlag()) return
     void updateSettings({ transcriptionMode: 'disabled' })
-    toast('Transcription was turned off', {
-      description:
-        'Bundled transcription may have crashed last time, which can happen on lower-memory devices.',
+    setTimeout(() => {
+      toast('Transcription was turned off', {
+        description:
+          'Bundled transcription may have crashed last time, which can happen on lower-memory devices.',
+      })
     })
   }, [])
 

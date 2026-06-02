@@ -23,7 +23,7 @@ import type { AnalysisChunk } from '#/lib/AnalysisFrame'
 
 import { useTimelineState } from './useTimelineState'
 
-vi.mock('#/lib/checkFeatures', () => ({
+vi.mock('#/lib/browserFeatures', () => ({
   checkFeatures: vi.fn(() => null),
 }))
 

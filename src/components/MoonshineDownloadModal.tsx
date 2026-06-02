@@ -30,7 +30,7 @@ import {
 import {
   dismissMoonshineDownloadState,
   useMoonshineDownloadState,
-} from '#/lib/transcription-bundled'
+} from '#/lib/transcribeBundled'
 
 function formatMB(bytes: number): string {
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`

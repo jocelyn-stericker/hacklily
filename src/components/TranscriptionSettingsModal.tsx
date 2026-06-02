@@ -32,10 +32,10 @@ import {
   DialogHeader,
   DialogTitle,
 } from '#/components/ui/dialog'
-import type { LocalTranscriptionStatus } from '#/lib/checkFeatures'
+import { useBrowserSpeechRecognitionAvailable } from '#/components/useBrowserSpeechRecognitionAvailable'
+import type { LocalTranscriptionStatus } from '#/lib/browserFeatures'
 import type { TranscriptionMode } from '#/lib/settings'
 import { useSettings, updateSettings } from '#/lib/settings'
-import { useBrowserSpeechRecognitionAvailable } from '#/lib/useBrowserSpeechRecognitionAvailable'
 import { cn } from '#/lib/utils'
 
 /** Badge describing whether the browser's own on-device engine can be used. */

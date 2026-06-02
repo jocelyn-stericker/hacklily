@@ -42,11 +42,11 @@ export type AudioRingWriterNode = Omit<AudioWorkletNode, 'port'> & {
  * Then, send it a SharedArrayBuffer to write to.
  */
 export class AudioRingWriter extends AudioWorkletProcessor {
-  private _ctrl: Int32Array | null = null
-  private _data: Float32Array | null = null
-  private _bufSamples: number | null = null
-  private _bufMask = 0
-  private _activated = false
+  #ctrl: Int32Array | null = null
+  #data: Float32Array | null = null
+  #bufSamples: number | null = null
+  #bufMask = 0
+  #activated = false
 
   constructor() {
     super()
@@ -61,14 +61,14 @@ export class AudioRingWriter extends AudioWorkletProcessor {
         )
       }
 
-      this._bufSamples = data.bufSamples
-      this._bufMask = this._bufSamples - 1
+      this.#bufSamples = data.bufSamples
+      this.#bufMask = this.#bufSamples - 1
 
       const sab = data.sab
       // Not sure if we need to align to an 8-byte boundary, but either way, this is
       // a write-only ring buffer, we don't store a read position.
-      this._ctrl = new Int32Array(sab, 0, 2)
-      this._data = new Float32Array(sab, 8, this._bufSamples)
+      this.#ctrl = new Int32Array(sab, 0, 2)
+      this.#data = new Float32Array(sab, 8, this.#bufSamples)
     }
   }
 
@@ -79,18 +79,18 @@ export class AudioRingWriter extends AudioWorkletProcessor {
     const inp = inputs[0]?.[0]
     if (!inp?.length) return true
 
-    const ctrl = this._ctrl
-    const data = this._data
+    const ctrl = this.#ctrl
+    const data = this.#data
     if (!ctrl || !data) return true
 
-    if (!this._activated) {
+    if (!this.#activated) {
       if (!inp.some((s) => s !== 0)) return true
-      this._activated = true
+      this.#activated = true
     }
 
     const wp = Atomics.load(ctrl, 0)
     for (let i = 0; i < inp.length; i++) {
-      data[(wp + i) & this._bufMask] = inp[i]!
+      data[(wp + i) & this.#bufMask] = inp[i]!
     }
     Atomics.store(ctrl, 0, wp + inp.length)
     Atomics.notify(ctrl, 0)

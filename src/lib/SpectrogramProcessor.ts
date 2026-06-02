@@ -469,10 +469,10 @@ export class SpectrogramStreamProcessor {
       this.ringHead++
     }
     this.totalFed += samples.length
-    this._processReady()
+    this.#processReady()
   }
 
-  private _processReady(): void {
+  #processReady(): void {
     const p = this.params
     while (true) {
       const start = this.nextFrameCenter - p.halfNsampWindow

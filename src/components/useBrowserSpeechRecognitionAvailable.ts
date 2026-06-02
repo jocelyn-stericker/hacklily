@@ -17,11 +17,11 @@
 
 import { useEffect, useState } from 'react'
 
+import type { LocalTranscriptionStatus } from '#/lib/browserFeatures'
 import {
-  checkLocalTranscription,
   isBrowserTranscriptionAvailable,
-} from '#/lib/checkFeatures'
-import type { LocalTranscriptionStatus } from '#/lib/checkFeatures'
+  checkLocalTranscription,
+} from '#/lib/browserFeatures'
 
 export interface BrowserSpeechRecognitionAvailability {
   browser: boolean

@@ -77,7 +77,13 @@ function getAudioContext(): AudioContext {
 // here too so any other caller can't start an overlapping session.
 let recognitionChain: Promise<unknown> = Promise.resolve()
 
-export function enqueueRecognition<T>(task: () => Promise<T>): Promise<T> {
+export function transcribeWeb(
+  pcm: Float32Array,
+  sampleRate: number,
+  processLocally: boolean,
+): Promise<string> {
+  const task = () => recognizePcm(pcm, sampleRate, processLocally)
+
   const run = recognitionChain.then(task, task)
   recognitionChain = run.then(
     () => undefined,

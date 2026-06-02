@@ -26,7 +26,7 @@ export function measureRopeGain(rope: SabRope): number {
 }
 
 /**
- * Caches the per-recording loudness gain for each {@link SabRope}, so playback
+ * Caches the per-recording loudness gain for each `SabRope`, so playback
  * and export apply the same value and don't re-measure on every play.
  *
  * Keyed on rope identity plus length: a finalized rope is stable, so it hits

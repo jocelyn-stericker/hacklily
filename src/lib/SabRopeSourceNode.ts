@@ -56,7 +56,7 @@ const FEED_CHUNK = 128
  * The ropes are laid end-to-end on a single timeline: rope 0 plays first, then
  * rope 1, and so on. Each rope carries its own sample rate. A rope already at
  * the output rate is read straight through; a rope at a different rate is run
- * through a {@link ResamplerStreamProcessor}, whose windowed-sinc kernel
+ * through a `ResamplerStreamProcessor`, whose windowed-sinc kernel
  * anti-aliases on downsampling.
  *
  * Playback is a forward stream with a single random-access seek per `start`.
@@ -81,7 +81,7 @@ const FEED_CHUNK = 128
 export class AudioRopeSourceNode extends AudioWorkletProcessor {
   /** Ropes laid end-to-end; the last one may still be growing. */
   #ropes: Array<SabRope> = []
-  /** Loudness-normalization gain per rope, parallel to {@link #ropes}. */
+  /** Loudness-normalization gain per rope, parallel to ropes. */
   #gains: Array<number> = []
   #playing = false
 

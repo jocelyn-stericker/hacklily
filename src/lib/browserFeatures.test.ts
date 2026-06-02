@@ -23,7 +23,7 @@ import {
   isBrowserTranscriptionAvailable,
   resetTrackRecognitionProbeForTests,
   supportsTrackRecognition,
-} from './checkFeatures'
+} from './browserFeatures'
 
 // Drive the behavioural track-support probe by faking the iframe it creates.
 // `mode` controls what the iframe's SpeechRecognition.start() does:
@@ -50,7 +50,7 @@ function fakeTrackProbe(mode: 'supported' | 'unsupported' | 'no-ctor') {
   resetTrackRecognitionProbeForTests()
 }
 
-describe('checkFeatures', () => {
+describe('browserFeatures', () => {
   let originalCrossOriginIsolated: boolean
   let originalSharedArrayBuffer: typeof SharedArrayBuffer | undefined
   let originalSelf: any

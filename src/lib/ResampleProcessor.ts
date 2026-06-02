@@ -220,10 +220,10 @@ export class ResamplerStreamProcessor {
     for (let i = 0; i < samples.length; i++)
       ring[(this.totalFed + i) & ringMask] = samples[i]!
     this.totalFed += samples.length
-    this._processReady()
+    this.#processReady()
   }
 
-  private _processReady(): void {
+  #processReady(): void {
     const {
       ring,
       ringMask,

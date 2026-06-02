@@ -256,10 +256,10 @@ export class PitchProcessor {
     this.windowAC = new Float32Array(this.brentIxmax + 1)
     this.rBuf = new Float32Array(2 * this.brentIxmax + 1)
 
-    this._computeWindowAC()
+    this.#computeWindowAC()
   }
 
-  private _computeWindowAC(): void {
+  #computeWindowAC(): void {
     const {
       window,
       nsampWindow,
@@ -298,7 +298,7 @@ export class PitchProcessor {
    *
    * Source: Sound_to_Pitch_filteredAc in fon/Sound_to_Pitch.cpp.
    */
-  private _lowPassFilter(samples: Float32Array): Float32Array {
+  #lowPassFilter(samples: Float32Array): Float32Array {
     const { sampleRate, cfg } = this
     const cutoffHz =
       cfg.pitchCeilingHz / Math.sqrt(-2.0 * Math.log(cfg.attenuationAtTop))
@@ -358,7 +358,7 @@ export class PitchProcessor {
     // ── Gaussian low-pass pre-filter ──────────────────────────────────────────
     const signal =
       cfg.attenuationAtTop > 0 && cfg.attenuationAtTop < 1
-        ? this._lowPassFilter(samples)
+        ? this.#lowPassFilter(samples)
         : samples
 
     // ── Global mean and peak (computed on filtered signal, matching Praat) ────

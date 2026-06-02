@@ -22,8 +22,8 @@ import type { SabRope } from './SabRope'
 /**
  * Trigger download of a wav containing the ropes laid end-to-end.
  *
- * `gains` is one loudness-normalization gain per rope (see
- * {@link RopeGainCache}); pass all-1 to export the raw signal.
+ * @param gains one loudness-normalization per rope, all 1s for raw signal
+ * See `RopeGainCache`.
  *
  * Must be done in response to a click or other event.
  */
@@ -49,7 +49,7 @@ enum WavFormat {
 }
 
 /**
- * Encode mono PCM from one or more {@link SabRope}s laid end-to-end as a 16-bit
+ * Encode mono PCM from one or more `SabRope`s laid end-to-end as a 16-bit
  * WAV. Ropes may carry different sample rates (e.g. recordings appended under
  * changed device settings); each is resampled to the highest rate present and
  * concatenated, matching how the playback worklet treats the same ropes.

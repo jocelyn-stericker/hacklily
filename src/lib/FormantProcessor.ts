@@ -475,10 +475,10 @@ export class FormantStreamProcessor {
       this.ringHead++
     }
     this.totalFed += samples.length
-    this._processReady()
+    this.#processReady()
   }
 
-  private _processReady(): void {
+  #processReady(): void {
     const {
       ring,
       ringMask,

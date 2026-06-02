@@ -18,7 +18,7 @@
 import { useCallback, useMemo, useState } from 'react'
 
 import type { AnalysisChunk } from '#/lib/AnalysisFrame'
-import { checkFeatures } from '#/lib/checkFeatures'
+import { checkFeatures } from '#/lib/browserFeatures'
 
 export interface TimelineState {
   viewportLeftSec: number

@@ -22,8 +22,8 @@
  * the surround channel weighting is dropped and the channel weight is 1.0.
  *
  * Two wrappers, per the project's stream+batch convention:
- *   - {@link LoudnessAnalyzer}: feed blocks via `addFrames`, read results after.
- *   - {@link measureLoudness}: one-shot over a whole buffer.
+ *   - `LoudnessAnalyzer`: feed blocks via `addFrames`, read results after.
+ *   - `measureLoudness`: one-shot over a whole buffer.
  */
 
 /** Target playback/export loudness. -14 LUFS matches YouTube/Spotify, which
@@ -230,9 +230,9 @@ class Interpolator {
 }
 
 /**
- * Streaming mono loudness measurement. Feed samples with {@link addFrames} (any
- * chunking), then read {@link integratedLoudness}, {@link truePeak} and
- * {@link samplePeak}. Mirrors libebur128's gating-block buffering
+ * Streaming mono loudness measurement. Feed samples with `addFrames` (any
+ * chunking), then read `integratedLoudness`, `truePeak` and
+ * `samplePeak`. Mirrors libebur128's gating-block buffering
  * (ebur128.c:708-779, 977-1044): a 400 ms ring filtered in place, with a new
  * gating block emitted every 100 ms once the first 400 ms have filled.
  */

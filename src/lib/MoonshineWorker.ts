@@ -105,6 +105,7 @@ function loadPipeline(): Promise<AutomaticSpeechRecognitionPipeline> {
     // into MatMulNBits ("Missing required scale ... weight_merged_0_scale").
     // Capping at "basic" skips that pass, so ort-web runs the same valid
     // DQ+MatMul graph that ort-node does.
+    // TODO: remove when https://github.com/microsoft/onnxruntime/pull/28326 is in a published version
     session_options: { graphOptimizationLevel: 'basic' as const },
     // Forward aggregate download progress to the main thread so the UI can show
     // a modal during the one-time model download. transformers.js fires the
@@ -127,8 +128,6 @@ function loadPipeline(): Promise<AutomaticSpeechRecognitionPipeline> {
     model: MODEL,
     options,
     wasmThreads: env.backends.onnx.wasm?.numThreads,
-    wasmProxy: env.backends.onnx.wasm?.proxy,
-    webgpuAvailable: typeof navigator !== 'undefined' && 'gpu' in navigator,
   })
   return pipeline('automatic-speech-recognition', MODEL, options)
 }

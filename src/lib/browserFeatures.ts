@@ -157,7 +157,7 @@ export type LocalTranscriptionStatus =
  * `available` probe, so a browser that only has the prefixed
  * `webkitSpeechRecognition` is treated as having no local transcription (even
  * though browser-based transcription may still be available — see
- * {@link isBrowserTranscriptionAvailable}).
+ * `isBrowserTranscriptionAvailable`)
  */
 export async function checkLocalTranscription(
   lang = 'en-US',

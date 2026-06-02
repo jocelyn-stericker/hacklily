@@ -19,8 +19,8 @@ import type { AnalysisChunk } from '#/lib/AnalysisFrame'
 import { ensureBrowserEngineInstalled } from '#/lib/installBrowserEngine'
 import type { SabRope } from '#/lib/SabRope'
 import type { SettingsRow } from '#/lib/settings'
-import { transcribeBundled } from '#/lib/transcription-bundled'
-import { enqueueRecognition, recognizePcm } from '#/lib/transcription-web'
+import { transcribeBundled } from '#/lib/transcribeBundled'
+import { transcribeWeb } from '#/lib/transcribeWeb'
 
 /**
  * Status and result of transcribing a chunk. Absent (`undefined`) means
@@ -35,12 +35,12 @@ export type TranscriptionState =
  * Supplies the mono PCM samples spanning a chunk, or `null` if the audio for
  * the chunk is unavailable. Returned samples cover the chunk's time range at
  * its `sampleRate`. The caller owns sourcing the audio (e.g. from the recorded
- * {@link SabRope}s); transcription only consumes the samples.
+ * `SabRope`s); transcription only consumes the samples.
  */
 export type ChunkPcmProvider = (chunk: AnalysisChunk) => Float32Array | null
 
 /**
- * Slice the mono PCM spanning `chunk` out of the {@link SabRope} that holds its
+ * Slice the mono PCM spanning `chunk` out of the `SabRope` that holds its
  * recording session, or `null` if that audio isn't available. `chunks` is the
  * full analysis timeline — needed to locate which session `chunk` belongs to
  * and its frame offset within it — and `ropes` are the per-session PCM buffers
@@ -49,7 +49,7 @@ export type ChunkPcmProvider = (chunk: AnalysisChunk) => Float32Array | null
  * Returns `null` when the rope hasn't grown to cover the chunk yet, so a
  * still-growing session transcribes each chunk as its PCM lands and a later
  * pass retries whatever wasn't ready. Suitable for building a
- * {@link ChunkPcmProvider} bound to the recording's ropes.
+ * `ChunkPcmProvider` bound to the recording's ropes.
  */
 export function chunkPcmFromRopes(
   chunk: AnalysisChunk,
@@ -126,14 +126,10 @@ export async function transcribeChunk(
         // Block recognition until it's ready so the UI can surface a progress
         // modal instead of letting the chunk hang silently.
         await ensureBrowserEngineInstalled()
-        text = await enqueueRecognition(() =>
-          recognizePcm(pcm, chunk.sampleRate, true),
-        )
+        text = await transcribeWeb(pcm, chunk.sampleRate, true)
         break
       case 'cloud':
-        text = await enqueueRecognition(() =>
-          recognizePcm(pcm, chunk.sampleRate, false),
-        )
+        text = await transcribeWeb(pcm, chunk.sampleRate, false)
         break
       case 'bundled':
         text = await transcribeBundled(pcm, chunk.sampleRate)
