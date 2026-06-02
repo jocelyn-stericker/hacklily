@@ -7,6 +7,7 @@ export default defineConfig({
   test: {
     environment: 'node',
     globals: true,
+    silent: 'passed-only',
     coverage: {
       include: ['src/**/*.{ts,tsx}'],
     },
