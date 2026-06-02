@@ -30,7 +30,7 @@
 
 /** Recognition language. Matches the default used by the feature probes. */
 const TRANSCRIPTION_LANG = 'en-US'
-const LOG = '[transcription-web]'
+const LOG = '[transcribeWeb]'
 
 type SpeechRecognitionConstructor = new () => SpeechRecognition
 
@@ -166,7 +166,9 @@ export async function recognizePcm(
         source.disconnect()
         try {
           source.stop()
-        } catch {}
+        } catch (err) {
+          console.warn(LOG, 'source.stop failed during cleanup:', err)
+        }
       }
 
       const joinTranscripts = () =>
@@ -199,14 +201,18 @@ export async function recognizePcm(
       source.onended = () => {
         try {
           recognition.stop()
-        } catch {}
+        } catch (err) {
+          console.warn(LOG, 'recognition.stop failed on ended:', err)
+        }
       }
 
       const durationMs = (buffer.length / sampleRate) * 1000
       const watchdog = setTimeout(() => {
         try {
           recognition.abort()
-        } catch {}
+        } catch (err) {
+          console.warn(LOG, 'recognition.abort failed in watchdog:', err)
+        }
         if (!settled) {
           settled = true
           cleanup()

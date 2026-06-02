@@ -313,6 +313,7 @@ function App() {
     cursorSec: timelineState.cursorSec,
     onStop: handlePause,
     onPlaybackPositionChanged: handlePlaybackPositionChanged,
+    onError: handleError,
   })
 
   const playDisabled = !ropes.some((rope) => rope.length > 0)

@@ -23,6 +23,8 @@ import {
   checkLocalTranscription,
 } from '#/lib/browserFeatures'
 
+const LOG = '[BrowserSpeechRecognition]'
+
 export interface BrowserSpeechRecognitionAvailability {
   browser: boolean
   local: LocalTranscriptionStatus
@@ -45,12 +47,21 @@ export function useBrowserSpeechRecognitionAvailable(
   useEffect(() => {
     let cancelled = false
 
-    void Promise.all([
+    Promise.all([
       isBrowserTranscriptionAvailable(lang),
       checkLocalTranscription(lang),
-    ]).then(([browser, local]) => {
-      if (!cancelled) setResolved({ lang, status: { browser, local } })
-    })
+    ])
+      .then(([browser, local]) => {
+        if (!cancelled) setResolved({ lang, status: { browser, local } })
+      })
+      .catch((err) => {
+        console.warn(LOG, 'availability probe failed:', err)
+        if (!cancelled)
+          setResolved({
+            lang,
+            status: { browser: false, local: false as const },
+          })
+      })
 
     return () => {
       cancelled = true

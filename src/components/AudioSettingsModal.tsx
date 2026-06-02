@@ -40,6 +40,8 @@ import type {
   SampleRatePref,
 } from '#/lib/settings'
 
+const LOG = '[AudioSettings]'
+
 function isDesktopLinux(): boolean {
   if (typeof navigator === 'undefined') return false
   const platform =
@@ -61,14 +63,27 @@ export function AudioSettingsModal({
   const settings: SettingsRow = useSettings()
 
   const [devices, setDevices] = useState<MediaDeviceInfo[]>([])
+  const [devicesError, setDevicesError] = useState<string | null>(null)
   const linux = isDesktopLinux()
 
   useEffect(() => {
     if (!open) return
+    // Reset previous error state when dialog reopens.
+    setDevicesError(null) // eslint-disable-line react-hooks-js/set-state-in-effect
     navigator.mediaDevices
       .enumerateDevices()
-      .then((all) => setDevices(all.filter((d) => d.kind === 'audioinput')))
-      .catch(() => {})
+      .then((all) => {
+        setDevices(all.filter((d) => d.kind === 'audioinput'))
+        setDevicesError(null)
+      })
+      .catch((err) => {
+        console.warn(LOG, 'enumerateDevices failed:', err)
+        setDevicesError(
+          err instanceof DOMException
+            ? 'Unable to access microphone list. Check permissions.'
+            : 'Failed to enumerate audio devices.',
+        )
+      })
   }, [open])
 
   return (
@@ -86,9 +101,14 @@ export function AudioSettingsModal({
                 value={settings.inputDeviceId ?? 'default'}
                 onValueChange={(val) => {
                   if (val === (settings.inputDeviceId ?? 'default')) return
-                  void updateSettings({
+                  updateSettings({
                     inputDeviceId: val === 'default' ? null : val,
-                  }).then(() => toast('Setting applied'))
+                  })
+                    .then(() => toast('Setting applied'))
+                    .catch((err) => {
+                      console.error(LOG, 'failed to save input device:', err)
+                      toast('Failed to save setting')
+                    })
                 }}
               >
                 <SelectTrigger id="input-device" className="w-full">
@@ -110,7 +130,10 @@ export function AudioSettingsModal({
                   ))}
                 </SelectContent>
               </Select>
-              {devices.length === 0 && (
+              {devicesError && (
+                <p className="text-xs text-destructive">{devicesError}</p>
+              )}
+              {!devicesError && devices.length === 0 && (
                 <p className="text-xs text-muted-foreground">
                   Grant microphone permission to see available devices.
                 </p>
@@ -124,9 +147,14 @@ export function AudioSettingsModal({
                 value={settings.sampleRate}
                 onValueChange={(val) => {
                   if (val === settings.sampleRate) return
-                  void updateSettings({
+                  updateSettings({
                     sampleRate: val as SampleRatePref,
-                  }).then(() => toast('Setting applied'))
+                  })
+                    .then(() => toast('Setting applied'))
+                    .catch((err) => {
+                      console.error(LOG, 'failed to save sample rate:', err)
+                      toast('Failed to save setting')
+                    })
                 }}
               >
                 <SelectTrigger id="sample-rate" className="w-full">
@@ -161,9 +189,14 @@ export function AudioSettingsModal({
                     (settings.persistentMic ? 'persistent' : 'on-demand')
                   )
                     return
-                  void updateSettings({
+                  updateSettings({
                     persistentMic: val === 'persistent',
-                  }).then(() => toast('Setting applied'))
+                  })
+                    .then(() => toast('Setting applied'))
+                    .catch((err) => {
+                      console.error(LOG, 'failed to save persistent mic:', err)
+                      toast('Failed to save setting')
+                    })
                 }}
               >
                 <SelectTrigger id="persistent-mic" className="w-full">
@@ -198,9 +231,18 @@ export function AudioSettingsModal({
                 value={settings.browserPreprocessing}
                 onValueChange={(val) => {
                   if (val === settings.browserPreprocessing) return
-                  void updateSettings({
+                  updateSettings({
                     browserPreprocessing: val as BrowserPreprocessing,
-                  }).then(() => toast('Setting applied'))
+                  })
+                    .then(() => toast('Setting applied'))
+                    .catch((err) => {
+                      console.error(
+                        LOG,
+                        'failed to save browser preprocessing:',
+                        err,
+                      )
+                      toast('Failed to save setting')
+                    })
                 }}
               >
                 <SelectTrigger id="browser-preprocessing" className="w-full">

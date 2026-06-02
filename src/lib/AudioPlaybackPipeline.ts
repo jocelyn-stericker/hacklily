@@ -21,9 +21,12 @@ import type { SabRope } from './SabRope'
 import type { AudioRopeSourceNodeNode } from './SabRopeSourceNode'
 import { TypedEventTarget } from './TypedEventTarget'
 
+const LOG = '[AudioPlaybackPipeline]'
+
 type AudioPlaybackOutEvents = {
   stop: Event
   positionChanged: CustomEvent<{ timeSec: number }>
+  error: CustomEvent<{ error: string }>
 }
 
 /**
@@ -64,7 +67,12 @@ export class AudioPlaybackPipeline extends TypedEventTarget<AudioPlaybackOutEven
   }) {
     super()
     signal.addEventListener('abort', this.#stop)
-    void this.#play(ropes, gains, startAtSec, sampleRate)
+    this.#play(ropes, gains, startAtSec, sampleRate).catch((err) => {
+      console.error(LOG, 'playback failed:', err)
+      this.emit('error', {
+        error: err instanceof Error ? err.message : String(err),
+      })
+    })
   }
 
   async #play(
@@ -87,7 +95,9 @@ export class AudioPlaybackPipeline extends TypedEventTarget<AudioPlaybackOutEven
     await context.audioWorklet.addModule(audioWorkletUrl)
     // Aborted while the module was loading — release the context and bail.
     if (this.#stopCtrl.signal.aborted) {
-      void context.close().catch(() => {})
+      void context.close().catch((err) => {
+        console.warn(LOG, 'context.close during abort:', err)
+      })
       this.#context = null
       return
     }
@@ -134,11 +144,13 @@ export class AudioPlaybackPipeline extends TypedEventTarget<AudioPlaybackOutEven
       try {
         this.#node.port.postMessage(null)
         this.#node.disconnect()
-      } catch {
-        // already stopped
+      } catch (err) {
+        console.warn(LOG, 'stop cleanup error:', err)
       }
       // close() is async; swallow its rejection rather than floating it.
-      void this.#context.close().catch(() => {})
+      void this.#context.close().catch((err) => {
+        console.warn(LOG, 'context.close during stop:', err)
+      })
       this.#node = null
       this.#context = null
     }

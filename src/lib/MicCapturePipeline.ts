@@ -152,11 +152,9 @@ export async function preInitPersistentStream(
       trackSettings,
     )
   } catch (err) {
-    if (
-      (err as any)?.constraint === 'deviceId' &&
-      settings.inputDeviceId !== null
-    ) {
-      await fixSettingsConstraint(settings, err)
+    const fixed = await fixSettingsConstraint(settings, err)
+    if (!fixed) {
+      toast('Failed to open microphone. Check permissions and try again.')
     }
     console.warn(LOG, 'preInit: failed to open persistent stream:', err)
   }

@@ -29,6 +29,7 @@ export function useAudioPlayback({
   cursorSec,
   onStop,
   onPlaybackPositionChanged,
+  onError,
 }: {
   enabled: boolean
   ropes: Array<SabRope>
@@ -36,13 +37,16 @@ export function useAudioPlayback({
   cursorSec: number
   onStop: () => void
   onPlaybackPositionChanged: (timeSec: number) => void
+  onError?: (error: string) => void
 }) {
   const onStopRef = useRef(onStop)
   const onPlaybackPositionChangedRef = useRef(onPlaybackPositionChanged)
+  const onErrorRef = useRef(onError)
 
   useLayoutEffect(() => {
     onStopRef.current = onStop
     onPlaybackPositionChangedRef.current = onPlaybackPositionChanged
+    onErrorRef.current = onError
   })
 
   useEffect(() => {
@@ -142,6 +146,12 @@ export function useAudioPlayback({
         }
         onStopRef.current()
       },
+      listenerOpts,
+    )
+
+    pipeline.addEventListener(
+      'error',
+      (e) => onErrorRef.current?.(e.detail.error),
       listenerOpts,
     )
   }, [enabled, ropes, gainCache, preferredRate, cursorSec])

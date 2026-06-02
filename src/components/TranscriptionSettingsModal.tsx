@@ -38,6 +38,8 @@ import type { TranscriptionMode } from '#/lib/settings'
 import { useSettings, updateSettings } from '#/lib/settings'
 import { cn } from '#/lib/utils'
 
+const LOG = '[TranscriptionSettings]'
+
 /** Badge describing whether the browser's own on-device engine can be used. */
 function browserEngineBadge(local: LocalTranscriptionStatus | null): ReactNode {
   switch (local) {
@@ -135,10 +137,15 @@ export function TranscriptionSettingsModal({
   const cloudAvailable = availability === null ? true : availability.browser
 
   const save = () =>
-    void updateSettings({ transcriptionMode: draft }).then(() => {
-      toast('Setting applied')
-      onOpenChange(false)
-    })
+    updateSettings({ transcriptionMode: draft })
+      .then(() => {
+        toast('Setting applied')
+        onOpenChange(false)
+      })
+      .catch((err) => {
+        console.error(LOG, 'failed to save:', err)
+        toast('Failed to save setting')
+      })
 
   // The action's label reflects the kind of change being saved: turning
   // transcription on, turning it off, or just switching between engines.

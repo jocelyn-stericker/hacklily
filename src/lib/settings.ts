@@ -17,6 +17,8 @@
 
 import { useSyncExternalStore } from 'react'
 
+const LOG = '[Settings]'
+
 export type SampleRatePref = 'auto' | 'prefer48000' | 'prefer44100'
 export type BrowserPreprocessing = 'default' | 'minimal'
 
@@ -60,7 +62,9 @@ function readFromStorage(): SettingsRow {
   try {
     const raw = localStorage.getItem(STORAGE_KEY)
     if (raw) return { ...DEFAULT_SETTINGS, ...JSON.parse(raw) }
-  } catch {}
+  } catch (err) {
+    console.warn(LOG, 'failed to read stored settings:', err)
+  }
   return { ...DEFAULT_SETTINGS }
 }
 

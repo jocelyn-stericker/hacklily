@@ -30,6 +30,8 @@ import type {
   MoonshineWorkerOutMessage,
 } from '#/lib/MoonshineWorker'
 
+const LOG = '[transcribeBundled]'
+
 let moonshineWorker: MoonshineWorker | null = null
 let nextTranscribeId = 0
 const pendingTranscriptions = new Map<
@@ -169,13 +171,17 @@ const CRASH_FLAG_KEY = 'braat:bundled-transcription-active'
 function markBundledActive(): void {
   try {
     localStorage.setItem(CRASH_FLAG_KEY, '1')
-  } catch {}
+  } catch (err) {
+    console.warn(LOG, 'markBundledActive failed:', err)
+  }
 }
 
 function clearBundledActive(): void {
   try {
     localStorage.removeItem(CRASH_FLAG_KEY)
-  } catch {}
+  } catch (err) {
+    console.warn(LOG, 'clearBundledActive failed:', err)
+  }
 }
 
 // A jetsam/OOM kill never fires pagehide; a normal navigation or tab close
@@ -195,7 +201,9 @@ export function consumeBundledCrashFlag(): boolean {
   try {
     crashed = localStorage.getItem(CRASH_FLAG_KEY) !== null
     if (crashed) localStorage.removeItem(CRASH_FLAG_KEY)
-  } catch {}
+  } catch (err) {
+    console.warn(LOG, 'consumeBundledCrashFlag failed:', err)
+  }
   return crashed
 }
 

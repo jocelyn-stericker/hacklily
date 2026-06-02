@@ -22,6 +22,8 @@ import type { SettingsRow } from '#/lib/settings'
 import { transcribeBundled } from '#/lib/transcribeBundled'
 import { transcribeWeb } from '#/lib/transcribeWeb'
 
+const LOG = '[Transcription]'
+
 /**
  * Status and result of transcribing a chunk. Absent (`undefined`) means
  * transcription has not been requested for the chunk.
@@ -176,7 +178,9 @@ export function transcribeChunks(
   // can't wedge the chain and silently stop all later transcription.
   chunksChain = chunksChain.then(() =>
     transcribeChunksSequential(chunks, settings, getPcm, onUpdate).catch(
-      () => {},
+      (err) => {
+        console.warn(LOG, 'sequential pass failed:', err)
+      },
     ),
   )
 }
