@@ -34,8 +34,8 @@ env.backends.onnx.wasm!.numThreads = 1
 env.backends.onnx.wasm!.wasmPaths = {
   // We override this because the asyncify version does not play well with Safari iOS
   // TODO: use optimized ort files with a custom build of onnxruntime, like we do for VAD.
-  mjs: 'https://cdn.jsdelivr.net/npm/onnxruntime-web@1.26.0-dev.20260416-b7804b056c/dist/ort-wasm-simd-threaded.mjs',
-  wasm: 'https://cdn.jsdelivr.net/npm/onnxruntime-web@1.26.0-dev.20260416-b7804b056c/dist/ort-wasm-simd-threaded.wasm',
+  mjs: 'https://cdn.jsdelivr.net/npm/onnxruntime-web@1.24.3/dist/ort-wasm-simd-threaded.mjs',
+  wasm: 'https://cdn.jsdelivr.net/npm/onnxruntime-web@1.24.3/dist/ort-wasm-simd-threaded.wasm',
 }
 
 // Moonshine is trained on 16 kHz mono audio.
@@ -100,13 +100,6 @@ function getPipeline(): Promise<AutomaticSpeechRecognitionPipeline> {
 function loadPipeline(): Promise<AutomaticSpeechRecognitionPipeline> {
   const options = {
     dtype: DTYPE,
-    // onnxruntime-web's "extended" (Level 2) graph optimizer crashes trying to
-    // fuse the quantized decoder's tied embed_tokens DequantizeLinear+MatMul
-    // into MatMulNBits ("Missing required scale ... weight_merged_0_scale").
-    // Capping at "basic" skips that pass, so ort-web runs the same valid
-    // DQ+MatMul graph that ort-node does.
-    // TODO: remove when https://github.com/microsoft/onnxruntime/pull/28326 is in a published version
-    session_options: { graphOptimizationLevel: 'basic' as const },
     // Forward aggregate download progress to the main thread so the UI can show
     // a modal during the one-time model download. transformers.js fires the
     // same progress events whether files are coming from the network or the
@@ -132,33 +125,12 @@ function loadPipeline(): Promise<AutomaticSpeechRecognitionPipeline> {
   return pipeline('automatic-speech-recognition', MODEL, options)
 }
 
-// Peak-normalize a chunk's PCM in place. These small models recognize quiet
-// speech much better when the input is scaled up to use the full range; a chunk
-// of pure silence (maxAbs === 0) is left untouched.
-function normalize(pcm: Float32Array): void {
-  let maxAbs = 0
-  for (const sample of pcm) maxAbs = Math.max(maxAbs, Math.abs(sample))
-  if (maxAbs === 0) return
-  const gain = 1 / maxAbs
-  pcm.forEach((sample, i) => {
-    pcm[i] = sample * gain
-  })
-}
-
-// Normalize a chunk's mono PCM, resample it to Moonshine's 16 kHz rate
-function prepareAudio(pcm: Float32Array, sampleRate: number): Float32Array {
-  // resample() returns a copy even when the rate already matches, so it's safe
-  // to mutate `pcm` first — it's the worker's own copy of the posted buffer.
-  normalize(pcm)
-  return resample(pcm, sampleRate, MOONSHINE_SAMPLE_RATE)
-}
-
 async function transcribe(data: MoonshineWorkerInMessage): Promise<void> {
   try {
     console.log(LOG, `Transcribing ${data.pcm.length / data.sampleRate}s`)
     console.time(LOG + ' transcribe')
     const transcriber = await getPipeline()
-    const audio = prepareAudio(data.pcm, data.sampleRate)
+    const audio = resample(data.pcm, data.sampleRate, MOONSHINE_SAMPLE_RATE)
     const seconds = audio.length / MOONSHINE_SAMPLE_RATE
     const maxNewTokens = Math.min(
       DECODER_MAX_TOKENS,
