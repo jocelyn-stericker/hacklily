@@ -660,6 +660,61 @@ describe('computeSealResolutions', () => {
 })
 
 describe('transcribeChunks', () => {
+  it('transcribes visible chunks first, then the rest in timeline order', async () => {
+    const rope = new SabRope(16000)
+    rope.append(new Float32Array(16000 * 10)) // 10 seconds of audio
+
+    // Five 1-second voiced chunks laid end to end at 0s..5s.
+    const chunks: AnalysisChunk[] = Array.from({ length: 5 }, (_, i) => ({
+      timeStepSamples: 160,
+      sampleRate: 16000,
+      freqStepHz: 0,
+      firstBinHz: 0,
+      startTimeSec: i,
+      frames: Array.from({ length: 100 }),
+      voiced: true,
+    }))
+
+    const order: number[] = []
+    const getAudio: ChunkAudioProvider = (c) => {
+      order.push(chunks.indexOf(c))
+      return {
+        rope,
+        startTime: c.startTimeSec,
+        endTime: Promise.resolve(c.startTimeSec + 1),
+        signal: new AbortController().signal,
+      }
+    }
+
+    const settings = {
+      inputDeviceId: null,
+      sampleRate: 'auto' as const,
+      persistentMic: false,
+      browserPreprocessing: 'default' as const,
+      transcriptionMode: 'large' as const,
+    } satisfies SettingsRow
+
+    // Only the chunk at index 3 (3s..4s) is on-screen.
+    transcribeChunks(
+      [...chunks],
+      settings,
+      getAudio,
+      undefined,
+      undefined,
+      () => ({
+        leftSec: 3.2,
+        rightSec: 3.8,
+      }),
+    )
+
+    for (let i = 0; i < 100 && order.length < chunks.length; i++) {
+      await new Promise((resolve) => setTimeout(resolve, 0))
+    }
+
+    // Visible chunk first, then the off-screen chunks front-to-back.
+    expect(order).toEqual([3, 0, 1, 2, 4])
+  })
+
   it('transcribes remaining chunks after a chunk is abandoned', async () => {
     const rope = new SabRope(16000)
     rope.append(new Float32Array(16000 * 10)) // 10 seconds of audio

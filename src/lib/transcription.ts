@@ -461,10 +461,55 @@ async function runTranscription(
   }
 }
 
+/** A visible time range on the timeline, in seconds. */
+export type Viewport = { leftSec: number; rightSec: number }
+
+/**
+ * Supplies the currently-visible time range, or `null` when there's no useful
+ * viewport (e.g. nothing rendered yet). Read live on each step of a scan so the
+ * order tracks the user scrolling/zooming mid-pass.
+ */
+export type ViewportProvider = () => Viewport | null
+
+/** Whether `chunk`'s time span overlaps `viewport` at all. */
+function chunkVisible(chunk: AnalysisChunk, viewport: Viewport): boolean {
+  const durationSec =
+    (chunk.frames.length * chunk.timeStepSamples) / chunk.sampleRate
+  const endSec = chunk.startTimeSec + durationSec
+  return chunk.startTimeSec < viewport.rightSec && endSec > viewport.leftSec
+}
+
+/**
+ * Pick the next chunk to transcribe: the first untranscribed voiced chunk
+ * visible in `viewport`, or — when none is visible — the first untranscribed
+ * voiced chunk overall. Chunks are in timeline order, so "first" is also
+ * earliest. `attempted` holds chunks already tried this pass (transcribed,
+ * skipped for missing audio, or cancelled) so the scan can't loop on them.
+ * Returns `null` when nothing is left to do.
+ */
+function selectNextChunk(
+  chunks: AnalysisChunk[],
+  attempted: Set<AnalysisChunk>,
+  viewport: Viewport | null,
+): AnalysisChunk | null {
+  let firstPending: AnalysisChunk | null = null
+  for (const chunk of chunks) {
+    if (attempted.has(chunk) || !chunk.voiced || chunk.transcription) continue
+    if (viewport && chunkVisible(chunk, viewport)) return chunk
+    firstPending ??= chunk
+  }
+  return firstPending
+}
+
 /**
  * Kick off transcription for every voiced chunk that hasn't been transcribed
  * yet. Each chunk is transcribed independently; `onUpdate` fires as results
  * arrive. No-op when transcription is disabled.
+ *
+ * Chunks visible in the viewport (supplied by `getViewport`, re-read on each
+ * step) are transcribed first, so the text the user is looking at fills in
+ * before off-screen audio; the rest follow in timeline order. Without a
+ * viewport the scan is plain front-to-back.
  *
  * A chunk whose PCM isn't available yet (e.g. the audio hasn't been appended to
  * the recording buffer) is left untouched rather than started and failed, so a
@@ -472,13 +517,13 @@ async function runTranscription(
  */
 // Bundled, browser, and cloud transcription all process one chunk at a time
 // (the worker, and the Web Speech API, are each single-session). Running the
-// scan sequentially — slicing a chunk's PCM only when it's that chunk's turn,
-// and awaiting it before the next — keeps just one chunk of audio resident at a
-// time instead of materialising every voiced chunk's samples up front. The
-// scans are serialised through a single chain so an effect that re-fires mid-run
-// (e.g. on each new analysis frame) queues behind the current pass rather than
-// racing it; by the time a queued pass runs, chunks already claimed below are
-// skipped.
+// scan one chunk at a time — slicing a chunk's PCM only when it's that chunk's
+// turn, and awaiting it before the next — keeps just one chunk of audio
+// resident at a time instead of materialising every voiced chunk's samples up
+// front. The scans are serialised through a single chain so an effect that
+// re-fires mid-run (e.g. on each new analysis frame) queues behind the current
+// pass rather than racing it; by the time a queued pass runs, chunks already
+// claimed below are skipped.
 let chunksChain: Promise<void> = Promise.resolve()
 
 // Bumped by `invalidateTranscriptions` so a scan that began under an
@@ -511,6 +556,9 @@ export function transcribeChunks(
   // Invoked when the selected model turns out not to be downloaded. The caller
   // is expected to revert the mode (and typically surface a toast).
   onModelUnavailable?: () => void,
+  // Supplies the currently-visible time range so on-screen chunks transcribe
+  // first; omitted (or returning `null`) falls back to timeline order.
+  getViewport?: ViewportProvider,
 ): void {
   if (settings.transcriptionMode === 'disabled') return
   // Keep `chunksChain` always-resolving so a thrown pass (e.g. getAudio failing)
@@ -522,6 +570,7 @@ export function transcribeChunks(
       getAudio,
       onUpdate,
       onModelUnavailable,
+      getViewport,
     ).catch((err) => {
       console.warn(LOG, 'sequential pass failed:', err)
     }),
@@ -534,13 +583,22 @@ async function transcribeChunksSequential(
   getAudio: ChunkAudioProvider,
   onUpdate?: () => void,
   onModelUnavailable?: () => void,
+  getViewport?: ViewportProvider,
 ): Promise<void> {
   const generation = scanGeneration
-  for (const chunk of chunks) {
+  // Re-pick the next chunk each step (rather than iterating a fixed order) so a
+  // viewport that moves mid-pass redirects the scan to whatever's now on-screen.
+  // `attempted` records chunks already handled this pass so a chunk left
+  // untranscribed (audio not ready, or cancelled back to `undefined`) can't be
+  // re-selected and spin the loop; a later pass retries it.
+  const attempted = new Set<AnalysisChunk>()
+  for (;;) {
     // A model switch invalidated this pass mid-run; stop rather than refill the
     // cleared chunks with results from the now-superseded model.
     if (scanGeneration !== generation) return
-    if (!chunk.voiced || chunk.transcription) continue
+    const chunk = selectNextChunk(chunks, attempted, getViewport?.() ?? null)
+    if (!chunk) return
+    attempted.add(chunk)
     const audio = getAudio(chunk)
     if (!audio) continue
     // transcribeChunk claims the chunk synchronously (sets `pending` before its

@@ -62,6 +62,7 @@ import type {
   AudioSpan,
   ChunkAudioProvider,
   LiveSpanEntry,
+  Viewport,
 } from '#/lib/transcription'
 import { cn } from '#/lib/utils'
 
@@ -228,6 +229,21 @@ function App() {
     settingsRef.current = settings
   }, [settings])
 
+  // Mirror the visible time range into a ref so transcription can read it live
+  // on each step and prioritise on-screen chunks, following the viewport as the
+  // user scrolls/zooms mid-pass without restarting the scan.
+  const viewportRef = useRef<Viewport>({
+    leftSec: timelineState.viewportLeftSec,
+    rightSec: timelineState.viewportRightSec,
+  })
+  useEffect(() => {
+    viewportRef.current = {
+      leftSec: timelineState.viewportLeftSec,
+      rightSec: timelineState.viewportRightSec,
+    }
+  }, [timelineState.viewportLeftSec, timelineState.viewportRightSec])
+  const getViewport = useCallback((): Viewport => viewportRef.current, [])
+
   // Live transcription spans: deferred endTime + abort for each voiced chunk
   // being transcribed during recording. Cleared when the rope is sealed.
   const liveSpansRef = useRef<Map<AnalysisChunk, LiveSpanEntry>>(new Map())
@@ -390,8 +406,9 @@ function App() {
       getAudio,
       () => speechStripRef.current?.refreshTranscriptions(),
       handleModelUnavailable,
+      getViewport,
     )
-  }, [getAudio, handleModelUnavailable])
+  }, [getAudio, handleModelUnavailable, getViewport])
 
   const handlePatch = useCallback(
     (from: number, to: number) => {
@@ -587,6 +604,7 @@ function App() {
       getAudio,
       () => speechStripRef.current?.refreshTranscriptions(),
       handleModelUnavailable,
+      getViewport,
     )
   }, [
     analysisMut,
@@ -595,6 +613,7 @@ function App() {
     ropes,
     getAudio,
     handleModelUnavailable,
+    getViewport,
   ])
 
   return (
