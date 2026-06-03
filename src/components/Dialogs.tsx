@@ -16,8 +16,6 @@
  */
 
 import { AudioSettingsModal } from '#/components/AudioSettingsModal'
-import { BrowserEngineInstallModal } from '#/components/BrowserEngineInstallModal'
-import { MoonshineDownloadModal } from '#/components/MoonshineDownloadModal'
 import { TranscriptionSettingsModal } from '#/components/TranscriptionSettingsModal'
 import type { AnalysisChunk } from '#/lib/AnalysisFrame'
 
@@ -117,8 +115,6 @@ export function Dialogs({
         open={showTranscriptionSettings}
         onOpenChange={onCloseTranscriptionSettings}
       />
-      <BrowserEngineInstallModal />
-      <MoonshineDownloadModal />
     </>
   )
 }

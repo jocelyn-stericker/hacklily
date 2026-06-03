@@ -72,7 +72,7 @@ describe('settings', () => {
         sampleRate: 'auto',
         persistentMic: false,
         browserPreprocessing: 'default',
-        transcriptionMode: 'browser',
+        transcriptionMode: 'small',
       }
       const constraints = buildAudioConstraints(settings)
       expect(constraints.echoCancellation).toBeUndefined()
@@ -88,7 +88,7 @@ describe('settings', () => {
         sampleRate: 'auto',
         persistentMic: false,
         browserPreprocessing: 'minimal',
-        transcriptionMode: 'browser',
+        transcriptionMode: 'small',
       }
       const constraints = buildAudioConstraints(settings)
       expect(constraints.echoCancellation).toBe(false)
@@ -103,7 +103,7 @@ describe('settings', () => {
         sampleRate: 'auto',
         persistentMic: false,
         browserPreprocessing: 'default',
-        transcriptionMode: 'browser',
+        transcriptionMode: 'small',
       }
       const constraints = buildAudioConstraints(settings)
       expect(constraints.deviceId).toEqual({ exact: deviceId })
@@ -115,7 +115,7 @@ describe('settings', () => {
         sampleRate: 'prefer48000',
         persistentMic: false,
         browserPreprocessing: 'default',
-        transcriptionMode: 'browser',
+        transcriptionMode: 'small',
       }
       const constraints = buildAudioConstraints(settings)
       expect(constraints.sampleRate).toEqual({ ideal: 48000 })
@@ -127,7 +127,7 @@ describe('settings', () => {
         sampleRate: 'prefer44100',
         persistentMic: false,
         browserPreprocessing: 'default',
-        transcriptionMode: 'browser',
+        transcriptionMode: 'small',
       }
       const constraints = buildAudioConstraints(settings)
       expect(constraints.sampleRate).toEqual({ ideal: 44100 })
@@ -140,7 +140,7 @@ describe('settings', () => {
         sampleRate: 'prefer48000',
         persistentMic: true,
         browserPreprocessing: 'minimal',
-        transcriptionMode: 'browser',
+        transcriptionMode: 'small',
       }
       const constraints = buildAudioConstraints(settings)
       expect(constraints.echoCancellation).toBe(false)
@@ -158,7 +158,7 @@ describe('settings', () => {
         sampleRate: 'auto',
         persistentMic: false,
         browserPreprocessing: 'default',
-        transcriptionMode: 'browser',
+        transcriptionMode: 'small',
       }
       expect(preferredSampleRate(settings)).toBeUndefined()
     })
@@ -169,7 +169,7 @@ describe('settings', () => {
         sampleRate: 'prefer48000',
         persistentMic: false,
         browserPreprocessing: 'default',
-        transcriptionMode: 'browser',
+        transcriptionMode: 'small',
       }
       expect(preferredSampleRate(settings)).toBe(48000)
     })
@@ -180,7 +180,7 @@ describe('settings', () => {
         sampleRate: 'prefer44100',
         persistentMic: false,
         browserPreprocessing: 'default',
-        transcriptionMode: 'browser',
+        transcriptionMode: 'small',
       }
       expect(preferredSampleRate(settings)).toBe(44100)
     })
@@ -201,7 +201,7 @@ describe('settings', () => {
         sampleRate: 'prefer48000',
         persistentMic: true,
         browserPreprocessing: 'minimal',
-        transcriptionMode: 'browser',
+        transcriptionMode: 'small',
       }
       localStorage.setItem('braat:settings', JSON.stringify(initial))
 

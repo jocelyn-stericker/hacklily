@@ -46,11 +46,11 @@ declare module '#/lib/ImportWorker?worker' {
   export default ImportWorkerConstructor
 }
 
-declare module '#/lib/MoonshineWorker?worker' {
-  import type { MoonshineWorker } from '#/lib/MoonshineWorker'
+declare module '#/lib/TranscribeWorker?worker' {
+  import type { TranscribeWorker } from '#/lib/TranscribeWorker'
 
-  const MoonshineWorkerConstructor: new () => MoonshineWorker
-  export default MoonshineWorkerConstructor
+  const TranscribeWorkerConstructor: new () => TranscribeWorker
+  export default TranscribeWorkerConstructor
 }
 
 declare interface AudioParamDescriptor {

@@ -52,6 +52,7 @@ import { consumeBundledCrashFlag } from '#/lib/transcribeBundled'
 import {
   chunkAudioFromRopes,
   computeSealResolutions,
+  invalidateTranscriptions,
   locateChunkRope,
   reconcileLiveSpans,
   transcribeChunks,
@@ -186,6 +187,24 @@ function App() {
         description:
           'Bundled transcription may have crashed last time, which can happen on lower-memory devices.',
       })
+    })
+  }, [])
+
+  // When the selected transcription model turns out not to be downloaded (it was
+  // never fetched, or its cached weights were evicted), turn transcription off
+  // and tell the user, rather than failing every chunk. Guarded to fire once per
+  // mode so a single pass doesn't stack toasts; re-armed when the mode changes.
+  const modelUnavailableHandledRef = useRef(false)
+  useEffect(() => {
+    modelUnavailableHandledRef.current = false
+  }, [settings.transcriptionMode])
+  const handleModelUnavailable = useCallback(() => {
+    if (modelUnavailableHandledRef.current) return
+    modelUnavailableHandledRef.current = true
+    void updateSettings({ transcriptionMode: 'disabled' })
+    toast('Transcription was turned off', {
+      description:
+        'The selected model isn’t available. Re-enable transcription in settings to download it.',
     })
   }, [])
 
@@ -364,10 +383,14 @@ function App() {
 
     setLiveChunks(new Set(liveSpans.keys()))
 
-    transcribeChunks(chunks, settingsRef.current, getAudio, () =>
-      speechStripRef.current?.refreshTranscriptions(),
+    transcribeChunks(
+      chunks,
+      settingsRef.current,
+      getAudio,
+      () => speechStripRef.current?.refreshTranscriptions(),
+      handleModelUnavailable,
     )
-  }, [getAudio])
+  }, [getAudio, handleModelUnavailable])
 
   const handlePatch = useCallback(
     (from: number, to: number) => {
@@ -526,16 +549,51 @@ function App() {
     status.value === 'recording' || status.value === 'analyzing'
   const noOp = useCallback(() => {}, [])
 
+  // Switching to a different transcription model re-transcribes everything with
+  // it: the existing text was produced by another engine, so drop it and let the
+  // pass below redo it. Tracks the last *enabled* mode (a ref, not state — this
+  // is a transition detector, not rendered) so turning transcription off and
+  // back on to the same model keeps its results instead of needlessly re-running
+  // (costly for the large model). Declared before the transcribe effect so the
+  // clear lands first when both fire on the same settings change.
+  const prevEnabledModeRef = useRef(
+    settings.transcriptionMode === 'disabled'
+      ? null
+      : settings.transcriptionMode,
+  )
+  useEffect(() => {
+    const next = settings.transcriptionMode
+    // Keep the remembered model (and any existing text) across a disable.
+    if (next === 'disabled') return
+    const prev = prevEnabledModeRef.current
+    prevEnabledModeRef.current = next
+    // First enable, or re-selecting the same model: nothing to redo.
+    if (prev === null || prev === next) return
+    invalidateTranscriptions(analysisMutRef.current)
+    speechStripRef.current?.refreshTranscriptions()
+  }, [settings.transcriptionMode])
+
   // Transcribe. Results mutate chunks in place, so we tell the SpeechStrip
   // imperatively to re-render its overlay as they arrive. During recording,
   // transcription is kicked off from reconcileLiveSpans; this effect handles
   // the post-recording pass (imports, re-scans, settings changes).
   useEffect(() => {
     if (isRecording || ropes.length === 0) return
-    transcribeChunks(analysisMut, settings, getAudio, () =>
-      speechStripRef.current?.refreshTranscriptions(),
+    transcribeChunks(
+      analysisMut,
+      settings,
+      getAudio,
+      () => speechStripRef.current?.refreshTranscriptions(),
+      handleModelUnavailable,
     )
-  }, [analysisMut, settings, isRecording, ropes, getAudio])
+  }, [
+    analysisMut,
+    settings,
+    isRecording,
+    ropes,
+    getAudio,
+    handleModelUnavailable,
+  ])
 
   return (
     <>

@@ -111,6 +111,31 @@ function probeTrackRecognition(): boolean {
   }
 }
 
+// Whether the device can run the large (Whisper) model, which is WebGPU-only.
+// Memoised: the answer is stable for the life of the page, and requesting an
+// adapter is not free. Mirrors `supportsTrackRecognition`.
+let webGpuAvailable: boolean | undefined
+
+export async function isWebGpuAvailable(): Promise<boolean> {
+  if (webGpuAvailable === undefined) webGpuAvailable = await probeWebGpu()
+  return webGpuAvailable
+}
+
+async function probeWebGpu(): Promise<boolean> {
+  // `navigator.gpu` isn't in the DOM lib yet, so declare the slice we use.
+  const gpu = (
+    navigator as unknown as {
+      gpu?: { requestAdapter(): Promise<unknown> }
+    }
+  ).gpu
+  if (!gpu) return false
+  try {
+    return (await gpu.requestAdapter()) != null
+  } catch {
+    return false
+  }
+}
+
 /**
  * Whether any kind of browser-based speech recognition is available, whether
  * on-device or cloud-backed.

@@ -16,13 +16,82 @@
  */
 
 import type { AnalysisChunk } from '#/lib/AnalysisFrame'
+import type { LocalTranscriptionStatus } from '#/lib/browserFeatures'
+import { checkLocalTranscription } from '#/lib/browserFeatures'
+import { clearModelDownloaded, isModelDownloaded } from '#/lib/modelDownload'
+import type { WorkerDownloadModel } from '#/lib/modelDownload'
 import type { SabRope } from '#/lib/SabRope'
 import type { SettingsRow } from '#/lib/settings'
-import { transcribeBundled } from '#/lib/transcribeBundled'
+import { transcribeWithWorker } from '#/lib/transcribeBundled'
 import { transcribeWeb } from '#/lib/transcribeWeb'
-import { ensureWebEngineInstalled } from '#/lib/transcribeWebInstall'
 
 const LOG = '[Transcription]'
+
+/**
+ * Thrown when the engine a tier resolves to isn't actually downloaded — the
+ * model was never fetched, or its cached weights were evicted. Distinct from an
+ * ordinary inference error: the orchestrator reverts the transcription mode
+ * rather than marking the chunk as failed (see `onModelUnavailable`).
+ */
+export class ModelUnavailableError extends Error {
+  constructor(message: string) {
+    super(message)
+    this.name = 'ModelUnavailableError'
+  }
+}
+
+// Marker the transcribe worker prefixes onto an error when the model couldn't be
+// loaded (missing or corrupt cached weights, a failed session, a refused offline
+// fetch) — see TranscribeWorker.ts. Reaching it means the model isn't usable.
+// Duplicated from the worker, which can't be imported here without running on the
+// UI thread.
+const MODEL_LOAD_FAILED_MARKER = 'transcription model could not be loaded'
+
+function isModelLoadFailure(err: unknown): boolean {
+  return err instanceof Error && err.message.includes(MODEL_LOAD_FAILED_MARKER)
+}
+
+/**
+ * Run a worker model, translating a model *load* failure into
+ * `ModelUnavailableError`. The worker is offline, so unusable cached weights
+ * (missing, evicted, or corrupt) can't be repaired mid-transcription; we forget
+ * the model's "downloaded" flag (so the settings modal re-offers the download)
+ * and let the caller revert the mode. Inference failures after a good load are
+ * left as ordinary per-chunk errors.
+ */
+async function transcribeWithWorkerChecked(
+  audio: AudioSpan,
+  model: WorkerDownloadModel,
+  label: string,
+): Promise<string> {
+  try {
+    return await transcribeWithWorker(audio, model)
+  } catch (err) {
+    if (isModelLoadFailure(err)) {
+      clearModelDownloaded(model)
+      throw new ModelUnavailableError(
+        `${label} couldn’t be loaded and needs to be downloaded again.`,
+      )
+    }
+    throw err
+  }
+}
+
+/** Which concrete engine the "small" tier resolves to. */
+export type SmallEngine = 'browser' | 'moonshine'
+
+/**
+ * Resolve the "small" tier to a concrete engine: the browser's on-device engine
+ * when it's downloaded or downloadable, otherwise the bundled Moonshine model.
+ * Shared by the settings modal and the transcribe path so they always agree.
+ */
+export function resolveSmallEngine(
+  local: LocalTranscriptionStatus,
+): SmallEngine {
+  return local === 'downloaded' || local === 'available'
+    ? 'browser'
+    : 'moonshine'
+}
 
 /**
  * Status and result of transcribing a chunk. Absent (`undefined`) means
@@ -300,9 +369,10 @@ export function computeSealResolutions(
  * `audio` is the chunk's recorded audio span, materialised to PCM by each
  * backend as needed.
  *
- * The "browser" and "cloud" modes run the Web Speech API on the chunk's audio
- * (on-device vs. allowing the user agent's remote service, respectively). The
- * "bundled" mode runs the Moonshine model in a web worker.
+ * Models are never downloaded here — that only happens in the settings modal.
+ * If the engine a tier resolves to isn't downloaded, this throws
+ * `ModelUnavailableError` (caught and propagated so the orchestrator can revert
+ * the mode), rather than marking the chunk as a normal failure.
  */
 export async function transcribeChunk(
   chunk: AnalysisChunk,
@@ -317,22 +387,7 @@ export async function transcribeChunk(
   onUpdate?.()
 
   try {
-    let text: string
-    switch (settings.transcriptionMode) {
-      case 'browser':
-        // The browser may need to download its on-device model on first use.
-        // Block recognition until it's ready so the UI can surface a progress
-        // modal instead of letting the chunk hang silently.
-        await ensureWebEngineInstalled()
-        text = await transcribeWeb(audio, true)
-        break
-      case 'cloud':
-        text = await transcribeWeb(audio, false)
-        break
-      case 'bundled':
-        text = await transcribeBundled(audio)
-        break
-    }
+    const text = await runTranscription(settings.transcriptionMode, audio)
     chunk.transcription = { status: 'done', text }
   } catch (err) {
     if (audio.signal.aborted) {
@@ -343,12 +398,67 @@ export async function transcribeChunk(
       onUpdate?.()
       return
     }
+    if (err instanceof ModelUnavailableError) {
+      // The selected model isn't usable. Leave the chunk untranscribed and let
+      // the caller revert the mode (one toast, not a per-chunk error each).
+      chunk.transcription = undefined
+      onUpdate?.()
+      throw err
+    }
     chunk.transcription = {
       status: 'error',
       error: err instanceof Error ? err.message : 'Transcription failed',
     }
   }
   onUpdate?.()
+}
+
+/**
+ * Run the recognition for one span under the given tier, resolving "small" to a
+ * concrete engine. Throws `ModelUnavailableError` when the resolved engine's
+ * model hasn't been downloaded (the settings modal is the only place that
+ * downloads). The "cloud" tier needs no download.
+ */
+async function runTranscription(
+  mode: Exclude<SettingsRow['transcriptionMode'], 'disabled'>,
+  audio: AudioSpan,
+): Promise<string> {
+  switch (mode) {
+    case 'cloud':
+      return transcribeWeb(audio, false)
+    case 'large':
+      if (!isModelDownloaded('whisper')) {
+        throw new ModelUnavailableError(
+          'The large transcription model hasn’t been downloaded.',
+        )
+      }
+      return transcribeWithWorkerChecked(
+        audio,
+        'whisper',
+        'The large transcription model',
+      )
+    case 'small': {
+      const local = await checkLocalTranscription()
+      if (resolveSmallEngine(local) === 'browser') {
+        if (local !== 'downloaded') {
+          throw new ModelUnavailableError(
+            'The browser’s on-device speech model hasn’t been downloaded.',
+          )
+        }
+        return transcribeWeb(audio, true)
+      }
+      if (!isModelDownloaded('moonshine')) {
+        throw new ModelUnavailableError(
+          'The small transcription model hasn’t been downloaded.',
+        )
+      }
+      return transcribeWithWorkerChecked(
+        audio,
+        'moonshine',
+        'The small transcription model',
+      )
+    }
+  }
 }
 
 /**
@@ -371,21 +481,50 @@ export async function transcribeChunk(
 // skipped.
 let chunksChain: Promise<void> = Promise.resolve()
 
+// Bumped by `invalidateTranscriptions` so a scan that began under an
+// outdated model (e.g. before the user switched models) abandons itself
+// instead of refilling the just-cleared chunks with stale results — which the
+// fresh scan would then skip as already-transcribed. Each sequential pass
+// captures the value live when it starts running and bails the moment it no
+// longer matches.
+let scanGeneration = 0
+
+/**
+ * Discard every chunk's transcription so a subsequent `transcribeChunks` pass
+ * redoes them — used when the selected model changes and the existing text was
+ * produced by a different engine. Supersedes any in-flight scan (see
+ * `scanGeneration`) so it can't keep writing old-model results past the switch.
+ * The caller still triggers the fresh pass (and re-renders any overlay).
+ */
+export function invalidateTranscriptions(chunks: AnalysisChunk[]): void {
+  scanGeneration += 1
+  for (const chunk of chunks) {
+    if (chunk.transcription) chunk.transcription = undefined
+  }
+}
+
 export function transcribeChunks(
   chunks: AnalysisChunk[],
   settings: SettingsRow,
   getAudio: ChunkAudioProvider,
   onUpdate?: () => void,
+  // Invoked when the selected model turns out not to be downloaded. The caller
+  // is expected to revert the mode (and typically surface a toast).
+  onModelUnavailable?: () => void,
 ): void {
   if (settings.transcriptionMode === 'disabled') return
   // Keep `chunksChain` always-resolving so a thrown pass (e.g. getAudio failing)
   // can't wedge the chain and silently stop all later transcription.
   chunksChain = chunksChain.then(() =>
-    transcribeChunksSequential(chunks, settings, getAudio, onUpdate).catch(
-      (err) => {
-        console.warn(LOG, 'sequential pass failed:', err)
-      },
-    ),
+    transcribeChunksSequential(
+      chunks,
+      settings,
+      getAudio,
+      onUpdate,
+      onModelUnavailable,
+    ).catch((err) => {
+      console.warn(LOG, 'sequential pass failed:', err)
+    }),
   )
 }
 
@@ -394,14 +533,28 @@ async function transcribeChunksSequential(
   settings: SettingsRow,
   getAudio: ChunkAudioProvider,
   onUpdate?: () => void,
+  onModelUnavailable?: () => void,
 ): Promise<void> {
+  const generation = scanGeneration
   for (const chunk of chunks) {
+    // A model switch invalidated this pass mid-run; stop rather than refill the
+    // cleared chunks with results from the now-superseded model.
+    if (scanGeneration !== generation) return
     if (!chunk.voiced || chunk.transcription) continue
     const audio = getAudio(chunk)
     if (!audio) continue
     // transcribeChunk claims the chunk synchronously (sets `pending` before its
-    // first await) and swallows its own errors, so awaiting here never throws
-    // and a queued pass won't re-pick a chunk this one has started.
-    await transcribeChunk(chunk, settings, audio, onUpdate)
+    // first await) and swallows its own errors, so awaiting here never throws —
+    // except `ModelUnavailableError`, which it rethrows so we can stop the pass
+    // and let the caller revert the mode rather than failing every chunk.
+    try {
+      await transcribeChunk(chunk, settings, audio, onUpdate)
+    } catch (err) {
+      if (err instanceof ModelUnavailableError) {
+        onModelUnavailable?.()
+        return
+      }
+      throw err
+    }
   }
 }

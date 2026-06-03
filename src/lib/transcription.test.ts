@@ -31,7 +31,7 @@ import {
 import type { ChunkAudioProvider, LiveSpanEntry } from './transcription'
 
 vi.mock('./transcribeBundled', () => ({
-  transcribeBundled: vi.fn(
+  transcribeWithWorker: vi.fn(
     async (audio: { endTime: Promise<number>; signal: AbortSignal }) => {
       audio.signal.throwIfAborted()
 
@@ -73,8 +73,11 @@ vi.mock('./transcribeWeb', () => ({
   transcribeWeb: vi.fn().mockRejectedValue(new Error('not used')),
 }))
 
-vi.mock('./transcribeWebInstall', () => ({
-  ensureWebEngineInstalled: vi.fn().mockResolvedValue(undefined),
+// transcription.ts imports modelDownload (which pulls in a web-worker module);
+// stub it so the worker model always reads as downloaded and no worker loads.
+vi.mock('./modelDownload', () => ({
+  isModelDownloaded: vi.fn().mockReturnValue(true),
+  clearModelDownloaded: vi.fn(),
 }))
 
 // Only `frames.length`, `timeStepSamples`, `sampleRate`, and `recordingStart`
@@ -705,7 +708,7 @@ describe('transcribeChunks', () => {
       sampleRate: 'auto' as const,
       persistentMic: false,
       browserPreprocessing: 'default' as const,
-      transcriptionMode: 'bundled' as const,
+      transcriptionMode: 'large' as const,
     } satisfies SettingsRow
 
     transcribeChunks([chunk1, chunk2], settings, getAudio)

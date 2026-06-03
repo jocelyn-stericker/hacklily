@@ -15,9 +15,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Check } from 'lucide-react'
+import { Check, Loader2 } from 'lucide-react'
 import type { ReactNode } from 'react'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
 
 import { Badge } from '#/components/ui/badge'
@@ -33,25 +33,120 @@ import {
   DialogTitle,
 } from '#/components/ui/dialog'
 import { useBrowserSpeechRecognitionAvailable } from '#/components/useBrowserSpeechRecognitionAvailable'
-import type { LocalTranscriptionStatus } from '#/lib/browserFeatures'
+import type { DownloadModel } from '#/lib/modelDownload'
+import {
+  cancelDownload,
+  startDownload,
+  useDownloadState,
+  useModelDownloaded,
+} from '#/lib/modelDownload'
 import type { TranscriptionMode } from '#/lib/settings'
 import { useSettings, updateSettings } from '#/lib/settings'
+import { resolveSmallEngine } from '#/lib/transcription'
 import { cn } from '#/lib/utils'
 
 const LOG = '[TranscriptionSettings]'
 
-/** Badge describing whether the browser's own on-device engine can be used. */
-function browserEngineBadge(local: LocalTranscriptionStatus | null): ReactNode {
-  switch (local) {
-    case null:
-      return <Badge variant="outline">Checking…</Badge>
-    case 'downloaded':
-      return <Badge variant="secondary">Ready</Badge>
-    case 'available':
-      return null
-    case false:
-      return <Badge variant="outline">Unavailable</Badge>
+function formatMB(bytes: number): string {
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`
+}
+
+// Progress for an in-flight download: a determinate bar once the total size is
+// known, an indeterminate spinner before that (and for the browser engine,
+// whose install reports no byte progress).
+function DownloadProgress({
+  loaded,
+  total,
+}: {
+  loaded: number
+  total: number
+}) {
+  if (total <= 0) {
+    return (
+      <div className="flex items-center gap-2 text-xs text-muted-foreground">
+        <Loader2 className="size-4 animate-spin" />
+        <span>Downloading…</span>
+      </div>
+    )
   }
+  const percent = Math.min(100, (loaded / total) * 100)
+  return (
+    <div className="space-y-1">
+      <div className="h-2 w-full overflow-hidden rounded-full bg-muted">
+        <div
+          className="h-full bg-primary transition-[width] duration-150"
+          style={{ width: `${percent}%` }}
+        />
+      </div>
+      <div className="flex justify-between text-xs text-muted-foreground tabular-nums">
+        <span>
+          {formatMB(loaded)} / {formatMB(total)}
+        </span>
+        <span>{Math.round(percent)}%</span>
+      </div>
+    </div>
+  )
+}
+
+// Download / cancel / retry controls for one model, rendered only while the
+// model isn't ready. Downloads can only ever be started from here. Starting a
+// download also selects the tier (via `onDownload`) — downloading a model is a
+// clear signal the user intends to use it.
+function DownloadControls({
+  model,
+  sizeLabel,
+  onDownload,
+}: {
+  model: DownloadModel
+  sizeLabel?: string
+  onDownload: () => void
+}) {
+  const state = useDownloadState(model)
+  // `force` re-downloads ignoring the cache; used by "Try again" so a corrupt
+  // cached file (e.g. a truncated weight) can't keep failing the same way.
+  const begin = (force = false) => {
+    onDownload()
+    startDownload(model, { force })
+  }
+  if (state.status === 'downloading') {
+    return (
+      <div className="flex flex-col gap-2">
+        <DownloadProgress loaded={state.loaded} total={state.total} />
+        <div>
+          <Button
+            type="button"
+            size="sm"
+            variant="outline"
+            onClick={() => cancelDownload(model)}
+          >
+            Cancel
+          </Button>
+        </div>
+      </div>
+    )
+  }
+  if (state.status === 'failed') {
+    return (
+      <div className="flex flex-col gap-2">
+        <p className="text-xs text-destructive">{state.error}</p>
+        <div className="flex flex-col gap-1">
+          <Button type="button" size="sm" onClick={() => begin(true)}>
+            Try again
+          </Button>
+          <p className="text-xs text-muted-foreground">
+            Try again re-downloads from scratch.
+          </p>
+        </div>
+      </div>
+    )
+  }
+  return (
+    <div>
+      <Button type="button" size="sm" onClick={() => begin()}>
+        Download{sizeLabel ? ` · ${sizeLabel}` : ''}
+      </Button>
+    </div>
+  )
 }
 
 function ModeCard({
@@ -61,6 +156,7 @@ function ModeCard({
   title,
   description,
   badge,
+  footer,
 }: {
   selected: boolean
   disabled?: boolean
@@ -68,43 +164,56 @@ function ModeCard({
   title: string
   description?: string
   badge?: ReactNode
+  footer?: ReactNode
 }) {
   return (
-    <button
-      type="button"
-      role="radio"
-      aria-checked={selected}
-      disabled={disabled}
-      onClick={onSelect}
+    <div
       className={cn(
-        'flex w-full flex-col gap-1 rounded-lg border p-3 text-left transition-colors outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50',
+        'rounded-lg border transition-colors',
         disabled
-          ? 'cursor-not-allowed border-border opacity-55'
+          ? 'border-border opacity-55'
           : selected
-            ? 'cursor-pointer border-primary bg-primary/5'
-            : 'cursor-pointer border-border hover:bg-muted/50',
+            ? 'border-primary bg-primary/5'
+            : 'border-border',
       )}
     >
-      <div className="flex items-center justify-between gap-2">
-        <span className="flex items-center gap-2 text-sm font-medium">
-          <span
-            className={cn(
-              'flex size-4 shrink-0 items-center justify-center rounded-full border transition-colors',
-              selected
-                ? 'border-primary bg-primary text-primary-foreground'
-                : 'border-muted-foreground/40',
-            )}
-          >
-            {selected && <Check className="size-3" />}
+      <button
+        type="button"
+        role="radio"
+        aria-checked={selected}
+        disabled={disabled}
+        onClick={onSelect}
+        className={cn(
+          'flex w-full flex-col gap-1 rounded-lg p-3 text-left outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50',
+          disabled
+            ? 'cursor-not-allowed'
+            : selected
+              ? 'cursor-pointer'
+              : 'cursor-pointer hover:bg-muted/50',
+        )}
+      >
+        <div className="flex items-center justify-between gap-2">
+          <span className="flex items-center gap-2 text-sm font-medium">
+            <span
+              className={cn(
+                'flex size-4 shrink-0 items-center justify-center rounded-full border transition-colors',
+                selected
+                  ? 'border-primary bg-primary text-primary-foreground'
+                  : 'border-muted-foreground/40',
+              )}
+            >
+              {selected && <Check className="size-3" />}
+            </span>
+            {title}
           </span>
-          {title}
-        </span>
-        {badge}
-      </div>
-      {description ? (
-        <p className="pl-6 text-xs text-muted-foreground">{description}</p>
-      ) : null}
-    </button>
+          {badge}
+        </div>
+        {description ? (
+          <p className="pl-6 text-xs text-muted-foreground">{description}</p>
+        ) : null}
+      </button>
+      {footer ? <div className="px-3 pb-3 pl-9">{footer}</div> : null}
+    </div>
   )
 }
 
@@ -118,7 +227,32 @@ export function TranscriptionSettingsModal({
   const settings = useSettings()
   const availability = useBrowserSpeechRecognitionAvailable()
   const local = availability?.local ?? null
+  const webgpu = availability?.webgpu ?? null
   const mode = settings.transcriptionMode
+
+  const moonshineDownloaded = useModelDownloaded('moonshine')
+  const whisperDownloaded = useModelDownloaded('whisper')
+
+  // Small tier resolves to the browser engine (if downloaded/downloadable) or
+  // the bundled Moonshine model. `null` while the availability probe is pending.
+  const smallEngine = local === null ? null : resolveSmallEngine(local)
+  const smallDownloadModel: DownloadModel =
+    smallEngine === 'moonshine' ? 'moonshine' : 'browser'
+  const smallReady =
+    smallEngine === 'browser'
+      ? local === 'downloaded'
+      : smallEngine === 'moonshine'
+        ? moonshineDownloaded
+        : false
+
+  // Large tier needs WebGPU. While the probe is in flight (webgpu === null) we
+  // leave it selectable, like the cloud tier.
+  const largeAvailable = webgpu !== false
+  const largeReady = whisperDownloaded
+
+  // The bundled fallback always works, so the small tier is never unavailable —
+  // only "not downloaded yet".
+  const cloudAvailable = availability === null ? true : availability.browser
 
   // The dialog edits a draft and only commits when Save is pressed. Reset it to
   // the saved value whenever the dialog opens (adjusting state during render
@@ -130,11 +264,14 @@ export function TranscriptionSettingsModal({
     if (open) setDraft(mode)
   }
 
-  // While the probe is still in flight (availability === null) we don't yet know
-  // what's supported, so we leave engines selectable; unavailable ones disable
-  // once it resolves. The bundled model is always available.
-  const browserEngineAvailable = local !== false
-  const cloudAvailable = availability === null ? true : availability.browser
+  // Downloads may only happen from this modal, so cancel any in-flight download
+  // when it closes.
+  useEffect(() => {
+    if (open) return
+    cancelDownload('browser')
+    cancelDownload('moonshine')
+    cancelDownload('whisper')
+  }, [open])
 
   const save = () =>
     updateSettings({ transcriptionMode: draft })
@@ -155,6 +292,20 @@ export function TranscriptionSettingsModal({
       : mode !== 'disabled' && draft === 'disabled'
         ? 'Disable transcription'
         : 'Save'
+
+  // Any tier the device supports is selectable, but a tier whose model isn't
+  // downloaded yet can't actually be applied — block Save (with an explanatory
+  // tooltip) until its weights are present.
+  const draftNeedsDownload =
+    (draft === 'small' && !smallReady) || (draft === 'large' && !largeReady)
+
+  const smallTitle =
+    smallEngine === 'moonshine' ? 'Fast (Moonshine)' : 'Fast (built-in)'
+
+  const smallDescription =
+    smallEngine === 'moonshine'
+      ? 'A fast, lightweight model'
+      : 'Your browser’s own on-device speech recognition'
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -193,23 +344,55 @@ export function TranscriptionSettingsModal({
               </header>
 
               <ModeCard
-                selected={draft === 'browser' && browserEngineAvailable}
-                disabled={!browserEngineAvailable}
-                onSelect={() => setDraft('browser')}
-                title="Browser engine"
-                badge={browserEngineBadge(local)}
-                description={
-                  'Uses your browser’s own on-device speech recognition' +
-                  (local === 'available'
-                    ? '; large download on first use, then offline.'
-                    : '.')
+                selected={draft === 'small'}
+                onSelect={() => setDraft('small')}
+                title={smallTitle}
+                description={smallDescription}
+                badge={
+                  local === null ? (
+                    <Badge variant="outline">Checking…</Badge>
+                  ) : smallReady ? (
+                    <Badge variant="secondary">Ready</Badge>
+                  ) : null
+                }
+                footer={
+                  local !== null && !smallReady ? (
+                    <DownloadControls
+                      model={smallDownloadModel}
+                      sizeLabel={
+                        smallEngine === 'moonshine' ? '70 MB' : '<100 MB'
+                      }
+                      onDownload={() => setDraft('small')}
+                    />
+                  ) : null
                 }
               />
+
               <ModeCard
-                selected={draft === 'bundled'}
-                onSelect={() => setDraft('bundled')}
-                title="Bundled model"
-                description="Braat’s bundled Moonshine model. 70 MB model download on first use, then offline."
+                selected={draft === 'large'}
+                disabled={!largeAvailable}
+                onSelect={() => setDraft('large')}
+                title="Accurate (Whisper Turbo)"
+                description="Recommended. Requires WebGPU, as well as significant compute and memory"
+                badge={
+                  !largeAvailable ? (
+                    <Badge variant="outline">Needs WebGPU</Badge>
+                  ) : largeReady ? (
+                    <Badge variant="secondary">Ready</Badge>
+                  ) : null
+                }
+                footer={
+                  // Only offer the download once WebGPU is confirmed (webgpu ===
+                  // true), not merely while the probe is pending — no point
+                  // fetching 540 MB the device can't run.
+                  webgpu === true && !largeReady ? (
+                    <DownloadControls
+                      model="whisper"
+                      sizeLabel="540 MB"
+                      onDownload={() => setDraft('large')}
+                    />
+                  ) : null
+                }
               />
             </section>
 
@@ -225,7 +408,7 @@ export function TranscriptionSettingsModal({
               </header>
 
               <ModeCard
-                selected={draft === 'cloud' && cloudAvailable}
+                selected={draft === 'cloud'}
                 disabled={!cloudAvailable}
                 onSelect={() => setDraft('cloud')}
                 title="Cloud transcription"
@@ -234,7 +417,7 @@ export function TranscriptionSettingsModal({
                     <Badge variant="outline">Unavailable</Badge>
                   )
                 }
-                description="Uses your browser's speech recognition. May use your browser or operating system's remote service, subject to that vendor's privacy policy."
+                description="Use your browser or operating system's transcription service, subject to that vendor's privacy policy. Whisper Turbo is more accurate"
               />
             </section>
           </div>
@@ -244,9 +427,17 @@ export function TranscriptionSettingsModal({
           <DialogClose render={<Button variant="outline" />}>
             Cancel
           </DialogClose>
-          <Button onClick={save} disabled={draft === mode}>
-            {saveLabel}
-          </Button>
+          <span
+            title={draftNeedsDownload ? 'Download required' : undefined}
+            className="inline-flex"
+          >
+            <Button
+              onClick={save}
+              disabled={draft === mode || draftNeedsDownload}
+            >
+              {saveLabel}
+            </Button>
+          </span>
         </DialogFooter>
       </DialogContent>
     </Dialog>
