@@ -185,7 +185,7 @@ function App() {
     setTimeout(() => {
       toast('Transcription was turned off', {
         description:
-          'Bundled transcription may have crashed last time, which can happen on lower-memory devices.',
+          'Bundled transcription may have crashed last time, possibly due to insufficient memory',
       })
     })
   }, [])

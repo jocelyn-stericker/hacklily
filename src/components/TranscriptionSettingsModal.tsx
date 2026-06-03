@@ -373,7 +373,7 @@ export function TranscriptionSettingsModal({
                 disabled={!largeAvailable}
                 onSelect={() => setDraft('large')}
                 title="Accurate (Whisper Turbo)"
-                description="Recommended. Requires WebGPU, as well as significant compute and memory"
+                description="Put your MacBook Pro or gaming PC to good use. Requires WebGPU, as well as significant compute and memory"
                 badge={
                   !largeAvailable ? (
                     <Badge variant="outline">Needs WebGPU</Badge>
@@ -433,6 +433,7 @@ export function TranscriptionSettingsModal({
           >
             <Button
               onClick={save}
+              className="w-full"
               disabled={draft === mode || draftNeedsDownload}
             >
               {saveLabel}
