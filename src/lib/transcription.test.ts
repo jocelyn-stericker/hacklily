@@ -15,18 +15,67 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, vi } from 'vitest'
 
 import type { AnalysisChunk } from './AnalysisFrame'
 import { SabRope } from './SabRope'
+import type { SettingsRow } from './settings'
 import {
   chunkAudioFromRopes,
   computeSealResolutions,
   locateChunkRope,
   readAudioSpan,
   reconcileLiveSpans,
+  transcribeChunks,
 } from './transcription'
-import type { LiveSpanEntry } from './transcription'
+import type { ChunkAudioProvider, LiveSpanEntry } from './transcription'
+
+vi.mock('./transcribeBundled', () => ({
+  transcribeBundled: vi.fn(
+    async (audio: { endTime: Promise<number>; signal: AbortSignal }) => {
+      audio.signal.throwIfAborted()
+
+      // Reproduce the fixed readAudioSpan: race endTime against the abort
+      // signal so an abort mid-wait unblocks the chunksChain.
+      await new Promise<void>((resolve, reject) => {
+        const onAbort = () => {
+          cleanup()
+          reject(audio.signal.reason)
+        }
+        const cleanup = () => {
+          audio.signal.removeEventListener('abort', onAbort)
+        }
+        audio.signal.addEventListener('abort', onAbort)
+        if (audio.signal.aborted) {
+          cleanup()
+          reject(audio.signal.reason)
+          return
+        }
+        audio.endTime.then(
+          () => {
+            cleanup()
+            resolve()
+          },
+          (err) => {
+            cleanup()
+            reject(err)
+          },
+        )
+      })
+
+      audio.signal.throwIfAborted()
+      return 'transcribed text'
+    },
+  ),
+}))
+
+vi.mock('./transcribeWeb', () => ({
+  transcribeWeb: vi.fn().mockRejectedValue(new Error('not used')),
+}))
+
+vi.mock('./transcribeWebInstall', () => ({
+  ensureWebEngineInstalled: vi.fn().mockResolvedValue(undefined),
+}))
 
 // Only `frames.length`, `timeStepSamples`, `sampleRate`, and `recordingStart`
 // matter to chunkPcmFromRopes, so keep the chunks minimal.
@@ -604,5 +653,80 @@ describe('computeSealResolutions', () => {
     liveSpans.set(c, makeSpan())
     const result = computeSealResolutions([c], liveSpans, [rope])
     expect(result[0]!.endTime).toBe(0)
+  })
+})
+
+describe('transcribeChunks', () => {
+  it('transcribes remaining chunks after a chunk is abandoned', async () => {
+    const rope = new SabRope(16000)
+    rope.append(new Float32Array(16000 * 10)) // 10 seconds of audio
+
+    const chunk1: AnalysisChunk = {
+      timeStepSamples: 160,
+      sampleRate: 16000,
+      freqStepHz: 0,
+      firstBinHz: 0,
+      startTimeSec: 0,
+      frames: Array.from({ length: 100 }),
+      voiced: true,
+    }
+    const chunk2: AnalysisChunk = {
+      timeStepSamples: 160,
+      sampleRate: 16000,
+      freqStepHz: 0,
+      firstBinHz: 0,
+      startTimeSec: 0,
+      frames: Array.from({ length: 100 }),
+      voiced: true,
+    }
+
+    const abortController1 = new AbortController()
+    const endTimePromise1 = new Promise<number>(() => {})
+
+    const getAudio: ChunkAudioProvider = (newChunk) => {
+      if (newChunk === chunk1) {
+        return {
+          rope,
+          startTime: 0,
+          endTime: endTimePromise1,
+          signal: abortController1.signal,
+        }
+      }
+      return {
+        rope,
+        startTime: 1,
+        endTime: Promise.resolve(2),
+        signal: new AbortController().signal,
+      }
+    }
+
+    const settings = {
+      inputDeviceId: null,
+      sampleRate: 'auto' as const,
+      persistentMic: false,
+      browserPreprocessing: 'default' as const,
+      transcriptionMode: 'bundled' as const,
+    } satisfies SettingsRow
+
+    transcribeChunks([chunk1, chunk2], settings, getAudio)
+
+    // Let the chunksChain start processing chunk1 (it enters the
+    // mocked transcribeBundled and hangs on await audio.endTime).
+    await new Promise((resolve) => setTimeout(resolve, 10))
+
+    // Abort chunk1 — the mock hasn't registered an abort listener
+    // yet (just like the real transcribeBundled), so this abort is
+    // missed and the promise never settles.
+    abortController1.abort()
+
+    // Give any remaining microtasks a chance to drain.
+    await new Promise((resolve) => setTimeout(resolve, 10))
+
+    // chunk2 should have been transcribed in the same pass, but the
+    // chunksChain is stuck on chunk1 and never reaches it.
+    expect(chunk2.transcription).toEqual({
+      status: 'done',
+      text: 'transcribed text',
+    })
   })
 })

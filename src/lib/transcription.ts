@@ -79,7 +79,31 @@ export type ChunkAudioProvider = (chunk: AnalysisChunk) => AudioSpan | null
  * yet yields a shorter buffer rather than reading past the rope.
  */
 export async function readAudioSpan(audio: AudioSpan): Promise<Float32Array> {
-  const endTime = await audio.endTime
+  const endTime = await new Promise<number>((resolve, reject) => {
+    const onAbort = () => {
+      cleanup()
+      reject(audio.signal.reason)
+    }
+    const cleanup = () => {
+      audio.signal.removeEventListener('abort', onAbort)
+    }
+    audio.signal.addEventListener('abort', onAbort)
+    if (audio.signal.aborted) {
+      cleanup()
+      reject(audio.signal.reason)
+      return
+    }
+    audio.endTime.then(
+      (value) => {
+        cleanup()
+        resolve(value)
+      },
+      (err) => {
+        cleanup()
+        reject(err)
+      },
+    )
+  })
   const { rope } = audio
   const start = Math.round(audio.startTime * rope.sampleRate)
   const end = Math.min(Math.round(endTime * rope.sampleRate), rope.length)
