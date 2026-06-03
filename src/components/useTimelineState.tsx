@@ -134,25 +134,27 @@ export function useTimelineState(analysis: AnalysisChunk[]) {
       }),
     [],
   )
-  const handlePlotZoom = useCallback((p: number, z: number) => {
+  // `factor` scales the visible span multiplicatively: > 1 zooms out, < 1 zooms
+  // in. `p` (0..1) is the focal point along the viewport that stays pinned, so
+  // the time under the cursor/fingers doesn't drift while zooming.
+  const handlePlotZoom = useCallback((p: number, factor: number) => {
     setTimelineState((timeline) => {
-      const viewportLeftSec = Math.min(
-        Math.max(0, timeline.viewportLeftSec - p * (z / 10)),
-        Math.floor(timeline.trackDurationSec / 30 + 1) * 30,
-      )
-      const viewportRightSec = Math.min(
-        timeline.viewportRightSec + (1 - p) * (z / 10),
-        Math.floor(timeline.trackDurationSec / 30 + 1) * 30,
-      )
+      const span = timeline.viewportRightSec - timeline.viewportLeftSec
+      const maxSpan = Math.floor(timeline.trackDurationSec / 30 + 1) * 30
+      const minSpan = 0.5
+      const newSpan = Math.min(Math.max(span * factor, minSpan), maxSpan)
 
-      if (viewportRightSec - viewportLeftSec < 0.5) {
+      if (newSpan === span) {
         return timeline
       }
+
+      const focusSec = timeline.viewportLeftSec + p * span
+      const viewportLeftSec = Math.max(0, focusSec - p * newSpan)
 
       return {
         ...timeline,
         viewportLeftSec,
-        viewportRightSec,
+        viewportRightSec: viewportLeftSec + newSpan,
       }
     })
   }, [])

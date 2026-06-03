@@ -59,7 +59,7 @@ interface Padding {
 
 interface Props {
   onScroll: (t: number) => void
-  onZoom: (xPercentage: number, amount: number) => void
+  onZoom: (xPercentage: number, factor: number) => void
   onClick: (t: number) => void
   onHover: (t: number | null) => void
   yAxis: YAxis

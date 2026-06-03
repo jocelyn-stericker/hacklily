@@ -25,13 +25,38 @@ import {
 
 import { assertUnreachable, cn } from '#/lib/utils'
 
+// Larger = faster wheel zoom. Tuned so a typical trackpad/mouse notch is a
+// gentle step regardless of device.
+const WHEEL_ZOOM_SENSITIVITY = 0.002
+// Cap a single wheel event so high-resolution wheels and momentum flings can't
+// jump the zoom; this is what keeps feel consistent across devices.
+const MAX_WHEEL_DELTA_PX = 80
+
+/**
+ * Convert a wheel event into a multiplicative zoom factor (> 1 zooms out, < 1
+ * zooms in). Normalizes `deltaMode` to pixels and clamps the magnitude so the
+ * step feels the same whether deltaY arrives in lines (classic mice) or pixels
+ * (trackpads / high-res wheels).
+ */
+function wheelZoomFactor(ev: WheelEvent, root: HTMLElement) {
+  let dy = ev.deltaY
+  if (ev.deltaMode === 1) {
+    dy *= 16 // DOM_DELTA_LINE → approximate line height in px
+  } else if (ev.deltaMode === 2) {
+    dy *= root.clientHeight // DOM_DELTA_PAGE → one viewport
+  }
+  dy = Math.max(-MAX_WHEEL_DELTA_PX, Math.min(MAX_WHEEL_DELTA_PX, dy))
+  return Math.exp(dy * WHEEL_ZOOM_SENSITIVITY)
+}
+
 export interface Props extends Omit<
   React.ComponentProps<'div'>,
   'onScroll' | 'onClick'
 > {
   scrollX: number
   virtualWidth: number
-  onZoom: (xPercentage: number, amount: number) => void
+  /** `factor` scales the visible span: > 1 zooms out, < 1 zooms in. */
+  onZoom: (xPercentage: number, factor: number) => void
   onScrollX: (x: number) => void
   onClick: (x: number) => void
   onHover: (x: number | null) => void
@@ -109,7 +134,7 @@ export function VirtualScrollArea({
             setMode('programmatic')
           }, 100)
 
-          onZoom(p, ev.deltaY / 25)
+          onZoom(p, wheelZoomFactor(ev, root))
         }
       }
       root.addEventListener('wheel', handleWheel, { passive: false })
@@ -119,11 +144,12 @@ export function VirtualScrollArea({
     }
   }, [onZoom, root])
 
+  // Current Euclidean separation between the two active pointers, or null unless
+  // exactly two are down. Used as a ratio between frames so pinch zoom is
+  // independent of screen size/DPI.
   const pointerDistance = useCallback(
     (
       newPointers: Array<{
-        initialX: number
-        initialY: number
         currentX: number
         currentY: number
       }>,
@@ -131,16 +157,10 @@ export function VirtualScrollArea({
       if (!newPointers[0] || !newPointers[1] || newPointers[2]) {
         return null
       }
-      const origDistance = Math.sqrt(
-        (newPointers[0].initialX - newPointers[1].initialX) ** 2 +
-          (newPointers[0].initialY - newPointers[1].initialY) ** 2,
-      )
-      const newDistance = Math.sqrt(
+      return Math.sqrt(
         (newPointers[0].currentX - newPointers[1].currentX) ** 2 +
           (newPointers[0].currentY - newPointers[1].currentY) ** 2,
       )
-
-      return origDistance - newDistance
     },
     [],
   )
@@ -199,8 +219,9 @@ export function VirtualScrollArea({
       const p =
         (pointers[0].currentX + pointers[1].currentX) / 2 / boundingRect.width
 
-      if (prevZoomDistance.current != null) {
-        onZoom(p, (distance - prevZoomDistance.current) / 4)
+      if (prevZoomDistance.current != null && prevZoomDistance.current > 0) {
+        // Spreading the fingers grows `distance`, shrinking the span (zoom in).
+        onZoom(p, prevZoomDistance.current / distance)
       }
       prevZoomDistance.current = distance
 

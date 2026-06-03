@@ -231,7 +231,7 @@ describe('useTimelineState', () => {
       result.current.timelineState.viewportLeftSec
 
     act(() => {
-      result.current.handlePlotZoom(0.5, 1)
+      result.current.handlePlotZoom(0.5, 0.5)
     })
 
     const newWidth =
@@ -246,7 +246,7 @@ describe('useTimelineState', () => {
     act(() => {
       // Try to zoom in a lot
       for (let i = 0; i < 20; i++) {
-        result.current.handlePlotZoom(0.5, 2)
+        result.current.handlePlotZoom(0.5, 0.5)
       }
     })
 
@@ -254,6 +254,38 @@ describe('useTimelineState', () => {
       result.current.timelineState.viewportRightSec -
       result.current.timelineState.viewportLeftSec
     expect(newWidth).toBeGreaterThanOrEqual(0.5)
+  })
+
+  it('handlePlotZoom scales the span multiplicatively', () => {
+    const { result } = renderHook(() => useTimelineState(mockAnalysis))
+    const initialWidth =
+      result.current.timelineState.viewportRightSec -
+      result.current.timelineState.viewportLeftSec
+
+    act(() => {
+      result.current.handlePlotZoom(0.5, 0.5)
+    })
+
+    const newWidth =
+      result.current.timelineState.viewportRightSec -
+      result.current.timelineState.viewportLeftSec
+    expect(newWidth).toBeCloseTo(initialWidth * 0.5)
+  })
+
+  it('handlePlotZoom pins the focal point under the cursor', () => {
+    const { result } = renderHook(() => useTimelineState(mockAnalysis))
+    const { viewportLeftSec, viewportRightSec } = result.current.timelineState
+    const p = 0.25
+    const focusSec = viewportLeftSec + p * (viewportRightSec - viewportLeftSec)
+
+    act(() => {
+      result.current.handlePlotZoom(p, 0.5)
+    })
+
+    const next = result.current.timelineState
+    const newFocusSec =
+      next.viewportLeftSec + p * (next.viewportRightSec - next.viewportLeftSec)
+    expect(newFocusSec).toBeCloseTo(focusSec)
   })
 
   it('handleNew resets all state', () => {
